@@ -21,11 +21,12 @@ export default async function Home() {
   const totalSets = new Set(sets?.map(s => s.set_id)).size
 
   const { data: recentCards } = await supabase
-    .from('cards')
-    .select('*')
-    .order('card_set_id', { ascending: false })
-    .limit(6)
-
+  .from('cards')
+  .select('*')
+  .like('card_set_id', 'OP%')
+  .order('card_set_id', { ascending: false })
+  .limit(6)
+  
   return (
     <div className="min-h-screen bg-gray-950 text-white">
       <Navbar email={user.email} />
