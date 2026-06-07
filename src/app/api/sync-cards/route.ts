@@ -21,38 +21,91 @@ async function fetchCards(url: string) {
   return Array.isArray(data) ? data : []
 }
 
+async function fetchApitcgAllCards(): Promise<any[]> {
+  const apiKey = process.env.APITCG_KEY!
+  const allCards: any[] = []
+  let page = 1
+  const limit = 100
+
+  while (true) {
+    const res = await fetch(
+      `https://apitcg.com/api/one-piece/cards?page=${page}&limit=${limit}`,
+      { headers: { 'x-api-key': apiKey } }
+    )
+    if (!res.ok) break
+    const data = await res.json()
+    if (!data.data || data.data.length === 0) break
+    allCards.push(...data.data)
+    if (page >= data.totalPages) break
+    page++
+  }
+  return allCards
+}
+
 export async function GET() {
   try {
-    const sets = await fetchCards('https://optcgapi.com/api/allSetCards/')
-    const sts = await fetchCards('https://optcgapi.com/api/allSTCards/')
-    const promos = await fetchCards('https://optcgapi.com/api/allPromoCards/')
+    const [sets, sts, promos, dons] = await Promise.all([
+      fetchCards('https://optcgapi.com/api/allSetCards/'),
+      fetchCards('https://optcgapi.com/api/allSTCards/'),
+      fetchCards('https://optcgapi.com/api/allPromoCards/'),
+      fetchCards('https://optcgapi.com/api/allDonCards/'),
+    ])
 
-    const allCards = [...sets, ...sts, ...promos]
-
-    const rows = allCards.map((c: any) => ({
+    const mapCard = (c: any) => ({
       id: c.card_image_id || c.card_set_id,
-      card_set_id: c.card_set_id,
       card_name: c.card_name,
-      set_name: c.set_name || 'Promo',
-      set_id: c.set_id || 'PROMO',
+      set_name: c.set_name || c.optcg_don_name?.split(' - ')[1] || 'Promo',
+      set_id: c.set_id || 'DON',
       card_image: c.card_image,
       card_text: c.card_text,
-      card_color: c.card_color,
-      card_type: c.card_type,
-      rarity: c.rarity,
+      card_color: c.card_color || null,
+      card_type: c.card_type || 'DON!!',
+      rarity: c.rarity || 'DON!!',
       card_cost: c.card_cost ? String(c.card_cost) : null,
       card_power: c.card_power ? String(c.card_power) : null,
-      attribute: c.attribute,
-      sub_types: c.sub_types,
+      attribute: c.attribute || null,
+      sub_types: c.sub_types || null,
       counter_amount: c.counter_amount ? String(c.counter_amount) : null,
       life: c.life ? String(c.life) : null,
       market_price: c.market_price,
       inventory_price: c.inventory_price,
+      card_set_id: c.card_set_id || null,
       updated_at: new Date().toISOString(),
-    }))
+    })
 
-   // Remove duplicatas pelo id
-    const uniqueRows = rows.filter((row, index, self) =>
+    const apitcgCards = await fetchApitcgAllCards()
+
+    const mapApitcg = (c: any) => ({
+      id: c.code || c.id,
+      card_name: c.name,
+      set_name: c.set?.name || '',
+      set_id: c.set?.name?.match(/\[([^\]]+)\]/)?.[1] || '',
+      card_image: c.images?.large || c.images?.small,
+      card_text: c.ability || '',
+      card_color: c.color,
+      card_type: c.type,
+      rarity: c.rarity,
+      card_cost: c.cost ? String(c.cost) : null,
+      card_power: c.power ? String(c.power) : null,
+      attribute: c.attribute?.name || null,
+      sub_types: c.family || null,
+      counter_amount: c.counter && c.counter !== '-' ? String(c.counter) : null,
+      life: null,
+      market_price: null,
+      inventory_price: null,
+      card_set_id: c.code || c.id,
+      updated_at: new Date().toISOString(),
+    })
+
+    const allCards = [
+      ...sets.map(mapCard),
+      ...sts.map(mapCard),
+      ...promos.map(mapCard),
+      ...dons.map(mapCard),
+      ...apitcgCards.map(mapApitcg),
+    ]
+
+    const uniqueRows = allCards.filter((row, index, self) =>
       index === self.findIndex(r => r.id === row.id)
     )
 

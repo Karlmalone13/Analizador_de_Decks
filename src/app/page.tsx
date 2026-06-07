@@ -23,7 +23,7 @@ export default async function Home() {
   const { data: recentCards } = await supabase
     .from('cards')
     .select('*')
-    .order('updated_at', { ascending: false })
+    .order('card_set_id', { ascending: false })
     .limit(6)
 
   return (
