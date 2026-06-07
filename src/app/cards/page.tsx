@@ -1,6 +1,9 @@
 'use client'
 
 import { useState, useRef } from 'react'
+import { createClient } from '@/utils/supabase/client'
+
+const supabase = createClient()
 
 interface Card {
   card_set_id: string
@@ -46,23 +49,30 @@ export default function CardsPage() {
 
   async function onSearchChange(value: string) {
     setSearch(value)
-    if (value.length < 2) { setSuggestions([]); setShowSuggestions(false); return }
+    if (value.length < 2) {
+      setSuggestions([])
+      setShowSuggestions(false)
+      return
+    }
     if (searchTimeout.current) clearTimeout(searchTimeout.current)
     searchTimeout.current = setTimeout(async () => {
       try {
         const isCode = /^[A-Z]{2}\d{2}-\d{3}/i.test(value)
-        const isPartialCode = /^[A-Z]{2}\d{2}/i.test(value) && !isCode
-        const url = isCode
-             ? `https://optcgapi.com/api/sets/card/${value.toUpperCase()}/`
-             : isPartialCode
-             ? `https://optcgapi.com/api/sets/filtered/?card_name=${encodeURIComponent(value)}`
-             : `https://optcgapi.com/api/sets/filtered/?card_name=${encodeURIComponent(value)}`
-        const res = await fetch(url)
-        const data = await res.json()
-        setSuggestions(Array.isArray(data) ? data.slice(0, 8) : [data])
+        let query = supabase.from('cards').select('*').limit(10)
+
+        if (isCode) {
+          query = query.or(`id.ilike.${value}%,card_set_id.ilike.${value}%`)
+        } else {
+          query = query.ilike('card_name', `%${value}%`)
+        }
+
+        const { data } = await query
+        setSuggestions((data || []) as any)
         setShowSuggestions(true)
-      } catch { setSuggestions([]) }
-    }, 400)
+      } catch {
+        setSuggestions([])
+      }
+    }, 300)
   }
 
   function selectSuggestion(card: Card) {
@@ -75,18 +85,20 @@ export default function CardsPage() {
   async function searchCards() {
     if (!search.trim()) return
     setLoading(true)
+    setShowSuggestions(false)
     try {
-      // Busca por código (ex: OP01-001) ou nome
-      const isCode = /^[A-Z]{2}\d{2}-\d{3}/.test(search.toUpperCase())
-      let url = ''
+      const isCode = /^[A-Z]{2}\d{2}-\d{3}/i.test(search)
+      let query = supabase.from('cards').select('*').limit(100)
+
       if (isCode) {
-        url = `https://optcgapi.com/api/sets/card/${search.toUpperCase()}/`
+        query = query.or(`id.ilike.${search}%,card_set_id.ilike.${search}%`)
       } else {
-        url = `https://optcgapi.com/api/sets/filtered/?card_name=${encodeURIComponent(search)}`
+        query = query.ilike('card_name', `%${search}%`)
       }
-      const res = await fetch(url)
-      const data = await res.json()
-      setCards(Array.isArray(data) ? data : [data])
+
+      const { data, error } = await query
+      if (error) throw error
+      setCards((data || []) as any)
     } catch {
       setCards([])
     }
@@ -148,7 +160,7 @@ export default function CardsPage() {
                   >
                     <img src={card.card_image} alt={card.card_name} className="w-8 h-11 object-cover rounded" />
                     <div>
-                      <div className="text-xs font-mono text-orange-400">{card.card_set_id}</div>
+                     <div className="text-xs font-mono text-orange-400">{(card.card_set_id || '').split('_')[0]}</div>
                       <div className="text-sm text-white">{card.card_name}</div>
                       <div className="text-xs text-gray-400">{card.set_name}</div>
                     </div>

@@ -31,6 +31,7 @@ export async function GET() {
 
     const rows = allCards.map((c: any) => ({
       id: c.card_image_id || c.card_set_id,
+      card_set_id: c.card_set_id,
       card_name: c.card_name,
       set_name: c.set_name || 'Promo',
       set_id: c.set_id || 'PROMO',
