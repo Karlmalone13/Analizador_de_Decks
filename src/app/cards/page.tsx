@@ -20,6 +20,8 @@ interface Card {
   sub_types: string
   counter_amount: string | null
   life: string | null
+  market_price: number | null
+  inventory_price: number | null
 }
 
 const COLORS = ['Red', 'Blue', 'Green', 'Purple', 'Black', 'Yellow']
@@ -131,12 +133,17 @@ export default function CardsPage() {
 
   return (
     <div className="min-h-screen bg-gray-950 text-white">
-      {/* Header */}
-      <div className="border-b border-gray-800 px-8 py-4 flex items-center justify-between">
-        <a href="/" className="text-xl font-bold">🏴‍☠️ OPTCG Analyzer</a>
-        <span className="text-gray-400 text-sm">Banco de Cartas</span>
+     {/* Header */}
+     <div className="border-b border-gray-800 px-6 py-3 flex items-center gap-6 sticky top-0 bg-gray-950 z-40">
+        <a href="/" className="text-xl font-bold text-white flex items-center gap-2 mr-4">
+          🏴‍☠️ <span>OPTCG Analyzer</span>
+        </a>
+        <nav className="flex items-center gap-1 flex-1">
+          <a href="/" className="px-4 py-2 rounded-xl text-sm font-medium text-gray-400 hover:text-white hover:bg-gray-800 transition">🏠 Início</a>
+          <a href="/cards" className="px-4 py-2 rounded-xl text-sm font-medium bg-orange-600 text-white transition">🃏 Cartas</a>
+          <a href="/deck" className="px-4 py-2 rounded-xl text-sm font-medium text-gray-400 hover:text-white hover:bg-gray-800 transition">⚔️ Deck Builder</a>
+        </nav>
       </div>
-
       <div className="max-w-7xl mx-auto px-8 py-8">
         {/* Search */}
         <div className="flex gap-3 mb-6">
@@ -313,40 +320,71 @@ export default function CardsPage() {
           ))}
         </div>
 
-        {/* Modal */}
+       {/* Modal */}
         {selected && (
           <div
-            className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4"
+            className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4"
             onClick={() => setSelected(null)}
           >
             <div
-              className="bg-gray-900 rounded-2xl max-w-2xl w-full flex gap-6 p-6"
+              className="bg-gray-900 rounded-2xl w-full max-w-lg shadow-2xl border border-gray-700"
               onClick={e => e.stopPropagation()}
             >
-              <img src={selected.card_image} alt={selected.card_name} className="w-48 rounded-xl flex-shrink-0" />
-              <div className="flex-1">
-                <div className="text-orange-400 font-mono text-sm mb-1">{selected.card_set_id}</div>
-                <h2 className="text-2xl font-bold mb-1">{selected.card_name}</h2>
-                <div className="text-gray-400 text-sm mb-4">{selected.set_name}</div>
-                <div className="grid grid-cols-2 gap-2 text-sm mb-4">
-                  <div><span className="text-gray-400">Tipo:</span> {selected.card_type}</div>
-                  <div><span className="text-gray-400">Cor:</span> {selected.card_color}</div>
-                  <div><span className="text-gray-400">Raridade:</span> {rarityLabel[selected.rarity]}</div>
-                  {selected.card_cost && <div><span className="text-gray-400">Custo:</span> {selected.card_cost}</div>}
-                  {selected.card_power && <div><span className="text-gray-400">Poder:</span> {selected.card_power}</div>}
-                  {selected.life && <div><span className="text-gray-400">Life:</span> {selected.life}</div>}
-                  {selected.counter_amount && <div><span className="text-gray-400">Counter:</span> {selected.counter_amount}</div>}
-                  {selected.attribute && <div><span className="text-gray-400">Atributo:</span> {selected.attribute}</div>}
+              <div className="flex gap-4 p-5">
+                {/* Imagem */}
+                <img
+                  src={selected.card_image}
+                  alt={selected.card_name}
+                  className="w-36 rounded-xl flex-shrink-0 object-contain"
+                />
+
+                {/* Info */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-orange-400 font-mono text-xs">{(selected.card_set_id || '').split('_')[0]}</span>
+                    <span className="text-xs bg-gray-800 px-2 py-0.5 rounded-lg text-gray-300">{rarityLabel[selected.rarity] || selected.rarity}</span>
+                  </div>
+                  <h2 className="text-lg font-bold text-white leading-tight mb-0.5">{selected.card_name}</h2>
+                  <p className="text-gray-400 text-xs mb-3">{selected.set_name}</p>
+
+                  <div className="grid grid-cols-2 gap-2 text-xs mb-3">
+                    {[
+                      { label: 'Tipo', value: selected.card_type },
+                      { label: 'Cor', value: selected.card_color },
+                      { label: 'Custo', value: selected.card_cost },
+                      { label: 'Poder', value: selected.card_power },
+                      { label: 'Life', value: selected.life },
+                      { label: 'Counter', value: selected.counter_amount },
+                      { label: 'Atributo', value: selected.attribute },
+                    ].filter(s => s.value).map(stat => (
+                      <div key={stat.label} className="bg-gray-800 rounded-lg px-2 py-1.5">
+                        <div className="text-gray-500 text-xs">{stat.label}</div>
+                        <div className="font-semibold text-white">{stat.value}</div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {selected.sub_types && (
+                    <div className="flex flex-wrap gap-1 mb-3">
+                      {selected.sub_types.split('/').map((t: string) => (
+                        <span key={t} className="bg-gray-800 text-gray-300 text-xs px-2 py-0.5 rounded-lg">{t.trim()}</span>
+                      ))}
+                    </div>
+                  )}
                 </div>
-                {selected.sub_types && (
-                  <div className="text-sm mb-3"><span className="text-gray-400">Tipos:</span> {selected.sub_types}</div>
-                )}
+              </div>
+
+              {/* Efeito e preço */}
+              <div className="px-5 pb-5">
                 {selected.card_text && (
-                  <div className="bg-gray-800 rounded-xl p-3 text-sm text-gray-200">{selected.card_text}</div>
+                  <div className="bg-gray-800 rounded-xl p-3 text-xs text-gray-200 leading-relaxed mb-3">
+                    {selected.card_text}
+                  </div>
                 )}
+                
                 <button
                   onClick={() => setSelected(null)}
-                  className="mt-4 bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded-xl text-sm transition"
+                  className="w-full bg-gray-700 hover:bg-gray-600 py-2 rounded-xl text-sm font-medium transition"
                 >
                   Fechar
                 </button>
