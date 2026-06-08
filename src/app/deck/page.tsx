@@ -173,6 +173,86 @@ export default function DeckBuilderPage() {
     setSaved(true)
     setTimeout(() => setSaved(false), 2000)
   }
+  function formatCardText(text: string) {
+  if (!text) return null
+  
+  const parts = text.split(/(\[.*?\])/g)
+  
+  return parts.map((part, i) => {
+    if (part.startsWith('[') && part.endsWith(']')) {
+      const keyword = part.slice(1, -1)
+      
+      const orangeKeywords = ['Rush', 'Blocker', 'Banish', 'Trigger', 'Double Attack', 'Unblockable']
+      const blueKeywords = ['On Play', 'When Attacking', 'Activate: Main', 'End of Your Turn', 'Once Per Turn', 'Your Turn', 'Opponent\'s Turn', 'On K.O.', 'On Block', 'DON!! x1', 'DON!! x2', 'DON!! x3', 'DON!! x4', 'DON!! x5']
+      
+      const isOrange = orangeKeywords.some(k => keyword.toLowerCase() === k.toLowerCase())
+      const isBlue = blueKeywords.some(k => keyword.toLowerCase() === k.toLowerCase())
+      
+      if (isOrange) {
+        return <span key={i} className="inline-block bg-orange-500 text-white text-xs font-bold px-2 py-0.5 rounded-full mx-0.5">{keyword}</span>
+      }
+      if (isBlue) {
+        return <span key={i} className="inline-block bg-blue-600 text-white text-xs font-bold px-2 py-0.5 rounded-full mx-0.5">{keyword}</span>
+      }
+      return <span key={i} className="inline-block bg-gray-600 text-white text-xs font-bold px-2 py-0.5 rounded-full mx-0.5">{keyword}</span>
+    }
+    return <span key={i}>{part}</span>
+  })
+}
+
+const KNOWN_TYPES = [
+  'Straw Hat Crew', 'Navy', 'Revolutionary Army', 'Whitebeard Pirates',
+  'Red-Haired Pirates', 'Blackbeard Pirates', 'Big Mom Pirates', 'Kaido',
+  'Animal Kingdom Pirates', 'Heart Pirates', 'Kid Pirates', 'Hawkins Pirates',
+  'On-Air Pirates', 'Bonney Pirates', 'Barto Club', 'Beautiful Pirates',
+  'Caribou Pirates', 'Drake Pirates', 'Firetank Pirates', 'Fallen Monk Pirates',
+  'Baroque Works', 'Buggy Pirates', 'Arlong Pirates', 'Krieg Pirates',
+  'Kuja Pirates', 'Thriller Bark Pirates', 'Donquixote Pirates', 'CP9', 'CP0',
+  'CP6', 'CP7', 'SWORD', 'Cross Guild', 'Buggy\'s Delivery', 'Foxy Pirates',
+  'Bellamy Pirates', 'Supernovas', 'The Four Emperors', 'The Seven Warlords of the Sea',
+  'The Akazaya Nine', 'The Vinsmoke Family', 'GERMA 66', 'Kingdom of GERMA',
+  'Rocks Pirates', 'Former Rocks Pirates', 'Former Navy', 'Former CP9',
+  'Former Whitebeard Pirates', 'Minks', 'Giant', 'Fish-Man', 'Merfolk',
+  'Celestial Dragons', 'Five Elders', 'Homies', 'Biological Weapon',
+  'Land of Wano', 'Kouzuki Clan', 'East Blue', 'Alabasta', 'Drum Kingdom',
+  'Skypiea', 'Sky Island', 'Water Seven', 'Thriller Bark', 'Amazon Lily',
+  'Impel Down', 'Marineford', 'Fish-Man Island', 'Punk Hazard', 'Dressrosa',
+  'Zou', 'Whole Cake Island', 'Wano', 'Egghead', 'FILM', 'ODYSSEY',
+  'Shandian Warrior', 'Jaya', 'Baterilla', 'Bowin Island', 'Muggy Kingdom',
+  'Hot Springs Island', 'Lunarian', 'Plague', 'SMILE', 'Animal', 'Music',
+  'New Fish-Man Pirates', 'The Sun Pirates', 'Jellyfish Pirates',
+  'Kingdom Pirates', 'Kougou Clan'
+].sort((a, b) => b.length - a.length) // ordena do maior para o menor para evitar matches parciais
+
+function splitSubTypes(subTypes: string): string[] {
+  if (!subTypes) return []
+  if (subTypes.includes('/')) return subTypes.split('/').map(t => t.trim())
+  
+  let remaining = subTypes
+  const found: string[] = []
+  
+  while (remaining.length > 0) {
+    const match = KNOWN_TYPES.find(t => remaining.startsWith(t))
+    if (match) {
+      found.push(match)
+      remaining = remaining.slice(match.length).trim()
+    } else {
+      // palavra desconhecida, pega até o próximo tipo conhecido
+      const nextMatch = KNOWN_TYPES.find(t => remaining.includes(t))
+      if (nextMatch) {
+        const idx = remaining.indexOf(nextMatch)
+        const unknown = remaining.slice(0, idx).trim()
+        if (unknown) found.push(unknown)
+        remaining = remaining.slice(idx)
+      } else {
+        found.push(remaining)
+        break
+      }
+    }
+  }
+  
+  return found.length > 0 ? found : [subTypes]
+}
 
   return (
     <div className="min-h-screen bg-gray-950 text-white flex flex-col">
@@ -315,11 +395,11 @@ export default function DeckBuilderPage() {
                     </button>
                   </div>
                   <div className="p-1.5 bg-gray-900">
-                    <div className="text-xs font-mono text-orange-400 truncate">{(card.card_set_id || '').split('_')[0]}</div>
-                    <div className="text-xs text-white truncate">{card.card_name}</div>
+                    <div className="text-sm font-mono text-orange-400 truncate">{(card.card_set_id || '').split('_')[0]}</div>
+                    <div className="text-sm text-white truncate">{card.card_name}</div>
                     <div className="flex items-center gap-1 mt-0.5">
-                      <span className={`text-xs px-1 py-0.5 rounded text-white ${colorClass[card.card_color] || 'bg-gray-700'}`}>{card.card_color}</span>
-                      <span className="text-xs text-gray-400">{card.card_type}</span>
+                      <span className={`text-sm px-1 py-0.5 rounded text-white ${colorClass[card.card_color] || 'bg-gray-700'}`}>{card.card_color}</span>
+                      <span className="text-sm text-gray-400">{card.card_type}</span>
                     </div>
                   </div>
                 </div>
@@ -446,11 +526,11 @@ export default function DeckBuilderPage() {
               />
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between mb-1">
-                  <span className="text-orange-400 font-mono text-xs">{(selectedCard.card_set_id || '').split('_')[0]}</span>
-                  <span className="text-xs bg-gray-800 px-2 py-0.5 rounded-lg text-gray-300">{selectedCard.rarity}</span>
+                  <span className="text-orange-400 font-mono text-s">{(selectedCard.card_set_id || '').split('_')[0]}</span>
+                  <span className="text-sm bg-gray-800 px-2 py-0.5 rounded-lg text-gray-300">{selectedCard.rarity}</span>
                 </div>
                 <h2 className="text-lg font-bold text-white leading-tight mb-0.5">{selectedCard.card_name}</h2>
-                <p className="text-gray-400 text-xs mb-3">{selectedCard.set_name}</p>
+                <p className="text-gray-400 text-sm mb-3">{selectedCard.set_name}</p>
                 <div className="grid grid-cols-2 gap-2 text-xs mb-3">
                   {[
                     { label: 'Tipo', value: selectedCard.card_type },
@@ -462,19 +542,24 @@ export default function DeckBuilderPage() {
                     { label: 'Atributo', value: selectedCard.attribute },
                   ].filter(s => s.value).map(stat => (
                     <div key={stat.label} className="bg-gray-800 rounded-lg px-2 py-1.5">
-                      <div className="text-gray-500">{stat.label}</div>
-                      <div className="font-semibold text-white">{stat.value}</div>
+                      <div className="text-gray-500 text-xs">{stat.label}</div>
+                      <div className="font-semibold text-white text-base">{stat.value}</div>
                     </div>
                   ))}
                 </div>
                 {selectedCard.sub_types && (
-                  <div className="text-xs mb-2 text-gray-400">Tipos: <span className="text-white">{selectedCard.sub_types}</span></div>
+                    <div className="text-sm mb-2 text-gray-400 flex flex-wrap items-center gap-1">
+                        <span>Tipos:</span>
+                         {splitSubTypes(selectedCard.sub_types).map((t, i) => (
+                         <span key={i} className="bg-gray-700 text-white text-xs px-2 py-0.5 rounded-lg">{t}</span>
+                     ))}
+                    </div>
                 )}
               </div>
             </div>
             {selectedCard.card_text && (
               <div className="px-5 pb-3">
-                <div className="bg-gray-800 rounded-xl p-3 text-xs text-gray-200 leading-relaxed">{selectedCard.card_text}</div>
+                <div className="bg-gray-800 rounded-xl p-3 text-sm text-gray-200 leading-relaxed">{formatCardText(selectedCard.card_text)}</div>
               </div>
             )}
             <div className="px-5 pb-5 flex gap-2">
