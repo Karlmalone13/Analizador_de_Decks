@@ -321,7 +321,22 @@ export default function DeckBuilderPage() {
               <div className="space-y-1">
                 {deck.cards.map((dc, i) => (
                   <div key={i} className="flex items-center gap-2 bg-gray-900 border border-gray-800 rounded-xl px-3 py-1.5 hover:border-gray-600 transition">
-                    <img src={dc.card.card_image} className="w-8 h-11 object-cover rounded" />
+                     <div className="relative flex-shrink-0" style={{ width: '48px', height: '64px' }}>
+                       {Array.from({ length: Math.min(dc.quantity, 4) }).map((_, idx) => (
+                         <img
+                           key={idx}
+                           src={dc.card.card_image}
+                           className="absolute object-cover rounded border border-gray-700"
+                           style={{
+                              width: '40px',
+                              height: '56px',
+                              left: `${idx * 4}px`,
+                              top: `${idx * 2}px`,
+                              zIndex: idx,
+                         }}
+                       />
+                       ))}
+                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="text-xs font-mono text-orange-400">{(dc.card.card_set_id || '').split('_')[0]}</div>
                       <div className="text-xs text-white truncate">{dc.card.card_name}</div>
