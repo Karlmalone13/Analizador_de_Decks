@@ -82,6 +82,7 @@ export default function DeckBuilderPage() {
   const [showImport, setShowImport] = useState(false)
   const [importText, setImportText] = useState('')
   const [importError, setImportError] = useState('')
+  const [deckError, setDeckError] = useState('')
 
 
   const colorClass: Record<string, string> = {
@@ -201,14 +202,23 @@ export default function DeckBuilderPage() {
       return
     }
     setDeck(d => {
-      const existing = d.cards.find(dc => dc.card.id === card.id)
-      if (existing) {
-        if (existing.quantity >= 4) return d
-        return { ...d, cards: d.cards.map(dc => dc.card.id === card.id ? { ...dc, quantity: dc.quantity + 1 } : dc) }
-      }
-      if (totalCards >= 50) return d
-      return { ...d, cards: [...d.cards, { card, quantity: 1 }] }
-    })
+  const existing = d.cards.find(dc => dc.card.id === card.id)
+  if (existing) {
+    if (existing.quantity >= 4) return d
+    const currentTotal = d.cards.reduce((sum, dc) => sum + dc.quantity, 0)
+    if (currentTotal >= 50) {
+      setTimeout(() => setDeckError('Seu deck já tem 50 cartas!'), 0)
+      return d
+    }
+    return { ...d, cards: d.cards.map(dc => dc.card.id === card.id ? { ...dc, quantity: dc.quantity + 1 } : dc) }
+  }
+  const currentTotal = d.cards.reduce((sum, dc) => sum + dc.quantity, 0)
+  if (currentTotal >= 50) {
+    setTimeout(() => setDeckError('Seu deck já tem 50 cartas!'), 0)
+    return d
+  }
+  return { ...d, cards: [...d.cards, { card, quantity: 1 }] }
+})
   }
 
   function removeCard(cardId: string) {
@@ -525,6 +535,18 @@ async function deleteDeck(deckId: string) {
               >
                {saving ? 'Salvando...' : saved ? '✓ Salvo!' : 'Salvar'}
               </button>
+
+              <button
+                onClick={() => {
+                if (confirm('Limpar o deck? Isso vai remover todas as cartas.')) {
+                      setDeck({ name: deck.name, leader: null, cards: [] })
+                  }
+                  }}
+                className="px-4 py-2 rounded-xl text-sm font-medium bg-gray-700 hover:bg-red-700 transition"
+              
+                  >
+                   🗑 Limpar
+              </button>
            </div>
 
           <div className="flex gap-2">
@@ -548,6 +570,12 @@ async function deleteDeck(deckId: string) {
           </button>
           </div>
           </div>
+          {deckError && (
+          <div className="mt-2 bg-red-600/20 border border-red-600/40 rounded-xl px-3 py-2 text-sm text-red-400 flex items-center justify-between">
+            <span>{deckError}</span>
+            <button onClick={() => setDeckError('')} className="text-red-400 hover:text-white ml-2">✕</button>
+            </div>
+            )}
 
           {/* Deck Content */}
           <div className="card-scroll overflow-y-scroll p-4" style={{ flex: 1, minHeight: 0, scrollbarWidth: 'thin', scrollbarColor: '#f97316 #1f2937' }}>
