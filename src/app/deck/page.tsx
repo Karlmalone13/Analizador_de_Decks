@@ -75,6 +75,14 @@ export default function DeckBuilderPage() {
   const [loadingAll, setLoadingAll] = useState(false)
   const [selectedCard, setSelectedCard] = useState<Card | null>(null)
   const [showColorDropdown, setShowColorDropdown] = useState(false)
+  const [showMyDecks, setShowMyDecks] = useState(false)
+  const [myDecks, setMyDecks] = useState<any[]>([])
+  const [loadingDecks, setLoadingDecks] = useState(false)
+  const [showExport, setShowExport] = useState(false)
+  const [showImport, setShowImport] = useState(false)
+  const [importText, setImportText] = useState('')
+  const [importError, setImportError] = useState('')
+
 
   const colorClass: Record<string, string> = {
     Red: 'bg-red-600', Blue: 'bg-blue-600', Green: 'bg-green-600',
@@ -277,7 +285,88 @@ export default function DeckBuilderPage() {
     }
     return found.length > 0 ? found : [subTypes]
   }
+  async function loadMyDecks() {
+  setLoadingDecks(true)
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) { setLoadingDecks(false); return }
+  const { data } = await supabase
+    .from('decks')
+    .select('*')
+    .eq('user_id', user.id)
+    .order('updated_at', { ascending: false })
+  setMyDecks(data || [])
+  setLoadingDecks(false)
+}
 
+function exportDeck(): string {
+  const lines: string[] = []
+  if (deck.leader) {
+    lines.push(`1x${(deck.leader.card_set_id || deck.leader.id).split('_')[0]}`)
+  }
+  deck.cards.forEach(dc => {
+    lines.push(`${dc.quantity}x${(dc.card.card_set_id || dc.card.id).split('_')[0]}`)
+  })
+  return lines.join('\n')
+}
+
+async function importDeck() {
+  setImportError('')
+  const lines = importText.trim().split('\n').filter(l => l.trim())
+  const cardCodes: { code: string, qty: number }[] = []
+
+  for (const line of lines) {
+    const match = line.trim().match(/^(\d+)x([A-Z0-9\-]+)$/i)
+    if (!match) { setImportError(`Linha inválida: ${line}`); return }
+    cardCodes.push({ code: match[2].toUpperCase(), qty: parseInt(match[1]) })
+  }
+
+  const codes = cardCodes.map(c => c.code)
+  const { data } = await supabase
+    .from('cards')
+    .select('*')
+    .or(codes.map(c => `card_set_id.eq.${c}`).join(','))
+
+  if (!data || data.length === 0) { setImportError('Nenhuma carta encontrada'); return }
+
+  const newDeck: Deck = { name: 'Deck Importado', leader: null, cards: [] }
+
+  for (const { code, qty } of cardCodes) {
+    const card = data.find((c: any) =>
+      (c.card_set_id || '').split('_')[0].toUpperCase() === code
+    ) as Card | undefined
+    if (!card) continue
+
+    if (card.card_type?.toUpperCase() === 'LEADER') {
+      newDeck.leader = card
+    } else {
+      newDeck.cards.push({ card, quantity: qty })
+    }
+  }
+
+  setDeck(newDeck)
+  setShowImport(false)
+  setImportText('')
+}
+
+function loadDeck(saved: any) {
+  try {
+    const parsed = JSON.parse(saved.cards)
+    setDeck({
+      id: saved.id,
+      name: saved.name,
+      leader: parsed.leader || null,
+      cards: parsed.cards || [],
+    })
+    setShowMyDecks(false)
+  } catch {
+    alert('Erro ao carregar deck')
+  }
+}
+
+async function deleteDeck(deckId: string) {
+  await supabase.from('decks').delete().eq('id', deckId)
+  setMyDecks(d => d.filter(d => d.id !== deckId))
+}
   return (
     <div className="min-h-screen bg-gray-950 text-white flex flex-col">
       <Navbar />
@@ -429,29 +518,35 @@ export default function DeckBuilderPage() {
                 onChange={e => setDeck(d => ({ ...d, name: e.target.value }))}
                 className="flex-1 bg-gray-900 border border-gray-700 rounded-xl px-3 py-2 text-sm font-bold outline-none focus:border-orange-500"
               />
-              <button
+                <button
                 onClick={saveDeck}
                 disabled={saving}
                 className={`px-4 py-2 rounded-xl text-sm font-medium transition ${saved ? 'bg-green-600' : 'bg-orange-600 hover:bg-orange-500'}`}
               >
-                {saving ? 'Salvando...' : saved ? '✓ Salvo!' : 'Salvar'}
+               {saving ? 'Salvando...' : saved ? '✓ Salvo!' : 'Salvar'}
               </button>
-            </div>
+           </div>
 
-            <div className="grid grid-cols-3 gap-2">
-              <div className={`rounded-xl p-2 text-center border ${isLeaderSet ? 'border-green-600 bg-green-600/10' : 'border-gray-700 bg-gray-900'}`}>
-                <div className="text-base font-bold">{isLeaderSet ? '✓' : '—'}</div>
-                <div className="text-xs text-gray-400">Leader</div>
-              </div>
-              <div className={`rounded-xl p-2 text-center border ${totalCards === 50 ? 'border-green-600 bg-green-600/10' : 'border-gray-700 bg-gray-900'}`}>
-                <div className="text-base font-bold">{totalCards}/50</div>
-                <div className="text-xs text-gray-400">Cartas</div>
-              </div>
-              <div className={`rounded-xl p-2 text-center border ${isComplete ? 'border-green-600 bg-green-600/10' : 'border-gray-700 bg-gray-900'}`}>
-                <div className="text-base font-bold">{deck.cards.length}</div>
-                <div className="text-xs text-gray-400">Tipos únicos</div>
-              </div>
-            </div>
+          <div className="flex gap-2">
+           <button
+             onClick={() => { setShowMyDecks(true); loadMyDecks() }}
+             className="flex-1 bg-gray-800 hover:bg-gray-700 px-3 py-1.5 rounded-xl text-sm transition"
+             >
+              📂 Meus Decks
+            </button>
+            <button
+            onClick={() => setShowExport(true)}
+            className="flex-1 bg-gray-800 hover:bg-gray-700 px-3 py-1.5 rounded-xl text-sm transition"
+             >
+            📤 Exportar
+          </button>
+         <button
+            onClick={() => setShowImport(true)}
+          className="flex-1 bg-gray-800 hover:bg-gray-700 px-3 py-1.5 rounded-xl text-sm transition"
+        >
+            📥 Importar
+          </button>
+          </div>
           </div>
 
           {/* Deck Content */}
@@ -509,6 +604,106 @@ export default function DeckBuilderPage() {
           </div>
         </div>
       </div>
+          {/* Modal Meus Decks */}
+{showMyDecks && (
+  <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setShowMyDecks(false)}>
+    <div className="bg-gray-900 rounded-2xl w-full max-w-lg shadow-2xl border border-gray-700 max-h-[80vh] flex flex-col" onClick={e => e.stopPropagation()}>
+      <div className="p-5 border-b border-gray-800 flex items-center justify-between">
+        <h2 className="text-lg font-bold">Meus Decks</h2>
+        <button onClick={() => setShowMyDecks(false)} className="text-gray-400 hover:text-white">✕</button>
+      </div>
+      <div className="flex-1 overflow-y-auto p-4">
+        {loadingDecks && <div className="text-center text-gray-400 py-8">Carregando...</div>}
+        {!loadingDecks && myDecks.length === 0 && (
+          <div className="text-center text-gray-500 py-8">Nenhum deck salvo ainda</div>
+        )}
+        <div className="space-y-2">
+          {myDecks.map(d => {
+            let leaderImg = null
+            try {
+              const parsed = JSON.parse(d.cards)
+              leaderImg = parsed.leader?.card_image
+            } catch {}
+            return (
+              <div key={d.id} className="flex items-center gap-3 bg-gray-800 rounded-xl p-3 hover:bg-gray-750 transition">
+                <div className="w-10 h-14 rounded-lg flex-shrink-0 overflow-hidden bg-gray-700">
+  {leaderImg && (
+    <img 
+      src={leaderImg} 
+      className="w-full h-full object-cover"
+      onError={e => { e.currentTarget.style.display = 'none' }}
+    />
+  )}
+</div>
+                <div className="flex-1 min-w-0">
+                  <div className="font-semibold text-sm text-white truncate">{d.name}</div>
+                  <div className="text-xs text-gray-400">{new Date(d.updated_at).toLocaleDateString('pt-BR')}</div>
+                </div>
+                <div className="flex gap-2">
+                  <button onClick={() => loadDeck(d)} className="bg-orange-600 hover:bg-orange-500 px-3 py-1.5 rounded-lg text-xs transition">Abrir</button>
+                  <button onClick={() => deleteDeck(d.id)} className="bg-gray-700 hover:bg-red-700 px-3 py-1.5 rounded-lg text-xs transition">🗑</button>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      </div>
+    </div>
+  </div>
+)}
+
+{/* Modal Exportar */}
+{showExport && (
+  <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setShowExport(false)}>
+    <div className="bg-gray-900 rounded-2xl w-full max-w-md shadow-2xl border border-gray-700" onClick={e => e.stopPropagation()}>
+      <div className="p-5 border-b border-gray-800 flex items-center justify-between">
+        <h2 className="text-lg font-bold">Exportar Deck</h2>
+        <button onClick={() => setShowExport(false)} className="text-gray-400 hover:text-white">✕</button>
+      </div>
+      <div className="p-5">
+        <textarea
+          readOnly
+          value={exportDeck()}
+          className="w-full bg-gray-800 border border-gray-700 rounded-xl p-3 text-sm text-white font-mono h-64 resize-none outline-none"
+        />
+        <button
+          onClick={() => { navigator.clipboard.writeText(exportDeck()); alert('Copiado!') }}
+          className="w-full mt-3 bg-orange-600 hover:bg-orange-500 py-2.5 rounded-xl text-sm font-medium transition"
+        >
+          📋 Copiar para área de transferência
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
+{/* Modal Importar */}
+{showImport && (
+  <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setShowImport(false)}>
+    <div className="bg-gray-900 rounded-2xl w-full max-w-md shadow-2xl border border-gray-700" onClick={e => e.stopPropagation()}>
+      <div className="p-5 border-b border-gray-800 flex items-center justify-between">
+        <h2 className="text-lg font-bold">Importar Deck</h2>
+        <button onClick={() => setShowImport(false)} className="text-gray-400 hover:text-white">✕</button>
+      </div>
+      <div className="p-5">
+        <p className="text-gray-400 text-sm mb-3">Cole a lista do simulador (formato: 4xOP01-025)</p>
+        <textarea
+          value={importText}
+          onChange={e => setImportText(e.target.value)}
+          placeholder={"1xOP01-001\n4xOP01-025\n4xOP01-002\n..."}
+          className="w-full bg-gray-800 border border-gray-700 rounded-xl p-3 text-sm text-white font-mono h-64 resize-none outline-none focus:border-orange-500"
+        />
+        {importError && <p className="text-red-400 text-xs mt-2">{importError}</p>}
+        <button
+          onClick={importDeck}
+          className="w-full mt-3 bg-orange-600 hover:bg-orange-500 py-2.5 rounded-xl text-sm font-medium transition"
+        >
+          📥 Importar Deck
+        </button>
+      </div>
+    </div>
+  </div>
+)}
 
       {/* Modal */}
       {selectedCard && (
