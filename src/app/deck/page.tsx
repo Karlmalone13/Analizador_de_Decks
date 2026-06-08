@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { createClient } from '@/utils/supabase/client'
 import Navbar from '@/components/Navbar'
 
@@ -43,11 +43,13 @@ export default function DeckBuilderPage() {
   const [results, setResults] = useState<Card[]>([])
   const [showFilters, setShowFilters] = useState(false)
   const [filters, setFilters] = useState({ color: '', type: '' })
+  const [sortBy, setSortBy] = useState<'cost_asc' | 'cost_desc' | 'power_asc' | 'power_desc' | ''>('')
   const [deck, setDeck] = useState<Deck>({ name: 'Novo Deck', leader: null, cards: [] })
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [allCards, setAllCards] = useState<Card[]>([])
   const [loadingAll, setLoadingAll] = useState(false)
+  const [selectedCard, setSelectedCard] = useState<Card | null>(null)
 
   const colorClass: Record<string, string> = {
     Red: 'bg-red-600', Blue: 'bg-blue-600', Green: 'bg-green-600',
@@ -58,26 +60,49 @@ export default function DeckBuilderPage() {
   const isLeaderSet = !!deck.leader
   const isComplete = isLeaderSet && totalCards === 50
 
-  useState(() => {
+  useEffect(() => {
     async function load() {
       setLoadingAll(true)
-      const { data } = await supabase.from('cards').select('*').order('card_set_id', { ascending: true })
-      setAllCards((data || []) as any)
+      let allData: Card[] = []
+      let from = 0
+      const pageSize = 1000
+
+      while (true) {
+        const { data } = await supabase
+          .from('cards')
+          .select('*')
+          .order('card_set_id', { ascending: true })
+          .range(from, from + pageSize - 1)
+
+        if (!data || data.length === 0) break
+        allData = [...allData, ...(data as Card[])]
+        if (data.length < pageSize) break
+        from += pageSize
+      }
+
+      setAllCards(allData)
       setLoadingAll(false)
+      searchCardsWithData(allData, '', { color: '', type: '' }, '')
     }
     load()
-  })
+  }, [])
 
-  function searchCards(overrideFilters?: { color?: string, type?: string }) {
-    const activeFilters = { ...filters, ...overrideFilters }
-    let filtered = allCards
+  function searchCardsWithData(
+    cards: Card[],
+    searchTerm: string,
+    activeFilters: { color: string, type: string },
+    sort: string
+  ) {
+    let filtered = [...cards]
 
-    if (search.trim()) {
-      const s = search.toLowerCase()
+    if (searchTerm.trim()) {
+      const s = searchTerm.toLowerCase()
       filtered = filtered.filter(c =>
         c.card_name?.toLowerCase().includes(s) ||
         c.card_set_id?.toLowerCase().includes(s) ||
-        c.id?.toLowerCase().includes(s)
+        c.id?.toLowerCase().includes(s) ||
+        c.sub_types?.toLowerCase().includes(s) ||
+        c.card_text?.toLowerCase().includes(s)
       )
     }
 
@@ -93,7 +118,12 @@ export default function DeckBuilderPage() {
       )
     }
 
-    setResults(filtered.slice(0, 200))
+    if (sort === 'cost_asc') filtered.sort((a, b) => parseInt(a.card_cost || '0') - parseInt(b.card_cost || '0'))
+    if (sort === 'cost_desc') filtered.sort((a, b) => parseInt(b.card_cost || '0') - parseInt(a.card_cost || '0'))
+    if (sort === 'power_asc') filtered.sort((a, b) => parseInt(a.card_power || '0') - parseInt(b.card_power || '0'))
+    if (sort === 'power_desc') filtered.sort((a, b) => parseInt(b.card_power || '0') - parseInt(a.card_power || '0'))
+
+    setResults(filtered.slice(0, 1000))
   }
 
   function addCard(card: Card) {
@@ -151,14 +181,13 @@ export default function DeckBuilderPage() {
       <div className="flex flex-1 overflow-hidden" style={{ height: 'calc(100vh - 53px)' }}>
         {/* Left - Card Search */}
         <div className="w-1/2 flex flex-col border-r border-gray-800 overflow-hidden">
-          {/* Search Header */}
           <div className="p-4 border-b border-gray-800">
             <div className="flex gap-2 mb-2">
               <input
                 type="text"
                 value={search}
                 onChange={e => setSearch(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && searchCards()}
+                onKeyDown={e => e.key === 'Enter' && searchCardsWithData(allCards, search, filters, sortBy)}
                 placeholder="Nome ou código da carta..."
                 className="flex-1 bg-gray-900 border border-gray-700 rounded-xl px-4 py-2 text-sm text-white outline-none focus:border-orange-500"
               />
@@ -169,14 +198,29 @@ export default function DeckBuilderPage() {
                 🔽 Filtros
               </button>
               <button
-                onClick={() => searchCards()}
+                onClick={() => searchCardsWithData(allCards, search, filters, sortBy)}
                 className="bg-orange-600 hover:bg-orange-500 px-4 py-2 rounded-xl text-sm font-medium transition"
               >
                 {loadingAll ? 'Carregando...' : 'Buscar'}
               </button>
+              <select
+                value={sortBy}
+                onChange={e => {
+                const newSort = e.target.value as any
+                setSortBy(newSort)
+                searchCardsWithData(allCards, search, filters, newSort)
+              }}
+              className="bg-gray-800 border border-gray-700 rounded-xl px-3 py-2 text-sm text-white outline-none"
+            >
+                <option value="">Ordenar</option>
+                <option value="cost_asc">Custo ↑</option>
+                <option value="cost_desc">Custo ↓</option>
+                <option value="power_asc">Poder ↑</option>
+                <option value="power_desc">Poder ↓</option>
+                </select>
+                <span className="text-gray-400 text-sm self-center">{results.length} carta(s)</span>
             </div>
 
-            {/* Filters */}
             {showFilters && (
               <div className="flex flex-wrap gap-2 pt-2">
                 <select
@@ -184,7 +228,7 @@ export default function DeckBuilderPage() {
                   onChange={e => {
                     const newType = e.target.value
                     setFilters(f => ({ ...f, type: newType }))
-                    searchCards({ type: newType })
+                    searchCardsWithData(allCards, search, { ...filters, type: newType }, sortBy)
                   }}
                   className="bg-gray-800 border border-gray-700 rounded-xl px-3 py-1.5 text-sm text-white outline-none"
                 >
@@ -197,7 +241,7 @@ export default function DeckBuilderPage() {
                   onChange={e => {
                     const newColor = e.target.value
                     setFilters(f => ({ ...f, color: newColor }))
-                    searchCards({ color: newColor })
+                    searchCardsWithData(allCards, search, { ...filters, color: newColor }, sortBy)
                   }}
                   className="bg-gray-800 border border-gray-700 rounded-xl px-3 py-1.5 text-sm text-white outline-none"
                 >
@@ -205,22 +249,38 @@ export default function DeckBuilderPage() {
                   {COLORS.map(c => <option key={c} value={c}>{c}</option>)}
                 </select>
 
+                <select
+                  value={sortBy}
+                  onChange={e => {
+                    const newSort = e.target.value as any
+                    setSortBy(newSort)
+                    searchCardsWithData(allCards, search, filters, newSort)
+                  }}
+                  className="bg-gray-800 border border-gray-700 rounded-xl px-3 py-1.5 text-sm text-white outline-none"
+                >
+                  <option value="">Ordenar por</option>
+                  <option value="cost_asc">Custo ↑</option>
+                  <option value="cost_desc">Custo ↓</option>
+                  <option value="power_asc">Poder ↑</option>
+                  <option value="power_desc">Poder ↓</option>
+                </select>
+
                 <button
                   onClick={() => {
                     setFilters({ color: '', type: '' })
-                    searchCards({ color: '', type: '' })
+                    setSortBy('')
+                    searchCardsWithData(allCards, search, { color: '', type: '' }, '')
                   }}
                   className="bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-xl text-sm transition"
                 >
                   Limpar
                 </button>
 
-                <span className="text-gray-400 text-sm self-center">{results.length} carta(s)</span>
+            
               </div>
             )}
           </div>
 
-          {/* Results */}
           <div className="flex-1 overflow-y-auto p-4">
             {loadingAll && (
               <div className="text-center text-gray-400 py-12">Carregando cartas...</div>
@@ -229,19 +289,30 @@ export default function DeckBuilderPage() {
               {results.map((card, i) => (
                 <div
                   key={i}
-                  className="relative group cursor-pointer rounded-xl overflow-hidden border border-gray-800 hover:border-orange-500 transition"
-                  onClick={() => addCard(card)}
+                  className="relative group rounded-xl overflow-hidden border border-gray-800 hover:border-orange-500 transition"
                 >
                   <img
                     src={card.card_image}
                     alt={card.card_name}
-                    className="w-full"
+                    className="w-full cursor-pointer"
+                    onClick={() => addCard(card)}
                     onError={e => {
                       e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjI4MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjI4MCIgZmlsbD0iIzFmMjkzNyIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LXNpemU9IjI0IiBmaWxsPSIjNGI1NTYzIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+8J+Ug8K/PC90ZXh0Pjwvc3ZnPg=='
                     }}
                   />
-                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
-                    <span className="text-white font-bold text-3xl">+</span>
+                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition flex flex-col items-center justify-center gap-2 pointer-events-none group-hover:pointer-events-auto">
+                    <button
+                      onClick={() => addCard(card)}
+                      className="bg-orange-600 hover:bg-orange-500 text-white font-bold text-lg w-10 h-10 rounded-full transition"
+                    >
+                      +
+                    </button>
+                    <button
+                      onClick={() => setSelectedCard(card)}
+                      className="bg-gray-800 hover:bg-gray-700 text-white text-xs px-3 py-1 rounded-full transition"
+                    >
+                      Ver carta
+                    </button>
                   </div>
                   <div className="p-1.5 bg-gray-900">
                     <div className="text-xs font-mono text-orange-400 truncate">{(card.card_set_id || '').split('_')[0]}</div>
@@ -321,22 +392,22 @@ export default function DeckBuilderPage() {
               <div className="space-y-1">
                 {deck.cards.map((dc, i) => (
                   <div key={i} className="flex items-center gap-2 bg-gray-900 border border-gray-800 rounded-xl px-3 py-1.5 hover:border-gray-600 transition">
-                     <div className="relative flex-shrink-0" style={{ width: '48px', height: '64px' }}>
-                       {Array.from({ length: Math.min(dc.quantity, 4) }).map((_, idx) => (
-                         <img
-                           key={idx}
-                           src={dc.card.card_image}
-                           className="absolute object-cover rounded border border-gray-700"
-                           style={{
-                              width: '40px',
-                              height: '56px',
-                              left: `${idx * 4}px`,
-                              top: `${idx * 2}px`,
-                              zIndex: idx,
-                         }}
-                       />
-                       ))}
-                     </div>
+                    <div className="relative flex-shrink-0" style={{ width: '48px', height: '64px' }}>
+                      {Array.from({ length: Math.min(dc.quantity, 4) }).map((_, idx) => (
+                        <img
+                          key={idx}
+                          src={dc.card.card_image}
+                          className="absolute object-cover rounded border border-gray-700"
+                          style={{
+                            width: '40px',
+                            height: '56px',
+                            left: `${idx * 4}px`,
+                            top: `${idx * 2}px`,
+                            zIndex: idx,
+                          }}
+                        />
+                      ))}
+                    </div>
                     <div className="flex-1 min-w-0">
                       <div className="text-xs font-mono text-orange-400">{(dc.card.card_set_id || '').split('_')[0]}</div>
                       <div className="text-xs text-white truncate">{dc.card.card_name}</div>
@@ -356,6 +427,73 @@ export default function DeckBuilderPage() {
           </div>
         </div>
       </div>
+
+      {/* Modal da carta */}
+      {selectedCard && (
+        <div
+          className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+          onClick={() => setSelectedCard(null)}
+        >
+          <div
+            className="bg-gray-900 rounded-2xl w-full max-w-lg shadow-2xl border border-gray-700"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="flex gap-4 p-5">
+              <img
+                src={selectedCard.card_image}
+                alt={selectedCard.card_name}
+                className="w-36 rounded-xl flex-shrink-0 object-contain"
+              />
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-orange-400 font-mono text-xs">{(selectedCard.card_set_id || '').split('_')[0]}</span>
+                  <span className="text-xs bg-gray-800 px-2 py-0.5 rounded-lg text-gray-300">{selectedCard.rarity}</span>
+                </div>
+                <h2 className="text-lg font-bold text-white leading-tight mb-0.5">{selectedCard.card_name}</h2>
+                <p className="text-gray-400 text-xs mb-3">{selectedCard.set_name}</p>
+                <div className="grid grid-cols-2 gap-2 text-xs mb-3">
+                  {[
+                    { label: 'Tipo', value: selectedCard.card_type },
+                    { label: 'Cor', value: selectedCard.card_color },
+                    { label: 'Custo', value: selectedCard.card_cost },
+                    { label: 'Poder', value: selectedCard.card_power },
+                    { label: 'Life', value: selectedCard.life },
+                    { label: 'Counter', value: selectedCard.counter_amount },
+                    { label: 'Atributo', value: selectedCard.attribute },
+                  ].filter(s => s.value).map(stat => (
+                    <div key={stat.label} className="bg-gray-800 rounded-lg px-2 py-1.5">
+                      <div className="text-gray-500">{stat.label}</div>
+                      <div className="font-semibold text-white">{stat.value}</div>
+                    </div>
+                  ))}
+                </div>
+                {selectedCard.sub_types && (
+                  <div className="text-xs mb-2 text-gray-400">Tipos: <span className="text-white">{selectedCard.sub_types}</span></div>
+                )}
+              </div>
+            </div>
+            {selectedCard.card_text && (
+              <div className="px-5 pb-3">
+                <div className="bg-gray-800 rounded-xl p-3 text-xs text-gray-200 leading-relaxed">{selectedCard.card_text}</div>
+              </div>
+            )}
+            <div className="px-5 pb-5 flex gap-2">
+              <button
+                onClick={() => { addCard(selectedCard); setSelectedCard(null) }}
+                className="flex-1 bg-orange-600 hover:bg-orange-500 py-2 rounded-xl text-sm font-medium transition"
+              >
+                + Adicionar ao deck
+              </button>
+              <button
+                onClick={() => setSelectedCard(null)}
+                className="bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded-xl text-sm transition"
+              >
+                Fechar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
