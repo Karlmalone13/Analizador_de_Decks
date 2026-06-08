@@ -84,7 +84,6 @@ export default function DeckBuilderPage() {
   const [importError, setImportError] = useState('')
   const [deckError, setDeckError] = useState('')
 
-
   const colorClass: Record<string, string> = {
     Red: 'bg-red-600', Blue: 'bg-blue-600', Green: 'bg-green-600',
     Purple: 'bg-purple-600', Black: 'bg-gray-600', Yellow: 'bg-yellow-500'
@@ -92,7 +91,6 @@ export default function DeckBuilderPage() {
 
   const totalCards = deck.cards.reduce((sum, dc) => sum + dc.quantity, 0)
   const isLeaderSet = !!deck.leader
-  const isComplete = isLeaderSet && totalCards === 50
 
   useEffect(() => {
     async function load() {
@@ -202,23 +200,23 @@ export default function DeckBuilderPage() {
       return
     }
     setDeck(d => {
-  const existing = d.cards.find(dc => dc.card.id === card.id)
-  if (existing) {
-    if (existing.quantity >= 4) return d
-    const currentTotal = d.cards.reduce((sum, dc) => sum + dc.quantity, 0)
-    if (currentTotal >= 50) {
-      setTimeout(() => setDeckError('Seu deck já tem 50 cartas!'), 0)
-      return d
-    }
-    return { ...d, cards: d.cards.map(dc => dc.card.id === card.id ? { ...dc, quantity: dc.quantity + 1 } : dc) }
-  }
-  const currentTotal = d.cards.reduce((sum, dc) => sum + dc.quantity, 0)
-  if (currentTotal >= 50) {
-    setTimeout(() => setDeckError('Seu deck já tem 50 cartas!'), 0)
-    return d
-  }
-  return { ...d, cards: [...d.cards, { card, quantity: 1 }] }
-})
+      const existing = d.cards.find(dc => dc.card.id === card.id)
+      if (existing) {
+        if (existing.quantity >= 4) return d
+        const currentTotal = d.cards.reduce((sum, dc) => sum + dc.quantity, 0)
+        if (currentTotal >= 50) {
+          setTimeout(() => setDeckError('Seu deck já tem 50 cartas!'), 0)
+          return d
+        }
+        return { ...d, cards: d.cards.map(dc => dc.card.id === card.id ? { ...dc, quantity: dc.quantity + 1 } : dc) }
+      }
+      const currentTotal = d.cards.reduce((sum, dc) => sum + dc.quantity, 0)
+      if (currentTotal >= 50) {
+        setTimeout(() => setDeckError('Seu deck já tem 50 cartas!'), 0)
+        return d
+      }
+      return { ...d, cards: [...d.cards, { card, quantity: 1 }] }
+    })
   }
 
   function removeCard(cardId: string) {
@@ -295,88 +293,123 @@ export default function DeckBuilderPage() {
     }
     return found.length > 0 ? found : [subTypes]
   }
+
   async function loadMyDecks() {
-  setLoadingDecks(true)
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) { setLoadingDecks(false); return }
-  const { data } = await supabase
-    .from('decks')
-    .select('*')
-    .eq('user_id', user.id)
-    .order('updated_at', { ascending: false })
-  setMyDecks(data || [])
-  setLoadingDecks(false)
-}
-
-function exportDeck(): string {
-  const lines: string[] = []
-  if (deck.leader) {
-    lines.push(`1x${(deck.leader.card_set_id || deck.leader.id).split('_')[0]}`)
-  }
-  deck.cards.forEach(dc => {
-    lines.push(`${dc.quantity}x${(dc.card.card_set_id || dc.card.id).split('_')[0]}`)
-  })
-  return lines.join('\n')
-}
-
-async function importDeck() {
-  setImportError('')
-  const lines = importText.trim().split('\n').filter(l => l.trim())
-  const cardCodes: { code: string, qty: number }[] = []
-
-  for (const line of lines) {
-    const match = line.trim().match(/^(\d+)x([A-Z0-9\-]+)$/i)
-    if (!match) { setImportError(`Linha inválida: ${line}`); return }
-    cardCodes.push({ code: match[2].toUpperCase(), qty: parseInt(match[1]) })
+    setLoadingDecks(true)
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) { setLoadingDecks(false); return }
+    const { data } = await supabase
+      .from('decks')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('updated_at', { ascending: false })
+    setMyDecks(data || [])
+    setLoadingDecks(false)
   }
 
-  const codes = cardCodes.map(c => c.code)
-  const { data } = await supabase
-    .from('cards')
-    .select('*')
-    .or(codes.map(c => `card_set_id.eq.${c}`).join(','))
+  function exportDeck(): string {
+    const lines: string[] = []
+    if (deck.leader) {
+      lines.push(`1x${(deck.leader.card_set_id || deck.leader.id).split('_')[0]}`)
+    }
+    deck.cards.forEach(dc => {
+      lines.push(`${dc.quantity}x${(dc.card.card_set_id || dc.card.id).split('_')[0]}`)
+    })
+    return lines.join('\n')
+  }
 
-  if (!data || data.length === 0) { setImportError('Nenhuma carta encontrada'); return }
+  async function importDeck() {
+    setImportError('')
+    const lines = importText.trim().split('\n').filter(l => l.trim())
+    const cardCodes: { code: string, qty: number }[] = []
 
-  const newDeck: Deck = { name: 'Deck Importado', leader: null, cards: [] }
+    for (const line of lines) {
+      const match = line.trim().match(/^(\d+)x([A-Z0-9\-]+)$/i)
+      if (!match) { setImportError(`Linha inválida: ${line}`); return }
+      cardCodes.push({ code: match[2].toUpperCase(), qty: parseInt(match[1]) })
+    }
 
-  for (const { code, qty } of cardCodes) {
-    const card = data.find((c: any) =>
-      (c.card_set_id || '').split('_')[0].toUpperCase() === code
-    ) as Card | undefined
-    if (!card) continue
+    const codes = cardCodes.map(c => c.code)
+    const { data } = await supabase
+      .from('cards')
+      .select('*')
+      .or(codes.map(c => `card_set_id.eq.${c}`).join(','))
 
-    if (card.card_type?.toUpperCase() === 'LEADER') {
-      newDeck.leader = card
-    } else {
-      newDeck.cards.push({ card, quantity: qty })
+    if (!data || data.length === 0) { setImportError('Nenhuma carta encontrada'); return }
+
+    const newDeck: Deck = { name: 'Deck Importado', leader: null, cards: [] }
+
+    for (const { code, qty } of cardCodes) {
+      const card = data.find((c: any) =>
+        (c.card_set_id || '').split('_')[0].toUpperCase() === code
+      ) as Card | undefined
+      if (!card) continue
+
+      if (card.card_type?.toUpperCase() === 'LEADER') {
+        newDeck.leader = card
+      } else {
+        newDeck.cards.push({ card, quantity: qty })
+      }
+    }
+
+    setDeck(newDeck)
+    setShowImport(false)
+    setImportText('')
+  }
+
+  function loadDeck(saved: any) {
+    try {
+      const parsed = JSON.parse(saved.cards)
+      setDeck({
+        id: saved.id,
+        name: saved.name,
+        leader: parsed.leader || null,
+        cards: parsed.cards || [],
+      })
+      setShowMyDecks(false)
+    } catch {
+      alert('Erro ao carregar deck')
     }
   }
 
-  setDeck(newDeck)
-  setShowImport(false)
-  setImportText('')
-}
-
-function loadDeck(saved: any) {
-  try {
-    const parsed = JSON.parse(saved.cards)
-    setDeck({
-      id: saved.id,
-      name: saved.name,
-      leader: parsed.leader || null,
-      cards: parsed.cards || [],
-    })
-    setShowMyDecks(false)
-  } catch {
-    alert('Erro ao carregar deck')
+  async function deleteDeck(deckId: string) {
+    await supabase.from('decks').delete().eq('id', deckId)
+    setMyDecks(d => d.filter(d => d.id !== deckId))
   }
-}
 
-async function deleteDeck(deckId: string) {
-  await supabase.from('decks').delete().eq('id', deckId)
-  setMyDecks(d => d.filter(d => d.id !== deckId))
-}
+  function CostChart() {
+    if (deck.cards.length === 0) return null
+    const costDist: Record<string, number> = {}
+    deck.cards.forEach(dc => {
+      const cost = dc.card.card_cost || '?'
+      costDist[cost] = (costDist[cost] || 0) + dc.quantity
+    })
+    const maxVal = Math.max(...Object.values(costDist))
+    const sorted = Object.entries(costDist).sort((a, b) => {
+      if (a[0] === '?') return 1
+      if (b[0] === '?') return -1
+      return parseInt(a[0]) - parseInt(b[0])
+    })
+    return (
+      <div className="mb-4 bg-gray-900 border border-gray-800 rounded-xl p-3">
+        <div className="text-xs text-gray-400 mb-2 font-semibold uppercase tracking-wide">Distribuição de Custos</div>
+        <div className="flex items-end gap-1 h-16">
+          {sorted.map(([cost, qty]) => (
+            <div key={cost} className="flex flex-col items-center flex-1">
+              <span className="text-xs text-gray-400 mb-1">{qty}</span>
+              <div
+                className="w-full bg-orange-500 rounded-t transition-all"
+                style={{ height: `${(qty / maxVal) * 36}px` }}
+              />
+              <span className="text-xs text-gray-500 mt-1">{cost}</span>
+            </div>
+          ))}
+        </div>
+        <div className="text-xs text-gray-600 text-center mt-1">Custo</div>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-gray-950 text-white flex flex-col">
       <Navbar />
@@ -385,8 +418,6 @@ async function deleteDeck(deckId: string) {
 
         {/* Left - Card Search */}
         <div className="w-1/2 flex flex-col border-r border-gray-800">
-
-          {/* Search Header */}
           <div className="p-4 border-b border-gray-800 flex-shrink-0">
             <div className="flex gap-2 mb-2">
               <input
@@ -481,37 +512,59 @@ async function deleteDeck(deckId: string) {
             )}
           </div>
 
-          {/* Results Grid */}
+          {/* Results Grid - 5 colunas */}
           <div className="card-scroll overflow-y-auto p-4" style={{ scrollbarWidth: 'thin', scrollbarColor: '#f97316 #1f2937' }}>
             {loadingAll && <div className="text-center text-gray-400 py-12">Carregando cartas...</div>}
-            <div className="grid grid-cols-4 gap-2">
-              {results.map((card, i) => (
-                <div key={i} className="relative group rounded-xl overflow-hidden border border-gray-800 hover:border-orange-500 transition">
-                  <img
-                    src={card.card_image}
-                    alt={card.card_name}
-                    className="w-full cursor-pointer"
-                    onClick={() => addCard(card)}
-                    onError={e => {
-                      e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjI4MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjI4MCIgZmlsbD0iIzFmMjkzNyIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LXNpemU9IjI0IiBmaWxsPSIjNGI1NTYzIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+8J+Ug8K/PC90ZXh0Pjwvc3ZnPg=='
-                    }}
-                  />
-                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition flex flex-col items-center justify-center gap-2 pointer-events-none group-hover:pointer-events-auto">
-                    <button onClick={() => addCard(card)} className="bg-orange-600 hover:bg-orange-500 text-white font-bold text-lg w-10 h-10 rounded-full transition">+</button>
-                    <button onClick={() => setSelectedCard(card)} className="bg-gray-800 hover:bg-gray-700 text-white text-xs px-3 py-1 rounded-full transition">Ver carta</button>
-                  </div>
-                  <div className="p-1.5 bg-gray-900">
-                    <div className="text-sm font-mono text-orange-400 truncate">{(card.card_set_id || '').split('_')[0]}</div>
-                    <div className="text-sm text-white truncate">{card.card_name}</div>
-                    <div className="flex items-center gap-1 mt-0.5">
-                      <span className={`text-sm px-1 py-0.5 rounded text-white ${colorClass[card.card_color] || 'bg-gray-700'}`}>{card.card_color}</span>
-                      <span className="text-sm text-gray-400">{card.card_type}</span>
+            <div className="grid grid-cols-5 gap-2">
+              {results.map((card, i) => {
+                const inDeck = deck.cards.find(dc => dc.card.id === card.id)
+                const isDeckLeader = deck.leader?.id === card.id
+                return (
+                  <div key={i} className={`relative group rounded-xl overflow-hidden border transition ${
+                    isDeckLeader ? 'border-yellow-500' :
+                    inDeck ? 'border-orange-500' :
+                    'border-gray-800 hover:border-orange-500'
+                  }`}>
+                    {inDeck && (
+                      <div className="absolute top-1 right-1 z-10 bg-orange-600 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center shadow">
+                        {inDeck.quantity}
+                      </div>
+                    )}
+                    {isDeckLeader && (
+                      <div className="absolute top-1 right-1 z-10 bg-yellow-500 text-black text-xs font-bold px-1.5 py-0.5 rounded-full shadow">
+                        L
+                      </div>
+                    )}
+                    <img
+                      src={card.card_image}
+                      alt={card.card_name}
+                      className="w-full cursor-pointer"
+                      onClick={() => addCard(card)}
+                      onError={e => {
+                        e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjI4MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjI4MCIgZmlsbD0iIzFmMjkzNyIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LXNpemU9IjI0IiBmaWxsPSIjNGI1NTYzIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+8J+Ug8K/PC90ZXh0Pjwvc3ZnPg=='
+                      }}
+                    />
+                    <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition flex flex-col items-center justify-center gap-2 pointer-events-none group-hover:pointer-events-auto">
+                      <button onClick={() => addCard(card)} className="bg-orange-600 hover:bg-orange-500 text-white font-bold text-lg w-10 h-10 rounded-full transition">+</button>
+                      <button onClick={() => setSelectedCard(card)} className="bg-gray-800 hover:bg-gray-700 text-white text-sm px-4 py-1.5 rounded-full transition font-medium">Ver carta</button>
+                    </div>
+                    <div className="p-1.5 bg-gray-900">
+                      <div className="text-xs font-mono text-orange-400 truncate">{(card.card_set_id || '').split('_')[0]}</div>
+                      <div className="text-xs text-white truncate">{card.card_name}</div>
+                      <div className="flex items-center gap-1 mt-0.5 flex-wrap">
+                        {card.card_color.split(/[\s\/]/).filter(Boolean).map((c, ci) => (
+                          <span key={ci} className={`text-xs px-1 py-0.5 rounded text-white ${colorClass[c.trim()] || 'bg-gray-700'}`}>{c.trim()}</span>
+                        ))}
+                        {card.card_cost && (
+                          <span className="text-xs bg-blue-600 text-white px-1.5 py-0.5 rounded-full ml-auto font-bold">{card.card_cost}</span>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                )
+              })}
               {!loadingAll && results.length === 0 && (
-                <div className="col-span-4 text-center text-gray-500 py-12">Busque cartas para adicionar ao deck</div>
+                <div className="col-span-5 text-center text-gray-500 py-12">Busque cartas para adicionar ao deck</div>
               )}
             </div>
           </div>
@@ -519,8 +572,6 @@ async function deleteDeck(deckId: string) {
 
         {/* Right - Deck */}
         <div className="w-1/2 flex flex-col">
-
-          {/* Deck Header */}
           <div className="p-4 border-b border-gray-800 flex-shrink-0">
             <div className="flex items-center gap-2 mb-3">
               <input
@@ -528,68 +579,91 @@ async function deleteDeck(deckId: string) {
                 onChange={e => setDeck(d => ({ ...d, name: e.target.value }))}
                 className="flex-1 bg-gray-900 border border-gray-700 rounded-xl px-3 py-2 text-sm font-bold outline-none focus:border-orange-500"
               />
-                <button
+              <button
                 onClick={saveDeck}
                 disabled={saving}
                 className={`px-4 py-2 rounded-xl text-sm font-medium transition ${saved ? 'bg-green-600' : 'bg-orange-600 hover:bg-orange-500'}`}
               >
-               {saving ? 'Salvando...' : saved ? '✓ Salvo!' : 'Salvar'}
+                {saving ? 'Salvando...' : saved ? '✓ Salvo!' : 'Salvar'}
               </button>
-
               <button
                 onClick={() => {
-                if (confirm('Limpar o deck? Isso vai remover todas as cartas.')) {
-                      setDeck({ name: deck.name, leader: null, cards: [] })
+                  if (confirm('Criar novo deck? O deck atual não salvo será perdido.')) {
+                    setDeck({ name: 'Novo Deck', leader: null, cards: [] })
                   }
-                  }}
-                className="px-4 py-2 rounded-xl text-sm font-medium bg-gray-700 hover:bg-red-700 transition"
-              
-                  >
-                   🗑 Limpar
+                }}
+                className="px-4 py-2 rounded-xl text-sm font-medium bg-gray-700 hover:bg-green-700 transition whitespace-nowrap"
+              >
+                ✚ Novo
               </button>
-           </div>
-
-          <div className="flex gap-2">
-           <button
-             onClick={() => { setShowMyDecks(true); loadMyDecks() }}
-             className="flex-1 bg-gray-800 hover:bg-gray-700 px-3 py-1.5 rounded-xl text-sm transition"
-             >
-              📂 Meus Decks
-            </button>
-            <button
-            onClick={() => setShowExport(true)}
-            className="flex-1 bg-gray-800 hover:bg-gray-700 px-3 py-1.5 rounded-xl text-sm transition"
-             >
-            📤 Exportar
-          </button>
-         <button
-            onClick={() => setShowImport(true)}
-          className="flex-1 bg-gray-800 hover:bg-gray-700 px-3 py-1.5 rounded-xl text-sm transition"
-        >
-            📥 Importar
-          </button>
-          </div>
-          </div>
-          {deckError && (
-          <div className="mt-2 bg-red-600/20 border border-red-600/40 rounded-xl px-3 py-2 text-sm text-red-400 flex items-center justify-between">
-            <span>{deckError}</span>
-            <button onClick={() => setDeckError('')} className="text-red-400 hover:text-white ml-2">✕</button>
+              <button
+                onClick={() => {
+                  if (confirm('Limpar o deck? Isso vai remover todas as cartas.')) {
+                    setDeck({ name: deck.name, leader: null, cards: [] })
+                  }
+                }}
+                className="px-4 py-2 rounded-xl text-sm font-medium bg-gray-700 hover:bg-red-700 transition whitespace-nowrap"
+              >
+                🗑 Limpar
+              </button>
             </div>
+
+            <div className="flex gap-2">
+              <button onClick={() => { setShowMyDecks(true); loadMyDecks() }} className="flex-1 bg-gray-800 hover:bg-gray-700 px-3 py-1.5 rounded-xl text-sm transition">
+                📂 Meus Decks
+              </button>
+              <button onClick={() => setShowExport(true)} className="flex-1 bg-gray-800 hover:bg-gray-700 px-3 py-1.5 rounded-xl text-sm transition">
+                📤 Exportar
+              </button>
+              <button onClick={() => setShowImport(true)} className="flex-1 bg-gray-800 hover:bg-gray-700 px-3 py-1.5 rounded-xl text-sm transition">
+                📥 Importar
+              </button>
+            </div>
+
+            {deckError && (
+              <div className="mt-3 bg-red-600/20 border border-red-600/40 rounded-xl px-3 py-2 text-sm text-red-400 flex items-center justify-between">
+                <span>{deckError}</span>
+                <button onClick={() => setDeckError('')} className="text-red-400 hover:text-white ml-2">✕</button>
+              </div>
             )}
+          </div>
 
           {/* Deck Content */}
           <div className="card-scroll overflow-y-scroll p-4" style={{ flex: 1, minHeight: 0, scrollbarWidth: 'thin', scrollbarColor: '#f97316 #1f2937' }}>
+
+            <CostChart />
+
+            {/* Leader */}
             <div className="mb-4">
-              <div className="text-xs text-gray-400 mb-2 font-semibold uppercase tracking-wide">Leader</div>
+              <div className="text-xs text-gray-400 mb-2 font-semibold uppercase tracking-wide flex items-center gap-2">
+                <span>Leader</span>
+                {isLeaderSet ? <span className="text-green-400">✓</span> : <span className="text-gray-600">—</span>}
+              </div>
               {deck.leader ? (
-                <div className="flex items-center gap-3 bg-gray-900 border border-yellow-600/40 rounded-xl p-2">
-                  <img src={deck.leader.card_image} className="w-12 h-16 object-cover rounded-lg" />
-                  <div className="flex-1">
-                    <div className="text-xs font-mono text-orange-400">{(deck.leader.card_set_id || '').split('_')[0]}</div>
-                    <div className="text-sm font-bold">{deck.leader.card_name}</div>
-                    <div className="text-xs text-gray-400">{deck.leader.card_color}</div>
+                <div className="rounded-xl overflow-hidden border border-gray-700">
+                  <div className="flex h-2">
+                    {deck.leader.card_color.split(/[\s\/]/).filter(Boolean).map((c, i) => (
+                      <div key={i} className={`flex-1 ${colorClass[c.trim()] || 'bg-gray-500'}`} />
+                    ))}
                   </div>
-                  <button onClick={() => setDeck(d => ({ ...d, leader: null }))} className="text-gray-500 hover:text-red-400 transition">✕</button>
+                  <div className="flex items-center gap-3 bg-gray-900 p-2">
+                    {/* Imagem do leader maior */}
+                    <img
+                      src={deck.leader.card_image}
+                        className="w-20 h-28 object-cover rounded-lg flex-shrink-0 cursor-pointer hover:opacity-80 transition"
+                           onClick={() => setSelectedCard(deck.leader)}
+                            />
+                    <div className="flex-1 min-w-0">
+                      <div className="text-xs font-mono text-orange-400">{(deck.leader.card_set_id || '').split('_')[0]}</div>
+                      <div className="text-sm font-bold truncate">{deck.leader.card_name}</div>
+                      <div className="flex flex-wrap gap-1 mt-0.5">
+                        {deck.leader.card_color.split(/[\s\/]/).filter(Boolean).map((c, i) => (
+                          <span key={i} className={`text-xs px-1.5 py-0.5 rounded text-white ${colorClass[c.trim()] || 'bg-gray-600'}`}>{c.trim()}</span>
+                        ))}
+                      </div>
+                    </div>
+                    <button onClick={() => setDeck(d => ({ ...d, leader: null }))} className="text-gray-500 hover:text-red-400 transition flex-shrink-0">✕</button>
+                  </div>
                 </div>
               ) : (
                 <div className="border border-dashed border-gray-700 rounded-xl p-4 text-center text-gray-500 text-sm">
@@ -598,29 +672,56 @@ async function deleteDeck(deckId: string) {
               )}
             </div>
 
+            {/* Main Deck */}
             <div>
-              <div className="text-xs text-gray-400 mb-2 font-semibold uppercase tracking-wide">Main Deck ({totalCards}/50)</div>
-              <div className="space-y-1">
+              <div className="mb-2">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-xs text-gray-400 font-semibold uppercase tracking-wide">Main Deck ({totalCards}/50)</span>
+                  <span className="text-xs text-gray-500">{50 - totalCards} restantes</span>
+                </div>
+                <div className="w-full bg-gray-800 rounded-full h-2">
+                  <div
+                    className={`h-2 rounded-full transition-all ${totalCards === 50 ? 'bg-green-500' : 'bg-orange-500'}`}
+                    style={{ width: `${(totalCards / 50) * 100}%` }}
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1 mt-3">
                 {deck.cards.map((dc, i) => (
                   <div key={i} className="flex items-center gap-2 bg-gray-900 border border-gray-800 rounded-xl px-3 py-1.5 hover:border-gray-600 transition">
-                    <div className="relative flex-shrink-0" style={{ width: '48px', height: '64px' }}>
-                      {Array.from({ length: Math.min(dc.quantity, 4) }).map((_, idx) => (
-                        <img
-                          key={idx}
-                          src={dc.card.card_image}
-                          className="absolute object-cover rounded border border-gray-700"
-                          style={{ width: '40px', height: '56px', left: `${idx * 4}px`, top: `${idx * 2}px`, zIndex: idx }}
-                        />
-                      ))}
+                    <div className="flex flex-col items-center gap-0.5 flex-shrink-0">
+                      {dc.card.card_cost
+                        ? <span className="text-xs text-gray-400">Custo {dc.card.card_cost}</span>
+                        : <span className="text-xs text-gray-600">—</span>
+                      }
+                      {/* Imagem maior e centralizada */}
+                      <div
+  className="relative cursor-pointer"
+  style={{ width: '68px', height: '90px' }}
+  onClick={() => setSelectedCard(dc.card)}
+>
+                        {Array.from({ length: Math.min(dc.quantity, 4) }).map((_, idx) => (
+                          <img
+                            key={idx}
+                            src={dc.card.card_image}
+                            className="absolute object-cover rounded border border-gray-700"
+                            style={{ width: '60px', height: '84px', left: `${idx * 4}px`, top: `${idx * 2}px`, zIndex: idx }}
+                          />
+                        ))}
+                      </div>
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="text-xs font-mono text-orange-400">{(dc.card.card_set_id || '').split('_')[0]}</div>
                       <div className="text-xs text-white truncate">{dc.card.card_name}</div>
                     </div>
-                    <div className="flex items-center gap-1">
-                      <button onClick={() => removeCard(dc.card.id)} className="w-6 h-6 bg-gray-700 hover:bg-red-700 rounded text-xs transition">−</button>
-                      <span className="w-5 text-center text-sm font-bold">{dc.quantity}</span>
-                      <button onClick={() => addCard(dc.card)} className="w-6 h-6 bg-gray-700 hover:bg-green-700 rounded text-xs transition">+</button>
+                    <div className="flex flex-col items-center gap-0.5">
+                      <span className="text-xs text-gray-400">Qtd</span>
+                      <div className="flex items-center gap-1">
+                        <button onClick={() => removeCard(dc.card.id)} className="w-6 h-6 bg-gray-700 hover:bg-red-700 rounded text-xs transition">−</button>
+                        <span className="w-5 text-center text-sm font-bold">{dc.quantity}</span>
+                        <button onClick={() => addCard(dc.card)} className="w-6 h-6 bg-gray-700 hover:bg-green-700 rounded text-xs transition">+</button>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -632,108 +733,83 @@ async function deleteDeck(deckId: string) {
           </div>
         </div>
       </div>
-          {/* Modal Meus Decks */}
-{showMyDecks && (
-  <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setShowMyDecks(false)}>
-    <div className="bg-gray-900 rounded-2xl w-full max-w-lg shadow-2xl border border-gray-700 max-h-[80vh] flex flex-col" onClick={e => e.stopPropagation()}>
-      <div className="p-5 border-b border-gray-800 flex items-center justify-between">
-        <h2 className="text-lg font-bold">Meus Decks</h2>
-        <button onClick={() => setShowMyDecks(false)} className="text-gray-400 hover:text-white">✕</button>
-      </div>
-      <div className="flex-1 overflow-y-auto p-4">
-        {loadingDecks && <div className="text-center text-gray-400 py-8">Carregando...</div>}
-        {!loadingDecks && myDecks.length === 0 && (
-          <div className="text-center text-gray-500 py-8">Nenhum deck salvo ainda</div>
-        )}
-        <div className="space-y-2">
-          {myDecks.map(d => {
-            let leaderImg = null
-            try {
-              const parsed = JSON.parse(d.cards)
-              leaderImg = parsed.leader?.card_image
-            } catch {}
-            return (
-              <div key={d.id} className="flex items-center gap-3 bg-gray-800 rounded-xl p-3 hover:bg-gray-750 transition">
-                <div className="w-10 h-14 rounded-lg flex-shrink-0 overflow-hidden bg-gray-700">
-  {leaderImg && (
-    <img 
-      src={leaderImg} 
-      className="w-full h-full object-cover"
-      onError={e => { e.currentTarget.style.display = 'none' }}
-    />
-  )}
-</div>
-                <div className="flex-1 min-w-0">
-                  <div className="font-semibold text-sm text-white truncate">{d.name}</div>
-                  <div className="text-xs text-gray-400">{new Date(d.updated_at).toLocaleDateString('pt-BR')}</div>
-                </div>
-                <div className="flex gap-2">
-                  <button onClick={() => loadDeck(d)} className="bg-orange-600 hover:bg-orange-500 px-3 py-1.5 rounded-lg text-xs transition">Abrir</button>
-                  <button onClick={() => deleteDeck(d.id)} className="bg-gray-700 hover:bg-red-700 px-3 py-1.5 rounded-lg text-xs transition">🗑</button>
-                </div>
+
+      {/* Modal Meus Decks */}
+      {showMyDecks && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setShowMyDecks(false)}>
+          <div className="bg-gray-900 rounded-2xl w-full max-w-lg shadow-2xl border border-gray-700 max-h-[80vh] flex flex-col" onClick={e => e.stopPropagation()}>
+            <div className="p-5 border-b border-gray-800 flex items-center justify-between">
+              <h2 className="text-lg font-bold">Meus Decks</h2>
+              <button onClick={() => setShowMyDecks(false)} className="text-gray-400 hover:text-white">✕</button>
+            </div>
+            <div className="flex-1 overflow-y-auto p-4">
+              {loadingDecks && <div className="text-center text-gray-400 py-8">Carregando...</div>}
+              {!loadingDecks && myDecks.length === 0 && <div className="text-center text-gray-500 py-8">Nenhum deck salvo ainda</div>}
+              <div className="space-y-2">
+                {myDecks.map(d => {
+                  let leaderImg = null
+                  try { const parsed = JSON.parse(d.cards); leaderImg = parsed.leader?.card_image } catch {}
+                  return (
+                    <div key={d.id} className="flex items-center gap-3 bg-gray-800 rounded-xl p-3 transition">
+                      <div className="w-10 h-14 rounded-lg flex-shrink-0 overflow-hidden bg-gray-700">
+                        {leaderImg && <img src={leaderImg} className="w-full h-full object-cover" onError={e => { e.currentTarget.style.display = 'none' }} />}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-semibold text-sm text-white truncate">{d.name}</div>
+                        <div className="text-xs text-gray-400">{new Date(d.updated_at).toLocaleDateString('pt-BR')}</div>
+                      </div>
+                      <div className="flex gap-2">
+                        <button onClick={() => loadDeck(d)} className="bg-orange-600 hover:bg-orange-500 px-3 py-1.5 rounded-lg text-xs transition">Abrir</button>
+                        <button onClick={() => deleteDeck(d.id)} className="bg-gray-700 hover:bg-red-700 px-3 py-1.5 rounded-lg text-xs transition">🗑</button>
+                      </div>
+                    </div>
+                  )
+                })}
               </div>
-            )
-          })}
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
-  </div>
-)}
+      )}
 
-{/* Modal Exportar */}
-{showExport && (
-  <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setShowExport(false)}>
-    <div className="bg-gray-900 rounded-2xl w-full max-w-md shadow-2xl border border-gray-700" onClick={e => e.stopPropagation()}>
-      <div className="p-5 border-b border-gray-800 flex items-center justify-between">
-        <h2 className="text-lg font-bold">Exportar Deck</h2>
-        <button onClick={() => setShowExport(false)} className="text-gray-400 hover:text-white">✕</button>
-      </div>
-      <div className="p-5">
-        <textarea
-          readOnly
-          value={exportDeck()}
-          className="w-full bg-gray-800 border border-gray-700 rounded-xl p-3 text-sm text-white font-mono h-64 resize-none outline-none"
-        />
-        <button
-          onClick={() => { navigator.clipboard.writeText(exportDeck()); alert('Copiado!') }}
-          className="w-full mt-3 bg-orange-600 hover:bg-orange-500 py-2.5 rounded-xl text-sm font-medium transition"
-        >
-          📋 Copiar para área de transferência
-        </button>
-      </div>
-    </div>
-  </div>
-)}
+      {/* Modal Exportar */}
+      {showExport && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setShowExport(false)}>
+          <div className="bg-gray-900 rounded-2xl w-full max-w-md shadow-2xl border border-gray-700" onClick={e => e.stopPropagation()}>
+            <div className="p-5 border-b border-gray-800 flex items-center justify-between">
+              <h2 className="text-lg font-bold">Exportar Deck</h2>
+              <button onClick={() => setShowExport(false)} className="text-gray-400 hover:text-white">✕</button>
+            </div>
+            <div className="p-5">
+              <textarea readOnly value={exportDeck()} className="w-full bg-gray-800 border border-gray-700 rounded-xl p-3 text-sm text-white font-mono h-64 resize-none outline-none" />
+              <button onClick={() => { navigator.clipboard.writeText(exportDeck()); alert('Copiado!') }} className="w-full mt-3 bg-orange-600 hover:bg-orange-500 py-2.5 rounded-xl text-sm font-medium transition">
+                📋 Copiar para área de transferência
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
-{/* Modal Importar */}
-{showImport && (
-  <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setShowImport(false)}>
-    <div className="bg-gray-900 rounded-2xl w-full max-w-md shadow-2xl border border-gray-700" onClick={e => e.stopPropagation()}>
-      <div className="p-5 border-b border-gray-800 flex items-center justify-between">
-        <h2 className="text-lg font-bold">Importar Deck</h2>
-        <button onClick={() => setShowImport(false)} className="text-gray-400 hover:text-white">✕</button>
-      </div>
-      <div className="p-5">
-        <p className="text-gray-400 text-sm mb-3">Cole a lista do simulador (formato: 4xOP01-025)</p>
-        <textarea
-          value={importText}
-          onChange={e => setImportText(e.target.value)}
-          placeholder={"1xOP01-001\n4xOP01-025\n4xOP01-002\n..."}
-          className="w-full bg-gray-800 border border-gray-700 rounded-xl p-3 text-sm text-white font-mono h-64 resize-none outline-none focus:border-orange-500"
-        />
-        {importError && <p className="text-red-400 text-xs mt-2">{importError}</p>}
-        <button
-          onClick={importDeck}
-          className="w-full mt-3 bg-orange-600 hover:bg-orange-500 py-2.5 rounded-xl text-sm font-medium transition"
-        >
-          📥 Importar Deck
-        </button>
-      </div>
-    </div>
-  </div>
-)}
+      {/* Modal Importar */}
+      {showImport && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setShowImport(false)}>
+          <div className="bg-gray-900 rounded-2xl w-full max-w-md shadow-2xl border border-gray-700" onClick={e => e.stopPropagation()}>
+            <div className="p-5 border-b border-gray-800 flex items-center justify-between">
+              <h2 className="text-lg font-bold">Importar Deck</h2>
+              <button onClick={() => setShowImport(false)} className="text-gray-400 hover:text-white">✕</button>
+            </div>
+            <div className="p-5">
+              <p className="text-gray-400 text-sm mb-3">Cole a lista do simulador (formato: 4xOP01-025)</p>
+              <textarea value={importText} onChange={e => setImportText(e.target.value)} placeholder={"1xOP01-001\n4xOP01-025\n4xOP01-002\n..."} className="w-full bg-gray-800 border border-gray-700 rounded-xl p-3 text-sm text-white font-mono h-64 resize-none outline-none focus:border-orange-500" />
+              {importError && <p className="text-red-400 text-xs mt-2">{importError}</p>}
+              <button onClick={importDeck} className="w-full mt-3 bg-orange-600 hover:bg-orange-500 py-2.5 rounded-xl text-sm font-medium transition">
+                📥 Importar Deck
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
-      {/* Modal */}
+      {/* Modal Ver Carta */}
       {selectedCard && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setSelectedCard(null)}>
           <div className="bg-gray-900 rounded-2xl w-full max-w-lg shadow-2xl border border-gray-700" onClick={e => e.stopPropagation()}>
