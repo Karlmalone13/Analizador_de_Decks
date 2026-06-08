@@ -41,12 +41,13 @@ export default function DeckBuilderPage() {
   const supabase = createClient()
   const [search, setSearch] = useState('')
   const [results, setResults] = useState<Card[]>([])
-  const [loading, setLoading] = useState(false)
   const [showFilters, setShowFilters] = useState(false)
   const [filters, setFilters] = useState({ color: '', type: '' })
   const [deck, setDeck] = useState<Deck>({ name: 'Novo Deck', leader: null, cards: [] })
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
+  const [allCards, setAllCards] = useState<Card[]>([])
+  const [loadingAll, setLoadingAll] = useState(false)
 
   const colorClass: Record<string, string> = {
     Red: 'bg-red-600', Blue: 'bg-blue-600', Green: 'bg-green-600',
@@ -57,29 +58,42 @@ export default function DeckBuilderPage() {
   const isLeaderSet = !!deck.leader
   const isComplete = isLeaderSet && totalCards === 50
 
-  async function searchCards() {
-    setLoading(true)
-    let query = supabase.from('cards').select('*').limit(500)
+  useState(() => {
+    async function load() {
+      setLoadingAll(true)
+      const { data } = await supabase.from('cards').select('*').order('card_set_id', { ascending: true })
+      setAllCards((data || []) as any)
+      setLoadingAll(false)
+    }
+    load()
+  })
+
+  function searchCards(overrideFilters?: { color?: string, type?: string }) {
+    const activeFilters = { ...filters, ...overrideFilters }
+    let filtered = allCards
 
     if (search.trim()) {
-      const isCode = /^[A-Z]{2}\d{2}/i.test(search)
-      if (isCode) {
-        query = query.or(`id.ilike.${search}%,card_set_id.ilike.${search}%`)
-      } else {
-        query = query.ilike('card_name', `%${search}%`)
-      }
+      const s = search.toLowerCase()
+      filtered = filtered.filter(c =>
+        c.card_name?.toLowerCase().includes(s) ||
+        c.card_set_id?.toLowerCase().includes(s) ||
+        c.id?.toLowerCase().includes(s)
+      )
     }
 
-    if (filters.color === 'Multicolor') {
-       query = query.ilike('card_color', '%/%')
-    } else if (filters.color) {
-       query = query.eq('card_color', filters.color)
+    if (activeFilters.color === 'Multicolor') {
+      filtered = filtered.filter(c => c.card_color?.includes(' ') || c.card_color?.includes('/'))
+    } else if (activeFilters.color) {
+      filtered = filtered.filter(c => c.card_color === activeFilters.color)
     }
-    if (filters.type) query = query.or(`card_type.ilike.${filters.type},card_type.ilike.${filters.type.toUpperCase()},card_type.ilike.${filters.type.toLowerCase()}`)
 
-    const { data } = await query
-    setResults((data || []) as any)
-    setLoading(false)
+    if (activeFilters.type) {
+      filtered = filtered.filter(c =>
+        c.card_type?.toLowerCase() === activeFilters.type.toLowerCase()
+      )
+    }
+
+    setResults(filtered.slice(0, 200))
   }
 
   function addCard(card: Card) {
@@ -155,11 +169,10 @@ export default function DeckBuilderPage() {
                 🔽 Filtros
               </button>
               <button
-                onClick={searchCards}
-                disabled={loading}
+                onClick={() => searchCards()}
                 className="bg-orange-600 hover:bg-orange-500 px-4 py-2 rounded-xl text-sm font-medium transition"
               >
-                {loading ? '...' : 'Buscar'}
+                {loadingAll ? 'Carregando...' : 'Buscar'}
               </button>
             </div>
 
@@ -168,7 +181,11 @@ export default function DeckBuilderPage() {
               <div className="flex flex-wrap gap-2 pt-2">
                 <select
                   value={filters.type}
-                  onChange={e => setFilters(f => ({ ...f, type: e.target.value }))}
+                  onChange={e => {
+                    const newType = e.target.value
+                    setFilters(f => ({ ...f, type: newType }))
+                    searchCards({ type: newType })
+                  }}
                   className="bg-gray-800 border border-gray-700 rounded-xl px-3 py-1.5 text-sm text-white outline-none"
                 >
                   <option value="">Todos os tipos</option>
@@ -177,7 +194,11 @@ export default function DeckBuilderPage() {
 
                 <select
                   value={filters.color}
-                  onChange={e => setFilters(f => ({ ...f, color: e.target.value }))}
+                  onChange={e => {
+                    const newColor = e.target.value
+                    setFilters(f => ({ ...f, color: newColor }))
+                    searchCards({ color: newColor })
+                  }}
                   className="bg-gray-800 border border-gray-700 rounded-xl px-3 py-1.5 text-sm text-white outline-none"
                 >
                   <option value="">Todas as cores</option>
@@ -185,7 +206,10 @@ export default function DeckBuilderPage() {
                 </select>
 
                 <button
-                  onClick={() => setFilters({ color: '', type: '' })}
+                  onClick={() => {
+                    setFilters({ color: '', type: '' })
+                    searchCards({ color: '', type: '' })
+                  }}
                   className="bg-gray-700 hover:bg-gray-600 px-3 py-1.5 rounded-xl text-sm transition"
                 >
                   Limpar
@@ -198,6 +222,9 @@ export default function DeckBuilderPage() {
 
           {/* Results */}
           <div className="flex-1 overflow-y-auto p-4">
+            {loadingAll && (
+              <div className="text-center text-gray-400 py-12">Carregando cartas...</div>
+            )}
             <div className="grid grid-cols-4 gap-2">
               {results.map((card, i) => (
                 <div
@@ -205,7 +232,14 @@ export default function DeckBuilderPage() {
                   className="relative group cursor-pointer rounded-xl overflow-hidden border border-gray-800 hover:border-orange-500 transition"
                   onClick={() => addCard(card)}
                 >
-                  <img src={card.card_image} alt={card.card_name} className="w-full" onError={e => { e.currentTarget.style.display='none' }}/>
+                  <img
+                    src={card.card_image}
+                    alt={card.card_name}
+                    className="w-full"
+                    onError={e => {
+                      e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjI4MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjI4MCIgZmlsbD0iIzFmMjkzNyIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LXNpemU9IjI0IiBmaWxsPSIjNGI1NTYzIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+8J+Ug8K/PC90ZXh0Pjwvc3ZnPg=='
+                    }}
+                  />
                   <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
                     <span className="text-white font-bold text-3xl">+</span>
                   </div>
@@ -219,8 +253,8 @@ export default function DeckBuilderPage() {
                   </div>
                 </div>
               ))}
-              {results.length === 0 && (
-                <div className="col-span-3 text-center text-gray-500 py-12">
+              {!loadingAll && results.length === 0 && (
+                <div className="col-span-4 text-center text-gray-500 py-12">
                   Busque cartas para adicionar ao deck
                 </div>
               )}
@@ -230,7 +264,6 @@ export default function DeckBuilderPage() {
 
         {/* Right - Deck */}
         <div className="w-1/2 flex flex-col overflow-hidden">
-          {/* Deck Header */}
           <div className="p-4 border-b border-gray-800">
             <div className="flex items-center gap-2 mb-3">
               <input
@@ -247,7 +280,6 @@ export default function DeckBuilderPage() {
               </button>
             </div>
 
-            {/* Stats */}
             <div className="grid grid-cols-3 gap-2">
               <div className={`rounded-xl p-2 text-center border ${isLeaderSet ? 'border-green-600 bg-green-600/10' : 'border-gray-700 bg-gray-900'}`}>
                 <div className="text-base font-bold">{isLeaderSet ? '✓' : '—'}</div>
@@ -264,9 +296,7 @@ export default function DeckBuilderPage() {
             </div>
           </div>
 
-          {/* Deck Content */}
           <div className="flex-1 overflow-y-auto p-4">
-            {/* Leader */}
             <div className="mb-4">
               <div className="text-xs text-gray-400 mb-2 font-semibold uppercase tracking-wide">Leader</div>
               {deck.leader ? (
@@ -281,12 +311,11 @@ export default function DeckBuilderPage() {
                 </div>
               ) : (
                 <div className="border border-dashed border-gray-700 rounded-xl p-4 text-center text-gray-500 text-sm">
-                  Filtre por tipo "LEADER" e clique para adicionar
+                  Filtre por LEADER e clique para adicionar
                 </div>
               )}
             </div>
 
-            {/* Cards */}
             <div>
               <div className="text-xs text-gray-400 mb-2 font-semibold uppercase tracking-wide">Main Deck ({totalCards}/50)</div>
               <div className="space-y-1">
