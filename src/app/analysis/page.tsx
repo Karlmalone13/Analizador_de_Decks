@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
 import Navbar from '@/components/Navbar'
@@ -44,6 +44,211 @@ const colorHex: Record<string, string> = {
     Purple: '#9333ea', Black: '#4b5563', Yellow: '#ca8a04'
 }
 
+// ── Hipergeométrica ───────────────────────────────────────────────────────────
+function combinacao(n: number, k: number): number {
+    if (k < 0 || k > n) return 0
+    if (k === 0 || k === n) return 1
+    let r = 1
+    for (let i = 0; i < k; i++) r *= (n - i) / (i + 1)
+    return r
+}
+function hipergeometrica(N: number, K: number, n: number, k: number): number {
+    return (combinacao(K, k) * combinacao(N - K, n - k)) / combinacao(N, n)
+}
+function probPeloMenos1(N: number, K: number, n: number): number {
+    if (K === 0 || N === 0) return 0
+    return 1 - hipergeometrica(N, K, n, 0)
+}
+function pct(p: number): string { return `${(p * 100).toFixed(1)}%` }
+
+function classif(p: number, ideal: number): { label: string, color: string, bar: string } {
+    if (p >= ideal) return { label: 'Excelente', color: 'text-green-400', bar: 'bg-green-500' }
+    if (p >= ideal * 0.75) return { label: 'Bom', color: 'text-yellow-400', bar: 'bg-yellow-500' }
+    if (p > 0) return { label: 'Regular', color: 'text-orange-400', bar: 'bg-orange-500' }
+    return { label: 'Ausente', color: 'text-red-400', bar: 'bg-red-500' }
+}
+
+function diagTexto(label: string, p: number, ideal: number, rec: string): string {
+    if (p >= ideal) return `✅ ${label} excelente — alta probabilidade de abrir com essa função na mão inicial`
+    if (p >= ideal * 0.75) return `🟡 ${label} bom — probabilidade aceitável, mas pode melhorar (recomendado: ${rec})`
+    if (p > 0) return `🟠 ${label} regular — adicione mais cópias para maior consistência (recomendado: ${rec})`
+    return `🔴 Sem ${label} no deck — vulnerabilidade crítica (recomendado: ${rec})`
+}
+
+// ── Simulação de mãos ─────────────────────────────────────────────────────────
+function simularMaos(deckCards: DeckCard[], totalCards: number, qtd = 10000) {
+    // Expande o deck em array de índices
+    const deck: number[] = []
+    deckCards.forEach((dc, idx) => {
+        for (let q = 0; q < dc.quantity; q++) deck.push(idx)
+    })
+
+    let bricks = 0
+    let comSearcher = 0
+    let comCounter2k = 0
+    let comBlocker = 0
+    let comLow2 = 0
+
+    // Contadores de aparição por carta (índice)
+    const aparicoes: number[] = new Array(deckCards.length).fill(0)
+
+    const hasKw = (dc: DeckCard, kw: string) =>
+        dc.card.card_text?.toLowerCase().includes(kw.toLowerCase())
+
+    for (let i = 0; i < qtd; i++) {
+        // Embaralha e tira 5
+        const shuffled = [...deck].sort(() => Math.random() - 0.5)
+        const mao = shuffled.slice(0, 5)
+        const idxSet = new Set(mao)
+
+        let temSearcher = false
+        let temCounter2k = false
+        let temBlocker = false
+        let temLow2 = false
+        let temJogavel = false // carta custo ≤ 3
+
+        mao.forEach(cardIdx => {
+            aparicoes[cardIdx]++
+            const dc = deckCards[cardIdx]
+            if (hasKw(dc, 'look at') || hasKw(dc, 'search your deck') || hasKw(dc, 'add up to')) temSearcher = true
+            if (dc.card.counter_amount === '2000') temCounter2k = true
+            if (hasKw(dc, '[Blocker]')) temBlocker = true
+            if (parseInt(dc.card.card_cost || '99') <= 2) temLow2 = true
+            if (parseInt(dc.card.card_cost || '99') <= 3) temJogavel = true
+        })
+
+        if (temSearcher) comSearcher++
+        if (temCounter2k) comCounter2k++
+        if (temBlocker) comBlocker++
+        if (temLow2) comLow2++
+        if (!temJogavel && !temCounter2k) bricks++ // mão sem carta jogável e sem defesa
+    }
+
+    // Dependência: % que cada carta apareceu nas mãos
+    const dependencia = deckCards.map((dc, idx) => ({
+        dc,
+        pct: aparicoes[idx] / (qtd * 5) * totalCards // normalizado
+    })).sort((a, b) => b.pct - a.pct)
+
+    return {
+        brickRate: bricks / qtd,
+        searcherRate: comSearcher / qtd,
+        counter2kRate: comCounter2k / qtd,
+        blockerRate: comBlocker / qtd,
+        low2Rate: comLow2 / qtd,
+        dependencia: dependencia.slice(0, 10),
+    }
+}
+
+// ── Melhor mão ────────────────────────────────────────────────────────────────
+function avaliarMao(mao: DeckCard[]): number {
+    let score = 0
+    const hasKw = (dc: DeckCard, kw: string) =>
+        dc.card.card_text?.toLowerCase().includes(kw.toLowerCase())
+
+    mao.forEach(dc => {
+        const cost = parseInt(dc.card.card_cost || '99')
+        if (hasKw(dc, 'look at') || hasKw(dc, 'search your deck')) score += 30
+        if (dc.card.counter_amount === '2000') score += 25
+        if (dc.card.counter_amount === '1000') score += 15
+        if (hasKw(dc, '[Blocker]')) score += 20
+        if (hasKw(dc, 'draw 1') || hasKw(dc, 'draw 2')) score += 15
+        if (hasKw(dc, '[Trigger]')) score += 10
+        if (cost <= 2) score += 15
+        if (cost <= 4) score += 5
+        if (cost >= 7) score -= 20
+    })
+    return score
+}
+
+function gerarMelhoresMaos(deckCards: DeckCard[], qtd = 50000): DeckCard[][] {
+    const deck: number[] = []
+    deckCards.forEach((dc, idx) => {
+        for (let q = 0; q < dc.quantity; q++) deck.push(idx)
+    })
+
+    let melhor: { mao: number[], score: number }[] = []
+
+    for (let i = 0; i < qtd; i++) {
+        const shuffled = [...deck].sort(() => Math.random() - 0.5)
+        const maoIdx = shuffled.slice(0, 5)
+        const mao = maoIdx.map(idx => deckCards[idx])
+        const score = avaliarMao(mao)
+        melhor.push({ mao: maoIdx, score })
+    }
+
+    melhor.sort((a, b) => b.score - a.score)
+
+    // Retorna top 3 mãos únicas
+    const unicas: DeckCard[][] = []
+    const vistas = new Set<string>()
+
+    for (const { mao } of melhor) {
+        const key = [...mao].sort().join(',')
+        if (!vistas.has(key)) {
+            vistas.add(key)
+            unicas.push(mao.map(idx => deckCards[idx]))
+            if (unicas.length >= 3) break
+        }
+    }
+
+    return unicas
+}
+
+// ── Plano de jogo ─────────────────────────────────────────────────────────────
+function gerarPlano(deckCards: DeckCard[], leader: Card | null): { turno: number, don: string, sugestao: string, cartas: DeckCard[] }[] {
+    const hasKw = (dc: DeckCard, kw: string) =>
+        dc.card.card_text?.toLowerCase().includes(kw.toLowerCase())
+
+    const porCusto = (min: number, max: number) =>
+        deckCards.filter(dc => {
+            const c = parseInt(dc.card.card_cost || '99')
+            return c >= min && c <= max
+        }).sort((a, b) => parseInt(b.card.card_power || '0') - parseInt(a.card.card_power || '0'))
+
+    const searchers = deckCards.filter(dc => hasKw(dc, 'look at') || hasKw(dc, 'search your deck'))
+    const blockers = deckCards.filter(dc => hasKw(dc, '[Blocker]')).filter(dc => parseInt(dc.card.card_cost || '99') <= 4)
+    const rushCards = deckCards.filter(dc => hasKw(dc, '[Rush]')).filter(dc => parseInt(dc.card.card_cost || '99') <= 5)
+
+    return [
+        {
+            turno: 1, don: '1-2 DON!!',
+            sugestao: searchers.filter(dc => parseInt(dc.card.card_cost || '99') <= 2).length > 0
+                ? 'Jogue um Searcher de custo 1-2 para buscar sua peça-chave e estabelecer vantagem de mão.'
+                : 'Jogue uma carta de custo 1-2 para estabelecer presença. Guarde counters na mão para defesa.',
+            cartas: searchers.filter(dc => parseInt(dc.card.card_cost || '99') <= 2).slice(0, 3).length > 0
+                ? searchers.filter(dc => parseInt(dc.card.card_cost || '99') <= 2).slice(0, 3)
+                : porCusto(1, 2).slice(0, 3)
+        },
+        {
+            turno: 2, don: '3-4 DON!!',
+            sugestao: 'Desenvolva sua mesa com cartas de custo 3-4. Priorize Blockers se o adversário for agressivo.',
+            cartas: [...porCusto(3, 3), ...porCusto(4, 4)].slice(0, 3)
+        },
+        {
+            turno: 3, don: '5-6 DON!!',
+            sugestao: rushCards.filter(dc => parseInt(dc.card.card_cost || '99') <= 5).length > 0
+                ? 'Aplique pressão com cartas Rush de custo ≤5. Ataque o Leader adversário para forçar Life cards.'
+                : 'Consolide sua mesa com cartas de custo 4-5. Use Blockers para proteger sua vantagem.',
+            cartas: rushCards.filter(dc => parseInt(dc.card.card_cost || '99') <= 5).slice(0, 3).length > 0
+                ? rushCards.filter(dc => parseInt(dc.card.card_cost || '99') <= 5).slice(0, 3)
+                : [...porCusto(4, 5)].slice(0, 3)
+        },
+        {
+            turno: 4, don: '7-8 DON!!',
+            sugestao: blockers.filter(dc => parseInt(dc.card.card_cost || '99') <= 6).length > 0
+                ? 'Estabeleça Blockers de custo ≤6 para proteger sua vantagem. Jogue cartas de custo 6-7 para pressionar.'
+                : 'Jogue suas cartas de custo 6-7 para aumentar a pressão. Mantenha counters na mão.',
+            cartas: [...porCusto(6, 7)].slice(0, 3)
+        },
+        {
+            turno: 5, don: '9-10 DON!!',
+            sugestao: 'Pico de poder! Jogue suas cartas mais fortes (custo 7-10). Foque em fechar o jogo com ataques ao Leader adversário.',
+            cartas: porCusto(7, 10).slice(0, 3)
+        },
+    ]
+}
+
 export default function AnalysisPage() {
     const supabase = createClient()
     const searchParams = useSearchParams()
@@ -53,6 +258,9 @@ export default function AnalysisPage() {
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState('')
     const [selectedCard, setSelectedCard] = useState<Card | null>(null)
+    const [simDone, setSimDone] = useState(false)
+    const [simResult, setSimResult] = useState<ReturnType<typeof simularMaos> | null>(null)
+    const [melhoresMaos, setMelhoresMaos] = useState<DeckCard[][]>([])
 
     useEffect(() => {
         if (!deckId) { setError('Nenhum deck selecionado.'); setLoading(false); return }
@@ -67,6 +275,19 @@ export default function AnalysisPage() {
         }
         load()
     }, [deckId])
+
+    // Roda simulação após carregar o deck
+    useEffect(() => {
+        if (!deck || simDone) return
+        setTimeout(() => {
+            const total = deck.cards.reduce((s, dc) => s + dc.quantity, 0)
+            const result = simularMaos(deck.cards, total, 10000)
+            const maos = gerarMelhoresMaos(deck.cards, 30000)
+            setSimResult(result)
+            setMelhoresMaos(maos)
+            setSimDone(true)
+        }, 100)
+    }, [deck])
 
     if (loading) return (
         <div className="min-h-screen bg-gray-950 text-white flex flex-col">
@@ -89,6 +310,8 @@ export default function AnalysisPage() {
 
     const allCards = deck.cards
     const totalCards = allCards.reduce((s, dc) => s + dc.quantity, 0)
+    const N = totalCards
+    const n = 5
 
     const cardsWithCost = allCards.filter(dc => dc.card.card_cost && dc.card.card_type?.toUpperCase() !== 'LEADER')
     const avgCost = cardsWithCost.length
@@ -134,24 +357,80 @@ export default function AnalysisPage() {
     const doubleAtk = allCards.filter(dc => hasKeyword(dc, '[Double Attack]'))
     const triggers = allCards.filter(dc => hasKeyword(dc, '[Trigger]'))
     const banish = allCards.filter(dc => hasKeyword(dc, '[Banish]'))
-    const searchers = allCards.filter(dc => hasKeyword(dc, 'look at the top') || hasKeyword(dc, 'search your deck') || hasKeyword(dc, 'add up to'))
-    const drawPower = allCards.filter(dc => hasKeyword(dc, 'draw') && !hasKeyword(dc, 'redraw'))
+    const searchers = allCards.filter(dc => hasKeyword(dc, 'look at') || hasKeyword(dc, 'search your deck') || hasKeyword(dc, 'add up to'))
+    const drawPower = allCards.filter(dc => hasKeyword(dc, 'draw 1') || hasKeyword(dc, 'draw 2') || hasKeyword(dc, 'draw 3') || hasKeyword(dc, 'draw 4') || hasKeyword(dc, 'draw 5') || hasKeyword(dc, 'draw a card') || hasKeyword(dc, 'draw cards'))
     const counters = allCards.filter(dc => dc.card.counter_amount && dc.card.counter_amount !== '0')
+    const counters2k = allCards.filter(dc => dc.card.counter_amount === '2000')
+    const counters1k = allCards.filter(dc => dc.card.counter_amount === '1000')
     const unblockable = allCards.filter(dc => hasKeyword(dc, '[Unblockable]'))
+    const low1Cards = allCards.filter(dc => dc.card.card_cost === '1')
+    const low2Cards = allCards.filter(dc => parseInt(dc.card.card_cost || '99') <= 2)
 
     const countQty = (arr: DeckCard[]) => arr.reduce((s, dc) => s + dc.quantity, 0)
 
-    const offScore = Math.min(100, Math.round((countQty(rush) * 8 + countQty(doubleAtk) * 10 + countQty(banish) * 6) / totalCards * 100 * 2))
-    const defScore = Math.min(100, Math.round((countQty(blockers) * 8 + countQty(counters) * 4) / totalCards * 100 * 2))
-    const conScore = Math.min(100, Math.round((countQty(searchers) * 10 + countQty(drawPower) * 6) / totalCards * 100 * 2))
-    const trigScore = Math.min(100, Math.round(countQty(triggers) / totalCards * 100 * 3))
+    const offScore = Math.min(100, Math.round((countQty(rush) * 8 + countQty(doubleAtk) * 10 + countQty(banish) * 6) / Math.max(totalCards, 1) * 100 * 2))
+    const defScore = Math.min(100, Math.round((countQty(blockers) * 8 + countQty(counters) * 4) / Math.max(totalCards, 1) * 100 * 2))
+    const conScore = Math.min(100, Math.round((countQty(searchers) * 10 + countQty(drawPower) * 6) / Math.max(totalCards, 1) * 100 * 2))
+    const trigScore = Math.min(100, Math.round(countQty(triggers) / Math.max(totalCards, 1) * 100 * 3))
 
     const leaderColors = deck.leader?.card_color?.split(/[\s\/]/).filter(Boolean) || []
+
+    const K_search = countQty(searchers)
+    const K_draw = countQty(drawPower)
+    const K_blocker = countQty(blockers)
+    const K_trigger = countQty(triggers)
+    const K_counter = countQty(counters)
+    const K_counter2k = countQty(counters2k)
+    const K_counter1k = countQty(counters1k)
+    const K_low1 = countQty(low1Cards)
+    const K_low2 = countQty(low2Cards)
+
+    const p_searcher = probPeloMenos1(N, K_search, n)
+    const p_draw = probPeloMenos1(N, K_draw, n)
+    const p_blocker = probPeloMenos1(N, K_blocker, n)
+    const p_trigger = probPeloMenos1(N, K_trigger, n)
+    const p_counter = probPeloMenos1(N, K_counter, n)
+    const p_counter2k = probPeloMenos1(N, K_counter2k, n)
+    const p_counter1k = probPeloMenos1(N, K_counter1k, n)
+    const p_low1 = probPeloMenos1(N, K_low1, n)
+    const p_low2 = probPeloMenos1(N, K_low2, n)
+
+    const avgCostNum = parseFloat(avgCost) || 0
+    const curvaScore = avgCostNum <= 2.5 ? 1 : avgCostNum <= 3.5 ? 0.75 : avgCostNum <= 4.5 ? 0.4 : 0.1
+
+    const rawScore =
+        (Math.min(p_searcher / 0.65, 1) * 25) +
+        (Math.min(p_counter2k / 0.65, 1) * 20 + Math.min(p_counter1k / 0.40, 1) * 5) +
+        (Math.min(p_blocker / 0.40, 1) * 15) +
+        (Math.min(p_low2 / 0.65, 1) * 20) +
+        (curvaScore * 15)
+
+    const consistScore = Math.round(rawScore)
+    const scoreLabel = consistScore >= 80 ? 'Excelente' : consistScore >= 60 ? 'Bom' : consistScore >= 40 ? 'Regular' : 'Fraco'
+    const scoreColor = consistScore >= 80 ? 'text-green-400' : consistScore >= 60 ? 'text-yellow-400' : consistScore >= 40 ? 'text-orange-400' : 'text-red-400'
+
+    let curvaMsg = ''
+    if (avgCostNum <= 2.5) curvaMsg = '✅ Curva leve — deck rápido e agressivo, ótimo para primeiros turnos'
+    else if (avgCostNum <= 3.5) curvaMsg = '🟡 Curva equilibrada — boa progressão de turnos, custo médio ideal'
+    else if (avgCostNum <= 4.5) curvaMsg = '🟠 Curva pesada — pode travar nos turnos iniciais, considere mais cartas baratas'
+    else curvaMsg = '🔴 Curva muito pesada — alto risco de mão ruim, adicione cartas de custo 1-2'
+
+    const metricas = [
+        { icon: '🔍', label: 'Searcher na mão', p: p_searcher, K: K_search, ideal: 0.65, rec: '8-12 searchers' },
+        { icon: '🛡️🛡️', label: 'Counter 2000 na mão', p: p_counter2k, K: K_counter2k, ideal: 0.65, rec: '8-10 counters 2k' },
+        { icon: '🛡️', label: 'Counter 1000 na mão', p: p_counter1k, K: K_counter1k, ideal: 0.40, rec: '4-6 counters 1k' },
+        { icon: '🔒', label: 'Blocker na mão', p: p_blocker, K: K_blocker, ideal: 0.40, rec: '4-8 blockers' },
+        { icon: '🃏', label: 'Draw Power na mão', p: p_draw, K: K_draw, ideal: 0.50, rec: '6-8 cartas de compra' },
+        { icon: '⚡', label: 'Trigger na mão', p: p_trigger, K: K_trigger, ideal: 0.40, rec: '4-8 triggers' },
+        { icon: '1️⃣', label: 'Carta custo 1 na mão', p: p_low1, K: K_low1, ideal: 0.40, rec: '4-8 cartas custo 1' },
+        { icon: '2️⃣', label: 'Carta custo ≤2 na mão', p: p_low2, K: K_low2, ideal: 0.65, rec: '8-12 cartas custo ≤2' },
+    ]
+
+    const plano = gerarPlano(allCards, deck.leader)
 
     return (
         <div className="min-h-screen bg-gray-950 text-white flex flex-col">
             <Navbar />
-
             <div className="max-w-7xl mx-auto px-6 py-8 w-full">
 
                 {/* Header */}
@@ -160,9 +439,7 @@ export default function AnalysisPage() {
                         <div className="text-gray-400 text-sm mb-1">Análise de Deck</div>
                         <h1 className="text-3xl font-bold">{deck.name}</h1>
                     </div>
-                    <a href="/deck" className="bg-gray-800 hover:bg-gray-700 px-4 py-2 rounded-xl text-sm transition">
-                        ← Voltar ao Builder
-                    </a>
+                    <a href="/deck" className="bg-gray-800 hover:bg-gray-700 px-4 py-2 rounded-xl text-sm transition">← Voltar ao Builder</a>
                 </div>
 
                 {/* TOP — Leader + Scores */}
@@ -171,23 +448,15 @@ export default function AnalysisPage() {
                         {deck.leader ? (
                             <>
                                 <div className="flex h-2">
-                                    {leaderColors.map((c, i) => (
-                                        <div key={i} className={`flex-1 ${colorClass[c] || 'bg-gray-500'}`} />
-                                    ))}
+                                    {leaderColors.map((c, i) => <div key={i} className={`flex-1 ${colorClass[c] || 'bg-gray-500'}`} />)}
                                 </div>
                                 <div className="p-5 flex gap-4 items-start">
-                                    <img
-                                        src={deck.leader.card_image}
-                                        className="w-36 h-48 object-cover rounded-xl flex-shrink-0 cursor-pointer hover:brightness-110 transition"
-                                        onClick={() => setSelectedCard(deck.leader)}
-                                    />
+                                    <img src={deck.leader.card_image} className="w-36 h-48 object-cover rounded-xl flex-shrink-0 cursor-pointer hover:brightness-110 transition" onClick={() => setSelectedCard(deck.leader)} />
                                     <div className="flex-1">
                                         <div className="text-xs text-gray-400 mb-1">Leader</div>
                                         <div className="font-bold text-base leading-tight mb-2">{deck.leader.card_name}</div>
                                         <div className="flex flex-wrap gap-1 mb-3">
-                                            {leaderColors.map((c, i) => (
-                                                <span key={i} className={`text-xs px-2 py-0.5 rounded text-white ${colorClass[c] || 'bg-gray-600'}`}>{c}</span>
-                                            ))}
+                                            {leaderColors.map((c, i) => <span key={i} className={`text-xs px-2 py-0.5 rounded text-white ${colorClass[c] || 'bg-gray-600'}`}>{c}</span>)}
                                         </div>
                                         <div className="grid grid-cols-1 gap-2">
                                             <div className="bg-gray-800 rounded-lg px-3 py-2 text-center">
@@ -202,9 +471,7 @@ export default function AnalysisPage() {
                                     </div>
                                 </div>
                             </>
-                        ) : (
-                            <div className="p-6 text-center text-gray-500">Sem Leader definido</div>
-                        )}
+                        ) : <div className="p-6 text-center text-gray-500">Sem Leader definido</div>}
                     </div>
 
                     <div className="lg:col-span-2 bg-gray-900 border border-gray-800 rounded-2xl p-6">
@@ -299,10 +566,210 @@ export default function AnalysisPage() {
                     </div>
                 </div>
 
+                {/* ANALISADOR INTELIGENTE */}
+                <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 mb-8">
+                    <div className="flex items-start justify-between mb-6">
+                        <div>
+                            <div className="text-sm font-semibold text-gray-400 uppercase tracking-wide">🧠 Analisador Inteligente</div>
+                            <div className="text-xs text-gray-500 mt-1">Distribuição Hipergeométrica — mão inicial de 5 cartas (N={N})</div>
+                        </div>
+                        <div className="flex gap-4 items-start">
+                            <div className="text-center bg-gray-800 rounded-2xl px-6 py-3">
+                                <div className={`text-5xl font-black ${scoreColor}`}>{consistScore}</div>
+                                <div className={`text-sm font-bold mt-1 ${scoreColor}`}>{scoreLabel}</div>
+                                <div className="text-xs text-gray-500 mt-0.5">Score de Consistência (0-100)</div>
+                            </div>
+                            <div className="bg-gray-800 rounded-2xl px-4 py-3 text-xs space-y-1.5">
+                                <div className="text-gray-400 font-semibold mb-2 uppercase tracking-wide">Índice</div>
+                                {[
+                                    { range: '80 – 100', label: 'Excelente', color: 'text-green-400' },
+                                    { range: '60 – 79', label: 'Bom', color: 'text-yellow-400' },
+                                    { range: '40 – 59', label: 'Regular', color: 'text-orange-400' },
+                                    { range: '0 – 39', label: 'Fraco', color: 'text-red-400' },
+                                ].map(({ range, label, color }) => (
+                                    <div key={label} className="flex items-center gap-2">
+                                        <span className={`font-bold w-16 ${color}`}>{range}</span>
+                                        <span className={`font-semibold ${color}`}>{label}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
+                        {metricas.map(({ icon, label, p, K, ideal }) => {
+                            const c = classif(p, ideal)
+                            return (
+                                <div key={label} className="bg-gray-800 rounded-xl p-4">
+                                    <div className="flex items-center justify-between mb-2">
+                                        <span className="text-xs text-gray-400">{icon} {label}</span>
+                                        <span className="text-xs text-gray-500">{K} cóp.</span>
+                                    </div>
+                                    <div className={`text-2xl font-black mb-1 ${c.color}`}>{pct(p)}</div>
+                                    <div className="w-full bg-gray-700 rounded-full h-1.5 mb-2">
+                                        <div className={`h-1.5 rounded-full transition-all ${c.bar}`} style={{ width: `${Math.min(p / ideal, 1) * 100}%` }} />
+                                    </div>
+                                    <div className={`text-xs font-semibold ${c.color}`}>{c.label}</div>
+                                    <div className="text-xs text-gray-600 mt-0.5">ideal ≥ {pct(ideal)}</div>
+                                </div>
+                            )
+                        })}
+                        <div className="bg-gray-800 rounded-xl p-4">
+                            <div className="flex items-center justify-between mb-2">
+                                <span className="text-xs text-gray-400">📊 Custo médio</span>
+                                <span className="text-xs text-gray-500">ideal ≤3.5</span>
+                            </div>
+                            <div className={`text-2xl font-black mb-1 ${avgCostNum <= 2.5 ? 'text-green-400' : avgCostNum <= 3.5 ? 'text-yellow-400' : avgCostNum <= 4.5 ? 'text-orange-400' : 'text-red-400'}`}>{avgCost}</div>
+                            <div className="w-full bg-gray-700 rounded-full h-1.5 mb-2">
+                                <div className={`h-1.5 rounded-full ${avgCostNum <= 3.5 ? 'bg-green-500' : avgCostNum <= 4.5 ? 'bg-orange-500' : 'bg-red-500'}`} style={{ width: `${Math.min((avgCostNum / 6) * 100, 100)}%` }} />
+                            </div>
+                            <div className={`text-xs font-semibold ${avgCostNum <= 2.5 ? 'text-green-400' : avgCostNum <= 3.5 ? 'text-yellow-400' : avgCostNum <= 4.5 ? 'text-orange-400' : 'text-red-400'}`}>
+                                {avgCostNum <= 2.5 ? 'Excelente' : avgCostNum <= 3.5 ? 'Bom' : avgCostNum <= 4.5 ? 'Regular' : 'Pesado'}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="border-t border-gray-800 pt-5">
+                        <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Diagnóstico Automático</div>
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
+                            {metricas.map(({ label, p, ideal, rec }) => (
+                                <div key={label} className="text-sm text-gray-300 bg-gray-800 rounded-lg px-4 py-2.5">
+                                    {diagTexto(label, p, ideal, rec)}
+                                </div>
+                            ))}
+                            <div className="text-sm text-gray-300 bg-gray-800 rounded-lg px-4 py-2.5 lg:col-span-2">{curvaMsg}</div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* SIMULAÇÃO DE 10.000 MÃOS */}
+                <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 mb-8">
+                    <div className="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-4">🎲 Simulação de 10.000 Mãos</div>
+                    {!simDone ? (
+                        <div className="text-center text-gray-400 py-8">Calculando simulação...</div>
+                    ) : simResult && (
+                        <>
+                            <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
+                                {[
+                                    { label: 'Taxa de Brick', value: simResult.brickRate, icon: '💀', invert: true, desc: 'Mão sem carta jogável e sem counter' },
+                                    { label: 'Searcher na abertura', value: simResult.searcherRate, icon: '🔍', invert: false, desc: 'Mão com pelo menos 1 searcher' },
+                                    { label: 'Counter 2k na abertura', value: simResult.counter2kRate, icon: '🛡️', invert: false, desc: 'Mão com pelo menos 1 counter 2000' },
+                                    { label: 'Blocker na abertura', value: simResult.blockerRate, icon: '🔒', invert: false, desc: 'Mão com pelo menos 1 blocker' },
+                                    { label: 'Carta ≤2 na abertura', value: simResult.low2Rate, icon: '⚡', invert: false, desc: 'Mão com pelo menos 1 carta custo ≤2' },
+                                ].map(({ label, value, icon, invert, desc }) => {
+                                    const good = invert ? value < 0.15 : value >= 0.5
+                                    const ok = invert ? value < 0.30 : value >= 0.35
+                                    const color = good ? 'text-green-400' : ok ? 'text-yellow-400' : 'text-red-400'
+                                    const bar = good ? 'bg-green-500' : ok ? 'bg-yellow-500' : 'bg-red-500'
+                                    return (
+                                        <div key={label} className="bg-gray-800 rounded-xl p-4 text-center">
+                                            <div className="text-2xl mb-1">{icon}</div>
+                                            <div className={`text-2xl font-black ${color}`}>{pct(value)}</div>
+                                            <div className="w-full bg-gray-700 rounded-full h-1.5 my-2">
+                                                <div className={`h-1.5 rounded-full ${bar}`} style={{ width: `${invert ? (1 - value) * 100 : value * 100}%` }} />
+                                            </div>
+                                            <div className="text-xs font-semibold text-gray-300">{label}</div>
+                                            <div className="text-xs text-gray-500 mt-1">{desc}</div>
+                                        </div>
+                                    )
+                                })}
+                            </div>
+
+                            {/* Índice de Dependência */}
+                            <div className="border-t border-gray-800 pt-5">
+                                <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">📌 Índice de Dependência — Cartas mais críticas</div>
+                                <div className="text-xs text-gray-500 mb-3">Cartas que mais aparecem nas mãos simuladas. Quanto maior, mais o deck depende dessa carta.</div>
+                                <div className="space-y-2">
+                                    {simResult.dependencia.slice(0, 8).map(({ dc, pct: p }, i) => {
+                                        const depPct = Math.min(Math.round(p * 100), 100)
+                                        const color = depPct >= 60 ? 'bg-red-500' : depPct >= 40 ? 'bg-orange-500' : 'bg-blue-500'
+                                        return (
+                                            <div key={i} className="flex items-center gap-3 bg-gray-800 rounded-xl px-3 py-2">
+                                                <img src={dc.card.card_image} className="w-8 h-11 object-cover rounded flex-shrink-0 cursor-pointer hover:brightness-110" onClick={() => setSelectedCard(dc.card)} />
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="text-xs text-white truncate font-medium">{dc.card.card_name}</div>
+                                                    <div className="text-xs text-gray-500">{(dc.card.card_set_id || '').split('_')[0]} · ×{dc.quantity}</div>
+                                                </div>
+                                                <div className="flex items-center gap-2 flex-shrink-0">
+                                                    <div className="w-24 bg-gray-700 rounded-full h-2">
+                                                        <div className={`h-2 rounded-full ${color}`} style={{ width: `${Math.min(depPct, 100)}%` }} />
+                                                    </div>
+                                                    <span className={`text-sm font-bold w-10 text-right ${depPct >= 60 ? 'text-red-400' : depPct >= 40 ? 'text-orange-400' : 'text-blue-400'}`}>{depPct}%</span>
+                                                </div>
+                                            </div>
+                                        )
+                                    })}
+                                </div>
+                            </div>
+                        </>
+                    )}
+                </div>
+
+                {/* MELHOR MÃO POSSÍVEL */}
+                {simDone && melhoresMaos.length > 0 && (
+                    <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 mb-8">
+                        <div className="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-2">🏆 Melhores Mãos de Abertura</div>
+                        <div className="text-xs text-gray-500 mb-5">Combinações ideais simuladas com base em searchers, counters, blockers e custo de jogo. (Top 3 de 30.000 simulações)</div>
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                            {melhoresMaos.map((mao, mi) => (
+                                <div key={mi} className="bg-gray-800 rounded-xl p-4">
+                                    <div className="flex items-center gap-2 mb-3">
+                                        <span className="text-sm font-bold text-white">{mi === 0 ? '🥇 Melhor mão' : mi === 1 ? '🥈 2ª melhor' : '🥉 3ª melhor'}</span>
+                                    </div>
+                                    <div className="flex gap-1.5 flex-wrap">
+                                        {mao.map((dc, ci) => (
+                                            <div key={ci} className="flex flex-col items-center gap-0.5">
+                                                <img
+                                                    src={dc.card.card_image}
+                                                    className="w-14 h-20 object-cover rounded-lg border border-gray-700 cursor-pointer hover:brightness-110 transition"
+                                                    onClick={() => setSelectedCard(dc.card)}
+                                                />
+                                                <span className="text-xs text-gray-400 text-center" style={{ width: '56px', fontSize: '9px' }}>
+                                                    {dc.card.card_name.length > 10 ? dc.card.card_name.slice(0, 10) + '…' : dc.card.card_name}
+                                                </span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
+                {/* PLANO DE JOGO POR TURNO */}
+                <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 mb-8">
+                    <div className="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-2">🗺️ Plano de Jogo por Turno</div>
+                    <div className="text-xs text-gray-500 mb-5">Sugestão de linha de jogo baseada nas cartas do deck.</div>
+                    <div className="space-y-3">
+                        {plano.map(({ turno, don, sugestao, cartas }) => (
+                            <div key={turno} className="flex gap-4 bg-gray-800 rounded-xl px-4 py-3">
+                                <div className="flex-shrink-0 w-14 h-14 bg-orange-600 rounded-xl flex items-center justify-center">
+                                    <div className="text-center">
+                                        <div className="text-white font-black text-lg">T{turno}</div>
+                                        <div className="text-orange-300 text-xs font-bold">{don}</div>
+                                    </div>
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <div className="text-sm text-gray-200 mb-2">{sugestao}</div>
+                                    <div className="flex gap-1.5 flex-wrap">
+                                        {cartas.slice(0, 4).map((dc, i) => (
+                                            <img
+                                                key={i}
+                                                src={dc.card.card_image}
+                                                className="w-8 h-11 object-cover rounded border border-gray-700 cursor-pointer hover:brightness-110 transition"
+                                                onClick={() => setSelectedCard(dc.card)}
+                                                title={dc.card.card_name}
+                                            />
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
                 {/* BAIXO — Funções + Lista */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-
-                    {/* Funções do Deck */}
                     <div className="bg-gray-900 border border-gray-800 rounded-2xl p-5">
                         <div className="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-4">Funções do Deck</div>
                         <div className="space-y-2">
@@ -327,107 +794,59 @@ export default function AnalysisPage() {
                                     <span className="text-base font-bold text-white w-7 text-right">{qty}</span>
                                     <div className="flex -space-x-2">
                                         {cards.slice(0, 3).map((dc, i) => (
-                                            <img
-                                                key={i}
-                                                src={dc.card.card_image}
-                                                className="w-9 h-12 object-cover rounded border border-gray-700 cursor-pointer hover:brightness-110 transition"
-                                                style={{ zIndex: i }}
-                                                onClick={() => setSelectedCard(dc.card)}
-                                            />
+                                            <img key={i} src={dc.card.card_image} className="w-9 h-12 object-cover rounded border border-gray-700 cursor-pointer hover:brightness-110 transition" style={{ zIndex: i }} onClick={() => setSelectedCard(dc.card)} />
                                         ))}
-                                        {cards.length > 3 && (
-                                            <div className="w-9 h-12 bg-gray-700 rounded border border-gray-600 flex items-center justify-center text-xs text-gray-400 font-bold">
-                                                +{cards.length - 3}
-                                            </div>
-                                        )}
+                                        {cards.length > 3 && <div className="w-9 h-12 bg-gray-700 rounded border border-gray-600 flex items-center justify-center text-xs text-gray-400 font-bold">+{cards.length - 3}</div>}
                                     </div>
                                 </div>
                             ))}
                         </div>
                     </div>
 
-                    {/* Lista completa — grid visual */}
                     <div className="bg-gray-900 border border-gray-800 rounded-2xl p-5">
                         <div className="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-4">
                             Lista do Deck <span className="text-gray-600 font-normal">({totalCards}/50)</span>
                         </div>
                         <div className="overflow-y-auto card-scroll" style={{ maxHeight: '600px', scrollbarWidth: 'thin', scrollbarColor: '#f97316 #1f2937' }}>
-
-                            {/* Leader */}
                             {deck.leader && (
                                 <div className="mb-5">
                                     <div className="text-xs text-gray-500 uppercase tracking-wide mb-2">Leader</div>
                                     <div className="flex gap-2">
                                         <div className="flex flex-col items-center gap-1">
                                             <div className="relative" style={{ width: '90px', height: '126px' }}>
-                                                <img
-                                                    src={deck.leader.card_image}
-                                                    className="absolute w-full h-full object-cover rounded-lg border-2 border-yellow-500 cursor-pointer hover:brightness-110 transition"
-                                                    onClick={() => setSelectedCard(deck.leader)}
-                                                />
+                                                <img src={deck.leader.card_image} className="absolute w-full h-full object-cover rounded-lg border-2 border-yellow-500 cursor-pointer hover:brightness-110 transition" onClick={() => setSelectedCard(deck.leader)} />
                                             </div>
-                                            <div className="text-xs text-gray-400 font-mono text-center" style={{ width: '90px' }}>
-                                                {(deck.leader.card_set_id || '').split('_')[0]}
-                                            </div>
-                                            <div className="text-xs text-white text-center font-medium leading-tight" style={{ width: '90px' }}>
-                                                {deck.leader.card_name}
-                                            </div>
+                                            <div className="text-xs text-gray-400 font-mono text-center" style={{ width: '90px' }}>{(deck.leader.card_set_id || '').split('_')[0]}</div>
+                                            <div className="text-xs text-white text-center font-medium leading-tight" style={{ width: '90px' }}>{deck.leader.card_name}</div>
                                         </div>
                                     </div>
                                 </div>
                             )}
-
-                            {/* Main Deck */}
                             <div className="text-xs text-gray-500 uppercase tracking-wide mb-3">Main Deck</div>
                             <div className="flex flex-wrap gap-4">
-                                {allCards
-                                    .sort((a, b) => parseInt(a.card.card_cost || '0') - parseInt(b.card.card_cost || '0'))
-                                    .map((dc, i) => (
-                                        <div key={i} className="flex flex-col items-center gap-1">
-                                            <span className="text-xs text-gray-400">
-                                                {dc.card.card_cost ? `Custo ${dc.card.card_cost}` : '—'}
-                                            </span>
-                                            <div className="relative cursor-pointer" style={{ width: '90px', height: `${120 + (Math.min(dc.quantity, 4) - 1) * 7}px` }}
-                                                onClick={() => setSelectedCard(dc.card)}>
-                                                {Array.from({ length: Math.min(dc.quantity, 4) }).map((_, idx) => (
-                                                    <img
-                                                        key={idx}
-                                                        src={dc.card.card_image}
-                                                        className="absolute object-cover rounded-lg border border-gray-700 hover:brightness-110 transition"
-                                                        style={{
-                                                            width: '86px',
-                                                            height: '120px',
-                                                            left: `${idx * 3}px`,
-                                                            top: `${idx * 7}px`,
-                                                            zIndex: idx,
-                                                        }}
-                                                    />
-                                                ))}
-                                            </div>
-                                            <div className="text-xs text-gray-400 font-mono text-center" style={{ width: '90px' }}>
-                                                {(dc.card.card_set_id || '').split('_')[0]}
-                                            </div>
-                                            <div className="text-xs text-white text-center font-medium leading-tight" style={{ width: '90px' }}>
-                                                {dc.card.card_name}
-                                            </div>
-                                            {/* Quantidade — bolinhas brancas + número */}
-                                            <div className="flex items-center gap-1.5 bg-gray-800 border border-gray-700 rounded-lg px-2 py-0.5">
-                                                <div className="flex gap-0.5">
-                                                    {Array.from({ length: dc.quantity }).map((_, idx) => (
-                                                        <div key={idx} className="w-2 h-2 rounded-full bg-gray-400" />
-                                                    ))}
-                                                </div>
-                                                <span className="text-xs font-bold text-white ml-1">×{dc.quantity}</span>
-                                            </div>
+                                {allCards.sort((a, b) => parseInt(a.card.card_cost || '0') - parseInt(b.card.card_cost || '0')).map((dc, i) => (
+                                    <div key={i} className="flex flex-col items-center gap-1">
+                                        <span className="text-xs text-gray-400">{dc.card.card_cost ? `Custo ${dc.card.card_cost}` : '—'}</span>
+                                        <div className="relative cursor-pointer" style={{ width: '90px', height: `${120 + (Math.min(dc.quantity, 4) - 1) * 7}px` }} onClick={() => setSelectedCard(dc.card)}>
+                                            {Array.from({ length: Math.min(dc.quantity, 4) }).map((_, idx) => (
+                                                <img key={idx} src={dc.card.card_image} className="absolute object-cover rounded-lg border border-gray-700 hover:brightness-110 transition" style={{ width: '86px', height: '120px', left: `${idx * 3}px`, top: `${idx * 7}px`, zIndex: idx }} />
+                                            ))}
                                         </div>
-                                    ))}
+                                        <div className="text-xs text-gray-400 font-mono text-center" style={{ width: '90px' }}>{(dc.card.card_set_id || '').split('_')[0]}</div>
+                                        <div className="text-xs text-white text-center font-medium leading-tight" style={{ width: '90px' }}>{dc.card.card_name}</div>
+                                        <div className="flex items-center gap-1.5 bg-gray-800 border border-gray-700 rounded-lg px-2 py-0.5">
+                                            <div className="flex gap-0.5">{Array.from({ length: dc.quantity }).map((_, idx) => <div key={idx} className="w-2 h-2 rounded-full bg-gray-400" />)}</div>
+                                            <span className="text-xs font-bold text-white ml-1">×{dc.quantity}</span>
+                                        </div>
+                                    </div>
+                                ))}
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            {/* Modal Ver Carta */}
+            {/* Modal */}
             {selectedCard && (
                 <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setSelectedCard(null)}>
                     <div className="bg-gray-900 rounded-2xl w-full max-w-lg shadow-2xl border border-gray-700" onClick={e => e.stopPropagation()}>
@@ -463,9 +882,7 @@ export default function AnalysisPage() {
                             </div>
                         )}
                         <div className="px-5 pb-5">
-                            <button onClick={() => setSelectedCard(null)} className="w-full bg-gray-700 hover:bg-gray-600 py-2 rounded-xl text-sm font-medium transition">
-                                Fechar
-                            </button>
+                            <button onClick={() => setSelectedCard(null)} className="w-full bg-gray-700 hover:bg-gray-600 py-2 rounded-xl text-sm font-medium transition">Fechar</button>
                         </div>
                     </div>
                 </div>
