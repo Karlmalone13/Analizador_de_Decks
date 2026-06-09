@@ -199,6 +199,18 @@ export default function DeckBuilderPage() {
       setDeck(d => ({ ...d, leader: card }))
       return
     }
+    // Validação de cor
+    if (deck.leader) {
+      const leaderColors = deck.leader.card_color.split(/[\s\/]/).filter(Boolean).map(c => c.trim())
+      const cardColors = card.card_color ? card.card_color.split(/[\s\/]/).filter(Boolean).map(c => c.trim()) : []
+      const isColorless = cardColors.length === 0 || card.card_color === '' || card.card_color === null
+      const isCompatible = isColorless || cardColors.some(c => leaderColors.includes(c))
+
+      if (!isCompatible) {
+        setDeckError(`Carta incompatível! Seu leader é ${deck.leader.card_color}. Só pode adicionar cartas ${leaderColors.join(' ou ')}.`)
+        return
+      }
+    }
     setDeck(d => {
       const existing = d.cards.find(dc => dc.card.id === card.id)
       if (existing) {
@@ -618,6 +630,18 @@ export default function DeckBuilderPage() {
               <button onClick={() => setShowImport(true)} className="flex-1 bg-gray-800 hover:bg-gray-700 px-3 py-1.5 rounded-xl text-sm transition">
                 📥 Importar
               </button>
+              <button
+                onClick={() => {
+                  if (!deck.id) {
+                    setDeckError('Salve o deck antes de analisar!')
+                    return
+                  }
+                  window.location.href = `/analysis?id=${deck.id}`
+                }}
+                className="flex-1 bg-blue-600 hover:bg-blue-500 px-3 py-1.5 rounded-xl text-sm transition"
+              >
+                📊 Analisar
+              </button>
             </div>
 
             {deckError && (
@@ -760,6 +784,7 @@ export default function DeckBuilderPage() {
                       </div>
                       <div className="flex gap-2">
                         <button onClick={() => loadDeck(d)} className="bg-orange-600 hover:bg-orange-500 px-3 py-1.5 rounded-lg text-xs transition">Abrir</button>
+                        <button onClick={() => { setShowMyDecks(false); window.location.href = `/analysis?id=${d.id}` }} className="bg-blue-600 hover:bg-blue-500 px-3 py-1.5 rounded-lg text-xs transition">📊</button>
                         <button onClick={() => deleteDeck(d.id)} className="bg-gray-700 hover:bg-red-700 px-3 py-1.5 rounded-lg text-xs transition">🗑</button>
                       </div>
                     </div>
