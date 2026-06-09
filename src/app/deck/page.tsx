@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@/utils/supabase/client'
 import Navbar from '@/components/Navbar'
+import { useSearchParams } from 'next/navigation'
 
 interface Card {
   id: string
@@ -92,6 +93,7 @@ export default function DeckBuilderPage() {
   const totalCards = deck.cards.reduce((sum, dc) => sum + dc.quantity, 0)
   const isLeaderSet = !!deck.leader
 
+  // useEffect existente — carrega todas as cartas
   useEffect(() => {
     async function load() {
       setLoadingAll(true)
@@ -113,6 +115,28 @@ export default function DeckBuilderPage() {
       searchCardsWithData(allData, '', { colors: [], type: '' }, '')
     }
     load()
+  }, [])
+
+  // useEffect novo — carrega deck da URL se vier com ?id=
+  const searchParams = useSearchParams()
+
+  useEffect(() => {
+    const id = searchParams.get('id')
+    if (!id) return
+    async function loadDeckFromUrl() {
+      const { data } = await supabase.from('decks').select('*').eq('id', id).single()
+      if (!data) return
+      try {
+        const parsed = JSON.parse(data.cards)
+        setDeck({
+          id: data.id,
+          name: data.name,
+          leader: parsed.leader || null,
+          cards: parsed.cards || [],
+        })
+      } catch { }
+    }
+    loadDeckFromUrl()
   }, [])
 
   function searchCardsWithData(
@@ -532,11 +556,10 @@ export default function DeckBuilderPage() {
                 const inDeck = deck.cards.find(dc => dc.card.id === card.id)
                 const isDeckLeader = deck.leader?.id === card.id
                 return (
-                  <div key={i} className={`relative group rounded-xl overflow-hidden border transition ${
-                    isDeckLeader ? 'border-yellow-500' :
-                    inDeck ? 'border-orange-500' :
-                    'border-gray-800 hover:border-orange-500'
-                  }`}>
+                  <div key={i} className={`relative group rounded-xl overflow-hidden border transition ${isDeckLeader ? 'border-yellow-500' :
+                      inDeck ? 'border-orange-500' :
+                        'border-gray-800 hover:border-orange-500'
+                    }`}>
                     {inDeck && (
                       <div className="absolute top-1 right-1 z-10 bg-orange-600 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center shadow">
                         {inDeck.quantity}
@@ -659,7 +682,7 @@ export default function DeckBuilderPage() {
 
             {/* Leader */}
             <div className="mb-4">
-              <div className="text-xs text-gray-400 mb-2 font-semibold uppercase tracking-wide flex items-center gap-2">
+              <div className="text-base text-gray-300 mb-2 font-semibold uppercase tracking-wide flex items-center gap-2">
                 <span>Leader</span>
                 {isLeaderSet ? <span className="text-green-400">✓</span> : <span className="text-gray-600">—</span>}
               </div>
@@ -674,15 +697,15 @@ export default function DeckBuilderPage() {
                     {/* Imagem do leader maior */}
                     <img
                       src={deck.leader.card_image}
-                        className="w-20 h-28 object-cover rounded-lg flex-shrink-0 cursor-pointer hover:opacity-80 transition"
-                           onClick={() => setSelectedCard(deck.leader)}
-                            />
+                      className="w-28 h-35 object-cover rounded-lg flex-shrink-0 cursor-pointer hover:opacity-80 transition"
+                      onClick={() => setSelectedCard(deck.leader)}
+                    />
                     <div className="flex-1 min-w-0">
                       <div className="text-xs font-mono text-orange-400">{(deck.leader.card_set_id || '').split('_')[0]}</div>
-                      <div className="text-sm font-bold truncate">{deck.leader.card_name}</div>
+                      <div className="text-base font-bold truncate">{deck.leader.card_name}</div>
                       <div className="flex flex-wrap gap-1 mt-0.5">
                         {deck.leader.card_color.split(/[\s\/]/).filter(Boolean).map((c, i) => (
-                          <span key={i} className={`text-xs px-1.5 py-0.5 rounded text-white ${colorClass[c.trim()] || 'bg-gray-600'}`}>{c.trim()}</span>
+                          <span key={i} className={`text-sm px-1.5 py-0.5 rounded text-white ${colorClass[c.trim()] || 'bg-gray-600'}`}>{c.trim()}</span>
                         ))}
                       </div>
                     </div>
@@ -700,8 +723,8 @@ export default function DeckBuilderPage() {
             <div>
               <div className="mb-2">
                 <div className="flex items-center justify-between mb-1">
-                  <span className="text-xs text-gray-400 font-semibold uppercase tracking-wide">Main Deck ({totalCards}/50)</span>
-                  <span className="text-xs text-gray-500">{50 - totalCards} restantes</span>
+                  <span className="text-base text-gray-300 font-semibold uppercase tracking-wide">Main Deck ({totalCards}/50)</span>
+                  <span className="text-base text-gray-300">{50 - totalCards} restantes</span>
                 </div>
                 <div className="w-full bg-gray-800 rounded-full h-2">
                   <div
@@ -711,46 +734,68 @@ export default function DeckBuilderPage() {
                 </div>
               </div>
 
-              <div className="space-y-1 mt-3">
+              <div className="grid mt-3" style={{ gridTemplateColumns: 'repeat(5, minmax(0, 1fr))', gap: '4px' }}>
                 {deck.cards.map((dc, i) => (
-                  <div key={i} className="flex items-center gap-2 bg-gray-900 border border-gray-800 rounded-xl px-3 py-1.5 hover:border-gray-600 transition">
-                    <div className="flex flex-col items-center gap-0.5 flex-shrink-0">
-                      {dc.card.card_cost
-                        ? <span className="text-xs text-gray-400">Custo {dc.card.card_cost}</span>
-                        : <span className="text-xs text-gray-600">—</span>
-                      }
-                      {/* Imagem maior e centralizada */}
+                  <div key={i} className="flex flex-col items-center gap-1 px-0.5">
+                    {/* Custo centralizado na largura da carta */}
+                    <span className="text-xs text-gray-400 " style={{ width: '86px' }}>
+                      {dc.card.card_cost ? `Custo ${dc.card.card_cost}` : '—'}
+                    </span>
+                    {/* Carta + botões lado a lado */}
+                    <div className="flex items-start">
                       <div
-  className="relative cursor-pointer"
-  style={{ width: '68px', height: '90px' }}
-  onClick={() => setSelectedCard(dc.card)}
->
+                        className="relative cursor-pointer flex-shrink-0"
+                        style={{ width: '86px', height: `${122 + (Math.min(dc.quantity, 4) - 1) * 7}px` }}
+                        onClick={() => setSelectedCard(dc.card)}
+                      >
                         {Array.from({ length: Math.min(dc.quantity, 4) }).map((_, idx) => (
                           <img
                             key={idx}
                             src={dc.card.card_image}
-                            className="absolute object-cover rounded border border-gray-700"
-                            style={{ width: '60px', height: '84px', left: `${idx * 4}px`, top: `${idx * 2}px`, zIndex: idx }}
+                            className="absolute object-cover rounded-lg border border-gray-700 hover:brightness-110 transition"
+                            style={{
+                              width: '86px',
+                              height: '122px',
+                              left: `${idx * 3}px`,
+                              top: `${idx * 7}px`,
+                              zIndex: idx,
+                            }}
                           />
                         ))}
                       </div>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="text-xs font-mono text-orange-400">{(dc.card.card_set_id || '').split('_')[0]}</div>
-                      <div className="text-xs text-white truncate">{dc.card.card_name}</div>
-                    </div>
-                    <div className="flex flex-col items-center gap-0.5">
-                      <span className="text-xs text-gray-400">Qtd</span>
-                      <div className="flex items-center gap-1">
-                        <button onClick={() => removeCard(dc.card.id)} className="w-6 h-6 bg-gray-700 hover:bg-red-700 rounded text-xs transition">−</button>
-                        <span className="w-5 text-center text-sm font-bold">{dc.quantity}</span>
-                        <button onClick={() => addCard(dc.card)} className="w-6 h-6 bg-gray-700 hover:bg-green-700 rounded text-xs transition">+</button>
+                      <div className="flex flex-col items-center gap-1 ml-2 mt-2 flex-shrink-0">
+                        <button onClick={() => addCard(dc.card)} className="w-7 h-7 bg-gray-700 hover:bg-green-700 rounded-lg text-sm transition flex items-center justify-center font-bold">+</button>
+                        <span className="text-sm font-bold text-white">{dc.quantity}</span>
+                        <button onClick={() => removeCard(dc.card.id)} className="w-7 h-7 bg-gray-700 hover:bg-red-700 rounded-lg text-sm transition flex items-center justify-center font-bold">−</button>
                       </div>
+                    </div>
+                    {/* Código e nome centralizados na largura da carta */}
+                    <div
+                      className="text-xs text-gray-400 font-mono"
+                      style={{
+                        width: '86px',
+                        marginLeft: `${(Math.min(dc.quantity, 4) - 1) * 3}px`,
+                      }}
+                    >
+                      {(dc.card.card_set_id || '').split('_')[0]}
+                    </div>
+                    <div
+                      className="text-xs text-gray-350 font-medium leading-tight"
+                      style={{
+                        width: '86px',
+                        marginLeft: `${(Math.min(dc.quantity, 4) - 30) * 1}px`,
+                        minHeight: '30px',
+                        textIndent: '10px',
+                        textAlign: 'center',
+                        
+                      }}
+                    >
+                      {dc.card.card_name}
                     </div>
                   </div>
                 ))}
                 {deck.cards.length === 0 && (
-                  <div className="text-center text-gray-500 text-sm py-8">Clique nas cartas para adicionar ao deck</div>
+                  <div className="w-full text-center text-gray-500 text-sm py-8">Clique nas cartas para adicionar ao deck</div>
                 )}
               </div>
             </div>
@@ -772,7 +817,7 @@ export default function DeckBuilderPage() {
               <div className="space-y-2">
                 {myDecks.map(d => {
                   let leaderImg = null
-                  try { const parsed = JSON.parse(d.cards); leaderImg = parsed.leader?.card_image } catch {}
+                  try { const parsed = JSON.parse(d.cards); leaderImg = parsed.leader?.card_image } catch { }
                   return (
                     <div key={d.id} className="flex items-center gap-3 bg-gray-800 rounded-xl p-3 transition">
                       <div className="w-10 h-14 rounded-lg flex-shrink-0 overflow-hidden bg-gray-700">
