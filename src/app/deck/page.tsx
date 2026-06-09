@@ -112,7 +112,7 @@ export default function DeckBuilderPage() {
       }
       setAllCards(allData)
       setLoadingAll(false)
-      searchCardsWithData(allData, '', { colors: [], type: '' }, '')
+      setResults([]) // não mostra nada até o usuário buscar
     }
     load()
   }, [])
@@ -491,6 +491,14 @@ export default function DeckBuilderPage() {
                 <option value="power_asc">Poder ↑</option>
                 <option value="power_desc">Poder ↓</option>
               </select>
+              {results.length > 0 && (
+                <button
+                  onClick={() => { setSearch(''); setResults([]) }}
+                  className="bg-gray-700 hover:bg-gray-600 px-3 py-2 rounded-xl text-sm transition"
+                >
+                  ✕
+                </button>
+              )}
               <span className="text-gray-400 text-sm self-center whitespace-nowrap">{results.length} carta(s)</span>
             </div>
 
@@ -697,7 +705,7 @@ export default function DeckBuilderPage() {
                     {/* Imagem do leader maior */}
                     <img
                       src={deck.leader.card_image}
-                      className="w-28 h-35 object-cover rounded-lg flex-shrink-0 cursor-pointer hover:opacity-80 transition"
+                      className="w-22 h-31 object-cover rounded-lg flex-shrink-0 cursor-pointer hover:opacity-80 transition"
                       onClick={() => setSelectedCard(deck.leader)}
                     />
                     <div className="flex-1 min-w-0">

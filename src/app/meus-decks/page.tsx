@@ -168,11 +168,11 @@ export default function MeusDecksPage() {
                                                 {deck.leader_image ? (
                                                     <img
                                                         src={deck.leader_image}
-                                                        className="w-20 h-28 object-cover rounded-xl border border-gray-700"
+                                                        className="w-26 h-34 object-cover rounded-xl border border-gray-700"
                                                         onError={e => { e.currentTarget.style.display = 'none' }}
                                                     />
                                                 ) : (
-                                                    <div className="w-20 h-28 bg-gray-800 rounded-xl border border-gray-700 flex items-center justify-center text-gray-600 text-2xl">
+                                                    <div className="w-26 h-34 bg-gray-800 rounded-xl border border-gray-700 flex items-center justify-center text-gray-600 text-2xl">
                                                         🃏
                                                     </div>
                                                 )}
@@ -182,17 +182,17 @@ export default function MeusDecksPage() {
                                             <div className="flex-1 min-w-0">
                                                 <h3 className="font-bold text-white text-lg truncate mb-1">{deck.name}</h3>
                                                 {deck.leader_name && (
-                                                    <div className="text-sm text-gray-400 truncate mb-2">{deck.leader_name}</div>
+                                                    <div className="text-sm text-orange-400 truncate mb-2">{deck.leader_name}</div>
                                                 )}
                                                 <div className="flex flex-wrap gap-1 mb-3">
                                                     {colors.map((c, i) => (
-                                                        <span key={i} className={`text-xs px-2 py-0.5 rounded text-white ${colorClass[c.trim()] || 'bg-gray-600'}`}>{c.trim()}</span>
+                                                        <span key={i} className={`text-sm px-2 py-0.5 rounded text-white ${colorClass[c.trim()] || 'bg-gray-600'}`}>{c.trim()}</span>
                                                     ))}
                                                 </div>
 
                                                 {/* Progresso */}
                                                 <div className="mb-1">
-                                                    <div className="flex justify-between text-xs mb-1">
+                                                    <div className="flex justify-between text-sm mb-1">
                                                         <span className="text-gray-400">{deck.total_cards}/50 cartas</span>
                                                         {isComplete
                                                             ? <span className="text-green-400 font-medium">✓ Completo</span>
@@ -207,7 +207,7 @@ export default function MeusDecksPage() {
                                                     </div>
                                                 </div>
 
-                                                <div className="text-xs text-gray-500">
+                                                <div className="text-sm text-gray-500">
                                                     {new Date(deck.updated_at).toLocaleDateString('pt-BR', {
                                                         day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'
                                                     })}
@@ -219,20 +219,20 @@ export default function MeusDecksPage() {
                                         <div className="flex gap-2 mt-4">
                                             <a
                                                 href={`/deck?id=${deck.id}`}
-                                                className="flex-1 bg-gray-800 hover:bg-gray-700 px-3 py-2 rounded-xl text-sm text-center transition font-medium"
+                                                className="flex-1 bg-gray-800 hover:bg-gray-700 px-3 py-2 rounded-xl text-base text-center transition font-medium"
                                             >
                                                 ✏️ Editar
                                             </a>
                                             <a
                                                 href={`/analysis?id=${deck.id}`}
-                                                className="flex-1 bg-blue-600 hover:bg-blue-500 px-3 py-2 rounded-xl text-sm text-center transition font-medium"
+                                                className="flex-1 bg-blue-600 hover:bg-blue-500 px-3 py-2 rounded-xl text-base text-center transition font-medium"
                                             >
                                                 📊 Analisar
                                             </a>
                                             <button
                                                 onClick={() => deleteDeck(deck.id)}
                                                 disabled={deleting === deck.id}
-                                                className="bg-gray-800 hover:bg-red-700 px-3 py-2 rounded-xl text-sm transition"
+                                                className="bg-gray-800 hover:bg-red-700 px-3 py-2 rounded-xl text-xs transition"
                                             >
                                                 {deleting === deck.id ? '...' : '🗑'}
                                             </button>
