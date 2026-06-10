@@ -241,7 +241,7 @@ class ReplayMatch:
         engine = DecisionEngine(p, opp)
         return engine.choose_card_to_play()
 
-    def play_card(self, card, p):
+    def play_card(self, card, p, opp=None):
         col = self.col(p)
         p.hand.remove(card)
         p.don_rested += card.cost
@@ -261,6 +261,12 @@ class ReplayMatch:
               f' ({card.power}pwr){kw_str}')
         if card.cost > 0:
             print(f'    {C.YELLOW}DON restantes: {p.don_available} ativos{C.RESET}')
+        # Mostra efeito completo da carta
+        card_text = getattr(card, 'card_text', '') or ''
+        if card_text:
+            # Trunca para não poluir o log
+            effect_short = card_text[:120] + ('...' if len(card_text) > 120 else '')
+            print(f'    {C.GRAY}Efeito: {effect_short}{C.RESET}')
 
         if card.card_type == 'CHARACTER':
             if len(p.field_chars) >= 5:
@@ -273,18 +279,44 @@ class ReplayMatch:
             card.just_played = not card.has_rush
             p.field_chars.append(card)
 
-            for _ in range(card.draw_power):
-                if p.deck:
-                    d = p.deck.pop()
-                    p.hand.append(d)
-                    print(f'    {C.GRAY}Draw → {d.name[:25]}{C.RESET}')
+            # Mostra efeito da carta
+            if card.card_text if hasattr(card, 'card_text') else False:
+                pass  # texto já mostrado acima
+
+            # Draw com condição
+            do_draw = True
+            if hasattr(card, 'draw_condition') and card.draw_condition not in ('always', ''):
+                if 'life<=' in card.draw_condition:
+                    limit = int(card.draw_condition.split('<=')[1])
+                    do_draw = p.life_count() <= limit
+                    if not do_draw:
+                        print(f'    {C.GRAY}Condição não satisfeita ({card.draw_condition}) — efeito não ativa{C.RESET}')
+
+            if do_draw:
+                for _ in range(card.draw_power):
+                    if p.deck:
+                        d = p.deck.pop()
+                        p.hand.append(d)
+                        print(f'    {C.GRAY}Draw → {d.name[:25]}{C.RESET}')
+
+                # Trash após draw — decide qual carta descartar situacionalmente
+                draw_trash = getattr(card, 'draw_then_trash', 0)
+                if draw_trash > 0 and p.hand:
+                    engine_tmp = DecisionEngine(p, opp)
+                    for _ in range(draw_trash):
+                        if p.hand:
+                            worst = engine_tmp.choose_card_to_trash(p.hand)
+                            if worst:
+                                p.hand.remove(worst)
+                                p.trash.append(worst)
+                                print(f'    {C.YELLOW}Trash → descartou: {worst.name[:25]} ')
+                                print(f'      (menor valor situacional — custo {worst.cost}, {worst.power}pwr){C.RESET}')
 
             if card.is_searcher and p.deck:
+                engine_tmp = DecisionEngine(p, opp)
                 look = min(5, len(p.deck))
                 candidates = p.deck[-look:]
-                useful = [c for c in candidates
-                          if c.cost >= 2 or c.has_blocker or c.has_rush or c.draw_power > 0]
-                best = max(useful if useful else candidates, key=lambda c: c.board_value())
+                best = engine_tmp.choose_card_to_search(candidates)
                 p.deck.remove(best)
                 p.hand.append(best)
                 p.searchers_used += 1
@@ -293,8 +325,8 @@ class ReplayMatch:
                 if best.has_blocker:       kws_s.append('Blocker')
                 if best.has_double_attack: kws_s.append('DA')
                 kw_s = f' [{", ".join(kws_s)}]' if kws_s else ''
-                print(f'    {C.CYAN}Searcher → olhou {look} cartas, '
-                      f'pegou: {best.name[:28]} (custo {best.cost}, {best.power}pwr){kw_s}{C.RESET}')
+                print(f'    {C.CYAN}Searcher → olhou {look} cartas situacionalmente,')
+                print(f'      pegou: {best.name[:28]} (custo {best.cost}, {best.power}pwr){kw_s}{C.RESET}')
             elif card.is_searcher and not p.deck:
                 print(f'    {C.GRAY}Searcher → deck vazio, nada buscado{C.RESET}')
 
@@ -405,7 +437,7 @@ class ReplayMatch:
         while plays < 8:
             card = self.choose_card(p, opp)
             if card:
-                self.play_card(card, p)
+                self.play_card(card, p, opp)
                 plays += 1
             else:
                 if plays == 0:

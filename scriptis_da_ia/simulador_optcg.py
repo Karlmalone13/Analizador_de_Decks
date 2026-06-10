@@ -59,6 +59,12 @@ class Card:
     has_bounce: bool = False
     has_rest_effect: bool = False
     has_start_of_game: bool = False  # efeito "At the start of the game"
+    # Efeitos com condição e custo secundário
+    draw_then_trash: int = 0         # draw X then trash Y → valor = Y
+    draw_condition: str = ''         # condição ex: 'life<=3', 'always'
+    has_power_minus: bool = False    # reduz poder de character inimigo
+    trash_opp_char: bool = False     # coloca/elimina character inimigo
+    card_text: str = ''              # texto original do efeito
     # Estado em jogo
     rested: bool = False
     just_played: bool = False
@@ -166,6 +172,30 @@ def parse_card_effects(text: str, counter_amount: str) -> dict:
     except:
         pass
 
+    # Detecta draw_power (compras sem custo secundário)
+    raw_draw = (t.count('draw 1') + t.count('draw 2') * 2 +
+                t.count('draw 3') * 3 + t.count('draw a card'))
+
+    # Detecta "draw X and/then trash Y" — efeito com custo secundário
+    import re
+    draw_trash = 0
+    draw_condition = 'always'
+    m = re.search(r'draw\s+(\d)\s+cards?\s+and\s+trash\s+(\d)', t)
+    if not m:
+        m = re.search(r'draw\s+(\d)\s+cards?.*?trash\s+(\d)\s+card', t)
+    if m:
+        draw_amt  = int(m.group(1))
+        trash_amt = int(m.group(2))
+        draw_trash = trash_amt
+        raw_draw = draw_amt  # draw correto
+        # Detecta condição
+        if 'if you have' in t and 'life' in t:
+            lm = re.search(r'if you have\s+(\d+)\s+or less life', t)
+            if lm:
+                draw_condition = f'life<={lm.group(1)}'
+        else:
+            draw_condition = 'always'
+
     return {
         'has_rush':            '[rush]' in t,
         'has_blocker':         '[blocker]' in t,
@@ -173,13 +203,16 @@ def parse_card_effects(text: str, counter_amount: str) -> dict:
         'has_banish':          '[banish]' in t,
         'has_trigger':         '[trigger]' in t,
         'has_unblockable':     '[unblockable]' in t,
-        'has_on_play_ko':      ('on play' in t and ('k.o.' in t or 'trash' in t)),
+        'has_on_play_ko':      ('on play' in t and ('k.o.' in t or 'trash' in t) and 'draw' not in t),
         'has_bounce':          ('return' in t and 'hand' in t),
         'has_rest_effect':     ('rest' in t and ('opponent' in t or 'your opponent' in t)),
         'is_searcher':         ('look at' in t or 'search your deck' in t or 'add up to' in t),
         'has_start_of_game':   'at the start of the game' in t,
-        'draw_power':          (t.count('draw 1') + t.count('draw 2') * 2 +
-                                t.count('draw 3') * 3 + t.count('draw a card')),
+        'has_power_minus':     ('-' in t and 'power' in t and 'opponent' in t),
+        'trash_opp_char':      ('opponent' in t and ('trash' in t or 'k.o.' in t) and 'on play' in t),
+        'draw_power':          raw_draw,
+        'draw_then_trash':     draw_trash,
+        'draw_condition':      draw_condition,
         'counter':             c_val,
     }
 
@@ -210,6 +243,7 @@ def load_cards_db(csv_path='cards_rows.csv') -> dict:
                 'cost':    int(row['card_cost']),
                 'power':   int(row['card_power']),
                 'life':    int(row['life']) if row['life'] > 0 else 0,
+                'text':    row['card_text'],
                 **effects,
             }
         print(f'  Banco de cartas: {len(db)} cartas com efeitos reais')
@@ -294,7 +328,12 @@ def build_real_deck(deck_name: str, deck_url: str, df_raw: pd.DataFrame,
             has_rest_effect=data.get('has_rest_effect', False),
             is_searcher=data.get('is_searcher', False),
             has_start_of_game=data.get('has_start_of_game', False),
+            has_power_minus=data.get('has_power_minus', False),
+            trash_opp_char=data.get('trash_opp_char', False),
             draw_power=data.get('draw_power', 0),
+            draw_then_trash=data.get('draw_then_trash', 0),
+            draw_condition=data.get('draw_condition', 'always'),
+            card_text=data.get('text', ''),
         )
 
         if card.card_type == 'LEADER':
@@ -391,13 +430,155 @@ class DecisionEngine:
 
         return s
 
+    def don_futuro(self, turnos: int = 2) -> int:
+        """Estima DON disponível nos próximos N turnos"""
+        return min(10, self.me.don_available + turnos * 2)
+
+    def avaliar_carta_situacional(self, card: Card) -> float:
+        """
+        Valor situacional de uma carta considerando:
+        - Estado atual da partida (vida, board, DON)
+        - Planejamento 2-3 turnos à frente
+        - Postura atual
+        Usado em: search (maior valor), trash (menor valor), play (maior valor)
+        """
+        s = 0.0
+        posture    = self.posture()
+        my_life    = self.me.life_count()
+        opp_life   = self.opp.life_count()
+        my_board   = self.me.board_score()
+        opp_board  = self.opp.board_score()
+        don_now    = self.me.don_available
+        don_t2     = self.don_futuro(2)
+        don_t3     = self.don_futuro(3)
+
+        # ── Jogabilidade futura ────────────────────────────────────────────
+        # Carta jogável agora vale mais
+        if card.cost <= don_now:    s += 40
+        elif card.cost <= don_t2:   s += 20
+        elif card.cost <= don_t3:   s += 10
+        else:                       s -= 10  # não consegue jogar em breve
+
+        # ── Valor base por poder ───────────────────────────────────────────
+        s += card.power / 1000 * 5
+
+        # ── Keywords ofensivas ─────────────────────────────────────────────
+        if card.has_rush:
+            rush_val = 30
+            if opp_life <= 2: rush_val += 40  # mais valioso para fechar
+            if opp_life == 0: rush_val += 100 # letal
+            s += rush_val
+
+        if card.has_double_attack:
+            s += 25
+            if opp_life <= 2: s += 30
+
+        if card.has_unblockable:
+            s += 20
+            if opp_life <= 2: s += 25
+
+        if card.has_banish:
+            s += 15
+
+        # ── Keywords defensivas ────────────────────────────────────────────
+        if card.has_blocker:
+            block_val = 20
+            if my_life <= 2: block_val += 60   # urgente quando vida baixa
+            if my_life == 1: block_val += 80
+            if opp_board > my_board: block_val += 30  # adversário com board forte
+            s += block_val
+
+        if card.counter > 0:
+            counter_val = card.counter / 1000 * 15
+            if my_life <= 2: counter_val *= 2.0  # counters valem mais com vida baixa
+            if my_life <= 1: counter_val *= 3.0
+            # Penaliza se já tem muitos counters na mão
+            counters_em_mao = sum(1 for c in self.me.hand if c.counter > 0 and c is not card)
+            if counters_em_mao >= 3: counter_val *= 0.5
+            s += counter_val
+
+        if card.has_trigger:
+            s += 10
+
+        # ── Vantagem de cartas ─────────────────────────────────────────────
+        if card.draw_power > 0:
+            draw_val = card.draw_power * 20
+            # Draw vale mais quando mão está pequena
+            if len(self.me.hand) <= 3: draw_val += 20
+            s += draw_val
+
+        if card.draw_then_trash > 0:
+            # draw_then_trash: compra X, descarta Y — valor líquido
+            cond = card.draw_condition
+            cond_ok = True
+            if 'life<=' in cond:
+                limit = int(cond.split('<=')[1])
+                cond_ok = my_life <= limit
+            if cond_ok:
+                s += card.draw_power * 15 - card.draw_then_trash * 5
+            else:
+                s -= 20  # condição não satisfeita, carta inútil agora
+
+        if card.is_searcher:
+            search_val = 25
+            # Searcher vale mais cedo (mais turnos para usar o que buscar)
+            if self.me.turn <= 3: search_val += 15
+            s += search_val
+
+        # ── Remoção ────────────────────────────────────────────────────────
+        if card.has_on_play_ko or card.trash_opp_char:
+            remove_val = 30
+            if opp_board > my_board: remove_val += 20
+            s += remove_val
+
+        if card.has_bounce:
+            s += 20
+            if opp_board > my_board: s += 15
+
+        if card.has_rest_effect:
+            s += 15
+
+        if card.has_power_minus:
+            s += 15
+            if opp_board > my_board: s += 10
+
+        # ── Ajuste por postura ─────────────────────────────────────────────
+        if posture == 'AGGRESSIVE':
+            if card.has_rush:          s += 30
+            if card.has_double_attack: s += 20
+            if card.counter > 0:       s -= 10  # menos defensivo em modo agressivo
+        elif posture == 'DEFENSIVE':
+            if card.has_blocker:       s += 40
+            if card.counter > 0:       s += 20
+            if card.has_rush:          s -= 10
+        elif posture == 'CONTROL':
+            if card.has_on_play_ko:    s += 25
+            if card.has_bounce:        s += 15
+        elif posture == 'DEVELOP':
+            if card.is_searcher:       s += 20
+            if card.draw_power > 0:    s += 15
+
+        return s
+
     def choose_card_to_play(self) -> Optional[Card]:
         playable = [c for c in self.me.hand
                     if c.card_type in ('CHARACTER', 'EVENT', 'STAGE')
                     and c.cost <= self.me.don_available]
         if not playable:
             return None
-        return max(playable, key=self.score_card_to_play)
+        return max(playable, key=self.avaliar_carta_situacional)
+
+    def choose_card_to_trash(self, hand: list) -> Optional[Card]:
+        """Escolhe a carta de menor valor situacional para descartar"""
+        if not hand:
+            return None
+        return min(hand, key=self.avaliar_carta_situacional)
+
+    def choose_card_to_search(self, candidates: list) -> Optional[Card]:
+        """Escolhe a carta de maior valor situacional para buscar"""
+        if not candidates:
+            return None
+        return max(candidates, key=self.avaliar_carta_situacional)
 
     def score_attack_target(self, attacker: Card, target_type: str,
                              target: Optional[Card]) -> float:
@@ -636,16 +817,35 @@ class OPTCGMatch:
             card.just_played = not card.has_rush  # Rush pode atacar imediatamente
             p.field_chars.append(card)
 
-            for _ in range(card.draw_power):
-                if p.deck:
-                    p.hand.append(p.deck.pop())
+            # Draw power com condição
+            do_draw = True
+            if card.draw_condition and card.draw_condition != 'always':
+                if 'life<=' in card.draw_condition:
+                    limit = int(card.draw_condition.split('<=')[1])
+                    do_draw = p.life_count() <= limit
+
+            if do_draw:
+                for _ in range(card.draw_power):
+                    if p.deck:
+                        p.hand.append(p.deck.pop())
+
+                # Se tem trash após draw, descarta a carta de menor valor situacional
+                if card.draw_then_trash > 0 and len(p.hand) > 0:
+                    engine_tmp = DecisionEngine(p, GameState(leader=p.leader))
+                    for _ in range(card.draw_then_trash):
+                        if p.hand:
+                            worst = engine_tmp.choose_card_to_trash(p.hand)
+                            if worst:
+                                p.hand.remove(worst)
+                                p.trash.append(worst)
 
             if card.is_searcher and p.deck:
-                # Searcher: olha as 5 primeiras, pega a melhor
+                # Searcher: olha as 5 primeiras, usa avaliar_carta_situacional
+                engine_tmp = DecisionEngine(p, GameState(leader=p.leader))
                 look = min(5, len(p.deck))
                 candidates = p.deck[-look:]
                 if candidates:
-                    best = max(candidates, key=lambda c: c.board_value())
+                    best = engine_tmp.choose_card_to_search(candidates)
                     p.deck.remove(best)
                     p.hand.append(best)
                     p.searchers_used += 1
