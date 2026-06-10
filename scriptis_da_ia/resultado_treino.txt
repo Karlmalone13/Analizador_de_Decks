@@ -1,0 +1,39 @@
+
+OPTCG Model — Relatorio de Treino
+==================================
+Data: 2026-06-09 23:54:51.072233
+Decks usados: 239
+Features: 20
+Target: final_score (50% performance + 30% leader_winrate + 20% sim_winrate)
+
+Resultados:
+  MAE (erro medio): 8.1 pontos
+  R2 (precisao):    0.083 (8.3%)
+  CV R2 medio:      -0.062 +- 0.189
+
+Features mais importantes:
+  sim_winrate          0.430
+  avg_cost             0.118
+  characters           0.063
+  triggers             0.060
+  counter_ratio        0.055
+  low_cost_1           0.040
+  low_cost_2           0.039
+  counters_1k          0.038
+  draw_power           0.036
+  blocker_ratio        0.023
+  searcher_ratio       0.020
+  searchers            0.018
+  blockers             0.016
+  events               0.013
+  event_ratio          0.012
+  counters_2k          0.009
+  rush                 0.005
+  leader_winrate       0.003
+  banish               0.002
+  double_atk           0.001
+
+Thresholds calibrados:
+  Excelente: >= 60.0
+  Bom:       >= 52.5
+  Regular:   >= 44.2
