@@ -1,6 +1,14 @@
 """
-OPTCG Game State Engine v2.0
+OPTCG Game State Engine v2.1
 Simulador de partidas com cartas REAIS para coletar dados e treinar IA
+
+Correções v2.1:
+  - DON acumula corretamente entre turnos
+  - Sem ataques no T1 e T2 (primeiro turno de cada jogador)
+  - Leader ataca corretamente
+  - Validador de decks (50 cartas, max 4 cópias, cores corretas)
+  - Stage inicial detectado por efeito "at the start of the game"
+  - Searcher mostra cartas buscadas
 
 Fontes:
   - decklists_raw.csv  — listas reais de torneio
@@ -47,9 +55,10 @@ class Card:
     # Efeitos
     draw_power: int = 0
     is_searcher: bool = False
-    has_on_play_ko: bool = False    # remove character ao entrar
-    has_bounce: bool = False        # retorna carta à mão
-    has_rest_effect: bool = False   # descansa character inimigo
+    has_on_play_ko: bool = False
+    has_bounce: bool = False
+    has_rest_effect: bool = False
+    has_start_of_game: bool = False  # efeito "At the start of the game"
     # Estado em jogo
     rested: bool = False
     just_played: bool = False
@@ -62,7 +71,6 @@ class Card:
         return base
 
     def board_value(self) -> int:
-        """Valor da carta no board para avaliação"""
         v = self.power // 1000
         if self.has_rush:          v += 4
         if self.has_blocker:       v += 3
@@ -76,7 +84,6 @@ class Card:
         return v
 
     def threat_value(self) -> int:
-        """Ameaça que esta carta representa para o oponente"""
         v = self.board_value()
         if self.has_rush:          v += 2
         if self.has_double_attack: v += 3
@@ -90,11 +97,14 @@ class GameState:
     deck: List[Card] = field(default_factory=list)
     hand: List[Card] = field(default_factory=list)
     field_chars: List[Card] = field(default_factory=list)
+    field_stage: Optional[Card] = None   # Stage em campo (max 1)
     life: List[Card] = field(default_factory=list)
     don_deck: int = 10
-    don_available: int = 0
+    don_available: int = 0   # DON ativos no cost area
+    don_rested: int = 0      # DON descansados (usados para pagar cartas)
     trash: List[Card] = field(default_factory=list)
     turn: int = 0
+    global_turn: int = 0  # turno global da partida (1=primeiro turno de qualquer jogador)
     is_first: bool = True
     # Estatísticas
     dmg_dealt: int = 0
@@ -122,15 +132,24 @@ class GameState:
         return sum(c.board_value() for c in self.field_chars)
 
     def color_counter_bonus(self) -> int:
-        """Ajuste de counter estimado por cor (doc IA)"""
         bonuses = {'Blue': 2000, 'Yellow': 1000, 'Green': 1000,
                    'Black': 1000, 'Purple': 500, 'Red': -1000}
         return bonuses.get(self.leader.color, 0)
 
     def estimated_counter(self) -> int:
-        """Estimativa de counter disponível (doc IA: cartas × 1000 + ajuste cor)"""
         base = len(self.hand) * 1000
         return max(0, base + self.color_counter_bonus())
+
+    def can_attack_this_turn(self) -> bool:
+        """
+        Regra correta: nenhum jogador ataca no seu PRIMEIRO turno.
+        1º jogador: não ataca no turno 1 (global_turn=1)
+        2º jogador: não ataca no turno 2 (global_turn=2)
+        """
+        if self.is_first:
+            return self.turn > 1   # 1º jogador ataca a partir do 2º turno dele
+        else:
+            return self.turn > 1   # 2º jogador ataca a partir do 2º turno dele
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -138,10 +157,6 @@ class GameState:
 # ══════════════════════════════════════════════════════════════════════════════
 
 def parse_card_effects(text: str, counter_amount: str) -> dict:
-    """
-    Lê o texto do efeito real da carta e extrai keywords.
-    Baseado nas regras oficiais v1.11 + Comprehensive Rules v1.2.0
-    """
     t = (text or '').lower()
     c_val = 0
     try:
@@ -152,24 +167,24 @@ def parse_card_effects(text: str, counter_amount: str) -> dict:
         pass
 
     return {
-        'has_rush':          '[rush]' in t,
-        'has_blocker':       '[blocker]' in t,
-        'has_double_attack': '[double attack]' in t,
-        'has_banish':        '[banish]' in t,
-        'has_trigger':       '[trigger]' in t,
-        'has_unblockable':   '[unblockable]' in t,
-        'has_on_play_ko':    ('on play' in t and ('k.o.' in t or 'trash' in t)),
-        'has_bounce':        ('return' in t and 'hand' in t),
-        'has_rest_effect':   ('rest' in t and ('opponent' in t or 'your opponent' in t)),
-        'is_searcher':       ('look at' in t or 'search your deck' in t or 'add up to' in t),
-        'draw_power':        (t.count('draw 1') + t.count('draw 2') * 2 +
-                              t.count('draw 3') * 3 + t.count('draw a card')),
-        'counter':           c_val,
+        'has_rush':            '[rush]' in t,
+        'has_blocker':         '[blocker]' in t,
+        'has_double_attack':   '[double attack]' in t,
+        'has_banish':          '[banish]' in t,
+        'has_trigger':         '[trigger]' in t,
+        'has_unblockable':     '[unblockable]' in t,
+        'has_on_play_ko':      ('on play' in t and ('k.o.' in t or 'trash' in t)),
+        'has_bounce':          ('return' in t and 'hand' in t),
+        'has_rest_effect':     ('rest' in t and ('opponent' in t or 'your opponent' in t)),
+        'is_searcher':         ('look at' in t or 'search your deck' in t or 'add up to' in t),
+        'has_start_of_game':   'at the start of the game' in t,
+        'draw_power':          (t.count('draw 1') + t.count('draw 2') * 2 +
+                                t.count('draw 3') * 3 + t.count('draw a card')),
+        'counter':             c_val,
     }
 
 
 def load_cards_db(csv_path='cards_rows.csv') -> dict:
-    """Carrega banco de cartas com efeitos reais"""
     db = {}
     try:
         df = pd.read_csv(csv_path)
@@ -203,11 +218,48 @@ def load_cards_db(csv_path='cards_rows.csv') -> dict:
     return db
 
 
+# ══════════════════════════════════════════════════════════════════════════════
+# VALIDADOR DE DECKS
+# ══════════════════════════════════════════════════════════════════════════════
+
+def validar_deck(leader: Card, cards: List[Card], cards_db: dict) -> tuple:
+    """
+    Valida o deck conforme as regras oficiais.
+    Retorna (valido: bool, erros: list[str])
+    """
+    erros = []
+
+    # 1. Total de cartas = 50
+    if len(cards) != 50:
+        erros.append(f'Total de cartas: {len(cards)} (deve ser 50)')
+
+    # 2. Máximo 4 cópias por card_code
+    from collections import Counter
+    contagem = Counter(c.code for c in cards)
+    for code, qty in contagem.items():
+        if qty > 4:
+            name = cards_db.get(code, {}).get('name', code)
+            erros.append(f'Mais de 4 cópias: {name} ({code}) — {qty} cópias')
+
+    # 3. Cores corretas conforme leader
+    leader_colors = set(leader.color.replace('/', ' ').split())
+    for c in cards:
+        card_colors = set(c.color.replace('/', ' ').split())
+        if card_colors and not card_colors.intersection(leader_colors):
+            # Ignora cartas sem cor definida
+            if c.color and c.color != 'nan':
+                erros.append(f'Cor incompatível: {c.name} ({c.color}) — leader é {leader.color}')
+                break  # reporta só o primeiro para não poluir
+
+    valido = len(erros) == 0
+    return valido, erros
+
+
 def build_real_deck(deck_name: str, deck_url: str, df_raw: pd.DataFrame,
                     cards_db: dict) -> Optional[tuple]:
     """
-    Constrói um deck real a partir do decklists_raw.csv
-    Retorna (leader_card, list_of_cards) ou None se falhar
+    Constrói um deck real a partir do decklists_raw.csv.
+    Retorna (leader_card, list_of_cards, start_of_game_stage) ou None
     """
     rows = df_raw[df_raw['deck_url'] == deck_url]
     if rows.empty:
@@ -215,6 +267,7 @@ def build_real_deck(deck_name: str, deck_url: str, df_raw: pd.DataFrame,
 
     leader = None
     cards = []
+    start_stage = None  # Stage que vai a campo no início do jogo
 
     for _, row in rows.iterrows():
         code = str(row['card_code'])
@@ -240,35 +293,36 @@ def build_real_deck(deck_name: str, deck_url: str, df_raw: pd.DataFrame,
             has_bounce=data.get('has_bounce', False),
             has_rest_effect=data.get('has_rest_effect', False),
             is_searcher=data.get('is_searcher', False),
+            has_start_of_game=data.get('has_start_of_game', False),
             draw_power=data.get('draw_power', 0),
         )
 
         if card.card_type == 'LEADER':
             leader = card
+            # Leader com "at the start of the game" coloca stage
+            if card.has_start_of_game:
+                # Busca stage no deck para colocar em campo
+                pass
         else:
             for _ in range(qty):
-                cards.append(deepcopy(card))
+                c = deepcopy(card)
+                cards.append(c)
+                # Stage com "at the start of the game" — vai a campo automaticamente
+                if c.card_type == 'STAGE' and c.has_start_of_game and start_stage is None:
+                    start_stage = deepcopy(card)
 
     if leader is None:
-        # Tenta inferir leader pelo nome do deck
         leader = Card(code='UNK', name=deck_name, card_type='LEADER',
                       color='', power=5000, life=5)
 
-    return leader, cards
+    return leader, cards, start_stage
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# MOTOR DE DECISÃO (baseado no documento de IA)
+# MOTOR DE DECISÃO
 # ══════════════════════════════════════════════════════════════════════════════
 
 class DecisionEngine:
-    """
-    Sistema de decisão baseado no documento ONE PIECE TCG AI Player Documentation.
-    Implementa: prioridade de análise, sistema de pontuação, perfis de cor,
-    estimativa de counter adversário, planejamento de turnos.
-    """
-
-    # Perfis de cor (doc IA)
     COLOR_PROFILES = {
         'Red':    {'aggro': 3, 'control': 0, 'tempo': 1},
         'Blue':   {'aggro': 1, 'control': 2, 'tempo': 3},
@@ -283,47 +337,29 @@ class DecisionEngine:
         self.opp = opp
 
     def posture(self) -> str:
-        """
-        Define postura atual (doc IA: agressiva/defensiva/controle/desenvolvimento)
-        """
         my_life = self.me.life_count()
         opp_life = self.opp.life_count()
         my_board = self.me.board_score()
         opp_board = self.opp.board_score()
-
-        if opp_life <= 1:
-            return 'AGGRESSIVE'
-        if my_life <= 1:
-            return 'DEFENSIVE'
-        if opp_board > my_board * 1.5:
-            return 'CONTROL'
-        if self.me.turn <= 3:
-            return 'DEVELOP'
+        if opp_life <= 1:   return 'AGGRESSIVE'
+        if my_life <= 1:    return 'DEFENSIVE'
+        if opp_board > my_board * 1.5: return 'CONTROL'
+        if self.me.turn <= 3:          return 'DEVELOP'
         return 'MIDRANGE'
 
     def can_lethal(self) -> bool:
-        """Verifica se existe sequência letal disponível"""
         if self.opp.life_count() > 0:
             return False
         active = self.me.active_chars()
-        return len(active) > 0
-
-    def probable_lethal_next_turn(self) -> bool:
-        """Estima se oponente pode ganhar no próximo turno (doc IA)"""
-        opp_attackers = len(self.opp.active_chars()) + 1  # +1 pelo leader
-        return self.opp.life_count() == 0 and opp_attackers > 0
+        leader_active = not getattr(self.me.leader, 'rested', False)
+        return len(active) > 0 or leader_active
 
     def score_card_to_play(self, card: Card) -> float:
-        """
-        Sistema de pontuação de jogadas (doc IA)
-        Baixar Character base: +100
-        """
         s = 100.0
         posture = self.posture()
         opp_life = self.opp.life_count()
         my_life = self.me.life_count()
 
-        # Pontuação por keywords
         if card.has_blocker:       s += 50
         if card.has_rush:          s += 100
         if card.draw_power > 0:    s += 80
@@ -333,7 +369,6 @@ class DecisionEngine:
         if card.has_rest_effect:   s += 60
         if card.has_double_attack: s += 60
 
-        # Ajuste por postura
         if posture == 'AGGRESSIVE':
             if card.has_rush:          s += 200
             if card.has_double_attack: s += 150
@@ -348,19 +383,15 @@ class DecisionEngine:
             if card.is_searcher:       s += 100
             if card.draw_power > 0:    s += 80
 
-        # Ajuste por situação
         if my_life <= 2 and card.has_blocker:   s += 200
         if opp_life <= 2 and card.has_rush:     s += 300
         if opp_life <= 1 and card.has_rush:     s += 500
-
-        # Custo-benefício
         if card.cost == 0:  s += 30
         if card.cost <= 2:  s += 20
 
         return s
 
     def choose_card_to_play(self) -> Optional[Card]:
-        """Escolhe melhor carta para jogar"""
         playable = [c for c in self.me.hand
                     if c.card_type in ('CHARACTER', 'EVENT', 'STAGE')
                     and c.cost <= self.me.don_available]
@@ -370,95 +401,46 @@ class DecisionEngine:
 
     def score_attack_target(self, attacker: Card, target_type: str,
                              target: Optional[Card]) -> float:
-        """
-        Sistema de pontuação de ataques (doc IA)
-        """
         s = 0.0
         opp_life = self.opp.life_count()
         atk_power = attacker.effective_power(True)
 
         if target_type == 'leader':
-            # Ataque ao leader
             s = 100
             if opp_life == 1: s = 500
-            if opp_life == 0: s = 10000  # LETAL
+            if opp_life == 0: s = 10000
             defend = self.opp.leader.power
             est_counter = self.opp.estimated_counter()
             if atk_power < defend + est_counter:
-                s -= 50  # ataque provável de não passar
-
+                s -= 50
         elif target_type == 'character' and target:
-            # Ataque a character (doc IA: prioridade por tipo)
             if target.cost <= 3:   s = 50
             elif target.cost <= 6: s = 120
             else:                  s = 200
-
-            if target.has_blocker:          s += 250
-            if target.has_rush:             s += 300
-            if target.draw_power > 0:       s += 400
-            if target.has_on_play_ko:       s += 350
-            if target.has_double_attack:    s += 200
-            if target.has_rest_effect:      s += 150
-
-            # Verifica se o ataque passa
+            if target.has_blocker:       s += 250
+            if target.has_rush:          s += 300
+            if target.draw_power > 0:    s += 400
+            if target.has_on_play_ko:    s += 350
+            if target.has_double_attack: s += 200
+            if target.has_rest_effect:   s += 150
             if atk_power < target.power:
-                s = -100  # não vai passar
+                s = -100
 
         return s
 
-    def choose_attack(self) -> Optional[tuple]:
-        """
-        Escolhe melhor atacante e alvo.
-        Retorna (attacker, target_type, target) ou None
-        """
-        available = self.me.active_chars()
-        if not available:
-            return None
-
-        best_score = -999
-        best_action = None
-
-        for attacker in available:
-            # Opção 1: atacar leader
-            s = self.score_attack_target(attacker, 'leader', None)
-            if s > best_score:
-                best_score = s
-                best_action = (attacker, 'leader', None)
-
-            # Opção 2: atacar characters descansados
-            for target in self.opp.rested_chars():
-                s = self.score_attack_target(attacker, 'character', target)
-                if s > best_score:
-                    best_score = s
-                    best_action = (attacker, 'character', target)
-
-        return best_action if best_score > -50 else None
-
     def should_use_counter(self, atk_power: int, def_power: int) -> bool:
-        """
-        Decide se usa counter (doc IA: usa quando vida <= 2 ou ataque grande)
-        """
         my_life = self.me.life_count()
         counter_avail = self.me.counter_in_hand()
-        if counter_avail == 0:
+        if counter_avail == 0 or atk_power < def_power:
             return False
-        if atk_power < def_power:
-            return False
-        # Doc IA: preservar counter é valioso (-150 se ficar sem counter)
-        if my_life <= 1:
-            return True
-        if my_life <= 2:
-            return atk_power - def_power >= 0
-        if my_life <= 4:
-            return atk_power - def_power >= 2000
+        if my_life <= 1: return True
+        if my_life <= 2: return atk_power - def_power >= 0
+        if my_life <= 4: return atk_power - def_power >= 2000
         return False
 
     def use_counter(self, needed: int) -> int:
-        """Usa counter da mão para defender"""
-        counters = sorted(
-            [c for c in self.me.hand if c.counter > 0],
-            key=lambda c: c.counter
-        )
+        counters = sorted([c for c in self.me.hand if c.counter > 0],
+                          key=lambda c: c.counter)
         total = 0
         for c in counters:
             if total >= needed:
@@ -470,16 +452,12 @@ class DecisionEngine:
         return total
 
     def should_use_blocker(self, attacker_power: int) -> Optional[Card]:
-        """
-        Decide se usa blocker (doc IA: usa para proteger quando vida baixa)
-        """
         my_life = self.me.life_count()
         if my_life > 3:
-            return None  # vida alta, não precisa
+            return None
         blockers = self.me.blockers_active()
         if not blockers:
             return None
-        # Usa o blocker de menor valor (preserva os melhores)
         return min(blockers, key=lambda c: c.board_value())
 
 
@@ -488,16 +466,12 @@ class DecisionEngine:
 # ══════════════════════════════════════════════════════════════════════════════
 
 class OPTCGMatch:
-    """
-    Simula uma partida completa de OPTCG com cartas reais.
-    Implementa todas as fases e mecânicas das regras oficiais.
-    """
-
-    MAX_TURNS = 25
+    MAX_TURNS = 15  # Limite realista — partidas terminam em 8-15 turnos
 
     def __init__(self, deck_a: tuple, deck_b: tuple):
-        leader_a, cards_a = deck_a
-        leader_b, cards_b = deck_b
+        # deck_a e deck_b = (leader, cards, start_stage)
+        leader_a, cards_a, stage_a = deck_a if len(deck_a) == 3 else (*deck_a, None)
+        leader_b, cards_b, stage_b = deck_b if len(deck_b) == 3 else (*deck_b, None)
 
         self.state_a = GameState(
             leader=deepcopy(leader_a),
@@ -507,8 +481,9 @@ class OPTCGMatch:
             leader=deepcopy(leader_b),
             deck=[deepcopy(c) for c in cards_b]
         )
+        self.start_stage_a = deepcopy(stage_a) if stage_a else None
+        self.start_stage_b = deepcopy(stage_b) if stage_b else None
 
-        # Decide quem vai primeiro
         if random.random() < 0.5:
             self.state_a.is_first = True
             self.state_b.is_first = False
@@ -516,100 +491,130 @@ class OPTCGMatch:
             self.state_a.is_first = False
             self.state_b.is_first = True
 
+        self.global_turn = 0  # conta turnos totais da partida
+
     def setup(self):
         """Setup inicial — regras 5-2"""
-        for p in [self.state_a, self.state_b]:
+        for p, stage in [(self.state_a, self.start_stage_a),
+                          (self.state_b, self.start_stage_b)]:
             random.shuffle(p.deck)
-            # Compra 5 cartas
             p.hand = [p.deck.pop() for _ in range(min(5, len(p.deck)))]
-            # Mulligan simples: refaz se não tiver jogada no T1
             if self._should_mulligan(p):
                 p.deck.extend(p.hand)
                 random.shuffle(p.deck)
                 p.hand = [p.deck.pop() for _ in range(min(5, len(p.deck)))]
-            # Coloca life cards
             life_count = p.leader.life if p.leader.life > 0 else 5
             p.life = [p.deck.pop() for _ in range(min(life_count, len(p.deck)))]
+            # Coloca stage inicial em campo (ex: Imu)
+            if stage:
+                p.field_stage = stage
 
     def _should_mulligan(self, p: GameState) -> bool:
-        """Mulligan: refaz se não tiver nenhuma carta de custo <= 2 (doc IA)"""
-        playable_t1 = [c for c in p.hand if c.cost <= 2 and c.card_type != 'LEADER']
-        return len(playable_t1) == 0
+        return len([c for c in p.hand
+                    if c.cost <= 2 and c.card_type != 'LEADER']) == 0
 
     # ── Fases ──────────────────────────────────────────────────────────────
 
     def refresh_phase(self, p: GameState):
-        """Refresh Phase — regra 6-2"""
-        p.don_available += sum(c.don_attached for c in p.field_chars)
-        p.don_available += p.leader.don_attached
+        """Refresh Phase — regra 6-2
+        Todos os DON no cost area viram ativos.
+        DON dado a cartas volta ao cost area.
+        """
+        # Retorna DON dado a cartas ao cost area
+        don_from_cards = sum(c.don_attached for c in p.field_chars) + p.leader.don_attached
         for c in p.field_chars:
             c.don_attached = 0
             c.rested = False
             c.just_played = False
         p.leader.don_attached = 0
+        p.leader.rested = False
+        # Todos os DON descansados viram ativos (refresh)
+        p.don_available += p.don_rested + don_from_cards
+        p.don_rested = 0
 
     def draw_phase(self, p: GameState):
-        """Draw Phase — regra 6-3 (1º jogador não compra no T1)"""
+        """Draw Phase — regra 6-3
+        1º jogador NÃO compra no primeiro turno.
+        """
         if p.turn == 1 and p.is_first:
             return
         if p.deck:
             p.hand.append(p.deck.pop())
 
     def don_phase(self, p: GameState):
-        """DON!! Phase — regra 6-4"""
+        """DON!! Phase — regra 6-4
+        Regra correta de DON:
+        - T1 do 1º jogador: +1 DON
+        - Todos os outros turnos: +2 DON (até esgotar o DON!! deck de 10)
+        DON acumula no cost area entre turnos!
+        """
         if p.turn == 1 and p.is_first:
-            gain = 1
+            gain = min(1, p.don_deck)
         else:
             gain = min(2, p.don_deck)
         p.don_deck -= gain
         p.don_available += gain
 
     def main_phase(self, p: GameState, opp: GameState) -> bool:
-        """
-        Main Phase — regra 6-5
-        Retorna True se o jogo acabou.
+        """Main Phase — regra 6-5
+        Ordem: jogar cartas → atacar com TODOS os atacantes
         """
         engine = DecisionEngine(p, opp)
-        actions_taken = 0
-        max_actions = 15
 
-        while actions_taken < max_actions:
-            # Prioridade 1: LETAL (doc IA: +10000)
-            if engine.can_lethal():
-                action = engine.choose_attack()
-                if action:
-                    attacker, ttype, target = action
-                    if self._execute_attack(attacker, ttype, target, p, opp, engine):
-                        return True
-
-            # Prioridade 2: Evitar derrota (doc IA: +9000)
-            if engine.probable_lethal_next_turn():
-                # Joga blocker ou defensor
-                best = engine.choose_card_to_play()
-                if best and best.has_blocker:
-                    self._play_card(best, p)
-                    actions_taken += 1
-                    continue
-
-            # Prioridade 3: Jogar cartas
+        # ── Jogar cartas ──────────────────────────────────────────────────
+        plays = 0
+        while plays < 8:
             card = engine.choose_card_to_play()
             if card:
                 self._play_card(card, p)
-                actions_taken += 1
-                continue
+                plays += 1
+            else:
+                break
 
-            # Prioridade 4: Atacar
-            action = engine.choose_attack()
-            if action and p.turn > 1:
-                attacker, ttype, target = action
-                if self._execute_attack(attacker, ttype, target, p, opp, engine):
-                    return True
-                actions_taken += 1
-                continue
+        # ── Atacar ────────────────────────────────────────────────────────
+        if p.can_attack_this_turn():
+            # Coleta todos os atacantes
+            attackers = [c for c in p.field_chars
+                         if not c.rested and not c.just_played]
+            if not p.leader.rested:
+                attackers.append(p.leader)
 
-            break  # Sem mais ações úteis
+            for attacker in list(attackers):
+                if attacker.rested:
+                    continue  # pode ter descansado em blocker
+                engine2 = DecisionEngine(p, opp)
 
-        # Remove flag just_played
+                best_score = -999
+                best_action = None
+
+                s = engine2.score_attack_target(attacker, 'leader', None)
+                if s > best_score:
+                    best_score = s
+                    best_action = (attacker, 'leader', None)
+
+                for target in opp.rested_chars():
+                    s = engine2.score_attack_target(attacker, 'character', target)
+                    if s > best_score:
+                        best_score = s
+                        best_action = (attacker, 'character', target)
+
+                if best_action and best_score > -50:
+                    a, ttype, tgt = best_action
+                    if self._execute_attack(a, ttype, tgt, p, opp, engine2):
+                        return True
+
+                    # Tenta letal imediato se vida chegou a 0
+                    if not opp.life:
+                        remaining = [c for c in p.field_chars
+                                     if not c.rested and not c.just_played
+                                     and c is not a]
+                        if not p.leader.rested and p.leader is not a:
+                            remaining.append(p.leader)
+                        for finisher in remaining:
+                            if self._execute_attack(finisher, 'leader', None,
+                                                     p, opp, engine2):
+                                return True
+
         for c in p.field_chars:
             c.just_played = False
 
@@ -618,46 +623,53 @@ class OPTCGMatch:
     def _play_card(self, card: Card, p: GameState):
         """Joga uma carta — regra 6-5-3"""
         p.hand.remove(card)
+        p.don_rested += card.cost   # DON gastos ficam descansados
         p.don_available -= card.cost
         p.chars_played += 1
 
         if card.card_type == 'CHARACTER':
-            # Campo cheio: remove o de menor valor
             if len(p.field_chars) >= 5:
                 worst = min(p.field_chars, key=lambda c: c.board_value())
                 p.field_chars.remove(worst)
                 p.trash.append(worst)
-
             card.rested = False
-            card.just_played = True
+            card.just_played = not card.has_rush  # Rush pode atacar imediatamente
             p.field_chars.append(card)
 
-            # On Play: draw
             for _ in range(card.draw_power):
                 if p.deck:
                     p.hand.append(p.deck.pop())
 
-            # On Play: searcher (simplificado: compra 1)
             if card.is_searcher and p.deck:
-                p.hand.append(p.deck.pop())
-                p.searchers_used += 1
+                # Searcher: olha as 5 primeiras, pega a melhor
+                look = min(5, len(p.deck))
+                candidates = p.deck[-look:]
+                if candidates:
+                    best = max(candidates, key=lambda c: c.board_value())
+                    p.deck.remove(best)
+                    p.hand.append(best)
+                    p.searchers_used += 1
+
+        elif card.card_type == 'STAGE':
+            # Substitui stage existente
+            if p.field_stage:
+                p.trash.append(p.field_stage)
+            p.field_stage = card
 
     def _execute_attack(self, attacker: Card, target_type: str,
                          target: Optional[Card], p: GameState,
                          opp: GameState, engine: DecisionEngine) -> bool:
-        """
-        Executa um ataque completo.
-        Retorna True se o jogo acabou.
-        Implementa: Attack → Block → Counter → Damage (regras 7-1)
-        """
-        # Attack Step — descansa o atacante
-        attacker.rested = True
-        atk_power = attacker.effective_power(True)
+        """Executa ataque completo: Attack → Block → Counter → Damage"""
+        # Descansa atacante
+        if attacker is p.leader:
+            p.leader.rested = True
+        else:
+            attacker.rested = True
 
-        # Efeitos When Attacking (simplificado: Double Attack)
+        atk_power = attacker.effective_power(True)
         damage = 2 if attacker.has_double_attack else 1
 
-        # Block Step — oponente pode usar blocker
+        # Block Step
         opp_engine = DecisionEngine(opp, p)
         blocker = opp_engine.should_use_blocker(atk_power)
         if blocker and not attacker.has_unblockable:
@@ -665,7 +677,7 @@ class OPTCGMatch:
             target = blocker
             blocker.rested = True
 
-        # Counter Step — oponente pode usar counter
+        # Define poder de defesa
         if target_type == 'leader':
             defend_power = opp.leader.power
         elif target and target in opp.field_chars:
@@ -673,48 +685,42 @@ class OPTCGMatch:
         else:
             return False
 
+        # Counter Step
         if opp_engine.should_use_counter(atk_power, defend_power):
             needed = atk_power - defend_power + 1
             added = opp_engine.use_counter(needed)
             defend_power += added
 
-        # Damage Step — regra 7-1-4
+        # Damage Step
         if atk_power >= defend_power:
             if target_type == 'leader':
-                # Dano ao leader
                 for _ in range(damage):
                     if not opp.life:
-                        # Oponente tem 0 vidas → próximo dano = vitória
                         p.dmg_dealt += 1
                         return True
                     life_card = opp.life.pop()
                     p.dmg_dealt += 1
-                    # Verifica trigger
                     if life_card.has_trigger:
-                        # Oponente escolhe ativar (simplificado: sempre ativa)
                         opp.hand.append(life_card)
                         opp.triggers_activated += 1
                     else:
                         opp.hand.append(life_card)
+                if not opp.life:
+                    return False  # vida chegou a 0, mas precisa de mais 1 ataque
             elif target_type == 'character' and target and target in opp.field_chars:
-                # K.O. do character
                 opp.field_chars.remove(target)
                 opp.trash.append(target)
 
         return False
 
     def end_phase(self, p: GameState):
-        """End Phase — regra 6-6"""
-        pass  # Efeitos End of Turn seriam processados aqui
-
-    # ── Partida completa ────────────────────────────────────────────────────
+        pass
 
     def play_turn(self, p: GameState, opp: GameState) -> Optional[str]:
-        """
-        Executa um turno completo.
-        Retorna 'A', 'B' ou None.
-        """
+        self.global_turn += 1
         p.turn += 1
+        p.global_turn = self.global_turn
+
         self.refresh_phase(p)
         self.draw_phase(p)
         self.don_phase(p)
@@ -722,7 +728,6 @@ class OPTCGMatch:
         if self.main_phase(p, opp):
             return 'A' if p is self.state_a else 'B'
 
-        # Verifica derrota por deck vazio
         if not p.deck:
             return 'B' if p is self.state_a else 'A'
         if not opp.deck:
@@ -732,16 +737,11 @@ class OPTCGMatch:
         return None
 
     def simulate(self) -> dict:
-        """
-        Simula a partida completa.
-        Retorna dict com resultado e estatísticas.
-        """
         self.setup()
         winner = None
         total_turns = 0
 
         for turn_num in range(self.MAX_TURNS * 2):
-            # Alterna turno
             if turn_num % 2 == 0:
                 p   = self.state_a if self.state_a.is_first else self.state_b
                 opp = self.state_b if self.state_a.is_first else self.state_a
@@ -760,18 +760,18 @@ class OPTCGMatch:
             winner = 'DRAW'
 
         return {
-            'winner':     winner,
-            'turns':      total_turns,
-            'dmg_a':      self.state_a.dmg_dealt,
-            'dmg_b':      self.state_b.dmg_dealt,
-            'life_a':     self.state_a.life_count(),
-            'life_b':     self.state_b.life_count(),
-            'counters_a': self.state_a.counters_used,
-            'counters_b': self.state_b.counters_used,
-            'searchers_a':self.state_a.searchers_used,
-            'searchers_b':self.state_b.searchers_used,
-            'triggers_a': self.state_a.triggers_activated,
-            'triggers_b': self.state_b.triggers_activated,
+            'winner':      winner,
+            'turns':       total_turns,
+            'dmg_a':       self.state_a.dmg_dealt,
+            'dmg_b':       self.state_b.dmg_dealt,
+            'life_a':      self.state_a.life_count(),
+            'life_b':      self.state_b.life_count(),
+            'counters_a':  self.state_a.counters_used,
+            'counters_b':  self.state_b.counters_used,
+            'searchers_a': self.state_a.searchers_used,
+            'searchers_b': self.state_b.searchers_used,
+            'triggers_a':  self.state_a.triggers_activated,
+            'triggers_b':  self.state_b.triggers_activated,
         }
 
 
@@ -780,7 +780,6 @@ class OPTCGMatch:
 # ══════════════════════════════════════════════════════════════════════════════
 
 def simular_matchup(deck_a: tuple, deck_b: tuple, n: int = 100) -> dict:
-    """Simula N partidas entre dois decks e retorna estatísticas"""
     wins_a = wins_b = draws = 0
     total_turns = []
     counters_a = counters_b = 0
@@ -805,12 +804,12 @@ def simular_matchup(deck_a: tuple, deck_b: tuple, n: int = 100) -> dict:
     avg_turns = sum(total_turns) / len(total_turns) if total_turns else 0
 
     return {
-        'wins_a':      wins_a,
-        'wins_b':      wins_b,
-        'draws':       draws,
-        'winrate_a':   round(wins_a / total * 100, 1) if total > 0 else 50.0,
-        'winrate_b':   round(wins_b / total * 100, 1) if total > 0 else 50.0,
-        'avg_turns':   round(avg_turns, 1),
+        'wins_a':         wins_a,
+        'wins_b':         wins_b,
+        'draws':          draws,
+        'winrate_a':      round(wins_a / total * 100, 1) if total > 0 else 50.0,
+        'winrate_b':      round(wins_b / total * 100, 1) if total > 0 else 50.0,
+        'avg_turns':      round(avg_turns, 1),
         'counters_pg_a':  round(counters_a  / total, 1) if total > 0 else 0,
         'counters_pg_b':  round(counters_b  / total, 1) if total > 0 else 0,
         'searchers_pg_a': round(searchers_a / total, 1) if total > 0 else 0,
@@ -822,11 +821,10 @@ def simular_matchup(deck_a: tuple, deck_b: tuple, n: int = 100) -> dict:
 
 def main():
     print('=' * 60)
-    print('OPTCG Game State Engine v2.0')
+    print('OPTCG Game State Engine v2.1')
     print('Simulador com cartas REAIS')
     print('=' * 60)
 
-    # ── Carrega dados ─────────────────────────────────────────────────────
     cards_db = load_cards_db('cards_rows.csv')
 
     if not os.path.exists('decklists_raw.csv'):
@@ -842,27 +840,36 @@ def main():
     print(f'  Decklists: {len(df_raw)} linhas')
     print(f'  Decks com features: {len(df_feat)}')
 
-    # ── Constrói decks reais ──────────────────────────────────────────────
-    print('\n[1/3] Construindo decks reais...')
+    # ── Constrói e valida decks ───────────────────────────────────────────
+    print('\n[1/3] Construindo e validando decks reais...')
     decks = {}
+    invalidos = 0
     urls_by_name = df_raw.groupby('deck_url')['deck_name'].first().to_dict()
 
     for url, name in urls_by_name.items():
         result = build_real_deck(name, url, df_raw, cards_db)
-        if result:
-            leader, cards = result
-            if len(cards) >= 40:  # só decks com pelo menos 40 cartas
-                decks[url] = {
-                    'name':   name,
-                    'url':    url,
-                    'leader': leader,
-                    'cards':  cards,
-                    'deck':   result,
-                }
+        if not result:
+            continue
+        leader, cards, start_stage = result
 
-    print(f'  Decks construídos: {len(decks)}')
+        # Valida deck
+        valido, erros = validar_deck(leader, cards, cards_db)
+        if not valido:
+            invalidos += 1
+            continue  # pula deck inválido
 
-    # Ordena por placing para pegar os top 5
+        if len(cards) >= 40:
+            decks[url] = {
+                'name':   name,
+                'url':    url,
+                'leader': leader,
+                'cards':  cards,
+                'deck':   result,
+            }
+
+    print(f'  Decks válidos: {len(decks)} | Inválidos/ignorados: {invalidos}')
+
+    # Top 5 por placing
     df_feat_sorted = df_feat.sort_values('placing')
     top5_urls = []
     for _, row in df_feat_sorted.iterrows():
@@ -871,18 +878,15 @@ def main():
             top5_urls.append(url)
         if len(top5_urls) >= 5:
             break
-
     if len(top5_urls) < 5:
         top5_urls = list(decks.keys())[:5]
 
-    print(f'  Top 5 para matchups: {[decks[u]["name"][:30] for u in top5_urls]}')
+    print(f'  Top 5: {[decks[u]["name"][:25] for u in top5_urls]}')
 
     # ── Simula matchups ───────────────────────────────────────────────────
     print('\n[2/3] Simulando partidas (cada deck vs top 5)...')
     resultados = []
-
     deck_urls = list(decks.keys())
-    total = len(deck_urls)
 
     for i, url_a in enumerate(deck_urls):
         deck_a_info = decks[url_a]
@@ -908,16 +912,14 @@ def main():
         if not winrates:
             continue
 
-        sim_wr = round(sum(winrates) / len(winrates), 1)
+        sim_wr    = round(sum(winrates) / len(winrates), 1)
         avg_turns = round(sum(avg_turns_list) / len(avg_turns_list), 1)
 
-        # Busca features do deck
-        feat_row = df_feat[df_feat['url'] == url_a]
-        placing = int(feat_row['placing'].values[0]) if len(feat_row) > 0 else 99
+        feat_row   = df_feat[df_feat['url'] == url_a]
+        placing    = int(feat_row['placing'].values[0])    if len(feat_row) > 0 else 99
         perf_score = float(feat_row['performance_score'].values[0]) if len(feat_row) > 0 else 50.0
-        leader_wr = float(feat_row['leader_winrate'].values[0]) if len(feat_row) > 0 else 0.0
+        leader_wr  = float(feat_row['leader_winrate'].values[0])    if len(feat_row) > 0 else 0.0
 
-        # Score final: 40% colocação + 30% winrate leader + 30% simulação
         final_score = round(
             perf_score * 0.40 +
             leader_wr  * 0.30 +
@@ -925,29 +927,28 @@ def main():
         )
 
         resultados.append({
-            'deck_name':      deck_a_info['name'],
-            'deck_url':       url_a,
-            'leader':         deck_a_info['leader'].code,
-            'placing':        placing,
+            'deck_name':         deck_a_info['name'],
+            'deck_url':          url_a,
+            'leader':            deck_a_info['leader'].code,
+            'placing':           placing,
             'performance_score': perf_score,
-            'leader_winrate': leader_wr,
-            'sim_winrate':    sim_wr,
-            'avg_turns':      avg_turns,
-            'counters_pg':    round(sum(counters_list)  / len(counters_list),  1),
-            'searchers_pg':   round(sum(searchers_list) / len(searchers_list), 1),
-            'triggers_pg':    round(sum(triggers_list)  / len(triggers_list),  1),
-            'final_score':    final_score,
+            'leader_winrate':    leader_wr,
+            'sim_winrate':       sim_wr,
+            'avg_turns':         avg_turns,
+            'counters_pg':       round(sum(counters_list)  / len(counters_list),  1),
+            'searchers_pg':      round(sum(searchers_list) / len(searchers_list), 1),
+            'triggers_pg':       round(sum(triggers_list)  / len(triggers_list),  1),
+            'final_score':       final_score,
         })
 
-        print(f'  [{i+1}/{total}] {deck_a_info["name"][:40]:<40} wr={sim_wr}% turns={avg_turns}')
+        print(f'  [{i+1}/{len(deck_urls)}] {deck_a_info["name"][:40]:<40} wr={sim_wr}% turns={avg_turns}')
 
-    # ── Salva resultados ──────────────────────────────────────────────────
+    # ── Salva ─────────────────────────────────────────────────────────────
     print('\n[3/3] Salvando resultados...')
     df_res = pd.DataFrame(resultados)
     df_res.to_csv('resultados_simulacao.csv', index=False, encoding='utf-8')
     print(f'✅ resultados_simulacao.csv — {len(resultados)} decks')
 
-    # Atualiza modelo
     if os.path.exists('modelo_optcg.json'):
         with open('modelo_optcg.json', 'r', encoding='utf-8') as f:
             modelo = json.load(f)
@@ -967,9 +968,8 @@ def main():
     ].to_string())
 
     print('\n✅ Simulação concluída!')
-    print('Próximos passos:')
     print('1. python treinar_modelo.py')
-    print('2. move modelo_optcg.json ..\\public\\modelo_optcg.json')
+    print('2. copy modelo_optcg.json ..\\public\\modelo_optcg.json')
 
 
 if __name__ == '__main__':
