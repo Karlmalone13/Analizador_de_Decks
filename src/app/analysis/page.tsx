@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
 import Navbar from '@/components/Navbar'
@@ -34,6 +34,30 @@ interface Deck {
     cards: DeckCard[]
 }
 
+interface ModeloIA {
+    feature_cols: string[]
+    thresholds: { excelente: number, bom: number, regular: number }
+    stats: Record<string, { mean: number, std: number, min: number, max: number }>
+    lookup: Array<{
+        leader: string
+        leader_winrate: number
+        avg_cost: number
+        searchers: number
+        counters_2k: number
+        counters_1k: number
+        blockers: number
+        combined_score: number
+    }>
+    meta_reference: Array<{
+        deck_name: string
+        leader: string
+        avg_cost: number
+        searchers: number
+        counters_2k: number
+        combined_score: number
+    }>
+}
+
 const colorClass: Record<string, string> = {
     Red: 'bg-red-600', Blue: 'bg-blue-600', Green: 'bg-green-600',
     Purple: 'bg-purple-600', Black: 'bg-gray-600', Yellow: 'bg-yellow-500'
@@ -56,9 +80,19 @@ function hipergeometrica(N: number, K: number, n: number, k: number): number {
     return (combinacao(K, k) * combinacao(N - K, n - k)) / combinacao(N, n)
 }
 function probPeloMenos1(N: number, K: number, n: number): number {
-    if (K === 0 || N === 0) return 0
+    if (K === 0 || N === 0 || n === 0) return 0
+    if (K > N) K = N
     return 1 - hipergeometrica(N, K, n, 0)
 }
+
+// Probabilidade de ter pelo menos 1 carta até o turno X (compras acumuladas)
+// N = deck restante, K = cópias restantes estimadas, draws = compras acumuladas
+function probAteOTurno(N: number, K: number, draws: number): number {
+    if (K <= 0 || N <= 0 || draws <= 0) return 0
+    if (K >= N) return 1
+    return probPeloMenos1(N, K, Math.min(draws, N))
+}
+
 function pct(p: number): string { return `${(p * 100).toFixed(1)}%` }
 
 function classif(p: number, ideal: number): { label: string, color: string, bar: string } {
@@ -75,37 +109,32 @@ function diagTexto(label: string, p: number, ideal: number, rec: string): string
     return `🔴 Sem ${label} no deck — vulnerabilidade crítica (recomendado: ${rec})`
 }
 
+// ── Fisher-Yates shuffle (matematicamente correto e uniforme) ─────────────────
+function fisherYates<T>(arr: T[]): T[] {
+    const a = [...arr]
+    for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]]
+    }
+    return a
+}
+
 // ── Simulação de mãos ─────────────────────────────────────────────────────────
 function simularMaos(deckCards: DeckCard[], totalCards: number, qtd = 10000) {
-    // Expande o deck em array de índices
     const deck: number[] = []
     deckCards.forEach((dc, idx) => {
         for (let q = 0; q < dc.quantity; q++) deck.push(idx)
     })
 
-    let bricks = 0
-    let comSearcher = 0
-    let comCounter2k = 0
-    let comBlocker = 0
-    let comLow2 = 0
-
-    // Contadores de aparição por carta (índice)
+    let bricks = 0, comSearcher = 0, comCounter2k = 0, comBlocker = 0, comLow2 = 0
     const aparicoes: number[] = new Array(deckCards.length).fill(0)
-
-    const hasKw = (dc: DeckCard, kw: string) =>
-        dc.card.card_text?.toLowerCase().includes(kw.toLowerCase())
+    const hasKw = (dc: DeckCard, kw: string) => dc.card.card_text?.toLowerCase().includes(kw.toLowerCase())
 
     for (let i = 0; i < qtd; i++) {
-        // Embaralha e tira 5
-        const shuffled = [...deck].sort(() => Math.random() - 0.5)
+        // Fisher-Yates para embaralhamento correto
+        const shuffled = fisherYates(deck)
         const mao = shuffled.slice(0, 5)
-        const idxSet = new Set(mao)
-
-        let temSearcher = false
-        let temCounter2k = false
-        let temBlocker = false
-        let temLow2 = false
-        let temJogavel = false // carta custo ≤ 3
+        let temSearcher = false, temCounter2k = false, temBlocker = false, temLow2 = false, temJogavel = false
 
         mao.forEach(cardIdx => {
             aparicoes[cardIdx]++
@@ -121,13 +150,11 @@ function simularMaos(deckCards: DeckCard[], totalCards: number, qtd = 10000) {
         if (temCounter2k) comCounter2k++
         if (temBlocker) comBlocker++
         if (temLow2) comLow2++
-        if (!temJogavel && !temCounter2k) bricks++ // mão sem carta jogável e sem defesa
+        if (!temJogavel && !temCounter2k) bricks++
     }
 
-    // Dependência: % que cada carta apareceu nas mãos
     const dependencia = deckCards.map((dc, idx) => ({
-        dc,
-        pct: aparicoes[idx] / (qtd * 5) * totalCards // normalizado
+        dc, pct: aparicoes[idx] / qtd
     })).sort((a, b) => b.pct - a.pct)
 
     return {
@@ -140,12 +167,9 @@ function simularMaos(deckCards: DeckCard[], totalCards: number, qtd = 10000) {
     }
 }
 
-// ── Melhor mão ────────────────────────────────────────────────────────────────
 function avaliarMao(mao: DeckCard[]): number {
     let score = 0
-    const hasKw = (dc: DeckCard, kw: string) =>
-        dc.card.card_text?.toLowerCase().includes(kw.toLowerCase())
-
+    const hasKw = (dc: DeckCard, kw: string) => dc.card.card_text?.toLowerCase().includes(kw.toLowerCase())
     mao.forEach(dc => {
         const cost = parseInt(dc.card.card_cost || '99')
         if (hasKw(dc, 'look at') || hasKw(dc, 'search your deck')) score += 30
@@ -166,23 +190,17 @@ function gerarMelhoresMaos(deckCards: DeckCard[], qtd = 50000): DeckCard[][] {
     deckCards.forEach((dc, idx) => {
         for (let q = 0; q < dc.quantity; q++) deck.push(idx)
     })
-
-    let melhor: { mao: number[], score: number }[] = []
-
+    const melhor: { mao: number[], score: number }[] = []
     for (let i = 0; i < qtd; i++) {
-        const shuffled = [...deck].sort(() => Math.random() - 0.5)
+        // Fisher-Yates
+        const shuffled = fisherYates(deck)
         const maoIdx = shuffled.slice(0, 5)
         const mao = maoIdx.map(idx => deckCards[idx])
-        const score = avaliarMao(mao)
-        melhor.push({ mao: maoIdx, score })
+        melhor.push({ mao: maoIdx, score: avaliarMao(mao) })
     }
-
     melhor.sort((a, b) => b.score - a.score)
-
-    // Retorna top 3 mãos únicas
     const unicas: DeckCard[][] = []
     const vistas = new Set<string>()
-
     for (const { mao } of melhor) {
         const key = [...mao].sort().join(',')
         if (!vistas.has(key)) {
@@ -191,15 +209,11 @@ function gerarMelhoresMaos(deckCards: DeckCard[], qtd = 50000): DeckCard[][] {
             if (unicas.length >= 3) break
         }
     }
-
     return unicas
 }
 
-// ── Plano de jogo ─────────────────────────────────────────────────────────────
 function gerarPlano(deckCards: DeckCard[], leader: Card | null): { turno: number, don: string, sugestao: string, cartas: DeckCard[] }[] {
-    const hasKw = (dc: DeckCard, kw: string) =>
-        dc.card.card_text?.toLowerCase().includes(kw.toLowerCase())
-
+    const hasKw = (dc: DeckCard, kw: string) => dc.card.card_text?.toLowerCase().includes(kw.toLowerCase())
     const porCusto = (min: number, max: number) =>
         deckCards.filter(dc => {
             const c = parseInt(dc.card.card_cost || '99')
@@ -249,6 +263,65 @@ function gerarPlano(deckCards: DeckCard[], leader: Card | null): { turno: number
     ]
 }
 
+// ── IA ────────────────────────────────────────────────────────────────────────
+function analisarComIA(
+    modelo: ModeloIA,
+    leaderCode: string,
+    avgCost: number,
+    searchers: number,
+    counters2k: number,
+    counters1k: number,
+    blockers: number
+): { score: number, label: string, color: string, similaresTop: typeof modelo.lookup, sugestoes: string[] } {
+
+    const similares = modelo.lookup
+        .map(item => {
+            const dist = Math.abs(item.avg_cost - avgCost) * 10
+                + Math.abs(item.searchers - searchers) * 2
+                + Math.abs(item.counters_2k - counters2k) * 2
+                + Math.abs(item.counters_1k - counters1k) * 1
+                + Math.abs(item.blockers - blockers) * 1
+            return { ...item, dist }
+        })
+        .sort((a, b) => a.dist - b.dist)
+
+    const vistos = new Set<string>()
+    const similaresSemDup = similares.filter(item => {
+        const key = item.leader 
+        if (vistos.has(key)) return false
+        vistos.add(key)
+        return true
+    })
+
+    const top5 = similaresSemDup.slice(0, 5)
+    const iaScore = top5.length > 0
+        ? Math.round(top5.reduce((s, i) => s + i.combined_score, 0) / top5.length)
+        : 50
+
+    const { excelente, bom, regular } = modelo.thresholds
+    const label = iaScore >= excelente ? 'Excelente' : iaScore >= bom ? 'Bom' : iaScore >= regular ? 'Regular' : 'Fraco'
+    const color = iaScore >= excelente ? 'text-green-400' : iaScore >= bom ? 'text-yellow-400' : iaScore >= regular ? 'text-orange-400' : 'text-red-400'
+
+    const sugestoes: string[] = []
+    const topPerf = similares.filter(i => i.combined_score >= excelente).slice(0, 3)
+
+    if (topPerf.length > 0) {
+        const avgSearchersTop = Math.round(topPerf.reduce((s, i) => s + i.searchers, 0) / topPerf.length)
+        const avgCounters2kTop = Math.round(topPerf.reduce((s, i) => s + i.counters_2k, 0) / topPerf.length)
+        const avgBlockersTop = Math.round(topPerf.reduce((s, i) => s + i.blockers, 0) / topPerf.length)
+        const avgCostTop = (topPerf.reduce((s, i) => s + i.avg_cost, 0) / topPerf.length).toFixed(1)
+
+        if (searchers < avgSearchersTop - 2) sugestoes.push(`🔍 Decks similares de alto nível usam em média ${avgSearchersTop} searchers (seu deck tem ${searchers})`)
+        if (counters2k < avgCounters2kTop - 1) sugestoes.push(`🛡️ Decks similares de alto nível usam em média ${avgCounters2kTop} counters 2000 (seu deck tem ${counters2k})`)
+        if (blockers < avgBlockersTop - 1) sugestoes.push(`🔒 Decks similares de alto nível usam em média ${avgBlockersTop} blockers (seu deck tem ${blockers})`)
+        if (avgCost > parseFloat(avgCostTop) + 0.5) sugestoes.push(`📊 Custo médio alto (${avgCost}) — decks similares top têm custo médio ${avgCostTop}`)
+    }
+
+    if (sugestoes.length === 0) sugestoes.push('✅ Seu deck tem estrutura similar aos melhores decks desse arquétipo!')
+
+    return { score: iaScore, label, color, similaresTop: top5, sugestoes }
+}
+
 export default function AnalysisPage() {
     const supabase = createClient()
     const searchParams = useSearchParams()
@@ -261,6 +334,7 @@ export default function AnalysisPage() {
     const [simDone, setSimDone] = useState(false)
     const [simResult, setSimResult] = useState<ReturnType<typeof simularMaos> | null>(null)
     const [melhoresMaos, setMelhoresMaos] = useState<DeckCard[][]>([])
+    const [modelo, setModelo] = useState<ModeloIA | null>(null)
 
     useEffect(() => {
         if (!deckId) { setError('Nenhum deck selecionado.'); setLoading(false); return }
@@ -276,7 +350,10 @@ export default function AnalysisPage() {
         load()
     }, [deckId])
 
-    // Roda simulação após carregar o deck
+    useEffect(() => {
+        fetch('/modelo_optcg.json').then(r => r.json()).then(setModelo).catch(() => null)
+    }, [])
+
     useEffect(() => {
         if (!deck || simDone) return
         setTimeout(() => {
@@ -310,8 +387,23 @@ export default function AnalysisPage() {
 
     const allCards = deck.cards
     const totalCards = allCards.reduce((s, dc) => s + dc.quantity, 0)
+    const leaderLife = parseInt(deck.leader?.life || '5') || 5
+
+    // ── Caso 1: Mão inicial ───────────────────────────────────────────────────
+    // Ordem correta: embaralha → compra 5 → coloca vidas
+    // N=50 pois a mão é comprada ANTES das cartas de vida
     const N = totalCards
     const n = 5
+
+    // ── Caso 2: Compras futuras (após setup) ──────────────────────────────────
+    // Deck restante = 50 - 5 (mão) - life (vidas)
+    // K restante estimado = K_total × (deck_restante / N)
+    const deckRestante = totalCards - n - leaderLife
+    const kRestante = (K: number) => Math.round(K * (deckRestante / totalCards))
+    // Compras acumuladas por turno (1 por turno + draw power médio)
+    const drawsT2 = 1   // turno 2: +1 compra
+    const drawsT3 = 2   // turno 3: +2 compras acumuladas
+    const drawsT5 = 4   // turno 5: +4 compras acumuladas
 
     const cardsWithCost = allCards.filter(dc => dc.card.card_cost && dc.card.card_type?.toUpperCase() !== 'LEADER')
     const avgCost = cardsWithCost.length
@@ -326,10 +418,7 @@ export default function AnalysisPage() {
         : 0
 
     const typeDist: Record<string, number> = {}
-    allCards.forEach(dc => {
-        const t = dc.card.card_type || 'Unknown'
-        typeDist[t] = (typeDist[t] || 0) + dc.quantity
-    })
+    allCards.forEach(dc => { const t = dc.card.card_type || 'Unknown'; typeDist[t] = (typeDist[t] || 0) + dc.quantity })
 
     const colorDist: Record<string, number> = {}
     allCards.forEach(dc => {
@@ -338,19 +427,14 @@ export default function AnalysisPage() {
     })
 
     const costDist: Record<string, number> = {}
-    allCards.forEach(dc => {
-        const cost = dc.card.card_cost || '?'
-        costDist[cost] = (costDist[cost] || 0) + dc.quantity
-    })
+    allCards.forEach(dc => { const cost = dc.card.card_cost || '?'; costDist[cost] = (costDist[cost] || 0) + dc.quantity })
     const costSorted = Object.entries(costDist).sort((a, b) => {
-        if (a[0] === '?') return 1
-        if (b[0] === '?') return -1
+        if (a[0] === '?') return 1; if (b[0] === '?') return -1
         return parseInt(a[0]) - parseInt(b[0])
     })
     const maxCost = Math.max(...Object.values(costDist))
 
-    const hasKeyword = (dc: DeckCard, kw: string) =>
-        dc.card.card_text?.toLowerCase().includes(kw.toLowerCase())
+    const hasKeyword = (dc: DeckCard, kw: string) => dc.card.card_text?.toLowerCase().includes(kw.toLowerCase())
 
     const blockers = allCards.filter(dc => hasKeyword(dc, '[Blocker]'))
     const rush = allCards.filter(dc => hasKeyword(dc, '[Rush]'))
@@ -374,7 +458,9 @@ export default function AnalysisPage() {
     const trigScore = Math.min(100, Math.round(countQty(triggers) / Math.max(totalCards, 1) * 100 * 3))
 
     const leaderColors = deck.leader?.card_color?.split(/[\s\/]/).filter(Boolean) || []
+    const leaderCode = (deck.leader?.card_set_id || '').split('_')[0]
 
+    // K valores — Caso 1 (abertura)
     const K_search = countQty(searchers)
     const K_draw = countQty(drawPower)
     const K_blocker = countQty(blockers)
@@ -385,6 +471,7 @@ export default function AnalysisPage() {
     const K_low1 = countQty(low1Cards)
     const K_low2 = countQty(low2Cards)
 
+    // Probabilidades — Caso 1 (mão inicial, N=50, n=5)
     const p_searcher = probPeloMenos1(N, K_search, n)
     const p_draw = probPeloMenos1(N, K_draw, n)
     const p_blocker = probPeloMenos1(N, K_blocker, n)
@@ -426,7 +513,25 @@ export default function AnalysisPage() {
         { icon: '2️⃣', label: 'Carta custo ≤2 na mão', p: p_low2, K: K_low2, ideal: 0.65, rec: '8-12 cartas custo ≤2' },
     ]
 
+    // Probabilidades — Caso 2 (compras futuras)
+    // N_restante = deck após mão + vidas, K ajustado proporcionalmente
+    const metricasCompra = [
+        { icon: '🔍', label: 'Searcher', K: K_search, cor: 'text-blue-400' },
+        { icon: '🛡️🛡️', label: 'Counter 2000', K: K_counter2k, cor: 'text-blue-400' },
+        { icon: '🛡️', label: 'Counter 1000', K: K_counter1k, cor: 'text-blue-400' },
+        { icon: '🔒', label: 'Blocker', K: K_blocker, cor: 'text-blue-400' },
+        { icon: '🃏', label: 'Draw Power', K: K_draw, cor: 'text-blue-400' },
+    ].map(m => ({
+        ...m,
+        // K restante no deck após setup (proporcional)
+        Kr: kRestante(m.K),
+        pT2: probAteOTurno(deckRestante, kRestante(m.K), drawsT2),
+        pT3: probAteOTurno(deckRestante, kRestante(m.K), drawsT3),
+        pT5: probAteOTurno(deckRestante, kRestante(m.K), drawsT5),
+    }))
+
     const plano = gerarPlano(allCards, deck.leader)
+    const iaResult = modelo ? analisarComIA(modelo, leaderCode, avgCostNum, K_search, K_counter2k, K_counter1k, K_blocker) : null
 
     return (
         <div className="min-h-screen bg-gray-950 text-white flex flex-col">
@@ -442,7 +547,7 @@ export default function AnalysisPage() {
                     <a href="/deck" className="bg-gray-800 hover:bg-gray-700 px-4 py-2 rounded-xl text-sm transition">← Voltar ao Builder</a>
                 </div>
 
-                {/* TOP — Leader + Scores */}
+                {/* TOP */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
                     <div className="bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden">
                         {deck.leader ? (
@@ -512,7 +617,7 @@ export default function AnalysisPage() {
                     </div>
                 </div>
 
-                {/* MEIO — Distribuições */}
+                {/* DISTRIBUIÇÕES */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
                     <div className="bg-gray-900 border border-gray-800 rounded-2xl p-5">
                         <div className="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-4">Distribuição por Tipo</div>
@@ -530,7 +635,6 @@ export default function AnalysisPage() {
                             ))}
                         </div>
                     </div>
-
                     <div className="bg-gray-900 border border-gray-800 rounded-2xl p-5">
                         <div className="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-4">Distribuição por Cor</div>
                         <div className="space-y-3">
@@ -550,7 +654,6 @@ export default function AnalysisPage() {
                             ))}
                         </div>
                     </div>
-
                     <div className="bg-gray-900 border border-gray-800 rounded-2xl p-5">
                         <div className="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-4">Curva de Custo</div>
                         <div className="flex items-end gap-1.5 h-28">
@@ -571,7 +674,9 @@ export default function AnalysisPage() {
                     <div className="flex items-start justify-between mb-6">
                         <div>
                             <div className="text-sm font-semibold text-gray-400 uppercase tracking-wide">🧠 Analisador Inteligente</div>
-                            <div className="text-xs text-gray-500 mt-1">Distribuição Hipergeométrica — mão inicial de 5 cartas (N={N})</div>
+                            <div className="text-xs text-gray-500 mt-1">
+                                Distribuição Hipergeométrica — mão inicial de {n} cartas (N={N}) · Leader life: {leaderLife}
+                            </div>
                         </div>
                         <div className="flex gap-4 items-start">
                             <div className="text-center bg-gray-800 rounded-2xl px-6 py-3">
@@ -596,6 +701,7 @@ export default function AnalysisPage() {
                         </div>
                     </div>
 
+                    {/* Grid métricas abertura */}
                     <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
                         {metricas.map(({ icon, label, p, K, ideal }) => {
                             const c = classif(p, ideal)
@@ -629,6 +735,7 @@ export default function AnalysisPage() {
                         </div>
                     </div>
 
+                    {/* Diagnóstico */}
                     <div className="border-t border-gray-800 pt-5">
                         <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Diagnóstico Automático</div>
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
@@ -640,7 +747,99 @@ export default function AnalysisPage() {
                             <div className="text-sm text-gray-300 bg-gray-800 rounded-lg px-4 py-2.5 lg:col-span-2">{curvaMsg}</div>
                         </div>
                     </div>
+
+                    {/* ── NOVA SEÇÃO: Probabilidade de Compra ao Longo do Jogo ── */}
+                    <div className="border-t border-gray-800 pt-5 mt-5">
+                        <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1">📈 Probabilidade de Encontrar ao Longo do Jogo</div>
+                        <div className="text-xs text-gray-500 mb-4">
+                            Deck restante após setup: {deckRestante} cartas (50 - {n} mão - {leaderLife} vidas) · Compras acumuladas por turno
+                        </div>
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-xs">
+                                <thead>
+                                    <tr className="border-b border-gray-700">
+                                        <th className="text-left text-gray-400 py-2 pr-4 font-semibold">Peça</th>
+                                        <th className="text-center text-gray-400 py-2 px-3 font-semibold">No deck<br /><span className="text-gray-600 font-normal">(restantes)</span></th>
+                                        <th className="text-center text-gray-400 py-2 px-3 font-semibold">Até T2<br /><span className="text-gray-600 font-normal">+1 compra</span></th>
+                                        <th className="text-center text-gray-400 py-2 px-3 font-semibold">Até T3<br /><span className="text-gray-600 font-normal">+2 compras</span></th>
+                                        <th className="text-center text-gray-400 py-2 px-3 font-semibold">Até T5<br /><span className="text-gray-600 font-normal">+4 compras</span></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {metricasCompra.map(({ icon, label, Kr, pT2, pT3, pT5 }) => {
+                                        const colorT5 = pT5 >= 0.7 ? 'text-green-400' : pT5 >= 0.5 ? 'text-yellow-400' : 'text-orange-400'
+                                        return (
+                                            <tr key={label} className="border-b border-gray-800 hover:bg-gray-800/50">
+                                                <td className="py-2.5 pr-4 text-white font-medium">{icon} {label}</td>
+                                                <td className="text-center py-2.5 px-3 text-gray-400">{Kr} cóp.</td>
+                                                <td className="text-center py-2.5 px-3">
+                                                    <span className={pT2 >= 0.5 ? 'text-green-400' : 'text-gray-400'}>{pct(pT2)}</span>
+                                                </td>
+                                                <td className="text-center py-2.5 px-3">
+                                                    <span className={pT3 >= 0.6 ? 'text-green-400' : pT3 >= 0.4 ? 'text-yellow-400' : 'text-orange-400'}>{pct(pT3)}</span>
+                                                </td>
+                                                <td className="text-center py-2.5 px-3">
+                                                    <span className={colorT5}>{pct(pT5)}</span>
+                                                </td>
+                                            </tr>
+                                        )
+                                    })}
+                                </tbody>
+                            </table>
+                        </div>
+                        <div className="text-xs text-gray-600 mt-2">* Estimativa baseada nas cópias proporcionalmente distribuídas no deck restante após setup</div>
+                    </div>
                 </div>
+
+                {/* IA */}
+                {iaResult && (
+                    <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 mb-8">
+                        <div className="flex items-start justify-between mb-6">
+                            <div>
+                                <div className="text-sm font-semibold text-gray-400 uppercase tracking-wide">🤖 Análise por IA</div>
+                                <div className="text-xs text-gray-500 mt-1">Comparado com {modelo?.lookup.length} decks de torneios reais · Treinado com dados do Limitless TCG + OP Leaderboard</div>
+                            </div>
+                            <div className="text-center bg-gray-800 rounded-2xl px-6 py-3">
+                                <div className={`text-5xl font-black ${iaResult.color}`}>{iaResult.score}</div>
+                                <div className={`text-sm font-bold mt-1 ${iaResult.color}`}>{iaResult.label}</div>
+                                <div className="text-xs text-gray-500 mt-0.5">Score da IA (0-100)</div>
+                            </div>
+                        </div>
+                        <div className="mb-5">
+                            <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">💡 Sugestões da IA</div>
+                            <div className="space-y-2">
+                                {iaResult.sugestoes.map((s, i) => (
+                                    <div key={i} className="text-sm text-gray-300 bg-gray-800 rounded-lg px-4 py-2.5">{s}</div>
+                                ))}
+                            </div>
+                        </div>
+                        <div className="border-t border-gray-800 pt-5">
+                            <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">📊 Decks mais similares de torneio</div>
+                            <div className="space-y-2">
+                                {iaResult.similaresTop.map((item, i) => {
+                                    const sc = item.combined_score
+                                    const scColor = sc >= (modelo?.thresholds.excelente || 75) ? 'text-green-400' : sc >= (modelo?.thresholds.bom || 60) ? 'text-yellow-400' : 'text-orange-400'
+                                    return (
+                                        <div key={i} className="flex items-center gap-3 bg-gray-800 rounded-xl px-4 py-2.5">
+                                            <span className="text-xs text-gray-500 w-4">{i + 1}</span>
+                                            <div className="flex-1 min-w-0">
+                                                <div className="text-xs text-white font-medium truncate">{item.leader}</div>
+                                                <div className="text-xs text-gray-500">
+                                                    Custo {item.avg_cost} · {item.searchers} searchers · {item.counters_2k} counter 2k · {item.blockers} blockers
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-xs text-gray-400">WR leader:</span>
+                                                <span className="text-xs font-bold text-blue-400">{item.leader_winrate.toFixed(1)}%</span>
+                                            </div>
+                                            <div className={`text-sm font-black ${scColor} w-10 text-right`}>{sc}</div>
+                                        </div>
+                                    )
+                                })}
+                            </div>
+                        </div>
+                    </div>
+                )}
 
                 {/* SIMULAÇÃO DE 10.000 MÃOS */}
                 <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 mb-8">
@@ -674,11 +873,9 @@ export default function AnalysisPage() {
                                     )
                                 })}
                             </div>
-
-                            {/* Índice de Dependência */}
                             <div className="border-t border-gray-800 pt-5">
                                 <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">📌 Índice de Dependência — Cartas mais críticas</div>
-                                <div className="text-xs text-gray-500 mb-3">Cartas que mais aparecem nas mãos simuladas. Quanto maior, mais o deck depende dessa carta.</div>
+                                <div className="text-xs text-gray-500 mb-3">% de mãos simuladas que contêm esta carta. Quanto maior, mais o deck depende dela.</div>
                                 <div className="space-y-2">
                                     {simResult.dependencia.slice(0, 8).map(({ dc, pct: p }, i) => {
                                         const depPct = Math.min(Math.round(p * 100), 100)
@@ -705,25 +902,19 @@ export default function AnalysisPage() {
                     )}
                 </div>
 
-                {/* MELHOR MÃO POSSÍVEL */}
+                {/* MELHOR MÃO */}
                 {simDone && melhoresMaos.length > 0 && (
                     <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 mb-8">
                         <div className="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-2">🏆 Melhores Mãos de Abertura</div>
-                        <div className="text-xs text-gray-500 mb-5">Combinações ideais simuladas com base em searchers, counters, blockers e custo de jogo. (Top 3 de 30.000 simulações)</div>
+                        <div className="text-xs text-gray-500 mb-5">Top 3 de 30.000 simulações com embaralhamento Fisher-Yates</div>
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                             {melhoresMaos.map((mao, mi) => (
                                 <div key={mi} className="bg-gray-800 rounded-xl p-4">
-                                    <div className="flex items-center gap-2 mb-3">
-                                        <span className="text-sm font-bold text-white">{mi === 0 ? '🥇 Melhor mão' : mi === 1 ? '🥈 2ª melhor' : '🥉 3ª melhor'}</span>
-                                    </div>
+                                    <div className="text-sm font-bold text-white mb-3">{mi === 0 ? '🥇 Melhor mão' : mi === 1 ? '🥈 2ª melhor' : '🥉 3ª melhor'}</div>
                                     <div className="flex gap-1.5 flex-wrap">
                                         {mao.map((dc, ci) => (
                                             <div key={ci} className="flex flex-col items-center gap-0.5">
-                                                <img
-                                                    src={dc.card.card_image}
-                                                    className="w-14 h-20 object-cover rounded-lg border border-gray-700 cursor-pointer hover:brightness-110 transition"
-                                                    onClick={() => setSelectedCard(dc.card)}
-                                                />
+                                                <img src={dc.card.card_image} className="w-14 h-20 object-cover rounded-lg border border-gray-700 cursor-pointer hover:brightness-110 transition" onClick={() => setSelectedCard(dc.card)} />
                                                 <span className="text-xs text-gray-400 text-center" style={{ width: '56px', fontSize: '9px' }}>
                                                     {dc.card.card_name.length > 10 ? dc.card.card_name.slice(0, 10) + '…' : dc.card.card_name}
                                                 </span>
@@ -736,7 +927,7 @@ export default function AnalysisPage() {
                     </div>
                 )}
 
-                {/* PLANO DE JOGO POR TURNO */}
+                {/* PLANO */}
                 <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 mb-8">
                     <div className="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-2">🗺️ Plano de Jogo por Turno</div>
                     <div className="text-xs text-gray-500 mb-5">Sugestão de linha de jogo baseada nas cartas do deck.</div>
@@ -753,13 +944,7 @@ export default function AnalysisPage() {
                                     <div className="text-sm text-gray-200 mb-2">{sugestao}</div>
                                     <div className="flex gap-1.5 flex-wrap">
                                         {cartas.slice(0, 4).map((dc, i) => (
-                                            <img
-                                                key={i}
-                                                src={dc.card.card_image}
-                                                className="w-8 h-11 object-cover rounded border border-gray-700 cursor-pointer hover:brightness-110 transition"
-                                                onClick={() => setSelectedCard(dc.card)}
-                                                title={dc.card.card_name}
-                                            />
+                                            <img key={i} src={dc.card.card_image} className="w-8 h-11 object-cover rounded border border-gray-700 cursor-pointer hover:brightness-110 transition" onClick={() => setSelectedCard(dc.card)} title={dc.card.card_name} />
                                         ))}
                                     </div>
                                 </div>
@@ -768,7 +953,7 @@ export default function AnalysisPage() {
                     </div>
                 </div>
 
-                {/* BAIXO — Funções + Lista */}
+                {/* FUNÇÕES + LISTA */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <div className="bg-gray-900 border border-gray-800 rounded-2xl p-5">
                         <div className="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-4">Funções do Deck</div>
