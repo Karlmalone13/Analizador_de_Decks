@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@/utils/supabase/client'
 import Navbar from '@/components/Navbar'
 import { useSearchParams } from 'next/navigation'
+import { isCardLegal, type Format } from '../../utils/format-legality'
 
 interface Card {
   id: string
@@ -68,6 +69,7 @@ export default function DeckBuilderPage() {
   const [results, setResults] = useState<Card[]>([])
   const [showFilters, setShowFilters] = useState(false)
   const [filters, setFilters] = useState({ colors: [] as string[], type: '' })
+  const [format, setFormat] = useState<Format>('extra')
   const [sortBy, setSortBy] = useState<'cost_asc' | 'cost_desc' | 'power_asc' | 'power_desc' | ''>('')
   const [deck, setDeck] = useState<Deck>({ name: 'Novo Deck', leader: null, cards: [] })
   const [saving, setSaving] = useState(false)
@@ -143,9 +145,13 @@ export default function DeckBuilderPage() {
     cards: Card[],
     searchTerm: string,
     activeFilters: { colors: string[], type: string },
-    sort: string
+    sort: string,
+    fmt: Format = format
   ) {
     let filtered = [...cards]
+
+    // Filtro de formato: esconde cartas ilegais no formato selecionado
+    filtered = filtered.filter(c => isCardLegal(c.card_set_id, fmt))
 
     if (searchTerm.trim()) {
       const s = searchTerm.toLowerCase()
@@ -477,19 +483,16 @@ export default function DeckBuilderPage() {
                 {loadingAll ? 'Carregando...' : 'Buscar'}
               </button>
               <select
-                value={sortBy}
+                value={format}
                 onChange={e => {
-                  const newSort = e.target.value as any
-                  setSortBy(newSort)
-                  searchCardsWithData(allCards, search, filters, newSort)
+                  const newFormat = e.target.value as Format
+                  setFormat(newFormat)
+                  searchCardsWithData(allCards, search, filters, sortBy, newFormat)
                 }}
-                className="bg-gray-800 border border-gray-700 rounded-xl px-3 py-2 text-sm text-white outline-none"
+                className="bg-gray-800 border border-gray-700 rounded-xl px-3 py-1.5 text-sm text-white outline-none"
               >
-                <option value="">Ordenar</option>
-                <option value="cost_asc">Custo ↑</option>
-                <option value="cost_desc">Custo ↓</option>
-                <option value="power_asc">Poder ↑</option>
-                <option value="power_desc">Poder ↓</option>
+                <option value="extra">Extra Regulation</option>
+                <option value="standard">Standard</option>
               </select>
               {results.length > 0 && (
                 <button
