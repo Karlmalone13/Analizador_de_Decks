@@ -1,0 +1,2063 @@
+"""
+optcg_engine/decision_engine.py
+================================
+Motor de simulação OPTCG — sistema unificado.
+
+Baseado nas 34k linhas do Assembly-CSharp.dll v1.40a.
+
+Estrutura:
+    Card          — carta (estado em jogo)
+    GameState     — estado de um jogador
+    EffectExecutor — executa efeitos do card_effects_db.json (único ponto)
+    DecisionEngine — IA de decisão situacional
+    OPTCGMatch    — motor de partida (fases, combate, turnos)
+    simular_matchup — pipeline de N partidas
+
+Fluxo de efeitos (baseado no DoV3ActionStep das 34k linhas):
+    _play_card() → EffectExecutor.execute(card, trigger='on_play', p, opp)
+    _execute_attack() → EffectExecutor.execute(card, trigger='when_attacking', p, opp)
+    on_ko → EffectExecutor.execute(card, trigger='on_ko', p, opp)
+    your_turn → EffectExecutor.apply_your_turn_buffs(p, opp)
+"""
+
+import re
+import json
+import os
+import random
+import pandas as pd
+from dataclasses import dataclass, field
+from typing import List, Optional
+from copy import deepcopy
+
+
+# ===========================================================================
+# Carrega o banco de efeitos
+# ===========================================================================
+
+_DB_PATH = os.path.join(os.path.dirname(__file__), '..', 'card_effects_db.json')
+_EFFECTS_DB: dict = {}
+
+def _load_effects_db():
+    global _EFFECTS_DB
+    if _EFFECTS_DB:
+        return
+    try:
+        with open(_DB_PATH, 'r', encoding='utf-8') as f:
+            _EFFECTS_DB = json.load(f)
+    except FileNotFoundError:
+        pass
+
+_load_effects_db()
+
+
+def get_card_effects(code: str) -> dict:
+    """Retorna os efeitos de uma carta pelo código."""
+    return _EFFECTS_DB.get(code, {}).get('effects', {})
+
+
+# ===========================================================================
+# Estruturas de dados
+# ===========================================================================
+
+@dataclass
+class Card:
+    code: str
+    name: str
+    card_type: str       # LEADER, CHARACTER, EVENT, STAGE
+    color: str
+    cost: int = 0
+    power: int = 0
+    counter: int = 0
+    life: int = 0
+    sub_types: str = ''
+    card_text: str = ''
+    # Keywords (do banco ou detectadas)
+    has_rush: bool = False
+    has_blocker: bool = False
+    has_double_attack: bool = False
+    has_banish: bool = False
+    has_trigger: bool = False
+    has_unblockable: bool = False
+    # Campos de compatibilidade com o replay
+    is_searcher: bool = False
+    draw_power: int = 0
+    draw_then_trash: int = 0
+    draw_condition: str = 'always'
+    has_on_play_ko: bool = False
+    has_bounce: bool = False
+    has_rest_effect: bool = False
+    has_start_of_game: bool = False
+    has_power_minus: bool = False
+    trash_opp_char: bool = False
+    # Estado em jogo
+    rested: bool = False
+    just_played: bool = False
+    don_attached: int = 0
+    # Buffs temporários (resetados a cada turno)
+    power_buff: int = 0
+
+    def effective_power(self, your_turn: bool = True) -> int:
+        return self.power + self.power_buff + (self.don_attached * 1000 if your_turn else 0)
+
+    def board_value(self) -> int:
+        v = self.power // 1000
+        if self.has_rush:          v += 4
+        if self.has_blocker:       v += 3
+        if self.has_double_attack: v += 3
+        if self.has_banish:        v += 2
+        if self.has_unblockable:   v += 4
+        if self.has_trigger:       v += 2
+        return v
+
+
+@dataclass
+class GameState:
+    leader: Card
+    deck: List[Card] = field(default_factory=list)
+    hand: List[Card] = field(default_factory=list)
+    field_chars: List[Card] = field(default_factory=list)
+    field_stage: Optional[Card] = None
+    life: List[Card] = field(default_factory=list)
+    don_deck: int = 10
+    don_available: int = 0
+    don_rested: int = 0
+    trash: List[Card] = field(default_factory=list)
+    turn: int = 0
+    global_turn: int = 0
+    is_first: bool = True
+    # Estatísticas
+    dmg_dealt: int = 0
+    chars_played: int = 0
+    counters_used: int = 0
+    searchers_used: int = 0
+    triggers_activated: int = 0
+
+    def life_count(self) -> int:
+        return len(self.life)
+
+    def active_chars(self) -> List[Card]:
+        return [c for c in self.field_chars if not c.rested and not c.just_played]
+
+    def rested_chars(self) -> List[Card]:
+        return [c for c in self.field_chars if c.rested]
+
+    def counter_in_hand(self) -> int:
+        return sum(c.counter for c in self.hand if c.counter > 0)
+
+    def blockers_active(self) -> List[Card]:
+        return [c for c in self.field_chars if c.has_blocker and not c.rested]
+
+    def board_score(self) -> int:
+        return sum(c.board_value() for c in self.field_chars)
+
+    def estimated_counter(self) -> int:
+        return len(self.hand) * 1000
+
+    def can_attack_this_turn(self) -> bool:
+        return self.turn > 1
+
+    def don_on_field(self) -> int:
+        return self.don_available + self.don_rested
+
+
+# ===========================================================================
+# EffectExecutor — único ponto de execução de efeitos
+# Baseado no DoV3ActionStep das 34k linhas
+# ===========================================================================
+
+class EffectExecutor:
+    """
+    Executa efeitos de cartas conforme o banco card_effects_db.json.
+    Cada 'action' corresponde a um efeito do DoV3ActionStep das 34k linhas.
+    """
+
+    def __init__(self, me: GameState, opp: GameState):
+        self.me = me
+        self.opp = opp
+        self._once_used: set = set()  # (card_code, trigger)
+
+    def reset_once_per_turn(self):
+        self._once_used.clear()
+
+    def execute(self, card: Card, trigger: str, verbose: bool = False) -> list:
+        """
+        Executa todos os efeitos de um trigger para uma carta.
+        Retorna lista de logs para o replay.
+        """
+        effects = get_card_effects(card.code)
+        if trigger not in effects:
+            return []
+
+        ef_data = effects[trigger]
+
+        # Once per turn
+        key = (card.code, trigger)
+        if ef_data.get('once_per_turn') and key in self._once_used:
+            return []
+
+        # Verifica condições
+        if not self._check_conditions(ef_data.get('conditions', {}), card):
+            return []
+
+        # Paga custos
+        if not self._pay_costs(ef_data.get('costs', []), card):
+            return []
+
+        # Executa steps
+        logs = []
+        for step in ef_data.get('steps', []):
+            log = self._execute_step(step, card)
+            if log:
+                logs.append(log)
+
+        if ef_data.get('once_per_turn'):
+            self._once_used.add(key)
+
+        return logs
+
+    def apply_your_turn_buffs(self) -> list:
+        """
+        Aplica buffs passivos [Your Turn] de todas as cartas em campo.
+        Baseado no CardV3PassiveFieldBuffs das 34k linhas.
+        Inclui stages, líderes e personagens.
+        """
+        logs = []
+        sources = self.me.field_chars + [self.me.leader]
+        if self.me.field_stage:
+            sources.append(self.me.field_stage)
+        # Reset buffs temporários antes de aplicar novos
+        for c in self.me.field_chars + [self.me.leader]:
+            c.power_buff = 0
+
+        for source in sources:
+            effects = get_card_effects(source.code)
+            for trigger in ('your_turn', 'passive'):
+                if trigger not in effects:
+                    continue
+                ef_data = effects[trigger]
+                if not self._check_conditions(ef_data.get('conditions', {}), source):
+                    continue
+                for step in ef_data.get('steps', []):
+                    log = self._execute_step(step, source)
+                    if log:
+                        logs.append(log)
+
+        return logs
+
+    def reset_your_turn_buffs(self):
+        """Reseta buffs temporários ao fim do turno."""
+        for card in self.me.field_chars + [self.me.leader]:
+            card.power_buff = 0
+
+    # ── Verificação de condições ─────────────────────────────────────────────
+
+    def _check_conditions(self, conds: dict, card: Card) -> bool:
+        me = self.me
+        opp = self.opp
+
+        if not conds:
+            return True
+
+        if 'life_lte' in conds and me.life_count() > conds['life_lte']:
+            return False
+        if 'life_gte' in conds and me.life_count() < conds['life_gte']:
+            return False
+        if 'trash_gte' in conds and len(me.trash) < conds['trash_gte']:
+            return False
+        if 'don_gte' in conds and me.don_available < conds['don_gte']:
+            return False
+        if 'don_on_field_gte' in conds and me.don_on_field() < conds['don_on_field_gte']:
+            return False
+        if 'chars_gte' in conds and len(me.field_chars) < conds['chars_gte']:
+            return False
+        if 'hand_lte' in conds and len(me.hand) > conds['hand_lte']:
+            return False
+        if 'leader_is' in conds:
+            if conds['leader_is'].lower() not in me.leader.name.lower():
+                return False
+        if 'leader_type_includes' in conds:
+            if conds['leader_type_includes'].lower() not in me.leader.sub_types.lower():
+                return False
+        if conds.get('leader_multicolor'):
+            colors = set(me.leader.color.replace('/', ' ').split())
+            if len(colors) < 2:
+                return False
+
+        return True
+
+    # ── Pagamento de custos ──────────────────────────────────────────────────
+
+    def _pay_costs(self, costs: list, card: Card) -> bool:
+        """Verifica e paga custos. Retorna False se não pode pagar."""
+        for cost in costs:
+            ctype = cost['type']
+            if ctype == 'rest_self':
+                if card.rested:
+                    return False
+                card.rested = True
+            elif ctype == 'rest_don':
+                count = cost.get('count', 1)
+                if self.me.don_available < count:
+                    return False
+                self.me.don_available -= count
+                self.me.don_rested += count
+            elif ctype == 'trash_from_hand':
+                count = cost.get('count', 1)
+                if len(self.me.hand) < count:
+                    return False
+                for _ in range(count):
+                    worst = self._choose_to_trash(self.me.hand)
+                    if worst:
+                        self.me.hand.remove(worst)
+                        self.me.trash.append(worst)
+            elif ctype == 'trash_self':
+                if card in self.me.field_chars:
+                    self.me.field_chars.remove(card)
+                    self.me.trash.append(card)
+        return True
+
+    # ── Execução de steps individuais ────────────────────────────────────────
+
+    def _execute_step(self, step: dict, card: Card) -> str:
+        action = step.get('action', '')
+        me = self.me
+        opp = self.opp
+
+        # ── Busca (StartTopDeck + AddToHand + FinalizeTopDeck) ────────────────
+        if action == 'look_top_deck':
+            # Apenas marca quantas cartas serão vistas — próximo step faz a seleção
+            return ''
+
+        if action == 'add_to_hand':
+            if not me.deck:
+                return ''
+            # Número de cartas a olhar (do step anterior look_top_deck)
+            # Busca o look_top_deck no mesmo bloco de efeitos
+            effects = get_card_effects(card.code)
+            look_count = 5  # padrão
+            for trigger, ef in effects.items():
+                for s in ef.get('steps', []):
+                    if s.get('action') == 'look_top_deck':
+                        look_count = s.get('count', 5)
+                        break
+
+            look = min(look_count, len(me.deck))
+            candidates = me.deck[-look:]
+
+            # Filtra por tipo se especificado
+            filter_type = step.get('filter_type', '')
+            exclude = step.get('exclude', [])
+            cost_lte = step.get('cost_lte', 99)
+            power_lte = step.get('power_lte', 999999)
+
+            filtered = []
+            for c in candidates:
+                if filter_type:
+                    ft = filter_type.lower()
+                    match = (ft in c.sub_types.lower() or
+                             ft in c.name.lower() or
+                             ft in c.card_type.lower() or
+                             ft in c.card_text.lower())
+                    if not match:
+                        continue
+                if any(ex.lower() in c.name.lower() for ex in exclude):
+                    continue
+                if c.cost > cost_lte:
+                    continue
+                if c.power > power_lte:
+                    continue
+                filtered.append(c)
+
+            count = step.get('count', 1)
+            taken = []
+            for _ in range(min(count, len(filtered))):
+                best = max(filtered, key=lambda x: x.board_value()) if filtered else None
+                if best:
+                    taken.append(best)
+                    filtered.remove(best)
+
+            for c in taken:
+                if c in me.deck:
+                    me.deck.remove(c)
+                me.hand.append(c)
+
+            # Resto permanece no deck (será tratado pelo próximo step)
+            me.searchers_used += 1
+            names = ', '.join(c.name[:15] for c in taken)
+            return f'buscou: {names}' if names else ''
+
+        if action == 'trash_rest':
+            # Cartas que foram vistas mas não pegas vão ao trash
+            # Identifica quais cartas do topo foram vistas
+            effects = get_card_effects(card.code)
+            look_count = 5
+            for trigger, ef in effects.items():
+                for s in ef.get('steps', []):
+                    if s.get('action') == 'look_top_deck':
+                        look_count = s.get('count', 5)
+                        break
+            # As cartas não tomadas ficam no topo do deck
+            # Quantas foram tomadas: count do add_to_hand
+            taken_count = 1
+            for trigger, ef in effects.items():
+                for s in ef.get('steps', []):
+                    if s.get('action') == 'add_to_hand':
+                        taken_count = s.get('count', 1)
+                        break
+            # O resto = look_count - taken = vão ao trash
+            rest_count = max(0, look_count - taken_count)
+            trashed = []
+            for _ in range(min(rest_count, len(me.deck))):
+                if me.deck:
+                    c = me.deck.pop()
+                    me.trash.append(c)
+                    trashed.append(c.name[:12])
+            return f'trash resto: {", ".join(trashed)}' if trashed else ''
+
+        if action == 'deck_bottom_rest':
+            # Resto vai ao fundo do deck (já está no topo, move para o fundo)
+            effects = get_card_effects(card.code)
+            look_count = 5
+            taken_count = 1
+            for trigger, ef in effects.items():
+                for s in ef.get('steps', []):
+                    if s.get('action') == 'look_top_deck':
+                        look_count = s.get('count', 5)
+                    if s.get('action') == 'add_to_hand':
+                        taken_count = s.get('count', 1)
+            rest_count = max(0, look_count - taken_count)
+            moved = []
+            for _ in range(min(rest_count, len(me.deck))):
+                if me.deck:
+                    c = me.deck.pop()  # tira do topo
+                    me.deck.insert(0, c)  # coloca no fundo
+                    moved.append(c)
+            return f'{len(moved)} carta(s) no fundo do deck' if moved else ''
+
+        if action == 'activate_main_effect':
+            # Trigger que ativa o efeito Main da carta
+            return self.execute(card, 'main')[0] if self.execute(card, 'main') else ''
+
+        # ── Draw ──────────────────────────────────────────────────────────────
+        if action == 'draw':
+            count = step.get('count', 1)
+            drawn = []
+            for _ in range(count):
+                if me.deck:
+                    c = me.deck.pop()
+                    me.hand.append(c)
+                    drawn.append(c.name[:12])
+            # then_trash após draw
+            then_trash = step.get('then_trash', 0)
+            for _ in range(then_trash):
+                worst = self._choose_to_trash(me.hand)
+                if worst:
+                    me.hand.remove(worst)
+                    me.trash.append(worst)
+            return f'comprou {len(drawn)} carta(s)' if drawn else ''
+
+        # ── KO ───────────────────────────────────────────────────────────────
+        if action == 'ko':
+            count = step.get('count', 1)
+            target_type = step.get('target', 'opp_character')
+            cost_lte = step.get('cost_lte', 99)
+            rested_only = step.get('rested_only', False)
+
+            if target_type == 'opp_stage':
+                if opp.field_stage and opp.field_stage.cost <= cost_lte:
+                    ko_name = opp.field_stage.name[:20]
+                    opp.trash.append(opp.field_stage)
+                    opp.field_stage = None
+                    return f'KO stage: {ko_name}'
+                return ''
+
+            # KO personagem
+            candidates = [c for c in opp.field_chars
+                          if c.cost <= cost_lte
+                          and (not rested_only or c.rested)]
+            koed = []
+            for _ in range(min(count, len(candidates))):
+                target = max(candidates, key=lambda x: x.board_value())
+                opp.field_chars.remove(target)
+                opp.trash.append(target)
+                candidates.remove(target)
+                koed.append(target.name[:15])
+            return f'KO: {", ".join(koed)}' if koed else ''
+
+        # ── Bounce ───────────────────────────────────────────────────────────
+        if action == 'bounce':
+            count = step.get('count', 1)
+            cost_lte = step.get('cost_lte', 99)
+
+            candidates = [c for c in opp.field_chars if c.cost <= cost_lte]
+            bounced = []
+            for _ in range(min(count, len(candidates))):
+                target = max(candidates, key=lambda x: x.board_value())
+                opp.field_chars.remove(target)
+                opp.hand.append(target)
+                target.rested = False
+                target.don_attached = 0
+                candidates.remove(target)
+                bounced.append(target.name[:15])
+            return f'bounce: {", ".join(bounced)}' if bounced else ''
+
+        # ── Restar oponente ───────────────────────────────────────────────────
+        if action == 'rest_opp_character':
+            count = step.get('count', 1)
+            cost_lte = step.get('cost_lte', 99)
+
+            candidates = [c for c in opp.field_chars
+                          if not c.rested and c.cost <= cost_lte]
+            rested = []
+            for _ in range(min(count, len(candidates))):
+                target = max(candidates, key=lambda x: x.board_value())
+                target.rested = True
+                candidates.remove(target)
+                rested.append(target.name[:15])
+            return f'restou: {", ".join(rested)}' if rested else ''
+
+        # ── Power buff ────────────────────────────────────────────────────────
+        if action == 'buff_power':
+            amount = step.get('amount', 0)
+            target = step.get('target', 'self')
+            duration = step.get('duration', 'this_turn')
+
+            if target == 'self':
+                card.power_buff += amount
+            elif target == 'leader':
+                me.leader.power_buff += amount
+            elif target == 'leader_or_character':
+                # IA escolhe o mais forte
+                best = max(me.field_chars + [me.leader],
+                           key=lambda c: c.effective_power(True)) if me.field_chars else me.leader
+                best.power_buff += amount
+            elif target in ('all_allies', 'all_allies_and_leader'):
+                for c in me.field_chars:
+                    c.power_buff += amount
+                if target == 'all_allies_and_leader':
+                    me.leader.power_buff += amount
+            return f'+{amount} power em {target}'
+
+        # ── Give DON ──────────────────────────────────────────────────────────
+        if action == 'give_don':
+            count = step.get('count', 1)
+            rested = step.get('rested', False)
+            # Dá DON ao personagem mais forte ativo
+            targets = [c for c in me.field_chars if not c.rested] + [me.leader]
+            if targets:
+                best = max(targets, key=lambda c: c.effective_power(True))
+                best.don_attached += count
+                if rested:
+                    me.don_available -= count
+                    me.don_rested += count
+            return f'+{count} DON'
+
+        # ── Play from trash ───────────────────────────────────────────────────
+        if action == 'play_from_trash':
+            filter_type = step.get('filter_type', '').lower()
+            cost_lte = step.get('cost_lte', 99)
+            count = step.get('count', 1)
+
+            candidates = []
+            for c in me.trash:
+                if c.cost > cost_lte:
+                    continue
+                if filter_type:
+                    match = (filter_type in c.sub_types.lower() or
+                             filter_type in c.name.lower() or
+                             filter_type in c.card_type.lower())
+                    if not match:
+                        continue
+                candidates.append(c)
+
+            played = []
+            for _ in range(min(count, len(candidates))):
+                if c.card_type == 'STAGE':
+                    best = max(candidates, key=lambda x: x.cost)
+                    me.trash.remove(best)
+                    if me.field_stage:
+                        me.trash.append(me.field_stage)
+                    me.field_stage = best
+                    played.append(best.name[:15])
+                    candidates.remove(best)
+                else:
+                    best = max(candidates, key=lambda x: x.board_value())
+                    me.trash.remove(best)
+                    if len(me.field_chars) >= 5:
+                        worst = min(me.field_chars, key=lambda x: x.board_value())
+                        me.field_chars.remove(worst)
+                        me.trash.append(worst)
+                    me.field_chars.append(best)
+                    played.append(best.name[:15])
+                    candidates.remove(best)
+
+            return f'jogou do trash: {", ".join(played)}' if played else ''
+
+        # ── Play from deck ────────────────────────────────────────────────────
+        if action == 'play_from_deck':
+            filter_type = step.get('filter_type', '').lower()
+            cost_lte = step.get('cost_lte', 99)
+            color = step.get('color', '')
+            count = step.get('count', 1)
+
+            candidates = []
+            for c in me.deck:
+                if c.cost > cost_lte:
+                    continue
+                if color and color.lower() not in c.color.lower():
+                    continue
+                if filter_type:
+                    match = (filter_type in c.sub_types.lower() or
+                             filter_type in c.name.lower())
+                    if not match:
+                        continue
+                candidates.append(c)
+
+            played = []
+            for _ in range(min(count, len(candidates))):
+                best = max(candidates, key=lambda x: x.board_value())
+                me.deck.remove(best)
+                if len(me.field_chars) >= 5:
+                    worst = min(me.field_chars, key=lambda x: x.board_value())
+                    me.field_chars.remove(worst)
+                    me.trash.append(worst)
+                best.just_played = not best.has_rush
+                me.field_chars.append(best)
+                candidates.remove(best)
+                played.append(best.name[:15])
+
+            random.shuffle(me.deck)
+            return f'jogou do deck: {", ".join(played)}' if played else ''
+
+        # ── Trash from hand ───────────────────────────────────────────────────
+        if action == 'trash_from_hand':
+            count = step.get('count', 1)
+            trashed = []
+            for _ in range(min(count, len(me.hand))):
+                worst = self._choose_to_trash(me.hand)
+                if worst:
+                    me.hand.remove(worst)
+                    me.trash.append(worst)
+                    trashed.append(worst.name[:12])
+            return f'descartou da mão: {", ".join(trashed)}' if trashed else ''
+
+        # ── Heal ─────────────────────────────────────────────────────────────
+        if action == 'heal':
+            count = step.get('count', 1)
+            for _ in range(min(count, len(me.deck))):
+                c = me.deck.pop(0)
+                me.life.append(c)
+            return f'+{count} vida(s)'
+
+        # ── Add from trash ────────────────────────────────────────────────────
+        if action == 'add_from_trash':
+            filter_name = step.get('filter_name', '').lower()
+            count = step.get('count', 1)
+            found = [c for c in me.trash
+                     if filter_name in c.name.lower() or filter_name in c.code.lower()]
+            added = []
+            for c in found[:count]:
+                me.trash.remove(c)
+                me.hand.append(c)
+                added.append(c.name[:15])
+            return f'recuperou do trash: {", ".join(added)}' if added else ''
+
+        # ── Keywords ──────────────────────────────────────────────────────────
+        if action == 'gain_rush':
+            card.has_rush = True
+            return 'ganhou Rush'
+        if action == 'gain_blocker':
+            card.has_blocker = True
+            return 'ganhou Blocker'
+        if action == 'gain_double_attack':
+            card.has_double_attack = True
+            return 'ganhou Double Attack'
+        if action == 'gain_banish':
+            card.has_banish = True
+            return 'ganhou Banish'
+        if action == 'gain_unblockable':
+            card.has_unblockable = True
+            return 'ganhou Unblockable'
+
+        # Keywords passivas (apenas registra, já vem do banco)
+        if action in ('keyword_blocker', 'keyword_rush', 'keyword_double_attack',
+                      'keyword_banish', 'keyword_trigger', 'keyword_unblockable'):
+            return ''
+
+        return ''
+
+    # ── Helpers de IA ────────────────────────────────────────────────────────
+
+    def _choose_to_trash(self, hand: list) -> Optional[Card]:
+        """Escolhe a carta de menor valor para descartar."""
+        if not hand:
+            return None
+        # Descarta eventos sem trigger primeiro, depois por menor custo
+        events = [c for c in hand if c.card_type == 'EVENT' and not c.has_trigger]
+        if events:
+            return min(events, key=lambda c: c.cost)
+        return min(hand, key=lambda c: c.board_value())
+
+
+# ===========================================================================
+# Carregamento de dados
+# ===========================================================================
+
+def parse_card_effects_basic(text: str, counter_amount: str) -> dict:
+    """Parser básico de keywords para cartas sem entrada no banco."""
+    t = (text or '').lower()
+    c_val = 0
+    try:
+        c_str = str(counter_amount or '').replace('.0', '')
+        if c_str.isdigit():
+            c_val = int(c_str)
+    except:
+        pass
+    return {
+        'has_rush':          '[rush]' in t,
+        'has_blocker':       '[blocker]' in t,
+        'has_double_attack': '[double attack]' in t,
+        'has_banish':        '[banish]' in t,
+        'has_trigger':       '[trigger]' in t,
+        'has_unblockable':   '[unblockable]' in t,
+        'counter':           c_val,
+    }
+
+
+def load_cards_db(csv_path: str = 'cards_rows.csv') -> dict:
+    db = {}
+    try:
+        df = pd.read_csv(csv_path)
+        for col in ['card_cost', 'card_power', 'life']:
+            df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0).astype(int)
+        for col in ['card_set_id', 'card_name', 'card_color', 'card_type',
+                    'card_text', 'counter_amount', 'sub_types']:
+            df[col] = df[col].fillna('').astype(str)
+
+        for _, row in df.iterrows():
+            code = row['card_set_id'].split('_')[0]
+            if not code or code == 'nan':
+                continue
+            kws = parse_card_effects_basic(row['card_text'], row['counter_amount'])
+            db[code] = {
+                'name':      row['card_name'],
+                'color':     row['card_color'],
+                'type':      row['card_type'].upper(),
+                'cost':      int(row['card_cost']),
+                'power':     int(row['card_power']),
+                'life':      int(row['life']),
+                'text':      row['card_text'],
+                'sub_types': row['sub_types'],
+                **kws,
+            }
+        print(f'  Banco de cartas: {len(db)} cartas carregadas')
+    except Exception as e:
+        print(f'  Erro ao carregar {csv_path}: {e}')
+    return db
+
+
+def validar_deck(leader: Card, cards: list, cards_db: dict) -> tuple:
+    from collections import Counter
+    erros = []
+    if len(cards) != 50:
+        erros.append(f'Total: {len(cards)} (deve ser 50)')
+    contagem = Counter(c.code for c in cards)
+    for code, qty in contagem.items():
+        if qty > 4:
+            erros.append(f'{code}: {qty} copias (max 4)')
+    return len(erros) == 0, erros
+
+
+def _make_card(code: str, data: dict) -> Card:
+    """Cria Card a partir do banco de dados, usando o effects_db para keywords."""
+    effects = get_card_effects(code)
+
+    # Keywords do banco ou do parse básico
+    has_blocker      = data.get('has_blocker', False)
+    has_rush         = data.get('has_rush', False)
+    has_double_attack= data.get('has_double_attack', False)
+    has_banish       = data.get('has_banish', False)
+    has_trigger      = data.get('has_trigger', False)
+    has_unblockable  = data.get('has_unblockable', False)
+
+    # Enriquece com o banco de efeitos
+    if 'passive' in effects:
+        for step in effects['passive'].get('steps', []):
+            a = step.get('action', '')
+            if a == 'keyword_blocker':      has_blocker = True
+            elif a == 'keyword_rush':       has_rush = True
+            elif a == 'keyword_double_attack': has_double_attack = True
+            elif a == 'keyword_banish':     has_banish = True
+            elif a == 'keyword_trigger':    has_trigger = True
+            elif a == 'keyword_unblockable': has_unblockable = True
+
+    # Campos extras detectados pelo banco ou pelo texto
+    t = data.get('text', '').lower()
+    is_searcher   = ('look at' in t or 'search your deck' in t or 'add up to' in t)
+    has_start_of_game = 'at the start of the game' in t
+    has_on_play_ko = 'on play' in t and ('k.o.' in t or 'trash' in t) and 'draw' not in t
+    has_bounce    = 'return' in t and 'hand' in t
+    has_rest_effect = 'rest' in t and 'opponent' in t
+    has_power_minus = '-' in t and 'power' in t and 'opponent' in t
+    trash_opp_char = 'opponent' in t and ('trash' in t or 'k.o.' in t) and 'on play' in t
+
+    import re as _re
+    raw_draw = (t.count('draw 1') + t.count('draw 2') * 2 +
+                t.count('draw 3') * 3 + t.count('draw a card'))
+    draw_then_trash = 0
+    draw_condition  = 'always'
+    m = _re.search(r'draw\s+(\d)\s+cards?.*?trash\s+(\d)\s+card', t)
+    if m:
+        raw_draw = int(m.group(1))
+        draw_then_trash = int(m.group(2))
+        lm = _re.search(r'if you have\s+(\d+)\s+or less life', t)
+        if lm:
+            draw_condition = f'life<={lm.group(1)}'
+
+    return Card(
+        code=code,
+        name=data.get('name', code),
+        card_type=data.get('type', 'CHARACTER'),
+        color=data.get('color', ''),
+        cost=data.get('cost', 0),
+        power=data.get('power', 0),
+        counter=data.get('counter', 0),
+        life=data.get('life', 0),
+        sub_types=data.get('sub_types', ''),
+        card_text=data.get('text', ''),
+        has_rush=has_rush,
+        has_blocker=has_blocker,
+        has_double_attack=has_double_attack,
+        has_banish=has_banish,
+        has_trigger=has_trigger,
+        has_unblockable=has_unblockable,
+        is_searcher=is_searcher,
+        draw_power=raw_draw,
+        draw_then_trash=draw_then_trash,
+        draw_condition=draw_condition,
+        has_on_play_ko=has_on_play_ko,
+        has_bounce=has_bounce,
+        has_rest_effect=has_rest_effect,
+        has_start_of_game=has_start_of_game,
+        has_power_minus=has_power_minus,
+        trash_opp_char=trash_opp_char,
+    )
+
+
+def build_real_deck(deck_name: str, deck_url: str,
+                    df_raw: pd.DataFrame, cards_db: dict) -> Optional[tuple]:
+    rows = df_raw[df_raw['deck_url'] == deck_url]
+    if rows.empty:
+        return None
+
+    leader = None
+    cards  = []
+
+    for _, row in rows.iterrows():
+        code = str(row['card_code'])
+        qty  = int(row['qty'])
+        data = cards_db.get(code, {})
+        if not data:
+            continue
+
+        card = _make_card(code, data)
+
+        if card.card_type == 'LEADER':
+            leader = card
+        else:
+            for _ in range(qty):
+                cards.append(deepcopy(card))
+
+    if leader is None:
+        leader = Card(code='UNK', name=deck_name, card_type='LEADER',
+                      color='', power=5000, life=5)
+
+    return leader, cards, None  # start_stage detectada no setup
+
+
+# ===========================================================================
+# DecisionEngine — IA de decisão
+# ===========================================================================
+
+
+# ============================================================================
+# NOVO DecisionEngine — Análise probabilística completa
+# Substitui a classe DecisionEngine no decision_engine.py
+# ============================================================================
+
+class GameAnalyzer:
+    """
+    Analisador de estado do jogo — calcula probabilidades e avalia posições.
+    Usado pelo DecisionEngine para tomar decisões informadas.
+    """
+
+    def __init__(self, me: 'GameState', opp: 'GameState'):
+        self.me  = me
+        self.opp = opp
+
+    # ── Análise do deck (perfil early/mid/late) ──────────────────────────────
+
+    def deck_profile(self) -> str:
+        """
+        Determina se o deck é early, mid ou late game
+        baseado na curva de custo das cartas no campo e mão.
+        """
+        all_cards = self.me.field_chars + self.me.hand
+        if not all_cards:
+            return 'mid'
+        avg_cost = sum(c.cost for c in all_cards) / len(all_cards)
+        if avg_cost <= 2.5:   return 'early'
+        elif avg_cost <= 5.0: return 'mid'
+        else:                 return 'late'
+
+    # ── Potencial ofensivo ───────────────────────────────────────────────────
+
+    def my_attack_power(self) -> int:
+        """Poder total de ataque disponível (sem DON)."""
+        total = self.me.leader.effective_power(True) if not self.me.leader.rested else 0
+        for c in self.me.field_chars:
+            if not c.rested and not c.just_played:
+                total += c.effective_power(True)
+        return total
+
+    def my_available_don(self) -> int:
+        return self.me.don_available
+
+    def max_don_boost(self) -> int:
+        """Máximo de boost de poder com DON disponível."""
+        return self.me.don_available * 1000
+
+    # ── Potencial defensivo do oponente ──────────────────────────────────────
+
+    def opp_counter_potential(self) -> int:
+        """
+        Potencial máximo de counter do oponente.
+        Cada carta na mão pode ter counter de 1000 ou 2000.
+        Estimativa: média de 1000 por carta na mão.
+        """
+        hand_size = len(self.opp.hand)
+        # Estima baseado em proporção típica de counters em decks
+        # ~40% das cartas têm counter 1000, ~20% têm counter 2000
+        estimated_1k = int(hand_size * 0.4)
+        estimated_2k = int(hand_size * 0.2)
+        return estimated_1k * 1000 + estimated_2k * 2000
+
+    def opp_counter_in_hand(self) -> int:
+        """Counter real do oponente (se visível — normalmente 0 em simulação)."""
+        return self.opp.counter_in_hand()
+
+    def opp_has_active_don_for_events(self) -> bool:
+        """Oponente tem DON para ativar eventos de defesa?"""
+        return self.opp.don_available >= 1
+
+    def opp_blocker_count(self) -> int:
+        """Quantos blockers ativos o oponente tem."""
+        return len(self.opp.blockers_active())
+
+    def opp_attack_count(self) -> int:
+        """Quantos personagens o oponente pode atacar no próximo turno."""
+        count = sum(1 for c in self.opp.field_chars if not c.rested)
+        if not self.opp.leader.rested:
+            count += 1
+        return count
+
+    # ── Probabilidades de vida ───────────────────────────────────────────────
+
+    def prob_trigger_in_opp_life(self) -> float:
+        """
+        Probabilidade de trigger na vida do oponente.
+        Baseado na proporção típica de triggers em decks competitivos (~20-30%).
+        """
+        if self.opp.life_count() == 0:
+            return 0.0
+        # Estima ~25% de chance de trigger por carta de vida
+        return min(0.25 * self.opp.life_count(), 0.85)
+
+    def prob_counter_in_opp_life(self) -> float:
+        """
+        Probabilidade de counter (+1000 ou +2000) na vida do oponente.
+        Estima ~35% das cartas têm counter em decks típicos.
+        """
+        if self.opp.life_count() == 0:
+            return 0.0
+        return min(0.35, 0.35 * self.opp.life_count())
+
+    def prob_trigger_in_my_life(self) -> float:
+        """Probabilidade de trigger na minha vida."""
+        if self.me.life_count() == 0:
+            return 0.0
+        return min(0.25 * self.me.life_count(), 0.85)
+
+    def prob_counter_in_my_life(self) -> float:
+        """Probabilidade de counter na minha vida."""
+        if self.me.life_count() == 0:
+            return 0.0
+        return min(0.35, 0.35 * self.me.life_count())
+
+    # ── Análise de lethality ─────────────────────────────────────────────────
+
+    def can_lethal_this_turn(self) -> bool:
+        """
+        Posso finalizar o oponente neste turno?
+        Leva em conta vida do oponente, atacantes disponíveis e DON.
+        """
+        opp_life = self.opp.life_count()
+        if opp_life > 0:
+            # Precisa de hits suficientes para zerar vida + 1 hit final
+            available_attacks = self._count_available_attacks()
+            return available_attacks >= opp_life + 1
+        else:
+            # Oponente já está com 0 vidas — qualquer ataque no líder fecha
+            return self._count_available_attacks() >= 1
+
+    def _count_available_attacks(self) -> int:
+        """Conta ataques disponíveis incluindo double attack."""
+        count = 0
+        if not self.me.leader.rested:
+            count += 1
+        for c in self.me.field_chars:
+            if not c.rested and not c.just_played:
+                count += 2 if c.has_double_attack else 1
+        return count
+
+    def opp_can_survive_lethal(self) -> float:
+        """
+        Probabilidade do oponente sobreviver a uma tentativa de letal.
+        Considera: blockers, counters na mão, triggers na vida.
+        """
+        prob_survive = 0.0
+
+        # Blockers podem desviar ataques
+        if self.opp_blocker_count() > 0:
+            prob_survive += 0.3
+
+        # Counters na mão podem aumentar o poder de defesa
+        if len(self.opp.hand) >= 3:
+            prob_survive += 0.2
+
+        # Triggers podem ativar efeitos de defesa
+        prob_survive += self.prob_trigger_in_opp_life() * 0.3
+
+        return min(prob_survive, 0.9)
+
+    # ── Análise de defesa ────────────────────────────────────────────────────
+
+    def opp_lethal_threat(self) -> float:
+        """
+        Probabilidade do oponente me finalizar no próximo turno.
+        Considera atacantes, DON disponível, minha vida.
+        """
+        opp_attacks = self.opp_attack_count()
+        my_life = self.me.life_count()
+        my_blockers = len(self.me.blockers_active())
+        my_counter  = self.me.counter_in_hand()
+
+        if opp_attacks == 0:
+            return 0.0
+
+        # Oponente precisa de (my_life + 1) hits para me finalizar
+        hits_needed = my_life + 1
+        available_hits = opp_attacks
+
+        if available_hits < hits_needed:
+            return 0.0
+
+        # Chance base
+        prob = max(0.0, (available_hits - hits_needed + 1) / max(available_hits, 1))
+
+        # Meus blockers reduzem a ameaça
+        prob *= max(0.1, 1.0 - my_blockers * 0.2)
+
+        # Meus counters reduzem a ameaça
+        if my_counter >= 2000:
+            prob *= 0.7
+        elif my_counter >= 1000:
+            prob *= 0.85
+
+        return min(prob, 0.95)
+
+    # ── Vale a pena salvar um personagem? ────────────────────────────────────
+
+    def char_value_score(self, card: 'Card') -> float:
+        """
+        Valor de um personagem para a partida.
+        Usado para decidir se vale gastar blocker/counter para salvar.
+        """
+        score = card.board_value() * 10.0
+
+        effects = get_card_effects(card.code)
+
+        # Tem efeito ativável que ainda não usou
+        if 'activate_main' in effects:
+            score += 20
+
+        # Tem efeito de ataque
+        if 'when_attacking' in effects:
+            score += 15
+
+        # É um blocker valioso
+        if card.has_blocker and self.me.life_count() <= 2:
+            score += 30
+
+        # Tem double attack
+        if card.has_double_attack:
+            score += 20
+
+        return score
+
+    # ── Análise do campo ─────────────────────────────────────────────────────
+
+    def field_advantage(self) -> float:
+        """
+        Vantagem de campo: positivo = eu estou na frente.
+        Considera poder total, quantidade de cartas e efeitos.
+        """
+        my_score  = sum(c.board_value() for c in self.me.field_chars)
+        opp_score = sum(c.board_value() for c in self.opp.field_chars)
+        return my_score - opp_score
+
+    def should_clear_field(self) -> bool:
+        """
+        Vale a pena limpar o campo do oponente?
+        Sim se oponente tem cartas com efeitos importantes ou muitos atacantes.
+        """
+        opp_threats = 0
+        for c in self.opp.field_chars:
+            effects = get_card_effects(c.code)
+            if any(t in effects for t in ('activate_main', 'when_attacking', 'on_ko')):
+                opp_threats += 2
+            else:
+                opp_threats += 1
+        return opp_threats >= 3 or self.opp_attack_count() >= 3
+
+
+class DecisionEngine:
+    """
+    Motor de decisão com análise probabilística completa.
+
+    Toma decisões baseado em:
+    - Perfil do deck (early/mid/late)
+    - Análise de lethality (posso finalizar? oponente pode me finalizar?)
+    - Distribuição ótima de DON
+    - Ordem de ataque estratégica
+    - Decisões de defesa (blocker vs counter)
+    - Gerenciamento de mão e DON reservado
+    """
+
+    def __init__(self, me: 'GameState', opp: 'GameState'):
+        self.me   = me
+        self.opp  = opp
+        self.analyzer = GameAnalyzer(me, opp)
+
+    # ── Postura ──────────────────────────────────────────────────────────────
+
+    def posture(self) -> str:
+        """
+        Determina a postura ideal para este turno.
+        Leva em conta perfil do deck, vida, campo e ameaças.
+        """
+        a = self.analyzer
+        profile = a.deck_profile()
+        my_life  = self.me.life_count()
+        opp_life = self.opp.life_count()
+
+        # Lethal disponível — sempre ofensivo
+        if a.can_lethal_this_turn():
+            return 'LETHAL'
+
+        # Oponente pode me finalizar no próximo turno — defensivo
+        if a.opp_lethal_threat() > 0.6:
+            return 'DEFENSIVE'
+
+        # Deck early game — sempre ofensivo
+        if profile == 'early':
+            if opp_life <= 2: return 'AGGRESSIVE'
+            return 'DEVELOP'
+
+        # Deck late game — defensivo até estar pronto
+        if profile == 'late':
+            if my_life <= 2: return 'DEFENSIVE'
+            if opp_life <= 1: return 'AGGRESSIVE'
+            return 'DEVELOP'
+
+        # Mid game — contextual
+        if opp_life <= 1:   return 'AGGRESSIVE'
+        if my_life <= 1:    return 'DEFENSIVE'
+        if a.field_advantage() < -3: return 'CONTROL'
+        if self.me.turn <= 3:        return 'DEVELOP'
+        return 'MIDRANGE'
+
+    # ── Avaliação de cartas ──────────────────────────────────────────────────
+
+    def avaliar_carta(self, card: 'Card') -> float:
+        """Avalia o valor situacional de uma carta para jogar/guardar/descartar."""
+        a       = self.analyzer
+        posture = self.posture()
+        s       = 0.0
+        my_life  = self.me.life_count()
+        opp_life = self.opp.life_count()
+        don_now  = self.me.don_available
+
+        # Jogabilidade imediata
+        if card.cost <= don_now:       s += 40
+        elif card.cost <= don_now + 2: s += 20
+        else:                          s -= 15
+
+        s += card.power / 1000 * 5
+
+        # Keywords
+        if card.has_rush:
+            v = 30
+            if opp_life <= 2: v += 50
+            if opp_life == 0: v += 100
+            s += v
+
+        if card.has_double_attack:
+            s += 25
+            if opp_life <= 2: s += 35
+
+        if card.has_unblockable:
+            s += 20
+            if opp_life <= 2: s += 30
+
+        if card.has_banish:
+            s += 15
+
+        if card.has_blocker:
+            v = 20
+            if my_life <= 1:   v += 100
+            elif my_life <= 2: v += 60
+            elif my_life <= 3: v += 30
+            if a.opp_attack_count() >= 3: v += 20
+            s += v
+
+        if card.counter > 0:
+            v = card.counter / 1000 * 15
+            if my_life <= 1: v *= 4.0
+            elif my_life <= 2: v *= 2.5
+            elif my_life <= 3: v *= 1.5
+            # Penaliza se já tem muitos counters na mão
+            counters_em_mao = sum(1 for c in self.me.hand
+                                  if c.counter > 0 and c is not card)
+            if counters_em_mao >= 4: v *= 0.4
+            elif counters_em_mao >= 2: v *= 0.7
+            s += v
+
+        if card.has_trigger:
+            s += 10
+
+        # Efeitos do banco
+        effects = get_card_effects(card.code)
+        has_draw   = any('draw' in str(e) for e in effects.values())
+        has_search = any('look_top_deck' in str(e) for e in effects.values())
+        has_ko     = any('ko' in str(e) for e in effects.values())
+        has_bounce = any('bounce' in str(e) for e in effects.values())
+        has_rest   = any('rest_opp_character' in str(e) for e in effects.values())
+
+        if has_draw:   s += 25 + (10 if len(self.me.hand) <= 3 else 0)
+        if has_search: s += 30 + (15 if self.me.turn <= 3 else 0)
+        if has_ko:
+            s += 35
+            if a.field_advantage() < 0: s += 25
+        if has_bounce:
+            s += 20
+            if a.field_advantage() < 0: s += 15
+        if has_rest:
+            # Restar abre personagens para ataque
+            if a.should_clear_field(): s += 20
+            else: s += 10
+
+        # Ajuste por postura
+        if posture == 'LETHAL':
+            if card.has_rush:          s += 50
+            if card.has_double_attack: s += 40
+            if card.has_unblockable:   s += 30
+        elif posture == 'AGGRESSIVE':
+            if card.has_rush:          s += 30
+            if card.has_double_attack: s += 20
+            if card.counter > 0:       s -= 10
+        elif posture == 'DEFENSIVE':
+            if card.has_blocker:       s += 50
+            if card.counter > 0:       s += 25
+            if card.has_rush:          s -= 15
+        elif posture == 'CONTROL':
+            if has_ko:     s += 30
+            if has_bounce: s += 20
+            if has_rest:   s += 15
+        elif posture == 'DEVELOP':
+            if has_search: s += 25
+            if has_draw:   s += 20
+
+        return s
+
+    # ── Escolher carta para jogar ─────────────────────────────────────────────
+
+    def choose_card_to_play(self) -> 'Optional[Card]':
+        """
+        Escolhe a melhor carta para jogar considerando:
+        - DON que vai sobrar depois
+        - Necessidade de reservar DON para defesa/efeitos
+        - Postura atual
+        """
+        a = self.analyzer
+
+        # Quanto DON reservar para defesa
+        don_reserve = self._don_reserve_for_defense()
+        don_usable  = max(0, self.me.don_available - don_reserve)
+
+        playable = []
+        for c in self.me.hand:
+            if c.card_type not in ('CHARACTER', 'EVENT', 'STAGE'):
+                continue
+            if c.cost > don_usable:
+                continue
+            # Não joga Counter como carta normal
+            if '[counter]' in c.card_text.lower() and c.card_type == 'EVENT':
+                continue
+            # Eventos sem efeito main/on_play não devem ser jogados
+            effects = get_card_effects(c.code)
+            has_main = any(t in effects for t in ('on_play', 'main', 'activate_main'))
+            if c.card_type == 'EVENT' and not has_main:
+                continue
+            playable.append(c)
+
+        if not playable:
+            return None
+        return max(playable, key=self.avaliar_carta)
+
+    def _don_reserve_for_defense(self) -> int:
+        """
+        Calcula quantos DON reservar para defesa no turno do oponente.
+        Considera: ameaça do oponente, cartas na mão, vida restante.
+        """
+        a = self.analyzer
+        my_life = self.me.life_count()
+        threat  = a.opp_lethal_threat()
+
+        # Se ameaça alta, reserva mais DON
+        if threat > 0.7:   return min(3, self.me.don_available)
+        if threat > 0.4:   return min(2, self.me.don_available)
+        if my_life <= 2:   return min(2, self.me.don_available)
+        if my_life <= 3:   return min(1, self.me.don_available)
+        return 0
+
+    # ── Distribuição de DON ───────────────────────────────────────────────────
+
+    def plan_don_distribution(self, attackers: list) -> dict:
+        """
+        Planeja a distribuição ótima de DON entre os atacantes.
+
+        Retorna dict: {card: don_amount}
+
+        Lógica:
+        1. Se pode finalizar — concentra DON no atacante mais forte
+        2. Se deve limpar campo — distribui para atingir cartas inimigas
+        3. Senão — distribui para maximizar dano na vida respeitando counters
+        """
+        a = self.analyzer
+        don_available = self.me.don_available
+        result = {id(att): 0 for att in attackers}
+        _att_map = {id(att): att for att in attackers}
+
+        if don_available <= 0 or not attackers:
+            return result
+
+        # Estima defesa do oponente
+        opp_leader_power = self.opp.leader.power
+        estimated_counter = a.opp_counter_potential()
+
+        # ── Modo LETHAL: concentra no mais forte ─────────────────────────────
+        if a.can_lethal_this_turn() or self.posture() == 'LETHAL':
+            # Ordena: mais forte primeiro
+            sorted_atk = sorted(attackers,
+                                 key=lambda c: c.effective_power(True),
+                                 reverse=True)
+            # Concentra no atacante principal
+            main_atk = sorted_atk[0]
+            result[id(main_atk)] = don_available
+            return result
+
+        # ── Modo CLEAR FIELD: distribui para restar/destruir cartas ──────────
+        if a.should_clear_field() and self.opp.rested_chars():
+            targets = sorted(self.opp.rested_chars(),
+                             key=lambda c: c.power)
+            don_left = don_available
+            for att in attackers:
+                if don_left <= 0:
+                    break
+                # Quanto DON precisa para superar o alvo mais fraco?
+                if targets:
+                    target_power = targets[0].power
+                    att_base = att.effective_power(True)
+                    don_needed = max(0, (target_power - att_base + 1000) // 1000)
+                    don_give   = min(don_needed, don_left)
+                    result[id(att)] = don_give
+                    don_left -= don_give
+                    if don_give >= don_needed and targets:
+                        targets.pop(0)
+            return result
+
+        # ── Modo NORMAL: distribui para superar defesa do líder ──────────────
+        # Ordena atacantes: mais fraco primeiro (gasta counters do oponente)
+        sorted_atk = sorted(attackers,
+                             key=lambda c: c.effective_power(True))
+
+        don_left = don_available
+        # Distribui DON para o atacante mais forte superar a defesa estimada
+        if sorted_atk:
+            strong_atk = sorted_atk[-1]  # mais forte
+            needed = max(0, (opp_leader_power + 1000 - strong_atk.effective_power(True)) // 1000)
+            don_give = min(needed, don_left)
+            result[id(strong_atk)] += don_give
+            don_left -= don_give
+
+        # DON restante vai para o segundo mais forte
+        if don_left > 0 and len(sorted_atk) >= 2:
+            second_atk = sorted_atk[-2]
+            result[id(second_atk)] += don_left
+            don_left = 0
+
+        return result
+
+    # ── Ordem e escolha de ataques ────────────────────────────────────────────
+
+    def plan_attacks(self, attackers: list) -> list:
+        """
+        Planeja a ordem ótima de ataques.
+
+        Retorna lista de (attacker, target_type, target) em ordem de execução.
+
+        Lógica:
+        1. Cartas com When Attacking têm prioridade
+        2. Mais fraco primeiro (gasta counters/blockers do oponente)
+        3. Mais forte por último (no alvo mais importante)
+        4. Se pode finalizar, concentra todos no líder
+        """
+        a = self.analyzer
+        plan = []
+
+        if not attackers:
+            return plan
+
+        # Separa: cartas com when_attacking vs normais
+        when_atk = []
+        normal   = []
+        for att in attackers:
+            effects = get_card_effects(att.code)
+            if 'when_attacking' in effects:
+                when_atk.append(att)
+            else:
+                normal.append(att)
+
+        # ── Modo LETHAL: todos atacam o líder ────────────────────────────────
+        if a.can_lethal_this_turn():
+            # Mais fraco primeiro para gastar counters, mais forte por último
+            all_atk = sorted(attackers, key=lambda c: c.effective_power(True))
+            for att in all_atk:
+                plan.append((att, 'leader', None))
+            return plan
+
+        # ── Modo CLEAR FIELD: ataca cartas restadas ──────────────────────────
+        rested_targets = sorted(self.opp.rested_chars(),
+                                key=lambda c: c.board_value(), reverse=True)
+
+        if a.should_clear_field() and rested_targets:
+            # When attacking primeiro
+            for att in when_atk:
+                if rested_targets:
+                    plan.append((att, 'character', rested_targets[0]))
+                    rested_targets = rested_targets[1:]
+                else:
+                    plan.append((att, 'leader', None))
+
+            # Mais fracos atacam cartas restadas primeiro
+            weak_first = sorted(normal, key=lambda c: c.effective_power(True))
+            for att in weak_first:
+                if rested_targets:
+                    target = rested_targets[0]
+                    if att.effective_power(True) >= target.power:
+                        plan.append((att, 'character', target))
+                        rested_targets = rested_targets[1:]
+                    else:
+                        plan.append((att, 'leader', None))
+                else:
+                    plan.append((att, 'leader', None))
+            return plan
+
+        # ── Modo NORMAL: mix de ataques ───────────────────────────────────────
+        # When attacking primeiro (aproveitam o efeito)
+        for att in when_atk:
+            plan.append((att, 'leader', None))
+
+        # Mais fracos atacam a vida primeiro (gastam counters do oponente)
+        sorted_normal = sorted(normal, key=lambda c: c.effective_power(True))
+        for att in sorted_normal:
+            # Avalia se ataque na vida ou em personagem restado
+            best_score = self.score_attack_target(att, 'leader', None)
+            best_action = (att, 'leader', None)
+
+            for t in self.opp.rested_chars():
+                s = self.score_attack_target(att, 'character', t)
+                if s > best_score:
+                    best_score = s
+                    best_action = (att, 'character', t)
+
+            if best_score > -500:
+                plan.append(best_action)
+
+        return plan
+
+    def score_attack_target(self, attacker: 'Card',
+                             target_type: str,
+                             target: 'Optional[Card]') -> float:
+        """
+        Pontua um alvo de ataque levando em conta múltiplos fatores.
+        """
+        a = self.analyzer
+        s = 0.0
+        opp_life  = self.opp.life_count()
+        atk_power = attacker.effective_power(True)
+
+        if target_type == 'leader':
+            # Não ataca líder com poder 0 sem DON
+            if atk_power == 0 and attacker.don_attached == 0:
+                return -999
+
+            s = 100
+            if opp_life == 1:  s = 500
+            if opp_life == 0:  s = 10000
+
+            # Penaliza se claramente não passa pela defesa
+            opp_defense = self.opp.leader.power + a.opp_counter_potential()
+            if atk_power < opp_defense - 2000:
+                s -= 60
+            elif atk_power < opp_defense:
+                s -= 20
+
+            # Bônus: mesmo que não passe, força oponente a gastar carta
+            if len(self.opp.hand) >= 3 and atk_power >= self.opp.leader.power:
+                s += 20  # vai forçar uso de counter
+
+        elif target_type == 'character' and target:
+            # Não ataca se não consegue KO
+            if atk_power < target.power:
+                # Pode valer para gastar counters do oponente
+                if len(self.opp.hand) >= 4:
+                    s = 10  # ataque "sondagem"
+                else:
+                    return -100
+
+            # Valor do alvo
+            s = target.board_value() * 15
+
+            # Prioriza ameaças
+            if target.has_double_attack:  s += 50
+            if target.has_rush:           s += 40
+            effects = get_card_effects(target.code)
+            if 'when_attacking' in effects: s += 35
+            if 'activate_main' in effects:  s += 25
+            if 'on_ko' in effects:          s -= 20  # cuidado: ativa efeito ao morrer
+
+            # Se atacar e matar, limpa ameaça
+            if atk_power >= target.power:
+                s += 30
+
+        return s
+
+    # ── Decisões de defesa ────────────────────────────────────────────────────
+
+    def should_use_blocker(self, attacker_power: int) -> 'Optional[Card]':
+        """
+        Decide se usa blocker e qual usar.
+
+        Fatores:
+        - Valor da minha vida (poucos = mais defensivo)
+        - Probabilidade de trigger na vida
+        - Valor do personagem que está sendo atacado vs valor do blocker
+        """
+        a = self.analyzer
+        my_life = self.me.life_count()
+
+        # Com muita vida, não usa blocker
+        if my_life > 4:
+            return None
+
+        blockers = self.me.blockers_active()
+        if not blockers:
+            return None
+
+        # Analisa se vale usar blocker
+        # Quanto mais baixa a vida, mais agressivo na defesa
+        use_threshold = {5: False, 4: False, 3: True, 2: True, 1: True}
+        if not use_threshold.get(my_life, True):
+            return None
+
+        # Com 1-2 vidas, sempre usa blocker se tiver
+        if my_life <= 2:
+            return min(blockers, key=lambda c: a.char_value_score(c))
+
+        # Com 3 vidas, usa se o atacante é forte
+        if my_life == 3 and attacker_power >= self.me.leader.power:
+            return min(blockers, key=lambda c: a.char_value_score(c))
+
+        return None
+
+    def should_use_counter(self, atk_power: int, def_power: int) -> bool:
+        """
+        Decide se usa counter considerando:
+        - Vida atual
+        - Quantidade de counters na mão
+        - Probabilidade de precisar de counters no próximo ataque
+        - DON ativo para ativar eventos
+        """
+        a = self.analyzer
+        my_life       = self.me.life_count()
+        counter_avail = self.me.counter_in_hand()
+
+        if counter_avail == 0:
+            return False
+        if atk_power < def_power:
+            return False  # defesa já suficiente
+
+        needed = atk_power - def_power + 1
+
+        # Com 1 vida — sempre usa counter se tiver
+        if my_life <= 1:
+            return counter_avail >= needed
+
+        # Com 2 vidas — usa se tem counter suficiente
+        if my_life <= 2:
+            return counter_avail >= needed
+
+        # Com 3 vidas — usa só se o ataque é sério
+        if my_life <= 3:
+            return counter_avail >= needed and needed <= 2000
+
+        # Com 4+ vidas — conserva counters para situações críticas
+        if my_life <= 4:
+            return needed <= 1000 and counter_avail >= needed * 2
+
+        return False
+
+    def use_counter(self, needed: int) -> int:
+        """
+        Usa o mínimo de counter necessário.
+        Prefere usar counters de menor valor primeiro para conservar os maiores.
+        """
+        counters = sorted([c for c in self.me.hand if c.counter > 0],
+                          key=lambda c: c.counter)
+        total = 0
+        for c in counters:
+            if total >= needed:
+                break
+            self.me.hand.remove(c)
+            self.me.trash.append(c)
+            total += c.counter
+            self.me.counters_used += c.counter
+        return total
+
+    # ── Helpers ───────────────────────────────────────────────────────────────
+
+    def choose_to_trash(self, hand: list) -> 'Optional[Card]':
+        """Escolhe a carta de menor valor situacional para descartar."""
+        if not hand:
+            return None
+        return min(hand, key=self.avaliar_carta)
+
+
+
+# ===========================================================================
+# OPTCGMatch — motor de partida
+# Baseado no fluxo de turno das 34k linhas
+# ===========================================================================
+
+class OPTCGMatch:
+    MAX_TURNS = 15
+
+    def __init__(self, deck_a: tuple, deck_b: tuple):
+        leader_a, cards_a, stage_a = deck_a if len(deck_a) == 3 else (*deck_a, None)
+        leader_b, cards_b, stage_b = deck_b if len(deck_b) == 3 else (*deck_b, None)
+
+        self.state_a = GameState(leader=deepcopy(leader_a),
+                                 deck=[deepcopy(c) for c in cards_a])
+        self.state_b = GameState(leader=deepcopy(leader_b),
+                                 deck=[deepcopy(c) for c in cards_b])
+
+        if random.random() < 0.5:
+            self.state_a.is_first = True
+            self.state_b.is_first = False
+        else:
+            self.state_a.is_first = False
+            self.state_b.is_first = True
+
+        self.global_turn = 0
+
+    def _distribute_don(self, p: GameState, engine: 'DecisionEngine'):
+        """
+        Distribui DON disponível antes dos ataques.
+        Baseado no AttachDon das 34k linhas.
+        IA: dá DON ao atacante mais forte que ainda não atacou.
+        """
+        if p.don_available <= 0:
+            return
+
+        # Candidatos: personagens ativos + líder
+        candidates = [c for c in p.field_chars
+                      if not c.rested and not c.just_played]
+        if not p.leader.rested:
+            candidates.append(p.leader)
+
+        if not candidates:
+            return
+
+        # Distribui DON ao mais forte (maximiza poder de ataque)
+        best = max(candidates, key=lambda c: c.effective_power(True))
+        don_to_give = p.don_available
+        best.don_attached += don_to_give
+        p.don_available -= don_to_give
+        p.don_rested += don_to_give
+
+    # ── Setup (CheckStartOfGameActions das 34k linhas) ───────────────────────
+
+    def _place_start_stage(self, p: GameState):
+        """
+        Detecta e coloca stage inicial em campo.
+        Baseado em CheckStartOfGameActions (proc.StartOfGame) das 34k linhas.
+        """
+        if not p.leader.card_text:
+            return
+
+        t = p.leader.card_text.lower()
+        if 'at the start of the game' not in t:
+            return
+
+        # Extrai tipo de stage mencionado
+        m = re.search(r'start of the game[^.]*play.*?\[([^\]]+)\].*?stage', t)
+        wanted = m.group(1).lower() if m else None
+
+        candidates = [c for c in p.deck if c.card_type == 'STAGE'
+                      and (not wanted or wanted in c.sub_types.lower()
+                           or wanted in c.name.lower())]
+
+        if candidates:
+            # Prefere a de maior custo (The Empty Throne > Mary Geoise)
+            best = max(candidates, key=lambda c: c.cost)
+            p.deck.remove(best)
+            p.field_stage = best
+
+    def setup(self):
+        """
+        Setup inicial conforme sequência das 34k linhas:
+        CheckStartOfGameActions → DrawCard(5) → OfferMulligan → StartGame
+        """
+        for p in [self.state_a, self.state_b]:
+            random.shuffle(p.deck)
+            p.hand = [p.deck.pop() for _ in range(min(5, len(p.deck)))]
+
+            # Mulligan se mão sem cartas de custo <= 2
+            if not any(c.cost <= 2 for c in p.hand if c.card_type != 'LEADER'):
+                p.deck.extend(p.hand)
+                random.shuffle(p.deck)
+                p.hand = [p.deck.pop() for _ in range(min(5, len(p.deck)))]
+
+            life_count = p.leader.life if p.leader.life > 0 else 5
+            p.life = [p.deck.pop() for _ in range(min(life_count, len(p.deck)))]
+
+            # Stage inicial (CheckStartOfGameActions)
+            self._place_start_stage(p)
+
+    # ── Fases do turno ───────────────────────────────────────────────────────
+
+    def refresh_phase(self, p: GameState):
+        """
+        PlayerUntap das 34k linhas:
+        - Retorna DON dado a cartas
+        - Reseta rested/just_played/power_buff
+        - Reseta once_per_turn
+        """
+        don_from_cards = sum(c.don_attached for c in p.field_chars) + p.leader.don_attached
+        for c in p.field_chars:
+            c.don_attached = 0
+            c.rested = False
+            c.just_played = False
+            c.power_buff = 0
+        p.leader.don_attached = 0
+        p.leader.rested = False
+        p.leader.power_buff = 0
+        p.don_available += p.don_rested + don_from_cards
+        p.don_rested = 0
+
+    def draw_phase(self, p: GameState):
+        """PlayerDrawPhase — 1º jogador não compra no T1."""
+        if p.turn == 1 and p.is_first:
+            return
+        if p.deck:
+            p.hand.append(p.deck.pop())
+
+    def don_phase(self, p: GameState):
+        """
+        PlayerDonPhase:
+        - T1 do 1º jogador: +1 DON
+        - Outros turnos: +2 DON
+        """
+        gain = min(1 if (p.turn == 1 and p.is_first) else 2, p.don_deck)
+        p.don_deck -= gain
+        p.don_available += gain
+
+    def main_phase(self, p: GameState, opp: GameState) -> bool:
+        """
+        Fase principal completa com IA probabilística.
+        Baseado no fluxo das 34k linhas:
+        1. Aplica buffs Your Turn
+        2. Joga cartas (com reserva de DON)
+        3. Distribui DON entre atacantes
+        4. Executa ataques na ordem planejada
+        """
+        engine = DecisionEngine(p, opp)
+        ee     = EffectExecutor(p, opp)
+
+        # 1. Aplica buffs Your Turn (stage, personagens, líder)
+        ee.apply_your_turn_buffs()
+
+        # 2. Jogar cartas — engine reserva DON para defesa automaticamente
+        plays = 0
+        while plays < 10:
+            card = engine.choose_card_to_play()
+            if card:
+                self._play_card(card, p, opp, ee)
+                plays += 1
+            else:
+                break
+
+        # 3. Distribui DON entre os atacantes
+        if p.can_attack_this_turn():
+            attackers = [c for c in p.field_chars
+                         if not c.rested and not c.just_played]
+            if not p.leader.rested:
+                attackers.append(p.leader)
+
+            if attackers and p.don_available > 0:
+                don_plan = engine.plan_don_distribution(attackers)
+                for att in attackers:
+                    don_amt = don_plan.get(id(att), 0)
+                    if don_amt > 0 and p.don_available >= don_amt:
+                        att.don_attached += don_amt
+                        p.don_available  -= don_amt
+                        p.don_rested     += don_amt
+
+            # 4. Executa ataques na ordem planejada
+            attack_plan = engine.plan_attacks(attackers)
+            atacantes_usados = set()
+
+            for attacker, ttype, tgt in attack_plan:
+                # Recarrega estado atual (pode ter mudado)
+                if attacker.rested:
+                    continue
+                if id(attacker) in atacantes_usados:
+                    continue
+                atacantes_usados.add(id(attacker))
+
+                # Verifica se alvo ainda é válido
+                if ttype == 'character':
+                    if tgt not in opp.field_chars:
+                        ttype, tgt = 'leader', None
+
+                if self._execute_attack(attacker, ttype, tgt, p, opp, engine):
+                    return True
+
+                # Se oponente chegou a 0 vidas, finaliza com restantes
+                if not opp.life:
+                    remaining = [c for c in p.field_chars
+                                 if not c.rested and not c.just_played
+                                 and id(c) not in atacantes_usados]
+                    if not p.leader.rested and id(p.leader) not in atacantes_usados:
+                        remaining.append(p.leader)
+                    for fin in remaining:
+                        if self._execute_attack(fin, 'leader', None, p, opp, engine):
+                            return True
+
+        for c in p.field_chars:
+            c.just_played = False
+
+        return False
+
+    def _play_card(self, card: Card, p: GameState, opp: GameState,
+                   ee: EffectExecutor):
+        """
+        Joga uma carta.
+        Efeitos executados APENAS via EffectExecutor — sem lógica duplicada.
+        """
+        p.hand.remove(card)
+        p.don_rested  += card.cost
+        p.don_available -= card.cost
+
+        if card.card_type == 'CHARACTER':
+            if len(p.field_chars) >= 5:
+                worst = min(p.field_chars, key=lambda c: c.board_value())
+                p.field_chars.remove(worst)
+                p.trash.append(worst)
+            card.rested = False
+            card.just_played = not card.has_rush
+            p.field_chars.append(card)
+
+        elif card.card_type == 'EVENT':
+            p.trash.append(card)
+
+        elif card.card_type == 'STAGE':
+            if p.field_stage:
+                p.trash.append(p.field_stage)
+            p.field_stage = card
+
+        # Executa efeito On Play via EffectExecutor (único ponto)
+        ee.execute(card, 'on_play')
+
+    def _execute_attack(self, attacker: Card, target_type: str,
+                        target: Optional[Card], p: GameState,
+                        opp: GameState, engine: DecisionEngine) -> bool:
+        """
+        ResolveAttack_Internal das 34k linhas.
+        Sequência: tap atacante → blocker → counter → damage.
+        """
+        if attacker is p.leader:
+            p.leader.rested = True
+        else:
+            attacker.rested = True
+
+        # Executa efeito When Attacking
+        ee = EffectExecutor(p, opp)
+        ee.execute(attacker, 'when_attacking')
+
+        atk_power = attacker.effective_power(True)
+        damage    = 2 if attacker.has_double_attack else 1
+
+        # Block step
+        opp_engine = DecisionEngine(opp, p)
+        blocker = opp_engine.should_use_blocker(atk_power)
+        if blocker and not attacker.has_unblockable:
+            target_type = 'character'
+            target      = blocker
+            blocker.rested = True
+
+        # Define poder de defesa
+        if target_type == 'leader':
+            defend_power = opp.leader.power + opp.leader.power_buff
+        elif target and target in opp.field_chars:
+            defend_power = target.power + target.power_buff
+        else:
+            return False
+
+        # Counter step
+        if opp_engine.should_use_counter(atk_power, defend_power):
+            defend_power += opp_engine.use_counter(atk_power - defend_power + 1)
+
+        # Damage step (ResolveAttack_Internal das 34k linhas)
+        if atk_power >= defend_power:
+            if target_type == 'leader':
+                for _ in range(damage):
+                    if not opp.life:
+                        p.dmg_dealt += 1
+                        return True  # vitória
+                    life_card = opp.life.pop()
+                    p.dmg_dealt += 1
+                    opp.hand.append(life_card)
+                    # Trigger de vida (BeginTriggerPhase das 34k linhas)
+                    if life_card.has_trigger and not attacker.has_banish:
+                        opp.triggers_activated += 1
+                        ee_opp = EffectExecutor(opp, p)
+                        ee_opp.execute(life_card, 'trigger')
+                if not opp.life:
+                    return False  # precisa de mais 1 ataque
+            elif target_type == 'character' and target and target in opp.field_chars:
+                opp.field_chars.remove(target)
+                opp.trash.append(target)
+                # On KO (AfterKOCharacter das 34k linhas)
+                ee_opp = EffectExecutor(opp, p)
+                ee_opp.execute(target, 'on_ko')
+
+        return False
+
+    def play_turn(self, p: GameState, opp: GameState) -> Optional[str]:
+        self.global_turn += 1
+        p.turn += 1
+        p.global_turn = self.global_turn
+
+        self.refresh_phase(p)
+        self.draw_phase(p)
+        self.don_phase(p)
+
+        if self.main_phase(p, opp):
+            return 'A' if p is self.state_a else 'B'
+        if not p.deck:
+            return 'B' if p is self.state_a else 'A'
+        if not opp.deck:
+            return 'A' if p is self.state_a else 'B'
+        return None
+
+    def simulate(self) -> dict:
+        self.setup()
+        winner = None
+        total_turns = 0
+
+        for turn_num in range(self.MAX_TURNS * 2):
+            p   = (self.state_a if self.state_a.is_first else self.state_b) \
+                  if turn_num % 2 == 0 \
+                  else (self.state_b if self.state_a.is_first else self.state_a)
+            opp = self.state_b if p is self.state_a else self.state_a
+
+            result = self.play_turn(p, opp)
+            total_turns += 1
+            if result:
+                winner = result
+                break
+
+        return {
+            'winner':      winner or 'DRAW',
+            'turns':       total_turns,
+            'dmg_a':       self.state_a.dmg_dealt,
+            'dmg_b':       self.state_b.dmg_dealt,
+            'life_a':      self.state_a.life_count(),
+            'life_b':      self.state_b.life_count(),
+            'counters_a':  self.state_a.counters_used,
+            'counters_b':  self.state_b.counters_used,
+            'searchers_a': self.state_a.searchers_used,
+            'searchers_b': self.state_b.searchers_used,
+            'triggers_a':  self.state_a.triggers_activated,
+            'triggers_b':  self.state_b.triggers_activated,
+        }
+
+
+# ===========================================================================
+# Pipeline de simulação
+# ===========================================================================
+
+def simular_matchup(deck_a: tuple, deck_b: tuple, n: int = 100) -> dict:
+    wins_a = wins_b = draws = 0
+    total_turns = []
+    counters_a = counters_b = searchers_a = searchers_b = triggers_a = triggers_b = 0
+
+    for _ in range(n):
+        match = OPTCGMatch(deck_a, deck_b)
+        r = match.simulate()
+        if r['winner'] == 'A':   wins_a += 1
+        elif r['winner'] == 'B': wins_b += 1
+        else:                    draws  += 1
+        total_turns.append(r['turns'])
+        counters_a  += r['counters_a'];  counters_b  += r['counters_b']
+        searchers_a += r['searchers_a']; searchers_b += r['searchers_b']
+        triggers_a  += r['triggers_a'];  triggers_b  += r['triggers_b']
+
+    total     = wins_a + wins_b + draws
+    avg_turns = sum(total_turns) / len(total_turns) if total_turns else 0
+
+    return {
+        'wins_a': wins_a, 'wins_b': wins_b, 'draws': draws,
+        'winrate_a':      round(wins_a / total * 100, 1) if total > 0 else 50.0,
+        'winrate_b':      round(wins_b / total * 100, 1) if total > 0 else 50.0,
+        'avg_turns':      round(avg_turns, 1),
+        'counters_pg_a':  round(counters_a  / total, 1) if total > 0 else 0,
+        'counters_pg_b':  round(counters_b  / total, 1) if total > 0 else 0,
+        'searchers_pg_a': round(searchers_a / total, 1) if total > 0 else 0,
+        'searchers_pg_b': round(searchers_b / total, 1) if total > 0 else 0,
+        'triggers_pg_a':  round(triggers_a  / total, 1) if total > 0 else 0,
+        'triggers_pg_b':  round(triggers_b  / total, 1) if total > 0 else 0,
+    }

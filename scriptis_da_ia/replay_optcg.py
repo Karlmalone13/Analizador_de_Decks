@@ -19,9 +19,9 @@ import os
 import pandas as pd
 from collections import Counter
 from copy import deepcopy
-from simulador_optcg import (
+from optcg_engine.decision_engine import (
     load_cards_db, build_real_deck, validar_deck,
-    Card, GameState, DecisionEngine
+    Card, GameState, DecisionEngine, EffectExecutor
 )
 
 # ── Cores terminal ─────────────────────────────────────────────────────────────
@@ -195,9 +195,34 @@ class ReplayMatch:
                 p.hand = [p.deck.pop() for _ in range(min(5, len(p.deck)))]
             life_n = p.leader.life if p.leader.life > 0 else 5
             p.life = [p.deck.pop() for _ in range(min(life_n, len(p.deck)))]
+
+            # Stage inicial
             if stage:
                 p.field_stage = stage
                 print(f'{col}{nm}: Stage inicial → {stage.name}{C.RESET}')
+            elif p.leader.has_start_of_game:
+                import re as _re
+                leader_text = p.leader.card_text.lower()
+                type_match = _re.search(
+                    r'start of the game[^.]*play.*?\[([^\]]+)\].*?stage',
+                    leader_text
+                )
+                wanted_type = type_match.group(1).lower() if type_match else None
+                valid_stages = []
+                for c in p.deck:
+                    if c.card_type != 'STAGE':
+                        continue
+                    sub = c.sub_types.lower() if hasattr(c, 'sub_types') and c.sub_types else ''
+                    name_l = c.name.lower()
+                    matches = (wanted_type in sub or wanted_type in name_l) if wanted_type else True
+                    if matches:
+                        valid_stages.append(c)
+                if valid_stages:
+                    best_stage = max(valid_stages, key=lambda c: c.cost)
+                    p.deck.remove(best_stage)
+                    p.field_stage = best_stage
+                    print(f'{col}{nm}: Stage inicial → {best_stage.name}{C.RESET}')
+
             print(f'{col}{nm}{C.RESET}: {len(p.hand)} cartas, {p.life_count()} vidas, {len(p.deck)} no deck')
 
         first_name = self.name_a if self.state_a.is_first else self.name_b
@@ -279,9 +304,12 @@ class ReplayMatch:
             card.just_played = not card.has_rush
             p.field_chars.append(card)
 
-            # Mostra efeito da carta
-            if card.card_text if hasattr(card, 'card_text') else False:
-                pass  # texto já mostrado acima
+            # Aplica efeitos On Play via EffectEngine
+            ee = EffectExecutor(p, opp if opp else GameState(leader=p.leader))
+            results = ee.execute(card, 'on_play')
+            for r in results:
+                if r:
+                    print(f'    {C.GREEN}↳ Efeito: {r}{C.RESET}')
 
             # Draw com condição
             do_draw = True
@@ -305,7 +333,7 @@ class ReplayMatch:
                     engine_tmp = DecisionEngine(p, opp)
                     for _ in range(draw_trash):
                         if p.hand:
-                            worst = engine_tmp.choose_card_to_trash(p.hand)
+                            worst = engine_tmp.choose_to_trash(p.hand)
                             if worst:
                                 p.hand.remove(worst)
                                 p.trash.append(worst)
@@ -313,19 +341,30 @@ class ReplayMatch:
                                 print(f'      (menor valor situacional — custo {worst.cost}, {worst.power}pwr){C.RESET}')
 
             if card.is_searcher and p.deck:
+                import re as _re
                 engine_tmp = DecisionEngine(p, opp)
-                look = min(5, len(p.deck))
+                # Lê o número do texto da carta (ex: "look at 3")
+                look_match = _re.search(r'look at (\d+)', card.card_text.lower())
+                look = min(int(look_match.group(1)) if look_match else 5, len(p.deck))
                 candidates = p.deck[-look:]
-                best = engine_tmp.choose_card_to_search(candidates)
+                best = max(candidates, key=lambda c: engine_tmp.avaliar_carta(c)) if candidates else None
+                # Remove a carta escolhida e adiciona à mão
                 p.deck.remove(best)
                 p.hand.append(best)
                 p.searchers_used += 1
+                # Resto volta para o FUNDO do deck
+                rest = [c for c in candidates if c is not best]
+                for c in rest:
+                    if c in p.deck:
+                        p.deck.remove(c)
+                p.deck = rest + p.deck
                 kws_s = []
                 if best.has_rush:          kws_s.append('Rush')
                 if best.has_blocker:       kws_s.append('Blocker')
                 if best.has_double_attack: kws_s.append('DA')
                 kw_s = f' [{", ".join(kws_s)}]' if kws_s else ''
-                print(f'    {C.CYAN}Searcher → olhou {look} cartas situacionalmente,')
+                rest_str = f', {len(rest)} carta(s) no fundo do deck' if rest else ''
+                print(f'    {C.CYAN}Searcher → olhou {look} cartas{rest_str},')
                 print(f'      pegou: {best.name[:28]} (custo {best.cost}, {best.power}pwr){kw_s}{C.RESET}')
             elif card.is_searcher and not p.deck:
                 print(f'    {C.GRAY}Searcher → deck vazio, nada buscado{C.RESET}')
@@ -490,6 +529,9 @@ class ReplayMatch:
                         for fin in remaining:
                             if self.execute_attack(fin, 'leader', None, p, opp):
                                 return 'A' if p is self.state_a else 'B'
+
+        # Aplica efeitos Activate Main das cartas em campo (IA decide)
+        # Activate Main é opcional (decisão do jogador) — não roda automaticamente
 
         for c in p.field_chars:
             c.just_played = False
