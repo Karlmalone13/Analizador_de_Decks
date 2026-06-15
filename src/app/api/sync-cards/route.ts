@@ -51,6 +51,19 @@ export async function GET() {
       fetchCards('https://optcgapi.com/api/allDonCards/'),
     ])
 
+
+    // Correções de cor conhecidas (optcgapi tem alguns erros).
+    // Chave = card_set_id (código base). Adicione conforme descobrir.
+    const COLOR_FIX: Record<string, string> = {
+      'OP15-098': 'Yellow',  // Monkey.D.Luffy — optcgapi traz Black, é Yellow
+    }
+    const fixColor = (code: string | null, color: string | null) => {
+      if (!code) return color
+      const base = code.trim().split('_')[0].toUpperCase()
+      
+      return COLOR_FIX[base] ?? color
+    }
+
     const mapCard = (c: any) => ({
       id: c.card_image_id || c.card_set_id,
       card_name: c.card_name,
@@ -58,7 +71,7 @@ export async function GET() {
       set_id: c.set_id || 'DON',
       card_image: c.card_image,
       card_text: c.card_text,
-      card_color: c.card_color || null,
+      card_color: fixColor(c.card_set_id, c.card_color || null),
       card_type: c.card_type || 'DON!!',
       rarity: c.rarity || 'DON!!',
       card_cost: c.card_cost ? String(c.card_cost) : null,
@@ -82,7 +95,7 @@ export async function GET() {
       set_id: c.set?.name?.match(/\[([^\]]+)\]/)?.[1] || '',
       card_image: c.images?.large || c.images?.small,
       card_text: c.ability || '',
-      card_color: c.color,
+      card_color: fixColor(c.code || c.id, c.color),
       card_type: c.type,
       rarity: c.rarity,
       card_cost: c.cost ? String(c.cost) : null,
