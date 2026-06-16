@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
 import Navbar from '@/components/Navbar'
+import { analyzeDeck, type CardAnalysis, type LeaderInput, type DeckAnalysis } from '../../utils/deck-analyzer'
+import analysisDb from '../../data/card_analysis_db.json'
 
 interface Card {
     id: string
@@ -32,30 +34,6 @@ interface Deck {
     name: string
     leader: Card | null
     cards: DeckCard[]
-}
-
-interface ModeloIA {
-    feature_cols: string[]
-    thresholds: { excelente: number, bom: number, regular: number }
-    stats: Record<string, { mean: number, std: number, min: number, max: number }>
-    lookup: Array<{
-        leader: string
-        leader_winrate: number
-        avg_cost: number
-        searchers: number
-        counters_2k: number
-        counters_1k: number
-        blockers: number
-        combined_score: number
-    }>
-    meta_reference: Array<{
-        deck_name: string
-        leader: string
-        avg_cost: number
-        searchers: number
-        counters_2k: number
-        combined_score: number
-    }>
 }
 
 const colorClass: Record<string, string> = {
@@ -264,62 +242,32 @@ function gerarPlano(deckCards: DeckCard[], leader: Card | null): { turno: number
 }
 
 // ── IA ────────────────────────────────────────────────────────────────────────
-function analisarComIA(
-    modelo: ModeloIA,
-    leaderCode: string,
-    avgCost: number,
-    searchers: number,
-    counters2k: number,
-    counters1k: number,
-    blockers: number
-): { score: number, label: string, color: string, similaresTop: typeof modelo.lookup, sugestoes: string[] } {
+// ── Ponte: deck do Supabase → deck-analyzer (arquétipo + Golden Ratios) ──────
+const ANALYSIS_DB = analysisDb as Record<string, CardAnalysis>
 
-    const similares = modelo.lookup
-        .map(item => {
-            const dist = Math.abs(item.avg_cost - avgCost) * 10
-                + Math.abs(item.searchers - searchers) * 2
-                + Math.abs(item.counters_2k - counters2k) * 2
-                + Math.abs(item.counters_1k - counters1k) * 1
-                + Math.abs(item.blockers - blockers) * 1
-            return { ...item, dist }
-        })
-        .sort((a, b) => a.dist - b.dist)
-
-    const vistos = new Set<string>()
-    const similaresSemDup = similares.filter(item => {
-        const key = item.leader 
-        if (vistos.has(key)) return false
-        vistos.add(key)
-        return true
-    })
-
-    const top5 = similaresSemDup.slice(0, 5)
-    const iaScore = top5.length > 0
-        ? Math.round(top5.reduce((s, i) => s + i.combined_score, 0) / top5.length)
-        : 50
-
-    const { excelente, bom, regular } = modelo.thresholds
-    const label = iaScore >= excelente ? 'Excelente' : iaScore >= bom ? 'Bom' : iaScore >= regular ? 'Regular' : 'Fraco'
-    const color = iaScore >= excelente ? 'text-green-400' : iaScore >= bom ? 'text-yellow-400' : iaScore >= regular ? 'text-orange-400' : 'text-red-400'
-
-    const sugestoes: string[] = []
-    const topPerf = similares.filter(i => i.combined_score >= excelente).slice(0, 3)
-
-    if (topPerf.length > 0) {
-        const avgSearchersTop = Math.round(topPerf.reduce((s, i) => s + i.searchers, 0) / topPerf.length)
-        const avgCounters2kTop = Math.round(topPerf.reduce((s, i) => s + i.counters_2k, 0) / topPerf.length)
-        const avgBlockersTop = Math.round(topPerf.reduce((s, i) => s + i.blockers, 0) / topPerf.length)
-        const avgCostTop = (topPerf.reduce((s, i) => s + i.avg_cost, 0) / topPerf.length).toFixed(1)
-
-        if (searchers < avgSearchersTop - 2) sugestoes.push(`🔍 Decks similares de alto nível usam em média ${avgSearchersTop} searchers (seu deck tem ${searchers})`)
-        if (counters2k < avgCounters2kTop - 1) sugestoes.push(`🛡️ Decks similares de alto nível usam em média ${avgCounters2kTop} counters 2000 (seu deck tem ${counters2k})`)
-        if (blockers < avgBlockersTop - 1) sugestoes.push(`🔒 Decks similares de alto nível usam em média ${avgBlockersTop} blockers (seu deck tem ${blockers})`)
-        if (avgCost > parseFloat(avgCostTop) + 0.5) sugestoes.push(`📊 Custo médio alto (${avgCost}) — decks similares top têm custo médio ${avgCostTop}`)
+function rodarAnalise(deck: Deck): DeckAnalysis | null {
+    if (!deck.leader) return null
+    const leaderCode = (deck.leader.card_set_id || '').split('_')[0]
+    const leader: LeaderInput = {
+        code: leaderCode,
+        color: deck.leader.card_color || '',
     }
+    // cruza cada carta do deck com o card_analysis_db.json
+    const main: CardAnalysis[] = []
+    for (const dc of deck.cards) {
+        const code = (dc.card.card_set_id || '').split('_')[0]
+        const rec = ANALYSIS_DB[code]
+        if (!rec || rec.type === 'LEADER') continue
+        for (let i = 0; i < dc.quantity; i++) main.push(rec)
+    }
+    return analyzeDeck(leader, main)
+}
 
-    if (sugestoes.length === 0) sugestoes.push('✅ Seu deck tem estrutura similar aos melhores decks desse arquétipo!')
-
-    return { score: iaScore, label, color, similaresTop: top5, sugestoes }
+const ARCHETYPE_COLOR: Record<string, string> = {
+    'Aggro': 'text-red-400',
+    'Controle': 'text-gray-300',
+    'Tempo/Ramp': 'text-purple-400',
+    'Vida/Triggers': 'text-yellow-400',
 }
 
 export default function AnalysisPage() {
@@ -334,7 +282,6 @@ export default function AnalysisPage() {
     const [simDone, setSimDone] = useState(false)
     const [simResult, setSimResult] = useState<ReturnType<typeof simularMaos> | null>(null)
     const [melhoresMaos, setMelhoresMaos] = useState<DeckCard[][]>([])
-    const [modelo, setModelo] = useState<ModeloIA | null>(null)
 
     useEffect(() => {
         if (!deckId) { setError('Nenhum deck selecionado.'); setLoading(false); return }
@@ -349,10 +296,6 @@ export default function AnalysisPage() {
         }
         load()
     }, [deckId])
-
-    useEffect(() => {
-        fetch('/modelo_optcg.json').then(r => r.json()).then(setModelo).catch(() => null)
-    }, [])
 
     useEffect(() => {
         if (!deck || simDone) return
@@ -531,7 +474,7 @@ export default function AnalysisPage() {
     }))
 
     const plano = gerarPlano(allCards, deck.leader)
-    const iaResult = modelo ? analisarComIA(modelo, leaderCode, avgCostNum, K_search, K_counter2k, K_counter1k, K_blocker) : null
+    const analise = rodarAnalise(deck)
 
     return (
         <div className="min-h-screen bg-gray-950 text-white flex flex-col">
@@ -791,48 +734,37 @@ export default function AnalysisPage() {
                     </div>
                 </div>
 
-                {/* IA */}
-                {iaResult && (
+                {/* ARQUÉTIPO + GOLDEN RATIOS */}
+                {analise && (
                     <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 mb-8">
                         <div className="flex items-start justify-between mb-6">
                             <div>
-                                <div className="text-sm font-semibold text-gray-400 uppercase tracking-wide">🤖 Análise por IA</div>
-                                <div className="text-xs text-gray-500 mt-1">Comparado com {modelo?.lookup.length} decks de torneios reais · Treinado com dados do Limitless TCG + OP Leaderboard</div>
+                                <div className="text-sm font-semibold text-gray-400 uppercase tracking-wide">📐 Arquétipo & Estrutura</div>
+                                <div className="text-xs text-gray-500 mt-1">Baseado no consenso de construção competitiva (Golden Ratios)</div>
                             </div>
                             <div className="text-center bg-gray-800 rounded-2xl px-6 py-3">
-                                <div className={`text-5xl font-black ${iaResult.color}`}>{iaResult.score}</div>
-                                <div className={`text-sm font-bold mt-1 ${iaResult.color}`}>{iaResult.label}</div>
-                                <div className="text-xs text-gray-500 mt-0.5">Score da IA (0-100)</div>
+                                <div className={`text-2xl font-black ${ARCHETYPE_COLOR[analise.archetype.archetype] || 'text-white'}`}>{analise.archetype.label}</div>
+                                <div className="text-xs text-gray-500 mt-1">via {analise.archetype.source === 'leader' ? 'líder' : analise.archetype.source === 'color' ? 'cor' : 'estrutura'} · confiança {analise.archetype.confidence}</div>
                             </div>
                         </div>
-                        <div className="mb-5">
-                            <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">💡 Sugestões da IA</div>
+                        <div className="mb-2">
+                            <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">📊 Golden Ratios · {analise.issues_count === 0 ? 'tudo dentro do recomendado' : `${analise.issues_count} ponto(s) de atenção`}</div>
                             <div className="space-y-2">
-                                {iaResult.sugestoes.map((s, i) => (
-                                    <div key={i} className="text-sm text-gray-300 bg-gray-800 rounded-lg px-4 py-2.5">{s}</div>
-                                ))}
-                            </div>
-                        </div>
-                        <div className="border-t border-gray-800 pt-5">
-                            <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">📊 Decks mais similares de torneio</div>
-                            <div className="space-y-2">
-                                {iaResult.similaresTop.map((item, i) => {
-                                    const sc = item.combined_score
-                                    const scColor = sc >= (modelo?.thresholds.excelente || 75) ? 'text-green-400' : sc >= (modelo?.thresholds.bom || 60) ? 'text-yellow-400' : 'text-orange-400'
+                                {analise.ratios.map((c, i) => {
+                                    const statusColor = c.status === 'ok' ? 'text-green-400' : c.status === 'baixo' ? 'text-orange-400' : 'text-yellow-400'
+                                    const barColor = c.status === 'ok' ? 'bg-green-500' : c.status === 'baixo' ? 'bg-orange-500' : 'bg-yellow-500'
+                                    const nomePt: Record<string, string> = { counters: 'Counters 2000', searchers: 'Searchers', blockers: 'Blockers', finishers: 'Finishers (8+)', events: 'Eventos' }
+                                    const pctBar = Math.min((c.count / Math.max(c.ideal[1], 1)) * 100, 100)
                                     return (
-                                        <div key={i} className="flex items-center gap-3 bg-gray-800 rounded-xl px-4 py-2.5">
-                                            <span className="text-xs text-gray-500 w-4">{i + 1}</span>
-                                            <div className="flex-1 min-w-0">
-                                                <div className="text-xs text-white font-medium truncate">{item.leader}</div>
-                                                <div className="text-xs text-gray-500">
-                                                    Custo {item.avg_cost} · {item.searchers} searchers · {item.counters_2k} counter 2k · {item.blockers} blockers
-                                                </div>
+                                        <div key={i} className="bg-gray-800 rounded-xl px-4 py-2.5">
+                                            <div className="flex items-center justify-between mb-1.5">
+                                                <span className="text-sm text-white font-medium">{nomePt[c.name] || c.name}</span>
+                                                <span className={`text-sm font-bold ${statusColor}`}>{c.count} <span className="text-xs text-gray-500">(ideal {c.ideal[0]}-{c.ideal[1]})</span></span>
                                             </div>
-                                            <div className="flex items-center gap-2">
-                                                <span className="text-xs text-gray-400">WR leader:</span>
-                                                <span className="text-xs font-bold text-blue-400">{item.leader_winrate.toFixed(1)}%</span>
+                                            <div className="w-full bg-gray-700 rounded-full h-1.5">
+                                                <div className={`h-1.5 rounded-full ${barColor}`} style={{ width: `${pctBar}%` }} />
                                             </div>
-                                            <div className={`text-sm font-black ${scColor} w-10 text-right`}>{sc}</div>
+                                            {c.status !== 'ok' && <div className="text-xs text-gray-400 mt-1.5">{c.advice}</div>}
                                         </div>
                                     )
                                 })}

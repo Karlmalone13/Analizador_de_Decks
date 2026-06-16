@@ -354,6 +354,45 @@ def parse_heal(text):
     return steps
 
 
+def parse_life(text):
+    """
+    Manipulação de vida em três direções (sinais de arquétipo diferentes):
+      - gain_life   : adiciona à SUA vida (defensivo → Vida/Triggers)
+      - attack_life : remove da vida do OPONENTE (ofensivo → Aggro/Controle)
+      - trash_own_life : descarta da SUA vida como custo/troca (engine)
+    Cobre variações de redação ("to the top/bottom of your Life", "up to N").
+    """
+    steps = []
+    t = text.lower()
+
+    # quantidade genérica (N ou "up to N"); default 1 quando não especifica
+    def qty_near(keyword_idx):
+        seg = t[max(0, keyword_idx - 60):keyword_idx]
+        m = re.search(r'(?:up to |add )?(\d+) cards?', seg)
+        return int(m.group(1)) if m else 1
+
+    # ── Ganha a própria vida ───────────────────────────────────────────
+    m = re.search(r'to (?:the (?:top|bottom) of )?your life', t)
+    if m and 'trash' not in t[:m.start()]:
+        # garante que é ADIÇÃO (add/put), não trash
+        if re.search(r'(add|put)[^.]*your life', t):
+            steps.append({'action': 'gain_life', 'count': qty_near(m.start())})
+
+    # ── Ataca a vida do oponente ───────────────────────────────────────
+    m = re.search(r"opponent's life", t)
+    if m:
+        # trash da vida do oponente OU fazer oponente add (ambos ofensivos)
+        if re.search(r"trash[^.]*opponent's life", t):
+            steps.append({'action': 'attack_life', 'count': qty_near(m.start())})
+
+    # ── Descarta a própria vida (custo/troca) ──────────────────────────
+    m = re.search(r'trash[^.]*from (?:the top of )?your life', t)
+    if m:
+        steps.append({'action': 'trash_own_life', 'count': qty_near(m.start())})
+
+    return steps
+
+
 def parse_add_from_trash(text):
     steps = []
     t = text.lower()
@@ -414,9 +453,13 @@ def parse_block(block_text, trigger_name):
     if 'from your deck' in t and 'play up to' in t and 'look at' not in t:
         steps.extend(parse_play_from_deck(t))
 
-    # Heal
+    # Heal (vida pelo fundo, redação clássica)
     if 'bottom of your life' in t:
         steps.extend(parse_heal(t))
+
+    # Manipulação de vida (3 direções: ganhar / atacar oponente / trashar própria)
+    if 'life' in t:
+        steps.extend(parse_life(t))
 
     # Add from trash
     if 'from your trash to your hand' in t:

@@ -62,6 +62,32 @@ COLOR_ARCHETYPE: dict[str, str] = {
 }
 
 
+# ── Pesos: comportamento da carta → arquétipo ──────────────────────────────
+# Pontuação ponderada. Cada flag presente soma os pontos abaixo, multiplicado
+# pelo número de CÓPIAS da carta no deck. Comportamento é o sinal PRIMÁRIO;
+# cor entra só como desempate quando há pouco sinal de comportamento.
+BEHAVIOR_WEIGHTS: dict[str, dict[str, int]] = {
+    #  flag                  Aggro Controle Ramp  Vida
+    'has_rush':          {AGGRO: 3},
+    'has_double_attack': {AGGRO: 2},
+    'has_unblockable':   {AGGRO: 2},
+    'kos':               {CONTROLE: 3},
+    'rests_opponent':    {CONTROLE: 2, RAMP: 1},
+    'bounces':           {CONTROLE: 1, RAMP: 2},
+    'power_buff':        {AGGRO: 1, CONTROLE: 1},
+    'gives_don':         {RAMP: 3},
+    'is_searcher':       {RAMP: 1},
+    'draws':             {RAMP: 1},
+    'is_blocker':        {CONTROLE: 1, RAMP: 1, VIDA: 1},
+    'has_counter_value': {CONTROLE: 1, VIDA: 2},
+    'has_counter_event': {CONTROLE: 1, VIDA: 2},
+    'has_trigger':       {VIDA: 3},
+    'gains_life':        {RAMP: 1, VIDA: 3},
+    'attacks_life':      {AGGRO: 2, CONTROLE: 2},
+    'trashes_own_life':  {AGGRO: 1, RAMP: 1},
+}
+
+
 # ===========================================================================
 # Resultado da detecção
 # ===========================================================================
@@ -95,33 +121,64 @@ def _colors_of(color_str: str) -> list[str]:
 def detect_archetype(leader: dict, main_cards: list[dict]) -> ArchetypeResult:
     """
     leader: dict com ao menos {code, color}
-    main_cards: lista de dicts com {cost, color, ...flags de analysis_db}
+    main_cards: lista de dicts (uma entrada por CÓPIA) com flags de comportamento
     """
     code = _base_code(leader.get('code', ''))
     leader_colors = _colors_of(leader.get('color', ''))
 
-    # ── Camada 1: líder conhecido ──────────────────────────────────────────
+    # ── Camada 1: líder conhecido (override manual de meta) ────────────────
     if code in LEADER_ARCHETYPE:
         arche = LEADER_ARCHETYPE[code]
         return ArchetypeResult(arche, 'leader', 'alta',
                                {arche: 100.0}, 'classificado pelo líder')
 
-    # ── Camada 2: mistura ponderada pela composição de cor do deck ─────────
-    if leader_colors:
-        mix = _color_mix(leader_colors, main_cards)
-        if mix:
-            dominant = max(mix, key=mix.get)
-            # confiança: alta separação = mais confiável
-            top = mix[dominant]
-            conf = 'média' if top >= 60 else 'baixa'
-            return ArchetypeResult(
-                dominant, 'color', conf, mix,
-                f'mistura por composição ({" ".join(leader_colors)})')
+    # ── Camada 2: comportamento das cartas (PRIMÁRIO) ──────────────────────
+    behavior_score = _behavior_mix(main_cards)
+    total_signal = sum(behavior_score.values())
 
-    # ── Camada 3: estrutura ────────────────────────────────────────────────
+    if total_signal >= 8:  # sinal de comportamento suficiente para confiar
+        mix = _normalize(behavior_score)
+        dominant = max(mix, key=mix.get)
+        top = mix[dominant]
+        conf = 'alta' if top >= 50 else ('média' if top >= 38 else 'baixa')
+        return ArchetypeResult(dominant, 'behavior', conf, mix,
+                               'inferido pelo comportamento das cartas')
+
+    # ── Camada 3: cor como desempate (pouco sinal de comportamento) ────────
+    if leader_colors:
+        cmix = _color_mix(leader_colors, main_cards)
+        if cmix:
+            # combina o pouco sinal de comportamento com a cor
+            for a, v in behavior_score.items():
+                cmix[a] = cmix.get(a, 0) + v * 2  # comportamento ainda pesa
+            mix = _normalize(cmix)
+            dominant = max(mix, key=mix.get)
+            return ArchetypeResult(dominant, 'color', 'baixa', mix,
+                                   f'pouco sinal de cartas; cor como base ({" ".join(leader_colors)})')
+
+    # ── Camada 4: estrutura (último recurso) ───────────────────────────────
     arche = _infer_from_structure(main_cards)
     return ArchetypeResult(arche, 'structure', 'baixa',
                            {arche: 100.0}, 'inferido pela estrutura')
+
+
+def _behavior_mix(main_cards: list[dict]) -> dict[str, float]:
+    """Soma os pesos de comportamento de todas as cartas (já por cópia)."""
+    score: dict[str, float] = {AGGRO: 0.0, CONTROLE: 0.0, RAMP: 0.0, VIDA: 0.0}
+    for card in main_cards:
+        for flag, weights in BEHAVIOR_WEIGHTS.items():
+            if card.get(flag):
+                for arche, pts in weights.items():
+                    score[arche] += pts
+    return score
+
+
+def _normalize(score: dict[str, float]) -> dict[str, float]:
+    """Converte pontuação bruta em percentuais que somam 100."""
+    total = sum(score.values())
+    if total == 0:
+        return {}
+    return {a: round(100 * v / total, 1) for a, v in score.items() if v > 0}
 
 
 def _color_mix(leader_colors: list[str], main_cards: list[dict]) -> dict[str, float]:

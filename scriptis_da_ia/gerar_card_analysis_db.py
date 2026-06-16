@@ -19,6 +19,7 @@ Saída:
 """
 
 import json
+import re
 import pandas as pd
 
 from gerar_effects_db import parse_card_effect
@@ -59,12 +60,27 @@ def derive_analysis(card_text: str, card_type: str, counter: int) -> dict:
 
     # ── Interação / removal ─────────────────────────────────────────────
     is_removal = bool(actions & {'ko', 'bounce', 'rest_opp_character'})
+    # comportamentos granulares (para detecção de arquétipo por cartas)
+    kos = 'ko' in actions                          # KO de personagem (controle)
+    rests_opponent = 'rest_opp_character' in actions  # trava personagem (controle/tempo)
+    bounces = 'bounce' in actions                  # retorna à mão (tempo/controle)
+    gives_don = 'give_don' in actions              # engine de DON (ramp)
+    power_buff = 'buff_power' in actions           # buff/debuff de poder
 
     # ── Agressão / finalização ──────────────────────────────────────────
     has_rush = 'keyword_rush' in actions or 'gain_rush' in actions
     has_double_attack = 'keyword_double_attack' in actions or 'gain_double_attack' in actions
     has_unblockable = 'keyword_unblockable' in actions or 'gain_unblockable' in actions
     has_banish = 'keyword_banish' in actions or 'gain_banish' in actions
+
+    # ── Cura / vida (identidade amarela) ────────────────────────────────
+    heals = 'heal' in actions
+    # Manipulação de vida detectada por padrão de texto (parser de efeitos
+    # não captura vida). Três direções, pois têm sinais opostos:
+    _t = (card_text or '').lower()
+    gains_life = bool(re.search(r'to (the top of )?your life', _t))      # defensivo (Vida)
+    attacks_life = bool(re.search(r"opponent's life", _t))               # ofensivo (Aggro/Controle)
+    trashes_own_life = bool(re.search(r'trash[^.]*your life', _t))       # troca vida por vantagem
 
     # ── Trigger na vida (afeta consistência defensiva) ──────────────────
     has_trigger = 'trigger' in triggers
@@ -76,6 +92,15 @@ def derive_analysis(card_text: str, card_type: str, counter: int) -> dict:
         'has_counter_event': has_counter_event,
         'is_blocker': is_blocker,
         'is_removal': is_removal,
+        'kos': kos,
+        'rests_opponent': rests_opponent,
+        'bounces': bounces,
+        'gives_don': gives_don,
+        'power_buff': power_buff,
+        'heals': heals,
+        'gains_life': gains_life,
+        'attacks_life': attacks_life,
+        'trashes_own_life': trashes_own_life,
         'has_rush': has_rush,
         'has_double_attack': has_double_attack,
         'has_unblockable': has_unblockable,
