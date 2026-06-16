@@ -48,6 +48,10 @@ def parse_conditions(text):
     m = re.search(r"if your leaders? type includes? [\"']?([^\"'\n,]+)[\"']?", t)
     if m: conds['leader_type_includes'] = m.group(1).strip()
 
+    # "if your leader has the X type" — X entre aspas, colchetes ou chaves
+    m = re.search(r'if your leader has (?:the )?["\[{]([^"\]}]+)["\]}] type', t)
+    if m: conds['leader_type'] = m.group(1).strip()
+
     if 'if your leader is multicolored' in t:
         conds['leader_multicolor'] = True
 
@@ -156,7 +160,7 @@ def parse_ko(text):
     t = text.lower()
 
     # KO stage
-    m = re.search(r"k\.o\. up to (\d+) of your opponent.{0,5} stages?", t)
+    m = re.search(r"k\.o\. up to (\d+) of your opponent.{0,20} stages?", t)
     if m:
         cost_m = re.search(r'with a cost of (\d+)', t)
         steps.append({
@@ -168,7 +172,7 @@ def parse_ko(text):
         return steps
 
     # KO personagem com custo
-    m = re.search(r"k\.o\. up to (\d+) of your opponent.{0,5} characters? with a cost of (\d+) or less", t)
+    m = re.search(r"k\.o\. up to (\d+) of your opponent.{0,20} characters? with a cost of (\d+) or less", t)
     if m:
         step = {
             'action': 'ko',
@@ -182,7 +186,7 @@ def parse_ko(text):
         return steps
 
     # KO generico
-    m = re.search(r"k\.o\. up to (\d+) of your opponent.{0,5} characters?", t)
+    m = re.search(r"k\.o\. up to (\d+) of your opponent.{0,20} characters?", t)
     if m:
         steps.append({
             'action': 'ko',
@@ -197,7 +201,7 @@ def parse_bounce(text):
     steps = []
     t = text.lower()
 
-    m = re.search(r"return up to (\d+) of your opponent.{0,5} characters? with a cost of (\d+) or less", t)
+    m = re.search(r"return up to (\d+) of your opponent.{0,20} characters? with a cost of (\d+) or less", t)
     if m:
         steps.append({
             'action': 'bounce',
@@ -207,7 +211,7 @@ def parse_bounce(text):
         })
         return steps
 
-    m = re.search(r"return up to (\d+) of your opponent.{0,5} characters?", t)
+    m = re.search(r"return up to (\d+) of your opponent.{0,20} characters?", t)
     if m:
         steps.append({'action': 'bounce', 'count': int(m.group(1)), 'target': 'opp_character'})
 
@@ -228,7 +232,7 @@ def parse_rest_opp(text):
         })
         return steps
 
-    m = re.search(r"rest up to (\d+) of your opponent.{0,5} characters?", t)
+    m = re.search(r"rest up to (\d+) of your opponent.{0,20} characters?", t)
     if m:
         steps.append({'action': 'rest_opp_character', 'count': int(m.group(1))})
 
@@ -364,6 +368,38 @@ def parse_play_from_deck(text):
     return steps
 
 
+def parse_play_generic(text):
+    """Play sem origem explícita: 'Play this card', 'Play up to N ... Character card'."""
+    steps = []
+    t = text.lower()
+    if 'play this card' in t:
+        steps.append({'action': 'play_card', 'count': 1, 'source': 'self'})
+        return steps
+    m = re.search(r'play up to (\d+) [^.]*?(?:character|stage) card', t)
+    if m and 'from your deck' not in t and 'from your trash' not in t:
+        cost_m = re.search(r'with a cost of (\d+) or less', t)
+        steps.append({
+            'action': 'play_card', 'count': int(m.group(1)),
+            'cost_lte': int(cost_m.group(1)) if cost_m else 99,
+        })
+    return steps
+
+
+def parse_cost_debuff(text):
+    """Give -N cost / +N cost (manipulação de custo)."""
+    steps = []
+    t = text.lower()
+    m = re.search(r'give [^.]*?([+\-−])(\d+) cost', t)
+    if m:
+        is_debuff = m.group(1) in ('-', '−')
+        target = 'opp_character' if "opponent" in t[:m.start()+len(m.group(0))] else 'own_character'
+        steps.append({
+            'action': 'debuff_cost' if is_debuff else 'buff_cost',
+            'amount': int(m.group(2)), 'target': target,
+        })
+    return steps
+
+
 def parse_heal(text):
     steps = []
     t = text.lower()
@@ -461,6 +497,14 @@ def parse_block(block_text, trigger_name):
     # Power buff/debuff
     if 'power' in t and ('+' in t or '-' in t or '−' in t):
         steps.extend(parse_power_buff(t))
+
+    # Custo: give -N/+N cost
+    if 'cost' in t and ('give' in t) and ('-' in t or '−' in t or '+' in t):
+        steps.extend(parse_cost_debuff(t))
+
+    # Play genérico (sem origem explícita)
+    if 'play ' in t:
+        steps.extend(parse_play_generic(t))
 
     # DON: give, add (ramp), set active
     if 'don' in t and ('give' in t or 'add' in t or 'set' in t):
