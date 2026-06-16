@@ -43,15 +43,20 @@ def _collect_actions(effects: dict) -> set:
 
 def _effects_with_trigger(effects: dict) -> list:
     """
-    Extrai [{action, trigger}] preservando QUAL gatilho dispara cada efeito.
-    Permite ponderar por confiabilidade (On Play 1.0 vs Trigger 0.35).
+    Extrai [{action, trigger, ...attrs}] preservando QUAL gatilho dispara cada
+    efeito e atributos relevantes para sinergia (power_lte, cost_lte).
     """
     out = []
     for trigger, data in effects.items():
         for step in data.get('steps', []):
             a = step.get('action')
             if a:
-                out.append({'action': a, 'trigger': trigger})
+                entry = {'action': a, 'trigger': trigger}
+                # atributos para sinergia Formato B
+                for attr in ('power_lte', 'cost_lte', 'rested_only', 'target'):
+                    if attr in step:
+                        entry[attr] = step[attr]
+                out.append(entry)
     return out
 
 
@@ -103,6 +108,7 @@ def derive_analysis(card_text: str, card_type: str, counter: int) -> dict:
     return {
         'effects': _effects_with_trigger(effects),
         'synergy_states': detect_card_states(card_text),
+        'text': card_text or '',
         'is_searcher': is_searcher,
         'draws': draws,
         'has_counter_value': has_counter_value,

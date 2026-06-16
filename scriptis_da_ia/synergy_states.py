@@ -60,13 +60,17 @@ def detect_card_states(card_text: str) -> dict:
 
 def detect_deck_synergies(main_cards: list) -> list:
     """
-    Recebe a lista de cartas do deck (cada uma com 'effects' e o texto via
-    'synergy_states' pré-computado, ou recalcula). Retorna as sinergias ativas:
-    [{state, desc, arquetipo, n_creators, n_exploiters, score}]
-
-    Uma sinergia está ATIVA quando o deck tem >=1 carta que cria o estado E
-    >=1 que o explora. O score escala com o menor lado (o gargalo da combo).
+    Recebe a lista de cartas do deck. Retorna as sinergias ativas (Formato A
+    + Formato B). Cada sinergia: {state, desc, arquetipo, n_creators,
+    n_exploiters, score}.
     """
+    active = _synergies_format_a(main_cards)
+    active += _synergies_format_b(main_cards)
+    return active
+
+
+def _synergies_format_a(main_cards: list) -> list:
+    """Formato A: estado compartilhado (uma carta cria, outra explora)."""
     creators = {s: 0 for s in SYNERGY_STATES}
     exploiters = {s: 0 for s in SYNERGY_STATES}
 
@@ -82,7 +86,6 @@ def detect_deck_synergies(main_cards: list) -> list:
     for state, cfg in SYNERGY_STATES.items():
         c, e = creators[state], exploiters[state]
         if c >= 1 and e >= 1:
-            # gargalo: a combo só funciona com os dois lados; usa o menor
             strength = min(c, e)
             active.append({
                 'state': state,
@@ -90,6 +93,51 @@ def detect_deck_synergies(main_cards: list) -> list:
                 'arquetipo': cfg['arquetipo'],
                 'n_creators': c,
                 'n_exploiters': e,
+                'score': strength * cfg['peso'],
+            })
+    return active
+
+
+# ── Formato B: sinergia por ATRIBUTO do efeito ─────────────────────────────
+# Uma carta com KO condicionado a poder/custo combina com cartas que reduzem
+# aquele mesmo atributo no oponente (a redução amplia o alcance do KO).
+FORMAT_B_SYNERGIES = {
+    'ko_poder_x_debuff_poder': {
+        'lado_a': lambda eff: eff.get('action') == 'ko' and 'power_lte' in eff,
+        'lado_b': lambda eff: eff.get('action') == 'debuff_power',
+        'arquetipo': 'Controle',
+        'peso': 3,
+        'desc': 'KO por poder + redução de poder (controle por poder)',
+    },
+    'ko_custo_x_debuff_custo': {
+        'lado_a': lambda eff: eff.get('action') == 'ko' and 'cost_lte' in eff,
+        'lado_b': lambda eff: eff.get('action') == 'debuff_cost',
+        'arquetipo': 'Controle',
+        'peso': 3,
+        'desc': 'KO por custo + redução de custo (controle por custo)',
+    },
+}
+
+
+def _synergies_format_b(main_cards: list) -> list:
+    """Formato B: KO por atributo + redução do mesmo atributo."""
+    active = []
+    for key, cfg in FORMAT_B_SYNERGIES.items():
+        a = b = 0
+        for card in main_cards:
+            for eff in card.get('effects', []):
+                if cfg['lado_a'](eff):
+                    a += 1
+                if cfg['lado_b'](eff):
+                    b += 1
+        if a >= 1 and b >= 1:
+            strength = min(a, b)
+            active.append({
+                'state': key,
+                'desc': cfg['desc'],
+                'arquetipo': cfg['arquetipo'],
+                'n_creators': a,
+                'n_exploiters': b,
                 'score': strength * cfg['peso'],
             })
     return active

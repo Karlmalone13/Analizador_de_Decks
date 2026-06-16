@@ -185,6 +185,20 @@ def parse_ko(text):
         steps.append(step)
         return steps
 
+    # KO personagem com PODER (with N (base) power or less)
+    m = re.search(r"k\.o\. up to (\d+) of your opponent.{0,20} characters? with (?:a )?(\d+) (?:base )?power or less", t)
+    if m:
+        step = {
+            'action': 'ko',
+            'count': int(m.group(1)),
+            'target': 'opp_character',
+            'power_lte': int(m.group(2))
+        }
+        if 'rested' in t:
+            step['rested_only'] = True
+        steps.append(step)
+        return steps
+
     # KO generico
     m = re.search(r"k\.o\. up to (\d+) of your opponent.{0,20} characters?", t)
     if m:
@@ -309,23 +323,32 @@ def parse_give_don(text):
     steps = []
     t = text.lower()
 
+    # Dar/anexar DON — distinguir alvo (aliado vs oponente)
     m = re.search(r'give up to (\d+) (?:rested )?don!!', t)
     if m:
+        cnt = int(m.group(1))
+        # alvo: se menciona "opponent" perto, é setup no oponente (controle)
+        # senão é buff em personagem próprio (aggro)
+        to_opp = bool(re.search(r"to .{0,30}opponent's (leader|character)", t)) or \
+                 bool(re.search(r"opponent's characters?:?\s*$", t))
         steps.append({
-            'action': 'give_don',
-            'count': int(m.group(1)),
-            'rested': 'rested' in t[:t.find('don!!')] if 'don!!' in t else False
+            'action': 'give_don_opp' if to_opp else 'give_don',
+            'count': cnt,
         })
 
-    # Aceleração: adicionar DON do deck de DON (ramp)
-    m = re.search(r'add up to (\d+) don!! cards?|add (\d+) don!! cards?', t)
-    if m:
-        cnt = int(m.group(1) or m.group(2))
-        steps.append({'action': 'add_don', 'count': cnt})
+    # Aceleração REAL: adicionar DON do seu deck de DON ao seu campo (ramp)
+    if re.search(r'add up to \d+ don!! cards? from your don!! deck|add \d+ don!! cards? from your don!! deck', t):
+        m2 = re.search(r'add up to (\d+) don!! cards?|add (\d+) don!! cards?', t)
+        if m2:
+            steps.append({'action': 'add_don', 'count': int(m2.group(1) or m2.group(2))})
 
-    # Reativar DON (set as active) = aceleração de tempo
+    # Reativar DON (set as active) = aceleração
     if re.search(r'set (?:up to )?\d* ?(?:of your )?don!! cards?.* as active', t):
         steps.append({'action': 'set_don_active'})
+
+    # Trava de DON do oponente: "will not become active" (controle de recurso)
+    if re.search(r"opponent's .{0,30}will not become active|will not become active", t):
+        steps.append({'action': 'lock_opp_don'})
 
     return steps
 

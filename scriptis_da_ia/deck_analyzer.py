@@ -19,6 +19,7 @@ from collections import Counter
 from dataclasses import dataclass, field
 from typing import Optional
 from synergy_states import detect_deck_synergies
+from tribal_cohesion import compute_tribal_cohesion
 
 # Peso moderado da sinergia (Camada 2) ao somar com efeitos isolados (Camada 1).
 # Começa em 0.5 para a sinergia reforçar sem dominar; calibrável.
@@ -400,6 +401,7 @@ def analyze_deck(leader: dict, main_cards: list[dict]) -> dict:
     arche = detect_archetype(leader, main_cards)
     ratios = analyze_ratios(main_cards, arche.archetype)
     curve = cost_curve(main_cards)
+    cohesion = compute_tribal_cohesion(leader, main_cards)
 
     n_issues = sum(1 for c in ratios if c.status != 'ok')
 
@@ -413,6 +415,8 @@ def analyze_deck(leader: dict, main_cards: list[dict]) -> dict:
             'mix': arche.mix,
             'note': arche.note,
         },
+        'synergies': arche.synergies,
+        'tribal_cohesion': cohesion,
         'ratios': [
             {'name': c.name, 'count': c.count,
              'ideal': [c.ideal_min, c.ideal_max],
