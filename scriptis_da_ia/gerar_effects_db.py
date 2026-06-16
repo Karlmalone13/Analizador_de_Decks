@@ -256,23 +256,31 @@ def parse_power_buff(text):
     steps = []
     t = text.lower()
 
-    m = re.search(r'\+(\d+)\s*power', t)
+    m = re.search(r'([+\-−])(\d+)\s*power', t)
     if not m:
         return steps
 
-    amount = int(m.group(1))
+    sign = m.group(1)
+    amount = int(m.group(2))
+    is_debuff = sign in ('-', '−')
     target = 'self'
     duration = 'this_turn'
 
+    # debuff normalmente mira o oponente
+    if is_debuff or "opponent" in t:
+        if "opponent's leader" in t:
+            target = 'opp_leader'
+        elif "opponent's character" in t or "opponent" in t:
+            target = 'opp_character'
     if 'your leader or 1 of your characters' in t:
         target = 'leader_or_character'
     elif 'all of your' in t and "leader" in t:
         target = 'all_allies_and_leader'
     elif 'all of your characters' in t:
         target = 'all_allies'
-    elif 'your leader' in t:
+    elif 'your leader' in t and not is_debuff:
         target = 'leader'
-    elif 'this character' in t or 'this card' in t:
+    elif ('this character' in t or 'this card' in t) and not is_debuff:
         target = 'self'
 
     if 'until the start of your' in t:
@@ -286,7 +294,10 @@ def parse_power_buff(text):
     elif 'this turn' in t:
         duration = 'this_turn'
 
-    steps.append({'action': 'buff_power', 'amount': amount, 'target': target, 'duration': duration})
+    steps.append({
+        'action': 'debuff_power' if is_debuff else 'buff_power',
+        'amount': amount, 'target': target, 'duration': duration
+    })
     return steps
 
 
@@ -301,6 +312,16 @@ def parse_give_don(text):
             'count': int(m.group(1)),
             'rested': 'rested' in t[:t.find('don!!')] if 'don!!' in t else False
         })
+
+    # Aceleração: adicionar DON do deck de DON (ramp)
+    m = re.search(r'add up to (\d+) don!! cards?|add (\d+) don!! cards?', t)
+    if m:
+        cnt = int(m.group(1) or m.group(2))
+        steps.append({'action': 'add_don', 'count': cnt})
+
+    # Reativar DON (set as active) = aceleração de tempo
+    if re.search(r'set (?:up to )?\d* ?(?:of your )?don!! cards?.* as active', t):
+        steps.append({'action': 'set_don_active'})
 
     return steps
 
@@ -437,12 +458,12 @@ def parse_block(block_text, trigger_name):
     if 'draw' in t and 'look at' not in t:
         steps.extend(parse_draw(t))
 
-    # Power buff
-    if '+' in t and 'power' in t:
+    # Power buff/debuff
+    if 'power' in t and ('+' in t or '-' in t or '−' in t):
         steps.extend(parse_power_buff(t))
 
-    # Give DON
-    if 'give' in t and 'don' in t:
+    # DON: give, add (ramp), set active
+    if 'don' in t and ('give' in t or 'add' in t or 'set' in t):
         steps.extend(parse_give_don(t))
 
     # Play from trash
