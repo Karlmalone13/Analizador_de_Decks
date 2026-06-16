@@ -1,0 +1,95 @@
+"""
+synergy_states.py
+=================
+Camada 2 da análise: SINERGIAS (Formato A — estado compartilhado).
+
+Cada carta pode CRIAR um estado de jogo e/ou EXPLORAR um estado.
+Quando um deck tem cartas que criam o estado S e cartas que exploram S,
+há sinergia — e isso reforça um arquétipo.
+
+Esta camada é SEPARADA da pontuação de efeitos isolados (deck_analyzer),
+para ser visível e depurável: o resultado final mostra quanto do arquétipo
+veio dos efeitos e quanto veio das sinergias.
+
+Mantido fora de gerar_effects_db para não misturar com o parser de efeitos.
+"""
+import re
+
+# ── Definição dos estados ───────────────────────────────────────────────────
+# Cada estado tem:
+#   cria    : regex que indica que a carta CRIA o estado
+#   explora : regex que indica que a carta EXPLORA o estado
+#   arquetipo : para qual arquétipo a sinergia aponta (quando detectada)
+#   peso    : força da sinergia (pontos adicionados ao arquétipo)
+SYNERGY_STATES = {
+    'char_restado': {
+        'cria':    r'rest up to \d+ (of your opponent|of them)|set .{0,20}character.{0,10}as rested|rest \d+ of your opponent',
+        'explora': r'rested character|that is rested|if .{0,15}is rested',
+        'arquetipo': 'Controle',
+        'peso': 3,
+        'desc': 'Restar + punir restado',
+    },
+    'vida_ganha': {
+        'cria':    r'to (the top of )?your life',
+        'explora': r'\[trigger\]',
+        'arquetipo': 'Vida/Triggers',
+        'peso': 3,
+        'desc': 'Ganhar vida + triggers (que vêm da vida)',
+    },
+    'opp_char_com_DON': {
+        'cria':    r"give .{0,30}don!!.{0,30}opponent'?s? (character|leader)",
+        'explora': r'with \d+ or more don!!|that has \d+ or more don',
+        'arquetipo': 'Controle',
+        'peso': 4,
+        'desc': 'DON ao oponente + punir quem tem DON (engine Krieg)',
+    },
+}
+
+
+def detect_card_states(card_text: str) -> dict:
+    """Para uma carta, retorna {estado: {'creates': bool, 'requires': bool}}."""
+    t = (card_text or '').lower()
+    out = {}
+    for state, cfg in SYNERGY_STATES.items():
+        creates = bool(re.search(cfg['cria'], t))
+        requires = bool(re.search(cfg['explora'], t))
+        if creates or requires:
+            out[state] = {'creates': creates, 'requires': requires}
+    return out
+
+
+def detect_deck_synergies(main_cards: list) -> list:
+    """
+    Recebe a lista de cartas do deck (cada uma com 'effects' e o texto via
+    'synergy_states' pré-computado, ou recalcula). Retorna as sinergias ativas:
+    [{state, desc, arquetipo, n_creators, n_exploiters, score}]
+
+    Uma sinergia está ATIVA quando o deck tem >=1 carta que cria o estado E
+    >=1 que o explora. O score escala com o menor lado (o gargalo da combo).
+    """
+    creators = {s: 0 for s in SYNERGY_STATES}
+    exploiters = {s: 0 for s in SYNERGY_STATES}
+
+    for card in main_cards:
+        states = card.get('synergy_states') or detect_card_states(card.get('text', ''))
+        for state, flags in states.items():
+            if flags.get('creates'):
+                creators[state] += 1
+            if flags.get('requires'):
+                exploiters[state] += 1
+
+    active = []
+    for state, cfg in SYNERGY_STATES.items():
+        c, e = creators[state], exploiters[state]
+        if c >= 1 and e >= 1:
+            # gargalo: a combo só funciona com os dois lados; usa o menor
+            strength = min(c, e)
+            active.append({
+                'state': state,
+                'desc': cfg['desc'],
+                'arquetipo': cfg['arquetipo'],
+                'n_creators': c,
+                'n_exploiters': e,
+                'score': strength * cfg['peso'],
+            })
+    return active

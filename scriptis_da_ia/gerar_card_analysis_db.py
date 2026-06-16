@@ -23,6 +23,7 @@ import re
 import pandas as pd
 
 from gerar_effects_db import parse_card_effect
+from synergy_states import detect_card_states
 
 
 # ===========================================================================
@@ -38,6 +39,20 @@ def _collect_actions(effects: dict) -> set:
             if a:
                 actions.add(a)
     return actions
+
+
+def _effects_with_trigger(effects: dict) -> list:
+    """
+    Extrai [{action, trigger}] preservando QUAL gatilho dispara cada efeito.
+    Permite ponderar por confiabilidade (On Play 1.0 vs Trigger 0.35).
+    """
+    out = []
+    for trigger, data in effects.items():
+        for step in data.get('steps', []):
+            a = step.get('action')
+            if a:
+                out.append({'action': a, 'trigger': trigger})
+    return out
 
 
 def derive_analysis(card_text: str, card_type: str, counter: int) -> dict:
@@ -86,6 +101,8 @@ def derive_analysis(card_text: str, card_type: str, counter: int) -> dict:
     has_trigger = 'trigger' in triggers
 
     return {
+        'effects': _effects_with_trigger(effects),
+        'synergy_states': detect_card_states(card_text),
         'is_searcher': is_searcher,
         'draws': draws,
         'has_counter_value': has_counter_value,

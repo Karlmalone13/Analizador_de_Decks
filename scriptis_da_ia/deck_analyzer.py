@@ -18,6 +18,11 @@ Detecção de arquétipo em 3 camadas (precisão decrescente, cobertura crescent
 from collections import Counter
 from dataclasses import dataclass, field
 from typing import Optional
+from synergy_states import detect_deck_synergies
+
+# Peso moderado da sinergia (Camada 2) ao somar com efeitos isolados (Camada 1).
+# Começa em 0.5 para a sinergia reforçar sem dominar; calibrável.
+SYNERGY_WEIGHT = 0.5
 
 
 # ===========================================================================
@@ -62,29 +67,57 @@ COLOR_ARCHETYPE: dict[str, str] = {
 }
 
 
-# ── Pesos: comportamento da carta → arquétipo ──────────────────────────────
-# Pontuação ponderada. Cada flag presente soma os pontos abaixo, multiplicado
-# pelo número de CÓPIAS da carta no deck. Comportamento é o sinal PRIMÁRIO;
-# cor entra só como desempate quando há pouco sinal de comportamento.
-BEHAVIOR_WEIGHTS: dict[str, dict[str, int]] = {
-    #  flag                  Aggro Controle Ramp  Vida
-    'has_rush':          {AGGRO: 3},
-    'has_double_attack': {AGGRO: 2},
-    'has_unblockable':   {AGGRO: 2},
-    'kos':               {CONTROLE: 3},
-    'rests_opponent':    {CONTROLE: 2, RAMP: 1},
-    'bounces':           {CONTROLE: 1, RAMP: 2},
-    'power_buff':        {AGGRO: 1, CONTROLE: 1},
-    'gives_don':         {RAMP: 3},
-    'is_searcher':       {RAMP: 1},
-    'draws':             {RAMP: 1},
-    'is_blocker':        {CONTROLE: 1, RAMP: 1, VIDA: 1},
-    'has_counter_value': {CONTROLE: 1, VIDA: 2},
-    'has_counter_event': {CONTROLE: 1, VIDA: 2},
-    'has_trigger':       {VIDA: 3},
-    'gains_life':        {RAMP: 1, VIDA: 3},
-    'attacks_life':      {AGGRO: 2, CONTROLE: 2},
-    'trashes_own_life':  {AGGRO: 1, RAMP: 1},
+# ── Pesos: ação da carta → arquétipo ───────────────────────────────────────
+# Pontuação ponderada por AÇÃO (do campo 'effects'), multiplicada pelo fator
+# de confiabilidade do GATILHO que dispara a ação. has_counter_value foi
+# REMOVIDO (era ruído onipresente). Ramp e Controle separados.
+ACTION_WEIGHTS: dict[str, dict[str, int]] = {
+    # Aggro (enriquecido)
+    'keyword_rush':          {AGGRO: 3},
+    'gain_rush':             {AGGRO: 3},
+    'keyword_double_attack': {AGGRO: 3},
+    'gain_double_attack':    {AGGRO: 3},
+    'keyword_unblockable':   {AGGRO: 3},
+    'gain_unblockable':      {AGGRO: 3},
+    'keyword_banish':        {AGGRO: 2},
+    'gain_banish':           {AGGRO: 2},
+    'buff_power':            {AGGRO: 2},
+    'give_don':              {AGGRO: 2},  # DON a aliado = +1000 poder = buff ofensivo
+    # Controle (desinflado: KO/debuff de +3 para +2, pois são comuns demais)
+    'ko':                    {CONTROLE: 2},
+    'debuff_power':          {CONTROLE: 2},
+    'rest_opp_character':    {CONTROLE: 2},
+    'bounce':                {CONTROLE: 2},
+    'debuff_cost':           {CONTROLE: 2},
+    'trash_from_hand':       {CONTROLE: 2},
+    'give_don_opp':          {CONTROLE: 2},  # DON ao oponente = setup p/ rest/freeze/debuff
+    'lock_opp_don':          {CONTROLE: 2},
+    # Ramp / Aceleração
+    'add_don':               {RAMP: 3},
+    'set_don_active':        {RAMP: 3},
+    'buff_cost':             {RAMP: 2},
+    'play_card':             {RAMP: 2},
+    'play_from_deck':        {RAMP: 2},
+    'play_from_trash':       {RAMP: 2},
+    'add_from_trash':        {RAMP: 2},
+    # Vida (estreito e puro: só ganho/manipulação de vida)
+    'gain_life':             {VIDA: 4},
+    'heal':                  {VIDA: 4},
+    'attack_life':           {AGGRO: 2, CONTROLE: 1},
+    'trash_own_life':        {VIDA: 1, RAMP: 1},
+    # Defensivo: blocker dá tempo/controle (NÃO é Vida)
+    'keyword_blocker':       {CONTROLE: 1, RAMP: 1},
+    'gain_blocker':          {CONTROLE: 1, RAMP: 1},
+}
+
+# Fator de confiabilidade por gatilho (multiplica o peso da ação)
+TRIGGER_RELIABILITY: dict[str, float] = {
+    'on_play': 1.0, 'activate_main': 1.0, 'main': 1.0, 'passive': 1.0,
+    'your_turn': 0.7, 'opp_turn': 0.6, 'end_of_turn': 0.6,
+    'when_attacking': 0.55,
+    'counter': 0.4,
+    'on_ko': 0.3,
+    'trigger': 0.25,
 }
 
 
@@ -99,6 +132,7 @@ class ArchetypeResult:
     confidence: str                      # 'alta' | 'média' | 'baixa'
     mix: dict[str, float] = field(default_factory=dict)  # {arquétipo: %}
     note: str = ''
+    synergies: list = field(default_factory=list)  # sinergias detectadas (Camada 2)
 
     def label(self) -> str:
         """Texto pronto p/ exibir: 'Tempo/Ramp (70%) + Aggro (30%)'."""
@@ -134,6 +168,14 @@ def detect_archetype(leader: dict, main_cards: list[dict]) -> ArchetypeResult:
 
     # ── Camada 2: comportamento das cartas (PRIMÁRIO) ──────────────────────
     behavior_score = _behavior_mix(main_cards)
+
+    # ── Camada 2: sinergias (estado criado × estado explorado) ─────────────
+    synergies = detect_deck_synergies(main_cards)
+    for syn in synergies:
+        arche = syn['arquetipo']
+        if arche in behavior_score:
+            behavior_score[arche] += syn['score'] * SYNERGY_WEIGHT
+
     total_signal = sum(behavior_score.values())
 
     if total_signal >= 8:  # sinal de comportamento suficiente para confiar
@@ -142,7 +184,8 @@ def detect_archetype(leader: dict, main_cards: list[dict]) -> ArchetypeResult:
         top = mix[dominant]
         conf = 'alta' if top >= 50 else ('média' if top >= 38 else 'baixa')
         return ArchetypeResult(dominant, 'behavior', conf, mix,
-                               'inferido pelo comportamento das cartas')
+                               'inferido pelo comportamento + sinergias',
+                               synergies=synergies)
 
     # ── Camada 3: cor como desempate (pouco sinal de comportamento) ────────
     if leader_colors:
@@ -163,13 +206,25 @@ def detect_archetype(leader: dict, main_cards: list[dict]) -> ArchetypeResult:
 
 
 def _behavior_mix(main_cards: list[dict]) -> dict[str, float]:
-    """Soma os pesos de comportamento de todas as cartas (já por cópia)."""
+    """
+    Soma os pesos de arquétipo percorrendo os EFEITOS de cada carta (já por
+    cópia), multiplicando o peso da ação pelo fator de confiabilidade do
+    gatilho que a dispara. On Play vale cheio; Trigger/On K.O. valem menos.
+    """
     score: dict[str, float] = {AGGRO: 0.0, CONTROLE: 0.0, RAMP: 0.0, VIDA: 0.0}
     for card in main_cards:
-        for flag, weights in BEHAVIOR_WEIGHTS.items():
-            if card.get(flag):
-                for arche, pts in weights.items():
-                    score[arche] += pts
+        effects = card.get('effects', [])
+        if not effects:
+            continue
+        for eff in effects:
+            action = eff.get('action')
+            trigger = eff.get('trigger', 'on_play')
+            weights = ACTION_WEIGHTS.get(action)
+            if not weights:
+                continue
+            factor = TRIGGER_RELIABILITY.get(trigger, 0.7)
+            for arche, pts in weights.items():
+                score[arche] += pts * factor
     return score
 
 
