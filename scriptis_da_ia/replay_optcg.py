@@ -21,7 +21,7 @@ from collections import Counter
 from copy import deepcopy
 from optcg_engine.decision_engine import (
     load_cards_db, build_real_deck, validar_deck,
-    Card, GameState, DecisionEngine, EffectExecutor
+    Card, GameState, DecisionEngine, EffectExecutor, OPTCGMatch
 )
 
 # ── Cores terminal ─────────────────────────────────────────────────────────────
@@ -476,116 +476,25 @@ class ReplayMatch:
               f'(T{p.turn} de {self.name(p).upper()}){C.RESET}')
         sep()
 
+        # Fases de início: refresh/draw/don (visualização própria do replay)
         self.refresh(p)
         self.draw(p)
         self.don(p)
         print_field(p, col, self.name(p))
 
-        # Main phase: jogar cartas
-        print(f'\n{C.BOLD}── Jogando cartas ──{C.RESET}')
-        plays = 0
-        while plays < 8:
-            card = self.choose_card(p, opp)
-            if card:
-                self.play_card(card, p, opp)
-                plays += 1
-            else:
-                if plays == 0:
-                    print(f'  {C.GRAY}Nenhuma carta jogável{C.RESET}')
-                break
-
-        # Ataques
-        print(f'\n{C.BOLD}── Ataques ──{C.RESET}')
-        if not p.can_attack_this_turn():
-            print(f'  {C.GRAY}Primeiro turno — sem ataques (regra oficial){C.RESET}')
-        else:
-            attackers = [c for c in p.field_chars
-                         if not c.rested and not c.just_played]
-            if not p.leader.rested:
-                attackers.append(p.leader)
-
-            if not attackers:
-                print(f'  {C.GRAY}Nenhum atacante disponível{C.RESET}')
-
-            for attacker in list(attackers):
-                if attacker.rested:
-                    continue
-                engine = DecisionEngine(p, opp)
-
-                best_score = -999
-                best_action = None
-
-                s = engine.score_attack_target(attacker, 'leader', None)
-                if s > best_score:
-                    best_score = s
-                    best_action = (attacker, 'leader', None)
-
-                for t in opp.rested_chars():
-                    s = engine.score_attack_target(attacker, 'character', t)
-                    if s > best_score:
-                        best_score = s
-                        best_action = (attacker, 'character', t)
-
-                if best_action and best_score > -50:
-                    a, ttype, tgt = best_action
-
-                    # ── Decisão 1a: quanto DON anexar a este ataque ──────────
-                    from optcg_engine.counter_estimation import (
-                        decide_don_for_attack, threat_weight)
-                    atk_power = a.effective_power(your_turn=True)
-                    if ttype == 'leader':
-                        tgt_base = opp.leader.power
-                        # lethal se este dano pode zerar a vida do oponente
-                        objective = 'lethal' if opp.life_count() <= 1 else 'pressure'
-                        tgt_threat = 0
-                    else:
-                        tgt_base = tgt.power if tgt else 0
-                        objective = 'destroy'
-                        tgt_threat = threat_weight(tgt) if tgt else 0
-
-                    don_decision = decide_don_for_attack(
-                        attacker_power=atk_power,
-                        target_base_power=tgt_base,
-                        objective=objective,
-                        opp_hand_size=len(opp.hand),
-                        opp_active_don=opp.don_available,
-                        don_available=p.don_available,
-                        target_threat=tgt_threat,
-                        counters_seen_used=getattr(opp, 'counters_used', 0),
-                    )
-                    don_to_attach = don_decision['don']
-                    if don_to_attach > 0:
-                        a.don_attached += don_to_attach
-                        p.don_available -= don_to_attach
-                        print(f'    {C.YELLOW}↳ anexou {don_to_attach} DON '
-                              f'({don_decision["mode"]}: {don_decision["reason"]}){C.RESET}')
-
-                    if self.execute_attack(a, ttype, tgt, p, opp):
-                        return 'A' if p is self.state_a else 'B'
-
-                    if not opp.life:
-                        remaining = [c for c in p.field_chars
-                                     if not c.rested and not c.just_played
-                                     and c is not a]
-                        if not p.leader.rested and p.leader is not a:
-                            remaining.append(p.leader)
-                        for fin in remaining:
-                            if self.execute_attack(fin, 'leader', None, p, opp):
-                                return 'A' if p is self.state_a else 'B'
-
-        # Aplica efeitos Activate Main das cartas em campo (IA decide)
-        # Activate Main é opcional (decisão do jogador) — não roda automaticamente
-
-        for c in p.field_chars:
-            c.just_played = False
-
+        # LÓGICA delegada ao ENGINE (fonte única). main_phase pertence a
+        # OPTCGMatch e opera sobre (p, opp) passados — não usa estado interno,
+        # então pode ser chamado com o estado do replay.
+        if not hasattr(self, '_engine_match'):
+            self._engine_match = OPTCGMatch.__new__(OPTCGMatch)
+            self._engine_match.global_turn = 0
+        won = self._engine_match.main_phase(p, opp, verbose=True)
+        if won:
+            return 'A' if p is self.state_a else 'B'
         if not p.deck:
-            print(f'{C.RED}Deck de {self.name(p)} vazio!{C.RESET}')
             return 'B' if p is self.state_a else 'A'
         if not opp.deck:
-            print(f'{C.RED}Deck de {self.name(opp)} vazio!{C.RESET}')
             return 'A' if p is self.state_a else 'B'
-
         return None
 
     def run(self):
