@@ -4,8 +4,6 @@ import { useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
 import Navbar from '@/components/Navbar'
-import { analyzeDeck, type CardAnalysis, type LeaderInput, type DeckAnalysis } from '../../utils/deck-analyzer'
-import analysisDb from '../../data/card_analysis_db.json'
 
 interface Card {
     id: string
@@ -242,27 +240,6 @@ function gerarPlano(deckCards: DeckCard[], leader: Card | null): { turno: number
 }
 
 // ── IA ────────────────────────────────────────────────────────────────────────
-// ── Ponte: deck do Supabase → deck-analyzer (arquétipo + Golden Ratios) ──────
-const ANALYSIS_DB = analysisDb as Record<string, CardAnalysis>
-
-function rodarAnalise(deck: Deck): DeckAnalysis | null {
-    if (!deck.leader) return null
-    const leaderCode = (deck.leader.card_set_id || '').split('_')[0]
-    const leader: LeaderInput = {
-        code: leaderCode,
-        color: deck.leader.card_color || '',
-    }
-    // cruza cada carta do deck com o card_analysis_db.json
-    const main: CardAnalysis[] = []
-    for (const dc of deck.cards) {
-        const code = (dc.card.card_set_id || '').split('_')[0]
-        const rec = ANALYSIS_DB[code]
-        if (!rec || rec.type === 'LEADER') continue
-        for (let i = 0; i < dc.quantity; i++) main.push(rec)
-    }
-    return analyzeDeck(leader, main)
-}
-
 const ARCHETYPE_COLOR: Record<string, string> = {
     'Aggro': 'text-red-400',
     'Controle': 'text-gray-300',
@@ -282,6 +259,8 @@ export default function AnalysisPage() {
     const [simDone, setSimDone] = useState(false)
     const [simResult, setSimResult] = useState<ReturnType<typeof simularMaos> | null>(null)
     const [melhoresMaos, setMelhoresMaos] = useState<DeckCard[][]>([])
+    const [analise, setAnalise] = useState<any>(null)
+    const [analiseLoading, setAnaliseLoading] = useState(false)
 
     useEffect(() => {
         if (!deckId) { setError('Nenhum deck selecionado.'); setLoading(false); return }
@@ -307,6 +286,26 @@ export default function AnalysisPage() {
             setMelhoresMaos(maos)
             setSimDone(true)
         }, 100)
+    }, [deck])
+
+    // Análise de arquétipo/sinergia/coesão via API Python (fonte única)
+    useEffect(() => {
+        if (!deck || !deck.leader) return
+        setAnaliseLoading(true)
+        const cards = [
+            { code: deck.leader.card_set_id, qty: 1 },
+            ...deck.cards.map(dc => ({ code: dc.card.card_set_id, qty: dc.quantity })),
+        ]
+        const API_URL = process.env.NEXT_PUBLIC_ANALYZER_API || 'http://localhost:8000'
+        fetch(`${API_URL}/analyze`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ cards }),
+        })
+            .then(r => r.ok ? r.json() : Promise.reject(r.status))
+            .then(data => setAnalise(data))
+            .catch(err => console.error('Erro na análise:', err))
+            .finally(() => setAnaliseLoading(false))
     }, [deck])
 
     if (loading) return (
@@ -474,7 +473,6 @@ export default function AnalysisPage() {
     }))
 
     const plano = gerarPlano(allCards, deck.leader)
-    const analise = rodarAnalise(deck)
 
     return (
         <div className="min-h-screen bg-gray-950 text-white flex flex-col">
@@ -743,14 +741,14 @@ export default function AnalysisPage() {
                                 <div className="text-xs text-gray-500 mt-1">Baseado no consenso de construção competitiva (Golden Ratios)</div>
                             </div>
                             <div className="text-center bg-gray-800 rounded-2xl px-6 py-3">
-                                <div className={`text-2xl font-black ${ARCHETYPE_COLOR[analise.archetype.archetype] || 'text-white'}`}>{analise.archetype.label}</div>
-                                <div className="text-xs text-gray-500 mt-1">via {analise.archetype.source === 'leader' ? 'líder' : analise.archetype.source === 'color' ? 'cor' : 'estrutura'} · confiança {analise.archetype.confidence}</div>
+                                <div className={`text-2xl font-black ${ARCHETYPE_COLOR[analise.archetype.primary] || 'text-white'}`}>{analise.archetype.label}</div>
+                                <div className="text-xs text-gray-500 mt-1">confiança {analise.archetype.confidence}</div>
                             </div>
                         </div>
                         <div className="mb-2">
                             <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">📊 Golden Ratios · {analise.issues_count === 0 ? 'tudo dentro do recomendado' : `${analise.issues_count} ponto(s) de atenção`}</div>
                             <div className="space-y-2">
-                                {analise.ratios.map((c, i) => {
+                                {analise.ratios.map((c: any, i: number) => {
                                     const statusColor = c.status === 'ok' ? 'text-green-400' : c.status === 'baixo' ? 'text-orange-400' : 'text-yellow-400'
                                     const barColor = c.status === 'ok' ? 'bg-green-500' : c.status === 'baixo' ? 'bg-orange-500' : 'bg-yellow-500'
                                     const nomePt: Record<string, string> = { counters: 'Counters 2000', searchers: 'Searchers', blockers: 'Blockers', finishers: 'Finishers (8+)', events: 'Eventos' }
@@ -770,10 +768,47 @@ export default function AnalysisPage() {
                                 })}
                             </div>
                         </div>
+
+                        {/* SINERGIAS */}
+                        {analise.synergies && analise.synergies.length > 0 && (
+                            <div className="mt-6 border-t border-gray-800 pt-5">
+                                <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">🔗 Sinergias detectadas</div>
+                                <div className="space-y-2">
+                                    {analise.synergies.map((s: any, i: number) => (
+                                        <div key={i} className="bg-gray-800 rounded-xl px-4 py-2.5">
+                                            <div className="flex items-center justify-between">
+                                                <span className="text-sm text-white font-medium">{s.desc}</span>
+                                                <span className="text-xs font-bold text-blue-400">{s.arquetipo}</span>
+                                            </div>
+                                            <div className="text-xs text-gray-400 mt-1">
+                                                {s.n_creators} carta(s) criam · {s.n_exploiters} explora(m)
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* COESÃO TRIBAL */}
+                        {analise.tribal_cohesion && analise.tribal_cohesion.leader_type && (
+                            <div className="mt-6 border-t border-gray-800 pt-5">
+                                <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">🎯 Coesão Tribal</div>
+                                <div className="bg-gray-800 rounded-xl px-4 py-3">
+                                    <div className="flex items-center justify-between mb-2">
+                                        <span className="text-sm text-white font-medium">{analise.tribal_cohesion.label}</span>
+                                        <span className="text-sm font-bold text-purple-400">{analise.tribal_cohesion.cohesion_pct}%</span>
+                                    </div>
+                                    <div className="w-full bg-gray-700 rounded-full h-1.5 mb-2">
+                                        <div className="h-1.5 rounded-full bg-purple-500" style={{ width: `${analise.tribal_cohesion.cohesion_pct}%` }} />
+                                    </div>
+                                    <div className="text-xs text-gray-400">
+                                        {analise.tribal_cohesion.same_type_pct}% das cartas são {analise.tribal_cohesion.leader_type} · {analise.tribal_cohesion.hook_count} cartas reforçam o tipo
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 )}
-
-                {/* SIMULAÇÃO DE 10.000 MÃOS */}
                 <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 mb-8">
                     <div className="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-4">🎲 Simulação de 10.000 Mãos</div>
                     {!simDone ? (
