@@ -39358,10 +39358,6 @@
                     {
                         "action": "trash_from_hand",
                         "count": 1
-                    },
-                    {
-                        "action": "trash_from_hand",
-                        "count": 1
                     }
                 ]
             }

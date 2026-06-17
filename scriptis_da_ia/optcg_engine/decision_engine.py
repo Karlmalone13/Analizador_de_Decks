@@ -1292,11 +1292,56 @@ class DecisionEngine:
 
     # ── Escolher carta para jogar ─────────────────────────────────────────────
 
+    def _effect_conditions_met(self, card) -> bool:
+        """
+        Verifica se as condições do efeito principal da carta estão satisfeitas
+        no estado ATUAL. Evita jogar carta cujo efeito condicional não vai ativar
+        (ex: Otama com 'life_lte:3' jogada com 4 vidas).
+
+        Retorna True se não há condições, ou se as condições batem.
+        """
+        effects = get_card_effects(card.code)
+        # pega o gatilho principal (on_play / main / activate_main)
+        main_trig = None
+        for t in ('on_play', 'main', 'activate_main'):
+            if t in effects:
+                main_trig = effects[t]
+                break
+        if not main_trig:
+            return True  # sem efeito principal — sem condição a checar
+
+        conds = main_trig.get('conditions', {})
+        if not conds:
+            return True
+
+        me = self.me
+        my_life  = me.life_count()
+        my_hand  = len(me.hand)
+        my_don   = me.don_available
+        my_trash = len(me.trash)
+        my_chars = len(me.field_chars)
+        leader_types = set(str(getattr(me.leader, 'sub_types', '')).lower().split())
+
+        for k, v in conds.items():
+            if k == 'life_lte'  and not (my_life  <= v): return False
+            if k == 'life_gte'  and not (my_life  >= v): return False
+            if k == 'hand_lte'  and not (my_hand  <= v): return False
+            if k == 'don_gte'   and not (my_don   >= v): return False
+            if k == 'don_on_field_gte' and not ((my_don + me.don_rested) >= v): return False
+            if k == 'trash_gte' and not (my_trash >= v): return False
+            if k == 'chars_gte' and not (my_chars >= v): return False
+            if k == 'leader_type':
+                if str(v).lower() not in ' '.join(leader_types): return False
+            if k == 'leader_is':
+                if str(v).lower() not in str(getattr(me.leader, 'name', '')).lower(): return False
+        return True
+
     def choose_card_to_play(self) -> 'Optional[Card]':
         """
         Escolhe a melhor carta para jogar considerando:
         - DON que vai sobrar depois
         - Necessidade de reservar DON para defesa/efeitos
+        - Se as condições do efeito da carta estão satisfeitas
         - Postura atual
         """
         a = self.analyzer
@@ -1319,6 +1364,12 @@ class DecisionEngine:
             has_main = any(t in effects for t in ('on_play', 'main', 'activate_main'))
             if c.card_type == 'EVENT' and not has_main:
                 continue
+            # NÃO joga carta cujo efeito condicional não vai ativar.
+            # Exceção: CHARACTER com poder relevante vale pelo corpo mesmo sem efeito.
+            if not self._effect_conditions_met(c):
+                vale_pelo_corpo = (c.card_type == 'CHARACTER' and c.power >= 5000)
+                if not vale_pelo_corpo:
+                    continue
             playable.append(c)
 
         if not playable:
@@ -1923,8 +1974,12 @@ class OPTCGMatch:
                 p.trash.append(p.field_stage)
             p.field_stage = card
 
-        # Executa efeito On Play via EffectExecutor (único ponto)
-        logs = ee.execute(card, 'on_play')
+        # Executa efeito ao jogar a carta via EffectExecutor (único ponto).
+        # Eventos e personagens podem ter o efeito em 'on_play' OU em 'main'
+        # (cartas cujo texto começa com [Main]). Ao jogar, ambos disparam.
+        logs = []
+        logs += ee.execute(card, 'on_play')
+        logs += ee.execute(card, 'main')
         if verbose:
             for log in logs:
                 if log:
