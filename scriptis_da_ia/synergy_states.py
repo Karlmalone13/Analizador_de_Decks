@@ -66,6 +66,53 @@ def detect_deck_synergies(main_cards: list) -> list:
     """
     active = _synergies_format_a(main_cards)
     active += _synergies_format_b(main_cards)
+    active += _synergies_don_payoff(main_cards)
+    return active
+
+
+# ── Item 3: give_don a aliado + cartas [DON!! xN] (payoff de DON) ───────────
+# Dar DON a um aliado só vale se houver aliados que ficam melhores com DON.
+# A DIREÇÃO (aggro/controle) vem do que esses aliados [DON!! xN] fazem:
+#   efeito de KO/rest/debuff -> Controle ; rush/power/double -> Aggro
+_CONTROL_ACTIONS = {'ko', 'rest_opp_character', 'bounce', 'debuff_power',
+                    'debuff_cost', 'trash_from_hand', 'lock_opp_don', 'give_don_opp'}
+_AGGRO_ACTIONS = {'buff_power', 'keyword_rush', 'gain_rush', 'keyword_double_attack',
+                  'gain_double_attack', 'keyword_unblockable', 'gain_unblockable'}
+
+
+def _synergies_don_payoff(main_cards: list) -> list:
+    givers = 0           # cartas que dão DON a aliado
+    payoffs_ctrl = 0     # cartas [DON xN] com efeito de controle
+    payoffs_aggro = 0    # cartas [DON xN] com efeito de aggro
+
+    for card in main_cards:
+        effects = card.get('effects', [])
+        for eff in effects:
+            if eff.get('action') == 'give_don':
+                givers += 1
+            if eff.get('don_requirement'):
+                act = eff.get('action')
+                if act in _CONTROL_ACTIONS:
+                    payoffs_ctrl += 1
+                elif act in _AGGRO_ACTIONS:
+                    payoffs_aggro += 1
+
+    active = []
+    if givers >= 1 and (payoffs_ctrl + payoffs_aggro) >= 1:
+        # a direção dominante define o arquétipo da sinergia
+        if payoffs_aggro >= payoffs_ctrl:
+            arche, n = 'Aggro', payoffs_aggro
+        else:
+            arche, n = 'Controle', payoffs_ctrl
+        strength = min(givers, payoffs_ctrl + payoffs_aggro)
+        active.append({
+            'state': 'don_payoff',
+            'desc': f'Dar DON a aliado + cartas [DON xN] ({arche.lower()})',
+            'arquetipo': arche,
+            'n_creators': givers,
+            'n_exploiters': payoffs_ctrl + payoffs_aggro,
+            'score': strength * 3,
+        })
     return active
 
 

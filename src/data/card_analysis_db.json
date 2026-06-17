@@ -12,6 +12,7 @@
    {
     "action": "buff_power",
     "trigger": "when_attacking",
+    "don_requirement": 1,
     "target": "self"
    }
   ],
@@ -213,6 +214,7 @@
    {
     "action": "debuff_power",
     "trigger": "when_attacking",
+    "don_requirement": 2,
     "target": "opp_character"
    },
    {
@@ -549,6 +551,7 @@
    {
     "action": "buff_power",
     "trigger": "your_turn",
+    "don_requirement": 1,
     "target": "self"
    }
   ],
@@ -2281,6 +2284,7 @@
    {
     "action": "buff_power",
     "trigger": "your_turn",
+    "don_requirement": 1,
     "target": "self"
    }
   ],
@@ -8592,7 +8596,8 @@
    },
    {
     "action": "trash_from_hand",
-    "trigger": "when_attacking"
+    "trigger": "when_attacking",
+    "don_requirement": 1
    }
   ],
   "synergy_states": {},
@@ -10319,6 +10324,7 @@
    {
     "action": "buff_power",
     "trigger": "your_turn",
+    "don_requirement": 1,
     "target": "all_allies"
    }
   ],
@@ -10429,7 +10435,8 @@
   "effects": [
    {
     "action": "draw",
-    "trigger": "your_turn"
+    "trigger": "your_turn",
+    "don_requirement": 1
    }
   ],
   "synergy_states": {},
@@ -10836,7 +10843,8 @@
   "effects": [
    {
     "action": "trash_from_hand",
-    "trigger": "when_attacking"
+    "trigger": "when_attacking",
+    "don_requirement": 1
    }
   ],
   "synergy_states": {},
@@ -10921,6 +10929,7 @@
    {
     "action": "ko",
     "trigger": "when_attacking",
+    "don_requirement": 1,
     "power_lte": 3000,
     "target": "opp_character"
    }
@@ -11109,6 +11118,7 @@
    {
     "action": "debuff_power",
     "trigger": "when_attacking",
+    "don_requirement": 1,
     "target": "opp_character"
    }
   ],
@@ -11607,7 +11617,8 @@
   "effects": [
    {
     "action": "set_don_active",
-    "trigger": "when_attacking"
+    "trigger": "when_attacking",
+    "don_requirement": 2
    }
   ],
   "synergy_states": {},
@@ -11646,6 +11657,7 @@
    {
     "action": "rest_opp_character",
     "trigger": "when_attacking",
+    "don_requirement": 1,
     "cost_lte": 5
    }
   ],
@@ -11766,6 +11778,7 @@
    {
     "action": "ko",
     "trigger": "when_attacking",
+    "don_requirement": 1,
     "cost_lte": 2,
     "rested_only": true,
     "target": "opp_character"
@@ -12071,7 +12084,8 @@
   "effects": [
    {
     "action": "set_don_active",
-    "trigger": "when_attacking"
+    "trigger": "when_attacking",
+    "don_requirement": 1
    }
   ],
   "synergy_states": {},
@@ -12700,7 +12714,8 @@
   "effects": [
    {
     "action": "add_don",
-    "trigger": "your_turn"
+    "trigger": "your_turn",
+    "don_requirement": 1
    }
   ],
   "synergy_states": {},
@@ -12805,12 +12820,14 @@
    {
     "action": "bounce",
     "trigger": "when_attacking",
+    "don_requirement": 1,
     "cost_lte": 3,
     "target": "opp_character"
    },
    {
     "action": "trash_from_hand",
-    "trigger": "when_attacking"
+    "trigger": "when_attacking",
+    "don_requirement": 1
    }
   ],
   "synergy_states": {},
@@ -13104,6 +13121,7 @@
    {
     "action": "buff_power",
     "trigger": "your_turn",
+    "don_requirement": 1,
     "target": "self"
    }
   ],
@@ -13347,7 +13365,8 @@
   "effects": [
    {
     "action": "draw",
-    "trigger": "when_attacking"
+    "trigger": "when_attacking",
+    "don_requirement": 1
    },
    {
     "action": "keyword_blocker",
@@ -13542,6 +13561,7 @@
    {
     "action": "buff_power",
     "trigger": "your_turn",
+    "don_requirement": 1,
     "target": "leader"
    }
   ],
@@ -13580,15 +13600,18 @@
   "effects": [
    {
     "action": "look_top_deck",
-    "trigger": "when_attacking"
+    "trigger": "when_attacking",
+    "don_requirement": 1
    },
    {
     "action": "add_to_hand",
-    "trigger": "when_attacking"
+    "trigger": "when_attacking",
+    "don_requirement": 1
    },
    {
     "action": "deck_bottom_rest",
-    "trigger": "when_attacking"
+    "trigger": "when_attacking",
+    "don_requirement": 1
    }
   ],
   "synergy_states": {},
@@ -14224,11 +14247,13 @@
   "effects": [
    {
     "action": "add_don",
-    "trigger": "when_attacking"
+    "trigger": "when_attacking",
+    "don_requirement": 1
    },
    {
     "action": "trash_from_hand",
-    "trigger": "when_attacking"
+    "trigger": "when_attacking",
+    "don_requirement": 1
    }
   ],
   "synergy_states": {},
@@ -14529,6 +14554,7 @@
    {
     "action": "buff_power",
     "trigger": "your_turn",
+    "don_requirement": 1,
     "target": "self"
    }
   ],
@@ -15190,6 +15216,7 @@
    {
     "action": "ko",
     "trigger": "when_attacking",
+    "don_requirement": 2,
     "power_lte": 3000,
     "target": "opp_character"
    }
@@ -15662,6 +15689,7 @@
    {
     "action": "ko",
     "trigger": "when_attacking",
+    "don_requirement": 2,
     "power_lte": 2000,
     "target": "opp_character"
    }
@@ -15740,6 +15768,7 @@
    {
     "action": "buff_power",
     "trigger": "your_turn",
+    "don_requirement": 1,
     "target": "all_allies"
    }
   ],
@@ -16316,6 +16345,7 @@
    {
     "action": "rest_opp_character",
     "trigger": "when_attacking",
+    "don_requirement": 1,
     "cost_lte": 2
    }
   ],
@@ -17219,7 +17249,8 @@
    },
    {
     "action": "trash_from_hand",
-    "trigger": "when_attacking"
+    "trigger": "when_attacking",
+    "don_requirement": 1
    }
   ],
   "synergy_states": {},
@@ -17541,7 +17572,8 @@
   "effects": [
    {
     "action": "trash_from_hand",
-    "trigger": "when_attacking"
+    "trigger": "when_attacking",
+    "don_requirement": 1
    }
   ],
   "synergy_states": {},
@@ -19094,6 +19126,7 @@
    {
     "action": "debuff_cost",
     "trigger": "when_attacking",
+    "don_requirement": 1,
     "target": "opp_character"
    }
   ],
@@ -19176,6 +19209,7 @@
    {
     "action": "debuff_cost",
     "trigger": "when_attacking",
+    "don_requirement": 1,
     "target": "opp_character"
    }
   ],
@@ -19575,6 +19609,7 @@
    {
     "action": "ko",
     "trigger": "when_attacking",
+    "don_requirement": 2,
     "target": "opp_character"
    }
   ],
@@ -20251,6 +20286,7 @@
    {
     "action": "debuff_power",
     "trigger": "when_attacking",
+    "don_requirement": 1,
     "target": "opp_character"
    }
   ],
@@ -22592,7 +22628,8 @@
   "effects": [
    {
     "action": "add_don",
-    "trigger": "when_attacking"
+    "trigger": "when_attacking",
+    "don_requirement": 1
    }
   ],
   "synergy_states": {},
@@ -22998,7 +23035,8 @@
   "effects": [
    {
     "action": "trash_from_hand",
-    "trigger": "when_attacking"
+    "trigger": "when_attacking",
+    "don_requirement": 2
    }
   ],
   "synergy_states": {
@@ -23042,6 +23080,7 @@
    {
     "action": "debuff_cost",
     "trigger": "your_turn",
+    "don_requirement": 1,
     "target": "opp_character"
    }
   ],
@@ -23907,6 +23946,7 @@
    {
     "action": "buff_power",
     "trigger": "when_attacking",
+    "don_requirement": 1,
     "target": "opp_character"
    }
   ],
@@ -24021,7 +24061,8 @@
   "effects": [
    {
     "action": "gain_life",
-    "trigger": "when_attacking"
+    "trigger": "when_attacking",
+    "don_requirement": 2
    }
   ],
   "synergy_states": {
@@ -25252,12 +25293,14 @@
    {
     "action": "ko",
     "trigger": "when_attacking",
+    "don_requirement": 1,
     "power_lte": 0,
     "target": "opp_character"
    },
    {
     "action": "debuff_power",
     "trigger": "when_attacking",
+    "don_requirement": 1,
     "target": "opp_character"
    }
   ],
@@ -25453,6 +25496,7 @@
    {
     "action": "ko",
     "trigger": "when_attacking",
+    "don_requirement": 1,
     "power_lte": 4000,
     "target": "opp_character"
    }
@@ -25744,6 +25788,7 @@
    {
     "action": "debuff_cost",
     "trigger": "your_turn",
+    "don_requirement": 1,
     "target": "opp_character"
    }
   ],
@@ -26619,11 +26664,13 @@
   "effects": [
    {
     "action": "draw",
-    "trigger": "when_attacking"
+    "trigger": "when_attacking",
+    "don_requirement": 1
    },
    {
     "action": "gain_life",
-    "trigger": "when_attacking"
+    "trigger": "when_attacking",
+    "don_requirement": 1
    }
   ],
   "synergy_states": {
@@ -30400,6 +30447,7 @@
    {
     "action": "debuff_power",
     "trigger": "when_attacking",
+    "don_requirement": 1,
     "target": "opp_character"
    }
   ],
@@ -30828,6 +30876,7 @@
    {
     "action": "ko",
     "trigger": "when_attacking",
+    "don_requirement": 1,
     "cost_lte": 3,
     "rested_only": true,
     "target": "opp_character"
@@ -32376,6 +32425,7 @@
    {
     "action": "rest_opp_character",
     "trigger": "when_attacking",
+    "don_requirement": 1,
     "cost_lte": 4
    }
   ],
@@ -33417,6 +33467,7 @@
    {
     "action": "debuff_cost",
     "trigger": "when_attacking",
+    "don_requirement": 1,
     "target": "opp_character"
    }
   ],
@@ -34966,6 +35017,7 @@
    {
     "action": "buff_power",
     "trigger": "when_attacking",
+    "don_requirement": 1,
     "target": "self"
    }
   ],
@@ -35880,11 +35932,13 @@
    {
     "action": "buff_power",
     "trigger": "when_attacking",
+    "don_requirement": 1,
     "target": "leader"
    },
    {
     "action": "set_don_active",
-    "trigger": "when_attacking"
+    "trigger": "when_attacking",
+    "don_requirement": 1
    }
   ],
   "synergy_states": {},
@@ -35923,6 +35977,7 @@
    {
     "action": "buff_power",
     "trigger": "when_attacking",
+    "don_requirement": 1,
     "target": "leader"
    }
   ],
@@ -38165,6 +38220,7 @@
    {
     "action": "buff_power",
     "trigger": "your_turn",
+    "don_requirement": 2,
     "target": "self"
    }
   ],
@@ -38712,11 +38768,13 @@
    {
     "action": "ko",
     "trigger": "when_attacking",
+    "don_requirement": 2,
     "target": "opp_character"
    },
    {
     "action": "trash_from_hand",
-    "trigger": "when_attacking"
+    "trigger": "when_attacking",
+    "don_requirement": 2
    },
    {
     "action": "play_card",
@@ -39963,6 +40021,7 @@
    {
     "action": "ko",
     "trigger": "when_attacking",
+    "don_requirement": 1,
     "power_lte": 2000,
     "target": "opp_character"
    }
@@ -41150,15 +41209,18 @@
   "effects": [
    {
     "action": "look_top_deck",
-    "trigger": "when_attacking"
+    "trigger": "when_attacking",
+    "don_requirement": 1
    },
    {
     "action": "add_to_hand",
-    "trigger": "when_attacking"
+    "trigger": "when_attacking",
+    "don_requirement": 1
    },
    {
     "action": "deck_reorder_rest",
-    "trigger": "when_attacking"
+    "trigger": "when_attacking",
+    "don_requirement": 1
    }
   ],
   "synergy_states": {},
@@ -42273,7 +42335,8 @@
   "effects": [
    {
     "action": "add_don",
-    "trigger": "when_attacking"
+    "trigger": "when_attacking",
+    "don_requirement": 1
    }
   ],
   "synergy_states": {},
@@ -42819,6 +42882,7 @@
    {
     "action": "debuff_cost",
     "trigger": "your_turn",
+    "don_requirement": 1,
     "target": "opp_character"
    }
   ],
@@ -43875,6 +43939,7 @@
    {
     "action": "ko",
     "trigger": "when_attacking",
+    "don_requirement": 1,
     "cost_lte": 3,
     "target": "opp_character"
    }
@@ -44966,6 +45031,7 @@
    {
     "action": "ko",
     "trigger": "when_attacking",
+    "don_requirement": 2,
     "power_lte": 4000,
     "target": "opp_character"
    }
@@ -45039,6 +45105,7 @@
    {
     "action": "buff_power",
     "trigger": "when_attacking",
+    "don_requirement": 1,
     "target": "self"
    }
   ],
@@ -47807,6 +47874,7 @@
    {
     "action": "ko",
     "trigger": "when_attacking",
+    "don_requirement": 1,
     "cost_lte": 4,
     "target": "opp_character"
    }
@@ -48345,6 +48413,7 @@
    {
     "action": "play_card",
     "trigger": "when_attacking",
+    "don_requirement": 1,
     "cost_lte": 99
    }
   ],
@@ -48634,7 +48703,8 @@
   "effects": [
    {
     "action": "draw",
-    "trigger": "your_turn"
+    "trigger": "your_turn",
+    "don_requirement": 1
    },
    {
     "action": "draw",
@@ -49642,6 +49712,7 @@
    {
     "action": "buff_power",
     "trigger": "when_attacking",
+    "don_requirement": 1,
     "target": "self"
    }
   ],
@@ -51699,7 +51770,8 @@
   "effects": [
    {
     "action": "add_don",
-    "trigger": "your_turn"
+    "trigger": "your_turn",
+    "don_requirement": 1
    }
   ],
   "synergy_states": {},
@@ -52763,11 +52835,13 @@
   "effects": [
    {
     "action": "draw",
-    "trigger": "when_attacking"
+    "trigger": "when_attacking",
+    "don_requirement": 1
    },
    {
     "action": "trash_from_hand",
-    "trigger": "when_attacking"
+    "trigger": "when_attacking",
+    "don_requirement": 1
    }
   ],
   "synergy_states": {},
@@ -54206,6 +54280,7 @@
    {
     "action": "ko",
     "trigger": "when_attacking",
+    "don_requirement": 2,
     "power_lte": 4000,
     "target": "opp_character"
    }
@@ -56167,15 +56242,18 @@
   "effects": [
    {
     "action": "look_top_deck",
-    "trigger": "when_attacking"
+    "trigger": "when_attacking",
+    "don_requirement": 1
    },
    {
     "action": "add_to_hand",
-    "trigger": "when_attacking"
+    "trigger": "when_attacking",
+    "don_requirement": 1
    },
    {
     "action": "deck_bottom_rest",
-    "trigger": "when_attacking"
+    "trigger": "when_attacking",
+    "don_requirement": 1
    }
   ],
   "synergy_states": {},
@@ -56919,6 +56997,7 @@
    {
     "action": "ko",
     "trigger": "when_attacking",
+    "don_requirement": 1,
     "cost_lte": 1,
     "target": "opp_character"
    }
@@ -58160,7 +58239,8 @@
   "effects": [
    {
     "action": "rest_opp_character",
-    "trigger": "when_attacking"
+    "trigger": "when_attacking",
+    "don_requirement": 1
    },
    {
     "action": "play_card",
@@ -80459,15 +80539,18 @@
   "effects": [
    {
     "action": "look_top_deck",
-    "trigger": "on_play"
+    "trigger": "on_play",
+    "don_requirement": 1
    },
    {
     "action": "add_to_hand",
-    "trigger": "on_play"
+    "trigger": "on_play",
+    "don_requirement": 1
    },
    {
     "action": "deck_bottom_rest",
-    "trigger": "on_play"
+    "trigger": "on_play",
+    "don_requirement": 1
    },
    {
     "action": "keyword_blocker",
@@ -82819,7 +82902,8 @@
   "effects": [
    {
     "action": "gain_rush",
-    "trigger": "when_attacking"
+    "trigger": "when_attacking",
+    "don_requirement": 1
    }
   ],
   "synergy_states": {},
@@ -83612,6 +83696,7 @@
    {
     "action": "ko",
     "trigger": "when_attacking",
+    "don_requirement": 1,
     "power_lte": 2000,
     "target": "opp_character"
    }
@@ -84515,6 +84600,7 @@
    {
     "action": "buff_power",
     "trigger": "your_turn",
+    "don_requirement": 1,
     "target": "self"
    }
   ],
@@ -85322,6 +85408,7 @@
    {
     "action": "buff_power",
     "trigger": "your_turn",
+    "don_requirement": 1,
     "target": "self"
    }
   ],
@@ -88314,6 +88401,7 @@
    {
     "action": "buff_power",
     "trigger": "your_turn",
+    "don_requirement": 2,
     "target": "self"
    }
   ],
@@ -88787,6 +88875,7 @@
    {
     "action": "ko",
     "trigger": "when_attacking",
+    "don_requirement": 1,
     "power_lte": 3000,
     "target": "opp_character"
    }
@@ -89257,6 +89346,7 @@
    {
     "action": "debuff_cost",
     "trigger": "your_turn",
+    "don_requirement": 1,
     "target": "opp_character"
    }
   ],
@@ -89334,6 +89424,7 @@
    {
     "action": "buff_power",
     "trigger": "your_turn",
+    "don_requirement": 1,
     "target": "self"
    }
   ],
@@ -89373,11 +89464,13 @@
    {
     "action": "ko",
     "trigger": "when_attacking",
+    "don_requirement": 1,
     "target": "opp_character"
    },
    {
     "action": "trash_from_hand",
-    "trigger": "when_attacking"
+    "trigger": "when_attacking",
+    "don_requirement": 1
    }
   ],
   "synergy_states": {},
@@ -89739,7 +89832,8 @@
   "effects": [
    {
     "action": "draw",
-    "trigger": "when_attacking"
+    "trigger": "when_attacking",
+    "don_requirement": 1
    }
   ],
   "synergy_states": {},
@@ -89857,6 +89951,7 @@
    {
     "action": "buff_power",
     "trigger": "your_turn",
+    "don_requirement": 1,
     "target": "self"
    },
    {
@@ -90919,11 +91014,13 @@
   "effects": [
    {
     "action": "draw",
-    "trigger": "when_attacking"
+    "trigger": "when_attacking",
+    "don_requirement": 1
    },
    {
     "action": "debuff_power",
     "trigger": "when_attacking",
+    "don_requirement": 1,
     "target": "opp_character"
    }
   ],
@@ -92154,6 +92251,7 @@
    {
     "action": "buff_power",
     "trigger": "when_attacking",
+    "don_requirement": 1,
     "target": "leader"
    }
   ],
@@ -93150,6 +93248,7 @@
    {
     "action": "buff_power",
     "trigger": "your_turn",
+    "don_requirement": 1,
     "target": "self"
    }
   ],
@@ -93468,11 +93567,13 @@
   "effects": [
    {
     "action": "draw",
-    "trigger": "when_attacking"
+    "trigger": "when_attacking",
+    "don_requirement": 1
    },
    {
     "action": "trash_from_hand",
-    "trigger": "when_attacking"
+    "trigger": "when_attacking",
+    "don_requirement": 1
    }
   ],
   "synergy_states": {},
@@ -96008,7 +96109,8 @@
   "effects": [
    {
     "action": "gain_life",
-    "trigger": "when_attacking"
+    "trigger": "when_attacking",
+    "don_requirement": 2
    }
   ],
   "synergy_states": {
@@ -96118,11 +96220,13 @@
    {
     "action": "buff_power",
     "trigger": "when_attacking",
+    "don_requirement": 1,
     "target": "self"
    },
    {
     "action": "gain_banish",
-    "trigger": "when_attacking"
+    "trigger": "when_attacking",
+    "don_requirement": 1
    }
   ],
   "synergy_states": {},
@@ -96160,7 +96264,8 @@
   "effects": [
    {
     "action": "gain_life",
-    "trigger": "when_attacking"
+    "trigger": "when_attacking",
+    "don_requirement": 1
    }
   ],
   "synergy_states": {
@@ -97544,6 +97649,7 @@
    {
     "action": "play_card",
     "trigger": "when_attacking",
+    "don_requirement": 1,
     "cost_lte": 4
    }
   ],
@@ -98012,6 +98118,7 @@
    {
     "action": "debuff_power",
     "trigger": "when_attacking",
+    "don_requirement": 1,
     "target": "opp_character"
    }
   ],
@@ -98964,6 +99071,7 @@
    {
     "action": "ko",
     "trigger": "when_attacking",
+    "don_requirement": 1,
     "cost_lte": 2,
     "rested_only": true,
     "target": "opp_character"
@@ -98971,6 +99079,7 @@
    {
     "action": "rest_opp_character",
     "trigger": "when_attacking",
+    "don_requirement": 1,
     "cost_lte": 2
    }
   ],
@@ -99048,6 +99157,7 @@
    {
     "action": "rest_opp_character",
     "trigger": "when_attacking",
+    "don_requirement": 1,
     "cost_lte": 6
    }
   ],
@@ -99168,6 +99278,7 @@
    {
     "action": "buff_power",
     "trigger": "when_attacking",
+    "don_requirement": 1,
     "target": "self"
    }
   ],
@@ -100328,6 +100439,7 @@
    {
     "action": "ko",
     "trigger": "when_attacking",
+    "don_requirement": 1,
     "cost_lte": 4,
     "target": "opp_character"
    }
@@ -102477,6 +102589,7 @@
    {
     "action": "ko",
     "trigger": "when_attacking",
+    "don_requirement": 2,
     "power_lte": 4000,
     "target": "opp_character"
    }
@@ -104675,6 +104788,7 @@
    {
     "action": "buff_power",
     "trigger": "your_turn",
+    "don_requirement": 2,
     "target": "self"
    }
   ],

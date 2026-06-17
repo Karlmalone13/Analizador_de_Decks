@@ -48,11 +48,13 @@ def _effects_with_trigger(effects: dict) -> list:
     """
     out = []
     for trigger, data in effects.items():
+        don_req = data.get('don_requirement')
         for step in data.get('steps', []):
             a = step.get('action')
             if a:
                 entry = {'action': a, 'trigger': trigger}
-                # atributos para sinergia Formato B
+                if don_req:
+                    entry['don_requirement'] = don_req
                 for attr in ('power_lte', 'cost_lte', 'rested_only', 'target'):
                     if attr in step:
                         entry[attr] = step[attr]
