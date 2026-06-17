@@ -1804,14 +1804,10 @@ class OPTCGMatch:
         p.don_deck -= gain
         p.don_available += gain
 
-    def main_phase(self, p: GameState, opp: GameState) -> bool:
+    def main_phase(self, p: GameState, opp: GameState, verbose: bool = False) -> bool:
         """
         Fase principal completa com IA probabilística.
-        Baseado no fluxo das 34k linhas:
-        1. Aplica buffs Your Turn
-        2. Joga cartas (com reserva de DON)
-        3. Distribui DON entre atacantes
-        4. Executa ataques na ordem planejada
+        Com verbose=True, narra as ações (para o replay).
         """
         engine = DecisionEngine(p, opp)
         ee     = EffectExecutor(p, opp)
@@ -1820,14 +1816,18 @@ class OPTCGMatch:
         ee.apply_your_turn_buffs()
 
         # 2. Jogar cartas — engine reserva DON para defesa automaticamente
+        if verbose:
+            print('  -- Jogando cartas --')
         plays = 0
         while plays < 10:
             card = engine.choose_card_to_play()
             if card:
-                self._play_card(card, p, opp, ee)
+                self._play_card(card, p, opp, ee, verbose=verbose)
                 plays += 1
             else:
                 break
+        if verbose and plays == 0:
+            print('    (nenhuma carta jogada)')
 
         # 3. Distribui DON entre os atacantes
         if p.can_attack_this_turn():
@@ -1844,28 +1844,34 @@ class OPTCGMatch:
                         att.don_attached += don_amt
                         p.don_available  -= don_amt
                         p.don_rested     += don_amt
+                        if verbose:
+                            print(f'    anexou {don_amt} DON em {att.name[:20]}')
 
             # 4. Executa ataques na ordem planejada
+            if verbose:
+                print('  -- Ataques --')
             attack_plan = engine.plan_attacks(attackers)
             atacantes_usados = set()
 
             for attacker, ttype, tgt in attack_plan:
-                # Recarrega estado atual (pode ter mudado)
                 if attacker.rested:
                     continue
                 if id(attacker) in atacantes_usados:
                     continue
                 atacantes_usados.add(id(attacker))
 
-                # Verifica se alvo ainda é válido
                 if ttype == 'character':
                     if tgt not in opp.field_chars:
                         ttype, tgt = 'leader', None
 
-                if self._execute_attack(attacker, ttype, tgt, p, opp, engine):
+                if verbose:
+                    tgt_name = 'Leader' if ttype == 'leader' else (tgt.name[:20] if tgt else '?')
+                    print(f'    {attacker.name[:20]} ({attacker.effective_power(True)}pwr) '
+                          f'ataca {tgt_name}')
+
+                if self._execute_attack(attacker, ttype, tgt, p, opp, engine, verbose=verbose):
                     return True
 
-                # Se oponente chegou a 0 vidas, finaliza com restantes
                 if not opp.life:
                     remaining = [c for c in p.field_chars
                                  if not c.rested and not c.just_played
@@ -1873,7 +1879,7 @@ class OPTCGMatch:
                     if not p.leader.rested and id(p.leader) not in atacantes_usados:
                         remaining.append(p.leader)
                     for fin in remaining:
-                        if self._execute_attack(fin, 'leader', None, p, opp, engine):
+                        if self._execute_attack(fin, 'leader', None, p, opp, engine, verbose=verbose):
                             return True
 
         for c in p.field_chars:
@@ -1882,20 +1888,29 @@ class OPTCGMatch:
         return False
 
     def _play_card(self, card: Card, p: GameState, opp: GameState,
-                   ee: EffectExecutor):
+                   ee: EffectExecutor, verbose: bool = False):
         """
         Joga uma carta.
         Efeitos executados APENAS via EffectExecutor — sem lógica duplicada.
+        Com verbose=True, narra a jogada (para o replay). Silencioso por padrão
+        (simulação em massa não passa verbose).
         """
         p.hand.remove(card)
         p.don_rested  += card.cost
         p.don_available -= card.cost
+
+        if verbose:
+            don_txt = f'gastou {card.cost} DON' if card.cost > 0 else 'grátis'
+            print(f'  > {don_txt} -> Joga: {card.name[:30]} '
+                  f'({card.effective_power(True)}pwr) [{card.card_type}]')
 
         if card.card_type == 'CHARACTER':
             if len(p.field_chars) >= 5:
                 worst = min(p.field_chars, key=lambda c: c.board_value())
                 p.field_chars.remove(worst)
                 p.trash.append(worst)
+                if verbose:
+                    print(f'    campo cheio -> descartou {worst.name[:25]}')
             card.rested = False
             card.just_played = not card.has_rush
             p.field_chars.append(card)
@@ -1909,14 +1924,19 @@ class OPTCGMatch:
             p.field_stage = card
 
         # Executa efeito On Play via EffectExecutor (único ponto)
-        ee.execute(card, 'on_play')
+        logs = ee.execute(card, 'on_play')
+        if verbose:
+            for log in logs:
+                if log:
+                    print(f'    ↳ [{card.name[:20]}] {log}')
 
     def _execute_attack(self, attacker: Card, target_type: str,
                         target: Optional[Card], p: GameState,
-                        opp: GameState, engine: DecisionEngine) -> bool:
+                        opp: GameState, engine: DecisionEngine,
+                        verbose: bool = False) -> bool:
         """
-        ResolveAttack_Internal das 34k linhas.
         Sequência: tap atacante → blocker → counter → damage.
+        Com verbose, narra blocker/counter/dano.
         """
         if attacker is p.leader:
             p.leader.rested = True
@@ -1925,7 +1945,11 @@ class OPTCGMatch:
 
         # Executa efeito When Attacking
         ee = EffectExecutor(p, opp)
-        ee.execute(attacker, 'when_attacking')
+        wa_logs = ee.execute(attacker, 'when_attacking')
+        if verbose:
+            for log in wa_logs:
+                if log:
+                    print(f'      ↳ [when attacking] {log}')
 
         atk_power = attacker.effective_power(True)
         damage    = 2 if attacker.has_double_attack else 1
@@ -1937,6 +1961,8 @@ class OPTCGMatch:
             target_type = 'character'
             target      = blocker
             blocker.rested = True
+            if verbose:
+                print(f'      🛡 Blocker! {blocker.name[:20]} intercepta')
 
         # Define poder de defesa
         if target_type == 'leader':
@@ -1948,9 +1974,12 @@ class OPTCGMatch:
 
         # Counter step
         if opp_engine.should_use_counter(atk_power, defend_power):
-            defend_power += opp_engine.use_counter(atk_power - defend_power + 1)
+            counter_add = opp_engine.use_counter(atk_power - defend_power + 1)
+            defend_power += counter_add
+            if verbose and counter_add > 0:
+                print(f'      🛡 Counter! +{counter_add} -> defesa {defend_power}')
 
-        # Damage step (ResolveAttack_Internal das 34k linhas)
+        # Damage step
         if atk_power >= defend_power:
             if target_type == 'leader':
                 for _ in range(damage):
@@ -1960,23 +1989,36 @@ class OPTCGMatch:
                     life_card = opp.life.pop()
                     p.dmg_dealt += 1
                     opp.hand.append(life_card)
-                    # Trigger de vida (BeginTriggerPhase das 34k linhas)
+                    if verbose:
+                        print(f'      💥 DANO! vida do oponente: {opp.life_count()}')
                     if life_card.has_trigger and not attacker.has_banish:
                         opp.triggers_activated += 1
                         ee_opp = EffectExecutor(opp, p)
-                        ee_opp.execute(life_card, 'trigger')
+                        tg_logs = ee_opp.execute(life_card, 'trigger')
+                        if verbose:
+                            for log in tg_logs:
+                                if log:
+                                    print(f'      ⚡ [trigger] {log}')
                 if not opp.life:
-                    return False  # precisa de mais 1 ataque
+                    return False
             elif target_type == 'character' and target and target in opp.field_chars:
                 opp.field_chars.remove(target)
                 opp.trash.append(target)
-                # On KO (AfterKOCharacter das 34k linhas)
+                if verbose:
+                    print(f'      💀 {target.name[:20]} foi KO!')
                 ee_opp = EffectExecutor(opp, p)
-                ee_opp.execute(target, 'on_ko')
+                ko_logs = ee_opp.execute(target, 'on_ko')
+                if verbose:
+                    for log in ko_logs:
+                        if log:
+                            print(f'      ↳ [on KO] {log}')
+        else:
+            if verbose:
+                print(f'      ✗ Ataque bloqueado ({atk_power} < {defend_power})')
 
         return False
 
-    def play_turn(self, p: GameState, opp: GameState) -> Optional[str]:
+    def play_turn(self, p: GameState, opp: GameState, verbose: bool = False) -> Optional[str]:
         self.global_turn += 1
         p.turn += 1
         p.global_turn = self.global_turn
@@ -1985,7 +2027,7 @@ class OPTCGMatch:
         self.draw_phase(p)
         self.don_phase(p)
 
-        if self.main_phase(p, opp):
+        if self.main_phase(p, opp, verbose=verbose):
             return 'A' if p is self.state_a else 'B'
         if not p.deck:
             return 'B' if p is self.state_a else 'A'

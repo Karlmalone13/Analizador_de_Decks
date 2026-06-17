@@ -83,6 +83,17 @@ def print_field(p: 'GameState', col: str, name: str):
     don_line = f'DON em campo: {don_vis}  Ativos: {C.YELLOW}{p.don_available}{C.RESET}  Restados: {C.GRAY}{don_rest}{C.RESET}'
     print(f'{col}│{C.RESET} {don_line}')
     print(f'{col}│{C.RESET} Mão: {len(p.hand)} cartas  Deck: {len(p.deck)} cartas  Trash: {len(p.trash)}')
+    # Cartas da mão (para auditoria): nome, custo e função
+    if p.hand:
+        for c in p.hand:
+            kws = []
+            if getattr(c, 'is_searcher', False):    kws.append('Search')
+            if getattr(c, 'has_blocker', False):    kws.append('Blocker')
+            if getattr(c, 'has_rush', False):       kws.append('Rush')
+            if c.card_type == 'EVENT':              kws.append('Event')
+            if c.card_type == 'STAGE':              kws.append('Stage')
+            kw_str = f' [{", ".join(kws)}]' if kws else ''
+            print(f'{col}│{C.RESET}   • {c.name[:32]:<32} (c{c.cost}){kw_str}')
     print(f'{col}└{"─" * W}┘{C.RESET}')
 
 def print_deck_list(name: str, leader: Card, cards: list, col: str):
@@ -309,7 +320,7 @@ class ReplayMatch:
             results = ee.execute(card, 'on_play')
             for r in results:
                 if r:
-                    print(f'    {C.GREEN}↳ Efeito: {r}{C.RESET}')
+                    print(f'    {C.GREEN}↳ [{card.name[:20]}] {r}{C.RESET}')
 
             # Draw com condição
             do_draw = True
@@ -517,6 +528,38 @@ class ReplayMatch:
 
                 if best_action and best_score > -50:
                     a, ttype, tgt = best_action
+
+                    # ── Decisão 1a: quanto DON anexar a este ataque ──────────
+                    from optcg_engine.counter_estimation import (
+                        decide_don_for_attack, threat_weight)
+                    atk_power = a.effective_power(your_turn=True)
+                    if ttype == 'leader':
+                        tgt_base = opp.leader.power
+                        # lethal se este dano pode zerar a vida do oponente
+                        objective = 'lethal' if opp.life_count() <= 1 else 'pressure'
+                        tgt_threat = 0
+                    else:
+                        tgt_base = tgt.power if tgt else 0
+                        objective = 'destroy'
+                        tgt_threat = threat_weight(tgt) if tgt else 0
+
+                    don_decision = decide_don_for_attack(
+                        attacker_power=atk_power,
+                        target_base_power=tgt_base,
+                        objective=objective,
+                        opp_hand_size=len(opp.hand),
+                        opp_active_don=opp.don_available,
+                        don_available=p.don_available,
+                        target_threat=tgt_threat,
+                        counters_seen_used=getattr(opp, 'counters_used', 0),
+                    )
+                    don_to_attach = don_decision['don']
+                    if don_to_attach > 0:
+                        a.don_attached += don_to_attach
+                        p.don_available -= don_to_attach
+                        print(f'    {C.YELLOW}↳ anexou {don_to_attach} DON '
+                              f'({don_decision["mode"]}: {don_decision["reason"]}){C.RESET}')
+
                     if self.execute_attack(a, ttype, tgt, p, opp):
                         return 'A' if p is self.state_a else 'B'
 
