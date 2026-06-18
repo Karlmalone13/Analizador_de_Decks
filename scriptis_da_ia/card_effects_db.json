@@ -1112,6 +1112,12 @@
                         "target": "opp_character",
                         "cost_lte": 5
                     }
+                ],
+                "costs": [
+                    {
+                        "type": "trash_from_hand",
+                        "count": 2
+                    }
                 ]
             }
         }
@@ -3352,6 +3358,10 @@
                     {
                         "type": "rest_don",
                         "count": 1
+                    },
+                    {
+                        "type": "trash_from_hand",
+                        "count": 1
                     }
                 ]
             },
@@ -3916,6 +3926,12 @@
                         "action": "draw",
                         "count": 2
                     }
+                ],
+                "costs": [
+                    {
+                        "type": "trash_from_hand",
+                        "count": 1
+                    }
                 ]
             },
             "opp_turn": {
@@ -4280,6 +4296,12 @@
                         "action": "trash_own_life",
                         "count": 1
                     }
+                ],
+                "costs": [
+                    {
+                        "type": "trash_from_hand",
+                        "count": 1
+                    }
                 ]
             },
             "trigger": {
@@ -4318,7 +4340,13 @@
                 ],
                 "conditions": {
                     "leader_type": "straw hat crew"
-                }
+                },
+                "costs": [
+                    {
+                        "type": "trash_from_hand",
+                        "count": 1
+                    }
+                ]
             }
         }
     },
@@ -5139,6 +5167,10 @@
                 "costs": [
                     {
                         "type": "rest_self"
+                    },
+                    {
+                        "type": "trash_from_hand",
+                        "count": 1
                     }
                 ]
             },
@@ -5372,6 +5404,10 @@
                     {
                         "type": "rest_don",
                         "count": 2
+                    },
+                    {
+                        "type": "trash_from_hand",
+                        "count": 1
                     }
                 ],
                 "once_per_turn": true
@@ -5707,6 +5743,12 @@
                         "amount": 1,
                         "target": "opp_character"
                     }
+                ],
+                "costs": [
+                    {
+                        "type": "trash_from_hand",
+                        "count": 3
+                    }
                 ]
             }
         }
@@ -5831,6 +5873,12 @@
                         "action": "draw",
                         "count": 1
                     }
+                ],
+                "costs": [
+                    {
+                        "type": "trash_from_hand",
+                        "count": 1
+                    }
                 ]
             }
         }
@@ -5858,6 +5906,12 @@
                         "action": "ko",
                         "count": 1,
                         "target": "opp_character"
+                    }
+                ],
+                "costs": [
+                    {
+                        "type": "trash_from_hand",
+                        "count": 2
                     }
                 ]
             }
@@ -9578,6 +9632,10 @@
                 "costs": [
                     {
                         "type": "rest_self"
+                    },
+                    {
+                        "type": "trash_from_hand",
+                        "count": 1
                     }
                 ]
             }
@@ -11495,6 +11553,12 @@
                         "target": "self",
                         "duration": "battle_only"
                     }
+                ],
+                "costs": [
+                    {
+                        "type": "trash_from_hand",
+                        "count": 1
+                    }
                 ]
             }
         }
@@ -11668,6 +11732,12 @@
                         "count": 1,
                         "target": "opp_character",
                         "power_lte": 5000
+                    }
+                ],
+                "costs": [
+                    {
+                        "type": "trash_from_hand",
+                        "count": 1
                     }
                 ]
             }
@@ -13524,6 +13594,12 @@
                         "count": 1,
                         "source": "self"
                     }
+                ],
+                "costs": [
+                    {
+                        "type": "trash_from_hand",
+                        "count": 1
+                    }
                 ]
             }
         }
@@ -14023,6 +14099,12 @@
                     },
                     {
                         "action": "trash_own_life",
+                        "count": 1
+                    }
+                ],
+                "costs": [
+                    {
+                        "type": "trash_from_hand",
                         "count": 1
                     }
                 ]
@@ -19575,6 +19657,12 @@
                         "action": "add_don",
                         "count": 1
                     }
+                ],
+                "costs": [
+                    {
+                        "type": "trash_from_hand",
+                        "count": 1
+                    }
                 ]
             }
         }
@@ -19836,6 +19924,12 @@
                         "count": 1,
                         "filter_type": "",
                         "cost_lte": 99
+                    }
+                ],
+                "costs": [
+                    {
+                        "type": "trash_from_hand",
+                        "count": 1
                     }
                 ],
                 "once_per_turn": true
@@ -20284,6 +20378,12 @@
                         "action": "ko",
                         "count": 1,
                         "target": "opp_character"
+                    }
+                ],
+                "costs": [
+                    {
+                        "type": "trash_from_hand",
+                        "count": 1
                     }
                 ]
             }
@@ -23835,6 +23935,12 @@
                         "amount": 1,
                         "target": "opp_character"
                     }
+                ],
+                "costs": [
+                    {
+                        "type": "trash_from_hand",
+                        "count": 2
+                    }
                 ]
             }
         }
@@ -23963,6 +24069,12 @@
                         "action": "ko",
                         "count": 1,
                         "target": "opp_character"
+                    }
+                ],
+                "costs": [
+                    {
+                        "type": "trash_from_hand",
+                        "count": 1
                     }
                 ]
             }
@@ -26888,6 +27000,12 @@
                 "conditions": {
                     "leader_type": "big mom pirates"
                 },
+                "costs": [
+                    {
+                        "type": "trash_from_hand",
+                        "count": 1
+                    }
+                ],
                 "once_per_turn": true
             }
         }
@@ -27331,6 +27449,12 @@
                     },
                     {
                         "action": "trash_own_life",
+                        "count": 1
+                    }
+                ],
+                "costs": [
+                    {
+                        "type": "trash_from_hand",
                         "count": 1
                     }
                 ]
@@ -28239,6 +28363,10 @@
                     {
                         "type": "rest_don",
                         "count": 5
+                    },
+                    {
+                        "type": "trash_from_hand",
+                        "count": 1
                     }
                 ]
             }
@@ -31622,6 +31750,12 @@
                         "action": "draw",
                         "count": 2
                     }
+                ],
+                "costs": [
+                    {
+                        "type": "trash_from_hand",
+                        "count": 1
+                    }
                 ]
             },
             "end_of_turn": {
@@ -34838,6 +34972,12 @@
                         "target": "opp_character",
                         "cost_lte": 2
                     }
+                ],
+                "costs": [
+                    {
+                        "type": "trash_from_hand",
+                        "count": 3
+                    }
                 ]
             }
         }
@@ -36894,7 +37034,13 @@
                 ],
                 "conditions": {
                     "leader_is": "sanji"
-                }
+                },
+                "costs": [
+                    {
+                        "type": "trash_from_hand",
+                        "count": 1
+                    }
+                ]
             }
         }
     },
@@ -38955,6 +39101,12 @@
                     {
                         "action": "gain_banish"
                     }
+                ],
+                "costs": [
+                    {
+                        "type": "trash_from_hand",
+                        "count": 1
+                    }
                 ]
             }
         }
@@ -39549,6 +39701,12 @@
                 "steps": [
                     {
                         "action": "draw",
+                        "count": 1
+                    }
+                ],
+                "costs": [
+                    {
+                        "type": "trash_from_hand",
                         "count": 1
                     }
                 ],
@@ -44399,6 +44557,12 @@
                         "action": "draw",
                         "count": 2
                     }
+                ],
+                "costs": [
+                    {
+                        "type": "trash_from_hand",
+                        "count": 1
+                    }
                 ]
             },
             "passive": {
@@ -44466,6 +44630,12 @@
                     {
                         "action": "draw",
                         "count": 2
+                    }
+                ],
+                "costs": [
+                    {
+                        "type": "trash_from_hand",
+                        "count": 1
                     }
                 ]
             }
@@ -45388,6 +45558,12 @@
                         "filter_type": "",
                         "cost_lte": 2
                     }
+                ],
+                "costs": [
+                    {
+                        "type": "trash_from_hand",
+                        "count": 3
+                    }
                 ]
             }
         }
@@ -46293,6 +46469,12 @@
                         "count": 1,
                         "target": "opp_character",
                         "power_lte": 8000
+                    }
+                ],
+                "costs": [
+                    {
+                        "type": "trash_from_hand",
+                        "count": 1
                     }
                 ]
             }
@@ -48061,6 +48243,12 @@
                         "action": "draw",
                         "count": 2
                     }
+                ],
+                "costs": [
+                    {
+                        "type": "trash_from_hand",
+                        "count": 1
+                    }
                 ]
             },
             "passive": {
@@ -48264,6 +48452,12 @@
                     {
                         "action": "draw",
                         "count": 2
+                    }
+                ],
+                "costs": [
+                    {
+                        "type": "trash_from_hand",
+                        "count": 1
                     }
                 ]
             }
@@ -50339,6 +50533,12 @@
                         "duration": "this_turn"
                     }
                 ],
+                "costs": [
+                    {
+                        "type": "trash_from_hand",
+                        "count": 1
+                    }
+                ],
                 "don_requirement": 1
             }
         }
@@ -50580,6 +50780,12 @@
                     {
                         "action": "draw",
                         "count": 2
+                    }
+                ],
+                "costs": [
+                    {
+                        "type": "trash_from_hand",
+                        "count": 1
                     }
                 ]
             },
@@ -55103,6 +55309,12 @@
                         "target": "opp_character",
                         "cost_lte": 5
                     }
+                ],
+                "costs": [
+                    {
+                        "type": "trash_from_hand",
+                        "count": 1
+                    }
                 ]
             }
         }
@@ -55855,6 +56067,12 @@
                         "count": 1
                     }
                 ],
+                "costs": [
+                    {
+                        "type": "trash_from_hand",
+                        "count": 1
+                    }
+                ],
                 "once_per_turn": true
             },
             "passive": {
@@ -56205,7 +56423,13 @@
                 ],
                 "conditions": {
                     "leader_type": "navy"
-                }
+                },
+                "costs": [
+                    {
+                        "type": "trash_from_hand",
+                        "count": 2
+                    }
+                ]
             }
         }
     },
@@ -57431,12 +57655,6 @@
                         "count": 1
                     }
                 ],
-                "costs": [
-                    {
-                        "type": "trash_from_hand",
-                        "count": 1
-                    }
-                ],
                 "once_per_turn": true
             }
         }
@@ -58457,6 +58675,12 @@
                     {
                         "action": "draw",
                         "count": 2
+                    }
+                ],
+                "costs": [
+                    {
+                        "type": "trash_from_hand",
+                        "count": 1
                     }
                 ]
             }

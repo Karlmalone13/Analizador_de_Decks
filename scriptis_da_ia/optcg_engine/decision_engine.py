@@ -2302,26 +2302,48 @@ class OPTCGMatch:
 
     def _should_activate_main(self, src, am, p, opp) -> bool:
         """
-        Decide se vale ativar o efeito Main. Heurística:
-        - Se dá draw/search e há recurso para o custo: vale
-        - Se precisa de alvo (rest/ko opponent) e não há alvo: não vale
+        Decide se vale ativar um efeito [Activate: Main] — GERAL, para qualquer
+        carta (não só Imu). Considera o custo real (você paga para receber):
+        - benefício de vantagem (draw/search) vale, SE o custo é pagável e compensa
+        - efeito que precisa de alvo só vale se há alvo
+        - se há custo de trash, só ativa com carta descartável (e que valha perder)
         """
         steps = am.get('steps', [])
         actions = [s.get('action') for s in steps]
+        costs = am.get('costs', [])   # lista (corrigido: era 'cost' singular)
 
-        # Efeitos de vantagem pura (draw, search) — quase sempre valem
+        # Verifica se o custo é PAGÁVEL
+        for c in costs:
+            ctype = c.get('type')
+            cnt = c.get('count', 1)
+            if ctype == 'trash_from_hand' and len(p.hand) < cnt:
+                return False   # não tem carta para trashar
+            if ctype == 'don_minus':
+                don_total = p.don_available + p.don_rested + \
+                            sum(x.don_attached for x in p.field_chars) + p.leader.don_attached
+                if don_total < cnt:
+                    return False
+
+        tem_custo_trash = any(c.get('type') == 'trash_from_hand' for c in costs)
+
+        # Efeitos de vantagem pura (draw, search) — valem se o custo compensa
         if any(a in ('draw', 'look_top_deck', 'add_to_hand') for a in actions):
-            # se o custo for trashar carta, só ativa se tiver carta descartável
-            cost = am.get('cost', {})
-            if cost.get('type') == 'trash_from_hand':
-                return len(p.hand) > cost.get('count', 1)
+            if tem_custo_trash:
+                # só ativa se, após trashar, ainda sobra mão útil (não esvazia a mão
+                # por 1 draw). Heurística: ter mais cartas que o custo + 1.
+                cnt = next((c.get('count', 1) for c in costs
+                            if c.get('type') == 'trash_from_hand'), 1)
+                return len(p.hand) > cnt   # sobra ao menos 1 carta após o custo
             return True
 
         # Efeitos que afetam o oponente — só com alvo
-        if any(a in ('rest_opp', 'ko_opp', 'debuff') for a in actions):
+        if any(a in ('rest_opp', 'ko_opp', 'debuff', 'debuff_power', 'bounce') for a in actions):
             return bool(opp.field_chars)
 
-        # Por padrão, não ativa (evita gastar recurso sem benefício claro)
+        # Efeitos de DON (ramp, reativar) — valem
+        if any(a in ('add_don', 'set_don_active') for a in actions):
+            return True
+
         return False
 
     def _score_play_action(self, card, engine) -> float:

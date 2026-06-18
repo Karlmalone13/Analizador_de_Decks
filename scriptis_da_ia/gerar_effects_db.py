@@ -72,10 +72,18 @@ def parse_costs(text):
     if m:
         costs.append({'type': 'rest_don', 'count': int(m.group(1))})
 
-    # Custo de trash da mao (antes do efeito principal)
-    m = re.search(r'you may trash (\d+) cards? from your hand[: ]', t)
+    # Custo de trash da mao/campo (antes do efeito principal, padrão "...: efeito")
+    # Captura variações: "trash N cards from your hand", "trash 1 [type] Character
+    # or 1 card from your hand", "trash 1 of your Characters", etc.
+    # O custo vem ANTES de um ':' que separa custo do benefício.
+    m = re.search(r'you may trash (\d+)[^:]*?(?:from your hand|character|card)[^:]*:', t)
     if m:
         costs.append({'type': 'trash_from_hand', 'count': int(m.group(1))})
+    else:
+        # padrão mais simples sem "you may" (custo obrigatório com ':')
+        m = re.search(r'\btrash (\d+) cards? from your hand\s*:', t)
+        if m:
+            costs.append({'type': 'trash_from_hand', 'count': int(m.group(1))})
 
     # DON!! −X: devolve X DON do campo para o deck de DON.
     # "you may" perto (antes ou depois, ex: dentro do parêntese explicativo)
