@@ -384,7 +384,10 @@ class EffectExecutor:
             # Resto permanece no deck (será tratado pelo próximo step)
             me.searchers_used += 1
             names = ', '.join(c.name[:15] for c in taken)
-            return f'buscou: {names}' if names else ''
+            if names:
+                return f'olhou {look} do topo -> pegou: {names}'
+            else:
+                return f'olhou {look} do topo -> nada para pegar'
 
         if action == 'trash_rest':
             # Cartas que foram vistas mas não pegas vão ao trash
@@ -1462,12 +1465,25 @@ class DecisionEngine:
             result[id(strong_atk)] += don_give
             don_left -= don_give
 
-        # DON restante vai para o segundo mais forte
+        # DON restante vai para o segundo mais forte — SÓ se o ataque tiver
+        # chance de passar. Não desperdiça DON num ataque que não supera a
+        # defesa nem com o DON (ex: personagem 2000 + 2 DON = 4000 < líder 5000).
         if don_left > 0 and len(sorted_atk) >= 2:
             second_atk = sorted_atk[-2]
-            result[id(second_atk)] += don_left
-            don_left = 0
-
+            second_power = second_atk.effective_power(True)
+            # com o DON restante, esse ataque chega a quanto?
+            reachable = second_power + don_left * 1000
+            # alvo mínimo viável: superar o líder (ou um personagem restado fraco)
+            min_target = opp_leader_power
+            rested = self.opp.rested_chars()
+            if rested:
+                min_target = min(min_target, min(c.power for c in rested))
+            # só anexa se o ataque puder ALCANÇAR o alvo (senão é desperdício)
+            if reachable >= min_target:
+                # anexa só o necessário para alcançar, não todo o resto
+                needed2 = max(0, (min_target - second_power + 999) // 1000)
+                result[id(second_atk)] += min(needed2, don_left)
+            # se não alcança nem com tudo, não anexa (deixa DON livre)
         return result
 
     # ── Ordem e escolha de ataques ────────────────────────────────────────────
@@ -1500,12 +1516,14 @@ class DecisionEngine:
             else:
                 normal.append(att)
 
-        # ── Modo LETHAL: todos atacam o líder ────────────────────────────────
+        # ── Modo LETHAL: todos atacam o líder (que tenham chance) ────────────
         if a.can_lethal_this_turn():
             # Mais fraco primeiro para gastar counters, mais forte por último
             all_atk = sorted(attackers, key=lambda c: c.effective_power(True))
             for att in all_atk:
-                plan.append((att, 'leader', None))
+                # mesmo no lethal, não inclui ataque que não passa nem ativa nada
+                if self.score_attack_target(att, 'leader', None) > -500:
+                    plan.append((att, 'leader', None))
             return plan
 
         # ── Modo CLEAR FIELD: ataca cartas restadas ──────────────────────────
@@ -1558,6 +1576,27 @@ class DecisionEngine:
 
         return plan
 
+    def _rest_activates_effect(self, card) -> bool:
+        """
+        Decide se restar este personagem (atacando) ativa um efeito útil,
+        justificando o ataque mesmo sem chance de passar.
+
+        Verdadeiro quando:
+        - tem [When Attacking] (o ato de atacar dispara o efeito), OU
+        - tem efeito [Your Turn]/[Opponent's Turn] que depende de estar restado
+          (ex: Shanks — restado dá -1000 a todos os personagens do oponente).
+        """
+        effects = get_card_effects(card.code)
+        if 'when_attacking' in effects:
+            return True
+        # efeitos que se beneficiam de estar restado
+        txt = (card.card_text or '').lower()
+        if ('when this character becomes rested' in txt or
+                'if this character is rested' in txt or
+                'while this character is rested' in txt):
+            return True
+        return False
+
     def score_attack_target(self, attacker: 'Card',
                              target_type: str,
                              target: 'Optional[Card]') -> float:
@@ -1570,24 +1609,37 @@ class DecisionEngine:
         atk_power = attacker.effective_power(True)
 
         if target_type == 'leader':
-            # Não ataca líder com poder 0 sem DON
-            if atk_power == 0 and attacker.don_attached == 0:
-                return -999
+            atk_power = attacker.effective_power(True)
+            don_disp  = self.me.don_available
+            leader_power = self.opp.leader.power
 
+            # REGRA DURA (validada com o usuário):
+            # Ataque ao líder só vale se:
+            #  (a) poder do atacante >= poder-base do líder (passa sem DON), OU
+            #  (b) poder + DON disponível >= poder-base do líder (passa com DON), OU
+            #  (c) restar o personagem ativa um efeito útil (When Attacking, ou
+            #      efeito Your Turn/Opp Turn que depende de estar restado).
+            passa_sem_don = atk_power >= leader_power
+            passa_com_don = (atk_power + don_disp * 1000) >= leader_power
+            vale_restar   = self._rest_activates_effect(attacker)
+
+            if not (passa_sem_don or passa_com_don or vale_restar):
+                return -999  # ataque inútil: não passa e não ativa nada — barra
+
+            # Pontua os ataques válidos
             s = 100
             if opp_life == 1:  s = 500
             if opp_life == 0:  s = 10000
 
-            # Penaliza se claramente não passa pela defesa
-            opp_defense = self.opp.leader.power + a.opp_counter_potential()
-            if atk_power < opp_defense - 2000:
-                s -= 60
-            elif atk_power < opp_defense:
-                s -= 20
+            # Bônus se restar ativa efeito (vale mesmo sem dano)
+            if vale_restar and not passa_sem_don:
+                s = max(s, 80)
 
-            # Bônus: mesmo que não passe, força oponente a gastar carta
-            if len(self.opp.hand) >= 3 and atk_power >= self.opp.leader.power:
-                s += 20  # vai forçar uso de counter
+            # Penaliza levemente se precisa de muito DON (mas ainda é válido)
+            opp_defense = leader_power + a.opp_counter_potential()
+            if atk_power < opp_defense and not passa_sem_don:
+                s -= 10
+            return s
 
         elif target_type == 'character' and target:
             # Não ataca se não consegue KO
@@ -1796,6 +1848,81 @@ class OPTCGMatch:
             p.deck.remove(best)
             p.field_stage = best
 
+    def _mulligan_decision(self, hand, deck=None) -> tuple:
+        """
+        Decide mulligan seguindo o documento (pág. 2) e as regras do usuário.
+
+        Avalia (contagem simples — sinais bons vs ruins):
+        - Jogada para T1/T2/T3: consigo aproveitar o DON de cada turno com as
+          cartas baratas da mão? (não é 1 carta — é gastar o DON do turno)
+        - Trigger demais na mão: relativo a quantos o deck tem (triggers valem
+          mais na vida; ter muitos na mão desperdiça)
+        - Tem searcher (bom: busca peça)
+        - Tem ramp de DON (bom: acelera)
+        - Counter de menos (ruim: sem defesa)
+        Se sinais ruins > bons -> mulligan.
+        """
+        from optcg_engine.deck_census import deck_census
+        non_leader = [c for c in hand if c.card_type != 'LEADER']
+        custos = sorted(c.cost for c in non_leader)
+
+        bons, ruins, motivos = 0, 0, []
+
+        # ── Jogada por turno: consigo gastar o DON do turno? ──
+        # DON disponível no turno N (jogador 1): T1=1, T2=3, T3=5
+        def aproveita_don(don_disp):
+            # tenta somar custos de cartas (cada uma usada uma vez) até o DON
+            restante = don_disp
+            usadas = 0
+            for c in custos:
+                if c <= restante and c > 0:
+                    restante -= c
+                    usadas += 1
+            return usadas > 0  # jogou pelo menos 1 carta aproveitando o turno
+
+        t1 = aproveita_don(1)
+        t2 = aproveita_don(3)
+        t3 = aproveita_don(5)
+        jogadas_cedo = sum([t1, t2, t3])
+        if jogadas_cedo >= 2:
+            bons += 1
+            motivos.append(f'curva ok (T1:{"s" if t1 else "n"} T2:{"s" if t2 else "n"} T3:{"s" if t3 else "n"})')
+        else:
+            ruins += 1
+            motivos.append('mao lenta (sem jogadas para os primeiros turnos)')
+
+        # ── Tem searcher na mão? (bom) ──
+        tem_searcher = any(getattr(c, 'is_searcher', False) or 'search' in c.card_text.lower()
+                           for c in non_leader)
+        if tem_searcher:
+            bons += 1; motivos.append('tem searcher')
+
+        # ── Tem ramp de DON? (bom) ──
+        tem_ramp = any('don' in c.card_text.lower() and
+                       ('add' in c.card_text.lower() or 'active' in c.card_text.lower())
+                       for c in non_leader)
+        if tem_ramp:
+            bons += 1; motivos.append('tem ramp de DON')
+
+        # ── Trigger demais na mão (relativo ao deck) ──
+        if deck:
+            census = deck_census(deck)
+            trig_no_deck = max(1, census['trigger'])
+            trig_na_mao = sum(1 for c in non_leader if getattr(c, 'has_trigger', False))
+            # se metade ou mais dos triggers do deck estão na mão, é ruim
+            if trig_na_mao >= 2 and trig_na_mao >= trig_no_deck * 0.5:
+                ruins += 1
+                motivos.append(f'trigger demais na mao ({trig_na_mao} de {trig_no_deck} do deck)')
+
+        # ── Counter de menos na mão (ruim) ──
+        counters_mao = sum(1 for c in non_leader if getattr(c, 'counter', 0) >= 1000)
+        if counters_mao == 0:
+            ruins += 1; motivos.append('sem counter na mao')
+
+        deve_trocar = ruins > bons
+        resumo = '; '.join(motivos)
+        return deve_trocar, resumo
+
     def setup(self):
         """
         Setup inicial conforme sequência das 34k linhas:
@@ -1838,22 +1965,92 @@ class OPTCGMatch:
         p.don_available += p.don_rested + don_from_cards
         p.don_rested = 0
 
-    def draw_phase(self, p: GameState):
+    def draw_phase(self, p: GameState, verbose: bool = False):
         """PlayerDrawPhase — 1º jogador não compra no T1."""
         if p.turn == 1 and p.is_first:
             return
         if p.deck:
-            p.hand.append(p.deck.pop())
+            drawn = p.deck.pop()
+            p.hand.append(drawn)
+            if verbose:
+                print(f'  \033[90mComprou: {drawn.name[:30]}\033[0m')
 
-    def don_phase(self, p: GameState):
+    def don_phase(self, p: GameState, verbose: bool = False):
         """
         PlayerDonPhase:
         - T1 do 1º jogador: +1 DON
         - Outros turnos: +2 DON
+        - Máximo 10 (limitado pelo don_deck)
         """
         gain = min(1 if (p.turn == 1 and p.is_first) else 2, p.don_deck)
         p.don_deck -= gain
         p.don_available += gain
+        if verbose:
+            print(f'  \033[93mDON!! +{gain} rampados │ '
+                  f'{p.don_available} ativos │ '
+                  f'{p.don_rested} restados\033[0m')
+
+    def _activate_main_effects(self, p, opp, ee, verbose=False):
+        """
+        Ativa efeitos [Activate: Main] disponíveis (líder, Stage, personagens).
+        A IA decide ativar quando o benefício é claro e o custo é pagável.
+        Respeita 'once_per_turn'.
+        """
+        # Fontes de efeito ativável: líder, stage, e personagens em campo
+        sources = []
+        if p.leader:
+            sources.append(p.leader)
+        if p.field_stage:
+            sources.append(p.field_stage)
+        sources.extend(p.field_chars)
+
+        for src in sources:
+            effects = get_card_effects(src.code)
+            am = effects.get('activate_main')
+            if not am:
+                continue
+            # once per turn: marca em atributo dinâmico
+            if am.get('once_per_turn'):
+                used = getattr(src, '_am_used_turn', -1)
+                if used == p.turn:
+                    continue
+            # Decide se vale ativar (benefício claro): draw/search/play sempre vale;
+            # efeitos que precisam de alvo, só se houver alvo.
+            if not self._should_activate_main(src, am, p, opp):
+                continue
+            # Marca uso e executa
+            src._am_used_turn = p.turn
+            if verbose:
+                print(f'    ⚙ ativou [Activate:Main] de {src.name[:22]}')
+            logs = ee.execute(src, 'activate_main')
+            if verbose:
+                for log in logs:
+                    if log:
+                        print(f'      ↳ {log}')
+
+    def _should_activate_main(self, src, am, p, opp) -> bool:
+        """
+        Decide se vale ativar o efeito Main. Heurística:
+        - Se dá draw/search e há recurso para o custo: vale
+        - Se precisa de alvo (rest/ko opponent) e não há alvo: não vale
+        """
+        steps = am.get('steps', [])
+        actions = [s.get('action') for s in steps]
+
+        # Efeitos de vantagem pura (draw, search) — quase sempre valem
+        if any(a in ('draw', 'look_top_deck', 'add_to_hand') for a in actions):
+            # se o custo for trashar carta, só ativa se tiver carta descartável
+            cost = am.get('cost', {})
+            if cost.get('type') == 'trash_from_hand':
+                return len(p.hand) > cost.get('count', 1)
+            return True
+
+        # Efeitos que afetam o oponente — só com alvo
+        if any(a in ('rest_opp', 'ko_opp', 'debuff') for a in actions):
+            return bool(opp.field_chars)
+
+        # Por padrão, não ativa (evita gastar recurso sem benefício claro)
+        return False
 
     def main_phase(self, p: GameState, opp: GameState, verbose: bool = False) -> bool:
         """
@@ -1879,6 +2076,9 @@ class OPTCGMatch:
                 break
         if verbose and plays == 0:
             print('    (nenhuma carta jogada)')
+
+        # 2b. Ativar efeitos [Activate: Main] (líder, Stage, personagens)
+        self._activate_main_effects(p, opp, ee, verbose=verbose)
 
         # 3. Distribui DON entre os atacantes
         if p.can_attack_this_turn():
@@ -1954,6 +2154,12 @@ class OPTCGMatch:
             don_txt = f'gastou {card.cost} DON' if card.cost > 0 else 'grátis'
             print(f'  > {don_txt} -> Joga: {card.name[:30]} '
                   f'({card.effective_power(True)}pwr) [{card.card_type}]')
+            # Texto do efeito da carta (cinza) — para auditoria sem decorar
+            txt = (card.card_text or '').strip()
+            if txt:
+                # primeira frase/linha do efeito, até ~90 chars
+                short = txt.replace('\n', ' ')[:90]
+                print(f'    \033[90mefeito: {short}{"..." if len(txt) > 90 else ""}\033[0m')
 
         if card.card_type == 'CHARACTER':
             if len(p.field_chars) >= 5:
@@ -2079,8 +2285,8 @@ class OPTCGMatch:
         p.global_turn = self.global_turn
 
         self.refresh_phase(p)
-        self.draw_phase(p)
-        self.don_phase(p)
+        self.draw_phase(p, verbose=verbose)
+        self.don_phase(p, verbose=verbose)
 
         if self.main_phase(p, opp, verbose=verbose):
             return 'A' if p is self.state_a else 'B'

@@ -199,11 +199,19 @@ class ReplayMatch:
         ]:
             random.shuffle(p.deck)
             p.hand = [p.deck.pop() for _ in range(min(5, len(p.deck)))]
-            if self._mulligan(p):
-                print(f'{col}{nm}: fez Mulligan!{C.RESET}')
+            # Decisão de mulligan via ENGINE (fonte única), com motivo
+            if not hasattr(self, '_engine_match'):
+                self._engine_match = OPTCGMatch.__new__(OPTCGMatch)
+                self._engine_match.global_turn = 0
+            deve_trocar, motivo = self._engine_match._mulligan_decision(
+                p.hand, deck=p.hand + p.deck)
+            if deve_trocar:
+                print(f'{col}{nm}: fez Mulligan — {motivo}{C.RESET}')
                 p.deck.extend(p.hand)
                 random.shuffle(p.deck)
                 p.hand = [p.deck.pop() for _ in range(min(5, len(p.deck)))]
+            else:
+                print(f'{col}{nm}: manteve a mão — {motivo}{C.RESET}')
             life_n = p.leader.life if p.leader.life > 0 else 5
             p.life = [p.deck.pop() for _ in range(min(life_n, len(p.deck)))]
 
@@ -241,37 +249,6 @@ class ReplayMatch:
 
     def _mulligan(self, p):
         return len([c for c in p.hand if c.cost <= 2 and c.card_type != 'LEADER']) == 0
-
-    def refresh(self, p):
-        don_from_cards = sum(c.don_attached for c in p.field_chars) + p.leader.don_attached
-        for c in p.field_chars:
-            c.don_attached = 0
-            c.rested = False
-            c.just_played = False
-        p.leader.don_attached = 0
-        p.leader.rested = False
-        # Todos os DON restados viram ativos no refresh
-        p.don_available += p.don_rested + don_from_cards
-        p.don_rested = 0
-
-    def draw(self, p):
-        if p.turn == 1 and p.is_first:
-            return
-        if p.deck:
-            drawn = p.deck.pop()
-            p.hand.append(drawn)
-            print(f'  {C.GRAY}Comprou: {drawn.name[:30]}{C.RESET}')
-
-    def don(self, p):
-        if p.turn == 1 and p.is_first:
-            gain = min(1, p.don_deck)
-        else:
-            gain = min(2, p.don_deck)
-        p.don_deck -= gain
-        p.don_available += gain
-        print(f'  {C.YELLOW}DON!! +{gain} rampados │ '
-              f'{p.don_available} ativos │ '
-              f'{p.don_rested} restados{C.RESET}')
 
     def choose_card(self, p, opp):
         engine = DecisionEngine(p, opp)
@@ -476,10 +453,13 @@ class ReplayMatch:
               f'(T{p.turn} de {self.name(p).upper()}){C.RESET}')
         sep()
 
-        # Fases de início: refresh/draw/don (visualização própria do replay)
-        self.refresh(p)
-        self.draw(p)
-        self.don(p)
+        # Fases de início: delegadas ao ENGINE (fonte única), com verbose
+        if not hasattr(self, '_engine_match'):
+            self._engine_match = OPTCGMatch.__new__(OPTCGMatch)
+            self._engine_match.global_turn = 0
+        self._engine_match.refresh_phase(p)
+        self._engine_match.draw_phase(p, verbose=True)
+        self._engine_match.don_phase(p, verbose=True)
         print_field(p, col, self.name(p))
 
         # LÓGICA delegada ao ENGINE (fonte única). main_phase pertence a
