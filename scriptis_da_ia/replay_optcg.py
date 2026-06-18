@@ -198,6 +198,10 @@ class ReplayMatch:
             (self.state_b, self.stage_b, C.RED,   self.name_b),
         ]:
             random.shuffle(p.deck)
+            # Censo do deck COMPLETO (50 cartas) — antes de separar mão/vida.
+            # Serve ao perfil do deck (aggressive/control/midrange).
+            from optcg_engine.deck_census import deck_census
+            p.full_deck_census = deck_census(list(p.deck))
             p.hand = [p.deck.pop() for _ in range(min(5, len(p.deck)))]
             # Decisão de mulligan via ENGINE (fonte única), com motivo
             if not hasattr(self, '_engine_match'):
@@ -461,6 +465,14 @@ class ReplayMatch:
         self._engine_match.draw_phase(p, verbose=True)
         self._engine_match.don_phase(p, verbose=True)
         print_field(p, col, self.name(p))
+
+        # Perfil do deck + fase da partida + postura (para auditoria)
+        from optcg_engine.decision_engine import DecisionEngine
+        eng = DecisionEngine(p, opp)
+        prof = eng.analyzer.deck_profile_type()
+        fase = eng.analyzer.game_phase()
+        post = eng.posture()
+        print(f'  {C.GRAY}[perfil: {prof} │ fase: {fase} │ postura: {post}]{C.RESET}')
 
         # LÓGICA delegada ao ENGINE (fonte única). main_phase pertence a
         # OPTCGMatch e opera sobre (p, opp) passados — não usa estado interno,

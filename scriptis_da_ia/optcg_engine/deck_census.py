@@ -86,14 +86,52 @@ def deck_census(deck) -> dict:
     }
 
 
-def format_census(census: dict) -> str:
-    """Resumo legível do censo (para debug/visualização)."""
-    lines = [f"Censo do deck ({census['total']} cartas):"]
-    lines.append(f"  Por custo: {census['by_cost']}")
-    lines.append(f"  Searchers: {census['searchers']['total']} {census['searchers']['by_cost']}")
-    lines.append(f"  Rush: {census['rush']['total']} | Blockers: {census['blockers']['total']}")
-    lines.append(f"  Eventos: {census['events']['total']} | Stages: {census['stages']['total']}")
-    lines.append(f"  Counter 1000: {census['counter_1000']} | 2000: {census['counter_2000']}")
-    lines.append(f"  Trigger: {census['trigger']} | Banish: {census['banish']} | "
-                 f"Draw: {census['draw_power']}")
-    return '\n'.join(lines)
+def deck_profile(census: dict) -> dict:
+    """
+    Classifica o perfil do deck (agressivo / controle / midrange) a partir do
+    censo. Limiares calibrados com decks reais do Limitless:
+
+      Agressivo (Red Zoro, Red Sanji):  custo médio ~1.7, ~85% cartas <=2
+      Controle  (Enel, Blackbeard):     custo médio ~4.06, ~20% <=2, ~20% >=6
+      Midrange: a faixa intermediária
+
+    Retorna {'profile', 'avg_cost', 'pct_cheap', 'pct_heavy', 'reason'}.
+    """
+    by_cost = census['by_cost']
+    total = census['total'] or 1
+
+    soma = sum(custo * qtd for custo, qtd in by_cost.items())
+    avg_cost = soma / total
+    cheap = sum(qtd for custo, qtd in by_cost.items() if custo <= 2)
+    heavy = sum(qtd for custo, qtd in by_cost.items() if custo >= 6)
+    pct_cheap = cheap / total
+    pct_heavy = heavy / total
+
+    # Sinais de agressividade que reforçam a curva
+    n_rush = census['rush']['total']
+    n_blockers = census['blockers']['total']
+
+    # Classificação por curva (o separador mais forte nos dados reais)
+    if avg_cost <= 2.5 and pct_cheap >= 0.55:
+        profile = 'aggressive'
+        reason = f'curva baixa (médio {avg_cost:.1f}, {pct_cheap*100:.0f}% custo<=2)'
+    elif avg_cost >= 3.5 or pct_heavy >= 0.15:
+        profile = 'control'
+        reason = f'curva alta (médio {avg_cost:.1f}, {pct_heavy*100:.0f}% custo>=6)'
+    else:
+        profile = 'midrange'
+        reason = f'curva equilibrada (médio {avg_cost:.1f})'
+
+    return {
+        'profile': profile,
+        'avg_cost': round(avg_cost, 2),
+        'pct_cheap': round(pct_cheap, 2),
+        'pct_heavy': round(pct_heavy, 2),
+        'rush': n_rush,
+        'blockers': n_blockers,
+        'reason': reason,
+    }
+
+
+if __name__ == '__main__':
+    print("Módulo de censo + perfil. Use deck_census(deck) e deck_profile(census).")

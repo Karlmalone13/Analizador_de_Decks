@@ -131,6 +131,7 @@ class GameState:
     counters_used: int = 0
     searchers_used: int = 0
     triggers_activated: int = 0
+    full_deck_census: dict = None
 
     def life_count(self) -> int:
         return len(self.life)
@@ -913,6 +914,29 @@ class GameAnalyzer:
         elif avg_cost <= 5.0: return 'mid'
         else:                 return 'late'
 
+    def game_phase(self) -> str:
+        """
+        FASE DA PARTIDA pelos DON na mesa (documento pág. 3):
+        Early (0-4 DON), Mid (5-8), Late (9-10).
+        É o MOMENTO da partida, não o tipo do deck.
+        """
+        don_total = self.me.don_available + self.me.don_rested
+        if don_total <= 4:   return 'early'
+        elif don_total <= 8: return 'mid'
+        else:                return 'late'
+
+    def deck_profile_type(self) -> str:
+        """
+        PERFIL do deck (aggressive/control/midrange) a partir do censo do deck
+        completo. Diferente de deck_profile() (que é por curva de mão+campo).
+        Usa o deck guardado em me.full_deck_census (setado no setup).
+        """
+        census = getattr(self.me, 'full_deck_census', None)
+        if not census:
+            return 'midrange'  # sem censo, neutro
+        from optcg_engine.deck_census import deck_profile as classify
+        return classify(census)['profile']
+
     # ── Potencial ofensivo ───────────────────────────────────────────────────
 
     def my_attack_power(self) -> int:
@@ -1156,39 +1180,62 @@ class DecisionEngine:
 
     def posture(self) -> str:
         """
-        Determina a postura ideal para este turno.
-        Leva em conta perfil do deck, vida, campo e ameaças.
+        Postura do turno = PERFIL do deck (aggressive/control/midrange) +
+        FASE da partida (early/mid/late pelos DON), conforme o documento.
+
+        - Prioridades absolutas primeiro (lethal / evitar derrota).
+        - Depois o PERFIL comanda:
+          * aggressive: pressiona em todas as fases (busca dano cedo)
+          * control: segue a fase (early desenvolve, mid controla, late finaliza)
+          * midrange: equilíbrio pela fase
         """
         a = self.analyzer
-        profile = a.deck_profile()
+        profile = a.deck_profile_type()   # aggressive / control / midrange
+        phase   = a.game_phase()          # early / mid / late (pelos DON)
         my_life  = self.me.life_count()
         opp_life = self.opp.life_count()
 
-        # Lethal disponível — sempre ofensivo
+        # ── Prioridades absolutas (independem de perfil/fase) ──
         if a.can_lethal_this_turn():
             return 'LETHAL'
-
-        # Oponente pode me finalizar no próximo turno — defensivo
         if a.opp_lethal_threat() > 0.6:
             return 'DEFENSIVE'
 
-        # Deck early game — sempre ofensivo
-        if profile == 'early':
-            if opp_life <= 2: return 'AGGRESSIVE'
-            return 'DEVELOP'
+        # ── Perfil AGRESSIVO: pressiona em todas as fases ──
+        # (deck de curva baixa com rush/buff ataca a vida desde cedo)
+        if profile == 'aggressive':
+            if my_life <= 1 and a.field_advantage() < 0:
+                return 'DEFENSIVE'      # só recua se realmente prestes a morrer
+            return 'AGGRESSIVE'
 
-        # Deck late game — defensivo até estar pronto
-        if profile == 'late':
-            if my_life <= 2: return 'DEFENSIVE'
-            if opp_life <= 1: return 'AGGRESSIVE'
-            return 'DEVELOP'
+        # ── Perfil CONTROLE: segue o padrão das fases ──
+        if profile == 'control':
+            if phase == 'early':
+                # desenvolver e preservar (board > dano)
+                if opp_life <= 1: return 'AGGRESSIVE'
+                return 'DEVELOP'
+            if phase == 'mid':
+                # disputar board, eliminar ameaças
+                if my_life <= 1: return 'DEFENSIVE'
+                if a.field_advantage() < -2: return 'CONTROL'
+                if opp_life <= 2: return 'AGGRESSIVE'
+                return 'CONTROL'
+            # late: buscar letal / finalizar
+            if my_life <= 2 and a.field_advantage() < 0: return 'DEFENSIVE'
+            return 'AGGRESSIVE'
 
-        # Mid game — contextual
+        # ── Perfil MIDRANGE: equilíbrio pela fase ──
         if opp_life <= 1:   return 'AGGRESSIVE'
         if my_life <= 1:    return 'DEFENSIVE'
-        if a.field_advantage() < -3: return 'CONTROL'
-        if self.me.turn <= 3:        return 'DEVELOP'
-        return 'MIDRANGE'
+        if phase == 'early':
+            if a.field_advantage() < -2: return 'CONTROL'
+            return 'DEVELOP'
+        if phase == 'mid':
+            if a.field_advantage() < -3: return 'CONTROL'
+            if opp_life <= 2: return 'AGGRESSIVE'
+            return 'MIDRANGE'
+        # late
+        return 'AGGRESSIVE'
 
     # ── Avaliação de cartas ──────────────────────────────────────────────────
 
