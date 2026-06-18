@@ -1386,6 +1386,26 @@ class DecisionEngine:
                 if str(v).lower() not in str(getattr(me.leader, 'name', '')).lower(): return False
         return True
 
+    def _can_play_card(self, card) -> bool:
+        """Decide se uma carta é jogável agora (mesma regra do choose_card_to_play)."""
+        if card.card_type not in ('CHARACTER', 'EVENT', 'STAGE'):
+            return False
+        don_reserve = self._don_reserve_for_defense()
+        don_usable  = max(0, self.me.don_available - don_reserve)
+        if card.cost > don_usable:
+            return False
+        if '[counter]' in card.card_text.lower() and card.card_type == 'EVENT':
+            return False
+        effects = get_card_effects(card.code)
+        has_main = any(t in effects for t in ('on_play', 'main', 'activate_main'))
+        if card.card_type == 'EVENT' and not has_main:
+            return False
+        if not self._effect_conditions_met(card):
+            vale_pelo_corpo = (card.card_type == 'CHARACTER' and card.power >= 5000)
+            if not vale_pelo_corpo:
+                return False
+        return True
+
     def choose_card_to_play(self) -> 'Optional[Card]':
         """
         Escolhe a melhor carta para jogar considerando:
@@ -1655,6 +1675,10 @@ class DecisionEngine:
         opp_life  = self.opp.life_count()
         atk_power = attacker.effective_power(True)
 
+        # Custo de restar um atacante que tem [Activate: Main] útil:
+        # atacar com ele perde o efeito do turno. Desconta, salvo letal/ameaça grande.
+        activate_cost = self._activate_main_value(attacker)
+
         if target_type == 'leader':
             atk_power = attacker.effective_power(True)
             don_disp  = self.me.don_available
@@ -1686,33 +1710,90 @@ class DecisionEngine:
             opp_defense = leader_power + a.opp_counter_potential()
             if atk_power < opp_defense and not passa_sem_don:
                 s -= 10
+
+            # Custo de perder o Activate Main: desconta, salvo se for letal
+            if activate_cost > 0 and opp_life > 1:
+                s -= activate_cost
             return s
 
         elif target_type == 'character' and target:
-            # Não ataca se não consegue KO
-            if atk_power < target.power:
-                # Pode valer para gastar counters do oponente
-                if len(self.opp.hand) >= 4:
-                    s = 10  # ataque "sondagem"
-                else:
-                    return -100
+            don_disp = self.me.don_available
+            # REGRA DURA (mesma do líder, validada com o usuário):
+            # só ataca personagem se:
+            #  (a) poder >= poder do alvo (mata sem DON), OU
+            #  (b) poder + DON disponível >= poder do alvo (mata com DON), OU
+            #  (c) restar o atacante ativa efeito útil.
+            passa_sem_don = atk_power >= target.power
+            passa_com_don = (atk_power + don_disp * 1000) >= target.power
+            vale_restar   = self._rest_activates_effect(attacker)
 
-            # Valor do alvo
+            if not (passa_sem_don or passa_com_don or vale_restar):
+                return -999   # não mata e não ativa nada — barra
+
+            # Valor do alvo (quão importante é removê-lo)
             s = target.board_value() * 15
 
-            # Prioriza ameaças
+            # Alvo COM EFEITO vale matar mesmo com poder baixo/0 (regra do usuário)
+            tgt_effects = get_card_effects(target.code)
+            tem_efeito_alvo = any(t in tgt_effects for t in
+                                  ('on_play', 'activate_main', 'when_attacking',
+                                   'blocker', 'on_ko', 'your_turn', 'opp_turn'))
+            if tem_efeito_alvo and target.power <= 2000:
+                s += 50   # remover utilidade do oponente vale, apesar do poder baixo
+
+            # Alvo cujo efeito AMEAÇA (pune no turno do oponente, ativa vantagem
+            # recorrente, ou bloqueia): remover nega a ameaça futura. Vale mais.
+            efeito_ameaca = any(t in tgt_effects for t in
+                                ('opp_turn', 'activate_main', 'blocker'))
+            if efeito_ameaca:
+                s += 70   # negar ameaça futura do oponente
+
+            # Prioriza ameaças (ordem de prioridade de alvos do documento)
             if target.has_double_attack:  s += 50
             if target.has_rush:           s += 40
-            effects = get_card_effects(target.code)
-            if 'when_attacking' in effects: s += 35
-            if 'activate_main' in effects:  s += 25
-            if 'on_ko' in effects:          s -= 20  # cuidado: ativa efeito ao morrer
+            if target.has_blocker:        s += 60
+            if 'when_attacking' in tgt_effects: s += 35
+            if 'activate_main' in tgt_effects:  s += 25
+            if 'on_ko' in tgt_effects:          s -= 20  # cuidado: ativa ao morrer
 
-            # Se atacar e matar, limpa ameaça
-            if atk_power >= target.power:
-                s += 30
+            # Bônus se restar ativa efeito (vale mesmo sem matar)
+            if vale_restar and not passa_sem_don:
+                s = max(s, 60)
+
+            # Custo de perder o Activate Main do ATACANTE: só compensa se o alvo
+            # é ameaça grande (poder alto, blocker, rush, gera vantagem).
+            ameaca_grande = (target.power >= 5000 or target.has_blocker or
+                             target.has_rush or target.has_double_attack)
+            if activate_cost > 0 and not ameaca_grande:
+                s -= activate_cost
+
+            return s
 
         return s
+
+    def _activate_main_value(self, card) -> float:
+        """
+        Valor do efeito [Activate: Main] de um personagem — o "custo" de restá-lo
+        atacando (perde o efeito do turno). 0 se não tem efeito ativável OU se a
+        condição do efeito NÃO está satisfeita agora (não há o que preservar:
+        regra do usuário — se não pode ativar, ataca normalmente).
+        """
+        effects = get_card_effects(card.code)
+        am = effects.get('activate_main')
+        if not am:
+            return 0.0
+        # Se o efeito não pode ativar agora (condição não satisfeita), não há
+        # nada a preservar — custo zero, a IA pode atacar com ela.
+        if not self._effect_conditions_met(card):
+            return 0.0
+        # Respeita once_per_turn: se já usou, não há efeito a preservar neste turno
+        if am.get('once_per_turn') and getattr(card, '_am_used_turn', -1) == self.me.turn:
+            return 0.0
+        steps = am.get('steps', [])
+        actions = [s.get('action') for s in steps]
+        if any(x in ('draw', 'look_top_deck', 'add_to_hand') for x in actions):
+            return 70.0
+        return 40.0
 
     # ── Decisões de defesa ────────────────────────────────────────────────────
 
@@ -2099,11 +2180,154 @@ class OPTCGMatch:
         # Por padrão, não ativa (evita gastar recurso sem benefício claro)
         return False
 
+    def _score_play_action(self, card, engine) -> float:
+        """
+        Pontua JOGAR uma carta. Cartas cujo efeito HABILITA o ataque
+        (On Play remoção, rush, buff, activate que ajuda) pontuam alto e saem
+        ANTES dos ataques. Cartas só-desenvolvimento (blocker defensivo, vanilla)
+        pontuam como dev e saem DEPOIS dos ataques (regra de ordem do usuário).
+        """
+        base = engine.avaliar_carta(card)
+        effects = get_card_effects(card.code)
+
+        # Carta que PRECISA entrar para ativar efeito que ajuda o ataque agora:
+        # On Play de remoção/buff, rush. Bônus para sair antes do ataque.
+        habilita_ataque = False
+        if 'on_play' in effects:
+            txt = (card.card_text or '').lower()
+            if any(k in txt for k in ['k.o.', 'ko ', 'rest', 'give', '-', 'draw', 'play']):
+                habilita_ataque = True
+        if card.has_rush:
+            habilita_ataque = True
+
+        if habilita_ataque:
+            base += 60   # prioriza sair antes dos ataques
+        return base
+
+    def _generate_and_score_actions(self, p, opp, engine):
+        """
+        Gera TODAS as ações possíveis no estado atual e as pontua.
+        Retorna lista de (score, tipo, dados) ordenada por score desc.
+
+        Ações: ('play', card) | ('activate', source) | ('attack', attacker, ttype, tgt)
+        """
+        actions = []
+        a = engine.analyzer
+
+        # ── Ações de JOGAR carta ──
+        for card in p.hand:
+            if not engine._can_play_card(card):
+                continue
+            score = self._score_play_action(card, engine)
+            actions.append((score, 'play', card, None, None))
+
+        # ── Ações de ATACAR (com risco de trigger descontado) ──
+        if p.can_attack_this_turn():
+            attackers = [c for c in p.field_chars if not c.rested and not c.just_played]
+            if not p.leader.rested:
+                attackers.append(p.leader)
+            for att in attackers:
+                # alvo líder
+                s_leader = engine.score_attack_target(att, 'leader', None)
+                if s_leader > -500:
+                    s_leader -= self._trigger_risk_penalty(opp)   # desconto de trigger
+                    actions.append((s_leader, 'attack', att, 'leader', None))
+                # alvos personagem
+                for tgt in opp.field_chars:
+                    s_char = engine.score_attack_target(att, 'character', tgt)
+                    if s_char > -500:
+                        actions.append((s_char, 'attack', att, 'character', tgt))
+
+        actions.sort(key=lambda x: x[0], reverse=True)
+        return actions
+
+    def _trigger_risk_penalty(self, opp) -> float:
+        """
+        Risco de trigger ao atacar (documento pág. 21): desconta, mas não proíbe.
+        Mais vidas do oponente = mais chance de trigger. Amarelo = risco maior.
+        """
+        vidas = opp.life_count()
+        if vidas == 0:
+            return 0
+        base = vidas * 8   # desconto suave por vida (trigger é risco, não veto)
+        cor = (getattr(opp.leader, 'color', '') or '').lower()
+        if 'yellow' in cor or 'amarelo' in cor:
+            base *= 1.8
+        return base
+
     def main_phase(self, p: GameState, opp: GameState, verbose: bool = False) -> bool:
         """
-        Fase principal completa com IA probabilística.
-        Com verbose=True, narra as ações (para o replay).
+        Fase principal = LOOP DE PONTUAÇÃO DE JOGADAS (documento pág. 9).
+        A cada passo: gera todas as ações possíveis, pontua, executa a melhor,
+        reavalia o estado, repete. A ordem (jogar antes/depois de atacar) emerge
+        das pontuações: cartas que habilitam ataque saem antes; desenvolvimento
+        sai depois. Para quando nenhuma ação tem score acima do limiar.
         """
+        engine = DecisionEngine(p, opp)
+        ee     = EffectExecutor(p, opp)
+        ee.apply_your_turn_buffs()
+
+        if verbose:
+            print('  -- Turno (loop de pontuação) --')
+
+        LIMIAR = 0       # abaixo disso, não vale agir
+        MAX_ACOES = 30   # trava de segurança
+        n = 0
+
+        while n < MAX_ACOES:
+            n += 1
+            # 1. Ativar efeitos [Activate: Main] de vantagem clara (draw/search)
+            #    são quase sempre bons — resolve antes de pontuar o resto.
+            self._activate_main_effects(p, opp, ee, verbose=verbose)
+
+            # 2. Gera e pontua todas as ações
+            actions = self._generate_and_score_actions(p, opp, engine)
+            if not actions or actions[0][0] < LIMIAR:
+                break
+
+            score, kind, obj, ttype, tgt = actions[0]
+
+            if kind == 'play':
+                self._play_card(obj, p, opp, ee, verbose=verbose)
+
+            elif kind == 'attack':
+                attacker = obj
+                if attacker.rested:
+                    continue
+                # decide DON para este ataque (parte da ação de atacar)
+                self._attach_don_for_attack(attacker, ttype, tgt, p, opp, engine, verbose)
+                if verbose:
+                    tgt_name = 'Leader' if ttype == 'leader' else (tgt.name[:20] if tgt else '?')
+                    print(f'    {attacker.name[:20]} ({attacker.effective_power(True)}pwr) '
+                          f'ataca {tgt_name}')
+                if self._execute_attack(attacker, ttype, tgt, p, opp, engine, verbose=verbose):
+                    return True
+
+        for c in p.field_chars:
+            c.just_played = False
+        return False
+
+    def _attach_don_for_attack(self, attacker, ttype, tgt, p, opp, engine, verbose):
+        """Anexa DON a este ataque, se ajudar a passar a defesa."""
+        if p.don_available <= 0:
+            return
+        if ttype == 'leader':
+            alvo_power = opp.leader.power
+        else:
+            alvo_power = tgt.power if tgt else 0
+        atk = attacker.effective_power(True)
+        # anexa o mínimo de DON para alcançar/superar o alvo (até o disponível)
+        falta = alvo_power - atk
+        if falta > 0:
+            need = min(p.don_available, (falta + 999) // 1000)
+            if need > 0:
+                attacker.don_attached += need
+                p.don_available -= need
+                p.don_rested += need
+                if verbose:
+                    print(f'    anexou {need} DON em {attacker.name[:20]}')
+
+    def _main_phase_OLD_fixed(self, p: GameState, opp: GameState, verbose: bool = False) -> bool:
         engine = DecisionEngine(p, opp)
         ee     = EffectExecutor(p, opp)
 
