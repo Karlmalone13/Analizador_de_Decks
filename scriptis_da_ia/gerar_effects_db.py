@@ -77,6 +77,17 @@ def parse_costs(text):
     if m:
         costs.append({'type': 'trash_from_hand', 'count': int(m.group(1))})
 
+    # DON!! −X: devolve X DON do campo para o deck de DON.
+    # "you may" perto (antes ou depois, ex: dentro do parêntese explicativo)
+    # -> opcional; senão -> obrigatório.
+    m = re.search(r'don!!\s*[−\-‐]\s*(\d+)', t)
+    if m:
+        x = int(m.group(1))
+        idx = m.start()
+        janela = t[max(0, idx-40):idx+60]   # olha antes E depois
+        opcional = 'you may' in janela
+        costs.append({'type': 'don_minus', 'count': x, 'optional': opcional})
+
     return costs
 
 

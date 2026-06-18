@@ -344,7 +344,61 @@ class EffectExecutor:
                 if card in self.me.field_chars:
                     self.me.field_chars.remove(card)
                     self.me.trash.append(card)
+            elif ctype == 'don_minus':
+                count = cost.get('count', 1)
+                if not self._return_don_to_deck(count):
+                    return False
         return True
+
+    def _return_don_to_deck(self, count: int) -> bool:
+        """
+        Paga um custo DON!! −X: devolve X DON do campo para o deck de DON.
+        Preferência (regra do usuário): devolve primeiro o DON "sem trabalho" —
+        anexado a quem JÁ atacou (restado) ou ao líder que já atacou, depois DON
+        restado no banco. Evita DON ativo e DON anexado a quem ainda vai agir.
+        Retorna False se não há DON suficiente devolvível.
+        """
+        me = self.me
+        devolvidos = 0
+
+        # Fonte 1: DON anexado a personagens que JÁ atacaram (restados)
+        for c in me.field_chars:
+            while c.don_attached > 0 and c.rested and devolvidos < count:
+                c.don_attached -= 1
+                me.don_deck += 1
+                devolvidos += 1
+
+        # Fonte 2: DON anexado ao líder se já atacou (restado)
+        while me.leader.don_attached > 0 and me.leader.rested and devolvidos < count:
+            me.leader.don_attached -= 1
+            me.don_deck += 1
+            devolvidos += 1
+
+        # Fonte 3: DON restado no banco (gasto, parado)
+        while me.don_rested > 0 and devolvidos < count:
+            me.don_rested -= 1
+            me.don_deck += 1
+            devolvidos += 1
+
+        # Fonte 4 (último caso): DON anexado a quem ainda NÃO atacou / DON ativo
+        # — só se for inevitável. Preferimos NÃO chegar aqui (o planner deve
+        # ordenar para atacar antes). Mas se o custo é obrigatório, paga.
+        if devolvidos < count:
+            for c in me.field_chars:
+                while c.don_attached > 0 and devolvidos < count:
+                    c.don_attached -= 1
+                    me.don_deck += 1
+                    devolvidos += 1
+            while me.leader.don_attached > 0 and devolvidos < count:
+                me.leader.don_attached -= 1
+                me.don_deck += 1
+                devolvidos += 1
+            while me.don_available > 0 and devolvidos < count:
+                me.don_available -= 1
+                me.don_deck += 1
+                devolvidos += 1
+
+        return devolvidos >= count
 
     # ── Execução de steps individuais ────────────────────────────────────────
 
@@ -2453,6 +2507,117 @@ class OPTCGMatch:
             base *= 1.8
         return base
 
+    def _evaluate_state(self, p, opp) -> float:
+        """
+        Avalia quão bom é um estado para 'p' (ao fim de uma sequência simulada).
+        Combina: dano causado, vida própria, vantagem de board, recursos.
+        Usado pelo Turn Planner para comparar linhas de jogo.
+        """
+        score = 0.0
+        # Dano causado ao oponente (vidas tiradas) — peso alto
+        score += p.dmg_dealt * 200
+        score -= opp.life_count() * 150          # quanto menos vida o opp tem, melhor
+        # Vitória/derrota
+        if opp.life_count() <= 0 and p.dmg_dealt > 0:
+            score += 10000
+        # Board próprio vs oponente
+        score += sum(c.board_value() for c in p.field_chars) * 10
+        score -= sum(c.board_value() for c in opp.field_chars) * 8
+        # Blockers do oponente vivos (ruim para mim)
+        score -= len(opp.blockers_active()) * 30
+        # Minha vida (defesa)
+        score += p.life_count() * 40
+        # Recursos: cartas na mão, DON ainda disponível (flexibilidade)
+        score += len(p.hand) * 8
+        score += p.don_available * 5
+        return score
+
+    def _apply_action(self, action, p, opp, ee, engine, verbose=False):
+        """
+        Executa UMA ação no estado dado (real ou cópia). Retorna True se venceu.
+        Reúso entre o jogo real e a simulação do planner.
+        """
+        score, kind, obj, ttype, tgt = action
+
+        if kind == 'play':
+            self._play_card(obj, p, opp, ee, verbose=verbose)
+
+        elif kind == 'attach_don':
+            card, falta, what = obj, ttype, tgt
+            anexar = min(falta, p.don_available)
+            if anexar > 0:
+                card.don_attached += anexar
+                p.don_available -= anexar
+                p.don_rested += anexar
+                if verbose:
+                    print(f'    ⚡ anexou {anexar} DON em {card.name[:20]} para ligar [{what}]')
+
+        elif kind == 'attack':
+            attacker = obj
+            if attacker.rested:
+                return False
+            self._attach_don_for_attack(attacker, ttype, tgt, p, opp, engine, verbose)
+            if verbose:
+                tgt_name = 'Leader' if ttype == 'leader' else (tgt.name[:20] if tgt else '?')
+                print(f'    {attacker.name[:20]} ({attacker.effective_power(True)}pwr) ataca {tgt_name}')
+            if self._execute_attack(attacker, ttype, tgt, p, opp, engine, verbose=verbose):
+                return True
+        return False
+
+    def _simulate_sequence(self, p, opp, first_action, max_steps=12):
+        """
+        Simula uma LINHA DE JOGO começando por first_action, numa CÓPIA do estado.
+        Após a primeira ação, segue gulosamente (melhor ação a cada passo) até o
+        fim do turno. Retorna o valor do estado final (para comparar linhas).
+        """
+        from copy import deepcopy
+        p2 = deepcopy(p)
+        opp2 = deepcopy(opp)
+        eng2 = DecisionEngine(p2, opp2)
+        ee2 = EffectExecutor(p2, opp2)
+
+        # Mapeia a primeira ação para os objetos da cópia (por índice/identidade)
+        first2 = self._remap_action(first_action, p, p2, opp, opp2)
+        if first2 is None:
+            return -1e9
+        won = self._apply_action(first2, p2, opp2, ee2, eng2, verbose=False)
+        if won:
+            return 1e9   # essa linha vence
+
+        # Continua gulosamente até o fim do turno
+        for _ in range(max_steps):
+            acts = self._generate_and_score_actions(p2, opp2, eng2)
+            if not acts or acts[0][0] < 0:
+                break
+            if self._apply_action(acts[0], p2, opp2, ee2, eng2, verbose=False):
+                return 1e9
+        return self._evaluate_state(p2, opp2)
+
+    def _remap_action(self, action, p, p2, opp, opp2):
+        """Remapeia uma ação do estado real para os objetos da cópia (por índice)."""
+        score, kind, obj, ttype, tgt = action
+        try:
+            if kind == 'play':
+                idx = p.hand.index(obj)
+                return (score, kind, p2.hand[idx], None, None)
+            if kind == 'attach_don':
+                idx = p.field_chars.index(obj) if obj in p.field_chars else None
+                obj2 = p2.field_chars[idx] if idx is not None else (p2.leader if obj is p.leader else None)
+                return (score, kind, obj2, ttype, tgt)
+            if kind == 'attack':
+                if obj is p.leader:
+                    att2 = p2.leader
+                else:
+                    att2 = p2.field_chars[p.field_chars.index(obj)]
+                if ttype == 'character' and tgt in opp.field_chars:
+                    tgt2 = opp2.field_chars[opp.field_chars.index(tgt)]
+                else:
+                    tgt2 = None
+                return (score, kind, att2, ttype, tgt2)
+        except (ValueError, IndexError):
+            return None
+        return None
+
     def main_phase(self, p: GameState, opp: GameState, verbose: bool = False) -> bool:
         """
         Fase principal = LOOP DE PONTUAÇÃO DE JOGADAS (documento pág. 9).
@@ -2466,53 +2631,38 @@ class OPTCGMatch:
         ee.apply_your_turn_buffs()
 
         if verbose:
-            print('  -- Turno (loop de pontuação) --')
+            print('  -- Turno (Turn Planner: simula sequências) --')
 
-        LIMIAR = 0       # abaixo disso, não vale agir
-        MAX_ACOES = 30   # trava de segurança
+        MAX_ACOES = 30
+        TOP_K = 6        # simula só as K ações mais promissoras (custo controlado)
         n = 0
 
         while n < MAX_ACOES:
             n += 1
-            # 1. Ativar efeitos [Activate: Main] de vantagem clara (draw/search)
-            #    são quase sempre bons — resolve antes de pontuar o resto.
             self._activate_main_effects(p, opp, ee, verbose=verbose)
 
-            # 2. Gera e pontua todas as ações
             actions = self._generate_and_score_actions(p, opp, engine)
-            if not actions or actions[0][0] < LIMIAR:
+            if not actions or actions[0][0] < 0:
                 break
 
-            score, kind, obj, ttype, tgt = actions[0]
+            # TURN PLANNER: para as TOP_K ações candidatas, simula a linha de jogo
+            # resultante e escolhe a que leva ao MELHOR estado de fim de turno.
+            # (Em vez de escolher gulosamente a de maior score imediato.)
+            candidatas = actions[:TOP_K]
+            melhor_acao = None
+            melhor_valor = -1e18
+            for cand in candidatas:
+                valor = self._simulate_sequence(p, opp, cand)
+                if valor > melhor_valor:
+                    melhor_valor = valor
+                    melhor_acao = cand
 
-            if kind == 'play':
-                self._play_card(obj, p, opp, ee, verbose=verbose)
+            if melhor_acao is None:
+                break
 
-            elif kind == 'attach_don':
-                # Anexa DON para ligar um efeito/keyword [DON!! ×N]
-                card, falta, what = obj, ttype, tgt
-                anexar = min(falta, p.don_available)
-                if anexar <= 0:
-                    break
-                card.don_attached += anexar
-                p.don_available -= anexar
-                p.don_rested += anexar
-                if verbose:
-                    print(f'    ⚡ anexou {anexar} DON em {card.name[:20]} '
-                          f'para ligar [{what}]')
-
-            elif kind == 'attack':
-                attacker = obj
-                if attacker.rested:
-                    continue
-                # decide DON para este ataque (parte da ação de atacar)
-                self._attach_don_for_attack(attacker, ttype, tgt, p, opp, engine, verbose)
-                if verbose:
-                    tgt_name = 'Leader' if ttype == 'leader' else (tgt.name[:20] if tgt else '?')
-                    print(f'    {attacker.name[:20]} ({attacker.effective_power(True)}pwr) '
-                          f'ataca {tgt_name}')
-                if self._execute_attack(attacker, ttype, tgt, p, opp, engine, verbose=verbose):
-                    return True
+            # Executa a primeira ação da melhor linha no estado REAL
+            if self._apply_action(melhor_acao, p, opp, ee, engine, verbose=verbose):
+                return True
 
         for c in p.field_chars:
             c.just_played = False

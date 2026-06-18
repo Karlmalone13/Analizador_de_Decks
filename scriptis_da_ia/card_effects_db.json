@@ -720,7 +720,14 @@
                 ],
                 "conditions": {
                     "leader_type": "water seven"
-                }
+                },
+                "costs": [
+                    {
+                        "type": "don_minus",
+                        "count": 1,
+                        "optional": true
+                    }
+                ]
             }
         }
     },
@@ -769,6 +776,13 @@
                         "action": "play_card",
                         "count": 1,
                         "source": "self"
+                    }
+                ],
+                "costs": [
+                    {
+                        "type": "don_minus",
+                        "count": 1,
+                        "optional": true
                     }
                 ]
             }
@@ -831,6 +845,13 @@
                         "action": "draw",
                         "count": 2
                     }
+                ],
+                "costs": [
+                    {
+                        "type": "don_minus",
+                        "count": 1,
+                        "optional": false
+                    }
                 ]
             }
         }
@@ -852,6 +873,13 @@
                         "count": 1,
                         "target": "opp_character",
                         "cost_lte": 8
+                    }
+                ],
+                "costs": [
+                    {
+                        "type": "don_minus",
+                        "count": 1,
+                        "optional": true
                     }
                 ]
             }
@@ -5281,7 +5309,14 @@
                 ],
                 "conditions": {
                     "leader_type": "animal kingdom pirates"
-                }
+                },
+                "costs": [
+                    {
+                        "type": "don_minus",
+                        "count": 2,
+                        "optional": false
+                    }
+                ]
             }
         }
     },
@@ -5467,6 +5502,13 @@
                 "conditions": {
                     "leader_type": "foxy pirates"
                 },
+                "costs": [
+                    {
+                        "type": "don_minus",
+                        "count": 1,
+                        "optional": false
+                    }
+                ],
                 "once_per_turn": true
             },
             "activate_main": {
@@ -8080,6 +8122,13 @@
                         "target": "opp_character",
                         "cost_lte": 3
                     }
+                ],
+                "costs": [
+                    {
+                        "type": "don_minus",
+                        "count": 2,
+                        "optional": true
+                    }
                 ]
             }
         }
@@ -8279,6 +8328,13 @@
                         "target": "opp_character",
                         "cost_lte": 5
                     }
+                ],
+                "costs": [
+                    {
+                        "type": "don_minus",
+                        "count": 1,
+                        "optional": true
+                    }
                 ]
             }
         }
@@ -8465,6 +8521,13 @@
                         "count": 1,
                         "cost_lte": 6
                     }
+                ],
+                "costs": [
+                    {
+                        "type": "don_minus",
+                        "count": 1,
+                        "optional": true
+                    }
                 ]
             }
         }
@@ -8498,6 +8561,13 @@
                         "amount": 2000,
                         "target": "leader",
                         "duration": "battle_only"
+                    }
+                ],
+                "costs": [
+                    {
+                        "type": "don_minus",
+                        "count": 2,
+                        "optional": true
                     }
                 ]
             }
@@ -10058,6 +10128,13 @@
                         "target": "opp_character",
                         "duration": "this_turn"
                     }
+                ],
+                "costs": [
+                    {
+                        "type": "don_minus",
+                        "count": 4,
+                        "optional": true
+                    }
                 ]
             }
         }
@@ -10119,6 +10196,13 @@
                         "count": 1,
                         "source": "self"
                     }
+                ],
+                "costs": [
+                    {
+                        "type": "don_minus",
+                        "count": 1,
+                        "optional": true
+                    }
                 ]
             }
         }
@@ -10140,6 +10224,13 @@
                         "count": 1,
                         "target": "opp_character",
                         "cost_lte": 1
+                    }
+                ],
+                "costs": [
+                    {
+                        "type": "don_minus",
+                        "count": 1,
+                        "optional": true
                     }
                 ]
             }
@@ -10173,6 +10264,13 @@
                         "count": 1,
                         "cost_lte": 3
                     }
+                ],
+                "costs": [
+                    {
+                        "type": "don_minus",
+                        "count": 2,
+                        "optional": true
+                    }
                 ]
             }
         }
@@ -10193,6 +10291,13 @@
                         "action": "rest_opp_character",
                         "count": 1,
                         "cost_lte": 4
+                    }
+                ],
+                "costs": [
+                    {
+                        "type": "don_minus",
+                        "count": 1,
+                        "optional": true
                     }
                 ]
             }
@@ -10245,6 +10350,13 @@
                         "amount": 792000,
                         "target": "self",
                         "duration": "this_turn"
+                    }
+                ],
+                "costs": [
+                    {
+                        "type": "don_minus",
+                        "count": 8,
+                        "optional": true
                     }
                 ]
             }
@@ -10391,6 +10503,13 @@
                         "target": "opp_leader",
                         "duration": "this_turn"
                     }
+                ],
+                "costs": [
+                    {
+                        "type": "don_minus",
+                        "count": 1,
+                        "optional": true
+                    }
                 ]
             }
         }
@@ -10412,6 +10531,13 @@
                         "amount": 3000,
                         "target": "opp_character",
                         "duration": "this_turn"
+                    }
+                ],
+                "costs": [
+                    {
+                        "type": "don_minus",
+                        "count": 1,
+                        "optional": true
                     }
                 ]
             }
@@ -11085,6 +11211,13 @@
                         "amount": 1000,
                         "target": "all_allies_and_leader",
                         "duration": "until_my_turn_start"
+                    }
+                ],
+                "costs": [
+                    {
+                        "type": "don_minus",
+                        "count": 2,
+                        "optional": true
                     }
                 ]
             }
@@ -12382,6 +12515,13 @@
                         "count": 1,
                         "cost_lte": 5
                     }
+                ],
+                "costs": [
+                    {
+                        "type": "don_minus",
+                        "count": 1,
+                        "optional": true
+                    }
                 ]
             }
         }
@@ -12400,6 +12540,13 @@
                 "steps": [
                     {
                         "action": "gain_banish"
+                    }
+                ],
+                "costs": [
+                    {
+                        "type": "don_minus",
+                        "count": 1,
+                        "optional": true
                     }
                 ]
             }
@@ -12425,6 +12572,13 @@
                     {
                         "action": "trash_from_hand",
                         "count": 1
+                    }
+                ],
+                "costs": [
+                    {
+                        "type": "don_minus",
+                        "count": 1,
+                        "optional": true
                     }
                 ]
             }
@@ -12491,7 +12645,14 @@
                 ],
                 "conditions": {
                     "leader_type": "water seven"
-                }
+                },
+                "costs": [
+                    {
+                        "type": "don_minus",
+                        "count": 1,
+                        "optional": true
+                    }
+                ]
             },
             "passive": {
                 "steps": [
@@ -12680,6 +12841,13 @@
                         "count": 1,
                         "cost_lte": 5
                     }
+                ],
+                "costs": [
+                    {
+                        "type": "don_minus",
+                        "count": 1,
+                        "optional": true
+                    }
                 ]
             }
         }
@@ -12748,7 +12916,14 @@
                 ],
                 "conditions": {
                     "leader_type": "water seven"
-                }
+                },
+                "costs": [
+                    {
+                        "type": "don_minus",
+                        "count": 1,
+                        "optional": true
+                    }
+                ]
             }
         }
     },
@@ -15257,6 +15432,13 @@
                         "count": 1
                     }
                 ],
+                "costs": [
+                    {
+                        "type": "don_minus",
+                        "count": 2,
+                        "optional": true
+                    }
+                ],
                 "once_per_turn": true
             }
         }
@@ -15344,6 +15526,13 @@
                         "count": 1,
                         "source": "self"
                     }
+                ],
+                "costs": [
+                    {
+                        "type": "don_minus",
+                        "count": 2,
+                        "optional": true
+                    }
                 ]
             }
         }
@@ -15364,6 +15553,13 @@
                         "action": "play_card",
                         "count": 1,
                         "source": "self"
+                    }
+                ],
+                "costs": [
+                    {
+                        "type": "don_minus",
+                        "count": 1,
+                        "optional": true
                     }
                 ]
             }
@@ -15401,6 +15597,13 @@
                         "count": 1,
                         "source": "self"
                     }
+                ],
+                "costs": [
+                    {
+                        "type": "don_minus",
+                        "count": 1,
+                        "optional": true
+                    }
                 ]
             }
         }
@@ -15421,6 +15624,13 @@
                         "action": "play_card",
                         "count": 1,
                         "source": "self"
+                    }
+                ],
+                "costs": [
+                    {
+                        "type": "don_minus",
+                        "count": 1,
+                        "optional": true
                     }
                 ]
             },
@@ -15468,6 +15678,13 @@
                         "action": "play_card",
                         "count": 1,
                         "source": "self"
+                    }
+                ],
+                "costs": [
+                    {
+                        "type": "don_minus",
+                        "count": 1,
+                        "optional": false
                     }
                 ]
             }
@@ -15579,6 +15796,13 @@
                         "target": "leader",
                         "duration": "battle_only"
                     }
+                ],
+                "costs": [
+                    {
+                        "type": "don_minus",
+                        "count": 1,
+                        "optional": true
+                    }
                 ]
             }
         }
@@ -15645,6 +15869,13 @@
                         "amount": 1000,
                         "target": "leader",
                         "duration": "this_turn"
+                    }
+                ],
+                "costs": [
+                    {
+                        "type": "don_minus",
+                        "count": 1,
+                        "optional": true
                     }
                 ]
             }
@@ -18278,6 +18509,13 @@
                         "count": 1,
                         "source": "self"
                     }
+                ],
+                "costs": [
+                    {
+                        "type": "don_minus",
+                        "count": 1,
+                        "optional": true
+                    }
                 ]
             }
         }
@@ -18382,6 +18620,13 @@
                         "target": "opp_character",
                         "duration": "this_turn"
                     }
+                ],
+                "costs": [
+                    {
+                        "type": "don_minus",
+                        "count": 1,
+                        "optional": true
+                    }
                 ]
             }
         }
@@ -18411,6 +18656,13 @@
                         "amount": 5000,
                         "target": "self",
                         "duration": "this_turn"
+                    }
+                ],
+                "costs": [
+                    {
+                        "type": "don_minus",
+                        "count": 1,
+                        "optional": true
                     }
                 ]
             }
@@ -19279,6 +19531,13 @@
                     {
                         "action": "add_don",
                         "count": 1
+                    }
+                ],
+                "costs": [
+                    {
+                        "type": "don_minus",
+                        "count": 10,
+                        "optional": false
                     }
                 ],
                 "once_per_turn": true
@@ -20640,6 +20899,11 @@
                     {
                         "type": "trash_from_hand",
                         "count": 2
+                    },
+                    {
+                        "type": "don_minus",
+                        "count": 1,
+                        "optional": true
                     }
                 ],
                 "once_per_turn": true
@@ -20876,6 +21140,13 @@
                         "action": "rest_opp_character",
                         "count": 2,
                         "cost_lte": 2
+                    }
+                ],
+                "costs": [
+                    {
+                        "type": "don_minus",
+                        "count": 1,
+                        "optional": true
                     }
                 ]
             }
@@ -23147,7 +23418,14 @@
                 ],
                 "conditions": {
                     "leader_type": "the vinsmoke family"
-                }
+                },
+                "costs": [
+                    {
+                        "type": "don_minus",
+                        "count": 1,
+                        "optional": true
+                    }
+                ]
             }
         }
     },
@@ -23365,6 +23643,13 @@
                         "count": 1,
                         "cost_lte": 99
                     }
+                ],
+                "costs": [
+                    {
+                        "type": "don_minus",
+                        "count": 1,
+                        "optional": true
+                    }
                 ]
             }
         }
@@ -23426,6 +23711,13 @@
                         "target": "opp_leader",
                         "duration": "this_turn"
                     }
+                ],
+                "costs": [
+                    {
+                        "type": "don_minus",
+                        "count": 1,
+                        "optional": true
+                    }
                 ]
             }
         }
@@ -23459,6 +23751,13 @@
                         "amount": 2000,
                         "target": "leader",
                         "duration": "battle_only"
+                    }
+                ],
+                "costs": [
+                    {
+                        "type": "don_minus",
+                        "count": 1,
+                        "optional": true
                     }
                 ]
             }
@@ -41835,7 +42134,14 @@
                 ],
                 "conditions": {
                     "leader_type": "donquixote pirates"
-                }
+                },
+                "costs": [
+                    {
+                        "type": "don_minus",
+                        "count": 3,
+                        "optional": false
+                    }
+                ]
             }
         }
     },
@@ -47240,6 +47546,11 @@
                     {
                         "type": "rest_don",
                         "count": 1
+                    },
+                    {
+                        "type": "don_minus",
+                        "count": 1,
+                        "optional": false
                     }
                 ],
                 "once_per_turn": true
@@ -47503,6 +47814,13 @@
                 "steps": [
                     {
                         "action": "gain_blocker"
+                    }
+                ],
+                "costs": [
+                    {
+                        "type": "don_minus",
+                        "count": 2,
+                        "optional": false
                     }
                 ]
             },
@@ -48732,6 +49050,13 @@
                 "steps": [
                     {
                         "action": "gain_banish"
+                    }
+                ],
+                "costs": [
+                    {
+                        "type": "don_minus",
+                        "count": 2,
+                        "optional": true
                     }
                 ]
             }
@@ -50078,6 +50403,13 @@
                         "count": 1,
                         "cost_lte": 99
                     }
+                ],
+                "costs": [
+                    {
+                        "type": "don_minus",
+                        "count": 1,
+                        "optional": false
+                    }
                 ]
             }
         }
@@ -50410,7 +50742,14 @@
                 ],
                 "conditions": {
                     "leader_type": "big mom pirates"
-                }
+                },
+                "costs": [
+                    {
+                        "type": "don_minus",
+                        "count": 2,
+                        "optional": false
+                    }
+                ]
             }
         }
     },
@@ -51561,6 +51900,13 @@
                         "count": 1
                     }
                 ],
+                "costs": [
+                    {
+                        "type": "don_minus",
+                        "count": 7,
+                        "optional": true
+                    }
+                ],
                 "once_per_turn": true
             }
         }
@@ -51594,6 +51940,13 @@
                         "target": "opp_character",
                         "cost_lte": 6
                     }
+                ],
+                "costs": [
+                    {
+                        "type": "don_minus",
+                        "count": 5,
+                        "optional": true
+                    }
                 ]
             }
         }
@@ -51615,6 +51968,13 @@
                         "count": 1,
                         "target": "opp_character",
                         "cost_lte": 4
+                    }
+                ],
+                "costs": [
+                    {
+                        "type": "don_minus",
+                        "count": 1,
+                        "optional": true
                     }
                 ]
             }
@@ -51640,6 +52000,13 @@
                     {
                         "action": "trash_from_hand",
                         "count": 1
+                    }
+                ],
+                "costs": [
+                    {
+                        "type": "don_minus",
+                        "count": 1,
+                        "optional": true
                     }
                 ]
             },
@@ -51667,6 +52034,13 @@
                     {
                         "action": "draw",
                         "count": 1
+                    }
+                ],
+                "costs": [
+                    {
+                        "type": "don_minus",
+                        "count": 1,
+                        "optional": true
                     }
                 ]
             }
@@ -51741,6 +52115,13 @@
                         "count": 1,
                         "target": "opp_character",
                         "cost_lte": 3
+                    }
+                ],
+                "costs": [
+                    {
+                        "type": "don_minus",
+                        "count": 1,
+                        "optional": true
                     }
                 ]
             },
@@ -51879,6 +52260,13 @@
                         "target": "leader",
                         "duration": "battle_only"
                     }
+                ],
+                "costs": [
+                    {
+                        "type": "don_minus",
+                        "count": 1,
+                        "optional": true
+                    }
                 ]
             }
         }
@@ -51928,6 +52316,13 @@
                         "amount": 2000,
                         "target": "self",
                         "duration": "this_turn"
+                    }
+                ],
+                "costs": [
+                    {
+                        "type": "don_minus",
+                        "count": 3,
+                        "optional": true
                     }
                 ],
                 "once_per_turn": true
@@ -52034,6 +52429,13 @@
                         "action": "draw",
                         "count": 2
                     }
+                ],
+                "costs": [
+                    {
+                        "type": "don_minus",
+                        "count": 2,
+                        "optional": true
+                    }
                 ]
             }
         }
@@ -52100,6 +52502,13 @@
                         "duration": "this_turn"
                     }
                 ],
+                "costs": [
+                    {
+                        "type": "don_minus",
+                        "count": 1,
+                        "optional": true
+                    }
+                ],
                 "once_per_turn": true
             }
         }
@@ -52123,6 +52532,13 @@
                     },
                     {
                         "action": "gain_double_attack"
+                    }
+                ],
+                "costs": [
+                    {
+                        "type": "don_minus",
+                        "count": 4,
+                        "optional": true
                     }
                 ],
                 "once_per_turn": true
@@ -52225,6 +52641,13 @@
                         "count": 1,
                         "target": "opp_character",
                         "cost_lte": 5
+                    }
+                ],
+                "costs": [
+                    {
+                        "type": "don_minus",
+                        "count": 2,
+                        "optional": true
                     }
                 ]
             }
@@ -53616,6 +54039,13 @@
                         "cost_lte": 4
                     }
                 ],
+                "costs": [
+                    {
+                        "type": "don_minus",
+                        "count": 3,
+                        "optional": true
+                    }
+                ],
                 "once_per_turn": true
             }
         }
@@ -53658,6 +54088,13 @@
                         "amount": 2000,
                         "target": "self",
                         "duration": "this_turn"
+                    }
+                ],
+                "costs": [
+                    {
+                        "type": "don_minus",
+                        "count": 1,
+                        "optional": true
                     }
                 ]
             },
@@ -53875,6 +54312,13 @@
                         "amount": 1000,
                         "target": "leader",
                         "duration": "until_my_turn_start"
+                    }
+                ],
+                "costs": [
+                    {
+                        "type": "don_minus",
+                        "count": 1,
+                        "optional": true
                     }
                 ]
             }
@@ -57087,6 +57531,13 @@
                         "action": "rest_opp_character",
                         "count": 1
                     }
+                ],
+                "costs": [
+                    {
+                        "type": "don_minus",
+                        "count": 2,
+                        "optional": true
+                    }
                 ]
             },
             "passive": {
@@ -57114,6 +57565,13 @@
                         "action": "add_don",
                         "count": 1
                     }
+                ],
+                "costs": [
+                    {
+                        "type": "don_minus",
+                        "count": 2,
+                        "optional": true
+                    }
                 ]
             }
         }
@@ -57135,6 +57593,13 @@
                         "amount": 2000,
                         "target": "opp_character",
                         "duration": "this_turn"
+                    }
+                ],
+                "costs": [
+                    {
+                        "type": "don_minus",
+                        "count": 2,
+                        "optional": true
                     }
                 ]
             }
