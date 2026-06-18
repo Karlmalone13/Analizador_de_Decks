@@ -1143,6 +1143,56 @@ class GameAnalyzer:
         opp_score = sum(c.board_value() for c in self.opp.field_chars)
         return my_score - opp_score
 
+    def critical_threats(self) -> list:
+        """
+        Identifica AMEAÇAS CRÍTICAS no board do oponente (documento nível 3).
+        Uma carta é ameaça crítica se:
+        - poder alto (>= 6000), OU
+        - tem efeito perigoso (gera vantagem recorrente, blocker que trava ataque),
+        - (a ameaça de lethal é tratada à parte por opp_lethal_threat).
+        Retorna a lista de cartas-ameaça, da mais perigosa para a menos.
+        """
+        ameacas = []
+        for c in self.opp.field_chars:
+            peso = 0
+            if c.power >= 6000:           peso += 3
+            elif c.power >= 5000:         peso += 1
+            if c.has_blocker:             peso += 2   # trava meu ataque
+            effects = get_card_effects(c.code)
+            if 'activate_main' in effects: peso += 2   # vantagem recorrente
+            if 'when_attacking' in effects: peso += 2
+            if c.has_double_attack:       peso += 2
+            if c.has_rush:                peso += 1
+            if peso >= 3:
+                ameacas.append((peso, c))
+        ameacas.sort(key=lambda x: x[0], reverse=True)
+        return [c for _, c in ameacas]
+
+    def analysis_priority(self) -> str:
+        """
+        PRIORIDADE DE ANÁLISE (documento) — cascata de INCLINAÇÃO.
+        Retorna o modo dominante deste momento. A ordem é respeitada (o nível
+        mais alto satisfeito comanda), mas é inclinação, não bloqueio: o loop
+        de pontuação ainda considera o contexto, com pesos ajustados por este modo.
+
+        1. LETHAL      — posso vencer neste turno (sempre vence, topo)
+        2. DEFENSIVE   — posso morrer no próximo turno (e não tenho lethal)
+        3. REMOVE_THREAT — existe ameaça crítica no board
+        4. DEVELOP     — posso/devo desenvolver board
+        5. ATTACK      — atacar líder (padrão)
+        """
+        if self.can_lethal_this_turn():
+            return 'LETHAL'
+        if self.opp_lethal_threat() > 0.6:
+            return 'DEFENSIVE'
+        if self.critical_threats():
+            return 'REMOVE_THREAT'
+        # desenvolver cedo / sem pressão; senão, atacar
+        don_total = self.me.don_available + self.me.don_rested
+        if don_total <= 4 and self.me.hand:
+            return 'DEVELOP'
+        return 'ATTACK'
+
     def should_clear_field(self) -> bool:
         """
         Vale a pena limpar o campo do oponente?
@@ -2214,11 +2264,24 @@ class OPTCGMatch:
         actions = []
         a = engine.analyzer
 
+        # PRIORIDADE DE ANÁLISE (cascata de inclinação): o modo dominante ajusta
+        # os pesos das ações, respeitando a ordem do documento sem bloquear.
+        priority = a.analysis_priority()
+        threats = a.critical_threats() if priority == 'REMOVE_THREAT' else []
+
         # ── Ações de JOGAR carta ──
         for card in p.hand:
             if not engine._can_play_card(card):
                 continue
             score = self._score_play_action(card, engine)
+            # Inclinação: desenvolver ganha peso no modo DEVELOP; perde no LETHAL/DEFENSIVE
+            if priority == 'DEVELOP':
+                score += 40
+            elif priority == 'LETHAL':
+                score -= 60   # não desenvolve quando pode ganhar — ataca
+            # Carta defensiva (blocker/counter) ganha peso no modo DEFENSIVE
+            if priority == 'DEFENSIVE' and (card.has_blocker or card.counter > 0):
+                score += 120
             actions.append((score, 'play', card, None, None))
 
         # ── Ações de ATACAR (com risco de trigger descontado) ──
@@ -2231,11 +2294,17 @@ class OPTCGMatch:
                 s_leader = engine.score_attack_target(att, 'leader', None)
                 if s_leader > -500:
                     s_leader -= self._trigger_risk_penalty(opp)   # desconto de trigger
+                    if priority == 'LETHAL':       s_leader += 500   # foco em fechar
+                    elif priority == 'DEFENSIVE':  s_leader -= 80    # não exponha à toa
+                    elif priority == 'REMOVE_THREAT': s_leader -= 100 # remova antes
                     actions.append((s_leader, 'attack', att, 'leader', None))
                 # alvos personagem
                 for tgt in opp.field_chars:
                     s_char = engine.score_attack_target(att, 'character', tgt)
                     if s_char > -500:
+                        # Inclinação: remover a AMEAÇA CRÍTICA ganha prioridade alta
+                        if tgt in threats:
+                            s_char += 300   # acima de atacar o líder
                         actions.append((s_char, 'attack', att, 'character', tgt))
 
         actions.sort(key=lambda x: x[0], reverse=True)
