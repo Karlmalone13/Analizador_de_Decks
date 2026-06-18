@@ -568,7 +568,10 @@ def parse_block(block_text, trigger_name):
     # Trash from hand (efeito, nao custo)
     if trigger_name in ('on_play', 'when_attacking', 'end_of_turn'):
         m = re.search(r'trash (\d+) cards? from your hand', t)
-        if m and 'you may trash' not in t[:t.find('trash')]:
+        # NÃO duplicar: se já foi tratado pelo bloco "trash the rest ... trash
+        # N card from your hand" (look_top_deck), não detectar de novo aqui.
+        already = bool(re.search(r'trash the rest.*?trash \d+ card from your hand', t, re.DOTALL))
+        if m and 'you may trash' not in t[:t.find('trash')] and not already:
             steps.append({'action': 'trash_from_hand', 'count': int(m.group(1))})
 
     # Trigger especial: "Activate this card's [Main] effect"
@@ -621,9 +624,12 @@ def parse_card_effect(card_text, card_type):
         costs = parse_costs(block)
         once = '[once per turn]' in t_low
 
-        # DON x requisito antes do trigger
+        # DON x requisito antes do trigger. Usa a posição real do match (m.start)
+        # em vez de reconstruir o nome — assim funciona para [Activate: Main],
+        # [On K.O.], etc., onde o nome tem pontuação/variações.
         don_req = 0
-        pre_trigger = t_low[:t_low.find(trigger_name.replace('_', ' '))] if trigger_name.replace('_', ' ') in t_low else ''
+        trigger_pos = m.start()
+        pre_trigger = t_low[:trigger_pos]
         don_m = re.search(r'\[don!! x(\d+)\]', pre_trigger[-50:])
         if don_m:
             don_req = int(don_m.group(1))
@@ -640,21 +646,44 @@ def parse_card_effect(card_text, card_type):
 
         result[trigger_name] = entry
 
-    # Keywords passivas
+    # Keywords — distinguir NATIVA (sempre ligada) de CONDICIONAL a [DON!! ×N].
+    # Ex: "[DON!! x1] This Character gains [Blocker]" -> blocker só com 1 DON anexado.
+    def keyword_don_req(keyword_tag):
+        """Se a keyword vem logo após um [DON!! ×N], retorna N; senão 0."""
+        idx = t_low.find(keyword_tag)
+        if idx < 0:
+            return 0
+        # olha os ~60 chars antes da keyword por um [DON!! ×N] e 'gains'
+        janela = t_low[max(0, idx-60):idx]
+        m = re.search(r'\[don!! x(\d+)\]', janela)
+        if m and ('gain' in janela or 'gains' in janela):
+            return int(m.group(1))
+        return 0
+
     passive_steps = []
-    if '[blocker]' in t_low:
-        passive_steps.append({'action': 'keyword_blocker'})
-    if '[rush]' in t_low and 'gains [rush]' not in t_low:
-        passive_steps.append({'action': 'keyword_rush'})
-    if '[double attack]' in t_low:
-        passive_steps.append({'action': 'keyword_double_attack'})
-    if '[banish]' in t_low and 'gains [banish]' not in t_low:
-        passive_steps.append({'action': 'keyword_banish'})
-    if '[unblockable]' in t_low:
-        passive_steps.append({'action': 'keyword_unblockable'})
+    cond_keywords = []   # keywords que exigem DON anexado
+
+    for tag, action in [('[blocker]', 'keyword_blocker'),
+                        ('[rush]', 'keyword_rush'),
+                        ('[double attack]', 'keyword_double_attack'),
+                        ('[banish]', 'keyword_banish'),
+                        ('[unblockable]', 'keyword_unblockable')]:
+        if tag not in t_low:
+            continue
+        # evita capturar "gains [rush]" como passivo nativo
+        if tag in ('[rush]', '[banish]') and f'gains {tag}' in t_low and keyword_don_req(tag) == 0:
+            continue
+        req = keyword_don_req(tag)
+        if req > 0:
+            cond_keywords.append({'action': action, 'don_requirement': req})
+        else:
+            passive_steps.append({'action': action})
 
     if passive_steps:
         result['passive'] = {'steps': passive_steps}
+    if cond_keywords:
+        # keywords condicionais a DON ficam separadas, com seu requisito
+        result['don_conditional_keywords'] = {'steps': cond_keywords}
 
     # Your Turn passivo de poder (sem trigger explicito)
     your_turn_power = re.search(r'\[your turn\].{0,60}\+(\d+)\s*power', t_low)

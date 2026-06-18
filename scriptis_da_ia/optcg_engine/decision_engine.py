@@ -85,6 +85,7 @@ class Card:
     draw_condition: str = 'always'
     has_on_play_ko: bool = False
     has_bounce: bool = False
+    don_cond_keywords: dict = None  # {keyword: don_req} — keywords ganhas com [DON!! ×N]
     has_rest_effect: bool = False
     has_start_of_game: bool = False
     has_power_minus: bool = False
@@ -95,6 +96,28 @@ class Card:
     don_attached: int = 0
     # Buffs temporários (resetados a cada turno)
     power_buff: int = 0
+
+    def _kw_active(self, kw: str, native: bool) -> bool:
+        """Keyword ativa se nativa OU condicional a [DON!! ×N] com DON suficiente."""
+        if native:
+            return True
+        cond = self.don_cond_keywords or {}
+        req = cond.get(kw)
+        if req is not None:
+            return getattr(self, 'don_attached', 0) >= req
+        return False
+
+    def is_blocker(self) -> bool:
+        return self._kw_active('blocker', self.has_blocker)
+
+    def is_double_attack(self) -> bool:
+        return self._kw_active('double_attack', self.has_double_attack)
+
+    def is_rush(self) -> bool:
+        return self._kw_active('rush', self.has_rush)
+
+    def is_banish(self) -> bool:
+        return self._kw_active('banish', self.has_banish)
 
     def effective_power(self, your_turn: bool = True) -> int:
         return self.power + self.power_buff + (self.don_attached * 1000 if your_turn else 0)
@@ -146,7 +169,7 @@ class GameState:
         return sum(c.counter for c in self.hand if c.counter > 0)
 
     def blockers_active(self) -> List[Card]:
-        return [c for c in self.field_chars if c.has_blocker and not c.rested]
+        return [c for c in self.field_chars if c.is_blocker() and not c.rested]
 
     def board_score(self) -> int:
         return sum(c.board_value() for c in self.field_chars)
@@ -198,6 +221,12 @@ class EffectExecutor:
 
         # Verifica condições
         if not self._check_conditions(ef_data.get('conditions', {}), card):
+            return []
+
+        # [DON!! ×N]: o efeito só ativa se a carta tem N DON anexados.
+        # Sem isso, a IA executaria o efeito de graça (vantagem ilegal).
+        don_req = ef_data.get('don_requirement', 0)
+        if don_req and getattr(card, 'don_attached', 0) < don_req:
             return []
 
         # Paga custos
@@ -795,6 +824,16 @@ def _make_card(code: str, data: dict) -> Card:
             elif a == 'keyword_trigger':    has_trigger = True
             elif a == 'keyword_unblockable': has_unblockable = True
 
+    # Keywords CONDICIONAIS a [DON!! ×N]: só valem com N DON anexados.
+    # Guardadas em dict {keyword: don_req}; a Card decide na hora se está ativa.
+    don_cond_keywords = {}
+    if 'don_conditional_keywords' in effects:
+        for step in effects['don_conditional_keywords'].get('steps', []):
+            a = step.get('action', '')
+            req = step.get('don_requirement', 1)
+            kw = a.replace('keyword_', '')
+            don_cond_keywords[kw] = req
+
     # Campos extras detectados pelo banco ou pelo texto
     t = data.get('text', '').lower()
     is_searcher   = ('look at' in t or 'search your deck' in t or 'add up to' in t)
@@ -835,6 +874,7 @@ def _make_card(code: str, data: dict) -> Card:
         has_banish=has_banish,
         has_trigger=has_trigger,
         has_unblockable=has_unblockable,
+        don_cond_keywords=don_cond_keywords,
         is_searcher=is_searcher,
         draw_power=raw_draw,
         draw_then_trash=draw_then_trash,
@@ -1044,7 +1084,7 @@ class GameAnalyzer:
             count += 1
         for c in self.me.field_chars:
             if not c.rested and not c.just_played:
-                count += 2 if c.has_double_attack else 1
+                count += 2 if c.is_double_attack() else 1
         return count
 
     def opp_can_survive_lethal(self) -> float:
@@ -2294,6 +2334,10 @@ class OPTCGMatch:
                 s_leader = engine.score_attack_target(att, 'leader', None)
                 if s_leader > -500:
                     s_leader -= self._trigger_risk_penalty(opp)   # desconto de trigger
+                    # Banish: prioriza atacar a vida (nega trigger e remove a carta
+                    # de vez). Inclinação forte, mas a ameaça crítica ainda vem antes.
+                    if att.has_banish:
+                        s_leader += 150
                     if priority == 'LETHAL':       s_leader += 500   # foco em fechar
                     elif priority == 'DEFENSIVE':  s_leader -= 80    # não exponha à toa
                     elif priority == 'REMOVE_THREAT': s_leader -= 100 # remova antes
@@ -2307,8 +2351,93 @@ class OPTCGMatch:
                             s_char += 300   # acima de atacar o líder
                         actions.append((s_char, 'attack', att, 'character', tgt))
 
+        # ── Ações de ANEXAR DON para ligar efeitos/keywords [DON!! ×N] ──
+        actions.extend(self._generate_attach_don_actions(p, opp, engine))
+
         actions.sort(key=lambda x: x[0], reverse=True)
         return actions
+
+    def _generate_attach_don_actions(self, p, opp, engine):
+        """
+        Gera ações de ANEXAR DON para ligar efeitos/keywords [DON!! ×N].
+        Avalia cada personagem em campo que tem efeito condicional a DON e ainda
+        não atingiu o requisito. Vale anexar se o efeito ligado compensa prender
+        o DON (custo ~25/DON), modulado pelo estado (postura/prioridade).
+        """
+        DON_COST = 25
+        acts = []
+        if p.don_available <= 0:
+            return acts
+        priority = engine.analyzer.analysis_priority()
+
+        for card in p.field_chars:
+            effects = get_card_effects(card.code)
+            # 1) keywords condicionais a DON (blocker/double_attack/rush/banish)
+            cond_kw = getattr(card, 'don_cond_keywords', None) or {}
+            for kw, req in cond_kw.items():
+                falta = req - card.don_attached
+                if falta <= 0 or falta > p.don_available:
+                    continue
+                valor = self._keyword_don_value(kw, card, p, opp, priority)
+                score = valor - falta * DON_COST
+                if score > 0:
+                    acts.append((score, 'attach_don', card, falta, kw))
+
+            # 2) gatilhos condicionais a DON (when_attacking/on_play/etc.)
+            for trig, ef in effects.items():
+                if not isinstance(ef, dict):
+                    continue
+                req = ef.get('don_requirement', 0)
+                if not req or card.don_attached >= req:
+                    continue
+                falta = req - card.don_attached
+                if falta > p.don_available:
+                    continue
+                # só vale ligar gatilho de ataque se o personagem vai atacar
+                valor = self._trigger_don_value(trig, ef, card, p, opp, priority)
+                score = valor - falta * DON_COST
+                if score > 0:
+                    acts.append((score, 'attach_don', card, falta, trig))
+        return acts
+
+    def _keyword_don_value(self, kw, card, p, opp, priority) -> float:
+        """Valor de ligar uma keyword via DON, conforme o estado."""
+        if kw == 'blocker':
+            # defensivo: vale muito sob pressão / vida baixa
+            base = 100
+            if priority == 'DEFENSIVE': base += 80
+            if p.life_count() <= 2:     base += 60
+            return base
+        if kw == 'double_attack':
+            # ofensivo: vale se o oponente está em alcance de dano
+            base = 80
+            if opp.life_count() <= 3: base += 60
+            if priority == 'LETHAL':  base += 150
+            return base
+        if kw == 'rush':
+            return 90   # poder atacar já
+        if kw == 'banish':
+            return 70 + (40 if opp.life_count() <= 3 else 0)
+        return 40
+
+    def _trigger_don_value(self, trig, ef, card, p, opp, priority) -> float:
+        """Valor de ligar um gatilho condicional a DON, pelo que o efeito faz."""
+        steps = ef.get('steps', [])
+        actions = [s.get('action') for s in steps]
+        valor = 0
+        if any(x in ('ko', 'rest_opp', 'debuff_power', 'bounce') for x in actions):
+            valor = 120   # remoção/controle — vale
+            if opp.field_chars: valor += 30
+        elif any(x in ('draw', 'add_to_hand', 'look_top_deck') for x in actions):
+            valor = 90    # vantagem de carta
+        elif any('power' in str(x) for x in actions):
+            valor = 60    # buff de poder
+        else:
+            valor = 40
+        # gatilhos de ataque só valem se o personagem pode atacar
+        if trig == 'when_attacking' and (card.rested or card.just_played):
+            valor = 0
+        return valor
 
     def _trigger_risk_penalty(self, opp) -> float:
         """
@@ -2358,6 +2487,19 @@ class OPTCGMatch:
 
             if kind == 'play':
                 self._play_card(obj, p, opp, ee, verbose=verbose)
+
+            elif kind == 'attach_don':
+                # Anexa DON para ligar um efeito/keyword [DON!! ×N]
+                card, falta, what = obj, ttype, tgt
+                anexar = min(falta, p.don_available)
+                if anexar <= 0:
+                    break
+                card.don_attached += anexar
+                p.don_available -= anexar
+                p.don_rested += anexar
+                if verbose:
+                    print(f'    ⚡ anexou {anexar} DON em {card.name[:20]} '
+                          f'para ligar [{what}]')
 
             elif kind == 'attack':
                 attacker = obj
@@ -2553,7 +2695,7 @@ class OPTCGMatch:
                     print(f'      ↳ [when attacking] {log}')
 
         atk_power = attacker.effective_power(True)
-        damage    = 2 if attacker.has_double_attack else 1
+        damage    = 2 if attacker.is_double_attack() else 1
 
         # Block step
         opp_engine = DecisionEngine(opp, p)
@@ -2589,9 +2731,16 @@ class OPTCGMatch:
                         return True  # vitória
                     life_card = opp.life.pop()
                     p.dmg_dealt += 1
-                    opp.hand.append(life_card)
-                    if verbose:
-                        print(f'      💥 DANO! vida do oponente: {opp.life_count()}')
+                    # Banish: a vida vai DIRETO para o trash, sem ir para a mão
+                    # e sem direito a trigger (regra oficial).
+                    if attacker.has_banish:
+                        opp.trash.append(life_card)
+                        if verbose:
+                            print(f'      💥 DANO (BANISH)! vida -> trash: {opp.life_count()}')
+                    else:
+                        opp.hand.append(life_card)
+                        if verbose:
+                            print(f'      💥 DANO! vida do oponente: {opp.life_count()}')
                     if life_card.has_trigger and not attacker.has_banish:
                         opp.triggers_activated += 1
                         ee_opp = EffectExecutor(opp, p)
