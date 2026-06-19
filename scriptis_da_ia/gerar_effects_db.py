@@ -622,7 +622,8 @@ def parse_card_effect(card_text, card_type):
         ('opp_turn',      r"\[opponent.{0,3}s? turn\](.+?)(?=\[(?:on play|activate|when attacking|on k\.o\.|trigger|counter|your turn|end of your turn)\]|$)"),
         ('trigger',       r'\[trigger\](.+?)(?=\[(?:on play|activate|when attacking|on k\.o\.|counter|your turn|end of your turn)\]|$)'),
         ('counter',       r'\[counter\](.+?)(?=\[(?:on play|activate|when attacking|on k\.o\.|trigger|your turn|end of your turn)\]|$)'),
-        ('end_of_turn',   r'\[end of your turn\](.+?)(?=\[(?:on play|activate|when attacking|trigger|counter)\]|$)'),
+        ('end_of_turn',   r'\[end of your turn\](.+?)(?=\[(?:on play|activate|when attacking|trigger|counter|on block)\]|$)'),
+        ('on_block',      r'\[on block\](.+?)(?=\[(?:on play|activate|when attacking|on k\.o\.|trigger|counter|your turn|end of your turn)\]|$)'),
         ('main',          r'\[main\](.+?)(?=\[(?:trigger|counter|on play|activate|when attacking|on k\.o\.|your turn|end of your turn)\]|$)'),
     ]
 

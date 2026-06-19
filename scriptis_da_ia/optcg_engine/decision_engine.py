@@ -233,8 +233,9 @@ class EffectExecutor:
         if not self._pay_costs(ef_data.get('costs', []), card):
             return []
 
-        # Executa steps
-        logs = []
+        # Executa steps. Os logs do CUSTO (pago acima) vêm primeiro, para o
+        # replay mostrar o que foi pago antes do benefício.
+        logs = list(getattr(self, '_cost_logs', []))
         for step in ef_data.get('steps', []):
             log = self._execute_step(step, card)
             if log:
@@ -318,36 +319,46 @@ class EffectExecutor:
     # ── Pagamento de custos ──────────────────────────────────────────────────
 
     def _pay_costs(self, costs: list, card: Card) -> bool:
-        """Verifica e paga custos. Retorna False se não pode pagar."""
+        """Verifica e paga custos. Retorna False se não pode pagar.
+        Registra o que foi pago em self._cost_logs (para o replay mostrar)."""
+        self._cost_logs = []
         for cost in costs:
             ctype = cost['type']
             if ctype == 'rest_self':
                 if card.rested:
                     return False
                 card.rested = True
+                self._cost_logs.append(f'custo: restou {card.name[:18]}')
             elif ctype == 'rest_don':
                 count = cost.get('count', 1)
                 if self.me.don_available < count:
                     return False
                 self.me.don_available -= count
                 self.me.don_rested += count
+                self._cost_logs.append(f'custo: restou {count} DON')
             elif ctype == 'trash_from_hand':
                 count = cost.get('count', 1)
                 if len(self.me.hand) < count:
                     return False
+                trashed = []
                 for _ in range(count):
                     worst = self._choose_to_trash(self.me.hand)
                     if worst:
                         self.me.hand.remove(worst)
                         self.me.trash.append(worst)
+                        trashed.append(worst.name[:15])
+                if trashed:
+                    self._cost_logs.append(f'custo: trashou da mão: {", ".join(trashed)}')
             elif ctype == 'trash_self':
                 if card in self.me.field_chars:
                     self.me.field_chars.remove(card)
                     self.me.trash.append(card)
+                    self._cost_logs.append(f'custo: trashou {card.name[:18]} (ele mesmo)')
             elif ctype == 'don_minus':
                 count = cost.get('count', 1)
                 if not self._return_don_to_deck(count):
                     return False
+                self._cost_logs.append(f'custo: devolveu {count} DON ao deck')
         return True
 
     def _return_don_to_deck(self, count: int) -> bool:
@@ -536,12 +547,19 @@ class EffectExecutor:
                     drawn.append(c.name[:12])
             # then_trash após draw
             then_trash = step.get('then_trash', 0)
+            trashed_after = []
             for _ in range(then_trash):
                 worst = self._choose_to_trash(me.hand)
                 if worst:
                     me.hand.remove(worst)
                     me.trash.append(worst)
-            return f'comprou {len(drawn)} carta(s)' if drawn else ''
+                    trashed_after.append(worst.name[:12])
+            if not drawn:
+                return ''
+            msg = f'comprou: {", ".join(drawn)}'
+            if trashed_after:
+                msg += f' (e trashou: {", ".join(trashed_after)})'
+            return msg
 
         # ── KO ───────────────────────────────────────────────────────────────
         if action == 'ko':
@@ -636,7 +654,6 @@ class EffectExecutor:
                 best.don_attached += count
                 if rested:
                     me.don_available -= count
-                    me.don_rested += count
             return f'+{count} DON'
 
         # ── Play from trash ───────────────────────────────────────────────────
@@ -1592,19 +1609,46 @@ class DecisionEngine:
 
     def _don_reserve_for_defense(self) -> int:
         """
-        Calcula quantos DON reservar para defesa no turno do oponente.
-        Considera: ameaça do oponente, cartas na mão, vida restante.
+        Quantos DON reservar para defesa no turno do oponente.
+        Decisão baseada na ANÁLISE DE RISCO (regra do usuário):
+        - Em PERIGO (pouca vida, ameaça alta, pouco counter na mão, ou tenho
+          evento counter que preciso deixar DON em pé para usar) -> reserva mais.
+        - SEGURO (muito counter na mão, blockers, vida alta, sem risco de perder
+          no próximo turno) -> reserva pouco/nada, força ataque.
         """
         a = self.analyzer
         my_life = self.me.life_count()
         threat  = a.opp_lethal_threat()
+        don_disp = self.me.don_available
 
-        # Se ameaça alta, reserva mais DON
-        if threat > 0.7:   return min(3, self.me.don_available)
-        if threat > 0.4:   return min(2, self.me.don_available)
-        if my_life <= 2:   return min(2, self.me.don_available)
-        if my_life <= 3:   return min(1, self.me.don_available)
-        return 0
+        # Recursos defensivos que JÁ tenho na mão/campo
+        counters_mao = sum(1 for c in self.me.hand if getattr(c, 'counter', 0) >= 1000)
+        eventos_counter = sum(1 for c in self.me.hand
+                              if c.card_type == 'EVENT' and '[counter]' in c.card_text.lower())
+        blockers = len(self.me.blockers_active())
+
+        # ── Estou SEGURO? muito counter + blocker + vida ok + sem ameaça ──
+        seguro = (counters_mao >= 3 and my_life >= 3 and threat < 0.4) or \
+                 (blockers >= 2 and my_life >= 4 and threat < 0.4)
+        if seguro:
+            return 0   # força ataque, não precisa guardar DON
+
+        # ── Estou em PERIGO? reserva conforme a gravidade ──
+        reserva = 0
+        if threat > 0.7:        reserva = 3
+        elif threat > 0.4:      reserva = 2
+        elif my_life <= 2:      reserva = 2
+        elif my_life <= 3:      reserva = 1
+
+        # Tenho evento counter mas POUCO counter de mão? vale deixar DON p/ o evento
+        if eventos_counter >= 1 and counters_mao <= 1 and my_life <= 3:
+            reserva = max(reserva, 1)
+
+        # Pouco counter na mão aumenta o risco de não conseguir defender
+        if counters_mao == 0 and my_life <= 3:
+            reserva = max(reserva, 1)
+
+        return min(reserva, don_disp)
 
     # ── Distribuição de DON ───────────────────────────────────────────────────
 
@@ -2090,7 +2134,6 @@ class OPTCGMatch:
         don_to_give = p.don_available
         best.don_attached += don_to_give
         p.don_available -= don_to_give
-        p.don_rested += don_to_give
 
     # ── Setup (CheckStartOfGameActions das 34k linhas) ───────────────────────
 
@@ -2570,7 +2613,6 @@ class OPTCGMatch:
             if anexar > 0:
                 card.don_attached += anexar
                 p.don_available -= anexar
-                p.don_rested += anexar
                 if verbose:
                     print(f'    ⚡ anexou {anexar} DON em {card.name[:20]} para ligar [{what}]')
 
@@ -2699,14 +2741,17 @@ class OPTCGMatch:
         else:
             alvo_power = tgt.power if tgt else 0
         atk = attacker.effective_power(True)
-        # anexa o mínimo de DON para alcançar/superar o alvo (até o disponível)
-        falta = alvo_power - atk
+        # Considera o COUNTER provável do oponente (alinha com score_attack_target):
+        # anexa DON para superar o alvo + counter estimado, não só o poder base.
+        # Mas não exagera: limita o counter considerado ao que a mão dele comporta.
+        counter_prov = engine.analyzer.opp_counter_potential() if ttype == 'leader' else 0
+        alvo_total = alvo_power + counter_prov
+        falta = alvo_total - atk
         if falta > 0:
             need = min(p.don_available, (falta + 999) // 1000)
             if need > 0:
                 attacker.don_attached += need
                 p.don_available -= need
-                p.don_rested += need
                 if verbose:
                     print(f'    anexou {need} DON em {attacker.name[:20]}')
 
@@ -2878,6 +2923,16 @@ class OPTCGMatch:
             blocker.rested = True
             if verbose:
                 print(f'      🛡 Blocker! {blocker.name[:20]} intercepta')
+            # [On Block]: efeito que dispara quando este personagem bloqueia.
+            # Roda no contexto do oponente (dono do blocker).
+            ob_effects = get_card_effects(blocker.code)
+            if 'on_block' in ob_effects:
+                ee_block = EffectExecutor(opp, p)
+                ob_logs = ee_block.execute(blocker, 'on_block')
+                if verbose:
+                    for log in ob_logs:
+                        if log:
+                            print(f'      ⚡ [On Block] {log}')
 
         # Define poder de defesa
         if target_type == 'leader':
@@ -2897,10 +2952,18 @@ class OPTCGMatch:
         # Damage step
         if atk_power >= defend_power:
             if target_type == 'leader':
+                # Vitória só se o oponente JÁ estava com 0 vidas ANTES deste ataque.
+                # (Receber dano com 0 vidas = derrota.)
+                if not opp.life:
+                    p.dmg_dealt += 1
+                    return True  # vitória: dano com 0 vidas
+
+                # Tira até 'damage' vidas, UMA por vez, resolvendo trigger de cada.
+                # Se a vida acabar durante o double attack, PARA — o dano extra
+                # não causa derrota (regra: só compra as vidas que tem).
                 for _ in range(damage):
                     if not opp.life:
-                        p.dmg_dealt += 1
-                        return True  # vitória
+                        break   # acabou a vida durante este ataque — não é derrota
                     life_card = opp.life.pop()
                     p.dmg_dealt += 1
                     # Banish: a vida vai DIRETO para o trash, sem ir para a mão
@@ -2921,8 +2984,7 @@ class OPTCGMatch:
                             for log in tg_logs:
                                 if log:
                                     print(f'      ⚡ [trigger] {log}')
-                if not opp.life:
-                    return False
+                return False   # tirou vida(s), mas oponente não estava em 0 — sem derrota
             elif target_type == 'character' and target and target in opp.field_chars:
                 opp.field_chars.remove(target)
                 opp.trash.append(target)

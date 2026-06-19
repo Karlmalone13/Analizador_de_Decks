@@ -6000,6 +6000,17 @@
         "color": "Yellow",
         "sub_types": "Navy Egghead",
         "effects": {
+            "on_block": {
+                "steps": [
+                    {
+                        "action": "draw",
+                        "count": 1
+                    }
+                ],
+                "conditions": {
+                    "life_lte": 2
+                }
+            },
             "passive": {
                 "steps": [
                     {
@@ -6480,6 +6491,16 @@
         "color": "Red",
         "sub_types": "Fish-Man Straw Hat Crew",
         "effects": {
+            "on_block": {
+                "steps": [
+                    {
+                        "action": "play_card",
+                        "count": 1,
+                        "cost_lte": 2
+                    }
+                ],
+                "don_requirement": 1
+            },
             "passive": {
                 "steps": [
                     {
@@ -7023,6 +7044,18 @@
         "color": "Green",
         "sub_types": "Kid Pirates Supernovas",
         "effects": {
+            "on_block": {
+                "steps": [
+                    {
+                        "action": "draw",
+                        "count": 1
+                    }
+                ],
+                "conditions": {
+                    "chars_gte": 3
+                },
+                "don_requirement": 1
+            },
             "passive": {
                 "steps": [
                     {
@@ -7817,6 +7850,18 @@
                 },
                 "don_requirement": 1
             },
+            "on_block": {
+                "steps": [
+                    {
+                        "action": "draw",
+                        "count": 1
+                    }
+                ],
+                "conditions": {
+                    "hand_lte": 5
+                },
+                "don_requirement": 1
+            },
             "passive": {
                 "steps": [
                     {
@@ -8441,6 +8486,23 @@
         "color": "Purple",
         "sub_types": "Animal Kingdom Pirates",
         "effects": {
+            "on_block": {
+                "steps": [
+                    {
+                        "action": "buff_power",
+                        "amount": 1000,
+                        "target": "self",
+                        "duration": "this_turn"
+                    }
+                ],
+                "costs": [
+                    {
+                        "type": "don_minus",
+                        "count": 1,
+                        "optional": true
+                    }
+                ]
+            },
             "passive": {
                 "steps": [
                     {
@@ -17760,6 +17822,15 @@
         "color": "Green",
         "sub_types": "Donquixote Pirates",
         "effects": {
+            "on_block": {
+                "steps": [
+                    {
+                        "action": "rest_opp_character",
+                        "count": 1,
+                        "cost_lte": 4
+                    }
+                ]
+            },
             "passive": {
                 "steps": [
                     {
@@ -18020,6 +18091,23 @@
         "color": "Blue",
         "sub_types": "Animal Kingdom Pirates Hawkins Pirates",
         "effects": {
+            "on_block": {
+                "steps": [
+                    {
+                        "action": "draw",
+                        "count": 1
+                    },
+                    {
+                        "action": "buff_power",
+                        "amount": 1000,
+                        "target": "self",
+                        "duration": "battle_only"
+                    }
+                ],
+                "conditions": {
+                    "hand_lte": 3
+                }
+            },
             "passive": {
                 "steps": [
                     {
@@ -31861,6 +31949,20 @@
         "color": "Purple",
         "sub_types": "Donquixote Pirates",
         "effects": {
+            "on_block": {
+                "steps": [
+                    {
+                        "action": "add_don",
+                        "count": 1
+                    }
+                ],
+                "costs": [
+                    {
+                        "type": "rest_don",
+                        "count": 2
+                    }
+                ]
+            },
             "passive": {
                 "steps": [
                     {
@@ -36176,6 +36278,15 @@
         "color": "Green",
         "sub_types": "Navy East Blue",
         "effects": {
+            "on_block": {
+                "steps": [
+                    {
+                        "action": "rest_opp_character",
+                        "count": 1,
+                        "cost_lte": 5
+                    }
+                ]
+            },
             "passive": {
                 "steps": [
                     {
@@ -52584,6 +52695,22 @@
         "color": "Purple",
         "sub_types": "Film",
         "effects": {
+            "on_block": {
+                "steps": [
+                    {
+                        "action": "rest_opp_character",
+                        "count": 1,
+                        "cost_lte": 5
+                    }
+                ],
+                "costs": [
+                    {
+                        "type": "don_minus",
+                        "count": 1,
+                        "optional": true
+                    }
+                ]
+            },
             "passive": {
                 "steps": [
                     {
@@ -54061,6 +54188,16 @@
         "color": "Yellow",
         "sub_types": "Land of Wano",
         "effects": {
+            "on_block": {
+                "steps": [
+                    {
+                        "action": "buff_power",
+                        "amount": 4000,
+                        "target": "self",
+                        "duration": "battle_only"
+                    }
+                ]
+            },
             "passive": {
                 "steps": [
                     {
