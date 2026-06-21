@@ -635,7 +635,22 @@
     "life": 0,
     "color": "Blue",
     "sub_types": "Impel Down",
-    "effects": {}
+    "effects": {
+      "when_attacking": {
+        "steps": [
+          {
+            "action": "bounce",
+            "count": 1,
+            "target": "opp_character",
+            "cost_lte": 3
+          }
+        ],
+        "conditions": {
+          "hand_lte": 1
+        },
+        "don_requirement": 1
+      }
+    }
   },
   "EB01-027": {
     "name": "Mr. 1 (Daz.Bonez)",
@@ -696,7 +711,18 @@
     "life": 0,
     "color": "Blue",
     "sub_types": "Straw Hat Crew East Blue",
-    "effects": {}
+    "effects": {
+      "trigger": {
+        "steps": [
+          {
+            "action": "bounce",
+            "count": 1,
+            "target": "opp_character",
+            "cost_lte": 8
+          }
+        ]
+      }
+    }
   },
   "EB01-030": {
     "name": "Loguetown",
@@ -2079,6 +2105,12 @@
     "effects": {
       "on_play": {
         "steps": [
+          {
+            "action": "bounce",
+            "count": 1,
+            "target": "opp_character",
+            "cost_lte": 1
+          },
           {
             "action": "draw",
             "count": 2
@@ -3750,6 +3782,13 @@
       "on_play": {
         "steps": [
           {
+            "action": "bounce",
+            "count": 1,
+            "target": "opp_character",
+            "power_base_only": true,
+            "power_eq": 6000
+          },
+          {
             "action": "trash_from_hand",
             "count": 1
           }
@@ -3783,7 +3822,19 @@
     "life": 0,
     "color": "Blue",
     "sub_types": "Amazon Lily",
-    "effects": {}
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "bounce",
+            "count": 1,
+            "target": "opp_character",
+            "power_base_only": true,
+            "power_eq": 7000
+          }
+        ]
+      }
+    }
   },
   "EB03-028": {
     "name": "Yu",
@@ -8360,7 +8411,21 @@
     "life": 0,
     "color": "Blue",
     "sub_types": "Baroque Works The Seven Warlords of the Sea",
-    "effects": {}
+    "effects": {
+      "counter": {
+        "steps": [
+          {
+            "action": "bounce",
+            "count": 1,
+            "target": "opp_character",
+            "cost_lte": 5
+          }
+        ],
+        "conditions": {
+          "leader_type": "the seven warlords of the sea"
+        }
+      }
+    }
   },
   "OP01-090": {
     "name": "Baroque Works",
@@ -10329,6 +10394,12 @@
       "on_play": {
         "steps": [
           {
+            "action": "bounce",
+            "count": 1,
+            "target": "opp_character",
+            "cost_lte": 4
+          },
+          {
             "action": "gain_double_attack"
           },
           {
@@ -10345,6 +10416,12 @@
       },
       "when_attacking": {
         "steps": [
+          {
+            "action": "bounce",
+            "count": 1,
+            "target": "opp_character",
+            "cost_lte": 4
+          },
           {
             "action": "gain_double_attack"
           },
@@ -10485,6 +10562,16 @@
             "action": "activate_main_effect"
           }
         ]
+      },
+      "main": {
+        "steps": [
+          {
+            "action": "bounce",
+            "count": 1,
+            "target": "opp_character",
+            "cost_lte": 4
+          }
+        ]
       }
     }
   },
@@ -10498,6 +10585,16 @@
     "color": "Blue",
     "sub_types": "Straw Hat Crew Impel Down",
     "effects": {
+      "trigger": {
+        "steps": [
+          {
+            "action": "bounce",
+            "count": 1,
+            "target": "opp_character",
+            "cost_lte": 2
+          }
+        ]
+      },
       "counter": {
         "steps": [
           {
@@ -10526,6 +10623,16 @@
     "color": "Blue",
     "sub_types": "Revolutionary Army Impel Down",
     "effects": {
+      "trigger": {
+        "steps": [
+          {
+            "action": "bounce",
+            "count": 1,
+            "target": "opp_character",
+            "cost_lte": 7
+          }
+        ]
+      },
       "counter": {
         "steps": [
           {
@@ -12848,7 +12955,18 @@
     "life": 0,
     "color": "Blue",
     "sub_types": "East Blue",
-    "effects": {}
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "bounce",
+            "count": 1,
+            "target": "opp_character",
+            "cost_lte": 3
+          }
+        ]
+      }
+    }
   },
   "OP03-048": {
     "name": "Nojiko",
@@ -12884,7 +13002,18 @@
     "life": 0,
     "color": "Blue",
     "sub_types": "East Blue",
-    "effects": {}
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "bounce",
+            "count": 1,
+            "target": "opp_character",
+            "cost_lte": 3
+          }
+        ]
+      }
+    }
   },
   "OP03-050": {
     "name": "Boodle",
@@ -12989,6 +13118,16 @@
     "color": "Blue",
     "sub_types": "Straw Hat Crew East Blue",
     "effects": {
+      "trigger": {
+        "steps": [
+          {
+            "action": "bounce",
+            "count": 1,
+            "target": "opp_character",
+            "cost_lte": 4
+          }
+        ]
+      },
       "counter": {
         "steps": [
           {
@@ -14650,6 +14789,12 @@
       "on_play": {
         "steps": [
           {
+            "action": "bounce",
+            "count": 1,
+            "target": "opp_character",
+            "cost_lte": 6
+          },
+          {
             "action": "draw",
             "count": 2,
             "then_trash": 2
@@ -15756,7 +15901,19 @@
     "life": 0,
     "color": "Blue",
     "sub_types": "Animal Kingdom Pirates",
-    "effects": {}
+    "effects": {
+      "when_attacking": {
+        "steps": [
+          {
+            "action": "bounce",
+            "count": 1,
+            "target": "opp_character",
+            "cost_lte": 2
+          }
+        ],
+        "don_requirement": 1
+      }
+    }
   },
   "OP04-044": {
     "name": "Kaido",
@@ -15767,7 +15924,18 @@
     "life": 0,
     "color": "Blue",
     "sub_types": "Animal Kingdom Pirates The Four Emperors",
-    "effects": {}
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "bounce",
+            "count": 1,
+            "target": "opp_character",
+            "cost_lte": 8
+          }
+        ]
+      }
+    }
   },
   "OP04-045": {
     "name": "King",
@@ -16027,6 +16195,16 @@
     "color": "Blue",
     "sub_types": "Animal Kingdom Pirates The Four Emperors",
     "effects": {
+      "trigger": {
+        "steps": [
+          {
+            "action": "bounce",
+            "count": 1,
+            "target": "opp_character",
+            "cost_lte": 6
+          }
+        ]
+      },
       "counter": {
         "steps": [
           {
@@ -18798,7 +18976,19 @@
     "life": 0,
     "color": "Blue",
     "sub_types": "Animal Kingdom Pirates Giant",
-    "effects": {}
+    "effects": {
+      "when_attacking": {
+        "steps": [
+          {
+            "action": "bounce",
+            "count": 1,
+            "target": "opp_character",
+            "cost_lte": 3
+          }
+        ],
+        "don_requirement": 1
+      }
+    }
   },
   "OP05-050": {
     "name": "Hina",
@@ -18964,6 +19154,16 @@
     "color": "Blue",
     "sub_types": "Navy",
     "effects": {
+      "trigger": {
+        "steps": [
+          {
+            "action": "bounce",
+            "count": 1,
+            "target": "opp_character",
+            "cost_lte": 3
+          }
+        ]
+      },
       "main": {
         "steps": [
           {
@@ -19010,6 +19210,12 @@
       },
       "main": {
         "steps": [
+          {
+            "action": "bounce",
+            "count": 1,
+            "target": "opp_character",
+            "cost_lte": 5
+          },
           {
             "action": "draw",
             "count": 1
@@ -24093,7 +24299,18 @@
     "life": 0,
     "color": "Blue",
     "sub_types": "Baroque Works The Seven Warlords of the Sea",
-    "effects": {}
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "bounce",
+            "count": 1,
+            "target": "opp_character",
+            "cost_lte": 2
+          }
+        ]
+      }
+    }
   },
   "OP07-041": {
     "name": "Gloriosa (Grandma Nyon)",
@@ -27104,7 +27321,19 @@
     "life": 0,
     "color": "Blue",
     "sub_types": "The Seven Warlords of the Sea",
-    "effects": {}
+    "effects": {
+      "when_attacking": {
+        "steps": [
+          {
+            "action": "bounce",
+            "count": 1,
+            "target": "opp_character",
+            "cost_lte": 3
+          }
+        ],
+        "don_requirement": 1
+      }
+    }
   },
   "OP08-043": {
     "name": "Edward.Newgate",
@@ -27188,7 +27417,18 @@
     "life": 0,
     "color": "Blue",
     "sub_types": "Whitebeard Pirates",
-    "effects": {}
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "bounce",
+            "count": 1,
+            "target": "opp_character",
+            "cost_lte": 6
+          }
+        ]
+      }
+    }
   },
   "OP08-048": {
     "name": "Sweetpea",
@@ -30140,7 +30380,18 @@
     "life": 0,
     "color": "Blue",
     "sub_types": "Buggy Pirates",
-    "effects": {}
+    "effects": {
+      "trigger": {
+        "steps": [
+          {
+            "action": "bounce",
+            "count": 1,
+            "target": "opp_character",
+            "cost_lte": 3
+          }
+        ]
+      }
+    }
   },
   "OP09-059": {
     "name": "Murder at the Steam Bath",
@@ -32818,7 +33069,18 @@
     "life": 0,
     "color": "Blue",
     "sub_types": "Dressrosa",
-    "effects": {}
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "bounce",
+            "count": 1,
+            "target": "opp_character",
+            "cost_lte": 5
+          }
+        ]
+      }
+    }
   },
   "OP10-047": {
     "name": "Koala",
@@ -33148,6 +33410,16 @@
     "color": "Blue",
     "sub_types": "Straw Hat Crew Dressrosa",
     "effects": {
+      "trigger": {
+        "steps": [
+          {
+            "action": "bounce",
+            "count": 1,
+            "target": "opp_character",
+            "cost_lte": 2
+          }
+        ]
+      },
       "main": {
         "steps": [
           {
@@ -35803,7 +36075,24 @@
     "life": 0,
     "color": "Blue",
     "sub_types": "Firetank Pirates",
-    "effects": {}
+    "effects": {
+      "when_attacking": {
+        "steps": [
+          {
+            "action": "bounce",
+            "count": 1,
+            "target": "opp_character",
+            "cost_lte": 1
+          }
+        ],
+        "costs": [
+          {
+            "type": "trash_from_hand",
+            "count": 1
+          }
+        ]
+      }
+    }
   },
   "OP11-051": {
     "name": "Sanji",
@@ -35814,7 +36103,19 @@
     "life": 0,
     "color": "Blue",
     "sub_types": "Straw Hat Crew The Vinsmoke Family",
-    "effects": {}
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "bounce",
+            "count": 1,
+            "target": "opp_character",
+            "power_base_only": true,
+            "power_lte": 5000
+          }
+        ]
+      }
+    }
   },
   "OP11-052": {
     "name": "Charlotte Lola",
@@ -35946,6 +36247,16 @@
     "color": "Blue",
     "sub_types": "Straw Hat Crew",
     "effects": {
+      "trigger": {
+        "steps": [
+          {
+            "action": "bounce",
+            "count": 1,
+            "target": "opp_character",
+            "cost_lte": 2
+          }
+        ]
+      },
       "counter": {
         "steps": [
           {
@@ -37295,6 +37606,12 @@
       "when_attacking": {
         "steps": [
           {
+            "action": "bounce",
+            "count": 1,
+            "target": "opp_character",
+            "cost_lte": 4
+          },
+          {
             "action": "give_don",
             "count": 1
           },
@@ -38354,6 +38671,21 @@
             "count": 2
           }
         ]
+      },
+      "activate_main": {
+        "steps": [
+          {
+            "action": "bounce",
+            "count": 1,
+            "target": "opp_character",
+            "cost_lte": 5
+          }
+        ],
+        "costs": [
+          {
+            "type": "trash_self"
+          }
+        ]
       }
     }
   },
@@ -38526,7 +38858,21 @@
     "life": 0,
     "color": "Blue",
     "sub_types": "Blackbeard Pirates The Seven Warlords of the Sea",
-    "effects": {}
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "bounce",
+            "count": 1,
+            "target": "opp_character",
+            "cost_lte": 1
+          }
+        ],
+        "conditions": {
+          "leader_type": "the seven warlords of the sea"
+        }
+      }
+    }
   },
   "OP12-055": {
     "name": "Mohji & Cabaji",
@@ -41363,7 +41709,18 @@
     "life": 0,
     "color": "Blue",
     "sub_types": "Whitebeard Pirates",
-    "effects": {}
+    "effects": {
+      "main": {
+        "steps": [
+          {
+            "action": "bounce",
+            "count": 1,
+            "target": "opp_character",
+            "cost_lte": 6
+          }
+        ]
+      }
+    }
   },
   "OP13-060": {
     "name": "Amatsuki Toki",
@@ -44114,6 +44471,12 @@
       "on_play": {
         "steps": [
           {
+            "action": "bounce",
+            "count": 1,
+            "target": "opp_character",
+            "cost_lte": 7
+          },
+          {
             "action": "draw",
             "count": 2
           }
@@ -44330,6 +44693,13 @@
       "main": {
         "steps": [
           {
+            "action": "bounce",
+            "count": 1,
+            "target": "opp_character",
+            "power_base_only": true,
+            "power_eq": 6000
+          },
+          {
             "action": "play_card",
             "count": 1,
             "cost_lte": 3
@@ -44354,6 +44724,16 @@
     "color": "Blue",
     "sub_types": "Fish-Man The Seven Warlords of the Sea The Sun Pirates",
     "effects": {
+      "trigger": {
+        "steps": [
+          {
+            "action": "bounce",
+            "count": 1,
+            "target": "opp_character",
+            "cost_lte": 4
+          }
+        ]
+      },
       "main": {
         "steps": [
           {
@@ -52613,7 +52993,18 @@
     "life": 0,
     "color": "Blue",
     "sub_types": "Straw Hat Crew",
-    "effects": {}
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "bounce",
+            "count": 1,
+            "target": "opp_character",
+            "cost_lte": 3
+          }
+        ]
+      }
+    }
   },
   "P-044": {
     "name": "Sabo - P-044 (Pirate Foil)",
@@ -52869,7 +53260,18 @@
     "life": 0,
     "color": "Blue",
     "sub_types": "Straw Hat Crew",
-    "effects": {}
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "bounce",
+            "count": 1,
+            "target": "opp_character",
+            "cost_lte": 5
+          }
+        ]
+      }
+    }
   },
   "P-057": {
     "name": "Fleeting Lullaby",
@@ -54647,7 +55049,26 @@
     "life": 5,
     "color": "Blue",
     "sub_types": "Baroque Works The Seven Warlords of the Sea",
-    "effects": {}
+    "effects": {
+      "activate_main": {
+        "steps": [
+          {
+            "action": "bounce",
+            "count": 1,
+            "target": "opp_character",
+            "cost_lte": 5
+          }
+        ],
+        "costs": [
+          {
+            "type": "don_minus",
+            "count": 4,
+            "optional": true
+          }
+        ],
+        "once_per_turn": true
+      }
+    }
   },
   "ST03-002": {
     "name": "Edward Weevil",
@@ -54777,7 +55198,18 @@
     "life": 0,
     "color": "Blue",
     "sub_types": "Donquixote Pirates The Seven Warlords of the Sea",
-    "effects": {}
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "bounce",
+            "count": 1,
+            "target": "opp_character",
+            "cost_lte": 7
+          }
+        ]
+      }
+    }
   },
   "ST03-010": {
     "name": "Bartholomew Kuma",
@@ -54871,7 +55303,18 @@
     "life": 0,
     "color": "Blue",
     "sub_types": "Blackbeard Pirates The Seven Warlords of the Sea",
-    "effects": {}
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "bounce",
+            "count": 1,
+            "target": "opp_character",
+            "cost_lte": 3
+          }
+        ]
+      }
+    }
   },
   "ST03-015": {
     "name": "Sables",
@@ -54887,6 +55330,16 @@
         "steps": [
           {
             "action": "activate_main_effect"
+          }
+        ]
+      },
+      "main": {
+        "steps": [
+          {
+            "action": "bounce",
+            "count": 1,
+            "target": "opp_character",
+            "cost_lte": 7
           }
         ]
       }
@@ -54906,6 +55359,16 @@
         "steps": [
           {
             "action": "activate_main_effect"
+          }
+        ]
+      },
+      "counter": {
+        "steps": [
+          {
+            "action": "bounce",
+            "count": 1,
+            "target": "opp_character",
+            "cost_lte": 3
           }
         ]
       }
@@ -59179,7 +59642,21 @@
     "life": 0,
     "color": "Blue",
     "sub_types": "Heart Pirates The Seven Warlords of the Sea",
-    "effects": {}
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "bounce",
+            "count": 1,
+            "target": "opp_character",
+            "cost_lte": 4
+          }
+        ],
+        "conditions": {
+          "leader_type": "the seven warlords of the sea"
+        }
+      }
+    }
   },
   "ST17-003": {
     "name": "Buggy",
@@ -60303,6 +60780,16 @@
     "color": "Blue",
     "sub_types": "Whitebeard Pirates",
     "effects": {
+      "trigger": {
+        "steps": [
+          {
+            "action": "bounce",
+            "count": 1,
+            "target": "opp_character",
+            "cost_lte": 3
+          }
+        ]
+      },
       "main": {
         "steps": [
           {

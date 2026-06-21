@@ -247,6 +247,8 @@ def parse_bounce(text):
     steps = []
     t = text.lower()
 
+    # Forma explicita "of your opponent['s] Character(s)" -- mantida primeiro
+    # pois e mais especifica.
     m = re.search(r"return up to (\d+) of your opponent.{0,20} characters? with a cost of (\d+) or less", t)
     if m:
         steps.append({
@@ -260,6 +262,66 @@ def parse_bounce(text):
     m = re.search(r"return up to (\d+) of your opponent.{0,20} characters?", t)
     if m:
         steps.append({'action': 'bounce', 'count': int(m.group(1)), 'target': 'opp_character'})
+        return steps
+
+    # Forma generica sem "of your opponent" -- "return up to N Character(s)
+    # with a cost of X or less to the owner's hand". Target e implicitamente
+    # o character do oponente (regra do jogo: sem qualificador de posse,
+    # bounce mira o oponente). NAO casar quando o trecho diz "of your" logo
+    # antes de "Character" (ai e auto-bounce de tribo, tratado em outro
+    # parser por exigir contexto de tipo).
+    for m in re.finditer(
+        r"return up to (\d+) characters?(?: other than this character)?"
+        r" with a cost of (\d+) or less",
+        t
+    ):
+        # Garante que nao e "of your [Tipo] Characters" (auto-bounce de tribo)
+        prefix = t[max(0, m.start() - 12):m.start()]
+        if 'of your' in prefix or 'of you' in prefix:
+            continue
+        steps.append({
+            'action': 'bounce',
+            'count': int(m.group(1)),
+            'target': 'opp_character',
+            'cost_lte': int(m.group(2)),
+        })
+
+    if steps:
+        return steps
+
+    # Variante por power (em vez de custo): "return up to N Character(s)
+    # with [base power] X to the owner's hand"
+    m = re.search(
+        r"return up to (\d+) characters? with (\d+) base power(?: or (more|less))? to the owner.?s hand",
+        t
+    )
+    if m:
+        step = {
+            'action': 'bounce',
+            'count': int(m.group(1)),
+            'target': 'opp_character',
+            'power_base_only': True,
+        }
+        comparator = m.group(3)
+        if comparator == 'more':
+            step['power_gte'] = int(m.group(2))
+        elif comparator == 'less':
+            step['power_lte'] = int(m.group(2))
+        else:
+            step['power_eq'] = int(m.group(2))
+        steps.append(step)
+        return steps
+
+    # Variante sem qualquer filtro de custo/power: "return up to N
+    # Character(s) to the owner's hand" (sem "of your opponent" e sem "of
+    # your [Tipo]" antes).
+    for m in re.finditer(r"return up to (\d+) characters? to the owner.?s hand", t):
+        prefix = t[max(0, m.start() - 12):m.start()]
+        if 'of your' in prefix or 'of you' in prefix:
+            continue
+        steps.append({'action': 'bounce', 'count': int(m.group(1)), 'target': 'opp_character'})
+
+    if steps:
         return steps
 
     # Auto-bounce: "return this Character to the owner's hand" -- devolve a

@@ -376,7 +376,22 @@
         }
     },
     "EB01-025": {},
-    "EB01-026": {},
+    "EB01-026": {
+        "when_attacking": {
+            "conditions": {
+                "hand_lte": 1
+            },
+            "don_requirement": 1,
+            "steps": [
+                {
+                    "action": "bounce",
+                    "cost_lte": 3,
+                    "count": 1,
+                    "target": "opp_character"
+                }
+            ]
+        }
+    },
     "EB01-027": {
         "on_play": {
             "steps": [
@@ -407,7 +422,18 @@
             ]
         }
     },
-    "EB01-029": {},
+    "EB01-029": {
+        "trigger": {
+            "steps": [
+                {
+                    "action": "bounce",
+                    "cost_lte": 8,
+                    "count": 1,
+                    "target": "opp_character"
+                }
+            ]
+        }
+    },
     "EB01-030": {
         "activate_main": {
             "steps": [
@@ -1230,6 +1256,12 @@
     "EB02-024": {
         "on_play": {
             "steps": [
+                {
+                    "action": "bounce",
+                    "cost_lte": 1,
+                    "count": 1,
+                    "target": "opp_character"
+                },
                 {
                     "action": "draw",
                     "count": 2
@@ -2230,6 +2262,13 @@
             ],
             "steps": [
                 {
+                    "action": "bounce",
+                    "count": 1,
+                    "power_base_only": true,
+                    "power_eq": 6000,
+                    "target": "opp_character"
+                },
+                {
                     "action": "trash_from_hand",
                     "count": 1
                 }
@@ -2237,7 +2276,19 @@
         }
     },
     "EB03-026": {},
-    "EB03-027": {},
+    "EB03-027": {
+        "on_play": {
+            "steps": [
+                {
+                    "action": "bounce",
+                    "count": 1,
+                    "power_base_only": true,
+                    "power_eq": 7000,
+                    "target": "opp_character"
+                }
+            ]
+        }
+    },
     "EB03-028": {
         "activate_main": {
             "conditions": {
@@ -4964,7 +5015,21 @@
             ]
         }
     },
-    "OP01-089": {},
+    "OP01-089": {
+        "counter": {
+            "conditions": {
+                "leader_type": "the seven warlords of the sea"
+            },
+            "steps": [
+                {
+                    "action": "bounce",
+                    "cost_lte": 5,
+                    "count": 1,
+                    "target": "opp_character"
+                }
+            ]
+        }
+    },
     "OP01-090": {
         "main": {
             "steps": [
@@ -5999,6 +6064,12 @@
             ],
             "steps": [
                 {
+                    "action": "bounce",
+                    "cost_lte": 4,
+                    "count": 1,
+                    "target": "opp_character"
+                },
+                {
                     "action": "gain_double_attack"
                 },
                 {
@@ -6022,6 +6093,12 @@
                 }
             ],
             "steps": [
+                {
+                    "action": "bounce",
+                    "cost_lte": 4,
+                    "count": 1,
+                    "target": "opp_character"
+                },
                 {
                     "action": "gain_double_attack"
                 },
@@ -6093,6 +6170,16 @@
         }
     },
     "OP02-067": {
+        "main": {
+            "steps": [
+                {
+                    "action": "bounce",
+                    "cost_lte": 4,
+                    "count": 1,
+                    "target": "opp_character"
+                }
+            ]
+        },
         "trigger": {
             "steps": [
                 {
@@ -6117,6 +6204,16 @@
                     "target": "leader_or_character"
                 }
             ]
+        },
+        "trigger": {
+            "steps": [
+                {
+                    "action": "bounce",
+                    "cost_lte": 2,
+                    "count": 1,
+                    "target": "opp_character"
+                }
+            ]
         }
     },
     "OP02-069": {
@@ -6127,6 +6224,16 @@
                     "amount": 6000,
                     "duration": "battle_only",
                     "target": "leader_or_character"
+                }
+            ]
+        },
+        "trigger": {
+            "steps": [
+                {
+                    "action": "bounce",
+                    "cost_lte": 7,
+                    "count": 1,
+                    "target": "opp_character"
                 }
             ]
         }
@@ -7452,7 +7559,18 @@
         }
     },
     "OP03-046": {},
-    "OP03-047": {},
+    "OP03-047": {
+        "on_play": {
+            "steps": [
+                {
+                    "action": "bounce",
+                    "cost_lte": 3,
+                    "count": 1,
+                    "target": "opp_character"
+                }
+            ]
+        }
+    },
     "OP03-048": {
         "on_play": {
             "conditions": {
@@ -7468,7 +7586,18 @@
             ]
         }
     },
-    "OP03-049": {},
+    "OP03-049": {
+        "on_play": {
+            "steps": [
+                {
+                    "action": "bounce",
+                    "cost_lte": 3,
+                    "count": 1,
+                    "target": "opp_character"
+                }
+            ]
+        }
+    },
     "OP03-050": {
         "passive": {
             "steps": [
@@ -7526,6 +7655,16 @@
                     "amount": 4000,
                     "duration": "battle_only",
                     "target": "leader"
+                }
+            ]
+        },
+        "trigger": {
+            "steps": [
+                {
+                    "action": "bounce",
+                    "cost_lte": 4,
+                    "count": 1,
+                    "target": "opp_character"
                 }
             ]
         }
@@ -8504,6 +8643,12 @@
         "on_play": {
             "steps": [
                 {
+                    "action": "bounce",
+                    "cost_lte": 6,
+                    "count": 1,
+                    "target": "opp_character"
+                },
+                {
                     "action": "draw",
                     "count": 2,
                     "then_trash": 2
@@ -9170,8 +9315,31 @@
             ]
         }
     },
-    "OP04-043": {},
-    "OP04-044": {},
+    "OP04-043": {
+        "when_attacking": {
+            "don_requirement": 1,
+            "steps": [
+                {
+                    "action": "bounce",
+                    "cost_lte": 2,
+                    "count": 1,
+                    "target": "opp_character"
+                }
+            ]
+        }
+    },
+    "OP04-044": {
+        "on_play": {
+            "steps": [
+                {
+                    "action": "bounce",
+                    "cost_lte": 8,
+                    "count": 1,
+                    "target": "opp_character"
+                }
+            ]
+        }
+    },
     "OP04-045": {
         "on_play": {
             "steps": [
@@ -9308,6 +9476,16 @@
                     "amount": 4000,
                     "duration": "battle_only",
                     "target": "leader_or_character"
+                }
+            ]
+        },
+        "trigger": {
+            "steps": [
+                {
+                    "action": "bounce",
+                    "cost_lte": 6,
+                    "count": 1,
+                    "target": "opp_character"
                 }
             ]
         }
@@ -10987,7 +11165,19 @@
         }
     },
     "OP05-048": {},
-    "OP05-049": {},
+    "OP05-049": {
+        "when_attacking": {
+            "don_requirement": 1,
+            "steps": [
+                {
+                    "action": "bounce",
+                    "cost_lte": 3,
+                    "count": 1,
+                    "target": "opp_character"
+                }
+            ]
+        }
+    },
     "OP05-050": {
         "on_play": {
             "conditions": {
@@ -11082,6 +11272,16 @@
                     "target": "leader_or_character"
                 }
             ]
+        },
+        "trigger": {
+            "steps": [
+                {
+                    "action": "bounce",
+                    "cost_lte": 3,
+                    "count": 1,
+                    "target": "opp_character"
+                }
+            ]
         }
     },
     "OP05-058": {},
@@ -11091,6 +11291,12 @@
                 "leader_multicolor": true
             },
             "steps": [
+                {
+                    "action": "bounce",
+                    "cost_lte": 5,
+                    "count": 1,
+                    "target": "opp_character"
+                },
                 {
                     "action": "draw",
                     "count": 1
@@ -13992,7 +14198,18 @@
             ]
         }
     },
-    "OP07-040": {},
+    "OP07-040": {
+        "on_play": {
+            "steps": [
+                {
+                    "action": "bounce",
+                    "cost_lte": 2,
+                    "count": 1,
+                    "target": "opp_character"
+                }
+            ]
+        }
+    },
     "OP07-041": {
         "on_play": {
             "steps": [
@@ -15793,7 +16010,19 @@
             ]
         }
     },
-    "OP08-042": {},
+    "OP08-042": {
+        "when_attacking": {
+            "don_requirement": 1,
+            "steps": [
+                {
+                    "action": "bounce",
+                    "cost_lte": 3,
+                    "count": 1,
+                    "target": "opp_character"
+                }
+            ]
+        }
+    },
     "OP08-043": {},
     "OP08-044": {
         "activate_main": {
@@ -15827,7 +16056,18 @@
         }
     },
     "OP08-046": {},
-    "OP08-047": {},
+    "OP08-047": {
+        "on_play": {
+            "steps": [
+                {
+                    "action": "bounce",
+                    "cost_lte": 6,
+                    "count": 1,
+                    "target": "opp_character"
+                }
+            ]
+        }
+    },
     "OP08-048": {},
     "OP08-049": {
         "on_play": {
@@ -17511,7 +17751,18 @@
             ]
         }
     },
-    "OP09-058": {},
+    "OP09-058": {
+        "trigger": {
+            "steps": [
+                {
+                    "action": "bounce",
+                    "cost_lte": 3,
+                    "count": 1,
+                    "target": "opp_character"
+                }
+            ]
+        }
+    },
     "OP09-059": {
         "counter": {
             "steps": [
@@ -19119,7 +19370,18 @@
             ]
         }
     },
-    "OP10-046": {},
+    "OP10-046": {
+        "on_play": {
+            "steps": [
+                {
+                    "action": "bounce",
+                    "cost_lte": 5,
+                    "count": 1,
+                    "target": "opp_character"
+                }
+            ]
+        }
+    },
     "OP10-047": {
         "when_attacking": {
             "steps": [
@@ -19310,6 +19572,16 @@
                 {
                     "action": "draw",
                     "count": 1
+                }
+            ]
+        },
+        "trigger": {
+            "steps": [
+                {
+                    "action": "bounce",
+                    "cost_lte": 2,
+                    "count": 1,
+                    "target": "opp_character"
                 }
             ]
         }
@@ -20874,8 +21146,37 @@
             ]
         }
     },
-    "OP11-050": {},
-    "OP11-051": {},
+    "OP11-050": {
+        "when_attacking": {
+            "costs": [
+                {
+                    "count": 1,
+                    "type": "trash_from_hand"
+                }
+            ],
+            "steps": [
+                {
+                    "action": "bounce",
+                    "cost_lte": 1,
+                    "count": 1,
+                    "target": "opp_character"
+                }
+            ]
+        }
+    },
+    "OP11-051": {
+        "on_play": {
+            "steps": [
+                {
+                    "action": "bounce",
+                    "count": 1,
+                    "power_base_only": true,
+                    "power_lte": 5000,
+                    "target": "opp_character"
+                }
+            ]
+        }
+    },
     "OP11-052": {},
     "OP11-053": {},
     "OP11-054": {
@@ -20943,6 +21244,16 @@
                     "amount": 2000,
                     "duration": "battle_only",
                     "target": "self"
+                }
+            ]
+        },
+        "trigger": {
+            "steps": [
+                {
+                    "action": "bounce",
+                    "cost_lte": 2,
+                    "count": 1,
+                    "target": "opp_character"
                 }
             ]
         }
@@ -21699,6 +22010,12 @@
             ],
             "steps": [
                 {
+                    "action": "bounce",
+                    "cost_lte": 4,
+                    "count": 1,
+                    "target": "opp_character"
+                },
+                {
                     "action": "give_don",
                     "count": 1
                 },
@@ -22268,6 +22585,21 @@
     },
     "OP12-045": {},
     "OP12-046": {
+        "activate_main": {
+            "costs": [
+                {
+                    "type": "trash_self"
+                }
+            ],
+            "steps": [
+                {
+                    "action": "bounce",
+                    "cost_lte": 5,
+                    "count": 1,
+                    "target": "opp_character"
+                }
+            ]
+        },
         "on_play": {
             "steps": [
                 {
@@ -22367,7 +22699,21 @@
             ]
         }
     },
-    "OP12-054": {},
+    "OP12-054": {
+        "on_play": {
+            "conditions": {
+                "leader_type": "the seven warlords of the sea"
+            },
+            "steps": [
+                {
+                    "action": "bounce",
+                    "cost_lte": 1,
+                    "count": 1,
+                    "target": "opp_character"
+                }
+            ]
+        }
+    },
     "OP12-055": {},
     "OP12-056": {
         "on_play": {
@@ -23964,7 +24310,18 @@
             ]
         }
     },
-    "OP13-059": {},
+    "OP13-059": {
+        "main": {
+            "steps": [
+                {
+                    "action": "bounce",
+                    "cost_lte": 6,
+                    "count": 1,
+                    "target": "opp_character"
+                }
+            ]
+        }
+    },
     "OP13-060": {},
     "OP13-061": {
         "on_play": {
@@ -25621,6 +25978,12 @@
             ],
             "steps": [
                 {
+                    "action": "bounce",
+                    "cost_lte": 7,
+                    "count": 1,
+                    "target": "opp_character"
+                },
+                {
                     "action": "draw",
                     "count": 2
                 }
@@ -25747,6 +26110,13 @@
             ],
             "steps": [
                 {
+                    "action": "bounce",
+                    "count": 1,
+                    "power_base_only": true,
+                    "power_eq": 6000,
+                    "target": "opp_character"
+                },
+                {
                     "action": "play_card",
                     "cost_lte": 3,
                     "count": 1
@@ -25763,6 +26133,16 @@
                 {
                     "action": "draw",
                     "count": 2
+                }
+            ]
+        },
+        "trigger": {
+            "steps": [
+                {
+                    "action": "bounce",
+                    "cost_lte": 4,
+                    "count": 1,
+                    "target": "opp_character"
                 }
             ]
         }
@@ -30614,7 +30994,18 @@
     },
     "P-041": {},
     "P-042": {},
-    "P-043": {},
+    "P-043": {
+        "on_play": {
+            "steps": [
+                {
+                    "action": "bounce",
+                    "cost_lte": 3,
+                    "count": 1,
+                    "target": "opp_character"
+                }
+            ]
+        }
+    },
     "P-044": {
         "passive": {
             "conditions": {
@@ -30740,7 +31131,18 @@
             ]
         }
     },
-    "P-056": {},
+    "P-056": {
+        "on_play": {
+            "steps": [
+                {
+                    "action": "bounce",
+                    "cost_lte": 5,
+                    "count": 1,
+                    "target": "opp_character"
+                }
+            ]
+        }
+    },
     "P-057": {
         "main": {
             "conditions": {
@@ -31688,7 +32090,26 @@
             ]
         }
     },
-    "ST03-001": {},
+    "ST03-001": {
+        "activate_main": {
+            "costs": [
+                {
+                    "count": 4,
+                    "optional": true,
+                    "type": "don_minus"
+                }
+            ],
+            "once_per_turn": true,
+            "steps": [
+                {
+                    "action": "bounce",
+                    "cost_lte": 5,
+                    "count": 1,
+                    "target": "opp_character"
+                }
+            ]
+        }
+    },
     "ST03-002": {},
     "ST03-003": {
         "passive": {
@@ -31738,7 +32159,18 @@
             ]
         }
     },
-    "ST03-009": {},
+    "ST03-009": {
+        "on_play": {
+            "steps": [
+                {
+                    "action": "bounce",
+                    "cost_lte": 7,
+                    "count": 1,
+                    "target": "opp_character"
+                }
+            ]
+        }
+    },
     "ST03-010": {
         "on_play": {
             "steps": [
@@ -31782,8 +32214,29 @@
             ]
         }
     },
-    "ST03-014": {},
+    "ST03-014": {
+        "on_play": {
+            "steps": [
+                {
+                    "action": "bounce",
+                    "cost_lte": 3,
+                    "count": 1,
+                    "target": "opp_character"
+                }
+            ]
+        }
+    },
     "ST03-015": {
+        "main": {
+            "steps": [
+                {
+                    "action": "bounce",
+                    "cost_lte": 7,
+                    "count": 1,
+                    "target": "opp_character"
+                }
+            ]
+        },
         "trigger": {
             "steps": [
                 {
@@ -31793,6 +32246,16 @@
         }
     },
     "ST03-016": {
+        "counter": {
+            "steps": [
+                {
+                    "action": "bounce",
+                    "cost_lte": 3,
+                    "count": 1,
+                    "target": "opp_character"
+                }
+            ]
+        },
         "trigger": {
             "steps": [
                 {
@@ -34210,7 +34673,21 @@
             ]
         }
     },
-    "ST17-002": {},
+    "ST17-002": {
+        "on_play": {
+            "conditions": {
+                "leader_type": "the seven warlords of the sea"
+            },
+            "steps": [
+                {
+                    "action": "bounce",
+                    "cost_lte": 4,
+                    "count": 1,
+                    "target": "opp_character"
+                }
+            ]
+        }
+    },
     "ST17-003": {
         "on_play": {
             "steps": [
@@ -34819,6 +35296,16 @@
                 {
                     "action": "draw",
                     "count": 1
+                }
+            ]
+        },
+        "trigger": {
+            "steps": [
+                {
+                    "action": "bounce",
+                    "cost_lte": 3,
+                    "count": 1,
+                    "target": "opp_character"
                 }
             ]
         }
