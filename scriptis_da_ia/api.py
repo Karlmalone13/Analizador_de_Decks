@@ -3,7 +3,8 @@ api.py — API do analisador de decks OPTCG
 ==========================================
 Expõe o motor de análise (deck_analyzer.analyze_deck) como endpoint HTTP.
 Fonte ÚNICA de verdade: o front chama esta API, não reimplementa a lógica.
-
+Busca manter esta camada o mais fina possível — só recebe a lista de cartas, chama o analisador, e devolve o resultado.
+Rode localmente:
 Rodar localmente:
     pip install fastapi uvicorn
     uvicorn api:app --reload --port 8000

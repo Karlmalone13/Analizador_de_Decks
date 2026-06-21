@@ -496,14 +496,33 @@ def parse_add_from_trash(text):
     steps = []
     t = text.lower()
 
-    m = re.search(r'add up to (\d+) \[([^\]]+)\] from your trash to your hand', t)
-    if m:
-        steps.append({
-            'action': 'add_from_trash',
-            'count': int(m.group(1)),
-            'filter_name': m.group(2)
-        })
+    # Aceita: "add up to N <descrição> from your trash to your hand"
+    # A <descrição> pode ser [tipo], "tipo" type, "Character cards with cost...", etc.
+    m = re.search(r'add up to (\d+) (.+?) from your trash to your hand', t)
+    if not m:
+        return steps
 
+    count = int(m.group(1))
+    desc = m.group(2)
+
+    step = {'action': 'add_from_trash', 'count': count}
+
+    # filtro de nome/tipo entre colchetes (ex: [Nico Robin])
+    name_m = re.search(r'\[([^\]]+)\]', desc)
+    if name_m:
+        step['filter_name'] = name_m.group(1)
+    # filtro de tipo entre aspas (ex: "CP" type)
+    else:
+        type_m = re.search(r'"([^"]+)" type', desc)
+        if type_m:
+            step['filter_type'] = type_m.group(1)
+
+    # filtro de custo (ex: with a cost of 4 or less)
+    cost_m = re.search(r'cost of (\d+) or less', desc)
+    if cost_m:
+        step['cost_lte'] = int(cost_m.group(1))
+
+    steps.append(step)
     return steps
 
 
@@ -764,7 +783,11 @@ def generate_effects_db(csv_path):
 
 
 if __name__ == '__main__':
-    print('Gerando card_effects_db.json...')
+    print('Este gerador não deve ser rodado sozinho — geraria um JSON')
+    print('dessincronizado do outro banco.')
+    print('Use:  python gerar_dbs.py   (gera os dois juntos)')
+    import sys
+    sys.exit(1)
     db = generate_effects_db('cards_rows.csv')
 
     with open('card_effects_db.json', 'w', encoding='utf-8') as f:

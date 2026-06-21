@@ -1899,6 +1899,11 @@ class DecisionEngine:
             if atk_power < opp_defense and not passa_sem_don:
                 s -= 10
 
+            # Unblockable: o ataque não pode ser bloqueado. Vale mais quando o
+            # oponente tem blockers (passa onde os outros seriam interceptados).
+            if attacker.has_unblockable and self.opp.blockers_active():
+                s += 40
+
             # Custo de perder o Activate Main: desconta, salvo se for letal
             if activate_cost > 0 and opp_life > 1:
                 s -= activate_cost

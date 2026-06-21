@@ -212,4 +212,9 @@ def main():
 
 
 if __name__ == '__main__':
+    print('Este gerador não deve ser rodado sozinho — geraria um JSON')
+    print('dessincronizado do outro banco.')
+    print('Use:  python gerar_dbs.py   (gera os dois juntos)')
+    import sys
+    sys.exit(1)    
     main()
