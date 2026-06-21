@@ -96,6 +96,19 @@ def parse_costs(text):
         opcional = 'you may' in janela
         costs.append({'type': 'don_minus', 'count': x, 'optional': opcional})
 
+    # Custo de power no PROPRIO lider/character (ex: "you may give your active
+    # leader -5000 power during this turn: [efeito]"). So conta como custo se
+    # vier ANTES de um ':' (separador custo->efeito) e o alvo for proprio
+    # (your leader/character), nao do oponente.
+    m = re.search(r"give your[^:]*?(?:leader|character)[^:]*?[−\-]\s*(\d+)\s*power[^:]*:", t)
+    if m:
+        amount = int(m.group(1))
+        idx = m.start()
+        janela = t[max(0, idx-30):idx]
+        opcional = 'you may' in janela
+        target = 'leader' if 'leader' in m.group(0) and 'character' not in m.group(0).split('leader')[0] else 'leader_or_character'
+        costs.append({'type': 'debuff_power_self', 'amount': amount, 'optional': opcional, 'target': target})
+
     return costs
 
 
@@ -247,6 +260,14 @@ def parse_bounce(text):
     m = re.search(r"return up to (\d+) of your opponent.{0,20} characters?", t)
     if m:
         steps.append({'action': 'bounce', 'count': int(m.group(1)), 'target': 'opp_character'})
+        return steps
+
+    # Auto-bounce: "return this Character to the owner's hand" -- devolve a
+    # SI MESMO pra mao, nao mira o oponente. Geralmente vem como efeito apos
+    # um custo opcional (ex: "you may give your leader -5000 power: return
+    # this Character to the owner's hand").
+    if re.search(r"return this character to the owner.?s hand", t):
+        steps.append({'action': 'bounce', 'count': 1, 'target': 'self'})
 
     return steps
 
@@ -290,51 +311,102 @@ def parse_draw(text):
 
 
 def parse_power_buff(text):
+    """
+    Processa TODAS as ocorrencias de "<sinal?>N power" no bloco de texto,
+    cada uma com sua propria janela de contexto local (nao o texto inteiro),
+    pra suportar cartas com multiplos efeitos de power no mesmo bloco
+    (ex: "Up to 3 of your Characters gain +1000 power. Then, give opponent's
+    Characters 2000 power" -- dois efeitos, sinais e alvos diferentes).
+
+    Regra de sinal quando ausente no texto (problema confirmado na fonte,
+    ~81 cartas no banco), validada por imagens reais das cartas:
+      alvo "opponent's [...]" => SEMPRE debuff
+      alvo "your [...]" / nome proprio / "this character" => SEMPRE buff
+    """
     steps = []
     t = text.lower()
 
-    m = re.search(r'([+\-−])(\d+)\s*power', t)
-    if not m:
-        return steps
+    JANELA_ANTES = 90  # chars de contexto antes do match, suficiente p/ pegar "of your opponent's characters"
+    JANELA_DEPOIS = 40  # chars de contexto depois, p/ pegar "during this turn/battle"
 
-    sign = m.group(1)
-    amount = int(m.group(2))
-    is_debuff = sign in ('-', '−')
-    target = 'self'
-    duration = 'this_turn'
+    for m in re.finditer(r'([+\-−]?)\s*(\d+)\s*power', t):
+        sign = m.group(1)
+        amount = int(m.group(2))
 
-    # debuff normalmente mira o oponente
-    if is_debuff or "opponent" in t:
-        if "opponent's leader" in t:
-            target = 'opp_leader'
-        elif "opponent's character" in t or "opponent" in t:
-            target = 'opp_character'
-    if 'your leader or 1 of your characters' in t:
-        target = 'leader_or_character'
-    elif 'all of your' in t and "leader" in t:
-        target = 'all_allies_and_leader'
-    elif 'all of your characters' in t:
-        target = 'all_allies'
-    elif 'your leader' in t and not is_debuff:
-        target = 'leader'
-    elif ('this character' in t or 'this card' in t) and not is_debuff:
+        contexto_antes = t[max(0, m.start() - JANELA_ANTES):m.start()]
+        contexto_depois = t[m.end():m.end() + JANELA_DEPOIS]
+        contexto = contexto_antes + ' <<N power>> ' + contexto_depois
+
+        # ignora clausulas de FILTRO (ex: "with 3000 power or less", "characters
+        # with 7000 power or more") -- isso e condicao de outro efeito (KO,
+        # bounce, etc.), nao um buff/debuff de power em si
+        if re.match(r'\s*(or less|or more)\b', contexto_depois):
+            continue
+        if re.search(r'\bwith\s*$', contexto_antes[-10:]):
+            continue
+
+        # ignora filtro de SELECAO DE CARTA (ex: "play up to N Character
+        # cards with [type] and X power from your hand/trash/deck") -- aqui
+        # o numero de power especifica qual carta jogar, nao e um buff/debuff
+        if re.search(r'\bplay up to \d+[^.]*$', contexto_antes) and \
+           re.match(r'\s*from your (hand|trash|deck)', contexto_depois):
+            continue
+
+        # ignora clausula de CUSTO proprio (ex: "give your leader -5000 power:
+        # [efeito]") -- isso ja foi capturado por parse_costs como custo,
+        # nao deve duplicar como step de debuff/buff solto
+        if re.search(r'give your[^:]*$', contexto_antes) and re.match(r'\s*[^.]*:', contexto_depois):
+            continue
+
+        if sign in ('-', '−'):
+            is_debuff = True
+        elif sign == '+':
+            is_debuff = False
+        else:
+            # sem sinal explicito -- infere pelo alvo na janela local (nao no texto inteiro)
+            is_debuff = bool(re.search(r"opponent'?s?\s+(?:leader\s+or\s+)?(?:leader|character)", contexto_antes))
+
         target = 'self'
+        if is_debuff:
+            if "opponent's leader or character" in contexto_antes or "opponent's leader" in contexto_antes and "character" in contexto_antes:
+                target = 'opp_leader_or_character'
+            elif "opponent's leader" in contexto_antes:
+                target = 'opp_leader'
+            elif re.search(r"all of your opponent.?s? characters", contexto_antes):
+                target = 'all_opp_characters'
+            else:
+                target = 'opp_character'
+        else:
+            if 'your leader or 1 of your characters' in contexto_antes or 'your leader or character' in contexto_antes:
+                target = 'leader_or_character'
+            elif 'all of your' in contexto_antes and "leader" in contexto_antes:
+                target = 'all_allies_and_leader'
+            elif 'all of your characters' in contexto_antes:
+                target = 'all_allies'
+            elif 'your leader' in contexto_antes:
+                target = 'leader'
+            elif ('this character' in contexto_antes or 'this card' in contexto_antes):
+                target = 'self'
+            elif 'of your characters' in contexto_antes or 'of your character cards' in contexto_antes:
+                target = 'own_character'
 
-    if 'until the start of your' in t:
-        duration = 'until_my_turn_start'
-    elif "until the start of your opponent" in t:
-        duration = 'until_opp_turn_start'
-    elif "until the end of your opponent" in t:
-        duration = 'until_opp_turn_end'
-    elif 'during this battle' in t:
-        duration = 'battle_only'
-    elif 'this turn' in t:
         duration = 'this_turn'
+        if 'until the start of your opponent' in contexto_depois:
+            duration = 'until_opp_turn_start'
+        elif 'until the end of your opponent' in contexto_depois:
+            duration = 'until_opp_turn_end'
+        elif 'until the start of your' in contexto_depois:
+            duration = 'until_my_turn_start'
+        elif 'during this battle' in contexto_depois:
+            duration = 'battle_only'
+        elif 'this turn' in contexto_depois:
+            duration = 'this_turn'
 
-    steps.append({
-        'action': 'debuff_power' if is_debuff else 'buff_power',
-        'amount': amount, 'target': target, 'duration': duration
-    })
+        steps.append({
+            'action': 'debuff_power' if is_debuff else 'buff_power',
+            'amount': amount, 'target': target, 'duration': duration
+        })
+
     return steps
 
 
@@ -365,8 +437,29 @@ def parse_give_don(text):
     if re.search(r'set (?:up to )?\d* ?(?:of your )?don!! cards?.* as active', t):
         steps.append({'action': 'set_don_active'})
 
-    # Trava de DON do oponente: "will not become active" (controle de recurso)
-    if re.search(r"opponent's .{0,30}will not become active|will not become active", t):
+    # Trava de "nao ficar ativo no Refresh" -- distinguir alvo: DON especifico,
+    # Character/Leader especifico, ou generico ("cards", pode ser qualquer um).
+    m = re.search(
+        r"up to (?:a total of )?(\d+) of your opponent.?s rested "
+        r"(don!! cards?|leader and character cards?|characters?|character cards?|leader cards?|cards?)"
+        r" will not become active",
+        t
+    )
+    if m:
+        cnt = int(m.group(1))
+        tipo = m.group(2)
+        if tipo.startswith('don'):
+            steps.append({'action': 'lock_opp_don_refresh', 'count': cnt})
+        elif tipo == 'cards' or tipo == 'card':
+            # generico ("cards" sem especificar) -- modelado como
+            # character_refresh por ser o caso mais comum nesse fraseado
+            steps.append({'action': 'lock_opp_character_refresh', 'count': cnt})
+        else:
+            steps.append({'action': 'lock_opp_character_refresh', 'count': cnt})
+    elif re.search(r"opponent's .{0,30}will not become active|will not become active", t):
+        # fallback antigo: padrao nao identificado claramente, mantem
+        # comportamento anterior (assume DON) para nao regredir casos nao
+        # cobertos pela regex especifica acima
         steps.append({'action': 'lock_opp_don'})
 
     return steps
@@ -376,16 +469,42 @@ def parse_play_from_trash(text):
     steps = []
     t = text.lower()
 
+    # Padrao com tipo (ex: "play up to 1 'Thriller Bark Pirates' type Character
+    # card with a cost of 2 or less from your trash")
     m = re.search(r'play up to (\d+) .{0,20}type (?:stage|character) card.{0,30}from your trash', t)
     if m:
         type_m = re.search(r'play up to \d+ "?([a-z][a-z0-9 .]+)"? type', t)
         cost_m = re.search(r'with a cost of (\d+) or less', t)
-        steps.append({
+        step = {
             'action': 'play_from_trash',
             'count': int(m.group(1)),
             'filter_type': type_m.group(1).strip() if type_m else '',
             'cost_lte': int(cost_m.group(1)) if cost_m else 99
-        })
+        }
+        exclude_m = re.search(r'other than \[([a-z][a-z0-9 .\'-]+)\]', t)
+        if exclude_m:
+            step['exclude'] = exclude_m.group(1).strip()
+        steps.append(step)
+        return steps
+
+    # Padrao SEM filtro de tipo/faccao -- so "Character card" generico, com
+    # filtro de custo e/ou keyword [Trigger], ex: "play up to 1 Character
+    # card with a cost of 4 or less and a [Trigger] other than [X] from your
+    # trash"
+    m = re.search(r'play up to (\d+) character card.{0,80}from your trash', t)
+    if m:
+        cost_m = re.search(r'with a cost of (\d+) or less', t)
+        step = {
+            'action': 'play_from_trash',
+            'count': int(m.group(1)),
+            'cost_lte': int(cost_m.group(1)) if cost_m else 99
+        }
+        if re.search(r'and a \[trigger\]', t):
+            step['has_trigger'] = True
+        exclude_m = re.search(r'other than \[([a-z][a-z0-9 .\'-]+)\]', t)
+        if exclude_m:
+            step['exclude'] = exclude_m.group(1).strip()
+        steps.append(step)
 
     return steps
 
@@ -492,6 +611,110 @@ def parse_life(text):
     return steps
 
 
+def parse_substitute_ko(text):
+    """
+    Cobre 'If [this Character/your X] would be K.O.'d [by an effect], you
+    may [custo] instead [of being K.O.'d]'. Dois padroes de custo vistos:
+      - trash 1 Event/Stage/card from your hand instead
+      - give that Character -N power ... instead of being K.O.'d
+    """
+    steps = []
+    t = text.lower()
+
+    if not re.search(r"would be k\.o\.'?d", t):
+        return steps
+
+    cost = None
+
+    m = re.search(r"you may trash (\d+) ([a-z][a-z0-9 /]*?) card[s]? from your hand instead", t)
+    if m:
+        tipos = re.split(r'\s*(?:/| or )\s*', m.group(2).strip())
+        cost = {'action': 'trash_from_hand', 'count': int(m.group(1)), 'filter_type': [x.strip() for x in tipos if x.strip()]}
+    else:
+        m = re.search(r"you may give (?:that character|this character) [−\-]?(\d+) power[^.]*instead", t)
+        if m:
+            cost = {'action': 'debuff_power_self', 'amount': int(m.group(1))}
+
+    if cost:
+        steps.append({'action': 'substitute_ko', 'cost': cost})
+
+    return steps
+
+
+def parse_negate_effect(text):
+    """
+    Cobre dois padroes distintos:
+      - 'Your [On Play] effects are negated' / "your opponent's [On Play]
+        effects are negated" -> negate_on_play_effects (alvo: self/opponent)
+      - 'Negate the effects of up to N of your opponent's Characters with a
+        cost of X or less' -> negate_effect (generico, com filtro de custo)
+    """
+    steps = []
+    t = text.lower()
+
+    # padrao especifico [on play] -- apenas o caso "opponent's effects negados"
+    # com trigger explicito (ex: dentro de [Activate: Main]). O caso "your
+    # [On Play] effects are negated" passivo e tratado em parse_card_effect.
+    if 'on play' in t and 'negat' in t:
+        if "your opponent's [on play] effects are negated" in t or "opponent's [on play] effects are negated" in t:
+            duration = 'until_opp_turn_end' if 'until the end' in t else 'this_turn'
+            steps.append({'action': 'negate_on_play_effects', 'target': 'opponent', 'duration': duration})
+            return steps
+
+    # padrao generico: 'negate the effects of up to N of your opponent's
+    # leader or character cards/characters [with a cost of X or less]'
+    m = re.search(r"negate the effects? of up to (\d+) of your opponent.{0,30}?(?:leader or character cards?|characters?)", t)
+    if m:
+        step = {'action': 'negate_effect', 'count': int(m.group(1)), 'target': 'opp_leader_or_character' if 'leader' in m.group(0) else 'opp_character'}
+        cost_m = re.search(r'with a cost of (\d+) or less', t)
+        if cost_m:
+            step['cost_lte'] = int(cost_m.group(1))
+        if 'during this turn' in t:
+            step['duration'] = 'this_turn'
+        steps.append(step)
+
+    return steps
+
+
+
+    """
+    Manipulação de vida em três direções (sinais de arquétipo diferentes):
+      - gain_life   : adiciona à SUA vida (defensivo → Vida/Triggers)
+      - attack_life : remove da vida do OPONENTE (ofensivo → Aggro/Controle)
+      - trash_own_life : descarta da SUA vida como custo/troca (engine)
+    Cobre variações de redação ("to the top/bottom of your Life", "up to N").
+    """
+    steps = []
+    t = text.lower()
+
+    # quantidade genérica (N ou "up to N"); default 1 quando não especifica
+    def qty_near(keyword_idx):
+        seg = t[max(0, keyword_idx - 60):keyword_idx]
+        m = re.search(r'(?:up to |add )?(\d+) cards?', seg)
+        return int(m.group(1)) if m else 1
+
+    # ── Ganha a própria vida ───────────────────────────────────────────
+    m = re.search(r'to (?:the (?:top|bottom) of )?your life', t)
+    if m and 'trash' not in t[:m.start()]:
+        # garante que é ADIÇÃO (add/put), não trash
+        if re.search(r'(add|put)[^.]*your life', t):
+            steps.append({'action': 'gain_life', 'count': qty_near(m.start())})
+
+    # ── Ataca a vida do oponente ───────────────────────────────────────
+    m = re.search(r"opponent's life", t)
+    if m:
+        # trash da vida do oponente OU fazer oponente add (ambos ofensivos)
+        if re.search(r"trash[^.]*opponent's life", t):
+            steps.append({'action': 'attack_life', 'count': qty_near(m.start())})
+
+    # ── Descarta a própria vida (custo/troca) ──────────────────────────
+    m = re.search(r'trash[^.]*from (?:the top of )?your life', t)
+    if m:
+        steps.append({'action': 'trash_own_life', 'count': qty_near(m.start())})
+
+    return steps
+
+
 def parse_add_from_trash(text):
     steps = []
     t = text.lower()
@@ -535,6 +758,16 @@ def parse_block(block_text, trigger_name):
     steps = []
     t = block_text.lower()
 
+    # Substitute KO: "would be K.O.'d... you may [custo] instead" -- precisa
+    # rodar ANTES de parse_ko e parse_power_buff, pois o texto menciona K.O.
+    # e/ou power mas NAO e um KO real nem um buff/debuff solto, e sim uma
+    # substituicao condicional. Reivindica o bloco inteiro (return antecipado)
+    # pra evitar que parse_ko/parse_power_buff capturem o mesmo trecho.
+    if re.search(r"would be k\.o\.'?d", t):
+        sub_steps = parse_substitute_ko(t)
+        if sub_steps:
+            return sub_steps
+
     # Busca
     if 'look at' in t:
         steps.extend(parse_look_at(t))
@@ -543,8 +776,8 @@ def parse_block(block_text, trigger_name):
     if 'k.o.' in t:
         steps.extend(parse_ko(t))
 
-    # Bounce
-    if 'return' in t and 'hand' in t and 'opponent' in t:
+    # Bounce (oponente OU auto-bounce do proprio character)
+    if 'return' in t and 'hand' in t:
         steps.extend(parse_bounce(t))
 
     # Restar oponente
@@ -555,8 +788,9 @@ def parse_block(block_text, trigger_name):
     if 'draw' in t and 'look at' not in t:
         steps.extend(parse_draw(t))
 
-    # Power buff/debuff
-    if 'power' in t and ('+' in t or '-' in t or '−' in t):
+    # Power buff/debuff (com ou sem sinal explicito -- parse_power_buff agora
+    # infere o sinal pelo alvo quando o texto nao traz +/- explicito)
+    if 'power' in t:
         steps.extend(parse_power_buff(t))
 
     # Custo: give -N/+N cost
@@ -567,9 +801,14 @@ def parse_block(block_text, trigger_name):
     if 'play ' in t:
         steps.extend(parse_play_generic(t))
 
-    # DON: give, add (ramp), set active
-    if 'don' in t and ('give' in t or 'add' in t or 'set' in t):
+    # DON: give, add (ramp), set active -- ou trava de "will not become
+    # active" (que pode mirar Character/Leader sem mencionar a palavra "don")
+    if ('don' in t and ('give' in t or 'add' in t or 'set' in t)) or 'will not become active' in t:
         steps.extend(parse_give_don(t))
+
+    # Negar efeito (On Play especifico, ou generico com filtro de custo)
+    if 'negat' in t:
+        steps.extend(parse_negate_effect(t))
 
     # Play from trash
     if 'from your trash' in t and 'play up to' in t:
@@ -628,23 +867,75 @@ def parse_card_effect(card_text, card_type):
         return {}
 
     t = str(card_text)
+    # normaliza tags HTML de quebra de linha (<br>, <br/>, <br />) para \n
+    # real -- a fonte de dados usa isso como separador equivalente a quebra
+    # de linha entre blocos de efeito.
+    t = re.sub(r'<br\s*/?>', '\n', t, flags=re.IGNORECASE)
+    # normaliza espacos multiplos (a fonte por vezes usa 2+ espacos entre
+    # frases/blocos) para um unico espaco, simplificando os lookbehind de
+    # abertura/parada de bloco que assumem exatamente 0 ou 1 espaco.
+    t = re.sub(r'[ \t]{2,}', ' ', t)
     t_low = t.lower()
     result = {}
 
     # Mapa de triggers → regex para extrair o bloco de texto
+    # Lista de TODAS as tags de trigger possiveis no texto cru (case-insensitive),
+    # usada simetricamente em todo lookahead de parada -- antes cada padrao so
+    # parava em um subconjunto proprio, causando vazamento entre blocos (ex:
+    # [Your Turn] vazava pra dentro de [Opponent's Turn] porque a lista de
+    # parada do your_turn nao incluia opponent's turn).
+    TODAS_TAGS = r"on play|activate:?\s*main|when attacking|on k\.o\.|your turn|opponent.{0,3}s? turn|trigger|counter|end of your turn|on block|main|blocker|rush|double attack|banish|unblockable"
+
+    # Delimitador de bloco só conta quando a tag aparece no INICIO de uma frase
+    # (inicio do texto, ou logo apos um '.' ou quebra de linha, com espaco
+    # opcional). Isso evita confundir "[Trigger]" como delimitador de novo
+    # bloco com "[Trigger]" usado como referencia a keyword no meio de uma
+    # frase, ex: "trash 1 card with a [Trigger] from your hand".
+    LOOKAHEAD_DELIM = r'(?=(?:^|(?<=[.\n])|(?<=\])|(?<=\)))\s*\[(?:' + TODAS_TAGS + r')\]|$)'
+
+    # Lookbehind de abertura: a tag so conta como INICIO de bloco se vier no
+    # comeco do texto, logo apos um '.'/quebra de linha, OU logo apos OUTRA
+    # tag '[...]' (tags costumam vir coladas, ex: "[DON!! x1] [When
+    # Attacking]"). Sem isso, re.search() acha a primeira ocorrencia da tag
+    # em QUALQUER lugar do texto -- incluindo uso da tag como referencia de
+    # keyword no meio de uma frase (ex: "a card with a [Trigger] from your
+    # hand").
+    ABERTURA = r'(?:(?<=^)|(?<=[.\n] )|(?<=[.\n])|(?<=\] )|(?<=\])|(?<=\) )|(?<=\)))'
+
     trigger_patterns = [
-        ('on_play',       r'\[on play\](.+?)(?=\[(?:on play|activate|when attacking|on k\.o\.|trigger|counter|your turn|end of your turn|blocker|rush|double attack|banish|unblockable)\]|$)'),
-        ('activate_main', r'\[activate:?\s*main\](.+?)(?=\[(?:on play|when attacking|on k\.o\.|trigger|counter|your turn|end of your turn)\]|$)'),
-        ('when_attacking',r'\[when attacking\](.+?)(?=\[(?:on play|activate|on k\.o\.|trigger|counter|your turn|end of your turn)\]|$)'),
-        ('on_ko',         r'\[on k\.o\.\](.+?)(?=\[(?:on play|activate|when attacking|trigger|counter|your turn|end of your turn)\]|$)'),
-        ('your_turn',     r'\[your turn\](.+?)(?=\[(?:on play|activate|when attacking|on k\.o\.|trigger|counter|end of your turn)\]|$)'),
-        ('opp_turn',      r"\[opponent.{0,3}s? turn\](.+?)(?=\[(?:on play|activate|when attacking|on k\.o\.|trigger|counter|your turn|end of your turn)\]|$)"),
-        ('trigger',       r'\[trigger\](.+?)(?=\[(?:on play|activate|when attacking|on k\.o\.|counter|your turn|end of your turn)\]|$)'),
-        ('counter',       r'\[counter\](.+?)(?=\[(?:on play|activate|when attacking|on k\.o\.|trigger|your turn|end of your turn)\]|$)'),
-        ('end_of_turn',   r'\[end of your turn\](.+?)(?=\[(?:on play|activate|when attacking|trigger|counter|on block)\]|$)'),
-        ('on_block',      r'\[on block\](.+?)(?=\[(?:on play|activate|when attacking|on k\.o\.|trigger|counter|your turn|end of your turn)\]|$)'),
-        ('main',          r'\[main\](.+?)(?=\[(?:trigger|counter|on play|activate|when attacking|on k\.o\.|your turn|end of your turn)\]|$)'),
+        ('on_play',       ABERTURA + r'\[on play\](.+?)' + LOOKAHEAD_DELIM),
+        ('activate_main', ABERTURA + r'\[activate:?\s*main\](.+?)' + LOOKAHEAD_DELIM),
+        ('when_attacking',ABERTURA + r'\[when attacking\](.+?)' + LOOKAHEAD_DELIM),
+        ('on_ko',         ABERTURA + r'\[on k\.o\.\](.+?)' + LOOKAHEAD_DELIM),
+        ('your_turn',     ABERTURA + r'\[your turn\](.+?)' + LOOKAHEAD_DELIM),
+        ('opp_turn',      ABERTURA + r"\[opponent.{0,3}s? turn\](.+?)" + LOOKAHEAD_DELIM),
+        ('trigger',       ABERTURA + r'\[trigger\](.+?)' + LOOKAHEAD_DELIM),
+        ('counter',       ABERTURA + r'\[counter\](.+?)' + LOOKAHEAD_DELIM),
+        ('end_of_turn',   ABERTURA + r'\[end of your turn\](.+?)' + LOOKAHEAD_DELIM),
+        ('on_block',      ABERTURA + r'\[on block\](.+?)' + LOOKAHEAD_DELIM),
+        ('main',          ABERTURA + r'\[main\](.+?)' + LOOKAHEAD_DELIM),
     ]
+
+    # Mapa tag-formal -> trigger_name, usado para resolver pares "[TAG1]/[TAG2]"
+    NOME_PARA_TRIGGER = {
+        'on play': 'on_play', 'activate main': 'activate_main', 'activate: main': 'activate_main',
+        'activate:main': 'activate_main', 'when attacking': 'when_attacking', 'on k.o.': 'on_ko',
+        'your turn': 'your_turn', "opponent's turn": 'opp_turn', 'trigger': 'trigger',
+        'counter': 'counter', 'end of your turn': 'end_of_turn', 'on block': 'on_block', 'main': 'main',
+    }
+
+    def par_de_barra(pos_inicio_tag1):
+        """
+        Se a tag que comeca em pos_inicio_tag1 (ex: '[on play]') e seguida,
+        logo apos o ']', por um '/' e outra tag '[...]' (ex: '[on play]/[when
+        attacking]' ou '[on play] / [when attacking]'), retorna o
+        trigger_name da segunda tag. Senao retorna None.
+        """
+        m = re.match(r'\[([a-z0-9 .:\'!]+?)\]\s*/\s*\[([a-z0-9 .:\'!]+?)\]', t_low[pos_inicio_tag1:pos_inicio_tag1+80])
+        if not m:
+            return None
+        nome2 = m.group(2).strip()
+        return NOME_PARA_TRIGGER.get(nome2)
 
     for trigger_name, pattern in trigger_patterns:
         m = re.search(pattern, t_low, re.DOTALL | re.IGNORECASE)
@@ -685,6 +976,34 @@ def parse_card_effect(card_text, card_type):
 
         result[trigger_name] = entry
 
+        # "[TAG1]/[TAG2] efeito" -- mesmo efeito jogavel em dois triggers
+        # diferentes (ex: On Play/When Attacking, Main/Counter). Duplica o
+        # MESMO entry (copia, nao referencia) pro segundo trigger.
+        par = par_de_barra(trigger_pos)
+        if par and par != trigger_name and par not in result:
+            result[par] = json.loads(json.dumps(entry))
+
+    # Fallback: texto sem NENHUM trigger formal da lista (ex: apenas
+    # "[Once Per Turn] If this Character would be K.O.'d... instead." ou
+    # "[Once Per Turn] When a [Trigger] activates, draw..."). O "quando" do
+    # efeito esta escrito em prosa (if/when), nao numa tag formal -- trata-se
+    # como passive (efeito sempre vigiando), preservando once_per_turn.
+    if not result:
+        sem_tags_de_trigger = not re.search(r'\[(?:' + TODAS_TAGS + r')\]', t_low)
+        if sem_tags_de_trigger:
+            fallback_steps = parse_block(t_low, 'passive')
+            if fallback_steps:
+                entry = {'steps': fallback_steps}
+                conds = parse_conditions(t_low)
+                costs = parse_costs(t_low)
+                if conds:
+                    entry['conditions'] = conds
+                if costs:
+                    entry['costs'] = costs
+                if '[once per turn]' in t_low:
+                    entry['once_per_turn'] = True
+                result['passive'] = entry
+
     # Keywords — distinguir NATIVA (sempre ligada) de CONDICIONAL a [DON!! ×N].
     # Ex: "[DON!! x1] This Character gains [Blocker]" -> blocker só com 1 DON anexado.
     def keyword_don_req(keyword_tag):
@@ -723,6 +1042,16 @@ def parse_card_effect(card_text, card_type):
     if cond_keywords:
         # keywords condicionais a DON ficam separadas, com seu requisito
         result['don_conditional_keywords'] = {'steps': cond_keywords}
+
+    # "Your [On Play] effects are negated" passivo (sem trigger explicito,
+    # texto solto fora de qualquer bloco [X]). Distinto do caso "your
+    # opponent's [On Play] effects are negated" (que vem dentro de um
+    # trigger como [Activate: Main] e ja e capturado no loop principal).
+    if re.search(r"^your \[on play\] effects are negated", t_low.strip()) or \
+       re.search(r"[.\n]\s*your \[on play\] effects are negated", t_low):
+        if 'passive' not in result:
+            result['passive'] = {'steps': []}
+        result['passive']['steps'].append({'action': 'negate_on_play_effects', 'target': 'self', 'duration': 'permanent'})
 
     # Your Turn passivo de poder (sem trigger explicito)
     your_turn_power = re.search(r'\[your turn\].{0,60}\+(\d+)\s*power', t_low)

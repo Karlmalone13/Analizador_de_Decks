@@ -52,7 +52,7 @@
    {
     "action": "debuff_power",
     "trigger": "on_play",
-    "target": "leader_or_character"
+    "target": "opp_leader_or_character"
    },
    {
     "action": "give_don_opp",
@@ -292,7 +292,12 @@
   "life": 0,
   "color": "Red",
   "sub_types": "Giant Whitebeard Pirates Allies",
-  "effects": [],
+  "effects": [
+   {
+    "action": "substitute_ko",
+    "trigger": "passive"
+   }
+  ],
   "synergy_states": {},
   "text": "[Once Per Turn] If this Character would be K.O.'d by an effect, you may trash 1 Event or Stage card from your hand instead.",
   "is_searcher": false,
@@ -467,6 +472,10 @@
   "color": "Green",
   "sub_types": "Beautiful Pirates Supernovas",
   "effects": [
+   {
+    "action": "set_don_active",
+    "trigger": "on_play"
+   },
    {
     "action": "set_don_active",
     "trigger": "when_attacking"
@@ -764,7 +773,7 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "leader"
+    "target": "leader_or_character"
    }
   ],
   "synergy_states": {},
@@ -961,7 +970,13 @@
   "life": 0,
   "color": "Blue",
   "sub_types": "Animal Kingdom Pirates SMILE",
-  "effects": [],
+  "effects": [
+   {
+    "action": "buff_power",
+    "trigger": "passive",
+    "target": "self"
+   }
+  ],
   "synergy_states": {},
   "text": "If you have 4 or less cards in your hand, all of your [SMILE] type Characters gain +1000 power.",
   "is_searcher": false,
@@ -974,7 +989,7 @@
   "rests_opponent": false,
   "bounces": false,
   "gives_don": false,
-  "power_buff": false,
+  "power_buff": true,
   "heals": false,
   "gains_life": false,
   "attacks_life": false,
@@ -1106,7 +1121,7 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "leader"
+    "target": "leader_or_character"
    }
   ],
   "synergy_states": {
@@ -1384,7 +1399,7 @@
    {
     "action": "buff_power",
     "trigger": "on_play",
-    "target": "leader"
+    "target": "leader_or_character"
    },
    {
     "action": "play_card",
@@ -1470,7 +1485,14 @@
   "life": 0,
   "color": "Purple",
   "sub_types": "Baroque Works",
-  "effects": [],
+  "effects": [
+   {
+    "action": "ko",
+    "trigger": "passive",
+    "cost_lte": 2,
+    "target": "opp_character"
+   }
+  ],
   "synergy_states": {},
   "text": "[On Your Opponent's Attack] [Once Per Turn] DON!! -1 (You may return the specified number of DON!! cards from your field to your DON!! deck.): K.O. up to 1 of your opponent's Characters with a cost of 2 or less.",
   "is_searcher": false,
@@ -1478,8 +1500,8 @@
   "has_counter_value": true,
   "has_counter_event": false,
   "is_blocker": false,
-  "is_removal": false,
-  "kos": false,
+  "is_removal": true,
+  "kos": true,
   "rests_opponent": false,
   "bounces": false,
   "gives_don": false,
@@ -1707,7 +1729,13 @@
   "life": 0,
   "color": "Black",
   "sub_types": "CP9",
-  "effects": [],
+  "effects": [
+   {
+    "action": "play_from_trash",
+    "trigger": "on_play",
+    "cost_lte": 99
+   }
+  ],
   "synergy_states": {},
   "text": "[On Play] You may place 3 cards with a type including \"CP\" from your trash at the bottom of your deck in any order: Play up to 1 Character card with a type including \"CP\" and a cost of 4 or less other than [Spandine] from your trash rested.",
   "is_searcher": false,
@@ -1779,7 +1807,12 @@
   "life": 0,
   "color": "Black",
   "sub_types": "Rumbar Pirates",
-  "effects": [],
+  "effects": [
+   {
+    "action": "gain_rush",
+    "trigger": "on_play"
+   }
+  ],
   "synergy_states": {},
   "text": "[On Play] If your opponent has a Character with a cost of 0, this Character gains [Rush] during this turn. (This card can attack on the turn in which it is played.)",
   "is_searcher": false,
@@ -1797,7 +1830,7 @@
   "gains_life": false,
   "attacks_life": false,
   "trashes_own_life": false,
-  "has_rush": false,
+  "has_rush": true,
   "has_double_attack": false,
   "has_unblockable": false,
   "has_banish": false,
@@ -1813,6 +1846,16 @@
   "color": "Black",
   "sub_types": "Straw Hat Crew",
   "effects": [
+   {
+    "action": "ko",
+    "trigger": "on_play",
+    "target": "opp_character"
+   },
+   {
+    "action": "debuff_cost",
+    "trigger": "on_play",
+    "target": "opp_character"
+   },
    {
     "action": "ko",
     "trigger": "when_attacking",
@@ -1856,11 +1899,16 @@
   "life": 0,
   "color": "Black",
   "sub_types": "Animal",
-  "effects": [],
+  "effects": [
+   {
+    "action": "draw",
+    "trigger": "passive"
+   }
+  ],
   "synergy_states": {},
   "text": "[Once Per Turn] When a Character is K.O.'d, draw 1 card and trash 1 card from your hand.",
   "is_searcher": false,
-  "draws": false,
+  "draws": true,
   "has_counter_value": false,
   "has_counter_event": false,
   "is_blocker": false,
@@ -2088,7 +2136,7 @@
    {
     "action": "debuff_power",
     "trigger": "trigger",
-    "target": "opp_leader"
+    "target": "opp_leader_or_character"
    }
   ],
   "synergy_states": {
@@ -2618,6 +2666,11 @@
     "action": "buff_power",
     "trigger": "your_turn",
     "target": "self"
+   },
+   {
+    "action": "buff_power",
+    "trigger": "opp_turn",
+    "target": "self"
    }
   ],
   "synergy_states": {},
@@ -2842,7 +2895,7 @@
    {
     "action": "buff_power",
     "trigger": "activate_main",
-    "target": "opp_character"
+    "target": "self"
    },
    {
     "action": "set_don_active",
@@ -3042,7 +3095,7 @@
     "trigger": "on_play"
    },
    {
-    "action": "lock_opp_don",
+    "action": "lock_opp_character_refresh",
     "trigger": "on_play"
    }
   ],
@@ -3169,6 +3222,10 @@
   "color": "Green",
   "sub_types": "Buggy Pirates East Blue",
   "effects": [
+   {
+    "action": "gain_double_attack",
+    "trigger": "on_play"
+   },
    {
     "action": "rest_opp_character",
     "trigger": "trigger",
@@ -3329,6 +3386,10 @@
     "action": "buff_power",
     "trigger": "main",
     "target": "self"
+   },
+   {
+    "action": "lock_opp_don",
+    "trigger": "main"
    }
   ],
   "synergy_states": {
@@ -4012,6 +4073,10 @@
   "effects": [
    {
     "action": "add_don",
+    "trigger": "on_play"
+   },
+   {
+    "action": "add_don",
     "trigger": "when_attacking"
    }
   ],
@@ -4086,7 +4151,18 @@
   "life": 0,
   "color": "Purple",
   "sub_types": "The Vinsmoke Family GERMA 66",
-  "effects": [],
+  "effects": [
+   {
+    "action": "buff_power",
+    "trigger": "main",
+    "target": "self"
+   },
+   {
+    "action": "play_from_trash",
+    "trigger": "main",
+    "cost_lte": 99
+   }
+  ],
   "synergy_states": {},
   "text": "[Main] You may trash 1 \"GERMA 66\" type Character card with 4000 power or less from your hand: If the number of DON!! cards on your field is equal to or less than the number on your opponent's field, play up to 1 Character card with 5000 to 7000 power and the same card name as the trashed card from your trash.",
   "is_searcher": false,
@@ -4099,7 +4175,7 @@
   "rests_opponent": false,
   "bounces": false,
   "gives_don": false,
-  "power_buff": false,
+  "power_buff": true,
   "heals": false,
   "gains_life": false,
   "attacks_life": false,
@@ -4396,7 +4472,13 @@
   "life": 0,
   "color": "Black",
   "sub_types": "CP9",
-  "effects": [],
+  "effects": [
+   {
+    "action": "play_from_trash",
+    "trigger": "activate_main",
+    "cost_lte": 99
+   }
+  ],
   "synergy_states": {},
   "text": "[Activate: Main] You may trash 1 card from your hand and trash this Character: Play up to 1 Character card with a type including \"CP\" and a cost of 5 or less other than [Blueno] from your trash.",
   "is_searcher": false,
@@ -4469,14 +4551,7 @@
   "sub_types": "Navy",
   "effects": [
    {
-    "action": "ko",
-    "trigger": "on_play",
-    "cost_lte": 1,
-    "rested_only": true,
-    "target": "opp_character"
-   },
-   {
-    "action": "give_don_opp",
+    "action": "give_don",
     "trigger": "on_play"
    },
    {
@@ -4497,7 +4572,7 @@
   "kos": true,
   "rests_opponent": false,
   "bounces": false,
-  "gives_don": false,
+  "gives_don": true,
   "power_buff": false,
   "heals": false,
   "gains_life": false,
@@ -4944,7 +5019,7 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "leader"
+    "target": "leader_or_character"
    },
    {
     "action": "play_card",
@@ -4988,7 +5063,7 @@
    {
     "action": "buff_power",
     "trigger": "activate_main",
-    "target": "opp_character"
+    "target": "self"
    }
   ],
   "synergy_states": {},
@@ -5147,8 +5222,13 @@
   "sub_types": "Alabasta",
   "effects": [
    {
+    "action": "debuff_power",
+    "trigger": "activate_main",
+    "target": "opp_character"
+   },
+   {
     "action": "gain_rush",
-    "trigger": "when_attacking"
+    "trigger": "activate_main"
    }
   ],
   "synergy_states": {},
@@ -5263,7 +5343,7 @@
    {
     "action": "buff_power",
     "trigger": "opp_turn",
-    "target": "leader"
+    "target": "self"
    },
    {
     "action": "keyword_blocker",
@@ -5345,6 +5425,11 @@
    {
     "action": "draw",
     "trigger": "on_play"
+   },
+   {
+    "action": "debuff_power",
+    "trigger": "activate_main",
+    "target": "opp_character"
    }
   ],
   "synergy_states": {},
@@ -5422,7 +5507,13 @@
   "life": 0,
   "color": "Red",
   "sub_types": "Navy SWORD",
-  "effects": [],
+  "effects": [
+   {
+    "action": "debuff_power",
+    "trigger": "activate_main",
+    "target": "opp_character"
+   }
+  ],
   "synergy_states": {},
   "text": "[On Play]/[When Attacking] Up to 1 of your {SWORD} type Leader or Character cards can also attack active Characters during this turn.\n[Activate: Main] [Once Per Turn] Give up to 1 of your opponent's Characters 1000 power during this turn.",
   "is_searcher": false,
@@ -5547,9 +5638,14 @@
   "sub_types": "Alabasta",
   "effects": [
    {
+    "action": "debuff_power",
+    "trigger": "trigger",
+    "target": "opp_character"
+   },
+   {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "leader"
+    "target": "leader_or_character"
    }
   ],
   "synergy_states": {
@@ -5578,7 +5674,7 @@
   "has_double_attack": false,
   "has_unblockable": false,
   "has_banish": false,
-  "has_trigger": false
+  "has_trigger": true
  },
  "EB03-012": {
   "name": "Otama",
@@ -5766,10 +5862,6 @@
    },
    {
     "action": "give_don",
-    "trigger": "on_play"
-   },
-   {
-    "action": "give_don",
     "trigger": "activate_main"
    }
   ],
@@ -5931,7 +6023,12 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "leader"
+    "target": "leader_or_character"
+   },
+   {
+    "action": "buff_power",
+    "trigger": "counter",
+    "target": "self"
    }
   ],
   "synergy_states": {},
@@ -6236,10 +6333,6 @@
   "color": "Blue",
   "sub_types": "East Blue",
   "effects": [
-   {
-    "action": "draw",
-    "trigger": "on_play"
-   },
    {
     "action": "trash_from_hand",
     "trigger": "on_play"
@@ -6693,6 +6786,11 @@
     "trigger": "on_play"
    },
    {
+    "action": "play_from_trash",
+    "trigger": "on_play",
+    "cost_lte": 99
+   },
+   {
     "action": "trash_from_hand",
     "trigger": "on_play"
    }
@@ -6809,6 +6907,11 @@
    {
     "action": "play_card",
     "trigger": "on_ko",
+    "cost_lte": 6
+   },
+   {
+    "action": "play_card",
+    "trigger": "opp_turn",
     "cost_lte": 6
    }
   ],
@@ -7157,6 +7260,10 @@
   "sub_types": "1000",
   "effects": [
    {
+    "action": "gain_double_attack",
+    "trigger": "on_play"
+   },
+   {
     "action": "keyword_double_attack",
     "trigger": "passive"
    }
@@ -7237,7 +7344,7 @@
    {
     "action": "buff_power",
     "trigger": "activate_main",
-    "target": "all_allies_and_leader"
+    "target": "self"
    }
   ],
   "synergy_states": {
@@ -7497,6 +7604,10 @@
     "trigger": "on_play"
    },
    {
+    "action": "draw",
+    "trigger": "your_turn"
+   },
+   {
     "action": "play_card",
     "trigger": "trigger"
    }
@@ -7538,7 +7649,12 @@
   "life": 0,
   "color": "Yellow",
   "sub_types": "Egghead Seraphim",
-  "effects": [],
+  "effects": [
+   {
+    "action": "gain_life",
+    "trigger": "on_play"
+   }
+  ],
   "synergy_states": {
    "vida_ganha": {
     "creates": true,
@@ -7730,7 +7846,7 @@
    {
     "action": "buff_power",
     "trigger": "opp_turn",
-    "target": "opp_character"
+    "target": "self"
    }
   ],
   "synergy_states": {},
@@ -8048,7 +8164,7 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "self"
+    "target": "own_character"
    },
    {
     "action": "debuff_power",
@@ -8552,10 +8668,6 @@
     "trigger": "on_play"
    },
    {
-    "action": "give_don",
-    "trigger": "on_play"
-   },
-   {
     "action": "trash_from_hand",
     "trigger": "on_play"
    },
@@ -8602,6 +8714,12 @@
     "trigger": "on_play"
    },
    {
+    "action": "debuff_power",
+    "trigger": "when_attacking",
+    "don_requirement": 1,
+    "target": "opp_character"
+   },
+   {
     "action": "trash_from_hand",
     "trigger": "when_attacking",
     "don_requirement": 1
@@ -8643,11 +8761,6 @@
    {
     "action": "draw",
     "trigger": "on_play"
-   },
-   {
-    "action": "debuff_power",
-    "trigger": "on_play",
-    "target": "self"
    },
    {
     "action": "keyword_double_attack",
@@ -9034,10 +9147,6 @@
    },
    {
     "action": "add_don",
-    "trigger": "on_play"
-   },
-   {
-    "action": "add_don",
     "trigger": "activate_main"
    }
   ],
@@ -9204,10 +9313,6 @@
     "trigger": "on_play"
    },
    {
-    "action": "add_don",
-    "trigger": "on_play"
-   },
-   {
     "action": "trash_from_hand",
     "trigger": "on_play"
    },
@@ -9347,11 +9452,6 @@
   "sub_types": "Kid Pirates Supernovas",
   "effects": [
    {
-    "action": "play_card",
-    "trigger": "on_play",
-    "cost_lte": 5
-   },
-   {
     "action": "add_don",
     "trigger": "on_play"
    },
@@ -9406,7 +9506,7 @@
    {
     "action": "buff_power",
     "trigger": "main",
-    "target": "opp_character"
+    "target": "self"
    }
   ],
   "synergy_states": {
@@ -9844,7 +9944,7 @@
    {
     "action": "debuff_power",
     "trigger": "trigger",
-    "target": "opp_character"
+    "target": "all_opp_characters"
    },
    {
     "action": "play_card",
@@ -10291,6 +10391,10 @@
     "target": "leader"
    },
    {
+    "action": "gain_blocker",
+    "trigger": "on_play"
+   },
+   {
     "action": "trash_from_hand",
     "trigger": "on_play"
    },
@@ -10600,7 +10704,12 @@
   "life": 0,
   "color": "Red",
   "sub_types": "Beautiful Pirates Supernovas",
-  "effects": [],
+  "effects": [
+   {
+    "action": "gain_rush",
+    "trigger": "on_play"
+   }
+  ],
   "synergy_states": {},
   "text": "[On Play] You may add 1 card from your Life area to your hand: This Character gains [Rush] during this turn. (This card can attack on the turn in which it is played.)",
   "is_searcher": false,
@@ -10618,7 +10727,7 @@
   "gains_life": false,
   "attacks_life": false,
   "trashes_own_life": false,
-  "has_rush": false,
+  "has_rush": true,
   "has_double_attack": false,
   "has_unblockable": false,
   "has_banish": false,
@@ -11076,7 +11185,7 @@
    {
     "action": "buff_power",
     "trigger": "activate_main",
-    "target": "leader"
+    "target": "leader_or_character"
    }
   ],
   "synergy_states": {},
@@ -11292,7 +11401,7 @@
    {
     "action": "debuff_power",
     "trigger": "trigger",
-    "target": "opp_leader"
+    "target": "opp_leader_or_character"
    },
    {
     "action": "ko",
@@ -11303,7 +11412,7 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "leader"
+    "target": "leader_or_character"
    }
   ],
   "synergy_states": {
@@ -11390,7 +11499,7 @@
    {
     "action": "debuff_power",
     "trigger": "counter",
-    "target": "opp_leader"
+    "target": "opp_leader_or_character"
    }
   ],
   "synergy_states": {
@@ -11434,7 +11543,12 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "leader"
+    "target": "leader_or_character"
+   },
+   {
+    "action": "buff_power",
+    "trigger": "counter",
+    "target": "self"
    }
   ],
   "synergy_states": {},
@@ -11562,7 +11676,13 @@
   "life": 0,
   "color": "Green",
   "sub_types": "Land of Wano The Akazaya Nine",
-  "effects": [],
+  "effects": [
+   {
+    "action": "buff_power",
+    "trigger": "passive",
+    "target": "self"
+   }
+  ],
   "synergy_states": {
    "char_restado": {
     "creates": false,
@@ -11580,7 +11700,7 @@
   "rests_opponent": false,
   "bounces": false,
   "gives_don": false,
-  "power_buff": false,
+  "power_buff": true,
   "heals": false,
   "gains_life": false,
   "attacks_life": false,
@@ -12318,12 +12438,6 @@
     "action": "play_card",
     "trigger": "activate_main",
     "cost_lte": 3
-   },
-   {
-    "action": "play_card",
-    "trigger": "opp_turn",
-    "don_requirement": 1,
-    "cost_lte": 3
    }
   ],
   "synergy_states": {
@@ -12580,7 +12694,7 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "leader"
+    "target": "leader_or_character"
    }
   ],
   "synergy_states": {
@@ -12637,7 +12751,7 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "leader"
+    "target": "leader_or_character"
    }
   ],
   "synergy_states": {
@@ -12786,11 +12900,16 @@
   "life": 4,
   "color": "Blue Purple",
   "sub_types": "Baroque Works The Seven Warlords of the Sea",
-  "effects": [],
+  "effects": [
+   {
+    "action": "draw",
+    "trigger": "passive"
+   }
+  ],
   "synergy_states": {},
   "text": "[DON!! x1] When you activate an Event, you may draw 1 card if you have 4 or less cards in your hand and haven't drawn a card using this Leader's effect during this turn.",
   "is_searcher": false,
-  "draws": false,
+  "draws": true,
   "has_counter_value": false,
   "has_counter_event": false,
   "is_blocker": false,
@@ -13728,7 +13847,7 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "leader"
+    "target": "leader_or_character"
    }
   ],
   "synergy_states": {
@@ -13817,7 +13936,7 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "leader"
+    "target": "leader_or_character"
    }
   ],
   "synergy_states": {},
@@ -13935,7 +14054,7 @@
    {
     "action": "debuff_power",
     "trigger": "your_turn",
-    "target": "opp_character"
+    "target": "all_opp_characters"
    }
   ],
   "synergy_states": {},
@@ -14152,7 +14271,17 @@
   "life": 0,
   "color": "Purple",
   "sub_types": "Animal Kingdom Pirates",
-  "effects": [],
+  "effects": [
+   {
+    "action": "debuff_power",
+    "trigger": "on_play",
+    "target": "opp_character"
+   },
+   {
+    "action": "gain_rush",
+    "trigger": "on_play"
+   }
+  ],
   "synergy_states": {},
   "text": "[On Play] DON!! -1 (You may return the specified number of DON!! cards from your field to your DON!! deck.): This Character gains [Rush] during this turn. Then, give up to 1 of your opponent's Characters -2000 power during this turn. (This card can attack on the turn in which it is played.)  This card has been officially errata'd.",
   "is_searcher": false,
@@ -14170,7 +14299,7 @@
   "gains_life": false,
   "attacks_life": false,
   "trashes_own_life": false,
-  "has_rush": false,
+  "has_rush": true,
   "has_double_attack": false,
   "has_unblockable": false,
   "has_banish": false,
@@ -14976,7 +15105,7 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "leader"
+    "target": "leader_or_character"
    }
   ],
   "synergy_states": {
@@ -15024,7 +15153,7 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "leader"
+    "target": "leader_or_character"
    },
    {
     "action": "add_don",
@@ -15590,6 +15719,10 @@
     "action": "debuff_power",
     "trigger": "on_play",
     "target": "opp_character"
+   },
+   {
+    "action": "gain_rush",
+    "trigger": "on_play"
    }
   ],
   "synergy_states": {},
@@ -15609,7 +15742,7 @@
   "gains_life": false,
   "attacks_life": false,
   "trashes_own_life": false,
-  "has_rush": false,
+  "has_rush": true,
   "has_double_attack": false,
   "has_unblockable": false,
   "has_banish": false,
@@ -15891,7 +16024,7 @@
    {
     "action": "debuff_power",
     "trigger": "trigger",
-    "target": "opp_leader"
+    "target": "opp_leader_or_character"
    },
    {
     "action": "ko",
@@ -16117,7 +16250,12 @@
   "life": 4,
   "color": "Blue Green",
   "sub_types": "Straw Hat Crew",
-  "effects": [],
+  "effects": [
+   {
+    "action": "set_don_active",
+    "trigger": "passive"
+   }
+  ],
   "synergy_states": {},
   "text": "[Once Per Turn] When you play a Character with no base effect from your hand, if you have 3 or less Characters, set up to 2 of your DON!! cards as active.",
   "is_searcher": false,
@@ -16436,7 +16574,13 @@
   "life": 0,
   "color": "Green",
   "sub_types": "Film Heart Pirates Supernovas",
-  "effects": [],
+  "effects": [
+   {
+    "action": "bounce",
+    "trigger": "activate_main",
+    "target": "self"
+   }
+  ],
   "synergy_states": {},
   "text": "[Activate:Main] (1) (You may rest the specified number of DON!! cards in your cost area.) You may return this Character to the owner's hand: Play up to 1 Character with a cost of 3 from your hand.",
   "is_searcher": false,
@@ -16444,10 +16588,10 @@
   "has_counter_value": true,
   "has_counter_event": false,
   "is_blocker": false,
-  "is_removal": false,
+  "is_removal": true,
   "kos": false,
   "rests_opponent": false,
-  "bounces": false,
+  "bounces": true,
   "gives_don": false,
   "power_buff": false,
   "heals": false,
@@ -16470,6 +16614,18 @@
   "color": "Green",
   "sub_types": "Film Straw Hat Crew",
   "effects": [
+   {
+    "action": "look_top_deck",
+    "trigger": "on_play"
+   },
+   {
+    "action": "add_to_hand",
+    "trigger": "on_play"
+   },
+   {
+    "action": "deck_bottom_rest",
+    "trigger": "on_play"
+   },
    {
     "action": "look_top_deck",
     "trigger": "when_attacking"
@@ -16831,7 +16987,7 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "leader"
+    "target": "leader_or_character"
    },
    {
     "action": "play_card",
@@ -17543,6 +17699,14 @@
   "effects": [
    {
     "action": "gain_double_attack",
+    "trigger": "on_play"
+   },
+   {
+    "action": "trash_from_hand",
+    "trigger": "on_play"
+   },
+   {
+    "action": "gain_double_attack",
     "trigger": "when_attacking"
    },
    {
@@ -17795,7 +17959,7 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "leader"
+    "target": "leader_or_character"
    }
   ],
   "synergy_states": {
@@ -17839,7 +18003,7 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "leader"
+    "target": "leader_or_character"
    }
   ],
   "synergy_states": {
@@ -17966,7 +18130,7 @@
    {
     "action": "buff_power",
     "trigger": "when_attacking",
-    "target": "opp_character"
+    "target": "self"
    }
   ],
   "synergy_states": {},
@@ -18620,7 +18784,7 @@
    {
     "action": "debuff_power",
     "trigger": "counter",
-    "target": "opp_leader"
+    "target": "opp_leader_or_character"
    }
   ],
   "synergy_states": {
@@ -18798,7 +18962,7 @@
     "action": "buff_power",
     "trigger": "activate_main",
     "don_requirement": 1,
-    "target": "opp_character"
+    "target": "self"
    },
    {
     "action": "debuff_cost",
@@ -19526,7 +19690,7 @@
    {
     "action": "buff_power",
     "trigger": "activate_main",
-    "target": "leader"
+    "target": "leader_or_character"
    },
    {
     "action": "debuff_cost",
@@ -19962,7 +20126,13 @@
   "life": 5,
   "color": "Red",
   "sub_types": "Whitebeard Pirates",
-  "effects": [],
+  "effects": [
+   {
+    "action": "buff_power",
+    "trigger": "passive",
+    "target": "self"
+   }
+  ],
   "synergy_states": {},
   "text": "When this Leader attacks or is attacked, you may trash any number of Event or Stage cards from your hand. This Leader gains +1000 power during this battle for every card trashed.",
   "is_searcher": false,
@@ -19975,7 +20145,7 @@
   "rests_opponent": false,
   "bounces": false,
   "gives_don": false,
-  "power_buff": false,
+  "power_buff": true,
   "heals": false,
   "gains_life": false,
   "attacks_life": false,
@@ -20433,6 +20603,12 @@
     "trigger": "on_play",
     "power_lte": 3000,
     "target": "opp_character"
+   },
+   {
+    "action": "ko",
+    "trigger": "your_turn",
+    "power_lte": 3000,
+    "target": "opp_character"
    }
   ],
   "synergy_states": {},
@@ -20615,6 +20791,11 @@
    },
    {
     "action": "debuff_power",
+    "trigger": "main",
+    "target": "opp_character"
+   },
+   {
+    "action": "debuff_power",
     "trigger": "counter",
     "target": "opp_character"
    }
@@ -20711,7 +20892,7 @@
    {
     "action": "debuff_power",
     "trigger": "trigger",
-    "target": "opp_leader"
+    "target": "opp_leader_or_character"
    },
    {
     "action": "buff_power",
@@ -20968,6 +21149,10 @@
     "cost_lte": 4,
     "rested_only": true,
     "target": "opp_character"
+   },
+   {
+    "action": "gain_double_attack",
+    "trigger": "on_play"
    },
    {
     "action": "trash_from_hand",
@@ -21612,7 +21797,7 @@
    {
     "action": "buff_power",
     "trigger": "main",
-    "target": "opp_character"
+    "target": "own_character"
    }
   ],
   "synergy_states": {
@@ -22122,7 +22307,13 @@
   "life": 0,
   "color": "Blue",
   "sub_types": "East Blue",
-  "effects": [],
+  "effects": [
+   {
+    "action": "buff_power",
+    "trigger": "passive",
+    "target": "self"
+   }
+  ],
   "synergy_states": {},
   "text": "[DON!! x1] If you have 20 or less cards in your deck, this Character gains +2000 power.",
   "is_searcher": false,
@@ -22135,7 +22326,7 @@
   "rests_opponent": false,
   "bounces": false,
   "gives_don": false,
-  "power_buff": false,
+  "power_buff": true,
   "heals": false,
   "gains_life": false,
   "attacks_life": false,
@@ -22163,7 +22354,7 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "leader"
+    "target": "leader_or_character"
    }
   ],
   "synergy_states": {
@@ -22811,7 +23002,12 @@
   "life": 0,
   "color": "Purple",
   "sub_types": "Straw Hat Crew Water Seven",
-  "effects": [],
+  "effects": [
+   {
+    "action": "gain_rush",
+    "trigger": "on_play"
+   }
+  ],
   "synergy_states": {},
   "text": "[On Play] DON!! -1 (You may return the specified number of DON!! cards from your field to your DON!! deck.) You may trash 1 Character card with a cost of 5 from your hand: This Character gains [Rush] during this turn. (This card can attack on the turn in which it is played.)",
   "is_searcher": false,
@@ -22829,7 +23025,7 @@
   "gains_life": false,
   "attacks_life": false,
   "trashes_own_life": false,
-  "has_rush": false,
+  "has_rush": true,
   "has_double_attack": false,
   "has_unblockable": false,
   "has_banish": false,
@@ -22896,7 +23092,7 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "leader"
+    "target": "leader_or_character"
    }
   ],
   "synergy_states": {
@@ -23613,6 +23809,11 @@
   "sub_types": "CP9",
   "effects": [
    {
+    "action": "play_from_trash",
+    "trigger": "on_ko",
+    "cost_lte": 99
+   },
+   {
     "action": "keyword_blocker",
     "trigger": "don_conditional_keywords"
    }
@@ -23682,7 +23883,12 @@
   "life": 0,
   "color": "Black",
   "sub_types": "CP9",
-  "effects": [],
+  "effects": [
+   {
+    "action": "gain_rush",
+    "trigger": "on_play"
+   }
+  ],
   "synergy_states": {},
   "text": "[On Play] You may place 2 cards with a type including \"CP\" from your trash at the bottom of your deck in any order: This Character gains [Rush] during this turn. (This card can attack on the turn in which it is played.)",
   "is_searcher": false,
@@ -23700,7 +23906,7 @@
   "gains_life": false,
   "attacks_life": false,
   "trashes_own_life": false,
-  "has_rush": false,
+  "has_rush": true,
   "has_double_attack": false,
   "has_unblockable": false,
   "has_banish": false,
@@ -23921,7 +24127,7 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "leader"
+    "target": "leader_or_character"
    }
   ],
   "synergy_states": {
@@ -24014,7 +24220,7 @@
     "action": "buff_power",
     "trigger": "when_attacking",
     "don_requirement": 1,
-    "target": "opp_character"
+    "target": "self"
    }
   ],
   "synergy_states": {},
@@ -24243,7 +24449,8 @@
   "effects": [
    {
     "action": "buff_power",
-    "trigger": "trigger",
+    "trigger": "when_attacking",
+    "don_requirement": 1,
     "target": "self"
    }
   ],
@@ -24273,7 +24480,7 @@
   "has_double_attack": false,
   "has_unblockable": false,
   "has_banish": false,
-  "has_trigger": true
+  "has_trigger": false
  },
  "OP03-106": {
   "name": "Charlotte Opera",
@@ -24663,7 +24870,7 @@
   "effects": [
    {
     "action": "ko",
-    "trigger": "trigger",
+    "trigger": "on_play",
     "cost_lte": 1,
     "target": "opp_character"
    }
@@ -24694,7 +24901,7 @@
   "has_double_attack": false,
   "has_unblockable": false,
   "has_banish": false,
-  "has_trigger": true
+  "has_trigger": false
  },
  "OP03-116": {
   "name": "Shirahoshi",
@@ -24808,7 +25015,7 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "leader"
+    "target": "leader_or_character"
    }
   ],
   "synergy_states": {
@@ -25129,11 +25336,6 @@
    {
     "action": "deck_bottom_rest",
     "trigger": "activate_main"
-   },
-   {
-    "action": "debuff_power",
-    "trigger": "activate_main",
-    "target": "self"
    }
   ],
   "synergy_states": {},
@@ -25286,7 +25488,7 @@
   "sub_types": "Alabasta",
   "effects": [
    {
-    "action": "debuff_power",
+    "action": "buff_power",
     "trigger": "when_attacking",
     "target": "self"
    }
@@ -25303,7 +25505,7 @@
   "rests_opponent": false,
   "bounces": false,
   "gives_don": false,
-  "power_buff": false,
+  "power_buff": true,
   "heals": false,
   "gains_life": false,
   "attacks_life": false,
@@ -25405,7 +25607,7 @@
   "sub_types": "Animal Alabasta",
   "effects": [
    {
-    "action": "debuff_power",
+    "action": "bounce",
     "trigger": "when_attacking",
     "target": "self"
    }
@@ -25417,10 +25619,10 @@
   "has_counter_value": true,
   "has_counter_event": false,
   "is_blocker": false,
-  "is_removal": false,
+  "is_removal": true,
   "kos": false,
   "rests_opponent": false,
-  "bounces": false,
+  "bounces": true,
   "gives_don": false,
   "power_buff": false,
   "heals": false,
@@ -25681,12 +25883,12 @@
    {
     "action": "debuff_power",
     "trigger": "trigger",
-    "target": "opp_leader"
+    "target": "opp_leader_or_character"
    },
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "leader"
+    "target": "leader_or_character"
    }
   ],
   "synergy_states": {
@@ -25730,7 +25932,12 @@
    {
     "action": "debuff_power",
     "trigger": "counter",
-    "target": "opp_leader"
+    "target": "opp_leader_or_character"
+   },
+   {
+    "action": "debuff_power",
+    "trigger": "counter",
+    "target": "opp_leader_or_character"
    }
   ],
   "synergy_states": {},
@@ -26054,7 +26261,13 @@
   "life": 0,
   "color": "Green",
   "sub_types": "Donquixote Pirates",
-  "effects": [],
+  "effects": [
+   {
+    "action": "rest_opp_character",
+    "trigger": "passive",
+    "cost_lte": 4
+   }
+  ],
   "synergy_states": {
    "char_restado": {
     "creates": true,
@@ -26067,9 +26280,9 @@
   "has_counter_value": true,
   "has_counter_event": false,
   "is_blocker": false,
-  "is_removal": false,
+  "is_removal": true,
   "kos": false,
-  "rests_opponent": false,
+  "rests_opponent": true,
   "bounces": false,
   "gives_don": false,
   "power_buff": false,
@@ -26300,7 +26513,12 @@
   "life": 0,
   "color": "Green",
   "sub_types": "Donquixote Pirates The Seven Warlords of the Sea",
-  "effects": [],
+  "effects": [
+   {
+    "action": "lock_opp_character_refresh",
+    "trigger": "on_play"
+   }
+  ],
   "synergy_states": {},
   "text": "[On Play] Up to a total of 3 of your opponent's rested Leader and Character cards will not become active in your opponent's next Refresh Phase.",
   "is_searcher": false,
@@ -26474,7 +26692,7 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "leader"
+    "target": "leader_or_character"
    }
   ],
   "synergy_states": {
@@ -26580,7 +26798,7 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "leader"
+    "target": "leader_or_character"
    }
   ],
   "synergy_states": {
@@ -26628,6 +26846,17 @@
    {
     "action": "set_don_active",
     "trigger": "trigger"
+   },
+   {
+    "action": "ko",
+    "trigger": "main",
+    "cost_lte": 6,
+    "rested_only": true,
+    "target": "opp_character"
+   },
+   {
+    "action": "rest_opp_character",
+    "trigger": "main"
    },
    {
     "action": "ko",
@@ -27251,11 +27480,16 @@
   "life": 0,
   "color": "Blue",
   "sub_types": "Animal Kingdom Pirates",
-  "effects": [],
+  "effects": [
+   {
+    "action": "draw",
+    "trigger": "passive"
+   }
+  ],
   "synergy_states": {},
   "text": "[DON!! x1] [Once Per Turn] When you activate an Event, draw 1 card. Then, place 1 card from your hand at the bottom of your deck.",
   "is_searcher": false,
-  "draws": false,
+  "draws": true,
   "has_counter_value": false,
   "has_counter_event": false,
   "is_blocker": false,
@@ -27402,7 +27636,7 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "leader"
+    "target": "leader_or_character"
    }
   ],
   "synergy_states": {
@@ -27640,7 +27874,13 @@
   "life": 0,
   "color": "Purple",
   "sub_types": "Water Seven The Franky Family",
-  "effects": [],
+  "effects": [
+   {
+    "action": "buff_power",
+    "trigger": "passive",
+    "target": "leader_or_character"
+   }
+  ],
   "synergy_states": {},
   "text": "[On Your Opponent's Attack] [Once Per Turn] DON!! -1 (You may return the specified number of DON!! cards from your field to your DON!! deck.): If your Leader has the [Water Seven] type, up to 1 of your Leader or Character cards gains +1000 power during this battle.",
   "is_searcher": false,
@@ -27653,7 +27893,7 @@
   "rests_opponent": false,
   "bounces": false,
   "gives_don": false,
-  "power_buff": false,
+  "power_buff": true,
   "heals": false,
   "gains_life": false,
   "attacks_life": false,
@@ -27950,7 +28190,13 @@
   "life": 0,
   "color": "Purple",
   "sub_types": "Baroque Works",
-  "effects": [],
+  "effects": [
+   {
+    "action": "debuff_power",
+    "trigger": "passive",
+    "target": "opp_character"
+   }
+  ],
   "synergy_states": {},
   "text": "[On Your Opponent's Attack] [Once Per Turn] DON!! -1 (You may return the specified number of DON!! cards from your field to your DON!! deck.): Give up to 1 of your opponent's Characters -1000 power during this turn.",
   "is_searcher": false,
@@ -28021,7 +28267,14 @@
   "life": 0,
   "color": "Purple",
   "sub_types": "Baroque Works",
-  "effects": [],
+  "effects": [
+   {
+    "action": "ko",
+    "trigger": "passive",
+    "cost_lte": 4,
+    "target": "opp_character"
+   }
+  ],
   "synergy_states": {},
   "text": "[On Your Opponent's Attack] [Once Per Turn] DON!! -2 (You may return the specified number of DON!! cards from your field to your DON!! deck.) You may rest this Character: K.O. up to 1 of your opponent's Characters with a cost of 4 or less.",
   "is_searcher": false,
@@ -28029,8 +28282,8 @@
   "has_counter_value": false,
   "has_counter_event": false,
   "is_blocker": false,
-  "is_removal": false,
-  "kos": false,
+  "is_removal": true,
+  "kos": true,
   "rests_opponent": false,
   "bounces": false,
   "gives_don": false,
@@ -28114,7 +28367,7 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "leader"
+    "target": "leader_or_character"
    }
   ],
   "synergy_states": {
@@ -28166,7 +28419,7 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "leader"
+    "target": "leader_or_character"
    },
    {
     "action": "add_don",
@@ -28218,7 +28471,7 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "leader"
+    "target": "leader_or_character"
    }
   ],
   "synergy_states": {
@@ -28581,6 +28834,11 @@
   "effects": [
    {
     "action": "debuff_cost",
+    "trigger": "on_play",
+    "target": "opp_character"
+   },
+   {
+    "action": "debuff_cost",
     "trigger": "when_attacking",
     "target": "opp_character"
    }
@@ -28617,11 +28875,16 @@
   "life": 0,
   "color": "Black",
   "sub_types": "Happosui Army Dressrosa",
-  "effects": [],
+  "effects": [
+   {
+    "action": "draw",
+    "trigger": "passive"
+   }
+  ],
   "synergy_states": {},
   "text": "[DON!! x1] When this Character battles and K.O.'s your opponent's Character, draw 2 cards and trash 2 cards from your hand.",
   "is_searcher": false,
-  "draws": false,
+  "draws": true,
   "has_counter_value": true,
   "has_counter_event": false,
   "is_blocker": false,
@@ -28760,7 +29023,12 @@
   "life": 0,
   "color": "Black",
   "sub_types": "Straw Hat Crew Dressrosa",
-  "effects": [],
+  "effects": [
+   {
+    "action": "lock_opp_don",
+    "trigger": "activate_main"
+   }
+  ],
   "synergy_states": {},
   "text": "This Character can also attack active Characters. [Activate:Main] [Once Per Turn] You may return 7 cards from your trash to the bottom of your deck in any order: Set this Character as active. Then, this Character will not become active in your next Refresh Phase.",
   "is_searcher": false,
@@ -28988,7 +29256,12 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "leader"
+    "target": "leader_or_character"
+   },
+   {
+    "action": "buff_power",
+    "trigger": "counter",
+    "target": "self"
    }
   ],
   "synergy_states": {
@@ -29219,6 +29492,10 @@
     "trigger": "on_play"
    },
    {
+    "action": "draw",
+    "trigger": "your_turn"
+   },
+   {
     "action": "ko",
     "trigger": "trigger",
     "cost_lte": 2,
@@ -29397,7 +29674,7 @@
   "effects": [
    {
     "action": "rest_opp_character",
-    "trigger": "trigger",
+    "trigger": "activate_main",
     "cost_lte": 2
    }
   ],
@@ -29431,7 +29708,7 @@
   "has_double_attack": false,
   "has_unblockable": false,
   "has_banish": false,
-  "has_trigger": true
+  "has_trigger": false
  },
  "OP04-106": {
   "name": "Charlotte Bavarois",
@@ -29813,7 +30090,7 @@
    {
     "action": "buff_power",
     "trigger": "trigger",
-    "target": "leader"
+    "target": "leader_or_character"
    },
    {
     "action": "gain_double_attack",
@@ -29875,7 +30152,7 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "leader"
+    "target": "leader_or_character"
    }
   ],
   "synergy_states": {
@@ -30042,10 +30319,9 @@
   "sub_types": "Revolutionary Army",
   "effects": [
    {
-    "action": "debuff_power",
+    "action": "substitute_ko",
     "trigger": "opp_turn",
-    "don_requirement": 1,
-    "target": "self"
+    "don_requirement": 1
    }
   ],
   "synergy_states": {},
@@ -30083,7 +30359,7 @@
   "effects": [
    {
     "action": "buff_power",
-    "trigger": "trigger",
+    "trigger": "activate_main",
     "target": "self"
    }
   ],
@@ -30113,7 +30389,7 @@
   "has_double_attack": false,
   "has_unblockable": false,
   "has_banish": false,
-  "has_trigger": true
+  "has_trigger": false
  },
  "OP05-003": {
   "name": "Inazuma",
@@ -30200,12 +30476,12 @@
    {
     "action": "debuff_power",
     "trigger": "on_play",
-    "target": "opp_leader"
+    "target": "opp_leader_or_character"
    },
    {
     "action": "debuff_power",
     "trigger": "when_attacking",
-    "target": "opp_leader"
+    "target": "opp_leader_or_character"
    }
   ],
   "synergy_states": {},
@@ -30707,7 +30983,7 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "leader"
+    "target": "leader_or_character"
    },
    {
     "action": "play_card",
@@ -30810,7 +31086,7 @@
    {
     "action": "buff_power",
     "trigger": "trigger",
-    "target": "leader"
+    "target": "leader_or_character"
    },
    {
     "action": "ko",
@@ -30821,7 +31097,7 @@
    {
     "action": "buff_power",
     "trigger": "main",
-    "target": "leader"
+    "target": "leader_or_character"
    }
   ],
   "synergy_states": {
@@ -31197,7 +31473,13 @@
   "life": 0,
   "color": "Green",
   "sub_types": "Donquixote Pirates",
-  "effects": [],
+  "effects": [
+   {
+    "action": "rest_opp_character",
+    "trigger": "passive",
+    "cost_lte": 6
+   }
+  ],
   "synergy_states": {
    "char_restado": {
     "creates": true,
@@ -31210,9 +31492,9 @@
   "has_counter_value": false,
   "has_counter_event": false,
   "is_blocker": false,
-  "is_removal": false,
+  "is_removal": true,
   "kos": false,
-  "rests_opponent": false,
+  "rests_opponent": true,
   "bounces": false,
   "gives_don": false,
   "power_buff": false,
@@ -31524,7 +31806,7 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "leader"
+    "target": "leader_or_character"
    }
   ],
   "synergy_states": {
@@ -31576,7 +31858,7 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "leader"
+    "target": "leader_or_character"
    },
    {
     "action": "set_don_active",
@@ -31642,7 +31924,7 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "leader"
+    "target": "leader_or_character"
    }
   ],
   "synergy_states": {
@@ -32345,7 +32627,7 @@
    {
     "action": "buff_power",
     "trigger": "main",
-    "target": "leader"
+    "target": "leader_or_character"
    }
   ],
   "synergy_states": {
@@ -33074,7 +33356,13 @@
   "life": 0,
   "color": "Purple",
   "sub_types": "Baroque Works",
-  "effects": [],
+  "effects": [
+   {
+    "action": "play_card",
+    "trigger": "passive",
+    "cost_lte": 3
+   }
+  ],
   "synergy_states": {},
   "text": "[On Your Opponent's Attack][Once Per Turn] DON!! -1 (You may return the specified number of DON!! cards from your field to your DON!! deck.): Play up to 1 [Baroque Works] type Character card with a cost of 3 or less from your hand.",
   "is_searcher": false,
@@ -33669,6 +33957,11 @@
   "effects": [
    {
     "action": "buff_power",
+    "trigger": "on_play",
+    "target": "self"
+   },
+   {
+    "action": "buff_power",
     "trigger": "on_ko",
     "target": "self"
    },
@@ -33839,6 +34132,10 @@
     "action": "debuff_cost",
     "trigger": "main",
     "target": "opp_character"
+   },
+   {
+    "action": "lock_opp_don",
+    "trigger": "main"
    }
   ],
   "synergy_states": {
@@ -33888,7 +34185,7 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "leader"
+    "target": "leader_or_character"
    }
   ],
   "synergy_states": {},
@@ -34060,7 +34357,13 @@
   "life": 0,
   "color": "Yellow",
   "sub_types": "Sky Island",
-  "effects": [],
+  "effects": [
+   {
+    "action": "debuff_power",
+    "trigger": "passive",
+    "target": "opp_leader_or_character"
+   }
+  ],
   "synergy_states": {},
   "text": "[On Your Opponent's Attack] You may rest this Character: Your opponent may trash 1 card from the top of their Life cards. If they do not, give up to 1 of your opponent's Leader or Character cards -2000 power during this turn.",
   "is_searcher": false,
@@ -34467,12 +34770,7 @@
   "life": 0,
   "color": "Yellow",
   "sub_types": "Sky Island",
-  "effects": [
-   {
-    "action": "draw",
-    "trigger": "trigger"
-   }
-  ],
+  "effects": [],
   "synergy_states": {
    "vida_ganha": {
     "creates": false,
@@ -34481,7 +34779,7 @@
   },
   "text": "[Once Per Turn] When a [Trigger] activates, draw 2 cards and trash 2 cards from your hand.",
   "is_searcher": false,
-  "draws": true,
+  "draws": false,
   "has_counter_value": true,
   "has_counter_event": false,
   "is_blocker": false,
@@ -34499,7 +34797,7 @@
   "has_double_attack": false,
   "has_unblockable": false,
   "has_banish": false,
-  "has_trigger": true
+  "has_trigger": false
  },
  "OP05-110": {
   "name": "Holly",
@@ -34666,7 +34964,12 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "leader"
+    "target": "leader_or_character"
+   },
+   {
+    "action": "buff_power",
+    "trigger": "counter",
+    "target": "self"
    }
   ],
   "synergy_states": {
@@ -34715,7 +35018,7 @@
    {
     "action": "buff_power",
     "trigger": "main",
-    "target": "leader"
+    "target": "leader_or_character"
    }
   ],
   "synergy_states": {
@@ -34879,10 +35182,6 @@
   "color": "Purple",
   "sub_types": "Straw Hat Crew The Four Emperors",
   "effects": [
-   {
-    "action": "add_don",
-    "trigger": "on_play"
-   },
    {
     "action": "add_don",
     "trigger": "activate_main"
@@ -35430,7 +35729,13 @@
   "life": 0,
   "color": "Red",
   "sub_types": "FILM Mecha Island",
-  "effects": [],
+  "effects": [
+   {
+    "action": "buff_power",
+    "trigger": "passive",
+    "target": "leader_or_character"
+   }
+  ],
   "synergy_states": {},
   "text": "[On Your Opponent's Attack] You may trash any number of [FILM] type cards from your hand. Your Leader or 1 of your Characters gains +1000 power during this battle for every card trashed.",
   "is_searcher": false,
@@ -35443,7 +35748,7 @@
   "rests_opponent": false,
   "bounces": false,
   "gives_don": false,
-  "power_buff": false,
+  "power_buff": true,
   "heals": false,
   "gains_life": false,
   "attacks_life": false,
@@ -35544,8 +35849,13 @@
   "effects": [
    {
     "action": "buff_power",
+    "trigger": "main",
+    "target": "leader_or_character"
+   },
+   {
+    "action": "buff_power",
     "trigger": "counter",
-    "target": "leader"
+    "target": "leader_or_character"
    }
   ],
   "synergy_states": {},
@@ -35590,7 +35900,12 @@
    {
     "action": "buff_power",
     "trigger": "main",
-    "target": "leader"
+    "target": "leader_or_character"
+   },
+   {
+    "action": "buff_power",
+    "trigger": "main",
+    "target": "leader_or_character"
    }
   ],
   "synergy_states": {
@@ -36034,7 +36349,7 @@
     "action": "buff_power",
     "trigger": "when_attacking",
     "don_requirement": 1,
-    "target": "leader"
+    "target": "self"
    },
    {
     "action": "set_don_active",
@@ -36079,7 +36394,7 @@
     "action": "buff_power",
     "trigger": "when_attacking",
     "don_requirement": 1,
-    "target": "leader"
+    "target": "self"
    }
   ],
   "synergy_states": {},
@@ -36118,7 +36433,7 @@
    {
     "action": "buff_power",
     "trigger": "when_attacking",
-    "target": "leader"
+    "target": "self"
    }
   ],
   "synergy_states": {},
@@ -36369,6 +36684,13 @@
   "effects": [
    {
     "action": "ko",
+    "trigger": "on_play",
+    "cost_lte": 4,
+    "rested_only": true,
+    "target": "opp_character"
+   },
+   {
+    "action": "ko",
     "trigger": "on_ko",
     "cost_lte": 4,
     "rested_only": true,
@@ -36456,7 +36778,12 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "leader"
+    "target": "leader_or_character"
+   },
+   {
+    "action": "buff_power",
+    "trigger": "counter",
+    "target": "self"
    }
   ],
   "synergy_states": {
@@ -37213,7 +37540,7 @@
    {
     "action": "buff_power",
     "trigger": "main",
-    "target": "leader"
+    "target": "leader_or_character"
    },
    {
     "action": "play_card",
@@ -37316,7 +37643,7 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "leader"
+    "target": "leader_or_character"
    }
   ],
   "synergy_states": {
@@ -37394,6 +37721,10 @@
     "action": "debuff_power",
     "trigger": "on_play",
     "target": "opp_character"
+   },
+   {
+    "action": "gain_rush",
+    "trigger": "on_play"
    }
   ],
   "synergy_states": {},
@@ -37413,7 +37744,7 @@
   "gains_life": false,
   "attacks_life": false,
   "trashes_own_life": false,
-  "has_rush": false,
+  "has_rush": true,
   "has_double_attack": false,
   "has_unblockable": false,
   "has_banish": false,
@@ -37890,7 +38221,13 @@
   "life": 0,
   "color": "Purple",
   "sub_types": "FILM Navy",
-  "effects": [],
+  "effects": [
+   {
+    "action": "negate_effect",
+    "trigger": "on_play",
+    "target": "opp_character"
+   }
+  ],
   "synergy_states": {},
   "text": "[On Play] DON!! -1 (You may return the specified number of DON!! cards from your field to your DON!! deck.): Negate the effect of up to 1 of your opponent's Characters during this turn. Then, if that Character has 5000 power or less, K.O. it.",
   "is_searcher": false,
@@ -38220,6 +38557,18 @@
   "effects": [
    {
     "action": "draw",
+    "trigger": "on_play"
+   },
+   {
+    "action": "trash_from_hand",
+    "trigger": "on_play"
+   },
+   {
+    "action": "draw",
+    "trigger": "on_ko"
+   },
+   {
+    "action": "trash_from_hand",
     "trigger": "on_ko"
    }
   ],
@@ -38292,7 +38641,7 @@
    {
     "action": "buff_power",
     "trigger": "on_ko",
-    "target": "leader"
+    "target": "leader_or_character"
    }
   ],
   "synergy_states": {},
@@ -38438,7 +38787,13 @@
   "life": 0,
   "color": "Black",
   "sub_types": "Happosui Army Dressrosa",
-  "effects": [],
+  "effects": [
+   {
+    "action": "buff_power",
+    "trigger": "passive",
+    "target": "leader"
+   }
+  ],
   "synergy_states": {},
   "text": "If your Leader has the [Dressrosa] type and is active, this Character gains +2000 power.",
   "is_searcher": false,
@@ -38451,7 +38806,7 @@
   "rests_opponent": false,
   "bounces": false,
   "gives_don": false,
-  "power_buff": false,
+  "power_buff": true,
   "heals": false,
   "gains_life": false,
   "attacks_life": false,
@@ -38684,6 +39039,21 @@
    {
     "action": "draw",
     "trigger": "trigger"
+   },
+   {
+    "action": "buff_power",
+    "trigger": "main",
+    "target": "leader"
+   },
+   {
+    "action": "buff_power",
+    "trigger": "main",
+    "target": "leader"
+   },
+   {
+    "action": "buff_power",
+    "trigger": "counter",
+    "target": "leader"
    },
    {
     "action": "buff_power",
@@ -38936,6 +39306,10 @@
   "sub_types": "Straw Hat Crew",
   "effects": [
    {
+    "action": "gain_banish",
+    "trigger": "on_play"
+   },
+   {
     "action": "ko",
     "trigger": "trigger",
     "cost_lte": 5,
@@ -38967,7 +39341,7 @@
   "has_rush": false,
   "has_double_attack": false,
   "has_unblockable": false,
-  "has_banish": false,
+  "has_banish": true,
   "has_trigger": true
  },
  "OP06-102": {
@@ -39543,7 +39917,7 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "leader"
+    "target": "leader_or_character"
    }
   ],
   "synergy_states": {
@@ -39936,11 +40310,6 @@
     "trigger": "on_play"
    },
    {
-    "action": "debuff_power",
-    "trigger": "on_play",
-    "target": "self"
-   },
-   {
     "action": "trash_from_hand",
     "trigger": "on_play"
    }
@@ -40058,6 +40427,10 @@
   "color": "Red",
   "sub_types": "Mountain Bandits Mountain Bandits",
   "effects": [
+   {
+    "action": "gain_double_attack",
+    "trigger": "on_play"
+   },
    {
     "action": "keyword_double_attack",
     "trigger": "passive"
@@ -40353,6 +40726,11 @@
    {
     "action": "buff_power",
     "trigger": "main",
+    "target": "self"
+   },
+   {
+    "action": "debuff_power",
+    "trigger": "main",
     "target": "opp_character"
    }
   ],
@@ -40490,7 +40868,12 @@
   "life": 5,
   "color": "Green",
   "sub_types": "Bonney Pirates Supernovas",
-  "effects": [],
+  "effects": [
+   {
+    "action": "rest_opp_character",
+    "trigger": "passive"
+   }
+  ],
   "synergy_states": {
    "char_restado": {
     "creates": true,
@@ -40503,9 +40886,9 @@
   "has_counter_value": false,
   "has_counter_event": false,
   "is_blocker": false,
-  "is_removal": false,
+  "is_removal": true,
   "kos": false,
-  "rests_opponent": false,
+  "rests_opponent": true,
   "bounces": false,
   "gives_don": false,
   "power_buff": false,
@@ -40768,7 +41151,12 @@
   "life": 0,
   "color": "Green",
   "sub_types": "Bonney Pirates Supernovas",
-  "effects": [],
+  "effects": [
+   {
+    "action": "lock_opp_don",
+    "trigger": "on_play"
+   }
+  ],
   "synergy_states": {
    "char_restado": {
     "creates": false,
@@ -41127,7 +41515,12 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "leader"
+    "target": "leader_or_character"
+   },
+   {
+    "action": "buff_power",
+    "trigger": "counter",
+    "target": "self"
    }
   ],
   "synergy_states": {
@@ -41185,7 +41578,7 @@
    {
     "action": "buff_power",
     "trigger": "main",
-    "target": "leader"
+    "target": "leader_or_character"
    }
   ],
   "synergy_states": {
@@ -41650,7 +42043,13 @@
   "life": 0,
   "color": "Blue",
   "sub_types": "Heart Pirates The Seven Warlords of the Sea",
-  "effects": [],
+  "effects": [
+   {
+    "action": "bounce",
+    "trigger": "activate_main",
+    "target": "self"
+   }
+  ],
   "synergy_states": {},
   "text": "[Activate: Main] You may return this Character to the owner's hand: If your opponent has 6 or more cards in their hand, your opponent places 1 card from their hand at the bottom of their deck.",
   "is_searcher": false,
@@ -41658,10 +42057,10 @@
   "has_counter_value": true,
   "has_counter_event": false,
   "is_blocker": false,
-  "is_removal": false,
+  "is_removal": true,
   "kos": false,
   "rests_opponent": false,
-  "bounces": false,
+  "bounces": true,
   "gives_don": false,
   "power_buff": false,
   "heals": false,
@@ -41949,7 +42348,7 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "leader"
+    "target": "leader_or_character"
    }
   ],
   "synergy_states": {
@@ -41997,7 +42396,7 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "leader"
+    "target": "leader_or_character"
    }
   ],
   "synergy_states": {
@@ -42045,7 +42444,7 @@
    {
     "action": "buff_power",
     "trigger": "main",
-    "target": "opp_character"
+    "target": "self"
    },
    {
     "action": "keyword_blocker",
@@ -42122,7 +42521,12 @@
   "life": 5,
   "color": "Purple",
   "sub_types": "Foxy Pirates",
-  "effects": [],
+  "effects": [
+   {
+    "action": "lock_opp_don",
+    "trigger": "when_attacking"
+   }
+  ],
   "synergy_states": {},
   "text": "[When Attacking] DON!! -3 (You may return the specified number of DON!! cards from your field to your DON!! deck.): If you have 3 or more [Foxy Pirates] type Characters, select your opponent's rested Leader and up to 1 Character card. The selected cards will not become active in your opponent's next Refresh Phase.",
   "is_searcher": false,
@@ -42561,11 +42965,7 @@
    {
     "action": "debuff_power",
     "trigger": "opp_turn",
-    "target": "all_allies_and_leader"
-   },
-   {
-    "action": "add_don",
-    "trigger": "opp_turn"
+    "target": "all_opp_characters"
    }
   ],
   "synergy_states": {},
@@ -42727,7 +43127,7 @@
    {
     "action": "debuff_power",
     "trigger": "counter",
-    "target": "opp_leader"
+    "target": "opp_leader_or_character"
    }
   ],
   "synergy_states": {},
@@ -42774,7 +43174,7 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "leader"
+    "target": "leader_or_character"
    }
   ],
   "synergy_states": {
@@ -43497,7 +43897,7 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "leader"
+    "target": "leader_or_character"
    }
   ],
   "synergy_states": {
@@ -43541,12 +43941,17 @@
    {
     "action": "buff_power",
     "trigger": "trigger",
-    "target": "leader"
+    "target": "leader_or_character"
    },
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "leader"
+    "target": "leader_or_character"
+   },
+   {
+    "action": "buff_power",
+    "trigger": "counter",
+    "target": "self"
    }
   ],
   "synergy_states": {
@@ -44494,7 +44899,7 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "leader"
+    "target": "leader_or_character"
    }
   ],
   "synergy_states": {
@@ -44542,13 +44947,23 @@
    },
    {
     "action": "rest_opp_character",
+    "trigger": "main",
+    "cost_lte": 4
+   },
+   {
+    "action": "buff_power",
+    "trigger": "main",
+    "target": "leader_or_character"
+   },
+   {
+    "action": "rest_opp_character",
     "trigger": "counter",
     "cost_lte": 4
    },
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "leader"
+    "target": "leader_or_character"
    }
   ],
   "synergy_states": {
@@ -44683,6 +45098,10 @@
    {
     "action": "gain_life",
     "trigger": "on_play"
+   },
+   {
+    "action": "gain_rush",
+    "trigger": "on_play"
    }
   ],
   "synergy_states": {
@@ -44707,7 +45126,7 @@
   "gains_life": true,
   "attacks_life": false,
   "trashes_own_life": false,
-  "has_rush": false,
+  "has_rush": true,
   "has_double_attack": false,
   "has_unblockable": false,
   "has_banish": false,
@@ -44878,7 +45297,13 @@
   "life": 0,
   "color": "Red",
   "sub_types": "Drum Kingdom",
-  "effects": [],
+  "effects": [
+   {
+    "action": "debuff_power",
+    "trigger": "on_play",
+    "target": "opp_character"
+   }
+  ],
   "synergy_states": {},
   "text": "[On Play] Give up to 1 of your opponent's Characters 2000 power during this turn. Then, if you don't have [Kuromarimo], play up to 1 [Kuromarimo] from your hand.",
   "is_searcher": false,
@@ -44953,6 +45378,24 @@
   "effects": [
    {
     "action": "look_top_deck",
+    "trigger": "on_play"
+   },
+   {
+    "action": "add_to_hand",
+    "trigger": "on_play",
+    "power_lte": 4000
+   },
+   {
+    "action": "deck_bottom_rest",
+    "trigger": "on_play"
+   },
+   {
+    "action": "play_card",
+    "trigger": "on_play",
+    "cost_lte": 99
+   },
+   {
+    "action": "look_top_deck",
     "trigger": "when_attacking"
    },
    {
@@ -44967,6 +45410,24 @@
    {
     "action": "play_card",
     "trigger": "when_attacking",
+    "cost_lte": 99
+   },
+   {
+    "action": "look_top_deck",
+    "trigger": "your_turn"
+   },
+   {
+    "action": "add_to_hand",
+    "trigger": "your_turn",
+    "power_lte": 4000
+   },
+   {
+    "action": "deck_bottom_rest",
+    "trigger": "your_turn"
+   },
+   {
+    "action": "play_card",
+    "trigger": "your_turn",
     "cost_lte": 99
    }
   ],
@@ -45003,6 +45464,11 @@
   "color": "Red",
   "sub_types": "Drum Kingdom",
   "effects": [
+   {
+    "action": "debuff_power",
+    "trigger": "on_play",
+    "target": "opp_character"
+   },
    {
     "action": "gain_rush",
     "trigger": "activate_main",
@@ -45228,6 +45694,12 @@
   "sub_types": "Drum Kingdom",
   "effects": [
    {
+    "action": "debuff_power",
+    "trigger": "when_attacking",
+    "don_requirement": 1,
+    "target": "opp_character"
+   },
+   {
     "action": "buff_power",
     "trigger": "when_attacking",
     "don_requirement": 1,
@@ -45355,12 +45827,17 @@
    {
     "action": "buff_power",
     "trigger": "trigger",
-    "target": "leader"
+    "target": "leader_or_character"
    },
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "leader"
+    "target": "leader_or_character"
+   },
+   {
+    "action": "debuff_power",
+    "trigger": "counter",
+    "target": "opp_leader_or_character"
    }
   ],
   "synergy_states": {
@@ -45402,7 +45879,17 @@
   "sub_types": "Animal Straw Hat Crew Drum Kingdom",
   "effects": [
    {
+    "action": "debuff_power",
+    "trigger": "trigger",
+    "target": "opp_leader_or_character"
+   },
+   {
     "action": "buff_power",
+    "trigger": "main",
+    "target": "own_character"
+   },
+   {
+    "action": "debuff_power",
     "trigger": "main",
     "target": "opp_character"
    }
@@ -45433,7 +45920,7 @@
   "has_double_attack": false,
   "has_unblockable": false,
   "has_banish": false,
-  "has_trigger": false
+  "has_trigger": true
  },
  "OP08-019": {
   "name": "Munch-Munch Mutation",
@@ -45452,9 +45939,24 @@
     "target": "opp_character"
    },
    {
+    "action": "debuff_power",
+    "trigger": "main",
+    "target": "opp_character"
+   },
+   {
     "action": "buff_power",
+    "trigger": "main",
+    "target": "own_character"
+   },
+   {
+    "action": "debuff_power",
     "trigger": "counter",
     "target": "opp_character"
+   },
+   {
+    "action": "buff_power",
+    "trigger": "counter",
+    "target": "own_character"
    }
   ],
   "synergy_states": {
@@ -45577,7 +46079,12 @@
   "life": 0,
   "color": "Green",
   "sub_types": "Minks The Akazaya Nine",
-  "effects": [],
+  "effects": [
+   {
+    "action": "lock_opp_don",
+    "trigger": "on_play"
+   }
+  ],
   "synergy_states": {
    "char_restado": {
     "creates": false,
@@ -45615,7 +46122,16 @@
   "life": 0,
   "color": "Green",
   "sub_types": "Minks",
-  "effects": [],
+  "effects": [
+   {
+    "action": "lock_opp_don",
+    "trigger": "on_play"
+   },
+   {
+    "action": "lock_opp_don",
+    "trigger": "when_attacking"
+   }
+  ],
   "synergy_states": {
    "char_restado": {
     "creates": false,
@@ -45653,7 +46169,12 @@
   "life": 0,
   "color": "Green",
   "sub_types": "Minks",
-  "effects": [],
+  "effects": [
+   {
+    "action": "lock_opp_don",
+    "trigger": "when_attacking"
+   }
+  ],
   "synergy_states": {
    "char_restado": {
     "creates": false,
@@ -45691,7 +46212,12 @@
   "life": 0,
   "color": "Green",
   "sub_types": "Minks",
-  "effects": [],
+  "effects": [
+   {
+    "action": "lock_opp_don",
+    "trigger": "on_play"
+   }
+  ],
   "synergy_states": {
    "char_restado": {
     "creates": false,
@@ -45729,7 +46255,13 @@
   "life": 0,
   "color": "Green",
   "sub_types": "Minks",
-  "effects": [],
+  "effects": [
+   {
+    "action": "lock_opp_don",
+    "trigger": "when_attacking",
+    "don_requirement": 1
+   }
+  ],
   "synergy_states": {
    "char_restado": {
     "creates": false,
@@ -45800,7 +46332,12 @@
   "life": 0,
   "color": "Green",
   "sub_types": "Minks The Akazaya Nine",
-  "effects": [],
+  "effects": [
+   {
+    "action": "gain_rush",
+    "trigger": "on_play"
+   }
+  ],
   "synergy_states": {},
   "text": "[On Play] If your opponent has 7 or more rested cards, this Character gains [Rush] during this turn. (This card can attack on the turn in which it is played.)",
   "is_searcher": false,
@@ -45818,7 +46355,7 @@
   "gains_life": false,
   "attacks_life": false,
   "trashes_own_life": false,
-  "has_rush": false,
+  "has_rush": true,
   "has_double_attack": false,
   "has_unblockable": false,
   "has_banish": false,
@@ -46116,6 +46653,10 @@
    {
     "action": "rest_opp_character",
     "trigger": "trigger"
+   },
+   {
+    "action": "lock_opp_don",
+    "trigger": "main"
    }
   ],
   "synergy_states": {
@@ -46336,7 +46877,13 @@
   "life": 0,
   "color": "Blue",
   "sub_types": "Amazon Lily",
-  "effects": [],
+  "effects": [
+   {
+    "action": "bounce",
+    "trigger": "activate_main",
+    "target": "self"
+   }
+  ],
   "synergy_states": {},
   "text": "[Activate:Main] You may return this Character to the owner's hand: If your Leader has the {Kuja Pirates} type, place up to 1 of your opponent's Characters with a cost of 1 or less at the bottom of the owner's deck.",
   "is_searcher": false,
@@ -46344,10 +46891,10 @@
   "has_counter_value": true,
   "has_counter_event": false,
   "is_blocker": false,
-  "is_removal": false,
+  "is_removal": true,
   "kos": false,
   "rests_opponent": false,
-  "bounces": false,
+  "bounces": true,
   "gives_don": false,
   "power_buff": false,
   "heals": false,
@@ -46474,11 +47021,16 @@
   "life": 0,
   "color": "Blue",
   "sub_types": "Whitebeard Pirates",
-  "effects": [],
+  "effects": [
+   {
+    "action": "draw",
+    "trigger": "passive"
+   }
+  ],
   "synergy_states": {},
   "text": "If this Character would be removed from the field by your opponent's effect or K.O.'d, trash this Character and draw 1 card instead.",
   "is_searcher": false,
-  "draws": false,
+  "draws": true,
   "has_counter_value": true,
   "has_counter_event": false,
   "is_blocker": false,
@@ -46606,7 +47158,12 @@
   "life": 0,
   "color": "Blue",
   "sub_types": "Whitebeard Pirates",
-  "effects": [],
+  "effects": [
+   {
+    "action": "gain_rush",
+    "trigger": "on_play"
+   }
+  ],
   "synergy_states": {},
   "text": "[On Play] Reveal 1 card from the top of your deck and place it at the top or bottom of your deck. If the revealed card's type includes \"Whitebeard Piratess\", this Character gains [Rush] during this turn. (This card can attack on the turn in which it is played.)",
   "is_searcher": false,
@@ -46624,7 +47181,7 @@
   "gains_life": false,
   "attacks_life": false,
   "trashes_own_life": false,
-  "has_rush": false,
+  "has_rush": true,
   "has_double_attack": false,
   "has_unblockable": false,
   "has_banish": false,
@@ -46823,7 +47380,7 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "leader"
+    "target": "leader_or_character"
    },
    {
     "action": "play_card",
@@ -47052,7 +47609,12 @@
   "life": 0,
   "color": "Purple",
   "sub_types": "Animal Kingdom Pirates",
-  "effects": [],
+  "effects": [
+   {
+    "action": "gain_rush",
+    "trigger": "on_play"
+   }
+  ],
   "synergy_states": {},
   "text": "[On Play] DON!! 1 (You may return the specified number of DON!! cards from your field to your DON!! deck.): If your opponent has 5 or more DON!! cards on their field, this Character gains [Rush] during this turn. (This card can attack on the turn in which it is played.)",
   "is_searcher": false,
@@ -47070,7 +47632,7 @@
   "gains_life": false,
   "attacks_life": false,
   "trashes_own_life": false,
-  "has_rush": false,
+  "has_rush": true,
   "has_double_attack": false,
   "has_unblockable": false,
   "has_banish": false,
@@ -48349,6 +48911,12 @@
    },
    {
     "action": "ko",
+    "trigger": "main",
+    "cost_lte": 2,
+    "target": "opp_character"
+   },
+   {
+    "action": "ko",
     "trigger": "counter",
     "cost_lte": 2,
     "target": "opp_character"
@@ -48395,12 +48963,12 @@
    {
     "action": "buff_power",
     "trigger": "trigger",
-    "target": "leader"
+    "target": "leader_or_character"
    },
    {
     "action": "buff_power",
     "trigger": "main",
-    "target": "opp_character"
+    "target": "own_character"
    }
   ],
   "synergy_states": {
@@ -48444,7 +49012,7 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "leader"
+    "target": "leader_or_character"
    }
   ],
   "synergy_states": {
@@ -48743,7 +49311,7 @@
    {
     "action": "buff_power",
     "trigger": "activate_main",
-    "target": "opp_character"
+    "target": "own_character"
    }
   ],
   "synergy_states": {},
@@ -48875,6 +49443,16 @@
   "sub_types": "Straw Hat Crew Egghead",
   "effects": [
    {
+    "action": "ko",
+    "trigger": "on_play",
+    "cost_lte": 5,
+    "target": "opp_character"
+   },
+   {
+    "action": "draw",
+    "trigger": "on_play"
+   },
+   {
     "action": "activate_main_effect",
     "trigger": "trigger"
    }
@@ -48887,12 +49465,12 @@
   },
   "text": "[On Play] You may trash 1 card with a [Trigger] from your hand: K.O. up to 1 of your opponent's Characters with a cost of 5 or less. Then, if you have 3 or less cards in your hand, draw 1 card. [Trigger] Activate this card's [On Play] effect.",
   "is_searcher": false,
-  "draws": false,
+  "draws": true,
   "has_counter_value": true,
   "has_counter_event": false,
   "is_blocker": false,
-  "is_removal": false,
-  "kos": false,
+  "is_removal": true,
+  "kos": true,
   "rests_opponent": false,
   "bounces": false,
   "gives_don": false,
@@ -49267,7 +49845,7 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "leader"
+    "target": "leader_or_character"
    }
   ],
   "synergy_states": {
@@ -49311,7 +49889,7 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "leader"
+    "target": "leader_or_character"
    },
    {
     "action": "gain_life",
@@ -49414,6 +49992,16 @@
     "trigger": "on_play",
     "power_lte": 3000,
     "target": "opp_character"
+   },
+   {
+    "action": "debuff_power",
+    "trigger": "on_play",
+    "target": "opp_character"
+   },
+   {
+    "action": "debuff_power",
+    "trigger": "on_play",
+    "target": "opp_character"
    }
   ],
   "synergy_states": {},
@@ -49495,7 +50083,13 @@
   "life": 5,
   "color": "Red",
   "sub_types": "The Four Emperors Red-Haired Pirates",
-  "effects": [],
+  "effects": [
+   {
+    "action": "debuff_power",
+    "trigger": "passive",
+    "target": "opp_leader_or_character"
+   }
+  ],
   "synergy_states": {},
   "text": "[Once Per Turn] This effect can be activated when your opponent attacks. Give up to 1 of your opponent's Leader or Character cards 1000 power during this turn.",
   "is_searcher": false,
@@ -49574,7 +50168,13 @@
   "life": 0,
   "color": "Red",
   "sub_types": "Heart Pirates",
-  "effects": [],
+  "effects": [
+   {
+    "action": "debuff_power",
+    "trigger": "when_attacking",
+    "target": "opp_character"
+   }
+  ],
   "synergy_states": {},
   "text": "[When Attacking] Give up to 1 of your opponent's Characters 2000 power during this turn.",
   "is_searcher": false,
@@ -49767,7 +50367,13 @@
   "life": 0,
   "color": "Red",
   "sub_types": "Red-Haired Pirates",
-  "effects": [],
+  "effects": [
+   {
+    "action": "debuff_power",
+    "trigger": "activate_main",
+    "target": "opp_character"
+   }
+  ],
   "synergy_states": {},
   "text": "[Activate: Main] You may place this Character at the bottom of the owner's deck: Give up to 1 of your opponent's Characters 3000 power during this turn.",
   "is_searcher": false,
@@ -49873,7 +50479,13 @@
   "life": 0,
   "color": "Red",
   "sub_types": "Red-Haired Pirates",
-  "effects": [],
+  "effects": [
+   {
+    "action": "debuff_power",
+    "trigger": "activate_main",
+    "target": "opp_character"
+   }
+  ],
   "synergy_states": {},
   "text": "[Activate: Main] You may rest this Character: If your Leader has the \"Red-Haired Pirates\" type, give up to 1 of your opponent's Characters 2000 power during this turn.",
   "is_searcher": false,
@@ -49944,6 +50556,12 @@
     "action": "buff_power",
     "trigger": "on_play",
     "target": "leader"
+   },
+   {
+    "action": "debuff_power",
+    "trigger": "when_attacking",
+    "don_requirement": 1,
+    "target": "opp_character"
    }
   ],
   "synergy_states": {},
@@ -50271,7 +50889,13 @@
   "life": 0,
   "color": "Red",
   "sub_types": "Red-Haired Pirates",
-  "effects": [],
+  "effects": [
+   {
+    "action": "debuff_power",
+    "trigger": "activate_main",
+    "target": "opp_character"
+   }
+  ],
   "synergy_states": {},
   "text": "[Activate: Main] You may rest this Stage: If your Leader has the \"Red-Haired Pirates\" type, give up to 1 of your opponent's Characters 1000 power during this turn.",
   "is_searcher": false,
@@ -50351,7 +50975,7 @@
    {
     "action": "buff_power",
     "trigger": "on_play",
-    "target": "leader"
+    "target": "leader_or_character"
    },
    {
     "action": "set_don_active",
@@ -50965,7 +51589,7 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "leader"
+    "target": "leader_or_character"
    }
   ],
   "synergy_states": {
@@ -51073,7 +51697,7 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "leader"
+    "target": "leader_or_character"
    }
   ],
   "synergy_states": {
@@ -51814,7 +52438,7 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "leader"
+    "target": "leader_or_character"
    }
   ],
   "synergy_states": {
@@ -51934,7 +52558,7 @@
   "effects": [
    {
     "action": "add_don",
-    "trigger": "trigger"
+    "trigger": "when_attacking"
    },
    {
     "action": "keyword_banish",
@@ -51967,7 +52591,7 @@
   "has_double_attack": false,
   "has_unblockable": false,
   "has_banish": true,
-  "has_trigger": true
+  "has_trigger": false
  },
  "OP09-063": {
   "name": "Usopp (063)",
@@ -52044,7 +52668,17 @@
   "life": 0,
   "color": "Purple",
   "sub_types": "Straw Hat Crew",
-  "effects": [],
+  "effects": [
+   {
+    "action": "rest_opp_character",
+    "trigger": "on_play",
+    "cost_lte": 6
+   },
+   {
+    "action": "gain_rush",
+    "trigger": "on_play"
+   }
+  ],
   "synergy_states": {
    "char_restado": {
     "creates": true,
@@ -52057,9 +52691,9 @@
   "has_counter_value": true,
   "has_counter_event": false,
   "is_blocker": false,
-  "is_removal": false,
+  "is_removal": true,
   "kos": false,
-  "rests_opponent": false,
+  "rests_opponent": true,
   "bounces": false,
   "gives_don": false,
   "power_buff": false,
@@ -52067,7 +52701,7 @@
   "gains_life": false,
   "attacks_life": false,
   "trashes_own_life": false,
-  "has_rush": false,
+  "has_rush": true,
   "has_double_attack": false,
   "has_unblockable": false,
   "has_banish": false,
@@ -52365,7 +52999,13 @@
   "life": 0,
   "color": "Purple",
   "sub_types": "Straw Hat Crew",
-  "effects": [],
+  "effects": [
+   {
+    "action": "debuff_power",
+    "trigger": "when_attacking",
+    "target": "opp_character"
+   }
+  ],
   "synergy_states": {},
   "text": "[When Attacking] You may return 1 or more DON!! cards from your field to your DON!! deck: Give up to 2 of your opponent's Characters 2000 power during this turn.",
   "is_searcher": false,
@@ -52402,7 +53042,7 @@
    {
     "action": "buff_power",
     "trigger": "your_turn",
-    "target": "leader"
+    "target": "leader_or_character"
    }
   ],
   "synergy_states": {},
@@ -52570,7 +53210,7 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "leader"
+    "target": "leader_or_character"
    }
   ],
   "synergy_states": {},
@@ -52701,8 +53341,14 @@
   "sub_types": "Blackbeard Pirates The Four Emperors",
   "effects": [
    {
-    "action": "trash_from_hand",
-    "trigger": "on_play"
+    "action": "negate_on_play_effects",
+    "trigger": "activate_main",
+    "target": "opponent"
+   },
+   {
+    "action": "negate_on_play_effects",
+    "trigger": "passive",
+    "target": "self"
    }
   ],
   "synergy_states": {},
@@ -52891,7 +53537,13 @@
   "life": 0,
   "color": "Black",
   "sub_types": "Blackbeard Pirates",
-  "effects": [],
+  "effects": [
+   {
+    "action": "buff_power",
+    "trigger": "passive",
+    "target": "leader"
+   }
+  ],
   "synergy_states": {},
   "text": "This Character cannot be K.O.'d by your opponent's effects.\nIf your Leader has the \"Blackbeard Pirates\" type, this Character gains +1000 power for every 4 cards in your trash.",
   "is_searcher": false,
@@ -52904,7 +53556,7 @@
   "rests_opponent": false,
   "bounces": false,
   "gives_don": false,
-  "power_buff": false,
+  "power_buff": true,
   "heals": false,
   "gains_life": false,
   "attacks_life": false,
@@ -53161,6 +53813,11 @@
   "sub_types": "Blackbeard Pirates The Four Emperors",
   "effects": [
    {
+    "action": "negate_effect",
+    "trigger": "activate_main",
+    "target": "opp_character"
+   },
+   {
     "action": "keyword_blocker",
     "trigger": "passive"
    }
@@ -53331,7 +53988,23 @@
   "life": 0,
   "color": "Black",
   "sub_types": "Blackbeard Pirates",
-  "effects": [],
+  "effects": [
+   {
+    "action": "negate_effect",
+    "trigger": "trigger",
+    "target": "opp_leader_or_character"
+   },
+   {
+    "action": "debuff_power",
+    "trigger": "counter",
+    "target": "opp_leader_or_character"
+   },
+   {
+    "action": "negate_effect",
+    "trigger": "counter",
+    "target": "opp_leader_or_character"
+   }
+  ],
   "synergy_states": {
    "vida_ganha": {
     "creates": false,
@@ -53342,7 +54015,7 @@
   "is_searcher": false,
   "draws": false,
   "has_counter_value": false,
-  "has_counter_event": false,
+  "has_counter_event": true,
   "is_blocker": false,
   "is_removal": false,
   "kos": false,
@@ -53358,7 +54031,7 @@
   "has_double_attack": false,
   "has_unblockable": false,
   "has_banish": false,
-  "has_trigger": false
+  "has_trigger": true
  },
  "OP09-098": {
   "name": "Black Hole",
@@ -53369,7 +54042,18 @@
   "life": 0,
   "color": "Black",
   "sub_types": "Blackbeard Pirates",
-  "effects": [],
+  "effects": [
+   {
+    "action": "negate_effect",
+    "trigger": "trigger",
+    "target": "opp_leader_or_character"
+   },
+   {
+    "action": "negate_effect",
+    "trigger": "main",
+    "target": "opp_character"
+   }
+  ],
   "synergy_states": {
    "vida_ganha": {
     "creates": false,
@@ -53396,7 +54080,7 @@
   "has_double_attack": false,
   "has_unblockable": false,
   "has_banish": false,
-  "has_trigger": false
+  "has_trigger": true
  },
  "OP09-099": {
   "name": "Fullalead",
@@ -53540,6 +54224,10 @@
    },
    {
     "action": "add_to_hand",
+    "trigger": "on_play"
+   },
+   {
+    "action": "deck_bottom_rest",
     "trigger": "on_play"
    },
    {
@@ -54183,7 +54871,7 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "leader"
+    "target": "leader_or_character"
    }
   ],
   "synergy_states": {
@@ -54234,6 +54922,10 @@
    },
    {
     "action": "add_to_hand",
+    "trigger": "main"
+   },
+   {
+    "action": "deck_bottom_rest",
     "trigger": "main"
    }
   ],
@@ -54320,6 +55012,10 @@
    {
     "action": "draw",
     "trigger": "on_play"
+   },
+   {
+    "action": "gain_rush",
+    "trigger": "on_play"
    }
   ],
   "synergy_states": {},
@@ -54339,7 +55035,7 @@
   "gains_life": false,
   "attacks_life": false,
   "trashes_own_life": false,
-  "has_rush": false,
+  "has_rush": true,
   "has_double_attack": false,
   "has_unblockable": false,
   "has_banish": false,
@@ -54363,10 +55059,6 @@
     "action": "buff_power",
     "trigger": "opp_turn",
     "target": "self"
-   },
-   {
-    "action": "set_don_active",
-    "trigger": "opp_turn"
    }
   ],
   "synergy_states": {},
@@ -54446,10 +55138,6 @@
    {
     "action": "add_don",
     "trigger": "opp_turn"
-   },
-   {
-    "action": "add_don",
-    "trigger": "end_of_turn"
    },
    {
     "action": "set_don_active",
@@ -54700,7 +55388,13 @@
   "life": 0,
   "color": "Red",
   "sub_types": "Biological Weapon Punk Hazard",
-  "effects": [],
+  "effects": [
+   {
+    "action": "debuff_power",
+    "trigger": "on_play",
+    "target": "opp_character"
+   }
+  ],
   "synergy_states": {},
   "text": "[On Play] If your Leader has the \"Punk Hazard\" type, give up to 1 of your opponent's Characters 3000 power during this turn.",
   "is_searcher": false,
@@ -54919,7 +55613,13 @@
   "life": 0,
   "color": "Red",
   "sub_types": "Punk Hazard",
-  "effects": [],
+  "effects": [
+   {
+    "action": "debuff_power",
+    "trigger": "on_play",
+    "target": "opp_character"
+   }
+  ],
   "synergy_states": {},
   "text": "[On Play] Give up to 1 of your opponent's Characters 1000 power during this turn.",
   "is_searcher": false,
@@ -54953,6 +55653,11 @@
   "color": "Red",
   "sub_types": "Donquixote Pirates Punk Hazard",
   "effects": [
+   {
+    "action": "debuff_power",
+    "trigger": "activate_main",
+    "target": "opp_character"
+   },
    {
     "action": "give_don_opp",
     "trigger": "activate_main"
@@ -55027,12 +55732,17 @@
    {
     "action": "buff_power",
     "trigger": "trigger",
-    "target": "leader"
+    "target": "leader_or_character"
    },
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "leader"
+    "target": "leader_or_character"
+   },
+   {
+    "action": "debuff_power",
+    "trigger": "counter",
+    "target": "opp_leader_or_character"
    }
   ],
   "synergy_states": {
@@ -55125,9 +55835,14 @@
     "target": "opp_character"
    },
    {
+    "action": "debuff_power",
+    "trigger": "main",
+    "target": "opp_character"
+   },
+   {
     "action": "buff_power",
     "trigger": "main",
-    "target": "leader"
+    "target": "leader_or_character"
    }
   ],
   "synergy_states": {
@@ -55638,7 +56353,12 @@
   "life": 0,
   "color": "Green",
   "sub_types": "Straw Hat Crew ODYSSEY",
-  "effects": [],
+  "effects": [
+   {
+    "action": "lock_opp_don_refresh",
+    "trigger": "on_play"
+   }
+  ],
   "synergy_states": {},
   "text": "[On Play] If you have 2 or more rested \"ODYSSEY\" type Characters, up to 1 of your opponent's rested DON!! cards will not become active in your opponent's next Refresh Phase.",
   "is_searcher": false,
@@ -55930,6 +56650,13 @@
   "effects": [
    {
     "action": "ko",
+    "trigger": "main",
+    "cost_lte": 7,
+    "rested_only": true,
+    "target": "opp_character"
+   },
+   {
+    "action": "ko",
     "trigger": "counter",
     "cost_lte": 7,
     "rested_only": true,
@@ -56071,7 +56798,12 @@
   "life": 0,
   "color": "Blue",
   "sub_types": "Animal Dressrosa",
-  "effects": [],
+  "effects": [
+   {
+    "action": "gain_banish",
+    "trigger": "on_play"
+   }
+  ],
   "synergy_states": {},
   "text": "[On Play] You may rest 1 of your \"Dressrosa\" type Leader or Stage cards: Up to 1 of your [Monkey.D.Luffy] Characters gains [Banish] during this turn.",
   "is_searcher": false,
@@ -56092,7 +56824,7 @@
   "has_rush": false,
   "has_double_attack": false,
   "has_unblockable": false,
-  "has_banish": false,
+  "has_banish": true,
   "has_trigger": false
  },
  "OP10-044": {
@@ -56298,7 +57030,13 @@
   "life": 0,
   "color": "Blue",
   "sub_types": "Revolutionary Army Dressrosa",
-  "effects": [],
+  "effects": [
+   {
+    "action": "bounce",
+    "trigger": "passive",
+    "target": "self"
+   }
+  ],
   "synergy_states": {},
   "text": "If your Character with a base cost of 7 or less other than [Sabo] would be removed from the field by your opponent's effect, you may return this Character to the owner's hand instead.",
   "is_searcher": false,
@@ -56306,10 +57044,10 @@
   "has_counter_value": true,
   "has_counter_event": false,
   "is_blocker": false,
-  "is_removal": false,
+  "is_removal": true,
   "kos": false,
   "rests_opponent": false,
-  "bounces": false,
+  "bounces": true,
   "gives_don": false,
   "power_buff": false,
   "heals": false,
@@ -57013,7 +57751,13 @@
   "life": 0,
   "color": "Purple",
   "sub_types": "Donquixote Pirates",
-  "effects": [],
+  "effects": [
+   {
+    "action": "rest_opp_character",
+    "trigger": "passive",
+    "cost_lte": 4
+   }
+  ],
   "synergy_states": {
    "char_restado": {
     "creates": true,
@@ -57026,9 +57770,9 @@
   "has_counter_value": true,
   "has_counter_event": false,
   "is_blocker": false,
-  "is_removal": false,
+  "is_removal": true,
   "kos": false,
-  "rests_opponent": false,
+  "rests_opponent": true,
   "bounces": false,
   "gives_don": false,
   "power_buff": false,
@@ -57482,6 +58226,18 @@
   "effects": [
    {
     "action": "look_top_deck",
+    "trigger": "main"
+   },
+   {
+    "action": "add_to_hand",
+    "trigger": "main"
+   },
+   {
+    "action": "deck_bottom_rest",
+    "trigger": "main"
+   },
+   {
+    "action": "look_top_deck",
     "trigger": "counter"
    },
    {
@@ -57589,7 +58345,7 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "leader"
+    "target": "leader_or_character"
    }
   ],
   "synergy_states": {
@@ -57819,14 +58575,9 @@
     "target": "opp_character"
    },
    {
-    "action": "ko",
-    "trigger": "opp_turn",
-    "target": "opp_character"
-   },
-   {
     "action": "buff_power",
     "trigger": "opp_turn",
-    "target": "leader"
+    "target": "self"
    }
   ],
   "synergy_states": {},
@@ -58052,7 +58803,7 @@
    {
     "action": "buff_power",
     "trigger": "activate_main",
-    "target": "self"
+    "target": "own_character"
    }
   ],
   "synergy_states": {},
@@ -59028,7 +59779,7 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "leader"
+    "target": "leader_or_character"
    }
   ],
   "synergy_states": {
@@ -59125,7 +59876,7 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "leader"
+    "target": "leader_or_character"
    }
   ],
   "synergy_states": {
@@ -59284,6 +60035,11 @@
     "trigger": "on_play",
     "power_lte": 0,
     "target": "opp_character"
+   },
+   {
+    "action": "debuff_power",
+    "trigger": "on_play",
+    "target": "opp_character"
    }
   ],
   "synergy_states": {},
@@ -59366,11 +60122,6 @@
    },
    {
     "action": "buff_power",
-    "trigger": "on_play",
-    "target": "self"
-   },
-   {
-    "action": "buff_power",
     "trigger": "activate_main",
     "target": "self"
    }
@@ -59445,7 +60196,14 @@
   "life": 0,
   "color": "Red",
   "sub_types": "FILM Neo Navy",
-  "effects": [],
+  "effects": [
+   {
+    "action": "buff_power",
+    "trigger": "when_attacking",
+    "don_requirement": 1,
+    "target": "self"
+   }
+  ],
   "synergy_states": {},
   "text": "[DON!! x1] [When Attacking] Give up to 1 of your opponent's (Special) attribute Characters 5000 power during this turn.",
   "is_searcher": false,
@@ -59458,7 +60216,7 @@
   "rests_opponent": false,
   "bounces": false,
   "gives_don": false,
-  "power_buff": false,
+  "power_buff": true,
   "heals": false,
   "gains_life": false,
   "attacks_life": false,
@@ -59519,6 +60277,11 @@
   "sub_types": "Navy",
   "effects": [
    {
+    "action": "debuff_power",
+    "trigger": "on_play",
+    "target": "opp_character"
+   },
+   {
     "action": "trash_from_hand",
     "trigger": "on_play"
    },
@@ -59559,7 +60322,14 @@
   "life": 0,
   "color": "Red",
   "sub_types": "Straw Hat Crew",
-  "effects": [],
+  "effects": [
+   {
+    "action": "debuff_power",
+    "trigger": "when_attacking",
+    "don_requirement": 2,
+    "target": "opp_character"
+   }
+  ],
   "synergy_states": {},
   "text": "[DON!! x2] [When Attacking] Give up to 1 of your opponent's Characters 2000 power until the end of your opponent's next turn.",
   "is_searcher": false,
@@ -59593,6 +60363,11 @@
   "color": "Red",
   "sub_types": "Navy SWORD",
   "effects": [
+   {
+    "action": "debuff_power",
+    "trigger": "on_play",
+    "target": "opp_character"
+   },
    {
     "action": "buff_power",
     "trigger": "when_attacking",
@@ -59895,6 +60670,11 @@
     "trigger": "main",
     "power_lte": 6000,
     "target": "opp_character"
+   },
+   {
+    "action": "debuff_power",
+    "trigger": "main",
+    "target": "opp_character"
    }
   ],
   "synergy_states": {
@@ -59938,12 +60718,17 @@
    {
     "action": "buff_power",
     "trigger": "trigger",
-    "target": "leader"
+    "target": "leader_or_character"
    },
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "leader"
+    "target": "leader_or_character"
+   },
+   {
+    "action": "buff_power",
+    "trigger": "counter",
+    "target": "leader_or_character"
    }
   ],
   "synergy_states": {
@@ -59991,9 +60776,14 @@
     "target": "opp_character"
    },
    {
-    "action": "buff_power",
+    "action": "debuff_power",
     "trigger": "main",
     "target": "opp_character"
+   },
+   {
+    "action": "buff_power",
+    "trigger": "main",
+    "target": "self"
    }
   ],
   "synergy_states": {
@@ -60153,7 +60943,13 @@
   "life": 0,
   "color": "Green",
   "sub_types": "The Sun Pirates Merfolk Fish-Man Island",
-  "effects": [],
+  "effects": [
+   {
+    "action": "play_card",
+    "trigger": "passive",
+    "cost_lte": 6
+   }
+  ],
   "synergy_states": {},
   "text": "When this Character is K.O.'d by your opponent's effect, you may trash 1 card from your hand and rest 1 of your DON!! cards. If you do, play up to 1 \"Fish-Man\" or \"Merfolk\" type Character card with a cost of 6 or less from your hand.",
   "is_searcher": false,
@@ -60186,7 +60982,13 @@
   "life": 0,
   "color": "Green",
   "sub_types": "Merfolk Fish-Man Island",
-  "effects": [],
+  "effects": [
+   {
+    "action": "buff_power",
+    "trigger": "passive",
+    "target": "leader_or_character"
+   }
+  ],
   "synergy_states": {},
   "text": "[On Your Opponent's Attack] [Once Per Turn] You may rest 1 of your DON!! cards and this Character: Up to 1 of your Leader or Character cards gains +1000 power during this battle.",
   "is_searcher": false,
@@ -60199,7 +61001,7 @@
   "rests_opponent": false,
   "bounces": false,
   "gives_don": false,
-  "power_buff": false,
+  "power_buff": true,
   "heals": false,
   "gains_life": false,
   "attacks_life": false,
@@ -60286,6 +61088,10 @@
   "color": "Green",
   "sub_types": "East Blue Neptunian",
   "effects": [
+   {
+    "action": "lock_opp_character_refresh",
+    "trigger": "on_play"
+   },
    {
     "action": "ko",
     "trigger": "trigger",
@@ -60779,7 +61585,7 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "opp_character"
+    "target": "self"
    }
   ],
   "synergy_states": {
@@ -60823,10 +61629,23 @@
   "life": 3,
   "color": "Blue Purple",
   "sub_types": "Straw Hat Crew",
-  "effects": [],
+  "effects": [
+   {
+    "action": "look_top_deck",
+    "trigger": "passive"
+   },
+   {
+    "action": "add_to_hand",
+    "trigger": "passive"
+   },
+   {
+    "action": "deck_top_rest",
+    "trigger": "passive"
+   }
+  ],
   "synergy_states": {},
   "text": "This effect can be activated at the start of your turn. If you have 8 or more DON!! cards on your field, look at 5 cards from the top of your deck; reveal up to 1 \"Straw Hat Crew\" type card and add it to your hand. Then, place the rest at the top or bottom of the deck in any order.",
-  "is_searcher": false,
+  "is_searcher": true,
   "draws": false,
   "has_counter_value": false,
   "has_counter_event": false,
@@ -60864,7 +61683,7 @@
    {
     "action": "buff_power",
     "trigger": "your_turn",
-    "target": "opp_character"
+    "target": "self"
    }
   ],
   "synergy_states": {},
@@ -60899,7 +61718,12 @@
   "life": 0,
   "color": "Blue",
   "sub_types": "Firetank Pirates",
-  "effects": [],
+  "effects": [
+   {
+    "action": "gain_rush",
+    "trigger": "on_play"
+   }
+  ],
   "synergy_states": {},
   "text": "[On Play] You may trash 1 \"Firetank Pirates\" type card from your hand: This Character gains [Rush] during this turn.\n(This card can attack on the turn in which it is played.)",
   "is_searcher": false,
@@ -60917,7 +61741,7 @@
   "gains_life": false,
   "attacks_life": false,
   "trashes_own_life": false,
-  "has_rush": false,
+  "has_rush": true,
   "has_double_attack": false,
   "has_unblockable": false,
   "has_banish": false,
@@ -61548,7 +62372,12 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "leader"
+    "target": "leader_or_character"
+   },
+   {
+    "action": "buff_power",
+    "trigger": "counter",
+    "target": "self"
    }
   ],
   "synergy_states": {
@@ -61693,7 +62522,7 @@
    {
     "action": "buff_power",
     "trigger": "when_attacking",
-    "target": "opp_character"
+    "target": "self"
    }
   ],
   "synergy_states": {},
@@ -62369,7 +63198,7 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "leader"
+    "target": "leader_or_character"
    }
   ],
   "synergy_states": {
@@ -63055,7 +63884,7 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "leader"
+    "target": "leader_or_character"
    },
    {
     "action": "add_from_trash",
@@ -63099,7 +63928,7 @@
    {
     "action": "buff_power",
     "trigger": "trigger",
-    "target": "leader"
+    "target": "leader_or_character"
    },
    {
     "action": "ko",
@@ -63284,7 +64113,7 @@
   "effects": [
    {
     "action": "attack_life",
-    "trigger": "trigger"
+    "trigger": "your_turn"
    }
   ],
   "synergy_states": {
@@ -63313,7 +64142,7 @@
   "has_double_attack": false,
   "has_unblockable": false,
   "has_banish": false,
-  "has_trigger": true
+  "has_trigger": false
  },
  "OP11-103": {
   "name": "Long-Jaw Neptunian",
@@ -63812,7 +64641,7 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "leader"
+    "target": "leader_or_character"
    }
   ],
   "synergy_states": {
@@ -63894,7 +64723,7 @@
    {
     "action": "buff_power",
     "trigger": "activate_main",
-    "target": "leader"
+    "target": "self"
    }
   ],
   "synergy_states": {},
@@ -63979,7 +64808,7 @@
    {
     "action": "buff_power",
     "trigger": "when_attacking",
-    "target": "leader"
+    "target": "leader_or_character"
    }
   ],
   "synergy_states": {},
@@ -64018,7 +64847,7 @@
    {
     "action": "buff_power",
     "trigger": "activate_main",
-    "target": "self"
+    "target": "own_character"
    }
   ],
   "synergy_states": {},
@@ -64243,7 +65072,12 @@
   "life": 0,
   "color": "Red",
   "sub_types": "Roger Pirates",
-  "effects": [],
+  "effects": [
+   {
+    "action": "gain_rush",
+    "trigger": "on_play"
+   }
+  ],
   "synergy_states": {},
   "text": "[On Play] Up to 1 of your Characters with a type including \"Roger Pirates\" other than [Shanks] gains [Rush] during this turn.\n(This card can attack on the turn in which it is played.)",
   "is_searcher": false,
@@ -64261,7 +65095,7 @@
   "gains_life": false,
   "attacks_life": false,
   "trashes_own_life": false,
-  "has_rush": false,
+  "has_rush": true,
   "has_double_attack": false,
   "has_unblockable": false,
   "has_banish": false,
@@ -64314,7 +65148,17 @@
   "life": 0,
   "color": "Red",
   "sub_types": "Fish-Man The Sun Pirates",
-  "effects": [],
+  "effects": [
+   {
+    "action": "buff_power",
+    "trigger": "on_play",
+    "target": "self"
+   },
+   {
+    "action": "gain_rush",
+    "trigger": "on_play"
+   }
+  ],
   "synergy_states": {},
   "text": "[On Play] You may reveal 2 Events from your hand: This Character gains [Rush] during this turn. Then, this Character gains +1000 power until the end of your opponent's next End Phase.",
   "is_searcher": false,
@@ -64327,12 +65171,12 @@
   "rests_opponent": false,
   "bounces": false,
   "gives_don": false,
-  "power_buff": false,
+  "power_buff": true,
   "heals": false,
   "gains_life": false,
   "attacks_life": false,
   "trashes_own_life": false,
-  "has_rush": false,
+  "has_rush": true,
   "has_double_attack": false,
   "has_unblockable": false,
   "has_banish": false,
@@ -64414,6 +65258,10 @@
   "color": "Red",
   "sub_types": "Roger Pirates",
   "effects": [
+   {
+    "action": "gain_blocker",
+    "trigger": "on_play"
+   },
    {
     "action": "keyword_blocker",
     "trigger": "passive"
@@ -64504,10 +65352,6 @@
    },
    {
     "action": "give_don",
-    "trigger": "on_play"
-   },
-   {
-    "action": "give_don",
     "trigger": "activate_main"
    }
   ],
@@ -64590,7 +65434,7 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "self"
+    "target": "own_character"
    },
    {
     "action": "keyword_blocker",
@@ -64679,7 +65523,12 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "opp_leader"
+    "target": "own_character"
+   },
+   {
+    "action": "debuff_power",
+    "trigger": "counter",
+    "target": "opp_leader_or_character"
    }
   ],
   "synergy_states": {},
@@ -64718,12 +65567,12 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "self"
+    "target": "own_character"
    },
    {
     "action": "buff_power",
     "trigger": "main",
-    "target": "leader"
+    "target": "leader_or_character"
    }
   ],
   "synergy_states": {},
@@ -64829,7 +65678,12 @@
   "life": 0,
   "color": "Green",
   "sub_types": "Land of Wano Minks The Akazaya Nine",
-  "effects": [],
+  "effects": [
+   {
+    "action": "lock_opp_don",
+    "trigger": "activate_main"
+   }
+  ],
   "synergy_states": {
    "char_restado": {
     "creates": false,
@@ -65405,7 +66259,13 @@
   "life": 0,
   "color": "Green",
   "sub_types": "Straw Hat Crew Supernovas",
-  "effects": [],
+  "effects": [
+   {
+    "action": "buff_power",
+    "trigger": "passive",
+    "target": "self"
+   }
+  ],
   "synergy_states": {},
   "text": "This card in your hand cannot be played by effects.\nIf your Leader has the (Slash) attribute, this Character cannot be K.O.'d in battle by (Slash) attribute cards and gains +1000 power.",
   "is_searcher": false,
@@ -65418,7 +66278,7 @@
   "rests_opponent": false,
   "bounces": false,
   "gives_don": false,
-  "power_buff": false,
+  "power_buff": true,
   "heals": false,
   "gains_life": false,
   "attacks_life": false,
@@ -65530,7 +66390,7 @@
    {
     "action": "buff_power",
     "trigger": "trigger",
-    "target": "leader"
+    "target": "leader_or_character"
    }
   ],
   "synergy_states": {
@@ -65715,14 +66575,6 @@
   "effects": [
    {
     "action": "draw",
-    "trigger": "on_play"
-   },
-   {
-    "action": "give_don",
-    "trigger": "on_play"
-   },
-   {
-    "action": "trash_from_hand",
     "trigger": "on_play"
    },
    {
@@ -66222,7 +67074,7 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "leader"
+    "target": "leader_or_character"
    }
   ],
   "synergy_states": {
@@ -66688,7 +67540,13 @@
   "life": 0,
   "color": "Purple",
   "sub_types": "Baroque Works The Seven Warlords of the Sea",
-  "effects": [],
+  "effects": [
+   {
+    "action": "buff_power",
+    "trigger": "passive",
+    "target": "leader_or_character"
+   }
+  ],
   "synergy_states": {},
   "text": "[On Your Opponent's Attack] [Once Per Turn] DON!! 1: If your Leader's type includes \"Baroque Works\", up to 1 of your Leader or Character cards gains +2000 power during this battle.",
   "is_searcher": false,
@@ -66701,7 +67559,7 @@
   "rests_opponent": false,
   "bounces": false,
   "gives_don": false,
-  "power_buff": false,
+  "power_buff": true,
   "heals": false,
   "gains_life": false,
   "attacks_life": false,
@@ -66721,7 +67579,13 @@
   "life": 0,
   "color": "Purple",
   "sub_types": "Alabasta Straw Hat Crew",
-  "effects": [],
+  "effects": [
+   {
+    "action": "buff_power",
+    "trigger": "passive",
+    "target": "self"
+   }
+  ],
   "synergy_states": {},
   "text": "This Character gains +1000 power for every 5 Events in your trash.\nIf this Character would be removed from the field by your opponent's effect, you may return 1 DON!! card from your field to your DON!! deck instead.",
   "is_searcher": false,
@@ -66734,7 +67598,7 @@
   "rests_opponent": false,
   "bounces": false,
   "gives_don": false,
-  "power_buff": false,
+  "power_buff": true,
   "heals": false,
   "gains_life": false,
   "attacks_life": false,
@@ -66837,7 +67701,7 @@
    {
     "action": "buff_power",
     "trigger": "on_play",
-    "target": "opp_character"
+    "target": "self"
    },
    {
     "action": "add_don",
@@ -67004,7 +67868,7 @@
    {
     "action": "buff_power",
     "trigger": "main",
-    "target": "opp_character"
+    "target": "self"
    },
    {
     "action": "keyword_blocker",
@@ -67052,6 +67916,11 @@
    {
     "action": "draw",
     "trigger": "main"
+   },
+   {
+    "action": "debuff_power",
+    "trigger": "main",
+    "target": "opp_character"
    }
   ],
   "synergy_states": {},
@@ -67187,11 +68056,16 @@
   "life": 4,
   "color": "Black Yellow",
   "sub_types": "Revolutionary Army Dressrosa",
-  "effects": [],
+  "effects": [
+   {
+    "action": "draw",
+    "trigger": "passive"
+   }
+  ],
   "synergy_states": {},
   "text": "When this Leader attacks your opponent's Leader, if you have 2 or more Characters with a cost of 8 or more, draw 1 card.\n[Once Per Turn] This effect can be activated when your opponent plays a Character with a base cost of 8 or more, or when your opponent plays a Character using a Character's effect. Your opponent adds 1 card from the top of their Life cards to their hand.",
   "is_searcher": false,
-  "draws": false,
+  "draws": true,
   "has_counter_value": false,
   "has_counter_event": false,
   "is_blocker": false,
@@ -67659,7 +68533,13 @@
   "life": 0,
   "color": "Black",
   "sub_types": "Revolutionary Army",
-  "effects": [],
+  "effects": [
+   {
+    "action": "play_from_trash",
+    "trigger": "on_play",
+    "cost_lte": 6
+   }
+  ],
   "synergy_states": {},
   "text": "[On Play] You may place 3 \"Revolutionary Army\" type cards from your trash at the bottom of your deck in any order: If your Leader has the \"Revolutionary Army\" type, play up to 1 Character card with a cost of 6 or less from your trash.",
   "is_searcher": false,
@@ -67846,7 +68726,12 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "leader"
+    "target": "leader_or_character"
+   },
+   {
+    "action": "buff_power",
+    "trigger": "counter",
+    "target": "self"
    }
   ],
   "synergy_states": {
@@ -68212,6 +69097,10 @@
    {
     "action": "gain_life",
     "trigger": "on_ko"
+   },
+   {
+    "action": "gain_life",
+    "trigger": "opp_turn"
    }
   ],
   "synergy_states": {
@@ -68538,7 +69427,7 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "leader"
+    "target": "leader_or_character"
    },
    {
     "action": "add_from_trash",
@@ -68729,6 +69618,10 @@
    {
     "action": "gain_life",
     "trigger": "on_ko"
+   },
+   {
+    "action": "gain_life",
+    "trigger": "opp_turn"
    }
   ],
   "synergy_states": {
@@ -68768,7 +69661,13 @@
   "life": 4,
   "color": "Green Red",
   "sub_types": "Straw Hat Crew Supernovas",
-  "effects": [],
+  "effects": [
+   {
+    "action": "buff_power",
+    "trigger": "passive",
+    "target": "self"
+   }
+  ],
   "synergy_states": {},
   "text": "[DON!! x1] [On Your Opponent's Attack] If you have 5 or less active DON!! cards, you may rest any number of your DON!! cards. For every DON!! card rested this way, this Leader or up to 1 of your \"Straw Hat Crew\" type Characters gains +2000 power during this battle.",
   "is_searcher": false,
@@ -68781,7 +69680,7 @@
   "rests_opponent": false,
   "bounces": false,
   "gives_don": false,
-  "power_buff": false,
+  "power_buff": true,
   "heals": false,
   "gains_life": false,
   "attacks_life": false,
@@ -68801,11 +69700,21 @@
   "life": 3,
   "color": "Blue Red",
   "sub_types": "Whitebeard Pirates",
-  "effects": [],
+  "effects": [
+   {
+    "action": "draw",
+    "trigger": "passive"
+   },
+   {
+    "action": "debuff_power",
+    "trigger": "passive",
+    "target": "opp_leader_or_character"
+   }
+  ],
   "synergy_states": {},
   "text": "[On Your Opponent's Attack] [Once Per Turn] You may trash 1 card from your hand: Give up to 1 of your opponent's Leader or Character cards 2000 power during this battle.\n[DON!! x1] [Once Per Turn] When you take damage or your Character with 6000 base power or more is K.O.'d, draw 1 card.",
   "is_searcher": false,
-  "draws": false,
+  "draws": true,
   "has_counter_value": false,
   "has_counter_event": false,
   "is_blocker": false,
@@ -68834,7 +69743,13 @@
   "life": 5,
   "color": "Purple Red",
   "sub_types": "Roger Pirates King of the Pirates",
-  "effects": [],
+  "effects": [
+   {
+    "action": "buff_power",
+    "trigger": "passive",
+    "target": "leader"
+   }
+  ],
   "synergy_states": {},
   "text": "If you have any DON!! cards on your field, 1 DON!! card placed during your DON!! Phase is given to your Leader.\nIf you have 9 or less DON!! cards on your field, give this Leader 2000 power.",
   "is_searcher": false,
@@ -68847,7 +69762,7 @@
   "rests_opponent": false,
   "bounces": false,
   "gives_don": false,
-  "power_buff": false,
+  "power_buff": true,
   "heals": false,
   "gains_life": false,
   "attacks_life": false,
@@ -68867,7 +69782,18 @@
   "life": 5,
   "color": "Red Black",
   "sub_types": "Revolutionary Army Dressrosa",
-  "effects": [],
+  "effects": [
+   {
+    "action": "buff_power",
+    "trigger": "passive",
+    "target": "self"
+   },
+   {
+    "action": "buff_power",
+    "trigger": "passive",
+    "target": "all_allies_and_leader"
+   }
+  ],
   "synergy_states": {},
   "text": "If you have 4 or more Life cards, give this Leader 1000 power.\n[DON!! x1] If you have a Character with a cost of 8 or more, your Leader and all of your Characters gain +1000 power.",
   "is_searcher": false,
@@ -68880,7 +69806,7 @@
   "rests_opponent": false,
   "bounces": false,
   "gives_don": false,
-  "power_buff": false,
+  "power_buff": true,
   "heals": false,
   "gains_life": false,
   "attacks_life": false,
@@ -68976,7 +69902,13 @@
   "life": 0,
   "color": "Red",
   "sub_types": "Goa Kingdom",
-  "effects": [],
+  "effects": [
+   {
+    "action": "debuff_power",
+    "trigger": "activate_main",
+    "target": "opp_character"
+   }
+  ],
   "synergy_states": {},
   "text": "[Activate: Main] You may give 1 of your active DON!! cards to 1 of your Leader or Character cards and trash this Character: Give up to 1 of your opponent's Characters 3000 power during this turn.",
   "is_searcher": false,
@@ -69361,7 +70293,13 @@
   "life": 0,
   "color": "Red",
   "sub_types": "Revolutionary Army",
-  "effects": [],
+  "effects": [
+   {
+    "action": "buff_power",
+    "trigger": "passive",
+    "target": "self"
+   }
+  ],
   "synergy_states": {},
   "text": "[Once Per Turn] If your \"Revolutionary Army\" type Character would be removed from the field by your opponent's effect, you may give this Character 2000 power during this turn instead.",
   "is_searcher": false,
@@ -69374,7 +70312,7 @@
   "rests_opponent": false,
   "bounces": false,
   "gives_don": false,
-  "power_buff": false,
+  "power_buff": true,
   "heals": false,
   "gains_life": false,
   "attacks_life": false,
@@ -69438,6 +70376,11 @@
     "trigger": "main",
     "power_lte": 3000,
     "target": "opp_character"
+   },
+   {
+    "action": "debuff_power",
+    "trigger": "main",
+    "target": "opp_character"
    }
   ],
   "synergy_states": {},
@@ -69476,6 +70419,11 @@
    {
     "action": "activate_main_effect",
     "trigger": "trigger"
+   },
+   {
+    "action": "debuff_power",
+    "trigger": "main",
+    "target": "opp_character"
    }
   ],
   "synergy_states": {
@@ -69517,6 +70465,16 @@
   "sub_types": "Straw Hat Crew",
   "effects": [
    {
+    "action": "debuff_power",
+    "trigger": "trigger",
+    "target": "opp_character"
+   },
+   {
+    "action": "debuff_power",
+    "trigger": "main",
+    "target": "opp_character"
+   },
+   {
     "action": "give_don_opp",
     "trigger": "main"
    }
@@ -69547,7 +70505,7 @@
   "has_double_attack": false,
   "has_unblockable": false,
   "has_banish": false,
-  "has_trigger": false
+  "has_trigger": true
  },
  "OP13-022": {
   "name": "Windmill Village",
@@ -69562,7 +70520,7 @@
    {
     "action": "buff_power",
     "trigger": "activate_main",
-    "target": "self"
+    "target": "own_character"
    }
   ],
   "synergy_states": {},
@@ -70277,6 +71235,10 @@
     "action": "buff_power",
     "trigger": "counter",
     "target": "leader"
+   },
+   {
+    "action": "lock_opp_don",
+    "trigger": "main"
    }
   ],
   "synergy_states": {
@@ -71210,7 +72172,12 @@
    {
     "action": "buff_power",
     "trigger": "on_play",
-    "target": "all_allies_and_leader"
+    "target": "leader"
+   },
+   {
+    "action": "debuff_power",
+    "trigger": "on_play",
+    "target": "all_opp_characters"
    }
   ],
   "synergy_states": {},
@@ -71696,7 +72663,12 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "leader"
+    "target": "leader_or_character"
+   },
+   {
+    "action": "debuff_power",
+    "trigger": "main",
+    "target": "opp_character"
    }
   ],
   "synergy_states": {},
@@ -71776,7 +72748,12 @@
   "life": 0,
   "color": "Purple",
   "sub_types": "Roger Pirates",
-  "effects": [],
+  "effects": [
+   {
+    "action": "add_don",
+    "trigger": "passive"
+   }
+  ],
   "synergy_states": {},
   "text": "[Once Per Turn] When your Character with a type including \"Roger Pirates\" is removed from the field by your opponent's effect, add up to 1 DON!! card from your DON!! deck and rest it.",
   "is_searcher": false,
@@ -71847,7 +72824,13 @@
   "life": 0,
   "color": "Black",
   "sub_types": "Celestial Dragons Five Elders",
-  "effects": [],
+  "effects": [
+   {
+    "action": "debuff_power",
+    "trigger": "when_attacking",
+    "target": "opp_character"
+   }
+  ],
   "synergy_states": {},
   "text": "If you have 7 or more cards in your trash, this Character cannot be removed from the field by your opponent's effects and gains [Rush].\n[When Attacking] If you have 10 or more cards in your trash, give up to 1 of your opponent's Characters 2000 power during this turn.",
   "is_searcher": false,
@@ -72589,7 +73572,7 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "leader"
+    "target": "leader_or_character"
    },
    {
     "action": "ko",
@@ -72640,11 +73623,6 @@
     "action": "buff_power",
     "trigger": "your_turn",
     "target": "leader"
-   },
-   {
-    "action": "play_card",
-    "trigger": "your_turn",
-    "cost_lte": 99
    }
   ],
   "synergy_states": {},
@@ -72682,7 +73660,7 @@
   "effects": [
    {
     "action": "give_don",
-    "trigger": "trigger"
+    "trigger": "your_turn"
    }
   ],
   "synergy_states": {
@@ -72711,7 +73689,7 @@
   "has_double_attack": false,
   "has_unblockable": false,
   "has_banish": false,
-  "has_trigger": true
+  "has_trigger": false
  },
  "OP13-101": {
   "name": "Atlas",
@@ -72931,11 +73909,11 @@
   "sub_types": "Bonney Pirates",
   "effects": [
    {
-    "action": "play_card",
-    "trigger": "trigger"
+    "action": "gain_blocker",
+    "trigger": "opp_turn"
    },
    {
-    "action": "gain_blocker",
+    "action": "play_card",
     "trigger": "trigger"
    },
    {
@@ -73015,6 +73993,10 @@
   "sub_types": "Bonney Pirates Egghead",
   "effects": [
    {
+    "action": "gain_rush",
+    "trigger": "on_play"
+   },
+   {
     "action": "rest_opp_character",
     "trigger": "trigger",
     "cost_lte": 7
@@ -73046,7 +74028,7 @@
   "gains_life": false,
   "attacks_life": false,
   "trashes_own_life": false,
-  "has_rush": false,
+  "has_rush": true,
   "has_double_attack": false,
   "has_unblockable": false,
   "has_banish": false,
@@ -73233,6 +74215,10 @@
     "trigger": "on_play"
    },
    {
+    "action": "deck_bottom_rest",
+    "trigger": "on_play"
+   },
+   {
     "action": "activate_main_effect",
     "trigger": "trigger"
    }
@@ -73275,6 +74261,16 @@
   "color": "Yellow",
   "sub_types": "Egghead Seraphim",
   "effects": [
+   {
+    "action": "debuff_power",
+    "trigger": "on_play",
+    "target": "opp_character"
+   },
+   {
+    "action": "debuff_power",
+    "trigger": "when_attacking",
+    "target": "opp_character"
+   },
    {
     "action": "play_card",
     "trigger": "trigger"
@@ -73325,7 +74321,12 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "leader"
+    "target": "leader_or_character"
+   },
+   {
+    "action": "buff_power",
+    "trigger": "counter",
+    "target": "leader_or_character"
    }
   ],
   "synergy_states": {
@@ -73777,7 +74778,13 @@
   "life": 0,
   "color": "Red",
   "sub_types": "Heart Pirates",
-  "effects": [],
+  "effects": [
+   {
+    "action": "debuff_power",
+    "trigger": "when_attacking",
+    "target": "opp_character"
+   }
+  ],
   "synergy_states": {},
   "text": "[When Attacking] If this Character has 5000 power or more, give up to 1 of your opponent's Characters 2000 power during this turn.",
   "is_searcher": false,
@@ -74179,7 +75186,19 @@
   "life": 0,
   "color": "Red",
   "sub_types": "Drake Pirates Navy Supernovas",
-  "effects": [],
+  "effects": [
+   {
+    "action": "debuff_power",
+    "trigger": "when_attacking",
+    "don_requirement": 1,
+    "target": "opp_character"
+   },
+   {
+    "action": "buff_power",
+    "trigger": "opp_turn",
+    "target": "leader"
+   }
+  ],
   "synergy_states": {},
   "text": "[Opponent's Turn] [Once Per Turn] If your {Supernovas} type Character would be removed from the field by your opponent's effect, you may give your Leader 2000 power during this turn instead.\n[DON!! x1] [When Attacking] Give up to 1 of your opponent's Characters 2000 power during this turn.",
   "is_searcher": false,
@@ -74192,7 +75211,7 @@
   "rests_opponent": false,
   "bounces": false,
   "gives_don": false,
-  "power_buff": false,
+  "power_buff": true,
   "heals": false,
   "gains_life": false,
   "attacks_life": false,
@@ -74254,7 +75273,7 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "leader"
+    "target": "leader_or_character"
    }
   ],
   "synergy_states": {
@@ -74387,7 +75406,12 @@
   "life": 0,
   "color": "Green",
   "sub_types": "Navy Dressrosa",
-  "effects": [],
+  "effects": [
+   {
+    "action": "lock_opp_don",
+    "trigger": "your_turn"
+   }
+  ],
   "synergy_states": {
    "char_restado": {
     "creates": false,
@@ -74626,6 +75650,11 @@
    {
     "action": "rest_opp_character",
     "trigger": "your_turn"
+   },
+   {
+    "action": "debuff_power",
+    "trigger": "opp_turn",
+    "target": "all_opp_characters"
    }
   ],
   "synergy_states": {
@@ -74715,11 +75744,6 @@
    {
     "action": "buff_power",
     "trigger": "activate_main",
-    "target": "self"
-   },
-   {
-    "action": "buff_power",
-    "trigger": "opp_turn",
     "target": "self"
    }
   ],
@@ -74927,7 +75951,7 @@
    {
     "action": "buff_power",
     "trigger": "your_turn",
-    "target": "opp_character"
+    "target": "self"
    }
   ],
   "synergy_states": {},
@@ -74962,7 +75986,12 @@
   "life": 0,
   "color": "Green",
   "sub_types": "East Blue",
-  "effects": [],
+  "effects": [
+   {
+    "action": "lock_opp_don",
+    "trigger": "your_turn"
+   }
+  ],
   "synergy_states": {
    "char_restado": {
     "creates": false,
@@ -75008,7 +76037,7 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "leader"
+    "target": "leader_or_character"
    }
   ],
   "synergy_states": {
@@ -76047,7 +77076,13 @@
   "life": 0,
   "color": "Purple",
   "sub_types": "Donquixote Pirates Navy Punk Hazard",
-  "effects": [],
+  "effects": [
+   {
+    "action": "debuff_power",
+    "trigger": "when_attacking",
+    "target": "opp_character"
+   }
+  ],
   "synergy_states": {},
   "text": "[Once Per Turn] If your {Donquixote Pirates} type Character would be removed from the field by your opponent's effect, you may return 1 DON!! card from your field to your DON!! deck instead.\n[When Attacking] DON!! 1: Give up to 1 of your opponent's Characters 2000 power during this turn.",
   "is_searcher": false,
@@ -76608,6 +77643,11 @@
   "sub_types": "Donquixote Pirates",
   "effects": [
    {
+    "action": "debuff_power",
+    "trigger": "on_ko",
+    "target": "opp_character"
+   },
+   {
     "action": "add_don",
     "trigger": "on_ko"
    }
@@ -76691,7 +77731,7 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "leader"
+    "target": "leader_or_character"
    },
    {
     "action": "add_don",
@@ -76734,7 +77774,12 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "leader"
+    "target": "leader_or_character"
+   },
+   {
+    "action": "buff_power",
+    "trigger": "counter",
+    "target": "self"
    }
   ],
   "synergy_states": {},
@@ -76928,7 +77973,13 @@
   "life": 0,
   "color": "Black",
   "sub_types": "Baroque Works",
-  "effects": [],
+  "effects": [
+   {
+    "action": "buff_power",
+    "trigger": "activate_main",
+    "target": "self"
+   }
+  ],
   "synergy_states": {},
   "text": "[Activate: Main] You may trash this Character: Give up to 1 of your opponent's 0 cost Characters 3000 power during this turn.",
   "is_searcher": false,
@@ -76941,7 +77992,7 @@
   "rests_opponent": false,
   "bounces": false,
   "gives_don": false,
-  "power_buff": false,
+  "power_buff": true,
   "heals": false,
   "gains_life": false,
   "attacks_life": false,
@@ -77032,7 +78083,13 @@
   "life": 0,
   "color": "Black",
   "sub_types": "Baroque Works",
-  "effects": [],
+  "effects": [
+   {
+    "action": "buff_power",
+    "trigger": "passive",
+    "target": "self"
+   }
+  ],
   "synergy_states": {},
   "text": "If you have 7 or more cards in your trash, this Character gains +1000 power, and all of your Characters with a type including \"Baroque Works\" gain +2 cost.",
   "is_searcher": false,
@@ -77045,7 +78102,7 @@
   "rests_opponent": false,
   "bounces": false,
   "gives_don": false,
-  "power_buff": false,
+  "power_buff": true,
   "heals": false,
   "gains_life": false,
   "attacks_life": false,
@@ -77439,7 +78496,13 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "leader"
+    "target": "leader_or_character"
+   },
+   {
+    "action": "negate_effect",
+    "trigger": "main",
+    "cost_lte": 5,
+    "target": "opp_character"
    }
   ],
   "synergy_states": {},
@@ -77792,7 +78855,13 @@
   "life": 0,
   "color": "Yellow",
   "sub_types": "The Seven Warlords of the Sea Thriller Bark Pirates",
-  "effects": [],
+  "effects": [
+   {
+    "action": "play_from_trash",
+    "trigger": "trigger",
+    "cost_lte": 4
+   }
+  ],
   "synergy_states": {
    "vida_ganha": {
     "creates": true,
@@ -77819,7 +78888,7 @@
   "has_double_attack": false,
   "has_unblockable": false,
   "has_banish": false,
-  "has_trigger": false
+  "has_trigger": true
  },
  "OP14-105": {
   "name": "Gorgon Sisters",
@@ -78065,7 +79134,7 @@
   "sub_types": "Thriller Bark Pirates",
   "effects": [
    {
-    "action": "play_card",
+    "action": "play_from_trash",
     "trigger": "on_ko",
     "cost_lte": 4
    }
@@ -78305,6 +79374,10 @@
     "trigger": "on_ko"
    },
    {
+    "action": "gain_life",
+    "trigger": "opp_turn"
+   },
+   {
     "action": "play_card",
     "trigger": "trigger"
    }
@@ -78354,7 +79427,7 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "leader"
+    "target": "leader_or_character"
    },
    {
     "action": "play_card",
@@ -78491,7 +79564,7 @@
    {
     "action": "buff_power",
     "trigger": "your_turn",
-    "target": "leader"
+    "target": "leader_or_character"
    }
   ],
   "synergy_states": {},
@@ -78571,16 +79644,10 @@
     "cost_lte": 99
    },
    {
-    "action": "rest_opp_character",
-    "trigger": "opp_turn",
-    "don_requirement": 1,
-    "cost_lte": 99
-   },
-   {
     "action": "debuff_power",
     "trigger": "opp_turn",
     "don_requirement": 1,
-    "target": "opp_character"
+    "target": "all_opp_characters"
    }
   ],
   "synergy_states": {
@@ -78630,13 +79697,9 @@
     "trigger": "activate_main"
    },
    {
-    "action": "draw",
-    "trigger": "when_attacking"
-   },
-   {
     "action": "buff_power",
     "trigger": "when_attacking",
-    "target": "opp_character"
+    "target": "self"
    }
   ],
   "synergy_states": {},
@@ -78792,7 +79855,13 @@
   "life": 0,
   "color": "Red",
   "sub_types": "Beautiful Pirates Dressrosa",
-  "effects": [],
+  "effects": [
+   {
+    "action": "buff_power",
+    "trigger": "passive",
+    "target": "self"
+   }
+  ],
   "synergy_states": {},
   "text": "If you have 4 or more Events in your trash, this Character gains +2000 power.",
   "is_searcher": false,
@@ -78805,7 +79874,7 @@
   "rests_opponent": false,
   "bounces": false,
   "gives_don": false,
-  "power_buff": false,
+  "power_buff": true,
   "heals": false,
   "gains_life": false,
   "attacks_life": false,
@@ -78866,9 +79935,13 @@
   "sub_types": "Krieg Pirates East Blue",
   "effects": [
    {
+    "action": "gain_rush",
+    "trigger": "on_play"
+   },
+   {
     "action": "debuff_power",
     "trigger": "activate_main",
-    "target": "opp_character"
+    "target": "all_opp_characters"
    }
   ],
   "synergy_states": {},
@@ -78888,7 +79961,7 @@
   "gains_life": false,
   "attacks_life": false,
   "trashes_own_life": false,
-  "has_rush": false,
+  "has_rush": true,
   "has_double_attack": false,
   "has_unblockable": false,
   "has_banish": false,
@@ -78903,7 +79976,13 @@
   "life": 0,
   "color": "Red",
   "sub_types": "Navy East Blue",
-  "effects": [],
+  "effects": [
+   {
+    "action": "debuff_power",
+    "trigger": "passive",
+    "target": "opp_character"
+   }
+  ],
   "synergy_states": {},
   "text": "If your Character with 7000 base power or less would be removed from the field by your opponent's effect, you may give your Leader -2000 power during this turn instead.",
   "is_searcher": false,
@@ -79359,6 +80438,11 @@
     "action": "buff_power",
     "trigger": "main",
     "target": "leader"
+   },
+   {
+    "action": "debuff_power",
+    "trigger": "main",
+    "target": "opp_character"
    }
   ],
   "synergy_states": {},
@@ -79394,6 +80478,11 @@
   "color": "Red",
   "sub_types": "Revolutionary Army Dressrosa",
   "effects": [
+   {
+    "action": "debuff_power",
+    "trigger": "main",
+    "target": "opp_character"
+   },
    {
     "action": "debuff_power",
     "trigger": "counter",
@@ -79471,11 +80560,7 @@
     "trigger": "activate_main"
    },
    {
-    "action": "give_don_opp",
-    "trigger": "on_ko"
-   },
-   {
-    "action": "lock_opp_don",
+    "action": "lock_opp_character_refresh",
     "trigger": "on_ko"
    }
   ],
@@ -80004,6 +81089,13 @@
   "effects": [
    {
     "action": "ko",
+    "trigger": "on_play",
+    "cost_lte": 4,
+    "rested_only": true,
+    "target": "opp_character"
+   },
+   {
+    "action": "ko",
     "trigger": "when_attacking",
     "cost_lte": 4,
     "rested_only": true,
@@ -80247,10 +81339,6 @@
    {
     "action": "draw",
     "trigger": "on_ko"
-   },
-   {
-    "action": "gain_rush",
-    "trigger": "on_ko"
    }
   ],
   "synergy_states": {},
@@ -80287,6 +81375,10 @@
   "sub_types": "Dressrosa",
   "effects": [
    {
+    "action": "gain_rush",
+    "trigger": "on_play"
+   },
+   {
     "action": "trash_from_hand",
     "trigger": "on_play"
    }
@@ -80308,7 +81400,7 @@
   "gains_life": false,
   "attacks_life": false,
   "trashes_own_life": false,
-  "has_rush": false,
+  "has_rush": true,
   "has_double_attack": false,
   "has_unblockable": false,
   "has_banish": false,
@@ -80488,6 +81580,10 @@
   "sub_types": "Straw Hat Crew Dressrosa",
   "effects": [
    {
+    "action": "gain_unblockable",
+    "trigger": "on_play"
+   },
+   {
     "action": "keyword_blocker",
     "trigger": "passive"
    },
@@ -80599,7 +81695,13 @@
   "life": 0,
   "color": "Blue",
   "sub_types": "Dressrosa Mogaro Kingdom",
-  "effects": [],
+  "effects": [
+   {
+    "action": "buff_power",
+    "trigger": "passive",
+    "target": "self"
+   }
+  ],
   "synergy_states": {},
   "text": "If you have [Kelly Funk], this Character gains +3000 power.",
   "is_searcher": false,
@@ -80612,7 +81714,7 @@
   "rests_opponent": false,
   "bounces": false,
   "gives_don": false,
-  "power_buff": false,
+  "power_buff": true,
   "heals": false,
   "gains_life": false,
   "attacks_life": false,
@@ -80914,7 +82016,7 @@
    {
     "action": "buff_power",
     "trigger": "on_play",
-    "target": "leader"
+    "target": "leader_or_character"
    }
   ],
   "synergy_states": {},
@@ -80991,7 +82093,13 @@
   "life": 0,
   "color": "Purple",
   "sub_types": "Sky Island",
-  "effects": [],
+  "effects": [
+   {
+    "action": "debuff_power",
+    "trigger": "passive",
+    "target": "opp_leader_or_character"
+   }
+  ],
   "synergy_states": {},
   "text": "[On Your Opponent's Attack] You may rest this Character: Your opponent may return 1 of their active DON!! cards to their DON!! deck. If they do not, give up to 1 of your opponent's Leader or Character cards 2000 power during this turn.",
   "is_searcher": false,
@@ -81070,6 +82178,11 @@
    {
     "action": "draw",
     "trigger": "on_play"
+   },
+   {
+    "action": "debuff_power",
+    "trigger": "when_attacking",
+    "target": "opp_character"
    }
   ],
   "synergy_states": {},
@@ -81497,7 +82610,13 @@
   "life": 0,
   "color": "Purple",
   "sub_types": "Sky Island",
-  "effects": [],
+  "effects": [
+   {
+    "action": "debuff_power",
+    "trigger": "activate_main",
+    "target": "opp_character"
+   }
+  ],
   "synergy_states": {},
   "text": "[Activate: Main] DON!! 2, You may rest this Character: If you have [Kotori] and [Satori], give up to 1 of your opponent's Characters 3000 power during this turn.",
   "is_searcher": false,
@@ -81631,7 +82750,7 @@
    {
     "action": "buff_power",
     "trigger": "main",
-    "target": "leader"
+    "target": "leader_or_character"
    }
   ],
   "synergy_states": {},
@@ -81675,6 +82794,11 @@
    {
     "action": "draw",
     "trigger": "main"
+   },
+   {
+    "action": "debuff_power",
+    "trigger": "main",
+    "target": "opp_character"
    }
   ],
   "synergy_states": {},
@@ -81712,6 +82836,10 @@
   "effects": [
    {
     "action": "draw",
+    "trigger": "main"
+   },
+   {
+    "action": "lock_opp_don",
     "trigger": "main"
    }
   ],
@@ -81760,7 +82888,7 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "leader"
+    "target": "leader_or_character"
    },
    {
     "action": "rest_opp_character",
@@ -81963,10 +83091,6 @@
   "effects": [
    {
     "action": "give_don",
-    "trigger": "on_play"
-   },
-   {
-    "action": "give_don",
     "trigger": "activate_main"
    }
   ],
@@ -82043,10 +83167,6 @@
   "effects": [
    {
     "action": "add_from_trash",
-    "trigger": "on_play"
-   },
-   {
-    "action": "add_from_trash",
     "trigger": "activate_main"
    }
   ],
@@ -82082,7 +83202,12 @@
   "life": 0,
   "color": "Black",
   "sub_types": "Straw Hat Crew",
-  "effects": [],
+  "effects": [
+   {
+    "action": "gain_rush",
+    "trigger": "on_play"
+   }
+  ],
   "synergy_states": {},
   "text": "[On Play] If your Leader has the {Straw Hat Crew} type, play up to 1 {Straw Hat Crew} type Character with a cost of 7 or less from your trash. The Character played with this effect gains [Rush] during this turn.",
   "is_searcher": false,
@@ -82100,7 +83225,7 @@
   "gains_life": false,
   "attacks_life": false,
   "trashes_own_life": false,
-  "has_rush": false,
+  "has_rush": true,
   "has_double_attack": false,
   "has_unblockable": false,
   "has_banish": false,
@@ -82299,7 +83424,13 @@
   "life": 0,
   "color": "Black",
   "sub_types": "Straw Hat Crew",
-  "effects": [],
+  "effects": [
+   {
+    "action": "buff_power",
+    "trigger": "passive",
+    "target": "self"
+   }
+  ],
   "synergy_states": {},
   "text": "Apply each of the following effects based on the number of cards in your trash:\n• If there are 10 or more cards, this Character's base power becomes 9000 and it gains +10 cost.\n• If you have 20 or more cards, during your opponent's turn, your Leader's base power becomes 7000.\n• If you have 30 or more cards, this Character gains +1000 power.",
   "is_searcher": false,
@@ -82312,7 +83443,7 @@
   "rests_opponent": false,
   "bounces": false,
   "gives_don": false,
-  "power_buff": false,
+  "power_buff": true,
   "heals": false,
   "gains_life": false,
   "attacks_life": false,
@@ -82407,7 +83538,7 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "leader"
+    "target": "leader_or_character"
    },
    {
     "action": "buff_power",
@@ -82451,7 +83582,7 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "leader"
+    "target": "leader_or_character"
    }
   ],
   "synergy_states": {},
@@ -82564,6 +83695,10 @@
   "sub_types": "Fallen Monk Pirates Supernovas Sky Island",
   "effects": [
    {
+    "action": "gain_rush",
+    "trigger": "on_play"
+   },
+   {
     "action": "give_don",
     "trigger": "activate_main"
    }
@@ -82585,7 +83720,7 @@
   "gains_life": false,
   "attacks_life": false,
   "trashes_own_life": false,
-  "has_rush": false,
+  "has_rush": true,
   "has_double_attack": false,
   "has_unblockable": false,
   "has_banish": false,
@@ -83213,8 +84348,9 @@
   "sub_types": "Sky Island Shandian Warrior",
   "effects": [
    {
-    "action": "give_don",
-    "trigger": "on_play"
+    "action": "debuff_power",
+    "trigger": "on_play",
+    "target": "all_opp_characters"
    },
    {
     "action": "give_don",
@@ -83802,7 +84938,17 @@
   "life": 0,
   "color": "Red",
   "sub_types": "Whitebeard Pirates",
-  "effects": [],
+  "effects": [
+   {
+    "action": "buff_power",
+    "trigger": "on_play",
+    "target": "self"
+   },
+   {
+    "action": "gain_rush",
+    "trigger": "on_play"
+   }
+  ],
   "synergy_states": {},
   "text": "[On Play] You may trash 1 Character card with 8000 power from your hand: This Character gains [Rush] and +2000 power until the end of your opponent's next End Phase.",
   "is_searcher": false,
@@ -83815,12 +84961,12 @@
   "rests_opponent": false,
   "bounces": false,
   "gives_don": false,
-  "power_buff": false,
+  "power_buff": true,
   "heals": false,
   "gains_life": false,
   "attacks_life": false,
   "trashes_own_life": false,
-  "has_rush": false,
+  "has_rush": true,
   "has_double_attack": false,
   "has_unblockable": false,
   "has_banish": false,
@@ -84031,7 +85177,13 @@
   "life": 0,
   "color": "Red",
   "sub_types": "Straw Hat Crew Impel Down",
-  "effects": [],
+  "effects": [
+   {
+    "action": "debuff_cost",
+    "trigger": "passive",
+    "target": "own_character"
+   }
+  ],
   "synergy_states": {},
   "text": "If your Leader's card name includes \"Ace\" and you have 6 or more DON!! cards on your field, give this card in your hand -2 cost. [On Your Opponent's Attack] You may trash 1 Character card with 8000 power from your hand: Your Leader and this Character's base power becomes 7000 during this turn.",
   "is_searcher": false,
@@ -84221,7 +85373,7 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "leader"
+    "target": "leader_or_character"
    },
    {
     "action": "draw",
@@ -84271,10 +85423,6 @@
    },
    {
     "action": "deck_bottom_rest",
-    "trigger": "on_play"
-   },
-   {
-    "action": "give_don",
     "trigger": "on_play"
    },
    {
@@ -84519,7 +85667,13 @@
   "life": 0,
   "color": "Green",
   "sub_types": "Fish-Man The Sun Pirates Impel Down",
-  "effects": [],
+  "effects": [
+   {
+    "action": "buff_power",
+    "trigger": "passive",
+    "target": "self"
+   }
+  ],
   "synergy_states": {},
   "text": "[DON!! X1] This Character gains +2000 power.",
   "is_searcher": false,
@@ -84532,7 +85686,7 @@
   "rests_opponent": false,
   "bounces": false,
   "gives_don": false,
-  "power_buff": false,
+  "power_buff": true,
   "heals": false,
   "gains_life": false,
   "attacks_life": false,
@@ -84624,7 +85778,12 @@
   "life": 0,
   "color": "Green",
   "sub_types": "Heart Pirates Supernovas",
-  "effects": [],
+  "effects": [
+   {
+    "action": "lock_opp_character_refresh",
+    "trigger": "on_play"
+   }
+  ],
   "synergy_states": {
    "char_restado": {
     "creates": false,
@@ -85057,6 +86216,10 @@
     "action": "buff_power",
     "trigger": "counter",
     "target": "leader"
+   },
+   {
+    "action": "lock_opp_don",
+    "trigger": "main"
    }
   ],
   "synergy_states": {
@@ -85350,6 +86513,10 @@
   "effects": [
    {
     "action": "draw",
+    "trigger": "on_play"
+   },
+   {
+    "action": "gain_blocker",
     "trigger": "on_play"
    },
    {
@@ -85715,7 +86882,7 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "leader"
+    "target": "leader_or_character"
    }
   ],
   "synergy_states": {
@@ -86052,10 +87219,6 @@
    },
    {
     "action": "add_don",
-    "trigger": "on_play"
-   },
-   {
-    "action": "add_don",
     "trigger": "activate_main"
    }
   ],
@@ -86231,6 +87394,10 @@
   "color": "Purple",
   "sub_types": "Donquixote Pirates",
   "effects": [
+   {
+    "action": "add_don",
+    "trigger": "on_play"
+   },
    {
     "action": "add_don",
     "trigger": "when_attacking"
@@ -86523,7 +87690,7 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "leader"
+    "target": "leader_or_character"
    },
    {
     "action": "buff_power",
@@ -86620,10 +87787,6 @@
    },
    {
     "action": "deck_bottom_rest",
-    "trigger": "on_play"
-   },
-   {
-    "action": "trash_from_hand",
     "trigger": "on_play"
    },
    {
@@ -86734,7 +87897,13 @@
   "life": 0,
   "color": "Black",
   "sub_types": "Land of Wano",
-  "effects": [],
+  "effects": [
+   {
+    "action": "debuff_power",
+    "trigger": "activate_main",
+    "target": "opp_character"
+   }
+  ],
   "synergy_states": {},
   "text": "[Activate: Main] You may rest this Character: If you have a Character with a cost of 8 or more, give up to 1 of your opponent's Characters 2000 power during this turn.",
   "is_searcher": false,
@@ -87259,10 +88428,6 @@
    {
     "action": "give_don",
     "trigger": "activate_main"
-   },
-   {
-    "action": "give_don",
-    "trigger": "on_ko"
    }
   ],
   "synergy_states": {},
@@ -87298,6 +88463,10 @@
   "color": "Black",
   "sub_types": "Land of Wano Straw Hat Crew",
   "effects": [
+   {
+    "action": "gain_unblockable",
+    "trigger": "on_play"
+   },
    {
     "action": "keyword_unblockable",
     "trigger": "passive"
@@ -87551,7 +88720,7 @@
    {
     "action": "buff_power",
     "trigger": "main",
-    "target": "leader"
+    "target": "leader_or_character"
    }
   ],
   "synergy_states": {
@@ -87642,6 +88811,20 @@
    {
     "action": "draw",
     "trigger": "on_ko"
+   },
+   {
+    "action": "debuff_power",
+    "trigger": "on_ko",
+    "target": "opp_leader_or_character"
+   },
+   {
+    "action": "draw",
+    "trigger": "opp_turn"
+   },
+   {
+    "action": "debuff_power",
+    "trigger": "opp_turn",
+    "target": "opp_leader_or_character"
    },
    {
     "action": "activate_main_effect",
@@ -88188,7 +89371,17 @@
   "life": 0,
   "color": "Yellow",
   "sub_types": "Blackbeard Pirates The Seven Warlords of the Sea",
-  "effects": [],
+  "effects": [
+   {
+    "action": "negate_effect",
+    "trigger": "trigger",
+    "target": "opp_leader_or_character"
+   },
+   {
+    "action": "add_from_trash",
+    "trigger": "main"
+   }
+  ],
   "synergy_states": {
    "vida_ganha": {
     "creates": false,
@@ -88196,7 +89389,7 @@
    }
   },
   "text": "[Main] If your Leader has the {Blackbeard Pirates} type, add up to 1 card with a [Trigger] other than [Black Vortex] from your trash to your hand.\n[Trigger] Negate the effect of up to 1 of your opponent's Leader or Character cards during this turn.",
-  "is_searcher": false,
+  "is_searcher": true,
   "draws": false,
   "has_counter_value": false,
   "has_counter_event": false,
@@ -88215,7 +89408,7 @@
   "has_double_attack": false,
   "has_unblockable": false,
   "has_banish": false,
-  "has_trigger": false
+  "has_trigger": true
  },
  "OP16-116": {
   "name": "Zehahahahaha!",
@@ -88273,6 +89466,12 @@
    {
     "action": "add_from_trash",
     "trigger": "trigger"
+   },
+   {
+    "action": "negate_effect",
+    "trigger": "main",
+    "cost_lte": 8,
+    "target": "opp_character"
    }
   ],
   "synergy_states": {
@@ -88313,6 +89512,14 @@
   "color": "Red",
   "sub_types": "Whitebeard Pirates",
   "effects": [
+   {
+    "action": "look_top_deck",
+    "trigger": "on_play"
+   },
+   {
+    "action": "add_to_hand",
+    "trigger": "on_play"
+   },
    {
     "action": "look_top_deck",
     "trigger": "on_ko"
@@ -88373,6 +89580,12 @@
    },
    {
     "action": "ko",
+    "trigger": "trigger",
+    "cost_lte": 5,
+    "target": "opp_character"
+   },
+   {
+    "action": "negate_effect",
     "trigger": "trigger",
     "cost_lte": 5,
     "target": "opp_character"
@@ -88786,7 +89999,7 @@
    {
     "action": "buff_power",
     "trigger": "activate_main",
-    "target": "self"
+    "target": "own_character"
    }
   ],
   "synergy_states": {},
@@ -89119,7 +90332,7 @@
    {
     "action": "buff_power",
     "trigger": "on_play",
-    "target": "leader"
+    "target": "leader_or_character"
    }
   ],
   "synergy_states": {},
@@ -89928,7 +91141,13 @@
   "life": 0,
   "color": "Red",
   "sub_types": "Revolutionary Army",
-  "effects": [],
+  "effects": [
+   {
+    "action": "buff_power",
+    "trigger": "passive",
+    "target": "self"
+   }
+  ],
   "synergy_states": {},
   "text": "[DON!! x1] If you have 4 or less cards in your hand, this Character gains +2000 power.",
   "is_searcher": false,
@@ -89941,7 +91160,7 @@
   "rests_opponent": false,
   "bounces": false,
   "gives_don": false,
-  "power_buff": false,
+  "power_buff": true,
   "heals": false,
   "gains_life": false,
   "attacks_life": false,
@@ -90410,7 +91629,12 @@
   "life": 0,
   "color": "Green",
   "sub_types": "Music/FILM",
-  "effects": [],
+  "effects": [
+   {
+    "action": "lock_opp_don",
+    "trigger": "main"
+   }
+  ],
   "synergy_states": {
    "char_restado": {
     "creates": false,
@@ -90485,7 +91709,7 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "leader"
+    "target": "leader_or_character"
    }
   ],
   "synergy_states": {},
@@ -90925,6 +92149,11 @@
    {
     "action": "add_to_hand",
     "trigger": "activate_main"
+   },
+   {
+    "action": "bounce",
+    "trigger": "activate_main",
+    "target": "self"
    }
   ],
   "synergy_states": {},
@@ -90934,10 +92163,10 @@
   "has_counter_value": true,
   "has_counter_event": false,
   "is_blocker": false,
-  "is_removal": false,
+  "is_removal": true,
   "kos": false,
   "rests_opponent": false,
-  "bounces": false,
+  "bounces": true,
   "gives_don": false,
   "power_buff": false,
   "heals": false,
@@ -91038,7 +92267,12 @@
   "life": 0,
   "color": "Purple",
   "sub_types": "Animal Kingdom Pirates",
-  "effects": [],
+  "effects": [
+   {
+    "action": "add_don",
+    "trigger": "passive"
+   }
+  ],
   "synergy_states": {},
   "text": "[Once Per Turn] When 2 or more DON!! cards on your field are returned to your DON!! deck, add up to 1 DON!! card from your DON!! deck and rest it. Then, set up to 1 of your purple Stages as active.",
   "is_searcher": false,
@@ -91071,7 +92305,13 @@
   "life": 0,
   "color": "Green",
   "sub_types": "ODYSSEY",
-  "effects": [],
+  "effects": [
+   {
+    "action": "buff_power",
+    "trigger": "passive",
+    "target": "self"
+   }
+  ],
   "synergy_states": {},
   "text": "If you have 2 or more rested {ODYSSEY} type Characters, this Character gains +1000 power.",
   "is_searcher": false,
@@ -91084,7 +92324,7 @@
   "rests_opponent": false,
   "bounces": false,
   "gives_don": false,
-  "power_buff": false,
+  "power_buff": true,
   "heals": false,
   "gains_life": false,
   "attacks_life": false,
@@ -91144,6 +92384,11 @@
   "sub_types": "Cross Guild",
   "effects": [
    {
+    "action": "bounce",
+    "trigger": "activate_main",
+    "target": "self"
+   },
+   {
     "action": "play_card",
     "trigger": "activate_main",
     "cost_lte": 99
@@ -91156,10 +92401,10 @@
   "has_counter_value": true,
   "has_counter_event": false,
   "is_blocker": false,
-  "is_removal": false,
+  "is_removal": true,
   "kos": false,
   "rests_opponent": false,
-  "bounces": false,
+  "bounces": true,
   "gives_don": false,
   "power_buff": false,
   "heals": false,
@@ -91369,6 +92614,11 @@
     "action": "play_card",
     "trigger": "on_ko",
     "cost_lte": 99
+   },
+   {
+    "action": "play_card",
+    "trigger": "opp_turn",
+    "cost_lte": 99
    }
   ],
   "synergy_states": {},
@@ -91446,7 +92696,7 @@
    {
     "action": "debuff_power",
     "trigger": "opp_turn",
-    "target": "self"
+    "target": "opp_character"
    }
   ],
   "synergy_states": {},
@@ -91523,7 +92773,12 @@
   "life": 5,
   "color": "Red",
   "sub_types": "Straw Hat Crew",
-  "effects": [],
+  "effects": [
+   {
+    "action": "gain_rush",
+    "trigger": "activate_main"
+   }
+  ],
   "synergy_states": {},
   "text": "[Activate:Main] [Once Per Turn] Up to 1 of your Characters without an [On Play] effect and with a cost of 8 or less gains [Rush] during this turn.(This card can attack on the turn in which it is played.)",
   "is_searcher": false,
@@ -91541,7 +92796,7 @@
   "gains_life": false,
   "attacks_life": false,
   "trashes_own_life": false,
-  "has_rush": false,
+  "has_rush": true,
   "has_double_attack": false,
   "has_unblockable": false,
   "has_banish": false,
@@ -92065,6 +93320,11 @@
    {
     "action": "give_don",
     "trigger": "on_play"
+   },
+   {
+    "action": "play_from_trash",
+    "trigger": "on_play",
+    "cost_lte": 4
    }
   ],
   "synergy_states": {},
@@ -92184,7 +93444,7 @@
    {
     "action": "buff_power",
     "trigger": "activate_main",
-    "target": "leader"
+    "target": "leader_or_character"
    },
    {
     "action": "rest_opp_character",
@@ -92460,7 +93720,7 @@
     "action": "buff_power",
     "trigger": "when_attacking",
     "don_requirement": 1,
-    "target": "leader"
+    "target": "leader_or_character"
    }
   ],
   "synergy_states": {},
@@ -92750,7 +94010,13 @@
   "life": 0,
   "color": "Red",
   "sub_types": "Straw Hat Crew Supernovas",
-  "effects": [],
+  "effects": [
+   {
+    "action": "buff_power",
+    "trigger": "passive",
+    "target": "self"
+   }
+  ],
   "synergy_states": {},
   "text": "[DON!! x1] This Character gains +1000 power.",
   "is_searcher": false,
@@ -92763,7 +94029,7 @@
   "rests_opponent": false,
   "bounces": false,
   "gives_don": false,
-  "power_buff": false,
+  "power_buff": true,
   "heals": false,
   "gains_life": false,
   "attacks_life": false,
@@ -92787,12 +94053,12 @@
    {
     "action": "buff_power",
     "trigger": "trigger",
-    "target": "leader"
+    "target": "leader_or_character"
    },
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "leader"
+    "target": "leader_or_character"
    }
   ],
   "synergy_states": {
@@ -93035,7 +94301,13 @@
   "life": 0,
   "color": "Green",
   "sub_types": "Fallen Monk Pirates Supernovas",
-  "effects": [],
+  "effects": [
+   {
+    "action": "buff_power",
+    "trigger": "passive",
+    "target": "self"
+   }
+  ],
   "synergy_states": {},
   "text": "[DON!! x1] If you have 3 or more Characters, this card gains +2000 power.",
   "is_searcher": false,
@@ -93048,7 +94320,7 @@
   "rests_opponent": false,
   "bounces": false,
   "gives_don": false,
-  "power_buff": false,
+  "power_buff": true,
   "heals": false,
   "gains_life": false,
   "attacks_life": false,
@@ -93505,7 +94777,7 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "leader"
+    "target": "leader_or_character"
    },
    {
     "action": "set_don_active",
@@ -93553,7 +94825,7 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "leader"
+    "target": "leader_or_character"
    },
    {
     "action": "set_don_active",
@@ -94250,7 +95522,7 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "leader"
+    "target": "leader_or_character"
    }
   ],
   "synergy_states": {},
@@ -94362,6 +95634,10 @@
     "trigger": "on_play",
     "cost_lte": 6,
     "target": "opp_character"
+   },
+   {
+    "action": "gain_rush",
+    "trigger": "on_play"
    }
   ],
   "synergy_states": {},
@@ -94381,7 +95657,7 @@
   "gains_life": false,
   "attacks_life": false,
   "trashes_own_life": false,
-  "has_rush": false,
+  "has_rush": true,
   "has_double_attack": false,
   "has_unblockable": false,
   "has_banish": false,
@@ -94889,7 +96165,7 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "leader"
+    "target": "leader_or_character"
    }
   ],
   "synergy_states": {},
@@ -96145,7 +97421,7 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "leader"
+    "target": "leader_or_character"
    }
   ],
   "synergy_states": {
@@ -96241,7 +97517,7 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "leader"
+    "target": "leader_or_character"
    }
   ],
   "synergy_states": {
@@ -96402,7 +97678,12 @@
   "life": 0,
   "color": "Yellow",
   "sub_types": "Big Mom Pirates",
-  "effects": [],
+  "effects": [
+   {
+    "action": "gain_rush",
+    "trigger": "on_play"
+   }
+  ],
   "synergy_states": {},
   "text": "[On Play] Look at up to 1 card from the top of your or your opponent's Life cards, and place it at the top or bottom of the Life cards. Then, if you have less Life cards than your opponent, this Character gains [Rush] during this turn. (This card can attack on the turn in which it is played.)",
   "is_searcher": false,
@@ -96420,7 +97701,7 @@
   "gains_life": false,
   "attacks_life": true,
   "trashes_own_life": false,
-  "has_rush": false,
+  "has_rush": true,
   "has_double_attack": false,
   "has_unblockable": false,
   "has_banish": false,
@@ -96944,7 +98225,7 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "leader"
+    "target": "leader_or_character"
    }
   ],
   "synergy_states": {
@@ -98102,7 +99383,7 @@
    {
     "action": "debuff_power",
     "trigger": "counter",
-    "target": "opp_leader"
+    "target": "opp_leader_or_character"
    }
   ],
   "synergy_states": {
@@ -98150,7 +99431,7 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "leader"
+    "target": "leader_or_character"
    }
   ],
   "synergy_states": {
@@ -98276,7 +99557,7 @@
    {
     "action": "debuff_power",
     "trigger": "your_turn",
-    "target": "self"
+    "target": "opp_character"
    }
   ],
   "synergy_states": {},
@@ -98311,7 +99592,12 @@
   "life": 0,
   "color": "Red",
   "sub_types": "Straw Hat Crew",
-  "effects": [],
+  "effects": [
+   {
+    "action": "gain_rush",
+    "trigger": "on_play"
+   }
+  ],
   "synergy_states": {},
   "text": "[On Play] If your opponent has a Character with 5000 or more power, this Character gains [Rush] during this turn. (This card can attack on the turn in which it is played.)",
   "is_searcher": false,
@@ -98329,7 +99615,7 @@
   "gains_life": false,
   "attacks_life": false,
   "trashes_own_life": false,
-  "has_rush": false,
+  "has_rush": true,
   "has_double_attack": false,
   "has_unblockable": false,
   "has_banish": false,
@@ -98628,6 +99914,10 @@
   "effects": [
    {
     "action": "add_don",
+    "trigger": "on_play"
+   },
+   {
+    "action": "add_don",
     "trigger": "when_attacking"
    }
   ],
@@ -98664,6 +99954,11 @@
   "color": "Purple",
   "sub_types": "Kid Pirates",
   "effects": [
+   {
+    "action": "buff_power",
+    "trigger": "on_play",
+    "target": "leader"
+   },
    {
     "action": "buff_power",
     "trigger": "when_attacking",
@@ -98750,7 +100045,7 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "leader"
+    "target": "leader_or_character"
    }
   ],
   "synergy_states": {},
@@ -99067,7 +100362,7 @@
    {
     "action": "buff_power",
     "trigger": "trigger",
-    "target": "leader"
+    "target": "leader_or_character"
    }
   ],
   "synergy_states": {
@@ -99544,7 +100839,13 @@
   "life": 0,
   "color": "Blue",
   "sub_types": "Big Mom Pirates",
-  "effects": [],
+  "effects": [
+   {
+    "action": "bounce",
+    "trigger": "activate_main",
+    "target": "self"
+   }
+  ],
   "synergy_states": {},
   "text": "[Activate:Main] Return this Character to the owner's hand.",
   "is_searcher": false,
@@ -99552,10 +100853,10 @@
   "has_counter_value": true,
   "has_counter_event": false,
   "is_blocker": false,
-  "is_removal": false,
+  "is_removal": true,
   "kos": false,
   "rests_opponent": false,
-  "bounces": false,
+  "bounces": true,
   "gives_don": false,
   "power_buff": false,
   "heals": false,
@@ -99718,6 +101019,10 @@
    },
    {
     "action": "rest_opp_character",
+    "trigger": "main"
+   },
+   {
+    "action": "rest_opp_character",
     "trigger": "counter"
    }
   ],
@@ -99766,7 +101071,7 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "leader"
+    "target": "leader_or_character"
    },
    {
     "action": "play_card",
@@ -99811,7 +101116,7 @@
     "action": "buff_power",
     "trigger": "activate_main",
     "don_requirement": 1,
-    "target": "self"
+    "target": "own_character"
    },
    {
     "action": "gain_life",
@@ -100241,7 +101546,12 @@
   "life": 0,
   "color": "Yellow",
   "sub_types": "Whitebeard Pirates",
-  "effects": [],
+  "effects": [
+   {
+    "action": "gain_rush",
+    "trigger": "on_play"
+   }
+  ],
   "synergy_states": {},
   "text": "[On Play] If you have 2 or less Life cards, this Character gains [Rush].\n(This card can attack on the turn in which it is played.)",
   "is_searcher": false,
@@ -100259,7 +101569,7 @@
   "gains_life": false,
   "attacks_life": false,
   "trashes_own_life": false,
-  "has_rush": false,
+  "has_rush": true,
   "has_double_attack": false,
   "has_unblockable": false,
   "has_banish": false,
@@ -100490,7 +101800,7 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "leader"
+    "target": "leader_or_character"
    }
   ],
   "synergy_states": {
@@ -100542,7 +101852,7 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "leader"
+    "target": "leader_or_character"
    }
   ],
   "synergy_states": {
@@ -100638,7 +101948,13 @@
   "life": 5,
   "color": "Black",
   "sub_types": "Straw Hat Crew",
-  "effects": [],
+  "effects": [
+   {
+    "action": "buff_power",
+    "trigger": "passive",
+    "target": "self"
+   }
+  ],
   "synergy_states": {},
   "text": "[DON!! x1] All of your Characters gain +1 cost. If you have a Character with a cost of 8 or more, this Leader gains +1000 power.",
   "is_searcher": false,
@@ -100651,7 +101967,7 @@
   "rests_opponent": false,
   "bounces": false,
   "gives_don": false,
-  "power_buff": false,
+  "power_buff": true,
   "heals": false,
   "gains_life": false,
   "attacks_life": false,
@@ -100861,6 +102177,11 @@
   "color": "Black",
   "sub_types": "Straw Hat Crew",
   "effects": [
+   {
+    "action": "debuff_cost",
+    "trigger": "on_play",
+    "target": "opp_character"
+   },
    {
     "action": "debuff_cost",
     "trigger": "when_attacking",
@@ -101118,7 +102439,7 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "leader"
+    "target": "leader_or_character"
    }
   ],
   "synergy_states": {
@@ -101174,7 +102495,7 @@
    {
     "action": "buff_power",
     "trigger": "main",
-    "target": "leader"
+    "target": "leader_or_character"
    }
   ],
   "synergy_states": {
@@ -101336,14 +102657,7 @@
   "sub_types": "The Four Emperors Whitebeard Pirates",
   "effects": [
    {
-    "action": "ko",
-    "trigger": "on_play",
-    "power_lte": 5000,
-    "rested_only": true,
-    "target": "opp_character"
-   },
-   {
-    "action": "give_don_opp",
+    "action": "give_don",
     "trigger": "on_play"
    },
    {
@@ -101364,7 +102678,7 @@
   "kos": true,
   "rests_opponent": false,
   "bounces": false,
-  "gives_don": false,
+  "gives_don": true,
   "power_buff": false,
   "heals": false,
   "gains_life": false,
@@ -101428,7 +102742,13 @@
   "life": 0,
   "color": "Red",
   "sub_types": "Whitebeard Pirates",
-  "effects": [],
+  "effects": [
+   {
+    "action": "debuff_power",
+    "trigger": "on_play",
+    "target": "opp_character"
+   }
+  ],
   "synergy_states": {},
   "text": "[On Play] If your Leader's type includes \"Whitebeard Pirates\", give up to 1 of your opponent's Characters 2000 power during this turn. Then, add 1 card from the top of your Life cards to your hand.",
   "is_searcher": false,
@@ -101574,7 +102894,13 @@
   "life": 0,
   "color": "Green",
   "sub_types": "FILM Big Mom Pirates",
-  "effects": [],
+  "effects": [
+   {
+    "action": "buff_power",
+    "trigger": "passive",
+    "target": "leader"
+   }
+  ],
   "synergy_states": {},
   "text": "If your Leader has the \"FILM\" type and you have 6 or more rested cards, this Character gains +2000 power.",
   "is_searcher": false,
@@ -101587,7 +102913,7 @@
   "rests_opponent": false,
   "bounces": false,
   "gives_don": false,
-  "power_buff": false,
+  "power_buff": true,
   "heals": false,
   "gains_life": false,
   "attacks_life": false,
@@ -101651,7 +102977,13 @@
   "life": 0,
   "color": "Green",
   "sub_types": "FILM Straw Hat Crew Supernovas",
-  "effects": [],
+  "effects": [
+   {
+    "action": "buff_power",
+    "trigger": "passive",
+    "target": "self"
+   }
+  ],
   "synergy_states": {},
   "text": "If you have a rested [Uta], this Character gains +1000 power.",
   "is_searcher": false,
@@ -101664,7 +102996,7 @@
   "rests_opponent": false,
   "bounces": false,
   "gives_don": false,
-  "power_buff": false,
+  "power_buff": true,
   "heals": false,
   "gains_life": false,
   "attacks_life": false,
@@ -102210,11 +103542,6 @@
    {
     "action": "give_don",
     "trigger": "activate_main"
-   },
-   {
-    "action": "give_don",
-    "trigger": "opp_turn",
-    "don_requirement": 1
    }
   ],
   "synergy_states": {},
@@ -103079,7 +104406,7 @@
    {
     "action": "buff_power",
     "trigger": "main",
-    "target": "leader"
+    "target": "leader_or_character"
    },
    {
     "action": "keyword_blocker",
@@ -103132,6 +104459,11 @@
     "action": "ko",
     "trigger": "main",
     "power_lte": 2000,
+    "target": "opp_character"
+   },
+   {
+    "action": "debuff_power",
+    "trigger": "main",
     "target": "opp_character"
    }
   ],
@@ -103553,6 +104885,11 @@
     "action": "buff_power",
     "trigger": "on_play",
     "target": "leader"
+   },
+   {
+    "action": "buff_power",
+    "trigger": "your_turn",
+    "target": "leader"
    }
   ],
   "synergy_states": {},
@@ -103739,7 +105076,7 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "leader"
+    "target": "leader_or_character"
    }
   ],
   "synergy_states": {
@@ -104163,6 +105500,10 @@
     "action": "buff_power",
     "trigger": "on_play",
     "target": "leader"
+   },
+   {
+    "action": "lock_opp_don",
+    "trigger": "on_play"
    }
   ],
   "synergy_states": {
@@ -104898,6 +106239,11 @@
   "sub_types": "Former Whitebeard Pirates Land of Wano",
   "effects": [
    {
+    "action": "gain_banish",
+    "trigger": "on_play",
+    "don_requirement": 2
+   },
+   {
     "action": "keyword_blocker",
     "trigger": "don_conditional_keywords"
    }
@@ -104922,7 +106268,7 @@
   "has_rush": false,
   "has_double_attack": false,
   "has_unblockable": false,
-  "has_banish": false,
+  "has_banish": true,
   "has_trigger": false
  },
  "ST28-003": {
@@ -104991,10 +106337,6 @@
     "action": "buff_power",
     "trigger": "your_turn",
     "target": "leader"
-   },
-   {
-    "action": "gain_rush",
-    "trigger": "your_turn"
    }
   ],
   "synergy_states": {},
@@ -105124,6 +106466,10 @@
   "color": "Yellow",
   "sub_types": "Straw Hat Crew Egghead",
   "effects": [
+   {
+    "action": "rest_opp_character",
+    "trigger": "on_play"
+   },
    {
     "action": "rest_opp_character",
     "trigger": "when_attacking"
@@ -105645,11 +106991,11 @@
   "effects": [
    {
     "action": "draw",
-    "trigger": "trigger"
+    "trigger": "activate_main"
    },
    {
     "action": "give_don",
-    "trigger": "trigger"
+    "trigger": "activate_main"
    }
   ],
   "synergy_states": {
@@ -105678,7 +107024,7 @@
   "has_double_attack": false,
   "has_unblockable": false,
   "has_banish": false,
-  "has_trigger": true
+  "has_trigger": false
  },
  "ST29-015": {
   "name": "Raw Heat Strike",
@@ -105693,7 +107039,12 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "leader"
+    "target": "leader_or_character"
+   },
+   {
+    "action": "debuff_power",
+    "trigger": "counter",
+    "target": "opp_leader_or_character"
    }
   ],
   "synergy_states": {},
@@ -105789,7 +107140,7 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "leader"
+    "target": "leader_or_character"
    }
   ],
   "synergy_states": {
@@ -106068,6 +107419,10 @@
   "sub_types": "Whitebeard Pirates",
   "effects": [
    {
+    "action": "gain_rush",
+    "trigger": "on_play"
+   },
+   {
     "action": "debuff_power",
     "trigger": "when_attacking",
     "target": "opp_character"
@@ -106090,7 +107445,7 @@
   "gains_life": false,
   "attacks_life": false,
   "trashes_own_life": false,
-  "has_rush": false,
+  "has_rush": true,
   "has_double_attack": false,
   "has_unblockable": false,
   "has_banish": false,
@@ -106143,11 +107498,16 @@
   "life": 0,
   "color": "Red",
   "sub_types": "Giant Whitebeard Pirates",
-  "effects": [],
+  "effects": [
+   {
+    "action": "draw",
+    "trigger": "passive"
+   }
+  ],
   "synergy_states": {},
   "text": "If your Character with 6000 base power would be removed from the field by your opponent's effect, you may trash this Character and draw 1 card instead.",
   "is_searcher": false,
-  "draws": false,
+  "draws": true,
   "has_counter_value": true,
   "has_counter_event": false,
   "is_blocker": false,
@@ -106177,6 +107537,10 @@
   "color": "Green",
   "sub_types": "Impel Down Former Baroque Works",
   "effects": [
+   {
+    "action": "lock_opp_character_refresh",
+    "trigger": "on_play"
+   },
    {
     "action": "keyword_blocker",
     "trigger": "passive"
@@ -106259,6 +107623,10 @@
   "sub_types": "Straw Hat Crew Impel Down",
   "effects": [
    {
+    "action": "gain_rush",
+    "trigger": "on_play"
+   },
+   {
     "action": "rest_opp_character",
     "trigger": "when_attacking"
    },
@@ -106289,7 +107657,7 @@
   "gains_life": false,
   "attacks_life": false,
   "trashes_own_life": false,
-  "has_rush": false,
+  "has_rush": true,
   "has_double_attack": false,
   "has_unblockable": false,
   "has_banish": false,
@@ -106380,7 +107748,7 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "leader"
+    "target": "leader_or_character"
    }
   ],
   "synergy_states": {
@@ -106428,7 +107796,7 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "leader"
+    "target": "leader_or_character"
    }
   ],
   "synergy_states": {},
