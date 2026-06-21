@@ -6695,6 +6695,7 @@
             {
                 "action": "ko",
                 "trigger": "on_play",
+                "cost_lte": 3,
                 "target": "opp_character"
             }
         ],
@@ -7558,6 +7559,7 @@
             {
                 "action": "ko",
                 "trigger": "on_play",
+                "cost_lte": 3,
                 "target": "opp_character"
             }
         ],
@@ -9898,6 +9900,7 @@
             {
                 "action": "ko",
                 "trigger": "main",
+                "cost_lte": 5,
                 "target": "opp_character"
             }
         ],
@@ -14204,7 +14207,13 @@
         "life": 0,
         "color": "Purple",
         "sub_types": "Animal Kingdom Pirates The Four Emperors",
-        "effects": [],
+        "effects": [
+            {
+                "action": "ko",
+                "trigger": "on_play",
+                "target": "all_character"
+            }
+        ],
         "synergy_states": {},
         "text": "[On Play] DON!! -6 (You may return the specified number of DON!! cards from your field to your DON!! deck.): If your Leader has the \"Animal Kingdom Pirates\" type, K.O. all Characters other than this Character.",
         "is_searcher": false,
@@ -14212,8 +14221,8 @@
         "has_counter_value": false,
         "has_counter_event": false,
         "is_blocker": false,
-        "is_removal": false,
-        "kos": false,
+        "is_removal": true,
+        "kos": true,
         "rests_opponent": false,
         "bounces": false,
         "gives_don": false,
@@ -32094,7 +32103,15 @@
         "life": 0,
         "color": "Green",
         "sub_types": "nan",
-        "effects": [],
+        "effects": [
+            {
+                "action": "ko",
+                "trigger": "end_of_turn",
+                "cost_lte": 5,
+                "rested_only": true,
+                "target": "all_character"
+            }
+        ],
         "synergy_states": {
             "char_restado": {
                 "creates": false,
@@ -32107,8 +32124,8 @@
         "has_counter_value": false,
         "has_counter_event": false,
         "is_blocker": false,
-        "is_removal": false,
-        "kos": false,
+        "is_removal": true,
+        "kos": true,
         "rests_opponent": false,
         "bounces": false,
         "gives_don": false,
@@ -36700,6 +36717,7 @@
             {
                 "action": "ko",
                 "trigger": "on_play",
+                "rested_only": true,
                 "target": "opp_character"
             }
         ],
@@ -38677,7 +38695,14 @@
         "life": 0,
         "color": "Black",
         "sub_types": "Thriller Bark Pirates",
-        "effects": [],
+        "effects": [
+            {
+                "action": "ko",
+                "trigger": "on_play",
+                "cost_lte": 2,
+                "target": "all_character"
+            }
+        ],
         "synergy_states": {},
         "text": "[On Play] You may return 2 cards from your trash to the bottom of your deck in any order: K.O. up to 1 Character with a cost of 2 or less.",
         "is_searcher": false,
@@ -38685,8 +38710,8 @@
         "has_counter_value": true,
         "has_counter_event": false,
         "is_blocker": false,
-        "is_removal": false,
-        "kos": false,
+        "is_removal": true,
+        "kos": true,
         "rests_opponent": false,
         "bounces": false,
         "gives_don": false,
@@ -39086,7 +39111,14 @@
         "life": 0,
         "color": "Black",
         "sub_types": "Former Rumbar Pirates",
-        "effects": [],
+        "effects": [
+            {
+                "action": "trash_character",
+                "trigger": "on_play",
+                "cost_lte": 4,
+                "target": "opp_character"
+            }
+        ],
         "synergy_states": {},
         "text": "[On Play] Choose one:\n• Trash up to 1 of your opponent's Characters with a cost of 4 or less.\n• Your opponent places 3 cards from their trash at bottom of their deck in any order.",
         "is_searcher": false,
@@ -40168,7 +40200,14 @@
         "life": 0,
         "color": "Yellow",
         "sub_types": "Sky Island",
-        "effects": [],
+        "effects": [
+            {
+                "action": "ko",
+                "trigger": "activate_main",
+                "cost_lte": 2,
+                "target": "opp_character"
+            }
+        ],
         "synergy_states": {},
         "text": "[Activate:Main][Once Per Turn] You may rest this card and 1 of your [Enel] cards: K.O. all of your opponent's Characters with a cost of 2 or less.",
         "is_searcher": false,
@@ -40176,8 +40215,8 @@
         "has_counter_value": false,
         "has_counter_event": false,
         "is_blocker": false,
-        "is_removal": false,
-        "kos": false,
+        "is_removal": true,
+        "kos": true,
         "rests_opponent": false,
         "bounces": false,
         "gives_don": false,
@@ -43956,6 +43995,12 @@
         "color": "Black",
         "sub_types": "Straw Hat Crew",
         "effects": [
+            {
+                "action": "trash_character",
+                "trigger": "when_attacking",
+                "cost_lte": 2,
+                "target": "opp_character"
+            },
             {
                 "action": "buff_power",
                 "trigger": "when_attacking",
@@ -48518,7 +48563,14 @@
         "life": 0,
         "color": "Black",
         "sub_types": "Animal Kingdom Pirates Former Rocks Pirates",
-        "effects": [],
+        "effects": [
+            {
+                "action": "trash_character",
+                "trigger": "activate_main",
+                "cost_lte": 7,
+                "target": "opp_character"
+            }
+        ],
         "synergy_states": {},
         "text": "[Activate:Main] [Once Per Turn] You may trash 1 card from your hand: If this Character was played on this turn, trash up to 1 of your opponent's Characters with a cost of 7 or less. Then, your opponent trashes 1 card from their hand.",
         "is_searcher": false,
@@ -50238,6 +50290,11 @@
         "sub_types": "Animal Kingdom Pirates The Four Emperors Big Mom Pirates",
         "effects": [
             {
+                "action": "ko",
+                "trigger": "when_attacking",
+                "target": "all_character"
+            },
+            {
                 "action": "gain_life",
                 "trigger": "when_attacking"
             },
@@ -50258,8 +50315,8 @@
         "has_counter_value": false,
         "has_counter_event": false,
         "is_blocker": false,
-        "is_removal": false,
-        "kos": false,
+        "is_removal": true,
+        "kos": true,
         "rests_opponent": false,
         "bounces": false,
         "gives_don": false,
@@ -50606,7 +50663,14 @@
         "life": 0,
         "color": "Red",
         "sub_types": "Red-Haired Pirates",
-        "effects": [],
+        "effects": [
+            {
+                "action": "trash_character",
+                "trigger": "on_play",
+                "power_lte": 6000,
+                "target": "opp_character"
+            }
+        ],
         "synergy_states": {},
         "text": "[On Play] Trash up to 1 of your opponent's Characters with 6000 power or less.",
         "is_searcher": false,
@@ -51299,7 +51363,6 @@
                 "action": "ko",
                 "trigger": "on_play",
                 "cost_lte": 5,
-                "rested_only": true,
                 "target": "opp_character"
             }
         ],
@@ -51849,7 +51912,6 @@
                 "action": "ko",
                 "trigger": "main",
                 "cost_lte": 4,
-                "rested_only": true,
                 "target": "opp_character"
             }
         ],
@@ -58813,6 +58875,7 @@
             {
                 "action": "ko",
                 "trigger": "activate_main",
+                "cost_lte": 3,
                 "target": "opp_character"
             },
             {
@@ -59190,7 +59253,20 @@
         "life": 0,
         "color": "Black",
         "sub_types": "Navy",
-        "effects": [],
+        "effects": [
+            {
+                "action": "ko",
+                "trigger": "trigger",
+                "cost_lte": 4,
+                "target": "opp_character"
+            },
+            {
+                "action": "ko",
+                "trigger": "main",
+                "cost_lte": 8,
+                "target": "opp_character"
+            }
+        ],
         "synergy_states": {
             "vida_ganha": {
                 "creates": false,
@@ -59203,8 +59279,8 @@
         "has_counter_value": false,
         "has_counter_event": false,
         "is_blocker": false,
-        "is_removal": false,
-        "kos": false,
+        "is_removal": true,
+        "kos": true,
         "rests_opponent": false,
         "bounces": false,
         "gives_don": false,
@@ -59217,7 +59293,7 @@
         "has_double_attack": false,
         "has_unblockable": false,
         "has_banish": false,
-        "has_trigger": false
+        "has_trigger": true
     },
     "OP10-097": {
         "name": "Gum-Gum Rhino Schneider",
@@ -59284,6 +59360,7 @@
             {
                 "action": "ko",
                 "trigger": "main",
+                "cost_lte": 6,
                 "target": "opp_character"
             }
         ],
@@ -62937,6 +63014,7 @@
             {
                 "action": "ko",
                 "trigger": "activate_main",
+                "cost_lte": 3,
                 "target": "opp_character"
             },
             {
@@ -63550,6 +63628,7 @@
             {
                 "action": "ko",
                 "trigger": "main",
+                "cost_lte": 8,
                 "target": "opp_character"
             }
         ],
@@ -64073,7 +64152,6 @@
                 "action": "ko",
                 "trigger": "on_play",
                 "cost_lte": 7,
-                "rested_only": true,
                 "target": "opp_character"
             },
             {
@@ -64867,6 +64945,7 @@
             {
                 "action": "ko",
                 "trigger": "main",
+                "cost_lte": 5,
                 "target": "opp_character"
             }
         ],
@@ -66242,6 +66321,8 @@
             {
                 "action": "ko",
                 "trigger": "on_play",
+                "cost_lte": 1,
+                "rested_only": true,
                 "target": "opp_character"
             },
             {
@@ -66623,6 +66704,8 @@
             {
                 "action": "ko",
                 "trigger": "main",
+                "cost_lte": 4,
+                "rested_only": true,
                 "target": "opp_character"
             }
         ],
@@ -68650,6 +68733,7 @@
             {
                 "action": "ko",
                 "trigger": "on_ko",
+                "cost_lte": 4,
                 "target": "opp_character"
             },
             {
@@ -73564,6 +73648,7 @@
             {
                 "action": "ko",
                 "trigger": "on_play",
+                "cost_lte": 5,
                 "target": "opp_character"
             },
             {
@@ -73734,6 +73819,7 @@
             {
                 "action": "ko",
                 "trigger": "on_play",
+                "cost_lte": 3,
                 "target": "opp_character"
             },
             {
@@ -73837,6 +73923,7 @@
             {
                 "action": "ko",
                 "trigger": "main",
+                "cost_lte": 6,
                 "target": "opp_character"
             }
         ],
@@ -74733,6 +74820,7 @@
             {
                 "action": "ko",
                 "trigger": "main",
+                "cost_lte": 6,
                 "target": "opp_character"
             }
         ],
@@ -77723,7 +77811,6 @@
                 "action": "ko",
                 "trigger": "on_play",
                 "cost_lte": 8,
-                "rested_only": true,
                 "target": "opp_character"
             }
         ],
@@ -84734,6 +84821,12 @@
         "sub_types": "Sky Island Shandian Warrior",
         "effects": [
             {
+                "action": "ko",
+                "trigger": "on_play",
+                "power_lte": 0,
+                "target": "opp_character"
+            },
+            {
                 "action": "debuff_power",
                 "trigger": "on_play",
                 "target": "all_opp_characters"
@@ -84750,8 +84843,8 @@
         "has_counter_value": true,
         "has_counter_event": false,
         "is_blocker": false,
-        "is_removal": false,
-        "kos": false,
+        "is_removal": true,
+        "kos": true,
         "rests_opponent": false,
         "bounces": false,
         "gives_don": true,
@@ -93840,6 +93933,7 @@
             {
                 "action": "ko",
                 "trigger": "on_ko",
+                "cost_lte": 4,
                 "target": "opp_character"
             },
             {
@@ -98922,6 +99016,12 @@
         "sub_types": "Red-Haired Pirates",
         "effects": [
             {
+                "action": "ko",
+                "trigger": "on_play",
+                "cost_lte": 1,
+                "target": "all_character"
+            },
+            {
                 "action": "trash_from_hand",
                 "trigger": "on_play"
             }
@@ -98933,8 +99033,8 @@
         "has_counter_value": false,
         "has_counter_event": false,
         "is_blocker": false,
-        "is_removal": false,
-        "kos": false,
+        "is_removal": true,
+        "kos": true,
         "rests_opponent": false,
         "bounces": false,
         "gives_don": false,
@@ -103409,6 +103509,7 @@
             {
                 "action": "ko",
                 "trigger": "on_play",
+                "rested_only": true,
                 "target": "opp_character"
             }
         ],
@@ -103984,7 +104085,13 @@
         "life": 0,
         "color": "Black",
         "sub_types": "Navy",
-        "effects": [],
+        "effects": [
+            {
+                "action": "trash_character",
+                "trigger": "activate_main",
+                "target": "opp_character"
+            }
+        ],
         "synergy_states": {},
         "text": "[On Play] If your Leader is [Smoker], give up to 1 of your opponent's Characters 4 cost during this turn.\n\n[Activate: Main] [Once Per Turn] If this Character was played on this turn, trash up to 1 of your opponent's Characters with a cost of 0.",
         "is_searcher": false,
@@ -106643,6 +106750,12 @@
         "sub_types": "Blackbeard Pirates The Four Emperors",
         "effects": [
             {
+                "action": "ko",
+                "trigger": "activate_main",
+                "cost_lte": 3,
+                "target": "all_character"
+            },
+            {
                 "action": "add_from_trash",
                 "trigger": "on_ko"
             }
@@ -106654,8 +106767,8 @@
         "has_counter_value": false,
         "has_counter_event": false,
         "is_blocker": false,
-        "is_removal": false,
-        "kos": false,
+        "is_removal": true,
+        "kos": true,
         "rests_opponent": false,
         "bounces": false,
         "gives_don": false,
@@ -106683,6 +106796,7 @@
             {
                 "action": "ko",
                 "trigger": "on_play",
+                "cost_lte": 5,
                 "target": "opp_character"
             }
         ],

@@ -562,32 +562,62 @@ class EffectExecutor:
             return msg
 
         # ── KO ───────────────────────────────────────────────────────────────
-        if action == 'ko':
+        if action in ('ko', 'trash_character'):
+            # 'trash_character' usa a MESMA mecanica de remocao de campo que
+            # 'ko' (vai para o trash do dono). A diferenca de regra real do
+            # jogo -- K.O. dispara o gatilho [On K.O.] do alvo, Trash de
+            # personagem NAO dispara -- ainda nao tem efeito aqui porque o
+            # engine hoje so dispara on_ko por morte em BATALHA (ver
+            # _resolve_battle), nunca por efeito de carta de nenhum dos dois
+            # tipos. Quando essa cascata for implementada para efeitos de
+            # carta, ela deve checar `action == 'ko'` antes de disparar.
             count = step.get('count', 1)
             target_type = step.get('target', 'opp_character')
-            cost_lte = step.get('cost_lte', 99)
+            cost_lte = step.get('cost_lte')
+            cost_eq = step.get('cost_eq')
+            power_lte = step.get('power_lte')
+            filter_type = step.get('filter_type', '').lower()
             rested_only = step.get('rested_only', False)
 
             if target_type == 'opp_stage':
-                if opp.field_stage and opp.field_stage.cost <= cost_lte:
+                if opp.field_stage and (cost_lte is None or opp.field_stage.cost <= cost_lte):
                     ko_name = opp.field_stage.name[:20]
                     opp.trash.append(opp.field_stage)
                     opp.field_stage = None
                     return f'KO stage: {ko_name}'
                 return ''
 
-            # KO personagem
-            candidates = [c for c in opp.field_chars
-                          if c.cost <= cost_lte
-                          and (not rested_only or c.rested)]
+            def elegivel(c):
+                if cost_lte is not None and c.cost > cost_lte:
+                    return False
+                if cost_eq is not None and c.cost != cost_eq:
+                    return False
+                if power_lte is not None and c.power > power_lte:
+                    return False
+                if rested_only and not c.rested:
+                    return False
+                if filter_type and filter_type not in c.sub_types.lower() and filter_type not in c.card_type.lower():
+                    return False
+                return True
+
+            # KO personagem(s) -- opp_character (so do oponente) ou
+            # all_character (ambos os lados, ex: board wipe simetrico).
+            if target_type == 'all_character':
+                pools = [(opp, [c for c in opp.field_chars if elegivel(c)]),
+                         (me, [c for c in me.field_chars if elegivel(c)])]
+            else:
+                pools = [(opp, [c for c in opp.field_chars if elegivel(c)])]
+
             koed = []
-            for _ in range(min(count, len(candidates))):
-                target = max(candidates, key=lambda x: x.board_value())
-                opp.field_chars.remove(target)
-                opp.trash.append(target)
-                candidates.remove(target)
-                koed.append(target.name[:15])
-            return f'KO: {", ".join(koed)}' if koed else ''
+            for owner, candidates in pools:
+                for _ in range(min(count, len(candidates))):
+                    target = max(candidates, key=lambda x: x.board_value())
+                    owner.field_chars.remove(target)
+                    owner.trash.append(target)
+                    candidates.remove(target)
+                    koed.append(target.name[:15])
+            label = 'KO' if action == 'ko' else 'Trash'
+            return f'{label}: {", ".join(koed)}' if koed else ''
 
         # ── Bounce ───────────────────────────────────────────────────────────
         if action == 'bounce':

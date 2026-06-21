@@ -1014,7 +1014,8 @@
           {
             "action": "ko",
             "count": 1,
-            "target": "opp_character"
+            "target": "opp_character",
+            "cost_eq": 0
           }
         ],
         "once_per_turn": true
@@ -1148,7 +1149,8 @@
           {
             "action": "ko",
             "count": 1,
-            "target": "opp_character"
+            "target": "opp_character",
+            "cost_eq": 0
           },
           {
             "action": "debuff_cost",
@@ -1162,7 +1164,8 @@
           {
             "action": "ko",
             "count": 1,
-            "target": "opp_character"
+            "target": "opp_character",
+            "cost_eq": 0
           },
           {
             "action": "debuff_cost",
@@ -4068,7 +4071,8 @@
           {
             "action": "ko",
             "count": 2,
-            "target": "opp_character"
+            "target": "opp_character",
+            "cost_lte": 3
           }
         ]
       }
@@ -4658,7 +4662,8 @@
           {
             "action": "ko",
             "count": 1,
-            "target": "opp_character"
+            "target": "opp_character",
+            "cost_lte": 3
           }
         ]
       }
@@ -6193,7 +6198,8 @@
           {
             "action": "ko",
             "count": 1,
-            "target": "opp_character"
+            "target": "opp_character",
+            "cost_lte": 5
           }
         ],
         "costs": [
@@ -8531,7 +8537,27 @@
     "life": 0,
     "color": "Purple",
     "sub_types": "Animal Kingdom Pirates The Four Emperors",
-    "effects": {}
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "ko",
+            "count": 99,
+            "target": "all_character"
+          }
+        ],
+        "conditions": {
+          "leader_type": "animal kingdom pirates"
+        },
+        "costs": [
+          {
+            "type": "don_minus",
+            "count": 6,
+            "optional": true
+          }
+        ]
+      }
+    }
   },
   "OP01-095": {
     "name": "Kyoshirou",
@@ -11691,7 +11717,8 @@
           {
             "action": "ko",
             "count": 1,
-            "target": "opp_character"
+            "target": "opp_character",
+            "cost_eq": 0
           }
         ],
         "don_requirement": 2
@@ -11837,7 +11864,8 @@
           {
             "action": "ko",
             "count": 1,
-            "target": "opp_character"
+            "target": "opp_character",
+            "cost_eq": 0
           }
         ]
       },
@@ -14145,7 +14173,8 @@
           {
             "action": "ko",
             "count": 1,
-            "target": "opp_character"
+            "target": "opp_character",
+            "cost_eq": 0
           }
         ]
       }
@@ -18820,7 +18849,19 @@
     "life": 0,
     "color": "Green",
     "sub_types": "nan",
-    "effects": {}
+    "effects": {
+      "end_of_turn": {
+        "steps": [
+          {
+            "action": "ko",
+            "count": 99,
+            "target": "all_character",
+            "cost_lte": 5,
+            "rested_only": true
+          }
+        ]
+      }
+    }
   },
   "OP05-041": {
     "name": "Sakazuki",
@@ -21445,7 +21486,8 @@
           {
             "action": "ko",
             "count": 1,
-            "target": "opp_character"
+            "target": "opp_character",
+            "rested_only": true
           }
         ],
         "costs": [
@@ -22540,7 +22582,18 @@
     "life": 0,
     "color": "Black",
     "sub_types": "Thriller Bark Pirates",
-    "effects": {}
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "ko",
+            "count": 1,
+            "target": "all_character",
+            "cost_lte": 2
+          }
+        ]
+      }
+    }
   },
   "OP06-082": {
     "name": "Inuppe",
@@ -22749,7 +22802,18 @@
     "life": 0,
     "color": "Black",
     "sub_types": "Former Rumbar Pirates",
-    "effects": {}
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "trash_character",
+            "count": 1,
+            "target": "opp_character",
+            "cost_lte": 4
+          }
+        ]
+      }
+    }
   },
   "OP06-093": {
     "name": "Perona (093)",
@@ -23370,7 +23434,24 @@
     "life": 0,
     "color": "Yellow",
     "sub_types": "Sky Island",
-    "effects": {}
+    "effects": {
+      "activate_main": {
+        "steps": [
+          {
+            "action": "ko",
+            "count": 99,
+            "target": "opp_character",
+            "cost_lte": 2
+          }
+        ],
+        "costs": [
+          {
+            "type": "rest_self"
+          }
+        ],
+        "once_per_turn": true
+      }
+    }
   },
   "OP06-118": {
     "name": "Roronoa Zoro",
@@ -25514,6 +25595,12 @@
     "effects": {
       "when_attacking": {
         "steps": [
+          {
+            "action": "trash_character",
+            "count": 1,
+            "target": "opp_character",
+            "cost_lte": 2
+          },
           {
             "action": "buff_power",
             "amount": 1000,
@@ -28117,7 +28204,25 @@
     "life": 0,
     "color": "Black",
     "sub_types": "Animal Kingdom Pirates Former Rocks Pirates",
-    "effects": {}
+    "effects": {
+      "activate_main": {
+        "steps": [
+          {
+            "action": "trash_character",
+            "count": 1,
+            "target": "opp_character",
+            "cost_lte": 7
+          }
+        ],
+        "costs": [
+          {
+            "type": "trash_from_hand",
+            "count": 1
+          }
+        ],
+        "once_per_turn": true
+      }
+    }
   },
   "OP08-080": {
     "name": "Queen",
@@ -28164,7 +28269,8 @@
           {
             "action": "ko",
             "count": 1,
-            "target": "opp_character"
+            "target": "opp_character",
+            "cost_eq": 0
           }
         ]
       }
@@ -28540,7 +28646,8 @@
           {
             "action": "ko",
             "count": 1,
-            "target": "opp_character"
+            "target": "opp_character",
+            "cost_eq": 0
           }
         ],
         "conditions": {
@@ -29157,6 +29264,11 @@
       "when_attacking": {
         "steps": [
           {
+            "action": "ko",
+            "count": 99,
+            "target": "all_character"
+          },
+          {
             "action": "gain_life",
             "count": 1
           },
@@ -29363,7 +29475,18 @@
     "life": 0,
     "color": "Red",
     "sub_types": "Red-Haired Pirates",
-    "effects": {}
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "trash_character",
+            "count": 1,
+            "target": "opp_character",
+            "power_lte": 6000
+          }
+        ]
+      }
+    }
   },
   "OP09-010": {
     "name": "Bonk Punch",
@@ -29780,8 +29903,7 @@
             "action": "ko",
             "count": 1,
             "target": "opp_character",
-            "cost_lte": 5,
-            "rested_only": true
+            "cost_lte": 5
           }
         ]
       }
@@ -30056,8 +30178,7 @@
             "action": "ko",
             "count": 1,
             "target": "opp_character",
-            "cost_lte": 4,
-            "rested_only": true
+            "cost_lte": 4
           }
         ]
       }
@@ -34172,7 +34293,8 @@
           {
             "action": "ko",
             "count": 1,
-            "target": "opp_character"
+            "target": "opp_character",
+            "cost_lte": 3
           }
         ],
         "conditions": {
@@ -34382,7 +34504,30 @@
     "life": 0,
     "color": "Black",
     "sub_types": "Navy",
-    "effects": {}
+    "effects": {
+      "trigger": {
+        "steps": [
+          {
+            "action": "ko",
+            "count": 1,
+            "target": "opp_character",
+            "filter_type": "the seven warlords of the sea",
+            "cost_lte": 4
+          }
+        ]
+      },
+      "main": {
+        "steps": [
+          {
+            "action": "ko",
+            "count": 1,
+            "target": "opp_character",
+            "filter_type": "the seven warlords of the sea",
+            "cost_lte": 8
+          }
+        ]
+      }
+    }
   },
   "OP10-097": {
     "name": "Gum-Gum Rhino Schneider",
@@ -34436,7 +34581,8 @@
           {
             "action": "ko",
             "count": 1,
-            "target": "opp_character"
+            "target": "opp_character",
+            "cost_lte": 6
           }
         ]
       }
@@ -36539,7 +36685,8 @@
           {
             "action": "ko",
             "count": 1,
-            "target": "opp_character"
+            "target": "opp_character",
+            "cost_lte": 3
           },
           {
             "action": "add_don",
@@ -36912,7 +37059,8 @@
           {
             "action": "ko",
             "count": 1,
-            "target": "opp_character"
+            "target": "opp_character",
+            "cost_lte": 8
           }
         ]
       }
@@ -37170,8 +37318,7 @@
             "action": "ko",
             "count": 1,
             "target": "opp_character",
-            "cost_lte": 7,
-            "rested_only": true
+            "cost_lte": 7
           },
           {
             "action": "give_don_opp",
@@ -37640,7 +37787,8 @@
           {
             "action": "ko",
             "count": 1,
-            "target": "opp_character"
+            "target": "opp_character",
+            "cost_lte": 5
           }
         ],
         "costs": [
@@ -38425,7 +38573,9 @@
           {
             "action": "ko",
             "count": 1,
-            "target": "opp_character"
+            "target": "opp_character",
+            "cost_lte": 1,
+            "rested_only": true
           },
           {
             "action": "rest_opp_character",
@@ -38632,7 +38782,9 @@
           {
             "action": "ko",
             "count": 2,
-            "target": "opp_character"
+            "target": "opp_character",
+            "cost_lte": 4,
+            "rested_only": true
           }
         ],
         "costs": [
@@ -39792,7 +39944,8 @@
           {
             "action": "ko",
             "count": 1,
-            "target": "opp_character"
+            "target": "opp_character",
+            "cost_lte": 4
           }
         ],
         "conditions": {
@@ -42638,7 +42791,8 @@
           {
             "action": "ko",
             "count": 1,
-            "target": "opp_character"
+            "target": "opp_character",
+            "cost_lte": 5
           },
           {
             "action": "trash_from_hand",
@@ -42755,7 +42909,8 @@
           {
             "action": "ko",
             "count": 2,
-            "target": "opp_character"
+            "target": "opp_character",
+            "cost_lte": 3
           },
           {
             "action": "trash_from_hand",
@@ -42834,7 +42989,8 @@
           {
             "action": "ko",
             "count": 1,
-            "target": "opp_character"
+            "target": "opp_character",
+            "cost_lte": 6
           }
         ],
         "costs": [
@@ -43389,7 +43545,8 @@
           {
             "action": "ko",
             "count": 1,
-            "target": "opp_character"
+            "target": "opp_character",
+            "cost_lte": 6
           }
         ]
       }
@@ -45104,8 +45261,7 @@
             "action": "ko",
             "count": 1,
             "target": "opp_character",
-            "cost_lte": 8,
-            "rested_only": true
+            "cost_lte": 8
           }
         ],
         "conditions": {
@@ -45435,7 +45591,8 @@
           {
             "action": "ko",
             "count": 1,
-            "target": "opp_character"
+            "target": "opp_character",
+            "cost_eq": 1
           }
         ]
       }
@@ -49335,6 +49492,12 @@
       "on_play": {
         "steps": [
           {
+            "action": "ko",
+            "count": 99,
+            "target": "opp_character",
+            "power_lte": 0
+          },
+          {
             "action": "debuff_power",
             "amount": 2000,
             "target": "all_opp_characters",
@@ -53227,7 +53390,8 @@
           {
             "action": "ko",
             "count": 1,
-            "target": "opp_character"
+            "target": "opp_character",
+            "cost_eq": 0
           },
           {
             "action": "trash_from_hand",
@@ -54649,7 +54813,8 @@
           {
             "action": "ko",
             "count": 1,
-            "target": "opp_character"
+            "target": "opp_character",
+            "cost_lte": 4
           }
         ],
         "conditions": {
@@ -56583,7 +56748,8 @@
           {
             "action": "ko",
             "count": 1,
-            "target": "opp_character"
+            "target": "opp_character",
+            "cost_eq": 0
           }
         ],
         "costs": [
@@ -56611,7 +56777,8 @@
           {
             "action": "ko",
             "count": 1,
-            "target": "opp_character"
+            "target": "opp_character",
+            "cost_eq": 0
           },
           {
             "action": "trash_from_hand",
@@ -57424,6 +57591,12 @@
     "effects": {
       "on_play": {
         "steps": [
+          {
+            "action": "ko",
+            "count": 99,
+            "target": "all_character",
+            "cost_lte": 1
+          },
           {
             "action": "trash_from_hand",
             "count": 1
@@ -59931,7 +60104,8 @@
           {
             "action": "ko",
             "count": 1,
-            "target": "opp_character"
+            "target": "opp_character",
+            "rested_only": true
           }
         ]
       }
@@ -60269,7 +60443,19 @@
     "life": 0,
     "color": "Black",
     "sub_types": "Navy",
-    "effects": {}
+    "effects": {
+      "activate_main": {
+        "steps": [
+          {
+            "action": "trash_character",
+            "count": 1,
+            "target": "opp_character",
+            "cost_eq": 0
+          }
+        ],
+        "once_per_turn": true
+      }
+    }
   },
   "ST19-004": {
     "name": "Hina",
@@ -61812,6 +61998,21 @@
     "color": "Black",
     "sub_types": "Blackbeard Pirates The Four Emperors",
     "effects": {
+      "activate_main": {
+        "steps": [
+          {
+            "action": "ko",
+            "count": 1,
+            "target": "all_character",
+            "cost_lte": 3
+          }
+        ],
+        "costs": [
+          {
+            "type": "rest_self"
+          }
+        ]
+      },
       "on_ko": {
         "steps": [
           {
@@ -61837,7 +62038,8 @@
           {
             "action": "ko",
             "count": 1,
-            "target": "opp_character"
+            "target": "opp_character",
+            "cost_lte": 5
           }
         ],
         "conditions": {

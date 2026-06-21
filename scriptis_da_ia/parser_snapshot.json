@@ -615,6 +615,7 @@
             "steps": [
                 {
                     "action": "ko",
+                    "cost_eq": 0,
                     "count": 1,
                     "target": "opp_character"
                 }
@@ -688,6 +689,7 @@
             "steps": [
                 {
                     "action": "ko",
+                    "cost_eq": 0,
                     "count": 1,
                     "target": "opp_character"
                 },
@@ -702,6 +704,7 @@
             "steps": [
                 {
                     "action": "ko",
+                    "cost_eq": 0,
                     "count": 1,
                     "target": "opp_character"
                 },
@@ -2431,6 +2434,7 @@
             "steps": [
                 {
                     "action": "ko",
+                    "cost_lte": 3,
                     "count": 2,
                     "target": "opp_character"
                 }
@@ -2821,6 +2825,7 @@
             "steps": [
                 {
                     "action": "ko",
+                    "cost_lte": 3,
                     "count": 1,
                     "target": "opp_character"
                 }
@@ -3805,6 +3810,7 @@
             "steps": [
                 {
                     "action": "ko",
+                    "cost_lte": 5,
                     "count": 1,
                     "target": "opp_character"
                 }
@@ -5085,7 +5091,27 @@
             ]
         }
     },
-    "OP01-094": {},
+    "OP01-094": {
+        "on_play": {
+            "conditions": {
+                "leader_type": "animal kingdom pirates"
+            },
+            "costs": [
+                {
+                    "count": 6,
+                    "optional": true,
+                    "type": "don_minus"
+                }
+            ],
+            "steps": [
+                {
+                    "action": "ko",
+                    "count": 99,
+                    "target": "all_character"
+                }
+            ]
+        }
+    },
     "OP01-095": {
         "on_play": {
             "conditions": {
@@ -6825,6 +6851,7 @@
             "steps": [
                 {
                     "action": "ko",
+                    "cost_eq": 0,
                     "count": 1,
                     "target": "opp_character"
                 }
@@ -6910,6 +6937,7 @@
             "steps": [
                 {
                     "action": "ko",
+                    "cost_eq": 0,
                     "count": 1,
                     "target": "opp_character"
                 }
@@ -8250,6 +8278,7 @@
             "steps": [
                 {
                     "action": "ko",
+                    "cost_eq": 0,
                     "count": 1,
                     "target": "opp_character"
                 }
@@ -11099,7 +11128,19 @@
             ]
         }
     },
-    "OP05-040": {},
+    "OP05-040": {
+        "end_of_turn": {
+            "steps": [
+                {
+                    "action": "ko",
+                    "cost_lte": 5,
+                    "count": 99,
+                    "rested_only": true,
+                    "target": "all_character"
+                }
+            ]
+        }
+    },
     "OP05-041": {
         "activate_main": {
             "costs": [
@@ -12610,6 +12651,7 @@
                 {
                     "action": "ko",
                     "count": 1,
+                    "rested_only": true,
                     "target": "opp_character"
                 }
             ]
@@ -13219,7 +13261,18 @@
             ]
         }
     },
-    "OP06-081": {},
+    "OP06-081": {
+        "on_play": {
+            "steps": [
+                {
+                    "action": "ko",
+                    "cost_lte": 2,
+                    "count": 1,
+                    "target": "all_character"
+                }
+            ]
+        }
+    },
     "OP06-082": {
         "on_ko": {
             "conditions": {
@@ -13318,7 +13371,18 @@
         }
     },
     "OP06-091": {},
-    "OP06-092": {},
+    "OP06-092": {
+        "on_play": {
+            "steps": [
+                {
+                    "action": "trash_character",
+                    "cost_lte": 4,
+                    "count": 1,
+                    "target": "opp_character"
+                }
+            ]
+        }
+    },
     "OP06-093": {
         "on_play": {
             "steps": [
@@ -13689,7 +13753,24 @@
             ]
         }
     },
-    "OP06-117": {},
+    "OP06-117": {
+        "activate_main": {
+            "costs": [
+                {
+                    "type": "rest_self"
+                }
+            ],
+            "once_per_turn": true,
+            "steps": [
+                {
+                    "action": "ko",
+                    "cost_lte": 2,
+                    "count": 99,
+                    "target": "opp_character"
+                }
+            ]
+        }
+    },
     "OP06-118": {},
     "OP06-119": {},
     "OP07-001": {},
@@ -14903,6 +14984,12 @@
     "OP07-091": {
         "when_attacking": {
             "steps": [
+                {
+                    "action": "trash_character",
+                    "cost_lte": 2,
+                    "count": 1,
+                    "target": "opp_character"
+                },
                 {
                     "action": "buff_power",
                     "amount": 1000,
@@ -16436,7 +16523,25 @@
         }
     },
     "OP08-078": {},
-    "OP08-079": {},
+    "OP08-079": {
+        "activate_main": {
+            "costs": [
+                {
+                    "count": 1,
+                    "type": "trash_from_hand"
+                }
+            ],
+            "once_per_turn": true,
+            "steps": [
+                {
+                    "action": "trash_character",
+                    "cost_lte": 7,
+                    "count": 1,
+                    "target": "opp_character"
+                }
+            ]
+        }
+    },
     "OP08-080": {
         "on_play": {
             "steps": [
@@ -16462,6 +16567,7 @@
             "steps": [
                 {
                     "action": "ko",
+                    "cost_eq": 0,
                     "count": 1,
                     "target": "opp_character"
                 }
@@ -16671,6 +16777,7 @@
             "steps": [
                 {
                     "action": "ko",
+                    "cost_eq": 0,
                     "count": 1,
                     "target": "opp_character"
                 }
@@ -17076,6 +17183,11 @@
         "when_attacking": {
             "steps": [
                 {
+                    "action": "ko",
+                    "count": 99,
+                    "target": "all_character"
+                },
+                {
                     "action": "gain_life",
                     "count": 1
                 },
@@ -17192,7 +17304,18 @@
             ]
         }
     },
-    "OP09-009": {},
+    "OP09-009": {
+        "on_play": {
+            "steps": [
+                {
+                    "action": "trash_character",
+                    "count": 1,
+                    "power_lte": 6000,
+                    "target": "opp_character"
+                }
+            ]
+        }
+    },
     "OP09-010": {
         "when_attacking": {
             "don_requirement": 1,
@@ -17439,7 +17562,6 @@
                     "action": "ko",
                     "cost_lte": 5,
                     "count": 1,
-                    "rested_only": true,
                     "target": "opp_character"
                 }
             ]
@@ -17598,7 +17720,6 @@
                     "action": "ko",
                     "cost_lte": 4,
                     "count": 1,
-                    "rested_only": true,
                     "target": "opp_character"
                 }
             ]
@@ -20076,6 +20197,7 @@
             "steps": [
                 {
                     "action": "ko",
+                    "cost_lte": 3,
                     "count": 1,
                     "target": "opp_character"
                 }
@@ -20183,7 +20305,30 @@
             ]
         }
     },
-    "OP10-096": {},
+    "OP10-096": {
+        "main": {
+            "steps": [
+                {
+                    "action": "ko",
+                    "cost_lte": 8,
+                    "count": 1,
+                    "filter_type": "the seven warlords of the sea",
+                    "target": "opp_character"
+                }
+            ]
+        },
+        "trigger": {
+            "steps": [
+                {
+                    "action": "ko",
+                    "cost_lte": 4,
+                    "count": 1,
+                    "filter_type": "the seven warlords of the sea",
+                    "target": "opp_character"
+                }
+            ]
+        }
+    },
     "OP10-097": {
         "main": {
             "conditions": {
@@ -20216,6 +20361,7 @@
             "steps": [
                 {
                     "action": "ko",
+                    "cost_lte": 6,
                     "count": 1,
                     "target": "opp_character"
                 }
@@ -21454,6 +21600,7 @@
             "steps": [
                 {
                     "action": "ko",
+                    "cost_lte": 3,
                     "count": 1,
                     "target": "opp_character"
                 },
@@ -21664,6 +21811,7 @@
             "steps": [
                 {
                     "action": "ko",
+                    "cost_lte": 8,
                     "count": 1,
                     "target": "opp_character"
                 }
@@ -21791,7 +21939,6 @@
                     "action": "ko",
                     "cost_lte": 7,
                     "count": 1,
-                    "rested_only": true,
                     "target": "opp_character"
                 },
                 {
@@ -22076,6 +22223,7 @@
             "steps": [
                 {
                     "action": "ko",
+                    "cost_lte": 5,
                     "count": 1,
                     "target": "opp_character"
                 }
@@ -22515,7 +22663,9 @@
             "steps": [
                 {
                     "action": "ko",
+                    "cost_lte": 1,
                     "count": 1,
+                    "rested_only": true,
                     "target": "opp_character"
                 },
                 {
@@ -22638,7 +22788,9 @@
             "steps": [
                 {
                     "action": "ko",
+                    "cost_lte": 4,
                     "count": 2,
+                    "rested_only": true,
                     "target": "opp_character"
                 }
             ]
@@ -23285,6 +23437,7 @@
             "steps": [
                 {
                     "action": "ko",
+                    "cost_lte": 4,
                     "count": 1,
                     "target": "opp_character"
                 }
@@ -24924,6 +25077,7 @@
             "steps": [
                 {
                     "action": "ko",
+                    "cost_lte": 5,
                     "count": 1,
                     "target": "opp_character"
                 },
@@ -25001,6 +25155,7 @@
             "steps": [
                 {
                     "action": "ko",
+                    "cost_lte": 3,
                     "count": 2,
                     "target": "opp_character"
                 },
@@ -25060,6 +25215,7 @@
             "steps": [
                 {
                     "action": "ko",
+                    "cost_lte": 6,
                     "count": 1,
                     "target": "opp_character"
                 }
@@ -25401,6 +25557,7 @@
             "steps": [
                 {
                     "action": "ko",
+                    "cost_lte": 6,
                     "count": 1,
                     "target": "opp_character"
                 }
@@ -26415,7 +26572,6 @@
                     "action": "ko",
                     "cost_lte": 8,
                     "count": 1,
-                    "rested_only": true,
                     "target": "opp_character"
                 }
             ]
@@ -26615,6 +26771,7 @@
             "steps": [
                 {
                     "action": "ko",
+                    "cost_eq": 1,
                     "count": 1,
                     "target": "opp_character"
                 }
@@ -28996,6 +29153,12 @@
             "once_per_turn": true,
             "steps": [
                 {
+                    "action": "ko",
+                    "count": 99,
+                    "power_lte": 0,
+                    "target": "opp_character"
+                },
+                {
                     "action": "debuff_power",
                     "amount": 2000,
                     "duration": "this_turn",
@@ -31294,6 +31457,7 @@
             "steps": [
                 {
                     "action": "ko",
+                    "cost_eq": 0,
                     "count": 1,
                     "target": "opp_character"
                 },
@@ -32072,6 +32236,7 @@
             "steps": [
                 {
                     "action": "ko",
+                    "cost_lte": 4,
                     "count": 1,
                     "target": "opp_character"
                 }
@@ -33120,6 +33285,7 @@
             "steps": [
                 {
                     "action": "ko",
+                    "cost_eq": 0,
                     "count": 1,
                     "target": "opp_character"
                 }
@@ -33137,6 +33303,7 @@
             "steps": [
                 {
                     "action": "ko",
+                    "cost_eq": 0,
                     "count": 1,
                     "target": "opp_character"
                 },
@@ -33581,6 +33748,12 @@
                 }
             ],
             "steps": [
+                {
+                    "action": "ko",
+                    "cost_lte": 1,
+                    "count": 99,
+                    "target": "all_character"
+                },
                 {
                     "action": "trash_from_hand",
                     "count": 1
@@ -34992,6 +35165,7 @@
                 {
                     "action": "ko",
                     "count": 1,
+                    "rested_only": true,
                     "target": "opp_character"
                 }
             ]
@@ -35190,7 +35364,19 @@
             ]
         }
     },
-    "ST19-003": {},
+    "ST19-003": {
+        "activate_main": {
+            "once_per_turn": true,
+            "steps": [
+                {
+                    "action": "trash_character",
+                    "cost_eq": 0,
+                    "count": 1,
+                    "target": "opp_character"
+                }
+            ]
+        }
+    },
     "ST19-004": {
         "activate_main": {
             "once_per_turn": true,
@@ -36073,6 +36259,21 @@
         }
     },
     "ST27-005": {
+        "activate_main": {
+            "costs": [
+                {
+                    "type": "rest_self"
+                }
+            ],
+            "steps": [
+                {
+                    "action": "ko",
+                    "cost_lte": 3,
+                    "count": 1,
+                    "target": "all_character"
+                }
+            ]
+        },
         "on_ko": {
             "steps": [
                 {
@@ -36090,6 +36291,7 @@
             "steps": [
                 {
                     "action": "ko",
+                    "cost_lte": 5,
                     "count": 1,
                     "target": "opp_character"
                 }

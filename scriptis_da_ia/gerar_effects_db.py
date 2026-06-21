@@ -191,8 +191,13 @@ def parse_ko(text):
     steps = []
     t = text.lower()
 
-    # KO stage
-    m = re.search(r"k\.o\. up to (\d+) of your opponent.{0,20} stages?", t)
+    # Verbo: "k.o." ou "trash" (sinonimos de remocao neste contexto).
+    VERBO = r'(?:k\.o\.|trash)'
+
+    # KO/trash stage (stage nao tem gatilho On K.O., entao mantem 'ko' para
+    # ambos os verbos sem distincao -- a diferenca semantica so importa para
+    # Character).
+    m = re.search(VERBO + r" up to (\d+) of your opponent.{0,20} stages?", t)
     if m:
         cost_m = re.search(r'with a cost of (\d+)', t)
         steps.append({
@@ -203,42 +208,63 @@ def parse_ko(text):
         })
         return steps
 
-    # KO personagem com custo
-    m = re.search(r"k\.o\. up to (\d+) of your opponent.{0,20} characters? with a cost of (\d+) or less", t)
-    if m:
-        step = {
-            'action': 'ko',
-            'count': int(m.group(1)),
-            'target': 'opp_character',
-            'cost_lte': int(m.group(2))
-        }
-        if 'rested' in t:
+    # KO/trash personagem do oponente. Verbo real do match decide a action:
+    # 'k.o.' -> 'ko' (dispara [On K.O.] do alvo); 'trash' -> 'trash_character'
+    # (remove do campo, mas NAO dispara [On K.O.] -- diferenca de regra
+    # confirmada: trash de personagem != K.O., so K.O. ativa o gatilho).
+    for m in re.finditer(
+        VERBO + r" (up to (\d+)|all(?: of)?(?: the)?(?: rested)?) of your opponent.{0,20}"
+        r'(?:"([a-z][a-z0-9 .\'-]+)"\s+type\s+)?'
+        r"characters?(?: with a (?:base )?cost of (\d+)( or less)?)?"
+        r"(?: with (?:a )?(\d+) (?:base )?power(?: or less)?)?",
+        t
+    ):
+        verbo_usado = re.match(r'k\.o\.|trash', m.group(0)).group(0)
+        action = 'ko' if verbo_usado == 'k.o.' else 'trash_character'
+        is_all = m.group(1).startswith('all')
+        count = 99 if is_all else int(m.group(2))
+        step = {'action': action, 'count': count, 'target': 'opp_character'}
+        if m.group(3):
+            step['filter_type'] = m.group(3).strip()
+        if m.group(4):
+            if m.group(5):
+                step['cost_lte'] = int(m.group(4))
+            else:
+                step['cost_eq'] = int(m.group(4))
+        if m.group(6):
+            step['power_lte'] = int(m.group(6))
+        if 'rested' in m.group(0):
             step['rested_only'] = True
         steps.append(step)
+
+    if steps:
         return steps
 
-    # KO personagem com PODER (with N (base) power or less)
-    m = re.search(r"k\.o\. up to (\d+) of your opponent.{0,20} characters? with (?:a )?(\d+) (?:base )?power or less", t)
+    # Variante SEM "of your opponent" -- alvo AMBOS os lados, ex: "K.O. all
+    # rested Characters with a cost of 5 or less" (sem qualificador de
+    # posse = afeta characters de qualquer jogador, confirmado pelo
+    # contexto de regra simetrica em OP05-040: a condicao trava Refresh
+    # Phase de "your and your opponent's", e o KO no End of Turn segue a
+    # mesma simetria). Mesma logica de separacao K.O./trash por verbo real.
+    m = re.search(
+        VERBO + r" (up to (\d+)|all) (?:of the )?(?:rested )?characters?"
+        r"(?: with a (?:base )?cost of (\d+)( or less)?)?",
+        t
+    )
     if m:
-        step = {
-            'action': 'ko',
-            'count': int(m.group(1)),
-            'target': 'opp_character',
-            'power_lte': int(m.group(2))
-        }
-        if 'rested' in t:
+        verbo_usado = re.match(r'k\.o\.|trash', m.group(0)).group(0)
+        action = 'ko' if verbo_usado == 'k.o.' else 'trash_character'
+        is_all = m.group(1).startswith('all')
+        count = 99 if is_all else int(m.group(2))
+        step = {'action': action, 'count': count, 'target': 'all_character'}
+        if m.group(3):
+            if m.group(4):
+                step['cost_lte'] = int(m.group(3))
+            else:
+                step['cost_eq'] = int(m.group(3))
+        if 'rested' in m.group(0):
             step['rested_only'] = True
         steps.append(step)
-        return steps
-
-    # KO generico
-    m = re.search(r"k\.o\. up to (\d+) of your opponent.{0,20} characters?", t)
-    if m:
-        steps.append({
-            'action': 'ko',
-            'count': int(m.group(1)),
-            'target': 'opp_character',
-        })
 
     return steps
 
@@ -993,8 +1019,11 @@ def parse_block(block_text, trigger_name):
     if 'look at' in t:
         steps.extend(parse_look_at(t))
 
-    # KO
-    if 'k.o.' in t:
+    # KO (e seu sinonimo "trash" quando remove Character do OPONENTE -- ex:
+    # "Trash up to 1 of your opponent's Characters with a cost of 4 or
+    # less". Gatilho 'trash up to' (nao 'trash' generico) para nao disparar
+    # em trash_from_hand/trash_self, que sao muito mais comuns no texto.)
+    if 'k.o.' in t or ('trash up to' in t and 'opponent' in t):
         steps.extend(parse_ko(t))
 
     # Bounce (oponente OU auto-bounce do proprio character)
