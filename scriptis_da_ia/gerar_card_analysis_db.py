@@ -176,6 +176,9 @@ def generate_analysis_db(csv_path: str = 'cards_rows.csv') -> dict:
 
         analysis = derive_analysis(card_text, card_type, counter)
 
+        attribute_raw = str(row.get('attribute') or '').strip()
+        attribute = '' if attribute_raw.upper() in ('NULL', 'N/A', '?', 'NAN') else attribute_raw
+
         db[code] = {
             'name': str(row.get('card_name') or code),
             'type': card_type,
@@ -185,6 +188,7 @@ def generate_analysis_db(csv_path: str = 'cards_rows.csv') -> dict:
             'life': life,
             'color': str(row.get('card_color') or ''),
             'sub_types': str(row.get('sub_types') or ''),
+            'attribute': attribute,
             **analysis,
         }
 

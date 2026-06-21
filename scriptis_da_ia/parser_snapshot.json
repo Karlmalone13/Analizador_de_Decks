@@ -1069,6 +1069,9 @@
         "passive": {
             "steps": [
                 {
+                    "action": "gain_blocker"
+                },
+                {
                     "action": "keyword_blocker"
                 }
             ]
@@ -1402,6 +1405,9 @@
     "EB02-033": {
         "passive": {
             "steps": [
+                {
+                    "action": "gain_blocker"
+                },
                 {
                     "action": "keyword_blocker"
                 }
@@ -3029,6 +3035,17 @@
         }
     },
     "EB04-007": {
+        "activate_main": {
+            "conditions": {
+                "opp_char_power_gte": 8000
+            },
+            "once_per_turn": true,
+            "steps": [
+                {
+                    "action": "gain_rush_character"
+                }
+            ]
+        },
         "on_play": {
             "once_per_turn": true,
             "steps": [
@@ -3106,6 +3123,13 @@
                 {
                     "action": "draw",
                     "count": 1
+                }
+            ]
+        },
+        "passive": {
+            "steps": [
+                {
+                    "action": "keyword_rush_character"
                 }
             ]
         }
@@ -3925,7 +3949,15 @@
     },
     "EB04-056": {
         "passive": {
+            "costs": [
+                {
+                    "type": "rest_self"
+                }
+            ],
             "steps": [
+                {
+                    "action": "gain_blocker"
+                },
                 {
                     "action": "keyword_blocker"
                 }
@@ -5493,7 +5525,18 @@
     "OP02-005": {},
     "OP02-006": {},
     "OP02-007": {},
-    "OP02-008": {},
+    "OP02-008": {
+        "passive": {
+            "conditions": {
+                "life_lte": 2
+            },
+            "steps": [
+                {
+                    "action": "gain_rush"
+                }
+            ]
+        }
+    },
     "OP02-009": {
         "on_play": {
             "steps": [
@@ -5716,7 +5759,15 @@
     "OP02-030": {},
     "OP02-031": {
         "passive": {
+            "costs": [
+                {
+                    "type": "rest_self"
+                }
+            ],
             "steps": [
+                {
+                    "action": "gain_blocker"
+                },
                 {
                     "action": "keyword_blocker"
                 }
@@ -6345,7 +6396,15 @@
     },
     "OP02-074": {
         "passive": {
+            "costs": [
+                {
+                    "type": "rest_self"
+                }
+            ],
             "steps": [
+                {
+                    "action": "gain_blocker"
+                },
                 {
                     "action": "keyword_blocker"
                 }
@@ -6613,7 +6672,15 @@
         }
     },
     "OP02-094": {},
-    "OP02-095": {},
+    "OP02-095": {
+        "passive": {
+            "steps": [
+                {
+                    "action": "gain_banish"
+                }
+            ]
+        }
+    },
     "OP02-096": {
         "on_play": {
             "steps": [
@@ -7294,7 +7361,17 @@
             ]
         }
     },
-    "OP03-022": {},
+    "OP03-022": {
+        "passive": {
+            "steps": [
+                {
+                    "action": "play_card",
+                    "cost_lte": 4,
+                    "count": 1
+                }
+            ]
+        }
+    },
     "OP03-023": {},
     "OP03-024": {
         "on_play": {
@@ -8784,7 +8861,15 @@
     },
     "OP04-005": {
         "passive": {
+            "costs": [
+                {
+                    "type": "rest_self"
+                }
+            ],
             "steps": [
+                {
+                    "action": "gain_blocker"
+                },
                 {
                     "action": "keyword_blocker"
                 }
@@ -9313,6 +9398,9 @@
     },
     "OP04-040": {
         "when_attacking": {
+            "conditions": {
+                "other_char_cost_gte": 8
+            },
             "don_requirement": 1,
             "steps": [
                 {
@@ -9554,7 +9642,23 @@
     },
     "OP04-059": {
         "passive": {
+            "conditions": {
+                "leader_type": "water seven"
+            },
+            "costs": [
+                {
+                    "type": "rest_self"
+                },
+                {
+                    "count": 1,
+                    "optional": true,
+                    "type": "don_minus"
+                }
+            ],
             "steps": [
+                {
+                    "action": "gain_blocker"
+                },
                 {
                     "action": "keyword_blocker"
                 }
@@ -9789,7 +9893,26 @@
     },
     "OP04-071": {
         "passive": {
+            "costs": [
+                {
+                    "type": "rest_self"
+                },
+                {
+                    "count": 1,
+                    "optional": true,
+                    "type": "don_minus"
+                }
+            ],
             "steps": [
+                {
+                    "action": "buff_power",
+                    "amount": 1000,
+                    "duration": "battle_only",
+                    "target": "self"
+                },
+                {
+                    "action": "gain_blocker"
+                },
                 {
                     "action": "keyword_blocker"
                 }
@@ -10497,6 +10620,9 @@
         "passive": {
             "steps": [
                 {
+                    "action": "gain_rush"
+                },
+                {
                     "action": "keyword_rush"
                 }
             ]
@@ -10552,9 +10678,23 @@
             ]
         }
     },
-    "OP05-003": {},
+    "OP05-003": {
+        "passive": {
+            "conditions": {
+                "other_char_power_gte": 7000
+            },
+            "steps": [
+                {
+                    "action": "gain_rush"
+                }
+            ]
+        }
+    },
     "OP05-004": {
         "activate_main": {
+            "conditions": {
+                "self_power_gte": 7000
+            },
             "once_per_turn": true,
             "steps": [
                 {
@@ -10580,6 +10720,9 @@
             ]
         },
         "when_attacking": {
+            "conditions": {
+                "self_power_gte": 7000
+            },
             "steps": [
                 {
                     "action": "debuff_power",
@@ -10765,6 +10908,9 @@
             ]
         },
         "when_attacking": {
+            "conditions": {
+                "self_power_gte": 7000
+            },
             "steps": [
                 {
                     "action": "ko",
@@ -11407,7 +11553,15 @@
     },
     "OP05-062": {
         "passive": {
+            "costs": [
+                {
+                    "type": "rest_self"
+                }
+            ],
             "steps": [
+                {
+                    "action": "gain_blocker"
+                },
                 {
                     "action": "keyword_blocker"
                 }
@@ -11503,7 +11657,19 @@
             ]
         }
     },
-    "OP05-070": {},
+    "OP05-070": {
+        "passive": {
+            "conditions": {
+                "don_gte": 8,
+                "don_on_field_gte": 8
+            },
+            "steps": [
+                {
+                    "action": "gain_rush"
+                }
+            ]
+        }
+    },
     "OP05-071": {
         "when_attacking": {
             "steps": [
@@ -11738,7 +11904,18 @@
     },
     "OP05-086": {
         "passive": {
+            "conditions": {
+                "trash_gte": 10
+            },
+            "costs": [
+                {
+                    "type": "rest_self"
+                }
+            ],
             "steps": [
+                {
+                    "action": "gain_blocker"
+                },
                 {
                     "action": "keyword_blocker"
                 }
@@ -12087,7 +12264,18 @@
         }
     },
     "OP05-108": {},
-    "OP05-109": {},
+    "OP05-109": {
+        "passive": {
+            "once_per_turn": true,
+            "steps": [
+                {
+                    "action": "draw",
+                    "count": 2,
+                    "then_trash": 2
+                }
+            ]
+        }
+    },
     "OP05-110": {},
     "OP05-111": {},
     "OP05-112": {
@@ -12226,7 +12414,18 @@
             ]
         }
     },
-    "OP06-002": {},
+    "OP06-002": {
+        "passive": {
+            "conditions": {
+                "self_power_gte": 7000
+            },
+            "steps": [
+                {
+                    "action": "gain_banish"
+                }
+            ]
+        }
+    },
     "OP06-003": {
         "on_play": {
             "steps": [
@@ -12289,7 +12488,18 @@
     },
     "OP06-010": {
         "passive": {
+            "conditions": {
+                "leader_type": "film"
+            },
+            "costs": [
+                {
+                    "type": "rest_self"
+                }
+            ],
             "steps": [
+                {
+                    "action": "gain_blocker"
+                },
                 {
                     "action": "keyword_blocker"
                 }
@@ -12403,6 +12613,9 @@
     },
     "OP06-018": {
         "main": {
+            "conditions": {
+                "opp_char_power_gte": 7000
+            },
             "steps": [
                 {
                     "action": "buff_power",
@@ -12895,7 +13108,18 @@
     "OP06-053": {},
     "OP06-054": {
         "passive": {
+            "conditions": {
+                "hand_lte": 4
+            },
+            "costs": [
+                {
+                    "type": "rest_self"
+                }
+            ],
             "steps": [
+                {
+                    "action": "gain_blocker"
+                },
                 {
                     "action": "keyword_blocker"
                 }
@@ -13101,7 +13325,18 @@
     },
     "OP06-072": {
         "passive": {
+            "conditions": {
+                "leader_type": "germa 66"
+            },
+            "costs": [
+                {
+                    "type": "rest_self"
+                }
+            ],
             "steps": [
+                {
+                    "action": "gain_blocker"
+                },
                 {
                     "action": "keyword_blocker"
                 }
@@ -13682,7 +13917,15 @@
     },
     "OP06-113": {
         "passive": {
+            "costs": [
+                {
+                    "type": "rest_self"
+                }
+            ],
             "steps": [
+                {
+                    "action": "gain_blocker"
+                },
                 {
                     "action": "keyword_blocker"
                 }
@@ -14133,7 +14376,15 @@
     },
     "OP07-024": {
         "passive": {
+            "costs": [
+                {
+                    "type": "rest_self"
+                }
+            ],
             "steps": [
+                {
+                    "action": "gain_blocker"
+                },
                 {
                     "action": "keyword_blocker"
                 }
@@ -14154,7 +14405,19 @@
     "OP07-028": {},
     "OP07-029": {
         "passive": {
+            "conditions": {
+                "leader_type": "supernovas"
+            },
+            "costs": [
+                {
+                    "type": "rest_self"
+                }
+            ],
+            "once_per_turn": true,
             "steps": [
+                {
+                    "action": "gain_blocker"
+                },
                 {
                     "action": "keyword_blocker"
                 }
@@ -14163,7 +14426,15 @@
     },
     "OP07-030": {
         "passive": {
+            "costs": [
+                {
+                    "type": "rest_self"
+                }
+            ],
             "steps": [
+                {
+                    "action": "gain_blocker"
+                },
                 {
                     "action": "keyword_blocker"
                 }
@@ -16502,6 +16773,9 @@
     },
     "OP08-076": {
         "main": {
+            "conditions": {
+                "opp_char_power_gte": 6000
+            },
             "steps": [
                 {
                     "action": "add_don",
@@ -16600,6 +16874,9 @@
     },
     "OP08-085": {
         "when_attacking": {
+            "conditions": {
+                "other_char_cost_gte": 8
+            },
             "don_requirement": 1,
             "steps": [
                 {
@@ -17404,7 +17681,19 @@
         }
     },
     "OP09-016": {},
-    "OP09-017": {},
+    "OP09-017": {
+        "passive": {
+            "conditions": {
+                "leader_power_gte": 7000,
+                "leader_type": "kid pirates"
+            },
+            "steps": [
+                {
+                    "action": "gain_rush"
+                }
+            ]
+        }
+    },
     "OP09-018": {
         "main": {
             "steps": [
@@ -18984,6 +19273,9 @@
     },
     "OP10-001": {
         "activate_main": {
+            "conditions": {
+                "other_char_power_gte": 7000
+            },
             "once_per_turn": true,
             "steps": [
                 {
@@ -19673,6 +19965,9 @@
         "passive": {
             "steps": [
                 {
+                    "action": "gain_blocker"
+                },
+                {
                     "action": "keyword_blocker"
                 }
             ]
@@ -20187,7 +20482,18 @@
         }
     },
     "OP10-084": {},
-    "OP10-085": {},
+    "OP10-085": {
+        "passive": {
+            "conditions": {
+                "trash_gte": 8
+            },
+            "steps": [
+                {
+                    "action": "gain_rush"
+                }
+            ]
+        }
+    },
     "OP10-086": {
         "activate_main": {
             "conditions": {
@@ -20474,6 +20780,9 @@
     "OP10-108": {
         "passive": {
             "steps": [
+                {
+                    "action": "gain_blocker"
+                },
                 {
                     "action": "keyword_blocker"
                 }
@@ -20927,6 +21236,9 @@
     },
     "OP11-019": {
         "counter": {
+            "conditions": {
+                "opp_char_power_gte": 6000
+            },
             "steps": [
                 {
                     "action": "buff_power",
@@ -21466,7 +21778,18 @@
     },
     "OP11-057": {
         "passive": {
+            "conditions": {
+                "hand_lte": 4
+            },
+            "costs": [
+                {
+                    "type": "rest_self"
+                }
+            ],
             "steps": [
+                {
+                    "action": "gain_blocker"
+                },
                 {
                     "action": "keyword_blocker"
                 }
@@ -21583,7 +21906,15 @@
     "OP11-064": {},
     "OP11-065": {
         "passive": {
+            "costs": [
+                {
+                    "type": "rest_self"
+                }
+            ],
             "steps": [
+                {
+                    "action": "gain_blocker"
+                },
                 {
                     "action": "keyword_blocker"
                 }
@@ -21699,7 +22030,25 @@
         }
     },
     "OP11-072": {},
-    "OP11-073": {},
+    "OP11-073": {
+        "passive": {
+            "conditions": {
+                "leader_type": "big mom pirates"
+            },
+            "once_per_turn": true,
+            "steps": [
+                {
+                    "action": "buff_power",
+                    "amount": 2000,
+                    "duration": "this_turn",
+                    "target": "leader"
+                },
+                {
+                    "action": "gain_rush"
+                }
+            ]
+        }
+    },
     "OP11-074": {
         "activate_main": {
             "costs": [
@@ -21950,7 +22299,15 @@
     },
     "OP11-096": {
         "passive": {
+            "costs": [
+                {
+                    "type": "rest_self"
+                }
+            ],
             "steps": [
+                {
+                    "action": "gain_blocker"
+                },
                 {
                     "action": "keyword_blocker"
                 }
@@ -23152,7 +23509,15 @@
     },
     "OP12-066": {
         "passive": {
+            "costs": [
+                {
+                    "type": "rest_self"
+                }
+            ],
             "steps": [
+                {
+                    "action": "gain_blocker"
+                },
                 {
                     "action": "keyword_blocker"
                 }
@@ -23205,7 +23570,18 @@
             ]
         }
     },
-    "OP12-072": {},
+    "OP12-072": {
+        "passive": {
+            "conditions": {
+                "leader_is": "sanji"
+            },
+            "steps": [
+                {
+                    "action": "gain_rush"
+                }
+            ]
+        }
+    },
     "OP12-073": {
         "on_play": {
             "steps": [
@@ -23498,6 +23874,9 @@
     },
     "OP12-096": {
         "main": {
+            "conditions": {
+                "other_char_cost_gte": 8
+            },
             "steps": [
                 {
                     "action": "ko",
@@ -23929,7 +24308,8 @@
     "OP13-004": {
         "passive": {
             "conditions": {
-                "life_gte": 4
+                "life_gte": 4,
+                "other_char_cost_gte": 8
             },
             "steps": [
                 {
@@ -23988,6 +24368,9 @@
     "OP13-009": {
         "passive": {
             "steps": [
+                {
+                    "action": "gain_double_attack"
+                },
                 {
                     "action": "keyword_double_attack"
                 }
@@ -25430,7 +25813,15 @@
     "OP13-111": {},
     "OP13-112": {
         "passive": {
+            "costs": [
+                {
+                    "type": "rest_self"
+                }
+            ],
             "steps": [
+                {
+                    "action": "gain_blocker"
+                },
                 {
                     "action": "keyword_blocker"
                 }
@@ -25628,6 +26019,9 @@
     "OP14-001": {},
     "OP14-002": {
         "when_attacking": {
+            "conditions": {
+                "self_power_gte": 5000
+            },
             "steps": [
                 {
                     "action": "ko",
@@ -25643,7 +26037,18 @@
         }
     },
     "OP14-003": {},
-    "OP14-004": {},
+    "OP14-004": {
+        "passive": {
+            "conditions": {
+                "self_power_gte": 5000
+            },
+            "steps": [
+                {
+                    "action": "gain_rush"
+                }
+            ]
+        }
+    },
     "OP14-005": {
         "activate_main": {
             "once_per_turn": true,
@@ -25657,6 +26062,9 @@
     },
     "OP14-006": {
         "when_attacking": {
+            "conditions": {
+                "self_power_gte": 5000
+            },
             "steps": [
                 {
                     "action": "debuff_power",
@@ -25716,6 +26124,9 @@
     },
     "OP14-012": {
         "when_attacking": {
+            "conditions": {
+                "self_power_gte": 5000
+            },
             "steps": [
                 {
                     "action": "give_don",
@@ -26691,6 +27102,9 @@
     },
     "OP14-077": {
         "counter": {
+            "conditions": {
+                "opp_char_power_gte": 6000
+            },
             "steps": [
                 {
                     "action": "buff_power",
@@ -28473,7 +28887,15 @@
     },
     "OP15-068": {
         "passive": {
+            "costs": [
+                {
+                    "type": "rest_self"
+                }
+            ],
             "steps": [
+                {
+                    "action": "gain_blocker"
+                },
                 {
                     "action": "keyword_blocker"
                 }
@@ -28835,7 +29257,23 @@
             ]
         }
     },
-    "OP15-093": {},
+    "OP15-093": {
+        "activate_main": {
+            "conditions": {
+                "trash_gte": 15
+            },
+            "costs": [
+                {
+                    "type": "trash_self"
+                }
+            ],
+            "steps": [
+                {
+                    "action": "gain_rush_character"
+                }
+            ]
+        }
+    },
     "OP15-094": {
         "passive": {
             "steps": [
@@ -29250,7 +29688,20 @@
     },
     "OP15-119": {
         "passive": {
+            "conditions": {
+                "don_gte": 6,
+                "don_on_field_gte": 6
+            },
             "steps": [
+                {
+                    "action": "buff_power",
+                    "amount": 1000,
+                    "duration": "this_turn",
+                    "target": "self"
+                },
+                {
+                    "action": "gain_rush"
+                },
                 {
                     "action": "keyword_blocker"
                 }
@@ -30408,10 +30859,21 @@
             ]
         }
     },
-    "OP16-079": {},
+    "OP16-079": {
+        "passive": {
+            "steps": [
+                {
+                    "action": "gain_rush"
+                }
+            ]
+        }
+    },
     "OP16-080": {},
     "OP16-081": {
         "activate_main": {
+            "conditions": {
+                "other_char_cost_gte": 8
+            },
             "costs": [
                 {
                     "type": "rest_self"
@@ -30550,6 +31012,13 @@
                 {
                     "action": "trash_from_hand",
                     "count": 2
+                }
+            ]
+        },
+        "passive": {
+            "steps": [
+                {
+                    "action": "keyword_rush_character"
                 }
             ]
         }
@@ -31808,6 +32277,9 @@
             ]
         },
         "when_attacking": {
+            "conditions": {
+                "other_char_cost_gte": 8
+            },
             "steps": [
                 {
                     "action": "draw",
@@ -33318,6 +33790,9 @@
     "ST06-004": {
         "passive": {
             "steps": [
+                {
+                    "action": "gain_double_attack"
+                },
                 {
                     "action": "keyword_double_attack"
                 }
@@ -34861,6 +35336,9 @@
     },
     "ST14-001": {
         "passive": {
+            "conditions": {
+                "other_char_cost_gte": 8
+            },
             "steps": [
                 {
                     "action": "buff_power",
@@ -34873,6 +35351,9 @@
     },
     "ST14-002": {
         "when_attacking": {
+            "conditions": {
+                "other_char_cost_gte": 8
+            },
             "don_requirement": 1,
             "steps": [
                 {
@@ -34886,6 +35367,9 @@
     },
     "ST14-003": {
         "on_play": {
+            "conditions": {
+                "other_char_cost_gte": 6
+            },
             "steps": [
                 {
                     "action": "ko",
@@ -34920,6 +35404,9 @@
     },
     "ST14-007": {
         "on_play": {
+            "conditions": {
+                "other_char_cost_gte": 8
+            },
             "steps": [
                 {
                     "action": "debuff_cost",
@@ -34929,6 +35416,9 @@
             ]
         },
         "when_attacking": {
+            "conditions": {
+                "other_char_cost_gte": 8
+            },
             "steps": [
                 {
                     "action": "debuff_cost",
@@ -34940,6 +35430,9 @@
     },
     "ST14-008": {
         "activate_main": {
+            "conditions": {
+                "other_char_cost_gte": 8
+            },
             "costs": [
                 {
                     "type": "rest_self"
@@ -34956,6 +35449,9 @@
     },
     "ST14-009": {
         "opp_turn": {
+            "conditions": {
+                "other_char_cost_gte": 6
+            },
             "don_requirement": 1,
             "steps": [
                 {
@@ -34969,10 +35465,24 @@
     },
     "ST14-010": {},
     "ST14-011": {},
-    "ST14-012": {},
+    "ST14-012": {
+        "passive": {
+            "conditions": {
+                "other_char_cost_gte": 10
+            },
+            "steps": [
+                {
+                    "action": "gain_rush"
+                }
+            ]
+        }
+    },
     "ST14-013": {},
     "ST14-014": {
         "counter": {
+            "conditions": {
+                "other_char_cost_gte": 8
+            },
             "steps": [
                 {
                     "action": "buff_power",
@@ -34994,6 +35504,9 @@
     },
     "ST14-015": {
         "main": {
+            "conditions": {
+                "other_char_cost_gte": 8
+            },
             "steps": [
                 {
                     "action": "ko",
@@ -35010,6 +35523,9 @@
             ]
         },
         "trigger": {
+            "conditions": {
+                "other_char_cost_gte": 8
+            },
             "steps": [
                 {
                     "action": "ko",
@@ -35110,7 +35626,20 @@
             ]
         }
     },
-    "ST15-005": {},
+    "ST15-005": {
+        "passive": {
+            "once_per_turn": true,
+            "steps": [
+                {
+                    "action": "substitute_removal",
+                    "cost": {
+                        "action": "debuff_power_self",
+                        "amount": 2000
+                    }
+                }
+            ]
+        }
+    },
     "ST16-001": {
         "activate_main": {
             "costs": [
@@ -35638,6 +36167,9 @@
     },
     "ST21-017": {
         "main": {
+            "conditions": {
+                "other_char_power_gte": 6000
+            },
             "steps": [
                 {
                     "action": "ko",
@@ -36598,6 +37130,13 @@
                 {
                     "action": "give_don",
                     "count": 1
+                }
+            ]
+        },
+        "passive": {
+            "steps": [
+                {
+                    "action": "keyword_rush_character"
                 }
             ]
         }

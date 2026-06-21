@@ -55,6 +55,38 @@ def parse_conditions(text):
     if 'if your leader is multicolored' in t:
         conds['leader_multicolor'] = True
 
+    # "if you have a Character with N power or more [other than this
+    # Character]" -- existe outro Character no SEU campo com power >= N.
+    m = re.search(r'if you have a character with (\d+) power or more', t)
+    if m: conds['other_char_power_gte'] = int(m.group(1))
+
+    # "if you have a Character with a cost of N or more" -- idem, por custo.
+    m = re.search(r'if you have a character with a cost of (\d+) or more', t)
+    if m: conds['other_char_cost_gte'] = int(m.group(1))
+
+    # "if this Character has N power or more" -- auto-referencia (o proprio
+    # Character que carrega o efeito).
+    m = re.search(r'if this character has (\d+) power or more', t)
+    if m: conds['self_power_gte'] = int(m.group(1))
+
+    # "if your Leader has N power or more" -- power BASE do Leader (pode
+    # vir junto com type, ex: "...power or more and the \"X\" type").
+    m = re.search(r'if your leader has (\d+) power or more', t)
+    if m: conds['leader_power_gte'] = int(m.group(1))
+
+    # "if your opponent has a Character with N power or more" -- existe
+    # Character no campo do OPONENTE com power >= N (distinto de
+    # other_char_power_gte, que e sobre o PROPRIO campo).
+    m = re.search(r'if your opponent has a character with (\d+) power or more', t)
+    if m: conds['opp_char_power_gte'] = int(m.group(1))
+
+    # Variante combinada: "...power or more and the "X"/[X]/{X} type" --
+    # captura o type quando vem encadeado depois da clausula de power (a
+    # regex leader_type/leader_type_includes acima nao cobre esse encadeamento).
+    if 'leader_power_gte' in conds and 'leader_type' not in conds and 'leader_type_includes' not in conds:
+        m = re.search(r'power or more and (?:the )?["\[{]([^"\]}]+)["\]}] type', t)
+        if m: conds['leader_type'] = m.group(1).strip()
+
     return conds
 
 
@@ -1080,8 +1112,13 @@ def parse_block(block_text, trigger_name):
     if 'from your trash to your hand' in t:
         steps.extend(parse_add_from_trash(t))
 
-    # Keywords concedidas
-    if 'gain [rush]' in t or 'gains [rush]' in t:
+    # Keywords concedidas. IMPORTANTE: '[Rush: Character]' e MECANICA
+    # DIFERENTE de '[Rush]' -- Rush comum permite atacar Leader OU
+    # Character; Rush: Character so permite atacar Character. Por isso a
+    # action e distinta (gain_rush_character), nunca reaproveitar gain_rush.
+    if 'gain [rush: character]' in t or 'gains [rush: character]' in t:
+        steps.append({'action': 'gain_rush_character'})
+    elif 'gain [rush]' in t or 'gains [rush]' in t:
         steps.append({'action': 'gain_rush'})
     if 'gain [blocker]' in t or 'gains [blocker]' in t:
         steps.append({'action': 'gain_blocker'})
@@ -1241,7 +1278,7 @@ def parse_card_effect(card_text, card_type):
     # efeito esta escrito em prosa (if/when), nao numa tag formal -- trata-se
     # como passive (efeito sempre vigiando), preservando once_per_turn.
     if not result:
-        sem_tags_de_trigger = not re.search(r'\[(?:' + TODAS_TAGS + r')\]', t_low)
+        sem_tags_de_trigger = not re.search(ABERTURA + r'\[(?:' + TODAS_TAGS + r')\]', t_low)
         if sem_tags_de_trigger:
             fallback_steps = parse_block(t_low, 'passive')
             if fallback_steps:
@@ -1276,13 +1313,16 @@ def parse_card_effect(card_text, card_type):
 
     for tag, action in [('[blocker]', 'keyword_blocker'),
                         ('[rush]', 'keyword_rush'),
+                        ('[rush: character]', 'keyword_rush_character'),
                         ('[double attack]', 'keyword_double_attack'),
                         ('[banish]', 'keyword_banish'),
                         ('[unblockable]', 'keyword_unblockable')]:
         if tag not in t_low:
             continue
-        # evita capturar "gains [rush]" como passivo nativo
-        if tag in ('[rush]', '[banish]') and f'gains {tag}' in t_low and keyword_don_req(tag) == 0:
+        # evita capturar "gains [rush]"/"gains [rush: character]" como
+        # passivo nativo quando na verdade e concedido condicionalmente
+        # (tratado pelo fallback como gain_rush/gain_rush_character).
+        if tag in ('[rush]', '[rush: character]', '[banish]') and f'gains {tag}' in t_low and keyword_don_req(tag) == 0:
             continue
         req = keyword_don_req(tag)
         if req > 0:
@@ -1291,9 +1331,28 @@ def parse_card_effect(card_text, card_type):
             passive_steps.append({'action': action})
 
     if passive_steps:
-        result['passive'] = {'steps': passive_steps}
+        if 'passive' in result:
+            result['passive']['steps'].extend(passive_steps)
+        else:
+            result['passive'] = {'steps': passive_steps}
     if cond_keywords:
-        # keywords condicionais a DON ficam separadas, com seu requisito
+        # keywords condicionais a DON ficam separadas, com seu requisito.
+        # Remove do passive (gerado pelo fallback de 'gains [X]') qualquer
+        # gain_X cuja MESMA keyword ja esta condicionada a DON aqui --
+        # evita duplicacao contraditoria (ex: "gains [Rush] sempre" E
+        # "ganha Rush so com 1 DON" ao mesmo tempo).
+        ACTION_PARA_GAIN = {
+            'keyword_blocker': 'gain_blocker', 'keyword_rush': 'gain_rush',
+            'keyword_double_attack': 'gain_double_attack', 'keyword_banish': 'gain_banish',
+            'keyword_unblockable': 'gain_unblockable',
+        }
+        gains_condicionais = {ACTION_PARA_GAIN[c['action']] for c in cond_keywords if c['action'] in ACTION_PARA_GAIN}
+        if 'passive' in result and gains_condicionais:
+            result['passive']['steps'] = [
+                s for s in result['passive']['steps'] if s.get('action') not in gains_condicionais
+            ]
+            if not result['passive']['steps']:
+                del result['passive']
         result['don_conditional_keywords'] = {'steps': cond_keywords}
 
     # "Your [On Play] effects are negated" passivo (sem trigger explicito,
@@ -1349,6 +1408,9 @@ def generate_effects_db(csv_path):
         try: life = int(float(row.get('life') or 0))
         except: life = 0
 
+        attribute_raw = str(row.get('attribute') or '').strip()
+        attribute = '' if attribute_raw.upper() in ('NULL', 'N/A', '?', 'NAN') else attribute_raw
+
         db[code] = {
             'name':      str(row.get('card_name') or ''),
             'type':      card_type,
@@ -1358,6 +1420,7 @@ def generate_effects_db(csv_path):
             'life':      life,
             'color':     str(row.get('card_color') or ''),
             'sub_types': str(row.get('sub_types') or ''),
+            'attribute': attribute,
             'effects':   parse_card_effect(card_text, card_type),
         }
 

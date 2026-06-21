@@ -70,9 +70,11 @@ class Card:
     counter: int = 0
     life: int = 0
     sub_types: str = ''
+    attribute: str = ''  # Slash, Special, Strike, Wisdom, Ranged (pode ser combinado, ex: "Slash Special")
     card_text: str = ''
     # Keywords (do banco ou detectadas)
     has_rush: bool = False
+    has_rush_character: bool = False  # [Rush: Character] -- so pode atacar Characters no turno em que entra, NUNCA o Leader (mecanica distinta de has_rush)
     has_blocker: bool = False
     has_double_attack: bool = False
     has_banish: bool = False
@@ -93,6 +95,7 @@ class Card:
     # Estado em jogo
     rested: bool = False
     just_played: bool = False
+    rush_character_only_this_turn: bool = False  # True so na janela em que Rush: Character libera o ataque (reseta junto com just_played)
     don_attached: int = 0
     # Buffs temporários (resetados a cada turno)
     power_buff: int = 0
@@ -115,6 +118,9 @@ class Card:
 
     def is_rush(self) -> bool:
         return self._kw_active('rush', self.has_rush)
+
+    def is_rush_character(self) -> bool:
+        return self._kw_active('rush_character', self.has_rush_character)
 
     def is_banish(self) -> bool:
         return self._kw_active('banish', self.has_banish)
@@ -312,6 +318,21 @@ class EffectExecutor:
         if conds.get('leader_multicolor'):
             colors = set(me.leader.color.replace('/', ' ').split())
             if len(colors) < 2:
+                return False
+        if 'other_char_power_gte' in conds:
+            outros = [c for c in me.field_chars if c is not card]
+            if not outros or max(c.effective_power(True) for c in outros) < conds['other_char_power_gte']:
+                return False
+        if 'other_char_cost_gte' in conds:
+            outros = [c for c in me.field_chars if c is not card]
+            if not outros or max(c.cost for c in outros) < conds['other_char_cost_gte']:
+                return False
+        if 'self_power_gte' in conds and card.effective_power(True) < conds['self_power_gte']:
+            return False
+        if 'leader_power_gte' in conds and me.leader.effective_power(True) < conds['leader_power_gte']:
+            return False
+        if 'opp_char_power_gte' in conds:
+            if not opp.field_chars or max(c.effective_power(False) for c in opp.field_chars) < conds['opp_char_power_gte']:
                 return False
 
         return True
@@ -711,6 +732,8 @@ class EffectExecutor:
                             me.trash.append(me.field_stage)
                         me.field_stage = self_card
                     else:
+                        self_card.just_played = not (self_card.has_rush or self_card.is_rush_character())
+                        self_card.rush_character_only_this_turn = self_card.is_rush_character() and not self_card.is_rush()
                         me.field_chars.append(self_card)
                     return f'jogou do trash (self): {self_card.name[:15]}'
                 return ''
@@ -759,6 +782,8 @@ class EffectExecutor:
                         worst = min(me.field_chars, key=lambda x: x.board_value())
                         me.field_chars.remove(worst)
                         me.trash.append(worst)
+                    best.just_played = not (best.has_rush or best.is_rush_character())
+                    best.rush_character_only_this_turn = best.is_rush_character() and not best.is_rush()
                     me.field_chars.append(best)
 
                 played.append(best.name[:15])
@@ -795,7 +820,8 @@ class EffectExecutor:
                     worst = min(me.field_chars, key=lambda x: x.board_value())
                     me.field_chars.remove(worst)
                     me.trash.append(worst)
-                best.just_played = not best.has_rush
+                best.just_played = not (best.has_rush or best.is_rush_character())
+                best.rush_character_only_this_turn = best.is_rush_character() and not best.is_rush()
                 me.field_chars.append(best)
                 candidates.remove(best)
                 played.append(best.name[:15])
@@ -840,6 +866,16 @@ class EffectExecutor:
         if action == 'gain_rush':
             card.has_rush = True
             return 'ganhou Rush'
+        if action == 'gain_rush_character':
+            card.has_rush_character = True
+            # Se o character ja esta em campo (efeito concedido mid-jogo, nao
+            # no momento em que entrou), a restricao de alvo so importa se
+            # ele ainda nao atacou neste turno -- aproxima usando just_played
+            # como sinal de 'ainda no turno em que pode usar a permissao'.
+            # Quando concedido no proprio turno em que e jogado (ex:
+            # EB04-007 via Activate:Main apos o On Play), marca a janela.
+            card.rush_character_only_this_turn = not card.has_rush
+            return 'ganhou Rush: Character'
         if action == 'gain_blocker':
             card.has_blocker = True
             return 'ganhou Blocker'
@@ -949,6 +985,7 @@ def _make_card(code: str, data: dict) -> Card:
     # Keywords do banco ou do parse básico
     has_blocker      = data.get('has_blocker', False)
     has_rush         = data.get('has_rush', False)
+    has_rush_character = data.get('has_rush_character', False)
     has_double_attack= data.get('has_double_attack', False)
     has_banish       = data.get('has_banish', False)
     has_trigger      = data.get('has_trigger', False)
@@ -960,6 +997,7 @@ def _make_card(code: str, data: dict) -> Card:
             a = step.get('action', '')
             if a == 'keyword_blocker':      has_blocker = True
             elif a == 'keyword_rush':       has_rush = True
+            elif a == 'keyword_rush_character': has_rush_character = True
             elif a == 'keyword_double_attack': has_double_attack = True
             elif a == 'keyword_banish':     has_banish = True
             elif a == 'keyword_trigger':    has_trigger = True
@@ -1008,8 +1046,10 @@ def _make_card(code: str, data: dict) -> Card:
         counter=data.get('counter', 0),
         life=data.get('life', 0),
         sub_types=data.get('sub_types', ''),
+        attribute=data.get('attribute', ''),
         card_text=data.get('text', ''),
         has_rush=has_rush,
+        has_rush_character=has_rush_character,
         has_blocker=has_blocker,
         has_double_attack=has_double_attack,
         has_banish=has_banish,
@@ -2524,18 +2564,22 @@ class OPTCGMatch:
             if not p.leader.rested:
                 attackers.append(p.leader)
             for att in attackers:
+                # [Rush: Character] restringe o alvo a Characters do
+                # oponente neste turno -- nao gera a opcao de atacar o Leader.
+                pode_atacar_leader = not getattr(att, 'rush_character_only_this_turn', False)
                 # alvo líder
-                s_leader = engine.score_attack_target(att, 'leader', None)
-                if s_leader > -500:
-                    s_leader -= self._trigger_risk_penalty(opp)   # desconto de trigger
-                    # Banish: prioriza atacar a vida (nega trigger e remove a carta
-                    # de vez). Inclinação forte, mas a ameaça crítica ainda vem antes.
-                    if att.has_banish:
-                        s_leader += 150
-                    if priority == 'LETHAL':       s_leader += 500   # foco em fechar
-                    elif priority == 'DEFENSIVE':  s_leader -= 80    # não exponha à toa
-                    elif priority == 'REMOVE_THREAT': s_leader -= 100 # remova antes
-                    actions.append((s_leader, 'attack', att, 'leader', None))
+                if pode_atacar_leader:
+                    s_leader = engine.score_attack_target(att, 'leader', None)
+                    if s_leader > -500:
+                        s_leader -= self._trigger_risk_penalty(opp)   # desconto de trigger
+                        # Banish: prioriza atacar a vida (nega trigger e remove a carta
+                        # de vez). Inclinação forte, mas a ameaça crítica ainda vem antes.
+                        if att.has_banish:
+                            s_leader += 150
+                        if priority == 'LETHAL':       s_leader += 500   # foco em fechar
+                        elif priority == 'DEFENSIVE':  s_leader -= 80    # não exponha à toa
+                        elif priority == 'REMOVE_THREAT': s_leader -= 100 # remova antes
+                        actions.append((s_leader, 'attack', att, 'leader', None))
                 # alvos personagem
                 for tgt in opp.field_chars:
                     s_char = engine.score_attack_target(att, 'character', tgt)
@@ -2943,7 +2987,8 @@ class OPTCGMatch:
                 if verbose:
                     print(f'    campo cheio -> descartou {worst.name[:25]}')
             card.rested = False
-            card.just_played = not card.has_rush
+            card.just_played = not (card.has_rush or card.is_rush_character())
+            card.rush_character_only_this_turn = card.is_rush_character() and not card.is_rush()
             p.field_chars.append(card)
 
         elif card.card_type == 'EVENT':
