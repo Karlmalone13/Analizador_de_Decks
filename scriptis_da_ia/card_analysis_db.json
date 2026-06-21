@@ -41843,7 +41843,12 @@
   "life": 0,
   "color": "Blue",
   "sub_types": "The Seven Warlords of the Sea Thriller Bark Pirates",
-  "effects": [],
+  "effects": [
+   {
+    "action": "substitute_removal",
+    "trigger": "passive"
+   }
+  ],
   "synergy_states": {},
   "text": "[Once Per Turn] If your Leader has the [The Seven Warlords of the Sea] type and this Character would be removed from the field by your opponent's effect, you may place 1 of your Characters other than [Gecko Moria] at the bottom of the owner's deck instead.",
   "is_searcher": false,
@@ -47023,14 +47028,14 @@
   "sub_types": "Whitebeard Pirates",
   "effects": [
    {
-    "action": "draw",
+    "action": "substitute_removal",
     "trigger": "passive"
    }
   ],
   "synergy_states": {},
   "text": "If this Character would be removed from the field by your opponent's effect or K.O.'d, trash this Character and draw 1 card instead.",
   "is_searcher": false,
-  "draws": true,
+  "draws": false,
   "has_counter_value": true,
   "has_counter_event": false,
   "is_blocker": false,
@@ -56320,7 +56325,12 @@
   "life": 0,
   "color": "Green",
   "sub_types": "Navy Punk Hazard",
-  "effects": [],
+  "effects": [
+   {
+    "action": "substitute_removal",
+    "trigger": "passive"
+   }
+  ],
   "synergy_states": {},
   "text": "If you have a green Character other than [Tashigi] that would be removed from the field by your opponent's effect, you may rest this Character instead.",
   "is_searcher": false,
@@ -57032,9 +57042,8 @@
   "sub_types": "Revolutionary Army Dressrosa",
   "effects": [
    {
-    "action": "bounce",
-    "trigger": "passive",
-    "target": "self"
+    "action": "substitute_removal",
+    "trigger": "passive"
    }
   ],
   "synergy_states": {},
@@ -57044,10 +57053,10 @@
   "has_counter_value": true,
   "has_counter_event": false,
   "is_blocker": false,
-  "is_removal": true,
+  "is_removal": false,
   "kos": false,
   "rests_opponent": false,
-  "bounces": true,
+  "bounces": false,
   "gives_don": false,
   "power_buff": false,
   "heals": false,
@@ -66735,7 +66744,12 @@
   "life": 0,
   "color": "Blue",
   "sub_types": "Navy",
-  "effects": [],
+  "effects": [
+   {
+    "action": "substitute_removal",
+    "trigger": "opp_turn"
+   }
+  ],
   "synergy_states": {},
   "text": "[Opponent's Turn] If your blue \"Navy\" type Character would be removed from the field by your opponent's effect, you may rest this Character and trash 1 card from your hand instead.",
   "is_searcher": false,
@@ -67581,9 +67595,8 @@
   "sub_types": "Alabasta Straw Hat Crew",
   "effects": [
    {
-    "action": "buff_power",
-    "trigger": "passive",
-    "target": "self"
+    "action": "substitute_removal",
+    "trigger": "passive"
    }
   ],
   "synergy_states": {},
@@ -67598,7 +67611,7 @@
   "rests_opponent": false,
   "bounces": false,
   "gives_don": false,
-  "power_buff": true,
+  "power_buff": false,
   "heals": false,
   "gains_life": false,
   "attacks_life": false,
@@ -70295,9 +70308,8 @@
   "sub_types": "Revolutionary Army",
   "effects": [
    {
-    "action": "buff_power",
-    "trigger": "passive",
-    "target": "self"
+    "action": "substitute_removal",
+    "trigger": "passive"
    }
   ],
   "synergy_states": {},
@@ -70312,7 +70324,7 @@
   "rests_opponent": false,
   "bounces": false,
   "gives_don": false,
-  "power_buff": true,
+  "power_buff": false,
   "heals": false,
   "gains_life": false,
   "attacks_life": false,
@@ -75194,9 +75206,8 @@
     "target": "opp_character"
    },
    {
-    "action": "buff_power",
-    "trigger": "opp_turn",
-    "target": "leader"
+    "action": "substitute_removal",
+    "trigger": "opp_turn"
    }
   ],
   "synergy_states": {},
@@ -75211,7 +75222,7 @@
   "rests_opponent": false,
   "bounces": false,
   "gives_don": false,
-  "power_buff": true,
+  "power_buff": false,
   "heals": false,
   "gains_life": false,
   "attacks_life": false,
@@ -79978,9 +79989,8 @@
   "sub_types": "Navy East Blue",
   "effects": [
    {
-    "action": "debuff_power",
-    "trigger": "passive",
-    "target": "opp_character"
+    "action": "substitute_removal",
+    "trigger": "passive"
    }
   ],
   "synergy_states": {},
@@ -81773,7 +81783,12 @@
   "life": 0,
   "color": "Blue",
   "sub_types": "Dressrosa The Tontattas",
-  "effects": [],
+  "effects": [
+   {
+    "action": "substitute_removal",
+    "trigger": "passive"
+   }
+  ],
   "synergy_states": {},
   "text": "If your Character with 7000 base power or less would be removed from the field by your opponent's effect, you may place 1 of your Characters at the bottom of the owner's deck instead.",
   "is_searcher": false,
@@ -82501,7 +82516,12 @@
   "life": 0,
   "color": "Purple",
   "sub_types": "Animal Sky Island",
-  "effects": [],
+  "effects": [
+   {
+    "action": "substitute_removal",
+    "trigger": "passive"
+   }
+  ],
   "synergy_states": {},
   "text": "If your Character with 7000 base power or less would be removed from the field by your opponent's effect, you may return 1 DON!! card from your field to your DON!! deck instead.",
   "is_searcher": false,
@@ -83358,7 +83378,12 @@
   "life": 0,
   "color": "Black",
   "sub_types": "Thriller Bark Pirates",
-  "effects": [],
+  "effects": [
+   {
+    "action": "substitute_removal",
+    "trigger": "passive"
+   }
+  ],
   "synergy_states": {},
   "text": "If your Character with 7000 base power or less would be removed from the field by your opponent's effect, you may trash 1 card from your hand instead.",
   "is_searcher": false,
@@ -105678,23 +105703,14 @@
   "sub_types": "Former Baroque Works Cross Guild",
   "effects": [
    {
-    "action": "draw",
-    "trigger": "on_play"
-   },
-   {
-    "action": "play_card",
-    "trigger": "on_play",
-    "cost_lte": 4
-   },
-   {
-    "action": "trash_from_hand",
+    "action": "substitute_removal",
     "trigger": "on_play"
    }
   ],
   "synergy_states": {},
   "text": "[On Play] Draw 2 cards and trash 1 card from your hand. Then, play up to 1 \"Cross Guild\" type Character card with a cost of 4 or less from your hand.\n[Once Per Turn] If your \"Cross Guild\" type Character would be removed from the field by your opponent's effect, you may trash 1 card from your hand instead.",
   "is_searcher": false,
-  "draws": true,
+  "draws": false,
   "has_counter_value": false,
   "has_counter_event": false,
   "is_blocker": false,
@@ -107500,14 +107516,14 @@
   "sub_types": "Giant Whitebeard Pirates",
   "effects": [
    {
-    "action": "draw",
+    "action": "substitute_removal",
     "trigger": "passive"
    }
   ],
   "synergy_states": {},
   "text": "If your Character with 6000 base power would be removed from the field by your opponent's effect, you may trash this Character and draw 1 card instead.",
   "is_searcher": false,
-  "draws": true,
+  "draws": false,
   "has_counter_value": true,
   "has_counter_event": false,
   "is_blocker": false,

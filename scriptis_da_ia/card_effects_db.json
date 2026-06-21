@@ -24135,7 +24135,23 @@
     "life": 0,
     "color": "Blue",
     "sub_types": "The Seven Warlords of the Sea Thriller Bark Pirates",
-    "effects": {}
+    "effects": {
+      "passive": {
+        "steps": [
+          {
+            "action": "substitute_removal",
+            "cost": {
+              "action": "place_own_character_bottom_deck",
+              "count": 1
+            }
+          }
+        ],
+        "conditions": {
+          "leader_type": "the seven warlords of the sea"
+        },
+        "once_per_turn": true
+      }
+    }
   },
   "OP07-043": {
     "name": "Salome",
@@ -27137,13 +27153,16 @@
       "passive": {
         "steps": [
           {
-            "action": "draw",
-            "count": 1
-          }
-        ],
-        "costs": [
-          {
-            "type": "trash_self"
+            "action": "substitute_removal",
+            "cost": {
+              "action": "trash_self"
+            },
+            "extra_steps": [
+              {
+                "action": "draw",
+                "count": 1
+              }
+            ]
           }
         ]
       }
@@ -32471,7 +32490,18 @@
     "life": 0,
     "color": "Green",
     "sub_types": "Navy Punk Hazard",
-    "effects": {}
+    "effects": {
+      "passive": {
+        "steps": [
+          {
+            "action": "substitute_removal",
+            "cost": {
+              "action": "rest_self"
+            }
+          }
+        ]
+      }
+    }
   },
   "OP10-033": {
     "name": "Nami (033)",
@@ -32847,9 +32877,10 @@
       "passive": {
         "steps": [
           {
-            "action": "bounce",
-            "count": 1,
-            "target": "self"
+            "action": "substitute_removal",
+            "cost": {
+              "action": "bounce_self"
+            }
           }
         ]
       }
@@ -38376,7 +38407,19 @@
     "life": 0,
     "color": "Blue",
     "sub_types": "Navy",
-    "effects": {}
+    "effects": {
+      "opp_turn": {
+        "steps": [
+          {
+            "action": "substitute_removal",
+            "cost": {
+              "action": "rest_self_and_trash_hand",
+              "trash_count": 1
+            }
+          }
+        ]
+      }
+    }
   },
   "OP12-049": {
     "name": "Buggy (049)",
@@ -38825,10 +38868,11 @@
       "passive": {
         "steps": [
           {
-            "action": "buff_power",
-            "amount": 1000,
-            "target": "self",
-            "duration": "this_turn"
+            "action": "substitute_removal",
+            "cost": {
+              "action": "return_own_don",
+              "count": 1
+            }
           }
         ]
       }
@@ -40384,10 +40428,11 @@
       "passive": {
         "steps": [
           {
-            "action": "buff_power",
-            "amount": 2000,
-            "target": "self",
-            "duration": "this_turn"
+            "action": "substitute_removal",
+            "cost": {
+              "action": "debuff_power_self",
+              "amount": 2000
+            }
           }
         ],
         "once_per_turn": true
@@ -43264,10 +43309,11 @@
       "opp_turn": {
         "steps": [
           {
-            "action": "buff_power",
-            "amount": 2000,
-            "target": "leader",
-            "duration": "this_turn"
+            "action": "substitute_removal",
+            "cost": {
+              "action": "debuff_power_self_leader",
+              "amount": 2000
+            }
           }
         ],
         "once_per_turn": true
@@ -46063,10 +46109,11 @@
       "passive": {
         "steps": [
           {
-            "action": "debuff_power",
-            "amount": 2000,
-            "target": "opp_character",
-            "duration": "this_turn"
+            "action": "substitute_removal",
+            "cost": {
+              "action": "debuff_power_self_leader",
+              "amount": 2000
+            }
           }
         ]
       }
@@ -47079,7 +47126,19 @@
     "life": 0,
     "color": "Blue",
     "sub_types": "Dressrosa The Tontattas",
-    "effects": {}
+    "effects": {
+      "passive": {
+        "steps": [
+          {
+            "action": "substitute_removal",
+            "cost": {
+              "action": "place_own_character_bottom_deck",
+              "count": 1
+            }
+          }
+        ]
+      }
+    }
   },
   "OP15-053": {
     "name": "Rebecca (OP15-053)",
@@ -47531,7 +47590,19 @@
     "life": 0,
     "color": "Purple",
     "sub_types": "Animal Sky Island",
-    "effects": {}
+    "effects": {
+      "passive": {
+        "steps": [
+          {
+            "action": "substitute_removal",
+            "cost": {
+              "action": "return_own_don",
+              "count": 1
+            }
+          }
+        ]
+      }
+    }
   },
   "OP15-070": {
     "name": "Fuza",
@@ -48052,7 +48123,19 @@
     "life": 0,
     "color": "Black",
     "sub_types": "Thriller Bark Pirates",
-    "effects": {}
+    "effects": {
+      "passive": {
+        "steps": [
+          {
+            "action": "substitute_removal",
+            "cost": {
+              "action": "trash_from_hand",
+              "count": 1
+            }
+          }
+        ]
+      }
+    }
   },
   "OP15-091": {
     "name": "Margarita",
@@ -60571,18 +60654,11 @@
       "on_play": {
         "steps": [
           {
-            "action": "draw",
-            "count": 2,
-            "then_trash": 1
-          },
-          {
-            "action": "play_card",
-            "count": 1,
-            "cost_lte": 4
-          },
-          {
-            "action": "trash_from_hand",
-            "count": 1
+            "action": "substitute_removal",
+            "cost": {
+              "action": "trash_from_hand",
+              "count": 1
+            }
           }
         ],
         "once_per_turn": true
@@ -61717,13 +61793,16 @@
       "passive": {
         "steps": [
           {
-            "action": "draw",
-            "count": 1
-          }
-        ],
-        "costs": [
-          {
-            "type": "trash_self"
+            "action": "substitute_removal",
+            "cost": {
+              "action": "trash_self"
+            },
+            "extra_steps": [
+              {
+                "action": "draw",
+                "count": 1
+              }
+            ]
           }
         ]
       }

@@ -14014,7 +14014,23 @@
             ]
         }
     },
-    "OP07-042": {},
+    "OP07-042": {
+        "passive": {
+            "conditions": {
+                "leader_type": "the seven warlords of the sea"
+            },
+            "once_per_turn": true,
+            "steps": [
+                {
+                    "action": "substitute_removal",
+                    "cost": {
+                        "action": "place_own_character_bottom_deck",
+                        "count": 1
+                    }
+                }
+            ]
+        }
+    },
     "OP07-043": {
         "on_play": {
             "steps": [
@@ -15794,15 +15810,18 @@
     },
     "OP08-045": {
         "passive": {
-            "costs": [
-                {
-                    "type": "trash_self"
-                }
-            ],
             "steps": [
                 {
-                    "action": "draw",
-                    "count": 1
+                    "action": "substitute_removal",
+                    "cost": {
+                        "action": "trash_self"
+                    },
+                    "extra_steps": [
+                        {
+                            "action": "draw",
+                            "count": 1
+                        }
+                    ]
                 }
             ]
         }
@@ -18912,7 +18931,18 @@
         }
     },
     "OP10-031": {},
-    "OP10-032": {},
+    "OP10-032": {
+        "passive": {
+            "steps": [
+                {
+                    "action": "substitute_removal",
+                    "cost": {
+                        "action": "rest_self"
+                    }
+                }
+            ]
+        }
+    },
     "OP10-033": {
         "on_play": {
             "steps": [
@@ -19118,9 +19148,10 @@
         "passive": {
             "steps": [
                 {
-                    "action": "bounce",
-                    "count": 1,
-                    "target": "self"
+                    "action": "substitute_removal",
+                    "cost": {
+                        "action": "bounce_self"
+                    }
                 }
             ]
         }
@@ -22277,7 +22308,19 @@
             ]
         }
     },
-    "OP12-048": {},
+    "OP12-048": {
+        "opp_turn": {
+            "steps": [
+                {
+                    "action": "substitute_removal",
+                    "cost": {
+                        "action": "rest_self_and_trash_hand",
+                        "trash_count": 1
+                    }
+                }
+            ]
+        }
+    },
     "OP12-049": {},
     "OP12-050": {
         "passive": {
@@ -22506,10 +22549,11 @@
         "passive": {
             "steps": [
                 {
-                    "action": "buff_power",
-                    "amount": 1000,
-                    "duration": "this_turn",
-                    "target": "self"
+                    "action": "substitute_removal",
+                    "cost": {
+                        "action": "return_own_don",
+                        "count": 1
+                    }
                 }
             ]
         }
@@ -23406,10 +23450,11 @@
             "once_per_turn": true,
             "steps": [
                 {
-                    "action": "buff_power",
-                    "amount": 2000,
-                    "duration": "this_turn",
-                    "target": "self"
+                    "action": "substitute_removal",
+                    "cost": {
+                        "action": "debuff_power_self",
+                        "amount": 2000
+                    }
                 }
             ]
         }
@@ -25084,10 +25129,11 @@
             "once_per_turn": true,
             "steps": [
                 {
-                    "action": "buff_power",
-                    "amount": 2000,
-                    "duration": "this_turn",
-                    "target": "leader"
+                    "action": "substitute_removal",
+                    "cost": {
+                        "action": "debuff_power_self_leader",
+                        "amount": 2000
+                    }
                 }
             ]
         },
@@ -26764,10 +26810,11 @@
         "passive": {
             "steps": [
                 {
-                    "action": "debuff_power",
-                    "amount": 2000,
-                    "duration": "this_turn",
-                    "target": "opp_character"
+                    "action": "substitute_removal",
+                    "cost": {
+                        "action": "debuff_power_self_leader",
+                        "amount": 2000
+                    }
                 }
             ]
         }
@@ -27350,7 +27397,19 @@
             ]
         }
     },
-    "OP15-052": {},
+    "OP15-052": {
+        "passive": {
+            "steps": [
+                {
+                    "action": "substitute_removal",
+                    "cost": {
+                        "action": "place_own_character_bottom_deck",
+                        "count": 1
+                    }
+                }
+            ]
+        }
+    },
     "OP15-053": {
         "don_conditional_keywords": {
             "steps": [
@@ -27632,7 +27691,19 @@
             ]
         }
     },
-    "OP15-069": {},
+    "OP15-069": {
+        "passive": {
+            "steps": [
+                {
+                    "action": "substitute_removal",
+                    "cost": {
+                        "action": "return_own_don",
+                        "count": 1
+                    }
+                }
+            ]
+        }
+    },
     "OP15-070": {
         "passive": {
             "steps": [
@@ -27943,7 +28014,19 @@
         }
     },
     "OP15-089": {},
-    "OP15-090": {},
+    "OP15-090": {
+        "passive": {
+            "steps": [
+                {
+                    "action": "substitute_removal",
+                    "cost": {
+                        "action": "trash_from_hand",
+                        "count": 1
+                    }
+                }
+            ]
+        }
+    },
     "OP15-091": {},
     "OP15-092": {
         "passive": {
@@ -34953,18 +35036,11 @@
             "once_per_turn": true,
             "steps": [
                 {
-                    "action": "draw",
-                    "count": 2,
-                    "then_trash": 1
-                },
-                {
-                    "action": "play_card",
-                    "cost_lte": 4,
-                    "count": 1
-                },
-                {
-                    "action": "trash_from_hand",
-                    "count": 1
+                    "action": "substitute_removal",
+                    "cost": {
+                        "action": "trash_from_hand",
+                        "count": 1
+                    }
                 }
             ]
         }
@@ -35666,15 +35742,18 @@
     },
     "ST30-009": {
         "passive": {
-            "costs": [
-                {
-                    "type": "trash_self"
-                }
-            ],
             "steps": [
                 {
-                    "action": "draw",
-                    "count": 1
+                    "action": "substitute_removal",
+                    "cost": {
+                        "action": "trash_self"
+                    },
+                    "extra_steps": [
+                        {
+                            "action": "draw",
+                            "count": 1
+                        }
+                    ]
                 }
             ]
         }

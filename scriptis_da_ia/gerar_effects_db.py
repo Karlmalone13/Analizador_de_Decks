@@ -631,12 +631,84 @@ def parse_substitute_ko(text):
         tipos = re.split(r'\s*(?:/| or )\s*', m.group(2).strip())
         cost = {'action': 'trash_from_hand', 'count': int(m.group(1)), 'filter_type': [x.strip() for x in tipos if x.strip()]}
     else:
+        # custo de power: SEMPRE debuff no alvo do custo (mesmo sendo proprio
+        # Leader/Character), mesmo sem sinal explicito no texto -- e
+        # sacrificio/substituicao, nao bonus. Confirmado por imagem real
+        # (X.Drake OP14-016: "give your Leader 2000 power instead" = -2000).
         m = re.search(r"you may give (?:that character|this character) [−\-]?(\d+) power[^.]*instead", t)
         if m:
             cost = {'action': 'debuff_power_self', 'amount': int(m.group(1))}
+        else:
+            m = re.search(r"you may give your leader [−\-]?(\d+) power[^.]*instead", t)
+            if m:
+                cost = {'action': 'debuff_power_self_leader', 'amount': int(m.group(1))}
 
     if cost:
         steps.append({'action': 'substitute_ko', 'cost': cost})
+
+    return steps
+
+
+def parse_substitute_removal(text):
+    """
+    Cobre 'If [this/your X Character] would be removed from the field [by
+    your opponent's effect][or K.O.'d], you may [custo] instead'. Mais
+    generico que substitute_ko (remocao cobre K.O., bounce, deck-bottom
+    causados por efeito -- nao so K.O.). Variacoes de custo vistas:
+      - discard/trash 1 card from your hand instead
+      - rest this Character instead
+      - return this Character to the owner's hand instead (bounce_self)
+      - give that Character/your Leader -N power instead (debuff_power_self
+        ou debuff_power_self_leader -- SEMPRE debuff, mesmo alvo proprio,
+        pois e sacrificio de substituicao)
+      - trash this Character and draw 1 card instead
+      - place 1 of your Characters [other than X] at the bottom of the
+        owner's deck instead
+    """
+    steps = []
+    t = text.lower()
+
+    if not re.search(r"would be removed from the field", t):
+        return steps
+
+    cost = None
+    extra_steps = []
+
+    # tentativas em ordem -- a primeira que casar define o custo
+    tentativas = [
+        (r"you may (?:discard|trash) (\d+) cards? from your hand instead",
+         lambda m: {'action': 'trash_from_hand', 'count': int(m.group(1))}),
+        (r"trash this character and draw (\d+) cards? instead",
+         lambda m: {'action': 'trash_self'}),
+        (r"you may rest this character and trash (\d+) cards? from your hand instead",
+         lambda m: {'action': 'rest_self_and_trash_hand', 'trash_count': int(m.group(1))}),
+        (r"you may rest this character instead",
+         lambda m: {'action': 'rest_self'}),
+        (r"return this character to the owner.?s hand instead",
+         lambda m: {'action': 'bounce_self'}),
+        (r"you may give (?:that character|this character) [−\-]?(\d+) power[^.]*instead",
+         lambda m: {'action': 'debuff_power_self', 'amount': int(m.group(1))}),
+        (r"you may give your leader [−\-]?(\d+) power[^.]*instead",
+         lambda m: {'action': 'debuff_power_self_leader', 'amount': int(m.group(1))}),
+        (r"you may (?:return|place) (\d+) of your characters?[^.]*instead",
+         lambda m: {'action': 'place_own_character_bottom_deck', 'count': int(m.group(1))}),
+        (r"you may return (\d+) don!! cards? from your field to your don!! deck instead",
+         lambda m: {'action': 'return_own_don', 'count': int(m.group(1))}),
+    ]
+
+    for pattern, builder in tentativas:
+        m = re.search(pattern, t)
+        if m:
+            cost = builder(m)
+            if pattern == r"trash this character and draw (\d+) cards? instead":
+                extra_steps.append({'action': 'draw', 'count': int(m.group(1))})
+            break
+
+    if cost:
+        step = {'action': 'substitute_removal', 'cost': cost}
+        if extra_steps:
+            step['extra_steps'] = extra_steps
+        steps.append(step)
 
     return steps
 
@@ -765,6 +837,14 @@ def parse_block(block_text, trigger_name):
     # pra evitar que parse_ko/parse_power_buff capturem o mesmo trecho.
     if re.search(r"would be k\.o\.'?d", t):
         sub_steps = parse_substitute_ko(t)
+        if sub_steps:
+            return sub_steps
+
+    # Substitute removal (generico, distinto de K.O.): "would be removed
+    # from the field... you may [custo] instead" -- mesma logica de
+    # reivindicar o bloco e retornar antecipado.
+    if re.search(r"would be removed from the field", t):
+        sub_steps = parse_substitute_removal(t)
         if sub_steps:
             return sub_steps
 
@@ -950,8 +1030,10 @@ def parse_card_effect(card_text, card_type):
         if not steps:
             continue
 
+        is_substitute = len(steps) == 1 and steps[0].get('action') in ('substitute_ko', 'substitute_removal')
+
         conds = parse_conditions(block)
-        costs = parse_costs(block)
+        costs = [] if is_substitute else parse_costs(block)
         once = '[once per turn]' in t_low
 
         # DON x requisito antes do trigger. Usa a posição real do match (m.start)
@@ -993,9 +1075,10 @@ def parse_card_effect(card_text, card_type):
         if sem_tags_de_trigger:
             fallback_steps = parse_block(t_low, 'passive')
             if fallback_steps:
+                is_substitute_fb = len(fallback_steps) == 1 and fallback_steps[0].get('action') in ('substitute_ko', 'substitute_removal')
                 entry = {'steps': fallback_steps}
                 conds = parse_conditions(t_low)
-                costs = parse_costs(t_low)
+                costs = [] if is_substitute_fb else parse_costs(t_low)
                 if conds:
                     entry['conditions'] = conds
                 if costs:
