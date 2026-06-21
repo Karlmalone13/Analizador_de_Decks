@@ -659,12 +659,41 @@ class EffectExecutor:
         # ── Play from trash ───────────────────────────────────────────────────
         if action == 'play_from_trash':
             filter_type = step.get('filter_type', '').lower()
-            cost_lte = step.get('cost_lte', 99)
+            filter_name = step.get('filter_name', '').lower()
+            cost_lte = step.get('cost_lte')
+            cost_eq = step.get('cost_eq')
+            power_eq = step.get('power_eq')
+            power_lte = step.get('power_lte')
             count = step.get('count', 1)
+            enters_rested = step.get('rested', False)
+            distinct_names = step.get('distinct_names', False)
+
+            # filter_self: recupera a SI MESMO do trash (ex: substituicao de
+            # remocao por auto-K.O. seguida de replay). Nao usa o pool geral
+            # de candidatos, e sim a propria carta que acabou de ir ao trash.
+            if step.get('filter_self'):
+                self_card = next((c for c in me.trash if c.code == card.code), None)
+                if self_card:
+                    me.trash.remove(self_card)
+                    self_card.rested = enters_rested
+                    if self_card.card_type == 'STAGE':
+                        if me.field_stage:
+                            me.trash.append(me.field_stage)
+                        me.field_stage = self_card
+                    else:
+                        me.field_chars.append(self_card)
+                    return f'jogou do trash (self): {self_card.name[:15]}'
+                return ''
 
             candidates = []
             for c in me.trash:
-                if c.cost > cost_lte:
+                if cost_lte is not None and c.cost > cost_lte:
+                    continue
+                if cost_eq is not None and c.cost != cost_eq:
+                    continue
+                if power_eq is not None and c.power != power_eq:
+                    continue
+                if power_lte is not None and c.power > power_lte:
                     continue
                 if filter_type:
                     match = (filter_type in c.sub_types.lower() or
@@ -672,28 +701,39 @@ class EffectExecutor:
                              filter_type in c.card_type.lower())
                     if not match:
                         continue
+                if filter_name and filter_name not in c.name.lower():
+                    continue
                 candidates.append(c)
 
             played = []
+            played_names_lower = set()
             for _ in range(min(count, len(candidates))):
-                if c.card_type == 'STAGE':
-                    best = max(candidates, key=lambda x: x.cost)
-                    me.trash.remove(best)
+                pool = candidates
+                if distinct_names:
+                    pool = [c for c in candidates if c.name.lower() not in played_names_lower]
+                if not pool:
+                    break
+                if any(c.card_type == 'STAGE' for c in pool):
+                    best = max((c for c in pool if c.card_type == 'STAGE'), key=lambda x: x.cost)
+                else:
+                    best = max(pool, key=lambda x: x.board_value())
+
+                me.trash.remove(best)
+                best.rested = enters_rested
+                if best.card_type == 'STAGE':
                     if me.field_stage:
                         me.trash.append(me.field_stage)
                     me.field_stage = best
-                    played.append(best.name[:15])
-                    candidates.remove(best)
                 else:
-                    best = max(candidates, key=lambda x: x.board_value())
-                    me.trash.remove(best)
                     if len(me.field_chars) >= 5:
                         worst = min(me.field_chars, key=lambda x: x.board_value())
                         me.field_chars.remove(worst)
                         me.trash.append(worst)
                     me.field_chars.append(best)
-                    played.append(best.name[:15])
-                    candidates.remove(best)
+
+                played.append(best.name[:15])
+                played_names_lower.add(best.name.lower())
+                candidates.remove(best)
 
             return f'jogou do trash: {", ".join(played)}' if played else ''
 

@@ -531,42 +531,121 @@ def parse_play_from_trash(text):
     steps = []
     t = text.lower()
 
-    # Padrao com tipo (ex: "play up to 1 'Thriller Bark Pirates' type Character
-    # card with a cost of 2 or less from your trash")
-    m = re.search(r'play up to (\d+) .{0,20}type (?:stage|character) card.{0,30}from your trash', t)
-    if m:
-        type_m = re.search(r'play up to \d+ "?([a-z][a-z0-9 .]+)"? type', t)
-        cost_m = re.search(r'with a cost of (\d+) or less', t)
-        step = {
-            'action': 'play_from_trash',
-            'count': int(m.group(1)),
-            'filter_type': type_m.group(1).strip() if type_m else '',
-            'cost_lte': int(cost_m.group(1)) if cost_m else 99
-        }
-        exclude_m = re.search(r'other than \[([a-z][a-z0-9 .\'-]+)\]', t)
-        if exclude_m:
-            step['exclude'] = exclude_m.group(1).strip()
-        steps.append(step)
+    # Padrao "choose up to N1 ... and up to N2 ... from your trash. Play 1
+    # card and play the other card rested." -- duas escolhas com custos
+    # distintos, uma delas entra rested e a outra ativa (regra fixa do
+    # template: a explicitamente nomeada como "the other" entra rested).
+    m_choose = re.search(
+        r'choose up to (\d+) character card with a cost of (\d+) or less '
+        r'and up to (\d+) character card with a cost of (\d+) or less from your trash',
+        t
+    )
+    if m_choose and 'play 1 card and play the other card rested' in t:
+        steps.append({'action': 'play_from_trash', 'count': int(m_choose.group(1)), 'cost_lte': int(m_choose.group(2))})
+        steps.append({'action': 'play_from_trash', 'count': int(m_choose.group(3)), 'cost_lte': int(m_choose.group(4)), 'rested': True})
         return steps
 
-    # Padrao SEM filtro de tipo/faccao -- so "Character card" generico, com
-    # filtro de custo e/ou keyword [Trigger], ex: "play up to 1 Character
-    # card with a cost of 4 or less and a [Trigger] other than [X] from your
-    # trash"
-    m = re.search(r'play up to (\d+) character card.{0,80}from your trash', t)
-    if m:
-        cost_m = re.search(r'with a cost of (\d+) or less', t)
-        step = {
-            'action': 'play_from_trash',
-            'count': int(m.group(1)),
-            'cost_lte': int(cost_m.group(1)) if cost_m else 99
-        }
-        if re.search(r'and a \[trigger\]', t):
+    # Padrao "play up to N1 Character card with a type including 'X' and a
+    # cost of C1 or less and up to N2 Character card with a type including
+    # 'X' and a cost of C2 from your trash." -- dois targets compartilhando
+    # um unico 'from your trash' no final da frase.
+    m_double = re.search(
+        r'play up to (\d+) character card with a type including "([a-z][a-z0-9 .\'-]+)" and a cost of (\d+) or less '
+        r'and up to (\d+) character card with a type including "[a-z][a-z0-9 .\'-]+" and a cost of (\d+)\b'
+        r'(?: or less)? from your trash',
+        t
+    )
+    if m_double:
+        steps.append({'action': 'play_from_trash', 'count': int(m_double.group(1)), 'filter_type': m_double.group(2).strip(), 'cost_lte': int(m_double.group(3))})
+        # segundo cost sem "or less" no texto original = igualdade exata
+        second_cost_eq = f'cost of {m_double.group(5)} from your trash' in t
+        step2 = {'action': 'play_from_trash', 'count': int(m_double.group(4)), 'filter_type': m_double.group(2).strip()}
+        if second_cost_eq:
+            step2['cost_eq'] = int(m_double.group(5))
+        else:
+            step2['cost_lte'] = int(m_double.group(5))
+        steps.append(step2)
+        return steps
+
+    # Padrao "play up to 1 [Nome1], up to 1 [Nome2], and up to 1 [Nome3],
+    # with a cost of C or less from your trash" -- lista de nomes proprios
+    # compartilhando um unico filtro de custo no final.
+    m_names = re.search(
+        r'play up to (\d+) \[([a-z][a-z0-9 .\'-]+)\], up to (\d+) \[([a-z][a-z0-9 .\'-]+)\], '
+        r'and up to (\d+) \[([a-z][a-z0-9 .\'-]+)\], with a cost of (\d+) or less from your trash',
+        t
+    )
+    if m_names:
+        cost_lte = int(m_names.group(7))
+        for i in (1, 2, 3):
+            cnt = int(m_names.group(i * 2 - 1))
+            name = m_names.group(i * 2).strip()
+            steps.append({'action': 'play_from_trash', 'count': cnt, 'filter_name': name, 'cost_lte': cost_lte})
+        return steps
+
+
+    # Cada match abaixo cobre UM target "play up to N ... from your trash
+    # [rested]?". Frases com dois targets (ex: "play up to 1 Character card
+    # with a cost of 4 or less and up to 1 ... with a cost of 1 ... from
+    # your trash") produzem dois steps, na ordem em que aparecem no texto.
+    for m in re.finditer(r'play up to (\d+) .{0,140}?from your trash(\s+rested)?', t):
+        clause = m.group(0)
+        count = int(m.group(1))
+        rested = bool(m.group(2))
+
+        step = {'action': 'play_from_trash', 'count': count}
+
+        cost_m = re.search(r'cost of (\d+) or less', clause)
+        cost_eq_m = re.search(r'with a cost of (\d+)\b(?! or less)', clause)
+        power_lte_m = re.search(r'(\d+) power or less', clause)
+        power_eq_m = re.search(r'with (\d+) power\b(?! or less)', clause)
+        if cost_m:
+            step['cost_lte'] = int(cost_m.group(1))
+        elif cost_eq_m:
+            step['cost_eq'] = int(cost_eq_m.group(1))
+        elif power_lte_m:
+            step['power_lte'] = int(power_lte_m.group(1))
+        elif power_eq_m:
+            step['power_eq'] = int(power_eq_m.group(1))
+        else:
+            step['cost_lte'] = 99
+
+        if 'different card names' in clause:
+            step['distinct_names'] = True
+
+        # Filtro de tipo: '"X" type' / '[X] type' / '{X} type' / 'type including "X"'
+        type_m = (re.search(r'"([a-z][a-z0-9 .\'-]+)"\s+type', clause)
+                  or re.search(r'[\[{]([a-z][a-z0-9 .\'-]+)[\]}]\s+type', clause)
+                  or re.search(r'type including "([a-z][a-z0-9 .\'-]+)"', clause))
+        if type_m:
+            step['filter_type'] = type_m.group(1).strip()
+        else:
+            # Sem "type": colchetes contendo nome PROPRIO de carta, ex.
+            # "play up to 1 [Ulti] with a cost of 4 or less from your trash"
+            name_m = re.search(r'play up to \d+ \[([a-z][a-z0-9 .\'-]+)\]', clause)
+            if name_m:
+                step['filter_name'] = name_m.group(1).strip()
+
+        if re.search(r'and a \[trigger\]', clause):
             step['has_trigger'] = True
-        exclude_m = re.search(r'other than \[([a-z][a-z0-9 .\'-]+)\]', t)
+
+        exclude_m = re.search(r'other than \[([a-z][a-z0-9 .\'-]+)\]', clause)
         if exclude_m:
             step['exclude'] = exclude_m.group(1).strip()
+
+        if rested:
+            step['rested'] = True
+
         steps.append(step)
+
+    if steps:
+        return steps
+
+    # Variante sem "up to": "play this Character card from your trash"
+    # (auto-recuperacao de si mesmo, geralmente apos um custo de trash de
+    # outra carta). Count implicito = 1, target = self.
+    if re.search(r'play this character card from your trash', t):
+        steps.append({'action': 'play_from_trash', 'count': 1, 'filter_self': True})
 
     return steps
 

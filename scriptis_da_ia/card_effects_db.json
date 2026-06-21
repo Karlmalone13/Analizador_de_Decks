@@ -1078,8 +1078,10 @@
           {
             "action": "play_from_trash",
             "count": 1,
-            "cost_lte": 99,
-            "exclude": "spandine"
+            "cost_lte": 4,
+            "filter_type": "cp",
+            "exclude": "spandine",
+            "rested": true
           }
         ]
       }
@@ -2601,8 +2603,9 @@
           {
             "action": "play_from_trash",
             "count": 1,
-            "filter_type": "",
-            "cost_lte": 4
+            "cost_lte": 4,
+            "filter_type": "navy",
+            "rested": true
           }
         ]
       },
@@ -2668,7 +2671,8 @@
           {
             "action": "play_from_trash",
             "count": 1,
-            "cost_lte": 99,
+            "cost_lte": 5,
+            "filter_type": "cp",
             "exclude": "blueno"
           }
         ],
@@ -4152,7 +4156,7 @@
           {
             "action": "play_from_trash",
             "count": 1,
-            "cost_lte": 99
+            "power_lte": 6000
           },
           {
             "action": "trash_from_hand",
@@ -4321,6 +4325,13 @@
           {
             "action": "give_don",
             "count": 1
+          },
+          {
+            "action": "play_from_trash",
+            "count": 1,
+            "cost_lte": 2,
+            "filter_type": "thriller bark pirates",
+            "rested": true
           }
         ],
         "conditions": {
@@ -13971,7 +13982,9 @@
           {
             "action": "play_from_trash",
             "count": 1,
-            "cost_lte": 99
+            "cost_lte": 4,
+            "filter_type": "cp",
+            "rested": true
           }
         ]
       },
@@ -14057,6 +14070,15 @@
     "color": "Black",
     "sub_types": "CP9",
     "effects": {
+      "trigger": {
+        "steps": [
+          {
+            "action": "play_from_trash",
+            "count": 1,
+            "cost_lte": 3
+          }
+        ]
+      },
       "main": {
         "steps": [
           {
@@ -20951,8 +20973,9 @@
           {
             "action": "play_from_trash",
             "count": 1,
-            "filter_type": "",
-            "cost_lte": 99
+            "cost_lte": 99,
+            "filter_type": "film",
+            "rested": true
           }
         ],
         "costs": [
@@ -22056,6 +22079,13 @@
       "on_play": {
         "steps": [
           {
+            "action": "play_from_trash",
+            "count": 4,
+            "power_lte": 4000,
+            "distinct_names": true,
+            "filter_type": "germa 66"
+          },
+          {
             "action": "trash_from_hand",
             "count": 2
           }
@@ -22482,6 +22512,12 @@
       "when_attacking": {
         "steps": [
           {
+            "action": "play_from_trash",
+            "count": 1,
+            "cost_lte": 4,
+            "filter_type": "thriller bark pirates"
+          },
+          {
             "action": "trash_from_hand",
             "count": 1
           }
@@ -22847,7 +22883,27 @@
     "life": 0,
     "color": "Black",
     "sub_types": "Thriller Bark Pirates",
-    "effects": {}
+    "effects": {
+      "activate_main": {
+        "steps": [
+          {
+            "action": "play_from_trash",
+            "count": 1,
+            "cost_lte": 2,
+            "filter_type": "thriller bark pirates",
+            "rested": true
+          }
+        ],
+        "conditions": {
+          "leader_type": "thriller bark pirates"
+        },
+        "costs": [
+          {
+            "type": "rest_self"
+          }
+        ]
+      }
+    }
   },
   "OP06-099": {
     "name": "Aisa",
@@ -25829,8 +25885,9 @@
           {
             "action": "play_from_trash",
             "count": 1,
-            "filter_type": "",
-            "cost_lte": 4
+            "cost_lte": 4,
+            "filter_type": "egghead",
+            "rested": true
           }
         ],
         "conditions": {
@@ -26143,8 +26200,8 @@
           {
             "action": "play_from_trash",
             "count": 1,
-            "filter_type": "",
-            "cost_lte": 5
+            "cost_lte": 5,
+            "filter_type": "egghead"
           }
         ]
       },
@@ -28271,8 +28328,8 @@
           {
             "action": "play_from_trash",
             "count": 1,
-            "filter_type": "",
-            "cost_lte": 2
+            "cost_lte": 2,
+            "filter_type": "smile"
           }
         ]
       }
@@ -28329,7 +28386,18 @@
     "life": 0,
     "color": "Black",
     "sub_types": "Animal Kingdom Pirates",
-    "effects": {}
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "play_from_trash",
+            "count": 1,
+            "cost_lte": 4,
+            "filter_name": "ulti"
+          }
+        ]
+      }
+    }
   },
   "OP08-093": {
     "name": "X.Drake",
@@ -28426,6 +28494,15 @@
     "color": "Black",
     "sub_types": "Blackbeard Pirates",
     "effects": {
+      "trigger": {
+        "steps": [
+          {
+            "action": "play_from_trash",
+            "count": 1,
+            "cost_lte": 3
+          }
+        ]
+      },
       "counter": {
         "steps": [
           {
@@ -29740,7 +29817,19 @@
     "life": 0,
     "color": "Green",
     "sub_types": "Straw Hat Crew ODYSSEY",
-    "effects": {}
+    "effects": {
+      "on_ko": {
+        "steps": [
+          {
+            "action": "play_from_trash",
+            "count": 1,
+            "cost_lte": 4,
+            "filter_type": "straw hat crew",
+            "rested": true
+          }
+        ]
+      }
+    }
   },
   "OP09-029": {
     "name": "Tony Tony.Chopper",
@@ -31038,7 +31127,19 @@
     "life": 0,
     "color": "Black",
     "sub_types": "Thriller Bark Pirates",
-    "effects": {}
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "play_from_trash",
+            "count": 1,
+            "cost_lte": 2,
+            "filter_type": "thriller bark pirates",
+            "rested": true
+          }
+        ]
+      }
+    }
   },
   "OP09-086": {
     "name": "Jesus Burgess",
@@ -33991,6 +34092,13 @@
           {
             "action": "draw",
             "count": 1
+          },
+          {
+            "action": "play_from_trash",
+            "count": 1,
+            "cost_lte": 5,
+            "filter_type": "blackbeard pirates",
+            "exclude": "kuzan"
           }
         ],
         "costs": [
@@ -34147,8 +34255,9 @@
           {
             "action": "play_from_trash",
             "count": 1,
+            "cost_lte": 3,
             "filter_type": "dressrosa",
-            "cost_lte": 3
+            "rested": true
           }
         ]
       },
@@ -36897,6 +37006,21 @@
             "count": 1
           }
         ]
+      },
+      "activate_main": {
+        "steps": [
+          {
+            "action": "play_from_trash",
+            "count": 1,
+            "cost_lte": 4,
+            "filter_name": "caribou"
+          }
+        ],
+        "costs": [
+          {
+            "type": "trash_self"
+          }
+        ]
       }
     }
   },
@@ -36986,6 +37110,13 @@
           {
             "action": "draw",
             "count": 1
+          },
+          {
+            "action": "play_from_trash",
+            "count": 1,
+            "cost_lte": 8,
+            "filter_type": "sword",
+            "exclude": "helmeppo"
           },
           {
             "action": "trash_from_hand",
@@ -42295,7 +42426,32 @@
     "life": 0,
     "color": "Black",
     "sub_types": "Celestial Dragons Five Elders",
-    "effects": {}
+    "effects": {
+      "activate_main": {
+        "steps": [
+          {
+            "action": "play_from_trash",
+            "count": 5,
+            "power_eq": 5000,
+            "distinct_names": true,
+            "filter_type": "five elders"
+          }
+        ],
+        "conditions": {
+          "leader_is": "imu"
+        },
+        "costs": [
+          {
+            "type": "rest_don",
+            "count": 1
+          },
+          {
+            "type": "trash_from_hand",
+            "count": 1
+          }
+        ]
+      }
+    }
   },
   "OP13-083": {
     "name": "St. Jaygarcia Saturn",
@@ -42520,8 +42676,8 @@
           {
             "action": "play_from_trash",
             "count": 1,
-            "filter_type": "mary geoise",
-            "cost_lte": 99
+            "cost_eq": 1,
+            "filter_type": "mary geoise"
           }
         ],
         "conditions": {
@@ -45332,7 +45488,24 @@
     "life": 0,
     "color": "Black",
     "sub_types": "Baroque Works",
-    "effects": {}
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "play_from_trash",
+            "count": 1,
+            "filter_type": "baroque works",
+            "cost_lte": 4
+          },
+          {
+            "action": "play_from_trash",
+            "count": 1,
+            "filter_type": "baroque works",
+            "cost_eq": 1
+          }
+        ]
+      }
+    }
   },
   "OP14-085": {
     "name": "Miss.Goldenweek(Marianne)",
@@ -45452,6 +45625,17 @@
             "action": "draw",
             "count": 2,
             "then_trash": 2
+          }
+        ]
+      },
+      "trigger": {
+        "steps": [
+          {
+            "action": "play_from_trash",
+            "count": 1,
+            "cost_lte": 4,
+            "filter_type": "thriller bark pirates",
+            "rested": true
           }
         ]
       }
@@ -45742,6 +45926,17 @@
             "action": "deck_bottom_rest"
           }
         ]
+      },
+      "trigger": {
+        "steps": [
+          {
+            "action": "play_from_trash",
+            "count": 1,
+            "cost_lte": 4,
+            "filter_type": "thriller bark pirates",
+            "rested": true
+          }
+        ]
       }
     }
   },
@@ -45765,7 +45960,19 @@
     "life": 0,
     "color": "Yellow",
     "sub_types": "Thriller Bark Pirates",
-    "effects": {}
+    "effects": {
+      "trigger": {
+        "steps": [
+          {
+            "action": "play_from_trash",
+            "count": 1,
+            "cost_lte": 4,
+            "filter_type": "thriller bark pirates",
+            "rested": true
+          }
+        ]
+      }
+    }
   },
   "OP14-103": {
     "name": "Gloriosa (Grandma Nyon)",
@@ -45949,6 +46156,17 @@
     "color": "Yellow",
     "sub_types": "Thriller Bark Pirates",
     "effects": {
+      "trigger": {
+        "steps": [
+          {
+            "action": "play_from_trash",
+            "count": 1,
+            "cost_lte": 4,
+            "filter_type": "thriller bark pirates",
+            "rested": true
+          }
+        ]
+      },
       "passive": {
         "steps": [
           {
@@ -45978,6 +46196,17 @@
             "exclude": "dr. hogback"
           }
         ]
+      },
+      "trigger": {
+        "steps": [
+          {
+            "action": "play_from_trash",
+            "count": 1,
+            "cost_lte": 4,
+            "filter_type": "thriller bark pirates",
+            "rested": true
+          }
+        ]
       }
     }
   },
@@ -45990,7 +46219,19 @@
     "life": 0,
     "color": "Yellow",
     "sub_types": "Thriller Bark Pirates",
-    "effects": {}
+    "effects": {
+      "trigger": {
+        "steps": [
+          {
+            "action": "play_from_trash",
+            "count": 1,
+            "cost_lte": 4,
+            "filter_type": "thriller bark pirates",
+            "rested": true
+          }
+        ]
+      }
+    }
   },
   "OP14-112": {
     "name": "Boa Hancock - OP14-112",
@@ -46186,6 +46427,17 @@
     "color": "Yellow",
     "sub_types": "Thriller Bark Pirates",
     "effects": {
+      "trigger": {
+        "steps": [
+          {
+            "action": "play_from_trash",
+            "count": 1,
+            "cost_lte": 4,
+            "filter_type": "thriller bark pirates",
+            "rested": true
+          }
+        ]
+      },
       "counter": {
         "steps": [
           {
@@ -48414,6 +48666,12 @@
       "on_play": {
         "steps": [
           {
+            "action": "play_from_trash",
+            "count": 1,
+            "cost_lte": 7,
+            "filter_type": "straw hat crew"
+          },
+          {
             "action": "gain_rush"
           }
         ],
@@ -48470,8 +48728,8 @@
           {
             "action": "play_from_trash",
             "count": 1,
-            "filter_type": "",
-            "cost_lte": 2
+            "cost_lte": 2,
+            "filter_type": "straw hat crew"
           }
         ],
         "costs": [
@@ -51288,7 +51546,27 @@
     "life": 0,
     "color": "Black",
     "sub_types": "Land of Wano Kouzuki Clan",
-    "effects": {}
+    "effects": {
+      "activate_main": {
+        "steps": [
+          {
+            "action": "play_from_trash",
+            "count": 1,
+            "cost_eq": 9,
+            "filter_name": "kouzuki momonosuke"
+          }
+        ],
+        "conditions": {
+          "don_gte": 9,
+          "don_on_field_gte": 9
+        },
+        "costs": [
+          {
+            "type": "trash_self"
+          }
+        ]
+      }
+    }
   },
   "OP16-085": {
     "name": "Kouzuki Momonosuke (085)",
@@ -51300,6 +51578,17 @@
     "color": "Black",
     "sub_types": "Land of Wano Kouzuki Clan",
     "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "play_from_trash",
+            "count": 1,
+            "cost_lte": 6,
+            "filter_type": "land of wano",
+            "exclude": "kouzuki momonosuke"
+          }
+        ]
+      },
       "passive": {
         "steps": [
           {
@@ -51568,6 +51857,16 @@
     "color": "Black",
     "sub_types": "Land of Wano",
     "effects": {
+      "on_ko": {
+        "steps": [
+          {
+            "action": "play_from_trash",
+            "count": 1,
+            "cost_lte": 6,
+            "filter_name": "yamato"
+          }
+        ]
+      },
       "passive": {
         "steps": [
           {
@@ -51620,6 +51919,20 @@
             "count": 1
           }
         ]
+      },
+      "activate_main": {
+        "steps": [
+          {
+            "action": "play_from_trash",
+            "count": 1,
+            "cost_eq": 8
+          }
+        ],
+        "costs": [
+          {
+            "type": "trash_self"
+          }
+        ]
       }
     }
   },
@@ -51648,8 +51961,8 @@
           {
             "action": "play_from_trash",
             "count": 1,
-            "filter_type": "",
-            "cost_lte": 6
+            "cost_lte": 6,
+            "filter_type": "land of wano"
           }
         ],
         "costs": [
@@ -51818,6 +52131,12 @@
           {
             "action": "draw",
             "count": 1
+          },
+          {
+            "action": "play_from_trash",
+            "count": 1,
+            "cost_eq": 1,
+            "filter_type": "blackbeard pirates"
           }
         ]
       }
@@ -51832,7 +52151,33 @@
     "life": 0,
     "color": "Yellow",
     "sub_types": "The Seven Warlords of the Sea Thriller Bark Pirates",
-    "effects": {}
+    "effects": {
+      "trigger": {
+        "steps": [
+          {
+            "action": "play_from_trash",
+            "count": 1,
+            "filter_name": "absalom",
+            "cost_lte": 4
+          },
+          {
+            "action": "play_from_trash",
+            "count": 1,
+            "filter_name": "dr. hogback",
+            "cost_lte": 4
+          },
+          {
+            "action": "play_from_trash",
+            "count": 1,
+            "filter_name": "perona",
+            "cost_lte": 4
+          }
+        ],
+        "conditions": {
+          "life_lte": 1
+        }
+      }
+    }
   },
   "OP16-106": {
     "name": "Sanjuan.Wolf",
@@ -54260,7 +54605,8 @@
           {
             "action": "play_from_trash",
             "count": 1,
-            "cost_lte": 4
+            "cost_lte": 4,
+            "rested": true
           }
         ],
         "conditions": {
@@ -61409,6 +61755,17 @@
     "color": "Black",
     "sub_types": "Blackbeard Pirates Former Navy",
     "effects": {
+      "on_ko": {
+        "steps": [
+          {
+            "action": "play_from_trash",
+            "count": 1,
+            "cost_lte": 5,
+            "filter_type": "blackbeard pirates",
+            "rested": true
+          }
+        ]
+      },
       "passive": {
         "steps": [
           {

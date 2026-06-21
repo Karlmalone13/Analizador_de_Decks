@@ -648,9 +648,11 @@
             "steps": [
                 {
                     "action": "play_from_trash",
-                    "cost_lte": 99,
+                    "cost_lte": 4,
                     "count": 1,
-                    "exclude": "spandine"
+                    "exclude": "spandine",
+                    "filter_type": "cp",
+                    "rested": true
                 }
             ]
         }
@@ -1553,7 +1555,8 @@
                     "action": "play_from_trash",
                     "cost_lte": 4,
                     "count": 1,
-                    "filter_type": ""
+                    "filter_type": "navy",
+                    "rested": true
                 }
             ]
         },
@@ -1597,9 +1600,10 @@
             "steps": [
                 {
                     "action": "play_from_trash",
-                    "cost_lte": 99,
+                    "cost_lte": 5,
                     "count": 1,
-                    "exclude": "blueno"
+                    "exclude": "blueno",
+                    "filter_type": "cp"
                 }
             ]
         }
@@ -2488,8 +2492,8 @@
                 },
                 {
                     "action": "play_from_trash",
-                    "cost_lte": 99,
-                    "count": 1
+                    "count": 1,
+                    "power_lte": 6000
                 },
                 {
                     "action": "trash_from_hand",
@@ -2598,6 +2602,13 @@
                 {
                     "action": "give_don",
                     "count": 1
+                },
+                {
+                    "action": "play_from_trash",
+                    "cost_lte": 2,
+                    "count": 1,
+                    "filter_type": "thriller bark pirates",
+                    "rested": true
                 }
             ]
         },
@@ -8152,8 +8163,10 @@
             "steps": [
                 {
                     "action": "play_from_trash",
-                    "cost_lte": 99,
-                    "count": 1
+                    "cost_lte": 4,
+                    "count": 1,
+                    "filter_type": "cp",
+                    "rested": true
                 }
             ]
         }
@@ -8207,6 +8220,15 @@
                 {
                     "action": "play_card",
                     "cost_lte": 99,
+                    "count": 1
+                }
+            ]
+        },
+        "trigger": {
+            "steps": [
+                {
+                    "action": "play_from_trash",
+                    "cost_lte": 3,
                     "count": 1
                 }
             ]
@@ -12298,7 +12320,8 @@
                     "action": "play_from_trash",
                     "cost_lte": 99,
                     "count": 1,
-                    "filter_type": ""
+                    "filter_type": "film",
+                    "rested": true
                 }
             ]
         }
@@ -12937,6 +12960,13 @@
             "once_per_turn": true,
             "steps": [
                 {
+                    "action": "play_from_trash",
+                    "count": 4,
+                    "distinct_names": true,
+                    "filter_type": "germa 66",
+                    "power_lte": 4000
+                },
+                {
                     "action": "trash_from_hand",
                     "count": 2
                 }
@@ -13177,6 +13207,12 @@
             ],
             "steps": [
                 {
+                    "action": "play_from_trash",
+                    "cost_lte": 4,
+                    "count": 1,
+                    "filter_type": "thriller bark pirates"
+                },
+                {
                     "action": "trash_from_hand",
                     "count": 1
                 }
@@ -13356,7 +13392,27 @@
             ]
         }
     },
-    "OP06-098": {},
+    "OP06-098": {
+        "activate_main": {
+            "conditions": {
+                "leader_type": "thriller bark pirates"
+            },
+            "costs": [
+                {
+                    "type": "rest_self"
+                }
+            ],
+            "steps": [
+                {
+                    "action": "play_from_trash",
+                    "cost_lte": 2,
+                    "count": 1,
+                    "filter_type": "thriller bark pirates",
+                    "rested": true
+                }
+            ]
+        }
+    },
     "OP06-099": {},
     "OP06-100": {
         "trigger": {
@@ -15082,7 +15138,8 @@
                     "action": "play_from_trash",
                     "cost_lte": 4,
                     "count": 1,
-                    "filter_type": ""
+                    "filter_type": "egghead",
+                    "rested": true
                 }
             ]
         },
@@ -15306,7 +15363,7 @@
                     "action": "play_from_trash",
                     "cost_lte": 5,
                     "count": 1,
-                    "filter_type": ""
+                    "filter_type": "egghead"
                 }
             ]
         }
@@ -16481,7 +16538,7 @@
                     "action": "play_from_trash",
                     "cost_lte": 2,
                     "count": 1,
-                    "filter_type": ""
+                    "filter_type": "smile"
                 }
             ]
         }
@@ -16518,7 +16575,18 @@
             ]
         }
     },
-    "OP08-092": {},
+    "OP08-092": {
+        "on_play": {
+            "steps": [
+                {
+                    "action": "play_from_trash",
+                    "cost_lte": 4,
+                    "count": 1,
+                    "filter_name": "ulti"
+                }
+            ]
+        }
+    },
     "OP08-093": {},
     "OP08-094": {
         "counter": {
@@ -16582,6 +16650,15 @@
                     "amount": 5000,
                     "duration": "battle_only",
                     "target": "leader_or_character"
+                }
+            ]
+        },
+        "trigger": {
+            "steps": [
+                {
+                    "action": "play_from_trash",
+                    "cost_lte": 3,
+                    "count": 1
                 }
             ]
         }
@@ -17379,7 +17456,19 @@
             ]
         }
     },
-    "OP09-028": {},
+    "OP09-028": {
+        "on_ko": {
+            "steps": [
+                {
+                    "action": "play_from_trash",
+                    "cost_lte": 4,
+                    "count": 1,
+                    "filter_type": "straw hat crew",
+                    "rested": true
+                }
+            ]
+        }
+    },
     "OP09-029": {},
     "OP09-030": {
         "on_play": {
@@ -18139,7 +18228,19 @@
             ]
         }
     },
-    "OP09-085": {},
+    "OP09-085": {
+        "on_play": {
+            "steps": [
+                {
+                    "action": "play_from_trash",
+                    "cost_lte": 2,
+                    "count": 1,
+                    "filter_type": "thriller bark pirates",
+                    "rested": true
+                }
+            ]
+        }
+    },
     "OP09-086": {
         "passive": {
             "conditions": {
@@ -19937,6 +20038,13 @@
                 {
                     "action": "draw",
                     "count": 1
+                },
+                {
+                    "action": "play_from_trash",
+                    "cost_lte": 5,
+                    "count": 1,
+                    "exclude": "kuzan",
+                    "filter_type": "blackbeard pirates"
                 }
             ]
         }
@@ -20009,7 +20117,8 @@
                     "action": "play_from_trash",
                     "cost_lte": 3,
                     "count": 1,
-                    "filter_type": "dressrosa"
+                    "filter_type": "dressrosa",
+                    "rested": true
                 }
             ]
         },
@@ -21601,6 +21710,21 @@
         }
     },
     "OP11-086": {
+        "activate_main": {
+            "costs": [
+                {
+                    "type": "trash_self"
+                }
+            ],
+            "steps": [
+                {
+                    "action": "play_from_trash",
+                    "cost_lte": 4,
+                    "count": 1,
+                    "filter_name": "caribou"
+                }
+            ]
+        },
         "on_play": {
             "steps": [
                 {
@@ -21643,6 +21767,13 @@
                 {
                     "action": "draw",
                     "count": 1
+                },
+                {
+                    "action": "play_from_trash",
+                    "cost_lte": 8,
+                    "count": 1,
+                    "exclude": "helmeppo",
+                    "filter_type": "sword"
                 },
                 {
                     "action": "trash_from_hand",
@@ -24666,7 +24797,32 @@
             ]
         }
     },
-    "OP13-082": {},
+    "OP13-082": {
+        "activate_main": {
+            "conditions": {
+                "leader_is": "imu"
+            },
+            "costs": [
+                {
+                    "count": 1,
+                    "type": "rest_don"
+                },
+                {
+                    "count": 1,
+                    "type": "trash_from_hand"
+                }
+            ],
+            "steps": [
+                {
+                    "action": "play_from_trash",
+                    "count": 5,
+                    "distinct_names": true,
+                    "filter_type": "five elders",
+                    "power_eq": 5000
+                }
+            ]
+        }
+    },
     "OP13-083": {
         "on_play": {
             "steps": [
@@ -24793,7 +24949,7 @@
             "steps": [
                 {
                     "action": "play_from_trash",
-                    "cost_lte": 99,
+                    "cost_eq": 1,
                     "count": 1,
                     "filter_type": "mary geoise"
                 }
@@ -26483,7 +26639,24 @@
             ]
         }
     },
-    "OP14-084": {},
+    "OP14-084": {
+        "on_play": {
+            "steps": [
+                {
+                    "action": "play_from_trash",
+                    "cost_lte": 4,
+                    "count": 1,
+                    "filter_type": "baroque works"
+                },
+                {
+                    "action": "play_from_trash",
+                    "cost_eq": 1,
+                    "count": 1,
+                    "filter_type": "baroque works"
+                }
+            ]
+        }
+    },
     "OP14-085": {
         "on_ko": {
             "steps": [
@@ -26553,6 +26726,17 @@
                     "action": "draw",
                     "count": 2,
                     "then_trash": 2
+                }
+            ]
+        },
+        "trigger": {
+            "steps": [
+                {
+                    "action": "play_from_trash",
+                    "cost_lte": 4,
+                    "count": 1,
+                    "filter_type": "thriller bark pirates",
+                    "rested": true
                 }
             ]
         }
@@ -26733,10 +26917,33 @@
                     "action": "deck_bottom_rest"
                 }
             ]
+        },
+        "trigger": {
+            "steps": [
+                {
+                    "action": "play_from_trash",
+                    "cost_lte": 4,
+                    "count": 1,
+                    "filter_type": "thriller bark pirates",
+                    "rested": true
+                }
+            ]
         }
     },
     "OP14-101": {},
-    "OP14-102": {},
+    "OP14-102": {
+        "trigger": {
+            "steps": [
+                {
+                    "action": "play_from_trash",
+                    "cost_lte": 4,
+                    "count": 1,
+                    "filter_type": "thriller bark pirates",
+                    "rested": true
+                }
+            ]
+        }
+    },
     "OP14-103": {
         "on_play": {
             "steps": [
@@ -26856,6 +27063,17 @@
                     "action": "keyword_blocker"
                 }
             ]
+        },
+        "trigger": {
+            "steps": [
+                {
+                    "action": "play_from_trash",
+                    "cost_lte": 4,
+                    "count": 1,
+                    "filter_type": "thriller bark pirates",
+                    "rested": true
+                }
+            ]
         }
     },
     "OP14-110": {
@@ -26869,9 +27087,32 @@
                     "has_trigger": true
                 }
             ]
+        },
+        "trigger": {
+            "steps": [
+                {
+                    "action": "play_from_trash",
+                    "cost_lte": 4,
+                    "count": 1,
+                    "filter_type": "thriller bark pirates",
+                    "rested": true
+                }
+            ]
         }
     },
-    "OP14-111": {},
+    "OP14-111": {
+        "trigger": {
+            "steps": [
+                {
+                    "action": "play_from_trash",
+                    "cost_lte": 4,
+                    "count": 1,
+                    "filter_type": "thriller bark pirates",
+                    "rested": true
+                }
+            ]
+        }
+    },
     "OP14-112": {
         "on_play": {
             "conditions": {
@@ -27014,6 +27255,17 @@
                     "amount": 3000,
                     "duration": "battle_only",
                     "target": "self"
+                }
+            ]
+        },
+        "trigger": {
+            "steps": [
+                {
+                    "action": "play_from_trash",
+                    "cost_lte": 4,
+                    "count": 1,
+                    "filter_type": "thriller bark pirates",
+                    "rested": true
                 }
             ]
         }
@@ -28348,6 +28600,12 @@
             },
             "steps": [
                 {
+                    "action": "play_from_trash",
+                    "cost_lte": 7,
+                    "count": 1,
+                    "filter_type": "straw hat crew"
+                },
+                {
                     "action": "gain_rush"
                 }
             ]
@@ -28388,7 +28646,7 @@
                     "action": "play_from_trash",
                     "cost_lte": 2,
                     "count": 1,
-                    "filter_type": ""
+                    "filter_type": "straw hat crew"
                 }
             ]
         }
@@ -30049,8 +30307,39 @@
             ]
         }
     },
-    "OP16-084": {},
+    "OP16-084": {
+        "activate_main": {
+            "conditions": {
+                "don_gte": 9,
+                "don_on_field_gte": 9
+            },
+            "costs": [
+                {
+                    "type": "trash_self"
+                }
+            ],
+            "steps": [
+                {
+                    "action": "play_from_trash",
+                    "cost_eq": 9,
+                    "count": 1,
+                    "filter_name": "kouzuki momonosuke"
+                }
+            ]
+        }
+    },
     "OP16-085": {
+        "on_play": {
+            "steps": [
+                {
+                    "action": "play_from_trash",
+                    "cost_lte": 6,
+                    "count": 1,
+                    "exclude": "kouzuki momonosuke",
+                    "filter_type": "land of wano"
+                }
+            ]
+        },
         "passive": {
             "steps": [
                 {
@@ -30209,6 +30498,16 @@
         }
     },
     "OP16-096": {
+        "on_ko": {
+            "steps": [
+                {
+                    "action": "play_from_trash",
+                    "cost_lte": 6,
+                    "count": 1,
+                    "filter_name": "yamato"
+                }
+            ]
+        },
         "passive": {
             "steps": [
                 {
@@ -30229,6 +30528,20 @@
         }
     },
     "OP16-098": {
+        "activate_main": {
+            "costs": [
+                {
+                    "type": "trash_self"
+                }
+            ],
+            "steps": [
+                {
+                    "action": "play_from_trash",
+                    "cost_eq": 8,
+                    "count": 1
+                }
+            ]
+        },
         "on_play": {
             "steps": [
                 {
@@ -30266,7 +30579,7 @@
                     "action": "play_from_trash",
                     "cost_lte": 6,
                     "count": 1,
-                    "filter_type": ""
+                    "filter_type": "land of wano"
                 }
             ]
         }
@@ -30379,11 +30692,43 @@
                 {
                     "action": "draw",
                     "count": 1
+                },
+                {
+                    "action": "play_from_trash",
+                    "cost_eq": 1,
+                    "count": 1,
+                    "filter_type": "blackbeard pirates"
                 }
             ]
         }
     },
-    "OP16-105": {},
+    "OP16-105": {
+        "trigger": {
+            "conditions": {
+                "life_lte": 1
+            },
+            "steps": [
+                {
+                    "action": "play_from_trash",
+                    "cost_lte": 4,
+                    "count": 1,
+                    "filter_name": "absalom"
+                },
+                {
+                    "action": "play_from_trash",
+                    "cost_lte": 4,
+                    "count": 1,
+                    "filter_name": "dr. hogback"
+                },
+                {
+                    "action": "play_from_trash",
+                    "cost_lte": 4,
+                    "count": 1,
+                    "filter_name": "perona"
+                }
+            ]
+        }
+    },
     "OP16-106": {
         "on_ko": {
             "conditions": {
@@ -31704,7 +32049,8 @@
                 {
                     "action": "play_from_trash",
                     "cost_lte": 4,
-                    "count": 1
+                    "count": 1,
+                    "rested": true
                 }
             ]
         }
@@ -35690,6 +36036,17 @@
         }
     },
     "ST27-003": {
+        "on_ko": {
+            "steps": [
+                {
+                    "action": "play_from_trash",
+                    "cost_lte": 5,
+                    "count": 1,
+                    "filter_type": "blackbeard pirates",
+                    "rested": true
+                }
+            ]
+        },
         "passive": {
             "steps": [
                 {

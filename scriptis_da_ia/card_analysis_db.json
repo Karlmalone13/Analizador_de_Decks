@@ -1748,7 +1748,7 @@
             {
                 "action": "play_from_trash",
                 "trigger": "on_play",
-                "cost_lte": 99
+                "cost_lte": 4
             }
         ],
         "synergy_states": {},
@@ -4497,7 +4497,7 @@
             {
                 "action": "play_from_trash",
                 "trigger": "activate_main",
-                "cost_lte": 99
+                "cost_lte": 5
             }
         ],
         "synergy_states": {},
@@ -6820,7 +6820,7 @@
             {
                 "action": "play_from_trash",
                 "trigger": "on_play",
-                "cost_lte": 99
+                "power_lte": 6000
             },
             {
                 "action": "trash_from_hand",
@@ -7077,6 +7077,11 @@
             {
                 "action": "give_don",
                 "trigger": "on_play"
+            },
+            {
+                "action": "play_from_trash",
+                "trigger": "on_play",
+                "cost_lte": 2
             },
             {
                 "action": "keyword_blocker",
@@ -23900,7 +23905,7 @@
             {
                 "action": "play_from_trash",
                 "trigger": "on_ko",
-                "cost_lte": 99
+                "cost_lte": 4
             },
             {
                 "action": "keyword_blocker",
@@ -24056,6 +24061,11 @@
         "sub_types": "CP9",
         "effects": [
             {
+                "action": "play_from_trash",
+                "trigger": "trigger",
+                "cost_lte": 3
+            },
+            {
                 "action": "look_top_deck",
                 "trigger": "main"
             },
@@ -24099,7 +24109,7 @@
         "has_double_attack": false,
         "has_unblockable": false,
         "has_banish": false,
-        "has_trigger": false
+        "has_trigger": true
     },
     "OP03-095": {
         "name": "Soap Sheep",
@@ -37897,6 +37907,11 @@
         "sub_types": "The Vinsmoke Family GERMA 66",
         "effects": [
             {
+                "action": "play_from_trash",
+                "trigger": "on_play",
+                "power_lte": 4000
+            },
+            {
                 "action": "trash_from_hand",
                 "trigger": "on_play"
             }
@@ -38621,6 +38636,11 @@
         "sub_types": "The Seven Warlords of the Sea Thriller Bark Pirates",
         "effects": [
             {
+                "action": "play_from_trash",
+                "trigger": "when_attacking",
+                "cost_lte": 4
+            },
+            {
                 "action": "trash_from_hand",
                 "trigger": "when_attacking"
             }
@@ -39320,7 +39340,13 @@
         "life": 0,
         "color": "Black",
         "sub_types": "Thriller Bark Pirates",
-        "effects": [],
+        "effects": [
+            {
+                "action": "play_from_trash",
+                "trigger": "activate_main",
+                "cost_lte": 2
+            }
+        ],
         "synergy_states": {},
         "text": "[Activate:Main] (1) (You may rest the specified number of DON!! cards in your cost area.) You may rest this Stage: If your Leader has the [Thriller Bark Pirates] type, play up to 1 [Thriller Bark Pirates] type Character card with a cost of 2 or less from your trash rested.",
         "is_searcher": false,
@@ -49001,7 +49027,13 @@
         "life": 0,
         "color": "Black",
         "sub_types": "Animal Kingdom Pirates",
-        "effects": [],
+        "effects": [
+            {
+                "action": "play_from_trash",
+                "trigger": "on_play",
+                "cost_lte": 4
+            }
+        ],
         "synergy_states": {},
         "text": "[On Play] Play up to 1 [Ulti] with a cost of 4 or less from your trash.",
         "is_searcher": false,
@@ -49173,6 +49205,11 @@
         "sub_types": "Blackbeard Pirates",
         "effects": [
             {
+                "action": "play_from_trash",
+                "trigger": "trigger",
+                "cost_lte": 3
+            },
+            {
                 "action": "buff_power",
                 "trigger": "counter",
                 "target": "leader_or_character"
@@ -49204,7 +49241,7 @@
         "has_double_attack": false,
         "has_unblockable": false,
         "has_banish": false,
-        "has_trigger": false
+        "has_trigger": true
     },
     "OP08-097": {
         "name": "Heliceratops",
@@ -51346,7 +51383,13 @@
         "life": 0,
         "color": "Green",
         "sub_types": "Straw Hat Crew ODYSSEY",
-        "effects": [],
+        "effects": [
+            {
+                "action": "play_from_trash",
+                "trigger": "on_ko",
+                "cost_lte": 4
+            }
+        ],
         "synergy_states": {},
         "text": "[On K.O.] You may add 1 card from the top or bottom of your Life cards to your hand: Play up to 1 \"ODYSSEY\" or \"Straw Hat Crew\" type Character card with a cost of 4 or less from your trash rested.",
         "is_searcher": false,
@@ -53674,7 +53717,13 @@
         "life": 0,
         "color": "Black",
         "sub_types": "Thriller Bark Pirates",
-        "effects": [],
+        "effects": [
+            {
+                "action": "play_from_trash",
+                "trigger": "on_play",
+                "cost_lte": 2
+            }
+        ],
         "synergy_states": {},
         "text": "[On Play] Play up to 1 \"Thriller Bark Pirates\" type Character card with a cost of 2 or less from your trash rested.",
         "is_searcher": false,
@@ -58616,6 +58665,11 @@
             {
                 "action": "draw",
                 "trigger": "activate_main"
+            },
+            {
+                "action": "play_from_trash",
+                "trigger": "activate_main",
+                "cost_lte": 5
             }
         ],
         "synergy_states": {},
@@ -63687,6 +63741,11 @@
             {
                 "action": "trash_from_hand",
                 "trigger": "on_play"
+            },
+            {
+                "action": "play_from_trash",
+                "trigger": "activate_main",
+                "cost_lte": 4
             }
         ],
         "synergy_states": {},
@@ -63900,6 +63959,11 @@
             {
                 "action": "draw",
                 "trigger": "on_play"
+            },
+            {
+                "action": "play_from_trash",
+                "trigger": "on_play",
+                "cost_lte": 8
             },
             {
                 "action": "trash_from_hand",
@@ -73137,7 +73201,12 @@
         "life": 0,
         "color": "Black",
         "sub_types": "Celestial Dragons Five Elders",
-        "effects": [],
+        "effects": [
+            {
+                "action": "play_from_trash",
+                "trigger": "activate_main"
+            }
+        ],
         "synergy_states": {},
         "text": "[Activate: Main] If your Leader is [Imu], you may rest 1 of your DON!! cards and trash 1 card from your hand: Trash all of your Characters and play up to 5 \"Five Elders\" type Character cards with 5000 power and different card names from your trash.",
         "is_searcher": false,
@@ -73541,8 +73610,7 @@
         "effects": [
             {
                 "action": "play_from_trash",
-                "trigger": "on_play",
-                "cost_lte": 99
+                "trigger": "on_play"
             }
         ],
         "synergy_states": {},
@@ -78264,7 +78332,17 @@
         "life": 0,
         "color": "Black",
         "sub_types": "Baroque Works",
-        "effects": [],
+        "effects": [
+            {
+                "action": "play_from_trash",
+                "trigger": "on_play",
+                "cost_lte": 4
+            },
+            {
+                "action": "play_from_trash",
+                "trigger": "on_play"
+            }
+        ],
         "synergy_states": {},
         "text": "[On Play] If your Leader's type includes \"Baroque Works\", play up to 1 Character card with a type including \"Baroque Works\" and a cost of 4 or less and up to 1 Character card with a type including \"Baroque Works\" and a cost of 1 from your trash.",
         "is_searcher": false,
@@ -78468,6 +78546,11 @@
             {
                 "action": "draw",
                 "trigger": "on_ko"
+            },
+            {
+                "action": "play_from_trash",
+                "trigger": "trigger",
+                "cost_lte": 4
             }
         ],
         "synergy_states": {
@@ -78496,7 +78579,7 @@
         "has_double_attack": false,
         "has_unblockable": false,
         "has_banish": false,
-        "has_trigger": false
+        "has_trigger": true
     },
     "OP14-090": {
         "name": "Mr.1(Daz.Bonez)",
@@ -78950,6 +79033,11 @@
             {
                 "action": "deck_bottom_rest",
                 "trigger": "on_ko"
+            },
+            {
+                "action": "play_from_trash",
+                "trigger": "trigger",
+                "cost_lte": 4
             }
         ],
         "synergy_states": {
@@ -78978,7 +79066,7 @@
         "has_double_attack": false,
         "has_unblockable": false,
         "has_banish": false,
-        "has_trigger": false
+        "has_trigger": true
     },
     "OP14-101": {
         "name": "Oars",
@@ -79022,7 +79110,13 @@
         "life": 0,
         "color": "Yellow",
         "sub_types": "Thriller Bark Pirates",
-        "effects": [],
+        "effects": [
+            {
+                "action": "play_from_trash",
+                "trigger": "trigger",
+                "cost_lte": 4
+            }
+        ],
         "synergy_states": {
             "vida_ganha": {
                 "creates": false,
@@ -79049,7 +79143,7 @@
         "has_double_attack": false,
         "has_unblockable": false,
         "has_banish": false,
-        "has_trigger": false
+        "has_trigger": true
     },
     "OP14-103": {
         "name": "Gloriosa (Grandma Nyon)",
@@ -79343,6 +79437,11 @@
         "sub_types": "Thriller Bark Pirates",
         "effects": [
             {
+                "action": "play_from_trash",
+                "trigger": "trigger",
+                "cost_lte": 4
+            },
+            {
                 "action": "keyword_blocker",
                 "trigger": "passive"
             }
@@ -79373,7 +79472,7 @@
         "has_double_attack": false,
         "has_unblockable": false,
         "has_banish": false,
-        "has_trigger": false
+        "has_trigger": true
     },
     "OP14-110": {
         "name": "Dr. Hogback",
@@ -79388,6 +79487,11 @@
             {
                 "action": "play_from_trash",
                 "trigger": "on_ko",
+                "cost_lte": 4
+            },
+            {
+                "action": "play_from_trash",
+                "trigger": "trigger",
                 "cost_lte": 4
             }
         ],
@@ -79417,7 +79521,7 @@
         "has_double_attack": false,
         "has_unblockable": false,
         "has_banish": false,
-        "has_trigger": false
+        "has_trigger": true
     },
     "OP14-111": {
         "name": "Perona - OP14-111",
@@ -79428,7 +79532,13 @@
         "life": 0,
         "color": "Yellow",
         "sub_types": "Thriller Bark Pirates",
-        "effects": [],
+        "effects": [
+            {
+                "action": "play_from_trash",
+                "trigger": "trigger",
+                "cost_lte": 4
+            }
+        ],
         "synergy_states": {
             "vida_ganha": {
                 "creates": false,
@@ -79455,7 +79565,7 @@
         "has_double_attack": false,
         "has_unblockable": false,
         "has_banish": false,
-        "has_trigger": false
+        "has_trigger": true
     },
     "OP14-112": {
         "name": "Boa Hancock - OP14-112",
@@ -79726,6 +79836,11 @@
         "sub_types": "Thriller Bark Pirates",
         "effects": [
             {
+                "action": "play_from_trash",
+                "trigger": "trigger",
+                "cost_lte": 4
+            },
+            {
                 "action": "buff_power",
                 "trigger": "counter",
                 "target": "self"
@@ -79757,7 +79872,7 @@
         "has_double_attack": false,
         "has_unblockable": false,
         "has_banish": false,
-        "has_trigger": false
+        "has_trigger": true
     },
     "OP14-118": {
         "name": "You'll Frighten Me...",
@@ -83464,6 +83579,11 @@
         "color": "Black",
         "sub_types": "Straw Hat Crew",
         "effects": [
+            {
+                "action": "play_from_trash",
+                "trigger": "on_play",
+                "cost_lte": 7
+            },
             {
                 "action": "gain_rush",
                 "trigger": "on_play"
@@ -88290,7 +88410,12 @@
         "life": 0,
         "color": "Black",
         "sub_types": "Land of Wano Kouzuki Clan",
-        "effects": [],
+        "effects": [
+            {
+                "action": "play_from_trash",
+                "trigger": "activate_main"
+            }
+        ],
         "synergy_states": {},
         "text": "[Activate: Main] You may trash this Character with a cost of 20 or more: If you have 9 or more DON!! cards on your field, play up to 1 [Kouzuki Momonosuke] with a cost of 9 from your trash.",
         "is_searcher": false,
@@ -88324,6 +88449,11 @@
         "color": "Black",
         "sub_types": "Land of Wano Kouzuki Clan",
         "effects": [
+            {
+                "action": "play_from_trash",
+                "trigger": "on_play",
+                "cost_lte": 6
+            },
             {
                 "action": "keyword_blocker",
                 "trigger": "passive"
@@ -88772,6 +88902,11 @@
         "sub_types": "Land of Wano",
         "effects": [
             {
+                "action": "play_from_trash",
+                "trigger": "on_ko",
+                "cost_lte": 6
+            },
+            {
                 "action": "keyword_unblockable",
                 "trigger": "passive"
             }
@@ -88855,6 +88990,10 @@
             {
                 "action": "trash_from_hand",
                 "trigger": "on_play"
+            },
+            {
+                "action": "play_from_trash",
+                "trigger": "activate_main"
             }
         ],
         "synergy_states": {},
@@ -89138,6 +89277,10 @@
             {
                 "action": "draw",
                 "trigger": "trigger"
+            },
+            {
+                "action": "play_from_trash",
+                "trigger": "trigger"
             }
         ],
         "synergy_states": {
@@ -89177,7 +89320,23 @@
         "life": 0,
         "color": "Yellow",
         "sub_types": "The Seven Warlords of the Sea Thriller Bark Pirates",
-        "effects": [],
+        "effects": [
+            {
+                "action": "play_from_trash",
+                "trigger": "trigger",
+                "cost_lte": 4
+            },
+            {
+                "action": "play_from_trash",
+                "trigger": "trigger",
+                "cost_lte": 4
+            },
+            {
+                "action": "play_from_trash",
+                "trigger": "trigger",
+                "cost_lte": 4
+            }
+        ],
         "synergy_states": {
             "vida_ganha": {
                 "creates": false,
@@ -89204,7 +89363,7 @@
         "has_double_attack": false,
         "has_unblockable": false,
         "has_banish": false,
-        "has_trigger": false
+        "has_trigger": true
     },
     "OP16-106": {
         "name": "Sanjuan.Wolf",
@@ -106398,6 +106557,11 @@
         "color": "Black",
         "sub_types": "Blackbeard Pirates Former Navy",
         "effects": [
+            {
+                "action": "play_from_trash",
+                "trigger": "on_ko",
+                "cost_lte": 5
+            },
             {
                 "action": "keyword_blocker",
                 "trigger": "passive"
