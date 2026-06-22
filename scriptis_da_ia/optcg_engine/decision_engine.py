@@ -870,6 +870,18 @@ class EffectExecutor:
         if action == 'lock_opp_attack_unless_pays':
             return '(lock_opp_attack_unless_pays: nao implementado -- pendente fase Opponent Reading)'
 
+        # ── Trava de Refresh Phase (nao fica ativo no proximo refresh) ─────────
+        # lock_opp_character_refresh / lock_opp_don_refresh: trava o character
+        # ou DON do OPONENTE de virar active na proxima Refresh Phase dele.
+        # lock_self_character_refresh: trava o PROPRIO character (geralmente
+        # custo de um efeito forte do jogador) -- alvo OPOSTO dos dois
+        # anteriores, nunca tratar como sinonimo. As 3 ainda nao tem logica de
+        # refresh implementada no engine (refresh_phase nao consome esses
+        # campos hoje); reconhecidas aqui para nao falhar silenciosamente,
+        # mas pendente de implementacao real.
+        if action in ('lock_opp_character_refresh', 'lock_opp_don_refresh', 'lock_self_character_refresh'):
+            return f'({action}: nao implementado -- pendente logica de Refresh Phase)'
+
         # ── Power buff ────────────────────────────────────────────────────────
         if action == 'buff_power':
             amount = step.get('amount', 0)

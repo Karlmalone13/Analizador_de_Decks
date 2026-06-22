@@ -3501,7 +3501,7 @@
                 "target": "self"
             },
             {
-                "action": "lock_opp_don",
+                "action": "lock_self_character_refresh",
                 "trigger": "main"
             }
         ],
@@ -27347,7 +27347,7 @@
         "attribute": "Special",
         "effects": [
             {
-                "action": "lock_opp_character_refresh",
+                "action": "lock_opp_don",
                 "trigger": "on_play"
             }
         ],
@@ -29947,7 +29947,7 @@
         "attribute": "Strike",
         "effects": [
             {
-                "action": "lock_opp_don",
+                "action": "lock_self_character_refresh",
                 "trigger": "activate_main"
             }
         ],
@@ -35223,7 +35223,7 @@
                 "target": "opp_character"
             },
             {
-                "action": "lock_opp_don",
+                "action": "lock_opp_character_refresh",
                 "trigger": "main"
             }
         ],
@@ -47551,8 +47551,9 @@
         "attribute": "Slash",
         "effects": [
             {
-                "action": "lock_opp_don",
-                "trigger": "on_play"
+                "action": "lock_opp_character_refresh",
+                "trigger": "on_play",
+                "cost_lte": 5
             }
         ],
         "synergy_states": {
@@ -47595,12 +47596,14 @@
         "attribute": "Special",
         "effects": [
             {
-                "action": "lock_opp_don",
-                "trigger": "on_play"
+                "action": "lock_opp_character_refresh",
+                "trigger": "on_play",
+                "cost_lte": 7
             },
             {
-                "action": "lock_opp_don",
-                "trigger": "when_attacking"
+                "action": "lock_opp_character_refresh",
+                "trigger": "when_attacking",
+                "cost_lte": 7
             }
         ],
         "synergy_states": {
@@ -47643,8 +47646,9 @@
         "attribute": "Slash",
         "effects": [
             {
-                "action": "lock_opp_don",
-                "trigger": "when_attacking"
+                "action": "lock_opp_character_refresh",
+                "trigger": "when_attacking",
+                "cost_lte": 4
             }
         ],
         "synergy_states": {
@@ -47687,8 +47691,9 @@
         "attribute": "Slash",
         "effects": [
             {
-                "action": "lock_opp_don",
-                "trigger": "on_play"
+                "action": "lock_opp_character_refresh",
+                "trigger": "on_play",
+                "cost_lte": 3
             }
         ],
         "synergy_states": {
@@ -47731,9 +47736,10 @@
         "attribute": "Slash",
         "effects": [
             {
-                "action": "lock_opp_don",
+                "action": "lock_opp_character_refresh",
                 "trigger": "when_attacking",
-                "don_requirement": 1
+                "don_requirement": 1,
+                "cost_lte": 1
             }
         ],
         "synergy_states": {
@@ -48139,8 +48145,9 @@
                 "trigger": "trigger"
             },
             {
-                "action": "lock_opp_don",
-                "trigger": "main"
+                "action": "lock_opp_character_refresh",
+                "trigger": "main",
+                "cost_lte": 7
             }
         ],
         "synergy_states": {
@@ -67868,8 +67875,9 @@
         "attribute": "Slash",
         "effects": [
             {
-                "action": "lock_opp_don",
-                "trigger": "activate_main"
+                "action": "lock_opp_character_refresh",
+                "trigger": "activate_main",
+                "cost_lte": 5
             }
         ],
         "synergy_states": {
@@ -73645,8 +73653,9 @@
                 "target": "leader"
             },
             {
-                "action": "lock_opp_don",
-                "trigger": "main"
+                "action": "lock_opp_character_refresh",
+                "trigger": "main",
+                "cost_lte": 7
             }
         ],
         "synergy_states": {
@@ -78569,8 +78578,9 @@
         "attribute": "Slash",
         "effects": [
             {
-                "action": "lock_opp_don",
-                "trigger": "your_turn"
+                "action": "lock_opp_character_refresh",
+                "trigger": "your_turn",
+                "cost_lte": 4
             }
         ],
         "synergy_states": {
@@ -89231,8 +89241,9 @@
                 "target": "leader"
             },
             {
-                "action": "lock_opp_don",
-                "trigger": "main"
+                "action": "lock_opp_character_refresh",
+                "trigger": "main",
+                "cost_lte": 6
             }
         ],
         "synergy_states": {
@@ -94849,8 +94860,9 @@
         "attribute": "",
         "effects": [
             {
-                "action": "lock_opp_don",
-                "trigger": "main"
+                "action": "lock_opp_character_refresh",
+                "trigger": "main",
+                "cost_lte": 4
             }
         ],
         "synergy_states": {

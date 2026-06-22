@@ -1876,6 +1876,9 @@
             "action": "set_don_active"
           }
         ],
+        "conditions": {
+          "only_field_type": "straw hat crew"
+        },
         "once_per_turn": true
       }
     }
@@ -2169,7 +2172,8 @@
             "duration": "this_turn"
           },
           {
-            "action": "lock_opp_don"
+            "action": "lock_self_character_refresh",
+            "count": 1
           }
         ]
       }
@@ -16508,8 +16512,7 @@
       "on_play": {
         "steps": [
           {
-            "action": "lock_opp_character_refresh",
-            "count": 3
+            "action": "lock_opp_don"
           }
         ]
       }
@@ -18170,7 +18173,8 @@
       "activate_main": {
         "steps": [
           {
-            "action": "lock_opp_don"
+            "action": "lock_self_character_refresh",
+            "count": 1
           }
         ],
         "once_per_turn": true
@@ -21081,7 +21085,10 @@
             "target": "opp_character",
             "count": 99
           }
-        ]
+        ],
+        "conditions": {
+          "only_field_type": "celestial dragons"
+        }
       }
     }
   },
@@ -21297,7 +21304,10 @@
             "target": "opp_character",
             "count": 99
           }
-        ]
+        ],
+        "conditions": {
+          "only_field_type": "celestial dragons"
+        }
       }
     }
   },
@@ -21353,7 +21363,9 @@
             "count": 1
           },
           {
-            "action": "lock_opp_don"
+            "action": "lock_opp_character_refresh",
+            "count": 1,
+            "cost_eq": 0
           }
         ]
       }
@@ -28687,7 +28699,9 @@
       "on_play": {
         "steps": [
           {
-            "action": "lock_opp_don"
+            "action": "lock_opp_character_refresh",
+            "count": 2,
+            "cost_lte": 5
           }
         ],
         "conditions": {
@@ -28710,14 +28724,18 @@
       "on_play": {
         "steps": [
           {
-            "action": "lock_opp_don"
+            "action": "lock_opp_character_refresh",
+            "count": 1,
+            "cost_lte": 7
           }
         ]
       },
       "when_attacking": {
         "steps": [
           {
-            "action": "lock_opp_don"
+            "action": "lock_opp_character_refresh",
+            "count": 1,
+            "cost_lte": 7
           }
         ]
       }
@@ -28737,7 +28755,9 @@
       "when_attacking": {
         "steps": [
           {
-            "action": "lock_opp_don"
+            "action": "lock_opp_character_refresh",
+            "count": 1,
+            "cost_lte": 4
           }
         ]
       }
@@ -28757,7 +28777,9 @@
       "on_play": {
         "steps": [
           {
-            "action": "lock_opp_don"
+            "action": "lock_opp_character_refresh",
+            "count": 1,
+            "cost_lte": 3
           }
         ]
       }
@@ -28777,7 +28799,9 @@
       "when_attacking": {
         "steps": [
           {
-            "action": "lock_opp_don"
+            "action": "lock_opp_character_refresh",
+            "count": 1,
+            "cost_lte": 1
           }
         ],
         "don_requirement": 1
@@ -28992,7 +29016,9 @@
       "main": {
         "steps": [
           {
-            "action": "lock_opp_don"
+            "action": "lock_opp_character_refresh",
+            "count": 99,
+            "cost_lte": 7
           }
         ]
       }
@@ -40822,7 +40848,9 @@
       "activate_main": {
         "steps": [
           {
-            "action": "lock_opp_don"
+            "action": "lock_opp_character_refresh",
+            "count": 1,
+            "cost_lte": 5
           }
         ],
         "costs": [
@@ -44291,7 +44319,9 @@
       "main": {
         "steps": [
           {
-            "action": "lock_opp_don"
+            "action": "lock_opp_character_refresh",
+            "count": 2,
+            "cost_lte": 7
           }
         ],
         "costs": [
@@ -45843,6 +45873,9 @@
             "cost_lte": 6
           }
         ],
+        "conditions": {
+          "only_field_type": "celestial dragons"
+        },
         "costs": [
           {
             "type": "rest_don",
@@ -47371,7 +47404,9 @@
       "your_turn": {
         "steps": [
           {
-            "action": "lock_opp_don"
+            "action": "lock_opp_character_refresh",
+            "count": 1,
+            "cost_lte": 4
           }
         ]
       }
@@ -49867,6 +49902,9 @@
             "duration": "this_turn"
           }
         ],
+        "conditions": {
+          "only_field_type": "east blue"
+        },
         "once_per_turn": true,
         "don_requirement": 1
       }
@@ -53620,6 +53658,9 @@
             "action": "set_don_active"
           }
         ],
+        "conditions": {
+          "only_field_type": "impel down"
+        },
         "once_per_turn": true
       }
     }
@@ -54032,7 +54073,9 @@
       "main": {
         "steps": [
           {
-            "action": "lock_opp_don"
+            "action": "lock_opp_character_refresh",
+            "count": 1,
+            "cost_lte": 6
           }
         ]
       }
@@ -57429,7 +57472,9 @@
       "main": {
         "steps": [
           {
-            "action": "lock_opp_don"
+            "action": "lock_opp_character_refresh",
+            "count": 2,
+            "cost_lte": 4
           }
         ],
         "conditions": {

@@ -55,6 +55,14 @@ def parse_conditions(text):
     if 'if your leader is multicolored' in t:
         conds['leader_multicolor'] = True
 
+    # "If the only Characters on your field are [X]/{X}/"X" type Characters"
+    # -- condicao sobre a COMPOSICAO do proprio campo (todos os Characters
+    # do jogador sao do mesmo tipo X), distinta de leader_type/self_type
+    # (que olham o Leader ou o proprio Character com o efeito). Escopo
+    # pequeno (6 cards no banco), mas padrao textual estavel e unico.
+    m = re.search(r'if the only character.{0,5} on your field (?:are|is) ["\[{]([^"\]}]+)["\]}] type', t)
+    if m: conds['only_field_type'] = m.group(1).strip()
+
     # "if you have a Character with N power or more [other than this
     # Character]" -- existe outro Character no SEU campo com power >= N.
     m = re.search(r'if you have a character with (\d+) power or more', t)
@@ -699,28 +707,70 @@ def parse_give_don(text):
         steps.append({'action': 'set_don_active'})
 
     # Trava de "nao ficar ativo no Refresh" -- distinguir alvo: DON especifico,
-    # Character/Leader especifico, ou generico ("cards", pode ser qualquer um).
+    # Character/Leader especifico (do OPONENTE, com filtro opcional de custo),
+    # ou self-lock (o proprio Character do efeito, sem "opponent" no texto --
+    # geralmente custo de um efeito forte, ex: "this Character will not
+    # become active" / "the selected Character will not become active").
+    # NUNCA tratar self-lock como lock_opp_*: alvo errado muda completamente
+    # quem perde a jogada no proximo turno.
+    m_self = re.search(
+        r"(?:this character|the selected characters?) will not become active",
+        t
+    )
+    if m_self and 'opponent' not in t[:m_self.start()]:
+        steps.append({'action': 'lock_self_character_refresh', 'count': 1})
+        return steps
+
+    # Padrao principal (cobre a maioria): "up to N / all of your opponent's
+    # rested Characters [with a cost of X or less] will not become active".
+    # cost_lte so e anexado quando o texto realmente traz o filtro -- nunca
+    # assumir um valor default que nao esta escrito na carta.
     m = re.search(
-        r"up to (?:a total of )?(\d+) of your opponent.?s rested "
+        r"(up to (\d+)|all) of your opponent.?s rested "
         r"(don!! cards?|leader and character cards?|characters?|character cards?|leader cards?|cards?)"
+        r"(?: with a cost of (\d+) or less)?"
         r" will not become active",
         t
     )
     if m:
-        cnt = int(m.group(1))
-        tipo = m.group(2)
+        cnt = 99 if m.group(1) == 'all' else int(m.group(2))
+        tipo = m.group(3)
+        cost_lte = m.group(4)
         if tipo.startswith('don'):
-            steps.append({'action': 'lock_opp_don_refresh', 'count': cnt})
-        elif tipo == 'cards' or tipo == 'card':
-            # generico ("cards" sem especificar) -- modelado como
-            # character_refresh por ser o caso mais comum nesse fraseado
-            steps.append({'action': 'lock_opp_character_refresh', 'count': cnt})
+            step = {'action': 'lock_opp_don_refresh', 'count': cnt}
         else:
-            steps.append({'action': 'lock_opp_character_refresh', 'count': cnt})
-    elif re.search(r"opponent's .{0,30}will not become active|will not become active", t):
-        # fallback antigo: padrao nao identificado claramente, mantem
-        # comportamento anterior (assume DON) para nao regredir casos nao
-        # cobertos pela regex especifica acima
+            # 'cards'/'card' generico (sem especificar Character/Leader) e
+            # tambem modelado como character_refresh -- caso mais comum
+            # nesse fraseado quando o substantivo nao e explicito.
+            step = {'action': 'lock_opp_character_refresh', 'count': cnt}
+        if cost_lte:
+            step['cost_lte'] = int(cost_lte)
+        steps.append(step)
+        return steps
+
+    # Variante sem "rested": "up to N of your opponent's Characters with a
+    # cost of X will not become active" -- aqui o custo e EXATO (cost_eq),
+    # nao "ou menos" (sem a clausula "or less" apos o numero). Ex: OP05-094
+    # "Characters with a cost of 0 will not become active".
+    m_eq = re.search(
+        r"up to (\d+) of your opponent.?s characters? with a cost of (\d+) will not become active",
+        t
+    )
+    if m_eq:
+        steps.append({
+            'action': 'lock_opp_character_refresh',
+            'count': int(m_eq.group(1)),
+            'cost_eq': int(m_eq.group(2)),
+        })
+        return steps
+
+    if re.search(r"opponent's .{0,30}will not become active|will not become active", t):
+        # fallback final: padrao nao identificado claramente pelos casos
+        # acima. Mantido como lock_opp_don por compatibilidade com a
+        # convencao anterior, mas a essa altura da auditoria a maioria dos
+        # casos reais (Character com filtro de custo/power, DON given,
+        # Stages) ja deveria ter caido nos ramos especificos -- se uma carta
+        # nova cair aqui, vale revisar o texto antes de assumir que e DON.
         steps.append({'action': 'lock_opp_don'})
 
     return steps
