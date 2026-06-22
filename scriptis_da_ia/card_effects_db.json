@@ -1864,6 +1864,12 @@
       "on_play": {
         "steps": [
           {
+            "action": "lock_opp_cannot_be_rested",
+            "count": 1,
+            "duration": "until_opp_turn_end",
+            "cost_lte": 5
+          },
+          {
             "action": "give_don_opp",
             "count": 1
           }
@@ -3784,6 +3790,12 @@
     "effects": {
       "on_play": {
         "steps": [
+          {
+            "action": "lock_opp_cannot_be_rested",
+            "count": 1,
+            "duration": "until_opp_end_phase",
+            "cost_lte": 8
+          },
           {
             "action": "set_don_active"
           }
@@ -8789,7 +8801,21 @@
     "color": "Blue",
     "sub_types": "Baroque Works",
     "attribute": "Special",
-    "effects": {}
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "lock_opp_character_attack",
+            "count": 1,
+            "duration": "until_opp_turn_end",
+            "cost_lte": 4
+          }
+        ],
+        "conditions": {
+          "leader_type": "baroque works"
+        }
+      }
+    }
   },
   "OP01-086": {
     "name": "Overheat",
@@ -17315,6 +17341,16 @@
     "sub_types": "Baroque Works",
     "attribute": "Wisdom",
     "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "lock_opp_character_attack",
+            "count": 1,
+            "duration": "until_my_next_turn_start",
+            "cost_lte": 5
+          }
+        ]
+      },
       "trigger": {
         "steps": [
           {
@@ -19890,7 +19926,18 @@
     "color": "Blue",
     "sub_types": "Navy",
     "attribute": "Special",
-    "effects": {}
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "lock_opp_character_attack",
+            "count": 1,
+            "duration": "until_my_next_turn_start",
+            "cost_lte": 7
+          }
+        ]
+      }
+    }
   },
   "OP05-043": {
     "name": "Ulti",
@@ -26315,7 +26362,28 @@
     "color": "Purple",
     "sub_types": "Fish-Man Foxy Pirates",
     "attribute": "Strike",
-    "effects": {}
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "lock_opp_character_attack",
+            "count": 1,
+            "duration": "until_opp_turn_end",
+            "cost_lte": 6
+          }
+        ],
+        "conditions": {
+          "leader_type": "foxy pirates"
+        },
+        "costs": [
+          {
+            "type": "don_minus",
+            "count": 1,
+            "optional": true
+          }
+        ]
+      }
+    }
   },
   "OP07-064": {
     "name": "Sanji",
@@ -37830,7 +37898,23 @@
     "color": "Green",
     "sub_types": "Fish-Man Former Arlong Pirates Fish-Man Island",
     "attribute": "Slash",
-    "effects": {}
+    "effects": {
+      "activate_main": {
+        "steps": [
+          {
+            "action": "lock_opp_cannot_be_rested",
+            "count": 1,
+            "duration": "until_opp_turn_end",
+            "cost_lte": 3
+          }
+        ],
+        "costs": [
+          {
+            "type": "rest_self"
+          }
+        ]
+      }
+    }
   },
   "OP11-035": {
     "name": "Fisher Tiger",
@@ -41040,6 +41124,11 @@
       "on_play": {
         "steps": [
           {
+            "action": "lock_opp_character_attack",
+            "count": 1,
+            "duration": "until_opp_end_phase"
+          },
+          {
             "action": "trash_from_hand",
             "count": 1
           }
@@ -43826,7 +43915,18 @@
     "color": "Green",
     "sub_types": "FILM Straw Hat Crew",
     "attribute": "Strike",
-    "effects": {}
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "lock_opp_cannot_be_rested",
+            "count": 1,
+            "duration": "until_opp_end_phase",
+            "cost_lte": 8
+          }
+        ]
+      }
+    }
   },
   "OP13-033": {
     "name": "Franky",
@@ -46991,6 +47091,16 @@
     "sub_types": "Thriller Bark Pirates Muggy Kingdom",
     "attribute": "Special",
     "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "lock_opp_cannot_be_rested",
+            "count": 2,
+            "duration": "until_opp_end_phase",
+            "cost_lte": 5
+          }
+        ]
+      },
       "on_ko": {
         "steps": [
           {
@@ -49162,6 +49272,26 @@
     "sub_types": "Thriller Bark Pirates",
     "attribute": "Special",
     "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "lock_opp_character_attack",
+            "count": 1,
+            "duration": "until_opp_end_phase",
+            "cost_lte": 6
+          }
+        ]
+      },
+      "on_ko": {
+        "steps": [
+          {
+            "action": "lock_opp_character_attack",
+            "count": 1,
+            "duration": "until_opp_end_phase",
+            "cost_lte": 6
+          }
+        ]
+      },
       "trigger": {
         "steps": [
           {
@@ -49463,6 +49593,12 @@
     "effects": {
       "on_play": {
         "steps": [
+          {
+            "action": "lock_opp_character_attack",
+            "count": 1,
+            "duration": "until_opp_end_phase",
+            "cost_lte": 9
+          },
           {
             "action": "draw",
             "count": 1
@@ -50235,7 +50371,18 @@
     "color": "Green",
     "sub_types": "Revolutionary Army The Seven Warlords of the Sea",
     "attribute": "Strike",
-    "effects": {}
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "lock_opp_cannot_be_rested",
+            "count": 1,
+            "duration": "until_opp_end_phase",
+            "cost_lte": 5
+          }
+        ]
+      }
+    }
   },
   "OP15-030": {
     "name": "Hyouzou",
@@ -53990,6 +54137,12 @@
     "effects": {
       "activate_main": {
         "steps": [
+          {
+            "action": "lock_opp_character_attack",
+            "count": 1,
+            "duration": "until_opp_end_phase",
+            "cost_lte": 9
+          },
           {
             "action": "draw",
             "count": 2
@@ -58194,7 +58347,25 @@
     "color": "Yellow",
     "sub_types": "FILM Kuja Pirates The Seven Warlords of the Sea",
     "attribute": "Special",
-    "effects": {}
+    "effects": {
+      "passive": {
+        "steps": [
+          {
+            "action": "lock_opp_character_attack",
+            "count": 1,
+            "duration": "until_opp_end_phase",
+            "exclude": "monkey.d.luffy"
+          }
+        ],
+        "costs": [
+          {
+            "type": "trash_from_hand",
+            "count": 1
+          }
+        ],
+        "once_per_turn": true
+      }
+    }
   },
   "PRB02-018": {
     "name": "Portgas.D.Ace - PRB02-018",
@@ -64084,7 +64255,24 @@
     "color": "Black",
     "sub_types": "Navy",
     "attribute": "Special",
-    "effects": {}
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "lock_opp_character_attack",
+            "count": 2,
+            "duration": "until_opp_turn_end",
+            "cost_lte": 4
+          }
+        ],
+        "costs": [
+          {
+            "type": "trash_from_hand",
+            "count": 1
+          }
+        ]
+      }
+    }
   },
   "ST19-002": {
     "name": "Sengoku",

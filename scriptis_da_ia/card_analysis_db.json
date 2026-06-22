@@ -3032,6 +3032,11 @@
         "attribute": "Slash",
         "effects": [
             {
+                "action": "lock_opp_cannot_be_rested",
+                "trigger": "on_play",
+                "cost_lte": 5
+            },
+            {
                 "action": "give_don_opp",
                 "trigger": "on_play"
             }
@@ -6087,6 +6092,11 @@
         "sub_types": "Bonney Pirates Supernovas",
         "attribute": "Special",
         "effects": [
+            {
+                "action": "lock_opp_cannot_be_rested",
+                "trigger": "on_play",
+                "cost_lte": 8
+            },
             {
                 "action": "set_don_active",
                 "trigger": "on_play"
@@ -14217,7 +14227,13 @@
         "color": "Blue",
         "sub_types": "Baroque Works",
         "attribute": "Special",
-        "effects": [],
+        "effects": [
+            {
+                "action": "lock_opp_character_attack",
+                "trigger": "on_play",
+                "cost_lte": 4
+            }
+        ],
         "synergy_states": {},
         "text": "[On Play] If your Leader has the \"Baroque Works\" type, select up to 1 of your opponent's Characters with a cost of 4 or less. The selected Character cannot attack until the end of your opponent's next turn.  This card has been officially errata'd.",
         "is_searcher": false,
@@ -28831,6 +28847,11 @@
         "attribute": "Wisdom",
         "effects": [
             {
+                "action": "lock_opp_character_attack",
+                "trigger": "on_play",
+                "cost_lte": 5
+            },
+            {
                 "action": "play_card",
                 "trigger": "trigger"
             }
@@ -33028,7 +33049,13 @@
         "color": "Blue",
         "sub_types": "Navy",
         "attribute": "Special",
-        "effects": [],
+        "effects": [
+            {
+                "action": "lock_opp_character_attack",
+                "trigger": "on_play",
+                "cost_lte": 7
+            }
+        ],
         "synergy_states": {},
         "text": "[On Play] Up to 1 of your opponent's Characters with a cost of 7 or less cannot attack until the start of your next turn.",
         "is_searcher": false,
@@ -44002,7 +44029,13 @@
         "color": "Purple",
         "sub_types": "Fish-Man Foxy Pirates",
         "attribute": "Strike",
-        "effects": [],
+        "effects": [
+            {
+                "action": "lock_opp_character_attack",
+                "trigger": "on_play",
+                "cost_lte": 6
+            }
+        ],
         "synergy_states": {},
         "text": "[On Play] DON!! -1 (You may return the specified number of DON!! cards from your field to your DON!! deck.): If your Leader has the [Foxy Pirates] type, up to 1 of your opponent's Characters with a cost of 6 or less cannot attack until the end of your opponent's next turn.",
         "is_searcher": false,
@@ -63286,7 +63319,13 @@
         "color": "Green",
         "sub_types": "Fish-Man Former Arlong Pirates Fish-Man Island",
         "attribute": "Slash",
-        "effects": [],
+        "effects": [
+            {
+                "action": "lock_opp_cannot_be_rested",
+                "trigger": "activate_main",
+                "cost_lte": 3
+            }
+        ],
         "synergy_states": {},
         "text": "[Activate: Main] You may rest this Character: If your Leader has the \"Fish-Man\" or \"Merfolk\" type, up to 1 of your opponent's Characters with a cost of 3 or less cannot be rested until the end of your opponent's next turn.",
         "is_searcher": false,
@@ -68693,6 +68732,10 @@
         "attribute": "Special",
         "effects": [
             {
+                "action": "lock_opp_character_attack",
+                "trigger": "on_play"
+            },
+            {
                 "action": "trash_from_hand",
                 "trigger": "on_play"
             },
@@ -73234,7 +73277,13 @@
         "color": "Green",
         "sub_types": "FILM Straw Hat Crew",
         "attribute": "Strike",
-        "effects": [],
+        "effects": [
+            {
+                "action": "lock_opp_cannot_be_rested",
+                "trigger": "on_play",
+                "cost_lte": 8
+            }
+        ],
         "synergy_states": {},
         "text": "[On Play] Up to 1 of your opponent's Characters with a cost of 8 or less cannot be rested until the end of your opponent's next End Phase.",
         "is_searcher": false,
@@ -78412,6 +78461,11 @@
         "attribute": "Special",
         "effects": [
             {
+                "action": "lock_opp_cannot_be_rested",
+                "trigger": "on_play",
+                "cost_lte": 5
+            },
+            {
                 "action": "play_card",
                 "trigger": "on_ko",
                 "cost_lte": 5
@@ -81838,6 +81892,16 @@
         "attribute": "Special",
         "effects": [
             {
+                "action": "lock_opp_character_attack",
+                "trigger": "on_play",
+                "cost_lte": 6
+            },
+            {
+                "action": "lock_opp_character_attack",
+                "trigger": "on_ko",
+                "cost_lte": 6
+            },
+            {
                 "action": "play_from_trash",
                 "trigger": "trigger",
                 "cost_lte": 4
@@ -82280,6 +82344,11 @@
         "sub_types": "Baroque Works The Seven Warlords of the Sea",
         "attribute": "Special",
         "effects": [
+            {
+                "action": "lock_opp_character_attack",
+                "trigger": "on_play",
+                "cost_lte": 9
+            },
             {
                 "action": "draw",
                 "trigger": "on_play"
@@ -83549,7 +83618,13 @@
         "color": "Green",
         "sub_types": "Revolutionary Army The Seven Warlords of the Sea",
         "attribute": "Strike",
-        "effects": [],
+        "effects": [
+            {
+                "action": "lock_opp_cannot_be_rested",
+                "trigger": "on_play",
+                "cost_lte": 5
+            }
+        ],
         "synergy_states": {},
         "text": "[On Play] Up to 1 of your opponent's Characters with a cost of 5 or less cannot be rested until the end of your opponent's next End Phase.",
         "is_searcher": false,
@@ -89764,6 +89839,11 @@
         "sub_types": "Impel Down Former Baroque Works",
         "attribute": "Special",
         "effects": [
+            {
+                "action": "lock_opp_character_attack",
+                "trigger": "activate_main",
+                "cost_lte": 9
+            },
             {
                 "action": "draw",
                 "trigger": "activate_main"
@@ -96668,7 +96748,12 @@
         "color": "Yellow",
         "sub_types": "FILM Kuja Pirates The Seven Warlords of the Sea",
         "attribute": "Special",
-        "effects": [],
+        "effects": [
+            {
+                "action": "lock_opp_character_attack",
+                "trigger": "passive"
+            }
+        ],
         "synergy_states": {
             "vida_ganha": {
                 "creates": false,
@@ -106941,7 +107026,13 @@
         "color": "Black",
         "sub_types": "Navy",
         "attribute": "Special",
-        "effects": [],
+        "effects": [
+            {
+                "action": "lock_opp_character_attack",
+                "trigger": "on_play",
+                "cost_lte": 4
+            }
+        ],
         "synergy_states": {},
         "text": "[On Play] You may trash 1 black \"Navy\" type card from your hand: Up to 2 of your opponent's Characters with a cost of 4 or less cannot attack until the end of your opponent's next turn.",
         "is_searcher": false,

@@ -422,6 +422,87 @@ def parse_rest_opp(text):
     return steps
 
 
+def parse_lock_attack(text):
+    """
+    Cobre 'Up to N of your opponent's Character(s) [with a cost of X or
+    less] cannot attack [until DURATION]' e a variante indireta 'select up
+    to N ... Characters. The selected Character(s) cannot attack ...'.
+    Tambem cobre 'cannot be rested' -- mecanica DISTINTA de 'cannot attack'
+    (trava o character de virar rested por qualquer meio, nao so de
+    atacar). Nunca unificar as duas actions.
+    """
+    steps = []
+    t = text.lower()
+
+    # SEGURANCA: 'Choose one: • opcao A • opcao B' sao alternativas
+    # MUTUAMENTE EXCLUSIVAS, nao efeitos sequenciais. Capturar o padrao de
+    # lock_attack quando ele esta dentro de uma bullet de escolha faria o
+    # parser tratar a opcao alternativa como se sempre acontecesse junto
+    # com a outra -- pior do que nao capturar nada. Ate a estrutura
+    # 'choice' ser implementada de verdade, deixa de fora aqui.
+    if 'choose one' in t and ('•' in t or '\u2022' in t):
+        return steps
+
+    def parse_duration(clause):
+        if 'end phase' in clause:
+            return 'until_opp_end_phase'
+        if 'the end of your opponent' in clause:
+            return 'until_opp_turn_end'
+        if 'the start of your next turn' in clause:
+            return 'until_my_next_turn_start'
+        return 'until_opp_turn_end'
+
+    # Padrao direto: "up to N of your opponent's Character(s) [with a cost
+    # of X or less] cannot (attack|be rested) until ..."
+    m = re.search(
+        r"up to (\d+) of your opponent.{0,15}characters?"
+        r"(?: with a cost of (\d+) or less)?"
+        r" cannot (attack|be rested) until ([^.]+)",
+        t
+    )
+    if m:
+        action = 'lock_opp_character_attack' if m.group(3) == 'attack' else 'lock_opp_cannot_be_rested'
+        step = {'action': action, 'count': int(m.group(1)), 'duration': parse_duration(m.group(4))}
+        if m.group(2):
+            step['cost_lte'] = int(m.group(2))
+        steps.append(step)
+        return steps
+
+    # Padrao indireto: "select up to N ... Characters [with a cost of X or
+    # less]. The selected Character(s) cannot (attack|be rested) until ..."
+    m_select = re.search(r"select up to (\d+) of your opponent.{0,15}characters?(?: with a cost of (\d+) or less)?", t)
+    m_efeito = re.search(r"the selected character.{0,5} cannot (attack|be rested) until ([^.]+)", t)
+    if m_select and m_efeito:
+        action = 'lock_opp_character_attack' if m_efeito.group(1) == 'attack' else 'lock_opp_cannot_be_rested'
+        step = {'action': action, 'count': int(m_select.group(1)), 'duration': parse_duration(m_efeito.group(2))}
+        if m_select.group(2):
+            step['cost_lte'] = int(m_select.group(2))
+        steps.append(step)
+        return steps
+
+    # Variante "your opponent's rested Leader or up to N of your opponent's
+    # Character(s) ... cannot attack until ..." -- alvo pode ser Leader OU
+    # Character. Captura so a parte de Character por ora (travar ataque do
+    # PROPRIO leader e mecanica rara e nao implementada no engine ainda).
+    m_leader_or_char = re.search(
+        r"opponent.{0,3}s rested leader or up to (\d+) of your opponent.{0,15}characters?"
+        r"(?: other than \[([a-z][a-z0-9 .\'-]+)\])?"
+        r" cannot attack until ([^.\[]+)",
+        t
+    )
+    if m_leader_or_char:
+        step = {
+            'action': 'lock_opp_character_attack',
+            'count': int(m_leader_or_char.group(1)),
+            'duration': parse_duration(m_leader_or_char.group(3)),
+        }
+        if m_leader_or_char.group(2):
+            step['exclude'] = m_leader_or_char.group(2).strip()
+        steps.append(step)
+
+    return steps
+
+
 def parse_draw(text):
     steps = []
     t = text.lower()
@@ -1138,6 +1219,11 @@ def parse_block(block_text, trigger_name):
     # Restar oponente
     if 'rest up to' in t and 'opponent' in t:
         steps.extend(parse_rest_opp(t))
+
+    # Trava de ataque / trava de ser restado (mecanicas distintas, ambas
+    # cobertas pela mesma funcao por compartilharem estrutura textual)
+    if ('cannot attack' in t or 'cannot be rested' in t) and 'opponent' in t:
+        steps.extend(parse_lock_attack(t))
 
     # Draw (sem look at)
     if 'draw' in t and 'look at' not in t:

@@ -97,6 +97,8 @@ class Card:
     just_played: bool = False
     rush_character_only_this_turn: bool = False  # True so na janela em que Rush: Character libera o ataque (reseta junto com just_played)
     don_attached: int = 0
+    cannot_attack_until: str = ''   # '', 'opp_turn_end', 'opp_end_phase', 'my_next_turn_start' -- trava de ataque (lock_opp_character_attack)
+    cannot_be_rested_until: str = ''  # mesma semantica de duracao, para lock_opp_cannot_be_rested (mecanica DISTINTA de cannot_attack)
     # Buffs temporários (resetados a cada turno)
     power_buff: int = 0
     cost_buff: int = 0       # resetado no fim do turno do oponente (duration until_opp_turn_end)
@@ -180,7 +182,7 @@ class GameState:
         return sum(c.counter for c in self.hand if c.counter > 0)
 
     def blockers_active(self) -> List[Card]:
-        return [c for c in self.field_chars if c.is_blocker() and not c.rested]
+        return [c for c in self.field_chars if c.is_blocker() and not c.rested and not c.cannot_be_rested_until]
 
     def board_score(self) -> int:
         return sum(c.board_value() for c in self.field_chars)
@@ -813,7 +815,7 @@ class EffectExecutor:
             cost_lte = step.get('cost_lte', 99)
 
             candidates = [c for c in opp.field_chars
-                          if not c.rested and c.cost <= cost_lte]
+                          if not c.rested and c.cost <= cost_lte and not c.cannot_be_rested_until]
             rested = []
             for _ in range(min(count, len(candidates))):
                 target = max(candidates, key=lambda x: x.board_value())
@@ -821,6 +823,39 @@ class EffectExecutor:
                 candidates.remove(target)
                 rested.append(target.name[:15])
             return f'restou: {", ".join(rested)}' if rested else ''
+
+        # ── Trava de ataque / trava de rest ─────────────────────────────────────
+        # Mecanicas DISTINTAS apesar de compartilharem estrutura de
+        # implementacao: lock_opp_character_attack impede ATACAR;
+        # lock_opp_cannot_be_rested impede o character de ficar RESTED por
+        # qualquer meio (atacar, bloquear, ou efeito). Nunca tratar como
+        # sinonimos -- confirmado por Arthur.
+        if action in ('lock_opp_character_attack', 'lock_opp_cannot_be_rested'):
+            count = step.get('count', 1)
+            cost_lte = step.get('cost_lte')
+            exclude = step.get('exclude', '').lower()
+            DUR_MAP = {
+                'until_opp_turn_end': 'opp_turn_end',
+                'until_opp_end_phase': 'opp_end_phase',
+                'until_my_next_turn_start': 'my_next_turn_start',
+            }
+            dur = DUR_MAP.get(step.get('duration', 'until_opp_turn_end'), 'opp_turn_end')
+
+            candidates = [c for c in opp.field_chars
+                          if (cost_lte is None or c.cost <= cost_lte)
+                          and (not exclude or exclude not in c.name.lower())]
+
+            locked = []
+            for _ in range(min(count, len(candidates))):
+                target = max(candidates, key=lambda x: x.board_value())
+                if action == 'lock_opp_character_attack':
+                    target.cannot_attack_until = dur
+                else:
+                    target.cannot_be_rested_until = dur
+                candidates.remove(target)
+                locked.append(target.name[:15])
+            verbo = 'atacar' if action == 'lock_opp_character_attack' else 'ficar rested'
+            return f'travou (não pode {verbo}): {", ".join(locked)}' if locked else ''
 
         # ── Power buff ────────────────────────────────────────────────────────
         if action == 'buff_power':
@@ -1350,7 +1385,7 @@ class GameAnalyzer:
         """Poder total de ataque disponível (sem DON)."""
         total = self.me.leader.effective_power(True) if not self.me.leader.rested else 0
         for c in self.me.field_chars:
-            if not c.rested and not c.just_played:
+            if not c.rested and not c.just_played and not c.cannot_attack_until and not c.cannot_be_rested_until:
                 total += c.effective_power(True)
         return total
 
@@ -1450,7 +1485,7 @@ class GameAnalyzer:
         if not self.me.leader.rested:
             count += 1
         for c in self.me.field_chars:
-            if not c.rested and not c.just_played:
+            if not c.rested and not c.just_played and not c.cannot_attack_until and not c.cannot_be_rested_until:
                 count += 2 if c.is_double_attack() else 1
         return count
 
@@ -2423,7 +2458,7 @@ class OPTCGMatch:
 
         # Candidatos: personagens ativos + líder
         candidates = [c for c in p.field_chars
-                      if not c.rested and not c.just_played]
+                      if not c.rested and not c.just_played and not c.cannot_attack_until and not c.cannot_be_rested_until]
         if not p.leader.rested:
             candidates.append(p.leader)
 
@@ -2568,6 +2603,15 @@ class OPTCGMatch:
         - Retorna DON dado a cartas
         - Reseta rested/just_played/power_buff
         - Reseta once_per_turn
+        - Reseta travas de ataque/rest (cannot_attack_until,
+          cannot_be_rested_until) quando este jogador comeca seu turno.
+          NOTA: o engine nao modela 'End Phase' como passo distinto do
+          turno -- por isso 'until end of next turn' e 'until end of next
+          End Phase' sao tratados de forma equivalente aqui (ambos resetam
+          no refresh do jogador travado). A diferenca de granularidade
+          entre os dois so importaria se algum efeito pudesse agir
+          especificamente NA End Phase antes do refresh, o que o engine
+          ainda nao simula.
         """
         don_from_cards = sum(c.don_attached for c in p.field_chars) + p.leader.don_attached
         for c in p.field_chars:
@@ -2576,10 +2620,13 @@ class OPTCGMatch:
             c.just_played = False
             c.power_buff = 0
             c.cost_buff = 0
+            c.cannot_attack_until = ''
+            c.cannot_be_rested_until = ''
         p.leader.don_attached = 0
         p.leader.rested = False
         p.leader.power_buff = 0
         p.leader.cost_buff = 0
+        p.leader.cannot_attack_until = ''
         p.don_available += p.don_rested + don_from_cards
         p.don_rested = 0
 
@@ -2748,7 +2795,7 @@ class OPTCGMatch:
 
         # ── Ações de ATACAR (com risco de trigger descontado) ──
         if p.can_attack_this_turn():
-            attackers = [c for c in p.field_chars if not c.rested and not c.just_played]
+            attackers = [c for c in p.field_chars if not c.rested and not c.just_played and not c.cannot_attack_until and not c.cannot_be_rested_until]
             if not p.leader.rested:
                 attackers.append(p.leader)
             for att in attackers:
@@ -3089,7 +3136,7 @@ class OPTCGMatch:
         # 3. Distribui DON entre os atacantes
         if p.can_attack_this_turn():
             attackers = [c for c in p.field_chars
-                         if not c.rested and not c.just_played]
+                         if not c.rested and not c.just_played and not c.cannot_attack_until and not c.cannot_be_rested_until]
             if not p.leader.rested:
                 attackers.append(p.leader)
 
@@ -3131,7 +3178,7 @@ class OPTCGMatch:
 
                 if not opp.life:
                     remaining = [c for c in p.field_chars
-                                 if not c.rested and not c.just_played
+                                 if not c.rested and not c.just_played and not c.cannot_attack_until and not c.cannot_be_rested_until
                                  and id(c) not in atacantes_usados]
                     if not p.leader.rested and id(p.leader) not in atacantes_usados:
                         remaining.append(p.leader)
