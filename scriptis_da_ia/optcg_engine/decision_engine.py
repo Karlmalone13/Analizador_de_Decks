@@ -857,6 +857,19 @@ class EffectExecutor:
             verbo = 'atacar' if action == 'lock_opp_character_attack' else 'ficar rested'
             return f'travou (não pode {verbo}): {", ".join(locked)}' if locked else ''
 
+        # ── Trava de ataque condicional a pagamento ─────────────────────────────
+        # DISTINTA de lock_opp_character_attack: aqui o character do oponente
+        # PODE atacar, mas o oponente paga um custo (ex: trash N cards) a cada
+        # ataque enquanto a trava estiver ativa. Decidir se "vale a pena pagar"
+        # e uma decisao de Opponent Reading (fase ainda pausada/pendente no
+        # TODO.md), nao um efeito imediato deterministico. Por ora o step e
+        # apenas reconhecido (nao falha, nao e ignorado silenciosamente) mas
+        # NAO trava nem cobra nada -- nunca reaproveitar cannot_attack_until
+        # aqui, pois isso mentiria sobre a mecanica (carta unica no banco ate
+        # esta auditoria: OP08-043 Edward.Newgate).
+        if action == 'lock_opp_attack_unless_pays':
+            return '(lock_opp_attack_unless_pays: nao implementado -- pendente fase Opponent Reading)'
+
         # ── Power buff ────────────────────────────────────────────────────────
         if action == 'buff_power':
             amount = step.get('amount', 0)

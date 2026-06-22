@@ -712,7 +712,10 @@
             "target": "leader",
             "duration": "this_turn"
           }
-        ]
+        ],
+        "conditions": {
+          "leader_type_includes": "baroque works"
+        }
       }
     }
   },
@@ -910,7 +913,10 @@
             "target": "leader_or_character",
             "duration": "this_turn"
           }
-        ]
+        ],
+        "conditions": {
+          "leader_type_includes": "baroque works"
+        }
       },
       "trigger": {
         "steps": [
@@ -1102,7 +1108,8 @@
           {
             "action": "debuff_cost",
             "amount": 2,
-            "target": "opp_character"
+            "target": "opp_character",
+            "count": 1
           },
           {
             "action": "play_card",
@@ -1213,7 +1220,8 @@
           {
             "action": "debuff_cost",
             "amount": 1,
-            "target": "opp_character"
+            "target": "opp_character",
+            "count": 1
           }
         ]
       },
@@ -1228,7 +1236,8 @@
           {
             "action": "debuff_cost",
             "amount": 1,
-            "target": "opp_character"
+            "target": "opp_character",
+            "count": 1
           }
         ]
       }
@@ -1273,7 +1282,8 @@
           {
             "action": "debuff_cost",
             "amount": 4,
-            "target": "opp_character"
+            "target": "opp_character",
+            "count": 1
           }
         ],
         "costs": [
@@ -2351,7 +2361,10 @@
             "count": 1,
             "cost_lte": 99
           }
-        ]
+        ],
+        "conditions": {
+          "leader_type_includes": "whitebeard pirates"
+        }
       }
     }
   },
@@ -3093,7 +3106,10 @@
             "count": 1,
             "source": "self"
           }
-        ]
+        ],
+        "conditions": {
+          "life_lte": 2
+        }
       }
     }
   },
@@ -5054,6 +5070,7 @@
           }
         ],
         "conditions": {
+          "life_gte": 2,
           "leader_type": "egghead"
         }
       }
@@ -5634,7 +5651,8 @@
           {
             "action": "debuff_cost",
             "amount": 3,
-            "target": "opp_character"
+            "target": "opp_character",
+            "count": 1
           }
         ],
         "conditions": {
@@ -6385,7 +6403,8 @@
           {
             "action": "buff_cost",
             "amount": 1,
-            "target": "opp_character"
+            "target": "opp_character",
+            "count": 1
           }
         ],
         "costs": [
@@ -6551,7 +6570,10 @@
             "target": "leader",
             "duration": "this_turn"
           }
-        ]
+        ],
+        "conditions": {
+          "leader_type_includes": "cp"
+        }
       }
     }
   },
@@ -9729,7 +9751,8 @@
           {
             "action": "debuff_cost",
             "amount": 1,
-            "target": "opp_character"
+            "target": "opp_character",
+            "count": 1
           }
         ]
       }
@@ -9859,7 +9882,10 @@
             "target": "opp_character",
             "duration": "this_turn"
           }
-        ]
+        ],
+        "conditions": {
+          "leader_type_includes": "whitebeard pirates"
+        }
       }
     }
   },
@@ -9940,7 +9966,10 @@
           {
             "action": "gain_rush"
           }
-        ]
+        ],
+        "conditions": {
+          "leader_type_includes": "whitebeard pirates"
+        }
       }
     }
   },
@@ -10116,7 +10145,10 @@
             "target": "opp_character",
             "power_lte": 3000
           }
-        ]
+        ],
+        "conditions": {
+          "leader_type_includes": "whitebeard pirates"
+        }
       }
     }
   },
@@ -11961,7 +11993,8 @@
           {
             "action": "debuff_cost",
             "amount": 4,
-            "target": "opp_character"
+            "target": "opp_character",
+            "count": 1
           }
         ]
       }
@@ -12116,7 +12149,8 @@
           {
             "action": "debuff_cost",
             "amount": 2,
-            "target": "opp_character"
+            "target": "opp_character",
+            "count": 1
           }
         ],
         "don_requirement": 1
@@ -12161,7 +12195,8 @@
           {
             "action": "debuff_cost",
             "amount": 3,
-            "target": "opp_character"
+            "target": "opp_character",
+            "count": 1
           }
         ],
         "don_requirement": 1
@@ -12184,7 +12219,8 @@
           {
             "action": "debuff_cost",
             "amount": 2,
-            "target": "opp_character"
+            "target": "opp_character",
+            "count": 1
           }
         ]
       }
@@ -12299,7 +12335,8 @@
           {
             "action": "debuff_cost",
             "amount": 1,
-            "target": "opp_character"
+            "target": "opp_character",
+            "count": 1
           }
         ],
         "costs": [
@@ -12332,7 +12369,8 @@
           {
             "action": "debuff_cost",
             "amount": 2,
-            "target": "opp_character"
+            "target": "opp_character",
+            "count": 1
           }
         ]
       },
@@ -12439,7 +12477,8 @@
           {
             "action": "debuff_cost",
             "amount": 5,
-            "target": "opp_character"
+            "target": "opp_character",
+            "count": 1
           }
         ]
       }
@@ -12556,7 +12595,8 @@
           {
             "action": "debuff_cost",
             "amount": 5,
-            "target": "opp_character"
+            "target": "opp_character",
+            "count": 99
           }
         ]
       }
@@ -12984,7 +13024,10 @@
             "target": "opp_character",
             "duration": "this_turn"
           }
-        ]
+        ],
+        "conditions": {
+          "leader_type_includes": "whitebeard pirates"
+        }
       },
       "counter": {
         "steps": [
@@ -12994,7 +13037,10 @@
             "target": "opp_character",
             "duration": "this_turn"
           }
-        ]
+        ],
+        "conditions": {
+          "leader_type_includes": "whitebeard pirates"
+        }
       }
     }
   },
@@ -14538,7 +14584,8 @@
           {
             "action": "debuff_cost",
             "amount": 3,
-            "target": "opp_character"
+            "target": "opp_character",
+            "count": 99
           }
         ],
         "don_requirement": 1
@@ -14601,7 +14648,8 @@
           {
             "action": "debuff_cost",
             "amount": 2,
-            "target": "opp_character"
+            "target": "opp_character",
+            "count": 1
           },
           {
             "action": "trash_from_hand",
@@ -14702,7 +14750,10 @@
           {
             "action": "trash_rest"
           }
-        ]
+        ],
+        "conditions": {
+          "leader_type_includes": "cp"
+        }
       }
     }
   },
@@ -14858,6 +14909,9 @@
             "count": 1
           }
         ],
+        "conditions": {
+          "leader_type_includes": "cp"
+        },
         "costs": [
           {
             "type": "trash_from_hand",
@@ -14905,7 +14959,10 @@
             "count": 1,
             "cost_lte": 99
           }
-        ]
+        ],
+        "conditions": {
+          "leader_type_includes": "cp"
+        }
       }
     }
   },
@@ -14925,7 +14982,8 @@
           {
             "action": "debuff_cost",
             "amount": 2,
-            "target": "opp_character"
+            "target": "opp_character",
+            "count": 2
           }
         ]
       }
@@ -15021,9 +15079,13 @@
           {
             "action": "debuff_cost",
             "amount": 2,
-            "target": "opp_character"
+            "target": "opp_character",
+            "count": 1
           }
         ],
+        "conditions": {
+          "leader_type_includes": "cp"
+        },
         "costs": [
           {
             "type": "rest_self"
@@ -16202,7 +16264,8 @@
           {
             "action": "debuff_cost",
             "amount": 1,
-            "target": "opp_character"
+            "target": "opp_character",
+            "count": 99
           }
         ],
         "don_requirement": 1
@@ -17231,6 +17294,9 @@
             "count": 1
           }
         ],
+        "conditions": {
+          "leader_type_includes": "baroque works"
+        },
         "costs": [
           {
             "type": "don_minus",
@@ -17381,7 +17447,10 @@
             "duration": "until_my_next_turn_start",
             "cost_lte": 5
           }
-        ]
+        ],
+        "conditions": {
+          "leader_type_includes": "baroque works"
+        }
       },
       "trigger": {
         "steps": [
@@ -17833,7 +17902,8 @@
           {
             "action": "debuff_cost",
             "amount": 4,
-            "target": "opp_character"
+            "target": "opp_character",
+            "count": 1
           }
         ],
         "once_per_turn": true
@@ -17986,7 +18056,8 @@
           {
             "action": "debuff_cost",
             "amount": 2,
-            "target": "opp_character"
+            "target": "opp_character",
+            "count": 1
           }
         ],
         "conditions": {
@@ -17998,7 +18069,8 @@
           {
             "action": "debuff_cost",
             "amount": 2,
-            "target": "opp_character"
+            "target": "opp_character",
+            "count": 1
           }
         ],
         "conditions": {
@@ -18057,7 +18129,8 @@
           {
             "action": "debuff_cost",
             "amount": 4,
-            "target": "opp_character"
+            "target": "opp_character",
+            "count": 1
           }
         ]
       }
@@ -19942,7 +20015,8 @@
           {
             "action": "debuff_cost",
             "amount": 1,
-            "target": "opp_character"
+            "target": "opp_character",
+            "count": 1
           }
         ],
         "once_per_turn": true
@@ -20952,7 +21026,8 @@
           {
             "action": "debuff_cost",
             "amount": 3,
-            "target": "opp_character"
+            "target": "opp_character",
+            "count": 1
           }
         ],
         "costs": [
@@ -21003,7 +21078,8 @@
           {
             "action": "debuff_cost",
             "amount": 4,
-            "target": "opp_character"
+            "target": "opp_character",
+            "count": 99
           }
         ]
       }
@@ -21073,7 +21149,8 @@
           {
             "action": "debuff_cost",
             "amount": 5,
-            "target": "opp_character"
+            "target": "opp_character",
+            "count": 1
           }
         ],
         "don_requirement": 1
@@ -21217,7 +21294,8 @@
           {
             "action": "debuff_cost",
             "amount": 6,
-            "target": "opp_character"
+            "target": "opp_character",
+            "count": 99
           }
         ]
       }
@@ -21271,7 +21349,8 @@
           {
             "action": "debuff_cost",
             "amount": 3,
-            "target": "opp_character"
+            "target": "opp_character",
+            "count": 1
           },
           {
             "action": "lock_opp_don"
@@ -22423,7 +22502,8 @@
           {
             "action": "debuff_cost",
             "amount": 1,
-            "target": "opp_character"
+            "target": "opp_character",
+            "count": 1
           }
         ],
         "once_per_turn": true
@@ -24155,7 +24235,8 @@
           {
             "action": "debuff_cost",
             "amount": 3,
-            "target": "opp_character"
+            "target": "opp_character",
+            "count": 1
           }
         ]
       }
@@ -26830,7 +26911,8 @@
           {
             "action": "debuff_cost",
             "amount": 1,
-            "target": "opp_character"
+            "target": "opp_character",
+            "count": 1
           }
         ],
         "costs": [
@@ -26858,7 +26940,8 @@
           {
             "action": "debuff_cost",
             "amount": 3,
-            "target": "opp_character"
+            "target": "opp_character",
+            "count": 1
           }
         ]
       }
@@ -26880,7 +26963,8 @@
           {
             "action": "debuff_cost",
             "amount": 1,
-            "target": "opp_character"
+            "target": "opp_character",
+            "count": 99
           }
         ],
         "don_requirement": 1
@@ -26903,7 +26987,8 @@
           {
             "action": "debuff_cost",
             "amount": 1,
-            "target": "opp_character"
+            "target": "opp_character",
+            "count": 1
           }
         ]
       }
@@ -26999,7 +27084,8 @@
           {
             "action": "debuff_cost",
             "amount": 2,
-            "target": "opp_character"
+            "target": "opp_character",
+            "count": 1
           }
         ]
       }
@@ -27247,7 +27333,8 @@
           {
             "action": "debuff_cost",
             "amount": 3,
-            "target": "opp_character"
+            "target": "opp_character",
+            "count": 1
           }
         ],
         "conditions": {
@@ -29009,7 +29096,10 @@
             "target": "opp_character",
             "cost_lte": 4
           }
-        ]
+        ],
+        "conditions": {
+          "leader_type_includes": "whitebeard piratess"
+        }
       }
     }
   },
@@ -29072,7 +29162,23 @@
     "color": "Blue",
     "sub_types": "The Four Emperors Whitebeard Pirates",
     "attribute": "Special",
-    "effects": {}
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "lock_opp_attack_unless_pays",
+            "count": 99,
+            "duration": "until_opp_turn_end",
+            "cost_type": "trash_from_hand",
+            "cost_amount": 2
+          }
+        ],
+        "conditions": {
+          "life_lte": 2,
+          "leader_type_includes": "whitebeard piratess"
+        }
+      }
+    }
   },
   "OP08-044": {
     "name": "Kingdew",
@@ -29309,7 +29415,10 @@
           {
             "action": "deck_top_rest"
           }
-        ]
+        ],
+        "conditions": {
+          "leader_type_includes": "whitebeard piratess"
+        }
       }
     }
   },
@@ -35645,7 +35754,10 @@
           {
             "action": "deck_bottom_rest"
           }
-        ]
+        ],
+        "conditions": {
+          "leader_type_includes": "germa"
+        }
       }
     }
   },
@@ -36212,7 +36324,8 @@
           {
             "action": "debuff_cost",
             "amount": 2,
-            "target": "opp_character"
+            "target": "opp_character",
+            "count": 1
           }
         ],
         "costs": [
@@ -41619,7 +41732,10 @@
           {
             "action": "gain_rush"
           }
-        ]
+        ],
+        "conditions": {
+          "leader_type_includes": "whitebeard pirates"
+        }
       }
     }
   },
@@ -41863,6 +41979,9 @@
             "duration": "battle_only"
           }
         ],
+        "conditions": {
+          "leader_type_includes": "baroque works"
+        },
         "once_per_turn": true
       }
     }
@@ -44549,7 +44668,10 @@
             "action": "draw",
             "count": 1
           }
-        ]
+        ],
+        "conditions": {
+          "leader_type_includes": "whitebeard pirates"
+        }
       }
     }
   },
@@ -44859,7 +44981,10 @@
             "action": "trash_from_hand",
             "count": 1
           }
-        ]
+        ],
+        "conditions": {
+          "leader_type_includes": "roger pirates"
+        }
       }
     }
   },
@@ -44880,7 +45005,10 @@
             "action": "add_don",
             "count": 1
           }
-        ]
+        ],
+        "conditions": {
+          "leader_type_includes": "roger pirates"
+        }
       },
       "passive": {
         "steps": [
@@ -44983,7 +45111,10 @@
             "action": "add_don",
             "count": 1
           }
-        ]
+        ],
+        "conditions": {
+          "leader_type_includes": "roger pirates"
+        }
       }
     }
   },
@@ -48451,7 +48582,8 @@
           {
             "action": "debuff_cost",
             "amount": 10,
-            "target": "opp_character"
+            "target": "opp_character",
+            "count": 1
           }
         ],
         "once_per_turn": true
@@ -48598,7 +48730,10 @@
             "filter_type": "baroque works",
             "cost_eq": 1
           }
-        ]
+        ],
+        "conditions": {
+          "leader_type_includes": "baroque works"
+        }
       }
     }
   },
@@ -48684,7 +48819,10 @@
           {
             "action": "trash_rest"
           }
-        ]
+        ],
+        "conditions": {
+          "leader_type_includes": "baroque works"
+        }
       }
     }
   },
@@ -48711,7 +48849,10 @@
             "action": "draw",
             "count": 1
           }
-        ]
+        ],
+        "conditions": {
+          "leader_type_includes": "baroque works"
+        }
       }
     }
   },
@@ -56680,7 +56821,8 @@
           {
             "action": "debuff_cost",
             "amount": 3,
-            "target": "opp_character"
+            "target": "opp_character",
+            "count": 1
           }
         ]
       }
@@ -56790,7 +56932,8 @@
           {
             "action": "debuff_cost",
             "amount": 2,
-            "target": "opp_character"
+            "target": "opp_character",
+            "count": 99
           }
         ],
         "don_requirement": 1
@@ -60532,7 +60675,8 @@
           {
             "action": "debuff_cost",
             "amount": 4,
-            "target": "opp_character"
+            "target": "opp_character",
+            "count": 1
           }
         ]
       }
@@ -60554,7 +60698,8 @@
           {
             "action": "debuff_cost",
             "amount": 2,
-            "target": "opp_character"
+            "target": "opp_character",
+            "count": 1
           }
         ],
         "costs": [
@@ -60601,7 +60746,8 @@
           {
             "action": "debuff_cost",
             "amount": 4,
-            "target": "opp_character"
+            "target": "opp_character",
+            "count": 1
           }
         ]
       }
@@ -60635,7 +60781,8 @@
           {
             "action": "debuff_cost",
             "amount": 3,
-            "target": "opp_character"
+            "target": "opp_character",
+            "count": 1
           }
         ]
       }
@@ -60756,7 +60903,8 @@
           {
             "action": "debuff_cost",
             "amount": 2,
-            "target": "opp_character"
+            "target": "opp_character",
+            "count": 1
           }
         ]
       }
@@ -60809,7 +60957,8 @@
           {
             "action": "debuff_cost",
             "amount": 1,
-            "target": "opp_character"
+            "target": "opp_character",
+            "count": 1
           }
         ]
       },
@@ -60818,7 +60967,8 @@
           {
             "action": "debuff_cost",
             "amount": 1,
-            "target": "opp_character"
+            "target": "opp_character",
+            "count": 1
           }
         ],
         "conditions": {
@@ -61248,7 +61398,8 @@
           {
             "action": "debuff_cost",
             "amount": 2,
-            "target": "opp_character"
+            "target": "opp_character",
+            "count": 1
           }
         ],
         "costs": [
@@ -61348,7 +61499,8 @@
           {
             "action": "debuff_cost",
             "amount": 4,
-            "target": "opp_character"
+            "target": "opp_character",
+            "count": 1
           }
         ]
       },
@@ -61406,7 +61558,8 @@
           {
             "action": "debuff_cost",
             "amount": 2,
-            "target": "opp_character"
+            "target": "opp_character",
+            "count": 1
           }
         ]
       }
@@ -61506,7 +61659,8 @@
           {
             "action": "debuff_cost",
             "amount": 7,
-            "target": "opp_character"
+            "target": "opp_character",
+            "count": 1
           }
         ]
       }
@@ -63514,7 +63668,8 @@
           {
             "action": "debuff_cost",
             "amount": 5,
-            "target": "opp_character"
+            "target": "opp_character",
+            "count": 1
           }
         ],
         "conditions": {
@@ -63526,7 +63681,8 @@
           {
             "action": "debuff_cost",
             "amount": 5,
-            "target": "opp_character"
+            "target": "opp_character",
+            "count": 1
           }
         ],
         "conditions": {
@@ -63929,7 +64085,10 @@
             "target": "opp_character",
             "duration": "this_turn"
           }
-        ]
+        ],
+        "conditions": {
+          "leader_type_includes": "whitebeard pirates"
+        }
       }
     }
   },
@@ -63954,6 +64113,9 @@
             }
           }
         ],
+        "conditions": {
+          "leader_type_includes": "whitebeard pirates"
+        },
         "once_per_turn": true
       }
     }
@@ -65347,7 +65509,10 @@
             "target": "leader",
             "duration": "until_opp_turn_end"
           }
-        ]
+        ],
+        "conditions": {
+          "leader_type_includes": "whitebeard pirates"
+        }
       }
     }
   },
@@ -66072,7 +66237,8 @@
           {
             "action": "debuff_cost",
             "amount": 1,
-            "target": "opp_character"
+            "target": "opp_character",
+            "count": 1
           }
         ],
         "conditions": {

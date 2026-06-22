@@ -21,10 +21,10 @@ def parse_conditions(text):
     conds = {}
     t = text.lower()
 
-    m = re.search(r'if you have (\d+) or less life', t)
+    m = re.search(r'(?:if|and) you have (\d+) or less life', t)
     if m: conds['life_lte'] = int(m.group(1))
 
-    m = re.search(r'if you have (\d+) or more life', t)
+    m = re.search(r'(?:if|and) you have (\d+) or more life', t)
     if m: conds['life_gte'] = int(m.group(1))
 
     m = re.search(r'if you have (\d+) or more cards? in your trash', t)
@@ -45,7 +45,7 @@ def parse_conditions(text):
     m = re.search(r'if your leader is \[([^\]]+)\]', t)
     if m: conds['leader_is'] = m.group(1)
 
-    m = re.search(r"if your leaders? type includes? [\"']?([^\"'\n,]+)[\"']?", t)
+    m = re.search(r"if your leader(?:'s|\u2019s)? type includes? [\"'\u2019]?([^\"'\u2019\n,]+)[\"'\u2019]?", t)
     if m: conds['leader_type_includes'] = m.group(1).strip()
 
     # "if your leader has the X type" — X entre aspas, colchetes ou chaves
@@ -470,13 +470,49 @@ def parse_lock_attack(text):
 
     # Padrao indireto: "select up to N ... Characters [with a cost of X or
     # less]. The selected Character(s) cannot (attack|be rested) until ..."
-    m_select = re.search(r"select up to (\d+) of your opponent.{0,15}characters?(?: with a cost of (\d+) or less)?", t)
+    # Tambem cobre "select all of your opponent's Characters" (sem "up to"
+    # -- count = 99, convencao usada em outros parsers para "all").
+    m_select = (re.search(r"select up to (\d+) of your opponent.{0,15}characters?(?: with a cost of (\d+) or less)?", t)
+                or re.search(r"select all of your opponent.{0,15}characters?(?: with a cost of (\d+) or less)?", t))
+    is_select_all = m_select and 'up to' not in m_select.group(0)
     m_efeito = re.search(r"the selected character.{0,5} cannot (attack|be rested) until ([^.]+)", t)
     if m_select and m_efeito:
         action = 'lock_opp_character_attack' if m_efeito.group(1) == 'attack' else 'lock_opp_cannot_be_rested'
-        step = {'action': action, 'count': int(m_select.group(1)), 'duration': parse_duration(m_efeito.group(2))}
-        if m_select.group(2):
-            step['cost_lte'] = int(m_select.group(2))
+        count = 99 if is_select_all else int(m_select.group(1))
+        cost_group = m_select.group(2) if not is_select_all else m_select.group(1)
+        step = {'action': action, 'count': count, 'duration': parse_duration(m_efeito.group(2))}
+        if cost_group:
+            step['cost_lte'] = int(cost_group)
+        steps.append(step)
+        return steps
+
+    # Variante condicional ao pagamento: "none of the selected Character(s)
+    # can attack unless your opponent trashes N cards from their hand
+    # whenever they attack" -- distinta do lock incondicional acima ("until"
+    # sem escape). Aqui o oponente PODE atacar pagando um custo a cada
+    # ataque; nao e um lock binario. Mecanica rara (carta unica no banco
+    # ate o momento desta auditoria) -- decision_engine ainda nao simula a
+    # decisao "vale a pena pagar", entao por ora o campo e so capturado
+    # (fica disponivel para a fase Opponent Reading implementar depois).
+    m_unless = re.search(
+        r"none of the selected character.{0,5} can attack unless your opponent "
+        r"trashes (\d+) cards? from their hand whenever they attack",
+        t
+    )
+    if m_select and m_unless:
+        count = 99 if is_select_all else int(m_select.group(1))
+        cost_group = m_select.group(2) if not is_select_all else m_select.group(1)
+        # duration: procura clausula "until the end of..." antes do "select"
+        dur_m = re.search(r"until ([^,]+),", t[:t.find('select')]) if 'select' in t else None
+        step = {
+            'action': 'lock_opp_attack_unless_pays',
+            'count': count,
+            'duration': parse_duration(dur_m.group(1)) if dur_m else 'until_opp_turn_end',
+            'cost_type': 'trash_from_hand',
+            'cost_amount': int(m_unless.group(1)),
+        }
+        if cost_group:
+            step['cost_lte'] = int(cost_group)
         steps.append(step)
         return steps
 
@@ -914,11 +950,18 @@ def parse_cost_debuff(text):
     m = re.search(r'give [^.]*?([+\-−])(\d+) cost', t)
     if m:
         is_debuff = m.group(1) in ('-', '−')
-        target = 'opp_character' if "opponent" in t[:m.start()+len(m.group(0))] else 'own_character'
-        steps.append({
+        clause = t[:m.start()+len(m.group(0))]
+        target = 'opp_character' if "opponent" in clause else 'own_character'
+        step = {
             'action': 'debuff_cost' if is_debuff else 'buff_cost',
             'amount': int(m.group(2)), 'target': target,
-        })
+        }
+        count_m = re.search(r'up to (\d+) of (?:your opponent\'s|your)', clause)
+        if count_m:
+            step['count'] = int(count_m.group(1))
+        elif 'all of your opponent' in clause or 'all of your' in clause:
+            step['count'] = 99
+        steps.append(step)
         return steps
 
     # "gains +N cost" / "gain -N cost" -- sempre sobre o PROPRIO lado
@@ -1290,8 +1333,11 @@ def parse_block(block_text, trigger_name):
         steps.extend(parse_rest_opp(t))
 
     # Trava de ataque / trava de ser restado (mecanicas distintas, ambas
-    # cobertas pela mesma funcao por compartilharem estrutura textual)
-    if ('cannot attack' in t or 'cannot be rested' in t) and 'opponent' in t:
+    # cobertas pela mesma funcao por compartilharem estrutura textual).
+    # 'can attack unless' e a variante de custo-condicional (carta paga para
+    # atacar), distinta de 'cannot attack until' (lock binario incondicional).
+    if (('cannot attack' in t or 'cannot be rested' in t or 'can attack unless' in t)
+            and 'opponent' in t):
         steps.extend(parse_lock_attack(t))
 
     # Transferencia/distribuicao de DON entre characters (distinto de
