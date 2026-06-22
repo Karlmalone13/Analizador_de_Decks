@@ -1073,6 +1073,12 @@
         "on_play": {
             "steps": [
                 {
+                    "action": "lock_opp_cannot_be_rested",
+                    "cost_lte": 5,
+                    "count": 1,
+                    "duration": "until_opp_turn_end"
+                },
+                {
                     "action": "give_don_opp",
                     "count": 1
                 }
@@ -2200,6 +2206,12 @@
                 "leader_type": "supernovas"
             },
             "steps": [
+                {
+                    "action": "lock_opp_cannot_be_rested",
+                    "cost_lte": 8,
+                    "count": 1,
+                    "duration": "until_opp_end_phase"
+                },
                 {
                     "action": "set_don_active"
                 }
@@ -5101,7 +5113,21 @@
             ]
         }
     },
-    "OP01-085": {},
+    "OP01-085": {
+        "on_play": {
+            "conditions": {
+                "leader_type": "baroque works"
+            },
+            "steps": [
+                {
+                    "action": "lock_opp_character_attack",
+                    "cost_lte": 4,
+                    "count": 1,
+                    "duration": "until_opp_turn_end"
+                }
+            ]
+        }
+    },
     "OP01-086": {
         "counter": {
             "steps": [
@@ -9832,6 +9858,16 @@
         }
     },
     "OP04-065": {
+        "on_play": {
+            "steps": [
+                {
+                    "action": "lock_opp_character_attack",
+                    "cost_lte": 5,
+                    "count": 1,
+                    "duration": "until_my_next_turn_start"
+                }
+            ]
+        },
         "trigger": {
             "costs": [
                 {
@@ -11377,7 +11413,18 @@
             ]
         }
     },
-    "OP05-042": {},
+    "OP05-042": {
+        "on_play": {
+            "steps": [
+                {
+                    "action": "lock_opp_character_attack",
+                    "cost_lte": 7,
+                    "count": 1,
+                    "duration": "until_my_next_turn_start"
+                }
+            ]
+        }
+    },
     "OP05-043": {
         "on_play": {
             "conditions": {
@@ -14953,7 +15000,28 @@
         }
     },
     "OP07-062": {},
-    "OP07-063": {},
+    "OP07-063": {
+        "on_play": {
+            "conditions": {
+                "leader_type": "foxy pirates"
+            },
+            "costs": [
+                {
+                    "count": 1,
+                    "optional": true,
+                    "type": "don_minus"
+                }
+            ],
+            "steps": [
+                {
+                    "action": "lock_opp_character_attack",
+                    "cost_lte": 6,
+                    "count": 1,
+                    "duration": "until_opp_turn_end"
+                }
+            ]
+        }
+    },
     "OP07-064": {
         "passive": {
             "steps": [
@@ -21584,7 +21652,23 @@
     },
     "OP11-032": {},
     "OP11-033": {},
-    "OP11-034": {},
+    "OP11-034": {
+        "activate_main": {
+            "costs": [
+                {
+                    "type": "rest_self"
+                }
+            ],
+            "steps": [
+                {
+                    "action": "lock_opp_cannot_be_rested",
+                    "cost_lte": 3,
+                    "count": 1,
+                    "duration": "until_opp_turn_end"
+                }
+            ]
+        }
+    },
     "OP11-035": {
         "on_play": {
             "steps": [
@@ -23392,6 +23476,11 @@
             ],
             "steps": [
                 {
+                    "action": "lock_opp_character_attack",
+                    "count": 1,
+                    "duration": "until_opp_end_phase"
+                },
+                {
                     "action": "trash_from_hand",
                     "count": 1
                 }
@@ -24984,7 +25073,18 @@
             ]
         }
     },
-    "OP13-032": {},
+    "OP13-032": {
+        "on_play": {
+            "steps": [
+                {
+                    "action": "lock_opp_cannot_be_rested",
+                    "cost_lte": 8,
+                    "count": 1,
+                    "duration": "until_opp_end_phase"
+                }
+            ]
+        }
+    },
     "OP13-033": {},
     "OP13-034": {
         "on_play": {
@@ -26826,6 +26926,16 @@
                     "count": 1
                 }
             ]
+        },
+        "on_play": {
+            "steps": [
+                {
+                    "action": "lock_opp_cannot_be_rested",
+                    "cost_lte": 5,
+                    "count": 2,
+                    "duration": "until_opp_end_phase"
+                }
+            ]
         }
     },
     "OP14-034": {
@@ -28131,6 +28241,26 @@
         }
     },
     "OP14-111": {
+        "on_ko": {
+            "steps": [
+                {
+                    "action": "lock_opp_character_attack",
+                    "cost_lte": 6,
+                    "count": 1,
+                    "duration": "until_opp_end_phase"
+                }
+            ]
+        },
+        "on_play": {
+            "steps": [
+                {
+                    "action": "lock_opp_character_attack",
+                    "cost_lte": 6,
+                    "count": 1,
+                    "duration": "until_opp_end_phase"
+                }
+            ]
+        },
         "trigger": {
             "steps": [
                 {
@@ -28333,6 +28463,12 @@
     "OP14-120": {
         "on_play": {
             "steps": [
+                {
+                    "action": "lock_opp_character_attack",
+                    "cost_lte": 9,
+                    "count": 1,
+                    "duration": "until_opp_end_phase"
+                },
                 {
                     "action": "draw",
                     "count": 1
@@ -28786,7 +28922,18 @@
             ]
         }
     },
-    "OP15-029": {},
+    "OP15-029": {
+        "on_play": {
+            "steps": [
+                {
+                    "action": "lock_opp_cannot_be_rested",
+                    "cost_lte": 5,
+                    "count": 1,
+                    "duration": "until_opp_end_phase"
+                }
+            ]
+        }
+    },
     "OP15-030": {},
     "OP15-031": {},
     "OP15-032": {},
@@ -30940,6 +31087,12 @@
                 }
             ],
             "steps": [
+                {
+                    "action": "lock_opp_character_attack",
+                    "cost_lte": 9,
+                    "count": 1,
+                    "duration": "until_opp_end_phase"
+                },
                 {
                     "action": "draw",
                     "count": 2
@@ -33335,7 +33488,25 @@
             ]
         }
     },
-    "PRB02-017": {},
+    "PRB02-017": {
+        "passive": {
+            "costs": [
+                {
+                    "count": 1,
+                    "type": "trash_from_hand"
+                }
+            ],
+            "once_per_turn": true,
+            "steps": [
+                {
+                    "action": "lock_opp_character_attack",
+                    "count": 1,
+                    "duration": "until_opp_end_phase",
+                    "exclude": "monkey.d.luffy"
+                }
+            ]
+        }
+    },
     "PRB02-018": {},
     "ST01-001": {},
     "ST01-002": {
@@ -36519,7 +36690,24 @@
             ]
         }
     },
-    "ST19-001": {},
+    "ST19-001": {
+        "on_play": {
+            "costs": [
+                {
+                    "count": 1,
+                    "type": "trash_from_hand"
+                }
+            ],
+            "steps": [
+                {
+                    "action": "lock_opp_character_attack",
+                    "cost_lte": 4,
+                    "count": 2,
+                    "duration": "until_opp_turn_end"
+                }
+            ]
+        }
+    },
     "ST19-002": {
         "on_play": {
             "conditions": {
