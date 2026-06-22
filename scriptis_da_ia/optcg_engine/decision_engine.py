@@ -408,6 +408,14 @@ class EffectExecutor:
                 ef_data = effects[trigger]
                 if not self._check_conditions(ef_data.get('conditions', {}), source):
                     continue
+                # LACUNA CONHECIDA: cartas com 'Choose one: • opcao A • opcao
+                # B' tem ef_data['choice'] = [[steps_opcao_A], [steps_opcao_B]]
+                # em vez de ef_data['steps'] (ver gerar_effects_db.py,
+                # parse_block). O .get('steps', []) abaixo retorna [] para
+                # essas cartas -- nenhuma opcao e executada (neutro, nao
+                # quebra), mas tambem nenhum efeito real acontece. Decidir
+                # qual opcao escolher e avaliacao de jogo (Opponent Reading /
+                # Play Scoring), nao um parsing determinístico -- pendente.
                 for step in ef_data.get('steps', []):
                     log = self._execute_step(step, source)
                     if log:
@@ -1133,6 +1141,27 @@ class EffectExecutor:
                     me.trash.append(worst)
                     trashed.append(worst.name[:12])
             return f'descartou da mão: {", ".join(trashed)}' if trashed else ''
+
+        # ── Trash from hand FORCADO no oponente (disrupcao de mao) ──────────────
+        # Distinto de trash_from_hand: alvo e a mao do OPONENTE, nao a minha.
+        # E um efeito DETERMINISTICO (sempre acontece, sem "se o oponente
+        # quiser") -- a unica decisao real e QUAL carta ele descarta, e isso
+        # reaproveita a mesma heuristica de _choose_to_trash (menor valor de
+        # board) aplicada na mao dele. Simplificacao assumida: nao modela
+        # blefe/retencao estrategica do oponente, so "descarta o que tem
+        # menos valor para o lado que esta descartando" -- aproximacao
+        # razoavel e nao tendenciosa para nenhum dos lados, mas e uma
+        # simplificacao real, nao a decisao otima do oponente.
+        if action == 'opp_trash_from_hand':
+            count = step.get('count', 1)
+            trashed = []
+            for _ in range(min(count, len(opp.hand))):
+                worst = self._choose_to_trash(opp.hand)
+                if worst:
+                    opp.hand.remove(worst)
+                    opp.trash.append(worst)
+                    trashed.append(worst.name[:12])
+            return f'oponente descartou: {", ".join(trashed)}' if trashed else ''
 
         # ── Heal ─────────────────────────────────────────────────────────────
         if action == 'heal':

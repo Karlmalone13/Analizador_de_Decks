@@ -2817,11 +2817,19 @@
     "attribute": "Slash",
     "effects": {
       "on_play": {
-        "steps": [
-          {
-            "action": "draw",
-            "count": 1
-          }
+        "choice": [
+          [
+            {
+              "action": "draw",
+              "count": 1
+            }
+          ],
+          [
+            {
+              "action": "opp_trash_from_hand",
+              "count": 1
+            }
+          ]
         ]
       },
       "passive": {
@@ -6966,7 +6974,7 @@
           {
             "action": "debuff_cost",
             "amount": 1,
-            "target": "own_character"
+            "target": "self"
           }
         ],
         "conditions": {
@@ -9262,7 +9270,23 @@
     "color": "Purple",
     "sub_types": "Animal Kingdom Pirates",
     "attribute": "Strike",
-    "effects": {}
+    "effects": {
+      "when_attacking": {
+        "steps": [
+          {
+            "action": "opp_trash_from_hand",
+            "count": 1
+          }
+        ],
+        "costs": [
+          {
+            "type": "don_minus",
+            "count": 1,
+            "optional": true
+          }
+        ]
+      }
+    }
   },
   "OP01-103": {
     "name": "Scratchmen Apoo",
@@ -9502,7 +9526,23 @@
     "color": "Purple",
     "sub_types": "Animal Kingdom Pirates Drake Pirates Navy",
     "attribute": "Slash",
-    "effects": {}
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "opp_trash_from_hand",
+            "count": 1
+          }
+        ],
+        "costs": [
+          {
+            "type": "don_minus",
+            "count": 1,
+            "optional": true
+          }
+        ]
+      }
+    }
   },
   "OP01-115": {
     "name": "Elephant's Marchoo",
@@ -14981,6 +15021,14 @@
     "sub_types": "CP9",
     "attribute": "",
     "effects": {
+      "trigger": {
+        "steps": [
+          {
+            "action": "opp_trash_from_hand",
+            "count": 1
+          }
+        ]
+      },
       "main": {
         "steps": [
           {
@@ -21052,7 +21100,21 @@
     "color": "Black",
     "sub_types": "Merfolk",
     "attribute": "Wisdom",
-    "effects": {}
+    "effects": {
+      "activate_main": {
+        "steps": [
+          {
+            "action": "opp_trash_from_hand",
+            "count": 1
+          }
+        ],
+        "costs": [
+          {
+            "type": "rest_self"
+          }
+        ]
+      }
+    }
   },
   "OP05-083": {
     "name": "Sterry",
@@ -21425,23 +21487,29 @@
         ]
       },
       "main": {
-        "steps": [
-          {
-            "action": "ko",
-            "count": 1,
-            "target": "opp_character",
-            "cost_lte": 1
-          },
-          {
-            "action": "bounce",
-            "count": 1,
-            "target": "opp_character",
-            "cost_lte": 1
-          },
-          {
-            "action": "draw",
-            "count": 1
-          }
+        "choice": [
+          [
+            {
+              "action": "ko",
+              "count": 1,
+              "target": "opp_character",
+              "cost_lte": 1
+            }
+          ],
+          [
+            {
+              "action": "bounce",
+              "count": 1,
+              "target": "opp_character",
+              "cost_lte": 1
+            }
+          ],
+          [
+            {
+              "action": "draw",
+              "count": 1
+            }
+          ]
         ]
       }
     }
@@ -22505,18 +22573,22 @@
     "attribute": "Special",
     "effects": {
       "activate_main": {
-        "steps": [
-          {
-            "action": "rest_opp_character",
-            "count": 1,
-            "cost_lte": 4
-          },
-          {
-            "action": "debuff_cost",
-            "amount": 1,
-            "target": "opp_character",
-            "count": 1
-          }
+        "choice": [
+          [
+            {
+              "action": "rest_opp_character",
+              "count": 1,
+              "cost_lte": 4
+            }
+          ],
+          [
+            {
+              "action": "debuff_cost",
+              "amount": 1,
+              "target": "opp_character",
+              "count": 1
+            }
+          ]
         ],
         "once_per_turn": true
       }
@@ -22989,19 +23061,23 @@
         ]
       },
       "main": {
-        "steps": [
-          {
-            "action": "ko",
-            "count": 1,
-            "target": "opp_character",
-            "cost_lte": 6,
-            "rested_only": true
-          },
-          {
-            "action": "rest_opp_character",
-            "count": 1,
-            "cost_lte": 6
-          }
+        "choice": [
+          [
+            {
+              "action": "rest_opp_character",
+              "count": 1,
+              "cost_lte": 6
+            }
+          ],
+          [
+            {
+              "action": "ko",
+              "count": 1,
+              "target": "opp_character",
+              "cost_lte": 6,
+              "rested_only": true
+            }
+          ]
         ]
       }
     }
@@ -23575,19 +23651,23 @@
     "attribute": "Special",
     "effects": {
       "on_play": {
-        "steps": [
-          {
-            "action": "ko",
-            "count": 1,
-            "target": "opp_character",
-            "cost_lte": 2
-          },
-          {
-            "action": "bounce",
-            "count": 1,
-            "target": "opp_character",
-            "cost_lte": 4
-          }
+        "choice": [
+          [
+            {
+              "action": "ko",
+              "count": 1,
+              "target": "opp_character",
+              "cost_lte": 2
+            }
+          ],
+          [
+            {
+              "action": "bounce",
+              "count": 1,
+              "target": "opp_character",
+              "cost_lte": 4
+            }
+          ]
         ]
       }
     }
@@ -24243,13 +24323,21 @@
     "attribute": "Special",
     "effects": {
       "on_play": {
-        "steps": [
-          {
-            "action": "debuff_cost",
-            "amount": 3,
-            "target": "opp_character",
-            "count": 1
-          }
+        "choice": [
+          [
+            {
+              "action": "opp_trash_from_hand",
+              "count": 1
+            }
+          ],
+          [
+            {
+              "action": "debuff_cost",
+              "amount": 3,
+              "target": "opp_character",
+              "count": 1
+            }
+          ]
         ]
       }
     }
@@ -26540,7 +26628,7 @@
           {
             "action": "debuff_cost",
             "amount": 3,
-            "target": "opp_character"
+            "target": "self"
           },
           {
             "action": "keyword_blocker"
@@ -27181,7 +27269,16 @@
     "color": "Black",
     "sub_types": "Journalist",
     "attribute": "Wisdom",
-    "effects": {}
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "opp_trash_from_hand",
+            "count": 1
+          }
+        ]
+      }
+    }
   },
   "OP07-091": {
     "name": "Monkey.D.Luffy (091)",
@@ -27245,7 +27342,16 @@
     "color": "Black",
     "sub_types": "CP0",
     "attribute": "Strike",
-    "effects": {}
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "opp_trash_from_hand",
+            "count": 1
+          }
+        ]
+      }
+    }
   },
   "OP07-094": {
     "name": "Shave",
@@ -29197,6 +29303,10 @@
             "duration": "until_opp_turn_end",
             "cost_type": "trash_from_hand",
             "cost_amount": 2
+          },
+          {
+            "action": "opp_trash_from_hand",
+            "count": 2
           }
         ],
         "conditions": {
@@ -29970,6 +30080,10 @@
             "count": 1,
             "target": "opp_character",
             "cost_lte": 7
+          },
+          {
+            "action": "opp_trash_from_hand",
+            "count": 1
           }
         ],
         "costs": [
@@ -33253,7 +33367,16 @@
     "color": "Black",
     "sub_types": "Big Mom Pirates",
     "attribute": "Wisdom",
-    "effects": {}
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "opp_trash_from_hand",
+            "count": 1
+          }
+        ]
+      }
+    }
   },
   "OP09-088": {
     "name": "Shiryu",
@@ -33681,7 +33804,16 @@
     "color": "Yellow",
     "sub_types": "Navy",
     "attribute": "Special",
-    "effects": {}
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "opp_trash_from_hand",
+            "count": 1
+          }
+        ]
+      }
+    }
   },
   "OP09-102": {
     "name": "Professor Clover",
@@ -33980,7 +34112,19 @@
     "color": "Yellow",
     "sub_types": "Straw Hat Crew Egghead",
     "attribute": "Slash",
-    "effects": {}
+    "effects": {
+      "trigger": {
+        "steps": [
+          {
+            "action": "opp_trash_from_hand",
+            "count": 2
+          }
+        ],
+        "conditions": {
+          "leader_type": "egghead"
+        }
+      }
+    }
   },
   "OP09-112": {
     "name": "Belo Betty",
@@ -36445,7 +36589,21 @@
     "color": "Black",
     "sub_types": "Animal Straw Hat Crew Dressrosa",
     "attribute": "Strike",
-    "effects": {}
+    "effects": {
+      "activate_main": {
+        "steps": [
+          {
+            "action": "opp_trash_from_hand",
+            "count": 1
+          }
+        ],
+        "costs": [
+          {
+            "type": "rest_self"
+          }
+        ]
+      }
+    }
   },
   "OP10-088": {
     "name": "Nami (088)",
@@ -37264,7 +37422,16 @@
     "color": "Black",
     "sub_types": "Straw Hat Crew Supernovas Dressrosa",
     "attribute": "Strike",
-    "effects": {}
+    "effects": {
+      "when_attacking": {
+        "steps": [
+          {
+            "action": "opp_trash_from_hand",
+            "count": 1
+          }
+        ]
+      }
+    }
   },
   "OP10-119": {
     "name": "Trafalgar Law (119)",
@@ -41813,17 +41980,21 @@
     "attribute": "",
     "effects": {
       "main": {
-        "steps": [
-          {
-            "action": "bounce",
-            "count": 1,
-            "target": "opp_character",
-            "cost_lte": 4
-          },
-          {
-            "action": "draw",
-            "count": 2
-          }
+        "choice": [
+          [
+            {
+              "action": "bounce",
+              "count": 1,
+              "target": "opp_character",
+              "cost_lte": 4
+            }
+          ],
+          [
+            {
+              "action": "draw",
+              "count": 2
+            }
+          ]
         ],
         "conditions": {
           "hand_lte": 6,
@@ -42407,6 +42578,17 @@
     "sub_types": "Revolutionary Army",
     "attribute": "Special",
     "effects": {
+      "when_attacking": {
+        "steps": [
+          {
+            "action": "opp_trash_from_hand",
+            "count": 1
+          }
+        ],
+        "conditions": {
+          "leader_type": "revolutionary army"
+        }
+      },
       "passive": {
         "steps": [
           {
@@ -42473,6 +42655,10 @@
           {
             "action": "trash_from_hand",
             "count": 1
+          },
+          {
+            "action": "opp_trash_from_hand",
+            "count": 2
           }
         ],
         "costs": [
@@ -48329,13 +48515,23 @@
     "attribute": "Special",
     "effects": {
       "on_play": {
-        "steps": [
-          {
-            "action": "ko",
-            "count": 1,
-            "target": "opp_character",
-            "cost_lte": 8
-          }
+        "choice": [
+          [
+            {
+              "action": "ko",
+              "count": 1,
+              "target": "opp_character",
+              "cost_lte": 8
+            }
+          ],
+          [
+            {
+              "action": "lock_opp_cannot_be_rested",
+              "count": 3,
+              "duration": "until_opp_end_phase",
+              "cost_lte": 7
+            }
+          ]
         ],
         "conditions": {
           "leader_type": "donquixote pirates"
@@ -50227,7 +50423,7 @@
           {
             "action": "debuff_cost",
             "amount": 2,
-            "target": "own_character"
+            "target": "self"
           },
           {
             "action": "keyword_blocker"
@@ -50452,7 +50648,7 @@
           {
             "action": "debuff_cost",
             "amount": 3,
-            "target": "own_character"
+            "target": "self"
           }
         ]
       }
@@ -51285,14 +51481,18 @@
     "attribute": "",
     "effects": {
       "main": {
-        "steps": [
-          {
-            "action": "draw",
-            "count": 2
-          },
-          {
-            "action": "gain_blocker"
-          }
+        "choice": [
+          [
+            {
+              "action": "draw",
+              "count": 2
+            }
+          ],
+          [
+            {
+              "action": "gain_blocker"
+            }
+          ]
         ]
       }
     }
@@ -53189,7 +53389,7 @@
           {
             "action": "debuff_cost",
             "amount": 3,
-            "target": "own_character"
+            "target": "self"
           },
           {
             "action": "keyword_blocker"
@@ -53447,7 +53647,7 @@
           {
             "action": "debuff_cost",
             "amount": 2,
-            "target": "own_character"
+            "target": "self"
           }
         ],
         "costs": [
@@ -55577,6 +55777,15 @@
             "action": "give_don",
             "count": 1,
             "rested": true
+          }
+        ],
+        "once_per_turn": true
+      },
+      "on_ko": {
+        "steps": [
+          {
+            "action": "opp_trash_from_hand",
+            "count": 2
           }
         ],
         "once_per_turn": true
@@ -58547,7 +58756,7 @@
           {
             "action": "debuff_cost",
             "amount": 3,
-            "target": "own_character"
+            "target": "self"
           },
           {
             "action": "keyword_blocker"
@@ -61241,11 +61450,19 @@
     "attribute": "Special",
     "effects": {
       "on_play": {
-        "steps": [
-          {
-            "action": "attack_life",
-            "count": 1
-          }
+        "choice": [
+          [
+            {
+              "action": "attack_life",
+              "count": 1
+            }
+          ],
+          [
+            {
+              "action": "gain_life",
+              "count": 1
+            }
+          ]
         ]
       }
     }
@@ -61361,11 +61578,19 @@
         ]
       },
       "main": {
-        "steps": [
-          {
-            "action": "attack_life",
-            "count": 1
-          }
+        "choice": [
+          [
+            {
+              "action": "attack_life",
+              "count": 1
+            }
+          ],
+          [
+            {
+              "action": "gain_life",
+              "count": 1
+            }
+          ]
         ]
       }
     }
@@ -62552,19 +62777,23 @@
     "attribute": "",
     "effects": {
       "main": {
-        "steps": [
-          {
-            "action": "ko",
-            "count": 1,
-            "target": "opp_character",
-            "cost_lte": 5,
-            "rested_only": true
-          },
-          {
-            "action": "rest_opp_character",
-            "count": 1,
-            "cost_lte": 5
-          }
+        "choice": [
+          [
+            {
+              "action": "rest_opp_character",
+              "count": 1,
+              "cost_lte": 5
+            }
+          ],
+          [
+            {
+              "action": "ko",
+              "count": 1,
+              "target": "opp_character",
+              "cost_lte": 5,
+              "rested_only": true
+            }
+          ]
         ],
         "conditions": {
           "leader_is": "uta"
@@ -62739,19 +62968,23 @@
     "attribute": "Slash",
     "effects": {
       "when_attacking": {
-        "steps": [
-          {
-            "action": "ko",
-            "count": 1,
-            "target": "opp_character",
-            "cost_lte": 2,
-            "rested_only": true
-          },
-          {
-            "action": "rest_opp_character",
-            "count": 1,
-            "cost_lte": 2
-          }
+        "choice": [
+          [
+            {
+              "action": "rest_opp_character",
+              "count": 1,
+              "cost_lte": 2
+            }
+          ],
+          [
+            {
+              "action": "ko",
+              "count": 1,
+              "target": "opp_character",
+              "cost_lte": 2,
+              "rested_only": true
+            }
+          ]
         ],
         "don_requirement": 1
       }
@@ -64818,15 +65051,19 @@
     "attribute": "Special",
     "effects": {
       "on_play": {
-        "steps": [
-          {
-            "action": "attack_life",
-            "count": 1
-          },
-          {
-            "action": "trash_from_hand",
-            "count": 1
-          }
+        "choice": [
+          [
+            {
+              "action": "opp_trash_from_hand",
+              "count": 2
+            }
+          ],
+          [
+            {
+              "action": "attack_life",
+              "count": 1
+            }
+          ]
         ],
         "costs": [
           {
@@ -65639,7 +65876,7 @@
           {
             "action": "debuff_cost",
             "amount": 4,
-            "target": "own_character"
+            "target": "self"
           },
           {
             "action": "keyword_blocker"
@@ -65680,7 +65917,7 @@
           {
             "action": "debuff_cost",
             "amount": 3,
-            "target": "opp_character"
+            "target": "self"
           }
         ]
       }
@@ -66119,7 +66356,7 @@
           {
             "action": "debuff_cost",
             "amount": 5,
-            "target": "own_character"
+            "target": "self"
           }
         ]
       }

@@ -1652,11 +1652,19 @@
     },
     "EB02-045": {
         "on_play": {
-            "steps": [
-                {
-                    "action": "draw",
-                    "count": 1
-                }
+            "choice": [
+                [
+                    {
+                        "action": "draw",
+                        "count": 1
+                    }
+                ],
+                [
+                    {
+                        "action": "opp_trash_from_hand",
+                        "count": 1
+                    }
+                ]
             ]
         },
         "passive": {
@@ -4216,7 +4224,7 @@
                 {
                     "action": "debuff_cost",
                     "amount": 1,
-                    "target": "own_character"
+                    "target": "self"
                 }
             ]
         }
@@ -5387,7 +5395,23 @@
             ]
         }
     },
-    "OP01-102": {},
+    "OP01-102": {
+        "when_attacking": {
+            "costs": [
+                {
+                    "count": 1,
+                    "optional": true,
+                    "type": "don_minus"
+                }
+            ],
+            "steps": [
+                {
+                    "action": "opp_trash_from_hand",
+                    "count": 1
+                }
+            ]
+        }
+    },
     "OP01-103": {},
     "OP01-104": {
         "trigger": {
@@ -5495,7 +5519,23 @@
             ]
         }
     },
-    "OP01-114": {},
+    "OP01-114": {
+        "on_play": {
+            "costs": [
+                {
+                    "count": 1,
+                    "optional": true,
+                    "type": "don_minus"
+                }
+            ],
+            "steps": [
+                {
+                    "action": "opp_trash_from_hand",
+                    "count": 1
+                }
+            ]
+        }
+    },
     "OP01-115": {
         "main": {
             "steps": [
@@ -8528,6 +8568,14 @@
                     "amount": 2,
                     "count": 2,
                     "target": "opp_character"
+                }
+            ]
+        },
+        "trigger": {
+            "steps": [
+                {
+                    "action": "opp_trash_from_hand",
+                    "count": 1
                 }
             ]
         }
@@ -12099,7 +12147,21 @@
             ]
         }
     },
-    "OP05-082": {},
+    "OP05-082": {
+        "activate_main": {
+            "costs": [
+                {
+                    "type": "rest_self"
+                }
+            ],
+            "steps": [
+                {
+                    "action": "opp_trash_from_hand",
+                    "count": 1
+                }
+            ]
+        }
+    },
     "OP05-083": {},
     "OP05-084": {
         "your_turn": {
@@ -12308,23 +12370,29 @@
     },
     "OP05-096": {
         "main": {
-            "steps": [
-                {
-                    "action": "ko",
-                    "cost_lte": 1,
-                    "count": 1,
-                    "target": "opp_character"
-                },
-                {
-                    "action": "bounce",
-                    "cost_lte": 1,
-                    "count": 1,
-                    "target": "opp_character"
-                },
-                {
-                    "action": "draw",
-                    "count": 1
-                }
+            "choice": [
+                [
+                    {
+                        "action": "ko",
+                        "cost_lte": 1,
+                        "count": 1,
+                        "target": "opp_character"
+                    }
+                ],
+                [
+                    {
+                        "action": "bounce",
+                        "cost_lte": 1,
+                        "count": 1,
+                        "target": "opp_character"
+                    }
+                ],
+                [
+                    {
+                        "action": "draw",
+                        "count": 1
+                    }
+                ]
             ]
         },
         "trigger": {
@@ -12914,20 +12982,24 @@
     },
     "OP06-021": {
         "activate_main": {
-            "once_per_turn": true,
-            "steps": [
-                {
-                    "action": "rest_opp_character",
-                    "cost_lte": 4,
-                    "count": 1
-                },
-                {
-                    "action": "debuff_cost",
-                    "amount": 1,
-                    "count": 1,
-                    "target": "opp_character"
-                }
-            ]
+            "choice": [
+                [
+                    {
+                        "action": "rest_opp_character",
+                        "cost_lte": 4,
+                        "count": 1
+                    }
+                ],
+                [
+                    {
+                        "action": "debuff_cost",
+                        "amount": 1,
+                        "count": 1,
+                        "target": "opp_character"
+                    }
+                ]
+            ],
+            "once_per_turn": true
         }
     },
     "OP06-022": {
@@ -13193,19 +13265,23 @@
     },
     "OP06-039": {
         "main": {
-            "steps": [
-                {
-                    "action": "ko",
-                    "cost_lte": 6,
-                    "count": 1,
-                    "rested_only": true,
-                    "target": "opp_character"
-                },
-                {
-                    "action": "rest_opp_character",
-                    "cost_lte": 6,
-                    "count": 1
-                }
+            "choice": [
+                [
+                    {
+                        "action": "rest_opp_character",
+                        "cost_lte": 6,
+                        "count": 1
+                    }
+                ],
+                [
+                    {
+                        "action": "ko",
+                        "cost_lte": 6,
+                        "count": 1,
+                        "rested_only": true,
+                        "target": "opp_character"
+                    }
+                ]
             ]
         },
         "trigger": {
@@ -13500,19 +13576,23 @@
     "OP06-064": {},
     "OP06-065": {
         "on_play": {
-            "steps": [
-                {
-                    "action": "ko",
-                    "cost_lte": 2,
-                    "count": 1,
-                    "target": "opp_character"
-                },
-                {
-                    "action": "bounce",
-                    "cost_lte": 4,
-                    "count": 1,
-                    "target": "opp_character"
-                }
+            "choice": [
+                [
+                    {
+                        "action": "ko",
+                        "cost_lte": 2,
+                        "count": 1,
+                        "target": "opp_character"
+                    }
+                ],
+                [
+                    {
+                        "action": "bounce",
+                        "cost_lte": 4,
+                        "count": 1,
+                        "target": "opp_character"
+                    }
+                ]
             ]
         }
     },
@@ -13860,13 +13940,21 @@
     },
     "OP06-093": {
         "on_play": {
-            "steps": [
-                {
-                    "action": "debuff_cost",
-                    "amount": 3,
-                    "count": 1,
-                    "target": "opp_character"
-                }
+            "choice": [
+                [
+                    {
+                        "action": "opp_trash_from_hand",
+                        "count": 1
+                    }
+                ],
+                [
+                    {
+                        "action": "debuff_cost",
+                        "amount": 3,
+                        "count": 1,
+                        "target": "opp_character"
+                    }
+                ]
             ]
         }
     },
@@ -15167,7 +15255,7 @@
                 {
                     "action": "debuff_cost",
                     "amount": 3,
-                    "target": "opp_character"
+                    "target": "self"
                 },
                 {
                     "action": "keyword_blocker"
@@ -15522,7 +15610,16 @@
         }
     },
     "OP07-089": {},
-    "OP07-090": {},
+    "OP07-090": {
+        "on_play": {
+            "steps": [
+                {
+                    "action": "opp_trash_from_hand",
+                    "count": 1
+                }
+            ]
+        }
+    },
     "OP07-091": {
         "when_attacking": {
             "steps": [
@@ -15553,7 +15650,16 @@
             ]
         }
     },
-    "OP07-093": {},
+    "OP07-093": {
+        "on_play": {
+            "steps": [
+                {
+                    "action": "opp_trash_from_hand",
+                    "count": 1
+                }
+            ]
+        }
+    },
     "OP07-094": {
         "counter": {
             "conditions": {
@@ -16750,6 +16856,10 @@
                     "cost_type": "trash_from_hand",
                     "count": 99,
                     "duration": "until_opp_turn_end"
+                },
+                {
+                    "action": "opp_trash_from_hand",
+                    "count": 2
                 }
             ]
         }
@@ -17130,6 +17240,10 @@
                     "cost_lte": 7,
                     "count": 1,
                     "target": "opp_character"
+                },
+                {
+                    "action": "opp_trash_from_hand",
+                    "count": 1
                 }
             ]
         }
@@ -19042,7 +19156,16 @@
             ]
         }
     },
-    "OP09-087": {},
+    "OP09-087": {
+        "on_play": {
+            "steps": [
+                {
+                    "action": "opp_trash_from_hand",
+                    "count": 1
+                }
+            ]
+        }
+    },
     "OP09-088": {
         "when_attacking": {
             "costs": [
@@ -19316,7 +19439,16 @@
             ]
         }
     },
-    "OP09-101": {},
+    "OP09-101": {
+        "on_play": {
+            "steps": [
+                {
+                    "action": "opp_trash_from_hand",
+                    "count": 1
+                }
+            ]
+        }
+    },
     "OP09-102": {
         "on_play": {
             "conditions": {
@@ -19505,7 +19637,19 @@
             ]
         }
     },
-    "OP09-111": {},
+    "OP09-111": {
+        "trigger": {
+            "conditions": {
+                "leader_type": "egghead"
+            },
+            "steps": [
+                {
+                    "action": "opp_trash_from_hand",
+                    "count": 2
+                }
+            ]
+        }
+    },
     "OP09-112": {
         "on_play": {
             "conditions": {
@@ -20925,7 +21069,21 @@
             ]
         }
     },
-    "OP10-087": {},
+    "OP10-087": {
+        "activate_main": {
+            "costs": [
+                {
+                    "type": "rest_self"
+                }
+            ],
+            "steps": [
+                {
+                    "action": "opp_trash_from_hand",
+                    "count": 1
+                }
+            ]
+        }
+    },
     "OP10-088": {
         "activate_main": {
             "costs": [
@@ -21403,7 +21561,16 @@
             ]
         }
     },
-    "OP10-118": {},
+    "OP10-118": {
+        "when_attacking": {
+            "steps": [
+                {
+                    "action": "opp_trash_from_hand",
+                    "count": 1
+                }
+            ]
+        }
+    },
     "OP10-119": {
         "on_play": {
             "steps": [
@@ -23972,22 +24139,26 @@
     },
     "OP12-060": {
         "main": {
+            "choice": [
+                [
+                    {
+                        "action": "bounce",
+                        "cost_lte": 4,
+                        "count": 1,
+                        "target": "opp_character"
+                    }
+                ],
+                [
+                    {
+                        "action": "draw",
+                        "count": 2
+                    }
+                ]
+            ],
             "conditions": {
                 "hand_lte": 6,
                 "leader_multicolor": true
-            },
-            "steps": [
-                {
-                    "action": "bounce",
-                    "cost_lte": 4,
-                    "count": 1,
-                    "target": "opp_character"
-                },
-                {
-                    "action": "draw",
-                    "count": 2
-                }
-            ]
+            }
         }
     },
     "OP12-061": {},
@@ -24303,6 +24474,17 @@
                     "target": "self"
                 }
             ]
+        },
+        "when_attacking": {
+            "conditions": {
+                "leader_type": "revolutionary army"
+            },
+            "steps": [
+                {
+                    "action": "opp_trash_from_hand",
+                    "count": 1
+                }
+            ]
         }
     },
     "OP12-086": {
@@ -24341,6 +24523,10 @@
                 {
                     "action": "trash_from_hand",
                     "count": 1
+                },
+                {
+                    "action": "opp_trash_from_hand",
+                    "count": 2
                 }
             ]
         },
@@ -27760,6 +27946,24 @@
     },
     "OP14-069": {
         "on_play": {
+            "choice": [
+                [
+                    {
+                        "action": "ko",
+                        "cost_lte": 8,
+                        "count": 1,
+                        "target": "opp_character"
+                    }
+                ],
+                [
+                    {
+                        "action": "lock_opp_cannot_be_rested",
+                        "cost_lte": 7,
+                        "count": 3,
+                        "duration": "until_opp_end_phase"
+                    }
+                ]
+            ],
             "conditions": {
                 "leader_type": "donquixote pirates"
             },
@@ -27768,14 +27972,6 @@
                     "count": 3,
                     "optional": false,
                     "type": "don_minus"
-                }
-            ],
-            "steps": [
-                {
-                    "action": "ko",
-                    "cost_lte": 8,
-                    "count": 1,
-                    "target": "opp_character"
                 }
             ]
         }
@@ -28954,7 +29150,7 @@
                 {
                     "action": "debuff_cost",
                     "amount": 2,
-                    "target": "own_character"
+                    "target": "self"
                 },
                 {
                     "action": "keyword_blocker"
@@ -29091,7 +29287,7 @@
                 {
                     "action": "debuff_cost",
                     "amount": 3,
-                    "target": "own_character"
+                    "target": "self"
                 }
             ]
         }
@@ -29550,14 +29746,18 @@
     },
     "OP15-055": {
         "main": {
-            "steps": [
-                {
-                    "action": "draw",
-                    "count": 2
-                },
-                {
-                    "action": "gain_blocker"
-                }
+            "choice": [
+                [
+                    {
+                        "action": "draw",
+                        "count": 2
+                    }
+                ],
+                [
+                    {
+                        "action": "gain_blocker"
+                    }
+                ]
             ]
         }
     },
@@ -30698,7 +30898,7 @@
                 {
                     "action": "debuff_cost",
                     "amount": 3,
-                    "target": "own_character"
+                    "target": "self"
                 },
                 {
                     "action": "keyword_blocker"
@@ -30849,7 +31049,7 @@
                 {
                     "action": "debuff_cost",
                     "amount": 2,
-                    "target": "own_character"
+                    "target": "self"
                 }
             ]
         }
@@ -32105,6 +32305,15 @@
                     "action": "give_don",
                     "count": 1,
                     "rested": true
+                }
+            ]
+        },
+        "on_ko": {
+            "once_per_turn": true,
+            "steps": [
+                {
+                    "action": "opp_trash_from_hand",
+                    "count": 2
                 }
             ]
         }
@@ -33724,7 +33933,7 @@
                 {
                     "action": "debuff_cost",
                     "amount": 3,
-                    "target": "own_character"
+                    "target": "self"
                 },
                 {
                     "action": "keyword_blocker"
@@ -35139,11 +35348,19 @@
     },
     "ST07-010": {
         "on_play": {
-            "steps": [
-                {
-                    "action": "attack_life",
-                    "count": 1
-                }
+            "choice": [
+                [
+                    {
+                        "action": "attack_life",
+                        "count": 1
+                    }
+                ],
+                [
+                    {
+                        "action": "gain_life",
+                        "count": 1
+                    }
+                ]
             ]
         }
     },
@@ -35197,11 +35414,19 @@
     "ST07-014": {},
     "ST07-015": {
         "main": {
-            "steps": [
-                {
-                    "action": "attack_life",
-                    "count": 1
-                }
+            "choice": [
+                [
+                    {
+                        "action": "attack_life",
+                        "count": 1
+                    }
+                ],
+                [
+                    {
+                        "action": "gain_life",
+                        "count": 1
+                    }
+                ]
             ]
         },
         "trigger": {
@@ -35823,23 +36048,27 @@
     },
     "ST11-003": {
         "main": {
+            "choice": [
+                [
+                    {
+                        "action": "rest_opp_character",
+                        "cost_lte": 5,
+                        "count": 1
+                    }
+                ],
+                [
+                    {
+                        "action": "ko",
+                        "cost_lte": 5,
+                        "count": 1,
+                        "rested_only": true,
+                        "target": "opp_character"
+                    }
+                ]
+            ],
             "conditions": {
                 "leader_is": "uta"
-            },
-            "steps": [
-                {
-                    "action": "ko",
-                    "cost_lte": 5,
-                    "count": 1,
-                    "rested_only": true,
-                    "target": "opp_character"
-                },
-                {
-                    "action": "rest_opp_character",
-                    "cost_lte": 5,
-                    "count": 1
-                }
-            ]
+            }
         }
     },
     "ST11-004": {
@@ -35922,21 +36151,25 @@
     "ST12-005": {},
     "ST12-006": {
         "when_attacking": {
-            "don_requirement": 1,
-            "steps": [
-                {
-                    "action": "ko",
-                    "cost_lte": 2,
-                    "count": 1,
-                    "rested_only": true,
-                    "target": "opp_character"
-                },
-                {
-                    "action": "rest_opp_character",
-                    "cost_lte": 2,
-                    "count": 1
-                }
-            ]
+            "choice": [
+                [
+                    {
+                        "action": "rest_opp_character",
+                        "cost_lte": 2,
+                        "count": 1
+                    }
+                ],
+                [
+                    {
+                        "action": "ko",
+                        "cost_lte": 2,
+                        "count": 1,
+                        "rested_only": true,
+                        "target": "opp_character"
+                    }
+                ]
+            ],
+            "don_requirement": 1
         }
     },
     "ST12-007": {},
@@ -37154,20 +37387,24 @@
     },
     "ST20-005": {
         "on_play": {
+            "choice": [
+                [
+                    {
+                        "action": "opp_trash_from_hand",
+                        "count": 2
+                    }
+                ],
+                [
+                    {
+                        "action": "attack_life",
+                        "count": 1
+                    }
+                ]
+            ],
             "costs": [
                 {
                     "count": 1,
                     "type": "trash_from_hand"
-                }
-            ],
-            "steps": [
-                {
-                    "action": "attack_life",
-                    "count": 1
-                },
-                {
-                    "action": "trash_from_hand",
-                    "count": 1
                 }
             ]
         }
@@ -37593,7 +37830,7 @@
                 {
                     "action": "debuff_cost",
                     "amount": 4,
-                    "target": "own_character"
+                    "target": "self"
                 },
                 {
                     "action": "keyword_blocker"
@@ -37620,7 +37857,7 @@
                 {
                     "action": "debuff_cost",
                     "amount": 3,
-                    "target": "opp_character"
+                    "target": "self"
                 }
             ]
         }
@@ -37905,7 +38142,7 @@
                 {
                     "action": "debuff_cost",
                     "amount": 5,
-                    "target": "own_character"
+                    "target": "self"
                 }
             ]
         }

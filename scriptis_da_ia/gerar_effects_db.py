@@ -1001,7 +1001,17 @@ def parse_cost_debuff(text):
     if m:
         is_debuff = m.group(1) in ('-', '−')
         clause = t[:m.start()+len(m.group(0))]
-        target = 'opp_character' if "opponent" in clause else 'own_character'
+        # "give this card [in your hand] -N cost" e SEMPRE auto-referencia
+        # (geralmente reduzir o proprio custo para jogar, condicionado a
+        # algo do board state -- ex: estar atras em DON). A palavra
+        # 'opponent' pode aparecer na CONDICAO anterior ('if your opponent
+        # has...', 'less than the number on your opponent's field') sem
+        # ter nada a ver com o alvo do give -- 'give this card' decide o
+        # alvo antes de checar 'opponent' na clausula inteira.
+        if re.search(r'give this card', clause):
+            target = 'self'
+        else:
+            target = 'opp_character' if "opponent" in clause else 'own_character'
         step = {
             'action': 'debuff_cost' if is_debuff else 'buff_cost',
             'amount': int(m.group(2)), 'target': target,
@@ -1336,12 +1346,56 @@ def parse_add_from_trash(text):
     return steps
 
 
+def parse_opp_trash_from_hand(text):
+    """'Your opponent trashes N cards from their hand' -- disrupcao de mao
+    FORCADA no oponente (sem 'up to', a quantidade exata e descartada por
+    escolha dele). Distinto de trash_from_hand (sempre sobre o PROPRIO
+    jogador) -- nunca unificar, alvo e oposto."""
+    steps = []
+    t = text.lower()
+    m = re.search(r'your opponent trashes (\d+) cards? from (?:their|his|her) hand', t)
+    if m:
+        steps.append({'action': 'opp_trash_from_hand', 'count': int(m.group(1))})
+    return steps
+
+
 # ===========================================================================
 # Parser principal de um bloco de texto
 # ===========================================================================
 
 def parse_block(block_text, trigger_name):
-    """Parseia um bloco de efeito e retorna lista de steps."""
+    """Parseia um bloco de efeito e retorna lista de steps.
+
+    CASO ESPECIAL -- 'Choose one: • opcao A • opcao B [• opcao C]': as
+    opcoes sao ALTERNATIVAS MUTUAMENTE EXCLUSIVAS (o jogador escolhe uma),
+    nao efeitos que acontecem em sequencia. Sem este tratamento, os steps
+    de todas as opcoes eram concatenados na mesma lista 'steps', fazendo o
+    engine acreditar que TODOS os efeitos aconteciam juntos -- falso para
+    qualquer carta com essa estrutura (confirmado: 19 cards no banco).
+    Retorna uma lista contendo um unico dict sentinela {'_choice': [...]}
+    em vez de steps normais; parse_card_effect (unico caller que monta o
+    'entry' final) reconhece esse formato e popula entry['choice'] no
+    lugar de entry['steps'], preservando o contrato de 'steps' para todo
+    o resto do parser (cada item de 'steps' sempre tem 'action').
+    """
+    if re.search(r'choose(?:s)? one\s*:', block_text, re.IGNORECASE):
+        opcoes_raw = re.split(r'[•\u2022]', block_text)
+        # primeiro item e o texto antes do primeiro bullet (geralmente so
+        # 'Choose one:' e eventual condicao -- nao e uma opcao)
+        opcoes_raw = [o.strip() for o in opcoes_raw[1:] if o.strip()]
+        if len(opcoes_raw) >= 2:
+            opcoes_parseadas = []
+            for opcao_texto in opcoes_raw:
+                sub_steps = parse_block(opcao_texto, trigger_name)
+                if sub_steps:
+                    opcoes_parseadas.append(sub_steps)
+            if len(opcoes_parseadas) >= 2:
+                return [{'_choice': opcoes_parseadas}]
+            # se so 1 opcao parseou com sucesso (outras nao reconhecidas
+            # pelo parser ainda), nao ha alternativa real capturavel --
+            # cai no comportamento normal abaixo em vez de fingir uma
+            # escolha de 1 item so.
+
     steps = []
     t = block_text.lower()
 
@@ -1472,6 +1526,13 @@ def parse_block(block_text, trigger_name):
         if m and 'you may trash' not in t[:t.find('trash')] and not already:
             steps.append({'action': 'trash_from_hand', 'count': int(m.group(1))})
 
+    # Disrupcao de mao FORCADA no oponente -- "your opponent trashes N cards
+    # from their hand". Alvo oposto de trash_from_hand (sempre 'their hand',
+    # nunca 'your hand'), por isso guard textual distinto e nao precisa de
+    # exclusao mutua: as duas regexes nunca casam no mesmo texto.
+    if 'opponent trashes' in t:
+        steps.extend(parse_opp_trash_from_hand(t))
+
     # Trigger especial: "Activate this card's [Main] effect"
     if trigger_name == 'trigger' and 'activate this card' in t:
         return [{'action': 'activate_main_effect'}]
@@ -1571,7 +1632,9 @@ def parse_card_effect(card_text, card_type):
         if not steps:
             continue
 
-        is_substitute = len(steps) == 1 and steps[0].get('action') in ('substitute_ko', 'substitute_removal')
+        is_choice = len(steps) == 1 and '_choice' in steps[0]
+        is_substitute = (not is_choice and len(steps) == 1
+                          and steps[0].get('action') in ('substitute_ko', 'substitute_removal'))
 
         conds = parse_conditions(block)
         costs = [] if is_substitute else parse_costs(block)
@@ -1587,7 +1650,10 @@ def parse_card_effect(card_text, card_type):
         if don_m:
             don_req = int(don_m.group(1))
 
-        entry = {'steps': steps}
+        if is_choice:
+            entry = {'choice': steps[0]['_choice']}
+        else:
+            entry = {'steps': steps}
         if conds:
             entry['conditions'] = conds
         if costs:
