@@ -3884,6 +3884,10 @@
             {
                 "action": "draw",
                 "trigger": "trigger"
+            },
+            {
+                "action": "substitute_ko",
+                "trigger": "counter"
             }
         ],
         "synergy_states": {
@@ -3896,7 +3900,7 @@
         "is_searcher": false,
         "draws": true,
         "has_counter_value": false,
-        "has_counter_event": false,
+        "has_counter_event": true,
         "is_blocker": false,
         "is_removal": false,
         "kos": false,
@@ -5394,6 +5398,10 @@
             {
                 "action": "gain_rush",
                 "trigger": "activate_main"
+            },
+            {
+                "action": "substitute_ko",
+                "trigger": "passive"
             }
         ],
         "synergy_states": {},
@@ -32466,6 +32474,10 @@
         "attribute": "Special",
         "effects": [
             {
+                "action": "substitute_ko",
+                "trigger": "opp_turn"
+            },
+            {
                 "action": "keyword_blocker",
                 "trigger": "passive"
             }
@@ -52106,7 +52118,12 @@
         "color": "Red",
         "sub_types": "Animal Red-Haired Pirates",
         "attribute": "Strike",
-        "effects": [],
+        "effects": [
+            {
+                "action": "substitute_ko",
+                "trigger": "passive"
+            }
+        ],
         "synergy_states": {},
         "text": "If your Character [Bonk Punch] would be K.O.'d by an effect, you may trash this Character instead.",
         "is_searcher": false,
@@ -59877,7 +59894,12 @@
         "color": "Purple",
         "sub_types": "Donquixote Pirates",
         "attribute": "Strike",
-        "effects": [],
+        "effects": [
+            {
+                "action": "substitute_ko",
+                "trigger": "passive"
+            }
+        ],
         "synergy_states": {},
         "text": "[Once Per Turn] If this Character would be K.O.'d by your opponent's effect, you may rest 2 of your active DON!! cards instead.",
         "is_searcher": false,
@@ -72219,7 +72241,12 @@
         "color": "Red",
         "sub_types": "Revolutionary Army",
         "attribute": "Special",
-        "effects": [],
+        "effects": [
+            {
+                "action": "substitute_ko",
+                "trigger": "passive"
+            }
+        ],
         "synergy_states": {},
         "text": "If your \"Revolutionary Army\" type Character would be K.O.'d by your opponent's effect, you may trash this Character instead.",
         "is_searcher": false,
@@ -73838,7 +73865,12 @@
         "color": "Blue",
         "sub_types": "Whitebeard Pirates",
         "attribute": "Slash",
-        "effects": [],
+        "effects": [
+            {
+                "action": "substitute_ko",
+                "trigger": "passive"
+            }
+        ],
         "synergy_states": {},
         "text": "If your Character with a type including \"Whitebeard Pirates\" would be K.O.'d by your opponent's effect, you may trash this Character instead.",
         "is_searcher": false,
@@ -74342,7 +74374,12 @@
         "color": "Purple",
         "sub_types": "Land of Wano Roger Pirates",
         "attribute": "Wisdom",
-        "effects": [],
+        "effects": [
+            {
+                "action": "substitute_ko",
+                "trigger": "passive"
+            }
+        ],
         "synergy_states": {},
         "text": "If your Character with a type including \"Roger Pirates\" would be K.O.'d by your opponent's effect, you may trash this Character instead.",
         "is_searcher": false,
@@ -82843,7 +82880,12 @@
         "color": "Red",
         "sub_types": "Dressrosa Barto Club",
         "attribute": "Special",
-        "effects": [],
+        "effects": [
+            {
+                "action": "substitute_ko",
+                "trigger": "passive"
+            }
+        ],
         "synergy_states": {},
         "text": "If this Character would be K.O.'d, you may trash 1 Event from your hand instead.\n[On Play] Activate up to 1 {Dressrosa} type Event with a base cost of 3 or less from your hand.",
         "is_searcher": false,
@@ -88133,7 +88175,12 @@
         "color": "Red",
         "sub_types": "Red-Haired Pirates",
         "attribute": "Slash",
-        "effects": [],
+        "effects": [
+            {
+                "action": "substitute_ko",
+                "trigger": "passive"
+            }
+        ],
         "synergy_states": {},
         "text": "[Once Per Turn] If your {Red-Haired Pirates} type Character would be K.O.'d, you may trash 1 Character card with 6000 power or more from your hand instead.",
         "is_searcher": false,
@@ -108448,6 +108495,10 @@
                 "action": "buff_power",
                 "trigger": "when_attacking",
                 "target": "self"
+            },
+            {
+                "action": "substitute_ko",
+                "trigger": "passive"
             }
         ],
         "synergy_states": {},

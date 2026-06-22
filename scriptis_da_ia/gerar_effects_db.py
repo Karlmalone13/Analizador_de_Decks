@@ -69,6 +69,15 @@ def parse_conditions(text):
     m = re.search(r'if this character has (\d+) power or more', t)
     if m: conds['self_power_gte'] = int(m.group(1))
 
+    # "if your [TIPO] type Character would be ..." -- restringe o PROPRIO
+    # Character que carrega o efeito a um tipo (sub_types) especifico.
+    # Distinto de leader_type: aqui e o tipo do Character com o efeito, nao
+    # do Leader. Duas variantes de redacao: "your "X" type Character" e
+    # "your Character with a type including "X"".
+    m = (re.search(r'if your ["\[{]([^"\]}]+)["\]}] type character (?:would|gains?|has)', t)
+         or re.search(r'if your character with a type including ["\[{]([^"\]}]+)["\]}] would', t))
+    if m: conds['self_type'] = m.group(1).strip()
+
     # "if your Leader has N power or more" -- power BASE do Leader (pode
     # vir junto com type, ex: "...power or more and the \"X\" type").
     m = re.search(r'if your leader has (\d+) power or more', t)
@@ -859,11 +868,41 @@ def parse_substitute_ko(text):
 
     cost = None
 
-    m = re.search(r"you may trash (\d+) ([a-z][a-z0-9 /]*?) card[s]? from your hand instead", t)
+    m = re.search(r"you may trash this character instead", t)
     if m:
-        tipos = re.split(r'\s*(?:/| or )\s*', m.group(2).strip())
-        cost = {'action': 'trash_from_hand', 'count': int(m.group(1)), 'filter_type': [x.strip() for x in tipos if x.strip()]}
-    else:
+        cost = {'action': 'trash_self'}
+
+    if not cost:
+        m = re.search(r"you may rest (\d+) of your active don!! cards instead", t)
+        if m:
+            cost = {'action': 'rest_don', 'count': int(m.group(1))}
+
+    if not cost:
+        # "trash N card(s) from your hand instead" -- SEM filtro de tipo
+        # (qualquer carta da mao). Testado ANTES da regex de tipo especifico
+        # para nao deixar a palavra solta "card" ser capturada como se
+        # fosse o nome de um tipo (ex: "Event"/"Stage").
+        m = re.search(r"you may trash (\d+) cards? from your hand instead", t)
+        if m:
+            cost = {'action': 'trash_from_hand', 'count': int(m.group(1))}
+
+    if not cost:
+        # trash N [card(s)] from your hand instead -- com filtro de TIPO
+        # ("Event"/"Stage") OU filtro de POWER ("Character card with N
+        # power or more"). So um dos dois filtros se aplica por carta.
+        m = re.search(r"you may trash (\d+) ([a-z][a-z0-9 /]*?)(?: cards?)? from your hand instead", t)
+        if m and 'power' in m.group(2):
+            m = None
+        if m:
+            tipos = re.split(r'\s*(?:/| or )\s*', m.group(2).strip())
+            cost = {'action': 'trash_from_hand', 'count': int(m.group(1)), 'filter_type': [x.strip() for x in tipos if x.strip()]}
+
+    if not cost:
+        m = re.search(r"you may trash (\d+) character cards? with (\d+) power or more from your hand instead", t)
+        if m:
+            cost = {'action': 'trash_from_hand', 'count': int(m.group(1)), 'power_gte': int(m.group(2))}
+
+    if not cost:
         # custo de power: SEMPRE debuff no alvo do custo (mesmo sendo proprio
         # Leader/Character), mesmo sem sinal explicito no texto -- e
         # sacrificio/substituicao, nao bonus. Confirmado por imagem real

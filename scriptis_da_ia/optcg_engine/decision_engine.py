@@ -257,6 +257,132 @@ class EffectExecutor:
 
         return logs
 
+    def try_substitute(self, card: Card, removal_kind: str, verbose: bool = False) -> str | None:
+        """
+        Verifica se `card` (do lado self.me) tem substitute_ko (removal_kind
+        == 'ko') ou substitute_removal (removal_kind in ('ko','bounce',
+        'deck_bottom') -- substitute_removal cobre QUALQUER remocao, nao so
+        K.O.) ativo, e se sim tenta pagar o custo da substituicao.
+        Retorna uma string de log se substituiu (e quem chamou NAO deve
+        prosseguir com a remocao real), ou None se nao ha substituto
+        aplicavel/pagavel (remocao segue normalmente).
+        """
+        effects = get_card_effects(card.code)
+        block = effects.get('passive', {})
+        if not block:
+            return None
+
+        for step in block.get('steps', []):
+            action = step.get('action')
+            aplica = (action == 'substitute_ko' and removal_kind == 'ko') or action == 'substitute_removal'
+            if not aplica:
+                continue
+
+            # Once per turn (mesma chave de controle que efeitos normais)
+            key = (card.code, 'passive_substitute')
+            if block.get('once_per_turn') and key in self._once_used:
+                continue
+
+            # Filtro de alvo: self_type (sub_types) ou self_name (nome
+            # proprio) -- quando presentes, restringem quais cards desse
+            # arquetipo podem usar o substituto.
+            conds = dict(block.get('conditions', {}))
+            if not self._check_conditions(conds, card):
+                continue
+            filter_type = step.get('filter_type', '')
+            if filter_type and filter_type.lower() not in card.sub_types.lower():
+                continue
+            filter_name = step.get('filter_name', '')
+            if filter_name and filter_name.lower() not in card.name.lower():
+                continue
+
+            cost = step.get('cost', {})
+            log = self._pay_substitute_cost(cost, card)
+            if log is None:
+                continue  # não conseguiu pagar -- tenta o próximo step (raro) ou desiste
+
+            if block.get('once_per_turn'):
+                self._once_used.add(key)
+            return log
+
+        return None
+
+    def _pay_substitute_cost(self, cost: dict, card: Card) -> str | None:
+        """Paga o custo de uma substituicao de K.O./remocao. Retorna log de
+        sucesso, ou None se nao pode pagar (substituicao nao ocorre)."""
+        ctype = cost.get('action')
+        me = self.me
+
+        if ctype == 'trash_self':
+            if card not in me.field_chars:
+                return None
+            me.field_chars.remove(card)
+            me.trash.append(card)
+            return f'{card.name[:18]} evitou K.O./remoção trashando a si mesmo'
+
+        if ctype == 'rest_don':
+            count = cost.get('count', 1)
+            if me.don_available < count:
+                return None
+            me.don_available -= count
+            me.don_rested += count
+            return f'{card.name[:18]} evitou K.O./remoção restando {count} DON'
+
+        if ctype in ('return_own_don', 'don_minus'):
+            count = cost.get('count', 1)
+            if not self._return_don_to_deck(count):
+                return None
+            return f'{card.name[:18]} evitou K.O./remoção devolvendo {count} DON ao deck'
+
+        if ctype == 'trash_from_hand':
+            count = cost.get('count', 1)
+            filter_type = cost.get('filter_type')
+            power_gte = cost.get('power_gte')
+            candidatos = list(me.hand)
+            if filter_type:
+                tipos_lower = [t.lower() for t in filter_type]
+                candidatos = [c for c in candidatos
+                              if any(t in c.sub_types.lower() or t in c.card_type.lower() for t in tipos_lower)]
+            if power_gte is not None:
+                candidatos = [c for c in candidatos if c.power >= power_gte]
+            if len(candidatos) < count:
+                return None
+            trashed = []
+            for _ in range(count):
+                worst = min(candidatos, key=lambda c: c.board_value())
+                me.hand.remove(worst)
+                me.trash.append(worst)
+                candidatos.remove(worst)
+                trashed.append(worst.name[:15])
+            return f'{card.name[:18]} evitou K.O./remoção trashando da mão: {", ".join(trashed)}'
+
+        if ctype == 'debuff_power_self':
+            amount = cost.get('amount', 0)
+            card.power_buff -= amount
+            return f'{card.name[:18]} evitou K.O./remoção perdendo {amount} de power'
+
+        if ctype == 'debuff_power_self_leader':
+            amount = cost.get('amount', 0)
+            me.leader.power_buff -= amount
+            return f'{card.name[:18]} evitou K.O./remoção (Leader perdeu {amount} de power)'
+
+        if ctype == 'rest_self':
+            if card.rested:
+                return None
+            card.rested = True
+            return f'{card.name[:18]} evitou K.O./remoção restando-se'
+
+        if ctype == 'bounce_self':
+            if card not in me.field_chars:
+                return None
+            me.field_chars.remove(card)
+            card.rested = False
+            card.don_attached = 0
+            me.hand.append(card)
+            return f'{card.name[:18]} evitou K.O./remoção voltando para a mão'
+
+        return None
+
     def apply_your_turn_buffs(self) -> list:
         """
         Aplica buffs passivos [Your Turn] de todas as cartas em campo.
@@ -341,6 +467,8 @@ class EffectExecutor:
         if 'opp_char_power_gte' in conds:
             if not opp.field_chars or max(c.effective_power(False) for c in opp.field_chars) < conds['opp_char_power_gte']:
                 return False
+        if 'self_type' in conds and conds['self_type'] not in card.sub_types.lower():
+            return False
 
         return True
 
@@ -637,15 +765,30 @@ class EffectExecutor:
                 pools = [(opp, [c for c in opp.field_chars if elegivel(c)])]
 
             koed = []
+            sub_logs = []
             for owner, candidates in pools:
                 for _ in range(min(count, len(candidates))):
                     target = max(candidates, key=lambda x: x.board_value())
+                    # Antes de remover de fato, verifica se o ALVO tem
+                    # substitute_ko/substitute_removal ativo -- e um efeito
+                    # passivo do proprio target, avaliado do ponto de vista
+                    # do SEU dono (quem paga o custo da substituicao).
+                    ee_target = EffectExecutor(owner, me if owner is opp else opp)
+                    sub_log = ee_target.try_substitute(target, 'ko' if action == 'ko' else 'removal')
+                    if sub_log:
+                        sub_logs.append(sub_log)
+                        candidates.remove(target)
+                        continue
                     owner.field_chars.remove(target)
                     owner.trash.append(target)
                     candidates.remove(target)
                     koed.append(target.name[:15])
             label = 'KO' if action == 'ko' else 'Trash'
-            return f'{label}: {", ".join(koed)}' if koed else ''
+            partes = []
+            if koed:
+                partes.append(f'{label}: {", ".join(koed)}')
+            partes.extend(sub_logs)
+            return ' | '.join(partes)
 
         # ── Bounce ───────────────────────────────────────────────────────────
         if action == 'bounce':
@@ -3151,11 +3294,16 @@ class OPTCGMatch:
                                     print(f'      ⚡ [trigger] {log}')
                 return False   # tirou vida(s), mas oponente não estava em 0 — sem derrota
             elif target_type == 'character' and target and target in opp.field_chars:
+                ee_opp = EffectExecutor(opp, p)
+                sub_log = ee_opp.try_substitute(target, 'ko')
+                if sub_log:
+                    if verbose:
+                        print(f'      🔁 {sub_log}')
+                    return False
                 opp.field_chars.remove(target)
                 opp.trash.append(target)
                 if verbose:
                     print(f'      💀 {target.name[:20]} foi KO!')
-                ee_opp = EffectExecutor(opp, p)
                 ko_logs = ee_opp.execute(target, 'on_ko')
                 if verbose:
                     for log in ko_logs:

@@ -2358,6 +2358,17 @@
             "count": 1
           }
         ]
+      },
+      "counter": {
+        "steps": [
+          {
+            "action": "substitute_ko",
+            "cost": {
+              "action": "trash_from_hand",
+              "count": 1
+            }
+          }
+        ]
       }
     }
   },
@@ -3323,6 +3334,18 @@
           },
           {
             "action": "gain_rush"
+          }
+        ],
+        "once_per_turn": true
+      },
+      "passive": {
+        "steps": [
+          {
+            "action": "substitute_ko",
+            "cost": {
+              "action": "trash_from_hand",
+              "count": 1
+            }
           }
         ],
         "once_per_turn": true
@@ -19537,6 +19560,16 @@
     "sub_types": "Donquixote Pirates Navy",
     "attribute": "Special",
     "effects": {
+      "opp_turn": {
+        "steps": [
+          {
+            "action": "substitute_ko",
+            "cost": {
+              "action": "trash_self"
+            }
+          }
+        ]
+      },
       "passive": {
         "steps": [
           {
@@ -31113,7 +31146,18 @@
     "color": "Red",
     "sub_types": "Animal Red-Haired Pirates",
     "attribute": "Strike",
-    "effects": {}
+    "effects": {
+      "passive": {
+        "steps": [
+          {
+            "action": "substitute_ko",
+            "cost": {
+              "action": "trash_self"
+            }
+          }
+        ]
+      }
+    }
   },
   "OP09-013": {
     "name": "Yasopp",
@@ -35729,7 +35773,20 @@
     "color": "Purple",
     "sub_types": "Donquixote Pirates",
     "attribute": "Strike",
-    "effects": {}
+    "effects": {
+      "passive": {
+        "steps": [
+          {
+            "action": "substitute_ko",
+            "cost": {
+              "action": "rest_don",
+              "count": 2
+            }
+          }
+        ],
+        "once_per_turn": true
+      }
+    }
   },
   "OP10-075": {
     "name": "Foxy",
@@ -43173,7 +43230,21 @@
     "color": "Red",
     "sub_types": "Revolutionary Army",
     "attribute": "Special",
-    "effects": {}
+    "effects": {
+      "passive": {
+        "steps": [
+          {
+            "action": "substitute_ko",
+            "cost": {
+              "action": "trash_self"
+            }
+          }
+        ],
+        "conditions": {
+          "self_type": "revolutionary army"
+        }
+      }
+    }
   },
   "OP13-009": {
     "name": "Curly.Dadan",
@@ -43374,6 +43445,9 @@
             }
           }
         ],
+        "conditions": {
+          "self_type": "revolutionary army"
+        },
         "once_per_turn": true
       }
     }
@@ -44097,7 +44171,21 @@
     "color": "Blue",
     "sub_types": "Whitebeard Pirates",
     "attribute": "Slash",
-    "effects": {}
+    "effects": {
+      "passive": {
+        "steps": [
+          {
+            "action": "substitute_ko",
+            "cost": {
+              "action": "trash_self"
+            }
+          }
+        ],
+        "conditions": {
+          "self_type": "whitebeard pirates"
+        }
+      }
+    }
   },
   "OP13-048": {
     "name": "Blamenco",
@@ -44370,7 +44458,21 @@
     "color": "Purple",
     "sub_types": "Land of Wano Roger Pirates",
     "attribute": "Wisdom",
-    "effects": {}
+    "effects": {
+      "passive": {
+        "steps": [
+          {
+            "action": "substitute_ko",
+            "cost": {
+              "action": "trash_self"
+            }
+          }
+        ],
+        "conditions": {
+          "self_type": "roger pirates"
+        }
+      }
+    }
   },
   "OP13-061": {
     "name": "Inuarashi",
@@ -46495,6 +46597,9 @@
             }
           }
         ],
+        "conditions": {
+          "self_type": "supernovas"
+        },
         "once_per_turn": true
       }
     }
@@ -46917,6 +47022,9 @@
             "duration": "this_turn"
           }
         ],
+        "conditions": {
+          "self_type": "straw hat crew"
+        },
         "once_per_turn": true
       }
     }
@@ -47680,6 +47788,9 @@
             }
           }
         ],
+        "conditions": {
+          "self_type": "donquixote pirates"
+        },
         "once_per_turn": true
       }
     }
@@ -49728,7 +49839,22 @@
     "color": "Red",
     "sub_types": "Dressrosa Barto Club",
     "attribute": "Special",
-    "effects": {}
+    "effects": {
+      "passive": {
+        "steps": [
+          {
+            "action": "substitute_ko",
+            "cost": {
+              "action": "trash_from_hand",
+              "count": 1,
+              "filter_type": [
+                "event"
+              ]
+            }
+          }
+        ]
+      }
+    }
   },
   "OP15-015": {
     "name": "Higuma",
@@ -52957,7 +53083,24 @@
     "color": "Red",
     "sub_types": "Red-Haired Pirates",
     "attribute": "Slash",
-    "effects": {}
+    "effects": {
+      "passive": {
+        "steps": [
+          {
+            "action": "substitute_ko",
+            "cost": {
+              "action": "trash_from_hand",
+              "count": 1,
+              "power_gte": 6000
+            }
+          }
+        ],
+        "conditions": {
+          "self_type": "red-haired pirates"
+        },
+        "once_per_turn": true
+      }
+    }
   },
   "OP16-019": {
     "name": "Let's Show 'Em What We're Made Of!!",
@@ -64837,6 +64980,18 @@
           }
         ],
         "once_per_turn": true
+      },
+      "passive": {
+        "steps": [
+          {
+            "action": "substitute_ko",
+            "cost": {
+              "action": "trash_from_hand",
+              "count": 1
+            }
+          }
+        ],
+        "once_per_turn": true
       }
     }
   },
@@ -65348,6 +65503,9 @@
             }
           }
         ],
+        "conditions": {
+          "self_type": "cross guild"
+        },
         "once_per_turn": true
       }
     }

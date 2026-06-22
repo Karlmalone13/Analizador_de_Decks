@@ -1351,6 +1351,17 @@
     },
     "EB02-029": {},
     "EB02-030": {
+        "counter": {
+            "steps": [
+                {
+                    "action": "substitute_ko",
+                    "cost": {
+                        "action": "trash_from_hand",
+                        "count": 1
+                    }
+                }
+            ]
+        },
         "trigger": {
             "steps": [
                 {
@@ -1913,6 +1924,18 @@
                 },
                 {
                     "action": "gain_rush"
+                }
+            ]
+        },
+        "passive": {
+            "once_per_turn": true,
+            "steps": [
+                {
+                    "action": "substitute_ko",
+                    "cost": {
+                        "action": "trash_from_hand",
+                        "count": 1
+                    }
                 }
             ]
         }
@@ -11156,6 +11179,16 @@
         }
     },
     "OP05-030": {
+        "opp_turn": {
+            "steps": [
+                {
+                    "action": "substitute_ko",
+                    "cost": {
+                        "action": "trash_self"
+                    }
+                }
+            ]
+        },
         "passive": {
             "steps": [
                 {
@@ -17694,7 +17727,18 @@
             ]
         }
     },
-    "OP09-012": {},
+    "OP09-012": {
+        "passive": {
+            "steps": [
+                {
+                    "action": "substitute_ko",
+                    "cost": {
+                        "action": "trash_self"
+                    }
+                }
+            ]
+        }
+    },
     "OP09-013": {
         "on_play": {
             "steps": [
@@ -20352,7 +20396,20 @@
         }
     },
     "OP10-073": {},
-    "OP10-074": {},
+    "OP10-074": {
+        "passive": {
+            "once_per_turn": true,
+            "steps": [
+                {
+                    "action": "substitute_ko",
+                    "cost": {
+                        "action": "rest_don",
+                        "count": 2
+                    }
+                }
+            ]
+        }
+    },
     "OP10-075": {
         "activate_main": {
             "costs": [
@@ -24595,7 +24652,21 @@
             ]
         }
     },
-    "OP13-008": {},
+    "OP13-008": {
+        "passive": {
+            "conditions": {
+                "self_type": "revolutionary army"
+            },
+            "steps": [
+                {
+                    "action": "substitute_ko",
+                    "cost": {
+                        "action": "trash_self"
+                    }
+                }
+            ]
+        }
+    },
     "OP13-009": {
         "passive": {
             "steps": [
@@ -24688,6 +24759,9 @@
     },
     "OP13-017": {
         "passive": {
+            "conditions": {
+                "self_type": "revolutionary army"
+            },
             "once_per_turn": true,
             "steps": [
                 {
@@ -25090,7 +25164,21 @@
             ]
         }
     },
-    "OP13-047": {},
+    "OP13-047": {
+        "passive": {
+            "conditions": {
+                "self_type": "whitebeard pirates"
+            },
+            "steps": [
+                {
+                    "action": "substitute_ko",
+                    "cost": {
+                        "action": "trash_self"
+                    }
+                }
+            ]
+        }
+    },
     "OP13-048": {},
     "OP13-049": {},
     "OP13-050": {},
@@ -25220,7 +25308,21 @@
             ]
         }
     },
-    "OP13-060": {},
+    "OP13-060": {
+        "passive": {
+            "conditions": {
+                "self_type": "roger pirates"
+            },
+            "steps": [
+                {
+                    "action": "substitute_ko",
+                    "cost": {
+                        "action": "trash_self"
+                    }
+                }
+            ]
+        }
+    },
     "OP13-061": {
         "on_play": {
             "steps": [
@@ -26488,6 +26590,9 @@
     },
     "OP14-016": {
         "opp_turn": {
+            "conditions": {
+                "self_type": "supernovas"
+            },
             "once_per_turn": true,
             "steps": [
                 {
@@ -26725,6 +26830,9 @@
     },
     "OP14-034": {
         "your_turn": {
+            "conditions": {
+                "self_type": "straw hat crew"
+            },
             "once_per_turn": true,
             "steps": [
                 {
@@ -27179,6 +27287,9 @@
     "OP14-060": {},
     "OP14-061": {
         "passive": {
+            "conditions": {
+                "self_type": "donquixote pirates"
+            },
             "once_per_turn": true,
             "steps": [
                 {
@@ -28444,7 +28555,22 @@
             ]
         }
     },
-    "OP15-014": {},
+    "OP15-014": {
+        "passive": {
+            "steps": [
+                {
+                    "action": "substitute_ko",
+                    "cost": {
+                        "action": "trash_from_hand",
+                        "count": 1,
+                        "filter_type": [
+                            "event"
+                        ]
+                    }
+                }
+            ]
+        }
+    },
     "OP15-015": {
         "on_play": {
             "steps": [
@@ -30320,7 +30446,24 @@
             ]
         }
     },
-    "OP16-018": {},
+    "OP16-018": {
+        "passive": {
+            "conditions": {
+                "self_type": "red-haired pirates"
+            },
+            "once_per_turn": true,
+            "steps": [
+                {
+                    "action": "substitute_ko",
+                    "cost": {
+                        "action": "trash_from_hand",
+                        "count": 1,
+                        "power_gte": 6000
+                    }
+                }
+            ]
+        }
+    },
     "OP16-019": {
         "main": {
             "steps": [
@@ -36844,6 +36987,18 @@
         }
     },
     "ST22-012": {
+        "passive": {
+            "once_per_turn": true,
+            "steps": [
+                {
+                    "action": "substitute_ko",
+                    "cost": {
+                        "action": "trash_from_hand",
+                        "count": 1
+                    }
+                }
+            ]
+        },
         "when_attacking": {
             "once_per_turn": true,
             "steps": [
@@ -37158,6 +37313,9 @@
     },
     "ST25-003": {
         "on_play": {
+            "conditions": {
+                "self_type": "cross guild"
+            },
             "once_per_turn": true,
             "steps": [
                 {
