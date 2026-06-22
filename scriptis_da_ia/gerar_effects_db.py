@@ -746,9 +746,12 @@ def parse_play_generic(text):
 
 
 def parse_cost_debuff(text):
-    """Give -N cost / +N cost (manipulação de custo)."""
+    """Give -N cost / +N cost (manipulação de custo no oponente, geralmente)
+    ou 'gains +N/-N cost' (auto-buff/debuff, sempre no próprio lado -- 'this
+    Character'/'up to N of your... Characters'/'All of your Characters')."""
     steps = []
     t = text.lower()
+
     m = re.search(r'give [^.]*?([+\-−])(\d+) cost', t)
     if m:
         is_debuff = m.group(1) in ('-', '−')
@@ -757,6 +760,37 @@ def parse_cost_debuff(text):
             'action': 'debuff_cost' if is_debuff else 'buff_cost',
             'amount': int(m.group(2)), 'target': target,
         })
+        return steps
+
+    # "gains +N cost" / "gain -N cost" -- sempre sobre o PROPRIO lado
+    # (Character que carrega o efeito, ou outros Characters do mesmo
+    # jogador). O alvo (self vs own_character generico) e determinado pelo
+    # sujeito da frase, nao pela presenca de "opponent".
+    m = re.search(r'gains? ([+\-−])(\d+) cost', t)
+    if m:
+        is_debuff = m.group(1) in ('-', '−')
+        is_self = bool(re.search(r'this character gains? [+\-−]\d+ cost', t))
+        step = {
+            'action': 'debuff_cost' if is_debuff else 'buff_cost',
+            'amount': int(m.group(2)),
+            'target': 'self' if is_self else 'own_character',
+        }
+        count_m = re.search(r'up to (\d+) of your', t)
+        if count_m:
+            step['count'] = int(count_m.group(1))
+        elif 'all of your' in t:
+            step['count'] = 99
+        type_m = (re.search(r'"([a-z][a-z0-9 .\'-]+)"\s+type', t)
+                  or re.search(r'[\[{]([a-z][a-z0-9 .\'-]+)[\]}]\s+type', t))
+        if type_m and not is_self:
+            step['filter_type'] = type_m.group(1).strip()
+        color_m = re.search(r'your (black|red|green|blue|yellow|purple) characters', t)
+        if color_m and not is_self:
+            step['color'] = color_m.group(1)
+        duration_m = re.search(r'until the end of your opponent.?s next (?:end phase|turn)', t)
+        step['duration'] = 'until_opp_turn_end' if duration_m else 'permanent'
+        steps.append(step)
+
     return steps
 
 
@@ -1075,8 +1109,8 @@ def parse_block(block_text, trigger_name):
     if 'power' in t:
         steps.extend(parse_power_buff(t))
 
-    # Custo: give -N/+N cost
-    if 'cost' in t and ('give' in t) and ('-' in t or '−' in t or '+' in t):
+    # Custo: give -N/+N cost (oponente, geralmente) / gains +N cost (proprio)
+    if 'cost' in t and ('give' in t or 'gain' in t) and ('-' in t or '−' in t or '+' in t):
         steps.extend(parse_cost_debuff(t))
 
     # Play genérico (sem origem explícita)
@@ -1116,17 +1150,22 @@ def parse_block(block_text, trigger_name):
     # DIFERENTE de '[Rush]' -- Rush comum permite atacar Leader OU
     # Character; Rush: Character so permite atacar Character. Por isso a
     # action e distinta (gain_rush_character), nunca reaproveitar gain_rush.
-    if 'gain [rush: character]' in t or 'gains [rush: character]' in t:
+    # Janela de lista compartilhada: "gains [A], [B] or [C]" -- [B] e [C] nao
+    # estao colados a 'gain(s)', mas pertencem a mesma concessao condicional.
+    _gains_lista_m = re.search(r'gains?\s+(\[[a-z: ]+\]\s*,?\s*)+(or\s*\[[a-z: ]+\]\s*)?', t)
+    _lista_txt = _gains_lista_m.group(0) if _gains_lista_m else ''
+
+    if 'gain [rush: character]' in t or 'gains [rush: character]' in t or '[rush: character]' in _lista_txt:
         steps.append({'action': 'gain_rush_character'})
-    elif 'gain [rush]' in t or 'gains [rush]' in t:
+    elif 'gain [rush]' in t or 'gains [rush]' in t or '[rush]' in _lista_txt:
         steps.append({'action': 'gain_rush'})
-    if 'gain [blocker]' in t or 'gains [blocker]' in t:
+    if 'gain [blocker]' in t or 'gains [blocker]' in t or '[blocker]' in _lista_txt:
         steps.append({'action': 'gain_blocker'})
-    if 'gain [double attack]' in t or 'gains [double attack]' in t:
+    if 'gain [double attack]' in t or 'gains [double attack]' in t or '[double attack]' in _lista_txt:
         steps.append({'action': 'gain_double_attack'})
-    if 'gain [banish]' in t or 'gains [banish]' in t:
+    if 'gain [banish]' in t or 'gains [banish]' in t or '[banish]' in _lista_txt:
         steps.append({'action': 'gain_banish'})
-    if 'gain [unblockable]' in t or 'gains [unblockable]' in t:
+    if 'gain [unblockable]' in t or 'gains [unblockable]' in t or '[unblockable]' in _lista_txt:
         steps.append({'action': 'gain_unblockable'})
 
     # Trash from hand (efeito, nao custo)
@@ -1272,6 +1311,47 @@ def parse_card_effect(card_text, card_type):
         if par and par != trigger_name and par not in result:
             result[par] = json.loads(json.dumps(entry))
 
+    # Segmento solto ANTES da primeira tag formal (independente de result já
+    # ter sido preenchido por outros blocos). Ex: "If your Leader has the
+    # [X] type, this Character gains +3 cost. [When Attacking] ...efeito
+    # do when_attacking..." -- o trecho antes de "[When Attacking]" e um
+    # efeito passivo proprio, nao parte do when_attacking. Sem isto, texto
+    # solto antes de QUALQUER tag formal era sempre descartado.
+    primeira_tag_m = re.search(ABERTURA + r'\[(?:' + TODAS_TAGS + r')\]', t_low)
+    if primeira_tag_m:
+        segmento_solto = t_low[:primeira_tag_m.start()].strip()
+        # ignora ruido administrativo que nao e efeito de jogo (nomenclatura
+        # de arquetipo, regra de deckbuilding) e [DON!! xN] isolado (j[a
+        # tratado como prefixo de don_requirement em outro lugar).
+        eh_ruido = (
+            'also treat this card' in segmento_solto
+            or 'you may have any number of this card' in segmento_solto
+            or re.fullmatch(r'(\[don!! x\d+\]\s*)+', segmento_solto or '')
+        )
+        if segmento_solto and len(segmento_solto) > 10 and not eh_ruido:
+            solto_steps = parse_block(segmento_solto, 'passive')
+            if solto_steps:
+                is_sub_solto = len(solto_steps) == 1 and solto_steps[0].get('action') in ('substitute_ko', 'substitute_removal')
+                solto_entry = {'steps': solto_steps}
+                solto_conds = parse_conditions(segmento_solto)
+                solto_costs = [] if is_sub_solto else parse_costs(segmento_solto)
+                if solto_conds:
+                    solto_entry['conditions'] = solto_conds
+                if solto_costs:
+                    solto_entry['costs'] = solto_costs
+                if '[once per turn]' in segmento_solto:
+                    solto_entry['once_per_turn'] = True
+                if 'passive' in result:
+                    # ja existe passive (ex: vindo de don_conditional_keywords
+                    # processado em outro momento) -- mescla os steps em vez
+                    # de sobrescrever.
+                    result['passive']['steps'].extend(solto_entry['steps'])
+                    for k, v in solto_entry.items():
+                        if k != 'steps' and k not in result['passive']:
+                            result['passive'][k] = v
+                else:
+                    result['passive'] = solto_entry
+
     # Fallback: texto sem NENHUM trigger formal da lista (ex: apenas
     # "[Once Per Turn] If this Character would be K.O.'d... instead." ou
     # "[Once Per Turn] When a [Trigger] activates, draw..."). O "quando" do
@@ -1319,10 +1399,27 @@ def parse_card_effect(card_text, card_type):
                         ('[unblockable]', 'keyword_unblockable')]:
         if tag not in t_low:
             continue
-        # evita capturar "gains [rush]"/"gains [rush: character]" como
-        # passivo nativo quando na verdade e concedido condicionalmente
-        # (tratado pelo fallback como gain_rush/gain_rush_character).
-        if tag in ('[rush]', '[rush: character]', '[banish]') and f'gains {tag}' in t_low and keyword_don_req(tag) == 0:
+        # evita capturar "gains [X]" como keyword nativa passiva quando na
+        # verdade e concedida CONDICIONALMENTE (tratada pelo fallback/segmento
+        # solto como gain_X, ou condicionada a DON como cond_keywords).
+        # evita capturar "gains [X]" como keyword nativa passiva quando na
+        # verdade e concedida CONDICIONALMENTE (tratada pelo fallback/segmento
+        # solto como gain_X, ou condicionada a DON como cond_keywords).
+        # Cobre tambem lista compartilhando um unico verbo, ex: "gains
+        # [Double Attack], [Banish] or [Blocker]" -- aqui [Banish] e
+        # [Blocker] nao estao colados a 'gains', mas fazem parte da MESMA
+        # concessao condicional.
+        gain_idx = t_low.find('gain ' + tag) if f'gain {tag}' in t_low else (t_low.find('gains ' + tag) if f'gains {tag}' in t_low else -1)
+        if gain_idx == -1:
+            # tag pode estar mais adiante numa lista "gains [A], [B] or [C]"
+            for verbo_m in re.finditer(r'gains?\s+\[', t_low):
+                # janela curta apos o verbo ate o fim da lista (heuristica:
+                # ate 60 chars, suficiente para 2-3 keywords curtas)
+                janela = t_low[verbo_m.start():verbo_m.start() + 60]
+                if tag in janela and re.search(r'^\s*gains?\s+(\[[a-z ]+\]\s*,?\s*)*(or\s*)?$', janela[:janela.find(tag)] + ' '):
+                    gain_idx = verbo_m.start()
+                    break
+        if gain_idx != -1 and keyword_don_req(tag) == 0:
             continue
         req = keyword_don_req(tag)
         if req > 0:

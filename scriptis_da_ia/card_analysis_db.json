@@ -1118,6 +1118,11 @@
             {
                 "action": "trash_from_hand",
                 "trigger": "on_play"
+            },
+            {
+                "action": "buff_power",
+                "trigger": "passive",
+                "target": "leader"
             }
         ],
         "synergy_states": {},
@@ -1132,7 +1137,7 @@
         "rests_opponent": false,
         "bounces": false,
         "gives_don": false,
-        "power_buff": false,
+        "power_buff": true,
         "heals": false,
         "gains_life": false,
         "attacks_life": false,
@@ -2365,6 +2370,10 @@
         "attribute": "Wisdom",
         "effects": [
             {
+                "action": "gain_life",
+                "trigger": "passive"
+            },
+            {
                 "action": "keyword_blocker",
                 "trigger": "passive"
             }
@@ -3064,10 +3073,6 @@
             {
                 "action": "gain_blocker",
                 "trigger": "passive"
-            },
-            {
-                "action": "keyword_blocker",
-                "trigger": "passive"
             }
         ],
         "synergy_states": {},
@@ -3328,10 +3333,6 @@
                 "action": "rest_opp_character",
                 "trigger": "trigger",
                 "cost_lte": 4
-            },
-            {
-                "action": "keyword_double_attack",
-                "trigger": "passive"
             }
         ],
         "synergy_states": {
@@ -4030,10 +4031,6 @@
             {
                 "action": "gain_blocker",
                 "trigger": "passive"
-            },
-            {
-                "action": "keyword_blocker",
-                "trigger": "passive"
             }
         ],
         "synergy_states": {},
@@ -4385,6 +4382,11 @@
             {
                 "action": "draw",
                 "trigger": "on_play"
+            },
+            {
+                "action": "buff_cost",
+                "trigger": "activate_main",
+                "target": "own_character"
             }
         ],
         "synergy_states": {},
@@ -4839,6 +4841,10 @@
             {
                 "action": "trash_from_hand",
                 "trigger": "when_attacking"
+            },
+            {
+                "action": "gain_rush",
+                "trigger": "passive"
             }
         ],
         "synergy_states": {
@@ -4863,7 +4869,7 @@
         "gains_life": true,
         "attacks_life": false,
         "trashes_own_life": true,
-        "has_rush": false,
+        "has_rush": true,
         "has_double_attack": false,
         "has_unblockable": false,
         "has_banish": false,
@@ -5249,7 +5255,12 @@
         "color": "Purple",
         "sub_types": "Straw Hat Crew Water Seven",
         "attribute": "Strike",
-        "effects": [],
+        "effects": [
+            {
+                "action": "gain_rush",
+                "trigger": "passive"
+            }
+        ],
         "synergy_states": {},
         "text": "If your Leader is multicolored and your opponent has 5 or more DON!! cards on their field, this Character gains [Rush].\n[When Attacking] [Once Per Turn] You may return 2 of your active DON!! cards to your DON!! deck: Set this Character as active. Then, add 1 card from the top of your Life cards to your hand.",
         "is_searcher": false,
@@ -5267,7 +5278,7 @@
         "gains_life": false,
         "attacks_life": false,
         "trashes_own_life": false,
-        "has_rush": false,
+        "has_rush": true,
         "has_double_attack": false,
         "has_unblockable": false,
         "has_banish": false,
@@ -6114,10 +6125,6 @@
             {
                 "action": "trash_from_hand",
                 "trigger": "end_of_turn"
-            },
-            {
-                "action": "keyword_blocker",
-                "trigger": "passive"
             }
         ],
         "synergy_states": {},
@@ -7120,6 +7127,11 @@
                 "action": "play_card",
                 "trigger": "opp_turn",
                 "cost_lte": 6
+            },
+            {
+                "action": "buff_cost",
+                "trigger": "passive",
+                "target": "self"
             }
         ],
         "synergy_states": {},
@@ -7214,7 +7226,7 @@
                 "trigger": "on_play"
             },
             {
-                "action": "keyword_blocker",
+                "action": "gain_blocker",
                 "trigger": "passive"
             }
         ],
@@ -7482,10 +7494,6 @@
             {
                 "action": "gain_double_attack",
                 "trigger": "on_play"
-            },
-            {
-                "action": "keyword_double_attack",
-                "trigger": "passive"
             }
         ],
         "synergy_states": {},
@@ -9068,10 +9076,6 @@
             {
                 "action": "gain_unblockable",
                 "trigger": "activate_main"
-            },
-            {
-                "action": "keyword_unblockable",
-                "trigger": "passive"
             }
         ],
         "synergy_states": {},
@@ -10027,6 +10031,11 @@
         "attribute": "Strike",
         "effects": [
             {
+                "action": "buff_cost",
+                "trigger": "opp_turn",
+                "target": "own_character"
+            },
+            {
                 "action": "keyword_blocker",
                 "trigger": "passive"
             }
@@ -10108,6 +10117,11 @@
             {
                 "action": "draw",
                 "trigger": "on_play"
+            },
+            {
+                "action": "buff_power",
+                "trigger": "passive",
+                "target": "leader"
             }
         ],
         "synergy_states": {},
@@ -10122,7 +10136,7 @@
         "rests_opponent": false,
         "bounces": false,
         "gives_don": false,
-        "power_buff": false,
+        "power_buff": true,
         "heals": false,
         "gains_life": false,
         "attacks_life": false,
@@ -10462,10 +10476,6 @@
             {
                 "action": "gain_blocker",
                 "trigger": "passive"
-            },
-            {
-                "action": "keyword_blocker",
-                "trigger": "passive"
             }
         ],
         "synergy_states": {},
@@ -10706,8 +10716,9 @@
                 "trigger": "on_play"
             },
             {
-                "action": "keyword_blocker",
-                "trigger": "passive"
+                "action": "debuff_cost",
+                "trigger": "passive",
+                "target": "own_character"
             }
         ],
         "synergy_states": {},
@@ -13500,10 +13511,6 @@
             {
                 "action": "gain_double_attack",
                 "trigger": "your_turn"
-            },
-            {
-                "action": "keyword_double_attack",
-                "trigger": "passive"
             }
         ],
         "synergy_states": {},
@@ -16906,10 +16913,6 @@
             {
                 "action": "gain_blocker",
                 "trigger": "passive"
-            },
-            {
-                "action": "keyword_blocker",
-                "trigger": "passive"
             }
         ],
         "synergy_states": {},
@@ -17724,6 +17727,11 @@
         "attribute": "Slash",
         "effects": [
             {
+                "action": "buff_power",
+                "trigger": "passive",
+                "target": "self"
+            },
+            {
                 "action": "keyword_blocker",
                 "trigger": "passive"
             }
@@ -17740,7 +17748,7 @@
         "rests_opponent": false,
         "bounces": false,
         "gives_don": false,
-        "power_buff": false,
+        "power_buff": true,
         "heals": false,
         "gains_life": false,
         "attacks_life": false,
@@ -18236,10 +18244,6 @@
             {
                 "action": "trash_from_hand",
                 "trigger": "when_attacking"
-            },
-            {
-                "action": "keyword_double_attack",
-                "trigger": "passive"
             }
         ],
         "synergy_states": {},
@@ -18761,10 +18765,6 @@
         "effects": [
             {
                 "action": "gain_blocker",
-                "trigger": "passive"
-            },
-            {
-                "action": "keyword_blocker",
                 "trigger": "passive"
             }
         ],
@@ -21367,10 +21367,6 @@
             {
                 "action": "gain_double_attack",
                 "trigger": "main"
-            },
-            {
-                "action": "keyword_double_attack",
-                "trigger": "passive"
             }
         ],
         "synergy_states": {
@@ -25317,7 +25313,12 @@
                 "trigger": "trigger"
             },
             {
-                "action": "keyword_double_attack",
+                "action": "buff_power",
+                "trigger": "passive",
+                "target": "self"
+            },
+            {
+                "action": "gain_double_attack",
                 "trigger": "passive"
             }
         ],
@@ -25338,7 +25339,7 @@
         "rests_opponent": false,
         "bounces": false,
         "gives_don": false,
-        "power_buff": false,
+        "power_buff": true,
         "heals": false,
         "gains_life": false,
         "attacks_life": false,
@@ -26226,10 +26227,6 @@
         "effects": [
             {
                 "action": "gain_blocker",
-                "trigger": "passive"
-            },
-            {
-                "action": "keyword_blocker",
                 "trigger": "passive"
             }
         ],
@@ -28572,10 +28569,6 @@
             {
                 "action": "gain_blocker",
                 "trigger": "passive"
-            },
-            {
-                "action": "keyword_blocker",
-                "trigger": "passive"
             }
         ],
         "synergy_states": {},
@@ -29107,10 +29100,6 @@
             },
             {
                 "action": "gain_blocker",
-                "trigger": "passive"
-            },
-            {
-                "action": "keyword_blocker",
                 "trigger": "passive"
             }
         ],
@@ -30061,10 +30050,6 @@
             {
                 "action": "gain_double_attack",
                 "trigger": "main"
-            },
-            {
-                "action": "keyword_double_attack",
-                "trigger": "passive"
             }
         ],
         "synergy_states": {
@@ -30637,6 +30622,11 @@
             {
                 "action": "play_card",
                 "trigger": "trigger"
+            },
+            {
+                "action": "buff_power",
+                "trigger": "passive",
+                "target": "self"
             }
         ],
         "synergy_states": {
@@ -30656,7 +30646,7 @@
         "rests_opponent": false,
         "bounces": false,
         "gives_don": false,
-        "power_buff": false,
+        "power_buff": true,
         "heals": false,
         "gains_life": false,
         "attacks_life": false,
@@ -31018,10 +31008,6 @@
             {
                 "action": "gain_double_attack",
                 "trigger": "main"
-            },
-            {
-                "action": "keyword_double_attack",
-                "trigger": "passive"
             }
         ],
         "synergy_states": {
@@ -31164,10 +31150,6 @@
         "effects": [
             {
                 "action": "gain_rush",
-                "trigger": "passive"
-            },
-            {
-                "action": "keyword_rush",
                 "trigger": "passive"
             }
         ],
@@ -33864,10 +33846,6 @@
             {
                 "action": "gain_blocker",
                 "trigger": "passive"
-            },
-            {
-                "action": "keyword_blocker",
-                "trigger": "passive"
             }
         ],
         "synergy_states": {},
@@ -34862,10 +34840,6 @@
             {
                 "action": "gain_blocker",
                 "trigger": "passive"
-            },
-            {
-                "action": "keyword_blocker",
-                "trigger": "passive"
             }
         ],
         "synergy_states": {},
@@ -35523,6 +35497,11 @@
             {
                 "action": "deck_bottom_rest",
                 "trigger": "on_play"
+            },
+            {
+                "action": "buff_power",
+                "trigger": "passive",
+                "target": "self"
             }
         ],
         "synergy_states": {},
@@ -35537,7 +35516,7 @@
         "rests_opponent": false,
         "bounces": false,
         "gives_don": false,
-        "power_buff": false,
+        "power_buff": true,
         "heals": false,
         "gains_life": false,
         "attacks_life": false,
@@ -36682,10 +36661,6 @@
         "effects": [
             {
                 "action": "gain_blocker",
-                "trigger": "passive"
-            },
-            {
-                "action": "keyword_blocker",
                 "trigger": "passive"
             }
         ],
@@ -38590,10 +38565,6 @@
             {
                 "action": "gain_blocker",
                 "trigger": "passive"
-            },
-            {
-                "action": "keyword_blocker",
-                "trigger": "passive"
             }
         ],
         "synergy_states": {},
@@ -39144,6 +39115,11 @@
         "attribute": "Strike",
         "effects": [
             {
+                "action": "buff_power",
+                "trigger": "passive",
+                "target": "self"
+            },
+            {
                 "action": "keyword_blocker",
                 "trigger": "passive"
             }
@@ -39160,7 +39136,7 @@
         "rests_opponent": false,
         "bounces": false,
         "gives_don": false,
-        "power_buff": false,
+        "power_buff": true,
         "heals": false,
         "gains_life": false,
         "attacks_life": false,
@@ -39331,10 +39307,6 @@
         "effects": [
             {
                 "action": "gain_blocker",
-                "trigger": "passive"
-            },
-            {
-                "action": "keyword_blocker",
                 "trigger": "passive"
             }
         ],
@@ -41090,10 +41062,6 @@
             {
                 "action": "gain_blocker",
                 "trigger": "passive"
-            },
-            {
-                "action": "keyword_blocker",
-                "trigger": "passive"
             }
         ],
         "synergy_states": {},
@@ -41717,10 +41685,6 @@
             {
                 "action": "gain_double_attack",
                 "trigger": "on_play"
-            },
-            {
-                "action": "keyword_double_attack",
-                "trigger": "passive"
             }
         ],
         "synergy_states": {},
@@ -42345,6 +42309,11 @@
         "attribute": "Special",
         "effects": [
             {
+                "action": "buff_power",
+                "trigger": "passive",
+                "target": "self"
+            },
+            {
                 "action": "keyword_blocker",
                 "trigger": "passive"
             }
@@ -42361,7 +42330,7 @@
         "rests_opponent": false,
         "bounces": false,
         "gives_don": false,
-        "power_buff": false,
+        "power_buff": true,
         "heals": false,
         "gains_life": false,
         "attacks_life": false,
@@ -42385,10 +42354,6 @@
         "effects": [
             {
                 "action": "gain_blocker",
-                "trigger": "passive"
-            },
-            {
-                "action": "keyword_blocker",
                 "trigger": "passive"
             }
         ],
@@ -42575,10 +42540,6 @@
             {
                 "action": "gain_blocker",
                 "trigger": "passive"
-            },
-            {
-                "action": "keyword_blocker",
-                "trigger": "passive"
             }
         ],
         "synergy_states": {
@@ -42622,10 +42583,6 @@
         "effects": [
             {
                 "action": "gain_blocker",
-                "trigger": "passive"
-            },
-            {
-                "action": "keyword_blocker",
                 "trigger": "passive"
             }
         ],
@@ -44068,6 +44025,11 @@
         "sub_types": "Straw Hat Crew",
         "attribute": "Strike",
         "effects": [
+            {
+                "action": "debuff_cost",
+                "trigger": "passive",
+                "target": "opp_character"
+            },
             {
                 "action": "keyword_blocker",
                 "trigger": "passive"
@@ -45733,10 +45695,6 @@
             {
                 "action": "gain_blocker",
                 "trigger": "trigger"
-            },
-            {
-                "action": "keyword_blocker",
-                "trigger": "passive"
             }
         ],
         "synergy_states": {
@@ -50056,6 +50014,11 @@
             {
                 "action": "draw",
                 "trigger": "activate_main"
+            },
+            {
+                "action": "buff_cost",
+                "trigger": "passive",
+                "target": "self"
             }
         ],
         "synergy_states": {},
@@ -50215,7 +50178,13 @@
         "color": "Black",
         "sub_types": "The Flying Fish Riders",
         "attribute": "Ranged",
-        "effects": [],
+        "effects": [
+            {
+                "action": "buff_cost",
+                "trigger": "on_play",
+                "target": "own_character"
+            }
+        ],
         "synergy_states": {},
         "text": "[On Play] Up to 1 of your Characters gains +1 cost until the end of your opponent's next turn.",
         "is_searcher": false,
@@ -50419,7 +50388,13 @@
         "color": "Black",
         "sub_types": "Animal Kingdom Pirates Drake Pirates Navy",
         "attribute": "Slash",
-        "effects": [],
+        "effects": [
+            {
+                "action": "buff_cost",
+                "trigger": "passive",
+                "target": "self"
+            }
+        ],
         "synergy_states": {},
         "text": "[DON!! x1] This Character gains +2 cost.",
         "is_searcher": false,
@@ -51372,6 +51347,11 @@
             {
                 "action": "play_card",
                 "trigger": "trigger"
+            },
+            {
+                "action": "buff_power",
+                "trigger": "passive",
+                "target": "self"
             }
         ],
         "synergy_states": {
@@ -51391,7 +51371,7 @@
         "rests_opponent": false,
         "bounces": false,
         "gives_don": false,
-        "power_buff": false,
+        "power_buff": true,
         "heals": false,
         "gains_life": false,
         "attacks_life": false,
@@ -51796,6 +51776,11 @@
         "sub_types": "The Four Emperors Red-Haired Pirates",
         "attribute": "Slash",
         "effects": [
+            {
+                "action": "debuff_power",
+                "trigger": "passive",
+                "target": "all_opp_characters"
+            },
             {
                 "action": "keyword_rush",
                 "trigger": "passive"
@@ -54188,6 +54173,11 @@
                 "action": "add_don",
                 "trigger": "your_turn",
                 "don_requirement": 1
+            },
+            {
+                "action": "buff_cost",
+                "trigger": "passive",
+                "target": "own_character"
             }
         ],
         "synergy_states": {},
@@ -54467,10 +54457,6 @@
             {
                 "action": "gain_blocker",
                 "trigger": "end_of_turn"
-            },
-            {
-                "action": "keyword_blocker",
-                "trigger": "passive"
             }
         ],
         "synergy_states": {},
@@ -55146,20 +55132,16 @@
         "attribute": "Special",
         "effects": [
             {
+                "action": "gain_blocker",
+                "trigger": "activate_main"
+            },
+            {
                 "action": "gain_double_attack",
                 "trigger": "activate_main"
             },
             {
-                "action": "keyword_blocker",
-                "trigger": "passive"
-            },
-            {
-                "action": "keyword_double_attack",
-                "trigger": "passive"
-            },
-            {
-                "action": "keyword_banish",
-                "trigger": "passive"
+                "action": "gain_banish",
+                "trigger": "activate_main"
             }
         ],
         "synergy_states": {},
@@ -58542,6 +58524,11 @@
             {
                 "action": "draw",
                 "trigger": "opp_turn"
+            },
+            {
+                "action": "buff_cost",
+                "trigger": "passive",
+                "target": "own_character"
             }
         ],
         "synergy_states": {},
@@ -58987,10 +58974,6 @@
         "effects": [
             {
                 "action": "gain_blocker",
-                "trigger": "passive"
-            },
-            {
-                "action": "keyword_blocker",
                 "trigger": "passive"
             }
         ],
@@ -60694,7 +60677,13 @@
         "color": "Black",
         "sub_types": "Celestial Dragons",
         "attribute": "Wisdom",
-        "effects": [],
+        "effects": [
+            {
+                "action": "buff_cost",
+                "trigger": "activate_main",
+                "target": "own_character"
+            }
+        ],
         "synergy_states": {},
         "text": "[Activate: Main] You may trash this Character: Up to 1 of your black Characters gains +3 cost until the end of your opponent's next turn.",
         "is_searcher": false,
@@ -60963,10 +60952,6 @@
             {
                 "action": "gain_blocker",
                 "trigger": "end_of_turn"
-            },
-            {
-                "action": "keyword_blocker",
-                "trigger": "passive"
             }
         ],
         "synergy_states": {},
@@ -61340,10 +61325,6 @@
             {
                 "action": "gain_blocker",
                 "trigger": "passive"
-            },
-            {
-                "action": "keyword_blocker",
-                "trigger": "passive"
             }
         ],
         "synergy_states": {},
@@ -61577,6 +61558,10 @@
             {
                 "action": "play_card",
                 "trigger": "trigger"
+            },
+            {
+                "action": "gain_rush",
+                "trigger": "passive"
             }
         ],
         "synergy_states": {
@@ -61601,7 +61586,7 @@
         "gains_life": false,
         "attacks_life": false,
         "trashes_own_life": false,
-        "has_rush": false,
+        "has_rush": true,
         "has_double_attack": false,
         "has_unblockable": false,
         "has_banish": false,
@@ -63317,6 +63302,11 @@
             {
                 "action": "rest_opp_character",
                 "trigger": "on_play"
+            },
+            {
+                "action": "play_card",
+                "trigger": "passive",
+                "cost_lte": 4
             }
         ],
         "synergy_states": {
@@ -64044,11 +64034,29 @@
                 "trigger": "on_play",
                 "power_lte": 5000,
                 "target": "opp_character"
+            },
+            {
+                "action": "look_top_deck",
+                "trigger": "passive"
+            },
+            {
+                "action": "add_to_hand",
+                "trigger": "passive",
+                "cost_lte": 5
+            },
+            {
+                "action": "deck_bottom_rest",
+                "trigger": "passive"
+            },
+            {
+                "action": "play_card",
+                "trigger": "passive",
+                "cost_lte": 5
             }
         ],
         "synergy_states": {},
         "text": "When this Character is K.O.'d by your opponent's effect, look at 5 cards from the top of your deck and play up to 1 \"Straw Hat Crew\" type Character card with a cost of 5 or less. Then, place the rest at the bottom of your deck in any order.\n[On Play] Return up to 1 Character with 5000 base power or less to the owner's hand.",
-        "is_searcher": false,
+        "is_searcher": true,
         "draws": false,
         "has_counter_value": false,
         "has_counter_event": false,
@@ -64266,10 +64274,6 @@
         "effects": [
             {
                 "action": "gain_blocker",
-                "trigger": "passive"
-            },
-            {
-                "action": "keyword_blocker",
                 "trigger": "passive"
             }
         ],
@@ -64626,10 +64630,6 @@
         "effects": [
             {
                 "action": "gain_blocker",
-                "trigger": "passive"
-            },
-            {
-                "action": "keyword_blocker",
                 "trigger": "passive"
             }
         ],
@@ -65140,7 +65140,13 @@
         "color": "Purple",
         "sub_types": "Big Mom Pirates Homies",
         "attribute": "Slash",
-        "effects": [],
+        "effects": [
+            {
+                "action": "buff_cost",
+                "trigger": "your_turn",
+                "target": "own_character"
+            }
+        ],
         "synergy_states": {},
         "text": "[Your Turn] [Once Per Turn] When a DON!! card on your field is returned to your DON!! deck, up to 1 of your \"Big Mom Pirates\" type Characters gains +2 cost until the end of your opponent's next turn.",
         "is_searcher": false,
@@ -65890,10 +65896,6 @@
         "effects": [
             {
                 "action": "gain_blocker",
-                "trigger": "passive"
-            },
-            {
-                "action": "keyword_blocker",
                 "trigger": "passive"
             }
         ],
@@ -67352,10 +67354,6 @@
             {
                 "action": "gain_blocker",
                 "trigger": "on_play"
-            },
-            {
-                "action": "keyword_blocker",
-                "trigger": "passive"
             }
         ],
         "synergy_states": {},
@@ -67490,6 +67488,11 @@
             {
                 "action": "give_don",
                 "trigger": "on_play"
+            },
+            {
+                "action": "buff_power",
+                "trigger": "passive",
+                "target": "self"
             }
         ],
         "synergy_states": {},
@@ -67504,7 +67507,7 @@
         "rests_opponent": false,
         "bounces": false,
         "gives_don": true,
-        "power_buff": false,
+        "power_buff": true,
         "heals": false,
         "gains_life": false,
         "attacks_life": false,
@@ -68626,7 +68629,13 @@
         "color": "Blue",
         "sub_types": "Cross Guild",
         "attribute": "Strike",
-        "effects": [],
+        "effects": [
+            {
+                "action": "buff_cost",
+                "trigger": "passive",
+                "target": "self"
+            }
+        ],
         "synergy_states": {},
         "text": "If you have 2 or more Characters with a base cost of 5 or more, this Character gains +1 cost.\n[On Play] Place up to 1 of your opponent's Characters with a base cost of 1 or less at the bottom of the owner's deck.",
         "is_searcher": false,
@@ -68664,6 +68673,11 @@
             {
                 "action": "trash_from_hand",
                 "trigger": "on_play"
+            },
+            {
+                "action": "buff_cost",
+                "trigger": "passive",
+                "target": "self"
             }
         ],
         "synergy_states": {},
@@ -69068,7 +69082,7 @@
                 "trigger": "opp_turn"
             },
             {
-                "action": "keyword_blocker",
+                "action": "substitute_removal",
                 "trigger": "passive"
             }
         ],
@@ -69489,6 +69503,11 @@
         "attribute": "Special",
         "effects": [
             {
+                "action": "buff_power",
+                "trigger": "passive",
+                "target": "self"
+            },
+            {
                 "action": "keyword_blocker",
                 "trigger": "passive"
             }
@@ -69505,7 +69524,7 @@
         "rests_opponent": false,
         "bounces": false,
         "gives_don": false,
-        "power_buff": false,
+        "power_buff": true,
         "heals": false,
         "gains_life": false,
         "attacks_life": false,
@@ -69566,7 +69585,7 @@
                 "trigger": "on_ko"
             },
             {
-                "action": "keyword_blocker",
+                "action": "gain_blocker",
                 "trigger": "passive"
             }
         ],
@@ -69606,10 +69625,6 @@
         "effects": [
             {
                 "action": "gain_blocker",
-                "trigger": "passive"
-            },
-            {
-                "action": "keyword_blocker",
                 "trigger": "passive"
             }
         ],
@@ -70392,7 +70407,13 @@
         "color": "Black",
         "sub_types": "Revolutionary Army",
         "attribute": "Special",
-        "effects": [],
+        "effects": [
+            {
+                "action": "buff_cost",
+                "trigger": "passive",
+                "target": "self"
+            }
+        ],
         "synergy_states": {},
         "text": "If your Leader has the \"Revolutionary Army\" type, this Character gains +3 cost.\n[When Attacking] If your Leader has the \"Revolutionary Army\" type and your opponent has 5 or more cards in their hand, your opponent trashes 1 card from their hand.",
         "is_searcher": false,
@@ -70479,7 +70500,7 @@
                 "trigger": "on_play"
             },
             {
-                "action": "keyword_blocker",
+                "action": "gain_blocker",
                 "trigger": "passive"
             }
         ],
@@ -70558,7 +70579,7 @@
                 "target": "opp_character"
             },
             {
-                "action": "keyword_blocker",
+                "action": "gain_blocker",
                 "trigger": "passive"
             }
         ],
@@ -70703,7 +70724,13 @@
         "color": "Black",
         "sub_types": "Giant Revolutionary Army",
         "attribute": "Special",
-        "effects": [],
+        "effects": [
+            {
+                "action": "buff_cost",
+                "trigger": "passive",
+                "target": "self"
+            }
+        ],
         "synergy_states": {},
         "text": "If your Leader has the \"Revolutionary Army\" type, this Character gains +4 cost.",
         "is_searcher": false,
@@ -70785,6 +70812,11 @@
             {
                 "action": "trash_from_hand",
                 "trigger": "on_play"
+            },
+            {
+                "action": "buff_cost",
+                "trigger": "passive",
+                "target": "self"
             }
         ],
         "synergy_states": {},
@@ -71029,7 +71061,7 @@
                 "trigger": "on_play"
             },
             {
-                "action": "keyword_blocker",
+                "action": "gain_blocker",
                 "trigger": "passive"
             }
         ],
@@ -71318,6 +71350,10 @@
             {
                 "action": "gain_life",
                 "trigger": "opp_turn"
+            },
+            {
+                "action": "gain_rush",
+                "trigger": "passive"
             }
         ],
         "synergy_states": {
@@ -71342,7 +71378,7 @@
         "gains_life": true,
         "attacks_life": false,
         "trashes_own_life": false,
-        "has_rush": false,
+        "has_rush": true,
         "has_double_attack": false,
         "has_unblockable": false,
         "has_banish": false,
@@ -71841,6 +71877,11 @@
         "attribute": "Strike",
         "effects": [
             {
+                "action": "buff_cost",
+                "trigger": "on_play",
+                "target": "self"
+            },
+            {
                 "action": "trash_from_hand",
                 "trigger": "on_play"
             },
@@ -72215,10 +72256,6 @@
         "effects": [
             {
                 "action": "gain_double_attack",
-                "trigger": "passive"
-            },
-            {
-                "action": "keyword_double_attack",
                 "trigger": "passive"
             }
         ],
@@ -73133,7 +73170,7 @@
                 "cost_lte": 5
             },
             {
-                "action": "keyword_blocker",
+                "action": "gain_blocker",
                 "trigger": "passive"
             }
         ],
@@ -74667,6 +74704,11 @@
             {
                 "action": "add_don",
                 "trigger": "on_play"
+            },
+            {
+                "action": "buff_power",
+                "trigger": "passive",
+                "target": "self"
             }
         ],
         "synergy_states": {},
@@ -74681,7 +74723,7 @@
         "rests_opponent": false,
         "bounces": false,
         "gives_don": false,
-        "power_buff": false,
+        "power_buff": true,
         "heals": false,
         "gains_life": false,
         "attacks_life": false,
@@ -75148,6 +75190,10 @@
                 "action": "debuff_power",
                 "trigger": "when_attacking",
                 "target": "opp_character"
+            },
+            {
+                "action": "gain_rush",
+                "trigger": "passive"
             }
         ],
         "synergy_states": {},
@@ -75167,7 +75213,7 @@
         "gains_life": false,
         "attacks_life": false,
         "trashes_own_life": false,
-        "has_rush": false,
+        "has_rush": true,
         "has_double_attack": false,
         "has_unblockable": false,
         "has_banish": false,
@@ -75187,6 +75233,11 @@
             {
                 "action": "give_don",
                 "trigger": "activate_main"
+            },
+            {
+                "action": "buff_cost",
+                "trigger": "passive",
+                "target": "self"
             }
         ],
         "synergy_states": {},
@@ -75519,7 +75570,7 @@
                 "trigger": "on_ko"
             },
             {
-                "action": "keyword_blocker",
+                "action": "gain_blocker",
                 "trigger": "passive"
             }
         ],
@@ -75602,7 +75653,7 @@
                 "trigger": "on_play"
             },
             {
-                "action": "keyword_blocker",
+                "action": "gain_blocker",
                 "trigger": "passive"
             }
         ],
@@ -76267,10 +76318,6 @@
             {
                 "action": "play_card",
                 "trigger": "trigger"
-            },
-            {
-                "action": "keyword_blocker",
-                "trigger": "passive"
             }
         ],
         "synergy_states": {
@@ -76528,10 +76575,6 @@
         "effects": [
             {
                 "action": "gain_blocker",
-                "trigger": "passive"
-            },
-            {
-                "action": "keyword_blocker",
                 "trigger": "passive"
             }
         ],
@@ -76891,6 +76934,10 @@
             {
                 "action": "give_don_opp",
                 "trigger": "on_play"
+            },
+            {
+                "action": "gain_rush",
+                "trigger": "passive"
             }
         ],
         "synergy_states": {},
@@ -76910,7 +76957,7 @@
         "gains_life": false,
         "attacks_life": false,
         "trashes_own_life": false,
-        "has_rush": false,
+        "has_rush": true,
         "has_double_attack": false,
         "has_unblockable": false,
         "has_banish": false,
@@ -76927,6 +76974,11 @@
         "sub_types": "Revolutionary Army Dressrosa",
         "attribute": "Special",
         "effects": [
+            {
+                "action": "buff_cost",
+                "trigger": "activate_main",
+                "target": "own_character"
+            },
             {
                 "action": "give_don",
                 "trigger": "activate_main"
@@ -77767,6 +77819,11 @@
             {
                 "action": "set_don_active",
                 "trigger": "activate_main"
+            },
+            {
+                "action": "buff_power",
+                "trigger": "passive",
+                "target": "self"
             }
         ],
         "synergy_states": {},
@@ -77781,7 +77838,7 @@
         "rests_opponent": false,
         "bounces": false,
         "gives_don": false,
-        "power_buff": false,
+        "power_buff": true,
         "heals": false,
         "gains_life": false,
         "attacks_life": false,
@@ -78861,6 +78918,10 @@
             {
                 "action": "draw",
                 "trigger": "on_ko"
+            },
+            {
+                "action": "gain_rush",
+                "trigger": "passive"
             }
         ],
         "synergy_states": {},
@@ -78880,7 +78941,7 @@
         "gains_life": false,
         "attacks_life": false,
         "trashes_own_life": false,
-        "has_rush": false,
+        "has_rush": true,
         "has_double_attack": false,
         "has_unblockable": false,
         "has_banish": false,
@@ -79034,6 +79095,10 @@
             {
                 "action": "draw",
                 "trigger": "on_play"
+            },
+            {
+                "action": "gain_rush",
+                "trigger": "passive"
             }
         ],
         "synergy_states": {},
@@ -79053,7 +79118,7 @@
         "gains_life": false,
         "attacks_life": false,
         "trashes_own_life": false,
-        "has_rush": false,
+        "has_rush": true,
         "has_double_attack": false,
         "has_unblockable": false,
         "has_banish": false,
@@ -79534,6 +79599,10 @@
                 "action": "debuff_power",
                 "trigger": "when_attacking",
                 "target": "opp_character"
+            },
+            {
+                "action": "substitute_removal",
+                "trigger": "passive"
             }
         ],
         "synergy_states": {},
@@ -80413,7 +80482,13 @@
         "color": "Black",
         "sub_types": "Thriller Bark Pirates",
         "attribute": "Slash",
-        "effects": [],
+        "effects": [
+            {
+                "action": "buff_cost",
+                "trigger": "on_ko",
+                "target": "own_character"
+            }
+        ],
         "synergy_states": {},
         "text": "[On K.O.] All of your {Thriller Bark Pirates} type Characters gain +4 cost until the end of your opponent's next End Phase.",
         "is_searcher": false,
@@ -80575,6 +80650,11 @@
                 "action": "buff_power",
                 "trigger": "passive",
                 "target": "self"
+            },
+            {
+                "action": "buff_cost",
+                "trigger": "passive",
+                "target": "own_character"
             }
         ],
         "synergy_states": {},
@@ -81101,6 +81181,11 @@
                 "action": "buff_power",
                 "trigger": "counter",
                 "target": "leader"
+            },
+            {
+                "action": "buff_cost",
+                "trigger": "main",
+                "target": "own_character"
             }
         ],
         "synergy_states": {},
@@ -82636,10 +82721,6 @@
             {
                 "action": "gain_blocker",
                 "trigger": "opp_turn"
-            },
-            {
-                "action": "keyword_blocker",
-                "trigger": "passive"
             }
         ],
         "synergy_states": {},
@@ -82719,6 +82800,11 @@
         "sub_types": "Animal Alabasta",
         "attribute": "Strike",
         "effects": [
+            {
+                "action": "debuff_cost",
+                "trigger": "passive",
+                "target": "own_character"
+            },
             {
                 "action": "keyword_blocker",
                 "trigger": "passive"
@@ -83065,6 +83151,11 @@
                 "action": "debuff_power",
                 "trigger": "counter",
                 "target": "opp_character"
+            },
+            {
+                "action": "debuff_cost",
+                "trigger": "passive",
+                "target": "own_character"
             }
         ],
         "synergy_states": {},
@@ -83190,10 +83281,6 @@
             {
                 "action": "gain_blocker",
                 "trigger": "opp_turn"
-            },
-            {
-                "action": "keyword_blocker",
-                "trigger": "passive"
             }
         ],
         "synergy_states": {
@@ -84190,10 +84277,6 @@
             {
                 "action": "keyword_blocker",
                 "trigger": "passive"
-            },
-            {
-                "action": "keyword_unblockable",
-                "trigger": "passive"
             }
         ],
         "synergy_states": {},
@@ -84527,10 +84610,6 @@
             {
                 "action": "gain_blocker",
                 "trigger": "main"
-            },
-            {
-                "action": "keyword_blocker",
-                "trigger": "passive"
             }
         ],
         "synergy_states": {},
@@ -84583,10 +84662,6 @@
             {
                 "action": "gain_double_attack",
                 "trigger": "main"
-            },
-            {
-                "action": "keyword_double_attack",
-                "trigger": "passive"
             }
         ],
         "synergy_states": {
@@ -84760,8 +84835,9 @@
                 "trigger": "activate_main"
             },
             {
-                "action": "keyword_blocker",
-                "trigger": "passive"
+                "action": "buff_power",
+                "trigger": "passive",
+                "target": "self"
             }
         ],
         "synergy_states": {},
@@ -84776,7 +84852,7 @@
         "rests_opponent": false,
         "bounces": false,
         "gives_don": false,
-        "power_buff": false,
+        "power_buff": true,
         "heals": false,
         "gains_life": false,
         "attacks_life": false,
@@ -85058,6 +85134,10 @@
             {
                 "action": "draw",
                 "trigger": "on_play"
+            },
+            {
+                "action": "gain_rush",
+                "trigger": "passive"
             }
         ],
         "synergy_states": {},
@@ -85077,7 +85157,7 @@
         "gains_life": false,
         "attacks_life": false,
         "trashes_own_life": false,
-        "has_rush": false,
+        "has_rush": true,
         "has_double_attack": false,
         "has_unblockable": false,
         "has_banish": false,
@@ -85096,10 +85176,6 @@
         "effects": [
             {
                 "action": "gain_blocker",
-                "trigger": "passive"
-            },
-            {
-                "action": "keyword_blocker",
                 "trigger": "passive"
             }
         ],
@@ -85177,7 +85253,7 @@
         "attribute": "Special",
         "effects": [
             {
-                "action": "keyword_unblockable",
+                "action": "gain_unblockable",
                 "trigger": "passive"
             }
         ],
@@ -85216,7 +85292,7 @@
         "attribute": "Strike",
         "effects": [
             {
-                "action": "keyword_double_attack",
+                "action": "gain_double_attack",
                 "trigger": "passive"
             }
         ],
@@ -85346,6 +85422,11 @@
             {
                 "action": "draw",
                 "trigger": "main"
+            },
+            {
+                "action": "buff_cost",
+                "trigger": "main",
+                "target": "own_character"
             }
         ],
         "synergy_states": {},
@@ -85634,7 +85715,13 @@
         "color": "Black",
         "sub_types": "Giant Thriller Bark Pirates",
         "attribute": "Strike",
-        "effects": [],
+        "effects": [
+            {
+                "action": "buff_power",
+                "trigger": "passive",
+                "target": "self"
+            }
+        ],
         "synergy_states": {},
         "text": "If you have [Gecko Moria] with 10000 power or more on your field and there are no other [Oars] cards, this Character gains +7000 power.\n[On K.O.] You may place 3 cards from your trash at the bottom of your deck in any order: Play this Character card from your trash.",
         "is_searcher": false,
@@ -85647,7 +85734,7 @@
         "rests_opponent": false,
         "bounces": false,
         "gives_don": false,
-        "power_buff": false,
+        "power_buff": true,
         "heals": false,
         "gains_life": false,
         "attacks_life": false,
@@ -85913,7 +86000,7 @@
                 "trigger": "on_play"
             },
             {
-                "action": "keyword_blocker",
+                "action": "gain_blocker",
                 "trigger": "passive"
             }
         ],
@@ -85955,6 +86042,11 @@
                 "action": "play_from_trash",
                 "trigger": "on_play",
                 "cost_lte": 2
+            },
+            {
+                "action": "buff_cost",
+                "trigger": "passive",
+                "target": "self"
             }
         ],
         "synergy_states": {},
@@ -86102,6 +86194,11 @@
                 "action": "buff_power",
                 "trigger": "passive",
                 "target": "self"
+            },
+            {
+                "action": "buff_cost",
+                "trigger": "passive",
+                "target": "own_character"
             }
         ],
         "synergy_states": {},
@@ -87254,6 +87351,11 @@
             {
                 "action": "trash_from_hand",
                 "trigger": "on_play"
+            },
+            {
+                "action": "buff_power",
+                "trigger": "passive",
+                "target": "self"
             }
         ],
         "synergy_states": {},
@@ -87268,7 +87370,7 @@
         "rests_opponent": false,
         "bounces": false,
         "gives_don": false,
-        "power_buff": false,
+        "power_buff": true,
         "heals": false,
         "gains_life": false,
         "attacks_life": false,
@@ -87429,10 +87531,6 @@
             {
                 "action": "gain_double_attack",
                 "trigger": "your_turn"
-            },
-            {
-                "action": "keyword_double_attack",
-                "trigger": "passive"
             }
         ],
         "synergy_states": {},
@@ -87503,6 +87601,11 @@
         "sub_types": "Whitebeard Pirates",
         "attribute": "Slash",
         "effects": [
+            {
+                "action": "debuff_cost",
+                "trigger": "passive",
+                "target": "own_character"
+            },
             {
                 "action": "keyword_blocker",
                 "trigger": "passive"
@@ -87988,6 +88091,11 @@
         "attribute": "Strike",
         "effects": [
             {
+                "action": "debuff_power",
+                "trigger": "passive",
+                "target": "opp_character"
+            },
+            {
                 "action": "keyword_blocker",
                 "trigger": "passive"
             }
@@ -88279,6 +88387,10 @@
         "attribute": "Slash",
         "effects": [
             {
+                "action": "rest_opp_character",
+                "trigger": "passive"
+            },
+            {
                 "action": "keyword_blocker",
                 "trigger": "passive"
             }
@@ -88295,9 +88407,9 @@
         "has_counter_value": true,
         "has_counter_event": false,
         "is_blocker": true,
-        "is_removal": false,
+        "is_removal": true,
         "kos": false,
-        "rests_opponent": false,
+        "rests_opponent": true,
         "bounces": false,
         "gives_don": false,
         "power_buff": false,
@@ -88923,10 +89035,6 @@
             {
                 "action": "gain_double_attack",
                 "trigger": "main"
-            },
-            {
-                "action": "keyword_double_attack",
-                "trigger": "passive"
             }
         ],
         "synergy_states": {
@@ -89286,10 +89394,6 @@
             {
                 "action": "gain_blocker",
                 "trigger": "on_play"
-            },
-            {
-                "action": "keyword_blocker",
-                "trigger": "passive"
             }
         ],
         "synergy_states": {},
@@ -90370,10 +90474,6 @@
             {
                 "action": "gain_blocker",
                 "trigger": "end_of_turn"
-            },
-            {
-                "action": "keyword_blocker",
-                "trigger": "passive"
             }
         ],
         "synergy_states": {},
@@ -90664,7 +90764,13 @@
         "color": "Black Yellow",
         "sub_types": "Blackbeard Pirates The Seven Warlords of the Sea",
         "attribute": "Special",
-        "effects": [],
+        "effects": [
+            {
+                "action": "buff_cost",
+                "trigger": "opp_turn",
+                "target": "own_character"
+            }
+        ],
         "synergy_states": {
             "vida_ganha": {
                 "creates": false,
@@ -90755,6 +90861,11 @@
             {
                 "action": "trash_rest",
                 "trigger": "on_play"
+            },
+            {
+                "action": "buff_cost",
+                "trigger": "passive",
+                "target": "self"
             }
         ],
         "synergy_states": {},
@@ -90954,6 +91065,11 @@
             {
                 "action": "draw",
                 "trigger": "on_play"
+            },
+            {
+                "action": "buff_cost",
+                "trigger": "on_play",
+                "target": "own_character"
             }
         ],
         "synergy_states": {},
@@ -91300,10 +91416,6 @@
             {
                 "action": "gain_unblockable",
                 "trigger": "on_play"
-            },
-            {
-                "action": "keyword_unblockable",
-                "trigger": "passive"
             }
         ],
         "synergy_states": {},
@@ -92162,7 +92274,7 @@
                 "trigger": "trigger"
             },
             {
-                "action": "keyword_blocker",
+                "action": "gain_blocker",
                 "trigger": "passive"
             }
         ],
@@ -95721,7 +95833,7 @@
                 "trigger": "on_play"
             },
             {
-                "action": "keyword_blocker",
+                "action": "gain_blocker",
                 "trigger": "passive"
             }
         ],
@@ -95852,6 +95964,10 @@
                 "action": "debuff_power",
                 "trigger": "when_attacking",
                 "target": "opp_character"
+            },
+            {
+                "action": "substitute_removal",
+                "trigger": "passive"
             }
         ],
         "synergy_states": {},
@@ -96134,6 +96250,10 @@
         "attribute": "Special",
         "effects": [
             {
+                "action": "draw",
+                "trigger": "passive"
+            },
+            {
                 "action": "keyword_blocker",
                 "trigger": "passive"
             }
@@ -96141,7 +96261,7 @@
         "synergy_states": {},
         "text": "This effect can be activated when this Character is rested by your opponent's effect. You may trash this Character and draw 2 cards.[Blocker]",
         "is_searcher": false,
-        "draws": false,
+        "draws": true,
         "has_counter_value": true,
         "has_counter_event": false,
         "is_blocker": true,
@@ -96360,6 +96480,11 @@
         "attribute": "Special",
         "effects": [
             {
+                "action": "debuff_cost",
+                "trigger": "passive",
+                "target": "own_character"
+            },
+            {
                 "action": "keyword_blocker",
                 "trigger": "passive"
             }
@@ -96405,7 +96530,7 @@
                 "target": "opp_character"
             },
             {
-                "action": "keyword_blocker",
+                "action": "gain_blocker",
                 "trigger": "passive"
             }
         ],
@@ -99706,6 +99831,11 @@
                 "action": "buff_power",
                 "trigger": "activate_main",
                 "target": "self"
+            },
+            {
+                "action": "buff_power",
+                "trigger": "passive",
+                "target": "self"
             }
         ],
         "synergy_states": {},
@@ -99750,10 +99880,6 @@
             {
                 "action": "gain_double_attack",
                 "trigger": "activate_main"
-            },
-            {
-                "action": "keyword_double_attack",
-                "trigger": "passive"
             }
         ],
         "synergy_states": {
@@ -100163,10 +100289,6 @@
         "effects": [
             {
                 "action": "gain_double_attack",
-                "trigger": "passive"
-            },
-            {
-                "action": "keyword_double_attack",
                 "trigger": "passive"
             }
         ],
@@ -101254,10 +101376,6 @@
             {
                 "action": "play_card",
                 "trigger": "trigger"
-            },
-            {
-                "action": "keyword_double_attack",
-                "trigger": "passive"
             }
         ],
         "synergy_states": {
@@ -105208,6 +105326,11 @@
                 "action": "buff_power",
                 "trigger": "passive",
                 "target": "self"
+            },
+            {
+                "action": "buff_cost",
+                "trigger": "passive",
+                "target": "own_character"
             }
         ],
         "synergy_states": {},
@@ -105326,7 +105449,13 @@
         "color": "Black",
         "sub_types": "Fish-Man The Sun Pirates",
         "attribute": "Strike",
-        "effects": [],
+        "effects": [
+            {
+                "action": "buff_cost",
+                "trigger": "activate_main",
+                "target": "own_character"
+            }
+        ],
         "synergy_states": {},
         "text": "[Activate:Main] [Once Per Turn] Up to 1 of your black \"Straw Hat Crew\" type Characters gains +2 cost until the end of your opponent's next turn.",
         "is_searcher": false,
@@ -105486,6 +105615,11 @@
             {
                 "action": "draw",
                 "trigger": "activate_main"
+            },
+            {
+                "action": "buff_cost",
+                "trigger": "activate_main",
+                "target": "own_character"
             }
         ],
         "synergy_states": {},
@@ -105596,7 +105730,13 @@
         "color": "Black",
         "sub_types": "Bowin Island",
         "attribute": "Wisdom",
-        "effects": [],
+        "effects": [
+            {
+                "action": "buff_cost",
+                "trigger": "activate_main",
+                "target": "own_character"
+            }
+        ],
         "synergy_states": {},
         "text": "[Activate:Main] You may rest this Character: Up to 1 of your black \"Straw Hat Crew\" type Characters gains +2 cost until the end of your opponent's next turn.",
         "is_searcher": false,
@@ -105820,6 +105960,11 @@
             {
                 "action": "draw",
                 "trigger": "main"
+            },
+            {
+                "action": "buff_cost",
+                "trigger": "main",
+                "target": "own_character"
             }
         ],
         "synergy_states": {
@@ -105864,6 +106009,11 @@
             {
                 "action": "draw",
                 "trigger": "on_play"
+            },
+            {
+                "action": "buff_cost",
+                "trigger": "passive",
+                "target": "own_character"
             }
         ],
         "synergy_states": {},
@@ -106861,6 +107011,12 @@
             {
                 "action": "give_don",
                 "trigger": "activate_main"
+            },
+            {
+                "action": "buff_cost",
+                "trigger": "opp_turn",
+                "don_requirement": 1,
+                "target": "self"
             }
         ],
         "synergy_states": {},
@@ -106982,6 +107138,10 @@
             {
                 "action": "play_card",
                 "trigger": "trigger"
+            },
+            {
+                "action": "trash_own_life",
+                "trigger": "passive"
             }
         ],
         "synergy_states": {
@@ -108010,7 +108170,12 @@
         "color": "Blue",
         "sub_types": "Land of Wano Kouzuki Clan Whitebeard Pirates",
         "attribute": "Slash",
-        "effects": [],
+        "effects": [
+            {
+                "action": "substitute_removal",
+                "trigger": "passive"
+            }
+        ],
         "synergy_states": {},
         "text": "If this Character would be removed from the field by your opponent's effect, you may trash 2 cards from your hand instead.\n[Activate: Main] [Once Per Turn] You may rest 3 of your DON!! cards and return 1 of your Characters other than this Character to the owner's hand: Set this Character as active.",
         "is_searcher": false,
@@ -108527,6 +108692,11 @@
         "attribute": "Special",
         "effects": [
             {
+                "action": "debuff_cost",
+                "trigger": "passive",
+                "target": "own_character"
+            },
+            {
                 "action": "keyword_blocker",
                 "trigger": "passive"
             }
@@ -108569,6 +108739,11 @@
                 "action": "buff_power",
                 "trigger": "on_play",
                 "target": "leader"
+            },
+            {
+                "action": "debuff_cost",
+                "trigger": "passive",
+                "target": "opp_character"
             }
         ],
         "synergy_states": {},
@@ -108975,6 +109150,11 @@
             {
                 "action": "trash_from_hand",
                 "trigger": "on_play"
+            },
+            {
+                "action": "buff_cost",
+                "trigger": "passive",
+                "target": "self"
             }
         ],
         "synergy_states": {},
@@ -109017,7 +109197,7 @@
                 "target": "self"
             },
             {
-                "action": "keyword_blocker",
+                "action": "gain_blocker",
                 "trigger": "passive"
             }
         ],
@@ -109139,7 +109319,7 @@
                 "trigger": "on_ko"
             },
             {
-                "action": "keyword_blocker",
+                "action": "gain_blocker",
                 "trigger": "passive"
             }
         ],
@@ -109176,7 +109356,13 @@
         "color": "Purple",
         "sub_types": "Straw Hat Crew",
         "attribute": "Strike",
-        "effects": [],
+        "effects": [
+            {
+                "action": "debuff_cost",
+                "trigger": "passive",
+                "target": "own_character"
+            }
+        ],
         "synergy_states": {},
         "text": "If you have a [San-Gorou] or [Sanji] Character with 7000 base power or more, give this card in your hand -5 cost.\n[On Play] Return all of your [San-Gorou] and [Sanji] Characters to the owner's hand.",
         "is_searcher": false,
@@ -109509,7 +109695,7 @@
                 "trigger": "on_play"
             },
             {
-                "action": "keyword_blocker",
+                "action": "gain_blocker",
                 "trigger": "passive"
             }
         ],
@@ -109919,6 +110105,11 @@
                 "trigger": "trigger",
                 "cost_lte": 3,
                 "target": "opp_character"
+            },
+            {
+                "action": "buff_power",
+                "trigger": "passive",
+                "target": "self"
             }
         ],
         "synergy_states": {
@@ -109938,7 +110129,7 @@
         "rests_opponent": false,
         "bounces": false,
         "gives_don": false,
-        "power_buff": false,
+        "power_buff": true,
         "heals": false,
         "gains_life": false,
         "attacks_life": true,
@@ -110506,10 +110697,6 @@
             {
                 "action": "gain_unblockable",
                 "trigger": "main"
-            },
-            {
-                "action": "keyword_unblockable",
-                "trigger": "passive"
             }
         ],
         "synergy_states": {},
@@ -110605,6 +110792,11 @@
                 "action": "buff_power",
                 "trigger": "opp_turn",
                 "target": "self"
+            },
+            {
+                "action": "debuff_power",
+                "trigger": "passive",
+                "target": "opp_character"
             }
         ],
         "synergy_states": {},
@@ -111014,6 +111206,10 @@
         "sub_types": "Buggy Pirates Impel Down",
         "attribute": "Slash",
         "effects": [
+            {
+                "action": "substitute_removal",
+                "trigger": "passive"
+            },
             {
                 "action": "keyword_blocker",
                 "trigger": "passive"

@@ -701,6 +701,16 @@
             "count": 1
           }
         ]
+      },
+      "passive": {
+        "steps": [
+          {
+            "action": "buff_power",
+            "amount": 1000,
+            "target": "leader",
+            "duration": "this_turn"
+          }
+        ]
       }
     }
   },
@@ -1456,6 +1466,10 @@
       "passive": {
         "steps": [
           {
+            "action": "gain_life",
+            "count": 1
+          },
+          {
             "action": "keyword_blocker"
           }
         ]
@@ -1872,9 +1886,6 @@
         "steps": [
           {
             "action": "gain_blocker"
-          },
-          {
-            "action": "keyword_blocker"
           }
         ]
       }
@@ -2027,13 +2038,6 @@
             "action": "rest_opp_character",
             "count": 1,
             "cost_lte": 4
-          }
-        ]
-      },
-      "passive": {
-        "steps": [
-          {
-            "action": "keyword_double_attack"
           }
         ]
       }
@@ -2440,9 +2444,6 @@
         "steps": [
           {
             "action": "gain_blocker"
-          },
-          {
-            "action": "keyword_blocker"
           }
         ]
       }
@@ -2674,6 +2675,23 @@
         "conditions": {
           "leader_type": "straw hat crew"
         }
+      },
+      "activate_main": {
+        "steps": [
+          {
+            "action": "buff_cost",
+            "amount": 2,
+            "target": "own_character",
+            "count": 1,
+            "filter_type": "straw hat crew",
+            "duration": "until_opp_turn_end"
+          }
+        ],
+        "costs": [
+          {
+            "type": "rest_self"
+          }
+        ]
       }
     }
   },
@@ -2957,6 +2975,16 @@
             "count": 1
           }
         ]
+      },
+      "passive": {
+        "steps": [
+          {
+            "action": "gain_rush"
+          }
+        ],
+        "conditions": {
+          "leader_type": "sky island"
+        }
       }
     }
   },
@@ -3202,7 +3230,18 @@
     "color": "Purple",
     "sub_types": "Straw Hat Crew Water Seven",
     "attribute": "Strike",
-    "effects": {}
+    "effects": {
+      "passive": {
+        "steps": [
+          {
+            "action": "gain_rush"
+          }
+        ],
+        "conditions": {
+          "leader_multicolor": true
+        }
+      }
+    }
   },
   "OP05-006": {
     "name": "Koala - OP05-006",
@@ -3765,13 +3804,6 @@
           {
             "type": "trash_from_hand",
             "count": 1
-          }
-        ]
-      },
-      "passive": {
-        "steps": [
-          {
-            "action": "keyword_blocker"
           }
         ]
       }
@@ -4419,6 +4451,19 @@
             "cost_lte": 6
           }
         ]
+      },
+      "passive": {
+        "steps": [
+          {
+            "action": "buff_cost",
+            "amount": 4,
+            "target": "self",
+            "duration": "permanent"
+          }
+        ],
+        "conditions": {
+          "leader_type": "revolutionary army"
+        }
       }
     }
   },
@@ -4482,9 +4527,12 @@
       "passive": {
         "steps": [
           {
-            "action": "keyword_blocker"
+            "action": "gain_blocker"
           }
-        ]
+        ],
+        "conditions": {
+          "leader_multicolor": true
+        }
       }
     }
   },
@@ -4664,13 +4712,6 @@
         "steps": [
           {
             "action": "gain_double_attack"
-          }
-        ]
-      },
-      "passive": {
-        "steps": [
-          {
-            "action": "keyword_double_attack"
           }
         ]
       }
@@ -5725,13 +5766,6 @@
             "count": 1
           }
         ]
-      },
-      "passive": {
-        "steps": [
-          {
-            "action": "keyword_unblockable"
-          }
-        ]
       }
     }
   },
@@ -6371,6 +6405,18 @@
     "sub_types": "Navy Egghead",
     "attribute": "Strike",
     "effects": {
+      "opp_turn": {
+        "steps": [
+          {
+            "action": "buff_cost",
+            "amount": 2,
+            "target": "own_character",
+            "count": 99,
+            "filter_type": "navy",
+            "duration": "permanent"
+          }
+        ]
+      },
       "passive": {
         "steps": [
           {
@@ -6429,6 +6475,16 @@
           {
             "type": "trash_from_hand",
             "count": 1
+          }
+        ]
+      },
+      "passive": {
+        "steps": [
+          {
+            "action": "buff_power",
+            "amount": 1000,
+            "target": "leader",
+            "duration": "this_turn"
           }
         ]
       }
@@ -6650,9 +6706,6 @@
         "steps": [
           {
             "action": "gain_blocker"
-          },
-          {
-            "action": "keyword_blocker"
           }
         ],
         "costs": [
@@ -6820,9 +6873,14 @@
       "passive": {
         "steps": [
           {
-            "action": "keyword_blocker"
+            "action": "debuff_cost",
+            "amount": 1,
+            "target": "own_character"
           }
-        ]
+        ],
+        "conditions": {
+          "life_lte": 1
+        }
       }
     }
   },
@@ -8322,13 +8380,6 @@
         "steps": [
           {
             "action": "gain_double_attack"
-          }
-        ]
-      },
-      "passive": {
-        "steps": [
-          {
-            "action": "keyword_double_attack"
           }
         ]
       }
@@ -10187,9 +10238,6 @@
         "steps": [
           {
             "action": "gain_blocker"
-          },
-          {
-            "action": "keyword_blocker"
           }
         ],
         "costs": [
@@ -10647,9 +10695,18 @@
       "passive": {
         "steps": [
           {
+            "action": "buff_power",
+            "amount": 2000,
+            "target": "self",
+            "duration": "this_turn"
+          },
+          {
             "action": "keyword_blocker"
           }
-        ]
+        ],
+        "conditions": {
+          "hand_lte": 1
+        }
       }
     }
   },
@@ -10952,13 +11009,6 @@
           {
             "type": "trash_from_hand",
             "count": 2
-          }
-        ]
-      },
-      "passive": {
-        "steps": [
-          {
-            "action": "keyword_double_attack"
           }
         ]
       }
@@ -11297,9 +11347,6 @@
         "steps": [
           {
             "action": "gain_blocker"
-          },
-          {
-            "action": "keyword_blocker"
           }
         ],
         "costs": [
@@ -12828,13 +12875,6 @@
         "conditions": {
           "leader_is": "portgas.d.ace"
         }
-      },
-      "passive": {
-        "steps": [
-          {
-            "action": "keyword_double_attack"
-          }
-        ]
       }
     }
   },
@@ -15130,7 +15170,13 @@
       "passive": {
         "steps": [
           {
-            "action": "keyword_double_attack"
+            "action": "buff_power",
+            "amount": 1000,
+            "target": "self",
+            "duration": "this_turn"
+          },
+          {
+            "action": "gain_double_attack"
           }
         ]
       }
@@ -15687,9 +15733,6 @@
         "steps": [
           {
             "action": "gain_blocker"
-          },
-          {
-            "action": "keyword_blocker"
           }
         ],
         "costs": [
@@ -17062,9 +17105,6 @@
         "steps": [
           {
             "action": "gain_blocker"
-          },
-          {
-            "action": "keyword_blocker"
           }
         ],
         "conditions": {
@@ -17451,9 +17491,6 @@
           },
           {
             "action": "gain_blocker"
-          },
-          {
-            "action": "keyword_blocker"
           }
         ],
         "costs": [
@@ -18069,13 +18106,6 @@
         "conditions": {
           "trash_gte": 15
         }
-      },
-      "passive": {
-        "steps": [
-          {
-            "action": "keyword_double_attack"
-          }
-        ]
       }
     }
   },
@@ -18393,6 +18423,16 @@
             "count": 1
           }
         ]
+      },
+      "passive": {
+        "steps": [
+          {
+            "action": "buff_power",
+            "amount": 1000,
+            "target": "self",
+            "duration": "this_turn"
+          }
+        ]
       }
     }
   },
@@ -18604,13 +18644,6 @@
             "action": "gain_double_attack"
           }
         ]
-      },
-      "passive": {
-        "steps": [
-          {
-            "action": "keyword_double_attack"
-          }
-        ]
       }
     }
   },
@@ -18687,9 +18720,6 @@
         "steps": [
           {
             "action": "gain_rush"
-          },
-          {
-            "action": "keyword_rush"
           }
         ]
       }
@@ -20289,9 +20319,6 @@
         "steps": [
           {
             "action": "gain_blocker"
-          },
-          {
-            "action": "keyword_blocker"
           }
         ],
         "costs": [
@@ -20904,9 +20931,6 @@
         "steps": [
           {
             "action": "gain_blocker"
-          },
-          {
-            "action": "keyword_blocker"
           }
         ],
         "conditions": {
@@ -21326,6 +21350,19 @@
             "action": "deck_bottom_rest"
           }
         ]
+      },
+      "passive": {
+        "steps": [
+          {
+            "action": "buff_power",
+            "amount": 1000,
+            "target": "self",
+            "duration": "this_turn"
+          }
+        ],
+        "conditions": {
+          "life_lte": 2
+        }
       }
     }
   },
@@ -21961,9 +21998,6 @@
         "steps": [
           {
             "action": "gain_blocker"
-          },
-          {
-            "action": "keyword_blocker"
           }
         ],
         "conditions": {
@@ -23065,9 +23099,6 @@
         "steps": [
           {
             "action": "gain_blocker"
-          },
-          {
-            "action": "keyword_blocker"
           }
         ],
         "conditions": {
@@ -23381,6 +23412,12 @@
       "passive": {
         "steps": [
           {
+            "action": "buff_power",
+            "amount": 1000,
+            "target": "self",
+            "duration": "this_turn"
+          },
+          {
             "action": "keyword_blocker"
           }
         ]
@@ -23480,9 +23517,6 @@
         "steps": [
           {
             "action": "gain_blocker"
-          },
-          {
-            "action": "keyword_blocker"
           }
         ],
         "conditions": {
@@ -24523,9 +24557,6 @@
         "steps": [
           {
             "action": "gain_blocker"
-          },
-          {
-            "action": "keyword_blocker"
           }
         ],
         "costs": [
@@ -24897,13 +24928,6 @@
         "steps": [
           {
             "action": "gain_double_attack"
-          }
-        ]
-      },
-      "passive": {
-        "steps": [
-          {
-            "action": "keyword_double_attack"
           }
         ]
       }
@@ -25291,6 +25315,12 @@
       "passive": {
         "steps": [
           {
+            "action": "buff_power",
+            "amount": 1000,
+            "target": "self",
+            "duration": "this_turn"
+          },
+          {
             "action": "keyword_blocker"
           }
         ]
@@ -25312,9 +25342,6 @@
         "steps": [
           {
             "action": "gain_blocker"
-          },
-          {
-            "action": "keyword_blocker"
           }
         ],
         "costs": [
@@ -25396,9 +25423,6 @@
         "steps": [
           {
             "action": "gain_blocker"
-          },
-          {
-            "action": "keyword_blocker"
           }
         ],
         "conditions": {
@@ -25428,9 +25452,6 @@
         "steps": [
           {
             "action": "gain_blocker"
-          },
-          {
-            "action": "keyword_blocker"
           }
         ],
         "costs": [
@@ -26276,6 +26297,11 @@
     "effects": {
       "passive": {
         "steps": [
+          {
+            "action": "debuff_cost",
+            "amount": 3,
+            "target": "opp_character"
+          },
           {
             "action": "keyword_blocker"
           }
@@ -27264,13 +27290,6 @@
         "steps": [
           {
             "action": "gain_blocker"
-          }
-        ]
-      },
-      "passive": {
-        "steps": [
-          {
-            "action": "keyword_blocker"
           }
         ]
       }
@@ -29772,6 +29791,16 @@
             "type": "rest_self"
           }
         ]
+      },
+      "passive": {
+        "steps": [
+          {
+            "action": "buff_cost",
+            "amount": 4,
+            "target": "self",
+            "duration": "permanent"
+          }
+        ]
       }
     }
   },
@@ -29858,7 +29887,19 @@
     "color": "Black",
     "sub_types": "The Flying Fish Riders",
     "attribute": "Ranged",
-    "effects": {}
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "buff_cost",
+            "amount": 1,
+            "target": "own_character",
+            "count": 1,
+            "duration": "until_opp_turn_end"
+          }
+        ]
+      }
+    }
   },
   "OP08-089": {
     "name": "Basil Hawkins",
@@ -29971,7 +30012,18 @@
     "color": "Black",
     "sub_types": "Animal Kingdom Pirates Drake Pirates Navy",
     "attribute": "Slash",
-    "effects": {}
+    "effects": {
+      "passive": {
+        "steps": [
+          {
+            "action": "buff_cost",
+            "amount": 2,
+            "target": "self",
+            "duration": "permanent"
+          }
+        ]
+      }
+    }
   },
   "OP08-094": {
     "name": "Imperial Flame",
@@ -30592,6 +30644,16 @@
             "count": 1
           }
         ]
+      },
+      "passive": {
+        "steps": [
+          {
+            "action": "buff_power",
+            "amount": 2000,
+            "target": "self",
+            "duration": "this_turn"
+          }
+        ]
       }
     }
   },
@@ -30852,6 +30914,12 @@
     "effects": {
       "passive": {
         "steps": [
+          {
+            "action": "debuff_power",
+            "amount": 1000,
+            "target": "all_opp_characters",
+            "duration": "this_turn"
+          },
           {
             "action": "keyword_rush"
           }
@@ -32235,6 +32303,17 @@
         ],
         "once_per_turn": true,
         "don_requirement": 1
+      },
+      "passive": {
+        "steps": [
+          {
+            "action": "buff_cost",
+            "amount": 1,
+            "target": "own_character",
+            "count": 99,
+            "duration": "permanent"
+          }
+        ]
       }
     }
   },
@@ -32371,13 +32450,6 @@
         "steps": [
           {
             "action": "gain_blocker"
-          }
-        ]
-      },
-      "passive": {
-        "steps": [
-          {
-            "action": "keyword_blocker"
           }
         ]
       }
@@ -32794,26 +32866,19 @@
       "activate_main": {
         "steps": [
           {
+            "action": "gain_blocker"
+          },
+          {
             "action": "gain_double_attack"
+          },
+          {
+            "action": "gain_banish"
           }
         ],
         "conditions": {
           "leader_type": "blackbeard pirates"
         },
         "once_per_turn": true
-      },
-      "passive": {
-        "steps": [
-          {
-            "action": "keyword_blocker"
-          },
-          {
-            "action": "keyword_double_attack"
-          },
-          {
-            "action": "keyword_banish"
-          }
-        ]
       }
     }
   },
@@ -34870,6 +34935,18 @@
           "hand_lte": 5
         },
         "once_per_turn": true
+      },
+      "passive": {
+        "steps": [
+          {
+            "action": "buff_cost",
+            "amount": 1,
+            "target": "own_character",
+            "count": 99,
+            "filter_type": "dressrosa",
+            "duration": "permanent"
+          }
+        ]
       }
     }
   },
@@ -35112,9 +35189,6 @@
         "steps": [
           {
             "action": "gain_blocker"
-          },
-          {
-            "action": "keyword_blocker"
           }
         ]
       }
@@ -36174,7 +36248,25 @@
     "color": "Black",
     "sub_types": "Celestial Dragons",
     "attribute": "Wisdom",
-    "effects": {}
+    "effects": {
+      "activate_main": {
+        "steps": [
+          {
+            "action": "buff_cost",
+            "amount": 3,
+            "target": "own_character",
+            "count": 1,
+            "color": "black",
+            "duration": "until_opp_turn_end"
+          }
+        ],
+        "costs": [
+          {
+            "type": "trash_self"
+          }
+        ]
+      }
+    }
   },
   "OP10-094": {
     "name": "Ryuma",
@@ -36331,13 +36423,6 @@
         "steps": [
           {
             "action": "gain_blocker"
-          }
-        ]
-      },
-      "passive": {
-        "steps": [
-          {
-            "action": "keyword_blocker"
           }
         ]
       }
@@ -36533,9 +36618,6 @@
         "steps": [
           {
             "action": "gain_blocker"
-          },
-          {
-            "action": "keyword_blocker"
           }
         ]
       }
@@ -36701,6 +36783,13 @@
           {
             "type": "trash_from_hand",
             "count": 1
+          }
+        ]
+      },
+      "passive": {
+        "steps": [
+          {
+            "action": "gain_rush"
           }
         ]
       }
@@ -37704,6 +37793,21 @@
             "count": 1
           }
         ]
+      },
+      "passive": {
+        "steps": [
+          {
+            "action": "play_card",
+            "count": 1,
+            "cost_lte": 4
+          }
+        ],
+        "costs": [
+          {
+            "type": "rest_don",
+            "count": 1
+          }
+        ]
       }
     }
   },
@@ -38175,6 +38279,27 @@
             "power_lte": 5000
           }
         ]
+      },
+      "passive": {
+        "steps": [
+          {
+            "action": "look_top_deck",
+            "count": 5
+          },
+          {
+            "action": "add_to_hand",
+            "count": 1,
+            "cost_lte": 5
+          },
+          {
+            "action": "deck_bottom_rest"
+          },
+          {
+            "action": "play_card",
+            "count": 1,
+            "cost_lte": 5
+          }
+        ]
       }
     }
   },
@@ -38280,9 +38405,6 @@
         "steps": [
           {
             "action": "gain_blocker"
-          },
-          {
-            "action": "keyword_blocker"
           }
         ],
         "conditions": {
@@ -38496,9 +38618,6 @@
         "steps": [
           {
             "action": "gain_blocker"
-          },
-          {
-            "action": "keyword_blocker"
           }
         ],
         "costs": [
@@ -38826,7 +38945,21 @@
     "color": "Purple",
     "sub_types": "Big Mom Pirates Homies",
     "attribute": "Slash",
-    "effects": {}
+    "effects": {
+      "your_turn": {
+        "steps": [
+          {
+            "action": "buff_cost",
+            "amount": 2,
+            "target": "own_character",
+            "count": 1,
+            "filter_type": "big mom pirates",
+            "duration": "until_opp_turn_end"
+          }
+        ],
+        "once_per_turn": true
+      }
+    }
   },
   "OP11-078": {
     "name": "Decuplets",
@@ -39230,9 +39363,6 @@
         "steps": [
           {
             "action": "gain_blocker"
-          },
-          {
-            "action": "keyword_blocker"
           }
         ],
         "costs": [
@@ -40086,13 +40216,6 @@
             "action": "gain_blocker"
           }
         ]
-      },
-      "passive": {
-        "steps": [
-          {
-            "action": "keyword_blocker"
-          }
-        ]
       }
     }
   },
@@ -40185,6 +40308,16 @@
           {
             "action": "give_don",
             "count": 1
+          }
+        ]
+      },
+      "passive": {
+        "steps": [
+          {
+            "action": "buff_power",
+            "amount": 2000,
+            "target": "self",
+            "duration": "this_turn"
           }
         ]
       }
@@ -40820,7 +40953,21 @@
     "color": "Blue",
     "sub_types": "Cross Guild",
     "attribute": "Strike",
-    "effects": {}
+    "effects": {
+      "passive": {
+        "steps": [
+          {
+            "action": "buff_cost",
+            "amount": 1,
+            "target": "self",
+            "duration": "permanent"
+          }
+        ],
+        "conditions": {
+          "chars_gte": 2
+        }
+      }
+    }
   },
   "OP12-043": {
     "name": "Kuzan (043)",
@@ -40844,6 +40991,16 @@
           {
             "type": "trash_from_hand",
             "count": 1
+          }
+        ]
+      },
+      "passive": {
+        "steps": [
+          {
+            "action": "buff_cost",
+            "amount": 1,
+            "target": "self",
+            "duration": "permanent"
           }
         ]
       }
@@ -41098,9 +41255,14 @@
       "passive": {
         "steps": [
           {
-            "action": "keyword_blocker"
+            "action": "substitute_removal",
+            "cost": {
+              "action": "trash_from_hand",
+              "count": 1
+            }
           }
-        ]
+        ],
+        "once_per_turn": true
       }
     }
   },
@@ -41358,6 +41520,12 @@
       "passive": {
         "steps": [
           {
+            "action": "buff_power",
+            "amount": 2000,
+            "target": "self",
+            "duration": "this_turn"
+          },
+          {
             "action": "keyword_blocker"
           }
         ]
@@ -41398,7 +41566,7 @@
       "passive": {
         "steps": [
           {
-            "action": "keyword_blocker"
+            "action": "gain_blocker"
           }
         ]
       }
@@ -41419,9 +41587,6 @@
         "steps": [
           {
             "action": "gain_blocker"
-          },
-          {
-            "action": "keyword_blocker"
           }
         ],
         "costs": [
@@ -41872,7 +42037,21 @@
     "color": "Black",
     "sub_types": "Revolutionary Army",
     "attribute": "Special",
-    "effects": {}
+    "effects": {
+      "passive": {
+        "steps": [
+          {
+            "action": "buff_cost",
+            "amount": 3,
+            "target": "self",
+            "duration": "permanent"
+          }
+        ],
+        "conditions": {
+          "leader_type": "revolutionary army"
+        }
+      }
+    }
   },
   "OP12-086": {
     "name": "Koala (086)",
@@ -41937,9 +42116,12 @@
       "passive": {
         "steps": [
           {
-            "action": "keyword_blocker"
+            "action": "gain_blocker"
           }
-        ]
+        ],
+        "conditions": {
+          "leader_is": "koala"
+        }
       }
     }
   },
@@ -41982,9 +42164,12 @@
       "passive": {
         "steps": [
           {
-            "action": "keyword_blocker"
+            "action": "gain_blocker"
           }
-        ]
+        ],
+        "conditions": {
+          "leader_type": "revolutionary army"
+        }
       }
     }
   },
@@ -42046,7 +42231,21 @@
     "color": "Black",
     "sub_types": "Giant Revolutionary Army",
     "attribute": "Special",
-    "effects": {}
+    "effects": {
+      "passive": {
+        "steps": [
+          {
+            "action": "buff_cost",
+            "amount": 4,
+            "target": "self",
+            "duration": "permanent"
+          }
+        ],
+        "conditions": {
+          "leader_type": "revolutionary army"
+        }
+      }
+    }
   },
   "OP12-094": {
     "name": "Monkey.D.Dragon",
@@ -42096,6 +42295,19 @@
             "count": 1
           }
         ]
+      },
+      "passive": {
+        "steps": [
+          {
+            "action": "buff_cost",
+            "amount": 4,
+            "target": "self",
+            "duration": "permanent"
+          }
+        ],
+        "conditions": {
+          "leader_type": "revolutionary army"
+        }
       }
     }
   },
@@ -42259,9 +42471,12 @@
       "passive": {
         "steps": [
           {
-            "action": "keyword_blocker"
+            "action": "gain_blocker"
           }
-        ]
+        ],
+        "conditions": {
+          "life_lte": 3
+        }
       }
     }
   },
@@ -42430,6 +42645,16 @@
             "count": 1
           }
         ]
+      },
+      "passive": {
+        "steps": [
+          {
+            "action": "gain_rush"
+          }
+        ],
+        "conditions": {
+          "life_lte": 2
+        }
       }
     }
   },
@@ -42720,6 +42945,12 @@
       "on_play": {
         "steps": [
           {
+            "action": "buff_cost",
+            "amount": 2,
+            "target": "self",
+            "duration": "until_opp_turn_end"
+          },
+          {
             "action": "trash_from_hand",
             "count": 1
           }
@@ -42959,9 +43190,6 @@
         "steps": [
           {
             "action": "gain_double_attack"
-          },
-          {
-            "action": "keyword_double_attack"
           }
         ]
       }
@@ -43505,9 +43733,12 @@
       "passive": {
         "steps": [
           {
-            "action": "keyword_blocker"
+            "action": "gain_blocker"
           }
-        ]
+        ],
+        "conditions": {
+          "life_lte": 1
+        }
       }
     }
   },
@@ -44367,6 +44598,20 @@
             "count": 1
           }
         ]
+      },
+      "passive": {
+        "steps": [
+          {
+            "action": "buff_power",
+            "amount": 2000,
+            "target": "self",
+            "duration": "this_turn"
+          }
+        ],
+        "conditions": {
+          "don_gte": 8,
+          "don_on_field_gte": 8
+        }
       }
     }
   },
@@ -44690,6 +44935,16 @@
         "conditions": {
           "trash_gte": 10
         }
+      },
+      "passive": {
+        "steps": [
+          {
+            "action": "gain_rush"
+          }
+        ],
+        "conditions": {
+          "trash_gte": 7
+        }
       }
     }
   },
@@ -44712,6 +44967,19 @@
           }
         ],
         "once_per_turn": true
+      },
+      "passive": {
+        "steps": [
+          {
+            "action": "buff_cost",
+            "amount": 3,
+            "target": "self",
+            "duration": "permanent"
+          }
+        ],
+        "conditions": {
+          "leader_type": "revolutionary army"
+        }
       }
     }
   },
@@ -44912,9 +45180,12 @@
       "passive": {
         "steps": [
           {
-            "action": "keyword_blocker"
+            "action": "gain_blocker"
           }
-        ]
+        ],
+        "conditions": {
+          "trash_gte": 7
+        }
       }
     }
   },
@@ -44964,9 +45235,12 @@
       "passive": {
         "steps": [
           {
-            "action": "keyword_blocker"
+            "action": "gain_blocker"
           }
-        ]
+        ],
+        "conditions": {
+          "trash_gte": 7
+        }
       }
     }
   },
@@ -45400,13 +45674,6 @@
             "source": "self"
           }
         ]
-      },
-      "passive": {
-        "steps": [
-          {
-            "action": "keyword_blocker"
-          }
-        ]
       }
     }
   },
@@ -45538,9 +45805,6 @@
         "steps": [
           {
             "action": "gain_blocker"
-          },
-          {
-            "action": "keyword_blocker"
           }
         ],
         "costs": [
@@ -45795,6 +46059,16 @@
             "count": 1
           }
         ]
+      },
+      "passive": {
+        "steps": [
+          {
+            "action": "gain_rush"
+          }
+        ],
+        "conditions": {
+          "life_lte": 3
+        }
       }
     }
   },
@@ -45811,6 +46085,13 @@
     "effects": {
       "activate_main": {
         "steps": [
+          {
+            "action": "buff_cost",
+            "amount": 2,
+            "target": "own_character",
+            "count": 1,
+            "duration": "until_opp_turn_end"
+          },
           {
             "action": "give_don",
             "count": 1
@@ -46316,6 +46597,16 @@
           }
         ],
         "once_per_turn": true
+      },
+      "passive": {
+        "steps": [
+          {
+            "action": "buff_power",
+            "amount": 1000,
+            "target": "self",
+            "duration": "this_turn"
+          }
+        ]
       }
     }
   },
@@ -46945,6 +47236,13 @@
             "count": 1
           }
         ]
+      },
+      "passive": {
+        "steps": [
+          {
+            "action": "gain_rush"
+          }
+        ]
       }
     }
   },
@@ -47059,6 +47357,13 @@
           {
             "type": "rest_don",
             "count": 2
+          }
+        ]
+      },
+      "passive": {
+        "steps": [
+          {
+            "action": "gain_rush"
           }
         ]
       }
@@ -47361,6 +47666,18 @@
             "amount": 2000,
             "target": "opp_character",
             "duration": "this_turn"
+          }
+        ],
+        "once_per_turn": true
+      },
+      "passive": {
+        "steps": [
+          {
+            "action": "substitute_removal",
+            "cost": {
+              "action": "return_own_don",
+              "count": 1
+            }
           }
         ],
         "once_per_turn": true
@@ -47904,7 +48221,20 @@
     "color": "Black",
     "sub_types": "Thriller Bark Pirates",
     "attribute": "Slash",
-    "effects": {}
+    "effects": {
+      "on_ko": {
+        "steps": [
+          {
+            "action": "buff_cost",
+            "amount": 4,
+            "target": "own_character",
+            "count": 99,
+            "filter_type": "thriller bark pirates",
+            "duration": "until_opp_turn_end"
+          }
+        ]
+      }
+    }
   },
   "OP14-083": {
     "name": "Ms. Wednesday",
@@ -48003,6 +48333,13 @@
             "amount": 1000,
             "target": "self",
             "duration": "this_turn"
+          },
+          {
+            "action": "buff_cost",
+            "amount": 2,
+            "target": "own_character",
+            "count": 99,
+            "duration": "permanent"
           }
         ],
         "conditions": {
@@ -48330,6 +48667,17 @@
             "amount": 3000,
             "target": "leader",
             "duration": "battle_only"
+          }
+        ]
+      },
+      "main": {
+        "steps": [
+          {
+            "action": "buff_cost",
+            "amount": 3,
+            "target": "own_character",
+            "count": 99,
+            "duration": "until_opp_turn_end"
           }
         ]
       }
@@ -49313,13 +49661,6 @@
         "conditions": {
           "leader_type": "east blue"
         }
-      },
-      "passive": {
-        "steps": [
-          {
-            "action": "keyword_blocker"
-          }
-        ]
       }
     }
   },
@@ -49365,6 +49706,11 @@
     "effects": {
       "passive": {
         "steps": [
+          {
+            "action": "debuff_cost",
+            "amount": 2,
+            "target": "own_character"
+          },
           {
             "action": "keyword_blocker"
           }
@@ -49566,6 +49912,15 @@
             "duration": "this_turn"
           }
         ]
+      },
+      "passive": {
+        "steps": [
+          {
+            "action": "debuff_cost",
+            "amount": 3,
+            "target": "own_character"
+          }
+        ]
       }
     }
   },
@@ -49635,13 +49990,6 @@
         "steps": [
           {
             "action": "gain_blocker"
-          }
-        ]
-      },
-      "passive": {
-        "steps": [
-          {
-            "action": "keyword_blocker"
           }
         ]
       }
@@ -50196,9 +50544,6 @@
         "steps": [
           {
             "action": "keyword_blocker"
-          },
-          {
-            "action": "keyword_unblockable"
           }
         ]
       }
@@ -50404,13 +50749,6 @@
             "action": "gain_blocker"
           }
         ]
-      },
-      "passive": {
-        "steps": [
-          {
-            "action": "keyword_blocker"
-          }
-        ]
       }
     }
   },
@@ -50447,13 +50785,6 @@
           },
           {
             "action": "gain_double_attack"
-          }
-        ]
-      },
-      "passive": {
-        "steps": [
-          {
-            "action": "keyword_double_attack"
           }
         ]
       }
@@ -50569,7 +50900,10 @@
       "passive": {
         "steps": [
           {
-            "action": "keyword_blocker"
+            "action": "buff_power",
+            "amount": 2000,
+            "target": "self",
+            "duration": "this_turn"
           }
         ]
       }
@@ -50750,6 +51084,13 @@
             "count": 1
           }
         ]
+      },
+      "passive": {
+        "steps": [
+          {
+            "action": "gain_rush"
+          }
+        ]
       }
     }
   },
@@ -50768,9 +51109,6 @@
         "steps": [
           {
             "action": "gain_blocker"
-          },
-          {
-            "action": "keyword_blocker"
           }
         ],
         "costs": [
@@ -50819,7 +51157,7 @@
       "passive": {
         "steps": [
           {
-            "action": "keyword_unblockable"
+            "action": "gain_unblockable"
           }
         ]
       }
@@ -50839,7 +51177,7 @@
       "passive": {
         "steps": [
           {
-            "action": "keyword_double_attack"
+            "action": "gain_double_attack"
           }
         ]
       }
@@ -50928,6 +51266,13 @@
           {
             "action": "draw",
             "count": 1
+          },
+          {
+            "action": "buff_cost",
+            "amount": 2,
+            "target": "own_character",
+            "count": 1,
+            "duration": "until_opp_turn_end"
           }
         ],
         "conditions": {
@@ -51119,7 +51464,18 @@
     "color": "Black",
     "sub_types": "Giant Thriller Bark Pirates",
     "attribute": "Strike",
-    "effects": {}
+    "effects": {
+      "passive": {
+        "steps": [
+          {
+            "action": "buff_power",
+            "amount": 7000,
+            "target": "self",
+            "duration": "this_turn"
+          }
+        ]
+      }
+    }
   },
   "OP15-081": {
     "name": "Sanji (OP15-081)",
@@ -51294,9 +51650,12 @@
       "passive": {
         "steps": [
           {
-            "action": "keyword_blocker"
+            "action": "gain_blocker"
           }
-        ]
+        ],
+        "conditions": {
+          "trash_gte": 10
+        }
       }
     }
   },
@@ -51324,6 +51683,16 @@
           {
             "type": "trash_from_hand",
             "count": 3
+          }
+        ]
+      },
+      "passive": {
+        "steps": [
+          {
+            "action": "buff_cost",
+            "amount": 6,
+            "target": "self",
+            "duration": "permanent"
           }
         ]
       }
@@ -51395,6 +51764,12 @@
             "amount": 1000,
             "target": "self",
             "duration": "this_turn"
+          },
+          {
+            "action": "buff_cost",
+            "amount": 10,
+            "target": "own_character",
+            "duration": "permanent"
           }
         ]
       }
@@ -52112,6 +52487,16 @@
             "count": 1
           }
         ]
+      },
+      "passive": {
+        "steps": [
+          {
+            "action": "buff_power",
+            "amount": 2000,
+            "target": "self",
+            "duration": "this_turn"
+          }
+        ]
       }
     }
   },
@@ -52223,13 +52608,6 @@
             "action": "gain_double_attack"
           }
         ]
-      },
-      "passive": {
-        "steps": [
-          {
-            "action": "keyword_double_attack"
-          }
-        ]
       }
     }
   },
@@ -52259,9 +52637,17 @@
       "passive": {
         "steps": [
           {
+            "action": "debuff_cost",
+            "amount": 3,
+            "target": "own_character"
+          },
+          {
             "action": "keyword_blocker"
           }
-        ]
+        ],
+        "conditions": {
+          "other_char_power_gte": 8000
+        }
       }
     }
   },
@@ -52549,6 +52935,12 @@
       "passive": {
         "steps": [
           {
+            "action": "debuff_power",
+            "amount": 4000,
+            "target": "opp_character",
+            "duration": "this_turn"
+          },
+          {
             "action": "keyword_blocker"
           }
         ]
@@ -52727,6 +53119,10 @@
     "effects": {
       "passive": {
         "steps": [
+          {
+            "action": "rest_opp_character",
+            "count": 1
+          },
           {
             "action": "keyword_blocker"
           }
@@ -53078,13 +53474,6 @@
         "conditions": {
           "leader_type": "impel down"
         }
-      },
-      "passive": {
-        "steps": [
-          {
-            "action": "keyword_double_attack"
-          }
-        ]
       }
     }
   },
@@ -53260,13 +53649,6 @@
           "leader_type": "impel down"
         },
         "once_per_turn": true
-      },
-      "passive": {
-        "steps": [
-          {
-            "action": "keyword_blocker"
-          }
-        ]
       }
     }
   },
@@ -54002,13 +54384,6 @@
             "optional": false
           }
         ]
-      },
-      "passive": {
-        "steps": [
-          {
-            "action": "keyword_blocker"
-          }
-        ]
       }
     }
   },
@@ -54187,7 +54562,27 @@
     "color": "Black Yellow",
     "sub_types": "Blackbeard Pirates The Seven Warlords of the Sea",
     "attribute": "Special",
-    "effects": {}
+    "effects": {
+      "opp_turn": {
+        "steps": [
+          {
+            "action": "buff_cost",
+            "amount": 1,
+            "target": "own_character",
+            "count": 99,
+            "filter_type": "blackbeard pirates",
+            "duration": "permanent"
+          }
+        ],
+        "costs": [
+          {
+            "type": "trash_from_hand",
+            "count": 1
+          }
+        ],
+        "once_per_turn": true
+      }
+    }
   },
   "OP16-081": {
     "name": "Otama",
@@ -54248,6 +54643,16 @@
         "conditions": {
           "leader_type": "land of wano"
         }
+      },
+      "passive": {
+        "steps": [
+          {
+            "action": "buff_cost",
+            "amount": 3,
+            "target": "self",
+            "duration": "permanent"
+          }
+        ]
       }
     }
   },
@@ -54376,6 +54781,14 @@
           {
             "action": "draw",
             "count": 1
+          },
+          {
+            "action": "buff_cost",
+            "amount": 20,
+            "target": "own_character",
+            "count": 1,
+            "filter_type": "land of wano",
+            "duration": "permanent"
           }
         ],
         "conditions": {
@@ -54602,13 +55015,6 @@
         "steps": [
           {
             "action": "gain_unblockable"
-          }
-        ]
-      },
-      "passive": {
-        "steps": [
-          {
-            "action": "keyword_unblockable"
           }
         ]
       }
@@ -55190,9 +55596,12 @@
       "passive": {
         "steps": [
           {
-            "action": "keyword_blocker"
+            "action": "gain_blocker"
           }
-        ]
+        ],
+        "conditions": {
+          "life_lte": 2
+        }
       }
     }
   },
@@ -57109,9 +57518,12 @@
       "passive": {
         "steps": [
           {
-            "action": "keyword_blocker"
+            "action": "gain_blocker"
           }
-        ]
+        ],
+        "conditions": {
+          "leader_type": "revolutionary army"
+        }
       }
     }
   },
@@ -57197,6 +57609,18 @@
             "amount": 2000,
             "target": "opp_character",
             "duration": "this_turn"
+          }
+        ],
+        "once_per_turn": true
+      },
+      "passive": {
+        "steps": [
+          {
+            "action": "substitute_removal",
+            "cost": {
+              "action": "debuff_power_self",
+              "amount": 2000
+            }
           }
         ],
         "once_per_turn": true
@@ -57363,7 +57787,16 @@
       "passive": {
         "steps": [
           {
+            "action": "draw",
+            "count": 2
+          },
+          {
             "action": "keyword_blocker"
+          }
+        ],
+        "costs": [
+          {
+            "type": "trash_self"
           }
         ]
       }
@@ -57521,9 +57954,17 @@
       "passive": {
         "steps": [
           {
+            "action": "debuff_cost",
+            "amount": 3,
+            "target": "own_character"
+          },
+          {
             "action": "keyword_blocker"
           }
-        ]
+        ],
+        "conditions": {
+          "trash_gte": 15
+        }
       }
     }
   },
@@ -57554,9 +57995,12 @@
       "passive": {
         "steps": [
           {
-            "action": "keyword_blocker"
+            "action": "gain_blocker"
           }
-        ]
+        ],
+        "conditions": {
+          "leader_type": "blackbeard pirates"
+        }
       }
     }
   },
@@ -59371,6 +59815,16 @@
           }
         ],
         "once_per_turn": true
+      },
+      "passive": {
+        "steps": [
+          {
+            "action": "buff_power",
+            "amount": 3000,
+            "target": "self",
+            "duration": "this_turn"
+          }
+        ]
       }
     }
   },
@@ -59404,13 +59858,6 @@
           }
         ],
         "once_per_turn": true
-      },
-      "passive": {
-        "steps": [
-          {
-            "action": "keyword_double_attack"
-          }
-        ]
       }
     }
   },
@@ -59641,9 +60088,6 @@
         "steps": [
           {
             "action": "gain_double_attack"
-          },
-          {
-            "action": "keyword_double_attack"
           }
         ]
       }
@@ -60263,13 +60707,6 @@
             "action": "play_card",
             "count": 1,
             "source": "self"
-          }
-        ]
-      },
-      "passive": {
-        "steps": [
-          {
-            "action": "keyword_double_attack"
           }
         ]
       }
@@ -62500,6 +62937,13 @@
             "amount": 1000,
             "target": "self",
             "duration": "this_turn"
+          },
+          {
+            "action": "buff_cost",
+            "amount": 1,
+            "target": "own_character",
+            "count": 99,
+            "duration": "permanent"
           }
         ],
         "conditions": {
@@ -62571,7 +63015,21 @@
     "color": "Black",
     "sub_types": "Fish-Man The Sun Pirates",
     "attribute": "Strike",
-    "effects": {}
+    "effects": {
+      "activate_main": {
+        "steps": [
+          {
+            "action": "buff_cost",
+            "amount": 2,
+            "target": "own_character",
+            "count": 1,
+            "filter_type": "straw hat crew",
+            "duration": "until_opp_turn_end"
+          }
+        ],
+        "once_per_turn": true
+      }
+    }
   },
   "ST14-005": {
     "name": "Tony Tony.Chopper",
@@ -62670,6 +63128,14 @@
             "action": "draw",
             "count": 1,
             "then_trash": 1
+          },
+          {
+            "action": "buff_cost",
+            "amount": 2,
+            "target": "own_character",
+            "count": 1,
+            "filter_type": "straw hat crew",
+            "duration": "until_opp_turn_end"
           }
         ],
         "conditions": {
@@ -62732,7 +63198,25 @@
     "color": "Black",
     "sub_types": "Bowin Island",
     "attribute": "Wisdom",
-    "effects": {}
+    "effects": {
+      "activate_main": {
+        "steps": [
+          {
+            "action": "buff_cost",
+            "amount": 2,
+            "target": "own_character",
+            "count": 1,
+            "filter_type": "straw hat crew",
+            "duration": "until_opp_turn_end"
+          }
+        ],
+        "costs": [
+          {
+            "type": "rest_self"
+          }
+        ]
+      }
+    }
   },
   "ST14-012": {
     "name": "Monkey.D.Luffy (012)",
@@ -62875,6 +63359,13 @@
           {
             "action": "draw",
             "count": 1
+          },
+          {
+            "action": "buff_cost",
+            "amount": 3,
+            "target": "own_character",
+            "count": 1,
+            "duration": "until_opp_turn_end"
           }
         ]
       }
@@ -62901,6 +63392,18 @@
         "conditions": {
           "leader_type": "straw hat crew"
         }
+      },
+      "passive": {
+        "steps": [
+          {
+            "action": "buff_cost",
+            "amount": 1,
+            "target": "own_character",
+            "count": 99,
+            "filter_type": "straw hat crew",
+            "duration": "permanent"
+          }
+        ]
       }
     }
   },
@@ -63513,6 +64016,18 @@
           }
         ],
         "once_per_turn": true
+      },
+      "opp_turn": {
+        "steps": [
+          {
+            "action": "buff_cost",
+            "amount": 4,
+            "target": "self",
+            "duration": "permanent"
+          }
+        ],
+        "once_per_turn": true,
+        "don_requirement": 1
       }
     }
   },
@@ -63587,6 +64102,15 @@
         "costs": [
           {
             "type": "trash_from_hand",
+            "count": 1
+          }
+        ],
+        "once_per_turn": true
+      },
+      "passive": {
+        "steps": [
+          {
+            "action": "trash_own_life",
             "count": 1
           }
         ],
@@ -64153,7 +64677,19 @@
     "color": "Blue",
     "sub_types": "Land of Wano Kouzuki Clan Whitebeard Pirates",
     "attribute": "Slash",
-    "effects": {}
+    "effects": {
+      "passive": {
+        "steps": [
+          {
+            "action": "substitute_removal",
+            "cost": {
+              "action": "trash_from_hand",
+              "count": 2
+            }
+          }
+        ]
+      }
+    }
   },
   "ST22-006": {
     "name": "Jozu",
@@ -64427,9 +64963,17 @@
       "passive": {
         "steps": [
           {
+            "action": "debuff_cost",
+            "amount": 4,
+            "target": "own_character"
+          },
+          {
             "action": "keyword_blocker"
           }
-        ]
+        ],
+        "conditions": {
+          "other_char_power_gte": 10000
+        }
       }
     }
   },
@@ -64456,6 +65000,15 @@
         "conditions": {
           "leader_type": "red-haired pirates"
         }
+      },
+      "passive": {
+        "steps": [
+          {
+            "action": "debuff_cost",
+            "amount": 3,
+            "target": "opp_character"
+          }
+        ]
       }
     }
   },
@@ -64720,6 +65273,19 @@
         "conditions": {
           "leader_is": "buggy"
         }
+      },
+      "passive": {
+        "steps": [
+          {
+            "action": "buff_cost",
+            "amount": 1,
+            "target": "self",
+            "duration": "permanent"
+          }
+        ],
+        "conditions": {
+          "chars_gte": 2
+        }
       }
     }
   },
@@ -64747,7 +65313,15 @@
       "passive": {
         "steps": [
           {
-            "action": "keyword_blocker"
+            "action": "gain_blocker"
+          }
+        ],
+        "conditions": {
+          "chars_gte": 2
+        },
+        "costs": [
+          {
+            "type": "rest_self"
           }
         ]
       }
@@ -64837,7 +65411,15 @@
       "passive": {
         "steps": [
           {
-            "action": "keyword_blocker"
+            "action": "gain_blocker"
+          }
+        ],
+        "conditions": {
+          "chars_gte": 2
+        },
+        "costs": [
+          {
+            "type": "rest_self"
           }
         ]
       }
@@ -64853,7 +65435,17 @@
     "color": "Purple",
     "sub_types": "Straw Hat Crew",
     "attribute": "Strike",
-    "effects": {}
+    "effects": {
+      "passive": {
+        "steps": [
+          {
+            "action": "debuff_cost",
+            "amount": 5,
+            "target": "own_character"
+          }
+        ]
+      }
+    }
   },
   "ST26-002": {
     "name": "Tony Tony.Chopper",
@@ -65087,7 +65679,15 @@
       "passive": {
         "steps": [
           {
-            "action": "keyword_blocker"
+            "action": "gain_blocker"
+          }
+        ],
+        "conditions": {
+          "leader_type": "blackbeard pirates"
+        },
+        "costs": [
+          {
+            "type": "rest_self"
           }
         ]
       }
@@ -65366,6 +65966,16 @@
             "count": 1,
             "target": "opp_character",
             "cost_lte": 3
+          }
+        ]
+      },
+      "passive": {
+        "steps": [
+          {
+            "action": "buff_power",
+            "amount": 1000,
+            "target": "self",
+            "duration": "this_turn"
           }
         ]
       }
@@ -65723,13 +66333,6 @@
             "action": "gain_unblockable"
           }
         ]
-      },
-      "passive": {
-        "steps": [
-          {
-            "action": "keyword_unblockable"
-          }
-        ]
       }
     }
   },
@@ -65791,6 +66394,16 @@
             "action": "buff_power",
             "amount": 3000,
             "target": "self",
+            "duration": "this_turn"
+          }
+        ]
+      },
+      "passive": {
+        "steps": [
+          {
+            "action": "debuff_power",
+            "amount": 2000,
+            "target": "opp_character",
             "duration": "this_turn"
           }
         ]
@@ -66039,6 +66652,12 @@
     "effects": {
       "passive": {
         "steps": [
+          {
+            "action": "substitute_removal",
+            "cost": {
+              "action": "rest_self"
+            }
+          },
           {
             "action": "keyword_blocker"
           }

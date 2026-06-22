@@ -99,6 +99,11 @@ class Card:
     don_attached: int = 0
     # Buffs temporários (resetados a cada turno)
     power_buff: int = 0
+    cost_buff: int = 0       # resetado no fim do turno do oponente (duration until_opp_turn_end)
+    cost_buff_permanent: int = 0  # nunca resetado (duration permanent, ex: leader_type condicional)
+
+    def effective_cost(self) -> int:
+        return max(0, self.cost + self.cost_buff + self.cost_buff_permanent)
 
     def _kw_active(self, kw: str, native: bool) -> bool:
         """Keyword ativa se nativa OU condicional a [DON!! ×N] com DON suficiente."""
@@ -265,6 +270,7 @@ class EffectExecutor:
         # Reset buffs temporários antes de aplicar novos
         for c in self.me.field_chars + [self.me.leader]:
             c.power_buff = 0
+            c.cost_buff = 0
 
         for source in sources:
             effects = get_card_effects(source.code)
@@ -285,6 +291,7 @@ class EffectExecutor:
         """Reseta buffs temporários ao fim do turno."""
         for card in self.me.field_chars + [self.me.leader]:
             card.power_buff = 0
+            card.cost_buff = 0
 
     # ── Verificação de condições ─────────────────────────────────────────────
 
@@ -693,6 +700,42 @@ class EffectExecutor:
                 if target == 'all_allies_and_leader':
                     me.leader.power_buff += amount
             return f'+{amount} power em {target}'
+
+        # ── Cost buff/debuff (buff_cost / debuff_cost) ──────────────────────────
+        # NOTA DE LIMITACAO: assim como buff_power, o sistema geral de turnos
+        # ainda nao distingue 'until_opp_turn_end' de 'this_turn' -- ambos sao
+        # resetados no mesmo ciclo (apply_your_turn_buffs/reset_your_turn_buffs).
+        # duration='permanent' (ex: condicionado a leader_type, sem prazo) usa
+        # cost_buff_permanent, que nunca e resetado por esses dois pontos.
+        if action in ('buff_cost', 'debuff_cost'):
+            amount = step.get('amount', 0)
+            if action == 'debuff_cost':
+                amount = -amount
+            target = step.get('target', 'self')
+            duration = step.get('duration', 'this_turn')
+            count = step.get('count', 1)
+            filter_type = step.get('filter_type', '').lower()
+            color = step.get('color', '').lower()
+
+            campo_alvo = me if target in ('self', 'own_character') else opp
+            if target == 'self':
+                candidatos = [card]
+            else:
+                candidatos = list(campo_alvo.field_chars)
+                if filter_type:
+                    candidatos = [c for c in candidatos if filter_type in c.sub_types.lower()]
+                if color:
+                    candidatos = [c for c in candidatos if color in c.color.lower()]
+
+            afetados = []
+            for c in candidatos[:count]:
+                if duration == 'permanent':
+                    c.cost_buff_permanent += amount
+                else:
+                    c.cost_buff += amount
+                afetados.append(c.name[:15])
+            sinal = '+' if amount >= 0 else ''
+            return f'{sinal}{amount} cost em {", ".join(afetados)}' if afetados else ''
 
         # ── Give DON ──────────────────────────────────────────────────────────
         if action == 'give_don':
@@ -2389,9 +2432,11 @@ class OPTCGMatch:
             c.rested = False
             c.just_played = False
             c.power_buff = 0
+            c.cost_buff = 0
         p.leader.don_attached = 0
         p.leader.rested = False
         p.leader.power_buff = 0
+        p.leader.cost_buff = 0
         p.don_available += p.don_rested + don_from_cards
         p.don_rested = 0
 
