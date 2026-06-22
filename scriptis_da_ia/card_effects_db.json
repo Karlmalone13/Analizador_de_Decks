@@ -43,8 +43,9 @@
             "duration": "this_turn"
           },
           {
-            "action": "give_don_opp",
-            "count": 1
+            "action": "give_don",
+            "count": 1,
+            "rested": true
           },
           {
             "action": "trash_from_hand",
@@ -180,7 +181,8 @@
         "steps": [
           {
             "action": "give_don",
-            "count": 1
+            "count": 1,
+            "rested": true
           }
         ],
         "once_per_turn": true
@@ -1644,7 +1646,8 @@
         "steps": [
           {
             "action": "give_don",
-            "count": 1
+            "count": 1,
+            "rested": true
           }
         ],
         "conditions": {
@@ -1724,7 +1727,8 @@
         "steps": [
           {
             "action": "give_don",
-            "count": 1
+            "count": 1,
+            "rested": true
           },
           {
             "action": "gain_rush"
@@ -1821,7 +1825,23 @@
     "color": "Red",
     "sub_types": "Straw Hat Crew",
     "attribute": "",
-    "effects": {}
+    "effects": {
+      "activate_main": {
+        "steps": [
+          {
+            "action": "transfer_don",
+            "count": 1,
+            "target": "friendly_character",
+            "filter_type": "straw hat crew"
+          }
+        ],
+        "costs": [
+          {
+            "type": "rest_self"
+          }
+        ]
+      }
+    }
   },
   "EB02-010": {
     "name": "Monkey.D.Luffy (010)",
@@ -1870,8 +1890,9 @@
             "cost_lte": 5
           },
           {
-            "action": "give_don_opp",
-            "count": 1
+            "action": "give_don",
+            "count": 1,
+            "rested": true
           }
         ]
       }
@@ -2877,7 +2898,8 @@
         "steps": [
           {
             "action": "give_don",
-            "count": 2
+            "count": 2,
+            "rested": true
           }
         ]
       },
@@ -3698,7 +3720,8 @@
         "steps": [
           {
             "action": "give_don",
-            "count": 2
+            "count": 2,
+            "rested": true
           }
         ],
         "costs": [
@@ -3728,8 +3751,9 @@
             "cost_lte": 2
           },
           {
-            "action": "give_don_opp",
-            "count": 1
+            "action": "give_don",
+            "count": 1,
+            "rested": true
           }
         ],
         "costs": [
@@ -3766,7 +3790,8 @@
         "steps": [
           {
             "action": "give_don",
-            "count": 1
+            "count": 1,
+            "rested": true
           }
         ],
         "costs": [
@@ -4586,7 +4611,8 @@
         "steps": [
           {
             "action": "give_don",
-            "count": 1
+            "count": 1,
+            "rested": true
           },
           {
             "action": "play_from_trash",
@@ -4821,7 +4847,8 @@
         "steps": [
           {
             "action": "give_don",
-            "count": 1
+            "count": 1,
+            "rested": true
           }
         ]
       },
@@ -4946,7 +4973,8 @@
         "steps": [
           {
             "action": "give_don",
-            "count": 3
+            "count": 3,
+            "rested": true
           }
         ]
       },
@@ -5453,7 +5481,8 @@
         "steps": [
           {
             "action": "give_don",
-            "count": 1
+            "count": 1,
+            "rested": true
           }
         ],
         "once_per_turn": true
@@ -5678,7 +5707,8 @@
         "steps": [
           {
             "action": "give_don",
-            "count": 1
+            "count": 1,
+            "rested": true
           }
         ],
         "costs": [
@@ -12723,7 +12753,8 @@
         "steps": [
           {
             "action": "give_don",
-            "count": 1
+            "count": 1,
+            "rested": true
           }
         ],
         "once_per_turn": true
@@ -15756,7 +15787,8 @@
         "steps": [
           {
             "action": "give_don",
-            "count": 1
+            "count": 1,
+            "rested": true
           }
         ],
         "costs": [
@@ -18992,7 +19024,8 @@
         "steps": [
           {
             "action": "give_don",
-            "count": 2
+            "count": 2,
+            "rested": true
           }
         ],
         "once_per_turn": true,
@@ -22412,7 +22445,8 @@
         "steps": [
           {
             "action": "give_don",
-            "count": 2
+            "count": 2,
+            "rested": true
           }
         ],
         "once_per_turn": true
@@ -24807,7 +24841,18 @@
     "color": "Red",
     "sub_types": "Revolutionary Army",
     "attribute": "Special",
-    "effects": {}
+    "effects": {
+      "activate_main": {
+        "steps": [
+          {
+            "action": "transfer_don",
+            "count": 2,
+            "target": "friendly_character"
+          }
+        ],
+        "once_per_turn": true
+      }
+    }
   },
   "OP07-002": {
     "name": "Ain",
@@ -25160,7 +25205,8 @@
         "steps": [
           {
             "action": "give_don",
-            "count": 2
+            "count": 2,
+            "rested": true
           }
         ]
       },
@@ -27925,7 +27971,24 @@
     "color": "Green Red",
     "sub_types": "5000",
     "attribute": "Strike",
-    "effects": {}
+    "effects": {
+      "activate_main": {
+        "steps": [
+          {
+            "action": "transfer_don",
+            "count": 3,
+            "target": "own_character",
+            "distribution": "free",
+            "per_target_max": 1,
+            "filter_type": [
+              "animal",
+              "drum kingdom"
+            ]
+          }
+        ],
+        "once_per_turn": true
+      }
+    }
   },
   "OP08-002": {
     "name": "Marco",
@@ -32611,7 +32674,8 @@
         "steps": [
           {
             "action": "give_don",
-            "count": 2
+            "count": 2,
+            "rested": true
           }
         ]
       }
@@ -34400,8 +34464,9 @@
             "duration": "this_turn"
           },
           {
-            "action": "give_don_opp",
-            "count": 2
+            "action": "give_don",
+            "count": 2,
+            "rested": true
           }
         ],
         "costs": [
@@ -34559,7 +34624,8 @@
         "steps": [
           {
             "action": "give_don",
-            "count": 1
+            "count": 1,
+            "rested": true
           }
         ],
         "conditions": {
@@ -37076,7 +37142,8 @@
         "steps": [
           {
             "action": "give_don",
-            "count": 1
+            "count": 1,
+            "rested": true
           },
           {
             "action": "gain_life",
@@ -37461,7 +37528,8 @@
         "steps": [
           {
             "action": "give_don",
-            "count": 1
+            "count": 1,
+            "rested": true
           }
         ],
         "once_per_turn": true
@@ -39482,8 +39550,9 @@
             "cost_lte": 7
           },
           {
-            "action": "give_don_opp",
-            "count": 1
+            "action": "give_don",
+            "count": 1,
+            "rested": true
           }
         ]
       }
@@ -40081,7 +40150,8 @@
           },
           {
             "action": "give_don",
-            "count": 1
+            "count": 1,
+            "rested": true
           },
           {
             "action": "trash_from_hand",
@@ -40375,7 +40445,8 @@
         "steps": [
           {
             "action": "give_don",
-            "count": 2
+            "count": 2,
+            "rested": true
           }
         ],
         "costs": [
@@ -40417,7 +40488,8 @@
         "steps": [
           {
             "action": "give_don",
-            "count": 2
+            "count": 2,
+            "rested": true
           }
         ],
         "costs": [
@@ -40448,7 +40520,8 @@
           },
           {
             "action": "give_don",
-            "count": 1
+            "count": 1,
+            "rested": true
           }
         ]
       },
@@ -40710,8 +40783,9 @@
             "count": 1
           },
           {
-            "action": "give_don_opp",
-            "count": 3
+            "action": "give_don",
+            "count": 3,
+            "rested": true
           }
         ],
         "costs": [
@@ -40853,8 +40927,9 @@
             "count": 1
           },
           {
-            "action": "give_don_opp",
-            "count": 3
+            "action": "give_don",
+            "count": 3,
+            "rested": true
           }
         ]
       }
@@ -41179,7 +41254,8 @@
         "steps": [
           {
             "action": "give_don",
-            "count": 1
+            "count": 1,
+            "rested": true
           }
         ],
         "costs": [
@@ -43254,7 +43330,8 @@
         "steps": [
           {
             "action": "give_don",
-            "count": 1
+            "count": 1,
+            "rested": true
           }
         ]
       }
@@ -43275,7 +43352,8 @@
         "steps": [
           {
             "action": "give_don",
-            "count": 2
+            "count": 2,
+            "rested": true
           }
         ]
       }
@@ -43658,8 +43736,9 @@
             "duration": "this_turn"
           },
           {
-            "action": "give_don_opp",
-            "count": 1
+            "action": "give_don",
+            "count": 1,
+            "rested": true
           }
         ]
       }
@@ -44203,7 +44282,8 @@
         "steps": [
           {
             "action": "give_don",
-            "count": 1
+            "count": 1,
+            "rested": true
           }
         ]
       },
@@ -44416,7 +44496,8 @@
           },
           {
             "action": "give_don",
-            "count": 1
+            "count": 1,
+            "rested": true
           }
         ],
         "conditions": {
@@ -45165,7 +45246,8 @@
         "steps": [
           {
             "action": "give_don",
-            "count": 1
+            "count": 1,
+            "rested": true
           }
         ],
         "once_per_turn": true
@@ -45739,7 +45821,8 @@
         "steps": [
           {
             "action": "give_don",
-            "count": 2
+            "count": 2,
+            "rested": true
           }
         ],
         "once_per_turn": true
@@ -46257,8 +46340,9 @@
             "cost_lte": 5
           },
           {
-            "action": "give_don_opp",
-            "count": 1
+            "action": "give_don",
+            "count": 1,
+            "rested": true
           }
         ]
       },
@@ -46296,7 +46380,8 @@
           },
           {
             "action": "give_don",
-            "count": 1
+            "count": 1,
+            "rested": true
           }
         ],
         "once_per_turn": true
@@ -46402,7 +46487,8 @@
         "steps": [
           {
             "action": "give_don",
-            "count": 1
+            "count": 1,
+            "rested": true
           }
         ],
         "once_per_turn": true
@@ -46552,7 +46638,8 @@
         "steps": [
           {
             "action": "give_don",
-            "count": 2
+            "count": 2,
+            "rested": true
           }
         ],
         "conditions": {
@@ -47308,7 +47395,8 @@
         "steps": [
           {
             "action": "give_don",
-            "count": 2
+            "count": 2,
+            "rested": true
           }
         ],
         "costs": [
@@ -49397,7 +49485,8 @@
         "steps": [
           {
             "action": "give_don",
-            "count": 1
+            "count": 1,
+            "rested": true
           }
         ],
         "once_per_turn": true
@@ -49690,7 +49779,8 @@
         "steps": [
           {
             "action": "give_don_opp",
-            "count": 1
+            "count": 1,
+            "rested": true
           }
         ],
         "once_per_turn": true
@@ -49862,7 +49952,8 @@
         "steps": [
           {
             "action": "give_don",
-            "count": 1
+            "count": 1,
+            "rested": true
           }
         ],
         "once_per_turn": true
@@ -49926,7 +50017,8 @@
         "steps": [
           {
             "action": "give_don",
-            "count": 1
+            "count": 1,
+            "rested": true
           }
         ]
       },
@@ -50042,7 +50134,8 @@
         "steps": [
           {
             "action": "give_don_opp",
-            "count": 1
+            "count": 1,
+            "rested": true
           }
         ],
         "once_per_turn": true
@@ -51113,7 +51206,8 @@
         "steps": [
           {
             "action": "give_don",
-            "count": 4
+            "count": 4,
+            "rested": true
           },
           {
             "action": "add_don",
@@ -51799,7 +51893,8 @@
         "steps": [
           {
             "action": "give_don",
-            "count": 1
+            "count": 1,
+            "rested": true
           }
         ],
         "conditions": {
@@ -52230,7 +52325,8 @@
         "steps": [
           {
             "action": "give_don",
-            "count": 1
+            "count": 1,
+            "rested": true
           }
         ]
       }
@@ -52631,7 +52727,8 @@
         "steps": [
           {
             "action": "give_don",
-            "count": 1
+            "count": 1,
+            "rested": true
           }
         ],
         "once_per_turn": true
@@ -52725,7 +52822,8 @@
           },
           {
             "action": "give_don",
-            "count": 1
+            "count": 1,
+            "rested": true
           }
         ]
       }
@@ -53357,7 +53455,8 @@
         "steps": [
           {
             "action": "give_don",
-            "count": 1
+            "count": 1,
+            "rested": true
           }
         ]
       }
@@ -53660,7 +53759,8 @@
         "steps": [
           {
             "action": "give_don",
-            "count": 3
+            "count": 3,
+            "rested": true
           },
           {
             "action": "trash_from_hand",
@@ -54040,7 +54140,8 @@
         "steps": [
           {
             "action": "give_don",
-            "count": 1
+            "count": 1,
+            "rested": true
           }
         ],
         "once_per_turn": true
@@ -55264,7 +55365,8 @@
           },
           {
             "action": "give_don",
-            "count": 1
+            "count": 1,
+            "rested": true
           },
           {
             "action": "trash_from_hand",
@@ -55289,7 +55391,8 @@
         "steps": [
           {
             "action": "give_don",
-            "count": 1
+            "count": 1,
+            "rested": true
           }
         ],
         "once_per_turn": true
@@ -57376,7 +57479,8 @@
         "steps": [
           {
             "action": "give_don",
-            "count": 1
+            "count": 1,
+            "rested": true
           }
         ],
         "once_per_turn": true
@@ -57484,7 +57588,8 @@
         "steps": [
           {
             "action": "give_don",
-            "count": 1
+            "count": 1,
+            "rested": true
           }
         ]
       },
@@ -57807,7 +57912,8 @@
         "steps": [
           {
             "action": "give_don",
-            "count": 1
+            "count": 1,
+            "rested": true
           }
         ]
       },
@@ -58221,7 +58327,8 @@
         "steps": [
           {
             "action": "give_don",
-            "count": 1
+            "count": 1,
+            "rested": true
           },
           {
             "action": "play_from_trash",
@@ -58512,7 +58619,8 @@
         "steps": [
           {
             "action": "give_don",
-            "count": 1
+            "count": 1,
+            "rested": true
           }
         ],
         "once_per_turn": true
@@ -58570,7 +58678,8 @@
         "steps": [
           {
             "action": "give_don",
-            "count": 2
+            "count": 2,
+            "rested": true
           }
         ]
       }
@@ -61116,7 +61225,8 @@
         "steps": [
           {
             "action": "give_don",
-            "count": 1
+            "count": 1,
+            "rested": true
           }
         ]
       }
@@ -63748,7 +63858,8 @@
         "steps": [
           {
             "action": "give_don",
-            "count": 1
+            "count": 1,
+            "rested": true
           }
         ]
       },
@@ -63862,7 +63973,8 @@
         "steps": [
           {
             "action": "give_don",
-            "count": 1
+            "count": 1,
+            "rested": true
           }
         ],
         "costs": [
@@ -64072,7 +64184,8 @@
           },
           {
             "action": "give_don",
-            "count": 1
+            "count": 1,
+            "rested": true
           }
         ]
       },
@@ -64100,7 +64213,8 @@
         "steps": [
           {
             "action": "give_don",
-            "count": 2
+            "count": 2,
+            "rested": true
           }
         ],
         "once_per_turn": true
@@ -64343,7 +64457,8 @@
         "steps": [
           {
             "action": "give_don",
-            "count": 1
+            "count": 1,
+            "rested": true
           }
         ],
         "once_per_turn": true
@@ -64397,7 +64512,8 @@
         "steps": [
           {
             "action": "give_don",
-            "count": 1
+            "count": 1,
+            "rested": true
           }
         ],
         "once_per_turn": true
@@ -64529,7 +64645,8 @@
         "steps": [
           {
             "action": "give_don",
-            "count": 2
+            "count": 2,
+            "rested": true
           }
         ],
         "once_per_turn": true,
@@ -64674,7 +64791,8 @@
         "steps": [
           {
             "action": "give_don",
-            "count": 2
+            "count": 2,
+            "rested": true
           }
         ],
         "once_per_turn": true
@@ -64744,7 +64862,8 @@
         "steps": [
           {
             "action": "give_don",
-            "count": 2
+            "count": 2,
+            "rested": true
           }
         ]
       }
@@ -64777,7 +64896,8 @@
         "steps": [
           {
             "action": "give_don",
-            "count": 1
+            "count": 1,
+            "rested": true
           }
         ]
       },
@@ -65063,7 +65183,8 @@
         "steps": [
           {
             "action": "give_don",
-            "count": 1
+            "count": 1,
+            "rested": true
           }
         ],
         "once_per_turn": true
@@ -65435,7 +65556,8 @@
         "steps": [
           {
             "action": "give_don",
-            "count": 1
+            "count": 1,
+            "rested": true
           }
         ],
         "once_per_turn": true
@@ -66542,7 +66664,8 @@
         "steps": [
           {
             "action": "give_don",
-            "count": 1
+            "count": 1,
+            "rested": true
           }
         ],
         "once_per_turn": true
@@ -66600,7 +66723,8 @@
           },
           {
             "action": "give_don",
-            "count": 1
+            "count": 1,
+            "rested": true
           }
         ],
         "costs": [
@@ -67074,7 +67198,25 @@
     "color": "Green",
     "sub_types": "Impel Down Former Baroque Works",
     "attribute": "Special",
-    "effects": {}
+    "effects": {
+      "activate_main": {
+        "steps": [
+          {
+            "action": "transfer_don",
+            "count": 2,
+            "target": "own_character",
+            "distribution": "free",
+            "per_target_max": 2,
+            "filter_power_base_eq": 6000
+          }
+        ],
+        "costs": [
+          {
+            "type": "rest_self"
+          }
+        ]
+      }
+    }
   },
   "ST30-015": {
     "name": "The Name of This Era Is \"Whitebeard\"!!",

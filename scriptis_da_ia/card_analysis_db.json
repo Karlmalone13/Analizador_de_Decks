@@ -57,7 +57,7 @@
                 "target": "opp_leader_or_character"
             },
             {
-                "action": "give_don_opp",
+                "action": "give_don",
                 "trigger": "on_play"
             },
             {
@@ -76,7 +76,7 @@
         "kos": false,
         "rests_opponent": false,
         "bounces": false,
-        "gives_don": false,
+        "gives_don": true,
         "power_buff": false,
         "heals": false,
         "gains_life": false,
@@ -2952,7 +2952,13 @@
         "color": "Red",
         "sub_types": "Straw Hat Crew",
         "attribute": "",
-        "effects": [],
+        "effects": [
+            {
+                "action": "transfer_don",
+                "trigger": "activate_main",
+                "target": "friendly_character"
+            }
+        ],
         "synergy_states": {},
         "text": "[Activate: Main] You may rest this Stage: Give up to 1 of your currently given DON!! cards to 1 of your \"Straw Hat Crew\" type Characters.",
         "is_searcher": false,
@@ -3037,7 +3043,7 @@
                 "cost_lte": 5
             },
             {
-                "action": "give_don_opp",
+                "action": "give_don",
                 "trigger": "on_play"
             }
         ],
@@ -3052,7 +3058,7 @@
         "kos": false,
         "rests_opponent": false,
         "bounces": false,
-        "gives_don": false,
+        "gives_don": true,
         "power_buff": false,
         "heals": false,
         "gains_life": false,
@@ -6006,7 +6012,7 @@
                 "cost_lte": 2
             },
             {
-                "action": "give_don_opp",
+                "action": "give_don",
                 "trigger": "activate_main"
             }
         ],
@@ -6026,7 +6032,7 @@
         "kos": false,
         "rests_opponent": true,
         "bounces": false,
-        "gives_don": false,
+        "gives_don": true,
         "power_buff": false,
         "heals": false,
         "gains_life": false,
@@ -41391,7 +41397,13 @@
         "color": "Red",
         "sub_types": "Revolutionary Army",
         "attribute": "Special",
-        "effects": [],
+        "effects": [
+            {
+                "action": "transfer_don",
+                "trigger": "activate_main",
+                "target": "friendly_character"
+            }
+        ],
         "synergy_states": {},
         "text": "[Activate:Main][Once Per Turn]Give up to 2 total of your currently given DON!! cards to 1 of your Characters.",
         "is_searcher": false,
@@ -46572,7 +46584,13 @@
         "color": "Green Red",
         "sub_types": "5000",
         "attribute": "Strike",
-        "effects": [],
+        "effects": [
+            {
+                "action": "transfer_don",
+                "trigger": "activate_main",
+                "target": "own_character"
+            }
+        ],
         "synergy_states": {},
         "text": "[Activate:Main] [Once Per Turn] Give up to 3 of your [Animal] or [Drum Kingdom] type Characters up to 1 rested DON!! card each.",
         "is_searcher": false,
@@ -57438,7 +57456,7 @@
                 "target": "opp_character"
             },
             {
-                "action": "give_don_opp",
+                "action": "give_don",
                 "trigger": "activate_main"
             }
         ],
@@ -57453,7 +57471,7 @@
         "kos": false,
         "rests_opponent": false,
         "bounces": false,
-        "gives_don": false,
+        "gives_don": true,
         "power_buff": false,
         "heals": false,
         "gains_life": false,
@@ -65917,7 +65935,7 @@
                 "target": "opp_character"
             },
             {
-                "action": "give_don_opp",
+                "action": "give_don",
                 "trigger": "on_play"
             }
         ],
@@ -65932,7 +65950,7 @@
         "kos": true,
         "rests_opponent": false,
         "bounces": false,
-        "gives_don": false,
+        "gives_don": true,
         "power_buff": false,
         "heals": false,
         "gains_life": false,
@@ -68005,7 +68023,7 @@
                 "trigger": "activate_main"
             },
             {
-                "action": "give_don_opp",
+                "action": "give_don",
                 "trigger": "activate_main"
             }
         ],
@@ -68025,7 +68043,7 @@
         "kos": false,
         "rests_opponent": true,
         "bounces": false,
-        "gives_don": false,
+        "gives_don": true,
         "power_buff": false,
         "heals": false,
         "gains_life": false,
@@ -68234,7 +68252,7 @@
                 "trigger": "on_play"
             },
             {
-                "action": "give_don_opp",
+                "action": "give_don",
                 "trigger": "on_play"
             }
         ],
@@ -68254,7 +68272,7 @@
         "kos": false,
         "rests_opponent": true,
         "bounces": false,
-        "gives_don": false,
+        "gives_don": true,
         "power_buff": false,
         "heals": false,
         "gains_life": false,
@@ -72835,7 +72853,7 @@
                 "target": "opp_character"
             },
             {
-                "action": "give_don_opp",
+                "action": "give_don",
                 "trigger": "main"
             }
         ],
@@ -72855,7 +72873,7 @@
         "kos": false,
         "rests_opponent": false,
         "bounces": false,
-        "gives_don": false,
+        "gives_don": true,
         "power_buff": false,
         "heals": false,
         "gains_life": false,
@@ -77018,7 +77036,7 @@
                 "target": "opp_character"
             },
             {
-                "action": "give_don_opp",
+                "action": "give_don",
                 "trigger": "on_play"
             },
             {
@@ -77037,7 +77055,7 @@
         "kos": false,
         "rests_opponent": false,
         "bounces": true,
-        "gives_don": false,
+        "gives_don": true,
         "power_buff": false,
         "heals": false,
         "gains_life": false,
@@ -111476,7 +111494,13 @@
         "color": "Green",
         "sub_types": "Impel Down Former Baroque Works",
         "attribute": "Special",
-        "effects": [],
+        "effects": [
+            {
+                "action": "transfer_don",
+                "trigger": "activate_main",
+                "target": "own_character"
+            }
+        ],
         "synergy_states": {},
         "text": "[Activate: Main] You may rest this Character: Give up to 2 of your Characters with 6000 base power up to 2 rested DON!! cards each.",
         "is_searcher": false,

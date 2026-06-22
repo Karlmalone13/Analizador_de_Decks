@@ -624,18 +624,33 @@ def parse_give_don(text):
     steps = []
     t = text.lower()
 
-    # Dar/anexar DON — distinguir alvo (aliado vs oponente)
-    m = re.search(r'give up to (\d+) (?:rested )?don!!', t)
+    # Dar/anexar DON — distinguir alvo (aliado vs oponente) e se o DON
+    # retirado do banco e especificamente RESTED (qualificador explicito no
+    # texto, ex: "give up to 1 rested DON!! card") -- sem o qualificador, a
+    # IA escolhe entre DON rested/ativo do banco na hora de executar.
+    m = re.search(r'give up to (\d+) (rested )?don!! cards?[^.]{0,60}', t)
     if m:
         cnt = int(m.group(1))
-        # alvo: se menciona "opponent" perto, é setup no oponente (controle)
-        # senão é buff em personagem próprio (aggro)
-        to_opp = bool(re.search(r"to .{0,30}opponent's (leader|character)", t)) or \
-                 bool(re.search(r"opponent's characters?:?\s*$", t))
-        steps.append({
+        is_rested = bool(m.group(2))
+        clause = m.group(0)
+        # alvo: se menciona "opponent" DENTRO da clausula do give (nao em
+        # outro efeito mais adiante na mesma carta), é setup no oponente
+        # (controle) senão é buff em personagem próprio (aggro). Tambem
+        # cobre o padrao indireto "its owner's Leader/Character" quando o
+        # CUSTO anterior ja estabeleceu "1 of your opponent's..." -- "its
+        # owner" refere-se a esse oponente, nao a "you".
+        to_opp = bool(re.search(r"to .{0,30}opponent.?s (leader|character)", clause)) or \
+                 bool(re.search(r"opponent.?s characters?:?\s*$", clause)) or \
+                 bool(re.search(r"from .{0,15}opponent.?s cost area", clause)) or \
+                 (bool(re.search(r"to its owner.?s (leader|character)", clause))
+                  and bool(re.search(r"of your opponent.?s (rested )?(don!!|character)", t[:m.start()])))
+        step = {
             'action': 'give_don_opp' if to_opp else 'give_don',
             'count': cnt,
-        })
+        }
+        if is_rested:
+            step['rested'] = True
+        steps.append(step)
 
     # Aceleração REAL: adicionar DON do seu deck de DON ao seu campo (ramp)
     if re.search(r'add up to \d+ don!! cards? from your don!! deck|add \d+ don!! cards? from your don!! deck', t):
@@ -671,6 +686,60 @@ def parse_give_don(text):
         # comportamento anterior (assume DON) para nao regredir casos nao
         # cobertos pela regex especifica acima
         steps.append({'action': 'lock_opp_don'})
+
+    return steps
+
+
+def parse_transfer_don(text):
+    """
+    Cobre duas variantes distintas, ambas com action 'transfer_don' (move
+    DON para um Character ja em campo, sem consumir o DON disponivel do
+    pool igual a give_don):
+      1) "give up to N of your currently given DON!! cards to 1 of your
+         [TIPO] Character(s)" -- move DON ja anexado a OUTRO character/
+         leader para o alvo (transferencia real entre characters).
+      2) "give up to N of your [TIPO/power] Characters up to M rested
+         DON!! card(s) each" -- distribui DON do pool entre VARIOS
+         characters, M por alvo, ate N alvos (distribution='free').
+    """
+    steps = []
+    t = text.lower()
+
+    # Variante 1: transferencia de DON ja anexado
+    m = re.search(
+        r"give up to (\d+)(?: total)? of your currently given don!! cards? to (\d+) of your"
+        r"(?: \[?\"?([a-z][a-z0-9 .\'-]+?)\"?\]? type)? characters?",
+        t
+    )
+    if m:
+        step = {'action': 'transfer_don', 'count': int(m.group(1)), 'target': 'friendly_character'}
+        if m.group(3):
+            step['filter_type'] = m.group(3).strip()
+        steps.append(step)
+        return steps
+
+    # Variante 2: distribuicao do pool para multiplos alvos
+    m2 = re.search(
+        r"give up to (\d+) of your"
+        r"(?: ((?:\[[a-z][a-z0-9 .\'-]+?\]\s*(?:or\s*)?)+) type)?"
+        r" characters?(?: with (\d+) base power)?"
+        r" up to (\d+) rested don!! cards? each",
+        t
+    )
+    if m2:
+        step = {
+            'action': 'transfer_don',
+            'count': int(m2.group(1)),
+            'target': 'own_character',
+            'distribution': 'free',
+            'per_target_max': int(m2.group(4)),
+        }
+        if m2.group(2):
+            tipos = re.findall(r'\[([a-z][a-z0-9 .\'-]+?)\]', m2.group(2))
+            step['filter_type'] = tipos if len(tipos) > 1 else tipos[0]
+        if m2.group(3):
+            step['filter_power_base_eq'] = int(m2.group(3))
+        steps.append(step)
 
     return steps
 
@@ -1224,6 +1293,11 @@ def parse_block(block_text, trigger_name):
     # cobertas pela mesma funcao por compartilharem estrutura textual)
     if ('cannot attack' in t or 'cannot be rested' in t) and 'opponent' in t:
         steps.extend(parse_lock_attack(t))
+
+    # Transferencia/distribuicao de DON entre characters (distinto de
+    # give_don, que da DON do pool a um unico alvo)
+    if 'don!!' in t and ('currently given' in t or 'rested don!! card' in t):
+        steps.extend(parse_transfer_don(t))
 
     # Draw (sem look at)
     if 'draw' in t and 'look at' not in t:

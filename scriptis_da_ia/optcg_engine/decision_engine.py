@@ -924,9 +924,56 @@ class EffectExecutor:
             if targets:
                 best = max(targets, key=lambda c: c.effective_power(True))
                 best.don_attached += count
+                # Debita do banco de DON real (don_rested + don_available),
+                # nunca de uma fonte gratuita externa -- ambos os tipos vêm
+                # do mesmo banco do jogador.
                 if rested:
-                    me.don_available -= count
+                    # "give up to N RESTED DON" -- exige especificamente DON
+                    # rested do banco. Se não houver o suficiente, usa o que
+                    # tiver (parcial) -- a IA não inventa DON.
+                    do_rested = min(count, me.don_rested)
+                    me.don_rested -= do_rested
+                else:
+                    # "give up to N DON" (sem qualificador) -- a IA escolhe.
+                    # Prioriza DON rested primeiro (preserva don_available
+                    # ativo para outras jogadas no mesmo turno); se não
+                    # houver rested suficiente, completa com don_available.
+                    do_rested = min(count, me.don_rested)
+                    me.don_rested -= do_rested
+                    restante = count - do_rested
+                    if restante > 0:
+                        do_available = min(restante, me.don_available)
+                        me.don_available -= do_available
             return f'+{count} DON'
+
+        # ── Give DON ao oponente (controle/setup) ───────────────────────────────
+        # Mecanica distinta de give_don: o DON sai do BANCO DO OPONENTE (nao do
+        # meu), e e anexado a um Character do OPONENTE. Geralmente usado para
+        # travar o refresh dele depois (ex: combinado com lock_opp_don /
+        # lock_opp_character_refresh), nao para dar vantagem ao oponente.
+        if action == 'give_don_opp':
+            count = step.get('count', 1)
+            rested = step.get('rested', False)
+
+            targets_opp = [c for c in opp.field_chars] + [opp.leader]
+            if targets_opp:
+                best = max(targets_opp, key=lambda c: c.effective_power(True))
+                best.don_attached += count
+                if rested:
+                    do_rested = min(count, opp.don_rested)
+                    opp.don_rested -= do_rested
+                else:
+                    # sem qualificador / "from cost area" -- usa o banco
+                    # ativo do oponente primeiro (e o DON que ele "gastou"
+                    # no turno, fica no cost area), completando com rested
+                    # se nao houver ativo suficiente.
+                    do_available = min(count, opp.don_available)
+                    opp.don_available -= do_available
+                    restante = count - do_available
+                    if restante > 0:
+                        do_rested = min(restante, opp.don_rested)
+                        opp.don_rested -= do_rested
+            return f'deu {count} DON ao character do oponente'
 
         # ── Play from trash ───────────────────────────────────────────────────
         if action == 'play_from_trash':
