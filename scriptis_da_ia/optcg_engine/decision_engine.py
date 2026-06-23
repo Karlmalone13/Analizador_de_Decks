@@ -493,6 +493,23 @@ class EffectExecutor:
             return False
         if 'leader_power_gte' in conds and me.leader.effective_power(True) < conds['leader_power_gte']:
             return False
+        if 'leader_power_lte' in conds and me.leader.effective_power(True) > conds['leader_power_lte']:
+            return False
+        if 'events_in_trash_gte' in conds:
+            n_events = sum(1 for c in me.trash if c.card_type.lower() == 'event')
+            if n_events < conds['events_in_trash_gte']:
+                return False
+        if 'board_has_cost' in conds or 'board_has_cost_gte' in conds:
+            # condicao de existencia: QUALQUER Character no jogo (os dois
+            # campos) com custo == N exato ou >= M.
+            todos = list(me.field_chars) + list(opp.field_chars)
+            exatos = set(conds.get('board_has_cost', []))
+            gte = conds.get('board_has_cost_gte')
+            existe = any(
+                c.cost in exatos or (gte is not None and c.cost >= gte)
+                for c in todos)
+            if not existe:
+                return False
         if 'opp_char_power_gte' in conds:
             if not opp.field_chars or max(c.effective_power(False) for c in opp.field_chars) < conds['opp_char_power_gte']:
                 return False
@@ -565,6 +582,35 @@ class EffectExecutor:
                 if not self._return_don_to_deck(count):
                     return False
                 self._cost_logs.append(f'custo: devolveu {count} DON ao deck')
+            elif ctype == 'ko_own_character':
+                # Custo de K.O. de um Character PROPRIO (distinto de trash_self:
+                # o alvo e OUTRO Character do jogador). K.O. != Trash -- precisa
+                # disparar o [On K.O.] do Character escolhido. Ex: OP14-079
+                # Crocodile (K.O. um Baroque Works), OP05-087 Hakuba.
+                count = cost.get('count', 1)
+                filter_type = cost.get('filter_type', '').lower()
+                candidatos = [
+                    c for c in self.me.field_chars
+                    if c is not card
+                    and (not filter_type or filter_type in c.sub_types.lower())
+                ]
+                if len(candidatos) < count:
+                    return False
+                koados = []
+                for _ in range(count):
+                    if not candidatos:
+                        break
+                    # escolhe o de menor valor de board (sacrifica o menos util),
+                    # reaproveitando a heuristica de _choose_to_trash.
+                    alvo = min(candidatos, key=lambda c: c.board_value())
+                    candidatos.remove(alvo)
+                    self.me.field_chars.remove(alvo)
+                    self.me.trash.append(alvo)
+                    koados.append(alvo.name[:15])
+                    # dispara [On K.O.] do Character K.O.ado (regra K.O. != Trash)
+                    self.execute(alvo, 'on_ko')
+                if koados:
+                    self._cost_logs.append(f'custo: K.O. próprio: {", ".join(koados)}')
         return True
 
     def _return_don_to_deck(self, count: int) -> bool:
@@ -2042,6 +2088,18 @@ class DecisionEngine:
             if k == 'don_gte'   and not (my_don   >= v): return False
             if k == 'don_on_field_gte' and not ((my_don + me.don_rested) >= v): return False
             if k == 'trash_gte' and not (my_trash >= v): return False
+            if k == 'events_in_trash_gte':
+                n_events = sum(1 for c in me.trash if c.card_type.lower() == 'event')
+                if not (n_events >= v): return False
+            if k == 'leader_power_lte':
+                if not (me.leader.effective_power(True) <= v): return False
+            if k in ('board_has_cost', 'board_has_cost_gte'):
+                todos = list(me.field_chars) + list(self.opp.field_chars)
+                exatos = set(conds.get('board_has_cost', []))
+                gte = conds.get('board_has_cost_gte')
+                if not any(c.cost in exatos or (gte is not None and c.cost >= gte)
+                           for c in todos):
+                    return False
             if k == 'chars_gte':
                 cost_filter = conds.get('chars_gte_cost_filter')
                 contagem = (sum(1 for c in me.field_chars if c.cost >= cost_filter)

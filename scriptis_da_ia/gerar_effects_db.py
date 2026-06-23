@@ -30,6 +30,12 @@ def parse_conditions(text):
     m = re.search(r'(?:if (?:you have|there are)|and you have) (\d+) or more cards? in your trash', t)
     if m: conds['trash_gte'] = int(m.group(1))
 
+    # "if you have N or more Events in your trash" -- conta SO os Event
+    # cards no trash, distinto de trash_gte (que conta qualquer card).
+    # 7 cards no banco (ex: OP15-021 Just Watch Me, Ace!!!).
+    m = re.search(r'if you have (\d+) or more events? in your trash', t)
+    if m: conds['events_in_trash_gte'] = int(m.group(1))
+
     m = re.search(r'if you have (\d+) or more don!!', t)
     if m: conds['don_gte'] = int(m.group(1))
 
@@ -97,6 +103,11 @@ def parse_conditions(text):
     m = re.search(r'if your leader has (\d+) power or more', t)
     if m: conds['leader_power_gte'] = int(m.group(1))
 
+    # "if your Leader has N power or less" -- simetrico ao gte. Usado para
+    # detectar Leader debuffado a 0 (ex: OP15-013 Pincers, "0 power or less").
+    m = re.search(r'if your leader has (\d+) power or less', t)
+    if m: conds['leader_power_lte'] = int(m.group(1))
+
     # "if your opponent has a Character with N power or more" -- existe
     # Character no campo do OPONENTE com power >= N (distinto de
     # other_char_power_gte, que e sobre o PROPRIO campo).
@@ -109,6 +120,20 @@ def parse_conditions(text):
     if 'leader_power_gte' in conds and 'leader_type' not in conds and 'leader_type_includes' not in conds:
         m = re.search(r'power or more and (?:the )?["\[{]([^"\]}]+)["\]}] type', t)
         if m: conds['leader_type'] = m.group(1).strip()
+
+    # "if there is a Character with a cost of N [or with a cost of M or
+    # more]" -- condicao de EXISTENCIA sobre QUALQUER Character no jogo
+    # (qualquer lado do campo), distinta de chars_gte (que conta o proprio
+    # campo do jogador). Dois padroes: simples "cost of N" e composto
+    # "cost of N or with a cost of M or more". 14 cards no banco
+    # (ex: OP14-098 Crescent Cutlass).
+    m = re.search(
+        r'if there is a character with a cost of (\d+)'
+        r'(?: or with a cost of (\d+) or more)?', t)
+    if m:
+        conds['board_has_cost'] = [int(m.group(1))]
+        if m.group(2):
+            conds['board_has_cost_gte'] = int(m.group(2))
 
     return conds
 
@@ -138,6 +163,20 @@ def parse_costs(text):
 
     if re.search(r'trash this (character|card)', t):
         costs.append({'type': 'trash_self'})
+
+    # Custo de K.O. de um Character PROPRIO (distinto de trash_self: o alvo
+    # nao e a carta que ativa o efeito, e outro Character do jogador, e o
+    # K.O. dispara o [On K.O.] desse Character -- K.O. != Trash). Pode ter
+    # filtro de tipo. Ex: OP14-079 Crocodile "You may K.O. up to 1 of your
+    # Characters with a type including 'Baroque Works': ...".
+    m = re.search(
+        r'you may k\.?o\.? (?:up to )?(\d+) of your character'
+        r'(?:s)?(?: with a type including [\'"\[{]([a-z][a-z0-9 .\'-]+)[\'"\]}])?', t)
+    if m:
+        cost = {'type': 'ko_own_character', 'count': int(m.group(1))}
+        if m.group(2):
+            cost['filter_type'] = m.group(2).strip()
+        costs.append(cost)
 
     m = re.search(r'rest (\d+) of your don!!', t)
     if m:
@@ -1164,7 +1203,8 @@ def parse_cost_debuff(text):
         elif 'all of your' in t:
             step['count'] = 99
         type_m = (re.search(r'"([a-z][a-z0-9 .\'-]+)"\s+type', t)
-                  or re.search(r'[\[{]([a-z][a-z0-9 .\'-]+)[\]}]\s+type', t))
+                  or re.search(r'[\[{]([a-z][a-z0-9 .\'-]+)[\]}]\s+type', t)
+                  or re.search(r'type including ["\[{]([a-z][a-z0-9 .\'-]+)["\]}]', t))
         if type_m and not is_self:
             step['filter_type'] = type_m.group(1).strip()
         color_m = re.search(r'your (black|red|green|blue|yellow|purple) characters', t)
@@ -1175,7 +1215,15 @@ def parse_cost_debuff(text):
         # characters com custo >= N recebem o auto-buff/debuff). Ex: OP10-042
         # 'all of your "Dressrosa" type Characters with a cost of 2 or more
         # gain +1 cost'.
-        cost_gte_m = re.search(r'with a cost of (\d+) or more', t)
+        # IMPORTANTE: buscar SO na clausula do alvo (apos 'all of your' /
+        # 'up to N of your'), nao no texto inteiro -- senao captura por engano
+        # a condicao de ativacao 'if there is a Character with a cost of N or
+        # more' que vem antes na mesma frase (ex: OP14-098).
+        target_clause = t
+        clause_m = re.search(r'(?:all of your|up to \d+ of your).*', t)
+        if clause_m:
+            target_clause = clause_m.group(0)
+        cost_gte_m = re.search(r'with a cost of (\d+) or more', target_clause)
         if cost_gte_m and not is_self:
             step['cost_gte'] = int(cost_gte_m.group(1))
         duration_m = re.search(r'until the end of your opponent.?s next (?:end phase|turn)', t)

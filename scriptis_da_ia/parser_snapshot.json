@@ -2769,6 +2769,12 @@
     },
     "EB03-046": {
         "on_play": {
+            "conditions": {
+                "board_has_cost": [
+                    0
+                ],
+                "board_has_cost_gte": 8
+            },
             "steps": [
                 {
                     "action": "draw",
@@ -6901,6 +6907,11 @@
     },
     "OP02-093": {
         "activate_main": {
+            "conditions": {
+                "board_has_cost": [
+                    0
+                ]
+            },
             "don_requirement": 1,
             "once_per_turn": true,
             "steps": [
@@ -6921,6 +6932,11 @@
     "OP02-094": {},
     "OP02-095": {
         "passive": {
+            "conditions": {
+                "board_has_cost": [
+                    0
+                ]
+            },
             "steps": [
                 {
                     "action": "gain_banish"
@@ -7005,6 +7021,11 @@
     },
     "OP02-102": {
         "when_attacking": {
+            "conditions": {
+                "board_has_cost": [
+                    0
+                ]
+            },
             "steps": [
                 {
                     "action": "buff_power",
@@ -7130,6 +7151,11 @@
             ]
         },
         "when_attacking": {
+            "conditions": {
+                "board_has_cost": [
+                    0
+                ]
+            },
             "steps": [
                 {
                     "action": "buff_power",
@@ -11071,6 +11097,9 @@
     },
     "OP05-009": {
         "on_play": {
+            "conditions": {
+                "leader_power_lte": 0
+            },
             "steps": [
                 {
                     "action": "draw",
@@ -12258,6 +12287,12 @@
     },
     "OP05-087": {
         "when_attacking": {
+            "costs": [
+                {
+                    "count": 1,
+                    "type": "ko_own_character"
+                }
+            ],
             "don_requirement": 1,
             "steps": [
                 {
@@ -20631,6 +20666,11 @@
     },
     "OP10-058": {
         "on_play": {
+            "conditions": {
+                "board_has_cost": [
+                    8
+                ]
+            },
             "steps": [
                 {
                     "action": "draw",
@@ -23007,6 +23047,11 @@
     "OP11-094": {},
     "OP11-095": {
         "on_play": {
+            "conditions": {
+                "board_has_cost": [
+                    9
+                ]
+            },
             "steps": [
                 {
                     "action": "ko",
@@ -24196,6 +24241,9 @@
     },
     "OP12-059": {
         "counter": {
+            "conditions": {
+                "events_in_trash_gte": 4
+            },
             "steps": [
                 {
                     "action": "buff_power",
@@ -24261,6 +24309,9 @@
     },
     "OP12-063": {
         "passive": {
+            "conditions": {
+                "events_in_trash_gte": 4
+            },
             "steps": [
                 {
                     "action": "buff_power",
@@ -24285,6 +24336,9 @@
             ]
         },
         "passive": {
+            "conditions": {
+                "events_in_trash_gte": 4
+            },
             "steps": [
                 {
                     "action": "gain_blocker"
@@ -24294,6 +24348,9 @@
     },
     "OP12-066": {
         "passive": {
+            "conditions": {
+                "events_in_trash_gte": 4
+            },
             "costs": [
                 {
                     "type": "rest_self"
@@ -27284,6 +27341,11 @@
     },
     "OP14-020": {
         "activate_main": {
+            "conditions": {
+                "board_has_cost": [
+                    5
+                ]
+            },
             "once_per_turn": true,
             "steps": [
                 {
@@ -28219,6 +28281,13 @@
     },
     "OP14-079": {
         "activate_main": {
+            "costs": [
+                {
+                    "count": 1,
+                    "filter_type": "baroque works",
+                    "type": "ko_own_character"
+                }
+            ],
             "once_per_turn": true,
             "steps": [
                 {
@@ -28350,6 +28419,7 @@
                     "amount": 2,
                     "count": 99,
                     "duration": "permanent",
+                    "filter_type": "baroque works",
                     "target": "own_character"
                 }
             ]
@@ -28461,6 +28531,12 @@
     },
     "OP14-094": {
         "on_play": {
+            "conditions": {
+                "board_has_cost": [
+                    0
+                ],
+                "board_has_cost_gte": 8
+            },
             "steps": [
                 {
                     "action": "draw",
@@ -28553,13 +28629,19 @@
             ]
         },
         "main": {
+            "conditions": {
+                "board_has_cost": [
+                    0
+                ],
+                "board_has_cost_gte": 8
+            },
             "steps": [
                 {
                     "action": "buff_cost",
                     "amount": 3,
-                    "cost_gte": 8,
                     "count": 99,
                     "duration": "until_opp_turn_end",
+                    "filter_type": "baroque works",
                     "target": "own_character"
                 }
             ]
@@ -29090,6 +29172,9 @@
     },
     "OP15-004": {
         "on_play": {
+            "conditions": {
+                "leader_power_lte": 0
+            },
             "steps": [
                 {
                     "action": "debuff_power",
@@ -29114,6 +29199,9 @@
     },
     "OP15-006": {
         "passive": {
+            "conditions": {
+                "events_in_trash_gte": 4
+            },
             "steps": [
                 {
                     "action": "buff_power",
@@ -29236,6 +29324,9 @@
     },
     "OP15-013": {
         "passive": {
+            "conditions": {
+                "leader_power_lte": 0
+            },
             "steps": [
                 {
                     "action": "debuff_cost",
@@ -29373,6 +29464,9 @@
             ]
         },
         "passive": {
+            "conditions": {
+                "events_in_trash_gte": 4
+            },
             "steps": [
                 {
                     "action": "debuff_cost",
@@ -35244,6 +35338,11 @@
     "ST06-003": {},
     "ST06-004": {
         "passive": {
+            "conditions": {
+                "board_has_cost": [
+                    0
+                ]
+            },
             "steps": [
                 {
                     "action": "gain_double_attack"
@@ -35757,6 +35856,11 @@
     },
     "ST08-009": {
         "on_play": {
+            "conditions": {
+                "board_has_cost": [
+                    0
+                ]
+            },
             "steps": [
                 {
                     "action": "draw",

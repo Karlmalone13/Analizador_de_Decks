@@ -4680,7 +4680,13 @@
             "action": "draw",
             "count": 1
           }
-        ]
+        ],
+        "conditions": {
+          "board_has_cost": [
+            0
+          ],
+          "board_has_cost_gte": 8
+        }
       }
     }
   },
@@ -12021,6 +12027,11 @@
             "target": "opp_character"
           }
         ],
+        "conditions": {
+          "board_has_cost": [
+            0
+          ]
+        },
         "once_per_turn": true,
         "don_requirement": 1
       }
@@ -12054,7 +12065,12 @@
           {
             "action": "gain_banish"
           }
-        ]
+        ],
+        "conditions": {
+          "board_has_cost": [
+            0
+          ]
+        }
       }
     }
   },
@@ -12218,7 +12234,12 @@
             "target": "self",
             "duration": "battle_only"
           }
-        ]
+        ],
+        "conditions": {
+          "board_has_cost": [
+            0
+          ]
+        }
       }
     }
   },
@@ -12461,7 +12482,12 @@
             "target": "opp_character",
             "count": 1
           }
-        ]
+        ],
+        "conditions": {
+          "board_has_cost": [
+            0
+          ]
+        }
       },
       "trigger": {
         "steps": [
@@ -19226,7 +19252,10 @@
             "action": "draw",
             "count": 1
           }
-        ]
+        ],
+        "conditions": {
+          "leader_power_lte": 0
+        }
       }
     }
   },
@@ -21271,6 +21300,12 @@
             "action": "debuff_cost",
             "amount": 5,
             "target": "opp_character",
+            "count": 1
+          }
+        ],
+        "costs": [
+          {
+            "type": "ko_own_character",
             "count": 1
           }
         ],
@@ -35837,7 +35872,12 @@
             "action": "draw",
             "count": 1
           }
-        ]
+        ],
+        "conditions": {
+          "board_has_cost": [
+            8
+          ]
+        }
       }
     }
   },
@@ -39936,7 +39976,12 @@
             "count": 1,
             "rested": true
           }
-        ]
+        ],
+        "conditions": {
+          "board_has_cost": [
+            9
+          ]
+        }
       }
     }
   },
@@ -42033,7 +42078,10 @@
             "target": "leader",
             "duration": "battle_only"
           }
-        ]
+        ],
+        "conditions": {
+          "events_in_trash_gte": 4
+        }
       },
       "main": {
         "steps": [
@@ -42145,7 +42193,10 @@
           {
             "action": "keyword_blocker"
           }
-        ]
+        ],
+        "conditions": {
+          "events_in_trash_gte": 4
+        }
       }
     }
   },
@@ -42185,7 +42236,10 @@
           {
             "action": "gain_blocker"
           }
-        ]
+        ],
+        "conditions": {
+          "events_in_trash_gte": 4
+        }
       }
     }
   },
@@ -42206,6 +42260,9 @@
             "action": "gain_blocker"
           }
         ],
+        "conditions": {
+          "events_in_trash_gte": 4
+        },
         "costs": [
           {
             "type": "rest_self"
@@ -47319,6 +47376,11 @@
             "action": "set_don_active"
           }
         ],
+        "conditions": {
+          "board_has_cost": [
+            5
+          ]
+        },
         "once_per_turn": true
       },
       "passive": {
@@ -48906,6 +48968,13 @@
             "count": 1
           }
         ],
+        "costs": [
+          {
+            "type": "ko_own_character",
+            "count": 1,
+            "filter_type": "baroque works"
+          }
+        ],
         "once_per_turn": true
       }
     }
@@ -49103,6 +49172,7 @@
             "amount": 2,
             "target": "own_character",
             "count": 99,
+            "filter_type": "baroque works",
             "duration": "permanent"
           }
         ],
@@ -49315,7 +49385,13 @@
             "action": "trash_from_hand",
             "count": 1
           }
-        ]
+        ],
+        "conditions": {
+          "board_has_cost": [
+            0
+          ],
+          "board_has_cost_gte": 8
+        }
       },
       "passive": {
         "steps": [
@@ -49447,10 +49523,16 @@
             "amount": 3,
             "target": "own_character",
             "count": 99,
-            "cost_gte": 8,
+            "filter_type": "baroque works",
             "duration": "until_opp_turn_end"
           }
-        ]
+        ],
+        "conditions": {
+          "board_has_cost": [
+            0
+          ],
+          "board_has_cost_gte": 8
+        }
       }
     }
   },
@@ -50271,7 +50353,10 @@
             "target": "opp_character",
             "duration": "this_turn"
           }
-        ]
+        ],
+        "conditions": {
+          "leader_power_lte": 0
+        }
       }
     }
   },
@@ -50317,7 +50402,10 @@
             "target": "self",
             "duration": "this_turn"
           }
-        ]
+        ],
+        "conditions": {
+          "events_in_trash_gte": 4
+        }
       }
     }
   },
@@ -50518,7 +50606,10 @@
           {
             "action": "keyword_blocker"
           }
-        ]
+        ],
+        "conditions": {
+          "leader_power_lte": 0
+        }
       }
     }
   },
@@ -50740,7 +50831,10 @@
             "amount": 3,
             "target": "self"
           }
-        ]
+        ],
+        "conditions": {
+          "events_in_trash_gte": 4
+        }
       }
     }
   },
@@ -61097,7 +61191,12 @@
           {
             "action": "gain_double_attack"
           }
-        ]
+        ],
+        "conditions": {
+          "board_has_cost": [
+            0
+          ]
+        }
       }
     }
   },
@@ -62040,7 +62139,12 @@
             "action": "draw",
             "count": 1
           }
-        ]
+        ],
+        "conditions": {
+          "board_has_cost": [
+            0
+          ]
+        }
       }
     }
   },
