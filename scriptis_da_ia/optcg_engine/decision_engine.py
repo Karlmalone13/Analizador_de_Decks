@@ -197,6 +197,72 @@ class GameState:
         return self.don_available + self.don_rested
 
 
+def is_attack_locked_self(card: 'Card', owner: 'GameState', opp: 'GameState') -> bool:
+    """
+    True se `card` esta travada para atacar por um efeito PASSIVO PROPRIO
+    (cannot_attack_self / cannot_attack_self_unless /
+    cannot_attack_own_characters_by_cost), distinto de cannot_attack_until
+    (que e trava posta por OUTRA carta via lock_opp_character_attack e ja
+    e checada separadamente nos mesmos 6 pontos). Centraliza a logica aqui
+    em vez de duplicar em GameAnalyzer/OPTCGMatch -- ambas as classes tem
+    acesso a um GameState do dono e um do oponente em todo ponto que
+    precisa decidir "esta carta pode atacar?".
+
+    Condicoes suportadas (mesmo vocabulario de _check_conditions, mas
+    replicado aqui de forma minima -- so os campos que cannot_attack_self_*
+    de fato usa no banco hoje: board_has_power_gte,
+    opp_chars_power_gte_count). Se 'conditions' nao foi reconhecida pelo
+    parser (campo legado 'condition_text' presente em vez de 'conditions'),
+    trata como travado SEMPRE -- mais seguro assumir o lock ativo do que
+    liberar o ataque sem confirmar a condicao real.
+    """
+    effects = get_card_effects(card.code)
+    passive = effects.get('passive', {})
+    for step in passive.get('steps', []):
+        action = step.get('action')
+        if action == 'cannot_attack_self':
+            return True
+        if action == 'cannot_attack_self_unless':
+            if 'condition_text' in step and 'conditions' not in step:
+                return True  # condicao nao estruturada -- trava por seguranca
+            conds = step.get('conditions', {})
+            if 'board_has_power_gte' in conds:
+                todos = list(owner.field_chars) + list(opp.field_chars)
+                if not todos or max(c.effective_power(True) for c in todos) < conds['board_has_power_gte']:
+                    return True  # condicao NAO satisfeita -> travada
+            if 'opp_chars_power_gte_count' in conds:
+                spec = conds['opp_chars_power_gte_count']
+                n = sum(1 for c in opp.field_chars if c.effective_power(False) >= spec['power_gte'])
+                if n < spec['count']:
+                    return True
+            # alguma condicao reconhecida e satisfeita (ou nenhuma condicao
+            # suportada presente, caso futuro) -- nao trava.
+    # mass_lock_conditional e um efeito de OUTRA carta no board (ex: P-084)
+    # que trava `card` por filtro de custo -- precisa varrer todo o board
+    # do dono (characters + leader) procurando alguma fonte com esse
+    # trigger ativo, e nao apenas os efeitos da propria `card` sendo
+    # avaliada (P-084 trava as OUTRAS cartas custo 3/4, nao trava P-084
+    # nela mesma via este trigger -- P-084 se trava via cannot_attack_self
+    # incondicional, ja checado acima).
+    fontes_mass_lock = list(owner.field_chars) + [owner.leader]
+    for fonte in fontes_mass_lock:
+        fonte_effects = get_card_effects(fonte.code)
+        mass_lock = fonte_effects.get('mass_lock_conditional')
+        if not mass_lock:
+            continue
+        conds = mass_lock.get('conditions', {})
+        leader_is = conds.get('leader_is', '').lower()
+        if leader_is and leader_is not in owner.leader.name.lower():
+            continue
+        costs_alvo = set()
+        for s in mass_lock.get('steps', []):
+            if s.get('action') == 'cannot_attack_own_characters_by_cost':
+                costs_alvo.update(s.get('costs', []))
+        if card.cost in costs_alvo:
+            return True
+    return False
+
+
 # ===========================================================================
 # EffectExecutor — único ponto de execução de efeitos
 # Baseado no DoV3ActionStep das 34k linhas
@@ -512,6 +578,23 @@ class EffectExecutor:
                 return False
         if 'opp_char_power_gte' in conds:
             if not opp.field_chars or max(c.effective_power(False) for c in opp.field_chars) < conds['opp_char_power_gte']:
+                return False
+        if 'board_has_power_gte' in conds:
+            # condicao de existencia generica: QUALQUER Character no jogo
+            # (os dois campos) com power >= N. Mesma semantica de
+            # board_has_cost, mas para power -- usada por
+            # cannot_attack_self_unless (ex: EB04-051).
+            todos = list(me.field_chars) + list(opp.field_chars)
+            if not todos or max(c.effective_power(True) for c in todos) < conds['board_has_power_gte']:
+                return False
+        if 'opp_chars_power_gte_count' in conds:
+            # CONTAGEM (nao existencia): precisa de >= count Characters
+            # distintos no campo do OPONENTE, cada um com power >= power_gte
+            # -- usada por cannot_attack_self_unless (ex: EB04-005) e por
+            # efeitos condicionais a board do oponente (ex: OP09-005).
+            spec = conds['opp_chars_power_gte_count']
+            n = sum(1 for c in opp.field_chars if c.effective_power(False) >= spec['power_gte'])
+            if n < spec['count']:
                 return False
         if 'self_type' in conds and conds['self_type'] not in card.sub_types.lower():
             return False
@@ -1612,7 +1695,8 @@ class GameAnalyzer:
         """Poder total de ataque disponível (sem DON)."""
         total = self.me.leader.effective_power(True) if not self.me.leader.rested else 0
         for c in self.me.field_chars:
-            if not c.rested and not c.just_played and not c.cannot_attack_until and not c.cannot_be_rested_until:
+            if (not c.rested and not c.just_played and not c.cannot_attack_until
+                    and not c.cannot_be_rested_until and not is_attack_locked_self(c, self.me, self.opp)):
                 total += c.effective_power(True)
         return total
 
@@ -1694,17 +1778,110 @@ class GameAnalyzer:
 
     def can_lethal_this_turn(self) -> bool:
         """
-        Posso finalizar o oponente neste turno?
-        Leva em conta vida do oponente, atacantes disponíveis e DON.
+        Posso GARANTIR a vitória neste turno, mesmo no pior caso de defesa do
+        oponente (ele escolhe livremente blocker/counter por ataque, na ordem
+        que mais o favorece)?
+
+        Antes, esta funcao so contava NUMERO de ataques >= vida+1, ignorando
+        poder/blocker/counter -- superestimava lethal contra qualquer
+        oponente com blocker ou counter na mao. Agora simula o pior caso real:
+          1. Lista os poderes de ataque disponiveis (com DON ja anexado via
+             effective_power); double attack conta como 2 hits do MESMO poder
+             (e o MESMO ataque -- um unico Blocker ou Counter resolve os 2
+             hits dele, nao 2 blockers/counters separados).
+          2. Ataques [Unblockable] NUNCA podem ser bloqueados -- sempre vao
+             direto pro Leader.
+          3. Os blocker do oponente (N ativos) desviam ate N ataques
+             BLOQUEAVEIS -- ele escolhe bloquear os de MAIOR poder primeiro
+             (sao os mais caros/dificeis de cobrir so com counter), pior caso
+             pra mim.
+          4. O que sobra (nao bloqueado) precisa ser coberto por counter da
+             MAO REAL do oponente (nao estimativa -- a simulacao conhece a
+             mao do oponente do outro lado). Sobrevive ao ataque de poder P
+             se consegue somar counter total >= P - leader_power + 1.
+             Distribui os counters da mao greedy: cobre primeiro os ataques
+             que precisam de MENOS counter (maximiza quantos ataques
+             sobrevive com o estoque de counter que tem).
+          5. Lethal garantido = mesmo nessa defesa otima do oponente, a vida
+             dele chega a 0 E ainda resta pelo menos 1 hit que conecta
+             (regra: receber dano com 0 vidas = derrota).
         """
         opp_life = self.opp.life_count()
+        leader_power = self.opp.leader.effective_power(False)
+
+        # Ataques disponiveis: (poder, eh_unblockable, hits) -- double attack
+        # e 1 ataque so (1 blocker/counter resolve os 2 hits), mas conta 2
+        # hits de dano se conectar.
+        ataques = []
+        if not self.me.leader.rested and not is_attack_locked_self(self.me.leader, self.me, self.opp):
+            ataques.append((self.me.leader.effective_power(True), self.me.leader.has_unblockable, 1))
+        for c in self.me.field_chars:
+            if (not c.rested and not c.just_played and not c.cannot_attack_until
+                    and not c.cannot_be_rested_until and not is_attack_locked_self(c, self.me, self.opp)):
+                hits = 2 if c.is_double_attack() else 1
+                ataques.append((c.effective_power(True), c.has_unblockable, hits))
+
+        if not ataques:
+            return False  # sem atacantes disponiveis, nunca fecha o jogo
+
+        unblockable = [a for a in ataques if a[1]]
+        bloqueaveis = sorted([a for a in ataques if not a[1]], key=lambda a: -a[0])  # maior poder primeiro
+
+        n_blockers = len(self.opp.blockers_active())
+        # Oponente bloqueia os N bloqueaveis de MAIOR poder (pior caso pra mim)
+        bloqueados = bloqueaveis[:n_blockers]
+        nao_bloqueados = bloqueaveis[n_blockers:]
+
+        candidatos_dano = unblockable + nao_bloqueados  # estes podem conectar (sujeitos a counter)
+
+        if not candidatos_dano:
+            return False  # tudo que sobrou foi bloqueado, nada chega na vida/leader
+
+        # Counters disponiveis na mao REAL do oponente (conhecida na simulacao,
+        # nao estimada -- distinto de max_plausible_defense, usado quando a
+        # mao do oponente NAO e observavel).
+        counters_disponiveis = sorted(
+            [c.counter for c in self.opp.hand if c.counter > 0]
+        )
+
+        # Greedy: cobre primeiro os ataques que precisam de MENOS counter
+        # (maximiza quantos ataques o oponente sobrevive com o estoque que
+        # tem) -- pior caso pra mim, melhor defesa pra ele.
+        candidatos_dano_ordenados = sorted(candidatos_dano, key=lambda a: a[0])
+        sobrou_counters = list(counters_disponiveis)
+        conecta = []
+        for power, is_unblockable, hits in candidatos_dano_ordenados:
+            necessario = power - leader_power + 1
+            # necessario = quanto de counter o oponente precisa somar para a
+            # defesa (leader_power + counter) IGUALAR ou SUPERAR o ataque.
+            # necessario <= 0 significa power < leader_power -- o ataque NAO
+            # tem poder suficiente para conectar mesmo SEM nenhum counter
+            # (regra do jogo: conecta apenas se atk_power >= defend_power) --
+            # logo nao conecta, e nao consome counter nenhum do oponente.
+            if necessario <= 0:
+                continue  # nao conecta, counters do oponente ficam intactos
+            # tenta cobrir 'necessario' somando counters disponiveis (do menor
+            # pro maior, gastando o minimo de cartas possivel)
+            soma = 0
+            usados = []
+            for ctr in sobrou_counters:
+                if soma >= necessario:
+                    break
+                soma += ctr
+                usados.append(ctr)
+            if soma >= necessario:
+                for u in usados:
+                    sobrou_counters.remove(u)
+                # sobreviveu -- nao conecta
+            else:
+                conecta.append((power, hits))  # nao deu pra cobrir -- conecta
+
+        hits_que_conectam = sum(h for _, h in conecta)
+
         if opp_life > 0:
-            # Precisa de hits suficientes para zerar vida + 1 hit final
-            available_attacks = self._count_available_attacks()
-            return available_attacks >= opp_life + 1
+            return hits_que_conectam >= opp_life + 1
         else:
-            # Oponente já está com 0 vidas — qualquer ataque no líder fecha
-            return self._count_available_attacks() >= 1
+            return hits_que_conectam >= 1
 
     def _count_available_attacks(self) -> int:
         """Conta ataques disponíveis incluindo double attack."""
@@ -1712,7 +1889,8 @@ class GameAnalyzer:
         if not self.me.leader.rested:
             count += 1
         for c in self.me.field_chars:
-            if not c.rested and not c.just_played and not c.cannot_attack_until and not c.cannot_be_rested_until:
+            if (not c.rested and not c.just_played and not c.cannot_attack_until
+                    and not c.cannot_be_rested_until and not is_attack_locked_self(c, self.me, self.opp)):
                 count += 2 if c.is_double_attack() else 1
         return count
 
@@ -2700,9 +2878,12 @@ class OPTCGMatch:
         if p.don_available <= 0:
             return
 
+        opp = self.state_b if p is self.state_a else self.state_a
+
         # Candidatos: personagens ativos + líder
         candidates = [c for c in p.field_chars
-                      if not c.rested and not c.just_played and not c.cannot_attack_until and not c.cannot_be_rested_until]
+                      if not c.rested and not c.just_played and not c.cannot_attack_until
+                      and not c.cannot_be_rested_until and not is_attack_locked_self(c, p, opp)]
         if not p.leader.rested:
             candidates.append(p.leader)
 
@@ -3039,7 +3220,9 @@ class OPTCGMatch:
 
         # ── Ações de ATACAR (com risco de trigger descontado) ──
         if p.can_attack_this_turn():
-            attackers = [c for c in p.field_chars if not c.rested and not c.just_played and not c.cannot_attack_until and not c.cannot_be_rested_until]
+            attackers = [c for c in p.field_chars
+                         if not c.rested and not c.just_played and not c.cannot_attack_until
+                         and not c.cannot_be_rested_until and not is_attack_locked_self(c, p, opp)]
             if not p.leader.rested:
                 attackers.append(p.leader)
             for att in attackers:
@@ -3380,7 +3563,8 @@ class OPTCGMatch:
         # 3. Distribui DON entre os atacantes
         if p.can_attack_this_turn():
             attackers = [c for c in p.field_chars
-                         if not c.rested and not c.just_played and not c.cannot_attack_until and not c.cannot_be_rested_until]
+                         if not c.rested and not c.just_played and not c.cannot_attack_until
+                         and not c.cannot_be_rested_until and not is_attack_locked_self(c, p, opp)]
             if not p.leader.rested:
                 attackers.append(p.leader)
 
@@ -3422,7 +3606,8 @@ class OPTCGMatch:
 
                 if not opp.life:
                     remaining = [c for c in p.field_chars
-                                 if not c.rested and not c.just_played and not c.cannot_attack_until and not c.cannot_be_rested_until
+                                 if not c.rested and not c.just_played and not c.cannot_attack_until
+                                 and not c.cannot_be_rested_until and not is_attack_locked_self(c, p, opp)
                                  and id(c) not in atacantes_usados]
                     if not p.leader.rested and id(p.leader) not in atacantes_usados:
                         remaining.append(p.leader)

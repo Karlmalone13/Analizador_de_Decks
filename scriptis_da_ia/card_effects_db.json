@@ -5318,7 +5318,12 @@
         "steps": [
           {
             "action": "cannot_attack_self_unless",
-            "condition_text": "your opponent has 2 or more characters with a base power of 5000 or more"
+            "conditions": {
+              "opp_chars_power_gte_count": {
+                "count": 2,
+                "power_gte": 5000
+              }
+            }
           }
         ]
       }
@@ -6715,7 +6720,9 @@
         "steps": [
           {
             "action": "cannot_attack_self_unless",
-            "condition_text": "there is a character with 12000 base power or more"
+            "conditions": {
+              "board_has_power_gte": 12000
+            }
           }
         ]
       }
@@ -31463,7 +31470,13 @@
             "action": "trash_from_hand",
             "count": 1
           }
-        ]
+        ],
+        "conditions": {
+          "opp_chars_power_gte_count": {
+            "count": 2,
+            "power_gte": 5000
+          }
+        }
       },
       "passive": {
         "steps": [

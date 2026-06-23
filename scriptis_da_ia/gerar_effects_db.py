@@ -179,6 +179,27 @@ def parse_conditions(text):
         if m.group(2):
             conds['board_has_cost_gte'] = int(m.group(2))
 
+    # "there is a Character with N base power or more" -- existencia
+    # generica de POWER no jogo (qualquer lado do campo), mesma semantica
+    # de board_has_cost mas para power em vez de cost. Distinta de
+    # other_char_power_gte (proprio campo) e opp_char_power_gte (campo do
+    # oponente, existencia de 1). Usada por cannot_attack_self_unless (ex:
+    # EB04-051 'cannot attack unless there is a Character with 12000 base
+    # power or more').
+    m = re.search(r'there is a character with (\d+) base power or more', t)
+    if m: conds['board_has_power_gte'] = int(m.group(1))
+
+    # "your opponent has N or more Characters with a base power of M or
+    # more" -- CONTAGEM (nao existencia) no campo do oponente: precisa de N
+    # Characters distintos, cada um com power >= M. Distinta de
+    # opp_char_power_gte (so checa se EXISTE 1 Character com power >= M,
+    # sem exigir contagem minima). Usada por cannot_attack_self_unless (ex:
+    # EB04-005).
+    m = re.search(
+        r'your opponent has (\d+) or more characters with a base power of (\d+) or more', t)
+    if m:
+        conds['opp_chars_power_gte_count'] = {'count': int(m.group(1)), 'power_gte': int(m.group(2))}
+
     return conds
 
 
@@ -567,10 +588,20 @@ def parse_lock_attack(text):
     if re.search(r'this character cannot attack(?! a leader)', t):
         unless_m = re.search(r'this character cannot attack unless ([^.]+)', t)
         if unless_m:
-            steps.append({
-                'action': 'cannot_attack_self_unless',
-                'condition_text': unless_m.group(1).strip(),
-            })
+            cond_texto = unless_m.group(1).strip()
+            cond_estruturada = parse_conditions(cond_texto)
+            step_unless = {'action': 'cannot_attack_self_unless'}
+            if cond_estruturada:
+                step_unless['conditions'] = cond_estruturada
+            else:
+                # fallback: condicao ainda nao reconhecida por
+                # parse_conditions -- preserva o texto cru para auditoria
+                # futura em vez de descartar silenciosamente, mas o engine
+                # trata ausencia de 'conditions' estruturada como travado
+                # sempre (mais seguro: forcar o lock incondicionalmente do
+                # que assumir liberado sem confirmar a condicao real).
+                step_unless['condition_text'] = cond_texto
+            steps.append(step_unless)
         else:
             steps.append({'action': 'cannot_attack_self'})
         # Padrao adicional, raro: alem do self-lock acima, o MESMO bloco pode
@@ -2024,6 +2055,22 @@ def parse_card_effect(card_text, card_type):
                         '', segmento_solto
                     ).strip()
 
+                # 'cannot_attack_self_unless' tambem carrega SUA PROPRIA
+                # 'conditions' (quando reconhecida por parse_conditions, ver
+                # acima) -- remove a clausula "cannot attack unless [cond]"
+                # do texto usado para extrair conditions do passive
+                # restante, senao parse_conditions(segmento_solto)
+                # reencontraria a mesma condicao e duplicaria no nivel do
+                # entry (inofensivo enquanto o passive tiver so esse step,
+                # mas viraria scope leakage real se outro step incondicional
+                # for adicionado ao mesmo bloco no futuro).
+                unless_steps = [s for s in solto_steps if s.get('action') == 'cannot_attack_self_unless' and 'conditions' in s]
+                if unless_steps:
+                    segmento_solto = re.sub(
+                        r'this character cannot attack unless [^.]+\.?',
+                        '', segmento_solto, flags=re.IGNORECASE
+                    ).strip()
+
             if solto_steps:
                 is_sub_solto = len(solto_steps) == 1 and solto_steps[0].get('action') in ('substitute_ko', 'substitute_removal')
                 solto_entry = {'steps': solto_steps}
@@ -2083,7 +2130,21 @@ def parse_card_effect(card_text, card_type):
             if fallback_steps:
                 is_substitute_fb = len(fallback_steps) == 1 and fallback_steps[0].get('action') in ('substitute_ko', 'substitute_removal')
                 entry = {'steps': fallback_steps}
-                conds = parse_conditions(t_low)
+
+                # mesma logica usada no segmento_solto: 'cannot_attack_self_unless'
+                # ja carrega sua PROPRIA 'conditions' (quando reconhecida) --
+                # remove a clausula antes de extrair parse_conditions(t_low)
+                # do bloco inteiro, senao a mesma condicao duplicaria no
+                # nivel do entry (ex: EB04-005, fallback sem tag formal).
+                t_low_para_conds = t_low
+                unless_steps_fb = [s for s in fallback_steps if s.get('action') == 'cannot_attack_self_unless' and 'conditions' in s]
+                if unless_steps_fb:
+                    t_low_para_conds = re.sub(
+                        r'this character cannot attack unless [^.]+\.?',
+                        '', t_low_para_conds, flags=re.IGNORECASE
+                    ).strip()
+
+                conds = parse_conditions(t_low_para_conds)
                 costs = [] if is_substitute_fb else parse_costs(t_low)
 
                 # mesmo split de "Then, if"/"If" usado no loop de tags
@@ -2093,7 +2154,7 @@ def parse_card_effect(card_text, card_type):
                 # Leader gains +1000 power' -- a condicao so deveria valer
                 # pro buff_power, nao pro buff_cost).
                 if not is_substitute_fb:
-                    parte_a_fb, parte_b_fb = split_then_if(t_low)
+                    parte_a_fb, parte_b_fb = split_then_if(t_low_para_conds)
                     if parte_b_fb is not None:
                         steps_a_fb = parse_block(parte_a_fb, 'passive')
                         steps_b_fb = parse_block(parte_b_fb, 'passive')
