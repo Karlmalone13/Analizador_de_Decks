@@ -27,7 +27,7 @@ def parse_conditions(text):
     m = re.search(r'(?:if|and) you have (\d+) or more life', t)
     if m: conds['life_gte'] = int(m.group(1))
 
-    m = re.search(r'if you have (\d+) or more cards? in your trash', t)
+    m = re.search(r'(?:if (?:you have|there are)|and you have) (\d+) or more cards? in your trash', t)
     if m: conds['trash_gte'] = int(m.group(1))
 
     m = re.search(r'if you have (\d+) or more don!!', t)
@@ -36,11 +36,17 @@ def parse_conditions(text):
     m = re.search(r'if you have (\d+) or more don!! cards? on your field', t)
     if m: conds['don_on_field_gte'] = int(m.group(1))
 
-    m = re.search(r'if you have (\d+) or more characters?', t)
-    if m: conds['chars_gte'] = int(m.group(1))
+    m = re.search(r'if you have (\d+) or more characters?(?: with an? (?:base|original) cost of (\d+) or more)?', t)
+    if m:
+        conds['chars_gte'] = int(m.group(1))
+        if m.group(2):
+            conds['chars_gte_cost_filter'] = int(m.group(2))
 
     m = re.search(r'if you have (\d+) or less cards? in your hand', t)
     if m: conds['hand_lte'] = int(m.group(1))
+
+    m = re.search(r'if you have (\d+) or more cards? in your hand', t)
+    if m: conds['hand_gte'] = int(m.group(1))
 
     m = re.search(r'if your leader is \[([^\]]+)\]', t)
     if m: conds['leader_is'] = m.group(1)
@@ -467,6 +473,48 @@ def parse_lock_attack(text):
     if 'choose one' in t and ('•' in t or '\u2022' in t):
         return steps
 
+    # Self-lock: "This Character cannot attack" -- trava no PROPRIO
+    # Character, geralmente como contrapartida de um efeito forte
+    # (balanceamento). NUNCA tratar como lock_opp_character_attack (alvo
+    # oposto). Cobre tambem a variante condicional 'cannot attack unless
+    # [condicao do board]' -- aqui a condicao fica embutida na propria
+    # frase de ataque (distinto de lock_opp_attack_unless_pays, que e sobre
+    # o oponente pagar um custo por ataque; aqui e sobre o ESTADO DO BOARD
+    # permitir ou nao o proprio ataque, sem custo nenhum envolvido).
+    if re.search(r'this character cannot attack(?! a leader)', t):
+        unless_m = re.search(r'this character cannot attack unless ([^.]+)', t)
+        if unless_m:
+            steps.append({
+                'action': 'cannot_attack_self_unless',
+                'condition_text': unless_m.group(1).strip(),
+            })
+        else:
+            steps.append({'action': 'cannot_attack_self'})
+        # Padrao adicional, raro: alem do self-lock acima, o MESMO bloco pode
+        # conter uma 2a frase independente travando OUTROS Characters por
+        # filtro de custo, condicionada a um Leader especifico (ex: P-084
+        # 'This Character cannot attack. If your Leader is [Buggy], all
+        # Characters with a cost of 3 or 4 cannot attack.'). A condicao fica
+        # DENTRO do step (nao no nivel do entry/passive), pois parse_conditions
+        # roda sobre o bloco inteiro e contaminaria o self-lock incondicional
+        # acima se fosse anexada no entry. Carta unica confirmada -- escopo
+        # minimo, sem generalizar para outras variantes de filtro.
+        cond_leader_m = re.search(r"if your leader is \[([^\]]+)\]", t)
+        mass_m = re.search(
+            r'all characters with a cost of (\d+)(?: or (\d+))? cannot attack',
+            t
+        )
+        if mass_m and cond_leader_m:
+            costs_alvo = [int(mass_m.group(1))]
+            if mass_m.group(2):
+                costs_alvo.append(int(mass_m.group(2)))
+            steps.append({
+                'action': 'cannot_attack_own_characters_by_cost',
+                'costs': costs_alvo,
+                'conditions': {'leader_is': cond_leader_m.group(1).strip()},
+            })
+        return steps
+
     def parse_duration(clause):
         if 'end phase' in clause:
             return 'until_opp_end_phase'
@@ -676,6 +724,63 @@ def parse_power_buff(text):
             'action': 'debuff_power' if is_debuff else 'buff_power',
             'amount': amount, 'target': target, 'duration': duration
         })
+
+    return steps
+
+
+def parse_set_base_power(text):
+    """'[X]'s base power becomes N' -- SUBSTITUI o valor de power, nao soma
+    como buff_power/debuff_power. Distinto e nunca deve ser unificado: um
+    Character com base power 5000 e +2000 de buff tem 7000 de power; se um
+    segundo efeito diz 'base power becomes 6000', o resultado e 6000 (a
+    SUBSTITUICAO ignora buffs aditivos anteriores aplicados sobre a base),
+    nao 6000+2000. Alvos confirmados no banco: Leader, o proprio Character
+    ('this Character'), 'up to N of your Leader or Character cards', e 'all
+    of your [TIPO] cards' -- escopo deliberadamente restrito a esses 4
+    padroes textuais confirmados (8 cards), sem generalizar para variantes
+    nao vistas."""
+    steps = []
+    t = text.lower()
+
+    for m in re.finditer(r"([a-z][a-z0-9 {}\[\]\"'.\-]*?)'s? base power becomes (\d+)", t):
+        sujeito = m.group(1).strip()
+        amount = int(m.group(2))
+        contexto_depois = t[m.end():m.end() + 60]
+
+        if re.search(r'\bleader\b', sujeito) and 'character' not in sujeito:
+            target = 'leader'
+        elif 'this character' in sujeito:
+            target = 'self'
+        elif re.search(r'\bleader or character\b', sujeito):
+            # alvo ambiguo (escolha do jogador entre Leader OU Character) --
+            # marca os dois alvos possiveis explicitamente em vez de
+            # adivinhar um dos dois; quem consumir decide a prioridade.
+            target = 'leader_or_own_character'
+        elif re.search(r'\ball of your\b', sujeito) or re.search(r'up to \d+ of your', sujeito):
+            target = 'own_character'
+        else:
+            # sujeito nao reconhecido com confianca -- nao captura em vez
+            # de adivinhar o alvo errado (ex: poderia ser do OPONENTE, que
+            # ainda nao apareceu em nenhuma carta confirmada).
+            continue
+
+        step = {'action': 'set_base_power', 'amount': amount, 'target': target}
+
+        count_m = re.search(r'up to (\d+) of your', sujeito)
+        if count_m:
+            step['count'] = int(count_m.group(1))
+        type_m = (re.search(r'"([a-z][a-z0-9 .\'-]+)"\s+type', sujeito)
+                  or re.search(r'[\[{]([a-z][a-z0-9 .\'-]+)[\]}]', sujeito))
+        if type_m:
+            step['filter_type'] = type_m.group(1).strip()
+
+        if re.search(r'until the end of your opponent.?s next (?:end phase|turn)', contexto_depois):
+            step['duration'] = 'until_opp_turn_end'
+        elif re.search(r'during this turn', contexto_depois):
+            step['duration'] = 'this_turn'
+        else:
+            step['duration'] = 'this_turn'  # default observado nas cartas confirmadas sem clausula explicita
+        steps.append(step)
 
     return steps
 
@@ -1465,7 +1570,7 @@ def parse_block(block_text, trigger_name):
     # 'can attack unless' e a variante de custo-condicional (carta paga para
     # atacar), distinta de 'cannot attack until' (lock binario incondicional).
     if (('cannot attack' in t or 'cannot be rested' in t or 'can attack unless' in t)
-            and 'opponent' in t):
+            and ('opponent' in t or 'this character cannot attack' in t)):
         steps.extend(parse_lock_attack(t))
 
     # Transferencia/distribuicao de DON entre characters (distinto de
@@ -1481,6 +1586,13 @@ def parse_block(block_text, trigger_name):
     # infere o sinal pelo alvo quando o texto nao traz +/- explicito)
     if 'power' in t:
         steps.extend(parse_power_buff(t))
+
+    # 'base power becomes N' -- SUBSTITUICAO do valor, mecanica distinta de
+    # buff_power (aditivo). Regex de parse_power_buff exige 'N power' (numero
+    # antes da palavra), e aqui e 'power becomes N' (numero depois) -- nao ha
+    # conflito/duplicacao entre as duas chamadas.
+    if 'base power becomes' in t:
+        steps.extend(parse_set_base_power(t))
 
     # Custo: give -N/+N cost (oponente, geralmente) / gains +N cost (proprio)
     if 'cost' in t and ('give' in t or 'gain' in t) and ('-' in t or '−' in t or '+' in t):
@@ -1583,6 +1695,47 @@ def parse_card_effect(card_text, card_type):
     t = re.sub(r'[ \t]{2,}', ' ', t)
     t_low = t.lower()
     result = {}
+
+    # CASO ESPECIAL: "Apply each of the following effects based on [recurso]:
+    # • If [condicao 1], [efeito 1]. • If [condicao 2], [efeito 2]. ..." --
+    # efeitos COEXISTENTES (nao mutuamente exclusivos como 'choice': todos
+    # cujos thresholds forem atingidos se aplicam ao mesmo tempo, geralmente
+    # em camadas crescentes). Estrutura nova 'conditional_stack' dentro de
+    # 'passive': lista de {conditions, steps}, cada item avaliado e aplicado
+    # independentemente pelo engine. Carta unica confirmada no banco
+    # (OP15-092) -- escopo deliberadamente minimo: NAO generaliza para
+    # qualquer 'choose one' ou condicional comum, so este padrao textual
+    # especifico ('apply each of the following effects').
+    if 'apply each of the following effects' in t_low:
+        recurso_m = re.search(r'based on the number of cards in your (\w+)', t_low)
+        recurso = recurso_m.group(1) if recurso_m else None
+        opcoes_raw = re.split(r'[•\u2022]', t)
+        opcoes_raw = [o.strip() for o in opcoes_raw[1:] if o.strip()]
+        stack = []
+        for opcao_texto in opcoes_raw:
+            opcao_low = opcao_texto.lower()
+            # Normaliza "if there are/you have N or more cards" -> insere o
+            # recurso (ex: "in your trash") explicitamente, ja que cada
+            # bullet individual costuma omiti-lo (definido so na frase-mae
+            # "based on the number of cards in your trash"). Sem isto,
+            # parse_conditions nunca reconhece a condicao de cada bullet.
+            if recurso and 'in your' not in opcao_low.split('or more')[0][-20:]:
+                opcao_low = re.sub(
+                    r'(if (?:there are|you have) \d+ or more cards?)',
+                    r'\1 in your ' + recurso,
+                    opcao_low, count=1
+                )
+            sub_conds = parse_conditions(opcao_low)
+            sub_steps = parse_block(opcao_low, 'passive')
+            if sub_steps and not (len(sub_steps) == 1 and '_choice' in sub_steps[0]):
+                item = {'steps': sub_steps}
+                if sub_conds:
+                    item['conditions'] = sub_conds
+                stack.append(item)
+        if stack:
+            return {'passive': {'conditional_stack': stack}}
+        # se nada foi parseado com sucesso, cai no fluxo normal abaixo (nao
+        # finge uma estrutura vazia)
 
     # Mapa de triggers → regex para extrair o bloco de texto
     # Lista de TODAS as tags de trigger possiveis no texto cru (case-insensitive),
@@ -1715,6 +1868,31 @@ def parse_card_effect(card_text, card_type):
         )
         if segmento_solto and len(segmento_solto) > 10 and not eh_ruido:
             solto_steps = parse_block(segmento_solto, 'passive')
+            if solto_steps:
+                # Separa qualquer step 'cannot_attack_own_characters_by_cost'
+                # (carrega sua PROPRIA condicao, ex: P-084 'if your Leader is
+                # Buggy') do resto do passive incondicional -- sem isto,
+                # parse_conditions(segmento_solto) aplicaria a condicao do
+                # mass-lock tambem ao cannot_attack_self incondicional do
+                # mesmo bloco. Trigger novo 'mass_lock_conditional', so para
+                # esse padrao raro (carta unica confirmada).
+                mass_lock_steps = [s for s in solto_steps if s.get('action') == 'cannot_attack_own_characters_by_cost']
+                solto_steps = [s for s in solto_steps if s.get('action') != 'cannot_attack_own_characters_by_cost']
+                if mass_lock_steps and 'mass_lock_conditional' not in result:
+                    result['mass_lock_conditional'] = {
+                        'steps': [{'action': s['action'], 'costs': s['costs']} for s in mass_lock_steps],
+                        'conditions': mass_lock_steps[0].get('conditions', {}),
+                    }
+                    # remove a sentenca do mass-lock do texto usado para
+                    # extrair conditions do passive restante -- senao
+                    # parse_conditions(segmento_solto) reencontraria 'if your
+                    # leader is buggy' e contaminaria o cannot_attack_self
+                    # incondicional com a mesma condicao do efeito separado.
+                    segmento_solto = re.sub(
+                        r'if your leader is \[[^\]]+\][^.]*?cannot attack\.?',
+                        '', segmento_solto
+                    ).strip()
+
             if solto_steps:
                 is_sub_solto = len(solto_steps) == 1 and solto_steps[0].get('action') in ('substitute_ko', 'substitute_removal')
                 solto_entry = {'steps': solto_steps}

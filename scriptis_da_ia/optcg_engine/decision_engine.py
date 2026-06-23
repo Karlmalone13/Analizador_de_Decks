@@ -416,6 +416,17 @@ class EffectExecutor:
                 # quebra), mas tambem nenhum efeito real acontece. Decidir
                 # qual opcao escolher e avaliacao de jogo (Opponent Reading /
                 # Play Scoring), nao um parsing determinístico -- pendente.
+                #
+                # LACUNA CONHECIDA #2: cartas com 'Apply each of the
+                # following effects based on N' (efeitos COEXISTENTES, nao
+                # exclusivos como choice) tem ef_data['conditional_stack'] =
+                # [{conditions, steps}, ...] em vez de ef_data['steps'].
+                # Carta unica confirmada (OP15-092) -- mesma neutralidade:
+                # nao quebra, mas nenhum item do stack e avaliado/executado
+                # ainda. Pendente: iterar o stack, checar conditions de cada
+                # item via _check_conditions, executar os steps dos que
+                # passarem (sem early-return -- sao cumulativos, nao 'escolha
+                # 1 e para').
                 for step in ef_data.get('steps', []):
                     log = self._execute_step(step, source)
                     if log:
@@ -448,9 +459,17 @@ class EffectExecutor:
             return False
         if 'don_on_field_gte' in conds and me.don_on_field() < conds['don_on_field_gte']:
             return False
-        if 'chars_gte' in conds and len(me.field_chars) < conds['chars_gte']:
-            return False
+        if 'chars_gte' in conds:
+            cost_filter = conds.get('chars_gte_cost_filter')
+            if cost_filter is not None:
+                contagem = sum(1 for c in me.field_chars if c.cost >= cost_filter)
+            else:
+                contagem = len(me.field_chars)
+            if contagem < conds['chars_gte']:
+                return False
         if 'hand_lte' in conds and len(me.hand) > conds['hand_lte']:
+            return False
+        if 'hand_gte' in conds and len(me.hand) < conds['hand_gte']:
             return False
         if 'leader_is' in conds:
             if conds['leader_is'].lower() not in me.leader.name.lower():
@@ -910,6 +929,32 @@ class EffectExecutor:
         # mas pendente de implementacao real.
         if action in ('lock_opp_character_refresh', 'lock_opp_don_refresh', 'lock_self_character_refresh'):
             return f'({action}: nao implementado -- pendente logica de Refresh Phase)'
+
+        # ── Substituicao de power base (set_base_power) ─────────────────────────
+        # Mecanica DISTINTA de buff_power/debuff_power: 'base power becomes N'
+        # substitui o valor (ignora buffs aditivos anteriores aplicados sobre a
+        # base), nao soma. Implementar corretamente exige alterar
+        # effective_power() para usar um override em vez de self.power -- isso
+        # afeta TODO calculo de ataque/bloqueio existente, entao a mudanca fica
+        # pendente para uma sessao dedicada em vez de uma alteracao isolada e
+        # nao calibrada aqui. target pode ser 'leader', 'self',
+        # 'own_character', ou 'leader_or_own_character' (alvo ambiguo,
+        # escolha do jogador entre Leader OU Character -- tambem pendente).
+        # 8 cards no banco (ex: OP15-092 Monkey.D.Luffy, EB04-003/004).
+        if action == 'set_base_power':
+            return '(set_base_power: nao implementado -- pendente alteracao calibrada de effective_power)'
+
+        # ── Self-lock de ataque (incondicional / condicional / em massa) ────────
+        # Implementar de verdade exige adicionar um campo booleano novo na
+        # classe Card e inclui-lo em TODOS os pontos que ja checam
+        # 'not c.cannot_attack_until' como filtro de "pode atacar" (6 pontos
+        # neste arquivo: my_attack_power, _count_available_attacks,
+        # planejamento de ataques, refresh, etc.) -- mudanca de escopo maior
+        # que uma alteracao isolada aqui justificaria. Reconhecidas sem
+        # travar nada ainda (cannot_attack_self: 3 cards; unless: 2 cards;
+        # mass-lock condicional: 1 carta -- P-084).
+        if action in ('cannot_attack_self', 'cannot_attack_self_unless', 'cannot_attack_own_characters_by_cost'):
+            return f'({action}: nao implementado -- pendente integracao nos pontos de checagem de ataque)'
 
         # ── Power buff ────────────────────────────────────────────────────────
         if action == 'buff_power':
@@ -1993,10 +2038,15 @@ class DecisionEngine:
             if k == 'life_lte'  and not (my_life  <= v): return False
             if k == 'life_gte'  and not (my_life  >= v): return False
             if k == 'hand_lte'  and not (my_hand  <= v): return False
+            if k == 'hand_gte'  and not (my_hand  >= v): return False
             if k == 'don_gte'   and not (my_don   >= v): return False
             if k == 'don_on_field_gte' and not ((my_don + me.don_rested) >= v): return False
             if k == 'trash_gte' and not (my_trash >= v): return False
-            if k == 'chars_gte' and not (my_chars >= v): return False
+            if k == 'chars_gte':
+                cost_filter = conds.get('chars_gte_cost_filter')
+                contagem = (sum(1 for c in me.field_chars if c.cost >= cost_filter)
+                            if cost_filter is not None else my_chars)
+                if not (contagem >= v): return False
             if k == 'leader_type':
                 if str(v).lower() not in ' '.join(leader_types): return False
             if k == 'leader_is':

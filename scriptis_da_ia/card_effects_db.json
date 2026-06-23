@@ -5254,6 +5254,17 @@
     "sub_types": "Navy Punk Hazard",
     "attribute": "Slash Special",
     "effects": {
+      "opp_turn": {
+        "steps": [
+          {
+            "action": "set_base_power",
+            "amount": 7000,
+            "target": "leader",
+            "filter_type": "navy",
+            "duration": "this_turn"
+          }
+        ]
+      },
       "passive": {
         "steps": [
           {
@@ -5273,7 +5284,18 @@
     "color": "Red",
     "sub_types": "East Blue",
     "attribute": "Strike",
-    "effects": {}
+    "effects": {
+      "when_attacking": {
+        "steps": [
+          {
+            "action": "set_base_power",
+            "amount": 7000,
+            "target": "leader",
+            "duration": "until_opp_turn_end"
+          }
+        ]
+      }
+    }
   },
   "EB04-005": {
     "name": "Trafalgar Law",
@@ -5285,7 +5307,16 @@
     "color": "Red",
     "sub_types": "Heart Pirates Supernovas The Seven Warlords of the Sea",
     "attribute": "Slash",
-    "effects": {}
+    "effects": {
+      "passive": {
+        "steps": [
+          {
+            "action": "cannot_attack_self_unless",
+            "condition_text": "your opponent has 2 or more characters with a base power of 5000 or more"
+          }
+        ]
+      }
+    }
   },
   "EB04-006": {
     "name": "Moda",
@@ -6671,6 +6702,14 @@
             "action": "play_card",
             "count": 1,
             "source": "self"
+          }
+        ]
+      },
+      "passive": {
+        "steps": [
+          {
+            "action": "cannot_attack_self_unless",
+            "condition_text": "there is a character with 12000 base power or more"
           }
         ]
       }
@@ -8482,7 +8521,10 @@
           {
             "action": "gain_double_attack"
           }
-        ]
+        ],
+        "conditions": {
+          "hand_gte": 5
+        }
       }
     }
   },
@@ -24145,7 +24187,15 @@
     "color": "Black",
     "sub_types": "Giant Thriller Bark Pirates",
     "attribute": "Strike",
-    "effects": {}
+    "effects": {
+      "passive": {
+        "steps": [
+          {
+            "action": "cannot_attack_self"
+          }
+        ]
+      }
+    }
   },
   "OP06-084": {
     "name": "Jigoro of the Wind",
@@ -38967,9 +39017,15 @@
       "passive": {
         "steps": [
           {
+            "action": "cannot_attack_self"
+          },
+          {
             "action": "keyword_blocker"
           }
-        ]
+        ],
+        "conditions": {
+          "hand_gte": 5
+        }
       }
     }
   },
@@ -41508,7 +41564,8 @@
           }
         ],
         "conditions": {
-          "chars_gte": 2
+          "chars_gte": 2,
+          "chars_gte_cost_filter": 5
         }
       }
     }
@@ -41551,7 +41608,10 @@
             "target": "self",
             "duration": "permanent"
           }
-        ]
+        ],
+        "conditions": {
+          "hand_gte": 5
+        }
       }
     }
   },
@@ -48199,7 +48259,15 @@
     "color": "Blue",
     "sub_types": "Fish-Man The Sun Pirates",
     "attribute": "Strike",
-    "effects": {}
+    "effects": {
+      "passive": {
+        "steps": [
+          {
+            "action": "cannot_attack_self"
+          }
+        ]
+      }
+    }
   },
   "OP14-057": {
     "name": "Don't Worry!! I'm Here!!",
@@ -52527,18 +52595,51 @@
     "attribute": "",
     "effects": {
       "passive": {
-        "steps": [
+        "conditional_stack": [
           {
-            "action": "buff_power",
-            "amount": 1000,
-            "target": "self",
-            "duration": "this_turn"
+            "steps": [
+              {
+                "action": "set_base_power",
+                "amount": 9000,
+                "target": "self",
+                "duration": "this_turn"
+              },
+              {
+                "action": "buff_cost",
+                "amount": 10,
+                "target": "own_character",
+                "duration": "permanent"
+              }
+            ],
+            "conditions": {
+              "trash_gte": 10
+            }
           },
           {
-            "action": "buff_cost",
-            "amount": 10,
-            "target": "own_character",
-            "duration": "permanent"
+            "steps": [
+              {
+                "action": "set_base_power",
+                "amount": 7000,
+                "target": "leader",
+                "duration": "this_turn"
+              }
+            ],
+            "conditions": {
+              "trash_gte": 20
+            }
+          },
+          {
+            "steps": [
+              {
+                "action": "buff_power",
+                "amount": 1000,
+                "target": "self",
+                "duration": "this_turn"
+              }
+            ],
+            "conditions": {
+              "trash_gte": 30
+            }
           }
         ]
       }
@@ -53667,6 +53768,12 @@
       "passive": {
         "steps": [
           {
+            "action": "set_base_power",
+            "amount": 7000,
+            "target": "self",
+            "duration": "this_turn"
+          },
+          {
             "action": "debuff_cost",
             "amount": 2,
             "target": "self"
@@ -54607,6 +54714,9 @@
             "duration": "this_turn"
           }
         ],
+        "conditions": {
+          "hand_gte": 5
+        },
         "don_requirement": 1
       }
     }
@@ -54714,6 +54824,17 @@
             "amount": 4000,
             "target": "self",
             "duration": "battle_only"
+          }
+        ]
+      },
+      "main": {
+        "steps": [
+          {
+            "action": "set_base_power",
+            "amount": 7000,
+            "target": "own_character",
+            "filter_type": "prisoner of impel down",
+            "duration": "this_turn"
           }
         ]
       }
@@ -56193,6 +56314,13 @@
           {
             "action": "draw",
             "count": 1
+          },
+          {
+            "action": "set_base_power",
+            "amount": 7000,
+            "target": "leader_or_own_character",
+            "count": 1,
+            "duration": "this_turn"
           }
         ],
         "conditions": {
@@ -58201,6 +58329,27 @@
             "cost_lte": 6
           }
         ]
+      },
+      "mass_lock_conditional": {
+        "steps": [
+          {
+            "action": "cannot_attack_own_characters_by_cost",
+            "costs": [
+              3,
+              4
+            ]
+          }
+        ],
+        "conditions": {
+          "leader_is": "buggy"
+        }
+      },
+      "passive": {
+        "steps": [
+          {
+            "action": "cannot_attack_self"
+          }
+        ]
       }
     }
   },
@@ -58306,6 +58455,19 @@
     "sub_types": "Navy/SWORD",
     "attribute": "Strike",
     "effects": {
+      "when_attacking": {
+        "steps": [
+          {
+            "action": "set_base_power",
+            "amount": 7000,
+            "target": "leader",
+            "duration": "until_opp_turn_end"
+          }
+        ],
+        "conditions": {
+          "leader_type": "navy"
+        }
+      },
       "opp_turn": {
         "steps": [
           {
@@ -66225,7 +66387,8 @@
           }
         ],
         "conditions": {
-          "chars_gte": 2
+          "chars_gte": 2,
+          "chars_gte_cost_filter": 5
         }
       }
     }
@@ -66258,7 +66421,8 @@
           }
         ],
         "conditions": {
-          "chars_gte": 2
+          "chars_gte": 2,
+          "chars_gte_cost_filter": 5
         },
         "costs": [
           {
@@ -66359,7 +66523,8 @@
           }
         ],
         "conditions": {
-          "chars_gte": 2
+          "chars_gte": 2,
+          "chars_gte_cost_filter": 5
         },
         "costs": [
           {
@@ -66494,7 +66659,50 @@
     "color": "Purple",
     "sub_types": "Straw Hat Crew",
     "attribute": "Strike",
-    "effects": {}
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "set_base_power",
+            "amount": 7000,
+            "target": "leader",
+            "filter_type": "straw hat crew",
+            "duration": "until_opp_turn_end"
+          }
+        ],
+        "conditions": {
+          "leader_multicolor": true
+        },
+        "costs": [
+          {
+            "type": "don_minus",
+            "count": 2,
+            "optional": true
+          }
+        ]
+      },
+      "when_attacking": {
+        "steps": [
+          {
+            "action": "set_base_power",
+            "amount": 7000,
+            "target": "leader",
+            "filter_type": "straw hat crew",
+            "duration": "until_opp_turn_end"
+          }
+        ],
+        "conditions": {
+          "leader_multicolor": true
+        },
+        "costs": [
+          {
+            "type": "don_minus",
+            "count": 2,
+            "optional": true
+          }
+        ]
+      }
+    }
   },
   "ST27-001": {
     "name": "Avalo Pizarro",
