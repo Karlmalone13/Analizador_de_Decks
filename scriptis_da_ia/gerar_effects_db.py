@@ -111,7 +111,23 @@ def parse_costs(text):
     costs = []
     t = text.lower()
 
-    if re.search(r'rest this (card|character|stage)', t):
+    # Custo composto: "rest this Character and 1 of your [TIPO] type Leader
+    # or Stage cards" -- DOIS recursos pagos juntos (a propria carta + um
+    # Leader/Stage com filtro de tipo). Distinto de rest_self puro: aqui o
+    # efeito so pode ser pago se AMBOS os recursos estiverem disponiveis.
+    # Verificado ANTES do rest_self generico para nao perder o segundo
+    # componente do custo (a regex de rest_self abaixo tambem casaria com o
+    # inicio desta frase, mas devolveria so 1 dos 2 recursos reais).
+    m_composto = re.search(
+        r'rest this character and \d+ of your ["\[{]([a-z][a-z0-9 .\'-]+)["\]}]\s+type leader or stage',
+        t
+    )
+    if m_composto:
+        costs.append({
+            'type': 'rest_self_and_leader_or_stage',
+            'filter_type': m_composto.group(1).strip(),
+        })
+    elif re.search(r'rest this (card|character|stage)', t):
         costs.append({'type': 'rest_self'})
 
     if re.search(r'trash this (character|card)', t):
@@ -1049,6 +1065,14 @@ def parse_cost_debuff(text):
         color_m = re.search(r'your (black|red|green|blue|yellow|purple) characters', t)
         if color_m and not is_self:
             step['color'] = color_m.group(1)
+        # filtro de custo MINIMO no proprio alvo (distinto de cost_lte, usado
+        # para filtrar o ALVO do debuff no oponente -- aqui e o oposto: so os
+        # characters com custo >= N recebem o auto-buff/debuff). Ex: OP10-042
+        # 'all of your "Dressrosa" type Characters with a cost of 2 or more
+        # gain +1 cost'.
+        cost_gte_m = re.search(r'with a cost of (\d+) or more', t)
+        if cost_gte_m and not is_self:
+            step['cost_gte'] = int(cost_gte_m.group(1))
         duration_m = re.search(r'until the end of your opponent.?s next (?:end phase|turn)', t)
         step['duration'] = 'until_opp_turn_end' if duration_m else 'permanent'
         steps.append(step)
@@ -1702,6 +1726,14 @@ def parse_card_effect(card_text, card_type):
                     solto_entry['costs'] = solto_costs
                 if '[once per turn]' in segmento_solto:
                     solto_entry['once_per_turn'] = True
+                # mesma logica do fallback abaixo: [DON!! xN] no INICIO do
+                # segmento solto tambem condiciona o efeito (ex: OP09-061
+                # '[DON!! x1] All of your Characters gain +1 cost' antes de
+                # um [Your Turn] formal -- sem isto, o segmento solto nunca
+                # recebia don_requirement por ter um trigger formal depois).
+                don_solto_m = re.match(r'^\[don!! x(\d+)\]', segmento_solto, re.IGNORECASE)
+                if don_solto_m:
+                    solto_entry['don_requirement'] = int(don_solto_m.group(1))
                 if 'passive' in result:
                     # ja existe passive (ex: vindo de don_conditional_keywords
                     # processado em outro momento) -- mescla os steps em vez
@@ -1733,6 +1765,16 @@ def parse_card_effect(card_text, card_type):
                     entry['costs'] = costs
                 if '[once per turn]' in t_low:
                     entry['once_per_turn'] = True
+                # [DON!! xN] no INICIO do texto (antes de 'this character
+                # gains...') tambem e condicao de DON anexado para actions
+                # genericas (buff_power/buff_cost), nao so para keywords --
+                # keyword_don_req (abaixo) so cobre 'gains [keyword]', nao
+                # 'gains +N power/cost'. Ex: OP08-093 X.Drake '[DON!! x1]
+                # This Character gains +2 cost' so deveria valer +2 cost
+                # enquanto a carta tem 1 DON!! anexado, nao permanentemente.
+                don_fb_m = re.match(r'^\[don!! x(\d+)\]', t_low.strip(), re.IGNORECASE)
+                if don_fb_m:
+                    entry['don_requirement'] = int(don_fb_m.group(1))
                 result['passive'] = entry
 
     # Keywords — distinguir NATIVA (sempre ligada) de CONDICIONAL a [DON!! ×N].

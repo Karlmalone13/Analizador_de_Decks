@@ -12050,6 +12050,7 @@
             {
                 "action": "buff_power",
                 "trigger": "passive",
+                "don_requirement": 1,
                 "target": "self"
             }
         ],
@@ -13303,7 +13304,8 @@
         "effects": [
             {
                 "action": "draw",
-                "trigger": "passive"
+                "trigger": "passive",
+                "don_requirement": 1
             }
         ],
         "synergy_states": {},
@@ -16026,7 +16028,8 @@
         "effects": [
             {
                 "action": "gain_rush",
-                "trigger": "passive"
+                "trigger": "passive",
+                "don_requirement": 1
             }
         ],
         "synergy_states": {},
@@ -21695,6 +21698,7 @@
             {
                 "action": "play_card",
                 "trigger": "passive",
+                "don_requirement": 2,
                 "cost_lte": 4
             }
         ],
@@ -23026,6 +23030,7 @@
             {
                 "action": "buff_power",
                 "trigger": "passive",
+                "don_requirement": 1,
                 "target": "self"
             }
         ],
@@ -25355,11 +25360,13 @@
             {
                 "action": "buff_power",
                 "trigger": "passive",
+                "don_requirement": 1,
                 "target": "self"
             },
             {
                 "action": "gain_double_attack",
-                "trigger": "passive"
+                "trigger": "passive",
+                "don_requirement": 1
             }
         ],
         "synergy_states": {
@@ -28362,7 +28369,8 @@
         "effects": [
             {
                 "action": "draw",
-                "trigger": "passive"
+                "trigger": "passive",
+                "don_requirement": 1
             }
         ],
         "synergy_states": {},
@@ -29806,7 +29814,8 @@
         "effects": [
             {
                 "action": "draw",
-                "trigger": "passive"
+                "trigger": "passive",
+                "don_requirement": 1
             }
         ],
         "synergy_states": {},
@@ -30671,6 +30680,7 @@
             {
                 "action": "buff_power",
                 "trigger": "passive",
+                "don_requirement": 1,
                 "target": "self"
             }
         ],
@@ -34225,7 +34235,8 @@
         "effects": [
             {
                 "action": "gain_rush",
-                "trigger": "passive"
+                "trigger": "passive",
+                "don_requirement": 1
             }
         ],
         "synergy_states": {},
@@ -50442,6 +50453,7 @@
             {
                 "action": "buff_cost",
                 "trigger": "passive",
+                "don_requirement": 1,
                 "target": "self"
             }
         ],
@@ -51401,6 +51413,7 @@
             {
                 "action": "buff_power",
                 "trigger": "passive",
+                "don_requirement": 1,
                 "target": "self"
             }
         ],
@@ -52361,7 +52374,8 @@
         "effects": [
             {
                 "action": "gain_rush",
-                "trigger": "passive"
+                "trigger": "passive",
+                "don_requirement": 1
             }
         ],
         "synergy_states": {},
@@ -54232,6 +54246,7 @@
             {
                 "action": "buff_cost",
                 "trigger": "passive",
+                "don_requirement": 1,
                 "target": "own_character"
             }
         ],
@@ -60438,7 +60453,8 @@
         "effects": [
             {
                 "action": "gain_rush",
-                "trigger": "passive"
+                "trigger": "passive",
+                "don_requirement": 1
             }
         ],
         "synergy_states": {},
@@ -72029,6 +72045,7 @@
             {
                 "action": "buff_power",
                 "trigger": "passive",
+                "don_requirement": 1,
                 "target": "self"
             }
         ],
@@ -88666,6 +88683,7 @@
             {
                 "action": "buff_power",
                 "trigger": "passive",
+                "don_requirement": 1,
                 "target": "self"
             }
         ],
@@ -94339,6 +94357,7 @@
             {
                 "action": "buff_power",
                 "trigger": "passive",
+                "don_requirement": 1,
                 "target": "self"
             }
         ],
@@ -97308,6 +97327,7 @@
             {
                 "action": "buff_power",
                 "trigger": "passive",
+                "don_requirement": 1,
                 "target": "self"
             }
         ],
@@ -97606,6 +97626,7 @@
             {
                 "action": "buff_power",
                 "trigger": "passive",
+                "don_requirement": 1,
                 "target": "self"
             }
         ],
@@ -105440,11 +105461,13 @@
             {
                 "action": "buff_power",
                 "trigger": "passive",
+                "don_requirement": 1,
                 "target": "self"
             },
             {
                 "action": "buff_cost",
                 "trigger": "passive",
+                "don_requirement": 1,
                 "target": "own_character"
             }
         ],

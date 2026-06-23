@@ -7717,7 +7717,8 @@
             "target": "self",
             "duration": "this_turn"
           }
-        ]
+        ],
+        "don_requirement": 1
       }
     }
   },
@@ -8370,7 +8371,8 @@
         ],
         "conditions": {
           "hand_lte": 4
-        }
+        },
+        "don_requirement": 1
       }
     }
   },
@@ -9903,7 +9905,8 @@
         ],
         "conditions": {
           "life_lte": 2
-        }
+        },
+        "don_requirement": 1
       }
     }
   },
@@ -13236,7 +13239,8 @@
             "count": 1,
             "cost_lte": 4
           }
-        ]
+        ],
+        "don_requirement": 2
       }
     }
   },
@@ -13942,7 +13946,8 @@
             "target": "self",
             "duration": "this_turn"
           }
-        ]
+        ],
+        "don_requirement": 1
       }
     }
   },
@@ -15372,7 +15377,8 @@
           {
             "action": "gain_double_attack"
           }
-        ]
+        ],
+        "don_requirement": 1
       }
     }
   },
@@ -17182,7 +17188,8 @@
             "count": 1
           }
         ],
-        "once_per_turn": true
+        "once_per_turn": true,
+        "don_requirement": 1
       }
     }
   },
@@ -18148,7 +18155,8 @@
             "count": 2,
             "then_trash": 2
           }
-        ]
+        ],
+        "don_requirement": 1
       }
     }
   },
@@ -18648,7 +18656,8 @@
             "target": "self",
             "duration": "this_turn"
           }
-        ]
+        ],
+        "don_requirement": 1
       }
     }
   },
@@ -20754,7 +20763,8 @@
         "conditions": {
           "don_gte": 8,
           "don_on_field_gte": 8
-        }
+        },
+        "don_requirement": 1
       }
     }
   },
@@ -30434,7 +30444,8 @@
             "target": "self",
             "duration": "permanent"
           }
-        ]
+        ],
+        "don_requirement": 1
       }
     }
   },
@@ -31066,7 +31077,8 @@
             "target": "self",
             "duration": "this_turn"
           }
-        ]
+        ],
+        "don_requirement": 1
       }
     }
   },
@@ -31657,7 +31669,8 @@
         "conditions": {
           "leader_power_gte": 7000,
           "leader_type": "kid pirates"
-        }
+        },
+        "don_requirement": 1
       }
     }
   },
@@ -32737,7 +32750,8 @@
             "count": 99,
             "duration": "permanent"
           }
-        ]
+        ],
+        "don_requirement": 1
       }
     }
   },
@@ -35401,6 +35415,7 @@
             "target": "own_character",
             "count": 99,
             "filter_type": "dressrosa",
+            "cost_gte": 2,
             "duration": "permanent"
           }
         ]
@@ -36500,7 +36515,8 @@
         ],
         "costs": [
           {
-            "type": "rest_self"
+            "type": "rest_self_and_leader_or_stage",
+            "filter_type": "dressrosa"
           }
         ]
       }
@@ -36537,7 +36553,8 @@
         ],
         "conditions": {
           "trash_gte": 8
-        }
+        },
+        "don_requirement": 1
       }
     }
   },
@@ -36599,7 +36616,8 @@
         ],
         "costs": [
           {
-            "type": "rest_self"
+            "type": "rest_self_and_leader_or_stage",
+            "filter_type": "dressrosa"
           }
         ]
       }
@@ -36625,7 +36643,8 @@
         ],
         "costs": [
           {
-            "type": "rest_self"
+            "type": "rest_self_and_leader_or_stage",
+            "filter_type": "dressrosa"
           }
         ]
       }
@@ -36696,7 +36715,8 @@
         ],
         "costs": [
           {
-            "type": "rest_self"
+            "type": "rest_self_and_leader_or_stage",
+            "filter_type": "dressrosa"
           }
         ]
       }
@@ -43554,7 +43574,8 @@
             "target": "self",
             "duration": "battle_only"
           }
-        ]
+        ],
+        "don_requirement": 1
       }
     }
   },
@@ -49358,6 +49379,7 @@
             "amount": 3,
             "target": "own_character",
             "count": 99,
+            "cost_gte": 8,
             "duration": "until_opp_turn_end"
           }
         ]
@@ -53976,7 +53998,8 @@
             "target": "self",
             "duration": "this_turn"
           }
-        ]
+        ],
+        "don_requirement": 1
       }
     }
   },
@@ -57409,7 +57432,8 @@
         ],
         "conditions": {
           "hand_lte": 4
-        }
+        },
+        "don_requirement": 1
       }
     }
   },
@@ -59124,7 +59148,8 @@
             "target": "self",
             "duration": "this_turn"
           }
-        ]
+        ],
+        "don_requirement": 1
       }
     }
   },
@@ -59295,7 +59320,8 @@
         ],
         "conditions": {
           "chars_gte": 3
-        }
+        },
+        "don_requirement": 1
       }
     }
   },
@@ -63799,12 +63825,14 @@
             "amount": 1,
             "target": "own_character",
             "count": 99,
+            "cost_gte": 8,
             "duration": "permanent"
           }
         ],
         "conditions": {
           "other_char_cost_gte": 8
-        }
+        },
+        "don_requirement": 1
       }
     }
   },
@@ -63993,6 +64021,7 @@
             "target": "own_character",
             "count": 1,
             "filter_type": "straw hat crew",
+            "cost_gte": 8,
             "duration": "until_opp_turn_end"
           }
         ],

@@ -495,6 +495,27 @@ class EffectExecutor:
                     return False
                 card.rested = True
                 self._cost_logs.append(f'custo: restou {card.name[:18]}')
+            elif ctype == 'rest_self_and_leader_or_stage':
+                # Custo composto: a propria carta E um Leader/Stage com
+                # filtro de tipo, AMBOS precisam estar disponiveis (nao
+                # rested) antes de pagar qualquer um -- pagamento parcial
+                # deixaria o jogo em estado inconsistente (carta restada
+                # sem o efeito ter sido de fato pago).
+                if card.rested:
+                    return False
+                filter_type = cost.get('filter_type', '').lower()
+                candidato = None
+                if filter_type in self.me.leader.sub_types.lower() and not self.me.leader.rested:
+                    candidato = self.me.leader
+                elif (self.me.field_stage and filter_type in self.me.field_stage.sub_types.lower()
+                      and not self.me.field_stage.rested):
+                    candidato = self.me.field_stage
+                if candidato is None:
+                    return False
+                card.rested = True
+                candidato.rested = True
+                self._cost_logs.append(
+                    f'custo: restou {card.name[:15]} e {candidato.name[:15]}')
             elif ctype == 'rest_don':
                 count = cost.get('count', 1)
                 if self.me.don_available < count:
@@ -927,6 +948,7 @@ class EffectExecutor:
             count = step.get('count', 1)
             filter_type = step.get('filter_type', '').lower()
             color = step.get('color', '').lower()
+            cost_gte = step.get('cost_gte')
 
             campo_alvo = me if target in ('self', 'own_character') else opp
             if target == 'self':
@@ -937,6 +959,8 @@ class EffectExecutor:
                     candidatos = [c for c in candidatos if filter_type in c.sub_types.lower()]
                 if color:
                     candidatos = [c for c in candidatos if color in c.color.lower()]
+                if cost_gte is not None:
+                    candidatos = [c for c in candidatos if c.cost >= cost_gte]
 
             afetados = []
             for c in candidatos[:count]:
