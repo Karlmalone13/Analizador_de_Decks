@@ -3250,12 +3250,12 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 5
+            "cost_lte": 5,
+            "conditions": {
+              "life_lte": 1
+            }
           }
-        ],
-        "conditions": {
-          "life_lte": 1
-        }
+        ]
       }
     }
   },
@@ -4647,12 +4647,12 @@
             "count": 1,
             "cost_lte": 2,
             "filter_type": "thriller bark pirates",
-            "rested": true
+            "rested": true,
+            "conditions": {
+              "trash_gte": 10
+            }
           }
-        ],
-        "conditions": {
-          "trash_gte": 10
-        }
+        ]
       },
       "passive": {
         "steps": [
@@ -7677,12 +7677,12 @@
             "action": "buff_power",
             "amount": 2000,
             "target": "self",
-            "duration": "this_turn"
+            "duration": "this_turn",
+            "conditions": {
+              "life_lte": 2
+            }
           }
-        ],
-        "conditions": {
-          "life_lte": 2
-        }
+        ]
       }
     }
   },
@@ -9762,12 +9762,12 @@
           },
           {
             "action": "add_don",
-            "count": 1
+            "count": 1,
+            "conditions": {
+              "life_lte": 2
+            }
           }
-        ],
-        "conditions": {
-          "life_lte": 2
-        }
+        ]
       }
     }
   },
@@ -10059,12 +10059,12 @@
             "duration": "this_turn"
           },
           {
-            "action": "gain_rush"
+            "action": "gain_rush",
+            "conditions": {
+              "leader_type_includes": "whitebeard pirates"
+            }
           }
-        ],
-        "conditions": {
-          "leader_type_includes": "whitebeard pirates"
-        }
+        ]
       }
     }
   },
@@ -12016,22 +12016,22 @@
       "activate_main": {
         "steps": [
           {
-            "action": "buff_power",
-            "amount": 1000,
-            "target": "self",
-            "duration": "this_turn"
-          },
-          {
             "action": "debuff_cost",
             "amount": 1,
             "target": "opp_character"
+          },
+          {
+            "action": "buff_power",
+            "amount": 1000,
+            "target": "self",
+            "duration": "this_turn",
+            "conditions": {
+              "board_has_cost": [
+                0
+              ]
+            }
           }
         ],
-        "conditions": {
-          "board_has_cost": [
-            0
-          ]
-        },
         "once_per_turn": true,
         "don_requirement": 1
       }
@@ -12471,23 +12471,23 @@
       "when_attacking": {
         "steps": [
           {
-            "action": "buff_power",
-            "amount": 2000,
-            "target": "self",
-            "duration": "battle_only"
-          },
-          {
             "action": "debuff_cost",
             "amount": 2,
             "target": "opp_character",
             "count": 1
+          },
+          {
+            "action": "buff_power",
+            "amount": 2000,
+            "target": "self",
+            "duration": "battle_only",
+            "conditions": {
+              "board_has_cost": [
+                0
+              ]
+            }
           }
-        ],
-        "conditions": {
-          "board_has_cost": [
-            0
-          ]
-        }
+        ]
       },
       "trigger": {
         "steps": [
@@ -14358,20 +14358,20 @@
       "on_play": {
         "steps": [
           {
+            "action": "add_don",
+            "count": 1
+          },
+          {
             "action": "ko",
             "count": 1,
             "target": "opp_character",
-            "cost_lte": 4
-          },
-          {
-            "action": "add_don",
-            "count": 1
+            "cost_lte": 4,
+            "conditions": {
+              "don_gte": 8,
+              "don_on_field_gte": 8
+            }
           }
-        ],
-        "conditions": {
-          "don_gte": 8,
-          "don_on_field_gte": 8
-        }
+        ]
       }
     }
   },
@@ -16925,12 +16925,12 @@
           },
           {
             "action": "gain_life",
-            "count": 1
+            "count": 1,
+            "conditions": {
+              "other_char_cost_gte": 8
+            }
           }
         ],
-        "conditions": {
-          "other_char_cost_gte": 8
-        },
         "don_requirement": 1
       }
     }
@@ -17523,18 +17523,18 @@
       "on_play": {
         "steps": [
           {
-            "action": "draw",
+            "action": "add_don",
             "count": 1
           },
           {
-            "action": "add_don",
-            "count": 1
+            "action": "draw",
+            "count": 1,
+            "conditions": {
+              "don_gte": 6,
+              "don_on_field_gte": 6
+            }
           }
-        ],
-        "conditions": {
-          "don_gte": 6,
-          "don_on_field_gte": 6
-        }
+        ]
       },
       "trigger": {
         "steps": [
@@ -17933,12 +17933,12 @@
           },
           {
             "action": "add_don",
-            "count": 1
+            "count": 1,
+            "conditions": {
+              "life_lte": 2
+            }
           }
-        ],
-        "conditions": {
-          "life_lte": 2
-        }
+        ]
       }
     }
   },
@@ -18392,12 +18392,12 @@
             "duration": "this_turn"
           },
           {
-            "action": "gain_double_attack"
+            "action": "gain_double_attack",
+            "conditions": {
+              "trash_gte": 15
+            }
           }
-        ],
-        "conditions": {
-          "trash_gte": 15
-        }
+        ]
       }
     }
   },
@@ -18456,12 +18456,12 @@
             "action": "buff_power",
             "amount": 2000,
             "target": "self",
-            "duration": "battle_only"
+            "duration": "battle_only",
+            "conditions": {
+              "trash_gte": 15
+            }
           }
-        ],
-        "conditions": {
-          "trash_gte": 15
-        }
+        ]
       }
     }
   },
@@ -18867,12 +18867,12 @@
           },
           {
             "action": "gain_life",
-            "count": 1
+            "count": 1,
+            "conditions": {
+              "life_lte": 1
+            }
           }
-        ],
-        "conditions": {
-          "life_lte": 1
-        }
+        ]
       }
     }
   },
@@ -19545,21 +19545,21 @@
       "main": {
         "steps": [
           {
-            "action": "ko",
-            "count": 1,
-            "target": "opp_character",
-            "power_lte": 0
-          },
-          {
             "action": "debuff_power",
             "amount": 4000,
             "target": "opp_character",
             "duration": "this_turn"
+          },
+          {
+            "action": "ko",
+            "count": 1,
+            "target": "opp_character",
+            "power_lte": 0,
+            "conditions": {
+              "life_lte": 2
+            }
           }
-        ],
-        "conditions": {
-          "life_lte": 2
-        }
+        ]
       }
     }
   },
@@ -21534,21 +21534,21 @@
       "counter": {
         "steps": [
           {
-            "action": "ko",
-            "count": 1,
-            "target": "opp_character",
-            "cost_lte": 4
-          },
-          {
             "action": "buff_power",
             "amount": 4000,
             "target": "leader_or_character",
             "duration": "battle_only"
+          },
+          {
+            "action": "ko",
+            "count": 1,
+            "target": "opp_character",
+            "cost_lte": 4,
+            "conditions": {
+              "trash_gte": 15
+            }
           }
-        ],
-        "conditions": {
-          "trash_gte": 15
-        }
+        ]
       }
     }
   },
@@ -22048,20 +22048,20 @@
       "main": {
         "steps": [
           {
-            "action": "rest_opp_character",
-            "count": 1,
-            "cost_lte": 4
-          },
-          {
             "action": "buff_power",
             "amount": 3000,
             "target": "leader_or_character",
             "duration": "this_turn"
+          },
+          {
+            "action": "rest_opp_character",
+            "count": 1,
+            "cost_lte": 4,
+            "conditions": {
+              "life_lte": 1
+            }
           }
-        ],
-        "conditions": {
-          "life_lte": 1
-        }
+        ]
       }
     }
   },
@@ -22585,12 +22585,12 @@
             "action": "buff_power",
             "amount": 1000,
             "target": "leader_or_character",
-            "duration": "this_turn"
+            "duration": "this_turn",
+            "conditions": {
+              "opp_char_power_gte": 7000
+            }
           }
-        ],
-        "conditions": {
-          "opp_char_power_gte": 7000
-        }
+        ]
       }
     }
   },
@@ -25988,12 +25988,12 @@
             "action": "buff_power",
             "amount": 1000,
             "target": "self",
-            "duration": "battle_only"
+            "duration": "battle_only",
+            "conditions": {
+              "chars_gte": 3
+            }
           }
-        ],
-        "conditions": {
-          "chars_gte": 3
-        }
+        ]
       }
     }
   },
@@ -27507,12 +27507,12 @@
             "action": "buff_power",
             "amount": 2000,
             "target": "self",
-            "duration": "battle_only"
+            "duration": "battle_only",
+            "conditions": {
+              "trash_gte": 10
+            }
           }
-        ],
-        "conditions": {
-          "trash_gte": 10
-        }
+        ]
       }
     }
   },
@@ -27547,12 +27547,12 @@
             "action": "debuff_cost",
             "amount": 3,
             "target": "opp_character",
-            "count": 1
+            "count": 1,
+            "conditions": {
+              "trash_gte": 10
+            }
           }
-        ],
-        "conditions": {
-          "trash_gte": 10
-        }
+        ]
       }
     }
   },
@@ -27852,12 +27852,12 @@
           {
             "action": "play_card",
             "count": 1,
-            "source": "self"
+            "source": "self",
+            "conditions": {
+              "life_lte": 1
+            }
           }
-        ],
-        "conditions": {
-          "life_lte": 1
-        }
+        ]
       }
     }
   },
@@ -28017,12 +28017,12 @@
           },
           {
             "action": "gain_life",
-            "count": 1
+            "count": 1,
+            "conditions": {
+              "life_lte": 1
+            }
           }
         ],
-        "conditions": {
-          "life_lte": 1
-        },
         "once_per_turn": true
       }
     }
@@ -28252,12 +28252,12 @@
             "count": 1
           },
           {
-            "action": "gain_rush"
+            "action": "gain_rush",
+            "conditions": {
+              "life_lte": 2
+            }
           }
-        ],
-        "conditions": {
-          "life_lte": 2
-        }
+        ]
       }
     }
   },
@@ -30114,11 +30114,15 @@
           {
             "action": "add_don",
             "count": 1
+          },
+          {
+            "action": "add_don",
+            "count": 1,
+            "conditions": {
+              "opp_char_power_gte": 6000
+            }
           }
-        ],
-        "conditions": {
-          "opp_char_power_gte": 6000
-        }
+        ]
       }
     }
   },
@@ -30915,12 +30919,12 @@
           },
           {
             "action": "draw",
-            "count": 1
+            "count": 1,
+            "conditions": {
+              "hand_lte": 3
+            }
           }
         ],
-        "conditions": {
-          "hand_lte": 3
-        },
         "costs": [
           {
             "type": "trash_from_hand",
@@ -31803,19 +31807,22 @@
       "main": {
         "steps": [
           {
-            "action": "draw",
-            "count": 1
-          },
-          {
             "action": "debuff_power",
             "amount": 3000,
             "target": "opp_character",
-            "duration": "this_turn"
+            "duration": "this_turn",
+            "conditions": {
+              "leader_type": "red-haired pirates"
+            }
+          },
+          {
+            "action": "draw",
+            "count": 1,
+            "conditions": {
+              "opp_char_power_gte": 5000
+            }
           }
-        ],
-        "conditions": {
-          "leader_type": "red-haired pirates"
-        }
+        ]
       }
     }
   },
@@ -34978,12 +34985,12 @@
             "action": "buff_power",
             "amount": 1000,
             "target": "leader_or_character",
-            "duration": "this_turn"
+            "duration": "this_turn",
+            "conditions": {
+              "life_lte": 2
+            }
           }
-        ],
-        "conditions": {
-          "life_lte": 2
-        }
+        ]
       }
     }
   },
@@ -36510,20 +36517,20 @@
       "counter": {
         "steps": [
           {
-            "action": "draw",
-            "count": 1
-          },
-          {
             "action": "buff_power",
             "amount": 4000,
             "target": "leader_or_character",
             "duration": "battle_only"
+          },
+          {
+            "action": "draw",
+            "count": 1,
+            "conditions": {
+              "don_gte": 7,
+              "don_on_field_gte": 7
+            }
           }
-        ],
-        "conditions": {
-          "don_gte": 7,
-          "don_on_field_gte": 7
-        }
+        ]
       }
     }
   },
@@ -36974,12 +36981,12 @@
             "duration": "this_turn"
           },
           {
-            "action": "gain_banish"
+            "action": "gain_banish",
+            "conditions": {
+              "trash_gte": 10
+            }
           }
-        ],
-        "conditions": {
-          "trash_gte": 10
-        }
+        ]
       }
     }
   },
@@ -38036,12 +38043,12 @@
             "action": "buff_power",
             "amount": 1000,
             "target": "leader_or_character",
-            "duration": "this_turn"
+            "duration": "this_turn",
+            "conditions": {
+              "opp_char_power_gte": 6000
+            }
           }
-        ],
-        "conditions": {
-          "opp_char_power_gte": 6000
-        }
+        ]
       }
     }
   },
@@ -39102,12 +39109,12 @@
             "action": "buff_power",
             "amount": 2000,
             "target": "self",
-            "duration": "battle_only"
+            "duration": "battle_only",
+            "conditions": {
+              "hand_lte": 4
+            }
           }
-        ],
-        "conditions": {
-          "hand_lte": 4
-        }
+        ]
       }
     }
   },
@@ -39966,22 +39973,22 @@
       "on_play": {
         "steps": [
           {
-            "action": "ko",
-            "count": 1,
-            "target": "opp_character",
-            "cost_lte": 7
-          },
-          {
             "action": "give_don",
             "count": 1,
             "rested": true
+          },
+          {
+            "action": "ko",
+            "count": 1,
+            "target": "opp_character",
+            "cost_lte": 7,
+            "conditions": {
+              "board_has_cost": [
+                9
+              ]
+            }
           }
-        ],
-        "conditions": {
-          "board_has_cost": [
-            9
-          ]
-        }
+        ]
       }
     }
   },
@@ -40032,12 +40039,12 @@
           {
             "action": "add_from_trash",
             "count": 1,
-            "cost_lte": 3
+            "cost_lte": 3,
+            "conditions": {
+              "trash_gte": 10
+            }
           }
-        ],
-        "conditions": {
-          "trash_gte": 10
-        }
+        ]
       }
     }
   },
@@ -43519,12 +43526,12 @@
           {
             "action": "add_from_trash",
             "count": 1,
-            "filter_name": "trafalgar law"
+            "filter_name": "trafalgar law",
+            "conditions": {
+              "life_lte": 2
+            }
           }
-        ],
-        "conditions": {
-          "life_lte": 2
-        }
+        ]
       }
     }
   },
@@ -48907,12 +48914,12 @@
           },
           {
             "action": "add_don",
-            "count": 1
+            "count": 1,
+            "conditions": {
+              "opp_char_power_gte": 6000
+            }
           }
-        ],
-        "conditions": {
-          "opp_char_power_gte": 6000
-        }
+        ]
       }
     }
   },
@@ -53039,12 +53046,12 @@
           {
             "action": "play_card",
             "count": 1,
-            "source": "self"
+            "source": "self",
+            "conditions": {
+              "life_lte": 2
+            }
           }
-        ],
-        "conditions": {
-          "life_lte": 2
-        }
+        ]
       }
     }
   },
@@ -54460,16 +54467,16 @@
       "main": {
         "steps": [
           {
-            "action": "rest_opp_character",
-            "count": 2
+            "action": "gain_double_attack"
           },
           {
-            "action": "gain_double_attack"
+            "action": "rest_opp_character",
+            "count": 2,
+            "conditions": {
+              "leader_type": "impel down"
+            }
           }
-        ],
-        "conditions": {
-          "leader_type": "impel down"
-        }
+        ]
       }
     }
   },
@@ -56227,21 +56234,21 @@
       "main": {
         "steps": [
           {
-            "action": "ko",
-            "count": 1,
-            "target": "opp_character",
-            "cost_lte": 2
-          },
-          {
             "action": "buff_power",
             "amount": 3000,
             "target": "leader_or_character",
             "duration": "this_turn"
+          },
+          {
+            "action": "ko",
+            "count": 1,
+            "target": "opp_character",
+            "cost_lte": 2,
+            "conditions": {
+              "trash_gte": 10
+            }
           }
-        ],
-        "conditions": {
-          "trash_gte": 10
-        }
+        ]
       }
     }
   },
@@ -58648,12 +58655,12 @@
           },
           {
             "action": "draw",
-            "count": 1
+            "count": 1,
+            "conditions": {
+              "hand_lte": 6
+            }
           }
-        ],
-        "conditions": {
-          "hand_lte": 6
-        }
+        ]
       },
       "opp_turn": {
         "steps": [
@@ -62671,7 +62678,10 @@
           {
             "action": "gain_rush"
           }
-        ]
+        ],
+        "conditions": {
+          "opp_char_power_gte": 5000
+        }
       }
     }
   },
@@ -63922,24 +63932,27 @@
       "activate_main": {
         "steps": [
           {
-            "action": "draw",
-            "count": 1,
-            "then_trash": 1
-          },
-          {
             "action": "buff_power",
             "amount": 2000,
             "target": "self",
             "duration": "until_my_turn_start"
           },
           {
+            "action": "draw",
+            "count": 1,
+            "then_trash": 1,
+            "conditions": {
+              "life_gte": 1
+            }
+          },
+          {
             "action": "trash_own_life",
-            "count": 1
+            "count": 1,
+            "conditions": {
+              "life_gte": 1
+            }
           }
         ],
-        "conditions": {
-          "life_gte": 1
-        },
         "once_per_turn": true
       }
     }
@@ -64081,23 +64094,22 @@
       "passive": {
         "steps": [
           {
-            "action": "buff_power",
-            "amount": 1000,
-            "target": "self",
-            "duration": "this_turn"
-          },
-          {
             "action": "buff_cost",
             "amount": 1,
             "target": "own_character",
             "count": 99,
-            "cost_gte": 8,
             "duration": "permanent"
+          },
+          {
+            "action": "buff_power",
+            "amount": 1000,
+            "target": "self",
+            "duration": "this_turn",
+            "conditions": {
+              "other_char_cost_gte": 8
+            }
           }
         ],
-        "conditions": {
-          "other_char_cost_gte": 8
-        },
         "don_requirement": 1
       }
     }
@@ -64277,23 +64289,22 @@
       "activate_main": {
         "steps": [
           {
-            "action": "draw",
-            "count": 1,
-            "then_trash": 1
-          },
-          {
             "action": "buff_cost",
             "amount": 2,
             "target": "own_character",
             "count": 1,
             "filter_type": "straw hat crew",
-            "cost_gte": 8,
             "duration": "until_opp_turn_end"
+          },
+          {
+            "action": "draw",
+            "count": 1,
+            "then_trash": 1,
+            "conditions": {
+              "other_char_cost_gte": 8
+            }
           }
         ],
-        "conditions": {
-          "other_char_cost_gte": 8
-        },
         "costs": [
           {
             "type": "rest_self"
@@ -64468,21 +64479,21 @@
       "main": {
         "steps": [
           {
-            "action": "ko",
-            "count": 1,
-            "target": "opp_character",
-            "cost_lte": 2
-          },
-          {
             "action": "buff_power",
             "amount": 3000,
             "target": "leader_or_character",
             "duration": "this_turn"
+          },
+          {
+            "action": "ko",
+            "count": 1,
+            "target": "opp_character",
+            "cost_lte": 2,
+            "conditions": {
+              "other_char_cost_gte": 8
+            }
           }
-        ],
-        "conditions": {
-          "other_char_cost_gte": 8
-        }
+        ]
       }
     }
   },
@@ -65741,21 +65752,21 @@
       "main": {
         "steps": [
           {
-            "action": "ko",
-            "count": 1,
-            "target": "opp_character",
-            "power_lte": 2000
-          },
-          {
             "action": "debuff_power",
             "amount": 5000,
             "target": "opp_character",
             "duration": "this_turn"
+          },
+          {
+            "action": "ko",
+            "count": 1,
+            "target": "opp_character",
+            "power_lte": 2000,
+            "conditions": {
+              "other_char_power_gte": 6000
+            }
           }
-        ],
-        "conditions": {
-          "other_char_power_gte": 6000
-        }
+        ]
       }
     }
   },
@@ -67556,12 +67567,12 @@
             "action": "debuff_power",
             "amount": 2000,
             "target": "opp_leader_or_character",
-            "duration": "this_turn"
+            "duration": "this_turn",
+            "conditions": {
+              "life_lte": 1
+            }
           }
-        ],
-        "conditions": {
-          "life_lte": 1
-        }
+        ]
       }
     }
   },
@@ -67618,21 +67629,21 @@
       "counter": {
         "steps": [
           {
-            "action": "ko",
-            "count": 1,
-            "target": "opp_character",
-            "cost_lte": 3
-          },
-          {
             "action": "buff_power",
             "amount": 4000,
             "target": "leader_or_character",
             "duration": "battle_only"
+          },
+          {
+            "action": "ko",
+            "count": 1,
+            "target": "opp_character",
+            "cost_lte": 3,
+            "conditions": {
+              "life_lte": 2
+            }
           }
-        ],
-        "conditions": {
-          "life_lte": 2
-        }
+        ]
       }
     }
   },

@@ -17,6 +17,47 @@ import re
 # Parsers de condicoes
 # ===========================================================================
 
+# "[efeito A incondicional]. Then, if [condicao], [efeito B]" ou
+# "[efeito A incondicional]. If [condicao], [efeito B]" -- divide um bloco em
+# duas partes (a parte ANTES do split, sem condicao; a parte DEPOIS, com sua
+# propria condicao) em vez de aplicar parse_conditions() no bloco inteiro.
+# Sem isto, _check_conditions() no engine bloqueava TAMBEM o efeito A (sempre
+# incondicional no jogo real) sempre que a condicao do "Then, if" falhasse --
+# bug confirmado visualmente em ST14-001/ST14-008 e replicado estruturalmente
+# em ~44 outras cartas (auditoria de 23/06). Exclui deliberadamente "if you
+# do" / "if that card is" -- la a condicao e sobre o RESULTADO da acao
+# anterior (custo opcional), nao sobre estado de jogo, e ja tem tratamento
+# proprio via parse_costs(optional=True); aplicar o split ali separaria
+# custo e efeito incorretamente (25 cards identificadas e excluidas).
+SPLIT_THEN_IF_RE = re.compile(
+    r'\.\s*(?:then,?\s+)?if\s+(?:you|your|there|opponent)(?!\s+do\b)',
+    re.IGNORECASE
+)
+
+
+def split_then_if(block_text):
+    """
+    Se block_text tem o padrao '[A]. Then, if [cond], [B]' ou '[A]. If
+    [cond], [B]', retorna (parte_a, parte_b) onde parte_a e o texto ANTES do
+    ponto (sem a condicao) e parte_b e o texto DEPOIS (com 'Then,'/'.'
+    removido do inicio, condicao incluida). Se nao houver o padrao, retorna
+    (block_text, None) -- parte_b None sinaliza "sem split, comportamento
+    antigo preservado".
+    """
+    m = SPLIT_THEN_IF_RE.search(block_text)
+    if not m:
+        return block_text, None
+    parte_a = block_text[:m.start() + 1].strip()  # inclui o '.'
+    parte_b = block_text[m.start() + 1:].strip()
+    # remove 'Then,' isolado do inicio de parte_b -- parse_conditions/
+    # parse_block nao precisam dele, e ele nao carrega nenhuma informacao
+    # de condicao por si so.
+    parte_b = re.sub(r'^then,?\s+', '', parte_b, flags=re.IGNORECASE).strip()
+    if not parte_a or not parte_b:
+        return block_text, None
+    return parte_a, parte_b
+
+
 def parse_conditions(text):
     conds = {}
     t = text.lower()
@@ -110,8 +151,11 @@ def parse_conditions(text):
 
     # "if your opponent has a Character with N power or more" -- existe
     # Character no campo do OPONENTE com power >= N (distinto de
-    # other_char_power_gte, que e sobre o PROPRIO campo).
-    m = re.search(r'if your opponent has a character with (\d+) power or more', t)
+    # other_char_power_gte, que e sobre o PROPRIO campo). Aceita as 2 ordens
+    # de palavras encontradas no texto oficial -- "N power or more" e "N or
+    # more power" (ex: OP09-019) -- sem isto a segunda ordem nunca era
+    # reconhecida e a condicao ficava vazia.
+    m = re.search(r'if your opponent has a character with (\d+)(?: power or more| or more power)', t)
     if m: conds['opp_char_power_gte'] = int(m.group(1))
 
     # Variante combinada: "...power or more and the "X"/[X]/{X} type" --
@@ -1865,6 +1909,45 @@ def parse_card_effect(card_text, card_type):
         costs = [] if is_substitute else parse_costs(block)
         once = '[once per turn]' in t_low
 
+        # "Then, if [cond]" scope leakage: se o bloco tem o padrao "[A
+        # incondicional]. Then, if [cond], [B]", a condicao extraida de
+        # block inteiro (linha acima) contaminaria TAMBEM os steps de A.
+        # Reparseia A e B separadamente e anexa a condicao SO aos steps de
+        # B (campo 'conditions' por-step, novo -- engine checa em
+        # _execute_step antes de cada step individual, alem da condicao
+        # global do entry). Nao se aplica a is_choice/is_substitute (blocos
+        # de estrutura especial que reivindicam o texto inteiro).
+        if not is_choice and not is_substitute:
+            parte_a, parte_b = split_then_if(block)
+            if parte_b is not None:
+                steps_a = parse_block(parte_a, trigger_name)
+                steps_b = parse_block(parte_b, trigger_name)
+                cond_a = parse_conditions(parte_a)
+                cond_b = parse_conditions(parte_b)
+                # so reaproveita o split se AMBAS as partes produziram pelo
+                # menos 1 step reconhecido e a condicao de B foi capturada
+                # -- caso contrario o split perderia cobertura (ex: parte_a
+                # ou parte_b com construcao nao suportada ainda pelo
+                # parser) e e mais seguro manter o comportamento antigo
+                # (conds no bloco inteiro) do que descartar steps validos.
+                if steps_a and steps_b and cond_b:
+                    for s in steps_b:
+                        s['conditions'] = cond_b
+                    # parte_a pode ter SUA PROPRIA condicao independente
+                    # (ex: OP09-019 'If Leader e Red-Haired, efeito A. Then,
+                    # if opp tem char 5000+, efeito B' -- 2 condicoes
+                    # distintas, uma por efeito). So anexa a steps_a se
+                    # cond_a != cond_b (evita duplicar a mesma condicao nos
+                    # dois lados quando o split partiu uma condicao unica
+                    # que parse_conditions(parte_a) capturou por reflexo).
+                    if cond_a and cond_a != cond_b:
+                        for s in steps_a:
+                            s['conditions'] = cond_a
+                    steps = steps_a + steps_b
+                    # a condicao global do entry deixa de existir -- ela
+                    # agora vive nos steps individuais (de A e/ou B).
+                    conds = {}
+
         # DON x requisito antes do trigger. Usa a posição real do match (m.start)
         # em vez de reconstruir o nome — assim funciona para [Activate: Main],
         # [On K.O.], etc., onde o nome tem pontuação/variações.
@@ -1946,6 +2029,23 @@ def parse_card_effect(card_text, card_type):
                 solto_entry = {'steps': solto_steps}
                 solto_conds = parse_conditions(segmento_solto)
                 solto_costs = [] if is_sub_solto else parse_costs(segmento_solto)
+
+                # mesmo split de "Then, if"/"If" do loop principal -- o
+                # segmento solto e texto livre (sem tag formal), igualmente
+                # sujeito a scope leakage quando tem "[A]. If [cond], [B]".
+                if not is_sub_solto:
+                    parte_a_s, parte_b_s = split_then_if(segmento_solto)
+                    if parte_b_s is not None:
+                        steps_a_s = parse_block(parte_a_s, 'passive')
+                        steps_b_s = parse_block(parte_b_s, 'passive')
+                        cond_b_s = parse_conditions(parte_b_s)
+                        if steps_a_s and steps_b_s and cond_b_s:
+                            for s in steps_b_s:
+                                s['conditions'] = cond_b_s
+                            solto_steps = steps_a_s + steps_b_s
+                            solto_entry['steps'] = solto_steps
+                            solto_conds = {}
+
                 if solto_conds:
                     solto_entry['conditions'] = solto_conds
                 if solto_costs:
@@ -1985,6 +2085,26 @@ def parse_card_effect(card_text, card_type):
                 entry = {'steps': fallback_steps}
                 conds = parse_conditions(t_low)
                 costs = [] if is_substitute_fb else parse_costs(t_low)
+
+                # mesmo split de "Then, if"/"If" usado no loop de tags
+                # formais acima -- sem tag formal o texto inteiro cai aqui,
+                # e o mesmo risco de scope leakage se aplica (ex: ST14-001
+                # '[DON!! x1] All Characters gain +1 cost. If cost>=8,
+                # Leader gains +1000 power' -- a condicao so deveria valer
+                # pro buff_power, nao pro buff_cost).
+                if not is_substitute_fb:
+                    parte_a_fb, parte_b_fb = split_then_if(t_low)
+                    if parte_b_fb is not None:
+                        steps_a_fb = parse_block(parte_a_fb, 'passive')
+                        steps_b_fb = parse_block(parte_b_fb, 'passive')
+                        cond_b_fb = parse_conditions(parte_b_fb)
+                        if steps_a_fb and steps_b_fb and cond_b_fb:
+                            for s in steps_b_fb:
+                                s['conditions'] = cond_b_fb
+                            fallback_steps = steps_a_fb + steps_b_fb
+                            entry['steps'] = fallback_steps
+                            conds = {}
+
                 if conds:
                     entry['conditions'] = conds
                 if costs:

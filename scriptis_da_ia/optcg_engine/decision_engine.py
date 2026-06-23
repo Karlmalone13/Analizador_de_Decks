@@ -670,6 +670,17 @@ class EffectExecutor:
         me = self.me
         opp = self.opp
 
+        # Condicao PROPRIA do step (distinta da condicao global do entry,
+        # ja checada em _execute_trigger antes de chamar qualquer step).
+        # Existe para separar "[A incondicional]. Then, if [cond], [B]" --
+        # a condicao do "Then, if" deve bloquear SO o step B, nao o A que
+        # vem antes dela no texto. Sem isto, qualquer condicao so podia
+        # valer pro bloco inteiro (todos os steps), causando scope leakage
+        # (confirmado em ST14-001/ST14-008 e ~44 outras cartas, 23/06).
+        step_conds = step.get('conditions')
+        if step_conds and not self._check_conditions(step_conds, card):
+            return ''
+
         # ── Busca (StartTopDeck + AddToHand + FinalizeTopDeck) ────────────────
         if action == 'look_top_deck':
             # Apenas marca quantas cartas serão vistas — próximo step faz a seleção
