@@ -4588,7 +4588,12 @@
         "color": "Black",
         "sub_types": "Thriller Bark Pirates",
         "attribute": "Wisdom",
-        "effects": [],
+        "effects": [
+            {
+                "action": "trash_from_deck_top",
+                "trigger": "on_play"
+            }
+        ],
         "synergy_states": {},
         "text": "[On Play] Trash 2 cards from the top of your deck and give up to 1 of your opponent's Characters 1 cost during this turn.",
         "is_searcher": false,
@@ -7335,6 +7340,10 @@
             {
                 "action": "draw",
                 "trigger": "on_play"
+            },
+            {
+                "action": "trash_from_deck_top",
+                "trigger": "on_ko"
             }
         ],
         "synergy_states": {},
@@ -7371,6 +7380,10 @@
         "sub_types": "Baroque Works",
         "attribute": "Strike",
         "effects": [
+            {
+                "action": "trash_from_deck_top",
+                "trigger": "on_play"
+            },
             {
                 "action": "draw",
                 "trigger": "on_ko"
@@ -9914,13 +9927,13 @@
         "attribute": "Strike",
         "effects": [
             {
-                "action": "buff_cost",
+                "action": "debuff_cost",
                 "trigger": "on_play",
                 "target": "opp_character"
             }
         ],
         "synergy_states": {},
-        "text": "[On Play] You may trash 3 cards from the top of your deck: Give up to 1 of your opponent's Characters +1 cost during this turn.",
+        "text": "[On Play] You may trash 3 cards from the top of your deck: Give up to 1 of your opponent's Characters -1 cost during this turn.",
         "is_searcher": false,
         "draws": false,
         "has_counter_value": true,
@@ -9952,7 +9965,12 @@
         "color": "Black",
         "sub_types": "CP0 Egghead",
         "attribute": "Slash",
-        "effects": [],
+        "effects": [
+            {
+                "action": "trash_from_deck_top",
+                "trigger": "on_play"
+            }
+        ],
         "synergy_states": {},
         "text": "[Once Per Turn] If your black Character with a base cost of 5 or less would be K.O.'d by your opponent's effect, you may place 3 cards from your trash at the bottom of your deck in any order instead.\n[On Play] Trash 2 cards from the top of your deck.",
         "is_searcher": false,
@@ -22549,7 +22567,12 @@
         "color": "Blue",
         "sub_types": "East Blue",
         "attribute": "Wisdom",
-        "effects": [],
+        "effects": [
+            {
+                "action": "trash_from_deck_top",
+                "trigger": "passive"
+            }
+        ],
         "synergy_states": {},
         "text": "When your deck is reduced to 0, you win the game instead of losing, according to the rules. [DON!! x1] When this Leader's attack deals damage to your opponent's Life, you may trash 1 card from the top of your deck.",
         "is_searcher": false,
@@ -22661,7 +22684,12 @@
         "color": "Blue",
         "sub_types": "East Blue",
         "attribute": "Wisdom",
-        "effects": [],
+        "effects": [
+            {
+                "action": "trash_from_deck_top",
+                "trigger": "passive"
+            }
+        ],
         "synergy_states": {},
         "text": "When you deal damage to your opponent's Life, you may trash 3 cards from the top of your deck. If you do, trash this Character.",
         "is_searcher": false,
@@ -22822,6 +22850,15 @@
                 "trigger": "on_play",
                 "cost_lte": 3,
                 "target": "opp_character"
+            },
+            {
+                "action": "trash_from_deck_top",
+                "trigger": "on_play"
+            },
+            {
+                "action": "trash_from_deck_top",
+                "trigger": "passive",
+                "don_requirement": 1
             }
         ],
         "synergy_states": {},
@@ -22941,6 +22978,10 @@
         "attribute": "Wisdom",
         "effects": [
             {
+                "action": "trash_from_deck_top",
+                "trigger": "on_ko"
+            },
+            {
                 "action": "keyword_blocker",
                 "trigger": "passive"
             }
@@ -22978,7 +23019,17 @@
         "color": "Blue",
         "sub_types": "Former Navy East Blue",
         "attribute": "Ranged",
-        "effects": [],
+        "effects": [
+            {
+                "action": "trash_from_deck_top",
+                "trigger": "on_ko"
+            },
+            {
+                "action": "trash_from_deck_top",
+                "trigger": "passive",
+                "don_requirement": 1
+            }
+        ],
         "synergy_states": {},
         "text": "[DON!! x1] When this Character's attack deals damage to your opponent's Life, you may trash 7 cards from the top of your deck. [On K.O.] You may trash 3 cards from the top of your deck.",
         "is_searcher": false,
@@ -23093,9 +23144,17 @@
                 "trigger": "trigger"
             },
             {
+                "action": "trash_from_deck_top",
+                "trigger": "trigger"
+            },
+            {
                 "action": "buff_power",
                 "trigger": "counter",
                 "target": "leader_or_character"
+            },
+            {
+                "action": "trash_from_deck_top",
+                "trigger": "counter"
             }
         ],
         "synergy_states": {
@@ -23147,6 +23206,10 @@
                 "action": "buff_power",
                 "trigger": "counter",
                 "target": "leader"
+            },
+            {
+                "action": "trash_from_deck_top",
+                "trigger": "counter"
             }
         ],
         "synergy_states": {
@@ -27941,6 +28004,10 @@
                 "action": "buff_power",
                 "trigger": "on_play",
                 "target": "self"
+            },
+            {
+                "action": "trash_from_deck_top",
+                "trigger": "on_play"
             }
         ],
         "synergy_states": {},
@@ -29536,6 +29603,10 @@
                 "action": "debuff_cost",
                 "trigger": "activate_main",
                 "target": "opp_character"
+            },
+            {
+                "action": "trash_from_deck_top",
+                "trigger": "activate_main"
             }
         ],
         "synergy_states": {},
@@ -29611,6 +29682,10 @@
                 "trigger": "when_attacking",
                 "cost_lte": 1,
                 "target": "opp_character"
+            },
+            {
+                "action": "trash_from_deck_top",
+                "trigger": "when_attacking"
             }
         ],
         "synergy_states": {},
@@ -29652,6 +29727,10 @@
                 "trigger": "on_play",
                 "cost_lte": 1,
                 "target": "opp_character"
+            },
+            {
+                "action": "trash_from_deck_top",
+                "trigger": "on_play"
             }
         ],
         "synergy_states": {},
@@ -29793,9 +29872,17 @@
                 "target": "opp_character"
             },
             {
+                "action": "trash_from_deck_top",
+                "trigger": "on_play"
+            },
+            {
                 "action": "debuff_cost",
                 "trigger": "when_attacking",
                 "target": "opp_character"
+            },
+            {
+                "action": "trash_from_deck_top",
+                "trigger": "when_attacking"
             }
         ],
         "synergy_states": {},
@@ -30029,6 +30116,10 @@
                 "trigger": "on_play",
                 "cost_lte": 1,
                 "target": "opp_character"
+            },
+            {
+                "action": "trash_from_deck_top",
+                "trigger": "on_play"
             }
         ],
         "synergy_states": {},
@@ -34890,6 +34981,10 @@
         "attribute": "Wisdom",
         "effects": [
             {
+                "action": "trash_from_deck_top",
+                "trigger": "on_play"
+            },
+            {
                 "action": "keyword_blocker",
                 "trigger": "passive"
             }
@@ -38388,6 +38483,10 @@
         "attribute": "Strike",
         "effects": [
             {
+                "action": "trash_from_deck_top",
+                "trigger": "your_turn"
+            },
+            {
                 "action": "keyword_blocker",
                 "trigger": "passive"
             }
@@ -39704,6 +39803,10 @@
                 "cost_lte": 4
             },
             {
+                "action": "trash_from_deck_top",
+                "trigger": "when_attacking"
+            },
+            {
                 "action": "trash_from_hand",
                 "trigger": "when_attacking"
             }
@@ -40066,7 +40169,16 @@
         "color": "Black",
         "sub_types": "Thriller Bark Pirates",
         "attribute": "Special",
-        "effects": [],
+        "effects": [
+            {
+                "action": "trash_from_deck_top",
+                "trigger": "on_play"
+            },
+            {
+                "action": "trash_from_deck_top",
+                "trigger": "on_ko"
+            }
+        ],
         "synergy_states": {},
         "text": "[On Play] / [On K.O.] Trash 3 cards from the top of your deck.",
         "is_searcher": false,
@@ -40139,7 +40251,12 @@
         "color": "Black",
         "sub_types": "Thriller Bark Pirates",
         "attribute": "Slash",
-        "effects": [],
+        "effects": [
+            {
+                "action": "trash_from_deck_top",
+                "trigger": "on_play"
+            }
+        ],
         "synergy_states": {},
         "text": "[On Play] If your Leader has the [Thriller Bark Pirates] type, trash 5 cards from the top of your deck.",
         "is_searcher": false,
@@ -44835,6 +44952,10 @@
                 "action": "debuff_cost",
                 "trigger": "on_play",
                 "target": "opp_character"
+            },
+            {
+                "action": "trash_from_deck_top",
+                "trigger": "on_play"
             }
         ],
         "synergy_states": {},
@@ -44998,6 +45119,10 @@
                 "action": "debuff_cost",
                 "trigger": "on_play",
                 "target": "opp_character"
+            },
+            {
+                "action": "trash_from_deck_top",
+                "trigger": "on_play"
             }
         ],
         "synergy_states": {},
@@ -50635,6 +50760,10 @@
                 "action": "buff_power",
                 "trigger": "counter",
                 "target": "leader_or_character"
+            },
+            {
+                "action": "trash_from_deck_top",
+                "trigger": "counter"
             }
         ],
         "synergy_states": {
@@ -60326,6 +60455,10 @@
                 "trigger": "on_play",
                 "cost_lte": 2,
                 "target": "opp_character"
+            },
+            {
+                "action": "trash_from_deck_top",
+                "trigger": "on_play"
             }
         ],
         "synergy_states": {},
@@ -60567,6 +60700,10 @@
         "attribute": "Strike",
         "effects": [
             {
+                "action": "trash_from_deck_top",
+                "trigger": "activate_main"
+            },
+            {
                 "action": "opp_trash_from_hand",
                 "trigger": "activate_main"
             }
@@ -60607,6 +60744,10 @@
         "effects": [
             {
                 "action": "draw",
+                "trigger": "activate_main"
+            },
+            {
+                "action": "trash_from_deck_top",
                 "trigger": "activate_main"
             }
         ],
@@ -60727,6 +60868,10 @@
                 "trigger": "activate_main",
                 "cost_lte": 1,
                 "target": "opp_character"
+            },
+            {
+                "action": "trash_from_deck_top",
+                "trigger": "activate_main"
             }
         ],
         "synergy_states": {},
@@ -60887,6 +61032,10 @@
                 "trigger": "on_play",
                 "cost_lte": 4,
                 "target": "opp_character"
+            },
+            {
+                "action": "trash_from_deck_top",
+                "trigger": "on_play"
             }
         ],
         "synergy_states": {},
@@ -65497,7 +65646,12 @@
         "color": "Black",
         "sub_types": "Navy",
         "attribute": "Special",
-        "effects": [],
+        "effects": [
+            {
+                "action": "trash_from_deck_top",
+                "trigger": "activate_main"
+            }
+        ],
         "synergy_states": {},
         "text": "[Activate: Main] You may trash this Character: If your Leader has the \"Navy\" type, up to 1 of your \"Navy\" type Characters can also attack active Characters during this turn. Then, trash 2 cards from the top of your deck.",
         "is_searcher": false,
@@ -65574,7 +65728,12 @@
         "color": "Black",
         "sub_types": "Navy",
         "attribute": "Special",
-        "effects": [],
+        "effects": [
+            {
+                "action": "trash_from_deck_top",
+                "trigger": "on_play"
+            }
+        ],
         "synergy_states": {},
         "text": "[On Play] Trash 3 cards from the top of your deck.\n[When Attacking] Up to 1 of your \"Navy\" type Leader or Character cards can also attack active Characters during this turn.",
         "is_searcher": false,
@@ -70504,6 +70663,10 @@
         "attribute": "Special",
         "effects": [
             {
+                "action": "trash_from_deck_top",
+                "trigger": "on_play"
+            },
+            {
                 "action": "keyword_blocker",
                 "trigger": "passive"
             }
@@ -71000,6 +71163,10 @@
                 "trigger": "trigger"
             },
             {
+                "action": "trash_from_deck_top",
+                "trigger": "trigger"
+            },
+            {
                 "action": "ko",
                 "trigger": "main",
                 "cost_lte": 4,
@@ -71103,6 +71270,10 @@
         "effects": [
             {
                 "action": "draw",
+                "trigger": "trigger"
+            },
+            {
+                "action": "trash_from_deck_top",
                 "trigger": "trigger"
             },
             {
@@ -75657,6 +75828,10 @@
         "sub_types": "Celestial Dragons",
         "attribute": "Ranged",
         "effects": [
+            {
+                "action": "trash_from_deck_top",
+                "trigger": "on_play"
+            },
             {
                 "action": "keyword_blocker",
                 "trigger": "passive"
@@ -80527,6 +80702,10 @@
                 "action": "debuff_cost",
                 "trigger": "activate_main",
                 "target": "opp_character"
+            },
+            {
+                "action": "trash_from_deck_top",
+                "trigger": "activate_main"
             }
         ],
         "synergy_states": {},
@@ -80612,6 +80791,10 @@
         "sub_types": "Thriller Bark Pirates",
         "attribute": "Special",
         "effects": [
+            {
+                "action": "trash_from_deck_top",
+                "trigger": "on_play"
+            },
             {
                 "action": "ko",
                 "trigger": "on_ko",
@@ -83380,7 +83563,12 @@
         "color": "Green Black",
         "sub_types": "Straw Hat Crew",
         "attribute": "Slash",
-        "effects": [],
+        "effects": [
+            {
+                "action": "trash_from_deck_top",
+                "trigger": "activate_main"
+            }
+        ],
         "synergy_states": {},
         "text": "Under the rules of this game, you do not lose when your deck has 0 cards. You lose at the end of the turn in which your deck becomes 0 cards. [Activate: Main] [Once Per Turn] Trash 4 cards from the top of your deck. Then, if your deck has 0 cards, set up to 1 of your Characters as active.",
         "is_searcher": false,
@@ -85941,7 +86129,12 @@
         "color": "Black",
         "sub_types": "Straw Hat Crew",
         "attribute": "Strike",
-        "effects": [],
+        "effects": [
+            {
+                "action": "trash_from_deck_top",
+                "trigger": "on_play"
+            }
+        ],
         "synergy_states": {},
         "text": "[On Play] If your Leader has the {Straw Hat Crew} type, trash 5 cards from the top of your deck.",
         "is_searcher": false,
@@ -85976,6 +86169,10 @@
         "sub_types": "Rolling Pirates",
         "attribute": "Slash",
         "effects": [
+            {
+                "action": "trash_from_deck_top",
+                "trigger": "on_play"
+            },
             {
                 "action": "add_from_trash",
                 "trigger": "on_ko",
@@ -86017,6 +86214,10 @@
         "attribute": "Wisdom",
         "effects": [
             {
+                "action": "trash_from_deck_top",
+                "trigger": "on_play"
+            },
+            {
                 "action": "give_don",
                 "trigger": "activate_main"
             }
@@ -86056,6 +86257,10 @@
         "attribute": "Wisdom",
         "effects": [
             {
+                "action": "trash_from_deck_top",
+                "trigger": "on_play"
+            },
+            {
                 "action": "draw",
                 "trigger": "on_ko"
             }
@@ -86094,6 +86299,10 @@
         "sub_types": "Animal Straw Hat Crew",
         "attribute": "Strike",
         "effects": [
+            {
+                "action": "trash_from_deck_top",
+                "trigger": "on_play"
+            },
             {
                 "action": "add_from_trash",
                 "trigger": "activate_main"
@@ -86537,6 +86746,10 @@
                 "action": "buff_power",
                 "trigger": "counter",
                 "target": "leader_or_character"
+            },
+            {
+                "action": "trash_from_deck_top",
+                "trigger": "main"
             }
         ],
         "synergy_states": {},
@@ -91793,6 +92006,10 @@
                 "action": "play_from_trash",
                 "trigger": "main",
                 "cost_lte": 6
+            },
+            {
+                "action": "trash_from_deck_top",
+                "trigger": "main"
             }
         ],
         "synergy_states": {},

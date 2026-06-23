@@ -784,7 +784,7 @@
             "costs": [
                 {
                     "count": 2,
-                    "type": "trash_from_hand"
+                    "type": "trash_from_deck_top"
                 }
             ],
             "steps": [
@@ -1675,7 +1675,16 @@
             ]
         }
     },
-    "EB02-046": {},
+    "EB02-046": {
+        "on_play": {
+            "steps": [
+                {
+                    "action": "trash_from_deck_top",
+                    "count": 2
+                }
+            ]
+        }
+    },
     "EB02-047": {
         "activate_main": {
             "costs": [
@@ -2768,6 +2777,14 @@
         }
     },
     "EB03-046": {
+        "on_ko": {
+            "steps": [
+                {
+                    "action": "trash_from_deck_top",
+                    "count": 2
+                }
+            ]
+        },
         "on_play": {
             "conditions": {
                 "board_has_cost": [
@@ -2789,6 +2806,14 @@
                 {
                     "action": "draw",
                     "count": 1
+                }
+            ]
+        },
+        "on_play": {
+            "steps": [
+                {
+                    "action": "trash_from_deck_top",
+                    "count": 3
                 }
             ]
         }
@@ -3912,12 +3937,12 @@
             "costs": [
                 {
                     "count": 3,
-                    "type": "trash_from_hand"
+                    "type": "trash_from_deck_top"
                 }
             ],
             "steps": [
                 {
-                    "action": "buff_cost",
+                    "action": "debuff_cost",
                     "amount": 1,
                     "count": 1,
                     "target": "opp_character"
@@ -3925,7 +3950,17 @@
             ]
         }
     },
-    "EB04-043": {},
+    "EB04-043": {
+        "on_play": {
+            "once_per_turn": true,
+            "steps": [
+                {
+                    "action": "trash_from_deck_top",
+                    "count": 2
+                }
+            ]
+        }
+    },
     "EB04-044": {
         "your_turn": {
             "once_per_turn": true,
@@ -4025,7 +4060,7 @@
             "costs": [
                 {
                     "count": 2,
-                    "type": "trash_from_hand"
+                    "type": "trash_from_deck_top"
                 }
             ],
             "steps": [
@@ -7908,7 +7943,16 @@
             ]
         }
     },
-    "OP03-040": {},
+    "OP03-040": {
+        "passive": {
+            "steps": [
+                {
+                    "action": "trash_from_deck_top",
+                    "count": 1
+                }
+            ]
+        }
+    },
     "OP03-041": {
         "passive": {
             "steps": [
@@ -7928,7 +7972,21 @@
             ]
         }
     },
-    "OP03-043": {},
+    "OP03-043": {
+        "passive": {
+            "costs": [
+                {
+                    "type": "trash_self"
+                }
+            ],
+            "steps": [
+                {
+                    "action": "trash_from_deck_top",
+                    "count": 3
+                }
+            ]
+        }
+    },
     "OP03-044": {
         "on_play": {
             "steps": [
@@ -7972,6 +8030,19 @@
                     "cost_lte": 3,
                     "count": 1,
                     "target": "opp_character"
+                },
+                {
+                    "action": "trash_from_deck_top",
+                    "count": 2
+                }
+            ]
+        },
+        "passive": {
+            "don_requirement": 1,
+            "steps": [
+                {
+                    "action": "trash_from_deck_top",
+                    "count": 7
                 }
             ]
         }
@@ -8004,6 +8075,14 @@
         }
     },
     "OP03-050": {
+        "on_ko": {
+            "steps": [
+                {
+                    "action": "trash_from_deck_top",
+                    "count": 1
+                }
+            ]
+        },
         "passive": {
             "steps": [
                 {
@@ -8012,7 +8091,25 @@
             ]
         }
     },
-    "OP03-051": {},
+    "OP03-051": {
+        "on_ko": {
+            "steps": [
+                {
+                    "action": "trash_from_deck_top",
+                    "count": 3
+                }
+            ]
+        },
+        "passive": {
+            "don_requirement": 1,
+            "steps": [
+                {
+                    "action": "trash_from_deck_top",
+                    "count": 7
+                }
+            ]
+        }
+    },
     "OP03-052": {},
     "OP03-053": {
         "passive": {
@@ -8035,6 +8132,10 @@
                     "amount": 2000,
                     "duration": "battle_only",
                     "target": "leader_or_character"
+                },
+                {
+                    "action": "trash_from_deck_top",
+                    "count": 1
                 }
             ]
         },
@@ -8042,6 +8143,10 @@
             "steps": [
                 {
                     "action": "draw",
+                    "count": 1
+                },
+                {
+                    "action": "trash_from_deck_top",
                     "count": 1
                 }
             ]
@@ -8061,6 +8166,10 @@
                     "amount": 4000,
                     "duration": "battle_only",
                     "target": "leader"
+                },
+                {
+                    "action": "trash_from_deck_top",
+                    "count": 2
                 }
             ]
         },
@@ -9769,6 +9878,10 @@
                     "amount": 3000,
                     "duration": "this_turn",
                     "target": "self"
+                },
+                {
+                    "action": "trash_from_deck_top",
+                    "count": 1
                 }
             ]
         }
@@ -10401,6 +10514,10 @@
                     "amount": 4,
                     "count": 1,
                     "target": "opp_character"
+                },
+                {
+                    "action": "trash_from_deck_top",
+                    "count": 2
                 }
             ]
         }
@@ -10414,6 +10531,10 @@
                     "cost_lte": 1,
                     "count": 1,
                     "target": "opp_character"
+                },
+                {
+                    "action": "trash_from_deck_top",
+                    "count": 2
                 }
             ]
         }
@@ -10429,6 +10550,10 @@
                     "cost_lte": 1,
                     "count": 1,
                     "target": "opp_character"
+                },
+                {
+                    "action": "trash_from_deck_top",
+                    "count": 1
                 }
             ]
         }
@@ -10491,6 +10616,10 @@
                     "amount": 2,
                     "count": 1,
                     "target": "opp_character"
+                },
+                {
+                    "action": "trash_from_deck_top",
+                    "count": 1
                 }
             ]
         },
@@ -10504,6 +10633,10 @@
                     "amount": 2,
                     "count": 1,
                     "target": "opp_character"
+                },
+                {
+                    "action": "trash_from_deck_top",
+                    "count": 1
                 }
             ]
         }
@@ -10564,6 +10697,10 @@
                     "cost_lte": 1,
                     "count": 1,
                     "target": "opp_character"
+                },
+                {
+                    "action": "trash_from_deck_top",
+                    "count": 2
                 }
             ]
         }
@@ -12267,6 +12404,14 @@
         }
     },
     "OP05-085": {
+        "on_play": {
+            "steps": [
+                {
+                    "action": "trash_from_deck_top",
+                    "count": 1
+                }
+            ]
+        },
         "passive": {
             "steps": [
                 {
@@ -13474,6 +13619,17 @@
                     "action": "keyword_blocker"
                 }
             ]
+        },
+        "your_turn": {
+            "conditions": {
+                "leader_type": "east blue"
+            },
+            "steps": [
+                {
+                    "action": "trash_from_deck_top",
+                    "count": 4
+                }
+            ]
         }
     },
     "OP06-049": {},
@@ -13904,6 +14060,10 @@
                     "filter_type": "thriller bark pirates"
                 },
                 {
+                    "action": "trash_from_deck_top",
+                    "count": 2
+                },
+                {
                     "action": "trash_from_hand",
                     "count": 1
                 }
@@ -14015,7 +14175,24 @@
             ]
         }
     },
-    "OP06-089": {},
+    "OP06-089": {
+        "on_ko": {
+            "steps": [
+                {
+                    "action": "trash_from_deck_top",
+                    "count": 3
+                }
+            ]
+        },
+        "on_play": {
+            "steps": [
+                {
+                    "action": "trash_from_deck_top",
+                    "count": 3
+                }
+            ]
+        }
+    },
     "OP06-090": {
         "on_play": {
             "steps": [
@@ -14027,7 +14204,19 @@
             ]
         }
     },
-    "OP06-091": {},
+    "OP06-091": {
+        "on_play": {
+            "conditions": {
+                "leader_type": "thriller bark pirates"
+            },
+            "steps": [
+                {
+                    "action": "trash_from_deck_top",
+                    "count": 5
+                }
+            ]
+        }
+    },
     "OP06-092": {
         "on_play": {
             "steps": [
@@ -15574,7 +15763,7 @@
             "costs": [
                 {
                     "count": 2,
-                    "type": "trash_from_hand"
+                    "type": "trash_from_deck_top"
                 }
             ],
             "steps": [
@@ -15620,6 +15809,10 @@
                     "amount": 1,
                     "count": 1,
                     "target": "opp_character"
+                },
+                {
+                    "action": "trash_from_deck_top",
+                    "count": 2
                 }
             ]
         }
@@ -15673,6 +15866,10 @@
                     "amount": 2,
                     "count": 1,
                     "target": "opp_character"
+                },
+                {
+                    "action": "trash_from_deck_top",
+                    "count": 2
                 }
             ]
         }
@@ -17605,6 +17802,10 @@
                     "amount": 5000,
                     "duration": "battle_only",
                     "target": "leader_or_character"
+                },
+                {
+                    "action": "trash_from_deck_top",
+                    "count": 1
                 }
             ]
         },
@@ -21111,6 +21312,10 @@
                     "cost_lte": 2,
                     "count": 1,
                     "target": "opp_character"
+                },
+                {
+                    "action": "trash_from_deck_top",
+                    "count": 2
                 }
             ]
         }
@@ -21206,6 +21411,10 @@
             ],
             "steps": [
                 {
+                    "action": "trash_from_deck_top",
+                    "count": 2
+                },
+                {
                     "action": "opp_trash_from_hand",
                     "count": 1
                 }
@@ -21224,6 +21433,10 @@
                 {
                     "action": "draw",
                     "count": 1
+                },
+                {
+                    "action": "trash_from_deck_top",
+                    "count": 2
                 }
             ]
         }
@@ -21263,6 +21476,10 @@
                     "cost_lte": 1,
                     "count": 1,
                     "target": "opp_character"
+                },
+                {
+                    "action": "trash_from_deck_top",
+                    "count": 2
                 }
             ]
         }
@@ -21317,6 +21534,10 @@
                     "cost_lte": 4,
                     "count": 1,
                     "target": "opp_character"
+                },
+                {
+                    "action": "trash_from_deck_top",
+                    "count": 2
                 }
             ]
         }
@@ -22959,7 +23180,24 @@
             ]
         }
     },
-    "OP11-082": {},
+    "OP11-082": {
+        "activate_main": {
+            "conditions": {
+                "leader_type": "navy"
+            },
+            "costs": [
+                {
+                    "type": "trash_self"
+                }
+            ],
+            "steps": [
+                {
+                    "action": "trash_from_deck_top",
+                    "count": 2
+                }
+            ]
+        }
+    },
     "OP11-083": {
         "on_play": {
             "steps": [
@@ -22977,7 +23215,16 @@
             ]
         }
     },
-    "OP11-084": {},
+    "OP11-084": {
+        "on_play": {
+            "steps": [
+                {
+                    "action": "trash_from_deck_top",
+                    "count": 3
+                }
+            ]
+        }
+    },
     "OP11-085": {
         "on_play": {
             "steps": [
@@ -23126,7 +23373,7 @@
             "costs": [
                 {
                     "count": 3,
-                    "type": "trash_from_hand"
+                    "type": "trash_from_deck_top"
                 }
             ],
             "steps": [
@@ -24610,6 +24857,17 @@
     "OP12-082": {},
     "OP12-083": {},
     "OP12-084": {
+        "on_play": {
+            "conditions": {
+                "leader_type": "revolutionary army"
+            },
+            "steps": [
+                {
+                    "action": "trash_from_deck_top",
+                    "count": 3
+                }
+            ]
+        },
         "passive": {
             "steps": [
                 {
@@ -24816,6 +25074,10 @@
                     "action": "draw",
                     "count": 1,
                     "then_trash": 1
+                },
+                {
+                    "action": "trash_from_deck_top",
+                    "count": 1
                 }
             ]
         }
@@ -24871,6 +25133,10 @@
                     "action": "draw",
                     "count": 1,
                     "then_trash": 1
+                },
+                {
+                    "action": "trash_from_deck_top",
+                    "count": 1
                 }
             ]
         }
@@ -26479,6 +26745,14 @@
         }
     },
     "OP13-087": {
+        "on_play": {
+            "steps": [
+                {
+                    "action": "trash_from_deck_top",
+                    "count": 1
+                }
+            ]
+        },
         "passive": {
             "steps": [
                 {
@@ -28315,6 +28589,10 @@
                     "amount": 10,
                     "count": 1,
                     "target": "opp_character"
+                },
+                {
+                    "action": "trash_from_deck_top",
+                    "count": 2
                 }
             ]
         }
@@ -28355,6 +28633,14 @@
                     "cost_eq": 1,
                     "count": 1,
                     "target": "opp_character"
+                }
+            ]
+        },
+        "on_play": {
+            "steps": [
+                {
+                    "action": "trash_from_deck_top",
+                    "count": 3
                 }
             ]
         }
@@ -29496,7 +29782,17 @@
             ]
         }
     },
-    "OP15-022": {},
+    "OP15-022": {
+        "activate_main": {
+            "once_per_turn": true,
+            "steps": [
+                {
+                    "action": "trash_from_deck_top",
+                    "count": 4
+                }
+            ]
+        }
+    },
     "OP15-023": {
         "activate_main": {
             "once_per_turn": true,
@@ -30416,7 +30712,19 @@
             ]
         }
     },
-    "OP15-081": {},
+    "OP15-081": {
+        "on_play": {
+            "conditions": {
+                "leader_type": "straw hat crew"
+            },
+            "steps": [
+                {
+                    "action": "trash_from_deck_top",
+                    "count": 5
+                }
+            ]
+        }
+    },
     "OP15-082": {
         "on_ko": {
             "steps": [
@@ -30424,6 +30732,14 @@
                     "action": "add_from_trash",
                     "cost_lte": 8,
                     "count": 1
+                }
+            ]
+        },
+        "on_play": {
+            "steps": [
+                {
+                    "action": "trash_from_deck_top",
+                    "count": 3
                 }
             ]
         }
@@ -30445,6 +30761,14 @@
                     "rested": true
                 }
             ]
+        },
+        "on_play": {
+            "steps": [
+                {
+                    "action": "trash_from_deck_top",
+                    "count": 3
+                }
+            ]
         }
     },
     "OP15-084": {
@@ -30456,6 +30780,17 @@
                 {
                     "action": "draw",
                     "count": 1
+                }
+            ]
+        },
+        "on_play": {
+            "conditions": {
+                "leader_type": "thriller bark pirates"
+            },
+            "steps": [
+                {
+                    "action": "trash_from_deck_top",
+                    "count": 5
                 }
             ]
         }
@@ -30475,6 +30810,14 @@
                     "action": "add_from_trash",
                     "count": 1,
                     "filter_name": "tony tony.chopper"
+                }
+            ]
+        },
+        "on_play": {
+            "steps": [
+                {
+                    "action": "trash_from_deck_top",
+                    "count": 3
                 }
             ]
         }
@@ -30527,7 +30870,7 @@
             "costs": [
                 {
                     "count": 3,
-                    "type": "trash_from_hand"
+                    "type": "trash_from_deck_top"
                 }
             ],
             "steps": [
@@ -30690,6 +31033,23 @@
                     "amount": 3000,
                     "duration": "battle_only",
                     "target": "leader_or_character"
+                }
+            ]
+        },
+        "main": {
+            "conditions": {
+                "leader_type": "straw hat crew"
+            },
+            "costs": [
+                {
+                    "count": 1,
+                    "type": "rest_don"
+                }
+            ],
+            "steps": [
+                {
+                    "action": "trash_from_deck_top",
+                    "count": 5
                 }
             ]
         }
@@ -32668,6 +33028,10 @@
                     "cost_lte": 6,
                     "count": 1,
                     "filter_type": "land of wano"
+                },
+                {
+                    "action": "trash_from_deck_top",
+                    "count": 5
                 }
             ]
         }

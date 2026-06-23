@@ -247,18 +247,31 @@ def parse_costs(text):
     if m:
         costs.append({'type': 'rest_don', 'count': int(m.group(1))})
 
-    # Custo de trash da mao/campo (antes do efeito principal, padrão "...: efeito")
-    # Captura variações: "trash N cards from your hand", "trash 1 [type] Character
-    # or 1 card from your hand", "trash 1 of your Characters", etc.
-    # O custo vem ANTES de um ':' que separa custo do benefício.
-    m = re.search(r'you may trash (\d+)[^:]*?(?:from your hand|character|card)[^:]*:', t)
+    # Custo de trash do TOPO DO PRÓPRIO DECK (mill como custo, distinto de
+    # trash_from_hand) -- "you may trash N cards from the top of your deck:
+    # [efeito]". Verificado ANTES da regex generica de trash_from_hand
+    # abaixo: sem esta prioridade, "N cards from the top of your deck:"
+    # era erroneamente capturado como trash_from_hand, porque a alternancia
+    # '(?:from your hand|character|card)' da regex generica casava a
+    # palavra solta "card(s)" antes de checar se o destino real era o
+    # deck, nao a mao (bug confirmado: EB04-042 Alpha e outras ~6 cards
+    # com este padrao de custo explicito antes de ':').
+    m = re.search(r'you may trash (\d+) cards? from the top of (?:your|the) deck\s*:', t)
     if m:
-        costs.append({'type': 'trash_from_hand', 'count': int(m.group(1))})
+        costs.append({'type': 'trash_from_deck_top', 'count': int(m.group(1))})
     else:
-        # padrão mais simples sem "you may" (custo obrigatório com ':')
-        m = re.search(r'\btrash (\d+) cards? from your hand\s*:', t)
+        # Custo de trash da mao/campo (antes do efeito principal, padrão "...: efeito")
+        # Captura variações: "trash N cards from your hand", "trash 1 [type] Character
+        # or 1 card from your hand", "trash 1 of your Characters", etc.
+        # O custo vem ANTES de um ':' que separa custo do benefício.
+        m = re.search(r'you may trash (\d+)[^:]*?(?:from your hand|character|card)[^:]*:', t)
         if m:
             costs.append({'type': 'trash_from_hand', 'count': int(m.group(1))})
+        else:
+            # padrão mais simples sem "you may" (custo obrigatório com ':')
+            m = re.search(r'\btrash (\d+) cards? from your hand\s*:', t)
+            if m:
+                costs.append({'type': 'trash_from_hand', 'count': int(m.group(1))})
 
     # DON!! −X: devolve X DON do campo para o deck de DON.
     # "you may" perto (antes ou depois, ex: dentro do parêntese explicativo)
@@ -1749,6 +1762,23 @@ def parse_block(block_text, trigger_name):
     # Manipulação de vida (3 direções: ganhar / atacar oponente / trashar própria)
     if 'life' in t:
         steps.extend(parse_life(t))
+
+    # Trash do TOPO DO PRÓPRIO DECK como EFEITO (mill, distinto do custo
+    # trash_from_deck_top em parse_costs -- aqui e o efeito completo em si,
+    # sem ':' separando custo/beneficio, ex: '[On Play] Trash 2 cards from
+    # the top of your deck.' ou '[On K.O.] Trash 3 cards from the top of
+    # your deck.'). So roda se a frase NAO tiver ':' antes do trash (senao
+    # e o padrao de custo, ja tratado em parse_costs e excluido daqui para
+    # nao duplicar a acao). 56 cards no banco, ~49 nesse padrao de efeito.
+    m_trash_deck = re.search(r'trash (\d+) cards? from the top of (?:your|the) deck', t)
+    if m_trash_deck:
+        # confirma que NAO e o padrao de custo (custo tem ':' apos a clausula
+        # do deck, ja consumido por parse_costs -- aqui so verifica se ha um
+        # ':' explicito imediatamente seguindo esta clausula no texto cru)
+        pos_fim_clausula = m_trash_deck.end()
+        eh_custo = bool(re.match(r'\s*:', t[pos_fim_clausula:pos_fim_clausula+3]))
+        if not eh_custo:
+            steps.append({'action': 'trash_from_deck_top', 'count': int(m_trash_deck.group(1))})
 
     # Add from trash
     if 'from your trash to your hand' in t:
