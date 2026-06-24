@@ -122,9 +122,20 @@ async def run_simulation_job(job_id: str):
             if not metas:
                 await db.fail_job(job_id, "nenhuma decklist de meta disponível para comparação")
                 return
-            matchups = [(m['name'], m['leader_code'], m['cards']) for m in metas]
+            # meta_decklists.cards guarda SÓ o main deck (50 cartas, sem
+            # leader) -- o leader_code é campo separado. load_deck() espera
+            # leader + main juntos numa lista só, então o leader precisa
+            # ser injetado aqui antes de montar matchups (bug corrigido em
+            # 24/06: sem isto, load_deck() levantava "decklist sem líder"
+            # para toda decklist de meta).
+            matchups = [
+                (m['name'], m['leader_code'], [{'code': m['leader_code'], 'qty': 1}] + m['cards'])
+                for m in metas
+            ]
         else:
             # custom_opponent ou own_decks: deck_b já vem completo no job
+            # (com leader incluso, montado pelo frontend antes de chamar
+            # POST /simulate -- ver src/app/simulate/page.tsx)
             matchups = [('oponente', None, job['deck_b'])]
 
         n_sim = job['n_simulations']

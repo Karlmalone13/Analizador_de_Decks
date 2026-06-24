@@ -68614,5 +68614,42 @@
         ]
       }
     }
+  },
+  "P-096": {
+    "name": "Girl",
+    "type": "CHARACTER",
+    "cost": 2,
+    "power": 0,
+    "counter": 1000,
+    "life": 0,
+    "color": "Blue",
+    "sub_types": "nan",
+    "attribute": "Wisdom",
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "draw",
+            "count": 1,
+            "then_trash": 1
+          },
+          {
+            "action": "trash_from_hand",
+            "count": 1
+          }
+        ],
+        "once_per_turn": true
+      },
+      "activate_main": {
+        "steps": [
+          {
+            "action": "give_don",
+            "count": 1,
+            "rested": true
+          }
+        ],
+        "once_per_turn": true
+      }
+    }
   }
 }

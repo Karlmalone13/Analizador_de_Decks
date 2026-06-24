@@ -1020,8 +1020,15 @@ class EffectExecutor:
             return f'{len(moved)} carta(s) no fundo do deck' if moved else ''
 
         if action == 'activate_main_effect':
-            # Trigger que ativa o efeito Main da carta
-            return self.execute(card, 'main')[0] if self.execute(card, 'main') else ''
+            # Trigger que ativa o efeito Main da carta. CORRIGIDO 24/06:
+            # antes chamava self.execute(card, 'main') DUAS vezes (uma no
+            # if, outra no corpo) -- isso duplicava o efeito quando ambas
+            # tinham sucesso, e causava IndexError quando a 2a chamada
+            # retornava lista vazia (ex: 'main' tinha once_per_turn e já
+            # havia sido consumido pela 1a chamada). Executa uma única vez
+            # e junta os logs com segurança.
+            logs = self.execute(card, 'main')
+            return '; '.join(l for l in logs if l) if logs else ''
 
         # ── Draw ──────────────────────────────────────────────────────────────
         if action == 'draw':

@@ -111851,5 +111851,52 @@
         "has_unblockable": false,
         "has_banish": false,
         "has_trigger": true
+    },
+    "P-096": {
+        "name": "Girl",
+        "type": "CHARACTER",
+        "cost": 2,
+        "power": 0,
+        "counter": 1000,
+        "life": 0,
+        "color": "Blue",
+        "sub_types": "nan",
+        "attribute": "Wisdom",
+        "effects": [
+            {
+                "action": "draw",
+                "trigger": "on_play"
+            },
+            {
+                "action": "trash_from_hand",
+                "trigger": "on_play"
+            },
+            {
+                "action": "give_don",
+                "trigger": "activate_main"
+            }
+        ],
+        "synergy_states": {},
+        "text": "[On Play] Draw 1 card and trash 1 card from your hand.<br>[Activate: Main] [Once Per Turn] Give up to 1 rested DON!! card to 1 of your [Nami] cards.",
+        "is_searcher": false,
+        "draws": true,
+        "has_counter_value": true,
+        "has_counter_event": false,
+        "is_blocker": false,
+        "is_removal": false,
+        "kos": false,
+        "rests_opponent": false,
+        "bounces": false,
+        "gives_don": true,
+        "power_buff": false,
+        "heals": false,
+        "gains_life": false,
+        "attacks_life": false,
+        "trashes_own_life": false,
+        "has_rush": false,
+        "has_double_attack": false,
+        "has_unblockable": false,
+        "has_banish": false,
+        "has_trigger": false
     }
 }
