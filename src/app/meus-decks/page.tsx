@@ -229,6 +229,12 @@ export default function MeusDecksPage() {
                                             >
                                                 📊 Analisar
                                             </a>
+                                            <a
+                                                href={`/simulate?id=${deck.id}`}
+                                                className="flex-1 bg-green-600 hover:bg-green-500 px-3 py-2 rounded-xl text-base text-center transition font-medium"
+                                            >
+                                                🎯 Simular
+                                            </a>
                                             <button
                                                 onClick={() => deleteDeck(deck.id)}
                                                 disabled={deleting === deck.id}
