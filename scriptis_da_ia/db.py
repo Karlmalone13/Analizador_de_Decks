@@ -207,51 +207,12 @@ async def insert_meta_decklist(
     return str(row["id"])
 
 
-# ─────────────────────────────────────────────────────────────────────────
-# user_decks
-# ─────────────────────────────────────────────────────────────────────────
-
-async def list_user_decks(user_id: str) -> list[dict]:
-    pool = await get_pool()
-    rows = await pool.fetch(
-        "SELECT id, name, leader_code, cards, created_at FROM user_decks WHERE user_id = $1 ORDER BY created_at DESC",
-        UUID(user_id),
-    )
-    out = []
-    for r in rows:
-        d = dict(r)
-        d["id"] = str(d["id"])
-        if isinstance(d.get("cards"), str):
-            d["cards"] = json.loads(d["cards"])
-        d["created_at"] = d["created_at"].isoformat()
-        out.append(d)
-    return out
-
-
-async def get_user_deck(deck_id: str) -> Optional[dict]:
-    pool = await get_pool()
-    row = await pool.fetchrow(
-        "SELECT id, user_id, name, leader_code, cards FROM user_decks WHERE id = $1",
-        UUID(deck_id),
-    )
-    if row is None:
-        return None
-    d = dict(row)
-    d["id"] = str(d["id"])
-    d["user_id"] = str(d["user_id"])
-    if isinstance(d.get("cards"), str):
-        d["cards"] = json.loads(d["cards"])
-    return d
-
-
-async def insert_user_deck(user_id: str, name: str, leader_code: str, cards: list[dict]) -> str:
-    pool = await get_pool()
-    row = await pool.fetchrow(
-        """
-        INSERT INTO user_decks (user_id, name, leader_code, cards)
-        VALUES ($1, $2, $3, $4::jsonb)
-        RETURNING id
-        """,
-        UUID(user_id), name, leader_code, json.dumps(cards),
-    )
-    return str(row["id"])
+# Nota: funções de leitura da tabela `decks` (list_user_decks,
+# get_user_deck) foram removidas deliberadamente. Decisão de 24/06: o
+# FRONTEND já tem os dados do deck em memória quando o usuário está na
+# tela de simulação (via Supabase client, igual a deck/page.tsx e
+# meus-decks/page.tsx) -- ele monta a lista [{code, qty}] e manda pronta
+# para POST /simulate. Isso evita 1-2 viagens de rede extra
+# Railway→Supabase por job que existiriam se o Python buscasse pelo
+# deck_id, sem nenhum ganho real (a tabela `decks` não precisa de
+# tratamento especial no Python para este fluxo).
