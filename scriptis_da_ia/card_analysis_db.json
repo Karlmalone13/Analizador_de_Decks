@@ -345,18 +345,13 @@
                 "trigger": "counter"
             },
             {
-                "action": "add_to_hand",
+                "action": "play_from_deck",
                 "trigger": "counter",
                 "cost_lte": 3
             },
             {
                 "action": "deck_bottom_rest",
                 "trigger": "counter"
-            },
-            {
-                "action": "play_card",
-                "trigger": "counter",
-                "cost_lte": 3
             }
         ],
         "synergy_states": {},
@@ -3685,18 +3680,13 @@
                 "trigger": "activate_main"
             },
             {
-                "action": "add_to_hand",
+                "action": "play_from_deck",
                 "trigger": "activate_main",
                 "cost_lte": 2
             },
             {
                 "action": "deck_bottom_rest",
                 "trigger": "activate_main"
-            },
-            {
-                "action": "play_card",
-                "trigger": "activate_main",
-                "cost_lte": 2
             }
         ],
         "synergy_states": {},
@@ -3817,11 +3807,6 @@
             {
                 "action": "deck_bottom_rest",
                 "trigger": "on_play"
-            },
-            {
-                "action": "play_card",
-                "trigger": "on_play",
-                "cost_lte": 99
             }
         ],
         "synergy_states": {},
@@ -5032,18 +5017,13 @@
                 "trigger": "on_play"
             },
             {
-                "action": "add_to_hand",
+                "action": "play_from_deck",
                 "trigger": "on_play",
                 "cost_lte": 5
             },
             {
                 "action": "deck_bottom_rest",
                 "trigger": "on_play"
-            },
-            {
-                "action": "play_card",
-                "trigger": "on_play",
-                "cost_lte": 5
             },
             {
                 "action": "trash_from_hand",
@@ -7434,11 +7414,6 @@
             {
                 "action": "deck_bottom_rest",
                 "trigger": "on_play"
-            },
-            {
-                "action": "play_card",
-                "trigger": "on_play",
-                "cost_lte": 99
             },
             {
                 "action": "keyword_blocker",
@@ -15522,18 +15497,13 @@
                 "trigger": "main"
             },
             {
-                "action": "add_to_hand",
+                "action": "play_from_deck",
                 "trigger": "main",
                 "cost_lte": 3
             },
             {
                 "action": "deck_bottom_rest",
                 "trigger": "main"
-            },
-            {
-                "action": "play_card",
-                "trigger": "main",
-                "cost_lte": 3
             }
         ],
         "synergy_states": {},
@@ -24826,17 +24796,12 @@
                 "trigger": "main"
             },
             {
-                "action": "add_to_hand",
+                "action": "play_from_deck",
                 "trigger": "main"
             },
             {
                 "action": "trash_rest",
                 "trigger": "main"
-            },
-            {
-                "action": "play_card",
-                "trigger": "main",
-                "cost_lte": 99
             }
         ],
         "synergy_states": {
@@ -29819,17 +29784,12 @@
                 "trigger": "on_play"
             },
             {
-                "action": "add_to_hand",
+                "action": "play_from_deck",
                 "trigger": "on_play"
             },
             {
                 "action": "trash_rest",
                 "trigger": "on_play"
-            },
-            {
-                "action": "play_card",
-                "trigger": "on_play",
-                "cost_lte": 99
             }
         ],
         "synergy_states": {},
@@ -36558,18 +36518,13 @@
                 "trigger": "on_play"
             },
             {
-                "action": "add_to_hand",
+                "action": "play_from_deck",
                 "trigger": "on_play",
                 "power_lte": 5000
             },
             {
                 "action": "deck_bottom_rest",
                 "trigger": "on_play"
-            },
-            {
-                "action": "play_card",
-                "trigger": "on_play",
-                "cost_lte": 99
             }
         ],
         "synergy_states": {},
@@ -44516,11 +44471,6 @@
             {
                 "action": "deck_bottom_rest",
                 "trigger": "on_play"
-            },
-            {
-                "action": "play_card",
-                "trigger": "on_play",
-                "cost_lte": 99
             }
         ],
         "synergy_states": {},
@@ -46964,7 +46914,7 @@
                 "trigger": "on_play"
             },
             {
-                "action": "add_to_hand",
+                "action": "play_from_deck",
                 "trigger": "on_play",
                 "power_lte": 4000
             },
@@ -46973,16 +46923,11 @@
                 "trigger": "on_play"
             },
             {
-                "action": "play_card",
-                "trigger": "on_play",
-                "cost_lte": 99
-            },
-            {
                 "action": "look_top_deck",
                 "trigger": "when_attacking"
             },
             {
-                "action": "add_to_hand",
+                "action": "play_from_deck",
                 "trigger": "when_attacking",
                 "power_lte": 4000
             },
@@ -46991,27 +46936,17 @@
                 "trigger": "when_attacking"
             },
             {
-                "action": "play_card",
-                "trigger": "when_attacking",
-                "cost_lte": 99
-            },
-            {
                 "action": "look_top_deck",
                 "trigger": "your_turn"
             },
             {
-                "action": "add_to_hand",
+                "action": "play_from_deck",
                 "trigger": "your_turn",
                 "power_lte": 4000
             },
             {
                 "action": "deck_bottom_rest",
                 "trigger": "your_turn"
-            },
-            {
-                "action": "play_card",
-                "trigger": "your_turn",
-                "cost_lte": 99
             }
         ],
         "synergy_states": {},
@@ -50936,7 +50871,7 @@
                 "trigger": "on_play"
             },
             {
-                "action": "add_to_hand",
+                "action": "play_from_deck",
                 "trigger": "on_play"
             },
             {
@@ -64325,18 +64260,13 @@
                 "trigger": "passive"
             },
             {
-                "action": "add_to_hand",
+                "action": "play_from_deck",
                 "trigger": "passive",
                 "cost_lte": 5
             },
             {
                 "action": "deck_bottom_rest",
                 "trigger": "passive"
-            },
-            {
-                "action": "play_card",
-                "trigger": "passive",
-                "cost_lte": 5
             }
         ],
         "synergy_states": {},
@@ -77705,18 +77635,13 @@
                 "trigger": "on_ko"
             },
             {
-                "action": "add_to_hand",
+                "action": "play_from_deck",
                 "trigger": "on_ko",
                 "power_lte": 2000
             },
             {
                 "action": "deck_bottom_rest",
                 "trigger": "on_ko"
-            },
-            {
-                "action": "play_card",
-                "trigger": "on_ko",
-                "cost_lte": 99
             }
         ],
         "synergy_states": {},
@@ -88884,11 +88809,6 @@
             {
                 "action": "deck_bottom_rest",
                 "trigger": "on_play"
-            },
-            {
-                "action": "play_card",
-                "trigger": "on_play",
-                "cost_lte": 2
             }
         ],
         "synergy_states": {},
@@ -90265,18 +90185,13 @@
                 "trigger": "main"
             },
             {
-                "action": "add_to_hand",
+                "action": "play_from_deck",
                 "trigger": "main",
                 "power_lte": 6000
             },
             {
                 "action": "deck_bottom_rest",
                 "trigger": "main"
-            },
-            {
-                "action": "play_card",
-                "trigger": "main",
-                "cost_lte": 99
             }
         ],
         "synergy_states": {},

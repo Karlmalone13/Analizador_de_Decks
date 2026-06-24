@@ -321,6 +321,7 @@ def parse_look_at(text):
     # Quantas pega
     take_m = re.search(r'(?:reveal|add|play) up to (\d+)', t)
     take_count = int(take_m.group(1)) if take_m else 1
+    verbo_pega = take_m.group(0).split()[0] if take_m else 'add'  # 'reveal' | 'add' | 'play'
 
     # Filtro
     filter_type = None
@@ -344,9 +345,20 @@ def parse_look_at(text):
     power_m = re.search(r'with (\d+) power or less', t)
 
     take_step = {
-        'action': 'add_to_hand',
+        'action': 'play_from_deck' if verbo_pega == 'play' else 'add_to_hand',
         'count': take_count,
     }
+    # rastreamento de informacao conhecida pelo oponente: "reveal up to N
+    # [filtro]" expoe a carta especifica adicionada a mao (181 das 221
+    # cards de busca usam esse padrao -- confirmado oficialmente como
+    # informacao publica, mesmo sendo o texto-padrao de search comum).
+    # "add up to N" SEM a palavra reveal (ex: OP05-043) NAO expoe a carta.
+    # "play up to N" vai direto pro campo, que ja e publico por natureza --
+    # nao precisa do campo revealed (tratado pela action play_from_deck_search).
+    if verbo_pega == 'add':
+        take_step['revealed_to_opponent'] = False
+    elif verbo_pega == 'reveal':
+        take_step['revealed_to_opponent'] = True
     if filter_type:
         take_step['filter_type'] = filter_type
     if exclude:
@@ -1230,11 +1242,19 @@ def parse_play_generic(text):
         return steps
     m = re.search(r'play up to (\d+) [^.]*?(?:character|stage) card', t)
     if m and 'from your deck' not in t and 'from your trash' not in t:
-        cost_m = re.search(r'with a cost of (\d+) or less', t)
-        steps.append({
-            'action': 'play_card', 'count': int(m.group(1)),
-            'cost_lte': int(cost_m.group(1)) if cost_m else 99,
-        })
+        # exclui tambem o padrao "look at N cards from the top of your
+        # deck ... play up to N [filtro]" -- ja tratado integralmente por
+        # parse_look_at() como play_from_deck (respeitando a janela das N
+        # cartas vistas, nao o deck inteiro). Sem esta exclusao, esse
+        # padrao gerava DUAS actions de jogar a mesma carta (bug
+        # pre-existente, 17 cards: EB01-009, EB02-025, OP01-116, etc).
+        precedido_de_look = bool(re.search(r'look at \d+ cards? from the top of (?:your|the) deck', t[:m.start()]))
+        if not precedido_de_look:
+            cost_m = re.search(r'with a cost of (\d+) or less', t)
+            steps.append({
+                'action': 'play_card', 'count': int(m.group(1)),
+                'cost_lte': int(cost_m.group(1)) if cost_m else 99,
+            })
     return steps
 
 

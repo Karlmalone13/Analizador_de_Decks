@@ -236,17 +236,12 @@
             "count": 5
           },
           {
-            "action": "add_to_hand",
+            "action": "play_from_deck",
             "count": 1,
             "cost_lte": 3
           },
           {
             "action": "deck_bottom_rest"
-          },
-          {
-            "action": "play_card",
-            "count": 1,
-            "cost_lte": 3
           }
         ]
       }
@@ -502,6 +497,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "filter_type": "donquixote pirates"
           },
           {
@@ -1816,7 +1812,8 @@
           },
           {
             "action": "add_to_hand",
-            "count": 1
+            "count": 1,
+            "revealed_to_opponent": true
           },
           {
             "action": "deck_bottom_rest"
@@ -1951,6 +1948,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "filter_type": "zou"
           },
           {
@@ -2042,6 +2040,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "filter_type": "straw hat crew",
             "exclude": [
               "nami"
@@ -2134,7 +2133,8 @@
           },
           {
             "action": "add_to_hand",
-            "count": 1
+            "count": 1,
+            "revealed_to_opponent": true
           },
           {
             "action": "deck_bottom_rest"
@@ -2220,7 +2220,8 @@
           },
           {
             "action": "add_to_hand",
-            "count": 1
+            "count": 1,
+            "revealed_to_opponent": false
           },
           {
             "action": "deck_reorder_rest"
@@ -2275,17 +2276,12 @@
             "count": 5
           },
           {
-            "action": "add_to_hand",
+            "action": "play_from_deck",
             "count": 1,
             "cost_lte": 2
           },
           {
             "action": "deck_bottom_rest"
-          },
-          {
-            "action": "play_card",
-            "count": 1,
-            "cost_lte": 2
           }
         ],
         "conditions": {
@@ -2355,15 +2351,11 @@
           },
           {
             "action": "add_to_hand",
-            "count": 1
+            "count": 1,
+            "revealed_to_opponent": true
           },
           {
             "action": "deck_bottom_rest"
-          },
-          {
-            "action": "play_card",
-            "count": 1,
-            "cost_lte": 99
           }
         ],
         "conditions": {
@@ -2442,7 +2434,8 @@
           },
           {
             "action": "add_to_hand",
-            "count": 1
+            "count": 1,
+            "revealed_to_opponent": true
           },
           {
             "action": "deck_bottom_rest"
@@ -2471,6 +2464,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "filter_type": "galley-la company"
           },
           {
@@ -2567,6 +2561,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "filter_type": "straw hat crew"
           },
           {
@@ -2700,7 +2695,8 @@
           },
           {
             "action": "add_to_hand",
-            "count": 1
+            "count": 1,
+            "revealed_to_opponent": true
           },
           {
             "action": "deck_bottom_rest"
@@ -2983,7 +2979,8 @@
           },
           {
             "action": "add_to_hand",
-            "count": 1
+            "count": 1,
+            "revealed_to_opponent": true
           },
           {
             "action": "deck_bottom_rest"
@@ -3152,7 +3149,7 @@
             "count": 5
           },
           {
-            "action": "add_to_hand",
+            "action": "play_from_deck",
             "count": 1,
             "exclude": [
               "vegapunk"
@@ -3161,11 +3158,6 @@
           },
           {
             "action": "deck_bottom_rest"
-          },
-          {
-            "action": "play_card",
-            "count": 1,
-            "cost_lte": 5
           },
           {
             "action": "trash_from_hand",
@@ -3228,7 +3220,8 @@
           },
           {
             "action": "add_to_hand",
-            "count": 1
+            "count": 1,
+            "revealed_to_opponent": true
           },
           {
             "action": "deck_bottom_rest"
@@ -3365,6 +3358,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "filter_type": "dracule mihawk"
           },
           {
@@ -3653,6 +3647,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "power_lte": 1000
           },
           {
@@ -4021,7 +4016,8 @@
           },
           {
             "action": "add_to_hand",
-            "count": 1
+            "count": 1,
+            "revealed_to_opponent": false
           },
           {
             "action": "deck_reorder_rest"
@@ -4614,6 +4610,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "filter_type": "onigashima island"
           },
           {
@@ -4755,15 +4752,11 @@
           },
           {
             "action": "add_to_hand",
-            "count": 1
+            "count": 1,
+            "revealed_to_opponent": true
           },
           {
             "action": "deck_bottom_rest"
-          },
-          {
-            "action": "play_card",
-            "count": 1,
-            "cost_lte": 99
           }
         ]
       },
@@ -5145,7 +5138,8 @@
           },
           {
             "action": "add_to_hand",
-            "count": 1
+            "count": 1,
+            "revealed_to_opponent": true
           },
           {
             "action": "deck_bottom_rest"
@@ -5263,6 +5257,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "exclude": [
               "jewelry bonney"
             ]
@@ -5374,6 +5369,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "filter_type": "lulucia kingdom"
           },
           {
@@ -6062,6 +6058,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "filter_type": "sanji"
           },
           {
@@ -6322,7 +6319,8 @@
           },
           {
             "action": "add_to_hand",
-            "count": 1
+            "count": 1,
+            "revealed_to_opponent": true
           },
           {
             "action": "deck_bottom_rest"
@@ -7417,6 +7415,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "filter_type": "straw hat crew",
             "exclude": [
               "nami"
@@ -7755,6 +7754,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "filter_type": "straw hat crew"
           },
           {
@@ -8013,6 +8013,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "filter_type": "land of wano"
           },
           {
@@ -8665,7 +8666,8 @@
           },
           {
             "action": "add_to_hand",
-            "count": 1
+            "count": 1,
+            "revealed_to_opponent": false
           },
           {
             "action": "deck_reorder_rest"
@@ -8752,7 +8754,8 @@
           },
           {
             "action": "add_to_hand",
-            "count": 1
+            "count": 1,
+            "revealed_to_opponent": false
           },
           {
             "action": "deck_reorder_rest"
@@ -8937,7 +8940,8 @@
           },
           {
             "action": "add_to_hand",
-            "count": 1
+            "count": 1,
+            "revealed_to_opponent": true
           },
           {
             "action": "deck_bottom_rest"
@@ -9027,7 +9031,8 @@
           },
           {
             "action": "add_to_hand",
-            "count": 1
+            "count": 1,
+            "revealed_to_opponent": false
           },
           {
             "action": "deck_reorder_rest"
@@ -9088,6 +9093,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "filter_type": "baroque works",
             "exclude": [
               "baroque works"
@@ -9688,17 +9694,12 @@
             "count": 5
           },
           {
-            "action": "add_to_hand",
+            "action": "play_from_deck",
             "count": 1,
             "cost_lte": 3
           },
           {
             "action": "deck_bottom_rest"
-          },
-          {
-            "action": "play_card",
-            "count": 1,
-            "cost_lte": 3
           }
         ]
       }
@@ -10315,7 +10316,8 @@
           },
           {
             "action": "add_to_hand",
-            "count": 1
+            "count": 1,
+            "revealed_to_opponent": true
           },
           {
             "action": "deck_bottom_rest"
@@ -10585,6 +10587,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "filter_type": "film",
             "exclude": [
               "nami"
@@ -10604,6 +10607,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "filter_type": "film",
             "exclude": [
               "nami"
@@ -11061,7 +11065,8 @@
           },
           {
             "action": "add_to_hand",
-            "count": 1
+            "count": 1,
+            "revealed_to_opponent": false
           },
           {
             "action": "deck_reorder_rest"
@@ -11105,6 +11110,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "filter_type": "the seven warlords of the sea"
           },
           {
@@ -11134,6 +11140,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "exclude": [
               "buggy"
             ]
@@ -11816,6 +11823,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "exclude": [
               "hannyabal"
             ]
@@ -12026,6 +12034,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "filter_type": "impel down"
           },
           {
@@ -12822,6 +12831,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "exclude": [
               "izo"
             ]
@@ -12926,7 +12936,8 @@
           },
           {
             "action": "add_to_hand",
-            "count": 1
+            "count": 1,
+            "revealed_to_opponent": true
           },
           {
             "action": "deck_bottom_rest"
@@ -13292,7 +13303,8 @@
           },
           {
             "action": "add_to_hand",
-            "count": 1
+            "count": 1,
+            "revealed_to_opponent": true
           },
           {
             "action": "deck_bottom_rest"
@@ -13559,6 +13571,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "exclude": [
               "nami"
             ]
@@ -14366,6 +14379,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "filter_type": "water seven",
             "exclude": [
               "kokoro"
@@ -14923,7 +14937,8 @@
           },
           {
             "action": "add_to_hand",
-            "count": 1
+            "count": 1,
+            "revealed_to_opponent": false
           },
           {
             "action": "deck_bottom_rest"
@@ -14976,6 +14991,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "exclude": [
               "spandam"
             ]
@@ -15042,6 +15058,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "filter_type": "navy",
             "exclude": [
               "brannew"
@@ -15181,16 +15198,11 @@
             "count": 5
           },
           {
-            "action": "add_to_hand",
+            "action": "play_from_deck",
             "count": 1
           },
           {
             "action": "trash_rest"
-          },
-          {
-            "action": "play_card",
-            "count": 1,
-            "cost_lte": 99
           }
         ],
         "conditions": {
@@ -15633,6 +15645,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "filter_type": "sanji",
             "exclude": [
               "charlotte pudding"
@@ -15665,6 +15678,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "filter_type": "big mom pirates"
           },
           {
@@ -16033,6 +16047,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "filter_type": "alabasta"
           },
           {
@@ -16893,6 +16908,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "filter_type": "donquixote pirates"
           },
           {
@@ -17009,6 +17025,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "filter_type": "dressrosa"
           },
           {
@@ -17071,6 +17088,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "filter_type": "east blue"
           },
           {
@@ -17204,7 +17222,8 @@
           },
           {
             "action": "add_to_hand",
-            "count": 1
+            "count": 1,
+            "revealed_to_opponent": false
           },
           {
             "action": "deck_bottom_rest"
@@ -17311,6 +17330,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "filter_type": "animal kingdom pirates",
             "exclude": [
               "who's.who"
@@ -17735,7 +17755,8 @@
           },
           {
             "action": "add_to_hand",
-            "count": 1
+            "count": 1,
+            "revealed_to_opponent": true
           },
           {
             "action": "deck_bottom_rest"
@@ -18280,7 +18301,7 @@
             "count": 3
           },
           {
-            "action": "add_to_hand",
+            "action": "play_from_deck",
             "count": 1,
             "exclude": [
               "stussy"
@@ -18288,11 +18309,6 @@
           },
           {
             "action": "trash_rest"
-          },
-          {
-            "action": "play_card",
-            "count": 1,
-            "cost_lte": 99
           }
         ]
       }
@@ -18495,6 +18511,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "filter_type": "dressrosa",
             "exclude": [
               "rebecca"
@@ -19537,6 +19554,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "filter_type": "revolutionary army",
             "exclude": [
               "belo betty"
@@ -19766,6 +19784,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "filter_type": "revolutionary army"
           },
           {
@@ -20068,6 +20087,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "filter_type": "donquixote pirates"
           },
           {
@@ -20341,7 +20361,8 @@
           },
           {
             "action": "add_to_hand",
-            "count": 1
+            "count": 1,
+            "revealed_to_opponent": false
           },
           {
             "action": "deck_top_rest"
@@ -20595,7 +20616,8 @@
           },
           {
             "action": "add_to_hand",
-            "count": 1
+            "count": 1,
+            "revealed_to_opponent": false
           },
           {
             "action": "deck_reorder_rest"
@@ -20839,6 +20861,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "filter_type": "kid pirates",
             "exclude": [
               "killer"
@@ -20949,6 +20972,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "filter_type": "heart pirates"
           },
           {
@@ -21166,6 +21190,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "filter_type": "straw hat crew"
           },
           {
@@ -21855,6 +21880,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "filter_type": "holly"
           },
           {
@@ -21995,6 +22021,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "filter_type": "sky island",
             "exclude": [
               "shura"
@@ -22375,17 +22402,12 @@
             "count": 3
           },
           {
-            "action": "add_to_hand",
+            "action": "play_from_deck",
             "count": 1,
             "power_lte": 5000
           },
           {
             "action": "deck_bottom_rest"
-          },
-          {
-            "action": "play_card",
-            "count": 1,
-            "cost_lte": 99
           }
         ]
       }
@@ -22578,6 +22600,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "filter_type": "film"
           },
           {
@@ -22944,6 +22967,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "filter_type": "fish-man",
             "exclude": [
               "camie"
@@ -23553,6 +23577,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "filter_type": "navy",
             "exclude": [
               "tashigi"
@@ -23744,7 +23769,8 @@
           },
           {
             "action": "add_to_hand",
-            "count": 1
+            "count": 1,
+            "revealed_to_opponent": false
           },
           {
             "action": "deck_reorder_rest"
@@ -24226,6 +24252,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "exclude": [
               "germa 66"
             ]
@@ -24256,7 +24283,8 @@
           },
           {
             "action": "add_to_hand",
-            "count": 1
+            "count": 1,
+            "revealed_to_opponent": true
           },
           {
             "action": "deck_bottom_rest"
@@ -25173,6 +25201,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "filter_type": "upper yard"
           },
           {
@@ -25386,6 +25415,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "power_lte": 2000
           },
           {
@@ -25617,6 +25647,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "filter_type": "portgas.d.ace"
           },
           {
@@ -25888,6 +25919,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "exclude": [
               "otama"
             ]
@@ -26258,6 +26290,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "filter_type": "supernovas",
             "exclude": [
               "more pizza!!"
@@ -26314,7 +26347,8 @@
           },
           {
             "action": "add_to_hand",
-            "count": 1
+            "count": 1,
+            "revealed_to_opponent": false
           },
           {
             "action": "deck_reorder_rest"
@@ -26367,6 +26401,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "filter_type": "amazon lily",
             "exclude": [
               "gloriosa (grandma nyon)"
@@ -26503,6 +26538,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "filter_type": "the seven warlords of the sea"
           },
           {
@@ -27094,16 +27130,12 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "filter_type": "foxy pirates",
             "power_lte": 4000
           },
           {
             "action": "deck_bottom_rest"
-          },
-          {
-            "action": "play_card",
-            "count": 1,
-            "cost_lte": 99
           }
         ],
         "costs": [
@@ -27256,6 +27288,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "filter_type": "animal kingdom pirates"
           },
           {
@@ -28177,6 +28210,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "filter_type": "egghead",
             "exclude": [
               "lilith"
@@ -28283,6 +28317,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "filter_type": "egghead",
             "exclude": [
               "he possesses the world's most brilliant mind"
@@ -28630,17 +28665,12 @@
             "count": 5
           },
           {
-            "action": "add_to_hand",
+            "action": "play_from_deck",
             "count": 1,
             "power_lte": 4000
           },
           {
             "action": "deck_bottom_rest"
-          },
-          {
-            "action": "play_card",
-            "count": 1,
-            "cost_lte": 99
           }
         ]
       },
@@ -28651,17 +28681,12 @@
             "count": 5
           },
           {
-            "action": "add_to_hand",
+            "action": "play_from_deck",
             "count": 1,
             "power_lte": 4000
           },
           {
             "action": "deck_bottom_rest"
-          },
-          {
-            "action": "play_card",
-            "count": 1,
-            "cost_lte": 99
           }
         ]
       },
@@ -28672,17 +28697,12 @@
             "count": 5
           },
           {
-            "action": "add_to_hand",
+            "action": "play_from_deck",
             "count": 1,
             "power_lte": 4000
           },
           {
             "action": "deck_bottom_rest"
-          },
-          {
-            "action": "play_card",
-            "count": 1,
-            "cost_lte": 99
           }
         ]
       }
@@ -28868,6 +28888,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "filter_type": "tony tony.chopper",
             "exclude": [
               "dr.kureha"
@@ -29375,6 +29396,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "filter_type": "minks",
             "exclude": [
               "wanda"
@@ -29845,7 +29867,8 @@
           },
           {
             "action": "add_to_hand",
-            "count": 1
+            "count": 1,
+            "revealed_to_opponent": true
           },
           {
             "action": "deck_top_rest"
@@ -30419,6 +30442,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "exclude": [
               "queen"
             ]
@@ -30943,7 +30967,7 @@
             "count": 7
           },
           {
-            "action": "add_to_hand",
+            "action": "play_from_deck",
             "count": 1
           },
           {
@@ -31233,6 +31257,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "filter_type": "upper yard"
           },
           {
@@ -31591,6 +31616,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "filter_type": "red-haired pirates"
           },
           {
@@ -32068,6 +32094,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "filter_type": "red-haired pirates",
             "exclude": [
               "come on!! we'll fight you!!"
@@ -32436,6 +32463,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "filter_type": "odyssey",
             "exclude": [
               "lim"
@@ -32641,6 +32669,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "filter_type": "land of wano"
           },
           {
@@ -32781,7 +32810,8 @@
           },
           {
             "action": "add_to_hand",
-            "count": 1
+            "count": 1,
+            "revealed_to_opponent": true
           },
           {
             "action": "deck_bottom_rest"
@@ -32834,6 +32864,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "filter_type": "richie"
           },
           {
@@ -32895,6 +32926,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "filter_type": "cross guild",
             "exclude": [
               "mr.3(galdino)"
@@ -32934,6 +32966,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "filter_type": "cross guild"
           },
           {
@@ -33219,6 +33252,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "filter_type": "straw hat crew"
           },
           {
@@ -33915,6 +33949,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "filter_type": "blackbeard pirates"
           },
           {
@@ -33957,6 +33992,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "filter_type": "blackbeard pirates",
             "exclude": [
               "my era...begins!!"
@@ -34064,6 +34100,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "filter_type": "blackbeard pirates"
           },
           {
@@ -34154,7 +34191,8 @@
           },
           {
             "action": "add_to_hand",
-            "count": 1
+            "count": 1,
+            "revealed_to_opponent": true
           },
           {
             "action": "deck_bottom_rest"
@@ -34617,6 +34655,7 @@
           {
             "action": "add_to_hand",
             "count": 2,
+            "revealed_to_opponent": true,
             "exclude": [
               "dereshi!"
             ]
@@ -34784,6 +34823,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "exclude": [
               "vergo"
             ]
@@ -34846,6 +34886,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "filter_type": "smiley"
           },
           {
@@ -35374,6 +35415,7 @@
           {
             "action": "add_to_hand",
             "count": 2,
+            "revealed_to_opponent": true,
             "filter_type": "the akazaya nine"
           },
           {
@@ -35605,6 +35647,7 @@
           {
             "action": "add_to_hand",
             "count": 2,
+            "revealed_to_opponent": true,
             "filter_type": "odyssey"
           },
           {
@@ -35922,6 +35965,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "filter_type": "revolutionary army"
           },
           {
@@ -36057,6 +36101,7 @@
           {
             "action": "add_to_hand",
             "count": 2,
+            "revealed_to_opponent": true,
             "filter_type": "dressrosa",
             "exclude": [
               "leo"
@@ -36129,6 +36174,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "filter_type": "dressrosa"
           },
           {
@@ -36245,7 +36291,8 @@
           },
           {
             "action": "add_to_hand",
-            "count": 1
+            "count": 1,
+            "revealed_to_opponent": true
           },
           {
             "action": "deck_bottom_rest"
@@ -36297,6 +36344,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "filter_type": "donquixote pirates"
           },
           {
@@ -36644,6 +36692,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "filter_type": "donquixote pirates",
             "exclude": [
               "i do not forgive those who laugh at my family!!!"
@@ -36663,6 +36712,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "filter_type": "donquixote pirates",
             "exclude": [
               "i do not forgive those who laugh at my family!!!"
@@ -37402,6 +37452,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "filter_type": "supernovas"
           },
           {
@@ -37545,6 +37596,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "filter_type": "supernovas",
             "exclude": [
               "monkey.d.luffy"
@@ -37883,6 +37935,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "filter_type": "navy"
           },
           {
@@ -38551,6 +38604,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "filter_type": "neptunian"
           },
           {
@@ -38697,6 +38751,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "filter_type": "neptunian"
           },
           {
@@ -38734,6 +38789,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "filter_type": "neptunian"
           },
           {
@@ -38838,6 +38894,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "filter_type": "straw hat crew"
           },
           {
@@ -39015,7 +39072,8 @@
           },
           {
             "action": "add_to_hand",
-            "count": 1
+            "count": 1,
+            "revealed_to_opponent": true
           },
           {
             "action": "trash_rest"
@@ -39047,6 +39105,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "filter_type": "firetank pirates"
           },
           {
@@ -39075,7 +39134,8 @@
           },
           {
             "action": "add_to_hand",
-            "count": 1
+            "count": 1,
+            "revealed_to_opponent": false
           },
           {
             "action": "deck_reorder_rest"
@@ -39153,17 +39213,12 @@
             "count": 5
           },
           {
-            "action": "add_to_hand",
+            "action": "play_from_deck",
             "count": 1,
             "cost_lte": 5
           },
           {
             "action": "deck_bottom_rest"
-          },
-          {
-            "action": "play_card",
-            "count": 1,
-            "cost_lte": 5
           }
         ]
       }
@@ -39379,6 +39434,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "filter_type": "straw hat crew",
             "exclude": [
               "let's crash this wedding!!!"
@@ -39425,7 +39481,8 @@
           },
           {
             "action": "add_to_hand",
-            "count": 1
+            "count": 1,
+            "revealed_to_opponent": false
           },
           {
             "action": "buff_power",
@@ -39616,6 +39673,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "filter_type": "big mom pirates"
           },
           {
@@ -39631,7 +39689,8 @@
           },
           {
             "action": "add_to_hand",
-            "count": 1
+            "count": 1,
+            "revealed_to_opponent": false
           }
         ],
         "costs": [
@@ -40374,6 +40433,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "filter_type": "navy",
             "exclude": [
               "i'm gonna be a navy officer!!!"
@@ -40503,6 +40563,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "filter_type": "fish-man island"
           },
           {
@@ -41005,6 +41066,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "filter_type": "monkey.d.luffy"
           },
           {
@@ -41171,6 +41233,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "filter_type": "monkey.d.luffy"
           },
           {
@@ -41280,7 +41343,8 @@
           },
           {
             "action": "add_to_hand",
-            "count": 1
+            "count": 1,
+            "revealed_to_opponent": true
           },
           {
             "action": "deck_bottom_rest"
@@ -41531,7 +41595,8 @@
           },
           {
             "action": "add_to_hand",
-            "count": 1
+            "count": 1,
+            "revealed_to_opponent": true
           },
           {
             "action": "deck_bottom_rest"
@@ -41691,7 +41756,8 @@
           },
           {
             "action": "add_to_hand",
-            "count": 1
+            "count": 1,
+            "revealed_to_opponent": true
           },
           {
             "action": "deck_bottom_rest"
@@ -42036,6 +42102,7 @@
           {
             "action": "add_to_hand",
             "count": 2,
+            "revealed_to_opponent": true,
             "filter_type": "navy",
             "exclude": [
               "sengoku"
@@ -42633,6 +42700,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "filter_type": "sanji"
           },
           {
@@ -42850,7 +42918,8 @@
           },
           {
             "action": "add_to_hand",
-            "count": 1
+            "count": 1,
+            "revealed_to_opponent": false
           },
           {
             "action": "deck_bottom_rest"
@@ -42881,7 +42950,8 @@
           },
           {
             "action": "add_to_hand",
-            "count": 1
+            "count": 1,
+            "revealed_to_opponent": true
           },
           {
             "action": "deck_bottom_rest"
@@ -43039,6 +43109,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "filter_type": "revolutionary army",
             "exclude": [
               "koala"
@@ -43347,6 +43418,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "filter_type": "revolutionary army",
             "exclude": [
               "captains assembled"
@@ -43656,6 +43728,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "filter_type": "trafalgar law"
           },
           {
@@ -43841,7 +43914,8 @@
           },
           {
             "action": "add_to_hand",
-            "count": 1
+            "count": 1,
+            "revealed_to_opponent": false
           },
           {
             "action": "deck_bottom_rest"
@@ -44234,6 +44308,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "filter_type": "alabasta"
           },
           {
@@ -44336,7 +44411,8 @@
           },
           {
             "action": "add_to_hand",
-            "count": 1
+            "count": 1,
+            "revealed_to_opponent": true
           },
           {
             "action": "deck_bottom_rest"
@@ -45551,6 +45627,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "exclude": [
               "shanks"
             ]
@@ -46095,6 +46172,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "filter_type": "five elders"
           },
           {
@@ -46124,6 +46202,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "filter_type": "five elders"
           },
           {
@@ -46165,6 +46244,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "filter_type": "celestial dragons",
             "exclude": [
               "saint shalria"
@@ -46449,6 +46529,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "filter_type": "celestial dragons",
             "exclude": [
               "the five elders are at your service!!!"
@@ -46902,6 +46983,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "exclude": [
               "lilith"
             ]
@@ -47032,6 +47114,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "filter_type": "supernovas"
           },
           {
@@ -47365,7 +47448,7 @@
             "count": 5
           },
           {
-            "action": "add_to_hand",
+            "action": "play_from_deck",
             "count": 1,
             "exclude": [
               "basil hawkins"
@@ -47374,11 +47457,6 @@
           },
           {
             "action": "deck_bottom_rest"
-          },
-          {
-            "action": "play_card",
-            "count": 1,
-            "cost_lte": 99
           }
         ]
       }
@@ -47450,6 +47528,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "exclude": [
               "monkey.d.luffy"
             ]
@@ -47644,7 +47723,8 @@
           },
           {
             "action": "add_to_hand",
-            "count": 1
+            "count": 1,
+            "revealed_to_opponent": true
           },
           {
             "action": "deck_bottom_rest"
@@ -48238,7 +48318,8 @@
           },
           {
             "action": "add_to_hand",
-            "count": 1
+            "count": 1,
+            "revealed_to_opponent": true
           },
           {
             "action": "deck_bottom_rest"
@@ -48910,7 +48991,8 @@
           },
           {
             "action": "add_to_hand",
-            "count": 1
+            "count": 1,
+            "revealed_to_opponent": false
           },
           {
             "action": "deck_bottom_rest"
@@ -49508,6 +49590,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "exclude": [
               "miss.valentine(mikita)"
             ]
@@ -49790,6 +49873,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "exclude": [
               "hurry up and make me the pirate king!"
             ]
@@ -49869,6 +49953,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "exclude": [
               "disappointed?"
             ]
@@ -49899,7 +49984,8 @@
           },
           {
             "action": "add_to_hand",
-            "count": 1
+            "count": 1,
+            "revealed_to_opponent": true
           },
           {
             "action": "deck_bottom_rest"
@@ -50295,7 +50381,8 @@
           },
           {
             "action": "add_to_hand",
-            "count": 1
+            "count": 1,
+            "revealed_to_opponent": true
           },
           {
             "action": "deck_bottom_rest"
@@ -51275,7 +51362,8 @@
           },
           {
             "action": "add_to_hand",
-            "count": 1
+            "count": 1,
+            "revealed_to_opponent": true
           },
           {
             "action": "deck_bottom_rest"
@@ -51508,6 +51596,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "exclude": [
               "the outcome will tell us who's strong and who's weak"
             ]
@@ -51590,7 +51679,8 @@
           },
           {
             "action": "add_to_hand",
-            "count": 1
+            "count": 1,
+            "revealed_to_opponent": true
           },
           {
             "action": "deck_bottom_rest"
@@ -51693,7 +51783,8 @@
           },
           {
             "action": "add_to_hand",
-            "count": 1
+            "count": 1,
+            "revealed_to_opponent": true
           },
           {
             "action": "deck_bottom_rest"
@@ -51921,7 +52012,8 @@
           },
           {
             "action": "add_to_hand",
-            "count": 1
+            "count": 1,
+            "revealed_to_opponent": true
           },
           {
             "action": "deck_bottom_rest"
@@ -52303,7 +52395,8 @@
           },
           {
             "action": "add_to_hand",
-            "count": 1
+            "count": 1,
+            "revealed_to_opponent": false
           },
           {
             "action": "deck_reorder_rest"
@@ -53359,7 +53452,8 @@
           },
           {
             "action": "add_to_hand",
-            "count": 1
+            "count": 1,
+            "revealed_to_opponent": false
           },
           {
             "action": "deck_bottom_rest"
@@ -53532,7 +53626,8 @@
           },
           {
             "action": "add_to_hand",
-            "count": 1
+            "count": 1,
+            "revealed_to_opponent": true
           },
           {
             "action": "deck_bottom_rest"
@@ -53824,7 +53919,8 @@
           },
           {
             "action": "add_to_hand",
-            "count": 1
+            "count": 1,
+            "revealed_to_opponent": false
           },
           {
             "action": "deck_bottom_rest"
@@ -54423,7 +54519,8 @@
           },
           {
             "action": "add_to_hand",
-            "count": 1
+            "count": 1,
+            "revealed_to_opponent": false
           },
           {
             "action": "deck_bottom_rest"
@@ -54546,15 +54643,11 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "cost_lte": 2
           },
           {
             "action": "deck_bottom_rest"
-          },
-          {
-            "action": "play_card",
-            "count": 1,
-            "cost_lte": 2
           }
         ]
       }
@@ -54710,7 +54803,8 @@
           },
           {
             "action": "add_to_hand",
-            "count": 1
+            "count": 1,
+            "revealed_to_opponent": true
           },
           {
             "action": "deck_bottom_rest"
@@ -55342,17 +55436,12 @@
             "count": 5
           },
           {
-            "action": "add_to_hand",
+            "action": "play_from_deck",
             "count": 2,
             "power_lte": 6000
           },
           {
             "action": "deck_bottom_rest"
-          },
-          {
-            "action": "play_card",
-            "count": 2,
-            "cost_lte": 99
           }
         ],
         "costs": [
@@ -55459,6 +55548,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "exclude": [
               "koby"
             ]
@@ -55571,7 +55661,8 @@
           },
           {
             "action": "add_to_hand",
-            "count": 1
+            "count": 1,
+            "revealed_to_opponent": true
           },
           {
             "action": "deck_bottom_rest"
@@ -55742,7 +55833,8 @@
           },
           {
             "action": "add_to_hand",
-            "count": 1
+            "count": 1,
+            "revealed_to_opponent": true
           },
           {
             "action": "deck_bottom_rest"
@@ -55880,7 +55972,8 @@
           },
           {
             "action": "add_to_hand",
-            "count": 2
+            "count": 2,
+            "revealed_to_opponent": true
           },
           {
             "action": "deck_bottom_rest"
@@ -55908,7 +56001,8 @@
           },
           {
             "action": "add_to_hand",
-            "count": 1
+            "count": 1,
+            "revealed_to_opponent": true
           },
           {
             "action": "deck_bottom_rest"
@@ -56033,7 +56127,8 @@
           },
           {
             "action": "add_to_hand",
-            "count": 1
+            "count": 1,
+            "revealed_to_opponent": true
           },
           {
             "action": "trash_rest"
@@ -56306,6 +56401,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "exclude": [
               "nami"
             ]
@@ -57171,6 +57267,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "filter_type": "monkey.d.luffy"
           }
         ]
@@ -57184,6 +57281,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "filter_type": "monkey.d.luffy"
           }
         ]
@@ -57209,7 +57307,8 @@
           },
           {
             "action": "add_to_hand",
-            "count": 1
+            "count": 1,
+            "revealed_to_opponent": false
           },
           {
             "action": "deck_bottom_rest"
@@ -58131,7 +58230,8 @@
           },
           {
             "action": "add_to_hand",
-            "count": 1
+            "count": 1,
+            "revealed_to_opponent": false
           },
           {
             "action": "deck_reorder_rest"
@@ -58477,7 +58577,8 @@
           },
           {
             "action": "add_to_hand",
-            "count": 1
+            "count": 1,
+            "revealed_to_opponent": false
           },
           {
             "action": "deck_reorder_rest"
@@ -58589,7 +58690,8 @@
           },
           {
             "action": "add_to_hand",
-            "count": 1
+            "count": 1,
+            "revealed_to_opponent": false
           },
           {
             "action": "bounce",
@@ -59196,6 +59298,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "filter_type": "the seven warlords of the sea",
             "exclude": [
               "jinbe"
@@ -59352,6 +59455,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "filter_type": "straw hat crew",
             "exclude": [
               "nami"
@@ -60050,6 +60154,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "filter_type": "supernovas"
           },
           {
@@ -60447,7 +60552,8 @@
           },
           {
             "action": "add_to_hand",
-            "count": 1
+            "count": 1,
+            "revealed_to_opponent": false
           }
         ]
       },
@@ -61391,6 +61497,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "filter_type": "film",
             "exclude": [
               "buena festa"
@@ -63500,6 +63607,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "filter_type": "film",
             "exclude": [
               "new genesis"
@@ -63819,7 +63927,8 @@
           },
           {
             "action": "add_to_hand",
-            "count": 1
+            "count": 1,
+            "revealed_to_opponent": false
           },
           {
             "action": "deck_reorder_rest"
@@ -63856,7 +63965,8 @@
           },
           {
             "action": "add_to_hand",
-            "count": 1
+            "count": 1,
+            "revealed_to_opponent": false
           },
           {
             "action": "deck_reorder_rest"
@@ -63996,7 +64106,8 @@
           },
           {
             "action": "add_to_hand",
-            "count": 1
+            "count": 1,
+            "revealed_to_opponent": false
           },
           {
             "action": "deck_bottom_rest"
@@ -64253,6 +64364,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "filter_type": "sabo",
             "cost_lte": 5
           },
@@ -64447,6 +64559,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "filter_type": "sabo",
             "cost_lte": 5
           },
@@ -65275,7 +65388,8 @@
           },
           {
             "action": "add_to_hand",
-            "count": 1
+            "count": 1,
+            "revealed_to_opponent": false
           }
         ]
       }
@@ -65300,7 +65414,8 @@
           },
           {
             "action": "add_to_hand",
-            "count": 1
+            "count": 1,
+            "revealed_to_opponent": false
           },
           {
             "action": "deck_reorder_rest"
@@ -65451,7 +65566,8 @@
           },
           {
             "action": "add_to_hand",
-            "count": 1
+            "count": 1,
+            "revealed_to_opponent": true
           },
           {
             "action": "deck_bottom_rest"
@@ -66189,6 +66305,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "exclude": [
               "izo"
             ]
@@ -66747,6 +66864,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "filter_type": "supernovas"
           },
           {
@@ -67515,6 +67633,7 @@
           {
             "action": "add_to_hand",
             "count": 1,
+            "revealed_to_opponent": true,
             "filter_type": "land of wano"
           },
           {
@@ -67645,7 +67764,8 @@
           },
           {
             "action": "add_to_hand",
-            "count": 1
+            "count": 1,
+            "revealed_to_opponent": true
           },
           {
             "action": "deck_bottom_rest"
@@ -68076,7 +68196,8 @@
           },
           {
             "action": "add_to_hand",
-            "count": 1
+            "count": 1,
+            "revealed_to_opponent": true
           },
           {
             "action": "deck_bottom_rest"
@@ -68484,7 +68605,8 @@
           },
           {
             "action": "add_to_hand",
-            "count": 1
+            "count": 1,
+            "revealed_to_opponent": true
           },
           {
             "action": "deck_bottom_rest"

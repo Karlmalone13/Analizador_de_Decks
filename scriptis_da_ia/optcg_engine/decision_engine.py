@@ -168,6 +168,34 @@ class GameState:
     searchers_used: int = 0
     triggers_activated: int = 0
     full_deck_census: dict = None
+    # ids (id(card), nao codigo -- pode haver copias da mesma carta na mao
+    # com status de revelacao diferente) das instancias de Card atualmente
+    # na mao que foram expostas ao oponente por um efeito de busca com
+    # 'reveal' (confirmado pela regra oficial: o padrao "look at N; reveal
+    # up to 1 [filtro] and add to hand" expoe a carta especifica escolhida,
+    # mesmo sendo o texto mais comum do jogo -- distinto de dano normal na
+    # vida, que NUNCA revela, e de busca sem a palavra 'reveal', que tambem
+    # nao revela). Removido do set quando a carta sai da mao (jogada,
+    # trashada, etc) -- usado pelo OpponentModel para saber quais cartas
+    # specificas o oponente certamente tem, em vez de sortear via Monte Carlo.
+    revealed_to_opponent: set = field(default_factory=set)
+
+    def known_hand_cards(self) -> List['Card']:
+        """
+        Subconjunto de `self.hand` que é conhecido pelo oponente (cartas
+        reveladas por efeito de busca e que ainda estão na mão). Filtra de
+        forma lazy contra `self.hand` em vez de exigir limpeza manual de
+        `revealed_to_opponent` em cada um dos pontos do engine onde uma
+        carta sai da mão (jogada, trashada, etc) -- mais seguro do que
+        arriscar esquecer algum desses pontos e deixar um id() órfão
+        apontando para memória já realocada para outra carta.
+        """
+        ids_na_mao = {id(c) for c in self.hand}
+        # remove ids que não correspondem a nenhuma carta atual na mão
+        # (carta já saiu -- ex: jogada, trashada). Faz isso aqui (lazy)
+        # em vez de em cada ponto de remoção da mão.
+        self.revealed_to_opponent &= ids_na_mao
+        return [c for c in self.hand if id(c) in self.revealed_to_opponent]
 
     def life_count(self) -> int:
         return len(self.life)
@@ -821,6 +849,8 @@ class EffectExecutor:
                 if c in me.deck:
                     me.deck.remove(c)
                 me.hand.append(c)
+                if step.get('revealed_to_opponent') is True:
+                    me.revealed_to_opponent.add(id(c))
 
             # Resto permanece no deck (será tratado pelo próximo step)
             me.searchers_used += 1
@@ -1309,8 +1339,33 @@ class EffectExecutor:
             color = step.get('color', '')
             count = step.get('count', 1)
 
+            # Se precedido de 'look_top_deck' (padrao "look at N cards from
+            # the top of your deck; play up to 1 [filtro]"), restringe a
+            # busca as N cartas do topo, igual a add_to_hand -- sem isto, a
+            # IA "veria" o deck inteiro para escolher a melhor carta, o que
+            # nao e a regra real (so as N cartas reveladas pelo look estao
+            # disponiveis) e tambem nao embaralharia o deck no final (regra
+            # de "look E play" deixa o resto no topo/fundo conforme o texto,
+            # nao embaralha -- distinto do "play a card from anywhere in
+            # your deck", que de fato revela o deck inteiro e embaralha).
+            effects = get_card_effects(card.code)
+            look_count = None
+            for trigger, ef in effects.items():
+                for s in ef.get('steps', []):
+                    if s.get('action') == 'look_top_deck':
+                        look_count = s.get('count')
+                        break
+                if look_count:
+                    break
+
+            if look_count:
+                look = min(look_count, len(me.deck))
+                pool = me.deck[-look:]
+            else:
+                pool = me.deck
+
             candidates = []
-            for c in me.deck:
+            for c in pool:
                 if c.cost > cost_lte:
                     continue
                 if color and color.lower() not in c.color.lower():
@@ -1336,7 +1391,12 @@ class EffectExecutor:
                 candidates.remove(best)
                 played.append(best.name[:15])
 
-            random.shuffle(me.deck)
+            if not look_count:
+                # so embaralha quando a busca expos o deck inteiro -- o
+                # padrao "look at N; play" deixa o resto das N cartas vistas
+                # para o step seguinte (trash_rest/deck_bottom_rest/etc)
+                # tratar, sem tocar no resto do deck.
+                random.shuffle(me.deck)
             return f'jogou do deck: {", ".join(played)}' if played else ''
 
         # ── Trash from hand ───────────────────────────────────────────────────
