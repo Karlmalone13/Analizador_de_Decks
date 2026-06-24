@@ -25,6 +25,7 @@ import json
 import os
 import random
 import pandas as pd
+from optcg_engine.opponent_model import OpponentModel
 from dataclasses import dataclass, field
 from typing import List, Optional
 from copy import deepcopy
@@ -59,8 +60,30 @@ def get_card_effects(code: str) -> dict:
 # Estruturas de dados
 # ===========================================================================
 
-@dataclass
-class Card:
+@dataclass(frozen=True)
+class CardData:
+    """
+    Dados FIXOS de uma carta -- idênticos para QUALQUER cópia física dela
+    em qualquer GameState, NUNCA mutados durante uma partida (confirmado
+    por levantamento de todas as atribuições do engine em 24/06: zero
+    mutações para estes campos especificamente). Uma única instância de
+    CardData é compartilhada (referenciada, nunca copiada) por todas as
+    cópias da mesma carta -- isso é o que reduz o custo de deepcopy(Card)
+    de "recriar um objeto grande" para "copiar uma referência + campos
+    pequenos mutáveis" (ver Card abaixo).
+
+    IMPORTANTE: has_rush/has_blocker/has_double_attack/has_banish/
+    has_unblockable NÃO estão aqui, mesmo sendo "nativas" no banco --
+    elas são MUTADAS em tempo de execução por efeitos de OUTRAS cartas
+    (ex: OP10-099 Eustass"Captain"Kid concede Blocker a um Character via
+    `card.has_blocker = True`) e são lidas diretamente (sem passar por
+    is_blocker()/etc) em ~55 pontos do engine. Separar "nativo" de
+    "concedido" exigiria migrar todos esses 55 pontos com risco real de
+    regressão silenciosa -- mantidas em Card (mutável) por segurança,
+    iguais ao comportamento já existente. has_trigger fica aqui porque
+    nunca é concedida por outra carta (sem 'gain_trigger' no banco,
+    confirmado em 24/06) -- é genuinamente fixa.
+    """
     code: str
     name: str
     card_type: str       # LEADER, CHARACTER, EVENT, STAGE
@@ -72,26 +95,42 @@ class Card:
     sub_types: str = ''
     attribute: str = ''  # Slash, Special, Strike, Wisdom, Ranged (pode ser combinado, ex: "Slash Special")
     card_text: str = ''
-    # Keywords (do banco ou detectadas)
-    has_rush: bool = False
-    has_rush_character: bool = False  # [Rush: Character] -- so pode atacar Characters no turno em que entra, NUNCA o Leader (mecanica distinta de has_rush)
-    has_blocker: bool = False
-    has_double_attack: bool = False
-    has_banish: bool = False
-    has_trigger: bool = False
-    has_unblockable: bool = False
-    # Campos de compatibilidade com o replay
+    has_trigger: bool = False  # nunca concedida por outra carta -- genuinamente fixa
     is_searcher: bool = False
     draw_power: int = 0
     draw_then_trash: int = 0
     draw_condition: str = 'always'
     has_on_play_ko: bool = False
     has_bounce: bool = False
-    don_cond_keywords: dict = None  # {keyword: don_req} — keywords ganhas com [DON!! ×N]
+    don_cond_keywords: tuple = None  # tupla de (keyword, don_req) -- imutável, dict não é hashable/frozen-safe
     has_rest_effect: bool = False
     has_start_of_game: bool = False
     has_power_minus: bool = False
     trash_opp_char: bool = False
+
+    def don_cond_keywords_dict(self) -> dict:
+        """Converte a tupla imutável de volta para dict, para uso em _kw_active."""
+        return dict(self.don_cond_keywords) if self.don_cond_keywords else {}
+
+
+@dataclass
+class Card:
+    """
+    Estado MUTÁVEL de uma cópia física de carta nesta partida. `data`
+    referencia um CardData COMPARTILHADO (nunca copiado por deepcopy --
+    ver __deepcopy__) com os valores base e campos genuinamente fixos.
+    Todo o resto aqui (incluindo keywords has_rush/has_blocker/etc, que
+    podem ser concedidas por outras cartas) é copiado normalmente.
+    """
+    data: CardData
+    # Keywords (nativas do banco OU concedidas por outra carta em tempo de
+    # execução -- ver docstring de CardData sobre por que ficam aqui)
+    has_rush: bool = False
+    has_rush_character: bool = False  # [Rush: Character] -- so pode atacar Characters no turno em que entra, NUNCA o Leader (mecanica distinta de has_rush)
+    has_blocker: bool = False
+    has_double_attack: bool = False
+    has_banish: bool = False
+    has_unblockable: bool = False
     # Estado em jogo
     rested: bool = False
     just_played: bool = False
@@ -103,6 +142,78 @@ class Card:
     power_buff: int = 0
     cost_buff: int = 0       # resetado no fim do turno do oponente (duration until_opp_turn_end)
     cost_buff_permanent: int = 0  # nunca resetado (duration permanent, ex: leader_type condicional)
+
+    def __deepcopy__(self, memo):
+        """
+        deepcopy customizado: `self.data` é uma REFERÊNCIA compartilhada,
+        NUNCA copiada (é frozen/imutável, copiar seria desperdício puro --
+        este é o ganho de performance real desta refatoração, medido por
+        profiling em 24/06 mostrando 94% do tempo de simulação em
+        deepcopy). Todo o resto (campos mutáveis) é copiado normalmente.
+        """
+        from copy import deepcopy as _dc
+        cls = self.__class__
+        novo = cls.__new__(cls)
+        memo[id(self)] = novo
+        novo.data = self.data  # referência compartilhada, SEM copiar
+        for campo in ('has_rush', 'has_rush_character', 'has_blocker',
+                      'has_double_attack', 'has_banish', 'has_unblockable',
+                      'rested', 'just_played', 'rush_character_only_this_turn',
+                      'don_attached', 'cannot_attack_until', 'cannot_be_rested_until',
+                      'power_buff', 'cost_buff', 'cost_buff_permanent'):
+            setattr(novo, campo, getattr(self, campo))
+        return novo
+
+    # ── Properties de delegação para os campos fixos de CardData ──────────
+    # Mantém `card.code`, `card.name`, etc funcionando exatamente como
+    # antes em TODOS os pontos do engine que já acessam esses campos --
+    # nenhum dos call sites existentes precisa mudar.
+    @property
+    def code(self) -> str: return self.data.code
+    @property
+    def name(self) -> str: return self.data.name
+    @property
+    def card_type(self) -> str: return self.data.card_type
+    @property
+    def color(self) -> str: return self.data.color
+    @property
+    def cost(self) -> int: return self.data.cost
+    @property
+    def power(self) -> int: return self.data.power
+    @property
+    def counter(self) -> int: return self.data.counter
+    @property
+    def life(self) -> int: return self.data.life
+    @property
+    def sub_types(self) -> str: return self.data.sub_types
+    @property
+    def attribute(self) -> str: return self.data.attribute
+    @property
+    def card_text(self) -> str: return self.data.card_text
+    @property
+    def has_trigger(self) -> bool: return self.data.has_trigger
+    @property
+    def is_searcher(self) -> bool: return self.data.is_searcher
+    @property
+    def draw_power(self) -> int: return self.data.draw_power
+    @property
+    def draw_then_trash(self) -> int: return self.data.draw_then_trash
+    @property
+    def draw_condition(self) -> str: return self.data.draw_condition
+    @property
+    def has_on_play_ko(self) -> bool: return self.data.has_on_play_ko
+    @property
+    def has_bounce(self) -> bool: return self.data.has_bounce
+    @property
+    def don_cond_keywords(self) -> dict: return self.data.don_cond_keywords_dict()
+    @property
+    def has_rest_effect(self) -> bool: return self.data.has_rest_effect
+    @property
+    def has_start_of_game(self) -> bool: return self.data.has_start_of_game
+    @property
+    def has_power_minus(self) -> bool: return self.data.has_power_minus
+    @property
+    def trash_opp_char(self) -> bool: return self.data.trash_opp_char
 
     def effective_cost(self) -> int:
         return max(0, self.cost + self.cost_buff + self.cost_buff_permanent)
@@ -1569,6 +1680,15 @@ def validar_deck(leader: Card, cards: list, cards_db: dict) -> tuple:
     return len(erros) == 0, erros
 
 
+# Cache de CardData por código de carta -- garante referência compartilhada
+# entre todas as cópias da mesma carta em qualquer GameState (ver
+# _make_card e Card.__deepcopy__). Não é limpo entre partidas: CardData é
+# imutável e idêntico para o mesmo código em qualquer contexto, então
+# manter o cache ao longo de todo o processo é seguro e só economiza
+# trabalho repetido.
+_CARD_DATA_CACHE: dict = {}
+
+
 def _make_card(code: str, data: dict) -> Card:
     """Cria Card a partir do banco de dados, usando o effects_db para keywords."""
     effects = get_card_effects(code)
@@ -1627,36 +1747,50 @@ def _make_card(code: str, data: dict) -> Card:
         if lm:
             draw_condition = f'life<={lm.group(1)}'
 
+    # Cache de CardData por código: garante que TODAS as cópias da mesma
+    # carta (em qualquer GameState, qualquer deepcopy) compartilham a
+    # MESMA instância de CardData -- sem isto, cada chamada de _make_card
+    # criaria um CardData novo e o ganho de deepcopy seria parcial (cada
+    # Card ainda apontaria para um objeto distinto, mesmo que do mesmo
+    # código, perdendo a vantagem de referência compartilhada).
+    cache_key = code
+    card_data = _CARD_DATA_CACHE.get(cache_key)
+    if card_data is None:
+        card_data = CardData(
+            code=code,
+            name=data.get('name', code),
+            card_type=data.get('type', 'CHARACTER'),
+            color=data.get('color', ''),
+            cost=data.get('cost', 0),
+            power=data.get('power', 0),
+            counter=data.get('counter', 0),
+            life=data.get('life', 0),
+            sub_types=data.get('sub_types', ''),
+            attribute=data.get('attribute', ''),
+            card_text=data.get('text', ''),
+            has_trigger=has_trigger,
+            don_cond_keywords=tuple(don_cond_keywords.items()) if don_cond_keywords else None,
+            is_searcher=is_searcher,
+            draw_power=raw_draw,
+            draw_then_trash=draw_then_trash,
+            draw_condition=draw_condition,
+            has_on_play_ko=has_on_play_ko,
+            has_bounce=has_bounce,
+            has_rest_effect=has_rest_effect,
+            has_start_of_game=has_start_of_game,
+            has_power_minus=has_power_minus,
+            trash_opp_char=trash_opp_char,
+        )
+        _CARD_DATA_CACHE[cache_key] = card_data
+
     return Card(
-        code=code,
-        name=data.get('name', code),
-        card_type=data.get('type', 'CHARACTER'),
-        color=data.get('color', ''),
-        cost=data.get('cost', 0),
-        power=data.get('power', 0),
-        counter=data.get('counter', 0),
-        life=data.get('life', 0),
-        sub_types=data.get('sub_types', ''),
-        attribute=data.get('attribute', ''),
-        card_text=data.get('text', ''),
+        data=card_data,
         has_rush=has_rush,
         has_rush_character=has_rush_character,
         has_blocker=has_blocker,
         has_double_attack=has_double_attack,
         has_banish=has_banish,
-        has_trigger=has_trigger,
         has_unblockable=has_unblockable,
-        don_cond_keywords=don_cond_keywords,
-        is_searcher=is_searcher,
-        draw_power=raw_draw,
-        draw_then_trash=draw_then_trash,
-        draw_condition=draw_condition,
-        has_on_play_ko=has_on_play_ko,
-        has_bounce=has_bounce,
-        has_rest_effect=has_rest_effect,
-        has_start_of_game=has_start_of_game,
-        has_power_minus=has_power_minus,
-        trash_opp_char=trash_opp_char,
     )
 
 
@@ -1685,8 +1819,8 @@ def build_real_deck(deck_name: str, deck_url: str,
                 cards.append(deepcopy(card))
 
     if leader is None:
-        leader = Card(code='UNK', name=deck_name, card_type='LEADER',
-                      color='', power=5000, life=5)
+        leader = Card(data=CardData(code='UNK', name=deck_name, card_type='LEADER',
+                                     color='', power=5000, life=5))
 
     return leader, cards, None  # start_stage detectada no setup
 
@@ -2929,6 +3063,16 @@ class OPTCGMatch:
 
         self.global_turn = 0
 
+        # OpponentModel de cada lado: construído a partir da decklist
+        # COMPLETA do ADVERSÁRIO (state_a usa o deck de state_b para saber
+        # contra o que está jogando, e vice-versa) -- a decklist completa é
+        # sempre conhecida neste produto (colada pelo usuário ou carregada
+        # de meta_decklists/user_decks), nunca estimada por arquétipo.
+        # Usado por _simulate_sequence via DecisionEngine para substituir a
+        # mão/vida REAL do oponente por amostras Monte Carlo plausíveis.
+        self.model_for_a = OpponentModel(full_decklist=list(self.state_b.deck))
+        self.model_for_b = OpponentModel(full_decklist=list(self.state_a.deck))
+
     def _distribute_don(self, p: GameState, engine: 'DecisionEngine'):
         """
         Distribui DON disponível antes dos ataques.
@@ -3469,15 +3613,62 @@ class OPTCGMatch:
                 return True
         return False
 
-    def _simulate_sequence(self, p, opp, first_action, max_steps=12):
+    def _simulate_sequence(self, p, opp, first_action, max_steps=12, amostras=None):
         """
         Simula uma LINHA DE JOGO começando por first_action, numa CÓPIA do estado.
         Após a primeira ação, segue gulosamente (melhor ação a cada passo) até o
         fim do turno. Retorna o valor do estado final (para comparar linhas).
+
+        A mão e vida REAIS de `opp` NUNCA são lidas dentro da simulação --
+        são substituídas pelas amostras em `amostras` (lista de
+        (hand_sample, life_sample), uma por rodada Monte Carlo -- gerada
+        UMA VEZ por turno em main_phase e reusada entre todas as TOP_K
+        candidatas, não regerada aqui). O valor final é a MÉDIA das N
+        rodadas. Isso corrige a "trapaça" original (a simulação via a mão
+        exata do oponente real para decidir blocker/counter) sem mudar
+        nada na lógica de should_use_blocker/should_use_counter, que
+        continuam idênticas — só passam a operar sobre a mão fictícia.
+
+        Se `amostras` for None (ex: chamada legada sem Monte Carlo
+        disponível), cai numa única rodada contra o estado real de opp.
+        """
+        if not amostras:
+            return self._simulate_sequence_once(p, opp, first_action, max_steps, amostra=None)
+
+        valores = [
+            self._simulate_sequence_once(p, opp, first_action, max_steps, amostra=amostra)
+            for amostra in amostras
+        ]
+        return sum(valores) / len(valores)
+
+    def _simulate_sequence_once(self, p, opp, first_action, max_steps=12, amostra=None):
+        """
+        Uma única rodada de simulação (ver _simulate_sequence para a versão
+        agregada com Monte Carlo). `amostra` é uma tupla (hand_sample,
+        life_sample) já sorteada -- esta função só aplica, não sorteia.
+        Separada em método próprio para poder ser chamada N vezes com
+        amostras diferentes sem duplicar a lógica de remap/apply/loop.
         """
         from copy import deepcopy
         p2 = deepcopy(p)
         opp2 = deepcopy(opp)
+
+        if amostra is not None:
+            # Substitui mão e vida REAIS de opp2 pela amostra Monte Carlo
+            # ANTES de qualquer ação ser aplicada -- nenhum código de
+            # combate (should_use_blocker, should_use_counter, trigger ao
+            # tomar dano) vê a mão/vida real do oponente a partir daqui.
+            # As instâncias de Card na amostra são reusadas (mesmo objeto)
+            # entre as TOP_K chamadas que recebem a mesma `amostra` desta
+            # lista -- isso é seguro porque cada chamada já faz seu próprio
+            # deepcopy de opp2 seria necessário SE a amostra fosse mutada,
+            # mas should_use_blocker/should_use_counter apenas leem
+            # power/counter das cartas, nunca mutam o objeto Card em si
+            # (mutam GameState.hand/life, que já são listas novas aqui).
+            hand_sample, life_sample = amostra
+            opp2.hand = list(hand_sample)
+            opp2.life = list(life_sample)
+
         eng2 = DecisionEngine(p2, opp2)
         ee2 = EffectExecutor(p2, opp2)
 
@@ -3553,11 +3744,24 @@ class OPTCGMatch:
             # TURN PLANNER: para as TOP_K ações candidatas, simula a linha de jogo
             # resultante e escolhe a que leva ao MELHOR estado de fim de turno.
             # (Em vez de escolher gulosamente a de maior score imediato.)
+            #
+            # As N amostras Monte Carlo do oponente são geradas UMA VEZ por
+            # turno (aqui), não uma vez por candidata -- o estado observável
+            # de `opp` é o mesmo para todas as TOP_K candidatas neste ponto
+            # (nenhuma delas foi aplicada ainda), então gerar 6x N amostras
+            # do zero seria 6x mais caro sem nenhum ganho de fidelidade.
+            # Reusar as mesmas N amostras também torna a comparação entre
+            # candidatas pareada (mesma "versão do oponente" testada contra
+            # cada uma), reduzindo ruído Monte Carlo na escolha final.
+            model = self.model_for_a if p is self.state_a else self.model_for_b
+            n_monte_carlo = 20
+            amostras_turno = [model.sample(opp, rng=random.Random()) for _ in range(n_monte_carlo)]
+
             candidatas = actions[:TOP_K]
             melhor_acao = None
             melhor_valor = -1e18
             for cand in candidatas:
-                valor = self._simulate_sequence(p, opp, cand)
+                valor = self._simulate_sequence(p, opp, cand, amostras=amostras_turno)
                 if valor > melhor_valor:
                     melhor_valor = valor
                     melhor_acao = cand
