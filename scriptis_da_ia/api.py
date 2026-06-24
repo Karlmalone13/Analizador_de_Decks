@@ -16,18 +16,33 @@ Endpoint:
 """
 import json
 import os
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+from typing import Optional
 
 from deck_analyzer import analyze_deck
+import db
+import simulation_worker
 
 # ── Carrega o card_analysis_db uma vez na inicialização ─────────────────────
 _DB_PATH = os.path.join(os.path.dirname(__file__), 'card_analysis_db.json')
 with open(_DB_PATH, encoding='utf-8') as f:
     CARD_DB = json.load(f)
 
-app = FastAPI(title="OPTCG Deck Analyzer API")
+from contextlib import asynccontextmanager
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    yield
+    # fecha o pool de conexões do Postgres de forma limpa no shutdown --
+    # sem isto, conexões podem ficar penduradas no Supabase (free tier tem
+    # limite baixo de conexões simultâneas).
+    await db.close_pool()
+
+
+app = FastAPI(title="OPTCG Deck Analyzer API", lifespan=lifespan)
 
 # CORS: permite o front (em outro domínio) chamar a API.
 # Em produção, troque "*" pela URL real do seu front.
@@ -46,6 +61,28 @@ class CardEntry(BaseModel):
 
 class DeckRequest(BaseModel):
     cards: list[CardEntry]
+
+
+class SimulateRequest(BaseModel):
+    """
+    Pedido de simulação. analysis_type define o que deck_b/n_meta_decks
+    significam:
+      - 'custom_opponent': deck_b obrigatório (decklist colada/escolhida)
+      - 'own_decks': deck_b obrigatório (outro deck salvo do usuário)
+      - 'meta': deck_b ignorado, n_meta_decks define quantas decklists de
+        meta_decklists são usadas (limite de 20, acordado em sessão de
+        23/06 para caber em tempo de processamento razoável)
+    """
+    analysis_type: str  # 'meta' | 'custom_opponent' | 'own_decks'
+    deck_a: list[CardEntry]
+    deck_b: Optional[list[CardEntry]] = None
+    n_simulations: int = 10
+    n_meta_decks: Optional[int] = None
+    user_id: Optional[str] = None
+
+
+MAX_N_SIMULATIONS = 10   # partidas por matchup -- limite acordado em 23/06
+MAX_N_META_DECKS = 20    # decklists de meta por job -- limite acordado em 23/06
 
 
 @app.get("/")
@@ -79,3 +116,56 @@ def analyze(req: DeckRequest):
     if missing:
         result['warnings'] = {'cards_nao_encontradas': missing}
     return result
+
+
+@app.post("/simulate")
+async def simulate(req: SimulateRequest, background_tasks: BackgroundTasks):
+    """
+    Cria um job de simulação e dispara a execução em background. Responde
+    IMEDIATAMENTE com {job_id} -- a requisição HTTP nunca espera as
+    partidas rodarem (padrão fila + polling, acordado em 23/06 para evitar
+    timeout: ~10 partidas x 20 decklists de meta pode levar minutos).
+
+    O cliente deve consultar GET /simulate/status/{job_id} periodicamente
+    até status='done' ou 'error'.
+    """
+    if req.analysis_type not in ('meta', 'custom_opponent', 'own_decks'):
+        raise HTTPException(status_code=400, detail="analysis_type inválido")
+
+    if req.analysis_type in ('custom_opponent', 'own_decks') and not req.deck_b:
+        raise HTTPException(status_code=400, detail=f"deck_b é obrigatório para analysis_type={req.analysis_type}")
+
+    n_sim = min(req.n_simulations, MAX_N_SIMULATIONS)
+    n_meta = min(req.n_meta_decks or MAX_N_META_DECKS, MAX_N_META_DECKS) if req.analysis_type == 'meta' else None
+
+    deck_a_dicts = [{'code': c.code, 'qty': c.qty} for c in req.deck_a]
+    deck_b_dicts = [{'code': c.code, 'qty': c.qty} for c in req.deck_b] if req.deck_b else None
+
+    total_steps = n_sim * (n_meta if req.analysis_type == 'meta' else 1)
+
+    job_id = await db.create_job(
+        analysis_type=req.analysis_type,
+        deck_a=deck_a_dicts,
+        deck_b=deck_b_dicts,
+        n_simulations=n_sim,
+        n_meta_decks=n_meta,
+        total_steps=total_steps,
+        user_id=req.user_id,
+    )
+
+    background_tasks.add_task(simulation_worker.run_simulation_job, job_id)
+
+    return {"job_id": job_id, "status": "pending", "total_steps": total_steps}
+
+
+@app.get("/simulate/status/{job_id}")
+async def simulate_status(job_id: str):
+    """
+    Consulta rápida ao banco -- nunca espera nada, só lê o estado atual do
+    job. O front faz polling neste endpoint a cada poucos segundos até
+    status='done' ou 'error'.
+    """
+    job = await db.get_job(job_id)
+    if job is None:
+        raise HTTPException(status_code=404, detail="job não encontrado")
+    return job
