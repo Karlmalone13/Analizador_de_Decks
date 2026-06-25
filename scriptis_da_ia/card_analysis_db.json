@@ -7129,11 +7129,6 @@
                 "cost_lte": 6
             },
             {
-                "action": "play_card",
-                "trigger": "opp_turn",
-                "cost_lte": 6
-            },
-            {
                 "action": "buff_cost",
                 "trigger": "passive",
                 "target": "self"
@@ -35191,6 +35186,11 @@
         "attribute": "Wisdom",
         "effects": [
             {
+                "action": "play_card",
+                "trigger": "on_play",
+                "cost_lte": 3
+            },
+            {
                 "action": "add_from_trash",
                 "trigger": "on_play"
             },
@@ -38791,7 +38791,7 @@
                 "target": "leader_or_character"
             },
             {
-                "action": "play_card",
+                "action": "play_from_deck",
                 "trigger": "main",
                 "cost_lte": 99
             }
@@ -48878,7 +48878,7 @@
         "attribute": "Special",
         "effects": [
             {
-                "action": "play_card",
+                "action": "play_from_deck",
                 "trigger": "on_play",
                 "cost_lte": 99
             }
@@ -48979,7 +48979,7 @@
                 "target": "leader_or_character"
             },
             {
-                "action": "play_card",
+                "action": "play_from_deck",
                 "trigger": "counter",
                 "cost_lte": 99
             }
@@ -50795,7 +50795,7 @@
                 "action": "play_card",
                 "trigger": "when_attacking",
                 "don_requirement": 1,
-                "cost_lte": 99
+                "cost_lte": "don_count_self"
             }
         ],
         "synergy_states": {},
@@ -62981,7 +62981,7 @@
             {
                 "action": "play_card",
                 "trigger": "activate_main",
-                "cost_lte": 99
+                "cost_lte": "don_count_self"
             }
         ],
         "synergy_states": {},
@@ -71591,10 +71591,6 @@
                 "trigger": "on_ko"
             },
             {
-                "action": "gain_life",
-                "trigger": "opp_turn"
-            },
-            {
                 "action": "gain_rush",
                 "trigger": "passive"
             }
@@ -72131,10 +72127,6 @@
             {
                 "action": "gain_life",
                 "trigger": "on_ko"
-            },
-            {
-                "action": "gain_life",
-                "trigger": "opp_turn"
             }
         ],
         "synergy_states": {
@@ -76283,7 +76275,7 @@
             {
                 "action": "play_card",
                 "trigger": "activate_main",
-                "cost_lte": 99
+                "cost_lte": "don_count_self"
             },
             {
                 "action": "buff_power",
@@ -82028,6 +82020,11 @@
         "attribute": "Wisdom",
         "effects": [
             {
+                "action": "play_card",
+                "trigger": "on_ko",
+                "cost_lte": 4
+            },
+            {
                 "action": "play_from_trash",
                 "trigger": "on_ko",
                 "cost_lte": 4
@@ -82292,10 +82289,6 @@
             {
                 "action": "gain_life",
                 "trigger": "on_ko"
-            },
-            {
-                "action": "gain_life",
-                "trigger": "opp_turn"
             },
             {
                 "action": "play_card",
@@ -91826,6 +91819,11 @@
         "attribute": "Strike",
         "effects": [
             {
+                "action": "play_card",
+                "trigger": "on_play",
+                "cost_lte": 6
+            },
+            {
                 "action": "add_from_trash",
                 "trigger": "on_play",
                 "cost_lte": 6
@@ -92111,15 +92109,6 @@
             {
                 "action": "debuff_power",
                 "trigger": "on_ko",
-                "target": "opp_leader_or_character"
-            },
-            {
-                "action": "draw",
-                "trigger": "opp_turn"
-            },
-            {
-                "action": "debuff_power",
-                "trigger": "opp_turn",
                 "target": "opp_leader_or_character"
             },
             {
@@ -96054,12 +96043,7 @@
             {
                 "action": "play_card",
                 "trigger": "on_ko",
-                "cost_lte": 99
-            },
-            {
-                "action": "play_card",
-                "trigger": "opp_turn",
-                "cost_lte": 99
+                "cost_lte": "don_count_opp"
             }
         ],
         "synergy_states": {},
@@ -104427,7 +104411,7 @@
         "attribute": "Special",
         "effects": [
             {
-                "action": "play_card",
+                "action": "play_from_deck",
                 "trigger": "on_play",
                 "cost_lte": 99
             },
@@ -104564,7 +104548,7 @@
                 "trigger": "on_play"
             },
             {
-                "action": "play_card",
+                "action": "play_from_deck",
                 "trigger": "when_attacking",
                 "cost_lte": 99
             }
@@ -104750,7 +104734,7 @@
                 "target": "leader_or_character"
             },
             {
-                "action": "play_card",
+                "action": "play_from_deck",
                 "trigger": "counter",
                 "cost_lte": 99
             }

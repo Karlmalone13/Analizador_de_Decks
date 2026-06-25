@@ -887,6 +887,33 @@ class EffectExecutor:
 
     # ── Execução de steps individuais ────────────────────────────────────────
 
+    def _resolve_cost_lte(self, step: dict, default=99):
+        """
+        Resolve o valor de cost_lte de um step, tratando os dois casos:
+        (1) valor FIXO (int), como ja era -- maioria dos casos.
+        (2) valor DINAMICO ("equal to or less than the number of DON!! cards
+            on your/your opponent's field"), confirmado em 4 cartas:
+            OP13-099 (Empty Throne), OP08-098 (Kalgara), OP11-022
+            (Shirahoshi) -- as 3 usam DON!! do PROPRIO campo
+            ('don_count_self') -- e P-090 (Charlotte Smoothie), que usa
+            DON!! do campo do OPONENTE ('don_count_opp') -- texto da carta
+            diz explicitamente "on your opponent's field", lado invertido
+            das outras 3. Sem esta distincao, um simbolo generico unico
+            erraria a Smoothie.
+        Antes desta funcao, o parser ja emitia cost_lte=99 (fixo, "sem
+        limite") para as 4 cartas -- nao quebrava o engine, mas tornava o
+        limite real do efeito (baseado em DON!! em campo) inexistente na
+        pratica: qualquer carta de custo ate 99 passava, quando a regra real
+        e mais restritiva na maioria das posicoes de jogo (DON!! em campo
+        raramente chega a 99).
+        """
+        cost_lte = step.get('cost_lte', default)
+        if cost_lte == 'don_count_self':
+            return self.me.don_available + self.me.don_rested
+        if cost_lte == 'don_count_opp':
+            return self.opp.don_available + self.opp.don_rested
+        return cost_lte
+
     def _execute_step(self, step: dict, card: Card) -> str:
         action = step.get('action', '')
         me = self.me
@@ -927,7 +954,7 @@ class EffectExecutor:
             # Filtra por tipo se especificado
             filter_type = step.get('filter_type', '')
             exclude = step.get('exclude', [])
-            cost_lte = step.get('cost_lte', 99)
+            cost_lte = self._resolve_cost_lte(step, default=99)
             power_lte = step.get('power_lte', 999999)
 
             filtered = []
@@ -1067,7 +1094,7 @@ class EffectExecutor:
             # carta, ela deve checar `action == 'ko'` antes de disparar.
             count = step.get('count', 1)
             target_type = step.get('target', 'opp_character')
-            cost_lte = step.get('cost_lte')
+            cost_lte = self._resolve_cost_lte(step, default=None)
             cost_eq = step.get('cost_eq')
             power_lte = step.get('power_lte')
             filter_type = step.get('filter_type', '').lower()
@@ -1131,7 +1158,7 @@ class EffectExecutor:
         # ── Bounce ───────────────────────────────────────────────────────────
         if action == 'bounce':
             count = step.get('count', 1)
-            cost_lte = step.get('cost_lte', 99)
+            cost_lte = self._resolve_cost_lte(step, default=99)
 
             candidates = [c for c in opp.field_chars if c.cost <= cost_lte]
             bounced = []
@@ -1148,7 +1175,7 @@ class EffectExecutor:
         # ── Restar oponente ───────────────────────────────────────────────────
         if action == 'rest_opp_character':
             count = step.get('count', 1)
-            cost_lte = step.get('cost_lte', 99)
+            cost_lte = self._resolve_cost_lte(step, default=99)
 
             candidates = [c for c in opp.field_chars
                           if not c.rested and c.cost <= cost_lte and not c.cannot_be_rested_until]
@@ -1168,7 +1195,7 @@ class EffectExecutor:
         # sinonimos -- confirmado por Arthur.
         if action in ('lock_opp_character_attack', 'lock_opp_cannot_be_rested'):
             count = step.get('count', 1)
-            cost_lte = step.get('cost_lte')
+            cost_lte = self._resolve_cost_lte(step, default=None)
             exclude = step.get('exclude', '').lower()
             DUR_MAP = {
                 'until_opp_turn_end': 'opp_turn_end',
@@ -1369,7 +1396,7 @@ class EffectExecutor:
         if action == 'play_from_trash':
             filter_type = step.get('filter_type', '').lower()
             filter_name = step.get('filter_name', '').lower()
-            cost_lte = step.get('cost_lte')
+            cost_lte = self._resolve_cost_lte(step, default=None)
             cost_eq = step.get('cost_eq')
             power_eq = step.get('power_eq')
             power_lte = step.get('power_lte')
@@ -1453,7 +1480,7 @@ class EffectExecutor:
         # ── Play from deck ────────────────────────────────────────────────────
         if action == 'play_from_deck':
             filter_type = step.get('filter_type', '').lower()
-            cost_lte = step.get('cost_lte', 99)
+            cost_lte = self._resolve_cost_lte(step, default=99)
             color = step.get('color', '')
             count = step.get('count', 1)
 

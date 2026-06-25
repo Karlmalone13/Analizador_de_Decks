@@ -178,6 +178,16 @@ class ReplayMatch:
         self.name_b = name_b
         self.global_turn = 0
 
+        # Opponent Reading (Monte Carlo) exige model_for_a/model_for_b em
+        # main_phase. Construímos AQUI, neste exato ponto -- deck completo,
+        # ANTES do setup() tirar a mão de abertura -- pela mesma regra do
+        # OPTCGMatch.__init__ real: cada lado modela o deck COMPLETO do
+        # adversário (list(state_b.deck) / list(state_a.deck)), nunca uma
+        # reconstrução parcial feita depois que cartas já saíram pra mão.
+        from optcg_engine.decision_engine import OpponentModel
+        self.model_for_a = OpponentModel(full_decklist=list(self.state_b.deck))
+        self.model_for_b = OpponentModel(full_decklist=list(self.state_a.deck))
+
         if random.random() < 0.5:
             self.state_a.is_first = True
             self.state_b.is_first = False
@@ -187,6 +197,30 @@ class ReplayMatch:
 
     def col(self, p): return C.BLUE if p is self.state_a else C.RED
     def name(self, p): return self.name_a if p is self.state_a else self.name_b
+
+    def _get_engine_match(self) -> 'OPTCGMatch':
+        """
+        Retorna o OPTCGMatch interno usado para delegar fases/main_phase ao
+        ENGINE (fonte única), criando-o uma vez se necessário.
+
+        Não chamamos OPTCGMatch.__init__ porque ele criaria state_a/state_b
+        NOVOS via deepcopy dos decks originais -- desconectados do estado que
+        este replay já vem evoluindo turno a turno. Em vez disso, via
+        __new__, montamos um OPTCGMatch que aponta para os MESMOS objetos
+        state_a/state_b/model_for_a/model_for_b do ReplayMatch (estes últimos
+        já construídos no __init__, com o deck completo, igual ao
+        OPTCGMatch.__init__ real faz) -- main_phase passou a exigir
+        model_for_a/model_for_b (Opponent Reading) e antes desta correção
+        isso quebrava com AttributeError.
+        """
+        if not hasattr(self, '_engine_match'):
+            self._engine_match = OPTCGMatch.__new__(OPTCGMatch)
+            self._engine_match.global_turn = 0
+            self._engine_match.state_a = self.state_a
+            self._engine_match.state_b = self.state_b
+            self._engine_match.model_for_a = self.model_for_a
+            self._engine_match.model_for_b = self.model_for_b
+        return self._engine_match
 
     def setup(self):
         sep('═')
@@ -204,10 +238,7 @@ class ReplayMatch:
             p.full_deck_census = deck_census(list(p.deck))
             p.hand = [p.deck.pop() for _ in range(min(5, len(p.deck)))]
             # Decisão de mulligan via ENGINE (fonte única), com motivo
-            if not hasattr(self, '_engine_match'):
-                self._engine_match = OPTCGMatch.__new__(OPTCGMatch)
-                self._engine_match.global_turn = 0
-            deve_trocar, motivo = self._engine_match._mulligan_decision(
+            deve_trocar, motivo = self._get_engine_match()._mulligan_decision(
                 p.hand, deck=p.hand + p.deck)
             if deve_trocar:
                 print(f'{col}{nm}: fez Mulligan — {motivo}{C.RESET}')
@@ -262,12 +293,10 @@ class ReplayMatch:
         sep()
 
         # Fases de início: delegadas ao ENGINE (fonte única), com verbose
-        if not hasattr(self, '_engine_match'):
-            self._engine_match = OPTCGMatch.__new__(OPTCGMatch)
-            self._engine_match.global_turn = 0
-        self._engine_match.refresh_phase(p)
-        self._engine_match.draw_phase(p, verbose=True)
-        self._engine_match.don_phase(p, verbose=True)
+        engine_match = self._get_engine_match()
+        engine_match.refresh_phase(p)
+        engine_match.draw_phase(p, verbose=True)
+        engine_match.don_phase(p, verbose=True)
         print_field(p, col, self.name(p))
 
         # Perfil do deck + fase da partida + postura (para auditoria)
@@ -279,13 +308,8 @@ class ReplayMatch:
         prio = eng.analyzer.analysis_priority()
         print(f'  {C.GRAY}[perfil: {prof} │ fase: {fase} │ postura: {post} │ prioridade: {prio}]{C.RESET}')
 
-        # LÓGICA delegada ao ENGINE (fonte única). main_phase pertence a
-        # OPTCGMatch e opera sobre (p, opp) passados — não usa estado interno,
-        # então pode ser chamado com o estado do replay.
-        if not hasattr(self, '_engine_match'):
-            self._engine_match = OPTCGMatch.__new__(OPTCGMatch)
-            self._engine_match.global_turn = 0
-        won = self._engine_match.main_phase(p, opp, verbose=True)
+        # LÓGICA delegada ao ENGINE (fonte única).
+        won = self._get_engine_match().main_phase(p, opp, verbose=True)
         if won:
             return 'A' if p is self.state_a else 'B'
         if not p.deck:

@@ -2014,7 +2014,8 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 3
+            "cost_lte": 3,
+            "filter_type": "animal"
           }
         ]
       }
@@ -2629,7 +2630,8 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 2
+            "cost_lte": 2,
+            "filter_type": "impel down"
           }
         ]
       }
@@ -4534,16 +4536,10 @@
             "count": 1,
             "cost_lte": 6
           }
-        ]
-      },
-      "opp_turn": {
-        "steps": [
-          {
-            "action": "play_card",
-            "count": 1,
-            "cost_lte": 6
-          }
-        ]
+        ],
+        "conditions": {
+          "opp_turn_only": true
+        }
       },
       "passive": {
         "steps": [
@@ -5604,7 +5600,8 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 6
+            "cost_lte": 6,
+            "color": "green"
           }
         ]
       },
@@ -6777,7 +6774,8 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 99
+            "cost_lte": 99,
+            "color": "yellow"
           }
         ],
         "conditions": {
@@ -7347,7 +7345,8 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 2
+            "cost_lte": 2,
+            "color": "red"
           }
         ],
         "don_requirement": 1
@@ -7983,7 +7982,8 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 3
+            "cost_lte": 3,
+            "filter_type": "the akazaya nine"
           }
         ],
         "conditions": {
@@ -10978,7 +10978,8 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 6
+            "cost_lte": 6,
+            "color": "blue"
           }
         ]
       }
@@ -13095,7 +13096,8 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 99
+            "cost_lte": 99,
+            "color": "red"
           }
         ]
       }
@@ -19195,7 +19197,8 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 99
+            "cost_lte": 99,
+            "color": "green"
           }
         ],
         "costs": [
@@ -21596,6 +21599,12 @@
       "on_play": {
         "steps": [
           {
+            "action": "play_card",
+            "count": 1,
+            "cost_lte": 3,
+            "color": "black"
+          },
+          {
             "action": "add_from_trash",
             "count": 1,
             "filter_name": "rebecca"
@@ -23730,9 +23739,12 @@
             "duration": "this_turn"
           },
           {
-            "action": "play_card",
+            "action": "play_from_deck",
             "count": 1,
-            "cost_lte": 99
+            "filter_type": "",
+            "cost_lte": 99,
+            "reveal_count": 1,
+            "rested": false
           }
         ]
       }
@@ -29832,9 +29844,12 @@
       "on_play": {
         "steps": [
           {
-            "action": "play_card",
+            "action": "play_from_deck",
             "count": 1,
-            "cost_lte": 99
+            "filter_type": "whitebeard pirates",
+            "cost_lte": 99,
+            "reveal_count": 1,
+            "rested": false
           }
         ]
       }
@@ -29900,9 +29915,12 @@
             "duration": "battle_only"
           },
           {
-            "action": "play_card",
+            "action": "play_from_deck",
             "count": 1,
-            "cost_lte": 99
+            "filter_type": "whitebeard piratess",
+            "cost_lte": 99,
+            "reveal_count": 1,
+            "rested": false
           }
         ]
       }
@@ -30930,7 +30948,7 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 99
+            "cost_lte": "don_count_self"
           }
         ],
         "don_requirement": 1
@@ -32154,7 +32172,8 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 5
+            "cost_lte": 5,
+            "filter_type": "odyssey"
           },
           {
             "action": "add_don",
@@ -32342,7 +32361,8 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 3
+            "cost_lte": 3,
+            "filter_type": "odyssey"
           }
         ]
       }
@@ -32608,7 +32628,8 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 99
+            "cost_lte": 99,
+            "filter_type": "cross guild"
           }
         ],
         "costs": [
@@ -32711,7 +32732,8 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 5
+            "cost_lte": 5,
+            "filter_type": "cross guild"
           }
         ]
       }
@@ -34231,7 +34253,8 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 4
+            "cost_lte": 4,
+            "filter_type": "revolutionary army"
           }
         ]
       },
@@ -34362,7 +34385,8 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 3
+            "cost_lte": 3,
+            "color": "yellow"
           }
         ]
       }
@@ -34611,7 +34635,8 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 4
+            "cost_lte": 4,
+            "filter_type": "revolutionary army"
           }
         ]
       },
@@ -34912,7 +34937,8 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 2
+            "cost_lte": 2,
+            "filter_type": "punk hazard"
           }
         ]
       }
@@ -36486,7 +36512,8 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 5
+            "cost_lte": 5,
+            "filter_type": "donquixote pirates"
           },
           {
             "action": "add_don",
@@ -38406,7 +38433,8 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 99
+            "cost_lte": "don_count_self",
+            "filter_type": "neptunian"
           }
         ],
         "costs": [
@@ -39850,7 +39878,8 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 3
+            "cost_lte": 3,
+            "filter_type": "impel down"
           }
         ],
         "conditions": {
@@ -41004,7 +41033,8 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 99
+            "cost_lte": 99,
+            "color": "red"
           }
         ]
       }
@@ -41273,7 +41303,8 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 99
+            "cost_lte": 99,
+            "color": "red"
           },
           {
             "action": "give_don",
@@ -42309,7 +42340,9 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 99
+            "cost_lte": 99,
+            "filter_type": "navy",
+            "color": "blue"
           },
           {
             "action": "trash_from_hand",
@@ -43686,15 +43719,10 @@
             "action": "gain_life",
             "count": 1
           }
-        ]
-      },
-      "opp_turn": {
-        "steps": [
-          {
-            "action": "gain_life",
-            "count": 1
-          }
-        ]
+        ],
+        "conditions": {
+          "opp_turn_only": true
+        }
       },
       "passive": {
         "steps": [
@@ -43825,7 +43853,8 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 4
+            "cost_lte": 4,
+            "filter_type": "supernovas"
           }
         ],
         "conditions": {
@@ -44020,15 +44049,10 @@
             "action": "gain_life",
             "count": 1
           }
-        ]
-      },
-      "opp_turn": {
-        "steps": [
-          {
-            "action": "gain_life",
-            "count": 1
-          }
-        ]
+        ],
+        "conditions": {
+          "opp_turn_only": true
+        }
       }
     }
   },
@@ -46645,7 +46669,9 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 99
+            "cost_lte": "don_count_self",
+            "filter_type": "five elders",
+            "color": "black"
           }
         ],
         "costs": [
@@ -47566,7 +47592,8 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 99
+            "cost_lte": 99,
+            "color": "red"
           }
         ],
         "conditions": {
@@ -47680,7 +47707,8 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 99
+            "cost_lte": 99,
+            "color": "red"
           }
         ]
       },
@@ -48060,7 +48088,8 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 5
+            "cost_lte": 5,
+            "color": "green"
           }
         ]
       }
@@ -49705,7 +49734,8 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 99
+            "cost_lte": 99,
+            "filter_type": "character card with a"
           }
         ]
       }
@@ -50264,6 +50294,11 @@
       "on_ko": {
         "steps": [
           {
+            "action": "play_card",
+            "count": 1,
+            "cost_lte": 4
+          },
+          {
             "action": "play_from_trash",
             "count": 1,
             "cost_lte": 4,
@@ -50460,15 +50495,10 @@
             "action": "gain_life",
             "count": 1
           }
-        ]
-      },
-      "opp_turn": {
-        "steps": [
-          {
-            "action": "gain_life",
-            "count": 1
-          }
-        ]
+        ],
+        "conditions": {
+          "opp_turn_only": true
+        }
       },
       "trigger": {
         "steps": [
@@ -53589,7 +53619,8 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 2
+            "cost_lte": 2,
+            "color": "yellow"
           }
         ]
       }
@@ -54451,7 +54482,8 @@
           {
             "action": "play_card",
             "count": 2,
-            "cost_lte": 99
+            "cost_lte": 99,
+            "filter_type": "character cards with a"
           }
         ]
       }
@@ -56570,6 +56602,11 @@
       "on_play": {
         "steps": [
           {
+            "action": "play_card",
+            "count": 1,
+            "cost_lte": 6
+          },
+          {
             "action": "add_from_trash",
             "count": 1,
             "cost_lte": 6
@@ -56778,24 +56815,8 @@
           }
         ],
         "conditions": {
-          "leader_type": "blackbeard pirates"
-        }
-      },
-      "opp_turn": {
-        "steps": [
-          {
-            "action": "draw",
-            "count": 1
-          },
-          {
-            "action": "debuff_power",
-            "amount": 3000,
-            "target": "opp_leader_or_character",
-            "duration": "this_turn"
-          }
-        ],
-        "conditions": {
-          "leader_type": "blackbeard pirates"
+          "leader_type": "blackbeard pirates",
+          "opp_turn_only": true
         }
       },
       "trigger": {
@@ -58838,7 +58859,8 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 99
+            "cost_lte": 99,
+            "filter_type": "cross guild"
           }
         ]
       }
@@ -58973,7 +58995,7 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 99
+            "cost_lte": "don_count_opp"
           }
         ],
         "costs": [
@@ -58982,23 +59004,10 @@
             "count": 1,
             "optional": false
           }
-        ]
-      },
-      "opp_turn": {
-        "steps": [
-          {
-            "action": "play_card",
-            "count": 1,
-            "cost_lte": 99
-          }
         ],
-        "costs": [
-          {
-            "type": "don_minus",
-            "count": 1,
-            "optional": false
-          }
-        ]
+        "conditions": {
+          "opp_turn_only": true
+        }
       }
     }
   },
@@ -59388,7 +59397,8 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 99
+            "cost_lte": 99,
+            "filter_type": "big mom pirates"
           }
         ],
         "conditions": {
@@ -62902,7 +62912,8 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 4
+            "cost_lte": 4,
+            "color": "yellow"
           }
         ],
         "don_requirement": 1
@@ -63838,9 +63849,12 @@
       "on_play": {
         "steps": [
           {
-            "action": "play_card",
+            "action": "play_from_deck",
             "count": 1,
-            "cost_lte": 99
+            "filter_type": "",
+            "cost_lte": 99,
+            "reveal_count": 1,
+            "rested": false
           }
         ],
         "once_per_turn": true
@@ -63938,9 +63952,12 @@
       "when_attacking": {
         "steps": [
           {
-            "action": "play_card",
+            "action": "play_from_deck",
             "count": 1,
-            "cost_lte": 99
+            "filter_type": "",
+            "cost_lte": 99,
+            "reveal_count": 1,
+            "rested": true
           }
         ]
       }
@@ -64050,9 +64067,12 @@
             "duration": "battle_only"
           },
           {
-            "action": "play_card",
+            "action": "play_from_deck",
             "count": 1,
-            "cost_lte": 99
+            "filter_type": "",
+            "cost_lte": 99,
+            "reveal_count": 1,
+            "rested": false
           }
         ]
       }
@@ -65592,7 +65612,9 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 5
+            "cost_lte": 5,
+            "filter_type": "straw hat crew",
+            "color": "purple"
           }
         ]
       }
@@ -66169,7 +66191,8 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 99
+            "cost_lte": 99,
+            "color": "red"
           }
         ],
         "don_requirement": 2
@@ -67086,7 +67109,8 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 6
+            "cost_lte": 6,
+            "filter_type": "cross guild"
           }
         ],
         "conditions": {

@@ -1233,6 +1233,44 @@ def parse_play_from_deck(text):
     return steps
 
 
+def parse_reveal_top_play(text):
+    """
+    Padrao "reveal 1 card from the top of your deck, play up to N Character
+    card(s) [filtro], (then) place the rest at the top or bottom of your
+    deck" -- DISTINTO de parse_look_at (que exige "look at N cards..." e
+    olha MULTIPLAS cartas antes de escolher). Aqui sempre revela 1 carta so
+    e decide na hora jogar ou nao -- sem janela de escolha entre varias.
+    Confirmado em 6 cards que escapavam de parse_play_generic e
+    parse_play_from_deck por nao conterem a frase EXATA "from your deck"
+    (diziam "from THE TOP OF your deck"): OP06-057, OP08-052, OP08-054,
+    ST12-010, ST12-013, ST12-017.
+    """
+    steps = []
+    t = text.lower()
+
+    if not re.search(r'reveal 1 card from the top of (?:your|the) deck', t):
+        return steps
+
+    m = re.search(r'play up to (\d+) [^.]*?character card', t)
+    if not m:
+        return steps
+    count = int(m.group(1))
+
+    type_m = re.search(r'type including "([^"]+)"', t)
+    cost_m = re.search(r'with a cost of (\d+) or less', t)
+    rested = bool(re.search(r'character card[^.]*\brested\b', t))
+
+    steps.append({
+        'action': 'play_from_deck',
+        'count': count,
+        'filter_type': type_m.group(1).strip() if type_m else '',
+        'cost_lte': int(cost_m.group(1)) if cost_m else 99,
+        'reveal_count': 1,
+        'rested': rested,
+    })
+    return steps
+
+
 def parse_play_generic(text):
     """Play sem origem explícita: 'Play this card', 'Play up to N ... Character card'."""
     steps = []
@@ -1241,20 +1279,65 @@ def parse_play_generic(text):
         steps.append({'action': 'play_card', 'count': 1, 'source': 'self'})
         return steps
     m = re.search(r'play up to (\d+) [^.]*?(?:character|stage) card', t)
-    if m and 'from your deck' not in t and 'from your trash' not in t:
+    # Exclusao de DECK/trash olha so a JANELA PROXIMA da clausula "play up
+    # to..." (curto alcance: clausula anterior conectada por ":" ou inicio
+    # de frase), NAO o texto inteiro -- olhar o texto inteiro causa falso
+    # negativo quando "from your deck"/"from your trash" pertence a uma
+    # CLAUSULA ANTERIOR nao relacionada. Caso real: OP15-109 tem "add up to
+    # 1 card from the top of your deck to your life cards" numa clausula de
+    # busca, seguida por "play up to 1 [...] from your HAND" numa clausula
+    # SEPARADA -- a checagem no texto inteiro bloqueava o play_card por
+    # engano (a carta e de jogar da MAO, sem relacao com o deck mencionado
+    # antes). Janela = do inicio da ultima clausula (apos ':' ou '.' mais
+    # proximo antes do match) até o fim do match.
+    inicio_clausula = max(t.rfind(':', 0, m.start()), t.rfind('. ', 0, m.start())) if m else -1
+    fim_sentenca = t.find('.', m.end()) if m else -1
+    fim_janela = fim_sentenca if fim_sentenca != -1 else (m.end() if m else 0)
+    janela = t[inicio_clausula + 1:fim_janela] if m else ''
+    sem_origem_deck = 'from your deck' not in janela and 'from the top of your deck' not in janela
+    if m and sem_origem_deck and 'from your trash' not in janela:
         # exclui tambem o padrao "look at N cards from the top of your
         # deck ... play up to N [filtro]" -- ja tratado integralmente por
         # parse_look_at() como play_from_deck (respeitando a janela das N
         # cartas vistas, nao o deck inteiro). Sem esta exclusao, esse
+
         # padrao gerava DUAS actions de jogar a mesma carta (bug
         # pre-existente, 17 cards: EB01-009, EB02-025, OP01-116, etc).
         precedido_de_look = bool(re.search(r'look at \d+ cards? from the top of (?:your|the) deck', t[:m.start()]))
         if not precedido_de_look:
             cost_m = re.search(r'with a cost of (\d+) or less', t)
-            steps.append({
+            # filter_type/color: mesma regex usada em parse_play_from_deck.
+            # Antes ausente aqui -- confirmado faltando em OP13-099 (Empty
+            # Throne: "play up to 1 BLACK \"Five Elders\" type Character
+            # card..."), que perdia o filtro de arquetipo/cor inteiramente.
+            type_m = re.search(
+                r'play up to \d+ (?:black |red |blue |green |yellow |purple )?"?([a-z][a-z0-9 .]+)"? type',
+                janela)
+            color_m = re.search(r'play up to \d+ (black|red|blue|green|yellow|purple)', janela)
+            # cost_lte DINAMICO: "with a cost equal to or less than the
+            # number of DON!! cards on your/your opponent's field" --
+            # confirmado em 4 cartas (OP13-099 Empty Throne, OP08-098
+            # Kalgara, OP11-022 Shirahoshi: lado PROPRIO; P-090 Charlotte
+            # Smoothie: lado do OPONENTE, unica das 4 com "opponent's"
+            # entre "number of don!! cards on" e "field"). Resolvido em
+            # runtime por EffectExecutor._resolve_cost_lte.
+            dyn_m = re.search(
+                r'number of don!{0,2} cards on (your opponent.{0,3}s|your) field', janela)
+            if dyn_m:
+                cost_lte_val = 'don_count_opp' if 'opponent' in dyn_m.group(1) else 'don_count_self'
+            elif cost_m:
+                cost_lte_val = int(cost_m.group(1))
+            else:
+                cost_lte_val = 99
+            step = {
                 'action': 'play_card', 'count': int(m.group(1)),
-                'cost_lte': int(cost_m.group(1)) if cost_m else 99,
-            })
+                'cost_lte': cost_lte_val,
+            }
+            if type_m:
+                step['filter_type'] = type_m.group(1).strip()
+            if color_m:
+                step['color'] = color_m.group(1)
+            steps.append(step)
     return steps
 
 
@@ -1771,6 +1854,13 @@ def parse_block(block_text, trigger_name):
     if 'from your trash' in t and 'play up to' in t:
         steps.extend(parse_play_from_trash(t))
 
+    # Play from deck -- "reveal 1 from TOP, play" (padrao sem "look at",
+    # decisao imediata sobre 1 carta so -- ver docstring de
+    # parse_reveal_top_play). Roda ANTES do padrao com "from your deck"
+    # literal/"look at", que e estrutura diferente (janela de N cartas).
+    if re.search(r'reveal 1 card from the top of (?:your|the) deck', t):
+        steps.extend(parse_reveal_top_play(t))
+
     # Play from deck
     if 'from your deck' in t and 'play up to' in t and 'look at' not in t:
         steps.extend(parse_play_from_deck(t))
@@ -2060,6 +2150,25 @@ def parse_card_effect(card_text, card_type):
         par = par_de_barra(trigger_pos)
         if par and par != trigger_name and par not in result:
             result[par] = json.loads(json.dumps(entry))
+
+    # Tags ADJACENTES COLADAS sem barra, ex: "[Opponent's Turn] [On K.O.]
+    # efeito" -- diferente do caso "[A]/[B]" (que SAO dois triggers
+    # distintos de propósito, mesmo efeito). Aqui e UMA UNICA condicao
+    # composta ("durante o turno do oponente, quando K.O.") que cada regex
+    # de trigger_patterns casa e preenche separadamente, pois elas operam
+    # de forma independente na mesma string -- resultado: result['on_ko']
+    # e result['opp_turn'] ficam com STEPS IDENTICOS, e o engine executaria
+    # o mesmo efeito 2x. Confirmado em 6 cartas (EB03-042, OP12-107,
+    # OP12-119, OP14-115, OP16-103, P-090), sempre no padrao
+    # "[Opponent's Turn] [On K.O.]". Colapsa em 'on_ko' (mais especifico --
+    # toda ocorrencia de K.O. neste padrao ja e composta com opp_turn) e
+    # remove a entrada redundante de 'opp_turn', preservando a restricao
+    # de turno como 'conditions.opp_turn_only' para o engine checar.
+    if ('on_ko' in result and 'opp_turn' in result
+            and result['on_ko'].get('steps') == result['opp_turn'].get('steps')):
+        if re.search(r"\[opponent.{0,3}s? turn\]\s*\[on k\.o\.\]", t_low):
+            result['on_ko'].setdefault('conditions', {})['opp_turn_only'] = True
+            del result['opp_turn']
 
     # Segmento solto ANTES da primeira tag formal (independente de result já
     # ter sido preenchido por outros blocos). Ex: "If your Leader has the
