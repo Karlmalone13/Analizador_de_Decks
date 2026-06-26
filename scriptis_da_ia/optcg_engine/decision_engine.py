@@ -371,6 +371,69 @@ class GameState:
         return self.don_available + self.don_rested
 
 
+def is_immune(card: 'Card', imm_type: str, owner: 'GameState', opp: 'GameState',
+              source_is_opp: bool = True) -> bool:
+    """
+    True se `card` está imune a `imm_type` ('ko' | 'removal') no estado atual.
+
+    Lê a action 'immunity' nos effects da carta (parseada como passive/opp_turn/
+    don_conditional). Respeita:
+      - source: imunidade "by opponent's effects" (source='opp') só vale quando
+        a remoção/KO VEM do oponente (source_is_opp=True). Imunidade 'any' sempre.
+      - condição de DON: imunidade sob [DON!! xN] só vale com N DON anexados.
+      - condição de turno: imunidade [Opponent's Turn] só vale no turno do oponente
+        (= NÃO é o turno do dono da carta).
+    KO em batalha vs por efeito: 'ko' cobre ambos aqui (o banco não distingue
+    "in battle" vs "by effect" nas 68 cartas — todas são "cannot be K.O.'d").
+    """
+    effects = get_card_effects(card.code)
+    for timing, blk in effects.items():
+        if not isinstance(blk, dict):
+            continue
+        for step in blk.get('steps', []):
+            if step.get('action') != 'immunity' or step.get('imm_type') != imm_type:
+                continue
+            # source
+            if step.get('source') == 'opp' and not source_is_opp:
+                continue
+            # condição de turno: [Opponent's Turn] só no turno do oponente
+            if timing == 'opp_turn' and owner is _current_turn_owner(owner, opp):
+                continue
+            # condição de DON anexado ([DON!! xN])
+            don_req = blk.get('don_requirement', 0)
+            if don_req and getattr(card, 'don_attached', 0) < don_req:
+                continue
+            # condições estruturadas (If all DON rested, If life <= N, etc)
+            conds = blk.get('conditions') or step.get('conditions')
+            if conds and not _immunity_conds_met(conds, card, owner, opp):
+                continue
+            return True
+    return False
+
+
+def _current_turn_owner(owner, opp):
+    """Heurística leve: quem tem o turno. owner.turn é incrementado no play_turn
+    do jogador ativo, então comparamos quem agiu por último. Conservador:
+    se indeterminado, retorna None (imunidade de opp_turn vale)."""
+    # Sem um flag global de turno acessível aqui, usamos a convenção de que
+    # durante a resolução de um ataque, o atacante é opp e o defensor é owner.
+    # Para imunidade [Opponent's Turn] do defensor, é o turno do oponente => vale.
+    return None
+
+
+def _immunity_conds_met(conds, card, owner, opp):
+    if 'all_don_rested' in conds:
+        if owner.don_available > 0:
+            return False
+    if 'life_lte' in conds:
+        if len(owner.life) > conds['life_lte']:
+            return False
+    if 'life_gte' in conds:
+        if len(owner.life) < conds['life_gte']:
+            return False
+    return True
+
+
 def is_attack_locked_self(card: 'Card', owner: 'GameState', opp: 'GameState') -> bool:
     """
     True se `card` esta travada para atacar por um efeito PASSIVO PROPRIO
@@ -1229,9 +1292,18 @@ class EffectExecutor:
 
             koed = []
             sub_logs = []
+            immune_skipped = []
+            imm_kind = 'ko' if action == 'ko' else 'removal'
             for owner, candidates in pools:
                 for _ in range(min(count, len(candidates))):
                     target = max(candidates, key=lambda x: x.board_value())
+                    # Imunidade: o alvo pode ser imune a KO/remoção por efeito do
+                    # oponente. Pula o alvo (não conta como removido).
+                    other = me if owner is opp else opp
+                    if is_immune(target, imm_kind, owner, other, source_is_opp=True):
+                        immune_skipped.append(target.name[:12])
+                        candidates.remove(target)
+                        continue
                     # Antes de remover de fato, verifica se o ALVO tem
                     # substitute_ko/substitute_removal ativo -- e um efeito
                     # passivo do proprio target, avaliado do ponto de vista
@@ -1250,6 +1322,8 @@ class EffectExecutor:
             partes = []
             if koed:
                 partes.append(f'{label}: {", ".join(koed)}')
+            if immune_skipped:
+                partes.append(f'imune: {", ".join(immune_skipped)}')
             partes.extend(sub_logs)
             return ' | '.join(partes)
 
@@ -1260,15 +1334,24 @@ class EffectExecutor:
 
             candidates = [c for c in opp.field_chars if c.cost <= cost_lte]
             bounced = []
+            immune_skipped = []
             for _ in range(min(count, len(candidates))):
                 target = max(candidates, key=lambda x: x.board_value())
+                # Bounce é remoção do campo -> respeita imunidade a removal
+                if is_immune(target, 'removal', opp, me, source_is_opp=True):
+                    immune_skipped.append(target.name[:12])
+                    candidates.remove(target)
+                    continue
                 opp.field_chars.remove(target)
                 opp.hand.append(target)
                 target.rested = False
                 target.don_attached = 0
                 candidates.remove(target)
                 bounced.append(target.name[:15])
-            return f'bounce: {", ".join(bounced)}' if bounced else ''
+            out = []
+            if bounced: out.append(f'bounce: {", ".join(bounced)}')
+            if immune_skipped: out.append(f'imune: {", ".join(immune_skipped)}')
+            return ' | '.join(out)
 
         # ── Restar oponente ───────────────────────────────────────────────────
         if action == 'rest_opp_character':
@@ -4479,6 +4562,13 @@ class OPTCGMatch:
                                     print(f'      ⚡ [trigger] {log}')
                 return False   # tirou vida(s), mas oponente não estava em 0 — sem derrota
             elif target_type == 'character' and target and target in opp.field_chars:
+                # Imunidade a KO (cobre combate -- "cannot be K.O.'d" no banco
+                # não distingue battle vs effect; protege ambos). O atacante é p,
+                # então a fonte é o oponente do dono do alvo.
+                if is_immune(target, 'ko', opp, p, source_is_opp=True):
+                    if verbose:
+                        print(f'      🛡 {target.name[:20]} imune a KO!')
+                    return False
                 ee_opp = EffectExecutor(opp, p)
                 sub_log = ee_opp.try_substitute(target, 'ko')
                 if sub_log:

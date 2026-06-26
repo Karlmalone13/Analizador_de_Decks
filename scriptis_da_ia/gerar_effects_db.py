@@ -1819,6 +1819,26 @@ def parse_opp_trash_from_hand(text):
 # Parser principal de um bloco de texto
 # ===========================================================================
 
+def parse_immunity(text):
+    """
+    Imunidade passiva. Dois tipos presentes no banco (os tipos exóticos do
+    simulador — effect-immune genérico, combat-immune — não aparecem no pool):
+      - 'ko'      : "cannot be K.O.'d"
+      - 'removal' : "cannot be removed from the field"
+    source: 'opp' se "by your opponent's effects" (só efeitos do oponente),
+            senão 'any'. A condição (DON xN / Opponent's Turn / If...) é tratada
+            pelo sistema de conditions do parser, no nível do entry/step.
+    """
+    t = text.lower()
+    steps = []
+    src = 'opp' if "opponent's effect" in t or "opponents effect" in t else 'any'
+    if re.search(r"cannot be k\.?o\.?'?d|can'?t be k\.?o", t):
+        steps.append({'action': 'immunity', 'imm_type': 'ko', 'source': src})
+    if re.search(r'cannot be removed from the field|can'+chr(39)+r't be removed from the field', t):
+        steps.append({'action': 'immunity', 'imm_type': 'removal', 'source': src})
+    return steps
+
+
 def parse_block(block_text, trigger_name):
     """Parseia um bloco de efeito e retorna lista de steps.
 
@@ -1872,6 +1892,15 @@ def parse_block(block_text, trigger_name):
         sub_steps = parse_substitute_removal(t)
         if sub_steps:
             return sub_steps
+
+    # Imunidade (passiva): "cannot be K.O.'d" / "cannot be removed from the
+    # field". Roda ANTES de parse_ko para a frase não ser lida como um KO real.
+    # type: 'ko' | 'removal'; source: 'opp' (só efeitos do oponente) | 'any';
+    # a CONDIÇÃO (DON xN, Opponent's Turn, estado) é capturada pelo sistema de
+    # conditions do parse_card_effect (timing/[DON]/If...), não aqui.
+    imm = parse_immunity(t)
+    if imm:
+        steps.extend(imm)
 
     # Busca
     if 'look at' in t:

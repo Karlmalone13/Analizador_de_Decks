@@ -3929,6 +3929,11 @@
       "opp_turn": {
         "steps": [
           {
+            "action": "immunity",
+            "imm_type": "ko",
+            "source": "opp"
+          },
+          {
             "action": "gain_blocker"
           }
         ]
@@ -7026,6 +7031,18 @@
     "sub_types": "Scientist Ohara",
     "attribute": "Wisdom",
     "effects": {
+      "passive": {
+        "steps": [
+          {
+            "action": "immunity",
+            "imm_type": "removal",
+            "source": "opp"
+          }
+        ],
+        "conditions": {
+          "life_lte": 2
+        }
+      },
       "don_conditional_keywords": {
         "steps": [
           {
@@ -7703,7 +7720,18 @@
     "color": "Red",
     "sub_types": "Straw Hat Crew Supernovas",
     "attribute": "Strike",
-    "effects": {}
+    "effects": {
+      "passive": {
+        "steps": [
+          {
+            "action": "immunity",
+            "imm_type": "ko",
+            "source": "any"
+          }
+        ],
+        "don_requirement": 2
+      }
+    }
   },
   "OP01-025": {
     "name": "Roronoa Zoro (025)",
@@ -9433,7 +9461,17 @@
     "color": "Purple",
     "sub_types": "Land of Wano Kurozumi Clan",
     "attribute": "Special",
-    "effects": {}
+    "effects": {
+      "passive": {
+        "steps": [
+          {
+            "action": "immunity",
+            "imm_type": "ko",
+            "source": "any"
+          }
+        ]
+      }
+    }
   },
   "OP01-100": {
     "name": "Kurozumi Higurashi",
@@ -10575,7 +10613,17 @@
     "color": "Green",
     "sub_types": "Land of Wano Minks The Akazaya Nine",
     "attribute": "Slash",
-    "effects": {}
+    "effects": {
+      "passive": {
+        "steps": [
+          {
+            "action": "immunity",
+            "imm_type": "removal",
+            "source": "opp"
+          }
+        ]
+      }
+    }
   },
   "OP02-028": {
     "name": "Usopp",
@@ -12397,7 +12445,17 @@
     "color": "Black",
     "sub_types": "Navy",
     "attribute": "Slash",
-    "effects": {}
+    "effects": {
+      "passive": {
+        "steps": [
+          {
+            "action": "immunity",
+            "imm_type": "ko",
+            "source": "any"
+          }
+        ]
+      }
+    }
   },
   "OP02-101": {
     "name": "Strawberry",
@@ -12444,6 +12502,15 @@
             0
           ]
         }
+      },
+      "passive": {
+        "steps": [
+          {
+            "action": "immunity",
+            "imm_type": "ko",
+            "source": "any"
+          }
+        ]
       }
     }
   },
@@ -12718,6 +12785,11 @@
       "opp_turn": {
         "steps": [
           {
+            "action": "immunity",
+            "imm_type": "ko",
+            "source": "any"
+          },
+          {
             "action": "buff_power",
             "amount": 1000,
             "target": "self",
@@ -12821,6 +12893,21 @@
             "count": 1,
             "target": "opp_stage",
             "cost_lte": 3
+          }
+        ]
+      },
+      "counter": {
+        "steps": [
+          {
+            "action": "immunity",
+            "imm_type": "ko",
+            "source": "any"
+          }
+        ],
+        "costs": [
+          {
+            "type": "trash_from_hand",
+            "count": 1
           }
         ]
       }
@@ -13094,6 +13181,15 @@
           },
           {
             "action": "deck_bottom_rest"
+          }
+        ]
+      },
+      "passive": {
+        "steps": [
+          {
+            "action": "immunity",
+            "imm_type": "ko",
+            "source": "any"
           }
         ]
       }
@@ -13776,7 +13872,17 @@
     "color": "Green",
     "sub_types": "Buggy Pirates East Blue",
     "attribute": "Slash",
-    "effects": {}
+    "effects": {
+      "passive": {
+        "steps": [
+          {
+            "action": "immunity",
+            "imm_type": "ko",
+            "source": "any"
+          }
+        ]
+      }
+    }
   },
   "OP03-033": {
     "name": "Hatchan",
@@ -15010,7 +15116,18 @@
     "color": "Black",
     "sub_types": "Donquixote Pirates Navy",
     "attribute": "Strike",
-    "effects": {}
+    "effects": {
+      "passive": {
+        "steps": [
+          {
+            "action": "immunity",
+            "imm_type": "ko",
+            "source": "any"
+          }
+        ],
+        "don_requirement": 1
+      }
+    }
   },
   "OP03-080": {
     "name": "Kaku (080)",
@@ -15192,6 +15309,11 @@
     "effects": {
       "passive": {
         "steps": [
+          {
+            "action": "immunity",
+            "imm_type": "ko",
+            "source": "any"
+          },
           {
             "action": "keyword_blocker"
           }
@@ -19465,6 +19587,15 @@
             "type": "rest_self"
           }
         ]
+      },
+      "opp_turn": {
+        "steps": [
+          {
+            "action": "immunity",
+            "imm_type": "ko",
+            "source": "any"
+          }
+        ]
       }
     }
   },
@@ -22868,7 +22999,17 @@
     "color": "Red",
     "sub_types": "FILM Trump Pirates",
     "attribute": "Strike",
-    "effects": {}
+    "effects": {
+      "passive": {
+        "steps": [
+          {
+            "action": "immunity",
+            "imm_type": "ko",
+            "source": "any"
+          }
+        ]
+      }
+    }
   },
   "OP06-013": {
     "name": "Monkey.D.Luffy",
@@ -23395,6 +23536,11 @@
     "effects": {
       "when_attacking": {
         "steps": [
+          {
+            "action": "immunity",
+            "imm_type": "ko",
+            "source": "any"
+          },
           {
             "action": "buff_power",
             "amount": 2000,
@@ -23959,7 +24105,21 @@
     "color": "Blue",
     "sub_types": "Navy",
     "attribute": "Strike",
-    "effects": {}
+    "effects": {
+      "passive": {
+        "steps": [
+          {
+            "action": "immunity",
+            "imm_type": "ko",
+            "source": "any"
+          }
+        ],
+        "conditions": {
+          "hand_lte": 4
+        },
+        "don_requirement": 1
+      }
+    }
   },
   "OP06-053": {
     "name": "Jaguar.D.Saul",
@@ -25083,6 +25243,11 @@
       "counter": {
         "steps": [
           {
+            "action": "immunity",
+            "imm_type": "ko",
+            "source": "any"
+          },
+          {
             "action": "life_to_hand",
             "source": "life_top",
             "count": 1,
@@ -25410,6 +25575,16 @@
             "source": "self"
           }
         ]
+      },
+      "passive": {
+        "steps": [
+          {
+            "action": "immunity",
+            "imm_type": "ko",
+            "source": "any"
+          }
+        ],
+        "don_requirement": 2
       }
     }
   },
@@ -26520,7 +26695,20 @@
     "color": "Green",
     "sub_types": "Straw Hat Crew Supernovas",
     "attribute": "Strike",
-    "effects": {}
+    "effects": {
+      "passive": {
+        "steps": [
+          {
+            "action": "immunity",
+            "imm_type": "ko",
+            "source": "opp"
+          }
+        ],
+        "conditions": {
+          "chars_gte": 3
+        }
+      }
+    }
   },
   "OP07-034": {
     "name": "Roronoa Zoro (034)",
@@ -27426,7 +27614,17 @@
     "color": "Purple",
     "sub_types": "Foxy Pirates",
     "attribute": "Strike",
-    "effects": {}
+    "effects": {
+      "passive": {
+        "steps": [
+          {
+            "action": "immunity",
+            "imm_type": "ko",
+            "source": "opp"
+          }
+        ]
+      }
+    }
   },
   "OP07-070": {
     "name": "Big Bun",
@@ -28206,6 +28404,15 @@
         "conditions": {
           "leader_is": "vegapunk"
         }
+      },
+      "passive": {
+        "steps": [
+          {
+            "action": "immunity",
+            "imm_type": "ko",
+            "source": "any"
+          }
+        ]
       }
     }
   },
@@ -29651,7 +29858,17 @@
     "color": "Green",
     "sub_types": "Minks Big Mom Pirates",
     "attribute": "Strike",
-    "effects": {}
+    "effects": {
+      "passive": {
+        "steps": [
+          {
+            "action": "immunity",
+            "imm_type": "ko",
+            "source": "any"
+          }
+        ]
+      }
+    }
   },
   "OP08-030": {
     "name": "Pedro",
@@ -31803,6 +32020,11 @@
       "passive": {
         "steps": [
           {
+            "action": "immunity",
+            "imm_type": "ko",
+            "source": "any"
+          },
+          {
             "action": "buff_power",
             "amount": 2000,
             "target": "self",
@@ -32672,7 +32894,20 @@
     "color": "Green",
     "sub_types": "Baroque Works The Seven Warlords of the Sea ODYSSEY",
     "attribute": "Special",
-    "effects": {}
+    "effects": {
+      "passive": {
+        "steps": [
+          {
+            "action": "immunity",
+            "imm_type": "ko",
+            "source": "any"
+          }
+        ],
+        "conditions": {
+          "leader_type": "odyssey"
+        }
+      }
+    }
   },
   "OP09-026": {
     "name": "Sakazuki",
@@ -33124,7 +33359,17 @@
     "color": "Blue",
     "sub_types": "Cross Guild",
     "attribute": "Slash",
-    "effects": {}
+    "effects": {
+      "passive": {
+        "steps": [
+          {
+            "action": "immunity",
+            "imm_type": "ko",
+            "source": "any"
+          }
+        ]
+      }
+    }
   },
   "OP09-046": {
     "name": "Crocodile (046)",
@@ -34131,15 +34376,20 @@
       "passive": {
         "steps": [
           {
+            "action": "immunity",
+            "imm_type": "ko",
+            "source": "opp"
+          },
+          {
             "action": "buff_power",
             "amount": 1000,
             "target": "leader",
-            "duration": "this_turn"
+            "duration": "this_turn",
+            "conditions": {
+              "leader_type": "blackbeard pirates"
+            }
           }
-        ],
-        "conditions": {
-          "leader_type": "blackbeard pirates"
-        }
+        ]
       }
     }
   },
@@ -36932,6 +37182,15 @@
     "sub_types": "Donquixote Pirates",
     "attribute": "Special",
     "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "immunity",
+            "imm_type": "ko",
+            "source": "opp"
+          }
+        ]
+      },
       "passive": {
         "steps": [
           {
@@ -37327,6 +37586,15 @@
         "costs": [
           {
             "type": "trash_self"
+          }
+        ]
+      },
+      "passive": {
+        "steps": [
+          {
+            "action": "immunity",
+            "imm_type": "removal",
+            "source": "opp"
           }
         ]
       }
@@ -37901,7 +38169,21 @@
     "color": "Yellow",
     "sub_types": "Caribou Pirates Supernovas",
     "attribute": "Special",
-    "effects": {}
+    "effects": {
+      "passive": {
+        "steps": [
+          {
+            "action": "immunity",
+            "imm_type": "ko",
+            "source": "any"
+          }
+        ],
+        "conditions": {
+          "leader_type": "supernovas"
+        },
+        "don_requirement": 1
+      }
+    }
   },
   "OP10-105": {
     "name": "Cavendish (105)",
@@ -38319,6 +38601,15 @@
           {
             "action": "opp_trash_from_hand",
             "count": 1
+          }
+        ]
+      },
+      "passive": {
+        "steps": [
+          {
+            "action": "immunity",
+            "imm_type": "ko",
+            "source": "opp"
           }
         ]
       }
@@ -42023,6 +42314,15 @@
             "count": 1
           }
         ]
+      },
+      "passive": {
+        "steps": [
+          {
+            "action": "immunity",
+            "imm_type": "ko",
+            "source": "opp"
+          }
+        ]
       }
     }
   },
@@ -42311,6 +42611,11 @@
     "effects": {
       "passive": {
         "steps": [
+          {
+            "action": "immunity",
+            "imm_type": "ko",
+            "source": "any"
+          },
           {
             "action": "buff_power",
             "amount": 1000,
@@ -46642,6 +46947,11 @@
       "passive": {
         "steps": [
           {
+            "action": "immunity",
+            "imm_type": "removal",
+            "source": "opp"
+          },
+          {
             "action": "gain_rush"
           }
         ],
@@ -46751,6 +47061,18 @@
             "action": "deck_bottom_rest"
           }
         ]
+      },
+      "passive": {
+        "steps": [
+          {
+            "action": "immunity",
+            "imm_type": "removal",
+            "source": "opp"
+          }
+        ],
+        "conditions": {
+          "trash_gte": 7
+        }
       }
     }
   },
@@ -46781,6 +47103,18 @@
             "action": "deck_bottom_rest"
           }
         ]
+      },
+      "passive": {
+        "steps": [
+          {
+            "action": "immunity",
+            "imm_type": "removal",
+            "source": "opp"
+          }
+        ],
+        "conditions": {
+          "trash_gte": 7
+        }
       }
     }
   },
@@ -46895,6 +47229,11 @@
       "passive": {
         "steps": [
           {
+            "action": "immunity",
+            "imm_type": "removal",
+            "source": "opp"
+          },
+          {
             "action": "gain_blocker"
           }
         ],
@@ -46949,6 +47288,11 @@
       },
       "passive": {
         "steps": [
+          {
+            "action": "immunity",
+            "imm_type": "removal",
+            "source": "opp"
+          },
           {
             "action": "gain_blocker"
           }
@@ -47909,7 +48253,17 @@
     "color": "Red",
     "sub_types": "Firetank Pirates Supernovas",
     "attribute": "Ranged",
-    "effects": {}
+    "effects": {
+      "passive": {
+        "steps": [
+          {
+            "action": "immunity",
+            "imm_type": "ko",
+            "source": "any"
+          }
+        ]
+      }
+    }
   },
   "OP14-004": {
     "name": "Cavendish",
@@ -49983,6 +50337,15 @@
           }
         ],
         "once_per_turn": true
+      },
+      "passive": {
+        "steps": [
+          {
+            "action": "immunity",
+            "imm_type": "removal",
+            "source": "any"
+          }
+        ]
       }
     }
   },
@@ -52904,6 +53267,11 @@
       "passive": {
         "steps": [
           {
+            "action": "immunity",
+            "imm_type": "removal",
+            "source": "opp"
+          },
+          {
             "action": "buff_power",
             "amount": 2000,
             "target": "self",
@@ -54650,6 +55018,11 @@
       },
       "passive": {
         "steps": [
+          {
+            "action": "immunity",
+            "imm_type": "removal",
+            "source": "opp"
+          },
           {
             "action": "buff_power",
             "amount": 2000,
@@ -58197,7 +58570,18 @@
     "color": "Red",
     "sub_types": "Supernovas/Straw Hat Crew",
     "attribute": "Strike",
-    "effects": {}
+    "effects": {
+      "passive": {
+        "steps": [
+          {
+            "action": "immunity",
+            "imm_type": "ko",
+            "source": "any"
+          }
+        ],
+        "don_requirement": 1
+      }
+    }
   },
   "P-008": {
     "name": "Yamato",
@@ -58506,7 +58890,18 @@
     "color": "Black",
     "sub_types": "Navy",
     "attribute": "Special",
-    "effects": {}
+    "effects": {
+      "passive": {
+        "steps": [
+          {
+            "action": "immunity",
+            "imm_type": "ko",
+            "source": "any"
+          }
+        ],
+        "don_requirement": 1
+      }
+    }
   },
   "P-026": {
     "name": "Morgan",
@@ -59041,7 +59436,18 @@
     "color": "Blue",
     "sub_types": "The Seven Warlords of the Sea",
     "attribute": "Slash",
-    "effects": {}
+    "effects": {
+      "passive": {
+        "steps": [
+          {
+            "action": "immunity",
+            "imm_type": "ko",
+            "source": "any"
+          }
+        ],
+        "don_requirement": 1
+      }
+    }
   },
   "P-053": {
     "name": "Nami",
@@ -59079,7 +59485,18 @@
     "color": "Blue",
     "sub_types": "Navy",
     "attribute": "Strike",
-    "effects": {}
+    "effects": {
+      "passive": {
+        "steps": [
+          {
+            "action": "immunity",
+            "imm_type": "ko",
+            "source": "any"
+          }
+        ],
+        "don_requirement": 1
+      }
+    }
   },
   "P-055": {
     "name": "Monkey.D.Luffy",
@@ -62091,7 +62508,21 @@
     "color": "Purple",
     "sub_types": "Film Golden Lion Pirates",
     "attribute": "Slash",
-    "effects": {}
+    "effects": {
+      "passive": {
+        "steps": [
+          {
+            "action": "immunity",
+            "imm_type": "ko",
+            "source": "any"
+          }
+        ],
+        "conditions": {
+          "don_gte": 8,
+          "don_on_field_gte": 8
+        }
+      }
+    }
   },
   "ST05-009": {
     "name": "Scarlet",
@@ -62318,6 +62749,11 @@
       "counter": {
         "steps": [
           {
+            "action": "immunity",
+            "imm_type": "ko",
+            "source": "any"
+          },
+          {
             "action": "buff_power",
             "amount": 4000,
             "target": "self",
@@ -62415,6 +62851,11 @@
     "effects": {
       "passive": {
         "steps": [
+          {
+            "action": "immunity",
+            "imm_type": "ko",
+            "source": "any"
+          },
           {
             "action": "gain_double_attack"
           }
@@ -63205,6 +63646,15 @@
             "type": "rest_self"
           }
         ]
+      },
+      "passive": {
+        "steps": [
+          {
+            "action": "immunity",
+            "imm_type": "ko",
+            "source": "any"
+          }
+        ]
       }
     }
   },
@@ -63571,7 +64021,21 @@
     "color": "Yellow",
     "sub_types": "Animal Kingdom Pirates The Four Emperors",
     "attribute": "Special",
-    "effects": {}
+    "effects": {
+      "passive": {
+        "steps": [
+          {
+            "action": "immunity",
+            "imm_type": "ko",
+            "source": "any"
+          }
+        ],
+        "conditions": {
+          "life_lte": 2
+        },
+        "don_requirement": 1
+      }
+    }
   },
   "ST09-005": {
     "name": "Kouzuki Oden",
@@ -65634,6 +66098,11 @@
     "effects": {
       "opp_turn": {
         "steps": [
+          {
+            "action": "immunity",
+            "imm_type": "ko",
+            "source": "opp"
+          },
           {
             "action": "buff_power",
             "amount": 2000,

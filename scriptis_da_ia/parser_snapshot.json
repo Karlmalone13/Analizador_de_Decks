@@ -2348,6 +2348,11 @@
   "opp_turn": {
    "steps": [
     {
+     "action": "immunity",
+     "imm_type": "ko",
+     "source": "opp"
+    },
+    {
      "action": "gain_blocker"
     }
    ]
@@ -4323,6 +4328,18 @@
      "don_requirement": 1
     }
    ]
+  },
+  "passive": {
+   "conditions": {
+    "life_lte": 2
+   },
+   "steps": [
+    {
+     "action": "immunity",
+     "imm_type": "removal",
+     "source": "opp"
+    }
+   ]
   }
  },
  "EB04-058": {
@@ -4685,7 +4702,18 @@
   }
  },
  "OP01-023": {},
- "OP01-024": {},
+ "OP01-024": {
+  "passive": {
+   "don_requirement": 2,
+   "steps": [
+    {
+     "action": "immunity",
+     "imm_type": "ko",
+     "source": "any"
+    }
+   ]
+  }
+ },
  "OP01-025": {
   "passive": {
    "steps": [
@@ -5590,7 +5618,17 @@
   }
  },
  "OP01-098": {},
- "OP01-099": {},
+ "OP01-099": {
+  "passive": {
+   "steps": [
+    {
+     "action": "immunity",
+     "imm_type": "ko",
+     "source": "any"
+    }
+   ]
+  }
+ },
  "OP01-100": {
   "passive": {
    "steps": [
@@ -6193,7 +6231,17 @@
    ]
   }
  },
- "OP02-027": {},
+ "OP02-027": {
+  "passive": {
+   "steps": [
+    {
+     "action": "immunity",
+     "imm_type": "removal",
+     "source": "opp"
+    }
+   ]
+  }
+ },
  "OP02-028": {},
  "OP02-029": {
   "end_of_turn": {
@@ -7212,7 +7260,17 @@
    ]
   }
  },
- "OP02-100": {},
+ "OP02-100": {
+  "passive": {
+   "steps": [
+    {
+     "action": "immunity",
+     "imm_type": "ko",
+     "source": "any"
+    }
+   ]
+  }
+ },
  "OP02-101": {
   "passive": {
    "steps": [
@@ -7223,6 +7281,15 @@
   }
  },
  "OP02-102": {
+  "passive": {
+   "steps": [
+    {
+     "action": "immunity",
+     "imm_type": "ko",
+     "source": "any"
+    }
+   ]
+  },
   "when_attacking": {
    "conditions": {
     "board_has_cost": [
@@ -7379,6 +7446,11 @@
   "opp_turn": {
    "steps": [
     {
+     "action": "immunity",
+     "imm_type": "ko",
+     "source": "any"
+    },
+    {
      "action": "buff_power",
      "amount": 1000,
      "duration": "this_turn",
@@ -7431,6 +7503,21 @@
   }
  },
  "OP02-118": {
+  "counter": {
+   "costs": [
+    {
+     "count": 1,
+     "type": "trash_from_hand"
+    }
+   ],
+   "steps": [
+    {
+     "action": "immunity",
+     "imm_type": "ko",
+     "source": "any"
+    }
+   ]
+  },
   "trigger": {
    "steps": [
     {
@@ -7590,6 +7677,15 @@
     },
     {
      "action": "deck_bottom_rest"
+    }
+   ]
+  },
+  "passive": {
+   "steps": [
+    {
+     "action": "immunity",
+     "imm_type": "ko",
+     "source": "any"
     }
    ]
   }
@@ -8008,7 +8104,17 @@
    ]
   }
  },
- "OP03-032": {},
+ "OP03-032": {
+  "passive": {
+   "steps": [
+    {
+     "action": "immunity",
+     "imm_type": "ko",
+     "source": "any"
+    }
+   ]
+  }
+ },
  "OP03-033": {
   "trigger": {
    "conditions": {
@@ -8725,7 +8831,18 @@
    ]
   }
  },
- "OP03-079": {},
+ "OP03-079": {
+  "passive": {
+   "don_requirement": 1,
+   "steps": [
+    {
+     "action": "immunity",
+     "imm_type": "ko",
+     "source": "any"
+    }
+   ]
+  }
+ },
  "OP03-080": {
   "on_play": {
    "steps": [
@@ -8808,6 +8925,11 @@
  "OP03-088": {
   "passive": {
    "steps": [
+    {
+     "action": "immunity",
+     "imm_type": "ko",
+     "source": "any"
+    },
     {
      "action": "keyword_blocker"
     }
@@ -11387,6 +11509,15 @@
      "count": 1
     }
    ]
+  },
+  "opp_turn": {
+   "steps": [
+    {
+     "action": "immunity",
+     "imm_type": "ko",
+     "source": "any"
+    }
+   ]
   }
  },
  "OP05-001": {
@@ -13375,7 +13506,17 @@
    ]
   }
  },
- "OP06-012": {},
+ "OP06-012": {
+  "passive": {
+   "steps": [
+    {
+     "action": "immunity",
+     "imm_type": "ko",
+     "source": "any"
+    }
+   ]
+  }
+ },
  "OP06-013": {
   "on_play": {
    "steps": [
@@ -13708,6 +13849,11 @@
    },
    "steps": [
     {
+     "action": "immunity",
+     "imm_type": "ko",
+     "source": "any"
+    },
+    {
      "action": "buff_power",
      "amount": 2000,
      "duration": "until_my_turn_start",
@@ -14026,7 +14172,21 @@
    ]
   }
  },
- "OP06-052": {},
+ "OP06-052": {
+  "passive": {
+   "conditions": {
+    "hand_lte": 4
+   },
+   "don_requirement": 1,
+   "steps": [
+    {
+     "action": "immunity",
+     "imm_type": "ko",
+     "source": "any"
+    }
+   ]
+  }
+ },
  "OP06-053": {},
  "OP06-054": {
   "passive": {
@@ -14659,6 +14819,11 @@
   "counter": {
    "steps": [
     {
+     "action": "immunity",
+     "imm_type": "ko",
+     "source": "any"
+    },
+    {
      "action": "life_to_hand",
      "count": 1,
      "source": "life_top",
@@ -14842,6 +15007,16 @@
   }
  },
  "OP06-109": {
+  "passive": {
+   "don_requirement": 2,
+   "steps": [
+    {
+     "action": "immunity",
+     "imm_type": "ko",
+     "source": "any"
+    }
+   ]
+  },
   "trigger": {
    "steps": [
     {
@@ -15487,7 +15662,20 @@
    ]
   }
  },
- "OP07-033": {},
+ "OP07-033": {
+  "passive": {
+   "conditions": {
+    "chars_gte": 3
+   },
+   "steps": [
+    {
+     "action": "immunity",
+     "imm_type": "ko",
+     "source": "opp"
+    }
+   ]
+  }
+ },
  "OP07-034": {
   "when_attacking": {
    "conditions": {
@@ -15997,7 +16185,17 @@
    ]
   }
  },
- "OP07-069": {},
+ "OP07-069": {
+  "passive": {
+   "steps": [
+    {
+     "action": "immunity",
+     "imm_type": "ko",
+     "source": "opp"
+    }
+   ]
+  }
+ },
  "OP07-070": {},
  "OP07-071": {
   "activate_main": {
@@ -16447,6 +16645,15 @@
   }
  },
  "OP07-098": {
+  "passive": {
+   "steps": [
+    {
+     "action": "immunity",
+     "imm_type": "ko",
+     "source": "any"
+    }
+   ]
+  },
   "trigger": {
    "conditions": {
     "leader_is": "vegapunk"
@@ -17353,7 +17560,17 @@
    ]
   }
  },
- "OP08-029": {},
+ "OP08-029": {
+  "passive": {
+   "steps": [
+    {
+     "action": "immunity",
+     "imm_type": "ko",
+     "source": "any"
+    }
+   ]
+  }
+ },
  "OP08-030": {
   "on_ko": {
    "steps": [
@@ -18553,6 +18770,11 @@
    "don_requirement": 1,
    "steps": [
     {
+     "action": "immunity",
+     "imm_type": "ko",
+     "source": "any"
+    },
+    {
      "action": "buff_power",
      "amount": 2000,
      "duration": "this_turn",
@@ -19109,7 +19331,20 @@
    ]
   }
  },
- "OP09-025": {},
+ "OP09-025": {
+  "passive": {
+   "conditions": {
+    "leader_type": "odyssey"
+   },
+   "steps": [
+    {
+     "action": "immunity",
+     "imm_type": "ko",
+     "source": "any"
+    }
+   ]
+  }
+ },
  "OP09-026": {
   "on_play": {
    "steps": [
@@ -19375,7 +19610,17 @@
    ]
   }
  },
- "OP09-045": {},
+ "OP09-045": {
+  "passive": {
+   "steps": [
+    {
+     "action": "immunity",
+     "imm_type": "ko",
+     "source": "any"
+    }
+   ]
+  }
+ },
  "OP09-046": {
   "on_play": {
    "steps": [
@@ -19929,13 +20174,18 @@
  },
  "OP09-086": {
   "passive": {
-   "conditions": {
-    "leader_type": "blackbeard pirates"
-   },
    "steps": [
+    {
+     "action": "immunity",
+     "imm_type": "ko",
+     "source": "opp"
+    },
     {
      "action": "buff_power",
      "amount": 1000,
+     "conditions": {
+      "leader_type": "blackbeard pirates"
+     },
      "duration": "this_turn",
      "target": "leader"
     }
@@ -21599,6 +21849,15 @@
   }
  },
  "OP10-070": {
+  "on_play": {
+   "steps": [
+    {
+     "action": "immunity",
+     "imm_type": "ko",
+     "source": "opp"
+    }
+   ]
+  },
   "passive": {
    "steps": [
     {
@@ -21862,6 +22121,15 @@
      "count": 1,
      "exclude": "kuzan",
      "filter_type": "blackbeard pirates"
+    }
+   ]
+  },
+  "passive": {
+   "steps": [
+    {
+     "action": "immunity",
+     "imm_type": "removal",
+     "source": "opp"
     }
    ]
   }
@@ -22194,7 +22462,21 @@
    ]
   }
  },
- "OP10-104": {},
+ "OP10-104": {
+  "passive": {
+   "conditions": {
+    "leader_type": "supernovas"
+   },
+   "don_requirement": 1,
+   "steps": [
+    {
+     "action": "immunity",
+     "imm_type": "ko",
+     "source": "any"
+    }
+   ]
+  }
+ },
  "OP10-105": {},
  "OP10-106": {
   "on_ko": {
@@ -22453,6 +22735,15 @@
   }
  },
  "OP10-118": {
+  "passive": {
+   "steps": [
+    {
+     "action": "immunity",
+     "imm_type": "ko",
+     "source": "opp"
+    }
+   ]
+  },
   "when_attacking": {
    "steps": [
     {
@@ -24571,6 +24862,15 @@
  },
  "OP12-023": {},
  "OP12-024": {
+  "passive": {
+   "steps": [
+    {
+     "action": "immunity",
+     "imm_type": "ko",
+     "source": "opp"
+    }
+   ]
+  },
   "when_attacking": {
    "steps": [
     {
@@ -24734,6 +25034,11 @@
  "OP12-036": {
   "passive": {
    "steps": [
+    {
+     "action": "immunity",
+     "imm_type": "ko",
+     "source": "any"
+    },
     {
      "action": "buff_power",
      "amount": 1000,
@@ -27262,6 +27567,11 @@
    },
    "steps": [
     {
+     "action": "immunity",
+     "imm_type": "removal",
+     "source": "opp"
+    },
+    {
      "action": "gain_rush"
     }
    ]
@@ -27348,6 +27658,18 @@
      "action": "deck_bottom_rest"
     }
    ]
+  },
+  "passive": {
+   "conditions": {
+    "trash_gte": 7
+   },
+   "steps": [
+    {
+     "action": "immunity",
+     "imm_type": "removal",
+     "source": "opp"
+    }
+   ]
   }
  },
  "OP13-084": {
@@ -27365,6 +27687,18 @@
     },
     {
      "action": "deck_bottom_rest"
+    }
+   ]
+  },
+  "passive": {
+   "conditions": {
+    "trash_gte": 7
+   },
+   "steps": [
+    {
+     "action": "immunity",
+     "imm_type": "removal",
+     "source": "opp"
     }
    ]
   }
@@ -27429,6 +27763,11 @@
    },
    "steps": [
     {
+     "action": "immunity",
+     "imm_type": "removal",
+     "source": "opp"
+    },
+    {
      "action": "gain_blocker"
     }
    ]
@@ -27461,6 +27800,11 @@
     "trash_gte": 7
    },
    "steps": [
+    {
+     "action": "immunity",
+     "imm_type": "removal",
+     "source": "opp"
+    },
     {
      "action": "gain_blocker"
     }
@@ -28066,7 +28410,17 @@
    ]
   }
  },
- "OP14-003": {},
+ "OP14-003": {
+  "passive": {
+   "steps": [
+    {
+     "action": "immunity",
+     "imm_type": "ko",
+     "source": "any"
+    }
+   ]
+  }
+ },
  "OP14-004": {
   "passive": {
    "conditions": {
@@ -29302,6 +29656,15 @@
     {
      "action": "trash_from_deck_top",
      "count": 2
+    }
+   ]
+  },
+  "passive": {
+   "steps": [
+    {
+     "action": "immunity",
+     "imm_type": "removal",
+     "source": "any"
     }
    ]
   }
@@ -31114,6 +31477,11 @@
   "passive": {
    "steps": [
     {
+     "action": "immunity",
+     "imm_type": "removal",
+     "source": "opp"
+    },
+    {
      "action": "buff_power",
      "amount": 2000,
      "duration": "this_turn",
@@ -32222,6 +32590,11 @@
   },
   "passive": {
    "steps": [
+    {
+     "action": "immunity",
+     "imm_type": "removal",
+     "source": "opp"
+    },
     {
      "action": "buff_power",
      "amount": 2000,
@@ -34372,7 +34745,18 @@
    ]
   }
  },
- "P-007": {},
+ "P-007": {
+  "passive": {
+   "don_requirement": 1,
+   "steps": [
+    {
+     "action": "immunity",
+     "imm_type": "ko",
+     "source": "any"
+    }
+   ]
+  }
+ },
  "P-008": {},
  "P-009": {},
  "P-010": {
@@ -34483,7 +34867,18 @@
    ]
   }
  },
- "P-025": {},
+ "P-025": {
+  "passive": {
+   "don_requirement": 1,
+   "steps": [
+    {
+     "action": "immunity",
+     "imm_type": "ko",
+     "source": "any"
+    }
+   ]
+  }
+ },
  "P-026": {
   "when_attacking": {
    "steps": [
@@ -34743,7 +35138,18 @@
    ]
   }
  },
- "P-052": {},
+ "P-052": {
+  "passive": {
+   "don_requirement": 1,
+   "steps": [
+    {
+     "action": "immunity",
+     "imm_type": "ko",
+     "source": "any"
+    }
+   ]
+  }
+ },
  "P-053": {
   "on_play": {
    "conditions": {
@@ -34759,7 +35165,18 @@
    ]
   }
  },
- "P-054": {},
+ "P-054": {
+  "passive": {
+   "don_requirement": 1,
+   "steps": [
+    {
+     "action": "immunity",
+     "imm_type": "ko",
+     "source": "any"
+    }
+   ]
+  }
+ },
  "P-055": {
   "on_play": {
    "costs": [
@@ -36411,7 +36828,21 @@
   }
  },
  "ST05-007": {},
- "ST05-008": {},
+ "ST05-008": {
+  "passive": {
+   "conditions": {
+    "don_gte": 8,
+    "don_on_field_gte": 8
+   },
+   "steps": [
+    {
+     "action": "immunity",
+     "imm_type": "ko",
+     "source": "any"
+    }
+   ]
+  }
+ },
  "ST05-009": {
   "trigger": {
    "steps": [
@@ -36531,6 +36962,11 @@
   "counter": {
    "steps": [
     {
+     "action": "immunity",
+     "imm_type": "ko",
+     "source": "any"
+    },
+    {
      "action": "buff_power",
      "amount": 4000,
      "duration": "battle_only",
@@ -36597,6 +37033,11 @@
     ]
    },
    "steps": [
+    {
+     "action": "immunity",
+     "imm_type": "ko",
+     "source": "any"
+    },
     {
      "action": "gain_double_attack"
     }
@@ -37030,6 +37471,15 @@
      "target": "opp_character"
     }
    ]
+  },
+  "passive": {
+   "steps": [
+    {
+     "action": "immunity",
+     "imm_type": "ko",
+     "source": "any"
+    }
+   ]
   }
  },
  "ST08-003": {},
@@ -37209,7 +37659,21 @@
   }
  },
  "ST09-003": {},
- "ST09-004": {},
+ "ST09-004": {
+  "passive": {
+   "conditions": {
+    "life_lte": 2
+   },
+   "don_requirement": 1,
+   "steps": [
+    {
+     "action": "immunity",
+     "imm_type": "ko",
+     "source": "any"
+    }
+   ]
+  }
+ },
  "ST09-005": {
   "don_conditional_keywords": {
    "steps": [
@@ -38418,6 +38882,11 @@
    },
    "don_requirement": 1,
    "steps": [
+    {
+     "action": "immunity",
+     "imm_type": "ko",
+     "source": "opp"
+    },
     {
      "action": "buff_power",
      "amount": 2000,
