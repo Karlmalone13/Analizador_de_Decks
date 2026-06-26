@@ -298,6 +298,14 @@ class GameState:
     trash: List[Card] = field(default_factory=list)
     turn: int = 0
     global_turn: int = 0
+    # Auto-restrição "cannot play this turn" (combo set DON active + você se trava).
+    # Resetados no início do próprio turno. Valores:
+    #   cant_play_from_hand_this_turn: True = não pode jogar NADA da mão
+    #   cant_play_chars_this_turn:     True = não pode jogar CHARACTER
+    #   cant_play_cost_gte:            int  = não pode jogar com base cost >= N (0 = sem limite)
+    cant_play_from_hand_this_turn: bool = False
+    cant_play_chars_this_turn: bool = False
+    cant_play_cost_gte: int = 0
     is_first: bool = True
     # Estatísticas
     dmg_dealt: int = 0
@@ -1667,6 +1675,20 @@ class EffectExecutor:
                     trashed.append(worst.name[:12])
             return f'oponente descartou: {", ".join(trashed)}' if trashed else ''
 
+        # ── AUTO-RESTRIÇÃO: "Then, you cannot play ... this turn" ─────────────
+        # Combo de ramp (set DON active) que cobra: você perde o direito de jogar.
+        # Resetado no início do próprio turno (refresh).
+        if action == 'self_cant_play':
+            scope = step.get('scope', 'chars')   # 'hand' | 'chars'
+            if scope == 'hand':
+                me.cant_play_from_hand_this_turn = True
+            else:
+                me.cant_play_chars_this_turn = True
+                gte = step.get('cost_gte', 0)
+                if gte:
+                    me.cant_play_cost_gte = gte
+            return 'auto-restrição: não pode jogar mais este turno'
+
         # ── SHUFFLE/CYCLE mão no deck (+ recompra) = redesenhar a mão ─────────
         if action == 'shuffle_hand_into_deck':
             import random as _rnd
@@ -2860,6 +2882,14 @@ class DecisionEngine:
         """Decide se uma carta é jogável agora (mesma regra do choose_card_to_play)."""
         if card.card_type not in ('CHARACTER', 'EVENT', 'STAGE'):
             return False
+        # Auto-restrição "cannot play this turn" (combo de ramp que trava você)
+        if self.me.cant_play_from_hand_this_turn:
+            return False
+        if self.me.cant_play_chars_this_turn and card.card_type == 'CHARACTER':
+            return False
+        if self.me.cant_play_cost_gte and card.card_type == 'CHARACTER' \
+                and card.cost >= self.me.cant_play_cost_gte:
+            return False
         don_reserve = self._don_reserve_for_defense()
         don_usable  = max(0, self.me.don_available - don_reserve)
         if card.cost > don_usable:
@@ -3620,6 +3650,11 @@ class OPTCGMatch:
         p.leader.cannot_attack_until = ''
         p.don_available += p.don_rested + don_from_cards
         p.don_rested = 0
+        # Reset da auto-restrição "cannot play this turn" (vale só pelo turno em
+        # que foi imposta; ao começar o próximo turno do jogador, ela cai).
+        p.cant_play_from_hand_this_turn = False
+        p.cant_play_chars_this_turn = False
+        p.cant_play_cost_gte = 0
 
     def draw_phase(self, p: GameState, verbose: bool = False):
         """PlayerDrawPhase — 1º jogador não compra no T1."""
@@ -3773,6 +3808,33 @@ class OPTCGMatch:
 
         if habilita_ataque:
             base += 60   # prioriza sair antes dos ataques
+
+        # Penalização de AUTO-TRAVA (parte b): se jogar esta carta me trava de
+        # jogar mais neste turno (self_cant_play no on_play), e ainda tenho cartas
+        # que eu QUERERIA jogar antes de travar, penaliza — para o planner preferir
+        # jogá-las primeiro (ou só ativar o combo quando a mão já foi gasta).
+        op = effects.get('on_play')
+        if op and any(s.get('action') == 'self_cant_play' for s in op.get('steps', [])):
+            scope = next((s.get('scope', 'chars') for s in op['steps']
+                          if s.get('action') == 'self_cant_play'), 'chars')
+            gte = next((s.get('cost_gte', 0) for s in op['steps']
+                        if s.get('action') == 'self_cant_play'), 0)
+            me = engine.me
+            don_usable = me.don_available
+            perdidas = 0
+            for c in me.hand:
+                if c is card or c.card_type not in ('CHARACTER', 'EVENT', 'STAGE'):
+                    continue
+                if c.cost > don_usable:
+                    continue   # não jogaria mesmo (sem DON) — não conta como perda
+                # essa carta SERIA bloqueada pela trava?
+                bloqueada = (scope == 'hand'
+                             or (c.card_type == 'CHARACTER'
+                                 and (gte == 0 or c.cost >= gte)))
+                if bloqueada:
+                    perdidas += engine.avaliar_carta(c)
+            base -= perdidas * 0.5   # peso TUNÁVEL (fase 3)
+
         return base
 
     def _generate_and_score_actions(self, p, opp, engine):

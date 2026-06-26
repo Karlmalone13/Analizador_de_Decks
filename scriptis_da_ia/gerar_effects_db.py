@@ -1905,6 +1905,19 @@ def parse_block(block_text, trigger_name):
     if 'don!!' in t and ('currently given' in t or 'rested don!! card' in t):
         steps.extend(parse_transfer_don(t))
 
+    # Auto-restrição "you cannot play ... this turn" (combo de ramp).
+    # 3 variantes: tudo da mão / characters / characters com base cost >= N.
+    m = re.search(r'you cannot play (?:any )?(cards? from your hand|character cards?)(?:[^.]*?base cost of (\d+) or more)?[^.]*?(?:during this turn|this turn)', t)
+    if m:
+        what = m.group(1)
+        if 'from your hand' in what:
+            steps.append({'action': 'self_cant_play', 'scope': 'hand'})
+        else:
+            st = {'action': 'self_cant_play', 'scope': 'chars'}
+            if m.group(2):
+                st['cost_gte'] = int(m.group(2))
+            steps.append(st)
+
     # Shuffle/cycle hand into deck (+ draw back) -- ANTES do draw, pois o texto
     # "...Then, draw N" senão geraria um 'draw' duplicado. O draw-back já está
     # embutido na action shuffle_hand_into_deck (draw_back=True).

@@ -2427,6 +2427,10 @@
   "on_play": {
    "steps": [
     {
+     "action": "self_cant_play",
+     "scope": "chars"
+    },
+    {
      "action": "play_card",
      "cost_lte": 5,
      "count": 1
@@ -24655,6 +24659,11 @@
   "on_play": {
    "steps": [
     {
+     "action": "self_cant_play",
+     "cost_gte": 7,
+     "scope": "chars"
+    },
+    {
      "action": "set_don_active",
      "count": 4,
      "up_to": true
@@ -26416,6 +26425,11 @@
   "on_play": {
    "steps": [
     {
+     "action": "self_cant_play",
+     "cost_gte": 5,
+     "scope": "chars"
+    },
+    {
      "action": "set_don_active",
      "count": 2,
      "up_to": true
@@ -26494,7 +26508,16 @@
    ]
   }
  },
- "OP13-028": {},
+ "OP13-028": {
+  "on_play": {
+   "steps": [
+    {
+     "action": "self_cant_play",
+     "scope": "hand"
+    }
+   ]
+  }
+ },
  "OP13-029": {},
  "OP13-030": {
   "on_play": {
@@ -27951,6 +27974,11 @@
    },
    "steps": [
     {
+     "action": "self_cant_play",
+     "cost_gte": 5,
+     "scope": "chars"
+    },
+    {
      "action": "set_don_active",
      "count": 4,
      "up_to": true
@@ -28294,6 +28322,10 @@
    "once_per_turn": true,
    "steps": [
     {
+     "action": "self_cant_play",
+     "scope": "chars"
+    },
+    {
      "action": "set_don_active",
      "count": 3,
      "up_to": true
@@ -28341,6 +28373,10 @@
  "OP14-024": {
   "on_play": {
    "steps": [
+    {
+     "action": "self_cant_play",
+     "scope": "chars"
+    },
     {
      "action": "set_don_active",
      "count": 3,

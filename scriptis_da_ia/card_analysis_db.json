@@ -6389,6 +6389,10 @@
   "attribute": "Wisdom",
   "effects": [
    {
+    "action": "self_cant_play",
+    "trigger": "on_play"
+   },
+   {
     "action": "play_card",
     "trigger": "on_play",
     "cost_lte": 5
@@ -68485,6 +68489,10 @@
   "attribute": "Slash",
   "effects": [
    {
+    "action": "self_cant_play",
+    "trigger": "on_play"
+   },
+   {
     "action": "set_don_active",
     "trigger": "on_play"
    },
@@ -73228,6 +73236,10 @@
   "attribute": "Special",
   "effects": [
    {
+    "action": "self_cant_play",
+    "trigger": "on_play"
+   },
+   {
     "action": "set_don_active",
     "trigger": "on_play"
    },
@@ -73435,7 +73447,12 @@
   "color": "Green",
   "sub_types": "FILM The Four Emperors Red-Haired Pirates",
   "attribute": "Slash",
-  "effects": [],
+  "effects": [
+   {
+    "action": "self_cant_play",
+    "trigger": "on_play"
+   }
+  ],
   "synergy_states": {},
   "text": "[On Play] Set all of your DON!! cards as active. Then, you cannot play cards from your hand during this turn.",
   "is_searcher": false,
@@ -77283,6 +77300,10 @@
   "attribute": "Strike",
   "effects": [
    {
+    "action": "self_cant_play",
+    "trigger": "on_play"
+   },
+   {
     "action": "set_don_active",
     "trigger": "on_play"
    },
@@ -78212,6 +78233,10 @@
   "attribute": "Slash",
   "effects": [
    {
+    "action": "self_cant_play",
+    "trigger": "activate_main"
+   },
+   {
     "action": "set_don_active",
     "trigger": "activate_main"
    },
@@ -78376,6 +78401,10 @@
   "sub_types": "Land of Wano The Akazaya Nine",
   "attribute": "Slash",
   "effects": [
+   {
+    "action": "self_cant_play",
+    "trigger": "on_play"
+   },
    {
     "action": "set_don_active",
     "trigger": "on_play"
