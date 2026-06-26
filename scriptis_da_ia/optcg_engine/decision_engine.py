@@ -1667,6 +1667,29 @@ class EffectExecutor:
                     trashed.append(worst.name[:12])
             return f'oponente descartou: {", ".join(trashed)}' if trashed else ''
 
+        # ── SHUFFLE/CYCLE mão no deck (+ recompra) = redesenhar a mão ─────────
+        if action == 'shuffle_hand_into_deck':
+            import random as _rnd
+            n = len(me.hand)
+            if n == 0:
+                return ''
+            dest = step.get('dest', 'deck')
+            # move toda a mão para o deck
+            cards = list(me.hand)
+            me.hand.clear()
+            if dest == 'deck_bottom':
+                for c in cards:
+                    me.deck.insert(0, c)        # fundo = início da lista
+            else:
+                me.deck.extend(cards)
+                _rnd.shuffle(me.deck)
+            # recompra N (= nº devolvido), do topo (= pop())
+            if step.get('draw_back'):
+                for _ in range(n):
+                    if not me.deck: break
+                    me.hand.append(me.deck.pop())
+            return f'redesenhou a mão ({n} cartas)'
+
         # ── DON: reativar DON rested (set as active) = ramp dentro do turno ───
         if action == 'set_don_active':
             count = step.get('count', 1)

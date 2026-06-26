@@ -17473,7 +17473,18 @@
     "color": "Blue",
     "sub_types": "Animal Kingdom Pirates",
     "attribute": "Strike",
-    "effects": {}
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "shuffle_hand_into_deck",
+            "dest": "deck",
+            "draw_back": true,
+            "optional": false
+          }
+        ]
+      }
+    }
   },
   "OP04-049": {
     "name": "Jack",
@@ -58034,7 +58045,18 @@
     "color": "Red",
     "sub_types": "Straw Hat Crew",
     "attribute": "",
-    "effects": {}
+    "effects": {
+      "main": {
+        "steps": [
+          {
+            "action": "shuffle_hand_into_deck",
+            "dest": "deck",
+            "draw_back": true,
+            "optional": false
+          }
+        ]
+      }
+    }
   },
   "P-003": {
     "name": "Eustass\"Captain\"Kid",
@@ -58837,7 +58859,18 @@
     "color": "Purple",
     "sub_types": "Land of Wano",
     "attribute": "Strike",
-    "effects": {}
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "shuffle_hand_into_deck",
+            "dest": "deck_bottom",
+            "draw_back": true,
+            "optional": true
+          }
+        ]
+      }
+    }
   },
   "P-047": {
     "name": "Monkey.D.Luffy",

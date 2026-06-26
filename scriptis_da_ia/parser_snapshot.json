@@ -10176,7 +10176,18 @@
   }
  },
  "OP04-047": {},
- "OP04-048": {},
+ "OP04-048": {
+  "on_play": {
+   "steps": [
+    {
+     "action": "shuffle_hand_into_deck",
+     "dest": "deck",
+     "draw_back": true,
+     "optional": false
+    }
+   ]
+  }
+ },
  "OP04-049": {
   "on_ko": {
    "steps": [
@@ -34264,7 +34275,18 @@
    ]
   }
  },
- "P-002": {},
+ "P-002": {
+  "main": {
+   "steps": [
+    {
+     "action": "shuffle_hand_into_deck",
+     "dest": "deck",
+     "draw_back": true,
+     "optional": false
+    }
+   ]
+  }
+ },
  "P-003": {
   "don_conditional_keywords": {
    "steps": [
@@ -34605,7 +34627,18 @@
    ]
   }
  },
- "P-046": {},
+ "P-046": {
+  "on_play": {
+   "steps": [
+    {
+     "action": "shuffle_hand_into_deck",
+     "dest": "deck_bottom",
+     "draw_back": true,
+     "optional": true
+    }
+   ]
+  }
+ },
  "P-047": {
   "when_attacking": {
    "conditions": {

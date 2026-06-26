@@ -750,6 +750,27 @@ def parse_lock_attack(text):
     return steps
 
 
+def parse_shuffle_hand(text):
+    """
+    "Return all cards in your hand to your deck and shuffle. Then draw equal to
+    the number returned" (OP04-048, P-002) OU "place all hand at bottom of deck,
+    if you do draw equal" (P-046). Redesenha a mão do mesmo tamanho.
+      dest:      'deck' (shuffle) | 'deck_bottom'
+      draw_back: True  (compra = nº devolvido)
+      optional:  True se "if you do" / "you may"
+    """
+    t = text.lower()
+    to_bottom = bool(re.search(r'place all (?:the )?cards in your hand (?:on|at) the bottom', t))
+    optional  = ('you may place all' in t) or ('if you do' in t)
+    draw_back = bool(re.search(r'draw cards? equal to the number', t))
+    return [{
+        'action':    'shuffle_hand_into_deck',
+        'dest':      'deck_bottom' if to_bottom else 'deck',
+        'draw_back': draw_back,
+        'optional':  optional,
+    }]
+
+
 def parse_draw(text):
     steps = []
     t = text.lower()
@@ -1884,8 +1905,17 @@ def parse_block(block_text, trigger_name):
     if 'don!!' in t and ('currently given' in t or 'rested don!! card' in t):
         steps.extend(parse_transfer_don(t))
 
-    # Draw (sem look at)
-    if 'draw' in t and 'look at' not in t:
+    # Shuffle/cycle hand into deck (+ draw back) -- ANTES do draw, pois o texto
+    # "...Then, draw N" senão geraria um 'draw' duplicado. O draw-back já está
+    # embutido na action shuffle_hand_into_deck (draw_back=True).
+    shuffled_hand = False
+    if re.search(r'return all (?:the )?cards in your hand to your deck', t) or \
+       re.search(r'place all (?:the )?cards in your hand (?:on|at) the bottom of your deck', t):
+        steps.extend(parse_shuffle_hand(t))
+        shuffled_hand = True
+
+    # Draw (sem look at). Pula se já tratado como shuffle_hand (draw-back embutido).
+    if 'draw' in t and 'look at' not in t and not shuffled_hand:
         steps.extend(parse_draw(t))
 
     # Power buff/debuff (com ou sem sinal explicito -- parse_power_buff agora

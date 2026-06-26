@@ -28262,7 +28262,12 @@
   "color": "Blue",
   "sub_types": "Animal Kingdom Pirates",
   "attribute": "Strike",
-  "effects": [],
+  "effects": [
+   {
+    "action": "shuffle_hand_into_deck",
+    "trigger": "on_play"
+   }
+  ],
   "synergy_states": {},
   "text": "[On Play] Return all cards in your hand to your deck and shuffle your deck. Then, draw cards equal to the number you returned to your deck.",
   "is_searcher": false,
@@ -93166,7 +93171,12 @@
   "color": "Red",
   "sub_types": "Straw Hat Crew",
   "attribute": "",
-  "effects": [],
+  "effects": [
+   {
+    "action": "shuffle_hand_into_deck",
+    "trigger": "main"
+   }
+  ],
   "synergy_states": {},
   "text": "[Main] Return all cards in your hand to your deck and shuffle your deck. Then, draw cards equal to the number you returned to your deck.",
   "is_searcher": false,
@@ -94768,7 +94778,12 @@
   "color": "Purple",
   "sub_types": "Land of Wano",
   "attribute": "Strike",
-  "effects": [],
+  "effects": [
+   {
+    "action": "shuffle_hand_into_deck",
+    "trigger": "on_play"
+   }
+  ],
   "synergy_states": {},
   "text": "[On Play] You may place all cards in your hand at the bottom of your deck in any order. If you do, draw cards equal to the number you placed at the bottom of your deck.",
   "is_searcher": false,
