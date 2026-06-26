@@ -38,6 +38,9 @@ from copy import deepcopy
 _DB_PATH = os.path.join(os.path.dirname(__file__), '..', 'card_effects_db.json')
 _EFFECTS_DB: dict = {}
 
+_ANALYSIS_PATH = os.path.join(os.path.dirname(__file__), '..', 'card_analysis_db.json')
+_ANALYSIS_DB: dict = {}
+
 def _load_effects_db():
     global _EFFECTS_DB
     if _EFFECTS_DB:
@@ -51,9 +54,33 @@ def _load_effects_db():
 _load_effects_db()
 
 
+def _load_analysis_db():
+    global _ANALYSIS_DB
+    if _ANALYSIS_DB:
+        return
+    try:
+        with open(_ANALYSIS_PATH, 'r', encoding='utf-8') as f:
+            _ANALYSIS_DB = json.load(f)
+    except FileNotFoundError:
+        pass
+
+_load_analysis_db()
+
+
 def get_card_effects(code: str) -> dict:
     """Retorna os efeitos de uma carta pelo código."""
     return _EFFECTS_DB.get(code, {}).get('effects', {})
+
+
+def get_card_flags(code: str) -> dict:
+    """
+    Retorna as flags estruturadas de classificação da carta (card_analysis_db):
+    kos, is_removal, is_blocker, is_searcher, draws, bounces, rests_opponent,
+    power_buff, gives_don, gains_life, has_trigger, etc. Fonte única de
+    classificação de efeito -- preferir SEMPRE sobre substring no texto cru.
+    Retorna dict vazio se a carta não está no banco (degrada sem quebrar).
+    """
+    return _ANALYSIS_DB.get(code, {})
 
 
 # ===========================================================================
@@ -2491,26 +2518,42 @@ class DecisionEngine:
         if card.has_trigger:
             s += 10
 
-        # Efeitos do banco
-        effects = get_card_effects(card.code)
-        has_draw   = any('draw' in str(e) for e in effects.values())
-        has_search = any('look_top_deck' in str(e) for e in effects.values())
-        has_ko     = any('ko' in str(e) for e in effects.values())
-        has_bounce = any('bounce' in str(e) for e in effects.values())
-        has_rest   = any('rest_opp_character' in str(e) for e in effects.values())
+        # Efeitos do banco — flags estruturadas do card_analysis_db (fonte única
+        # de classificação; substituiu a detecção frágil por substring no texto).
+        flags = get_card_flags(card.code)
+        has_draw   = flags.get('draws', False)
+        has_search = flags.get('is_searcher', False)
+        has_ko     = flags.get('kos', False) or flags.get('is_removal', False)
+        has_bounce = flags.get('bounces', False)
+        has_rest   = flags.get('rests_opponent', False)
+        has_buff   = flags.get('power_buff', False)
+        has_givdon = flags.get('gives_don', False)
+        has_gainlf = flags.get('gains_life', False)
 
         if has_draw:   s += 25 + (10 if len(self.me.hand) <= 3 else 0)
         if has_search: s += 30 + (15 if self.me.turn <= 3 else 0)
         if has_ko:
             s += 35
             if a.field_advantage() < 0: s += 25
+            # remoção sem alvo vale pouco -- não pontuar KO no vácuo
+            if not self.opp.field_chars: s -= 30
         if has_bounce:
             s += 20
             if a.field_advantage() < 0: s += 15
+            if not self.opp.field_chars: s -= 20
         if has_rest:
             # Restar abre personagens para ataque
             if a.should_clear_field(): s += 20
             else: s += 10
+        if has_buff:
+            s += 15
+        if has_givdon:
+            s += 20
+        if has_gainlf:
+            v = 15
+            if my_life <= 1:   v += 60
+            elif my_life <= 2: v += 35
+            s += v
 
         # Ajuste por postura
         if posture == 'LETHAL':
@@ -3480,14 +3523,17 @@ class OPTCGMatch:
         pontuam como dev e saem DEPOIS dos ataques (regra de ordem do usuário).
         """
         base = engine.avaliar_carta(card)
+        flags = get_card_flags(card.code)
         effects = get_card_effects(card.code)
 
         # Carta que PRECISA entrar para ativar efeito que ajuda o ataque agora:
-        # On Play de remoção/buff, rush. Bônus para sair antes do ataque.
+        # On Play de remoção/buff/rest/draw, ou rush. Bônus para sair antes do
+        # ataque. Detecção via flags estruturadas (não substring no texto cru).
         habilita_ataque = False
         if 'on_play' in effects:
-            txt = (card.card_text or '').lower()
-            if any(k in txt for k in ['k.o.', 'ko ', 'rest', 'give', '-', 'draw', 'play']):
+            if (flags.get('kos') or flags.get('is_removal') or flags.get('bounces')
+                    or flags.get('rests_opponent') or flags.get('power_buff')
+                    or flags.get('draws') or flags.get('is_searcher')):
                 habilita_ataque = True
         if card.has_rush:
             habilita_ataque = True
