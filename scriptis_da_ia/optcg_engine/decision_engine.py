@@ -448,6 +448,60 @@ class EffectExecutor:
     def reset_once_per_turn(self):
         self._once_used.clear()
 
+    def _step_is_viable(self, step: dict, card: Card) -> bool:
+        """
+        Diz se um step PRODUZIRÁ efeito real no estado atual. Usado para não
+        pagar custo de um efeito que não vai fazer nada (decisão 25/06: ampla
+        — minimiza jogadas-erro). Default seguro: action desconhecida = viável
+        (não aborta por engano). Só retorna False quando há CERTEZA de que o
+        step é inócuo agora (falta material: alvo, carta na zona, deck vazio).
+        """
+        a = step.get('action', '')
+        me, opp = self.me, self.opp
+
+        # ── Efeitos que precisam de ALVO no oponente ──────────────────────────
+        if a in ('ko', 'rest_opp_character', 'debuff_power', 'debuff_cost',
+                 'bounce', 'lock_opp_character_refresh', 'lock_opp_character_attack',
+                 'opp_trash_from_hand'):
+            if a == 'opp_trash_from_hand':
+                return len(opp.hand) > 0
+            return len(opp.field_chars) > 0
+
+        # ── Jogar carta da mão com filtro ─────────────────────────────────────
+        if a == 'play_card':
+            if step.get('source') == 'self':
+                return card in me.hand     # GRUPO 1 (trigger): a própria carta
+            cost_lte = step.get('cost_lte')
+            if cost_lte == 'don_count_self':
+                cost_lte = me.don_available + me.don_rested
+            ftype = (step.get('filter_type') or '').lower()
+            fcolor = (step.get('color') or '').lower()
+            for c in me.hand:
+                if cost_lte is not None and c.cost > cost_lte: continue
+                if ftype and ftype not in c.sub_types.lower():  continue
+                if fcolor and fcolor not in c.color.lower():    continue
+                return True
+            return False
+
+        # ── Recuperar/jogar de zona que pode estar vazia ──────────────────────
+        if a in ('play_from_trash', 'add_from_trash'):
+            return len(me.trash) > 0
+        if a in ('play_from_deck', 'trash_from_deck_top', 'deck_reorder_rest',
+                 'deck_top_rest', 'deck_bottom_rest', 'look_top_deck', 'draw'):
+            return len(me.deck) > 0
+        if a in ('trash_from_hand', 'life_to_hand'):
+            return len(me.hand) > 0 if a == 'trash_from_hand' else len(me.life) > 0
+        if a == 'trash_own_life':
+            return len(me.life) > 0
+        if a == 'attack_life':
+            return len(opp.life) > 0
+        if a == 'set_don_active':
+            return me.don_rested > 0
+
+        # Default: sem material a checar (buff próprio, keyword, add_don,
+        # gain_life do deck, etc) = sempre viável.
+        return True
+
     def execute(self, card: Card, trigger: str, verbose: bool = False) -> list:
         """
         Executa todos os efeitos de um trigger para uma carta.
@@ -472,6 +526,15 @@ class EffectExecutor:
         # Sem isso, a IA executaria o efeito de graça (vantagem ilegal).
         don_req = ef_data.get('don_requirement', 0)
         if don_req and getattr(card, 'don_attached', 0) < don_req:
+            return []
+
+        # VIABILIDADE (conserto estrutural, decisão 25/06): não pagar custo se
+        # NENHUM step do efeito vai produzir resultado real no estado atual
+        # (ex: "play up to 1" sem carta elegível, "KO 1" sem alvo, mill com deck
+        # vazio). Minimiza jogadas-erro nas estatísticas. Só aborta se TODOS os
+        # steps forem inviáveis; um único step viável já ativa o efeito.
+        steps_all = ef_data.get('steps', [])
+        if steps_all and not any(self._step_is_viable(s, card) for s in steps_all):
             return []
 
         # Paga custos
