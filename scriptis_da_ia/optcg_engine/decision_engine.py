@@ -1683,6 +1683,115 @@ class EffectExecutor:
             return f'trashou {trashed} da propria vida' if trashed else ''
 
         # ── Add from trash ────────────────────────────────────────────────────
+        # ── PLAY_CARD: jogar carta de graça (não consome DON) ─────────────────
+        # Regra confirmada (Arthur): "play card from effect" entra com custo ZERO.
+        # Dois grupos no banco:
+        #   GRUPO 1 (source='self', sempre [Trigger]): jogar a PRÓPRIA carta que
+        #     virou da vida, em vez de mandá-la para a mão. OPCIONAL — a IA decide
+        #     por score se vale jogar grátis ou guardar na mão (counter/uso futuro).
+        #   GRUPO 2 (cost_lte/filter_type/color): jogar OUTRA carta da mão que bate
+        #     o filtro, escolhendo a de maior valor. "up to" => pode não jogar.
+        if action == 'play_card':
+
+            def _score_to_play(c):
+                # score local (executor não tem DecisionEngine): board_value real
+                # + bônus por efeito útil, via as MESMAS flags do analysis_db.
+                f = get_card_flags(c.code)
+                s = c.board_value()
+                if f.get('kos') or f.get('is_removal'): s += 70
+                if f.get('bounces'):                    s += 45
+                if f.get('rests_opponent'):             s += 35
+                if f.get('is_searcher'):                s += 40
+                if f.get('draws'):                      s += 35
+                if f.get('is_blocker'):                 s += 30
+                if f.get('power_buff'):                 s += 20
+                if f.get('has_trigger'):                s += 10
+                return s
+
+            def _put_into_play(c):
+                # replica a parte de "entrar em campo" de _play_card, SEM cobrar
+                # DON e sem o verbose do replay. Eventos vão pro trash (resolvem
+                # efeito on_play depois), characters/stages pro campo.
+                if c.card_type == 'CHARACTER':
+                    if len(me.field_chars) >= 5:
+                        worst = min(me.field_chars, key=lambda x: x.board_value())
+                        me.field_chars.remove(worst)
+                        me.trash.append(worst)
+                    c.rested = False
+                    c.just_played = not (c.has_rush or c.is_rush_character())
+                    c.rush_character_only_this_turn = c.is_rush_character() and not c.is_rush()
+                    me.field_chars.append(c)
+                elif c.card_type == 'STAGE':
+                    if me.field_stage:
+                        me.trash.append(me.field_stage)
+                    me.field_stage = c
+                elif c.card_type == 'EVENT':
+                    me.trash.append(c)
+                # dispara o efeito on_play da carta jogada (entrou agora)
+                self.execute(c, 'on_play')
+                self.execute(c, 'main')
+
+            source = step.get('source')
+
+            # GRUPO 1 — jogar a própria carta (trigger de vida), opcional por score
+            if source == 'self':
+                if card not in me.hand:
+                    return ''   # já saiu da mão / contexto inesperado
+                # valor de jogar (corpo em campo) vs guardar na mão (counter/futuro)
+                val_play = _score_to_play(card)
+                val_keep = card.counter / 1000 * 15 + card.board_value() * 0.3
+                # guarda de campo cheio: só descarta o pior se a nova supera
+                campo_cheio = (card.card_type == 'CHARACTER' and len(me.field_chars) >= 5)
+                if campo_cheio:
+                    pior = min((x.board_value() for x in me.field_chars), default=0)
+                    if card.board_value() <= pior:
+                        return ''   # não vale trocar — mantém na mão
+                if val_play <= val_keep:
+                    return ''       # vale mais na mão — não joga
+                me.hand.remove(card)
+                _put_into_play(card)
+                return f'jogou {card.name[:18]} (grátis, do trigger)'
+
+            # GRUPO 2 — jogar carta da mão com filtro, escolhendo a melhor
+            cost_lte = step.get('cost_lte')
+            if cost_lte == 'don_count_self':
+                cost_lte = self.me.don_available + self.me.don_rested  # dinâmico
+            ftype = (step.get('filter_type') or '').lower()
+            fcolor = (step.get('color') or '').lower()
+
+            elegiveis = []
+            for c in me.hand:
+                if c.card_type not in ('CHARACTER', 'STAGE', 'EVENT'):
+                    continue
+                if cost_lte is not None and c.cost > cost_lte:
+                    continue
+                if ftype and ftype not in c.sub_types.lower():
+                    continue
+                if fcolor and fcolor not in c.color.lower():
+                    continue
+                elegiveis.append(c)
+
+            if not elegiveis:
+                return ''
+
+            count = step.get('count', 1)
+            jogadas = []
+            for _ in range(count):
+                if not elegiveis:
+                    break
+                melhor = max(elegiveis, key=_score_to_play)
+                # guarda de campo cheio para characters
+                if melhor.card_type == 'CHARACTER' and len(me.field_chars) >= 5:
+                    pior = min((x.board_value() for x in me.field_chars), default=0)
+                    if melhor.board_value() <= pior:
+                        elegiveis.remove(melhor)
+                        continue
+                me.hand.remove(melhor)
+                elegiveis.remove(melhor)
+                _put_into_play(melhor)
+                jogadas.append(melhor.name[:15])
+            return f'jogou (grátis): {", ".join(jogadas)}' if jogadas else ''
+
         if action == 'add_from_trash':
             filter_name = step.get('filter_name', '').lower()
             count = step.get('count', 1)
@@ -3512,6 +3621,24 @@ class OPTCGMatch:
         # Efeitos de DON (ramp, reativar) — valem
         if any(a in ('add_don', 'set_don_active') for a in actions):
             return True
+
+        # play_card (jogar carta da mão de graça) — vale se há carta elegível.
+        # GRUPO 1 (source=self) é trigger, não chega aqui. Aqui só GRUPO 2.
+        if 'play_card' in actions:
+            for s in steps:
+                if s.get('action') != 'play_card':
+                    continue
+                cost_lte = s.get('cost_lte')
+                if cost_lte == 'don_count_self':
+                    cost_lte = p.don_available + p.don_rested
+                ftype = (s.get('filter_type') or '').lower()
+                fcolor = (s.get('color') or '').lower()
+                for c in p.hand:
+                    if cost_lte is not None and c.cost > cost_lte:   continue
+                    if ftype and ftype not in c.sub_types.lower():    continue
+                    if fcolor and fcolor not in c.color.lower():      continue
+                    return True   # tem ao menos 1 carta jogável de graça
+            return False
 
         return False
 
