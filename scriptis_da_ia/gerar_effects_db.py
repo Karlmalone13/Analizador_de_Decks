@@ -1424,52 +1424,115 @@ def parse_cost_debuff(text):
     return steps
 
 
-def parse_heal(text):
-    steps = []
-    t = text.lower()
-
-    m = re.search(r'add (\d+) cards? from the top of your deck to the bottom of your life', t)
-    if m:
-        steps.append({'action': 'heal', 'count': int(m.group(1))})
-
-    return steps
-
-
 def parse_life(text):
     """
-    Manipulação de vida em três direções (sinais de arquétipo diferentes):
-      - gain_life   : adiciona à SUA vida (defensivo → Vida/Triggers)
-      - attack_life : remove da vida do OPONENTE (ofensivo → Aggro/Controle)
-      - trash_own_life : descarta da SUA vida como custo/troca (engine)
-    Cobre variações de redação ("to the top/bottom of your Life", "up to N").
+    Manipulação de vida — UMA action por operação atômica, com eixos:
+
+      gain_life     : adiciona à SUA vida
+        source: deck_top | hand | own_field | opp_life | trash
+        dest:   life_top | life_bottom | life_top_or_bottom
+        count:  int (N fixo)
+        up_to:  bool  (True = "up to N", opcional)
+        face:   'up' | 'down'  (engine ainda não modela face; campo preservado)
+
+      life_to_hand  : "comprar" da SUA vida para a mão (ex: Hiyori OP06-106)
+        source: life_top | life_bottom | life_top_or_bottom
+        count, up_to
+
+      attack_life   : remove da vida do OPONENTE
+        count, up_to
+
+      trash_own_life: descarta da SUA vida (custo/troca)
+        count, up_to, until_1 (bool: "until you have 1 Life card")
+
+    Regra de design (auditoria 25/06): NUNCA juntar duas operações numa action.
+    "trash life: add life" = trash_own_life (custo) + gain_life (efeito), 2 steps.
+    'heal' foi unificado aqui em gain_life (corrige bug top/bottom do parse_heal).
     """
     steps = []
     t = text.lower()
 
-    # quantidade genérica (N ou "up to N"); default 1 quando não especifica
-    def qty_near(keyword_idx):
-        seg = t[max(0, keyword_idx - 60):keyword_idx]
-        m = re.search(r'(?:up to |add )?(\d+) cards?', seg)
+    def qty_in(seg):
+        m = re.search(r'(\d+) cards?', seg)
         return int(m.group(1)) if m else 1
 
-    # ── Ganha a própria vida ───────────────────────────────────────────
-    m = re.search(r'to (?:the (?:top|bottom) of )?your life', t)
-    if m and 'trash' not in t[:m.start()]:
-        # garante que é ADIÇÃO (add/put), não trash
-        if re.search(r'(add|put)[^.]*your life', t):
-            steps.append({'action': 'gain_life', 'count': qty_near(m.start())})
+    def up_to_in(seg):
+        return 'up to' in seg
 
-    # ── Ataca a vida do oponente ───────────────────────────────────────
-    m = re.search(r"opponent's life", t)
-    if m:
-        # trash da vida do oponente OU fazer oponente add (ambos ofensivos)
-        if re.search(r"trash[^.]*opponent's life", t):
-            steps.append({'action': 'attack_life', 'count': qty_near(m.start())})
+    def dest_from(seg):
+        has_top = 'top of your life' in seg
+        has_bot = 'bottom of your life' in seg
+        if has_top and has_bot:
+            return 'life_top_or_bottom'
+        if has_bot:
+            return 'life_bottom'
+        return 'life_top'   # default: topo
 
-    # ── Descarta a própria vida (custo/troca) ──────────────────────────
-    m = re.search(r'trash[^.]*from (?:the top of )?your life', t)
+    def source_from(seg):
+        if 'top of your deck' in seg:                return 'deck_top'
+        if 'from your hand' in seg:                  return 'hand'
+        if 'from your trash' in seg:                 return 'trash'
+        if 'character' in seg and 'your' in seg:     return 'own_field'
+        return 'deck_top'   # fallback mais comum
+
+    # ── gain_life: ADIÇÃO à própria vida ───────────────────────────────
+    # Ancorar na CLÁUSULA "add ... to (top/bottom of) your life" e ler
+    # source/dest/qty SÓ de dentro dela (seg = o próprio match), nunca do
+    # texto todo -- senão vaza entre cláusulas (ex: Hiyori, custo + efeito).
+    m = re.search(r'(add|put)[^.:]*?to (?:the (?:top|bottom|top or bottom) of )?your life(?: cards?)?', t)
+    if m and 'trash' not in m.group(0):
+        seg = m.group(0)
+        step = {
+            'action': 'gain_life',
+            'source': source_from(seg),
+            'dest':   dest_from(seg),
+            'count':  qty_in(seg),
+            'up_to':  up_to_in(seg),
+        }
+        if 'face-up' in seg or 'face up' in seg:
+            step['face'] = 'up'
+        elif 'face-down' in seg or 'face down' in seg:
+            step['face'] = 'down'
+        steps.append(step)
+
+    # ── life_to_hand: "comprar" da própria vida → mão ──────────────────
+    # SÓ quando é EFEITO puro (sem ':' logo após, que indicaria custo de
+    # outro efeito). Padrão de custo "add 1 from Life to hand: [efeito]"
+    # (~40 cartas, arquétipo Whitebeard) é tratado em parse_costs, NÃO aqui
+    # -- senão a IA executaria o custo como benefício grátis. (auditoria 25/06)
+    m = re.search(r'add[^.:]*?from the (top|bottom|top or bottom) of your life cards? to your hand', t)
     if m:
-        steps.append({'action': 'trash_own_life', 'count': qty_near(m.start())})
+        after = t[m.end():m.end() + 2]
+        is_cost = after.lstrip().startswith(':')
+        if not is_cost:
+            seg = m.group(0)
+            where = m.group(1)
+            src = ('life_top_or_bottom' if where == 'top or bottom'
+                   else 'life_bottom' if where == 'bottom' else 'life_top')
+            steps.append({
+                'action': 'life_to_hand',
+                'source': src,
+                'count':  qty_in(seg),
+                'up_to':  up_to_in(seg),
+            })
+
+    # ── attack_life: trash da vida do OPONENTE ─────────────────────────
+    m = re.search(r"trash[^.:]*opponent's life", t)
+    if m:
+        steps.append({
+            'action': 'attack_life',
+            'count':  qty_in(m.group(0)),
+            'up_to':  up_to_in(m.group(0)),
+        })
+
+    # ── trash_own_life: descarta da própria vida ───────────────────────
+    m = re.search(r'trash[^.:]*from (?:the top of )?your life', t)
+    if m:
+        step = {'action': 'trash_own_life', 'count': qty_in(m.group(0)),
+                'up_to': up_to_in(m.group(0))}
+        if 'until you have 1 life' in t:
+            step['until_1'] = True
+        steps.append(step)
 
     return steps
 
@@ -1865,11 +1928,8 @@ def parse_block(block_text, trigger_name):
     if 'from your deck' in t and 'play up to' in t and 'look at' not in t:
         steps.extend(parse_play_from_deck(t))
 
-    # Heal (vida pelo fundo, redação clássica)
-    if 'bottom of your life' in t:
-        steps.extend(parse_heal(t))
-
-    # Manipulação de vida (3 direções: ganhar / atacar oponente / trashar própria)
+    # Manipulação de vida (gain_life/life_to_hand/attack_life/trash_own_life)
+    # 'heal' foi unificado em gain_life dentro de parse_life (corrige bug top/bottom)
     if 'life' in t:
         steps.extend(parse_life(t))
 

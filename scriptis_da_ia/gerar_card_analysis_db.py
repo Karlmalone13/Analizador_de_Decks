@@ -96,7 +96,7 @@ def derive_analysis(card_text: str, card_type: str, counter: int) -> dict:
     has_banish = 'keyword_banish' in actions or 'gain_banish' in actions
 
     # ── Cura / vida (identidade amarela) ────────────────────────────────
-    heals = 'heal' in actions
+    heals = 'heal' in actions or 'gain_life' in actions   # heal unificado em gain_life
     # Manipulação de vida detectada por padrão de texto (parser de efeitos
     # não captura vida). Três direções, pois têm sinais opostos:
     _t = (card_text or '').lower()

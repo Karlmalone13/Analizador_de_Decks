@@ -1577,13 +1577,83 @@ class EffectExecutor:
                     trashed.append(worst.name[:12])
             return f'oponente descartou: {", ".join(trashed)}' if trashed else ''
 
-        # ── Heal ─────────────────────────────────────────────────────────────
-        if action == 'heal':
+        # ── LIFE: adicionar à própria vida (unifica o antigo 'heal') ──────────
+        # Convenção confirmada no engine: fim da lista = TOPO da vida
+        # (combate faz opp.life.pop() = último = próxima a revelar).
+        # Logo: append = topo ; insert(0) = fundo.
+        if action == 'gain_life':
+            count  = step.get('count', 1)
+            source = step.get('source', 'deck_top')
+            dest   = step.get('dest', 'life_top')
+
+            def _put_life(c):
+                if dest == 'life_bottom':
+                    me.life.insert(0, c)
+                else:
+                    me.life.append(c)   # life_top e life_top_or_bottom → topo (default)
+
+            added = 0
+            for _ in range(count):
+                c = None
+                if source == 'deck_top':
+                    if not me.deck: break
+                    c = me.deck.pop(0)
+                elif source == 'hand':
+                    if not me.hand: break
+                    c = me.hand.pop(0)          # escolha refinável depois
+                elif source == 'trash':
+                    if not me.trash: break
+                    c = me.trash.pop(0)
+                elif source == 'own_field':
+                    if not me.field_chars: break
+                    c = me.field_chars.pop(0)   # character vira life card
+                elif source == 'opp_life':
+                    if not opp.life: break
+                    c = opp.life.pop()
+                if c is None: break
+                _put_life(c)
+                added += 1
+            return f'+{added} vida ({source}->{dest})' if added else ''
+
+        # ── LIFE: "comprar" da própria vida para a mão (Hiyori OP06-106) ──────
+        if action == 'life_to_hand':
             count = step.get('count', 1)
-            for _ in range(min(count, len(me.deck))):
-                c = me.deck.pop(0)
-                me.life.append(c)
-            return f'+{count} vida(s)'
+            src   = step.get('source', 'life_top')
+            taken = 0
+            for _ in range(count):
+                if not me.life: break
+                # topo = pop() (fim) ; fundo = pop(0). top_or_bottom default topo.
+                c = me.life.pop(0) if src == 'life_bottom' else me.life.pop()
+                me.hand.append(c)
+                taken += 1
+            return f'comprou {taken} da vida -> mao' if taken else ''
+
+        # ── LIFE: remover da vida do OPONENTE ─────────────────────────────────
+        if action == 'attack_life':
+            count = step.get('count', 1)
+            removed = 0
+            for _ in range(count):
+                if not opp.life: break
+                c = opp.life.pop()              # topo da vida do oponente
+                opp.trash.append(c)
+                removed += 1
+            return f'-{removed} vida do oponente' if removed else ''
+
+        # ── LIFE: descartar da própria vida (custo/troca) ─────────────────────
+        if action == 'trash_own_life':
+            if step.get('until_1'):
+                trashed = 0
+                while len(me.life) > 1:
+                    me.trash.append(me.life.pop())
+                    trashed += 1
+                return f'trashou {trashed} da propria vida (ate 1)' if trashed else ''
+            count = step.get('count', 1)
+            trashed = 0
+            for _ in range(count):
+                if not me.life: break
+                me.trash.append(me.life.pop())
+                trashed += 1
+            return f'trashou {trashed} da propria vida' if trashed else ''
 
         # ── Add from trash ────────────────────────────────────────────────────
         if action == 'add_from_trash':

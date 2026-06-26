@@ -103,7 +103,6 @@ ACTION_WEIGHTS: dict[str, dict[str, int]] = {
     'add_from_trash':        {RAMP: 2},
     # Vida (estreito e puro: só ganho/manipulação de vida)
     'gain_life':             {VIDA: 4},
-    'heal':                  {VIDA: 4},
     'attack_life':           {AGGRO: 2, CONTROLE: 1},
     'trash_own_life':        {VIDA: 1, RAMP: 1},
     # Defensivo: blocker dá tempo/controle (NÃO é Vida)

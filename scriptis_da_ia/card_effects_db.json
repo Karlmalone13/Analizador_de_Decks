@@ -1323,7 +1323,22 @@
     "color": "Black",
     "sub_types": "Straw Hat Crew",
     "attribute": "",
-    "effects": {}
+    "effects": {
+      "counter": {
+        "steps": [
+          {
+            "action": "gain_life",
+            "source": "deck_top",
+            "dest": "life_top",
+            "count": 1,
+            "up_to": true
+          }
+        ],
+        "conditions": {
+          "trash_gte": 30
+        }
+      }
+    }
   },
   "EB01-051": {
     "name": "Finger Pistol",
@@ -1475,7 +1490,10 @@
         "steps": [
           {
             "action": "gain_life",
-            "count": 1
+            "source": "deck_top",
+            "dest": "life_top",
+            "count": 1,
+            "up_to": true
           },
           {
             "action": "keyword_blocker"
@@ -1540,7 +1558,9 @@
           },
           {
             "action": "trash_own_life",
-            "count": 1
+            "count": 1,
+            "up_to": false,
+            "until_1": true
           }
         ]
       }
@@ -1570,7 +1590,9 @@
         "steps": [
           {
             "action": "trash_own_life",
-            "count": 1
+            "count": 1,
+            "up_to": false,
+            "until_1": true
           }
         ]
       }
@@ -3034,6 +3056,13 @@
             "duration": "this_turn"
           },
           {
+            "action": "gain_life",
+            "source": "deck_top",
+            "dest": "life_top",
+            "count": 1,
+            "up_to": true
+          },
+          {
             "action": "trash_from_hand",
             "count": 1
           }
@@ -3302,6 +3331,17 @@
     "sub_types": "Straw Hat Crew Water Seven",
     "attribute": "Strike",
     "effects": {
+      "when_attacking": {
+        "steps": [
+          {
+            "action": "life_to_hand",
+            "source": "life_top",
+            "count": 1,
+            "up_to": false
+          }
+        ],
+        "once_per_turn": true
+      },
       "passive": {
         "steps": [
           {
@@ -4314,7 +4354,10 @@
         "steps": [
           {
             "action": "gain_life",
-            "count": 1
+            "source": "deck_top",
+            "dest": "life_top",
+            "count": 1,
+            "up_to": true
           }
         ]
       }
@@ -4867,6 +4910,13 @@
             "amount": 1000,
             "target": "self",
             "duration": "this_turn"
+          },
+          {
+            "action": "gain_life",
+            "source": "deck_top",
+            "dest": "life_top",
+            "count": 1,
+            "up_to": false
           }
         ],
         "conditions": {
@@ -4925,8 +4975,16 @@
       "on_play": {
         "steps": [
           {
+            "action": "gain_life",
+            "source": "deck_top",
+            "dest": "life_top",
+            "count": 1,
+            "up_to": true
+          },
+          {
             "action": "trash_own_life",
-            "count": 1
+            "count": 1,
+            "up_to": false
           }
         ],
         "costs": [
@@ -4967,8 +5025,16 @@
       "on_play": {
         "steps": [
           {
+            "action": "gain_life",
+            "source": "deck_top",
+            "dest": "life_top",
+            "count": 2,
+            "up_to": true
+          },
+          {
             "action": "trash_own_life",
-            "count": 1
+            "count": 1,
+            "up_to": false
           }
         ],
         "conditions": {
@@ -5030,7 +5096,8 @@
         "steps": [
           {
             "action": "attack_life",
-            "count": 1
+            "count": 1,
+            "up_to": true
           }
         ]
       }
@@ -5098,7 +5165,10 @@
         "steps": [
           {
             "action": "gain_life",
-            "count": 1
+            "source": "hand",
+            "dest": "life_top",
+            "count": 1,
+            "up_to": true
           }
         ],
         "conditions": {
@@ -5183,6 +5253,26 @@
     "sub_types": "Heart Pirates",
     "attribute": "Slash",
     "effects": {
+      "activate_main": {
+        "steps": [
+          {
+            "action": "gain_life",
+            "source": "deck_top",
+            "dest": "life_top",
+            "count": 1,
+            "up_to": true
+          }
+        ],
+        "costs": [
+          {
+            "type": "trash_self"
+          },
+          {
+            "type": "trash_from_hand",
+            "count": 1
+          }
+        ]
+      },
       "passive": {
         "steps": [
           {
@@ -5210,11 +5300,17 @@
             "amount": 1000,
             "target": "opp_character",
             "duration": "this_turn"
+          },
+          {
+            "action": "life_to_hand",
+            "source": "life_top",
+            "count": 1,
+            "up_to": false,
+            "conditions": {
+              "life_gte": 2
+            }
           }
         ],
-        "conditions": {
-          "life_gte": 2
-        },
         "once_per_turn": true
       },
       "opp_turn": {
@@ -6830,7 +6926,10 @@
         "steps": [
           {
             "action": "gain_life",
-            "count": 1
+            "source": "deck_top",
+            "dest": "life_top",
+            "count": 1,
+            "up_to": true
           }
         ],
         "conditions": {
@@ -6934,7 +7033,10 @@
         "steps": [
           {
             "action": "gain_life",
-            "count": 1
+            "source": "deck_top",
+            "dest": "life_top",
+            "count": 1,
+            "up_to": true
           }
         ],
         "conditions": {
@@ -7012,7 +7114,10 @@
           },
           {
             "action": "gain_life",
-            "count": 1
+            "source": "hand",
+            "dest": "life_top",
+            "count": 1,
+            "up_to": true
           }
         ]
       }
@@ -9870,7 +9975,18 @@
     "color": "Red",
     "sub_types": "The Four Emperors Whitebeard Pirates",
     "attribute": "Special",
-    "effects": {}
+    "effects": {
+      "end_of_turn": {
+        "steps": [
+          {
+            "action": "life_to_hand",
+            "source": "life_top",
+            "count": 1,
+            "up_to": false
+          }
+        ]
+      }
+    }
   },
   "OP02-002": {
     "name": "Monkey.D.Garp (002)",
@@ -10019,6 +10135,12 @@
             "amount": 4000,
             "target": "opp_character",
             "duration": "this_turn"
+          },
+          {
+            "action": "life_to_hand",
+            "source": "life_top",
+            "count": 1,
+            "up_to": false
           }
         ],
         "conditions": {
@@ -14800,6 +14922,13 @@
       "when_attacking": {
         "steps": [
           {
+            "action": "gain_life",
+            "source": "deck_top",
+            "dest": "life_top",
+            "count": 1,
+            "up_to": true
+          },
+          {
             "action": "trash_from_hand",
             "count": 1
           }
@@ -15437,7 +15566,10 @@
         "steps": [
           {
             "action": "gain_life",
-            "count": 1
+            "source": "deck_top",
+            "dest": "life_top",
+            "count": 1,
+            "up_to": true
           }
         ],
         "don_requirement": 2
@@ -15590,7 +15722,25 @@
     "color": "Yellow",
     "sub_types": "Big Mom Pirates",
     "attribute": "Wisdom",
-    "effects": {}
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "gain_life",
+            "source": "deck_top",
+            "dest": "life_top",
+            "count": 1,
+            "up_to": true
+          }
+        ],
+        "costs": [
+          {
+            "type": "trash_from_hand",
+            "count": 1
+          }
+        ]
+      }
+    }
   },
   "OP03-110": {
     "name": "Charlotte Smoothie",
@@ -15720,11 +15870,15 @@
         "steps": [
           {
             "action": "gain_life",
-            "count": 1
+            "source": "deck_top",
+            "dest": "life_top",
+            "count": 1,
+            "up_to": true
           },
           {
             "action": "attack_life",
-            "count": 1
+            "count": 1,
+            "up_to": true
           }
         ],
         "conditions": {
@@ -15845,6 +15999,23 @@
     "sub_types": "The Four Emperors Big Mom Pirates",
     "attribute": "",
     "effects": {
+      "trigger": {
+        "steps": [
+          {
+            "action": "gain_life",
+            "source": "deck_top",
+            "dest": "life_top",
+            "count": 1,
+            "up_to": true
+          }
+        ],
+        "costs": [
+          {
+            "type": "trash_from_hand",
+            "count": 2
+          }
+        ]
+      },
       "counter": {
         "steps": [
           {
@@ -15911,7 +16082,8 @@
         "steps": [
           {
             "action": "attack_life",
-            "count": 1
+            "count": 1,
+            "up_to": true
           }
         ]
       }
@@ -15948,7 +16120,8 @@
           },
           {
             "action": "trash_own_life",
-            "count": 1
+            "count": 1,
+            "up_to": false
           }
         ],
         "costs": [
@@ -17060,7 +17233,10 @@
           },
           {
             "action": "gain_life",
+            "source": "deck_top",
+            "dest": "life_top",
             "count": 1,
+            "up_to": true,
             "conditions": {
               "other_char_cost_gte": 8
             }
@@ -17555,7 +17731,10 @@
           },
           {
             "action": "gain_life",
-            "count": 1
+            "source": "deck_top",
+            "dest": "life_top",
+            "count": 1,
+            "up_to": true
           },
           {
             "action": "trash_from_hand",
@@ -18662,7 +18841,28 @@
     "color": "Yellow",
     "sub_types": "Land of Wano",
     "attribute": "Wisdom",
-    "effects": {}
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "gain_life",
+            "source": "deck_top",
+            "dest": "life_top",
+            "count": 1,
+            "up_to": false
+          }
+        ],
+        "conditions": {
+          "life_lte": 1
+        },
+        "costs": [
+          {
+            "type": "trash_from_hand",
+            "count": 2
+          }
+        ]
+      }
+    }
   },
   "OP04-099": {
     "name": "Olin",
@@ -19030,7 +19230,10 @@
           },
           {
             "action": "gain_life",
+            "source": "deck_top",
+            "dest": "life_top",
             "count": 1,
+            "up_to": true,
             "conditions": {
               "life_lte": 1
             }
@@ -19155,7 +19358,10 @@
         "steps": [
           {
             "action": "gain_life",
-            "count": 1
+            "source": "hand",
+            "dest": "life_top",
+            "count": 1,
+            "up_to": true
           }
         ]
       }
@@ -21814,7 +22020,10 @@
         "steps": [
           {
             "action": "gain_life",
-            "count": 1
+            "source": "deck_top",
+            "dest": "life_top",
+            "count": 1,
+            "up_to": false
           }
         ],
         "once_per_turn": true
@@ -22233,6 +22442,23 @@
     "sub_types": "Sky Island",
     "attribute": "",
     "effects": {
+      "trigger": {
+        "steps": [
+          {
+            "action": "gain_life",
+            "source": "deck_top",
+            "dest": "life_top",
+            "count": 1,
+            "up_to": true
+          }
+        ],
+        "costs": [
+          {
+            "type": "trash_from_hand",
+            "count": 2
+          }
+        ]
+      },
       "main": {
         "steps": [
           {
@@ -22948,6 +23174,12 @@
             "action": "play_card",
             "count": 1,
             "cost_lte": 4
+          },
+          {
+            "action": "life_to_hand",
+            "source": "life_top",
+            "count": 1,
+            "up_to": false
           }
         ],
         "conditions": {
@@ -23044,6 +23276,12 @@
           },
           {
             "action": "set_don_active"
+          },
+          {
+            "action": "life_to_hand",
+            "source": "life_top",
+            "count": 1,
+            "up_to": false
           }
         ],
         "conditions": {
@@ -23071,6 +23309,12 @@
             "amount": 1000,
             "target": "self",
             "duration": "this_turn"
+          },
+          {
+            "action": "life_to_hand",
+            "source": "life_top",
+            "count": 1,
+            "up_to": false
           }
         ],
         "conditions": {
@@ -23099,6 +23343,12 @@
             "amount": 2000,
             "target": "self",
             "duration": "until_my_turn_start"
+          },
+          {
+            "action": "life_to_hand",
+            "source": "life_top",
+            "count": 1,
+            "up_to": false
           }
         ],
         "conditions": {
@@ -23201,6 +23451,12 @@
             "amount": 1000,
             "target": "self",
             "duration": "this_turn"
+          },
+          {
+            "action": "life_to_hand",
+            "source": "life_top",
+            "count": 1,
+            "up_to": false
           }
         ],
         "once_per_turn": true
@@ -23218,6 +23474,16 @@
     "sub_types": "Fish-Man New Fish-Man Pirates",
     "attribute": "Strike",
     "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "life_to_hand",
+            "source": "life_top",
+            "count": 1,
+            "up_to": false
+          }
+        ]
+      },
       "passive": {
         "steps": [
           {
@@ -24756,6 +25022,16 @@
             "action": "activate_main_effect"
           }
         ]
+      },
+      "counter": {
+        "steps": [
+          {
+            "action": "life_to_hand",
+            "source": "life_top",
+            "count": 1,
+            "up_to": false
+          }
+        ]
       }
     }
   },
@@ -24961,7 +25237,10 @@
         "steps": [
           {
             "action": "gain_life",
-            "count": 1
+            "source": "deck_top",
+            "dest": "life_top",
+            "count": 1,
+            "up_to": true
           }
         ]
       },
@@ -25003,7 +25282,10 @@
         "steps": [
           {
             "action": "gain_life",
-            "count": 1
+            "source": "hand",
+            "dest": "life_top",
+            "count": 1,
+            "up_to": true
           }
         ]
       }
@@ -25238,7 +25520,10 @@
         "steps": [
           {
             "action": "gain_life",
-            "count": 1
+            "source": "deck_top",
+            "dest": "life_top",
+            "count": 1,
+            "up_to": true
           }
         ]
       },
@@ -25280,13 +25565,23 @@
         ]
       },
       "main": {
-        "steps": [
-          {
-            "action": "ko",
-            "count": 1,
-            "target": "opp_character",
-            "cost_lte": 5
-          }
+        "choice": [
+          [
+            {
+              "action": "ko",
+              "count": 1,
+              "target": "opp_character",
+              "cost_lte": 5
+            }
+          ],
+          [
+            {
+              "action": "life_to_hand",
+              "source": "life_top",
+              "count": 1,
+              "up_to": false
+            }
+          ]
         ]
       }
     }
@@ -27820,7 +28115,10 @@
         "steps": [
           {
             "action": "gain_life",
-            "count": 1
+            "source": "deck_top",
+            "dest": "life_top",
+            "count": 1,
+            "up_to": false
           }
         ],
         "once_per_turn": true
@@ -28267,7 +28565,10 @@
           },
           {
             "action": "gain_life",
+            "source": "deck_top",
+            "dest": "life_top",
             "count": 1,
+            "up_to": true,
             "conditions": {
               "life_lte": 1
             }
@@ -28500,7 +28801,10 @@
         "steps": [
           {
             "action": "gain_life",
-            "count": 1
+            "source": "deck_top",
+            "dest": "life_top",
+            "count": 1,
+            "up_to": true
           },
           {
             "action": "gain_rush",
@@ -30222,6 +30526,13 @@
       "on_play": {
         "steps": [
           {
+            "action": "gain_life",
+            "source": "deck_top",
+            "dest": "life_top",
+            "count": 1,
+            "up_to": true
+          },
+          {
             "action": "trash_from_hand",
             "count": 1
           }
@@ -30949,6 +31260,12 @@
             "action": "play_card",
             "count": 1,
             "cost_lte": "don_count_self"
+          },
+          {
+            "action": "life_to_hand",
+            "source": "life_top",
+            "count": 1,
+            "up_to": false
           }
         ],
         "don_requirement": 1
@@ -31009,8 +31326,16 @@
       "activate_main": {
         "steps": [
           {
+            "action": "gain_life",
+            "source": "deck_top",
+            "dest": "life_top",
+            "count": 1,
+            "up_to": false
+          },
+          {
             "action": "trash_own_life",
-            "count": 1
+            "count": 1,
+            "up_to": false
           }
         ],
         "conditions": {
@@ -31246,7 +31571,10 @@
         "steps": [
           {
             "action": "gain_life",
-            "count": 1
+            "source": "deck_top",
+            "dest": "life_top",
+            "count": 1,
+            "up_to": true
           }
         ],
         "conditions": {
@@ -31478,7 +31806,16 @@
           },
           {
             "action": "gain_life",
-            "count": 1
+            "source": "hand",
+            "dest": "life_top",
+            "count": 1,
+            "up_to": true
+          },
+          {
+            "action": "life_to_hand",
+            "source": "life_top_or_bottom",
+            "count": 1,
+            "up_to": false
           }
         ]
       }
@@ -31499,7 +31836,10 @@
         "steps": [
           {
             "action": "gain_life",
-            "count": 1
+            "source": "hand",
+            "dest": "life_top",
+            "count": 1,
+            "up_to": true
           }
         ]
       },
@@ -31513,7 +31853,8 @@
           },
           {
             "action": "trash_own_life",
-            "count": 1
+            "count": 1,
+            "up_to": false
           }
         ],
         "costs": [
@@ -31580,11 +31921,15 @@
           },
           {
             "action": "gain_life",
-            "count": 1
+            "source": "deck_top",
+            "dest": "life_top",
+            "count": 1,
+            "up_to": true
           },
           {
             "action": "attack_life",
-            "count": 1
+            "count": 1,
+            "up_to": true
           }
         ]
       }
@@ -34282,12 +34627,21 @@
         "steps": [
           {
             "action": "gain_life",
-            "count": 1
+            "source": "hand",
+            "dest": "life_top",
+            "count": 1,
+            "up_to": true
+          },
+          {
+            "action": "life_to_hand",
+            "source": "life_top_or_bottom",
+            "count": 1,
+            "up_to": false,
+            "conditions": {
+              "life_gte": 2
+            }
           }
-        ],
-        "conditions": {
-          "life_gte": 2
-        }
+        ]
       },
       "trigger": {
         "steps": [
@@ -34317,7 +34671,10 @@
         "steps": [
           {
             "action": "gain_life",
-            "count": 1
+            "source": "deck_top",
+            "dest": "life_top",
+            "count": 1,
+            "up_to": true
           }
         ],
         "conditions": {
@@ -34376,7 +34733,8 @@
         "steps": [
           {
             "action": "attack_life",
-            "count": 1
+            "count": 1,
+            "up_to": true
           }
         ]
       },
@@ -35565,7 +35923,19 @@
     "color": "Green",
     "sub_types": "Straw Hat Crew ODYSSEY",
     "attribute": "Strike",
-    "effects": {}
+    "effects": {
+      "passive": {
+        "steps": [
+          {
+            "action": "life_to_hand",
+            "source": "life_top",
+            "count": 1,
+            "up_to": false
+          }
+        ],
+        "once_per_turn": true
+      }
+    }
   },
   "OP10-035": {
     "name": "Brook (035)",
@@ -37408,6 +37778,12 @@
             "amount": 1000,
             "target": "self",
             "duration": "this_turn"
+          },
+          {
+            "action": "life_to_hand",
+            "source": "life_top",
+            "count": 1,
+            "up_to": false
           }
         ],
         "once_per_turn": true
@@ -37429,7 +37805,10 @@
         "steps": [
           {
             "action": "gain_life",
-            "count": 1
+            "source": "hand",
+            "dest": "life_top",
+            "count": 1,
+            "up_to": true
           }
         ]
       }
@@ -37507,7 +37886,10 @@
         "steps": [
           {
             "action": "gain_life",
-            "count": 1
+            "source": "hand",
+            "dest": "life_top",
+            "count": 1,
+            "up_to": true
           }
         ]
       },
@@ -37555,7 +37937,8 @@
         "steps": [
           {
             "action": "attack_life",
-            "count": 1
+            "count": 1,
+            "up_to": true
           }
         ]
       },
@@ -37651,7 +38034,8 @@
         "steps": [
           {
             "action": "attack_life",
-            "count": 1
+            "count": 1,
+            "up_to": true
           }
         ],
         "costs": [
@@ -37883,7 +38267,10 @@
           },
           {
             "action": "gain_life",
-            "count": 1
+            "source": "deck_top",
+            "dest": "life_top",
+            "count": 1,
+            "up_to": false
           }
         ]
       }
@@ -39771,7 +40158,24 @@
     "color": "Purple",
     "sub_types": "Big Mom Pirates",
     "attribute": "Special",
-    "effects": {}
+    "effects": {
+      "activate_main": {
+        "steps": [
+          {
+            "action": "life_to_hand",
+            "source": "life_top",
+            "count": 1,
+            "up_to": false
+          }
+        ],
+        "costs": [
+          {
+            "type": "rest_self"
+          }
+        ],
+        "once_per_turn": true
+      }
+    }
   },
   "OP11-073": {
     "name": "Charlotte Linlin",
@@ -40534,7 +40938,8 @@
         "steps": [
           {
             "action": "attack_life",
-            "count": 1
+            "count": 1,
+            "up_to": false
           }
         ],
         "once_per_turn": true
@@ -42508,7 +42913,19 @@
     "color": "Purple Yellow",
     "sub_types": "Donquixote Pirates Navy",
     "attribute": "Special",
-    "effects": {}
+    "effects": {
+      "passive": {
+        "steps": [
+          {
+            "action": "life_to_hand",
+            "source": "life_top",
+            "count": 1,
+            "up_to": false
+          }
+        ],
+        "once_per_turn": true
+      }
+    }
   },
   "OP12-062": {
     "name": "Vinsmoke Sora",
@@ -43717,7 +44134,10 @@
         "steps": [
           {
             "action": "gain_life",
-            "count": 1
+            "source": "deck_top",
+            "dest": "life_top",
+            "count": 1,
+            "up_to": true
           }
         ],
         "conditions": {
@@ -44032,6 +44452,13 @@
             "duration": "until_opp_turn_end"
           },
           {
+            "action": "gain_life",
+            "source": "deck_top",
+            "dest": "life_top",
+            "count": 1,
+            "up_to": true
+          },
+          {
             "action": "trash_from_hand",
             "count": 1
           }
@@ -44047,7 +44474,10 @@
         "steps": [
           {
             "action": "gain_life",
-            "count": 1
+            "source": "deck_top",
+            "dest": "life_top",
+            "count": 1,
+            "up_to": true
           }
         ],
         "conditions": {
@@ -46751,10 +47181,6 @@
           {
             "action": "draw",
             "count": 1
-          },
-          {
-            "action": "attack_life",
-            "count": 1
           }
         ],
         "costs": [
@@ -46801,6 +47227,26 @@
     "sub_types": "Land of Wano Kouzuki Clan",
     "attribute": "Wisdom",
     "effects": {
+      "on_ko": {
+        "steps": [
+          {
+            "action": "gain_life",
+            "source": "deck_top",
+            "dest": "life_top",
+            "count": 1,
+            "up_to": true
+          }
+        ],
+        "conditions": {
+          "leader_multicolor": true
+        },
+        "costs": [
+          {
+            "type": "trash_from_hand",
+            "count": 1
+          }
+        ]
+      },
       "passive": {
         "steps": [
           {
@@ -47812,6 +48258,12 @@
         "steps": [
           {
             "action": "lock_opp_don"
+          },
+          {
+            "action": "life_to_hand",
+            "source": "life_top",
+            "count": 1,
+            "up_to": false
           }
         ]
       }
@@ -49169,7 +49621,10 @@
         "steps": [
           {
             "action": "gain_life",
-            "count": 1
+            "source": "deck_top",
+            "dest": "life_top",
+            "count": 1,
+            "up_to": true
           }
         ]
       }
@@ -49412,6 +49867,13 @@
       },
       "when_attacking": {
         "steps": [
+          {
+            "action": "gain_life",
+            "source": "deck_top",
+            "dest": "life_top",
+            "count": 1,
+            "up_to": true
+          },
           {
             "action": "trash_from_hand",
             "count": 3
@@ -50086,7 +50548,10 @@
         "steps": [
           {
             "action": "gain_life",
-            "count": 1
+            "source": "hand",
+            "dest": "life_top",
+            "count": 1,
+            "up_to": true
           }
         ]
       },
@@ -50112,6 +50577,17 @@
     "sub_types": "The Seven Warlords of the Sea Thriller Bark Pirates",
     "attribute": "Special",
     "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "gain_life",
+            "source": "deck_top",
+            "dest": "life_top",
+            "count": 1,
+            "up_to": false
+          }
+        ]
+      },
       "trigger": {
         "steps": [
           {
@@ -50379,7 +50855,10 @@
         "steps": [
           {
             "action": "gain_life",
-            "count": 1
+            "source": "deck_top",
+            "dest": "life_top",
+            "count": 1,
+            "up_to": true
           }
         ],
         "conditions": {
@@ -50493,7 +50972,10 @@
         "steps": [
           {
             "action": "gain_life",
-            "count": 1
+            "source": "deck_top",
+            "dest": "life_top",
+            "count": 1,
+            "up_to": true
           }
         ],
         "conditions": {
@@ -51516,7 +51998,18 @@
     "color": "Green",
     "sub_types": "Fish-Man New Fish-Man Pirates Fish-Man Island",
     "attribute": "Strike",
-    "effects": {}
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "life_to_hand",
+            "source": "life_top",
+            "count": 1,
+            "up_to": false
+          }
+        ]
+      }
+    }
   },
   "OP15-034": {
     "name": "Yorki",
@@ -53394,7 +53887,18 @@
     "color": "Yellow",
     "sub_types": "Straw Hat Crew Sky Island",
     "attribute": "Strike",
-    "effects": {}
+    "effects": {
+      "passive": {
+        "steps": [
+          {
+            "action": "life_to_hand",
+            "source": "life_top",
+            "count": 1,
+            "up_to": false
+          }
+        ]
+      }
+    }
   },
   "OP15-099": {
     "name": "Urouge",
@@ -53452,7 +53956,8 @@
           },
           {
             "action": "trash_own_life",
-            "count": 1
+            "count": 1,
+            "up_to": false
           }
         ],
         "costs": [
@@ -53597,7 +54102,18 @@
     "color": "Yellow",
     "sub_types": "Bonney Pirates Supernovas",
     "attribute": "Special",
-    "effects": {}
+    "effects": {
+      "passive": {
+        "steps": [
+          {
+            "action": "life_to_hand",
+            "source": "life_top",
+            "count": 1,
+            "up_to": false
+          }
+        ]
+      }
+    }
   },
   "OP15-106": {
     "name": "Octoballoon",
@@ -53687,7 +54203,10 @@
           },
           {
             "action": "gain_life",
-            "count": 1
+            "source": "deck_top",
+            "dest": "life_top",
+            "count": 1,
+            "up_to": true
           }
         ],
         "conditions": {
@@ -53711,7 +54230,10 @@
         "steps": [
           {
             "action": "gain_life",
-            "count": 1
+            "source": "deck_top",
+            "dest": "life_top",
+            "count": 1,
+            "up_to": true
           }
         ],
         "conditions": {
@@ -53784,6 +54306,13 @@
       "on_play": {
         "steps": [
           {
+            "action": "gain_life",
+            "source": "deck_top",
+            "dest": "life_top",
+            "count": 1,
+            "up_to": true
+          },
+          {
             "action": "trash_from_hand",
             "count": 1
           }
@@ -53855,6 +54384,12 @@
             "count": 1,
             "target": "opp_character",
             "cost_lte": 4
+          },
+          {
+            "action": "life_to_hand",
+            "source": "life_top",
+            "count": 1,
+            "up_to": false
           }
         ]
       }
@@ -53884,8 +54419,16 @@
       "main": {
         "steps": [
           {
+            "action": "gain_life",
+            "source": "deck_top",
+            "dest": "life_top",
+            "count": 1,
+            "up_to": true
+          },
+          {
             "action": "trash_own_life",
-            "count": 1
+            "count": 1,
+            "up_to": false
           }
         ],
         "conditions": {
@@ -57336,7 +57879,10 @@
           },
           {
             "action": "gain_life",
-            "count": 3
+            "source": "deck_top",
+            "dest": "life_top",
+            "count": 1,
+            "up_to": true
           }
         ]
       },
@@ -58528,6 +59074,12 @@
             "amount": 1000,
             "target": "self",
             "duration": "this_turn"
+          },
+          {
+            "action": "life_to_hand",
+            "source": "life_top",
+            "count": 1,
+            "up_to": false
           }
         ],
         "once_per_turn": true
@@ -60759,7 +61311,8 @@
         "steps": [
           {
             "action": "attack_life",
-            "count": 1
+            "count": 1,
+            "up_to": true
           }
         ],
         "costs": [
@@ -62039,7 +62592,10 @@
         "steps": [
           {
             "action": "gain_life",
-            "count": 1
+            "source": "hand",
+            "dest": "life_top",
+            "count": 1,
+            "up_to": true
           }
         ],
         "conditions": {
@@ -62123,7 +62679,10 @@
         "steps": [
           {
             "action": "gain_life",
-            "count": 1
+            "source": "deck_top",
+            "dest": "life_top",
+            "count": 1,
+            "up_to": true
           }
         ],
         "don_requirement": 1
@@ -62242,13 +62801,17 @@
           [
             {
               "action": "attack_life",
-              "count": 1
+              "count": 1,
+              "up_to": false
             }
           ],
           [
             {
               "action": "gain_life",
-              "count": 1
+              "source": "deck_top",
+              "dest": "life_top",
+              "count": 1,
+              "up_to": false
             }
           ]
         ]
@@ -62370,13 +62933,17 @@
           [
             {
               "action": "attack_life",
-              "count": 1
+              "count": 1,
+              "up_to": false
             }
           ],
           [
             {
               "action": "gain_life",
-              "count": 1
+              "source": "deck_top",
+              "dest": "life_top",
+              "count": 1,
+              "up_to": false
             }
           ]
         ]
@@ -62844,6 +63411,23 @@
     "sub_types": "Land of Wano Kouzuki Clan",
     "attribute": "Slash",
     "effects": {
+      "on_ko": {
+        "steps": [
+          {
+            "action": "gain_life",
+            "source": "deck_top",
+            "dest": "life_top",
+            "count": 1,
+            "up_to": true
+          }
+        ],
+        "costs": [
+          {
+            "type": "trash_from_hand",
+            "count": 2
+          }
+        ]
+      },
       "don_conditional_keywords": {
         "steps": [
           {
@@ -63013,6 +63597,23 @@
     "sub_types": "Land of Wano",
     "attribute": "",
     "effects": {
+      "trigger": {
+        "steps": [
+          {
+            "action": "gain_life",
+            "source": "deck_top",
+            "dest": "life_top",
+            "count": 1,
+            "up_to": true
+          }
+        ],
+        "costs": [
+          {
+            "type": "trash_from_hand",
+            "count": 2
+          }
+        ]
+      },
       "counter": {
         "steps": [
           {
@@ -64099,7 +64700,10 @@
           },
           {
             "action": "gain_life",
-            "count": 1
+            "source": "own_field",
+            "dest": "life_top",
+            "count": 1,
+            "up_to": false
           }
         ],
         "once_per_turn": true,
@@ -64134,7 +64738,10 @@
           },
           {
             "action": "gain_life",
-            "count": 1
+            "source": "own_field",
+            "dest": "life_top",
+            "count": 1,
+            "up_to": true
           }
         ],
         "once_per_turn": true,
@@ -64169,7 +64776,10 @@
         "steps": [
           {
             "action": "gain_life",
-            "count": 1
+            "source": "deck_top",
+            "dest": "life_top",
+            "count": 1,
+            "up_to": false
           }
         ]
       }
@@ -64186,6 +64796,23 @@
     "sub_types": "Revolutionary Army",
     "attribute": "Special",
     "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "gain_life",
+            "source": "deck_top",
+            "dest": "life_top",
+            "count": 1,
+            "up_to": false
+          }
+        ],
+        "costs": [
+          {
+            "type": "trash_from_hand",
+            "count": 1
+          }
+        ]
+      },
       "passive": {
         "steps": [
           {
@@ -64233,10 +64860,6 @@
             "amount": 2000,
             "target": "leader",
             "duration": "until_opp_turn_end"
-          },
-          {
-            "action": "trash_own_life",
-            "count": 1
           }
         ],
         "costs": [
@@ -64291,7 +64914,8 @@
         "steps": [
           {
             "action": "attack_life",
-            "count": 1
+            "count": 1,
+            "up_to": true
           }
         ]
       }
@@ -64315,10 +64939,6 @@
             "amount": 2000,
             "target": "leader",
             "duration": "until_opp_turn_end"
-          },
-          {
-            "action": "trash_own_life",
-            "count": 1
           }
         ],
         "costs": [
@@ -64413,10 +65033,6 @@
             "amount": 2000,
             "target": "leader",
             "duration": "until_opp_turn_end"
-          },
-          {
-            "action": "trash_own_life",
-            "count": 1
           }
         ],
         "costs": [
@@ -64457,6 +65073,7 @@
           {
             "action": "trash_own_life",
             "count": 1,
+            "up_to": false,
             "conditions": {
               "life_gte": 1
             }
@@ -64501,7 +65118,10 @@
         "steps": [
           {
             "action": "gain_life",
-            "count": 1
+            "source": "hand",
+            "dest": "life_top",
+            "count": 1,
+            "up_to": true
           }
         ]
       },
@@ -64532,7 +65152,10 @@
         "steps": [
           {
             "action": "gain_life",
-            "count": 1
+            "source": "hand",
+            "dest": "life_top",
+            "count": 1,
+            "up_to": true
           }
         ]
       },
@@ -65178,6 +65801,12 @@
             "amount": 2000,
             "target": "opp_character",
             "duration": "this_turn"
+          },
+          {
+            "action": "life_to_hand",
+            "source": "life_top",
+            "count": 1,
+            "up_to": false
           }
         ],
         "conditions": {
@@ -65819,7 +66448,8 @@
         "steps": [
           {
             "action": "trash_own_life",
-            "count": 1
+            "count": 1,
+            "up_to": false
           }
         ],
         "once_per_turn": true
@@ -65882,7 +66512,8 @@
           [
             {
               "action": "attack_life",
-              "count": 1
+              "count": 1,
+              "up_to": false
             }
           ]
         ],
@@ -66613,6 +67244,12 @@
             "amount": 2000,
             "target": "leader",
             "duration": "until_opp_turn_end"
+          },
+          {
+            "action": "life_to_hand",
+            "source": "life_top_or_bottom",
+            "count": 1,
+            "up_to": false
           }
         ],
         "conditions": {
@@ -67865,7 +68502,10 @@
         "steps": [
           {
             "action": "gain_life",
-            "count": 1
+            "source": "hand",
+            "dest": "life_top",
+            "count": 1,
+            "up_to": true
           }
         ]
       },
