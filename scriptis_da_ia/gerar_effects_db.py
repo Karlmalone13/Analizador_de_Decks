@@ -963,8 +963,12 @@ def parse_give_don(text):
             steps.append({'action': 'add_don', 'count': int(m2.group(1) or m2.group(2))})
 
     # Reativar DON (set as active) = aceleração
-    if re.search(r'set (?:up to )?\d* ?(?:of your )?don!! cards?.* as active', t):
-        steps.append({'action': 'set_don_active'})
+    m = re.search(r'set (up to )?(\d+)? ?(?:of your )?don!! cards?.* as active', t)
+    if m:
+        step = {'action': 'set_don_active', 'count': int(m.group(2)) if m.group(2) else 1}
+        if m.group(1):
+            step['up_to'] = True
+        steps.append(step)
 
     # Trava de "nao ficar ativo no Refresh" -- distinguir alvo: DON especifico,
     # Character/Leader especifico (do OPONENTE, com filtro opcional de custo),

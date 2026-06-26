@@ -1604,6 +1604,26 @@ class EffectExecutor:
                     trashed.append(worst.name[:12])
             return f'oponente descartou: {", ".join(trashed)}' if trashed else ''
 
+        # ── DON: reativar DON rested (set as active) = ramp dentro do turno ───
+        if action == 'set_don_active':
+            count = step.get('count', 1)
+            moved = min(count, me.don_rested)
+            me.don_rested    -= moved
+            me.don_available += moved
+            return f'reativou {moved} DON' if moved else ''
+
+        # ── MILL: trashar do topo do PRÓPRIO deck (sem disparar trigger) ──────
+        # Regra (Arthur): trash do deck = carta vai ao trash SEM ativar Trigger.
+        # Topo do deck = fim da lista (= draw_phase usa pop()).
+        if action == 'trash_from_deck_top':
+            count = step.get('count', 1)
+            milled = 0
+            for _ in range(count):
+                if not me.deck: break
+                me.trash.append(me.deck.pop())
+                milled += 1
+            return f'mill {milled} (topo do deck -> trash)' if milled else ''
+
         # ── LIFE: adicionar à própria vida (unifica o antigo 'heal') ──────────
         # Convenção confirmada no engine: fim da lista = TOPO da vida
         # (combate faz opp.life.pop() = último = próxima a revelar).
@@ -1624,7 +1644,7 @@ class EffectExecutor:
                 c = None
                 if source == 'deck_top':
                     if not me.deck: break
-                    c = me.deck.pop(0)
+                    c = me.deck.pop()       # topo do deck = fim da lista (= draw_phase)
                 elif source == 'hand':
                     if not me.hand: break
                     c = me.hand.pop(0)          # escolha refinável depois

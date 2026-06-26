@@ -320,7 +320,9 @@
       "on_play": {
         "steps": [
           {
-            "action": "set_don_active"
+            "action": "set_don_active",
+            "count": 2,
+            "up_to": true
           }
         ],
         "conditions": {
@@ -330,7 +332,9 @@
       "when_attacking": {
         "steps": [
           {
-            "action": "set_don_active"
+            "action": "set_don_active",
+            "count": 2,
+            "up_to": true
           }
         ],
         "conditions": {
@@ -1892,7 +1896,9 @@
             "duration": "until_opp_turn_end"
           },
           {
-            "action": "set_don_active"
+            "action": "set_don_active",
+            "count": 2,
+            "up_to": true
           }
         ],
         "conditions": {
@@ -2010,7 +2016,9 @@
       "on_play": {
         "steps": [
           {
-            "action": "set_don_active"
+            "action": "set_don_active",
+            "count": 1,
+            "up_to": true
           },
           {
             "action": "lock_opp_character_refresh",
@@ -3896,7 +3904,9 @@
             "cost_lte": 8
           },
           {
-            "action": "set_don_active"
+            "action": "set_don_active",
+            "count": 1,
+            "up_to": true
           }
         ],
         "conditions": {
@@ -5235,7 +5245,9 @@
             "count": 1
           },
           {
-            "action": "set_don_active"
+            "action": "set_don_active",
+            "count": 1,
+            "up_to": true
           }
         ],
         "once_per_turn": true
@@ -5724,7 +5736,9 @@
       "activate_main": {
         "steps": [
           {
-            "action": "set_don_active"
+            "action": "set_don_active",
+            "count": 1,
+            "up_to": true
           }
         ]
       },
@@ -7882,7 +7896,9 @@
       "activate_main": {
         "steps": [
           {
-            "action": "set_don_active"
+            "action": "set_don_active",
+            "count": 2,
+            "up_to": true
           }
         ],
         "once_per_turn": true
@@ -7949,7 +7965,9 @@
       "when_attacking": {
         "steps": [
           {
-            "action": "set_don_active"
+            "action": "set_don_active",
+            "count": 1,
+            "up_to": true
           }
         ],
         "don_requirement": 2
@@ -8203,7 +8221,9 @@
       "when_attacking": {
         "steps": [
           {
-            "action": "set_don_active"
+            "action": "set_don_active",
+            "count": 2,
+            "up_to": true
           }
         ],
         "conditions": {
@@ -10532,7 +10552,9 @@
       "passive": {
         "steps": [
           {
-            "action": "set_don_active"
+            "action": "set_don_active",
+            "count": 2,
+            "up_to": true
           }
         ],
         "once_per_turn": true
@@ -10577,7 +10599,9 @@
       "end_of_turn": {
         "steps": [
           {
-            "action": "set_don_active"
+            "action": "set_don_active",
+            "count": 1,
+            "up_to": true
           }
         ]
       }
@@ -11019,7 +11043,9 @@
       "activate_main": {
         "steps": [
           {
-            "action": "set_don_active"
+            "action": "set_don_active",
+            "count": 1,
+            "up_to": true
           }
         ],
         "costs": [
@@ -16674,7 +16700,9 @@
       "end_of_turn": {
         "steps": [
           {
-            "action": "set_don_active"
+            "action": "set_don_active",
+            "count": 2,
+            "up_to": true
           }
         ]
       }
@@ -16836,7 +16864,9 @@
             "cost_lte": 4
           },
           {
-            "action": "set_don_active"
+            "action": "set_don_active",
+            "count": 1,
+            "up_to": true
           }
         ],
         "conditions": {
@@ -16891,7 +16921,9 @@
       "end_of_turn": {
         "steps": [
           {
-            "action": "set_don_active"
+            "action": "set_don_active",
+            "count": 1,
+            "up_to": true
           }
         ]
       }
@@ -16960,7 +16992,9 @@
       "end_of_turn": {
         "steps": [
           {
-            "action": "set_don_active"
+            "action": "set_don_active",
+            "count": 2,
+            "up_to": true
           }
         ],
         "costs": [
@@ -16990,7 +17024,9 @@
             "cost_lte": 5
           },
           {
-            "action": "set_don_active"
+            "action": "set_don_active",
+            "count": 1,
+            "up_to": true
           }
         ],
         "conditions": {
@@ -17144,7 +17180,9 @@
       "trigger": {
         "steps": [
           {
-            "action": "set_don_active"
+            "action": "set_don_active",
+            "count": 5,
+            "up_to": true
           }
         ]
       },
@@ -20418,7 +20456,9 @@
             "duration": "battle_only"
           },
           {
-            "action": "set_don_active"
+            "action": "set_don_active",
+            "count": 3,
+            "up_to": true
           }
         ]
       }
@@ -23275,7 +23315,9 @@
             "duration": "this_turn"
           },
           {
-            "action": "set_don_active"
+            "action": "set_don_active",
+            "count": 1,
+            "up_to": true
           },
           {
             "action": "life_to_hand",
@@ -26193,7 +26235,9 @@
       "end_of_turn": {
         "steps": [
           {
-            "action": "set_don_active"
+            "action": "set_don_active",
+            "count": 1,
+            "up_to": true
           }
         ]
       },
@@ -29651,7 +29695,9 @@
       "activate_main": {
         "steps": [
           {
-            "action": "set_don_active"
+            "action": "set_don_active",
+            "count": 1,
+            "up_to": true
           }
         ],
         "conditions": {
@@ -29832,7 +29878,9 @@
       "activate_main": {
         "steps": [
           {
-            "action": "set_don_active"
+            "action": "set_don_active",
+            "count": 1,
+            "up_to": true
           }
         ],
         "conditions": {
@@ -32555,7 +32603,9 @@
             "duration": "battle_only"
           },
           {
-            "action": "set_don_active"
+            "action": "set_don_active",
+            "count": 3,
+            "up_to": true
           }
         ],
         "conditions": {
@@ -35111,7 +35161,9 @@
       "activate_main": {
         "steps": [
           {
-            "action": "set_don_active"
+            "action": "set_don_active",
+            "count": 2,
+            "up_to": true
           }
         ],
         "conditions": {
@@ -35179,7 +35231,9 @@
       "end_of_turn": {
         "steps": [
           {
-            "action": "set_don_active"
+            "action": "set_don_active",
+            "count": 1,
+            "up_to": true
           }
         ],
         "once_per_turn": true
@@ -35844,7 +35898,9 @@
       "activate_main": {
         "steps": [
           {
-            "action": "set_don_active"
+            "action": "set_don_active",
+            "count": 1,
+            "up_to": true
           }
         ]
       },
@@ -35972,7 +36028,9 @@
       "your_turn": {
         "steps": [
           {
-            "action": "set_don_active"
+            "action": "set_don_active",
+            "count": 1,
+            "up_to": true
           }
         ],
         "once_per_turn": true
@@ -36799,7 +36857,9 @@
       "on_play": {
         "steps": [
           {
-            "action": "set_don_active"
+            "action": "set_don_active",
+            "count": 1,
+            "up_to": true
           },
           {
             "action": "add_from_trash",
@@ -36928,7 +36988,9 @@
       "end_of_turn": {
         "steps": [
           {
-            "action": "set_don_active"
+            "action": "set_don_active",
+            "count": 2,
+            "up_to": true
           }
         ],
         "conditions": {
@@ -42093,7 +42155,9 @@
       "on_play": {
         "steps": [
           {
-            "action": "set_don_active"
+            "action": "set_don_active",
+            "count": 4,
+            "up_to": true
           }
         ]
       },
@@ -44415,7 +44479,9 @@
             "then_trash": 1
           },
           {
-            "action": "set_don_active"
+            "action": "set_don_active",
+            "count": 1,
+            "up_to": true
           },
           {
             "action": "trash_from_hand",
@@ -45073,7 +45139,9 @@
       "on_play": {
         "steps": [
           {
-            "action": "set_don_active"
+            "action": "set_don_active",
+            "count": 2,
+            "up_to": true
           }
         ]
       },
@@ -45102,7 +45170,9 @@
       "on_play": {
         "steps": [
           {
-            "action": "set_don_active"
+            "action": "set_don_active",
+            "count": 2,
+            "up_to": true
           }
         ]
       }
@@ -45122,7 +45192,9 @@
       "on_play": {
         "steps": [
           {
-            "action": "set_don_active"
+            "action": "set_don_active",
+            "count": 1,
+            "up_to": true
           }
         ],
         "conditions": {
@@ -45182,14 +45254,18 @@
       "on_play": {
         "steps": [
           {
-            "action": "set_don_active"
+            "action": "set_don_active",
+            "count": 2,
+            "up_to": true
           }
         ]
       },
       "end_of_turn": {
         "steps": [
           {
-            "action": "set_don_active"
+            "action": "set_don_active",
+            "count": 1,
+            "up_to": true
           }
         ]
       }
@@ -45233,7 +45309,9 @@
       "on_play": {
         "steps": [
           {
-            "action": "set_don_active"
+            "action": "set_don_active",
+            "count": 2,
+            "up_to": true
           }
         ]
       }
@@ -45320,7 +45398,9 @@
       "on_play": {
         "steps": [
           {
-            "action": "set_don_active"
+            "action": "set_don_active",
+            "count": 1,
+            "up_to": true
           }
         ]
       }
@@ -45364,7 +45444,9 @@
       "on_play": {
         "steps": [
           {
-            "action": "set_don_active"
+            "action": "set_don_active",
+            "count": 2,
+            "up_to": true
           }
         ]
       }
@@ -45398,7 +45480,9 @@
             "cost_lte": 5
           },
           {
-            "action": "set_don_active"
+            "action": "set_don_active",
+            "count": 2,
+            "up_to": true
           }
         ]
       }
@@ -47641,7 +47725,9 @@
       "on_play": {
         "steps": [
           {
-            "action": "set_don_active"
+            "action": "set_don_active",
+            "count": 4,
+            "up_to": true
           }
         ],
         "conditions": {
@@ -48221,7 +48307,9 @@
       "activate_main": {
         "steps": [
           {
-            "action": "set_don_active"
+            "action": "set_don_active",
+            "count": 3,
+            "up_to": true
           }
         ],
         "conditions": {
@@ -48283,7 +48371,9 @@
       "end_of_turn": {
         "steps": [
           {
-            "action": "set_don_active"
+            "action": "set_don_active",
+            "count": 2,
+            "up_to": true
           }
         ]
       }
@@ -48315,7 +48405,9 @@
       "on_play": {
         "steps": [
           {
-            "action": "set_don_active"
+            "action": "set_don_active",
+            "count": 3,
+            "up_to": true
           }
         ]
       }
@@ -48479,7 +48571,9 @@
             "cost_lte": 8
           },
           {
-            "action": "set_don_active"
+            "action": "set_don_active",
+            "count": 5,
+            "up_to": true
           }
         ]
       },
@@ -48721,7 +48815,9 @@
       "end_of_turn": {
         "steps": [
           {
-            "action": "set_don_active"
+            "action": "set_don_active",
+            "count": 1,
+            "up_to": true
           }
         ],
         "conditions": {
@@ -55130,7 +55226,9 @@
       "activate_main": {
         "steps": [
           {
-            "action": "set_don_active"
+            "action": "set_don_active",
+            "count": 2,
+            "up_to": true
           }
         ],
         "conditions": {
@@ -60849,7 +60947,9 @@
       "trigger": {
         "steps": [
           {
-            "action": "set_don_active"
+            "action": "set_don_active",
+            "count": 2,
+            "up_to": true
           }
         ]
       },
@@ -60862,7 +60962,9 @@
             "duration": "battle_only"
           },
           {
-            "action": "set_don_active"
+            "action": "set_don_active",
+            "count": 1,
+            "up_to": true
           }
         ]
       }
@@ -60888,7 +60990,9 @@
             "duration": "battle_only"
           },
           {
-            "action": "set_don_active"
+            "action": "set_don_active",
+            "count": 1,
+            "up_to": true
           }
         ]
       }
@@ -64229,7 +64333,9 @@
             "action": "deck_bottom_rest"
           },
           {
-            "action": "set_don_active"
+            "action": "set_don_active",
+            "count": 1,
+            "up_to": true
           }
         ],
         "conditions": {
@@ -67531,7 +67637,9 @@
             "action": "deck_bottom_rest"
           },
           {
-            "action": "set_don_active"
+            "action": "set_don_active",
+            "count": 1,
+            "up_to": true
           }
         ],
         "costs": [
@@ -67556,7 +67664,9 @@
       "end_of_turn": {
         "steps": [
           {
-            "action": "set_don_active"
+            "action": "set_don_active",
+            "count": 1,
+            "up_to": true
           }
         ]
       }
@@ -67611,7 +67721,9 @@
             "cost_lte": 5
           },
           {
-            "action": "set_don_active"
+            "action": "set_don_active",
+            "count": 1,
+            "up_to": true
           }
         ],
         "conditions": {
