@@ -955,6 +955,32 @@ class EffectExecutor:
                         trashed.append(worst.name[:15])
                 if trashed:
                     self._cost_logs.append(f'custo: trashou da mão: {", ".join(trashed)}')
+            elif ctype == 'trash_char_or_hand':
+                # Custo com ESCOLHA (ex: leader Imu): trashar 1 character próprio
+                # (com filtro de tipo) OU 1 carta da mão. Resolve gastando o
+                # recurso de MENOR valor — naturalmente trasha um character só
+                # quando ele vale menos que descartar da mão. (Escolha fina de
+                # "trashar p/ encher o trash e ligar imunidade" = Bug B, futuro.)
+                count = cost.get('count', 1)
+                ft = cost.get('filter_type', '').lower()
+                for _ in range(count):
+                    chars = [c for c in self.me.field_chars
+                             if not ft or ft in c.sub_types.lower()]
+                    pior_char = min(chars, key=lambda c: c.board_value(), default=None)
+                    pior_mao = self._choose_to_trash(self.me.hand)
+                    if pior_char is None and pior_mao is None:
+                        return False
+                    # comparar valores (character via board_value; mão via avaliar simples)
+                    val_char = pior_char.board_value() if pior_char else 10**9
+                    val_mao = pior_mao.board_value() if pior_mao else 10**9
+                    if pior_char is not None and val_char <= val_mao:
+                        self.me.field_chars.remove(pior_char)
+                        self.me.trash.append(pior_char)
+                        self._cost_logs.append(f'custo: trashou character {pior_char.name[:14]}')
+                    elif pior_mao is not None:
+                        self.me.hand.remove(pior_mao)
+                        self.me.trash.append(pior_mao)
+                        self._cost_logs.append(f'custo: trashou da mão {pior_mao.name[:14]}')
             elif ctype == 'trash_self':
                 if card in self.me.field_chars:
                     self.me.field_chars.remove(card)
@@ -3577,31 +3603,73 @@ class OPTCGMatch:
 
     # ── Setup (CheckStartOfGameActions das 34k linhas) ───────────────────────
 
-    def _place_start_stage(self, p: GameState):
+    def _place_start_stage(self, p: GameState, opp: GameState = None):
         """
-        Detecta e coloca stage inicial em campo.
-        Baseado em CheckStartOfGameActions (proc.StartOfGame) das 34k linhas.
+        Coloca o Stage inicial (proc.StartOfGame). Para leaders que puxam um Stage
+        do deck no início (ex: Imu — "play up to 1 [Mary Geoise] type Stage").
+
+        Escolha condicional ao matchup (regra confirmada por Arthur):
+          - Default: o Stage de MAIOR custo (ex: The Empty Throne) — mais valor.
+          - Stage de MENOR custo (Mary Geoise barata) SE:
+              (a) MIRROR — oponente é o mesmo leader (sempre tem como atacar Stage alto), OU
+              (b) o deck do oponente contém remoção de Stage que ALCANÇA o Stage caro
+                  (K.O./trash/return de Stage do oponente com custo >= custo do Stage caro).
+          Ver deck do oponente no setup é legítimo (decklist é conhecida nas 3 análises;
+          só a MÃO não pode ser vista).
         """
         if not p.leader.card_text:
             return
-
         t = p.leader.card_text.lower()
         if 'at the start of the game' not in t:
             return
 
-        # Extrai tipo de stage mencionado
         m = re.search(r'start of the game[^.]*play.*?\[([^\]]+)\].*?stage', t)
         wanted = m.group(1).lower() if m else None
 
         candidates = [c for c in p.deck if c.card_type == 'STAGE'
                       and (not wanted or wanted in c.sub_types.lower()
                            or wanted in c.name.lower())]
+        if not candidates:
+            return
 
-        if candidates:
-            # Prefere a de maior custo (The Empty Throne > Mary Geoise)
-            best = max(candidates, key=lambda c: c.cost)
-            p.deck.remove(best)
-            p.field_stage = best
+        caro = max(candidates, key=lambda c: c.cost)
+        barato = min(candidates, key=lambda c: c.cost)
+
+        usar_barato = False
+        if caro.cost != barato.cost and opp is not None:
+            # (a) mirror
+            if opp.leader.code == p.leader.code:
+                usar_barato = True
+            # (b) oponente remove Stage com alcance >= custo do Stage caro
+            elif self._opp_can_remove_stage(opp, caro.cost):
+                usar_barato = True
+
+        best = barato if usar_barato else caro
+        p.deck.remove(best)
+        p.field_stage = best
+
+    @staticmethod
+    def _opp_can_remove_stage(opp: GameState, reach_cost: int) -> bool:
+        """True se o deck do oponente tem carta que K.O./trasha/devolve um Stage
+        do oponente (= nosso) com alcance de custo >= reach_cost."""
+        for c in opp.deck:
+            t = (c.card_text or '').lower()
+            # K.O./trash explicito do "opponent's stage", respeitando filtro de custo
+            for mm in re.finditer(r"(k\.?o\.?|trash)[^.]*?opponent's stages?(?:[^.]*?cost of (\d+) or less)?", t):
+                cap = mm.group(2)
+                if cap and int(cap) < reach_cost:
+                    continue
+                return True
+            # return stage to owner (bounce), sem filtro baixo
+            for mm in re.finditer(r"return[^.]*?\bstages?\b[^.]*?to (?:its|the) owner", t):
+                seg = t[max(0, mm.start() - 15):mm.end()]
+                if 'this stage' in seg:
+                    continue
+                cm = re.search(r'cost of (\d+) or less', seg)
+                if cm and int(cm.group(1)) < reach_cost:
+                    continue
+                return True
+        return False
 
     def _mulligan_decision(self, hand, deck=None) -> tuple:
         """
@@ -3697,7 +3765,8 @@ class OPTCGMatch:
             p.life = [p.deck.pop() for _ in range(min(life_count, len(p.deck)))]
 
             # Stage inicial (CheckStartOfGameActions)
-            self._place_start_stage(p)
+            opp_state = self.state_b if p is self.state_a else self.state_a
+            self._place_start_stage(p, opp_state)
 
     # ── Fases do turno ───────────────────────────────────────────────────────
 

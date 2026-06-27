@@ -46912,8 +46912,9 @@
         ],
         "costs": [
           {
-            "type": "trash_from_hand",
-            "count": 1
+            "type": "trash_char_or_hand",
+            "count": 1,
+            "filter_type": "celestial dragons"
           }
         ],
         "once_per_turn": true

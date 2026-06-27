@@ -264,14 +264,26 @@ def parse_costs(text):
         # Captura variações: "trash N cards from your hand", "trash 1 [type] Character
         # or 1 card from your hand", "trash 1 of your Characters", etc.
         # O custo vem ANTES de um ':' que separa custo do benefício.
-        m = re.search(r'you may trash (\d+)[^:]*?(?:from your hand|character|card)[^:]*:', t)
-        if m:
-            costs.append({'type': 'trash_from_hand', 'count': int(m.group(1))})
+        # CASO ESPECIAL: "trash 1 of your [tipo] Characters OR 1 card from your hand"
+        # (ex: leader Imu) -- é um custo com ESCOLHA. Capturado como tipo próprio
+        # para não perder a opção de trashar character (engine decide qual gastar).
+        m_choice = re.search(
+            r'you may trash (\d+)[^:]*?characters?\s+or\s+\d+\s+cards?\s+from your hand\s*:', t)
+        if m_choice:
+            cost = {'type': 'trash_char_or_hand', 'count': int(m_choice.group(1))}
+            ft = re.search(r"of your [\['\"{]([a-z][a-z0-9 .'-]+)[\]'\"}]\s+type characters", t)
+            if ft:
+                cost['filter_type'] = ft.group(1).strip()
+            costs.append(cost)
         else:
-            # padrão mais simples sem "you may" (custo obrigatório com ':')
-            m = re.search(r'\btrash (\d+) cards? from your hand\s*:', t)
+            m = re.search(r'you may trash (\d+)[^:]*?(?:from your hand|character|card)[^:]*:', t)
             if m:
                 costs.append({'type': 'trash_from_hand', 'count': int(m.group(1))})
+            else:
+                # padrão mais simples sem "you may" (custo obrigatório com ':')
+                m = re.search(r'\btrash (\d+) cards? from your hand\s*:', t)
+                if m:
+                    costs.append({'type': 'trash_from_hand', 'count': int(m.group(1))})
 
     # DON!! −X: devolve X DON do campo para o deck de DON.
     # "you may" perto (antes ou depois, ex: dentro do parêntese explicativo)
