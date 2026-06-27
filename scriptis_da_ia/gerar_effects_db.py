@@ -1679,33 +1679,41 @@ def parse_cost_debuff(text):
             'amount': int(m.group(2)),
             'target': 'self' if is_self else 'own_character',
         }
-        count_m = re.search(r'up to (\d+) of your', t)
+        # CLAUSULA escopada em DUAS camadas (bug confirmado por foto/leitura
+        # real 27/06, dois casos distintos):
+        # 1) Limita a SENTENCA atual (depois do ultimo '.') -- sem isso,
+        #    type_m/color_m vazavam pra frases SEGUINTES nao-relacionadas
+        #    (Marshall.D.Teach OP16-080: "{Blackbeard Pirates} type" era de
+        #    uma habilidade [On Your Opponent's Attack] diferente).
+        # 2) Dentro da sentenca, se existir 'all of your'/'up to N of your',
+        #    comeca DALI -- sem isso, cost_gte_m vazava da condicao de
+        #    ativacao ANTERIOR na mesma sentenca (OP14-098: "if there is a
+        #    Character with a cost of 8 or more" e a condicao, nao o filtro
+        #    do alvo do buff).
+        inicio_periodo = t.rfind('.', 0, m.start()) + 1
+        sentenca = t[inicio_periodo:m.end()]
+        alvo_m = re.search(r'(?:all of your|up to \d+ of your)', sentenca)
+        clause = sentenca[alvo_m.start():] if alvo_m else sentenca
+
+        count_m = re.search(r'up to (\d+) of your', clause)
         if count_m:
             step['count'] = int(count_m.group(1))
-        elif 'all of your' in t:
+        elif 'all of your' in clause:
             step['count'] = 99
-        type_m = (re.search(r'"([a-z][a-z0-9 .\'-]+)"\s+type', t)
-                  or re.search(r'[\[{]([a-z][a-z0-9 .\'-]+)[\]}]\s+type', t)
-                  or re.search(r'type including ["\[{]([a-z][a-z0-9 .\'-]+)["\]}]', t))
+        type_m = (re.search(r'"([a-z][a-z0-9 .\'-]+)"\s+type', clause)
+                  or re.search(r'[\[{]([a-z][a-z0-9 .\'-]+)[\]}]\s+type', clause)
+                  or re.search(r'type including ["\[{]([a-z][a-z0-9 .\'-]+)["\]}]', clause))
         if type_m and not is_self:
             step['filter_type'] = type_m.group(1).strip()
-        color_m = re.search(r'your (black|red|green|blue|yellow|purple) characters', t)
+        color_m = re.search(r'your (black|red|green|blue|yellow|purple) characters', clause)
         if color_m and not is_self:
             step['color'] = color_m.group(1)
         # filtro de custo MINIMO no proprio alvo (distinto de cost_lte, usado
         # para filtrar o ALVO do debuff no oponente -- aqui e o oposto: so os
         # characters com custo >= N recebem o auto-buff/debuff). Ex: OP10-042
         # 'all of your "Dressrosa" type Characters with a cost of 2 or more
-        # gain +1 cost'.
-        # IMPORTANTE: buscar SO na clausula do alvo (apos 'all of your' /
-        # 'up to N of your'), nao no texto inteiro -- senao captura por engano
-        # a condicao de ativacao 'if there is a Character with a cost of N or
-        # more' que vem antes na mesma frase (ex: OP14-098).
-        target_clause = t
-        clause_m = re.search(r'(?:all of your|up to \d+ of your).*', t)
-        if clause_m:
-            target_clause = clause_m.group(0)
-        cost_gte_m = re.search(r'with a cost of (\d+) or more', target_clause)
+        # gain +1 cost'. Mesma clausula de 2 camadas acima.
+        cost_gte_m = re.search(r'with a cost of (\d+) or more', clause)
         if cost_gte_m and not is_self:
             step['cost_gte'] = int(cost_gte_m.group(1))
         duration_m = re.search(r'until the end of your opponent.?s next (?:end phase|turn)', t)

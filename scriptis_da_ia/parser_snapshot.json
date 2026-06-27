@@ -34114,7 +34114,6 @@
                     "amount": 1,
                     "count": 99,
                     "duration": "permanent",
-                    "filter_type": "blackbeard pirates",
                     "target": "own_character"
                 }
             ]
@@ -34256,7 +34255,6 @@
                     "amount": 20,
                     "count": 1,
                     "duration": "permanent",
-                    "filter_type": "land of wano",
                     "target": "own_character"
                 }
             ]
