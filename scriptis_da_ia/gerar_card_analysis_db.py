@@ -30,11 +30,36 @@ from synergy_states import detect_card_states
 # Derivação de flags de análise a partir dos efeitos parseados
 # ===========================================================================
 
+def _steps_de(data: dict) -> list:
+    """
+    Lê os steps de um bloco, cobrindo as TRÊS formas possíveis:
+    'steps' (lista direta), 'choice' (lista de listas-alternativas, ex:
+    "Choose one: • efeito A • efeito B") ou 'conditional_stack' (lista de
+    {steps, conditions} -- "Apply each of the following based on X").
+    Bug confirmado 27/06: sem isso, cartas com qualquer uma das 2 formas
+    alternativas (Perona OP06-021/093, Boeuf Burst OP12-060, Luffy
+    OP15-092 e mais 8) ficavam com 'effects': [] no card_analysis_db
+    mesmo já corretamente parseadas no card_effects_db -- a IA via os
+    efeitos certos, mas o analisador de decks (frontend) achava vazia.
+    """
+    if 'choice' in data:
+        out = []
+        for opcao in data['choice']:
+            out.extend(opcao)
+        return out
+    if 'conditional_stack' in data:
+        out = []
+        for bloco in data['conditional_stack']:
+            out.extend(bloco.get('steps', []))
+        return out
+    return data.get('steps', [])
+
+
 def _collect_actions(effects: dict) -> set:
     """Junta todos os 'action' de todos os triggers numa carta."""
     actions = set()
     for trigger, data in effects.items():
-        for step in data.get('steps', []):
+        for step in _steps_de(data):
             a = step.get('action')
             if a:
                 actions.add(a)
@@ -49,7 +74,7 @@ def _effects_with_trigger(effects: dict) -> list:
     out = []
     for trigger, data in effects.items():
         don_req = data.get('don_requirement')
-        for step in data.get('steps', []):
+        for step in _steps_de(data):
             a = step.get('action')
             if a:
                 entry = {'action': a, 'trigger': trigger}

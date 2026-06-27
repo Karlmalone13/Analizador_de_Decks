@@ -531,17 +531,19 @@ def is_attack_locked_self(card: 'Card', owner: 'GameState', opp: 'GameState') ->
 def remove_character_from_field(owner: 'GameState', card: 'Card', destino: str = 'trash') -> None:
     """
     Remove `card` de owner.field_chars e move pro destino indicado:
-    'trash' | 'hand' | 'deck_bottom' | 'deck_top'.
+    'trash' | 'hand' | 'deck_bottom' | 'deck_top' | 'life_top' | 'life_bottom'.
 
     Regra oficial (comprehensive rules -- "When a Character with DON!!
     card(s) Leaves the Field"): qualquer DON anexado volta para a area
     de custo do DONO da carta (NUNCA de quem causou a remocao) e fica
     RESTED. Auditoria 27/06 encontrou esse retorno faltando em 12 pontos
     diferentes do engine (combate, KO por efeito, bounce, substituicao
-    de custo, troca por campo-cheio) -- todos zeravam ou simplesmente
-    perdiam o don_attached sem creditar de volta. Esta funcao e o UNICO
-    ponto que deve remover um Character do campo a partir de agora;
-    nunca fazer owner.field_chars.remove(card) direto em codigo novo.
+    de custo, troca por campo-cheio), e mais 1 ponto (gain_life
+    source='own_field', Kawamatsu OP06-103) achado ao corrigir essa
+    mesma carta -- usava field_chars.pop(0) direto, fora do grep original
+    (procurava so '.remove(', nao '.pop('). Esta funcao e o UNICO ponto
+    que deve remover um Character do campo a partir de agora; nunca fazer
+    owner.field_chars.remove(card)/pop(...) direto em codigo novo.
     """
     if card in owner.field_chars:
         owner.field_chars.remove(card)
@@ -559,6 +561,12 @@ def remove_character_from_field(owner: 'GameState', card: 'Card', destino: str =
     elif destino == 'deck_top':
         card.rested = False
         owner.deck.append(card)
+    elif destino == 'life_bottom':
+        card.rested = False
+        owner.life.insert(0, card)
+    elif destino == 'life_top':
+        card.rested = False
+        owner.life.append(card)   # fim da lista = topo da vida (mesma convencao do deck)
 
 
 # ===========================================================================
@@ -1498,6 +1506,20 @@ class EffectExecutor:
                 rested.append(target.name[:15])
             return f'restou: {", ".join(rested)}' if rested else ''
 
+        # ── rest_opp_don: restar DON!! do OPONENTE -- desvantagem de tempo
+        # (ele tem menos DON ativo pro turno dele), DISTINTA de
+        # rest_opp_character (alvo é Character, não DON!! card). Achado na
+        # auditoria do censo 0_nao_classificado (27/06): P-060 Tot Musica,
+        # ST02-008 Scratchmen Apoo. NUNCA confundir com don_minus (que
+        # devolve DON ao deck do PRÓPRIO jogador como custo) -- aqui o DON
+        # do oponente continua no campo dele, só fica rested.
+        if action == 'rest_opp_don':
+            count = step.get('count', 1)
+            rested_n = min(count, opp.don_available)
+            opp.don_available -= rested_n
+            opp.don_rested += rested_n
+            return f'restou {rested_n} DON do oponente' if rested_n else ''
+
         # ── Trava de ataque / trava de rest / trava de Blocker (persistente) ────
         # Mecanicas DISTINTAS apesar de compartilharem estrutura de
         # implementacao: lock_opp_character_attack impede ATACAR;
@@ -1646,6 +1668,7 @@ class EffectExecutor:
             duration = step.get('duration', 'this_turn')
             count = step.get('count', 1)
             filter_type = step.get('filter_type', '').lower()
+            filter_name = step.get('filter_name', '').lower()
             color = step.get('color', '').lower()
             cost_gte = step.get('cost_gte')
 
@@ -1656,6 +1679,13 @@ class EffectExecutor:
                 candidatos = list(campo_alvo.field_chars)
                 if filter_type:
                     candidatos = [c for c in candidatos if filter_type in c.sub_types.lower()]
+                if filter_name:
+                    # Filtro por NOME PROPRIO (ex: Shinobu OP16-087, "up to 1
+                    # of your [Kouzuki Momonosuke] gains +20 cost") -- DISTINTO
+                    # de filter_type: aqui o alvo e 1 personagem especifico
+                    # por nome, nao uma familia/tipo inteira. Achado 27/06:
+                    # o parser confundia com filter_type antes da correcao.
+                    candidatos = [c for c in candidatos if filter_name in c.name.lower()]
                 if color:
                     candidatos = [c for c in candidatos if color in c.color.lower()]
                 if cost_gte is not None:
@@ -1984,6 +2014,76 @@ class EffectExecutor:
             me.don_available += moved
             return f'reativou {moved} DON' if moved else ''
 
+        # ── set_active: desrestar Character(s)/Leader fora do Refresh normal
+        # (26 cartas, censo padrão 8, nunca implementado antes -- ex:
+        # Komurasaki OP01-042, Pica OP05-032, Zoro OP06-118). DISTINTO de
+        # set_don_active (DON!! cards) -- nunca confundir. Sempre exige
+        # candidato JÁ RESTED (reativar algo já ativo é no-op sem sentido,
+        # mesmo quando o texto não diz "rested" explicitamente).
+        if action == 'set_active':
+            target = step.get('target', 'self')
+            if target == 'self':
+                if card.rested:
+                    card.rested = False
+                    return f'{card.name[:18]} ficou ativo'
+                return ''
+            if target == 'leader':
+                filter_type = step.get('filter_type', '').lower()
+                if filter_type and filter_type not in me.leader.sub_types.lower():
+                    return ''
+                if me.leader.rested:
+                    me.leader.rested = False
+                    return f'{me.leader.name[:18]} (leader) ficou ativo'
+                return ''
+
+            count = step.get('count', 1)
+            filter_type = step.get('filter_type', '').lower()
+            filter_name = step.get('filter_name', '').lower()
+            color = step.get('color', '').lower()
+            attribute = step.get('attribute', '').lower()
+            cost_lte = step.get('cost_lte')
+            cost_eq = step.get('cost_eq')
+            power_lte = step.get('power_lte')
+            power_eq = step.get('power_eq')
+
+            candidatos = [c for c in me.field_chars if c.rested]
+            if filter_type:
+                candidatos = [c for c in candidatos if filter_type in c.sub_types.lower()]
+            if filter_name:
+                candidatos = [c for c in candidatos if filter_name in c.name.lower()]
+            if color:
+                candidatos = [c for c in candidatos if color in c.color.lower()]
+            if attribute:
+                candidatos = [c for c in candidatos if attribute in c.attribute.lower()]
+            if cost_lte is not None:
+                candidatos = [c for c in candidatos if c.cost <= cost_lte]
+            if cost_eq is not None:
+                candidatos = [c for c in candidatos if c.cost == cost_eq]
+            if power_lte is not None:
+                candidatos = [c for c in candidatos if c.power <= power_lte]
+            if power_eq is not None:
+                candidatos = [c for c in candidatos if c.power == power_eq]
+
+            ativados = []
+            for _ in range(count):
+                if not candidatos:
+                    break
+                melhor = max(candidatos, key=lambda c: c.board_value())
+                melhor.rested = False
+                candidatos.remove(melhor)
+                ativados.append(melhor.name[:14])
+
+            if target == 'own_character_and_leader' and me.leader.rested:
+                me.leader.rested = False
+                ativados.append(f'{me.leader.name[:14]} (leader)')
+            elif target == 'leader_or_character' and not ativados and me.leader.rested:
+                # "leader OR character" sem candidato de character valido --
+                # tenta o leader como alternativa (mesmo "ou" da carta).
+                me.leader.rested = False
+                ativados.append(f'{me.leader.name[:14]} (leader)')
+
+            return f'ficou(ram) ativo(s): {", ".join(ativados)}' if ativados else ''
+
         # ── REMOÇÃO: enviar Character do oponente ao FUNDO do deck dele ───────
         # Remoção forte (ignora On-KO; enterra no deck). Respeita imunidade a
         # removal. Distinta de bounce (mão) e KO (trash).
@@ -2034,6 +2134,7 @@ class EffectExecutor:
             count  = step.get('count', 1)
             source = step.get('source', 'deck_top')
             dest   = step.get('dest', 'life_top')
+            power_eq = step.get('power_eq')
 
             def _put_life(c):
                 if dest == 'life_bottom':
@@ -2054,8 +2155,18 @@ class EffectExecutor:
                     if not me.trash: break
                     c = me.trash.pop(0)
                 elif source == 'own_field':
-                    if not me.field_chars: break
-                    c = me.field_chars.pop(0)   # character vira life card
+                    # Character do PRÓPRIO campo virando life card (ex:
+                    # Kawamatsu OP06-103, "with 0 power" -> power_eq=0).
+                    # Usa remove_character_from_field (nao pop(0) direto)
+                    # pra devolver DON anexado -- achado 27/06, faltava
+                    # nesse ponto especifico (fora do grep original).
+                    candidatos = [x for x in me.field_chars
+                                  if power_eq is None or x.power == power_eq]
+                    if not candidatos: break
+                    c = min(candidatos, key=lambda x: x.board_value())
+                    remove_character_from_field(me, c, dest)
+                    added += 1
+                    continue
                 elif source == 'opp_life':
                     if not opp.life: break
                     c = opp.life.pop()
@@ -2212,24 +2323,37 @@ class EffectExecutor:
                 _put_into_play(card)
                 return f'jogou {card.name[:18]} (grátis, do trigger)'
 
-            # GRUPO 2 — jogar carta da mão com filtro, escolhendo a melhor
+            # GRUPO 2 — jogar carta da mão (ou mão+trash) com filtro, escolhendo a melhor
             cost_lte = step.get('cost_lte')
             if cost_lte == 'don_count_self':
                 cost_lte = self.me.don_available + self.me.don_rested  # dinâmico
+            cost_eq = step.get('cost_eq')
             ftype = (step.get('filter_type') or '').lower()
             fcolor = (step.get('color') or '').lower()
+            fname = (step.get('filter_name') or '').lower()
+            fexclude = (step.get('exclude') or '').lower()
+            fontes = [me.hand]
+            if step.get('source_alt') == 'trash':
+                fontes.append(me.trash)
 
             elegiveis = []
-            for c in me.hand:
-                if c.card_type not in ('CHARACTER', 'STAGE', 'EVENT'):
-                    continue
-                if cost_lte is not None and c.cost > cost_lte:
-                    continue
-                if ftype and ftype not in c.sub_types.lower():
-                    continue
-                if fcolor and fcolor not in c.color.lower():
-                    continue
-                elegiveis.append(c)
+            for fonte in fontes:
+                for c in fonte:
+                    if c.card_type not in ('CHARACTER', 'STAGE', 'EVENT'):
+                        continue
+                    if cost_lte is not None and c.cost > cost_lte:
+                        continue
+                    if cost_eq is not None and c.cost != cost_eq:
+                        continue
+                    if ftype and ftype not in c.sub_types.lower():
+                        continue
+                    if fcolor and fcolor not in c.color.lower():
+                        continue
+                    if fname and fname not in c.name.lower():
+                        continue
+                    if fexclude and fexclude in c.name.lower():
+                        continue
+                    elegiveis.append(c)
 
             if not elegiveis:
                 return ''
@@ -2246,9 +2370,14 @@ class EffectExecutor:
                     if pior is None or melhor.board_value() <= pior.board_value():
                         elegiveis.remove(melhor)
                         continue
-                me.hand.remove(melhor)
+                if melhor in me.hand:
+                    me.hand.remove(melhor)
+                elif melhor in me.trash:
+                    me.trash.remove(melhor)
                 elegiveis.remove(melhor)
                 _put_into_play(melhor)
+                if step.get('enters_rested'):
+                    melhor.rested = True
                 jogadas.append(melhor.name[:15])
             return f'jogou (grátis): {", ".join(jogadas)}' if jogadas else ''
 

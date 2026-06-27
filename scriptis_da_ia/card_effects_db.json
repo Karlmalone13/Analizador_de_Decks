@@ -359,7 +359,9 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 5
+            "cost_lte": 5,
+            "filter_type": "land of wano",
+            "exclude": "kouzuki hiyori"
           }
         ],
         "costs": [
@@ -850,7 +852,10 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 99
+            "cost_eq": 5,
+            "filter_type": "water seven",
+            "exclude": "blueno",
+            "source_alt": "trash"
           }
         ],
         "conditions": {
@@ -1106,7 +1111,10 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 3
+            "cost_lte": 3,
+            "filter_type": "dressrosa",
+            "exclude": "scarlet",
+            "enters_rested": true
           }
         ],
         "costs": [
@@ -1602,6 +1610,13 @@
       "main": {
         "steps": [
           {
+            "action": "play_card",
+            "count": 1,
+            "cost_lte": 7,
+            "filter_name": "enel",
+            "source_alt": "trash"
+          },
+          {
             "action": "trash_own_life",
             "count": 1,
             "up_to": false,
@@ -2010,7 +2025,18 @@
     "color": "Green",
     "sub_types": "East Blue",
     "attribute": "Wisdom",
-    "effects": {}
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "play_card",
+            "count": 1,
+            "cost_lte": 99,
+            "filter_name": "gaimon"
+          }
+        ]
+      }
+    }
   },
   "EB02-015": {
     "name": "Jewelry Bonney",
@@ -2969,6 +2995,16 @@
             "filter_name": "laboon"
           }
         ]
+      },
+      "on_ko": {
+        "steps": [
+          {
+            "action": "play_card",
+            "count": 1,
+            "cost_lte": 4,
+            "filter_name": "laboon"
+          }
+        ]
       }
     }
   },
@@ -3311,6 +3347,7 @@
             "action": "play_card",
             "count": 1,
             "cost_lte": 5,
+            "filter_name": "sanji",
             "conditions": {
               "life_lte": 1
             }
@@ -3360,6 +3397,10 @@
     "effects": {
       "when_attacking": {
         "steps": [
+          {
+            "action": "set_active",
+            "target": "self"
+          },
           {
             "action": "life_to_hand",
             "source": "life_top",
@@ -3571,7 +3612,9 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 99
+            "cost_lte": 99,
+            "filter_type": "donquixote pirates",
+            "enters_rested": true
           }
         ],
         "conditions": {
@@ -3780,7 +3823,21 @@
     "color": "Green",
     "sub_types": "Land of Wano",
     "attribute": "Special",
-    "effects": {}
+    "effects": {
+      "activate_main": {
+        "steps": [
+          {
+            "action": "rest_opp_don",
+            "count": 1
+          }
+        ],
+        "costs": [
+          {
+            "type": "rest_self"
+          }
+        ]
+      }
+    }
   },
   "EB03-013": {
     "name": "Carrot",
@@ -3801,6 +3858,12 @@
             "target": "opp_character",
             "cost_lte": 5,
             "rested_only": true
+          },
+          {
+            "action": "play_card",
+            "count": 1,
+            "cost_lte": 99,
+            "filter_name": "zou"
           }
         ],
         "once_per_turn": true
@@ -3955,6 +4018,24 @@
           },
           {
             "action": "gain_blocker"
+          }
+        ]
+      },
+      "end_of_turn": {
+        "steps": [
+          {
+            "action": "set_active",
+            "target": "self"
+          }
+        ],
+        "costs": [
+          {
+            "type": "rest_don",
+            "count": 1
+          },
+          {
+            "type": "trash_from_hand",
+            "count": 1
           }
         ]
       }
@@ -4115,7 +4196,8 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 5
+            "cost_lte": 5,
+            "filter_name": "alabasta"
           }
         ]
       },
@@ -4257,7 +4339,8 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 6
+            "cost_lte": 6,
+            "filter_name": "boa hancock"
           }
         ],
         "conditions": {
@@ -4600,7 +4683,10 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 6
+            "cost_lte": 6,
+            "filter_type": "revolutionary army",
+            "exclude": "koala",
+            "source_alt": "trash"
           }
         ],
         "conditions": {
@@ -4864,7 +4950,9 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 6
+            "cost_lte": 6,
+            "filter_type": "thriller bark pirates",
+            "source_alt": "trash"
           }
         ],
         "conditions": {
@@ -5274,13 +5362,30 @@
       "activate_main": {
         "steps": [
           {
-            "action": "rest_opp_character",
+            "action": "rest_opp_don",
             "count": 1
           },
           {
             "action": "set_don_active",
             "count": 1,
             "up_to": true
+          }
+        ],
+        "once_per_turn": true
+      },
+      "end_of_turn": {
+        "steps": [
+          {
+            "action": "set_active",
+            "count": 1,
+            "target": "own_character",
+            "filter_type": "film"
+          }
+        ],
+        "costs": [
+          {
+            "type": "rest_don",
+            "count": 1
           }
         ],
         "once_per_turn": true
@@ -5300,6 +5405,12 @@
     "effects": {
       "activate_main": {
         "steps": [
+          {
+            "action": "play_card",
+            "count": 1,
+            "cost_lte": 7,
+            "filter_name": "trafalgar law"
+          },
           {
             "action": "gain_life",
             "source": "deck_top",
@@ -5682,7 +5793,19 @@
     "color": "Green",
     "sub_types": "Land of Wano The Akazaya Nine",
     "attribute": "Slash",
-    "effects": {}
+    "effects": {
+      "activate_main": {
+        "steps": [
+          {
+            "action": "set_active",
+            "count": 1,
+            "target": "leader",
+            "filter_type": "land of wano"
+          }
+        ],
+        "once_per_turn": true
+      }
+    }
   },
   "EB04-013": {
     "name": "Carrot",
@@ -5694,7 +5817,21 @@
     "color": "Green",
     "sub_types": "Minks",
     "attribute": "Special",
-    "effects": {}
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "set_active",
+            "count": 2,
+            "target": "own_character_and_leader",
+            "filter_type": "minks"
+          }
+        ],
+        "conditions": {
+          "leader_type": "minks"
+        }
+      }
+    }
   },
   "EB04-014": {
     "name": "Kouzuki Sukiyaki",
@@ -5743,6 +5880,7 @@
             "action": "play_card",
             "count": 1,
             "cost_lte": 6,
+            "filter_name": "fish-man",
             "color": "green"
           }
         ]
@@ -5803,7 +5941,8 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 5
+            "cost_lte": 5,
+            "filter_type": "minks"
           }
         ],
         "conditions": {
@@ -5899,6 +6038,12 @@
       },
       "counter": {
         "steps": [
+          {
+            "action": "set_active",
+            "count": 1,
+            "target": "own_character",
+            "filter_type": "fish-man"
+          },
           {
             "action": "buff_power",
             "amount": 3000,
@@ -6063,7 +6208,9 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 8
+            "cost_lte": 8,
+            "filter_type": "alabasta",
+            "exclude": "nefeltari vivi"
           }
         ]
       }
@@ -6125,7 +6272,8 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 99
+            "cost_lte": 99,
+            "filter_name": "trigger"
           }
         ]
       }
@@ -6505,7 +6653,8 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 5
+            "cost_lte": 5,
+            "filter_type": "kid pirates"
           }
         ],
         "costs": [
@@ -6578,6 +6727,20 @@
             "then_trash": 1
           }
         ]
+      },
+      "main": {
+        "steps": [
+          {
+            "action": "play_card",
+            "count": 1,
+            "cost_lte": 99,
+            "filter_name": "sanji",
+            "source_alt": "trash"
+          }
+        ],
+        "conditions": {
+          "leader_is": "sanji"
+        }
       }
     }
   },
@@ -6730,7 +6893,10 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 3
+            "cost_lte": 3,
+            "filter_type": "sword",
+            "exclude": "helmeppo",
+            "source_alt": "trash"
           }
         ],
         "costs": [
@@ -6978,7 +7144,8 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 4
+            "cost_lte": 4,
+            "filter_type": "revolutionary army"
           }
         ]
       },
@@ -7237,7 +7404,18 @@
     "color": "Green Red",
     "sub_types": "Heart Pirates Supernovas",
     "attribute": "Slash",
-    "effects": {}
+    "effects": {
+      "activate_main": {
+        "steps": [
+          {
+            "action": "play_card",
+            "count": 1,
+            "cost_lte": 5
+          }
+        ],
+        "once_per_turn": true
+      }
+    }
   },
   "OP01-003": {
     "name": "Monkey.D.Luffy (003)",
@@ -7252,6 +7430,13 @@
     "effects": {
       "activate_main": {
         "steps": [
+          {
+            "action": "set_active",
+            "count": 1,
+            "target": "own_character",
+            "filter_type": "straw hat crew",
+            "cost_lte": 5
+          },
           {
             "action": "buff_power",
             "amount": 1000,
@@ -8139,6 +8324,19 @@
           "leader_is": "kouzuki oden"
         },
         "once_per_turn": true
+      },
+      "when_attacking": {
+        "steps": [
+          {
+            "action": "set_active",
+            "count": 1,
+            "target": "own_character",
+            "filter_type": "the akazaya nine",
+            "cost_lte": 3
+          }
+        ],
+        "once_per_turn": true,
+        "don_requirement": 1
       }
     }
   },
@@ -8187,7 +8385,22 @@
     "color": "Green",
     "sub_types": "Land of Wano Kouzuki Clan",
     "attribute": "Wisdom",
-    "effects": {}
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "set_active",
+            "count": 1,
+            "target": "own_character",
+            "filter_type": "land of wano",
+            "cost_lte": 3
+          }
+        ],
+        "conditions": {
+          "leader_is": "kouzuki oden"
+        }
+      }
+    }
   },
   "OP01-043": {
     "name": "Shinobu",
@@ -8212,6 +8425,16 @@
     "sub_types": "Heart Pirates",
     "attribute": "Strike",
     "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "play_card",
+            "count": 1,
+            "cost_lte": 99,
+            "filter_name": "penguin"
+          }
+        ]
+      },
       "passive": {
         "steps": [
           {
@@ -8320,7 +8543,20 @@
     "color": "Green",
     "sub_types": "Heart Pirates Minks",
     "attribute": "Strike",
-    "effects": {}
+    "effects": {
+      "when_attacking": {
+        "steps": [
+          {
+            "action": "play_card",
+            "count": 1,
+            "cost_lte": 4,
+            "filter_type": "heart pirates",
+            "exclude": "bepo"
+          }
+        ],
+        "don_requirement": 1
+      }
+    }
   },
   "OP01-050": {
     "name": "Penguin",
@@ -8333,6 +8569,16 @@
     "sub_types": "Heart Pirates",
     "attribute": "Strike",
     "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "play_card",
+            "count": 1,
+            "cost_lte": 99,
+            "filter_name": "shachi"
+          }
+        ]
+      },
       "passive": {
         "steps": [
           {
@@ -8498,6 +8744,11 @@
       "counter": {
         "steps": [
           {
+            "action": "set_active",
+            "count": 1,
+            "target": "own_character"
+          },
+          {
             "action": "buff_power",
             "amount": 2000,
             "target": "leader_or_character",
@@ -8553,7 +8804,25 @@
     "color": "Green",
     "sub_types": "Land of Wano",
     "attribute": "",
-    "effects": {}
+    "effects": {
+      "main": {
+        "steps": [
+          {
+            "action": "set_active",
+            "count": 1,
+            "target": "own_character",
+            "filter_type": "land of wano",
+            "cost_lte": 3
+          }
+        ],
+        "costs": [
+          {
+            "type": "trash_from_hand",
+            "count": 1
+          }
+        ]
+      }
+    }
   },
   "OP01-060": {
     "name": "Donquixote Doflamingo (060)",
@@ -8860,6 +9129,16 @@
     "sub_types": "Revolutionary Army The Seven Warlords of the Sea",
     "attribute": "Strike",
     "effects": {
+      "on_ko": {
+        "steps": [
+          {
+            "action": "play_card",
+            "count": 1,
+            "cost_lte": 4,
+            "filter_name": "pacifista"
+          }
+        ]
+      },
       "passive": {
         "steps": [
           {
@@ -9176,7 +9455,18 @@
     "color": "Blue",
     "sub_types": "Baroque Works",
     "attribute": "",
-    "effects": {}
+    "effects": {
+      "counter": {
+        "steps": [
+          {
+            "action": "play_card",
+            "count": 1,
+            "cost_lte": 3,
+            "filter_type": "baroque works"
+          }
+        ]
+      }
+    }
   },
   "OP01-088": {
     "name": "Desert Spada",
@@ -10236,7 +10526,24 @@
     "color": "Red",
     "sub_types": "Mountain Bandits",
     "attribute": "Slash",
-    "effects": {}
+    "effects": {
+      "activate_main": {
+        "steps": [
+          {
+            "action": "play_card",
+            "count": 1,
+            "cost_eq": 1,
+            "color": "red",
+            "exclude": "dogura"
+          }
+        ],
+        "costs": [
+          {
+            "type": "rest_self"
+          }
+        ]
+      }
+    }
   },
   "OP02-011": {
     "name": "Vista",
@@ -10685,7 +10992,17 @@
     "color": "Green",
     "sub_types": "Land of Wano Kouzuki Clan",
     "attribute": "Slash",
-    "effects": {}
+    "effects": {
+      "activate_main": {
+        "steps": [
+          {
+            "action": "set_active",
+            "target": "self"
+          }
+        ],
+        "once_per_turn": true
+      }
+    }
   },
   "OP02-031": {
     "name": "Kouzuki Toki",
@@ -10722,7 +11039,19 @@
     "color": "Green",
     "sub_types": "Minks",
     "attribute": "Slash",
-    "effects": {}
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "set_active",
+            "count": 1,
+            "target": "own_character",
+            "filter_type": "minks",
+            "cost_lte": 5
+          }
+        ]
+      }
+    }
   },
   "OP02-033": {
     "name": "Jinbe",
@@ -10776,6 +11105,11 @@
             "action": "bounce",
             "count": 1,
             "target": "self"
+          },
+          {
+            "action": "play_card",
+            "count": 1,
+            "cost_eq": 3
           }
         ]
       }
@@ -10850,7 +11184,8 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 2
+            "cost_lte": 2,
+            "filter_name": "film"
           }
         ]
       }
@@ -10904,7 +11239,8 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 3
+            "cost_lte": 3,
+            "filter_name": "film"
           }
         ]
       }
@@ -10989,7 +11325,9 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 3
+            "cost_lte": 3,
+            "filter_type": "minks",
+            "exclude": "wanda"
           }
         ]
       }
@@ -11195,6 +11533,7 @@
             "action": "play_card",
             "count": 1,
             "cost_lte": 6,
+            "filter_type": "impel down",
             "color": "blue"
           }
         ]
@@ -11545,6 +11884,20 @@
     "sub_types": "Impel Down Former Baroque Works",
     "attribute": "Special",
     "effects": {
+      "end_of_turn": {
+        "steps": [
+          {
+            "action": "set_active",
+            "target": "self"
+          }
+        ],
+        "costs": [
+          {
+            "type": "trash_from_hand",
+            "count": 1
+          }
+        ]
+      },
       "passive": {
         "steps": [
           {
@@ -11783,7 +12136,8 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 99
+            "cost_lte": 99,
+            "filter_type": "jailer beast"
           }
         ]
       }
@@ -11901,7 +12255,9 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 3
+            "cost_lte": 3,
+            "filter_type": "smile",
+            "exclude": "daifugo"
           }
         ],
         "costs": [
@@ -12300,7 +12656,18 @@
     "color": "Black",
     "sub_types": "Navy",
     "attribute": "Slash",
-    "effects": {}
+    "effects": {
+      "passive": {
+        "steps": [
+          {
+            "action": "set_active",
+            "target": "self"
+          }
+        ],
+        "once_per_turn": true,
+        "don_requirement": 1
+      }
+    }
   },
   "OP02-095": {
     "name": "Onigumo",
@@ -13359,7 +13726,7 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 99,
+            "cost_eq": 1,
             "color": "red"
           }
         ]
@@ -13604,6 +13971,10 @@
             "action": "rest_opp_character",
             "count": 1,
             "cost_lte": 5
+          },
+          {
+            "action": "set_active",
+            "target": "leader"
           }
         ]
       }
@@ -13625,7 +13996,8 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 4
+            "cost_lte": 4,
+            "filter_name": "trigger"
           }
         ],
         "don_requirement": 2
@@ -13760,6 +14132,12 @@
             "action": "rest_opp_character",
             "count": 1,
             "cost_lte": 2
+          },
+          {
+            "action": "play_card",
+            "count": 1,
+            "cost_lte": 2,
+            "filter_name": "buchi"
           }
         ],
         "conditions": {
@@ -13778,7 +14156,24 @@
     "color": "Green",
     "sub_types": "East Blue Black Cat Pirates",
     "attribute": "Special",
-    "effects": {}
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "set_active",
+            "count": 1,
+            "target": "leader_or_character",
+            "filter_type": "east blue",
+            "cost_lte": 6
+          }
+        ],
+        "costs": [
+          {
+            "type": "rest_self"
+          }
+        ]
+      }
+    }
   },
   "OP03-029": {
     "name": "Chew",
@@ -13978,6 +14373,16 @@
             "rested_only": true
           }
         ]
+      },
+      "main": {
+        "steps": [
+          {
+            "action": "set_active",
+            "count": 1,
+            "target": "own_character",
+            "filter_name": "kuro"
+          }
+        ]
       }
     }
   },
@@ -13997,7 +14402,8 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 4
+            "cost_lte": 4,
+            "filter_name": "trigger"
           }
         ]
       },
@@ -14561,7 +14967,8 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 5
+            "cost_lte": 5,
+            "filter_type": "galley-la company"
           }
         ],
         "costs": [
@@ -15082,7 +15489,23 @@
     "color": "Black",
     "sub_types": "CP9",
     "attribute": "Strike",
-    "effects": {}
+    "effects": {
+      "your_turn": {
+        "steps": [
+          {
+            "action": "set_active",
+            "target": "leader"
+          }
+        ],
+        "costs": [
+          {
+            "type": "trash_from_hand",
+            "count": 2
+          }
+        ],
+        "once_per_turn": true
+      }
+    }
   },
   "OP03-077": {
     "name": "Charlotte Linlin (077)",
@@ -16235,7 +16658,8 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 4
+            "cost_lte": 4,
+            "filter_name": "trigger"
           }
         ]
       },
@@ -16362,7 +16786,19 @@
     "color": "Yellow",
     "sub_types": "Big Mom Pirates",
     "attribute": "Strike",
-    "effects": {}
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "gain_life",
+            "source": "deck_top",
+            "dest": "life_bottom",
+            "count": 1,
+            "up_to": true
+          }
+        ]
+      }
+    }
   },
   "OP04-001": {
     "name": "Nefeltari Vivi (001)",
@@ -16628,7 +17064,8 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 99
+            "cost_lte": 99,
+            "filter_type": "animal"
           }
         ]
       }
@@ -16891,6 +17328,16 @@
           }
         ],
         "don_requirement": 1
+      },
+      "end_of_turn": {
+        "steps": [
+          {
+            "action": "set_active",
+            "count": 1,
+            "target": "own_character",
+            "cost_lte": 5
+          }
+        ]
       }
     }
   },
@@ -16904,7 +17351,16 @@
     "color": "Green",
     "sub_types": "Donquixote Pirates",
     "attribute": "Special",
-    "effects": {}
+    "effects": {
+      "passive": {
+        "steps": [
+          {
+            "action": "rest_opp_don",
+            "count": 1
+          }
+        ]
+      }
+    }
   },
   "OP04-022": {
     "name": "Eric",
@@ -17047,7 +17503,17 @@
     "color": "Green",
     "sub_types": "Former Navy East Blue",
     "attribute": "Ranged",
-    "effects": {}
+    "effects": {
+      "end_of_turn": {
+        "steps": [
+          {
+            "action": "set_active",
+            "target": "self"
+          }
+        ],
+        "don_requirement": 1
+      }
+    }
   },
   "OP04-028": {
     "name": "Diamante",
@@ -17060,6 +17526,15 @@
     "sub_types": "Donquixote Pirates",
     "attribute": "Slash",
     "effects": {
+      "end_of_turn": {
+        "steps": [
+          {
+            "action": "set_active",
+            "target": "self"
+          }
+        ],
+        "don_requirement": 1
+      },
       "passive": {
         "steps": [
           {
@@ -17244,6 +17719,11 @@
       },
       "counter": {
         "steps": [
+          {
+            "action": "set_active",
+            "count": 1,
+            "target": "own_character"
+          },
           {
             "action": "buff_power",
             "amount": 4000,
@@ -18879,6 +19359,10 @@
       "activate_main": {
         "steps": [
           {
+            "action": "set_active",
+            "target": "self"
+          },
+          {
             "action": "lock_self_character_refresh",
             "count": 1
           }
@@ -19207,7 +19691,17 @@
     "color": "Yellow",
     "sub_types": "Land of Wano",
     "attribute": "Slash",
-    "effects": {}
+    "effects": {
+      "activate_main": {
+        "steps": [
+          {
+            "action": "set_active",
+            "target": "self"
+          }
+        ],
+        "once_per_turn": true
+      }
+    }
   },
   "OP04-103": {
     "name": "Kouzuki Hiyori",
@@ -19451,6 +19945,25 @@
     "sub_types": "Big Mom Pirates Homies",
     "attribute": "Special",
     "effects": {
+      "activate_main": {
+        "steps": [
+          {
+            "action": "set_active",
+            "count": 1,
+            "target": "own_character",
+            "filter_name": "charlotte linlin"
+          }
+        ],
+        "costs": [
+          {
+            "type": "rest_self"
+          },
+          {
+            "type": "trash_from_hand",
+            "count": 1
+          }
+        ]
+      },
       "trigger": {
         "steps": [
           {
@@ -19656,7 +20169,7 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 99,
+            "cost_eq": 5,
             "color": "green"
           }
         ],
@@ -19772,7 +20285,8 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 99
+            "cost_lte": 99,
+            "filter_type": "revolutionary army"
           }
         ],
         "conditions": {
@@ -20146,7 +20660,8 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 99
+            "cost_lte": 99,
+            "filter_type": "revolutionary army"
           }
         ]
       },
@@ -20161,7 +20676,8 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 99
+            "cost_lte": 99,
+            "filter_type": "revolutionary army"
           }
         ]
       }
@@ -20295,6 +20811,17 @@
     "sub_types": "Donquixote Pirates Navy",
     "attribute": "Special",
     "effects": {
+      "end_of_turn": {
+        "steps": [
+          {
+            "action": "set_active",
+            "target": "leader"
+          }
+        ],
+        "conditions": {
+          "hand_lte": 6
+        }
+      },
       "passive": {
         "steps": [
           {
@@ -20386,7 +20913,18 @@
     "color": "Green",
     "sub_types": "Bellamy Pirates",
     "attribute": "Slash",
-    "effects": {}
+    "effects": {
+      "when_attacking": {
+        "steps": [
+          {
+            "action": "set_active",
+            "target": "self"
+          }
+        ],
+        "once_per_turn": true,
+        "don_requirement": 1
+      }
+    }
   },
   "OP05-027": {
     "name": "Trafalgar Law (027)",
@@ -20507,7 +21045,20 @@
     "color": "Green",
     "sub_types": "Donquixote Pirates",
     "attribute": "Strike",
-    "effects": {}
+    "effects": {
+      "when_attacking": {
+        "steps": [
+          {
+            "action": "set_active",
+            "count": 1,
+            "target": "own_character",
+            "cost_eq": 1,
+            "rested_only": true
+          }
+        ],
+        "once_per_turn": true
+      }
+    }
   },
   "OP05-032": {
     "name": "Pica",
@@ -20519,7 +21070,17 @@
     "color": "Green",
     "sub_types": "Donquixote Pirates",
     "attribute": "Strike",
-    "effects": {}
+    "effects": {
+      "end_of_turn": {
+        "steps": [
+          {
+            "action": "set_active",
+            "target": "self"
+          }
+        ],
+        "once_per_turn": true
+      }
+    }
   },
   "OP05-033": {
     "name": "Baby 5 (033)",
@@ -20537,7 +21098,8 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 2
+            "cost_lte": 2,
+            "filter_type": "donquixote pirates"
           }
         ],
         "costs": [
@@ -21478,7 +22040,24 @@
     "color": "Purple",
     "sub_types": "Animal Straw Hat Crew",
     "attribute": "Wisdom",
-    "effects": {}
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "set_active",
+            "count": 1,
+            "target": "own_character",
+            "filter_type": "straw hat crew",
+            "color": "purple",
+            "power_lte": 6000
+          }
+        ],
+        "conditions": {
+          "don_gte": 8,
+          "don_on_field_gte": 8
+        }
+      }
+    }
   },
   "OP05-069": {
     "name": "Trafalgar Law (069)",
@@ -21673,7 +22252,8 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 3
+            "cost_lte": 3,
+            "filter_type": "baroque works"
           }
         ],
         "costs": [
@@ -22123,7 +22703,8 @@
             "action": "play_card",
             "count": 1,
             "cost_lte": 3,
-            "color": "black"
+            "color": "black",
+            "enters_rested": true
           },
           {
             "action": "add_from_trash",
@@ -22682,7 +23263,8 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 99
+            "cost_eq": 1,
+            "filter_type": "sky island"
           }
         ]
       },
@@ -22980,7 +23562,18 @@
     "color": "Red",
     "sub_types": "FILM Omatsuri Island",
     "attribute": "Ranged",
-    "effects": {}
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "play_card",
+            "count": 1,
+            "cost_lte": 99,
+            "filter_name": "lily carnation"
+          }
+        ]
+      }
+    }
   },
   "OP06-005": {
     "name": "Gasparde",
@@ -23383,7 +23976,7 @@
       "activate_main": {
         "steps": [
           {
-            "action": "rest_opp_character",
+            "action": "rest_opp_don",
             "count": 1
           }
         ]
@@ -23491,7 +24084,8 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 4
+            "cost_lte": 4,
+            "filter_type": "fish-man"
           },
           {
             "action": "life_to_hand",
@@ -23549,7 +24143,19 @@
     "color": "Green",
     "sub_types": "Frost Moon Village",
     "attribute": "Slash",
-    "effects": {}
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "set_active",
+            "count": 1,
+            "target": "own_character",
+            "attribute": "slash",
+            "cost_lte": 4
+          }
+        ]
+      }
+    }
   },
   "OP06-027": {
     "name": "Gyro",
@@ -23625,6 +24231,10 @@
       "when_attacking": {
         "steps": [
           {
+            "action": "set_active",
+            "target": "self"
+          },
+          {
             "action": "buff_power",
             "amount": 1000,
             "target": "self",
@@ -23698,7 +24308,8 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 3
+            "cost_lte": 3,
+            "filter_name": "fish-man"
           }
         ]
       }
@@ -24377,7 +24988,7 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 99
+            "cost_eq": 2
           }
         ]
       },
@@ -24485,7 +25096,32 @@
     "color": "Purple",
     "sub_types": "The Vinsmoke Family GERMA 66",
     "attribute": "Strike",
-    "effects": {}
+    "effects": {
+      "activate_main": {
+        "steps": [
+          {
+            "action": "play_card",
+            "count": 1,
+            "cost_eq": 7,
+            "filter_name": "vinsmoke ichiji",
+            "source_alt": "trash"
+          }
+        ],
+        "conditions": {
+          "leader_type": "germa 66"
+        },
+        "costs": [
+          {
+            "type": "trash_self"
+          },
+          {
+            "type": "don_minus",
+            "count": 1,
+            "optional": true
+          }
+        ]
+      }
+    }
   },
   "OP06-061": {
     "name": "Vinsmoke Ichiji (061)",
@@ -24546,6 +25182,22 @@
           }
         ],
         "once_per_turn": true
+      },
+      "activate_main": {
+        "steps": [
+          {
+            "action": "rest_opp_don",
+            "count": 1
+          }
+        ],
+        "costs": [
+          {
+            "type": "don_minus",
+            "count": 1,
+            "optional": false
+          }
+        ],
+        "once_per_turn": true
       }
     }
   },
@@ -24587,7 +25239,32 @@
     "color": "Purple",
     "sub_types": "The Vinsmoke Family GERMA 66",
     "attribute": "Special",
-    "effects": {}
+    "effects": {
+      "activate_main": {
+        "steps": [
+          {
+            "action": "play_card",
+            "count": 1,
+            "cost_eq": 5,
+            "filter_name": "vinsmoke niji",
+            "source_alt": "trash"
+          }
+        ],
+        "conditions": {
+          "leader_type": "germa 66"
+        },
+        "costs": [
+          {
+            "type": "trash_self"
+          },
+          {
+            "type": "don_minus",
+            "count": 1,
+            "optional": true
+          }
+        ]
+      }
+    }
   },
   "OP06-065": {
     "name": "Vinsmoke Niji (065)",
@@ -24632,7 +25309,32 @@
     "color": "Purple",
     "sub_types": "The Vinsmoke Family GERMA 66",
     "attribute": "Strike",
-    "effects": {}
+    "effects": {
+      "activate_main": {
+        "steps": [
+          {
+            "action": "play_card",
+            "count": 1,
+            "cost_eq": 4,
+            "filter_name": "vinsmoke yonji",
+            "source_alt": "trash"
+          }
+        ],
+        "conditions": {
+          "leader_type": "germa 66"
+        },
+        "costs": [
+          {
+            "type": "trash_self"
+          },
+          {
+            "type": "don_minus",
+            "count": 1,
+            "optional": true
+          }
+        ]
+      }
+    }
   },
   "OP06-067": {
     "name": "Vinsmoke Yonji (067)",
@@ -24670,7 +25372,32 @@
     "color": "Purple",
     "sub_types": "The Vinsmoke Family GERMA 66",
     "attribute": "Special",
-    "effects": {}
+    "effects": {
+      "activate_main": {
+        "steps": [
+          {
+            "action": "play_card",
+            "count": 1,
+            "cost_eq": 4,
+            "filter_name": "vinsmoke reiju",
+            "source_alt": "trash"
+          }
+        ],
+        "conditions": {
+          "leader_type": "germa 66"
+        },
+        "costs": [
+          {
+            "type": "trash_self"
+          },
+          {
+            "type": "don_minus",
+            "count": 1,
+            "optional": true
+          }
+        ]
+      }
+    }
   },
   "OP06-069": {
     "name": "Vinsmoke Reiju (069)",
@@ -25617,7 +26344,26 @@
     "color": "Yellow",
     "sub_types": "Fish-Man Land of Wano The Akazaya Nine",
     "attribute": "Slash",
-    "effects": {}
+    "effects": {
+      "when_attacking": {
+        "steps": [
+          {
+            "action": "gain_life",
+            "source": "own_field",
+            "dest": "life_bottom",
+            "count": 1,
+            "up_to": true,
+            "power_eq": 0
+          }
+        ],
+        "costs": [
+          {
+            "type": "trash_from_hand",
+            "count": 2
+          }
+        ]
+      }
+    }
   },
   "OP06-104": {
     "name": "Kikunojo",
@@ -25699,6 +26445,17 @@
     "sub_types": "Land of Wano Kouzuki Clan",
     "attribute": "Wisdom",
     "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "gain_life",
+            "source": "own_field",
+            "dest": "life_bottom",
+            "count": 1,
+            "up_to": true
+          }
+        ]
+      },
       "passive": {
         "steps": [
           {
@@ -25832,6 +26589,20 @@
     "sub_types": "Land of Wano The Akazaya Nine",
     "attribute": "Slash",
     "effects": {
+      "when_attacking": {
+        "steps": [
+          {
+            "action": "rest_opp_don",
+            "count": 1
+          }
+        ],
+        "costs": [
+          {
+            "type": "trash_from_hand",
+            "count": 1
+          }
+        ]
+      },
       "trigger": {
         "steps": [
           {
@@ -26023,7 +26794,26 @@
     "color": "Green",
     "sub_types": "Straw Hat Crew",
     "attribute": "Slash",
-    "effects": {}
+    "effects": {
+      "activate_main": {
+        "steps": [
+          {
+            "action": "set_active",
+            "target": "self"
+          }
+        ],
+        "once_per_turn": true
+      },
+      "when_attacking": {
+        "steps": [
+          {
+            "action": "set_active",
+            "target": "self"
+          }
+        ],
+        "once_per_turn": true
+      }
+    }
   },
   "OP06-119": {
     "name": "Sanji",
@@ -26554,7 +27344,8 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 3
+            "cost_lte": 3,
+            "filter_name": "fish-man"
           }
         ],
         "conditions": {
@@ -26693,7 +27484,19 @@
     "color": "Green",
     "sub_types": "Caribou Pirates Supernovas",
     "attribute": "Strike",
-    "effects": {}
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "play_card",
+            "count": 1,
+            "cost_lte": 4,
+            "filter_name": "caribou",
+            "enters_rested": true
+          }
+        ]
+      }
+    }
   },
   "OP07-026": {
     "name": "Jewelry Bonney (026)",
@@ -27226,7 +28029,9 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 4
+            "cost_lte": 4,
+            "filter_type": "the seven warlords of the sea",
+            "exclude": "jinbe"
           }
         ]
       }
@@ -27306,7 +28111,19 @@
     "color": "Blue",
     "sub_types": "Weevil's Mother",
     "attribute": "Wisdom",
-    "effects": {}
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "play_card",
+            "count": 1,
+            "cost_lte": 4,
+            "filter_name": "edward weevil",
+            "enters_rested": true
+          }
+        ]
+      }
+    }
   },
   "OP07-050": {
     "name": "Boa Sandersonia",
@@ -27816,7 +28633,18 @@
     "color": "Purple",
     "sub_types": "Fish-Man Giant Foxy Pirates",
     "attribute": "Strike",
-    "effects": {}
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "play_card",
+            "count": 1,
+            "cost_lte": "don_count_self",
+            "filter_type": "foxy pirates"
+          }
+        ]
+      }
+    }
   },
   "OP07-071": {
     "name": "Foxy (071)",
@@ -27902,7 +28730,24 @@
     "color": "Purple",
     "sub_types": "Straw Hat Crew",
     "attribute": "Strike",
-    "effects": {}
+    "effects": {
+      "activate_main": {
+        "steps": [
+          {
+            "action": "set_active",
+            "target": "self"
+          }
+        ],
+        "costs": [
+          {
+            "type": "don_minus",
+            "count": 3,
+            "optional": true
+          }
+        ],
+        "once_per_turn": true
+      }
+    }
   },
   "OP07-074": {
     "name": "Monda",
@@ -28058,6 +28903,16 @@
           {
             "action": "add_don",
             "count": 1
+          }
+        ]
+      },
+      "main": {
+        "steps": [
+          {
+            "action": "set_active",
+            "count": 1,
+            "target": "own_character",
+            "filter_name": "foxy"
           }
         ]
       }
@@ -29220,6 +30075,20 @@
             "source": "self"
           }
         ]
+      },
+      "end_of_turn": {
+        "steps": [
+          {
+            "action": "set_active",
+            "count": 1,
+            "target": "own_character",
+            "filter_type": "egghead",
+            "cost_lte": 5
+          }
+        ],
+        "conditions": {
+          "life_lte": 3
+        }
       }
     }
   },
@@ -29402,6 +30271,12 @@
             "amount": 2000,
             "target": "opp_character",
             "duration": "this_turn"
+          },
+          {
+            "action": "play_card",
+            "count": 1,
+            "cost_lte": 99,
+            "filter_name": "kuromarimo"
           }
         ]
       }
@@ -30085,14 +30960,22 @@
     "attribute": "Slash",
     "effects": {
       "on_ko": {
-        "steps": [
-          {
-            "action": "ko",
-            "count": 1,
-            "target": "opp_character",
-            "cost_lte": 6,
-            "rested_only": true
-          }
+        "choice": [
+          [
+            {
+              "action": "rest_opp_don",
+              "count": 1
+            }
+          ],
+          [
+            {
+              "action": "ko",
+              "count": 1,
+              "target": "opp_character",
+              "cost_lte": 6,
+              "rested_only": true
+            }
+          ]
         ]
       },
       "passive": {
@@ -30114,7 +30997,19 @@
     "color": "Green",
     "sub_types": "Minks",
     "attribute": "Wisdom",
-    "effects": {}
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "set_active",
+            "count": 1,
+            "target": "own_character",
+            "filter_type": "minks",
+            "cost_lte": 2
+          }
+        ]
+      }
+    }
   },
   "OP08-032": {
     "name": "Milky",
@@ -30324,6 +31219,16 @@
         "costs": [
           {
             "type": "rest_self"
+          }
+        ]
+      },
+      "end_of_turn": {
+        "steps": [
+          {
+            "action": "set_active",
+            "count": 1,
+            "target": "own_character",
+            "filter_type": "minks"
           }
         ]
       }
@@ -30829,7 +31734,26 @@
     "color": "Purple",
     "sub_types": "Animal Kingdom Pirates Lunarian",
     "attribute": "Special",
-    "effects": {}
+    "effects": {
+      "activate_main": {
+        "steps": [
+          {
+            "action": "play_card",
+            "count": 1,
+            "cost_lte": 7,
+            "filter_name": "king"
+          }
+        ],
+        "conditions": {
+          "leader_type": "animal kingdom pirates"
+        },
+        "costs": [
+          {
+            "type": "trash_self"
+          }
+        ]
+      }
+    }
   },
   "OP08-060": {
     "name": "King (060)",
@@ -30885,7 +31809,26 @@
     "color": "Purple",
     "sub_types": "Big Mom Pirates",
     "attribute": "Strike",
-    "effects": {}
+    "effects": {
+      "activate_main": {
+        "steps": [
+          {
+            "action": "play_card",
+            "count": 1,
+            "cost_lte": "don_count_opp",
+            "filter_name": "charlotte katakuri"
+          }
+        ],
+        "conditions": {
+          "leader_type": "big mom pirates"
+        },
+        "costs": [
+          {
+            "type": "trash_self"
+          }
+        ]
+      }
+    }
   },
   "OP08-063": {
     "name": "Charlotte Katakuri (063)",
@@ -30918,7 +31861,19 @@
     "color": "Purple",
     "sub_types": "Big Mom Pirates",
     "attribute": "Slash",
-    "effects": {}
+    "effects": {
+      "activate_main": {
+        "steps": [
+          {
+            "action": "play_card",
+            "count": 1,
+            "cost_lte": 99,
+            "filter_name": "biscuit warrior"
+          }
+        ],
+        "once_per_turn": true
+      }
+    }
   },
   "OP08-065": {
     "name": "Charlotte Smoothie",
@@ -31053,6 +32008,16 @@
     "sub_types": "Big Mom Pirates",
     "attribute": "Strike",
     "effects": {
+      "on_ko": {
+        "steps": [
+          {
+            "action": "play_card",
+            "count": 1,
+            "cost_lte": 5,
+            "filter_name": "viscount hiyoko"
+          }
+        ]
+      },
       "passive": {
         "steps": [
           {
@@ -31766,7 +32731,8 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": "don_count_self"
+            "cost_lte": "don_count_self",
+            "filter_type": "shandian warrior"
           },
           {
             "action": "life_to_hand",
@@ -32293,6 +33259,12 @@
             "amount": 3000,
             "target": "leader_or_character",
             "duration": "battle_only"
+          },
+          {
+            "action": "play_card",
+            "count": 1,
+            "cost_lte": 99,
+            "filter_name": "upper yard"
           }
         ],
         "conditions": {
@@ -32689,6 +33661,16 @@
     "sub_types": "Red-Haired Pirates",
     "attribute": "Strike",
     "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "play_card",
+            "count": 1,
+            "cost_lte": 99,
+            "filter_name": "monster"
+          }
+        ]
+      },
       "when_attacking": {
         "steps": [
           {
@@ -33222,7 +34204,19 @@
     "color": "Green",
     "sub_types": "Animal Straw Hat Crew ODYSSEY",
     "attribute": "Strike",
-    "effects": {}
+    "effects": {
+      "end_of_turn": {
+        "steps": [
+          {
+            "action": "set_active",
+            "count": 1,
+            "target": "own_character",
+            "filter_type": "odyssey",
+            "cost_lte": 4
+          }
+        ]
+      }
+    }
   },
   "OP09-030": {
     "name": "Trafalgar Law",
@@ -33241,7 +34235,8 @@
             "action": "play_card",
             "count": 1,
             "cost_lte": 3,
-            "filter_type": "odyssey"
+            "filter_type": "odyssey",
+            "exclude": "trafalgar law"
           }
         ]
       }
@@ -33258,6 +34253,14 @@
     "sub_types": "Donquixote Pirates The Seven Warlords of the Sea ODYSSEY",
     "attribute": "Special",
     "effects": {
+      "end_of_turn": {
+        "steps": [
+          {
+            "action": "set_active",
+            "target": "self"
+          }
+        ]
+      },
       "passive": {
         "steps": [
           {
@@ -33335,7 +34338,7 @@
       "on_play": {
         "steps": [
           {
-            "action": "rest_opp_character",
+            "action": "rest_opp_don",
             "count": 1
           }
         ]
@@ -33370,6 +34373,14 @@
           },
           {
             "action": "deck_bottom_rest"
+          }
+        ]
+      },
+      "end_of_turn": {
+        "steps": [
+          {
+            "action": "set_active",
+            "target": "self"
           }
         ]
       }
@@ -33483,11 +34494,16 @@
             "amount": 2000,
             "target": "leader_or_character",
             "duration": "battle_only"
+          },
+          {
+            "action": "set_active",
+            "count": 2,
+            "target": "own_character",
+            "conditions": {
+              "leader_type": "odyssey"
+            }
           }
-        ],
-        "conditions": {
-          "leader_type": "odyssey"
-        }
+        ]
       }
     }
   },
@@ -33540,7 +34556,8 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 5
+            "cost_lte": 5,
+            "exclude": "alvida"
           }
         ],
         "conditions": {
@@ -34066,7 +35083,18 @@
     "color": "Purple",
     "sub_types": "Kid Pirates",
     "attribute": "Slash",
-    "effects": {}
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "set_active",
+            "count": 1,
+            "target": "leader",
+            "filter_type": "kid pirates"
+          }
+        ]
+      }
+    }
   },
   "OP09-065": {
     "name": "Sanji (065)",
@@ -34142,6 +35170,10 @@
     "effects": {
       "end_of_turn": {
         "steps": [
+          {
+            "action": "set_active",
+            "target": "self"
+          },
           {
             "action": "gain_blocker"
           }
@@ -35866,6 +36898,16 @@
     "sub_types": "Punk Hazard",
     "attribute": "Ranged",
     "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "play_card",
+            "count": 1,
+            "cost_lte": 99,
+            "filter_name": "rock"
+          }
+        ]
+      },
       "passive": {
         "steps": [
           {
@@ -36064,7 +37106,18 @@
     "color": "Red",
     "sub_types": "Punk Hazard",
     "attribute": "Ranged",
-    "effects": {}
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "play_card",
+            "count": 1,
+            "cost_lte": 99,
+            "filter_name": "scotch"
+          }
+        ]
+      }
+    }
   },
   "OP10-018": {
     "name": "Ten-Layer Igloo",
@@ -36314,7 +37367,18 @@
     "color": "Green",
     "sub_types": "Land of Wano The Akazaya Nine Punk Hazard",
     "attribute": "Slash",
-    "effects": {}
+    "effects": {
+      "activate_main": {
+        "steps": [
+          {
+            "action": "play_card",
+            "count": 1,
+            "cost_eq": 6,
+            "filter_name": "kin'emon"
+          }
+        ]
+      }
+    }
   },
   "OP10-027": {
     "name": "Kin'emon (027)",
@@ -36326,7 +37390,18 @@
     "color": "Green",
     "sub_types": "Land of Wano The Akazaya Nine Punk Hazard",
     "attribute": "Slash",
-    "effects": {}
+    "effects": {
+      "activate_main": {
+        "steps": [
+          {
+            "action": "play_card",
+            "count": 1,
+            "cost_eq": 6,
+            "filter_name": "kin'emon"
+          }
+        ]
+      }
+    }
   },
   "OP10-028": {
     "name": "Kouzuki Momonosuke (028)",
@@ -36377,7 +37452,20 @@
     "color": "Green",
     "sub_types": "The Seven Warlords of the Sea ODYSSEY",
     "attribute": "Slash",
-    "effects": {}
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "set_active",
+            "count": 1,
+            "target": "own_character",
+            "filter_type": "odyssey",
+            "cost_lte": 5,
+            "rested_only": true
+          }
+        ]
+      }
+    }
   },
   "OP10-030": {
     "name": "Smoker (030)",
@@ -36542,7 +37630,19 @@
     "color": "Green",
     "sub_types": "ODYSSEY",
     "attribute": "Wisdom",
-    "effects": {}
+    "effects": {
+      "end_of_turn": {
+        "steps": [
+          {
+            "action": "set_active",
+            "count": 1,
+            "target": "own_character",
+            "filter_type": "odyssey"
+          }
+        ],
+        "once_per_turn": true
+      }
+    }
   },
   "OP10-038": {
     "name": "Roronoa Zoro (038)",
@@ -38300,6 +39400,13 @@
       "end_of_turn": {
         "steps": [
           {
+            "action": "set_active",
+            "count": 1,
+            "target": "own_character",
+            "filter_type": "supernovas",
+            "cost_eq": 3
+          },
+          {
             "action": "gain_blocker"
           }
         ]
@@ -38815,6 +39922,12 @@
       },
       "counter": {
         "steps": [
+          {
+            "action": "set_active",
+            "count": 1,
+            "target": "own_character",
+            "cost_lte": 5
+          },
           {
             "action": "buff_power",
             "amount": 3000,
@@ -40659,6 +41772,13 @@
       "end_of_turn": {
         "steps": [
           {
+            "action": "set_active",
+            "count": 2,
+            "target": "own_character",
+            "filter_type": "big mom pirates",
+            "cost_eq": 3
+          },
+          {
             "action": "add_don",
             "count": 1
           }
@@ -41704,6 +42824,18 @@
     "sub_types": "Neptunian",
     "attribute": "Strike",
     "effects": {
+      "activate_main": {
+        "steps": [
+          {
+            "action": "set_active",
+            "target": "self"
+          }
+        ],
+        "conditions": {
+          "leader_is": "shirahoshi"
+        },
+        "once_per_turn": true
+      },
       "passive": {
         "steps": [
           {
@@ -41925,7 +43057,30 @@
     "color": "Yellow",
     "sub_types": "Merfolk Fish-Man Island",
     "attribute": "",
-    "effects": {}
+    "effects": {
+      "trigger": {
+        "steps": [
+          {
+            "action": "gain_life",
+            "source": "own_field",
+            "dest": "life_bottom",
+            "count": 1,
+            "up_to": true
+          }
+        ]
+      },
+      "main": {
+        "steps": [
+          {
+            "action": "gain_life",
+            "source": "deck_top",
+            "dest": "life_bottom",
+            "count": 1,
+            "up_to": true
+          }
+        ]
+      }
+    }
   },
   "OP11-117": {
     "name": "Fish-Man Island",
@@ -42507,7 +43662,18 @@
     "color": "Green",
     "sub_types": "Straw Hat Crew Supernovas",
     "attribute": "Slash",
-    "effects": {}
+    "effects": {
+      "activate_main": {
+        "steps": [
+          {
+            "action": "set_active",
+            "target": "leader"
+          }
+        ],
+        "once_per_turn": true,
+        "don_requirement": 3
+      }
+    }
   },
   "OP12-021": {
     "name": "Ipponmatsu",
@@ -42979,6 +44145,15 @@
             "amount": 1000,
             "target": "leader_or_character",
             "duration": "this_turn"
+          }
+        ]
+      },
+      "main": {
+        "steps": [
+          {
+            "action": "set_active",
+            "count": 1,
+            "target": "leader"
           }
         ]
       }
@@ -44935,7 +46110,8 @@
             "action": "play_card",
             "count": 1,
             "cost_lte": 4,
-            "filter_type": "supernovas"
+            "filter_type": "supernovas",
+            "enters_rested": true
           }
         ],
         "conditions": {
@@ -45052,6 +46228,26 @@
             "amount": 3000,
             "target": "leader",
             "duration": "battle_only"
+          }
+        ]
+      },
+      "main": {
+        "steps": [
+          {
+            "action": "gain_life",
+            "source": "deck_top",
+            "dest": "life_bottom",
+            "count": 1,
+            "up_to": true
+          }
+        ],
+        "conditions": {
+          "leader_type": "supernovas"
+        },
+        "costs": [
+          {
+            "type": "rest_don",
+            "count": 5
           }
         ]
       }
@@ -45744,7 +46940,8 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 5
+            "cost_lte": 5,
+            "enters_rested": true
           }
         ]
       }
@@ -45936,7 +47133,8 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 5
+            "cost_lte": 5,
+            "enters_rested": true
           }
         ]
       },
@@ -46050,6 +47248,14 @@
             "action": "set_don_active",
             "count": 2,
             "up_to": true
+          }
+        ]
+      },
+      "end_of_turn": {
+        "steps": [
+          {
+            "action": "set_active",
+            "target": "self"
           }
         ]
       }
@@ -46369,7 +47575,21 @@
     "color": "Blue",
     "sub_types": "Kuja Pirates",
     "attribute": "Strike",
-    "effects": {}
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "play_card",
+            "count": 1,
+            "cost_lte": 3,
+            "filter_name": "boa hancock"
+          }
+        ],
+        "conditions": {
+          "leader_is": "boa hancock"
+        }
+      }
+    }
   },
   "OP13-051": {
     "name": "Boa Hancock",
@@ -46406,6 +47626,19 @@
     "sub_types": "Kuja Pirates",
     "attribute": "Slash",
     "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "play_card",
+            "count": 1,
+            "cost_lte": 6,
+            "filter_name": "boa hancock"
+          }
+        ],
+        "conditions": {
+          "leader_is": "boa hancock"
+        }
+      },
       "passive": {
         "steps": [
           {
@@ -47024,7 +48257,8 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 99
+            "cost_lte": 99,
+            "filter_type": "homies"
           }
         ]
       }
@@ -48134,7 +49368,8 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 5
+            "cost_lte": 5,
+            "filter_name": "trigger"
           }
         ],
         "conditions": {
@@ -49076,7 +50311,16 @@
     "color": "Green",
     "sub_types": "Land of Wano The Akazaya Nine",
     "attribute": "Slash",
-    "effects": {}
+    "effects": {
+      "end_of_turn": {
+        "steps": [
+          {
+            "action": "set_active",
+            "target": "self"
+          }
+        ]
+      }
+    }
   },
   "OP14-024": {
     "name": "Kin'emon",
@@ -49120,7 +50364,8 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 6
+            "cost_lte": 6,
+            "filter_type": "east blue"
           }
         ],
         "conditions": {
@@ -49615,7 +50860,8 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 3
+            "cost_lte": 3,
+            "filter_name": "fish-man"
           }
         ]
       },
@@ -49735,7 +50981,8 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 3
+            "cost_lte": 3,
+            "filter_name": "fish-man"
           }
         ]
       },
@@ -49873,7 +51120,8 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 6
+            "cost_lte": 6,
+            "filter_type": "impel down"
           }
         ],
         "costs": [
@@ -50036,7 +51284,8 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 3
+            "cost_lte": 3,
+            "filter_type": "fish-man"
           }
         ],
         "costs": [
@@ -50178,7 +51427,8 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 5
+            "cost_lte": 5,
+            "filter_type": "donquixote pirates"
           }
         ]
       }
@@ -50348,6 +51598,10 @@
     "effects": {
       "passive": {
         "steps": [
+          {
+            "action": "set_active",
+            "target": "self"
+          },
           {
             "action": "keyword_blocker"
           }
@@ -50989,8 +52243,7 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 99,
-            "filter_type": "character card with a"
+            "cost_lte": 99
           }
         ]
       }
@@ -51557,7 +52810,8 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 4
+            "cost_lte": 4,
+            "filter_name": "trigger"
           },
           {
             "action": "play_from_trash",
@@ -51655,7 +52909,8 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 99
+            "cost_lte": 99,
+            "filter_name": "trigger"
           }
         ]
       }
@@ -51811,7 +53066,8 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 4
+            "cost_lte": 4,
+            "filter_name": "amazon lily"
           }
         ]
       }
@@ -51867,7 +53123,8 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 99
+            "cost_lte": 99,
+            "filter_name": "trigger"
           }
         ]
       }
@@ -52543,6 +53800,11 @@
       "activate_main": {
         "steps": [
           {
+            "action": "set_active",
+            "count": 1,
+            "target": "own_character"
+          },
+          {
             "action": "trash_from_deck_top",
             "count": 4
           }
@@ -52772,7 +54034,26 @@
     "color": "Green",
     "sub_types": "Straw Hat Crew",
     "attribute": "Slash",
-    "effects": {}
+    "effects": {
+      "activate_main": {
+        "steps": [
+          {
+            "action": "set_active",
+            "count": 1,
+            "target": "own_character",
+            "cost_lte": 8
+          }
+        ],
+        "conditions": {
+          "leader_type": "straw hat crew"
+        },
+        "costs": [
+          {
+            "type": "trash_self"
+          }
+        ]
+      }
+    }
   },
   "OP15-033": {
     "name": "Hody Jones",
@@ -52787,6 +54068,12 @@
     "effects": {
       "on_play": {
         "steps": [
+          {
+            "action": "set_active",
+            "count": 1,
+            "target": "leader",
+            "filter_type": "fish-man"
+          },
           {
             "action": "life_to_hand",
             "source": "life_top",
@@ -52963,7 +54250,8 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 99
+            "cost_eq": 3,
+            "filter_type": "dressrosa"
           }
         ]
       }
@@ -53069,7 +54357,18 @@
     "color": "Blue",
     "sub_types": "Dressrosa Mogaro Kingdom",
     "attribute": "Strike",
-    "effects": {}
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "play_card",
+            "count": 1,
+            "cost_lte": 99,
+            "filter_name": "bobby funk"
+          }
+        ]
+      }
+    }
   },
   "OP15-044": {
     "name": "Koala",
@@ -53360,7 +54659,8 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 4
+            "cost_lte": 4,
+            "filter_type": "dressrosa"
           }
         ],
         "conditions": {
@@ -53880,7 +55180,8 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 99
+            "cost_eq": 1,
+            "filter_name": "heavenly warriors"
           }
         ]
       },
@@ -54981,7 +56282,8 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 5
+            "cost_lte": 5,
+            "filter_type": "sky island"
           },
           {
             "action": "gain_life",
@@ -55062,7 +56364,8 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 3
+            "cost_lte": 3,
+            "filter_type": "shandian warrior"
           }
         ]
       },
@@ -55639,6 +56942,25 @@
     "sub_types": "Red-Haired Pirates",
     "attribute": "Ranged",
     "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "play_card",
+            "count": 1,
+            "cost_lte": 99,
+            "filter_name": "shanks"
+          }
+        ],
+        "conditions": {
+          "leader_type": "red-haired pirates"
+        },
+        "costs": [
+          {
+            "type": "rest_don",
+            "count": 1
+          }
+        ]
+      },
       "passive": {
         "steps": [
           {
@@ -55810,8 +57132,7 @@
           {
             "action": "play_card",
             "count": 2,
-            "cost_lte": 99,
-            "filter_type": "character cards with a"
+            "cost_lte": 99
           }
         ]
       }
@@ -55979,7 +57300,8 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 2
+            "cost_lte": 2,
+            "filter_name": "antlerkov"
           }
         ]
       }
@@ -56067,7 +57389,8 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 2
+            "cost_lte": 2,
+            "filter_name": "bunkov"
           }
         ]
       }
@@ -56091,6 +57414,17 @@
             "count": 1
           }
         ]
+      },
+      "end_of_turn": {
+        "steps": [
+          {
+            "action": "set_active",
+            "count": 99,
+            "target": "own_character",
+            "color": "green",
+            "cost_lte": 5
+          }
+        ]
       }
     }
   },
@@ -56104,7 +57438,18 @@
     "color": "Green",
     "sub_types": "Buggy Pirates Impel Down",
     "attribute": "Slash",
-    "effects": {}
+    "effects": {
+      "on_ko": {
+        "steps": [
+          {
+            "action": "play_card",
+            "count": 1,
+            "cost_lte": 99,
+            "filter_name": "prisoner of impel down"
+          }
+        ]
+      }
+    }
   },
   "OP16-032": {
     "name": "Boa Hancock",
@@ -56279,6 +57624,21 @@
             "duration": "battle_only"
           }
         ]
+      },
+      "main": {
+        "steps": [
+          {
+            "action": "set_active",
+            "count": 99,
+            "target": "own_character_and_leader"
+          }
+        ],
+        "costs": [
+          {
+            "type": "rest_don",
+            "count": 6
+          }
+        ]
       }
     }
   },
@@ -56352,7 +57712,20 @@
     "color": "Blue",
     "sub_types": "Buggy Pirates Impel Down",
     "attribute": "Slash",
-    "effects": {}
+    "effects": {
+      "passive": {
+        "steps": [
+          {
+            "action": "play_card",
+            "count": 1,
+            "cost_lte": 99,
+            "filter_name": "prisoner of impel down"
+          }
+        ],
+        "once_per_turn": true,
+        "don_requirement": 1
+      }
+    }
   },
   "OP16-042": {
     "name": "Prisoner of Impel Down",
@@ -56422,7 +57795,8 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 2
+            "cost_lte": 2,
+            "filter_type": "impel down"
           }
         ]
       },
@@ -56475,6 +57849,12 @@
           {
             "action": "draw",
             "count": 1
+          },
+          {
+            "action": "play_card",
+            "count": 1,
+            "cost_lte": 99,
+            "filter_name": "prisoner of impel down"
           },
           {
             "action": "gain_blocker",
@@ -56829,7 +58209,8 @@
           {
             "action": "play_card",
             "count": 3,
-            "cost_lte": 99
+            "cost_lte": 99,
+            "filter_type": "admiral"
           }
         ]
       }
@@ -57226,6 +58607,10 @@
       },
       "end_of_turn": {
         "steps": [
+          {
+            "action": "set_active",
+            "target": "self"
+          },
           {
             "action": "gain_blocker"
           }
@@ -57643,6 +59028,7 @@
             "amount": 20,
             "target": "own_character",
             "count": 1,
+            "filter_name": "kouzuki momonosuke",
             "duration": "permanent"
           }
         ],
@@ -57922,7 +59308,7 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 6
+            "cost_lte": 2
           },
           {
             "action": "add_from_trash",
@@ -58032,6 +59418,21 @@
             "duration": "battle_only"
           }
         ]
+      },
+      "main": {
+        "steps": [
+          {
+            "action": "set_active",
+            "count": 1,
+            "target": "leader"
+          }
+        ],
+        "costs": [
+          {
+            "type": "rest_don",
+            "count": 2
+          }
+        ]
       }
     }
   },
@@ -58092,6 +59493,13 @@
           {
             "action": "draw",
             "count": 1
+          },
+          {
+            "action": "play_card",
+            "count": 1,
+            "cost_lte": 99,
+            "filter_name": "fullalead",
+            "source_alt": "trash"
           }
         ]
       },
@@ -58182,6 +59590,12 @@
     "effects": {
       "trigger": {
         "steps": [
+          {
+            "action": "play_card",
+            "count": 1,
+            "cost_lte": 99,
+            "filter_name": "absalom"
+          },
           {
             "action": "play_from_trash",
             "count": 1,
@@ -58525,6 +59939,16 @@
             "action": "draw",
             "count": 2,
             "then_trash": 1
+          }
+        ]
+      },
+      "main": {
+        "steps": [
+          {
+            "action": "play_card",
+            "count": 1,
+            "cost_lte": 99,
+            "filter_name": "marshall.d.teach"
           }
         ]
       }
@@ -59218,7 +60642,23 @@
     "color": "Green",
     "sub_types": "FILM/Supernovas/Barto Club",
     "attribute": "Special",
-    "effects": {}
+    "effects": {
+      "end_of_turn": {
+        "steps": [
+          {
+            "action": "set_active",
+            "count": 1,
+            "target": "own_character",
+            "filter_type": "film"
+          }
+        ],
+        "costs": [
+          {
+            "type": "rest_self"
+          }
+        ]
+      }
+    }
   },
   "P-030": {
     "name": "Jinbe",
@@ -59828,7 +61268,21 @@
     "color": "Green",
     "sub_types": "Music/FILM",
     "attribute": "",
-    "effects": {}
+    "effects": {
+      "main": {
+        "steps": [
+          {
+            "action": "set_active",
+            "count": 99,
+            "target": "own_character",
+            "filter_type": "film"
+          }
+        ],
+        "conditions": {
+          "leader_is": "uta"
+        }
+      }
+    }
   },
   "P-059": {
     "name": "The World's Continuation",
@@ -59866,7 +61320,16 @@
     "color": "Green",
     "sub_types": "Music/FILM",
     "attribute": "",
-    "effects": {}
+    "effects": {
+      "main": {
+        "steps": [
+          {
+            "action": "rest_opp_don",
+            "count": 2
+          }
+        ]
+      }
+    }
   },
   "P-061": {
     "name": "Monkey.D.Luffy",
@@ -60164,6 +61627,11 @@
       "passive": {
         "steps": [
           {
+            "action": "set_active",
+            "count": 1,
+            "target": "own_character"
+          },
+          {
             "action": "add_don",
             "count": 1
           }
@@ -60206,6 +61674,14 @@
     "sub_types": "ODYSSEY",
     "attribute": "Wisdom",
     "effects": {
+      "end_of_turn": {
+        "steps": [
+          {
+            "action": "set_active",
+            "target": "self"
+          }
+        ]
+      },
       "passive": {
         "steps": [
           {
@@ -60236,7 +61712,7 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 99,
+            "cost_eq": 5,
             "filter_type": "cross guild"
           }
         ]
@@ -60330,7 +61806,8 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 6
+            "cost_lte": 6,
+            "filter_type": "cross guild"
           }
         ]
       },
@@ -60367,7 +61844,22 @@
     "color": "Yellow",
     "sub_types": "Bonney Pirates Supernovas",
     "attribute": "Special",
-    "effects": {}
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "gain_life",
+            "source": "own_field",
+            "dest": "life_bottom",
+            "count": 1,
+            "up_to": true
+          }
+        ],
+        "conditions": {
+          "leader_type": "supernovas"
+        }
+      }
+    }
   },
   "P-088": {
     "name": "Trafalgar Law",
@@ -60397,7 +61889,9 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": "don_count_opp"
+            "cost_lte": "don_count_opp",
+            "filter_type": "big mom pirates",
+            "exclude": "charlotte smoothie"
           }
         ],
         "costs": [
@@ -60429,7 +61923,8 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 5
+            "cost_lte": 5,
+            "filter_name": "neptunian"
           }
         ]
       }
@@ -61062,7 +62557,18 @@
     "color": "Yellow",
     "sub_types": "Whitebeard Pirates",
     "attribute": "Special",
-    "effects": {}
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "play_card",
+            "count": 1,
+            "cost_lte": 99,
+            "filter_name": "sabo"
+          }
+        ]
+      }
+    }
   },
   "ST01-001": {
     "name": "Monkey.D.Luffy (001)",
@@ -61467,7 +62973,23 @@
     "color": "Green",
     "sub_types": "Kid Pirates Supernovas",
     "attribute": "Special",
-    "effects": {}
+    "effects": {
+      "activate_main": {
+        "steps": [
+          {
+            "action": "set_active",
+            "target": "leader"
+          }
+        ],
+        "costs": [
+          {
+            "type": "trash_from_hand",
+            "count": 1
+          }
+        ],
+        "once_per_turn": true
+      }
+    }
   },
   "ST02-002": {
     "name": "Vito",
@@ -61618,7 +63140,17 @@
     "color": "Green",
     "sub_types": "On-Air Pirates Supernovas",
     "attribute": "Ranged",
-    "effects": {}
+    "effects": {
+      "when_attacking": {
+        "steps": [
+          {
+            "action": "rest_opp_don",
+            "count": 1
+          }
+        ],
+        "don_requirement": 1
+      }
+    }
   },
   "ST02-009": {
     "name": "Trafalgar Law",
@@ -61630,7 +63162,20 @@
     "color": "Green",
     "sub_types": "Heart Pirates Supernovas",
     "attribute": "Slash",
-    "effects": {}
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "set_active",
+            "count": 1,
+            "target": "own_character",
+            "filter_type": "heart pirates",
+            "cost_lte": 5,
+            "rested_only": true
+          }
+        ]
+      }
+    }
   },
   "ST02-010": {
     "name": "Basil Hawkins",
@@ -61642,7 +63187,19 @@
     "color": "Green",
     "sub_types": "Hawkins Pirates Supernovas",
     "attribute": "Slash",
-    "effects": {}
+    "effects": {
+      "your_turn": {
+        "steps": [
+          {
+            "action": "set_active",
+            "count": 1,
+            "target": "own_character"
+          }
+        ],
+        "once_per_turn": true,
+        "don_requirement": 1
+      }
+    }
   },
   "ST02-011": {
     "name": "Heat",
@@ -61679,6 +63236,16 @@
     "sub_types": "Kid Pirates Supernovas",
     "attribute": "Special",
     "effects": {
+      "end_of_turn": {
+        "steps": [
+          {
+            "action": "set_active",
+            "count": 1,
+            "target": "own_character"
+          }
+        ],
+        "don_requirement": 1
+      },
       "passive": {
         "steps": [
           {
@@ -62225,7 +63792,25 @@
     "color": "Purple",
     "sub_types": "Animal Kingdom Pirates",
     "attribute": "Strike",
-    "effects": {}
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "play_card",
+            "count": 1,
+            "cost_lte": 4,
+            "filter_name": "page one"
+          }
+        ],
+        "costs": [
+          {
+            "type": "don_minus",
+            "count": 1,
+            "optional": true
+          }
+        ]
+      }
+    }
   },
   "ST04-003": {
     "name": "Kaido (003)",
@@ -63888,7 +65473,24 @@
     "color": "Yellow",
     "sub_types": "Big Mom Pirates Homies",
     "attribute": "",
-    "effects": {}
+    "effects": {
+      "activate_main": {
+        "steps": [
+          {
+            "action": "gain_life",
+            "source": "own_field",
+            "dest": "life_top",
+            "count": 1,
+            "up_to": true
+          }
+        ],
+        "costs": [
+          {
+            "type": "rest_self"
+          }
+        ]
+      }
+    }
   },
   "ST08-001": {
     "name": "Monkey.D.Luffy (001)",
@@ -64421,6 +66023,7 @@
             "action": "play_card",
             "count": 1,
             "cost_lte": 4,
+            "filter_type": "land of wano",
             "color": "yellow"
           }
         ],
@@ -64579,11 +66182,18 @@
             "amount": 4000,
             "target": "leader_or_character",
             "duration": "battle_only"
+          },
+          {
+            "action": "gain_life",
+            "source": "own_field",
+            "dest": "life_bottom",
+            "count": 1,
+            "up_to": true,
+            "conditions": {
+              "life_lte": 2
+            }
           }
-        ],
-        "conditions": {
-          "life_lte": 2
-        }
+        ]
       }
     }
   },
@@ -65084,6 +66694,22 @@
     "sub_types": "FILM",
     "attribute": "Special",
     "effects": {
+      "end_of_turn": {
+        "steps": [
+          {
+            "action": "set_active",
+            "count": 1,
+            "target": "own_character",
+            "filter_type": "film"
+          }
+        ],
+        "costs": [
+          {
+            "type": "trash_from_hand",
+            "count": 1
+          }
+        ]
+      },
       "passive": {
         "steps": [
           {
@@ -65190,6 +66816,15 @@
             "duration": "this_turn"
           }
         ]
+      },
+      "main": {
+        "steps": [
+          {
+            "action": "set_active",
+            "count": 1,
+            "target": "leader"
+          }
+        ]
       }
     }
   },
@@ -65203,7 +66838,20 @@
     "color": "Blue Green",
     "sub_types": "Straw Hat Crew",
     "attribute": "Slash Strike",
-    "effects": {}
+    "effects": {
+      "when_attacking": {
+        "steps": [
+          {
+            "action": "set_active",
+            "count": 1,
+            "target": "own_character",
+            "power_lte": 7000
+          }
+        ],
+        "once_per_turn": true,
+        "don_requirement": 1
+      }
+    }
   },
   "ST12-002": {
     "name": "Kuina",
@@ -65257,7 +66905,10 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 4
+            "cost_lte": 4,
+            "filter_type": "muggy kingdom",
+            "exclude": "dracule mihawk",
+            "enters_rested": true
           }
         ]
       }
@@ -65331,7 +66982,19 @@
     "color": "Green",
     "sub_types": "East Blue",
     "attribute": "Wisdom",
-    "effects": {}
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "set_active",
+            "count": 1,
+            "target": "own_character",
+            "attribute": "slash",
+            "cost_lte": 4
+          }
+        ]
+      }
+    }
   },
   "ST12-008": {
     "name": "Roronoa Zoro",
@@ -65765,6 +67428,16 @@
     "sub_types": "Mountain Bandits",
     "attribute": "Slash",
     "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "play_card",
+            "count": 1,
+            "cost_lte": 99,
+            "filter_name": "sabo"
+          }
+        ]
+      },
       "passive": {
         "steps": [
           {
@@ -67422,6 +69095,17 @@
     "sub_types": "Big Mom Pirates",
     "attribute": "Wisdom",
     "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "set_active",
+            "count": 1,
+            "target": "own_character",
+            "filter_type": "big mom pirates",
+            "cost_lte": 3
+          }
+        ]
+      },
       "trigger": {
         "steps": [
           {
@@ -67775,7 +69459,8 @@
             "action": "play_card",
             "count": 1,
             "cost_lte": 99,
-            "color": "red"
+            "color": "red",
+            "exclude": "roronoa zoro"
           }
         ],
         "don_requirement": 2
@@ -67979,6 +69664,21 @@
     "sub_types": "Land of Wano Kouzuki Clan Whitebeard Pirates",
     "attribute": "Slash",
     "effects": {
+      "activate_main": {
+        "steps": [
+          {
+            "action": "set_active",
+            "target": "self"
+          }
+        ],
+        "costs": [
+          {
+            "type": "rest_don",
+            "count": 3
+          }
+        ],
+        "once_per_turn": true
+      },
       "passive": {
         "steps": [
           {
@@ -68192,6 +69892,12 @@
             "amount": 2000,
             "target": "leader",
             "duration": "until_opp_turn_end"
+          },
+          {
+            "action": "play_card",
+            "count": 1,
+            "cost_lte": 99,
+            "filter_name": "edward.newgate"
           },
           {
             "action": "life_to_hand",
@@ -68788,7 +70494,7 @@
       "on_play": {
         "steps": [
           {
-            "action": "rest_opp_character",
+            "action": "rest_opp_don",
             "count": 1
           }
         ],

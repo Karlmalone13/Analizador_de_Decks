@@ -222,7 +222,9 @@
                 {
                     "action": "play_card",
                     "cost_lte": 5,
-                    "count": 1
+                    "count": 1,
+                    "exclude": "kouzuki hiyori",
+                    "filter_type": "land of wano"
                 }
             ]
         }
@@ -497,8 +499,11 @@
             "steps": [
                 {
                     "action": "play_card",
-                    "cost_lte": 99,
-                    "count": 1
+                    "cost_eq": 5,
+                    "count": 1,
+                    "exclude": "blueno",
+                    "filter_type": "water seven",
+                    "source_alt": "trash"
                 }
             ]
         }
@@ -650,7 +655,10 @@
                 {
                     "action": "play_card",
                     "cost_lte": 3,
-                    "count": 1
+                    "count": 1,
+                    "enters_rested": true,
+                    "exclude": "scarlet",
+                    "filter_type": "dressrosa"
                 }
             ]
         }
@@ -934,6 +942,13 @@
         "main": {
             "steps": [
                 {
+                    "action": "play_card",
+                    "cost_lte": 7,
+                    "count": 1,
+                    "filter_name": "enel",
+                    "source_alt": "trash"
+                },
+                {
                     "action": "trash_own_life",
                     "count": 1,
                     "until_1": true,
@@ -1186,7 +1201,18 @@
             ]
         }
     },
-    "EB02-014": {},
+    "EB02-014": {
+        "on_play": {
+            "steps": [
+                {
+                    "action": "play_card",
+                    "cost_lte": 99,
+                    "count": 1,
+                    "filter_name": "gaimon"
+                }
+            ]
+        }
+    },
     "EB02-015": {
         "on_play": {
             "steps": [
@@ -1763,6 +1789,16 @@
         }
     },
     "EB02-048": {
+        "on_ko": {
+            "steps": [
+                {
+                    "action": "play_card",
+                    "cost_lte": 4,
+                    "count": 1,
+                    "filter_name": "laboon"
+                }
+            ]
+        },
         "on_play": {
             "steps": [
                 {
@@ -1994,7 +2030,8 @@
                         "life_lte": 1
                     },
                     "cost_lte": 5,
-                    "count": 1
+                    "count": 1,
+                    "filter_name": "sanji"
                 }
             ]
         }
@@ -2030,6 +2067,10 @@
         "when_attacking": {
             "once_per_turn": true,
             "steps": [
+                {
+                    "action": "set_active",
+                    "target": "self"
+                },
                 {
                     "action": "life_to_hand",
                     "count": 1,
@@ -2118,7 +2159,9 @@
                 {
                     "action": "play_card",
                     "cost_lte": 99,
-                    "count": 1
+                    "count": 1,
+                    "enters_rested": true,
+                    "filter_type": "donquixote pirates"
                 }
             ]
         }
@@ -2247,7 +2290,21 @@
             ]
         }
     },
-    "EB03-012": {},
+    "EB03-012": {
+        "activate_main": {
+            "costs": [
+                {
+                    "type": "rest_self"
+                }
+            ],
+            "steps": [
+                {
+                    "action": "rest_opp_don",
+                    "count": 1
+                }
+            ]
+        }
+    },
     "EB03-013": {
         "activate_main": {
             "once_per_turn": true,
@@ -2258,6 +2315,12 @@
                     "count": 1,
                     "rested_only": true,
                     "target": "opp_character"
+                },
+                {
+                    "action": "play_card",
+                    "cost_lte": 99,
+                    "count": 1,
+                    "filter_name": "zou"
                 }
             ]
         }
@@ -2347,6 +2410,24 @@
         }
     },
     "EB03-018": {
+        "end_of_turn": {
+            "costs": [
+                {
+                    "count": 1,
+                    "type": "rest_don"
+                },
+                {
+                    "count": 1,
+                    "type": "trash_from_hand"
+                }
+            ],
+            "steps": [
+                {
+                    "action": "set_active",
+                    "target": "self"
+                }
+            ]
+        },
         "opp_turn": {
             "steps": [
                 {
@@ -2450,7 +2531,8 @@
                 {
                     "action": "play_card",
                     "cost_lte": 5,
-                    "count": 1
+                    "count": 1,
+                    "filter_name": "alabasta"
                 }
             ]
         },
@@ -2546,7 +2628,8 @@
                 {
                     "action": "play_card",
                     "cost_lte": 6,
-                    "count": 1
+                    "count": 1,
+                    "filter_name": "boa hancock"
                 }
             ]
         }
@@ -2740,7 +2823,10 @@
                 {
                     "action": "play_card",
                     "cost_lte": 6,
-                    "count": 1
+                    "count": 1,
+                    "exclude": "koala",
+                    "filter_type": "revolutionary army",
+                    "source_alt": "trash"
                 }
             ]
         },
@@ -2933,7 +3019,9 @@
                 {
                     "action": "play_card",
                     "cost_lte": 6,
-                    "count": 1
+                    "count": 1,
+                    "filter_type": "thriller bark pirates",
+                    "source_alt": "trash"
                 }
             ]
         }
@@ -3203,13 +3291,30 @@
             "once_per_turn": true,
             "steps": [
                 {
-                    "action": "rest_opp_character",
+                    "action": "rest_opp_don",
                     "count": 1
                 },
                 {
                     "action": "set_don_active",
                     "count": 1,
                     "up_to": true
+                }
+            ]
+        },
+        "end_of_turn": {
+            "costs": [
+                {
+                    "count": 1,
+                    "type": "rest_don"
+                }
+            ],
+            "once_per_turn": true,
+            "steps": [
+                {
+                    "action": "set_active",
+                    "count": 1,
+                    "filter_type": "film",
+                    "target": "own_character"
                 }
             ]
         }
@@ -3226,6 +3331,12 @@
                 }
             ],
             "steps": [
+                {
+                    "action": "play_card",
+                    "cost_lte": 7,
+                    "count": 1,
+                    "filter_name": "trafalgar law"
+                },
                 {
                     "action": "gain_life",
                     "count": 1,
@@ -3467,8 +3578,34 @@
             ]
         }
     },
-    "EB04-012": {},
-    "EB04-013": {},
+    "EB04-012": {
+        "activate_main": {
+            "once_per_turn": true,
+            "steps": [
+                {
+                    "action": "set_active",
+                    "count": 1,
+                    "filter_type": "land of wano",
+                    "target": "leader"
+                }
+            ]
+        }
+    },
+    "EB04-013": {
+        "on_play": {
+            "conditions": {
+                "leader_type": "minks"
+            },
+            "steps": [
+                {
+                    "action": "set_active",
+                    "count": 2,
+                    "filter_type": "minks",
+                    "target": "own_character_and_leader"
+                }
+            ]
+        }
+    },
     "EB04-014": {
         "activate_main": {
             "once_per_turn": true,
@@ -3495,7 +3632,8 @@
                     "action": "play_card",
                     "color": "green",
                     "cost_lte": 6,
-                    "count": 1
+                    "count": 1,
+                    "filter_name": "fish-man"
                 }
             ]
         },
@@ -3536,7 +3674,8 @@
                 {
                     "action": "play_card",
                     "cost_lte": 5,
-                    "count": 1
+                    "count": 1,
+                    "filter_type": "minks"
                 }
             ]
         }
@@ -3587,6 +3726,12 @@
     "EB04-020": {
         "counter": {
             "steps": [
+                {
+                    "action": "set_active",
+                    "count": 1,
+                    "filter_type": "fish-man",
+                    "target": "own_character"
+                },
                 {
                     "action": "buff_power",
                     "amount": 3000,
@@ -3705,7 +3850,9 @@
                 {
                     "action": "play_card",
                     "cost_lte": 8,
-                    "count": 1
+                    "count": 1,
+                    "exclude": "nefeltari vivi",
+                    "filter_type": "alabasta"
                 }
             ]
         }
@@ -3745,7 +3892,8 @@
                 {
                     "action": "play_card",
                     "cost_lte": 99,
-                    "count": 1
+                    "count": 1,
+                    "filter_name": "trigger"
                 }
             ]
         }
@@ -3990,7 +4138,8 @@
                 {
                     "action": "play_card",
                     "cost_lte": 5,
-                    "count": 1
+                    "count": 1,
+                    "filter_type": "kid pirates"
                 }
             ]
         },
@@ -4036,6 +4185,20 @@
         }
     },
     "EB04-041": {
+        "main": {
+            "conditions": {
+                "leader_is": "sanji"
+            },
+            "steps": [
+                {
+                    "action": "play_card",
+                    "cost_lte": 99,
+                    "count": 1,
+                    "filter_name": "sanji",
+                    "source_alt": "trash"
+                }
+            ]
+        },
         "trigger": {
             "steps": [
                 {
@@ -4135,7 +4298,10 @@
                 {
                     "action": "play_card",
                     "cost_lte": 3,
-                    "count": 1
+                    "count": 1,
+                    "exclude": "helmeppo",
+                    "filter_type": "sword",
+                    "source_alt": "trash"
                 }
             ]
         }
@@ -4290,7 +4456,8 @@
                 {
                     "action": "play_card",
                     "cost_lte": 4,
-                    "count": 1
+                    "count": 1,
+                    "filter_type": "revolutionary army"
                 }
             ]
         },
@@ -4461,11 +4628,29 @@
             ]
         }
     },
-    "OP01-002": {},
+    "OP01-002": {
+        "activate_main": {
+            "once_per_turn": true,
+            "steps": [
+                {
+                    "action": "play_card",
+                    "cost_lte": 5,
+                    "count": 1
+                }
+            ]
+        }
+    },
     "OP01-003": {
         "activate_main": {
             "once_per_turn": true,
             "steps": [
+                {
+                    "action": "set_active",
+                    "cost_lte": 5,
+                    "count": 1,
+                    "filter_type": "straw hat crew",
+                    "target": "own_character"
+                },
                 {
                     "action": "buff_power",
                     "amount": 1000,
@@ -4945,6 +5130,19 @@
                     "filter_type": "the akazaya nine"
                 }
             ]
+        },
+        "when_attacking": {
+            "don_requirement": 1,
+            "once_per_turn": true,
+            "steps": [
+                {
+                    "action": "set_active",
+                    "cost_lte": 3,
+                    "count": 1,
+                    "filter_type": "the akazaya nine",
+                    "target": "own_character"
+                }
+            ]
         }
     },
     "OP01-041": {
@@ -4971,9 +5169,34 @@
             ]
         }
     },
-    "OP01-042": {},
+    "OP01-042": {
+        "on_play": {
+            "conditions": {
+                "leader_is": "kouzuki oden"
+            },
+            "steps": [
+                {
+                    "action": "set_active",
+                    "cost_lte": 3,
+                    "count": 1,
+                    "filter_type": "land of wano",
+                    "target": "own_character"
+                }
+            ]
+        }
+    },
     "OP01-043": {},
     "OP01-044": {
+        "on_play": {
+            "steps": [
+                {
+                    "action": "play_card",
+                    "cost_lte": 99,
+                    "count": 1,
+                    "filter_name": "penguin"
+                }
+            ]
+        },
         "passive": {
             "steps": [
                 {
@@ -5027,8 +5250,31 @@
             ]
         }
     },
-    "OP01-049": {},
+    "OP01-049": {
+        "when_attacking": {
+            "don_requirement": 1,
+            "steps": [
+                {
+                    "action": "play_card",
+                    "cost_lte": 4,
+                    "count": 1,
+                    "exclude": "bepo",
+                    "filter_type": "heart pirates"
+                }
+            ]
+        }
+    },
     "OP01-050": {
+        "on_play": {
+            "steps": [
+                {
+                    "action": "play_card",
+                    "cost_lte": 99,
+                    "count": 1,
+                    "filter_name": "shachi"
+                }
+            ]
+        },
         "passive": {
             "steps": [
                 {
@@ -5106,6 +5352,11 @@
         "counter": {
             "steps": [
                 {
+                    "action": "set_active",
+                    "count": 1,
+                    "target": "own_character"
+                },
+                {
                     "action": "buff_power",
                     "amount": 2000,
                     "duration": "battle_only",
@@ -5150,7 +5401,25 @@
             ]
         }
     },
-    "OP01-059": {},
+    "OP01-059": {
+        "main": {
+            "costs": [
+                {
+                    "count": 1,
+                    "type": "trash_from_hand"
+                }
+            ],
+            "steps": [
+                {
+                    "action": "set_active",
+                    "cost_lte": 3,
+                    "count": 1,
+                    "filter_type": "land of wano",
+                    "target": "own_character"
+                }
+            ]
+        }
+    },
     "OP01-060": {},
     "OP01-061": {
         "your_turn": {
@@ -5292,6 +5561,16 @@
         }
     },
     "OP01-074": {
+        "on_ko": {
+            "steps": [
+                {
+                    "action": "play_card",
+                    "cost_lte": 4,
+                    "count": 1,
+                    "filter_name": "pacifista"
+                }
+            ]
+        },
         "passive": {
             "steps": [
                 {
@@ -5465,7 +5744,18 @@
             ]
         }
     },
-    "OP01-087": {},
+    "OP01-087": {
+        "counter": {
+            "steps": [
+                {
+                    "action": "play_card",
+                    "cost_lte": 3,
+                    "count": 1,
+                    "filter_type": "baroque works"
+                }
+            ]
+        }
+    },
     "OP01-088": {
         "counter": {
             "steps": [
@@ -6041,7 +6331,24 @@
             ]
         }
     },
-    "OP02-010": {},
+    "OP02-010": {
+        "activate_main": {
+            "costs": [
+                {
+                    "type": "rest_self"
+                }
+            ],
+            "steps": [
+                {
+                    "action": "play_card",
+                    "color": "red",
+                    "cost_eq": 1,
+                    "count": 1,
+                    "exclude": "dogura"
+                }
+            ]
+        }
+    },
     "OP02-011": {
         "on_play": {
             "steps": [
@@ -6270,7 +6577,17 @@
             ]
         }
     },
-    "OP02-030": {},
+    "OP02-030": {
+        "activate_main": {
+            "once_per_turn": true,
+            "steps": [
+                {
+                    "action": "set_active",
+                    "target": "self"
+                }
+            ]
+        }
+    },
     "OP02-031": {
         "passive": {
             "costs": [
@@ -6285,7 +6602,19 @@
             ]
         }
     },
-    "OP02-032": {},
+    "OP02-032": {
+        "on_play": {
+            "steps": [
+                {
+                    "action": "set_active",
+                    "cost_lte": 5,
+                    "count": 1,
+                    "filter_type": "minks",
+                    "target": "own_character"
+                }
+            ]
+        }
+    },
     "OP02-033": {},
     "OP02-034": {
         "when_attacking": {
@@ -6306,6 +6635,11 @@
                     "action": "bounce",
                     "count": 1,
                     "target": "self"
+                },
+                {
+                    "action": "play_card",
+                    "cost_eq": 3,
+                    "count": 1
                 }
             ]
         }
@@ -6358,7 +6692,8 @@
                 {
                     "action": "play_card",
                     "cost_lte": 2,
-                    "count": 1
+                    "count": 1,
+                    "filter_name": "film"
                 }
             ]
         }
@@ -6379,7 +6714,8 @@
                 {
                     "action": "play_card",
                     "cost_lte": 3,
-                    "count": 1
+                    "count": 1,
+                    "filter_name": "film"
                 }
             ]
         }
@@ -6420,7 +6756,9 @@
                 {
                     "action": "play_card",
                     "cost_lte": 3,
-                    "count": 1
+                    "count": 1,
+                    "exclude": "wanda",
+                    "filter_type": "minks"
                 }
             ]
         }
@@ -6549,7 +6887,8 @@
                     "action": "play_card",
                     "color": "blue",
                     "cost_lte": 6,
-                    "count": 1
+                    "count": 1,
+                    "filter_type": "impel down"
                 }
             ]
         }
@@ -6745,6 +7084,20 @@
         }
     },
     "OP02-065": {
+        "end_of_turn": {
+            "costs": [
+                {
+                    "count": 1,
+                    "type": "trash_from_hand"
+                }
+            ],
+            "steps": [
+                {
+                    "action": "set_active",
+                    "target": "self"
+                }
+            ]
+        },
         "passive": {
             "steps": [
                 {
@@ -6895,7 +7248,8 @@
                 {
                     "action": "play_card",
                     "cost_lte": 99,
-                    "count": 1
+                    "count": 1,
+                    "filter_type": "jailer beast"
                 }
             ]
         }
@@ -6965,7 +7319,9 @@
                 {
                     "action": "play_card",
                     "cost_lte": 3,
-                    "count": 1
+                    "count": 1,
+                    "exclude": "daifugo",
+                    "filter_type": "smile"
                 }
             ]
         }
@@ -7181,7 +7537,18 @@
             ]
         }
     },
-    "OP02-094": {},
+    "OP02-094": {
+        "passive": {
+            "don_requirement": 1,
+            "once_per_turn": true,
+            "steps": [
+                {
+                    "action": "set_active",
+                    "target": "self"
+                }
+            ]
+        }
+    },
     "OP02-095": {
         "passive": {
             "conditions": {
@@ -7789,7 +8156,7 @@
                 {
                     "action": "play_card",
                     "color": "red",
-                    "cost_lte": 99,
+                    "cost_eq": 1,
                     "count": 1
                 }
             ]
@@ -7957,6 +8324,10 @@
                     "action": "rest_opp_character",
                     "cost_lte": 5,
                     "count": 1
+                },
+                {
+                    "action": "set_active",
+                    "target": "leader"
                 }
             ]
         }
@@ -7968,7 +8339,8 @@
                 {
                     "action": "play_card",
                     "cost_lte": 4,
-                    "count": 1
+                    "count": 1,
+                    "filter_name": "trigger"
                 }
             ]
         }
@@ -8050,11 +8422,34 @@
                     "action": "rest_opp_character",
                     "cost_lte": 2,
                     "count": 1
+                },
+                {
+                    "action": "play_card",
+                    "cost_lte": 2,
+                    "count": 1,
+                    "filter_name": "buchi"
                 }
             ]
         }
     },
-    "OP03-028": {},
+    "OP03-028": {
+        "on_play": {
+            "costs": [
+                {
+                    "type": "rest_self"
+                }
+            ],
+            "steps": [
+                {
+                    "action": "set_active",
+                    "cost_lte": 6,
+                    "count": 1,
+                    "filter_type": "east blue",
+                    "target": "leader_or_character"
+                }
+            ]
+        }
+    },
     "OP03-029": {
         "on_play": {
             "steps": [
@@ -8156,6 +8551,16 @@
     },
     "OP03-035": {},
     "OP03-036": {
+        "main": {
+            "steps": [
+                {
+                    "action": "set_active",
+                    "count": 1,
+                    "filter_name": "kuro",
+                    "target": "own_character"
+                }
+            ]
+        },
         "trigger": {
             "steps": [
                 {
@@ -8185,7 +8590,8 @@
                 {
                     "action": "play_card",
                     "cost_lte": 4,
-                    "count": 1
+                    "count": 1,
+                    "filter_name": "trigger"
                 }
             ]
         }
@@ -8514,7 +8920,8 @@
                 {
                     "action": "play_card",
                     "cost_lte": 5,
-                    "count": 1
+                    "count": 1,
+                    "filter_type": "galley-la company"
                 }
             ]
         }
@@ -8830,7 +9237,23 @@
             ]
         }
     },
-    "OP03-076": {},
+    "OP03-076": {
+        "your_turn": {
+            "costs": [
+                {
+                    "count": 2,
+                    "type": "trash_from_hand"
+                }
+            ],
+            "once_per_turn": true,
+            "steps": [
+                {
+                    "action": "set_active",
+                    "target": "leader"
+                }
+            ]
+        }
+    },
     "OP03-077": {
         "when_attacking": {
             "conditions": {
@@ -9520,7 +9943,8 @@
                 {
                     "action": "play_card",
                     "cost_lte": 4,
-                    "count": 1
+                    "count": 1,
+                    "filter_name": "trigger"
                 }
             ]
         }
@@ -9593,7 +10017,19 @@
             ]
         }
     },
-    "OP03-123": {},
+    "OP03-123": {
+        "on_play": {
+            "steps": [
+                {
+                    "action": "gain_life",
+                    "count": 1,
+                    "dest": "life_bottom",
+                    "source": "deck_top",
+                    "up_to": true
+                }
+            ]
+        }
+    },
     "OP04-001": {
         "activate_main": {
             "once_per_turn": true,
@@ -9749,7 +10185,8 @@
                 {
                     "action": "play_card",
                     "cost_lte": 99,
-                    "count": 1
+                    "count": 1,
+                    "filter_type": "animal"
                 }
             ]
         }
@@ -9892,6 +10329,16 @@
         }
     },
     "OP04-020": {
+        "end_of_turn": {
+            "steps": [
+                {
+                    "action": "set_active",
+                    "cost_lte": 5,
+                    "count": 1,
+                    "target": "own_character"
+                }
+            ]
+        },
         "your_turn": {
             "don_requirement": 1,
             "steps": [
@@ -9904,7 +10351,16 @@
             ]
         }
     },
-    "OP04-021": {},
+    "OP04-021": {
+        "passive": {
+            "steps": [
+                {
+                    "action": "rest_opp_don",
+                    "count": 1
+                }
+            ]
+        }
+    },
     "OP04-022": {
         "activate_main": {
             "costs": [
@@ -9981,8 +10437,27 @@
             ]
         }
     },
-    "OP04-027": {},
+    "OP04-027": {
+        "end_of_turn": {
+            "don_requirement": 1,
+            "steps": [
+                {
+                    "action": "set_active",
+                    "target": "self"
+                }
+            ]
+        }
+    },
     "OP04-028": {
+        "end_of_turn": {
+            "don_requirement": 1,
+            "steps": [
+                {
+                    "action": "set_active",
+                    "target": "self"
+                }
+            ]
+        },
         "passive": {
             "steps": [
                 {
@@ -10080,6 +10555,11 @@
     "OP04-035": {
         "counter": {
             "steps": [
+                {
+                    "action": "set_active",
+                    "count": 1,
+                    "target": "own_character"
+                },
                 {
                     "action": "buff_power",
                     "amount": 4000,
@@ -11127,6 +11607,10 @@
             "once_per_turn": true,
             "steps": [
                 {
+                    "action": "set_active",
+                    "target": "self"
+                },
+                {
                     "action": "lock_self_character_refresh",
                     "count": 1
                 }
@@ -11316,7 +11800,17 @@
             ]
         }
     },
-    "OP04-102": {},
+    "OP04-102": {
+        "activate_main": {
+            "once_per_turn": true,
+            "steps": [
+                {
+                    "action": "set_active",
+                    "target": "self"
+                }
+            ]
+        }
+    },
     "OP04-103": {
         "on_play": {
             "steps": [
@@ -11461,6 +11955,25 @@
         }
     },
     "OP04-111": {
+        "activate_main": {
+            "costs": [
+                {
+                    "type": "rest_self"
+                },
+                {
+                    "count": 1,
+                    "type": "trash_from_hand"
+                }
+            ],
+            "steps": [
+                {
+                    "action": "set_active",
+                    "count": 1,
+                    "filter_name": "charlotte linlin",
+                    "target": "own_character"
+                }
+            ]
+        },
         "trigger": {
             "steps": [
                 {
@@ -11583,7 +12096,7 @@
                 {
                     "action": "play_card",
                     "color": "green",
-                    "cost_lte": 99,
+                    "cost_eq": 5,
                     "count": 1
                 }
             ]
@@ -11654,7 +12167,8 @@
                 {
                     "action": "play_card",
                     "cost_lte": 99,
-                    "count": 1
+                    "count": 1,
+                    "filter_type": "revolutionary army"
                 }
             ]
         }
@@ -11902,7 +12416,8 @@
                 {
                     "action": "play_card",
                     "cost_lte": 99,
-                    "count": 1
+                    "count": 1,
+                    "filter_type": "revolutionary army"
                 }
             ]
         },
@@ -11911,7 +12426,8 @@
                 {
                     "action": "play_card",
                     "cost_lte": 99,
-                    "count": 1
+                    "count": 1,
+                    "filter_type": "revolutionary army"
                 }
             ]
         }
@@ -12001,6 +12517,17 @@
         }
     },
     "OP05-022": {
+        "end_of_turn": {
+            "conditions": {
+                "hand_lte": 6
+            },
+            "steps": [
+                {
+                    "action": "set_active",
+                    "target": "leader"
+                }
+            ]
+        },
         "passive": {
             "steps": [
                 {
@@ -12048,7 +12575,18 @@
             ]
         }
     },
-    "OP05-026": {},
+    "OP05-026": {
+        "when_attacking": {
+            "don_requirement": 1,
+            "once_per_turn": true,
+            "steps": [
+                {
+                    "action": "set_active",
+                    "target": "self"
+                }
+            ]
+        }
+    },
     "OP05-027": {
         "activate_main": {
             "costs": [
@@ -12114,8 +12652,31 @@
             ]
         }
     },
-    "OP05-031": {},
-    "OP05-032": {},
+    "OP05-031": {
+        "when_attacking": {
+            "once_per_turn": true,
+            "steps": [
+                {
+                    "action": "set_active",
+                    "cost_eq": 1,
+                    "count": 1,
+                    "rested_only": true,
+                    "target": "own_character"
+                }
+            ]
+        }
+    },
+    "OP05-032": {
+        "end_of_turn": {
+            "once_per_turn": true,
+            "steps": [
+                {
+                    "action": "set_active",
+                    "target": "self"
+                }
+            ]
+        }
+    },
     "OP05-033": {
         "activate_main": {
             "costs": [
@@ -12127,7 +12688,8 @@
                 {
                     "action": "play_card",
                     "cost_lte": 2,
-                    "count": 1
+                    "count": 1,
+                    "filter_type": "donquixote pirates"
                 }
             ]
         }
@@ -12678,7 +13240,24 @@
             ]
         }
     },
-    "OP05-068": {},
+    "OP05-068": {
+        "on_play": {
+            "conditions": {
+                "don_gte": 8,
+                "don_on_field_gte": 8
+            },
+            "steps": [
+                {
+                    "action": "set_active",
+                    "color": "purple",
+                    "count": 1,
+                    "filter_type": "straw hat crew",
+                    "power_lte": 6000,
+                    "target": "own_character"
+                }
+            ]
+        }
+    },
     "OP05-069": {
         "when_attacking": {
             "steps": [
@@ -12804,7 +13383,8 @@
                 {
                     "action": "play_card",
                     "cost_lte": 3,
-                    "count": 1
+                    "count": 1,
+                    "filter_type": "baroque works"
                 }
             ]
         }
@@ -13070,7 +13650,8 @@
                     "action": "play_card",
                     "color": "black",
                     "cost_lte": 3,
-                    "count": 1
+                    "count": 1,
+                    "enters_rested": true
                 },
                 {
                     "action": "add_from_trash",
@@ -13397,8 +13978,9 @@
             "steps": [
                 {
                     "action": "play_card",
-                    "cost_lte": 99,
-                    "count": 1
+                    "cost_eq": 1,
+                    "count": 1,
+                    "filter_type": "sky island"
                 }
             ]
         },
@@ -13575,7 +14157,18 @@
             ]
         }
     },
-    "OP06-004": {},
+    "OP06-004": {
+        "on_play": {
+            "steps": [
+                {
+                    "action": "play_card",
+                    "cost_lte": 99,
+                    "count": 1,
+                    "filter_name": "lily carnation"
+                }
+            ]
+        }
+    },
     "OP06-005": {},
     "OP06-006": {
         "when_attacking": {
@@ -13802,7 +14395,7 @@
         "activate_main": {
             "steps": [
                 {
-                    "action": "rest_opp_character",
+                    "action": "rest_opp_don",
                     "count": 1
                 }
             ]
@@ -13869,7 +14462,8 @@
                 {
                     "action": "play_card",
                     "cost_lte": 4,
-                    "count": 1
+                    "count": 1,
+                    "filter_type": "fish-man"
                 },
                 {
                     "action": "life_to_hand",
@@ -13902,7 +14496,19 @@
             ]
         }
     },
-    "OP06-026": {},
+    "OP06-026": {
+        "on_play": {
+            "steps": [
+                {
+                    "action": "set_active",
+                    "attribute": "slash",
+                    "cost_lte": 4,
+                    "count": 1,
+                    "target": "own_character"
+                }
+            ]
+        }
+    },
     "OP06-027": {
         "on_ko": {
             "steps": [
@@ -13950,6 +14556,10 @@
             "once_per_turn": true,
             "steps": [
                 {
+                    "action": "set_active",
+                    "target": "self"
+                },
+                {
                     "action": "buff_power",
                     "amount": 1000,
                     "duration": "this_turn",
@@ -13996,7 +14606,8 @@
                 {
                     "action": "play_card",
                     "cost_lte": 3,
-                    "count": 1
+                    "count": 1,
+                    "filter_name": "fish-man"
                 }
             ]
         }
@@ -14406,7 +15017,7 @@
             "steps": [
                 {
                     "action": "play_card",
-                    "cost_lte": 99,
+                    "cost_eq": 2,
                     "count": 1
                 }
             ]
@@ -14464,7 +15075,32 @@
             ]
         }
     },
-    "OP06-060": {},
+    "OP06-060": {
+        "activate_main": {
+            "conditions": {
+                "leader_type": "germa 66"
+            },
+            "costs": [
+                {
+                    "type": "trash_self"
+                },
+                {
+                    "count": 1,
+                    "optional": true,
+                    "type": "don_minus"
+                }
+            ],
+            "steps": [
+                {
+                    "action": "play_card",
+                    "cost_eq": 7,
+                    "count": 1,
+                    "filter_name": "vinsmoke ichiji",
+                    "source_alt": "trash"
+                }
+            ]
+        }
+    },
     "OP06-061": {
         "on_play": {
             "steps": [
@@ -14481,6 +15117,22 @@
         }
     },
     "OP06-062": {
+        "activate_main": {
+            "costs": [
+                {
+                    "count": 1,
+                    "optional": false,
+                    "type": "don_minus"
+                }
+            ],
+            "once_per_turn": true,
+            "steps": [
+                {
+                    "action": "rest_opp_don",
+                    "count": 1
+                }
+            ]
+        },
         "on_play": {
             "costs": [
                 {
@@ -14522,7 +15174,32 @@
             ]
         }
     },
-    "OP06-064": {},
+    "OP06-064": {
+        "activate_main": {
+            "conditions": {
+                "leader_type": "germa 66"
+            },
+            "costs": [
+                {
+                    "type": "trash_self"
+                },
+                {
+                    "count": 1,
+                    "optional": true,
+                    "type": "don_minus"
+                }
+            ],
+            "steps": [
+                {
+                    "action": "play_card",
+                    "cost_eq": 5,
+                    "count": 1,
+                    "filter_name": "vinsmoke niji",
+                    "source_alt": "trash"
+                }
+            ]
+        }
+    },
     "OP06-065": {
         "on_play": {
             "choice": [
@@ -14545,7 +15222,32 @@
             ]
         }
     },
-    "OP06-066": {},
+    "OP06-066": {
+        "activate_main": {
+            "conditions": {
+                "leader_type": "germa 66"
+            },
+            "costs": [
+                {
+                    "type": "trash_self"
+                },
+                {
+                    "count": 1,
+                    "optional": true,
+                    "type": "don_minus"
+                }
+            ],
+            "steps": [
+                {
+                    "action": "play_card",
+                    "cost_eq": 4,
+                    "count": 1,
+                    "filter_name": "vinsmoke yonji",
+                    "source_alt": "trash"
+                }
+            ]
+        }
+    },
     "OP06-067": {
         "passive": {
             "steps": [
@@ -14561,7 +15263,32 @@
             ]
         }
     },
-    "OP06-068": {},
+    "OP06-068": {
+        "activate_main": {
+            "conditions": {
+                "leader_type": "germa 66"
+            },
+            "costs": [
+                {
+                    "type": "trash_self"
+                },
+                {
+                    "count": 1,
+                    "optional": true,
+                    "type": "don_minus"
+                }
+            ],
+            "steps": [
+                {
+                    "action": "play_card",
+                    "cost_eq": 4,
+                    "count": 1,
+                    "filter_name": "vinsmoke reiju",
+                    "source_alt": "trash"
+                }
+            ]
+        }
+    },
     "OP06-069": {
         "on_play": {
             "steps": [
@@ -15123,7 +15850,26 @@
             ]
         }
     },
-    "OP06-103": {},
+    "OP06-103": {
+        "when_attacking": {
+            "costs": [
+                {
+                    "count": 2,
+                    "type": "trash_from_hand"
+                }
+            ],
+            "steps": [
+                {
+                    "action": "gain_life",
+                    "count": 1,
+                    "dest": "life_bottom",
+                    "power_eq": 0,
+                    "source": "own_field",
+                    "up_to": true
+                }
+            ]
+        }
+    },
     "OP06-104": {
         "on_ko": {
             "steps": [
@@ -15161,6 +15907,17 @@
         }
     },
     "OP06-107": {
+        "on_play": {
+            "steps": [
+                {
+                    "action": "gain_life",
+                    "count": 1,
+                    "dest": "life_bottom",
+                    "source": "own_field",
+                    "up_to": true
+                }
+            ]
+        },
         "passive": {
             "steps": [
                 {
@@ -15245,6 +16002,20 @@
                     "action": "play_card",
                     "count": 1,
                     "source": "self"
+                }
+            ]
+        },
+        "when_attacking": {
+            "costs": [
+                {
+                    "count": 1,
+                    "type": "trash_from_hand"
+                }
+            ],
+            "steps": [
+                {
+                    "action": "rest_opp_don",
+                    "count": 1
                 }
             ]
         }
@@ -15364,7 +16135,26 @@
             ]
         }
     },
-    "OP06-118": {},
+    "OP06-118": {
+        "activate_main": {
+            "once_per_turn": true,
+            "steps": [
+                {
+                    "action": "set_active",
+                    "target": "self"
+                }
+            ]
+        },
+        "when_attacking": {
+            "once_per_turn": true,
+            "steps": [
+                {
+                    "action": "set_active",
+                    "target": "self"
+                }
+            ]
+        }
+    },
     "OP06-119": {},
     "OP07-001": {
         "activate_main": {
@@ -15667,7 +16457,8 @@
                 {
                     "action": "play_card",
                     "cost_lte": 3,
-                    "count": 1
+                    "count": 1,
+                    "filter_name": "fish-man"
                 }
             ]
         },
@@ -15748,7 +16539,19 @@
             ]
         }
     },
-    "OP07-025": {},
+    "OP07-025": {
+        "on_play": {
+            "steps": [
+                {
+                    "action": "play_card",
+                    "cost_lte": 4,
+                    "count": 1,
+                    "enters_rested": true,
+                    "filter_name": "caribou"
+                }
+            ]
+        }
+    },
     "OP07-026": {
         "on_play": {
             "steps": [
@@ -16061,7 +16864,9 @@
                 {
                     "action": "play_card",
                     "cost_lte": 4,
-                    "count": 1
+                    "count": 1,
+                    "exclude": "jinbe",
+                    "filter_type": "the seven warlords of the sea"
                 }
             ]
         }
@@ -16097,7 +16902,19 @@
         }
     },
     "OP07-048": {},
-    "OP07-049": {},
+    "OP07-049": {
+        "on_play": {
+            "steps": [
+                {
+                    "action": "play_card",
+                    "cost_lte": 4,
+                    "count": 1,
+                    "enters_rested": true,
+                    "filter_name": "edward weevil"
+                }
+            ]
+        }
+    },
     "OP07-050": {
         "on_play": {
             "steps": [
@@ -16376,7 +17193,18 @@
             ]
         }
     },
-    "OP07-070": {},
+    "OP07-070": {
+        "on_play": {
+            "steps": [
+                {
+                    "action": "play_card",
+                    "cost_lte": "don_count_self",
+                    "count": 1,
+                    "filter_type": "foxy pirates"
+                }
+            ]
+        }
+    },
     "OP07-071": {
         "activate_main": {
             "once_per_turn": true,
@@ -16429,7 +17257,24 @@
             ]
         }
     },
-    "OP07-073": {},
+    "OP07-073": {
+        "activate_main": {
+            "costs": [
+                {
+                    "count": 3,
+                    "optional": true,
+                    "type": "don_minus"
+                }
+            ],
+            "once_per_turn": true,
+            "steps": [
+                {
+                    "action": "set_active",
+                    "target": "self"
+                }
+            ]
+        }
+    },
     "OP07-074": {
         "activate_main": {
             "conditions": {
@@ -16525,6 +17370,16 @@
         }
     },
     "OP07-078": {
+        "main": {
+            "steps": [
+                {
+                    "action": "set_active",
+                    "count": 1,
+                    "filter_name": "foxy",
+                    "target": "own_character"
+                }
+            ]
+        },
         "trigger": {
             "steps": [
                 {
@@ -17255,6 +18110,20 @@
         }
     },
     "OP07-117": {
+        "end_of_turn": {
+            "conditions": {
+                "life_lte": 3
+            },
+            "steps": [
+                {
+                    "action": "set_active",
+                    "cost_lte": 5,
+                    "count": 1,
+                    "filter_type": "egghead",
+                    "target": "own_character"
+                }
+            ]
+        },
         "trigger": {
             "steps": [
                 {
@@ -17368,6 +18237,12 @@
                     "amount": 2000,
                     "duration": "this_turn",
                     "target": "opp_character"
+                },
+                {
+                    "action": "play_card",
+                    "cost_lte": 99,
+                    "count": 1,
+                    "filter_name": "kuromarimo"
                 }
             ]
         }
@@ -17776,14 +18651,22 @@
     },
     "OP08-030": {
         "on_ko": {
-            "steps": [
-                {
-                    "action": "ko",
-                    "cost_lte": 6,
-                    "count": 1,
-                    "rested_only": true,
-                    "target": "opp_character"
-                }
+            "choice": [
+                [
+                    {
+                        "action": "rest_opp_don",
+                        "count": 1
+                    }
+                ],
+                [
+                    {
+                        "action": "ko",
+                        "cost_lte": 6,
+                        "count": 1,
+                        "rested_only": true,
+                        "target": "opp_character"
+                    }
+                ]
             ]
         },
         "passive": {
@@ -17794,7 +18677,19 @@
             ]
         }
     },
-    "OP08-031": {},
+    "OP08-031": {
+        "on_play": {
+            "steps": [
+                {
+                    "action": "set_active",
+                    "cost_lte": 2,
+                    "count": 1,
+                    "filter_type": "minks",
+                    "target": "own_character"
+                }
+            ]
+        }
+    },
     "OP08-032": {
         "activate_main": {
             "conditions": {
@@ -17916,6 +18811,16 @@
                     "action": "set_don_active",
                     "count": 1,
                     "up_to": true
+                }
+            ]
+        },
+        "end_of_turn": {
+            "steps": [
+                {
+                    "action": "set_active",
+                    "count": 1,
+                    "filter_type": "minks",
+                    "target": "own_character"
                 }
             ]
         }
@@ -18201,7 +19106,26 @@
             ]
         }
     },
-    "OP08-059": {},
+    "OP08-059": {
+        "activate_main": {
+            "conditions": {
+                "leader_type": "animal kingdom pirates"
+            },
+            "costs": [
+                {
+                    "type": "trash_self"
+                }
+            ],
+            "steps": [
+                {
+                    "action": "play_card",
+                    "cost_lte": 7,
+                    "count": 1,
+                    "filter_name": "king"
+                }
+            ]
+        }
+    },
     "OP08-060": {
         "on_play": {
             "steps": [
@@ -18224,7 +19148,26 @@
             ]
         }
     },
-    "OP08-062": {},
+    "OP08-062": {
+        "activate_main": {
+            "conditions": {
+                "leader_type": "big mom pirates"
+            },
+            "costs": [
+                {
+                    "type": "trash_self"
+                }
+            ],
+            "steps": [
+                {
+                    "action": "play_card",
+                    "cost_lte": "don_count_opp",
+                    "count": 1,
+                    "filter_name": "charlotte katakuri"
+                }
+            ]
+        }
+    },
     "OP08-063": {
         "on_play": {
             "steps": [
@@ -18235,7 +19178,19 @@
             ]
         }
     },
-    "OP08-064": {},
+    "OP08-064": {
+        "activate_main": {
+            "once_per_turn": true,
+            "steps": [
+                {
+                    "action": "play_card",
+                    "cost_lte": 99,
+                    "count": 1,
+                    "filter_name": "biscuit warrior"
+                }
+            ]
+        }
+    },
     "OP08-065": {},
     "OP08-066": {
         "on_ko": {
@@ -18304,6 +19259,16 @@
         }
     },
     "OP08-070": {
+        "on_ko": {
+            "steps": [
+                {
+                    "action": "play_card",
+                    "cost_lte": 5,
+                    "count": 1,
+                    "filter_name": "viscount hiyoko"
+                }
+            ]
+        },
         "passive": {
             "steps": [
                 {
@@ -18710,7 +19675,8 @@
                 {
                     "action": "play_card",
                     "cost_lte": "don_count_self",
-                    "count": 1
+                    "count": 1,
+                    "filter_type": "shandian warrior"
                 },
                 {
                     "action": "life_to_hand",
@@ -19043,6 +20009,12 @@
                     "amount": 3000,
                     "duration": "battle_only",
                     "target": "leader_or_character"
+                },
+                {
+                    "action": "play_card",
+                    "cost_lte": 99,
+                    "count": 1,
+                    "filter_name": "upper yard"
                 }
             ]
         },
@@ -19291,6 +20263,16 @@
         }
     },
     "OP09-010": {
+        "on_play": {
+            "steps": [
+                {
+                    "action": "play_card",
+                    "cost_lte": 99,
+                    "count": 1,
+                    "filter_name": "monster"
+                }
+            ]
+        },
         "when_attacking": {
             "don_requirement": 1,
             "steps": [
@@ -19615,7 +20597,19 @@
             ]
         }
     },
-    "OP09-029": {},
+    "OP09-029": {
+        "end_of_turn": {
+            "steps": [
+                {
+                    "action": "set_active",
+                    "cost_lte": 4,
+                    "count": 1,
+                    "filter_type": "odyssey",
+                    "target": "own_character"
+                }
+            ]
+        }
+    },
     "OP09-030": {
         "on_play": {
             "steps": [
@@ -19623,12 +20617,21 @@
                     "action": "play_card",
                     "cost_lte": 3,
                     "count": 1,
+                    "exclude": "trafalgar law",
                     "filter_type": "odyssey"
                 }
             ]
         }
     },
     "OP09-031": {
+        "end_of_turn": {
+            "steps": [
+                {
+                    "action": "set_active",
+                    "target": "self"
+                }
+            ]
+        },
         "passive": {
             "steps": [
                 {
@@ -19685,13 +20688,21 @@
         "on_play": {
             "steps": [
                 {
-                    "action": "rest_opp_character",
+                    "action": "rest_opp_don",
                     "count": 1
                 }
             ]
         }
     },
     "OP09-037": {
+        "end_of_turn": {
+            "steps": [
+                {
+                    "action": "set_active",
+                    "target": "self"
+                }
+            ]
+        },
         "on_play": {
             "steps": [
                 {
@@ -19763,15 +20774,20 @@
     },
     "OP09-041": {
         "counter": {
-            "conditions": {
-                "leader_type": "odyssey"
-            },
             "steps": [
                 {
                     "action": "buff_power",
                     "amount": 2000,
                     "duration": "battle_only",
                     "target": "leader_or_character"
+                },
+                {
+                    "action": "set_active",
+                    "conditions": {
+                        "leader_type": "odyssey"
+                    },
+                    "count": 2,
+                    "target": "own_character"
                 }
             ]
         },
@@ -19816,7 +20832,8 @@
                 {
                     "action": "play_card",
                     "cost_lte": 5,
-                    "count": 1
+                    "count": 1,
+                    "exclude": "alvida"
                 }
             ]
         }
@@ -20108,7 +21125,18 @@
         }
     },
     "OP09-063": {},
-    "OP09-064": {},
+    "OP09-064": {
+        "on_play": {
+            "steps": [
+                {
+                    "action": "set_active",
+                    "count": 1,
+                    "filter_type": "kid pirates",
+                    "target": "leader"
+                }
+            ]
+        }
+    },
     "OP09-065": {
         "on_play": {
             "steps": [
@@ -20140,6 +21168,10 @@
     "OP09-068": {
         "end_of_turn": {
             "steps": [
+                {
+                    "action": "set_active",
+                    "target": "self"
+                },
                 {
                     "action": "gain_blocker"
                 }
@@ -21215,6 +22247,16 @@
         }
     },
     "OP10-008": {
+        "on_play": {
+            "steps": [
+                {
+                    "action": "play_card",
+                    "cost_lte": 99,
+                    "count": 1,
+                    "filter_name": "rock"
+                }
+            ]
+        },
         "passive": {
             "steps": [
                 {
@@ -21314,7 +22356,18 @@
             ]
         }
     },
-    "OP10-017": {},
+    "OP10-017": {
+        "on_play": {
+            "steps": [
+                {
+                    "action": "play_card",
+                    "cost_lte": 99,
+                    "count": 1,
+                    "filter_name": "scotch"
+                }
+            ]
+        }
+    },
     "OP10-018": {
         "counter": {
             "steps": [
@@ -21465,8 +22518,30 @@
             ]
         }
     },
-    "OP10-026": {},
-    "OP10-027": {},
+    "OP10-026": {
+        "activate_main": {
+            "steps": [
+                {
+                    "action": "play_card",
+                    "cost_eq": 6,
+                    "count": 1,
+                    "filter_name": "kin'emon"
+                }
+            ]
+        }
+    },
+    "OP10-027": {
+        "activate_main": {
+            "steps": [
+                {
+                    "action": "play_card",
+                    "cost_eq": 6,
+                    "count": 1,
+                    "filter_name": "kin'emon"
+                }
+            ]
+        }
+    },
     "OP10-028": {
         "activate_main": {
             "costs": [
@@ -21495,7 +22570,20 @@
             ]
         }
     },
-    "OP10-029": {},
+    "OP10-029": {
+        "on_play": {
+            "steps": [
+                {
+                    "action": "set_active",
+                    "cost_lte": 5,
+                    "count": 1,
+                    "filter_type": "odyssey",
+                    "rested_only": true,
+                    "target": "own_character"
+                }
+            ]
+        }
+    },
     "OP10-030": {
         "activate_main": {
             "steps": [
@@ -21572,7 +22660,19 @@
             ]
         }
     },
-    "OP10-037": {},
+    "OP10-037": {
+        "end_of_turn": {
+            "once_per_turn": true,
+            "steps": [
+                {
+                    "action": "set_active",
+                    "count": 1,
+                    "filter_type": "odyssey",
+                    "target": "own_character"
+                }
+            ]
+        }
+    },
     "OP10-038": {
         "opp_turn": {
             "steps": [
@@ -22648,6 +23748,13 @@
         "end_of_turn": {
             "steps": [
                 {
+                    "action": "set_active",
+                    "cost_eq": 3,
+                    "count": 1,
+                    "filter_type": "supernovas",
+                    "target": "own_character"
+                },
+                {
                     "action": "gain_blocker"
                 }
             ]
@@ -22960,6 +24067,12 @@
                 "life_lte": 1
             },
             "steps": [
+                {
+                    "action": "set_active",
+                    "cost_lte": 5,
+                    "count": 1,
+                    "target": "own_character"
+                },
                 {
                     "action": "buff_power",
                     "amount": 3000,
@@ -24050,6 +25163,13 @@
         "end_of_turn": {
             "steps": [
                 {
+                    "action": "set_active",
+                    "cost_eq": 3,
+                    "count": 2,
+                    "filter_type": "big mom pirates",
+                    "target": "own_character"
+                },
+                {
                     "action": "add_don",
                     "count": 1
                 }
@@ -24655,6 +25775,18 @@
         }
     },
     "OP11-107": {
+        "activate_main": {
+            "conditions": {
+                "leader_is": "shirahoshi"
+            },
+            "once_per_turn": true,
+            "steps": [
+                {
+                    "action": "set_active",
+                    "target": "self"
+                }
+            ]
+        },
         "passive": {
             "steps": [
                 {
@@ -24777,7 +25909,30 @@
             ]
         }
     },
-    "OP11-116": {},
+    "OP11-116": {
+        "main": {
+            "steps": [
+                {
+                    "action": "gain_life",
+                    "count": 1,
+                    "dest": "life_bottom",
+                    "source": "deck_top",
+                    "up_to": true
+                }
+            ]
+        },
+        "trigger": {
+            "steps": [
+                {
+                    "action": "gain_life",
+                    "count": 1,
+                    "dest": "life_bottom",
+                    "source": "own_field",
+                    "up_to": true
+                }
+            ]
+        }
+    },
     "OP11-117": {
         "activate_main": {
             "conditions": {
@@ -25106,7 +26261,18 @@
             ]
         }
     },
-    "OP12-020": {},
+    "OP12-020": {
+        "activate_main": {
+            "don_requirement": 3,
+            "once_per_turn": true,
+            "steps": [
+                {
+                    "action": "set_active",
+                    "target": "leader"
+                }
+            ]
+        }
+    },
     "OP12-021": {
         "passive": {
             "steps": [
@@ -25362,6 +26528,15 @@
         }
     },
     "OP12-039": {
+        "main": {
+            "steps": [
+                {
+                    "action": "set_active",
+                    "count": 1,
+                    "target": "leader"
+                }
+            ]
+        },
         "trigger": {
             "steps": [
                 {
@@ -26514,6 +27689,7 @@
                     "action": "play_card",
                     "cost_lte": 4,
                     "count": 1,
+                    "enters_rested": true,
                     "filter_type": "supernovas"
                 }
             ]
@@ -26584,6 +27760,26 @@
                     "amount": 3000,
                     "duration": "battle_only",
                     "target": "leader"
+                }
+            ]
+        },
+        "main": {
+            "conditions": {
+                "leader_type": "supernovas"
+            },
+            "costs": [
+                {
+                    "count": 5,
+                    "type": "rest_don"
+                }
+            ],
+            "steps": [
+                {
+                    "action": "gain_life",
+                    "count": 1,
+                    "dest": "life_bottom",
+                    "source": "deck_top",
+                    "up_to": true
                 }
             ]
         }
@@ -26987,7 +28183,8 @@
                 {
                     "action": "play_card",
                     "cost_lte": 5,
-                    "count": 1
+                    "count": 1,
+                    "enters_rested": true
                 }
             ]
         },
@@ -27105,7 +28302,8 @@
                 {
                     "action": "play_card",
                     "cost_lte": 5,
-                    "count": 1
+                    "count": 1,
+                    "enters_rested": true
                 }
             ]
         },
@@ -27147,6 +28345,14 @@
     "OP13-035": {},
     "OP13-036": {},
     "OP13-037": {
+        "end_of_turn": {
+            "steps": [
+                {
+                    "action": "set_active",
+                    "target": "self"
+                }
+            ]
+        },
         "on_play": {
             "steps": [
                 {
@@ -27329,7 +28535,21 @@
     },
     "OP13-048": {},
     "OP13-049": {},
-    "OP13-050": {},
+    "OP13-050": {
+        "on_play": {
+            "conditions": {
+                "leader_is": "boa hancock"
+            },
+            "steps": [
+                {
+                    "action": "play_card",
+                    "cost_lte": 3,
+                    "count": 1,
+                    "filter_name": "boa hancock"
+                }
+            ]
+        }
+    },
     "OP13-051": {
         "on_ko": {
             "conditions": {
@@ -27344,6 +28564,19 @@
         }
     },
     "OP13-052": {
+        "on_play": {
+            "conditions": {
+                "leader_is": "boa hancock"
+            },
+            "steps": [
+                {
+                    "action": "play_card",
+                    "cost_lte": 6,
+                    "count": 1,
+                    "filter_name": "boa hancock"
+                }
+            ]
+        },
         "passive": {
             "steps": [
                 {
@@ -27720,7 +28953,8 @@
                 {
                     "action": "play_card",
                     "cost_lte": 99,
-                    "count": 1
+                    "count": 1,
+                    "filter_type": "homies"
                 }
             ]
         }
@@ -28437,7 +29671,8 @@
                 {
                     "action": "play_card",
                     "cost_lte": 5,
-                    "count": 1
+                    "count": 1,
+                    "filter_name": "trigger"
                 }
             ]
         },
@@ -29013,7 +30248,16 @@
             ]
         }
     },
-    "OP14-023": {},
+    "OP14-023": {
+        "end_of_turn": {
+            "steps": [
+                {
+                    "action": "set_active",
+                    "target": "self"
+                }
+            ]
+        }
+    },
     "OP14-024": {
         "on_play": {
             "steps": [
@@ -29038,7 +30282,8 @@
                 {
                     "action": "play_card",
                     "cost_lte": 6,
-                    "count": 1
+                    "count": 1,
+                    "filter_type": "east blue"
                 }
             ]
         }
@@ -29340,7 +30585,8 @@
                 {
                     "action": "play_card",
                     "cost_lte": 3,
-                    "count": 1
+                    "count": 1,
+                    "filter_name": "fish-man"
                 }
             ]
         }
@@ -29408,7 +30654,8 @@
                 {
                     "action": "play_card",
                     "cost_lte": 3,
-                    "count": 1
+                    "count": 1,
+                    "filter_name": "fish-man"
                 }
             ]
         },
@@ -29497,7 +30744,8 @@
                 {
                     "action": "play_card",
                     "cost_lte": 6,
-                    "count": 1
+                    "count": 1,
+                    "filter_type": "impel down"
                 }
             ]
         },
@@ -29594,7 +30842,8 @@
                 {
                     "action": "play_card",
                     "cost_lte": 3,
-                    "count": 1
+                    "count": 1,
+                    "filter_type": "fish-man"
                 }
             ]
         }
@@ -29667,7 +30916,8 @@
                 {
                     "action": "play_card",
                     "cost_lte": 5,
-                    "count": 1
+                    "count": 1,
+                    "filter_type": "donquixote pirates"
                 }
             ]
         },
@@ -29768,6 +31018,10 @@
     "OP14-070": {
         "passive": {
             "steps": [
+                {
+                    "action": "set_active",
+                    "target": "self"
+                },
                 {
                     "action": "keyword_blocker"
                 }
@@ -30178,8 +31432,7 @@
                 {
                     "action": "play_card",
                     "cost_lte": 99,
-                    "count": 1,
-                    "filter_type": "character card with a"
+                    "count": 1
                 }
             ]
         }
@@ -30537,7 +31790,8 @@
                 {
                     "action": "play_card",
                     "cost_lte": 4,
-                    "count": 1
+                    "count": 1,
+                    "filter_name": "trigger"
                 },
                 {
                     "action": "play_from_trash",
@@ -30613,7 +31867,8 @@
                 {
                     "action": "play_card",
                     "cost_lte": 99,
-                    "count": 1
+                    "count": 1,
+                    "filter_name": "trigger"
                 }
             ]
         }
@@ -30717,7 +31972,8 @@
                 {
                     "action": "play_card",
                     "cost_lte": 4,
-                    "count": 1
+                    "count": 1,
+                    "filter_name": "amazon lily"
                 }
             ]
         },
@@ -30759,7 +32015,8 @@
                 {
                     "action": "play_card",
                     "cost_lte": 99,
-                    "count": 1
+                    "count": 1,
+                    "filter_name": "trigger"
                 }
             ]
         }
@@ -31172,6 +32429,11 @@
             "once_per_turn": true,
             "steps": [
                 {
+                    "action": "set_active",
+                    "count": 1,
+                    "target": "own_character"
+                },
+                {
                     "action": "trash_from_deck_top",
                     "count": 4
                 }
@@ -31290,10 +32552,35 @@
     },
     "OP15-030": {},
     "OP15-031": {},
-    "OP15-032": {},
+    "OP15-032": {
+        "activate_main": {
+            "conditions": {
+                "leader_type": "straw hat crew"
+            },
+            "costs": [
+                {
+                    "type": "trash_self"
+                }
+            ],
+            "steps": [
+                {
+                    "action": "set_active",
+                    "cost_lte": 8,
+                    "count": 1,
+                    "target": "own_character"
+                }
+            ]
+        }
+    },
     "OP15-033": {
         "on_play": {
             "steps": [
+                {
+                    "action": "set_active",
+                    "count": 1,
+                    "filter_type": "fish-man",
+                    "target": "leader"
+                },
                 {
                     "action": "life_to_hand",
                     "count": 1,
@@ -31403,8 +32690,9 @@
             "steps": [
                 {
                     "action": "play_card",
-                    "cost_lte": 99,
-                    "count": 1
+                    "cost_eq": 3,
+                    "count": 1,
+                    "filter_type": "dressrosa"
                 }
             ]
         }
@@ -31466,7 +32754,18 @@
             ]
         }
     },
-    "OP15-043": {},
+    "OP15-043": {
+        "on_play": {
+            "steps": [
+                {
+                    "action": "play_card",
+                    "cost_lte": 99,
+                    "count": 1,
+                    "filter_name": "bobby funk"
+                }
+            ]
+        }
+    },
     "OP15-044": {
         "on_ko": {
             "steps": [
@@ -31639,7 +32938,8 @@
                 {
                     "action": "play_card",
                     "cost_lte": 4,
-                    "count": 1
+                    "count": 1,
+                    "filter_type": "dressrosa"
                 }
             ]
         }
@@ -31946,8 +33246,9 @@
             "steps": [
                 {
                     "action": "play_card",
-                    "cost_lte": 99,
-                    "count": 1
+                    "cost_eq": 1,
+                    "count": 1,
+                    "filter_name": "heavenly warriors"
                 }
             ]
         },
@@ -32655,7 +33956,8 @@
                 {
                     "action": "play_card",
                     "cost_lte": 5,
-                    "count": 1
+                    "count": 1,
+                    "filter_type": "sky island"
                 },
                 {
                     "action": "gain_life",
@@ -32700,7 +34002,8 @@
                 {
                     "action": "play_card",
                     "cost_lte": 3,
-                    "count": 1
+                    "count": 1,
+                    "filter_type": "shandian warrior"
                 }
             ]
         },
@@ -33068,6 +34371,25 @@
         }
     },
     "OP16-012": {
+        "on_play": {
+            "conditions": {
+                "leader_type": "red-haired pirates"
+            },
+            "costs": [
+                {
+                    "count": 1,
+                    "type": "rest_don"
+                }
+            ],
+            "steps": [
+                {
+                    "action": "play_card",
+                    "cost_lte": 99,
+                    "count": 1,
+                    "filter_name": "shanks"
+                }
+            ]
+        },
         "passive": {
             "steps": [
                 {
@@ -33152,8 +34474,7 @@
                 {
                     "action": "play_card",
                     "cost_lte": 99,
-                    "count": 2,
-                    "filter_type": "character cards with a"
+                    "count": 2
                 }
             ]
         },
@@ -33265,7 +34586,8 @@
                 {
                     "action": "play_card",
                     "cost_lte": 2,
-                    "count": 1
+                    "count": 1,
+                    "filter_name": "antlerkov"
                 }
             ]
         }
@@ -33309,12 +34631,24 @@
                 {
                     "action": "play_card",
                     "cost_lte": 2,
-                    "count": 1
+                    "count": 1,
+                    "filter_name": "bunkov"
                 }
             ]
         }
     },
     "OP16-030": {
+        "end_of_turn": {
+            "steps": [
+                {
+                    "action": "set_active",
+                    "color": "green",
+                    "cost_lte": 5,
+                    "count": 99,
+                    "target": "own_character"
+                }
+            ]
+        },
         "on_play": {
             "steps": [
                 {
@@ -33324,7 +34658,18 @@
             ]
         }
     },
-    "OP16-031": {},
+    "OP16-031": {
+        "on_ko": {
+            "steps": [
+                {
+                    "action": "play_card",
+                    "cost_lte": 99,
+                    "count": 1,
+                    "filter_name": "prisoner of impel down"
+                }
+            ]
+        }
+    },
     "OP16-032": {
         "passive": {
             "steps": [
@@ -33422,6 +34767,21 @@
                     "target": "leader"
                 }
             ]
+        },
+        "main": {
+            "costs": [
+                {
+                    "count": 6,
+                    "type": "rest_don"
+                }
+            ],
+            "steps": [
+                {
+                    "action": "set_active",
+                    "count": 99,
+                    "target": "own_character_and_leader"
+                }
+            ]
         }
     },
     "OP16-039": {
@@ -33462,7 +34822,20 @@
             ]
         }
     },
-    "OP16-041": {},
+    "OP16-041": {
+        "passive": {
+            "don_requirement": 1,
+            "once_per_turn": true,
+            "steps": [
+                {
+                    "action": "play_card",
+                    "cost_lte": 99,
+                    "count": 1,
+                    "filter_name": "prisoner of impel down"
+                }
+            ]
+        }
+    },
     "OP16-042": {},
     "OP16-043": {
         "passive": {
@@ -33488,7 +34861,8 @@
                 {
                     "action": "play_card",
                     "cost_lte": 2,
-                    "count": 1
+                    "count": 1,
+                    "filter_type": "impel down"
                 }
             ]
         },
@@ -33512,6 +34886,12 @@
                 {
                     "action": "draw",
                     "count": 1
+                },
+                {
+                    "action": "play_card",
+                    "cost_lte": 99,
+                    "count": 1,
+                    "filter_name": "prisoner of impel down"
                 },
                 {
                     "action": "gain_blocker",
@@ -33730,7 +35110,8 @@
                 {
                     "action": "play_card",
                     "cost_lte": 99,
-                    "count": 3
+                    "count": 3,
+                    "filter_type": "admiral"
                 }
             ]
         }
@@ -33983,6 +35364,10 @@
                 }
             ],
             "steps": [
+                {
+                    "action": "set_active",
+                    "target": "self"
+                },
                 {
                     "action": "gain_blocker"
                 }
@@ -34255,6 +35640,7 @@
                     "amount": 20,
                     "count": 1,
                     "duration": "permanent",
+                    "filter_name": "kouzuki momonosuke",
                     "target": "own_character"
                 }
             ]
@@ -34415,7 +35801,7 @@
             "steps": [
                 {
                     "action": "play_card",
-                    "cost_lte": 6,
+                    "cost_lte": 2,
                     "count": 1
                 },
                 {
@@ -34493,6 +35879,21 @@
                     "target": "leader"
                 }
             ]
+        },
+        "main": {
+            "costs": [
+                {
+                    "count": 2,
+                    "type": "rest_don"
+                }
+            ],
+            "steps": [
+                {
+                    "action": "set_active",
+                    "count": 1,
+                    "target": "leader"
+                }
+            ]
         }
     },
     "OP16-101": {
@@ -34531,6 +35932,13 @@
                 {
                     "action": "draw",
                     "count": 1
+                },
+                {
+                    "action": "play_card",
+                    "cost_lte": 99,
+                    "count": 1,
+                    "filter_name": "fullalead",
+                    "source_alt": "trash"
                 }
             ]
         },
@@ -34591,6 +35999,12 @@
                 "life_lte": 1
             },
             "steps": [
+                {
+                    "action": "play_card",
+                    "cost_lte": 99,
+                    "count": 1,
+                    "filter_name": "absalom"
+                },
                 {
                     "action": "play_from_trash",
                     "cost_lte": 4,
@@ -34804,6 +36218,16 @@
         }
     },
     "OP16-116": {
+        "main": {
+            "steps": [
+                {
+                    "action": "play_card",
+                    "cost_lte": 99,
+                    "count": 1,
+                    "filter_name": "marshall.d.teach"
+                }
+            ]
+        },
         "trigger": {
             "steps": [
                 {
@@ -35151,7 +36575,23 @@
             ]
         }
     },
-    "P-029": {},
+    "P-029": {
+        "end_of_turn": {
+            "costs": [
+                {
+                    "type": "rest_self"
+                }
+            ],
+            "steps": [
+                {
+                    "action": "set_active",
+                    "count": 1,
+                    "filter_type": "film",
+                    "target": "own_character"
+                }
+            ]
+        }
+    },
     "P-030": {
         "on_ko": {
             "steps": [
@@ -35464,7 +36904,21 @@
             ]
         }
     },
-    "P-058": {},
+    "P-058": {
+        "main": {
+            "conditions": {
+                "leader_is": "uta"
+            },
+            "steps": [
+                {
+                    "action": "set_active",
+                    "count": 99,
+                    "filter_type": "film",
+                    "target": "own_character"
+                }
+            ]
+        }
+    },
     "P-059": {
         "counter": {
             "conditions": {
@@ -35480,7 +36934,16 @@
             ]
         }
     },
-    "P-060": {},
+    "P-060": {
+        "main": {
+            "steps": [
+                {
+                    "action": "rest_opp_don",
+                    "count": 2
+                }
+            ]
+        }
+    },
     "P-061": {},
     "P-062": {
         "activate_main": {
@@ -35636,6 +37099,11 @@
             "once_per_turn": true,
             "steps": [
                 {
+                    "action": "set_active",
+                    "count": 1,
+                    "target": "own_character"
+                },
+                {
                     "action": "add_don",
                     "count": 1
                 }
@@ -35655,6 +37123,14 @@
         }
     },
     "P-079": {
+        "end_of_turn": {
+            "steps": [
+                {
+                    "action": "set_active",
+                    "target": "self"
+                }
+            ]
+        },
         "passive": {
             "steps": [
                 {
@@ -35673,7 +37149,7 @@
                 },
                 {
                     "action": "play_card",
-                    "cost_lte": 99,
+                    "cost_eq": 5,
                     "count": 1,
                     "filter_type": "cross guild"
                 }
@@ -35749,7 +37225,8 @@
                 {
                     "action": "play_card",
                     "cost_lte": 6,
-                    "count": 1
+                    "count": 1,
+                    "filter_type": "cross guild"
                 }
             ]
         },
@@ -35761,7 +37238,22 @@
             ]
         }
     },
-    "P-085": {},
+    "P-085": {
+        "on_play": {
+            "conditions": {
+                "leader_type": "supernovas"
+            },
+            "steps": [
+                {
+                    "action": "gain_life",
+                    "count": 1,
+                    "dest": "life_bottom",
+                    "source": "own_field",
+                    "up_to": true
+                }
+            ]
+        }
+    },
     "P-088": {},
     "P-090": {
         "on_ko": {
@@ -35779,7 +37271,9 @@
                 {
                     "action": "play_card",
                     "cost_lte": "don_count_opp",
-                    "count": 1
+                    "count": 1,
+                    "exclude": "charlotte smoothie",
+                    "filter_type": "big mom pirates"
                 }
             ]
         }
@@ -35790,7 +37284,8 @@
                 {
                     "action": "play_card",
                     "cost_lte": 5,
-                    "count": 1
+                    "count": 1,
+                    "filter_name": "neptunian"
                 }
             ]
         }
@@ -36214,7 +37709,18 @@
             ]
         }
     },
-    "PRB02-018": {},
+    "PRB02-018": {
+        "on_play": {
+            "steps": [
+                {
+                    "action": "play_card",
+                    "cost_lte": 99,
+                    "count": 1,
+                    "filter_name": "sabo"
+                }
+            ]
+        }
+    },
     "ST01-001": {},
     "ST01-002": {
         "passive": {
@@ -36421,7 +37927,23 @@
             ]
         }
     },
-    "ST02-001": {},
+    "ST02-001": {
+        "activate_main": {
+            "costs": [
+                {
+                    "count": 1,
+                    "type": "trash_from_hand"
+                }
+            ],
+            "once_per_turn": true,
+            "steps": [
+                {
+                    "action": "set_active",
+                    "target": "leader"
+                }
+            ]
+        }
+    },
     "ST02-002": {},
     "ST02-003": {
         "passive": {
@@ -36495,12 +38017,57 @@
             ]
         }
     },
-    "ST02-008": {},
-    "ST02-009": {},
-    "ST02-010": {},
+    "ST02-008": {
+        "when_attacking": {
+            "don_requirement": 1,
+            "steps": [
+                {
+                    "action": "rest_opp_don",
+                    "count": 1
+                }
+            ]
+        }
+    },
+    "ST02-009": {
+        "on_play": {
+            "steps": [
+                {
+                    "action": "set_active",
+                    "cost_lte": 5,
+                    "count": 1,
+                    "filter_type": "heart pirates",
+                    "rested_only": true,
+                    "target": "own_character"
+                }
+            ]
+        }
+    },
+    "ST02-010": {
+        "your_turn": {
+            "don_requirement": 1,
+            "once_per_turn": true,
+            "steps": [
+                {
+                    "action": "set_active",
+                    "count": 1,
+                    "target": "own_character"
+                }
+            ]
+        }
+    },
     "ST02-011": {},
     "ST02-012": {},
     "ST02-013": {
+        "end_of_turn": {
+            "don_requirement": 1,
+            "steps": [
+                {
+                    "action": "set_active",
+                    "count": 1,
+                    "target": "own_character"
+                }
+            ]
+        },
         "passive": {
             "steps": [
                 {
@@ -36794,7 +38361,25 @@
             ]
         }
     },
-    "ST04-002": {},
+    "ST04-002": {
+        "on_play": {
+            "costs": [
+                {
+                    "count": 1,
+                    "optional": true,
+                    "type": "don_minus"
+                }
+            ],
+            "steps": [
+                {
+                    "action": "play_card",
+                    "cost_lte": 4,
+                    "count": 1,
+                    "filter_name": "page one"
+                }
+            ]
+        }
+    },
     "ST04-003": {
         "on_play": {
             "costs": [
@@ -37731,7 +39316,24 @@
             ]
         }
     },
-    "ST07-017": {},
+    "ST07-017": {
+        "activate_main": {
+            "costs": [
+                {
+                    "type": "rest_self"
+                }
+            ],
+            "steps": [
+                {
+                    "action": "gain_life",
+                    "count": 1,
+                    "dest": "life_top",
+                    "source": "own_field",
+                    "up_to": true
+                }
+            ]
+        }
+    },
     "ST08-001": {
         "your_turn": {
             "steps": [
@@ -38012,7 +39614,8 @@
                     "action": "play_card",
                     "color": "yellow",
                     "cost_lte": 4,
-                    "count": 1
+                    "count": 1,
+                    "filter_type": "land of wano"
                 }
             ]
         }
@@ -38078,15 +39681,22 @@
     },
     "ST09-015": {
         "counter": {
-            "conditions": {
-                "life_lte": 2
-            },
             "steps": [
                 {
                     "action": "buff_power",
                     "amount": 4000,
                     "duration": "battle_only",
                     "target": "leader_or_character"
+                },
+                {
+                    "action": "gain_life",
+                    "conditions": {
+                        "life_lte": 2
+                    },
+                    "count": 1,
+                    "dest": "life_bottom",
+                    "source": "own_field",
+                    "up_to": true
                 }
             ]
         },
@@ -38388,6 +39998,22 @@
     },
     "ST11-001": {},
     "ST11-002": {
+        "end_of_turn": {
+            "costs": [
+                {
+                    "count": 1,
+                    "type": "trash_from_hand"
+                }
+            ],
+            "steps": [
+                {
+                    "action": "set_active",
+                    "count": 1,
+                    "filter_type": "film",
+                    "target": "own_character"
+                }
+            ]
+        },
         "passive": {
             "steps": [
                 {
@@ -38452,6 +40078,15 @@
         }
     },
     "ST11-005": {
+        "main": {
+            "steps": [
+                {
+                    "action": "set_active",
+                    "count": 1,
+                    "target": "leader"
+                }
+            ]
+        },
         "trigger": {
             "steps": [
                 {
@@ -38463,7 +40098,20 @@
             ]
         }
     },
-    "ST12-001": {},
+    "ST12-001": {
+        "when_attacking": {
+            "don_requirement": 1,
+            "once_per_turn": true,
+            "steps": [
+                {
+                    "action": "set_active",
+                    "count": 1,
+                    "power_lte": 7000,
+                    "target": "own_character"
+                }
+            ]
+        }
+    },
     "ST12-002": {
         "activate_main": {
             "costs": [
@@ -38495,7 +40143,10 @@
                 {
                     "action": "play_card",
                     "cost_lte": 4,
-                    "count": 1
+                    "count": 1,
+                    "enters_rested": true,
+                    "exclude": "dracule mihawk",
+                    "filter_type": "muggy kingdom"
                 }
             ]
         }
@@ -38525,7 +40176,19 @@
             "don_requirement": 1
         }
     },
-    "ST12-007": {},
+    "ST12-007": {
+        "on_play": {
+            "steps": [
+                {
+                    "action": "set_active",
+                    "attribute": "slash",
+                    "cost_lte": 4,
+                    "count": 1,
+                    "target": "own_character"
+                }
+            ]
+        }
+    },
     "ST12-008": {
         "when_attacking": {
             "don_requirement": 1,
@@ -38783,6 +40446,16 @@
         }
     },
     "ST13-006": {
+        "on_play": {
+            "steps": [
+                {
+                    "action": "play_card",
+                    "cost_lte": 99,
+                    "count": 1,
+                    "filter_name": "sabo"
+                }
+            ]
+        },
         "passive": {
             "steps": [
                 {
@@ -39791,6 +41464,17 @@
     },
     "ST20-003": {},
     "ST20-004": {
+        "on_play": {
+            "steps": [
+                {
+                    "action": "set_active",
+                    "cost_lte": 3,
+                    "count": 1,
+                    "filter_type": "big mom pirates",
+                    "target": "own_character"
+                }
+            ]
+        },
         "trigger": {
             "steps": [
                 {
@@ -39977,7 +41661,8 @@
                     "action": "play_card",
                     "color": "red",
                     "cost_lte": 99,
-                    "count": 1
+                    "count": 1,
+                    "exclude": "roronoa zoro"
                 }
             ]
         }
@@ -40095,6 +41780,21 @@
     },
     "ST22-004": {},
     "ST22-005": {
+        "activate_main": {
+            "costs": [
+                {
+                    "count": 3,
+                    "type": "rest_don"
+                }
+            ],
+            "once_per_turn": true,
+            "steps": [
+                {
+                    "action": "set_active",
+                    "target": "self"
+                }
+            ]
+        },
         "passive": {
             "steps": [
                 {
@@ -40201,6 +41901,12 @@
                     "amount": 2000,
                     "duration": "until_opp_turn_end",
                     "target": "leader"
+                },
+                {
+                    "action": "play_card",
+                    "cost_lte": 99,
+                    "count": 1,
+                    "filter_name": "edward.newgate"
                 },
                 {
                     "action": "life_to_hand",
@@ -40592,7 +42298,7 @@
             ],
             "steps": [
                 {
-                    "action": "rest_opp_character",
+                    "action": "rest_opp_don",
                     "count": 1
                 }
             ]

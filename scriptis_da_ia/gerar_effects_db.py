@@ -718,6 +718,21 @@ def parse_rest_opp(text):
     steps = []
     t = text.lower()
 
+    # Rest DON!! do OPONENTE -- mecânica distinta de rest_opp_character
+    # (aqui o alvo é DON!! card no campo do oponente, não um Character).
+    # Achado na auditoria do censo 0_nao_classificado (27/06): P-060 Tot
+    # Musica, ST02-008 Scratchmen Apoo, EB03-012 Otama (parte de um
+    # "choose one"). Nunca confundir com don_minus (que devolve DON ao
+    # DECK do PRÓPRIO jogador como custo) -- aqui é desvantagem temporária
+    # imposta no oponente, o DON continua no campo dele, só fica rested.
+    m_don = re.search(r"rest (?:up to (\d+)|(\d+)) of your opponent.{0,15}don!{0,2}\s*cards?", t)
+    if m_don:
+        steps.append({
+            'action': 'rest_opp_don',
+            'count': int(m_don.group(1) or m_don.group(2)),
+        })
+        return steps
+
     m = re.search(r"rest up to (\d+) of your opponent.{0,10} characters? (?:with a cost of (\d+) or|that has)", t)
     if m:
         cost_m = re.search(r'cost of (\d+) or', t)
@@ -731,6 +746,105 @@ def parse_rest_opp(text):
     m = re.search(r"rest up to (\d+) of your opponent.{0,20} characters?", t)
     if m:
         steps.append({'action': 'rest_opp_character', 'count': int(m.group(1))})
+
+    return steps
+
+
+def parse_set_active(text):
+    """
+    "Set [alvo] as active" -- desrestar fora da Refresh Phase normal.
+    DISTINTO de set_don_active (DON!! cards especificamente, já cobre seu
+    próprio padrão -- aqui excluímos qualquer match com 'don!!' no meio
+    pra nunca duplicar). Alvos vistos no banco (26 cartas, censo padrão 8,
+    nunca implementado antes):
+      'this Character'                          -> target='self'
+      'this Leader'                              -> target='leader'
+      'up to N of your [Tipo] Characters...'     -> target='own_character'
+      'up to N of your [Tipo] Characters and
+       your Leader'                              -> target='own_character_and_leader'
+      'up to N of your [Tipo] Leader or
+       Character cards'                          -> target='leader_or_character'
+      'up to N of your [Tipo] Leader'             -> target='leader'
+    Filtros possíveis no mesmo trecho: filter_type, attribute, color,
+    cost_lte/cost_eq, power_lte/power_eq, rested_only.
+    """
+    steps = []
+    t = text.lower()
+
+    for m in re.finditer(r'set ([^.]*?) as active', t):
+        desc = m.group(1)
+        if 'don!!' in desc:
+            continue   # cobertura própria em set_don_active, não duplicar
+        # "...add up to N DON!! card(s)... AND set it as active" -- o "it"
+        # refere-se ao DON!! card da clausula ANTERIOR, não um character.
+        # 'don!!' não aparece dentro do proprio desc (so na frase anterior),
+        # por isso o filtro acima nao pega. Achado ao validar 74 cartas que
+        # teriam virado 'own_character' por engano (EB01-021 e outras).
+        antes = t[max(0, m.start() - 60):m.start()]
+        if desc.strip() in ('it', 'this', 'them') and 'don!!' in antes:
+            continue
+        step = {'action': 'set_active'}
+
+        desc_strip = desc.strip()
+        if desc_strip == 'this character':
+            step['target'] = 'self'
+        elif desc_strip == 'this leader':
+            step['target'] = 'leader'
+        else:
+            count_m = re.match(r'up to (\d+) of your', desc_strip)
+            if count_m:
+                step['count'] = int(count_m.group(1))
+            elif 'all of your' in desc:
+                step['count'] = 99   # ex: OP16-038 "your Leader and all of your Characters"
+            else:
+                step['count'] = 1
+
+            # "your leader and X" (leader no INICIO, ex: OP16-038) OU "X and
+            # your leader" (leader no FIM, ex: Carrot EB04-013) -- as duas
+            # ordens aparecem no banco, achado ao validar essa carta.
+            if 'leader and' in desc or 'and your leader' in desc:
+                step['target'] = 'own_character_and_leader'
+            elif 'leader or character' in desc:
+                step['target'] = 'leader_or_character'
+            elif 'leader' in desc and 'character' not in desc:
+                step['target'] = 'leader'
+            else:
+                step['target'] = 'own_character'
+
+            type_m = (re.search(r'"([a-z][a-z0-9 .\'-]+)"\s+type', desc)
+                      or re.search(r'[\[{]([a-z][a-z0-9 .\'-]+)[\]}]\s+type', desc))
+            if type_m:
+                step['filter_type'] = type_m.group(1).strip()
+            else:
+                # Filtro por NOME PRÓPRIO (sem "type" depois, ex: "[Kuro]
+                # cards"/"[Foxy] cards"/"[Charlotte Linlin] Characters") --
+                # mesma distinção já feita pra buff_cost (Shinobu OP16-087).
+                name_m = re.search(r'[\[{]([a-z][a-z0-9 .\'-]+)[\]}]\s+(?:cards?|characters?)', desc)
+                if name_m:
+                    step['filter_name'] = name_m.group(1).strip()
+            attr_m = re.search(r'"([a-z]+)"\s+attribute', desc)
+            if attr_m:
+                step['attribute'] = attr_m.group(1).strip()
+            color_m = re.search(
+                r'your (purple|red|green|blue|yellow|black)\s+'
+                r'(?:[\[{"][a-z][a-z0-9 .\'-]+[\]}"]\s+type\s+)?characters', desc)
+            if color_m:
+                step['color'] = color_m.group(1)
+            cost_m = re.search(r'cost of (\d+)( or less)?', desc)
+            if cost_m:
+                if cost_m.group(2):
+                    step['cost_lte'] = int(cost_m.group(1))
+                else:
+                    step['cost_eq'] = int(cost_m.group(1))
+            power_m = re.search(r'(\d+) power( or less)?', desc)
+            if power_m:
+                if power_m.group(2):
+                    step['power_lte'] = int(power_m.group(1))
+                else:
+                    step['power_eq'] = int(power_m.group(1))
+            if 'rested' in desc:
+                step['rested_only'] = True
+        steps.append(step)
 
     return steps
 
@@ -1569,7 +1683,13 @@ def parse_play_generic(text):
     if 'play this card' in t:
         steps.append({'action': 'play_card', 'count': 1, 'source': 'self'})
         return steps
-    m = re.search(r'play up to (\d+) [^.]*?(?:character|stage) card', t)
+    m = re.search(
+        r'play up to (\d+) [^.]*?'
+        r'(?:(?:character|stage) cards?'        # "Character card"/"Stage card" (forma original)
+        r'|type cards?'                          # "[Tipo] type card" generico, sem a palavra Character/Stage
+        r'|characters?\b(?!\s*card)'              # "red Character"/"Character with..." sem "card" depois
+        r'|[\[{][a-z][a-z0-9 .\'-]+[\]}](?!\s+type))',  # "[Nome]" carta especifica por nome, nao tipo
+        t)
     # Exclusao de DECK/trash olha so a JANELA PROXIMA da clausula "play up
     # to..." (curto alcance: clausula anterior conectada por ":" ou inicio
     # de frase), NAO o texto inteiro -- olhar o texto inteiro causa falso
@@ -1596,14 +1716,18 @@ def parse_play_generic(text):
         # pre-existente, 17 cards: EB01-009, EB02-025, OP01-116, etc).
         precedido_de_look = bool(re.search(r'look at \d+ cards? from the top of (?:your|the) deck', t[:m.start()]))
         if not precedido_de_look:
-            cost_m = re.search(r'with a cost of (\d+) or less', t)
+            cost_m = re.search(r'with a cost of (\d+) or less', janela)
+            cost_eq_m = re.search(r'with a cost of (\d+)(?! or less)', janela)
             # filter_type/color: mesma regex usada em parse_play_from_deck.
             # Antes ausente aqui -- confirmado faltando em OP13-099 (Empty
             # Throne: "play up to 1 BLACK \"Five Elders\" type Character
             # card..."), que perdia o filtro de arquetipo/cor inteiramente.
-            type_m = re.search(
-                r'play up to \d+ (?:black |red |blue |green |yellow |purple )?"?([a-z][a-z0-9 .]+)"? type',
+            type_m = (re.search(
+                r'play up to \d+ (?:black |red |blue |green |yellow |purple )?"([a-z][a-z0-9 .]+)" type',
                 janela)
+                or re.search(
+                r'play up to \d+ (?:black |red |blue |green |yellow |purple )?[\[{]([a-z][a-z0-9 .\'-]+)[\]}]\s+type',
+                janela))
             color_m = re.search(r'play up to \d+ (black|red|blue|green|yellow|purple)', janela)
             # cost_lte DINAMICO: "with a cost equal to or less than the
             # number of DON!! cards on your/your opponent's field" --
@@ -1620,14 +1744,52 @@ def parse_play_generic(text):
                 cost_lte_val = int(cost_m.group(1))
             else:
                 cost_lte_val = 99
+            cost_eq_val = int(cost_eq_m.group(1)) if (cost_eq_m and not cost_m and not dyn_m) else None
             step = {
                 'action': 'play_card', 'count': int(m.group(1)),
                 'cost_lte': cost_lte_val,
             }
+            if cost_eq_val is not None:
+                step['cost_eq'] = cost_eq_val
+                del step['cost_lte']   # exato substitui o limite generico, nao soma
             if type_m:
                 step['filter_type'] = type_m.group(1).strip()
+            else:
+                # Filtro por NOME PRÓPRIO (sem "type" depois, ex: "Play up
+                # to 1 [Gaimon] from your hand" -- carta especifica, nao
+                # arquetipo). Mesma distinção já feita pra buff_cost
+                # (Shinobu) e set_active (Kuro/Foxy). Achado 27/06. NUNCA
+                # usar o mesmo nome que já está em "other than [X]" --
+                # esse colchete é so exclusão, não filtro (ex: Dogura
+                # "red Character other than [Dogura]": sem isso, virava
+                # "jogar [Dogura] que não seja [Dogura]" = sempre vazio).
+                excl_m_probe = re.search(r'other than [\[{]([a-z][a-z0-9 .\'-]+)[\]}]', janela)
+                for name_cand in re.finditer(r'[\[{]([a-z][a-z0-9 .\'-]+)[\]}](?!\s+type)', janela):
+                    nome = name_cand.group(1).strip()
+                    if excl_m_probe and nome == excl_m_probe.group(1).strip():
+                        continue
+                    step_filter_name = nome
+                    break
+                else:
+                    step_filter_name = None
+                if step_filter_name:
+                    step['filter_name'] = step_filter_name
             if color_m:
                 step['color'] = color_m.group(1)
+            # "other than [Nome]" -- exclui a propria carta-fonte (ou outra
+            # especifica) da lista de elegiveis, ex: Bepo "other than
+            # [Bepo]", Dogura "other than [Dogura]".
+            excl_m = re.search(r'other than [\[{]([a-z][a-z0-9 .\'-]+)[\]}]', janela)
+            if excl_m:
+                step['exclude'] = excl_m.group(1).strip()
+            # "from your hand or trash" -- fonte flexivel, nao so a mao.
+            if 'from your hand or trash' in janela:
+                step['source_alt'] = 'trash'
+            # "...from your hand rested" -- entra em campo JA restado
+            # (oposto do normal). Ex: Coribou "play up to 1 [Caribou]...
+            # from your hand rested."
+            if re.search(r'from your hand(?: or trash)? rested\b', janela):
+                step['enters_rested'] = True
             steps.append(step)
     return steps
 
@@ -1705,6 +1867,17 @@ def parse_cost_debuff(text):
                   or re.search(r'type including ["\[{]([a-z][a-z0-9 .\'-]+)["\]}]', clause))
         if type_m and not is_self:
             step['filter_type'] = type_m.group(1).strip()
+        else:
+            # Filtro por NOME PRÓPRIO (sem "type" depois) -- ex: Shinobu
+            # OP16-087 "up to 1 of your [Kouzuki Momonosuke] gains +20
+            # cost" (nome de personagem entre [], NAO um tipo). Achado
+            # 27/06: antes vazava o filter_type da condição anterior na
+            # mesma frase ("{Land of Wano} type" pertencia ao "if your
+            # Leader has..."), já corrigido pelo escopo de clausula acima
+            # -- mas faltava capturar o filtro REAL (por nome) que sobra.
+            name_m = re.search(r'[\[{]([a-z][a-z0-9 .\'-]+)[\]}]\s+gains?\s+[+\-−]\d+ cost', clause)
+            if name_m and not is_self:
+                step['filter_name'] = name_m.group(1).strip()
         color_m = re.search(r'your (black|red|green|blue|yellow|purple) characters', clause)
         if color_m and not is_self:
             step['color'] = color_m.group(1)
@@ -1770,8 +1943,8 @@ def parse_life(text):
         return 'up to' in seg
 
     def dest_from(seg):
-        has_top = 'top of your life' in seg
-        has_bot = 'bottom of your life' in seg
+        has_top = 'top of your life' in seg or 'top of the owner' in seg
+        has_bot = 'bottom of your life' in seg or 'bottom of the owner' in seg
         if has_top and has_bot:
             return 'life_top_or_bottom'
         if has_bot:
@@ -1786,10 +1959,13 @@ def parse_life(text):
         return 'deck_top'   # fallback mais comum
 
     # ── gain_life: ADIÇÃO à própria vida ───────────────────────────────
-    # Ancorar na CLÁUSULA "add ... to (top/bottom of) your life" e ler
-    # source/dest/qty SÓ de dentro dela (seg = o próprio match), nunca do
-    # texto todo -- senão vaza entre cláusulas (ex: Hiyori, custo + efeito).
-    m = re.search(r'(add|put)[^.:]*?to (?:the (?:top|bottom|top or bottom) of )?your life(?: cards?)?', t)
+    # Ancorar na CLÁUSULA "add ... to (top/bottom of) your/the owner's
+    # life" e ler source/dest/qty SÓ de dentro dela (seg = o próprio
+    # match), nunca do texto todo -- senão vaza entre cláusulas (ex:
+    # Hiyori, custo + efeito). "the owner's life cards" (Kawamatsu
+    # OP06-103) é sinônimo de "your life" aqui -- mesmo dono, fraseado
+    # diferente porque a regra original usa "owner" genericamente.
+    m = re.search(r'(add|put)[^.:]*?to (?:the (?:top|bottom|top or bottom) of )?(?:your|the owner.?s) life(?: cards?)?', t)
     if m and 'trash' not in m.group(0):
         seg = m.group(0)
         step = {
@@ -1799,6 +1975,14 @@ def parse_life(text):
             'count':  qty_in(seg),
             'up_to':  up_to_in(seg),
         }
+        # Filtro de power no PRÓPRIO character fonte (só relevante quando
+        # source == own_field, ex: Kawamatsu "1 of your Characters with 0
+        # power"). Sem isso a IA poderia mandar qualquer character pra
+        # vida, nao só os de power exato pedido pela carta.
+        if step['source'] == 'own_field':
+            power_m = re.search(r'with (\d+) power', seg)
+            if power_m:
+                step['power_eq'] = int(power_m.group(1))
         if 'face-up' in seg or 'face up' in seg:
             step['face'] = 'up'
         elif 'face-down' in seg or 'face down' in seg:
@@ -2274,6 +2458,11 @@ def parse_block(block_text, trigger_name):
         steps.extend(parse_select_unblockable_turn(t))
     elif 'blocker' in t and 'cannot activate' in t and 'whenever your leader attacks' in t:
         steps.extend(parse_select_unblockable_turn(t))
+
+    # "Set [alvo] as active" -- desrestar fora do Refresh normal. Exclui
+    # don!! explicitamente dentro da função (set_don_active já cobre).
+    if ' as active' in t and 'set ' in t:
+        steps.extend(parse_set_active(t))
 
     # Trava de ataque / trava de ser restado / trava de Blocker persistente
     # (mecanicas distintas, cobertas pela mesma funcao por compartilharem

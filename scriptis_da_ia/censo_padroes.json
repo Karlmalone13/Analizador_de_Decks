@@ -1,1398 +1,4 @@
 {
-    "0_nao_classificado": [
-        {
-            "id": "EB01-008",
-            "name": "LittleOars Jr."
-        },
-        {
-            "id": "EB01-026",
-            "name": "Prince Bellett"
-        },
-        {
-            "id": "EB01-047",
-            "name": "Laboon (047)"
-        },
-        {
-            "id": "EB02-009",
-            "name": "Thousand Sunny"
-        },
-        {
-            "id": "EB02-039",
-            "name": "GERMA 66"
-        },
-        {
-            "id": "EB03-008",
-            "name": "Hibari"
-        },
-        {
-            "id": "EB03-012",
-            "name": "Otama"
-        },
-        {
-            "id": "EB03-027",
-            "name": "Marguerite"
-        },
-        {
-            "id": "EB04-012",
-            "name": "Kikunojo - EB04-012"
-        },
-        {
-            "id": "OP01-008",
-            "name": "Cavendish"
-        },
-        {
-            "id": "OP01-032",
-            "name": "Ashura Doji"
-        },
-        {
-            "id": "OP01-062",
-            "name": "Crocodile (062)"
-        },
-        {
-            "id": "OP01-069",
-            "name": "Caesar Clown"
-        },
-        {
-            "id": "OP01-085",
-            "name": "Mr.3 (Galdino)"
-        },
-        {
-            "id": "OP01-089",
-            "name": "Crescent Cutlass"
-        },
-        {
-            "id": "OP01-098",
-            "name": "Kurozumi Orochi"
-        },
-        {
-            "id": "OP01-105",
-            "name": "Bao Huang"
-        },
-        {
-            "id": "OP02-008",
-            "name": "Jozu"
-        },
-        {
-            "id": "OP02-025",
-            "name": "Kin'emon"
-        },
-        {
-            "id": "OP02-027",
-            "name": "Inuarashi"
-        },
-        {
-            "id": "OP02-095",
-            "name": "Onigumo"
-        },
-        {
-            "id": "OP03-001",
-            "name": "Portgas.D.Ace"
-        },
-        {
-            "id": "OP03-049",
-            "name": "Patty"
-        },
-        {
-            "id": "OP03-053",
-            "name": "Yosaku & Johnny"
-        },
-        {
-            "id": "OP03-070",
-            "name": "Monkey.D.Luffy (Dash Pack)"
-        },
-        {
-            "id": "OP03-091",
-            "name": "Helmeppo"
-        },
-        {
-            "id": "OP04-031",
-            "name": "Donquixote Doflamingo (031)"
-        },
-        {
-            "id": "OP04-043",
-            "name": "Ulti"
-        },
-        {
-            "id": "OP04-044",
-            "name": "Kaido"
-        },
-        {
-            "id": "OP04-048",
-            "name": "Sasaki"
-        },
-        {
-            "id": "OP04-072",
-            "name": "Mr.5 (Gem)"
-        },
-        {
-            "id": "OP04-080",
-            "name": "Gyats"
-        },
-        {
-            "id": "OP04-086",
-            "name": "Chinjao"
-        },
-        {
-            "id": "OP04-096",
-            "name": "Corrida Coliseum"
-        },
-        {
-            "id": "OP05-003",
-            "name": "Inazuma"
-        },
-        {
-            "id": "OP05-040",
-            "name": "Birdcage"
-        },
-        {
-            "id": "OP05-042",
-            "name": "Issho"
-        },
-        {
-            "id": "OP05-049",
-            "name": "Haccha"
-        },
-        {
-            "id": "OP05-070",
-            "name": "Fra-Nosuke"
-        },
-        {
-            "id": "OP05-079",
-            "name": "Viola"
-        },
-        {
-            "id": "OP05-097",
-            "name": "Mary Geoise"
-        },
-        {
-            "id": "OP05-099",
-            "name": "Amazon"
-        },
-        {
-            "id": "OP06-002",
-            "name": "Inazuma"
-        },
-        {
-            "id": "OP06-014",
-            "name": "Ratchet"
-        },
-        {
-            "id": "OP06-047",
-            "name": "Charlotte Pudding"
-        },
-        {
-            "id": "OP06-083",
-            "name": "Oars"
-        },
-        {
-            "id": "OP06-086",
-            "name": "Gecko Moria (086)"
-        },
-        {
-            "id": "OP06-088",
-            "name": "Sai"
-        },
-        {
-            "id": "OP06-092",
-            "name": "Brook"
-        },
-        {
-            "id": "OP06-098",
-            "name": "Thriller Bark"
-        },
-        {
-            "id": "OP06-117",
-            "name": "The Ark Maxim"
-        },
-        {
-            "id": "OP07-001",
-            "name": "Monkey.D.Dragon (001)"
-        },
-        {
-            "id": "OP07-002",
-            "name": "Ain"
-        },
-        {
-            "id": "OP07-026",
-            "name": "Jewelry Bonney (026)"
-        },
-        {
-            "id": "OP07-047",
-            "name": "Trafalgar Law (047)"
-        },
-        {
-            "id": "OP07-062",
-            "name": "Vinsmoke Reiju"
-        },
-        {
-            "id": "OP07-090",
-            "name": "Morgans"
-        },
-        {
-            "id": "OP08-001",
-            "name": "Tony Tony.Chopper (001)"
-        },
-        {
-            "id": "OP08-022",
-            "name": "Inuarashi"
-        },
-        {
-            "id": "OP08-023",
-            "name": "Carrot (023)"
-        },
-        {
-            "id": "OP08-024",
-            "name": "Concelot"
-        },
-        {
-            "id": "OP08-025",
-            "name": "Shishilian"
-        },
-        {
-            "id": "OP08-026",
-            "name": "Giovanni"
-        },
-        {
-            "id": "OP08-042",
-            "name": "Edward Weevil"
-        },
-        {
-            "id": "OP08-043",
-            "name": "Edward.Newgate"
-        },
-        {
-            "id": "OP08-045",
-            "name": "Thatch"
-        },
-        {
-            "id": "OP08-046",
-            "name": "Shakuyaku"
-        },
-        {
-            "id": "OP08-047",
-            "name": "Jozu"
-        },
-        {
-            "id": "OP08-049",
-            "name": "Speed Jil"
-        },
-        {
-            "id": "OP08-082",
-            "name": "Sasaki"
-        },
-        {
-            "id": "OP08-083",
-            "name": "Sheepshead"
-        },
-        {
-            "id": "OP08-088",
-            "name": "Duval"
-        },
-        {
-            "id": "OP08-092",
-            "name": "Page One"
-        },
-        {
-            "id": "OP08-093",
-            "name": "X.Drake"
-        },
-        {
-            "id": "OP09-001",
-            "name": "Shanks (001)"
-        },
-        {
-            "id": "OP09-003",
-            "name": "Shachi & Penguin"
-        },
-        {
-            "id": "OP09-009",
-            "name": "Benn.Beckman"
-        },
-        {
-            "id": "OP09-011",
-            "name": "Hongo"
-        },
-        {
-            "id": "OP09-012",
-            "name": "Monster"
-        },
-        {
-            "id": "OP09-017",
-            "name": "Wire"
-        },
-        {
-            "id": "OP09-021",
-            "name": "Red Force"
-        },
-        {
-            "id": "OP09-033",
-            "name": "Nico Robin (033)"
-        },
-        {
-            "id": "OP09-058",
-            "name": "Special Muggy Ball"
-        },
-        {
-            "id": "OP09-073",
-            "name": "Brook (073)"
-        },
-        {
-            "id": "OP09-085",
-            "name": "Gecko Moria"
-        },
-        {
-            "id": "OP09-087",
-            "name": "Charlotte Pudding"
-        },
-        {
-            "id": "OP09-097",
-            "name": "Black Vortex"
-        },
-        {
-            "id": "OP09-098",
-            "name": "Black Hole"
-        },
-        {
-            "id": "OP09-111",
-            "name": "Brook (111)"
-        },
-        {
-            "id": "OP10-009",
-            "name": "Smiley"
-        },
-        {
-            "id": "OP10-015",
-            "name": "Mocha"
-        },
-        {
-            "id": "OP10-032",
-            "name": "Tashigi"
-        },
-        {
-            "id": "OP10-033",
-            "name": "Nami (033)"
-        },
-        {
-            "id": "OP10-043",
-            "name": "Moocy"
-        },
-        {
-            "id": "OP10-046",
-            "name": "Kyros"
-        },
-        {
-            "id": "OP10-049",
-            "name": "Sabo"
-        },
-        {
-            "id": "OP10-066",
-            "name": "Giolla"
-        },
-        {
-            "id": "OP10-074",
-            "name": "Pica"
-        },
-        {
-            "id": "OP10-085",
-            "name": "Jesus Burgess"
-        },
-        {
-            "id": "OP10-093",
-            "name": "Saint Homing"
-        },
-        {
-            "id": "OP10-096",
-            "name": "There's No Longer Any Need for the Seven Warlords of the Sea!!!"
-        },
-        {
-            "id": "OP11-006",
-            "name": "Zephyr"
-        },
-        {
-            "id": "OP11-009",
-            "name": "Nico Robin"
-        },
-        {
-            "id": "OP11-025",
-            "name": "Ishilly"
-        },
-        {
-            "id": "OP11-027",
-            "name": "Bulge-Eyed Neptunian"
-        },
-        {
-            "id": "OP11-034",
-            "name": "Hatchan"
-        },
-        {
-            "id": "OP11-040",
-            "name": "Monkey.D.Luffy (040)"
-        },
-        {
-            "id": "OP11-042",
-            "name": "Vito"
-        },
-        {
-            "id": "OP11-050",
-            "name": "Gotti"
-        },
-        {
-            "id": "OP11-077",
-            "name": "Randolph"
-        },
-        {
-            "id": "OP11-091",
-            "name": "Berry Good"
-        },
-        {
-            "id": "OP12-007",
-            "name": "Shanks (007)"
-        },
-        {
-            "id": "OP12-022",
-            "name": "Inuarashi"
-        },
-        {
-            "id": "OP12-040",
-            "name": "Kuzan (040)"
-        },
-        {
-            "id": "OP12-048",
-            "name": "Donquixote Rosinante (048)"
-        },
-        {
-            "id": "OP12-054",
-            "name": "Marshall.D.Teach"
-        },
-        {
-            "id": "OP12-070",
-            "name": "Sanji (070)"
-        },
-        {
-            "id": "OP12-072",
-            "name": "Zeff"
-        },
-        {
-            "id": "OP12-081",
-            "name": "Koala (081)"
-        },
-        {
-            "id": "OP12-085",
-            "name": "Karasu"
-        },
-        {
-            "id": "OP12-093",
-            "name": "Morley"
-        },
-        {
-            "id": "OP13-001",
-            "name": "Monkey.D.Luffy (001)"
-        },
-        {
-            "id": "OP13-003",
-            "name": "Gol.D.Roger (003)"
-        },
-        {
-            "id": "OP13-004",
-            "name": "Sabo (004)"
-        },
-        {
-            "id": "OP13-007",
-            "name": "Ace & Sabo & Luffy"
-        },
-        {
-            "id": "OP13-008",
-            "name": "Emporio.Ivankov"
-        },
-        {
-            "id": "OP13-017",
-            "name": "Monkey.D.Dragon"
-        },
-        {
-            "id": "OP13-028",
-            "name": "Shanks (028)"
-        },
-        {
-            "id": "OP13-032",
-            "name": "Nico Robin"
-        },
-        {
-            "id": "OP13-033",
-            "name": "Franky"
-        },
-        {
-            "id": "OP13-047",
-            "name": "Fossa"
-        },
-        {
-            "id": "OP13-059",
-            "name": "Brilliant Punk"
-        },
-        {
-            "id": "OP13-060",
-            "name": "Amatsuki Toki"
-        },
-        {
-            "id": "OP13-078",
-            "name": "Oro Jackson"
-        },
-        {
-            "id": "OP14-004",
-            "name": "Cavendish"
-        },
-        {
-            "id": "OP14-006",
-            "name": "Shachi & Penguin"
-        },
-        {
-            "id": "OP14-016",
-            "name": "X.Drake"
-        },
-        {
-            "id": "OP14-035",
-            "name": "Yosaku"
-        },
-        {
-            "id": "OP14-056",
-            "name": "Wadatsumi"
-        },
-        {
-            "id": "OP14-065",
-            "name": "Senor Pink"
-        },
-        {
-            "id": "OP14-082",
-            "name": "Oinkchuck"
-        },
-        {
-            "id": "OP14-083",
-            "name": "Ms. Wednesday"
-        },
-        {
-            "id": "OP14-084",
-            "name": "Ms. All Sunday"
-        },
-        {
-            "id": "OP14-086",
-            "name": "Miss Doublefinger(Zala)"
-        },
-        {
-            "id": "OP14-102",
-            "name": "Kumacy"
-        },
-        {
-            "id": "OP14-111",
-            "name": "Perona - OP14-111"
-        },
-        {
-            "id": "OP15-006",
-            "name": "Cavendish"
-        },
-        {
-            "id": "OP15-009",
-            "name": "Koby (OP15-009)"
-        },
-        {
-            "id": "OP15-014",
-            "name": "Bartolomeo"
-        },
-        {
-            "id": "OP15-029",
-            "name": "Bartholomew Kuma (OP15-029)"
-        },
-        {
-            "id": "OP15-031",
-            "name": "Purinpurin"
-        },
-        {
-            "id": "OP15-035",
-            "name": "Laboon"
-        },
-        {
-            "id": "OP15-050",
-            "name": "Bobby Funk"
-        },
-        {
-            "id": "OP15-059",
-            "name": "Amazon"
-        },
-        {
-            "id": "OP15-069",
-            "name": "Nola"
-        },
-        {
-            "id": "OP15-072",
-            "name": "Hotori"
-        },
-        {
-            "id": "OP15-086",
-            "name": "Nami (OP15-086)"
-        },
-        {
-            "id": "OP15-090",
-            "name": "Perona"
-        },
-        {
-            "id": "OP15-092",
-            "name": "Monkey.D.Luffy (OP15-092)"
-        },
-        {
-            "id": "OP15-093",
-            "name": "The Risky Brothers"
-        },
-        {
-            "id": "OP16-014",
-            "name": "Marco"
-        },
-        {
-            "id": "OP16-015",
-            "name": "Monkey.D.Luffy"
-        },
-        {
-            "id": "OP16-018",
-            "name": "Rockstar"
-        },
-        {
-            "id": "OP16-027",
-            "name": "Jinbe (027)"
-        },
-        {
-            "id": "OP16-030",
-            "name": "Trafalgar Law (030)"
-        },
-        {
-            "id": "OP16-047",
-            "name": "Donquixote Doflamingo (047)"
-        },
-        {
-            "id": "OP16-074",
-            "name": "Magellan"
-        },
-        {
-            "id": "OP16-079",
-            "name": "Yamato (079)"
-        },
-        {
-            "id": "OP16-080",
-            "name": "Marshall.D.Teach (080)"
-        },
-        {
-            "id": "OP16-081",
-            "name": "Otama"
-        },
-        {
-            "id": "OP16-084",
-            "name": "Kouzuki Momonosuke (084)"
-        },
-        {
-            "id": "OP16-105",
-            "name": "Gecko Moria"
-        },
-        {
-            "id": "OP16-115",
-            "name": "Black Vortex"
-        },
-        {
-            "id": "P-002",
-            "name": "I Smell Adventure!!!"
-        },
-        {
-            "id": "P-008",
-            "name": "Yamato"
-        },
-        {
-            "id": "P-009",
-            "name": "Trafalgar Law"
-        },
-        {
-            "id": "P-043",
-            "name": "Monkey.D.Luffy"
-        },
-        {
-            "id": "P-044",
-            "name": "Sabo - P-044 (Pirate Foil)"
-        },
-        {
-            "id": "P-056",
-            "name": "Roronoa Zoro"
-        },
-        {
-            "id": "P-057",
-            "name": "Fleeting Lullaby"
-        },
-        {
-            "id": "P-060",
-            "name": "Tot Musica"
-        },
-        {
-            "id": "P-071",
-            "name": "Marco"
-        },
-        {
-            "id": "P-076",
-            "name": "Sakazuki"
-        },
-        {
-            "id": "P-078",
-            "name": "Adio"
-        },
-        {
-            "id": "PRB01-001",
-            "name": "Sanji (PRB01-001)"
-        },
-        {
-            "id": "PRB02-005",
-            "name": "Monkey.D.Luffy - PRB02-005"
-        },
-        {
-            "id": "PRB02-017",
-            "name": "Boa Hancock"
-        },
-        {
-            "id": "ST01-001",
-            "name": "Monkey.D.Luffy (001)"
-        },
-        {
-            "id": "ST01-013",
-            "name": "Roronoa Zoro"
-        },
-        {
-            "id": "ST02-003",
-            "name": "Urouge"
-        },
-        {
-            "id": "ST02-008",
-            "name": "Scratchmen Apoo"
-        },
-        {
-            "id": "ST03-009",
-            "name": "Donquixote Doflamingo"
-        },
-        {
-            "id": "ST03-014",
-            "name": "Marshall.D.Teach"
-        },
-        {
-            "id": "ST08-013",
-            "name": "Mr.2.Bon.Kurei (Bentham)"
-        },
-        {
-            "id": "ST12-012",
-            "name": "Charlotte Pudding"
-        },
-        {
-            "id": "ST13-011",
-            "name": "Portgas.D.Ace (011)"
-        },
-        {
-            "id": "ST14-001",
-            "name": "Monkey.D.Luffy (001)"
-        },
-        {
-            "id": "ST14-004",
-            "name": "Jinbe"
-        },
-        {
-            "id": "ST14-011",
-            "name": "Heracles"
-        },
-        {
-            "id": "ST14-012",
-            "name": "Monkey.D.Luffy (012)"
-        },
-        {
-            "id": "ST15-001",
-            "name": "Atmos"
-        },
-        {
-            "id": "ST16-003",
-            "name": "Charlotte Katakuri"
-        },
-        {
-            "id": "ST16-005",
-            "name": "Monkey.D.Luffy (ST16-005)"
-        },
-        {
-            "id": "ST17-002",
-            "name": "Trafalgar Law (ST17-002)"
-        },
-        {
-            "id": "ST19-001",
-            "name": "Smoker (ST19-001)"
-        },
-        {
-            "id": "ST19-003",
-            "name": "Tashigi"
-        },
-        {
-            "id": "ST26-001",
-            "name": "Soba Mask"
-        },
-        {
-            "id": "ST30-009",
-            "name": "LittleOars Jr."
-        },
-        {
-            "id": "ST30-014",
-            "name": "Mr.3(Galdino)"
-        }
-    ],
-    "2_bounce_to_deck": [
-        {
-            "id": "EB01-029",
-            "name": "Sorry. I'm a Goner."
-        },
-        {
-            "id": "EB01-043",
-            "name": "Spandine"
-        },
-        {
-            "id": "EB02-027",
-            "name": "Vista"
-        },
-        {
-            "id": "EB03-026",
-            "name": "Boa Hancock"
-        },
-        {
-            "id": "EB04-043",
-            "name": "Kaku"
-        },
-        {
-            "id": "OP01-063",
-            "name": "Arlong"
-        },
-        {
-            "id": "OP01-070",
-            "name": "Dracule Mihawk"
-        },
-        {
-            "id": "OP02-005",
-            "name": "Curly.Dadan"
-        },
-        {
-            "id": "OP03-092",
-            "name": "Rob Lucci (092)"
-        },
-        {
-            "id": "OP04-053",
-            "name": "Page One"
-        },
-        {
-            "id": "OP04-090",
-            "name": "Monkey.D.Luffy (090)"
-        },
-        {
-            "id": "OP05-045",
-            "name": "Stainless"
-        },
-        {
-            "id": "OP05-051",
-            "name": "Borsalino"
-        },
-        {
-            "id": "OP05-058",
-            "name": "It's a Waste of Human Life!!"
-        },
-        {
-            "id": "OP05-082",
-            "name": "Shirahoshi"
-        },
-        {
-            "id": "OP05-117",
-            "name": "Upper Yard"
-        },
-        {
-            "id": "OP06-046",
-            "name": "Sakazuki"
-        },
-        {
-            "id": "OP06-053",
-            "name": "Jaguar.D.Saul"
-        },
-        {
-            "id": "OP06-081",
-            "name": "Absalom"
-        },
-        {
-            "id": "OP06-119",
-            "name": "Sanji"
-        },
-        {
-            "id": "OP07-048",
-            "name": "Donquixote Doflamingo"
-        },
-        {
-            "id": "OP07-051",
-            "name": "Boa Hancock (051)"
-        },
-        {
-            "id": "OP07-052",
-            "name": "Boa Marigold"
-        },
-        {
-            "id": "OP07-093",
-            "name": "Rob Lucci (093)"
-        },
-        {
-            "id": "OP08-041",
-            "name": "Aphelandra"
-        },
-        {
-            "id": "OP09-008",
-            "name": "Building Snake"
-        },
-        {
-            "id": "OP09-051",
-            "name": "Buggy (051)"
-        },
-        {
-            "id": "OP10-026",
-            "name": "Kin'emon (026)"
-        },
-        {
-            "id": "OP10-027",
-            "name": "Kin'emon (027)"
-        },
-        {
-            "id": "OP10-118",
-            "name": "Monkey.D.Luffy (118)"
-        },
-        {
-            "id": "OP11-001",
-            "name": "Koby (001)"
-        },
-        {
-            "id": "OP11-051",
-            "name": "Sanji"
-        },
-        {
-            "id": "OP12-042",
-            "name": "Alvida"
-        },
-        {
-            "id": "OP12-094",
-            "name": "Monkey.D.Dragon"
-        },
-        {
-            "id": "OP14-092",
-            "name": "Mr.3(Galdino)"
-        },
-        {
-            "id": "OP15-080",
-            "name": "Oars"
-        },
-        {
-            "id": "OP15-091",
-            "name": "Margarita"
-        },
-        {
-            "id": "P-030",
-            "name": "Jinbe"
-        },
-        {
-            "id": "P-046",
-            "name": "Yamato"
-        },
-        {
-            "id": "P-082",
-            "name": "Crocodile - P-082 (Pirate Foil)"
-        },
-        {
-            "id": "ST11-001",
-            "name": "Uta (001)"
-        }
-    ],
-    "1_custo_don_antes_efeito": [
-        {
-            "id": "EB01-037",
-            "name": "Mr. 9"
-        },
-        {
-            "id": "EB03-031",
-            "name": "Vinsmoke Reiju"
-        },
-        {
-            "id": "OP01-094",
-            "name": "Kaido (094)"
-        },
-        {
-            "id": "OP01-097",
-            "name": "Queen"
-        },
-        {
-            "id": "OP01-102",
-            "name": "Jack"
-        },
-        {
-            "id": "OP01-112",
-            "name": "Page One"
-        },
-        {
-            "id": "OP01-114",
-            "name": "X.Drake (114)"
-        },
-        {
-            "id": "OP02-085",
-            "name": "Magellan (085)"
-        },
-        {
-            "id": "OP04-063",
-            "name": "Franky"
-        },
-        {
-            "id": "OP04-070",
-            "name": "Mr.3 (Galdino)"
-        },
-        {
-            "id": "OP05-075",
-            "name": "Mr.1 (Daz.Bonez)"
-        },
-        {
-            "id": "OP06-074",
-            "name": "Zephyr (Navy)"
-        },
-        {
-            "id": "OP07-059",
-            "name": "Foxy (059)"
-        },
-        {
-            "id": "OP07-063",
-            "name": "Capote"
-        },
-        {
-            "id": "OP07-073",
-            "name": "Monkey.D.Luffy (073)"
-        },
-        {
-            "id": "OP08-060",
-            "name": "King (060)"
-        },
-        {
-            "id": "OP08-064",
-            "name": "Charlotte Cracker"
-        },
-        {
-            "id": "OP08-071",
-            "name": "Count Niwatori"
-        },
-        {
-            "id": "OP08-073",
-            "name": "Viscount Hiyoko"
-        },
-        {
-            "id": "OP09-064",
-            "name": "Killer"
-        },
-        {
-            "id": "OP11-073",
-            "name": "Charlotte Linlin"
-        },
-        {
-            "id": "OP12-061",
-            "name": "Donquixote Rosinante (061)"
-        },
-        {
-            "id": "OP12-069",
-            "name": "Crocodile"
-        },
-        {
-            "id": "OP14-061",
-            "name": "Vergo"
-        },
-        {
-            "id": "ST03-001",
-            "name": "Crocodile (001)"
-        },
-        {
-            "id": "ST04-002",
-            "name": "Ulti"
-        },
-        {
-            "id": "ST26-005",
-            "name": "Monkey.D.Luffy (ST26-005)"
-        }
-    ],
-    "3_rush_condicional_oponente": [
-        {
-            "id": "EB01-045",
-            "name": "Brook (045)"
-        },
-        {
-            "id": "EB02-061",
-            "name": "Monkey.D.Luffy (061)"
-        },
-        {
-            "id": "OP01-097",
-            "name": "Queen"
-        },
-        {
-            "id": "OP08-028",
-            "name": "Nekomamushi"
-        },
-        {
-            "id": "OP08-060",
-            "name": "King (060)"
-        },
-        {
-            "id": "OP09-065",
-            "name": "Sanji (065)"
-        },
-        {
-            "id": "OP11-073",
-            "name": "Charlotte Linlin"
-        },
-        {
-            "id": "OP12-009",
-            "name": "Jinbe"
-        },
-        {
-            "id": "OP13-080",
-            "name": "St. Ethanbaron V. Nusjuro"
-        },
-        {
-            "id": "OP16-009",
-            "name": "Speed Jil"
-        },
-        {
-            "id": "ST07-003",
-            "name": "Charlotte Katakuri"
-        },
-        {
-            "id": "ST10-004",
-            "name": "Sanji"
-        },
-        {
-            "id": "ST15-005",
-            "name": "Portgas.D.Ace"
-        }
-    ],
-    "5_play_from_hand": [
-        {
-            "id": "EB02-014",
-            "name": "Sarfunkel"
-        },
-        {
-            "id": "OP01-002",
-            "name": "Trafalgar Law (002)"
-        },
-        {
-            "id": "OP01-049",
-            "name": "Bepo"
-        },
-        {
-            "id": "OP01-087",
-            "name": "Officer Agents"
-        },
-        {
-            "id": "OP02-010",
-            "name": "Dogura"
-        },
-        {
-            "id": "OP02-035",
-            "name": "Trafalgar Law"
-        },
-        {
-            "id": "OP03-022",
-            "name": "Arlong"
-        },
-        {
-            "id": "OP05-075",
-            "name": "Mr.1 (Daz.Bonez)"
-        },
-        {
-            "id": "OP06-004",
-            "name": "Baron Omatsuri"
-        },
-        {
-            "id": "OP06-060",
-            "name": "Vinsmoke Ichiji (060)"
-        },
-        {
-            "id": "OP06-064",
-            "name": "Vinsmoke Niji (064)"
-        },
-        {
-            "id": "OP06-066",
-            "name": "Vinsmoke Yonji (066)"
-        },
-        {
-            "id": "OP06-068",
-            "name": "Vinsmoke Reiju (068)"
-        },
-        {
-            "id": "OP07-025",
-            "name": "Coribou"
-        },
-        {
-            "id": "OP07-049",
-            "name": "Buckin"
-        },
-        {
-            "id": "OP07-070",
-            "name": "Big Bun"
-        },
-        {
-            "id": "OP08-005",
-            "name": "Chess"
-        },
-        {
-            "id": "OP08-059",
-            "name": "Alber"
-        },
-        {
-            "id": "OP08-062",
-            "name": "Charlotte Katakuri (062)"
-        },
-        {
-            "id": "OP08-064",
-            "name": "Charlotte Cracker"
-        },
-        {
-            "id": "OP10-017",
-            "name": "Rock"
-        },
-        {
-            "id": "OP10-026",
-            "name": "Kin'emon (026)"
-        },
-        {
-            "id": "OP10-027",
-            "name": "Kin'emon (027)"
-        },
-        {
-            "id": "OP11-024",
-            "name": "Aladine"
-        },
-        {
-            "id": "OP13-050",
-            "name": "Boa Sandersonia"
-        },
-        {
-            "id": "OP15-043",
-            "name": "Kelly Funk"
-        },
-        {
-            "id": "OP16-031",
-            "name": "Buggy (031)"
-        },
-        {
-            "id": "OP16-041",
-            "name": "Buggy (041)"
-        },
-        {
-            "id": "PRB02-018",
-            "name": "Portgas.D.Ace - PRB02-018"
-        },
-        {
-            "id": "ST04-002",
-            "name": "Ulti"
-        }
-    ],
-    "9_mill_proprio_deck": [
-        {
-            "id": "EB02-046",
-            "name": "Hildon"
-        },
-        {
-            "id": "EB04-043",
-            "name": "Kaku"
-        },
-        {
-            "id": "OP03-040",
-            "name": "Nami (040)"
-        },
-        {
-            "id": "OP03-043",
-            "name": "Gaimon"
-        },
-        {
-            "id": "OP03-047",
-            "name": "Zeff"
-        },
-        {
-            "id": "OP03-051",
-            "name": "Bell-mere"
-        },
-        {
-            "id": "OP06-089",
-            "name": "Taralan"
-        },
-        {
-            "id": "OP06-091",
-            "name": "Victoria Cindry"
-        },
-        {
-            "id": "OP10-087",
-            "name": "Tony Tony.Chopper (087)"
-        },
-        {
-            "id": "OP11-082",
-            "name": "Aramaki"
-        },
-        {
-            "id": "OP11-084",
-            "name": "Kuzan"
-        },
-        {
-            "id": "OP12-090",
-            "name": "Belo Betty"
-        },
-        {
-            "id": "OP15-022",
-            "name": "Brook (OP15-022)"
-        },
-        {
-            "id": "OP15-081",
-            "name": "Sanji (OP15-081)"
-        }
-    ],
-    "1_custo_trash_hand_antes_efeito": [
-        {
-            "id": "EB02-047",
-            "name": "Blueno"
-        },
-        {
-            "id": "EB04-028",
-            "name": "Ice Time"
-        },
-        {
-            "id": "OP03-076",
-            "name": "Rob Lucci (076)"
-        },
-        {
-            "id": "OP05-045",
-            "name": "Stainless"
-        },
-        {
-            "id": "OP07-058",
-            "name": "Island of Women"
-        },
-        {
-            "id": "OP08-079",
-            "name": "Kaido"
-        },
-        {
-            "id": "OP09-052",
-            "name": "Marco"
-        },
-        {
-            "id": "OP13-002",
-            "name": "Portgas.D.Ace (002)"
-        },
-        {
-            "id": "ST02-001",
-            "name": "Eustass\"Captain\"Kid (001)"
-        },
-        {
-            "id": "ST13-003",
-            "name": "Monkey.D.Luffy (003)"
-        },
-        {
-            "id": "ST22-005",
-            "name": "Kouzuki Oden"
-        }
-    ],
     "4_manipulacao_life": [
         {
             "id": "EB02-053",
@@ -1403,36 +9,8 @@
             "name": "Mad Treasure"
         },
         {
-            "id": "EB02-061",
-            "name": "Monkey.D.Luffy (061)"
-        },
-        {
-            "id": "EB03-059",
-            "name": "S-Snake"
-        },
-        {
-            "id": "OP02-001",
-            "name": "Edward.Newgate (001)"
-        },
-        {
-            "id": "OP03-109",
-            "name": "Charlotte Chiffon"
-        },
-        {
-            "id": "OP03-123",
-            "name": "Charlotte Katakuri (123)"
-        },
-        {
             "id": "OP04-097",
             "name": "Otama"
-        },
-        {
-            "id": "OP04-098",
-            "name": "Toko"
-        },
-        {
-            "id": "OP04-102",
-            "name": "Kin'emon"
         },
         {
             "id": "OP05-111",
@@ -1443,72 +21,16 @@
             "name": "Aisa"
         },
         {
-            "id": "OP09-028",
-            "name": "Sanji (028)"
-        },
-        {
-            "id": "OP09-101",
-            "name": "Kuzan"
-        },
-        {
             "id": "OP10-022",
             "name": "Trafalgar Law (022)"
-        },
-        {
-            "id": "OP10-034",
-            "name": "Franky (034)"
-        },
-        {
-            "id": "OP11-072",
-            "name": "Charlotte Mont-d'or"
-        },
-        {
-            "id": "OP11-116",
-            "name": "Merman Combat Ultramarine"
-        },
-        {
-            "id": "OP12-061",
-            "name": "Donquixote Rosinante (061)"
         },
         {
             "id": "OP13-105",
             "name": "Kouzuki Momonosuke"
         },
         {
-            "id": "OP14-021",
-            "name": "Issho - OP14-021"
-        },
-        {
-            "id": "OP14-104",
-            "name": "Gecko Moria - OP14-104"
-        },
-        {
-            "id": "OP15-033",
-            "name": "Hody Jones"
-        },
-        {
-            "id": "OP15-098",
-            "name": "Monkey.D.Luffy (OP15-098)"
-        },
-        {
-            "id": "OP15-105",
-            "name": "Jewelry Bonney (OP15-105)"
-        },
-        {
-            "id": "P-085",
-            "name": "Jewelry Bonney - P-085 (Pirate Foil)"
-        },
-        {
-            "id": "ST07-003",
-            "name": "Charlotte Katakuri"
-        },
-        {
             "id": "ST07-008",
             "name": "Charlotte Pudding"
-        },
-        {
-            "id": "ST07-017",
-            "name": "Queen Mama Chanter"
         },
         {
             "id": "ST09-010",
@@ -1523,192 +45,100 @@
             "name": "Makino"
         },
         {
-            "id": "ST15-004",
-            "name": "Thatch"
-        },
-        {
             "id": "ST20-003",
             "name": "Charlotte Brulee"
         }
     ],
-    "8_set_as_active": [
+    "2_bounce_to_deck": [
         {
-            "id": "EB02-061",
-            "name": "Monkey.D.Luffy (061)"
+            "id": "EB03-026",
+            "name": "Boa Hancock"
         },
         {
-            "id": "EB04-013",
-            "name": "Carrot"
+            "id": "OP01-063",
+            "name": "Arlong"
         },
         {
-            "id": "OP01-042",
-            "name": "Komurasaki"
+            "id": "OP02-005",
+            "name": "Curly.Dadan"
         },
         {
-            "id": "OP01-059",
-            "name": "BE-BENG!!"
+            "id": "OP05-058",
+            "name": "It's a Waste of Human Life!!"
         },
         {
-            "id": "OP02-026",
+            "id": "OP05-117",
+            "name": "Upper Yard"
+        },
+        {
+            "id": "OP06-119",
             "name": "Sanji"
         },
         {
-            "id": "OP02-030",
-            "name": "Kouzuki Oden"
+            "id": "OP07-048",
+            "name": "Donquixote Doflamingo"
         },
         {
-            "id": "OP02-032",
-            "name": "Shishilian"
+            "id": "OP11-001",
+            "name": "Koby (001)"
         },
         {
-            "id": "OP02-094",
-            "name": "Isuka"
+            "id": "OP14-092",
+            "name": "Mr.3(Galdino)"
         },
         {
-            "id": "OP03-028",
-            "name": "Jango"
+            "id": "OP15-091",
+            "name": "Margarita"
         },
         {
-            "id": "OP03-076",
-            "name": "Rob Lucci (076)"
+            "id": "ST11-001",
+            "name": "Uta (001)"
+        }
+    ],
+    "1_custo_don_antes_efeito": [
+        {
+            "id": "EB03-031",
+            "name": "Vinsmoke Reiju"
         },
         {
-            "id": "OP04-090",
-            "name": "Monkey.D.Luffy (090)"
+            "id": "OP01-112",
+            "name": "Page One"
         },
         {
-            "id": "OP04-102",
-            "name": "Kin'emon"
+            "id": "OP02-085",
+            "name": "Magellan (085)"
         },
         {
-            "id": "OP05-026",
-            "name": "Sarquiss"
+            "id": "OP08-071",
+            "name": "Count Niwatori"
         },
         {
-            "id": "OP05-031",
-            "name": "Buffalo"
+            "id": "OP08-073",
+            "name": "Viscount Hiyoko"
+        }
+    ],
+    "1_custo_trash_hand_antes_efeito": [
+        {
+            "id": "EB04-028",
+            "name": "Ice Time"
         },
         {
-            "id": "OP05-032",
-            "name": "Pica"
+            "id": "OP07-058",
+            "name": "Island of Women"
         },
         {
-            "id": "OP05-068",
-            "name": "Chopa-Emon"
+            "id": "OP09-052",
+            "name": "Marco"
         },
         {
-            "id": "OP06-026",
-            "name": "Koushirou"
-        },
-        {
-            "id": "OP06-118",
-            "name": "Roronoa Zoro"
-        },
-        {
-            "id": "OP07-073",
-            "name": "Monkey.D.Luffy (073)"
-        },
-        {
-            "id": "OP08-031",
-            "name": "Miyagi"
-        },
-        {
-            "id": "OP09-064",
-            "name": "Killer"
-        },
-        {
-            "id": "OP10-029",
-            "name": "Dracule Mihawk"
-        },
-        {
-            "id": "OP10-037",
-            "name": "Lim"
-        },
-        {
-            "id": "OP15-022",
-            "name": "Brook (OP15-022)"
-        },
-        {
-            "id": "OP15-032",
-            "name": "Brook (OP15-032)"
-        },
-        {
-            "id": "P-029",
-            "name": "Bartolomeo"
-        },
-        {
-            "id": "P-077",
-            "name": "Ulti"
-        },
-        {
-            "id": "ST02-001",
-            "name": "Eustass\"Captain\"Kid (001)"
-        },
-        {
-            "id": "ST02-009",
-            "name": "Trafalgar Law"
-        },
-        {
-            "id": "ST12-001",
-            "name": "Roronoa Zoro & Sanji"
-        },
-        {
-            "id": "ST12-007",
-            "name": "Rika"
-        },
-        {
-            "id": "ST22-005",
-            "name": "Kouzuki Oden"
+            "id": "ST13-003",
+            "name": "Monkey.D.Luffy (003)"
         }
     ],
     "1b_custo_parenteses_rest_don": [
         {
-            "id": "OP01-002",
-            "name": "Trafalgar Law (002)"
-        },
-        {
-            "id": "OP01-042",
-            "name": "Komurasaki"
-        },
-        {
             "id": "OP01-060",
             "name": "Donquixote Doflamingo (060)"
-        },
-        {
-            "id": "OP02-030",
-            "name": "Kouzuki Oden"
-        },
-        {
-            "id": "OP02-032",
-            "name": "Shishilian"
-        },
-        {
-            "id": "OP03-022",
-            "name": "Arlong"
-        },
-        {
-            "id": "OP04-021",
-            "name": "Viola"
-        },
-        {
-            "id": "OP04-025",
-            "name": "Giolla"
-        },
-        {
-            "id": "OP05-029",
-            "name": "Donquixote Doflamingo (029)"
-        },
-        {
-            "id": "OP06-118",
-            "name": "Roronoa Zoro"
-        },
-        {
-            "id": "OP07-019",
-            "name": "Jewelry Bonney (019)"
-        },
-        {
-            "id": "OP07-040",
-            "name": "Crocodile"
         },
         {
             "id": "OP07-048",
@@ -1717,114 +147,154 @@
         {
             "id": "ST03-007",
             "name": "Sentomaru"
-        },
-        {
-            "id": "ST12-007",
-            "name": "Rika"
         }
     ],
-    "7_protecao_nao_pode_ko": [
+    "0_nao_classificado": [
         {
-            "id": "OP01-024",
-            "name": "Monkey.D.Luffy (024)"
+            "id": "OP01-069",
+            "name": "Caesar Clown"
         },
         {
-            "id": "OP01-099",
-            "name": "Kurozumi Semimaru"
+            "id": "OP01-098",
+            "name": "Kurozumi Orochi"
         },
         {
-            "id": "OP02-100",
-            "name": "Jango"
+            "id": "OP01-105",
+            "name": "Bao Huang"
         },
         {
-            "id": "OP03-032",
-            "name": "Buggy (032)"
+            "id": "OP02-025",
+            "name": "Kin'emon"
         },
         {
-            "id": "OP03-079",
-            "name": "Vergo"
+            "id": "OP03-091",
+            "name": "Helmeppo"
         },
         {
-            "id": "OP06-012",
-            "name": "Bear.King"
+            "id": "OP04-080",
+            "name": "Gyats"
         },
         {
-            "id": "OP06-052",
-            "name": "Tokikake"
+            "id": "OP04-096",
+            "name": "Corrida Coliseum"
         },
         {
-            "id": "OP07-033",
-            "name": "Monkey.D.Luffy (033)"
+            "id": "OP05-079",
+            "name": "Viola"
         },
         {
-            "id": "OP07-069",
-            "name": "Pickles"
+            "id": "OP05-097",
+            "name": "Mary Geoise"
         },
         {
-            "id": "OP08-029",
-            "name": "Pekoms"
+            "id": "OP06-047",
+            "name": "Charlotte Pudding"
         },
         {
-            "id": "OP09-025",
-            "name": "Crocodile (025)"
+            "id": "OP06-086",
+            "name": "Gecko Moria (086)"
         },
         {
-            "id": "OP09-045",
-            "name": "Cabaji"
+            "id": "OP07-002",
+            "name": "Ain"
         },
         {
-            "id": "OP09-086",
-            "name": "Jesus Burgess"
+            "id": "OP07-062",
+            "name": "Vinsmoke Reiju"
         },
         {
-            "id": "OP10-104",
-            "name": "Caribou"
+            "id": "OP08-046",
+            "name": "Shakuyaku"
         },
         {
-            "id": "OP10-118",
-            "name": "Monkey.D.Luffy (118)"
+            "id": "OP08-082",
+            "name": "Sasaki"
         },
         {
-            "id": "OP12-036",
-            "name": "Roronoa Zoro (036)"
+            "id": "OP08-083",
+            "name": "Sheepshead"
         },
         {
-            "id": "OP14-003",
-            "name": "Capone\"Gang\"Bege"
+            "id": "OP09-033",
+            "name": "Nico Robin (033)"
         },
         {
-            "id": "P-007",
-            "name": "Monkey.D.Luffy"
+            "id": "OP11-027",
+            "name": "Bulge-Eyed Neptunian"
         },
         {
-            "id": "P-025",
-            "name": "Smoker"
+            "id": "OP11-091",
+            "name": "Berry Good"
         },
         {
-            "id": "P-052",
-            "name": "Dracule Mihawk"
+            "id": "OP12-040",
+            "name": "Kuzan (040)"
         },
         {
-            "id": "P-054",
-            "name": "Monkey.D.Garp"
+            "id": "OP13-033",
+            "name": "Franky"
         },
         {
-            "id": "ST05-008",
-            "name": "Shiki"
+            "id": "OP14-065",
+            "name": "Senor Pink"
         },
         {
-            "id": "ST09-004",
-            "name": "Kaido"
+            "id": "OP15-031",
+            "name": "Purinpurin"
+        },
+        {
+            "id": "OP15-035",
+            "name": "Laboon"
+        },
+        {
+            "id": "OP16-014",
+            "name": "Marco"
+        },
+        {
+            "id": "OP16-047",
+            "name": "Donquixote Doflamingo (047)"
+        },
+        {
+            "id": "OP16-074",
+            "name": "Magellan"
+        },
+        {
+            "id": "P-008",
+            "name": "Yamato"
+        },
+        {
+            "id": "P-009",
+            "name": "Trafalgar Law"
+        },
+        {
+            "id": "P-071",
+            "name": "Marco"
+        },
+        {
+            "id": "P-076",
+            "name": "Sakazuki"
+        },
+        {
+            "id": "PRB02-005",
+            "name": "Monkey.D.Luffy - PRB02-005"
+        },
+        {
+            "id": "ST01-001",
+            "name": "Monkey.D.Luffy (001)"
+        },
+        {
+            "id": "ST08-013",
+            "name": "Mr.2.Bon.Kurei (Bentham)"
+        },
+        {
+            "id": "ST15-001",
+            "name": "Atmos"
         }
     ],
-    "6_activate_custo_composto": [
+    "9_mill_proprio_deck": [
         {
-            "id": "OP13-082",
-            "name": "Five Elders"
-        },
-        {
-            "id": "ST22-005",
-            "name": "Kouzuki Oden"
+            "id": "OP12-090",
+            "name": "Belo Betty"
         }
     ]
 }
