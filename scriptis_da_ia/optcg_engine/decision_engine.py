@@ -2445,39 +2445,6 @@ class GameAnalyzer:
             count += 1
         return count
 
-    # ── Probabilidades de vida ───────────────────────────────────────────────
-
-    def prob_trigger_in_opp_life(self) -> float:
-        """
-        Probabilidade de trigger na vida do oponente.
-        Baseado na proporção típica de triggers em decks competitivos (~20-30%).
-        """
-        if self.opp.life_count() == 0:
-            return 0.0
-        # Estima ~25% de chance de trigger por carta de vida
-        return min(0.25 * self.opp.life_count(), 0.85)
-
-    def prob_counter_in_opp_life(self) -> float:
-        """
-        Probabilidade de counter (+1000 ou +2000) na vida do oponente.
-        Estima ~35% das cartas têm counter em decks típicos.
-        """
-        if self.opp.life_count() == 0:
-            return 0.0
-        return min(0.35, 0.35 * self.opp.life_count())
-
-    def prob_trigger_in_my_life(self) -> float:
-        """Probabilidade de trigger na minha vida."""
-        if self.me.life_count() == 0:
-            return 0.0
-        return min(0.25 * self.me.life_count(), 0.85)
-
-    def prob_counter_in_my_life(self) -> float:
-        """Probabilidade de counter na minha vida."""
-        if self.me.life_count() == 0:
-            return 0.0
-        return min(0.35, 0.35 * self.me.life_count())
-
     # ── Análise de lethality ─────────────────────────────────────────────────
 
     def can_lethal_this_turn(self) -> bool:
@@ -2597,26 +2564,6 @@ class GameAnalyzer:
                     and not c.cannot_be_rested_until and not is_attack_locked_self(c, self.me, self.opp)):
                 count += 2 if c.is_double_attack() else 1
         return count
-
-    def opp_can_survive_lethal(self) -> float:
-        """
-        Probabilidade do oponente sobreviver a uma tentativa de letal.
-        Considera: blockers, counters na mão, triggers na vida.
-        """
-        prob_survive = 0.0
-
-        # Blockers podem desviar ataques
-        if self.opp_blocker_count() > 0:
-            prob_survive += 0.3
-
-        # Counters na mão podem aumentar o poder de defesa
-        if len(self.opp.hand) >= 3:
-            prob_survive += 0.2
-
-        # Triggers podem ativar efeitos de defesa
-        prob_survive += self.prob_trigger_in_opp_life() * 0.3
-
-        return min(prob_survive, 0.9)
 
     # ── Análise de defesa ────────────────────────────────────────────────────
 

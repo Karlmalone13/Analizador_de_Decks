@@ -47720,6 +47720,10 @@
         "costs": [
           {
             "type": "rest_self"
+          },
+          {
+            "type": "rest_don",
+            "count": 3
           }
         ]
       },

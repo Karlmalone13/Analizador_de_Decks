@@ -243,7 +243,11 @@ def parse_costs(text):
             cost['filter_type'] = m.group(2).strip()
         costs.append(cost)
 
-    m = re.search(r'rest (\d+) of your don!!', t)
+    # rest N DON como custo. Cobre tanto "rest N of your DON" isolado quanto o
+    # padrão COMPOSTO "rest this card and N of your DON!! cards" (ex: Empty
+    # Throne OP13-099 -- rest_self + rest 3 DON), onde "rest" não vem colado ao
+    # número. O rest_self acima já capturou a 1ª parte; aqui pegamos os DON.
+    m = re.search(r'rest (?:this (?:card|character|stage) and )?(\d+) of your don!!', t)
     if m:
         costs.append({'type': 'rest_don', 'count': int(m.group(1))})
 

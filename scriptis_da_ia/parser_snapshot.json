@@ -28132,6 +28132,10 @@
    "costs": [
     {
      "type": "rest_self"
+    },
+    {
+     "count": 3,
+     "type": "rest_don"
     }
    ],
    "steps": [
