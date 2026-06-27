@@ -507,6 +507,31 @@ def parse_place_bottom(text):
         if m.group(3):
             step['power_lte'] = int(m.group(3))
         steps.append(step)
+        return steps
+
+    # Forma genérica sem "of your opponent" -- "Place up to N Character(s)
+    # with a cost of X or less at the bottom of the owner's deck" (ex:
+    # OP01-070 Mihawk, OP05-051 Borsalino, OP06-046 Sakazuki). Mesma
+    # convenção já usada em parse_bounce: sem qualificador de posse, o
+    # alvo é implicitamente o character do OPONENTE (regra do jogo).
+    # Exclui "of your [Tipo] Characters" -- isso seria auto-bounce de
+    # tribo pro fundo do deck, fora de escopo aqui (nenhum caso visto
+    # ainda, mas guard por consistência com parse_bounce).
+    m = re.search(
+        r"place (?:up to )?(\d+) characters?"
+        r"(?:[^.]*?(?:base )?cost of (\d+) or less)?"
+        r"(?:[^.]*?(\d+) power or less)?"
+        r"[^.]*?bottom of (?:the owner.?s|your) deck", t)
+    if m:
+        prefix = t[max(0, m.start() - 12):m.start()]
+        if 'of your' in prefix or 'of you' in prefix:
+            return steps
+        step = {'action': 'place_opp_character_bottom_deck', 'count': int(m.group(1))}
+        if m.group(2):
+            step['cost_lte'] = int(m.group(2))
+        if m.group(3):
+            step['power_lte'] = int(m.group(3))
+        steps.append(step)
     return steps
 
 
@@ -1985,8 +2010,10 @@ def parse_block(block_text, trigger_name):
     if 'return' in t and 'hand' in t:
         steps.extend(parse_bounce(t))
 
-    # Place opponent's character at bottom of deck (remoção forte, ≠ bounce/KO)
-    if 'bottom of' in t and "opponent's character" in t:
+    # Place character at bottom of deck (remoção forte, ≠ bounce/KO). Cobre
+    # tanto "of your opponent's character(s)" quanto a forma genérica sem
+    # qualificador (ex: OP01-070 Mihawk) -- a função decide o resto.
+    if 'bottom of' in t and 'character' in t:
         steps.extend(parse_place_bottom(t))
 
     # Restar oponente

@@ -6323,6 +6323,11 @@
         "attribute": "Slash",
         "effects": [
             {
+                "action": "place_opp_character_bottom_deck",
+                "trigger": "on_play",
+                "cost_lte": 4
+            },
+            {
                 "action": "keyword_blocker",
                 "trigger": "passive"
             }
@@ -13687,7 +13692,13 @@
         "color": "Blue",
         "sub_types": "The Seven Warlords of the Sea",
         "attribute": "Slash",
-        "effects": [],
+        "effects": [
+            {
+                "action": "place_opp_character_bottom_deck",
+                "trigger": "on_play",
+                "cost_lte": 7
+            }
+        ],
         "synergy_states": {},
         "text": "[On Play] Place up to 1 Character with a cost of 7 or less at the bottom of the owner's deck.  This card has been officially errata'd.",
         "is_searcher": false,
@@ -13722,6 +13733,11 @@
         "sub_types": "Fish-Man Straw Hat Crew",
         "attribute": "Strike",
         "effects": [
+            {
+                "action": "place_opp_character_bottom_deck",
+                "trigger": "on_play",
+                "cost_lte": 3
+            },
             {
                 "action": "play_card",
                 "trigger": "trigger"
@@ -18463,6 +18479,12 @@
         "sub_types": "Impel Down Former Baroque Works",
         "attribute": "Strike",
         "effects": [
+            {
+                "action": "place_opp_character_bottom_deck",
+                "trigger": "when_attacking",
+                "don_requirement": 1,
+                "cost_lte": 2
+            },
             {
                 "action": "trash_from_hand",
                 "trigger": "when_attacking",
@@ -23391,7 +23413,18 @@
         "color": "Blue",
         "sub_types": "Straw Hat Crew East Blue",
         "attribute": "",
-        "effects": [],
+        "effects": [
+            {
+                "action": "place_opp_character_bottom_deck",
+                "trigger": "trigger",
+                "cost_lte": 3
+            },
+            {
+                "action": "place_opp_character_bottom_deck",
+                "trigger": "main",
+                "cost_lte": 5
+            }
+        ],
         "synergy_states": {
             "vida_ganha": {
                 "creates": false,
@@ -23418,7 +23451,7 @@
         "has_double_attack": false,
         "has_unblockable": false,
         "has_banish": false,
-        "has_trigger": false
+        "has_trigger": true
     },
     "OP03-058": {
         "name": "Iceburg",
@@ -28653,6 +28686,11 @@
             {
                 "action": "activate_main_effect",
                 "trigger": "trigger"
+            },
+            {
+                "action": "place_opp_character_bottom_deck",
+                "trigger": "main",
+                "cost_lte": 4
             }
         ],
         "synergy_states": {
@@ -28693,7 +28731,17 @@
         "color": "Blue",
         "sub_types": "Straw Hat Crew",
         "attribute": "",
-        "effects": [],
+        "effects": [
+            {
+                "action": "place_opp_character_bottom_deck",
+                "trigger": "trigger",
+                "cost_lte": 4
+            },
+            {
+                "action": "place_opp_character_bottom_deck",
+                "trigger": "main"
+            }
+        ],
         "synergy_states": {
             "vida_ganha": {
                 "creates": false,
@@ -28720,7 +28768,7 @@
         "has_double_attack": false,
         "has_unblockable": false,
         "has_banish": false,
-        "has_trigger": false
+        "has_trigger": true
     },
     "OP04-057": {
         "name": "Dragon Twister Demolition Breath",
@@ -28738,6 +28786,11 @@
                 "trigger": "trigger",
                 "cost_lte": 6,
                 "target": "opp_character"
+            },
+            {
+                "action": "place_opp_character_bottom_deck",
+                "trigger": "counter",
+                "cost_lte": 1
             },
             {
                 "action": "buff_power",
@@ -33433,7 +33486,13 @@
         "color": "Blue",
         "sub_types": "Navy",
         "attribute": "Slash",
-        "effects": [],
+        "effects": [
+            {
+                "action": "place_opp_character_bottom_deck",
+                "trigger": "activate_main",
+                "cost_lte": 2
+            }
+        ],
         "synergy_states": {},
         "text": "[Activate:Main] You may trash 1 card from your hand and rest this Character: Place up to 1 Character with a cost of 2 or less at the bottom of the owner's deck.",
         "is_searcher": false,
@@ -33554,7 +33613,14 @@
         "color": "Blue",
         "sub_types": "Navy",
         "attribute": "Slash",
-        "effects": [],
+        "effects": [
+            {
+                "action": "place_opp_character_bottom_deck",
+                "trigger": "when_attacking",
+                "don_requirement": 1,
+                "cost_lte": 2
+            }
+        ],
         "synergy_states": {},
         "text": "[DON!! x1][When Attacking] Place up to 1 Character with a cost of 2 or less at the bottom of the owner's deck.",
         "is_searcher": false,
@@ -33669,7 +33735,13 @@
         "color": "Blue",
         "sub_types": "Navy",
         "attribute": "Special",
-        "effects": [],
+        "effects": [
+            {
+                "action": "place_opp_character_bottom_deck",
+                "trigger": "on_play",
+                "cost_lte": 4
+            }
+        ],
         "synergy_states": {},
         "text": "[On Play] Place up to 1 Character with a cost of 4 or less at the bottom of the owner's deck.",
         "is_searcher": false,
@@ -33921,6 +33993,11 @@
                 "trigger": "trigger",
                 "cost_lte": 3,
                 "target": "opp_character"
+            },
+            {
+                "action": "place_opp_character_bottom_deck",
+                "trigger": "main",
+                "cost_lte": 2
             },
             {
                 "action": "buff_power",
@@ -38463,6 +38540,11 @@
         "attribute": "Special",
         "effects": [
             {
+                "action": "place_opp_character_bottom_deck",
+                "trigger": "activate_main",
+                "cost_lte": 2
+            },
+            {
                 "action": "buff_power",
                 "trigger": "activate_main",
                 "target": "self"
@@ -38578,7 +38660,13 @@
         "color": "Blue",
         "sub_types": "Navy",
         "attribute": "Special",
-        "effects": [],
+        "effects": [
+            {
+                "action": "place_opp_character_bottom_deck",
+                "trigger": "on_play",
+                "cost_lte": 2
+            }
+        ],
         "synergy_states": {},
         "text": "[On Play] Place up to 1 Character with a cost of 2 or less at the bottom of the owner's deck.",
         "is_searcher": false,
@@ -38849,7 +38937,13 @@
         "color": "Blue",
         "sub_types": "Giant Navy",
         "attribute": "Strike",
-        "effects": [],
+        "effects": [
+            {
+                "action": "place_opp_character_bottom_deck",
+                "trigger": "on_ko",
+                "cost_lte": 2
+            }
+        ],
         "synergy_states": {},
         "text": "[On K.O.] Place up to 1 Character with a cost of 2 or less at the bottom of the owner's deck.",
         "is_searcher": false,
@@ -39056,7 +39150,18 @@
         "color": "Blue",
         "sub_types": "Navy",
         "attribute": "",
-        "effects": [],
+        "effects": [
+            {
+                "action": "place_opp_character_bottom_deck",
+                "trigger": "trigger",
+                "cost_lte": 5
+            },
+            {
+                "action": "place_opp_character_bottom_deck",
+                "trigger": "main",
+                "cost_lte": 6
+            }
+        ],
         "synergy_states": {
             "vida_ganha": {
                 "creates": false,
@@ -39083,7 +39188,7 @@
         "has_double_attack": false,
         "has_unblockable": false,
         "has_banish": false,
-        "has_trigger": false
+        "has_trigger": true
     },
     "OP06-059": {
         "name": "White Snake",
@@ -43859,7 +43964,13 @@
         "color": "Blue",
         "sub_types": "Kuja Pirates The Seven Warlords of the Sea",
         "attribute": "Special",
-        "effects": [],
+        "effects": [
+            {
+                "action": "place_opp_character_bottom_deck",
+                "trigger": "on_play",
+                "cost_lte": 1
+            }
+        ],
         "synergy_states": {},
         "text": "[On Play] Up to 1 of your opponent's Characters other than [Monkey.D.Luffy] cannot attack until the end of your opponent's next turn. Then, place up to 1 Character with a cost of 1 or less at the bottom of the owner's deck.",
         "is_searcher": false,
@@ -43893,7 +44004,13 @@
         "color": "Blue",
         "sub_types": "Kuja Pirates",
         "attribute": "Slash",
-        "effects": [],
+        "effects": [
+            {
+                "action": "place_opp_character_bottom_deck",
+                "trigger": "on_play",
+                "cost_lte": 2
+            }
+        ],
         "synergy_states": {},
         "text": "[On Play] If you have 2 or more [Amazon Lily] or [Kuja Pirates] type Characters on your field, place up to 1 Character with a cost of 2 or less at the bottom of the owner's deck.",
         "is_searcher": false,
@@ -49281,7 +49398,13 @@
         "color": "Blue",
         "sub_types": "Former Whitebeard Pirates",
         "attribute": "",
-        "effects": [],
+        "effects": [
+            {
+                "action": "place_opp_character_bottom_deck",
+                "trigger": "main",
+                "cost_lte": 6
+            }
+        ],
         "synergy_states": {},
         "text": "[Main] You may reveal 2 cards with a type including \"Whitebeard Piratess\" from your hand: Place up to 1 Character with a cost of 6 or less at the bottom of the owner's deck.",
         "is_searcher": false,
@@ -59431,6 +59554,11 @@
         "attribute": "Special",
         "effects": [
             {
+                "action": "place_opp_character_bottom_deck",
+                "trigger": "on_play",
+                "cost_lte": 1
+            },
+            {
                 "action": "keyword_blocker",
                 "trigger": "passive"
             }
@@ -64795,6 +64923,10 @@
         "attribute": "Slash",
         "effects": [
             {
+                "action": "place_opp_character_bottom_deck",
+                "trigger": "on_play"
+            },
+            {
                 "action": "keyword_blocker",
                 "trigger": "passive"
             }
@@ -65029,6 +65161,11 @@
         "effects": [
             {
                 "action": "place_opp_character_bottom_deck",
+                "trigger": "trigger",
+                "cost_lte": 1
+            },
+            {
+                "action": "place_opp_character_bottom_deck",
                 "trigger": "main",
                 "cost_lte": 4
             }
@@ -65059,7 +65196,7 @@
         "has_double_attack": false,
         "has_unblockable": false,
         "has_banish": false,
-        "has_trigger": false
+        "has_trigger": true
     },
     "OP11-062": {
         "name": "Charlotte Katakuri (062)",
@@ -94545,7 +94682,13 @@
         "color": "Blue",
         "sub_types": "Fish-Man/The Seven Warlords of the Sea/The Sun Pirates",
         "attribute": "Strike",
-        "effects": [],
+        "effects": [
+            {
+                "action": "place_opp_character_bottom_deck",
+                "trigger": "on_ko",
+                "cost_lte": 3
+            }
+        ],
         "synergy_states": {},
         "text": "[On K.O.] Place up to 1 Character with a cost of 3 or less at the bottom of the owner's deck.",
         "is_searcher": false,
@@ -99025,6 +99168,12 @@
         "sub_types": "Baroque Works The Seven Warlords of the Sea",
         "attribute": "Special",
         "effects": [
+            {
+                "action": "place_opp_character_bottom_deck",
+                "trigger": "on_block",
+                "don_requirement": 1,
+                "cost_lte": 2
+            },
             {
                 "action": "keyword_blocker",
                 "trigger": "passive"
@@ -109531,6 +109680,11 @@
                 "trigger": "trigger",
                 "cost_lte": 3,
                 "target": "opp_character"
+            },
+            {
+                "action": "place_opp_character_bottom_deck",
+                "trigger": "main",
+                "cost_lte": 5
             },
             {
                 "action": "draw",

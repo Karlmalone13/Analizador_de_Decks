@@ -4069,6 +4069,15 @@
     "sub_types": "Navy",
     "attribute": "Slash",
     "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "place_opp_character_bottom_deck",
+            "count": 1,
+            "cost_lte": 4
+          }
+        ]
+      },
       "passive": {
         "steps": [
           {
@@ -8801,7 +8810,17 @@
     "color": "Blue",
     "sub_types": "The Seven Warlords of the Sea",
     "attribute": "Slash",
-    "effects": {}
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "place_opp_character_bottom_deck",
+            "count": 1,
+            "cost_lte": 7
+          }
+        ]
+      }
+    }
   },
   "OP01-071": {
     "name": "Jinbe (071)",
@@ -8814,6 +8833,15 @@
     "sub_types": "Fish-Man Straw Hat Crew",
     "attribute": "Strike",
     "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "place_opp_character_bottom_deck",
+            "count": 1,
+            "cost_lte": 3
+          }
+        ]
+      },
       "trigger": {
         "steps": [
           {
@@ -11554,6 +11582,11 @@
     "effects": {
       "when_attacking": {
         "steps": [
+          {
+            "action": "place_opp_character_bottom_deck",
+            "count": 1,
+            "cost_lte": 2
+          },
           {
             "action": "trash_from_hand",
             "count": 1
@@ -14566,7 +14599,26 @@
     "color": "Blue",
     "sub_types": "Straw Hat Crew East Blue",
     "attribute": "",
-    "effects": {}
+    "effects": {
+      "trigger": {
+        "steps": [
+          {
+            "action": "place_opp_character_bottom_deck",
+            "count": 1,
+            "cost_lte": 3
+          }
+        ]
+      },
+      "main": {
+        "steps": [
+          {
+            "action": "place_opp_character_bottom_deck",
+            "count": 1,
+            "cost_lte": 5
+          }
+        ]
+      }
+    }
   },
   "OP03-058": {
     "name": "Iceburg",
@@ -17849,6 +17901,21 @@
             "action": "activate_main_effect"
           }
         ]
+      },
+      "main": {
+        "steps": [
+          {
+            "action": "place_opp_character_bottom_deck",
+            "count": 1,
+            "cost_lte": 4
+          }
+        ],
+        "costs": [
+          {
+            "type": "trash_from_hand",
+            "count": 1
+          }
+        ]
       }
     }
   },
@@ -17862,7 +17929,25 @@
     "color": "Blue",
     "sub_types": "Straw Hat Crew",
     "attribute": "",
-    "effects": {}
+    "effects": {
+      "trigger": {
+        "steps": [
+          {
+            "action": "place_opp_character_bottom_deck",
+            "count": 1,
+            "cost_lte": 4
+          }
+        ]
+      },
+      "main": {
+        "steps": [
+          {
+            "action": "place_opp_character_bottom_deck",
+            "count": 1
+          }
+        ]
+      }
+    }
   },
   "OP04-057": {
     "name": "Dragon Twister Demolition Breath",
@@ -17887,6 +17972,11 @@
       },
       "counter": {
         "steps": [
+          {
+            "action": "place_opp_character_bottom_deck",
+            "count": 1,
+            "cost_lte": 1
+          },
           {
             "action": "buff_power",
             "amount": 4000,
@@ -20857,7 +20947,26 @@
     "color": "Blue",
     "sub_types": "Navy",
     "attribute": "Slash",
-    "effects": {}
+    "effects": {
+      "activate_main": {
+        "steps": [
+          {
+            "action": "place_opp_character_bottom_deck",
+            "count": 1,
+            "cost_lte": 2
+          }
+        ],
+        "costs": [
+          {
+            "type": "rest_self"
+          },
+          {
+            "type": "trash_from_hand",
+            "count": 1
+          }
+        ]
+      }
+    }
   },
   "OP05-046": {
     "name": "Dalmatian",
@@ -20927,7 +21036,18 @@
     "color": "Blue",
     "sub_types": "Navy",
     "attribute": "Slash",
-    "effects": {}
+    "effects": {
+      "when_attacking": {
+        "steps": [
+          {
+            "action": "place_opp_character_bottom_deck",
+            "count": 1,
+            "cost_lte": 2
+          }
+        ],
+        "don_requirement": 1
+      }
+    }
   },
   "OP05-049": {
     "name": "Haccha",
@@ -20987,7 +21107,17 @@
     "color": "Blue",
     "sub_types": "Navy",
     "attribute": "Special",
-    "effects": {}
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "place_opp_character_bottom_deck",
+            "count": 1,
+            "cost_lte": 4
+          }
+        ]
+      }
+    }
   },
   "OP05-052": {
     "name": "Maynard",
@@ -21138,6 +21268,11 @@
       },
       "main": {
         "steps": [
+          {
+            "action": "place_opp_character_bottom_deck",
+            "count": 1,
+            "cost_lte": 2
+          },
           {
             "action": "buff_power",
             "amount": 3000,
@@ -23983,6 +24118,11 @@
       "activate_main": {
         "steps": [
           {
+            "action": "place_opp_character_bottom_deck",
+            "count": 1,
+            "cost_lte": 2
+          },
+          {
             "action": "buff_power",
             "amount": 3000,
             "target": "self",
@@ -24049,7 +24189,17 @@
     "color": "Blue",
     "sub_types": "Navy",
     "attribute": "Special",
-    "effects": {}
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "place_opp_character_bottom_deck",
+            "count": 1,
+            "cost_lte": 2
+          }
+        ]
+      }
+    }
   },
   "OP06-047": {
     "name": "Charlotte Pudding",
@@ -24202,7 +24352,17 @@
     "color": "Blue",
     "sub_types": "Giant Navy",
     "attribute": "Strike",
-    "effects": {}
+    "effects": {
+      "on_ko": {
+        "steps": [
+          {
+            "action": "place_opp_character_bottom_deck",
+            "count": 1,
+            "cost_lte": 2
+          }
+        ]
+      }
+    }
   },
   "OP06-054": {
     "name": "Borsalino",
@@ -24324,7 +24484,26 @@
     "color": "Blue",
     "sub_types": "Navy",
     "attribute": "",
-    "effects": {}
+    "effects": {
+      "trigger": {
+        "steps": [
+          {
+            "action": "place_opp_character_bottom_deck",
+            "count": 1,
+            "cost_lte": 5
+          }
+        ]
+      },
+      "main": {
+        "steps": [
+          {
+            "action": "place_opp_character_bottom_deck",
+            "count": 2,
+            "cost_lte": 6
+          }
+        ]
+      }
+    }
   },
   "OP06-059": {
     "name": "White Snake",
@@ -27286,7 +27465,17 @@
     "color": "Blue",
     "sub_types": "Kuja Pirates The Seven Warlords of the Sea",
     "attribute": "Special",
-    "effects": {}
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "place_opp_character_bottom_deck",
+            "count": 1,
+            "cost_lte": 1
+          }
+        ]
+      }
+    }
   },
   "OP07-052": {
     "name": "Boa Marigold",
@@ -27298,7 +27487,17 @@
     "color": "Blue",
     "sub_types": "Kuja Pirates",
     "attribute": "Slash",
-    "effects": {}
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "place_opp_character_bottom_deck",
+            "count": 1,
+            "cost_lte": 2
+          }
+        ]
+      }
+    }
   },
   "OP07-053": {
     "name": "Portgas.D.Ace (053)",
@@ -30630,7 +30829,17 @@
     "color": "Blue",
     "sub_types": "Former Whitebeard Pirates",
     "attribute": "",
-    "effects": {}
+    "effects": {
+      "main": {
+        "steps": [
+          {
+            "action": "place_opp_character_bottom_deck",
+            "count": 1,
+            "cost_lte": 6
+          }
+        ]
+      }
+    }
   },
   "OP08-056": {
     "name": "Moby Dick",
@@ -36830,6 +37039,15 @@
     "sub_types": "Dressrosa Barto Club",
     "attribute": "Special",
     "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "place_opp_character_bottom_deck",
+            "count": 1,
+            "cost_lte": 1
+          }
+        ]
+      },
       "passive": {
         "steps": [
           {
@@ -40218,6 +40436,14 @@
     "sub_types": "Straw Hat Crew",
     "attribute": "Slash",
     "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "place_opp_character_bottom_deck",
+            "count": 1
+          }
+        ]
+      },
       "passive": {
         "steps": [
           {
@@ -40377,6 +40603,15 @@
     "sub_types": "Straw Hat Crew",
     "attribute": "",
     "effects": {
+      "trigger": {
+        "steps": [
+          {
+            "action": "place_opp_character_bottom_deck",
+            "count": 1,
+            "cost_lte": 1
+          }
+        ]
+      },
       "main": {
         "steps": [
           {
@@ -59163,7 +59398,17 @@
     "color": "Blue",
     "sub_types": "Fish-Man/The Seven Warlords of the Sea/The Sun Pirates",
     "attribute": "Strike",
-    "effects": {}
+    "effects": {
+      "on_ko": {
+        "steps": [
+          {
+            "action": "place_opp_character_bottom_deck",
+            "count": 1,
+            "cost_lte": 3
+          }
+        ]
+      }
+    }
   },
   "P-031": {
     "name": "Uta",
@@ -61756,6 +62001,16 @@
     "sub_types": "Baroque Works The Seven Warlords of the Sea",
     "attribute": "Special",
     "effects": {
+      "on_block": {
+        "steps": [
+          {
+            "action": "place_opp_character_bottom_deck",
+            "count": 1,
+            "cost_lte": 2
+          }
+        ],
+        "don_requirement": 1
+      },
       "passive": {
         "steps": [
           {
@@ -68158,6 +68413,11 @@
       },
       "main": {
         "steps": [
+          {
+            "action": "place_opp_character_bottom_deck",
+            "count": 1,
+            "cost_lte": 5
+          },
           {
             "action": "draw",
             "count": 1
