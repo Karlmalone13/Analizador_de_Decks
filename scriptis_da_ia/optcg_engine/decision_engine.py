@@ -634,10 +634,22 @@ class EffectExecutor:
         # gain_life do deck, etc) = sempre viável.
         return True
 
-    def execute(self, card: Card, trigger: str, verbose: bool = False) -> list:
+    def execute(self, card: Card, trigger: str, verbose: bool = False, is_opp_turn: bool = False) -> list:
         """
         Executa todos os efeitos de um trigger para uma carta.
         Retorna lista de logs para o replay.
+
+        is_opp_turn: relevante SO para trigger='on_ko' com a condicao
+        'opp_turn_only' (gerada para blocos "[Opponent's Turn][On K.O.]",
+        7 cards -- ex: EB03-055 Nico Robin). Era gerada pelo parser e NUNCA
+        checada (achado em auditoria 27/06) -- o efeito disparava
+        incondicionalmente, inclusive no turno do PROPRIO dono. Quem chama
+        execute() deve passar True/False conforme o contexto real (ex:
+        K.O. por combate = turno de quem ataca = opp_turn_only vale pro
+        dono do alvo; K.O. como custo pago pelo proprio jogador = seu
+        proprio turno = opp_turn_only NAO vale). Default False (conservador
+        -- nao dispara de graca em contexto indeterminado, mesmo principio
+        do don_requirement abaixo).
         """
         effects = get_card_effects(card.code)
         if trigger not in effects:
@@ -648,6 +660,11 @@ class EffectExecutor:
         # Once per turn
         key = (card.code, trigger)
         if ef_data.get('once_per_turn') and key in self._once_used:
+            return []
+
+        # [Opponent's Turn][On K.O.]: so dispara se o K.O. aconteceu de fato
+        # no turno do oponente do dono da carta.
+        if trigger == 'on_ko' and ef_data.get('conditions', {}).get('opp_turn_only') and not is_opp_turn:
             return []
 
         # Verifica condições
@@ -1071,7 +1088,7 @@ class EffectExecutor:
                     remove_character_from_field(self.me, alvo, 'trash')
                     koados.append(alvo.name[:15])
                     # dispara [On K.O.] do Character K.O.ado (regra K.O. != Trash)
-                    self.execute(alvo, 'on_ko')
+                    self.execute(alvo, 'on_ko', is_opp_turn=False)
                 if koados:
                     self._cost_logs.append(f'custo: K.O. próprio: {", ".join(koados)}')
         return True
@@ -4783,7 +4800,7 @@ class OPTCGMatch:
                 remove_character_from_field(opp, target, 'trash')
                 if verbose:
                     print(f'      💀 {target.name[:20]} foi KO!')
-                ko_logs = ee_opp.execute(target, 'on_ko')
+                ko_logs = ee_opp.execute(target, 'on_ko', is_opp_turn=True)
                 if verbose:
                     for log in ko_logs:
                         if log:
