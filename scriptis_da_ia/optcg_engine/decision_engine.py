@@ -325,6 +325,12 @@ class GameState:
     # trashada, etc) -- usado pelo OpponentModel para saber quais cartas
     # specificas o oponente certamente tem, em vez de sortear via Monte Carlo.
     revealed_to_opponent: set = field(default_factory=set)
+    # Trava TRANSITORIA de Blocker, escopo de UMA UNICA batalha (a que esta
+    # sendo resolvida agora). Setada por lock_opp_blocker_battle (efeito
+    # [When Attacking] do atacante) e LIMPA pelo proprio _resolve_battle
+    # logo depois do block step -- nunca deve sobreviver pra proxima
+    # batalha. None = sem trava. dict = {'power_lte'|'power_gte'|'cost_lte': N}.
+    blocker_lock_battle: Optional[dict] = None
 
     def known_hand_cards(self) -> List['Card']:
         """
@@ -356,7 +362,22 @@ class GameState:
         return sum(c.counter for c in self.hand if c.counter > 0)
 
     def blockers_active(self) -> List[Card]:
-        return [c for c in self.field_chars if c.is_blocker() and not c.rested and not c.cannot_be_rested_until]
+        elegiveis = [c for c in self.field_chars
+                     if c.is_blocker() and not c.rested and not c.cannot_be_rested_until]
+        lock = self.blocker_lock_battle
+        if lock is None:
+            return elegiveis
+        power_lte = lock.get('power_lte')
+        power_gte = lock.get('power_gte')
+        cost_lte = lock.get('cost_lte')
+        if power_lte is None and power_gte is None and cost_lte is None:
+            return []   # sem filtro -- trava o campo inteiro
+        def travado(c):
+            if power_lte is not None and c.power <= power_lte: return True
+            if power_gte is not None and c.power >= power_gte: return True
+            if cost_lte is not None and c.cost <= cost_lte: return True
+            return False
+        return [c for c in elegiveis if not travado(c)]
 
     def board_score(self) -> int:
         return sum(c.board_value() for c in self.field_chars)
@@ -1473,6 +1494,22 @@ class EffectExecutor:
         # mas pendente de implementacao real.
         if action in ('lock_opp_character_refresh', 'lock_opp_don_refresh', 'lock_self_character_refresh'):
             return f'({action}: nao implementado -- pendente logica de Refresh Phase)'
+
+        # ── lock_opp_blocker_battle: trava o Blocker do oponente NESTA
+        # batalha (quem está atacando agora) -- DISTINTA dos cannot_attack_*
+        # acima e de lock_opp_character_refresh: aqui é transitória (só essa
+        # batalha, _resolve_battle limpa logo depois) e afeta a ELEGIBILIDADE
+        # de Blocker, não a capacidade de atacar. blockers_active() já lê
+        # opp.blocker_lock_battle -- aqui só seta o filtro (ou None pra
+        # campo todo) antes do block step rodar.
+        if action == 'lock_opp_blocker_battle':
+            lock = {}
+            if step.get('power_lte') is not None: lock['power_lte'] = step['power_lte']
+            if step.get('power_gte') is not None: lock['power_gte'] = step['power_gte']
+            if step.get('cost_lte') is not None: lock['cost_lte'] = step['cost_lte']
+            opp.blocker_lock_battle = lock
+            filtro = ', '.join(f'{k}={v}' for k, v in lock.items()) or 'campo todo'
+            return f'oponente nao pode usar Blocker nesta batalha ({filtro})'
 
         # ── Substituicao de power base (set_base_power) ─────────────────────────
         # Mecanica DISTINTA de buff_power/debuff_power: 'base power becomes N'
@@ -4596,6 +4633,7 @@ class OPTCGMatch:
         # Block step
         opp_engine = DecisionEngine(opp, p)
         blocker = opp_engine.should_use_blocker(atk_power)
+        opp.blocker_lock_battle = None   # trava era so pra ESTA batalha -- limpa already-consumida
         if blocker and not attacker.has_unblockable:
             target_type = 'character'
             target      = blocker

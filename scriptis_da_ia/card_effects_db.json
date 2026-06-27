@@ -10065,6 +10065,14 @@
     "sub_types": "The Four Emperors Red-Haired Pirates",
     "attribute": "Slash",
     "effects": {
+      "when_attacking": {
+        "steps": [
+          {
+            "action": "lock_opp_blocker_battle",
+            "power_lte": 2000
+          }
+        ]
+      },
       "passive": {
         "steps": [
           {
@@ -11480,6 +11488,17 @@
     "sub_types": "Giant Revolutionary Army",
     "attribute": "Special",
     "effects": {
+      "when_attacking": {
+        "steps": [
+          {
+            "action": "lock_opp_blocker_battle",
+            "cost_lte": 5
+          }
+        ],
+        "conditions": {
+          "hand_lte": 1
+        }
+      },
       "passive": {
         "steps": [
           {
@@ -12551,6 +12570,19 @@
     "sub_types": "Navy",
     "attribute": "Slash",
     "effects": {
+      "when_attacking": {
+        "steps": [
+          {
+            "action": "lock_opp_blocker_battle",
+            "cost_lte": 5
+          }
+        ],
+        "conditions": {
+          "board_has_cost": [
+            0
+          ]
+        }
+      },
       "passive": {
         "steps": [
           {
@@ -13125,6 +13157,15 @@
     "sub_types": "ODYSSEY",
     "attribute": "Ranged",
     "effects": {
+      "when_attacking": {
+        "steps": [
+          {
+            "action": "lock_opp_blocker_battle",
+            "power_lte": 2000
+          }
+        ],
+        "don_requirement": 1
+      },
       "passive": {
         "steps": [
           {
@@ -20127,6 +20168,16 @@
     "sub_types": "Giant Revolutionary Army",
     "attribute": "Special",
     "effects": {
+      "when_attacking": {
+        "steps": [
+          {
+            "action": "lock_opp_blocker_battle"
+          }
+        ],
+        "conditions": {
+          "self_power_gte": 7000
+        }
+      },
       "trigger": {
         "steps": [
           {
@@ -24403,6 +24454,17 @@
     "sub_types": "Navy",
     "attribute": "Strike",
     "effects": {
+      "when_attacking": {
+        "steps": [
+          {
+            "action": "lock_opp_blocker_battle"
+          }
+        ],
+        "conditions": {
+          "hand_lte": 4
+        },
+        "don_requirement": 2
+      },
       "passive": {
         "steps": [
           {
@@ -32223,6 +32285,14 @@
     "sub_types": "Egghead Seraphim",
     "attribute": "Special",
     "effects": {
+      "when_attacking": {
+        "steps": [
+          {
+            "action": "lock_opp_blocker_battle"
+          }
+        ],
+        "don_requirement": 1
+      },
       "trigger": {
         "steps": [
           {
@@ -61262,6 +61332,15 @@
     "sub_types": "Straw Hat Crew",
     "attribute": "Ranged",
     "effects": {
+      "when_attacking": {
+        "steps": [
+          {
+            "action": "lock_opp_blocker_battle",
+            "power_gte": 5000
+          }
+        ],
+        "don_requirement": 2
+      },
       "trigger": {
         "steps": [
           {
@@ -61449,6 +61528,14 @@
     "sub_types": "Straw Hat Crew Supernovas",
     "attribute": "Strike",
     "effects": {
+      "when_attacking": {
+        "steps": [
+          {
+            "action": "lock_opp_blocker_battle"
+          }
+        ],
+        "don_requirement": 2
+      },
       "passive": {
         "steps": [
           {

@@ -647,6 +647,46 @@ def parse_rest_opp(text):
     return steps
 
 
+def parse_lock_blocker_battle(text):
+    """
+    "Your opponent cannot activate [a] [Blocker] [Character that has N
+    power] [Character with a cost of N or less] during this battle."
+
+    Trava TRANSITÓRIA, escopo de UMA batalha (a que está sendo resolvida
+    agora, sempre via [When Attacking]) -- DISTINTA de parse_lock_attack
+    (que trava ataque/rest com duração entre turnos, persistente). Nunca
+    unificar: aqui some no fim desta mesma batalha; lá persiste.
+
+    Filtros vistos no banco: power_lte / power_gte / cost_lte (nunca dois
+    juntos na mesma carta). Sem filtro = trava o campo inteiro do oponente.
+    """
+    t = text.lower()
+    steps = []
+
+    m = re.search(r"blocker.{0,15}character that has (\d+) (or less|or more) power.{0,30}during this battle", t)
+    if m:
+        step = {'action': 'lock_opp_blocker_battle'}
+        if m.group(2) == 'or less':
+            step['power_lte'] = int(m.group(1))
+        else:
+            step['power_gte'] = int(m.group(1))
+        steps.append(step)
+        return steps
+
+    m = re.search(r"blocker.{0,20}character with a cost of (\d+) or less.{0,30}during this battle", t)
+    if m:
+        steps.append({'action': 'lock_opp_blocker_battle', 'cost_lte': int(m.group(1))})
+        return steps
+
+    # Sem filtro -- as duas formas acima já tentaram e falharam, então
+    # qualquer "cannot activate [Blocker] ... during this battle" que
+    # sobrar aqui é incondicional (campo inteiro).
+    if re.search(r"cannot activate \[?blocker\]?.{0,5}during this battle", t):
+        steps.append({'action': 'lock_opp_blocker_battle'})
+
+    return steps
+
+
 def parse_lock_attack(text):
     """
     Cobre 'Up to N of your opponent's Character(s) [with a cost of X or
@@ -2019,6 +2059,12 @@ def parse_block(block_text, trigger_name):
     # Restar oponente
     if 'rest up to' in t and 'opponent' in t:
         steps.extend(parse_rest_opp(t))
+
+    # Trava de Blocker do oponente, so NESTA batalha (when_attacking) --
+    # DISTINTA da trava de ataque/rest com duracao (abaixo). Roda ANTES
+    # pra nao deixar "during this battle" cair no parser errado.
+    if 'blocker' in t and 'during this battle' in t and 'cannot activate' in t:
+        steps.extend(parse_lock_blocker_battle(t))
 
     # Trava de ataque / trava de ser restado (mecanicas distintas, ambas
     # cobertas pela mesma funcao por compartilharem estrutura textual).

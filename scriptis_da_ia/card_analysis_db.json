@@ -15785,6 +15785,11 @@
         "attribute": "Slash",
         "effects": [
             {
+                "action": "lock_opp_blocker_battle",
+                "trigger": "when_attacking",
+                "power_lte": 2000
+            },
+            {
                 "action": "keyword_blocker",
                 "trigger": "passive"
             },
@@ -18339,6 +18344,11 @@
         "attribute": "Special",
         "effects": [
             {
+                "action": "lock_opp_blocker_battle",
+                "trigger": "when_attacking",
+                "cost_lte": 5
+            },
+            {
                 "action": "keyword_blocker",
                 "trigger": "passive"
             }
@@ -20029,6 +20039,11 @@
         "attribute": "Slash",
         "effects": [
             {
+                "action": "lock_opp_blocker_battle",
+                "trigger": "when_attacking",
+                "cost_lte": 5
+            },
+            {
                 "action": "keyword_blocker",
                 "trigger": "passive"
             }
@@ -20961,6 +20976,12 @@
         "sub_types": "ODYSSEY",
         "attribute": "Ranged",
         "effects": [
+            {
+                "action": "lock_opp_blocker_battle",
+                "trigger": "when_attacking",
+                "don_requirement": 1,
+                "power_lte": 2000
+            },
             {
                 "action": "keyword_blocker",
                 "trigger": "passive"
@@ -32158,6 +32179,10 @@
         "attribute": "Special",
         "effects": [
             {
+                "action": "lock_opp_blocker_battle",
+                "trigger": "when_attacking"
+            },
+            {
                 "action": "play_card",
                 "trigger": "trigger"
             },
@@ -39017,6 +39042,11 @@
         "sub_types": "Navy",
         "attribute": "Strike",
         "effects": [
+            {
+                "action": "lock_opp_blocker_battle",
+                "trigger": "when_attacking",
+                "don_requirement": 2
+            },
             {
                 "action": "keyword_blocker",
                 "trigger": "passive"
@@ -51757,6 +51787,11 @@
         "sub_types": "Egghead Seraphim",
         "attribute": "Special",
         "effects": [
+            {
+                "action": "lock_opp_blocker_battle",
+                "trigger": "when_attacking",
+                "don_requirement": 1
+            },
             {
                 "action": "play_card",
                 "trigger": "trigger"
@@ -97749,6 +97784,11 @@
         "attribute": "Ranged",
         "effects": [
             {
+                "action": "lock_opp_blocker_battle",
+                "trigger": "when_attacking",
+                "don_requirement": 2
+            },
+            {
                 "action": "play_card",
                 "trigger": "trigger"
             },
@@ -98129,6 +98169,11 @@
         "sub_types": "Straw Hat Crew Supernovas",
         "attribute": "Strike",
         "effects": [
+            {
+                "action": "lock_opp_blocker_battle",
+                "trigger": "when_attacking",
+                "don_requirement": 2
+            },
             {
                 "action": "keyword_blocker",
                 "trigger": "passive"

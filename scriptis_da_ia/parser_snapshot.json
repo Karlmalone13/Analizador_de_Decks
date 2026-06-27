@@ -6000,6 +6000,14 @@
                     "action": "keyword_rush"
                 }
             ]
+        },
+        "when_attacking": {
+            "steps": [
+                {
+                    "action": "lock_opp_blocker_battle",
+                    "power_lte": 2000
+                }
+            ]
         }
     },
     "OP01-121": {
@@ -6730,6 +6738,17 @@
                     "action": "keyword_blocker"
                 }
             ]
+        },
+        "when_attacking": {
+            "conditions": {
+                "hand_lte": 1
+            },
+            "steps": [
+                {
+                    "action": "lock_opp_blocker_battle",
+                    "cost_lte": 5
+                }
+            ]
         }
     },
     "OP02-062": {
@@ -7361,6 +7380,19 @@
                     "action": "keyword_blocker"
                 }
             ]
+        },
+        "when_attacking": {
+            "conditions": {
+                "board_has_cost": [
+                    0
+                ]
+            },
+            "steps": [
+                {
+                    "action": "lock_opp_blocker_battle",
+                    "cost_lte": 5
+                }
+            ]
         }
     },
     "OP02-102": {
@@ -7691,6 +7723,15 @@
             "steps": [
                 {
                     "action": "keyword_blocker"
+                }
+            ]
+        },
+        "when_attacking": {
+            "don_requirement": 1,
+            "steps": [
+                {
+                    "action": "lock_opp_blocker_battle",
+                    "power_lte": 2000
                 }
             ]
         }
@@ -11923,6 +11964,16 @@
                     "source": "self"
                 }
             ]
+        },
+        "when_attacking": {
+            "conditions": {
+                "self_power_gte": 7000
+            },
+            "steps": [
+                {
+                    "action": "lock_opp_blocker_battle"
+                }
+            ]
         }
     },
     "OP05-017": {
@@ -14441,6 +14492,17 @@
             "steps": [
                 {
                     "action": "keyword_blocker"
+                }
+            ]
+        },
+        "when_attacking": {
+            "conditions": {
+                "hand_lte": 4
+            },
+            "don_requirement": 2,
+            "steps": [
+                {
+                    "action": "lock_opp_blocker_battle"
                 }
             ]
         }
@@ -19045,6 +19107,14 @@
                     "action": "play_card",
                     "count": 1,
                     "source": "self"
+                }
+            ]
+        },
+        "when_attacking": {
+            "don_requirement": 1,
+            "steps": [
+                {
+                    "action": "lock_opp_blocker_battle"
                 }
             ]
         }
@@ -36411,6 +36481,15 @@
                     "source": "self"
                 }
             ]
+        },
+        "when_attacking": {
+            "don_requirement": 2,
+            "steps": [
+                {
+                    "action": "lock_opp_blocker_battle",
+                    "power_gte": 5000
+                }
+            ]
         }
     },
     "ST01-003": {},
@@ -36480,6 +36559,14 @@
                 },
                 {
                     "action": "keyword_rush"
+                }
+            ]
+        },
+        "when_attacking": {
+            "don_requirement": 2,
+            "steps": [
+                {
+                    "action": "lock_opp_blocker_battle"
                 }
             ]
         }
