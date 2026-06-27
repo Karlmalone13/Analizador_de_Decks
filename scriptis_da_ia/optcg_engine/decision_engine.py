@@ -1998,15 +1998,34 @@ class EffectExecutor:
                 if f.get('has_trigger'):                s += 10
                 return s
 
+            def _pior_para_trocar(field_chars):
+                # Pior character pra eventual troca por um play gratis quando o
+                # campo ja tem 5. EXCEÇÃO (aprovada por Arthur, audit PLAY):
+                # nunca escolhe pra trocar quem tem has_blocker ou DON anexado
+                # -- board_value() nao captura esse papel ativo (um Blocker de
+                # power baixo seguraria o campo; um character com DON anexado
+                # perde esse DON se for trashado, ja que nada devolve pra area
+                # de custo nesse caminho -- bug separado, registrado, nao
+                # corrigido aqui, só evitado com essa exceção).
+                candidatos = [x for x in field_chars
+                              if not x.has_blocker and x.don_attached == 0]
+                pool = candidatos if candidatos else field_chars  # se TODOS
+                # tiverem papel ativo, nao trava a troca pra sempre -- usa o
+                # pool completo como ultimo recurso.
+                if not pool:
+                    return None
+                return min(pool, key=lambda x: x.board_value())
+
             def _put_into_play(c):
                 # replica a parte de "entrar em campo" de _play_card, SEM cobrar
                 # DON e sem o verbose do replay. Eventos vão pro trash (resolvem
                 # efeito on_play depois), characters/stages pro campo.
                 if c.card_type == 'CHARACTER':
                     if len(me.field_chars) >= 5:
-                        worst = min(me.field_chars, key=lambda x: x.board_value())
-                        me.field_chars.remove(worst)
-                        me.trash.append(worst)
+                        worst = _pior_para_trocar(me.field_chars)
+                        if worst is not None:
+                            me.field_chars.remove(worst)
+                            me.trash.append(worst)
                     c.rested = False
                     c.just_played = not (c.has_rush or c.is_rush_character())
                     c.rush_character_only_this_turn = c.is_rush_character() and not c.is_rush()
@@ -2033,8 +2052,8 @@ class EffectExecutor:
                 # guarda de campo cheio: só descarta o pior se a nova supera
                 campo_cheio = (card.card_type == 'CHARACTER' and len(me.field_chars) >= 5)
                 if campo_cheio:
-                    pior = min((x.board_value() for x in me.field_chars), default=0)
-                    if card.board_value() <= pior:
+                    pior = _pior_para_trocar(me.field_chars)
+                    if pior is None or card.board_value() <= pior.board_value():
                         return ''   # não vale trocar — mantém na mão
                 if val_play <= val_keep:
                     return ''       # vale mais na mão — não joga
@@ -2072,8 +2091,8 @@ class EffectExecutor:
                 melhor = max(elegiveis, key=_score_to_play)
                 # guarda de campo cheio para characters
                 if melhor.card_type == 'CHARACTER' and len(me.field_chars) >= 5:
-                    pior = min((x.board_value() for x in me.field_chars), default=0)
-                    if melhor.board_value() <= pior:
+                    pior = _pior_para_trocar(me.field_chars)
+                    if pior is None or melhor.board_value() <= pior.board_value():
                         elegiveis.remove(melhor)
                         continue
                 me.hand.remove(melhor)
