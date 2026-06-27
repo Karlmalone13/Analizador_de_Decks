@@ -166,6 +166,7 @@ class Card:
     cannot_attack_until: str = ''   # '', 'opp_turn_end', 'opp_end_phase', 'my_next_turn_start' -- trava de ataque (lock_opp_character_attack)
     cannot_block_until: str = ''    # mesma semantica de duracao, para lock_opp_blocker_turn (Limejuice OP09-014, Kuzan OP16-063) -- trava PERSISTENTE de 1 character especifico, DISTINTA de blocker_lock_battle (transitoria, campo todo/filtrado, so 1 batalha)
     unblockable_this_turn: bool = False  # Unblockable CONCEDIDO so neste turno (Sanji ST21-003, Diable Jambe ST01-016, OP13-057) -- DISTINTO de has_unblockable (nativo ou gain_unblockable permanente). Resetado no refresh_phase do DONO. Regra 10-1-7-1 confirma equivalencia: "[Unblockable] prevents the opponent from activating [Blocker] when attacked" -- mesma semantica, so com expiracao.
+    rush_this_turn: bool = False  # Rush CONCEDIDO so neste turno (39 cards, ex: EB01-045 Brook, OP01-008 Cavendish) -- mesma logica de unblockable_this_turn. has_rush continua sendo o permanente/nativo (NUNCA tocar -- decisao de 24/06 contra unificar nativo/concedido por risco de regressao em 17 pontos; este campo PARALELO evita o risco). Resetado no refresh_phase.
     cannot_be_rested_until: str = ''  # mesma semantica de duracao, para lock_opp_cannot_be_rested (mecanica DISTINTA de cannot_attack)
     # Buffs temporários (resetados a cada turno)
     power_buff: int = 0
@@ -189,7 +190,7 @@ class Card:
                       'has_double_attack', 'has_banish', 'has_unblockable',
                       'rested', 'just_played', 'rush_character_only_this_turn',
                       'don_attached', 'cannot_attack_until', 'cannot_be_rested_until', 'cannot_block_until',
-                      'unblockable_this_turn',
+                      'unblockable_this_turn', 'rush_this_turn',
                       'power_buff', 'cost_buff', 'cost_buff_permanent'):
             setattr(novo, campo, getattr(self, campo))
         return novo
@@ -265,7 +266,7 @@ class Card:
         return self._kw_active('double_attack', self.has_double_attack)
 
     def is_rush(self) -> bool:
-        return self._kw_active('rush', self.has_rush)
+        return self._kw_active('rush', self.has_rush) or self.rush_this_turn
 
     def is_rush_character(self) -> bool:
         return self._kw_active('rush_character', self.has_rush_character)
@@ -278,7 +279,7 @@ class Card:
 
     def board_value(self) -> int:
         v = self.power // 1000
-        if self.has_rush:          v += 4
+        if self.has_rush or self.rush_this_turn:          v += 4
         if self.has_blocker:       v += 3
         if self.has_double_attack: v += 3
         if self.has_banish:        v += 2
@@ -1699,7 +1700,7 @@ class EffectExecutor:
                             me.trash.append(me.field_stage)
                         me.field_stage = self_card
                     else:
-                        self_card.just_played = not (self_card.has_rush or self_card.is_rush_character())
+                        self_card.just_played = not (self_card.has_rush or self_card.rush_this_turn or self_card.is_rush_character())
                         self_card.rush_character_only_this_turn = self_card.is_rush_character() and not self_card.is_rush()
                         me.field_chars.append(self_card)
                     return f'jogou do trash (self): {self_card.name[:15]}'
@@ -1748,7 +1749,7 @@ class EffectExecutor:
                     if len(me.field_chars) >= 5:
                         worst = min(me.field_chars, key=lambda x: x.board_value())
                         remove_character_from_field(me, worst, 'trash')
-                    best.just_played = not (best.has_rush or best.is_rush_character())
+                    best.just_played = not (best.has_rush or best.rush_this_turn or best.is_rush_character())
                     best.rush_character_only_this_turn = best.is_rush_character() and not best.is_rush()
                     me.field_chars.append(best)
 
@@ -1810,7 +1811,7 @@ class EffectExecutor:
                 if len(me.field_chars) >= 5:
                     worst = min(me.field_chars, key=lambda x: x.board_value())
                     remove_character_from_field(me, worst, 'trash')
-                best.just_played = not (best.has_rush or best.is_rush_character())
+                best.just_played = not (best.has_rush or best.rush_this_turn or best.is_rush_character())
                 best.rush_character_only_this_turn = best.is_rush_character() and not best.is_rush()
                 me.field_chars.append(best)
                 candidates.remove(best)
@@ -2096,7 +2097,7 @@ class EffectExecutor:
                         if worst is not None:
                             remove_character_from_field(me, worst, 'trash')
                     c.rested = False
-                    c.just_played = not (c.has_rush or c.is_rush_character())
+                    c.just_played = not (c.has_rush or c.rush_this_turn or c.is_rush_character())
                     c.rush_character_only_this_turn = c.is_rush_character() and not c.is_rush()
                     me.field_chars.append(c)
                 elif c.card_type == 'STAGE':
@@ -2184,6 +2185,9 @@ class EffectExecutor:
 
         # ── Keywords ──────────────────────────────────────────────────────────
         if action == 'gain_rush':
+            if step.get('duration') == 'this_turn':
+                card.rush_this_turn = True
+                return 'ganhou Rush (so este turno)'
             card.has_rush = True
             return 'ganhou Rush'
         if action == 'gain_rush_character':
@@ -2194,7 +2198,7 @@ class EffectExecutor:
             # como sinal de 'ainda no turno em que pode usar a permissao'.
             # Quando concedido no proprio turno em que e jogado (ex:
             # EB04-007 via Activate:Main apos o On Play), marca a janela.
-            card.rush_character_only_this_turn = not card.has_rush
+            card.rush_character_only_this_turn = not (card.has_rush or card.rush_this_turn)
             return 'ganhou Rush: Character'
         if action == 'gain_blocker':
             card.has_blocker = True
@@ -2794,7 +2798,7 @@ class GameAnalyzer:
             if 'activate_main' in effects: peso += 2   # vantagem recorrente
             if 'when_attacking' in effects: peso += 2
             if c.has_double_attack:       peso += 2
-            if c.has_rush:                peso += 1
+            if c.has_rush or c.rush_this_turn:                peso += 1
             if peso >= 3:
                 ameacas.append((peso, c))
         ameacas.sort(key=lambda x: x[0], reverse=True)
@@ -2938,7 +2942,7 @@ class DecisionEngine:
         s += card.power / 1000 * 5
 
         # Keywords
-        if card.has_rush:
+        if card.has_rush or card.rush_this_turn:
             v = 30
             if opp_life <= 2: v += 50
             if opp_life == 0: v += 100
@@ -3017,17 +3021,17 @@ class DecisionEngine:
 
         # Ajuste por postura
         if posture == 'LETHAL':
-            if card.has_rush:          s += 50
+            if card.has_rush or card.rush_this_turn:          s += 50
             if card.has_double_attack: s += 40
             if card.has_unblockable or card.unblockable_this_turn:   s += 30
         elif posture == 'AGGRESSIVE':
-            if card.has_rush:          s += 30
+            if card.has_rush or card.rush_this_turn:          s += 30
             if card.has_double_attack: s += 20
             if card.counter > 0:       s -= 10
         elif posture == 'DEFENSIVE':
             if card.has_blocker:       s += 50
             if card.counter > 0:       s += 25
-            if card.has_rush:          s -= 15
+            if card.has_rush or card.rush_this_turn:          s -= 15
         elif posture == 'CONTROL':
             if has_ko:     s += 30
             if has_bounce: s += 20
@@ -3505,7 +3509,7 @@ class DecisionEngine:
 
             # Prioriza ameaças (ordem de prioridade de alvos do documento)
             if target.has_double_attack:  s += 50
-            if target.has_rush:           s += 40
+            if target.has_rush or target.rush_this_turn:           s += 40
             if target.has_blocker:        s += 60
             if 'when_attacking' in tgt_effects: s += 35
             if 'activate_main' in tgt_effects:  s += 25
@@ -3518,7 +3522,7 @@ class DecisionEngine:
             # Custo de perder o Activate Main do ATACANTE: só compensa se o alvo
             # é ameaça grande (poder alto, blocker, rush, gera vantagem).
             ameaca_grande = (target.power >= 5000 or target.has_blocker or
-                             target.has_rush or target.has_double_attack)
+                             target.has_rush or target.rush_this_turn or target.has_double_attack)
             if activate_cost > 0 and not ameaca_grande:
                 s -= activate_cost
 
@@ -3912,6 +3916,7 @@ class OPTCGMatch:
             c.cannot_be_rested_until = ''
             c.cannot_block_until = ''
             c.unblockable_this_turn = False
+            c.rush_this_turn = False
         p.leader.don_attached = 0
         p.leader.rested = False
         p.leader.power_buff = 0
@@ -4073,7 +4078,7 @@ class OPTCGMatch:
                     or flags.get('rests_opponent') or flags.get('power_buff')
                     or flags.get('draws') or flags.get('is_searcher')):
                 habilita_ataque = True
-        if card.has_rush:
+        if card.has_rush or card.rush_this_turn:
             habilita_ataque = True
 
         if habilita_ataque:
@@ -4629,7 +4634,7 @@ class OPTCGMatch:
                 if verbose:
                     print(f'    campo cheio -> descartou {worst.name[:25]}')
             card.rested = False
-            card.just_played = not (card.has_rush or card.is_rush_character())
+            card.just_played = not (card.has_rush or card.rush_this_turn or card.is_rush_character())
             card.rush_character_only_this_turn = card.is_rush_character() and not card.is_rush()
             p.field_chars.append(card)
 

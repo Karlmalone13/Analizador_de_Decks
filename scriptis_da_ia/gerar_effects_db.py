@@ -2272,18 +2272,60 @@ def parse_block(block_text, trigger_name):
     _gains_lista_m = re.search(r'gains?\s+(\[[a-z: ]+\]\s*,?\s*)+(or\s*\[[a-z: ]+\]\s*)?', t)
     _lista_txt = _gains_lista_m.group(0) if _gains_lista_m else ''
 
-    if 'gain [rush: character]' in t or 'gains [rush: character]' in t or '[rush: character]' in _lista_txt:
-        steps.append({'action': 'gain_rush_character'})
-    elif 'gain [rush]' in t or 'gains [rush]' in t or '[rush]' in _lista_txt:
-        steps.append({'action': 'gain_rush'})
-    if 'gain [blocker]' in t or 'gains [blocker]' in t or '[blocker]' in _lista_txt:
-        steps.append({'action': 'gain_blocker'})
-    if 'gain [double attack]' in t or 'gains [double attack]' in t or '[double attack]' in _lista_txt:
-        steps.append({'action': 'gain_double_attack'})
+    # Auditoria 27/06: gain_rush/gain_double_attack/gain_blocker/
+    # gain_unblockable nunca expiravam (setavam has_* permanente mesmo
+    # quando o texto diz "during this turn"/"during this battle"). Captura
+    # a duracao numa JANELA LOCAL apos o match especifico (nao o bloco
+    # inteiro -- evita pegar "during this turn" de outra clausula). Sem
+    # duration no texto = grant permanente/condicional-passivo (maioria
+    # dos casos, ex: "If your Leader is X, gains [Blocker]") -- esses
+    # continuam indo pro has_* de sempre, NUNCA tocar.
+    def _duration_apos(pos, janela=45):
+        seg = t[pos:pos + janela]
+        if 'during this turn' in seg:
+            return 'this_turn'
+        if 'during this battle' in seg:
+            return 'battle_only'
+        return None
+
+    m_rc = re.search(r'gains?\s+\[rush: character\]', t)
+    if m_rc or '[rush: character]' in _lista_txt:
+        step = {'action': 'gain_rush_character'}
+        dur = _duration_apos(m_rc.end()) if m_rc else None
+        if dur:
+            step['duration'] = dur
+        steps.append(step)
+    else:
+        m_r = re.search(r'gains?\s+\[rush\]', t)
+        if m_r or '[rush]' in _lista_txt:
+            step = {'action': 'gain_rush'}
+            dur = _duration_apos(m_r.end()) if m_r else None
+            if dur:
+                step['duration'] = dur
+            steps.append(step)
+    m_b = re.search(r'gains?\s+\[blocker\]', t)
+    if m_b or '[blocker]' in _lista_txt:
+        step = {'action': 'gain_blocker'}
+        dur = _duration_apos(m_b.end()) if m_b else None
+        if dur:
+            step['duration'] = dur
+        steps.append(step)
+    m_da = re.search(r'gains?\s+\[double attack\]', t)
+    if m_da or '[double attack]' in _lista_txt:
+        step = {'action': 'gain_double_attack'}
+        dur = _duration_apos(m_da.end()) if m_da else None
+        if dur:
+            step['duration'] = dur
+        steps.append(step)
     if 'gain [banish]' in t or 'gains [banish]' in t or '[banish]' in _lista_txt:
         steps.append({'action': 'gain_banish'})
-    if 'gain [unblockable]' in t or 'gains [unblockable]' in t or '[unblockable]' in _lista_txt:
-        steps.append({'action': 'gain_unblockable'})
+    m_u = re.search(r'gains?\s+\[unblockable\]', t)
+    if m_u or '[unblockable]' in _lista_txt:
+        step = {'action': 'gain_unblockable'}
+        dur = _duration_apos(m_u.end()) if m_u else None
+        if dur:
+            step['duration'] = dur
+        steps.append(step)
 
     # Trash from hand (efeito, nao custo)
     if trigger_name in ('on_play', 'when_attacking', 'end_of_turn'):

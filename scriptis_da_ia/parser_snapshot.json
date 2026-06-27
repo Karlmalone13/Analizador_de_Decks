@@ -698,7 +698,8 @@
         "on_play": {
             "steps": [
                 {
-                    "action": "gain_rush"
+                    "action": "gain_rush",
+                    "duration": "this_turn"
                 }
             ]
         }
@@ -1040,7 +1041,8 @@
                     "rested": true
                 },
                 {
-                    "action": "gain_rush"
+                    "action": "gain_rush",
+                    "duration": "this_turn"
                 }
             ]
         }
@@ -1239,7 +1241,8 @@
         "on_play": {
             "steps": [
                 {
-                    "action": "gain_double_attack"
+                    "action": "gain_double_attack",
+                    "duration": "this_turn"
                 }
             ]
         },
@@ -2050,7 +2053,8 @@
                     "target": "opp_character"
                 },
                 {
-                    "action": "gain_rush"
+                    "action": "gain_rush",
+                    "duration": "this_turn"
                 }
             ]
         },
@@ -2964,7 +2968,8 @@
         "on_play": {
             "steps": [
                 {
-                    "action": "gain_double_attack"
+                    "action": "gain_double_attack",
+                    "duration": "this_turn"
                 }
             ]
         }
@@ -3395,7 +3400,8 @@
             "once_per_turn": true,
             "steps": [
                 {
-                    "action": "gain_rush_character"
+                    "action": "gain_rush_character",
+                    "duration": "this_turn"
                 }
             ]
         },
@@ -3735,7 +3741,8 @@
             ],
             "steps": [
                 {
-                    "action": "gain_unblockable"
+                    "action": "gain_unblockable",
+                    "duration": "this_turn"
                 }
             ]
         }
@@ -4584,7 +4591,8 @@
         "on_play": {
             "steps": [
                 {
-                    "action": "gain_rush"
+                    "action": "gain_rush",
+                    "duration": "this_turn"
                 }
             ]
         }
@@ -5685,7 +5693,8 @@
                     "target": "opp_character"
                 },
                 {
-                    "action": "gain_rush"
+                    "action": "gain_rush",
+                    "duration": "this_turn"
                 }
             ]
         }
@@ -6142,7 +6151,8 @@
                     "action": "gain_rush",
                     "conditions": {
                         "leader_type_includes": "whitebeard pirates"
-                    }
+                    },
+                    "duration": "this_turn"
                 }
             ]
         }
@@ -6767,7 +6777,8 @@
                     "target": "opp_character"
                 },
                 {
-                    "action": "gain_double_attack"
+                    "action": "gain_double_attack",
+                    "duration": "this_turn"
                 },
                 {
                     "action": "trash_from_hand",
@@ -6790,7 +6801,8 @@
                     "target": "opp_character"
                 },
                 {
-                    "action": "gain_double_attack"
+                    "action": "gain_double_attack",
+                    "duration": "this_turn"
                 },
                 {
                     "action": "trash_from_hand",
@@ -7932,7 +7944,8 @@
                     "target": "leader"
                 },
                 {
-                    "action": "gain_double_attack"
+                    "action": "gain_double_attack",
+                    "duration": "this_turn"
                 }
             ]
         },
@@ -8828,7 +8841,8 @@
             ],
             "steps": [
                 {
-                    "action": "gain_rush"
+                    "action": "gain_rush",
+                    "duration": "this_turn"
                 }
             ]
         }
@@ -9143,7 +9157,8 @@
         "on_play": {
             "steps": [
                 {
-                    "action": "gain_rush"
+                    "action": "gain_rush",
+                    "duration": "this_turn"
                 }
             ]
         }
@@ -9727,7 +9742,8 @@
                     "count": 1
                 },
                 {
-                    "action": "gain_rush"
+                    "action": "gain_rush",
+                    "duration": "this_turn"
                 }
             ]
         }
@@ -10659,7 +10675,8 @@
             ],
             "steps": [
                 {
-                    "action": "gain_blocker"
+                    "action": "gain_blocker",
+                    "duration": "this_turn"
                 }
             ]
         }
@@ -10930,7 +10947,8 @@
                     "target": "self"
                 },
                 {
-                    "action": "gain_blocker"
+                    "action": "gain_blocker",
+                    "duration": "battle_only"
                 }
             ]
         }
@@ -11308,7 +11326,8 @@
                     "action": "gain_double_attack",
                     "conditions": {
                         "trash_gte": 15
-                    }
+                    },
+                    "duration": "this_turn"
                 }
             ]
         },
@@ -11628,7 +11647,8 @@
         "main": {
             "steps": [
                 {
-                    "action": "gain_double_attack"
+                    "action": "gain_double_attack",
+                    "duration": "this_turn"
                 }
             ]
         },
@@ -15670,7 +15690,8 @@
         "on_play": {
             "steps": [
                 {
-                    "action": "gain_double_attack"
+                    "action": "gain_double_attack",
+                    "duration": "this_turn"
                 }
             ]
         }
@@ -15929,7 +15950,8 @@
             ],
             "steps": [
                 {
-                    "action": "gain_blocker"
+                    "action": "gain_blocker",
+                    "duration": "this_turn"
                 }
             ]
         }
@@ -17112,7 +17134,8 @@
         "trigger": {
             "steps": [
                 {
-                    "action": "gain_blocker"
+                    "action": "gain_blocker",
+                    "duration": "this_turn"
                 }
             ]
         }
@@ -17463,7 +17486,8 @@
                     "action": "gain_rush",
                     "conditions": {
                         "life_lte": 2
-                    }
+                    },
+                    "duration": "this_turn"
                 }
             ]
         }
@@ -17605,7 +17629,8 @@
             "once_per_turn": true,
             "steps": [
                 {
-                    "action": "gain_rush"
+                    "action": "gain_rush",
+                    "duration": "this_turn"
                 }
             ]
         },
@@ -17921,7 +17946,8 @@
         "on_play": {
             "steps": [
                 {
-                    "action": "gain_rush"
+                    "action": "gain_rush",
+                    "duration": "this_turn"
                 }
             ]
         }
@@ -18200,7 +18226,8 @@
         "on_play": {
             "steps": [
                 {
-                    "action": "gain_rush"
+                    "action": "gain_rush",
+                    "duration": "this_turn"
                 }
             ]
         }
@@ -18368,7 +18395,8 @@
         "on_play": {
             "steps": [
                 {
-                    "action": "gain_rush"
+                    "action": "gain_rush",
+                    "duration": "this_turn"
                 }
             ]
         }
@@ -20287,7 +20315,8 @@
                     "count": 1
                 },
                 {
-                    "action": "gain_rush"
+                    "action": "gain_rush",
+                    "duration": "this_turn"
                 }
             ]
         }
@@ -21256,7 +21285,8 @@
                     "count": 1
                 },
                 {
-                    "action": "gain_rush"
+                    "action": "gain_rush",
+                    "duration": "this_turn"
                 }
             ]
         }
@@ -23845,7 +23875,8 @@
             ],
             "steps": [
                 {
-                    "action": "gain_rush"
+                    "action": "gain_rush",
+                    "duration": "this_turn"
                 }
             ]
         }
@@ -25093,7 +25124,8 @@
         "on_play": {
             "steps": [
                 {
-                    "action": "gain_rush"
+                    "action": "gain_rush",
+                    "duration": "this_turn"
                 }
             ]
         }
@@ -25117,7 +25149,8 @@
                     "target": "self"
                 },
                 {
-                    "action": "gain_rush"
+                    "action": "gain_rush",
+                    "duration": "this_turn"
                 }
             ]
         }
@@ -25854,7 +25887,8 @@
             },
             "steps": [
                 {
-                    "action": "gain_rush"
+                    "action": "gain_rush",
+                    "duration": "this_turn"
                 }
             ]
         },
@@ -26060,7 +26094,8 @@
             },
             "steps": [
                 {
-                    "action": "gain_rush"
+                    "action": "gain_rush",
+                    "duration": "this_turn"
                 }
             ]
         }
@@ -28592,7 +28627,8 @@
         "opp_turn": {
             "steps": [
                 {
-                    "action": "gain_blocker"
+                    "action": "gain_blocker",
+                    "duration": "this_turn"
                 }
             ]
         },
@@ -28614,7 +28650,8 @@
             },
             "steps": [
                 {
-                    "action": "gain_rush"
+                    "action": "gain_rush",
+                    "duration": "this_turn"
                 }
             ]
         },
@@ -29593,7 +29630,8 @@
         "passive": {
             "steps": [
                 {
-                    "action": "gain_rush"
+                    "action": "gain_rush",
+                    "duration": "this_turn"
                 }
             ]
         }
@@ -29672,7 +29710,8 @@
         "passive": {
             "steps": [
                 {
-                    "action": "gain_rush"
+                    "action": "gain_rush",
+                    "duration": "this_turn"
                 }
             ]
         }
@@ -31157,7 +31196,8 @@
             "once_per_turn": true,
             "steps": [
                 {
-                    "action": "gain_rush"
+                    "action": "gain_rush",
+                    "duration": "this_turn"
                 }
             ]
         }
@@ -31656,7 +31696,8 @@
             "once_per_turn": true,
             "steps": [
                 {
-                    "action": "gain_rush"
+                    "action": "gain_rush",
+                    "duration": "this_turn"
                 }
             ]
         },
@@ -31683,7 +31724,8 @@
             ],
             "steps": [
                 {
-                    "action": "gain_rush"
+                    "action": "gain_rush",
+                    "duration": "this_turn"
                 },
                 {
                     "action": "trash_from_hand",
@@ -31754,7 +31796,8 @@
         "on_play": {
             "steps": [
                 {
-                    "action": "gain_unblockable"
+                    "action": "gain_unblockable",
+                    "duration": "this_turn"
                 }
             ]
         },
@@ -31900,7 +31943,8 @@
                     "target": "self"
                 },
                 {
-                    "action": "gain_double_attack"
+                    "action": "gain_double_attack",
+                    "duration": "this_turn"
                 }
             ]
         },
@@ -32466,7 +32510,8 @@
                     "filter_type": "straw hat crew"
                 },
                 {
-                    "action": "gain_rush"
+                    "action": "gain_rush",
+                    "duration": "this_turn"
                 }
             ]
         }
@@ -32602,7 +32647,8 @@
             ],
             "steps": [
                 {
-                    "action": "gain_rush_character"
+                    "action": "gain_rush_character",
+                    "duration": "this_turn"
                 }
             ]
         }
@@ -32725,7 +32771,8 @@
             ],
             "steps": [
                 {
-                    "action": "gain_rush"
+                    "action": "gain_rush",
+                    "duration": "this_turn"
                 }
             ]
         }
@@ -32921,7 +32968,8 @@
             "don_requirement": 1,
             "steps": [
                 {
-                    "action": "gain_rush"
+                    "action": "gain_rush",
+                    "duration": "this_turn"
                 }
             ]
         }
@@ -33135,7 +33183,8 @@
             "once_per_turn": true,
             "steps": [
                 {
-                    "action": "gain_rush"
+                    "action": "gain_rush",
+                    "duration": "this_turn"
                 }
             ]
         }
@@ -33663,7 +33712,8 @@
         "main": {
             "steps": [
                 {
-                    "action": "gain_double_attack"
+                    "action": "gain_double_attack",
+                    "duration": "this_turn"
                 },
                 {
                     "action": "rest_opp_character",
@@ -33748,7 +33798,8 @@
                     "count": 1
                 },
                 {
-                    "action": "gain_blocker"
+                    "action": "gain_blocker",
+                    "duration": "this_turn"
                 }
             ]
         }
@@ -34338,7 +34389,8 @@
         "passive": {
             "steps": [
                 {
-                    "action": "gain_rush"
+                    "action": "gain_rush",
+                    "duration": "this_turn"
                 }
             ]
         }
@@ -34643,7 +34695,8 @@
         "on_play": {
             "steps": [
                 {
-                    "action": "gain_unblockable"
+                    "action": "gain_unblockable",
+                    "duration": "this_turn"
                 }
             ]
         }
@@ -36155,7 +36208,8 @@
             "once_per_turn": true,
             "steps": [
                 {
-                    "action": "gain_rush"
+                    "action": "gain_rush",
+                    "duration": "this_turn"
                 }
             ]
         }
@@ -37102,7 +37156,8 @@
                     "target": "opp_character"
                 },
                 {
-                    "action": "gain_rush"
+                    "action": "gain_rush",
+                    "duration": "this_turn"
                 }
             ]
         }
@@ -37486,7 +37541,8 @@
                     "count": 2
                 },
                 {
-                    "action": "gain_double_attack"
+                    "action": "gain_double_attack",
+                    "duration": "this_turn"
                 }
             ]
         }
@@ -37831,7 +37887,8 @@
         "on_play": {
             "steps": [
                 {
-                    "action": "gain_rush"
+                    "action": "gain_rush",
+                    "duration": "this_turn"
                 }
             ]
         }
@@ -37973,7 +38030,8 @@
             ],
             "steps": [
                 {
-                    "action": "gain_double_attack"
+                    "action": "gain_double_attack",
+                    "duration": "this_turn"
                 }
             ]
         },
@@ -38475,7 +38533,8 @@
             },
             "steps": [
                 {
-                    "action": "gain_rush"
+                    "action": "gain_rush",
+                    "duration": "this_turn"
                 }
             ]
         }
@@ -41177,7 +41236,8 @@
                     "target": "self"
                 },
                 {
-                    "action": "gain_rush"
+                    "action": "gain_rush",
+                    "duration": "this_turn"
                 }
             ]
         },
@@ -41497,7 +41557,8 @@
         "main": {
             "steps": [
                 {
-                    "action": "gain_unblockable"
+                    "action": "gain_unblockable",
+                    "duration": "this_turn"
                 }
             ]
         }
@@ -41626,7 +41687,8 @@
             ],
             "steps": [
                 {
-                    "action": "gain_rush"
+                    "action": "gain_rush",
+                    "duration": "this_turn"
                 }
             ]
         },
@@ -41710,7 +41772,8 @@
             ],
             "steps": [
                 {
-                    "action": "gain_rush"
+                    "action": "gain_rush",
+                    "duration": "this_turn"
                 }
             ]
         },
