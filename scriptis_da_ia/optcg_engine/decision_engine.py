@@ -3201,6 +3201,48 @@ class DecisionEngine:
             return None
         return max(playable, key=self.avaliar_carta)
 
+    def _has_don_reactive_use(self) -> bool:
+        """
+        Existe algum jeito real de gastar DON reservado durante o turno do
+        oponente? Sem isso, reservar é desperdício puro -- melhor
+        concentrar tudo no ataque (auditoria 27/06, sugestão de Arthur).
+
+        3 fontes, em ordem de confiabilidade:
+          1. Counter event na mão que EXIGE DON no próprio custo (raro --
+             a maioria de [Counter] só pede trashar a carta, sem DON).
+          2. Character/Leader em campo com efeito [Counter]/[Opponent's
+             Turn] que pede DON!! xN -- já estruturado no banco via
+             don_requirement, nada novo a parsear.
+          3. Proxy de EXPECTATIVA por composição: proporção de cartas com
+             counter ainda não vistas em deck+vida. NÃO espia a ordem da
+             vida (isso seria cheat) -- só conta quantas das restantes,
+             agregadas, têm counter. Threshold 15%, aprovado por Arthur
+             como número de partida (sem dado real por arquétipo ainda --
+             isso fica pra quando Opponent Reading for retomado).
+        """
+        me = self.me
+
+        for c in me.hand:
+            if c.card_type == 'EVENT' and '[counter]' in c.card_text.lower():
+                if re.search(r'don!!\s*[-x]?\s*\d', c.card_text.lower()):
+                    return True
+
+        for c in list(me.field_chars) + [me.leader]:
+            effects = get_card_effects(c.code)
+            for timing in ('counter', 'opp_turn'):
+                blk = effects.get(timing)
+                if blk and blk.get('don_requirement', 0) > 0:
+                    return True
+
+        pool = me.deck + me.life
+        if pool:
+            com_counter = sum(1 for c in pool
+                               if c.counter >= 1000 or '[counter]' in c.card_text.lower())
+            if com_counter / len(pool) >= 0.15:
+                return True
+
+        return False
+
     def _don_reserve_for_defense(self) -> int:
         """
         Quantos DON reservar para defesa no turno do oponente.
@@ -3210,6 +3252,12 @@ class DecisionEngine:
         - SEGURO (muito counter na mão, blockers, vida alta, sem risco de perder
           no próximo turno) -> reserva pouco/nada, força ataque.
         """
+        # Sem NENHUM jeito real de gastar DON na defesa, reservar é só
+        # perder poder de ataque de graça -- corta aqui antes de qualquer
+        # análise de ameaça/vida.
+        if not self._has_don_reactive_use():
+            return 0
+
         a = self.analyzer
         my_life = self.me.life_count()
         threat  = a.opp_lethal_threat()
@@ -3269,7 +3317,8 @@ class DecisionEngine:
         opp_leader_power = self.opp.leader.power
         estimated_counter = a.opp_counter_potential()
 
-        # ── Modo LETHAL: concentra no mais forte ─────────────────────────────
+        # ── Modo LETHAL: concentra no mais forte, gasta TUDO (sem reserva,
+        # confirmado por Arthur -- ir pro lethal vale mais que guardar DON) ──
         if a.can_lethal_this_turn() or self.posture() == 'LETHAL':
             # Ordena: mais forte primeiro
             sorted_atk = sorted(attackers,
@@ -3278,6 +3327,18 @@ class DecisionEngine:
             # Concentra no atacante principal
             main_atk = sorted_atk[0]
             result[id(main_atk)] = don_available
+            return result
+
+        # ── Reserva de DON para defesa (CLEAR FIELD e NORMAL apenas --
+        # auditoria 27/06: choose_card_to_play/_can_play_card já reservavam
+        # no Main Phase, mas a distribuição em combate ignorava por completo,
+        # podendo zerar o DON disponível pro Counter Step do oponente mesmo
+        # quando a análise de risco pedia reserva). _don_reserve_for_defense
+        # já corta pra 0 se não houver nenhum uso reativo real (ver
+        # _has_don_reactive_use) -- não reserva à toa.
+        don_reserve = self._don_reserve_for_defense()
+        don_available = max(0, don_available - don_reserve)
+        if don_available <= 0:
             return result
 
         # ── Modo CLEAR FIELD: distribui para restar/destruir cartas ──────────
