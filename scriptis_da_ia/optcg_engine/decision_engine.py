@@ -167,6 +167,8 @@ class Card:
     cannot_block_until: str = ''    # mesma semantica de duracao, para lock_opp_blocker_turn (Limejuice OP09-014, Kuzan OP16-063) -- trava PERSISTENTE de 1 character especifico, DISTINTA de blocker_lock_battle (transitoria, campo todo/filtrado, so 1 batalha)
     unblockable_this_turn: bool = False  # Unblockable CONCEDIDO so neste turno (Sanji ST21-003, Diable Jambe ST01-016, OP13-057) -- DISTINTO de has_unblockable (nativo ou gain_unblockable permanente). Resetado no refresh_phase do DONO. Regra 10-1-7-1 confirma equivalencia: "[Unblockable] prevents the opponent from activating [Blocker] when attacked" -- mesma semantica, so com expiracao.
     rush_this_turn: bool = False  # Rush CONCEDIDO so neste turno (39 cards, ex: EB01-045 Brook, OP01-008 Cavendish) -- mesma logica de unblockable_this_turn. has_rush continua sendo o permanente/nativo (NUNCA tocar -- decisao de 24/06 contra unificar nativo/concedido por risco de regressao em 17 pontos; este campo PARALELO evita o risco). Resetado no refresh_phase.
+    double_attack_this_turn: bool = False  # Double Attack CONCEDIDO so neste turno (12 cards) -- mesma logica. has_double_attack permanente intocado.
+    blocker_this_turn: bool = False  # Blocker CONCEDIDO so neste turno (6 cards) -- mesma logica. has_blocker permanente intocado.
     cannot_be_rested_until: str = ''  # mesma semantica de duracao, para lock_opp_cannot_be_rested (mecanica DISTINTA de cannot_attack)
     # Buffs temporários (resetados a cada turno)
     power_buff: int = 0
@@ -190,7 +192,7 @@ class Card:
                       'has_double_attack', 'has_banish', 'has_unblockable',
                       'rested', 'just_played', 'rush_character_only_this_turn',
                       'don_attached', 'cannot_attack_until', 'cannot_be_rested_until', 'cannot_block_until',
-                      'unblockable_this_turn', 'rush_this_turn',
+                      'unblockable_this_turn', 'rush_this_turn', 'double_attack_this_turn', 'blocker_this_turn',
                       'power_buff', 'cost_buff', 'cost_buff_permanent'):
             setattr(novo, campo, getattr(self, campo))
         return novo
@@ -260,10 +262,10 @@ class Card:
         return False
 
     def is_blocker(self) -> bool:
-        return self._kw_active('blocker', self.has_blocker)
+        return self._kw_active('blocker', self.has_blocker) or self.blocker_this_turn
 
     def is_double_attack(self) -> bool:
-        return self._kw_active('double_attack', self.has_double_attack)
+        return self._kw_active('double_attack', self.has_double_attack) or self.double_attack_this_turn
 
     def is_rush(self) -> bool:
         return self._kw_active('rush', self.has_rush) or self.rush_this_turn
@@ -280,8 +282,8 @@ class Card:
     def board_value(self) -> int:
         v = self.power // 1000
         if self.has_rush or self.rush_this_turn:          v += 4
-        if self.has_blocker:       v += 3
-        if self.has_double_attack: v += 3
+        if self.has_blocker or self.blocker_this_turn:       v += 3
+        if self.has_double_attack or self.double_attack_this_turn: v += 3
         if self.has_banish:        v += 2
         if self.has_unblockable:   v += 4
         if self.has_trigger:       v += 2
@@ -2079,7 +2081,7 @@ class EffectExecutor:
                 # de custo nesse caminho -- bug separado, registrado, nao
                 # corrigido aqui, só evitado com essa exceção).
                 candidatos = [x for x in field_chars
-                              if not x.has_blocker and x.don_attached == 0]
+                              if not (x.has_blocker or x.blocker_this_turn) and x.don_attached == 0]
                 pool = candidatos if candidatos else field_chars  # se TODOS
                 # tiverem papel ativo, nao trava a troca pra sempre -- usa o
                 # pool completo como ultimo recurso.
@@ -2201,15 +2203,24 @@ class EffectExecutor:
             card.rush_character_only_this_turn = not (card.has_rush or card.rush_this_turn)
             return 'ganhou Rush: Character'
         if action == 'gain_blocker':
+            if step.get('duration') == 'this_turn':
+                card.blocker_this_turn = True
+                return 'ganhou Blocker (so este turno)'
             card.has_blocker = True
             return 'ganhou Blocker'
         if action == 'gain_double_attack':
+            if step.get('duration') == 'this_turn':
+                card.double_attack_this_turn = True
+                return 'ganhou Double Attack (so este turno)'
             card.has_double_attack = True
             return 'ganhou Double Attack'
         if action == 'gain_banish':
             card.has_banish = True
             return 'ganhou Banish'
         if action == 'gain_unblockable':
+            if step.get('duration') == 'this_turn':
+                card.unblockable_this_turn = True
+                return 'ganhou Unblockable (so este turno)'
             card.has_unblockable = True
             return 'ganhou Unblockable'
 
@@ -2759,11 +2770,11 @@ class GameAnalyzer:
             score += 15
 
         # É um blocker valioso
-        if card.has_blocker and self.me.life_count() <= 2:
+        if (card.has_blocker or card.blocker_this_turn) and self.me.life_count() <= 2:
             score += 30
 
         # Tem double attack
-        if card.has_double_attack:
+        if card.has_double_attack or card.double_attack_this_turn:
             score += 20
 
         return score
@@ -2793,11 +2804,11 @@ class GameAnalyzer:
             peso = 0
             if c.power >= 6000:           peso += 3
             elif c.power >= 5000:         peso += 1
-            if c.has_blocker:             peso += 2   # trava meu ataque
+            if c.has_blocker or c.blocker_this_turn:             peso += 2   # trava meu ataque
             effects = get_card_effects(c.code)
             if 'activate_main' in effects: peso += 2   # vantagem recorrente
             if 'when_attacking' in effects: peso += 2
-            if c.has_double_attack:       peso += 2
+            if c.has_double_attack or c.double_attack_this_turn:       peso += 2
             if c.has_rush or c.rush_this_turn:                peso += 1
             if peso >= 3:
                 ameacas.append((peso, c))
@@ -2948,7 +2959,7 @@ class DecisionEngine:
             if opp_life == 0: v += 100
             s += v
 
-        if card.has_double_attack:
+        if card.has_double_attack or card.double_attack_this_turn:
             s += 25
             if opp_life <= 2: s += 35
 
@@ -2959,7 +2970,7 @@ class DecisionEngine:
         if card.has_banish:
             s += 15
 
-        if card.has_blocker:
+        if card.has_blocker or card.blocker_this_turn:
             v = 20
             if my_life <= 1:   v += 100
             elif my_life <= 2: v += 60
@@ -3022,14 +3033,14 @@ class DecisionEngine:
         # Ajuste por postura
         if posture == 'LETHAL':
             if card.has_rush or card.rush_this_turn:          s += 50
-            if card.has_double_attack: s += 40
+            if card.has_double_attack or card.double_attack_this_turn: s += 40
             if card.has_unblockable or card.unblockable_this_turn:   s += 30
         elif posture == 'AGGRESSIVE':
             if card.has_rush or card.rush_this_turn:          s += 30
-            if card.has_double_attack: s += 20
+            if card.has_double_attack or card.double_attack_this_turn: s += 20
             if card.counter > 0:       s -= 10
         elif posture == 'DEFENSIVE':
-            if card.has_blocker:       s += 50
+            if card.has_blocker or card.blocker_this_turn:       s += 50
             if card.counter > 0:       s += 25
             if card.has_rush or card.rush_this_turn:          s -= 15
         elif posture == 'CONTROL':
@@ -3508,9 +3519,9 @@ class DecisionEngine:
                 s += 70   # negar ameaça futura do oponente
 
             # Prioriza ameaças (ordem de prioridade de alvos do documento)
-            if target.has_double_attack:  s += 50
+            if target.has_double_attack or target.double_attack_this_turn:  s += 50
             if target.has_rush or target.rush_this_turn:           s += 40
-            if target.has_blocker:        s += 60
+            if target.has_blocker or target.blocker_this_turn:        s += 60
             if 'when_attacking' in tgt_effects: s += 35
             if 'activate_main' in tgt_effects:  s += 25
             if 'on_ko' in tgt_effects:          s -= 20  # cuidado: ativa ao morrer
@@ -3521,8 +3532,8 @@ class DecisionEngine:
 
             # Custo de perder o Activate Main do ATACANTE: só compensa se o alvo
             # é ameaça grande (poder alto, blocker, rush, gera vantagem).
-            ameaca_grande = (target.power >= 5000 or target.has_blocker or
-                             target.has_rush or target.rush_this_turn or target.has_double_attack)
+            ameaca_grande = (target.power >= 5000 or target.has_blocker or target.blocker_this_turn or
+                             target.has_rush or target.rush_this_turn or target.has_double_attack or target.double_attack_this_turn)
             if activate_cost > 0 and not ameaca_grande:
                 s -= activate_cost
 
@@ -3917,6 +3928,8 @@ class OPTCGMatch:
             c.cannot_block_until = ''
             c.unblockable_this_turn = False
             c.rush_this_turn = False
+            c.double_attack_this_turn = False
+            c.blocker_this_turn = False
         p.leader.don_attached = 0
         p.leader.rested = False
         p.leader.power_buff = 0
@@ -4138,7 +4151,7 @@ class OPTCGMatch:
             elif priority == 'LETHAL':
                 score -= 60   # não desenvolve quando pode ganhar — ataca
             # Carta defensiva (blocker/counter) ganha peso no modo DEFENSIVE
-            if priority == 'DEFENSIVE' and (card.has_blocker or card.counter > 0):
+            if priority == 'DEFENSIVE' and (card.has_blocker or card.blocker_this_turn or card.counter > 0):
                 score += 120
             actions.append((score, 'play', card, None, None))
 
