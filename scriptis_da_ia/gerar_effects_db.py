@@ -1505,11 +1505,22 @@ def parse_life(text):
         source: life_top | life_bottom | life_top_or_bottom
         count, up_to
 
-      attack_life   : remove da vida do OPONENTE
+      attack_life   : remove da vida do OPONENTE -- vai DIRETO pro trash, SEM
+        checar [Trigger] (padrao textual "trash ... opponent's life").
         count, up_to
 
       trash_own_life: descarta da SUA vida (custo/troca)
         count, up_to, until_1 (bool: "until you have 1 Life card")
+
+      deal_damage   : dano direto ao oponente, FORA de combate (ex: Nico Robin
+        EB03-055 "[On K.O.] You may deal 1 damage", Reject OP06-116 "If your
+        opponent has 1 Life card, deal 1 damage"). Regra oficial (comprehensive
+        rules 4-6): a vida vai pra MAO e, se tiver [Trigger], pode ser revelada
+        e ativada -- == o mesmo fluxo que dano de combate ao Leader ja usa.
+        NUNCA unificar com attack_life: e o oposto semantico (mao+trigger vs
+        trash sem trigger), mesma logica que separa K.O. de trash_character.
+        count, target ('opponent' -- unico valor visto no banco; campo
+        generico para nao travar se aparecer "self" no futuro)
 
     Regra de design (auditoria 25/06): NUNCA juntar duas operações numa action.
     "trash life: add life" = trash_own_life (custo) + gain_life (efeito), 2 steps.
@@ -1599,6 +1610,22 @@ def parse_life(text):
         if 'until you have 1 life' in t:
             step['until_1'] = True
         steps.append(step)
+
+    # ── deal_damage: dano direto, FORA de combate ──────────────────────
+    # Ancora em "to your opponent" -- nunca aparece no texto-lembrete de
+    # [Double Attack]/[Banish] ("This card deals 2 damage." / "When this
+    # card deals damage, the target card is trashed..."), então não
+    # precisaria do guard, mas mantém por segurança caso uma carta nova
+    # use fraseado parecido dentro de parenteses.
+    for m in re.finditer(r'deal[s]? (\d+) damage to your opponent', t):
+        contexto_antes = t[max(0, m.start() - 15):m.start()]
+        if '(this card' in contexto_antes or '(when this card' in contexto_antes:
+            continue
+        steps.append({
+            'action': 'deal_damage',
+            'count':  int(m.group(1)),
+            'target': 'opponent',
+        })
 
     return steps
 
@@ -2049,9 +2076,12 @@ def parse_block(block_text, trigger_name):
     if 'from your deck' in t and 'play up to' in t and 'look at' not in t:
         steps.extend(parse_play_from_deck(t))
 
-    # Manipulação de vida (gain_life/life_to_hand/attack_life/trash_own_life)
-    # 'heal' foi unificado em gain_life dentro de parse_life (corrige bug top/bottom)
-    if 'life' in t:
+    # Manipulação de vida (gain_life/life_to_hand/attack_life/trash_own_life/
+    # deal_damage). 'heal' foi unificado em gain_life dentro de parse_life
+    # (corrige bug top/bottom). deal_damage não tem a palavra 'life' no
+    # texto ("deal 1 damage to your opponent") -- por isso o gate cobre
+    # também esse padrão, não só 'life' in t.
+    if 'life' in t or ('deal' in t and 'damage' in t):
         steps.extend(parse_life(t))
 
     # Trash do TOPO DO PRÓPRIO DECK como EFEITO (mill, distinto do custo

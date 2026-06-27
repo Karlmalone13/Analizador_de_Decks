@@ -5089,6 +5089,18 @@
             "count": 1
           }
         ]
+      },
+      "on_ko": {
+        "steps": [
+          {
+            "action": "deal_damage",
+            "count": 1,
+            "target": "opponent"
+          }
+        ],
+        "conditions": {
+          "opp_turn_only": true
+        }
       }
     }
   },
@@ -25900,6 +25912,11 @@
               "source": "life_top",
               "count": 1,
               "up_to": false
+            },
+            {
+              "action": "deal_damage",
+              "count": 1,
+              "target": "opponent"
             }
           ]
         ]

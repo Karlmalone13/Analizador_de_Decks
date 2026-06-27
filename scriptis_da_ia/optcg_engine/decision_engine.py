@@ -1936,6 +1936,26 @@ class EffectExecutor:
                 removed += 1
             return f'-{removed} vida do oponente' if removed else ''
 
+        # ── DANO direto, FORA de combate (ex: Nico Robin EB03-055, Reject
+        # OP06-116) -- distinto de attack_life: aqui a vida vai pra MAO e,
+        # se tiver [Trigger], pode ser revelada/ativada (regra 4-6, mesmo
+        # fluxo que dano de combate ao Leader ja usa). NUNCA tratar como
+        # attack_life -- la a vida vai pro trash sem trigger, e e o oposto
+        # do que esse efeito faz.
+        if action == 'deal_damage':
+            count = step.get('count', 1)
+            dealt = 0
+            for _ in range(count):
+                if not opp.life: break
+                life_card = opp.life.pop()
+                opp.hand.append(life_card)
+                dealt += 1
+                if life_card.has_trigger:
+                    opp.triggers_activated += 1
+                    ee_opp = EffectExecutor(opp, me)
+                    ee_opp.execute(life_card, 'trigger')
+            return f'-{dealt} vida do oponente (dano, com trigger)' if dealt else ''
+
         # ── LIFE: descartar da própria vida (custo/troca) ─────────────────────
         if action == 'trash_own_life':
             if step.get('until_1'):
