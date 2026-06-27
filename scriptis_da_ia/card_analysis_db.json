@@ -59,10 +59,6 @@
             {
                 "action": "give_don",
                 "trigger": "on_play"
-            },
-            {
-                "action": "trash_from_hand",
-                "trigger": "on_play"
             }
         ],
         "synergy_states": {},
@@ -1108,10 +1104,6 @@
         "effects": [
             {
                 "action": "draw",
-                "trigger": "on_play"
-            },
-            {
-                "action": "trash_from_hand",
                 "trigger": "on_play"
             },
             {
@@ -4860,10 +4852,6 @@
                 "trigger": "when_attacking"
             },
             {
-                "action": "trash_from_hand",
-                "trigger": "when_attacking"
-            },
-            {
                 "action": "gain_rush",
                 "trigger": "passive"
             }
@@ -4943,10 +4931,6 @@
         "effects": [
             {
                 "action": "draw",
-                "trigger": "on_play"
-            },
-            {
-                "action": "trash_from_hand",
                 "trigger": "on_play"
             },
             {
@@ -6154,10 +6138,6 @@
             {
                 "action": "gain_blocker",
                 "trigger": "opp_turn"
-            },
-            {
-                "action": "trash_from_hand",
-                "trigger": "end_of_turn"
             }
         ],
         "synergy_states": {},
@@ -6282,10 +6262,6 @@
                 "action": "place_opp_character_bottom_deck",
                 "trigger": "on_play",
                 "cost_lte": 3
-            },
-            {
-                "action": "trash_from_hand",
-                "trigger": "on_play"
             }
         ],
         "synergy_states": {},
@@ -6465,10 +6441,6 @@
                 "action": "bounce",
                 "trigger": "on_play",
                 "target": "opp_character"
-            },
-            {
-                "action": "trash_from_hand",
-                "trigger": "on_play"
             }
         ],
         "synergy_states": {},
@@ -7047,10 +7019,6 @@
                 "action": "play_from_trash",
                 "trigger": "on_play",
                 "power_lte": 6000
-            },
-            {
-                "action": "trash_from_hand",
-                "trigger": "on_play"
             }
         ],
         "synergy_states": {},
@@ -9024,10 +8992,6 @@
                 "trigger": "on_play"
             },
             {
-                "action": "trash_from_hand",
-                "trigger": "on_play"
-            },
-            {
                 "action": "give_don",
                 "trigger": "activate_main"
             }
@@ -9067,19 +9031,10 @@
         "attribute": "Slash",
         "effects": [
             {
-                "action": "trash_from_hand",
-                "trigger": "on_play"
-            },
-            {
                 "action": "debuff_power",
                 "trigger": "when_attacking",
                 "don_requirement": 1,
                 "target": "opp_character"
-            },
-            {
-                "action": "trash_from_hand",
-                "trigger": "when_attacking",
-                "don_requirement": 1
             }
         ],
         "synergy_states": {},
@@ -9246,10 +9201,6 @@
             {
                 "action": "draw",
                 "trigger": "when_attacking"
-            },
-            {
-                "action": "trash_from_hand",
-                "trigger": "when_attacking"
             }
         ],
         "synergy_states": {},
@@ -9288,10 +9239,6 @@
         "effects": [
             {
                 "action": "draw",
-                "trigger": "on_play"
-            },
-            {
-                "action": "trash_from_hand",
                 "trigger": "on_play"
             },
             {
@@ -9682,10 +9629,6 @@
             },
             {
                 "action": "draw",
-                "trigger": "on_play"
-            },
-            {
-                "action": "trash_from_hand",
                 "trigger": "on_play"
             },
             {
@@ -10816,10 +10759,6 @@
                 "trigger": "on_play"
             },
             {
-                "action": "trash_from_hand",
-                "trigger": "on_play"
-            },
-            {
                 "action": "debuff_cost",
                 "trigger": "passive",
                 "target": "self"
@@ -11415,11 +11354,6 @@
                 "trigger": "when_attacking",
                 "don_requirement": 1,
                 "cost_lte": 4
-            },
-            {
-                "action": "trash_from_hand",
-                "trigger": "when_attacking",
-                "don_requirement": 1
             }
         ],
         "synergy_states": {},
@@ -13472,11 +13406,6 @@
                 "don_requirement": 1,
                 "cost_lte": 3,
                 "target": "opp_character"
-            },
-            {
-                "action": "trash_from_hand",
-                "trigger": "when_attacking",
-                "don_requirement": 1
             }
         ],
         "synergy_states": {},
@@ -14983,11 +14912,6 @@
         "effects": [
             {
                 "action": "add_don",
-                "trigger": "when_attacking",
-                "don_requirement": 1
-            },
-            {
-                "action": "trash_from_hand",
                 "trigger": "when_attacking",
                 "don_requirement": 1
             }
@@ -17972,10 +17896,6 @@
             {
                 "action": "draw",
                 "trigger": "on_play"
-            },
-            {
-                "action": "trash_from_hand",
-                "trigger": "on_play"
             }
         ],
         "synergy_states": {},
@@ -18131,11 +18051,6 @@
                 "trigger": "when_attacking",
                 "don_requirement": 1,
                 "cost_lte": 1
-            },
-            {
-                "action": "trash_from_hand",
-                "trigger": "when_attacking",
-                "don_requirement": 1
             }
         ],
         "synergy_states": {},
@@ -18269,10 +18184,6 @@
             {
                 "action": "draw",
                 "trigger": "when_attacking"
-            },
-            {
-                "action": "trash_from_hand",
-                "trigger": "when_attacking"
             }
         ],
         "synergy_states": {},
@@ -18398,10 +18309,6 @@
                 "trigger": "on_play"
             },
             {
-                "action": "trash_from_hand",
-                "trigger": "on_play"
-            },
-            {
                 "action": "bounce",
                 "trigger": "when_attacking",
                 "cost_lte": 4,
@@ -18409,10 +18316,6 @@
             },
             {
                 "action": "gain_double_attack",
-                "trigger": "when_attacking"
-            },
-            {
-                "action": "trash_from_hand",
                 "trigger": "when_attacking"
             }
         ],
@@ -18494,11 +18397,6 @@
                 "trigger": "when_attacking",
                 "don_requirement": 1,
                 "cost_lte": 2
-            },
-            {
-                "action": "trash_from_hand",
-                "trigger": "when_attacking",
-                "don_requirement": 1
             }
         ],
         "synergy_states": {},
@@ -18535,10 +18433,6 @@
         "sub_types": "Impel Down Former Baroque Works",
         "attribute": "Special",
         "effects": [
-            {
-                "action": "trash_from_hand",
-                "trigger": "end_of_turn"
-            },
             {
                 "action": "keyword_blocker",
                 "trigger": "passive"
@@ -19914,10 +19808,6 @@
                 "trigger": "on_play",
                 "cost_lte": 3,
                 "target": "opp_character"
-            },
-            {
-                "action": "trash_from_hand",
-                "trigger": "on_play"
             }
         ],
         "synergy_states": {},
@@ -19959,10 +19849,6 @@
                 "trigger": "on_play",
                 "cost_lte": 5,
                 "target": "opp_character"
-            },
-            {
-                "action": "trash_from_hand",
-                "trigger": "on_play"
             }
         ],
         "synergy_states": {},
@@ -22001,10 +21887,6 @@
                 "trigger": "on_play"
             },
             {
-                "action": "trash_from_hand",
-                "trigger": "on_play"
-            },
-            {
                 "action": "keyword_double_attack",
                 "trigger": "don_conditional_keywords"
             }
@@ -22863,10 +22745,6 @@
             {
                 "action": "draw",
                 "trigger": "on_play"
-            },
-            {
-                "action": "trash_from_hand",
-                "trigger": "on_play"
             }
         ],
         "synergy_states": {},
@@ -23566,10 +23444,6 @@
         "effects": [
             {
                 "action": "draw",
-                "trigger": "when_attacking"
-            },
-            {
-                "action": "trash_from_hand",
                 "trigger": "when_attacking"
             }
         ],
@@ -24285,11 +24159,6 @@
                 "action": "gain_life",
                 "trigger": "when_attacking",
                 "don_requirement": 2
-            },
-            {
-                "action": "trash_from_hand",
-                "trigger": "when_attacking",
-                "don_requirement": 2
             }
         ],
         "synergy_states": {
@@ -24461,10 +24330,6 @@
                 "action": "debuff_cost",
                 "trigger": "on_play",
                 "target": "opp_character"
-            },
-            {
-                "action": "trash_from_hand",
-                "trigger": "on_play"
             }
         ],
         "synergy_states": {},
@@ -24943,10 +24808,6 @@
                 "trigger": "on_play",
                 "cost_lte": 1,
                 "target": "opp_character"
-            },
-            {
-                "action": "trash_from_hand",
-                "trigger": "on_play"
             }
         ],
         "synergy_states": {},
@@ -25973,10 +25834,6 @@
                 "trigger": "on_play"
             },
             {
-                "action": "trash_from_hand",
-                "trigger": "on_play"
-            },
-            {
                 "action": "play_card",
                 "trigger": "trigger"
             }
@@ -26281,10 +26138,6 @@
             },
             {
                 "action": "draw",
-                "trigger": "on_play"
-            },
-            {
-                "action": "trash_from_hand",
                 "trigger": "on_play"
             }
         ],
@@ -28131,10 +27984,6 @@
             {
                 "action": "deck_bottom_rest",
                 "trigger": "on_play"
-            },
-            {
-                "action": "trash_from_hand",
-                "trigger": "on_play"
             }
         ],
         "synergy_states": {},
@@ -28942,10 +28791,6 @@
             },
             {
                 "action": "gain_life",
-                "trigger": "on_play"
-            },
-            {
-                "action": "trash_from_hand",
                 "trigger": "on_play"
             }
         ],
@@ -29965,10 +29810,6 @@
         "effects": [
             {
                 "action": "draw",
-                "trigger": "on_play"
-            },
-            {
-                "action": "trash_from_hand",
                 "trigger": "on_play"
             },
             {
@@ -34697,10 +34538,6 @@
                 "trigger": "on_play"
             },
             {
-                "action": "trash_from_hand",
-                "trigger": "on_play"
-            },
-            {
                 "action": "play_card",
                 "trigger": "trigger"
             }
@@ -36023,10 +35860,6 @@
         "effects": [
             {
                 "action": "draw",
-                "trigger": "on_play"
-            },
-            {
-                "action": "trash_from_hand",
                 "trigger": "on_play"
             }
         ],
@@ -37635,10 +37468,6 @@
         "attribute": "Slash",
         "effects": [
             {
-                "action": "trash_from_hand",
-                "trigger": "on_play"
-            },
-            {
                 "action": "rest_opp_character",
                 "trigger": "trigger",
                 "cost_lte": 4
@@ -38885,7 +38714,7 @@
         "attribute": "Special",
         "effects": [
             {
-                "action": "trash_from_hand",
+                "action": "opp_bounce_own_character",
                 "trigger": "on_play"
             }
         ],
@@ -39374,10 +39203,6 @@
                 "action": "play_from_trash",
                 "trigger": "on_play",
                 "power_lte": 4000
-            },
-            {
-                "action": "trash_from_hand",
-                "trigger": "on_play"
             }
         ],
         "synergy_states": {
@@ -39421,10 +39246,6 @@
         "effects": [
             {
                 "action": "add_from_trash",
-                "trigger": "on_play"
-            },
-            {
-                "action": "trash_from_hand",
                 "trigger": "on_play"
             }
         ],
@@ -39799,10 +39620,6 @@
                 "trigger": "on_play"
             },
             {
-                "action": "trash_from_hand",
-                "trigger": "on_play"
-            },
-            {
                 "action": "keyword_blocker",
                 "trigger": "passive"
             }
@@ -40128,10 +39945,6 @@
             {
                 "action": "trash_from_deck_top",
                 "trigger": "when_attacking"
-            },
-            {
-                "action": "trash_from_hand",
-                "trigger": "when_attacking"
             }
         ],
         "synergy_states": {},
@@ -40214,15 +40027,7 @@
                 "trigger": "on_play"
             },
             {
-                "action": "trash_from_hand",
-                "trigger": "on_play"
-            },
-            {
                 "action": "draw",
-                "trigger": "on_ko"
-            },
-            {
-                "action": "trash_from_hand",
                 "trigger": "on_ko"
             }
         ],
@@ -40964,11 +40769,6 @@
                 "target": "opp_character"
             },
             {
-                "action": "trash_from_hand",
-                "trigger": "when_attacking",
-                "don_requirement": 2
-            },
-            {
                 "action": "play_card",
                 "trigger": "trigger"
             }
@@ -41102,12 +40902,7 @@
         "color": "Yellow",
         "sub_types": "Fish-Man Land of Wano The Akazaya Nine",
         "attribute": "Slash",
-        "effects": [
-            {
-                "action": "trash_from_hand",
-                "trigger": "when_attacking"
-            }
-        ],
+        "effects": [],
         "synergy_states": {},
         "text": "[When Attacking] You may trash 2 cards from your hand: Add up to 1 of your Characters with 0 power to the top or bottom of the owner's Life cards face-up.",
         "is_searcher": false,
@@ -41498,10 +41293,6 @@
         "sub_types": "Land of Wano The Akazaya Nine",
         "attribute": "Slash",
         "effects": [
-            {
-                "action": "trash_from_hand",
-                "trigger": "when_attacking"
-            },
             {
                 "action": "play_card",
                 "trigger": "trigger"
@@ -41964,10 +41755,6 @@
             {
                 "action": "deck_bottom_rest",
                 "trigger": "on_play"
-            },
-            {
-                "action": "trash_from_hand",
-                "trigger": "on_play"
             }
         ],
         "synergy_states": {},
@@ -42050,10 +41837,6 @@
         "effects": [
             {
                 "action": "draw",
-                "trigger": "on_play"
-            },
-            {
-                "action": "trash_from_hand",
                 "trigger": "on_play"
             }
         ],
@@ -46087,10 +45870,6 @@
                 "trigger": "on_play"
             },
             {
-                "action": "trash_from_hand",
-                "trigger": "on_play"
-            },
-            {
                 "action": "play_card",
                 "trigger": "trigger"
             }
@@ -46976,10 +46755,6 @@
                 "trigger": "on_play",
                 "cost_lte": 5,
                 "target": "opp_character"
-            },
-            {
-                "action": "trash_from_hand",
-                "trigger": "on_play"
             }
         ],
         "synergy_states": {},
@@ -49983,10 +49758,6 @@
             {
                 "action": "gain_life",
                 "trigger": "on_play"
-            },
-            {
-                "action": "trash_from_hand",
-                "trigger": "on_play"
             }
         ],
         "synergy_states": {
@@ -50671,10 +50442,6 @@
             {
                 "action": "draw",
                 "trigger": "on_play"
-            },
-            {
-                "action": "trash_from_hand",
-                "trigger": "on_play"
             }
         ],
         "synergy_states": {},
@@ -50869,10 +50636,6 @@
                 "trigger": "on_play",
                 "cost_lte": 3,
                 "target": "opp_character"
-            },
-            {
-                "action": "trash_from_hand",
-                "trigger": "on_play"
             },
             {
                 "action": "ko",
@@ -51391,10 +51154,6 @@
                 "action": "ko",
                 "trigger": "on_play",
                 "target": "opp_character"
-            },
-            {
-                "action": "trash_from_hand",
-                "trigger": "on_play"
             }
         ],
         "synergy_states": {},
@@ -52425,10 +52184,6 @@
                 "trigger": "on_play"
             },
             {
-                "action": "trash_from_hand",
-                "trigger": "on_play"
-            },
-            {
                 "action": "keyword_blocker",
                 "trigger": "passive"
             }
@@ -53233,10 +52988,6 @@
         "effects": [
             {
                 "action": "draw",
-                "trigger": "on_play"
-            },
-            {
-                "action": "trash_from_hand",
                 "trigger": "on_play"
             }
         ],
@@ -54239,10 +53990,6 @@
         "effects": [
             {
                 "action": "draw",
-                "trigger": "on_play"
-            },
-            {
-                "action": "trash_from_hand",
                 "trigger": "on_play"
             },
             {
@@ -55250,10 +54997,6 @@
                 "trigger": "on_play"
             },
             {
-                "action": "trash_from_hand",
-                "trigger": "on_play"
-            },
-            {
                 "action": "keyword_blocker",
                 "trigger": "passive"
             }
@@ -55930,11 +55673,6 @@
         "effects": [
             {
                 "action": "draw",
-                "trigger": "when_attacking",
-                "don_requirement": 1
-            },
-            {
-                "action": "trash_from_hand",
                 "trigger": "when_attacking",
                 "don_requirement": 1
             }
@@ -56952,10 +56690,6 @@
         "effects": [
             {
                 "action": "draw",
-                "trigger": "on_play"
-            },
-            {
-                "action": "trash_from_hand",
                 "trigger": "on_play"
             },
             {
@@ -58445,10 +58179,6 @@
             {
                 "action": "draw",
                 "trigger": "on_play"
-            },
-            {
-                "action": "trash_from_hand",
-                "trigger": "on_play"
             }
         ],
         "synergy_states": {
@@ -59307,10 +59037,6 @@
         "effects": [
             {
                 "action": "draw",
-                "trigger": "when_attacking"
-            },
-            {
-                "action": "trash_from_hand",
                 "trigger": "when_attacking"
             }
         ],
@@ -60632,10 +60358,6 @@
         "effects": [
             {
                 "action": "add_don",
-                "trigger": "on_play"
-            },
-            {
-                "action": "trash_from_hand",
                 "trigger": "on_play"
             }
         ],
@@ -62234,10 +61956,6 @@
             {
                 "action": "draw",
                 "trigger": "end_of_turn"
-            },
-            {
-                "action": "trash_from_hand",
-                "trigger": "end_of_turn"
             }
         ],
         "synergy_states": {},
@@ -62901,10 +62619,6 @@
                 "action": "debuff_power",
                 "trigger": "on_play",
                 "target": "opp_character"
-            },
-            {
-                "action": "trash_from_hand",
-                "trigger": "on_play"
             },
             {
                 "action": "keyword_blocker",
@@ -66504,10 +66218,6 @@
                 "action": "play_from_trash",
                 "trigger": "on_play",
                 "cost_lte": 8
-            },
-            {
-                "action": "trash_from_hand",
-                "trigger": "on_play"
             }
         ],
         "synergy_states": {},
@@ -67184,10 +66894,6 @@
             {
                 "action": "draw",
                 "trigger": "on_play"
-            },
-            {
-                "action": "trash_from_hand",
-                "trigger": "on_play"
             }
         ],
         "synergy_states": {},
@@ -67226,10 +66932,6 @@
         "effects": [
             {
                 "action": "draw",
-                "trigger": "on_play"
-            },
-            {
-                "action": "trash_from_hand",
                 "trigger": "on_play"
             }
         ],
@@ -67604,10 +67306,6 @@
             },
             {
                 "action": "give_don",
-                "trigger": "when_attacking"
-            },
-            {
-                "action": "trash_from_hand",
                 "trigger": "when_attacking"
             },
             {
@@ -69456,10 +69154,6 @@
                 "trigger": "on_play"
             },
             {
-                "action": "trash_from_hand",
-                "trigger": "on_play"
-            },
-            {
                 "action": "buff_cost",
                 "trigger": "passive",
                 "target": "self"
@@ -69631,10 +69325,6 @@
             },
             {
                 "action": "deck_bottom_rest",
-                "trigger": "on_play"
-            },
-            {
-                "action": "trash_from_hand",
                 "trigger": "on_play"
             }
         ],
@@ -69984,10 +69674,6 @@
                 "action": "play_card",
                 "trigger": "on_play",
                 "cost_lte": 99
-            },
-            {
-                "action": "trash_from_hand",
-                "trigger": "on_play"
             }
         ],
         "synergy_states": {},
@@ -71283,10 +70969,6 @@
         "attribute": "Strike",
         "effects": [
             {
-                "action": "trash_from_hand",
-                "trigger": "on_play"
-            },
-            {
                 "action": "opp_trash_from_hand",
                 "trigger": "on_play"
             },
@@ -71601,10 +71283,6 @@
                 "trigger": "on_play"
             },
             {
-                "action": "trash_from_hand",
-                "trigger": "on_play"
-            },
-            {
                 "action": "buff_cost",
                 "trigger": "passive",
                 "target": "self"
@@ -71853,10 +71531,6 @@
         "effects": [
             {
                 "action": "draw",
-                "trigger": "on_play"
-            },
-            {
-                "action": "trash_from_hand",
                 "trigger": "on_play"
             },
             {
@@ -72629,10 +72303,6 @@
                 "trigger": "on_play"
             },
             {
-                "action": "trash_from_hand",
-                "trigger": "on_play"
-            },
-            {
                 "action": "keyword_blocker",
                 "trigger": "passive"
             }
@@ -72678,10 +72348,6 @@
             },
             {
                 "action": "gain_life",
-                "trigger": "on_play"
-            },
-            {
-                "action": "trash_from_hand",
                 "trigger": "on_play"
             },
             {
@@ -74450,10 +74116,6 @@
                 "trigger": "on_play"
             },
             {
-                "action": "trash_from_hand",
-                "trigger": "on_play"
-            },
-            {
                 "action": "keyword_blocker",
                 "trigger": "passive"
             }
@@ -74494,10 +74156,6 @@
         "effects": [
             {
                 "action": "draw",
-                "trigger": "on_play"
-            },
-            {
-                "action": "trash_from_hand",
                 "trigger": "on_play"
             }
         ],
@@ -75498,10 +75156,6 @@
             {
                 "action": "add_don",
                 "trigger": "on_play"
-            },
-            {
-                "action": "trash_from_hand",
-                "trigger": "on_play"
             }
         ],
         "synergy_states": {},
@@ -76116,6 +75770,11 @@
         "attribute": "Slash / Special",
         "effects": [
             {
+                "action": "trash_character",
+                "trigger": "activate_main",
+                "target": "self_character"
+            },
+            {
                 "action": "play_from_trash",
                 "trigger": "activate_main"
             }
@@ -76506,10 +76165,6 @@
                 "target": "opp_character"
             },
             {
-                "action": "trash_from_hand",
-                "trigger": "on_play"
-            },
-            {
                 "action": "immunity",
                 "trigger": "passive"
             },
@@ -76596,10 +76251,6 @@
                 "trigger": "on_play"
             },
             {
-                "action": "trash_from_hand",
-                "trigger": "on_play"
-            },
-            {
                 "action": "keyword_blocker",
                 "trigger": "passive"
             }
@@ -76683,10 +76334,6 @@
                 "trigger": "on_play",
                 "cost_lte": 3,
                 "target": "opp_character"
-            },
-            {
-                "action": "trash_from_hand",
-                "trigger": "on_play"
             }
         ],
         "synergy_states": {},
@@ -79756,10 +79403,6 @@
                 "trigger": "on_play"
             },
             {
-                "action": "trash_from_hand",
-                "trigger": "on_play"
-            },
-            {
                 "action": "keyword_blocker",
                 "trigger": "passive"
             }
@@ -80101,10 +79744,6 @@
                 "action": "play_card",
                 "trigger": "on_play",
                 "cost_lte": 6
-            },
-            {
-                "action": "trash_from_hand",
-                "trigger": "on_play"
             },
             {
                 "action": "keyword_blocker",
@@ -81291,10 +80930,6 @@
             {
                 "action": "gain_life",
                 "trigger": "when_attacking"
-            },
-            {
-                "action": "trash_from_hand",
-                "trigger": "when_attacking"
             }
         ],
         "synergy_states": {
@@ -81893,10 +81528,6 @@
         "effects": [
             {
                 "action": "draw",
-                "trigger": "on_play"
-            },
-            {
-                "action": "trash_from_hand",
                 "trigger": "on_play"
             },
             {
@@ -82502,10 +82133,6 @@
         "effects": [
             {
                 "action": "draw",
-                "trigger": "on_play"
-            },
-            {
-                "action": "trash_from_hand",
                 "trigger": "on_play"
             },
             {
@@ -85001,10 +84628,6 @@
             {
                 "action": "gain_rush",
                 "trigger": "on_play"
-            },
-            {
-                "action": "trash_from_hand",
-                "trigger": "on_play"
             }
         ],
         "synergy_states": {},
@@ -86950,10 +86573,6 @@
                 "trigger": "on_play"
             },
             {
-                "action": "trash_from_hand",
-                "trigger": "on_play"
-            },
-            {
                 "action": "gain_blocker",
                 "trigger": "passive"
             }
@@ -87527,10 +87146,6 @@
             {
                 "action": "deck_bottom_rest",
                 "trigger": "on_play"
-            },
-            {
-                "action": "trash_from_hand",
-                "trigger": "on_play"
             }
         ],
         "synergy_states": {},
@@ -87661,10 +87276,6 @@
         "effects": [
             {
                 "action": "draw",
-                "trigger": "on_play"
-            },
-            {
-                "action": "trash_from_hand",
                 "trigger": "on_play"
             },
             {
@@ -88059,10 +87670,6 @@
         "effects": [
             {
                 "action": "gain_life",
-                "trigger": "on_play"
-            },
-            {
-                "action": "trash_from_hand",
                 "trigger": "on_play"
             }
         ],
@@ -90454,10 +90061,6 @@
                 "trigger": "on_play"
             },
             {
-                "action": "trash_from_hand",
-                "trigger": "on_play"
-            },
-            {
                 "action": "keyword_blocker",
                 "trigger": "passive"
             }
@@ -91141,10 +90744,6 @@
             {
                 "action": "add_don",
                 "trigger": "on_play"
-            },
-            {
-                "action": "trash_from_hand",
-                "trigger": "on_play"
             }
         ],
         "synergy_states": {},
@@ -91364,10 +90963,6 @@
         "effects": [
             {
                 "action": "add_don",
-                "trigger": "on_play"
-            },
-            {
-                "action": "trash_from_hand",
                 "trigger": "on_play"
             },
             {
@@ -92139,10 +91734,6 @@
                 "trigger": "on_play"
             },
             {
-                "action": "trash_from_hand",
-                "trigger": "on_play"
-            },
-            {
                 "action": "keyword_rush_character",
                 "trigger": "passive"
             }
@@ -92189,10 +91780,6 @@
             },
             {
                 "action": "draw",
-                "trigger": "on_play"
-            },
-            {
-                "action": "trash_from_hand",
                 "trigger": "on_play"
             }
         ],
@@ -92322,10 +91909,6 @@
             },
             {
                 "action": "give_don",
-                "trigger": "on_play"
-            },
-            {
-                "action": "trash_from_hand",
                 "trigger": "on_play"
             }
         ],
@@ -92536,10 +92119,6 @@
         "effects": [
             {
                 "action": "draw",
-                "trigger": "on_play"
-            },
-            {
-                "action": "trash_from_hand",
                 "trigger": "on_play"
             },
             {
@@ -93026,10 +92605,6 @@
         "sub_types": "Blackbeard Pirates Impel Down",
         "attribute": "Slash",
         "effects": [
-            {
-                "action": "trash_from_hand",
-                "trigger": "on_play"
-            },
             {
                 "action": "draw",
                 "trigger": "trigger"
@@ -94937,11 +94512,6 @@
                 "trigger": "when_attacking",
                 "don_requirement": 1,
                 "target": "opp_character"
-            },
-            {
-                "action": "trash_from_hand",
-                "trigger": "when_attacking",
-                "don_requirement": 1
             }
         ],
         "synergy_states": {},
@@ -95658,7 +95228,7 @@
         "attribute": "Strike",
         "effects": [
             {
-                "action": "trash_from_hand",
+                "action": "opp_place_own_character_bottom_deck",
                 "trigger": "on_play"
             }
         ],
@@ -96321,10 +95891,6 @@
             },
             {
                 "action": "draw",
-                "trigger": "when_attacking"
-            },
-            {
-                "action": "trash_from_hand",
                 "trigger": "when_attacking"
             }
         ],
@@ -99320,11 +98886,6 @@
                 "action": "draw",
                 "trigger": "when_attacking",
                 "don_requirement": 1
-            },
-            {
-                "action": "trash_from_hand",
-                "trigger": "when_attacking",
-                "don_requirement": 1
             }
         ],
         "synergy_states": {},
@@ -100026,10 +99587,6 @@
                 "trigger": "on_play"
             },
             {
-                "action": "trash_from_hand",
-                "trigger": "on_play"
-            },
-            {
                 "action": "keyword_blocker",
                 "trigger": "passive"
             }
@@ -100143,10 +99700,6 @@
         "effects": [
             {
                 "action": "add_don",
-                "trigger": "on_play"
-            },
-            {
-                "action": "trash_from_hand",
                 "trigger": "on_play"
             }
         ],
@@ -101312,10 +100865,6 @@
                 "action": "ko",
                 "trigger": "on_play",
                 "target": "opp_character"
-            },
-            {
-                "action": "trash_from_hand",
-                "trigger": "on_play"
             }
         ],
         "synergy_states": {},
@@ -102835,10 +102384,6 @@
                 "trigger": "on_play",
                 "cost_lte": 1,
                 "target": "all_character"
-            },
-            {
-                "action": "trash_from_hand",
-                "trigger": "on_play"
             }
         ],
         "synergy_states": {},
@@ -109306,10 +108851,6 @@
             {
                 "action": "draw",
                 "trigger": "on_play"
-            },
-            {
-                "action": "trash_from_hand",
-                "trigger": "on_play"
             }
         ],
         "synergy_states": {},
@@ -109891,10 +109432,6 @@
                 "trigger": "on_play",
                 "power_lte": 4000,
                 "target": "opp_character"
-            },
-            {
-                "action": "trash_from_hand",
-                "trigger": "on_play"
             }
         ],
         "synergy_states": {},
@@ -110012,10 +109549,6 @@
         "effects": [
             {
                 "action": "draw",
-                "trigger": "on_play"
-            },
-            {
-                "action": "trash_from_hand",
                 "trigger": "on_play"
             },
             {
@@ -110251,10 +109784,6 @@
         "effects": [
             {
                 "action": "draw",
-                "trigger": "on_play"
-            },
-            {
-                "action": "trash_from_hand",
                 "trigger": "on_play"
             },
             {
@@ -111128,10 +110657,6 @@
         "effects": [
             {
                 "action": "draw",
-                "trigger": "when_attacking"
-            },
-            {
-                "action": "trash_from_hand",
                 "trigger": "when_attacking"
             }
         ],
@@ -112040,10 +111565,6 @@
             {
                 "action": "draw",
                 "trigger": "on_play"
-            },
-            {
-                "action": "trash_from_hand",
-                "trigger": "on_play"
             }
         ],
         "synergy_states": {},
@@ -112645,10 +112166,6 @@
         "effects": [
             {
                 "action": "draw",
-                "trigger": "on_play"
-            },
-            {
-                "action": "trash_from_hand",
                 "trigger": "on_play"
             },
             {

@@ -456,15 +456,32 @@ def parse_ko(text):
     if steps:
         return steps
 
+    # Variante "all of YOUR characters" (sem "opponent") -- alvo SO o
+    # PROPRIO campo, distinto da variante sem qualificador abaixo (que
+    # afeta AMBOS os lados). Ex: Five Elders OP13-082 "Trash all of your
+    # Characters" (verbo trash -- nao dispara On K.O., e board wipe do
+    # PROPRIO board pra reconstruir do trash em seguida). Auditoria 27/06,
+    # confirmado por foto da carta real.
+    m_self = re.search(VERBO + r" all of your characters", t)
+    if m_self:
+        verbo_usado = re.match(r'k\.o\.|trash', m_self.group(0)).group(0)
+        action = 'ko' if verbo_usado == 'k.o.' else 'trash_character'
+        steps.append({'action': action, 'count': 99, 'target': 'self_character'})
+        return steps
+
     # Variante SEM "of your opponent" -- alvo AMBOS os lados, ex: "K.O. all
     # rested Characters with a cost of 5 or less" (sem qualificador de
     # posse = afeta characters de qualquer jogador, confirmado pelo
     # contexto de regra simetrica em OP05-040: a condicao trava Refresh
     # Phase de "your and your opponent's", e o KO no End of Turn segue a
     # mesma simetria). Mesma logica de separacao K.O./trash por verbo real.
+    # "other than this character" (Kaido OP01-094, Kaido & Linlin OP08-119,
+    # confirmado por foto 27/06) exclui a PROPRIA carta do board wipe --
+    # sem isso o engine se autodestruiria junto com o resto do campo.
     m = re.search(
         VERBO + r" (up to (\d+)|all) (?:of the )?(?:rested )?characters?"
-        r"(?: with a (?:base )?cost of (\d+)( or less)?)?",
+        r"(?: with a (?:base )?cost of (\d+)( or less)?)?"
+        r"( other than this character)?",
         t
     )
     if m:
@@ -478,6 +495,8 @@ def parse_ko(text):
                 step['cost_lte'] = int(m.group(3))
             else:
                 step['cost_eq'] = int(m.group(3))
+        if m.group(5):
+            step['exclude_self'] = True
         if 'rested' in m.group(0):
             step['rested_only'] = True
         steps.append(step)
@@ -2020,6 +2039,30 @@ def parse_opp_trash_from_hand(text):
     return steps
 
 
+def parse_opp_self_move_character(text):
+    """
+    'Your opponent returns N of their Characters to the owner's hand'
+    (OP06-051 Tsuru) / 'Your opponent places N of their Characters at the
+    bottom of the owner's deck' (P-055 Luffy) -- FORCA o oponente a mover
+    1 dos PROPRIOS characters dele (ele escolhe qual -- aproximamos
+    escolhendo o PIOR por board_value, mesmo criterio ja usado em toda
+    escolha "sacrifique o pior" do engine). DISTINTO de bounce/
+    place_opp_character_bottom_deck (onde EU escolho o MELHOR do oponente
+    pra remover) -- aqui o alvo e dele, a escolha (aproximada) e dele.
+    Achado por foto real 27/06, expondo um efeito que nunca tinha sido
+    parseado (mascarado por um bug de duplicacao de trash_from_hand).
+    """
+    steps = []
+    t = text.lower()
+    m = re.search(r"your opponent returns (\d+) of (?:their|his|her) characters? to the owner.?s hand", t)
+    if m:
+        steps.append({'action': 'opp_bounce_own_character', 'count': int(m.group(1))})
+    m2 = re.search(r"your opponent places (\d+) of (?:their|his|her) characters? at the bottom of the owner.?s deck", t)
+    if m2:
+        steps.append({'action': 'opp_place_own_character_bottom_deck', 'count': int(m2.group(1))})
+    return steps
+
+
 # ===========================================================================
 # Parser principal de um bloco de texto
 # ===========================================================================
@@ -2115,7 +2158,16 @@ def parse_block(block_text, trigger_name):
     # "Trash up to 1 of your opponent's Characters with a cost of 4 or
     # less". Gatilho 'trash up to' (nao 'trash' generico) para nao disparar
     # em trash_from_hand/trash_self, que sao muito mais comuns no texto.)
-    if 'k.o.' in t or ('trash up to' in t and 'opponent' in t):
+    # KO (e seu sinonimo "trash" quando remove Character do OPONENTE -- ex:
+    # "Trash up to 1 of your opponent's Characters with a cost of 4 or
+    # less". Gatilho 'trash up to' (nao 'trash' generico) para nao disparar
+    # em trash_from_hand/trash_self, que sao muito mais comuns no texto.
+    # 'trash all of your characters' (Five Elders) e 'all characters other
+    # than this character' (Kaido) tambem precisam do gate -- nao tem
+    # 'opponent' nem 'trash up to', ficavam fora antes (auditoria 27/06).
+    if ('k.o.' in t or ('trash up to' in t and 'opponent' in t)
+            or 'trash all of your characters' in t
+            or 'all characters other than this character' in t):
         steps.extend(parse_ko(t))
 
     # Bounce (oponente OU auto-bounce do proprio character)
@@ -2333,8 +2385,25 @@ def parse_block(block_text, trigger_name):
         # NÃO duplicar: se já foi tratado pelo bloco "trash the rest ... trash
         # N card from your hand" (look_top_deck), não detectar de novo aqui.
         already = bool(re.search(r'trash the rest.*?trash \d+ card from your hand', t, re.DOTALL))
-        if m and 'you may trash' not in t[:t.find('trash')] and not already:
-            steps.append({'action': 'trash_from_hand', 'count': int(m.group(1))})
+        # NÃO duplicar (2): "draw N cards and trash M cards from your hand"
+        # já é capturado inteiro por parse_draw via 'then_trash' -- achado
+        # em auditoria de buff_cost/debuff_cost (27/06), 59 cartas, mesma
+        # familia do bug do Luffy mas gatilho diferente (aqui não tem ':'
+        # de custo, é "and" ligando draw+trash no mesmo efeito).
+        already_draw = bool(re.search(r'draw \d+ cards? and trash \d+ cards? from your hand', t))
+        if m and not already and not already_draw:
+            # Se a frase casada e seguida de ':' (so espaco entre), ela
+            # PROPRIA e a declaracao de custo ("you may trash N cards from
+            # your hand: efeito") -- nao duplicar como step de efeito.
+            # Bug confirmado por foto real (Luffy EB04-061, 27/06): o guard
+            # antigo testava 'you may trash' contra t[:t.find('trash')],
+            # um slice que SEMPRE corta antes da palavra 'trash' -- nunca
+            # podia conter a frase 'you may trash' completa, entao nunca
+            # bloqueava a duplicacao de verdade.
+            depois = t[m.end():m.end() + 3].lstrip()
+            eh_custo = depois.startswith(':')
+            if not eh_custo:
+                steps.append({'action': 'trash_from_hand', 'count': int(m.group(1))})
 
     # Disrupcao de mao FORCADA no oponente -- "your opponent trashes N cards
     # from their hand". Alvo oposto de trash_from_hand (sempre 'their hand',
@@ -2342,6 +2411,12 @@ def parse_block(block_text, trigger_name):
     # exclusao mutua: as duas regexes nunca casam no mesmo texto.
     if 'opponent trashes' in t:
         steps.extend(parse_opp_trash_from_hand(t))
+
+    # Mesma familia (forca o oponente a mover 1 dos PROPRIOS characters
+    # dele) -- "your opponent returns...to the owner's hand" / "your
+    # opponent places...at the bottom of the owner's deck".
+    if 'your opponent returns' in t or 'your opponent places' in t:
+        steps.extend(parse_opp_self_move_character(t))
 
     # Trigger especial: "Activate this card's [Main] effect"
     if trigger_name == 'trigger' and 'activate this card' in t:

@@ -46,10 +46,6 @@
             "action": "give_don",
             "count": 1,
             "rested": true
-          },
-          {
-            "action": "trash_from_hand",
-            "count": 1
           }
         ],
         "costs": [
@@ -697,10 +693,6 @@
             "action": "draw",
             "count": 2,
             "then_trash": 1
-          },
-          {
-            "action": "trash_from_hand",
-            "count": 1
           }
         ]
       },
@@ -3091,10 +3083,6 @@
             "dest": "life_top",
             "count": 1,
             "up_to": true
-          },
-          {
-            "action": "trash_from_hand",
-            "count": 1
           }
         ],
         "conditions": {
@@ -3148,10 +3136,6 @@
             "action": "draw",
             "count": 2,
             "then_trash": 1
-          },
-          {
-            "action": "trash_from_hand",
-            "count": 1
           }
         ],
         "conditions": {
@@ -3960,24 +3944,6 @@
             "action": "gain_blocker"
           }
         ]
-      },
-      "end_of_turn": {
-        "steps": [
-          {
-            "action": "trash_from_hand",
-            "count": 1
-          }
-        ],
-        "costs": [
-          {
-            "type": "rest_don",
-            "count": 1
-          },
-          {
-            "type": "trash_from_hand",
-            "count": 1
-          }
-        ]
       }
     }
   },
@@ -4047,10 +4013,6 @@
             "action": "place_opp_character_bottom_deck",
             "count": 1,
             "cost_lte": 3
-          },
-          {
-            "action": "trash_from_hand",
-            "count": 1
           }
         ],
         "costs": [
@@ -4172,10 +4134,6 @@
             "target": "opp_character",
             "power_base_only": true,
             "power_eq": 6000
-          },
-          {
-            "action": "trash_from_hand",
-            "count": 1
           }
         ],
         "costs": [
@@ -4556,10 +4514,6 @@
             "action": "play_from_trash",
             "count": 1,
             "power_lte": 6000
-          },
-          {
-            "action": "trash_from_hand",
-            "count": 1
           }
         ],
         "conditions": {
@@ -5952,10 +5906,6 @@
             "action": "draw",
             "count": 2,
             "then_trash": 1
-          },
-          {
-            "action": "trash_from_hand",
-            "count": 1
           }
         ],
         "conditions": {
@@ -5992,20 +5942,6 @@
     "sub_types": "Navy Dressrosa",
     "attribute": "Slash",
     "effects": {
-      "on_play": {
-        "steps": [
-          {
-            "action": "trash_from_hand",
-            "count": 2
-          }
-        ],
-        "costs": [
-          {
-            "type": "trash_from_hand",
-            "count": 2
-          }
-        ]
-      },
       "when_attacking": {
         "steps": [
           {
@@ -6013,10 +5949,6 @@
             "amount": 2000,
             "target": "opp_character",
             "duration": "this_turn"
-          },
-          {
-            "action": "trash_from_hand",
-            "count": 1
           }
         ],
         "costs": [
@@ -6143,10 +6075,6 @@
             "action": "draw",
             "count": 1,
             "then_trash": 1
-          },
-          {
-            "action": "trash_from_hand",
-            "count": 1
           }
         ]
       }
@@ -6169,10 +6097,6 @@
             "action": "draw",
             "count": 2,
             "then_trash": 1
-          },
-          {
-            "action": "trash_from_hand",
-            "count": 1
           }
         ]
       },
@@ -6448,10 +6372,6 @@
             "action": "draw",
             "count": 2,
             "then_trash": 1
-          },
-          {
-            "action": "trash_from_hand",
-            "count": 1
           }
         ],
         "conditions": {
@@ -7240,10 +7160,6 @@
           },
           {
             "action": "gain_blocker"
-          },
-          {
-            "action": "trash_from_hand",
-            "count": 1
           }
         ],
         "costs": [
@@ -7580,10 +7496,6 @@
             "count": 1,
             "filter_name": "tony tony.chopper",
             "cost_lte": 4
-          },
-          {
-            "action": "trash_from_hand",
-            "count": 1
           }
         ],
         "costs": [
@@ -8713,10 +8625,6 @@
             "count": 1,
             "target": "opp_character",
             "cost_lte": 3
-          },
-          {
-            "action": "trash_from_hand",
-            "count": 1
           }
         ],
         "costs": [
@@ -9416,7 +9324,8 @@
           {
             "action": "ko",
             "count": 99,
-            "target": "all_character"
+            "target": "all_character",
+            "exclude_self": true
           }
         ],
         "conditions": {
@@ -9590,10 +9499,6 @@
         "steps": [
           {
             "action": "add_don",
-            "count": 1
-          },
-          {
-            "action": "trash_from_hand",
             "count": 1
           }
         ],
@@ -11293,10 +11198,6 @@
             "action": "draw",
             "count": 2,
             "then_trash": 1
-          },
-          {
-            "action": "trash_from_hand",
-            "count": 1
           }
         ]
       }
@@ -11371,10 +11272,6 @@
             "action": "place_opp_character_bottom_deck",
             "count": 1,
             "cost_lte": 1
-          },
-          {
-            "action": "trash_from_hand",
-            "count": 1
           }
         ],
         "costs": [
@@ -11466,10 +11363,6 @@
             "action": "draw",
             "count": 1,
             "then_trash": 1
-          },
-          {
-            "action": "trash_from_hand",
-            "count": 1
           }
         ]
       }
@@ -11540,10 +11433,6 @@
           {
             "action": "gain_double_attack",
             "duration": "this_turn"
-          },
-          {
-            "action": "trash_from_hand",
-            "count": 2
           }
         ],
         "costs": [
@@ -11564,10 +11453,6 @@
           {
             "action": "gain_double_attack",
             "duration": "this_turn"
-          },
-          {
-            "action": "trash_from_hand",
-            "count": 2
           }
         ],
         "costs": [
@@ -11617,10 +11502,6 @@
             "action": "place_opp_character_bottom_deck",
             "count": 1,
             "cost_lte": 2
-          },
-          {
-            "action": "trash_from_hand",
-            "count": 1
           }
         ],
         "costs": [
@@ -11644,20 +11525,6 @@
     "sub_types": "Impel Down Former Baroque Works",
     "attribute": "Special",
     "effects": {
-      "end_of_turn": {
-        "steps": [
-          {
-            "action": "trash_from_hand",
-            "count": 1
-          }
-        ],
-        "costs": [
-          {
-            "type": "trash_from_hand",
-            "count": 1
-          }
-        ]
-      },
       "passive": {
         "steps": [
           {
@@ -12501,10 +12368,6 @@
             "count": 1,
             "target": "opp_character",
             "cost_lte": 3
-          },
-          {
-            "action": "trash_from_hand",
-            "count": 1
           }
         ],
         "costs": [
@@ -12534,10 +12397,6 @@
             "count": 1,
             "target": "opp_character",
             "cost_lte": 5
-          },
-          {
-            "action": "trash_from_hand",
-            "count": 1
           }
         ],
         "costs": [
@@ -13812,10 +13671,6 @@
           },
           {
             "action": "gain_double_attack"
-          },
-          {
-            "action": "trash_from_hand",
-            "count": 1
           }
         ],
         "costs": [
@@ -14303,10 +14158,6 @@
             "action": "draw",
             "count": 2,
             "then_trash": 2
-          },
-          {
-            "action": "trash_from_hand",
-            "count": 2
           }
         ]
       }
@@ -14747,10 +14598,6 @@
             "action": "draw",
             "count": 2,
             "then_trash": 1
-          },
-          {
-            "action": "trash_from_hand",
-            "count": 1
           }
         ],
         "costs": [
@@ -15236,10 +15083,6 @@
             "dest": "life_top",
             "count": 1,
             "up_to": true
-          },
-          {
-            "action": "trash_from_hand",
-            "count": 1
           }
         ],
         "conditions": {
@@ -15348,10 +15191,6 @@
             "amount": 2,
             "target": "opp_character",
             "count": 1
-          },
-          {
-            "action": "trash_from_hand",
-            "count": 2
           }
         ]
       }
@@ -15610,10 +15449,6 @@
             "count": 1,
             "target": "opp_character",
             "cost_lte": 1
-          },
-          {
-            "action": "trash_from_hand",
-            "count": 1
           }
         ],
         "conditions": {
@@ -16259,10 +16094,6 @@
             "action": "draw",
             "count": 3,
             "then_trash": 2
-          },
-          {
-            "action": "trash_from_hand",
-            "count": 2
           }
         ]
       },
@@ -16482,10 +16313,6 @@
             "action": "draw",
             "count": 2,
             "then_trash": 2
-          },
-          {
-            "action": "trash_from_hand",
-            "count": 2
           }
         ]
       }
@@ -17610,10 +17437,6 @@
           },
           {
             "action": "deck_bottom_rest"
-          },
-          {
-            "action": "trash_from_hand",
-            "count": 2
           }
         ],
         "costs": [
@@ -18124,10 +17947,6 @@
             "dest": "life_top",
             "count": 1,
             "up_to": true
-          },
-          {
-            "action": "trash_from_hand",
-            "count": 1
           }
         ],
         "conditions": {
@@ -18838,10 +18657,6 @@
             "action": "draw",
             "count": 2,
             "then_trash": 2
-          },
-          {
-            "action": "trash_from_hand",
-            "count": 2
           }
         ]
       },
@@ -21740,10 +21555,6 @@
           {
             "action": "add_don",
             "count": 1
-          },
-          {
-            "action": "trash_from_hand",
-            "count": 1
           }
         ],
         "costs": [
@@ -22645,10 +22456,6 @@
             "action": "draw",
             "count": 1,
             "then_trash": 1
-          },
-          {
-            "action": "trash_from_hand",
-            "count": 1
           }
         ]
       }
@@ -23605,20 +23412,6 @@
     "sub_types": "Fish-Man Arlong Pirates East Blue",
     "attribute": "Slash",
     "effects": {
-      "on_play": {
-        "steps": [
-          {
-            "action": "trash_from_hand",
-            "count": 1
-          }
-        ],
-        "costs": [
-          {
-            "type": "trash_from_hand",
-            "count": 1
-          }
-        ]
-      },
       "trigger": {
         "steps": [
           {
@@ -24374,8 +24167,8 @@
       "on_play": {
         "steps": [
           {
-            "action": "trash_from_hand",
-            "count": 2
+            "action": "opp_bounce_own_character",
+            "count": 1
           }
         ],
         "costs": [
@@ -24687,10 +24480,6 @@
             "power_lte": 4000,
             "distinct_names": true,
             "filter_type": "germa 66"
-          },
-          {
-            "action": "trash_from_hand",
-            "count": 2
           }
         ],
         "costs": [
@@ -24725,10 +24514,6 @@
             "action": "add_from_trash",
             "count": 1,
             "filter_name": "the vinsmoke family"
-          },
-          {
-            "action": "trash_from_hand",
-            "count": 1
           }
         ],
         "costs": [
@@ -24946,10 +24731,6 @@
             "action": "draw",
             "count": 1,
             "then_trash": 1
-          },
-          {
-            "action": "trash_from_hand",
-            "count": 1
           }
         ],
         "conditions": {
@@ -25180,10 +24961,6 @@
           {
             "action": "trash_from_deck_top",
             "count": 2
-          },
-          {
-            "action": "trash_from_hand",
-            "count": 1
           }
         ],
         "costs": [
@@ -25235,10 +25012,6 @@
             "action": "draw",
             "count": 2,
             "then_trash": 2
-          },
-          {
-            "action": "trash_from_hand",
-            "count": 2
           }
         ],
         "conditions": {
@@ -25251,10 +25024,6 @@
             "action": "draw",
             "count": 2,
             "then_trash": 2
-          },
-          {
-            "action": "trash_from_hand",
-            "count": 2
           }
         ],
         "conditions": {
@@ -25699,10 +25468,6 @@
             "action": "ko",
             "count": 1,
             "target": "opp_character"
-          },
-          {
-            "action": "trash_from_hand",
-            "count": 1
           }
         ],
         "costs": [
@@ -25788,22 +25553,7 @@
     "color": "Yellow",
     "sub_types": "Fish-Man Land of Wano The Akazaya Nine",
     "attribute": "Slash",
-    "effects": {
-      "when_attacking": {
-        "steps": [
-          {
-            "action": "trash_from_hand",
-            "count": 2
-          }
-        ],
-        "costs": [
-          {
-            "type": "trash_from_hand",
-            "count": 2
-          }
-        ]
-      }
-    }
+    "effects": {}
   },
   "OP06-104": {
     "name": "Kikunojo",
@@ -26018,20 +25768,6 @@
     "sub_types": "Land of Wano The Akazaya Nine",
     "attribute": "Slash",
     "effects": {
-      "when_attacking": {
-        "steps": [
-          {
-            "action": "trash_from_hand",
-            "count": 1
-          }
-        ],
-        "costs": [
-          {
-            "type": "trash_from_hand",
-            "count": 1
-          }
-        ]
-      },
       "trigger": {
         "steps": [
           {
@@ -26325,10 +26061,6 @@
           },
           {
             "action": "deck_bottom_rest"
-          },
-          {
-            "action": "trash_from_hand",
-            "count": 1
           }
         ],
         "costs": [
@@ -26387,10 +26119,6 @@
             "action": "draw",
             "count": 1,
             "then_trash": 1
-          },
-          {
-            "action": "trash_from_hand",
-            "count": 1
           }
         ],
         "costs": [
@@ -28844,10 +28572,6 @@
             "action": "draw",
             "count": 2,
             "then_trash": 2
-          },
-          {
-            "action": "trash_from_hand",
-            "count": 2
           }
         ],
         "conditions": {
@@ -29426,10 +29150,6 @@
             "count": 1,
             "target": "opp_character",
             "cost_lte": 5
-          },
-          {
-            "action": "trash_from_hand",
-            "count": 1
           }
         ],
         "costs": [
@@ -31220,10 +30940,6 @@
             "dest": "life_top",
             "count": 1,
             "up_to": true
-          },
-          {
-            "action": "trash_from_hand",
-            "count": 1
           }
         ],
         "costs": [
@@ -31606,10 +31322,6 @@
             "action": "draw",
             "count": 2,
             "then_trash": 2
-          },
-          {
-            "action": "trash_from_hand",
-            "count": 2
           }
         ]
       }
@@ -31712,10 +31424,6 @@
             "count": 1,
             "target": "opp_character",
             "cost_lte": 3
-          },
-          {
-            "action": "trash_from_hand",
-            "count": 1
           }
         ],
         "costs": [
@@ -32057,10 +31765,6 @@
             "action": "ko",
             "count": 1,
             "target": "opp_character"
-          },
-          {
-            "action": "trash_from_hand",
-            "count": 1
           }
         ],
         "costs": [
@@ -32619,7 +32323,8 @@
           {
             "action": "ko",
             "count": 99,
-            "target": "all_character"
+            "target": "all_character",
+            "exclude_self": true
           },
           {
             "action": "gain_life",
@@ -32757,10 +32462,6 @@
             "action": "draw",
             "count": 2,
             "then_trash": 1
-          },
-          {
-            "action": "trash_from_hand",
-            "count": 1
           }
         ],
         "conditions": {
@@ -33302,10 +33003,6 @@
             "action": "draw",
             "count": 2,
             "then_trash": 2
-          },
-          {
-            "action": "trash_from_hand",
-            "count": 2
           }
         ]
       }
@@ -33867,10 +33564,6 @@
             "action": "draw",
             "count": 2,
             "then_trash": 1
-          },
-          {
-            "action": "trash_from_hand",
-            "count": 1
           }
         ]
       },
@@ -34434,10 +34127,6 @@
           {
             "action": "draw",
             "count": 2
-          },
-          {
-            "action": "trash_from_hand",
-            "count": 1
           }
         ],
         "costs": [
@@ -34866,10 +34555,6 @@
         "steps": [
           {
             "action": "draw",
-            "count": 2
-          },
-          {
-            "action": "trash_from_hand",
             "count": 2
           }
         ],
@@ -35581,10 +35266,6 @@
             "action": "draw",
             "count": 2,
             "then_trash": 2
-          },
-          {
-            "action": "trash_from_hand",
-            "count": 2
           }
         ]
       },
@@ -36508,10 +36189,6 @@
             "action": "draw",
             "count": 3,
             "then_trash": 2
-          },
-          {
-            "action": "trash_from_hand",
-            "count": 2
           }
         ]
       }
@@ -36993,10 +36670,6 @@
             "action": "draw",
             "count": 2,
             "then_trash": 1
-          },
-          {
-            "action": "trash_from_hand",
-            "count": 1
           }
         ],
         "once_per_turn": true
@@ -37813,10 +37486,6 @@
         "steps": [
           {
             "action": "add_don",
-            "count": 1
-          },
-          {
-            "action": "trash_from_hand",
             "count": 1
           }
         ],
@@ -38870,10 +38539,6 @@
             "action": "draw",
             "count": 1,
             "then_trash": 1
-          },
-          {
-            "action": "trash_from_hand",
-            "count": 1
           }
         ]
       }
@@ -39296,10 +38961,6 @@
             "amount": 6000,
             "target": "opp_character",
             "duration": "this_turn"
-          },
-          {
-            "action": "trash_from_hand",
-            "count": 1
           }
         ],
         "conditions": {
@@ -41529,10 +41190,6 @@
             "cost_lte": 8,
             "filter_type": "sword",
             "exclude": "helmeppo"
-          },
-          {
-            "action": "trash_from_hand",
-            "count": 1
           }
         ],
         "costs": [
@@ -41943,10 +41600,6 @@
             "action": "draw",
             "count": 2,
             "then_trash": 1
-          },
-          {
-            "action": "trash_from_hand",
-            "count": 1
           }
         ],
         "conditions": {
@@ -41972,10 +41625,6 @@
             "action": "draw",
             "count": 2,
             "then_trash": 2
-          },
-          {
-            "action": "trash_from_hand",
-            "count": 2
           }
         ]
       }
@@ -42198,10 +41847,6 @@
             "action": "give_don",
             "count": 1,
             "rested": true
-          },
-          {
-            "action": "trash_from_hand",
-            "count": 1
           }
         ],
         "costs": [
@@ -43290,10 +42935,6 @@
             "action": "lock_opp_character_attack",
             "count": 1,
             "duration": "until_opp_end_phase"
-          },
-          {
-            "action": "trash_from_hand",
-            "count": 1
           }
         ],
         "costs": [
@@ -43435,10 +43076,6 @@
           },
           {
             "action": "deck_bottom_rest"
-          },
-          {
-            "action": "trash_from_hand",
-            "count": 1
           }
         ],
         "costs": [
@@ -43637,10 +43274,6 @@
             "cost_lte": 99,
             "filter_type": "navy",
             "color": "blue"
-          },
-          {
-            "action": "trash_from_hand",
-            "count": 1
           }
         ],
         "costs": [
@@ -44480,10 +44113,6 @@
       "on_play": {
         "steps": [
           {
-            "action": "trash_from_hand",
-            "count": 1
-          },
-          {
             "action": "opp_trash_from_hand",
             "count": 2
           }
@@ -44671,10 +44300,6 @@
             "action": "draw",
             "count": 1,
             "then_trash": 1
-          },
-          {
-            "action": "trash_from_hand",
-            "count": 1
           }
         ]
       },
@@ -44852,10 +44477,6 @@
             "action": "draw",
             "count": 2,
             "then_trash": 1
-          },
-          {
-            "action": "trash_from_hand",
-            "count": 1
           }
         ]
       },
@@ -45309,10 +44930,6 @@
             "action": "set_don_active",
             "count": 1,
             "up_to": true
-          },
-          {
-            "action": "trash_from_hand",
-            "count": 1
           }
         ]
       },
@@ -45350,10 +44967,6 @@
             "dest": "life_top",
             "count": 1,
             "up_to": true
-          },
-          {
-            "action": "trash_from_hand",
-            "count": 1
           }
         ],
         "costs": [
@@ -46436,10 +46049,6 @@
             "action": "draw",
             "count": 2,
             "then_trash": 1
-          },
-          {
-            "action": "trash_from_hand",
-            "count": 1
           }
         ]
       },
@@ -46469,10 +46078,6 @@
             "action": "draw",
             "count": 2,
             "then_trash": 1
-          },
-          {
-            "action": "trash_from_hand",
-            "count": 1
           }
         ],
         "conditions": {
@@ -47104,10 +46709,6 @@
           {
             "action": "add_don",
             "count": 1
-          },
-          {
-            "action": "trash_from_hand",
-            "count": 1
           }
         ],
         "conditions": {
@@ -47546,6 +47147,11 @@
       "activate_main": {
         "steps": [
           {
+            "action": "trash_character",
+            "count": 99,
+            "target": "self_character"
+          },
+          {
             "action": "play_from_trash",
             "count": 5,
             "power_eq": 5000,
@@ -47808,10 +47414,6 @@
             "count": 1,
             "target": "opp_character",
             "cost_lte": 5
-          },
-          {
-            "action": "trash_from_hand",
-            "count": 1
           }
         ],
         "costs": [
@@ -47881,10 +47483,6 @@
             "action": "draw",
             "count": 2,
             "then_trash": 2
-          },
-          {
-            "action": "trash_from_hand",
-            "count": 2
           }
         ]
       },
@@ -47938,10 +47536,6 @@
             "count": 2,
             "target": "opp_character",
             "cost_lte": 3
-          },
-          {
-            "action": "trash_from_hand",
-            "count": 1
           }
         ],
         "costs": [
@@ -49897,10 +49491,6 @@
             "action": "draw",
             "count": 2,
             "then_trash": 1
-          },
-          {
-            "action": "trash_from_hand",
-            "count": 1
           }
         ]
       },
@@ -50129,10 +49719,6 @@
             "action": "play_card",
             "count": 1,
             "cost_lte": 6
-          },
-          {
-            "action": "trash_from_hand",
-            "count": 3
           }
         ],
         "costs": [
@@ -50922,10 +50508,6 @@
             "dest": "life_top",
             "count": 1,
             "up_to": true
-          },
-          {
-            "action": "trash_from_hand",
-            "count": 3
           }
         ],
         "costs": [
@@ -51310,10 +50892,6 @@
             "action": "draw",
             "count": 2,
             "then_trash": 1
-          },
-          {
-            "action": "trash_from_hand",
-            "count": 1
           }
         ],
         "conditions": {
@@ -51720,10 +51298,6 @@
             "action": "draw",
             "count": 2,
             "then_trash": 2
-          },
-          {
-            "action": "trash_from_hand",
-            "count": 2
           }
         ]
       },
@@ -53309,10 +52883,6 @@
           {
             "action": "gain_rush",
             "duration": "this_turn"
-          },
-          {
-            "action": "trash_from_hand",
-            "count": 1
           }
         ],
         "conditions": {
@@ -54610,10 +54180,6 @@
             "action": "draw",
             "count": 2,
             "then_trash": 2
-          },
-          {
-            "action": "trash_from_hand",
-            "count": 2
           }
         ]
       },
@@ -55054,10 +54620,6 @@
           },
           {
             "action": "deck_bottom_rest"
-          },
-          {
-            "action": "trash_from_hand",
-            "count": 1
           }
         ],
         "costs": [
@@ -55136,10 +54698,6 @@
             "action": "draw",
             "count": 2,
             "then_trash": 2
-          },
-          {
-            "action": "trash_from_hand",
-            "count": 2
           }
         ]
       },
@@ -55374,10 +54932,6 @@
             "dest": "life_top",
             "count": 1,
             "up_to": true
-          },
-          {
-            "action": "trash_from_hand",
-            "count": 1
           }
         ],
         "costs": [
@@ -56815,10 +56369,6 @@
             "action": "draw",
             "count": 2,
             "then_trash": 1
-          },
-          {
-            "action": "trash_from_hand",
-            "count": 1
           }
         ]
       },
@@ -57288,10 +56838,6 @@
           {
             "action": "add_don",
             "count": 2
-          },
-          {
-            "action": "trash_from_hand",
-            "count": 2
           }
         ],
         "conditions": {
@@ -57448,10 +56994,6 @@
         "steps": [
           {
             "action": "add_don",
-            "count": 1
-          },
-          {
-            "action": "trash_from_hand",
             "count": 1
           }
         ],
@@ -57992,10 +57534,6 @@
             "action": "draw",
             "count": 2,
             "then_trash": 2
-          },
-          {
-            "action": "trash_from_hand",
-            "count": 2
           }
         ]
       },
@@ -58031,10 +57569,6 @@
             "action": "draw",
             "count": 2,
             "then_trash": 2
-          },
-          {
-            "action": "trash_from_hand",
-            "count": 2
           }
         ]
       }
@@ -58124,10 +57658,6 @@
             "action": "give_don",
             "count": 1,
             "rested": true
-          },
-          {
-            "action": "trash_from_hand",
-            "count": 2
           }
         ]
       }
@@ -58260,10 +57790,6 @@
             "action": "draw",
             "count": 1,
             "then_trash": 1
-          },
-          {
-            "action": "trash_from_hand",
-            "count": 1
           }
         ]
       },
@@ -58598,20 +58124,6 @@
     "sub_types": "Blackbeard Pirates Impel Down",
     "attribute": "Slash",
     "effects": {
-      "on_play": {
-        "steps": [
-          {
-            "action": "trash_from_hand",
-            "count": 1
-          }
-        ],
-        "costs": [
-          {
-            "type": "trash_from_hand",
-            "count": 1
-          }
-        ]
-      },
       "trigger": {
         "steps": [
           {
@@ -59681,10 +59193,6 @@
             "count": 1,
             "target": "opp_character",
             "cost_eq": 0
-          },
-          {
-            "action": "trash_from_hand",
-            "count": 1
           }
         ],
         "costs": [
@@ -60089,8 +59597,8 @@
       "on_play": {
         "steps": [
           {
-            "action": "trash_from_hand",
-            "count": 2
+            "action": "opp_place_own_character_bottom_deck",
+            "count": 1
           }
         ],
         "costs": [
@@ -60462,10 +59970,6 @@
             "action": "draw",
             "count": 1,
             "then_trash": 1
-          },
-          {
-            "action": "trash_from_hand",
-            "count": 1
           }
         ],
         "conditions": {
@@ -62247,10 +61751,6 @@
             "action": "draw",
             "count": 2,
             "then_trash": 2
-          },
-          {
-            "action": "trash_from_hand",
-            "count": 2
           }
         ],
         "don_requirement": 1
@@ -62648,10 +62148,6 @@
             "action": "draw",
             "count": 2,
             "then_trash": 1
-          },
-          {
-            "action": "trash_from_hand",
-            "count": 1
           }
         ],
         "costs": [
@@ -62726,10 +62222,6 @@
         "steps": [
           {
             "action": "add_don",
-            "count": 1
-          },
-          {
-            "action": "trash_from_hand",
             "count": 1
           }
         ],
@@ -63452,10 +62944,6 @@
             "count": 1,
             "target": "opp_character",
             "cost_eq": 0
-          },
-          {
-            "action": "trash_from_hand",
-            "count": 1
           }
         ],
         "costs": [
@@ -64359,10 +63847,6 @@
             "count": 99,
             "target": "all_character",
             "cost_lte": 1
-          },
-          {
-            "action": "trash_from_hand",
-            "count": 1
           }
         ],
         "costs": [
@@ -68359,10 +67843,6 @@
             "action": "draw",
             "count": 2,
             "then_trash": 1
-          },
-          {
-            "action": "trash_from_hand",
-            "count": 1
           }
         ]
       }
@@ -68708,10 +68188,6 @@
             "count": 1,
             "target": "opp_character",
             "power_lte": 4000
-          },
-          {
-            "action": "trash_from_hand",
-            "count": 1
           }
         ],
         "conditions": {
@@ -68795,10 +68271,6 @@
             "action": "draw",
             "count": 1,
             "then_trash": 1
-          },
-          {
-            "action": "trash_from_hand",
-            "count": 1
           }
         ]
       },
@@ -68950,10 +68422,6 @@
             "action": "draw",
             "count": 3,
             "then_trash": 2
-          },
-          {
-            "action": "trash_from_hand",
-            "count": 2
           }
         ],
         "conditions": {
@@ -69646,10 +69114,6 @@
             "action": "draw",
             "count": 1,
             "then_trash": 1
-          },
-          {
-            "action": "trash_from_hand",
-            "count": 1
           }
         ],
         "conditions": {
@@ -70225,10 +69689,6 @@
             "action": "draw",
             "count": 3,
             "then_trash": 2
-          },
-          {
-            "action": "trash_from_hand",
-            "count": 2
           }
         ]
       }
@@ -70613,10 +70073,6 @@
             "action": "draw",
             "count": 1,
             "then_trash": 1
-          },
-          {
-            "action": "trash_from_hand",
-            "count": 1
           }
         ],
         "once_per_turn": true
