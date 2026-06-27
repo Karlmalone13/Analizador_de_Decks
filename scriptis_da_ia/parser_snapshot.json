@@ -822,6 +822,15 @@
   }
  },
  "EB01-053": {
+  "on_play": {
+   "steps": [
+    {
+     "action": "place_opp_character_bottom_deck",
+     "cost_lte": 3,
+     "count": 1
+    }
+   ]
+  },
   "trigger": {
    "steps": [
     {
@@ -1394,7 +1403,17 @@
    ]
   }
  },
- "EB02-027": {},
+ "EB02-027": {
+  "on_play": {
+   "steps": [
+    {
+     "action": "place_opp_character_bottom_deck",
+     "count": 1,
+     "power_lte": 1000
+    }
+   ]
+  }
+ },
  "EB02-028": {
   "on_play": {
    "conditions": {
@@ -2394,6 +2413,11 @@
     }
    ],
    "steps": [
+    {
+     "action": "place_opp_character_bottom_deck",
+     "cost_lte": 3,
+     "count": 1
+    },
     {
      "action": "trash_from_hand",
      "count": 1
@@ -3707,6 +3731,15 @@
   }
  },
  "EB04-026": {
+  "on_play": {
+   "steps": [
+    {
+     "action": "place_opp_character_bottom_deck",
+     "cost_lte": 1,
+     "count": 1
+    }
+   ]
+  },
   "when_attacking": {
    "steps": [
     {
@@ -6583,6 +6616,11 @@
    "don_requirement": 1,
    "steps": [
     {
+     "action": "place_opp_character_bottom_deck",
+     "cost_lte": 1,
+     "count": 1
+    },
+    {
      "action": "trash_from_hand",
      "count": 1
     }
@@ -8764,6 +8802,22 @@
   }
  },
  "OP03-074": {
+  "main": {
+   "costs": [
+    {
+     "count": 1,
+     "optional": true,
+     "type": "don_minus"
+    }
+   ],
+   "steps": [
+    {
+     "action": "place_opp_character_bottom_deck",
+     "cost_lte": 4,
+     "count": 1
+    }
+   ]
+  },
   "trigger": {
    "steps": [
     {
@@ -13053,6 +13107,11 @@
     ],
     [
      {
+      "action": "place_opp_character_bottom_deck",
+      "cost_lte": 1,
+      "count": 1
+     },
+     {
       "action": "draw",
       "count": 1
      }
@@ -14214,7 +14273,17 @@
    ]
   }
  },
- "OP06-056": {},
+ "OP06-056": {
+  "main": {
+   "steps": [
+    {
+     "action": "place_opp_character_bottom_deck",
+     "cost_lte": 2,
+     "count": 1
+    }
+   ]
+  }
+ },
  "OP06-057": {
   "main": {
    "steps": [
@@ -14509,7 +14578,26 @@
    ]
   }
  },
- "OP06-077": {},
+ "OP06-077": {
+  "main": {
+   "steps": [
+    {
+     "action": "place_opp_character_bottom_deck",
+     "cost_lte": 5,
+     "count": 1
+    }
+   ]
+  },
+  "trigger": {
+   "steps": [
+    {
+     "action": "place_opp_character_bottom_deck",
+     "cost_lte": 4,
+     "count": 1
+    }
+   ]
+  }
+ },
  "OP06-078": {
   "main": {
    "steps": [
@@ -17742,6 +17830,11 @@
      "action": "bounce",
      "count": 1,
      "target": "self"
+    },
+    {
+     "action": "place_opp_character_bottom_deck",
+     "cost_lte": 1,
+     "count": 1
     }
    ]
   }
@@ -19692,7 +19785,16 @@
    ]
   }
  },
- "OP09-051": {},
+ "OP09-051": {
+  "on_play": {
+   "steps": [
+    {
+     "action": "place_opp_character_bottom_deck",
+     "count": 1
+    }
+   ]
+  }
+ },
  "OP09-052": {},
  "OP09-053": {
   "on_play": {
@@ -20481,6 +20583,11 @@
  "OP09-101": {
   "on_play": {
    "steps": [
+    {
+     "action": "place_opp_character_bottom_deck",
+     "cost_lte": 3,
+     "count": 1
+    },
     {
      "action": "opp_trash_from_hand",
      "count": 1
@@ -21691,6 +21798,15 @@
   }
  },
  "OP10-060": {
+  "main": {
+   "steps": [
+    {
+     "action": "place_opp_character_bottom_deck",
+     "count": 1,
+     "power_lte": 6000
+    }
+   ]
+  },
   "trigger": {
    "steps": [
     {
@@ -23700,7 +23816,17 @@
    ]
   }
  },
- "OP11-061": {},
+ "OP11-061": {
+  "main": {
+   "steps": [
+    {
+     "action": "place_opp_character_bottom_deck",
+     "cost_lte": 4,
+     "count": 1
+    }
+   ]
+  }
+ },
  "OP11-062": {
   "when_attacking": {
    "once_per_turn": true,
@@ -25114,6 +25240,15 @@
   }
  },
  "OP12-042": {
+  "on_play": {
+   "steps": [
+    {
+     "action": "place_opp_character_bottom_deck",
+     "cost_lte": 1,
+     "count": 1
+    }
+   ]
+  },
   "passive": {
    "conditions": {
     "chars_gte": 2,
@@ -27188,6 +27323,21 @@
      "amount": 3000,
      "duration": "battle_only",
      "target": "leader"
+    }
+   ]
+  },
+  "main": {
+   "costs": [
+    {
+     "count": 1,
+     "type": "rest_don"
+    }
+   ],
+   "steps": [
+    {
+     "action": "place_opp_character_bottom_deck",
+     "count": 1,
+     "power_lte": 3000
     }
    ]
   }
@@ -35440,7 +35590,32 @@
    ]
   }
  },
- "P-082": {},
+ "P-082": {
+  "on_play": {
+   "conditions": {
+    "leader_type": "cross guild"
+   },
+   "steps": [
+    {
+     "action": "place_opp_character_bottom_deck",
+     "count": 1,
+     "power_lte": 2000
+    }
+   ]
+  },
+  "your_turn": {
+   "conditions": {
+    "leader_type": "cross guild"
+   },
+   "steps": [
+    {
+     "action": "place_opp_character_bottom_deck",
+     "count": 1,
+     "power_lte": 2000
+    }
+   ]
+  }
+ },
  "P-083": {
   "when_attacking": {
    "costs": [
@@ -37828,6 +38003,11 @@
    ],
    "once_per_turn": true,
    "steps": [
+    {
+     "action": "place_opp_character_bottom_deck",
+     "count": 1,
+     "power_lte": 3000
+    },
     {
      "action": "play_card",
      "cost_lte": 4,

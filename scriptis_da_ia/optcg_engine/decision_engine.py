@@ -1829,6 +1829,39 @@ class EffectExecutor:
             me.don_available += moved
             return f'reativou {moved} DON' if moved else ''
 
+        # ── REMOÇÃO: enviar Character do oponente ao FUNDO do deck dele ───────
+        # Remoção forte (ignora On-KO; enterra no deck). Respeita imunidade a
+        # removal. Distinta de bounce (mão) e KO (trash).
+        if action == 'place_opp_character_bottom_deck':
+            count = step.get('count', 1)
+            cost_lte = step.get('cost_lte')
+            power_lte = step.get('power_lte')
+            cands = []
+            for c in opp.field_chars:
+                if cost_lte is not None and c.cost > cost_lte: continue
+                if power_lte is not None and c.power > power_lte: continue
+                cands.append(c)
+            placed = []
+            immune = []
+            for _ in range(min(count, len(cands))):
+                if not cands: break
+                target = max(cands, key=lambda x: x.board_value())
+                if is_immune(target, 'removal', opp, me, source_is_opp=True):
+                    immune.append(target.name[:12])
+                    cands.remove(target)
+                    continue
+                opp.field_chars.remove(target)
+                target.rested = False
+                target.don_attached = 0
+                opp.deck.insert(0, target)   # fundo do deck = início da lista
+                cands.remove(target)
+                placed.append(target.name[:14])
+            out = []
+            if placed: out.append(f'fundo do deck: {", ".join(placed)}')
+            if immune: out.append(f'imune: {", ".join(immune)}')
+            return ' | '.join(out)
+
+        # ── REMOÇÃO: enviar Character do oponente ao FUNDO do deck dele (fim) ──
         # ── MILL: trashar do topo do PRÓPRIO deck (sem disparar trigger) ──────
         # Regra (Arthur): trash do deck = carta vai ao trash SEM ativar Trigger.
         # Topo do deck = fim da lista (= draw_phase usa pop()).

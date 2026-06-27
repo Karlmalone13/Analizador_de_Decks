@@ -481,6 +481,31 @@ def parse_ko(text):
     return steps
 
 
+def parse_place_bottom(text):
+    """
+    "Place up to N of your opponent's Character(s) [with cost/power filter] at the
+    bottom of the owner's deck." Remoção forte (enterra no fundo do deck, ignora
+    On-KO). Distinta de bounce (vai pra mão) e de KO (vai pro trash).
+    Filtros: cost_lte / power_lte. Respeita imunidade a removal no engine.
+    """
+    steps = []
+    t = text.lower()
+    # só do OPONENTE (o caso próprio é place_own_character_bottom_deck)
+    m = re.search(
+        r"place (?:up to )?(\d+) of your opponent's characters?"
+        r"(?:[^.]*?(?:base )?cost of (\d+) or less)?"
+        r"(?:[^.]*?(\d+) power or less)?"
+        r"[^.]*?bottom of", t)
+    if m:
+        step = {'action': 'place_opp_character_bottom_deck', 'count': int(m.group(1))}
+        if m.group(2):
+            step['cost_lte'] = int(m.group(2))
+        if m.group(3):
+            step['power_lte'] = int(m.group(3))
+        steps.append(step)
+    return steps
+
+
 def parse_bounce(text):
     steps = []
     t = text.lower()
@@ -1928,6 +1953,10 @@ def parse_block(block_text, trigger_name):
     # Bounce (oponente OU auto-bounce do proprio character)
     if 'return' in t and 'hand' in t:
         steps.extend(parse_bounce(t))
+
+    # Place opponent's character at bottom of deck (remoção forte, ≠ bounce/KO)
+    if 'bottom of' in t and "opponent's character" in t:
+        steps.extend(parse_place_bottom(t))
 
     # Restar oponente
     if 'rest up to' in t and 'opponent' in t:

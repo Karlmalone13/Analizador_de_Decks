@@ -1404,6 +1404,15 @@
     "sub_types": "Scientist",
     "attribute": "Special",
     "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "place_opp_character_bottom_deck",
+            "count": 1,
+            "cost_lte": 3
+          }
+        ]
+      },
       "trigger": {
         "steps": [
           {
@@ -2361,7 +2370,17 @@
     "color": "Blue",
     "sub_types": "Whitebeard Pirates",
     "attribute": "Slash",
-    "effects": {}
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "place_opp_character_bottom_deck",
+            "count": 1,
+            "power_lte": 1000
+          }
+        ]
+      }
+    }
   },
   "EB02-028": {
     "name": "Portgas.D.Ace",
@@ -4020,6 +4039,11 @@
     "effects": {
       "on_play": {
         "steps": [
+          {
+            "action": "place_opp_character_bottom_deck",
+            "count": 1,
+            "cost_lte": 3
+          },
           {
             "action": "trash_from_hand",
             "count": 1
@@ -6076,6 +6100,15 @@
     "sub_types": "Navy Egghead",
     "attribute": "Special",
     "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "place_opp_character_bottom_deck",
+            "count": 1,
+            "cost_lte": 1
+          }
+        ]
+      },
       "when_attacking": {
         "steps": [
           {
@@ -11277,6 +11310,11 @@
       "when_attacking": {
         "steps": [
           {
+            "action": "place_opp_character_bottom_deck",
+            "count": 1,
+            "cost_lte": 1
+          },
+          {
             "action": "trash_from_hand",
             "count": 1
           }
@@ -14998,6 +15036,22 @@
         "steps": [
           {
             "action": "activate_main_effect"
+          }
+        ]
+      },
+      "main": {
+        "steps": [
+          {
+            "action": "place_opp_character_bottom_deck",
+            "count": 1,
+            "cost_lte": 4
+          }
+        ],
+        "costs": [
+          {
+            "type": "don_minus",
+            "count": 1,
+            "optional": true
           }
         ]
       }
@@ -22171,6 +22225,11 @@
           ],
           [
             {
+              "action": "place_opp_character_bottom_deck",
+              "count": 1,
+              "cost_lte": 1
+            },
+            {
               "action": "draw",
               "count": 1
             }
@@ -24191,7 +24250,17 @@
     "color": "Blue",
     "sub_types": "Navy",
     "attribute": "",
-    "effects": {}
+    "effects": {
+      "main": {
+        "steps": [
+          {
+            "action": "place_opp_character_bottom_deck",
+            "count": 1,
+            "cost_lte": 2
+          }
+        ]
+      }
+    }
   },
   "OP06-057": {
     "name": "But I Will Never Doubt a Woman's Tears!!!!",
@@ -24717,7 +24786,26 @@
     "color": "Purple",
     "sub_types": "The Vinsmoke Family GERMA 66",
     "attribute": "",
-    "effects": {}
+    "effects": {
+      "trigger": {
+        "steps": [
+          {
+            "action": "place_opp_character_bottom_deck",
+            "count": 1,
+            "cost_lte": 4
+          }
+        ]
+      },
+      "main": {
+        "steps": [
+          {
+            "action": "place_opp_character_bottom_deck",
+            "count": 1,
+            "cost_lte": 5
+          }
+        ]
+      }
+    }
   },
   "OP06-078": {
     "name": "GERMA 66",
@@ -30169,6 +30257,11 @@
             "action": "bounce",
             "count": 1,
             "target": "self"
+          },
+          {
+            "action": "place_opp_character_bottom_deck",
+            "count": 1,
+            "cost_lte": 1
           }
         ],
         "conditions": {
@@ -33507,7 +33600,16 @@
     "color": "Blue",
     "sub_types": "The Four Emperors Cross Guild",
     "attribute": "Slash",
-    "effects": {}
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "place_opp_character_bottom_deck",
+            "count": 1
+          }
+        ]
+      }
+    }
   },
   "OP09-052": {
     "name": "Marco",
@@ -34846,6 +34948,11 @@
     "effects": {
       "on_play": {
         "steps": [
+          {
+            "action": "place_opp_character_bottom_deck",
+            "count": 1,
+            "cost_lte": 3
+          },
           {
             "action": "opp_trash_from_hand",
             "count": 1
@@ -36918,6 +37025,15 @@
         "steps": [
           {
             "action": "activate_main_effect"
+          }
+        ]
+      },
+      "main": {
+        "steps": [
+          {
+            "action": "place_opp_character_bottom_deck",
+            "count": 1,
+            "power_lte": 6000
           }
         ]
       }
@@ -40243,7 +40359,17 @@
     "color": "Blue",
     "sub_types": "Straw Hat Crew",
     "attribute": "",
-    "effects": {}
+    "effects": {
+      "main": {
+        "steps": [
+          {
+            "action": "place_opp_character_bottom_deck",
+            "count": 1,
+            "cost_lte": 4
+          }
+        ]
+      }
+    }
   },
   "OP11-062": {
     "name": "Charlotte Katakuri (062)",
@@ -42757,6 +42883,15 @@
     "sub_types": "Cross Guild",
     "attribute": "Strike",
     "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "place_opp_character_bottom_deck",
+            "count": 1,
+            "cost_lte": 1
+          }
+        ]
+      },
       "passive": {
         "steps": [
           {
@@ -46316,6 +46451,21 @@
             "amount": 3000,
             "target": "leader",
             "duration": "battle_only"
+          }
+        ]
+      },
+      "main": {
+        "steps": [
+          {
+            "action": "place_opp_character_bottom_deck",
+            "count": 1,
+            "power_lte": 3000
+          }
+        ],
+        "costs": [
+          {
+            "type": "rest_don",
+            "count": 1
           }
         ]
       }
@@ -60013,7 +60163,32 @@
     "color": "Blue",
     "sub_types": "Former Baroque Works Cross Guild",
     "attribute": "Special",
-    "effects": {}
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "place_opp_character_bottom_deck",
+            "count": 1,
+            "power_lte": 2000
+          }
+        ],
+        "conditions": {
+          "leader_type": "cross guild"
+        }
+      },
+      "your_turn": {
+        "steps": [
+          {
+            "action": "place_opp_character_bottom_deck",
+            "count": 1,
+            "power_lte": 2000
+          }
+        ],
+        "conditions": {
+          "leader_type": "cross guild"
+        }
+      }
+    }
   },
   "P-083": {
     "name": "Shanks",
@@ -64314,6 +64489,11 @@
     "effects": {
       "activate_main": {
         "steps": [
+          {
+            "action": "place_opp_character_bottom_deck",
+            "count": 1,
+            "power_lte": 3000
+          },
           {
             "action": "play_card",
             "count": 1,

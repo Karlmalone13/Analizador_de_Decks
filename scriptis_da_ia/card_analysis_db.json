@@ -2207,6 +2207,11 @@
   "attribute": "Special",
   "effects": [
    {
+    "action": "place_opp_character_bottom_deck",
+    "trigger": "on_play",
+    "cost_lte": 3
+   },
+   {
     "action": "debuff_power",
     "trigger": "trigger",
     "target": "opp_leader_or_character"
@@ -3766,7 +3771,13 @@
   "color": "Blue",
   "sub_types": "Whitebeard Pirates",
   "attribute": "Slash",
-  "effects": [],
+  "effects": [
+   {
+    "action": "place_opp_character_bottom_deck",
+    "trigger": "on_play",
+    "power_lte": 1000
+   }
+  ],
   "synergy_states": {},
   "text": "[On Play] Place up to 1 of your opponent's Characters with 1000 power or less at the bottom of the owner's deck.",
   "is_searcher": false,
@@ -6267,6 +6278,11 @@
   "sub_types": "Cross Guild",
   "attribute": "Strike",
   "effects": [
+   {
+    "action": "place_opp_character_bottom_deck",
+    "trigger": "on_play",
+    "cost_lte": 3
+   },
    {
     "action": "trash_from_hand",
     "trigger": "on_play"
@@ -9212,6 +9228,11 @@
   "sub_types": "Navy Egghead",
   "attribute": "Special",
   "effects": [
+   {
+    "action": "place_opp_character_bottom_deck",
+    "trigger": "on_play",
+    "cost_lte": 1
+   },
    {
     "action": "draw",
     "trigger": "when_attacking"
@@ -18080,6 +18101,12 @@
     "trigger": "on_play"
    },
    {
+    "action": "place_opp_character_bottom_deck",
+    "trigger": "when_attacking",
+    "don_requirement": 1,
+    "cost_lte": 1
+   },
+   {
     "action": "trash_from_hand",
     "trigger": "when_attacking",
     "don_requirement": 1
@@ -24076,6 +24103,11 @@
    {
     "action": "activate_main_effect",
     "trigger": "trigger"
+   },
+   {
+    "action": "place_opp_character_bottom_deck",
+    "trigger": "main",
+    "cost_lte": 4
    }
   ],
   "synergy_states": {
@@ -38924,7 +38956,13 @@
   "color": "Blue",
   "sub_types": "Navy",
   "attribute": "",
-  "effects": [],
+  "effects": [
+   {
+    "action": "place_opp_character_bottom_deck",
+    "trigger": "main",
+    "cost_lte": 2
+   }
+  ],
   "synergy_states": {},
   "text": "[Main] Place up to 1 of your opponent's Characters with a cost of 2 or less and up to 1 of your opponent's Characters with a cost of 1 or less at the bottom of the owner's deck in any order.",
   "is_searcher": false,
@@ -39788,7 +39826,18 @@
   "color": "Purple",
   "sub_types": "The Vinsmoke Family GERMA 66",
   "attribute": "",
-  "effects": [],
+  "effects": [
+   {
+    "action": "place_opp_character_bottom_deck",
+    "trigger": "trigger",
+    "cost_lte": 4
+   },
+   {
+    "action": "place_opp_character_bottom_deck",
+    "trigger": "main",
+    "cost_lte": 5
+   }
+  ],
   "synergy_states": {
    "vida_ganha": {
     "creates": false,
@@ -39815,7 +39864,7 @@
   "has_double_attack": false,
   "has_unblockable": false,
   "has_banish": false,
-  "has_trigger": false
+  "has_trigger": true
  },
  "OP06-078": {
   "name": "GERMA 66",
@@ -48646,6 +48695,11 @@
     "action": "bounce",
     "trigger": "activate_main",
     "target": "self"
+   },
+   {
+    "action": "place_opp_character_bottom_deck",
+    "trigger": "activate_main",
+    "cost_lte": 1
    }
   ],
   "synergy_states": {},
@@ -54142,7 +54196,12 @@
   "color": "Blue",
   "sub_types": "The Four Emperors Cross Guild",
   "attribute": "Slash",
-  "effects": [],
+  "effects": [
+   {
+    "action": "place_opp_character_bottom_deck",
+    "trigger": "on_play"
+   }
+  ],
   "synergy_states": {},
   "text": "[On Play] Place up to 1 of your opponent's Characters at the bottom of the owner's deck. Then, if you do not have 5 Characters with a cost of 5 or more, place this Character at the bottom of the owner's deck.",
   "is_searcher": false,
@@ -56289,6 +56348,11 @@
   "sub_types": "Navy",
   "attribute": "Special",
   "effects": [
+   {
+    "action": "place_opp_character_bottom_deck",
+    "trigger": "on_play",
+    "cost_lte": 3
+   },
    {
     "action": "opp_trash_from_hand",
     "trigger": "on_play"
@@ -59708,6 +59772,11 @@
    {
     "action": "activate_main_effect",
     "trigger": "trigger"
+   },
+   {
+    "action": "place_opp_character_bottom_deck",
+    "trigger": "main",
+    "power_lte": 6000
    }
   ],
   "synergy_states": {
@@ -64952,7 +65021,13 @@
   "color": "Blue",
   "sub_types": "Straw Hat Crew",
   "attribute": "",
-  "effects": [],
+  "effects": [
+   {
+    "action": "place_opp_character_bottom_deck",
+    "trigger": "main",
+    "cost_lte": 4
+   }
+  ],
   "synergy_states": {
    "vida_ganha": {
     "creates": false,
@@ -69149,6 +69224,11 @@
   "sub_types": "Cross Guild",
   "attribute": "Strike",
   "effects": [
+   {
+    "action": "place_opp_character_bottom_deck",
+    "trigger": "on_play",
+    "cost_lte": 1
+   },
    {
     "action": "buff_cost",
     "trigger": "passive",
@@ -74826,6 +74906,11 @@
     "action": "buff_power",
     "trigger": "counter",
     "target": "leader"
+   },
+   {
+    "action": "place_opp_character_bottom_deck",
+    "trigger": "main",
+    "power_lte": 3000
    }
   ],
   "synergy_states": {},
@@ -96276,7 +96361,18 @@
   "color": "Blue",
   "sub_types": "Former Baroque Works Cross Guild",
   "attribute": "Special",
-  "effects": [],
+  "effects": [
+   {
+    "action": "place_opp_character_bottom_deck",
+    "trigger": "on_play",
+    "power_lte": 2000
+   },
+   {
+    "action": "place_opp_character_bottom_deck",
+    "trigger": "your_turn",
+    "power_lte": 2000
+   }
+  ],
   "synergy_states": {},
   "text": "[Your Turn] [On Play] If your Leader has the {Cross Guild} type or a type including \"Baroque Works\", place up to 1 of your opponent's Characters with 2000 power or less at the bottom of the owner's deck.",
   "is_searcher": false,
@@ -103586,6 +103682,11 @@
   "sub_types": "Heart Pirates",
   "attribute": "Slash",
   "effects": [
+   {
+    "action": "place_opp_character_bottom_deck",
+    "trigger": "activate_main",
+    "power_lte": 3000
+   },
    {
     "action": "play_card",
     "trigger": "activate_main",
