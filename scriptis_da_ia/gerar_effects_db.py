@@ -853,6 +853,35 @@ def parse_lock_attack(text):
             step['exclude'] = m_leader_or_char.group(2).strip()
         steps.append(step)
 
+    # lock_opp_blocker_turn: "cannot activate [Blocker]... during this turn"
+    # -- DISTINTA de lock_opp_blocker_battle (essa e "during this BATTLE",
+    # transitoria, ja tratada em parse_lock_blocker_battle). Aqui e
+    # persistente (dura alem desta batalha, igual cannot_attack_until) e
+    # mira 1 character ESPECIFICO escolhido pela IA, nao o campo filtrado.
+    # 2 formas vistas no banco (Limejuice OP09-014, Kuzan OP16-063).
+    m_block_power = re.search(
+        r"cannot activate up to (\d+) \[?blocker\]? character that has (\d+) power or less"
+        r"[^.]*?during this turn", t)
+    if m_block_power:
+        steps.append({
+            'action': 'lock_opp_blocker_turn',
+            'count': int(m_block_power.group(1)),
+            'power_lte': int(m_block_power.group(2)),
+            'duration': 'until_opp_turn_end',
+        })
+        return steps
+
+    m_block_plain = re.search(
+        r"up to (\d+) of your opponent.{0,15}characters? cannot activate \[?blocker\]?"
+        r"[^.]*?during this turn", t)
+    if m_block_plain:
+        steps.append({
+            'action': 'lock_opp_blocker_turn',
+            'count': int(m_block_plain.group(1)),
+            'duration': 'until_opp_turn_end',
+        })
+        return steps
+
     return steps
 
 
@@ -2066,12 +2095,17 @@ def parse_block(block_text, trigger_name):
     if 'blocker' in t and 'during this battle' in t and 'cannot activate' in t:
         steps.extend(parse_lock_blocker_battle(t))
 
-    # Trava de ataque / trava de ser restado (mecanicas distintas, ambas
-    # cobertas pela mesma funcao por compartilharem estrutura textual).
-    # 'can attack unless' e a variante de custo-condicional (carta paga para
-    # atacar), distinta de 'cannot attack until' (lock binario incondicional).
+    # Trava de ataque / trava de ser restado / trava de Blocker persistente
+    # (mecanicas distintas, cobertas pela mesma funcao por compartilharem
+    # estrutura textual). 'can attack unless' e a variante de
+    # custo-condicional (carta paga para atacar), distinta de 'cannot
+    # attack until' (lock binario incondicional). O terceiro ramo ("cannot
+    # activate...blocker...during this turn") e a variante PERSISTENTE da
+    # trava de Blocker (Limejuice/Kuzan) -- distinta da transitoria acima,
+    # que exige "during this battle" e já foi tratada primeiro.
     if (('cannot attack' in t or 'cannot be rested' in t or 'can attack unless' in t)
-            and ('opponent' in t or 'this character cannot attack' in t)):
+            and ('opponent' in t or 'this character cannot attack' in t)) or \
+       ('blocker' in t and 'cannot activate' in t and 'during this turn' in t):
         steps.extend(parse_lock_attack(t))
 
     # Transferencia/distribuicao de DON entre characters (distinto de

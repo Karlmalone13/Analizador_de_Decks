@@ -19520,6 +19520,16 @@
         }
     },
     "OP09-014": {
+        "on_play": {
+            "steps": [
+                {
+                    "action": "lock_opp_blocker_turn",
+                    "count": 1,
+                    "duration": "until_opp_turn_end",
+                    "power_lte": 4000
+                }
+            ]
+        },
         "passive": {
             "steps": [
                 {
@@ -33948,6 +33958,16 @@
     "OP16-061": {},
     "OP16-062": {},
     "OP16-063": {
+        "activate_main": {
+            "once_per_turn": true,
+            "steps": [
+                {
+                    "action": "lock_opp_blocker_turn",
+                    "count": 1,
+                    "duration": "until_opp_turn_end"
+                }
+            ]
+        },
         "on_play": {
             "once_per_turn": true,
             "steps": [

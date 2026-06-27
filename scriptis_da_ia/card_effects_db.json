@@ -32962,6 +32962,16 @@
     "sub_types": "Red-Haired Pirates",
     "attribute": "Special",
     "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "lock_opp_blocker_turn",
+            "count": 1,
+            "power_lte": 4000,
+            "duration": "until_opp_turn_end"
+          }
+        ]
+      },
       "passive": {
         "steps": [
           {
@@ -57085,6 +57095,16 @@
           {
             "action": "add_don",
             "count": 2
+          }
+        ],
+        "once_per_turn": true
+      },
+      "activate_main": {
+        "steps": [
+          {
+            "action": "lock_opp_blocker_turn",
+            "count": 1,
+            "duration": "until_opp_turn_end"
           }
         ],
         "once_per_turn": true

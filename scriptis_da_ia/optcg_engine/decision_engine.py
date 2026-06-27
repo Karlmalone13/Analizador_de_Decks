@@ -164,6 +164,7 @@ class Card:
     rush_character_only_this_turn: bool = False  # True so na janela em que Rush: Character libera o ataque (reseta junto com just_played)
     don_attached: int = 0
     cannot_attack_until: str = ''   # '', 'opp_turn_end', 'opp_end_phase', 'my_next_turn_start' -- trava de ataque (lock_opp_character_attack)
+    cannot_block_until: str = ''    # mesma semantica de duracao, para lock_opp_blocker_turn (Limejuice OP09-014, Kuzan OP16-063) -- trava PERSISTENTE de 1 character especifico, DISTINTA de blocker_lock_battle (transitoria, campo todo/filtrado, so 1 batalha)
     cannot_be_rested_until: str = ''  # mesma semantica de duracao, para lock_opp_cannot_be_rested (mecanica DISTINTA de cannot_attack)
     # Buffs temporários (resetados a cada turno)
     power_buff: int = 0
@@ -186,7 +187,7 @@ class Card:
         for campo in ('has_rush', 'has_rush_character', 'has_blocker',
                       'has_double_attack', 'has_banish', 'has_unblockable',
                       'rested', 'just_played', 'rush_character_only_this_turn',
-                      'don_attached', 'cannot_attack_until', 'cannot_be_rested_until',
+                      'don_attached', 'cannot_attack_until', 'cannot_be_rested_until', 'cannot_block_until',
                       'power_buff', 'cost_buff', 'cost_buff_permanent'):
             setattr(novo, campo, getattr(self, campo))
         return novo
@@ -363,7 +364,8 @@ class GameState:
 
     def blockers_active(self) -> List[Card]:
         elegiveis = [c for c in self.field_chars
-                     if c.is_blocker() and not c.rested and not c.cannot_be_rested_until]
+                     if c.is_blocker() and not c.rested and not c.cannot_be_rested_until
+                     and not c.cannot_block_until]
         lock = self.blocker_lock_battle
         if lock is None:
             return elegiveis
@@ -1437,15 +1439,21 @@ class EffectExecutor:
                 rested.append(target.name[:15])
             return f'restou: {", ".join(rested)}' if rested else ''
 
-        # ── Trava de ataque / trava de rest ─────────────────────────────────────
+        # ── Trava de ataque / trava de rest / trava de Blocker (persistente) ────
         # Mecanicas DISTINTAS apesar de compartilharem estrutura de
         # implementacao: lock_opp_character_attack impede ATACAR;
         # lock_opp_cannot_be_rested impede o character de ficar RESTED por
-        # qualquer meio (atacar, bloquear, ou efeito). Nunca tratar como
+        # qualquer meio (atacar, bloquear, ou efeito); lock_opp_blocker_turn
+        # impede especificamente de usar [Blocker] (Limejuice OP09-014, Kuzan
+        # OP16-063) -- DISTINTA de lock_opp_blocker_battle (essa aqui e
+        # persistente, escolhe 1 character especifico e dura alem desta
+        # batalha; a outra e transitoria e trava o campo todo/filtrado so na
+        # batalha que esta sendo resolvida agora). Nunca tratar como
         # sinonimos -- confirmado por Arthur.
-        if action in ('lock_opp_character_attack', 'lock_opp_cannot_be_rested'):
+        if action in ('lock_opp_character_attack', 'lock_opp_cannot_be_rested', 'lock_opp_blocker_turn'):
             count = step.get('count', 1)
             cost_lte = self._resolve_cost_lte(step, default=None)
+            power_lte = step.get('power_lte')
             exclude = step.get('exclude', '').lower()
             DUR_MAP = {
                 'until_opp_turn_end': 'opp_turn_end',
@@ -1456,6 +1464,8 @@ class EffectExecutor:
 
             candidates = [c for c in opp.field_chars
                           if (cost_lte is None or c.cost <= cost_lte)
+                          and (power_lte is None or c.power <= power_lte)
+                          and (action != 'lock_opp_blocker_turn' or c.is_blocker())
                           and (not exclude or exclude not in c.name.lower())]
 
             locked = []
@@ -1463,11 +1473,15 @@ class EffectExecutor:
                 target = max(candidates, key=lambda x: x.board_value())
                 if action == 'lock_opp_character_attack':
                     target.cannot_attack_until = dur
-                else:
+                elif action == 'lock_opp_cannot_be_rested':
                     target.cannot_be_rested_until = dur
+                else:
+                    target.cannot_block_until = dur
                 candidates.remove(target)
                 locked.append(target.name[:15])
-            verbo = 'atacar' if action == 'lock_opp_character_attack' else 'ficar rested'
+            verbo = {'lock_opp_character_attack': 'atacar',
+                     'lock_opp_cannot_be_rested': 'ficar rested',
+                     'lock_opp_blocker_turn': 'bloquear'}[action]
             return f'travou (não pode {verbo}): {", ".join(locked)}' if locked else ''
 
         # ── Trava de ataque condicional a pagamento ─────────────────────────────
@@ -3848,8 +3862,9 @@ class OPTCGMatch:
         - Retorna DON dado a cartas
         - Reseta rested/just_played/power_buff
         - Reseta once_per_turn
-        - Reseta travas de ataque/rest (cannot_attack_until,
-          cannot_be_rested_until) quando este jogador comeca seu turno.
+        - Reseta travas de ataque/rest/blocker (cannot_attack_until,
+          cannot_be_rested_until, cannot_block_until) quando este jogador
+          comeca seu turno.
           NOTA: o engine nao modela 'End Phase' como passo distinto do
           turno -- por isso 'until end of next turn' e 'until end of next
           End Phase' sao tratados de forma equivalente aqui (ambos resetam
@@ -3867,6 +3882,7 @@ class OPTCGMatch:
             c.cost_buff = 0
             c.cannot_attack_until = ''
             c.cannot_be_rested_until = ''
+            c.cannot_block_until = ''
         p.leader.don_attached = 0
         p.leader.rested = False
         p.leader.power_buff = 0

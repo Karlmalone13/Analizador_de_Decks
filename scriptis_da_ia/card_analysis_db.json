@@ -52793,6 +52793,11 @@
         "attribute": "Special",
         "effects": [
             {
+                "action": "lock_opp_blocker_turn",
+                "trigger": "on_play",
+                "power_lte": 4000
+            },
+            {
                 "action": "keyword_blocker",
                 "trigger": "passive"
             }
@@ -90989,6 +90994,10 @@
             {
                 "action": "add_don",
                 "trigger": "on_play"
+            },
+            {
+                "action": "lock_opp_blocker_turn",
+                "trigger": "activate_main"
             },
             {
                 "action": "keyword_blocker",
