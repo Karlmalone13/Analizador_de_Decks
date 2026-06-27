@@ -647,6 +647,49 @@ def parse_rest_opp(text):
     return steps
 
 
+def parse_select_unblockable_turn(text):
+    """
+    "Select up to 1 of your [Tipo] Character(s)/Leader-or-Character... If
+    the selected card attacks during this turn, your opponent cannot
+    activate [Blocker]." Equivalente por regra (10-1-7-1) a conceder
+    [Unblockable] SO NESTE TURNO ao alvo escolhido. DISTINTA de
+    gain_unblockable (alvo sempre 'card', sem seleção, sem expiração).
+
+    3 cartas no banco hoje (Sanji ST21-003, Diable Jambe ST01-016, OP13-057
+    -- esta última sem seleção, sempre o Leader, daí target='leader_only').
+    Perfume Femur (OP07-057, "select + buff +'Then, if'" no mesmo alvo) e
+    Rayleigh (OP12-016, alvo = quem recebeu o DON!! do custo) ficam de fora
+    -- precisam de rastreio de alvo entre steps que esta função não faz.
+    """
+    t = text.lower()
+    steps = []
+
+    # OP13-057: sem seleção, sempre o próprio Leader, condicional a vida.
+    if re.search(r"opponent cannot activate \[?blocker\]?.{0,10}whenever your leader attacks.{0,10}during this turn", t):
+        steps.append({'action': 'select_grant_unblockable_turn', 'target': 'leader_only'})
+        return steps
+
+    # Sanji / Diable Jambe: "select up to 1 of your [Tipo] Character(s)
+    # [with N power or more]. If/Your opponent cannot...if that
+    # Leader-or-Character/Character attacks during this turn, opponent
+    # cannot activate [Blocker]."
+    m_select = re.search(
+        r"select up to (\d+) of your \{?([a-z .'’-]+?)\}? type (characters?|leader or character cards?)"
+        r"(?: with (\d+) power or more)?", t)
+    if m_select and 'cannot activate' in t and ('blocker' in t):
+        step = {
+            'action': 'select_grant_unblockable_turn',
+            'filter_type': m_select.group(2).strip(),
+        }
+        if m_select.group(4):
+            step['power_gte'] = int(m_select.group(4))
+        if 'leader or character' in m_select.group(3):
+            step['include_leader'] = True
+        steps.append(step)
+
+    return steps
+
+
 def parse_lock_blocker_battle(text):
     """
     "Your opponent cannot activate [a] [Blocker] [Character that has N
@@ -2094,6 +2137,14 @@ def parse_block(block_text, trigger_name):
     # pra nao deixar "during this battle" cair no parser errado.
     if 'blocker' in t and 'during this battle' in t and 'cannot activate' in t:
         steps.extend(parse_lock_blocker_battle(t))
+
+    # Unblockable concedido via "select + if attacks this turn" ou fixo no
+    # Leader (Sanji, Diable Jambe, OP13-057) -- equivalente por regra a
+    # gain_unblockable, mas SO neste turno e com alvo selecionado/fixo.
+    if 'blocker' in t and 'cannot activate' in t and 'during this turn' in t and 'select' in t:
+        steps.extend(parse_select_unblockable_turn(t))
+    elif 'blocker' in t and 'cannot activate' in t and 'whenever your leader attacks' in t:
+        steps.extend(parse_select_unblockable_turn(t))
 
     # Trava de ataque / trava de ser restado / trava de Blocker persistente
     # (mecanicas distintas, cobertas pela mesma funcao por compartilharem

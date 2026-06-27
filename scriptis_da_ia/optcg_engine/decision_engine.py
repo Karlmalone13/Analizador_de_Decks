@@ -165,6 +165,7 @@ class Card:
     don_attached: int = 0
     cannot_attack_until: str = ''   # '', 'opp_turn_end', 'opp_end_phase', 'my_next_turn_start' -- trava de ataque (lock_opp_character_attack)
     cannot_block_until: str = ''    # mesma semantica de duracao, para lock_opp_blocker_turn (Limejuice OP09-014, Kuzan OP16-063) -- trava PERSISTENTE de 1 character especifico, DISTINTA de blocker_lock_battle (transitoria, campo todo/filtrado, so 1 batalha)
+    unblockable_this_turn: bool = False  # Unblockable CONCEDIDO so neste turno (Sanji ST21-003, Diable Jambe ST01-016, OP13-057) -- DISTINTO de has_unblockable (nativo ou gain_unblockable permanente). Resetado no refresh_phase do DONO. Regra 10-1-7-1 confirma equivalencia: "[Unblockable] prevents the opponent from activating [Blocker] when attacked" -- mesma semantica, so com expiracao.
     cannot_be_rested_until: str = ''  # mesma semantica de duracao, para lock_opp_cannot_be_rested (mecanica DISTINTA de cannot_attack)
     # Buffs temporários (resetados a cada turno)
     power_buff: int = 0
@@ -188,6 +189,7 @@ class Card:
                       'has_double_attack', 'has_banish', 'has_unblockable',
                       'rested', 'just_played', 'rush_character_only_this_turn',
                       'don_attached', 'cannot_attack_until', 'cannot_be_rested_until', 'cannot_block_until',
+                      'unblockable_this_turn',
                       'power_buff', 'cost_buff', 'cost_buff_permanent'):
             setattr(novo, campo, getattr(self, campo))
         return novo
@@ -2207,6 +2209,32 @@ class EffectExecutor:
             card.has_unblockable = True
             return 'ganhou Unblockable'
 
+        # ── select_grant_unblockable_turn: "Select up to 1 of your [Tipo]
+        # Character(s)/Leader-or-Character... if that card attacks during
+        # this turn, opponent cannot activate [Blocker]." Equivalente (regra
+        # 10-1-7-1) a conceder [Unblockable] SO NESTE TURNO ao alvo
+        # escolhido -- por isso seta unblockable_this_turn, NUNCA
+        # has_unblockable (que e permanente/nativo). DISTINTA de
+        # gain_unblockable: aqui tem selecao de alvo com filtro, lá o alvo
+        # é sempre 'card' (a própria carta com o efeito).
+        # Sanji ST21-003, Diable Jambe ST01-016, OP13-057 (target='leader_only').
+        if action == 'select_grant_unblockable_turn':
+            if step.get('target') == 'leader_only':
+                me.leader.unblockable_this_turn = True
+                return f'{me.leader.name[:18]} ganhou Unblockable este turno'
+            filter_type = (step.get('filter_type') or '').lower()
+            power_gte = step.get('power_gte')
+            candidatos = [c for c in me.field_chars
+                          if (not filter_type or filter_type in c.sub_types.lower())
+                          and (power_gte is None or c.power >= power_gte)]
+            if step.get('include_leader') and (not filter_type or filter_type in me.leader.sub_types.lower()):
+                candidatos.append(me.leader)
+            if not candidatos:
+                return ''
+            alvo = max(candidatos, key=lambda c: c.board_value())
+            alvo.unblockable_this_turn = True
+            return f'{alvo.name[:18]} ganhou Unblockable este turno'
+
         # Keywords passivas (apenas registra, já vem do banco)
         if action in ('keyword_blocker', 'keyword_rush', 'keyword_double_attack',
                       'keyword_banish', 'keyword_trigger', 'keyword_unblockable'):
@@ -2920,7 +2948,7 @@ class DecisionEngine:
             s += 25
             if opp_life <= 2: s += 35
 
-        if card.has_unblockable:
+        if card.has_unblockable or card.unblockable_this_turn:
             s += 20
             if opp_life <= 2: s += 30
 
@@ -2991,7 +3019,7 @@ class DecisionEngine:
         if posture == 'LETHAL':
             if card.has_rush:          s += 50
             if card.has_double_attack: s += 40
-            if card.has_unblockable:   s += 30
+            if card.has_unblockable or card.unblockable_this_turn:   s += 30
         elif posture == 'AGGRESSIVE':
             if card.has_rush:          s += 30
             if card.has_double_attack: s += 20
@@ -3435,7 +3463,7 @@ class DecisionEngine:
 
             # Unblockable: o ataque não pode ser bloqueado. Vale mais quando o
             # oponente tem blockers (passa onde os outros seriam interceptados).
-            if attacker.has_unblockable and self.opp.blockers_active():
+            if (attacker.has_unblockable or attacker.unblockable_this_turn) and self.opp.blockers_active():
                 s += 40
 
             # Custo de perder o Activate Main: desconta, salvo se for letal
@@ -3883,11 +3911,13 @@ class OPTCGMatch:
             c.cannot_attack_until = ''
             c.cannot_be_rested_until = ''
             c.cannot_block_until = ''
+            c.unblockable_this_turn = False
         p.leader.don_attached = 0
         p.leader.rested = False
         p.leader.power_buff = 0
         p.leader.cost_buff = 0
         p.leader.cannot_attack_until = ''
+        p.leader.unblockable_this_turn = False
         p.don_available += p.don_rested + don_from_cards
         p.don_rested = 0
         # Reset da auto-restrição "cannot play this turn" (vale só pelo turno em
@@ -4650,7 +4680,7 @@ class OPTCGMatch:
         opp_engine = DecisionEngine(opp, p)
         blocker = opp_engine.should_use_blocker(atk_power)
         opp.blocker_lock_battle = None   # trava era so pra ESTA batalha -- limpa already-consumida
-        if blocker and not attacker.has_unblockable:
+        if blocker and not attacker.has_unblockable and not attacker.unblockable_this_turn:
             target_type = 'character'
             target      = blocker
             blocker.rested = True

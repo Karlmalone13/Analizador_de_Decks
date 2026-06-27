@@ -27639,6 +27639,23 @@
                 }
             ]
         },
+        "main": {
+            "conditions": {
+                "life_lte": 1
+            },
+            "costs": [
+                {
+                    "count": 1,
+                    "type": "rest_don"
+                }
+            ],
+            "steps": [
+                {
+                    "action": "select_grant_unblockable_turn",
+                    "target": "leader_only"
+                }
+            ]
+        },
         "passive": {
             "steps": [
                 {
@@ -36646,6 +36663,15 @@
         }
     },
     "ST01-016": {
+        "main": {
+            "steps": [
+                {
+                    "action": "select_grant_unblockable_turn",
+                    "filter_type": "straw hat crew",
+                    "include_leader": true
+                }
+            ]
+        },
         "passive": {
             "steps": [
                 {
@@ -40122,6 +40148,15 @@
         }
     },
     "ST21-003": {
+        "on_play": {
+            "steps": [
+                {
+                    "action": "select_grant_unblockable_turn",
+                    "filter_type": "straw hat crew",
+                    "power_gte": 6000
+                }
+            ]
+        },
         "passive": {
             "steps": [
                 {

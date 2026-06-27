@@ -75046,6 +75046,11 @@
                 "target": "leader"
             },
             {
+                "action": "select_grant_unblockable_turn",
+                "trigger": "main",
+                "target": "leader_only"
+            },
+            {
                 "action": "keyword_blocker",
                 "trigger": "passive"
             }
@@ -98374,6 +98379,10 @@
                 "target": "opp_character"
             },
             {
+                "action": "select_grant_unblockable_turn",
+                "trigger": "main"
+            },
+            {
                 "action": "keyword_blocker",
                 "trigger": "passive"
             }
@@ -108475,6 +108484,10 @@
         "sub_types": "Straw Hat Crew",
         "attribute": "Strike",
         "effects": [
+            {
+                "action": "select_grant_unblockable_turn",
+                "trigger": "on_play"
+            },
             {
                 "action": "keyword_blocker",
                 "trigger": "passive"
