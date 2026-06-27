@@ -500,6 +500,39 @@ def is_attack_locked_self(card: 'Card', owner: 'GameState', opp: 'GameState') ->
     return False
 
 
+def remove_character_from_field(owner: 'GameState', card: 'Card', destino: str = 'trash') -> None:
+    """
+    Remove `card` de owner.field_chars e move pro destino indicado:
+    'trash' | 'hand' | 'deck_bottom' | 'deck_top'.
+
+    Regra oficial (comprehensive rules -- "When a Character with DON!!
+    card(s) Leaves the Field"): qualquer DON anexado volta para a area
+    de custo do DONO da carta (NUNCA de quem causou a remocao) e fica
+    RESTED. Auditoria 27/06 encontrou esse retorno faltando em 12 pontos
+    diferentes do engine (combate, KO por efeito, bounce, substituicao
+    de custo, troca por campo-cheio) -- todos zeravam ou simplesmente
+    perdiam o don_attached sem creditar de volta. Esta funcao e o UNICO
+    ponto que deve remover um Character do campo a partir de agora;
+    nunca fazer owner.field_chars.remove(card) direto em codigo novo.
+    """
+    if card in owner.field_chars:
+        owner.field_chars.remove(card)
+    if card.don_attached > 0:
+        owner.don_rested += card.don_attached
+        card.don_attached = 0
+    if destino == 'trash':
+        owner.trash.append(card)
+    elif destino == 'hand':
+        card.rested = False
+        owner.hand.append(card)
+    elif destino == 'deck_bottom':
+        card.rested = False
+        owner.deck.insert(0, card)   # fundo do deck = início da lista
+    elif destino == 'deck_top':
+        card.rested = False
+        owner.deck.append(card)
+
+
 # ===========================================================================
 # EffectExecutor — único ponto de execução de efeitos
 # Baseado no DoV3ActionStep das 34k linhas
@@ -684,8 +717,7 @@ class EffectExecutor:
         if ctype == 'trash_self':
             if card not in me.field_chars:
                 return None
-            me.field_chars.remove(card)
-            me.trash.append(card)
+            remove_character_from_field(me, card, 'trash')
             return f'{card.name[:18]} evitou K.O./remoção trashando a si mesmo'
 
         if ctype == 'rest_don':
@@ -743,10 +775,7 @@ class EffectExecutor:
         if ctype == 'bounce_self':
             if card not in me.field_chars:
                 return None
-            me.field_chars.remove(card)
-            card.rested = False
-            card.don_attached = 0
-            me.hand.append(card)
+            remove_character_from_field(me, card, 'hand')
             return f'{card.name[:18]} evitou K.O./remoção voltando para a mão'
 
         return None
@@ -974,8 +1003,7 @@ class EffectExecutor:
                     val_char = pior_char.board_value() if pior_char else 10**9
                     val_mao = pior_mao.board_value() if pior_mao else 10**9
                     if pior_char is not None and val_char <= val_mao:
-                        self.me.field_chars.remove(pior_char)
-                        self.me.trash.append(pior_char)
+                        remove_character_from_field(self.me, pior_char, 'trash')
                         self._cost_logs.append(f'custo: trashou character {pior_char.name[:14]}')
                     elif pior_mao is not None:
                         self.me.hand.remove(pior_mao)
@@ -983,8 +1011,7 @@ class EffectExecutor:
                         self._cost_logs.append(f'custo: trashou da mão {pior_mao.name[:14]}')
             elif ctype == 'trash_self':
                 if card in self.me.field_chars:
-                    self.me.field_chars.remove(card)
-                    self.me.trash.append(card)
+                    remove_character_from_field(self.me, card, 'trash')
                     self._cost_logs.append(f'custo: trashou {card.name[:18]} (ele mesmo)')
             elif ctype == 'don_minus':
                 count = cost.get('count', 1)
@@ -1013,8 +1040,7 @@ class EffectExecutor:
                     # reaproveitando a heuristica de _choose_to_trash.
                     alvo = min(candidatos, key=lambda c: c.board_value())
                     candidatos.remove(alvo)
-                    self.me.field_chars.remove(alvo)
-                    self.me.trash.append(alvo)
+                    remove_character_from_field(self.me, alvo, 'trash')
                     koados.append(alvo.name[:15])
                     # dispara [On K.O.] do Character K.O.ado (regra K.O. != Trash)
                     self.execute(alvo, 'on_ko')
@@ -1340,8 +1366,7 @@ class EffectExecutor:
                         sub_logs.append(sub_log)
                         candidates.remove(target)
                         continue
-                    owner.field_chars.remove(target)
-                    owner.trash.append(target)
+                    remove_character_from_field(owner, target, 'trash')
                     candidates.remove(target)
                     koed.append(target.name[:15])
             label = 'KO' if action == 'ko' else 'Trash'
@@ -1368,10 +1393,7 @@ class EffectExecutor:
                     immune_skipped.append(target.name[:12])
                     candidates.remove(target)
                     continue
-                opp.field_chars.remove(target)
-                opp.hand.append(target)
-                target.rested = False
-                target.don_attached = 0
+                remove_character_from_field(opp, target, 'hand')
                 candidates.remove(target)
                 bounced.append(target.name[:15])
             out = []
@@ -1672,8 +1694,7 @@ class EffectExecutor:
                 else:
                     if len(me.field_chars) >= 5:
                         worst = min(me.field_chars, key=lambda x: x.board_value())
-                        me.field_chars.remove(worst)
-                        me.trash.append(worst)
+                        remove_character_from_field(me, worst, 'trash')
                     best.just_played = not (best.has_rush or best.is_rush_character())
                     best.rush_character_only_this_turn = best.is_rush_character() and not best.is_rush()
                     me.field_chars.append(best)
@@ -1735,8 +1756,7 @@ class EffectExecutor:
                 me.deck.remove(best)
                 if len(me.field_chars) >= 5:
                     worst = min(me.field_chars, key=lambda x: x.board_value())
-                    me.field_chars.remove(worst)
-                    me.trash.append(worst)
+                    remove_character_from_field(me, worst, 'trash')
                 best.just_played = not (best.has_rush or best.is_rush_character())
                 best.rush_character_only_this_turn = best.is_rush_character() and not best.is_rush()
                 me.field_chars.append(best)
@@ -1850,10 +1870,7 @@ class EffectExecutor:
                     immune.append(target.name[:12])
                     cands.remove(target)
                     continue
-                opp.field_chars.remove(target)
-                target.rested = False
-                target.don_attached = 0
-                opp.deck.insert(0, target)   # fundo do deck = início da lista
+                remove_character_from_field(opp, target, 'deck_bottom')
                 cands.remove(target)
                 placed.append(target.name[:14])
             out = []
@@ -2024,8 +2041,7 @@ class EffectExecutor:
                     if len(me.field_chars) >= 5:
                         worst = _pior_para_trocar(me.field_chars)
                         if worst is not None:
-                            me.field_chars.remove(worst)
-                            me.trash.append(worst)
+                            remove_character_from_field(me, worst, 'trash')
                     c.rested = False
                     c.just_played = not (c.has_rush or c.is_rush_character())
                     c.rush_character_only_this_turn = c.is_rush_character() and not c.is_rush()
@@ -4526,8 +4542,7 @@ class OPTCGMatch:
         if card.card_type == 'CHARACTER':
             if len(p.field_chars) >= 5:
                 worst = min(p.field_chars, key=lambda c: c.board_value())
-                p.field_chars.remove(worst)
-                p.trash.append(worst)
+                remove_character_from_field(p, worst, 'trash')
                 if verbose:
                     print(f'    campo cheio -> descartou {worst.name[:25]}')
             card.rested = False
@@ -4663,8 +4678,7 @@ class OPTCGMatch:
                     if verbose:
                         print(f'      🔁 {sub_log}')
                     return False
-                opp.field_chars.remove(target)
-                opp.trash.append(target)
+                remove_character_from_field(opp, target, 'trash')
                 if verbose:
                     print(f'      💀 {target.name[:20]} foi KO!')
                 ko_logs = ee_opp.execute(target, 'on_ko')
