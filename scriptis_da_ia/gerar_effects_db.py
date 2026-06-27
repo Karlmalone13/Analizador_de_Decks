@@ -252,6 +252,37 @@ def parse_costs(text):
         costs.append({'type': 'ko_own_character', 'count': int(m_b.group(1)),
                        'filter_type': m_b.group(2).strip()})
 
+    # Custo de colocar N cartas do PRÓPRIO trash no fundo do PRÓPRIO deck
+    # ("in any order" -- ordem é escolha do jogador, irrelevante pro engine).
+    # Achado em auditoria de buff_cost 27/06: 51 cartas usam esse custo,
+    # ZERO cobertura antes -- a IA tratava como grátis. 3 formas de filtro
+    # de tipo + verbo "place" OU "return":
+    #   (a) 'N "Tipo" type cards from your trash'        -- ex: Dragon, Garp
+    #   (b) 'N cards with a type including "Tipo"'       -- ex: Kaku OP07-080
+    #   (c) sem filtro: 'N cards from your trash'         -- ex: Trafalgar Law
+    # NAO cobre (deliberado, fora de escopo por ora): combo "this Character
+    # and N [Tipo]" (Kin'emon OP10-026/027, 2 cartas) nem "any number"
+    # (Luffy OP07-091, 1 carta) -- ambos precisam de tratamento especial.
+    m_a = re.search(
+        r'you may (?:place|return) (\d+) [\'"\[{]([a-z][a-z0-9 .\'-]+?)[\'"\]}]\s*type\s+cards?'
+        r' from your trash (?:at|to) the bottom of your deck', t)
+    m_b2 = re.search(
+        r'you may (?:place|return) (\d+) cards? with a type including'
+        r' [\'"\[{]([a-z][a-z0-9 .\'-]+?)[\'"\]}] from your trash'
+        r' (?:at|to) the bottom of your deck', t)
+    m_c = re.search(
+        r'you may (?:place|return) (\d+) cards? from your trash'
+        r' (?:at|to) the bottom of your deck', t)
+    if m_a:
+        costs.append({'type': 'place_from_trash_bottom_deck',
+                       'count': int(m_a.group(1)), 'filter_type': m_a.group(2).strip()})
+    elif m_b2:
+        costs.append({'type': 'place_from_trash_bottom_deck',
+                       'count': int(m_b2.group(1)), 'filter_type': m_b2.group(2).strip()})
+    elif m_c:
+        costs.append({'type': 'place_from_trash_bottom_deck',
+                       'count': int(m_c.group(1))})
+
     # rest N DON como custo. Cobre tanto "rest N of your DON" isolado quanto o
     # padrão COMPOSTO "rest this card and N of your DON!! cards" (ex: Empty
     # Throne OP13-099 -- rest_self + rest 3 DON), onde "rest" não vem colado ao

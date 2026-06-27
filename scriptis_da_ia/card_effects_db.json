@@ -1138,6 +1138,13 @@
             "exclude": "spandine",
             "rested": true
           }
+        ],
+        "costs": [
+          {
+            "type": "place_from_trash_bottom_deck",
+            "count": 3,
+            "filter_type": "cp"
+          }
         ]
       }
     }
@@ -2872,6 +2879,12 @@
               "count": 1
             }
           ]
+        ],
+        "costs": [
+          {
+            "type": "place_from_trash_bottom_deck",
+            "count": 2
+          }
         ]
       },
       "passive": {
@@ -4627,6 +4640,13 @@
             "count": 1,
             "target": "opp_character",
             "cost_lte": 4
+          }
+        ],
+        "costs": [
+          {
+            "type": "place_from_trash_bottom_deck",
+            "count": 2,
+            "filter_type": "cp"
           }
         ]
       },
@@ -15164,6 +15184,13 @@
             "target": "opp_character",
             "cost_lte": 3
           }
+        ],
+        "costs": [
+          {
+            "type": "place_from_trash_bottom_deck",
+            "count": 2,
+            "filter_type": "cp"
+          }
         ]
       }
     }
@@ -15426,6 +15453,13 @@
           {
             "action": "gain_rush",
             "duration": "this_turn"
+          }
+        ],
+        "costs": [
+          {
+            "type": "place_from_trash_bottom_deck",
+            "count": 2,
+            "filter_type": "cp"
           }
         ]
       }
@@ -18849,6 +18883,12 @@
             "count": 1
           }
         ],
+        "costs": [
+          {
+            "type": "place_from_trash_bottom_deck",
+            "count": 7
+          }
+        ],
         "once_per_turn": true
       }
     }
@@ -22146,6 +22186,12 @@
             "target": "opp_character",
             "cost_lte": 2
           }
+        ],
+        "costs": [
+          {
+            "type": "place_from_trash_bottom_deck",
+            "count": 3
+          }
         ]
       }
     }
@@ -24997,6 +25043,12 @@
             "target": "all_character",
             "cost_lte": 2
           }
+        ],
+        "costs": [
+          {
+            "type": "place_from_trash_bottom_deck",
+            "count": 2
+          }
         ]
       }
     }
@@ -25209,6 +25261,12 @@
             "action": "add_from_trash",
             "count": 1,
             "filter_name": "dr. hogback"
+          }
+        ],
+        "costs": [
+          {
+            "type": "place_from_trash_bottom_deck",
+            "count": 2
           }
         ]
       }
@@ -28053,6 +28111,13 @@
             "target": "opp_character",
             "count": 1
           }
+        ],
+        "costs": [
+          {
+            "type": "place_from_trash_bottom_deck",
+            "count": 2,
+            "filter_type": "cp"
+          }
         ]
       }
     }
@@ -28129,6 +28194,13 @@
           },
           {
             "action": "gain_banish"
+          }
+        ],
+        "costs": [
+          {
+            "type": "place_from_trash_bottom_deck",
+            "count": 4,
+            "filter_type": "thriller bark pirates"
           }
         ]
       }
@@ -28346,6 +28418,13 @@
             "target": "opp_character",
             "cost_lte": 1
           }
+        ],
+        "costs": [
+          {
+            "type": "place_from_trash_bottom_deck",
+            "count": 2,
+            "filter_type": "cp"
+          }
         ]
       }
     }
@@ -28366,6 +28445,12 @@
           {
             "action": "opp_trash_from_hand",
             "count": 1
+          }
+        ],
+        "costs": [
+          {
+            "type": "place_from_trash_bottom_deck",
+            "count": 3
           }
         ]
       }
@@ -31213,6 +31298,13 @@
             "target": "opp_character",
             "cost_eq": 0
           }
+        ],
+        "costs": [
+          {
+            "type": "place_from_trash_bottom_deck",
+            "count": 3,
+            "filter_type": "cp"
+          }
         ]
       }
     }
@@ -31524,6 +31616,12 @@
             "target": "opp_character",
             "cost_lte": 2
           }
+        ],
+        "costs": [
+          {
+            "type": "place_from_trash_bottom_deck",
+            "count": 3
+          }
         ]
       },
       "counter": {
@@ -31533,6 +31631,12 @@
             "count": 1,
             "target": "opp_character",
             "cost_lte": 2
+          }
+        ],
+        "costs": [
+          {
+            "type": "place_from_trash_bottom_deck",
+            "count": 3
           }
         ]
       }
@@ -37997,6 +38101,13 @@
             "duration": "this_turn"
           }
         ],
+        "costs": [
+          {
+            "type": "place_from_trash_bottom_deck",
+            "count": 2,
+            "filter_type": "thriller bark pirates"
+          }
+        ],
         "once_per_turn": true
       }
     }
@@ -38733,6 +38844,12 @@
           {
             "action": "opp_trash_from_hand",
             "count": 1
+          }
+        ],
+        "costs": [
+          {
+            "type": "place_from_trash_bottom_deck",
+            "count": 3
           }
         ]
       },
@@ -41260,6 +41377,13 @@
               ]
             }
           }
+        ],
+        "costs": [
+          {
+            "type": "place_from_trash_bottom_deck",
+            "count": 3,
+            "filter_type": "navy"
+          }
         ]
       }
     }
@@ -41889,6 +42013,12 @@
             "amount": 1000,
             "target": "leader_or_character",
             "duration": "until_opp_turn_end"
+          }
+        ],
+        "costs": [
+          {
+            "type": "place_from_trash_bottom_deck",
+            "count": 2
           }
         ]
       }
@@ -44222,6 +44352,12 @@
             "duration": "this_turn"
           }
         ],
+        "costs": [
+          {
+            "type": "place_from_trash_bottom_deck",
+            "count": 3
+          }
+        ],
         "once_per_turn": true
       }
     }
@@ -44285,7 +44421,14 @@
         ],
         "conditions": {
           "leader_type": "revolutionary army"
-        }
+        },
+        "costs": [
+          {
+            "type": "place_from_trash_bottom_deck",
+            "count": 3,
+            "filter_type": "revolutionary army"
+          }
+        ]
       }
     }
   },
@@ -47120,6 +47263,12 @@
             "action": "give_don",
             "count": 1,
             "rested": true
+          }
+        ],
+        "costs": [
+          {
+            "type": "place_from_trash_bottom_deck",
+            "count": 1
           }
         ],
         "once_per_turn": true
@@ -67139,6 +67288,12 @@
             "action": "give_don",
             "count": 1,
             "rested": true
+          }
+        ],
+        "costs": [
+          {
+            "type": "place_from_trash_bottom_deck",
+            "count": 1
           }
         ],
         "once_per_turn": true

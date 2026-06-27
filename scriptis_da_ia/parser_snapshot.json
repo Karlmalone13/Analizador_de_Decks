@@ -657,6 +657,13 @@
     },
     "EB01-043": {
         "on_play": {
+            "costs": [
+                {
+                    "count": 3,
+                    "filter_type": "cp",
+                    "type": "place_from_trash_bottom_deck"
+                }
+            ],
             "steps": [
                 {
                     "action": "play_from_trash",
@@ -1707,6 +1714,12 @@
                         "count": 1
                     }
                 ]
+            ],
+            "costs": [
+                {
+                    "count": 2,
+                    "type": "place_from_trash_bottom_deck"
+                }
             ]
         },
         "passive": {
@@ -2747,6 +2760,13 @@
     },
     "EB03-043": {
         "on_play": {
+            "costs": [
+                {
+                    "count": 2,
+                    "filter_type": "cp",
+                    "type": "place_from_trash_bottom_deck"
+                }
+            ],
             "steps": [
                 {
                     "action": "ko",
@@ -8861,6 +8881,13 @@
     },
     "OP03-080": {
         "on_play": {
+            "costs": [
+                {
+                    "count": 2,
+                    "filter_type": "cp",
+                    "type": "place_from_trash_bottom_deck"
+                }
+            ],
             "steps": [
                 {
                     "action": "ko",
@@ -8994,6 +9021,13 @@
     "OP03-091": {},
     "OP03-092": {
         "on_play": {
+            "costs": [
+                {
+                    "count": 2,
+                    "filter_type": "cp",
+                    "type": "place_from_trash_bottom_deck"
+                }
+            ],
             "steps": [
                 {
                     "action": "gain_rush",
@@ -11084,6 +11118,12 @@
     },
     "OP04-090": {
         "activate_main": {
+            "costs": [
+                {
+                    "count": 7,
+                    "type": "place_from_trash_bottom_deck"
+                }
+            ],
             "once_per_turn": true,
             "steps": [
                 {
@@ -13064,6 +13104,12 @@
     },
     "OP05-093": {
         "on_play": {
+            "costs": [
+                {
+                    "count": 3,
+                    "type": "place_from_trash_bottom_deck"
+                }
+            ],
             "steps": [
                 {
                     "action": "ko",
@@ -14738,6 +14784,12 @@
     },
     "OP06-081": {
         "on_play": {
+            "costs": [
+                {
+                    "count": 2,
+                    "type": "place_from_trash_bottom_deck"
+                }
+            ],
             "steps": [
                 {
                     "action": "ko",
@@ -14853,6 +14905,12 @@
     },
     "OP06-090": {
         "on_play": {
+            "costs": [
+                {
+                    "count": 2,
+                    "type": "place_from_trash_bottom_deck"
+                }
+            ],
             "steps": [
                 {
                     "action": "add_from_trash",
@@ -16496,6 +16554,13 @@
     },
     "OP07-080": {
         "on_play": {
+            "costs": [
+                {
+                    "count": 2,
+                    "filter_type": "cp",
+                    "type": "place_from_trash_bottom_deck"
+                }
+            ],
             "steps": [
                 {
                     "action": "debuff_cost",
@@ -16537,6 +16602,13 @@
     },
     "OP07-083": {
         "activate_main": {
+            "costs": [
+                {
+                    "count": 4,
+                    "filter_type": "thriller bark pirates",
+                    "type": "place_from_trash_bottom_deck"
+                }
+            ],
             "steps": [
                 {
                     "action": "buff_power",
@@ -16657,6 +16729,13 @@
     },
     "OP07-092": {
         "on_play": {
+            "costs": [
+                {
+                    "count": 2,
+                    "filter_type": "cp",
+                    "type": "place_from_trash_bottom_deck"
+                }
+            ],
             "steps": [
                 {
                     "action": "ko",
@@ -16669,6 +16748,12 @@
     },
     "OP07-093": {
         "on_play": {
+            "costs": [
+                {
+                    "count": 3,
+                    "type": "place_from_trash_bottom_deck"
+                }
+            ],
             "steps": [
                 {
                     "action": "opp_trash_from_hand",
@@ -18336,6 +18421,13 @@
     },
     "OP08-081": {
         "when_attacking": {
+            "costs": [
+                {
+                    "count": 3,
+                    "filter_type": "cp",
+                    "type": "place_from_trash_bottom_deck"
+                }
+            ],
             "steps": [
                 {
                     "action": "ko",
@@ -18497,6 +18589,12 @@
     },
     "OP08-094": {
         "counter": {
+            "costs": [
+                {
+                    "count": 3,
+                    "type": "place_from_trash_bottom_deck"
+                }
+            ],
             "steps": [
                 {
                     "action": "ko",
@@ -18507,6 +18605,12 @@
             ]
         },
         "main": {
+            "costs": [
+                {
+                    "count": 3,
+                    "type": "place_from_trash_bottom_deck"
+                }
+            ],
             "steps": [
                 {
                     "action": "ko",
@@ -22414,6 +22518,13 @@
     },
     "OP10-092": {
         "activate_main": {
+            "costs": [
+                {
+                    "count": 2,
+                    "filter_type": "thriller bark pirates",
+                    "type": "place_from_trash_bottom_deck"
+                }
+            ],
             "once_per_turn": true,
             "steps": [
                 {
@@ -22877,6 +22988,12 @@
             ]
         },
         "when_attacking": {
+            "costs": [
+                {
+                    "count": 3,
+                    "type": "place_from_trash_bottom_deck"
+                }
+            ],
             "steps": [
                 {
                     "action": "opp_trash_from_hand",
@@ -24326,6 +24443,13 @@
     "OP11-094": {},
     "OP11-095": {
         "on_play": {
+            "costs": [
+                {
+                    "count": 3,
+                    "filter_type": "navy",
+                    "type": "place_from_trash_bottom_deck"
+                }
+            ],
             "steps": [
                 {
                     "action": "give_don",
@@ -24702,6 +24826,12 @@
     },
     "OP11-119": {
         "when_attacking": {
+            "costs": [
+                {
+                    "count": 2,
+                    "type": "place_from_trash_bottom_deck"
+                }
+            ],
             "steps": [
                 {
                     "action": "buff_power",
@@ -26032,6 +26162,12 @@
     "OP12-090": {},
     "OP12-091": {
         "activate_main": {
+            "costs": [
+                {
+                    "count": 3,
+                    "type": "place_from_trash_bottom_deck"
+                }
+            ],
             "once_per_turn": true,
             "steps": [
                 {
@@ -26064,6 +26200,13 @@
             "conditions": {
                 "leader_type": "revolutionary army"
             },
+            "costs": [
+                {
+                    "count": 3,
+                    "filter_type": "revolutionary army",
+                    "type": "place_from_trash_bottom_deck"
+                }
+            ],
             "steps": [
                 {
                     "action": "play_from_trash",
@@ -27734,6 +27877,12 @@
     },
     "OP13-081": {
         "activate_main": {
+            "costs": [
+                {
+                    "count": 1,
+                    "type": "place_from_trash_bottom_deck"
+                }
+            ],
             "once_per_turn": true,
             "steps": [
                 {
@@ -39558,6 +39707,12 @@
     },
     "ST19-004": {
         "activate_main": {
+            "costs": [
+                {
+                    "count": 1,
+                    "type": "place_from_trash_bottom_deck"
+                }
+            ],
             "once_per_turn": true,
             "steps": [
                 {

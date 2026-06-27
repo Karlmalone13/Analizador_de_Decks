@@ -1091,6 +1091,31 @@ class EffectExecutor:
                     self.execute(alvo, 'on_ko', is_opp_turn=False)
                 if koados:
                     self._cost_logs.append(f'custo: K.O. próprio: {", ".join(koados)}')
+            elif ctype == 'place_from_trash_bottom_deck':
+                # Custo de colocar N cartas do PRÓPRIO trash no fundo do
+                # PRÓPRIO deck ("in any order" -- ordem e escolha do
+                # jogador, irrelevante pro engine). Achado em auditoria de
+                # buff_cost 27/06: 51 cartas usam esse custo, zero
+                # cobertura antes (Kaku OP07-080, Trafalgar Law, Dragon...).
+                count = cost.get('count', 1)
+                filter_type = cost.get('filter_type', '').lower()
+                candidatos = [
+                    c for c in self.me.trash
+                    if not filter_type or filter_type in c.sub_types.lower()
+                    or filter_type in c.card_type.lower()
+                ]
+                if len(candidatos) < count:
+                    return False
+                movidos = []
+                for _ in range(count):
+                    # qualquer N -- "in any order" e escolha estetica do
+                    # jogador, sem efeito mecanico (fundo do deck nao
+                    # discrimina ordem entre as N cartas movidas agora).
+                    alvo = candidatos.pop()
+                    self.me.trash.remove(alvo)
+                    self.me.deck.insert(0, alvo)   # fundo do deck = inicio da lista
+                    movidos.append(alvo.name[:14])
+                self._cost_logs.append(f'custo: fundo do deck (do trash): {", ".join(movidos)}')
         return True
 
     def _return_don_to_deck(self, count: int) -> bool:
@@ -1366,7 +1391,11 @@ class EffectExecutor:
                     return f'KO stage: {ko_name}'
                 return ''
 
+            exclude_self = step.get('exclude_self', False)
+
             def elegivel(c):
+                if exclude_self and c is card:
+                    return False
                 if cost_lte is not None and c.cost > cost_lte:
                     return False
                 if cost_eq is not None and c.cost != cost_eq:
@@ -1379,11 +1408,19 @@ class EffectExecutor:
                     return False
                 return True
 
-            # KO personagem(s) -- opp_character (so do oponente) ou
-            # all_character (ambos os lados, ex: board wipe simetrico).
+            # KO personagem(s) -- opp_character (so do oponente),
+            # self_character (so o PROPRIO campo, ex: Five Elders OP13-082
+            # "trash all of your Characters" -- distinto de all_character
+            # por afetar so um lado), ou all_character (ambos os lados, ex:
+            # board wipe simetrico do Kaido OP01-094/Kaido & Linlin OP08-119
+            # -- exclude_self impede a propria carta se autodestruir,
+            # confirmado por foto real "K.O. all Characters other than
+            # this Character").
             if target_type == 'all_character':
                 pools = [(opp, [c for c in opp.field_chars if elegivel(c)]),
                          (me, [c for c in me.field_chars if elegivel(c)])]
+            elif target_type == 'self_character':
+                pools = [(me, [c for c in me.field_chars if elegivel(c)])]
             else:
                 pools = [(opp, [c for c in opp.field_chars if elegivel(c)])]
 
@@ -1876,6 +1913,31 @@ class EffectExecutor:
                     opp.trash.append(worst)
                     trashed.append(worst.name[:12])
             return f'oponente descartou: {", ".join(trashed)}' if trashed else ''
+
+        # ── Mesma familia: forca o OPONENTE a mover 1 dos PROPRIOS
+        # characters dele (ele escolheria; aproximamos pelo pior por
+        # board_value, mesmo criterio de toda escolha "sacrifique o pior"
+        # já usada no engine). DISTINTO de bounce/
+        # place_opp_character_bottom_deck (onde EU escolho o MELHOR do
+        # oponente pra remover). Achado por foto real 27/06 (Tsuru
+        # OP06-051, Luffy P-055).
+        if action == 'opp_bounce_own_character':
+            count = step.get('count', 1)
+            bounced = []
+            for _ in range(min(count, len(opp.field_chars))):
+                worst = min(opp.field_chars, key=lambda c: c.board_value())
+                remove_character_from_field(opp, worst, 'hand')
+                bounced.append(worst.name[:12])
+            return f'oponente devolveu pra mão: {", ".join(bounced)}' if bounced else ''
+
+        if action == 'opp_place_own_character_bottom_deck':
+            count = step.get('count', 1)
+            placed = []
+            for _ in range(min(count, len(opp.field_chars))):
+                worst = min(opp.field_chars, key=lambda c: c.board_value())
+                remove_character_from_field(opp, worst, 'deck_bottom')
+                placed.append(worst.name[:12])
+            return f'oponente colocou no fundo do deck: {", ".join(placed)}' if placed else ''
 
         # ── AUTO-RESTRIÇÃO: "Then, you cannot play ... this turn" ─────────────
         # Combo de ramp (set DON active) que cobra: você perde o direito de jogar.
