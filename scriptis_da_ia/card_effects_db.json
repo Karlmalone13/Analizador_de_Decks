@@ -18557,6 +18557,12 @@
       "activate_main": {
         "steps": [
           {
+            "action": "ko",
+            "count": 1,
+            "target": "self_character",
+            "filter_type": "dressrosa"
+          },
+          {
             "action": "debuff_cost",
             "amount": 4,
             "target": "opp_character",
@@ -50496,6 +50502,13 @@
             "amount": 1000,
             "target": "all_allies_and_leader",
             "duration": "this_turn"
+          }
+        ],
+        "costs": [
+          {
+            "type": "ko_own_character",
+            "count": 1,
+            "filter_type": "thriller bark pirates"
           }
         ],
         "once_per_turn": true

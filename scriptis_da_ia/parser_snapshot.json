@@ -10920,6 +10920,12 @@
             "once_per_turn": true,
             "steps": [
                 {
+                    "action": "ko",
+                    "count": 1,
+                    "filter_type": "dressrosa",
+                    "target": "self_character"
+                },
+                {
                     "action": "debuff_cost",
                     "amount": 4,
                     "count": 1,
@@ -29800,6 +29806,13 @@
     },
     "OP14-080": {
         "activate_main": {
+            "costs": [
+                {
+                    "count": 1,
+                    "filter_type": "thriller bark pirates",
+                    "type": "ko_own_character"
+                }
+            ],
             "once_per_turn": true,
             "steps": [
                 {

@@ -29641,6 +29641,11 @@
         "attribute": "Strike",
         "effects": [
             {
+                "action": "ko",
+                "trigger": "activate_main",
+                "target": "self_character"
+            },
+            {
                 "action": "debuff_cost",
                 "trigger": "activate_main",
                 "target": "opp_character"
@@ -29657,8 +29662,8 @@
         "has_counter_value": true,
         "has_counter_event": false,
         "is_blocker": false,
-        "is_removal": false,
-        "kos": false,
+        "is_removal": true,
+        "kos": true,
         "rests_opponent": false,
         "bounces": false,
         "gives_don": false,

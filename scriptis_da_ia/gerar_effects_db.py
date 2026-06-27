@@ -232,16 +232,25 @@ def parse_costs(text):
     # Custo de K.O. de um Character PROPRIO (distinto de trash_self: o alvo
     # nao e a carta que ativa o efeito, e outro Character do jogador, e o
     # K.O. dispara o [On K.O.] desse Character -- K.O. != Trash). Pode ter
-    # filtro de tipo. Ex: OP14-079 Crocodile "You may K.O. up to 1 of your
-    # Characters with a type including 'Baroque Works': ...".
+    # filtro de tipo, em DUAS ordens de palavra possiveis:
+    #   (a) "Characters with a type including 'X'" -- ex: OP14-079 Crocodile
+    #   (b) "[X] type Characters" -- ex: OP06-083 Oars, OP14-080 Gecko Moria
+    #       (achado em auditoria 27/06, nunca capturado antes -- a IA tratava
+    #       como custo gratis, sem checar se tinha o character pra pagar)
     m = re.search(
         r'you may k\.?o\.? (?:up to )?(\d+) of your character'
         r'(?:s)?(?: with a type including [\'"\[{]([a-z][a-z0-9 .\'-]+)[\'"\]}])?', t)
+    m_b = re.search(
+        r'you may k\.?o\.? (?:up to )?(\d+) of your '
+        r'[\["\{]([a-z][a-z0-9 .\'-]+)[\]"\}]\s*type\s+characters?', t)
     if m:
         cost = {'type': 'ko_own_character', 'count': int(m.group(1))}
         if m.group(2):
             cost['filter_type'] = m.group(2).strip()
         costs.append(cost)
+    elif m_b:
+        costs.append({'type': 'ko_own_character', 'count': int(m_b.group(1)),
+                       'filter_type': m_b.group(2).strip()})
 
     # rest N DON como custo. Cobre tanto "rest N of your DON" isolado quanto o
     # padrão COMPOSTO "rest this card and N of your DON!! cards" (ex: Empty
@@ -455,6 +464,35 @@ def parse_ko(text):
 
     if steps:
         return steps
+
+    # Variante "K.O./trash N (ou up to N) de characters PROPRIOS com filtro
+    # de TIPO explicito" -- contagem exata ou "up to", tipo sempre entre
+    # [ ] / { } / "" , DISTINTA de "all of your characters" abaixo (sem
+    # tipo, board wipe total sem filtro). Ex: Orlumbus OP04-079 "K.O. 1 of
+    # your [Dressrosa] type Characters". Auditoria buff_cost 27/06.
+    m_self_typed = re.search(
+        VERBO + r" (up to (\d+)|(\d+)) of your "
+        r'[\["\{]([a-z][a-z0-9 .\'-]+)[\]"\}]\s*type\s+characters?',
+        t
+    )
+    if m_self_typed:
+        # GUARD (mesma armadilha do trash_from_hand, ja corrigida 2x hoje):
+        # "you may K.O. N of your [Tipo] type Characters: efeito" e CUSTO,
+        # nao efeito incondicional -- nao duplicar como step aqui. Achado
+        # ao validar OP06-083 Oars / OP14-080 Gecko Moria, que tem
+        # exatamente essa frase como custo opcional, nao efeito solto.
+        antes = t[max(0, m_self_typed.start() - 10):m_self_typed.start()]
+        depois = t[m_self_typed.end():m_self_typed.end() + 3].lstrip()
+        eh_custo = 'you may' in antes and depois.startswith(':')
+        if not eh_custo:
+            verbo_usado = re.match(r'k\.o\.|trash', m_self_typed.group(0)).group(0)
+            action = 'ko' if verbo_usado == 'k.o.' else 'trash_character'
+            count = int(m_self_typed.group(2) or m_self_typed.group(3))
+            steps.append({
+                'action': action, 'count': count, 'target': 'self_character',
+                'filter_type': m_self_typed.group(4).strip(),
+            })
+            return steps
 
     # Variante "all of YOUR characters" (sem "opponent") -- alvo SO o
     # PROPRIO campo, distinto da variante sem qualificador abaixo (que
