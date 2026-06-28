@@ -867,6 +867,9 @@ class EffectExecutor:
                 ef_data = effects[trigger]
                 if not self._check_conditions(ef_data.get('conditions', {}), source):
                     continue
+                don_req = ef_data.get('don_requirement', 0)
+                if don_req and getattr(source, 'don_attached', 0) < don_req:
+                    continue
                 # LACUNA CONHECIDA: cartas com 'Choose one: • opcao A • opcao
                 # B' tem ef_data['choice'] = [[steps_opcao_A], [steps_opcao_B]]
                 # em vez de ef_data['steps'] (ver gerar_effects_db.py,
@@ -1682,6 +1685,46 @@ class EffectExecutor:
                 if target == 'all_allies_and_leader':
                     me.leader.power_buff += amount
             return f'+{amount} power em {target}'
+
+        if action == 'buff_power_per_count':
+            source = step.get('source', 'trash')
+            count_per = max(1, int(step.get('count_per', 1) or 1))
+            amount_per = int(step.get('amount_per', 1000) or 0)
+            target = step.get('target', 'self')
+
+            if source == 'events_in_trash':
+                n = sum(1 for c in me.trash if c.card_type == 'EVENT')
+            elif source == 'trash':
+                n = len(me.trash)
+            elif source == 'rested_don':
+                n = me.don_rested
+            elif source == 'hand':
+                n = len(me.hand)
+            elif source == 'unique_character_names':
+                n = len({c.name for c in me.field_chars})
+            elif source == 'own_characters':
+                n = len(me.field_chars)
+            else:
+                n = 0
+
+            amount = (n // count_per) * amount_per
+            if amount <= 0:
+                return ''
+
+            if target == 'self':
+                card.power_buff += amount
+            elif target == 'leader':
+                me.leader.power_buff += amount
+            elif target == 'leader_or_character':
+                best = max(me.field_chars + [me.leader],
+                           key=lambda c: c.effective_power(True)) if me.field_chars else me.leader
+                best.power_buff += amount
+            elif target in ('all_allies', 'all_allies_and_leader'):
+                for c in me.field_chars:
+                    c.power_buff += amount
+                if target == 'all_allies_and_leader':
+                    me.leader.power_buff += amount
+            return f'+{amount} power em {target} ({n}/{count_per} {source})'
 
         # ── Cost buff/debuff (buff_cost / debuff_cost) ──────────────────────────
         # NOTA DE LIMITACAO: assim como buff_power, o sistema geral de turnos

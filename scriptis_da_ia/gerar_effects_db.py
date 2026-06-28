@@ -1230,8 +1230,52 @@ def parse_power_buff(text):
 
     JANELA_ANTES = 90  # chars de contexto antes do match, suficiente p/ pegar "of your opponent's characters"
     JANELA_DEPOIS = 40  # chars de contexto depois, p/ pegar "during this turn/battle"
+    dynamic_spans = []
+
+    def target_from_context(ctx: str) -> str:
+        if 'your leader or 1 of your characters' in ctx or 'your leader or character' in ctx:
+            return 'leader_or_character'
+        if 'your leader' in ctx:
+            return 'leader'
+        if 'all of your characters' in ctx:
+            return 'all_allies'
+        return 'self'
+
+    # Buffs dinamicos do ActV3: Passive1KPerXTrash,
+    # Passive1KPerXEventTrash, Passive1KPerXRestedDon e variantes simples.
+    # Captura antes do buff fixo para nao degradar "+1000 por N" em "+1000".
+    dynamic_patterns = [
+        (r'gains? \+(\d+)\s*power\s+for every (\d+) events? in your trash',
+         'events_in_trash'),
+        (r'gains? \+(\d+)\s*power\s+for every (\d+) cards? in your trash',
+         'trash'),
+        (r'gains? \+(\d+)\s*power\s+for every (\d+) of your rested don!! cards?',
+         'rested_don'),
+        (r'gains? \+(\d+)\s*power\s+for every card in your hand',
+         'hand'),
+        (r'gains? \+(\d+)\s*power\s+for each of your characters with a different card name',
+         'unique_character_names'),
+        (r'gains? \+(\d+)\s*power\s+for each of your characters(?! with a different card name)',
+         'own_characters'),
+    ]
+    for pattern, source in dynamic_patterns:
+        for dm in re.finditer(pattern, t):
+            contexto_antes = t[max(0, dm.start() - JANELA_ANTES):dm.start()]
+            amount_per = int(dm.group(1))
+            count_per = int(dm.group(2)) if dm.lastindex and dm.lastindex >= 2 and dm.group(2) else 1
+            steps.append({
+                'action': 'buff_power_per_count',
+                'amount_per': amount_per,
+                'count_per': count_per,
+                'source': source,
+                'target': target_from_context(contexto_antes),
+                'duration': 'this_turn',
+            })
+            dynamic_spans.append((dm.start(), dm.end()))
 
     for m in re.finditer(r'([+\-−]?)\s*(\d+)\s*power', t):
+        if any(start <= m.start() < end for start, end in dynamic_spans):
+            continue
         sign = m.group(1)
         amount = int(m.group(2))
 
@@ -2450,7 +2494,12 @@ def parse_block(block_text, trigger_name):
     if re.search(r"would be removed from the field", t):
         sub_steps = parse_substitute_removal(t)
         if sub_steps:
-            return sub_steps
+            prefix = re.split(r"if .*?would be removed from the field", t, maxsplit=1)[0]
+            dyn_steps = [
+                s for s in parse_power_buff(prefix)
+                if s.get('action') == 'buff_power_per_count'
+            ]
+            return dyn_steps + sub_steps
 
     # Imunidade (passiva): "cannot be K.O.'d" / "cannot be removed from the
     # field". Roda ANTES de parse_ko para a frase não ser lida como um KO real.

@@ -3,6 +3,10 @@
 #Zip files
 *.zip
 
+# local Codex/reference files
+_referencias/
+.codex/
+
 # dependencies
 /node_modules
 __pycache__/

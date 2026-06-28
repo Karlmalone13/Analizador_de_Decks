@@ -391,8 +391,10 @@
       "your_turn": {
         "steps": [
           {
-            "action": "buff_power",
-            "amount": 1000,
+            "action": "buff_power_per_count",
+            "amount_per": 1000,
+            "count_per": 3,
+            "source": "rested_don",
             "target": "self",
             "duration": "this_turn"
           }
@@ -706,8 +708,10 @@
       "passive": {
         "steps": [
           {
-            "action": "buff_power",
-            "amount": 1000,
+            "action": "buff_power_per_count",
+            "amount_per": 1000,
+            "count_per": 2,
+            "source": "events_in_trash",
             "target": "leader",
             "duration": "this_turn"
           }
@@ -9170,8 +9174,10 @@
       "your_turn": {
         "steps": [
           {
-            "action": "buff_power",
-            "amount": 1000,
+            "action": "buff_power_per_count",
+            "amount_per": 1000,
+            "count_per": 1,
+            "source": "hand",
             "target": "self",
             "duration": "this_turn"
           }
@@ -9451,8 +9457,10 @@
       "your_turn": {
         "steps": [
           {
-            "action": "buff_power",
-            "amount": 1000,
+            "action": "buff_power_per_count",
+            "amount_per": 1000,
+            "count_per": 2,
+            "source": "events_in_trash",
             "target": "leader",
             "duration": "this_turn"
           }
@@ -26214,8 +26222,10 @@
       "your_turn": {
         "steps": [
           {
-            "action": "buff_power",
-            "amount": 1000,
+            "action": "buff_power_per_count",
+            "amount_per": 1000,
+            "count_per": 5,
+            "source": "trash",
             "target": "self",
             "duration": "this_turn"
           }
@@ -36054,8 +36064,10 @@
             "source": "opp"
           },
           {
-            "action": "buff_power",
-            "amount": 1000,
+            "action": "buff_power_per_count",
+            "amount_per": 1000,
+            "count_per": 4,
+            "source": "trash",
             "target": "leader",
             "duration": "this_turn",
             "conditions": {
@@ -45467,6 +45479,14 @@
     "effects": {
       "passive": {
         "steps": [
+          {
+            "action": "buff_power_per_count",
+            "amount_per": 1000,
+            "count_per": 5,
+            "source": "events_in_trash",
+            "target": "self",
+            "duration": "this_turn"
+          },
           {
             "action": "substitute_removal",
             "cost": {
@@ -58063,8 +58083,10 @@
       "your_turn": {
         "steps": [
           {
-            "action": "buff_power",
-            "amount": 1000,
+            "action": "buff_power_per_count",
+            "amount_per": 1000,
+            "count_per": 1,
+            "source": "unique_character_names",
             "target": "self",
             "duration": "this_turn"
           }
@@ -61090,8 +61112,10 @@
       "main": {
         "steps": [
           {
-            "action": "buff_power",
-            "amount": 1000,
+            "action": "buff_power_per_count",
+            "amount_per": 1000,
+            "count_per": 1,
+            "source": "own_characters",
             "target": "leader",
             "duration": "this_turn"
           }
