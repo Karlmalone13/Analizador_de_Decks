@@ -1322,6 +1322,8 @@ class EffectExecutor:
             return ''
 
         if action == 'add_to_hand':
+            from optcg_engine.rules_facade import eligible_cards
+
             if not me.deck:
                 return ''
             # Número de cartas a olhar (do step anterior look_top_deck)
@@ -1337,29 +1339,20 @@ class EffectExecutor:
             look = min(look_count, len(me.deck))
             candidates = me.deck[-look:]
 
-            # Filtra por tipo se especificado
-            filter_type = step.get('filter_type', '')
             exclude = step.get('exclude', [])
             cost_lte = self._resolve_cost_lte(step, default=99)
-            power_lte = step.get('power_lte', 999999)
-
-            filtered = []
-            for c in candidates:
-                if filter_type:
-                    ft = filter_type.lower()
-                    match = (ft in c.sub_types.lower() or
-                             ft in c.name.lower() or
-                             ft in c.card_type.lower() or
-                             ft in c.card_text.lower())
-                    if not match:
-                        continue
-                if any(ex.lower() in c.name.lower() for ex in exclude):
-                    continue
-                if c.cost > cost_lte:
-                    continue
-                if c.power > power_lte:
-                    continue
-                filtered.append(c)
+            filtered = eligible_cards(
+                candidates,
+                cost_lte=cost_lte,
+                power_lte=step.get('power_lte', 999999),
+                filter_text=step.get('filter_type', ''),
+                include_text=True,
+            )
+            if exclude:
+                filtered = [
+                    c for c in filtered
+                    if not any(ex.lower() in c.name.lower() for ex in exclude)
+                ]
 
             count = step.get('count', 1)
             taken = []
