@@ -2204,6 +2204,12 @@ class EffectExecutor:
         # candidato JÁ RESTED (reativar algo já ativo é no-op sem sentido,
         # mesmo quando o texto não diz "rested" explicitamente).
         if action == 'set_active':
+            from optcg_engine.rules_facade import (
+                card_matches_filter,
+                choose_highest_board_value,
+                eligible_cards,
+            )
+
             target = step.get('target', 'self')
             if target == 'self':
                 if card.rested:
@@ -2211,8 +2217,7 @@ class EffectExecutor:
                     return f'{card.name[:18]} ficou ativo'
                 return ''
             if target == 'leader':
-                filter_type = step.get('filter_type', '').lower()
-                if filter_type and filter_type not in me.leader.sub_types.lower():
+                if not card_matches_filter(me.leader, step.get('filter_type', '')):
                     return ''
                 if me.leader.rested:
                     me.leader.rested = False
@@ -2220,38 +2225,24 @@ class EffectExecutor:
                 return ''
 
             count = step.get('count', 1)
-            filter_type = step.get('filter_type', '').lower()
-            filter_name = step.get('filter_name', '').lower()
-            color = step.get('color', '').lower()
-            attribute = step.get('attribute', '').lower()
-            cost_lte = step.get('cost_lte')
-            cost_eq = step.get('cost_eq')
-            power_lte = step.get('power_lte')
-            power_eq = step.get('power_eq')
-
-            candidatos = [c for c in me.field_chars if c.rested]
-            if filter_type:
-                candidatos = [c for c in candidatos if filter_type in c.sub_types.lower()]
-            if filter_name:
-                candidatos = [c for c in candidatos if filter_name in c.name.lower()]
-            if color:
-                candidatos = [c for c in candidatos if color in c.color.lower()]
-            if attribute:
-                candidatos = [c for c in candidatos if attribute in c.attribute.lower()]
-            if cost_lte is not None:
-                candidatos = [c for c in candidatos if c.cost <= cost_lte]
-            if cost_eq is not None:
-                candidatos = [c for c in candidatos if c.cost == cost_eq]
-            if power_lte is not None:
-                candidatos = [c for c in candidatos if c.power <= power_lte]
-            if power_eq is not None:
-                candidatos = [c for c in candidatos if c.power == power_eq]
+            candidatos = eligible_cards(
+                me.field_chars,
+                rested_only=True,
+                filter_text=step.get('filter_type', ''),
+                name_or_code=step.get('filter_name', ''),
+                color=step.get('color', ''),
+                attribute=step.get('attribute', ''),
+                cost_lte=step.get('cost_lte'),
+                cost_eq=step.get('cost_eq'),
+                power_lte=step.get('power_lte'),
+                power_eq=step.get('power_eq'),
+            )
 
             ativados = []
             for _ in range(count):
                 if not candidatos:
                     break
-                melhor = max(candidatos, key=lambda c: c.board_value())
+                melhor = choose_highest_board_value(candidatos)
                 melhor.rested = False
                 candidatos.remove(melhor)
                 ativados.append(melhor.name[:14])
@@ -2637,19 +2628,26 @@ class EffectExecutor:
         # é sempre 'card' (a própria carta com o efeito).
         # Sanji ST21-003, Diable Jambe ST01-016, OP13-057 (target='leader_only').
         if action == 'select_grant_unblockable_turn':
+            from optcg_engine.rules_facade import (
+                card_matches_filter,
+                choose_highest_board_value,
+                eligible_cards,
+            )
+
             if step.get('target') == 'leader_only':
                 me.leader.unblockable_this_turn = True
                 return f'{me.leader.name[:18]} ganhou Unblockable este turno'
-            filter_type = (step.get('filter_type') or '').lower()
-            power_gte = step.get('power_gte')
-            candidatos = [c for c in me.field_chars
-                          if (not filter_type or filter_type in c.sub_types.lower())
-                          and (power_gte is None or c.power >= power_gte)]
-            if step.get('include_leader') and (not filter_type or filter_type in me.leader.sub_types.lower()):
+            filter_type = step.get('filter_type', '')
+            candidatos = eligible_cards(
+                me.field_chars,
+                filter_text=filter_type,
+                power_gte=step.get('power_gte'),
+            )
+            if step.get('include_leader') and card_matches_filter(me.leader, filter_type):
                 candidatos.append(me.leader)
             if not candidatos:
                 return ''
-            alvo = max(candidatos, key=lambda c: c.board_value())
+            alvo = choose_highest_board_value(candidatos)
             alvo.unblockable_this_turn = True
             return f'{alvo.name[:18]} ganhou Unblockable este turno'
 
@@ -2664,14 +2662,19 @@ class EffectExecutor:
             return f'{card.name[:18]} pode atacar characters ativos (permanente)'
 
         if action == 'select_grant_can_attack_active_turn':
-            filter_type = (step.get('filter_type') or '').lower()
-            candidatos = [c for c in me.field_chars
-                          if not filter_type or filter_type in c.sub_types.lower()]
-            if step.get('include_leader') and (not filter_type or filter_type in me.leader.sub_types.lower()):
+            from optcg_engine.rules_facade import (
+                card_matches_filter,
+                choose_highest_board_value,
+                eligible_cards,
+            )
+
+            filter_type = step.get('filter_type', '')
+            candidatos = eligible_cards(me.field_chars, filter_text=filter_type)
+            if step.get('include_leader') and card_matches_filter(me.leader, filter_type):
                 candidatos.append(me.leader)
             if not candidatos:
                 return ''
-            alvo = max(candidatos, key=lambda c: c.board_value())
+            alvo = choose_highest_board_value(candidatos)
             alvo.can_attack_active_this_turn = True
             return f'{alvo.name[:18]} pode atacar characters ativos este turno'
 

@@ -61,12 +61,14 @@ def eligible_cards(
     filter_text: str = "",
     name_or_code: str = "",
     color: str = "",
+    attribute: str = "",
     exclude_name: str = "",
     exclude_card: "Card | None" = None,
 ) -> list["Card"]:
     """Retorna cartas que passam nos filtros comuns de alvo."""
     out = []
     color_filter = (color or "").lower()
+    attribute_filter = (attribute or "").lower()
     exclude = (exclude_name or "").lower()
 
     for card in cards:
@@ -94,6 +96,8 @@ def eligible_cards(
                     and name_or_code_filter not in str(getattr(card, "code", "")).lower()):
                 continue
         if color_filter and color_filter not in str(getattr(card, "color", "")).lower():
+            continue
+        if attribute_filter and attribute_filter not in str(getattr(card, "attribute", "")).lower():
             continue
         if exclude and exclude in str(getattr(card, "name", "")).lower():
             continue
