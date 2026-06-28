@@ -222,7 +222,7 @@ function advice(cat: string, status: string, archetype: string): string {
         'finishers|alto': 'finishers demais — risco de travar a mão cedo',
         'events|alto': 'eventos demais — faltam corpos no board para atacar',
     }
-    let msg = base[`${cat}|${status}`] || ''
+    const msg = base[`${cat}|${status}`] || ''
 
     if (cat === 'counters' && status === 'baixo') {
         if (archetype === AGGRO) return msg + ' (tolerável num deck agressivo, mas cuidado)'

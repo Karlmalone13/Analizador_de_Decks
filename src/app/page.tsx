@@ -2,6 +2,12 @@ import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
 import Navbar from '@/components/Navbar'
 
+interface CardThumb {
+  id: string
+  card_image: string
+  card_name: string
+}
+
 export default async function Home() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -95,7 +101,7 @@ export default async function Home() {
           <>
             <h2 className="text-2xl font-bold mb-6">Cartas Recentes</h2>
             <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
-              {recentCards.map((card: any) => (
+              {(recentCards as CardThumb[]).map((card) => (
                 <a href="/cards" key={card.id} className="rounded-xl overflow-hidden border border-gray-800 hover:border-orange-500 transition hover:scale-105 cursor-pointer">
                   <img
                     src={card.card_image}

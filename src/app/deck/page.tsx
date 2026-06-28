@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { createClient } from '@/utils/supabase/client'
 import Navbar from '@/components/Navbar'
 import { useSearchParams } from 'next/navigation'
@@ -36,6 +36,13 @@ interface Deck {
   cards: DeckCard[]
 }
 
+interface SavedDeck {
+  id: string
+  name: string
+  cards: string
+  updated_at: string
+}
+
 const COLORS = ['Red', 'Blue', 'Green', 'Purple', 'Black', 'Yellow', 'Multicolor']
 const TYPES = ['LEADER', 'CHARACTER', 'EVENT', 'STAGE', 'DON!!']
 
@@ -64,6 +71,14 @@ const KNOWN_TYPES = [
 ].sort((a, b) => b.length - a.length)
 
 export default function DeckBuilderPage() {
+    return (
+        <Suspense fallback={null}>
+            <DeckBuilderPageContent />
+        </Suspense>
+    )
+}
+
+function DeckBuilderPageContent() {
   const supabase = createClient()
   const [search, setSearch] = useState('')
   const [results, setResults] = useState<Card[]>([])
@@ -79,7 +94,7 @@ export default function DeckBuilderPage() {
   const [selectedCard, setSelectedCard] = useState<Card | null>(null)
   const [showColorDropdown, setShowColorDropdown] = useState(false)
   const [showMyDecks, setShowMyDecks] = useState(false)
-  const [myDecks, setMyDecks] = useState<any[]>([])
+  const [myDecks, setMyDecks] = useState<SavedDeck[]>([])
   const [loadingDecks, setLoadingDecks] = useState(false)
   const [showExport, setShowExport] = useState(false)
   const [showImport, setShowImport] = useState(false)
@@ -382,9 +397,9 @@ export default function DeckBuilderPage() {
     const newDeck: Deck = { name: 'Deck Importado', leader: null, cards: [] }
 
     for (const { code, qty } of cardCodes) {
-      const card = data.find((c: any) =>
+      const card = (data as Card[]).find((c) =>
         (c.card_set_id || '').split('_')[0].toUpperCase() === code
-      ) as Card | undefined
+      )
       if (!card) continue
 
       if (card.card_type?.toUpperCase() === 'LEADER') {
@@ -399,7 +414,7 @@ export default function DeckBuilderPage() {
     setImportText('')
   }
 
-  function loadDeck(saved: any) {
+  function loadDeck(saved: SavedDeck) {
     try {
       const parsed = JSON.parse(saved.cards)
       setDeck({
@@ -419,7 +434,7 @@ export default function DeckBuilderPage() {
     setMyDecks(d => d.filter(d => d.id !== deckId))
   }
 
-  function CostChart() {
+  function renderCostChart() {
     if (deck.cards.length === 0) return null
     const costDist: Record<string, number> = {}
     deck.cards.forEach(dc => {
@@ -689,7 +704,7 @@ export default function DeckBuilderPage() {
           {/* Deck Content */}
           <div className="card-scroll overflow-y-scroll p-4" style={{ flex: 1, minHeight: 0, scrollbarWidth: 'thin', scrollbarColor: '#f97316 #1f2937' }}>
 
-            <CostChart />
+            {renderCostChart()}
 
             {/* Leader */}
             <div className="mb-4">

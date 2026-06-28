@@ -26,10 +26,6 @@ export default function MeusDecksPage() {
     const [deleting, setDeleting] = useState<string | null>(null)
     const [search, setSearch] = useState('')
 
-    useEffect(() => {
-        loadDecks()
-    }, [])
-
     async function loadDecks() {
         setLoading(true)
         const { data: { user } } = await supabase.auth.getUser()
@@ -42,7 +38,7 @@ export default function MeusDecksPage() {
             .order('updated_at', { ascending: false })
 
         if (data) {
-            const summaries: DeckSummary[] = data.map((d: any) => {
+            const summaries: DeckSummary[] = data.map((d: { id: string; name: string; updated_at: string; cards: string }) => {
                 let leader_image = null
                 let leader_name = null
                 let leader_color = null
@@ -52,7 +48,7 @@ export default function MeusDecksPage() {
                     leader_image = parsed.leader?.card_image || null
                     leader_name = parsed.leader?.card_name || null
                     leader_color = parsed.leader?.card_color || null
-                    total_cards = (parsed.cards || []).reduce((s: number, dc: any) => s + dc.quantity, 0)
+                    total_cards = (parsed.cards || []).reduce((s: number, dc: { quantity: number }) => s + dc.quantity, 0)
                 } catch { }
                 return { id: d.id, name: d.name, updated_at: d.updated_at, leader_image, leader_name, leader_color, total_cards }
             })
@@ -60,6 +56,10 @@ export default function MeusDecksPage() {
         }
         setLoading(false)
     }
+
+    useEffect(() => {
+        queueMicrotask(() => { loadDecks() })
+    }, [])
 
     async function deleteDeck(id: string) {
         if (!confirm('Excluir este deck? Esta ação não pode ser desfeita.')) return
@@ -253,7 +253,7 @@ export default function MeusDecksPage() {
                 {/* Sem resultados na busca */}
                 {!loading && decks.length > 0 && filtered.length === 0 && (
                     <div className="text-center text-gray-500 py-12">
-                        Nenhum deck encontrado para "{search}"
+                        Nenhum deck encontrado para &quot;{search}&quot;
                     </div>
                 )}
             </div>

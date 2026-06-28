@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
 import Navbar from '@/components/Navbar'
@@ -32,6 +32,35 @@ interface Deck {
     name: string
     leader: Card | null
     cards: DeckCard[]
+}
+
+interface AnaliseRatio {
+    name: string
+    count: number
+    ideal: [number, number]
+    status: string
+    advice: string
+}
+
+interface AnaliseSynergy {
+    desc: string
+    arquetipo: string
+    n_creators: number
+    n_exploiters: number
+}
+
+interface AnaliseResult {
+    archetype: { primary: string; label: string; confidence: string }
+    issues_count: number
+    ratios: AnaliseRatio[]
+    synergies: AnaliseSynergy[]
+    tribal_cohesion?: {
+        leader_type: string
+        label: string
+        cohesion_pct: number
+        same_type_pct: number
+        hook_count: number
+    }
 }
 
 const colorClass: Record<string, string> = {
@@ -248,6 +277,14 @@ const ARCHETYPE_COLOR: Record<string, string> = {
 }
 
 export default function AnalysisPage() {
+    return (
+        <Suspense fallback={null}>
+            <AnalysisPageContent />
+        </Suspense>
+    )
+}
+
+function AnalysisPageContent() {
     const supabase = createClient()
     const searchParams = useSearchParams()
     const deckId = searchParams.get('id')
@@ -259,11 +296,14 @@ export default function AnalysisPage() {
     const [simDone, setSimDone] = useState(false)
     const [simResult, setSimResult] = useState<ReturnType<typeof simularMaos> | null>(null)
     const [melhoresMaos, setMelhoresMaos] = useState<DeckCard[][]>([])
-    const [analise, setAnalise] = useState<any>(null)
+    const [analise, setAnalise] = useState<AnaliseResult | null>(null)
     const [analiseLoading, setAnaliseLoading] = useState(false)
 
     useEffect(() => {
-        if (!deckId) { setError('Nenhum deck selecionado.'); setLoading(false); return }
+        if (!deckId) {
+            queueMicrotask(() => { setError('Nenhum deck selecionado.'); setLoading(false) })
+            return
+        }
         async function load() {
             const { data, error } = await supabase.from('decks').select('*').eq('id', deckId).single()
             if (error || !data) { setError('Deck não encontrado.'); setLoading(false); return }
@@ -291,7 +331,7 @@ export default function AnalysisPage() {
     // Análise de arquétipo/sinergia/coesão via API Python (fonte única)
     useEffect(() => {
         if (!deck || !deck.leader) return
-        setAnaliseLoading(true)
+        queueMicrotask(() => { setAnaliseLoading(true) })
         const cards = [
             { code: deck.leader.card_set_id, qty: 1 },
             ...deck.cards.map(dc => ({ code: dc.card.card_set_id, qty: dc.quantity })),
@@ -748,7 +788,7 @@ export default function AnalysisPage() {
                         <div className="mb-2">
                             <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">📊 Golden Ratios · {analise.issues_count === 0 ? 'tudo dentro do recomendado' : `${analise.issues_count} ponto(s) de atenção`}</div>
                             <div className="space-y-2">
-                                {analise.ratios.map((c: any, i: number) => {
+                                {analise.ratios.map((c: AnaliseRatio, i: number) => {
                                     const statusColor = c.status === 'ok' ? 'text-green-400' : c.status === 'baixo' ? 'text-orange-400' : 'text-yellow-400'
                                     const barColor = c.status === 'ok' ? 'bg-green-500' : c.status === 'baixo' ? 'bg-orange-500' : 'bg-yellow-500'
                                     const nomePt: Record<string, string> = { counters: 'Counters 2000', searchers: 'Searchers', blockers: 'Blockers', finishers: 'Finishers (8+)', events: 'Eventos' }
@@ -774,7 +814,7 @@ export default function AnalysisPage() {
                             <div className="mt-6 border-t border-gray-800 pt-5">
                                 <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">🔗 Sinergias detectadas</div>
                                 <div className="space-y-2">
-                                    {analise.synergies.map((s: any, i: number) => (
+                                    {analise.synergies.map((s: AnaliseSynergy, i: number) => (
                                         <div key={i} className="bg-gray-800 rounded-xl px-4 py-2.5">
                                             <div className="flex items-center justify-between">
                                                 <span className="text-sm text-white font-medium">{s.desc}</span>

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useRef, useCallback } from 'react'
+import { useEffect, useState, useRef, useCallback, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
 import Navbar from '@/components/Navbar'
@@ -48,6 +48,39 @@ interface ParsedEntry {
     qty: number
 }
 
+interface DeckRow {
+    id: string
+    name: string
+    cards: string
+}
+
+interface MatchupBreakdown {
+    matchup: string
+    win_rate: number
+    wins: number
+    n_simulations: number
+}
+
+interface SimulationJobStatus {
+    status: 'pending' | 'running' | 'done' | 'error'
+    progress: number
+    total_steps: number
+    error_message?: string
+    result?: {
+        overall_win_rate: number
+        total_simulations: number
+        breakdown_by_matchup?: MatchupBreakdown[]
+    }
+}
+
+interface SimulationRequest {
+    analysis_type: 'custom_opponent' | 'own_decks' | 'meta'
+    deck_a: ParsedEntry[]
+    n_simulations: number
+    deck_b?: ParsedEntry[]
+    n_meta_decks?: number
+}
+
 type Tab = 'meta' | 'pasted' | 'own'
 
 const colorClass: Record<string, string> = {
@@ -82,13 +115,21 @@ function formatDecklistText(leader: Card | null, cards: DeckCard[]): string {
 }
 
 export default function SimulatePage() {
+    return (
+        <Suspense fallback={null}>
+            <SimulatePageContent />
+        </Suspense>
+    )
+}
+
+function SimulatePageContent() {
     const supabase = createClient()
     const searchParams = useSearchParams()
     const deckId = searchParams.get('id')
 
     const [deck, setDeck] = useState<Deck | null>(null)
-    const [loading, setLoading] = useState(true)
-    const [error, setError] = useState('')
+    const [loading, setLoading] = useState(Boolean(deckId))
+    const [error, setError] = useState(deckId ? '' : 'Nenhum deck selecionado.')
 
     const [tab, setTab] = useState<Tab>('pasted')
 
@@ -110,12 +151,12 @@ export default function SimulatePage() {
     const [nMetaDecks, setNMetaDecks] = useState(10)
     const [running, setRunning] = useState(false)
     const [jobId, setJobId] = useState<string | null>(null)
-    const [jobStatus, setJobStatus] = useState<any>(null)
+    const [jobStatus, setJobStatus] = useState<SimulationJobStatus | null>(null)
     const pollRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
     // ── Carrega o deck de origem (deck_a, vindo de /meus-decks) ────────────
     useEffect(() => {
-        if (!deckId) { setError('Nenhum deck selecionado.'); setLoading(false); return }
+        if (!deckId) return
         async function load() {
             const { data, error } = await supabase.from('decks').select('*').eq('id', deckId).single()
             if (error || !data) { setError('Deck não encontrado.'); setLoading(false); return }
@@ -139,14 +180,14 @@ export default function SimulatePage() {
                 .neq('id', deckId || '')
                 .order('updated_at', { ascending: false })
             if (data) {
-                const summaries: DeckSummary[] = data.map((d: any) => {
+                const summaries: DeckSummary[] = data.map((d: DeckRow) => {
                     let leader_image = null, leader_name = null, leader_color = null, total_cards = 0
                     try {
                         const parsed = JSON.parse(d.cards)
                         leader_image = parsed.leader?.card_image || null
                         leader_name = parsed.leader?.card_name || null
                         leader_color = parsed.leader?.card_color || null
-                        total_cards = (parsed.cards || []).reduce((s: number, dc: any) => s + dc.quantity, 0)
+                        total_cards = (parsed.cards || []).reduce((s: number, dc: DeckCard) => s + dc.quantity, 0)
                     } catch { }
                     return { id: d.id, name: d.name, leader_image, leader_name, leader_color, total_cards }
                 })
@@ -168,13 +209,25 @@ export default function SimulatePage() {
 
     // ── Parser + busca de imagens para a decklist colada ───────────────────
     useEffect(() => {
-        if (tab !== 'pasted' || !pastedText.trim()) { setPastedPreview(null); setPastedMissing([]); return }
+        if (tab !== 'pasted' || !pastedText.trim()) {
+            queueMicrotask(() => {
+                setPastedPreview(null)
+                setPastedMissing([])
+            })
+            return
+        }
 
         const entries = parseDecklistText(pastedText)
-        if (entries.length === 0) { setPastedPreview(null); setPastedMissing([]); return }
+        if (entries.length === 0) {
+            queueMicrotask(() => {
+                setPastedPreview(null)
+                setPastedMissing([])
+            })
+            return
+        }
 
         let cancelled = false
-        setParsingPasted(true)
+        queueMicrotask(() => { setParsingPasted(true) })
 
         async function resolve() {
             const codes = entries.map(e => e.code)
@@ -215,7 +268,7 @@ export default function SimulatePage() {
             ...deck.cards.map(dc => ({ code: dc.card.card_set_id, qty: dc.quantity })),
         ]
 
-        let body: any = { analysis_type: tab === 'pasted' ? 'custom_opponent' : tab === 'own' ? 'own_decks' : 'meta', deck_a: deckA, n_simulations: nSimulations }
+        const body: SimulationRequest = { analysis_type: tab === 'pasted' ? 'custom_opponent' : tab === 'own' ? 'own_decks' : 'meta', deck_a: deckA, n_simulations: nSimulations }
 
         if (tab === 'pasted') {
             if (!pastedPreview?.leader) { alert('A decklist colada precisa ter um Leader válido.'); return }
@@ -245,12 +298,12 @@ export default function SimulatePage() {
                 body: JSON.stringify(body),
             })
             if (!r.ok) {
-                const err = await r.json().catch(() => ({}))
+                const err = await r.json().catch(() => ({})) as { detail?: string }
                 alert(`Erro ao iniciar simulação: ${err.detail || r.status}`)
                 setRunning(false)
                 return
             }
-            const data = await r.json()
+            const data = await r.json() as { job_id: string }
             setJobId(data.job_id)
         } catch (e) {
             alert('Erro de conexão com a API de simulação.')
@@ -265,7 +318,7 @@ export default function SimulatePage() {
             try {
                 const r = await fetch(`${API_URL}/simulate/status/${jobId}`)
                 if (!r.ok) return
-                const data = await r.json()
+                const data = await r.json() as SimulationJobStatus
                 setJobStatus(data)
                 if (data.status === 'done' || data.status === 'error') {
                     setRunning(false)
@@ -341,7 +394,7 @@ export default function SimulatePage() {
                             placeholder={'1xOP16-080\n3xOP09-095\n1xOP09-091\n...'}
                             className="w-full h-40 bg-gray-800 border border-gray-700 rounded-xl p-3 text-sm font-mono text-gray-200 resize-none focus:outline-none focus:border-orange-500"
                         />
-                        <div className="text-xs text-gray-500 mt-1">Formato: uma carta por linha, "QUANTIDADExCÓDIGO" (ex: 4xOP16-109). Inclua o Leader.</div>
+                        <div className="text-xs text-gray-500 mt-1">Formato: uma carta por linha, &quot;QUANTIDADExCÓDIGO&quot; (ex: 4xOP16-109). Inclua o Leader.</div>
 
                         {parsingPasted && <div className="text-sm text-gray-400 mt-3">Buscando cartas...</div>}
 
@@ -458,9 +511,9 @@ export default function SimulatePage() {
                                 </div>
                                 <div className="text-sm text-gray-400 mb-4">{jobStatus.result.total_simulations} simulações no total</div>
 
-                                {jobStatus.result.breakdown_by_matchup?.length > 1 && (
+                                {(jobStatus.result.breakdown_by_matchup?.length ?? 0) > 1 && (
                                     <div className="space-y-2">
-                                        {jobStatus.result.breakdown_by_matchup.map((b: any, i: number) => (
+                                        {jobStatus.result.breakdown_by_matchup!.map((b, i) => (
                                             <div key={i} className="flex items-center justify-between bg-gray-800 rounded-xl px-3 py-2">
                                                 <span className="text-sm text-gray-300">{b.matchup}</span>
                                                 <span className="text-sm font-bold text-white">{(b.win_rate * 100).toFixed(0)}% ({b.wins}/{b.n_simulations})</span>

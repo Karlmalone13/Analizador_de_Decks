@@ -1316,6 +1316,8 @@ class EffectExecutor:
         return cost_lte
 
     def _execute_step(self, step: dict, card: Card) -> str:
+        from optcg_engine.rules_facade import eligible_cards
+
         action = step.get('action', '')
         me = self.me
         opp = self.opp

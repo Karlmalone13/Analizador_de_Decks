@@ -158,10 +158,10 @@ export default function CardsPage() {
     filterCards(allCards, search, newFilters, sortBy)
   }
 
-  function updateFilter(key: string, value: string) {
+  function updateFilter(key: Exclude<keyof typeof filters, 'colors'>, value: string) {
     const newFilters = { ...filters, [key]: value }
-    setFilters(newFilters as any)
-    filterCards(allCards, search, newFilters as any, sortBy)
+    setFilters(newFilters)
+    filterCards(allCards, search, newFilters, sortBy)
   }
 
   function splitSubTypes(subTypes: string): string[] {

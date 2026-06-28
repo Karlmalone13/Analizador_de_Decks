@@ -21,9 +21,43 @@ async function fetchCards(url: string) {
   return Array.isArray(data) ? data : []
 }
 
-async function fetchApitcgAllCards(): Promise<any[]> {
+interface ApiCard {
+  card_image_id?: string
+  card_set_id?: string
+  card_name?: string
+  set_name?: string
+  optcg_don_name?: string
+  set_id?: string
+  card_image?: string
+  card_text?: string
+  card_color?: string
+  card_type?: string
+  rarity?: string
+  card_cost?: string | number
+  card_power?: string | number
+  attribute?: string | { name?: string }
+  sub_types?: string
+  counter_amount?: string | number
+  life?: string | number
+  market_price?: number
+  inventory_price?: number
+  code?: string
+  id?: string
+  name?: string
+  set?: { name?: string }
+  images?: { large?: string; small?: string }
+  ability?: string
+  color?: string
+  type?: string
+  cost?: string | number
+  power?: string | number
+  family?: string
+  counter?: string | number
+}
+
+async function fetchApitcgAllCards(): Promise<ApiCard[]> {
   const apiKey = process.env.APITCG_KEY!
-  const allCards: any[] = []
+  const allCards: ApiCard[] = []
   let page = 1
   const limit = 100
 
@@ -64,19 +98,19 @@ export async function GET() {
       return COLOR_FIX[base] ?? color
     }
 
-    const mapCard = (c: any) => ({
+    const mapCard = (c: ApiCard) => ({
       id: c.card_image_id || c.card_set_id,
       card_name: c.card_name,
       set_name: c.set_name || c.optcg_don_name?.split(' - ')[1] || 'Promo',
       set_id: c.set_id || 'DON',
       card_image: c.card_image,
       card_text: c.card_text,
-      card_color: fixColor(c.card_set_id, c.card_color || null),
+      card_color: fixColor(c.card_set_id ?? null, c.card_color || null),
       card_type: c.card_type || 'DON!!',
       rarity: c.rarity || 'DON!!',
       card_cost: c.card_cost ? String(c.card_cost) : null,
       card_power: c.card_power ? String(c.card_power) : null,
-      attribute: c.attribute || null,
+      attribute: typeof c.attribute === 'string' ? c.attribute : null,
       sub_types: c.sub_types || null,
       counter_amount: c.counter_amount ? String(c.counter_amount) : null,
       life: c.life ? String(c.life) : null,
@@ -88,19 +122,19 @@ export async function GET() {
 
     const apitcgCards = await fetchApitcgAllCards()
 
-    const mapApitcg = (c: any) => ({
+    const mapApitcg = (c: ApiCard) => ({
       id: c.code || c.id,
       card_name: c.name,
       set_name: c.set?.name || '',
       set_id: c.set?.name?.match(/\[([^\]]+)\]/)?.[1] || '',
       card_image: c.images?.large || c.images?.small,
       card_text: c.ability || '',
-      card_color: fixColor(c.code || c.id, c.color),
+      card_color: fixColor(c.code ?? c.id ?? null, c.color ?? null),
       card_type: c.type,
       rarity: c.rarity,
       card_cost: c.cost ? String(c.cost) : null,
       card_power: c.power ? String(c.power) : null,
-      attribute: c.attribute?.name || null,
+      attribute: typeof c.attribute === 'object' ? c.attribute?.name || null : null,
       sub_types: c.family || null,
       counter_amount: c.counter && c.counter !== '-' ? String(c.counter) : null,
       life: null,
