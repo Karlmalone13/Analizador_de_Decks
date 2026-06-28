@@ -7,6 +7,76 @@ e `git status` antes de tocar em qualquer coisa.
 
 ---
 
+## 2026-06-28 19:55 — Claude
+
+**Feito:**
+- Auditoria "dois motores" (`decision_engine.py` vs `optcg_engine/models.py` +
+  `action_system.py`/`validators.py`/`card_power.py`/`card_queries.py`,
+  decompilados da DLL oficial): confirmado que NÃO há acoplamento entre eles
+  hoje (zero imports cruzados) e que `decision_engine.py` (o motor real de
+  produção) já está correto e fiel à DLL nos pontos de maior risco testados
+  por amostragem (cálculo de poder, resolução de combate, economia de DON,
+  direção do deck topo/fundo). Detalhe completo na resposta da sessão; não
+  escrevi isso num .md ainda — se for re-auditar, repetir a amostragem.
+- **Achado importante**: `comparacao_simulador_vs_IA.md` (de sessão anterior)
+  **superestimou os gaps de cobertura**. Buscou só por nome literal no C#,
+  sem checar sinônimos funcionais no Python. Pelo menos 4 dos "8 efeitos
+  relevantes ausentes" já existem sob outro nome (`deal_damage`,
+  `ShuffleHandIntoDeck`/`CycleEntireHandToDeckBottom` já cobertos). Gaps reais
+  confirmados ficam em ~3: `OppNoBlockerThisTurn` (ausente), `Freeze`/
+  `bSkipNextActive` (nome existe mas é stub não funcional), `CantPlay*`
+  direcionado ao oponente (só funciona auto-aplicado hoje, ex: carta Imu).
+  **`comparacao_simulador_vs_IA.md` e a seção de buracos do `TODO.md` ainda
+  NÃO foram corrigidos com essa informação** — próxima sessão deveria
+  atualizar antes de implementar qualquer um dos gaps.
+- **Higienização de arquivos fantasma** (a pedido do usuário, antes de decidir
+  o que fazer com os "dois motores"). Removidos (git rm, commitado):
+  - `src/utils/deck-analyzer.ts` — um TERCEIRO motor morto: reimplementação
+    própria em TypeScript da análise de deck, nunca importada por nenhuma
+    página do front (a API Python já faz esse trabalho). `buildAnalysisIndex`
+    era exportada mas nunca chamada.
+  - `src/data/card_analysis_db.json` (2.8 MB) e `src/data/modelo_optcg.json`
+    (56 KB) — só existiam por causa do módulo morto acima.
+  - `scriptis_da_ia/check_leader.py`, `check_meta_count.py` — scripts de
+    debug de uso único, hardcoded, sem reuso.
+  - `scriptis_da_ia/test_payload.json` — sem nenhuma referência no repo.
+  - `scriptis_da_ia/Proficfile` — vazio (0 bytes), nome com typo
+    (provavelmente devia ser `Procfile`); não usado (Railway usa start
+    command configurado no painel, não Procfile).
+  - `scriptis_da_ia/modelo_optcg.json`, `.pkl`, `features.csv`,
+    `resultados_simulacao.csv` — artefatos gerados pela abordagem de ML já
+    documentada como superada em `scriptis_da_ia/README.md` (os SCRIPTS
+    `treinar_modelo.py` e `coletar_dados_optcg.py` foram MANTIDOS — o
+    README registra valor futuro possível pro coletor).
+  - Validado: `npx tsc --noEmit`, `npx eslint` (0 erros) e import do
+    `decision_engine.py`/`api.py` em Python continuam OK após a remoção.
+  - **NÃO removidos** (têm uso real ou são trabalho pendente documentado):
+    `propostas_completo.py`/`propostas_finais_209.json`/`censo_padroes.py`/
+    `censo_padroes.json` (insumo dos lotes 9-11 do parser, ainda não
+    aplicados — ver `RESUMA_SESSAO.md`), `smoke_test*.py`, `snapshot_parser.py`,
+    `diff_parser.py`, `gerar_dbs.py` (ferramentas ativas do workflow).
+  - `scriptis_da_ia/card_analysis_db.json` (no scriptis_da_ia, NÃO no
+    src/data) é a base REAL usada pela API — não tocar nesse.
+
+**Estado atual:**
+- Mudanças prontas para commit (limpeza de arquivos fantasma). Ainda não
+  commitado no momento em que este bloco foi escrito — ver `git status`.
+
+**Próximo:**
+- Corrigir `comparacao_simulador_vs_IA.md` e `TODO.md` com a lista real de
+  gaps (~3, não 8) antes de implementar qualquer um deles.
+- Decidir o destino final de `optcg_engine/models.py` + companhia (4470
+  linhas decompiladas, fiéis à DLL, sem uso em produção): a recomendação
+  anterior foi mantê-los como referência congelada (não merge de modelo de
+  dados, que seria reescrita de alto risco contradizendo a conclusão já
+  documentada de que a arquitetura atual está correta) — usuário ainda não
+  confirmou essa direção, decisão pausada pela higienização.
+- Implementar os ~3 gaps reais confirmados (`OppNoBlockerThisTurn`, `Freeze`
+  funcional, `CantPlay*` direcionado ao oponente) quando a documentação for
+  corrigida.
+
+---
+
 ## 2026-06-28 19:10 — Claude
 
 **Feito:**
