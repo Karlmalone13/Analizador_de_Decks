@@ -3723,6 +3723,28 @@
     "sub_types": "Navy SWORD",
     "attribute": "Ranged",
     "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "select_grant_can_attack_active_turn",
+            "count": 1,
+            "filter_type": "sword",
+            "include_leader": true
+          }
+        ],
+        "once_per_turn": true
+      },
+      "when_attacking": {
+        "steps": [
+          {
+            "action": "select_grant_can_attack_active_turn",
+            "count": 1,
+            "filter_type": "sword",
+            "include_leader": true
+          }
+        ],
+        "once_per_turn": true
+      },
       "activate_main": {
         "steps": [
           {
@@ -7045,6 +7067,16 @@
             "amount": 3000,
             "target": "leader",
             "duration": "battle_only"
+          }
+        ]
+      },
+      "main": {
+        "steps": [
+          {
+            "action": "select_grant_can_attack_active_turn",
+            "count": 1,
+            "filter_type": "sword",
+            "include_leader": true
           }
         ]
       }
@@ -19308,7 +19340,17 @@
     "color": "Black",
     "sub_types": "Dressrosa",
     "attribute": "Wisdom",
-    "effects": {}
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "select_grant_can_attack_active_turn",
+            "count": 1,
+            "filter_type": "dressrosa"
+          }
+        ]
+      }
+    }
   },
   "OP04-081": {
     "name": "Cavendish",
@@ -19334,6 +19376,14 @@
             "count": 2
           }
         ]
+      },
+      "passive": {
+        "steps": [
+          {
+            "action": "gain_can_attack_active"
+          }
+        ],
+        "don_requirement": 1
       }
     }
   },
@@ -19581,6 +19631,13 @@
           }
         ],
         "once_per_turn": true
+      },
+      "passive": {
+        "steps": [
+          {
+            "action": "gain_can_attack_active"
+          }
+        ]
       }
     }
   },
@@ -40647,6 +40704,21 @@
     "sub_types": "FILM Navy",
     "attribute": "Special",
     "effects": {
+      "activate_main": {
+        "steps": [
+          {
+            "action": "select_grant_can_attack_active_turn",
+            "count": 1,
+            "filter_type": "navy",
+            "include_leader": true
+          }
+        ],
+        "costs": [
+          {
+            "type": "rest_self"
+          }
+        ]
+      },
       "passive": {
         "steps": [
           {
@@ -42565,6 +42637,11 @@
       "activate_main": {
         "steps": [
           {
+            "action": "select_grant_can_attack_active_turn",
+            "count": 1,
+            "filter_type": "navy"
+          },
+          {
             "action": "trash_from_deck_top",
             "count": 2
           }
@@ -42624,6 +42701,16 @@
           {
             "action": "trash_from_deck_top",
             "count": 3
+          }
+        ]
+      },
+      "when_attacking": {
+        "steps": [
+          {
+            "action": "select_grant_can_attack_active_turn",
+            "count": 1,
+            "filter_type": "navy",
+            "include_leader": true
           }
         ]
       }
@@ -43515,6 +43602,14 @@
     "sub_types": "Navy SWORD",
     "attribute": "Strike",
     "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "select_grant_can_attack_active_turn",
+            "count": 1
+          }
+        ]
+      },
       "when_attacking": {
         "steps": [
           {

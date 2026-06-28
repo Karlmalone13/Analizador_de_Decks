@@ -860,6 +860,39 @@ def parse_set_active(text):
     return steps
 
 
+def parse_can_attack_active(text):
+    """
+    "This Character can also attack active Characters" (PERMANENTE, sem
+    seleção -- Cavendish OP04-081, Luffy OP04-090) ou "Up to N of your
+    [Tipo] Leader or Character cards can also attack active Characters
+    during this turn" (TEMPORÁRIO, com seleção -- Hibari, Gyats, Borsalino,
+    Aramaki, Kuzan, Koby). Keyword nunca implementada antes, achada na
+    auditoria do censo 27/06 (9 cartas).
+    """
+    steps = []
+    t = text.lower()
+
+    if re.search(r'this character can also attack active characters?', t):
+        steps.append({'action': 'gain_can_attack_active'})
+        return steps
+
+    m_select = re.search(
+        r'(?:up to (\d+) of your|your) '
+        r'(?:[\["\{]([a-z][a-z0-9 .\'-]+)[\]"\}]\s+type\s+)?'
+        r'(?:leader or character|characters?)'
+        r'[^.]*?can also attack active characters?', t)
+    if m_select:
+        step = {'action': 'select_grant_can_attack_active_turn',
+                'count': int(m_select.group(1)) if m_select.group(1) else 1}
+        if m_select.group(2):
+            step['filter_type'] = m_select.group(2).strip()
+        if 'leader or character' in m_select.group(0):
+            step['include_leader'] = True
+        steps.append(step)
+
+    return steps
+
+
 def parse_select_unblockable_turn(text):
     """
     "Select up to 1 of your [Tipo] Character(s)/Leader-or-Character... If
@@ -2461,6 +2494,10 @@ def parse_block(block_text, trigger_name):
     # pra nao deixar "during this battle" cair no parser errado.
     if 'blocker' in t and 'during this battle' in t and 'cannot activate' in t:
         steps.extend(parse_lock_blocker_battle(t))
+
+    # "can also attack active Characters" -- keyword nova (achada 27/06).
+    if 'can also attack active' in t:
+        steps.extend(parse_can_attack_active(t))
 
     # Unblockable concedido via "select + if attacks this turn" ou fixo no
     # Leader (Sanji, Diable Jambe, OP13-057) -- equivalente por regra a

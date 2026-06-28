@@ -169,6 +169,8 @@ class Card:
     rush_this_turn: bool = False  # Rush CONCEDIDO so neste turno (39 cards, ex: EB01-045 Brook, OP01-008 Cavendish) -- mesma logica de unblockable_this_turn. has_rush continua sendo o permanente/nativo (NUNCA tocar -- decisao de 24/06 contra unificar nativo/concedido por risco de regressao em 17 pontos; este campo PARALELO evita o risco). Resetado no refresh_phase.
     double_attack_this_turn: bool = False  # Double Attack CONCEDIDO so neste turno (12 cards) -- mesma logica. has_double_attack permanente intocado.
     blocker_this_turn: bool = False  # Blocker CONCEDIDO so neste turno (6 cards) -- mesma logica. has_blocker permanente intocado.
+    can_attack_active: bool = False  # "This Character can also attack active Characters" PERMANENTE (Cavendish OP04-081, Luffy OP04-090) -- keyword nunca implementada antes (achado 27/06, 9 cartas).
+    can_attack_active_this_turn: bool = False  # mesma habilidade, mas CONCEDIDA so neste turno via select (Hibari, Gyats, Borsalino, Aramaki, Kuzan, Koby) -- resetada no refresh_phase.
     cannot_be_rested_until: str = ''  # mesma semantica de duracao, para lock_opp_cannot_be_rested (mecanica DISTINTA de cannot_attack)
     # Buffs temporários (resetados a cada turno)
     power_buff: int = 0
@@ -193,6 +195,7 @@ class Card:
                       'rested', 'just_played', 'rush_character_only_this_turn',
                       'don_attached', 'cannot_attack_until', 'cannot_be_rested_until', 'cannot_block_until',
                       'unblockable_this_turn', 'rush_this_turn', 'double_attack_this_turn', 'blocker_this_turn',
+                      'can_attack_active', 'can_attack_active_this_turn',
                       'power_buff', 'cost_buff', 'cost_buff_permanent'):
             setattr(novo, campo, getattr(self, campo))
         return novo
@@ -361,7 +364,15 @@ class GameState:
     def active_chars(self) -> List[Card]:
         return [c for c in self.field_chars if not c.rested and not c.just_played]
 
-    def rested_chars(self) -> List[Card]:
+    def rested_chars(self, attacker: 'Card' = None) -> List[Card]:
+        # "This Character can also attack active Characters" (permanente ou
+        # so este turno, 9 cartas -- achado 27/06, nunca implementado antes).
+        # Sem attacker (uso normal de scoring/heuristica) mantém o
+        # comportamento de sempre -- só passa attacker explicitamente nos
+        # pontos que decidem o ataque real, pra não arriscar a lógica de
+        # múltiplos atacantes do planejador numa mudança apressada.
+        if attacker is not None and (attacker.can_attack_active or attacker.can_attack_active_this_turn):
+            return list(self.field_chars)
         return [c for c in self.field_chars if c.rested]
 
     def counter_in_hand(self) -> int:
@@ -2458,6 +2469,28 @@ class EffectExecutor:
             alvo.unblockable_this_turn = True
             return f'{alvo.name[:18]} ganhou Unblockable este turno'
 
+        # ── "can also attack active Characters" -- keyword nova (achada
+        # 27/06, 9 cartas). gain_can_attack_active = PERMANENTE ("This
+        # Character can also attack active Characters", sem seleção --
+        # Cavendish OP04-081, Luffy OP04-090). select_grant_*_turn = mesma
+        # estrutura de select_grant_unblockable_turn, mas concede
+        # can_attack_active_this_turn (temporário) ao alvo escolhido.
+        if action == 'gain_can_attack_active':
+            card.can_attack_active = True
+            return f'{card.name[:18]} pode atacar characters ativos (permanente)'
+
+        if action == 'select_grant_can_attack_active_turn':
+            filter_type = (step.get('filter_type') or '').lower()
+            candidatos = [c for c in me.field_chars
+                          if not filter_type or filter_type in c.sub_types.lower()]
+            if step.get('include_leader') and (not filter_type or filter_type in me.leader.sub_types.lower()):
+                candidatos.append(me.leader)
+            if not candidatos:
+                return ''
+            alvo = max(candidatos, key=lambda c: c.board_value())
+            alvo.can_attack_active_this_turn = True
+            return f'{alvo.name[:18]} pode atacar characters ativos este turno'
+
         # Keywords passivas (apenas registra, já vem do banco)
         if action in ('keyword_blocker', 'keyword_rush', 'keyword_double_attack',
                       'keyword_banish', 'keyword_trigger', 'keyword_unblockable'):
@@ -4199,6 +4232,7 @@ class OPTCGMatch:
             c.rush_this_turn = False
             c.double_attack_this_turn = False
             c.blocker_this_turn = False
+            c.can_attack_active_this_turn = False
         p.leader.don_attached = 0
         p.leader.rested = False
         p.leader.power_buff = 0

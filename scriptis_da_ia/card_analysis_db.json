@@ -5721,6 +5721,14 @@
         "attribute": "Ranged",
         "effects": [
             {
+                "action": "select_grant_can_attack_active_turn",
+                "trigger": "on_play"
+            },
+            {
+                "action": "select_grant_can_attack_active_turn",
+                "trigger": "when_attacking"
+            },
+            {
                 "action": "debuff_power",
                 "trigger": "activate_main",
                 "target": "opp_character"
@@ -10335,6 +10343,10 @@
                 "action": "buff_power",
                 "trigger": "counter",
                 "target": "leader"
+            },
+            {
+                "action": "select_grant_can_attack_active_turn",
+                "trigger": "main"
             }
         ],
         "synergy_states": {},
@@ -29939,7 +29951,12 @@
         "color": "Black",
         "sub_types": "Dressrosa",
         "attribute": "Wisdom",
-        "effects": [],
+        "effects": [
+            {
+                "action": "select_grant_can_attack_active_turn",
+                "trigger": "on_play"
+            }
+        ],
         "synergy_states": {},
         "text": "[On Play] Up to 1 of your [Dressrosa] type Characters can also attack active Characters during this turn.",
         "is_searcher": false,
@@ -29983,6 +30000,11 @@
             {
                 "action": "trash_from_deck_top",
                 "trigger": "when_attacking"
+            },
+            {
+                "action": "gain_can_attack_active",
+                "trigger": "passive",
+                "don_requirement": 1
             }
         ],
         "synergy_states": {},
@@ -30368,6 +30390,10 @@
             {
                 "action": "lock_self_character_refresh",
                 "trigger": "activate_main"
+            },
+            {
+                "action": "gain_can_attack_active",
+                "trigger": "passive"
             }
         ],
         "synergy_states": {},
@@ -63487,6 +63513,10 @@
         "attribute": "Special",
         "effects": [
             {
+                "action": "select_grant_can_attack_active_turn",
+                "trigger": "activate_main"
+            },
+            {
                 "action": "keyword_blocker",
                 "trigger": "passive"
             }
@@ -66482,6 +66512,10 @@
         "attribute": "Special",
         "effects": [
             {
+                "action": "select_grant_can_attack_active_turn",
+                "trigger": "activate_main"
+            },
+            {
                 "action": "trash_from_deck_top",
                 "trigger": "activate_main"
             }
@@ -66566,6 +66600,10 @@
             {
                 "action": "trash_from_deck_top",
                 "trigger": "on_play"
+            },
+            {
+                "action": "select_grant_can_attack_active_turn",
+                "trigger": "when_attacking"
             }
         ],
         "synergy_states": {},
@@ -68017,6 +68055,10 @@
         "sub_types": "Navy SWORD",
         "attribute": "Strike",
         "effects": [
+            {
+                "action": "select_grant_can_attack_active_turn",
+                "trigger": "on_play"
+            },
             {
                 "action": "buff_power",
                 "trigger": "when_attacking",
