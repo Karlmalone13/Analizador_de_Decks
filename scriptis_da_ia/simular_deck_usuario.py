@@ -53,6 +53,7 @@ def fetch_deck(deck_id: str) -> dict | None:
 def supabase_json_to_deck(deck_json: dict, cards_db: dict) -> tuple | None:
     """
     Converte JSON do Deck Builder para (leader, cards, start_stage).
+    start_stage fica None: a escolha depende do efeito do lider e do matchup.
     Formato: {"leader": {...}, "cards": [{"card": {...}, "quantity": N}]}
     """
     def make_card(card_data: dict) -> Card | None:
@@ -115,7 +116,6 @@ def supabase_json_to_deck(deck_json: dict, cards_db: dict) -> tuple | None:
 
     # Cartas
     cards = []
-    start_stage = None
     missing = []
 
     for entry in deck_json.get('cards', []):
@@ -127,16 +127,12 @@ def supabase_json_to_deck(deck_json: dict, cards_db: dict) -> tuple | None:
             continue
         for _ in range(quantity):
             cards.append(deepcopy(card))
-        if (card.card_type == 'STAGE' and
-                card.has_start_of_game and
-                start_stage is None):
-            start_stage = deepcopy(card)
 
     if missing:
         print(f"  ⚠️  {len(missing)} cartas não encontradas: {list(set(missing))[:5]}")
 
     print(f"  Deck montado: líder={leader.name} | {len(cards)} cartas")
-    return (leader, cards, start_stage)
+    return (leader, cards, None)
 
 
 def fetch_opponent_decks(exclude_id: str, cards_db: dict, limit: int = 10) -> list:

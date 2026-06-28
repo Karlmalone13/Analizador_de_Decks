@@ -414,6 +414,21 @@ class GameState:
         return self.don_available + self.don_rested
 
 
+def effective_hand_play_cost(p: GameState, card: Card) -> int:
+    """Custo para jogar uma carta da mao no estado simplificado atual."""
+    cost = card.effective_cost()
+    stage = p.field_stage
+    stage_text = (stage.card_text or '').lower() if stage else ''
+    if (stage
+            and card.card_type == 'CHARACTER'
+            and card.cost >= 2
+            and 'celestial dragons' in card.sub_types.lower()
+            and 'cost of playing' in stage_text
+            and 'celestial dragons' in stage_text):
+        cost -= 1
+    return max(0, cost)
+
+
 def is_immune(card: 'Card', imm_type: str, owner: 'GameState', opp: 'GameState',
               source_is_opp: bool = True) -> bool:
     """
@@ -3364,8 +3379,9 @@ class DecisionEngine:
         don_now  = self.me.don_available
 
         # Jogabilidade imediata
-        if card.cost <= don_now:       s += 40
-        elif card.cost <= don_now + 2: s += 20
+        play_cost = effective_hand_play_cost(self.me, card)
+        if play_cost <= don_now:       s += 40
+        elif play_cost <= don_now + 2: s += 20
         else:                          s -= 15
 
         s += card.power / 1000 * 5
@@ -3548,7 +3564,7 @@ class DecisionEngine:
             return False
         don_reserve = self._don_reserve_for_defense()
         don_usable  = max(0, self.me.don_available - don_reserve)
-        if card.cost > don_usable:
+        if effective_hand_play_cost(self.me, card) > don_usable:
             return False
         if '[counter]' in card.card_text.lower() and card.card_type == 'EVENT':
             return False
@@ -3580,7 +3596,7 @@ class DecisionEngine:
         for c in self.me.hand:
             if c.card_type not in ('CHARACTER', 'EVENT', 'STAGE'):
                 continue
-            if c.cost > don_usable:
+            if effective_hand_play_cost(self.me, c) > don_usable:
                 continue
             # Não joga Counter como carta normal
             if '[counter]' in c.card_text.lower() and c.card_type == 'EVENT':
@@ -4416,6 +4432,8 @@ class OPTCGMatch:
         p.leader.cost_buff = 0
         p.leader.cannot_attack_until = ''
         p.leader.unblockable_this_turn = False
+        if p.field_stage:
+            p.field_stage.rested = False
         p.don_available += p.don_rested + don_from_cards
         p.don_rested = 0
         # Reset da auto-restrição "cannot play this turn" (vale só pelo turno em
@@ -4503,6 +4521,10 @@ class OPTCGMatch:
         for c in costs:
             ctype = c.get('type')
             cnt = c.get('count', 1)
+            if ctype == 'rest_self' and getattr(src, 'rested', False):
+                return False
+            if ctype == 'rest_don' and p.don_available < cnt:
+                return False
             if ctype == 'trash_from_hand' and len(p.hand) < cnt:
                 return False   # não tem carta para trashar
             if ctype == 'don_minus':
@@ -4593,7 +4615,7 @@ class OPTCGMatch:
             for c in me.hand:
                 if c is card or c.card_type not in ('CHARACTER', 'EVENT', 'STAGE'):
                     continue
-                if c.cost > don_usable:
+                if effective_hand_play_cost(me, c) > don_usable:
                     continue   # não jogaria mesmo (sem DON) — não conta como perda
                 # essa carta SERIA bloqueada pela trava?
                 bloqueada = (scope == 'hand'
@@ -5105,12 +5127,13 @@ class OPTCGMatch:
         Com verbose=True, narra a jogada (para o replay). Silencioso por padrão
         (simulação em massa não passa verbose).
         """
+        play_cost = effective_hand_play_cost(p, card)
         p.hand.remove(card)
-        p.don_rested  += card.cost
-        p.don_available -= card.cost
+        p.don_rested  += play_cost
+        p.don_available -= play_cost
 
         if verbose:
-            don_txt = f'gastou {card.cost} DON' if card.cost > 0 else 'grátis'
+            don_txt = f'gastou {play_cost} DON' if play_cost > 0 else 'grátis'
             print(f'  > {don_txt} -> Joga: {card.name[:30]} '
                   f'({card.effective_power(True)}pwr) [{card.card_type}]')
             # Texto do efeito da carta (cinza) — para auditoria sem decorar

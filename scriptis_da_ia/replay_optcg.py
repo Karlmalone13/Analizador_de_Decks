@@ -250,32 +250,14 @@ class ReplayMatch:
             life_n = p.leader.life if p.leader.life > 0 else 5
             p.life = [p.deck.pop() for _ in range(min(life_n, len(p.deck)))]
 
-            # Stage inicial
-            if stage:
+            # Stage inicial: usa a mesma regra do motor principal.
+            if stage and not p.leader.has_start_of_game:
                 p.field_stage = stage
-                print(f'{col}{nm}: Stage inicial → {stage.name}{C.RESET}')
-            elif p.leader.has_start_of_game:
-                import re as _re
-                leader_text = p.leader.card_text.lower()
-                type_match = _re.search(
-                    r'start of the game[^.]*play.*?\[([^\]]+)\].*?stage',
-                    leader_text
-                )
-                wanted_type = type_match.group(1).lower() if type_match else None
-                valid_stages = []
-                for c in p.deck:
-                    if c.card_type != 'STAGE':
-                        continue
-                    sub = c.sub_types.lower() if hasattr(c, 'sub_types') and c.sub_types else ''
-                    name_l = c.name.lower()
-                    matches = (wanted_type in sub or wanted_type in name_l) if wanted_type else True
-                    if matches:
-                        valid_stages.append(c)
-                if valid_stages:
-                    best_stage = max(valid_stages, key=lambda c: c.cost)
-                    p.deck.remove(best_stage)
-                    p.field_stage = best_stage
-                    print(f'{col}{nm}: Stage inicial → {best_stage.name}{C.RESET}')
+            else:
+                opp_state = self.state_b if p is self.state_a else self.state_a
+                self._get_engine_match()._place_start_stage(p, opp_state)
+            if p.field_stage:
+                print(f'{col}{nm}: Stage inicial → {p.field_stage.name}{C.RESET}')
 
             print(f'{col}{nm}{C.RESET}: {len(p.hand)} cartas, {p.life_count()} vidas, {len(p.deck)} no deck')
 
