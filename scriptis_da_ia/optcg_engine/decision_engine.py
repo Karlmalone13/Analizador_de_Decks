@@ -4960,6 +4960,22 @@ class OPTCGMatch:
                 if log:
                     print(f'      ↳ [when attacking] {log}')
 
+        # Executa [On Your Opponent's Attack] -- gatilho do DEFENSOR,
+        # reage à declaração do ataque (qualquer Character/Leader dele
+        # pode ter essa habilidade, não só o alvo). Achado 27/06: a tag
+        # nunca tinha reconhecimento dedicado antes, caía em 'passive'
+        # (nunca disparava de verdade -- 44 cartas, ex: Viola OP04-021,
+        # Mr.9 EB01-037). Roda ANTES de calcular atk_power -- efeitos
+        # como debuff_power (EB01-002 Izo) precisam valer pra ESTA
+        # batalha, não depois que o dano já foi calculado.
+        ee_react = EffectExecutor(opp, p)
+        for reagente in [opp.leader] + list(opp.field_chars):
+            oa_logs = ee_react.execute(reagente, 'on_opp_attack')
+            if verbose:
+                for log in oa_logs:
+                    if log:
+                        print(f'      ↳ [on opp attack: {reagente.name[:15]}] {log}')
+
         atk_power = attacker.effective_power(True)
         damage    = 2 if attacker.is_double_attack() else 1
 

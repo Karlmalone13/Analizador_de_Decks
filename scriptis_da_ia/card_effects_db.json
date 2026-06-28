@@ -37,15 +37,20 @@
       "on_play": {
         "steps": [
           {
+            "action": "give_don",
+            "count": 1,
+            "rested": true
+          }
+        ],
+        "once_per_turn": true
+      },
+      "on_opp_attack": {
+        "steps": [
+          {
             "action": "debuff_power",
             "amount": 2000,
             "target": "opp_leader_or_character",
             "duration": "this_turn"
-          },
-          {
-            "action": "give_don",
-            "count": 1,
-            "rested": true
           }
         ],
         "costs": [
@@ -882,6 +887,25 @@
     "sub_types": "Baroque Works",
     "attribute": "Slash",
     "effects": {
+      "on_opp_attack": {
+        "steps": [
+          {
+            "action": "add_don",
+            "count": 1
+          }
+        ],
+        "conditions": {
+          "leader_type_includes": "baroque works"
+        },
+        "costs": [
+          {
+            "type": "don_minus",
+            "count": 1,
+            "optional": true
+          }
+        ],
+        "once_per_turn": true
+      },
       "passive": {
         "steps": [
           {
@@ -975,7 +999,7 @@
     "sub_types": "Baroque Works",
     "attribute": "Strike",
     "effects": {
-      "passive": {
+      "on_opp_attack": {
         "steps": [
           {
             "action": "ko",
@@ -6477,6 +6501,26 @@
     "sub_types": "Big Mom Pirates",
     "attribute": "Wisdom",
     "effects": {
+      "on_opp_attack": {
+        "steps": [
+          {
+            "action": "buff_power",
+            "amount": 2000,
+            "target": "leader_or_character",
+            "duration": "battle_only"
+          }
+        ],
+        "conditions": {
+          "events_in_trash_gte": 4
+        },
+        "costs": [
+          {
+            "type": "trash_from_hand",
+            "count": 1
+          }
+        ],
+        "once_per_turn": true
+      },
       "passive": {
         "steps": [
           {
@@ -7413,6 +7457,12 @@
             "cost_lte": 5
           }
         ],
+        "costs": [
+          {
+            "type": "rest_don",
+            "count": 2
+          }
+        ],
         "once_per_turn": true
       }
     }
@@ -7442,6 +7492,12 @@
             "amount": 1000,
             "target": "self",
             "duration": "this_turn"
+          }
+        ],
+        "costs": [
+          {
+            "type": "rest_don",
+            "count": 4
           }
         ],
         "once_per_turn": true
@@ -8370,6 +8426,10 @@
         "costs": [
           {
             "type": "rest_self"
+          },
+          {
+            "type": "rest_don",
+            "count": 1
           }
         ]
       }
@@ -8398,7 +8458,13 @@
         ],
         "conditions": {
           "leader_is": "kouzuki oden"
-        }
+        },
+        "costs": [
+          {
+            "type": "rest_don",
+            "count": 3
+          }
+        ]
       }
     }
   },
@@ -9612,6 +9678,12 @@
         "steps": [
           {
             "action": "add_don",
+            "count": 1
+          }
+        ],
+        "costs": [
+          {
+            "type": "rest_don",
             "count": 1
           }
         ]
@@ -11000,6 +11072,12 @@
             "target": "self"
           }
         ],
+        "costs": [
+          {
+            "type": "rest_don",
+            "count": 3
+          }
+        ],
         "once_per_turn": true
       }
     }
@@ -11048,6 +11126,12 @@
             "target": "own_character",
             "filter_type": "minks",
             "cost_lte": 5
+          }
+        ],
+        "costs": [
+          {
+            "type": "rest_don",
+            "count": 2
           }
         ]
       }
@@ -11111,6 +11195,12 @@
             "count": 1,
             "cost_eq": 3
           }
+        ],
+        "costs": [
+          {
+            "type": "rest_don",
+            "count": 1
+          }
         ]
       }
     }
@@ -11144,6 +11234,12 @@
           {
             "action": "deck_bottom_rest"
           }
+        ],
+        "costs": [
+          {
+            "type": "rest_don",
+            "count": 1
+          }
         ]
       },
       "when_attacking": {
@@ -11163,6 +11259,12 @@
           },
           {
             "action": "deck_bottom_rest"
+          }
+        ],
+        "costs": [
+          {
+            "type": "rest_don",
+            "count": 1
           }
         ]
       }
@@ -13949,6 +14051,10 @@
         "costs": [
           {
             "type": "rest_self"
+          },
+          {
+            "type": "rest_don",
+            "count": 2
           }
         ]
       }
@@ -13976,6 +14082,12 @@
             "action": "set_active",
             "target": "leader"
           }
+        ],
+        "costs": [
+          {
+            "type": "rest_don",
+            "count": 3
+          }
         ]
       }
     }
@@ -13998,6 +14110,12 @@
             "count": 1,
             "cost_lte": 4,
             "filter_name": "trigger"
+          }
+        ],
+        "costs": [
+          {
+            "type": "rest_don",
+            "count": 1
           }
         ],
         "don_requirement": 2
@@ -15191,6 +15309,12 @@
               "don_on_field_gte": 8
             }
           }
+        ],
+        "costs": [
+          {
+            "type": "rest_don",
+            "count": 2
+          }
         ]
       }
     }
@@ -15532,6 +15656,10 @@
           "life_lte": 1
         },
         "costs": [
+          {
+            "type": "rest_don",
+            "count": 2
+          },
           {
             "type": "trash_from_hand",
             "count": 1
@@ -16822,6 +16950,12 @@
             "duration": "this_turn"
           }
         ],
+        "costs": [
+          {
+            "type": "rest_don",
+            "count": 2
+          }
+        ],
         "once_per_turn": true
       }
     }
@@ -17337,6 +17471,12 @@
             "target": "own_character",
             "cost_lte": 5
           }
+        ],
+        "costs": [
+          {
+            "type": "rest_don",
+            "count": 1
+          }
         ]
       }
     }
@@ -17352,11 +17492,17 @@
     "sub_types": "Donquixote Pirates",
     "attribute": "Special",
     "effects": {
-      "passive": {
+      "on_opp_attack": {
         "steps": [
           {
             "action": "rest_opp_don",
             "count": 1
+          }
+        ],
+        "costs": [
+          {
+            "type": "rest_don",
+            "count": 2
           }
         ]
       }
@@ -17452,12 +17598,18 @@
     "sub_types": "Donquixote Pirates",
     "attribute": "Special",
     "effects": {
-      "passive": {
+      "on_opp_attack": {
         "steps": [
           {
             "action": "rest_opp_character",
             "count": 1,
             "cost_lte": 4
+          }
+        ],
+        "costs": [
+          {
+            "type": "rest_don",
+            "count": 2
           }
         ]
       }
@@ -17489,7 +17641,13 @@
         ],
         "conditions": {
           "leader_type": "donquixote pirates"
-        }
+        },
+        "costs": [
+          {
+            "type": "rest_don",
+            "count": 1
+          }
+        ]
       }
     }
   },
@@ -17585,11 +17743,21 @@
             "target": "opp_character",
             "cost_lte": 5,
             "rested_only": true
-          },
+          }
+        ]
+      },
+      "on_opp_attack": {
+        "steps": [
           {
             "action": "rest_opp_character",
             "count": 1,
-            "cost_lte": 5
+            "cost_lte": 4
+          }
+        ],
+        "costs": [
+          {
+            "type": "rest_don",
+            "count": 2
           }
         ]
       }
@@ -17890,6 +18058,12 @@
         "conditions": {
           "hand_lte": 6
         },
+        "costs": [
+          {
+            "type": "rest_don",
+            "count": 1
+          }
+        ],
         "once_per_turn": true
       }
     }
@@ -18229,6 +18403,10 @@
         "costs": [
           {
             "type": "rest_self"
+          },
+          {
+            "type": "rest_don",
+            "count": 2
           }
         ]
       },
@@ -18414,7 +18592,7 @@
     "sub_types": "Galley-La Company Water Seven",
     "attribute": "Wisdom",
     "effects": {
-      "passive": {
+      "on_opp_attack": {
         "steps": [
           {
             "action": "gain_blocker",
@@ -18451,11 +18629,6 @@
       "on_play": {
         "steps": [
           {
-            "action": "draw",
-            "count": 1,
-            "then_trash": 1
-          },
-          {
             "action": "gain_life",
             "source": "deck_top",
             "dest": "life_top",
@@ -18471,6 +18644,23 @@
             "type": "don_minus",
             "count": 2,
             "optional": true
+          }
+        ],
+        "once_per_turn": true
+      },
+      "on_opp_attack": {
+        "steps": [
+          {
+            "action": "draw",
+            "count": 1,
+            "then_trash": 1
+          }
+        ],
+        "costs": [
+          {
+            "type": "don_minus",
+            "count": 1,
+            "optional": false
           }
         ],
         "once_per_turn": true
@@ -18529,7 +18719,7 @@
     "sub_types": "Water Seven The Franky Family",
     "attribute": "Wisdom",
     "effects": {
-      "passive": {
+      "on_opp_attack": {
         "steps": [
           {
             "action": "buff_power",
@@ -18731,6 +18921,23 @@
     "sub_types": "Animal Water Seven",
     "attribute": "Strike",
     "effects": {
+      "on_opp_attack": {
+        "steps": [
+          {
+            "action": "bounce",
+            "count": 1,
+            "target": "opp_character",
+            "cost_lte": 2
+          }
+        ],
+        "costs": [
+          {
+            "type": "don_minus",
+            "count": 1,
+            "optional": true
+          }
+        ]
+      },
       "passive": {
         "steps": [
           {
@@ -18780,7 +18987,7 @@
     "sub_types": "Baroque Works",
     "attribute": "Special",
     "effects": {
-      "passive": {
+      "on_opp_attack": {
         "steps": [
           {
             "action": "debuff_power",
@@ -18811,7 +19018,7 @@
     "sub_types": "Baroque Works",
     "attribute": "Strike",
     "effects": {
-      "passive": {
+      "on_opp_attack": {
         "steps": [
           {
             "action": "buff_power",
@@ -18848,7 +19055,7 @@
     "sub_types": "Baroque Works",
     "attribute": "Special",
     "effects": {
-      "passive": {
+      "on_opp_attack": {
         "steps": [
           {
             "action": "ko",
@@ -19697,6 +19904,12 @@
           {
             "action": "set_active",
             "target": "self"
+          }
+        ],
+        "costs": [
+          {
+            "type": "rest_don",
+            "count": 1
           }
         ],
         "once_per_turn": true
@@ -20993,12 +21206,18 @@
     "sub_types": "Donquixote Pirates",
     "attribute": "Special",
     "effects": {
-      "passive": {
+      "on_opp_attack": {
         "steps": [
           {
             "action": "rest_opp_character",
             "count": 1,
             "cost_lte": 6
+          }
+        ],
+        "costs": [
+          {
+            "type": "rest_don",
+            "count": 1
           }
         ],
         "once_per_turn": true
@@ -21105,6 +21324,10 @@
         "costs": [
           {
             "type": "rest_self"
+          },
+          {
+            "type": "rest_don",
+            "count": 1
           }
         ]
       }
@@ -21140,6 +21363,10 @@
         "costs": [
           {
             "type": "rest_self"
+          },
+          {
+            "type": "rest_don",
+            "count": 1
           }
         ]
       }
@@ -22247,7 +22474,7 @@
     "sub_types": "Baroque Works",
     "attribute": "Slash",
     "effects": {
-      "passive": {
+      "on_opp_attack": {
         "steps": [
           {
             "action": "play_card",
@@ -22615,6 +22842,10 @@
         "costs": [
           {
             "type": "rest_self"
+          },
+          {
+            "type": "rest_don",
+            "count": 1
           }
         ]
       }
@@ -22641,6 +22872,10 @@
         "costs": [
           {
             "type": "rest_self"
+          },
+          {
+            "type": "rest_don",
+            "count": 1
           }
         ]
       }
@@ -22948,7 +23183,7 @@
     "sub_types": "Sky Island",
     "attribute": "Wisdom",
     "effects": {
-      "passive": {
+      "on_opp_attack": {
         "steps": [
           {
             "action": "debuff_power",
@@ -23788,7 +24023,7 @@
     "sub_types": "FILM Mecha Island",
     "attribute": "Wisdom",
     "effects": {
-      "passive": {
+      "on_opp_attack": {
         "steps": [
           {
             "action": "buff_power",
@@ -26225,6 +26460,10 @@
         "costs": [
           {
             "type": "rest_self"
+          },
+          {
+            "type": "rest_don",
+            "count": 1
           }
         ]
       }
@@ -26802,6 +27041,12 @@
             "target": "self"
           }
         ],
+        "costs": [
+          {
+            "type": "rest_don",
+            "count": 2
+          }
+        ],
         "once_per_turn": true
       },
       "when_attacking": {
@@ -26809,6 +27054,12 @@
           {
             "action": "set_active",
             "target": "self"
+          }
+        ],
+        "costs": [
+          {
+            "type": "rest_don",
+            "count": 1
           }
         ],
         "once_per_turn": true
@@ -27059,6 +27310,23 @@
     "sub_types": "FILM Grantesoro",
     "attribute": "Special",
     "effects": {
+      "on_opp_attack": {
+        "steps": [
+          {
+            "action": "buff_power",
+            "amount": 2000,
+            "target": "leader_or_character",
+            "duration": "battle_only"
+          }
+        ],
+        "costs": [
+          {
+            "type": "trash_from_hand",
+            "count": 1
+          }
+        ],
+        "once_per_turn": true
+      },
       "passive": {
         "steps": [
           {
@@ -27317,10 +27585,16 @@
     "sub_types": "Bonney Pirates Supernovas",
     "attribute": "Special",
     "effects": {
-      "passive": {
+      "on_opp_attack": {
         "steps": [
           {
             "action": "rest_opp_character",
+            "count": 1
+          }
+        ],
+        "costs": [
+          {
+            "type": "rest_don",
             "count": 1
           }
         ],
@@ -27459,7 +27733,7 @@
     "sub_types": "Foolshout Island",
     "attribute": "Wisdom",
     "effects": {
-      "passive": {
+      "on_opp_attack": {
         "steps": [
           {
             "action": "gain_blocker",
@@ -27893,6 +28167,12 @@
             "count": 1,
             "target": "opp_character",
             "cost_lte": 2
+          }
+        ],
+        "costs": [
+          {
+            "type": "rest_don",
+            "count": 1
           }
         ]
       }
@@ -29438,6 +29718,12 @@
             "dest": "life_top",
             "count": 1,
             "up_to": false
+          }
+        ],
+        "costs": [
+          {
+            "type": "rest_don",
+            "count": 1
           }
         ],
         "once_per_turn": true
@@ -34054,12 +34340,6 @@
       "on_play": {
         "steps": [
           {
-            "action": "buff_power",
-            "amount": 2000,
-            "target": "leader_or_character",
-            "duration": "battle_only"
-          },
-          {
             "action": "set_don_active",
             "count": 3,
             "up_to": true
@@ -34068,6 +34348,17 @@
         "conditions": {
           "leader_type": "odyssey"
         },
+        "once_per_turn": true
+      },
+      "on_opp_attack": {
+        "steps": [
+          {
+            "action": "buff_power",
+            "amount": 2000,
+            "target": "leader_or_character",
+            "duration": "battle_only"
+          }
+        ],
         "costs": [
           {
             "type": "rest_don",
@@ -34281,6 +34572,15 @@
     "sub_types": "Donquixote Pirates Navy ODYSSEY",
     "attribute": "Special",
     "effects": {
+      "on_opp_attack": {
+        "steps": [
+          {
+            "action": "set_active",
+            "target": "self"
+          }
+        ],
+        "once_per_turn": true
+      },
       "passive": {
         "steps": [
           {
@@ -38434,7 +38734,7 @@
     "sub_types": "Donquixote Pirates",
     "attribute": "Special",
     "effects": {
-      "passive": {
+      "on_opp_attack": {
         "steps": [
           {
             "action": "rest_opp_character",
@@ -38562,7 +38862,12 @@
             "count": 1,
             "cost_lte": 5,
             "filter_type": "donquixote pirates"
-          },
+          }
+        ],
+        "once_per_turn": true
+      },
+      "on_opp_attack": {
+        "steps": [
           {
             "action": "add_don",
             "count": 1
@@ -40621,7 +40926,7 @@
     "sub_types": "Merfolk Fish-Man Island",
     "attribute": "Wisdom",
     "effects": {
-      "passive": {
+      "on_opp_attack": {
         "steps": [
           {
             "action": "buff_power",
@@ -41060,12 +41365,8 @@
     "sub_types": "Straw Hat Crew",
     "attribute": "Special",
     "effects": {
-      "your_turn": {
+      "on_opp_attack": {
         "steps": [
-          {
-            "action": "draw",
-            "count": 1
-          },
           {
             "action": "buff_power",
             "amount": 2000,
@@ -41073,15 +41374,25 @@
             "duration": "this_turn"
           }
         ],
-        "conditions": {
-          "hand_lte": 7
-        },
         "costs": [
           {
             "type": "trash_from_hand",
             "count": 1
           }
         ],
+        "once_per_turn": true,
+        "don_requirement": 1
+      },
+      "your_turn": {
+        "steps": [
+          {
+            "action": "draw",
+            "count": 1
+          }
+        ],
+        "conditions": {
+          "hand_lte": 7
+        },
         "once_per_turn": true
       }
     }
@@ -41124,6 +41435,21 @@
     "sub_types": "The Vinsmoke Family GERMA 66",
     "attribute": "Strike",
     "effects": {
+      "on_opp_attack": {
+        "steps": [
+          {
+            "action": "buff_power",
+            "amount": 1000,
+            "target": "leader_or_character",
+            "duration": "battle_only"
+          },
+          {
+            "action": "trash_from_deck_top",
+            "count": 2
+          }
+        ],
+        "once_per_turn": true
+      },
       "passive": {
         "steps": [
           {
@@ -41281,7 +41607,11 @@
           },
           {
             "action": "deck_reorder_rest"
-          },
+          }
+        ]
+      },
+      "on_opp_attack": {
+        "steps": [
           {
             "action": "buff_power",
             "amount": 1000,
@@ -41661,6 +41991,26 @@
           }
         ],
         "once_per_turn": true
+      },
+      "on_opp_attack": {
+        "steps": [
+          {
+            "action": "look_top_deck",
+            "count": 1
+          },
+          {
+            "action": "add_to_hand",
+            "count": 1,
+            "revealed_to_opponent": false
+          },
+          {
+            "action": "buff_power",
+            "amount": 1000,
+            "target": "self",
+            "duration": "battle_only"
+          }
+        ],
+        "once_per_turn": true
       }
     }
   },
@@ -41949,22 +42299,26 @@
     "sub_types": "The Four Emperors Big Mom Pirates",
     "attribute": "Special",
     "effects": {
-      "passive": {
+      "on_opp_attack": {
         "steps": [
           {
             "action": "buff_power",
             "amount": 2000,
             "target": "leader",
             "duration": "this_turn"
-          },
+          }
+        ],
+        "once_per_turn": true
+      },
+      "passive": {
+        "steps": [
           {
             "action": "gain_rush"
           }
         ],
         "conditions": {
           "leader_type": "big mom pirates"
-        },
-        "once_per_turn": true
+        }
       }
     }
   },
@@ -43336,6 +43690,23 @@
     "sub_types": "The Four Emperors Red-Haired Pirates",
     "attribute": "Slash",
     "effects": {
+      "on_opp_attack": {
+        "steps": [
+          {
+            "action": "debuff_power",
+            "amount": 2000,
+            "target": "opp_leader_or_character",
+            "duration": "this_turn"
+          }
+        ],
+        "costs": [
+          {
+            "type": "trash_from_hand",
+            "count": 1
+          }
+        ],
+        "once_per_turn": true
+      },
       "passive": {
         "steps": [
           {
@@ -44924,7 +45295,7 @@
     "sub_types": "Baroque Works The Seven Warlords of the Sea",
     "attribute": "Special",
     "effects": {
-      "passive": {
+      "on_opp_attack": {
         "steps": [
           {
             "action": "buff_power",
@@ -46348,7 +46719,7 @@
     "sub_types": "Straw Hat Crew Supernovas",
     "attribute": "Strike",
     "effects": {
-      "passive": {
+      "on_opp_attack": {
         "steps": [
           {
             "action": "buff_power",
@@ -46372,7 +46743,7 @@
     "sub_types": "Whitebeard Pirates",
     "attribute": "Special",
     "effects": {
-      "passive": {
+      "on_opp_attack": {
         "steps": [
           {
             "action": "draw",
@@ -53141,7 +53512,7 @@
     "sub_types": "The Seven Warlords of the Sea",
     "attribute": "Slash",
     "effects": {
-      "your_turn": {
+      "on_opp_attack": {
         "steps": [
           {
             "action": "buff_power",
@@ -53246,6 +53617,17 @@
         "once_per_turn": true
       },
       "when_attacking": {
+        "steps": [
+          {
+            "action": "buff_power",
+            "amount": 1000,
+            "target": "self",
+            "duration": "battle_only"
+          }
+        ],
+        "once_per_turn": true
+      },
+      "on_opp_attack": {
         "steps": [
           {
             "action": "buff_power",
@@ -54752,7 +55134,14 @@
           {
             "action": "draw",
             "count": 1
-          },
+          }
+        ],
+        "conditions": {
+          "leader_type": "dressrosa"
+        }
+      },
+      "on_opp_attack": {
+        "steps": [
           {
             "action": "buff_power",
             "amount": 2000,
@@ -54760,9 +55149,6 @@
             "duration": "battle_only"
           }
         ],
-        "conditions": {
-          "leader_type": "dressrosa"
-        },
         "costs": [
           {
             "type": "rest_self"
@@ -54809,7 +55195,7 @@
     "sub_types": "Sky Island",
     "attribute": "Wisdom",
     "effects": {
-      "passive": {
+      "on_opp_attack": {
         "steps": [
           {
             "action": "debuff_power",
@@ -57016,24 +57402,28 @@
     "sub_types": "Straw Hat Crew Impel Down",
     "attribute": "Strike",
     "effects": {
-      "passive": {
+      "on_opp_attack": {
         "steps": [
           {
             "action": "set_base_power",
             "amount": 7000,
             "target": "self",
             "duration": "this_turn"
-          },
-          {
-            "action": "debuff_cost",
-            "amount": 2,
-            "target": "self"
           }
         ],
         "costs": [
           {
             "type": "trash_from_hand",
             "count": 1
+          }
+        ]
+      },
+      "passive": {
+        "steps": [
+          {
+            "action": "debuff_cost",
+            "amount": 2,
+            "target": "self"
           }
         ]
       }
@@ -58812,12 +59202,6 @@
             "target": "own_character",
             "count": 99,
             "duration": "permanent"
-          }
-        ],
-        "costs": [
-          {
-            "type": "trash_from_hand",
-            "count": 1
           }
         ],
         "once_per_turn": true
@@ -62144,6 +62528,16 @@
     "sub_types": "Bonney Pirates Supernovas",
     "attribute": "Special",
     "effects": {
+      "on_opp_attack": {
+        "steps": [
+          {
+            "action": "set_don_active",
+            "count": 1,
+            "up_to": true
+          }
+        ],
+        "once_per_turn": true
+      },
       "passive": {
         "steps": [
           {
@@ -62983,6 +63377,10 @@
         ],
         "costs": [
           {
+            "type": "rest_don",
+            "count": 3
+          },
+          {
             "type": "trash_from_hand",
             "count": 1
           }
@@ -63125,6 +63523,10 @@
         "costs": [
           {
             "type": "rest_self"
+          },
+          {
+            "type": "rest_don",
+            "count": 1
           }
         ]
       }
@@ -64662,6 +65064,10 @@
           }
         ],
         "costs": [
+          {
+            "type": "rest_don",
+            "count": 3
+          },
           {
             "type": "trash_from_hand",
             "count": 1
@@ -66431,6 +66837,12 @@
             "action": "add_don",
             "count": 1
           }
+        ],
+        "costs": [
+          {
+            "type": "rest_don",
+            "count": 1
+          }
         ]
       }
     }
@@ -66991,6 +67403,12 @@
             "target": "own_character",
             "attribute": "slash",
             "cost_lte": 4
+          }
+        ],
+        "costs": [
+          {
+            "type": "rest_don",
+            "count": 2
           }
         ]
       }
@@ -68500,6 +68918,16 @@
     "sub_types": "FILM",
     "attribute": "Wisdom",
     "effects": {
+      "on_opp_attack": {
+        "steps": [
+          {
+            "action": "buff_power",
+            "amount": 1000,
+            "target": "leader_or_character",
+            "duration": "battle_only"
+          }
+        ]
+      },
       "passive": {
         "steps": [
           {
@@ -69604,6 +70032,14 @@
           {
             "action": "deck_bottom_rest"
           }
+        ]
+      },
+      "on_opp_attack": {
+        "steps": [
+          {
+            "action": "draw",
+            "count": 1
+          }
         ],
         "costs": [
           {
@@ -70180,7 +70616,11 @@
           },
           {
             "action": "deck_bottom_rest"
-          },
+          }
+        ]
+      },
+      "on_opp_attack": {
+        "steps": [
           {
             "action": "set_don_active",
             "count": 1,

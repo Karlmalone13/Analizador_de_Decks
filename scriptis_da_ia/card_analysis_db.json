@@ -52,13 +52,13 @@
         "attribute": "Ranged",
         "effects": [
             {
-                "action": "debuff_power",
-                "trigger": "on_play",
-                "target": "opp_leader_or_character"
-            },
-            {
                 "action": "give_don",
                 "trigger": "on_play"
+            },
+            {
+                "action": "debuff_power",
+                "trigger": "on_opp_attack",
+                "target": "opp_leader_or_character"
             }
         ],
         "synergy_states": {},
@@ -1399,6 +1399,10 @@
         "attribute": "Slash",
         "effects": [
             {
+                "action": "add_don",
+                "trigger": "on_opp_attack"
+            },
+            {
                 "action": "keyword_blocker",
                 "trigger": "passive"
             }
@@ -1531,7 +1535,7 @@
         "effects": [
             {
                 "action": "ko",
-                "trigger": "passive",
+                "trigger": "on_opp_attack",
                 "cost_lte": 2,
                 "target": "opp_character"
             }
@@ -9611,6 +9615,11 @@
         "attribute": "Wisdom",
         "effects": [
             {
+                "action": "buff_power",
+                "trigger": "on_opp_attack",
+                "target": "leader_or_character"
+            },
+            {
                 "action": "keyword_blocker",
                 "trigger": "passive"
             }
@@ -9627,7 +9636,7 @@
         "rests_opponent": false,
         "bounces": false,
         "gives_don": false,
-        "power_buff": false,
+        "power_buff": true,
         "heals": false,
         "gains_life": false,
         "attacks_life": false,
@@ -27260,7 +27269,7 @@
         "effects": [
             {
                 "action": "rest_opp_don",
-                "trigger": "passive"
+                "trigger": "on_opp_attack"
             }
         ],
         "synergy_states": {
@@ -27432,7 +27441,7 @@
         "effects": [
             {
                 "action": "rest_opp_character",
-                "trigger": "passive",
+                "trigger": "on_opp_attack",
                 "cost_lte": 4
             }
         ],
@@ -27658,8 +27667,8 @@
             },
             {
                 "action": "rest_opp_character",
-                "trigger": "on_play",
-                "cost_lte": 5
+                "trigger": "on_opp_attack",
+                "cost_lte": 4
             }
         ],
         "synergy_states": {
@@ -28984,7 +28993,7 @@
         "effects": [
             {
                 "action": "gain_blocker",
-                "trigger": "passive"
+                "trigger": "on_opp_attack"
             }
         ],
         "synergy_states": {},
@@ -29022,12 +29031,12 @@
         "attribute": "Special",
         "effects": [
             {
-                "action": "draw",
+                "action": "gain_life",
                 "trigger": "on_play"
             },
             {
-                "action": "gain_life",
-                "trigger": "on_play"
+                "action": "draw",
+                "trigger": "on_opp_attack"
             }
         ],
         "synergy_states": {
@@ -29144,7 +29153,7 @@
         "effects": [
             {
                 "action": "buff_power",
-                "trigger": "passive",
+                "trigger": "on_opp_attack",
                 "target": "leader_or_character"
             }
         ],
@@ -29388,6 +29397,12 @@
         "attribute": "Strike",
         "effects": [
             {
+                "action": "bounce",
+                "trigger": "on_opp_attack",
+                "cost_lte": 2,
+                "target": "opp_character"
+            },
+            {
                 "action": "keyword_blocker",
                 "trigger": "passive"
             }
@@ -29399,10 +29414,10 @@
         "has_counter_value": true,
         "has_counter_event": false,
         "is_blocker": true,
-        "is_removal": false,
+        "is_removal": true,
         "kos": false,
         "rests_opponent": false,
-        "bounces": false,
+        "bounces": true,
         "gives_don": false,
         "power_buff": false,
         "heals": false,
@@ -29472,7 +29487,7 @@
         "effects": [
             {
                 "action": "debuff_power",
-                "trigger": "passive",
+                "trigger": "on_opp_attack",
                 "target": "opp_character"
             }
         ],
@@ -29512,12 +29527,12 @@
         "effects": [
             {
                 "action": "buff_power",
-                "trigger": "passive",
+                "trigger": "on_opp_attack",
                 "target": "self"
             },
             {
                 "action": "gain_blocker",
-                "trigger": "passive"
+                "trigger": "on_opp_attack"
             }
         ],
         "synergy_states": {},
@@ -29556,7 +29571,7 @@
         "effects": [
             {
                 "action": "ko",
-                "trigger": "passive",
+                "trigger": "on_opp_attack",
                 "cost_lte": 4,
                 "target": "opp_character"
             }
@@ -32901,7 +32916,7 @@
         "effects": [
             {
                 "action": "rest_opp_character",
-                "trigger": "passive",
+                "trigger": "on_opp_attack",
                 "cost_lte": 6
             }
         ],
@@ -34914,7 +34929,7 @@
         "effects": [
             {
                 "action": "play_card",
-                "trigger": "passive",
+                "trigger": "on_opp_attack",
                 "cost_lte": 3
             }
         ],
@@ -35958,7 +35973,7 @@
         "effects": [
             {
                 "action": "debuff_power",
-                "trigger": "passive",
+                "trigger": "on_opp_attack",
                 "target": "opp_leader_or_character"
             }
         ],
@@ -37384,7 +37399,7 @@
         "effects": [
             {
                 "action": "buff_power",
-                "trigger": "passive",
+                "trigger": "on_opp_attack",
                 "target": "leader_or_character"
             }
         ],
@@ -42431,6 +42446,11 @@
         "attribute": "Special",
         "effects": [
             {
+                "action": "buff_power",
+                "trigger": "on_opp_attack",
+                "target": "leader_or_character"
+            },
+            {
                 "action": "keyword_blocker",
                 "trigger": "passive"
             }
@@ -42447,7 +42467,7 @@
         "rests_opponent": false,
         "bounces": false,
         "gives_don": false,
-        "power_buff": false,
+        "power_buff": true,
         "heals": false,
         "gains_life": false,
         "attacks_life": false,
@@ -42841,7 +42861,7 @@
         "effects": [
             {
                 "action": "rest_opp_character",
-                "trigger": "passive"
+                "trigger": "on_opp_attack"
             }
         ],
         "synergy_states": {
@@ -43063,7 +43083,7 @@
         "effects": [
             {
                 "action": "gain_blocker",
-                "trigger": "passive"
+                "trigger": "on_opp_attack"
             }
         ],
         "synergy_states": {},
@@ -53467,13 +53487,13 @@
         "attribute": "Special",
         "effects": [
             {
-                "action": "buff_power",
-                "trigger": "on_play",
-                "target": "leader_or_character"
-            },
-            {
                 "action": "set_don_active",
                 "trigger": "on_play"
+            },
+            {
+                "action": "buff_power",
+                "trigger": "on_opp_attack",
+                "target": "leader_or_character"
             }
         ],
         "synergy_states": {},
@@ -53853,6 +53873,11 @@
         "sub_types": "Donquixote Pirates Navy ODYSSEY",
         "attribute": "Special",
         "effects": [
+            {
+                "action": "set_active",
+                "trigger": "on_opp_attack",
+                "target": "self"
+            },
             {
                 "action": "keyword_blocker",
                 "trigger": "passive"
@@ -60543,7 +60568,7 @@
         "effects": [
             {
                 "action": "rest_opp_character",
-                "trigger": "passive",
+                "trigger": "on_opp_attack",
                 "cost_lte": 4
             }
         ],
@@ -60756,7 +60781,7 @@
             },
             {
                 "action": "add_don",
-                "trigger": "on_play"
+                "trigger": "on_opp_attack"
             }
         ],
         "synergy_states": {},
@@ -63940,7 +63965,7 @@
         "effects": [
             {
                 "action": "buff_power",
-                "trigger": "passive",
+                "trigger": "on_opp_attack",
                 "target": "leader_or_character"
             }
         ],
@@ -64659,13 +64684,14 @@
         "attribute": "Special",
         "effects": [
             {
-                "action": "draw",
-                "trigger": "your_turn"
+                "action": "buff_power",
+                "trigger": "on_opp_attack",
+                "don_requirement": 1,
+                "target": "self"
             },
             {
-                "action": "buff_power",
-                "trigger": "your_turn",
-                "target": "self"
+                "action": "draw",
+                "trigger": "your_turn"
             }
         ],
         "synergy_states": {},
@@ -64742,6 +64768,15 @@
         "attribute": "Strike",
         "effects": [
             {
+                "action": "buff_power",
+                "trigger": "on_opp_attack",
+                "target": "leader_or_character"
+            },
+            {
+                "action": "trash_from_deck_top",
+                "trigger": "on_opp_attack"
+            },
+            {
                 "action": "keyword_blocker",
                 "trigger": "passive"
             }
@@ -64758,7 +64793,7 @@
         "rests_opponent": false,
         "bounces": false,
         "gives_don": false,
-        "power_buff": false,
+        "power_buff": true,
         "heals": false,
         "gains_life": false,
         "attacks_life": false,
@@ -65001,7 +65036,7 @@
             },
             {
                 "action": "buff_power",
-                "trigger": "on_play",
+                "trigger": "on_opp_attack",
                 "target": "leader"
             }
         ],
@@ -65578,6 +65613,19 @@
                 "action": "buff_power",
                 "trigger": "when_attacking",
                 "target": "self"
+            },
+            {
+                "action": "look_top_deck",
+                "trigger": "on_opp_attack"
+            },
+            {
+                "action": "add_to_hand",
+                "trigger": "on_opp_attack"
+            },
+            {
+                "action": "buff_power",
+                "trigger": "on_opp_attack",
+                "target": "self"
             }
         ],
         "synergy_states": {},
@@ -66037,7 +66085,7 @@
         "effects": [
             {
                 "action": "buff_power",
-                "trigger": "passive",
+                "trigger": "on_opp_attack",
                 "target": "leader"
             },
             {
@@ -68283,6 +68331,11 @@
         "sub_types": "The Four Emperors Red-Haired Pirates",
         "attribute": "Slash",
         "effects": [
+            {
+                "action": "debuff_power",
+                "trigger": "on_opp_attack",
+                "target": "opp_leader_or_character"
+            },
             {
                 "action": "keyword_blocker",
                 "trigger": "passive"
@@ -70842,7 +70895,7 @@
         "effects": [
             {
                 "action": "buff_power",
-                "trigger": "passive",
+                "trigger": "on_opp_attack",
                 "target": "leader_or_character"
             }
         ],
@@ -73045,7 +73098,7 @@
         "effects": [
             {
                 "action": "buff_power",
-                "trigger": "passive",
+                "trigger": "on_opp_attack",
                 "don_requirement": 1,
                 "target": "self"
             }
@@ -73086,11 +73139,11 @@
         "effects": [
             {
                 "action": "draw",
-                "trigger": "passive"
+                "trigger": "on_opp_attack"
             },
             {
                 "action": "debuff_power",
-                "trigger": "passive",
+                "trigger": "on_opp_attack",
                 "target": "opp_leader_or_character"
             }
         ],
@@ -83432,7 +83485,7 @@
         "effects": [
             {
                 "action": "buff_power",
-                "trigger": "your_turn",
+                "trigger": "on_opp_attack",
                 "target": "leader_or_character"
             }
         ],
@@ -83576,6 +83629,11 @@
             {
                 "action": "buff_power",
                 "trigger": "when_attacking",
+                "target": "self"
+            },
+            {
+                "action": "buff_power",
+                "trigger": "on_opp_attack",
                 "target": "self"
             }
         ],
@@ -85980,7 +86038,7 @@
             },
             {
                 "action": "buff_power",
-                "trigger": "on_play",
+                "trigger": "on_opp_attack",
                 "target": "leader_or_character"
             }
         ],
@@ -86063,7 +86121,7 @@
         "effects": [
             {
                 "action": "debuff_power",
-                "trigger": "passive",
+                "trigger": "on_opp_attack",
                 "target": "opp_leader_or_character"
             }
         ],
@@ -89342,7 +89400,7 @@
         "effects": [
             {
                 "action": "set_base_power",
-                "trigger": "passive",
+                "trigger": "on_opp_attack",
                 "target": "self"
             },
             {
@@ -97505,6 +97563,10 @@
         "sub_types": "Bonney Pirates Supernovas",
         "attribute": "Special",
         "effects": [
+            {
+                "action": "set_don_active",
+                "trigger": "on_opp_attack"
+            },
             {
                 "action": "keyword_blocker",
                 "trigger": "passive"
@@ -107891,6 +107953,11 @@
         "attribute": "Wisdom",
         "effects": [
             {
+                "action": "buff_power",
+                "trigger": "on_opp_attack",
+                "target": "leader_or_character"
+            },
+            {
                 "action": "keyword_blocker",
                 "trigger": "passive"
             }
@@ -107907,7 +107974,7 @@
         "rests_opponent": false,
         "bounces": false,
         "gives_don": false,
-        "power_buff": false,
+        "power_buff": true,
         "heals": false,
         "gains_life": false,
         "attacks_life": false,
@@ -109669,12 +109736,16 @@
             {
                 "action": "deck_bottom_rest",
                 "trigger": "on_play"
+            },
+            {
+                "action": "draw",
+                "trigger": "on_opp_attack"
             }
         ],
         "synergy_states": {},
         "text": "[On Play] Look at 5 cards from the top of your deck; reveal up to 1 card with a type including \"Whitebeard Pirates\" other than [Izo] and add it to your hand. Then, place the rest at the bottom of your deck in any order.[On Your Opponent's Attack] You may trash this Character: Draw 1 card and place 1 card from your hand at the bottom of your deck.",
         "is_searcher": true,
-        "draws": false,
+        "draws": true,
         "has_counter_value": true,
         "has_counter_event": false,
         "is_blocker": false,
@@ -110587,7 +110658,7 @@
             },
             {
                 "action": "set_don_active",
-                "trigger": "on_play"
+                "trigger": "on_opp_attack"
             }
         ],
         "synergy_states": {},

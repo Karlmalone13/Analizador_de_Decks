@@ -290,6 +290,17 @@ def parse_costs(text):
     m = re.search(r'rest (?:this (?:card|character|stage) and )?(\d+) of your don!!', t)
     if m:
         costs.append({'type': 'rest_don', 'count': int(m.group(1))})
+    else:
+        # Forma "(N) (You may rest the specified number of DON!! cards in
+        # your cost area.):" -- atalho numérico isolado entre parênteses,
+        # com a explicação-padrão da regra também entre parênteses. Achado
+        # 27/06 auditando [On Your Opponent's Attack] -- Viola OP04-021,
+        # Giolla OP04-025, Trebol OP04-030 pagavam de graça antes disso.
+        m_par = re.search(
+            r'\((\d+)\)\s*\(you may rest the specified number of don!{0,2}\s*cards? in your cost area',
+            t)
+        if m_par:
+            costs.append({'type': 'rest_don', 'count': int(m_par.group(1))})
 
     # Custo de trash do TOPO DO PRÓPRIO DECK (mill como custo, distinto de
     # trash_from_hand) -- "you may trash N cards from the top of your deck:
@@ -2758,7 +2769,7 @@ def parse_card_effect(card_text, card_type):
     # parava em um subconjunto proprio, causando vazamento entre blocos (ex:
     # [Your Turn] vazava pra dentro de [Opponent's Turn] porque a lista de
     # parada do your_turn nao incluia opponent's turn).
-    TODAS_TAGS = r"on play|activate:?\s*main|when attacking|on k\.o\.|your turn|opponent.{0,3}s? turn|trigger|counter|end of your turn|on block|main|blocker|rush|double attack|banish|unblockable"
+    TODAS_TAGS = r"on play|activate:?\s*main|when attacking|on your opponent.{0,3}s? attack|on k\.o\.|your turn|opponent.{0,3}s? turn|trigger|counter|end of your turn|on block|main|blocker|rush|double attack|banish|unblockable"
 
     # Delimitador de bloco só conta quando a tag aparece no INICIO de uma frase
     # (inicio do texto, ou logo apos um '.' ou quebra de linha, com espaco
@@ -2780,6 +2791,7 @@ def parse_card_effect(card_text, card_type):
         ('on_play',       ABERTURA + r'\[on play\](.+?)' + LOOKAHEAD_DELIM),
         ('activate_main', ABERTURA + r'\[activate:?\s*main\](.+?)' + LOOKAHEAD_DELIM),
         ('when_attacking',ABERTURA + r'\[when attacking\](.+?)' + LOOKAHEAD_DELIM),
+        ('on_opp_attack', ABERTURA + r"\[on your opponent.{0,3}s? attack\](.+?)" + LOOKAHEAD_DELIM),
         ('on_ko',         ABERTURA + r'\[on k\.o\.\](.+?)' + LOOKAHEAD_DELIM),
         ('your_turn',     ABERTURA + r'\[your turn\](.+?)' + LOOKAHEAD_DELIM),
         ('opp_turn',      ABERTURA + r"\[opponent.{0,3}s? turn\](.+?)" + LOOKAHEAD_DELIM),
@@ -2794,6 +2806,7 @@ def parse_card_effect(card_text, card_type):
     NOME_PARA_TRIGGER = {
         'on play': 'on_play', 'activate main': 'activate_main', 'activate: main': 'activate_main',
         'activate:main': 'activate_main', 'when attacking': 'when_attacking', 'on k.o.': 'on_ko',
+        "on your opponent's attack": 'on_opp_attack',
         'your turn': 'your_turn', "opponent's turn": 'opp_turn', 'trigger': 'trigger',
         'counter': 'counter', 'end of your turn': 'end_of_turn', 'on block': 'on_block', 'main': 'main',
     }
