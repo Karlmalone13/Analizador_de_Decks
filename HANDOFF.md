@@ -7,6 +7,49 @@ e `git status` antes de tocar em qualquer coisa.
 
 ---
 
+## 2026-06-28 21:15 — Claude
+
+**Feito:**
+- Revisão completa (não amostragem) dos 15 itens de
+  `comparacao_simulador_vs_IA.md` ("8 relevantes" + "7 médios") direto contra
+  `decision_engine.py`, com linha de código citada para cada um. Resultado:
+  - Dos 8 "relevantes": `DealDamage`/`TakeDamage`, `ShuffleHandIntoDeck` e
+    `CycleEntireHandToDeckBottom` já estavam implementados. `BuffSelf1KPerXTargets`/
+    `BuffXPerGivenDon`/`BuffXPerTopDeckCost` é parcial (framework
+    `buff_power_per_count` existe, falta só 2 fontes novas — barato). Restam 4
+    gaps reais: `OppNoBlockerThisTurn`, `Freeze` (stub confirmado por
+    comentário no próprio código, linha 1722), `CantPlayAnyCardsFromHand`/
+    `CantPlayAnyCharactersToField` direcionado ao OPONENTE (hoje só
+    auto-aplicado via `self_cant_play`).
+  - Dos 7 "médios": **todos os 7 confirmados ausentes** — a categorização
+    original estava invertida (a lista de "menor prioridade" é a que está
+    100% sem cobertura). Confirmado especificamente que `set_base_power` só
+    aceita valor fixo (não serve para `MatchLeaderToBasePower`, que precisa
+    copiar dinamicamente) e que `cannot_attack_self` é mecanismo diferente de
+    `FieldCantAttackLeader`.
+- Reescrita a seção "BURACOS" de `comparacao_simulador_vs_IA.md` com a tabela
+  corrigida, status verificado por código, e contagem nova (42 cobertos / 25
+  ausentes, era 39/28).
+- Reescrita a seção "BURACOS DE MECÂNICA" de `TODO.md` com a lista real
+  (4 gaps + 1 parcial barato + 7 médios todos ausentes), marcando os 3 itens
+  já implementados como `[x]`.
+
+**Estado atual:**
+- Edições prontas pra commit em `comparacao_simulador_vs_IA.md` e `TODO.md`.
+
+**Próximo:**
+- Implementar os gaps reais confirmados, em ordem de impacto sugerida:
+  1. `OppNoBlockerThisTurn` (maior impacto competitivo, habilita lethal)
+  2. `CantPlayAnyCardsFromHand`/`CantPlayAnyCharactersToField` no oponente
+     (arquétipo control, ex: Imu)
+  3. `Freeze` funcional (precisa tocar `refresh_phase`)
+  4. (barato) acrescentar fontes `don_attached`/`top_deck_cost` no
+     `buff_power_per_count`
+- `simular_deck_usuario.py` com import quebrado pré-existente, ainda não
+  corrigido (achado em bloco anterior).
+
+---
+
 ## 2026-06-28 20:50 — Claude
 
 **Feito:**

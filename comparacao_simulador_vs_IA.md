@@ -4,8 +4,17 @@
 (GameplayLogicScript, 34.127 linhas, v1.40a, 100% lida via dnSpy).
 **Método:** cruzamento dos `ActV3Effect` do `DoV3ActionStep` (lista canônica de
 efeitos do simulador) contra as 66 actions do nosso `card_effects_db.json`.
-**Resultado:** 39 efeitos cobertos, 28 ausentes — destes, ~8 valem implementação,
-o resto é raro/arquétipo-específico/não-essencial para a IA de decisão.
+**Resultado original (pré-correção):** 39 efeitos cobertos, 28 ausentes — destes,
+~8 valem implementação, o resto é raro/arquétipo-específico/não-essencial.
+
+> **CORRIGIDO em 28/06/2026** (ver [HANDOFF.md](HANDOFF.md)). O cruzamento original
+> buscou só por NOME LITERAL no C#, sem checar se a mesma mecânica já existia no
+> Python sob outro nome. Re-auditoria item a item contra `decision_engine.py`
+> (código citado por linha) encontrou que **4 dos 8 "relevantes" já estavam
+> implementados** e que a categorização estava invertida: os "7 médios" (menor
+> prioridade no doc original) estão **100% ausentes**, enquanto os "8 relevantes"
+> (prioridade alta) já tinham metade pronta. Contagem real: **42 cobertos, 25
+> ausentes** — ver tabela corrigida abaixo.
 
 ---
 
@@ -29,32 +38,32 @@ buracos são de COBERTURA de efeitos, não de modelo.
 
 ---
 
-## BURACOS — efeitos que o simulador tem e nós NÃO (28)
+## BURACOS — efeitos que o simulador tem e nós NÃO (25, corrigido)
 
-### 🔴 Relevantes para a IA (vale implementar) — 8
+### 🔴 Relevantes para a IA — 4 gaps reais + 1 parcial (de 8 originais — 3 já cobertos)
 
-| Efeito (sim) | O que faz | Nossa lacuna |
-|--------------|-----------|--------------|
-| **DealDamage / TakeDamage** | dano direto à vida (sem combate) | sem action; distinto de attack_life (que trasha) — dano pode disparar trigger de vida |
-| **Freeze (don/stage/card)** | `bSkipNextActive` — alvo não desvira na próxima Refresh | temos lock_*_refresh parcial; falta o freeze genérico de DON/Stage |
-| **CantPlayAnyCardsFromHand** | trava a mão do oponente no turno | sem action — efeito de trava forte (Imu, control) |
-| **CantPlayAnyCharactersToField** | trava jogar characters | sem action |
-| **OppNoBlockerThisTurn** | oponente não pode bloquear | sem action — habilita lethal, alto impacto |
-| **ShuffleHandIntoDeck** | devolve mão ao deck e embaralha | sem action — arquétipo de reset (ex: Sanji visto no replay) |
-| **CycleEntireHandToDeckBottom** | mão inteira ao fundo do deck | sem action |
-| **BuffSelf1KPerXTargets / BuffXPerGivenDon / BuffXPerTopDeckCost** | buff dinâmico proporcional | temos buff_power fixo; falta o escalonável (ex: Sanji "+1000 per 5 events in trash" visto no replay) |
+| Efeito (sim) | Status real (verificado no código, 28/06/2026) |
+|--------------|--------------------------------------------------|
+| ~~DealDamage / TakeDamage~~ | ✅ **JÁ COBERTO** — action `deal_damage` (`decision_engine.py:2400`), trata trigger de vida corretamente |
+| ~~ShuffleHandIntoDeck~~ | ✅ **JÁ COBERTO** — `shuffle_hand_into_deck` com `dest='deck'` (`decision_engine.py:2185`) |
+| ~~CycleEntireHandToDeckBottom~~ | ✅ **JÁ COBERTO** — mesma action, `dest='deck_bottom'` |
+| **BuffSelf1KPerXTargets / BuffXPerGivenDon / BuffXPerTopDeckCost** | 🟡 **PARCIAL** — framework `buff_power_per_count` (`decision_engine.py:1822`) já cobre `trash`, `events_in_trash`, `rested_don`, `hand`, `unique_character_names`, `own_characters`. Falta só acrescentar as fontes "DON anexado à própria carta" e "custo do topo do deck" — extensão barata do `if/elif` existente, não gap estrutural |
+| **Freeze (don/stage/card)** | ❌ **GAP REAL** — `lock_opp_character_refresh`/`lock_opp_don_refresh`/`lock_self_character_refresh` são reconhecidos mas o próprio código documenta: "ainda não tem lógica de refresh implementada" (`decision_engine.py:1722`) |
+| **CantPlayAnyCardsFromHand** (no oponente) | ❌ **GAP REAL** — `self_cant_play` só seta a flag em `me.*` (`decision_engine.py:2173`), nunca no oponente |
+| **CantPlayAnyCharactersToField** (no oponente) | ❌ **GAP REAL** — mesma raiz do item acima |
+| **OppNoBlockerThisTurn** | ❌ **GAP REAL** — só existe trava por 1 batalha (`blocker_lock_battle`, resetada após cada combate) ou por carta específica persistente (`cannot_block_until`); não existe "campo todo, turno inteiro" |
 
-### 🟡 Médios (casos específicos, implementar se aparecerem no meta) — 7
+### 🟡 "Médios" — na verdade 7 gaps reais, 100% ausentes (categorização original estava invertida)
 
-| Efeito | O que faz |
-|--------|-----------|
-| PeekSelfLife / PeekOppLife | ver carta de vida (sem mover) — informação, baixo impacto mecânico |
-| TrashAllFaceUpLife | trasha vida face-up (arquétipo específico) |
-| MatchLeaderToBasePower | iguala power do Leader a um valor |
-| SaveTargetName / HandSize / Count | memória entre passos (efeitos "do mesmo nome que...") |
-| ForceOpponent | força ação do oponente (raro) |
-| QueueUpEndOfTurnAction / QueueUpOppMainPhaseAction | efeito agendado para fim de turno / main do oponente |
-| FieldCantAttackLeader | campo não pode atacar Leader |
+| Efeito | Confirmação (verificado no código, 28/06/2026) |
+|--------|--------------------------------------------------|
+| PeekSelfLife / PeekOppLife | nenhuma action equivalente nas 75 do banco |
+| TrashAllFaceUpLife | não modelamos face da vida (face-up/down) em lugar nenhum |
+| MatchLeaderToBasePower | `set_base_power` só aceita valor FIXO do step (`decision_engine.py:1785`, `int(amount)`) — nunca copia dinamicamente o power de outra carta |
+| SaveTargetName / HandSize / Count | não existe memória entre steps na engine |
+| ForceOpponent | nenhuma action equivalente (raro, mantido como tal) |
+| QueueUpEndOfTurnAction / QueueUpOppMainPhaseAction | nenhuma action equivalente |
+| FieldCantAttackLeader | `cannot_attack_self` é OUTRA coisa — trava a própria carta de atacar, não impede atacar o líder especificamente (`decision_engine.py:518`) |
 
 ### 🟢 Raros / arquétipo-específico / não-essencial (provavelmente ignorar) — 13
 
@@ -89,14 +98,24 @@ A maioria é nicho. Auditar sob demanda, não em varredura.
 
 ---
 
-## CONCLUSÃO DA COMPARAÇÃO
+## CONCLUSÃO DA COMPARAÇÃO (corrigida em 28/06/2026)
 
 1. **A arquitetura está certa.** Nosso modelo trigger/condition/cost/step espelha
    o proc/details/effect do simulador. Não há defeito estrutural a corrigir.
-2. **Os buracos são de cobertura, e são finitos:** 8 efeitos relevantes, ~7 médios,
-   ~13 ignoráveis. Não é poço sem fundo.
-3. **Os 8 relevantes priorizados:** OppNoBlockerThisTurn e os buffs dinâmicos têm
-   maior impacto competitivo (aparecem no meta — Sanji no replay usa buff dinâmico).
-   CantPlayFromHand/Field e ShuffleHand são de arquétipos control (Imu).
+   Confirmado de novo numa auditoria por amostragem do cálculo de poder,
+   resolução de combate, economia de DON e direção do deck — todos batem com
+   o C# oficial, sem bug encontrado no motor de produção.
+2. **Os buracos reais (verificados por código, não por busca de nome) são 11,
+   não 15:** 4 gaps reais + 1 parcial/barato (da lista "relevantes") + 7 gaps
+   reais (da lista "médios", que estava 100% intacta apesar de catalogada como
+   menor prioridade). Mais ~13 itens raros/arquétipo-específico (não revisados
+   item a item, mantidos como estavam).
+3. **Prioridade real agora:** `OppNoBlockerThisTurn`, `Freeze` funcional
+   (refresh phase), e `CantPlayAnyCardsFromHand`/`CantPlayAnyCharactersToField`
+   DIRECIONADO AO OPONENTE (hoje só existe auto-aplicado) — esses 3-4 itens
+   têm impacto competitivo real (arquétipos control como Imu, lethal turns) e
+   nenhum exige mudança estrutural grande. Os 7 "médios" (PeekLife,
+   MatchLeaderToBasePower, FieldCantAttackLeader, etc.) ficam para quando
+   aparecerem cartas reais no meta que dependam deles — não há urgência.
 4. **Maior dívida não-atacada: sistema de imunidade** (família inteira ausente).
    Consciente, registrada, fora de escopo atual.

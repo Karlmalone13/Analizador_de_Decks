@@ -63,18 +63,36 @@ implementa → valida (snapshot/diff PERDEU=0 + partidas reais instrumentadas).
 
 ## 🔴 BURACOS DE MECÂNICA (cruzamento com simulador) — priorizados
 
-### Relevantes (vale implementar) — 8
-- [ ] DealDamage/TakeDamage — dano direto à vida (≠ attack_life, dispara trigger)
-- [ ] OppNoBlockerThisTurn — oponente não bloqueia (habilita lethal, alto impacto)
-- [ ] Buff dinâmico (BuffSelf1KPerXTargets/BuffXPerGivenDon/BuffXPerTopDeckCost) —
-  temos buff_power fixo; Sanji "+1000 per 5 events in trash" (replay) não escala
-- [ ] Freeze (don/stage/card) — bSkipNextActive genérico
-- [ ] CantPlayAnyCardsFromHand / CantPlayAnyCharactersToField — trava control (Imu)
-- [ ] ShuffleHandIntoDeck / CycleEntireHandToDeckBottom — reset de mão (Sanji)
+> **CORRIGIDO em 28/06/2026** — lista original (`comparacao_simulador_vs_IA.md`)
+> buscou só por nome literal no C#, sem checar sinônimos no Python. Re-auditada
+> item a item contra `decision_engine.py`: DealDamage, ShuffleHandIntoDeck e
+> CycleEntireHandToDeckBottom **já estavam implementados**. Lista abaixo reflete
+> o estado real, verificado por linha de código.
 
-### Médios — 7
-PeekSelfLife/OppLife, TrashAllFaceUpLife, MatchLeaderToBasePower, SaveTargetName,
-ForceOpponent, QueueUpEndOfTurnAction/OppMainPhase, FieldCantAttackLeader.
+### Gaps reais confirmados — 4 (+ 1 parcial barato)
+- [ ] OppNoBlockerThisTurn — oponente não bloqueia (habilita lethal, alto impacto).
+  Hoje só existe trava por 1 batalha (`blocker_lock_battle`) ou por carta
+  específica (`cannot_block_until`); falta "campo todo, turno inteiro".
+- [ ] Freeze (don/stage/card) — `lock_opp_character_refresh`/`lock_opp_don_refresh`/
+  `lock_self_character_refresh` são reconhecidos mas SEM lógica de refresh
+  implementada (`decision_engine.py:1722`, comentário confirma).
+- [ ] CantPlayAnyCardsFromHand / CantPlayAnyCharactersToField DIRECIONADO AO
+  OPONENTE — trava control (Imu). Hoje `self_cant_play` só afeta o próprio
+  jogador (`me.*`), nunca o oponente.
+- [ ] (parcial, barato) Buff dinâmico por DON anexado / custo do topo do deck —
+  framework `buff_power_per_count` já existe e cobre várias fontes (trash,
+  events_in_trash, rested_don, hand, etc.); falta só 2 branches novos.
+- [x] ~~DealDamage/TakeDamage~~ — já implementado (`deal_damage`)
+- [x] ~~ShuffleHandIntoDeck / CycleEntireHandToDeckBottom~~ — já implementado
+  (`shuffle_hand_into_deck`, parâmetro `dest`)
+
+### "Médios" — 7, na verdade TODOS ausentes (categorização original invertida)
+PeekSelfLife/OppLife, TrashAllFaceUpLife, MatchLeaderToBasePower (set_base_power
+só aceita valor fixo, não dinâmico), SaveTargetName (sem memória entre steps),
+ForceOpponent, QueueUpEndOfTurnAction/OppMainPhase, FieldCantAttackLeader
+(`cannot_attack_self` é outra coisa — trava a própria carta, não o ataque ao
+líder). Nenhum tem urgência — implementar quando aparecer carta real no meta
+que dependa.
 
 ### Dívida técnica grande (consciente, fora de escopo)
 - [ ] Sistema de imunidade inteiro (ImmuneToKO/Removal/Combat/Effect/Strikes) — família
