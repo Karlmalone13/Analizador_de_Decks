@@ -7,6 +7,36 @@ e `git status` antes de tocar em qualquer coisa.
 
 ---
 
+## 2026-06-28 19:10 — Claude
+
+**Feito:**
+- Criados `CLAUDE.md` (lido automaticamente pelo Claude Code no início de
+  toda sessão nesta pasta) e este `HANDOFF.md`, para o projeto não depender
+  de memória de sessão nem de "lembrar de avisar" a próxima IA.
+- Criado hook de `pre-push` (`scripts/hooks/pre-push` + instalador
+  `scripts/setup-git-hooks.sh`): bloqueia `git push` se `HANDOFF.md` não
+  tiver sido alterado nos commits enviados. `.git/hooks/` não é versionado
+  pelo git — **cada clone/máquina nova precisa rodar
+  `sh scripts/setup-git-hooks.sh` uma vez** para o hook funcionar lá também.
+  Testado: tentei dar push sem atualizar este arquivo e foi bloqueado
+  corretamente.
+- Commits feitos e enviados ao `origin/main`: correção do `UnboundLocalError`
+  do `eligible_cards`, zeragem dos erros de lint/build do front, e agora os
+  arquivos de continuidade + o hook.
+
+**Estado atual:**
+- Tudo commitado. `git push` deve passar agora que este bloco foi escrito.
+
+**Próximo:**
+- Continuar o trabalho de engine/parser que estava em andamento antes
+  (ver seção "🔴 PROBLEMAS ABERTOS" e "🔴 BURACOS DE MECÂNICA" do `TODO.md`):
+  `_choose_to_trash` não avalia qualidade do trash, Five Elders (c10) nunca
+  jogada, e os buracos de mecânica priorizados (DealDamage, Freeze, etc.).
+- Se trabalhar em outra máquina/clone, lembrar de rodar
+  `sh scripts/setup-git-hooks.sh` primeiro.
+
+---
+
 ## 2026-06-28 18:45 — Claude
 
 **Feito:**
