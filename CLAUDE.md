@@ -1,0 +1,94 @@
+# CLAUDE.md — guia para qualquer sessão nova (Claude Code / Codex)
+
+Este arquivo é lido automaticamente no início de cada sessão do Claude Code.
+Leia também o [HANDOFF.md](HANDOFF.md) (registro do que foi feito na sessão
+anterior, por qual IA) antes de tocar em qualquer coisa, e rode
+`git log --oneline -10` + `git status` para ver o estado real.
+
+## O que é o projeto
+
+Analisador de decks de **One Piece TCG (OPTCG)**: classifica arquétipo,
+detecta sinergias, mede coesão tribal, e simula partidas completas entre dois
+decks com IA jogando os dois lados. Duas partes bem separadas:
+
+### 1. Front-end (`src/`) — Next.js 16 + React 19 + Supabase
+- App Router (`src/app/*/page.tsx`): `/`, `/cards`, `/deck`, `/analysis`,
+  `/meus-decks`, `/simulate`.
+- Supabase: auth + tabela `cards` (banco de cartas) + tabela `decks` (decks
+  salvos do usuário, coluna `cards` é um JSON string `{leader, cards}`).
+- Stack: TypeScript estrito, Tailwind, ESLint com regras de React Hooks
+  (`react-hooks/set-state-in-effect` etc. — **rodar `npx eslint` e
+  `npx tsc --noEmit` antes de considerar algo pronto**, o projeto tem zero
+  erros hoje, não regredir).
+- Páginas que usam `useSearchParams()` precisam estar envolvidas em
+  `<Suspense>` (senão `next build` quebra) — ver `/analysis`, `/deck`,
+  `/simulate` como referência do padrão usado.
+
+### 2. Back-end Python (`scriptis_da_ia/`) — duas sub-partes
+
+**a) Analisador de deck (produção, hospedado no Railway)**
+Pipeline: `cards_rows.csv` → `gerar_effects_db.py` (parser texto→efeitos) →
+`card_effects_db.json` → `gerar_card_analysis_db.py` → `card_analysis_db.json`
+→ `deck_analyzer.py` (classifica arquétipo/sinergias/coesão) → `api.py`
+(FastAPI, `POST /analyze`). Front consome via `NEXT_PUBLIC_ANALYZER_API`.
+Detalhes completos em [scriptis_da_ia/README.md](scriptis_da_ia/README.md).
+
+**b) Motor de simulação de partidas** (`scriptis_da_ia/optcg_engine/`)
+Simula partidas turno a turno entre dois decks. Peças principais:
+- `decision_engine.py` — `OPTCGMatch`: turnos, fases, IA de decisão
+  (`_execute_step`, `_score_to_play`, Turn Planner). **Fonte única de
+  verdade das regras** — qualquer lógica de jogo deve viver aqui, não
+  duplicada em scripts de replay/visualização.
+- `replay_optcg.py` — visualizador/auditor de partidas; delega tudo
+  (`_place_start_stage`, `refresh_phase`, `main_phase`) ao `OPTCGMatch`, não
+  reimplementa regra própria.
+- `rules_facade.py` — funções utilitárias compartilhadas (`eligible_cards`,
+  `card_matches_filter`, `choose_highest_board_value`, etc.) usadas via
+  import local dentro de `_execute_step`. **Cuidado**: imports locais
+  Python tornam o nome local pra função inteira — se usar uma função da
+  facade num branch novo, garanta que o import já rodou antes nesse caminho
+  (ou importe no topo da função, como foi feito pra `eligible_cards`).
+  Ver [PLANO_UNIFICACAO.md](scriptis_da_ia/PLANO_UNIFICACAO.md) e
+  [MAPA_EFEITOS.md](scriptis_da_ia/MAPA_EFEITOS.md) para o plano de
+  unificação engine/replay e mapa de efeitos implementados.
+
+## Regras de jogo (NUNCA quebrar) — ver [TODO.md](TODO.md) para a lista completa
+- K.O. ≠ Trash · Rush ≠ Rush:Character · `give_don_opp` tira do próprio jogador
+- Sinal de custo só conta com texto explícito
+- `play_card` vindo de efeito = sempre GRÁTIS (sem custo de DON)
+- Só paga custo de uma ação ativável se algum step realmente produzir efeito
+  (viabilidade ampla — evita ativar habilidade "no vácuo")
+- Topo do deck = fim da lista em Python (`pop()`, não `pop(0)`)
+- Mill do deck = trash seco, sem disparar trigger
+
+Referências oficiais das regras (manual, playsheet) em
+[_referencias/regras_do_jogo/](_referencias/regras_do_jogo/).
+
+## Estado do projeto / o que falta
+Ver [TODO.md](TODO.md) (lista viva, atualizada por sessão) para: buracos de
+mecânica conhecidos e priorizados, problemas abertos do replay, dívida
+técnica consciente (sistema de imunidade, etc.), e o roadmap (consertar
+lógica → auditar via replay → tunar heurísticas por volume de simulação →
+ML só se 1-3 baterem teto).
+
+## Workflow / convenções
+```
+# parser: snapshot → fix → diff_parser.py (PERDEU=0 é o padrão) → gerar_dbs → re-snapshot → commit
+# engine puro: editar → partida real instrumentada (replay) → commit (sem gerar_dbs)
+# NUNCA `git add -A`; commits em linha única (ambiente CMD/PowerShell)
+```
+- Front: `npm run dev` (porta 3000), `npx eslint`, `npx tsc --noEmit`,
+  `npx next build` antes de considerar uma tarefa de front concluída.
+- API Python local: `cd scriptis_da_ia && pip install -r requirements.txt
+  && uvicorn api:app --reload --port 8000`.
+- Chaves Supabase: `.env.local` tem `service_role` exposta — **rotacionar
+  antes de deploy público** (pendência de segurança conhecida, ver TODO.md).
+
+## Trabalhando junto com outra IA (Codex ou outra sessão Claude)
+Nenhuma sessão vê o histórico de conversa da outra — só o estado dos
+arquivos. Por isso:
+1. Sempre commitar antes de parar (créditos, fim de sessão).
+2. Sempre escrever um bloco novo no topo do [HANDOFF.md](HANDOFF.md) antes
+   de parar: o que foi feito, estado atual, o que falta.
+3. Ao assumir uma sessão, ler `HANDOFF.md` + `git log --oneline -10` +
+   `git status` antes de qualquer edição.
