@@ -174,6 +174,7 @@ class Card:
     cannot_be_rested_until: str = ''  # mesma semantica de duracao, para lock_opp_cannot_be_rested (mecanica DISTINTA de cannot_attack)
     # Buffs temporários (resetados a cada turno)
     power_buff: int = 0
+    base_power_override: Optional[int] = None
     cost_buff: int = 0       # resetado no fim do turno do oponente (duration until_opp_turn_end)
     cost_buff_permanent: int = 0  # nunca resetado (duration permanent, ex: leader_type condicional)
 
@@ -196,7 +197,8 @@ class Card:
                       'don_attached', 'cannot_attack_until', 'cannot_be_rested_until', 'cannot_block_until',
                       'unblockable_this_turn', 'rush_this_turn', 'double_attack_this_turn', 'blocker_this_turn',
                       'can_attack_active', 'can_attack_active_this_turn',
-                      'power_buff', 'cost_buff', 'cost_buff_permanent'):
+                      'power_buff', 'base_power_override',
+                      'cost_buff', 'cost_buff_permanent'):
             setattr(novo, campo, getattr(self, campo))
         return novo
 
@@ -252,7 +254,8 @@ class Card:
     def trash_opp_char(self) -> bool: return self.data.trash_opp_char
 
     def effective_cost(self) -> int:
-        return max(0, self.cost + self.cost_buff + self.cost_buff_permanent)
+        from optcg_engine.rules_facade import effective_card_cost
+        return effective_card_cost(self)
 
     def _kw_active(self, kw: str, native: bool) -> bool:
         """Keyword ativa se nativa OU condicional a [DON!! ×N] com DON suficiente."""
@@ -280,7 +283,8 @@ class Card:
         return self._kw_active('banish', self.has_banish)
 
     def effective_power(self, your_turn: bool = True) -> int:
-        return self.power + self.power_buff + (self.don_attached * 1000 if your_turn else 0)
+        from optcg_engine.rules_facade import effective_card_power
+        return effective_card_power(self, your_turn=your_turn)
 
     def board_value(self) -> int:
         v = self.power // 1000
@@ -613,10 +617,22 @@ class EffectExecutor:
         # ── Efeitos que precisam de ALVO no oponente ──────────────────────────
         if a in ('ko', 'rest_opp_character', 'debuff_power', 'debuff_cost',
                  'bounce', 'lock_opp_character_refresh', 'lock_opp_character_attack',
-                 'opp_trash_from_hand'):
+                 'opp_trash_from_hand', 'place_opp_character_bottom_deck'):
             if a == 'opp_trash_from_hand':
                 return len(opp.hand) > 0
-            return len(opp.field_chars) > 0
+            from optcg_engine.rules_facade import eligible_cards
+            cost_lte = self._resolve_cost_lte(step, default=None)
+            candidates = eligible_cards(
+                opp.field_chars,
+                cost_lte=cost_lte,
+                cost_eq=step.get('cost_eq'),
+                power_lte=step.get('power_lte'),
+                rested_only=step.get('rested_only', False),
+                active_only=(a == 'rest_opp_character'),
+                filter_text=step.get('filter_type', ''),
+                exclude_name=step.get('exclude', ''),
+            )
+            return bool(candidates)
 
         # ── Jogar carta da mão com filtro ─────────────────────────────────────
         if a == 'play_card':
@@ -652,6 +668,52 @@ class EffectExecutor:
         # Default: sem material a checar (buff próprio, keyword, add_don,
         # gain_life do deck, etc) = sempre viável.
         return True
+
+    def _resolve_choice(self, options: list, card: Card) -> list:
+        """Escolhe a opcao viavel de maior valor heuristico."""
+        if not options:
+            return []
+
+        weights = {
+            'attack_life': 4,
+            'place_opp_character_bottom_deck': 3,
+            'ko': 2,
+            'trash_character': 2,
+            'bounce': 1,
+            'draw': 1,
+            'trash_opp_life': 3,
+            'gain_life': 2,
+        }
+
+        def choice_step_viable(step: dict) -> bool:
+            action = step.get('action', '')
+            if action == 'draw':
+                return True
+            if action == 'gain_life':
+                source = step.get('source', 'deck_top')
+                if source == 'deck_top':
+                    return bool(self.me.deck)
+                if source == 'hand':
+                    return bool(self.me.hand)
+                if source == 'trash':
+                    return bool(self.me.trash)
+                if source == 'opp_life':
+                    return bool(self.opp.life)
+            return self._step_is_viable(step, card)
+
+        best_steps = []
+        best_score = -1
+        for option in options:
+            steps = option if isinstance(option, list) else [option]
+            viable = [s for s in steps if choice_step_viable(s)]
+            if not viable:
+                continue
+            score = sum(weights.get(s.get('action', ''), 1) for s in viable)
+            if score > best_score:
+                best_score = score
+                best_steps = steps
+
+        return best_steps
 
     def execute(self, card: Card, trigger: str, verbose: bool = False, is_opp_turn: bool = False) -> list:
         """
@@ -702,6 +764,8 @@ class EffectExecutor:
         # vazio). Minimiza jogadas-erro nas estatísticas. Só aborta se TODOS os
         # steps forem inviáveis; um único step viável já ativa o efeito.
         steps_all = ef_data.get('steps', [])
+        if not steps_all and ef_data.get('choice'):
+            steps_all = self._resolve_choice(ef_data.get('choice', []), card)
         if steps_all and not any(self._step_is_viable(s, card) for s in steps_all):
             return []
 
@@ -712,7 +776,7 @@ class EffectExecutor:
         # Executa steps. Os logs do CUSTO (pago acima) vêm primeiro, para o
         # replay mostrar o que foi pago antes do benefício.
         logs = list(getattr(self, '_cost_logs', []))
-        for step in ef_data.get('steps', []):
+        for step in steps_all:
             log = self._execute_step(step, card)
             if log:
                 logs.append(log)
@@ -889,7 +953,14 @@ class EffectExecutor:
                 # item via _check_conditions, executar os steps dos que
                 # passarem (sem early-return -- sao cumulativos, nao 'escolha
                 # 1 e para').
-                for step in ef_data.get('steps', []):
+                steps_to_run = list(ef_data.get('steps', []))
+                for item in ef_data.get('conditional_stack', []):
+                    if self._check_conditions(item.get('conditions', {}), source):
+                        steps_to_run.extend(item.get('steps', []))
+                if not steps_to_run and ef_data.get('choice'):
+                    steps_to_run = self._resolve_choice(ef_data.get('choice', []), source)
+
+                for step in steps_to_run:
                     log = self._execute_step(step, source)
                     if log:
                         logs.append(log)
@@ -1394,6 +1465,10 @@ class EffectExecutor:
 
         # ── KO ───────────────────────────────────────────────────────────────
         if action in ('ko', 'trash_character'):
+            from optcg_engine.rules_facade import (
+                choose_highest_board_value,
+                eligible_cards,
+            )
             # 'trash_character' usa a MESMA mecanica de remocao de campo que
             # 'ko' (vai para o trash do dono). A diferenca de regra real do
             # jogo -- K.O. dispara o gatilho [On K.O.] do alvo, Trash de
@@ -1407,7 +1482,6 @@ class EffectExecutor:
             cost_lte = self._resolve_cost_lte(step, default=None)
             cost_eq = step.get('cost_eq')
             power_lte = step.get('power_lte')
-            filter_type = step.get('filter_type', '').lower()
             rested_only = step.get('rested_only', False)
 
             if target_type == 'opp_stage':
@@ -1418,23 +1492,6 @@ class EffectExecutor:
                     return f'KO stage: {ko_name}'
                 return ''
 
-            exclude_self = step.get('exclude_self', False)
-
-            def elegivel(c):
-                if exclude_self and c is card:
-                    return False
-                if cost_lte is not None and c.cost > cost_lte:
-                    return False
-                if cost_eq is not None and c.cost != cost_eq:
-                    return False
-                if power_lte is not None and c.power > power_lte:
-                    return False
-                if rested_only and not c.rested:
-                    return False
-                if filter_type and filter_type not in c.sub_types.lower() and filter_type not in c.card_type.lower():
-                    return False
-                return True
-
             # KO personagem(s) -- opp_character (so do oponente),
             # self_character (so o PROPRIO campo, ex: Five Elders OP13-082
             # "trash all of your Characters" -- distinto de all_character
@@ -1443,13 +1500,24 @@ class EffectExecutor:
             # -- exclude_self impede a propria carta se autodestruir,
             # confirmado por foto real "K.O. all Characters other than
             # this Character").
+            def target_pool(cards):
+                return eligible_cards(
+                    cards,
+                    cost_lte=cost_lte,
+                    cost_eq=cost_eq,
+                    power_lte=power_lte,
+                    rested_only=rested_only,
+                    filter_text=step.get('filter_type', ''),
+                    exclude_card=card if step.get('exclude_self', False) else None,
+                )
+
             if target_type == 'all_character':
-                pools = [(opp, [c for c in opp.field_chars if elegivel(c)]),
-                         (me, [c for c in me.field_chars if elegivel(c)])]
+                pools = [(opp, target_pool(opp.field_chars)),
+                         (me, target_pool(me.field_chars))]
             elif target_type == 'self_character':
-                pools = [(me, [c for c in me.field_chars if elegivel(c)])]
+                pools = [(me, target_pool(me.field_chars))]
             else:
-                pools = [(opp, [c for c in opp.field_chars if elegivel(c)])]
+                pools = [(opp, target_pool(opp.field_chars))]
 
             koed = []
             sub_logs = []
@@ -1457,7 +1525,7 @@ class EffectExecutor:
             imm_kind = 'ko' if action == 'ko' else 'removal'
             for owner, candidates in pools:
                 for _ in range(min(count, len(candidates))):
-                    target = max(candidates, key=lambda x: x.board_value())
+                    target = choose_highest_board_value(candidates)
                     # Imunidade: o alvo pode ser imune a KO/remoção por efeito do
                     # oponente. Pula o alvo (não conta como removido).
                     other = me if owner is opp else opp
@@ -1489,14 +1557,25 @@ class EffectExecutor:
 
         # ── Bounce ───────────────────────────────────────────────────────────
         if action == 'bounce':
+            from optcg_engine.rules_facade import (
+                choose_highest_board_value,
+                eligible_cards,
+            )
             count = step.get('count', 1)
             cost_lte = self._resolve_cost_lte(step, default=99)
 
-            candidates = [c for c in opp.field_chars if c.cost <= cost_lte]
+            candidates = eligible_cards(
+                opp.field_chars,
+                cost_lte=cost_lte,
+                cost_eq=step.get('cost_eq'),
+                power_lte=step.get('power_lte'),
+                rested_only=step.get('rested_only', False),
+                filter_text=step.get('filter_type', ''),
+            )
             bounced = []
             immune_skipped = []
             for _ in range(min(count, len(candidates))):
-                target = max(candidates, key=lambda x: x.board_value())
+                target = choose_highest_board_value(candidates)
                 # Bounce é remoção do campo -> respeita imunidade a removal
                 if is_immune(target, 'removal', opp, me, source_is_opp=True):
                     immune_skipped.append(target.name[:12])
@@ -1512,14 +1591,24 @@ class EffectExecutor:
 
         # ── Restar oponente ───────────────────────────────────────────────────
         if action == 'rest_opp_character':
+            from optcg_engine.rules_facade import (
+                choose_highest_board_value,
+                eligible_cards,
+            )
             count = step.get('count', 1)
             cost_lte = self._resolve_cost_lte(step, default=99)
 
-            candidates = [c for c in opp.field_chars
-                          if not c.rested and c.cost <= cost_lte and not c.cannot_be_rested_until]
+            candidates = eligible_cards(
+                [c for c in opp.field_chars if not c.cannot_be_rested_until],
+                cost_lte=cost_lte,
+                cost_eq=step.get('cost_eq'),
+                power_lte=step.get('power_lte'),
+                active_only=True,
+                filter_text=step.get('filter_type', ''),
+            )
             rested = []
             for _ in range(min(count, len(candidates))):
-                target = max(candidates, key=lambda x: x.board_value())
+                target = choose_highest_board_value(candidates)
                 target.rested = True
                 candidates.remove(target)
                 rested.append(target.name[:15])
@@ -1650,7 +1739,36 @@ class EffectExecutor:
         # escolha do jogador entre Leader OU Character -- tambem pendente).
         # 8 cards no banco (ex: OP15-092 Monkey.D.Luffy, EB04-003/004).
         if action == 'set_base_power':
-            return '(set_base_power: nao implementado -- pendente alteracao calibrada de effective_power)'
+            from optcg_engine.rules_facade import (
+                card_matches_filter,
+                choose_highest_effective_power,
+            )
+            amount = step.get('amount')
+            if amount is None:
+                return None
+
+            target = step.get('target', 'self')
+            filter_type = step.get('filter_type') or ''
+
+            if target == 'self':
+                candidates = [card] if card_matches_filter(card, filter_type) else []
+            elif target == 'leader':
+                candidates = [me.leader] if card_matches_filter(me.leader, filter_type) else []
+            elif target == 'own_character':
+                candidates = [c for c in me.field_chars
+                              if card_matches_filter(c, filter_type)]
+            elif target in ('leader_or_own_character', 'leader_or_character'):
+                candidates = [c for c in [me.leader] + me.field_chars
+                              if card_matches_filter(c, filter_type)]
+            else:
+                candidates = []
+
+            if not candidates:
+                return None
+
+            chosen = choose_highest_effective_power(candidates, your_turn=True)
+            chosen.base_power_override = int(amount)
+            return f'base power de {chosen.name[:15]} virou {amount}'
 
         # ── Self-lock de ataque (incondicional / condicional / em massa) ────────
         # Implementar de verdade exige adicionar um campo booleano novo na
@@ -1733,24 +1851,28 @@ class EffectExecutor:
         # duration='permanent' (ex: condicionado a leader_type, sem prazo) usa
         # cost_buff_permanent, que nunca e resetado por esses dois pontos.
         if action in ('buff_cost', 'debuff_cost'):
+            from optcg_engine.rules_facade import eligible_cards
+
             amount = step.get('amount', 0)
             if action == 'debuff_cost':
                 amount = -amount
             target = step.get('target', 'self')
             duration = step.get('duration', 'this_turn')
             count = step.get('count', 1)
-            filter_type = step.get('filter_type', '').lower()
             filter_name = step.get('filter_name', '').lower()
-            color = step.get('color', '').lower()
             cost_gte = step.get('cost_gte')
 
             campo_alvo = me if target in ('self', 'own_character') else opp
             if target == 'self':
                 candidatos = [card]
             else:
-                candidatos = list(campo_alvo.field_chars)
-                if filter_type:
-                    candidatos = [c for c in candidatos if filter_type in c.sub_types.lower()]
+                candidatos = eligible_cards(
+                    campo_alvo.field_chars,
+                    cost_lte=step.get('cost_lte'),
+                    power_lte=step.get('power_lte'),
+                    filter_text=step.get('filter_type', ''),
+                    color=step.get('color', ''),
+                )
                 if filter_name:
                     # Filtro por NOME PROPRIO (ex: Shinobu OP16-087, "up to 1
                     # of your [Kouzuki Momonosuke] gains +20 cost") -- DISTINTO
@@ -1758,8 +1880,6 @@ class EffectExecutor:
                     # por nome, nao uma familia/tipo inteira. Achado 27/06:
                     # o parser confundia com filter_type antes da correcao.
                     candidatos = [c for c in candidatos if filter_name in c.name.lower()]
-                if color:
-                    candidatos = [c for c in candidatos if color in c.color.lower()]
                 if cost_gte is not None:
                     candidatos = [c for c in candidatos if c.cost >= cost_gte]
 
@@ -1835,6 +1955,8 @@ class EffectExecutor:
 
         # ── Play from trash ───────────────────────────────────────────────────
         if action == 'play_from_trash':
+            from optcg_engine.rules_facade import eligible_cards
+
             filter_type = step.get('filter_type', '').lower()
             filter_name = step.get('filter_name', '').lower()
             cost_lte = self._resolve_cost_lte(step, default=None)
@@ -1864,25 +1986,15 @@ class EffectExecutor:
                     return f'jogou do trash (self): {self_card.name[:15]}'
                 return ''
 
-            candidates = []
-            for c in me.trash:
-                if cost_lte is not None and c.cost > cost_lte:
-                    continue
-                if cost_eq is not None and c.cost != cost_eq:
-                    continue
-                if power_eq is not None and c.power != power_eq:
-                    continue
-                if power_lte is not None and c.power > power_lte:
-                    continue
-                if filter_type:
-                    match = (filter_type in c.sub_types.lower() or
-                             filter_type in c.name.lower() or
-                             filter_type in c.card_type.lower())
-                    if not match:
-                        continue
-                if filter_name and filter_name not in c.name.lower():
-                    continue
-                candidates.append(c)
+            candidates = eligible_cards(
+                me.trash,
+                cost_lte=cost_lte,
+                cost_eq=cost_eq,
+                power_eq=power_eq,
+                power_lte=power_lte,
+                filter_text=filter_type,
+                name_or_code=filter_name,
+            )
 
             played = []
             played_names_lower = set()
@@ -1919,6 +2031,8 @@ class EffectExecutor:
 
         # ── Play from deck ────────────────────────────────────────────────────
         if action == 'play_from_deck':
+            from optcg_engine.rules_facade import eligible_cards
+
             filter_type = step.get('filter_type', '').lower()
             cost_lte = self._resolve_cost_lte(step, default=99)
             color = step.get('color', '')
@@ -1949,18 +2063,15 @@ class EffectExecutor:
             else:
                 pool = me.deck
 
-            candidates = []
-            for c in pool:
-                if c.cost > cost_lte:
-                    continue
-                if color and color.lower() not in c.color.lower():
-                    continue
-                if filter_type:
-                    match = (filter_type in c.sub_types.lower() or
-                             filter_type in c.name.lower())
-                    if not match:
-                        continue
-                candidates.append(c)
+            candidates = eligible_cards(
+                list(pool),
+                cost_lte=cost_lte,
+                cost_eq=step.get('cost_eq'),
+                power_lte=step.get('power_lte'),
+                filter_text=filter_type,
+                name_or_code=step.get('filter_name', ''),
+                color=color,
+            )
 
             played = []
             for _ in range(min(count, len(candidates))):
@@ -2160,19 +2271,22 @@ class EffectExecutor:
         # Remoção forte (ignora On-KO; enterra no deck). Respeita imunidade a
         # removal. Distinta de bounce (mão) e KO (trash).
         if action == 'place_opp_character_bottom_deck':
+            from optcg_engine.rules_facade import (
+                choose_highest_board_value,
+                eligible_cards,
+            )
             count = step.get('count', 1)
-            cost_lte = step.get('cost_lte')
-            power_lte = step.get('power_lte')
-            cands = []
-            for c in opp.field_chars:
-                if cost_lte is not None and c.cost > cost_lte: continue
-                if power_lte is not None and c.power > power_lte: continue
-                cands.append(c)
+            cands = eligible_cards(
+                opp.field_chars,
+                cost_lte=step.get('cost_lte'),
+                power_lte=step.get('power_lte'),
+                filter_text=step.get('filter_type', ''),
+            )
             placed = []
             immune = []
             for _ in range(min(count, len(cands))):
                 if not cands: break
-                target = max(cands, key=lambda x: x.board_value())
+                target = choose_highest_board_value(cands)
                 if is_immune(target, 'removal', opp, me, source_is_opp=True):
                     immune.append(target.name[:12])
                     cands.remove(target)
@@ -2454,10 +2568,19 @@ class EffectExecutor:
             return f'jogou (grátis): {", ".join(jogadas)}' if jogadas else ''
 
         if action == 'add_from_trash':
+            from optcg_engine.rules_facade import eligible_cards
+
             filter_name = step.get('filter_name', '').lower()
             count = step.get('count', 1)
-            found = [c for c in me.trash
-                     if filter_name in c.name.lower() or filter_name in c.code.lower()]
+            found = eligible_cards(
+                me.trash,
+                cost_lte=step.get('cost_lte'),
+                cost_eq=step.get('cost_eq'),
+                power_lte=step.get('power_lte'),
+                filter_text=step.get('filter_type', ''),
+                name_or_code=filter_name,
+                color=step.get('color', ''),
+            )
             added = []
             for c in found[:count]:
                 me.trash.remove(c)
