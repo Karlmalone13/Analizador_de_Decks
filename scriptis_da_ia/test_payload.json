@@ -1,0 +1,67 @@
+{
+    "analysis_type": "meta",
+    "deck_a": [
+        {
+            "code": "OP16-079",
+            "qty": 1
+        },
+        {
+            "code": "OP16-091",
+            "qty": 4
+        },
+        {
+            "code": "OP16-092",
+            "qty": 4
+        },
+        {
+            "code": "OP16-081",
+            "qty": 2
+        },
+        {
+            "code": "OP16-087",
+            "qty": 4
+        },
+        {
+            "code": "OP16-088",
+            "qty": 2
+        },
+        {
+            "code": "OP16-082",
+            "qty": 4
+        },
+        {
+            "code": "OP16-084",
+            "qty": 4
+        },
+        {
+            "code": "OP16-098",
+            "qty": 4
+        },
+        {
+            "code": "OP16-086",
+            "qty": 2
+        },
+        {
+            "code": "OP16-096",
+            "qty": 4
+        },
+        {
+            "code": "OP16-097",
+            "qty": 4
+        },
+        {
+            "code": "OP16-085",
+            "qty": 4
+        },
+        {
+            "code": "OP14-096",
+            "qty": 4
+        },
+        {
+            "code": "OP16-099",
+            "qty": 4
+        }
+    ],
+    "n_simulations": 5,
+    "n_meta_decks": 2
+}

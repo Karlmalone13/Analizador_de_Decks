@@ -443,24 +443,11 @@ export default function SimulatePage() {
                     </button>
                 </div>
 
-                {/* Progresso + Resultado */}
-                {jobStatus && (
+                {/* Resultado */}
+                {jobStatus && (jobStatus.status === 'done' || jobStatus.status === 'error') && (
                     <div className="bg-gray-900 border border-gray-800 rounded-2xl p-5">
                         {jobStatus.status === 'error' && (
                             <div className="text-red-400">Erro na simulação: {jobStatus.error_message}</div>
-                        )}
-
-                        {(jobStatus.status === 'pending' || jobStatus.status === 'running') && (
-                            <div>
-                                <div className="flex justify-between text-sm mb-2">
-                                    <span className="text-gray-400">Simulando partidas...</span>
-                                    <span className="text-white font-medium">{jobStatus.progress}/{jobStatus.total_steps}</span>
-                                </div>
-                                <div className="w-full bg-gray-800 rounded-full h-2">
-                                    <div className="h-2 rounded-full bg-orange-500 transition-all"
-                                        style={{ width: `${jobStatus.total_steps ? (jobStatus.progress / jobStatus.total_steps) * 100 : 0}%` }} />
-                                </div>
-                            </div>
                         )}
 
                         {jobStatus.status === 'done' && jobStatus.result && (
@@ -486,6 +473,33 @@ export default function SimulatePage() {
                     </div>
                 )}
             </div>
+
+            {/* Overlay modal de progresso (centro da tela) */}
+            {(running || jobStatus?.status === 'pending' || jobStatus?.status === 'running') && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
+                    <div className="bg-gray-900 border border-gray-700 rounded-2xl p-8 w-[90%] max-w-md shadow-2xl">
+                        <div className="flex items-center gap-3 mb-5">
+                            <div className="w-6 h-6 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />
+                            <span className="text-lg font-semibold text-white">Simulando partidas...</span>
+                        </div>
+
+                        <div className="text-center mb-4">
+                            <span className="text-5xl font-bold text-orange-400">
+                                {jobStatus?.total_steps ? Math.round((jobStatus.progress / jobStatus.total_steps) * 100) : 0}%
+                            </span>
+                        </div>
+
+                        <div className="w-full bg-gray-800 rounded-full h-4 overflow-hidden mb-3">
+                            <div className="h-4 rounded-full bg-orange-500 transition-all duration-500"
+                                style={{ width: `${jobStatus?.total_steps ? (jobStatus.progress / jobStatus.total_steps) * 100 : 5}%` }} />
+                        </div>
+
+                        <div className="text-sm text-gray-400 text-center">
+                            {jobStatus?.progress ?? 0} de {jobStatus?.total_steps ?? '...'} partidas concluídas
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     )
 }
