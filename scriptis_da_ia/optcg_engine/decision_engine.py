@@ -638,17 +638,20 @@ class EffectExecutor:
         if a == 'play_card':
             if step.get('source') == 'self':
                 return card in me.hand     # GRUPO 1 (trigger): a própria carta
+            from optcg_engine.rules_facade import eligible_cards
+
             cost_lte = step.get('cost_lte')
             if cost_lte == 'don_count_self':
                 cost_lte = me.don_available + me.don_rested
-            ftype = (step.get('filter_type') or '').lower()
-            fcolor = (step.get('color') or '').lower()
-            for c in me.hand:
-                if cost_lte is not None and c.cost > cost_lte: continue
-                if ftype and ftype not in c.sub_types.lower():  continue
-                if fcolor and fcolor not in c.color.lower():    continue
-                return True
-            return False
+            return bool(eligible_cards(
+                me.hand,
+                cost_lte=cost_lte,
+                cost_eq=step.get('cost_eq'),
+                filter_text=step.get('filter_type', ''),
+                name_or_code=step.get('filter_name', ''),
+                color=step.get('color', ''),
+                exclude_name=step.get('exclude', ''),
+            ))
 
         # ── Recuperar/jogar de zona que pode estar vazia ──────────────────────
         if a in ('play_from_trash', 'add_from_trash'):
@@ -863,16 +866,14 @@ class EffectExecutor:
             return f'{card.name[:18]} evitou K.O./remoção devolvendo {count} DON ao deck'
 
         if ctype == 'trash_from_hand':
+            from optcg_engine.rules_facade import eligible_cards
+
             count = cost.get('count', 1)
-            filter_type = cost.get('filter_type')
-            power_gte = cost.get('power_gte')
-            candidatos = list(me.hand)
-            if filter_type:
-                tipos_lower = [t.lower() for t in filter_type]
-                candidatos = [c for c in candidatos
-                              if any(t in c.sub_types.lower() or t in c.card_type.lower() for t in tipos_lower)]
-            if power_gte is not None:
-                candidatos = [c for c in candidatos if c.power >= power_gte]
+            candidatos = eligible_cards(
+                me.hand,
+                filter_text=cost.get('filter_type', ''),
+                power_gte=cost.get('power_gte'),
+            )
             if len(candidatos) < count:
                 return None
             trashed = []
@@ -1123,16 +1124,19 @@ class EffectExecutor:
                 if trashed:
                     self._cost_logs.append(f'custo: trashou da mão: {", ".join(trashed)}')
             elif ctype == 'trash_char_or_hand':
+                from optcg_engine.rules_facade import eligible_cards
+
                 # Custo com ESCOLHA (ex: leader Imu): trashar 1 character próprio
                 # (com filtro de tipo) OU 1 carta da mão. Resolve gastando o
                 # recurso de MENOR valor — naturalmente trasha um character só
                 # quando ele vale menos que descartar da mão. (Escolha fina de
                 # "trashar p/ encher o trash e ligar imunidade" = Bug B, futuro.)
                 count = cost.get('count', 1)
-                ft = cost.get('filter_type', '').lower()
                 for _ in range(count):
-                    chars = [c for c in self.me.field_chars
-                             if not ft or ft in c.sub_types.lower()]
+                    chars = eligible_cards(
+                        self.me.field_chars,
+                        filter_text=cost.get('filter_type', ''),
+                    )
                     pior_char = min(chars, key=lambda c: c.board_value(), default=None)
                     pior_mao = self._choose_to_trash(self.me.hand)
                     if pior_char is None and pior_mao is None:
@@ -1157,17 +1161,18 @@ class EffectExecutor:
                     return False
                 self._cost_logs.append(f'custo: devolveu {count} DON ao deck')
             elif ctype == 'ko_own_character':
+                from optcg_engine.rules_facade import eligible_cards
+
                 # Custo de K.O. de um Character PROPRIO (distinto de trash_self:
                 # o alvo e OUTRO Character do jogador). K.O. != Trash -- precisa
                 # disparar o [On K.O.] do Character escolhido. Ex: OP14-079
                 # Crocodile (K.O. um Baroque Works), OP05-087 Hakuba.
                 count = cost.get('count', 1)
-                filter_type = cost.get('filter_type', '').lower()
-                candidatos = [
-                    c for c in self.me.field_chars
-                    if c is not card
-                    and (not filter_type or filter_type in c.sub_types.lower())
-                ]
+                candidatos = eligible_cards(
+                    self.me.field_chars,
+                    filter_text=cost.get('filter_type', ''),
+                    exclude_card=card,
+                )
                 if len(candidatos) < count:
                     return False
                 koados = []
@@ -1185,18 +1190,18 @@ class EffectExecutor:
                 if koados:
                     self._cost_logs.append(f'custo: K.O. próprio: {", ".join(koados)}')
             elif ctype == 'place_from_trash_bottom_deck':
+                from optcg_engine.rules_facade import eligible_cards
+
                 # Custo de colocar N cartas do PRÓPRIO trash no fundo do
                 # PRÓPRIO deck ("in any order" -- ordem e escolha do
                 # jogador, irrelevante pro engine). Achado em auditoria de
                 # buff_cost 27/06: 51 cartas usam esse custo, zero
                 # cobertura antes (Kaku OP07-080, Trafalgar Law, Dragon...).
                 count = cost.get('count', 1)
-                filter_type = cost.get('filter_type', '').lower()
-                candidatos = [
-                    c for c in self.me.trash
-                    if not filter_type or filter_type in c.sub_types.lower()
-                    or filter_type in c.card_type.lower()
-                ]
+                candidatos = eligible_cards(
+                    self.me.trash,
+                    filter_text=cost.get('filter_type', ''),
+                )
                 if len(candidatos) < count:
                     return False
                 movidos = []
@@ -2505,32 +2510,24 @@ class EffectExecutor:
             if cost_lte == 'don_count_self':
                 cost_lte = self.me.don_available + self.me.don_rested  # dinâmico
             cost_eq = step.get('cost_eq')
-            ftype = (step.get('filter_type') or '').lower()
-            fcolor = (step.get('color') or '').lower()
-            fname = (step.get('filter_name') or '').lower()
-            fexclude = (step.get('exclude') or '').lower()
             fontes = [me.hand]
             if step.get('source_alt') == 'trash':
                 fontes.append(me.trash)
 
             elegiveis = []
             for fonte in fontes:
-                for c in fonte:
-                    if c.card_type not in ('CHARACTER', 'STAGE', 'EVENT'):
-                        continue
-                    if cost_lte is not None and c.cost > cost_lte:
-                        continue
-                    if cost_eq is not None and c.cost != cost_eq:
-                        continue
-                    if ftype and ftype not in c.sub_types.lower():
-                        continue
-                    if fcolor and fcolor not in c.color.lower():
-                        continue
-                    if fname and fname not in c.name.lower():
-                        continue
-                    if fexclude and fexclude in c.name.lower():
-                        continue
-                    elegiveis.append(c)
+                elegiveis.extend(
+                    c for c in eligible_cards(
+                        fonte,
+                        cost_lte=cost_lte,
+                        cost_eq=cost_eq,
+                        filter_text=step.get('filter_type', ''),
+                        name_or_code=step.get('filter_name', ''),
+                        color=step.get('color', ''),
+                        exclude_name=step.get('exclude', ''),
+                    )
+                    if c.card_type in ('CHARACTER', 'STAGE', 'EVENT')
+                )
 
             if not elegiveis:
                 return ''

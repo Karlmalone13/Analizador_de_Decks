@@ -31,10 +31,13 @@ def effective_card_power(card: "Card", your_turn: bool = True) -> int:
     return base_power + card.power_buff + don_power
 
 
-def card_matches_filter(card: "Card", filter_text: str = "", include_color: bool = False) -> bool:
+def card_matches_filter(card: "Card", filter_text: str | list | tuple = "", include_color: bool = False) -> bool:
     """Filtro textual usado pelos efeitos parseados do banco atual."""
-    needle = (filter_text or "").lower()
-    if not needle:
+    if isinstance(filter_text, (list, tuple)):
+        needles = [str(item).lower() for item in filter_text if str(item)]
+    else:
+        needles = [str(filter_text or "").lower()] if filter_text else []
+    if not needles:
         return True
 
     fields = [
@@ -45,7 +48,7 @@ def card_matches_filter(card: "Card", filter_text: str = "", include_color: bool
     if include_color:
         fields.append(getattr(card, "color", ""))
 
-    return any(needle in str(value).lower() for value in fields)
+    return any(needle in str(value).lower() for needle in needles for value in fields)
 
 
 def eligible_cards(
@@ -58,7 +61,7 @@ def eligible_cards(
     power_gte: int | None = None,
     rested_only: bool = False,
     active_only: bool = False,
-    filter_text: str = "",
+    filter_text: str | list | tuple = "",
     name_or_code: str = "",
     color: str = "",
     attribute: str = "",
