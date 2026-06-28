@@ -7,6 +7,55 @@ e `git status` antes de tocar em qualquer coisa.
 
 ---
 
+## 2026-06-28 20:35 — Claude
+
+**Feito:**
+- Decisão tomada sobre o destino de `optcg_engine/models.py` + companhia
+  (`action_system.py`, `validators.py`, `card_power.py`, `card_queries.py`,
+  `card_loader.py`, `enums.py`): usuário escolheu **mover para referência**,
+  não deletar nem integrar. Executado:
+  - `git mv` dos 7 arquivos para
+    `_referencias/simulador-oficial/decompiled_python/` (nome com
+    UNDERSCORE, não hífen — hífen quebraria import de pacote Python).
+  - Criado `decompiled_python/__init__.py` documentando o que é e por que
+    está lá.
+  - `scriptis_da_ia/optcg_engine/__init__.py` foi ESVAZIADO — antes
+    importava todo esse material automaticamente em TODO import do pacote
+    (ou seja, rodava em toda chamada da API mesmo sem ser usado). Agora só
+    tem docstring + `__version__`. Confirmado por grep: nada em
+    `scriptis_da_ia/` faz `from optcg_engine import X` no nível do pacote
+    (sempre `from optcg_engine.decision_engine import X` etc), então é
+    seguro.
+  - Validado: `from decompiled_python.models import ...` etc funciona
+    isolado (pacote próprio, imports relativos internos intactos). E
+    `import optcg_engine`, `decision_engine.py`, `api.py`, `replay_optcg.py`,
+    `simulation_worker.py` continuam importando OK depois da mudança —
+    inclusive o `smoke_test.py` (testes de regressão do motor) passou 100%.
+  - Atualizados `scriptis_da_ia/README.md` e `CLAUDE.md` pra refletir a nova
+    localização e não apontar mais pro `MAPA_EFEITOS.md` (já removido).
+- **Achado colateral (NÃO corrigido ainda)**: `scriptis_da_ia/
+  simular_deck_usuario.py` tem um import quebrado pré-existente — importa
+  `parse_card_effects` de `decision_engine.py`, mas essa função não existe
+  lá (só existe `parse_card_effects_basic`). Confirmado via `git show` que
+  o bug já existia no commit `9237f2c` (antes desta sessão), não foi
+  introduzido pela movimentação de hoje. Script provavelmente não é
+  executado há um tempo. Não corrigi — fora do escopo desta tarefa.
+
+**Estado atual:**
+- Tudo pronto pra commit: 7 `git mv`, 1 arquivo novo (`__init__.py` da
+  pasta de referência), edições em `optcg_engine/__init__.py`,
+  `scriptis_da_ia/README.md`, `CLAUDE.md`.
+
+**Próximo:**
+- Corrigir `simular_deck_usuario.py` (import quebrado, achado acima) se for
+  usar esse script.
+- Mesma pendência de antes: corrigir `comparacao_simulador_vs_IA.md` e a
+  seção de buracos do `TODO.md` com a lista real de gaps (~3, não 8).
+- Implementar os ~3 gaps reais confirmados (`OppNoBlockerThisTurn`, `Freeze`
+  funcional, `CantPlay*` direcionado ao oponente) quando a doc for corrigida.
+
+---
+
 ## 2026-06-28 20:10 — Claude
 
 **Feito:**

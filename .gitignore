@@ -3,8 +3,14 @@
 #Zip files
 *.zip
 
-# local Codex/reference files
-_referencias/
+# local Codex/reference files (DLL/PDFs/decompilado em C# ficam só locais,
+# nunca vão pro git - binarios grandes/sensiveis). Excecao: o porte Python
+# fiel em decompiled_python/ E versionado de proposito (texto leve, util
+# pra qualquer maquina/sessao - ver CLAUDE.md).
+_referencias/*
+!_referencias/simulador-oficial/
+_referencias/simulador-oficial/*
+!_referencias/simulador-oficial/decompiled_python/
 .codex/
 
 # dependencies

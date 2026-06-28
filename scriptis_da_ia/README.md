@@ -4,8 +4,11 @@ Esta pasta contém o cérebro do analisador: o pipeline que lê as cartas, enten
 o que cada uma faz, classifica o arquétipo do deck, detecta sinergias e mede a
 coesão tribal — e a API que expõe tudo isso para o front.
 
-> Nota: a subpasta `optcg_engine/` (motor de simulação de partidas) **não** está
-> documentada aqui — está em avaliação separada e pode ter usos futuros.
+> Nota: a subpasta `optcg_engine/` (motor de SIMULAÇÃO DE PARTIDAS, distinto
+> deste analisador de deck) não está documentada aqui. Auditada em 28/06/2026:
+> é produção real, correta e fiel ao simulador oficial (ver
+> [PLANO_UNIFICACAO.md](optcg_engine/../PLANO_UNIFICACAO.md) e
+> [comparacao_simulador_vs_IA.md](../comparacao_simulador_vs_IA.md)).
 
 ---
 
@@ -119,11 +122,13 @@ Sem a variável, o front usa `http://localhost:8000`.
 
 O projeto evoluiu por tentativas. Além do analisador atual, a pasta contém:
 
-- **Modelo estatístico treinado** (`treinar_modelo.py`, `modelo_optcg.json`,
-  `features.csv`, `coletar_dados_optcg.py`): previa um "score de performance" via
-  Gradient Boosting sobre decklists de torneio. Substituído pela análise por
-  efeitos/sinergias (resultados explicáveis, sem re-treino). O coletor de
-  decklists (Limitless TCG) ainda pode servir para validar a classificação contra
-  torneios reais.
-- **`optcg_engine/`** — motor de simulação de partidas. Em avaliação; documentado
-  à parte.
+- **Modelo estatístico treinado** (`treinar_modelo.py`, `coletar_dados_optcg.py`):
+  previa um "score de performance" via Gradient Boosting sobre decklists de
+  torneio. Substituído pela análise por efeitos/sinergias (resultados
+  explicáveis, sem re-treino). Os artefatos gerados (`modelo_optcg.json/.pkl`,
+  `features.csv`, `resultados_simulacao.csv`) foram removidos em 28/06/2026
+  (hygiene pass — regeneráveis rodando os scripts de novo se precisar). O
+  coletor de decklists (Limitless TCG) ainda pode servir para validar a
+  classificação contra torneios reais.
+- **`optcg_engine/`** — motor de simulação de partidas (produção, ver nota no
+  topo deste README).

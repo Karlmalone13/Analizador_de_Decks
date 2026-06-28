@@ -48,9 +48,23 @@ Simula partidas turno a turno entre dois decks. Peças principais:
   Python tornam o nome local pra função inteira — se usar uma função da
   facade num branch novo, garanta que o import já rodou antes nesse caminho
   (ou importe no topo da função, como foi feito pra `eligible_cards`).
-  Ver [PLANO_UNIFICACAO.md](scriptis_da_ia/PLANO_UNIFICACAO.md) e
-  [MAPA_EFEITOS.md](scriptis_da_ia/MAPA_EFEITOS.md) para o plano de
-  unificação engine/replay e mapa de efeitos implementados.
+  Ver [PLANO_UNIFICACAO.md](scriptis_da_ia/PLANO_UNIFICACAO.md) (status:
+  CONCLUÍDO) para o diagnóstico e a decisão "replay vira só visualização".
+
+**Material de referência (não é código de produção, não importar em nada
+do `scriptis_da_ia/`):** `_referencias/simulador-oficial/dnspy-export/` tem
+o C# decompilado da DLL oficial do jogo (`GameplayLogicScript.cs`, 34k
+linhas). `_referencias/simulador-oficial/decompiled_python/` tem um porte
+Python fiel desse C# (`models.py`, `action_system.py`, `card_power.py`,
+`validators.py`, `card_queries.py`, `card_loader.py`) — auditoria de
+28/06/2026 confirmou ZERO acoplamento com `decision_engine.py` e que o
+motor de produção já está correto nos pontos testados (poder, combate, DON,
+direção do deck). Use esse material só quando precisar confirmar a regra
+exata do jogo sem ler 34 mil linhas de C#. **Não tente "unificar" os dois**
+sem necessidade real — já foi avaliado e a conclusão foi manter separado
+(ver [comparacao_simulador_vs_IA.md](comparacao_simulador_vs_IA.md), mas
+desconfie da lista de gaps ali — auditoria encontrou que está inflada,
+correção ainda pendente, ver [HANDOFF.md](HANDOFF.md)).
 
 ## Regras de jogo (NUNCA quebrar) — ver [TODO.md](TODO.md) para a lista completa
 - K.O. ≠ Trash · Rush ≠ Rush:Character · `give_don_opp` tira do próprio jogador
