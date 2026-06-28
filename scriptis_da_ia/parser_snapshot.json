@@ -7529,7 +7529,31 @@
         }
     },
     "OP02-084": {},
-    "OP02-085": {},
+    "OP02-085": {
+        "on_play": {
+            "costs": [
+                {
+                    "count": 1,
+                    "optional": true,
+                    "type": "don_minus"
+                }
+            ],
+            "steps": [
+                {
+                    "action": "opp_don_minus",
+                    "count": 1
+                }
+            ]
+        },
+        "opp_turn": {
+            "steps": [
+                {
+                    "action": "opp_don_minus",
+                    "count": 2
+                }
+            ]
+        }
+    },
     "OP02-086": {
         "on_ko": {
             "conditions": {
@@ -7588,6 +7612,14 @@
                     "target": "opp_leader_or_character"
                 }
             ]
+        },
+        "trigger": {
+            "steps": [
+                {
+                    "action": "opp_don_minus",
+                    "count": 1
+                }
+            ]
         }
     },
     "OP02-090": {
@@ -7607,6 +7639,14 @@
                     "target": "opp_character"
                 }
             ]
+        },
+        "trigger": {
+            "steps": [
+                {
+                    "action": "opp_don_minus",
+                    "count": 1
+                }
+            ]
         }
     },
     "OP02-091": {
@@ -7614,6 +7654,14 @@
             "steps": [
                 {
                     "action": "add_don",
+                    "count": 1
+                }
+            ]
+        },
+        "trigger": {
+            "steps": [
+                {
+                    "action": "opp_don_minus",
                     "count": 1
                 }
             ]
@@ -31411,7 +31459,16 @@
             ]
         }
     },
-    "OP14-065": {},
+    "OP14-065": {
+        "on_ko": {
+            "steps": [
+                {
+                    "action": "opp_don_minus",
+                    "count": 1
+                }
+            ]
+        }
+    },
     "OP14-066": {},
     "OP14-067": {
         "on_ko": {
@@ -35867,7 +35924,27 @@
             ]
         }
     },
-    "OP16-074": {},
+    "OP16-074": {
+        "on_ko": {
+            "steps": [
+                {
+                    "action": "opp_don_minus",
+                    "count": 4
+                }
+            ]
+        },
+        "on_play": {
+            "conditions": {
+                "leader_type": "impel down"
+            },
+            "steps": [
+                {
+                    "action": "opp_don_minus",
+                    "count": 1
+                }
+            ]
+        }
+    },
     "OP16-075": {
         "on_play": {
             "conditions": {

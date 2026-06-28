@@ -2365,6 +2365,12 @@ def parse_opp_self_move_character(text):
     m2 = re.search(r"your opponent places (\d+) of (?:their|his|her) characters? at the bottom of the owner.?s deck", t)
     if m2:
         steps.append({'action': 'opp_place_own_character_bottom_deck', 'count': int(m2.group(1))})
+    # 'Your opponent returns N DON!! card(s) from their field to their
+    # DON!! deck' -- mesma familia (forca o oponente), agora sobre DON em
+    # vez de Character. DISTINTO de don_minus (custo do PROPRIO jogador).
+    m3 = re.search(r"your opponent returns (\d+) don!{0,2}\s*cards? from (?:their|his|her) field", t)
+    if m3:
+        steps.append({'action': 'opp_don_minus', 'count': int(m3.group(1))})
     return steps
 
 

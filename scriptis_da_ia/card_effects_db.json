@@ -12549,7 +12549,31 @@
     "color": "Purple",
     "sub_types": "Impel Down",
     "attribute": "Special",
-    "effects": {}
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "opp_don_minus",
+            "count": 1
+          }
+        ],
+        "costs": [
+          {
+            "type": "don_minus",
+            "count": 1,
+            "optional": true
+          }
+        ]
+      },
+      "opp_turn": {
+        "steps": [
+          {
+            "action": "opp_don_minus",
+            "count": 2
+          }
+        ]
+      }
+    }
   },
   "OP02-086": {
     "name": "Minokoala",
@@ -12636,6 +12660,14 @@
     "sub_types": "Impel Down",
     "attribute": "",
     "effects": {
+      "trigger": {
+        "steps": [
+          {
+            "action": "opp_don_minus",
+            "count": 1
+          }
+        ]
+      },
       "counter": {
         "steps": [
           {
@@ -12666,6 +12698,14 @@
     "sub_types": "Impel Down",
     "attribute": "",
     "effects": {
+      "trigger": {
+        "steps": [
+          {
+            "action": "opp_don_minus",
+            "count": 1
+          }
+        ]
+      },
       "main": {
         "steps": [
           {
@@ -12696,6 +12736,14 @@
     "sub_types": "Impel Down",
     "attribute": "",
     "effects": {
+      "trigger": {
+        "steps": [
+          {
+            "action": "opp_don_minus",
+            "count": 1
+          }
+        ]
+      },
       "main": {
         "steps": [
           {
@@ -51936,7 +51984,16 @@
     "color": "Purple",
     "sub_types": "Donquixote Pirates",
     "attribute": "Special",
-    "effects": {}
+    "effects": {
+      "on_ko": {
+        "steps": [
+          {
+            "action": "opp_don_minus",
+            "count": 1
+          }
+        ]
+      }
+    }
   },
   "OP14-066": {
     "name": "Diamante",
@@ -59120,7 +59177,27 @@
     "color": "Purple",
     "sub_types": "Impel Down",
     "attribute": "Special",
-    "effects": {}
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "opp_don_minus",
+            "count": 1
+          }
+        ],
+        "conditions": {
+          "leader_type": "impel down"
+        }
+      },
+      "on_ko": {
+        "steps": [
+          {
+            "action": "opp_don_minus",
+            "count": 4
+          }
+        ]
+      }
+    }
   },
   "OP16-075": {
     "name": "Monkey.D.Garp",

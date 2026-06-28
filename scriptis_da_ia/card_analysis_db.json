@@ -19458,7 +19458,16 @@
         "color": "Purple",
         "sub_types": "Impel Down",
         "attribute": "Special",
-        "effects": [],
+        "effects": [
+            {
+                "action": "opp_don_minus",
+                "trigger": "on_play"
+            },
+            {
+                "action": "opp_don_minus",
+                "trigger": "opp_turn"
+            }
+        ],
         "synergy_states": {},
         "text": "[On Play] DON!! -1 (You may return the specified number of DON!! cards from your field to your DON!! deck.): Your opponent returns 1 DON!! card from their field to their DON!! deck. [Opponent's Turn] When this Character is K.O.'d, your opponent returns 2 DON!! cards from their field to their DON!! deck.",
         "is_searcher": false,
@@ -19614,6 +19623,10 @@
         "attribute": "",
         "effects": [
             {
+                "action": "opp_don_minus",
+                "trigger": "trigger"
+            },
+            {
                 "action": "debuff_power",
                 "trigger": "counter",
                 "target": "opp_leader_or_character"
@@ -19645,7 +19658,7 @@
         "has_double_attack": false,
         "has_unblockable": false,
         "has_banish": false,
-        "has_trigger": false
+        "has_trigger": true
     },
     "OP02-090": {
         "name": "Hydra",
@@ -19658,6 +19671,10 @@
         "sub_types": "Impel Down",
         "attribute": "",
         "effects": [
+            {
+                "action": "opp_don_minus",
+                "trigger": "trigger"
+            },
             {
                 "action": "debuff_power",
                 "trigger": "main",
@@ -19690,7 +19707,7 @@
         "has_double_attack": false,
         "has_unblockable": false,
         "has_banish": false,
-        "has_trigger": false
+        "has_trigger": true
     },
     "OP02-091": {
         "name": "Venom Road",
@@ -19703,6 +19720,10 @@
         "sub_types": "Impel Down",
         "attribute": "",
         "effects": [
+            {
+                "action": "opp_don_minus",
+                "trigger": "trigger"
+            },
             {
                 "action": "add_don",
                 "trigger": "main"
@@ -19734,7 +19755,7 @@
         "has_double_attack": false,
         "has_unblockable": false,
         "has_banish": false,
-        "has_trigger": false
+        "has_trigger": true
     },
     "OP02-092": {
         "name": "Impel Down",
@@ -81063,7 +81084,12 @@
         "color": "Purple",
         "sub_types": "Donquixote Pirates",
         "attribute": "Special",
-        "effects": [],
+        "effects": [
+            {
+                "action": "opp_don_minus",
+                "trigger": "on_ko"
+            }
+        ],
         "synergy_states": {},
         "text": "[On K.O.] Your opponent returns 1 DON!! card from their field to their DON!! deck.",
         "is_searcher": false,
@@ -91971,7 +91997,16 @@
         "color": "Purple",
         "sub_types": "Impel Down",
         "attribute": "Special",
-        "effects": [],
+        "effects": [
+            {
+                "action": "opp_don_minus",
+                "trigger": "on_play"
+            },
+            {
+                "action": "opp_don_minus",
+                "trigger": "on_ko"
+            }
+        ],
         "synergy_states": {},
         "text": "[On Play] If your Leader has the {Impel Down} type, your opponent returns 1 DON!! card from their field to their DON!! deck.\n[On K.O.] Your opponent returns 4 DON!! cards from their field to their DON!! deck.",
         "is_searcher": false,

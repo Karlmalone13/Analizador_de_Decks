@@ -1137,15 +1137,20 @@ class EffectExecutor:
                 self._cost_logs.append(f'custo: fundo do deck (do trash): {", ".join(movidos)}')
         return True
 
-    def _return_don_to_deck(self, count: int) -> bool:
+    def _return_don_to_deck(self, count: int, estado: 'GameState' = None) -> bool:
         """
         Paga um custo DON!! −X: devolve X DON do campo para o deck de DON.
         Preferência (regra do usuário): devolve primeiro o DON "sem trabalho" —
         anexado a quem JÁ atacou (restado) ou ao líder que já atacou, depois DON
         restado no banco. Evita DON ativo e DON anexado a quem ainda vai agir.
         Retorna False se não há DON suficiente devolvível.
+
+        `estado`: por padrão self.me (uso normal, custo do PRÓPRIO jogador).
+        Aceita self.opp também -- usado por opp_don_minus (achado 27/06,
+        "Your opponent returns N DON!! cards from their field to their
+        DON!! deck", FORÇADO no oponente, não custo próprio).
         """
-        me = self.me
+        me = estado if estado is not None else self.me
         devolvidos = 0
 
         # Fonte 1: DON anexado a personagens que JÁ atacaram (restados)
@@ -1530,6 +1535,19 @@ class EffectExecutor:
             opp.don_available -= rested_n
             opp.don_rested += rested_n
             return f'restou {rested_n} DON do oponente' if rested_n else ''
+
+        # ── opp_don_minus: FORÇA o oponente a devolver N DON!! do campo
+        # dele pro DON deck DELE (perde DON pro resto da partida, mais forte
+        # que rest_opp_don que só atrasa por 1 turno). DISTINTA de
+        # don_minus (que devolve DON do PRÓPRIO jogador como custo). Achado
+        # 27/06: Magellan OP02-085/OP16-074, Senor Pink OP14-065, Judgment
+        # of Hell, Hydra, Venom Road. Reaproveita _return_don_to_deck
+        # generalizada -- mesma preferência de "devolver o DON que menos
+        # importa" vale pro oponente escolhendo por si mesmo.
+        if action == 'opp_don_minus':
+            count = step.get('count', 1)
+            self._return_don_to_deck(count, estado=opp)
+            return f'oponente devolveu até {count} DON pro deck'
 
         # ── Trava de ataque / trava de rest / trava de Blocker (persistente) ────
         # Mecanicas DISTINTAS apesar de compartilharem estrutura de
