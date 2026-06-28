@@ -7,6 +7,39 @@ e `git status` antes de tocar em qualquer coisa.
 
 ---
 
+## 2026-06-28 20:50 — Claude
+
+**Feito:**
+- Verificação pedida pelo usuário: conferi se o `origin/main` no GitHub está
+  de fato espelhando a higienização toda feita hoje (não só local). Resultado:
+  `git status` limpo, local e remoto no mesmo commit (`git rev-list
+  --left-right --count origin/main...HEAD` = `0 0`). Confirmado via
+  `git ls-tree -r origin/main` que os 14 arquivos removidos hoje estão
+  realmente ausentes do remoto, os novos (`CLAUDE.md`, `HANDOFF.md`,
+  `scripts/hooks/pre-push`, `_referencias/.../decompiled_python/*`) estão
+  presentes, e a DLL/PDFs/dnspy-export continuam fora do git (0 matches).
+- **Achado extra**: 2 arquivos `.pyc` (`scriptis_da_ia/optcg_engine/
+  __pycache__/engine.cpython-313.pyc` e `simulator.cpython-313.pyc`) estavam
+  RASTREADOS no git apesar de `__pycache__/` estar no `.gitignore` — devem
+  ter sido adicionados antes da regra existir. Os nomes ("engine", "simulator")
+  não correspondem a nenhum `.py` que existe hoje no repo (são bytecode de
+  arquivos-fonte já renomeados/removidos há muito tempo). Removidos do git
+  com `git rm --cached` (continuam no disco local como cache normal, só não
+  versionados mais).
+
+**Estado atual:**
+- `git rm --cached` executado, pronto pra commit. Repo tem 87 arquivos
+  rastreados no remoto depois da higienização de hoje (era mais antes).
+
+**Próximo:**
+- Mesma pendência de antes: corrigir `comparacao_simulador_vs_IA.md` e a
+  seção de buracos do `TODO.md` com a lista real de gaps (~3, não 8).
+- Implementar os ~3 gaps reais confirmados quando a doc for corrigida.
+- `simular_deck_usuario.py` com import quebrado pré-existente (achado às
+  20:35), ainda não corrigido.
+
+---
+
 ## 2026-06-28 20:35 — Claude
 
 **Feito:**
