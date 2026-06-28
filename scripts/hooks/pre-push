@@ -1,0 +1,33 @@
+#!/bin/sh
+# Bloqueia o push se HANDOFF.md nao foi atualizado desde o que ja esta no
+# remoto. Garante que toda sessao (Claude ou Codex) deixe registro antes de
+# entregar o trabalho para a proxima.
+
+remote="$1"
+url="$2"
+
+while read local_ref local_sha remote_ref remote_sha; do
+    # Ignora delecao de branch (local_sha all-zero)
+    case "$local_sha" in
+        0000000000000000000000000000000000000000) continue ;;
+    esac
+
+    if [ "$remote_sha" = "0000000000000000000000000000000000000000" ]; then
+        # Branch nova no remoto: nao ha base de comparacao, deixa passar.
+        continue
+    fi
+
+    changed=$(git diff --name-only "$remote_sha" "$local_sha" -- HANDOFF.md)
+    if [ -z "$changed" ]; then
+        echo ""
+        echo "BLOQUEADO: HANDOFF.md nao foi atualizado nestes commits."
+        echo "Antes de dar push, escreva um bloco novo no topo do HANDOFF.md"
+        echo "com o que foi feito nesta sessao (veja o formato ja usado no arquivo)."
+        echo ""
+        echo "Para pular esta checagem uma vez (nao recomendado): git push --no-verify"
+        echo ""
+        exit 1
+    fi
+done
+
+exit 0

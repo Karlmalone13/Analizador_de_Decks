@@ -92,3 +92,12 @@ arquivos. Por isso:
    de parar: o que foi feito, estado atual, o que falta.
 3. Ao assumir uma sessão, ler `HANDOFF.md` + `git log --oneline -10` +
    `git status` antes de qualquer edição.
+
+Isso é reforçado por um **hook de `pre-push`** (`scripts/hooks/pre-push`):
+bloqueia o `git push` se `HANDOFF.md` não tiver sido alterado nos commits
+sendo enviados. `.git/hooks/` não é versionado pelo git, então em cada
+clone/máquina nova é preciso instalar uma vez:
+```bash
+sh scripts/setup-git-hooks.sh
+```
+Para pular a checagem numa emergência (não recomendado): `git push --no-verify`.
