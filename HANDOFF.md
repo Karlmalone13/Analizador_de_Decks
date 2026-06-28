@@ -7,6 +7,48 @@ e `git status` antes de tocar em qualquer coisa.
 
 ---
 
+## 2026-06-28 20:10 — Claude
+
+**Feito:**
+- Higienização round 2, a pedido do usuário: conferidos TODOS os `.md` e
+  `.json` do repo (fora node_modules/.next/.git). Achados e tratados:
+  - `public/modelo_optcg.json` — gêmeo do `src/data/modelo_optcg.json` já
+    removido na limpeza anterior; também não usado em lugar nenhum. Removido.
+  - `scriptis_da_ia/MAPA_EFEITOS.md` — **removido por estar desatualizado e
+    enganoso**: afirmava que `activate_main` (253 cartas) e `passive` (408
+    cartas) "NÃO EXECUTADOS pelo engine", o que é FALSO hoje — conferi no
+    código (`_activate_main_effects` em `decision_engine.py:4472`, lógica de
+    `passive` em várias linhas) e ambos estão implementados há tempo. Quem
+    lesse esse arquivo hoje seria induzido a pensar que falta implementar
+    algo que já existe. `TODO.md` já cumpre o papel de tracking atualizado.
+  - `scriptis_da_ia/PLANO_UNIFICACAO.md` — mantido (tem valor histórico real:
+    documenta o diagnóstico e a decisão "replay vira só visualização"), mas
+    adicionei nota `STATUS: CONCLUÍDO` no topo, já que o plano que ele
+    descreve está executado (confirmado na auditoria de 19:55 desta sessão)
+    e o texto original não deixava isso claro pra quem lesse depois.
+  - Conferidos e OK, sem mudança: `TODO.md`, `RESUMA_SESSAO.md`, `README.md`,
+    `scriptis_da_ia/README.md`, `_referencias/simulador-oficial/notas.md`,
+    `comparacao_simulador_vs_IA.md` (já sabíamos que tem gaps errados, ainda
+    não corrigido — ver bloco anterior), `card_analysis_db.json`,
+    `card_effects_db.json`, `parser_snapshot.json`, `censo_padroes.json`,
+    `propostas_finais_209.json`, configs (`package.json`, `tsconfig.json`,
+    `vercel.json`, `.claude/settings.local.json`).
+- Validar antes do próximo commit: `npx tsc --noEmit` + `npx eslint` (não
+  deveriam ser afetados, já que `public/` não entra no build do Next; e
+  `.md` não afeta lint/build).
+
+**Estado atual:**
+- `git rm` já executado para os 2 arquivos fantasma; edição de
+  `PLANO_UNIFICACAO.md` feita. Pronto para commit.
+
+**Próximo:**
+- Mesma pendência do bloco anterior: corrigir `comparacao_simulador_vs_IA.md`
+  e a seção de buracos do `TODO.md` com a lista real de gaps (~3, não 8).
+- Decidir destino final de `optcg_engine/models.py` + companhia (pausado
+  pela higienização, ver bloco de 19:55).
+
+---
+
 ## 2026-06-28 19:55 — Claude
 
 **Feito:**

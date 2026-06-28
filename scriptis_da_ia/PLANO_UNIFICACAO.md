@@ -1,5 +1,11 @@
 # Plano de Unificação Replay → Engine (optcg_engine)
 
+> **STATUS: CONCLUÍDO** (confirmado em auditoria de 28/06/2026 — ver
+> [HANDOFF.md](../HANDOFF.md)). `replay_optcg.py` hoje só monta estado e
+> delega `_place_start_stage`, `refresh_phase`, `don_phase`, `draw_phase` e
+> `main_phase` ao `OPTCGMatch`; não há lógica de jogo própria nele. Documento
+> mantido como registro histórico do diagnóstico e da decisão tomada.
+
 ## O achado central (diagnóstico)
 
 O `replay_optcg.py` foi escrito com **lógica de jogo PRÓPRIA**, separada do
