@@ -7,6 +7,33 @@ e `git status` antes de tocar em qualquer coisa.
 
 ---
 
+## 2026-06-29 13:11 — Codex
+
+**Feito** — adicionada cópia manual de `GameState.__deepcopy__` para o Turn
+Planner. `Card` já tinha clone customizado; `GameState` ainda usava o caminho
+genérico do dataclass. A nova cópia replica zonas, flags e contadores de forma
+explícita e preserva referências internas via `memo` (ex: `end_of_turn_queue`
+apontando para uma carta também presente em uma zona).
+
+**Validação/performance:**
+- `python -m py_compile scriptis_da_ia\optcg_engine\decision_engine.py` passou.
+- `python scriptis_da_ia\smoke_test.py` passou.
+- Teste direto de alias em `end_of_turn_queue` passou.
+- `python audit_replay.py --n 5 --seed 42` passou com 0 anomalias.
+- `python smoke_test_broad.py` passou `40/40` em ~144s.
+- `python audit_replay.py --n 10 --seed 42` passou com 0 anomalias em ~24.2s
+  (antes desta fatia: ~31.5s na mesma medição curta).
+
+**Observação:** ainda não é a solução final do planner. O clone ficou mais
+barato, mas `_simulate_sequence*` continua clonando muitos estados. Próxima
+fatia estrutural deve reduzir quantidade de clones ou reaproveitar avaliação
+de estados, não aumentar complexidade de regras.
+
+**Estado após esta fatia:** esperado commit/push com
+`scriptis_da_ia/optcg_engine/decision_engine.py`, `HANDOFF.md` e `TODO.md`.
+
+---
+
 ## 2026-06-29 02:28 — Codex
 
 **Feito** — aplicada uma otimização estrutural pequena no Turn Planner:

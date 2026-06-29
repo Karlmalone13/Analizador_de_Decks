@@ -351,6 +351,48 @@ class GameState:
     blocker_lock_battle: Optional[dict] = None
     end_of_turn_queue: List[dict] = field(default_factory=list)
 
+    def __deepcopy__(self, memo):
+        """
+        Clone enxuto para o Turn Planner. `Card` ja tem __deepcopy__ proprio,
+        entao aqui evitamos o caminho generico do dataclass e copiamos apenas
+        as zonas/flags do estado.
+        """
+        from copy import deepcopy as _dc
+        cls = self.__class__
+        novo = cls.__new__(cls)
+        memo[id(self)] = novo
+
+        novo.leader = _dc(self.leader, memo)
+        novo.deck = [_dc(c, memo) for c in self.deck]
+        novo.hand = [_dc(c, memo) for c in self.hand]
+        novo.field_chars = [_dc(c, memo) for c in self.field_chars]
+        novo.field_stage = _dc(self.field_stage, memo) if self.field_stage else None
+        novo.life = [_dc(c, memo) for c in self.life]
+        novo.trash = [_dc(c, memo) for c in self.trash]
+
+        novo.don_deck = self.don_deck
+        novo.don_available = self.don_available
+        novo.don_rested = self.don_rested
+        novo.frozen_don_count = self.frozen_don_count
+        novo.turn = self.turn
+        novo.global_turn = self.global_turn
+        novo.cant_play_from_hand_this_turn = self.cant_play_from_hand_this_turn
+        novo.cant_play_chars_this_turn = self.cant_play_chars_this_turn
+        novo.cant_play_cost_gte = self.cant_play_cost_gte
+        novo.cannot_attack_leader_this_turn = self.cannot_attack_leader_this_turn
+        novo.is_first = self.is_first
+
+        novo.dmg_dealt = self.dmg_dealt
+        novo.chars_played = self.chars_played
+        novo.counters_used = self.counters_used
+        novo.searchers_used = self.searchers_used
+        novo.triggers_activated = self.triggers_activated
+        novo.full_deck_census = _dc(self.full_deck_census, memo)
+        novo.revealed_to_opponent = set(self.revealed_to_opponent)
+        novo.blocker_lock_battle = _dc(self.blocker_lock_battle, memo)
+        novo.end_of_turn_queue = _dc(self.end_of_turn_queue, memo)
+        return novo
+
     def known_hand_cards(self) -> List['Card']:
         """
         Subconjunto de `self.hand` que é conhecido pelo oponente (cartas
