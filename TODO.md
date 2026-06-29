@@ -131,9 +131,22 @@ implementa → valida (snapshot/diff PERDEU=0 + partidas reais instrumentadas).
   snapshot). 9 cartas corrigidas (estavam parseadas como buff FIXO, errado —
   ex: "+1000 per 3 rested DON" tratava como +1000 sempre).
 
-### "Médios" — 6 (SaveTargetName implementado em 28/06/2026, ver acima)
-PeekSelfLife/OppLife, TrashAllFaceUpLife, MatchLeaderToBasePower (set_base_power
-só aceita valor fixo, não dinâmico), ForceOpponent, QueueUpEndOfTurnAction/
+### "Médios" — 5 (SaveTargetName e MatchLeaderToBasePower implementados em 28/06/2026)
+- [x] ~~MatchLeaderToBasePower~~ — **implementado em 28/06/2026**: novo campo
+  `source` em `set_base_power` (`gerar_effects_db.py`, regex `m_dyn` em
+  `parse_set_base_power`), valor calculado em tempo de execução via
+  `effective_power()` em vez de `amount` fixo do banco. 3 fontes
+  confirmadas: `opp_leader` (5 cartas: EB04-052, OP06-009, OP16-036,
+  OP16-055 + dup), `own_leader` (1 carta, OP14-053), `selected_opp_character`
+  (2 cartas: EB01-061, OP16-104 — seleção e cópia no MESMO step, sem
+  precisar de memória entre steps). Fica de fora: OP04-069 ("the same as
+  the power of your opponent's ATTACKING Leader or Character" — exige
+  saber quem está atacando no momento da resolução, contexto de batalha
+  que `set_base_power` não tem hoje; 1 carta, raro). `PERDEU=0`, smoke
+  tests 100%, 4 cenários manuais (opp_leader/own_leader/selected com
+  escolha do melhor candidato/sem candidato não quebra).
+
+PeekSelfLife/OppLife, TrashAllFaceUpLife, ForceOpponent, QueueUpEndOfTurnAction/
 OppMainPhase, FieldCantAttackLeader (`cannot_attack_self` é outra coisa — trava
 a própria carta, não o ataque ao líder). Nenhum tem urgência — implementar
 quando aparecer carta real no meta que dependa.

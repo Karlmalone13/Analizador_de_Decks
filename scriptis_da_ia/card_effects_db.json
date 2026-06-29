@@ -1674,6 +1674,16 @@
             "count": 1
           }
         ]
+      },
+      "when_attacking": {
+        "steps": [
+          {
+            "action": "set_base_power",
+            "target": "self",
+            "source": "selected_opp_character",
+            "duration": "this_turn"
+          }
+        ]
       }
     }
   },
@@ -7158,6 +7168,16 @@
     "sub_types": "Straw Hat Crew Egghead",
     "attribute": "Strike",
     "effects": {
+      "when_attacking": {
+        "steps": [
+          {
+            "action": "set_base_power",
+            "target": "self",
+            "source": "opp_leader",
+            "duration": "this_turn"
+          }
+        ]
+      },
       "on_ko": {
         "steps": [
           {
@@ -24043,6 +24063,28 @@
     "sub_types": "FILM Shipbuilding Town",
     "attribute": "Strike",
     "effects": {
+      "when_attacking": {
+        "steps": [
+          {
+            "action": "set_base_power",
+            "target": "self",
+            "source": "opp_leader",
+            "duration": "until_my_turn_start"
+          }
+        ],
+        "once_per_turn": true
+      },
+      "on_block": {
+        "steps": [
+          {
+            "action": "set_base_power",
+            "target": "self",
+            "source": "opp_leader",
+            "duration": "until_my_turn_start"
+          }
+        ],
+        "once_per_turn": true
+      },
       "passive": {
         "steps": [
           {
@@ -51815,6 +51857,19 @@
     "sub_types": "Whitebeard Pirates",
     "attribute": "Slash",
     "effects": {
+      "opp_turn": {
+        "steps": [
+          {
+            "action": "set_base_power",
+            "target": "self",
+            "source": "own_leader",
+            "duration": "this_turn"
+          }
+        ],
+        "conditions": {
+          "hand_lte": 7
+        }
+      },
       "passive": {
         "steps": [
           {
@@ -58286,6 +58341,16 @@
             "cost_lte": 4
           }
         ]
+      },
+      "when_attacking": {
+        "steps": [
+          {
+            "action": "set_base_power",
+            "target": "self",
+            "source": "opp_leader",
+            "duration": "this_turn"
+          }
+        ]
       }
     }
   },
@@ -58757,6 +58822,17 @@
             "count": 1
           }
         ]
+      },
+      "when_attacking": {
+        "steps": [
+          {
+            "action": "set_base_power",
+            "target": "self",
+            "source": "opp_leader",
+            "duration": "this_turn"
+          }
+        ],
+        "don_requirement": 1
       }
     }
   },
@@ -60287,6 +60363,16 @@
     "sub_types": "Blackbeard Pirates Impel Down",
     "attribute": "Special",
     "effects": {
+      "when_attacking": {
+        "steps": [
+          {
+            "action": "set_base_power",
+            "target": "self",
+            "source": "selected_opp_character",
+            "duration": "this_turn"
+          }
+        ]
+      },
       "trigger": {
         "steps": [
           {

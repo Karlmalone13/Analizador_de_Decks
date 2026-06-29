@@ -1004,6 +1004,16 @@
      "count": 1
     }
    ]
+  },
+  "when_attacking": {
+   "steps": [
+    {
+     "action": "set_base_power",
+     "duration": "this_turn",
+     "source": "selected_opp_character",
+     "target": "self"
+    }
+   ]
   }
  },
  "EB02-001": {},
@@ -4513,6 +4523,16 @@
      "color": "yellow",
      "cost_lte": 99,
      "count": 1
+    }
+   ]
+  },
+  "when_attacking": {
+   "steps": [
+    {
+     "action": "set_base_power",
+     "duration": "this_turn",
+     "source": "opp_leader",
+     "target": "self"
     }
    ]
   }
@@ -14583,10 +14603,32 @@
  },
  "OP06-008": {},
  "OP06-009": {
+  "on_block": {
+   "once_per_turn": true,
+   "steps": [
+    {
+     "action": "set_base_power",
+     "duration": "until_my_turn_start",
+     "source": "opp_leader",
+     "target": "self"
+    }
+   ]
+  },
   "passive": {
    "steps": [
     {
      "action": "keyword_blocker"
+    }
+   ]
+  },
+  "when_attacking": {
+   "once_per_turn": true,
+   "steps": [
+    {
+     "action": "set_base_power",
+     "duration": "until_my_turn_start",
+     "source": "opp_leader",
+     "target": "self"
     }
    ]
   }
@@ -31422,6 +31464,19 @@
   }
  },
  "OP14-053": {
+  "opp_turn": {
+   "conditions": {
+    "hand_lte": 7
+   },
+   "steps": [
+    {
+     "action": "set_base_power",
+     "duration": "this_turn",
+     "source": "own_leader",
+     "target": "self"
+    }
+   ]
+  },
   "passive": {
    "steps": [
     {
@@ -35451,6 +35506,16 @@
      "count": 1
     }
    ]
+  },
+  "when_attacking": {
+   "steps": [
+    {
+     "action": "set_base_power",
+     "duration": "this_turn",
+     "source": "opp_leader",
+     "target": "self"
+    }
+   ]
   }
  },
  "OP16-037": {
@@ -35711,6 +35776,17 @@
     {
      "action": "draw",
      "count": 1
+    }
+   ]
+  },
+  "when_attacking": {
+   "don_requirement": 1,
+   "steps": [
+    {
+     "action": "set_base_power",
+     "duration": "this_turn",
+     "source": "opp_leader",
+     "target": "self"
     }
    ]
   }
@@ -36715,6 +36791,16 @@
      "cost_eq": 1,
      "count": 1,
      "filter_type": "blackbeard pirates"
+    }
+   ]
+  },
+  "when_attacking": {
+   "steps": [
+    {
+     "action": "set_base_power",
+     "duration": "this_turn",
+     "source": "selected_opp_character",
+     "target": "self"
     }
    ]
   }

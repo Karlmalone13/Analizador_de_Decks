@@ -74,13 +74,13 @@ buracos são de COBERTURA de efeitos, não de modelo.
 | ~~CantPlayAnyCardsFromHand~~ (no oponente) | ✅ **INVESTIGADO, 0 cartas reais** — as 18 cartas com "cannot play" no banco são todas auto-aplicadas (custo de ramp de DON, já cobertas por `self_cant_play`). Exemplo "Imu" do doc original não corresponde a carta real do pool |
 | ~~CantPlayAnyCharactersToField~~ (no oponente) | ✅ mesma conclusão do item acima |
 
-### 🟡 "Médios" — 6 gaps reais (SaveTargetName resolvido em 28/06/2026)
+### 🟡 "Médios" — 5 gaps reais (SaveTargetName e MatchLeaderToBasePower resolvidos em 28/06/2026)
 
 | Efeito | Confirmação (verificado no código, 28/06/2026) |
 |--------|--------------------------------------------------|
 | PeekSelfLife / PeekOppLife | nenhuma action equivalente nas 75 do banco |
 | TrashAllFaceUpLife | não modelamos face da vida (face-up/down) em lugar nenhum |
-| MatchLeaderToBasePower | `set_base_power` só aceita valor FIXO do step (`decision_engine.py:1785`, `int(amount)`) — nunca copia dinamicamente o power de outra carta |
+| ~~MatchLeaderToBasePower~~ | ✅ **IMPLEMENTADO em 28/06/2026** — novo campo `source` em `set_base_power`, valor calculado em tempo de execução via `effective_power()` em vez de `amount` fixo. Cobre `opp_leader` (5 cartas), `own_leader` (1 carta), `selected_opp_character` (2 cartas, seleção+cópia no mesmo step). Fica de fora OP04-069 ("the same as the power of your opponent's ATTACKING Leader or Character" — exige contexto de batalha que `set_base_power` não tem, 1 carta raro) |
 | ~~SaveTargetName / HandSize / Count~~ | ✅ **IMPLEMENTADO em 28/06/2026** — `EffectExecutor._last_selected`, preenchido por `buff_power target='select_filtered'`, consumido por `select_grant_unblockable_turn`/`lock_self_character_refresh` `target='selected'`. Resolveu OP07-057, OP12-077, EB02-021. Também corrigiu um bug de ordem de despacho (sub-parsers não seguem a ordem do texto original) e um bug pré-existente de target errado em `buff_power` (48 cartas com "up to N of your [Tipo] cards gains power" caíam em `target='self'`, agora `select_filtered` com seleção real) |
 | ForceOpponent | nenhuma action equivalente (raro, mantido como tal) |
 | QueueUpEndOfTurnAction / QueueUpOppMainPhaseAction | nenhuma action equivalente |

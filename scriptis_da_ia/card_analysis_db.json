@@ -2568,6 +2568,11 @@
    {
     "action": "add_don",
     "trigger": "on_play"
+   },
+   {
+    "action": "set_base_power",
+    "trigger": "when_attacking",
+    "target": "self"
    }
   ],
   "synergy_states": {},
@@ -10437,6 +10442,11 @@
   "sub_types": "Straw Hat Crew Egghead",
   "attribute": "Strike",
   "effects": [
+   {
+    "action": "set_base_power",
+    "trigger": "when_attacking",
+    "target": "self"
+   },
    {
     "action": "play_card",
     "trigger": "on_ko",
@@ -37233,6 +37243,16 @@
   "sub_types": "FILM Shipbuilding Town",
   "attribute": "Strike",
   "effects": [
+   {
+    "action": "set_base_power",
+    "trigger": "when_attacking",
+    "target": "self"
+   },
+   {
+    "action": "set_base_power",
+    "trigger": "on_block",
+    "target": "self"
+   },
    {
     "action": "keyword_blocker",
     "trigger": "passive"
@@ -80601,6 +80621,11 @@
   "attribute": "Slash",
   "effects": [
    {
+    "action": "set_base_power",
+    "trigger": "opp_turn",
+    "target": "self"
+   },
+   {
     "action": "keyword_blocker",
     "trigger": "passive"
    }
@@ -90399,6 +90424,11 @@
     "action": "rest_opp_character",
     "trigger": "on_play",
     "cost_lte": 4
+   },
+   {
+    "action": "set_base_power",
+    "trigger": "when_attacking",
+    "target": "self"
    }
   ],
   "synergy_states": {
@@ -91192,6 +91222,12 @@
    {
     "action": "draw",
     "trigger": "on_play"
+   },
+   {
+    "action": "set_base_power",
+    "trigger": "when_attacking",
+    "don_requirement": 1,
+    "target": "self"
    }
   ],
   "synergy_states": {},
@@ -93357,6 +93393,11 @@
   "sub_types": "Blackbeard Pirates Impel Down",
   "attribute": "Special",
   "effects": [
+   {
+    "action": "set_base_power",
+    "trigger": "when_attacking",
+    "target": "self"
+   },
    {
     "action": "draw",
     "trigger": "trigger"

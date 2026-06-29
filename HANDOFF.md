@@ -7,6 +7,62 @@ e `git status` antes de tocar em qualquer coisa.
 
 ---
 
+## 2026-06-29 01:00 — Claude
+
+**Feito** (plano em 3 partes pedido pelo usuário: 1. import quebrado, 2. um
+gap "médio", 3. auditoria via replay — completei 1 e 2 nesta sessão):
+- **1. Corrigido o import quebrado de `simular_deck_usuario.py`** (mencionado
+  como dívida pendente em handoffs anteriores). Era de fato `parse_card_effects`
+  vs `parse_card_effects_basic` (o nome certo). Rename simples no import e no
+  único call site. Validado rodando o script até a etapa de Supabase (carrega
+  2614 cartas normalmente, só falha depois por falta de credencial — esperado
+  neste ambiente local).
+- **2. Implementado `MatchLeaderToBasePower`** (escolhido entre os 6 "médios"
+  por ter o maior número de cartas reais confirmadas — 13 cartas via
+  levantamento por regex no `cards_rows.csv`, contra ≤11 dos outros). Novo
+  campo `source` em `set_base_power`: quando presente, o `amount` é calculado
+  em tempo de execução via `effective_power()` da carta referenciada, em vez
+  do `int(amount)` fixo do banco (gap real confirmado:
+  `decision_engine.py` antigo comentário dizia até estar "pendente sessão
+  dedicada" pra ativar `base_power_override` no `effective_power()` — achei
+  que isso já estava implementado há tempo, comentário estava desatualizado;
+  corrigido o comentário também).
+  - 3 fontes: `opp_leader` (5 cartas), `own_leader` (1 carta),
+    `selected_opp_character` (2 cartas — seleção e cópia no MESMO step de
+    texto, não precisa da infra de memória entre steps da rodada anterior).
+  - Fica de fora: OP04-069 ("the same as the power of your opponent's
+    ATTACKING Leader or Character") — exige saber quem está atacando no
+    momento da resolução, contexto de batalha que `set_base_power` não tem
+    hoje. 1 carta, registrado como gap residual.
+  - Workflow completo: baseline via `git show HEAD:...`, `PERDEU=0` (7 cartas
+    mudaram, todas ganho de cobertura — eram blocos sem nenhum efeito antes),
+    `gerar_dbs.py`, `snapshot_parser.py`, `smoke_test.py` 100%,
+    `smoke_test_broad.py` 40/40, e 4 cenários manuais diretos (opp_leader,
+    own_leader, selected com escolha do melhor candidato do oponente, e sem
+    candidato não quebra nem aplica nada).
+- `TODO.md` e `comparacao_simulador_vs_IA.md` atualizados (médios: 6 → 5).
+
+**Estado atual:**
+- Pendente de commit: `simular_deck_usuario.py`, `TODO.md`,
+  `comparacao_simulador_vs_IA.md`, `scriptis_da_ia/gerar_effects_db.py`,
+  `scriptis_da_ia/optcg_engine/decision_engine.py`,
+  `scriptis_da_ia/card_effects_db.json`,
+  `scriptis_da_ia/card_analysis_db.json`,
+  `scriptis_da_ia/parser_snapshot.json`.
+
+**Próximo:**
+- Commitar/push o que está pendente acima.
+- **3. Auditoria via replay/partida real instrumentada** — ainda não
+  iniciada (era o 3º item do plano do usuário, "vamos fazer 1, depois 2 e
+  depois 3"). Rodar `replay_optcg.py` com partidas reais e procurar
+  comportamento estranho na prática, em vez de seguir só a lista teórica
+  de gaps.
+- 5 "médios" restantes sem urgência (PeekLife, TrashAllFaceUpLife,
+  ForceOpponent, QueueUpEndOfTurnAction/OppMainPhase, FieldCantAttackLeader).
+- Sistema de imunidade — dívida consciente, fora de escopo.
+
+---
+
 ## 2026-06-29 00:15 — Claude
 
 **Feito** (sessão tinha travado/fechado o app no meio do bloco anterior;

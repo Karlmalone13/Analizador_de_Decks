@@ -20,7 +20,7 @@ sys.path.insert(0, os.path.dirname(__file__))
 from optcg_engine.decision_engine import (
     Card, GameState, DecisionEngine,
     load_cards_db, build_real_deck, validar_deck,
-    parse_card_effects, simular_matchup
+    parse_card_effects_basic, simular_matchup
 )
 
 # ── Supabase ──────────────────────────────────────────────────────────────────
@@ -66,7 +66,7 @@ def supabase_json_to_deck(deck_json: dict, cards_db: dict) -> tuple | None:
             # tenta parsear do próprio JSON
             text    = str(card_data.get('card_text', ''))
             counter = str(card_data.get('counter_amount', ''))
-            data    = parse_card_effects(text, counter)
+            data    = parse_card_effects_basic(text, counter)
             data['name']  = str(card_data.get('card_name', code))
             data['color'] = str(card_data.get('card_color', ''))
             data['type']  = str(card_data.get('card_type', 'CHARACTER')).upper()

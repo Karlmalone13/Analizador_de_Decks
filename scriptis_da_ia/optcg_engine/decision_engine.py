@@ -1787,20 +1787,43 @@ class EffectExecutor:
         # ── Substituicao de power base (set_base_power) ─────────────────────────
         # Mecanica DISTINTA de buff_power/debuff_power: 'base power becomes N'
         # substitui o valor (ignora buffs aditivos anteriores aplicados sobre a
-        # base), nao soma. Implementar corretamente exige alterar
-        # effective_power() para usar um override em vez de self.power -- isso
-        # afeta TODO calculo de ataque/bloqueio existente, entao a mudanca fica
-        # pendente para uma sessao dedicada em vez de uma alteracao isolada e
-        # nao calibrada aqui. target pode ser 'leader', 'self',
-        # 'own_character', ou 'leader_or_own_character' (alvo ambiguo,
-        # escolha do jogador entre Leader OU Character -- tambem pendente).
-        # 8 cards no banco (ex: OP15-092 Monkey.D.Luffy, EB04-003/004).
+        # base), nao soma. `base_power_override` (campo em Card) e consumido
+        # por `effective_card_power` em rules_facade.py -- JA implementado e
+        # correto pra valor FIXO (target 'leader'/'self'/'own_character'/
+        # 'leader_or_own_character', 8 cards, ex: OP15-092 Monkey.D.Luffy,
+        # EB04-003/004). `source` (achado 28/06/2026, MatchLeaderToBasePower)
+        # cobre o caso DINAMICO -- "becomes the same as [outra carta]",
+        # sem numero literal no banco -- 12 cartas a mais.
         if action == 'set_base_power':
             from optcg_engine.rules_facade import (
                 card_matches_filter,
                 choose_highest_effective_power,
             )
             amount = step.get('amount')
+            source = step.get('source')
+            if source:
+                # MatchLeaderToBasePower (achado 28/06/2026, 12 cartas
+                # reais): valor DINAMICO, calculado do estado atual em vez
+                # de um amount fixo do banco. Sempre target='self' (a
+                # propria carta do efeito, unico caso confirmado).
+                if source == 'opp_leader':
+                    amount = opp.leader.effective_power(False)
+                elif source == 'own_leader':
+                    amount = me.leader.effective_power(True)
+                elif source == 'selected_opp_character':
+                    from optcg_engine.rules_facade import (
+                        eligible_cards,
+                        choose_highest_board_value,
+                    )
+                    candidatos = eligible_cards(opp.field_chars)
+                    if not candidatos:
+                        return ''
+                    alvo = choose_highest_board_value(candidatos)
+                    amount = alvo.effective_power(False)
+                else:
+                    return None
+                card.base_power_override = int(amount)
+                return f'base power de {card.name[:15]} virou {amount} ({source})'
             if amount is None:
                 return None
 

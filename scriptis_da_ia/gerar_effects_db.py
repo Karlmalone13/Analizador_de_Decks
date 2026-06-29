@@ -1503,6 +1503,43 @@ def parse_set_base_power(text):
             step['duration'] = 'this_turn'  # default observado nas cartas confirmadas sem clausula explicita
         steps.append(step)
 
+    # "[Tipo]'s base power becomes the same as [fonte]" -- SEM numero literal
+    # (MatchLeaderToBasePower, achado 28/06/2026, 12 cartas reais). Distinto
+    # do loop acima (que exige `becomes (\d+)`, valor fixo): aqui o valor e
+    # DINAMICO, calculado em tempo de execucao a partir de outra carta no
+    # estado do jogo (engine usa effective_power(), nao um amount fixo do
+    # banco). 3 fontes confirmadas:
+    #   'opp_leader'              -- "...the same as your opponent's Leader
+    #                                 (during this turn|'s (base )?power...)"
+    #   'own_leader'              -- "...the same as your Leader's base power"
+    #   'selected_opp_character'  -- precedido de "select up to 1 of your
+    #                                 opponent's characters", copia da carta
+    #                                 selecionada (selecao e copia no MESMO
+    #                                 step, sem precisar de memoria entre
+    #                                 steps -- distinto do SaveTargetName)
+    # Fica de fora: "the same as the power of your opponent's ATTACKING
+    # Leader or Character" (OP04-069, 1 carta) -- exige saber QUEM esta
+    # atacando no momento da resolucao, contexto de batalha que o
+    # set_base_power nao tem acesso hoje. Nao implementado (raro).
+    m_dyn = re.search(
+        r"this character'?s base power becomes the same as "
+        r"(your opponent'?s leader|your leader'?s base power|the selected character'?s power)",
+        t
+    )
+    if m_dyn:
+        fonte = m_dyn.group(1)
+        if 'selected character' in fonte:
+            source = 'selected_opp_character'
+        elif 'your leader' in fonte and "opponent" not in fonte:
+            source = 'own_leader'
+        else:
+            source = 'opp_leader'
+        step = {'action': 'set_base_power', 'target': 'self', 'source': source}
+        contexto_depois = t[m_dyn.end():m_dyn.end() + 60]
+        step['duration'] = ('until_my_turn_start' if 'until the start of your next turn' in contexto_depois
+                             else 'this_turn')
+        steps.append(step)
+
     return steps
 
 
