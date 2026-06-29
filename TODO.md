@@ -172,7 +172,16 @@ implementa → valida (snapshot/diff PERDEU=0 + partidas reais instrumentadas).
   snapshot). 9 cartas corrigidas (estavam parseadas como buff FIXO, errado —
   ex: "+1000 per 3 rested DON" tratava como +1000 sempre).
 
-### "Médios" — 5 (SaveTargetName e MatchLeaderToBasePower implementados em 28/06/2026)
+### Fechado em 29/06/2026 -- 5 gaps medios restantes
+- [x] ~~PeekSelfLife/OppLife~~ -- parser gera `peek_life`; engine olha/reordena Life propria ou do oponente com heuristica simples.
+- [x] ~~TrashAllFaceUpLife~~ -- `Card.life_face_up` modela face da carta na Life; `gain_life face='up'`, `turn_life_face_up/down` e `trash_own_life face='up'` implementados.
+- [x] ~~ForceOpponent~~ -- `choice_chooser='opponent'`, `opp_bounce_own_character` com escolha defensiva/filtro de custo, e `opp_choose_trash_our_hand`.
+- [x] ~~QueueUpEndOfTurnAction/OppMainPhase~~ -- `GameState.end_of_turn_queue` + `OPTCGMatch.end_phase()`; cobre `set_active`, `set_don_active`, `gain_life` agendados e Black Maria (`return_don_until_match_opp`). OppMainPhase segue sem carta real prioritaria.
+- [x] ~~FieldCantAttackLeader~~ -- `cannot_attack_leader_this_turn` bloqueia ataques ao Leader durante o turno (ex: OP06-026 Koushirou), distinto de `cannot_attack_self`.
+
+Validacao: `python smoke_test.py`; `python audit_replay.py --n 5 --seed 42`; teste direto dos 5 gaps. `smoke_test_broad.py` completo ficou lento demais para fechar em 300s; 10 partidas aleatorias terminaram sem excecao em ~289s (risco/performance a observar).
+
+### "Médios" — resolvidos (SaveTargetName e MatchLeaderToBasePower implementados em 28/06/2026)
 - [x] ~~MatchLeaderToBasePower~~ — **implementado em 28/06/2026**: novo campo
   `source` em `set_base_power` (`gerar_effects_db.py`, regex `m_dyn` em
   `parse_set_base_power`), valor calculado em tempo de execução via
@@ -187,10 +196,8 @@ implementa → valida (snapshot/diff PERDEU=0 + partidas reais instrumentadas).
   tests 100%, 4 cenários manuais (opp_leader/own_leader/selected com
   escolha do melhor candidato/sem candidato não quebra).
 
-PeekSelfLife/OppLife, TrashAllFaceUpLife, ForceOpponent, QueueUpEndOfTurnAction/
-OppMainPhase, FieldCantAttackLeader (`cannot_attack_self` é outra coisa — trava
-a própria carta, não o ataque ao líder). Nenhum tem urgência — implementar
-quando aparecer carta real no meta que dependa.
+Os 5 medios restantes foram fechados em 29/06/2026. Ainda ficam a familia grande
+de imunidade e stubs antigos listados abaixo.
 
 ### Dívida técnica grande (consciente, fora de escopo)
 - [ ] Sistema de imunidade inteiro (ImmuneToKO/Removal/Combat/Effect/Strikes) — família

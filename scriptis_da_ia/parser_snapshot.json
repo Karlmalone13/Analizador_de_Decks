@@ -654,6 +654,11 @@
  },
  "EB01-040": {
   "activate_main": {
+   "costs": [
+    {
+     "type": "turn_life_face_up"
+    }
+   ],
    "once_per_turn": true,
    "steps": [
     {
@@ -851,6 +856,24 @@
   }
  },
  "EB01-052": {
+  "on_play": {
+   "choice": [
+    [
+     {
+      "action": "peek_life",
+      "count": "all",
+      "target": "opponent"
+     }
+    ],
+    [
+     {
+      "action": "turn_life_face_down",
+      "count": "all",
+      "target": "self"
+     }
+    ]
+   ]
+  },
   "passive": {
    "steps": [
     {
@@ -1259,6 +1282,7 @@
     {
      "action": "set_don_active",
      "count": 1,
+     "timing": "end_of_turn",
      "up_to": true
     },
     {
@@ -1956,7 +1980,26 @@
    ]
   }
  },
- "EB02-053": {},
+ "EB02-053": {
+  "on_ko": {
+   "steps": [
+    {
+     "action": "peek_life",
+     "count": 1,
+     "target": "any"
+    }
+   ]
+  },
+  "on_play": {
+   "steps": [
+    {
+     "action": "peek_life",
+     "count": 1,
+     "target": "any"
+    }
+   ]
+  }
+ },
  "EB02-054": {
   "on_play": {
    "conditions": {
@@ -3111,12 +3154,20 @@
  },
  "EB03-051": {
   "on_play": {
+   "conditions": {
+    "has_face_up_life": true
+   },
    "steps": [
     {
      "action": "ko",
      "cost_lte": 2,
      "count": 1,
      "target": "opp_character"
+    },
+    {
+     "action": "turn_life_face_down",
+     "count": "all",
+     "target": "self"
     }
    ]
   }
@@ -3150,6 +3201,11 @@
  },
  "EB03-053": {
   "on_ko": {
+   "costs": [
+    {
+     "type": "turn_life_face_up"
+    }
+   ],
    "steps": [
     {
      "action": "play_card",
@@ -3248,6 +3304,11 @@
  },
  "EB03-056": {
   "on_play": {
+   "costs": [
+    {
+     "type": "turn_life_face_up"
+    }
+   ],
    "steps": [
     {
      "action": "ko",
@@ -3325,6 +3386,7 @@
      "action": "gain_life",
      "count": 1,
      "dest": "life_top",
+     "face": "up",
      "source": "hand",
      "up_to": true
     }
@@ -4658,6 +4720,11 @@
  },
  "EB04-059": {
   "main": {
+   "costs": [
+    {
+     "type": "turn_life_face_up"
+    }
+   ],
    "steps": [
     {
      "action": "ko",
@@ -4690,6 +4757,7 @@
      "action": "gain_life",
      "count": 1,
      "dest": "life_top",
+     "face": "up",
      "source": "hand",
      "up_to": true
     }
@@ -5217,6 +5285,14 @@
   }
  },
  "OP01-038": {
+  "on_ko": {
+   "steps": [
+    {
+     "action": "opp_choose_trash_our_hand",
+     "count": 1
+    }
+   ]
+  },
   "when_attacking": {
    "don_requirement": 1,
    "steps": [
@@ -9878,6 +9954,11 @@
      "amount": 1000,
      "duration": "battle_only",
      "target": "self"
+    },
+    {
+     "action": "peek_life",
+     "count": 1,
+     "target": "any"
     }
    ]
   }
@@ -9916,6 +9997,15 @@
  },
  "OP03-103": {},
  "OP03-104": {
+  "on_play": {
+   "steps": [
+    {
+     "action": "peek_life",
+     "count": 1,
+     "target": "any"
+    }
+   ]
+  },
   "passive": {
    "steps": [
     {
@@ -10285,6 +10375,7 @@
      "action": "gain_life",
      "count": 1,
      "dest": "life_bottom",
+     "face": "up",
      "source": "deck_top",
      "up_to": true
     }
@@ -10723,6 +10814,7 @@
     {
      "action": "set_don_active",
      "count": 1,
+     "timing": "end_of_turn",
      "up_to": true
     }
    ]
@@ -10835,6 +10927,7 @@
     {
      "action": "set_don_active",
      "count": 1,
+     "timing": "end_of_turn",
      "up_to": true
     }
    ]
@@ -14933,6 +15026,9 @@
      "cost_lte": 4,
      "count": 1,
      "target": "own_character"
+    },
+    {
+     "action": "cannot_attack_leader_turn"
     }
    ]
   }
@@ -16224,7 +16320,17 @@
    ]
   }
  },
- "OP06-099": {},
+ "OP06-099": {
+  "on_play": {
+   "steps": [
+    {
+     "action": "peek_life",
+     "count": 1,
+     "target": "any"
+    }
+   ]
+  }
+ },
  "OP06-100": {
   "trigger": {
    "steps": [
@@ -16297,6 +16403,7 @@
      "action": "gain_life",
      "count": 1,
      "dest": "life_bottom",
+     "face": "up",
      "power_eq": 0,
      "source": "own_field",
      "up_to": true
@@ -16347,6 +16454,7 @@
      "action": "gain_life",
      "count": 1,
      "dest": "life_bottom",
+     "face": "up",
      "source": "own_field",
      "up_to": true
     }
@@ -18205,6 +18313,7 @@
      "action": "gain_life",
      "count": 1,
      "dest": "life_top",
+     "face": "up",
      "source": "deck_top",
      "up_to": false
     }
@@ -19681,6 +19790,11 @@
  },
  "OP08-063": {
   "on_play": {
+   "costs": [
+    {
+     "type": "turn_life_face_down"
+    }
+   ],
    "steps": [
     {
      "action": "add_don",
@@ -19806,6 +19920,10 @@
     {
      "action": "add_don",
      "count": 5
+    },
+    {
+     "action": "return_don_until_match_opp",
+     "timing": "end_of_turn"
     }
    ]
   }
@@ -19817,6 +19935,11 @@
      "action": "rest_opp_character",
      "cost_lte": 2,
      "count": 1
+    },
+    {
+     "action": "turn_life_face_down",
+     "count": "all",
+     "target": "self"
     }
    ]
   }
@@ -20554,6 +20677,7 @@
      "action": "gain_life",
      "count": 1,
      "dest": "life_top",
+     "face": "up",
      "source": "hand",
      "up_to": true
     },
@@ -21555,6 +21679,15 @@
   }
  },
  "OP09-058": {
+  "main": {
+   "steps": [
+    {
+     "action": "opp_bounce_own_character",
+     "cost_lte": 6,
+     "count": 1
+    }
+   ]
+  },
   "trigger": {
    "steps": [
     {
@@ -22344,6 +22477,7 @@
      "action": "gain_life",
      "count": 1,
      "dest": "life_top",
+     "face": "up",
      "source": "hand",
      "up_to": true
     },
@@ -24283,6 +24417,11 @@
  },
  "OP10-099": {
   "end_of_turn": {
+   "costs": [
+    {
+     "type": "turn_life_face_up"
+    }
+   ],
    "steps": [
     {
      "action": "set_active",
@@ -24349,6 +24488,7 @@
      "action": "gain_life",
      "count": 1,
      "dest": "life_top",
+     "face": "up",
      "source": "hand",
      "up_to": true
     }
@@ -24400,6 +24540,7 @@
      "action": "gain_life",
      "count": 1,
      "dest": "life_top",
+     "face": "up",
      "source": "hand",
      "up_to": true
     }
@@ -24587,6 +24728,11 @@
      "cost_lte": 5,
      "count": 1,
      "target": "opp_character"
+    },
+    {
+     "action": "peek_life",
+     "count": 1,
+     "target": "any"
     }
    ]
   },
@@ -24666,6 +24812,7 @@
      "action": "gain_life",
      "count": 1,
      "dest": "life_top",
+     "face": "down",
      "source": "deck_top",
      "up_to": false
     }
@@ -26318,6 +26465,11 @@
    "conditions": {
     "leader_is": "shirahoshi"
    },
+   "costs": [
+    {
+     "type": "turn_life_face_down"
+    }
+   ],
    "steps": [
     {
      "action": "draw",
@@ -26369,6 +26521,11 @@
  },
  "OP11-104": {
   "on_play": {
+   "costs": [
+    {
+     "type": "turn_life_face_down"
+    }
+   ],
    "steps": [
     {
      "action": "look_top_deck",
@@ -26411,11 +26568,17 @@
    "conditions": {
     "leader_is": "shirahoshi"
    },
+   "costs": [
+    {
+     "type": "turn_life_face_down"
+    }
+   ],
    "once_per_turn": true,
    "steps": [
     {
      "action": "set_active",
-     "target": "self"
+     "target": "self",
+     "timing": "end_of_turn"
     }
    ]
   },
@@ -26432,6 +26595,11 @@
    "conditions": {
     "leader_is": "shirahoshi"
    },
+   "costs": [
+    {
+     "type": "turn_life_face_down"
+    }
+   ],
    "steps": [
     {
      "action": "draw",
@@ -26548,6 +26716,7 @@
      "action": "gain_life",
      "count": 1,
      "dest": "life_bottom",
+     "face": "up",
      "source": "deck_top",
      "up_to": true
     }
@@ -26559,6 +26728,7 @@
      "action": "gain_life",
      "count": 1,
      "dest": "life_bottom",
+     "face": "up",
      "source": "own_field",
      "up_to": true
     }
@@ -26570,6 +26740,11 @@
    "conditions": {
     "leader_is": "shirahoshi"
    },
+   "costs": [
+    {
+     "type": "turn_life_face_up"
+    }
+   ],
    "once_per_turn": true,
    "steps": [
     {
@@ -28254,6 +28429,15 @@
      "target": "self"
     }
    ]
+  },
+  "passive": {
+   "steps": [
+    {
+     "action": "turn_life_face_up",
+     "count": 1,
+     "target": "self"
+    }
+   ]
   }
  },
  "OP12-103": {},
@@ -28475,6 +28659,7 @@
      "action": "gain_life",
      "count": 1,
      "dest": "life_bottom",
+     "face": "down",
      "source": "deck_top",
      "up_to": true
     }
@@ -28913,6 +29098,7 @@
     {
      "action": "set_don_active",
      "count": 2,
+     "timing": "end_of_turn",
      "up_to": true
     }
    ]
@@ -29078,6 +29264,7 @@
     {
      "action": "set_don_active",
      "count": 2,
+     "timing": "end_of_turn",
      "up_to": true
     }
    ]
@@ -30311,7 +30498,17 @@
    ]
   }
  },
- "OP13-105": {},
+ "OP13-105": {
+  "on_play": {
+   "steps": [
+    {
+     "action": "peek_life",
+     "count": "all",
+     "target": "self"
+    }
+   ]
+  }
+ },
  "OP13-106": {
   "opp_turn": {
    "steps": [
@@ -30358,6 +30555,15 @@
   }
  },
  "OP13-109": {
+  "passive": {
+   "steps": [
+    {
+     "action": "turn_life_face_up",
+     "count": 1,
+     "target": "self"
+    }
+   ]
+  },
   "trigger": {
    "steps": [
     {
@@ -30435,6 +30641,11 @@
  },
  "OP13-114": {
   "on_play": {
+   "costs": [
+    {
+     "type": "turn_life_face_up"
+    }
+   ],
    "steps": [
     {
      "action": "debuff_power",
@@ -30460,6 +30671,11 @@
    ]
   },
   "when_attacking": {
+   "costs": [
+    {
+     "type": "turn_life_face_up"
+    }
+   ],
    "steps": [
     {
      "action": "debuff_power",
@@ -30524,6 +30740,11 @@
  },
  "OP13-117": {
   "main": {
+   "costs": [
+    {
+     "type": "turn_life_face_up"
+    }
+   ],
    "steps": [
     {
      "action": "ko",
@@ -31064,6 +31285,7 @@
     {
      "action": "set_don_active",
      "count": 5,
+     "timing": "end_of_turn",
      "up_to": true
     }
    ]
@@ -32399,6 +32621,7 @@
      "action": "gain_life",
      "count": 1,
      "dest": "life_top",
+     "face": "up",
      "source": "deck_top",
      "up_to": false
     }
@@ -34542,6 +34765,11 @@
  },
  "OP15-099": {
   "activate_main": {
+   "costs": [
+    {
+     "type": "turn_life_face_down"
+    }
+   ],
    "steps": [
     {
      "action": "give_don",
@@ -34805,6 +35033,11 @@
    ]
   },
   "on_play": {
+   "costs": [
+    {
+     "type": "turn_life_face_up"
+    }
+   ],
    "once_per_turn": true,
    "steps": [
     {
@@ -37728,7 +37961,8 @@
      "action": "set_active",
      "count": 99,
      "filter_type": "film",
-     "target": "own_character"
+     "target": "own_character",
+     "timing": "end_of_turn"
     }
    ]
   }
@@ -38062,6 +38296,7 @@
      "action": "gain_life",
      "count": 1,
      "dest": "life_bottom",
+     "face": "up",
      "source": "own_field",
      "up_to": true
     }
@@ -38535,6 +38770,9 @@
  },
  "PRB02-018": {
   "on_play": {
+   "conditions": {
+    "has_face_up_life": true
+   },
    "steps": [
     {
      "action": "play_card",
@@ -39954,6 +40192,11 @@
   "on_play": {
    "steps": [
     {
+     "action": "peek_life",
+     "count": 1,
+     "target": "any"
+    },
+    {
      "action": "gain_rush",
      "duration": "this_turn"
     }
@@ -40009,7 +40252,17 @@
    ]
   }
  },
- "ST07-008": {},
+ "ST07-008": {
+  "on_play": {
+   "steps": [
+    {
+     "action": "peek_life",
+     "count": 1,
+     "target": "any"
+    }
+   ]
+  }
+ },
  "ST07-009": {
   "activate_main": {
    "costs": [
@@ -40061,7 +40314,8 @@
       "up_to": false
      }
     ]
-   ]
+   ],
+   "choice_chooser": "opponent"
   }
  },
  "ST07-011": {
@@ -40132,7 +40386,8 @@
       "up_to": false
      }
     ]
-   ]
+   ],
+   "choice_chooser": "opponent"
   },
   "trigger": {
    "steps": [
@@ -40150,6 +40405,20 @@
      "amount": 2000,
      "duration": "battle_only",
      "target": "leader_or_character"
+    },
+    {
+     "action": "peek_life",
+     "count": 1,
+     "target": "any"
+    }
+   ]
+  },
+  "trigger": {
+   "steps": [
+    {
+     "action": "peek_life",
+     "count": 1,
+     "target": "opponent"
     }
    ]
   }
@@ -40166,6 +40435,7 @@
      "action": "gain_life",
      "count": 1,
      "dest": "life_top",
+     "face": "up",
      "source": "own_field",
      "up_to": true
     }
@@ -40533,6 +40803,7 @@
      },
      "count": 1,
      "dest": "life_bottom",
+     "face": "up",
      "source": "own_field",
      "up_to": true
     }
@@ -41222,6 +41493,7 @@
      "action": "gain_life",
      "count": 1,
      "dest": "life_top",
+     "face": "up",
      "source": "own_field",
      "up_to": false
     }
@@ -41249,8 +41521,19 @@
      "action": "gain_life",
      "count": 1,
      "dest": "life_top",
+     "face": "up",
      "source": "own_field",
      "up_to": true
+    }
+   ]
+  },
+  "end_of_turn": {
+   "once_per_turn": true,
+   "steps": [
+    {
+     "action": "trash_own_life",
+     "count": "all",
+     "face": "up"
     }
    ]
   }
@@ -41259,6 +41542,11 @@
  "ST13-004": {
   "on_play": {
    "steps": [
+    {
+     "action": "peek_life",
+     "count": "all",
+     "target": "self"
+    },
     {
      "action": "gain_life",
      "count": 1,
@@ -41282,6 +41570,7 @@
      "action": "gain_life",
      "count": 1,
      "dest": "life_top",
+     "face": "down",
      "source": "deck_top",
      "up_to": false
     }
@@ -41389,7 +41678,17 @@
    ]
   }
  },
- "ST13-012": {},
+ "ST13-012": {
+  "on_play": {
+   "steps": [
+    {
+     "action": "peek_life",
+     "count": "all",
+     "target": "self"
+    }
+   ]
+  }
+ },
  "ST13-013": {
   "on_play": {
    "steps": [
@@ -41457,6 +41756,15 @@
   }
  },
  "ST13-016": {
+  "on_play": {
+   "steps": [
+    {
+     "action": "peek_life",
+     "count": "all",
+     "target": "self"
+    }
+   ]
+  },
   "passive": {
    "steps": [
     {
@@ -41473,6 +41781,11 @@
      "amount": 4000,
      "duration": "battle_only",
      "target": "leader_or_character"
+    },
+    {
+     "action": "peek_life",
+     "count": "all",
+     "target": "self"
     }
    ]
   },
@@ -42277,6 +42590,11 @@
  },
  "ST20-001": {
   "activate_main": {
+   "costs": [
+    {
+     "type": "turn_life_face_up"
+    }
+   ],
    "once_per_turn": true,
    "steps": [
     {
@@ -42322,7 +42640,17 @@
    ]
   }
  },
- "ST20-003": {},
+ "ST20-003": {
+  "trigger": {
+   "steps": [
+    {
+     "action": "peek_life",
+     "count": 1,
+     "target": "any"
+    }
+   ]
+  }
+ },
  "ST20-004": {
   "on_play": {
    "steps": [
@@ -42362,6 +42690,7 @@
      }
     ]
    ],
+   "choice_chooser": "opponent",
    "costs": [
     {
      "count": 1,
@@ -43023,6 +43352,7 @@
     {
      "action": "set_don_active",
      "count": 1,
+     "timing": "end_of_turn",
      "up_to": true
     }
    ]
@@ -43628,6 +43958,18 @@
   }
  },
  "ST29-008": {
+  "passive": {
+   "conditions": {
+    "self_type": "egghead"
+   },
+   "steps": [
+    {
+     "action": "turn_life_face_up",
+     "count": 1,
+     "target": "self"
+    }
+   ]
+  },
   "trigger": {
    "conditions": {
     "leader_is": "monkey.d.luffy"

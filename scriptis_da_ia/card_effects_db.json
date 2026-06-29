@@ -1101,6 +1101,11 @@
             "cost_eq": 0
           }
         ],
+        "costs": [
+          {
+            "type": "turn_life_face_up"
+          }
+        ],
         "once_per_turn": true
       }
     }
@@ -1422,6 +1427,24 @@
     "sub_types": "Dressrosa",
     "attribute": "Special",
     "effects": {
+      "on_play": {
+        "choice": [
+          [
+            {
+              "action": "peek_life",
+              "target": "opponent",
+              "count": "all"
+            }
+          ],
+          [
+            {
+              "action": "turn_life_face_down",
+              "target": "self",
+              "count": "all"
+            }
+          ]
+        ]
+      },
       "passive": {
         "steps": [
           {
@@ -2094,7 +2117,8 @@
           {
             "action": "set_don_active",
             "count": 1,
-            "up_to": true
+            "up_to": true,
+            "timing": "end_of_turn"
           },
           {
             "action": "lock_opp_character_refresh",
@@ -3209,7 +3233,26 @@
     "color": "Yellow",
     "sub_types": "Alchemi",
     "attribute": "Wisdom",
-    "effects": {}
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "peek_life",
+            "target": "any",
+            "count": 1
+          }
+        ]
+      },
+      "on_ko": {
+        "steps": [
+          {
+            "action": "peek_life",
+            "target": "any",
+            "count": 1
+          }
+        ]
+      }
+    }
   },
   "EB02-054": {
     "name": "Sanji",
@@ -5079,8 +5122,16 @@
             "count": 1,
             "target": "opp_character",
             "cost_lte": 2
+          },
+          {
+            "action": "turn_life_face_down",
+            "target": "self",
+            "count": "all"
           }
-        ]
+        ],
+        "conditions": {
+          "has_face_up_life": true
+        }
       }
     }
   },
@@ -5148,6 +5199,11 @@
             "action": "play_card",
             "count": 1,
             "cost_lte": 99
+          }
+        ],
+        "costs": [
+          {
+            "type": "turn_life_face_up"
           }
         ]
       }
@@ -5272,6 +5328,11 @@
             "target": "opp_character",
             "cost_lte": 3
           }
+        ],
+        "costs": [
+          {
+            "type": "turn_life_face_up"
+          }
         ]
       }
     }
@@ -5372,7 +5433,8 @@
             "source": "hand",
             "dest": "life_top",
             "count": 1,
-            "up_to": true
+            "up_to": true,
+            "face": "up"
           }
         ],
         "conditions": {
@@ -7406,6 +7468,11 @@
             "target": "opp_character",
             "cost_lte": 6
           }
+        ],
+        "costs": [
+          {
+            "type": "turn_life_face_up"
+          }
         ]
       }
     }
@@ -7443,7 +7510,8 @@
             "source": "hand",
             "dest": "life_top",
             "count": 1,
-            "up_to": true
+            "up_to": true,
+            "face": "up"
           }
         ]
       }
@@ -8400,6 +8468,14 @@
           }
         ],
         "don_requirement": 1
+      },
+      "on_ko": {
+        "steps": [
+          {
+            "action": "opp_choose_trash_our_hand",
+            "count": 1
+          }
+        ]
       }
     }
   },
@@ -16382,6 +16458,11 @@
             "amount": 1000,
             "target": "self",
             "duration": "battle_only"
+          },
+          {
+            "action": "peek_life",
+            "target": "any",
+            "count": 1
           }
         ],
         "don_requirement": 1
@@ -16476,6 +16557,15 @@
     "sub_types": "Merfolk",
     "attribute": "Wisdom",
     "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "peek_life",
+            "target": "any",
+            "count": 1
+          }
+        ]
+      },
       "passive": {
         "steps": [
           {
@@ -17055,7 +17145,8 @@
             "source": "deck_top",
             "dest": "life_bottom",
             "count": 1,
-            "up_to": true
+            "up_to": true,
+            "face": "up"
           }
         ]
       }
@@ -17769,7 +17860,8 @@
           {
             "action": "set_don_active",
             "count": 1,
-            "up_to": true
+            "up_to": true,
+            "timing": "end_of_turn"
           }
         ],
         "conditions": {
@@ -17964,7 +18056,8 @@
           {
             "action": "set_don_active",
             "count": 1,
-            "up_to": true
+            "up_to": true,
+            "timing": "end_of_turn"
           }
         ],
         "conditions": {
@@ -24580,6 +24673,9 @@
             "target": "own_character",
             "attribute": "slash",
             "cost_lte": 4
+          },
+          {
+            "action": "cannot_attack_leader_turn"
           }
         ]
       }
@@ -26674,7 +26770,17 @@
     "color": "Yellow",
     "sub_types": "Sky Island",
     "attribute": "Wisdom",
-    "effects": {}
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "peek_life",
+            "target": "any",
+            "count": 1
+          }
+        ]
+      }
+    }
   },
   "OP06-100": {
     "name": "Inuarashi",
@@ -26787,7 +26893,8 @@
             "dest": "life_bottom",
             "count": 1,
             "up_to": true,
-            "power_eq": 0
+            "power_eq": 0,
+            "face": "up"
           }
         ],
         "costs": [
@@ -26886,7 +26993,8 @@
             "source": "own_field",
             "dest": "life_bottom",
             "count": 1,
-            "up_to": true
+            "up_to": true,
+            "face": "up"
           }
         ]
       },
@@ -29936,7 +30044,8 @@
             "source": "deck_top",
             "dest": "life_top",
             "count": 1,
-            "up_to": false
+            "up_to": false,
+            "face": "up"
           }
         ],
         "costs": [
@@ -32358,6 +32467,11 @@
             "action": "add_don",
             "count": 1
           }
+        ],
+        "costs": [
+          {
+            "type": "turn_life_face_down"
+          }
         ]
       }
     }
@@ -32598,6 +32712,10 @@
           {
             "action": "add_don",
             "count": 5
+          },
+          {
+            "action": "return_don_until_match_opp",
+            "timing": "end_of_turn"
           }
         ],
         "once_per_turn": true
@@ -32621,6 +32739,11 @@
             "action": "rest_opp_character",
             "count": 1,
             "cost_lte": 2
+          },
+          {
+            "action": "turn_life_face_down",
+            "target": "self",
+            "count": "all"
           }
         ]
       }
@@ -33810,7 +33933,8 @@
             "source": "hand",
             "dest": "life_top",
             "count": 1,
-            "up_to": true
+            "up_to": true,
+            "face": "up"
           },
           {
             "action": "life_to_hand",
@@ -35456,6 +35580,15 @@
             "cost_lte": 3
           }
         ]
+      },
+      "main": {
+        "steps": [
+          {
+            "action": "opp_bounce_own_character",
+            "count": 1,
+            "cost_lte": 6
+          }
+        ]
       }
     }
   },
@@ -36743,7 +36876,8 @@
             "source": "hand",
             "dest": "life_top",
             "count": 1,
-            "up_to": true
+            "up_to": true,
+            "face": "up"
           },
           {
             "action": "life_to_hand",
@@ -39946,6 +40080,11 @@
           {
             "action": "gain_blocker"
           }
+        ],
+        "costs": [
+          {
+            "type": "turn_life_face_up"
+          }
         ]
       }
     }
@@ -40046,7 +40185,8 @@
             "source": "hand",
             "dest": "life_top",
             "count": 1,
-            "up_to": true
+            "up_to": true,
+            "face": "up"
           }
         ]
       }
@@ -40141,7 +40281,8 @@
             "source": "hand",
             "dest": "life_top",
             "count": 1,
-            "up_to": true
+            "up_to": true,
+            "face": "up"
           }
         ]
       },
@@ -40435,6 +40576,11 @@
             "count": 1,
             "target": "opp_character",
             "cost_lte": 5
+          },
+          {
+            "action": "peek_life",
+            "target": "any",
+            "count": 1
           }
         ]
       }
@@ -40539,7 +40685,8 @@
             "source": "deck_top",
             "dest": "life_top",
             "count": 1,
-            "up_to": false
+            "up_to": false,
+            "face": "down"
           }
         ]
       }
@@ -43295,7 +43442,12 @@
         ],
         "conditions": {
           "leader_is": "shirahoshi"
-        }
+        },
+        "costs": [
+          {
+            "type": "turn_life_face_down"
+          }
+        ]
       }
     }
   },
@@ -43399,6 +43551,11 @@
           {
             "action": "deck_top_rest"
           }
+        ],
+        "costs": [
+          {
+            "type": "turn_life_face_down"
+          }
         ]
       },
       "passive": {
@@ -43460,12 +43617,18 @@
         "steps": [
           {
             "action": "set_active",
-            "target": "self"
+            "target": "self",
+            "timing": "end_of_turn"
           }
         ],
         "conditions": {
           "leader_is": "shirahoshi"
         },
+        "costs": [
+          {
+            "type": "turn_life_face_down"
+          }
+        ],
         "once_per_turn": true
       },
       "passive": {
@@ -43498,7 +43661,12 @@
         ],
         "conditions": {
           "leader_is": "shirahoshi"
-        }
+        },
+        "costs": [
+          {
+            "type": "turn_life_face_down"
+          }
+        ]
       }
     }
   },
@@ -43697,7 +43865,8 @@
             "source": "own_field",
             "dest": "life_bottom",
             "count": 1,
-            "up_to": true
+            "up_to": true,
+            "face": "up"
           }
         ]
       },
@@ -43708,7 +43877,8 @@
             "source": "deck_top",
             "dest": "life_bottom",
             "count": 1,
-            "up_to": true
+            "up_to": true,
+            "face": "up"
           }
         ]
       }
@@ -43737,6 +43907,11 @@
         "conditions": {
           "leader_is": "shirahoshi"
         },
+        "costs": [
+          {
+            "type": "turn_life_face_up"
+          }
+        ],
         "once_per_turn": true
       }
     }
@@ -46557,6 +46732,15 @@
             "duration": "this_turn"
           }
         ]
+      },
+      "passive": {
+        "steps": [
+          {
+            "action": "turn_life_face_up",
+            "target": "self",
+            "count": 1
+          }
+        ]
       }
     }
   },
@@ -46935,7 +47119,8 @@
             "source": "deck_top",
             "dest": "life_bottom",
             "count": 1,
-            "up_to": true
+            "up_to": true,
+            "face": "down"
           }
         ],
         "conditions": {
@@ -47667,7 +47852,8 @@
           {
             "action": "set_don_active",
             "count": 2,
-            "up_to": true
+            "up_to": true,
+            "timing": "end_of_turn"
           }
         ]
       }
@@ -47995,7 +48181,8 @@
           {
             "action": "set_don_active",
             "count": 2,
-            "up_to": true
+            "up_to": true,
+            "timing": "end_of_turn"
           }
         ]
       }
@@ -49956,7 +50143,17 @@
     "color": "Yellow",
     "sub_types": "Land of Wano Kouzuki Clan",
     "attribute": "Slash",
-    "effects": {}
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "peek_life",
+            "target": "self",
+            "count": "all"
+          }
+        ]
+      }
+    }
   },
   "OP13-106": {
     "name": "Conney",
@@ -50053,6 +50250,15 @@
             "action": "draw",
             "count": 2,
             "then_trash": 1
+          }
+        ]
+      },
+      "passive": {
+        "steps": [
+          {
+            "action": "turn_life_face_up",
+            "target": "self",
+            "count": 1
           }
         ]
       }
@@ -50186,6 +50392,11 @@
             "target": "opp_character",
             "duration": "this_turn"
           }
+        ],
+        "costs": [
+          {
+            "type": "turn_life_face_up"
+          }
         ]
       },
       "when_attacking": {
@@ -50195,6 +50406,11 @@
             "amount": 2000,
             "target": "opp_character",
             "duration": "this_turn"
+          }
+        ],
+        "costs": [
+          {
+            "type": "turn_life_face_up"
           }
         ]
       },
@@ -50315,6 +50531,11 @@
             "count": 1,
             "target": "opp_character",
             "cost_lte": 6
+          }
+        ],
+        "costs": [
+          {
+            "type": "turn_life_face_up"
           }
         ]
       }
@@ -51215,7 +51436,8 @@
           {
             "action": "set_don_active",
             "count": 5,
-            "up_to": true
+            "up_to": true,
+            "timing": "end_of_turn"
           }
         ]
       },
@@ -53354,7 +53576,8 @@
             "source": "deck_top",
             "dest": "life_top",
             "count": 1,
-            "up_to": false
+            "up_to": false,
+            "face": "up"
           }
         ]
       },
@@ -56781,6 +57004,11 @@
             "count": 1,
             "rested": true
           }
+        ],
+        "costs": [
+          {
+            "type": "turn_life_face_down"
+          }
         ]
       }
     }
@@ -57191,6 +57419,11 @@
             "amount": 2000,
             "target": "all_opp_characters",
             "duration": "this_turn"
+          }
+        ],
+        "costs": [
+          {
+            "type": "turn_life_face_up"
           }
         ],
         "once_per_turn": true
@@ -62089,7 +62322,8 @@
             "action": "set_active",
             "count": 99,
             "target": "own_character",
-            "filter_type": "film"
+            "filter_type": "film",
+            "timing": "end_of_turn"
           }
         ],
         "conditions": {
@@ -62666,7 +62900,8 @@
             "source": "own_field",
             "dest": "life_bottom",
             "count": 1,
-            "up_to": true
+            "up_to": true,
+            "face": "up"
           }
         ],
         "conditions": {
@@ -63390,7 +63625,10 @@
             "cost_lte": 99,
             "filter_name": "sabo"
           }
-        ]
+        ],
+        "conditions": {
+          "has_face_up_life": true
+        }
       }
     }
   },
@@ -65957,6 +66195,11 @@
       "on_play": {
         "steps": [
           {
+            "action": "peek_life",
+            "target": "any",
+            "count": 1
+          },
+          {
             "action": "gain_rush",
             "duration": "this_turn"
           }
@@ -66067,7 +66310,17 @@
     "color": "Yellow",
     "sub_types": "Big Mom Pirates",
     "attribute": "Wisdom",
-    "effects": {}
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "peek_life",
+            "target": "any",
+            "count": 1
+          }
+        ]
+      }
+    }
   },
   "ST07-009": {
     "name": "Charlotte Mont-d'Or",
@@ -66141,7 +66394,8 @@
               "up_to": false
             }
           ]
-        ]
+        ],
+        "choice_chooser": "opponent"
       }
     }
   },
@@ -66274,7 +66528,8 @@
               "up_to": false
             }
           ]
-        ]
+        ],
+        "choice_chooser": "opponent"
       }
     }
   },
@@ -66289,6 +66544,15 @@
     "sub_types": "Big Mom Pirates",
     "attribute": "",
     "effects": {
+      "trigger": {
+        "steps": [
+          {
+            "action": "peek_life",
+            "target": "opponent",
+            "count": 1
+          }
+        ]
+      },
       "counter": {
         "steps": [
           {
@@ -66296,6 +66560,11 @@
             "amount": 2000,
             "target": "leader_or_character",
             "duration": "battle_only"
+          },
+          {
+            "action": "peek_life",
+            "target": "any",
+            "count": 1
           }
         ]
       }
@@ -66319,7 +66588,8 @@
             "source": "own_field",
             "dest": "life_top",
             "count": 1,
-            "up_to": true
+            "up_to": true,
+            "face": "up"
           }
         ],
         "costs": [
@@ -67027,6 +67297,7 @@
             "dest": "life_bottom",
             "count": 1,
             "up_to": true,
+            "face": "up",
             "conditions": {
               "life_lte": 2
             }
@@ -68148,7 +68419,8 @@
             "source": "own_field",
             "dest": "life_top",
             "count": 1,
-            "up_to": false
+            "up_to": false,
+            "face": "up"
           }
         ],
         "once_per_turn": true,
@@ -68186,11 +68458,22 @@
             "source": "own_field",
             "dest": "life_top",
             "count": 1,
-            "up_to": true
+            "up_to": true,
+            "face": "up"
           }
         ],
         "once_per_turn": true,
         "don_requirement": 2
+      },
+      "end_of_turn": {
+        "steps": [
+          {
+            "action": "trash_own_life",
+            "face": "up",
+            "count": "all"
+          }
+        ],
+        "once_per_turn": true
       }
     }
   },
@@ -68220,6 +68503,11 @@
       "on_play": {
         "steps": [
           {
+            "action": "peek_life",
+            "target": "self",
+            "count": "all"
+          },
+          {
             "action": "gain_life",
             "source": "deck_top",
             "dest": "life_top",
@@ -68248,7 +68536,8 @@
             "source": "deck_top",
             "dest": "life_top",
             "count": 1,
-            "up_to": false
+            "up_to": false,
+            "face": "down"
           }
         ],
         "costs": [
@@ -68437,7 +68726,17 @@
     "color": "Yellow",
     "sub_types": "Windmill Village",
     "attribute": "Wisdom",
-    "effects": {}
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "peek_life",
+            "target": "self",
+            "count": "all"
+          }
+        ]
+      }
+    }
   },
   "ST13-013": {
     "name": "Monkey.D.Garp",
@@ -68549,6 +68848,15 @@
     "sub_types": "Land of Wano",
     "attribute": "Strike",
     "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "peek_life",
+            "target": "self",
+            "count": "all"
+          }
+        ]
+      },
       "passive": {
         "steps": [
           {
@@ -68587,6 +68895,11 @@
             "amount": 4000,
             "target": "leader_or_character",
             "duration": "battle_only"
+          },
+          {
+            "action": "peek_life",
+            "target": "self",
+            "count": "all"
           }
         ]
       }
@@ -69882,6 +70195,11 @@
             "rested": true
           }
         ],
+        "costs": [
+          {
+            "type": "turn_life_face_up"
+          }
+        ],
         "once_per_turn": true
       },
       "passive": {
@@ -69942,7 +70260,17 @@
     "color": "Yellow",
     "sub_types": "Big Mom Pirates",
     "attribute": "Special",
-    "effects": {}
+    "effects": {
+      "trigger": {
+        "steps": [
+          {
+            "action": "peek_life",
+            "target": "any",
+            "count": 1
+          }
+        ]
+      }
+    }
   },
   "ST20-004": {
     "name": "Charlotte Pudding (ST20-004)",
@@ -70004,6 +70332,7 @@
             }
           ]
         ],
+        "choice_chooser": "opponent",
         "costs": [
           {
             "type": "trash_from_hand",
@@ -71146,7 +71475,8 @@
           {
             "action": "set_don_active",
             "count": 1,
-            "up_to": true
+            "up_to": true,
+            "timing": "end_of_turn"
           }
         ],
         "conditions": {
@@ -72072,6 +72402,18 @@
         ],
         "conditions": {
           "leader_is": "monkey.d.luffy"
+        }
+      },
+      "passive": {
+        "steps": [
+          {
+            "action": "turn_life_face_up",
+            "target": "self",
+            "count": 1
+          }
+        ],
+        "conditions": {
+          "self_type": "egghead"
         }
       }
     }

@@ -7,6 +7,37 @@ e `git status` antes de tocar em qualquer coisa.
 
 ---
 
+## 2026-06-29 17:00 — Codex
+
+**Feito** — fechados os 5 gaps médios que sobravam no cruzamento com o
+simulador oficial:
+- `PeekSelfLife/OppLife`: parser gera `peek_life`; engine olha/reordena Life
+  própria ou do oponente.
+- `TrashAllFaceUpLife`: adicionado `Card.life_face_up`; `gain_life` marca
+  face-up/face-down; `turn_life_face_up/down` e `trash_own_life face='up'`
+  executam a mecânica; face limpa quando a carta sai da Life.
+- `ForceOpponent`: escolhas com "Your opponent chooses one" agora carregam
+  `choice_chooser='opponent'`; `opp_bounce_own_character` respeita escolha do
+  oponente/filtro de custo; `opp_choose_trash_our_hand` cobre Kanjuro-like.
+- `QueueUpEndOfTurnAction/OppMainPhase`: adicionado
+  `GameState.end_of_turn_queue` + `OPTCGMatch.end_phase()`. Cobre `set_active`,
+  `set_don_active`, `gain_life` marcados com `timing='end_of_turn'` e Black
+  Maria (`return_don_until_match_opp`). OppMainPhase ficou sem carta real
+  prioritária no pool atual.
+- `FieldCantAttackLeader`: `cannot_attack_leader_this_turn` bloqueia geração e
+  execução direta de ataques ao Leader durante o turno.
+
+**Validado:** `python -m py_compile gerar_effects_db.py optcg_engine\decision_engine.py`;
+`python gerar_dbs.py`; `python snapshot_parser.py`; `python smoke_test.py`;
+`python audit_replay.py --n 5 --seed 42`; teste direto dos 5 gaps. `smoke_test_broad.py`
+completo não terminou em 300s; teste equivalente com 10 partidas aleatórias
+terminou sem exceção, mas lento (~289s). Isso é o principal risco a observar.
+
+**Próximo:** investigar a regressão/perfil de performance antes de confiar em
+simulações massivas. Dívida grande de imunidade continua fora desta fatia.
+
+---
+
 ## 2026-06-29 03:00 — Claude
 
 **Feito** — 2 itens rápidos pedidos pelo usuário pra fechar a sessão:

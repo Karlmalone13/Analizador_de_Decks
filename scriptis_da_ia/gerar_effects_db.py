@@ -108,6 +108,9 @@ def parse_conditions(text):
     if 'if your leader is multicolored' in t:
         conds['leader_multicolor'] = True
 
+    if 'if you have a face-up life card' in t:
+        conds['has_face_up_life'] = True
+
     # "If the only Characters on your field are [X]/{X}/"X" type Characters"
     # -- condicao sobre a COMPOSICAO do proprio campo (todos os Characters
     # do jogador sao do mesmo tipo X), distinta de leader_type/self_type
@@ -228,6 +231,13 @@ def parse_costs(text):
 
     if re.search(r'trash this (character|card)', t):
         costs.append({'type': 'trash_self'})
+
+    m_face_cost = re.search(
+        r'you may turn 1 card from the top of your life cards face-(up|down)\s*:',
+        t
+    )
+    if m_face_cost:
+        costs.append({'type': f'turn_life_face_{m_face_cost.group(1)}'})
 
     # Custo de K.O. de um Character PROPRIO (distinto de trash_self: o alvo
     # nao e a carta que ativa o efeito, e outro Character do jogador, e o
@@ -637,6 +647,8 @@ def parse_place_bottom(text):
 def parse_bounce(text):
     steps = []
     t = text.lower()
+    if 'your opponent chooses' in t:
+        return steps
 
     # Forma explicita "of your opponent['s] Character(s)" -- mantida primeiro
     # pois e mais especifica.
@@ -855,6 +867,8 @@ def parse_set_active(text):
                     step['power_eq'] = int(power_m.group(1))
             if 'rested' in desc:
                 step['rested_only'] = True
+        if 'at the end of this turn' in t[max(0, m.start() - 20):m.end() + 45]:
+            step['timing'] = 'end_of_turn'
         steps.append(step)
 
     return steps
@@ -1587,7 +1601,12 @@ def parse_give_don(text):
         step = {'action': 'set_don_active', 'count': int(m.group(2)) if m.group(2) else 1}
         if m.group(1):
             step['up_to'] = True
+        if 'at the end of this turn' in m.group(0) or 'at the end of this turn' in t[max(0, m.start() - 20):m.end() + 40]:
+            step['timing'] = 'end_of_turn'
         steps.append(step)
+
+    if re.search(r'at the end of this turn, return don!! cards from your field to your don!! deck until you have the same number of don!! cards on your field as your opponent', t):
+        steps.append({'action': 'return_don_until_match_opp', 'timing': 'end_of_turn'})
 
     # Trava de "nao ficar ativo no Refresh" -- distinguir alvo: DON especifico,
     # Character/Leader especifico (do OPONENTE, com filtro opcional de custo),
@@ -2193,6 +2212,26 @@ def parse_life(text):
     # Hiyori, custo + efeito). "the owner's life cards" (Kawamatsu
     # OP06-103) é sinônimo de "your life" aqui -- mesmo dono, fraseado
     # diferente porque a regra original usa "owner" genericamente.
+    if re.search(r'look at up to 1 card from the top of your or your opponent.?s life cards?', t):
+        steps.append({'action': 'peek_life', 'target': 'any', 'count': 1})
+    elif re.search(r'look at up to 1 card from the top of your opponent.?s life cards?', t):
+        steps.append({'action': 'peek_life', 'target': 'opponent', 'count': 1})
+    elif re.search(r'look at all of your opponent.?s life cards?|look at all your opponent.?s life cards?', t):
+        steps.append({'action': 'peek_life', 'target': 'opponent', 'count': 'all'})
+    elif re.search(r'look at all of your life cards?|look at all your life cards?', t):
+        steps.append({'action': 'peek_life', 'target': 'self', 'count': 'all'})
+
+    if re.search(r'turn all of your life cards face-down', t):
+        steps.append({'action': 'turn_life_face_down', 'target': 'self', 'count': 'all'})
+    m_turn = re.search(r'turn 1 card from the top of your life cards face-(up|down)', t)
+    if m_turn:
+        after = t[m_turn.end():m_turn.end() + 2]
+        if not after.lstrip().startswith(':'):
+            steps.append({'action': f"turn_life_face_{m_turn.group(1)}", 'target': 'self', 'count': 1})
+
+    if re.search(r'trash all your face-up life cards?', t):
+        steps.append({'action': 'trash_own_life', 'face': 'up', 'count': 'all'})
+
     m = re.search(r'(add|put)[^.:]*?to (?:the (?:top|bottom|top or bottom) of )?(?:your|the owner.?s) life(?: cards?)?', t)
     if m and 'trash' not in m.group(0):
         seg = m.group(0)
@@ -2211,9 +2250,10 @@ def parse_life(text):
             power_m = re.search(r'with (\d+) power', seg)
             if power_m:
                 step['power_eq'] = int(power_m.group(1))
-        if 'face-up' in seg or 'face up' in seg:
+        face_window = t[m.start():m.end() + 25]
+        if 'face-up' in face_window or 'face up' in face_window:
             step['face'] = 'up'
-        elif 'face-down' in seg or 'face down' in seg:
+        elif 'face-down' in face_window or 'face down' in face_window:
             step['face'] = 'down'
         steps.append(step)
 
@@ -2525,6 +2565,9 @@ def parse_opp_trash_from_hand(text):
     m = re.search(r'your opponent trashes (\d+) cards? from (?:their|his|her) hand', t)
     if m:
         steps.append({'action': 'opp_trash_from_hand', 'count': int(m.group(1))})
+    m2 = re.search(r'your opponent chooses (\d+) cards? from your hand;? trash', t)
+    if m2:
+        steps.append({'action': 'opp_choose_trash_our_hand', 'count': int(m2.group(1))})
     return steps
 
 
@@ -2543,6 +2586,15 @@ def parse_opp_self_move_character(text):
     """
     steps = []
     t = text.lower()
+    m_choose_bounce = re.search(
+        r"your opponent chooses (\d+) of (?:their|his|her) characters?(?: with a cost of (\d+) or less)?[^.]*return",
+        t
+    )
+    if m_choose_bounce:
+        step = {'action': 'opp_bounce_own_character', 'count': int(m_choose_bounce.group(1))}
+        if m_choose_bounce.group(2):
+            step['cost_lte'] = int(m_choose_bounce.group(2))
+        steps.append(step)
     m = re.search(r"your opponent returns (\d+) of (?:their|his|her) characters? to the owner.?s hand", t)
     if m:
         steps.append({'action': 'opp_bounce_own_character', 'count': int(m.group(1))})
@@ -2609,7 +2661,10 @@ def parse_block(block_text, trigger_name):
                 if sub_steps:
                     opcoes_parseadas.append(sub_steps)
             if len(opcoes_parseadas) >= 2:
-                return [{'_choice': opcoes_parseadas}]
+                choice = {'_choice': opcoes_parseadas}
+                if re.search(r'your opponent chooses? one\s*:', block_text, re.IGNORECASE):
+                    choice['_choice_chooser'] = 'opponent'
+                return [choice]
             # se so 1 opcao parseou com sucesso (outras nao reconhecidas
             # pelo parser ainda), nao ha alternativa real capturavel --
             # cai no comportamento normal abaixo em vez de fingir uma
@@ -2737,6 +2792,9 @@ def parse_block(block_text, trigger_name):
             if m.group(2):
                 st['cost_gte'] = int(m.group(2))
             steps.append(st)
+
+    if re.search(r'you cannot attack a leader[^.]*during this turn', t):
+        steps.append({'action': 'cannot_attack_leader_turn'})
 
     # Shuffle/cycle hand into deck (+ draw back) -- ANTES do draw, pois o texto
     # "...Then, draw N" senão geraria um 'draw' duplicado. O draw-back já está
@@ -2918,13 +2976,13 @@ def parse_block(block_text, trigger_name):
     # from their hand". Alvo oposto de trash_from_hand (sempre 'their hand',
     # nunca 'your hand'), por isso guard textual distinto e nao precisa de
     # exclusao mutua: as duas regexes nunca casam no mesmo texto.
-    if 'opponent trashes' in t:
+    if 'opponent trashes' in t or ('opponent chooses' in t and 'from your hand' in t and 'trash' in t):
         steps.extend(parse_opp_trash_from_hand(t))
 
     # Mesma familia (forca o oponente a mover 1 dos PROPRIOS characters
     # dele) -- "your opponent returns...to the owner's hand" / "your
     # opponent places...at the bottom of the owner's deck".
-    if 'your opponent returns' in t or 'your opponent places' in t:
+    if 'your opponent returns' in t or 'your opponent places' in t or ('your opponent chooses' in t and 'return' in t):
         steps.extend(parse_opp_self_move_character(t))
 
     # Trigger especial: "Activate this card's [Main] effect"
@@ -3139,6 +3197,8 @@ def parse_card_effect(card_text, card_type):
 
         if is_choice:
             entry = {'choice': steps[0]['_choice']}
+            if steps[0].get('_choice_chooser'):
+                entry['choice_chooser'] = steps[0]['_choice_chooser']
         else:
             entry = {'steps': steps}
         if conds:

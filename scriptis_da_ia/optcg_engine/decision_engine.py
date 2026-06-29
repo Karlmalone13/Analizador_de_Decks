@@ -173,6 +173,7 @@ class Card:
     can_attack_active_this_turn: bool = False  # mesma habilidade, mas CONCEDIDA so neste turno via select (Hibari, Gyats, Borsalino, Aramaki, Kuzan, Koby) -- resetada no refresh_phase.
     cannot_be_rested_until: str = ''  # mesma semantica de duracao, para lock_opp_cannot_be_rested (mecanica DISTINTA de cannot_attack)
     frozen_next_refresh: bool = False  # Freeze (lock_opp_character_refresh / lock_self_character_refresh com target='this_card') -- pula APENAS o untap (c.rested=False) na PROXIMA refresh_phase do dono, consumido uma vez (refresh_phase zera este campo, fica rested mesmo se nao tiver sido atacado/restado por outro motivo). DISTINTO de cannot_be_rested_until (que trava o character de FICAR rested -- aqui e o oposto, ele PERMANECE rested ignorando o untap).
+    life_face_up: bool = False  # estado valido apenas enquanto a carta esta na zona de Life (ST13/face-up life)
     # Buffs temporários (resetados a cada turno)
     power_buff: int = 0
     base_power_override: Optional[int] = None
@@ -199,7 +200,8 @@ class Card:
                       'unblockable_this_turn', 'rush_this_turn', 'double_attack_this_turn', 'blocker_this_turn',
                       'can_attack_active', 'can_attack_active_this_turn',
                       'power_buff', 'base_power_override',
-                      'cost_buff', 'cost_buff_permanent', 'frozen_next_refresh'):
+                      'cost_buff', 'cost_buff_permanent', 'frozen_next_refresh',
+                      'life_face_up'):
             setattr(novo, campo, getattr(self, campo))
         return novo
 
@@ -321,6 +323,7 @@ class GameState:
     cant_play_from_hand_this_turn: bool = False
     cant_play_chars_this_turn: bool = False
     cant_play_cost_gte: int = 0
+    cannot_attack_leader_this_turn: bool = False
     is_first: bool = True
     # Estatísticas
     dmg_dealt: int = 0
@@ -346,6 +349,7 @@ class GameState:
     # logo depois do block step -- nunca deve sobreviver pra proxima
     # batalha. None = sem trava. dict = {'power_lte'|'power_gte'|'cost_lte': N}.
     blocker_lock_battle: Optional[dict] = None
+    end_of_turn_queue: List[dict] = field(default_factory=list)
 
     def known_hand_cards(self) -> List['Card']:
         """
@@ -691,6 +695,11 @@ class EffectExecutor:
                 exclude_name=step.get('exclude', ''),
             )
             return bool(candidates)
+        if a == 'opp_choose_trash_our_hand':
+            return len(me.hand) > 0
+        if a == 'opp_bounce_own_character':
+            cost_lte = step.get('cost_lte')
+            return any(cost_lte is None or c.cost <= cost_lte for c in opp.field_chars)
 
         # ── Jogar carta da mão com filtro ─────────────────────────────────────
         if a == 'play_card':
@@ -720,17 +729,22 @@ class EffectExecutor:
         if a in ('trash_from_hand', 'life_to_hand'):
             return len(me.hand) > 0 if a == 'trash_from_hand' else len(me.life) > 0
         if a == 'trash_own_life':
-            return len(me.life) > 0
+            return any(c.life_face_up for c in me.life) if step.get('face') == 'up' else len(me.life) > 0
         if a == 'attack_life':
             return len(opp.life) > 0
         if a == 'set_don_active':
             return me.don_rested > 0
+        if a in ('peek_life', 'turn_life_face_up', 'turn_life_face_down'):
+            owner = opp if step.get('target') == 'opponent' else me
+            return len(owner.life) > 0
+        if a == 'return_don_until_match_opp':
+            return me.don_on_field() > opp.don_on_field()
 
         # Default: sem material a checar (buff próprio, keyword, add_don,
         # gain_life do deck, etc) = sempre viável.
         return True
 
-    def _resolve_choice(self, options: list, card: Card) -> list:
+    def _resolve_choice(self, options: list, card: Card, chooser: str = 'self') -> list:
         """Escolhe a opcao viavel de maior valor heuristico."""
         if not options:
             return []
@@ -763,14 +777,14 @@ class EffectExecutor:
             return self._step_is_viable(step, card)
 
         best_steps = []
-        best_score = -1
+        best_score = None
         for option in options:
             steps = option if isinstance(option, list) else [option]
             viable = [s for s in steps if choice_step_viable(s)]
             if not viable:
                 continue
             score = sum(weights.get(s.get('action', ''), 1) for s in viable)
-            if score > best_score:
+            if best_score is None or (score > best_score if chooser != 'opponent' else score < best_score):
                 best_score = score
                 best_steps = steps
 
@@ -826,7 +840,7 @@ class EffectExecutor:
         # steps forem inviáveis; um único step viável já ativa o efeito.
         steps_all = ef_data.get('steps', [])
         if not steps_all and ef_data.get('choice'):
-            steps_all = self._resolve_choice(ef_data.get('choice', []), card)
+            steps_all = self._resolve_choice(ef_data.get('choice', []), card, ef_data.get('choice_chooser', 'self'))
         if steps_all and not any(self._step_is_viable(s, card) for s in steps_all):
             return []
 
@@ -1023,7 +1037,7 @@ class EffectExecutor:
                     if self._check_conditions(item.get('conditions', {}), source):
                         steps_to_run.extend(item.get('steps', []))
                 if not steps_to_run and ef_data.get('choice'):
-                    steps_to_run = self._resolve_choice(ef_data.get('choice', []), source)
+                    steps_to_run = self._resolve_choice(ef_data.get('choice', []), source, ef_data.get('choice_chooser', 'self'))
 
                 for step in steps_to_run:
                     log = self._execute_step(step, source)
@@ -1129,6 +1143,8 @@ class EffectExecutor:
             if n < spec['count']:
                 return False
         if 'self_type' in conds and conds['self_type'] not in card.sub_types.lower():
+            return False
+        if conds.get('has_face_up_life') and not any(c.life_face_up for c in me.life):
             return False
 
         return True
@@ -1278,6 +1294,13 @@ class EffectExecutor:
                     self.me.deck.insert(0, alvo)   # fundo do deck = inicio da lista
                     movidos.append(alvo.name[:14])
                 self._cost_logs.append(f'custo: fundo do deck (do trash): {", ".join(movidos)}')
+            elif ctype in ('turn_life_face_up', 'turn_life_face_down'):
+                if not self.me.life:
+                    return False
+                alvo = self.me.life[-1]
+                alvo.life_face_up = (ctype == 'turn_life_face_up')
+                face = 'face-up' if alvo.life_face_up else 'face-down'
+                self._cost_logs.append(f'custo: virou vida do topo {face}')
         return True
 
     def _return_don_to_deck(self, count: int, estado: 'GameState' = None) -> bool:
@@ -1381,6 +1404,11 @@ class EffectExecutor:
         step_conds = step.get('conditions')
         if step_conds and not self._check_conditions(step_conds, card):
             return ''
+        if step.get('timing') == 'end_of_turn' and not step.get('_from_queue'):
+            queued = dict(step)
+            queued['_from_queue'] = True
+            me.end_of_turn_queue.append({'step': queued, 'card': card})
+            return f'agendou {action} para o fim do turno'
 
         # ── Busca (StartTopDeck + AddToHand + FinalizeTopDeck) ────────────────
         if action == 'look_top_deck':
@@ -1500,6 +1528,60 @@ class EffectExecutor:
             # e junta os logs com segurança.
             logs = self.execute(card, 'main')
             return '; '.join(l for l in logs if l) if logs else ''
+
+        if action == 'peek_life':
+            target = step.get('target', 'any')
+            count = step.get('count', 1)
+            pools = ([(me, 'propria')] if target == 'self'
+                     else [(opp, 'oponente')] if target == 'opponent'
+                     else [(opp, 'oponente'), (me, 'propria')])
+            for owner, label in pools:
+                if not owner.life:
+                    continue
+                n = len(owner.life) if count == 'all' else min(int(count), len(owner.life))
+                if count == 'all':
+                    seen = owner.life[-n:]
+                    owner.life[-n:] = sorted(
+                        seen,
+                        key=lambda c: c.board_value() + (2500 if c.has_trigger else 0),
+                        reverse=(owner is me),
+                    )
+                    return f'olhou/reordenou {n} vida(s) ({label})'
+                top = owner.life[-1]
+                should_bottom = owner is opp and (top.has_trigger or top.counter > 0 or top.board_value() >= 5000)
+                if should_bottom:
+                    owner.life.insert(0, owner.life.pop())
+                    return f'olhou vida do {label}: moveu topo para o fundo'
+                return f'olhou vida do {label}: manteve topo'
+            return ''
+
+        if action in ('turn_life_face_up', 'turn_life_face_down'):
+            owner = opp if step.get('target') == 'opponent' else me
+            if not owner.life:
+                return ''
+            count = len(owner.life) if step.get('count') == 'all' else min(int(step.get('count', 1)), len(owner.life))
+            desired = action == 'turn_life_face_up'
+            changed = 0
+            for c in owner.life[-count:]:
+                if c.life_face_up != desired:
+                    c.life_face_up = desired
+                    changed += 1
+            face = 'face-up' if desired else 'face-down'
+            return f'virou {changed} vida(s) {face}' if changed else f'vida ja estava {face}'
+
+        if action == 'cannot_attack_leader_turn':
+            me.cannot_attack_leader_this_turn = True
+            return 'nao pode atacar Leader neste turno'
+
+        if action == 'return_don_until_match_opp':
+            target_total = opp.don_on_field()
+            returned = 0
+            while me.don_on_field() > target_total:
+                before = me.don_on_field()
+                if not self._return_don_to_deck(1, estado=me) or me.don_on_field() == before:
+                    break
+                returned += 1
+            return f'devolveu {returned} DON ate igualar o oponente' if returned else ''
 
         # ── Draw ──────────────────────────────────────────────────────────────
         if action == 'draw':
@@ -2296,12 +2378,25 @@ class EffectExecutor:
         # place_opp_character_bottom_deck (onde EU escolho o MELHOR do
         # oponente pra remover). Achado por foto real 27/06 (Tsuru
         # OP06-051, Luffy P-055).
+        if action == 'opp_choose_trash_our_hand':
+            count = step.get('count', 1)
+            trashed = []
+            for _ in range(min(count, len(me.hand))):
+                chosen = max(me.hand, key=lambda c: c.board_value())
+                remove_by_identity(me.hand, chosen)
+                me.trash.append(chosen)
+                trashed.append(chosen.name[:12])
+            return f'oponente escolheu descartar: {", ".join(trashed)}' if trashed else ''
+
         if action == 'opp_bounce_own_character':
             count = step.get('count', 1)
+            cost_lte = step.get('cost_lte')
+            candidates = [c for c in opp.field_chars if cost_lte is None or c.cost <= cost_lte]
             bounced = []
-            for _ in range(min(count, len(opp.field_chars))):
-                worst = min(opp.field_chars, key=lambda c: c.board_value())
+            for _ in range(min(count, len(candidates))):
+                worst = min(candidates, key=lambda c: c.board_value())
                 remove_character_from_field(opp, worst, 'hand')
+                remove_by_identity(candidates, worst)
                 bounced.append(worst.name[:12])
             return f'oponente devolveu pra mão: {", ".join(bounced)}' if bounced else ''
 
@@ -2476,6 +2571,8 @@ class EffectExecutor:
             power_eq = step.get('power_eq')
 
             def _put_life(c):
+                face = step.get('face')
+                c.life_face_up = (face == 'up')
                 if dest == 'life_bottom':
                     me.life.insert(0, c)
                 else:
@@ -2523,6 +2620,7 @@ class EffectExecutor:
                 if not me.life: break
                 # topo = pop() (fim) ; fundo = pop(0). top_or_bottom default topo.
                 c = me.life.pop(0) if src == 'life_bottom' else me.life.pop()
+                c.life_face_up = False
                 me.hand.append(c)
                 taken += 1
             return f'comprou {taken} da vida -> mao' if taken else ''
@@ -2534,6 +2632,7 @@ class EffectExecutor:
             for _ in range(count):
                 if not opp.life: break
                 c = opp.life.pop()              # topo da vida do oponente
+                c.life_face_up = False
                 opp.trash.append(c)
                 removed += 1
             return f'-{removed} vida do oponente' if removed else ''
@@ -2550,6 +2649,7 @@ class EffectExecutor:
             for _ in range(count):
                 if not opp.life: break
                 life_card = opp.life.pop()
+                life_card.life_face_up = False
                 opp.hand.append(life_card)
                 dealt += 1
                 if life_card.has_trigger:
@@ -2560,17 +2660,28 @@ class EffectExecutor:
 
         # ── LIFE: descartar da própria vida (custo/troca) ─────────────────────
         if action == 'trash_own_life':
+            if step.get('face') == 'up':
+                face_up_cards = [c for c in list(me.life) if c.life_face_up]
+                for c in face_up_cards:
+                    remove_by_identity(me.life, c)
+                    c.life_face_up = False
+                    me.trash.append(c)
+                return f'trashou {len(face_up_cards)} vida(s) face-up' if face_up_cards else ''
             if step.get('until_1'):
                 trashed = 0
                 while len(me.life) > 1:
-                    me.trash.append(me.life.pop())
+                    c = me.life.pop()
+                    c.life_face_up = False
+                    me.trash.append(c)
                     trashed += 1
                 return f'trashou {trashed} da propria vida (ate 1)' if trashed else ''
             count = step.get('count', 1)
             trashed = 0
             for _ in range(count):
                 if not me.life: break
-                me.trash.append(me.life.pop())
+                c = me.life.pop()
+                c.life_face_up = False
+                me.trash.append(c)
                 trashed += 1
             return f'trashou {trashed} da propria vida' if trashed else ''
 
@@ -3138,7 +3249,7 @@ class GameAnalyzer:
 
     def my_attack_power(self) -> int:
         """Poder total de ataque disponível (sem DON)."""
-        total = self.me.leader.effective_power(True) if not self.me.leader.rested else 0
+        total = self.me.leader.effective_power(True) if not self.me.leader.rested and not self.me.cannot_attack_leader_this_turn else 0
         for c in self.me.field_chars:
             if (not c.rested and not c.just_played and not c.cannot_attack_until
                     and not c.cannot_be_rested_until and not is_attack_locked_self(c, self.me, self.opp)):
@@ -3225,7 +3336,7 @@ class GameAnalyzer:
         # e 1 ataque so (1 blocker/counter resolve os 2 hits), mas conta 2
         # hits de dano se conectar.
         ataques = []
-        if not self.me.leader.rested and not is_attack_locked_self(self.me.leader, self.me, self.opp):
+        if not self.me.cannot_attack_leader_this_turn and not self.me.leader.rested and not is_attack_locked_self(self.me.leader, self.me, self.opp):
             ataques.append((self.me.leader.effective_power(True), self.me.leader.has_unblockable, 1))
         for c in self.me.field_chars:
             if (not c.rested and not c.just_played and not c.cannot_attack_until
@@ -3298,7 +3409,7 @@ class GameAnalyzer:
     def _count_available_attacks(self) -> int:
         """Conta ataques disponíveis incluindo double attack."""
         count = 0
-        if not self.me.leader.rested:
+        if not self.me.cannot_attack_leader_this_turn and not self.me.leader.rested:
             count += 1
         for c in self.me.field_chars:
             if (not c.rested and not c.just_played and not c.cannot_attack_until
@@ -4615,6 +4726,7 @@ class OPTCGMatch:
         p.cant_play_from_hand_this_turn = False
         p.cant_play_chars_this_turn = False
         p.cant_play_cost_gte = 0
+        p.cannot_attack_leader_this_turn = False
 
     def draw_phase(self, p: GameState, verbose: bool = False):
         """PlayerDrawPhase — 1º jogador não compra no T1."""
@@ -4640,6 +4752,28 @@ class OPTCGMatch:
             print(f'  \033[93mDON!! +{gain} rampados │ '
                   f'{p.don_available} ativos │ '
                   f'{p.don_rested} restados\033[0m')
+
+    def end_phase(self, p: GameState, opp: GameState, verbose: bool = False):
+        """Resolve [End of Your Turn] e actions agendadas para o fim do turno."""
+        ee = EffectExecutor(p, opp)
+        sources = [p.leader] + list(p.field_chars)
+        if p.field_stage:
+            sources.append(p.field_stage)
+        for source in sources:
+            logs = ee.execute(source, 'end_of_turn')
+            if verbose:
+                for log in logs:
+                    if log:
+                        print(f'  \033[90m[end] {log}\033[0m')
+
+        queue = list(p.end_of_turn_queue)
+        p.end_of_turn_queue.clear()
+        for item in queue:
+            step = item.get('step', {})
+            source = item.get('card') or p.leader
+            log = ee._execute_step(step, source)
+            if verbose and log:
+                print(f'  \033[90m[end queued] {log}\033[0m')
 
     def _activate_main_effects(self, p, opp, ee, verbose=False):
         """
@@ -4843,7 +4977,7 @@ class OPTCGMatch:
                 # oponente neste turno -- nao gera a opcao de atacar o Leader.
                 pode_atacar_leader = not getattr(att, 'rush_character_only_this_turn', False)
                 # alvo líder
-                if pode_atacar_leader:
+                if pode_atacar_leader and not p.cannot_attack_leader_this_turn:
                     s_leader = engine.score_attack_target(att, 'leader', None)
                     if s_leader > -500:
                         s_leader -= self._trigger_risk_penalty(opp)   # desconto de trigger
@@ -5271,6 +5405,11 @@ class OPTCGMatch:
         Sequência: tap atacante → blocker → counter → damage.
         Com verbose, narra blocker/counter/dano.
         """
+        if target_type == 'leader' and p.cannot_attack_leader_this_turn:
+            if verbose:
+                print('      ataque ao Leader bloqueado por efeito neste turno')
+            return False
+
         if attacker is p.leader:
             p.leader.rested = True
         else:
@@ -5414,6 +5553,7 @@ class OPTCGMatch:
 
         if self.main_phase(p, opp, verbose=verbose):
             return 'A' if p is self.state_a else 'B'
+        self.end_phase(p, opp, verbose=verbose)
         if not p.deck:
             return 'B' if p is self.state_a else 'A'
         if not opp.deck:

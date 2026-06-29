@@ -78,13 +78,13 @@ buracos são de COBERTURA de efeitos, não de modelo.
 
 | Efeito | Confirmação (verificado no código, 28/06/2026) |
 |--------|--------------------------------------------------|
-| PeekSelfLife / PeekOppLife | nenhuma action equivalente nas 75 do banco |
-| TrashAllFaceUpLife | não modelamos face da vida (face-up/down) em lugar nenhum |
+| ~~PeekSelfLife / PeekOppLife~~ | ✅ **IMPLEMENTADO em 29/06/2026** — `peek_life` para Life própria/oponente, com reordenação heurística |
+| ~~TrashAllFaceUpLife~~ | ✅ **IMPLEMENTADO em 29/06/2026** — `Card.life_face_up`, `turn_life_face_up/down`, `trash_own_life face='up'` |
 | ~~MatchLeaderToBasePower~~ | ✅ **IMPLEMENTADO em 28/06/2026** — novo campo `source` em `set_base_power`, valor calculado em tempo de execução via `effective_power()` em vez de `amount` fixo. Cobre `opp_leader` (5 cartas), `own_leader` (1 carta), `selected_opp_character` (2 cartas, seleção+cópia no mesmo step). Fica de fora OP04-069 ("the same as the power of your opponent's ATTACKING Leader or Character" — exige contexto de batalha que `set_base_power` não tem, 1 carta raro) |
 | ~~SaveTargetName / HandSize / Count~~ | ✅ **IMPLEMENTADO em 28/06/2026** — `EffectExecutor._last_selected`, preenchido por `buff_power target='select_filtered'`, consumido por `select_grant_unblockable_turn`/`lock_self_character_refresh` `target='selected'`. Resolveu OP07-057, OP12-077, EB02-021. Também corrigiu um bug de ordem de despacho (sub-parsers não seguem a ordem do texto original) e um bug pré-existente de target errado em `buff_power` (48 cartas com "up to N of your [Tipo] cards gains power" caíam em `target='self'`, agora `select_filtered` com seleção real) |
-| ForceOpponent | nenhuma action equivalente (raro, mantido como tal) |
-| QueueUpEndOfTurnAction / QueueUpOppMainPhaseAction | nenhuma action equivalente |
-| FieldCantAttackLeader | `cannot_attack_self` é OUTRA coisa — trava a própria carta de atacar, não impede atacar o líder especificamente (`decision_engine.py:518`) |
+| ~~ForceOpponent~~ | ✅ **IMPLEMENTADO em 29/06/2026** — `choice_chooser='opponent'`, `opp_bounce_own_character`, `opp_choose_trash_our_hand` |
+| ~~QueueUpEndOfTurnAction / QueueUpOppMainPhaseAction~~ | ✅ **IMPLEMENTADO parcial em 29/06/2026** — fila de fim de turno (`end_of_turn_queue` + `end_phase`) para os padrões reais vistos; OppMainPhase sem carta prioritária no pool |
+| ~~FieldCantAttackLeader~~ | ✅ **IMPLEMENTADO em 29/06/2026** — `cannot_attack_leader_this_turn`, distinto de `cannot_attack_self` |
 
 ### 🟢 Raros / arquétipo-específico / não-essencial (provavelmente ignorar) — 13
 

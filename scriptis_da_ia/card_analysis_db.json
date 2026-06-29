@@ -2163,6 +2163,16 @@
   "attribute": "Special",
   "effects": [
    {
+    "action": "peek_life",
+    "trigger": "on_play",
+    "target": "opponent"
+   },
+   {
+    "action": "turn_life_face_down",
+    "trigger": "on_play",
+    "target": "self"
+   },
+   {
     "action": "keyword_blocker",
     "trigger": "passive"
    }
@@ -4927,7 +4937,18 @@
   "color": "Yellow",
   "sub_types": "Alchemi",
   "attribute": "Wisdom",
-  "effects": [],
+  "effects": [
+   {
+    "action": "peek_life",
+    "trigger": "on_play",
+    "target": "any"
+   },
+   {
+    "action": "peek_life",
+    "trigger": "on_ko",
+    "target": "any"
+   }
+  ],
   "synergy_states": {},
   "text": "[On Play]/[On K.O.] Look at up to 1 card from the top of your or your opponent's Life cards and place it at the top or bottom of the Life cards.",
   "is_searcher": false,
@@ -7609,6 +7630,11 @@
     "trigger": "on_play",
     "cost_lte": 2,
     "target": "opp_character"
+   },
+   {
+    "action": "turn_life_face_down",
+    "trigger": "on_play",
+    "target": "self"
    }
   ],
   "synergy_states": {},
@@ -12452,6 +12478,10 @@
     "cost_lte": 2,
     "rested_only": true,
     "target": "opp_character"
+   },
+   {
+    "action": "opp_choose_trash_our_hand",
+    "trigger": "on_ko"
    }
   ],
   "synergy_states": {
@@ -25363,6 +25393,12 @@
     "trigger": "when_attacking",
     "don_requirement": 1,
     "target": "self"
+   },
+   {
+    "action": "peek_life",
+    "trigger": "when_attacking",
+    "don_requirement": 1,
+    "target": "any"
    }
   ],
   "synergy_states": {},
@@ -25556,6 +25592,11 @@
   "sub_types": "Merfolk",
   "attribute": "Wisdom",
   "effects": [
+   {
+    "action": "peek_life",
+    "trigger": "on_play",
+    "target": "any"
+   },
    {
     "action": "keyword_blocker",
     "trigger": "passive"
@@ -38021,6 +38062,10 @@
     "trigger": "on_play",
     "cost_lte": 4,
     "target": "own_character"
+   },
+   {
+    "action": "cannot_attack_leader_turn",
+    "trigger": "on_play"
    }
   ],
   "synergy_states": {},
@@ -41207,7 +41252,13 @@
   "color": "Yellow",
   "sub_types": "Sky Island",
   "attribute": "Wisdom",
-  "effects": [],
+  "effects": [
+   {
+    "action": "peek_life",
+    "trigger": "on_play",
+    "target": "any"
+   }
+  ],
   "synergy_states": {},
   "text": "[On Play] Look at up to 1 card from the top of your or your opponent's Life cards and place it at the top or bottom of the Life cards.",
   "is_searcher": false,
@@ -50556,6 +50607,10 @@
    {
     "action": "add_don",
     "trigger": "activate_main"
+   },
+   {
+    "action": "return_don_until_match_opp",
+    "trigger": "activate_main"
    }
   ],
   "synergy_states": {},
@@ -50596,6 +50651,11 @@
     "action": "rest_opp_character",
     "trigger": "main",
     "cost_lte": 2
+   },
+   {
+    "action": "turn_life_face_down",
+    "trigger": "main",
+    "target": "self"
    }
   ],
   "synergy_states": {
@@ -55058,6 +55118,11 @@
     "trigger": "trigger",
     "cost_lte": 3,
     "target": "opp_character"
+   },
+   {
+    "action": "opp_bounce_own_character",
+    "trigger": "main",
+    "cost_lte": 6
    }
   ],
   "synergy_states": {
@@ -62844,6 +62909,11 @@
     "trigger": "main",
     "cost_lte": 5,
     "target": "opp_character"
+   },
+   {
+    "action": "peek_life",
+    "trigger": "main",
+    "target": "any"
    }
   ],
   "synergy_states": {
@@ -72425,6 +72495,11 @@
     "action": "buff_power",
     "trigger": "opp_turn",
     "target": "self"
+   },
+   {
+    "action": "turn_life_face_up",
+    "trigger": "passive",
+    "target": "self"
    }
   ],
   "synergy_states": {},
@@ -77614,7 +77689,13 @@
   "color": "Yellow",
   "sub_types": "Land of Wano Kouzuki Clan",
   "attribute": "Slash",
-  "effects": [],
+  "effects": [
+   {
+    "action": "peek_life",
+    "trigger": "on_play",
+    "target": "self"
+   }
+  ],
   "synergy_states": {},
   "text": "[On Play] Look at all of your Life cards and place them back in your Life area in any order.",
   "is_searcher": false,
@@ -77787,6 +77868,11 @@
    {
     "action": "draw",
     "trigger": "trigger"
+   },
+   {
+    "action": "turn_life_face_up",
+    "trigger": "passive",
+    "target": "self"
    }
   ],
   "synergy_states": {
@@ -102683,6 +102769,11 @@
   "attribute": "Strike",
   "effects": [
    {
+    "action": "peek_life",
+    "trigger": "on_play",
+    "target": "any"
+   },
+   {
     "action": "gain_rush",
     "trigger": "on_play"
    }
@@ -102893,7 +102984,13 @@
   "color": "Yellow",
   "sub_types": "Big Mom Pirates",
   "attribute": "Wisdom",
-  "effects": [],
+  "effects": [
+   {
+    "action": "peek_life",
+    "trigger": "on_play",
+    "target": "any"
+   }
+  ],
   "synergy_states": {},
   "text": "[On Play] Look at up to 1 card from the top of your or your opponent's Life cards, and place it at the top or bottom of the Life cards.",
   "is_searcher": false,
@@ -103243,9 +103340,19 @@
   "attribute": "",
   "effects": [
    {
+    "action": "peek_life",
+    "trigger": "trigger",
+    "target": "opponent"
+   },
+   {
     "action": "buff_power",
     "trigger": "counter",
     "target": "leader_or_character"
+   },
+   {
+    "action": "peek_life",
+    "trigger": "counter",
+    "target": "any"
    }
   ],
   "synergy_states": {
@@ -103274,7 +103381,7 @@
   "has_double_attack": false,
   "has_unblockable": false,
   "has_banish": false,
-  "has_trigger": false
+  "has_trigger": true
  },
  "ST07-017": {
   "name": "Queen Mama Chanter",
@@ -106332,6 +106439,10 @@
     "action": "gain_life",
     "trigger": "activate_main",
     "don_requirement": 2
+   },
+   {
+    "action": "trash_own_life",
+    "trigger": "end_of_turn"
    }
   ],
   "synergy_states": {
@@ -106412,6 +106523,11 @@
   "sub_types": "The Four Emperors Whitebeard Pirates",
   "attribute": "Special",
   "effects": [
+   {
+    "action": "peek_life",
+    "trigger": "on_play",
+    "target": "self"
+   },
    {
     "action": "gain_life",
     "trigger": "on_play"
@@ -106746,7 +106862,13 @@
   "color": "Yellow",
   "sub_types": "Windmill Village",
   "attribute": "Wisdom",
-  "effects": [],
+  "effects": [
+   {
+    "action": "peek_life",
+    "trigger": "on_play",
+    "target": "self"
+   }
+  ],
   "synergy_states": {},
   "text": "[On Play] You may add 1 card from the top or bottom of your Life cards to your hand: Look at all of your Life cards and place them back in your Life area in any order.",
   "is_searcher": false,
@@ -106918,6 +107040,11 @@
   "attribute": "Strike",
   "effects": [
    {
+    "action": "peek_life",
+    "trigger": "on_play",
+    "target": "self"
+   },
+   {
     "action": "keyword_rush",
     "trigger": "passive"
    }
@@ -106964,6 +107091,11 @@
     "action": "buff_power",
     "trigger": "counter",
     "target": "leader_or_character"
+   },
+   {
+    "action": "peek_life",
+    "trigger": "counter",
+    "target": "self"
    }
   ],
   "synergy_states": {
@@ -108997,7 +109129,13 @@
   "color": "Yellow",
   "sub_types": "Big Mom Pirates",
   "attribute": "Special",
-  "effects": [],
+  "effects": [
+   {
+    "action": "peek_life",
+    "trigger": "trigger",
+    "target": "any"
+   }
+  ],
   "synergy_states": {
    "vida_ganha": {
     "creates": false,
@@ -109024,7 +109162,7 @@
   "has_double_attack": false,
   "has_unblockable": false,
   "has_banish": false,
-  "has_trigger": false
+  "has_trigger": true
  },
  "ST20-004": {
   "name": "Charlotte Pudding (ST20-004)",
@@ -112185,6 +112323,11 @@
    {
     "action": "play_card",
     "trigger": "trigger"
+   },
+   {
+    "action": "turn_life_face_up",
+    "trigger": "passive",
+    "target": "self"
    }
   ],
   "synergy_states": {
