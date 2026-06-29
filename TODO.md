@@ -69,22 +69,29 @@ implementa → valida (snapshot/diff PERDEU=0 + partidas reais instrumentadas).
 > CycleEntireHandToDeckBottom **já estavam implementados**. Lista abaixo reflete
 > o estado real, verificado por linha de código.
 
-### Gaps reais confirmados — 4 (+ 1 parcial barato)
-- [ ] OppNoBlockerThisTurn — oponente não bloqueia (habilita lethal, alto impacto).
-  Hoje só existe trava por 1 batalha (`blocker_lock_battle`) ou por carta
-  específica (`cannot_block_until`); falta "campo todo, turno inteiro".
+### Gaps reais confirmados — 2 (+ 3 residuais estreitos)
 - [ ] Freeze (don/stage/card) — `lock_opp_character_refresh`/`lock_opp_don_refresh`/
   `lock_self_character_refresh` são reconhecidos mas SEM lógica de refresh
   implementada (`decision_engine.py:1722`, comentário confirma).
 - [ ] CantPlayAnyCardsFromHand / CantPlayAnyCharactersToField DIRECIONADO AO
   OPONENTE — trava control (Imu). Hoje `self_cant_play` só afeta o próprio
   jogador (`me.*`), nunca o oponente.
-- [ ] (parcial, barato) Buff dinâmico por DON anexado / custo do topo do deck —
-  framework `buff_power_per_count` já existe e cobre várias fontes (trash,
-  events_in_trash, rested_don, hand, etc.); falta só 2 branches novos.
+- [ ] OppNoBlockerThisTurn, 3 cartas residuais (OP07-057, OP12-016, OP12-077) —
+  precisam de "memória de alvo entre steps" (select X, X ganha +2000 power,
+  então se X atacar, oponente não bloqueia). Mesma raiz do gap `SaveTargetName`
+  dos "médios" abaixo — não implementar isolado, resolver junto.
 - [x] ~~DealDamage/TakeDamage~~ — já implementado (`deal_damage`)
 - [x] ~~ShuffleHandIntoDeck / CycleEntireHandToDeckBottom~~ — já implementado
   (`shuffle_hand_into_deck`, parâmetro `dest`)
+- [x] ~~OppNoBlockerThisTurn (maior parte)~~ — **implementado em 28/06/2026**:
+  parser estendido (`gerar_effects_db.py`, regex `m_block_filtered`) para as
+  3 variantes de texto que faltavam (OP11-013 "All", OP12-051 custo, ST21-016
+  power). `PERDEU=0`, smoke tests OK. 17 de 20 cartas reais cobertas agora.
+- [x] ~~Buff dinâmico (BuffSelf1KPerXTargets/BuffXPerGivenDon/BuffXPerTopDeckCost)~~
+  — já estava implementado num commit anterior (`4f41178`) que nunca teve o
+  snapshot/db regenerado; feito em 28/06/2026 (`gerar_dbs.py` + novo
+  snapshot). 9 cartas corrigidas (estavam parseadas como buff FIXO, errado —
+  ex: "+1000 per 3 rested DON" tratava como +1000 sempre).
 
 ### "Médios" — 7, na verdade TODOS ausentes (categorização original invertida)
 PeekSelfLife/OppLife, TrashAllFaceUpLife, MatchLeaderToBasePower (set_base_power

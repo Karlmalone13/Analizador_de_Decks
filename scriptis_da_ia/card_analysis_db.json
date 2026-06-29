@@ -63495,6 +63495,11 @@
   "attribute": "Special",
   "effects": [
    {
+    "action": "lock_opp_blocker_turn",
+    "trigger": "when_attacking",
+    "power_lte": 2000
+   },
+   {
     "action": "keyword_blocker",
     "trigger": "passive"
    }
@@ -70224,6 +70229,11 @@
   "sub_types": "Navy",
   "attribute": "Special",
   "effects": [
+   {
+    "action": "lock_opp_blocker_turn",
+    "trigger": "activate_main",
+    "cost_lte": 4
+   },
    {
     "action": "keyword_blocker",
     "trigger": "passive"
@@ -109663,6 +109673,11 @@
     "trigger": "trigger",
     "power_lte": 4000,
     "target": "opp_character"
+   },
+   {
+    "action": "lock_opp_blocker_turn",
+    "trigger": "main",
+    "power_lte": 4000
    },
    {
     "action": "buff_power",

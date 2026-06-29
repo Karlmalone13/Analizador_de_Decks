@@ -7,6 +7,70 @@ e `git status` antes de tocar em qualquer coisa.
 
 ---
 
+## 2026-06-28 22:30 — Claude
+
+**Feito:**
+- Implementado `OppNoBlockerThisTurn`, com correção de rumo no meio do
+  caminho (registrando aqui pra próxima sessão não repetir o erro):
+  1ª tentativa: classifiquei como "gap real total" — errado, a action
+  `lock_opp_blocker_turn` já existia no engine. 2ª tentativa: levantei 6
+  cartas "ausentes" e categorizei 3 delas (OP07-057, OP12-016, OP12-077)
+  como precisando de mecanismo novo de "atacante específico" — também
+  impreciso: 2 dessas (na real, eram outras: OP13-057/ST01-016, não essas 3)
+  já eram cobertas por `select_grant_unblockable_turn`. Só depois de varrer
+  as 20 cartas reais do banco com "cannot activate Blocker" uma a uma contra
+  `card_effects_db.json` é que cheguei no número certo: 17/20 já cobertas,
+  3 residuais (OP07-057, OP12-016, OP12-077) que precisam de "lembrar alvo
+  selecionado num step anterior" — mesma raiz do gap `SaveTargetName`, não
+  implementado agora (registrado como item ligado, não isolado).
+  - Implementado: extensão de regex em `gerar_effects_db.py`
+    (`parse_lock_attack`, novo bloco `m_block_filtered`) cobrindo "All" (em
+    vez de "up to N") e cláusula de custo/power no meio da frase. 3 cartas
+    a mais: OP11-013, OP12-051, ST21-016.
+- **Achado importante no caminho**: ao validar com `diff_parser.py`, descobri
+  que 9 cartas MUDARAM sem eu ter tocado nelas — investigação revelou que o
+  commit `4f41178` ("Implementa buffs dinamicos do ActV3", de sessão
+  anterior) já tinha implementado `buff_power_per_count` no parser, mas
+  NUNCA regenerou/commitou um `parser_snapshot.json` atualizado — violação
+  do workflow documentado no `TODO.md` ("PERDEU=0" devia ter sido confirmado
+  e não foi). Validei manualmente que a implementação está correta (ex:
+  "+1000 power for every 3 rested DON" → `count_per=3, source='rested_don'`,
+  bate exato) e completei o workflow que faltava: `gerar_dbs.py` +
+  `snapshot_parser.py`.
+- **Workflow seguido corretamente nesta sessão** (depois de um tropeço meu —
+  rodei `snapshot_parser.py` DEPOIS de editar o parser por engano na 1ª
+  tentativa, o que invalidaria a comparação; corrigido buscando o snapshot
+  real via `git show HEAD:...` em vez de `git stash`, que reintroduziu o
+  erro numa segunda tentativa antes de eu perceber e fazer do jeito limpo):
+  `gerar_effects_db.py` editado → `gerar_dbs.py` (regenera
+  `card_effects_db.json` + `card_analysis_db.json`) → `snapshot_parser.py`
+  → diff contra baseline real do HEAD → `PERDEU=0`, 12 `MUDOU` (3 minhas + 9
+  do achado do `4f41178`) → `smoke_test.py` (100%) → `smoke_test_broad.py`
+  (40/40 partidas sem exceção).
+- Documentação corrigida de novo (3ª revisão do dia neste tópico):
+  `comparacao_simulador_vs_IA.md` e `TODO.md` atualizados com a contagem
+  final (44 cobertos / 23 ausentes) e os 2 itens implementados marcados.
+
+**Estado atual:**
+- Pronto pra commit: `gerar_effects_db.py`, `card_effects_db.json`,
+  `card_analysis_db.json`, `parser_snapshot.json`, `comparacao_simulador_vs_IA.md`,
+  `TODO.md`.
+
+**Próximo:**
+- Gaps reais restantes (2 genuínos + 1 ligado): `Freeze` funcional (refresh
+  phase), `CantPlayAnyCardsFromHand`/`CantPlayAnyCharactersToField` no
+  oponente, e o conjunto `SaveTargetName`/3 cartas residuais de
+  `OppNoBlockerThisTurn` (memória de alvo entre steps — maior escopo,
+  resolver junto).
+- 7 "médios" sem urgência.
+- `simular_deck_usuario.py` com import quebrado pré-existente, ainda não
+  corrigido.
+- **Lição pra próxima sessão**: sempre que `diff_parser.py` mostrar mudanças
+  que você não fez, INVESTIGAR antes de assumir bug seu — pode ser trabalho
+  de sessão anterior sem snapshot regenerado (foi o caso aqui).
+
+---
+
 ## 2026-06-28 21:15 — Claude
 
 **Feito:**

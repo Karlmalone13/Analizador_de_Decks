@@ -15,6 +15,15 @@ efeitos do simulador) contra as 66 actions do nosso `card_effects_db.json`.
 > prioridade no doc original) estão **100% ausentes**, enquanto os "8 relevantes"
 > (prioridade alta) já tinham metade pronta. Contagem real: **42 cobertos, 25
 > ausentes** — ver tabela corrigida abaixo.
+>
+> **ATUALIZADO em 28/06/2026** (mesmo dia, depois de implementar): parser
+> estendido para `OppNoBlockerThisTurn` (3 cartas: OP11-013, OP12-051,
+> ST21-016) e validado o `buff_power_per_count` que já existia no parser sem
+> nunca ter tido snapshot/db regenerado (9 cartas afetadas: EB01-014,
+> EB01-027, OP01-072, OP01-083, OP06-085, OP09-086, OP12-070, OP16-034,
+> P-024). Contagem agora: **44 cobertos, 23 ausentes** (7 "médios" + `Freeze`
+> + `CantPlay*` no oponente + 3 residuais de `OppNoBlockerThisTurn` que
+> precisam de memória de alvo entre steps, mesma raiz de `SaveTargetName`).
 
 ---
 
@@ -47,11 +56,11 @@ buracos são de COBERTURA de efeitos, não de modelo.
 | ~~DealDamage / TakeDamage~~ | ✅ **JÁ COBERTO** — action `deal_damage` (`decision_engine.py:2400`), trata trigger de vida corretamente |
 | ~~ShuffleHandIntoDeck~~ | ✅ **JÁ COBERTO** — `shuffle_hand_into_deck` com `dest='deck'` (`decision_engine.py:2185`) |
 | ~~CycleEntireHandToDeckBottom~~ | ✅ **JÁ COBERTO** — mesma action, `dest='deck_bottom'` |
-| **BuffSelf1KPerXTargets / BuffXPerGivenDon / BuffXPerTopDeckCost** | 🟡 **PARCIAL** — framework `buff_power_per_count` (`decision_engine.py:1822`) já cobre `trash`, `events_in_trash`, `rested_don`, `hand`, `unique_character_names`, `own_characters`. Falta só acrescentar as fontes "DON anexado à própria carta" e "custo do topo do deck" — extensão barata do `if/elif` existente, não gap estrutural |
+| ~~BuffSelf1KPerXTargets / BuffXPerGivenDon / BuffXPerTopDeckCost~~ | ✅ **JÁ COBERTO** — framework `buff_power_per_count` (`decision_engine.py:1822`), parser correspondente em `gerar_effects_db.py` (commit `4f41178`). Cobre `trash`, `events_in_trash`, `rested_don`, `hand`, `unique_character_names`, `own_characters`. Faltam só as fontes "DON anexado à própria carta" e "custo do topo do deck" (nenhuma carta real encontrada com essas variantes ainda — não bloqueante) |
+| ~~OppNoBlockerThisTurn~~ | ✅ **JÁ COBERTO (maior parte)** — `lock_opp_blocker_turn` (engine) + parser estendido em 28/06/2026. Das 20 cartas reais com "cannot activate Blocker": 17 cobertas (9 `lock_opp_blocker_battle`, 5 `lock_opp_blocker_turn`, 3 `select_grant_unblockable_turn`). Restam 3 (OP07-057, OP12-016, OP12-077) que exigem "lembrar o alvo selecionado num step anterior" — ver gap `SaveTargetName` abaixo, mesma raiz |
 | **Freeze (don/stage/card)** | ❌ **GAP REAL** — `lock_opp_character_refresh`/`lock_opp_don_refresh`/`lock_self_character_refresh` são reconhecidos mas o próprio código documenta: "ainda não tem lógica de refresh implementada" (`decision_engine.py:1722`) |
 | **CantPlayAnyCardsFromHand** (no oponente) | ❌ **GAP REAL** — `self_cant_play` só seta a flag em `me.*` (`decision_engine.py:2173`), nunca no oponente |
 | **CantPlayAnyCharactersToField** (no oponente) | ❌ **GAP REAL** — mesma raiz do item acima |
-| **OppNoBlockerThisTurn** | ❌ **GAP REAL** — só existe trava por 1 batalha (`blocker_lock_battle`, resetada após cada combate) ou por carta específica persistente (`cannot_block_until`); não existe "campo todo, turno inteiro" |
 
 ### 🟡 "Médios" — na verdade 7 gaps reais, 100% ausentes (categorização original estava invertida)
 
@@ -60,7 +69,7 @@ buracos são de COBERTURA de efeitos, não de modelo.
 | PeekSelfLife / PeekOppLife | nenhuma action equivalente nas 75 do banco |
 | TrashAllFaceUpLife | não modelamos face da vida (face-up/down) em lugar nenhum |
 | MatchLeaderToBasePower | `set_base_power` só aceita valor FIXO do step (`decision_engine.py:1785`, `int(amount)`) — nunca copia dinamicamente o power de outra carta |
-| SaveTargetName / HandSize / Count | não existe memória entre steps na engine |
+| SaveTargetName / HandSize / Count | não existe memória entre steps na engine. Mesma raiz do gap restante de `OppNoBlockerThisTurn` (OP07-057, OP12-016, OP12-077 — "select X, X ganha +2000 power, então se X atacar, oponente não bloqueia") |
 | ForceOpponent | nenhuma action equivalente (raro, mantido como tal) |
 | QueueUpEndOfTurnAction / QueueUpOppMainPhaseAction | nenhuma action equivalente |
 | FieldCantAttackLeader | `cannot_attack_self` é OUTRA coisa — trava a própria carta de atacar, não impede atacar o líder especificamente (`decision_engine.py:518`) |
@@ -105,17 +114,18 @@ A maioria é nicho. Auditar sob demanda, não em varredura.
    Confirmado de novo numa auditoria por amostragem do cálculo de poder,
    resolução de combate, economia de DON e direção do deck — todos batem com
    o C# oficial, sem bug encontrado no motor de produção.
-2. **Os buracos reais (verificados por código, não por busca de nome) são 11,
-   não 15:** 4 gaps reais + 1 parcial/barato (da lista "relevantes") + 7 gaps
-   reais (da lista "médios", que estava 100% intacta apesar de catalogada como
-   menor prioridade). Mais ~13 itens raros/arquétipo-específico (não revisados
-   item a item, mantidos como estavam).
-3. **Prioridade real agora:** `OppNoBlockerThisTurn`, `Freeze` funcional
-   (refresh phase), e `CantPlayAnyCardsFromHand`/`CantPlayAnyCharactersToField`
-   DIRECIONADO AO OPONENTE (hoje só existe auto-aplicado) — esses 3-4 itens
-   têm impacto competitivo real (arquétipos control como Imu, lethal turns) e
-   nenhum exige mudança estrutural grande. Os 7 "médios" (PeekLife,
-   MatchLeaderToBasePower, FieldCantAttackLeader, etc.) ficam para quando
-   aparecerem cartas reais no meta que dependam deles — não há urgência.
+2. **Implementado em 28/06/2026** (mesmo dia da auditoria): `OppNoBlockerThisTurn`
+   tinha o engine pronto mas o parser cobria só 2 de 5 variantes de texto reais —
+   estendida a regex em `gerar_effects_db.py` (3 cartas a mais: OP11-013,
+   OP12-051, ST21-016; `PERDEU=0`, smoke tests OK). `BuffSelf1KPerXTargets`/
+   `BuffXPerGivenDon`/`BuffXPerTopDeckCost` já estava implementado num commit
+   anterior (`4f41178`) cujo snapshot nunca tinha sido regenerado/validado —
+   feito agora.
+3. **Os buracos reais restantes (verificados por código) são 9, não 15:**
+   `Freeze` funcional, `CantPlayAnyCardsFromHand`/`CantPlayAnyCharactersToField`
+   direcionado ao oponente, 3 cartas residuais de `OppNoBlockerThisTurn`
+   (precisam de "memória de alvo entre steps") + os 7 "médios" (categorização
+   original invertida — são os que estão 100% ausentes, não os "relevantes").
+   Nenhum exige mudança estrutural grande; nenhum tem urgência de meta hoje.
 4. **Maior dívida não-atacada: sistema de imunidade** (família inteira ausente).
    Consciente, registrada, fora de escopo atual.

@@ -1171,6 +1171,30 @@ def parse_lock_attack(text):
         })
         return steps
 
+    # Variante com filtro de custo/power ENTRE "character(s)" e "cannot
+    # activate" (ordem de frase distinta de m_block_power/m_block_plain
+    # acima), e/ou "All" no lugar de "up to N" (campo inteiro filtrado,
+    # nao so 1 character). 3 cartas no banco hoje: OP11-013 (all + power),
+    # OP12-051 (up to 1 + cost), ST21-016 (up to 1 + power). count=99 para
+    # "all" segue a mesma convencao de is_select_all usada acima neste
+    # arquivo -- decision_engine.py ja faz min(count, len(candidates)).
+    m_block_filtered = re.search(
+        r"(all|up to (\d+)) of your opponent.{0,15}characters?"
+        r"(?: with (?:a base cost of (\d+) or less|(\d+) power or less))?"
+        r" cannot activate \[?blocker\]?[^.]*?during this turn", t)
+    if m_block_filtered:
+        step = {
+            'action': 'lock_opp_blocker_turn',
+            'count': 99 if m_block_filtered.group(1) == 'all' else int(m_block_filtered.group(2)),
+            'duration': 'until_opp_turn_end',
+        }
+        if m_block_filtered.group(3):
+            step['cost_lte'] = int(m_block_filtered.group(3))
+        if m_block_filtered.group(4):
+            step['power_lte'] = int(m_block_filtered.group(4))
+        steps.append(step)
+        return steps
+
     return steps
 
 

@@ -40744,6 +40744,16 @@
     "sub_types": "Navy SWORD",
     "attribute": "Special",
     "effects": {
+      "when_attacking": {
+        "steps": [
+          {
+            "action": "lock_opp_blocker_turn",
+            "count": 99,
+            "duration": "until_opp_turn_end",
+            "power_lte": 2000
+          }
+        ]
+      },
       "passive": {
         "steps": [
           {
@@ -44991,6 +45001,25 @@
     "sub_types": "Navy",
     "attribute": "Special",
     "effects": {
+      "activate_main": {
+        "steps": [
+          {
+            "action": "lock_opp_blocker_turn",
+            "count": 1,
+            "duration": "until_opp_turn_end",
+            "cost_lte": 4
+          }
+        ],
+        "costs": [
+          {
+            "type": "rest_self"
+          },
+          {
+            "type": "trash_from_hand",
+            "count": 1
+          }
+        ]
+      },
       "passive": {
         "steps": [
           {
@@ -70122,6 +70151,12 @@
       },
       "main": {
         "steps": [
+          {
+            "action": "lock_opp_blocker_turn",
+            "count": 1,
+            "duration": "until_opp_turn_end",
+            "power_lte": 4000
+          },
           {
             "action": "buff_power",
             "amount": 1000,
