@@ -69,6 +69,21 @@ implementa → valida (snapshot/diff PERDEU=0 + partidas reais instrumentadas).
 > CycleEntireHandToDeckBottom **já estavam implementados**. Lista abaixo reflete
 > o estado real, verificado por linha de código.
 
+### Achado/corrigido em 28/06/2026, 3ª rodada do dia (fora dos gaps originais)
+- [x] ~~`buff_power` target='own_character' não consumido pelo engine~~ —
+  achado ao investigar o gap de memória de alvo acima. O parser já gerava
+  esse target (15 cartas reais: EB04-009, OP03-039, OP08-018, OP08-019 (x2),
+  OP08-095, OP08-103, OP10-092, OP12-001, OP12-016, OP12-018, OP12-019,
+  OP13-022, P-011, ST13-001) mas o engine não tinha handler — caía no
+  fallback sem aplicar nada (no-op silencioso). Implementado: seleciona
+  entre `me.field_chars` (sem filtro de tipo, distinto de
+  `select_filtered`) via `eligible_cards`, escolhe o melhor por
+  `choose_highest_board_value`. Também corrigido o parser, que não
+  capturava os filtros do texto (`power_lte` — "with N power or less",
+  `exclude` — "other than [Nome]") — 3 cartas afetadas (OP10-092, OP12-001,
+  OP13-022). `PERDEU=0`, smoke tests 100%, testado manualmente (sem
+  filtro/com power_lte/com exclude, todos corretos).
+
 ### Gaps reais confirmados — 0 (todos resolvidos em 28/06/2026)
 - [x] ~~"Memória de alvo entre steps" (`SaveTargetName`)~~ — **implementado em
   28/06/2026**: `EffectExecutor._last_selected` (zerado a cada `execute()`,

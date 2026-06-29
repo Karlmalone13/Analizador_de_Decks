@@ -1408,6 +1408,22 @@ def parse_power_buff(text):
             elif 'of your characters' in contexto_antes or 'of your character cards' in contexto_antes:
                 target = 'own_character'
 
+        # Filtros do alvo 'own_character' (selecao entre os PROPRIOS
+        # characters, sem tipo -- distinto de 'select_filtered', que e por
+        # tipo). 15 cartas reais no banco usam esse alvo, algumas com filtro
+        # de power ("with N (base) power or less") ou exclusao de nome
+        # ("other than [Nome]") -- sem isso a action escolheria QUALQUER
+        # character, ignorando a restrição do texto.
+        power_lte_own = None
+        exclude_own = ''
+        if target == 'own_character':
+            m_plte = re.search(r'with (\d+) (?:base )?power or less', contexto_antes)
+            if m_plte:
+                power_lte_own = int(m_plte.group(1))
+            m_excl = re.search(r'other than \[([^\]]+)\]', contexto_antes)
+            if m_excl:
+                exclude_own = m_excl.group(1).strip()
+
         duration = 'this_turn'
         if 'until the start of your opponent' in contexto_depois:
             duration = 'until_opp_turn_start'
@@ -1420,10 +1436,15 @@ def parse_power_buff(text):
         elif 'this turn' in contexto_depois:
             duration = 'this_turn'
 
-        steps.append({
+        step = {
             'action': 'debuff_power' if is_debuff else 'buff_power',
             'amount': amount, 'target': target, 'duration': duration
-        })
+        }
+        if power_lte_own is not None:
+            step['power_lte'] = power_lte_own
+        if exclude_own:
+            step['exclude'] = exclude_own
+        steps.append(step)
 
     return steps
 

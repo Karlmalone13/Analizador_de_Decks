@@ -7,6 +7,52 @@ e `git status` antes de tocar em qualquer coisa.
 
 ---
 
+## 2026-06-29 00:15 — Claude
+
+**Feito** (sessão tinha travado/fechado o app no meio do bloco anterior;
+usuário voltou, confirmei que nada se perdeu no disco, commitei e dei push
+do bloco pendente, depois segui com o item que tinha ficado como chip de
+background):
+- Push do commit `4ea805f` (Freeze + SaveTargetName + investigação CantPlay*,
+  ver bloco anterior) — `a5b3007..4ea805f main -> main`, hook de pre-push
+  passou normal.
+- **Corrigido o `target='own_character'` não tratado em `buff_power`**
+  (achado de brinde na rodada anterior, virou chip — usuário pediu pra
+  investigar agora em vez de background). 15 cartas reais usam esse target
+  (EB04-009, OP03-039, OP08-018, OP08-019 x2, OP08-095, OP08-103, OP10-092,
+  OP12-001, OP12-016, OP12-018, OP12-019, OP13-022, P-011, ST13-001) e
+  TODAS caíam no fallback sem aplicar nada (no-op silencioso desde sempre,
+  não é regressão de hoje). Implementado: seleciona entre `me.field_chars`
+  via `eligible_cards`/`choose_highest_board_value` (sem filtro de tipo,
+  distinto do `select_filtered` da rodada anterior). No caminho, achei que
+  o PARSER também não capturava os filtros do texto em 3 dessas cartas
+  ("with N power or less" → `power_lte`, "other than [Nome]" → `exclude`:
+  OP10-092, OP12-001, OP13-022) — corrigido junto.
+- Workflow completo: baseline via `git show HEAD:...`, `PERDEU=0` (3 cartas
+  mudaram no parser, as com filtro — as outras 12 sem filtro não mudam
+  estrutura), `gerar_dbs.py`, `snapshot_parser.py`, `smoke_test.py` 100%,
+  `smoke_test_broad.py` 40/40, e 3 cenários manuais diretos (sem filtro
+  escolhe o mais forte, com `power_lte` filtra certo, com `exclude` ignora
+  a carta excluída mesmo sendo a melhor candidata).
+- `TODO.md` atualizado com o achado/correção como item separado.
+
+**Estado atual:**
+- Pendente de commit: `TODO.md`, `scriptis_da_ia/gerar_effects_db.py`,
+  `scriptis_da_ia/optcg_engine/decision_engine.py`,
+  `scriptis_da_ia/card_effects_db.json`,
+  `scriptis_da_ia/card_analysis_db.json`,
+  `scriptis_da_ia/parser_snapshot.json`.
+
+**Próximo:**
+- Commitar e (se usuário pedir) dar push do que está pendente acima.
+- 6 "médios" sem urgência (ver `comparacao_simulador_vs_IA.md`).
+- `simular_deck_usuario.py` com import quebrado pré-existente, ainda não
+  corrigido.
+- Sistema de imunidade (família inteira ausente) — dívida consciente, fora
+  de escopo.
+
+---
+
 ## 2026-06-28 23:50 — Claude
 
 **Feito ("vamos fazer o restante" — os 3 gaps reais que sobraram):**

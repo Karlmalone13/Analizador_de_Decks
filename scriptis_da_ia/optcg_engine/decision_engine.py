@@ -1880,6 +1880,28 @@ class EffectExecutor:
                     self._last_selected = alvo
                     return f'{alvo.name[:18]} selecionado, +{amount} power'
                 return ''
+            elif target == 'own_character':
+                # "Up to N of your Characters [with X power or less] [other
+                # than [Nome]] gains +Y power" -- selecao entre os PROPRIOS
+                # characters SEM filtro de tipo (distinto de
+                # 'select_filtered'). Achado 28/06/2026: este target ja era
+                # gerado pelo parser (15 cartas reais) mas nunca era
+                # consumido aqui -- caia no fallback abaixo sem aplicar
+                # nada (no-op silencioso).
+                from optcg_engine.rules_facade import (
+                    eligible_cards,
+                    choose_highest_board_value,
+                )
+                candidatos = eligible_cards(
+                    me.field_chars,
+                    power_lte=step.get('power_lte'),
+                    exclude_name=step.get('exclude', ''),
+                )
+                if candidatos:
+                    alvo = choose_highest_board_value(candidatos)
+                    alvo.power_buff += amount
+                    return f'{alvo.name[:18]} +{amount} power'
+                return ''
             return f'+{amount} power em {target}'
 
         if action == 'buff_power_per_count':

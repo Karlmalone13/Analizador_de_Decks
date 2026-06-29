@@ -68135,6 +68135,7 @@
    {
     "action": "buff_power",
     "trigger": "activate_main",
+    "power_lte": 4000,
     "target": "own_character"
    }
   ],
@@ -74070,6 +74071,7 @@
    {
     "action": "buff_power",
     "trigger": "activate_main",
+    "power_lte": 2000,
     "target": "own_character"
    }
   ],

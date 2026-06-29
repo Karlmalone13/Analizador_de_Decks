@@ -24123,6 +24123,7 @@
      "action": "buff_power",
      "amount": 2000,
      "duration": "this_turn",
+     "exclude": "perona",
      "target": "own_character"
     }
    ]
@@ -26602,6 +26603,7 @@
      "action": "buff_power",
      "amount": 2000,
      "duration": "this_turn",
+     "power_lte": 4000,
      "target": "own_character"
     }
    ]
@@ -28831,6 +28833,7 @@
      "action": "buff_power",
      "amount": 1000,
      "duration": "this_turn",
+     "power_lte": 2000,
      "target": "own_character"
     }
    ]
