@@ -7,6 +7,104 @@ e `git status` antes de tocar em qualquer coisa.
 
 ---
 
+## 2026-06-28 23:50 — Claude
+
+**Feito ("vamos fazer o restante" — os 3 gaps reais que sobraram):**
+- **Freeze (don/stage/card) implementado de verdade.** Campo novo
+  `frozen_next_refresh` (bool) na classe `Card` (incluído também no
+  `__deepcopy__` customizado — lista hardcoded, fácil esquecer) e
+  `frozen_don_count` (int) em `GameState`. `refresh_phase` agora pula o
+  untap de characters/stage congelados (e o flag é consumido, só vale 1
+  refresh) e segura `min(frozen_don_count, don_rested)` DON sem desvirar.
+  Handlers de `lock_opp_character_refresh` (18 cartas, filtro
+  cost_lte/cost_eq), `lock_opp_don_refresh` (1 carta) e
+  `lock_self_character_refresh` target='this_card' (1 carta, OP04-090)
+  implementados de verdade (antes só retornavam "não implementado").
+  Testado manualmente com script direto (character/stage/DON congelados
+  ficam rested 1 refresh e voltam ao normal na seguinte) + smoke tests.
+- **CantPlayAnyCardsFromHand/CantPlayAnyCharactersToField no oponente:
+  investigado e descartado.** Busquei "opponent cannot play" em todas as
+  variantes no `cards_rows.csv` — 0 cartas reais. As 18 cartas com "cannot
+  play" no banco são TODAS auto-aplicadas (custo de ramp de DON, já
+  cobertas por `self_cant_play`). O exemplo "Imu" do doc original não
+  corresponde a carta real do nosso pool — não implementei código
+  especulativo sem carta pra validar (mesma lógica de não deixar código
+  morto). Perguntei ao usuário antes de pular, ele confirmou.
+- **SaveTargetName / memória de alvo entre steps implementado.** Isso
+  cresceu de escopo no meio do caminho (avisei o usuário, ele confirmou
+  seguir): além da memória em si, precisei consertar DOIS bugs
+  pré-existentes que travavam as cartas-alvo:
+  1. `parse_power_buff` (`gerar_effects_db.py`) tinha um bug de bracket:
+     "select up to N of your [Tipo]..." com `[...]` colchetes nunca batia
+     porque a regex só previa `{...}` chaves (cartas reais usam os 2
+     estilos + `"..."` aspas, inconsistente na fonte). Generalizado pra
+     cobrir os 3 estilos.
+  2. Ordem de despacho dos sub-parsers dentro de `parse_block` NÃO segue a
+     ordem do texto original — `select_grant_unblockable_turn`/
+     `lock_self_character_refresh` (consome o alvo) era despachado ANTES
+     de `buff_power` (que seleciona o alvo), deixando a memória vazia no
+     momento errado. Corrigido com `steps.sort()` estável no final de
+     `parse_block` (quem tem `target='selected'` sempre vai depois).
+  - Mecanismo: `EffectExecutor._last_selected`, zerado a cada `execute()`,
+    preenchido por `buff_power` com `target='select_filtered'` (nova opção,
+    seleciona entre `field_chars`+`leader` por `card_matches_filter`,
+    escolhe o melhor por `choose_highest_board_value`), consumido por
+    `select_grant_unblockable_turn`/`lock_self_character_refresh` com
+    `target='selected'` (se não há memória, não aplica em ninguém — mais
+    seguro que adivinhar).
+  - Resolveu de verdade: OP07-057, OP12-077 (residuais de
+    `OppNoBlockerThisTurn`) e EB02-021 (residual de Freeze, "the selected
+    Character will not become active"). OP12-016 (Rayleigh) fica de fora —
+    o alvo dele vem de um CUSTO ("give 2 DON to 1 of your Rayleigh"), não
+    de um step anterior; memória custo→efeito é mecanismo diferente, não
+    implementado (1 carta, raro).
+  - **Achado de brinde**: ao generalizar a regex de `parse_power_buff`,
+    descobri que o padrão "up to N of your [Tipo] cards gains +X power"
+    (SEM a palavra "select") já existia em 48 cartas no banco e SEMPRE
+    caía em `target='self'` por engano (bug pré-existente — o efeito não é
+    "esta carta ganha power", é "escolha 1 personagem do tipo X no
+    campo"). Corrigido para `target='select_filtered'` nas 48. Validei uma
+    amostra manualmente (OP03-117, OP04-093, OP11-007 — este último tinha
+    um false-positive extra: pegava "leader" de uma cláusula de condição
+    não relacionada, "if your leader has the Navy type, up to 1 of your
+    Navy type Characters gains...") — todas as 48 são correções reais, não
+    regressão.
+  - **Achado de brinde #2, NÃO corrigido** (fora de escopo, registrado):
+    `target='own_character'` também é gerado pelo parser de `buff_power`
+    mas o engine nunca trata esse valor — cai no fallback sem aplicar nada
+    (no-op silencioso). Criei um chip de task em background pra investigar
+    quantas cartas reais isso afeta e corrigir — não toquei agora pra não
+    inflar mais o escopo desta sessão.
+- Workflow seguido corretamente: baseline limpo via
+  `git show HEAD:scriptis_da_ia/parser_snapshot.json` (não `git stash`,
+  lição da sessão anterior) → editei parser → `PERDEU=0` em todas as 3
+  rodadas (Freeze não mudou parser; SaveTargetName mudou 52 cartas, todas
+  conferidas) → `gerar_dbs.py` → `snapshot_parser.py` → `smoke_test.py`
+  100% → `smoke_test_broad.py` 40/40 (rodado 3x, uma por feature).
+- `TODO.md` e `comparacao_simulador_vs_IA.md` reescritos: zero gaps "reais"
+  restantes, só os 6 "médios" sem urgência (PeekLife, TrashAllFaceUpLife,
+  MatchLeaderToBasePower, ForceOpponent, QueueUpEndOfTurnAction/
+  OppMainPhase, FieldCantAttackLeader).
+
+**Estado atual:**
+- Tudo no disco, NÃO commitado ainda (a sessão travou antes do commit).
+  `git status`: `TODO.md`, `comparacao_simulador_vs_IA.md`,
+  `scriptis_da_ia/card_analysis_db.json`, `scriptis_da_ia/card_effects_db.json`,
+  `scriptis_da_ia/gerar_effects_db.py`,
+  `scriptis_da_ia/optcg_engine/decision_engine.py`,
+  `scriptis_da_ia/parser_snapshot.json`. Próxima ação: revisar `git diff`
+  uma vez e commitar (1 commit ou 3 separados por feature — a decidir).
+
+**Próximo:**
+- Commitar o que está pendente (ver acima).
+- Task em background pendente: `target='own_character'` não tratado em
+  `buff_power` (chip criado, não iniciado).
+- 6 "médios" sem urgência (ver `comparacao_simulador_vs_IA.md`).
+- `simular_deck_usuario.py` com import quebrado pré-existente, ainda não
+  corrigido (fora de escopo, mencionado em sessões anteriores).
+
+---
+
 ## 2026-06-28 22:30 — Claude
 
 **Feito:**

@@ -1826,7 +1826,7 @@
    {
     "action": "buff_power",
     "trigger": "activate_main",
-    "target": "self"
+    "target": "select_filtered"
    }
   ],
   "synergy_states": {},
@@ -3509,11 +3509,12 @@
    {
     "action": "buff_power",
     "trigger": "main",
-    "target": "self"
+    "target": "select_filtered"
    },
    {
     "action": "lock_self_character_refresh",
-    "trigger": "main"
+    "trigger": "main",
+    "target": "selected"
    }
   ],
   "synergy_states": {
@@ -5246,7 +5247,7 @@
    {
     "action": "buff_power",
     "trigger": "activate_main",
-    "target": "self"
+    "target": "select_filtered"
    }
   ],
   "synergy_states": {},
@@ -6652,7 +6653,7 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "self"
+    "target": "select_filtered"
    },
    {
     "action": "play_card",
@@ -6765,12 +6766,12 @@
    {
     "action": "buff_power",
     "trigger": "on_play",
-    "target": "self"
+    "target": "select_filtered"
    },
    {
     "action": "buff_power",
     "trigger": "your_turn",
-    "target": "self"
+    "target": "select_filtered"
    }
   ],
   "synergy_states": {},
@@ -8968,7 +8969,7 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "self"
+    "target": "select_filtered"
    },
    {
     "action": "debuff_cost",
@@ -9023,7 +9024,7 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "self"
+    "target": "select_filtered"
    }
   ],
   "synergy_states": {
@@ -9405,7 +9406,7 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "self"
+    "target": "select_filtered"
    },
    {
     "action": "look_top_deck",
@@ -9912,7 +9913,7 @@
    {
     "action": "buff_power",
     "trigger": "main",
-    "target": "self"
+    "target": "select_filtered"
    }
   ],
   "synergy_states": {
@@ -10124,7 +10125,7 @@
    {
     "action": "buff_power",
     "trigger": "activate_main",
-    "target": "self"
+    "target": "select_filtered"
    }
   ],
   "synergy_states": {},
@@ -26124,7 +26125,7 @@
    {
     "action": "buff_power",
     "trigger": "activate_main",
-    "target": "self"
+    "target": "select_filtered"
    },
    {
     "action": "play_card",
@@ -30410,7 +30411,8 @@
    },
    {
     "action": "lock_self_character_refresh",
-    "trigger": "activate_main"
+    "trigger": "activate_main",
+    "target": "this_card"
    },
    {
     "action": "gain_can_attack_active",
@@ -30550,7 +30552,7 @@
    {
     "action": "buff_power",
     "trigger": "main",
-    "target": "self"
+    "target": "select_filtered"
    },
    {
     "action": "gain_double_attack",
@@ -30992,7 +30994,7 @@
    {
     "action": "buff_power",
     "trigger": "on_play",
-    "target": "self"
+    "target": "select_filtered"
    },
    {
     "action": "play_card",
@@ -31270,7 +31272,7 @@
    {
     "action": "buff_power",
     "trigger": "activate_main",
-    "target": "self"
+    "target": "select_filtered"
    }
   ],
   "synergy_states": {},
@@ -35126,7 +35128,7 @@
    {
     "action": "buff_power",
     "trigger": "main",
-    "target": "self"
+    "target": "select_filtered"
    }
   ],
   "synergy_states": {
@@ -35599,12 +35601,12 @@
    {
     "action": "buff_power",
     "trigger": "on_play",
-    "target": "self"
+    "target": "select_filtered"
    },
    {
     "action": "buff_power",
     "trigger": "on_ko",
-    "target": "self"
+    "target": "select_filtered"
    },
    {
     "action": "keyword_blocker",
@@ -41572,7 +41574,7 @@
    {
     "action": "buff_power",
     "trigger": "trigger",
-    "target": "self"
+    "target": "select_filtered"
    }
   ],
   "synergy_states": {
@@ -42668,12 +42670,12 @@
    {
     "action": "buff_power",
     "trigger": "on_play",
-    "target": "self"
+    "target": "select_filtered"
    },
    {
     "action": "buff_power",
     "trigger": "your_turn",
-    "target": "self"
+    "target": "select_filtered"
    }
   ],
   "synergy_states": {},
@@ -42760,7 +42762,7 @@
    {
     "action": "buff_power",
     "trigger": "main",
-    "target": "self"
+    "target": "select_filtered"
    },
    {
     "action": "debuff_power",
@@ -42864,7 +42866,7 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "self"
+    "target": "select_filtered"
    }
   ],
   "synergy_states": {
@@ -43969,12 +43971,12 @@
    {
     "action": "buff_power",
     "trigger": "on_play",
-    "target": "self"
+    "target": "select_filtered"
    },
    {
     "action": "buff_power",
     "trigger": "your_turn",
-    "target": "self"
+    "target": "select_filtered"
    }
   ],
   "synergy_states": {},
@@ -44565,7 +44567,12 @@
    {
     "action": "buff_power",
     "trigger": "main",
-    "target": "self"
+    "target": "select_filtered"
+   },
+   {
+    "action": "select_grant_unblockable_turn",
+    "trigger": "main",
+    "target": "selected"
    },
    {
     "action": "keyword_blocker",
@@ -45863,12 +45870,12 @@
    {
     "action": "buff_power",
     "trigger": "on_play",
-    "target": "self"
+    "target": "select_filtered"
    },
    {
     "action": "buff_power",
     "trigger": "your_turn",
-    "target": "self"
+    "target": "select_filtered"
    }
   ],
   "synergy_states": {},
@@ -46354,7 +46361,7 @@
    {
     "action": "buff_power",
     "trigger": "trigger",
-    "target": "self"
+    "target": "select_filtered"
    }
   ],
   "synergy_states": {
@@ -49579,12 +49586,12 @@
    {
     "action": "buff_power",
     "trigger": "on_play",
-    "target": "self"
+    "target": "select_filtered"
    },
    {
     "action": "buff_power",
     "trigger": "your_turn",
-    "target": "self"
+    "target": "select_filtered"
    }
   ],
   "synergy_states": {},
@@ -51965,7 +51972,7 @@
    {
     "action": "buff_power",
     "trigger": "activate_main",
-    "target": "self"
+    "target": "select_filtered"
    }
   ],
   "synergy_states": {},
@@ -61952,7 +61959,7 @@
    {
     "action": "buff_power",
     "trigger": "main",
-    "target": "self"
+    "target": "select_filtered"
    },
    {
     "action": "gain_banish",
@@ -62178,7 +62185,7 @@
    {
     "action": "buff_power",
     "trigger": "activate_main",
-    "target": "self"
+    "target": "select_filtered"
    },
    {
     "action": "life_to_hand",
@@ -63253,7 +63260,7 @@
    {
     "action": "buff_power",
     "trigger": "activate_main",
-    "target": "leader"
+    "target": "select_filtered"
    }
   ],
   "synergy_states": {},
@@ -63807,14 +63814,14 @@
     "target": "opp_character"
    },
    {
+    "action": "buff_power",
+    "trigger": "main",
+    "target": "select_filtered"
+   },
+   {
     "action": "debuff_power",
     "trigger": "main",
     "target": "opp_character"
-   },
-   {
-    "action": "buff_power",
-    "trigger": "main",
-    "target": "self"
    }
   ],
   "synergy_states": {
@@ -71310,7 +71317,12 @@
    {
     "action": "buff_power",
     "trigger": "main",
-    "target": "self"
+    "target": "select_filtered"
+   },
+   {
+    "action": "select_grant_unblockable_turn",
+    "trigger": "main",
+    "target": "selected"
    },
    {
     "action": "keyword_blocker",
@@ -71903,7 +71915,7 @@
    {
     "action": "buff_power",
     "trigger": "activate_main",
-    "target": "self"
+    "target": "select_filtered"
    }
   ],
   "synergy_states": {},
@@ -72511,12 +72523,12 @@
    {
     "action": "buff_power",
     "trigger": "on_play",
-    "target": "self"
+    "target": "select_filtered"
    },
    {
     "action": "buff_power",
     "trigger": "your_turn",
-    "target": "self"
+    "target": "select_filtered"
    }
   ],
   "synergy_states": {},
@@ -73178,7 +73190,7 @@
     "action": "buff_power",
     "trigger": "on_opp_attack",
     "don_requirement": 1,
-    "target": "self"
+    "target": "select_filtered"
    }
   ],
   "synergy_states": {},
@@ -73699,7 +73711,7 @@
    {
     "action": "buff_power",
     "trigger": "trigger",
-    "target": "self"
+    "target": "select_filtered"
    }
   ],
   "synergy_states": {
@@ -73744,7 +73756,7 @@
    {
     "action": "buff_power",
     "trigger": "activate_main",
-    "target": "self"
+    "target": "select_filtered"
    }
   ],
   "synergy_states": {},
@@ -77088,7 +77100,7 @@
    {
     "action": "buff_power",
     "trigger": "on_play",
-    "target": "self"
+    "target": "select_filtered"
    }
   ],
   "synergy_states": {},
@@ -83479,7 +83491,7 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "self"
+    "target": "select_filtered"
    }
   ],
   "synergy_states": {
@@ -85102,12 +85114,12 @@
    {
     "action": "buff_power",
     "trigger": "on_play",
-    "target": "self"
+    "target": "select_filtered"
    },
    {
     "action": "buff_power",
     "trigger": "your_turn",
-    "target": "self"
+    "target": "select_filtered"
    }
   ],
   "synergy_states": {},
@@ -85291,7 +85303,7 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "self"
+    "target": "select_filtered"
    },
    {
     "action": "lock_opp_don",
@@ -86832,7 +86844,7 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "self"
+    "target": "select_filtered"
    },
    {
     "action": "draw",
@@ -86881,7 +86893,7 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "self"
+    "target": "select_filtered"
    },
    {
     "action": "ko",
@@ -86932,7 +86944,7 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "self"
+    "target": "select_filtered"
    },
    {
     "action": "draw",
@@ -87763,7 +87775,7 @@
    {
     "action": "buff_power",
     "trigger": "main",
-    "target": "self"
+    "target": "select_filtered"
    }
   ],
   "synergy_states": {},
@@ -92103,7 +92115,7 @@
    {
     "action": "buff_power",
     "trigger": "main",
-    "target": "self"
+    "target": "select_filtered"
    }
   ],
   "synergy_states": {},
@@ -101807,7 +101819,7 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "self"
+    "target": "select_filtered"
    }
   ],
   "synergy_states": {
@@ -112085,7 +112097,7 @@
    {
     "action": "buff_power",
     "trigger": "trigger",
-    "target": "self"
+    "target": "select_filtered"
    }
   ],
   "synergy_states": {

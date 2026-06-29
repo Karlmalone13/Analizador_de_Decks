@@ -21,9 +21,21 @@ efeitos do simulador) contra as 66 actions do nosso `card_effects_db.json`.
 > ST21-016) e validado o `buff_power_per_count` que já existia no parser sem
 > nunca ter tido snapshot/db regenerado (9 cartas afetadas: EB01-014,
 > EB01-027, OP01-072, OP01-083, OP06-085, OP09-086, OP12-070, OP16-034,
-> P-024). Contagem agora: **44 cobertos, 23 ausentes** (7 "médios" + `Freeze`
-> + `CantPlay*` no oponente + 3 residuais de `OppNoBlockerThisTurn` que
-> precisam de memória de alvo entre steps, mesma raiz de `SaveTargetName`).
+> P-024). Contagem: **44 cobertos, 23 ausentes**.
+>
+> **CONCLUÍDO em 28/06/2026** (mesmo dia, segunda rodada — "o restante"):
+> `Freeze` (don/stage/card) implementado de verdade (`frozen_next_refresh`/
+> `frozen_don_count`, consumidos em `refresh_phase`); `CantPlayAnyCardsFromHand`/
+> `CantPlayAnyCharactersToField` no oponente investigado e descartado (0
+> cartas reais no banco — exemplo "Imu" do doc original não corresponde a
+> carta real); `SaveTargetName`/memória de alvo entre steps implementado
+> (`EffectExecutor._last_selected`), resolvendo os 3 residuais de
+> `OppNoBlockerThisTurn` (2 reais: OP07-057, OP12-077; OP12-016 fica de fora,
+> memória custo→efeito é mecanismo diferente) + o residual de `Freeze`
+> (EB02-021) + corrigindo de quebra um bug de target errado pré-existente em
+> `buff_power` (48 cartas com o padrão "up to N of your [Tipo] cards gains
+> power" caíam em `target='self'` por engano). Contagem final: **47
+> cobertos, 6 "médios" ausentes** (nenhum com urgência de meta).
 
 ---
 
@@ -47,9 +59,9 @@ buracos são de COBERTURA de efeitos, não de modelo.
 
 ---
 
-## BURACOS — efeitos que o simulador tem e nós NÃO (25, corrigido)
+## BURACOS — efeitos que o simulador tem e nós NÃO (25, corrigido → 6 reais hoje)
 
-### 🔴 Relevantes para a IA — 4 gaps reais + 1 parcial (de 8 originais — 3 já cobertos)
+### 🔴 Relevantes para a IA — 0 gaps reais (8 originais, todos cobertos/resolvidos em 28/06/2026)
 
 | Efeito (sim) | Status real (verificado no código, 28/06/2026) |
 |--------------|--------------------------------------------------|
@@ -57,19 +69,19 @@ buracos são de COBERTURA de efeitos, não de modelo.
 | ~~ShuffleHandIntoDeck~~ | ✅ **JÁ COBERTO** — `shuffle_hand_into_deck` com `dest='deck'` (`decision_engine.py:2185`) |
 | ~~CycleEntireHandToDeckBottom~~ | ✅ **JÁ COBERTO** — mesma action, `dest='deck_bottom'` |
 | ~~BuffSelf1KPerXTargets / BuffXPerGivenDon / BuffXPerTopDeckCost~~ | ✅ **JÁ COBERTO** — framework `buff_power_per_count` (`decision_engine.py:1822`), parser correspondente em `gerar_effects_db.py` (commit `4f41178`). Cobre `trash`, `events_in_trash`, `rested_don`, `hand`, `unique_character_names`, `own_characters`. Faltam só as fontes "DON anexado à própria carta" e "custo do topo do deck" (nenhuma carta real encontrada com essas variantes ainda — não bloqueante) |
-| ~~OppNoBlockerThisTurn~~ | ✅ **JÁ COBERTO (maior parte)** — `lock_opp_blocker_turn` (engine) + parser estendido em 28/06/2026. Das 20 cartas reais com "cannot activate Blocker": 17 cobertas (9 `lock_opp_blocker_battle`, 5 `lock_opp_blocker_turn`, 3 `select_grant_unblockable_turn`). Restam 3 (OP07-057, OP12-016, OP12-077) que exigem "lembrar o alvo selecionado num step anterior" — ver gap `SaveTargetName` abaixo, mesma raiz |
-| **Freeze (don/stage/card)** | ❌ **GAP REAL** — `lock_opp_character_refresh`/`lock_opp_don_refresh`/`lock_self_character_refresh` são reconhecidos mas o próprio código documenta: "ainda não tem lógica de refresh implementada" (`decision_engine.py:1722`) |
-| **CantPlayAnyCardsFromHand** (no oponente) | ❌ **GAP REAL** — `self_cant_play` só seta a flag em `me.*` (`decision_engine.py:2173`), nunca no oponente |
-| **CantPlayAnyCharactersToField** (no oponente) | ❌ **GAP REAL** — mesma raiz do item acima |
+| ~~OppNoBlockerThisTurn~~ | ✅ **COBERTO** — `lock_opp_blocker_turn` (engine) + parser estendido em 28/06/2026 + memória de alvo entre steps (mesmo dia, 2ª rodada). Das 20 cartas reais: 19 cobertas. Resta só OP12-016 (Rayleigh, alvo = quem recebeu DON!! de um CUSTO — memória custo→efeito, mecanismo diferente, não implementado, 1 carta raro) |
+| ~~Freeze (don/stage/card)~~ | ✅ **IMPLEMENTADO em 28/06/2026** — `frozen_next_refresh` (Card) + `frozen_don_count` (GameState), consumidos em `refresh_phase`. 21 cartas cobertas (18 `lock_opp_character_refresh`, 1 `lock_opp_don_refresh`, 2 `lock_self_character_refresh`) |
+| ~~CantPlayAnyCardsFromHand~~ (no oponente) | ✅ **INVESTIGADO, 0 cartas reais** — as 18 cartas com "cannot play" no banco são todas auto-aplicadas (custo de ramp de DON, já cobertas por `self_cant_play`). Exemplo "Imu" do doc original não corresponde a carta real do pool |
+| ~~CantPlayAnyCharactersToField~~ (no oponente) | ✅ mesma conclusão do item acima |
 
-### 🟡 "Médios" — na verdade 7 gaps reais, 100% ausentes (categorização original estava invertida)
+### 🟡 "Médios" — 6 gaps reais (SaveTargetName resolvido em 28/06/2026)
 
 | Efeito | Confirmação (verificado no código, 28/06/2026) |
 |--------|--------------------------------------------------|
 | PeekSelfLife / PeekOppLife | nenhuma action equivalente nas 75 do banco |
 | TrashAllFaceUpLife | não modelamos face da vida (face-up/down) em lugar nenhum |
 | MatchLeaderToBasePower | `set_base_power` só aceita valor FIXO do step (`decision_engine.py:1785`, `int(amount)`) — nunca copia dinamicamente o power de outra carta |
-| SaveTargetName / HandSize / Count | não existe memória entre steps na engine. Mesma raiz do gap restante de `OppNoBlockerThisTurn` (OP07-057, OP12-016, OP12-077 — "select X, X ganha +2000 power, então se X atacar, oponente não bloqueia") |
+| ~~SaveTargetName / HandSize / Count~~ | ✅ **IMPLEMENTADO em 28/06/2026** — `EffectExecutor._last_selected`, preenchido por `buff_power target='select_filtered'`, consumido por `select_grant_unblockable_turn`/`lock_self_character_refresh` `target='selected'`. Resolveu OP07-057, OP12-077, EB02-021. Também corrigiu um bug de ordem de despacho (sub-parsers não seguem a ordem do texto original) e um bug pré-existente de target errado em `buff_power` (48 cartas com "up to N of your [Tipo] cards gains power" caíam em `target='self'`, agora `select_filtered` com seleção real) |
 | ForceOpponent | nenhuma action equivalente (raro, mantido como tal) |
 | QueueUpEndOfTurnAction / QueueUpOppMainPhaseAction | nenhuma action equivalente |
 | FieldCantAttackLeader | `cannot_attack_self` é OUTRA coisa — trava a própria carta de atacar, não impede atacar o líder especificamente (`decision_engine.py:518`) |
@@ -121,11 +133,18 @@ A maioria é nicho. Auditar sob demanda, não em varredura.
    `BuffXPerGivenDon`/`BuffXPerTopDeckCost` já estava implementado num commit
    anterior (`4f41178`) cujo snapshot nunca tinha sido regenerado/validado —
    feito agora.
-3. **Os buracos reais restantes (verificados por código) são 9, não 15:**
-   `Freeze` funcional, `CantPlayAnyCardsFromHand`/`CantPlayAnyCharactersToField`
-   direcionado ao oponente, 3 cartas residuais de `OppNoBlockerThisTurn`
-   (precisam de "memória de alvo entre steps") + os 7 "médios" (categorização
-   original invertida — são os que estão 100% ausentes, não os "relevantes").
-   Nenhum exige mudança estrutural grande; nenhum tem urgência de meta hoje.
-4. **Maior dívida não-atacada: sistema de imunidade** (família inteira ausente).
+3. **Concluído em 28/06/2026** (mesmo dia, segunda rodada — "o restante"):
+   `Freeze` (don/stage/card) implementado de verdade; `CantPlayAnyCardsFromHand`/
+   `CantPlayAnyCharactersToField` no oponente investigado e descartado (0
+   cartas reais); `SaveTargetName`/memória de alvo entre steps implementado,
+   resolvendo os 3 residuais de `OppNoBlockerThisTurn` reais (OP07-057,
+   OP12-077; OP12-016 fica de fora — memória custo→efeito é outro mecanismo)
+   e o residual de `Freeze` (EB02-021). De brinde, corrigiu um bug de ordem
+   de despacho no parser (sub-parsers não seguem a ordem do texto original)
+   e um bug pré-existente de target errado em `buff_power` (48 cartas).
+4. **Os buracos reais restantes são 6, todos "médios" sem urgência de meta:**
+   PeekSelfLife/OppLife, TrashAllFaceUpLife, MatchLeaderToBasePower,
+   ForceOpponent, QueueUpEndOfTurnAction/OppMainPhase, FieldCantAttackLeader.
+   Nenhum exige mudança estrutural grande.
+5. **Maior dívida não-atacada: sistema de imunidade** (família inteira ausente).
    Consciente, registrada, fora de escopo atual.

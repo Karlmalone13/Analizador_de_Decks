@@ -903,12 +903,29 @@ def parse_select_unblockable_turn(text):
 
     3 cartas no banco hoje (Sanji ST21-003, Diable Jambe ST01-016, OP13-057
     -- esta última sem seleção, sempre o Leader, daí target='leader_only').
-    Perfume Femur (OP07-057, "select + buff +'Then, if'" no mesmo alvo) e
-    Rayleigh (OP12-016, alvo = quem recebeu o DON!! do custo) ficam de fora
-    -- precisam de rastreio de alvo entre steps que esta função não faz.
+    Perfume Femur (OP07-057) e Trafalgar Law (OP12-077): "select + buff" no
+    MESMO alvo ("...and that card gains +2000 power. Then, if the selected
+    card attacks...") -- consome a memoria de alvo entre steps preenchida
+    pelo step de buff_power anterior (target='select_filtered',
+    _last_selected no engine; implementado 28/06/2026, ver SaveTargetName em
+    comparacao_simulador_vs_IA.md), em vez de re-selecionar do zero.
+    Rayleigh (OP12-016, alvo = quem recebeu o DON!! do custo, nao de um step)
+    fica de fora -- memoria de CUSTO->efeito e um mecanismo diferente, nao
+    implementado.
     """
     t = text.lower()
     steps = []
+
+    # "...and that card gains +N power... Then, if the selected
+    # card/character attacks..." -- prova de que um step de buff_power
+    # ANTERIOR no mesmo bloco ja selecionou o alvo (ver parse_power_buff,
+    # m_select_buff). Reusa esse alvo via memoria entre steps, em vez da
+    # re-selecao independente por filtro feita abaixo (que poderia escolher
+    # uma carta DIFERENTE da que recebeu o buff).
+    if re.search(r"and that card gains? \+\d+\s*power", t) and \
+       re.search(r"(?:the selected (?:card|character)|that (?:card|leader or character)) attacks", t):
+        steps.append({'action': 'select_grant_unblockable_turn', 'target': 'selected'})
+        return steps
 
     # OP13-057: sem seleção, sempre o próprio Leader, condicional a vida.
     if re.search(r"opponent cannot activate \[?blocker\]?.{0,10}whenever your leader attacks.{0,10}during this turn", t):
@@ -1297,6 +1314,37 @@ def parse_power_buff(text):
             })
             dynamic_spans.append((dm.start(), dm.end()))
 
+    # "Select up to N of your [Tipo]/{Tipo}/"Tipo" Leader or Character cards
+    # and that card gains +X power" (OP07-057, OP12-077) ou "Up to N of your
+    # [Tipo] type Characters gains +X power" (EB02-021, sem a palavra
+    # "select", mas com "the selected Character" depois) -- alvo escolhido
+    # por FILTRO DE TIPO entre Leader+Characters, distinto de 'self' (a
+    # propria carta do efeito) e de 'own_character' (sem memoria de
+    # selecao). Tipo aparece com 3 estilos de delimitador inconsistentes na
+    # fonte (achado 28/06/2026) -- TIPO_BRACKETS cobre os 3. Guarda
+    # filter_type para a action escolher o alvo certo em tempo de execucao,
+    # e habilita memoria de alvo entre steps (SaveTargetName, ver
+    # comparacao_simulador_vs_IA.md).
+    TIPO_BRACKETS = r'(?:\{([^}]+)\}|\[([^\]]+)\]|"([^"]+)")'
+    m_select_buff = re.search(
+        r"(?:select )?up to (\d+) of your " + TIPO_BRACKETS +
+        r"(?: type)? (?:leader or character cards|character cards|leader or character|characters|cards)"
+        r"(?:\s+and that card)? gains? \+(\d+)\s*power",
+        t
+    )
+    if m_select_buff:
+        count = int(m_select_buff.group(1))
+        filtro = next((g for g in m_select_buff.groups()[1:4] if g), '').strip()
+        amount = int(m_select_buff.group(5))
+        step = {
+            'action': 'buff_power', 'amount': amount,
+            'target': 'select_filtered', 'duration': 'this_turn', 'count': count,
+        }
+        if filtro:
+            step['filter_type'] = filtro
+        steps.append(step)
+        dynamic_spans.append((m_select_buff.start(), m_select_buff.end()))
+
     for m in re.finditer(r'([+\-−]?)\s*(\d+)\s*power', t):
         if any(start <= m.start() < end for start, end in dynamic_spans):
             continue
@@ -1491,11 +1539,21 @@ def parse_give_don(text):
     # NUNCA tratar self-lock como lock_opp_*: alvo errado muda completamente
     # quem perde a jogada no proximo turno.
     m_self = re.search(
-        r"(?:this character|the selected characters?) will not become active",
+        r"(this character|the selected characters?) will not become active",
         t
     )
     if m_self and 'opponent' not in t[:m_self.start()]:
-        steps.append({'action': 'lock_self_character_refresh', 'count': 1})
+        step = {'action': 'lock_self_character_refresh', 'count': 1}
+        # 'this character' = a propria carta do efeito, alvo sem ambiguidade
+        # (OP04-090). 'the selected character(s)' = a carta escolhida por um
+        # step ANTERIOR no mesmo bloco (ex: EB02-021, "up to 1 Character
+        # gains +6000 power... THEN the selected Character will not become
+        # active") -- exige memoria de alvo entre steps, que o engine ainda
+        # nao tem (mesma raiz do gap SaveTargetName/residuais de
+        # OppNoBlockerThisTurn). target='this_card' e executado de verdade;
+        # target='selected' fica so reconhecido (engine nao aplica ainda).
+        step['target'] = 'this_card' if m_self.group(1) == 'this character' else 'selected'
+        steps.append(step)
         return steps
 
     # Padrao principal (cobre a maioria): "up to N / all of your opponent's
@@ -2814,6 +2872,17 @@ def parse_block(block_text, trigger_name):
     # Trigger especial: "Activate this card's [Main] effect"
     if trigger_name == 'trigger' and 'activate this card' in t:
         return [{'action': 'activate_main_effect'}]
+
+    # Memoria de alvo entre steps (SaveTargetName, 28/06/2026): a ordem de
+    # despacho dos sub-parsers acima NAO segue a ordem do texto original
+    # (ex: select_unblockable_turn e chamado antes de power_buff), o que
+    # pode colocar um step target='selected' ANTES do step
+    # target='select_filtered' que preenche a memoria -- a execucao
+    # sequencial em decision_engine.py.execute() ficaria com a memoria
+    # vazia no momento errado. Reordenacao ESTAVEL (sort) garante que quem
+    # SELECIONA sempre execute antes de quem CONSOME a selecao, sem mexer
+    # na ordem relativa dos demais steps.
+    steps.sort(key=lambda s: 1 if s.get('target') == 'selected' else 0)
 
     return steps
 

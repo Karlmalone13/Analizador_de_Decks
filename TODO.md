@@ -69,17 +69,40 @@ implementa → valida (snapshot/diff PERDEU=0 + partidas reais instrumentadas).
 > CycleEntireHandToDeckBottom **já estavam implementados**. Lista abaixo reflete
 > o estado real, verificado por linha de código.
 
-### Gaps reais confirmados — 2 (+ 3 residuais estreitos)
-- [ ] Freeze (don/stage/card) — `lock_opp_character_refresh`/`lock_opp_don_refresh`/
-  `lock_self_character_refresh` são reconhecidos mas SEM lógica de refresh
-  implementada (`decision_engine.py:1722`, comentário confirma).
-- [ ] CantPlayAnyCardsFromHand / CantPlayAnyCharactersToField DIRECIONADO AO
-  OPONENTE — trava control (Imu). Hoje `self_cant_play` só afeta o próprio
-  jogador (`me.*`), nunca o oponente.
-- [ ] OppNoBlockerThisTurn, 3 cartas residuais (OP07-057, OP12-016, OP12-077) —
-  precisam de "memória de alvo entre steps" (select X, X ganha +2000 power,
-  então se X atacar, oponente não bloqueia). Mesma raiz do gap `SaveTargetName`
-  dos "médios" abaixo — não implementar isolado, resolver junto.
+### Gaps reais confirmados — 0 (todos resolvidos em 28/06/2026)
+- [x] ~~"Memória de alvo entre steps" (`SaveTargetName`)~~ — **implementado em
+  28/06/2026**: `EffectExecutor._last_selected` (zerado a cada `execute()`,
+  preenchido por `buff_power` `target='select_filtered'`, consumido por
+  `select_grant_unblockable_turn`/`lock_self_character_refresh`
+  `target='selected'`). Resolveu OP07-057, OP12-077 (residuais de
+  `OppNoBlockerThisTurn`) e EB02-021 (residual de Freeze). Exigiu também
+  corrigir um bug PRÉ-EXISTENTE de ordem de despacho (sub-parsers do
+  `parse_block` não seguem a ordem do texto — `steps.sort()` estável
+  garante que quem seleciona executa antes de quem consome) e um bug
+  pré-existente de target errado em `parse_power_buff` (padrão "up to N of
+  your [Tipo] cards gains +X power" caía em `target='self'` por engano —
+  corrigido para `select_filtered` com seleção real por filtro, afetando
+  48 cartas que tinham esse padrão, todas verificadas como correção real,
+  não regressão). OP12-016 (Rayleigh, alvo = quem recebeu DON!! de um
+  CUSTO, não de um step) fica de fora — memória custo→efeito é mecanismo
+  diferente, não implementado (raro, 1 carta). `PERDEU=0`, smoke tests
+  100%, testes diretos do mecanismo (select_filtered + selected, com e sem
+  memória prévia) passando.
+- [x] ~~CantPlayAnyCardsFromHand / CantPlayAnyCharactersToField direcionado ao
+  oponente~~ — **investigado em 28/06/2026, 0 cartas reais no banco**.
+  Buscado "opponent cannot play"/"can't play" em todas as formas — as 18
+  cartas com "cannot play" são TODAS auto-aplicadas (custo de ramp de DON,
+  já cobertas por `self_cant_play`). O exemplo "Imu" do doc original não
+  corresponde a carta real do nosso pool. Não implementar especulativo —
+  reabrir só se aparecer carta real.
+- [x] ~~Freeze (don/stage/card)~~ — **implementado em 28/06/2026**:
+  `frozen_next_refresh` (Card) + `frozen_don_count` (GameState), consumidos
+  em `refresh_phase`. Cobre `lock_opp_character_refresh` (18 cartas,
+  filtro cost_lte/cost_eq), `lock_opp_don_refresh` (1 carta),
+  `lock_self_character_refresh` target='this_card' (1 carta, OP04-090).
+  target='selected' (EB02-021) fica no item de memória de alvo acima.
+  `PERDEU=0`, smoke tests 100%, testado manualmente (character/stage/DON
+  congelados ficam rested 1 refresh e voltam ao normal na seguinte).
 - [x] ~~DealDamage/TakeDamage~~ — já implementado (`deal_damage`)
 - [x] ~~ShuffleHandIntoDeck / CycleEntireHandToDeckBottom~~ — já implementado
   (`shuffle_hand_into_deck`, parâmetro `dest`)
@@ -93,13 +116,12 @@ implementa → valida (snapshot/diff PERDEU=0 + partidas reais instrumentadas).
   snapshot). 9 cartas corrigidas (estavam parseadas como buff FIXO, errado —
   ex: "+1000 per 3 rested DON" tratava como +1000 sempre).
 
-### "Médios" — 7, na verdade TODOS ausentes (categorização original invertida)
+### "Médios" — 6 (SaveTargetName implementado em 28/06/2026, ver acima)
 PeekSelfLife/OppLife, TrashAllFaceUpLife, MatchLeaderToBasePower (set_base_power
-só aceita valor fixo, não dinâmico), SaveTargetName (sem memória entre steps),
-ForceOpponent, QueueUpEndOfTurnAction/OppMainPhase, FieldCantAttackLeader
-(`cannot_attack_self` é outra coisa — trava a própria carta, não o ataque ao
-líder). Nenhum tem urgência — implementar quando aparecer carta real no meta
-que dependa.
+só aceita valor fixo, não dinâmico), ForceOpponent, QueueUpEndOfTurnAction/
+OppMainPhase, FieldCantAttackLeader (`cannot_attack_self` é outra coisa — trava
+a própria carta, não o ataque ao líder). Nenhum tem urgência — implementar
+quando aparecer carta real no meta que dependa.
 
 ### Dívida técnica grande (consciente, fora de escopo)
 - [ ] Sistema de imunidade inteiro (ImmuneToKO/Removal/Combat/Effect/Strikes) — família

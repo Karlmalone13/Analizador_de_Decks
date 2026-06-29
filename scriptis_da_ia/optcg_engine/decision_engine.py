@@ -172,6 +172,7 @@ class Card:
     can_attack_active: bool = False  # "This Character can also attack active Characters" PERMANENTE (Cavendish OP04-081, Luffy OP04-090) -- keyword nunca implementada antes (achado 27/06, 9 cartas).
     can_attack_active_this_turn: bool = False  # mesma habilidade, mas CONCEDIDA so neste turno via select (Hibari, Gyats, Borsalino, Aramaki, Kuzan, Koby) -- resetada no refresh_phase.
     cannot_be_rested_until: str = ''  # mesma semantica de duracao, para lock_opp_cannot_be_rested (mecanica DISTINTA de cannot_attack)
+    frozen_next_refresh: bool = False  # Freeze (lock_opp_character_refresh / lock_self_character_refresh com target='this_card') -- pula APENAS o untap (c.rested=False) na PROXIMA refresh_phase do dono, consumido uma vez (refresh_phase zera este campo, fica rested mesmo se nao tiver sido atacado/restado por outro motivo). DISTINTO de cannot_be_rested_until (que trava o character de FICAR rested -- aqui e o oposto, ele PERMANECE rested ignorando o untap).
     # Buffs temporários (resetados a cada turno)
     power_buff: int = 0
     base_power_override: Optional[int] = None
@@ -198,7 +199,7 @@ class Card:
                       'unblockable_this_turn', 'rush_this_turn', 'double_attack_this_turn', 'blocker_this_turn',
                       'can_attack_active', 'can_attack_active_this_turn',
                       'power_buff', 'base_power_override',
-                      'cost_buff', 'cost_buff_permanent'):
+                      'cost_buff', 'cost_buff_permanent', 'frozen_next_refresh'):
             setattr(novo, campo, getattr(self, campo))
         return novo
 
@@ -308,6 +309,7 @@ class GameState:
     don_deck: int = 10
     don_available: int = 0
     don_rested: int = 0
+    frozen_don_count: int = 0  # Freeze de DON (lock_opp_don_refresh, OP10-033) -- N do don_rested NAO volta a ficar available na proxima refresh_phase deste jogador. Consumido uma vez (capado por min(frozen_don_count, don_rested) no momento do refresh, depois zerado).
     trash: List[Card] = field(default_factory=list)
     turn: int = 0
     global_turn: int = 0
@@ -614,6 +616,7 @@ class EffectExecutor:
         self.me = me
         self.opp = opp
         self._once_used: set = set()  # (card_code, trigger)
+        self._last_selected: Optional[Card] = None  # ver execute()
 
     def reset_once_per_turn(self):
         self._once_used.clear()
@@ -794,6 +797,12 @@ class EffectExecutor:
         # Executa steps. Os logs do CUSTO (pago acima) vêm primeiro, para o
         # replay mostrar o que foi pago antes do benefício.
         logs = list(getattr(self, '_cost_logs', []))
+        # Memoria de alvo entre steps (SaveTargetName, achado 28/06/2026):
+        # zerada a cada execute(), preenchida por um step de selecao
+        # (buff_power target='select_filtered') e consumida por um step
+        # POSTERIOR no MESMO bloco (target='selected') -- nunca atravessa
+        # triggers/blocos diferentes.
+        self._last_selected = None
         for step in steps_all:
             log = self._execute_step(step, card)
             if log:
@@ -1714,17 +1723,50 @@ class EffectExecutor:
         if action == 'lock_opp_attack_unless_pays':
             return '(lock_opp_attack_unless_pays: nao implementado -- pendente fase Opponent Reading)'
 
-        # ── Trava de Refresh Phase (nao fica ativo no proximo refresh) ─────────
+        # ── Trava de Refresh Phase (Freeze -- nao fica ativo no proximo
+        # refresh) ───────────────────────────────────────────────────────────
         # lock_opp_character_refresh / lock_opp_don_refresh: trava o character
         # ou DON do OPONENTE de virar active na proxima Refresh Phase dele.
         # lock_self_character_refresh: trava o PROPRIO character (geralmente
         # custo de um efeito forte do jogador) -- alvo OPOSTO dos dois
-        # anteriores, nunca tratar como sinonimo. As 3 ainda nao tem logica de
-        # refresh implementada no engine (refresh_phase nao consome esses
-        # campos hoje); reconhecidas aqui para nao falhar silenciosamente,
-        # mas pendente de implementacao real.
-        if action in ('lock_opp_character_refresh', 'lock_opp_don_refresh', 'lock_self_character_refresh'):
-            return f'({action}: nao implementado -- pendente logica de Refresh Phase)'
+        # anteriores, nunca tratar como sinonimo. refresh_phase consome
+        # frozen_next_refresh/frozen_don_count (implementado 28/06/2026).
+        if action == 'lock_opp_character_refresh':
+            count = step.get('count', 1)
+            cost_lte = step.get('cost_lte')
+            cost_eq = step.get('cost_eq')
+            candidates = [c for c in opp.field_chars
+                          if c.rested
+                          and (cost_lte is None or c.cost <= cost_lte)
+                          and (cost_eq is None or c.cost == cost_eq)]
+            locked = []
+            for _ in range(min(count, len(candidates))):
+                target = max(candidates, key=lambda x: x.board_value())
+                target.frozen_next_refresh = True
+                candidates.remove(target)
+                locked.append(target.name[:15])
+            return f'congelou (não desvira no próx. refresh): {", ".join(locked)}' if locked else ''
+
+        if action == 'lock_opp_don_refresh':
+            count = step.get('count', 1)
+            opp.frozen_don_count += count
+            return f'congelou até {count} DON do oponente (não desvira no próx. refresh)'
+
+        if action == 'lock_self_character_refresh':
+            if step.get('target') == 'this_card':
+                card.frozen_next_refresh = True
+                return f'{card.name[:15]} congelado (não desvira no próx. refresh)'
+            # target == 'selected': alvo escolhido por um step ANTERIOR no
+            # mesmo bloco (ex: EB02-021 "up to 1 Character gains +6000 power
+            # ... THEN the selected Character will not become active") --
+            # consome _last_selected (memoria de alvo entre steps,
+            # implementado 28/06/2026 junto com buff_power
+            # target='select_filtered'). Sem alvo memorizado, nao executa.
+            alvo = self._last_selected
+            if alvo is None:
+                return ''
+            alvo.frozen_next_refresh = True
+            return f'{alvo.name[:15]} (selecionado antes) congelado (não desvira no próx. refresh)'
 
         # ── lock_opp_blocker_battle: trava o Blocker do oponente NESTA
         # batalha (quem está atacando agora) -- DISTINTA dos cannot_attack_*
@@ -1817,6 +1859,27 @@ class EffectExecutor:
                     c.power_buff += amount
                 if target == 'all_allies_and_leader':
                     me.leader.power_buff += amount
+            elif target == 'select_filtered':
+                # "Select up to N of your [Tipo] Leader/Character cards and
+                # that card gains +X power" (OP07-057, EB02-021) -- alvo NAO
+                # e a propria carta do efeito, e sim escolhido por filtro de
+                # tipo/categoria entre Leader+Characters. Guarda em
+                # _last_selected para um step POSTERIOR no mesmo bloco poder
+                # referenciar "the selected card" (lock_self_character_refresh
+                # / select_grant_unblockable_turn com target='selected').
+                from optcg_engine.rules_facade import (
+                    card_matches_filter,
+                    choose_highest_board_value,
+                )
+                filter_type = step.get('filter_type', '')
+                candidatos = [c for c in me.field_chars + [me.leader]
+                              if card_matches_filter(c, filter_type)]
+                if candidatos:
+                    alvo = choose_highest_board_value(candidatos)
+                    alvo.power_buff += amount
+                    self._last_selected = alvo
+                    return f'{alvo.name[:18]} selecionado, +{amount} power'
+                return ''
             return f'+{amount} power em {target}'
 
         if action == 'buff_power_per_count':
@@ -2644,6 +2707,18 @@ class EffectExecutor:
             if step.get('target') == 'leader_only':
                 me.leader.unblockable_this_turn = True
                 return f'{me.leader.name[:18]} ganhou Unblockable este turno'
+            if step.get('target') == 'selected':
+                # "Then, if the selected card attacks during this turn, your
+                # opponent cannot activate Blocker" (OP07-057, OP12-077) --
+                # alvo e o card escolhido por um step ANTERIOR no mesmo
+                # bloco (buff_power target='select_filtered'), nao uma nova
+                # selecao. Sem alvo memorizado, nao executa (mais seguro do
+                # que adivinhar).
+                alvo = self._last_selected
+                if alvo is None:
+                    return ''
+                alvo.unblockable_this_turn = True
+                return f'{alvo.name[:18]} (selecionado antes) ganhou Unblockable este turno'
             filter_type = step.get('filter_type', '')
             candidatos = eligible_cards(
                 me.field_chars,
@@ -4416,7 +4491,15 @@ class OPTCGMatch:
         don_from_cards = sum(c.don_attached for c in p.field_chars) + p.leader.don_attached
         for c in p.field_chars:
             c.don_attached = 0
-            c.rested = False
+            # Freeze (lock_opp_character_refresh / lock_self_character_refresh
+            # target='this_card'): pula SO o untap nesta refresh, consumido
+            # uma vez -- card permanece rested mesmo sem ter sido restado de
+            # novo por outro motivo. Resto do reset (buffs, travas de turno)
+            # acontece normalmente, igual a qualquer outro character.
+            if c.frozen_next_refresh:
+                c.frozen_next_refresh = False
+            else:
+                c.rested = False
             c.just_played = False
             c.power_buff = 0
             c.cost_buff = 0
@@ -4435,9 +4518,16 @@ class OPTCGMatch:
         p.leader.cannot_attack_until = ''
         p.leader.unblockable_this_turn = False
         if p.field_stage:
-            p.field_stage.rested = False
-        p.don_available += p.don_rested + don_from_cards
-        p.don_rested = 0
+            if p.field_stage.frozen_next_refresh:
+                p.field_stage.frozen_next_refresh = False
+            else:
+                p.field_stage.rested = False
+        # Freeze de DON (lock_opp_don_refresh): N do don_rested fica congelado
+        # (nao volta a ficar available nesta refresh), consumido uma vez.
+        frozen = min(p.frozen_don_count, p.don_rested)
+        p.don_available += (p.don_rested - frozen) + don_from_cards
+        p.don_rested = frozen
+        p.frozen_don_count = 0
         # Reset da auto-restrição "cannot play this turn" (vale só pelo turno em
         # que foi imposta; ao começar o próximo turno do jogador, ela cai).
         p.cant_play_from_hand_this_turn = False

@@ -1201,8 +1201,10 @@
           {
             "action": "buff_power",
             "amount": 3000,
-            "target": "self",
-            "duration": "this_turn"
+            "target": "select_filtered",
+            "duration": "this_turn",
+            "count": 1,
+            "filter_type": "spandam"
           }
         ],
         "costs": [
@@ -2264,12 +2266,15 @@
           {
             "action": "buff_power",
             "amount": 6000,
-            "target": "self",
-            "duration": "this_turn"
+            "target": "select_filtered",
+            "duration": "this_turn",
+            "count": 1,
+            "filter_type": "straw hat crew"
           },
           {
             "action": "lock_self_character_refresh",
-            "count": 1
+            "count": 1,
+            "target": "selected"
           }
         ]
       }
@@ -3400,8 +3405,10 @@
           {
             "action": "buff_power",
             "amount": 1000,
-            "target": "self",
-            "duration": "until_opp_turn_end"
+            "target": "select_filtered",
+            "duration": "this_turn",
+            "count": 1,
+            "filter_type": "straw hat crew"
           }
         ],
         "costs": [
@@ -4379,8 +4386,10 @@
           {
             "action": "buff_power",
             "amount": 3000,
-            "target": "self",
-            "duration": "battle_only"
+            "target": "select_filtered",
+            "duration": "this_turn",
+            "count": 1,
+            "filter_type": "boa hancock"
           }
         ]
       },
@@ -4445,8 +4454,10 @@
           {
             "action": "buff_power",
             "amount": 2000,
-            "target": "self",
-            "duration": "this_turn"
+            "target": "select_filtered",
+            "duration": "this_turn",
+            "count": 1,
+            "filter_type": "charlotte katakuri"
           }
         ]
       },
@@ -4455,8 +4466,10 @@
           {
             "action": "buff_power",
             "amount": 2000,
-            "target": "self",
-            "duration": "this_turn"
+            "target": "select_filtered",
+            "duration": "this_turn",
+            "count": 1,
+            "filter_type": "charlotte katakuri"
           }
         ]
       }
@@ -6046,8 +6059,10 @@
           {
             "action": "buff_power",
             "amount": 3000,
-            "target": "self",
-            "duration": "battle_only"
+            "target": "select_filtered",
+            "duration": "this_turn",
+            "count": 1,
+            "filter_type": "minks"
           }
         ]
       },
@@ -6097,8 +6112,10 @@
           {
             "action": "buff_power",
             "amount": 3000,
-            "target": "self",
-            "duration": "battle_only"
+            "target": "select_filtered",
+            "duration": "this_turn",
+            "count": 1,
+            "filter_type": "fish-man"
           }
         ]
       }
@@ -6357,8 +6374,10 @@
           {
             "action": "buff_power",
             "amount": 4000,
-            "target": "self",
-            "duration": "battle_only"
+            "target": "select_filtered",
+            "duration": "this_turn",
+            "count": 1,
+            "filter_type": "sanji"
           }
         ],
         "costs": [
@@ -6765,8 +6784,10 @@
           {
             "action": "buff_power",
             "amount": 3000,
-            "target": "self",
-            "duration": "this_turn"
+            "target": "select_filtered",
+            "duration": "this_turn",
+            "count": 1,
+            "filter_type": "kaido"
           }
         ],
         "costs": [
@@ -6903,8 +6924,10 @@
           {
             "action": "buff_power",
             "amount": 1000,
-            "target": "self",
-            "duration": "this_turn"
+            "target": "select_filtered",
+            "duration": "this_turn",
+            "count": 1,
+            "filter_type": "revolutionary army"
           }
         ],
         "costs": [
@@ -16797,8 +16820,10 @@
           {
             "action": "buff_power",
             "amount": 1000,
-            "target": "self",
-            "duration": "until_my_turn_start"
+            "target": "select_filtered",
+            "duration": "this_turn",
+            "count": 1,
+            "filter_type": "charlotte linlin"
           }
         ],
         "costs": [
@@ -19677,7 +19702,8 @@
           },
           {
             "action": "lock_self_character_refresh",
-            "count": 1
+            "count": 1,
+            "target": "this_card"
           }
         ],
         "costs": [
@@ -19785,8 +19811,10 @@
           {
             "action": "buff_power",
             "amount": 6000,
-            "target": "self",
-            "duration": "this_turn"
+            "target": "select_filtered",
+            "duration": "this_turn",
+            "count": 1,
+            "filter_type": "dressrosa"
           },
           {
             "action": "gain_double_attack",
@@ -20045,8 +20073,10 @@
           {
             "action": "buff_power",
             "amount": 1000,
-            "target": "self",
-            "duration": "this_turn"
+            "target": "select_filtered",
+            "duration": "this_turn",
+            "count": 1,
+            "filter_type": "land of wano"
           }
         ]
       },
@@ -20228,8 +20258,10 @@
           {
             "action": "buff_power",
             "amount": 3000,
-            "target": "self",
-            "duration": "this_turn"
+            "target": "select_filtered",
+            "duration": "this_turn",
+            "count": 1,
+            "filter_type": "land of wano"
           }
         ],
         "costs": [
@@ -22706,8 +22738,10 @@
           {
             "action": "buff_power",
             "amount": 5000,
-            "target": "self",
-            "duration": "this_turn"
+            "target": "select_filtered",
+            "duration": "this_turn",
+            "count": 1,
+            "filter_type": "kid pirates"
           }
         ],
         "costs": [
@@ -23010,8 +23044,10 @@
           {
             "action": "buff_power",
             "amount": 2000,
-            "target": "self",
-            "duration": "this_turn"
+            "target": "select_filtered",
+            "duration": "this_turn",
+            "count": 1,
+            "filter_type": "dressrosa"
           }
         ]
       },
@@ -23020,8 +23056,10 @@
           {
             "action": "buff_power",
             "amount": 2000,
-            "target": "self",
-            "duration": "this_turn"
+            "target": "select_filtered",
+            "duration": "this_turn",
+            "count": 1,
+            "filter_type": "dressrosa"
           }
         ]
       },
@@ -26835,8 +26873,10 @@
           {
             "action": "buff_power",
             "amount": 2000,
-            "target": "self",
-            "duration": "this_turn"
+            "target": "select_filtered",
+            "duration": "this_turn",
+            "count": 1,
+            "filter_type": "land of wano"
           }
         ]
       }
@@ -27547,8 +27587,10 @@
           {
             "action": "buff_power",
             "amount": 2000,
-            "target": "self",
-            "duration": "this_turn"
+            "target": "select_filtered",
+            "duration": "this_turn",
+            "count": 1,
+            "filter_type": "portgas.d.ace"
           }
         ]
       },
@@ -27557,8 +27599,10 @@
           {
             "action": "buff_power",
             "amount": 2000,
-            "target": "self",
-            "duration": "this_turn"
+            "target": "select_filtered",
+            "duration": "this_turn",
+            "count": 1,
+            "filter_type": "portgas.d.ace"
           }
         ]
       }
@@ -27616,8 +27660,10 @@
           {
             "action": "buff_power",
             "amount": 2000,
-            "target": "self",
-            "duration": "this_turn"
+            "target": "select_filtered",
+            "duration": "this_turn",
+            "count": 1,
+            "filter_type": "revolutionary army"
           },
           {
             "action": "debuff_power",
@@ -27682,8 +27728,10 @@
           {
             "action": "buff_power",
             "amount": 2000,
-            "target": "self",
-            "duration": "this_turn"
+            "target": "select_filtered",
+            "duration": "this_turn",
+            "count": 1,
+            "filter_type": "revolutionary army"
           }
         ]
       }
@@ -28370,8 +28418,10 @@
           {
             "action": "buff_power",
             "amount": 2000,
-            "target": "self",
-            "duration": "this_turn"
+            "target": "select_filtered",
+            "duration": "this_turn",
+            "count": 1,
+            "filter_type": "boa hancock"
           }
         ]
       },
@@ -28380,8 +28430,10 @@
           {
             "action": "buff_power",
             "amount": 2000,
-            "target": "self",
-            "duration": "this_turn"
+            "target": "select_filtered",
+            "duration": "this_turn",
+            "count": 1,
+            "filter_type": "boa hancock"
           }
         ]
       }
@@ -28731,8 +28783,14 @@
           {
             "action": "buff_power",
             "amount": 2000,
-            "target": "self",
-            "duration": "this_turn"
+            "target": "select_filtered",
+            "duration": "this_turn",
+            "count": 1,
+            "filter_type": "the seven warlords of the sea"
+          },
+          {
+            "action": "select_grant_unblockable_turn",
+            "target": "selected"
           }
         ]
       },
@@ -29570,8 +29628,10 @@
           {
             "action": "buff_power",
             "amount": 2000,
-            "target": "self",
-            "duration": "this_turn"
+            "target": "select_filtered",
+            "duration": "this_turn",
+            "count": 1,
+            "filter_type": "rob lucci"
           }
         ]
       },
@@ -29580,8 +29640,10 @@
           {
             "action": "buff_power",
             "amount": 2000,
-            "target": "self",
-            "duration": "this_turn"
+            "target": "select_filtered",
+            "duration": "this_turn",
+            "count": 1,
+            "filter_type": "rob lucci"
           }
         ]
       }
@@ -29895,8 +29957,10 @@
           {
             "action": "buff_power",
             "amount": 2000,
-            "target": "self",
-            "duration": "this_turn"
+            "target": "select_filtered",
+            "duration": "this_turn",
+            "count": 1,
+            "filter_type": "egghead"
           }
         ]
       }
@@ -31912,8 +31976,10 @@
           {
             "action": "buff_power",
             "amount": 2000,
-            "target": "self",
-            "duration": "this_turn"
+            "target": "select_filtered",
+            "duration": "this_turn",
+            "count": 1,
+            "filter_type": "edward weevil"
           }
         ]
       },
@@ -31922,8 +31988,10 @@
           {
             "action": "buff_power",
             "amount": 2000,
-            "target": "self",
-            "duration": "this_turn"
+            "target": "select_filtered",
+            "duration": "this_turn",
+            "count": 1,
+            "filter_type": "edward weevil"
           }
         ]
       }
@@ -33402,8 +33470,10 @@
           {
             "action": "buff_power",
             "amount": 2000,
-            "target": "self",
-            "duration": "this_turn"
+            "target": "select_filtered",
+            "duration": "this_turn",
+            "count": 1,
+            "filter_type": "charlotte pudding"
           }
         ],
         "costs": [
@@ -39772,8 +39842,10 @@
           {
             "action": "buff_power",
             "amount": 2000,
-            "target": "self",
-            "duration": "this_turn"
+            "target": "select_filtered",
+            "duration": "this_turn",
+            "count": 1,
+            "filter_type": "dressrosa"
           },
           {
             "action": "gain_banish",
@@ -39897,8 +39969,10 @@
           {
             "action": "buff_power",
             "amount": 1000,
-            "target": "self",
-            "duration": "this_turn"
+            "target": "select_filtered",
+            "duration": "this_turn",
+            "count": 3,
+            "filter_type": "revolutionary army"
           },
           {
             "action": "life_to_hand",
@@ -40586,8 +40660,10 @@
           {
             "action": "buff_power",
             "amount": 2000,
-            "target": "leader",
-            "duration": "this_turn"
+            "target": "select_filtered",
+            "duration": "this_turn",
+            "count": 1,
+            "filter_type": "navy"
           }
         ],
         "conditions": {
@@ -40950,15 +41026,17 @@
       "main": {
         "steps": [
           {
+            "action": "buff_power",
+            "amount": 1000,
+            "target": "select_filtered",
+            "duration": "this_turn",
+            "count": 1,
+            "filter_type": "navy"
+          },
+          {
             "action": "debuff_power",
             "amount": 2000,
             "target": "opp_character",
-            "duration": "this_turn"
-          },
-          {
-            "action": "buff_power",
-            "amount": 1000,
-            "target": "self",
             "duration": "this_turn"
           }
         ]
@@ -45706,8 +45784,14 @@
           {
             "action": "buff_power",
             "amount": 2000,
-            "target": "self",
-            "duration": "this_turn"
+            "target": "select_filtered",
+            "duration": "this_turn",
+            "count": 1,
+            "filter_type": "trafalgar law"
+          },
+          {
+            "action": "select_grant_unblockable_turn",
+            "target": "selected"
           }
         ]
       },
@@ -46086,8 +46170,10 @@
           {
             "action": "buff_power",
             "amount": 2000,
-            "target": "self",
-            "duration": "this_turn"
+            "target": "select_filtered",
+            "duration": "this_turn",
+            "count": 2,
+            "filter_type": "smile"
           }
         ],
         "costs": [
@@ -46481,8 +46567,10 @@
           {
             "action": "buff_power",
             "amount": 2000,
-            "target": "self",
-            "duration": "this_turn"
+            "target": "select_filtered",
+            "duration": "this_turn",
+            "count": 1,
+            "filter_type": "trafalgar law"
           }
         ]
       },
@@ -46491,8 +46579,10 @@
           {
             "action": "buff_power",
             "amount": 2000,
-            "target": "self",
-            "duration": "this_turn"
+            "target": "select_filtered",
+            "duration": "this_turn",
+            "count": 1,
+            "filter_type": "trafalgar law"
           }
         ]
       }
@@ -46916,8 +47006,10 @@
           {
             "action": "buff_power",
             "amount": 2000,
-            "target": "self",
-            "duration": "battle_only"
+            "target": "select_filtered",
+            "duration": "this_turn",
+            "count": 1,
+            "filter_type": "straw hat crew"
           }
         ],
         "don_requirement": 1
@@ -47225,8 +47317,10 @@
           {
             "action": "buff_power",
             "amount": 3000,
-            "target": "self",
-            "duration": "this_turn"
+            "target": "select_filtered",
+            "duration": "this_turn",
+            "count": 1,
+            "filter_type": "portgas.d.ace"
           }
         ]
       }
@@ -47248,8 +47342,10 @@
           {
             "action": "buff_power",
             "amount": 2000,
-            "target": "self",
-            "duration": "this_turn"
+            "target": "select_filtered",
+            "duration": "this_turn",
+            "count": 1,
+            "filter_type": "monkey.d.luffy"
           }
         ],
         "costs": [
@@ -49463,8 +49559,10 @@
           {
             "action": "buff_power",
             "amount": 2000,
-            "target": "self",
-            "duration": "this_turn"
+            "target": "select_filtered",
+            "duration": "this_turn",
+            "count": 1,
+            "filter_type": "celestial dragons"
           }
         ]
       }
@@ -53672,8 +53770,10 @@
           {
             "action": "buff_power",
             "amount": 3000,
-            "target": "self",
-            "duration": "battle_only"
+            "target": "select_filtered",
+            "duration": "this_turn",
+            "count": 1,
+            "filter_type": "thriller bark pirates"
           }
         ]
       }
@@ -54683,8 +54783,10 @@
           {
             "action": "buff_power",
             "amount": 2000,
-            "target": "self",
-            "duration": "this_turn"
+            "target": "select_filtered",
+            "duration": "this_turn",
+            "count": 1,
+            "filter_type": "brook"
           }
         ]
       },
@@ -54693,8 +54795,10 @@
           {
             "action": "buff_power",
             "amount": 2000,
-            "target": "self",
-            "duration": "this_turn"
+            "target": "select_filtered",
+            "duration": "this_turn",
+            "count": 1,
+            "filter_type": "brook"
           }
         ]
       }
@@ -54803,8 +54907,10 @@
           {
             "action": "buff_power",
             "amount": 4000,
-            "target": "self",
-            "duration": "battle_only"
+            "target": "select_filtered",
+            "duration": "this_turn",
+            "count": 1,
+            "filter_type": "krieg"
           }
         ]
       },
@@ -55797,8 +55903,10 @@
           {
             "action": "buff_power",
             "amount": 2000,
-            "target": "self",
-            "duration": "battle_only"
+            "target": "select_filtered",
+            "duration": "this_turn",
+            "count": 1,
+            "filter_type": "enel"
           }
         ]
       },
@@ -55838,8 +55946,10 @@
           {
             "action": "buff_power",
             "amount": 2000,
-            "target": "self",
-            "duration": "battle_only"
+            "target": "select_filtered",
+            "duration": "this_turn",
+            "count": 1,
+            "filter_type": "enel"
           }
         ]
       },
@@ -55880,8 +55990,10 @@
           {
             "action": "buff_power",
             "amount": 2000,
-            "target": "self",
-            "duration": "battle_only"
+            "target": "select_filtered",
+            "duration": "this_turn",
+            "count": 1,
+            "filter_type": "enel"
           }
         ]
       },
@@ -56472,8 +56584,10 @@
           {
             "action": "buff_power",
             "amount": 3000,
-            "target": "self",
-            "duration": "this_turn"
+            "target": "select_filtered",
+            "duration": "this_turn",
+            "count": 1,
+            "filter_type": "straw hat crew"
           }
         ],
         "conditions": {
@@ -59300,8 +59414,10 @@
           {
             "action": "buff_power",
             "amount": 2000,
-            "target": "self",
-            "duration": "this_turn"
+            "target": "select_filtered",
+            "duration": "this_turn",
+            "count": 3,
+            "filter_type": "admiral"
           }
         ],
         "costs": [
@@ -65261,8 +65377,10 @@
           {
             "action": "buff_power",
             "amount": 4000,
-            "target": "self",
-            "duration": "battle_only"
+            "target": "select_filtered",
+            "duration": "this_turn",
+            "count": 1,
+            "filter_type": "film"
           }
         ]
       }
@@ -71835,8 +71953,10 @@
           {
             "action": "buff_power",
             "amount": 2000,
-            "target": "self",
-            "duration": "this_turn"
+            "target": "select_filtered",
+            "duration": "this_turn",
+            "count": 1,
+            "filter_type": "monkey.d.luffy"
           }
         ]
       }
