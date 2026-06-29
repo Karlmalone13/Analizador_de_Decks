@@ -7,6 +7,31 @@ e `git status` antes de tocar em qualquer coisa.
 
 ---
 
+## 2026-06-29 02:28 — Codex
+
+**Feito** — aplicada uma otimização estrutural pequena no Turn Planner:
+`_generate_and_score_actions()` agora calcula a reserva defensiva de DON uma vez
+por estado e passa `don_usable` para `_can_play_card()`, em vez de recalcular
+`_don_reserve_for_defense()` para cada carta da mão. Também reaproveita a
+`analysis_priority()` já calculada ao gerar ações de anexar DON.
+
+**Validação/performance:**
+- `python -m py_compile scriptis_da_ia\optcg_engine\decision_engine.py` passou.
+- `python scriptis_da_ia\smoke_test.py` passou.
+- `python audit_replay.py --n 5 --seed 42` passou com 0 anomalias.
+- `python smoke_test_broad.py` passou `40/40` em ~144s.
+- `python audit_replay.py --n 10 --seed 42` passou com 0 anomalias em ~31.5s.
+
+**Observação importante:** isso não elimina a dívida principal. O gargalo grande
+continua sendo o uso pesado de `deepcopy` dentro de `_simulate_sequence*`; esta
+mudança só remove recomputação repetida dentro do mesmo estado.
+
+**Estado atual:** mudança ainda não commitada. Working tree deve ter
+`scriptis_da_ia/optcg_engine/decision_engine.py`, este `HANDOFF.md` e `TODO.md`
+se a nota de TODO for mantida.
+
+---
+
 ## 2026-06-29 17:30 — Codex
 
 **Feito** — investigada a lentidão pós-fechamento dos 5 gaps médios. `cProfile`
@@ -27,12 +52,10 @@ de simulações/deepcopies por decisão.
 - `audit_replay.py --n 5 --seed 42` passou com 0 anomalias.
 - Perfil de 1 partida caiu de ~24.6s para ~11.8s.
 
-**Estado atual:** mudança de performance ainda não commitada. Working tree deve
-ter `scriptis_da_ia/optcg_engine/decision_engine.py` e este `HANDOFF.md`.
+**Estado atual:** commitado e enviado em `9330cc7 Reduz custo do Turn Planner`.
 
-**Próximo:** se Arthur aprovar, commitar/pushar a poda do planner. Depois,
-investigar otimização estrutural de verdade: reduzir `deepcopy` no planner ou
-cachear cálculos de defesa/DON antes de mexer em qualidade de decisão.
+**Próximo:** investigar otimização estrutural de verdade: reduzir `deepcopy` no
+planner antes de mexer em qualidade de decisão.
 
 ---
 

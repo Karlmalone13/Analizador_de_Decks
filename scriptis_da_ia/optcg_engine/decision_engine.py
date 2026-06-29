@@ -3820,7 +3820,7 @@ class DecisionEngine:
                 if str(v).lower() not in str(getattr(me.leader, 'name', '')).lower(): return False
         return True
 
-    def _can_play_card(self, card) -> bool:
+    def _can_play_card(self, card, don_usable: int | None = None) -> bool:
         """Decide se uma carta é jogável agora (mesma regra do choose_card_to_play)."""
         if card.card_type not in ('CHARACTER', 'EVENT', 'STAGE'):
             return False
@@ -3832,8 +3832,9 @@ class DecisionEngine:
         if self.me.cant_play_cost_gte and card.card_type == 'CHARACTER' \
                 and card.cost >= self.me.cant_play_cost_gte:
             return False
-        don_reserve = self._don_reserve_for_defense()
-        don_usable  = max(0, self.me.don_available - don_reserve)
+        if don_usable is None:
+            don_reserve = self._don_reserve_for_defense()
+            don_usable  = max(0, self.me.don_available - don_reserve)
         if effective_hand_play_cost(self.me, card) > don_usable:
             return False
         if '[counter]' in card.card_text.lower() and card.card_type == 'EVENT':
@@ -4949,10 +4950,12 @@ class OPTCGMatch:
         # os pesos das ações, respeitando a ordem do documento sem bloquear.
         priority = a.analysis_priority()
         threats = a.critical_threats() if priority == 'REMOVE_THREAT' else []
+        don_reserve = engine._don_reserve_for_defense()
+        don_usable = max(0, p.don_available - don_reserve)
 
         # ── Ações de JOGAR carta ──
         for card in p.hand:
-            if not engine._can_play_card(card):
+            if not engine._can_play_card(card, don_usable=don_usable):
                 continue
             score = self._score_play_action(card, engine)
             # Inclinação: desenvolver ganha peso no modo DEVELOP; perde no LETHAL/DEFENSIVE
@@ -4999,12 +5002,12 @@ class OPTCGMatch:
                         actions.append((s_char, 'attack', att, 'character', tgt))
 
         # ── Ações de ANEXAR DON para ligar efeitos/keywords [DON!! ×N] ──
-        actions.extend(self._generate_attach_don_actions(p, opp, engine))
+        actions.extend(self._generate_attach_don_actions(p, opp, engine, priority=priority))
 
         actions.sort(key=lambda x: x[0], reverse=True)
         return actions
 
-    def _generate_attach_don_actions(self, p, opp, engine):
+    def _generate_attach_don_actions(self, p, opp, engine, priority=None):
         """
         Gera ações de ANEXAR DON para ligar efeitos/keywords [DON!! ×N].
         Avalia cada personagem em campo que tem efeito condicional a DON e ainda
@@ -5015,7 +5018,8 @@ class OPTCGMatch:
         acts = []
         if p.don_available <= 0:
             return acts
-        priority = engine.analyzer.analysis_priority()
+        if priority is None:
+            priority = engine.analyzer.analysis_priority()
 
         for card in p.field_chars:
             effects = get_card_effects(card.code)

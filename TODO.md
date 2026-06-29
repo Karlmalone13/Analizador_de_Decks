@@ -7,6 +7,16 @@
 
 ---
 
+## Dívida técnica ativa — Turn Planner
+
+- [ ] **Reduzir `deepcopy` em `_simulate_sequence*`**: a poda de orçamento já
+  melhorou o runtime, e a reserva defensiva agora é calculada uma vez por estado
+  em `_generate_and_score_actions()`. Ainda assim, o gargalo estrutural continua
+  sendo clonar estado demais dentro do planner. Próxima melhoria real deve atacar
+  clone incremental/cópia enxuta ou cache seguro de avaliações por estado.
+
+---
+
 ## 🟢 FEITO NESTA SESSÃO (25-26/06)
 
 Sessão focada em destravar mecânicas sem branch no engine (auditoria por mecânica,
