@@ -12,10 +12,11 @@
 - [ ] **Reduzir `deepcopy` em `_simulate_sequence*`**: a poda de orçamento já
   melhorou o runtime; a reserva defensiva agora é calculada uma vez por estado
   em `_generate_and_score_actions()`; e `GameState.__deepcopy__` já tem cópia
-  manual mais enxuta. Ainda assim, o gargalo estrutural continua sendo clonar
-  estados demais dentro do planner. Próxima melhoria real deve atacar clone
-  incremental, redução de chamadas a `_simulate_sequence*` ou cache seguro de
-  avaliações por estado.
+  manual mais enxuta. `main_phase()` também passou a simular no mínimo 3
+  candidatas e só incluir a 4ª-6ª quando estiverem perto da melhor por score.
+  Ainda assim, o gargalo estrutural continua sendo clonar estados demais dentro
+  do planner. Próxima melhoria real deve atacar clone incremental ou cache
+  seguro de avaliações por estado, medindo impacto em qualidade de decisão.
 
 ---
 

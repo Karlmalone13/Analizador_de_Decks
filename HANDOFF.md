@@ -7,6 +7,32 @@ e `git status` antes de tocar em qualquer coisa.
 
 ---
 
+## 2026-06-29 13:17 — Codex
+
+**Feito** — reduzida a quantidade de simulações por decisão no Turn Planner sem
+voltar ao modo guloso. `main_phase()` continua olhando até `TOP_K=6`, mas agora
+sempre simula as 3 melhores ações e só inclui a 4ª-6ª se estiverem a até 180
+pontos da melhor ação imediata. Também evita gerar amostras Monte Carlo quando
+só existe uma candidata.
+
+**Validação/performance:**
+- `python -m py_compile scriptis_da_ia\optcg_engine\decision_engine.py` passou.
+- `python scriptis_da_ia\smoke_test.py` passou.
+- `python audit_replay.py --n 5 --seed 42` passou com 0 anomalias.
+- `python smoke_test_broad.py` passou `40/40` em ~86s.
+- `python audit_replay.py --n 10 --seed 42` passou com 0 anomalias em ~17.3s
+  (antes desta fatia: ~24.2s na mesma medição curta).
+
+**Observação:** esta é uma poda conservadora por score, não uma prova de ótima
+jogada. O risco residual é alguma 4ª-6ª ação com score imediato baixo produzir
+linha futura muito melhor; por isso mantive no mínimo 3 candidatas e uma janela
+generosa.
+
+**Estado após esta fatia:** esperado commit/push com
+`scriptis_da_ia/optcg_engine/decision_engine.py`, `HANDOFF.md` e `TODO.md`.
+
+---
+
 ## 2026-06-29 13:11 — Codex
 
 **Feito** — adicionada cópia manual de `GameState.__deepcopy__` para o Turn

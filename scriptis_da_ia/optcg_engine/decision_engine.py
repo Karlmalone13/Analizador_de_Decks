@@ -5320,6 +5320,8 @@ class OPTCGMatch:
 
         MAX_ACOES = 30
         TOP_K = 6        # simula só as K ações mais promissoras (custo controlado)
+        MIN_PLANNER_CANDIDATES = 3
+        PLANNER_SCORE_WINDOW = 180
         n = 0
 
         while n < MAX_ACOES:
@@ -5342,11 +5344,21 @@ class OPTCGMatch:
             # Reusar as mesmas N amostras também torna a comparação entre
             # candidatas pareada (mesma "versão do oponente" testada contra
             # cada uma), reduzindo ruído Monte Carlo na escolha final.
+            top_score = actions[0][0]
+            candidatas = [
+                acao for idx, acao in enumerate(actions[:TOP_K])
+                if idx < MIN_PLANNER_CANDIDATES or acao[0] >= top_score - PLANNER_SCORE_WINDOW
+            ]
+            if len(candidatas) == 1:
+                melhor_acao = candidatas[0]
+                if self._apply_action(melhor_acao, p, opp, ee, engine, verbose=verbose):
+                    return True
+                continue
+
             model = self.model_for_a if p is self.state_a else self.model_for_b
             n_monte_carlo = 6
             amostras_turno = [model.sample(opp, rng=random.Random()) for _ in range(n_monte_carlo)]
 
-            candidatas = actions[:TOP_K]
             melhor_acao = None
             melhor_valor = -1e18
             for cand in candidatas:
