@@ -7,6 +7,65 @@ e `git status` antes de tocar em qualquer coisa.
 
 ---
 
+## 2026-06-29 02:30 — Claude
+
+**Feito** — item 3 do plano do usuário ("vamos fazer 1, depois 2 e depois
+3"): auditoria via partida real instrumentada (não a lista teórica de
+gaps). Encontrei e corrigi um bug real de integridade de estado:
+
+- Construí um harness de auditoria (`audit_replay.py`, scratchpad, **não
+  versionado**) que roda N partidas reais (decks de `decklists_raw.csv`)
+  via `ReplayMatch`/`OPTCGMatch` e checa por turno: conservação de DON
+  (`don_available + don_rested + don_attached_em_campo == 10 - don_deck`),
+  power negativo, conservação de contagem de cartas.
+- 25 partidas (seed=42) acharam 2 com violação de conservação de DON. Causa
+  raiz: `Card` é `@dataclass` SEM `eq=False` → `__eq__`/`__hash__` por
+  VALOR (todos os campos), o que faz `list.remove(card)`/`card in lista`
+  ficarem ambíguos quando 2+ cópias físicas da MESMA carta com o MESMO
+  estado coexistem na mesma zona (ex: 2 cópias recém-compradas na mão) —
+  `.remove()` pode remover a cópia IRMÃ em vez da exata, deixando a carta
+  realmente jogada ainda na mão; o Turn Planner a re-seleciona numa
+  iteração seguinte e a joga DE NOVO, resultando no MESMO objeto Python
+  duas vezes em `field_chars` (board_value e DON contados em dobro).
+- **Por que não é um fix trivial de `eq=False`**: `_remap_action`
+  (`decision_engine.py` ~5064, Turn Planner) usa `.index(obj)` para mapear
+  uma ação do estado real pro clone (deepcopy) — isso DEPENDE de
+  comparação por valor pra funcionar (objetos pós-deepcopy nunca são `is`
+  o original). Mudar `Card` pra identidade quebraria isso por completo
+  (todo remap falharia com `ValueError`, zerando a pontuação de toda ação
+  simulada pelo Turn Planner).
+- **Fix aplicado**: 2 helpers de identidade (`remove_by_identity`,
+  `contains_identity`, logo antes de `remove_character_from_field`,
+  `decision_engine.py` ~linha 591) + ~35 call sites de `.remove(card)`/
+  `in`/`not in` trocados de comparação por valor pra `is`, em TODAS as
+  operações que removem/checam uma carta DENTRO de um único estado (mão,
+  campo, trash, deck, listas de candidatos temporárias). `_remap_action`
+  ficou intocado de propósito.
+- Validação: `smoke_test.py` 100%, `smoke_test_broad.py` 40/40, e
+  re-rodei `audit_replay.py` com o MESMO seed=42 → **0 anomalias, 0
+  exceções** nas 25 partidas (antes: 6 anomalias em 2 partidas).
+- Documentado em `TODO.md` (seção nova "29/06/2026 — bug de identidade em
+  `Card`"). Detalhes completos da reprodução lá.
+
+**Estado atual:**
+- Commit `ffc6a22` (tasks 1+2 da sessão anterior) ainda não pushed.
+- Pendente de commit: `scriptis_da_ia/optcg_engine/decision_engine.py`
+  (o fix de identidade), `TODO.md`.
+- `audit_replay.py` vive só no scratchpad da sessão — não foi trazido pro
+  repo. Se for útil como ferramenta permanente de auditoria, é um
+  candidato pra uma sessão futura decidir se formaliza em
+  `scriptis_da_ia/` (não fiz essa chamada aqui, escopo era só achar e
+  corrigir bugs).
+
+**Próximo:**
+- Commitar e dar push (item 3 concluído, plano original dos 3 itens
+  fechado).
+- 5 "médios" restantes sem urgência (PeekLife, TrashAllFaceUpLife,
+  ForceOpponent, QueueUpEndOfTurnAction/OppMainPhase, FieldCantAttackLeader).
+- Sistema de imunidade — dívida consciente, fora de escopo.
+
+---
+
 ## 2026-06-29 01:00 — Claude
 
 **Feito** (plano em 3 partes pedido pelo usuário: 1. import quebrado, 2. um

@@ -560,6 +560,47 @@ def is_attack_locked_self(card: 'Card', owner: 'GameState', opp: 'GameState') ->
     return False
 
 
+def remove_by_identity(lst: list, obj) -> bool:
+    """
+    Remove de `lst` EXATAMENTE o objeto `obj` (comparando por identidade,
+    `is`, nunca por __eq__ de valor). Retorna True se removeu.
+
+    Necessario porque `Card` e um @dataclass SEM eq=False -- __eq__ e
+    auto-gerado por VALOR (todos os campos), de proposito: `_remap_action`
+    (linha ~5064) depende disso pra mapear uma acao do estado real pro
+    clone via deepcopy do Turn Planner (`p.hand.index(obj)` so funciona
+    cruzando a fronteira real->clone se a comparacao for por valor, ja que
+    objetos pos-deepcopy nunca sao `is` o original). MUDAR Card pra
+    eq=False quebraria isso (todo `_remap_action` passaria a sempre
+    falhar com ValueError, zerando a pontuacao de toda acao simulada).
+
+    Mas isso significa que `list.remove(card)`/`card in lista` DENTRO de
+    um UNICO estado (sem cruzar real/clone) sao AMBIGUOS quando 2+ copias
+    fisicas da mesma carta com o MESMO estado (recem compradas, por
+    exemplo) coexistem na mesma zona -- list.remove()/in casam a PRIMEIRA
+    ocorrencia "igual", nao necessariamente o objeto exato passado.
+    Achado 28/06/2026 via auditoria de partida real instrumentada
+    (replay_optcg.py + checagem de conservacao de DON): uma carta
+    ("St. Topman Warcury", 2 copias na mao com estado identico) foi jogada
+    -- e devido a esse bug, a copia "errada" ficou removida da mao,
+    deixando a copia REALMENTE jogada ainda la; numa iteracao posterior do
+    Turn Planner ela foi selecionada e jogada DE NOVO, resultando no MESMO
+    objeto Card duas vezes em field_chars (inflando board_value e DON
+    summado). Usar esta funcao em qualquer remocao DENTRO do mesmo estado
+    corrige isso sem tocar em `_remap_action`.
+    """
+    for i, x in enumerate(lst):
+        if x is obj:
+            del lst[i]
+            return True
+    return False
+
+
+def contains_identity(lst: list, obj) -> bool:
+    """`obj in lista`, mas por identidade (`is`) -- ver remove_by_identity."""
+    return any(x is obj for x in lst)
+
+
 def remove_character_from_field(owner: 'GameState', card: 'Card', destino: str = 'trash') -> None:
     """
     Remove `card` de owner.field_chars e move pro destino indicado:
@@ -577,8 +618,7 @@ def remove_character_from_field(owner: 'GameState', card: 'Card', destino: str =
     que deve remover um Character do campo a partir de agora; nunca fazer
     owner.field_chars.remove(card)/pop(...) direto em codigo novo.
     """
-    if card in owner.field_chars:
-        owner.field_chars.remove(card)
+    remove_by_identity(owner.field_chars, card)
     if card.don_attached > 0:
         owner.don_rested += card.don_attached
         card.don_attached = 0
@@ -655,7 +695,7 @@ class EffectExecutor:
         # ── Jogar carta da mão com filtro ─────────────────────────────────────
         if a == 'play_card':
             if step.get('source') == 'self':
-                return card in me.hand     # GRUPO 1 (trigger): a própria carta
+                return contains_identity(me.hand, card)  # GRUPO 1 (trigger): a própria carta
             from optcg_engine.rules_facade import eligible_cards
 
             cost_lte = step.get('cost_lte')
@@ -870,7 +910,7 @@ class EffectExecutor:
         me = self.me
 
         if ctype == 'trash_self':
-            if card not in me.field_chars:
+            if not contains_identity(me.field_chars, card):
                 return None
             remove_character_from_field(me, card, 'trash')
             return f'{card.name[:18]} evitou K.O./remoção trashando a si mesmo'
@@ -903,9 +943,9 @@ class EffectExecutor:
             trashed = []
             for _ in range(count):
                 worst = min(candidatos, key=lambda c: c.board_value())
-                me.hand.remove(worst)
+                remove_by_identity(me.hand, worst)
                 me.trash.append(worst)
-                candidatos.remove(worst)
+                remove_by_identity(candidatos, worst)
                 trashed.append(worst.name[:15])
             return f'{card.name[:18]} evitou K.O./remoção trashando da mão: {", ".join(trashed)}'
 
@@ -926,7 +966,7 @@ class EffectExecutor:
             return f'{card.name[:18]} evitou K.O./remoção restando-se'
 
         if ctype == 'bounce_self':
-            if card not in me.field_chars:
+            if not contains_identity(me.field_chars, card):
                 return None
             remove_character_from_field(me, card, 'hand')
             return f'{card.name[:18]} evitou K.O./remoção voltando para a mão'
@@ -1142,7 +1182,7 @@ class EffectExecutor:
                 for _ in range(count):
                     worst = self._choose_to_trash(self.me.hand)
                     if worst:
-                        self.me.hand.remove(worst)
+                        remove_by_identity(self.me.hand, worst)
                         self.me.trash.append(worst)
                         trashed.append(worst.name[:15])
                 if trashed:
@@ -1172,11 +1212,11 @@ class EffectExecutor:
                         remove_character_from_field(self.me, pior_char, 'trash')
                         self._cost_logs.append(f'custo: trashou character {pior_char.name[:14]}')
                     elif pior_mao is not None:
-                        self.me.hand.remove(pior_mao)
+                        remove_by_identity(self.me.hand, pior_mao)
                         self.me.trash.append(pior_mao)
                         self._cost_logs.append(f'custo: trashou da mão {pior_mao.name[:14]}')
             elif ctype == 'trash_self':
-                if card in self.me.field_chars:
+                if contains_identity(self.me.field_chars, card):
                     remove_character_from_field(self.me, card, 'trash')
                     self._cost_logs.append(f'custo: trashou {card.name[:18]} (ele mesmo)')
             elif ctype == 'don_minus':
@@ -1206,7 +1246,7 @@ class EffectExecutor:
                     # escolhe o de menor valor de board (sacrifica o menos util),
                     # reaproveitando a heuristica de _choose_to_trash.
                     alvo = min(candidatos, key=lambda c: c.board_value())
-                    candidatos.remove(alvo)
+                    remove_by_identity(candidatos, alvo)
                     remove_character_from_field(self.me, alvo, 'trash')
                     koados.append(alvo.name[:15])
                     # dispara [On K.O.] do Character K.O.ado (regra K.O. != Trash)
@@ -1234,7 +1274,7 @@ class EffectExecutor:
                     # jogador, sem efeito mecanico (fundo do deck nao
                     # discrimina ordem entre as N cartas movidas agora).
                     alvo = candidatos.pop()
-                    self.me.trash.remove(alvo)
+                    remove_by_identity(self.me.trash, alvo)
                     self.me.deck.insert(0, alvo)   # fundo do deck = inicio da lista
                     movidos.append(alvo.name[:14])
                 self._cost_logs.append(f'custo: fundo do deck (do trash): {", ".join(movidos)}')
@@ -1386,11 +1426,10 @@ class EffectExecutor:
                 best = max(filtered, key=lambda x: x.board_value()) if filtered else None
                 if best:
                     taken.append(best)
-                    filtered.remove(best)
+                    remove_by_identity(filtered, best)
 
             for c in taken:
-                if c in me.deck:
-                    me.deck.remove(c)
+                remove_by_identity(me.deck, c)
                 me.hand.append(c)
                 if step.get('revealed_to_opponent') is True:
                     me.revealed_to_opponent.add(id(c))
@@ -1477,7 +1516,7 @@ class EffectExecutor:
             for _ in range(then_trash):
                 worst = self._choose_to_trash(me.hand)
                 if worst:
-                    me.hand.remove(worst)
+                    remove_by_identity(me.hand, worst)
                     me.trash.append(worst)
                     trashed_after.append(worst.name[:12])
             if not drawn:
@@ -1555,7 +1594,7 @@ class EffectExecutor:
                     other = me if owner is opp else opp
                     if is_immune(target, imm_kind, owner, other, source_is_opp=True):
                         immune_skipped.append(target.name[:12])
-                        candidates.remove(target)
+                        remove_by_identity(candidates, target)
                         continue
                     # Antes de remover de fato, verifica se o ALVO tem
                     # substitute_ko/substitute_removal ativo -- e um efeito
@@ -1565,10 +1604,10 @@ class EffectExecutor:
                     sub_log = ee_target.try_substitute(target, 'ko' if action == 'ko' else 'removal')
                     if sub_log:
                         sub_logs.append(sub_log)
-                        candidates.remove(target)
+                        remove_by_identity(candidates, target)
                         continue
                     remove_character_from_field(owner, target, 'trash')
-                    candidates.remove(target)
+                    remove_by_identity(candidates, target)
                     koed.append(target.name[:15])
             label = 'KO' if action == 'ko' else 'Trash'
             partes = []
@@ -1603,10 +1642,10 @@ class EffectExecutor:
                 # Bounce é remoção do campo -> respeita imunidade a removal
                 if is_immune(target, 'removal', opp, me, source_is_opp=True):
                     immune_skipped.append(target.name[:12])
-                    candidates.remove(target)
+                    remove_by_identity(candidates, target)
                     continue
                 remove_character_from_field(opp, target, 'hand')
-                candidates.remove(target)
+                remove_by_identity(candidates, target)
                 bounced.append(target.name[:15])
             out = []
             if bounced: out.append(f'bounce: {", ".join(bounced)}')
@@ -1634,7 +1673,7 @@ class EffectExecutor:
             for _ in range(min(count, len(candidates))):
                 target = choose_highest_board_value(candidates)
                 target.rested = True
-                candidates.remove(target)
+                remove_by_identity(candidates, target)
                 rested.append(target.name[:15])
             return f'restou: {", ".join(rested)}' if rested else ''
 
@@ -1703,7 +1742,7 @@ class EffectExecutor:
                     target.cannot_be_rested_until = dur
                 else:
                     target.cannot_block_until = dur
-                candidates.remove(target)
+                remove_by_identity(candidates, target)
                 locked.append(target.name[:15])
             verbo = {'lock_opp_character_attack': 'atacar',
                      'lock_opp_cannot_be_rested': 'ficar rested',
@@ -1743,7 +1782,7 @@ class EffectExecutor:
             for _ in range(min(count, len(candidates))):
                 target = max(candidates, key=lambda x: x.board_value())
                 target.frozen_next_refresh = True
-                candidates.remove(target)
+                remove_by_identity(candidates, target)
                 locked.append(target.name[:15])
             return f'congelou (não desvira no próx. refresh): {", ".join(locked)}' if locked else ''
 
@@ -2096,7 +2135,7 @@ class EffectExecutor:
             if step.get('filter_self'):
                 self_card = next((c for c in me.trash if c.code == card.code), None)
                 if self_card:
-                    me.trash.remove(self_card)
+                    remove_by_identity(me.trash, self_card)
                     self_card.rested = enters_rested
                     if self_card.card_type == 'STAGE':
                         if me.field_stage:
@@ -2132,7 +2171,7 @@ class EffectExecutor:
                 else:
                     best = max(pool, key=lambda x: x.board_value())
 
-                me.trash.remove(best)
+                remove_by_identity(me.trash, best)
                 best.rested = enters_rested
                 if best.card_type == 'STAGE':
                     if me.field_stage:
@@ -2148,7 +2187,7 @@ class EffectExecutor:
 
                 played.append(best.name[:15])
                 played_names_lower.add(best.name.lower())
-                candidates.remove(best)
+                remove_by_identity(candidates, best)
 
             return f'jogou do trash: {", ".join(played)}' if played else ''
 
@@ -2199,14 +2238,14 @@ class EffectExecutor:
             played = []
             for _ in range(min(count, len(candidates))):
                 best = max(candidates, key=lambda x: x.board_value())
-                me.deck.remove(best)
+                remove_by_identity(me.deck, best)
                 if len(me.field_chars) >= 5:
                     worst = min(me.field_chars, key=lambda x: x.board_value())
                     remove_character_from_field(me, worst, 'trash')
                 best.just_played = not (best.has_rush or best.rush_this_turn or best.is_rush_character())
                 best.rush_character_only_this_turn = best.is_rush_character() and not best.is_rush()
                 me.field_chars.append(best)
-                candidates.remove(best)
+                remove_by_identity(candidates, best)
                 played.append(best.name[:15])
 
             if not look_count:
@@ -2224,7 +2263,7 @@ class EffectExecutor:
             for _ in range(min(count, len(me.hand))):
                 worst = self._choose_to_trash(me.hand)
                 if worst:
-                    me.hand.remove(worst)
+                    remove_by_identity(me.hand, worst)
                     me.trash.append(worst)
                     trashed.append(worst.name[:12])
             return f'descartou da mão: {", ".join(trashed)}' if trashed else ''
@@ -2245,7 +2284,7 @@ class EffectExecutor:
             for _ in range(min(count, len(opp.hand))):
                 worst = self._choose_to_trash(opp.hand)
                 if worst:
-                    opp.hand.remove(worst)
+                    remove_by_identity(opp.hand, worst)
                     opp.trash.append(worst)
                     trashed.append(worst.name[:12])
             return f'oponente descartou: {", ".join(trashed)}' if trashed else ''
@@ -2367,7 +2406,7 @@ class EffectExecutor:
                     break
                 melhor = choose_highest_board_value(candidatos)
                 melhor.rested = False
-                candidatos.remove(melhor)
+                remove_by_identity(candidatos, melhor)
                 ativados.append(melhor.name[:14])
 
             if target == 'own_character_and_leader' and me.leader.rested:
@@ -2403,10 +2442,10 @@ class EffectExecutor:
                 target = choose_highest_board_value(cands)
                 if is_immune(target, 'removal', opp, me, source_is_opp=True):
                     immune.append(target.name[:12])
-                    cands.remove(target)
+                    remove_by_identity(cands, target)
                     continue
                 remove_character_from_field(opp, target, 'deck_bottom')
-                cands.remove(target)
+                remove_by_identity(cands, target)
                 placed.append(target.name[:14])
             out = []
             if placed: out.append(f'fundo do deck: {", ".join(placed)}')
@@ -2606,7 +2645,7 @@ class EffectExecutor:
 
             # GRUPO 1 — jogar a própria carta (trigger de vida), opcional por score
             if source == 'self':
-                if card not in me.hand:
+                if not contains_identity(me.hand, card):
                     return ''   # já saiu da mão / contexto inesperado
                 # valor de jogar (corpo em campo) vs guardar na mão (counter/futuro)
                 val_play = _score_to_play(card)
@@ -2619,7 +2658,7 @@ class EffectExecutor:
                         return ''   # não vale trocar — mantém na mão
                 if val_play <= val_keep:
                     return ''       # vale mais na mão — não joga
-                me.hand.remove(card)
+                remove_by_identity(me.hand, card)
                 _put_into_play(card)
                 return f'jogou {card.name[:18]} (grátis, do trigger)'
 
@@ -2660,13 +2699,11 @@ class EffectExecutor:
                 if melhor.card_type == 'CHARACTER' and len(me.field_chars) >= 5:
                     pior = _pior_para_trocar(me.field_chars)
                     if pior is None or melhor.board_value() <= pior.board_value():
-                        elegiveis.remove(melhor)
+                        remove_by_identity(elegiveis, melhor)
                         continue
-                if melhor in me.hand:
-                    me.hand.remove(melhor)
-                elif melhor in me.trash:
-                    me.trash.remove(melhor)
-                elegiveis.remove(melhor)
+                if not remove_by_identity(me.hand, melhor):
+                    remove_by_identity(me.trash, melhor)
+                remove_by_identity(elegiveis, melhor)
                 _put_into_play(melhor)
                 if step.get('enters_rested'):
                     melhor.rested = True
@@ -2689,7 +2726,7 @@ class EffectExecutor:
             )
             added = []
             for c in found[:count]:
-                me.trash.remove(c)
+                remove_by_identity(me.trash, c)
                 me.hand.append(c)
                 added.append(c.name[:15])
             return f'recuperou do trash: {", ".join(added)}' if added else ''
@@ -4268,7 +4305,7 @@ class DecisionEngine:
         for c in counters:
             if total >= needed:
                 break
-            self.me.hand.remove(c)
+            remove_by_identity(self.me.hand, c)
             self.me.trash.append(c)
             total += c.counter
             self.me.counters_used += c.counter
@@ -4391,7 +4428,7 @@ class OPTCGMatch:
                 usar_barato = True
 
         best = barato if usar_barato else caro
-        p.deck.remove(best)
+        remove_by_identity(p.deck, best)
         p.field_stage = best
 
     @staticmethod
@@ -5265,7 +5302,7 @@ class OPTCGMatch:
         (simulação em massa não passa verbose).
         """
         play_cost = effective_hand_play_cost(p, card)
-        p.hand.remove(card)
+        remove_by_identity(p.hand, card)
         p.don_rested  += play_cost
         p.don_available -= play_cost
 

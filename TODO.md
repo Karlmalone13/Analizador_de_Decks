@@ -69,6 +69,36 @@ implementa → valida (snapshot/diff PERDEU=0 + partidas reais instrumentadas).
 > CycleEntireHandToDeckBottom **já estavam implementados**. Lista abaixo reflete
 > o estado real, verificado por linha de código.
 
+### Achado/corrigido em 29/06/2026 — bug de identidade em `Card` (auditoria via replay real)
+- [x] ~~Carta duplicada por REFERÊNCIA (mesmo objeto Python 2x) em
+  `field_chars`~~ — achado pela auditoria #3 do plano do usuário (rodar
+  partidas reais instrumentadas em vez de só seguir a lista teórica de
+  gaps), não por nenhum gap conhecido. `Card` é `@dataclass` sem
+  `eq=False`, então `__eq__`/`__hash__` são gerados por VALOR (todos os
+  campos), de propósito — `_remap_action` (Turn Planner, ~linha 5064)
+  depende disso pra mapear uma ação do estado real pro clone (deepcopy)
+  via `.index(obj)`, já que objetos pós-deepcopy nunca são `is` o
+  original. Efeito colateral: quando 2+ cópias físicas da MESMA carta
+  com o MESMO estado (ex: recém compradas) coexistem na mesma zona,
+  `list.remove(card)`/`card in lista` ficam ambíguos — podem
+  remover/casar uma cópia IRMÃ em vez da carta exata. Reproduzido em 2 de
+  25 partidas reais aleatórias (seed=42): "St. Topman Warcury" e
+  "Roronoa Zoro - PRB" jogados, mas a remoção da mão removeu a cópia
+  errada, deixando a carta realmente jogada ainda lá; numa iteração
+  seguinte do Turn Planner ela foi selecionada e jogada DE NOVO, virando
+  o MESMO objeto duas vezes em `field_chars` (inflava DON somado e
+  board_value — quebrava a invariante "don_available + don_rested +
+  don_attached em campo == 10 − don_deck"). Corrigido com 2 helpers de
+  identidade (`remove_by_identity`/`contains_identity`,
+  `decision_engine.py` ~linha 591) e substituição de ~35 call sites de
+  `.remove(card)`/`in`/`not in` em zonas (`hand`, `field_chars`, `trash`,
+  `deck`, listas de candidatos temporárias) por versão baseada em `is`,
+  SEM tocar em `_remap_action` (continua por valor, de propósito).
+  Validado: `smoke_test.py` 100%, `smoke_test_broad.py` 40/40, e
+  `audit_replay.py` (script de auditoria criado nesta sessão, não
+  versionado) 25/25 partidas reais sem nenhuma anomalia (antes da
+  correção: 6 anomalias de conservação de DON em 2 partidas).
+
 ### Achado/corrigido em 28/06/2026, 3ª rodada do dia (fora dos gaps originais)
 - [x] ~~`buff_power` target='own_character' não consumido pelo engine~~ —
   achado ao investigar o gap de memória de alvo acima. O parser já gerava
