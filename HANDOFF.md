@@ -7,6 +7,35 @@ e `git status` antes de tocar em qualquer coisa.
 
 ---
 
+## 2026-06-29 17:30 — Codex
+
+**Feito** — investigada a lentidão pós-fechamento dos 5 gaps médios. `cProfile`
+mostrou que o gargalo não era uma action nova isolada, e sim explosão do Turn
+Planner: `_simulate_sequence`/`_simulate_sequence_once` chamavam milhares de
+`deepcopy`, amplificado por `TOP_K=6`, `n_monte_carlo=20`, `max_steps=12`.
+
+**Mudança aplicada:** reduzido o orçamento do planner para `max_steps=8` e
+`n_monte_carlo=6`. Isso mantém o planner avaliando linhas, mas reduz o número
+de simulações/deepcopies por decisão.
+
+**Validação/performance:**
+- Antes: 10 partidas aleatórias equivalentes ao broad levaram ~289s; broad 40
+  não fechava em 300s.
+- Depois: 10 partidas aleatórias fecharam em ~78s; `smoke_test_broad.py` fechou
+  `40/40` em ~151s.
+- `smoke_test.py` passou.
+- `audit_replay.py --n 5 --seed 42` passou com 0 anomalias.
+- Perfil de 1 partida caiu de ~24.6s para ~11.8s.
+
+**Estado atual:** mudança de performance ainda não commitada. Working tree deve
+ter `scriptis_da_ia/optcg_engine/decision_engine.py` e este `HANDOFF.md`.
+
+**Próximo:** se Arthur aprovar, commitar/pushar a poda do planner. Depois,
+investigar otimização estrutural de verdade: reduzir `deepcopy` no planner ou
+cachear cálculos de defesa/DON antes de mexer em qualidade de decisão.
+
+---
+
 ## 2026-06-29 17:00 — Codex
 
 **Feito** — fechados os 5 gaps médios que sobravam no cruzamento com o

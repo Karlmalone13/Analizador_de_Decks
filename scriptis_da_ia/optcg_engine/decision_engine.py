@@ -5156,7 +5156,7 @@ class OPTCGMatch:
                 return True
         return False
 
-    def _simulate_sequence(self, p, opp, first_action, max_steps=12, amostras=None):
+    def _simulate_sequence(self, p, opp, first_action, max_steps=8, amostras=None):
         """
         Simula uma LINHA DE JOGO começando por first_action, numa CÓPIA do estado.
         Após a primeira ação, segue gulosamente (melhor ação a cada passo) até o
@@ -5184,7 +5184,7 @@ class OPTCGMatch:
         ]
         return sum(valores) / len(valores)
 
-    def _simulate_sequence_once(self, p, opp, first_action, max_steps=12, amostra=None):
+    def _simulate_sequence_once(self, p, opp, first_action, max_steps=8, amostra=None):
         """
         Uma única rodada de simulação (ver _simulate_sequence para a versão
         agregada com Monte Carlo). `amostra` é uma tupla (hand_sample,
@@ -5297,7 +5297,7 @@ class OPTCGMatch:
             # candidatas pareada (mesma "versão do oponente" testada contra
             # cada uma), reduzindo ruído Monte Carlo na escolha final.
             model = self.model_for_a if p is self.state_a else self.model_for_b
-            n_monte_carlo = 20
+            n_monte_carlo = 6
             amostras_turno = [model.sample(opp, rng=random.Random()) for _ in range(n_monte_carlo)]
 
             candidatas = actions[:TOP_K]

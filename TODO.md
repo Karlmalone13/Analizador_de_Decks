@@ -221,6 +221,11 @@ de imunidade e stubs antigos listados abaixo.
 ### Turn Planner
 - [ ] can_lethal_this_turn ainda cheata lendo self.opp.hand para counters
 - [ ] 5 funções órfãs — deletar ou integrar
+- [ ] Otimização estrutural de performance: reduzir `deepcopy` no Turn Planner
+  ou cachear cálculos caros (`_don_reserve_for_defense`, defesa/counter,
+  geração de ações). Em 29/06/2026 foi feita só uma poda de orçamento
+  (`max_steps=8`, Monte Carlo=6) para recuperar o tempo do broad; não é a
+  solução definitiva.
 
 ### Parser — cobertura
 - [ ] cartas com card_text mas effects vazio — revalidar contagem (2148 com efeito agora)
