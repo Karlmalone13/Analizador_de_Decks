@@ -7,6 +7,37 @@ e `git status` antes de tocar em qualquer coisa.
 
 ---
 
+## 2026-06-29 03:00 — Claude
+
+**Feito** — 2 itens rápidos pedidos pelo usuário pra fechar a sessão:
+- **Removido `_main_phase_OLD_fixed`** (`decision_engine.py`) — versão
+  antiga de `main_phase`, de antes do Turn Planner existir, confirmada
+  como dead code (`grep` não achou chamada em lugar nenhum fora da
+  própria definição). Tinha um bug de conservação de DON, mas nunca
+  executava em produção. Removida só por higiene.
+- **Formalizado `audit_replay.py`** como ferramenta permanente em
+  `scriptis_da_ia/audit_replay.py` (antes vivia só no scratchpad da
+  sessão anterior). Limpei a instrumentação de debug específica daquela
+  investigação (os monkeypatches de rastreamento de `_attach_don_for_attack`/
+  `_apply_action` que já cumpriram seu papel) e deixei só as checagens de
+  invariante reutilizáveis: conservação de DON (com detector de
+  duplicata por `id()` em `field_chars`), power negativo, conservação de
+  contagem de cartas. Uso: `python audit_replay.py [--n N] [--seed S]`,
+  sai com exit code 1 se achar exceção ou anomalia (dá pra plugar num
+  CI/hook no futuro se quiser). Validado: roda limpo (25/25, 0 anomalias,
+  exit 0) e `smoke_test.py`/`smoke_test_broad.py` continuam 100%/40-40
+  depois da remoção do dead code.
+
+**Estado atual:** tudo commitado e pushed, working tree limpo, sem
+pendências da sessão de hoje além do que já está listado em `TODO.md`.
+
+**Próximo:** 5 "médios" restantes sem urgência (PeekLife,
+TrashAllFaceUpLife, ForceOpponent, QueueUpEndOfTurnAction/OppMainPhase,
+FieldCantAttackLeader); sistema de imunidade (dívida consciente, fora de
+escopo).
+
+---
+
 ## 2026-06-29 02:30 — Claude
 
 **Feito** — item 3 do plano do usuário ("vamos fazer 1, depois 2 e depois

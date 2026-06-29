@@ -95,9 +95,20 @@ implementa → valida (snapshot/diff PERDEU=0 + partidas reais instrumentadas).
   `deck`, listas de candidatos temporárias) por versão baseada em `is`,
   SEM tocar em `_remap_action` (continua por valor, de propósito).
   Validado: `smoke_test.py` 100%, `smoke_test_broad.py` 40/40, e
-  `audit_replay.py` (script de auditoria criado nesta sessão, não
-  versionado) 25/25 partidas reais sem nenhuma anomalia (antes da
-  correção: 6 anomalias de conservação de DON em 2 partidas).
+  `audit_replay.py` 25/25 partidas reais sem nenhuma anomalia (antes da
+  correção: 6 anomalias de conservação de DON em 2 partidas). O script de
+  auditoria foi formalizado como ferramenta permanente em
+  `scriptis_da_ia/audit_replay.py` (`python audit_replay.py [--n N]
+  [--seed S]`, exit code 1 se achar exceção/anomalia) — útil pra rodar
+  depois de qualquer mudança no `decision_engine.py` que não seja
+  parser-only, complementar ao `smoke_test_broad.py` (que só checa "não
+  lançou excecao", não invariantes de estado).
+- [x] ~~Dead code `_main_phase_OLD_fixed`~~ — removido (`decision_engine.py`).
+  Versão antiga de `main_phase` (pré Turn Planner), confirmada sem
+  nenhuma chamada no código (`grep` não achou uso fora da própria
+  definição). Continha um bug de conservação de DON (`don_rested +=
+  don_amt` duplicava o valor) que NUNCA foi a causa de nada em produção
+  por estar morta — removida só por higiene, sem efeito funcional.
 
 ### Achado/corrigido em 28/06/2026, 3ª rodada do dia (fora dos gaps originais)
 - [x] ~~`buff_power` target='own_character' não consumido pelo engine~~ —
