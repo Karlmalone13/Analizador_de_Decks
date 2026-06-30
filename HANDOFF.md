@@ -1,6 +1,43 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
-## 2026-07-02 (4) - Claude — ÚLTIMA DESTA SESSÃO
+## 2026-07-02 (5) - Claude — ÚLTIMA DESTA SESSÃO
+
+**Feito — dead wood + reauditoria de cartas com effects vazio.**
+
+**Dead wood (linha 477 do TODO):** item "substituição externa OP07-029/OP16-014
+  fora de escopo" estava desatualizado — ambas implementadas na sessão de hoje.
+  Marcado como `[x]` no TODO.
+
+**Reauditoria de effects vazios:** contagem real era 2286 com efeito (não
+  "2148" do TODO antigo). Script de varredura identificou 54 gaps reais
+  (excluindo NULL, variantes de ID canônico, errata) em 3 grupos. O Grupo C
+  (parser menores) foi corrigido na hora — 9+ cartas novas + 20+ ajustes
+  em cartas existentes:
+  - `gain_can_attack_active` aceita variante "your opponent's active
+    Characters" (OP01-021, OP02-014, OP06-110, +1).
+  - `give_don` aceita "Give [target] up to N rested DON!!" com alvo antes
+    de "up to" — ST01-001 + 6 cartas com give_don em on_play/activate_main
+    que vinham sem esse step.
+  - `opp_place_trash_bottom_deck` player-iniciado ("Place up to N card from
+    your opponent's trash at the bottom of the owner's deck") — OP15-091.
+  - `rest_opp_character` sem "up to" e aceitando "cards" em vez de
+    "characters" — P-008 Yamato, OP13-033 Franky + custo cost_lte em 8
+    cartas que tinham rest_opp_character sem o filtro de custo.
+  - `play_from_trash filter_self=True` mapeado de "add this Character card
+    to your hand" (K.O. recovery) — P-071 Marco.
+  - `set_active + set_don_active` combinados para "Set this Character or
+    up to N DON!! cards as active" — OP13-035 Bepo.
+  Grupo B (~30+ cartas) deixado para futuros itens: swap de poder, redirect
+  ataque, triggers de "quando oponente descarta", etc.
+
+**Validação:** `diff_parser.py` (`PERDEU=0`, 6 GANHOU + 20 MUDOU);
+  `gerar_dbs.py` (2286 com efeito); `smoke_test.py` (100%);
+  `smoke_test_broad.py` (40/40); `audit_replay.py --n 20 --seed 7` e
+  `--n 15 --seed 99` (0 exceções, 0 anomalias).
+
+---
+
+## 2026-07-02 (4) - Claude
 
 **Feito — timing `when_rested` + fix typo OP14-119 (Mihawk).**
 

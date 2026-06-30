@@ -474,17 +474,8 @@ de imunidade e stubs antigos listados abaixo.
   'your_turn')`. 11 smoke tests novos. Validado com `diff_parser.py`
   (`PERDEU=0`), `audit_replay.py --n 20 --seed 7`, `--n 15 --seed 99` e
   `--n 25 --seed 321` (0 exceções, 0 anomalias nas três).
-- [ ] **Substituição externa — 2 cartas ainda fora de escopo:** OP07-029
-  (rest 1 Character do OPONENTE como custo — mecânica invertida, beneficia
-  sem sacrificar nada seu, precisa de design próprio) e OP16-014 (K.O. a
-  própria fonte como custo SEM nenhum filtro de alvo no texto — "if one of
-  your Characters would be removed... K.O. this character instead" — o
-  alvo é genuinamente irrestrito, mas a checagem de segurança atual em
-  `_target_matches_external_substitute` trata "sem filtro" como "não
-  protege" por padrão, pensada pra casos onde o parser FALHOU em extrair um
-  filtro que existe, não pra casos onde o texto real não tem restrição
-  nenhuma; precisa de um jeito de distinguir os dois cenários antes de
-  implementar).
+- [x] ~~Substituição externa — OP07-029 e OP16-014~~ — **implementados em
+  02/07/2026** (ver commits anteriores desta sessão).
 
 ---
 
@@ -611,7 +602,22 @@ de imunidade e stubs antigos listados abaixo.
   (clone incremental ou cache de avaliações) permanece aberta.
 
 ### Parser — cobertura
-- [ ] cartas com card_text mas effects vazio — revalidar contagem (2148 com efeito agora)
+- [x] **cartas com card_text mas effects vazio — revalidado (02/07/2026).**
+  Contagem anterior "2148 com efeito" estava desatualizada. Resultado atual:
+  **2286/2614 com efeito** (+138 desde o início da sessão). Gaps restantes
+  reais: **~54 cartas** (excluindo NULL, variantes de ID e cards erratados),
+  classificados em 3 grupos: (A) falsos positivos de ID de variante (9 cards
+  — efectivamente parsed sob ID canônico); (B) mecânicas novas que requerem
+  design próprio (~30+: swap de poder, redirecionar ataque, triggers de
+  "opponent trashes from hand", "set power to 0", play específico por nome
+  do deck, etc.); (C) gaps de parser menores corrigidos nesta auditoria (9
+  cartas novas: `gain_can_attack_active` com variante "your opponent's
+  active" — OP01-021, OP02-014 + 1 bônus; `give_don` com target-first —
+  ST01-001 + 6 bônus em cartas existentes; `opp_place_trash_bottom_deck`
+  player-iniciado — OP15-091; `rest_opp_character` sem "up to" e com "cards"
+  — P-008, OP13-033; `play_from_trash filter_self` em on_ko — P-071;
+  set_active+set_don_active combinado — OP13-035). Mecânicas do grupo B
+  listadas em item separado abaixo conforme aparecerem prioritárias.
 - [x] **opponent has N+ DON — implementado (02/07/2026), 8 cartas exatas
   (EB02-061, OP02-089, OP02-090, OP02-091, OP08-060, OP14-063, PRB02-010,
   ST26-005).** Novo `opp_don_on_field_gte` em `parse_conditions`

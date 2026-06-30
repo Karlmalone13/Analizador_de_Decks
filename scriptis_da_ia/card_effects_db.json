@@ -4378,6 +4378,16 @@
           "opp_hand_gte": 5
         },
         "once_per_turn": true
+      },
+      "activate_main": {
+        "steps": [
+          {
+            "action": "give_don",
+            "count": 1,
+            "rested": true
+          }
+        ],
+        "once_per_turn": true
       }
     }
   },
@@ -7940,6 +7950,11 @@
             "amount": 2000,
             "target": "self",
             "duration": "this_turn"
+          },
+          {
+            "action": "give_don",
+            "count": 2,
+            "rested": true
           }
         ],
         "once_per_turn": true
@@ -8145,7 +8160,16 @@
     "color": "Red",
     "sub_types": "Straw Hat Crew",
     "attribute": "Ranged",
-    "effects": {}
+    "effects": {
+      "passive": {
+        "steps": [
+          {
+            "action": "gain_can_attack_active"
+          }
+        ],
+        "don_requirement": 1
+      }
+    }
   },
   "OP01-022": {
     "name": "Brook",
@@ -8194,6 +8218,16 @@
     "sub_types": "Straw Hat Crew Supernovas",
     "attribute": "Strike",
     "effects": {
+      "activate_main": {
+        "steps": [
+          {
+            "action": "give_don",
+            "count": 2,
+            "rested": true
+          }
+        ],
+        "once_per_turn": true
+      },
       "passive": {
         "steps": [
           {
@@ -10377,7 +10411,23 @@
     "color": "Purple",
     "sub_types": "Animal Kingdom Pirates",
     "attribute": "Strike",
-    "effects": {}
+    "effects": {
+      "activate_main": {
+        "steps": [
+          {
+            "action": "gain_can_attack_active"
+          }
+        ],
+        "costs": [
+          {
+            "type": "don_minus",
+            "count": 1,
+            "optional": true
+          }
+        ],
+        "once_per_turn": true
+      }
+    }
   },
   "OP01-113": {
     "name": "Holedem",
@@ -10950,7 +11000,16 @@
     "color": "Red",
     "sub_types": "Whitebeard Pirates Allies",
     "attribute": "Slash",
-    "effects": {}
+    "effects": {
+      "passive": {
+        "steps": [
+          {
+            "action": "gain_can_attack_active"
+          }
+        ],
+        "don_requirement": 1
+      }
+    }
   },
   "OP02-015": {
     "name": "Makino",
@@ -11700,7 +11759,8 @@
         "steps": [
           {
             "action": "rest_opp_character",
-            "count": 1
+            "count": 1,
+            "cost_lte": 5
           }
         ]
       },
@@ -18333,7 +18393,8 @@
           },
           {
             "action": "rest_opp_character",
-            "count": 1
+            "count": 1,
+            "cost_lte": 6
           }
         ]
       },
@@ -18348,7 +18409,8 @@
           },
           {
             "action": "rest_opp_character",
-            "count": 1
+            "count": 1,
+            "cost_lte": 6
           }
         ]
       }
@@ -21836,7 +21898,8 @@
         "steps": [
           {
             "action": "rest_opp_character",
-            "count": 1
+            "count": 1,
+            "cost_lte": 3
           }
         ]
       },
@@ -27228,6 +27291,14 @@
             "source": "self"
           }
         ]
+      },
+      "passive": {
+        "steps": [
+          {
+            "action": "gain_can_attack_active"
+          }
+        ],
+        "don_requirement": 2
       }
     }
   },
@@ -30956,6 +31027,11 @@
               "animal",
               "drum kingdom"
             ]
+          },
+          {
+            "action": "give_don",
+            "count": 1,
+            "rested": true
           }
         ],
         "once_per_turn": true
@@ -38458,7 +38534,8 @@
         "steps": [
           {
             "action": "rest_opp_character",
-            "count": 1
+            "count": 1,
+            "cost_lte": 5
           }
         ]
       }
@@ -44879,7 +44956,8 @@
         "steps": [
           {
             "action": "rest_opp_character",
-            "count": 1
+            "count": 1,
+            "cost_lte": 6
           }
         ]
       },
@@ -44921,7 +44999,8 @@
         "steps": [
           {
             "action": "rest_opp_character",
-            "count": 1
+            "count": 1,
+            "cost_lte": 4
           },
           {
             "action": "give_don",
@@ -45081,7 +45160,8 @@
         "steps": [
           {
             "action": "rest_opp_character",
-            "count": 1
+            "count": 1,
+            "cost_lte": 6
           },
           {
             "action": "give_don",
@@ -48386,7 +48466,16 @@
     "color": "Green",
     "sub_types": "FILM Straw Hat Crew",
     "attribute": "Strike",
-    "effects": {}
+    "effects": {
+      "on_ko": {
+        "steps": [
+          {
+            "action": "rest_opp_character",
+            "count": 2
+          }
+        ]
+      }
+    }
   },
   "OP13-034": {
     "name": "Brook",
@@ -48420,7 +48509,20 @@
     "color": "Green",
     "sub_types": "FILM Heart Pirates Minks",
     "attribute": "Strike",
-    "effects": {}
+    "effects": {
+      "end_of_turn": {
+        "steps": [
+          {
+            "action": "set_active",
+            "target": "self"
+          },
+          {
+            "action": "set_don_active",
+            "count": 1
+          }
+        ]
+      }
+    }
   },
   "OP13-036": {
     "name": "Helmeppo",
@@ -48608,6 +48710,11 @@
             "action": "draw",
             "count": 2,
             "then_trash": 1
+          },
+          {
+            "action": "give_don",
+            "count": 2,
+            "rested": true
           }
         ]
       },
@@ -51586,6 +51693,14 @@
             "up_to": true
           }
         ]
+      },
+      "on_ko": {
+        "steps": [
+          {
+            "action": "rest_opp_character",
+            "count": 1
+          }
+        ]
       }
     }
   },
@@ -53954,6 +54069,16 @@
     "sub_types": "Kuja Pirates The Seven Warlords of the Sea",
     "attribute": "Slash Special",
     "effects": {
+      "activate_main": {
+        "steps": [
+          {
+            "action": "give_don",
+            "count": 1,
+            "rested": true
+          }
+        ],
+        "once_per_turn": true
+      },
       "trigger": {
         "steps": [
           {
@@ -55198,7 +55323,8 @@
         "steps": [
           {
             "action": "rest_opp_character",
-            "count": 1
+            "count": 1,
+            "cost_lte": 7
           }
         ]
       },
@@ -55379,6 +55505,14 @@
     "sub_types": "Straw Hat Crew",
     "attribute": "Slash",
     "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "rest_opp_character",
+            "count": 1
+          }
+        ]
+      },
       "activate_main": {
         "steps": [
           {
@@ -58983,6 +59117,10 @@
     "effects": {
       "on_play": {
         "steps": [
+          {
+            "action": "rest_opp_character",
+            "count": 1
+          },
           {
             "action": "give_don",
             "count": 3,
@@ -64114,7 +64252,18 @@
     "color": "Red",
     "sub_types": "Straw Hat Crew Supernovas",
     "attribute": "Strike",
-    "effects": {}
+    "effects": {
+      "activate_main": {
+        "steps": [
+          {
+            "action": "give_don",
+            "count": 1,
+            "rested": true
+          }
+        ],
+        "once_per_turn": true
+      }
+    }
   },
   "ST01-002": {
     "name": "Usopp",
@@ -68841,7 +68990,8 @@
         "steps": [
           {
             "action": "rest_opp_character",
-            "count": 1
+            "count": 1,
+            "cost_lte": 4
           }
         ]
       },
@@ -68849,7 +68999,8 @@
         "steps": [
           {
             "action": "rest_opp_character",
-            "count": 1
+            "count": 1,
+            "cost_lte": 4
           }
         ]
       }
@@ -73556,6 +73707,11 @@
             "distribution": "free",
             "per_target_max": 2,
             "filter_power_base_eq": 6000
+          },
+          {
+            "action": "give_don",
+            "count": 2,
+            "rested": true
           }
         ],
         "costs": [

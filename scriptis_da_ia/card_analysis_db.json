@@ -6562,6 +6562,10 @@
    {
     "action": "opp_place_hand_bottom_deck",
     "trigger": "on_play"
+   },
+   {
+    "action": "give_don",
+    "trigger": "activate_main"
    }
   ],
   "synergy_states": {},
@@ -6575,7 +6579,7 @@
   "kos": false,
   "rests_opponent": false,
   "bounces": false,
-  "gives_don": false,
+  "gives_don": true,
   "power_buff": false,
   "heals": false,
   "gains_life": false,
@@ -11443,6 +11447,10 @@
     "action": "buff_power",
     "trigger": "activate_main",
     "target": "self"
+   },
+   {
+    "action": "give_don",
+    "trigger": "activate_main"
    }
   ],
   "synergy_states": {},
@@ -11456,7 +11464,7 @@
   "kos": false,
   "rests_opponent": false,
   "bounces": false,
-  "gives_don": false,
+  "gives_don": true,
   "power_buff": true,
   "heals": false,
   "gains_life": false,
@@ -11772,7 +11780,13 @@
   "color": "Red",
   "sub_types": "Straw Hat Crew",
   "attribute": "Ranged",
-  "effects": [],
+  "effects": [
+   {
+    "action": "gain_can_attack_active",
+    "trigger": "passive",
+    "don_requirement": 1
+   }
+  ],
   "synergy_states": {},
   "text": "[DON!! x1] This Character can also attack your opponent's active Characters.",
   "is_searcher": false,
@@ -11883,6 +11897,10 @@
   "attribute": "Strike",
   "effects": [
    {
+    "action": "give_don",
+    "trigger": "activate_main"
+   },
+   {
     "action": "immunity",
     "trigger": "passive",
     "don_requirement": 2
@@ -11899,7 +11917,7 @@
   "kos": false,
   "rests_opponent": false,
   "bounces": false,
-  "gives_don": false,
+  "gives_don": true,
   "power_buff": false,
   "heals": false,
   "gains_life": false,
@@ -15575,7 +15593,12 @@
   "color": "Purple",
   "sub_types": "Animal Kingdom Pirates",
   "attribute": "Strike",
-  "effects": [],
+  "effects": [
+   {
+    "action": "gain_can_attack_active",
+    "trigger": "activate_main"
+   }
+  ],
   "synergy_states": {},
   "text": "[Activate:Main] [Once Per Turn] DON!! -1 (You may return the specified number of DON!! cards from your field to your DON!! deck.): This Character can also attack your opponent's active Characters during this turn.",
   "is_searcher": false,
@@ -16540,7 +16563,13 @@
   "color": "Red",
   "sub_types": "Whitebeard Pirates Allies",
   "attribute": "Slash",
-  "effects": [],
+  "effects": [
+   {
+    "action": "gain_can_attack_active",
+    "trigger": "passive",
+    "don_requirement": 1
+   }
+  ],
   "synergy_states": {},
   "text": "[DON!! x1] This Character can also attack your opponent's active Characters.",
   "is_searcher": false,
@@ -17818,7 +17847,8 @@
   "effects": [
    {
     "action": "rest_opp_character",
-    "trigger": "trigger"
+    "trigger": "trigger",
+    "cost_lte": 5
    },
    {
     "action": "buff_power",
@@ -28179,7 +28209,8 @@
    },
    {
     "action": "rest_opp_character",
-    "trigger": "main"
+    "trigger": "main",
+    "cost_lte": 6
    },
    {
     "action": "ko",
@@ -28190,7 +28221,8 @@
    },
    {
     "action": "rest_opp_character",
-    "trigger": "counter"
+    "trigger": "counter",
+    "cost_lte": 6
    }
   ],
   "synergy_states": {
@@ -33454,7 +33486,8 @@
   "effects": [
    {
     "action": "rest_opp_character",
-    "trigger": "trigger"
+    "trigger": "trigger",
+    "cost_lte": 3
    },
    {
     "action": "buff_power",
@@ -41788,6 +41821,11 @@
    {
     "action": "play_card",
     "trigger": "trigger"
+   },
+   {
+    "action": "gain_can_attack_active",
+    "trigger": "passive",
+    "don_requirement": 2
    }
   ],
   "synergy_states": {
@@ -47519,6 +47557,10 @@
     "action": "transfer_don",
     "trigger": "activate_main",
     "target": "own_character"
+   },
+   {
+    "action": "give_don",
+    "trigger": "activate_main"
    }
   ],
   "synergy_states": {},
@@ -47532,7 +47574,7 @@
   "kos": false,
   "rests_opponent": false,
   "bounces": false,
-  "gives_don": false,
+  "gives_don": true,
   "power_buff": false,
   "heals": false,
   "gains_life": false,
@@ -59391,7 +59433,8 @@
   "effects": [
    {
     "action": "rest_opp_character",
-    "trigger": "on_ko"
+    "trigger": "on_ko",
+    "cost_lte": 5
    }
   ],
   "synergy_states": {
@@ -69291,7 +69334,8 @@
   "effects": [
    {
     "action": "rest_opp_character",
-    "trigger": "when_attacking"
+    "trigger": "when_attacking",
+    "cost_lte": 6
    },
    {
     "action": "immunity",
@@ -69373,7 +69417,8 @@
   "effects": [
    {
     "action": "rest_opp_character",
-    "trigger": "activate_main"
+    "trigger": "activate_main",
+    "cost_lte": 4
    },
    {
     "action": "give_don",
@@ -69611,7 +69656,8 @@
   "effects": [
    {
     "action": "rest_opp_character",
-    "trigger": "on_play"
+    "trigger": "on_play",
+    "cost_lte": 6
    },
    {
     "action": "give_don",
@@ -74735,7 +74781,12 @@
   "color": "Green",
   "sub_types": "FILM Straw Hat Crew",
   "attribute": "Strike",
-  "effects": [],
+  "effects": [
+   {
+    "action": "rest_opp_character",
+    "trigger": "on_ko"
+   }
+  ],
   "synergy_states": {
    "char_restado": {
     "creates": true,
@@ -74748,9 +74799,9 @@
   "has_counter_value": false,
   "has_counter_event": false,
   "is_blocker": false,
-  "is_removal": false,
+  "is_removal": true,
   "kos": false,
-  "rests_opponent": false,
+  "rests_opponent": true,
   "bounces": false,
   "gives_don": false,
   "power_buff": false,
@@ -74813,7 +74864,17 @@
   "color": "Green",
   "sub_types": "FILM Heart Pirates Minks",
   "attribute": "Strike",
-  "effects": [],
+  "effects": [
+   {
+    "action": "set_active",
+    "trigger": "end_of_turn",
+    "target": "self"
+   },
+   {
+    "action": "set_don_active",
+    "trigger": "end_of_turn"
+   }
+  ],
   "synergy_states": {},
   "text": "[End of Your Turn] Set this Character or up to 1 of your DON!! cards as active.",
   "is_searcher": false,
@@ -75133,6 +75194,10 @@
     "trigger": "on_play"
    },
    {
+    "action": "give_don",
+    "trigger": "on_play"
+   },
+   {
     "action": "keyword_blocker",
     "trigger": "passive"
    }
@@ -75148,7 +75213,7 @@
   "kos": false,
   "rests_opponent": false,
   "bounces": false,
-  "gives_don": false,
+  "gives_don": true,
   "power_buff": false,
   "heals": false,
   "gains_life": false,
@@ -79549,6 +79614,10 @@
    {
     "action": "set_don_active",
     "trigger": "on_play"
+   },
+   {
+    "action": "rest_opp_character",
+    "trigger": "on_ko"
    }
   ],
   "synergy_states": {
@@ -79563,9 +79632,9 @@
   "has_counter_value": true,
   "has_counter_event": false,
   "is_blocker": false,
-  "is_removal": false,
+  "is_removal": true,
   "kos": false,
-  "rests_opponent": false,
+  "rests_opponent": true,
   "bounces": false,
   "gives_don": false,
   "power_buff": false,
@@ -83125,6 +83194,10 @@
   "attribute": "Slash Special",
   "effects": [
    {
+    "action": "give_don",
+    "trigger": "activate_main"
+   },
+   {
     "action": "play_card",
     "trigger": "trigger"
    }
@@ -83145,7 +83218,7 @@
   "kos": false,
   "rests_opponent": false,
   "bounces": false,
-  "gives_don": false,
+  "gives_don": true,
   "power_buff": false,
   "heals": false,
   "gains_life": false,
@@ -84935,7 +85008,8 @@
   "effects": [
    {
     "action": "rest_opp_character",
-    "trigger": "on_ko"
+    "trigger": "on_ko",
+    "cost_lte": 7
    },
    {
     "action": "immunity",
@@ -85285,6 +85359,10 @@
   "attribute": "Slash",
   "effects": [
    {
+    "action": "rest_opp_character",
+    "trigger": "on_play"
+   },
+   {
     "action": "set_active",
     "trigger": "activate_main",
     "cost_lte": 8,
@@ -85303,9 +85381,9 @@
   "has_counter_value": true,
   "has_counter_event": false,
   "is_blocker": false,
-  "is_removal": false,
+  "is_removal": true,
   "kos": false,
-  "rests_opponent": false,
+  "rests_opponent": true,
   "bounces": false,
   "gives_don": false,
   "power_buff": false,
@@ -90636,6 +90714,10 @@
   "attribute": "Slash",
   "effects": [
    {
+    "action": "rest_opp_character",
+    "trigger": "on_play"
+   },
+   {
     "action": "give_don",
     "trigger": "on_play"
    },
@@ -90656,9 +90738,9 @@
   "has_counter_value": false,
   "has_counter_event": false,
   "is_blocker": false,
-  "is_removal": false,
+  "is_removal": true,
   "kos": false,
-  "rests_opponent": false,
+  "rests_opponent": true,
   "bounces": false,
   "gives_don": true,
   "power_buff": false,
@@ -98646,7 +98728,12 @@
   "color": "Red",
   "sub_types": "Straw Hat Crew Supernovas",
   "attribute": "Strike",
-  "effects": [],
+  "effects": [
+   {
+    "action": "give_don",
+    "trigger": "activate_main"
+   }
+  ],
   "synergy_states": {},
   "text": "[Activate: Main] [Once Per Turn] Give this Leader or 1 of your Characters up to 1 rested DON!! card.",
   "is_searcher": false,
@@ -98658,7 +98745,7 @@
   "kos": false,
   "rests_opponent": false,
   "bounces": false,
-  "gives_don": false,
+  "gives_don": true,
   "power_buff": false,
   "heals": false,
   "gains_life": false,
@@ -106471,11 +106558,13 @@
    },
    {
     "action": "rest_opp_character",
-    "trigger": "main"
+    "trigger": "main",
+    "cost_lte": 4
    },
    {
     "action": "rest_opp_character",
-    "trigger": "counter"
+    "trigger": "counter",
+    "cost_lte": 4
    }
   ],
   "synergy_states": {
@@ -113536,6 +113625,10 @@
     "action": "transfer_don",
     "trigger": "activate_main",
     "target": "own_character"
+   },
+   {
+    "action": "give_don",
+    "trigger": "activate_main"
    }
   ],
   "synergy_states": {},
@@ -113549,7 +113642,7 @@
   "kos": false,
   "rests_opponent": false,
   "bounces": false,
-  "gives_don": false,
+  "gives_don": true,
   "power_buff": false,
   "heals": false,
   "gains_life": false,

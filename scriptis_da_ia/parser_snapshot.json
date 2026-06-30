@@ -2680,6 +2680,16 @@
   }
  },
  "EB03-026": {
+  "activate_main": {
+   "once_per_turn": true,
+   "steps": [
+    {
+     "action": "give_don",
+     "count": 1,
+     "rested": true
+    }
+   ]
+  },
   "on_play": {
    "conditions": {
     "opp_hand_gte": 5
@@ -5044,6 +5054,11 @@
      "amount": 2000,
      "duration": "this_turn",
      "target": "self"
+    },
+    {
+     "action": "give_don",
+     "count": 2,
+     "rested": true
     }
    ]
   }
@@ -5160,7 +5175,16 @@
    ]
   }
  },
- "OP01-021": {},
+ "OP01-021": {
+  "passive": {
+   "don_requirement": 1,
+   "steps": [
+    {
+     "action": "gain_can_attack_active"
+    }
+   ]
+  }
+ },
  "OP01-022": {
   "when_attacking": {
    "don_requirement": 1,
@@ -5176,6 +5200,16 @@
  },
  "OP01-023": {},
  "OP01-024": {
+  "activate_main": {
+   "once_per_turn": true,
+   "steps": [
+    {
+     "action": "give_don",
+     "count": 2,
+     "rested": true
+    }
+   ]
+  },
   "passive": {
    "don_requirement": 2,
    "steps": [
@@ -6391,7 +6425,23 @@
    ]
   }
  },
- "OP01-112": {},
+ "OP01-112": {
+  "activate_main": {
+   "costs": [
+    {
+     "count": 1,
+     "optional": true,
+     "type": "don_minus"
+    }
+   ],
+   "once_per_turn": true,
+   "steps": [
+    {
+     "action": "gain_can_attack_active"
+    }
+   ]
+  }
+ },
  "OP01-113": {
   "on_ko": {
    "steps": [
@@ -6711,7 +6761,16 @@
    ]
   }
  },
- "OP02-014": {},
+ "OP02-014": {
+  "passive": {
+   "don_requirement": 1,
+   "steps": [
+    {
+     "action": "gain_can_attack_active"
+    }
+   ]
+  }
+ },
  "OP02-015": {
   "activate_main": {
    "costs": [
@@ -7135,6 +7194,7 @@
    "steps": [
     {
      "action": "rest_opp_character",
+     "cost_lte": 5,
      "count": 1
     }
    ]
@@ -11137,6 +11197,7 @@
     },
     {
      "action": "rest_opp_character",
+     "cost_lte": 6,
      "count": 1
     }
    ]
@@ -11152,6 +11213,7 @@
     },
     {
      "action": "rest_opp_character",
+     "cost_lte": 6,
      "count": 1
     }
    ]
@@ -13381,6 +13443,7 @@
    "steps": [
     {
      "action": "rest_opp_character",
+     "cost_lte": 3,
      "count": 1
     }
    ]
@@ -16649,6 +16712,14 @@
   }
  },
  "OP06-110": {
+  "passive": {
+   "don_requirement": 2,
+   "steps": [
+    {
+     "action": "gain_can_attack_active"
+    }
+   ]
+  },
   "trigger": {
    "steps": [
     {
@@ -18967,6 +19038,11 @@
      ],
      "per_target_max": 1,
      "target": "own_character"
+    },
+    {
+     "action": "give_don",
+     "count": 1,
+     "rested": true
     }
    ]
   }
@@ -23510,6 +23586,7 @@
    "steps": [
     {
      "action": "rest_opp_character",
+     "cost_lte": 5,
      "count": 1
     }
    ]
@@ -27443,6 +27520,7 @@
    "steps": [
     {
      "action": "rest_opp_character",
+     "cost_lte": 6,
      "count": 1
     }
    ]
@@ -27459,6 +27537,7 @@
    "steps": [
     {
      "action": "rest_opp_character",
+     "cost_lte": 4,
      "count": 1
     },
     {
@@ -27559,6 +27638,7 @@
    "steps": [
     {
      "action": "rest_opp_character",
+     "cost_lte": 6,
      "count": 1
     },
     {
@@ -29533,7 +29613,16 @@
    ]
   }
  },
- "OP13-033": {},
+ "OP13-033": {
+  "on_ko": {
+   "steps": [
+    {
+     "action": "rest_opp_character",
+     "count": 2
+    }
+   ]
+  }
+ },
  "OP13-034": {
   "on_play": {
    "steps": [
@@ -29545,7 +29634,20 @@
    ]
   }
  },
- "OP13-035": {},
+ "OP13-035": {
+  "end_of_turn": {
+   "steps": [
+    {
+     "action": "set_active",
+     "target": "self"
+    },
+    {
+     "action": "set_don_active",
+     "count": 1
+    }
+   ]
+  }
+ },
  "OP13-036": {},
  "OP13-037": {
   "end_of_turn": {
@@ -29656,6 +29758,11 @@
      "action": "draw",
      "count": 2,
      "then_trash": 1
+    },
+    {
+     "action": "give_don",
+     "count": 2,
+     "rested": true
     }
    ]
   },
@@ -31500,6 +31607,14 @@
   }
  },
  "OP14-024": {
+  "on_ko": {
+   "steps": [
+    {
+     "action": "rest_opp_character",
+     "count": 1
+    }
+   ]
+  },
   "on_play": {
    "steps": [
     {
@@ -32989,6 +33104,16 @@
   }
  },
  "OP14-105": {
+  "activate_main": {
+   "once_per_turn": true,
+   "steps": [
+    {
+     "action": "give_don",
+     "count": 1,
+     "rested": true
+    }
+   ]
+  },
   "trigger": {
    "conditions": {
     "leader_type": "kuja pirates"
@@ -33804,6 +33929,7 @@
    "steps": [
     {
      "action": "rest_opp_character",
+     "cost_lte": 7,
      "count": 1
     }
    ]
@@ -33912,6 +34038,14 @@
      "cost_lte": 8,
      "count": 1,
      "target": "own_character"
+    }
+   ]
+  },
+  "on_play": {
+   "steps": [
+    {
+     "action": "rest_opp_character",
+     "count": 1
     }
    ]
   }
@@ -36159,6 +36293,10 @@
  "OP16-035": {
   "on_play": {
    "steps": [
+    {
+     "action": "rest_opp_character",
+     "count": 1
+    },
     {
      "action": "give_don",
      "count": 3,
@@ -39255,7 +39393,18 @@
    ]
   }
  },
- "ST01-001": {},
+ "ST01-001": {
+  "activate_main": {
+   "once_per_turn": true,
+   "steps": [
+    {
+     "action": "give_don",
+     "count": 1,
+     "rested": true
+    }
+   ]
+  }
+ },
  "ST01-002": {
   "passive": {
    "steps": [
@@ -41929,6 +42078,7 @@
    "steps": [
     {
      "action": "rest_opp_character",
+     "cost_lte": 4,
      "count": 1
     }
    ]
@@ -41937,6 +42087,7 @@
    "steps": [
     {
      "action": "rest_opp_character",
+     "cost_lte": 4,
      "count": 1
     }
    ]
@@ -44874,6 +45025,11 @@
      "filter_power_base_eq": 6000,
      "per_target_max": 2,
      "target": "own_character"
+    },
+    {
+     "action": "give_don",
+     "count": 2,
+     "rested": true
     }
    ]
   }

@@ -798,9 +798,19 @@ def parse_rest_opp(text):
         })
         return steps
 
-    m = re.search(r"rest up to (\d+) of your opponent.{0,20} characters?", t)
+    # Variante sem "up to" (exacta): "rest N of your opponent's Characters"
+    # (ex: P-008 Yamato "rest 1 of your opponent's Characters with cost<=2").
+    # Tambem aceita "cards" em vez de "characters" (ex: OP13-033 Franky
+    # "rest up to 2 of your opponent's cards" -- qualquer tipo de carta do
+    # oponente no campo, nao so Characters; heuristica: aplica como
+    # rest_opp_character (so characters tem rested relevante no estado).
+    m = re.search(r"rest (?:up to )?(\d+) of your opponent.{0,20}(?:characters?|cards?)", t)
     if m:
-        steps.append({'action': 'rest_opp_character', 'count': int(m.group(1))})
+        cost_m = re.search(r'cost of (\d+) or less', t)
+        step = {'action': 'rest_opp_character', 'count': int(m.group(1))}
+        if cost_m:
+            step['cost_lte'] = int(cost_m.group(1))
+        steps.append(step)
 
     return steps
 
@@ -825,6 +835,17 @@ def parse_set_active(text):
     """
     steps = []
     t = text.lower()
+
+    # Padrao combinado "Set this Character OR up to N of your DON!! cards as
+    # active" (ex: OP13-035 Bepo) -- a clausula inteira contem "don!!" e
+    # seria descartada pelo filtro abaixo. Detecta aqui e produz os dois
+    # steps (simplificacao sobre a escolha real: engine executa ambos quando
+    # possiveis, sem modelar a exclusividade do "or").
+    m_combo = re.search(r'set this character or up to (\d+) of your don!! cards? as active', t)
+    if m_combo:
+        steps.append({'action': 'set_active', 'target': 'self'})
+        steps.append({'action': 'set_don_active', 'count': int(m_combo.group(1))})
+        return steps
 
     for m in re.finditer(r'set ([^.]*?) as active', t):
         desc = m.group(1)
@@ -918,7 +939,10 @@ def parse_can_attack_active(text):
     steps = []
     t = text.lower()
 
-    if re.search(r'this character can also attack active characters?', t):
+    # Aceita "active Characters" OU "your opponent's active Characters"
+    # (a variante com "your opponent's" aparece em cartas mais antigas
+    # como OP01-021, OP02-014; a forma curta e mais comum nas novas).
+    if re.search(r'this character can also attack (?:your opponent.?s )?active characters?', t):
         steps.append({'action': 'gain_can_attack_active'})
         return steps
 
@@ -1600,6 +1624,22 @@ def parse_give_don(text):
     # retirado do banco e especificamente RESTED (qualificador explicito no
     # texto, ex: "give up to 1 rested DON!! card") -- sem o qualificador, a
     # IA escolhe entre DON rested/ativo do banco na hora de executar.
+    # Variante alternativa: "Give [alvo] up to N rested DON!! card" onde o
+    # alvo vem ANTES de "up to N" (ex: ST01-001 "Give this Leader or 1 of
+    # your Characters up to 1 rested DON!! card"). Testada ANTES da regex
+    # padrao pra nao mascarar o match da regex mais curta (que nao casaria
+    # aqui de qualquer forma -- nao tem "give up to N" diretamente).
+    m_tgt_first = re.search(r'give .{3,60}?up to (\d+) (rested )?don!! cards?', t)
+    if m_tgt_first and not re.search(r'give up to \d+ (rested )?don!!', t):
+        cnt = int(m_tgt_first.group(1))
+        is_rested = bool(m_tgt_first.group(2))
+        clause = m_tgt_first.group(0)
+        to_opp = 'opponent' in clause
+        step = {'action': 'give_don_opp' if to_opp else 'give_don', 'count': cnt}
+        if is_rested:
+            step['rested'] = True
+        steps.append(step)
+
     m = re.search(r'give up to (\d+) (rested )?don!! cards?[^.]{0,60}', t)
     if m:
         cnt = int(m.group(1))
@@ -1896,6 +1936,15 @@ def parse_play_from_trash(text):
     # outra carta). Count implicito = 1, target = self.
     if re.search(r'play this character card from your trash', t):
         steps.append({'action': 'play_from_trash', 'count': 1, 'filter_self': True})
+
+    # "you may add this Character card to your hand" -- recuperacao de si
+    # mesmo no trash para a MAO (distinto de play_from_trash que vai pro
+    # campo). Achado 02/07/2026 (P-071 Marco on_ko). Simplificacao: mapeado
+    # para play_from_trash filter_self=True pois o resultado pratico
+    # (recuperar a carta em vez de perde-la) e equivalente para a IA.
+    if re.search(r'(?:you may )?add this character card to your hand', t):
+        if not steps:  # nao duplica se play_from_trash ja capturou acima
+            steps.append({'action': 'play_from_trash', 'count': 1, 'filter_self': True})
 
     return steps
 
@@ -2831,6 +2880,18 @@ def parse_opp_self_move_character(text):
         if m5.group(2) == 'events':
             step['filter_type'] = 'event'
         steps.append(step)
+
+    # "Place up to N card(s) from your opponent's trash at the bottom of
+    # the owner's deck" -- iniciativa do JOGADOR ATIVO escolhendo do trash
+    # do oponente, destino = fundo do deck do oponente. Funcionalmente
+    # identico ao opp_place_trash_bottom_deck (mesmo resultado de jogo).
+    # Achado 02/07/2026 (OP15-091 Margarita). "owner's deck" = deck do
+    # dono da carta (o oponente, por ser trash dele).
+    m6 = re.search(
+        r"place up to (\d+) cards? from your opponent.?s trash "
+        r"at(?: the)? bottom of (?:the owner.?s|their) deck", t)
+    if m6:
+        steps.append({'action': 'opp_place_trash_bottom_deck', 'count': int(m6.group(1))})
     return steps
 
 
@@ -3005,7 +3066,9 @@ def parse_block(block_text, trigger_name):
         steps.extend(parse_lock_blocker_battle(t))
 
     # "can also attack active Characters" -- keyword nova (achada 27/06).
-    if 'can also attack active' in t:
+    # Aceita tambem a variante "can also attack your opponent's active
+    # Characters" (cartas antigas OP01-021, OP02-014 etc.).
+    if 'can also attack active' in t or "can also attack your opponent's active" in t:
         steps.extend(parse_can_attack_active(t))
 
     # Unblockable concedido via "select + if attacks this turn" ou fixo no
