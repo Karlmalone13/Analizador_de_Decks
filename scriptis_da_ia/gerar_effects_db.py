@@ -421,7 +421,21 @@ def parse_look_at(text):
     steps = []
     t = text.lower()
 
-    m = re.search(r'look at (\d+) cards?', t)
+    # Aceita variantes: "look at N cards", "look at up to N cards",
+    # "look at the top N cards" (todas equivalentes no engine -- olha N cartas
+    # do topo do deck e escolhe 1+ para adicionar/jogar).
+    # Guarda negativa: "look at ... card from the top of your ... Life cards"
+    # refere-se a cartas de Life, nao ao deck -- tratado por peek_life,
+    # nao por esta funcao (ex: EB02-053, OP03-099).
+    # Guarda: parse_look_at e para busca no DECK. Se nao ha "from the top of
+    # your deck" nem "from your deck" no texto, o "look at" refere-se a outro
+    # contexto (ex: Life cards -- tratado por peek_life). Sem esta guarda,
+    # "Look at up to 1 card from the top of your ... Life cards" (EB02-053)
+    # producao steps errados de look_top_deck/add_to_hand.
+    if ('from the top of your deck' not in t and 'from your deck' not in t
+            and 'of your deck' not in t):
+        return steps
+    m = re.search(r'look at (?:up to |the top )?(\d+) cards?', t)
     if not m:
         return steps
     look_count = int(m.group(1))
@@ -766,6 +780,38 @@ def parse_bounce(text):
     if re.search(r"return this character to the owner.?s hand", t):
         steps.append({'action': 'bounce', 'count': 1, 'target': 'self'})
 
+    # "return up to N of your [Tipo A] or [Tipo B] type Characters to the
+    # owner's hand" -- auto-bounce de Characters PROPRIOS com filtro de tipo
+    # (potencialmente multi-tipo com 'or'). Ex: OP07-062 Vinsmoke Reiju,
+    # OP07-058 Island of Women. Tipo primario = primeiro tipo mencionado
+    # (heuristica de filtragem: IA prioriza a opcao mais barata da tribo
+    # principal, mesmo com OR).
+    m_own = re.search(
+        r"return up to (\d+) of your "
+        r"(?:\[([^\]]+)\](?: or \[([^\]]+)\])? type characters?)"
+        r"(?:.{0,30})?to the owner.?s hand",
+        t
+    )
+    if m_own and not steps:
+        step = {'action': 'bounce', 'count': int(m_own.group(1)), 'target': 'own_character'}
+        # Usa o primeiro tipo como filtro primario (IA escolhe entre proprios)
+        if m_own.group(2):
+            step['filter_type'] = m_own.group(2).strip()
+        steps.append(step)
+    # Variante com condicional de DON e cost_lte: "if the number of DON!!
+    # cards on your field is equal to or less than the number on your
+    # opponent's field, return up to 1 of your [Tipo] Characters..."
+    # (OP07-062 Vinsmoke Reiju, condicao sera capturada por parse_conditions).
+    m_cond = re.search(
+        r"return up to (\d+) of your "
+        r"\[([^\]]+)\] type characters? with a cost of (\d+)",
+        t
+    )
+    if m_cond and not steps:
+        steps.append({'action': 'bounce', 'count': int(m_cond.group(1)),
+                      'target': 'own_character', 'filter_type': m_cond.group(2).strip(),
+                      'cost_lte': int(m_cond.group(3))})
+
     return steps
 
 
@@ -845,6 +891,23 @@ def parse_set_active(text):
     if m_combo:
         steps.append({'action': 'set_active', 'target': 'self'})
         steps.append({'action': 'set_don_active', 'count': int(m_combo.group(1))})
+        return steps
+
+    # "set up to N of your [Type A] (or [Type B]) type Characters and up to N
+    # of your DON!! cards as active" -- Jinbe Leader (OP11-021). A clausula
+    # inteira contem "don!!" e seria descartada pelo filtro abaixo. Produz
+    # set_active (tipo filtrado) + set_don_active (simplificacao: OR de dois
+    # tipos vira filtro do primeiro tipo).
+    m_char_don = re.search(
+        r'set up to (\d+) of your [^.]*?type characters? and up to (\d+) of your don!! cards? as active', t)
+    if m_char_don:
+        char_step = {'action': 'set_active', 'target': 'own_character', 'count': int(m_char_don.group(1))}
+        # extrai o(s) tipo(s) mencionados
+        type_m = re.search(r'"([^"]+)"(?: or "([^"]+)")? type character', t)
+        if type_m:
+            char_step['filter_type'] = type_m.group(1).strip()
+        steps.append(char_step)
+        steps.append({'action': 'set_don_active', 'count': int(m_char_don.group(2))})
         return steps
 
     for m in re.finditer(r'set ([^.]*?) as active', t):
@@ -944,6 +1007,22 @@ def parse_can_attack_active(text):
     # como OP01-021, OP02-014; a forma curta e mais comum nas novas).
     if re.search(r'this character can also attack (?:your opponent.?s )?active characters?', t):
         steps.append({'action': 'gain_can_attack_active'})
+        return steps
+
+    # "can attack Characters on the turn in which it is played" / "can attack
+    # on the turn in which they are played" = semanticamente identico ao
+    # keyword [Rush] (pode atacar no proprio turno de ser jogado). Dois
+    # contextos: self (this Character, condicional a leader) e GRANT a tipo
+    # (Stage passiva concede Rush a todos os Characters do tipo quando jogados).
+    m_rush_self = re.search(r'this character can attack characters? on the turn in which it is played', t)
+    if m_rush_self:
+        steps.append({'action': 'gain_rush'})
+        return steps
+    m_rush_type = re.search(
+        r'your \[?([a-z][a-z0-9 ]+)\]? type characters? can attack characters? '
+        r'on the turn in which they are played', t)
+    if m_rush_type:
+        steps.append({'action': 'gain_rush', 'filter_type': m_rush_type.group(1).strip()})
         return steps
 
     m_select = re.search(
@@ -1148,19 +1227,26 @@ def parse_lock_attack(text):
     # Padrao direto: "up to N of your opponent's Character(s) [with a cost
     # of X or less] cannot (attack|be rested) until ..."
     m = re.search(
-        r"up to (\d+) of your opponent.{0,15}characters?"
+        r"up to (\d+) of your opponent.{0,15}(?:leader or )?characters?"
+        r"(?:\s+cards?)?"                              # aceita "cards" apos "character(s)" (OP04-100)
         r"(?: with a cost (?:of|or) (\d+) or less)?"  # aceita typo "cost or N" (OP14-119)
+        r"(?: with (\d+) power or less)?"              # filtro por power (EB04-028)
         r"(?: other than \[([^\]]+)\])?"
-        r" cannot (attack|be rested) until ([^.]+)",
+        r" cannot (attack|be rested) (?:until|during this) ([^.]+)",
         t
     )
     if m:
-        action = 'lock_opp_character_attack' if m.group(4) == 'attack' else 'lock_opp_cannot_be_rested'
-        step = {'action': action, 'count': int(m.group(1)), 'duration': parse_duration(m.group(5))}
+        action = 'lock_opp_character_attack' if m.group(5) == 'attack' else 'lock_opp_cannot_be_rested'
+        duration_txt = m.group(6)
+        dur = ('until_opp_turn_end' if 'this turn' in duration_txt
+               else parse_duration(duration_txt))
+        step = {'action': action, 'count': int(m.group(1)), 'duration': dur}
         if m.group(2):
             step['cost_lte'] = int(m.group(2))
         if m.group(3):
-            step['exclude'] = m.group(3).strip()
+            step['power_lte'] = int(m.group(3))
+        if m.group(4):
+            step['exclude'] = m.group(4).strip()
         steps.append(step)
         return steps
 
@@ -1953,6 +2039,22 @@ def parse_play_from_deck(text):
     steps = []
     t = text.lower()
 
+    # Variante "play by name from deck": "play up to N [Name] with a cost of X
+    # from your deck" -- usa nome entre colchetes, nao tipo. Ex: ST03-007
+    # Sentomaru "[Pacifista]", OP08-071 "[Baron Tamago]", OP08-073 "[Count
+    # Niwatori]". Mapeado como play_from_deck com filter_name.
+    m_name_deck = re.search(
+        r'play up to (\d+) \[([^\]]+)\](?: with a cost of (\d+) or less)? from your deck', t)
+    if m_name_deck:
+        step_nd = {
+            'action': 'play_from_deck',
+            'count': int(m_name_deck.group(1)),
+            'filter_name': m_name_deck.group(2).strip(),
+            'cost_lte': int(m_name_deck.group(3)) if m_name_deck.group(3) else 99,
+        }
+        steps.append(step_nd)
+        return steps
+
     m = re.search(r'play up to (\d+) .{0,20}type character card.{0,40}from your deck', t)
     if m:
         type_m = re.search(r'play up to \d+ (?:black |red |blue |green |yellow |purple )?"?([a-z][a-z0-9 .]+)"? type', t)
@@ -1987,7 +2089,59 @@ def parse_reveal_top_play(text):
     if not re.search(r'reveal 1 card from the top of (?:your|the) deck', t):
         return steps
 
-    m = re.search(r'play up to (\d+) [^.]*?character card', t)
+    # Variante "add to hand" em vez de "play": "reveal 1 card ... and add up
+    # to 1 [Tipo] card to your hand. Then, place the rest at the bottom of
+    # your deck." (ex: ST11-001 Uta). Mapeado para add_to_hand + deck_bottom_rest.
+    m_add = re.search(r'add up to (\d+) ([^\n.]+?) cards? to your hand', t)
+    if m_add:
+        filter_m = re.search(r'\[([^\]]+)\]', m_add.group(2))
+        type_m_add = re.search(r'"([^"]+)" type', m_add.group(2))
+        step_add = {
+            'action': 'add_to_hand',
+            'count': int(m_add.group(1)),
+            'revealed_to_opponent': True,
+        }
+        if filter_m:
+            step_add['filter_type'] = filter_m.group(1).strip().lower()
+        elif type_m_add:
+            step_add['filter_type'] = type_m_add.group(1).strip().lower()
+        steps.append({'action': 'look_top_deck', 'count': 1})
+        steps.append(step_add)
+        if 'place the rest at the bottom' in t:
+            steps.append({'action': 'deck_bottom_rest'})
+        elif 'place the rest at the top or bottom' in t or 'place them at the top or bottom' in t:
+            steps.append({'action': 'deck_reorder_rest'})
+        return steps
+
+    # Variante condicional: "reveal 1 card. If that card is [Tipo] with a
+    # cost of N or less, you may play that card [rested]." -- sem "play up to
+    # N character card" mas ainda joga da deck condicional. Ex: OP01-060,
+    # OP07-048. Mapeado como play_from_deck com reveal_count=1.
+    m_cond = re.search(r'if that card is [^,.]+ with a cost of (\d+) or less.{0,40}you may play that card', t)
+    if m_cond:
+        type_m_cond = (re.search(r'if that card is "([^"]+)" type', t)
+                       or re.search(r'if that card is \[([^\]]+)\] type', t)
+                       or re.search(r'if that card is a "([^"]+)" type', t)
+                       or re.search(r'if that card is a \[([^\]]+)\] type', t))
+        rested_cond = 'play that card rested' in t or 'play it rested' in t
+        step_cond = {
+            'action': 'play_from_deck',
+            'count': 1,
+            'filter_type': type_m_cond.group(1).strip() if type_m_cond else '',
+            'cost_lte': int(m_cond.group(1)),
+            'reveal_count': 1,
+            'rested': rested_cond,
+        }
+        steps.append(step_cond)
+        if 'place the rest at the bottom' in t:
+            steps.append({'action': 'deck_bottom_rest'})
+        return steps
+
+    # Aceita "character card(s)" e "character" sem "card" (ex: OP06-119
+    # "play up to 1 character with a cost of 9 or less").
+    m = re.search(r'play up to (\d+) [^.]*?character cards?(?! deck)', t)
+    if not m:
+        m = re.search(r'play up to (\d+) [^.]*?character\b(?!\s+deck)(?!\s+from)', t)
     if not m:
         return steps
     count = int(m.group(1))
@@ -2132,10 +2286,22 @@ def parse_cost_debuff(text):
     steps = []
     t = text.lower()
 
-    m = re.search(r'give [^.]*?([+\-−])(\d+) cost', t)
+    # Aceita sinal explicito (+/-/−/－) ou sem sinal. Tambem aceita sinal
+    # fullwidth (U+FF0D, P-076 Sakazuki). Se sem sinal + "opponent" no trecho
+    # → debuff_cost (custo sobe para o oponente). Se sem sinal + proprio lado
+    # → buff_cost (reducao de custo para si, sem sinal = positivo para quem
+    # recebe → custo reduzido na semantica OPTCG).
+    m = re.search(r'give [^.]*?([+\-−－]?)(\d+) cost', t)
     if m:
-        is_debuff = m.group(1) in ('-', '−')
+        sign = m.group(1)
         clause = t[:m.start()+len(m.group(0))]
+        has_opp = 'opponent' in clause
+        if sign in ('-', '−', '－'):
+            is_debuff = True
+        elif sign == '+':
+            is_debuff = False
+        else:  # sem sinal: opponent → debuff, own → buff
+            is_debuff = has_opp
         # "give this card [in your hand] -N cost" e SEMPRE auto-referencia
         # (geralmente reduzir o proprio custo para jogar, condicionado a
         # algo do board state -- ex: estar atras em DON). A palavra
@@ -3056,7 +3222,8 @@ def parse_block(block_text, trigger_name):
         steps.extend(parse_place_bottom(t))
 
     # Restar oponente
-    if 'rest up to' in t and 'opponent' in t:
+    # Aceita "rest up to N" e "rest N" (sem "up to") para oponente.
+    if ('rest up to' in t or re.search(r'rest \d+', t)) and 'opponent' in t:
         steps.extend(parse_rest_opp(t))
 
     # Trava de Blocker do oponente, so NESTA batalha (when_attacking) --
@@ -3065,10 +3232,11 @@ def parse_block(block_text, trigger_name):
     if 'blocker' in t and 'during this battle' in t and 'cannot activate' in t:
         steps.extend(parse_lock_blocker_battle(t))
 
-    # "can also attack active Characters" -- keyword nova (achada 27/06).
-    # Aceita tambem a variante "can also attack your opponent's active
-    # Characters" (cartas antigas OP01-021, OP02-014 etc.).
-    if 'can also attack active' in t or "can also attack your opponent's active" in t:
+    # "can also attack active Characters" / "can attack Characters on the turn
+    # in which it is played" (= Rush semantico). Aceita variantes antigas.
+    if ('can also attack active' in t or "can also attack your opponent's active" in t
+            or 'can attack characters on the turn' in t
+            or 'can attack characters? on the turn' in t):
         steps.extend(parse_can_attack_active(t))
 
     # Unblockable concedido via "select + if attacks this turn" ou fixo no
@@ -3125,6 +3293,36 @@ def parse_block(block_text, trigger_name):
     if re.search(r'return all (?:the )?cards in your hand to your deck', t) or \
        re.search(r'place all (?:the )?cards in your hand (?:on|at) the bottom of your deck', t):
         steps.extend(parse_shuffle_hand(t))
+    # "your opponent adds N card(s) from their Life area to their hand" --
+    # forca o oponente a mover da propria vida para a propria mao (enfraquece
+    # a vida dele). Achado 02/07/2026 (P-009 Trafalgar Law).
+    m_opp_life = re.search(
+        r"your opponent (?:adds?|takes?) (\d+) cards? from (?:their|his|her) life(?: area)? to (?:their|his|her) hand",
+        t)
+    if m_opp_life:
+        steps.append({'action': 'opp_life_to_hand', 'count': int(m_opp_life.group(1))})
+
+    # "the cost of playing [Tipo] type Character cards ... will be reduced by N"
+    # -- reducao de custo de jogo (da mao) para tipo especifico. Achado
+    # 02/07/2026 (OP05-097 Mary Geoise). Engine ja trata via hardcode para
+    # esta Stage; o step serve para a analysis_db reconhecer a mecanica.
+    m_red = re.search(r"cost of playing \[?([a-z][a-z0-9 ]+)\]? type.+?reduced by (\d+)", t)
+    if m_red:
+        steps.append({'action': 'buff_cost', 'amount': int(m_red.group(2)),
+                      'target': 'own_play_hand', 'filter_type': m_red.group(1).strip()})
+
+    # Versao para o OPONENTE: "your opponent returns all cards in their hand
+    # to their deck and shuffles their deck. Then, your opponent draws N cards."
+    # (OP06-047 Charlotte Pudding) -- forca o oponente a reciclar a mao inteira
+    # e recomprar N cartas (reset de mao). Novo action opp_shuffle_hand_into_deck.
+    m_opp_shuf = re.search(
+        r"your opponent returns all cards? in (?:their|his|her) hand to (?:their|his|her) deck", t)
+    if m_opp_shuf:
+        draw_m = re.search(r'your opponent draws (\d+) cards?', t)
+        step_shuf = {'action': 'opp_shuffle_hand_into_deck'}
+        if draw_m:
+            step_shuf['draw_back'] = int(draw_m.group(1))
+        steps.append(step_shuf)
         shuffled_hand = True
 
     # Draw (sem look at). Pula se já tratado como shuffle_hand (draw-back embutido).
@@ -3143,8 +3341,8 @@ def parse_block(block_text, trigger_name):
     if 'base power becomes' in t:
         steps.extend(parse_set_base_power(t))
 
-    # Custo: give -N/+N cost (oponente, geralmente) / gains +N cost (proprio)
-    if 'cost' in t and ('give' in t or 'gain' in t) and ('-' in t or '−' in t or '+' in t):
+    # Custo: give +/-N cost / "give N cost" sem sinal (opponent) / gains +N cost
+    if 'cost' in t and ('give' in t or 'gain' in t):
         steps.extend(parse_cost_debuff(t))
 
     # Play genérico (sem origem explícita)
@@ -3161,7 +3359,11 @@ def parse_block(block_text, trigger_name):
         steps.extend(parse_negate_effect(t))
 
     # Play from trash
-    if 'from your trash' in t and 'play up to' in t:
+    if 'from your trash' in t and ('play up to' in t or 'play this character card from your trash' in t):
+        steps.extend(parse_play_from_trash(t))
+    # Variante "add this Character card to your hand" em on_ko (sem "from your
+    # trash" explicito -- P-071 Marco). Mapeado para play_from_trash self.
+    if 'add this character card to your hand' in t:
         steps.extend(parse_play_from_trash(t))
 
     # Play from deck -- "reveal 1 from TOP, play" (padrao sem "look at",
@@ -3307,7 +3509,8 @@ def parse_block(block_text, trigger_name):
     if ('your opponent returns' in t or 'your opponent places' in t
             or 'your opponent must place' in t
             or ('they place' in t and 'hand' in t)
-            or ('your opponent chooses' in t and 'return' in t)):
+            or ('your opponent chooses' in t and 'return' in t)
+            or "from your opponent's trash" in t):  # player places from opp trash
         steps.extend(parse_opp_self_move_character(t))
 
     # Trigger especial: "Activate this card's [Main] effect"

@@ -2607,6 +2607,19 @@ class EffectExecutor:
             self._return_don_to_deck(count, estado=opp)
             return f'oponente devolveu até {count} DON pro deck'
 
+        # "your opponent adds N card(s) from their Life area to their hand"
+        # -- forca o oponente a mover da propria vida para a propria mao
+        # (enfraquece a vida dele, da carta a ele na mao). P-009 Law.
+        if action == 'opp_life_to_hand':
+            count = step.get('count', 1)
+            moved = []
+            for _ in range(min(count, len(opp.life))):
+                c = opp.life.pop()
+                c.life_face_up = False
+                opp.hand.append(c)
+                moved.append(c.name[:12])
+            return f'oponente moveu da vida pra mao: {", ".join(moved)}' if moved else ''
+
         # ── Trava de ataque / trava de rest / trava de Blocker (persistente) ────
         # Mecanicas DISTINTAS apesar de compartilharem estrutura de
         # implementacao: lock_opp_character_attack impede ATACAR;
@@ -3362,6 +3375,23 @@ class EffectExecutor:
                     if not me.deck: break
                     me.hand.append(me.deck.pop())
             return f'redesenhou a mão ({n} cartas)'
+
+        # Versao OPONENTE de shuffle_hand_into_deck: forca o oponente a
+        # reciclar sua mao inteira no deck e recomprar N cartas (OP06-047).
+        if action == 'opp_shuffle_hand_into_deck':
+            import random as _rnd
+            n = len(opp.hand)
+            if n == 0:
+                return ''
+            cards = list(opp.hand)
+            opp.hand.clear()
+            opp.deck.extend(cards)
+            _rnd.shuffle(opp.deck)
+            draw_back = step.get('draw_back', 0)
+            for _ in range(draw_back):
+                if not opp.deck: break
+                opp.hand.append(opp.deck.pop())
+            return f'oponente reciclou mão ({n} cartas) e comprou {draw_back}'
 
         # ── DON: reativar DON rested (set as active) = ramp dentro do turno ───
         if action == 'add_don':

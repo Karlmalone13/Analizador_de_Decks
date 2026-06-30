@@ -2236,6 +2236,13 @@
         "conditions": {
           "leader_type": "straw hat crew"
         }
+      },
+      "passive": {
+        "steps": [
+          {
+            "action": "gain_rush"
+          }
+        ]
       }
     }
   },
@@ -3007,6 +3014,12 @@
       "on_play": {
         "steps": [
           {
+            "action": "debuff_cost",
+            "amount": 1,
+            "target": "opp_character",
+            "count": 1
+          },
+          {
             "action": "trash_from_deck_top",
             "count": 2
           }
@@ -3167,13 +3180,23 @@
     "attribute": "",
     "effects": {
       "main": {
-        "steps": [
-          {
-            "action": "ko",
-            "count": 1,
-            "target": "opp_character",
-            "cost_lte": 2
-          }
+        "choice": [
+          [
+            {
+              "action": "ko",
+              "count": 1,
+              "target": "opp_character",
+              "cost_lte": 2
+            }
+          ],
+          [
+            {
+              "action": "debuff_cost",
+              "amount": 4,
+              "target": "opp_character",
+              "count": 1
+            }
+          ]
         ]
       }
     }
@@ -5470,6 +5493,17 @@
           "life_gte": 2,
           "leader_type": "egghead"
         }
+      },
+      "trigger": {
+        "steps": [
+          {
+            "action": "lock_opp_character_attack",
+            "count": 1,
+            "duration": "until_opp_turn_end",
+            "cost_lte": 6,
+            "exclude": "monkey.d.luffy"
+          }
+        ]
       }
     }
   },
@@ -6112,6 +6146,16 @@
         "conditions": {
           "leader_type": "minks"
         }
+      },
+      "your_turn": {
+        "steps": [
+          {
+            "action": "debuff_cost",
+            "amount": 1,
+            "target": "opp_character",
+            "count": 99
+          }
+        ]
       }
     }
   },
@@ -6478,7 +6522,27 @@
     "color": "Blue",
     "sub_types": "Navy",
     "attribute": "",
-    "effects": {}
+    "effects": {
+      "main": {
+        "steps": [
+          {
+            "action": "lock_opp_character_attack",
+            "count": 2,
+            "duration": "until_opp_end_phase",
+            "power_lte": 10000
+          }
+        ],
+        "conditions": {
+          "leader_type": "navy"
+        },
+        "costs": [
+          {
+            "type": "trash_from_hand",
+            "count": 1
+          }
+        ]
+      }
+    }
   },
   "EB04-029": {
     "name": "I Heard the Sound...of a Lady's Teardrops Falling",
@@ -9180,7 +9244,27 @@
     "color": "Blue",
     "sub_types": "Donquixote Pirates The Seven Warlords of the Sea",
     "attribute": "Special",
-    "effects": {}
+    "effects": {
+      "when_attacking": {
+        "steps": [
+          {
+            "action": "play_from_deck",
+            "count": 1,
+            "filter_type": "the seven warlords of the sea",
+            "cost_lte": 4,
+            "reveal_count": 1,
+            "rested": true
+          }
+        ],
+        "costs": [
+          {
+            "type": "rest_don",
+            "count": 1
+          }
+        ],
+        "don_requirement": 2
+      }
+    }
   },
   "OP01-061": {
     "name": "Kaido (061)",
@@ -9349,7 +9433,18 @@
     "color": "Blue",
     "sub_types": "Punk Hazard Scientist",
     "attribute": "Special",
-    "effects": {}
+    "effects": {
+      "on_ko": {
+        "steps": [
+          {
+            "action": "play_from_deck",
+            "count": 1,
+            "filter_name": "smiley",
+            "cost_lte": 99
+          }
+        ]
+      }
+    }
   },
   "OP01-070": {
     "name": "Dracule Mihawk",
@@ -10806,7 +10901,24 @@
     "color": "Red",
     "sub_types": "Mountain Bandits",
     "attribute": "Slash",
-    "effects": {}
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "look_top_deck",
+            "count": 5
+          },
+          {
+            "action": "add_to_hand",
+            "count": 1,
+            "revealed_to_opponent": true
+          },
+          {
+            "action": "deck_bottom_rest"
+          }
+        ]
+      }
+    }
   },
   "OP02-006": {
     "name": "Kingdew",
@@ -11097,6 +11209,24 @@
     "sub_types": "Whitebeard Pirates",
     "attribute": "Special",
     "effects": {
+      "on_ko": {
+        "steps": [
+          {
+            "action": "play_from_trash",
+            "count": 1,
+            "filter_self": true
+          }
+        ],
+        "conditions": {
+          "life_lte": 2
+        },
+        "costs": [
+          {
+            "type": "trash_from_hand",
+            "count": 1
+          }
+        ]
+      },
       "passive": {
         "steps": [
           {
@@ -20186,7 +20316,19 @@
     "color": "Black",
     "sub_types": "Dressrosa",
     "attribute": "",
-    "effects": {}
+    "effects": {
+      "passive": {
+        "steps": [
+          {
+            "action": "gain_rush",
+            "filter_type": "dressrosa"
+          }
+        ],
+        "conditions": {
+          "leader_type": "dressrosa"
+        }
+      }
+    }
   },
   "OP04-097": {
     "name": "Otama",
@@ -20268,7 +20410,17 @@
     "color": "Yellow",
     "sub_types": "Firetank Pirates",
     "attribute": "Ranged",
-    "effects": {}
+    "effects": {
+      "trigger": {
+        "steps": [
+          {
+            "action": "lock_opp_character_attack",
+            "count": 1,
+            "duration": "until_opp_turn_end"
+          }
+        ]
+      }
+    }
   },
   "OP04-101": {
     "name": "Carmel",
@@ -23596,7 +23748,18 @@
     "color": "Black",
     "sub_types": "Mary Geoise",
     "attribute": "",
-    "effects": {}
+    "effects": {
+      "your_turn": {
+        "steps": [
+          {
+            "action": "buff_cost",
+            "amount": 1,
+            "target": "own_play_hand",
+            "filter_type": "celestial dragons"
+          }
+        ]
+      }
+    }
   },
   "OP05-098": {
     "name": "Enel (098)",
@@ -24108,7 +24271,25 @@
     "color": "Yellow",
     "sub_types": "Sky Island",
     "attribute": "",
-    "effects": {}
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "look_top_deck",
+            "count": 5
+          },
+          {
+            "action": "add_to_hand",
+            "count": 1,
+            "revealed_to_opponent": true,
+            "filter_type": "sky island"
+          },
+          {
+            "action": "deck_bottom_rest"
+          }
+        ]
+      }
+    }
   },
   "OP05-118": {
     "name": "Kaido (118)",
@@ -25459,7 +25640,16 @@
     "color": "Blue",
     "sub_types": "Big Mom Pirates",
     "attribute": "Wisdom",
-    "effects": {}
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "opp_shuffle_hand_into_deck",
+            "draw_back": 5
+          }
+        ]
+      }
+    }
   },
   "OP06-048": {
     "name": "Zeff",
@@ -27597,7 +27787,20 @@
     "color": "Blue",
     "sub_types": "Straw Hat Crew",
     "attribute": "Strike",
-    "effects": {}
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "play_from_deck",
+            "count": 1,
+            "filter_type": "",
+            "cost_lte": 9,
+            "reveal_count": 1,
+            "rested": false
+          }
+        ]
+      }
+    }
   },
   "OP07-001": {
     "name": "Monkey.D.Dragon (001)",
@@ -28455,6 +28658,13 @@
             "cost_lte": 6
           }
         ]
+      },
+      "passive": {
+        "steps": [
+          {
+            "action": "gain_rush"
+          }
+        ]
       }
     }
   },
@@ -28926,7 +29136,30 @@
     "color": "Blue",
     "sub_types": "Donquixote Pirates The Seven Warlords of the Sea",
     "attribute": "Special",
-    "effects": {}
+    "effects": {
+      "activate_main": {
+        "steps": [
+          {
+            "action": "play_from_deck",
+            "count": 1,
+            "filter_type": "the seven warlords of the sea",
+            "cost_lte": 4,
+            "reveal_count": 1,
+            "rested": true
+          },
+          {
+            "action": "deck_bottom_rest"
+          }
+        ],
+        "costs": [
+          {
+            "type": "rest_don",
+            "count": 2
+          }
+        ],
+        "once_per_turn": true
+      }
+    }
   },
   "OP07-049": {
     "name": "Buckin",
@@ -29199,7 +29432,30 @@
     "color": "Blue",
     "sub_types": "Amazon Lily",
     "attribute": "",
-    "effects": {}
+    "effects": {
+      "activate_main": {
+        "steps": [
+          {
+            "action": "bounce",
+            "count": 1,
+            "target": "own_character",
+            "filter_type": "amazon lily"
+          }
+        ],
+        "conditions": {
+          "leader_type": "kuja pirates"
+        },
+        "costs": [
+          {
+            "type": "rest_self"
+          },
+          {
+            "type": "trash_from_hand",
+            "count": 1
+          }
+        ]
+      }
+    }
   },
   "OP07-059": {
     "name": "Foxy (059)",
@@ -29294,7 +29550,18 @@
     "color": "Purple",
     "sub_types": "The Vinsmoke Family Kingdom of GERMA",
     "attribute": "Strike",
-    "effects": {}
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "bounce",
+            "count": 1,
+            "target": "own_character",
+            "filter_type": "the vinsmoke family"
+          }
+        ]
+      }
+    }
   },
   "OP07-063": {
     "name": "Capote",
@@ -30142,6 +30409,10 @@
         "steps": [
           {
             "action": "opp_trash_from_hand",
+            "count": 1
+          },
+          {
+            "action": "opp_place_trash_bottom_deck",
             "count": 1
           }
         ],
@@ -32569,11 +32840,21 @@
     "attribute": "Special",
     "effects": {
       "activate_main": {
-        "steps": [
-          {
-            "action": "draw",
-            "count": 1
-          }
+        "choice": [
+          [
+            {
+              "action": "draw",
+              "count": 1
+            }
+          ],
+          [
+            {
+              "action": "debuff_cost",
+              "amount": 2,
+              "target": "opp_character",
+              "count": 1
+            }
+          ]
         ],
         "conditions": {
           "hand_lte": 5
@@ -32924,7 +33205,21 @@
     "color": "Purple",
     "sub_types": "Big Mom Pirates",
     "attribute": "Strike",
-    "effects": {}
+    "effects": {
+      "on_ko": {
+        "steps": [
+          {
+            "action": "play_from_deck",
+            "count": 1,
+            "filter_name": "baron tamago",
+            "cost_lte": 4
+          }
+        ],
+        "conditions": {
+          "opp_turn_only": true
+        }
+      }
+    }
   },
   "OP08-072": {
     "name": "Biscuit Warrior",
@@ -32956,7 +33251,21 @@
     "color": "Purple",
     "sub_types": "Big Mom Pirates",
     "attribute": "Strike",
-    "effects": {}
+    "effects": {
+      "on_ko": {
+        "steps": [
+          {
+            "action": "play_from_deck",
+            "count": 1,
+            "filter_name": "count niwatori",
+            "cost_lte": 6
+          }
+        ],
+        "conditions": {
+          "opp_turn_only": true
+        }
+      }
+    }
   },
   "OP08-074": {
     "name": "Black Maria",
@@ -33180,7 +33489,27 @@
     "color": "Black",
     "sub_types": "Animal Kingdom Pirates",
     "attribute": "Slash",
-    "effects": {}
+    "effects": {
+      "activate_main": {
+        "steps": [
+          {
+            "action": "debuff_cost",
+            "amount": 2,
+            "target": "opp_character",
+            "count": 1
+          }
+        ],
+        "costs": [
+          {
+            "type": "rest_self"
+          },
+          {
+            "type": "rest_don",
+            "count": 1
+          }
+        ]
+      }
+    }
   },
   "OP08-083": {
     "name": "Sheepshead",
@@ -33192,7 +33521,19 @@
     "color": "Black",
     "sub_types": "Animal Kingdom Pirates SMILE",
     "attribute": "Slash",
-    "effects": {}
+    "effects": {
+      "your_turn": {
+        "steps": [
+          {
+            "action": "debuff_cost",
+            "amount": 1,
+            "target": "opp_character",
+            "count": 99
+          }
+        ],
+        "don_requirement": 1
+      }
+    }
   },
   "OP08-084": {
     "name": "Jack",
@@ -33297,6 +33638,17 @@
     "sub_types": "Animal Kingdom Pirates On-Air Pirates",
     "attribute": "Ranged",
     "effects": {
+      "activate_main": {
+        "steps": [
+          {
+            "action": "debuff_cost",
+            "amount": 1,
+            "target": "opp_character",
+            "count": 1
+          }
+        ],
+        "once_per_turn": true
+      },
       "passive": {
         "steps": [
           {
@@ -33603,6 +33955,12 @@
             "count": 1,
             "target": "opp_character",
             "cost_eq": 0
+          },
+          {
+            "action": "debuff_cost",
+            "amount": 2,
+            "target": "opp_character",
+            "count": 1
           }
         ],
         "conditions": {
@@ -35700,7 +36058,23 @@
     "color": "Blue",
     "sub_types": "Whitebeard Pirates",
     "attribute": "Special",
-    "effects": {}
+    "effects": {
+      "opp_turn": {
+        "steps": [
+          {
+            "action": "play_from_trash",
+            "count": 1,
+            "filter_self": true
+          }
+        ],
+        "costs": [
+          {
+            "type": "trash_from_hand",
+            "count": 1
+          }
+        ]
+      }
+    }
   },
   "OP09-053": {
     "name": "Mohji",
@@ -36500,6 +36874,24 @@
     "sub_types": "Blackbeard Pirates",
     "attribute": "Ranged",
     "effects": {
+      "activate_main": {
+        "steps": [
+          {
+            "action": "debuff_cost",
+            "amount": 3,
+            "target": "opp_character",
+            "count": 1
+          }
+        ],
+        "conditions": {
+          "leader_type": "blackbeard pirates"
+        },
+        "costs": [
+          {
+            "type": "rest_self"
+          }
+        ]
+      },
       "on_ko": {
         "steps": [
           {
@@ -36664,6 +37056,12 @@
         "steps": [
           {
             "action": "draw",
+            "count": 1
+          },
+          {
+            "action": "debuff_cost",
+            "amount": 2,
+            "target": "opp_character",
             "count": 1
           }
         ],
@@ -41566,7 +41964,25 @@
     "color": "Green",
     "sub_types": "Fish-Man Straw Hat Crew",
     "attribute": "Strike",
-    "effects": {}
+    "effects": {
+      "end_of_turn": {
+        "steps": [
+          {
+            "action": "set_active",
+            "target": "own_character",
+            "count": 1,
+            "filter_type": "fish-man"
+          },
+          {
+            "action": "set_don_active",
+            "count": 1
+          }
+        ],
+        "conditions": {
+          "hand_lte": 6
+        }
+      }
+    }
   },
   "OP11-022": {
     "name": "Shirahoshi (022)",
@@ -41617,6 +42033,18 @@
             "cost_lte": 4
           }
         ]
+      },
+      "passive": {
+        "steps": [
+          {
+            "action": "debuff_cost",
+            "amount": 3,
+            "target": "self"
+          }
+        ],
+        "conditions": {
+          "leader_type": "fish-man"
+        }
       }
     }
   },
@@ -41700,7 +42128,18 @@
     "color": "Green",
     "sub_types": "Neptunian",
     "attribute": "Strike",
-    "effects": {}
+    "effects": {
+      "passive": {
+        "steps": [
+          {
+            "action": "gain_rush"
+          }
+        ],
+        "conditions": {
+          "leader_is": "shirahoshi"
+        }
+      }
+    }
   },
   "OP11-028": {
     "name": "Lord of the Coast",
@@ -42721,15 +43160,6 @@
       "when_attacking": {
         "steps": [
           {
-            "action": "look_top_deck",
-            "count": 1
-          },
-          {
-            "action": "add_to_hand",
-            "count": 1,
-            "revealed_to_opponent": false
-          },
-          {
             "action": "buff_power",
             "amount": 1000,
             "target": "self",
@@ -42740,15 +43170,6 @@
       },
       "on_opp_attack": {
         "steps": [
-          {
-            "action": "look_top_deck",
-            "count": 1
-          },
-          {
-            "action": "add_to_hand",
-            "count": 1,
-            "revealed_to_opponent": false
-          },
           {
             "action": "buff_power",
             "amount": 1000,
@@ -42950,24 +43371,6 @@
           },
           {
             "action": "deck_bottom_rest"
-          }
-        ]
-      },
-      "activate_main": {
-        "steps": [
-          {
-            "action": "look_top_deck",
-            "count": 1
-          },
-          {
-            "action": "add_to_hand",
-            "count": 1,
-            "revealed_to_opponent": false
-          }
-        ],
-        "costs": [
-          {
-            "type": "rest_self"
           }
         ]
       }
@@ -46762,7 +47165,24 @@
     "color": "Black",
     "sub_types": "Revolutionary Army",
     "attribute": "Special",
-    "effects": {}
+    "effects": {
+      "when_attacking": {
+        "steps": [
+          {
+            "action": "debuff_cost",
+            "amount": 2,
+            "target": "opp_character",
+            "count": 1
+          }
+        ],
+        "costs": [
+          {
+            "type": "trash_from_deck_top",
+            "count": 2
+          }
+        ]
+      }
+    }
   },
   "OP12-091": {
     "name": "Poker",
@@ -53413,6 +53833,12 @@
             "amount": 3000,
             "target": "self",
             "duration": "this_turn"
+          },
+          {
+            "action": "debuff_cost",
+            "amount": 0,
+            "target": "opp_character",
+            "count": 1
           }
         ],
         "costs": [
@@ -53627,6 +54053,19 @@
             "count": 1
           }
         ]
+      },
+      "passive": {
+        "steps": [
+          {
+            "action": "gain_rush"
+          }
+        ],
+        "conditions": {
+          "board_has_cost": [
+            0
+          ],
+          "board_has_cost_gte": 8
+        }
       }
     }
   },
@@ -54556,6 +54995,18 @@
             "filter_name": "trigger"
           }
         ]
+      },
+      "counter": {
+        "steps": [
+          {
+            "action": "lock_opp_character_attack",
+            "count": 1,
+            "duration": "until_opp_turn_end"
+          }
+        ],
+        "conditions": {
+          "life_lte": 2
+        }
       }
     }
   },
@@ -54621,6 +55072,21 @@
           },
           {
             "action": "draw",
+            "count": 1
+          }
+        ]
+      },
+      "on_ko": {
+        "steps": [
+          {
+            "action": "play_from_trash",
+            "count": 1,
+            "filter_self": true
+          }
+        ],
+        "costs": [
+          {
+            "type": "trash_from_hand",
             "count": 1
           }
         ]
@@ -56939,6 +57405,21 @@
     "sub_types": "Giant Thriller Bark Pirates",
     "attribute": "Strike",
     "effects": {
+      "on_ko": {
+        "steps": [
+          {
+            "action": "play_from_trash",
+            "count": 1,
+            "filter_self": true
+          }
+        ],
+        "costs": [
+          {
+            "type": "place_from_trash_bottom_deck",
+            "count": 3
+          }
+        ]
+      },
       "passive": {
         "steps": [
           {
@@ -57264,7 +57745,16 @@
     "color": "Black",
     "sub_types": "The Owner of Cindry's Shadow",
     "attribute": "Wisdom",
-    "effects": {}
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "opp_place_trash_bottom_deck",
+            "count": 1
+          }
+        ]
+      }
+    }
   },
   "OP15-092": {
     "name": "Monkey.D.Luffy (OP15-092)",
@@ -57647,6 +58137,15 @@
           {
             "action": "rest_opp_character",
             "count": 1
+          }
+        ]
+      },
+      "passive": {
+        "steps": [
+          {
+            "action": "buff_cost",
+            "amount": 3,
+            "target": "self"
           }
         ]
       }
@@ -58548,6 +59047,21 @@
     "sub_types": "Whitebeard Pirates",
     "attribute": "Special",
     "effects": {
+      "on_ko": {
+        "steps": [
+          {
+            "action": "play_from_trash",
+            "count": 1,
+            "filter_self": true
+          }
+        ],
+        "costs": [
+          {
+            "type": "trash_from_hand",
+            "count": 1
+          }
+        ]
+      },
       "passive": {
         "steps": [
           {
@@ -60711,6 +61225,12 @@
             "action": "draw",
             "count": 2,
             "then_trash": 2
+          },
+          {
+            "action": "debuff_cost",
+            "amount": 4,
+            "target": "opp_character",
+            "count": 1
           }
         ]
       },
@@ -61897,7 +62417,22 @@
     "color": "Green",
     "sub_types": "Land of Wano",
     "attribute": "Strike",
-    "effects": {}
+    "effects": {
+      "activate_main": {
+        "steps": [
+          {
+            "action": "rest_opp_character",
+            "count": 1,
+            "cost_lte": 2
+          }
+        ],
+        "costs": [
+          {
+            "type": "rest_self"
+          }
+        ]
+      }
+    }
   },
   "P-009": {
     "name": "Trafalgar Law",
@@ -61909,7 +62444,19 @@
     "color": "Blue",
     "sub_types": "Supernovas/Heart Pirates",
     "attribute": "Slash",
-    "effects": {}
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "opp_life_to_hand",
+            "count": 1
+          }
+        ],
+        "conditions": {
+          "opp_hand_gte": 6
+        }
+      }
+    }
   },
   "P-010": {
     "name": "Kaido",
@@ -63167,7 +63714,17 @@
     "color": "Blue",
     "sub_types": "Whitebeard Pirates",
     "attribute": "Special",
-    "effects": {}
+    "effects": {
+      "on_ko": {
+        "steps": [
+          {
+            "action": "play_from_trash",
+            "count": 1,
+            "filter_self": true
+          }
+        ]
+      }
+    }
   },
   "P-073": {
     "name": "Sabo - P-073 (Pirate Foil)",
@@ -63268,7 +63825,25 @@
     "color": "Blue/Black",
     "sub_types": "Navy",
     "attribute": "Special",
-    "effects": {}
+    "effects": {
+      "activate_main": {
+        "steps": [
+          {
+            "action": "debuff_cost",
+            "amount": 1,
+            "target": "opp_character",
+            "count": 1
+          }
+        ],
+        "costs": [
+          {
+            "type": "trash_from_hand",
+            "count": 1
+          }
+        ],
+        "once_per_turn": true
+      }
+    }
   },
   "P-077": {
     "name": "Ulti",
@@ -65197,7 +65772,26 @@
     "color": "Blue",
     "sub_types": "Navy",
     "attribute": "Slash",
-    "effects": {}
+    "effects": {
+      "activate_main": {
+        "steps": [
+          {
+            "action": "play_from_deck",
+            "count": 1,
+            "filter_name": "pacifista",
+            "cost_lte": 4
+          }
+        ],
+        "costs": [
+          {
+            "type": "rest_don",
+            "count": 2
+          }
+        ],
+        "once_per_turn": true,
+        "don_requirement": 1
+      }
+    }
   },
   "ST03-008": {
     "name": "Trafalgar Law",
@@ -68436,7 +69030,27 @@
     "color": "Green",
     "sub_types": "FILM",
     "attribute": "Special",
-    "effects": {}
+    "effects": {
+      "when_attacking": {
+        "steps": [
+          {
+            "action": "look_top_deck",
+            "count": 1
+          },
+          {
+            "action": "add_to_hand",
+            "count": 1,
+            "revealed_to_opponent": true,
+            "filter_type": "film"
+          },
+          {
+            "action": "deck_bottom_rest"
+          }
+        ],
+        "once_per_turn": true,
+        "don_requirement": 1
+      }
+    }
   },
   "ST11-002": {
     "name": "Uta (002)",
@@ -70750,6 +71364,20 @@
     "sub_types": "Navy",
     "attribute": "Slash",
     "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "debuff_cost",
+            "amount": 4,
+            "target": "opp_character",
+            "count": 1
+          }
+        ],
+        "conditions": {
+          "leader_is": "smoker"
+        },
+        "once_per_turn": true
+      },
       "activate_main": {
         "steps": [
           {
@@ -70815,6 +71443,23 @@
     "sub_types": "Navy",
     "attribute": "Strike",
     "effects": {
+      "activate_main": {
+        "steps": [
+          {
+            "action": "debuff_cost",
+            "amount": 1,
+            "target": "opp_character",
+            "count": 1
+          }
+        ],
+        "costs": [
+          {
+            "type": "place_from_trash_bottom_deck",
+            "count": 1
+          }
+        ],
+        "once_per_turn": true
+      },
       "passive": {
         "steps": [
           {
@@ -73539,6 +74184,21 @@
     "sub_types": "Whitebeard Pirates",
     "attribute": "Special",
     "effects": {
+      "on_ko": {
+        "steps": [
+          {
+            "action": "play_from_trash",
+            "count": 1,
+            "filter_self": true
+          }
+        ],
+        "costs": [
+          {
+            "type": "trash_from_hand",
+            "count": 1
+          }
+        ]
+      },
       "passive": {
         "steps": [
           {
