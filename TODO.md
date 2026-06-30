@@ -318,14 +318,22 @@ de imunidade e stubs antigos listados abaixo.
   (2 debuffs sequenciais sem marcador de mesmo alvo), OP09-097 (combina com
   `negate_effect`, ainda sem handler). Validado com `audit_replay.py --n 20
   --seed 7` e `--n 15 --seed 99`: 0 excecoes, 0 anomalias.
-- [ ] **KO via Counter event (pendente):** 4 cartas ("[Counter] K.O. up to 1
-  of your opponent's Characters with cost/power N or less, rested only")
-  removem o atacante inteiramente ANTES do dano, cancelando o ataque — nao
-  e uma reducao de atk_power/buff de defesa, e sim um mecanismo de
-  cancelamento total. Precisa de um ponto de injecao proprio no fluxo de
-  `_resolve_attack` (provavelmente logo apos o Blocker, antes da comparacao
-  atk_power >= defend_power), distinto dos dois mecanismos ja implementados.
-  Cartas: EB01-010, OP08-094, OP10-040, OP13-039.
+- [x] **KO via Counter event (30/06/2026):** implementado — terceiro
+  mecanismo de Counter event, distinto de buffar a propria defesa e de
+  debuffar o atacante. "[Counter] K.O. up to 1 of your opponent's
+  Characters with cost/power N or less[, rested only]" remove o atacante
+  inteiramente ANTES do dano, cancelando o ataque por completo (sem
+  comparacao de power). Novas funcoes `_counter_event_ko_plan` +
+  `try_counter_event_ko_attacker`, chamadas no fluxo de `_resolve_attack`
+  logo apos o debuff do atacante nao bastar e antes do Damage Step; se
+  ativar, `return False` direto (ataque cancelado). Respeita
+  imunidade/substituicao do atacante (mesma checagem do 'ko' generico,
+  `ko_context='effect'`). `rested_only` e trivialmente satisfeito (o
+  atacante ja fica `rested=True` ao declarar o ataque, bem antes do Counter
+  Step). Escopo minimo: exige EXATAMENTE 1 step 'ko' com
+  `target='opp_character'` e nenhum outro step. Desbloqueia as 4 cartas:
+  EB01-010, OP08-094, OP10-040, OP13-039. Validado com `audit_replay.py
+  --n 20 --seed 7` e `--n 15 --seed 99`: 0 excecoes, 0 anomalias.
 - [ ] Implementar substituição externa: auditoria de 29/06/2026 achou cerca de
   38 textos onde uma fonte em campo/líder protege outro alvo (`if your Character
   would be removed/K.O.'d...`). O parser já estrutura muitos como

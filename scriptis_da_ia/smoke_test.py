@@ -883,6 +883,58 @@ counter = ee.try_counter_event_debuff(atacante3, 'character', needed=3000)
 check('Counter event de debuff com condicao de vida ativa quando passa (life_lte 2)',
       counter and counter[0] == 3000 and atacante3.power_buff == -3000)
 
+# ── 15h. Counter events que dao K.O. no ATACANTE inteiro -- cancela o
+# ataque por completo (sem comparacao de power). EB01-010: power_lte 6000 ──
+me, opp = me_opp()
+me.don_available = 2
+atacante_ko = mk('ATK-KO1', 'Atacante fraco', power=5000)
+atacante_ko.rested = True
+opp.field_chars = [atacante_ko]
+evento_ko_puro = mk('EB01-010', "There's No Way You Could Defeat Me", card_type='EVENT', cost=2)
+me.hand = [evento_ko_puro]
+ee = EffectExecutor(me, opp)
+log = ee.try_counter_event_ko_attacker(atacante_ko)
+check('Counter event de K.O. puro remove o atacante elegivel (power_lte)',
+      log and evento_ko_puro in me.trash and atacante_ko in opp.trash
+      and atacante_ko not in opp.field_chars)
+
+me, opp = me_opp()
+me.don_available = 2
+atacante_forte = mk('ATK-KO2', 'Atacante forte', power=7000)
+atacante_forte.rested = True
+opp.field_chars = [atacante_forte]
+evento_ko_fraco = mk('EB01-010', "There's No Way You Could Defeat Me", card_type='EVENT', cost=2)
+me.hand = [evento_ko_fraco]
+ee = EffectExecutor(me, opp)
+log = ee.try_counter_event_ko_attacker(atacante_forte)
+check('Counter event de K.O. puro nao remove atacante acima do power_lte',
+      log is None and evento_ko_fraco in me.hand and atacante_forte in opp.field_chars)
+
+# OP10-040: cost_lte 7 + rested_only -- atacante sempre esta rested ao atacar
+me, opp = me_opp()
+me.don_available = 2
+atacante_rested = mk('ATK-KO3', 'Atacante custo 5', cost=5, power=8000)
+atacante_rested.rested = True
+opp.field_chars = [atacante_rested]
+evento_ko_rested = mk('OP10-040', 'The Weak Do Not Have the Right', card_type='EVENT', cost=2)
+me.hand = [evento_ko_rested]
+ee = EffectExecutor(me, opp)
+log = ee.try_counter_event_ko_attacker(atacante_rested)
+check('Counter event de K.O. com rested_only remove atacante (sempre rested ao atacar)',
+      log and atacante_rested in opp.trash)
+
+me, opp = me_opp()
+me.don_available = 2
+atacante_caro = mk('ATK-KO4', 'Atacante custo 8', cost=8, power=8000)
+atacante_caro.rested = True
+opp.field_chars = [atacante_caro]
+evento_ko_caro = mk('OP10-040', 'The Weak Do Not Have the Right', card_type='EVENT', cost=2)
+me.hand = [evento_ko_caro]
+ee = EffectExecutor(me, opp)
+log = ee.try_counter_event_ko_attacker(atacante_caro)
+check('Counter event de K.O. nao remove atacante acima do cost_lte',
+      log is None and atacante_caro in opp.field_chars)
+
 print()
 print(f'{"TODOS OS TESTES PASSARAM" if FAIL == 0 else f"{FAIL} TESTE(S) FALHARAM"}')
 sys.exit(1 if FAIL else 0)

@@ -1,5 +1,44 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-06-30 (7) - Claude
+
+**Feito - KO via Counter event:** terceiro e último mecanismo de Counter
+event desta sequência de auditoria, item que tinha ficado explicitamente
+pendente no handoff anterior. 4 cartas ("[Counter] K.O. up to 1 of your
+opponent's Characters with cost/power N or less[, rested only]" — EB01-010,
+OP08-094, OP10-040, OP13-039) removem o atacante INTEIRAMENTE antes do dano,
+cancelando o ataque por completo — não é uma redução de power como os dois
+mecanismos anteriores (buff de defesa / debuff do atacante), é cancelamento
+total.
+
+Implementei `_counter_event_ko_plan` + `try_counter_event_ko_attacker` em
+[decision_engine.py](scriptis_da_ia/optcg_engine/decision_engine.py),
+chamadas no fluxo de `_resolve_attack` logo depois do debuff do atacante não
+bastar e antes do Damage Step — se ativar, `return False` direto. Respeita
+imunidade/substituição do atacante com a mesma checagem do `ko` genérico
+(`ko_context='effect'`, já que isto é o efeito do Counter event, não dano em
+combate). `rested_only` é satisfeito trivialmente porque o atacante já fica
+`rested=True` ao declarar o ataque, bem antes do Counter Step rodar. Escopo
+mínimo de novo: exige exatamente 1 step `ko` com `target='opp_character'` e
+nenhum outro step.
+
+**Validação:** `python -m py_compile`; `python smoke_test.py` (72/72, 4
+casos novos cobrindo ativação por `power_lte`/`cost_lte`+`rested_only` e os
+respectivos casos negativos); `python smoke_test_broad.py` (40/40); `python
+audit_replay.py --n 20 --seed 7` e `--n 15 --seed 99` (0 exceções, 0
+anomalias nas duas).
+
+**Estado da auditoria de Counter events nesta sequência (encerrada por
+ora):** dos 78 eventos `[Counter]` originalmente fora da heurística, agora
+restam fora de escopo: `play_card`/`play_from_deck`/busca em deck (9
+cartas, lógica de seleção mais complexa — próximo candidato natural se
+alguém quiser continuar), `bounce` puro (2, avaliado como fora de escopo em
+sessão anterior), `substitute_ko`/`immunity`/`negate_effect` combinados (4,
+mecânicas distintas que merecem auditoria própria), e 3 cartas com semântica
+ambígua de alvo no debuff (OP02-089, OP04-017, OP09-097).
+
+---
+
 ## 2026-06-30 (6) - Claude
 
 **Feito - Counter events que enfraquecem o ATACANTE:** mecânica nova,

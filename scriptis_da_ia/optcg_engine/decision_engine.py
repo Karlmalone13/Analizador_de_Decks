@@ -1400,6 +1400,78 @@ class EffectExecutor:
             log += ' | custo: ' + '; '.join(cost_logs)
         return amount, log
 
+    def _counter_event_ko_plan(self, event: Card, attacker: Card) -> bool:
+        """Checa se um evento [Counter] da K.O. no ATACANTE especifico.
+        Achado 30/06/2026: 4 cartas no banco sao "[Counter] K.O. up to 1 of
+        your opponent's Characters with cost/power N or less[, rested
+        only]" (EB01-010, OP08-094, OP10-040, OP13-039) -- cancelamento
+        TOTAL do ataque (sem dano nenhum), distinto de buffar defesa ou
+        debuffar o atacante. Escopo minimo: exige EXATAMENTE 1 step 'ko'
+        com target='opp_character' (Leaders nunca aparecem como alvo nesses
+        4 casos) e nenhum outro step."""
+        block = get_card_effects(event.code).get('counter', {})
+        if not block or not self._check_conditions(block.get('conditions', {}), event):
+            return False
+        steps = block.get('steps', [])
+        if len(steps) != 1:
+            return False
+        step = steps[0]
+        if step.get('action') != 'ko' or step.get('target') != 'opp_character':
+            return False
+        cost_lte = step.get('cost_lte')
+        if cost_lte is not None and attacker.cost > cost_lte:
+            return False
+        power_lte = step.get('power_lte')
+        if power_lte is not None and attacker.effective_power(False) > power_lte:
+            return False
+        if step.get('rested_only') and not attacker.rested:
+            return False
+        return True
+
+    def try_counter_event_ko_attacker(self, attacker: Card) -> str | None:
+        """Usa um evento [Counter] que da K.O. no atacante inteiro,
+        cancelando o ataque (sem comparacao de power -- o ataque
+        simplesmente nao acontece). Respeita imunidade/substituicao do
+        atacante igual ao 'ko' generico (ko_context='effect': nao e KO em
+        combate, e o efeito do proprio Counter event)."""
+        candidates = []
+        for event in self.me.hand:
+            if event.card_type != 'EVENT':
+                continue
+            if not self._counter_event_ko_plan(event, attacker):
+                continue
+            play_cost = effective_hand_play_cost(self.me, event)
+            if self.me.don_available < play_cost:
+                continue
+            costs = get_card_effects(event.code).get('counter', {}).get('costs', [])
+            if not self._counter_event_cost_payable(event, costs):
+                continue
+            candidates.append((play_cost, event, costs))
+
+        if not candidates:
+            return None
+
+        play_cost, event, costs = min(candidates, key=lambda item: item[0])
+
+        if is_immune(attacker, 'ko', self.opp, self.me, source_is_opp=True, ko_context='effect'):
+            return None
+        ee_attacker = EffectExecutor(self.opp, self.me)
+        if ee_attacker.try_any_substitute(attacker, 'ko', source_is_opp=True):
+            return None
+
+        cost_logs = self._pay_counter_event_costs(event, costs)
+        if cost_logs is None:
+            return None
+        remove_by_identity(self.me.hand, event)
+        self.me.trash.append(event)
+        self.me.don_available -= play_cost
+        self.me.don_rested += play_cost
+        remove_character_from_field(self.opp, attacker, 'trash')
+        log = f'Counter {event.name[:18]}: K.O. no atacante {attacker.name[:15]}'
+        if cost_logs:
+            log += ' | custo: ' + '; '.join(cost_logs)
+        return log
+
     def _pay_substitute_cost(self, cost: dict, card: Card) -> str | None:
         """Paga o custo de uma substituicao de K.O./remocao. Retorna log de
         sucesso, ou None se nao pode pagar (substituicao nao ocorre)."""
@@ -6126,11 +6198,12 @@ class OPTCGMatch:
                 if verbose:
                     print(f'      🛡 {counter_log} -> defesa {defend_power}')
 
+        attacker_type = 'leader' if attacker is p.leader else 'character'
+
         # Counter event que enfraquece o ATACANTE em vez de buffar a propria
         # defesa -- mecanica distinta (ex: OP01-028, ST09-014). So tentado se
         # o buff acima nao bastou.
         if atk_power >= defend_power:
-            attacker_type = 'leader' if attacker is p.leader else 'character'
             counter_debuff = ee_react.try_counter_event_debuff(
                 attacker,
                 attacker_type,
@@ -6141,6 +6214,17 @@ class OPTCGMatch:
                 atk_power -= amount
                 if verbose:
                     print(f'      🛡 {counter_log} -> ataque {atk_power}')
+
+        # Counter event que da K.O. no ATACANTE inteiro -- cancela o ataque
+        # por completo (sem dano), distinto dos dois mecanismos acima que so
+        # ajustam power. So aplica a Characters atacando (Leaders nao sao
+        # alvo de 'opp_character').
+        if atk_power >= defend_power and attacker_type == 'character':
+            ko_log = ee_react.try_counter_event_ko_attacker(attacker)
+            if ko_log:
+                if verbose:
+                    print(f'      🛡 {ko_log} -> ataque cancelado')
+                return False
 
         # Damage step
         if atk_power >= defend_power:
