@@ -1263,9 +1263,9 @@ class EffectExecutor:
                     pior_mao = self._choose_to_trash(self.me.hand)
                     if pior_char is None and pior_mao is None:
                         return False
-                    # comparar valores (character via board_value; mão via avaliar simples)
-                    val_char = pior_char.board_value() if pior_char else 10**9
-                    val_mao = pior_mao.board_value() if pior_mao else 10**9
+                    # comparar perda real: campo e mao usam escalas proximas.
+                    val_char = pior_char.board_value() * 10 if pior_char else 10**9
+                    val_mao = self._trash_value(pior_mao) if pior_mao else 10**9
                     if pior_char is not None and val_char <= val_mao:
                         remove_character_from_field(self.me, pior_char, 'trash')
                         self._cost_logs.append(f'custo: trashou character {pior_char.name[:14]}')
@@ -3004,15 +3004,37 @@ class EffectExecutor:
 
     # ── Helpers de IA ────────────────────────────────────────────────────────
 
+    def _trash_value(self, card: Card) -> float:
+        """Valor aproximado de manter uma carta na mao; menor = melhor descarte."""
+        if card is None:
+            return 10**9
+
+        value = DecisionEngine(self.me, self.opp).avaliar_carta(card)
+        text = (card.card_text or '').lower()
+        flags = get_card_flags(card.code)
+
+        if card.card_type == 'EVENT':
+            if '[counter]' in text:
+                value += 35
+                if self.me.life_count() <= 2:
+                    value += 35
+            if flags.get('kos') or flags.get('is_removal') or flags.get('bounces'):
+                value += 35
+            if 'negate the effect' in text or 'cannot be removed' in text:
+                value += 40
+            if flags.get('draws') or flags.get('is_searcher'):
+                value += 20
+
+        if card.card_type == 'CHARACTER' and card.cost >= 8:
+            value += 20
+
+        return value
+
     def _choose_to_trash(self, hand: list) -> Optional[Card]:
-        """Escolhe a carta de menor valor para descartar."""
+        """Escolhe a carta de menor valor situacional para descartar."""
         if not hand:
             return None
-        # Descarta eventos sem trigger primeiro, depois por menor custo
-        events = [c for c in hand if c.card_type == 'EVENT' and not c.has_trigger]
-        if events:
-            return min(events, key=lambda c: c.cost)
-        return min(hand, key=lambda c: c.board_value())
+        return min(hand, key=self._trash_value)
 
 
 # ===========================================================================
@@ -3903,12 +3925,12 @@ class DecisionEngine:
 
         # Quanto DON reservar para defesa
         don_reserve = self._don_reserve_for_defense()
-        don_usable  = max(0, self.me.don_available - don_reserve)
 
         playable = []
         for c in self.me.hand:
             if c.card_type not in ('CHARACTER', 'EVENT', 'STAGE'):
                 continue
+            don_usable = self._don_usable_for_play(c, don_reserve)
             if effective_hand_play_cost(self.me, c) > don_usable:
                 continue
             # Não joga Counter como carta normal
@@ -4021,6 +4043,25 @@ class DecisionEngine:
             reserva = max(reserva, 1)
 
         return min(reserva, don_disp)
+
+    def _can_spend_reserved_don_for_play(self, card) -> bool:
+        """
+        Reserva defensiva nao deve remover automaticamente uma jogada premium
+        da lista de candidatas. O Turn Planner ainda compara a linha; aqui so
+        deixamos o candidato existir.
+        """
+        if effective_hand_play_cost(self.me, card) > self.me.don_available:
+            return False
+        return card.card_type == 'CHARACTER' and (card.cost >= 8 or card.power >= 9000)
+
+    def _don_usable_for_play(self, card, don_reserve: int | None = None) -> int:
+        if don_reserve is None:
+            don_reserve = self._don_reserve_for_defense()
+        don_usable = max(0, self.me.don_available - don_reserve)
+        if effective_hand_play_cost(self.me, card) > don_usable \
+                and self._can_spend_reserved_don_for_play(card):
+            return self.me.don_available
+        return don_usable
 
     # ── Distribuição de DON ───────────────────────────────────────────────────
 
@@ -4993,10 +5034,10 @@ class OPTCGMatch:
         priority = a.analysis_priority()
         threats = a.critical_threats() if priority == 'REMOVE_THREAT' else []
         don_reserve = engine._don_reserve_for_defense()
-        don_usable = max(0, p.don_available - don_reserve)
 
         # ── Ações de JOGAR carta ──
         for card in p.hand:
+            don_usable = engine._don_usable_for_play(card, don_reserve)
             if not engine._can_play_card(card, don_usable=don_usable):
                 continue
             score = self._score_play_action(card, engine)

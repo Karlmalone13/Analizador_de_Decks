@@ -7,6 +7,35 @@ e `git status` antes de tocar em qualquer coisa.
 
 ---
 
+## 2026-06-29 22:48 — Codex
+
+**Feito** — fechados os 2 erros visíveis de replay que abririam a fila:
+- `_choose_to_trash` deixou de descartar "evento sem trigger de menor custo" às
+  cegas. Agora usa valor situacional (`DecisionEngine.avaliar_carta`) com bônus
+  para evento defensivo/removal/search/draw. Isso preserva `Ground Death` quando
+  há descarte realmente pior na mão.
+- Five Elders com Mary Geoise: confirmado que o custo efetivo é 9, mas a reserva
+  defensiva de DON tirava a carta da lista de ações antes do planner comparar.
+  Agora corpos premium (`cost >= 8` ou `power >= 9000`) podem disputar o uso do
+  DON reservado; o planner ainda decide se a linha vale.
+
+**Validação:**
+- `python -m py_compile scriptis_da_ia\smoke_test.py scriptis_da_ia\optcg_engine\decision_engine.py` passou.
+- `python scriptis_da_ia\smoke_test.py` passou, com regressões novas para
+  Ground Death e Five Elders/Mary Geoise.
+- `python audit_replay.py --n 5 --seed 42` passou com 0 anomalias.
+- `python smoke_test_broad.py` passou `40/40`.
+
+**Próximo:** seguir a ordem combinada: `can_lethal_this_turn` não deve ler a mão
+real do oponente para estimar counters; precisa usar informação conhecida ou
+estimativa/modelo.
+
+**Estado após esta fatia:** esperado commit/push com
+`scriptis_da_ia/optcg_engine/decision_engine.py`, `scriptis_da_ia/smoke_test.py`,
+`HANDOFF.md` e `TODO.md`.
+
+---
+
 ## 2026-06-29 13:17 — Codex
 
 **Feito** — reduzida a quantidade de simulações por decisão no Turn Planner sem

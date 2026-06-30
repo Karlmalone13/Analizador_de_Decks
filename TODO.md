@@ -66,11 +66,12 @@ implementa → valida (snapshot/diff PERDEU=0 + partidas reais instrumentadas).
 
 ## 🔴 PROBLEMAS ABERTOS (replay Imu vs Sanji, 26/06)
 
-- [ ] **Problema 2 — _choose_to_trash não avalia qualidade**: Imu trashou Ground Death
-  (removal) como custo no T1 tendo cartas piores. Mesma família do conserto de
-  viabilidade. PRÓXIMO candidato.
-- [ ] **Problema 3 — Five Elders (c10) nunca jogada**: na mão T7→T11 com 9 DON.
-  Correto (nunca teve 10 DON) ou subvalorização? Investigar.
+- [x] ~~**Problema 2 — _choose_to_trash não avalia qualidade**~~: corrigido em
+  29/06/2026. O descarte agora usa valor situacional e preserva eventos
+  defensivos/removal como Ground Death quando há descarte pior.
+- [x] ~~**Problema 3 — Five Elders (c10) nunca jogada**~~: corrigido em
+  29/06/2026. Mary Geoise reduz o custo para 9; corpos premium agora podem
+  disputar DON reservado em vez de serem filtrados antes do Turn Planner.
 
 ---
 
@@ -232,7 +233,7 @@ de imunidade e stubs antigos listados abaixo.
 - [ ] on_opponent_attack timing não existe (72 cards em "passive"). Precondição da reserva fina.
 
 ### Turn Planner
-- [ ] can_lethal_this_turn ainda cheata lendo self.opp.hand para counters
+- [ ] can_lethal_this_turn ainda cheata lendo self.opp.hand para counters — próximo alvo
 - [ ] 5 funções órfãs — deletar ou integrar
 - [ ] Otimização estrutural de performance: reduzir `deepcopy` no Turn Planner
   ou cachear cálculos caros (`_don_reserve_for_defense`, defesa/counter,

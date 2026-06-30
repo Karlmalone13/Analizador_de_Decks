@@ -6,7 +6,8 @@ Roda contra os dados REAIS de card_effects_db.json, nao contra mocks.
 import sys, json
 sys.path.insert(0, '.')
 from optcg_engine.decision_engine import (
-    Card, CardData, GameState, EffectExecutor, get_card_effects
+    Card, CardData, GameState, EffectExecutor, DecisionEngine, OPTCGMatch,
+    effective_hand_play_cost, get_card_effects
 )
 
 FAIL = 0
@@ -17,9 +18,12 @@ def check(label, cond):
         FAIL += 1
     print(f'[{status}] {label}')
 
-def mk(code, name, power=5000, cost=4, sub_types='', card_type='CHARACTER', color='Red'):
+def mk(code, name, power=5000, cost=4, sub_types='', card_type='CHARACTER',
+       color='Red', text='', counter=0, has_trigger=False):
     return Card(data=CardData(code=code, name=name, card_type=card_type,
-                               color=color, cost=cost, power=power, sub_types=sub_types))
+                               color=color, cost=cost, power=power,
+                               counter=counter, sub_types=sub_types,
+                               card_text=text, has_trigger=has_trigger))
 
 def me_opp():
     leader = mk('LD-01', 'Leader Teste', power=5000, card_type='LEADER', sub_types='')
@@ -177,6 +181,59 @@ me.leader = mk('LD-X', 'Lider', power=5000, card_type='LEADER')
 ee.apply_your_turn_buffs()
 check('conditional_stack: trash=35 ativa os 3 blocos cumulativamente (inclui buff_power +1000)',
       card_op15092b.base_power_override == 9000 and card_op15092b.power_buff == 1000)
+
+# ── 10. descarte situacional: nao jogar fora evento defensivo/removal valioso ──
+me, opp = me_opp()
+ee = EffectExecutor(me, opp)
+ground_death = mk(
+    'OP14-096',
+    'Ground Death',
+    card_type='EVENT',
+    cost=1,
+    text='[Main] Negate the effect of up to 1 of your opponent Characters. [Counter] +4000 power.',
+)
+carta_pior = mk('LOW', 'Carta pior', card_type='EVENT', cost=5)
+me.hand = [ground_death, carta_pior]
+chosen = ee._choose_to_trash(me.hand)
+check('choose_to_trash preserva Ground Death quando ha descarte pior',
+      chosen is carta_pior)
+
+# ── 11. Five Elders: Mary Geoise + corpo premium pode disputar DON reservado ──
+me, opp = me_opp()
+me.turn = 8
+me.don_available = 9
+five_elders = mk(
+    'OP13-082',
+    'Five Elders',
+    power=12000,
+    cost=10,
+    sub_types='Celestial Dragons Five Elders',
+)
+mary_geoise = mk(
+    'OP05-097',
+    'Mary Geoise',
+    cost=1,
+    card_type='STAGE',
+    sub_types='Mary Geoise',
+    text='The cost of playing [Celestial Dragons] type Character cards with a cost of 2 or more from your hand will be reduced by 1.',
+)
+ground_death_2 = mk(
+    'OP14-096',
+    'Ground Death',
+    card_type='EVENT',
+    cost=1,
+    text='[Counter] Your Leader gains +4000 power during this battle.',
+)
+me.field_stage = mary_geoise
+me.hand = [five_elders, ground_death_2]
+me.life = [ground_death_2, ground_death_2]
+opp.field_chars = [mk('BIG1', 'Ameaca 1', power=9000), mk('BIG2', 'Ameaca 2', power=9000)]
+engine = DecisionEngine(me, opp)
+actions = OPTCGMatch((me.leader, []), (opp.leader, []))._generate_and_score_actions(me, opp, engine)
+check('Mary Geoise reduz Five Elders para 9 DON',
+      effective_hand_play_cost(me, five_elders) == 9)
+check('Five Elders entra como candidata mesmo com DON reservado para defesa',
+      any(a[1] == 'play' and a[2] is five_elders for a in actions))
 
 print()
 print(f'{"TODOS OS TESTES PASSARAM" if FAIL == 0 else f"{FAIL} TESTE(S) FALHARAM"}')
