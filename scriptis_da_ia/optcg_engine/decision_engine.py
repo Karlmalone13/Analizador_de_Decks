@@ -477,23 +477,51 @@ def effective_hand_play_cost(p: GameState, card: Card) -> int:
     return max(0, cost)
 
 
-def _ko_immunity_applies_to_context(card: 'Card', ko_context: str | None) -> bool:
-    if ko_context not in ('battle', 'effect'):
-        return True
-
+def _ko_sentence(card: 'Card') -> str:
     text = ((card.card_text or '') or get_card_flags(card.code).get('text', '')).lower()
     if not text:
-        return True
-
+        return ''
+    text = (text.replace('&lt;', '<').replace('&gt;', '>')
+                .replace('＜', '<').replace('＞', '>'))
     cannot_ko = re.search(r"cannot be k\.?o\.?'?d|can't be k\.?o", text)
     if not cannot_ko:
-        return True
-
+        return ''
     sentence_start = max(text.rfind('.', 0, cannot_ko.start()), text.rfind('\n', 0, cannot_ko.start()))
     sentence_end = text.find('.', cannot_ko.end())
     if sentence_end == -1:
         sentence_end = len(text)
-    sentence = text[sentence_start + 1:sentence_end]
+    return text[sentence_start + 1:sentence_end]
+
+
+def _source_matches_battle_ko_immunity(sentence: str, source_card: Optional['Card']) -> bool:
+    if not source_card:
+        return True
+
+    src_type = (source_card.card_type or '').upper()
+    src_attr = (source_card.attribute or '').lower()
+
+    if 'by leaders' in sentence:
+        return src_type == 'LEADER'
+    if 'by characters without' in sentence and 'special' in sentence:
+        return src_type == 'CHARACTER' and 'special' not in src_attr
+    if 'by attribute cards' in sentence:
+        return bool(src_attr)
+
+    for attr in ('strike', 'slash', 'special', 'wisdom', 'ranged'):
+        if attr in sentence and re.search(rf'by [^.]*(?:<|")?{attr}(?:>|")?[^.]*attribute', sentence):
+            return attr in src_attr
+
+    return True
+
+
+def _ko_immunity_applies_to_context(card: 'Card', ko_context: str | None,
+                                    source_card: Optional['Card'] = None) -> bool:
+    if ko_context not in ('battle', 'effect'):
+        return True
+
+    sentence = _ko_sentence(card)
+    if not sentence:
+        return True
 
     battle_only = 'in battle' in sentence
     effect_only = 'by effect' in sentence or "by your opponent's effect" in sentence
@@ -501,11 +529,14 @@ def _ko_immunity_applies_to_context(card: 'Card', ko_context: str | None) -> boo
         return False
     if ko_context == 'effect' and battle_only and not effect_only:
         return False
+    if ko_context == 'battle' and not _source_matches_battle_ko_immunity(sentence, source_card):
+        return False
     return True
 
 
 def is_immune(card: 'Card', imm_type: str, owner: 'GameState', opp: 'GameState',
-              source_is_opp: bool = True, ko_context: str | None = None) -> bool:
+              source_is_opp: bool = True, ko_context: str | None = None,
+              source_card: Optional['Card'] = None) -> bool:
     """
     True se `card` está imune a `imm_type` ('ko' | 'removal') no estado atual.
 
@@ -526,7 +557,7 @@ def is_immune(card: 'Card', imm_type: str, owner: 'GameState', opp: 'GameState',
         for step in blk.get('steps', []):
             if step.get('action') != 'immunity' or step.get('imm_type') != imm_type:
                 continue
-            if imm_type == 'ko' and not _ko_immunity_applies_to_context(card, ko_context):
+            if imm_type == 'ko' and not _ko_immunity_applies_to_context(card, ko_context, source_card):
                 continue
             # source
             if step.get('source') == 'opp' and not source_is_opp:
@@ -5990,7 +6021,15 @@ class OPTCGMatch:
             elif target_type == 'character' and target and target in opp.field_chars:
                 # Imunidade a KO em combate. `is_immune` separa esta janela de
                 # KO por efeito quando o texto bruto diz "in battle"/"by effects".
-                if is_immune(target, 'ko', opp, p, source_is_opp=True, ko_context='battle'):
+                if is_immune(
+                    target,
+                    'ko',
+                    opp,
+                    p,
+                    source_is_opp=True,
+                    ko_context='battle',
+                    source_card=attacker,
+                ):
                     if verbose:
                         print(f'      🛡 {target.name[:20]} imune a KO!')
                     return False

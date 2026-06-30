@@ -20,11 +20,12 @@ def check(label, cond):
     print(f'[{status}] {label}')
 
 def mk(code, name, power=5000, cost=4, sub_types='', card_type='CHARACTER',
-       color='Red', text='', counter=0, has_trigger=False):
+       color='Red', text='', counter=0, has_trigger=False, attribute=''):
     return Card(data=CardData(code=code, name=name, card_type=card_type,
                                color=color, cost=cost, power=power,
                                counter=counter, sub_types=sub_types,
-                               card_text=text, has_trigger=has_trigger))
+                               attribute=attribute, card_text=text,
+                               has_trigger=has_trigger))
 
 def me_opp():
     leader = mk('LD-01', 'Leader Teste', power=5000, card_type='LEADER', sub_types='')
@@ -297,6 +298,37 @@ check('imunidade KO by effects nao protege contra KO em batalha',
       not is_immune(effect_only, 'ko', me, opp, source_is_opp=True, ko_context='battle'))
 check('imunidade KO by effects protege no contexto de efeito',
       is_immune(effect_only, 'ko', me, opp, source_is_opp=True, ko_context='effect'))
+
+slash_immune = mk('OP03-032', 'Buggy slash-only', power=3000)
+slash_attacker = mk('ATK-SLASH', 'Atacante Slash', attribute='Slash')
+strike_attacker = mk('ATK-STRIKE', 'Atacante Strike', attribute='Strike')
+check('imunidade KO battle por Slash protege contra atacante Slash',
+      is_immune(slash_immune, 'ko', me, opp, source_is_opp=True,
+                ko_context='battle', source_card=slash_attacker))
+check('imunidade KO battle por Slash nao protege contra atacante Strike',
+      not is_immune(slash_immune, 'ko', me, opp, source_is_opp=True,
+                    ko_context='battle', source_card=strike_attacker))
+
+leader_only = mk('ST08-002', 'Uta leader-only', power=4000)
+leader_attacker = mk('ATK-LD', 'Leader atacante', card_type='LEADER', attribute='Strike')
+char_attacker = mk('ATK-CHAR', 'Character atacante', attribute='Strike')
+check('imunidade KO battle por Leaders protege contra Leader',
+      is_immune(leader_only, 'ko', me, opp, source_is_opp=True,
+                ko_context='battle', source_card=leader_attacker))
+check('imunidade KO battle por Leaders nao protege contra Character',
+      not is_immune(leader_only, 'ko', me, opp, source_is_opp=True,
+                    ko_context='battle', source_card=char_attacker))
+
+without_special = mk('P-025', 'Smoker without-special', power=4000)
+without_special.don_attached = 1
+normal_attacker = mk('ATK-NORMAL', 'Character sem Special', attribute='Strike')
+special_attacker = mk('ATK-SPECIAL', 'Character Special', attribute='Special')
+check('imunidade KO battle sem Special protege contra Character sem Special',
+      is_immune(without_special, 'ko', me, opp, source_is_opp=True,
+                ko_context='battle', source_card=normal_attacker))
+check('imunidade KO battle sem Special nao protege contra Character Special',
+      not is_immune(without_special, 'ko', me, opp, source_is_opp=True,
+                    ko_context='battle', source_card=special_attacker))
 
 # ── 14. substitute_removal executa extra_steps (Thatch: trash self + draw) ──
 me, opp = me_opp()

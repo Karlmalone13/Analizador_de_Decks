@@ -223,9 +223,12 @@ de imunidade e stubs antigos listados abaixo.
 - Fatia seguinte feita: KO por efeito e KO em batalha agora passam contexto para
   `is_immune()`, e o helper usa o texto bruto para impedir que imunidade
   `cannot be K.O.'d in battle` proteja contra efeito, ou `by effects` proteja
-  contra batalha. Ainda falta modelar restricoes por atributo/fonte do atacante
-  (`Strike`, `Slash`, `Special`, `Leaders`) e variantes nao parseadas como
-  OP11-005/OP11-046.
+  contra batalha.
+- Fatia seguinte feita (30/06/2026): KO em batalha agora também restringe por
+  atributo/fonte do atacante (`Strike`, `Slash`, `Special`, `Leaders`, "by
+  Characters without [Special]"). `_source_matches_battle_ko_immunity()` lê o
+  atacante (`source_card`) e compara com o texto da sentença de imunidade.
+  Ainda falta variantes não parseadas como OP11-005/OP11-046.
 - [ ] Implementar substituição externa: auditoria de 29/06/2026 achou cerca de
   38 textos onde uma fonte em campo/líder protege outro alvo (`if your Character
   would be removed/K.O.'d...`). O parser já estrutura muitos como

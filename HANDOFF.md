@@ -1,5 +1,24 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-06-30 - Claude
+
+**Feito - imunidade KO em batalha por atributo/fonte do atacante:** próxima
+fatia da pendência deixada pela sessão anterior. `_source_matches_battle_ko_immunity()`
+(novo) compara a sentença de imunidade (extraída por `_ko_sentence()`, fatorado
+de `_ko_immunity_applies_to_context()`) com o atacante (`source_card`) para os
+padrões "by Leaders", "by Characters without [Special]" e "by [Strike/Slash/
+Special/Wisdom/Ranged] attribute Characters". `is_immune()` e o caminho de KO em
+combate (`OPTCGMatch`) agora passam `source_card=attacker`.
+
+**Validação:** `python -m py_compile scriptis_da_ia\smoke_test.py
+scriptis_da_ia\optcg_engine\decision_engine.py`; `python
+scriptis_da_ia\smoke_test.py` (38/38); `python smoke_test_broad.py` (40/40);
+`python audit_replay.py --n 5 --seed 42` (0 anomalias).
+
+**Ainda falta:** variantes de imunidade não parseadas como `immunity` ainda
+(ex.: OP11-005/OP11-046), e a família grande de substituição externa (ver
+seção de dívida técnica no TODO.md).
+
 ## 2026-06-30 - Codex
 
 **Feito - imunidade KO por contexto:** `is_immune()` agora recebe `ko_context`
