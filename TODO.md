@@ -392,15 +392,58 @@ de imunidade e stubs antigos listados abaixo.
 ## 🔴 FILA ANTERIOR ainda aberta
 
 ### Stubs sem lógica de decisão
-- [ ] choice (19) — heurística de valor
-- [ ] conditional_stack (OP15-092) — custo-benefício por threshold
-- [ ] set_base_power (8) — integrar em effective_power() (6+ pontos)
-- [ ] lock_opp_attack_unless_pays (OP08-043) — "vale pagar?"
-- [ ] deck_reorder_rest / deck_top_rest (21) — DECK_REORDER, heurística de ordem. Próximo bloco.
+- [x] ~~choice (19) — heurística de valor~~ — JÁ IMPLEMENTADO (auditoria
+  01/07/2026, este item estava desatualizado). `_resolve_choice`
+  (`decision_engine.py:853-897`) tem heurística de valor real por peso de
+  ação (`attack_life`=4, `trash_opp_life`/`place_opp_character_bottom_deck`=3,
+  `ko`/`trash_character`/`gain_life`=2, `bounce`/`draw`=1), filtra por
+  viabilidade e escolhe a opção de maior score (menor se `chooser='opponent'`).
+  Consumido em `execute()` e no passive-loop. Contagem real: 17 cartas (não
+  19). Smoke tests dedicados em `smoke_test.py:120-161`.
+- [x] ~~conditional_stack (OP15-092) — custo-benefício por threshold~~ — JÁ
+  IMPLEMENTADO (auditoria 01/07/2026). `decision_engine.py:1610-1613` itera
+  `conditional_stack`, checa `conditions` de cada item via
+  `_check_conditions` e ACUMULA (`extend`) os blocos que passam — cumulativo,
+  não exclusivo. 1 carta confirmada (OP15-092), igual ao TODO. Smoke test em
+  `smoke_test.py:161-184`.
+- [x] ~~set_base_power (8) — integrar em effective_power()~~ — JÁ
+  IMPLEMENTADO (auditoria 01/07/2026, contagem estava desatualizada).
+  Handler completo em `decision_engine.py:2512-2566`: resolve target
+  (self/leader/own_character/leader_or_own_character), filtra por
+  `filter_type`, seta `card.base_power_override`, consumido por
+  `effective_card_power` (`rules_facade.py`). Inclui caso dinâmico
+  (`source=opp_leader/own_leader/selected_opp_character`, achado
+  28/06/2026). Contagem real: 15 cartas (não 8 — dobrou desde a estimativa
+  original).
+- [ ] lock_opp_attack_unless_pays (OP08-043) — "vale pagar?" — CONFIRMADO
+  ainda não implementado (auditoria 01/07/2026): `decision_engine.py:2438-2439`
+  só tem um placeholder (`'nao implementado -- pendente fase Opponent
+  Reading'`), sem handler de execução real nem lógica de custo-benefício.
+  1 carta (OP08-043), igual ao TODO original.
+- [ ] deck_reorder_rest / deck_top_rest — CONFIRMADO ainda não implementado
+  (auditoria 01/07/2026, contagem corrigida): `deck_reorder_rest` e
+  `deck_top_rest` só aparecem em `_step_is_viable`
+  (`decision_engine.py:832-833`), sem handler real em `_execute_step` (busca
+  direta confirma zero ocorrências de `if action == 'deck_reorder_rest'` ou
+  `'deck_top_rest'`). `deck_reorder_rest` tem 16 cartas (não 21). `deck_top_rest`
+  é uma action SEPARADA e distinta com 5 cartas próprias (OP02-057, OP05-043,
+  OP08-053, OP11-040, OP11-104) — total real 21 cartas, mas duas mecânicas
+  diferentes, não uma só.
 
 ### Reserva de DON em combate
-- [ ] plan_don_distribution não subtrai reserva defensiva (usa don_available cru)
-- [ ] on_opponent_attack timing não existe (72 cards em "passive"). Precondição da reserva fina.
+- [x] ~~plan_don_distribution não subtrai reserva defensiva (usa don_available cru)~~
+  — STALE, já corrigido (auditoria 01/07/2026). `decision_engine.py:4678-4778`
+  já chama `_don_reserve_for_defense()` (linha 4720) e subtrai do
+  `don_available` antes de distribuir DON nos modos CLEAR FIELD/NORMAL — só
+  ignora a reserva no modo LETHAL deliberadamente (decisão confirmada pelo
+  usuário em 27/06/2026: "ir pro lethal vale mais que guardar DON").
+- [x] ~~on_opponent_attack timing não existe (72 cards em "passive")~~ —
+  STALE, já corrigido em 27/06/2026 (confirmado de novo em 30/06/2026 durante
+  a auditoria de Counter events). O timing `on_opp_attack` já existe no
+  parser (`gerar_effects_db.py:3160`) e já é executado em
+  `_resolve_attack` (`decision_engine.py`, `ee_react.execute(reagente,
+  'on_opp_attack')`, ANTES de calcular `atk_power` — necessário pra debuffs
+  do tipo Izo EB01-002 valerem nesta batalha).
 
 ### Turn Planner
 - [x] ~~can_lethal_this_turn ainda cheata lendo self.opp.hand para counters~~ —
