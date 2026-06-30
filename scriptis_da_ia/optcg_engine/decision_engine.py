@@ -4185,6 +4185,10 @@ def load_cards_db(csv_path: str = 'cards_rows.csv') -> dict:
                 'sub_types': row['sub_types'],
                 **kws,
             }
+            # Guarda URL de imagem para o replay viewer
+            img_url = str(row.get('card_image', '') or '')
+            if img_url and img_url != 'nan':
+                _CARD_IMAGE_CACHE[code] = img_url
         print(f'  Banco de cartas: {len(db)} cartas carregadas')
     except Exception as e:
         print(f'  Erro ao carregar {csv_path}: {e}')
@@ -4210,6 +4214,8 @@ def validar_deck(leader: Card, cards: list, cards_db: dict) -> tuple:
 # manter o cache ao longo de todo o processo é seguro e só economiza
 # trabalho repetido.
 _CARD_DATA_CACHE: dict = {}
+# Cache de imagens: code -> URL da imagem (preenchido por load_cards_db)
+_CARD_IMAGE_CACHE: dict = {}
 
 
 def _make_card(code: str, data: dict) -> Card:
@@ -5417,6 +5423,13 @@ class OPTCGMatch:
             self.state_b.is_first = True
 
         self.global_turn = 0
+        # replay_log: lista de eventos estruturados gerados durante a partida.
+        # None = modo normal (sem logging extra). Definida para uma lista vazia
+        # por simulate_replay() antes de chamar setup()+play_turn().
+        self.replay_log: list | None = None
+        # nomes dos jogadores para o replay (preenchidos por simulate_replay)
+        self._name_a = 'Player A'
+        self._name_b = 'Player B'
 
         # OpponentModel de cada lado: construído a partir da decklist
         # COMPLETA do ADVERSÁRIO (state_a usa o deck de state_b para saber
@@ -6319,6 +6332,10 @@ class OPTCGMatch:
         remove_by_identity(p.hand, card)
         p.don_rested  += play_cost
         p.don_available -= play_cost
+        # Replay event: carta jogada
+        self._log_event(p, 'play_card', card=card,
+                        description=f'Jogou {card.name} (custo {play_cost} DON)',
+                        phase='main')
 
         if verbose:
             don_txt = f'gastou {play_cost} DON' if play_cost > 0 else 'grátis'
@@ -6360,6 +6377,12 @@ class OPTCGMatch:
             for log in logs:
                 if log:
                     print(f'    ↳ [{card.name[:20]}] {log}')
+        # Replay: log effects that fired
+        effect_descs = [l for l in logs if l]
+        if effect_descs:
+            self._log_event(p, 'effect', card=card,
+                            description='; '.join(effect_descs[:3]),
+                            phase='main')
 
     def _execute_attack(self, attacker: Card, target_type: str,
                         target: Optional[Card], p: GameState,
@@ -6378,6 +6401,11 @@ class OPTCGMatch:
             p.leader.rested = True
         else:
             attacker.rested = True
+        # Replay event: ataque declarado
+        tgt_name = 'Leader' if target_type == 'leader' else (target.name if target else '?')
+        self._log_event(p, 'attack', card=attacker, target=target if target_type != 'leader' else opp.leader,
+                        description=f'{attacker.name} ataca {tgt_name}',
+                        phase='attack')
 
         # Paga o custo de lock_opp_attack_unless_pays (OP08-043), se o
         # atacante estiver sob essa trava. A viabilidade ja foi checada na
@@ -6531,6 +6559,9 @@ class OPTCGMatch:
                     # e sem direito a trigger (regra oficial).
                     if attacker.has_banish:
                         opp.trash.append(life_card)
+                        self._log_event(p, 'life_damage', card=attacker, target=life_card,
+                            description=f'BANISH! vida de {(self._name_b if p is self.state_a else self._name_a)}: {opp.life_count()}',
+                            phase='attack')
                         if verbose:
                             print(f'      💥 DANO (BANISH)! vida -> trash: {opp.life_count()}')
                     else:
@@ -6541,6 +6572,10 @@ class OPTCGMatch:
                             opp.deck.insert(0, life_card)
                         else:
                             opp.hand.append(life_card)
+                        opp_name = self._name_b if p is self.state_a else self._name_a
+                        self._log_event(p, 'life_damage', card=attacker, target=life_card,
+                            description=f'Dano! vida de {opp_name}: {opp.life_count()} restantes',
+                            phase='attack')
                         if verbose:
                             print(f'      💥 DANO! vida do oponente: {opp.life_count()}')
                     if life_card.has_trigger and not attacker.has_banish:
@@ -6592,13 +6627,84 @@ class OPTCGMatch:
 
         return False
 
+    # ── Replay logger ────────────────────────────────────────────────────────
+
+    def _log_event(self, p: GameState, event_type: str, card: 'Card' = None,
+                   target: 'Card' = None, description: str = '', phase: str = 'main',
+                   extra: dict = None):
+        """Registra um evento estruturado se replay_log estiver ativo."""
+        if self.replay_log is None:
+            return
+
+        def card_dict(c):
+            if c is None:
+                return None
+            return {
+                'code':  c.code,
+                'name':  c.name,
+                'image': _CARD_IMAGE_CACHE.get(c.code, ''),
+                'cost':  c.cost,
+                'power': c.power,
+                'type':  c.card_type,
+                'color': c.color or '',
+            }
+
+        player_id = 'A' if p is self.state_a else 'B'
+        player_name = self._name_a if player_id == 'A' else self._name_b
+        event = {
+            'turn':        self.global_turn,
+            'player':      player_id,
+            'player_name': player_name,
+            'phase':       phase,
+            'type':        event_type,
+            'card':        card_dict(card),
+            'target':      card_dict(target),
+            'description': description,
+        }
+        if extra:
+            event.update(extra)
+        self.replay_log.append(event)
+
+    def simulate_replay(self, name_a: str = 'Player A', name_b: str = 'Player B') -> dict:
+        """Roda uma partida completa capturando log estruturado de eventos.
+        Retorna o mesmo dict de simulate() mais 'events' (lista de eventos
+        por turno) e 'turns_detail' (eventos agrupados por turno)."""
+        self.replay_log = []
+        self._name_a = name_a
+        self._name_b = name_b
+        result = self.simulate()
+
+        # Agrupa eventos por turno para o frontend navegar facilmente
+        turns_detail = {}
+        for ev in self.replay_log:
+            t = ev['turn']
+            turns_detail.setdefault(t, []).append(ev)
+
+        result['events'] = self.replay_log
+        result['turns_detail'] = [
+            {'turn': t, 'events': evs}
+            for t, evs in sorted(turns_detail.items())
+        ]
+        return result
+
     def play_turn(self, p: GameState, opp: GameState, verbose: bool = False) -> Optional[str]:
         self.global_turn += 1
         p.turn += 1
         p.global_turn = self.global_turn
 
+        self._log_event(p, 'turn_start', phase='refresh',
+                        description=f'Turno {self.global_turn} — refresh/compra/DON')
         self.refresh_phase(p)
+
+        # Log de compra de carta
+        hand_before = len(p.hand)
         self.draw_phase(p, verbose=verbose)
+        drawn = len(p.hand) - hand_before
+        if drawn > 0:
+            self._log_event(p, 'draw', phase='draw',
+                            description=f'Comprou {drawn} carta(s)',
+                            extra={'count': drawn})
+
         self.don_phase(p, verbose=verbose)
 
         if self.main_phase(p, opp, verbose=verbose):

@@ -1,6 +1,43 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
-## 2026-07-02 (13) - Claude — ÚLTIMA DESTA SESSÃO
+## 2026-07-02 (14) - Claude — ÚLTIMA DESTA SESSÃO
+
+**Feito — Replay Viewer com popup de cartas + compliance checker infrastructure.**
+
+**Backend (Python):**
+- `OPTCGMatch.simulate_replay(name_a, name_b)` — roda 1 partida e retorna
+  log estruturado de eventos por turno. Eventos: `turn_start`, `draw`,
+  `play_card`, `effect` (efeitos on_play), `attack`, `life_damage`.
+  Cada evento tem `{turn, player, player_name, phase, type, card, target, description}`.
+  `card/target` incluem `{code, name, image, cost, power, type, color}`.
+- `_CARD_IMAGE_CACHE` — dict code→URL de imagem carregado pelo `load_cards_db`
+  para enriquecer eventos sem modificar Card/CardData.
+- `_log_event(p, type, card, ...)` — helper em OPTCGMatch, no-op quando
+  `replay_log is None` (modo normal, zero overhead).
+- `replay_optcg.ReplayMatch._get_engine_match()` — adicionado `replay_log=None`
+  e `_name_a/_name_b` para o `OPTCGMatch.__new__` não ter AttributeError.
+- API `POST /replay` em `api.py` — aceita `{deck_a, deck_b, name_a, name_b}`,
+  usa `simulation_worker.load_deck()`, retorna `simulate_replay()` result.
+
+**Frontend (Next.js):**
+- `src/components/ReplayViewer.tsx` — modal completo com:
+  - Timeline de turnos (botões coloridos A=azul/B=vermelho)
+  - Eventos do turno atual com ícones por tipo
+  - Popup de imagem da carta ao hover (com card_image da API)
+  - Navegação Anterior/Próximo + Auto-play (1.5s/turno)
+  - Informações do evento: nome, descrição, alvo
+- `src/app/simulate/page.tsx` — integrado:
+  - `startReplay()`: chama `/replay`, carrega deck_b dinamicamente (pasted
+    preview, own deck via Supabase, ou deck_a como fallback)
+  - Botão "🎬 Ver Replay de 1 Partida" aparece após resultado da simulação
+  - Modal `<ReplayViewer>` controlado por `showReplay` state
+
+**Próximo:** compliance checker (`audit_card_effects.py`) para detectar
+  automaticamente efeitos que não disparam.
+
+---
+
+## 2026-07-02 (13) - Claude
 
 **Feito — otimização estrutural de deepcopy no Turn Planner: 2.8x speedup.**
 

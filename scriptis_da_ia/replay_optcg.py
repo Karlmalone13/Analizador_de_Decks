@@ -220,6 +220,10 @@ class ReplayMatch:
             self._engine_match.state_b = self.state_b
             self._engine_match.model_for_a = self.model_for_a
             self._engine_match.model_for_b = self.model_for_b
+            # replay_log e _name_a/_name_b: necessarios para _log_event
+            self._engine_match.replay_log = None
+            self._engine_match._name_a = getattr(self, 'name_a', 'A')
+            self._engine_match._name_b = getattr(self, 'name_b', 'B')
         return self._engine_match
 
     def setup(self):

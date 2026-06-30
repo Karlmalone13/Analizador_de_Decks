@@ -4,6 +4,7 @@ import { useEffect, useState, useRef, useCallback, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
 import Navbar from '@/components/Navbar'
+import ReplayViewer from '@/components/ReplayViewer'
 
 interface Card {
     id: string
@@ -153,6 +154,11 @@ function SimulatePageContent() {
     const [jobId, setJobId] = useState<string | null>(null)
     const [jobStatus, setJobStatus] = useState<SimulationJobStatus | null>(null)
     const pollRef = useRef<ReturnType<typeof setInterval> | null>(null)
+
+    // Replay state
+    const [replayData, setReplayData] = useState<any | null>(null)
+    const [replayLoading, setReplayLoading] = useState(false)
+    const [showReplay, setShowReplay] = useState(false)
 
     // ── Carrega o deck de origem (deck_a, vindo de /meus-decks) ────────────
     useEffect(() => {
@@ -308,6 +314,68 @@ function SimulatePageContent() {
         } catch (e) {
             alert('Erro de conexão com a API de simulação.')
             setRunning(false)
+        }
+    }
+
+    // ── Replay: roda 1 partida com log detalhado ────────────────────────────
+    async function startReplay() {
+        if (!deck || !deck.leader) return
+        setReplayLoading(true)
+        setShowReplay(false)
+
+        const deckAEntries = [
+            { code: deck.leader.card_set_id, qty: 1 },
+            ...deck.cards.map(dc => ({ code: dc.card.card_set_id, qty: dc.quantity })),
+        ]
+
+        let deckBEntries: { code: string; qty: number }[] = []
+        if (tab === 'pasted' && pastedPreview?.leader) {
+            deckBEntries = [
+                { code: pastedPreview.leader.card_set_id, qty: 1 },
+                ...pastedPreview.cards.map(dc => ({ code: dc.card.card_set_id, qty: dc.quantity })),
+            ]
+        } else if (tab === 'own' && selectedOwnDeckId) {
+            // For own deck replay, fetch the deck from Supabase
+            try {
+                const { data: ownDeckRow } = await supabase.from('decks').select('*').eq('id', selectedOwnDeckId).single()
+                if (ownDeckRow) {
+                    const parsed: { leader: string; cards: { code: string; qty: number }[] } = JSON.parse(ownDeckRow.cards)
+                    deckBEntries = [
+                        { code: parsed.leader, qty: 1 },
+                        ...parsed.cards,
+                    ]
+                }
+            } catch { /* fall through to using deck_a */ }
+        }
+        if (deckBEntries.length === 0) {
+            // meta: não temos deck_b selecionado — usa o próprio deck_a como oponente
+            deckBEntries = deckAEntries
+        }
+
+        try {
+            const r = await fetch(`${API_URL}/replay`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    deck_a: deckAEntries,
+                    deck_b: deckBEntries,
+                    name_a: deck.leader.card_name || 'Deck A',
+                    name_b: (tab === 'pasted' ? pastedPreview?.leader?.card_name : ownDecks.find(d => d.id === selectedOwnDeckId)?.leader_name) || 'Deck B',
+                }),
+            })
+            if (!r.ok) {
+                const err = await r.json().catch(() => ({})) as { detail?: string }
+                alert(`Erro no replay: ${err.detail || r.status}`)
+                setReplayLoading(false)
+                return
+            }
+            const data = await r.json()
+            setReplayData(data)
+            setShowReplay(true)
+        } catch (e) {
+            alert('Erro de conexão com a API.')
+        } finally {
+            setReplayLoading(false)
         }
     }
 
@@ -512,7 +580,7 @@ function SimulatePageContent() {
                                 <div className="text-sm text-gray-400 mb-4">{jobStatus.result.total_simulations} simulações no total</div>
 
                                 {(jobStatus.result.breakdown_by_matchup?.length ?? 0) > 1 && (
-                                    <div className="space-y-2">
+                                    <div className="space-y-2 mb-4">
                                         {jobStatus.result.breakdown_by_matchup!.map((b, i) => (
                                             <div key={i} className="flex items-center justify-between bg-gray-800 rounded-xl px-3 py-2">
                                                 <span className="text-sm text-gray-300">{b.matchup}</span>
@@ -521,11 +589,34 @@ function SimulatePageContent() {
                                         ))}
                                     </div>
                                 )}
+
+                                {/* Botão de replay */}
+                                <button
+                                    onClick={startReplay}
+                                    disabled={replayLoading}
+                                    className="w-full mt-2 bg-indigo-700 hover:bg-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed px-4 py-2.5 rounded-xl text-sm font-medium transition flex items-center justify-center gap-2"
+                                >
+                                    {replayLoading ? (
+                                        <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> Carregando replay...</>
+                                    ) : (
+                                        <>🎬 Ver Replay de 1 Partida</>
+                                    )}
+                                </button>
                             </div>
                         )}
                     </div>
                 )}
             </div>
+
+            {/* Replay viewer modal */}
+            {showReplay && replayData && (
+                <ReplayViewer
+                    replayData={replayData}
+                    nameA={deck?.leader?.card_name || 'Deck A'}
+                    nameB={(tab === 'pasted' ? pastedPreview?.leader?.card_name : ownDecks.find(d => d.id === selectedOwnDeckId)?.leader_name) || 'Deck B'}
+                    onClose={() => setShowReplay(false)}
+                />
+            )}
 
             {/* Overlay modal de progresso (centro da tela) */}
             {(running || jobStatus?.status === 'pending' || jobStatus?.status === 'running') && (

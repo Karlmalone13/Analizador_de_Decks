@@ -158,6 +158,48 @@ async def simulate(req: SimulateRequest, background_tasks: BackgroundTasks):
     return {"job_id": job_id, "status": "pending", "total_steps": total_steps}
 
 
+class ReplayRequest(BaseModel):
+    """Pedido de replay de uma única partida com log detalhado de eventos."""
+    deck_a: list[CardEntry]
+    deck_b: list[CardEntry]
+    name_a: str = 'Player A'
+    name_b: str = 'Player B'
+
+
+@app.post("/replay")
+async def replay(req: ReplayRequest):
+    """
+    Roda UMA partida completa e retorna log estruturado de eventos por turno.
+    Usado pelo replay viewer no frontend para mostrar o que aconteceu em cada
+    turno: cartas jogadas, ataques, dano na vida, efeitos disparados.
+
+    Resposta: {winner, turns, events: [...], turns_detail: [{turn, events}]}
+    Cada evento tem: {turn, player, player_name, phase, type, card, target, description}
+    card/target: {code, name, image, cost, power, type, color}
+    """
+    from optcg_engine.decision_engine import OPTCGMatch
+    from simulation_worker import load_deck, DeckLoadError
+
+    def entries_to_dict(entries):
+        return [{'code': e.code, 'qty': e.qty} for e in entries]
+
+    try:
+        deck_a = load_deck(entries_to_dict(req.deck_a))
+        deck_b = load_deck(entries_to_dict(req.deck_b))
+    except DeckLoadError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f'Erro ao montar deck: {e}')
+
+    try:
+        match = OPTCGMatch(deck_a, deck_b)
+        result = match.simulate_replay(name_a=req.name_a, name_b=req.name_b)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f'Erro na simulação: {e}')
+
+    return result
+
+
 @app.get("/simulate/status/{job_id}")
 async def simulate_status(job_id: str):
     """
