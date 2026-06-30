@@ -28,6 +28,14 @@ substituição têm filtro de alvo estruturado.
 **Limite consciente:** ainda não fecha 100% das 38 cartas reais; faltam variantes
 sem filtro extraível pelo sujeito simples e validação carta-a-carta em replay.
 
+**Auditoria pós-commit dos 12 sem filtro:** 10/12 são `this Character`, então
+estão corretos sem filtro externo porque o executor tenta primeiro a substituição
+do próprio alvo. `OP07-042` também é self, mas o sujeito vem composto com
+condição de leader; não precisa de mudança de comportamento. O único caso
+conceitualmente diferente é `EB02-030`, que é evento `[Counter]` protegendo
+`any of your Characters` em batalha. O motor ainda não executa Counter events
+como efeitos, só soma counter impresso da mão; isso deve virar uma fatia própria.
+
 **Validação:**
 - `python -m py_compile scriptis_da_ia\smoke_test.py scriptis_da_ia\optcg_engine\decision_engine.py` passou.
 - `python scriptis_da_ia\smoke_test.py` passou.

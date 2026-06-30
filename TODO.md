@@ -231,9 +231,11 @@ de imunidade e stubs antigos listados abaixo.
   `exclude=tashigi`, Sabo -> `cost_lte=7` + `exclude=sabo`, Rosinante OP12-048
   -> `filter_type=navy` + `filter_color=blue`, ST30-009/ST30-011 ->
   `power_eq=6000`. Auditoria rápida: 21 de 33 steps de substituição têm filtro
-  de alvo estruturado. Ainda falta validar variantes restantes carta-a-carta e
-  cobrir filtros mais raros. Já corrigido nesta
-  auditoria: `extra_steps` de substituição (`trash self + draw`) agora executam.
+  de alvo estruturado. Auditoria dos 12 restantes: 10 são `this Character`,
+  `OP07-042` também é self com sujeito composto, e `EB02-030` é Counter event
+  para `any of your Characters`, que pertence a uma fatia própria de execução
+  de eventos [Counter]. Já corrigido nesta auditoria: `extra_steps` de
+  substituição (`trash self + draw`) agora executam.
 
 ---
 
