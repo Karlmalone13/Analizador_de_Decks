@@ -48292,7 +48292,7 @@
             "action": "buff_cost",
             "amount": 2,
             "target": "self",
-            "duration": "until_opp_turn_end"
+            "duration": "until_opp_end_phase"
           },
           {
             "action": "gain_life",
@@ -54144,7 +54144,7 @@
             "target": "own_character",
             "count": 99,
             "filter_type": "thriller bark pirates",
-            "duration": "until_opp_turn_end"
+            "duration": "until_opp_end_phase"
           }
         ]
       }
@@ -54638,7 +54638,7 @@
             "target": "own_character",
             "count": 99,
             "filter_type": "baroque works",
-            "duration": "until_opp_turn_end"
+            "duration": "until_opp_end_phase"
           }
         ],
         "conditions": {
@@ -57553,12 +57553,19 @@
             "amount": 2,
             "target": "own_character",
             "count": 1,
-            "duration": "until_opp_turn_end"
+            "duration": "until_opp_end_phase"
           }
         ],
         "conditions": {
           "leader_is": "enel"
-        }
+        },
+        "costs": [
+          {
+            "type": "don_minus",
+            "count": 1,
+            "optional": false
+          }
+        ]
       }
     }
   },

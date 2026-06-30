@@ -29821,7 +29821,7 @@
     {
      "action": "buff_cost",
      "amount": 2,
-     "duration": "until_opp_turn_end",
+     "duration": "until_opp_end_phase",
      "target": "self"
     },
     {
@@ -33430,7 +33430,7 @@
      "action": "buff_cost",
      "amount": 4,
      "count": 99,
-     "duration": "until_opp_turn_end",
+     "duration": "until_opp_end_phase",
      "filter_type": "thriller bark pirates",
      "target": "own_character"
     }
@@ -33754,7 +33754,7 @@
      "action": "buff_cost",
      "amount": 3,
      "count": 99,
-     "duration": "until_opp_turn_end",
+     "duration": "until_opp_end_phase",
      "filter_type": "baroque works",
      "target": "own_character"
     }
@@ -35602,6 +35602,13 @@
    "conditions": {
     "leader_is": "enel"
    },
+   "costs": [
+    {
+     "count": 1,
+     "optional": false,
+     "type": "don_minus"
+    }
+   ],
    "steps": [
     {
      "action": "draw",
@@ -35611,7 +35618,7 @@
      "action": "buff_cost",
      "amount": 2,
      "count": 1,
-     "duration": "until_opp_turn_end",
+     "duration": "until_opp_end_phase",
      "target": "own_character"
     }
    ]
@@ -43176,7 +43183,15 @@
    ]
   }
  },
- "ST13-003": {},
+ "ST13-003": {
+  "passive": {
+   "steps": [
+    {
+     "action": "face_up_life_to_deck_rule"
+    }
+   ]
+  }
+ },
  "ST13-004": {
   "on_play": {
    "steps": [

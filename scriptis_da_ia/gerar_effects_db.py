@@ -2478,8 +2478,11 @@ def parse_cost_debuff(text):
         cost_gte_m = re.search(r'with a cost of (\d+) or more', clause)
         if cost_gte_m and not is_self:
             step['cost_gte'] = int(cost_gte_m.group(1))
-        duration_m = re.search(r'until the end of your opponent.?s next (?:end phase|turn)', t)
-        step['duration'] = 'until_opp_turn_end' if duration_m else 'permanent'
+        duration_m = re.search(r'until the end of your opponent.?s next (end phase|turn)', t)
+        if duration_m:
+            step['duration'] = 'until_opp_end_phase' if 'end phase' in duration_m.group(1) else 'until_opp_turn_end'
+        else:
+            step['duration'] = 'permanent'
         steps.append(step)
 
     # "Set the cost of up to N of your opponent's Characters [with no base
