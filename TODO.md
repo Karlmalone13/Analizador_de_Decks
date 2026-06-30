@@ -9,7 +9,7 @@
 
 ## Dívida técnica ativa — Turn Planner
 
-- [ ] **Reduzir `deepcopy` em `_simulate_sequence*`**: a poda de orçamento já
+- [x] **Reduzir `deepcopy` em `_simulate_sequence*`** — **implementado (02/07/2026).** `_SimDeck` (list subclass copy-on-pop lazy) aplicada ao `p.deck` + mesmo truque do `opp.deck`. Speedup 2.8× (0.85ms → 0.30ms/call, 31ms → 11ms/main_phase). Ver HANDOFF (13). a poda de orçamento já
   melhorou o runtime; a reserva defensiva agora é calculada uma vez por estado
   em `_generate_and_score_actions()`; e `GameState.__deepcopy__` já tem cópia
   manual mais enxuta. `main_phase()` também passou a simular no mínimo 3

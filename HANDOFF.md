@@ -1,6 +1,32 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
-## 2026-07-02 (12) - Claude — ÚLTIMA DESTA SESSÃO
+## 2026-07-02 (13) - Claude — ÚLTIMA DESTA SESSÃO
+
+**Feito — otimização estrutural de deepcopy no Turn Planner: 2.8x speedup.**
+
+**Técnica:** `_SimDeck` (list subclass com copy-on-pop lazy) + mesmo truque do
+  `opp.deck` aplicado agora ao `p.deck` também.
+
+`_simulate_sequence_once` agora:
+1. Zera ambos os decks antes do `deepcopy(state)` (evita copiar ~80 Cards cada)
+2. Restaura como listas rasas: `p2.deck = _SimDeck(p.deck)` e `opp2.deck = list(opp.deck)`
+3. `_SimDeck.pop()` deepcopia a carta APENAS quando ela é efetivamente sacada
+   durante a simulação — normalmente 0-2 por chamada, não 80.
+
+**Correctness:** `_SimDeck(list)` é uma lista nova (não compartilha o objeto
+  lista com `p.deck` — `list.__init__(other_list)` copia os elementos). Cards
+  popped são deepcopiados no momento do pop, então mutações na simulação nunca
+  afetam `p.deck`. Validado em 100 partidas (4 seeds × 25) — 0 exceções, 0
+  anomalias de conservação de DON.
+
+**Benchmark:** `_simulate_sequence_once`: 0.85ms → 0.30ms por chamada (2.8×),
+  `main_phase` (36 calls): 31ms → 11ms. O gargalo era `deck (~80 cards) =
+  0.7ms` de 1.2ms total; com lazy copy, só as cartas efetivamente sacadas são
+  deepcopiadas.
+
+---
+
+## 2026-07-02 (12) - Claude
 
 **Feito — OP15-074 Varie (foto recebida do usuário) + fix de duração.**
 
