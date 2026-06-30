@@ -1,5 +1,45 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-06-30 (3) - Claude
+
+**Feito - implementa `debuff_power` (achado durante auditoria de Counter
+events) + corrige power negativo:** ao auditar a fatia seguinte de Counter
+events (extras agressivos/estado complexo), achei que `debuff_power` nunca
+teve handler de execução em `_execute_step` — só era reconhecido em
+`_step_is_viable` e em heurísticas de score. Era no-op silencioso em **142
+steps reais** no banco, em quase todos os timings (on_play, when_attacking,
+main, activate_main, counter, trigger, on_opp_attack, etc.), não só Counter
+events. Perguntei ao usuário se queria escopo pequeno (pular debuff_power) ou
+corrigir a causa raiz — escolheu corrigir.
+
+1. Implementado `if action == 'debuff_power':` em
+   [decision_engine.py](scriptis_da_ia/optcg_engine/decision_engine.py),
+   espelhando `buff_power` só que no lado do oponente. 4 targets reais:
+   `opp_character`/`opp_leader_or_character` (alvo mais valioso via
+   `choose_highest_board_value`, cai no Leader se o campo do oponente está
+   vazio), `all_opp_characters`, `opp_leader`. Parser nunca emite
+   filtro/count pra esses alvos — sempre 1 escolha automática da IA.
+2. Adicionado `debuff_power` em `safe_extra_actions` dos Counter events
+   (objetivo original da fatia) — desbloqueia OP08-017, OP10-018, OP12-018,
+   ST29-015 (buff de batalha + debuff do atacante).
+3. **`audit_replay.py` pegou um bug real na primeira rodada**: Characters
+   ficando com power negativo (Otama, Jozu) — `effective_card_power()`
+   (`rules_facade.py`) não tinha piso em 0. Corrigido com `max(0, ...)`.
+
+**Validação:** `python -m py_compile`; `python smoke_test.py` (50/50, 6 casos
+novos cobrindo os 4 targets de debuff_power + integração real com OP10-018);
+`python smoke_test_broad.py` (40/40); `python audit_replay.py --n 5 --seed
+42` (0 anomalias, depois do fix do power negativo) e `--n 20 --seed 7` (0
+exceções, 0 anomalias, amostra maior por ser mudança ampla).
+
+**Ainda falta:** a fatia original de Counter events (extras agressivos:
+`play_card`, buscas/topdeck, múltiplos buffs no mesmo evento) continua
+pendente — esta sessão desviou pra consertar o achado de `debuff_power`
+antes. Ver TODO.md para a lista completa de extras ainda não suportados (78
+eventos `[Counter]` fora da heurística atual).
+
+---
+
 ## 2026-06-30 (2) - Claude
 
 **Feito - auditoria de OP11-005/OP11-046 + 2 bugs corrigidos:** a pendência

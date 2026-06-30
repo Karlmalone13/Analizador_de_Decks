@@ -1238,7 +1238,7 @@ class EffectExecutor:
         extras = [step for step in steps if step is not buff_steps[0]]
         safe_extra_actions = {
             'draw', 'set_active', 'rest_opp_character', 'add_don', 'set_don_active',
-            'ko', 'bounce', 'place_opp_character_bottom_deck',
+            'ko', 'bounce', 'place_opp_character_bottom_deck', 'debuff_power',
         }
         if any(step.get('action') not in safe_extra_actions for step in extras):
             return None
@@ -2467,6 +2467,42 @@ class EffectExecutor:
                     return f'{alvo.name[:18]} +{amount} power'
                 return ''
             return f'+{amount} power em {target}'
+
+        if action == 'debuff_power':
+            # Espelha buff_power, mas do lado do oponente -- achado 30/06/2026:
+            # a action ja era reconhecida em viabilidade (_step_is_viable) e em
+            # heuristicas de score, mas nunca tinha handler de execucao aqui,
+            # virando no-op silencioso em 142 steps reais no banco (on_play,
+            # when_attacking, main, activate_main, counter, trigger, etc).
+            # O parser (gerar_effects_db.py) nunca emite filtro/count pra estes
+            # alvos -- sempre 1 alvo escolhido pela IA (o mais valioso do
+            # oponente), exceto 'all_opp_characters' que afeta o campo inteiro.
+            from optcg_engine.rules_facade import choose_highest_board_value
+
+            amount = step.get('amount', 0)
+            target = step.get('target', 'opp_character')
+
+            if target == 'opp_leader':
+                opp.leader.power_buff -= amount
+                return f'Leader do oponente -{amount} power'
+            if target == 'all_opp_characters':
+                if not opp.field_chars:
+                    return ''
+                for c in opp.field_chars:
+                    c.power_buff -= amount
+                return f'-{amount} power em todos os Characters do oponente'
+            if target == 'opp_leader_or_character':
+                candidatos = list(opp.field_chars) + [opp.leader]
+                alvo = choose_highest_board_value(candidatos)
+                alvo.power_buff -= amount
+                return f'{alvo.name[:18]} -{amount} power'
+            if target == 'opp_character':
+                if not opp.field_chars:
+                    return ''
+                alvo = choose_highest_board_value(opp.field_chars)
+                alvo.power_buff -= amount
+                return f'{alvo.name[:18]} -{amount} power'
+            return ''
 
         if action == 'buff_power_per_count':
             source = step.get('source', 'trash')

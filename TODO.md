@@ -245,6 +245,26 @@ de imunidade e stubs antigos listados abaixo.
   checkers agora respeitam `only_field_type`. `diff_parser.py` confirmou
   `PERDEU=0`; `audit_replay.py` 0 anomalias (turnos mudaram em 2 das 5
   partidas do seed 42, esperado — comportamento real mudou).
+- [x] **`debuff_power` sem handler de execução (30/06/2026):** achado durante
+  a auditoria dos Counter events — a action já era reconhecida em
+  `_step_is_viable` e em heurísticas de score, mas `_execute_step` nunca
+  tinha um `if action == 'debuff_power':` — virava no-op silencioso em TODOS
+  os 142 steps reais do banco (on_play 31, when_attacking 27, main 25,
+  activate_main 17, counter 14, trigger 10, on_opp_attack 6, demais 12), não
+  só em Counter events. Implementado handler espelhando `buff_power` mas do
+  lado do oponente, 4 targets: `opp_character`/`opp_leader_or_character`
+  (escolhe o alvo mais valioso via `choose_highest_board_value`, com
+  `opp_leader_or_character` caindo no Leader quando o campo do oponente está
+  vazio), `all_opp_characters` (afeta todos) e `opp_leader` (direto, raro/0
+  cartas hoje). Parser nunca emite filtro/count pra esses alvos — sempre 1
+  escolha automática. Adicionado também a `safe_extra_actions` dos Counter
+  events (objetivo original desta fatia), desbloqueando OP08-017, OP10-018,
+  OP12-018, ST29-015. **Bug-side-effect descoberto pelo `audit_replay.py`:**
+  com debuff de verdade acontecendo, Characters podiam ficar com power
+  negativo (Otama, Jozu na auditoria) — `effective_card_power()`
+  (`rules_facade.py`) não tinha piso em 0. Corrigido com `max(0, ...)` no
+  retorno (regra real do jogo: power nunca é negativo). Validado com
+  `audit_replay.py --n 20 --seed 7`: 0 exceções, 0 anomalias.
 - [ ] Implementar substituição externa: auditoria de 29/06/2026 achou cerca de
   38 textos onde uma fonte em campo/líder protege outro alvo (`if your Character
   would be removed/K.O.'d...`). O parser já estrutura muitos como

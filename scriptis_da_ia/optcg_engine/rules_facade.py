@@ -28,7 +28,11 @@ def effective_card_power(card: "Card", your_turn: bool = True) -> int:
     if base_power is None:
         base_power = card.power
     don_power = card.don_attached * 1000 if your_turn else 0
-    return base_power + card.power_buff + don_power
+    # Regra do jogo: power nunca fica negativo (vira 0). So virou alcancavel
+    # na pratica em 30/06/2026, quando debuff_power passou a ser executado de
+    # verdade (antes era no-op) -- audit_replay.py pegou Characters com power
+    # negativo em partidas reais (Otama, Jozu) sem este piso.
+    return max(0, base_power + card.power_buff + don_power)
 
 
 def card_matches_filter(

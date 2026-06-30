@@ -666,6 +666,52 @@ counter = ee.try_counter_event_power(me.leader, 'leader', needed=1)
 check('Counter event de remocao pura sem buff nao entra na rota defensiva',
       counter is None and evento_bounce_puro in me.hand and opp_char in opp.field_chars)
 
+# ── 15. debuff_power: action parseada/usada em viabilidade e score desde
+# antes, mas SEM handler de execucao em _execute_step ate agora (achado
+# 30/06/2026: 142 steps reais no banco eram no-op silencioso) ──
+me, opp = me_opp()
+alvo_fraco = mk('OPP-FRACO', 'Fraco', power=3000)
+alvo_forte = mk('OPP-FORTE', 'Forte', power=8000)
+opp.field_chars = [alvo_fraco, alvo_forte]
+ee = EffectExecutor(me, opp)
+ee._execute_step({'action': 'debuff_power', 'amount': 2000, 'target': 'opp_character', 'duration': 'this_turn'}, me.leader)
+check('debuff_power opp_character escolhe o alvo mais valioso do oponente',
+      alvo_forte.power_buff == -2000 and alvo_fraco.power_buff == 0)
+
+me, opp = me_opp()
+opp.field_chars = []
+ee = EffectExecutor(me, opp)
+ee._execute_step({'action': 'debuff_power', 'amount': 1000, 'target': 'opp_leader_or_character', 'duration': 'this_turn'}, me.leader)
+check('debuff_power opp_leader_or_character cai no Leader quando campo do oponente esta vazio',
+      opp.leader.power_buff == -1000)
+
+me, opp = me_opp()
+opp.field_chars = [mk('OPP-A', 'A', power=3000), mk('OPP-B', 'B', power=4000)]
+ee = EffectExecutor(me, opp)
+ee._execute_step({'action': 'debuff_power', 'amount': 1000, 'target': 'all_opp_characters', 'duration': 'this_turn'}, me.leader)
+check('debuff_power all_opp_characters atinge todos os Characters do oponente',
+      all(c.power_buff == -1000 for c in opp.field_chars))
+
+me, opp = me_opp()
+ee = EffectExecutor(me, opp)
+ee._execute_step({'action': 'debuff_power', 'amount': 1000, 'target': 'opp_leader', 'duration': 'this_turn'}, me.leader)
+check('debuff_power opp_leader atinge o Leader do oponente diretamente',
+      opp.leader.power_buff == -1000)
+
+# ── 15b. Counter event real com buff + debuff (OP10-018 Ten-Layer Igloo:
+# +3000 leader_or_character battle_only / -2000 opp_leader_or_character) ──
+me, opp = me_opp()
+me.don_available = 2
+evento_buff_debuff = mk('OP10-018', 'Ten-Layer Igloo', card_type='EVENT', cost=2)
+opp_alvo = mk('OPP-D1', 'Alvo do debuff', power=5000)
+opp.field_chars = [opp_alvo]
+me.hand = [evento_buff_debuff]
+ee = EffectExecutor(me, opp)
+counter = ee.try_counter_event_power(me.leader, 'leader', needed=3000)
+check('Counter event com buff + debuff_power aplica os dois efeitos',
+      counter and counter[0] == 3000 and evento_buff_debuff in me.trash
+      and opp_alvo.power_buff == -2000)
+
 print()
 print(f'{"TODOS OS TESTES PASSARAM" if FAIL == 0 else f"{FAIL} TESTE(S) FALHARAM"}')
 sys.exit(1 if FAIL else 0)
