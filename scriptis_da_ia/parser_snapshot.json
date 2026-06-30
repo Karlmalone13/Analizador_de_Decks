@@ -39701,7 +39701,32 @@
    ]
   }
  },
- "PRB02-005": {},
+ "PRB02-005": {
+  "on_play": {
+   "conditions": {
+    "leader_multicolor": true,
+    "opp_don_on_field_lte": 7
+   },
+   "steps": [
+    {
+     "action": "rest_opp_don",
+     "count": 1
+    }
+   ]
+  },
+  "your_turn": {
+   "conditions": {
+    "leader_multicolor": true,
+    "opp_don_on_field_lte": 7
+   },
+   "steps": [
+    {
+     "action": "rest_opp_don",
+     "count": 1
+    }
+   ]
+  }
+ },
  "PRB02-006": {
   "passive": {
    "steps": [

@@ -1,6 +1,57 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
-## 2026-07-02 (6) - Claude — ÚLTIMA DESTA SESSÃO
+## 2026-07-02 (7) - Claude — ÚLTIMA DESTA SESSÃO
+
+**Feito — Auditoria de gaps (rodada 3): 23 gaps finais, 2315 com efeito.**
+
+Continuação direta da rodada anterior. Mecânicas novas implementadas nesta rodada:
+- `set_base_power` target='opp_character' + duração 'this_turn' — OP07-002 Ain.
+  Cuidado: bug de indentação detectado e corrigido durante a implementação
+  (o bloco m_opp foi inadvertidamente indentado dentro do if, quebrando o
+  for loop original — PERDEU=2 transitório, corrigido, validado PERDEU=0).
+- `opp_don_on_field_lte` condição (simétrica à `opp_don_on_field_gte`) —
+  PRB02-005 Luffy (oponente tem 7 ou menos DON).
+- `rest_opp_don` dispatch broadened: aceita "rests" (conjugado) além de
+  "rest" — PRB02-005 "your opponent rests 1 of their active DON!! cards."
+- `opp_shuffle_hand_into_deck` com `draw_back=N` — OP06-047 Charlotte Pudding:
+  força oponente a reciclar mão no deck e recomprar N. Engine + parser.
+- `opp_life_to_hand` — P-009 Law: oponente move carta da própria vida para mão.
+- `play_from_deck` por NOME (`filter_name`) — ST03-007, OP08-071, OP08-073.
+- `buff_cost target='own_play_hand'` — OP05-097 Mary Geoise (analítico).
+- `opp_place_trash_bottom_deck` player-iniciado — OP15-091 Margarita.
+- `opp_shuffle_hand_into_deck` + `opp_life_to_hand` engine handlers em
+  `decision_engine.py`.
+- `set_active` + `set_don_active` combo (Jinbe Leader OP11-021).
+- Vários outros fixes de dispatch (rests? \d+, cost sem sinal, can attack on
+  the turn, look_at up to/the top N, reveal+conditional-play, bounce own type).
+
+**23 gaps restantes** — esses exigem mecânica genuinamente nova de engine
+ou são casos aceitáveis como informação-only/DB anomaly:
+  - **DB anomaly**: EB03_OP05-006_p1 (ID mismatch, parses como OP05-006)
+  - **Info-only**: OP01-105 Bao Huang (revelar mão do oponente), OP16-042
+    Prisoner of Impel Down (regra de deckbuilding)
+  - **Novo mecanismo complexo**: OP04-097/OP05-111/EB02-057 (add opp Character
+    à vida face-up do oponente), OP05-058 (mass deck_bottom + equalizar mãos),
+    OP06-086 Gecko Moria (jogar 2 do trash com custos diferentes), OP09-033
+    Nico Robin (mass immunity temporário por tipo), OP10-022 Law Leader
+    (bounce cost + peek life + conditional play), OP12-040 Kuzan Leader
+    (trigger reativo ao descarte do oponente), OP14-001/017 (swap de poder),
+    OP14-060 Doflamingo (redirect ataque), OP15-031 Purinpurin (KO se custo=DON
+    anexado), OP02-025 Kin'emon Leader (delay cost reduction), OP03-091
+    Helmeppo (set cost to 0 conditional), OP04-047 Ice Oni (end-of-battle
+    trigger), EB03-031 Vinsmoke Reiju (activate Event's Main from trash),
+    ST08-013 Mr.2 (mutual KO after battle), ST13-003 Luffy Leader (life rule
+    change), ST15-001 Atmos (restriction add life to hand), PRB02-005 Luffy
+    (delayed rest opp DON — simplification needed), EB02-057 Mad Treasure.
+
+**Validação:** `diff_parser.py` (PERDEU=0 após correção do bug de indentação);
+  `gerar_dbs.py` (2315 com efeito); `smoke_test.py` (100%);
+  `smoke_test_broad.py` (40/40); `audit_replay.py --n 20 --seed 7` (0
+  exceções, 0 anomalias).
+
+---
+
+## 2026-07-02 (6) - Claude
 
 **Feito — Auditoria de gaps (rodada 2): 51 → 24 gaps, 2286 → 2314 com efeito.**
 

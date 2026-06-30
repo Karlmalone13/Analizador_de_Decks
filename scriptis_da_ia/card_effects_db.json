@@ -64406,7 +64406,32 @@
     "color": "Green",
     "sub_types": "Straw Hat Crew Supernovas",
     "attribute": "Strike",
-    "effects": {}
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "rest_opp_don",
+            "count": 1
+          }
+        ],
+        "conditions": {
+          "opp_don_on_field_lte": 7,
+          "leader_multicolor": true
+        }
+      },
+      "your_turn": {
+        "steps": [
+          {
+            "action": "rest_opp_don",
+            "count": 1
+          }
+        ],
+        "conditions": {
+          "opp_don_on_field_lte": 7,
+          "leader_multicolor": true
+        }
+      }
+    }
   },
   "PRB02-006": {
     "name": "Roronoa Zoro - PRB02-006",

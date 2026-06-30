@@ -98357,7 +98357,16 @@
   "color": "Green",
   "sub_types": "Straw Hat Crew Supernovas",
   "attribute": "Strike",
-  "effects": [],
+  "effects": [
+   {
+    "action": "rest_opp_don",
+    "trigger": "on_play"
+   },
+   {
+    "action": "rest_opp_don",
+    "trigger": "your_turn"
+   }
+  ],
   "synergy_states": {},
   "text": "[Your Turn] [On Play] If your Leader is multicolored and your opponent has 7 or less DON!! cards on their field, your opponent rests 1 of their active DON!! cards at the start of their next Main Phase.",
   "is_searcher": false,

@@ -92,6 +92,9 @@ def parse_conditions(text):
     m = re.search(r"your opponent has (\d+) or more don!! cards? on (?:their|his|her) field", t)
     if m: conds['opp_don_on_field_gte'] = int(m.group(1))
 
+    m = re.search(r"your opponent has (\d+) or less don!! cards? on (?:their|his|her) field", t)
+    if m: conds['opp_don_on_field_lte'] = int(m.group(1))
+
     # "if your opponent has N or more cards in their hand" -- gate sobre o
     # tamanho da MAO DO OPONENTE, distinto de hand_gte (mao do PROPRIO
     # jogador). Achado 02/07/2026: prefixava 5 das 13 cartas de
@@ -826,7 +829,9 @@ def parse_rest_opp(text):
     # "choose one"). Nunca confundir com don_minus (que devolve DON ao
     # DECK do PRÓPRIO jogador como custo) -- aqui é desvantagem temporária
     # imposta no oponente, o DON continua no campo dele, só fica rested.
-    m_don = re.search(r"rest (?:up to (\d+)|(\d+)) of your opponent.{0,15}don!{0,2}\s*cards?", t)
+    # Aceita "rest/rests" (conjugado para "your opponent rests", PRB02-005)
+    # e "rest up to N" ou "rest N" (sem "up to").
+    m_don = re.search(r"rests? (?:up to (\d+)|(\d+)) of (?:your opponent|their).{0,15}don!{0,2}\s*cards?", t)
     if m_don:
         steps.append({
             'action': 'rest_opp_don',
@@ -1644,6 +1649,11 @@ def parse_set_base_power(text):
             # ainda nao apareceu em nenhuma carta confirmada).
             continue
 
+    # "Set the power of up to N of your opponent's Characters to X during
+    # this turn." -- Ain OP07-002 (power to 0 = debuff massivo). Forma textual
+    # distinta de "base power becomes N" acima -- sem "base power", usa "set
+    # the power of X to N". Mapeado como set_base_power target=opp_character
+    # duration=this_turn (motor: aplica override no power do oponente).
         step = {'action': 'set_base_power', 'amount': amount, 'target': target}
 
         count_m = re.search(r'up to (\d+) of your', sujeito)
@@ -1661,6 +1671,21 @@ def parse_set_base_power(text):
         else:
             step['duration'] = 'this_turn'  # default observado nas cartas confirmadas sem clausula explicita
         steps.append(step)
+
+    # "Set the power of up to N of your opponent's Characters to X during
+    # this turn." -- Ain OP07-002. Forma distinta de "base power becomes N"
+    # acima -- usa "set the power of X to N", sem "base power".
+    m_opp = re.search(
+        r"set the power of up to (\d+) of your opponent.{0,20}characters? to (\d+)"
+        r"(?: during this turn)?", t)
+    if m_opp:
+        steps.append({
+            'action': 'set_base_power',
+            'count': int(m_opp.group(1)),
+            'target': 'opp_character',
+            'amount': int(m_opp.group(2)),
+            'duration': 'this_turn',
+        })
 
     # "[Tipo]'s base power becomes the same as [fonte]" -- SEM numero literal
     # (MatchLeaderToBasePower, achado 28/06/2026, 12 cartas reais). Distinto
@@ -3223,7 +3248,8 @@ def parse_block(block_text, trigger_name):
 
     # Restar oponente
     # Aceita "rest up to N" e "rest N" (sem "up to") para oponente.
-    if ('rest up to' in t or re.search(r'rest \d+', t)) and 'opponent' in t:
+    # Tambem aceita "your opponent rests N" (verbo conjugado, PRB02-005).
+    if ('rest up to' in t or re.search(r'rests? \d+', t)) and 'opponent' in t:
         steps.extend(parse_rest_opp(t))
 
     # Trava de Blocker do oponente, so NESTA batalha (when_attacking) --

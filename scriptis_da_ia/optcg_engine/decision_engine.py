@@ -1831,6 +1831,8 @@ class EffectExecutor:
             return False
         if 'opp_don_on_field_gte' in conds and opp.don_on_field() < conds['opp_don_on_field_gte']:
             return False
+        if 'opp_don_on_field_lte' in conds and opp.don_on_field() > conds['opp_don_on_field_lte']:
+            return False
         if 'opp_hand_gte' in conds and len(opp.hand) < conds['opp_hand_gte']:
             return False
         if 'chars_gte' in conds:
@@ -2811,6 +2813,18 @@ class EffectExecutor:
             elif target in ('leader_or_own_character', 'leader_or_character'):
                 candidates = [c for c in [me.leader] + me.field_chars
                               if card_matches_filter(c, filter_type)]
+            elif target == 'opp_character':
+                # "Set the power of up to N of your opponent's Characters to X"
+                # (Ain OP07-002). Escolhe o mais valioso -- beneficia mais
+                # zerando o Character que ameaca mais.
+                count = step.get('count', 1)
+                candidates = sorted(
+                    [c for c in opp.field_chars if card_matches_filter(c, filter_type)],
+                    key=lambda c: -c.board_value()
+                )[:count]
+                for c in candidates:
+                    c.base_power_override = int(amount)
+                return f'power de {", ".join(c.name[:12] for c in candidates)} virou {amount}'
             else:
                 candidates = []
 
@@ -4779,6 +4793,7 @@ class DecisionEngine:
             if k == 'don_gte'   and not (my_don   >= v): return False
             if k == 'don_on_field_gte' and not ((my_don + me.don_rested) >= v): return False
             if k == 'opp_don_on_field_gte' and not (self.opp.don_on_field() >= v): return False
+            if k == 'opp_don_on_field_lte' and not (self.opp.don_on_field() <= v): return False
             if k == 'opp_hand_gte' and not (len(self.opp.hand) >= v): return False
             if k == 'trash_gte' and not (my_trash >= v): return False
             if k == 'events_in_trash_gte':
