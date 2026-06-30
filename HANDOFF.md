@@ -1,5 +1,45 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-01 (2) - Claude
+
+**Feito - implementa lock_opp_attack_unless_pays (OP08-043 Edward.Newgate):**
+primeiro dos 2 itens reais que sobraram da auditoria da fila anterior.
+Character do oponente PODE atacar, mas o dono paga um custo (trash N cartas
+da mão) a cada ataque enquanto a trava estiver ativa — distinto de
+`cannot_attack_until` (bloqueio total, já implementado).
+
+- Campo novo `Card.attack_paywall: dict` (`{cost_type, cost_amount, until}`)
+  — adicionado ao `__deepcopy__` customizado de `Card` (campo dict sempre
+  REASSIGNED, nunca mutado in-place, então compartilhar referência no
+  deepcopy é seguro) e resetado em `refresh_phase` junto com
+  `cannot_attack_until`.
+- Execução do step seleciona TODOS os Characters do oponente no campo no
+  momento (texto real confirma: "select all of your opponent's
+  Characters", sem escolha — `count=99`).
+- Novo helper `can_afford_attack_paywall(card, owner)`
+  ([decision_engine.py:675](scriptis_da_ia/optcg_engine/decision_engine.py))
+  — adicionado aos 5 pontos que já filtravam `not c.cannot_attack_until`
+  como "pode atacar" (`my_attack_power`, geração de ações de ataque em 3
+  lugares diferentes, Turn Planner). Simplificação deliberada: paga sempre
+  que a mão tem cartas suficientes, sem modelar "vale a pena pagar" (a
+  fase "Opponent Reading" mencionada no comentário antigo do código
+  continua pausada — não reabri ela só por causa de 1 carta; mesmo padrão
+  conservador que o resto do engine já usa pra custos de ativação).
+- Pagamento real acontece em `_execute_attack`, logo depois de restar o
+  atacante: trasha as N piores cartas da mão por `board_value()`.
+
+**Validação:** `python -m py_compile`; `python smoke_test.py` (81/81, 4
+casos novos: trava aplicada a todos os characters do oponente,
+`can_afford_attack_paywall` com/sem paywall e mão insuficiente, e
+integração real via `OPTCGMatch._execute_attack` confirmando o trash
+automático); `python smoke_test_broad.py` (40/40); `python audit_replay.py
+--n 20 --seed 7` e `--n 15 --seed 99` (0 exceções, 0 anomalias nas duas).
+
+**Ainda falta:** `deck_reorder_rest`/`deck_top_rest` (2 actions distintas,
+16+5 cartas) — próximo item da fila pedida pelo usuário.
+
+---
+
 ## 2026-07-01 - Claude
 
 **Feito - auditoria da "FILA ANTERIOR ainda aberta" do TODO.md:** usuário

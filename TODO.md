@@ -415,11 +415,25 @@ de imunidade e stubs antigos listados abaixo.
   (`source=opp_leader/own_leader/selected_opp_character`, achado
   28/06/2026). Contagem real: 15 cartas (não 8 — dobrou desde a estimativa
   original).
-- [ ] lock_opp_attack_unless_pays (OP08-043) — "vale pagar?" — CONFIRMADO
-  ainda não implementado (auditoria 01/07/2026): `decision_engine.py:2438-2439`
-  só tem um placeholder (`'nao implementado -- pendente fase Opponent
-  Reading'`), sem handler de execução real nem lógica de custo-benefício.
-  1 carta (OP08-043), igual ao TODO original.
+- [x] **lock_opp_attack_unless_pays (OP08-043) — implementado (01/07/2026):**
+  campo novo `Card.attack_paywall` (dict `{cost_type, cost_amount, until}`,
+  resetado em `refresh_phase` junto com `cannot_attack_until` — mesma
+  simplificação de duration já usada lá). Execução do step seleciona TODOS
+  os Characters do oponente no campo no momento (texto real: "select all of
+  your opponent's Characters", sem escolha — `count=99`). Novo helper
+  `can_afford_attack_paywall(card, owner)` adicionado aos 5 pontos que já
+  filtravam `not c.cannot_attack_until` como "pode atacar"
+  (`my_attack_power`, geração de ações de ataque em 3 lugares, Turn
+  Planner) — simplificação deliberada: paga sempre que a mão tem cartas
+  suficientes, sem modelar "vale a pena" (mesmo padrão do resto do engine
+  pra custos de ativação, evita reabrir a fase "Opponent Reading" só por
+  causa de 1 carta). Pagamento real acontece em `_execute_attack` no
+  momento de declarar o ataque (trasha as N piores cartas da mão por
+  `board_value`). 4 smoke tests novos: trava aplicada a todos os
+  characters, `can_afford_attack_paywall` com/sem paywall e mão
+  insuficiente, e integração real via `OPTCGMatch._execute_attack`
+  confirmando o trash automático. Validado com `audit_replay.py --n 20
+  --seed 7` e `--n 15 --seed 99`: 0 exceções, 0 anomalias.
 - [ ] deck_reorder_rest / deck_top_rest — CONFIRMADO ainda não implementado
   (auditoria 01/07/2026, contagem corrigida): `deck_reorder_rest` e
   `deck_top_rest` só aparecem em `_step_is_viable`

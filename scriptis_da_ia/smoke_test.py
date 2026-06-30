@@ -8,7 +8,7 @@ sys.path.insert(0, '.')
 import optcg_engine.decision_engine as de
 from optcg_engine.decision_engine import (
     Card, CardData, GameState, EffectExecutor, DecisionEngine, OPTCGMatch,
-    effective_hand_play_cost, get_card_effects, is_immune
+    effective_hand_play_cost, get_card_effects, is_immune, can_afford_attack_paywall
 )
 
 FAIL = 0
@@ -984,6 +984,53 @@ counter = ee.try_counter_event_power(me.leader, 'leader', needed=4000)
 check('Counter event com look_top_deck + add_to_hand busca carta filtrada do deck',
       counter and counter[0] == 4000 and evento_busca in me.trash
       and donquixote_top in me.hand)
+
+# ── 16. lock_opp_attack_unless_pays (OP08-043 Edward.Newgate) -- character
+# PODE atacar, mas o dono paga um custo a cada ataque enquanto a trava
+# estiver ativa. Distinto de cannot_attack_until (bloqueio total) ──
+me, opp = me_opp()
+opp.field_chars = [mk('OC1', 'Oponente 1'), mk('OC2', 'Oponente 2')]
+newgate = mk('OP08-043', 'Edward.Newgate', power=12000, cost=10)
+ee = EffectExecutor(me, opp)
+log = ee._execute_step(
+    {'action': 'lock_opp_attack_unless_pays', 'count': 99,
+     'duration': 'until_opp_turn_end', 'cost_type': 'trash_from_hand', 'cost_amount': 2},
+    newgate,
+)
+check('lock_opp_attack_unless_pays trava TODOS os Characters do oponente no momento',
+      bool(log) and all(c.attack_paywall == {'cost_type': 'trash_from_hand', 'cost_amount': 2, 'until': 'opp_turn_end'}
+                         for c in opp.field_chars))
+
+# can_afford_attack_paywall: sem paywall sempre pode; com paywall, so se a
+# mao tiver cartas suficientes pra pagar
+me, opp = me_opp()
+sem_paywall = mk('SP1', 'Sem paywall')
+check('can_afford_attack_paywall permite atacar sem paywall ativo',
+      can_afford_attack_paywall(sem_paywall, me))
+
+com_paywall = mk('CP1', 'Com paywall')
+com_paywall.attack_paywall = {'cost_type': 'trash_from_hand', 'cost_amount': 2}
+me.hand = [mk('H1', 'H1'), mk('H2', 'H2')]
+check('can_afford_attack_paywall permite atacar com mao suficiente',
+      can_afford_attack_paywall(com_paywall, me))
+me.hand = [mk('H1', 'H1')]
+check('can_afford_attack_paywall bloqueia atacar sem mao suficiente',
+      not can_afford_attack_paywall(com_paywall, me))
+
+# Integracao real: declarar o ataque paga o custo automaticamente
+me, opp = me_opp()
+me.don_available = 5
+me.life = []
+opp.life = [mk('L1', 'Vida opp')]
+atacante_travado = mk('ATK-PW', 'Atacante travado', power=5000)
+atacante_travado.attack_paywall = {'cost_type': 'trash_from_hand', 'cost_amount': 2}
+me.field_chars = [atacante_travado]
+me.hand = [mk('H1', 'H1', power=1000), mk('H2', 'H2', power=2000), mk('H3', 'H3', power=3000)]
+engine = DecisionEngine(me, opp)
+match = OPTCGMatch((me.leader, []), (opp.leader, []))
+match._execute_attack(atacante_travado, 'leader', None, me, opp, engine)
+check('Declarar ataque com attack_paywall ativo trasha as cartas do custo automaticamente',
+      len(me.hand) == 1 and len(me.trash) == 2)
 
 print()
 print(f'{"TODOS OS TESTES PASSARAM" if FAIL == 0 else f"{FAIL} TESTE(S) FALHARAM"}')

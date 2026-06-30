@@ -172,6 +172,7 @@ class Card:
     can_attack_active: bool = False  # "This Character can also attack active Characters" PERMANENTE (Cavendish OP04-081, Luffy OP04-090) -- keyword nunca implementada antes (achado 27/06, 9 cartas).
     can_attack_active_this_turn: bool = False  # mesma habilidade, mas CONCEDIDA so neste turno via select (Hibari, Gyats, Borsalino, Aramaki, Kuzan, Koby) -- resetada no refresh_phase.
     cannot_be_rested_until: str = ''  # mesma semantica de duracao, para lock_opp_cannot_be_rested (mecanica DISTINTA de cannot_attack)
+    attack_paywall: dict = field(default_factory=dict)  # {'cost_type','cost_amount'} ou {} -- lock_opp_attack_unless_pays (OP08-043): PODE atacar, mas o DONO paga o custo a cada ataque enquanto ativo. Distinto de cannot_attack_until (bloqueio total). Resetado no refresh_phase do dono junto com cannot_attack_until (mesma simplificacao de duration ja usada la).
     frozen_next_refresh: bool = False  # Freeze (lock_opp_character_refresh / lock_self_character_refresh com target='this_card') -- pula APENAS o untap (c.rested=False) na PROXIMA refresh_phase do dono, consumido uma vez (refresh_phase zera este campo, fica rested mesmo se nao tiver sido atacado/restado por outro motivo). DISTINTO de cannot_be_rested_until (que trava o character de FICAR rested -- aqui e o oposto, ele PERMANECE rested ignorando o untap).
     life_face_up: bool = False  # estado valido apenas enquanto a carta esta na zona de Life (ST13/face-up life)
     # Buffs temporários (resetados a cada turno)
@@ -203,6 +204,7 @@ class Card:
                       'cost_buff', 'cost_buff_permanent', 'frozen_next_refresh',
                       'life_face_up'):
             setattr(novo, campo, getattr(self, campo))
+        novo.attack_paywall = self.attack_paywall  # dict sempre REASSIGNED (nunca mutado in-place), referencia compartilhada e segura
         return novo
 
     # ── Properties de delegação para os campos fixos de CardData ──────────
@@ -668,6 +670,22 @@ def is_attack_locked_self(card: 'Card', owner: 'GameState', opp: 'GameState') ->
         if card.cost in costs_alvo:
             return True
     return False
+
+
+def can_afford_attack_paywall(card: 'Card', owner: 'GameState') -> bool:
+    """
+    True se `card` PODE atacar apesar de ter `attack_paywall` ativo
+    (lock_opp_attack_unless_pays, ex: OP08-043 Edward.Newgate) -- ou se nao
+    tem paywall nenhum. Simplificacao deliberada: paga sempre que pode (nao
+    modela "vale a pena" como Opponent Reading faria), mesmo padrao do resto
+    do engine pra custos de ativacao (so checa viabilidade material).
+    """
+    paywall = card.attack_paywall
+    if not paywall:
+        return True
+    if paywall.get('cost_type') == 'trash_from_hand':
+        return len(owner.hand) >= paywall.get('cost_amount', 1)
+    return True
 
 
 def remove_by_identity(lst: list, obj) -> bool:
@@ -2428,15 +2446,31 @@ class EffectExecutor:
         # ── Trava de ataque condicional a pagamento ─────────────────────────────
         # DISTINTA de lock_opp_character_attack: aqui o character do oponente
         # PODE atacar, mas o oponente paga um custo (ex: trash N cards) a cada
-        # ataque enquanto a trava estiver ativa. Decidir se "vale a pena pagar"
-        # e uma decisao de Opponent Reading (fase ainda pausada/pendente no
-        # TODO.md), nao um efeito imediato deterministico. Por ora o step e
-        # apenas reconhecido (nao falha, nao e ignorado silenciosamente) mas
-        # NAO trava nem cobra nada -- nunca reaproveitar cannot_attack_until
-        # aqui, pois isso mentiria sobre a mecanica (carta unica no banco ate
-        # esta auditoria: OP08-043 Edward.Newgate).
+        # ataque enquanto a trava estiver ativa. Implementado em 01/07/2026:
+        # `attack_paywall` (campo novo em Card) guarda {'cost_type',
+        # 'cost_amount'}; os pontos que filtram "pode atacar" (mesmos 6 que
+        # checam cannot_attack_until) tambem checam
+        # `can_afford_attack_paywall()`; o pagamento de verdade acontece em
+        # `_resolve_attack` no momento de declarar o ataque (simplificacao
+        # deliberada: paga sempre que pode, sem modelar "vale a pena" --
+        # mesmo padrao que o resto do engine usa pra custos de ativacao).
+        # Unica carta no banco: OP08-043 Edward.Newgate, count=99 = "select
+        # ALL of your opponent's Characters on their field" (sem escolha).
         if action == 'lock_opp_attack_unless_pays':
-            return '(lock_opp_attack_unless_pays: nao implementado -- pendente fase Opponent Reading)'
+            count = step.get('count', 99)
+            cost_type = step.get('cost_type', 'trash_from_hand')
+            cost_amount = step.get('cost_amount', 1)
+            DUR_MAP = {
+                'until_opp_turn_end': 'opp_turn_end',
+                'until_opp_end_phase': 'opp_end_phase',
+                'until_my_next_turn_start': 'my_next_turn_start',
+            }
+            dur = DUR_MAP.get(step.get('duration', 'until_opp_turn_end'), 'opp_turn_end')
+            targets = list(opp.field_chars)[:count]
+            for t in targets:
+                t.attack_paywall = {'cost_type': cost_type, 'cost_amount': cost_amount, 'until': dur}
+            names = ', '.join(t.name[:15] for t in targets)
+            return f'travou (so ataca pagando {cost_amount} cartas): {names}' if names else ''
 
         # ── Trava de Refresh Phase (Freeze -- nao fica ativo no proximo
         # refresh) ───────────────────────────────────────────────────────────
@@ -3911,7 +3945,8 @@ class GameAnalyzer:
         total = self.me.leader.effective_power(True) if not self.me.leader.rested and not self.me.cannot_attack_leader_this_turn else 0
         for c in self.me.field_chars:
             if (not c.rested and not c.just_played and not c.cannot_attack_until
-                    and not c.cannot_be_rested_until and not is_attack_locked_self(c, self.me, self.opp)):
+                    and not c.cannot_be_rested_until and not is_attack_locked_self(c, self.me, self.opp)
+                    and can_afford_attack_paywall(c, self.me)):
                 total += c.effective_power(True)
         return total
 
@@ -4018,7 +4053,8 @@ class GameAnalyzer:
             ataques.append((self.me.leader.effective_power(True), self.me.leader.has_unblockable, 1))
         for c in self.me.field_chars:
             if (not c.rested and not c.just_played and not c.cannot_attack_until
-                    and not c.cannot_be_rested_until and not is_attack_locked_self(c, self.me, self.opp)):
+                    and not c.cannot_be_rested_until and not is_attack_locked_self(c, self.me, self.opp)
+                    and can_afford_attack_paywall(c, self.me)):
                 hits = 2 if c.is_double_attack() else 1
                 ataques.append((c.effective_power(True), c.has_unblockable, hits))
 
@@ -4087,7 +4123,8 @@ class GameAnalyzer:
             count += 1
         for c in self.me.field_chars:
             if (not c.rested and not c.just_played and not c.cannot_attack_until
-                    and not c.cannot_be_rested_until and not is_attack_locked_self(c, self.me, self.opp)):
+                    and not c.cannot_be_rested_until and not is_attack_locked_self(c, self.me, self.opp)
+                    and can_afford_attack_paywall(c, self.me)):
                 count += 2 if c.is_double_attack() else 1
         return count
 
@@ -5176,7 +5213,8 @@ class OPTCGMatch:
         # Candidatos: personagens ativos + líder
         candidates = [c for c in p.field_chars
                       if not c.rested and not c.just_played and not c.cannot_attack_until
-                      and not c.cannot_be_rested_until and not is_attack_locked_self(c, p, opp)]
+                      and not c.cannot_be_rested_until and not is_attack_locked_self(c, p, opp)
+                      and can_afford_attack_paywall(c, p)]
         if not p.leader.rested:
             candidates.append(p.leader)
 
@@ -5393,6 +5431,7 @@ class OPTCGMatch:
             c.cannot_attack_until = ''
             c.cannot_be_rested_until = ''
             c.cannot_block_until = ''
+            c.attack_paywall = {}
             c.unblockable_this_turn = False
             c.rush_this_turn = False
             c.double_attack_this_turn = False
@@ -5665,7 +5704,8 @@ class OPTCGMatch:
         if p.can_attack_this_turn():
             attackers = [c for c in p.field_chars
                          if not c.rested and not c.just_played and not c.cannot_attack_until
-                         and not c.cannot_be_rested_until and not is_attack_locked_self(c, p, opp)]
+                         and not c.cannot_be_rested_until and not is_attack_locked_self(c, p, opp)
+                         and can_afford_attack_paywall(c, p)]
             if not p.leader.rested:
                 attackers.append(p.leader)
             for att in attackers:
@@ -6123,6 +6163,23 @@ class OPTCGMatch:
             p.leader.rested = True
         else:
             attacker.rested = True
+
+        # Paga o custo de lock_opp_attack_unless_pays (OP08-043), se o
+        # atacante estiver sob essa trava. A viabilidade ja foi checada na
+        # geracao da acao (can_afford_attack_paywall); re-checa aqui por
+        # seguranca (defensivo, nao deve faltar carta na pratica).
+        if attacker.attack_paywall:
+            paywall = attacker.attack_paywall
+            if paywall.get('cost_type') == 'trash_from_hand':
+                cost_amount = min(paywall.get('cost_amount', 1), len(p.hand))
+                pagas = []
+                for _ in range(cost_amount):
+                    pior = min(p.hand, key=lambda c: c.board_value())
+                    remove_by_identity(p.hand, pior)
+                    p.trash.append(pior)
+                    pagas.append(pior.name[:15])
+                if verbose and pagas:
+                    print(f'      💸 {attacker.name[:18]} pagou pra atacar (trava): {", ".join(pagas)}')
 
         # Executa efeito When Attacking
         ee = EffectExecutor(p, opp)
