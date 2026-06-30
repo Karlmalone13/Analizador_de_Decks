@@ -214,8 +214,8 @@ Os 5 medios restantes foram fechados em 29/06/2026. Ainda ficam a familia grande
 de imunidade e stubs antigos listados abaixo.
 
 ### Dívida técnica grande (consciente, fora de escopo)
-- [ ] Sistema de imunidade inteiro (ImmuneToKO/Removal/Combat/Effect/Strikes) — família
-  ausente, ~6 variantes. Raro no meta, custa muito (toca combate + remoção). Não agora.
+- [ ] Sistema de imunidade inteiro (ImmuneToKO/Removal/Combat/Effect/Strikes) — próximo bloco.
+  Família ausente, ~6 variantes. Toca combate + remoção, então deve entrar com testes diretos.
 
 ---
 
@@ -233,7 +233,9 @@ de imunidade e stubs antigos listados abaixo.
 - [ ] on_opponent_attack timing não existe (72 cards em "passive"). Precondição da reserva fina.
 
 ### Turn Planner
-- [ ] can_lethal_this_turn ainda cheata lendo self.opp.hand para counters — próximo alvo
+- [x] ~~can_lethal_this_turn ainda cheata lendo self.opp.hand para counters~~ —
+  corrigido em 29/06/2026. Agora usa counters revelados + estimativa por tamanho
+  de mão oculta.
 - [ ] 5 funções órfãs — deletar ou integrar
 - [ ] Otimização estrutural de performance: reduzir `deepcopy` no Turn Planner
   ou cachear cálculos caros (`_don_reserve_for_defense`, defesa/counter,

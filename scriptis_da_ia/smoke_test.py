@@ -235,6 +235,33 @@ check('Mary Geoise reduz Five Elders para 9 DON',
 check('Five Elders entra como candidata mesmo com DON reservado para defesa',
       any(a[1] == 'play' and a[2] is five_elders for a in actions))
 
+# ── 12. can_lethal_this_turn nao espia counter oculto da mao real ──
+me, opp = me_opp()
+me.leader = mk('LD-ATK', 'Leader atacante', power=6000, card_type='LEADER')
+opp.leader = mk('LD-DEF', 'Leader defensor', power=5000, card_type='LEADER')
+opp.life = []
+opp.hand = [
+    mk('H1', 'Counter oculto 1', counter=2000),
+    mk('H2', 'Counter oculto 2', counter=2000),
+    mk('H3', 'Counter oculto 3', counter=2000),
+]
+hidden_counter_result = DecisionEngine(me, opp).analyzer.can_lethal_this_turn()
+
+me2, opp2 = me_opp()
+me2.leader = mk('LD-ATK', 'Leader atacante', power=6000, card_type='LEADER')
+opp2.leader = mk('LD-DEF', 'Leader defensor', power=5000, card_type='LEADER')
+opp2.life = []
+opp2.hand = [mk('B1', 'Blank 1'), mk('B2', 'Blank 2'), mk('B3', 'Blank 3')]
+blank_hidden_result = DecisionEngine(me2, opp2).analyzer.can_lethal_this_turn()
+
+opp.revealed_to_opponent = {id(c) for c in opp.hand}
+known_counter_result = DecisionEngine(me, opp).analyzer.can_lethal_this_turn()
+
+check('can_lethal_this_turn ignora counters reais ocultos e usa tamanho da mao',
+      hidden_counter_result == blank_hidden_result)
+check('can_lethal_this_turn respeita counters revelados',
+      known_counter_result is False and hidden_counter_result is True)
+
 print()
 print(f'{"TODOS OS TESTES PASSARAM" if FAIL == 0 else f"{FAIL} TESTE(S) FALHARAM"}')
 sys.exit(1 if FAIL else 0)

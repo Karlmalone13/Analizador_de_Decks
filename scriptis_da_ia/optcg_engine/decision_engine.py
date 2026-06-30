@@ -3342,6 +3342,24 @@ class GameAnalyzer:
         estimated_2k = int(hand_size * 0.2)
         return estimated_1k * 1000 + estimated_2k * 2000
 
+    def opp_counter_chunks_for_lethal(self) -> list[int]:
+        """
+        Counter disponivel para analise de lethal sem espiar a mao oculta.
+        Cartas reveladas contam pelo valor real; slots desconhecidos usam a
+        mesma estimativa tipica de `opp_counter_potential`, quebrada em blocos
+        de 1000 para ser conservador na defesa do oponente.
+        """
+        known = self.opp.known_hand_cards()
+        known_total = sum(c.counter for c in known if c.counter > 0)
+        unknown_hand_size = max(0, len(self.opp.hand) - len(known))
+
+        estimated_1k = int(unknown_hand_size * 0.4)
+        estimated_2k = int(unknown_hand_size * 0.2)
+        estimated_unknown_total = estimated_1k * 1000 + estimated_2k * 2000
+
+        total = known_total + estimated_unknown_total
+        return [1000] * (total // 1000)
+
     def opp_counter_in_hand(self) -> int:
         """Counter real do oponente (se visível — normalmente 0 em simulação)."""
         return self.opp.counter_in_hand()
@@ -3382,10 +3400,11 @@ class GameAnalyzer:
              BLOQUEAVEIS -- ele escolhe bloquear os de MAIOR poder primeiro
              (sao os mais caros/dificeis de cobrir so com counter), pior caso
              pra mim.
-          4. O que sobra (nao bloqueado) precisa ser coberto por counter da
-             MAO REAL do oponente (nao estimativa -- a simulacao conhece a
-             mao do oponente do outro lado). Sobrevive ao ataque de poder P
-             se consegue somar counter total >= P - leader_power + 1.
+          4. O que sobra (nao bloqueado) precisa ser coberto por counter
+             conhecido/estimado do oponente. Cartas reveladas contam pelo
+             valor real; slots ocultos usam estimativa por tamanho da mao.
+             Sobrevive ao ataque de poder P se consegue somar counter total
+             >= P - leader_power + 1.
              Distribui os counters da mao greedy: cobre primeiro os ataques
              que precisam de MENOS counter (maximiza quantos ataques
              sobrevive com o estoque de counter que tem).
@@ -3424,12 +3443,8 @@ class GameAnalyzer:
         if not candidatos_dano:
             return False  # tudo que sobrou foi bloqueado, nada chega na vida/leader
 
-        # Counters disponiveis na mao REAL do oponente (conhecida na simulacao,
-        # nao estimada -- distinto de max_plausible_defense, usado quando a
-        # mao do oponente NAO e observavel).
-        counters_disponiveis = sorted(
-            [c.counter for c in self.opp.hand if c.counter > 0]
-        )
+        # Counters disponiveis sem espiar mao oculta.
+        counters_disponiveis = sorted(self.opp_counter_chunks_for_lethal())
 
         # Greedy: cobre primeiro os ataques que precisam de MENOS counter
         # (maximiza quantos ataques o oponente sobrevive com o estoque que

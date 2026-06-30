@@ -7,6 +7,32 @@ e `git status` antes de tocar em qualquer coisa.
 
 ---
 
+## 2026-06-29 22:53 — Codex
+
+**Feito** — `can_lethal_this_turn` deixou de espiar counters reais da mão oculta
+do oponente. A análise agora usa:
+- cartas reveladas na mão (`known_hand_cards`) pelo counter real;
+- slots ocultos apenas por tamanho de mão, com a mesma densidade típica já usada
+  por `opp_counter_potential`;
+- chunks de 1000 para ser conservador a favor da defesa.
+
+**Validação:**
+- `python -m py_compile scriptis_da_ia\smoke_test.py scriptis_da_ia\optcg_engine\decision_engine.py` passou.
+- `python scriptis_da_ia\smoke_test.py` passou, incluindo regressão que compara
+  mão oculta com counter real vs mão oculta sem counter: resultado igual.
+- `python audit_replay.py --n 5 --seed 42` passou com 0 anomalias.
+- `python smoke_test_broad.py` passou `40/40`.
+
+**Próximo:** sistema de imunidade, na ordem combinada. Primeiro mapear actions
+`immunity` já parseadas e todos os pontos de remoção/KO/combate que precisam
+consultar `is_immune`.
+
+**Estado após esta fatia:** esperado commit/push com
+`scriptis_da_ia/optcg_engine/decision_engine.py`, `scriptis_da_ia/smoke_test.py`,
+`HANDOFF.md` e `TODO.md`.
+
+---
+
 ## 2026-06-29 22:48 — Codex
 
 **Feito** — fechados os 2 erros visíveis de replay que abririam a fila:
