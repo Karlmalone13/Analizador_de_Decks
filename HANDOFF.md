@@ -1,6 +1,67 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
-## 2026-07-02 (5) - Claude — ÚLTIMA DESTA SESSÃO
+## 2026-07-02 (6) - Claude — ÚLTIMA DESTA SESSÃO
+
+**Feito — Auditoria de gaps (rodada 2): 51 → 24 gaps, 2286 → 2314 com efeito.**
+
+Esta rodada focou nos gaps que ficaram da auditoria anterior, abordando grupos
+de parser com regex simples e mecânicas novas implementáveis. Mudanças
+por categoria:
+
+**Regex/dispatch corrigidos (sem mechanic nova):**
+- `look_at` aceita "look at up to N" e "look at the top N" (OP02-005, OP05-117)
+- `parse_reveal_top_play`: aceita "add to hand" (ST11-001) e condicional "if that
+  card is X, play rested" (OP01-060, OP07-048); também "character" sem "card"
+- `lock_opp_character_attack` aceita "leader or character cards" + "cards" após
+  "character" (OP04-100) e "during this turn" além de "until" + `power_lte`
+  (EB04-028)
+- `parse_rest_opp`: dispatch broadened para "rest N" sem "up to"; aceita "cards"
+  além de "characters" (P-008, OP13-033 → já commitados antes)
+- `parse_cost_debuff`: dispatch broadened para custo SEM sinal + sinal fullwidth
+  － (P-076, OP08-082, OP08-083 + 6 bônus em cartas existentes)
+- `parse_can_attack_active` + dispatch: aceita "can attack characters on the turn
+  in which it/they is/are played" = Rush semântico (OP04-096, OP11-027 + bônus)
+- Dispatch `parse_play_from_trash`: cobre "play this character card from your
+  trash" + "add this character card to your hand" (P-071, OP09-052, OP15-080
+  Oars + bônus OP02-018, OP14-120, ST30-008)
+
+**Mecânicas novas implementadas:**
+- `opp_shuffle_hand_into_deck(draw_back=N)` — OP06-047 Charlotte Pudding:
+  força oponente a reciclar mão no deck e recomprar N. Engine em
+  `decision_engine.py`, parser em `gerar_effects_db.py`.
+- `opp_life_to_hand` — P-009 Law: oponente move carta de sua própria vida para
+  a mão (enfraquece vida dele). Parser + engine handler adicionados.
+- `play_from_deck` por NOME via filter_name (em vez de filter_type): ST03-007
+  Sentomaru "[Pacifista]", OP08-071 "[Baron Tamago]", OP08-073 "[Count Niwatori]".
+- `opp_place_trash_bottom_deck` iniciado pelo jogador ativo: OP15-091 Margarita.
+- `buff_cost` target='own_play_hand': OP05-097 Mary Geoise (registro analítico;
+  engine já trata via hardcode).
+- `opp_life_to_hand` + set_active OR set_don_active combos: OP11-021 Jinbe Leader.
+- `gain_rush` via `parse_can_attack_active` para "can attack Characters on the
+  turn in which it is played" (OP04-096 Corrida Coliseum passivo + OP11-027).
+- `give_don` target-first: `give [alvo] up to N rested DON!!` — ST01-001 + bônus.
+
+**Bugs colaterais corrigidos no processo:**
+- `parse_look_at` guard life-cards: impede falso positivo para "look at ... Life
+  cards" (EB02-053, OP03-099 perdiam look_top_deck que estava errado; corrigido
+  para não mais disparar nesses casos).
+- OP11-062, OP11-070: perderam look_top_deck incorreto sobre o deck do OPONENTE;
+  esses efeitos eram no-op silencioso incorreto antes.
+
+**Gaps restantes (24):** maioria exige mecânica genuinamente nova —  swap de
+poder (OP14-001/017), redirect ataque (OP14-060), trigger reativo ao descarte do
+oponente (OP12-040), efeito com "at the end of a battle" (OP04-047, ST08-013),
+adicionar character do oponente à vida dele (OP04-097, OP05-111, EB02-057),
+regra de baralho (OP16-042, EB03_OP05-006_p1 = ID mismatch, OP01-105 = info).
+
+**Validação:** `diff_parser.py` (PERDEU=0 em todos os rounds);
+  `gerar_dbs.py` (2314 com efeito); `smoke_test.py` (100%);
+  `smoke_test_broad.py` (40/40); `audit_replay.py --n 20 --seed 7` e
+  `--n 15 --seed 99` (0 exceções, 0 anomalias).
+
+---
+
+## 2026-07-02 (5) - Claude
 
 **Feito — dead wood + reauditoria de cartas com effects vazio.**
 

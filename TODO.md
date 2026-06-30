@@ -602,6 +602,14 @@ de imunidade e stubs antigos listados abaixo.
   (clone incremental ou cache de avaliações) permanece aberta.
 
 ### Parser — cobertura
+- [x] **cartas com card_text mas effects vazio — revalidado e parcialmente
+  corrigido (2 rodadas: 02/07/2026).** Total atual: **2314/2614 com efeito**
+  (era 2148 antigo → 2286 após rodada 1 → 2314 após rodada 2). **24 gaps
+  reais restantes** — maioria exige mecânica genuinamente nova: swap de
+  poder (OP14-001/017), redirect ataque (OP14-060), trigger reativo ao descarte
+  do oponente (OP12-040 Kuzan), "end of battle" trigger (OP04-047/ST08-013),
+  adicionar character do oponente à vida dele (OP04-097/OP05-111/EB02-057),
+  etc. Ver HANDOFF.md (6) para lista completa e categorização.
 - [x] **cartas com card_text mas effects vazio — revalidado (02/07/2026).**
   Contagem anterior "2148 com efeito" estava desatualizada. Resultado atual:
   **2286/2614 com efeito** (+138 desde o início da sessão). Gaps restantes
