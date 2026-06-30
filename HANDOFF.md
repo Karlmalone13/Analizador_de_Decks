@@ -1,6 +1,55 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
-## 2026-07-02 (8) - Claude — ÚLTIMA DESTA SESSÃO
+## 2026-07-02 (9) - Claude — ÚLTIMA DESTA SESSÃO
+
+**Feito — gaps restantes: 19 → 11, 2319 → 2324 com efeito.**
+
+Problemas de dispatch corrigidos (itens que estavam implementados mas não chegavam ao banco):
+- **OP04-097 Otama** (`place_opp_char_to_opp_life`): regex `.{0,20}` insuficiente para
+  "[animal] or [smile] type characters" (29 chars) → alargado para `.{0,45}`. Dispatch
+  corrigido para `'add up to' in t` em vez de regex de path errado.
+- **OP09-033 Nico Robin** (`grant_ko_immunity_type`): dispatch checava `"cannot be k.o.'d by"`
+  mas texto usa `"can be k.o.'d by"` (negação via "none of", não via "cannot"). Corrigido.
+- **OP07-002 Ain** (`set_base_power target=opp_character`): dispatch `parse_set_base_power`
+  só disparava com "base power becomes" — adicionado `or 'set the power of' in t`.
+
+Novos parsers/ações:
+- **OP06-086 Gecko Moria**: dispatch `parse_play_from_trash` ampliado para aceitar
+  "play N card" sem "up to" — dois steps `play_from_trash` (cost≤4 normal + cost≤2
+  rested) já eram produzidos corretamente pela função, só o dispatch faltava.
+- **OP15-031 Purinpurin**: nova ação `ko_if_cost_eq_don` — engine seleciona rested
+  Character do oponente onde `c.cost == c.don_attached` e KO. Parser detecta
+  "if the chosen Character has a cost equal to the number of DON!! cards given to it, K.O. it".
+- **ST13-003 Luffy Leader** (partial): parser de `gain_life` agora aceita "from your
+  hand or trash to the top of your life" (padrão com "trash" na source — antes bloqueado
+  pelo guard `'trash' not in m.group(0)`). Resolvido com regex específico antes do
+  guard geral. Activate:Main agora parseia (life_lte=0 condition + gain_life hand source).
+  A regra passiva "face-up life → deck" continua sem implementação de engine (muito
+  complexo, 1 carta).
+- **OP12-040 Kuzan Leader**: simplificação — `draw dynamic=True` para analysis (trigger
+  reativo real "draw = número de cartas descartadas por Navy" não modelado no engine).
+- **OP02-025 Kin'emon Leader**: simplificação — `buff_cost target='own_play_hand'
+  duration='next_play_only'` para analysis (one-shot cost reduction para próxima
+  jogada não modelado no engine, mas registrado no DB).
+
+**Bug crítico evitado (duas vezes nesta sessão):** editar dentro de `parse_set_base_power`
+sem respeitar que o `step = {...}` pertence ao for-loop causa PERDEU em dezenas de cartas
+(indentação quebra a pertença ao loop). Cuidado extremo ao editar esta função.
+
+**Gaps restantes: 11** (de 51 iniciais):
+  - 3 não-jogáveis: EB03_OP05-006_p1 (ID mismatch), OP01-105 (info only), OP16-042 (regra de deck)
+  - 8 mecânicas genuinamente novas: swap de poder (OP14-001/017), redirect ataque
+    (OP14-060), EB03-031 (activate Event from trash), OP04-047 (end-of-battle trigger),
+    OP05-058 (mass deck_bottom + equalizar mãos), OP10-022 (bounce cost + reveal life + play),
+    ST08-013 (mutual KO after battle).
+
+**Validação:** `diff_parser.py` (PERDEU=0); `gerar_dbs.py` (2324 com efeito);
+  `smoke_test.py` (5 testes novos, 100%); `smoke_test_broad.py` (40/40);
+  `audit_replay.py --n 20 --seed 7` (0 exceções, 0 anomalias).
+
+---
+
+## 2026-07-02 (8) - Claude
 
 **Feito — 4 gaps de mecânica nova (pedidos do usuário), 2315 → 2319 com efeito.**
 

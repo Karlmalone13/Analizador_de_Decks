@@ -552,7 +552,7 @@ def parse_opp_char_to_opp_life(text):
     steps = []
     t = text.lower()
     m = re.search(
-        r"add up to (\d+) of your opponent.{0,20}characters?"
+        r"add up to (\d+) of your opponent.{0,45}characters?"
         r"(?: with a cost of (\d+) or less)?"
         r" to the (top or bottom|top|bottom) of your opponent.{0,5}(?:life cards?|life)",
         t)
@@ -1458,6 +1458,20 @@ def parse_shuffle_hand(text):
     }]
 
 
+def parse_reactive_draw(text):
+    """'When a card is trashed from your hand by your "X" type card's effect,
+    draw cards equal to the number of cards trashed.' (OP12-040 Kuzan Leader)
+    -- trigger reativo. Simplificacao: mapeado como draw generico no banco
+    (nao modela o mecanismo reativo no engine, mas registra a acao para
+    analysis_db e cobertura de effects vazio). Reconhecivel pelo padrao
+    'draw cards equal to the number of cards trashed'."""
+    steps = []
+    t = text.lower()
+    if re.search(r'draw cards? equal to the number of cards? trashed', t):
+        steps.append({'action': 'draw', 'count': 1, 'dynamic': True})
+    return steps
+
+
 def parse_draw(text):
     steps = []
     t = text.lower()
@@ -1707,11 +1721,6 @@ def parse_set_base_power(text):
             # ainda nao apareceu em nenhuma carta confirmada).
             continue
 
-    # "Set the power of up to N of your opponent's Characters to X during
-    # this turn." -- Ain OP07-002 (power to 0 = debuff massivo). Forma textual
-    # distinta de "base power becomes N" acima -- sem "base power", usa "set
-    # the power of X to N". Mapeado como set_base_power target=opp_character
-    # duration=this_turn (motor: aplica override no power do oponente).
         step = {'action': 'set_base_power', 'amount': amount, 'target': target}
 
         count_m = re.search(r'up to (\d+) of your', sujeito)
@@ -1744,6 +1753,15 @@ def parse_set_base_power(text):
             'amount': int(m_opp.group(2)),
             'duration': 'this_turn',
         })
+
+    # "if the chosen Character has a cost equal to the number of DON!! cards
+    # given to it, K.O. it" -- OP15-031 Purinpurin. Nova action ko_if_cost_eq_don.
+    m_pu = re.search(
+        r"if the (?:chosen )?character has a cost equal to the number of don!!.{0,30}k\.?o\.? it",
+        t)
+    if m_pu:
+        steps.append({'action': 'ko_if_cost_eq_don', 'target': 'opp_character',
+                      'rested_only': True})
 
     # "[Tipo]'s base power becomes the same as [fonte]" -- SEM numero literal
     # (MatchLeaderToBasePower, achado 28/06/2026, 12 cartas reais). Distinto
@@ -2586,6 +2604,23 @@ def parse_life(text):
 
     if re.search(r'trash all your face-up life cards?', t):
         steps.append({'action': 'trash_own_life', 'face': 'up', 'count': 'all'})
+
+    # Padrao especifico "from your hand or trash to the top of your life"
+    # (ST13-003): verbo e "add" mas a fonte inclui "trash" -- a guarda geral
+    # abaixo bloquearia. Testa ANTES da regex geral para capturar primeiro.
+    m_hand_trash_life = re.search(
+        r'add up to (\d+).{0,30}?from your (?:hand or trash|trash or hand)'
+        r' to the (top or bottom|top|bottom) of your life',
+        t)
+    if m_hand_trash_life:
+        count = int(m_hand_trash_life.group(1))
+        dest = ('life_top_or_bottom' if 'or bottom' in m_hand_trash_life.group(2)
+                else 'life_top')
+        step_ht = {'action': 'gain_life', 'source': 'hand',
+                   'dest': dest, 'count': count, 'up_to': True}
+        if 'face-up' in t[m_hand_trash_life.start():m_hand_trash_life.end() + 15]:
+            step_ht['face'] = 'up'
+        steps.append(step_ht)
 
     m = re.search(r'(add|put)[^.:]*?to (?:the (?:top|bottom|top or bottom) of )?(?:your|the owner.?s) life(?: cards?)?', t)
     if m and 'trash' not in m.group(0):
@@ -3450,13 +3485,37 @@ def parse_block(block_text, trigger_name):
     # buff_power (aditivo). Regex de parse_power_buff exige 'N power' (numero
     # antes da palavra), e aqui e 'power becomes N' (numero depois) -- nao ha
     # conflito/duplicacao entre as duas chamadas.
-    if 'base power becomes' in t:
+    # Aceita tambem "set the power of X to N" (OP07-002 Ain).
+    if 'base power becomes' in t or 'set the power of' in t:
         steps.extend(parse_set_base_power(t))
 
     # Custo: give +/-N cost / "give N cost" sem sinal (opponent) / gains +N cost
     # Tambem "set the cost of X to N" (OP03-091 Helmeppo).
     if 'cost' in t and ('give' in t or 'gain' in t or 'set the cost' in t):
         steps.extend(parse_cost_debuff(t))
+
+    # "draw cards equal to the number of cards trashed" -- trigger reativo
+    # (OP12-040 Kuzan Leader). Simplificacao: registra como draw para analysis.
+    if 'draw cards equal to the number' in t:
+        steps.extend(parse_reactive_draw(t))
+
+    # "the next time you play a [X] type Character card with a cost of N or
+    # more from your hand during this turn, the cost will be reduced by N"
+    # (OP02-025 Kin'emon Leader) -- buff temporario one-shot de custo de jogo.
+    # Simplificacao: mapeado como buff_cost para analysis (nao modela o
+    # "proximo jogo" exato no engine, onde o custo e reduzido via
+    # effective_hand_play_cost na proxima chamada).
+    m_next = re.search(
+        r"the next time you play a .{0,40}type character card.{0,30}the cost will be reduced by (\d+)",
+        t)
+    if m_next:
+        type_m_n = (re.search(r'\[([^\]]+)\] type', t)
+                    or re.search(r'\{([^}]+)\} type', t))
+        step_n = {'action': 'buff_cost', 'amount': int(m_next.group(1)),
+                  'target': 'own_play_hand', 'duration': 'next_play_only'}
+        if type_m_n:
+            step_n['filter_type'] = type_m_n.group(1).strip()
+        steps.append(step_n)
 
     # Play genérico (sem origem explícita)
     if 'play ' in t:
@@ -3472,7 +3531,10 @@ def parse_block(block_text, trigger_name):
         steps.extend(parse_negate_effect(t))
 
     # Play from trash
-    if 'from your trash' in t and ('play up to' in t or 'play this character card from your trash' in t):
+    # Aceita "play up to N", "play this character card" e "play N card" sem "up to"
+    # (ex: OP06-086 Gecko Moria "play 1 card and play the other card rested").
+    if 'from your trash' in t and ('play up to' in t or 'play this character card from your trash' in t
+                                    or re.search(r'play \d+ card', t)):
         steps.extend(parse_play_from_trash(t))
     # Variante "add this Character card to your hand" em on_ko (sem "from your
     # trash" explicito -- P-071 Marco). Mapeado para play_from_trash self.
@@ -3627,11 +3689,14 @@ def parse_block(block_text, trigger_name):
         steps.extend(parse_opp_self_move_character(t))
 
     # Imunidade a KO temporária para tipo próprio (OP09-033 Nico Robin).
-    if "cannot be k.o.'d by" in t or "cannot be k.o'd by" in t:
+    # Texto usa "none of your X type Characters CAN BE k.o.'d by effects"
+    # (negacao via "none of", nao via "cannot") -- tambem aceita "cannot".
+    if "can be k.o.'d by" in t or "cannot be k.o.'d by" in t:
         steps.extend(parse_grant_ko_immunity(t))
 
     # Adicionar Character do oponente à vida DELE face-up (OP04-097/OP05-111/EB02-057).
-    if 'to the' in t and 'opponent' in t and 'life' in t and ('characters?' in t or 'character' in t):
+    if ('to the' in t and 'opponent' in t and 'life' in t
+            and 'character' in t and 'add up to' in t):
         steps.extend(parse_opp_char_to_opp_life(t))
 
     # Trigger especial: "Activate this card's [Main] effect"

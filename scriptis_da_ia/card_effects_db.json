@@ -5952,6 +5952,17 @@
     "sub_types": "Lulucia Kingdom",
     "attribute": "",
     "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "set_base_power",
+            "count": 1,
+            "target": "opp_character",
+            "amount": 0,
+            "duration": "this_turn"
+          }
+        ]
+      },
       "opp_turn": {
         "steps": [
           {
@@ -20380,7 +20391,19 @@
     "color": "Yellow",
     "sub_types": "Land of Wano",
     "attribute": "Wisdom",
-    "effects": {}
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "place_opp_char_to_opp_life",
+            "count": 1,
+            "cost_lte": 3,
+            "dest": "life_top",
+            "filter_type": "animal"
+          }
+        ]
+      }
+    }
   },
   "OP04-098": {
     "name": "Toko",
@@ -26884,7 +26907,23 @@
     "color": "Black",
     "sub_types": "The Seven Warlords of the Sea Thriller Bark Pirates",
     "attribute": "Special",
-    "effects": {}
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "play_from_trash",
+            "count": 1,
+            "cost_lte": 4
+          },
+          {
+            "action": "play_from_trash",
+            "count": 1,
+            "cost_lte": 2,
+            "rested": true
+          }
+        ]
+      }
+    }
   },
   "OP06-087": {
     "name": "Cerberus",
@@ -27912,7 +27951,19 @@
     "color": "Red",
     "sub_types": "FILM Neo Navy",
     "attribute": "Special",
-    "effects": {}
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "set_base_power",
+            "count": 1,
+            "target": "opp_character",
+            "amount": 0,
+            "duration": "this_turn"
+          }
+        ]
+      }
+    }
   },
   "OP07-003": {
     "name": "Outlook III",
@@ -35678,7 +35729,25 @@
     "color": "Green",
     "sub_types": "Straw Hat Crew ODYSSEY",
     "attribute": "Strike",
-    "effects": {}
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "grant_ko_immunity_type",
+            "filter_type": "odyssey",
+            "duration": "opp_turn_end"
+          },
+          {
+            "action": "grant_ko_immunity_type",
+            "filter_type": "straw hat crew",
+            "duration": "opp_turn_end"
+          }
+        ],
+        "conditions": {
+          "chars_rested_gte": 2
+        }
+      }
+    }
   },
   "OP09-035": {
     "name": "Portgas.D.Ace",
@@ -45909,7 +45978,17 @@
     "color": "Blue",
     "sub_types": "Navy",
     "attribute": "Special",
-    "effects": {}
+    "effects": {
+      "passive": {
+        "steps": [
+          {
+            "action": "draw",
+            "count": 1,
+            "dynamic": true
+          }
+        ]
+      }
+    }
   },
   "OP12-041": {
     "name": "Sanji (041)",

@@ -1535,6 +1535,30 @@ ee._execute_step({'action': 'life_to_hand', 'count': 1, 'source': 'life_top'}, m
 check('ST15-001 cant_take_life bloqueia life_to_hand enquanto ativo',
       len(me.life) == 2 and len(me.hand) == hand_inicial)  # vida intacta, mao inalterada
 
+# ── 32. OP15-031 Purinpurin: KO se custo == DON!! anexado. ──
+me, opp = me_opp()
+char_match = mk('MATCH', 'Custo=DON', power=5000, cost=3)
+char_match.don_attached = 3
+char_match.rested = True
+char_no_match = mk('NOMATCH', 'Custo!=DON', power=5000, cost=4)
+char_no_match.don_attached = 2
+char_no_match.rested = True
+opp.field_chars = [char_match, char_no_match]
+ee = EffectExecutor(me, opp)
+ee._execute_step({'action': 'ko_if_cost_eq_don', 'target': 'opp_character', 'rested_only': True}, me.leader)
+check('ko_if_cost_eq_don remove apenas Character onde cost==don_attached',
+      char_match not in opp.field_chars and char_no_match in opp.field_chars)
+
+# ── 33. dispatch fixes: OP04-097, OP09-033, OP07-002 agora parseable ──
+import gerar_effects_db as _g
+for _cid, _t, _ctype in [
+    ('OP04-097', '[On Play] Add up to 1 of your opponent\'s [Animal] or [SMILE] type Characters with a cost of 3 or less to the top of your opponent\'s Life cards face-up.', 'CHARACTER'),
+    ('OP09-033', '[On Play] If you have 2 or more rested Characters, none of your "ODYSSEY" or "Straw Hat Crew" type Characters can be K.O.\'d by effects until the end of your opponent\'s next turn.', 'CHARACTER'),
+    ('OP07-002', '[On Play] Set the power of up to 1 of your opponent\'s Characters to 0 during this turn.', 'CHARACTER'),
+]:
+    _eff = _g.parse_card_effect(_t, _ctype)
+    check(f'{_cid} parseia corretamente (dispatch corrigido)', bool(_eff))
+
 print()
 print(f'{"TODOS OS TESTES PASSARAM" if FAIL == 0 else f"{FAIL} TESTE(S) FALHARAM"}')
 sys.exit(1 if FAIL else 0)

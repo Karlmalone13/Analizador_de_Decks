@@ -8646,6 +8646,11 @@
   "attribute": "",
   "effects": [
    {
+    "action": "set_base_power",
+    "trigger": "on_play",
+    "target": "opp_character"
+   },
+   {
     "action": "buff_power",
     "trigger": "opp_turn",
     "target": "all_allies"
@@ -30933,7 +30938,13 @@
   "color": "Yellow",
   "sub_types": "Land of Wano",
   "attribute": "Wisdom",
-  "effects": [],
+  "effects": [
+   {
+    "action": "place_opp_char_to_opp_life",
+    "trigger": "on_play",
+    "cost_lte": 3
+   }
+  ],
   "synergy_states": {},
   "text": "[On Play] Add up to 1 of your opponent's [Animal] or [SMILE] type Characters with a cost of 3 or less to the top of your opponent's Life cards face-up.",
   "is_searcher": false,
@@ -40911,7 +40922,18 @@
   "color": "Black",
   "sub_types": "The Seven Warlords of the Sea Thriller Bark Pirates",
   "attribute": "Special",
-  "effects": [],
+  "effects": [
+   {
+    "action": "play_from_trash",
+    "trigger": "on_play",
+    "cost_lte": 4
+   },
+   {
+    "action": "play_from_trash",
+    "trigger": "on_play",
+    "cost_lte": 2
+   }
+  ],
   "synergy_states": {},
   "text": "[On Play] Choose up to 1 Character card with a cost of 4 or less and up to 1 Character card with a cost of 2 or less from your trash. Play 1 card and play the other card rested.",
   "is_searcher": false,
@@ -42465,7 +42487,13 @@
   "color": "Red",
   "sub_types": "FILM Neo Navy",
   "attribute": "Special",
-  "effects": [],
+  "effects": [
+   {
+    "action": "set_base_power",
+    "trigger": "on_play",
+    "target": "opp_character"
+   }
+  ],
   "synergy_states": {},
   "text": "[On Play] Set the power of up to 1 of your opponent's Characters to 0 during this turn.",
   "is_searcher": false,
@@ -54378,7 +54406,16 @@
   "color": "Green",
   "sub_types": "Straw Hat Crew ODYSSEY",
   "attribute": "Strike",
-  "effects": [],
+  "effects": [
+   {
+    "action": "grant_ko_immunity_type",
+    "trigger": "on_play"
+   },
+   {
+    "action": "grant_ko_immunity_type",
+    "trigger": "on_play"
+   }
+  ],
   "synergy_states": {
    "char_restado": {
     "creates": false,
@@ -70278,11 +70315,16 @@
   "color": "Blue",
   "sub_types": "Navy",
   "attribute": "Special",
-  "effects": [],
+  "effects": [
+   {
+    "action": "draw",
+    "trigger": "passive"
+   }
+  ],
   "synergy_states": {},
   "text": "When a card is trashed from your hand by your \"Navy\" type card's effect, draw cards equal to the number of cards trashed.",
   "is_searcher": false,
-  "draws": false,
+  "draws": true,
   "has_counter_value": false,
   "has_counter_event": false,
   "is_blocker": false,

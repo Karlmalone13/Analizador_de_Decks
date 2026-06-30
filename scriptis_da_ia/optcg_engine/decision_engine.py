@@ -2635,6 +2635,29 @@ class EffectExecutor:
                 moved.append(c.name[:12])
             return f'oponente moveu da vida pra mao: {", ".join(moved)}' if moved else ''
 
+        # ── KO se custo == DON anexado (OP15-031 Purinpurin) ────────────────────
+        # "Select up to 1 of your opponent's rested Characters. If the chosen
+        # Character has a cost equal to the number of DON!! cards given to it,
+        # K.O. it." -- escolhe o melhor rested do oponente que satisfaz a
+        # condicao cost == don_attached; KO se achar.
+        if action == 'ko_if_cost_eq_don':
+            from optcg_engine.rules_facade import card_matches_filter
+            filter_type = step.get('filter_type', '')
+            rested_only = step.get('rested_only', True)
+            candidates = [c for c in opp.field_chars
+                          if (not rested_only or c.rested)
+                          and card_matches_filter(c, filter_type)
+                          and c.cost == c.don_attached
+                          and not is_immune(c, 'ko', opp, me, source_is_opp=True)]
+            if candidates:
+                # escolhe o mais valioso que satisfaz a condicao
+                alvo = max(candidates, key=lambda c: c.board_value())
+                remove_character_from_field(opp, alvo, 'trash')
+                ee_ko = EffectExecutor(opp, me)
+                ee_ko.execute(alvo, 'on_ko', is_opp_turn=False)
+                return f'K.O. {alvo.name[:15]} (cost=={alvo.cost}==DON!!)'
+            return ''
+
         # ── Imunidade a KO temporária para tipo próprio (OP09-033 Nico Robin) ──
         # Concede immunity_ko_until a todos os PROPRIOS Characters que
         # correspondem ao filter_type. Limpo no refresh_phase do dono.

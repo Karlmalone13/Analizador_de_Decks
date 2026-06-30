@@ -3759,6 +3759,17 @@
   }
  },
  "EB04-010": {
+  "on_play": {
+   "steps": [
+    {
+     "action": "set_base_power",
+     "amount": 0,
+     "count": 1,
+     "duration": "this_turn",
+     "target": "opp_character"
+    }
+   ]
+  },
   "opp_turn": {
    "steps": [
     {
@@ -12544,7 +12555,19 @@
    ]
   }
  },
- "OP04-097": {},
+ "OP04-097": {
+  "on_play": {
+   "steps": [
+    {
+     "action": "place_opp_char_to_opp_life",
+     "cost_lte": 3,
+     "count": 1,
+     "dest": "life_top",
+     "filter_type": "animal"
+    }
+   ]
+  }
+ },
  "OP04-098": {
   "on_play": {
    "conditions": {
@@ -16577,7 +16600,23 @@
    ]
   }
  },
- "OP06-086": {},
+ "OP06-086": {
+  "on_play": {
+   "steps": [
+    {
+     "action": "play_from_trash",
+     "cost_lte": 4,
+     "count": 1
+    },
+    {
+     "action": "play_from_trash",
+     "cost_lte": 2,
+     "count": 1,
+     "rested": true
+    }
+   ]
+  }
+ },
  "OP06-087": {
   "passive": {
    "steps": [
@@ -17220,7 +17259,19 @@
    ]
   }
  },
- "OP07-002": {},
+ "OP07-002": {
+  "on_play": {
+   "steps": [
+    {
+     "action": "set_base_power",
+     "amount": 0,
+     "count": 1,
+     "duration": "this_turn",
+     "target": "opp_character"
+    }
+   ]
+  }
+ },
  "OP07-003": {
   "activate_main": {
    "costs": [
@@ -22027,7 +22078,25 @@
    ]
   }
  },
- "OP09-033": {},
+ "OP09-033": {
+  "on_play": {
+   "conditions": {
+    "chars_rested_gte": 2
+   },
+   "steps": [
+    {
+     "action": "grant_ko_immunity_type",
+     "duration": "opp_turn_end",
+     "filter_type": "odyssey"
+    },
+    {
+     "action": "grant_ko_immunity_type",
+     "duration": "opp_turn_end",
+     "filter_type": "straw hat crew"
+    }
+   ]
+  }
+ },
  "OP09-034": {
   "on_play": {
    "steps": [
@@ -28288,7 +28357,17 @@
    ]
   }
  },
- "OP12-040": {},
+ "OP12-040": {
+  "passive": {
+   "steps": [
+    {
+     "action": "draw",
+     "count": 1,
+     "dynamic": true
+    }
+   ]
+  }
+ },
  "OP12-041": {
   "when_attacking": {
    "once_per_turn": true,
