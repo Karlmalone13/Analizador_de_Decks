@@ -967,6 +967,120 @@ class EffectExecutor:
 
         return None
 
+    def _substitute_source_blocks(self, source: Card, source_is_opp: bool):
+        effects = get_card_effects(source.code)
+        for trigger in ('passive', 'opp_turn'):
+            if trigger == 'opp_turn' and not source_is_opp:
+                continue
+            block = effects.get(trigger, {})
+            if block:
+                yield trigger, block
+
+    def _source_conditions_met_for_substitute(self, source: Card, block: dict) -> bool:
+        conds = dict(block.get('conditions', {}))
+        for key in ('self_type', 'self_power_base_lte', 'self_power_base_gte'):
+            conds.pop(key, None)
+        return self._check_conditions(conds, source)
+
+    def _target_matches_external_substitute(self, target: Card, source: Card,
+                                            step: dict, block: dict) -> bool:
+        from optcg_engine.rules_facade import card_matches_filter
+
+        if step.get('filter_type') and not card_matches_filter(target, step.get('filter_type')):
+            return False
+        if step.get('filter_name'):
+            needle = step.get('filter_name', '').lower()
+            if needle not in target.name.lower() and needle not in target.code.lower():
+                return False
+        if step.get('filter_color') and step.get('filter_color', '').lower() not in target.color.lower():
+            return False
+        if step.get('cost_lte') is not None and target.cost > step['cost_lte']:
+            return False
+        if step.get('cost_gte') is not None and target.cost < step['cost_gte']:
+            return False
+        if step.get('power_lte') is not None and target.power > step['power_lte']:
+            return False
+        if step.get('power_eq') is not None and target.power != step['power_eq']:
+            return False
+        if step.get('power_gte') is not None and target.power < step['power_gte']:
+            return False
+        if step.get('rested_only') and not target.rested:
+            return False
+        if step.get('exclude_self') and target is source:
+            return False
+        if step.get('exclude'):
+            exclude = step.get('exclude', '').lower()
+            if exclude in target.name.lower() or exclude in target.code.lower():
+                return False
+
+        conds = block.get('conditions', {})
+        if conds.get('self_type') and conds['self_type'] not in target.sub_types.lower():
+            return False
+        if conds.get('self_power_base_lte') is not None and target.power > conds['self_power_base_lte']:
+            return False
+        if conds.get('self_power_base_gte') is not None and target.power < conds['self_power_base_gte']:
+            return False
+
+        target_keys = (
+            'filter_type', 'filter_name', 'filter_color', 'cost_lte', 'cost_gte',
+            'power_lte', 'power_eq', 'power_gte', 'rested_only', 'exclude', 'exclude_self',
+        )
+        target_cond_keys = ('self_type', 'self_power_base_lte', 'self_power_base_gte')
+        return any(k in step for k in target_keys) or any(k in conds for k in target_cond_keys)
+
+    def _try_external_substitute_from_source(self, source: Card, target: Card,
+                                             removal_kind: str,
+                                             source_is_opp: bool) -> str | None:
+        for trigger, block in self._substitute_source_blocks(source, source_is_opp):
+            if not self._source_conditions_met_for_substitute(source, block):
+                continue
+            don_req = block.get('don_requirement', 0)
+            if don_req and getattr(source, 'don_attached', 0) < don_req:
+                continue
+            for step in block.get('steps', []):
+                action = step.get('action')
+                aplica = (action == 'substitute_ko' and removal_kind == 'ko') or action == 'substitute_removal'
+                if not aplica:
+                    continue
+                key = (source.code, f'{trigger}_substitute')
+                if block.get('once_per_turn') and key in self._once_used:
+                    continue
+                if not self._target_matches_external_substitute(target, source, step, block):
+                    continue
+                cost = step.get('cost', {})
+                cost_card = target if cost.get('action') == 'debuff_power_self' else source
+                log = self._pay_substitute_cost(cost, cost_card)
+                if log is None:
+                    continue
+                extra_logs = []
+                for extra in step.get('extra_steps', []):
+                    extra_log = self._execute_step(extra, source)
+                    if extra_log:
+                        extra_logs.append(extra_log)
+                if block.get('once_per_turn'):
+                    self._once_used.add(key)
+                if extra_logs:
+                    return log + ' | ' + ' | '.join(extra_logs)
+                return log
+        return None
+
+    def try_any_substitute(self, target: Card, removal_kind: str,
+                           source_is_opp: bool = True) -> str | None:
+        log = self.try_substitute(target, removal_kind)
+        if log:
+            return log
+
+        sources = [c for c in self.me.field_chars if c is not target]
+        sources.append(self.me.leader)
+        if self.me.field_stage:
+            sources.append(self.me.field_stage)
+        for source in sources:
+            log = self._try_external_substitute_from_source(
+                source, target, removal_kind, source_is_opp)
+            if log:
+                return log
+        return None
+
     def _pay_substitute_cost(self, cost: dict, card: Card) -> str | None:
         """Paga o custo de uma substituicao de K.O./remocao. Retorna log de
         sucesso, ou None se nao pode pagar (substituicao nao ocorre)."""
@@ -1034,6 +1148,24 @@ class EffectExecutor:
                 return None
             remove_character_from_field(me, card, 'hand')
             return f'{card.name[:18]} evitou K.O./remoção voltando para a mão'
+
+        if ctype == 'rest_self_and_trash_hand':
+            trash_count = cost.get('trash_count', cost.get('count', 1))
+            if card.rested or len(me.hand) < trash_count:
+                return None
+            trashed = []
+            for _ in range(trash_count):
+                worst = self._choose_to_trash(me.hand)
+                if worst is None:
+                    return None
+                remove_by_identity(me.hand, worst)
+                me.trash.append(worst)
+                trashed.append(worst.name[:15])
+            card.rested = True
+            return (
+                f'{card.name[:18]} evitou K.O./remocao restando-se '
+                f'e trashando da mao: {", ".join(trashed)}'
+            )
 
         return None
 
@@ -1734,7 +1866,11 @@ class EffectExecutor:
                     # passivo do proprio target, avaliado do ponto de vista
                     # do SEU dono (quem paga o custo da substituicao).
                     ee_target = EffectExecutor(owner, me if owner is opp else opp)
-                    sub_log = ee_target.try_substitute(target, 'ko' if action == 'ko' else 'removal')
+                    sub_log = ee_target.try_any_substitute(
+                        target,
+                        'ko' if action == 'ko' else 'removal',
+                        source_is_opp=source_is_opp,
+                    )
                     if sub_log:
                         sub_logs.append(sub_log)
                         remove_by_identity(candidates, target)
@@ -5646,7 +5782,7 @@ class OPTCGMatch:
                         print(f'      🛡 {target.name[:20]} imune a KO!')
                     return False
                 ee_opp = EffectExecutor(opp, p)
-                sub_log = ee_opp.try_substitute(target, 'ko')
+                sub_log = ee_opp.try_any_substitute(target, 'ko', source_is_opp=True)
                 if sub_log:
                     if verbose:
                         print(f'      🔁 {sub_log}')

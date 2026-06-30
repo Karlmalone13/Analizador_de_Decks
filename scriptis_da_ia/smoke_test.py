@@ -5,6 +5,7 @@ Roda contra os dados REAIS de card_effects_db.json, nao contra mocks.
 """
 import sys, json
 sys.path.insert(0, '.')
+import optcg_engine.decision_engine as de
 from optcg_engine.decision_engine import (
     Card, CardData, GameState, EffectExecutor, DecisionEngine, OPTCGMatch,
     effective_hand_play_cost, get_card_effects
@@ -294,6 +295,78 @@ ee = EffectExecutor(me, opp)
 log = ee.try_substitute(thatch, 'removal')
 check('substitute_removal com extra_steps compra carta apos trash_self',
       thatch in me.trash and draw_card in me.hand and 'comprou' in (log or ''))
+
+# ── 15. substituicao externa protege outro alvo quando o step tem filtro ──
+de._EFFECTS_DB['TEST-PROTECTOR'] = {
+    'effects': {
+        'passive': {
+            'steps': [{
+                'action': 'substitute_ko',
+                'filter_type': 'allytag',
+                'cost': {'action': 'trash_self'},
+            }]
+        }
+    }
+}
+me, opp = me_opp()
+protector = mk('TEST-PROTECTOR', 'Protetor externo', sub_types='Guard')
+protected = mk('TEST-ALLY', 'Alvo protegido', sub_types='AllyTag')
+unmatched = mk('TEST-OTHER', 'Alvo errado', sub_types='Other')
+me.field_chars = [protector, protected, unmatched]
+ee = EffectExecutor(me, opp)
+log = ee.try_any_substitute(protected, 'ko')
+check('substituicao externa usa fonte aliada e preserva alvo filtrado',
+      protector in me.trash and protected in me.field_chars and 'Protetor' in (log or ''))
+
+me, opp = me_opp()
+protector = mk('TEST-PROTECTOR', 'Protetor externo', sub_types='Guard')
+unmatched = mk('TEST-OTHER', 'Alvo errado', sub_types='Other')
+me.field_chars = [protector, unmatched]
+ee = EffectExecutor(me, opp)
+log = ee.try_any_substitute(unmatched, 'ko')
+check('substituicao externa nao protege alvo fora do filtro',
+      log is None and protector in me.field_chars and unmatched in me.field_chars)
+
+de._EFFECTS_DB['TEST-LEADER-PROTECT'] = {
+    'effects': {
+        'opp_turn': {
+            'don_requirement': 1,
+            'steps': [{
+                'action': 'substitute_ko',
+                'power_gte': 5000,
+                'cost': {'action': 'debuff_power_self', 'amount': 1000},
+            }]
+        }
+    }
+}
+me, opp = me_opp()
+me.leader = mk('TEST-LEADER-PROTECT', 'Leader protetor', power=5000, card_type='LEADER')
+me.leader.don_attached = 1
+protected = mk('TEST-BIG', 'Alvo grande', power=5000)
+me.field_chars = [protected]
+ee = EffectExecutor(me, opp)
+log = ee.try_any_substitute(protected, 'ko', source_is_opp=True)
+check('substituicao externa com debuff aplica custo no alvo protegido',
+      protected.power_buff == -1000 and me.leader.power_buff == 0 and protected in me.field_chars and bool(log))
+
+me, opp = me_opp()
+buggy = mk('ST30-011', 'Buggy', power=5000)
+alvo_6000 = mk('TARGET-6000', 'Alvo 6000', power=6000)
+alvo_5000 = mk('TARGET-5000', 'Alvo 5000', power=5000)
+me.field_chars = [buggy, alvo_6000, alvo_5000]
+ee = EffectExecutor(me, opp)
+log = ee.try_any_substitute(alvo_6000, 'removal')
+check('substituicao externa real ST30-011 protege alvo com power_eq 6000',
+      buggy.rested and alvo_6000 in me.field_chars and bool(log))
+
+me, opp = me_opp()
+buggy = mk('ST30-011', 'Buggy', power=5000)
+alvo_5000 = mk('TARGET-5000', 'Alvo 5000', power=5000)
+me.field_chars = [buggy, alvo_5000]
+ee = EffectExecutor(me, opp)
+log = ee.try_any_substitute(alvo_5000, 'removal')
+check('substituicao externa real ST30-011 nao protege power diferente',
+      log is None and not buggy.rested and alvo_5000 in me.field_chars)
 
 print()
 print(f'{"TODOS OS TESTES PASSARAM" if FAIL == 0 else f"{FAIL} TESTE(S) FALHARAM"}')

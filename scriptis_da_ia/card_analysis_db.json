@@ -33061,7 +33061,8 @@
   "effects": [
    {
     "action": "substitute_ko",
-    "trigger": "opp_turn"
+    "trigger": "opp_turn",
+    "rested_only": true
    },
    {
     "action": "keyword_blocker",
@@ -59954,7 +59955,8 @@
   "effects": [
    {
     "action": "substitute_removal",
-    "trigger": "passive"
+    "trigger": "passive",
+    "cost_lte": 7
    }
   ],
   "synergy_states": {},
@@ -84129,7 +84131,8 @@
   "effects": [
    {
     "action": "substitute_removal",
-    "trigger": "passive"
+    "trigger": "passive",
+    "power_lte": 7000
    }
   ],
   "synergy_states": {},
@@ -86005,7 +86008,8 @@
   "effects": [
    {
     "action": "substitute_removal",
-    "trigger": "passive"
+    "trigger": "passive",
+    "power_lte": 7000
    }
   ],
   "synergy_states": {},
@@ -86756,7 +86760,8 @@
   "effects": [
    {
     "action": "substitute_removal",
-    "trigger": "passive"
+    "trigger": "passive",
+    "power_lte": 7000
    }
   ],
   "synergy_states": {},
@@ -87676,7 +87681,8 @@
   "effects": [
    {
     "action": "substitute_removal",
-    "trigger": "passive"
+    "trigger": "passive",
+    "power_lte": 7000
    }
   ],
   "synergy_states": {},

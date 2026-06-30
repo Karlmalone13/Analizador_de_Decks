@@ -2315,6 +2315,60 @@ def parse_life(text):
     return steps
 
 
+def _apply_substitute_target_filters(step, text, removal_kind):
+    t = text.lower()
+    if removal_kind == 'ko':
+        m = re.search(r"if (.+?) would be k\.o\.'?d", t)
+    else:
+        m = re.search(r"if (.+?) would be removed from the field", t)
+    if not m:
+        return step
+
+    subject = m.group(1)
+    if 'this character' in subject:
+        return step
+
+    name_m = re.search(r'character\s+\[([^\]]+)\]', subject)
+    if name_m:
+        step['filter_name'] = name_m.group(1).strip()
+
+    type_m = re.search(r'["\[{]([^"\]\}]+)["\]}]\s+type character', subject)
+    if type_m:
+        step['filter_type'] = type_m.group(1).strip()
+
+    colors = ('red', 'green', 'blue', 'purple', 'black', 'yellow')
+    for color in colors:
+        if re.search(rf'\b{color}\s+(?:"[^"]+"\s+type\s+)?character', subject):
+            step['filter_color'] = color
+            break
+
+    cost_lte = re.search(r'(?:base )?cost of (\d+) or less', subject)
+    if cost_lte:
+        step['cost_lte'] = int(cost_lte.group(1))
+    cost_gte = re.search(r'(?:base )?cost of (\d+) or more', subject)
+    if cost_gte:
+        step['cost_gte'] = int(cost_gte.group(1))
+
+    power_lte = re.search(r'(\d+) base power or less', subject)
+    if power_lte:
+        step['power_lte'] = int(power_lte.group(1))
+    power_eq = re.search(r'with (\d+) base power', subject)
+    if power_eq and 'or less' not in subject and 'or more' not in subject:
+        step['power_eq'] = int(power_eq.group(1))
+    power_gte = re.search(r'(\d+) power or more', subject)
+    if power_gte:
+        step['power_gte'] = int(power_gte.group(1))
+
+    if 'rested character' in subject:
+        step['rested_only'] = True
+
+    exclude_m = re.search(r'other than \[([^\]]+)\]', subject)
+    if exclude_m:
+        step['exclude'] = exclude_m.group(1).strip()
+
+    return step
+
+
 def parse_substitute_ko(text):
     """
     Cobre 'If [this Character/your X] would be K.O.'d [by an effect], you
@@ -2378,7 +2432,8 @@ def parse_substitute_ko(text):
                 cost = {'action': 'debuff_power_self_leader', 'amount': int(m.group(1))}
 
     if cost:
-        steps.append({'action': 'substitute_ko', 'cost': cost})
+        step = {'action': 'substitute_ko', 'cost': cost}
+        steps.append(_apply_substitute_target_filters(step, t, 'ko'))
 
     return steps
 
@@ -2442,7 +2497,7 @@ def parse_substitute_removal(text):
         step = {'action': 'substitute_removal', 'cost': cost}
         if extra_steps:
             step['extra_steps'] = extra_steps
-        steps.append(step)
+        steps.append(_apply_substitute_target_filters(step, t, 'removal'))
 
     return steps
 

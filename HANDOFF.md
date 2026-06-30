@@ -1,5 +1,41 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-06-29 23:35 - Codex
+
+**Feito** - primeira fatia de substituição externa no executor:
+- `try_any_substitute()` tenta primeiro a substituição do próprio alvo e depois
+  procura fontes aliadas em campo, leader e stage.
+- Fontes externas só protegem quando o step/bloco tem filtro de alvo
+  estruturado (`filter_type`, `filter_name`, custo/power/rested ou condições
+  target-like). Isso evita que cartas cujo parser perdeu filtro passem a
+  proteger qualquer coisa por acidente.
+- Caminhos de KO/removal por efeito e KO em combate agora chamam
+  `try_any_substitute()`.
+- Custo `rest_self_and_trash_hand` foi adicionado para substituições externas
+  já parseadas nesse formato.
+- Smoke novo cobre fonte externa protegendo alvo filtrado e recusando alvo fora
+  do filtro.
+
+**Parser/data coverage nesta fatia:** `gerar_effects_db.py` agora extrai filtros
+do alvo protegido em substituições quando o sujeito da frase é claro. Exemplos
+confirmados no banco regenerado: Monster ganhou `filter_name=bonk punch`,
+Tashigi ganhou `filter_color=green` + `exclude=tashigi`, Sabo ganhou
+`cost_lte=7` + `exclude=sabo`, Rosinante OP12-048 ganhou `filter_type=navy` +
+`filter_color=blue`; ST30-009/ST30-011 ganharam `power_eq=6000`.
+Resultado da auditoria rápida: 21 de 33 steps de
+substituição têm filtro de alvo estruturado.
+
+**Limite consciente:** ainda não fecha 100% das 38 cartas reais; faltam variantes
+sem filtro extraível pelo sujeito simples e validação carta-a-carta em replay.
+
+**Validação:**
+- `python -m py_compile scriptis_da_ia\smoke_test.py scriptis_da_ia\optcg_engine\decision_engine.py` passou.
+- `python scriptis_da_ia\smoke_test.py` passou.
+- `python audit_replay.py --n 5 --seed 42` passou com 0 anomalias.
+- `python smoke_test_broad.py` passou `40/40`.
+
+---
+
 Regra: antes de parar (créditos, fim de sessão, etc.), escreva um bloco novo
 no TOPO deste arquivo com data/hora, o que foi feito, e o que falta. Quem
 assumir a sessão seguinte deve ler este arquivo + rodar `git log --oneline -10`

@@ -224,8 +224,16 @@ de imunidade e stubs antigos listados abaixo.
   38 textos onde uma fonte em campo/líder protege outro alvo (`if your Character
   would be removed/K.O.'d...`). O parser já estrutura muitos como
   `substitute_*`, mas o executor atual consulta principalmente o alvo removido.
-  Precisa separar `target` e `source`. Já corrigido nesta auditoria: `extra_steps`
-  de substituição (`trash self + draw`) agora executam.
+  Primeiras fatias feitas: executor agora separa `target`/`source` via
+  `try_any_substitute()` quando o step tem filtro estruturado; parser passou a
+  extrair filtros simples do alvo protegido. Exemplos confirmados no banco:
+  Monster -> `filter_name=bonk punch`, Tashigi -> `filter_color=green` +
+  `exclude=tashigi`, Sabo -> `cost_lte=7` + `exclude=sabo`, Rosinante OP12-048
+  -> `filter_type=navy` + `filter_color=blue`, ST30-009/ST30-011 ->
+  `power_eq=6000`. Auditoria rápida: 21 de 33 steps de substituição têm filtro
+  de alvo estruturado. Ainda falta validar variantes restantes carta-a-carta e
+  cobrir filtros mais raros. Já corrigido nesta
+  auditoria: `extra_steps` de substituição (`trash self + draw`) agora executam.
 
 ---
 

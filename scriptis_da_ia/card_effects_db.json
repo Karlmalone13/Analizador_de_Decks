@@ -3603,7 +3603,8 @@
             "cost": {
               "action": "trash_from_hand",
               "count": 1
-            }
+            },
+            "cost_gte": 4
           }
         ],
         "once_per_turn": true
@@ -20679,7 +20680,8 @@
             "cost": {
               "action": "debuff_power_self",
               "amount": 1000
-            }
+            },
+            "power_gte": 5000
           }
         ],
         "once_per_turn": true,
@@ -21499,7 +21501,8 @@
             "action": "substitute_ko",
             "cost": {
               "action": "trash_self"
-            }
+            },
+            "rested_only": true
           }
         ]
       },
@@ -34369,7 +34372,8 @@
             "action": "substitute_ko",
             "cost": {
               "action": "trash_self"
-            }
+            },
+            "filter_name": "bonk punch"
           }
         ]
       }
@@ -38188,7 +38192,9 @@
             "action": "substitute_removal",
             "cost": {
               "action": "rest_self"
-            }
+            },
+            "filter_color": "green",
+            "exclude": "tashigi"
           }
         ]
       }
@@ -38635,7 +38641,9 @@
             "action": "substitute_removal",
             "cost": {
               "action": "bounce_self"
-            }
+            },
+            "cost_lte": 7,
+            "exclude": "sabo"
           }
         ]
       }
@@ -45249,7 +45257,9 @@
             "cost": {
               "action": "rest_self_and_trash_hand",
               "trash_count": 1
-            }
+            },
+            "filter_type": "navy",
+            "filter_color": "blue"
           }
         ]
       }
@@ -47424,7 +47434,8 @@
             "action": "substitute_ko",
             "cost": {
               "action": "trash_self"
-            }
+            },
+            "filter_type": "revolutionary army"
           }
         ],
         "conditions": {
@@ -47635,7 +47646,8 @@
             "cost": {
               "action": "debuff_power_self",
               "amount": 2000
-            }
+            },
+            "filter_type": "revolutionary army"
           }
         ],
         "conditions": {
@@ -51046,7 +51058,8 @@
             "cost": {
               "action": "debuff_power_self_leader",
               "amount": 2000
-            }
+            },
+            "filter_type": "supernovas"
           }
         ],
         "conditions": {
@@ -52313,7 +52326,8 @@
             "cost": {
               "action": "return_own_don",
               "count": 1
-            }
+            },
+            "filter_type": "donquixote pirates"
           }
         ],
         "conditions": {
@@ -54396,7 +54410,8 @@
             "cost": {
               "action": "debuff_power_self_leader",
               "amount": 2000
-            }
+            },
+            "power_lte": 7000
           }
         ]
       }
@@ -55564,7 +55579,8 @@
             "cost": {
               "action": "place_own_character_bottom_deck",
               "count": 1
-            }
+            },
+            "power_lte": 7000
           }
         ]
       }
@@ -56064,7 +56080,8 @@
             "cost": {
               "action": "return_own_don",
               "count": 1
-            }
+            },
+            "power_lte": 7000
           }
         ]
       }
@@ -56707,7 +56724,8 @@
             "cost": {
               "action": "trash_from_hand",
               "count": 1
-            }
+            },
+            "power_lte": 7000
           }
         ]
       }
@@ -58092,7 +58110,8 @@
               "action": "trash_from_hand",
               "count": 1,
               "power_gte": 6000
-            }
+            },
+            "filter_type": "red-haired pirates"
           }
         ],
         "conditions": {
@@ -71581,7 +71600,8 @@
             "cost": {
               "action": "trash_from_hand",
               "count": 1
-            }
+            },
+            "filter_type": "cross guild"
           }
         ],
         "conditions": {
@@ -72907,7 +72927,8 @@
                 "action": "draw",
                 "count": 1
               }
-            ]
+            ],
+            "power_eq": 6000
           }
         ]
       }
@@ -72958,7 +72979,8 @@
             "action": "substitute_removal",
             "cost": {
               "action": "rest_self"
-            }
+            },
+            "power_eq": 6000
           },
           {
             "action": "keyword_blocker"
