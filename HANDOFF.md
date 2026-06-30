@@ -1,5 +1,47 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-06-30 (8) - Claude
+
+**Feito - Counter events: buff + play_card/busca em deck (última fatia
+desta sequência):** `play_card`, `play_from_deck`, `look_top_deck`,
+`add_to_hand`, `deck_bottom_rest` já tinham handler genérico (usados em
+on_play/trigger normalmente) — adicionados a `safe_extra_actions` como
+bônus de valor junto de um buff `battle_only` que já defende sozinho.
+Desbloqueia 8 das 9 cartas do grupo: EB01-019, EB02-059, OP02-045,
+OP05-018, OP08-054, OP08-115, OP14-116, ST12-017.
+
+**Achado novo (não corrigido, baixo impacto):** `deck_reorder_rest` (usado
+só por OP01-088) é parseada e referenciada em `_step_is_viable`, mas
+**nunca teve handler de execução** — mesmo padrão de bug do `debuff_power`
+de uma sessão atrás, só que aqui afeta 1 única carta. Deixei de fora desta
+fatia por ser baixo impacto; registrado no TODO.md pra não se perder.
+
+**Deliberadamente fora de escopo:** os 4 Counter events sem nenhum buff que
+só jogam/buscam carta (EB01-009, OP01-087, OP04-036, OP10-078) — não
+afetam `defend_power`/`atk_power` de jeito nenhum, então não cabem no
+framework "isso impede o hit". Exigiriam um critério de decisão diferente
+("vale gastar DON/carta por puro valor, mesmo sem impedir o ataque?").
+
+Cobertura final de Counter events com buff (depois de toda a sequência
+desta sessão): **136/180** (começou em 102/180).
+
+**Validação:** `python -m py_compile`; `python smoke_test.py` (76/76, 4
+casos novos cobrindo play_card incondicional/condicional pass-fail e busca
+em deck); `python smoke_test_broad.py` (40/40); `python audit_replay.py
+--n 20 --seed 7` e `--n 15 --seed 99` (0 exceções, 0 anomalias nas duas).
+
+**Estado final da auditoria de Counter events (encerrada por ora).** Ainda
+fora de escopo, ver TODO.md para detalhes:
+- `deck_reorder_rest` sem handler (1 carta, OP01-088).
+- `bounce` puro (2, avaliado como fora de escopo em sessão anterior).
+- `substitute_ko`/`immunity`/`negate_effect` combinados (4, mecânicas
+  distintas que merecem auditoria própria).
+- 3 cartas com semântica ambígua de alvo no debuff (OP02-089, OP04-017,
+  OP09-097).
+- 4 cartas puramente de busca/play sem buff (fora do framework atual).
+
+---
+
 ## 2026-06-30 (7) - Claude
 
 **Feito - KO via Counter event:** terceiro e último mecanismo de Counter

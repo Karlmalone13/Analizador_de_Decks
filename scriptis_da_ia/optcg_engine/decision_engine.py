@@ -1247,6 +1247,8 @@ class EffectExecutor:
             'draw', 'set_active', 'rest_opp_character', 'add_don', 'set_don_active',
             'ko', 'bounce', 'place_opp_character_bottom_deck', 'debuff_power',
             'trash_from_deck_top', 'peek_life', 'add_from_trash', 'gain_life',
+            'play_card', 'play_from_deck', 'look_top_deck', 'add_to_hand',
+            'deck_bottom_rest',
         }
         if any(step.get('action') not in safe_extra_actions for step in extras):
             return None

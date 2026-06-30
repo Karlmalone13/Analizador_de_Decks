@@ -935,6 +935,56 @@ log = ee.try_counter_event_ko_attacker(atacante_caro)
 check('Counter event de K.O. nao remove atacante acima do cost_lte',
       log is None and atacante_caro in opp.field_chars)
 
+# ── 15i. Counter events com buff + play_card/busca em deck (acoes que ja
+# tem handler generico, so bonus de valor -- o buff sozinho ja defende) ──
+me, opp = me_opp()
+me.don_available = 2
+evento_play = mk('OP02-045', 'Three Sword Style Oni Giri', card_type='EVENT', cost=2)
+carta_barata = mk('BARATA1', 'Carta barata', cost=2, power=3000)
+me.hand = [evento_play, carta_barata]
+ee = EffectExecutor(me, opp)
+counter = ee.try_counter_event_power(me.leader, 'leader', needed=6000)
+check('Counter event com play_card joga carta da mao de graca como bonus',
+      counter and counter[0] == 6000 and evento_play in me.trash
+      and carta_barata in me.field_chars and carta_barata not in me.hand)
+
+me, opp = me_opp()
+me.don_available = 2
+me.life = [mk('L1', 'Vida 1')]
+evento_play_cond = mk('EB02-059', "Without Your Help", card_type='EVENT', cost=2)
+sanji_barato = mk('SANJI1', 'Sanji barato', cost=3, power=3000)
+me.hand = [evento_play_cond, sanji_barato]
+ee = EffectExecutor(me, opp)
+counter = ee.try_counter_event_power(me.leader, 'leader', needed=1000)
+check('Counter event com play_card condicional joga quando condicao passa (life_lte 1)',
+      counter and counter[0] == 1000 and evento_play_cond in me.trash
+      and sanji_barato in me.field_chars)
+
+me, opp = me_opp()
+me.don_available = 2
+me.life = [mk('L1', 'Vida 1'), mk('L2', 'Vida 2')]
+evento_play_cond2 = mk('EB02-059', "Without Your Help", card_type='EVENT', cost=2)
+sanji_barato2 = mk('SANJI2', 'Sanji barato 2', cost=3, power=3000)
+me.hand = [evento_play_cond2, sanji_barato2]
+ee = EffectExecutor(me, opp)
+counter = ee.try_counter_event_power(me.leader, 'leader', needed=1000)
+check('Counter event com play_card condicional NAO joga quando condicao falha',
+      counter and counter[0] == 1000 and evento_play_cond2 in me.trash
+      and sanji_barato2 in me.hand and sanji_barato2 not in me.field_chars)
+
+# EB01-019: look_top_deck + add_to_hand + deck_bottom_rest + buff
+me, opp = me_opp()
+me.don_available = 2
+evento_busca = mk('EB01-019', 'Off-White', card_type='EVENT', cost=2)
+donquixote_top = mk('DQ1', 'Donquixote Family char', sub_types='Donquixote Pirates', cost=3)
+me.deck = [mk('IRRELEVANTE', 'Irrelevante'), donquixote_top]
+me.hand = [evento_busca]
+ee = EffectExecutor(me, opp)
+counter = ee.try_counter_event_power(me.leader, 'leader', needed=4000)
+check('Counter event com look_top_deck + add_to_hand busca carta filtrada do deck',
+      counter and counter[0] == 4000 and evento_busca in me.trash
+      and donquixote_top in me.hand)
+
 print()
 print(f'{"TODOS OS TESTES PASSARAM" if FAIL == 0 else f"{FAIL} TESTE(S) FALHARAM"}')
 sys.exit(1 if FAIL else 0)

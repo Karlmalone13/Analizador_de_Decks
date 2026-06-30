@@ -334,6 +334,31 @@ de imunidade e stubs antigos listados abaixo.
   `target='opp_character'` e nenhum outro step. Desbloqueia as 4 cartas:
   EB01-010, OP08-094, OP10-040, OP13-039. Validado com `audit_replay.py
   --n 20 --seed 7` e `--n 15 --seed 99`: 0 excecoes, 0 anomalias.
+- [x] **Counter events: buff + play_card/busca em deck (30/06/2026):**
+  ultima fatia da auditoria de Counter events. `play_card`, `play_from_deck`,
+  `look_top_deck`, `add_to_hand`, `deck_bottom_rest` ja tinham handler
+  generico (usados em on_play/trigger/etc.) — adicionados a
+  `safe_extra_actions` como bonus de valor junto de um buff `battle_only`
+  que ja defende sozinho (mesmo raciocinio dos extras anteriores: o buff e
+  o que importa pra decisao, a busca/play e so ganho extra). Desbloqueia
+  EB01-019, EB02-059, OP01-088 (exceto a parte de `deck_reorder_rest`, ver
+  abaixo), OP02-045, OP05-018, OP08-054, OP08-115, OP14-116, ST12-017 (8 de
+  9 cartas do grupo).
+  **Achado novo, nao corrigido:** `deck_reorder_rest` (1 carta, OP01-088:
+  "look at 3 cards from top, place at top or bottom in any order") e
+  parseada e referenciada em `_step_is_viable` mas NUNCA teve handler de
+  execucao — mesmo padrao do bug do `debuff_power` (achado 30/06/2026,
+  sessao anterior), so que aqui afeta 1 unica carta. Deixado de fora desta
+  fatia por escopo (baixo impacto), registrado aqui pra nao se perder.
+  **Deliberadamente fora de escopo:** os 4 Counter events SEM nenhum buff
+  que so jogam/buscam carta (EB01-009, OP01-087, OP04-036, OP10-078) — nao
+  swingam `defend_power`/`atk_power` de jeito nenhum, entao nao cabem no
+  framework de "isso impede o hit". Tratá-los exigiria um criterio de
+  decisao totalmente diferente ("vale a pena gastar DON/carta por puro
+  valor, mesmo sem impedir o ataque?"), fora do escopo desta auditoria.
+  Cobertura final de Counter events com buff: 128/180 pra 136/180.
+  Validado com `audit_replay.py --n 20 --seed 7` e `--n 15 --seed 99`: 0
+  excecoes, 0 anomalias.
 - [ ] Implementar substituição externa: auditoria de 29/06/2026 achou cerca de
   38 textos onde uma fonte em campo/líder protege outro alvo (`if your Character
   would be removed/K.O.'d...`). O parser já estrutura muitos como
