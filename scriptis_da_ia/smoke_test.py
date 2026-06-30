@@ -368,6 +368,31 @@ log = ee.try_any_substitute(alvo_5000, 'removal')
 check('substituicao externa real ST30-011 nao protege power diferente',
       log is None and not buggy.rested and alvo_5000 in me.field_chars)
 
+me, opp = me_opp()
+me.don_available = 2
+evento_counter = mk('EB02-030', "Friend's Dream", card_type='EVENT', cost=2)
+descarte = mk('DISC-1', 'Carta custo counter')
+alvo = mk('ALLY-KO', 'Aliado em batalha')
+me.hand = [evento_counter, descarte]
+me.field_chars = [alvo]
+ee = EffectExecutor(me, opp)
+log = ee.try_counter_event_substitute(alvo, 'ko')
+check('Counter event EB02-030 substitui KO em batalha pagando evento e descarte',
+      alvo in me.field_chars and evento_counter in me.trash and descarte in me.trash
+      and me.don_available == 0 and me.don_rested == 2 and bool(log))
+
+me, opp = me_opp()
+me.don_available = 1
+evento_counter = mk('EB02-030', "Friend's Dream", card_type='EVENT', cost=2)
+descarte = mk('DISC-1', 'Carta custo counter')
+alvo = mk('ALLY-KO', 'Aliado em batalha')
+me.hand = [evento_counter, descarte]
+me.field_chars = [alvo]
+ee = EffectExecutor(me, opp)
+log = ee.try_counter_event_substitute(alvo, 'ko')
+check('Counter event EB02-030 nao ativa sem DON suficiente',
+      log is None and evento_counter in me.hand and descarte in me.hand and me.don_available == 1)
+
 print()
 print(f'{"TODOS OS TESTES PASSARAM" if FAIL == 0 else f"{FAIL} TESTE(S) FALHARAM"}')
 sys.exit(1 if FAIL else 0)

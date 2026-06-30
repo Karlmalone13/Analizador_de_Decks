@@ -1081,6 +1081,49 @@ class EffectExecutor:
                 return log
         return None
 
+    def try_counter_event_substitute(self, target: Card, removal_kind: str) -> str | None:
+        """Ativa evento [Counter] da mao que substitui K.O./remocao em batalha."""
+        for event in list(self.me.hand):
+            if event.card_type != 'EVENT':
+                continue
+            block = get_card_effects(event.code).get('counter', {})
+            if not block:
+                continue
+            play_cost = effective_hand_play_cost(self.me, event)
+            if self.me.don_available < play_cost:
+                continue
+
+            for step in block.get('steps', []):
+                action = step.get('action')
+                aplica = (action == 'substitute_ko' and removal_kind == 'ko') or action == 'substitute_removal'
+                if not aplica:
+                    continue
+                target_keys = (
+                    'filter_type', 'filter_name', 'filter_color', 'cost_lte', 'cost_gte',
+                    'power_lte', 'power_eq', 'power_gte', 'rested_only', 'exclude',
+                )
+                if any(k in step for k in target_keys) and not self._target_matches_external_substitute(target, event, step, block):
+                    continue
+
+                cost = step.get('cost', {})
+                if cost.get('action') != 'trash_from_hand':
+                    continue
+                count = cost.get('count', 1)
+                if len([c for c in self.me.hand if c is not event]) < count:
+                    continue
+
+                remove_by_identity(self.me.hand, event)
+                self.me.trash.append(event)
+                self.me.don_available -= play_cost
+                self.me.don_rested += play_cost
+
+                log = self._pay_substitute_cost(cost, target)
+                if log is None:
+                    continue
+                return f'Counter {event.name[:18]}: {log}'
+
+        return None
+
     def _pay_substitute_cost(self, cost: dict, card: Card) -> str | None:
         """Paga o custo de uma substituicao de K.O./remocao. Retorna log de
         sucesso, ou None se nao pode pagar (substituicao nao ocorre)."""
@@ -5786,6 +5829,11 @@ class OPTCGMatch:
                 if sub_log:
                     if verbose:
                         print(f'      🔁 {sub_log}')
+                    return False
+                counter_sub_log = ee_opp.try_counter_event_substitute(target, 'ko')
+                if counter_sub_log:
+                    if verbose:
+                        print(f'      🔁 {counter_sub_log}')
                     return False
                 remove_character_from_field(opp, target, 'trash')
                 if verbose:

@@ -2,6 +2,12 @@
 
 ## 2026-06-29 23:35 - Codex
 
+**Update posterior - EB02-030:** implementado suporte estreito para Counter event
+com `counter -> substitute_ko` e custo `trash_from_hand` no K.O. em batalha.
+Hoje so existe 1 caso no banco (`EB02-030`). O evento agora exige DON suficiente,
+vai para o trash, trasha 1 carta da mao e preserva o Character alvo. Smoke cobre
+ativacao e bloqueio por DON insuficiente.
+
 **Feito** - primeira fatia de substituição externa no executor:
 - `try_any_substitute()` tenta primeiro a substituição do próprio alvo e depois
   procura fontes aliadas em campo, leader e stage.

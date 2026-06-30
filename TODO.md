@@ -232,10 +232,11 @@ de imunidade e stubs antigos listados abaixo.
   -> `filter_type=navy` + `filter_color=blue`, ST30-009/ST30-011 ->
   `power_eq=6000`. Auditoria rápida: 21 de 33 steps de substituição têm filtro
   de alvo estruturado. Auditoria dos 12 restantes: 10 são `this Character`,
-  `OP07-042` também é self com sujeito composto, e `EB02-030` é Counter event
-  para `any of your Characters`, que pertence a uma fatia própria de execução
-  de eventos [Counter]. Já corrigido nesta auditoria: `extra_steps` de
-  substituição (`trash self + draw`) agora executam.
+  `OP07-042` também é self com sujeito composto. `EB02-030` era Counter event
+  para `any of your Characters` e foi coberto por suporte estreito a
+  `counter -> substitute_ko` com custo `trash_from_hand`. Ainda falta a fatia
+  maior de execução completa dos 180 eventos [Counter]. Já corrigido nesta
+  auditoria: `extra_steps` de substituição (`trash self + draw`) agora executam.
 
 ---
 
