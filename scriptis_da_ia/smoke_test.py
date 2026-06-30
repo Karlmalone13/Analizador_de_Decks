@@ -1447,6 +1447,39 @@ log = ee._execute_step({'action': 'lock_opp_cannot_be_rested', 'count': 1,
 check('lock_opp_cannot_be_rested com exclude nao trava Monkey.D.Luffy mas trava Zoro',
       not luffy_card.cannot_be_rested_until and bool(zoro_card.cannot_be_rested_until))
 
+# ── 27. when_rested -- novo timing disparado em _execute_attack apos restar
+# o atacante. Achado 02/07/2026: 6 cartas OP14-xxx eram wrongly classificadas
+# como 'your_turn' (executavam passivamente no inicio do turno em vez de so
+# quando a carta efetivamente ficava rested). OP14-119 Mihawk era
+# completamente perdida (effects vazio antes, cost_lte=9 + typo "cost or").
+# Validated end-to-end via execute(card, 'when_rested'). ──
+me, opp = me_opp()
+mihawk = mk('OP14-119', 'Dracule Mihawk', power=10000, sub_types='The Seven Warlords of the Sea')
+me.field_chars = [mihawk]
+mihawk.rested = True
+opp_alvo = mk('OPP-CHEAP', 'Alvo barato', power=5000, cost=7)
+opp_blocked = mk('OPP-EXPENSIVE', 'Custo alto', power=8000, cost=10)
+opp.field_chars = [opp_alvo, opp_blocked]
+ee = EffectExecutor(me, opp)
+ee.execute(mihawk, 'when_rested')
+check('OP14-119 when_rested trava Character do oponente com cost<=9 mas nao o de cost=10',
+      bool(opp_alvo.cannot_be_rested_until) and not opp_blocked.cannot_be_rested_until)
+
+# Garante que 'when_rested' ja nao aparece mais como 'your_turn'
+# (nao dispara no inicio do turno sem a carta ter sido restada)
+me2, opp2 = me_opp()
+op14028 = mk('OP14-028', 'Char OP14', power=6000)
+opp2_target = mk('OPP-RESTED', 'Alvo rested barato', power=4000, cost=2)
+opp2_target.rested = True
+me2.field_chars = [op14028]
+opp2.field_chars = [opp2_target]
+ee2 = EffectExecutor(me2, opp2)
+# Se executarmos 'your_turn' (incorreto), o KO apareceria; 'when_rested' so dispara
+# quando o card fica rested de verdade (via execute). Verificamos ausencia de KO.
+ee2.execute(op14028, 'your_turn')
+check('OP14-028 nao dispara KO via your_turn (effet agora e when_rested, nao your_turn)',
+      opp2_target in opp2.field_chars)
+
 print()
 print(f'{"TODOS OS TESTES PASSARAM" if FAIL == 0 else f"{FAIL} TESTE(S) FALHARAM"}')
 sys.exit(1 if FAIL else 0)

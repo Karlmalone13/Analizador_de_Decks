@@ -6169,8 +6169,18 @@ class OPTCGMatch:
                 if verbose and pagas:
                     print(f'      💸 {attacker.name[:18]} pagou pra atacar (trava): {", ".join(pagas)}')
 
-        # Executa efeito When Attacking
+        # Dispara efeito "when this character becomes rested" (when_rested),
+        # se houver. Ocorre imediatamente apos o atacante ser restado, antes
+        # do When Attacking -- segue a ordem real do texto da carta
+        # (ex: OP14-119 Mihawk: "When this Character becomes rested, [efeito]").
         ee = EffectExecutor(p, opp)
+        wr_logs = ee.execute(attacker, 'when_rested')
+        if verbose:
+            for log in wr_logs:
+                if log:
+                    print(f'      [quando restou] {log}')
+
+        # Executa efeito When Attacking
         wa_logs = ee.execute(attacker, 'when_attacking')
         if verbose:
             for log in wa_logs:

@@ -1125,7 +1125,7 @@ def parse_lock_attack(text):
     # of X or less] cannot (attack|be rested) until ..."
     m = re.search(
         r"up to (\d+) of your opponent.{0,15}characters?"
-        r"(?: with a cost of (\d+) or less)?"
+        r"(?: with a cost (?:of|or) (\d+) or less)?"  # aceita typo "cost or N" (OP14-119)
         r"(?: other than \[([^\]]+)\])?"
         r" cannot (attack|be rested) until ([^.]+)",
         t
@@ -3356,7 +3356,19 @@ def parse_card_effect(card_text, card_type):
         ('when_attacking',ABERTURA + r'\[when attacking\](.+?)' + LOOKAHEAD_DELIM),
         ('on_opp_attack', ABERTURA + r"\[on your opponent.{0,3}s? attack\](.+?)" + LOOKAHEAD_DELIM),
         ('on_ko',         ABERTURA + r'\[on k\.o\.\](.+?)' + LOOKAHEAD_DELIM),
-        ('your_turn',     ABERTURA + r'\[your turn\](.+?)' + LOOKAHEAD_DELIM),
+        # 'when_rested' precede 'your_turn' pra ser testado primeiro: captura
+        # o padrao "[Your Turn] When this Character becomes rested, [efeito]"
+        # antes que o regex generico de your_turn reivindique o bloco inteiro.
+        # Achado 02/07/2026 (OP14-119 Mihawk): o bloco era descartado pelo
+        # parse_block porque "when this character becomes rested" nao era
+        # reconhecido como step -- agora vira um timing proprio, disparado
+        # em _execute_attack apos restar o atacante.
+        ('when_rested',   ABERTURA + r'\[your turn\]\s*when this (?:character|card) becomes rested[^.]*?[.,]\s*(.+?)' + LOOKAHEAD_DELIM),
+        # Lookahead negativo: exclui o sub-padrao "when this character becomes rested"
+        # que ja foi capturado como 'when_rested' acima -- sem isso, o regex
+        # generico casaria TAMBEM o mesmo bloco e geraria um entry 'your_turn'
+        # duplicado com os mesmos steps (OP14-021/027/028/032/035/119).
+        ('your_turn',     ABERTURA + r'\[your turn\](?!\s*when this (?:character|card) becomes rested)(.+?)' + LOOKAHEAD_DELIM),
         ('opp_turn',      ABERTURA + r"\[opponent.{0,3}s? turn\](.+?)" + LOOKAHEAD_DELIM),
         ('trigger',       ABERTURA + r'\[trigger\](.+?)' + LOOKAHEAD_DELIM),
         ('counter',       ABERTURA + r'\[counter\](.+?)' + LOOKAHEAD_DELIM),

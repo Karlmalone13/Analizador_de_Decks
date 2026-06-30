@@ -666,6 +666,18 @@ de imunidade e stubs antigos listados abaixo.
   carta real OP08-046 abaixo/no limiar), `audit_replay.py --n 20 --seed 7`
   e `--n 15 --seed 99`: 0 exceções, 0 anomalias.
 - [ ] OP15-074 Varie — DON sem sinal, aguarda foto
+- ~~OP14-119 (Mihawk) — trigger "becomes rested" sem parser~~: **resolvido
+  (02/07/2026).** Novo timing `when_rested` no parser (`gerar_effects_db.py`,
+  trigger_patterns antes de `your_turn`, com lookahead negativo pra evitar
+  duplicar o mesmo bloco como `your_turn`). 6 cartas afetadas: OP14-021,
+  OP14-027, OP14-028, OP14-032, OP14-035 (antes ficavam como `your_turn`,
+  disparavam passivamente no início do turno) + OP14-119 (estava totalmente
+  vazia — também tinha o typo "cost or 9" em vez de "cost of 9" no CSV, regex
+  do parser corrigido para aceitar ambos). Engine: `when_rested` disparado em
+  `_execute_attack` após restar o atacante (único ponto de resting durante o
+  turno ativo que cobre todos os casos práticos; resting via custo de
+  Activate:Main não dispara — simplificação documentada, sem carta real
+  afetada hoje).
 
 ---
 

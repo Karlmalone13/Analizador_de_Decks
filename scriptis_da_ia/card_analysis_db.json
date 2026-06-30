@@ -79417,11 +79417,11 @@
   "effects": [
    {
     "action": "lock_opp_don",
-    "trigger": "your_turn"
+    "trigger": "when_rested"
    },
    {
     "action": "life_to_hand",
-    "trigger": "your_turn"
+    "trigger": "when_rested"
    }
   ],
   "synergy_states": {
@@ -79677,7 +79677,7 @@
   "effects": [
    {
     "action": "rest_opp_character",
-    "trigger": "your_turn"
+    "trigger": "when_rested"
    },
    {
     "action": "debuff_power",
@@ -79726,7 +79726,7 @@
   "effects": [
    {
     "action": "ko",
-    "trigger": "your_turn",
+    "trigger": "when_rested",
     "cost_lte": 2,
     "rested_only": true,
     "target": "opp_character"
@@ -79904,7 +79904,7 @@
   "effects": [
    {
     "action": "rest_opp_character",
-    "trigger": "your_turn",
+    "trigger": "when_rested",
     "cost_lte": 4
    }
   ],
@@ -80038,7 +80038,7 @@
   "effects": [
    {
     "action": "lock_opp_character_refresh",
-    "trigger": "your_turn",
+    "trigger": "when_rested",
     "cost_lte": 4
    }
   ],
@@ -83831,6 +83831,11 @@
     "action": "buff_power",
     "trigger": "on_opp_attack",
     "target": "leader_or_character"
+   },
+   {
+    "action": "lock_opp_cannot_be_rested",
+    "trigger": "when_rested",
+    "cost_lte": 9
    }
   ],
   "synergy_states": {},

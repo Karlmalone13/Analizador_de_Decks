@@ -1,6 +1,36 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
-## 2026-07-02 (3) - Claude — ÚLTIMA DESTA SESSÃO
+## 2026-07-02 (4) - Claude — ÚLTIMA DESTA SESSÃO
+
+**Feito — timing `when_rested` + fix typo OP14-119 (Mihawk).**
+
+Dois problemas paralelos bloqueavam OP14-119 completamente:
+1. **Typo no CSV**: "with a cost **or** 9 or less" em vez de "**of** 9".
+   Fix: regex de `lock_opp_cannot_be_rested` aceitando `(?:of|or)` antes do
+   número (1 linha em `gerar_effects_db.py`).
+2. **Timing "when becomes rested" sem parser**: novo `when_rested` em
+   `trigger_patterns`, posicionado **antes** de `your_turn` para ter prioridade,
+   com lookahead negativo em `your_turn` para não duplicar o bloco. Engine:
+   `when_rested` disparado em `_execute_attack` após `attacker.rested = True`.
+
+Bônus: 5 outras cartas do set OP14 (OP14-021/027/028/032/035) que também usam
+"When this Character becomes rested" estavam sendo classificadas como
+`your_turn` (disparavam no início de cada turno, não quando a carta de fato
+ficava rested). Agora migradas para `when_rested` corretamente.
+
+**Simplificação documentada:** `when_rested` dispara APENAS via `_execute_attack`
+(carta ataca e fica rested). Resting via custo de Activate:Main (`rest_self`)
+não dispara — 0 cartas reais afetadas hoje; reabrir se aparecer carta com
+Activate:Main + "when becomes rested" simultaneamente.
+
+**Validação:** `diff_parser.py` (`PERDEU=0`, 6 MUDOU corretos);
+`gerar_dbs.py` + `snapshot_parser.py`; `smoke_test.py` (2 testes novos);
+`smoke_test_broad.py` (40/40); `audit_replay.py --n 20 --seed 7` e
+`--n 15 --seed 99` (0 exceções, 0 anomalias).
+
+---
+
+## 2026-07-02 (3) - Claude
 
 **Feito — os 4 itens do usuário em sequência: substituição externa (2
 cartas), imunidade/exclusão (2 cartas), 5 funções órfãs, deepcopy.**

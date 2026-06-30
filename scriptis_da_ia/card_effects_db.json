@@ -51505,7 +51505,7 @@
     "sub_types": "Navy Dressrosa",
     "attribute": "Slash",
     "effects": {
-      "your_turn": {
+      "when_rested": {
         "steps": [
           {
             "action": "lock_opp_don"
@@ -51649,7 +51649,7 @@
     "sub_types": "The Four Emperors Red-Haired Pirates East Blue",
     "attribute": "Slash",
     "effects": {
-      "your_turn": {
+      "when_rested": {
         "steps": [
           {
             "action": "rest_opp_character",
@@ -51680,7 +51680,7 @@
     "sub_types": "East Blue",
     "attribute": "Slash",
     "effects": {
-      "your_turn": {
+      "when_rested": {
         "steps": [
           {
             "action": "ko",
@@ -51787,7 +51787,7 @@
     "sub_types": "Animal Muggy Kingdom",
     "attribute": "Slash",
     "effects": {
-      "your_turn": {
+      "when_rested": {
         "steps": [
           {
             "action": "rest_opp_character",
@@ -51877,7 +51877,7 @@
     "sub_types": "East Blue",
     "attribute": "Slash",
     "effects": {
-      "your_turn": {
+      "when_rested": {
         "steps": [
           {
             "action": "lock_opp_character_refresh",
@@ -54458,6 +54458,17 @@
           {
             "type": "trash_from_hand",
             "count": 1
+          }
+        ],
+        "once_per_turn": true
+      },
+      "when_rested": {
+        "steps": [
+          {
+            "action": "lock_opp_cannot_be_rested",
+            "count": 1,
+            "duration": "until_opp_end_phase",
+            "cost_lte": 9
           }
         ],
         "once_per_turn": true
