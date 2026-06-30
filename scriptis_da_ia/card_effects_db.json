@@ -10885,6 +10885,9 @@
       "on_play": {
         "steps": [
           {
+            "action": "self_cant_take_life"
+          },
+          {
             "action": "buff_power",
             "amount": 2000,
             "target": "leader",
@@ -11378,6 +11381,16 @@
             "duration": "this_turn"
           }
         ]
+      },
+      "main": {
+        "steps": [
+          {
+            "action": "self_cant_take_life"
+          }
+        ],
+        "conditions": {
+          "life_lte": 3
+        }
       }
     }
   },
@@ -16497,7 +16510,20 @@
     "color": "Black",
     "sub_types": "Navy",
     "attribute": "Wisdom",
-    "effects": {}
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "debuff_cost",
+            "count": 1,
+            "target": "opp_character",
+            "to_value": 0,
+            "duration": "this_turn",
+            "filter_no_effect": true
+          }
+        ]
+      }
+    }
   },
   "OP03-092": {
     "name": "Rob Lucci (092)",
@@ -24915,6 +24941,9 @@
           {
             "action": "rest_opp_don",
             "count": 1
+          },
+          {
+            "action": "self_cant_take_life"
           }
         ]
       }
@@ -70864,7 +70893,18 @@
     "color": "Red",
     "sub_types": "Whitebeard Pirates",
     "attribute": "Slash",
-    "effects": {}
+    "effects": {
+      "when_attacking": {
+        "steps": [
+          {
+            "action": "self_cant_take_life"
+          }
+        ],
+        "conditions": {
+          "leader_is": "edward.newgate"
+        }
+      }
+    }
   },
   "ST15-002": {
     "name": "Edward.Newgate (ST15-002)",

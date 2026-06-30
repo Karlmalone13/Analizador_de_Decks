@@ -16218,6 +16218,10 @@
   "attribute": "Special",
   "effects": [
    {
+    "action": "self_cant_take_life",
+    "trigger": "on_play"
+   },
+   {
     "action": "buff_power",
     "trigger": "on_play",
     "target": "leader"
@@ -17017,6 +17021,10 @@
     "action": "buff_power",
     "trigger": "trigger",
     "target": "leader"
+   },
+   {
+    "action": "self_cant_take_life",
+    "trigger": "main"
    }
   ],
   "synergy_states": {
@@ -25140,7 +25148,13 @@
   "color": "Black",
   "sub_types": "Navy",
   "attribute": "Wisdom",
-  "effects": [],
+  "effects": [
+   {
+    "action": "debuff_cost",
+    "trigger": "on_play",
+    "target": "opp_character"
+   }
+  ],
   "synergy_states": {},
   "text": "[On Play] Set the cost of up to 1 of your opponent's Characters with no base effect to 0 during this turn.",
   "is_searcher": false,
@@ -37966,6 +37980,10 @@
   "effects": [
    {
     "action": "rest_opp_don",
+    "trigger": "activate_main"
+   },
+   {
+    "action": "self_cant_take_life",
     "trigger": "activate_main"
    }
   ],
@@ -108575,7 +108593,12 @@
   "color": "Red",
   "sub_types": "Whitebeard Pirates",
   "attribute": "Slash",
-  "effects": [],
+  "effects": [
+   {
+    "action": "self_cant_take_life",
+    "trigger": "when_attacking"
+   }
+  ],
   "synergy_states": {},
   "text": "[When Attacking] If your Leader is [Edward.Newgate], you cannot add Life cards to your hand using your own effects during this turn.",
   "is_searcher": false,

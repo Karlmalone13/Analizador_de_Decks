@@ -2473,6 +2473,28 @@ def parse_cost_debuff(text):
         step['duration'] = 'until_opp_turn_end' if duration_m else 'permanent'
         steps.append(step)
 
+    # "Set the cost of up to N of your opponent's Characters [with no base
+    # effect] to X during this turn." -- OP03-091 Helmeppo.
+    # Distinto de "give N cost": aqui e SETAR o custo a um valor fixo (0),
+    # nao uma reducao relativa. Mapeado como debuff_cost com to_zero=True
+    # (engine interpreta como: cost_buff = -original_cost para zerar o custo).
+    m_set = re.search(
+        r"set the cost of up to (\d+) of your opponent.{0,20}characters?"
+        r"(?: with no base effect)?"
+        r" to (\d+)(?: during this turn)?",
+        t)
+    if m_set:
+        step = {
+            'action': 'debuff_cost',
+            'count': int(m_set.group(1)),
+            'target': 'opp_character',
+            'to_value': int(m_set.group(2)),  # valor alvo (0)
+            'duration': 'this_turn',
+        }
+        if 'no base effect' in t:
+            step['filter_no_effect'] = True
+        steps.append(step)
+
     return steps
 
 
@@ -3370,6 +3392,12 @@ def parse_block(block_text, trigger_name):
     if re.search(r'you cannot attack a leader[^.]*during this turn', t):
         steps.append({'action': 'cannot_attack_leader_turn'})
 
+    # "you cannot add Life cards to your hand using your own effects during
+    # this turn" -- ST15-001 Atmos. Seta flag no GameState que bloqueia a
+    # action life_to_hand neste turno.
+    if re.search(r'you cannot add (?:life cards?|life) to your hand', t):
+        steps.append({'action': 'self_cant_take_life'})
+
     # Shuffle/cycle hand into deck (+ draw back) -- ANTES do draw, pois o texto
     # "...Then, draw N" senão geraria um 'draw' duplicado. O draw-back já está
     # embutido na action shuffle_hand_into_deck (draw_back=True).
@@ -3426,7 +3454,8 @@ def parse_block(block_text, trigger_name):
         steps.extend(parse_set_base_power(t))
 
     # Custo: give +/-N cost / "give N cost" sem sinal (opponent) / gains +N cost
-    if 'cost' in t and ('give' in t or 'gain' in t):
+    # Tambem "set the cost of X to N" (OP03-091 Helmeppo).
+    if 'cost' in t and ('give' in t or 'gain' in t or 'set the cost' in t):
         steps.extend(parse_cost_debuff(t))
 
     # Play genérico (sem origem explícita)

@@ -327,6 +327,7 @@ class GameState:
     cant_play_chars_this_turn: bool = False
     cant_play_cost_gte: int = 0
     cannot_attack_leader_this_turn: bool = False
+    cant_take_life_this_turn: bool = False  # ST15-001 Atmos: "cannot add Life cards to your hand using your own effects this turn"
     is_first: bool = True
     # Estatísticas
     dmg_dealt: int = 0
@@ -380,6 +381,7 @@ class GameState:
         novo.turn = self.turn
         novo.global_turn = self.global_turn
         novo.cant_play_from_hand_this_turn = self.cant_play_from_hand_this_turn
+        novo.cant_take_life_this_turn = self.cant_take_life_this_turn
         novo.cant_play_chars_this_turn = self.cant_play_chars_this_turn
         novo.cant_play_cost_gte = self.cant_play_cost_gte
         novo.cannot_attack_leader_this_turn = self.cannot_attack_leader_this_turn
@@ -3088,13 +3090,23 @@ class EffectExecutor:
                     candidatos = [c for c in candidatos if filter_name in c.name.lower()]
                 if cost_gte is not None:
                     candidatos = [c for c in candidatos if c.cost >= cost_gte]
+                # filter_no_effect: Characters sem efeito parseado no banco
+                # ("with no base effect", OP03-091 Helmeppo).
+                if step.get('filter_no_effect'):
+                    candidatos = [c for c in candidatos
+                                  if not get_card_effects(c.code).get('effects')]
 
+            to_value = step.get('to_value')  # "set cost to N" (OP03-091)
             afetados = []
             for c in candidatos[:count]:
-                if duration == 'permanent':
-                    c.cost_buff_permanent += amount
+                if to_value is not None:
+                    real_amount = -(c.effective_cost() - to_value)
                 else:
-                    c.cost_buff += amount
+                    real_amount = amount
+                if duration == 'permanent':
+                    c.cost_buff_permanent += real_amount
+                else:
+                    c.cost_buff += real_amount
                 afetados.append(c.name[:15])
             sinal = '+' if amount >= 0 else ''
             return f'{sinal}{amount} cost em {", ".join(afetados)}' if afetados else ''
@@ -3635,6 +3647,10 @@ class EffectExecutor:
 
         # ── LIFE: "comprar" da própria vida para a mão (Hiyori OP06-106) ──────
         if action == 'life_to_hand':
+            # ST15-001 Atmos: "cannot add Life cards to your hand using your
+            # own effects during this turn" -- bloqueia esta action.
+            if me.cant_take_life_this_turn:
+                return ''
             count = step.get('count', 1)
             src   = step.get('source', 'life_top')
             taken = 0
@@ -3646,6 +3662,13 @@ class EffectExecutor:
                 me.hand.append(c)
                 taken += 1
             return f'comprou {taken} da vida -> mao' if taken else ''
+
+        # ── Restricao: nao pode adicionar Life cards a mao neste turno ──────────
+        # ST15-001 Atmos: "you cannot add Life cards to your hand using your
+        # own effects during this turn." -- ativo quando a carta ataca.
+        if action == 'self_cant_take_life':
+            me.cant_take_life_this_turn = True
+            return 'restricao: nao pode pegar da vida este turno'
 
         # ── LIFE: remover da vida do OPONENTE ─────────────────────────────────
         if action == 'attack_life':
@@ -5538,6 +5561,7 @@ class OPTCGMatch:
         p.cant_play_chars_this_turn = False
         p.cant_play_cost_gte = 0
         p.cannot_attack_leader_this_turn = False
+        p.cant_take_life_this_turn = False
 
     def draw_phase(self, p: GameState, verbose: bool = False):
         """PlayerDrawPhase — 1º jogador não compra no T1."""

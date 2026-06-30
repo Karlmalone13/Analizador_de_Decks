@@ -6756,6 +6756,9 @@
   "on_play": {
    "steps": [
     {
+     "action": "self_cant_take_life"
+    },
+    {
      "action": "buff_power",
      "amount": 2000,
      "duration": "until_my_turn_start",
@@ -7031,6 +7034,16 @@
   }
  },
  "OP02-023": {
+  "main": {
+   "conditions": {
+    "life_lte": 3
+   },
+   "steps": [
+    {
+     "action": "self_cant_take_life"
+    }
+   ]
+  },
   "trigger": {
    "steps": [
     {
@@ -10080,7 +10093,20 @@
    ]
   }
  },
- "OP03-091": {},
+ "OP03-091": {
+  "on_play": {
+   "steps": [
+    {
+     "action": "debuff_cost",
+     "count": 1,
+     "duration": "this_turn",
+     "filter_no_effect": true,
+     "target": "opp_character",
+     "to_value": 0
+    }
+   ]
+  }
+ },
  "OP03-092": {
   "on_play": {
    "costs": [
@@ -15334,6 +15360,9 @@
     {
      "action": "rest_opp_don",
      "count": 1
+    },
+    {
+     "action": "self_cant_take_life"
     }
    ]
   }
@@ -43541,7 +43570,18 @@
    ]
   }
  },
- "ST15-001": {},
+ "ST15-001": {
+  "when_attacking": {
+   "conditions": {
+    "leader_is": "edward.newgate"
+   },
+   "steps": [
+    {
+     "action": "self_cant_take_life"
+    }
+   ]
+  }
+ },
  "ST15-002": {
   "activate_main": {
    "costs": [

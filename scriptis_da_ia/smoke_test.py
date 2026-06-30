@@ -1511,6 +1511,30 @@ check('place_opp_char_to_opp_life remove do campo do oponente e insere na vida f
       and len(opp.life) == 2 and opp.life[-1] is alvo_barato
       and opp.life[-1].life_face_up)
 
+# ── 30. OP03-091 Helmeppo: "set the cost of up to 1 of your opponent's
+# Characters with no base effect to 0 during this turn." ──
+me, opp = me_opp()
+vanilla = mk('VANILLA', 'Vanilla', power=5000, cost=4)  # sem efeito no DB
+opp.field_chars = [vanilla]
+ee = EffectExecutor(me, opp)
+ee._execute_step({
+    'action': 'debuff_cost', 'count': 1, 'target': 'opp_character',
+    'to_value': 0, 'filter_no_effect': True, 'duration': 'this_turn',
+}, me.leader)
+check('OP03-091 set_cost_to_0: vanilla fica com custo efetivo 0',
+      vanilla.effective_cost() == 0)
+
+# ── 31. ST15-001 Atmos: "cannot add Life cards to your hand" seta flag e
+# bloqueia life_to_hand neste turno. ──
+me, opp = me_opp()
+me.life = [mk('L1','Vida'), mk('L2','Vida')]
+hand_inicial = len(me.hand)
+ee = EffectExecutor(me, opp)
+ee._execute_step({'action': 'self_cant_take_life'}, me.leader)
+ee._execute_step({'action': 'life_to_hand', 'count': 1, 'source': 'life_top'}, me.leader)
+check('ST15-001 cant_take_life bloqueia life_to_hand enquanto ativo',
+      len(me.life) == 2 and len(me.hand) == hand_inicial)  # vida intacta, mao inalterada
+
 print()
 print(f'{"TODOS OS TESTES PASSARAM" if FAIL == 0 else f"{FAIL} TESTE(S) FALHARAM"}')
 sys.exit(1 if FAIL else 0)
