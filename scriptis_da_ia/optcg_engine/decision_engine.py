@@ -2634,16 +2634,24 @@ class EffectExecutor:
             return f'base power de {chosen.name[:15]} virou {amount}'
 
         # ── Self-lock de ataque (incondicional / condicional / em massa) ────────
-        # Implementar de verdade exige adicionar um campo booleano novo na
-        # classe Card e inclui-lo em TODOS os pontos que ja checam
-        # 'not c.cannot_attack_until' como filtro de "pode atacar" (6 pontos
-        # neste arquivo: my_attack_power, _count_available_attacks,
-        # planejamento de ataques, refresh, etc.) -- mudanca de escopo maior
-        # que uma alteracao isolada aqui justificaria. Reconhecidas sem
-        # travar nada ainda (cannot_attack_self: 3 cards; unless: 2 cards;
-        # mass-lock condicional: 1 carta -- P-084).
+        # Achado 01/07/2026: este comentario estava DESATUALIZADO -- a trava
+        # ja e aplicada de verdade, so que por um caminho diferente deste
+        # branch. `is_attack_locked_self()` (definida no topo do arquivo) le
+        # `effects['passive']['steps']` DIRETO de `get_card_effects()` (sem
+        # depender de nenhum estado setado aqui) e ja e chamada nos 5+
+        # pontos que filtram "pode atacar" (my_attack_power, geracao de
+        # acoes de ataque, Turn Planner). Esses steps TAMBEM passam por aqui
+        # via `apply_your_turn_buffs()` (que executa TODO step de 'passive',
+        # nao so buffs) -- mas como a trava real ja acontece em
+        # is_attack_locked_self(), este branch e so um no-op silencioso
+        # (evita logar a mensagem antiga de "nao implementado" toda vez que
+        # uma dessas 6 cartas tem o turno passado em revista). Cartas
+        # cobertas: cannot_attack_self (3: OP06-083, OP11-058, OP14-056,
+        # mais P-084 que tambem usa esta action pra si mesmo), unless (2:
+        # EB04-005, EB04-051), mass-lock condicional (1: P-084, via
+        # `mass_lock_conditional` separado, nao por este branch).
         if action in ('cannot_attack_self', 'cannot_attack_self_unless', 'cannot_attack_own_characters_by_cost'):
-            return f'({action}: nao implementado -- pendente integracao nos pontos de checagem de ataque)'
+            return ''
 
         # ── Power buff ────────────────────────────────────────────────────────
         if action == 'buff_power':

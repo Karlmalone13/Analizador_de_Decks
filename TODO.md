@@ -455,6 +455,22 @@ de imunidade e stubs antigos listados abaixo.
   deck_top_rest, integração via Counter event OP01-088). Validado com
   `audit_replay.py --n 20 --seed 7` e `--n 15 --seed 99`: 0 exceções, 0
   anomalias.
+- [x] **cannot_attack_self / cannot_attack_self_unless /
+  cannot_attack_own_characters_by_cost (01/07/2026) — já estava
+  implementado, só faltava teste:** não era item formal do TODO.md, só um
+  comentário inline em `decision_engine.py` dizendo "reconhecidas sem
+  travar nada ainda" (6 cartas: Oars, Luffy OP11-058, Wadatsumi, P-084
+  Buggy, Trafalgar Law EB04-005, Emet EB04-051). Auditoria confirmou que
+  `is_attack_locked_self()` já lê `effects['passive']`/
+  `mass_lock_conditional` direto do banco (sem depender de execução) e já
+  estava plugada nos 5 pontos de "pode atacar" — a trava JÁ funcionava.
+  O placeholder em `_execute_step` não bloqueava nada, mas também não era
+  morto: `apply_your_turn_buffs()` roda todo step de `'passive'` (não só
+  buffs), então gerava um log confuso de "não implementado" todo turno
+  mesmo a trava real já estando ativa em paralelo. Trocado por `return ''`
+  silencioso + comentário corrigido. 6 smoke tests novos cobrindo os 3
+  sub-mecanismos. Validado com `audit_replay.py --n 20 --seed 7` e `--n 15
+  --seed 99`: 0 exceções, 0 anomalias.
 
 ### Reserva de DON em combate
 - [x] ~~plan_don_distribution não subtrai reserva defensiva (usa don_available cru)~~

@@ -8,7 +8,8 @@ sys.path.insert(0, '.')
 import optcg_engine.decision_engine as de
 from optcg_engine.decision_engine import (
     Card, CardData, GameState, EffectExecutor, DecisionEngine, OPTCGMatch,
-    effective_hand_play_cost, get_card_effects, is_immune, can_afford_attack_paywall
+    effective_hand_play_cost, get_card_effects, is_immune, can_afford_attack_paywall,
+    is_attack_locked_self
 )
 
 FAIL = 0
@@ -1071,6 +1072,44 @@ counter = ee.try_counter_event_power(me.leader, 'leader', needed=2000)
 check('Counter event OP01-088 ativa agora que deck_reorder_rest tem handler',
       counter and counter[0] == 2000 and evento_op01088 in me.trash
       and carta_deck in me.hand)
+
+# ── 18. is_attack_locked_self -- achado 01/07/2026: ja estava 100%
+# implementado (le 'passive'/'mass_lock_conditional' direto do banco, sem
+# depender de execute()), so faltava cobertura de teste. O comentario antigo
+# no _execute_step dizia "nao implementado", mas era so um no-op de log --
+# a trava real sempre aconteceu aqui. cannot_attack_self incondicional ──
+me, opp = me_opp()
+oars = mk('OP06-083', 'Oars')
+check('cannot_attack_self trava incondicionalmente (Oars)',
+      is_attack_locked_self(oars, me, opp))
+
+# cannot_attack_self_unless com condicao -- EB04-005 Trafalgar Law
+me, opp = me_opp()
+law = mk('EB04-005', 'Trafalgar Law')
+check('cannot_attack_self_unless trava quando condicao nao e satisfeita (Law)',
+      is_attack_locked_self(law, me, opp))
+opp.field_chars = [mk('X1', 'X1', power=6000), mk('X2', 'X2', power=6000)]
+check('cannot_attack_self_unless libera quando condicao e satisfeita (Law, 2+ opp chars 5000+)',
+      not is_attack_locked_self(law, me, opp))
+
+# cannot_attack_own_characters_by_cost (mass-lock condicional) -- P-084 Buggy
+me, opp = me_opp()
+me.leader = mk('LDBUGGY', 'Buggy', card_type='LEADER', sub_types='Buggy Pirates')
+buggy = mk('P-084', 'Buggy')
+ally_custo3 = mk('ALLY3', 'Aliado custo 3', cost=3)
+ally_custo5 = mk('ALLY5', 'Aliado custo 5', cost=5)
+me.field_chars = [buggy, ally_custo3, ally_custo5]
+check('mass_lock_conditional do Buggy trava aliados de custo 3/4',
+      is_attack_locked_self(ally_custo3, me, opp))
+check('mass_lock_conditional do Buggy nao trava aliados fora da faixa de custo',
+      not is_attack_locked_self(ally_custo5, me, opp))
+me, opp = me_opp()
+me.leader = mk('LDOUTRO', 'Outro Leader', card_type='LEADER', sub_types='Navy')
+buggy2 = mk('P-084', 'Buggy')
+ally_custo3b = mk('ALLY3B', 'Aliado custo 3', cost=3)
+me.field_chars = [buggy2, ally_custo3b]
+check('mass_lock_conditional do Buggy nao trava se o Leader nao for Buggy',
+      not is_attack_locked_self(ally_custo3b, me, opp))
 
 print()
 print(f'{"TODOS OS TESTES PASSARAM" if FAIL == 0 else f"{FAIL} TESTE(S) FALHARAM"}')

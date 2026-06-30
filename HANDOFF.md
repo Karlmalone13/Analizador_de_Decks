@@ -1,5 +1,50 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-01 (4) - Claude
+
+**Feito - cannot_attack_self family: já estava implementado, só faltava
+teste + limpar comentário enganoso:** depois de fechar `deck_reorder_rest`/
+`deck_top_rest`, fui pro próximo item de maior leverage (mesmo bloqueador
+estrutural dos "5 pontos de filtro de ataque" que tinha acabado de tocar):
+`cannot_attack_self`/`cannot_attack_self_unless`/
+`cannot_attack_own_characters_by_cost` (6 cartas, comentário inline no
+código dizia "reconhecidas sem travar nada ainda").
+
+**Achado:** essa família JÁ estava 100% implementada e funcionando.
+`is_attack_locked_self()` (`decision_engine.py:609-672`) lê
+`effects['passive']['steps']` direto de `get_card_effects()` — sem depender
+de nenhum estado setado por `_execute_step` — e já é chamada nos 5 pontos
+que filtram "pode atacar" (os mesmos que recebi `can_afford_attack_paywall`
+na sessão anterior). Verifiquei diretamente: Oars (cannot_attack_self),
+Trafalgar Law EB04-005 (unless + condição opp_chars_power_gte_count) e
+Buggy P-084 (mass_lock_conditional por custo) já travam corretamente.
+
+O placeholder em `_execute_step` (`if action in (...): return '(...nao
+implementado...)'`) NÃO bloqueava nada — mas também não era código morto:
+`apply_your_turn_buffs()` executa TODO step de `'passive'` via
+`_execute_step` (não só buffs), então esse placeholder rodava todo turno
+pra cada uma dessas 6 cartas, gerando um log confuso de "não implementado"
+mesmo a trava real já estando ativa em paralelo via `is_attack_locked_self`.
+Troquei o placeholder por um `return ''` silencioso e corrigi o comentário
+pra explicar a situação real (evita que uma sessão futura tente
+"reimplementar" algo que já funciona).
+
+**Validação:** `python -m py_compile`; `python smoke_test.py` (90/90, 6
+casos novos: `cannot_attack_self` incondicional, `unless` com condição
+falhando/passando, mass-lock por custo travando/liberando/não-aplicando com
+Leader errado); `python smoke_test_broad.py` (40/40); `python
+audit_replay.py --n 20 --seed 7` e `--n 15 --seed 99` (0 exceções, 0
+anomalias nas duas).
+
+**Ainda falta:** substituição externa (família grande, ~38 textos),
+auditoria de imunidade restante (`EffectImmune`/`CombatImmune`/
+`ImmuneToStrikes`), itens de performance (`deepcopy` no Turn Planner, 5
+funções órfãs), itens menores de parser (place-at-bottom-of-deck ~14,
+opponent has N+ DON ~8), e rotação de chaves Supabase (segurança, antes de
+deploy público).
+
+---
+
 ## 2026-07-01 (3) - Claude
 
 **Feito - implementa deck_reorder_rest / deck_top_rest (último item da
