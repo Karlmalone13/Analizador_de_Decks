@@ -1002,56 +1002,69 @@ class EffectExecutor:
         aplicavel/pagavel (remocao segue normalmente).
         """
         effects = get_card_effects(card.code)
-        block = effects.get('passive', {})
-        if not block:
-            return None
-
-        for step in block.get('steps', []):
-            action = step.get('action')
-            aplica = (action == 'substitute_ko' and removal_kind == 'ko') or action == 'substitute_removal'
-            if not aplica:
+        # Achado 01/07/2026: so checava 'passive', mas cartas com a tag
+        # formal "[Opponent's Turn]"/"[Your Turn]" ANTES da clausula de
+        # substituicao (ex: OP14-029, OP14-092) viram esse timing virar a
+        # chave de topo no parser, nao 'passive' (mesmo padrao que
+        # is_immune() ja trata corretamente ao iterar varios timings).
+        for timing in ('passive', 'opp_turn', 'your_turn'):
+            block = effects.get(timing, {})
+            if not block:
                 continue
 
-            # Once per turn (mesma chave de controle que efeitos normais)
-            key = (card.code, 'passive_substitute')
-            if block.get('once_per_turn') and key in self._once_used:
-                continue
+            for step in block.get('steps', []):
+                action = step.get('action')
+                aplica = (action == 'substitute_ko' and removal_kind == 'ko') or action == 'substitute_removal'
+                if not aplica:
+                    continue
 
-            # Filtro de alvo: self_type (sub_types) ou self_name (nome
-            # proprio) -- quando presentes, restringem quais cards desse
-            # arquetipo podem usar o substituto.
-            conds = dict(block.get('conditions', {}))
-            if not self._check_conditions(conds, card):
-                continue
-            filter_type = step.get('filter_type', '')
-            if filter_type and filter_type.lower() not in card.sub_types.lower():
-                continue
-            filter_name = step.get('filter_name', '')
-            if filter_name and filter_name.lower() not in card.name.lower():
-                continue
+                # Once per turn (mesma chave de controle que efeitos normais)
+                key = (card.code, f'{timing}_substitute')
+                if block.get('once_per_turn') and key in self._once_used:
+                    continue
 
-            cost = step.get('cost', {})
-            log = self._pay_substitute_cost(cost, card)
-            if log is None:
-                continue  # não conseguiu pagar -- tenta o próximo step (raro) ou desiste
+                # Filtro de alvo: self_type (sub_types) ou self_name (nome
+                # proprio) -- quando presentes, restringem quais cards desse
+                # arquetipo podem usar o substituto.
+                conds = dict(block.get('conditions', {}))
+                if not self._check_conditions(conds, card):
+                    continue
+                filter_type = step.get('filter_type', '')
+                if filter_type and filter_type.lower() not in card.sub_types.lower():
+                    continue
+                filter_name = step.get('filter_name', '')
+                if filter_name and filter_name.lower() not in card.name.lower():
+                    continue
 
-            extra_logs = []
-            for extra in step.get('extra_steps', []):
-                extra_log = self._execute_step(extra, card)
-                if extra_log:
-                    extra_logs.append(extra_log)
+                cost = step.get('cost', {})
+                log = self._pay_substitute_cost(cost, card)
+                if log is None:
+                    continue  # não conseguiu pagar -- tenta o próximo step (raro) ou desiste
 
-            if block.get('once_per_turn'):
-                self._once_used.add(key)
-            if extra_logs:
-                return log + ' | ' + ' | '.join(extra_logs)
-            return log
+                extra_logs = []
+                for extra in step.get('extra_steps', []):
+                    extra_log = self._execute_step(extra, card)
+                    if extra_log:
+                        extra_logs.append(extra_log)
+
+                if block.get('once_per_turn'):
+                    self._once_used.add(key)
+                if extra_logs:
+                    return log + ' | ' + ' | '.join(extra_logs)
+                return log
 
         return None
 
     def _substitute_source_blocks(self, source: Card, source_is_opp: bool):
         effects = get_card_effects(source.code)
-        for trigger in ('passive', 'opp_turn'):
+        # 'your_turn' adicionado em 01/07/2026 -- mesmo achado de
+        # try_substitute(): cartas com a tag formal "[Your Turn]" antes da
+        # clausula de substituicao (ex: OP14-034) usam essa chave de topo,
+        # nao 'passive'. Sem gating extra por source_is_opp aqui (mesma
+        # simplificacao ja usada no resto do engine pra essas tags de turno
+        # -- is_immune()/_current_turn_owner() tambem trata como "sempre
+        # vale" por falta de rastreamento fino de turno).
+        for trigger in ('passive', 'opp_turn', 'your_turn'):
             if trigger == 'opp_turn' and not source_is_opp:
                 continue
             block = effects.get(trigger, {})
@@ -1580,6 +1593,113 @@ class EffectExecutor:
                 f'{card.name[:18]} evitou K.O./remocao restando-se '
                 f'e trashando da mao: {", ".join(trashed)}'
             )
+
+        # ── Custos novos achados na auditoria de substituicao externa de
+        # 01/07/2026 (11 cartas, ver TODO.md) ──────────────────────────────
+
+        if ctype == 'rest_leader':
+            # OP04-082: "you may rest your Leader or 1 [Corrida Coliseum]
+            # instead" -- simplificacao deliberada: so a opcao do Leader (a
+            # alternativa de stage nomeado e rara e exige modelar "OR" entre
+            # dois tipos de carta bem diferentes).
+            if me.leader.rested:
+                return None
+            me.leader.rested = True
+            return f'{card.name[:18]} evitou K.O./remoção restando o Leader'
+
+        if ctype == 'rest_own_filtered':
+            # OP10-037/OP11-110: "you may rest 1 of your [Tipo] (type)
+            # Characters instead" -- rest um PROPRIO Character que bate no
+            # filtro de tipo do CUSTO (distinto do filtro de ALVO -- aqui o
+            # filtro e sobre quem PAGA, nao sobre quem e protegido).
+            from optcg_engine.rules_facade import eligible_cards
+
+            candidatos = eligible_cards(
+                [c for c in me.field_chars if not c.rested],
+                filter_text=cost.get('filter_type', ''),
+            )
+            if not candidatos:
+                return None
+            alvo = max(candidatos, key=lambda c: c.board_value())
+            alvo.rested = True
+            return f'{card.name[:18]} evitou K.O./remoção restando {alvo.name[:15]}'
+
+        if ctype == 'rest_own_character':
+            # OP14-034 (substituicao EXTERNA): "you may rest 1 of your
+            # Characters instead" -- qualquer Character proprio, sem filtro
+            # de tipo (distinto de rest_own_filtered).
+            candidatos = [c for c in me.field_chars if not c.rested]
+            if not candidatos:
+                return None
+            alvo = max(candidatos, key=lambda c: c.board_value())
+            alvo.rested = True
+            return f'{card.name[:18]} evitou K.O./remoção restando {alvo.name[:15]}'
+
+        if ctype == 'rest_own_card':
+            # OP14-029/OP15-035: "you may rest N of your cards instead" --
+            # qualquer carta propria (Character OU Leader), sem filtro.
+            count = cost.get('count', 1)
+            candidatos = [c for c in me.field_chars if not c.rested]
+            if not me.leader.rested:
+                candidatos.append(me.leader)
+            if len(candidatos) < count:
+                return None
+            restados = []
+            for _ in range(count):
+                alvo = max(candidatos, key=lambda c: c.board_value())
+                alvo.rested = True
+                remove_by_identity(candidatos, alvo)
+                restados.append(alvo.name[:15])
+            return f'{card.name[:18]} evitou K.O./remoção restando: {", ".join(restados)}'
+
+        if ctype == 'life_to_hand':
+            # OP10-034/OP12-061: "you may add N cards from the top of your
+            # Life cards to your hand instead" -- perde vida (carta sai da
+            # zona de Life) mas ganha a carta na mao, mesma logica da action
+            # generica 'life_to_hand' (achado: aqui e usada como CUSTO de
+            # substituicao, nao como efeito solto).
+            count = cost.get('count', 1)
+            if len(me.life) < count:
+                return None
+            taken = []
+            for _ in range(count):
+                c = me.life.pop()
+                c.life_face_up = False
+                me.hand.append(c)
+                taken.append(c.name[:15])
+            return f'{card.name[:18]} evitou K.O./remoção comprando da vida: {", ".join(taken)}'
+
+        if ctype == 'life_to_trash':
+            # ST09-010/ST20-002: "you may trash N cards from the top [or
+            # bottom] of your Life cards instead" -- perde vida igual
+            # life_to_hand, mas a carta vai pro trash em vez da mao.
+            count = cost.get('count', 1)
+            if len(me.life) < count:
+                return None
+            trashed = []
+            for _ in range(count):
+                c = me.life.pop()
+                c.life_face_up = False
+                me.trash.append(c)
+                trashed.append(c.name[:15])
+            return f'{card.name[:18]} evitou K.O./remoção trashando da vida: {", ".join(trashed)}'
+
+        if ctype == 'trash_to_deck_bottom':
+            # OP14-092: "you may place N cards from your trash at the
+            # bottom of your deck in any order instead" -- mesma semantica
+            # do custo 'place_from_trash_bottom_deck' ja usado em
+            # _pay_costs (ativacao normal), replicada aqui pro contexto de
+            # substituicao (funcoes de custo separadas, sem reuso direto).
+            count = cost.get('count', 1)
+            if len(me.trash) < count:
+                return None
+            movidas = []
+            for _ in range(count):
+                pior = min(me.trash, key=lambda c: c.board_value())
+                remove_by_identity(me.trash, pior)
+                me.deck.insert(0, pior)
+                movidas.append(pior.name[:15])
+            return f'{card.name[:18]} evitou K.O./remoção mandando pro fundo do deck: {", ".join(movidas)}'
 
         return None
 

@@ -6978,6 +6978,20 @@
           }
         ],
         "once_per_turn": true
+      },
+      "passive": {
+        "steps": [
+          {
+            "action": "substitute_ko",
+            "cost": {
+              "action": "trash_to_deck_bottom",
+              "count": 3
+            },
+            "filter_color": "black",
+            "cost_lte": 5
+          }
+        ],
+        "once_per_turn": true
       }
     }
   },
@@ -19646,6 +19660,16 @@
         "conditions": {
           "leader_is": "rebecca"
         }
+      },
+      "passive": {
+        "steps": [
+          {
+            "action": "substitute_ko",
+            "cost": {
+              "action": "rest_leader"
+            }
+          }
+        ]
       }
     }
   },
@@ -38272,10 +38296,11 @@
       "passive": {
         "steps": [
           {
-            "action": "life_to_hand",
-            "source": "life_top",
-            "count": 1,
-            "up_to": false
+            "action": "substitute_ko",
+            "cost": {
+              "action": "life_to_hand",
+              "count": 1
+            }
           }
         ],
         "once_per_turn": true
@@ -38344,6 +38369,19 @@
             "count": 1,
             "target": "own_character",
             "filter_type": "odyssey"
+          }
+        ],
+        "once_per_turn": true
+      },
+      "passive": {
+        "steps": [
+          {
+            "action": "substitute_removal",
+            "cost": {
+              "action": "rest_own_filtered",
+              "count": 1,
+              "filter_type": "odyssey"
+            }
           }
         ],
         "once_per_turn": true
@@ -40747,7 +40785,22 @@
     "color": "Red Black",
     "sub_types": "Navy SWORD",
     "attribute": "Strike",
-    "effects": {}
+    "effects": {
+      "passive": {
+        "steps": [
+          {
+            "action": "substitute_removal",
+            "cost": {
+              "action": "trash_to_deck_bottom",
+              "count": 3
+            },
+            "filter_type": "navy",
+            "power_lte": 7000
+          }
+        ],
+        "once_per_turn": true
+      }
+    }
   },
   "OP11-002": {
     "name": "Ain",
@@ -43778,6 +43831,18 @@
             "cost_lte": 1
           }
         ]
+      },
+      "passive": {
+        "steps": [
+          {
+            "action": "substitute_ko",
+            "cost": {
+              "action": "rest_own_filtered",
+              "count": 1,
+              "filter_type": "fish-man island"
+            }
+          }
+        ]
       }
     }
   },
@@ -45679,10 +45744,11 @@
       "passive": {
         "steps": [
           {
-            "action": "life_to_hand",
-            "source": "life_top",
-            "count": 1,
-            "up_to": false
+            "action": "substitute_ko",
+            "cost": {
+              "action": "life_to_hand",
+              "count": 1
+            }
           }
         ],
         "once_per_turn": true
@@ -51479,6 +51545,18 @@
           }
         ],
         "once_per_turn": true
+      },
+      "opp_turn": {
+        "steps": [
+          {
+            "action": "substitute_removal",
+            "cost": {
+              "action": "rest_own_card",
+              "count": 1
+            }
+          }
+        ],
+        "once_per_turn": true
       }
     }
   },
@@ -51602,6 +51680,14 @@
             "amount": 1000,
             "target": "self",
             "duration": "this_turn"
+          },
+          {
+            "action": "substitute_ko",
+            "cost": {
+              "action": "rest_own_character",
+              "count": 1
+            },
+            "filter_type": "straw hat crew"
           }
         ],
         "conditions": {
@@ -53289,7 +53375,20 @@
     "color": "Black",
     "sub_types": "Baroque Works",
     "attribute": "Special",
-    "effects": {}
+    "effects": {
+      "opp_turn": {
+        "steps": [
+          {
+            "action": "substitute_ko",
+            "cost": {
+              "action": "trash_to_deck_bottom",
+              "count": 3
+            }
+          }
+        ],
+        "once_per_turn": true
+      }
+    }
   },
   "OP14-093": {
     "name": "Mr.4(Babe)",
@@ -55188,7 +55287,20 @@
     "color": "Green",
     "sub_types": "Animal",
     "attribute": "Strike",
-    "effects": {}
+    "effects": {
+      "passive": {
+        "steps": [
+          {
+            "action": "substitute_removal",
+            "cost": {
+              "action": "rest_own_card",
+              "count": 2
+            },
+            "power_lte": 7000
+          }
+        ]
+      }
+    }
   },
   "OP15-036": {
     "name": "Ryuma",
@@ -57066,10 +57178,12 @@
       "passive": {
         "steps": [
           {
-            "action": "life_to_hand",
-            "source": "life_top",
-            "count": 1,
-            "up_to": false
+            "action": "substitute_removal",
+            "cost": {
+              "action": "life_to_hand",
+              "count": 1
+            },
+            "filter_type": "sky island"
           }
         ]
       }
@@ -57279,10 +57393,12 @@
       "passive": {
         "steps": [
           {
-            "action": "life_to_hand",
-            "source": "life_top",
-            "count": 1,
-            "up_to": false
+            "action": "substitute_removal",
+            "cost": {
+              "action": "life_to_hand",
+              "count": 1
+            },
+            "power_lte": 7000
           }
         ]
       }
@@ -67276,7 +67392,20 @@
     "color": "Yellow",
     "sub_types": "Land of Wano Whitebeard Pirates",
     "attribute": "Special",
-    "effects": {}
+    "effects": {
+      "passive": {
+        "steps": [
+          {
+            "action": "substitute_ko",
+            "cost": {
+              "action": "life_to_trash",
+              "count": 1
+            }
+          }
+        ],
+        "once_per_turn": true
+      }
+    }
   },
   "ST09-011": {
     "name": "Monkey.D.Luffy",
@@ -70351,9 +70480,11 @@
       "passive": {
         "steps": [
           {
-            "action": "trash_own_life",
-            "count": 1,
-            "up_to": false
+            "action": "substitute_ko",
+            "cost": {
+              "action": "life_to_trash",
+              "count": 1
+            }
           }
         ],
         "once_per_turn": true
@@ -71686,6 +71817,17 @@
     "effects": {
       "on_play": {
         "steps": [
+          {
+            "action": "draw",
+            "count": 2,
+            "then_trash": 1
+          },
+          {
+            "action": "play_card",
+            "count": 1,
+            "cost_lte": 4,
+            "filter_type": "cross guild"
+          },
           {
             "action": "substitute_removal",
             "cost": {

@@ -10086,6 +10086,11 @@
    {
     "action": "trash_from_deck_top",
     "trigger": "on_play"
+   },
+   {
+    "action": "substitute_ko",
+    "trigger": "passive",
+    "cost_lte": 5
    }
   ],
   "synergy_states": {},
@@ -30135,6 +30140,10 @@
    {
     "action": "trash_from_deck_top",
     "trigger": "on_play"
+   },
+   {
+    "action": "substitute_ko",
+    "trigger": "passive"
    }
   ],
   "synergy_states": {},
@@ -59293,7 +59302,7 @@
   "attribute": "Strike",
   "effects": [
    {
-    "action": "life_to_hand",
+    "action": "substitute_ko",
     "trigger": "passive"
    }
   ],
@@ -59423,6 +59432,10 @@
     "action": "set_active",
     "trigger": "end_of_turn",
     "target": "own_character"
+   },
+   {
+    "action": "substitute_removal",
+    "trigger": "passive"
    }
   ],
   "synergy_states": {},
@@ -63114,7 +63127,13 @@
   "color": "Red Black",
   "sub_types": "Navy SWORD",
   "attribute": "Strike",
-  "effects": [],
+  "effects": [
+   {
+    "action": "substitute_removal",
+    "trigger": "passive",
+    "power_lte": 7000
+   }
+  ],
   "synergy_states": {},
   "text": "Your \"SWORD\" type Characters can attack Characters on the turn in which they are played.\r\n[Once Per Turn] If your \"Navy\" type Character with 7000 base power or less would be removed from the field by your opponent's effect, you may place 3 cards from your trash at the bottom of your deck in any order instead.",
   "is_searcher": false,
@@ -67825,6 +67844,10 @@
     "trigger": "on_play",
     "cost_lte": 1,
     "target": "opp_character"
+   },
+   {
+    "action": "substitute_ko",
+    "trigger": "passive"
    }
   ],
   "synergy_states": {},
@@ -70789,7 +70812,7 @@
   "attribute": "Special",
   "effects": [
    {
-    "action": "life_to_hand",
+    "action": "substitute_ko",
     "trigger": "passive"
    }
   ],
@@ -79686,6 +79709,10 @@
     "action": "buff_power",
     "trigger": "activate_main",
     "target": "self"
+   },
+   {
+    "action": "substitute_removal",
+    "trigger": "opp_turn"
    }
   ],
   "synergy_states": {},
@@ -79903,6 +79930,10 @@
     "action": "buff_power",
     "trigger": "your_turn",
     "target": "self"
+   },
+   {
+    "action": "substitute_ko",
+    "trigger": "your_turn"
    }
   ],
   "synergy_states": {},
@@ -82430,7 +82461,12 @@
   "color": "Black",
   "sub_types": "Baroque Works",
   "attribute": "Special",
-  "effects": [],
+  "effects": [
+   {
+    "action": "substitute_ko",
+    "trigger": "opp_turn"
+   }
+  ],
   "synergy_states": {},
   "text": "[Opponent's Turn] [Once Per Turn] If this Character would be K.O.'d, you may place 3 cards from your trash at the bottom of your deck in any order instead.",
   "is_searcher": false,
@@ -85307,7 +85343,13 @@
   "color": "Green",
   "sub_types": "Animal",
   "attribute": "Strike",
-  "effects": [],
+  "effects": [
+   {
+    "action": "substitute_removal",
+    "trigger": "passive",
+    "power_lte": 7000
+   }
+  ],
   "synergy_states": {},
   "text": "If your Character with 7000 base power or less would be removed from the field by your opponent's effect, you may rest 2 of your cards instead.",
   "is_searcher": false,
@@ -88060,7 +88102,7 @@
   "attribute": "Strike",
   "effects": [
    {
-    "action": "life_to_hand",
+    "action": "substitute_removal",
     "trigger": "passive"
    }
   ],
@@ -88374,8 +88416,9 @@
   "attribute": "Special",
   "effects": [
    {
-    "action": "life_to_hand",
-    "trigger": "passive"
+    "action": "substitute_removal",
+    "trigger": "passive",
+    "power_lte": 7000
    }
   ],
   "synergy_states": {},
@@ -104461,7 +104504,12 @@
   "color": "Yellow",
   "sub_types": "Land of Wano Whitebeard Pirates",
   "attribute": "Special",
-  "effects": [],
+  "effects": [
+   {
+    "action": "substitute_ko",
+    "trigger": "passive"
+   }
+  ],
   "synergy_states": {},
   "text": "[Once Per Turn] If this Character would be K.O.'d, you may trash 1 card from the top or bottom of your Life cards instead.",
   "is_searcher": false,
@@ -109137,7 +109185,7 @@
     "trigger": "trigger"
    },
    {
-    "action": "trash_own_life",
+    "action": "substitute_ko",
     "trigger": "passive"
    }
   ],
@@ -111265,6 +111313,15 @@
   "attribute": "Slash Special",
   "effects": [
    {
+    "action": "draw",
+    "trigger": "on_play"
+   },
+   {
+    "action": "play_card",
+    "trigger": "on_play",
+    "cost_lte": 4
+   },
+   {
     "action": "substitute_removal",
     "trigger": "on_play"
    }
@@ -111272,7 +111329,7 @@
   "synergy_states": {},
   "text": "[On Play] Draw 2 cards and trash 1 card from your hand. Then, play up to 1 \"Cross Guild\" type Character card with a cost of 4 or less from your hand.\r\n[Once Per Turn] If your \"Cross Guild\" type Character would be removed from the field by your opponent's effect, you may trash 1 card from your hand instead.",
   "is_searcher": false,
-  "draws": false,
+  "draws": true,
   "has_counter_value": false,
   "has_counter_event": false,
   "is_blocker": false,

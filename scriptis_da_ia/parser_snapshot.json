@@ -4422,6 +4422,20 @@
      "count": 2
     }
    ]
+  },
+  "passive": {
+   "once_per_turn": true,
+   "steps": [
+    {
+     "action": "substitute_ko",
+     "cost": {
+      "action": "trash_to_deck_bottom",
+      "count": 3
+     },
+     "cost_lte": 5,
+     "filter_color": "black"
+    }
+   ]
   }
  },
  "EB04-044": {
@@ -11973,6 +11987,16 @@
     {
      "action": "trash_from_deck_top",
      "count": 1
+    }
+   ]
+  },
+  "passive": {
+   "steps": [
+    {
+     "action": "substitute_ko",
+     "cost": {
+      "action": "rest_leader"
+     }
     }
    ]
   }
@@ -23336,10 +23360,11 @@
    "once_per_turn": true,
    "steps": [
     {
-     "action": "life_to_hand",
-     "count": 1,
-     "source": "life_top",
-     "up_to": false
+     "action": "substitute_ko",
+     "cost": {
+      "action": "life_to_hand",
+      "count": 1
+     }
     }
    ]
   }
@@ -23375,6 +23400,19 @@
      "count": 1,
      "filter_type": "odyssey",
      "target": "own_character"
+    }
+   ]
+  },
+  "passive": {
+   "once_per_turn": true,
+   "steps": [
+    {
+     "action": "substitute_removal",
+     "cost": {
+      "action": "rest_own_filtered",
+      "count": 1,
+      "filter_type": "odyssey"
+     }
     }
    ]
   }
@@ -24864,7 +24902,22 @@
    ]
   }
  },
- "OP11-001": {},
+ "OP11-001": {
+  "passive": {
+   "once_per_turn": true,
+   "steps": [
+    {
+     "action": "substitute_removal",
+     "cost": {
+      "action": "trash_to_deck_bottom",
+      "count": 3
+     },
+     "filter_type": "navy",
+     "power_lte": 7000
+    }
+   ]
+  }
+ },
  "OP11-002": {
   "on_play": {
    "steps": [
@@ -26696,6 +26749,18 @@
      "target": "opp_character"
     }
    ]
+  },
+  "passive": {
+   "steps": [
+    {
+     "action": "substitute_ko",
+     "cost": {
+      "action": "rest_own_filtered",
+      "count": 1,
+      "filter_type": "fish-man island"
+     }
+    }
+   ]
   }
  },
  "OP11-111": {},
@@ -27828,10 +27893,11 @@
    "once_per_turn": true,
    "steps": [
     {
-     "action": "life_to_hand",
-     "count": 1,
-     "source": "life_top",
-     "up_to": false
+     "action": "substitute_ko",
+     "cost": {
+      "action": "life_to_hand",
+      "count": 1
+     }
     }
    ]
   }
@@ -31350,6 +31416,18 @@
      "target": "self"
     }
    ]
+  },
+  "opp_turn": {
+   "once_per_turn": true,
+   "steps": [
+    {
+     "action": "substitute_removal",
+     "cost": {
+      "action": "rest_own_card",
+      "count": 1
+     }
+    }
+   ]
   }
  },
  "OP14-030": {},
@@ -31422,6 +31500,14 @@
      "amount": 1000,
      "duration": "this_turn",
      "target": "self"
+    },
+    {
+     "action": "substitute_ko",
+     "cost": {
+      "action": "rest_own_character",
+      "count": 1
+     },
+     "filter_type": "straw hat crew"
     }
    ]
   }
@@ -32467,7 +32553,20 @@
    ]
   }
  },
- "OP14-092": {},
+ "OP14-092": {
+  "opp_turn": {
+   "once_per_turn": true,
+   "steps": [
+    {
+     "action": "substitute_ko",
+     "cost": {
+      "action": "trash_to_deck_bottom",
+      "count": 3
+     }
+    }
+   ]
+  }
+ },
  "OP14-093": {
   "on_ko": {
    "steps": [
@@ -33673,7 +33772,20 @@
    ]
   }
  },
- "OP15-035": {},
+ "OP15-035": {
+  "passive": {
+   "steps": [
+    {
+     "action": "substitute_removal",
+     "cost": {
+      "action": "rest_own_card",
+      "count": 2
+     },
+     "power_lte": 7000
+    }
+   ]
+  }
+ },
  "OP15-036": {
   "on_play": {
    "steps": [
@@ -34858,10 +34970,12 @@
   "passive": {
    "steps": [
     {
-     "action": "life_to_hand",
-     "count": 1,
-     "source": "life_top",
-     "up_to": false
+     "action": "substitute_removal",
+     "cost": {
+      "action": "life_to_hand",
+      "count": 1
+     },
+     "filter_type": "sky island"
     }
    ]
   }
@@ -34994,10 +35108,12 @@
   "passive": {
    "steps": [
     {
-     "action": "life_to_hand",
-     "count": 1,
-     "source": "life_top",
-     "up_to": false
+     "action": "substitute_removal",
+     "cost": {
+      "action": "life_to_hand",
+      "count": 1
+     },
+     "power_lte": 7000
     }
    ]
   }
@@ -40844,7 +40960,20 @@
    ]
   }
  },
- "ST09-010": {},
+ "ST09-010": {
+  "passive": {
+   "once_per_turn": true,
+   "steps": [
+    {
+     "action": "substitute_ko",
+     "cost": {
+      "action": "life_to_trash",
+      "count": 1
+     }
+    }
+   ]
+  }
+ },
  "ST09-011": {},
  "ST09-012": {
   "when_attacking": {
@@ -42727,9 +42856,11 @@
    "once_per_turn": true,
    "steps": [
     {
-     "action": "trash_own_life",
-     "count": 1,
-     "up_to": false
+     "action": "substitute_ko",
+     "cost": {
+      "action": "life_to_trash",
+      "count": 1
+     }
     }
    ]
   },
@@ -43531,6 +43662,17 @@
    },
    "once_per_turn": true,
    "steps": [
+    {
+     "action": "draw",
+     "count": 2,
+     "then_trash": 1
+    },
+    {
+     "action": "play_card",
+     "cost_lte": 4,
+     "count": 1,
+     "filter_type": "cross guild"
+    },
     {
      "action": "substitute_removal",
      "cost": {

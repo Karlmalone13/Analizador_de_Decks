@@ -2446,6 +2446,46 @@ def _parse_substitute_cost(t):
     if m:
         return {'action': 'return_own_don', 'count': int(m.group(1))}, extra_steps
 
+    # Custos novos achados na auditoria de substituicao externa de
+    # 01/07/2026 (11 cartas). Testados ANTES das variantes genericas de
+    # 'rest' (own_character/own_card) pra nao perder o filtro de tipo.
+
+    m = re.search(r"you may rest your leader[^.]*instead", t)
+    if m:
+        return {'action': 'rest_leader'}, extra_steps
+
+    # "rest N of your [Tipo]/{Tipo}/"Tipo" (type) Character(s) instead" --
+    # filtro de tipo no PROPRIO custo (distinto do filtro de alvo). Cobre
+    # tanto "...type Characters instead" (OP10-037) quanto "...[Tipo] or
+    # your [Outro] Leader instead" (OP11-110, ignora a alternativa do Leader
+    # -- '[^.]*instead' consome o resto da frase sem exigir casar com ela).
+    m = re.search(
+        r'you may rest (\d+) of your (?:\{([^}]+)\}|\[([^\]]+)\]|"([^"]+)")'
+        r'(?: type characters?)?[^.]*instead', t)
+    if m:
+        filtro = next((g for g in m.groups()[1:4] if g), '').strip()
+        return {'action': 'rest_own_filtered', 'count': int(m.group(1)), 'filter_type': filtro}, extra_steps
+
+    m = re.search(r"you may rest (\d+) of your characters? instead", t)
+    if m:
+        return {'action': 'rest_own_character', 'count': int(m.group(1))}, extra_steps
+
+    m = re.search(r"you may rest (\d+) of your cards? instead", t)
+    if m:
+        return {'action': 'rest_own_card', 'count': int(m.group(1))}, extra_steps
+
+    m = re.search(r"you may add (\d+) cards? from the top of your life cards to your hand instead", t)
+    if m:
+        return {'action': 'life_to_hand', 'count': int(m.group(1))}, extra_steps
+
+    m = re.search(r"you may trash (\d+) cards? from the top(?: or bottom)? of your life cards instead", t)
+    if m:
+        return {'action': 'life_to_trash', 'count': int(m.group(1))}, extra_steps
+
+    m = re.search(r"you may place (\d+) cards? from your trash at the bottom of your deck[^.]*instead", t)
+    if m:
+        return {'action': 'trash_to_deck_bottom', 'count': int(m.group(1))}, extra_steps
+
     # "trash N card(s) from your hand instead" -- SEM filtro de tipo (qualquer
     # carta da mao). Testado ANTES das variantes com filtro pra nao deixar a
     # palavra solta "card" ser capturada como se fosse nome de tipo.
@@ -2775,25 +2815,37 @@ def parse_block(block_text, trigger_name):
     # Substitute KO: "would be K.O.'d... you may [custo] instead" -- precisa
     # rodar ANTES de parse_ko e parse_power_buff, pois o texto menciona K.O.
     # e/ou power mas NAO e um KO real nem um buff/debuff solto, e sim uma
-    # substituicao condicional. Reivindica o bloco inteiro (return antecipado)
-    # pra evitar que parse_ko/parse_power_buff capturem o mesmo trecho.
+    # substituicao condicional. Reivindica so a partir da clausula "if ...
+    # would be K.O.'d" em diante (return antecipado) pra evitar que
+    # parse_ko/parse_power_buff capturem o mesmo trecho.
+    # Achado 01/07/2026 (OP14-034): quando a tag de trigger formal (ex:
+    # "[Your Turn]") nao para no proximo "[Once Per Turn]" (nao e uma tag
+    # reconhecida em TODAS_TAGS), o bloco capturado pode ter OUTRO efeito
+    # incondicional (ex: buff_power) ANTES da clausula de substituicao --
+    # sem extrair e reparsear esse PREFIXO separadamente, ele era
+    # silenciosamente descartado assim que a substituicao reivindicava o
+    # bloco inteiro. Reusa o mesmo prefixo/sufixo split do removal abaixo.
     if re.search(r"would be k\.o\.'?d", t):
         sub_steps = parse_substitute_ko(t)
         if sub_steps:
+            prefix = re.split(r"if .*?would be k\.o\.'?d", t, maxsplit=1)[0].strip()
+            prefix_steps = parse_block(prefix, trigger_name) if prefix else []
+            if prefix_steps and not (len(prefix_steps) == 1 and '_choice' in prefix_steps[0]):
+                return prefix_steps + sub_steps
             return sub_steps
 
     # Substitute removal (generico, distinto de K.O.): "would be removed
     # from the field... you may [custo] instead" -- mesma logica de
-    # reivindicar o bloco e retornar antecipado.
+    # reivindicar so a partir da clausula e retornar antecipado, preservando
+    # qualquer efeito incondicional que viesse ANTES dela no mesmo bloco.
     if re.search(r"would be removed from the field", t):
         sub_steps = parse_substitute_removal(t)
         if sub_steps:
-            prefix = re.split(r"if .*?would be removed from the field", t, maxsplit=1)[0]
-            dyn_steps = [
-                s for s in parse_power_buff(prefix)
-                if s.get('action') == 'buff_power_per_count'
-            ]
-            return dyn_steps + sub_steps
+            prefix = re.split(r"if .*?would be removed from the field", t, maxsplit=1)[0].strip()
+            prefix_steps = parse_block(prefix, trigger_name) if prefix else []
+            if prefix_steps and not (len(prefix_steps) == 1 and '_choice' in prefix_steps[0]):
+                return prefix_steps + sub_steps
+            return sub_steps
 
     # Imunidade (passiva): "cannot be K.O.'d" / "cannot be removed from the
     # field". Roda ANTES de parse_ko para a frase não ser lida como um KO real.

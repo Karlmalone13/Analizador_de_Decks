@@ -403,21 +403,49 @@ de imunidade e stubs antigos listados abaixo.
   só precisava parar de descartar o filtro). 8 smoke tests novos.
   Validado com `audit_replay.py --n 20 --seed 7` e `--n 15 --seed 99`: 0
   exceções, 0 anomalias.
-- [ ] **Substituição externa — 13 cartas ainda pendentes** (custos
-  genuinamente novos, não cobertos pela fatia acima): OP04-082 (rest
-  Leader ou stage nomeado), OP07-029 (rest 1 Character do OPONENTE como
-  custo — mecânica invertida, beneficia sem sacrificar nada seu),
-  OP10-034 (life card → mão), OP10-037 (rest 1 Character filtrado por
-  tipo), OP11-110 (rest Character filtrado OU Leader, "or" composto),
-  OP12-061 (life card → mão, self por nome), OP14-029 (rest 1 carta
-  qualquer, sem filtro), OP14-034 (substituição EXTERNA, custo rest 1
-  Character qualquer — não necessariamente a fonte), OP14-092 (trash N do
-  trash pro fundo do deck), OP15-035 (substituição EXTERNA, custo rest 2
-  cartas), OP16-014 (K.O. a própria fonte como custo, distinto de
-  `trash_self`), ST09-010/ST20-002 (trash carta da Life, distinto de
-  `life_to_hand`). Cada um precisa de 1 cost-type novo em
-  `_pay_substitute_cost` — não reusa nada do que já existe, por isso ficou
-  de fora desta fatia.
+- [x] **Substituição externa — 11 das 13 cartas pendentes fechadas
+  (01/07/2026):** 7 cost-types novos em `_pay_substitute_cost`:
+  `rest_leader` (OP04-082, ignora a alternativa de stage nomeado),
+  `rest_own_filtered` (OP10-037, OP11-110 — rest 1 Character próprio de um
+  tipo específico, ignora a alternativa "ou Leader" de OP11-110),
+  `rest_own_character` (OP14-034, externa), `rest_own_card` (OP14-029;
+  OP15-035, externa, count=2), `life_to_hand` (OP10-034, OP12-061),
+  `life_to_trash` (ST09-010, ST20-002), `trash_to_deck_bottom` (OP14-092).
+  Parser: novos padrões em `_parse_substitute_cost`. **Bônus reais
+  encontrados pelos mesmos padrões** (cartas fora da lista original, todas
+  confirmadas corretas por leitura do texto bruto): EB04-043 (`filter_color`
+  black + cost_lte 5 + `trash_to_deck_bottom`), **OP11-001** (Leader Koby —
+  primeira fonte de substituição que é um Leader, já funciona sem mudança
+  de engine porque `try_any_substitute()` já incluía `self.me.leader` na
+  lista de fontes externas), OP15-098, OP15-105 (`life_to_hand`).
+  **2 bugs estruturais achados e corrigidos na mesma fatia:**
+  (1) `parse_substitute_ko`/`parse_substitute_removal` reivindicavam o
+  BLOCO INTEIRO de texto ao achar a cláusula de substituição, descartando
+  silenciosamente qualquer efeito incondicional que viesse ANTES dela no
+  mesmo bloco (ex: OP14-034 perdia um `buff_power` que vinha antes do texto
+  de substituição sob a mesma tag `[Your Turn]`) — corrigido extraindo o
+  prefixo e reparseando via `parse_block` recursivo; corrigiu também
+  ST25-003 (achado bônus, perdia `draw`+`play_card`) sem nenhuma
+  intervenção minha além de generalizar o fix. (2) `try_substitute()` e
+  `_substitute_source_blocks()` só checavam a chave `'passive'`, mas cartas
+  com a tag formal `[Opponent's Turn]`/`[Your Turn]` ANTES da cláusula de
+  substituição (ex: OP14-029, OP14-092, OP14-034) fazem esse timing virar a
+  chave de topo no parser, não `passive` — mesmo padrão que `is_immune()`
+  já tratava corretamente. Ambas agora iteram `('passive', 'opp_turn',
+  'your_turn')`. 11 smoke tests novos. Validado com `diff_parser.py`
+  (`PERDEU=0`), `audit_replay.py --n 20 --seed 7`, `--n 15 --seed 99` e
+  `--n 25 --seed 321` (0 exceções, 0 anomalias nas três).
+- [ ] **Substituição externa — 2 cartas ainda fora de escopo:** OP07-029
+  (rest 1 Character do OPONENTE como custo — mecânica invertida, beneficia
+  sem sacrificar nada seu, precisa de design próprio) e OP16-014 (K.O. a
+  própria fonte como custo SEM nenhum filtro de alvo no texto — "if one of
+  your Characters would be removed... K.O. this character instead" — o
+  alvo é genuinamente irrestrito, mas a checagem de segurança atual em
+  `_target_matches_external_substitute` trata "sem filtro" como "não
+  protege" por padrão, pensada pra casos onde o parser FALHOU em extrair um
+  filtro que existe, não pra casos onde o texto real não tem restrição
+  nenhuma; precisa de um jeito de distinguir os dois cenários antes de
+  implementar).
 
 ---
 

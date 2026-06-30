@@ -1,5 +1,68 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-01 (6) - Claude
+
+**Feito - substituição externa: fecha 11 das 13 cartas restantes + 2 bugs
+estruturais achados no caminho:** continuação direta da fatia anterior.
+Implementei 7 cost-types novos em `_pay_substitute_cost`
+([decision_engine.py](scriptis_da_ia/optcg_engine/decision_engine.py)):
+`rest_leader`, `rest_own_filtered`, `rest_own_character`, `rest_own_card`,
+`life_to_hand`, `life_to_trash`, `trash_to_deck_bottom` — com os padrões de
+parser correspondentes em `_parse_substitute_cost`. Fechou OP04-082,
+OP10-034, OP10-037, OP11-110, OP12-061, OP14-029, OP14-034, OP14-092,
+OP15-035, ST09-010, ST20-002 (11 das 13).
+
+**Bônus genuínos** pegos pelos mesmos padrões de regex, fora da lista
+original (confirmados corretos por leitura do texto bruto): EB04-043,
+OP15-098, OP15-105, e **OP11-001** — a primeira carta de substituição cuja
+FONTE é um Leader (Koby), não um Character; funcionou sem nenhuma mudança
+de engine porque `try_any_substitute()` já incluía `self.me.leader` na
+lista de fontes externas desde a fatia anterior.
+
+**2 bugs estruturais achados e corrigidos no processo** (não eram apenas
+"faltava regex"):
+
+1. `parse_substitute_ko`/`parse_substitute_removal` reivindicavam o BLOCO
+   INTEIRO de texto ao achar a cláusula de substituição, descartando
+   silenciosamente qualquer efeito incondicional que viesse ANTES dela no
+   mesmo bloco. Pegou OP14-034 no meio do trabalho: a carta tem um
+   `buff_power` sob a tag `[Your Turn]` seguido de uma sentença de
+   substituição separada (sem tag própria) — como "[Once Per Turn]" não é
+   uma tag formal reconhecida que para a captura do bloco `[Your Turn]`, o
+   texto inteiro virava um blob só, e quando a substituição passou a ser
+   reconhecida (graças à fatia anterior), ela "engolia" o buff junto.
+   Corrigido extraindo o prefixo antes da cláusula e reparseando via
+   `parse_block` recursivo. Sem nenhuma intervenção extra minha, o MESMO
+   fix corrigiu ST25-003 (achado bônus, perdia `draw`+`play_card` pelo
+   mesmo motivo).
+2. `try_substitute()` e `_substitute_source_blocks()` só checavam a chave
+   `'passive'` do banco — mas cartas com a tag formal `[Opponent's
+   Turn]`/`[Your Turn]` ANTES da cláusula de substituição (OP14-029,
+   OP14-092, OP14-034) fazem esse timing virar a chave de TOPO no parser,
+   não `passive`. É o mesmo padrão que `is_immune()` já tratava
+   corretamente (ela itera múltiplos timings); as duas funções de
+   substituição não tinham recebido o mesmo tratamento. Ambas agora iteram
+   `('passive', 'opp_turn', 'your_turn')`.
+
+**Validação:** `python -m py_compile`; `python diff_parser.py` (`PERDEU=0`
+em todas as rodadas, incluindo depois do fix do prefixo); `python
+gerar_dbs.py` + `python snapshot_parser.py`; `python smoke_test.py`
+(111/111, 11 casos novos); `python smoke_test_broad.py` (40/40); `python
+audit_replay.py` com 3 seeds diferentes (`--n 20 --seed 7`, `--n 15 --seed
+99`, `--n 25 --seed 321` — terceira rodada extra por causa do escopo amplo
+da mudança no dispatch do parser): 0 exceções, 0 anomalias nas três.
+
+**Ainda fora de escopo (2 cartas):** OP07-029 (mecânica invertida — rest 1
+Character do OPONENTE como custo, precisa de design próprio) e OP16-014
+(K.O. da própria fonte como custo, mas o texto real não tem NENHUM filtro
+de alvo — "if one of your Characters would be removed... instead" — a
+checagem de segurança atual trata "sem filtro" como "não protege" por
+padrão, pensada pra parser que falhou em extrair um filtro existente, não
+pra texto genuinamente irrestrito; precisa de um jeito de distinguir os
+dois cenários).
+
+---
+
 ## 2026-07-01 (5) - Claude
 
 **Feito - substituição externa: gap real de parser achado e corrigido (6

@@ -1201,6 +1201,101 @@ log = ee.try_any_substitute(alvo_outro, 'removal')
 check('OP15-094 nao protege Character fora do tipo Straw Hat Crew',
       log is None and op15094b in me.field_chars)
 
+# ── 20. substituicao externa: 11 cartas reais com custos genuinamente
+# novos (rest_leader, rest_own_filtered, rest_own_character, rest_own_card,
+# life_to_hand, life_to_trash, trash_to_deck_bottom) -- achado 01/07/2026 ──
+
+# OP04-082: self KO, custo rest_leader
+me, opp = me_opp()
+op04082 = mk('OP04-082', 'Kyros', power=6000)
+me.field_chars = [op04082]
+ee = EffectExecutor(me, opp)
+log = ee.try_substitute(op04082, 'ko')
+check('OP04-082 substitui KO restando o proprio Leader',
+      bool(log) and me.leader.rested and op04082 in me.field_chars)
+
+# OP10-034/OP12-061: self KO, custo life_to_hand (achado: antes eram
+# mis-parseadas como life_to_hand PASSIVO INCONDICIONAL, nao substituicao)
+me, opp = me_opp()
+op10034 = mk('OP10-034', 'Franky', power=7000)
+me.field_chars = [op10034]
+me.life = [mk('L1', 'Vida 1')]
+ee = EffectExecutor(me, opp)
+log = ee.try_substitute(op10034, 'ko')
+check('OP10-034 substitui KO comprando carta da propria vida',
+      bool(log) and op10034 in me.field_chars and len(me.life) == 0 and len(me.hand) == 1)
+
+# OP10-037/OP11-110: self removal/KO, custo rest_own_filtered
+me, opp = me_opp()
+op10037 = mk('OP10-037', 'Lim', power=5000)
+odyssey_ally = mk('ODY1', 'Odyssey aliado', sub_types='ODYSSEY')
+me.field_chars = [op10037, odyssey_ally]
+ee = EffectExecutor(me, opp)
+log = ee.try_substitute(op10037, 'removal')
+check('OP10-037 substitui remocao restando 1 Character ODYSSEY proprio',
+      bool(log) and op10037 in me.field_chars and odyssey_ally.rested)
+
+me, opp = me_opp()
+op10037b = mk('OP10-037', 'Lim', power=5000)
+nao_odyssey = mk('NAOODY', 'Navy Ally', sub_types='Navy')
+me.field_chars = [op10037b, nao_odyssey]
+ee = EffectExecutor(me, opp)
+log = ee.try_substitute(op10037b, 'removal')
+check('OP10-037 nao substitui sem nenhum Character ODYSSEY disponivel',
+      log is None and nao_odyssey in me.field_chars and not nao_odyssey.rested)
+
+# OP14-029: self removal, custo rest_own_card (qualquer carta, incl Leader)
+me, opp = me_opp()
+op14029 = mk('OP14-029', 'Tashigi', power=5000)
+me.field_chars = [op14029]
+ee = EffectExecutor(me, opp)
+log = ee.try_substitute(op14029, 'removal')
+check('OP14-029 substitui remocao restando qualquer carta propria',
+      bool(log) and op14029 in me.field_chars
+      and (op14029.rested or me.leader.rested))
+
+# OP14-034: substituicao EXTERNA, custo rest_own_character (sem filtro)
+me, opp = me_opp()
+op14034 = mk('OP14-034', 'Luffy', sub_types='', power=6000)
+alvo_shc2 = mk('ALVO-SHC2', 'Alvo Straw Hat', sub_types='Straw Hat Crew', power=5000)
+me.field_chars = [op14034, alvo_shc2]
+ee = EffectExecutor(me, opp)
+log = ee.try_any_substitute(alvo_shc2, 'ko')
+check('OP14-034 protege outro Character Straw Hat Crew restando-se',
+      bool(log) and op14034.rested and alvo_shc2 in me.field_chars)
+
+# OP14-092: self KO, custo trash_to_deck_bottom
+me, opp = me_opp()
+op14092 = mk('OP14-092', 'Mr.3', power=4000)
+me.field_chars = [op14092]
+me.trash = [mk(f'TR{i}', f'Trash {i}') for i in range(3)]
+ee = EffectExecutor(me, opp)
+log = ee.try_substitute(op14092, 'ko')
+check('OP14-092 substitui KO mandando 3 cartas do trash pro fundo do deck',
+      bool(log) and op14092 in me.field_chars and len(me.trash) == 0 and len(me.deck) == 3)
+
+# OP15-035: substituicao EXTERNA, custo rest_own_card count=2
+me, opp = me_opp()
+op15035 = mk('OP15-035', 'Laboon', power=5000)
+alvo_fraco2 = mk('ALVO-FRACO2', 'Alvo fraco', power=6000)
+ally2 = mk('ALLY2', 'Aliado 2', power=3000)
+me.field_chars = [op15035, alvo_fraco2, ally2]
+ee = EffectExecutor(me, opp)
+log = ee.try_any_substitute(alvo_fraco2, 'removal')
+check('OP15-035 protege outro Character com power<=7000 restando 2 cartas',
+      bool(log) and alvo_fraco2 in me.field_chars
+      and sum(1 for c in [op15035, ally2, alvo_fraco2, me.leader] if c.rested) == 2)
+
+# ST09-010/ST20-002: self KO, custo life_to_trash
+me, opp = me_opp()
+st09010 = mk('ST09-010', 'Ace', power=6000)
+me.field_chars = [st09010]
+me.life = [mk('L1', 'Vida 1')]
+ee = EffectExecutor(me, opp)
+log = ee.try_substitute(st09010, 'ko')
+check('ST09-010 substitui KO trashando carta da propria vida',
+      bool(log) and st09010 in me.field_chars and len(me.life) == 0 and len(me.trash) == 1)
+
 print()
 print(f'{"TODOS OS TESTES PASSARAM" if FAIL == 0 else f"{FAIL} TESTE(S) FALHARAM"}')
 sys.exit(1 if FAIL else 0)
