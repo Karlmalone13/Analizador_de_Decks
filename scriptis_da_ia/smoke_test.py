@@ -330,6 +330,46 @@ check('imunidade KO battle sem Special nao protege contra Character Special',
       not is_immune(without_special, 'ko', me, opp, source_is_opp=True,
                     ko_context='battle', source_card=special_attacker))
 
+# ── 13b. [Blocker] seguido de texto nao engole o resto do bloco (bug do
+# parser: 'blocker' esta em TODAS_TAGS sem handler proprio, sem o fix o
+# texto apos o reminder do Blocker era descartado por inteiro) ──
+smoker_op11 = mk('OP11-005', 'Smoker DON imune', power=5000)
+smoker_op11.don_attached = 1
+smoker_op11_sem_don = mk('OP11-005', 'Smoker sem DON', power=5000)
+check('OP11-005 ganha keyword Blocker (nao regrediu com o fix)',
+      any(s.get('action') == 'keyword_blocker' for s in get_card_effects('OP11-005').get('passive', {}).get('steps', [])))
+check('OP11-005 imune a KO por efeito de Character sem Special com 1 DON',
+      is_immune(smoker_op11, 'ko', me, opp, source_is_opp=True, ko_context='effect',
+                source_card=mk('ATK-N', 'Atacante sem Special', attribute='Strike')))
+check('OP11-005 nao imune sem DON anexado',
+      not is_immune(smoker_op11_sem_don, 'ko', me, opp, source_is_opp=True, ko_context='effect',
+                    source_card=mk('ATK-N2', 'Atacante sem Special', attribute='Strike')))
+
+yonji_op11 = mk('OP11-046', 'Vinsmoke Yonji so GERMA', power=5000, sub_types='The Vinsmoke Family GERMA 66')
+me_germa, opp_dummy = me_opp()
+me_germa.field_chars = [yonji_op11, mk('ALLY-GERMA', 'Aliado GERMA', sub_types='The Vinsmoke Family GERMA 66')]
+check('OP11-046 imune a KO por efeito do oponente quando so tem Characters GERMA',
+      is_immune(yonji_op11, 'ko', me_germa, opp_dummy, source_is_opp=True, ko_context='effect'))
+me_misto, opp_dummy2 = me_opp()
+me_misto.field_chars = [yonji_op11, mk('ALLY-OUTRO', 'Aliado nao-GERMA', sub_types='Navy')]
+check('OP11-046 nao imune quando tem Character fora de GERMA no campo',
+      not is_immune(yonji_op11, 'ko', me_misto, opp_dummy2, source_is_opp=True, ko_context='effect'))
+
+# ── 13c. condicao only_field_type tambem respeitada por _check_conditions
+# (EffectExecutor) -- estava parseada desde 29/06 mas nunca era checada,
+# tratando o efeito como incondicional para qualquer carta que a use ──
+me_cond, opp_cond = me_opp()
+charlos = mk('OP05-084', 'Saint Charlos', sub_types='Celestial Dragons')
+me_cond.field_chars = [charlos]
+ee_cond = EffectExecutor(me_cond, opp_cond)
+check('_check_conditions respeita only_field_type satisfeita',
+      ee_cond._check_conditions({'only_field_type': 'celestial dragons'}, charlos))
+me_cond2, opp_cond2 = me_opp()
+me_cond2.field_chars = [charlos, mk('OUTRO', 'Nao Dragon', sub_types='Navy')]
+ee_cond2 = EffectExecutor(me_cond2, opp_cond2)
+check('_check_conditions reprova only_field_type com Character fora do tipo',
+      not ee_cond2._check_conditions({'only_field_type': 'celestial dragons'}, charlos))
+
 # ── 14. substitute_removal executa extra_steps (Thatch: trash self + draw) ──
 me, opp = me_opp()
 thatch = mk('OP08-045', 'Thatch')

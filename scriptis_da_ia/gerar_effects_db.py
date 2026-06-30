@@ -119,6 +119,16 @@ def parse_conditions(text):
     m = re.search(r'if the only character.{0,5} on your field (?:are|is) ["\[{]([^"\]}]+)["\]}] type', t)
     if m: conds['only_field_type'] = m.group(1).strip()
 
+    # Variante de ordem de palavras: "if you only have Characters with a
+    # type including X" (mesma semantica de only_field_type, redacao
+    # diferente -- "type" vem ANTES do valor, nao depois). Confirmado em
+    # OP11-046 (Vinsmoke Yonji): "if you only have Characters with a type
+    # including "GERMA", this Character cannot be K.O.'d ... by your
+    # opponent's effects".
+    if 'only_field_type' not in conds:
+        m = re.search(r'if you only have characters? with a type including "([^"]+)"', t)
+        if m: conds['only_field_type'] = m.group(1).strip()
+
     # "if you have a Character with N power or more [other than this
     # Character]" -- existe outro Character no SEU campo com power >= N.
     m = re.search(r'if you have a character with (\d+) power or more', t)
@@ -3399,6 +3409,54 @@ def parse_card_effect(card_text, card_type):
                             result['passive'][k] = v
                 else:
                     result['passive'] = solto_entry
+
+    # Segmento solto APOS o reminder de [Blocker]: 'blocker' esta em
+    # TODAS_TAGS (delimita os OUTROS blocos, que param ao encontrar
+    # '[Blocker]'), mas nao tem trigger_pattern proprio. Sem isto, texto que
+    # vem DEPOIS do parenteses de regra do Blocker nunca era capturado: nem
+    # pelo loop principal (sem handler para a tag), nem pelo segmento solto
+    # "antes da primeira tag" (esse so cobre ANTES, e [Blocker] geralmente
+    # e a primeira tag), nem pelo fallback final (que exige ausencia de
+    # QUALQUER tag de TODAS_TAGS, e '[Blocker]' conta como tag mesmo sem
+    # handler). Casos reais confirmados: OP11-005 (imunidade a KO
+    # condicionada a DON x1), OP11-046 (imunidade a KO condicionada a tipo),
+    # OP11-088 (buff de counter-attack), ST10-014 (draw/trash em retorno de
+    # DON ao deck).
+    blocker_m = re.search(r'\[blocker\]\s*\([^)]*\)', t_low, re.IGNORECASE)
+    if blocker_m:
+        pos_apos_blocker = blocker_m.end()
+        # nao reivindica texto ja coberto por um trigger formal mais a
+        # frente (ex: '[Blocker] (...) [On K.O.] efeito' ja funciona hoje).
+        # Busca com pos= (nao slice) para o lookbehind de ABERTURA continuar
+        # enxergando o ')' que fecha o reminder do Blocker -- um slice
+        # perderia esse caractere e a busca falharia, engolindo o bloco
+        # seguinte inteiro (bug encontrado: duplicava on_play/on_ko/etc.
+        # dentro de 'passive' quando [Blocker] vem ANTES de outro trigger).
+        prox_tag_m = re.compile(ABERTURA + r'\[(?:' + TODAS_TAGS + r')\]').search(t_low, pos_apos_blocker)
+        fim_segmento = prox_tag_m.start() if prox_tag_m else len(t_low)
+        segmento_pos_blocker = t_low[pos_apos_blocker:fim_segmento].strip()
+        if segmento_pos_blocker and len(segmento_pos_blocker) > 10:
+            pos_blocker_steps = parse_block(segmento_pos_blocker, 'passive')
+            if pos_blocker_steps:
+                pos_blocker_entry = {'steps': pos_blocker_steps}
+                pos_blocker_conds = parse_conditions(segmento_pos_blocker)
+                pos_blocker_costs = parse_costs(segmento_pos_blocker)
+                if pos_blocker_conds:
+                    pos_blocker_entry['conditions'] = pos_blocker_conds
+                if pos_blocker_costs:
+                    pos_blocker_entry['costs'] = pos_blocker_costs
+                if '[once per turn]' in segmento_pos_blocker:
+                    pos_blocker_entry['once_per_turn'] = True
+                don_pos_m = re.match(r'^\[don!! x(\d+)\]', segmento_pos_blocker, re.IGNORECASE)
+                if don_pos_m:
+                    pos_blocker_entry['don_requirement'] = int(don_pos_m.group(1))
+                if 'passive' in result:
+                    result['passive']['steps'].extend(pos_blocker_entry['steps'])
+                    for k, v in pos_blocker_entry.items():
+                        if k != 'steps' and k not in result['passive']:
+                            result['passive'][k] = v
+                else:
+                    result['passive'] = pos_blocker_entry
 
     # Fallback: texto sem NENHUM trigger formal da lista (ex: apenas
     # "[Once Per Turn] If this Character would be K.O.'d... instead." ou

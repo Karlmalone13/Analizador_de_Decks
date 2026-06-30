@@ -228,7 +228,23 @@ de imunidade e stubs antigos listados abaixo.
   atributo/fonte do atacante (`Strike`, `Slash`, `Special`, `Leaders`, "by
   Characters without [Special]"). `_source_matches_battle_ko_immunity()` lê o
   atacante (`source_card`) e compara com o texto da sentença de imunidade.
-  Ainda falta variantes não parseadas como OP11-005/OP11-046.
+- Auditoria de OP11-005/OP11-046 (30/06/2026): achou um bug de parser, não um
+  caso não suportado. `'blocker'` está em `TODAS_TAGS` (delimita os OUTROS
+  blocos, que param ao bater em `[Blocker]`), mas não tem `trigger_pattern`
+  próprio — então qualquer texto que vem DEPOIS do parêntese de regra do
+  Blocker era descartado por inteiro (nem o loop principal, nem o segmento
+  solto "antes da 1ª tag", nem o fallback final cobriam esse caso). Afetava
+  4 cartas no banco: OP11-005, OP11-046, OP11-088, ST10-014. Corrigido com um
+  novo segmento "pós-Blocker" em `parse_card_effect` (`gerar_effects_db.py`).
+  De brinde: achado e corrigido um 2º bug — a condição `only_field_type`
+  ("if you only have Characters with type X") era parseada desde 29/06 mas
+  NUNCA checada nem em `_check_conditions` (EffectExecutor) nem em
+  `_immunity_conds_met` (caminho de imunidade) — tratava o efeito como
+  incondicional para as 6 cartas que já a usavam (EB02-010, OP05-084,
+  OP05-092, OP13-097, OP15-001, OP16-022) além da nova OP11-046. Ambos os
+  checkers agora respeitam `only_field_type`. `diff_parser.py` confirmou
+  `PERDEU=0`; `audit_replay.py` 0 anomalias (turnos mudaram em 2 das 5
+  partidas do seed 42, esperado — comportamento real mudou).
 - [ ] Implementar substituição externa: auditoria de 29/06/2026 achou cerca de
   38 textos onde uma fonte em campo/líder protege outro alvo (`if your Character
   would be removed/K.O.'d...`). O parser já estrutura muitos como

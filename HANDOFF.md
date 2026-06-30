@@ -1,5 +1,41 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-06-30 (2) - Claude
+
+**Feito - auditoria de OP11-005/OP11-046 + 2 bugs corrigidos:** a pendência
+"variantes não parseadas como OP11-005/OP11-046" do HANDOFF anterior era na
+verdade um bug de parser, não um caso novo de regra.
+
+1. **Bug do parser (`gerar_effects_db.py`):** `'blocker'` está em
+   `TODAS_TAGS` (delimitador para os OUTROS blocos pararem em `[Blocker]`),
+   mas não tem `trigger_pattern` próprio. Texto que vem DEPOIS do parêntese
+   de regra do Blocker era descartado por inteiro — nenhum dos 3 caminhos de
+   fallback cobria esse caso. Afetava 4 cartas: OP11-005 (imunidade KO
+   condicionada a DON x1 contra Characters sem Special), OP11-046 (imunidade
+   KO condicionada a "só ter Characters GERMA"), OP11-088 (buff de
+   counter-attack) e ST10-014 (draw/trash). Corrigido com um novo segmento
+   "pós-Blocker" em `parse_card_effect`.
+2. **Bug de condição nunca checada:** a condição `only_field_type` ("if you
+   only have Characters with type X") era parseada desde 29/06/2026 mas
+   NUNCA era lida nem por `_check_conditions` (EffectExecutor) nem por
+   `_immunity_conds_met` (caminho específico de imunidade) — o efeito era
+   tratado como incondicional. Afetava as 6 cartas que já usavam essa
+   condição (EB02-010, OP05-084, OP05-092, OP13-097, OP15-001, OP16-022)
+   além da nova OP11-046. Ambos os checkers agora respeitam `only_field_type`.
+
+**Validação:** `python -m py_compile`; `python diff_parser.py` (`GANHOU=0
+PERDEU=0`, 4 MUDOU = exatamente as 4 cartas esperadas); `python gerar_dbs.py`
++ `python snapshot_parser.py`; `python smoke_test.py` (45/45, com 7 casos
+novos cobrindo os dois bugs); `python smoke_test_broad.py` (40/40); `python
+audit_replay.py --n 5 --seed 42` (0 anomalias — turnos mudaram em 2 das 5
+partidas, esperado já que comportamento real mudou).
+
+**Ainda falta:** a família grande de substituição externa (eventos
+`[Counter]` com efeitos extras agressivos/estado complexo) é a próxima fatia
+combinada com o usuário.
+
+---
+
 ## 2026-06-30 - Claude
 
 **Feito - imunidade KO em batalha por atributo/fonte do atacante:** próxima

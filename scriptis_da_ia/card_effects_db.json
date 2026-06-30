@@ -40812,9 +40812,15 @@
       "passive": {
         "steps": [
           {
+            "action": "immunity",
+            "imm_type": "ko",
+            "source": "any"
+          },
+          {
             "action": "keyword_blocker"
           }
-        ]
+        ],
+        "don_requirement": 1
       }
     }
   },
@@ -41933,9 +41939,17 @@
       "passive": {
         "steps": [
           {
+            "action": "immunity",
+            "imm_type": "ko",
+            "source": "opp"
+          },
+          {
             "action": "keyword_blocker"
           }
-        ]
+        ],
+        "conditions": {
+          "only_field_type": "germa"
+        }
       }
     }
   },
@@ -43147,9 +43161,16 @@
       "passive": {
         "steps": [
           {
+            "action": "buff_power",
+            "amount": 5000,
+            "target": "self",
+            "duration": "battle_only"
+          },
+          {
             "action": "keyword_blocker"
           }
-        ]
+        ],
+        "once_per_turn": true
       }
     }
   },
@@ -67703,9 +67724,15 @@
       "passive": {
         "steps": [
           {
+            "action": "draw",
+            "count": 1,
+            "then_trash": 1
+          },
+          {
             "action": "keyword_blocker"
           }
-        ]
+        ],
+        "once_per_turn": true
       }
     }
   },

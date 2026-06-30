@@ -63270,8 +63270,14 @@
   "attribute": "Special",
   "effects": [
    {
+    "action": "immunity",
+    "trigger": "passive",
+    "don_requirement": 1
+   },
+   {
     "action": "keyword_blocker",
-    "trigger": "passive"
+    "trigger": "passive",
+    "don_requirement": 1
    }
   ],
   "synergy_states": {},
@@ -65044,6 +65050,10 @@
   "sub_types": "The Vinsmoke Family GERMA 66",
   "attribute": "Strike",
   "effects": [
+   {
+    "action": "immunity",
+    "trigger": "passive"
+   },
    {
     "action": "keyword_blocker",
     "trigger": "passive"
@@ -66884,6 +66894,11 @@
   "attribute": "Special",
   "effects": [
    {
+    "action": "buff_power",
+    "trigger": "passive",
+    "target": "self"
+   },
+   {
     "action": "keyword_blocker",
     "trigger": "passive"
    }
@@ -66900,7 +66915,7 @@
   "rests_opponent": false,
   "bounces": false,
   "gives_don": false,
-  "power_buff": false,
+  "power_buff": true,
   "heals": false,
   "gains_life": false,
   "attacks_life": false,
@@ -105211,6 +105226,10 @@
   "attribute": "Slash",
   "effects": [
    {
+    "action": "draw",
+    "trigger": "passive"
+   },
+   {
     "action": "keyword_blocker",
     "trigger": "passive"
    }
@@ -105218,7 +105237,7 @@
   "synergy_states": {},
   "text": "[Blocker] (After your opponent declares an attack, you may rest this card to make it the new target of the attack.) [Once Per Turn] When a DON!! card on your field is returned to your DON!! deck, draw 1 card and trash 1 card from your hand.",
   "is_searcher": false,
-  "draws": false,
+  "draws": true,
   "has_counter_value": true,
   "has_counter_event": false,
   "is_blocker": true,

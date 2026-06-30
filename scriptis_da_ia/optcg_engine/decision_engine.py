@@ -597,6 +597,10 @@ def _immunity_conds_met(conds, card, owner, opp):
     if 'life_gte' in conds:
         if len(owner.life) < conds['life_gte']:
             return False
+    if 'only_field_type' in conds:
+        tipo = conds['only_field_type'].lower()
+        if not owner.field_chars or any(tipo not in c.sub_types.lower() for c in owner.field_chars):
+            return False
     return True
 
 
@@ -1544,6 +1548,10 @@ class EffectExecutor:
                 return False
         if 'self_type' in conds and conds['self_type'] not in card.sub_types.lower():
             return False
+        if 'only_field_type' in conds:
+            tipo = conds['only_field_type'].lower()
+            if not me.field_chars or any(tipo not in c.sub_types.lower() for c in me.field_chars):
+                return False
         if conds.get('has_face_up_life') and not any(c.life_face_up for c in me.life):
             return False
 
