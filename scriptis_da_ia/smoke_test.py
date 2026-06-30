@@ -1480,6 +1480,37 @@ ee2.execute(op14028, 'your_turn')
 check('OP14-028 nao dispara KO via your_turn (effet agora e when_rested, nao your_turn)',
       opp2_target in opp2.field_chars)
 
+# ── 28. grant_ko_immunity_type (OP09-033 Nico Robin): imunidade temporaria
+# a KO por efeito para Characters do tipo proprio. ──
+me, opp = me_opp()
+robin = mk('OP09-033', 'Nico Robin', power=5000)
+odyssey1 = mk('ODYSSEY-1', 'Char ODYSSEY', power=4000, sub_types='ODYSSEY')
+odyssey1.rested = True
+odyssey2 = mk('ODYSSEY-2', 'Outro ODYSSEY', power=3000, sub_types='ODYSSEY')
+odyssey2.rested = True
+non_odyssey = mk('NON', 'Char normal', power=5000, sub_types='Navy')
+me.field_chars = [robin, odyssey1, odyssey2, non_odyssey]
+ee = EffectExecutor(me, opp)
+ee._execute_step({'action': 'grant_ko_immunity_type', 'filter_type': 'odyssey', 'duration': 'opp_turn_end'}, robin)
+check('grant_ko_immunity_type cobre chars ODYSSEY mas nao outros',
+      bool(odyssey1.immunity_ko_until) and bool(odyssey2.immunity_ko_until)
+      and not non_odyssey.immunity_ko_until)
+
+# ── 29. place_opp_char_to_opp_life (OP04-097/OP05-111/EB02-057): coloca
+# Character do oponente na vida dele face-up. ──
+me, opp = me_opp()
+alvo_barato = mk('ALVO', 'Alvo barato', power=4000, cost=2, sub_types='Animal')
+alvo_caro = mk('CARO', 'Alvo caro', power=8000, cost=6)
+opp.field_chars = [alvo_barato, alvo_caro]
+opp.life = [mk('VIDA', 'Vida', power=0)]
+ee = EffectExecutor(me, opp)
+ee._execute_step({'action': 'place_opp_char_to_opp_life', 'count': 1,
+                  'cost_lte': 3, 'filter_type': 'animal', 'dest': 'life_top'}, me.leader)
+check('place_opp_char_to_opp_life remove do campo do oponente e insere na vida face-up',
+      alvo_barato not in opp.field_chars and alvo_caro in opp.field_chars
+      and len(opp.life) == 2 and opp.life[-1] is alvo_barato
+      and opp.life[-1].life_face_up)
+
 print()
 print(f'{"TODOS OS TESTES PASSARAM" if FAIL == 0 else f"{FAIL} TESTE(S) FALHARAM"}')
 sys.exit(1 if FAIL else 0)

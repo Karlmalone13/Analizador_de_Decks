@@ -5148,7 +5148,13 @@
   "color": "Yellow",
   "sub_types": "Treasure Pirates",
   "attribute": "Special",
-  "effects": [],
+  "effects": [
+   {
+    "action": "place_opp_char_to_opp_life",
+    "trigger": "when_attacking",
+    "cost_lte": 3
+   }
+  ],
   "synergy_states": {},
   "text": "[When Attacking] You may add 1 card from the top or bottom of your Life cards to your hand: Add up to 1 of your opponent's Characters with a cost of 3 or less to the top or bottom of your opponent's Life cards face-up.",
   "is_searcher": false,
@@ -31497,6 +31503,11 @@
   "attribute": "Wisdom",
   "effects": [
    {
+    "action": "place_opp_char_to_opp_life",
+    "trigger": "on_ko",
+    "cost_lte": 3
+   },
+   {
     "action": "keyword_blocker",
     "trigger": "passive"
    }
@@ -31818,6 +31829,11 @@
    {
     "action": "gain_life",
     "trigger": "trigger"
+   },
+   {
+    "action": "place_opp_char_to_opp_life",
+    "trigger": "main",
+    "cost_lte": 3
    }
   ],
   "synergy_states": {
@@ -36721,7 +36737,13 @@
   "color": "Yellow",
   "sub_types": "Sky Island",
   "attribute": "Special",
-  "effects": [],
+  "effects": [
+   {
+    "action": "place_opp_char_to_opp_life",
+    "trigger": "on_play",
+    "cost_lte": 3
+   }
+  ],
   "synergy_states": {},
   "text": "[On Play] You may play 1 [Kotori] from your hand: Add up to 1 of your opponent's Characters with a cost of 3 or less to the top or bottom of your opponent's Life cards face-up.",
   "is_searcher": false,
@@ -50655,6 +50677,11 @@
    {
     "action": "gain_life",
     "trigger": "on_play"
+   },
+   {
+    "action": "place_opp_char_to_opp_life",
+    "trigger": "on_play",
+    "cost_lte": 6
    }
   ],
   "synergy_states": {

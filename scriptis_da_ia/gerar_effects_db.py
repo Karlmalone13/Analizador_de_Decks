@@ -114,6 +114,11 @@ def parse_conditions(text):
         if m.group(2):
             conds['chars_gte_cost_filter'] = int(m.group(2))
 
+    # "if you have N or more rested Characters" -- conta PROPRIOS Characters
+    # que estao rested, distinto de chars_gte (que conta todos). OP09-033.
+    m = re.search(r'if you have (\d+) or more rested characters?', t)
+    if m: conds['chars_rested_gte'] = int(m.group(1))
+
     m = re.search(r'if you have (\d+) or less cards? in your hand', t)
     if m: conds['hand_lte'] = int(m.group(1))
 
@@ -510,6 +515,59 @@ def parse_look_at(text):
     elif 'place them at the top or bottom' in t:
         steps.append({'action': 'deck_reorder_rest'})
 
+    return steps
+
+
+def parse_grant_ko_immunity(text):
+    """'None of your "X" type Characters can be K.O.'d by effects until...'
+    -- concede imunidade temporaria a KO por efeito a Characters do tipo X
+    no proprio campo. Achado 02/07/2026 (OP09-033 Nico Robin, condicao
+    chars_rested_gte=2). Nota: OR de dois tipos (ex: ODYSSEY or Straw Hat
+    Crew) produz dois steps independentes (um por tipo); engine itera ambos."""
+    steps = []
+    t = text.lower()
+    # "none of your "X" (or "Y") type Characters can be k.o.'d by effects until..."
+    m = re.search(
+        r"none of your (?:\"([^\"]+)\"(?: or \"([^\"]+)\")? type characters?)"
+        r" can(?:not)? be k\.?o\.?'?d by (?:effects?|your opponent)",
+        t)
+    if m:
+        dur_m = re.search(r'until the end of your opponent.?s next (?:end phase|turn)', t)
+        dur = 'opp_turn_end' if dur_m else 'opp_turn_end'
+        # tipo primario + tipo secundario (OR) → dois steps separados
+        for tipo in (m.group(1), m.group(2)):
+            if tipo:
+                steps.append({'action': 'grant_ko_immunity_type',
+                              'filter_type': tipo.strip(),
+                              'duration': dur})
+    return steps
+
+
+def parse_opp_char_to_opp_life(text):
+    """'Add up to N of your opponent's [X] Characters with a cost of Y or
+    less to the top/bottom of your opponent's Life cards face-up.' --
+    remove Character do campo do oponente e insere na vida dele (face-up).
+    Achado 02/07/2026 (OP04-097 Otama, OP05-111 Hotori, EB02-057 Mad
+    Treasure)."""
+    steps = []
+    t = text.lower()
+    m = re.search(
+        r"add up to (\d+) of your opponent.{0,20}characters?"
+        r"(?: with a cost of (\d+) or less)?"
+        r" to the (top or bottom|top|bottom) of your opponent.{0,5}(?:life cards?|life)",
+        t)
+    if m:
+        step = {'action': 'place_opp_char_to_opp_life', 'count': int(m.group(1))}
+        if m.group(2):
+            step['cost_lte'] = int(m.group(2))
+        dest_txt = m.group(3)
+        step['dest'] = 'life_top_or_bottom' if 'or bottom' in dest_txt else (
+            'life_bottom' if 'bottom' in dest_txt else 'life_top')
+        # filtro de tipo (Animal ou SMILE)
+        type_m = re.search(r'\[([^\]]+)\](?: or \[([^\]]+)\])? type characters?', t)
+        if type_m:
+            step['filter_type'] = type_m.group(1).strip()
+        steps.append(step)
     return steps
 
 
@@ -3538,6 +3596,14 @@ def parse_block(block_text, trigger_name):
             or ('your opponent chooses' in t and 'return' in t)
             or "from your opponent's trash" in t):  # player places from opp trash
         steps.extend(parse_opp_self_move_character(t))
+
+    # Imunidade a KO temporária para tipo próprio (OP09-033 Nico Robin).
+    if "cannot be k.o.'d by" in t or "cannot be k.o'd by" in t:
+        steps.extend(parse_grant_ko_immunity(t))
+
+    # Adicionar Character do oponente à vida DELE face-up (OP04-097/OP05-111/EB02-057).
+    if 'to the' in t and 'opponent' in t and 'life' in t and ('characters?' in t or 'character' in t):
+        steps.extend(parse_opp_char_to_opp_life(t))
 
     # Trigger especial: "Activate this card's [Main] effect"
     if trigger_name == 'trigger' and 'activate this card' in t:

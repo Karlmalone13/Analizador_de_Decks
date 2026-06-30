@@ -3399,7 +3399,18 @@
     "color": "Yellow",
     "sub_types": "Treasure Pirates",
     "attribute": "Special",
-    "effects": {}
+    "effects": {
+      "when_attacking": {
+        "steps": [
+          {
+            "action": "place_opp_char_to_opp_life",
+            "count": 1,
+            "cost_lte": 3,
+            "dest": "life_top_or_bottom"
+          }
+        ]
+      }
+    }
   },
   "EB02-058": {
     "name": "UUUUUS!",
@@ -9044,6 +9055,9 @@
             "count": 1
           }
         ],
+        "conditions": {
+          "chars_rested_gte": 2
+        },
         "once_per_turn": true
       }
     }
@@ -20720,6 +20734,16 @@
     "sub_types": "Whole Cake Island",
     "attribute": "Wisdom",
     "effects": {
+      "on_ko": {
+        "steps": [
+          {
+            "action": "place_opp_char_to_opp_life",
+            "count": 1,
+            "cost_lte": 3,
+            "dest": "life_top_or_bottom"
+          }
+        ]
+      },
       "passive": {
         "steps": [
           {
@@ -20923,6 +20947,16 @@
             "dest": "life_top",
             "count": 1,
             "up_to": true
+          }
+        ]
+      },
+      "main": {
+        "steps": [
+          {
+            "action": "place_opp_char_to_opp_life",
+            "count": 1,
+            "cost_lte": 3,
+            "dest": "life_top_or_bottom"
           }
         ]
       }
@@ -21859,6 +21893,9 @@
             "rested_only": true
           }
         ],
+        "conditions": {
+          "chars_rested_gte": 2
+        },
         "once_per_turn": true
       }
     }
@@ -24094,7 +24131,18 @@
     "color": "Yellow",
     "sub_types": "Sky Island",
     "attribute": "Special",
-    "effects": {}
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "place_opp_char_to_opp_life",
+            "count": 1,
+            "cost_lte": 3,
+            "dest": "life_top_or_bottom"
+          }
+        ]
+      }
+    }
   },
   "OP05-112": {
     "name": "Captain McKinley",
@@ -33154,6 +33202,12 @@
             "dest": "life_top",
             "count": 1,
             "up_to": true
+          },
+          {
+            "action": "place_opp_char_to_opp_life",
+            "count": 1,
+            "cost_lte": 6,
+            "dest": "life_top_or_bottom"
           }
         ],
         "costs": [
@@ -35370,7 +35424,10 @@
             "count": 2,
             "then_trash": 2
           }
-        ]
+        ],
+        "conditions": {
+          "chars_rested_gte": 2
+        }
       }
     }
   },
@@ -35418,7 +35475,10 @@
             "target": "opp_character",
             "cost_lte": 5
           }
-        ]
+        ],
+        "conditions": {
+          "chars_rested_gte": 2
+        }
       }
     }
   },
@@ -35440,6 +35500,9 @@
             "count": 1
           }
         ],
+        "conditions": {
+          "chars_rested_gte": 3
+        },
         "once_per_turn": true
       }
     }
@@ -35533,7 +35596,10 @@
             "action": "set_active",
             "target": "self"
           }
-        ]
+        ],
+        "conditions": {
+          "chars_rested_gte": 2
+        }
       },
       "passive": {
         "steps": [
@@ -35603,7 +35669,10 @@
             "count": 1,
             "cost_lte": 5
           }
-        ]
+        ],
+        "conditions": {
+          "chars_rested_gte": 2
+        }
       }
     }
   },
@@ -35624,7 +35693,10 @@
             "action": "rest_opp_don",
             "count": 1
           }
-        ]
+        ],
+        "conditions": {
+          "chars_rested_gte": 2
+        }
       }
     }
   },
@@ -35665,7 +35737,10 @@
             "action": "set_active",
             "target": "self"
           }
-        ]
+        ],
+        "conditions": {
+          "chars_rested_gte": 3
+        }
       }
     }
   },
@@ -35746,7 +35821,10 @@
             "target": "opp_character",
             "cost_lte": 4
           }
-        ]
+        ],
+        "conditions": {
+          "chars_rested_gte": 2
+        }
       }
     }
   },
@@ -38669,7 +38747,10 @@
             "count": 1,
             "cost_lte": 5
           }
-        ]
+        ],
+        "conditions": {
+          "chars_rested_gte": 2
+        }
       }
     }
   },
@@ -38691,7 +38772,10 @@
             "count": 3,
             "then_trash": 2
           }
-        ]
+        ],
+        "conditions": {
+          "chars_rested_gte": 2
+        }
       }
     }
   },
@@ -38801,7 +38885,10 @@
             "cost_lte": 5,
             "rested_only": true
           }
-        ]
+        ],
+        "conditions": {
+          "chars_rested_gte": 2
+        }
       }
     }
   },
@@ -39018,7 +39105,10 @@
             "target": "self",
             "duration": "this_turn"
           }
-        ]
+        ],
+        "conditions": {
+          "chars_rested_gte": 2
+        }
       }
     }
   },
@@ -63037,7 +63127,10 @@
             "target": "self",
             "duration": "this_turn"
           }
-        ]
+        ],
+        "conditions": {
+          "chars_rested_gte": 2
+        }
       }
     }
   },

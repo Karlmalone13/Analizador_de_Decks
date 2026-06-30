@@ -172,6 +172,7 @@ class Card:
     can_attack_active: bool = False  # "This Character can also attack active Characters" PERMANENTE (Cavendish OP04-081, Luffy OP04-090) -- keyword nunca implementada antes (achado 27/06, 9 cartas).
     can_attack_active_this_turn: bool = False  # mesma habilidade, mas CONCEDIDA so neste turno via select (Hibari, Gyats, Borsalino, Aramaki, Kuzan, Koby) -- resetada no refresh_phase.
     cannot_be_rested_until: str = ''  # mesma semantica de duracao, para lock_opp_cannot_be_rested (mecanica DISTINTA de cannot_attack)
+    immunity_ko_until: str = ''       # imunidade a KO por efeito TEMPORARIA concedida por outro efeito (ex: OP09-033 Nico Robin -- "none of your X type Characters can be K.O.'d by effects until end of opp's next turn"). Mesma semantica de duracao. Checada em is_immune().
     attack_paywall: dict = field(default_factory=dict)  # {'cost_type','cost_amount'} ou {} -- lock_opp_attack_unless_pays (OP08-043): PODE atacar, mas o DONO paga o custo a cada ataque enquanto ativo. Distinto de cannot_attack_until (bloqueio total). Resetado no refresh_phase do dono junto com cannot_attack_until (mesma simplificacao de duration ja usada la).
     frozen_next_refresh: bool = False  # Freeze (lock_opp_character_refresh / lock_self_character_refresh com target='this_card') -- pula APENAS o untap (c.rested=False) na PROXIMA refresh_phase do dono, consumido uma vez (refresh_phase zera este campo, fica rested mesmo se nao tiver sido atacado/restado por outro motivo). DISTINTO de cannot_be_rested_until (que trava o character de FICAR rested -- aqui e o oposto, ele PERMANECE rested ignorando o untap).
     life_face_up: bool = False  # estado valido apenas enquanto a carta esta na zona de Life (ST13/face-up life)
@@ -202,7 +203,7 @@ class Card:
                       'can_attack_active', 'can_attack_active_this_turn',
                       'power_buff', 'base_power_override',
                       'cost_buff', 'cost_buff_permanent', 'frozen_next_refresh',
-                      'life_face_up'):
+                      'life_face_up', 'immunity_ko_until'):
             setattr(novo, campo, getattr(self, campo))
         novo.attack_paywall = self.attack_paywall  # dict sempre REASSIGNED (nunca mutado in-place), referencia compartilhada e segura
         return novo
@@ -583,6 +584,12 @@ def is_immune(card: 'Card', imm_type: str, owner: 'GameState', opp: 'GameState',
             conds = blk.get('conditions') or step.get('conditions')
             if conds and not _immunity_conds_met(conds, card, owner, opp):
                 continue
+            return True
+    # Imunidade TEMPORARIA concedida via grant_ko_immunity_type (ex: OP09-033
+    # Nico Robin). Campo immunity_ko_until no Card, setado pelo engine quando
+    # o efeito e executado e limpo no refresh_phase do DONO da carta.
+    if imm_type == 'ko' and getattr(card, 'immunity_ko_until', ''):
+        if source_is_opp:  # imunidade valida contra efeitos do oponente
             return True
     return False
 
@@ -1833,6 +1840,10 @@ class EffectExecutor:
             return False
         if 'opp_don_on_field_lte' in conds and opp.don_on_field() > conds['opp_don_on_field_lte']:
             return False
+        if 'chars_rested_gte' in conds:
+            n_rested = sum(1 for c in me.field_chars if c.rested)
+            if n_rested < conds['chars_rested_gte']:
+                return False
         if 'opp_hand_gte' in conds and len(opp.hand) < conds['opp_hand_gte']:
             return False
         if 'chars_gte' in conds:
@@ -2621,6 +2632,49 @@ class EffectExecutor:
                 opp.hand.append(c)
                 moved.append(c.name[:12])
             return f'oponente moveu da vida pra mao: {", ".join(moved)}' if moved else ''
+
+        # ── Imunidade a KO temporária para tipo próprio (OP09-033 Nico Robin) ──
+        # Concede immunity_ko_until a todos os PROPRIOS Characters que
+        # correspondem ao filter_type. Limpo no refresh_phase do dono.
+        if action == 'grant_ko_immunity_type':
+            from optcg_engine.rules_facade import card_matches_filter
+            filter_type = step.get('filter_type', '')
+            dur = step.get('duration', 'opp_turn_end')
+            granted = []
+            for c in me.field_chars + [me.leader]:
+                if card_matches_filter(c, filter_type):
+                    c.immunity_ko_until = dur
+                    granted.append(c.name[:12])
+            return f'imunidade a KO concedida: {", ".join(granted)}' if granted else ''
+
+        # ── Coloca Character do oponente na VIDA DELE face-up ──────────────────
+        # "Add up to N of your opponent's [X] Characters to the top/bottom of
+        # your opponent's Life cards face-up." (OP04-097 Otama, OP05-111 Hotori,
+        # EB02-057 Mad Treasure). Remove do campo do oponente e insere na vida
+        # dele (face-up). Heuristica: escolhe o PIOR Character do oponente (menor
+        # board_value) pra maximizar o dano ao campo dele; o destino dentro da
+        # vida e o topo ('life_top') por padrao.
+        if action == 'place_opp_char_to_opp_life':
+            from optcg_engine.rules_facade import eligible_cards, card_matches_filter
+            count = step.get('count', 1)
+            cost_lte = step.get('cost_lte')
+            filter_type = step.get('filter_type', '')
+            candidates = [c for c in opp.field_chars
+                          if (cost_lte is None or c.cost <= cost_lte)
+                          and card_matches_filter(c, filter_type)]
+            placed = []
+            for _ in range(min(count, len(candidates))):
+                worst = min(candidates, key=lambda c: c.board_value())
+                remove_character_from_field(opp, worst, 'hand')  # remove do campo sem KO
+                worst.life_face_up = True
+                dest = step.get('dest', 'life_top')
+                if dest == 'life_top':
+                    opp.life.append(worst)   # topo = fim da lista
+                else:
+                    opp.life.insert(0, worst)  # fundo = inicio da lista
+                remove_by_identity(candidates, worst)
+                placed.append(worst.name[:12])
+            return f'mandou {", ".join(placed)} pra vida do oponente face-up' if placed else ''
 
         # ── Trava de ataque / trava de rest / trava de Blocker (persistente) ────
         # Mecanicas DISTINTAS apesar de compartilharem estrutura de
@@ -5460,6 +5514,7 @@ class OPTCGMatch:
             c.double_attack_this_turn = False
             c.blocker_this_turn = False
             c.can_attack_active_this_turn = False
+            c.immunity_ko_until = ''  # imunidade temporaria (grant_ko_immunity_type)
         p.leader.don_attached = 0
         p.leader.rested = False
         p.leader.power_buff = 0

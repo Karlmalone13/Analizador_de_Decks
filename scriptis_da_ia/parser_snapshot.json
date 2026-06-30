@@ -2102,7 +2102,18 @@
    ]
   }
  },
- "EB02-057": {},
+ "EB02-057": {
+  "when_attacking": {
+   "steps": [
+    {
+     "action": "place_opp_char_to_opp_life",
+     "cost_lte": 3,
+     "count": 1,
+     "dest": "life_top_or_bottom"
+    }
+   ]
+  }
+ },
  "EB02-058": {
   "main": {
    "steps": [
@@ -5712,6 +5723,9 @@
  },
  "OP01-052": {
   "when_attacking": {
+   "conditions": {
+    "chars_rested_gte": 2
+   },
    "once_per_turn": true,
    "steps": [
     {
@@ -12741,6 +12755,16 @@
   }
  },
  "OP04-110": {
+  "on_ko": {
+   "steps": [
+    {
+     "action": "place_opp_char_to_opp_life",
+     "cost_lte": 3,
+     "count": 1,
+     "dest": "life_top_or_bottom"
+    }
+   ]
+  },
   "passive": {
    "steps": [
     {
@@ -12859,6 +12883,16 @@
   }
  },
  "OP04-117": {
+  "main": {
+   "steps": [
+    {
+     "action": "place_opp_char_to_opp_life",
+     "cost_lte": 3,
+     "count": 1,
+     "dest": "life_top_or_bottom"
+    }
+   ]
+  },
   "trigger": {
    "steps": [
     {
@@ -13457,6 +13491,9 @@
  },
  "OP05-031": {
   "when_attacking": {
+   "conditions": {
+    "chars_rested_gte": 2
+   },
    "once_per_turn": true,
    "steps": [
     {
@@ -14821,7 +14858,18 @@
   }
  },
  "OP05-110": {},
- "OP05-111": {},
+ "OP05-111": {
+  "on_play": {
+   "steps": [
+    {
+     "action": "place_opp_char_to_opp_life",
+     "cost_lte": 3,
+     "count": 1,
+     "dest": "life_top_or_bottom"
+    }
+   ]
+  }
+ },
  "OP05-112": {
   "on_ko": {
    "steps": [
@@ -20422,6 +20470,12 @@
      "dest": "life_top",
      "source": "deck_top",
      "up_to": true
+    },
+    {
+     "action": "place_opp_char_to_opp_life",
+     "cost_lte": 6,
+     "count": 1,
+     "dest": "life_top_or_bottom"
     }
    ]
   }
@@ -21812,6 +21866,9 @@
  },
  "OP09-024": {
   "on_play": {
+   "conditions": {
+    "chars_rested_gte": 2
+   },
    "steps": [
     {
      "action": "draw",
@@ -21837,6 +21894,9 @@
  },
  "OP09-026": {
   "on_play": {
+   "conditions": {
+    "chars_rested_gte": 2
+   },
    "steps": [
     {
      "action": "ko",
@@ -21849,6 +21909,9 @@
  },
  "OP09-027": {
   "when_attacking": {
+   "conditions": {
+    "chars_rested_gte": 3
+   },
    "once_per_turn": true,
    "steps": [
     {
@@ -21899,6 +21962,9 @@
  },
  "OP09-031": {
   "end_of_turn": {
+   "conditions": {
+    "chars_rested_gte": 2
+   },
    "steps": [
     {
      "action": "set_active",
@@ -21958,6 +22024,9 @@
  },
  "OP09-035": {
   "on_play": {
+   "conditions": {
+    "chars_rested_gte": 2
+   },
    "steps": [
     {
      "action": "rest_opp_character",
@@ -21969,6 +22038,9 @@
  },
  "OP09-036": {
   "on_play": {
+   "conditions": {
+    "chars_rested_gte": 2
+   },
    "steps": [
     {
      "action": "rest_opp_don",
@@ -21979,6 +22051,9 @@
  },
  "OP09-037": {
   "end_of_turn": {
+   "conditions": {
+    "chars_rested_gte": 3
+   },
    "steps": [
     {
      "action": "set_active",
@@ -22036,6 +22111,9 @@
  },
  "OP09-040": {
   "main": {
+   "conditions": {
+    "chars_rested_gte": 2
+   },
    "steps": [
     {
      "action": "ko",
@@ -23829,6 +23907,9 @@
  },
  "OP10-024": {
   "on_play": {
+   "conditions": {
+    "chars_rested_gte": 2
+   },
    "steps": [
     {
      "action": "ko",
@@ -23847,6 +23928,9 @@
  },
  "OP10-025": {
   "on_play": {
+   "conditions": {
+    "chars_rested_gte": 2
+   },
    "steps": [
     {
      "action": "draw",
@@ -23910,6 +23994,9 @@
  },
  "OP10-029": {
   "on_play": {
+   "conditions": {
+    "chars_rested_gte": 2
+   },
    "steps": [
     {
      "action": "set_active",
@@ -24030,6 +24117,9 @@
  },
  "OP10-038": {
   "opp_turn": {
+   "conditions": {
+    "chars_rested_gte": 2
+   },
    "steps": [
     {
      "action": "buff_power",
@@ -38875,6 +38965,9 @@
  },
  "P-037": {
   "when_attacking": {
+   "conditions": {
+    "chars_rested_gte": 2
+   },
    "steps": [
     {
      "action": "buff_power",
