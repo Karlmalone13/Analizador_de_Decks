@@ -214,12 +214,25 @@ Os 5 medios restantes foram fechados em 29/06/2026. Ainda ficam a familia grande
 de imunidade e stubs antigos listados abaixo.
 
 ### Dívida técnica grande — imunidade
-- [ ] Completar auditoria de imunidade (ImmuneToKO/Removal/Combat/Effect/Strikes).
-  Em 29/06/2026 foi confirmado que `ko`/`removal` já têm 52 actions parseadas e
+- [x] **Completar auditoria de imunidade — encerrada (01/07/2026).** Em
+  29/06/2026 foi confirmado que `ko`/`removal` já têm 52 actions parseadas e
   os caminhos principais chamam `is_immune()`. Corrigido bug de fonte: imunidade
-  "by opponent's effects" não protege mais contra efeito próprio. Próximo passo
-  é auditar variantes ainda fora de `immunity`: `EffectImmune`, `CombatImmune`,
-  `ImmuneToStrikes` e substituições "would be removed/K.O.'d ... instead".
+  "by opponent's effects" não protege mais contra efeito próprio. A
+  substituição "would be removed/K.O.'d ... instead" foi fechada em
+  01/07/2026 (ver entradas acima). Investigação direta de `EffectImmune`/
+  `CombatImmune`/`ImmuneToStrikes`: são nomes de MECANISMOS INTERNOS do
+  código oficial decompilado (`_referencias/simulador-oficial/`,
+  `ActV3Effect.cs`/`GameplayLogicScript.cs`), não padrões de texto
+  adicionais nas cartas. Busca direta em `cards_rows.csv` por variantes
+  textuais mais amplas ("cannot be affected", "immune to", "cannot be
+  targeted/selected/chosen", "unaffected", "ignores effects") não achou
+  NENHUMA carta real usando esses padrões além do que `cannot be K.O.'d`/
+  `cannot be removed from the field` já cobre — e isso já está
+  implementado, incluindo a parte de atributo do atacante (Strike/Slash/
+  Special/Wisdom/Ranged/Leaders, que É literalmente "ImmuneToStrikes" na
+  prática) feita em 30/06/2026. Confirmado com exemplos reais (OP01-024,
+  EB03-018) já parseados corretamente como `action: 'immunity'`. Item
+  fechado — não há mais gap de cobertura conhecido nesta família.
 - Fatia seguinte feita: KO por efeito e KO em batalha agora passam contexto para
   `is_immune()`, e o helper usa o texto bruto para impedir que imunidade
   `cannot be K.O.'d in battle` proteja contra efeito, ou `by effects` proteja

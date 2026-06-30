@@ -1,5 +1,42 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-01 (7) - Claude
+
+**Feito - fecha item "auditoria de imunidade restante" (sem código, só
+investigação + documentação):** próximo item da fila do TODO.md. Antes de
+implementar, investiguei se `EffectImmune`/`CombatImmune`/`ImmuneToStrikes`
+eram mecânicas reais com cartas afetadas — mesmo padrão de checar antes de
+agir que rendeu bons resultados hoje.
+
+**Achado:** são nomes de MECANISMOS INTERNOS do código oficial decompilado
+(`_referencias/simulador-oficial/dnspy-export/Assembly-CSharp/ActV3Effect.cs`,
+`GameplayLogicScript.cs` — flags como `bCombatImmune`, `bEffectImmune`,
+`ImmuneToStrikes: List<StrikeType>`), não padrões de texto adicionais que
+aparecem em cartas. Busquei direto em `cards_rows.csv` por variantes
+textuais mais amplas ("cannot be affected", "immune to", "cannot be
+targeted/selected/chosen", "unaffected", "ignores effects") e não achei
+NENHUMA carta real usando esses padrões além do que `cannot be K.O.'d`/
+`cannot be removed from the field` já cobre — e isso já está implementado,
+incluindo a parte de atributo do atacante (Strike/Slash/Special/Wisdom/
+Ranged/Leaders — que é literalmente "ImmuneToStrikes" na prática) feita
+ontem (30/06). Confirmei com 2 exemplos reais (OP01-024, EB03-018) já
+parseados corretamente.
+
+**Resultado:** item fechado no TODO.md — não há mais gap de cobertura
+conhecido na família de imunidade.
+
+**Estado da sessão:** essa foi uma sessão longa cobrindo toda a "fila
+anterior" do TODO.md pedida pelo usuário (itens 4-10 de uma lista
+numerada, depois substituição externa completa, depois esta auditoria de
+imunidade). Itens reais que ainda restam abertos no TODO.md: 5 funções
+órfãs (deletar ou integrar), otimização de `deepcopy` no Turn Planner,
+revalidar contagem de cartas com `card_text` mas `effects` vazio,
+`opponent has N+ DON` sem parser (~8 cartas), `place-at-bottom-of-deck`
+mecânica nova (~14 cartas), OP15-074 Varie (aguarda foto), e rotação de
+chaves Supabase (segurança, antes de deploy público).
+
+---
+
 ## 2026-07-01 (6) - Claude
 
 **Feito - substituição externa: fecha 11 das 13 cartas restantes + 2 bugs
