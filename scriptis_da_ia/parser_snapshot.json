@@ -1808,6 +1808,9 @@
      }
     ]
    ],
+   "conditions": {
+    "opp_hand_gte": 5
+   },
    "costs": [
     {
      "count": 2,
@@ -2677,6 +2680,9 @@
  },
  "EB03-026": {
   "on_play": {
+   "conditions": {
+    "opp_hand_gte": 5
+   },
    "once_per_turn": true,
    "steps": [
     {
@@ -3934,6 +3940,9 @@
  },
  "EB04-022": {
   "on_play": {
+   "conditions": {
+    "opp_hand_gte": 6
+   },
    "costs": [
     {
      "count": 2,
@@ -14100,6 +14109,9 @@
  },
  "OP05-082": {
   "activate_main": {
+   "conditions": {
+    "opp_hand_gte": 6
+   },
    "costs": [
     {
      "type": "rest_self"
@@ -16344,7 +16356,10 @@
       "target": "opp_character"
      }
     ]
-   ]
+   ],
+   "conditions": {
+    "opp_hand_gte": 5
+   }
   }
  },
  "OP06-094": {},
@@ -17618,6 +17633,9 @@
  },
  "OP07-047": {
   "activate_main": {
+   "conditions": {
+    "opp_hand_gte": 6
+   },
    "steps": [
     {
      "action": "bounce",
@@ -19675,6 +19693,9 @@
  },
  "OP08-046": {
   "your_turn": {
+   "conditions": {
+    "opp_hand_gte": 5
+   },
    "costs": [
     {
      "type": "rest_self"
@@ -22276,6 +22297,9 @@
  },
  "OP09-087": {
   "on_play": {
+   "conditions": {
+    "opp_hand_gte": 5
+   },
    "steps": [
     {
      "action": "opp_trash_from_hand",
@@ -24373,6 +24397,9 @@
  },
  "OP10-087": {
   "activate_main": {
+   "conditions": {
+    "opp_hand_gte": 5
+   },
    "costs": [
     {
      "filter_type": "dressrosa",
@@ -24956,6 +24983,9 @@
    ]
   },
   "when_attacking": {
+   "conditions": {
+    "opp_hand_gte": 5
+   },
    "costs": [
     {
      "count": 3,
@@ -28403,6 +28433,9 @@
  },
  "OP12-087": {
   "on_play": {
+   "conditions": {
+    "opp_hand_gte": 5
+   },
    "costs": [
     {
      "count": 1,
@@ -36235,6 +36268,9 @@
  "OP16-046": {},
  "OP16-047": {
   "activate_main": {
+   "conditions": {
+    "opp_hand_gte": 8
+   },
    "costs": [
     {
      "type": "rest_self"
@@ -42037,6 +42073,9 @@
  },
  "ST13-009": {
   "on_play": {
+   "conditions": {
+    "opp_hand_gte": 7
+   },
    "steps": [
     {
      "action": "attack_life",

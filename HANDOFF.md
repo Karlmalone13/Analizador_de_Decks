@@ -1,6 +1,36 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
-## 2026-07-02 (1) - Claude — ÚLTIMA DESTA SESSÃO
+## 2026-07-02 (2) - Claude — ÚLTIMA DESTA SESSÃO
+
+**Feito - corrige a "simplificação consciente" do item anterior
+(opp_hand_gte), a pedido do usuário.** O item (1) abaixo tinha deixado
+registrado que a condição "if opponent has N+ cards in hand" (prefixo de
+5 das 13 cartas de place-at-bottom-of-deck) não estava sendo checada — a
+ação disparava sempre, só coincidindo com a regra real quando a mão do
+oponente estava em 0. Usuário pediu exemplo concreto, viu que com mão
+intermediária (1 a N-1 cartas) a ação tira uma carta que a regra real não
+tiraria, e pediu correção.
+
+Nova condição `opp_hand_gte` em `parse_conditions` (`gerar_effects_db.py`,
+mesmo molde de `hand_gte` já existente mas sobre `opp.hand`), plugada em
+`_check_conditions` e no pre-filtro do Turn Planner
+(`decision_engine.py`). Escopo real saiu maior do que os 5 cards
+esperados — o mesmo gap textual ("if your opponent has N or more cards in
+their hand") afetava TODA a família `opp_trash_from_hand`/`attack_life`
+com esse prefixo, não só `opp_place_hand_bottom_deck`: 13 cartas no total
+(EB02-045, EB03-026, EB04-022, OP05-082, OP06-093, OP07-047, OP08-046,
+OP09-087, OP10-087, OP10-118, OP12-087, OP16-047, ST13-009).
+
+**Validação:** `diff_parser.py` (`PERDEU=0`, 13/13 MUDOU — só ganharam o
+gate, nenhum efeito novo nem perdido); `gerar_dbs.py` + `snapshot_parser.py`;
+`smoke_test.py` (4 testes novos: 2 unidade + 2 end-to-end via carta real
+OP08-046 abaixo/no limiar); `smoke_test_broad.py` (40/40);
+`audit_replay.py --n 20 --seed 7` e `--n 15 --seed 99`: 0 exceções, 0
+anomalias.
+
+---
+
+## 2026-07-02 (1) - Claude
 
 **Feito - os 2 itens "Parser — cobertura" pedidos pelo usuário: `opponent
 has N+ DON` (8 cartas) e `place-at-bottom-of-deck` (13 cartas).** Ver

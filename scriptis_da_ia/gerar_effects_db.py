@@ -92,6 +92,19 @@ def parse_conditions(text):
     m = re.search(r"your opponent has (\d+) or more don!! cards? on (?:their|his|her) field", t)
     if m: conds['opp_don_on_field_gte'] = int(m.group(1))
 
+    # "if your opponent has N or more cards in their hand" -- gate sobre o
+    # tamanho da MAO DO OPONENTE, distinto de hand_gte (mao do PROPRIO
+    # jogador). Achado 02/07/2026: prefixava 5 das 13 cartas de
+    # place-at-bottom-of-deck (EB03-026, EB04-022, OP07-047, OP08-046,
+    # OP16-047) e estava sendo descartado -- a acao (opp_place_hand_bottom_
+    # deck) disparava sempre que o gatilho ocorria, mesmo com a mao do
+    # oponente abaixo do limiar (efeito real nao deveria acontecer nesse
+    # caso). Sem isso, o "vazio => no-op" so coincide com a regra real
+    # quando a mao esta em 0; com 1..N-1 cartas a simplificacao tirava uma
+    # carta que a regra nao tiraria.
+    m = re.search(r"if your opponent has (\d+) or more cards? in (?:their|his|her) hand", t)
+    if m: conds['opp_hand_gte'] = int(m.group(1))
+
     m = re.search(r'if you have (\d+) or more characters?(?: with an? (?:base|original) cost of (\d+) or more)?', t)
     if m:
         conds['chars_gte'] = int(m.group(1))

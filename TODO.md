@@ -633,16 +633,25 @@ de imunidade e stubs antigos listados abaixo.
   era reconhecida pelo split de `parse_block` — só faltava a 2ª opção
   (`opp_place_trash_bottom_deck`) ter parser pra virar uma `choice` de
   verdade em vez de cair no fallback de "só a 1ª opção conta".
-  **Simplificação consciente, não corrigida:** a condição "if opponent
-  has N+ cards in hand" que prefixa várias dessas cartas (EB03-026,
-  EB04-022, OP07-047, OP08-046, OP16-047) não ficou modelada como gate —
-  mesmo padrão já aceito para toda a família `opp_trash_from_hand`
-  (Shirahoshi etc.): a ação natural já não faz nada com mão vazia/pequena,
-  e modelar o threshold exato exigiria um novo tipo de condição
-  (`opp_hand_gte`) só usado por essa família, sem carta nova lavrada por
-  isso. `PERDEU=0`, 7 GANHOU + 6 MUDOU = 13/13, 2 smoke tests novos,
+  `PERDEU=0`, 7 GANHOU + 6 MUDOU = 13/13, 2 smoke tests novos,
   `audit_replay.py --n 20 --seed 7` e `--n 15 --seed 99`: 0 exceções, 0
   anomalias.
+- [x] **opp_hand_gte — corrigido (02/07/2026), 13 cartas.** Item acima
+  tinha ficado registrado como "simplificação consciente" (ação dispara
+  sempre, mesmo com a mão do oponente abaixo do limiar — só coincidia com
+  a regra real quando a mão estava em 0). Usuário pediu correção
+  explícita: "não pode ser simplificado porque interfere na partida".
+  Nova condição `opp_hand_gte` em `parse_conditions` (mesmo molde de
+  `hand_gte` já existente, mas sobre `opp.hand`), plugada em
+  `_check_conditions` e no pre-filtro do Turn Planner. Escopo real maior
+  do que os 5 cards de place-at-bottom-of-deck — o mesmo gap afetava TODA
+  a família `opp_trash_from_hand`/`attack_life` com esse prefixo
+  condicional: EB02-045, EB03-026, EB04-022, OP05-082, OP06-093,
+  OP07-047, OP08-046, OP09-087, OP10-087, OP10-118, OP12-087, OP16-047,
+  ST13-009. `PERDEU=0`, 13/13 MUDOU (só ganharam o gate, nenhum efeito
+  novo nem perdido), 4 smoke tests novos (2 unidade + 2 end-to-end via
+  carta real OP08-046 abaixo/no limiar), `audit_replay.py --n 20 --seed 7`
+  e `--n 15 --seed 99`: 0 exceções, 0 anomalias.
 - [ ] OP15-074 Varie — DON sem sinal, aguarda foto
 
 ---

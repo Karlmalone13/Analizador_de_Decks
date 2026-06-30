@@ -1378,6 +1378,47 @@ check('opp_place_trash_bottom_deck com filter_type=event so move Events do trash
       bool(log) and evento not in opp.trash and char_trash in opp.trash
       and len(opp.deck) == 1 and opp.deck[0] is evento)
 
+# ── 24. opp_hand_gte ("if your opponent has N or more cards in their
+# hand") -- gate sobre o tamanho da MAO DO OPONENTE. Achado 02/07/2026:
+# corrigia uma simplificacao identificada pelo usuario -- com a mao do
+# oponente abaixo do limiar mas nao vazia, a acao disparava igual e tirava
+# uma carta que a regra real nao tiraria. 13 cartas no banco (EB02-045,
+# EB03-026, EB04-022, OP05-082, OP06-093, OP07-047, OP08-046, OP09-087,
+# OP10-087, OP10-118, OP12-087, OP16-047, ST13-009). ──
+me, opp = me_opp()
+opp.hand = [mk('H1', 'Mao 1'), mk('H2', 'Mao 2')]
+ee = EffectExecutor(me, opp)
+ok = ee._check_conditions({'opp_hand_gte': 5}, me.leader)
+check('opp_hand_gte nao satisfeita (oponente com 2 cartas, exige 5+)', not ok)
+
+me, opp = me_opp()
+opp.hand = [mk(f'H{i}', f'Mao {i}') for i in range(5)]
+ee = EffectExecutor(me, opp)
+ok = ee._check_conditions({'opp_hand_gte': 5}, me.leader)
+check('opp_hand_gte satisfeita (oponente com 5 cartas, exige 5+)', ok)
+
+# end-to-end via execute() + carta real do banco (OP08-046 Shakuyaku,
+# trigger 'your_turn', limiar real = 5): confirma que o gate plugado em
+# parse_conditions + _check_conditions realmente bloqueia o efeito quando
+# a mao do oponente esta abaixo do limiar (nao so a unidade isolada acima).
+me, opp = me_opp()
+shakuyaku = mk('OP08-046', 'Shakuyaku', power=5000)
+me.field_chars = [shakuyaku]
+opp.hand = [mk('H1', 'Mao 1'), mk('H2', 'Mao 2')]
+ee = EffectExecutor(me, opp)
+ee.execute(shakuyaku, 'your_turn')
+check('OP08-046 nao dispara opp_place_hand_bottom_deck com mao do oponente abaixo do limiar (2 < 5)',
+      len(opp.hand) == 2)
+
+me, opp = me_opp()
+shakuyaku2 = mk('OP08-046', 'Shakuyaku', power=5000)
+me.field_chars = [shakuyaku2]
+opp.hand = [mk(f'H{i}', f'Mao {i}') for i in range(5)]
+ee = EffectExecutor(me, opp)
+ee.execute(shakuyaku2, 'your_turn')
+check('OP08-046 dispara opp_place_hand_bottom_deck com mao do oponente no limiar (5 >= 5)',
+      len(opp.hand) == 4)
+
 print()
 print(f'{"TODOS OS TESTES PASSARAM" if FAIL == 0 else f"{FAIL} TESTE(S) FALHARAM"}')
 sys.exit(1 if FAIL else 0)

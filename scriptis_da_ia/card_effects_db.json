@@ -2973,6 +2973,9 @@
             }
           ]
         ],
+        "conditions": {
+          "opp_hand_gte": 5
+        },
         "costs": [
           {
             "type": "place_from_trash_bottom_deck",
@@ -4370,6 +4373,9 @@
             "count": 1
           }
         ],
+        "conditions": {
+          "opp_hand_gte": 5
+        },
         "once_per_turn": true
       }
     }
@@ -6265,6 +6271,9 @@
             "count": 2
           }
         ],
+        "conditions": {
+          "opp_hand_gte": 6
+        },
         "costs": [
           {
             "type": "trash_from_hand",
@@ -23060,6 +23069,9 @@
             "count": 1
           }
         ],
+        "conditions": {
+          "opp_hand_gte": 6
+        },
         "costs": [
           {
             "type": "rest_self"
@@ -26728,7 +26740,10 @@
               "count": 1
             }
           ]
-        ]
+        ],
+        "conditions": {
+          "opp_hand_gte": 5
+        }
       }
     }
   },
@@ -28815,7 +28830,10 @@
             "action": "opp_place_hand_bottom_deck",
             "count": 1
           }
-        ]
+        ],
+        "conditions": {
+          "opp_hand_gte": 6
+        }
       }
     }
   },
@@ -32166,6 +32184,9 @@
             "count": 1
           }
         ],
+        "conditions": {
+          "opp_hand_gte": 5
+        },
         "costs": [
           {
             "type": "rest_self"
@@ -36492,7 +36513,10 @@
             "action": "opp_trash_from_hand",
             "count": 1
           }
-        ]
+        ],
+        "conditions": {
+          "opp_hand_gte": 5
+        }
       }
     }
   },
@@ -39903,6 +39927,9 @@
             "count": 1
           }
         ],
+        "conditions": {
+          "opp_hand_gte": 5
+        },
         "costs": [
           {
             "type": "rest_self_and_leader_or_stage",
@@ -40814,6 +40841,9 @@
             "count": 1
           }
         ],
+        "conditions": {
+          "opp_hand_gte": 5
+        },
         "costs": [
           {
             "type": "place_from_trash_bottom_deck",
@@ -46547,6 +46577,9 @@
             "count": 2
           }
         ],
+        "conditions": {
+          "opp_hand_gte": 5
+        },
         "costs": [
           {
             "type": "trash_from_hand",
@@ -59197,6 +59230,9 @@
             "count": 2
           }
         ],
+        "conditions": {
+          "opp_hand_gte": 8
+        },
         "costs": [
           {
             "type": "rest_self"
@@ -69058,7 +69094,10 @@
             "count": 1,
             "up_to": true
           }
-        ]
+        ],
+        "conditions": {
+          "opp_hand_gte": 7
+        }
       }
     }
   },
