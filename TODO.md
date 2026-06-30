@@ -434,15 +434,27 @@ de imunidade e stubs antigos listados abaixo.
   insuficiente, e integração real via `OPTCGMatch._execute_attack`
   confirmando o trash automático. Validado com `audit_replay.py --n 20
   --seed 7` e `--n 15 --seed 99`: 0 exceções, 0 anomalias.
-- [ ] deck_reorder_rest / deck_top_rest — CONFIRMADO ainda não implementado
-  (auditoria 01/07/2026, contagem corrigida): `deck_reorder_rest` e
-  `deck_top_rest` só aparecem em `_step_is_viable`
-  (`decision_engine.py:832-833`), sem handler real em `_execute_step` (busca
-  direta confirma zero ocorrências de `if action == 'deck_reorder_rest'` ou
-  `'deck_top_rest'`). `deck_reorder_rest` tem 16 cartas (não 21). `deck_top_rest`
-  é uma action SEPARADA e distinta com 5 cartas próprias (OP02-057, OP05-043,
-  OP08-053, OP11-040, OP11-104) — total real 21 cartas, mas duas mecânicas
-  diferentes, não uma só.
+- [x] **deck_reorder_rest / deck_top_rest — implementado (01/07/2026):**
+  achado importante durante a implementação: `deck_top_rest` é um nome de
+  action EQUIVOCADO do parser (`gerar_effects_db.py:467-470`) — o regex
+  casa o prefixo `'place the rest at the top'` antes de checar o sufixo
+  `'or bottom'`, então TODA carta real com texto "place the rest at the top
+  or bottom of the deck in any order" cai em `deck_top_rest` em vez de
+  `deck_reorder_rest`. Confirmado varrendo `cards_rows.csv`: nenhuma das 5
+  cartas de `deck_top_rest` (OP02-057, OP05-043, OP08-053, OP11-040,
+  OP11-104) tem texto "top" sem "or bottom" — são o MESMO mecanismo de
+  `deck_reorder_rest` (escolha livre de ordem/posição), só com nome
+  diferente. Não vale a pena tocar o parser/regenerar DBs só por causa do
+  nome — as duas actions agora compartilham o mesmo handler em
+  `_execute_step`. Heurística (mesmo princípio do `peek_life` 'all'): a IA
+  bota a carta mais valiosa de volta no topo do deck (próxima a ser
+  comprada), o resto fica ordenado por `board_value` crescente abaixo dela.
+  Também adicionadas a `safe_extra_actions` dos Counter events — desbloqueia
+  OP01-088 (que tinha ficado de fora na fatia de Counter events por causa
+  desse handler faltando). 3 smoke tests novos (deck_reorder_rest,
+  deck_top_rest, integração via Counter event OP01-088). Validado com
+  `audit_replay.py --n 20 --seed 7` e `--n 15 --seed 99`: 0 exceções, 0
+  anomalias.
 
 ### Reserva de DON em combate
 - [x] ~~plan_don_distribution não subtrai reserva defensiva (usa don_available cru)~~

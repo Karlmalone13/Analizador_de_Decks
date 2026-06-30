@@ -1,5 +1,51 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-01 (3) - Claude
+
+**Feito - implementa deck_reorder_rest / deck_top_rest (último item da
+fila pedida pelo usuário):** os dois últimos stubs sem handler de execução.
+
+**Achado importante:** `deck_top_rest` é um nome de action EQUIVOCADO do
+parser. `gerar_effects_db.py:467-470` tem um `elif` que casa o PREFIXO
+`'place the rest at the top'` antes de checar o sufixo `'or bottom'` —
+então toda carta com o texto real "place the rest at the top or bottom of
+the deck in any order" cai incorretamente em `deck_top_rest`. Verifiquei
+diretamente em `cards_rows.csv`: nenhuma das 5 cartas que usam
+`deck_top_rest` (OP02-057, OP05-043, OP08-053, OP11-040, OP11-104) tem
+texto "place the rest at the top" SEM "or bottom" em seguida — são
+exatamente o mesmo mecanismo de `deck_reorder_rest` (escolha livre de
+ordem), só com nome diferente. Decidi não tocar o parser/regenerar os DBs
+só por causa do nome — as duas actions agora compartilham o mesmo handler
+em `_execute_step`.
+
+**Implementação:** heurística mirando o `peek_life` 'all' já existente — a
+IA controla a ordem livremente, então bota a carta mais valiosa de volta no
+topo do deck (próxima a ser comprada), o resto ordenado por `board_value`
+crescente abaixo dela. Também adicionadas a `safe_extra_actions` dos
+Counter events — isso desbloqueia **OP01-088**, que tinha ficado de fora
+explicitamente na fatia de Counter events de ontem por causa desse handler
+faltando (documentado no HANDOFF.md (8) de 30/06).
+
+**Validação:** `python -m py_compile`; `python smoke_test.py` (84/84, 3
+casos novos: `deck_reorder_rest` puro, `deck_top_rest` com filtro, e
+integração via Counter event OP01-088); `python smoke_test_broad.py`
+(40/40); `python audit_replay.py --n 20 --seed 7` e `--n 15 --seed 99` (0
+exceções, 0 anomalias nas duas).
+
+**Estado da fila pedida pelo usuário (4 a 10 da lista original): TODOS
+fechados.** 5 já estavam implementados (corrigido no TODO.md), 2
+implementados nesta sessão (`lock_opp_attack_unless_pays` e
+`deck_reorder_rest`/`deck_top_rest`). Itens reais ainda em aberto no
+TODO.md: substituição externa (família grande), auditoria de imunidade
+restante (`EffectImmune`/`CombatImmune`/`ImmuneToStrikes`), `cannot_attack_self`/
+`cannot_attack_self_unless`/`cannot_attack_own_characters_by_cost` (6
+cartas, mesmo bloqueador estrutural do `lock_opp_attack_unless_pays` — os
+5 pontos de filtro "pode atacar" já foram tocados nesta sessão, então a
+próxima implementação desses fica mais barata), e os itens de performance/
+parser menores listados no TODO.md.
+
+---
+
 ## 2026-07-01 (2) - Claude
 
 **Feito - implementa lock_opp_attack_unless_pays (OP08-043 Edward.Newgate):**

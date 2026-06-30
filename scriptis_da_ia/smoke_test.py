@@ -1032,6 +1032,46 @@ match._execute_attack(atacante_travado, 'leader', None, me, opp, engine)
 check('Declarar ataque com attack_paywall ativo trasha as cartas do custo automaticamente',
       len(me.hand) == 1 and len(me.trash) == 2)
 
+# ── 17. deck_reorder_rest / deck_top_rest -- mesma semantica de execucao
+# (achado: 'deck_top_rest' eh nome equivocado do parser, todas as ocorrencias
+# reais sao "top OR bottom in any order"). Heuristica: melhor carta no topo. ──
+me, opp = me_opp()
+ee = EffectExecutor(me, opp)
+kaya = mk('EB03-023', 'Kaya', card_type='CHARACTER')
+me.hand = [kaya]
+fraca = mk('FRACA', 'Fraca', power=1000)
+media = mk('MEDIA', 'Media', power=4000)
+forte = mk('FORTE', 'Forte', power=9000, has_trigger=True)
+me.deck = [fraca, media, forte]  # forte = topo (fim da lista), unico candidato de add_to_hand
+logs = ee.execute(kaya, 'on_play')
+check('deck_reorder_rest pega 1 do topo e reordena o resto (melhor carta volta ao topo)',
+      forte in me.hand and len(me.deck) == 2 and me.deck[-1] is media and me.deck[0] is fraca)
+
+me, opp = me_opp()
+ee = EffectExecutor(me, opp)
+kuma = mk('OP02-057', 'Bartholomew Kuma', card_type='CHARACTER')
+me.hand = [kuma]
+warlord = mk('WL1', 'Warlord', sub_types='The Seven Warlords of the Sea', power=5000)
+outra = mk('OUTRA', 'Outra carta', power=3000)
+me.deck = [outra, warlord]  # warlord = topo, bate no filtro
+logs = ee.execute(kuma, 'on_play')
+check('deck_top_rest (nome equivocado do parser) executa igual deck_reorder_rest',
+      warlord in me.hand and len(me.deck) == 1 and me.deck[0] is outra)
+
+# OP01-088: Counter event que tinha ficado de fora por causa do deck_top_rest
+# sem handler -- agora deve ativar normalmente (buff + busca)
+me, opp = me_opp()
+me.don_available = 2
+evento_op01088 = mk('OP01-088', 'Desert Spada', card_type='EVENT', cost=2)
+carta_deck = mk('DECKCARD', 'Carta do deck', power=2000)
+me.deck = [carta_deck]
+me.hand = [evento_op01088]
+ee = EffectExecutor(me, opp)
+counter = ee.try_counter_event_power(me.leader, 'leader', needed=2000)
+check('Counter event OP01-088 ativa agora que deck_reorder_rest tem handler',
+      counter and counter[0] == 2000 and evento_op01088 in me.trash
+      and carta_deck in me.hand)
+
 print()
 print(f'{"TODOS OS TESTES PASSARAM" if FAIL == 0 else f"{FAIL} TESTE(S) FALHARAM"}')
 sys.exit(1 if FAIL else 0)

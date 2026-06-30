@@ -1266,7 +1266,7 @@ class EffectExecutor:
             'ko', 'bounce', 'place_opp_character_bottom_deck', 'debuff_power',
             'trash_from_deck_top', 'peek_life', 'add_from_trash', 'gain_life',
             'play_card', 'play_from_deck', 'look_top_deck', 'add_to_hand',
-            'deck_bottom_rest',
+            'deck_bottom_rest', 'deck_reorder_rest', 'deck_top_rest',
         }
         if any(step.get('action') not in safe_extra_actions for step in extras):
             return None
@@ -2117,6 +2117,40 @@ class EffectExecutor:
                     me.deck.insert(0, c)  # coloca no fundo
                     moved.append(c)
             return f'{len(moved)} carta(s) no fundo do deck' if moved else ''
+
+        if action in ('deck_reorder_rest', 'deck_top_rest'):
+            # Achado 01/07/2026: 'deck_top_rest' e um nome de action
+            # equivocado do parser -- TODAS as 21 ocorrencias reais no banco
+            # (16 deck_reorder_rest + 5 deck_top_rest) sao o mesmo texto
+            # "place the rest/them at the top OR BOTTOM of the deck in any
+            # order" (escolha livre, nunca um "place at the top" puro sem
+            # "or bottom"). 'deck_top_rest' nasceu de um regex que casa o
+            # PREFIXO "place the rest at the top" antes de checar o sufixo
+            # "or bottom" -- confirmado: nenhuma carta no banco tem so
+            # "place the rest at the top" sem "or bottom". As duas actions
+            # tem a MESMA semantica de execucao aqui (nao vale a pena tocar
+            # o parser/regenerar DBs so por causa do nome).
+            # Heuristica (mesmo principio do peek_life 'all'): a IA controla
+            # a ordem livremente, entao bota a carta mais valiosa no TOPO
+            # (fim da lista = proxima a ser comprada).
+            effects = get_card_effects(card.code)
+            look_count = 5
+            taken_count = 0
+            for trigger, ef in effects.items():
+                for s in ef.get('steps', []):
+                    if s.get('action') == 'look_top_deck':
+                        look_count = s.get('count', 5)
+                    if s.get('action') == 'add_to_hand':
+                        taken_count = s.get('count', 1)
+            rest_count = max(0, look_count - taken_count)
+            seen = []
+            for _ in range(min(rest_count, len(me.deck))):
+                seen.append(me.deck.pop())
+            if not seen:
+                return ''
+            seen.sort(key=lambda c: c.board_value())  # pior primeiro, melhor por ultimo
+            me.deck.extend(seen)  # melhor carta -> fim da lista = topo do deck
+            return f'{len(seen)} carta(s) reordenada(s) no deck (melhor no topo)'
 
         if action == 'activate_main_effect':
             # Trigger que ativa o efeito Main da carta. CORRIGIDO 24/06:
