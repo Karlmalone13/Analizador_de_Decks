@@ -22,6 +22,11 @@ seguros `set_active` e `rest_opp_character` junto de um unico buff defensivo
 restando Character do oponente. Validado com broad `40/40` e audit replay sem
 anomalias.
 
+**Update posterior - Counter DON + buff:** implementado executor para `add_don`
+e o helper de Counter passou a aceitar extras seguros `add_don` e
+`set_don_active`. Smoke cobre `OP01-119` adicionando DON ativo com condicao de
+vida, a mesma carta sem a condicao ativa, e `ST02-016` reativando DON rested.
+
 **Update posterior - EB02-030:** implementado suporte estreito para Counter event
 com `counter -> substitute_ko` e custo `trash_from_hand` no K.O. em batalha.
 Hoje so existe 1 caso no banco (`EB02-030`). O evento agora exige DON suficiente,

@@ -508,6 +508,41 @@ check('Counter event com rest_opp_character resta character oponente',
       counter and counter[0] == 4000 and evento_rest in me.trash
       and opp_char.rested)
 
+me, opp = me_opp()
+me.life = [mk('L1', 'Life 1'), mk('L2', 'Life 2')]
+me.don_available = 2
+me.don_deck = 5
+evento_add_don = mk('OP01-119', 'Thunder Bagua', card_type='EVENT', cost=2)
+me.hand = [evento_add_don]
+ee = EffectExecutor(me, opp)
+counter = ee.try_counter_event_power(me.leader, 'leader', needed=4000)
+check('Counter event com add_don adiciona DON ativo quando condicao passa',
+      counter and counter[0] == 4000 and evento_add_don in me.trash
+      and me.don_available == 1 and me.don_rested == 2 and me.don_deck == 4)
+
+me, opp = me_opp()
+me.life = [mk('L1', 'Life 1'), mk('L2', 'Life 2'), mk('L3', 'Life 3')]
+me.don_available = 2
+me.don_deck = 5
+evento_add_don = mk('OP01-119', 'Thunder Bagua', card_type='EVENT', cost=2)
+me.hand = [evento_add_don]
+ee = EffectExecutor(me, opp)
+counter = ee.try_counter_event_power(me.leader, 'leader', needed=4000)
+check('Counter event com add_don respeita condicao life_lte',
+      counter and counter[0] == 4000 and evento_add_don in me.trash
+      and me.don_available == 0 and me.don_rested == 2 and me.don_deck == 5)
+
+me, opp = me_opp()
+me.don_available = 2
+me.don_rested = 1
+evento_set_don = mk('ST02-016', 'Repel', card_type='EVENT', cost=2)
+me.hand = [evento_set_don]
+ee = EffectExecutor(me, opp)
+counter = ee.try_counter_event_power(me.leader, 'leader', needed=4000)
+check('Counter event com set_don_active reativa DON rested',
+      counter and counter[0] == 4000 and evento_set_don in me.trash
+      and me.don_available == 1 and me.don_rested == 2)
+
 print()
 print(f'{"TODOS OS TESTES PASSARAM" if FAIL == 0 else f"{FAIL} TESTE(S) FALHARAM"}')
 sys.exit(1 if FAIL else 0)

@@ -1172,7 +1172,7 @@ class EffectExecutor:
         if len(buff_steps) != 1:
             return None
         extras = [step for step in steps if step is not buff_steps[0]]
-        safe_extra_actions = {'draw', 'set_active', 'rest_opp_character'}
+        safe_extra_actions = {'draw', 'set_active', 'rest_opp_character', 'add_don', 'set_don_active'}
         if any(step.get('action') not in safe_extra_actions for step in extras):
             return None
         step = buff_steps[0]
@@ -2789,6 +2789,13 @@ class EffectExecutor:
             return f'redesenhou a mão ({n} cartas)'
 
         # ── DON: reativar DON rested (set as active) = ramp dentro do turno ───
+        if action == 'add_don':
+            count = step.get('count', 1)
+            moved = min(count, me.don_deck)
+            me.don_deck -= moved
+            me.don_available += moved
+            return f'adicionou {moved} DON ativo' if moved else ''
+
         if action == 'set_don_active':
             count = step.get('count', 1)
             moved = min(count, me.don_rested)

@@ -239,9 +239,10 @@ de imunidade e stubs antigos listados abaixo.
   agora podem ser usados no Counter Step quando impedem o hit. Segunda fatia:
   blocos com um buff defensivo unico + steps `draw` seguros tambem executam a
   compra. Terceira fatia: extras seguros `set_active` e `rest_opp_character`
-  tambem executam junto do buff defensivo. Ainda faltam eventos [Counter] com
-  efeitos extras agressivos/estado complexo (`KO`, `bounce`, `play`, `add_don`,
-  `set_don_active`, buscas/topdeck/life) e heuristica mais fina.
+  tambem executam junto do buff defensivo. Quarta fatia: `add_don` e
+  `set_don_active` tambem executam junto do buff defensivo. Ainda faltam eventos
+  [Counter] com efeitos extras agressivos/estado complexo (`KO`, `bounce`,
+  `play`, buscas/topdeck/life) e heuristica mais fina.
   Já corrigido nesta auditoria: `extra_steps` de substituição (`trash self + draw`)
   agora executam.
 
