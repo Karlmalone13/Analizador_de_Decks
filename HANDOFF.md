@@ -1,5 +1,43 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-01 - Claude
+
+**Feito - auditoria da "FILA ANTERIOR ainda aberta" do TODO.md:** usuário
+pediu pra trabalhar os itens "choice", "conditional_stack", "set_base_power",
+"lock_opp_attack_unless_pays", "deck_reorder_rest/deck_top_rest",
+"plan_don_distribution" e "on_opponent_attack timing" em ordem. Antes de
+implementar, rodei um agente de investigação (read-only) pra confirmar o
+estado real de cada um no código, já que `on_opponent_attack timing` eu
+sabia de antemão que estava stale (resolvido em 27/06, confirmado de novo
+ontem). Resultado: **5 dos 7 itens já estavam implementados**, o TODO.md
+só não tinha sido atualizado:
+
+- `choice` (heurística de valor) — já implementado, `_resolve_choice`
+  (`decision_engine.py:853-897`). Contagem real 17 cartas (TODO dizia 19).
+- `conditional_stack` — já implementado (`decision_engine.py:1610-1613`).
+  1 carta (OP15-092), confere com o TODO.
+- `set_base_power` — já implementado, handler completo em
+  `decision_engine.py:2512-2566` incluindo caso dinâmico. Contagem real 15
+  cartas (TODO dizia 8 — dobrou).
+- `plan_don_distribution` — já subtrai a reserva defensiva
+  (`decision_engine.py:4720`), só ignora no modo LETHAL deliberadamente
+  (decisão do usuário em 27/06).
+- `on_opponent_attack timing` — já existe e já é executado, confirmado de
+  novo.
+
+Corrigi o TODO.md marcando os 5 como feitos com a contagem/localização real,
+mantendo só os 2 itens genuinamente pendentes:
+- `lock_opp_attack_unless_pays` (OP08-043, 1 carta) — placeholder não
+  implementado em `decision_engine.py:2438-2439`.
+- `deck_reorder_rest`/`deck_top_rest` — duas actions DISTINTAS sem handler
+  de execução (`deck_reorder_rest`: 16 cartas; `deck_top_rest`: 5 cartas
+  próprias — OP02-057, OP05-043, OP08-053, OP11-040, OP11-104).
+
+**Ainda falta:** implementar esses 2 itens reais (próximo passo desta
+sessão).
+
+---
+
 ## 2026-06-30 (8) - Claude
 
 **Feito - Counter events: buff + play_card/busca em deck (última fatia
