@@ -285,6 +285,23 @@ de imunidade e stubs antigos listados abaixo.
   (2, busca complexa), os 44 sem nenhum buff `battle_only` (padrões
   totalmente diferentes: KO puro, debuff puro do atacante, bounce puro já
   coberto, etc.) — ver auditoria detalhada no HANDOFF.md de 30/06/2026 (4).
+- [x] **Counter events: duration='this_turn' + select_filtered (30/06/2026):**
+  dos 44 sem `buff_power(battle_only)`, 14 tinham SO um `buff_power` com
+  `duration='this_turn'` (nao `battle_only`) — o planner exigia
+  `battle_only` estritamente. Como o Counter Step so acontece DENTRO da
+  resolucao da batalha em curso, e o resto do engine ja trata as duas
+  durations de forma identica na limpeza (reset de `power_buff` no inicio do
+  turno), ampliei o filtro pra aceitar as duas. Desbloqueia 5 cartas com
+  `target` ja suportado (leader/leader_or_character): OP04-037, OP04-076,
+  OP06-017, OP09-039, OP13-077. As outras 9 usam `target='select_filtered'`
+  ("Up to 1 of your [Tipo] Leader or Character cards gains +X power") —
+  adicionado como novo `target_rule`, mas so conta como defesa valida se o
+  ALVO REAL sob ataque bater no `filter_type` (via `card_matches_filter`);
+  senao a carta buffaria outro aliado que nao impede o hit desta batalha.
+  Desbloqueia EB03-029, EB04-019, EB04-029, OP07-018, OP14-117, OP15-038,
+  OP15-074, OP15-075, OP15-076. Cobertura subiu de 114/180 pra 128/180.
+  Validado com `audit_replay.py --n 20 --seed 7` e `--n 15 --seed 99`: 0
+  excecoes, 0 anomalias.
 - [ ] Implementar substituição externa: auditoria de 29/06/2026 achou cerca de
   38 textos onde uma fonte em campo/líder protege outro alvo (`if your Character
   would be removed/K.O.'d...`). O parser já estrutura muitos como

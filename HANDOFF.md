@@ -1,5 +1,46 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-06-30 (5) - Claude
+
+**Feito - Counter events: duration='this_turn' + select_filtered:**
+continuação direta da auditoria dos 44 eventos `[Counter]` sem nenhum
+`buff_power(battle_only)`. Achei que 14 deles tinham um único `buff_power`
+mas com `duration='this_turn'` em vez de `battle_only` — o planner exigia
+`battle_only` estritamente e descartava esses casos.
+
+1. **`this_turn` também conta como defesa de batalha**: o Counter Step só
+   acontece DENTRO da resolução da batalha em curso, e o resto do engine já
+   trata `'this_turn'`/`'battle_only'` de forma idêntica na limpeza (reset
+   de `power_buff` no início do turno) — então restringir a `battle_only` era
+   conservador demais sem necessidade. Ampliei o filtro em
+   `_counter_event_power_plan`. Desbloqueia 5 cartas com `target` já
+   suportado: OP04-037, OP04-076, OP06-017, OP09-039, OP13-077.
+2. **Novo `target_rule='select_filtered'`**: as outras 9 cartas usam "Up to
+   1 of your [Tipo] Leader or Character cards gains +X power" — o alvo é
+   escolhido por filtro de tipo, não necessariamente o defensor. Validação
+   importante: só conta como defesa válida se o **alvo real sob ataque**
+   bater no `filter_type` (via `card_matches_filter`), senão a carta
+   buffaria outro aliado qualquer que não impede o hit desta batalha
+   especificamente. Desbloqueia EB03-029, EB04-019, EB04-029, OP07-018,
+   OP14-117, OP15-038, OP15-074, OP15-075, OP15-076.
+
+Cobertura de Counter events com buff `battle_only`/`this_turn` foi de
+114/180 pra 128/180.
+
+**Validação:** `python -m py_compile`; `python smoke_test.py` (64/64, 5 casos
+novos cobrindo `this_turn` e `select_filtered` positivo/negativo); `python
+smoke_test_broad.py` (40/40); `python audit_replay.py --n 20 --seed 7` e
+`--n 15 --seed 99` (0 exceções, 0 anomalias nas duas).
+
+**Ainda falta (ver TODO.md):** os 30 eventos `[Counter]` restantes — KO puro
+(4), debuff puro do atacante (6+1 duplo), `play_card`/`play_from_deck`/busca
+em deck (9, lógica de seleção mais complexa), `bounce` puro (2, já avaliado
+como fora de escopo da rota defensiva em sessão anterior), `substitute_ko`/
+`immunity`/`negate_effect` combinados (4, mecânicas distintas que merecem
+auditoria própria) e alguns casos mistos únicos.
+
+---
+
 ## 2026-06-30 (4) - Claude
 
 **Feito - fatia de Counter events: 2º buff condicional + extras simples:**

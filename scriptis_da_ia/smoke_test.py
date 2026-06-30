@@ -801,6 +801,40 @@ counter = ee.try_counter_event_power(me.leader, 'leader', needed=4000)
 check('Counter event com gain_life ativa quando condicao passa (life_lte 2)',
       counter and counter[0] == 4000 and evento_gain_life in me.trash)
 
+# ── 15e. Counter events com buff duration='this_turn' (nao so 'battle_only')
+# -- o Counter Step so acontece DENTRO da resolucao da batalha, entao
+# 'this_turn' tambem impede o hit. OP13-077 (target='leader' direto) ──
+me, opp = me_opp()
+me.don_available = 2
+evento_this_turn = mk('OP13-077', 'Go All the Way to the Top', card_type='EVENT', cost=2)
+me.hand = [evento_this_turn]
+ee = EffectExecutor(me, opp)
+counter = ee.try_counter_event_power(me.leader, 'leader', needed=3000)
+check('Counter event com buff duration=this_turn conta como defesa de batalha',
+      counter and counter[0] == 3000 and evento_this_turn in me.trash)
+
+# ── 15f. Counter events com target='select_filtered' -- so conta como
+# defesa se o ALVO REAL sob ataque bater no filtro (EB03-029: Boa Hancock) ──
+me, opp = me_opp()
+me.don_available = 2
+me.leader = mk('LD-BH', 'Boa Hancock Leader', power=5000, card_type='LEADER', sub_types='Boa Hancock Pirates')
+evento_filtrado = mk('EB03-029', 'Insolent Fool Stand Down', card_type='EVENT', cost=2)
+me.hand = [evento_filtrado]
+ee = EffectExecutor(me, opp)
+counter = ee.try_counter_event_power(me.leader, 'leader', needed=3000)
+check('Counter event select_filtered protege quando o alvo sob ataque bate no filtro',
+      counter and counter[0] == 3000 and evento_filtrado in me.trash)
+
+me, opp = me_opp()
+me.don_available = 2
+me.leader = mk('LD-OUTRO', 'Leader qualquer', power=5000, card_type='LEADER', sub_types='Navy')
+evento_filtrado2 = mk('EB03-029', 'Insolent Fool Stand Down', card_type='EVENT', cost=2)
+me.hand = [evento_filtrado2]
+ee = EffectExecutor(me, opp)
+counter = ee.try_counter_event_power(me.leader, 'leader', needed=1)
+check('Counter event select_filtered nao protege alvo fora do filtro',
+      counter is None and evento_filtrado2 in me.hand)
+
 print()
 print(f'{"TODOS OS TESTES PASSARAM" if FAIL == 0 else f"{FAIL} TESTE(S) FALHARAM"}')
 sys.exit(1 if FAIL else 0)

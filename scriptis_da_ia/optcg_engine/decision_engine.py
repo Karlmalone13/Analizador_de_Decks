@@ -1229,9 +1229,15 @@ class EffectExecutor:
         if not block or not self._check_conditions(block.get('conditions', {}), event):
             return None
         steps = block.get('steps', [])
+        # 'this_turn' conta igual a 'battle_only' aqui: o Counter Step so
+        # acontece DENTRO da resolucao desta batalha, e o resto do engine ja
+        # trata as duas durations de forma identica na limpeza (reset de
+        # power_buff no inicio do turno) -- achado 30/06/2026, 5 cartas reais
+        # no banco usam 'this_turn' num buff que so faz sentido como defesa
+        # de Counter (OP04-037, OP04-076, OP06-017, OP09-039, OP13-077).
         buff_steps = [
             step for step in steps
-            if step.get('action') == 'buff_power' and step.get('duration') == 'battle_only'
+            if step.get('action') == 'buff_power' and step.get('duration') in ('battle_only', 'this_turn')
         ]
         if not buff_steps:
             return None
@@ -1250,7 +1256,16 @@ class EffectExecutor:
             return None
         if target_rule == 'own_character' and target_type != 'character':
             return None
-        if target_rule not in ('leader', 'own_character', 'leader_or_character'):
+        if target_rule == 'select_filtered':
+            # "Up to 1 of your [Tipo] type Leader or Character cards gains
+            # +X power" -- so conta como defesa se o ALVO REAL sob ataque
+            # (target, o leader/character defendendo) bater no filtro; senao
+            # o efeito buffaria outra carta qualquer, que nao impede o hit
+            # nesta batalha (achado 30/06/2026, 9 cartas no banco).
+            from optcg_engine.rules_facade import card_matches_filter
+            if not card_matches_filter(target, principal.get('filter_type', '')):
+                return None
+        elif target_rule not in ('leader', 'own_character', 'leader_or_character'):
             return None
         if principal.get('conditions') and not self._check_conditions(principal.get('conditions', {}), event):
             return None
