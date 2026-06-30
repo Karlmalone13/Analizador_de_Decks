@@ -1126,14 +1126,17 @@ def parse_lock_attack(text):
     m = re.search(
         r"up to (\d+) of your opponent.{0,15}characters?"
         r"(?: with a cost of (\d+) or less)?"
+        r"(?: other than \[([^\]]+)\])?"
         r" cannot (attack|be rested) until ([^.]+)",
         t
     )
     if m:
-        action = 'lock_opp_character_attack' if m.group(3) == 'attack' else 'lock_opp_cannot_be_rested'
-        step = {'action': action, 'count': int(m.group(1)), 'duration': parse_duration(m.group(4))}
+        action = 'lock_opp_character_attack' if m.group(4) == 'attack' else 'lock_opp_cannot_be_rested'
+        step = {'action': action, 'count': int(m.group(1)), 'duration': parse_duration(m.group(5))}
         if m.group(2):
             step['cost_lte'] = int(m.group(2))
+        if m.group(3):
+            step['exclude'] = m.group(3).strip()
         steps.append(step)
         return steps
 
@@ -2418,6 +2421,21 @@ def _apply_substitute_target_filters(step, text, removal_kind):
     if exclude_m:
         step['exclude'] = exclude_m.group(1).strip()
 
+    # "if one of your Characters would be removed..." -- sujeito GENUINAMENTE
+    # sem restricao nenhuma (sem nome/tipo/cor/atributo/custo/power/exclude).
+    # Achado 02/07/2026 (OP16-014): distinto de "parser falhou em extrair um
+    # filtro que existe" -- aqui o texto real nao tem filtro nenhum, e
+    # _target_matches_external_substitute trata "nenhuma chave de filtro" como
+    # "protecao desligada" por seguranca (padrao pensado pra falha de parser,
+    # nao pra texto sem filtro de verdade). Marca explicitamente com
+    # 'no_filter' pra o executor distinguir os dois cenarios.
+    if not any(k in step for k in (
+            'filter_name', 'filter_type', 'filter_color', 'filter_attribute',
+            'cost_lte', 'cost_gte', 'power_lte', 'power_eq', 'power_gte',
+            'rested_only', 'exclude')):
+        if re.fullmatch(r'(?:up to \d+ |one |any )*of your characters?', subject.strip()):
+            step['no_filter'] = True
+
     return step
 
 
@@ -2440,6 +2458,16 @@ def _parse_substitute_cost(t):
     extra_steps = []
 
     m = re.search(r"you may trash this character instead", t)
+    if m:
+        return {'action': 'trash_self'}, extra_steps
+
+    # "you may K.O. this character instead" -- custo de substituicao via
+    # auto-K.O. (achado 02/07/2026, OP16-014 Marco). Na regra real, o K.O.
+    # ativa efeitos on_ko da carta (ex: Marco se ressuscita do trash).
+    # Simplificacao aqui: mapeado para trash_self (remocao sem ativar on_ko
+    # no proprio contexto de substituicao -- on_ko sera ativado normalmente
+    # quando o K.O. ocorrer via caminho de combate/efeito direto).
+    m = re.search(r"you may k\.?o\.? this character instead", t)
     if m:
         return {'action': 'trash_self'}, extra_steps
 
@@ -2547,6 +2575,15 @@ def _parse_substitute_cost(t):
     m = re.search(r"you may (?:return|place) (\d+) of your characters?[^.]*instead", t)
     if m:
         return {'action': 'place_own_character_bottom_deck', 'count': int(m.group(1))}, extra_steps
+
+    # "you may rest N of your opponent's Characters instead" -- mecanica
+    # INVERTIDA (achado 02/07/2026, OP07-029): nao sacrifica nada proprio,
+    # so resta um Character do OPONENTE. Testada DEPOIS de
+    # 'rest N of your characters' pra nao precisar de lookahead negativo --
+    # a presenca de "opponent's" e que distingue.
+    m = re.search(r"you may rest (\d+) of your opponent.?s characters?[^.]*instead", t)
+    if m:
+        return {'action': 'rest_opp_character', 'count': int(m.group(1))}, extra_steps
 
     return None, extra_steps
 
@@ -2904,7 +2941,15 @@ def parse_block(block_text, trigger_name):
     if re.search(r"would be removed from the field", t):
         sub_steps = parse_substitute_removal(t)
         if sub_steps:
-            prefix = re.split(r"if .*?would be removed from the field", t, maxsplit=1)[0].strip()
+            # Localiza o inicio da clausula de substituicao no texto:
+            # acha "would be removed from the field" e retrocede ate o "if"
+            # imediatamente anterior (rfind ao inves de split previne infinita
+            # recursao quando ha outro "if" mais cedo no texto, ex: OP07-029
+            # que tem "if [leader] type" antes do "if this character would be
+            # removed").
+            _m_rem = re.search(r"would be removed from the field", t)
+            _if_pos = t.rfind('if ', 0, _m_rem.start()) if _m_rem else -1
+            prefix = t[:_if_pos].strip() if _if_pos >= 0 else ''
             prefix_steps = parse_block(prefix, trigger_name) if prefix else []
             if prefix_steps and not (len(prefix_steps) == 1 and '_choice' in prefix_steps[0]):
                 return prefix_steps + sub_steps

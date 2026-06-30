@@ -389,7 +389,11 @@ class GameState:
         novo.counters_used = self.counters_used
         novo.searchers_used = self.searchers_used
         novo.triggers_activated = self.triggers_activated
-        novo.full_deck_census = _dc(self.full_deck_census, memo)
+        # full_deck_census e INVARIANTE (setado no setup, nunca mutado durante
+        # o jogo) -- compartilhamos a REFERENCIA em vez de deepcopiar o dict
+        # inteiro a cada clone do Turn Planner (economiza ~0.1ms por clone
+        # sem risco de corrupcao, confirmado por leitura de todos os call sites).
+        novo.full_deck_census = self.full_deck_census
         novo.revealed_to_opponent = set(self.revealed_to_opponent)
         novo.blocker_lock_battle = _dc(self.blocker_lock_battle, memo)
         novo.end_of_turn_queue = _dc(self.end_of_turn_queue, memo)
@@ -1127,6 +1131,13 @@ class EffectExecutor:
             'power_lte', 'power_eq', 'power_gte', 'rested_only', 'exclude', 'exclude_self',
         )
         target_cond_keys = ('self_type', 'self_power_base_lte', 'self_power_base_gte')
+        # 'no_filter': marcado explicitamente pelo parser quando o texto real
+        # nao tem restricao nenhuma de alvo (ex: OP16-014 "if one of your
+        # Characters would be removed..."). Distinto de "nenhuma chave
+        # presente" generico (que continua tratado como "protecao desligada"
+        # por seguranca, default pra falha de extracao de filtro).
+        if step.get('no_filter'):
+            return True
         return any(k in step for k in target_keys) or any(k in conds for k in target_cond_keys)
 
     def _try_external_substitute_from_source(self, source: Card, target: Card,
@@ -1704,6 +1715,33 @@ class EffectExecutor:
                 me.deck.insert(0, pior)
                 movidas.append(pior.name[:15])
             return f'{card.name[:18]} evitou K.O./remoção mandando pro fundo do deck: {", ".join(movidas)}'
+
+        if ctype == 'rest_opp_character':
+            # OP07-029 (Basil Hawkins): "you may rest 1 of your opponent's
+            # Characters instead" -- custo INVERTIDO, nao sacrifica nada
+            # proprio, resta um Character do OPONENTE. Distingue de
+            # rest_own_character (mesmo nome raiz, alvo oposto). Verifica
+            # imunidade a rest da carta alvo (mesmo criterio do action
+            # 'rest_opp_character' usado para efeitos diretos). Heuristica:
+            # escolhe o MELHOR Character do oponente pra restar (maior
+            # board_value), pois e um custo que beneficia quem ativa.
+            from optcg_engine.rules_facade import eligible_cards, choose_highest_board_value
+            count = cost.get('count', 1)
+            candidatos = [
+                c for c in self.opp.field_chars
+                if not c.rested
+                and not c.cannot_be_rested_until
+                and not is_immune(c, 'rest', self.opp, me, source_is_opp=True)
+            ]
+            if len(candidatos) < count:
+                return None
+            restados = []
+            for _ in range(count):
+                alvo = choose_highest_board_value(candidatos)
+                alvo.rested = True
+                remove_by_identity(candidatos, alvo)
+                restados.append(alvo.name[:15])
+            return f'{card.name[:18]} evitou K.O./remoção restando {", ".join(restados)} do oponente'
 
         return None
 
@@ -4331,18 +4369,6 @@ class GameAnalyzer:
         else:
             return hits_que_conectam >= 1
 
-    def _count_available_attacks(self) -> int:
-        """Conta ataques disponíveis incluindo double attack."""
-        count = 0
-        if not self.me.cannot_attack_leader_this_turn and not self.me.leader.rested:
-            count += 1
-        for c in self.me.field_chars:
-            if (not c.rested and not c.just_played and not c.cannot_attack_until
-                    and not c.cannot_be_rested_until and not is_attack_locked_self(c, self.me, self.opp)
-                    and can_afford_attack_paywall(c, self.me)):
-                count += 2 if c.is_double_attack() else 1
-        return count
-
     # ── Análise de defesa ────────────────────────────────────────────────────
 
     def opp_lethal_threat(self) -> float:
@@ -4777,46 +4803,6 @@ class DecisionEngine:
                 return False
         return True
 
-    def choose_card_to_play(self) -> 'Optional[Card]':
-        """
-        Escolhe a melhor carta para jogar considerando:
-        - DON que vai sobrar depois
-        - Necessidade de reservar DON para defesa/efeitos
-        - Se as condições do efeito da carta estão satisfeitas
-        - Postura atual
-        """
-        a = self.analyzer
-
-        # Quanto DON reservar para defesa
-        don_reserve = self._don_reserve_for_defense()
-
-        playable = []
-        for c in self.me.hand:
-            if c.card_type not in ('CHARACTER', 'EVENT', 'STAGE'):
-                continue
-            don_usable = self._don_usable_for_play(c, don_reserve)
-            if effective_hand_play_cost(self.me, c) > don_usable:
-                continue
-            # Não joga Counter como carta normal
-            if '[counter]' in c.card_text.lower() and c.card_type == 'EVENT':
-                continue
-            # Eventos sem efeito main/on_play não devem ser jogados
-            effects = get_card_effects(c.code)
-            has_main = any(t in effects for t in ('on_play', 'main', 'activate_main'))
-            if c.card_type == 'EVENT' and not has_main:
-                continue
-            # NÃO joga carta cujo efeito condicional não vai ativar.
-            # Exceção: CHARACTER com poder relevante vale pelo corpo mesmo sem efeito.
-            if not self._effect_conditions_met(c):
-                vale_pelo_corpo = (c.card_type == 'CHARACTER' and c.power >= 5000)
-                if not vale_pelo_corpo:
-                    continue
-            playable.append(c)
-
-        if not playable:
-            return None
-        return max(playable, key=self.avaliar_carta)
-
     def _has_don_reactive_use(self) -> bool:
         """
         Existe algum jeito real de gastar DON reservado durante o turno do
@@ -4929,197 +4915,7 @@ class DecisionEngine:
 
     # ── Distribuição de DON ───────────────────────────────────────────────────
 
-    def plan_don_distribution(self, attackers: list) -> dict:
-        """
-        Planeja a distribuição ótima de DON entre os atacantes.
-
-        Retorna dict: {card: don_amount}
-
-        Lógica:
-        1. Se pode finalizar — concentra DON no atacante mais forte
-        2. Se deve limpar campo — distribui para atingir cartas inimigas
-        3. Senão — distribui para maximizar dano na vida respeitando counters
-        """
-        a = self.analyzer
-        don_available = self.me.don_available
-        result = {id(att): 0 for att in attackers}
-        _att_map = {id(att): att for att in attackers}
-
-        if don_available <= 0 or not attackers:
-            return result
-
-        # Estima defesa do oponente
-        opp_leader_power = self.opp.leader.power
-        estimated_counter = a.opp_counter_potential()
-
-        # ── Modo LETHAL: concentra no mais forte, gasta TUDO (sem reserva,
-        # confirmado por Arthur -- ir pro lethal vale mais que guardar DON) ──
-        if a.can_lethal_this_turn() or self.posture() == 'LETHAL':
-            # Ordena: mais forte primeiro
-            sorted_atk = sorted(attackers,
-                                 key=lambda c: c.effective_power(True),
-                                 reverse=True)
-            # Concentra no atacante principal
-            main_atk = sorted_atk[0]
-            result[id(main_atk)] = don_available
-            return result
-
-        # ── Reserva de DON para defesa (CLEAR FIELD e NORMAL apenas --
-        # auditoria 27/06: choose_card_to_play/_can_play_card já reservavam
-        # no Main Phase, mas a distribuição em combate ignorava por completo,
-        # podendo zerar o DON disponível pro Counter Step do oponente mesmo
-        # quando a análise de risco pedia reserva). _don_reserve_for_defense
-        # já corta pra 0 se não houver nenhum uso reativo real (ver
-        # _has_don_reactive_use) -- não reserva à toa.
-        don_reserve = self._don_reserve_for_defense()
-        don_available = max(0, don_available - don_reserve)
-        if don_available <= 0:
-            return result
-
-        # ── Modo CLEAR FIELD: distribui para restar/destruir cartas ──────────
-        if a.should_clear_field() and self.opp.rested_chars():
-            targets = sorted(self.opp.rested_chars(),
-                             key=lambda c: c.power)
-            don_left = don_available
-            for att in attackers:
-                if don_left <= 0:
-                    break
-                # Quanto DON precisa para superar o alvo mais fraco?
-                if targets:
-                    target_power = targets[0].power
-                    att_base = att.effective_power(True)
-                    don_needed = max(0, (target_power - att_base + 1000) // 1000)
-                    don_give   = min(don_needed, don_left)
-                    result[id(att)] = don_give
-                    don_left -= don_give
-                    if don_give >= don_needed and targets:
-                        targets.pop(0)
-            return result
-
-        # ── Modo NORMAL: distribui para superar defesa do líder ──────────────
-        # Ordena atacantes: mais fraco primeiro (gasta counters do oponente)
-        sorted_atk = sorted(attackers,
-                             key=lambda c: c.effective_power(True))
-
-        don_left = don_available
-        # Distribui DON para o atacante mais forte superar a defesa estimada
-        if sorted_atk:
-            strong_atk = sorted_atk[-1]  # mais forte
-            needed = max(0, (opp_leader_power + 1000 - strong_atk.effective_power(True)) // 1000)
-            don_give = min(needed, don_left)
-            result[id(strong_atk)] += don_give
-            don_left -= don_give
-
-        # DON restante vai para o segundo mais forte — SÓ se o ataque tiver
-        # chance de passar. Não desperdiça DON num ataque que não supera a
-        # defesa nem com o DON (ex: personagem 2000 + 2 DON = 4000 < líder 5000).
-        if don_left > 0 and len(sorted_atk) >= 2:
-            second_atk = sorted_atk[-2]
-            second_power = second_atk.effective_power(True)
-            # com o DON restante, esse ataque chega a quanto?
-            reachable = second_power + don_left * 1000
-            # alvo mínimo viável: superar o líder (ou um personagem restado fraco)
-            min_target = opp_leader_power
-            rested = self.opp.rested_chars()
-            if rested:
-                min_target = min(min_target, min(c.power for c in rested))
-            # só anexa se o ataque puder ALCANÇAR o alvo (senão é desperdício)
-            if reachable >= min_target:
-                # anexa só o necessário para alcançar, não todo o resto
-                needed2 = max(0, (min_target - second_power + 999) // 1000)
-                result[id(second_atk)] += min(needed2, don_left)
-            # se não alcança nem com tudo, não anexa (deixa DON livre)
-        return result
-
     # ── Ordem e escolha de ataques ────────────────────────────────────────────
-
-    def plan_attacks(self, attackers: list) -> list:
-        """
-        Planeja a ordem ótima de ataques.
-
-        Retorna lista de (attacker, target_type, target) em ordem de execução.
-
-        Lógica:
-        1. Cartas com When Attacking têm prioridade
-        2. Mais fraco primeiro (gasta counters/blockers do oponente)
-        3. Mais forte por último (no alvo mais importante)
-        4. Se pode finalizar, concentra todos no líder
-        """
-        a = self.analyzer
-        plan = []
-
-        if not attackers:
-            return plan
-
-        # Separa: cartas com when_attacking vs normais
-        when_atk = []
-        normal   = []
-        for att in attackers:
-            effects = get_card_effects(att.code)
-            if 'when_attacking' in effects:
-                when_atk.append(att)
-            else:
-                normal.append(att)
-
-        # ── Modo LETHAL: todos atacam o líder (que tenham chance) ────────────
-        if a.can_lethal_this_turn():
-            # Mais fraco primeiro para gastar counters, mais forte por último
-            all_atk = sorted(attackers, key=lambda c: c.effective_power(True))
-            for att in all_atk:
-                # mesmo no lethal, não inclui ataque que não passa nem ativa nada
-                if self.score_attack_target(att, 'leader', None) > -500:
-                    plan.append((att, 'leader', None))
-            return plan
-
-        # ── Modo CLEAR FIELD: ataca cartas restadas ──────────────────────────
-        rested_targets = sorted(self.opp.rested_chars(),
-                                key=lambda c: c.board_value(), reverse=True)
-
-        if a.should_clear_field() and rested_targets:
-            # When attacking primeiro
-            for att in when_atk:
-                if rested_targets:
-                    plan.append((att, 'character', rested_targets[0]))
-                    rested_targets = rested_targets[1:]
-                else:
-                    plan.append((att, 'leader', None))
-
-            # Mais fracos atacam cartas restadas primeiro
-            weak_first = sorted(normal, key=lambda c: c.effective_power(True))
-            for att in weak_first:
-                if rested_targets:
-                    target = rested_targets[0]
-                    if att.effective_power(True) >= target.power:
-                        plan.append((att, 'character', target))
-                        rested_targets = rested_targets[1:]
-                    else:
-                        plan.append((att, 'leader', None))
-                else:
-                    plan.append((att, 'leader', None))
-            return plan
-
-        # ── Modo NORMAL: mix de ataques ───────────────────────────────────────
-        # When attacking primeiro (aproveitam o efeito)
-        for att in when_atk:
-            plan.append((att, 'leader', None))
-
-        # Mais fracos atacam a vida primeiro (gastam counters do oponente)
-        sorted_normal = sorted(normal, key=lambda c: c.effective_power(True))
-        for att in sorted_normal:
-            # Avalia se ataque na vida ou em personagem restado
-            best_score = self.score_attack_target(att, 'leader', None)
-            best_action = (att, 'leader', None)
-
-            for t in self.opp.rested_chars():
-                s = self.score_attack_target(att, 'character', t)
-                if s > best_score:
-                    best_score = s
-                    best_action = (att, 'character', t)
-
-            if best_score > -500:
-                plan.append(best_action)
-
-        return plan
 
     def _rest_activates_effect(self, card) -> bool:
         """
@@ -5416,34 +5212,6 @@ class OPTCGMatch:
         self.model_for_a = OpponentModel(full_decklist=list(self.state_b.deck))
         self.model_for_b = OpponentModel(full_decklist=list(self.state_a.deck))
 
-    def _distribute_don(self, p: GameState, engine: 'DecisionEngine'):
-        """
-        Distribui DON disponível antes dos ataques.
-        Baseado no AttachDon das 34k linhas.
-        IA: dá DON ao atacante mais forte que ainda não atacou.
-        """
-        if p.don_available <= 0:
-            return
-
-        opp = self.state_b if p is self.state_a else self.state_a
-
-        # Candidatos: personagens ativos + líder
-        candidates = [c for c in p.field_chars
-                      if not c.rested and not c.just_played and not c.cannot_attack_until
-                      and not c.cannot_be_rested_until and not is_attack_locked_self(c, p, opp)
-                      and can_afford_attack_paywall(c, p)]
-        if not p.leader.rested:
-            candidates.append(p.leader)
-
-        if not candidates:
-            return
-
-        # Distribui DON ao mais forte (maximiza poder de ataque)
-        best = max(candidates, key=lambda c: c.effective_power(True))
-        don_to_give = p.don_available
-        best.don_attached += don_to_give
-        p.don_available -= don_to_give
-
     # ── Setup (CheckStartOfGameActions das 34k linhas) ───────────────────────
 
     def _place_start_stage(self, p: GameState, opp: GameState = None):
@@ -5517,6 +5285,7 @@ class OPTCGMatch:
     def _mulligan_decision(self, hand, deck=None) -> tuple:
         """
         Decide mulligan seguindo o documento (pág. 2) e as regras do usuário.
+        Chamado por replay_optcg.ReplayMatch.setup().
 
         Avalia (contagem simples — sinais bons vs ruins):
         - Jogada para T1/T2/T3: consigo aproveitar o DON de cada turno com as
@@ -5534,17 +5303,14 @@ class OPTCGMatch:
 
         bons, ruins, motivos = 0, 0, []
 
-        # ── Jogada por turno: consigo gastar o DON do turno? ──
-        # DON disponível no turno N (jogador 1): T1=1, T2=3, T3=5
         def aproveita_don(don_disp):
-            # tenta somar custos de cartas (cada uma usada uma vez) até o DON
             restante = don_disp
             usadas = 0
             for c in custos:
                 if c <= restante and c > 0:
                     restante -= c
                     usadas += 1
-            return usadas > 0  # jogou pelo menos 1 carta aproveitando o turno
+            return usadas > 0
 
         t1 = aproveita_don(1)
         t2 = aproveita_don(3)
@@ -5557,30 +5323,25 @@ class OPTCGMatch:
             ruins += 1
             motivos.append('mao lenta (sem jogadas para os primeiros turnos)')
 
-        # ── Tem searcher na mão? (bom) ──
         tem_searcher = any(getattr(c, 'is_searcher', False) or 'search' in c.card_text.lower()
                            for c in non_leader)
         if tem_searcher:
             bons += 1; motivos.append('tem searcher')
 
-        # ── Tem ramp de DON? (bom) ──
         tem_ramp = any('don' in c.card_text.lower() and
                        ('add' in c.card_text.lower() or 'active' in c.card_text.lower())
                        for c in non_leader)
         if tem_ramp:
             bons += 1; motivos.append('tem ramp de DON')
 
-        # ── Trigger demais na mão (relativo ao deck) ──
         if deck:
             census = deck_census(deck)
             trig_no_deck = max(1, census['trigger'])
             trig_na_mao = sum(1 for c in non_leader if getattr(c, 'has_trigger', False))
-            # se metade ou mais dos triggers do deck estão na mão, é ruim
             if trig_na_mao >= 2 and trig_na_mao >= trig_no_deck * 0.5:
                 ruins += 1
                 motivos.append(f'trigger demais na mao ({trig_na_mao} de {trig_no_deck} do deck)')
 
-        # ── Counter de menos na mão (ruim) ──
         counters_mao = sum(1 for c in non_leader if getattr(c, 'counter', 0) >= 1000)
         if counters_mao == 0:
             ruins += 1; motivos.append('sem counter na mao')
@@ -6148,7 +5909,17 @@ class OPTCGMatch:
         """
         from copy import deepcopy
         p2 = deepcopy(p)
+        # Optimizacao: o deck do OPONENTE nunca e mutado durante a simulacao
+        # do turno do jogador ativo (oponente nao age, nao compra cartas,
+        # nao sofre mill em cenarios tipicos). Evitamos deepcopiar ~49 Cards
+        # zerando temporariamente o deck antes do clone e restaurando como
+        # lista rasa depois -- economiza ~0.5-0.7ms por chamada sem risco
+        # de corrupcao do estado real (opp.deck nao e tocado apos a linha 'p2=').
+        _opp_deck = opp.deck
+        opp.deck = []
         opp2 = deepcopy(opp)
+        opp.deck = _opp_deck
+        opp2.deck = list(_opp_deck)  # lista nova, Cards compartilhados (leitura apenas)
 
         if amostra is not None:
             # Substitui mão e vida REAIS de opp2 pela amostra Monte Carlo

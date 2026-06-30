@@ -1,6 +1,67 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
-## 2026-07-02 (2) - Claude — ÚLTIMA DESTA SESSÃO
+## 2026-07-02 (3) - Claude — ÚLTIMA DESTA SESSÃO
+
+**Feito — os 4 itens do usuário em sequência: substituição externa (2
+cartas), imunidade/exclusão (2 cartas), 5 funções órfãs, deepcopy.**
+
+**Substitução externa (OP07-029 + OP16-014):**
+- *OP07-029 (Basil Hawkins)*: novo cost type `rest_opp_character` em
+  `_parse_substitute_cost` + handler em `_pay_substitute_cost` (resta o
+  melhor Character do oponente, verifica imunidade a rest). Bônus: o
+  `rfind('if ')` trick corrigiu um bug silencioso no split de prefixo de
+  `parse_block` — o regex original `if .*?` consumia a partir do PRIMEIRO
+  "if" do texto (e.g. a condição de tipo do Leader), deixando o prefixo
+  vazio; a nova heurística localiza o "if" mais próximo de "would be
+  removed from the field". Bônus 2: ST15-005 também ganhou `gain_rush`
+  que estava sendo silenciado pelo mesmo bug.
+- *OP16-014 (Marco)*: novo flag `no_filter` em
+  `_apply_substitute_target_filters` (marcado quando o sujeito do "if
+  X would be removed" é genuinamente irrestrito — "one of your
+  characters" sem nenhum filtro). `_target_matches_external_substitute`
+  agora retorna True quando `no_filter=True`, em vez de tratar
+  "nenhuma chave de filtro" como "proteção desligada" (padrão de
+  segurança pra falha de extração, não pra ausência real de filtro).
+  Custo "K.O. this character instead" mapeado para `trash_self`
+  (simplificação documentada: on_ko de self-ressurreição não dispara
+  no contexto de substituição).
+
+**Imunidade/exclusão (OP16-032):** regex de `lock_opp_cannot_be_rested`
+  /`lock_opp_character_attack` extendido com grupo opcional `(?: other
+  than \[([^\]]+)\])?` — agora extrai `exclude` diretamente no parser,
+  sem handler de engine adicional (engine já lia `step.get('exclude')`
+  desde a implementação original). OP16-032 Boa Hancock agora tem
+  `on_play: lock_opp_cannot_be_rested exclude='monkey.d.luffy'` correto.
+  OP14-119 (Mihawk, trigger "when this Character becomes rested") ficou
+  de fora: exigiria modelar um novo tipo de timing de gatilho não
+  suportado, impacto baixo, 1 carta.
+
+**5 funções órfãs (→ 5 deletadas, 1 restaurada):** AST scan detectou 6
+  candidatas. Deletadas via script de remoção de linhas: `_count_available
+  _attacks`, `choose_card_to_play`, `plan_don_distribution`,
+  `plan_attacks`, `_distribute_don` (5 genuinamente mortas, -345 linhas).
+  `_mulligan_decision` foi deletada por engano e restaurada depois: é
+  chamada por `replay_optcg.py` via `self._get_engine_match()._mulligan_
+  decision(...)` — não aparecia no scan interno porque só é chamada
+  externamente. Lesson learned: AST scan de "funções não chamadas dentro
+  do arquivo" não detecta calls de arquivos externos.
+
+**Deepcopy (otimização menor):** dois pontos em `GameState.__deepcopy__` e
+  `_simulate_sequence_once`: (a) `full_deck_census` agora é referência
+  compartilhada (invariante de partida, nunca mutado); (b) `opp.deck` em
+  `_simulate_sequence_once` usa `list()` em vez de deepcopy por card —
+  salva ~0.5-0.7ms por chamada de simulação (opponent não age durante a
+  simulação do turno ativo). A dívida maior (clone incremental) permanece.
+
+**Validação:** `diff_parser.py` (PERDEU=0, 1 GANHOU + 6 MUDOU);
+  `gerar_dbs.py` + `snapshot_parser.py`; `smoke_test.py` (2 testes
+  novos, 100%); `smoke_test_broad.py` (40/40);
+  `audit_replay.py --n 20 --seed 7` e `--n 15 --seed 99` (0 exceções, 0
+  anomalias).
+
+---
+
+## 2026-07-02 (2) - Claude
 
 **Feito - corrige a "simplificação consciente" do item anterior
 (opp_hand_gte), a pedido do usuário.** O item (1) abaixo tinha deixado

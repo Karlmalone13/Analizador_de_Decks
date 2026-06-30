@@ -43444,6 +43444,10 @@
    {
     "action": "gain_blocker",
     "trigger": "passive"
+   },
+   {
+    "action": "substitute_removal",
+    "trigger": "passive"
    }
   ],
   "synergy_states": {
@@ -44422,6 +44426,10 @@
     "action": "place_opp_character_bottom_deck",
     "trigger": "on_play",
     "cost_lte": 1
+   },
+   {
+    "action": "lock_opp_character_attack",
+    "trigger": "on_play"
    }
   ],
   "synergy_states": {},
@@ -52325,6 +52333,11 @@
   "sub_types": "Egghead Seraphim",
   "attribute": "Special",
   "effects": [
+   {
+    "action": "lock_opp_character_attack",
+    "trigger": "on_play",
+    "cost_lte": 6
+   },
    {
     "action": "activate_main_effect",
     "trigger": "trigger"
@@ -89721,7 +89734,12 @@
   "color": "Red",
   "sub_types": "Whitebeard Pirates",
   "attribute": "Special",
-  "effects": [],
+  "effects": [
+   {
+    "action": "substitute_removal",
+    "trigger": "passive"
+   }
+  ],
   "synergy_states": {},
   "text": "If one of your Characters would be removed from the field by your opponent's effect, you may K.O. this character instead.\r\n[On K.O.] You may trash 1 Character card with 8000 power from your hand: Play this Character card from your trash.",
   "is_searcher": false,
@@ -90477,6 +90495,10 @@
   "sub_types": "Kuja Pirates The Seven Warlords of the Sea Impel Down",
   "attribute": "Special",
   "effects": [
+   {
+    "action": "lock_opp_cannot_be_rested",
+    "trigger": "on_play"
+   },
    {
     "action": "keyword_unblockable",
     "trigger": "passive"
@@ -108320,6 +108342,10 @@
   "attribute": "Special",
   "effects": [
    {
+    "action": "gain_rush",
+    "trigger": "passive"
+   },
+   {
     "action": "substitute_removal",
     "trigger": "passive"
    }
@@ -108341,7 +108367,7 @@
   "gains_life": false,
   "attacks_life": false,
   "trashes_own_life": false,
-  "has_rush": false,
+  "has_rush": true,
   "has_double_attack": false,
   "has_unblockable": false,
   "has_banish": false,

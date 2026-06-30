@@ -1419,6 +1419,34 @@ ee.execute(shakuyaku2, 'your_turn')
 check('OP08-046 dispara opp_place_hand_bottom_deck com mao do oponente no limiar (5 >= 5)',
       len(opp.hand) == 4)
 
+# ── 25. OP07-029 (Basil Hawkins): substituicao de remocao com custo
+# rest_opp_character -- restar 1 Character do OPONENTE em vez de gastar
+# algo proprio. Achado 02/07/2026 (carta fora de escopo anterior). ──
+me, opp = me_opp()
+hawkins = mk('OP07-029', 'Basil Hawkins', power=6000, sub_types='Supernovas')
+me.leader = mk('LD-SN', 'Capone Bege', power=5000, card_type='LEADER', sub_types='Supernovas')
+me.field_chars = [hawkins]
+opp_char = mk('OPP-CHAR', 'Char do oponente', power=7000)
+opp.field_chars = [opp_char]
+ee = EffectExecutor(me, opp)
+# "if THIS Character would be removed" -- Hawkins so protege a si mesmo
+log = ee.try_any_substitute(hawkins, 'removal', source_is_opp=True)
+check('OP07-029 substitui propria remocao restando 1 Character do oponente',
+      bool(log) and hawkins in me.field_chars and opp_char.rested)
+
+# ── 26. OP16-032 Boa Hancock: lock_opp_cannot_be_rested com exclusao
+# "other than [Monkey.D.Luffy]" agora parseada corretamente. ──
+me, opp = me_opp()
+luffy_card = mk('OP01-001', 'Monkey.D.Luffy', power=6000)
+zoro_card = mk('OP01-002', 'Roronoa Zoro', power=6000)
+opp.field_chars = [luffy_card, zoro_card]
+ee = EffectExecutor(me, opp)
+log = ee._execute_step({'action': 'lock_opp_cannot_be_rested', 'count': 1,
+                        'duration': 'until_opp_end_phase',
+                        'exclude': 'monkey.d.luffy'}, me.leader)
+check('lock_opp_cannot_be_rested com exclude nao trava Monkey.D.Luffy mas trava Zoro',
+      not luffy_card.cannot_be_rested_until and bool(zoro_card.cannot_be_rested_until))
+
 print()
 print(f'{"TODOS OS TESTES PASSARAM" if FAIL == 0 else f"{FAIL} TESTE(S) FALHARAM"}')
 sys.exit(1 if FAIL else 0)

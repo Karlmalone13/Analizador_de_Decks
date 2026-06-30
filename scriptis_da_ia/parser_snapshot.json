@@ -1539,7 +1539,8 @@
      "cost": {
       "action": "trash_from_hand",
       "count": 1
-     }
+     },
+     "no_filter": true
     }
    ]
   },
@@ -17308,6 +17309,13 @@
    "steps": [
     {
      "action": "gain_blocker"
+    },
+    {
+     "action": "substitute_removal",
+     "cost": {
+      "action": "rest_opp_character",
+      "count": 1
+     }
     }
    ]
   }
@@ -17682,6 +17690,12 @@
      "action": "place_opp_character_bottom_deck",
      "cost_lte": 1,
      "count": 1
+    },
+    {
+     "action": "lock_opp_character_attack",
+     "count": 1,
+     "duration": "until_opp_turn_end",
+     "exclude": "monkey.d.luffy"
     }
    ]
   }
@@ -20736,6 +20750,17 @@
   }
  },
  "OP08-112": {
+  "on_play": {
+   "steps": [
+    {
+     "action": "lock_opp_character_attack",
+     "cost_lte": 6,
+     "count": 1,
+     "duration": "until_opp_turn_end",
+     "exclude": "monkey.d.luffy"
+    }
+   ]
+  },
   "trigger": {
    "steps": [
     {
@@ -35784,7 +35809,19 @@
    ]
   }
  },
- "OP16-014": {},
+ "OP16-014": {
+  "passive": {
+   "steps": [
+    {
+     "action": "substitute_removal",
+     "cost": {
+      "action": "trash_self"
+     },
+     "no_filter": true
+    }
+   ]
+  }
+ },
  "OP16-015": {
   "on_opp_attack": {
    "costs": [
@@ -36050,6 +36087,16 @@
   }
  },
  "OP16-032": {
+  "on_play": {
+   "steps": [
+    {
+     "action": "lock_opp_cannot_be_rested",
+     "count": 1,
+     "duration": "until_opp_end_phase",
+     "exclude": "monkey.d.luffy"
+    }
+   ]
+  },
   "passive": {
    "steps": [
     {
@@ -42674,6 +42721,9 @@
    },
    "once_per_turn": true,
    "steps": [
+    {
+     "action": "gain_rush"
+    },
     {
      "action": "substitute_removal",
      "cost": {

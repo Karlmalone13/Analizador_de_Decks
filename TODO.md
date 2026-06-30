@@ -590,12 +590,25 @@ de imunidade e stubs antigos listados abaixo.
 - [x] ~~can_lethal_this_turn ainda cheata lendo self.opp.hand para counters~~ —
   corrigido em 29/06/2026. Agora usa counters revelados + estimativa por tamanho
   de mão oculta.
-- [ ] 5 funções órfãs — deletar ou integrar
+- [x] **5 funções órfãs — deletadas (02/07/2026).** Na contagem real eram 6
+  (mais `_mulligan_decision` que parecia orfã mas é chamada por
+  `replay_optcg.py` — restaurada depois de deletada por engano). As 5
+  efetivamente mortas e removidas: `_count_available_attacks` (GameAnalyzer),
+  `choose_card_to_play` (DecisionEngine, supersedida pelo Turn Planner),
+  `plan_don_distribution` (DecisionEngine, idem), `plan_attacks`
+  (DecisionEngine, idem), `_distribute_don` (OPTCGMatch). -345 linhas.
 - [ ] Otimização estrutural de performance: reduzir `deepcopy` no Turn Planner
   ou cachear cálculos caros (`_don_reserve_for_defense`, defesa/counter,
   geração de ações). Em 29/06/2026 foi feita só uma poda de orçamento
   (`max_steps=8`, Monte Carlo=6) para recuperar o tempo do broad; não é a
-  solução definitiva.
+  solução definitiva. Em 02/07/2026 foram feitas 2 otimizações menores de
+  `deepcopy` em `GameState.__deepcopy__`: (a) `full_deck_census` agora é
+  compartilhado por referência (é invariante durante o jogo, jamais mutado
+  — economiza deepcopy de dict de ~50 entradas por clone); (b) `opp.deck`
+  em `_simulate_sequence_once` é copiado como lista rasa (não deepcopy de
+  cada Card) pois o oponente não age durante a simulação do turno ativo —
+  economiza ~0.5-0.7ms por chamada. A dívida estrutural mais profunda
+  (clone incremental ou cache de avaliações) permanece aberta.
 
 ### Parser — cobertura
 - [ ] cartas com card_text mas effects vazio — revalidar contagem (2148 com efeito agora)
