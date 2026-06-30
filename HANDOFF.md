@@ -1,6 +1,47 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
-## 2026-07-02 (7) - Claude — ÚLTIMA DESTA SESSÃO
+## 2026-07-02 (8) - Claude — ÚLTIMA DESTA SESSÃO
+
+**Feito — 4 gaps de mecânica nova (pedidos do usuário), 2315 → 2319 com efeito.**
+
+1. **`grant_ko_immunity_type` (OP09-033 Nico Robin):** "If you have 2 or more
+   rested Characters, none of your 'ODYSSEY' or 'Straw Hat Crew' type Characters
+   can be K.O.'d by effects until the end of your opponent's next turn." Novo
+   campo `immunity_ko_until: str` em Card (mesmo padrão de `cannot_attack_until`).
+   Nova ação `grant_ko_immunity_type` com `filter_type` e `duration`. Checado em
+   `is_immune()` antes do return False. Reset em `refresh_phase`. Nova condição
+   `chars_rested_gte` em `parse_conditions`. Parser: `parse_grant_ko_immunity`.
+   Bônus: 17 outras cartas OP09-xxx com "2 or more rested characters" também
+   ganharam a condição `chars_rested_gte=2` em seus effects existentes.
+
+2. **`place_opp_char_to_opp_life` (OP04-097 Otama, OP05-111 Hotori, EB02-057
+   Mad Treasure):** "Add up to N of your opponent's [X] Characters with a cost
+   of Y or less to the top/bottom of your opponent's Life cards face-up." Remove
+   character do campo do oponente via `remove_character_from_field(..., 'hand')`
+   (sem trigger on_ko), seta `life_face_up=True` e insere em `opp.life`. Parser:
+   `parse_opp_char_to_opp_life`. Engine handler em `decision_engine.py`.
+
+3. **`set_cost_to_0` / `filter_no_effect` (OP03-091 Helmeppo):** "Set the cost
+   of up to 1 of your opponent's Characters with no base effect to 0 during this
+   turn." Novo padrão em `parse_cost_debuff`: regex `set the cost of up to N...
+   to X`. Novo campo `to_value` no step (engine calcula `cost_buff += -(
+   effective_cost - to_value)` no momento de aplicação, sem precisar do custo
+   no parse time). Novo flag `filter_no_effect` em candidatos (filtra Characters
+   com `get_card_effects().get('effects')` vazio).
+
+4. **`self_cant_take_life` (ST15-001 Atmos + OP02-004, OP02-023, OP06-020):**
+   "You cannot add Life cards to your hand using your own effects during this turn."
+   Novo campo `cant_take_life_this_turn: bool` em `GameState`, resetado em
+   `refresh_phase`. Engine: `life_to_hand` retorna '' imediatamente se flag ativa.
+   4 cartas no banco com esse texto (achado 3 bônus no processo).
+
+**Validação completa:** diff (PERDEU=0 em todos), gerar_dbs (2319 com efeito),
+  smoke_test (100%, 2 testes novos por item), smoke_test_broad (40/40),
+  audit_replay seeds 7 e 99 (0 exceções, 0 anomalias).
+
+---
+
+## 2026-07-02 (7) - Claude
 
 **Feito — Auditoria de gaps (rodada 3): 23 gaps finais, 2315 com efeito.**
 
