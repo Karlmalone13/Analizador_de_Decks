@@ -7,6 +7,39 @@ e `git status` antes de tocar em qualquer coisa.
 
 ---
 
+## 2026-06-29 23:01 — Codex
+
+**Feito** — primeira fatia do sistema de imunidade. A auditoria mostrou que a
+família não estava mais "inteira ausente": há 52 `action='immunity'` parseadas
+no banco (`ko`: 41, `removal`: 11), e os caminhos principais de KO/removal já
+consultavam `is_immune()` (KO/trash por efeito, bounce, bottom deck e KO em
+combate).
+
+**Bug corrigido:** em `ko`/`trash` com `target='all_character'`, a engine sempre
+passava `source_is_opp=True`. Isso fazia imunidade "by opponent's effects"
+proteger também contra efeitos próprios, o que é errado. Agora `source_is_opp`
+é calculado por dono do alvo: se meu efeito remove meu próprio personagem, não
+conta como efeito do oponente.
+
+**Validação:**
+- `python -m py_compile scriptis_da_ia\smoke_test.py scriptis_da_ia\optcg_engine\decision_engine.py` passou.
+- `python scriptis_da_ia\smoke_test.py` passou, com testes diretos para:
+  imunidade `source=opp` não proteger contra KO próprio; e proteger contra KO
+  vindo do oponente.
+- `python audit_replay.py --n 5 --seed 42` passou com 0 anomalias.
+- `python smoke_test_broad.py` passou `40/40`.
+
+**Próximo:** continuar imunidade, mas agora como cobertura/variantes: auditar
+textos de `EffectImmune`, `CombatImmune`, `ImmuneToStrikes`, e substituições
+"would be removed/K.O.'d ... instead" que podem ainda estar fora de `immunity`
+ou parcialmente em `substitute_*`.
+
+**Estado após esta fatia:** esperado commit/push com
+`scriptis_da_ia/optcg_engine/decision_engine.py`, `scriptis_da_ia/smoke_test.py`,
+`HANDOFF.md` e `TODO.md`.
+
+---
+
 ## 2026-06-29 22:53 — Codex
 
 **Feito** — `can_lethal_this_turn` deixou de espiar counters reais da mão oculta

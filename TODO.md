@@ -213,9 +213,13 @@ Validacao: `python smoke_test.py`; `python audit_replay.py --n 5 --seed 42`; tes
 Os 5 medios restantes foram fechados em 29/06/2026. Ainda ficam a familia grande
 de imunidade e stubs antigos listados abaixo.
 
-### Dívida técnica grande (consciente, fora de escopo)
-- [ ] Sistema de imunidade inteiro (ImmuneToKO/Removal/Combat/Effect/Strikes) — próximo bloco.
-  Família ausente, ~6 variantes. Toca combate + remoção, então deve entrar com testes diretos.
+### Dívida técnica grande — imunidade
+- [ ] Completar auditoria de imunidade (ImmuneToKO/Removal/Combat/Effect/Strikes).
+  Em 29/06/2026 foi confirmado que `ko`/`removal` já têm 52 actions parseadas e
+  os caminhos principais chamam `is_immune()`. Corrigido bug de fonte: imunidade
+  "by opponent's effects" não protege mais contra efeito próprio. Próximo passo
+  é auditar variantes ainda fora de `immunity`: `EffectImmune`, `CombatImmune`,
+  `ImmuneToStrikes` e substituições "would be removed/K.O.'d ... instead".
 
 ---
 

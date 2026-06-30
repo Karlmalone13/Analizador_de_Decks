@@ -262,6 +262,27 @@ check('can_lethal_this_turn ignora counters reais ocultos e usa tamanho da mao',
 check('can_lethal_this_turn respeita counters revelados',
       known_counter_result is False and hidden_counter_result is True)
 
+# ── 13. imunidade source=opp nao protege contra efeito proprio ──
+me, opp = me_opp()
+source = mk('SRC', 'Board wipe')
+immune_own = mk('OP07-033', 'Luffy imune proprio', power=7000)
+me.field_chars = [immune_own, mk('ALLY1', 'Ally 1'), mk('ALLY2', 'Ally 2')]
+opp.field_chars = []
+ee = EffectExecutor(me, opp)
+log = ee._execute_step({'action': 'ko', 'target': 'all_character', 'count': 99}, source)
+check('imunidade by opponent effects nao protege contra KO do proprio efeito',
+      immune_own in me.trash and immune_own not in me.field_chars)
+
+me, opp = me_opp()
+source = mk('SRC', 'Removal inimigo')
+immune_opp = mk('OP07-033', 'Luffy imune oponente', power=7000)
+opp.field_chars = [immune_opp, mk('OALLY1', 'Opp Ally 1'), mk('OALLY2', 'Opp Ally 2')]
+me.field_chars = []
+ee = EffectExecutor(me, opp)
+log = ee._execute_step({'action': 'ko', 'target': 'opp_character', 'count': 1}, source)
+check('imunidade by opponent effects protege contra KO do oponente',
+      immune_opp in opp.field_chars and immune_opp not in opp.trash and 'imune' in (log or ''))
+
 print()
 print(f'{"TODOS OS TESTES PASSARAM" if FAIL == 0 else f"{FAIL} TESTE(S) FALHARAM"}')
 sys.exit(1 if FAIL else 0)

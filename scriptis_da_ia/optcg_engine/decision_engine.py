@@ -1716,7 +1716,8 @@ class EffectExecutor:
                     # Imunidade: o alvo pode ser imune a KO/remoção por efeito do
                     # oponente. Pula o alvo (não conta como removido).
                     other = me if owner is opp else opp
-                    if is_immune(target, imm_kind, owner, other, source_is_opp=True):
+                    source_is_opp = owner is opp
+                    if is_immune(target, imm_kind, owner, other, source_is_opp=source_is_opp):
                         immune_skipped.append(target.name[:12])
                         remove_by_identity(candidates, target)
                         continue
