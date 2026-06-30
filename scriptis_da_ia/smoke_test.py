@@ -393,6 +393,58 @@ log = ee.try_counter_event_substitute(alvo, 'ko')
 check('Counter event EB02-030 nao ativa sem DON suficiente',
       log is None and evento_counter in me.hand and descarte in me.hand and me.don_available == 1)
 
+me, opp = me_opp()
+me.don_available = 2
+evento_buff = mk('OP01-086', 'Overheat', card_type='EVENT', cost=2)
+me.hand = [evento_buff]
+target = me.leader
+ee = EffectExecutor(me, opp)
+counter = ee.try_counter_event_power(target, 'leader', needed=3000)
+check('Counter event simples usa buff suficiente no leader',
+      counter and counter[0] == 4000 and evento_buff in me.trash
+      and me.don_available == 0 and me.don_rested == 2)
+
+me, opp = me_opp()
+me.don_available = 0
+evento_buff = mk('OP02-068', 'Gum-Gum Rain', card_type='EVENT', cost=0)
+descarte = mk('DISC-2', 'Carta custo buff')
+me.hand = [evento_buff, descarte]
+target = me.leader
+ee = EffectExecutor(me, opp)
+counter = ee.try_counter_event_power(target, 'leader', needed=3000)
+check('Counter event simples paga custo extra de trash da mao',
+      counter and counter[0] == 3000 and evento_buff in me.trash and descarte in me.trash)
+
+me, opp = me_opp()
+me.don_available = 1
+evento_leader = mk('OP10-019', 'Divine Departure', card_type='EVENT', cost=1)
+alvo_char = mk('CHAR-1', 'Personagem defendido')
+me.hand = [evento_leader]
+me.field_chars = [alvo_char]
+ee = EffectExecutor(me, opp)
+counter = ee.try_counter_event_power(alvo_char, 'character', needed=3000)
+check('Counter event leader-only nao buffa character',
+      counter is None and evento_leader in me.hand and evento_leader not in me.trash)
+
+me, opp = me_opp()
+me.don_available = 1
+evento_cond = mk('EB01-028', 'Champion Rifle', card_type='EVENT', cost=1)
+me.hand = [evento_cond]
+ee = EffectExecutor(me, opp)
+counter = ee.try_counter_event_power(me.leader, 'leader', needed=2000)
+check('Counter event com leader_type nao ativa para lider errado',
+      counter is None and evento_cond in me.hand)
+
+me, opp = me_opp()
+me.leader = mk('LD-IMPEL', 'Impel Leader', power=5000, card_type='LEADER', sub_types='Impel Down')
+me.don_available = 1
+evento_cond = mk('EB01-028', 'Champion Rifle', card_type='EVENT', cost=1)
+me.hand = [evento_cond]
+ee = EffectExecutor(me, opp)
+counter = ee.try_counter_event_power(me.leader, 'leader', needed=2000)
+check('Counter event com leader_type ativa para lider correto',
+      counter and counter[0] == 2000 and evento_cond in me.trash)
+
 print()
 print(f'{"TODOS OS TESTES PASSARAM" if FAIL == 0 else f"{FAIL} TESTE(S) FALHARAM"}')
 sys.exit(1 if FAIL else 0)

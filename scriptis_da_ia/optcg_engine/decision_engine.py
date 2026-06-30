@@ -1124,6 +1124,97 @@ class EffectExecutor:
 
         return None
 
+    def _counter_event_cost_payable(self, event: Card, costs: list) -> bool:
+        extra_discards = 0
+        for cost in costs:
+            ctype = cost.get('type')
+            if ctype == 'trash_from_hand':
+                extra_discards += cost.get('count', 1)
+            elif ctype == 'don_minus' and not cost.get('optional', False):
+                if self.me.don_available + self.me.don_rested < cost.get('count', 1):
+                    return False
+            elif ctype != 'don_minus':
+                return False
+        return len([c for c in self.me.hand if c is not event]) >= extra_discards
+
+    def _pay_counter_event_costs(self, event: Card, costs: list) -> list[str] | None:
+        logs = []
+        for cost in costs:
+            ctype = cost.get('type')
+            if ctype == 'trash_from_hand':
+                trashed = []
+                for _ in range(cost.get('count', 1)):
+                    candidates = [c for c in self.me.hand if c is not event]
+                    if not candidates:
+                        return None
+                    worst = self._choose_to_trash(candidates)
+                    remove_by_identity(self.me.hand, worst)
+                    self.me.trash.append(worst)
+                    trashed.append(worst.name[:15])
+                logs.append(f'trashou da mao: {", ".join(trashed)}')
+            elif ctype == 'don_minus' and not cost.get('optional', False):
+                count = cost.get('count', 1)
+                if not self._return_don_to_deck(count):
+                    return None
+                logs.append(f'devolveu {count} DON')
+        return logs
+
+    def _counter_event_buff_amount(self, event: Card, target: Card,
+                                   target_type: str) -> int | None:
+        block = get_card_effects(event.code).get('counter', {})
+        if not block or not self._check_conditions(block.get('conditions', {}), event):
+            return None
+        steps = block.get('steps', [])
+        if len(steps) != 1:
+            return None
+        step = steps[0]
+        if step.get('action') != 'buff_power' or step.get('duration') != 'battle_only':
+            return None
+        target_rule = step.get('target')
+        if target_rule == 'leader' and target_type != 'leader':
+            return None
+        if target_rule == 'own_character' and target_type != 'character':
+            return None
+        if target_rule not in ('leader', 'own_character', 'leader_or_character'):
+            return None
+        if step.get('conditions') and not self._check_conditions(step.get('conditions', {}), event):
+            return None
+        return step.get('amount', 0)
+
+    def try_counter_event_power(self, target: Card, target_type: str,
+                                needed: int) -> tuple[int, str] | None:
+        """Usa um evento [Counter] simples se o buff de batalha impedir o hit."""
+        candidates = []
+        for event in self.me.hand:
+            if event.card_type != 'EVENT':
+                continue
+            amount = self._counter_event_buff_amount(event, target, target_type)
+            if amount is None or amount < needed:
+                continue
+            play_cost = effective_hand_play_cost(self.me, event)
+            if self.me.don_available < play_cost:
+                continue
+            costs = get_card_effects(event.code).get('counter', {}).get('costs', [])
+            if not self._counter_event_cost_payable(event, costs):
+                continue
+            candidates.append((amount - needed, play_cost, event, amount, costs))
+
+        if not candidates:
+            return None
+
+        _, play_cost, event, amount, costs = min(candidates, key=lambda item: (item[0], item[1]))
+        cost_logs = self._pay_counter_event_costs(event, costs)
+        if cost_logs is None:
+            return None
+        remove_by_identity(self.me.hand, event)
+        self.me.trash.append(event)
+        self.me.don_available -= play_cost
+        self.me.don_rested += play_cost
+        log = f'Counter {event.name[:18]}: +{amount} power'
+        if cost_logs:
+            log += ' | custo: ' + '; '.join(cost_logs)
+        return amount, log
+
     def _pay_substitute_cost(self, cost: dict, card: Card) -> str | None:
         """Paga o custo de uma substituicao de K.O./remocao. Retorna log de
         sucesso, ou None se nao pode pagar (substituicao nao ocorre)."""
@@ -1313,6 +1404,9 @@ class EffectExecutor:
                 return False
         if 'leader_type_includes' in conds:
             if conds['leader_type_includes'].lower() not in me.leader.sub_types.lower():
+                return False
+        if 'leader_type' in conds:
+            if conds['leader_type'].lower() not in me.leader.sub_types.lower():
                 return False
         if conds.get('leader_multicolor'):
             colors = set(me.leader.color.replace('/', ' ').split())
@@ -5779,6 +5873,19 @@ class OPTCGMatch:
             defend_power += counter_add
             if verbose and counter_add > 0:
                 print(f'      🛡 Counter! +{counter_add} -> defesa {defend_power}')
+
+        if atk_power >= defend_power:
+            counter_target = opp.leader if target_type == 'leader' else target
+            counter_event = ee_react.try_counter_event_power(
+                counter_target,
+                target_type,
+                atk_power - defend_power + 1,
+            )
+            if counter_event:
+                amount, counter_log = counter_event
+                defend_power += amount
+                if verbose:
+                    print(f'      🛡 {counter_log} -> defesa {defend_power}')
 
         # Damage step
         if atk_power >= defend_power:

@@ -2,6 +2,15 @@
 
 ## 2026-06-29 23:35 - Codex
 
+**Update posterior - Counter buff simples:** implementada a primeira fatia de
+execucao de eventos `[Counter]`: eventos com um unico `buff_power` defensivo
+(`battle_only`) agora podem ser usados no Counter Step se o buff sozinho impedir
+o hit. A selecao escolhe o evento suficiente com menor excesso de power, respeita
+DON disponivel, custos simples de `trash_from_hand` e condicoes `leader_type`.
+Auditoria antes da implementacao encontrou 70 eventos nesse formato. Smoke cobre:
+buff no leader, custo extra de trash, target leader-only recusando Character e
+condicao `leader_type` errada/certa.
+
 **Update posterior - EB02-030:** implementado suporte estreito para Counter event
 com `counter -> substitute_ko` e custo `trash_from_hand` no K.O. em batalha.
 Hoje so existe 1 caso no banco (`EB02-030`). O evento agora exige DON suficiente,
