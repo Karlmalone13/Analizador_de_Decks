@@ -9490,6 +9490,10 @@
     "action": "rest_opp_character",
     "trigger": "on_play",
     "cost_lte": 7
+   },
+   {
+    "action": "substitute_ko",
+    "trigger": "passive"
    }
   ],
   "synergy_states": {
@@ -9534,6 +9538,10 @@
    {
     "action": "add_don",
     "trigger": "activate_main"
+   },
+   {
+    "action": "substitute_ko",
+    "trigger": "passive"
    }
   ],
   "synergy_states": {},
@@ -10117,6 +10125,10 @@
    {
     "action": "draw",
     "trigger": "your_turn"
+   },
+   {
+    "action": "substitute_removal",
+    "trigger": "passive"
    }
   ],
   "synergy_states": {},
@@ -69319,6 +69331,11 @@
   "attribute": "Slash",
   "effects": [
    {
+    "action": "substitute_ko",
+    "trigger": "passive",
+    "cost_lte": 5
+   },
+   {
     "action": "keyword_blocker",
     "trigger": "passive"
    }
@@ -83899,6 +83916,10 @@
    {
     "action": "give_don_opp",
     "trigger": "activate_main"
+   },
+   {
+    "action": "substitute_ko",
+    "trigger": "passive"
    }
   ],
   "synergy_states": {
@@ -87862,6 +87883,10 @@
   "sub_types": "Straw Hat Crew",
   "attribute": "Slash",
   "effects": [
+   {
+    "action": "substitute_removal",
+    "trigger": "passive"
+   },
    {
     "action": "keyword_blocker",
     "trigger": "passive"

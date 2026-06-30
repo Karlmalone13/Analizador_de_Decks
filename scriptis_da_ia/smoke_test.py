@@ -1111,6 +1111,96 @@ me.field_chars = [buggy2, ally_custo3b]
 check('mass_lock_conditional do Buggy nao trava se o Leader nao for Buggy',
       not is_attack_locked_self(ally_custo3b, me, opp))
 
+# ── 19. substituicao externa: 6 cartas reais desbloqueadas pela unificacao
+# de _parse_substitute_cost (achado 01/07/2026: parse_substitute_ko e
+# parse_substitute_removal tinham listas de custo dessincronizadas) ──
+
+# EB04-030/EB04-031: substitute_ko self com custo return_own_don (so existia
+# antes em substitute_removal, nao em substitute_ko)
+me, opp = me_opp()
+eb04030 = mk('EB04-030', 'Kaido', power=12000)
+me.field_chars = [eb04030]
+me.don_rested = 1
+ee = EffectExecutor(me, opp)
+log = ee.try_substitute(eb04030, 'ko')
+check('EB04-030 substitui KO devolvendo 1 DON ao deck',
+      bool(log) and eb04030 in me.field_chars and me.don_deck == 11 and me.don_rested == 0)
+
+# EB04-044: substitute_removal self com "you CAN discard" (nao so "you MAY")
+me, opp = me_opp()
+eb04044 = mk('EB04-044', 'Koby', power=5000)
+me.leader = mk('LDNAVY', 'Navy Leader', card_type='LEADER', sub_types='Navy')
+me.field_chars = [eb04044]
+me.hand = [mk('H1', 'H1')]
+ee = EffectExecutor(me, opp)
+log = ee.try_substitute(eb04044, 'removal')
+check('EB04-044 substitui remocao descartando da mao (texto usa "you can", nao "you may")',
+      bool(log) and eb04044 in me.field_chars and len(me.hand) == 0 and len(me.trash) == 1)
+
+# OP15-003: substitute_ko self com trash_from_hand power_lte (nova variante
+# "power or less", so existia power_gte antes)
+me, opp = me_opp()
+op15003 = mk('OP15-003', 'Alvida', power=5000)
+me.field_chars = [op15003]
+carta_fraca = mk('FRACA', 'Fraca', power=5000, card_type='CHARACTER')
+carta_forte = mk('FORTE', 'Forte', power=7000, card_type='CHARACTER')
+me.hand = [carta_fraca, carta_forte]
+ee = EffectExecutor(me, opp)
+log = ee.try_substitute(op15003, 'ko')
+check('OP15-003 substitui KO trashando Character com power 6000 ou menos da mao',
+      bool(log) and carta_fraca in me.trash and carta_forte in me.hand)
+
+me, opp = me_opp()
+op15003b = mk('OP15-003', 'Alvida', power=5000)
+me.field_chars = [op15003b]
+carta_forte2 = mk('FORTE2', 'Forte', power=7000, card_type='CHARACTER')
+me.hand = [carta_forte2]
+ee = EffectExecutor(me, opp)
+log = ee.try_substitute(op15003b, 'ko')
+check('OP15-003 nao substitui se so tem Character forte demais na mao',
+      log is None and carta_forte2 in me.hand)
+
+# OP12-027: substituicao EXTERNA protegendo OUTRO Character Slash com
+# cost<=5 -- achado 01/07/2026: precisava do filtro 'filter_attribute' novo
+me, opp = me_opp()
+op12027 = mk('OP12-027', 'Vista', sub_types='', attribute='Slash', cost=4)
+alvo_slash = mk('ALVO-SLASH', 'Alvo Slash', attribute='Slash', cost=3)
+me.field_chars = [op12027, alvo_slash]
+ee = EffectExecutor(me, opp)
+log = ee.try_any_substitute(alvo_slash, 'ko')
+check('OP12-027 protege outro Character Slash com cost<=5 (rest_self)',
+      bool(log) and op12027.rested and alvo_slash in me.field_chars)
+
+me, opp = me_opp()
+op12027b = mk('OP12-027', 'Vista', sub_types='', attribute='Slash', cost=4)
+alvo_strike = mk('ALVO-STRIKE', 'Alvo Strike', attribute='Strike', cost=3)
+me.field_chars = [op12027b, alvo_strike]
+ee = EffectExecutor(me, opp)
+log = ee.try_any_substitute(alvo_strike, 'ko')
+check('OP12-027 nao protege Character fora do atributo Slash',
+      log is None and not op12027b.rested)
+
+# OP15-094: substituicao EXTERNA protegendo OUTRO Character Straw Hat Crew
+# -- achado 01/07/2026: o early-return de "this character" descartava o
+# filtro de tipo quando o texto era "other than this character"
+me, opp = me_opp()
+op15094 = mk('OP15-094', 'Zoro', sub_types='Straw Hat Crew')
+alvo_shc = mk('ALVO-SHC', 'Alvo Straw Hat', sub_types='Straw Hat Crew')
+me.field_chars = [op15094, alvo_shc]
+ee = EffectExecutor(me, opp)
+log = ee.try_any_substitute(alvo_shc, 'removal')
+check('OP15-094 protege outro Character Straw Hat Crew trashando a si mesma',
+      bool(log) and op15094 in me.trash and alvo_shc in me.field_chars)
+
+me, opp = me_opp()
+op15094b = mk('OP15-094', 'Zoro', sub_types='Straw Hat Crew')
+alvo_outro = mk('ALVO-OUTRO', 'Alvo nao-SHC', sub_types='Navy')
+me.field_chars = [op15094b, alvo_outro]
+ee = EffectExecutor(me, opp)
+log = ee.try_any_substitute(alvo_outro, 'removal')
+check('OP15-094 nao protege Character fora do tipo Straw Hat Crew',
+      log is None and op15094b in me.field_chars)
+
 print()
 print(f'{"TODOS OS TESTES PASSARAM" if FAIL == 0 else f"{FAIL} TESTE(S) FALHARAM"}')
 sys.exit(1 if FAIL else 0)

@@ -359,33 +359,65 @@ de imunidade e stubs antigos listados abaixo.
   Cobertura final de Counter events com buff: 128/180 pra 136/180.
   Validado com `audit_replay.py --n 20 --seed 7` e `--n 15 --seed 99`: 0
   excecoes, 0 anomalias.
-- [ ] Implementar substituição externa: auditoria de 29/06/2026 achou cerca de
-  38 textos onde uma fonte em campo/líder protege outro alvo (`if your Character
-  would be removed/K.O.'d...`). O parser já estrutura muitos como
-  `substitute_*`, mas o executor atual consulta principalmente o alvo removido.
-  Primeiras fatias feitas: executor agora separa `target`/`source` via
-  `try_any_substitute()` quando o step tem filtro estruturado; parser passou a
-  extrair filtros simples do alvo protegido. Exemplos confirmados no banco:
-  Monster -> `filter_name=bonk punch`, Tashigi -> `filter_color=green` +
-  `exclude=tashigi`, Sabo -> `cost_lte=7` + `exclude=sabo`, Rosinante OP12-048
-  -> `filter_type=navy` + `filter_color=blue`, ST30-009/ST30-011 ->
-  `power_eq=6000`. Auditoria rápida: 21 de 33 steps de substituição têm filtro
-  de alvo estruturado. Auditoria dos 12 restantes: 10 são `this Character`,
-  `OP07-042` também é self com sujeito composto. `EB02-030` era Counter event
-  para `any of your Characters` e foi coberto por suporte estreito a
-  `counter -> substitute_ko` com custo `trash_from_hand`. Primeira fatia de
-  eventos [Counter] feita: 70 eventos com buff defensivo unico `battle_only`
-  agora podem ser usados no Counter Step quando impedem o hit. Segunda fatia:
-  blocos com um buff defensivo unico + steps `draw` seguros tambem executam a
-  compra. Terceira fatia: extras seguros `set_active` e `rest_opp_character`
-  tambem executam junto do buff defensivo. Quarta fatia: `add_don` e
-  `set_don_active` tambem executam junto do buff defensivo. Quinta fatia:
-  remocoes simples `KO` e bottom-deck junto de buff defensivo tambem executam;
-  bounce puro segue fora da rota defensiva. Ainda faltam eventos [Counter] com
-  efeitos extras agressivos/estado complexo (`bounce` puro, `play`,
-  buscas/topdeck/life) e heuristica mais fina.
-  Já corrigido nesta auditoria: `extra_steps` de substituição (`trash self + draw`)
-  agora executam.
+- [x] **Substituição externa — executor/filtro: fechado.** Auditoria de
+  29/06/2026 achou ~38 textos onde uma fonte em campo/líder protege outro
+  alvo (`if your Character would be removed/K.O.'d...`). Implementado em
+  fatias: `try_any_substitute()` separa `target`/`source`, parser extrai
+  filtros estruturados do alvo protegido (`filter_name`, `filter_color`,
+  `filter_type`, `cost_lte`/`gte`, `power_eq`/`lte`/`gte`, `exclude`).
+  `EB02-030` (Counter event) ganhou suporte estreito próprio. Eventos
+  `[Counter]` com buff defensivo + extras (draw, set_active,
+  rest_opp_character, add_don, KO, bottom-deck, debuff do atacante, KO do
+  atacante, play_card/busca em deck) ficaram prontos na sequência de
+  30/06/2026 — ver entradas de HANDOFF.md daquele dia. Auditoria de
+  01/07/2026 confirmou: 21 de 33 steps de substituição têm filtro
+  estruturado; os 12 sem filtro são todos self-referentes (10 `this
+  Character` + OP07-042 self composto + EB02-030 já coberto) — **não havia
+  bug de "fonte externa sem filtro protegendo qualquer alvo"**:
+  `_target_matches_external_substitute` já bloqueia (retorna False) quando
+  um step não tem NENHUM filtro estruturado, comportamento seguro
+  confirmado por leitura direta do código.
+- [x] **Substituição externa — gap real de PARSER achado e corrigido
+  (01/07/2026):** a auditoria de 01/07 achou que `parse_substitute_ko` e
+  `parse_substitute_removal` tinham listas de padrões de custo PARALELAS
+  mas DESSINCRONIZADAS — vários padrões existiam só numa das duas funções
+  (`return_own_don` só em removal, `trash this character instead`/`rest
+  this character instead` só em KO). 17 cartas reais com texto "would be
+  removed/K.O.'d ... instead" ficaram sem NENHUMA action `substitute_*`
+  parseada por causa disso. Corrigido com `_parse_substitute_cost()`
+  (`gerar_effects_db.py`), função única compartilhada pelas duas, união de
+  todos os padrões de custo + 2 bugs extras corrigidos na mesma auditoria:
+  "you CAN [custo] instead" (regex só aceitava "you MAY") e variante
+  power-or-less pro `trash_from_hand` (só existia power-or-more, e em duas
+  redações: "N power or less" e "a power of N or less"). Desta fatia, 6
+  cartas fechadas com cobertura completa (custo + alvo, quando aplicável):
+  EB04-030, EB04-031 (`return_own_don` para KO), EB04-044 (verbo "can"),
+  OP15-003 (`trash_from_hand` power_lte), OP12-027 (substituição EXTERNA,
+  precisou de filtro novo `filter_attribute` pra Slash/Strike/Special/
+  Wisdom/Ranged), OP15-094 (substituição EXTERNA — achado bônus: o
+  early-return de "this character" em `_apply_substitute_target_filters`
+  descartava o filtro de tipo inteiro quando o texto era "X type Character
+  OTHER THAN this Character", tratando como self-target por engano; a
+  exclusão de si mesma já é garantida estruturalmente pelo executor
+  — `sources = [c for c in self.me.field_chars if c is not target]` — então
+  só precisava parar de descartar o filtro). 8 smoke tests novos.
+  Validado com `audit_replay.py --n 20 --seed 7` e `--n 15 --seed 99`: 0
+  exceções, 0 anomalias.
+- [ ] **Substituição externa — 13 cartas ainda pendentes** (custos
+  genuinamente novos, não cobertos pela fatia acima): OP04-082 (rest
+  Leader ou stage nomeado), OP07-029 (rest 1 Character do OPONENTE como
+  custo — mecânica invertida, beneficia sem sacrificar nada seu),
+  OP10-034 (life card → mão), OP10-037 (rest 1 Character filtrado por
+  tipo), OP11-110 (rest Character filtrado OU Leader, "or" composto),
+  OP12-061 (life card → mão, self por nome), OP14-029 (rest 1 carta
+  qualquer, sem filtro), OP14-034 (substituição EXTERNA, custo rest 1
+  Character qualquer — não necessariamente a fonte), OP14-092 (trash N do
+  trash pro fundo do deck), OP15-035 (substituição EXTERNA, custo rest 2
+  cartas), OP16-014 (K.O. a própria fonte como custo, distinto de
+  `trash_self`), ST09-010/ST20-002 (trash carta da Life, distinto de
+  `life_to_hand`). Cada um precisa de 1 cost-type novo em
+  `_pay_substitute_cost` — não reusa nada do que já existe, por isso ficou
+  de fora desta fatia.
 
 ---
 

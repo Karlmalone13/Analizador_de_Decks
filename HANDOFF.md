@@ -1,5 +1,63 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-01 (5) - Claude
+
+**Feito - substituição externa: gap real de parser achado e corrigido (6
+cartas):** próximo item pedido pelo usuário. Antes de mergulhar, rodei um
+agente de investigação pra confirmar se ainda tinha trabalho real (o item
+do TODO.md tinha cara de já estar majoritariamente fechado em sessões
+anteriores, igual aos outros achados stale de hoje).
+
+**Confirmado**: a parte de executor/filtro JÁ estava fechada — `21 de 33`
+steps com filtro estruturado, os 12 sem filtro são todos self-referentes
+(sem bug de "fonte externa sem filtro protegendo qualquer alvo" —
+`_target_matches_external_substitute` já bloqueia esse caso por padrão).
+**Mas achei um gap real**: `parse_substitute_ko` e `parse_substitute_removal`
+(`gerar_effects_db.py`) tinham listas de PADRÕES DE CUSTO paralelas mas
+dessincronizadas — vários padrões existiam só numa das duas funções
+(`return_own_don` só em removal; `trash this character instead`/`rest this
+character instead` só em KO). 17 cartas reais com texto "would be
+removed/K.O.'d ... instead" ficavam sem NENHUMA action `substitute_*`
+parseada por causa disso.
+
+**Corrigido**: unifiquei numa função só, `_parse_substitute_cost()`,
+chamada pelas duas — união de todos os padrões + 2 bugs extras achados na
+mesma auditoria: "you CAN [custo] instead" (regex só aceitava "you MAY") e
+falta de variante power-or-less pro `trash_from_hand` (só existia
+power-or-more, em duas redações de texto diferentes: "N power or less" e
+"a power of N or less"). Fechei 6 das 17 cartas nesta fatia (as que reusam
+custo/filtro já existente):
+- **EB04-030, EB04-031**: `substitute_ko` self com `return_own_don`.
+- **EB04-044**: `substitute_removal` self, só precisava do fix do verbo "can".
+- **OP15-003**: `substitute_ko` self com `trash_from_hand` + `power_lte` novo.
+- **OP12-027**: substituição EXTERNA (protege outro Character), precisou de
+  um filtro de alvo novo — `filter_attribute` (Strike/Slash/Special/Wisdom/
+  Ranged), plugado em `_target_matches_external_substitute`.
+- **OP15-094**: substituição EXTERNA — achado bônus interessante: o
+  early-return de `_apply_substitute_target_filters` via "this character"
+  no assunto da frase descartava o filtro de TIPO inteiro quando o texto
+  real era "X type Character OTHER THAN this Character" (tratando como
+  self-target por engano). A exclusão de si mesma já é garantida
+  estruturalmente pelo executor (`sources = [c for c in
+  self.me.field_chars if c is not target]` em `try_any_substitute`), então
+  só precisava parar de jogar fora o filtro nesse caso específico.
+
+**Validação:** `python -m py_compile`; `python diff_parser.py` (`GANHOU=0
+PERDEU=0`, 6 MUDOU = exatamente as 6 cartas esperadas); `python
+gerar_dbs.py` + `python snapshot_parser.py`; `python smoke_test.py`
+(102/102, 8 casos novos); `python smoke_test_broad.py` (40/40); `python
+audit_replay.py --n 20 --seed 7` e `--n 15 --seed 99` (0 exceções, 0
+anomalias nas duas).
+
+**Ainda falta:** 13 cartas com custos genuinamente novos (não reusam nada
+do que já existe): OP04-082, OP07-029 (mecânica invertida — rest 1
+Character do OPONENTE como custo), OP10-034, OP10-037, OP11-110, OP12-061,
+OP14-029, OP14-034 (externa), OP14-092, OP15-035 (externa), OP16-014, ST09-010,
+ST20-002. Cada uma precisa de 1 cost-type novo em `_pay_substitute_cost` —
+detalhado no TODO.md.
+
+---
+
 ## 2026-07-01 (4) - Claude
 
 **Feito - cannot_attack_self family: já estava implementado, só faltava

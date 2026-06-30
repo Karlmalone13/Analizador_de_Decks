@@ -4098,6 +4098,17 @@
      "count": 1
     }
    ]
+  },
+  "passive": {
+   "steps": [
+    {
+     "action": "substitute_ko",
+     "cost": {
+      "action": "return_own_don",
+      "count": 1
+     }
+    }
+   ]
   }
  },
  "EB04-031": {
@@ -4110,6 +4121,17 @@
     {
      "action": "add_don",
      "count": 1
+    }
+   ]
+  },
+  "passive": {
+   "steps": [
+    {
+     "action": "substitute_ko",
+     "cost": {
+      "action": "return_own_don",
+      "count": 1
+     }
     }
    ]
   }
@@ -4403,6 +4425,21 @@
   }
  },
  "EB04-044": {
+  "passive": {
+   "conditions": {
+    "leader_type": "navy"
+   },
+   "once_per_turn": true,
+   "steps": [
+    {
+     "action": "substitute_removal",
+     "cost": {
+      "action": "trash_from_hand",
+      "count": 1
+     }
+    }
+   ]
+  },
   "your_turn": {
    "once_per_turn": true,
    "steps": [
@@ -27205,6 +27242,14 @@
   "passive": {
    "steps": [
     {
+     "action": "substitute_ko",
+     "cost": {
+      "action": "rest_self"
+     },
+     "cost_lte": 5,
+     "filter_attribute": "slash"
+    },
+    {
      "action": "keyword_blocker"
     }
    ]
@@ -33114,6 +33159,18 @@
      "rested": true
     }
    ]
+  },
+  "passive": {
+   "steps": [
+    {
+     "action": "substitute_ko",
+     "cost": {
+      "action": "trash_from_hand",
+      "count": 1,
+      "power_lte": 6000
+     }
+    }
+   ]
   }
  },
  "OP15-004": {
@@ -34704,6 +34761,13 @@
  "OP15-094": {
   "passive": {
    "steps": [
+    {
+     "action": "substitute_removal",
+     "cost": {
+      "action": "trash_self"
+     },
+     "filter_type": "straw hat crew"
+    },
     {
      "action": "keyword_blocker"
     }

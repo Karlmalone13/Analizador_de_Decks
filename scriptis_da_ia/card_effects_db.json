@@ -6511,6 +6511,17 @@
             "optional": false
           }
         ]
+      },
+      "passive": {
+        "steps": [
+          {
+            "action": "substitute_ko",
+            "cost": {
+              "action": "return_own_don",
+              "count": 1
+            }
+          }
+        ]
       }
     }
   },
@@ -6536,6 +6547,17 @@
           "leader_type": "animal kingdom pirates"
         },
         "once_per_turn": true
+      },
+      "passive": {
+        "steps": [
+          {
+            "action": "substitute_ko",
+            "cost": {
+              "action": "return_own_don",
+              "count": 1
+            }
+          }
+        ]
       }
     }
   },
@@ -6977,6 +6999,21 @@
             "count": 1
           }
         ],
+        "once_per_turn": true
+      },
+      "passive": {
+        "steps": [
+          {
+            "action": "substitute_removal",
+            "cost": {
+              "action": "trash_from_hand",
+              "count": 1
+            }
+          }
+        ],
+        "conditions": {
+          "leader_type": "navy"
+        },
         "once_per_turn": true
       }
     }
@@ -44683,6 +44720,14 @@
       "passive": {
         "steps": [
           {
+            "action": "substitute_ko",
+            "cost": {
+              "action": "rest_self"
+            },
+            "filter_attribute": "slash",
+            "cost_lte": 5
+          },
+          {
             "action": "keyword_blocker"
           }
         ]
@@ -54277,6 +54322,18 @@
           }
         ],
         "once_per_turn": true
+      },
+      "passive": {
+        "steps": [
+          {
+            "action": "substitute_ko",
+            "cost": {
+              "action": "trash_from_hand",
+              "count": 1,
+              "power_lte": 6000
+            }
+          }
+        ]
       }
     }
   },
@@ -56868,6 +56925,13 @@
     "effects": {
       "passive": {
         "steps": [
+          {
+            "action": "substitute_removal",
+            "cost": {
+              "action": "trash_self"
+            },
+            "filter_type": "straw hat crew"
+          },
           {
             "action": "keyword_blocker"
           }

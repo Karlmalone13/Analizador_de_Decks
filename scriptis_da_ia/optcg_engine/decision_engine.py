@@ -1076,6 +1076,8 @@ class EffectExecutor:
                 return False
         if step.get('filter_color') and step.get('filter_color', '').lower() not in target.color.lower():
             return False
+        if step.get('filter_attribute') and step.get('filter_attribute', '').lower() not in (target.attribute or '').lower():
+            return False
         if step.get('cost_lte') is not None and target.cost > step['cost_lte']:
             return False
         if step.get('cost_gte') is not None and target.cost < step['cost_gte']:
@@ -1104,7 +1106,7 @@ class EffectExecutor:
             return False
 
         target_keys = (
-            'filter_type', 'filter_name', 'filter_color', 'cost_lte', 'cost_gte',
+            'filter_type', 'filter_name', 'filter_color', 'filter_attribute', 'cost_lte', 'cost_gte',
             'power_lte', 'power_eq', 'power_gte', 'rested_only', 'exclude', 'exclude_self',
         )
         target_cond_keys = ('self_type', 'self_power_base_lte', 'self_power_base_gte')
@@ -1526,6 +1528,7 @@ class EffectExecutor:
                 me.hand,
                 filter_text=cost.get('filter_type', ''),
                 power_gte=cost.get('power_gte'),
+                power_lte=cost.get('power_lte'),
             )
             if len(candidatos) < count:
                 return None

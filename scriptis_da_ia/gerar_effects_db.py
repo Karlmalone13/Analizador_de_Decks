@@ -2335,6 +2335,17 @@ def _apply_substitute_target_filters(step, text, removal_kind):
         return step
 
     subject = m.group(1)
+    # "X type Character OTHER THAN this Character" -- achado 01/07/2026
+    # (OP15-094): NAO e um self-target (a exclusao explicita de "this
+    # character" ja e garantida estruturalmente pelo executor -- a lista de
+    # fontes externas em try_any_substitute() ja filtra `c is not target`,
+    # entao a propria carta nunca aparece como protetora de si mesma via
+    # este caminho). Sem remover essa clausula antes do check abaixo, o
+    # early-return tratava como self-target e descartava o filtro de tipo
+    # inteiro (ex: 'straw hat crew'), deixando o step sem filtro estruturado
+    # -- e o executor trata "sem filtro" como protecao desligada por
+    # seguranca (nunca aplica), entao a carta nunca protegia ninguem.
+    subject = re.sub(r'\s*other than this character\s*', ' ', subject).strip()
     if 'this character' in subject:
         return step
 
@@ -2350,6 +2361,15 @@ def _apply_substitute_target_filters(step, text, removal_kind):
     for color in colors:
         if re.search(rf'\b{color}\s+(?:"[^"]+"\s+type\s+)?character', subject):
             step['filter_color'] = color
+            break
+
+    # Filtro de atributo (Strike/Slash/Special/Wisdom/Ranged), ex: "your
+    # (Slash) attribute Character with a cost of 5 or less other than this
+    # Character would be K.O.'d..." (OP12-027, achado 01/07/2026).
+    attrs = ('strike', 'slash', 'special', 'wisdom', 'ranged')
+    for attr in attrs:
+        if re.search(rf'\(?{attr}\)?\s+attribute\s+character', subject):
+            step['filter_attribute'] = attr
             break
 
     cost_lte = re.search(r'(?:base )?cost of (\d+) or less', subject)
@@ -2379,6 +2399,96 @@ def _apply_substitute_target_filters(step, text, removal_kind):
     return step
 
 
+def _parse_substitute_cost(t):
+    """
+    Extrai o custo de uma substituicao de K.O./remocao ("...instead").
+    Achado 01/07/2026: `parse_substitute_ko` e `parse_substitute_removal`
+    tinham listas de padroes de custo PARALELAS mas DESSINCRONIZADAS --
+    varios padroes existiam so numa das duas (ex: 'trash this character
+    instead' so existia na de KO, 'rest this character instead' e
+    'return N don to deck' so na de removal). Cartas reais que combinam
+    "would be K.O.'d" com um custo que so a lista de removal reconhecia (ou
+    vice-versa) ficavam sem nenhuma action parseada. Unificado numa unica
+    funcao compartilhada -- usada por ambos os parsers, elimina o risco de
+    nova divergencia. Tambem corrige 2 bugs achados na mesma auditoria:
+    "you CAN [custo] instead" (nao so "you MAY") e falta de variante
+    power-or-less pro trash_from_hand (so existia power-or-more).
+    Retorna (cost: dict|None, extra_steps: list).
+    """
+    extra_steps = []
+
+    m = re.search(r"you may trash this character instead", t)
+    if m:
+        return {'action': 'trash_self'}, extra_steps
+
+    m = re.search(r"you may rest this character and trash (\d+) cards? from your hand instead", t)
+    if m:
+        return {'action': 'rest_self_and_trash_hand', 'trash_count': int(m.group(1))}, extra_steps
+
+    m = re.search(r"you may rest this character instead", t)
+    if m:
+        return {'action': 'rest_self'}, extra_steps
+
+    m = re.search(r"trash this character and draw (\d+) cards? instead", t)
+    if m:
+        extra_steps.append({'action': 'draw', 'count': int(m.group(1))})
+        return {'action': 'trash_self'}, extra_steps
+
+    m = re.search(r"return this character to the owner.?s hand instead", t)
+    if m:
+        return {'action': 'bounce_self'}, extra_steps
+
+    m = re.search(r"you may rest (\d+) of your active don!! cards instead", t)
+    if m:
+        return {'action': 'rest_don', 'count': int(m.group(1))}, extra_steps
+
+    m = re.search(r"you may return (\d+) don!! cards? from your field to your don!! deck instead", t)
+    if m:
+        return {'action': 'return_own_don', 'count': int(m.group(1))}, extra_steps
+
+    # "trash N card(s) from your hand instead" -- SEM filtro de tipo (qualquer
+    # carta da mao). Testado ANTES das variantes com filtro pra nao deixar a
+    # palavra solta "card" ser capturada como se fosse nome de tipo.
+    m = re.search(r"you (?:may|can) (?:discard|trash) (\d+) cards? from your hand instead", t)
+    if m:
+        return {'action': 'trash_from_hand', 'count': int(m.group(1))}, extra_steps
+
+    # "with N power or less" OU "with a power of N or less" -- duas redacoes
+    # vistas no banco pro mesmo padrao (achado 01/07/2026, OP15-003).
+    m = re.search(r"you (?:may|can) trash (\d+) character cards? with (?:a power of )?(\d+)(?: power)? or less from your hand instead", t)
+    if m:
+        return {'action': 'trash_from_hand', 'count': int(m.group(1)), 'power_lte': int(m.group(2))}, extra_steps
+
+    m = re.search(r"you (?:may|can) trash (\d+) character cards? with (?:a power of )?(\d+)(?: power)? or more from your hand instead", t)
+    if m:
+        return {'action': 'trash_from_hand', 'count': int(m.group(1)), 'power_gte': int(m.group(2))}, extra_steps
+
+    # trash N [card(s)] from your hand instead -- com filtro de TIPO
+    # ("Event"/"Stage"). Testado por ultimo entre as variantes de
+    # trash_from_hand (mais generico, podia engolir as com filtro de power).
+    m = re.search(r"you (?:may|can) (?:discard|trash) (\d+) ([a-z][a-z0-9 /]*?)(?: cards?)? from your hand instead", t)
+    if m and 'power' in m.group(2):
+        m = None
+    if m:
+        tipos = re.split(r'\s*(?:/| or )\s*', m.group(2).strip())
+        return {'action': 'trash_from_hand', 'count': int(m.group(1)),
+                'filter_type': [x.strip() for x in tipos if x.strip()]}, extra_steps
+
+    m = re.search(r"you may give (?:that character|this character) [−\-]?(\d+) power[^.]*instead", t)
+    if m:
+        return {'action': 'debuff_power_self', 'amount': int(m.group(1))}, extra_steps
+
+    m = re.search(r"you may give your leader [−\-]?(\d+) power[^.]*instead", t)
+    if m:
+        return {'action': 'debuff_power_self_leader', 'amount': int(m.group(1))}, extra_steps
+
+    m = re.search(r"you may (?:return|place) (\d+) of your characters?[^.]*instead", t)
+    if m:
+        return {'action': 'place_own_character_bottom_deck', 'count': int(m.group(1))}, extra_steps
+
+    return None, extra_steps
+
+
 def parse_substitute_ko(text):
     """
     Cobre 'If [this Character/your X] would be K.O.'d [by an effect], you
@@ -2392,57 +2502,12 @@ def parse_substitute_ko(text):
     if not re.search(r"would be k\.o\.'?d", t):
         return steps
 
-    cost = None
-
-    m = re.search(r"you may trash this character instead", t)
-    if m:
-        cost = {'action': 'trash_self'}
-
-    if not cost:
-        m = re.search(r"you may rest (\d+) of your active don!! cards instead", t)
-        if m:
-            cost = {'action': 'rest_don', 'count': int(m.group(1))}
-
-    if not cost:
-        # "trash N card(s) from your hand instead" -- SEM filtro de tipo
-        # (qualquer carta da mao). Testado ANTES da regex de tipo especifico
-        # para nao deixar a palavra solta "card" ser capturada como se
-        # fosse o nome de um tipo (ex: "Event"/"Stage").
-        m = re.search(r"you may trash (\d+) cards? from your hand instead", t)
-        if m:
-            cost = {'action': 'trash_from_hand', 'count': int(m.group(1))}
-
-    if not cost:
-        # trash N [card(s)] from your hand instead -- com filtro de TIPO
-        # ("Event"/"Stage") OU filtro de POWER ("Character card with N
-        # power or more"). So um dos dois filtros se aplica por carta.
-        m = re.search(r"you may trash (\d+) ([a-z][a-z0-9 /]*?)(?: cards?)? from your hand instead", t)
-        if m and 'power' in m.group(2):
-            m = None
-        if m:
-            tipos = re.split(r'\s*(?:/| or )\s*', m.group(2).strip())
-            cost = {'action': 'trash_from_hand', 'count': int(m.group(1)), 'filter_type': [x.strip() for x in tipos if x.strip()]}
-
-    if not cost:
-        m = re.search(r"you may trash (\d+) character cards? with (\d+) power or more from your hand instead", t)
-        if m:
-            cost = {'action': 'trash_from_hand', 'count': int(m.group(1)), 'power_gte': int(m.group(2))}
-
-    if not cost:
-        # custo de power: SEMPRE debuff no alvo do custo (mesmo sendo proprio
-        # Leader/Character), mesmo sem sinal explicito no texto -- e
-        # sacrificio/substituicao, nao bonus. Confirmado por imagem real
-        # (X.Drake OP14-016: "give your Leader 2000 power instead" = -2000).
-        m = re.search(r"you may give (?:that character|this character) [−\-]?(\d+) power[^.]*instead", t)
-        if m:
-            cost = {'action': 'debuff_power_self', 'amount': int(m.group(1))}
-        else:
-            m = re.search(r"you may give your leader [−\-]?(\d+) power[^.]*instead", t)
-            if m:
-                cost = {'action': 'debuff_power_self_leader', 'amount': int(m.group(1))}
+    cost, extra_steps = _parse_substitute_cost(t)
 
     if cost:
         step = {'action': 'substitute_ko', 'cost': cost}
+        if extra_steps:
+            step['extra_steps'] = extra_steps
         steps.append(_apply_substitute_target_filters(step, t, 'ko'))
 
     return steps
@@ -2470,38 +2535,7 @@ def parse_substitute_removal(text):
     if not re.search(r"would be removed from the field", t):
         return steps
 
-    cost = None
-    extra_steps = []
-
-    # tentativas em ordem -- a primeira que casar define o custo
-    tentativas = [
-        (r"you may (?:discard|trash) (\d+) cards? from your hand instead",
-         lambda m: {'action': 'trash_from_hand', 'count': int(m.group(1))}),
-        (r"trash this character and draw (\d+) cards? instead",
-         lambda m: {'action': 'trash_self'}),
-        (r"you may rest this character and trash (\d+) cards? from your hand instead",
-         lambda m: {'action': 'rest_self_and_trash_hand', 'trash_count': int(m.group(1))}),
-        (r"you may rest this character instead",
-         lambda m: {'action': 'rest_self'}),
-        (r"return this character to the owner.?s hand instead",
-         lambda m: {'action': 'bounce_self'}),
-        (r"you may give (?:that character|this character) [−\-]?(\d+) power[^.]*instead",
-         lambda m: {'action': 'debuff_power_self', 'amount': int(m.group(1))}),
-        (r"you may give your leader [−\-]?(\d+) power[^.]*instead",
-         lambda m: {'action': 'debuff_power_self_leader', 'amount': int(m.group(1))}),
-        (r"you may (?:return|place) (\d+) of your characters?[^.]*instead",
-         lambda m: {'action': 'place_own_character_bottom_deck', 'count': int(m.group(1))}),
-        (r"you may return (\d+) don!! cards? from your field to your don!! deck instead",
-         lambda m: {'action': 'return_own_don', 'count': int(m.group(1))}),
-    ]
-
-    for pattern, builder in tentativas:
-        m = re.search(pattern, t)
-        if m:
-            cost = builder(m)
-            if pattern == r"trash this character and draw (\d+) cards? instead":
-                extra_steps.append({'action': 'draw', 'count': int(m.group(1))})
-            break
+    cost, extra_steps = _parse_substitute_cost(t)
 
     if cost:
         step = {'action': 'substitute_removal', 'cost': cost}
