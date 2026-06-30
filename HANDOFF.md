@@ -1,5 +1,47 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-06-30 (4) - Claude
+
+**Feito - fatia de Counter events: 2º buff condicional + extras simples:**
+voltei à auditoria original de Counter events (78 eventos `[Counter]` fora
+da heurística antes desta sessão). Categorizei os 78 em: 44 sem nenhum
+`buff_power(battle_only)` (padrões totalmente diferentes — KO puro, debuff
+puro do atacante, etc., fora de escopo hoje), 8 com 2 `buff_power
+(battle_only)`, e o resto com 1 buff + alguma extra ainda não suportada.
+
+1. **8 cartas com 2 buffs `battle_only`** (EB03-020, OP04-095, OP05-114,
+   OP06-038, OP07-035, OP07-095, OP11-059, OP12-098): conferi o texto real
+   e confirmei que o padrão é sempre "Up to 1 of your Leader or Character
+   cards gains +X power... Then, if [cond], **that card** gains an
+   additional +Y power" — o 2º buff (`target='self'` no parser, na real
+   "that card") é BÔNUS condicional ao MESMO alvo do 1º, não um alvo
+   independente. Generalizei `_counter_event_power_plan` em
+   [decision_engine.py](scriptis_da_ia/optcg_engine/decision_engine.py) pra
+   somar quantos `buff_power(battle_only)` existirem, com a regra: o
+   primeiro define o alvo (leader/own_character/leader_or_character), os
+   demais só entram se `target='self'` e sua própria `conditions` passar.
+2. **Extras simples desbloqueados**: `trash_from_deck_top`, `peek_life`,
+   `add_from_trash`, `gain_life` adicionados a `safe_extra_actions` — todos
+   já tinham handler genérico em `_execute_step`, sem seleção complexa.
+   Desbloqueia OP03-054, OP03-055, OP08-096, ST07-016, ST13-017, OP11-097,
+   OP12-115, ST09-015.
+
+Cobertura de Counter events com buff `battle_only` foi de 102/180 pra
+114/180.
+
+**Validação:** `python -m py_compile`; `python smoke_test.py` (61/61, 9 casos
+novos cobrindo multi-buff condicional/incondicional e os 4 extras novos);
+`python smoke_test_broad.py` (40/40); `python audit_replay.py --n 20 --seed
+7` (0 exceções, 0 anomalias).
+
+**Ainda falta (ver auditoria completa no TODO.md):** os 44 eventos `[Counter]`
+sem nenhum `buff_power(battle_only)` (padrões mecanicamente diferentes:
+KO/debuff/bounce puro do atacante, draw/buscas isoladas) e `play_card`/
+`play_from_deck`/`look_top_deck`+`add_to_hand` (9 cartas, busca mais
+complexa) continuam fora da heurística atual.
+
+---
+
 ## 2026-06-30 (3) - Claude
 
 **Feito - implementa `debuff_power` (achado durante auditoria de Counter

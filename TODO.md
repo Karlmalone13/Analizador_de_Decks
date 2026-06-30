@@ -265,6 +265,26 @@ de imunidade e stubs antigos listados abaixo.
   (`rules_facade.py`) não tinha piso em 0. Corrigido com `max(0, ...)` no
   retorno (regra real do jogo: power nunca é negativo). Validado com
   `audit_replay.py --n 20 --seed 7`: 0 exceções, 0 anomalias.
+- [x] **Counter events: 2º buff battle_only + extras simples (30/06/2026):**
+  `_counter_event_power_plan` exigia exatamente 1 `buff_power(battle_only)`.
+  Achado: 8 cartas no banco têm 2 (EB03-020, OP04-095, OP05-114, OP06-038,
+  OP07-035, OP07-095, OP11-059, OP12-098) — texto real confirma que o 2º
+  (sempre `target='self'`) é um BÔNUS condicional ao MESMO alvo escolhido no
+  1º ("Up to 1 of your Leader or Character cards gains +X power... Then, if
+  [cond], **that card** gains an additional +Y power"), não um 2º alvo
+  independente. Generalizado para somar quantos `buff_power(battle_only)`
+  existirem, desde que os adicionais tenham `target='self'` (aplica o bônus
+  só se a condição do step passar; se não tiver condição, soma sempre).
+  Também adicionados a `safe_extra_actions`: `trash_from_deck_top`,
+  `peek_life`, `add_from_trash`, `gain_life` — ações simples com handler
+  genérico já existente, sem seleção complexa. Desbloqueia OP03-054,
+  OP03-055, OP08-096 (trash_from_deck_top), ST07-016, ST13-017 (peek_life),
+  OP11-097, OP12-115 (add_from_trash), ST09-015 (gain_life). Cobertura de
+  Counter events com `buff_power(battle_only)` subiu de 102/180 pra 114/180.
+  Ainda fora: `play_card`/`play_from_deck` (7), `look_top_deck`+`add_to_hand`
+  (2, busca complexa), os 44 sem nenhum buff `battle_only` (padrões
+  totalmente diferentes: KO puro, debuff puro do atacante, bounce puro já
+  coberto, etc.) — ver auditoria detalhada no HANDOFF.md de 30/06/2026 (4).
 - [ ] Implementar substituição externa: auditoria de 29/06/2026 achou cerca de
   38 textos onde uma fonte em campo/líder protege outro alvo (`if your Character
   would be removed/K.O.'d...`). O parser já estrutura muitos como

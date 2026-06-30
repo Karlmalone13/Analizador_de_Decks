@@ -1233,26 +1233,42 @@ class EffectExecutor:
             step for step in steps
             if step.get('action') == 'buff_power' and step.get('duration') == 'battle_only'
         ]
-        if len(buff_steps) != 1:
+        if not buff_steps:
             return None
-        extras = [step for step in steps if step is not buff_steps[0]]
+        buff_step_ids = {id(s) for s in buff_steps}
+        extras = [step for step in steps if id(step) not in buff_step_ids]
         safe_extra_actions = {
             'draw', 'set_active', 'rest_opp_character', 'add_don', 'set_don_active',
             'ko', 'bounce', 'place_opp_character_bottom_deck', 'debuff_power',
+            'trash_from_deck_top', 'peek_life', 'add_from_trash', 'gain_life',
         }
         if any(step.get('action') not in safe_extra_actions for step in extras):
             return None
-        step = buff_steps[0]
-        target_rule = step.get('target')
+        principal, *bonus_steps = buff_steps
+        target_rule = principal.get('target')
         if target_rule == 'leader' and target_type != 'leader':
             return None
         if target_rule == 'own_character' and target_type != 'character':
             return None
         if target_rule not in ('leader', 'own_character', 'leader_or_character'):
             return None
-        if step.get('conditions') and not self._check_conditions(step.get('conditions', {}), event):
+        if principal.get('conditions') and not self._check_conditions(principal.get('conditions', {}), event):
             return None
-        return step.get('amount', 0), extras
+        amount = principal.get('amount', 0)
+        # buff_power(battle_only) ADICIONAL com target='self' -- texto real
+        # confirmado nos 8 casos do banco: "Up to 1 of your Leader or
+        # Character cards gains +X power... Then, if [cond], THAT CARD gains
+        # an additional +Y power" (ex: EB03-020, OP04-095, OP07-035). O
+        # parser mapeia "that card" como target='self' (mesma carta
+        # escolhida no step anterior, NAO o proprio Event) -- soma como
+        # bonus condicional ao MESMO alvo, nunca um 2º alvo independente.
+        for bonus in bonus_steps:
+            if bonus.get('target') != 'self':
+                return None
+            if bonus.get('conditions') and not self._check_conditions(bonus.get('conditions', {}), event):
+                continue
+            amount += bonus.get('amount', 0)
+        return amount, extras
 
     def try_counter_event_power(self, target: Card, target_type: str,
                                 needed: int) -> tuple[int, str] | None:

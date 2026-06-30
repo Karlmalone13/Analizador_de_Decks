@@ -712,6 +712,95 @@ check('Counter event com buff + debuff_power aplica os dois efeitos',
       counter and counter[0] == 3000 and evento_buff_debuff in me.trash
       and opp_alvo.power_buff == -2000)
 
+# ── 15c. Counter event com 2 buff_power(battle_only): o 2º (target='self')
+# e BONUS condicional ao MESMO alvo escolhido no 1º ("that card gains an
+# additional +X power"), nao um 2º alvo independente. EB03-020 sem condicao,
+# OP04-095 com condicao (trash_gte 15) ──
+me, opp = me_opp()
+me.don_available = 2
+evento_multi_buff = mk('EB03-020', 'There You Are Sore Loser', card_type='EVENT', cost=2)
+me.hand = [evento_multi_buff]
+ee = EffectExecutor(me, opp)
+counter = ee.try_counter_event_power(me.leader, 'leader', needed=4000)
+check('Counter event com 2 buffs battle_only soma os dois (sem condicao)',
+      counter and counter[0] == 4000 and evento_multi_buff in me.trash)
+
+me, opp = me_opp()
+me.don_available = 2
+me.trash = [mk(f'TR{i}', f'Trash {i}') for i in range(16)]
+evento_multi_cond = mk('OP04-095', 'Barrier', card_type='EVENT', cost=2)
+me.hand = [evento_multi_cond]
+ee = EffectExecutor(me, opp)
+counter = ee.try_counter_event_power(me.leader, 'leader', needed=4000)
+check('Counter event com bonus condicional soma quando condicao passa (trash_gte 15)',
+      counter and counter[0] == 4000 and evento_multi_cond in me.trash)
+
+me, opp = me_opp()
+me.don_available = 2
+me.trash = [mk(f'TR{i}', f'Trash {i}') for i in range(3)]
+evento_multi_cond2 = mk('OP04-095', 'Barrier', card_type='EVENT', cost=2)
+me.hand = [evento_multi_cond2]
+ee = EffectExecutor(me, opp)
+counter = ee.try_counter_event_power(me.leader, 'leader', needed=4000)
+check('Counter event com bonus condicional NAO soma quando condicao falha',
+      counter is None and evento_multi_cond2 in me.hand)
+
+# ── 15d. Counter events com extras simples desbloqueados (trash_from_deck_top,
+# peek_life, add_from_trash, gain_life) ──
+me, opp = me_opp()
+me.don_available = 2
+me.deck = [mk('D1', 'Topo do deck')]
+evento_trash_top = mk('OP03-054', "Usopp's Rubber Band of Doom", card_type='EVENT', cost=2)
+me.hand = [evento_trash_top]
+ee = EffectExecutor(me, opp)
+counter = ee.try_counter_event_power(me.leader, 'leader', needed=2000)
+check('Counter event com trash_from_deck_top trasha o topo do deck',
+      counter and counter[0] == 2000 and evento_trash_top in me.trash
+      and not me.deck and any(c.name == 'Topo do deck' for c in me.trash))
+
+me, opp = me_opp()
+me.don_available = 2
+me.life = [mk('L1', 'Vida 1'), mk('L2', 'Vida 2')]
+evento_peek = mk('ST07-016', 'Power Mochi', card_type='EVENT', cost=2)
+me.hand = [evento_peek]
+ee = EffectExecutor(me, opp)
+counter = ee.try_counter_event_power(me.leader, 'leader', needed=2000)
+check('Counter event com peek_life ativa sem erro',
+      counter and counter[0] == 2000 and evento_peek in me.trash)
+
+me, opp = me_opp()
+me.don_available = 2
+me.trash = [mk(f'TR{i}', f'Trash {i}', cost=2) for i in range(11)]
+recuperavel = me.trash[0]
+evento_add_trash = mk('OP11-097', "After All These Years", card_type='EVENT', cost=2)
+me.hand = [evento_add_trash]
+ee = EffectExecutor(me, opp)
+counter = ee.try_counter_event_power(me.leader, 'leader', needed=1000)
+check('Counter event com add_from_trash recupera carta quando condicao passa (trash_gte 10)',
+      counter and counter[0] == 1000 and evento_add_trash in me.trash
+      and recuperavel in me.hand)
+
+me, opp = me_opp()
+me.don_available = 2
+me.trash = [mk(f'TR{i}', f'Trash {i}', cost=2) for i in range(3)]
+evento_add_trash2 = mk('OP11-097', "After All These Years", card_type='EVENT', cost=2)
+me.hand = [evento_add_trash2]
+ee = EffectExecutor(me, opp)
+counter = ee.try_counter_event_power(me.leader, 'leader', needed=1000)
+check('Counter event com add_from_trash nao recupera quando condicao falha (trash_gte 10)',
+      counter and counter[0] == 1000 and evento_add_trash2 in me.trash
+      and len([c for c in me.trash if c.name.startswith('Trash')]) == 3)
+
+me, opp = me_opp()
+me.don_available = 2
+me.life = [mk('L1', 'Vida 1')]
+evento_gain_life = mk('ST09-015', 'Thunder Bagua', card_type='EVENT', cost=2)
+me.hand = [evento_gain_life]
+ee = EffectExecutor(me, opp)
+counter = ee.try_counter_event_power(me.leader, 'leader', needed=4000)
+check('Counter event com gain_life ativa quando condicao passa (life_lte 2)',
+      counter and counter[0] == 4000 and evento_gain_life in me.trash)
+
 print()
 print(f'{"TODOS OS TESTES PASSARAM" if FAIL == 0 else f"{FAIL} TESTE(S) FALHARAM"}')
 sys.exit(1 if FAIL else 0)
