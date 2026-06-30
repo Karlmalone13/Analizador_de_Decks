@@ -445,6 +445,44 @@ counter = ee.try_counter_event_power(me.leader, 'leader', needed=2000)
 check('Counter event com leader_type ativa para lider correto',
       counter and counter[0] == 2000 and evento_cond in me.trash)
 
+me, opp = me_opp()
+me.don_available = 2
+evento_draw_buff = mk('OP10-115', "Let's Meet Again", card_type='EVENT', cost=2)
+compra = mk('DRAW-COUNTER', 'Compra do counter')
+me.hand = [evento_draw_buff]
+me.deck = [compra]
+ee = EffectExecutor(me, opp)
+counter = ee.try_counter_event_power(me.leader, 'leader', needed=4000)
+check('Counter event draw + buff compra carta e defende',
+      counter and counter[0] == 4000 and evento_draw_buff in me.trash
+      and compra in me.hand and me.don_available == 0)
+
+me, opp = me_opp()
+me.don_available = 3
+me.don_rested = 3
+evento_cond_draw = mk('OP10-080', 'Little Black Bears', card_type='EVENT', cost=3)
+compra = mk('DRAW-COND', 'Compra condicional')
+me.hand = [evento_cond_draw]
+me.deck = [compra]
+ee = EffectExecutor(me, opp)
+counter = ee.try_counter_event_power(me.leader, 'leader', needed=4000)
+check('Counter event buff + draw condicional nao compra se condicao falha',
+      counter and counter[0] == 4000 and evento_cond_draw in me.trash
+      and compra in me.deck and compra not in me.hand)
+
+me, opp = me_opp()
+me.don_available = 10
+me.don_rested = 0
+evento_cond_draw = mk('OP10-080', 'Little Black Bears', card_type='EVENT', cost=3)
+compra = mk('DRAW-COND', 'Compra condicional')
+me.hand = [evento_cond_draw]
+me.deck = [compra]
+ee = EffectExecutor(me, opp)
+counter = ee.try_counter_event_power(me.leader, 'leader', needed=4000)
+check('Counter event buff + draw condicional compra quando condicao passa',
+      counter and counter[0] == 4000 and evento_cond_draw in me.trash
+      and compra in me.hand)
+
 print()
 print(f'{"TODOS OS TESTES PASSARAM" if FAIL == 0 else f"{FAIL} TESTE(S) FALHARAM"}')
 sys.exit(1 if FAIL else 0)

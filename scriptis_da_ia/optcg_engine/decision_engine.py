@@ -1159,17 +1159,22 @@ class EffectExecutor:
                 logs.append(f'devolveu {count} DON')
         return logs
 
-    def _counter_event_buff_amount(self, event: Card, target: Card,
-                                   target_type: str) -> int | None:
+    def _counter_event_power_plan(self, event: Card, target: Card,
+                                  target_type: str) -> tuple[int, list[dict]] | None:
         block = get_card_effects(event.code).get('counter', {})
         if not block or not self._check_conditions(block.get('conditions', {}), event):
             return None
         steps = block.get('steps', [])
-        if len(steps) != 1:
+        buff_steps = [
+            step for step in steps
+            if step.get('action') == 'buff_power' and step.get('duration') == 'battle_only'
+        ]
+        if len(buff_steps) != 1:
             return None
-        step = steps[0]
-        if step.get('action') != 'buff_power' or step.get('duration') != 'battle_only':
+        extras = [step for step in steps if step is not buff_steps[0]]
+        if any(step.get('action') != 'draw' for step in extras):
             return None
+        step = buff_steps[0]
         target_rule = step.get('target')
         if target_rule == 'leader' and target_type != 'leader':
             return None
@@ -1179,7 +1184,7 @@ class EffectExecutor:
             return None
         if step.get('conditions') and not self._check_conditions(step.get('conditions', {}), event):
             return None
-        return step.get('amount', 0)
+        return step.get('amount', 0), extras
 
     def try_counter_event_power(self, target: Card, target_type: str,
                                 needed: int) -> tuple[int, str] | None:
@@ -1188,8 +1193,11 @@ class EffectExecutor:
         for event in self.me.hand:
             if event.card_type != 'EVENT':
                 continue
-            amount = self._counter_event_buff_amount(event, target, target_type)
-            if amount is None or amount < needed:
+            plan = self._counter_event_power_plan(event, target, target_type)
+            if plan is None:
+                continue
+            amount, extras = plan
+            if amount < needed:
                 continue
             play_cost = effective_hand_play_cost(self.me, event)
             if self.me.don_available < play_cost:
@@ -1197,12 +1205,12 @@ class EffectExecutor:
             costs = get_card_effects(event.code).get('counter', {}).get('costs', [])
             if not self._counter_event_cost_payable(event, costs):
                 continue
-            candidates.append((amount - needed, play_cost, event, amount, costs))
+            candidates.append((amount - needed, play_cost, event, amount, costs, extras))
 
         if not candidates:
             return None
 
-        _, play_cost, event, amount, costs = min(candidates, key=lambda item: (item[0], item[1]))
+        _, play_cost, event, amount, costs, extras = min(candidates, key=lambda item: (item[0], item[1]))
         cost_logs = self._pay_counter_event_costs(event, costs)
         if cost_logs is None:
             return None
@@ -1211,8 +1219,17 @@ class EffectExecutor:
         self.me.don_available -= play_cost
         self.me.don_rested += play_cost
         log = f'Counter {event.name[:18]}: +{amount} power'
+        extra_logs = []
+        for extra in extras:
+            if extra.get('conditions') and not self._check_conditions(extra.get('conditions', {}), event):
+                continue
+            extra_log = self._execute_step(extra, event)
+            if extra_log:
+                extra_logs.append(extra_log)
         if cost_logs:
             log += ' | custo: ' + '; '.join(cost_logs)
+        if extra_logs:
+            log += ' | ' + ' | '.join(extra_logs)
         return amount, log
 
     def _pay_substitute_cost(self, cost: dict, card: Card) -> str | None:
