@@ -1331,6 +1331,75 @@ class EffectExecutor:
             log += ' | ' + ' | '.join(extra_logs)
         return amount, log
 
+    def _counter_event_debuff_plan(self, event: Card, attacker: Card,
+                                   attacker_type: str) -> int | None:
+        """Plano pra Counter events que enfraquecem o ATACANTE em vez de
+        buffar a propria defesa -- mecanica distinta de
+        _counter_event_power_plan, que so cobre 'Your Leader or Character
+        gains power'. Achado 30/06/2026: 5 cartas no banco sao "[Counter]
+        Give up to 1 of your opponent's Leader or Character cards -X power
+        during this turn" (OP01-028, OP03-017, OP07-075, OP15-021,
+        ST09-014) -- um unico debuff_power, sem extras, alvo escolhido pela
+        IA = sempre o atacante (o que importa pra sobreviver A ESTE ataque).
+        Escopo deliberadamente minimo: exige EXATAMENTE 1 debuff_power e
+        nenhum outro step -- cartas com 2 debuffs em sequencia (OP04-017,
+        OP02-089) ou combinadas com outra action (OP09-097 negate_effect)
+        tem semantica ambigua sobre se afetam o MESMO alvo, fora de escopo
+        por ora (ver TODO.md)."""
+        block = get_card_effects(event.code).get('counter', {})
+        if not block or not self._check_conditions(block.get('conditions', {}), event):
+            return None
+        steps = block.get('steps', [])
+        if len(steps) != 1:
+            return None
+        step = steps[0]
+        if step.get('action') != 'debuff_power':
+            return None
+        target_rule = step.get('target')
+        if target_rule == 'opp_character' and attacker_type != 'character':
+            return None
+        if target_rule not in ('opp_character', 'opp_leader_or_character'):
+            return None
+        if step.get('conditions') and not self._check_conditions(step.get('conditions', {}), event):
+            return None
+        return step.get('amount', 0)
+
+    def try_counter_event_debuff(self, attacker: Card, attacker_type: str,
+                                 needed: int) -> tuple[int, str] | None:
+        """Usa um evento [Counter] que enfraquece o ATACANTE (em vez de
+        buffar a propria defesa) se isso sozinho impedir o hit."""
+        candidates = []
+        for event in self.me.hand:
+            if event.card_type != 'EVENT':
+                continue
+            amount = self._counter_event_debuff_plan(event, attacker, attacker_type)
+            if amount is None or amount < needed:
+                continue
+            play_cost = effective_hand_play_cost(self.me, event)
+            if self.me.don_available < play_cost:
+                continue
+            costs = get_card_effects(event.code).get('counter', {}).get('costs', [])
+            if not self._counter_event_cost_payable(event, costs):
+                continue
+            candidates.append((amount - needed, play_cost, event, amount, costs))
+
+        if not candidates:
+            return None
+
+        _, play_cost, event, amount, costs = min(candidates, key=lambda item: (item[0], item[1]))
+        cost_logs = self._pay_counter_event_costs(event, costs)
+        if cost_logs is None:
+            return None
+        remove_by_identity(self.me.hand, event)
+        self.me.trash.append(event)
+        self.me.don_available -= play_cost
+        self.me.don_rested += play_cost
+        attacker.power_buff -= amount
+        log = f'Counter {event.name[:18]}: -{amount} power no atacante'
+        if cost_logs:
+            log += ' | custo: ' + '; '.join(cost_logs)
+        return amount, log
+
     def _pay_substitute_cost(self, cost: dict, card: Card) -> str | None:
         """Paga o custo de uma substituicao de K.O./remocao. Retorna log de
         sucesso, ou None se nao pode pagar (substituicao nao ocorre)."""
@@ -6056,6 +6125,22 @@ class OPTCGMatch:
                 defend_power += amount
                 if verbose:
                     print(f'      🛡 {counter_log} -> defesa {defend_power}')
+
+        # Counter event que enfraquece o ATACANTE em vez de buffar a propria
+        # defesa -- mecanica distinta (ex: OP01-028, ST09-014). So tentado se
+        # o buff acima nao bastou.
+        if atk_power >= defend_power:
+            attacker_type = 'leader' if attacker is p.leader else 'character'
+            counter_debuff = ee_react.try_counter_event_debuff(
+                attacker,
+                attacker_type,
+                atk_power - defend_power + 1,
+            )
+            if counter_debuff:
+                amount, counter_log = counter_debuff
+                atk_power -= amount
+                if verbose:
+                    print(f'      🛡 {counter_log} -> ataque {atk_power}')
 
         # Damage step
         if atk_power >= defend_power:

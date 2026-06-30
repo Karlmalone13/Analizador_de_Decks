@@ -302,6 +302,30 @@ de imunidade e stubs antigos listados abaixo.
   OP15-074, OP15-075, OP15-076. Cobertura subiu de 114/180 pra 128/180.
   Validado com `audit_replay.py --n 20 --seed 7` e `--n 15 --seed 99`: 0
   excecoes, 0 anomalias.
+- [x] **Counter events que enfraquecem o ATACANTE (30/06/2026):** mecanica
+  distinta de tudo anterior — em vez de buffar a propria defesa,
+  "[Counter] Give up to 1 of your opponent's Leader or Character cards -X
+  power during this turn" reduz o `atk_power` do atacante diretamente. Nova
+  funcao `try_counter_event_debuff` + `_counter_event_debuff_plan` em
+  `decision_engine.py`, chamada como fallback no fluxo de batalha logo apos
+  `try_counter_event_power` nao bastar (`atk_power -= amount`, mutando
+  `attacker.power_buff` de verdade, nao so o calculo de defesa). Escopo
+  minimo e deliberado: exige EXATAMENTE 1 `debuff_power` no bloco `counter`
+  e nenhum outro step. Desbloqueia OP01-028, OP03-017, OP07-075, OP15-021,
+  ST09-014 (5 cartas). Ficam de fora por ambiguidade de alvo (2 debuffs em
+  sequencia sem "that card" explicito, ao contrario do padrao de buff
+  bonus): OP02-089 ("total of 2... -3000", distribuicao ambigua), OP04-017
+  (2 debuffs sequenciais sem marcador de mesmo alvo), OP09-097 (combina com
+  `negate_effect`, ainda sem handler). Validado com `audit_replay.py --n 20
+  --seed 7` e `--n 15 --seed 99`: 0 excecoes, 0 anomalias.
+- [ ] **KO via Counter event (pendente):** 4 cartas ("[Counter] K.O. up to 1
+  of your opponent's Characters with cost/power N or less, rested only")
+  removem o atacante inteiramente ANTES do dano, cancelando o ataque — nao
+  e uma reducao de atk_power/buff de defesa, e sim um mecanismo de
+  cancelamento total. Precisa de um ponto de injecao proprio no fluxo de
+  `_resolve_attack` (provavelmente logo apos o Blocker, antes da comparacao
+  atk_power >= defend_power), distinto dos dois mecanismos ja implementados.
+  Cartas: EB01-010, OP08-094, OP10-040, OP13-039.
 - [ ] Implementar substituição externa: auditoria de 29/06/2026 achou cerca de
   38 textos onde uma fonte em campo/líder protege outro alvo (`if your Character
   would be removed/K.O.'d...`). O parser já estrutura muitos como

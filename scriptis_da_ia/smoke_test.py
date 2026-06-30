@@ -835,6 +835,54 @@ counter = ee.try_counter_event_power(me.leader, 'leader', needed=1)
 check('Counter event select_filtered nao protege alvo fora do filtro',
       counter is None and evento_filtrado2 in me.hand)
 
+# ── 15g. Counter events que enfraquecem o ATACANTE (debuff_power puro, sem
+# buffar a propria defesa) -- mecanica distinta de try_counter_event_power.
+# OP01-028: unico debuff_power, target=opp_leader_or_character ──
+me, opp = me_opp()
+me.don_available = 2
+atacante = mk('ATK-1', 'Atacante', power=6000)
+evento_debuff_puro = mk('OP01-028', 'Green Star Rafflesia', card_type='EVENT', cost=2)
+me.hand = [evento_debuff_puro]
+ee = EffectExecutor(me, opp)
+counter = ee.try_counter_event_debuff(atacante, 'character', needed=2000)
+check('Counter event de debuff puro enfraquece o atacante o suficiente',
+      counter and counter[0] == 2000 and evento_debuff_puro in me.trash
+      and atacante.power_buff == -2000)
+
+me, opp = me_opp()
+me.don_available = 2
+atacante2 = mk('ATK-2', 'Atacante 2', power=6000)
+evento_debuff_fraco = mk('OP01-028', 'Green Star Rafflesia', card_type='EVENT', cost=2)
+me.hand = [evento_debuff_fraco]
+ee = EffectExecutor(me, opp)
+counter = ee.try_counter_event_debuff(atacante2, 'character', needed=2001)
+check('Counter event de debuff puro nao ativa se o debuff nao for suficiente',
+      counter is None and evento_debuff_fraco in me.hand and atacante2.power_buff == 0)
+
+# OP03-017: target='opp_character' -- nao deve proteger contra Leader atacando
+me, opp = me_opp()
+me.don_available = 2
+me.leader = mk('LD-WB', 'Whitebeard Leader', power=5000, card_type='LEADER', sub_types='Whitebeard Pirates')
+atacante_leader = mk('ATK-LD', 'Leader Atacante', power=6000, card_type='LEADER')
+evento_op03017 = mk('OP03-017', 'Cross Fire', card_type='EVENT', cost=2)
+me.hand = [evento_op03017]
+ee = EffectExecutor(me, opp)
+counter = ee.try_counter_event_debuff(atacante_leader, 'leader', needed=1)
+check('Counter event de debuff target=opp_character nao protege contra Leader atacando',
+      counter is None and evento_op03017 in me.hand)
+
+# ST09-014: condicao no nivel do block (life_lte 2)
+me, opp = me_opp()
+me.don_available = 2
+me.life = [mk('L1', 'Vida 1'), mk('L2', 'Vida 2')]
+atacante3 = mk('ATK-3', 'Atacante 3', power=6000)
+evento_st09014 = mk('ST09-014', 'Narikabura Arrow', card_type='EVENT', cost=2)
+me.hand = [evento_st09014]
+ee = EffectExecutor(me, opp)
+counter = ee.try_counter_event_debuff(atacante3, 'character', needed=3000)
+check('Counter event de debuff com condicao de vida ativa quando passa (life_lte 2)',
+      counter and counter[0] == 3000 and atacante3.power_buff == -3000)
+
 print()
 print(f'{"TODOS OS TESTES PASSARAM" if FAIL == 0 else f"{FAIL} TESTE(S) FALHARAM"}')
 sys.exit(1 if FAIL else 0)

@@ -1,5 +1,48 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-06-30 (6) - Claude
+
+**Feito - Counter events que enfraquecem o ATACANTE:** mecânica nova,
+distinta de tudo que já existia (que sempre buffava a PRÓPRIA defesa). 5
+cartas no banco são "[Counter] Give up to 1 of your opponent's Leader or
+Character cards -X power during this turn" (OP01-028, OP03-017, OP07-075,
+OP15-021, ST09-014) — reduzem o `atk_power` do atacante diretamente.
+
+Implementei `_counter_event_debuff_plan` + `try_counter_event_debuff` em
+[decision_engine.py](scriptis_da_ia/optcg_engine/decision_engine.py),
+chamada como fallback no fluxo de `_resolve_attack` logo depois que
+`try_counter_event_power` (buff da própria defesa) não bastar sozinho —
+`atk_power -= amount`, mutando `attacker.power_buff` de verdade (não é só
+matemática local; o atacante fica realmente mais fraco pro resto do turno,
+consistente com o texto "during this turn"). Escopo deliberadamente mínimo:
+exige EXATAMENTE 1 `debuff_power` no bloco `counter` e nenhum outro step —
+deixei de fora 3 cartas com semântica ambígua de alvo (OP02-089 "total of
+2... -3000" com distribuição não clara, OP04-017 com 2 debuffs sequenciais
+sem o marcador "that card" que o padrão de buff bonus usa, OP09-097 que
+combina com `negate_effect`, ainda sem handler).
+
+**Validação:** `python -m py_compile`; `python smoke_test.py` (68/68, 4 casos
+novos cobrindo ativação, debuff insuficiente, mismatch de target_type
+leader/character, e condição de vida no nível do block); `python
+smoke_test_broad.py` (40/40); `python audit_replay.py --n 20 --seed 7` e
+`--n 15 --seed 99` (0 exceções, 0 anomalias nas duas).
+
+**Ainda falta (ver TODO.md):**
+- **KO via Counter event** (4 cartas: EB01-010, OP08-094, OP10-040,
+  OP13-039) — "[Counter] K.O. up to 1 of your opponent's Characters..."
+  remove o atacante inteiramente ANTES do dano, cancelando o ataque por
+  completo. É um mecanismo de cancelamento, não uma redução de power —
+  precisa de um ponto de injeção próprio no fluxo de `_resolve_attack`
+  (provavelmente logo após o Blocker), distinto dos dois mecanismos já
+  implementados (buff da defesa / debuff do atacante).
+- `play_card`/`play_from_deck`/busca em deck (9 cartas, lógica de seleção
+  mais complexa).
+- `bounce` puro (2, já avaliado como fora de escopo em sessão anterior).
+- `substitute_ko`/`immunity`/`negate_effect` combinados (4, mecânicas
+  distintas que merecem auditoria própria).
+
+---
+
 ## 2026-06-30 (5) - Claude
 
 **Feito - Counter events: duration='this_turn' + select_filtered:**
