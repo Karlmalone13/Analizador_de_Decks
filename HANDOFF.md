@@ -1,6 +1,32 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
-## 2026-07-02 (11) - Claude — ÚLTIMA DESTA SESSÃO
+## 2026-07-02 (12) - Claude — ÚLTIMA DESTA SESSÃO
+
+**Feito — OP15-074 Varie (foto recebida do usuário) + fix de duração.**
+
+Dois bugs confirmados pela foto:
+1. **CSV errado**: "DON!! 1" sem o sinal de menos → corrigido para "DON!! -1"
+   em `cards_rows.csv`. Sem a correção, `parse_costs` não reconhecia o custo
+   e o efeito ativava de graça.
+2. **Duração errada**: `parse_cost_debuff` mapeava toda duração "until the end
+   of your opponent's next End Phase" para `until_opp_turn_end`. Corrigido para
+   distinguir "end phase" → `until_opp_end_phase` vs "turn" → `until_opp_turn_end`.
+   Bonus: 3 cartas com o mesmo bug corrigidas (OP12-119, OP14-082, OP14-098).
+
+Efeito correto agora: **[Main] DON!! −1** (custo don_minus:1), leader_is='enel',
+draw 1 + buff_cost +2 own_character duration=until_opp_end_phase.
+**[Counter]** buff_power +2000 filter_type='enel'.
+
+TODO.md: item "OP15-074 Varie — DON sem sinal, aguarda foto" fechado.
+
+**Pendências restantes (lista limpa):**
+- Otimização estrutural de deepcopy no Turn Planner (dívida técnica de performance)
+- Rotação de chaves Supabase (antes de deploy público)
+- 3 gaps de parser intencionalmente sem efeito (ID mismatch, info-only, regra de deck)
+
+---
+
+## 2026-07-02 (11) - Claude
 
 **Feito — gaps: 4 → 3 (intencionais), 2334 → 2335 com efeito. Auditoria de
 gaps finalizada.**
