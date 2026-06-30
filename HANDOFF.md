@@ -1,6 +1,33 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
-## 2026-07-02 (10) - Claude — ÚLTIMA DESTA SESSÃO
+## 2026-07-02 (11) - Claude — ÚLTIMA DESTA SESSÃO
+
+**Feito — gaps: 4 → 3 (intencionais), 2334 → 2335 com efeito. Auditoria de
+gaps finalizada.**
+
+Último gap implementável: **ST13-003 Luffy Leader** — "Your face-up Life cards
+are placed at the bottom of your deck instead of being added to your hand,
+according to the rules." Novo campo `face_up_life_to_deck: bool` em `GameState`.
+Novo action `face_up_life_to_deck_rule` — setado via passive execution em
+`apply_your_turn_buffs` a cada turno que o Leader ST13-003 está ativo. A
+resolução de dano em `_execute_attack` (linha ~6502) checa este flag: se
+`life_card.life_face_up and opp.face_up_life_to_deck` → card vai para
+`opp.deck.insert(0, ...)` (fundo do deck) em vez de `opp.hand`.
+
+**3 gaps intencionalmente sem efeito (de 51 originais):**
+  - EB03_OP05-006_p1 — falso positivo de ID (parsa como OP05-006 base)
+  - OP01-105 Bao Huang — "Choose 2 cards from your opponent's hand; your opponent
+    reveals those cards" — info-only, sem mudança de estado de jogo
+  - OP16-042 Prisoner of Impel Down — "You may have any number of this card" —
+    regra de deckbuilding, sem efeito durante a partida
+
+**Auditoria de gaps: CONCLUÍDA.** 2614 cartas no banco, 2335 com efeito (era
+  2272 no início da sessão total, +63 esta rodada; a auditoria partiu de 51
+  gaps reais e chegou a 3 intencionais).
+
+---
+
+## 2026-07-02 (10) - Claude
 
 **Feito — gaps restantes: 14 → 4, 2324 → 2334 com efeito.**
 

@@ -107214,7 +107214,12 @@
   "color": "Yellow",
   "sub_types": "Straw Hat Crew Supernovas",
   "attribute": "Strike",
-  "effects": [],
+  "effects": [
+   {
+    "action": "face_up_life_to_deck_rule",
+    "trigger": "passive"
+   }
+  ],
   "synergy_states": {
    "vida_ganha": {
     "creates": true,

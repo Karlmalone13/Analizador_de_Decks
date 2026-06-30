@@ -328,6 +328,7 @@ class GameState:
     cant_play_cost_gte: int = 0
     cannot_attack_leader_this_turn: bool = False
     cant_take_life_this_turn: bool = False  # ST15-001 Atmos: "cannot add Life cards to your hand using your own effects this turn"
+    face_up_life_to_deck: bool = False      # ST13-003 Luffy Leader: face-up life cards go to BOTTOM of deck instead of hand when damaged
     is_first: bool = True
     # Estatísticas
     dmg_dealt: int = 0
@@ -382,6 +383,7 @@ class GameState:
         novo.global_turn = self.global_turn
         novo.cant_play_from_hand_this_turn = self.cant_play_from_hand_this_turn
         novo.cant_take_life_this_turn = self.cant_take_life_this_turn
+        novo.face_up_life_to_deck = self.face_up_life_to_deck
         novo.cant_play_chars_this_turn = self.cant_play_chars_this_turn
         novo.cant_play_cost_gte = self.cant_play_cost_gte
         novo.cannot_attack_leader_this_turn = self.cannot_attack_leader_this_turn
@@ -2694,6 +2696,11 @@ class EffectExecutor:
                         remove_character_from_field(me, card, 'trash')
                     return f'KO mutuo: {target_opp.name[:12]} e {card.name[:12]}'
             return ''
+
+        # ── ST13-003 Luffy Leader: face-up Life → deck bottom rule ─────────────
+        if action == 'face_up_life_to_deck_rule':
+            me.face_up_life_to_deck = True
+            return 'regra: vida face-up vai pro fundo do deck em vez da mao'
 
         # ── Redirect attack target (OP14-060) -- no-op engine, parser only ──────
         if action == 'redirect_attack_target':
@@ -6499,7 +6506,13 @@ class OPTCGMatch:
                         if verbose:
                             print(f'      💥 DANO (BANISH)! vida -> trash: {opp.life_count()}')
                     else:
-                        opp.hand.append(life_card)
+                        # ST13-003 Luffy Leader: face-up life cards go to deck
+                        # bottom instead of hand (passive rule change).
+                        if life_card.life_face_up and opp.face_up_life_to_deck:
+                            life_card.life_face_up = False
+                            opp.deck.insert(0, life_card)
+                        else:
+                            opp.hand.append(life_card)
                         if verbose:
                             print(f'      💥 DANO! vida do oponente: {opp.life_count()}')
                     if life_card.has_trigger and not attacker.has_banish:

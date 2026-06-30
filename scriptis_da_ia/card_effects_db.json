@@ -70125,7 +70125,15 @@
     "color": "Yellow",
     "sub_types": "Straw Hat Crew Supernovas",
     "attribute": "Strike",
-    "effects": {}
+    "effects": {
+      "passive": {
+        "steps": [
+          {
+            "action": "face_up_life_to_deck_rule"
+          }
+        ]
+      }
+    }
   },
   "ST13-004": {
     "name": "Edward.Newgate",

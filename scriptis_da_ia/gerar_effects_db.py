@@ -3576,6 +3576,14 @@ def parse_block(block_text, trigger_name):
     if 'cost' in t and ('give' in t or 'gain' in t or 'set the cost' in t):
         steps.extend(parse_cost_debuff(t))
 
+    # "Your face-up Life cards are placed at the bottom of your deck instead
+    # of being added to your hand, according to the rules." -- ST13-003 Luffy
+    # Leader. Regra passiva permanente que altera toda a resolucao de dano.
+    # Implementado via flag face_up_life_to_deck no GameState, setado uma vez
+    # no setup e persistente pelo jogo inteiro.
+    if 'face-up life cards' in t and 'bottom of your deck' in t and 'instead' in t:
+        steps.append({'action': 'face_up_life_to_deck_rule'})
+
     # "draw cards equal to the number of cards trashed" -- trigger reativo
     # (OP12-040 Kuzan Leader). Simplificacao: registra como draw para analysis.
     if 'draw cards equal to the number' in t:
