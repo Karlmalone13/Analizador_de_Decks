@@ -283,6 +283,18 @@ log = ee._execute_step({'action': 'ko', 'target': 'opp_character', 'count': 1}, 
 check('imunidade by opponent effects protege contra KO do oponente',
       immune_opp in opp.field_chars and immune_opp not in opp.trash and 'imune' in (log or ''))
 
+# ── 14. substitute_removal executa extra_steps (Thatch: trash self + draw) ──
+me, opp = me_opp()
+thatch = mk('OP08-045', 'Thatch')
+alvo = mk('ALLY-CG', 'Cross Guild ally', sub_types='Cross Guild')
+draw_card = mk('DRAW1', 'Carta comprada')
+me.field_chars = [thatch, alvo]
+me.deck = [draw_card]
+ee = EffectExecutor(me, opp)
+log = ee.try_substitute(thatch, 'removal')
+check('substitute_removal com extra_steps compra carta apos trash_self',
+      thatch in me.trash and draw_card in me.hand and 'comprou' in (log or ''))
+
 print()
 print(f'{"TODOS OS TESTES PASSARAM" if FAIL == 0 else f"{FAIL} TESTE(S) FALHARAM"}')
 sys.exit(1 if FAIL else 0)

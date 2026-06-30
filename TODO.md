@@ -220,6 +220,12 @@ de imunidade e stubs antigos listados abaixo.
   "by opponent's effects" não protege mais contra efeito próprio. Próximo passo
   é auditar variantes ainda fora de `immunity`: `EffectImmune`, `CombatImmune`,
   `ImmuneToStrikes` e substituições "would be removed/K.O.'d ... instead".
+- [ ] Implementar substituição externa: auditoria de 29/06/2026 achou cerca de
+  38 textos onde uma fonte em campo/líder protege outro alvo (`if your Character
+  would be removed/K.O.'d...`). O parser já estrutura muitos como
+  `substitute_*`, mas o executor atual consulta principalmente o alvo removido.
+  Precisa separar `target` e `source`. Já corrigido nesta auditoria: `extra_steps`
+  de substituição (`trash self + draw`) agora executam.
 
 ---
 

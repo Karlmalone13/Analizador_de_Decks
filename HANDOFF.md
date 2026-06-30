@@ -7,6 +7,43 @@ e `git status` antes de tocar em qualquer coisa.
 
 ---
 
+## 2026-06-29 23:11 — Codex
+
+**Feito** — auditoria de imunidade/substituição por texto bruto:
+- 220 cartas batem em padrões amplos (`cannot be K.O.'d`, `cannot be removed`,
+  `would be removed/K.O.'d`, `instead`, etc.).
+- `substitution_text_without_substitute_action = 0`: todo texto com padrão
+  claro de substituição já tem alguma action estruturada (`substitute_ko` ou
+  `substitute_removal`) ou foi classificado em outra mecânica.
+- `extra_steps` em substituição existia no banco para 2 cartas (`OP08-045`
+  Thatch e `ST30-009` LittleOars Jr.), mas o executor pagava o custo e ignorava
+  o efeito extra. Corrigido: após pagar a substituição, `_execute_step()` roda
+  cada `extra_step`. Smoke novo valida `trash_self + draw`.
+
+**Achado importante ainda aberto:** substituições por FONTE EXTERNA. Há cerca de
+38 textos do tipo "if your [outro] Character would be removed/K.O.'d, you may
+[fazer algo com esta carta/leader/mão] instead". O engine atual chama
+`try_substitute(target, ...)`, então ele olha principalmente os efeitos do alvo,
+não de aliados/líder que poderiam proteger o alvo. Corrigir isso exige separar
+explicitamente `target` e `source` no executor; não é só regex.
+
+**Validação:**
+- `python -m py_compile scriptis_da_ia\smoke_test.py scriptis_da_ia\optcg_engine\decision_engine.py` passou.
+- `python scriptis_da_ia\smoke_test.py` passou.
+- `python audit_replay.py --n 5 --seed 42` passou com 0 anomalias.
+- `python smoke_test_broad.py` passou `40/40`.
+
+**Próximo:** implementar substituição externa com assinatura do tipo
+`try_substitute(target, removal_kind, source=None)` ou método novo que procura
+fontes protetoras no campo/líder, aplicando custo no `source` e efeito no
+`target` quando o texto diz "that Character".
+
+**Estado após esta fatia:** esperado commit/push com
+`scriptis_da_ia/optcg_engine/decision_engine.py`, `scriptis_da_ia/smoke_test.py`,
+`HANDOFF.md` e `TODO.md`.
+
+---
+
 ## 2026-06-29 23:01 — Codex
 
 **Feito** — primeira fatia do sistema de imunidade. A auditoria mostrou que a

@@ -953,8 +953,16 @@ class EffectExecutor:
             if log is None:
                 continue  # não conseguiu pagar -- tenta o próximo step (raro) ou desiste
 
+            extra_logs = []
+            for extra in step.get('extra_steps', []):
+                extra_log = self._execute_step(extra, card)
+                if extra_log:
+                    extra_logs.append(extra_log)
+
             if block.get('once_per_turn'):
                 self._once_used.add(key)
+            if extra_logs:
+                return log + ' | ' + ' | '.join(extra_logs)
             return log
 
         return None
