@@ -2755,10 +2755,20 @@ def parse_opp_self_move_character(text):
 
 def parse_immunity(text):
     """
-    Imunidade passiva. Dois tipos presentes no banco (os tipos exóticos do
-    simulador — effect-immune genérico, combat-immune — não aparecem no pool):
+    Imunidade passiva. Tres tipos presentes no banco (os tipos exoticos do
+    simulador -- effect-immune generico, combat-immune -- nao aparecem no
+    pool como texto separado; ja sao cobertos por 'ko'/'removal' + a logica
+    de atributo do atacante em runtime, ver TODO.md "auditoria de
+    imunidade"):
       - 'ko'      : "cannot be K.O.'d"
       - 'removal' : "cannot be removed from the field"
+      - 'rest'    : "cannot be rested by your opponent's effects" --
+        AUTOPROTECAO contra rest forcado por efeito do oponente (achado
+        01/07/2026, 3 cartas: OP11-046, OP12-021, OP15-024). DISTINTA de
+        `lock_opp_cannot_be_rested` (que trava o CHARACTER DO OPONENTE,
+        beneficiando quem ativa o efeito -- mecanica oposta, ja
+        implementada, NAO confundir as duas so porque compartilham a
+        palavra "rested" no texto).
     source: 'opp' se "by your opponent's effects" (só efeitos do oponente),
             senão 'any'. A condição (DON xN / Opponent's Turn / If...) é tratada
             pelo sistema de conditions do parser, no nível do entry/step.
@@ -2770,6 +2780,11 @@ def parse_immunity(text):
         steps.append({'action': 'immunity', 'imm_type': 'ko', 'source': src})
     if re.search(r'cannot be removed from the field|can'+chr(39)+r't be removed from the field', t):
         steps.append({'action': 'immunity', 'imm_type': 'removal', 'source': src})
+    # Aceita tambem a forma composta "cannot be K.O.'d OR rested by your
+    # opponent's effects" (OP11-046) -- "rested" nao vem logo apos "cannot
+    # be" nesse caso, vem apos o "or".
+    if re.search(r"cannot be (?:k\.?o\.?'?d or )?rested by your opponent", t):
+        steps.append({'action': 'immunity', 'imm_type': 'rest', 'source': 'opp'})
     return steps
 
 

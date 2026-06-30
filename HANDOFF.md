@@ -1,5 +1,66 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-01 (8) - Claude — ÚLTIMA DESTA SESSÃO
+
+**Feito - imunidade a rest forçado (imm_type='rest'), 3 cartas:** um
+segundo agente de investigação que eu tinha disparado em paralelo (e cujo
+resultado cheguei a achar que tinha falhado) voltou depois de eu já ter
+fechado o item de auditoria de imunidade. Relatou um gap real: "cannot be
+rested by your opponent's effects" — mas reportou 11 cartas afetadas.
+Investigando, descobri que 8 dessas 11 já estavam corretamente
+implementadas como `lock_opp_cannot_be_rested` — uma mecânica **oposta**
+(trava o character do OPONENTE, beneficia quem ativa o efeito) que só
+compartilha a palavra "rested" no texto com a autoproteção real. O agente
+confundiu as duas por similaridade superficial. O gap genuíno era só 3
+cartas: **OP11-046, OP12-021, OP15-024**.
+
+Implementado: novo `imm_type='rest'` em `parse_immunity`
+(`gerar_effects_db.py`), incluindo a forma composta "cannot be K.O.'d OR
+rested by your opponent's effects" (OP11-046). `is_immune()` já era
+genérico o suficiente pra qualquer `imm_type` sem precisar de mudança — só
+documentei. Plugado em `rest_opp_character`
+([decision_engine.py](scriptis_da_ia/optcg_engine/decision_engine.py)), o
+único ponto real de "rest forçado por efeito do oponente" no banco hoje.
+
+**Validação:** `python -m py_compile`; `python diff_parser.py` (`PERDEU=0`,
+exatamente as 3 cartas esperadas); `python gerar_dbs.py` + `python
+snapshot_parser.py`; `python smoke_test.py` (119/119, 4 casos novos);
+`python smoke_test_broad.py` (40/40); `python audit_replay.py --n 20
+--seed 7` e `--n 15 --seed 99` (0 exceções, 0 anomalias nas duas).
+
+**Gaps menores não corrigidos** (achados de raspão, baixo impacto, 2
+cartas): OP14-119 (`lock_opp_cannot_be_rested` com gatilho "when this
+Character becomes rested" — trigger condicional não reconhecido pelo
+parser, perde o efeito inteiro) e OP16-032 (mesma action, mas com exclusão
+"other than [Nome]" não extraída — fica sem nenhum efeito parseado).
+Registrado no TODO.md.
+
+---
+
+## RESUMO DA SESSÃO DE 2026-07-01 (encerrada aqui — próxima sessão deve
+começar lendo este HANDOFF.md inteiro + `git log --oneline -20` antes de
+qualquer coisa):
+
+Sessão longa cobrindo, em sequência: (1) auditoria + correção da fila
+"FILA ANTERIOR ainda aberta" do TODO.md (5 de 7 itens já estavam
+implementados, 2 reais feitos — `lock_opp_attack_unless_pays` e
+`deck_reorder_rest`/`deck_top_rest`); (2) família completa de substituição
+externa (11 de 13 cartas + 2 bugs estruturais de parser corrigidos no
+caminho); (3) auditoria de imunidade restante (confirmado sem gap real em
+`EffectImmune`/`CombatImmune`/`ImmuneToStrikes`); (4) imunidade a rest
+forçado (3 cartas). Todos os commits já enviados pro `origin/main`.
+
+**Itens reais ainda abertos no TODO.md** pra próxima sessão: 5 funções
+órfãs (deletar ou integrar), otimização de `deepcopy` no Turn Planner
+(performance), revalidar contagem de cartas com `card_text` mas `effects`
+vazio, `opponent has N+ DON` sem parser (~8 cartas), `place-at-bottom-of-deck`
+mecânica nova (~14 cartas), OP15-074 Varie (aguarda foto — não dá pra
+resolver sem a imagem), `lock_opp_cannot_be_rested` com gatilho "becomes
+rested" + exclusão "other than [Nome]" (2 cartas, achado nesta sessão), e
+rotação de chaves Supabase (segurança, antes de deploy público).
+
+---
+
 ## 2026-07-01 (7) - Claude
 
 **Feito - fecha item "auditoria de imunidade restante" (sem código, só

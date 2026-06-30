@@ -65086,6 +65086,10 @@
     "trigger": "passive"
    },
    {
+    "action": "immunity",
+    "trigger": "passive"
+   },
+   {
     "action": "keyword_blocker",
     "trigger": "passive"
    }
@@ -69105,6 +69109,10 @@
   "sub_types": "East Blue",
   "attribute": "Wisdom",
   "effects": [
+   {
+    "action": "immunity",
+    "trigger": "passive"
+   },
    {
     "action": "keyword_blocker",
     "trigger": "passive"
@@ -84865,6 +84873,10 @@
    {
     "action": "rest_opp_character",
     "trigger": "on_ko"
+   },
+   {
+    "action": "immunity",
+    "trigger": "opp_turn"
    },
    {
     "action": "gain_blocker",

@@ -42034,6 +42034,11 @@
             "source": "opp"
           },
           {
+            "action": "immunity",
+            "imm_type": "rest",
+            "source": "opp"
+          },
+          {
             "action": "keyword_blocker"
           }
         ],
@@ -44652,6 +44657,11 @@
     "effects": {
       "passive": {
         "steps": [
+          {
+            "action": "immunity",
+            "imm_type": "rest",
+            "source": "opp"
+          },
           {
             "action": "keyword_blocker"
           }
@@ -55021,6 +55031,11 @@
       },
       "opp_turn": {
         "steps": [
+          {
+            "action": "immunity",
+            "imm_type": "rest",
+            "source": "opp"
+          },
           {
             "action": "gain_blocker"
           }

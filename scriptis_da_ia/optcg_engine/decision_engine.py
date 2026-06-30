@@ -540,7 +540,11 @@ def is_immune(card: 'Card', imm_type: str, owner: 'GameState', opp: 'GameState',
               source_is_opp: bool = True, ko_context: str | None = None,
               source_card: Optional['Card'] = None) -> bool:
     """
-    True se `card` está imune a `imm_type` ('ko' | 'removal') no estado atual.
+    True se `card` está imune a `imm_type` ('ko' | 'removal' | 'rest') no
+    estado atual. 'rest': autoproteção contra rest forçado por efeito do
+    oponente (achado 01/07/2026, OP11-046/OP12-021/OP15-024) -- DISTINTA de
+    `cannot_be_rested_until` (trava posta por OUTRA carta via
+    `lock_opp_cannot_be_rested`, já checada separadamente).
 
     Lê a action 'immunity' nos effects da carta (parseada como passive/opp_turn/
     don_conditional). Respeita:
@@ -2512,8 +2516,14 @@ class EffectExecutor:
             count = step.get('count', 1)
             cost_lte = self._resolve_cost_lte(step, default=99)
 
+            # imunidade a rest forçado (achado 01/07/2026, ex: OP12-021,
+            # OP15-024, OP11-046) -- DISTINTA de cannot_be_rested_until
+            # (trava posta por OUTRA carta, mecanica oposta, ja filtrada
+            # acima).
             candidates = eligible_cards(
-                [c for c in opp.field_chars if not c.cannot_be_rested_until],
+                [c for c in opp.field_chars
+                 if not c.cannot_be_rested_until
+                 and not is_immune(c, 'rest', opp, self.me, source_is_opp=True)],
                 cost_lte=cost_lte,
                 cost_eq=step.get('cost_eq'),
                 power_lte=step.get('power_lte'),

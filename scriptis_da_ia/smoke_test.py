@@ -1296,6 +1296,45 @@ log = ee.try_substitute(st09010, 'ko')
 check('ST09-010 substitui KO trashando carta da propria vida',
       bool(log) and st09010 in me.field_chars and len(me.life) == 0 and len(me.trash) == 1)
 
+# ── 21. imunidade a rest forcado por efeito do oponente (imm_type='rest')
+# -- achado 01/07/2026: OP11-046, OP12-021, OP15-024. DISTINTA de
+# lock_opp_cannot_be_rested (trava o character DO OPONENTE, mecanica
+# oposta, ja implementada -- confirmado que nao tem gap ali). ──
+me, opp = me_opp()
+op12021 = mk('OP12-021', 'Imune a rest', power=5000)
+controle1 = mk('CTRL1', 'Controle', power=4000)
+opp.field_chars = [op12021, controle1]
+ee = EffectExecutor(me, opp)
+log = ee._execute_step({'action': 'rest_opp_character', 'count': 2}, me.leader)
+check('OP12-021 e imune a rest forcado por efeito do oponente',
+      not op12021.rested and controle1.rested)
+
+me, opp = me_opp()
+op15024 = mk('OP15-024', 'Imune a rest 2', power=5000)
+controle2 = mk('CTRL2', 'Controle 2', power=4000)
+opp.field_chars = [op15024, controle2]
+ee = EffectExecutor(me, opp)
+log = ee._execute_step({'action': 'rest_opp_character', 'count': 2}, me.leader)
+check('OP15-024 e imune a rest forcado por efeito do oponente',
+      not op15024.rested and controle2.rested)
+
+# OP11-046: imunidade composta (KO ou rest), condicional a only_field_type=germa
+me, opp = me_opp()
+op11046 = mk('OP11-046', 'Vinsmoke Yonji', power=5000, sub_types='GERMA')
+opp.field_chars = [op11046, mk('GERMA-ALLY', 'Aliado GERMA', sub_types='GERMA')]
+ee = EffectExecutor(me, opp)
+ee._execute_step({'action': 'rest_opp_character', 'count': 1}, me.leader)
+check('OP11-046 imune a rest quando so tem Characters GERMA no campo',
+      not op11046.rested)
+
+me, opp = me_opp()
+op11046b = mk('OP11-046', 'Vinsmoke Yonji', power=5000)
+opp.field_chars = [op11046b, mk('NAVY-ALLY', 'Aliado Navy', sub_types='Navy')]
+ee = EffectExecutor(me, opp)
+ee._execute_step({'action': 'rest_opp_character', 'count': 1}, me.leader)
+check('OP11-046 nao imune a rest quando tem Character fora de GERMA',
+      op11046b.rested)
+
 print()
 print(f'{"TODOS OS TESTES PASSARAM" if FAIL == 0 else f"{FAIL} TESTE(S) FALHARAM"}')
 sys.exit(1 if FAIL else 0)

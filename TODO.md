@@ -233,6 +233,32 @@ de imunidade e stubs antigos listados abaixo.
   prática) feita em 30/06/2026. Confirmado com exemplos reais (OP01-024,
   EB03-018) já parseados corretamente como `action: 'immunity'`. Item
   fechado — não há mais gap de cobertura conhecido nesta família.
+- [x] **Imunidade a `rest` forçado — implementada (01/07/2026).** Um
+  segundo agente de investigação (disparado em paralelo, voltou depois do
+  item acima já fechado) achou um gap real: "cannot be rested by your
+  opponent's effects" — autoproteção contra REST forçado, DISTINTA de
+  `lock_opp_cannot_be_rested` (que trava o character DO OPONENTE,
+  mecânica oposta, beneficia quem ativa — já implementada, sem gap).
+  O agente reportou 11 cartas, mas 8 delas (EB02-011, EB03-017, OP11-034,
+  OP13-032, OP14-033, OP14-069, OP15-029) já são `lock_opp_cannot_be_rested`
+  funcionando — falso positivo do agente por similaridade textual
+  superficial ("cannot be rested" aparece nos dois textos com semântica
+  oposta). Gap real: só 3 cartas — OP11-046, OP12-021, OP15-024. Novo
+  `imm_type='rest'` em `parse_immunity` (`gerar_effects_db.py`), aceita
+  também a forma composta "cannot be K.O.'d OR rested by your opponent's
+  effects" (OP11-046). `is_immune()` já funcionava genérico pra qualquer
+  `imm_type` sem mudança — só documentado. Checagem plugada em
+  `rest_opp_character` (`decision_engine.py`), o único ponto real de
+  "rest forçado por efeito do oponente" no banco hoje. 4 smoke tests novos.
+  Validado com `diff_parser.py` (`PERDEU=0`, exatamente as 3 cartas
+  esperadas), `audit_replay.py --n 20 --seed 7` e `--n 15 --seed 99`: 0
+  exceções, 0 anomalias.
+  **Gaps menores não corrigidos** (achados de raspão, baixo
+  impacto): OP14-119 (`lock_opp_cannot_be_rested` com gatilho "when this
+  Character becomes rested", trigger condicional não reconhecido, perde o
+  efeito) e OP16-032 (mesma action, mas com exclusão `other than [Nome]`
+  não extraída pelo parser — fica sem nenhum efeito parseado). 2 cartas,
+  registrado aqui pra não se perder.
 - Fatia seguinte feita: KO por efeito e KO em batalha agora passam contexto para
   `is_immune()`, e o helper usa o texto bruto para impedir que imunidade
   `cannot be K.O.'d in battle` proteja contra efeito, ou `by effects` proteja
