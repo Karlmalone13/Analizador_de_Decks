@@ -238,9 +238,10 @@ de imunidade e stubs antigos listados abaixo.
   eventos [Counter] feita: 70 eventos com buff defensivo unico `battle_only`
   agora podem ser usados no Counter Step quando impedem o hit. Segunda fatia:
   blocos com um buff defensivo unico + steps `draw` seguros tambem executam a
-  compra. Ainda faltam eventos [Counter] com efeitos extras agressivos/estado
-  complexo (`KO`, `rest`, `bounce`, `play`, `set_active`, `add_don`) e heuristica
-  mais fina.
+  compra. Terceira fatia: extras seguros `set_active` e `rest_opp_character`
+  tambem executam junto do buff defensivo. Ainda faltam eventos [Counter] com
+  efeitos extras agressivos/estado complexo (`KO`, `bounce`, `play`, `add_don`,
+  `set_don_active`, buscas/topdeck/life) e heuristica mais fina.
   Já corrigido nesta auditoria: `extra_steps` de substituição (`trash self + draw`)
   agora executam.
 

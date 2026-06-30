@@ -483,6 +483,31 @@ check('Counter event buff + draw condicional compra quando condicao passa',
       counter and counter[0] == 4000 and evento_cond_draw in me.trash
       and compra in me.hand)
 
+me, opp = me_opp()
+me.don_available = 1
+evento_set_active = mk('OP01-057', 'Paradise Waterfall', card_type='EVENT', cost=1)
+rested_char = mk('RESTED-ALLY', 'Aliado rested')
+rested_char.rested = True
+me.hand = [evento_set_active]
+me.field_chars = [rested_char]
+ee = EffectExecutor(me, opp)
+counter = ee.try_counter_event_power(rested_char, 'character', needed=2000)
+check('Counter event com set_active reativa character proprio',
+      counter and counter[0] == 2000 and evento_set_active in me.trash
+      and not rested_char.rested)
+
+me, opp = me_opp()
+me.don_available = 2
+evento_rest = mk('OP01-058', 'Punk Gibson', card_type='EVENT', cost=2)
+opp_char = mk('OPP-ACTIVE', 'Oponente ativo', cost=4)
+opp.field_chars = [opp_char]
+me.hand = [evento_rest]
+ee = EffectExecutor(me, opp)
+counter = ee.try_counter_event_power(me.leader, 'leader', needed=4000)
+check('Counter event com rest_opp_character resta character oponente',
+      counter and counter[0] == 4000 and evento_rest in me.trash
+      and opp_char.rested)
+
 print()
 print(f'{"TODOS OS TESTES PASSARAM" if FAIL == 0 else f"{FAIL} TESTE(S) FALHARAM"}')
 sys.exit(1 if FAIL else 0)

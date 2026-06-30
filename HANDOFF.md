@@ -16,6 +16,12 @@ blocos com um unico buff defensivo `battle_only` mais steps `draw` seguros. O
 draw e executado depois de pagar o evento/custos e respeita condicoes no step.
 Smoke cobre `draw + buff`, `buff + draw` condicional falhando e passando.
 
+**Update posterior - Counter set/rest + buff:** o helper tambem aceita extras
+seguros `set_active` e `rest_opp_character` junto de um unico buff defensivo
+`battle_only`. Smoke cobre `OP01-057` reativando Character proprio e `OP01-058`
+restando Character do oponente. Validado com broad `40/40` e audit replay sem
+anomalias.
+
 **Update posterior - EB02-030:** implementado suporte estreito para Counter event
 com `counter -> substitute_ko` e custo `trash_from_hand` no K.O. em batalha.
 Hoje so existe 1 caso no banco (`EB02-030`). O evento agora exige DON suficiente,
