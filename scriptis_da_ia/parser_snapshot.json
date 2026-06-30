@@ -2144,7 +2144,8 @@
  "EB02-061": {
   "passive": {
    "conditions": {
-    "leader_multicolor": true
+    "leader_multicolor": true,
+    "opp_don_on_field_gte": 5
    },
    "steps": [
     {
@@ -2674,7 +2675,17 @@
    ]
   }
  },
- "EB03-026": {},
+ "EB03-026": {
+  "on_play": {
+   "once_per_turn": true,
+   "steps": [
+    {
+     "action": "opp_place_hand_bottom_deck",
+     "count": 1
+    }
+   ]
+  }
+ },
  "EB03-027": {
   "on_play": {
    "steps": [
@@ -3922,6 +3933,20 @@
   }
  },
  "EB04-022": {
+  "on_play": {
+   "costs": [
+    {
+     "count": 2,
+     "type": "trash_from_hand"
+    }
+   ],
+   "steps": [
+    {
+     "action": "opp_place_hand_bottom_deck",
+     "count": 2
+    }
+   ]
+  },
   "when_attacking": {
    "costs": [
     {
@@ -3993,6 +4018,10 @@
      "count": 1,
      "exclude": "nefeltari vivi",
      "filter_type": "alabasta"
+    },
+    {
+     "action": "opp_place_hand_bottom_deck",
+     "count": 1
     }
    ]
   }
@@ -7793,6 +7822,9 @@
    ]
   },
   "trigger": {
+   "conditions": {
+    "opp_don_on_field_gte": 6
+   },
    "steps": [
     {
      "action": "opp_don_minus",
@@ -7820,6 +7852,9 @@
    ]
   },
   "trigger": {
+   "conditions": {
+    "opp_don_on_field_gte": 6
+   },
    "steps": [
     {
      "action": "opp_don_minus",
@@ -7838,6 +7873,9 @@
    ]
   },
   "trigger": {
+   "conditions": {
+    "opp_don_on_field_gte": 6
+   },
    "steps": [
     {
      "action": "opp_don_minus",
@@ -14020,7 +14058,16 @@
    ]
   }
  },
- "OP05-079": {},
+ "OP05-079": {
+  "on_play": {
+   "steps": [
+    {
+     "action": "opp_place_trash_bottom_deck",
+     "count": 3
+    }
+   ]
+  }
+ },
  "OP05-080": {
   "when_attacking": {
    "once_per_turn": true,
@@ -15426,7 +15473,17 @@
    ]
   }
  },
- "OP06-044": {},
+ "OP06-044": {
+  "your_turn": {
+   "once_per_turn": true,
+   "steps": [
+    {
+     "action": "opp_place_hand_bottom_deck",
+     "count": 1
+    }
+   ]
+  }
+ },
  "OP06-045": {
   "on_play": {
    "steps": [
@@ -16252,13 +16309,21 @@
  },
  "OP06-092": {
   "on_play": {
-   "steps": [
-    {
-     "action": "trash_character",
-     "cost_lte": 4,
-     "count": 1,
-     "target": "opp_character"
-    }
+   "choice": [
+    [
+     {
+      "action": "trash_character",
+      "cost_lte": 4,
+      "count": 1,
+      "target": "opp_character"
+     }
+    ],
+    [
+     {
+      "action": "opp_place_trash_bottom_deck",
+      "count": 3
+     }
+    ]
    ]
   }
  },
@@ -17558,6 +17623,10 @@
      "action": "bounce",
      "count": 1,
      "target": "self"
+    },
+    {
+     "action": "opp_place_hand_bottom_deck",
+     "count": 1
     }
    ]
   }
@@ -19604,7 +19673,22 @@
    ]
   }
  },
- "OP08-046": {},
+ "OP08-046": {
+  "your_turn": {
+   "costs": [
+    {
+     "type": "rest_self"
+    }
+   ],
+   "once_per_turn": true,
+   "steps": [
+    {
+     "action": "opp_place_hand_bottom_deck",
+     "count": 1
+    }
+   ]
+  }
+ },
  "OP08-047": {
   "on_play": {
    "steps": [
@@ -19812,6 +19896,9 @@
  },
  "OP08-060": {
   "on_play": {
+   "conditions": {
+    "opp_don_on_field_gte": 5
+   },
    "steps": [
     {
      "action": "gain_rush",
@@ -26146,6 +26233,10 @@
      "count": 1,
      "source": "life_top",
      "up_to": false
+    },
+    {
+     "action": "opp_place_trash_bottom_deck",
+     "count": 2
     }
    ]
   }
@@ -26438,7 +26529,17 @@
    ]
   }
  },
- "OP11-091": {},
+ "OP11-091": {
+  "on_play": {
+   "steps": [
+    {
+     "action": "opp_place_trash_bottom_deck",
+     "count": 3,
+     "filter_type": "event"
+    }
+   ]
+  }
+ },
  "OP11-092": {
   "on_play": {
    "costs": [
@@ -32029,6 +32130,9 @@
  },
  "OP14-063": {
   "on_ko": {
+   "conditions": {
+    "opp_don_on_field_gte": 6
+   },
    "steps": [
     {
      "action": "play_card",
@@ -34031,6 +34135,17 @@
   }
  },
  "OP15-048": {
+  "on_ko": {
+   "conditions": {
+    "opp_turn_only": true
+   },
+   "steps": [
+    {
+     "action": "opp_place_hand_bottom_deck",
+     "count": 1
+    }
+   ]
+  },
   "on_play": {
    "costs": [
     {
@@ -36118,7 +36233,21 @@
   }
  },
  "OP16-046": {},
- "OP16-047": {},
+ "OP16-047": {
+  "activate_main": {
+   "costs": [
+    {
+     "type": "rest_self"
+    }
+   ],
+   "steps": [
+    {
+     "action": "opp_place_hand_bottom_deck",
+     "count": 2
+    }
+   ]
+  }
+ },
  "OP16-048": {
   "on_play": {
    "conditions": {
@@ -38051,7 +38180,20 @@
    ]
   }
  },
- "P-048": {},
+ "P-048": {
+  "when_attacking": {
+   "conditions": {
+    "life_gte": 4
+   },
+   "don_requirement": 1,
+   "steps": [
+    {
+     "action": "opp_place_hand_bottom_deck",
+     "count": 1
+    }
+   ]
+  }
+ },
  "P-049": {
   "on_play": {
    "steps": [
@@ -38822,7 +38964,8 @@
  "PRB02-010": {
   "on_play": {
    "conditions": {
-    "leader_type": "big mom pirates"
+    "leader_type": "big mom pirates",
+    "opp_don_on_field_gte": 6
    },
    "costs": [
     {
@@ -43826,7 +43969,8 @@
  "ST26-005": {
   "on_play": {
    "conditions": {
-    "leader_multicolor": true
+    "leader_multicolor": true,
+    "opp_don_on_field_gte": 5
    },
    "costs": [
     {
@@ -43847,7 +43991,8 @@
   },
   "when_attacking": {
    "conditions": {
-    "leader_multicolor": true
+    "leader_multicolor": true,
+    "opp_don_on_field_gte": 5
    },
    "costs": [
     {

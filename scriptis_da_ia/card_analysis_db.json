@@ -6558,7 +6558,12 @@
   "color": "Blue",
   "sub_types": "Kuja Pirates The Seven Warlords of the Sea",
   "attribute": "Special",
-  "effects": [],
+  "effects": [
+   {
+    "action": "opp_place_hand_bottom_deck",
+    "trigger": "on_play"
+   }
+  ],
   "synergy_states": {},
   "text": "[On Play] If your opponent has 5 or more cards in their hand, your opponent places 1 card from their hand at the bottom of their deck.\r\n[Activate: Main] [Once Per Turn] You may place 1 of your Characters at the bottom of the owner's deck: Give your Leader and 1 Character up to 1 rested DON!! card each.",
   "is_searcher": false,
@@ -9145,6 +9150,10 @@
   "attribute": "Slash",
   "effects": [
    {
+    "action": "opp_place_hand_bottom_deck",
+    "trigger": "on_play"
+   },
+   {
     "action": "debuff_power",
     "trigger": "when_attacking",
     "don_requirement": 1,
@@ -9271,6 +9280,10 @@
     "action": "play_card",
     "trigger": "on_play",
     "cost_lte": 8
+   },
+   {
+    "action": "opp_place_hand_bottom_deck",
+    "trigger": "on_play"
    }
   ],
   "synergy_states": {},
@@ -35242,7 +35255,12 @@
   "color": "Black",
   "sub_types": "Dressrosa",
   "attribute": "Special",
-  "effects": [],
+  "effects": [
+   {
+    "action": "opp_place_trash_bottom_deck",
+    "trigger": "on_play"
+   }
+  ],
   "synergy_states": {},
   "text": "[On Play] Your opponent places 3 cards from their trash at the bottom of their deck in any order.",
   "is_searcher": false,
@@ -38942,7 +38960,12 @@
   "color": "Blue",
   "sub_types": "Navy",
   "attribute": "Slash",
-  "effects": [],
+  "effects": [
+   {
+    "action": "opp_place_hand_bottom_deck",
+    "trigger": "your_turn"
+   }
+  ],
   "synergy_states": {},
   "text": "[Your Turn][Once Per Turn] When your opponent activates an Event, your opponent must place 1 card from their hand at the bottom of their deck.",
   "is_searcher": false,
@@ -40961,6 +40984,10 @@
     "trigger": "on_play",
     "cost_lte": 4,
     "target": "opp_character"
+   },
+   {
+    "action": "opp_place_trash_bottom_deck",
+    "trigger": "on_play"
    }
   ],
   "synergy_states": {},
@@ -44236,6 +44263,10 @@
     "action": "bounce",
     "trigger": "activate_main",
     "target": "self"
+   },
+   {
+    "action": "opp_place_hand_bottom_deck",
+    "trigger": "activate_main"
    }
   ],
   "synergy_states": {},
@@ -49484,7 +49515,12 @@
   "color": "Blue",
   "sub_types": "Amazon Lily",
   "attribute": "Wisdom",
-  "effects": [],
+  "effects": [
+   {
+    "action": "opp_place_hand_bottom_deck",
+    "trigger": "your_turn"
+   }
+  ],
   "synergy_states": {},
   "text": "[Your Turn] [Once Per Turn] When a Character is removed from the field by your effect, if your opponent has 5 or more cards in their hand, your opponent places 1 card from their hand at the bottom of their deck. Then, rest this Character.",
   "is_searcher": false,
@@ -66247,6 +66283,10 @@
    {
     "action": "life_to_hand",
     "trigger": "activate_main"
+   },
+   {
+    "action": "opp_place_trash_bottom_deck",
+    "trigger": "activate_main"
    }
   ],
   "synergy_states": {},
@@ -67044,7 +67084,12 @@
   "color": "Black",
   "sub_types": "Navy",
   "attribute": "Special",
-  "effects": [],
+  "effects": [
+   {
+    "action": "opp_place_trash_bottom_deck",
+    "trigger": "on_play"
+   }
+  ],
   "synergy_states": {},
   "text": "[On Play] Your opponent places 3 Events from their trash at the bottom of their deck in any order.",
   "is_searcher": false,
@@ -85946,6 +85991,10 @@
    {
     "action": "draw",
     "trigger": "on_play"
+   },
+   {
+    "action": "opp_place_hand_bottom_deck",
+    "trigger": "on_ko"
    }
   ],
   "synergy_states": {},
@@ -91079,7 +91128,12 @@
   "color": "Blue",
   "sub_types": "Donquixote Pirates Impel Down",
   "attribute": "Special",
-  "effects": [],
+  "effects": [
+   {
+    "action": "opp_place_hand_bottom_deck",
+    "trigger": "activate_main"
+   }
+  ],
   "synergy_states": {},
   "text": "[Activate:Main] You may rest this Character: If your opponent has 8 or more cards in their hand, they place 2 cards from their hand at the bottom of their deck in any order.",
   "is_searcher": false,
@@ -96135,7 +96189,13 @@
   "color": "Blue",
   "sub_types": "Fish-Man/Arlong Pirates",
   "attribute": "Slash",
-  "effects": [],
+  "effects": [
+   {
+    "action": "opp_place_hand_bottom_deck",
+    "trigger": "when_attacking",
+    "don_requirement": 1
+   }
+  ],
   "synergy_states": {},
   "text": "[DON!! x1] [When Attacking] If you have 4 or more Life cards, your opponent places 1 card from their hand at the bottom of their deck.",
   "is_searcher": false,

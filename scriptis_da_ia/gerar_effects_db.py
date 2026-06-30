@@ -83,6 +83,15 @@ def parse_conditions(text):
     m = re.search(r'if you have (\d+) or more don!! cards? on your field', t)
     if m: conds['don_on_field_gte'] = int(m.group(1))
 
+    # "if your opponent has N or more DON!! cards on their field" --
+    # condicao simetrica sobre o campo do OPONENTE, distinta de
+    # don_on_field_gte (proprio campo). 8 cartas no banco (ex: EB02-061,
+    # OP02-089/090/091, OP08-060, OP14-063, PRB02-010, ST26-005) -- gate
+    # vinha sendo descartado pelo parser, deixando efeitos (Rush condicional,
+    # retorno forcado de DON do oponente, buff de Leader) executarem sempre.
+    m = re.search(r"your opponent has (\d+) or more don!! cards? on (?:their|his|her) field", t)
+    if m: conds['opp_don_on_field_gte'] = int(m.group(1))
+
     m = re.search(r'if you have (\d+) or more characters?(?: with an? (?:base|original) cost of (\d+) or more)?', t)
     if m:
         conds['chars_gte'] = int(m.group(1))
@@ -2746,6 +2755,32 @@ def parse_opp_self_move_character(text):
     m3 = re.search(r"your opponent returns (\d+) don!{0,2}\s*cards? from (?:their|his|her) field", t)
     if m3:
         steps.append({'action': 'opp_don_minus', 'count': int(m3.group(1))})
+    # "Your opponent places/must place N cards from their hand at the
+    # bottom of their deck" (tambem "they place...", quando a frase de
+    # gatilho ja deixou 'opponent' implicito antes, ex: OP16-047) --
+    # disrupcao de mao FORCADA, mas destino e o FUNDO DO PROPRIO DECK do
+    # oponente (NUNCA trash, distinto de opp_trash_from_hand). Achado
+    # 02/07/2026, 9 cartas (EB03-026, EB04-022, EB04-025, OP06-044,
+    # OP07-047, OP08-046, OP15-048, P-048, OP16-047). EB04-025 tem um typo
+    # real no card_text ("from your hand" em vez de "their hand") mas a
+    # semantica de "your opponent places" so faz sentido com a mao DELE.
+    m4 = re.search(
+        r"(?:your opponent (?:places|must place)|they place) (\d+) cards? "
+        r"from (?:your|their|his|her) hand at(?: the)? bottom of (?:their|his|her) deck", t)
+    if m4:
+        steps.append({'action': 'opp_place_hand_bottom_deck', 'count': int(m4.group(1))})
+    # "Your opponent places N cards/Events from their trash at the bottom
+    # of their deck" -- mesma familia, fonte = TRASH do oponente. 4 cartas
+    # (OP05-079, OP06-092, OP11-072, OP11-091 -- esta ultima com filtro
+    # 'Events', so type Event no trash).
+    m5 = re.search(
+        r"your opponent places (\d+) (events|cards) "
+        r"from (?:their|his|her) trash at(?: the)? bottom of (?:their|his|her) deck", t)
+    if m5:
+        step = {'action': 'opp_place_trash_bottom_deck', 'count': int(m5.group(1))}
+        if m5.group(2) == 'events':
+            step['filter_type'] = 'event'
+        steps.append(step)
     return steps
 
 
@@ -3148,7 +3183,10 @@ def parse_block(block_text, trigger_name):
     # Mesma familia (forca o oponente a mover 1 dos PROPRIOS characters
     # dele) -- "your opponent returns...to the owner's hand" / "your
     # opponent places...at the bottom of the owner's deck".
-    if 'your opponent returns' in t or 'your opponent places' in t or ('your opponent chooses' in t and 'return' in t):
+    if ('your opponent returns' in t or 'your opponent places' in t
+            or 'your opponent must place' in t
+            or ('they place' in t and 'hand' in t)
+            or ('your opponent chooses' in t and 'return' in t)):
         steps.extend(parse_opp_self_move_character(t))
 
     # Trigger especial: "Activate this card's [Main] effect"

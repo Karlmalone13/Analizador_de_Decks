@@ -3505,6 +3505,7 @@
           }
         ],
         "conditions": {
+          "opp_don_on_field_gte": 5,
           "leader_multicolor": true
         }
       }
@@ -4361,7 +4362,17 @@
     "color": "Blue",
     "sub_types": "Kuja Pirates The Seven Warlords of the Sea",
     "attribute": "Special",
-    "effects": {}
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "opp_place_hand_bottom_deck",
+            "count": 1
+          }
+        ],
+        "once_per_turn": true
+      }
+    }
   },
   "EB03-027": {
     "name": "Marguerite",
@@ -6247,6 +6258,20 @@
     "sub_types": "Navy Dressrosa",
     "attribute": "Slash",
     "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "opp_place_hand_bottom_deck",
+            "count": 2
+          }
+        ],
+        "costs": [
+          {
+            "type": "trash_from_hand",
+            "count": 2
+          }
+        ]
+      },
       "when_attacking": {
         "steps": [
           {
@@ -6351,6 +6376,10 @@
             "cost_lte": 8,
             "filter_type": "alabasta",
             "exclude": "nefeltari vivi"
+          },
+          {
+            "action": "opp_place_hand_bottom_deck",
+            "count": 1
           }
         ]
       }
@@ -12845,7 +12874,10 @@
             "action": "opp_don_minus",
             "count": 1
           }
-        ]
+        ],
+        "conditions": {
+          "opp_don_on_field_gte": 6
+        }
       },
       "counter": {
         "steps": [
@@ -12883,7 +12915,10 @@
             "action": "opp_don_minus",
             "count": 1
           }
-        ]
+        ],
+        "conditions": {
+          "opp_don_on_field_gte": 6
+        }
       },
       "main": {
         "steps": [
@@ -12921,7 +12956,10 @@
             "action": "opp_don_minus",
             "count": 1
           }
-        ]
+        ],
+        "conditions": {
+          "opp_don_on_field_gte": 6
+        }
       },
       "main": {
         "steps": [
@@ -22941,7 +22979,16 @@
     "color": "Black",
     "sub_types": "Dressrosa",
     "attribute": "Special",
-    "effects": {}
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "opp_place_trash_bottom_deck",
+            "count": 3
+          }
+        ]
+      }
+    }
   },
   "OP05-080": {
     "name": "Elizabello II",
@@ -25271,7 +25318,17 @@
     "color": "Blue",
     "sub_types": "Navy",
     "attribute": "Slash",
-    "effects": {}
+    "effects": {
+      "your_turn": {
+        "steps": [
+          {
+            "action": "opp_place_hand_bottom_deck",
+            "count": 1
+          }
+        ],
+        "once_per_turn": true
+      }
+    }
   },
   "OP06-045": {
     "name": "Kuzan",
@@ -26625,13 +26682,21 @@
     "attribute": "Slash",
     "effects": {
       "on_play": {
-        "steps": [
-          {
-            "action": "trash_character",
-            "count": 1,
-            "target": "opp_character",
-            "cost_lte": 4
-          }
+        "choice": [
+          [
+            {
+              "action": "trash_character",
+              "count": 1,
+              "target": "opp_character",
+              "cost_lte": 4
+            }
+          ],
+          [
+            {
+              "action": "opp_place_trash_bottom_deck",
+              "count": 3
+            }
+          ]
         ]
       }
     }
@@ -28745,6 +28810,10 @@
             "action": "bounce",
             "count": 1,
             "target": "self"
+          },
+          {
+            "action": "opp_place_hand_bottom_deck",
+            "count": 1
           }
         ]
       }
@@ -32089,7 +32158,22 @@
     "color": "Blue",
     "sub_types": "Amazon Lily",
     "attribute": "Wisdom",
-    "effects": {}
+    "effects": {
+      "your_turn": {
+        "steps": [
+          {
+            "action": "opp_place_hand_bottom_deck",
+            "count": 1
+          }
+        ],
+        "costs": [
+          {
+            "type": "rest_self"
+          }
+        ],
+        "once_per_turn": true
+      }
+    }
   },
   "OP08-047": {
     "name": "Jozu",
@@ -32456,7 +32540,10 @@
             "action": "gain_rush",
             "duration": "this_turn"
           }
-        ]
+        ],
+        "conditions": {
+          "opp_don_on_field_gte": 5
+        }
       }
     }
   },
@@ -42804,6 +42891,10 @@
             "source": "life_top",
             "count": 1,
             "up_to": false
+          },
+          {
+            "action": "opp_place_trash_bottom_deck",
+            "count": 2
           }
         ],
         "costs": [
@@ -43311,7 +43402,17 @@
     "color": "Black",
     "sub_types": "Navy",
     "attribute": "Special",
-    "effects": {}
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "opp_place_trash_bottom_deck",
+            "count": 3,
+            "filter_type": "event"
+          }
+        ]
+      }
+    }
   },
   "OP11-092": {
     "name": "Helmeppo",
@@ -52547,7 +52648,10 @@
             "cost_lte": 5,
             "filter_type": "donquixote pirates"
           }
-        ]
+        ],
+        "conditions": {
+          "opp_don_on_field_gte": 6
+        }
       }
     }
   },
@@ -55702,6 +55806,17 @@
             "count": 1
           }
         ]
+      },
+      "on_ko": {
+        "steps": [
+          {
+            "action": "opp_place_hand_bottom_deck",
+            "count": 1
+          }
+        ],
+        "conditions": {
+          "opp_turn_only": true
+        }
       }
     }
   },
@@ -59074,7 +59189,21 @@
     "color": "Blue",
     "sub_types": "Donquixote Pirates Impel Down",
     "attribute": "Special",
-    "effects": {}
+    "effects": {
+      "activate_main": {
+        "steps": [
+          {
+            "action": "opp_place_hand_bottom_deck",
+            "count": 2
+          }
+        ],
+        "costs": [
+          {
+            "type": "rest_self"
+          }
+        ]
+      }
+    }
   },
   "OP16-048": {
     "name": "Buggy (048)",
@@ -62305,7 +62434,20 @@
     "color": "Blue",
     "sub_types": "Fish-Man/Arlong Pirates",
     "attribute": "Slash",
-    "effects": {}
+    "effects": {
+      "when_attacking": {
+        "steps": [
+          {
+            "action": "opp_place_hand_bottom_deck",
+            "count": 1
+          }
+        ],
+        "conditions": {
+          "life_gte": 4
+        },
+        "don_requirement": 1
+      }
+    }
   },
   "P-049": {
     "name": "Usopp",
@@ -63594,6 +63736,7 @@
           }
         ],
         "conditions": {
+          "opp_don_on_field_gte": 6,
           "leader_type": "big mom pirates"
         },
         "costs": [
@@ -72071,6 +72214,7 @@
           }
         ],
         "conditions": {
+          "opp_don_on_field_gte": 5,
           "leader_multicolor": true
         },
         "costs": [
@@ -72092,6 +72236,7 @@
           }
         ],
         "conditions": {
+          "opp_don_on_field_gte": 5,
           "leader_multicolor": true
         },
         "costs": [

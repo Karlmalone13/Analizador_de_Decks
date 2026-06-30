@@ -1,6 +1,47 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
-## 2026-07-01 (8) - Claude — ÚLTIMA DESTA SESSÃO
+## 2026-07-02 (1) - Claude — ÚLTIMA DESTA SESSÃO
+
+**Feito - os 2 itens "Parser — cobertura" pedidos pelo usuário: `opponent
+has N+ DON` (8 cartas) e `place-at-bottom-of-deck` (13 cartas).** Ver
+detalhe completo no TODO.md (seção "Parser — cobertura").
+
+Resumo rápido:
+1. **opp_don_on_field_gte**: nova condição em `parse_conditions`
+   (`gerar_effects_db.py`), simétrica a `don_on_field_gte` já existente
+   mas sobre o campo do OPONENTE. Infra de `conditions` já genérica — só
+   regex + 2 linhas de `_check_conditions`/pre-filtro do Turn Planner.
+   Achado real: OP02-089/090/091 disparavam "opponent returns 1 DON!!"
+   SEM gate nenhum (sempre, mesmo com oponente em 0 DON) — bug real
+   corrigido, não só cobertura nova.
+2. **place-at-bottom-of-deck**: a busca textual ampla por "bottom of
+   deck" trouxe ~80 cartas, mas a maioria já estava coberta por
+   mecanismos existentes (`deck_top_rest`/`deck_reorder_rest`/custos de
+   trash-pro-fundo). O gap real era uma família nova e coerente:
+   disrupção FORÇADA no oponente com destino o FUNDO DO PRÓPRIO DECK
+   dele (nunca trash) — 2 actions novas (`opp_place_hand_bottom_deck`,
+   `opp_place_trash_bottom_deck` com `filter_type='event'`) em
+   `decision_engine.py`, parser estendido em
+   `parse_opp_self_move_character`. Bônus no caminho: OP06-092 (Brook)
+   tinha um `Choose one:` com bullet corrompido (`�`) no `card_text`
+   bruto que o split de `parse_block` já reconhecia — só faltava a 2ª
+   opção ter parser pra virar uma `choice` de verdade.
+
+**Validação dos dois itens:** `python -m py_compile`; `diff_parser.py`
+(`PERDEU=0` nos dois); `gerar_dbs.py` + `snapshot_parser.py`;
+`smoke_test.py` (4 casos novos, 100%); `smoke_test_broad.py` (40/40);
+`audit_replay.py --n 20 --seed 7` e `--n 15 --seed 99` (0 exceções, 0
+anomalias nas duas).
+
+**Simplificação consciente, não corrigida:** a condição "if opponent has
+N+ cards in hand" que prefixa várias das 13 cartas de
+place-at-bottom-of-deck não ficou modelada como gate — mesmo padrão já
+aceito pra família `opp_trash_from_hand` (a ação natural já não faz nada
+com mão vazia/pequena). Registrar se reabrir o tema.
+
+---
+
+## 2026-07-01 (8) - Claude
 
 **Feito - imunidade a rest forçado (imm_type='rest'), 3 cartas:** um
 segundo agente de investigação que eu tinha disparado em paralelo (e cujo

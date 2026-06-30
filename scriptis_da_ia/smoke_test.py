@@ -1335,6 +1335,49 @@ ee._execute_step({'action': 'rest_opp_character', 'count': 1}, me.leader)
 check('OP11-046 nao imune a rest quando tem Character fora de GERMA',
       op11046b.rested)
 
+# ── 22. condicao opp_don_on_field_gte ("if your opponent has N+ DON!! cards
+# on their field") -- gate sobre o campo do OPONENTE, distinta de
+# don_on_field_gte (proprio campo). Achado 02/07/2026: 8 cartas no banco
+# (EB02-061, OP02-089/090/091, OP08-060, OP14-063, PRB02-010, ST26-005)
+# tinham essa clausula descartada pelo parser -- efeito executava sempre. ──
+me, opp = me_opp()
+opp.don_available = 6
+opp.don_rested = 0
+ee = EffectExecutor(me, opp)
+ok = ee._check_conditions({'opp_don_on_field_gte': 5}, me.leader)
+check('opp_don_on_field_gte satisfeita (oponente com 6 DON, exige 5+)', ok)
+
+me, opp = me_opp()
+opp.don_available = 2
+opp.don_rested = 1
+ee = EffectExecutor(me, opp)
+ok = ee._check_conditions({'opp_don_on_field_gte': 5}, me.leader)
+check('opp_don_on_field_gte nao satisfeita (oponente com 3 DON, exige 5+)', not ok)
+
+# ── 23. opp_place_hand_bottom_deck / opp_place_trash_bottom_deck --
+# disrupcao FORCADA no oponente, destino = FUNDO DO PROPRIO DECK dele
+# (NUNCA trash). Achado 02/07/2026, 13 cartas (EB03-026, EB04-022,
+# EB04-025, OP05-079, OP06-044, OP06-092, OP07-047, OP08-046, OP11-072,
+# OP11-091, OP15-048, P-048, OP16-047). ──
+me, opp = me_opp()
+opp.hand = [mk('H1', 'Mao 1', power=3000), mk('H2', 'Mao 2', power=9000)]
+opp.deck = [mk('D1', 'Topo do deck')]
+ee = EffectExecutor(me, opp)
+log = ee._execute_step({'action': 'opp_place_hand_bottom_deck', 'count': 1}, me.leader)
+check('opp_place_hand_bottom_deck move 1 carta da mao do oponente pro fundo do deck dele',
+      bool(log) and len(opp.hand) == 1 and len(opp.deck) == 2 and opp.deck[0].name == 'Mao 1')
+
+me, opp = me_opp()
+evento = mk('EV1', 'Evento no trash', card_type='EVENT')
+char_trash = mk('CH1', 'Character no trash')
+opp.trash = [evento, char_trash]
+opp.deck = []
+ee = EffectExecutor(me, opp)
+log = ee._execute_step({'action': 'opp_place_trash_bottom_deck', 'count': 3, 'filter_type': 'event'}, me.leader)
+check('opp_place_trash_bottom_deck com filter_type=event so move Events do trash do oponente',
+      bool(log) and evento not in opp.trash and char_trash in opp.trash
+      and len(opp.deck) == 1 and opp.deck[0] is evento)
+
 print()
 print(f'{"TODOS OS TESTES PASSARAM" if FAIL == 0 else f"{FAIL} TESTE(S) FALHARAM"}')
 sys.exit(1 if FAIL else 0)

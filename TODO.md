@@ -599,8 +599,50 @@ de imunidade e stubs antigos listados abaixo.
 
 ### Parser — cobertura
 - [ ] cartas com card_text mas effects vazio — revalidar contagem (2148 com efeito agora)
-- [ ] opponent has N+ DON (~8) — sem parser
-- [ ] place-at-bottom-of-deck (~14, achado no "OUTROS") — mecânica nova
+- [x] **opponent has N+ DON — implementado (02/07/2026), 8 cartas exatas
+  (EB02-061, OP02-089, OP02-090, OP02-091, OP08-060, OP14-063, PRB02-010,
+  ST26-005).** Novo `opp_don_on_field_gte` em `parse_conditions`
+  (`gerar_effects_db.py`), simétrico a `don_on_field_gte` mas sobre o
+  campo do OPONENTE. Infra de `conditions` já era genérica (anexada por
+  entry/step, checada em `_check_conditions` antes de executar) — só
+  faltava o regex; nenhuma mudança extra de engine necessária além de
+  plugar a chave em `_check_conditions` (linha ~1792) e no pre-filtro do
+  Turn Planner (linha ~4686). Achado real: OP02-089/090/091 tinham o
+  trigger "opponent returns 1 DON!! card" **sem gate algum** — disparava
+  sempre, mesmo com oponente em 0 DON. `PERDEU=0`, 8/8 mudanças
+  corretas no diff, 2 smoke tests novos, `audit_replay.py --n 20 --seed 7`
+  e `--n 15 --seed 99`: 0 exceções, 0 anomalias.
+- [x] **place-at-bottom-of-deck — implementado (02/07/2026), 13 cartas
+  (EB03-026, EB04-022, EB04-025, OP05-079, OP06-044, OP06-092, OP07-047,
+  OP08-046, OP11-072, OP11-091, OP15-048, P-048, OP16-047).** Escopo real
+  era mais amplo do que o "~14" original sugeria — boa parte do que
+  apareceu numa busca textual ampla por "bottom of deck" já estava
+  coberta (`deck_top_rest`/`deck_reorder_rest`/custos de trash-pro-fundo
+  já existentes). O gap genuíno era uma família nova e coerente:
+  disrupção FORÇADA no oponente com destino o FUNDO DO PRÓPRIO DECK dele
+  (nunca trash) — 2 actions novas em `decision_engine.py`:
+  `opp_place_hand_bottom_deck` (fonte = mão do oponente, escolhe a pior
+  carta por `_choose_to_trash`, mesma heurística de `opp_trash_from_hand`)
+  e `opp_place_trash_bottom_deck` (fonte = trash do oponente, aceita
+  `filter_type='event'` p/ OP11-091). Parser estendido em
+  `parse_opp_self_move_character` (`gerar_effects_db.py`), reconhece
+  variantes de redação "your opponent places/must place" e "they place"
+  (OP16-047, gatilho já deixa "opponent" implícito antes). Bônus: achado
+  no caminho que OP06-092 (Brook) tinha uma estrutura `Choose one:` com
+  bullet corrompido (`�` em vez de `•` no `card_text` bruto) que já
+  era reconhecida pelo split de `parse_block` — só faltava a 2ª opção
+  (`opp_place_trash_bottom_deck`) ter parser pra virar uma `choice` de
+  verdade em vez de cair no fallback de "só a 1ª opção conta".
+  **Simplificação consciente, não corrigida:** a condição "if opponent
+  has N+ cards in hand" que prefixa várias dessas cartas (EB03-026,
+  EB04-022, OP07-047, OP08-046, OP16-047) não ficou modelada como gate —
+  mesmo padrão já aceito para toda a família `opp_trash_from_hand`
+  (Shirahoshi etc.): a ação natural já não faz nada com mão vazia/pequena,
+  e modelar o threshold exato exigiria um novo tipo de condição
+  (`opp_hand_gte`) só usado por essa família, sem carta nova lavrada por
+  isso. `PERDEU=0`, 7 GANHOU + 6 MUDOU = 13/13, 2 smoke tests novos,
+  `audit_replay.py --n 20 --seed 7` e `--n 15 --seed 99`: 0 exceções, 0
+  anomalias.
 - [ ] OP15-074 Varie — DON sem sinal, aguarda foto
 
 ---

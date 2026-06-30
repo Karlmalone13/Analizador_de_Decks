@@ -1791,6 +1791,8 @@ class EffectExecutor:
             return False
         if 'don_on_field_gte' in conds and me.don_on_field() < conds['don_on_field_gte']:
             return False
+        if 'opp_don_on_field_gte' in conds and opp.don_on_field() < conds['opp_don_on_field_gte']:
+            return False
         if 'chars_gte' in conds:
             cost_filter = conds.get('chars_gte_cost_filter')
             if cost_filter is not None:
@@ -3248,6 +3250,42 @@ class EffectExecutor:
                 placed.append(worst.name[:12])
             return f'oponente colocou no fundo do deck: {", ".join(placed)}' if placed else ''
 
+        # ── Mesma familia (forca o OPONENTE), mas a fonte e a MAO dele, nao
+        # o campo -- destino e o FUNDO DO PROPRIO DECK do oponente (NUNCA
+        # trash, distinto de opp_trash_from_hand). Reusa _choose_to_trash
+        # (mesma heuristica de "descarta o pior" ja usada pra mao do
+        # oponente) so pra escolher QUAL carta, ja que o destino e
+        # diferente. Achado 02/07/2026 (EB03-026, EB04-022, EB04-025,
+        # OP06-044, OP07-047, OP08-046, OP15-048, P-048, OP16-047).
+        if action == 'opp_place_hand_bottom_deck':
+            count = step.get('count', 1)
+            placed = []
+            for _ in range(min(count, len(opp.hand))):
+                worst = self._choose_to_trash(opp.hand)
+                if worst:
+                    remove_by_identity(opp.hand, worst)
+                    opp.deck.insert(0, worst)
+                    placed.append(worst.name[:12])
+            return f'oponente colocou da mão no fundo do deck: {", ".join(placed)}' if placed else ''
+
+        # ── Mesma familia, fonte = TRASH do oponente. filter_type='event'
+        # restringe a Event cards (OP11-091). Achado 02/07/2026 (OP05-079,
+        # OP06-092, OP11-072, OP11-091).
+        if action == 'opp_place_trash_bottom_deck':
+            count = step.get('count', 1)
+            filter_type = step.get('filter_type')
+            candidates = list(opp.trash)
+            if filter_type == 'event':
+                candidates = [c for c in candidates if c.card_type.lower() == 'event']
+            placed = []
+            for _ in range(min(count, len(candidates))):
+                worst = min(candidates, key=lambda c: c.board_value())
+                remove_by_identity(opp.trash, worst)
+                remove_by_identity(candidates, worst)
+                opp.deck.insert(0, worst)
+                placed.append(worst.name[:12])
+            return f'oponente colocou do trash no fundo do deck: {", ".join(placed)}' if placed else ''
+
         # ── AUTO-RESTRIÇÃO: "Then, you cannot play ... this turn" ─────────────
         # Combo de ramp (set DON active) que cobra: você perde o direito de jogar.
         # Resetado no início do próprio turno (refresh).
@@ -4682,6 +4720,7 @@ class DecisionEngine:
             if k == 'hand_gte'  and not (my_hand  >= v): return False
             if k == 'don_gte'   and not (my_don   >= v): return False
             if k == 'don_on_field_gte' and not ((my_don + me.don_rested) >= v): return False
+            if k == 'opp_don_on_field_gte' and not (self.opp.don_on_field() >= v): return False
             if k == 'trash_gte' and not (my_trash >= v): return False
             if k == 'events_in_trash_gte':
                 n_events = sum(1 for c in me.trash if c.card_type.lower() == 'event')
