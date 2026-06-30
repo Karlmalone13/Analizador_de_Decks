@@ -1172,7 +1172,10 @@ class EffectExecutor:
         if len(buff_steps) != 1:
             return None
         extras = [step for step in steps if step is not buff_steps[0]]
-        safe_extra_actions = {'draw', 'set_active', 'rest_opp_character', 'add_don', 'set_don_active'}
+        safe_extra_actions = {
+            'draw', 'set_active', 'rest_opp_character', 'add_don', 'set_don_active',
+            'ko', 'bounce', 'place_opp_character_bottom_deck',
+        }
         if any(step.get('action') not in safe_extra_actions for step in extras):
             return None
         step = buff_steps[0]

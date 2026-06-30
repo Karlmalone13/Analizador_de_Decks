@@ -240,9 +240,11 @@ de imunidade e stubs antigos listados abaixo.
   blocos com um buff defensivo unico + steps `draw` seguros tambem executam a
   compra. Terceira fatia: extras seguros `set_active` e `rest_opp_character`
   tambem executam junto do buff defensivo. Quarta fatia: `add_don` e
-  `set_don_active` tambem executam junto do buff defensivo. Ainda faltam eventos
-  [Counter] com efeitos extras agressivos/estado complexo (`KO`, `bounce`,
-  `play`, buscas/topdeck/life) e heuristica mais fina.
+  `set_don_active` tambem executam junto do buff defensivo. Quinta fatia:
+  remocoes simples `KO` e bottom-deck junto de buff defensivo tambem executam;
+  bounce puro segue fora da rota defensiva. Ainda faltam eventos [Counter] com
+  efeitos extras agressivos/estado complexo (`bounce` puro, `play`,
+  buscas/topdeck/life) e heuristica mais fina.
   Já corrigido nesta auditoria: `extra_steps` de substituição (`trash self + draw`)
   agora executam.
 

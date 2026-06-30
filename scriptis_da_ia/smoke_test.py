@@ -543,6 +543,43 @@ check('Counter event com set_don_active reativa DON rested',
       counter and counter[0] == 4000 and evento_set_don in me.trash
       and me.don_available == 1 and me.don_rested == 2)
 
+me, opp = me_opp()
+me.don_available = 2
+evento_ko = mk('OP01-026', 'Red Hawk', card_type='EVENT', cost=2)
+opp_low = mk('OPP-LOW', 'Alvo pequeno', power=4000)
+opp_high = mk('OPP-HIGH', 'Alvo grande', power=7000)
+opp.field_chars = [opp_low, opp_high]
+me.hand = [evento_ko]
+ee = EffectExecutor(me, opp)
+counter = ee.try_counter_event_power(me.leader, 'leader', needed=4000)
+check('Counter event com KO remove alvo elegivel do oponente',
+      counter and counter[0] == 4000 and evento_ko in me.trash
+      and opp_low in opp.trash and opp_low not in opp.field_chars
+      and opp_high in opp.field_chars)
+
+me, opp = me_opp()
+me.don_available = 2
+evento_bottom = mk('OP04-057', 'Dragon Twister', card_type='EVENT', cost=2)
+opp_char = mk('OPP-C1', 'Alvo custo 1', cost=1)
+opp.field_chars = [opp_char]
+me.hand = [evento_bottom]
+ee = EffectExecutor(me, opp)
+counter = ee.try_counter_event_power(me.leader, 'leader', needed=4000)
+check('Counter event com bottom deck envia character ao fundo',
+      counter and counter[0] == 4000 and evento_bottom in me.trash
+      and opp_char not in opp.field_chars and opp.deck and opp.deck[0] is opp_char)
+
+me, opp = me_opp()
+me.don_available = 3
+evento_bounce_puro = mk('ST03-016', 'Thrust Pad Cannon', card_type='EVENT', cost=2)
+opp_char = mk('OPP-C3', 'Alvo bounce', cost=3)
+opp.field_chars = [opp_char]
+me.hand = [evento_bounce_puro]
+ee = EffectExecutor(me, opp)
+counter = ee.try_counter_event_power(me.leader, 'leader', needed=1)
+check('Counter event de remocao pura sem buff nao entra na rota defensiva',
+      counter is None and evento_bounce_puro in me.hand and opp_char in opp.field_chars)
+
 print()
 print(f'{"TODOS OS TESTES PASSARAM" if FAIL == 0 else f"{FAIL} TESTE(S) FALHARAM"}')
 sys.exit(1 if FAIL else 0)
