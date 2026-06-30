@@ -8,7 +8,7 @@ sys.path.insert(0, '.')
 import optcg_engine.decision_engine as de
 from optcg_engine.decision_engine import (
     Card, CardData, GameState, EffectExecutor, DecisionEngine, OPTCGMatch,
-    effective_hand_play_cost, get_card_effects
+    effective_hand_play_cost, get_card_effects, is_immune
 )
 
 FAIL = 0
@@ -283,6 +283,20 @@ ee = EffectExecutor(me, opp)
 log = ee._execute_step({'action': 'ko', 'target': 'opp_character', 'count': 1}, source)
 check('imunidade by opponent effects protege contra KO do oponente',
       immune_opp in opp.field_chars and immune_opp not in opp.trash and 'imune' in (log or ''))
+
+me, opp = me_opp()
+battle_only = mk('OP03-079', 'Vergo battle-only', power=7000)
+battle_only.don_attached = 1
+check('imunidade KO in battle nao protege contra KO por efeito',
+      not is_immune(battle_only, 'ko', me, opp, source_is_opp=True, ko_context='effect'))
+check('imunidade KO in battle protege no contexto de batalha',
+      is_immune(battle_only, 'ko', me, opp, source_is_opp=True, ko_context='battle'))
+
+effect_only = mk('OP02-102', 'Smoker effect-only', power=7000)
+check('imunidade KO by effects nao protege contra KO em batalha',
+      not is_immune(effect_only, 'ko', me, opp, source_is_opp=True, ko_context='battle'))
+check('imunidade KO by effects protege no contexto de efeito',
+      is_immune(effect_only, 'ko', me, opp, source_is_opp=True, ko_context='effect'))
 
 # ── 14. substitute_removal executa extra_steps (Thatch: trash self + draw) ──
 me, opp = me_opp()

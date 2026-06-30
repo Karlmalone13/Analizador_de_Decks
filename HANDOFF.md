@@ -1,5 +1,23 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-06-30 - Codex
+
+**Feito - imunidade KO por contexto:** `is_immune()` agora recebe `ko_context`
+para diferenciar KO por efeito (`effect`) de KO em batalha (`battle`). O helper
+usa o texto bruto da carta para impedir que `cannot be K.O.'d in battle`
+proteja contra efeitos, e que `cannot be K.O.'d by effects` proteja contra
+combate. Chamadores principais atualizados: executor de KO por efeito e
+resolucao de combate.
+
+**Validacao:** `python -m py_compile scriptis_da_ia\smoke_test.py
+scriptis_da_ia\optcg_engine\decision_engine.py`; `python
+scriptis_da_ia\smoke_test.py`; `python audit_replay.py --n 5 --seed 42`;
+`python smoke_test_broad.py` (40/40).
+
+**Ainda falta:** imunidade por atributo/fonte do atacante (`Strike`, `Slash`,
+`Special`, `Leaders`) e variantes que o parser ainda nao transformou em
+`immunity` (ex.: OP11-005/OP11-046).
+
 ## 2026-06-29 23:35 - Codex
 
 **Update posterior - Counter buff simples:** implementada a primeira fatia de
