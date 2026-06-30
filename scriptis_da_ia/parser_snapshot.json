@@ -617,6 +617,23 @@
   }
  },
  "EB01-038": {
+  "counter": {
+   "conditions": {
+    "leader_type_includes": "baroque works"
+   },
+   "costs": [
+    {
+     "count": 1,
+     "optional": true,
+     "type": "don_minus"
+    }
+   ],
+   "steps": [
+    {
+     "action": "redirect_attack_target"
+    }
+   ]
+  },
   "trigger": {
    "costs": [
     {
@@ -2810,7 +2827,32 @@
   }
  },
  "EB03-030": {},
- "EB03-031": {},
+ "EB03-031": {
+  "on_play": {
+   "conditions": {
+    "leader_is": "sanji"
+   },
+   "steps": [
+    {
+     "action": "activate_trash_event_main",
+     "cost_lte": 7,
+     "count": 1
+    }
+   ]
+  },
+  "your_turn": {
+   "conditions": {
+    "leader_is": "sanji"
+   },
+   "steps": [
+    {
+     "action": "activate_trash_event_main",
+     "cost_lte": 7,
+     "count": 1
+    }
+   ]
+  }
+ },
  "EB03-032": {
   "on_play": {
    "steps": [
@@ -7090,7 +7132,20 @@
    ]
   }
  },
- "OP02-025": {},
+ "OP02-025": {
+  "activate_main": {
+   "once_per_turn": true,
+   "steps": [
+    {
+     "action": "buff_cost",
+     "amount": 1,
+     "duration": "next_play_only",
+     "filter_type": "land of wano",
+     "target": "own_play_hand"
+    }
+   ]
+  }
+ },
  "OP02-026": {
   "passive": {
    "once_per_turn": true,
@@ -11556,7 +11611,18 @@
    ]
   }
  },
- "OP04-047": {},
+ "OP04-047": {
+  "your_turn": {
+   "steps": [
+    {
+     "action": "place_opp_character_bottom_deck",
+     "cost_lte": 5,
+     "count": 1,
+     "target": "battled"
+    }
+   ]
+  }
+ },
  "OP04-048": {
   "on_play": {
    "steps": [
@@ -13995,7 +14061,26 @@
    ]
   }
  },
- "OP05-058": {},
+ "OP05-058": {
+  "main": {
+   "steps": [
+    {
+     "action": "place_opp_character_bottom_deck",
+     "cost_lte": 3,
+     "count": 99
+    }
+   ]
+  },
+  "trigger": {
+   "steps": [
+    {
+     "action": "place_opp_character_bottom_deck",
+     "cost_lte": 2,
+     "count": 99
+    }
+   ]
+  }
+ },
  "OP05-059": {
   "main": {
    "conditions": {
@@ -23988,7 +24073,19 @@
    ]
   }
  },
- "OP10-022": {},
+ "OP10-022": {
+  "activate_main": {
+   "don_requirement": 1,
+   "once_per_turn": true,
+   "steps": [
+    {
+     "action": "bounce",
+     "count": 1,
+     "target": "own_character"
+    }
+   ]
+  }
+ },
  "OP10-023": {
   "on_play": {
    "conditions": {
@@ -31880,7 +31977,19 @@
    ]
   }
  },
- "OP14-001": {},
+ "OP14-001": {
+  "activate_main": {
+   "once_per_turn": true,
+   "steps": [
+    {
+     "action": "swap_base_power",
+     "duration": "this_turn",
+     "filter_type": "supernovas",
+     "target": "own_two_chars"
+    }
+   ]
+  }
+ },
  "OP14-002": {
   "when_attacking": {
    "conditions": {
@@ -32108,7 +32217,18 @@
    ]
   }
  },
- "OP14-017": {},
+ "OP14-017": {
+  "main": {
+   "steps": [
+    {
+     "action": "swap_base_power",
+     "duration": "this_turn",
+     "power_lte": 9000,
+     "target": "opp_two_chars"
+    }
+   ]
+  }
+ },
  "OP14-018": {
   "counter": {
    "steps": [
@@ -32879,7 +32999,24 @@
    ]
   }
  },
- "OP14-060": {},
+ "OP14-060": {
+  "on_opp_attack": {
+   "costs": [
+    {
+     "count": 1,
+     "optional": false,
+     "type": "don_minus"
+    }
+   ],
+   "once_per_turn": true,
+   "steps": [
+    {
+     "action": "redirect_attack_target",
+     "filter_type": "donquixote pirates"
+    }
+   ]
+  }
+ },
  "OP14-061": {
   "passive": {
    "conditions": {
@@ -34685,7 +34822,17 @@
   }
  },
  "OP15-030": {},
- "OP15-031": {},
+ "OP15-031": {
+  "on_play": {
+   "steps": [
+    {
+     "action": "ko_if_cost_eq_don",
+     "rested_only": true,
+     "target": "opp_character"
+    }
+   ]
+  }
+ },
  "OP15-032": {
   "activate_main": {
    "conditions": {
@@ -42023,7 +42170,16 @@
  "ST08-010": {},
  "ST08-011": {},
  "ST08-012": {},
- "ST08-013": {},
+ "ST08-013": {
+  "passive": {
+   "don_requirement": 1,
+   "steps": [
+    {
+     "action": "ko_battled_opp_char_and_self"
+    }
+   ]
+  }
+ },
  "ST08-014": {
   "main": {
    "steps": [

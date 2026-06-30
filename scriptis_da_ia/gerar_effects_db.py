@@ -1754,15 +1754,6 @@ def parse_set_base_power(text):
             'duration': 'this_turn',
         })
 
-    # "if the chosen Character has a cost equal to the number of DON!! cards
-    # given to it, K.O. it" -- OP15-031 Purinpurin. Nova action ko_if_cost_eq_don.
-    m_pu = re.search(
-        r"if the (?:chosen )?character has a cost equal to the number of don!!.{0,30}k\.?o\.? it",
-        t)
-    if m_pu:
-        steps.append({'action': 'ko_if_cost_eq_don', 'target': 'opp_character',
-                      'rested_only': True})
-
     # "[Tipo]'s base power becomes the same as [fonte]" -- SEM numero literal
     # (MatchLeaderToBasePower, achado 28/06/2026, 12 cartas reais). Distinto
     # do loop acima (que exige `becomes (\d+)`, valor fixo): aqui o valor e
@@ -3351,6 +3342,97 @@ def parse_block(block_text, trigger_name):
             or 'all characters other than this character' in t):
         steps.extend(parse_ko(t))
 
+    # "Swap the base power of the selected Characters with each other during
+    # this turn." -- OP14-001 (own chars) / OP14-017 (opp chars).
+    if 'swap the base power' in t:
+        m_swap = re.search(r'swap the base power of the selected characters? with each other', t)
+        if m_swap:
+            # Infere alvo (proprio vs oponente) pelo contexto antes do swap
+            pre = t[:m_swap.start()]
+            if 'opponent' in pre:
+                # OP14-017: 2 chars do oponente
+                power_m = re.search(r'with (\d+) base power or less', pre)
+                step_sw = {'action': 'swap_base_power', 'target': 'opp_two_chars',
+                           'duration': 'this_turn'}
+                if power_m:
+                    step_sw['power_lte'] = int(power_m.group(1))
+            else:
+                # OP14-001: 2 chars do proprio lado
+                type_m_sw = re.search(r'\{([^}]+)\}(?: or \{([^}]+)\})? type characters?', pre)
+                step_sw = {'action': 'swap_base_power', 'target': 'own_two_chars',
+                           'duration': 'this_turn'}
+                if type_m_sw:
+                    step_sw['filter_type'] = type_m_sw.group(1).strip()
+            steps.append(step_sw)
+
+    # "if the chosen Character has a cost equal to the number of DON!! cards
+    # given to it, K.O. it" -- OP15-031 Purinpurin.
+    if 'cost equal to the number of don!!' in t:
+        m_pu = re.search(
+            r"if the (?:chosen )?character has a cost equal to the number of don!!.{0,30}k\.?o\.? it",
+            t)
+        if m_pu and not any(s.get('action') == 'ko_if_cost_eq_don' for s in steps):
+            steps.append({'action': 'ko_if_cost_eq_don', 'target': 'opp_character',
+                          'rested_only': True})
+
+    # "Place all Characters with a cost of N or less at the bottom of the
+    # owner's deck" -- OP05-058 It's a Waste of Human Life!! (mass removal).
+    # Mapeado como place_opp_character_bottom_deck count=99 (todos).
+    m_mass = re.search(r"place all characters? with a cost of (\d+) or less at the bottom of the owner.?s deck", t)
+    if m_mass:
+        steps.append({'action': 'place_opp_character_bottom_deck',
+                      'count': 99, 'cost_lte': int(m_mass.group(1))})
+
+    # "Change the attack target to the selected card" -- OP14-060 Doflamingo.
+    # Parser apenas (engine: redirect durante combate exige interrupcao da
+    # resolucao de ataque -- nao implementado; registrado para analysis_db).
+    if 'change the attack target' in t:
+        filter_m_d = re.search(r'select your leader or 1 of your \{([^}]+)\} type characters?', t)
+        step_rd = {'action': 'redirect_attack_target'}
+        if filter_m_d:
+            step_rd['filter_type'] = filter_m_d.group(1).strip()
+        steps.append(step_rd)
+
+    # "At the end of a battle in which this Character battles..." --
+    # OP04-047 Ice Oni (place opp char bottom deck) e ST08-013 Mr.2 (mutual KO).
+    # Novo timing when_attacking_after_battle dispara apos o combate resolver.
+    if 'at the end of a battle in which this character battles' in t:
+        m_end = re.search(r'at the end of a battle in which this character battles.{0,60}?(place|k\.?o\.)', t)
+        if m_end:
+            if 'place' in m_end.group(1):
+                cost_m_e = re.search(r'with a cost of (\d+) or less', t)
+                step_e = {'action': 'place_opp_character_bottom_deck', 'count': 1,
+                          'target': 'battled'}
+                if cost_m_e:
+                    step_e['cost_lte'] = int(cost_m_e.group(1))
+                steps.append(step_e)
+            else:
+                # ST08-013: KO opp char + KO self (mutual)
+                steps.append({'action': 'ko_battled_opp_char_and_self'})
+
+    # "Activate the [Main] effect of up to 1 Event card with a cost of N or
+    # less in your trash." -- EB03-031 Vinsmoke Reiju. Parser apenas
+    # (execucao real de um efeito de evento do trash e muito complexa para
+    # o engine atual; registrado como activate_trash_event_main para analysis).
+    if 'activate' in t and 'main' in t and 'event card' in t and 'trash' in t:
+        m_act = re.search(r'activate (?:the )?\[?main\]? effect of up to (\d+) event cards? with a cost of (\d+) or less', t)
+        if m_act:
+            steps.append({'action': 'activate_trash_event_main',
+                          'count': int(m_act.group(1)),
+                          'cost_lte': int(m_act.group(2))})
+
+    # "you may return 1 of your Characters to the owner's hand" as COST for
+    # OP10-022 Law Leader, followed by reveal_life + conditional play.
+    # O efeito apos o custo e capturado pela parse_reveal_top_play / parse_life
+    # normalmente. O custo (bounce_own_char) nao aparece na lista de parse_costs
+    # padrao -- adicionado aqui como step extra de custo implicito (simplificacao).
+    # Heuristica: registrar bounce + play_from_deck para analysis_db.
+    if 'return 1 of your characters to the owner' in t and 'life cards' in t:
+        if not any(s.get('action') == 'bounce' for s in steps):
+            cond_chars_m = re.search(r'if the total cost of your characters is (\d+) or more', t)
+            step_b = {'action': 'bounce', 'count': 1, 'target': 'own_character'}
+            steps.append(step_b)
+
     # Bounce (oponente OU auto-bounce do proprio character)
     if 'return' in t and 'hand' in t:
         steps.extend(parse_bounce(t))
@@ -3506,7 +3588,7 @@ def parse_block(block_text, trigger_name):
     # "proximo jogo" exato no engine, onde o custo e reduzido via
     # effective_hand_play_cost na proxima chamada).
     m_next = re.search(
-        r"the next time you play a .{0,40}type character card.{0,30}the cost will be reduced by (\d+)",
+        r"the next time you play a .{0,40}type character card.{0,80}the cost will be reduced by (\d+)",
         t)
     if m_next:
         type_m_n = (re.search(r'\[([^\]]+)\] type', t)

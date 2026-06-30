@@ -2658,6 +2658,51 @@ class EffectExecutor:
                 return f'K.O. {alvo.name[:15]} (cost=={alvo.cost}==DON!!)'
             return ''
 
+        # ── Swap base power entre 2 Characters (OP14-001/OP14-017) ─────────────
+        if action == 'swap_base_power':
+            from optcg_engine.rules_facade import eligible_cards, card_matches_filter
+            target = step.get('target', 'own_two_chars')
+            filter_type = step.get('filter_type', '')
+            power_lte = step.get('power_lte')
+            pool = me.field_chars if 'own' in target else opp.field_chars
+            cands = [c for c in pool
+                     if card_matches_filter(c, filter_type)
+                     and (power_lte is None or c.effective_power(True) <= power_lte)]
+            if len(cands) >= 2:
+                # Escolhe os dois com maior board_value
+                cands.sort(key=lambda c: -c.board_value())
+                a, b = cands[0], cands[1]
+                pa = a.effective_power('own' in target)
+                pb = b.effective_power('own' in target)
+                a.base_power_override = pb
+                b.base_power_override = pa
+                return f'trocou power: {a.name[:12]}({pa}->{pb}) / {b.name[:12]}({pb}->{pa})'
+            return ''
+
+        # ── Mutual KO após batalha (ST08-013 Mr.2) ──────────────────────────────
+        # "K.O. the opponent's Character you battled with. If you do, K.O. this
+        # Character." -- simplificacao: KO o melhor char do oponente + KO self.
+        if action == 'ko_battled_opp_char_and_self':
+            if opp.field_chars:
+                target_opp = max(opp.field_chars, key=lambda c: c.board_value())
+                if not is_immune(target_opp, 'ko', opp, me, source_is_opp=True):
+                    remove_character_from_field(opp, target_opp, 'trash')
+                    ee_opp = EffectExecutor(opp, me)
+                    ee_opp.execute(target_opp, 'on_ko', is_opp_turn=True)
+                    # KO self (o proprio character que ativou o efeito)
+                    if contains_identity(me.field_chars, card):
+                        remove_character_from_field(me, card, 'trash')
+                    return f'KO mutuo: {target_opp.name[:12]} e {card.name[:12]}'
+            return ''
+
+        # ── Redirect attack target (OP14-060) -- no-op engine, parser only ──────
+        if action == 'redirect_attack_target':
+            return ''  # complexidade de interrupcao de resolucao de ataque inviavel
+
+        # ── Activate trash event Main (EB03-031) -- no-op engine, parser only ───
+        if action == 'activate_trash_event_main':
+            return ''  # executar efeito de evento do trash exige VM separada
+
         # ── Imunidade a KO temporária para tipo próprio (OP09-033 Nico Robin) ──
         # Concede immunity_ko_until a todos os PROPRIOS Characters que
         # correspondem ao filter_type. Limpo no refresh_phase do dono.

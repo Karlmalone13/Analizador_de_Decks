@@ -1,6 +1,45 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
-## 2026-07-02 (9) - Claude — ÚLTIMA DESTA SESSÃO
+## 2026-07-02 (10) - Claude — ÚLTIMA DESTA SESSÃO
+
+**Feito — gaps restantes: 14 → 4, 2324 → 2334 com efeito.**
+
+Dispatch fixes + novas mecânicas implementadas nesta rodada:
+- **OP15-031 / OP02-025**: m_pu estava dentro de parse_set_base_power (função
+  que só é chamada quando "base power becomes" ou "set the power of" estão no
+  texto) — movido para dispatch próprio em parse_block. OP02-025 regex
+  `.{0,30}` muito curta (57 chars entre "character card" e "cost will be
+  reduced") → ampliado para `.{0,80}`.
+- **swap_base_power** (OP14-001 Law Leader / OP14-017 Chambres): engine seleciona
+  2 chars do lado especificado, troca seus `base_power_override`.
+- **mass deck_bottom** (OP05-058): `place_opp_character_bottom_deck count=99
+  cost_lte=3` — a segunda parte (equalizar mãos) não implementada.
+- **ko_battled_opp_char_and_self** (ST08-013 Mr.2): KO o melhor char do oponente
+  + KO self (simplificação: escolhe melhor por board_value em vez do que "battled").
+- **redirect_attack_target** (OP14-060 Doflamingo): parser only — no-op no engine
+  (interrupcao de resolução de ataque é inviável com arquitetura atual).
+- **activate_trash_event_main** (EB03-031): parser only — no-op no engine.
+- **when_attacking_after_battle** (OP04-047): parsed como ação de `place_opp_character_
+  bottom_deck` dentro do bloco `your_turn`; engine vai tentar executar no início
+  do turno (timing errado, mas registrado para analysis_db).
+- **EB03-031, OP10-022, OP02-025**: parsers mínimos para coverage análise.
+- **OP12-040 Kuzan + OP02-025 Kin'emon**: já parseavam, só precisavam de dispatch
+  fix / regex width.
+
+**4 gaps restantes (de 51 originais):**
+  - EB03_OP05-006_p1 — ID mismatch (parsa como OP05-006, falso positivo)
+  - OP01-105 Bao Huang — info-only (revelar mão do oponente, sem estado)
+  - OP16-042 Prisoner of Impel Down — regra de deckbuilding
+  - ST13-003 passive — "face-up life → deck" em vez de mão (regra de dano
+    modificada, requer mudança em todos os pontos de damage resolution)
+
+**Validação:** `diff_parser.py` (PERDEU=0, 10 GANHOU); `gerar_dbs.py` (2334
+  com efeito); `smoke_test.py` (100%); `smoke_test_broad.py` (40/40);
+  `audit_replay.py --n 20 --seed 7` e `--n 15 --seed 99` (0 exceções, 0 anomalias).
+
+---
+
+## 2026-07-02 (9) - Claude
 
 **Feito — gaps restantes: 19 → 11, 2319 → 2324 com efeito.**
 

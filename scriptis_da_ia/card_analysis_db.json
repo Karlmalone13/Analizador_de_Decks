@@ -1577,6 +1577,10 @@
    {
     "action": "draw",
     "trigger": "trigger"
+   },
+   {
+    "action": "redirect_attack_target",
+    "trigger": "counter"
    }
   ],
   "synergy_states": {
@@ -1589,7 +1593,7 @@
   "is_searcher": false,
   "draws": true,
   "has_counter_value": false,
-  "has_counter_event": false,
+  "has_counter_event": true,
   "is_blocker": false,
   "is_removal": false,
   "kos": false,
@@ -6783,7 +6787,18 @@
   "color": "Purple",
   "sub_types": "The Vinsmoke Family GERMA 66",
   "attribute": "Special",
-  "effects": [],
+  "effects": [
+   {
+    "action": "activate_trash_event_main",
+    "trigger": "on_play",
+    "cost_lte": 7
+   },
+   {
+    "action": "activate_trash_event_main",
+    "trigger": "your_turn",
+    "cost_lte": 7
+   }
+  ],
   "synergy_states": {},
   "text": "[Your Turn] [On Play] DON!! 1: If your Leader is [Sanji], activate the [Main] effect of up to 1 Event card with a cost of 7 or less in your trash.",
   "is_searcher": false,
@@ -17119,7 +17134,13 @@
   "color": "Green",
   "sub_types": "Land of Wano The Akazaya Nine",
   "attribute": "Slash",
-  "effects": [],
+  "effects": [
+   {
+    "action": "buff_cost",
+    "trigger": "activate_main",
+    "target": "own_play_hand"
+   }
+  ],
   "synergy_states": {},
   "text": "[Activate:Main] [Once Per Turn] If you have 1 or less Characters, the next time you play a [Land of Wano] type Character card with a cost of 3 or more from your hand during this turn, the cost will be reduced by 1.",
   "is_searcher": false,
@@ -28709,7 +28730,14 @@
   "color": "Blue",
   "sub_types": "Animal Kingdom Pirates Plague",
   "attribute": "Special",
-  "effects": [],
+  "effects": [
+   {
+    "action": "place_opp_character_bottom_deck",
+    "trigger": "your_turn",
+    "cost_lte": 5,
+    "target": "battled"
+   }
+  ],
   "synergy_states": {},
   "text": "[Your Turn] At the end of a battle in which this Character battles your opponent's Character with a cost of 5 or less, place the opponent's Character you battled with at the bottom of the owner's deck.",
   "is_searcher": false,
@@ -34484,7 +34512,18 @@
   "color": "Blue",
   "sub_types": "Navy",
   "attribute": "",
-  "effects": [],
+  "effects": [
+   {
+    "action": "place_opp_character_bottom_deck",
+    "trigger": "trigger",
+    "cost_lte": 2
+   },
+   {
+    "action": "place_opp_character_bottom_deck",
+    "trigger": "main",
+    "cost_lte": 3
+   }
+  ],
   "synergy_states": {
    "vida_ganha": {
     "creates": false,
@@ -34511,7 +34550,7 @@
   "has_double_attack": false,
   "has_unblockable": false,
   "has_banish": false,
-  "has_trigger": false
+  "has_trigger": true
  },
  "OP05-059": {
   "name": "Let Us Begin the World of Violence!!",
@@ -59156,7 +59195,14 @@
   "color": "Green Yellow",
   "sub_types": "Heart Pirates Supernovas Dressrosa",
   "attribute": "Slash",
-  "effects": [],
+  "effects": [
+   {
+    "action": "bounce",
+    "trigger": "activate_main",
+    "don_requirement": 1,
+    "target": "own_character"
+   }
+  ],
   "synergy_states": {},
   "text": "[DON!! x1] [Activate: Main] [Once Per Turn] If the total cost of your Characters is 5 or more, you may return 1 of your Characters to the owner's hand: Reveal 1 card from the top of your Life cards. If that card is a \"Supernovas\" type Character card with a cost of 5 or less, you may play that card.",
   "is_searcher": false,
@@ -59164,10 +59210,10 @@
   "has_counter_value": false,
   "has_counter_event": false,
   "is_blocker": false,
-  "is_removal": false,
+  "is_removal": true,
   "kos": false,
   "rests_opponent": false,
-  "bounces": false,
+  "bounces": true,
   "gives_don": false,
   "power_buff": false,
   "heals": false,
@@ -78911,7 +78957,13 @@
   "color": "Red",
   "sub_types": "Heart Pirates Supernovas The Seven Warlords of the Sea",
   "attribute": "Slash",
-  "effects": [],
+  "effects": [
+   {
+    "action": "swap_base_power",
+    "trigger": "activate_main",
+    "target": "own_two_chars"
+   }
+  ],
   "synergy_states": {},
   "text": "[Activate:Main] [Once Per Turn] Select 2 of your {Supernovas} or {Heart Pirates} type Characters. Swap the base power of the selected Characters with each other during this turn.",
   "is_searcher": false,
@@ -79565,7 +79617,14 @@
   "color": "Red",
   "sub_types": "Heart Pirates Supernovas The Seven Warlords of the Sea",
   "attribute": "",
-  "effects": [],
+  "effects": [
+   {
+    "action": "swap_base_power",
+    "trigger": "main",
+    "power_lte": 9000,
+    "target": "opp_two_chars"
+   }
+  ],
   "synergy_states": {},
   "text": "[Main] Select 2 of your opponent's Characters with 9000 base power or less. Swap the base power of the selected Characters with each other during this turn.",
   "is_searcher": false,
@@ -81488,7 +81547,12 @@
   "color": "Purple",
   "sub_types": "Donquixote Pirates The Seven Warlords of the Sea",
   "attribute": "Special",
-  "effects": [],
+  "effects": [
+   {
+    "action": "redirect_attack_target",
+    "trigger": "on_opp_attack"
+   }
+  ],
   "synergy_states": {},
   "text": "[On Your Opponent's Attack] [Once Per Turn] DON!! -1: Select your Leader or 1 of your {Donquixote Pirates} type Characters. Change the attack target to the selected card.",
   "is_searcher": false,
@@ -85609,7 +85673,14 @@
   "color": "Green",
   "sub_types": "Navy East Blue",
   "attribute": "Wisdom",
-  "effects": [],
+  "effects": [
+   {
+    "action": "ko_if_cost_eq_don",
+    "trigger": "on_play",
+    "rested_only": true,
+    "target": "opp_character"
+   }
+  ],
   "synergy_states": {
    "char_restado": {
     "creates": false,
@@ -104531,7 +104602,13 @@
   "color": "Black",
   "sub_types": "Former Baroque Works",
   "attribute": "Strike",
-  "effects": [],
+  "effects": [
+   {
+    "action": "ko_battled_opp_char_and_self",
+    "trigger": "passive",
+    "don_requirement": 1
+   }
+  ],
   "synergy_states": {},
   "text": "[DON!! x1] At the end of a battle in which this Character battles your opponent's Character, you may K.O. the opponent's Character you battled with. If you do, K.O. this Character.",
   "is_searcher": false,

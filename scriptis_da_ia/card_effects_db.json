@@ -1048,6 +1048,23 @@
             "optional": false
           }
         ]
+      },
+      "counter": {
+        "steps": [
+          {
+            "action": "redirect_attack_target"
+          }
+        ],
+        "conditions": {
+          "leader_type_includes": "baroque works"
+        },
+        "costs": [
+          {
+            "type": "don_minus",
+            "count": 1,
+            "optional": true
+          }
+        ]
       }
     }
   },
@@ -4552,7 +4569,32 @@
     "color": "Purple",
     "sub_types": "The Vinsmoke Family GERMA 66",
     "attribute": "Special",
-    "effects": {}
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "activate_trash_event_main",
+            "count": 1,
+            "cost_lte": 7
+          }
+        ],
+        "conditions": {
+          "leader_is": "sanji"
+        }
+      },
+      "your_turn": {
+        "steps": [
+          {
+            "action": "activate_trash_event_main",
+            "count": 1,
+            "cost_lte": 7
+          }
+        ],
+        "conditions": {
+          "leader_is": "sanji"
+        }
+      }
+    }
   },
   "EB03-032": {
     "name": "Charlotte Flampe",
@@ -11450,7 +11492,20 @@
     "color": "Green",
     "sub_types": "Land of Wano The Akazaya Nine",
     "attribute": "Slash",
-    "effects": {}
+    "effects": {
+      "activate_main": {
+        "steps": [
+          {
+            "action": "buff_cost",
+            "amount": 1,
+            "target": "own_play_hand",
+            "duration": "next_play_only",
+            "filter_type": "land of wano"
+          }
+        ],
+        "once_per_turn": true
+      }
+    }
   },
   "OP02-026": {
     "name": "Sanji",
@@ -18842,7 +18897,18 @@
     "color": "Blue",
     "sub_types": "Animal Kingdom Pirates Plague",
     "attribute": "Special",
-    "effects": {}
+    "effects": {
+      "your_turn": {
+        "steps": [
+          {
+            "action": "place_opp_character_bottom_deck",
+            "count": 1,
+            "target": "battled",
+            "cost_lte": 5
+          }
+        ]
+      }
+    }
   },
   "OP04-048": {
     "name": "Sasaki",
@@ -22685,7 +22751,26 @@
     "color": "Blue",
     "sub_types": "Navy",
     "attribute": "",
-    "effects": {}
+    "effects": {
+      "trigger": {
+        "steps": [
+          {
+            "action": "place_opp_character_bottom_deck",
+            "count": 99,
+            "cost_lte": 2
+          }
+        ]
+      },
+      "main": {
+        "steps": [
+          {
+            "action": "place_opp_character_bottom_deck",
+            "count": 99,
+            "cost_lte": 3
+          }
+        ]
+      }
+    }
   },
   "OP05-059": {
     "name": "Let Us Begin the World of Violence!!",
@@ -38793,7 +38878,19 @@
     "color": "Green Yellow",
     "sub_types": "Heart Pirates Supernovas Dressrosa",
     "attribute": "Slash",
-    "effects": {}
+    "effects": {
+      "activate_main": {
+        "steps": [
+          {
+            "action": "bounce",
+            "count": 1,
+            "target": "own_character"
+          }
+        ],
+        "once_per_turn": true,
+        "don_requirement": 1
+      }
+    }
   },
   "OP10-023": {
     "name": "Issho",
@@ -51701,7 +51798,19 @@
     "color": "Red",
     "sub_types": "Heart Pirates Supernovas The Seven Warlords of the Sea",
     "attribute": "Slash",
-    "effects": {}
+    "effects": {
+      "activate_main": {
+        "steps": [
+          {
+            "action": "swap_base_power",
+            "target": "own_two_chars",
+            "duration": "this_turn",
+            "filter_type": "supernovas"
+          }
+        ],
+        "once_per_turn": true
+      }
+    }
   },
   "OP14-002": {
     "name": "Urouge",
@@ -52105,7 +52214,18 @@
     "color": "Red",
     "sub_types": "Heart Pirates Supernovas The Seven Warlords of the Sea",
     "attribute": "",
-    "effects": {}
+    "effects": {
+      "main": {
+        "steps": [
+          {
+            "action": "swap_base_power",
+            "target": "opp_two_chars",
+            "duration": "this_turn",
+            "power_lte": 9000
+          }
+        ]
+      }
+    }
   },
   "OP14-018": {
     "name": "Time for the Counterattack",
@@ -53349,7 +53469,24 @@
     "color": "Purple",
     "sub_types": "Donquixote Pirates The Seven Warlords of the Sea",
     "attribute": "Special",
-    "effects": {}
+    "effects": {
+      "on_opp_attack": {
+        "steps": [
+          {
+            "action": "redirect_attack_target",
+            "filter_type": "donquixote pirates"
+          }
+        ],
+        "costs": [
+          {
+            "type": "don_minus",
+            "count": 1,
+            "optional": false
+          }
+        ],
+        "once_per_turn": true
+      }
+    }
   },
   "OP14-061": {
     "name": "Vergo",
@@ -56156,7 +56293,17 @@
     "color": "Green",
     "sub_types": "Navy East Blue",
     "attribute": "Wisdom",
-    "effects": {}
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "ko_if_cost_eq_don",
+            "target": "opp_character",
+            "rested_only": true
+          }
+        ]
+      }
+    }
   },
   "OP15-032": {
     "name": "Brook (OP15-032)",
@@ -68323,7 +68470,16 @@
     "color": "Black",
     "sub_types": "Former Baroque Works",
     "attribute": "Strike",
-    "effects": {}
+    "effects": {
+      "passive": {
+        "steps": [
+          {
+            "action": "ko_battled_opp_char_and_self"
+          }
+        ],
+        "don_requirement": 1
+      }
+    }
   },
   "ST08-014": {
     "name": "Gum-Gum Bell",
