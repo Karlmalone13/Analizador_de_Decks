@@ -6079,6 +6079,52 @@ class OPTCGMatch:
 
         return base
 
+    def _score_activate_main(self, src, am, p, opp, priority) -> float:
+        """
+        Pontua a ação de ATIVAR um efeito [Activate:Main].
+        Permite que a ativação compita com plays e ataques no Turn Planner,
+        em vez de sempre disparar no início do turno.
+        """
+        steps = am.get('steps', [])
+        actions_list = [s.get('action') for s in steps]
+        costs = am.get('costs', [])
+
+        # Benefício base pelo tipo de efeito
+        if any(a in ('draw', 'look_top_deck', 'add_to_hand') for a in actions_list):
+            base = 120   # vantagem de carta — muito valioso
+        elif any(a in ('add_don', 'set_don_active') for a in actions_list):
+            base = 90    # ramp de DON
+        elif any(a in ('play_card',) for a in actions_list):
+            base = 110   # jogar carta grátis
+        elif any(a in ('rest_opp', 'ko_opp', 'debuff_power', 'bounce') for a in actions_list):
+            base = 100   # remoção/controle
+        else:
+            base = 60
+
+        # Custo real: quanto a ativação nos custa (trash de mão, DON, etc.)
+        custo_don = sum(c.get('count', 0) for c in costs if c.get('type') == 'rest_don')
+        tem_trash_hand = any(c.get('type') in ('trash_from_hand', 'trash_hand', 'trash_char_or_hand')
+                             for c in costs)
+
+        base -= custo_don * 15   # cada DON gasto tem custo de oportunidade
+
+        if tem_trash_hand:
+            # Estimar qual carta seria trashada e quanto ela vale
+            if p.hand:
+                ee_tmp = EffectExecutor(p, opp)
+                pior = min(p.hand, key=ee_tmp._trash_value)
+                perda = ee_tmp._trash_value(pior)
+                # Se a carta mais "barata" de trashar ainda é cara (jogável), penaliza
+                base -= min(perda * 0.3, 60)
+
+        # Ajustes por prioridade
+        if priority == 'LETHAL':
+            base -= 30   # prefere atacar quando pode ganhar
+        elif priority == 'DEFENSIVE':
+            base -= 20
+
+        return base
+
     def _generate_and_score_actions(self, p, opp, engine):
         """
         Gera TODAS as ações possíveis no estado atual e as pontua.
@@ -6144,6 +6190,26 @@ class OPTCGMatch:
                         if tgt in threats:
                             s_char += 300   # acima de atacar o líder
                         actions.append((s_char, 'attack', att, 'character', tgt))
+
+        # ── Ações de ATIVAR efeitos [Activate:Main] ──
+        sources = []
+        if p.leader:
+            sources.append(p.leader)
+        if p.field_stage:
+            sources.append(p.field_stage)
+        sources.extend(p.field_chars)
+        for src in sources:
+            effects = get_card_effects(src.code)
+            am = effects.get('activate_main')
+            if not am:
+                continue
+            if am.get('once_per_turn') and getattr(src, '_am_used_turn', -1) == p.turn:
+                continue
+            pode, _ = self._should_activate_main(src, am, p, opp)
+            if not pode:
+                continue
+            score = self._score_activate_main(src, am, p, opp, priority)
+            actions.append((score, 'activate', src, None, None))
 
         # ── Ações de ANEXAR DON para ligar efeitos/keywords [DON!! ×N] ──
         actions.extend(self._generate_attach_don_actions(p, opp, engine, priority=priority))
@@ -6283,6 +6349,21 @@ class OPTCGMatch:
         if kind == 'play':
             self._play_card(obj, p, opp, ee, verbose=verbose)
 
+        elif kind == 'activate':
+            src = obj
+            am = get_card_effects(src.code).get('activate_main', {})
+            src._am_used_turn = p.turn
+            self._log_decision(p, src, 'activate_main', 'activate', 'ação no planner')
+            logs = ee.execute(src, 'activate_main')
+            if verbose:
+                print(f'    ⚙ ativou [Activate:Main] de {src.name[:22]}')
+                for log in logs:
+                    if log:
+                        print(f'      ↳ {log}')
+            if any(logs):
+                desc = ' | '.join(l for l in logs if l)
+                self._log_event(p, 'activate_main', card=src, description=desc)
+
         elif kind == 'attach_don':
             card, falta, what = obj, ttype, tgt
             anexar = min(falta, p.don_available)
@@ -6397,11 +6478,9 @@ class OPTCGMatch:
             return 1e9   # essa linha vence
 
         # Continua gulosamente até o fim do turno
-        # IMPORTANTE: espelha o loop real de main_phase — ativa efeitos
-        # [Activate:Main] a cada passo antes de gerar novas ações, para que
-        # o planner capture o valor de combos como "jogar carta → ativar líder".
+        # activate_main agora compete como ação no _generate_and_score_actions,
+        # então não precisa mais de chamada separada aqui.
         for _ in range(max_steps):
-            self._activate_main_effects(p2, opp2, ee2, verbose=False)
             acts = self._generate_and_score_actions(p2, opp2, eng2)
             if not acts or acts[0][0] < 0:
                 break
@@ -6413,6 +6492,15 @@ class OPTCGMatch:
         """Remapeia uma ação do estado real para os objetos da cópia (por índice)."""
         score, kind, obj, ttype, tgt = action
         try:
+            if kind == 'activate':
+                # Remapeia source para o objeto equivalente na cópia
+                if obj is p.leader:
+                    return (score, kind, p2.leader, None, None)
+                if obj is p.field_stage:
+                    return (score, kind, p2.field_stage, None, None)
+                if obj in p.field_chars:
+                    return (score, kind, p2.field_chars[p.field_chars.index(obj)], None, None)
+                return None
             if kind == 'play':
                 idx = p.hand.index(obj)
                 return (score, kind, p2.hand[idx], None, None)
@@ -6457,8 +6545,6 @@ class OPTCGMatch:
 
         while n < MAX_ACOES:
             n += 1
-            self._activate_main_effects(p, opp, ee, verbose=verbose)
-
             actions = self._generate_and_score_actions(p, opp, engine)
             if not actions or actions[0][0] < 0:
                 break
