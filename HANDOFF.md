@@ -1,5 +1,39 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-01 (25) - Claude
+
+**Feito — bug crítico no parser corrigido + 3º log adicionado:**
+
+### Bug: parser não capturava ataques, bloqueios nem counters
+
+Formato real do log: `["CODE">DisplayName]` (fecha com `">NAME]`)
+Regex antigo esperava: `["CODE"]` (fecha com `"]`)
+
+Resultado: zero ataques capturados em todos os logs anteriores. Corrido:
+- `RE_ATTACK`, `RE_BLOCKS`, `RE_DISCARD`, `RE_EFFECT`, `RE_ATTACH` atualizados
+- `RE_ATTACK` agora captura também o `attacker_code` (grupo 3)
+- `result=None` em ataque sem "Attack Fails" → fechado como `'hit'` ao iniciar próximo ataque ou ao fim do turno
+- Logs antigos re-parseados: 40 ataques agora capturados na partida Nami vs Imu (antes: 0)
+
+### Diagnóstico do compare_vs_human após correção
+
+Divergências falsas eliminadas: o humano SIM atacava nos turnos "sem ação". O estado de fim-de-turno (pós-ação) era usado como estado inicial — IA via characters ativos quando já tinham atacado. Divergências reais identificadas:
+- **T01**: IA prefere activate do Imu (score 103) vs jogar Shalria (custo 1). Com 1 DON são mutuamente exclusivos — IA provavelmente supervaloriza activate no early.
+- **T03**: IA rankeia activate como top, não vê a sequência jogar+ativar+atacar como um todo (Turn Planner vê só 1ª ação do turno).
+- **T07/T17**: IA prefere activate, humano jogou carta — pode ser ordering issue do Turn Planner.
+
+### 3º log adicionado
+
+Imu-B vs Monkey.D.Luffy-BP (Sebs#6211), 17 turnos. Partida rica: Saturn debuffando Boa Hancock -2000, Gol D. Roger buffando Luffy, counters com Nami/Usohachi, The Empty Throne ativo todo turno. 41/50 do Imu, 30/50 do Luffy.
+
+**Banco atual:** 3 partidas (Teach-BY×Lucy-RB, Nami-BY×Imu-B, Imu-B×Luffy-BP)
+
+**Próximos passos prioritários:**
+1. Corrigir reconstrução de estado no compare: usar snapshot do turno ANTERIOR (= início do turno ativo, antes de qualquer ação)
+2. Depois: ajustar heurística de activate early (supervalorizado vs desenvolver campo)
+
+---
+
 ## 2026-07-01 (24) - Claude
 
 **Feito — compare_vs_human.py: compara IA vs humano turno a turno**
