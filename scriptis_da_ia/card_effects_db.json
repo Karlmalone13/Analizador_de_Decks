@@ -52328,6 +52328,7 @@
         "once_per_turn": true
       },
       "passive": {
+        "conditions": {"opp_leader_attribute": "slash"},
         "steps": [
           {
             "action": "buff_power",

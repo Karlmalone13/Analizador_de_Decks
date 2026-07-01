@@ -1954,6 +1954,10 @@ class EffectExecutor:
         if 'leader_is' in conds:
             if conds['leader_is'].lower() not in me.leader.name.lower():
                 return False
+        if 'opp_leader_attribute' in conds:
+            opp_attr = (getattr(opp.leader, 'attribute', '') or '').lower()
+            if conds['opp_leader_attribute'].lower() not in opp_attr:
+                return False
         if 'leader_type_includes' in conds:
             if _norm_type_text(conds['leader_type_includes']) not in _norm_type_text(me.leader.sub_types):
                 return False
@@ -5840,6 +5844,9 @@ class OPTCGMatch:
                 for log in logs:
                     if log:
                         print(f'      ↳ {log}')
+            # Loga no replay para aparecer nos eventos do turno
+            desc = ' | '.join(l for l in logs if l) or f'[Activate:Main] {src.name}'
+            self._log_event(p, 'activate_main', card=src, description=desc)
 
     def _should_activate_main(self, src, am, p, opp) -> tuple[bool, str]:
         """
