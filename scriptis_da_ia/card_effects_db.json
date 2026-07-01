@@ -51109,7 +51109,8 @@
             "count": 1,
             "cost_lte": "don_count_self",
             "filter_type": "five elders",
-            "color": "black"
+            "color": "black",
+            "card_type": "CHARACTER"
           }
         ],
         "costs": [

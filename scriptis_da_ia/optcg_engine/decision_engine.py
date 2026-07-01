@@ -4019,6 +4019,7 @@ class EffectExecutor:
                         exclude_name=step.get('exclude', ''),
                     )
                     if c.card_type in ('CHARACTER', 'STAGE', 'EVENT')
+                    and (not step.get('card_type') or c.card_type == step.get('card_type'))
                 )
 
             if not elegiveis:
@@ -4207,15 +4208,15 @@ class EffectExecutor:
             if flags.get('draws') or flags.get('is_searcher'):
                 value += 20
 
-        if card.card_type == 'CHARACTER' and card.cost >= 8:
-            value += 20
+        # Carta cara = win condition ou ameaça principal; proteger mesmo sem DON
+        # disponível agora (provavelmente jogável nos próximos turnos).
+        if card.card_type == 'CHARACTER' and card.cost >= 7:
+            value += 20 + card.cost * 8   # custo 10 → +100 extra
 
-        # Carta jogável este turno vale muito mais — não deve ser trashada como
-        # custo quando poderia ser jogada. Bônus proporcional ao custo efetivo
-        # (carta cara e jogável = perda dupla: perde a carta E a jogada).
+        # Carta jogável ESTE turno vale ainda mais — perda dupla se trashada.
         custo = effective_hand_play_cost(self.me, card)
         if custo <= self.me.don_available:
-            value += 60 + custo * 8   # ex: custo 9 → +132 (nunca trasha jogável premium)
+            value += 60 + custo * 6   # bônus adicional por ser jogável agora
 
         return value
 
