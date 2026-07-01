@@ -200,6 +200,59 @@ async def replay(req: ReplayRequest):
     return result
 
 
+@app.get("/replay/demo")
+async def replay_demo(seed: int = 42):
+    """
+    Roda uma partida demo usando dois decks reais de decklists_raw.csv.
+    Serve para validar visualmente o Replay Viewer sem exigir deck salvo.
+    """
+    import random
+    import pandas as pd
+    from optcg_engine.decision_engine import (
+        OPTCGMatch,
+        build_real_deck,
+        load_cards_db,
+        validar_deck,
+    )
+
+    try:
+        rng = random.Random(seed)
+        base_dir = os.path.dirname(__file__)
+        cards_db = load_cards_db(os.path.join(base_dir, 'cards_rows.csv'))
+        df_raw = pd.read_csv(os.path.join(base_dir, 'decklists_raw.csv'))
+        urls = df_raw.groupby('deck_url')['deck_name'].first()
+
+        decks = []
+        for url, name in urls.items():
+            built = build_real_deck(name, url, df_raw, cards_db)
+            if not built:
+                continue
+            leader, cards, start_stage = built
+            valido, _erros = validar_deck(leader, cards, cards_db)
+            if valido and len(cards) >= 40:
+                decks.append((name, (leader, cards, start_stage)))
+            if len(decks) >= 16:
+                break
+        if len(decks) < 2:
+            raise HTTPException(status_code=500, detail='Menos de 2 decks demo validos.')
+
+        idx_a, idx_b = rng.sample(range(len(decks)), 2)
+        name_a, deck_a = decks[idx_a]
+        name_b, deck_b = decks[idx_b]
+        match = OPTCGMatch(deck_a, deck_b)
+        result = match.simulate_replay(name_a=name_a, name_b=name_b)
+        result['demo'] = {
+            'seed': seed,
+            'deck_a': name_a,
+            'deck_b': name_b,
+        }
+        return result
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f'Erro no replay demo: {e}')
+
+
 @app.get("/simulate/status/{job_id}")
 async def simulate_status(job_id: str):
     """

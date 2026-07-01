@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef } from 'react'
 
 interface ReplayCard {
     code: string
@@ -10,6 +10,41 @@ interface ReplayCard {
     power: number
     type: string
     color: string
+}
+
+interface ReplayBoardCard extends ReplayCard {
+    rested?: boolean
+    current_power?: number
+}
+
+interface ReplayHandCard extends ReplayCard {
+    counter?: number
+    effective_cost?: number
+}
+
+interface PlayerSnapshot {
+    leader: ReplayCard | null
+    life: number
+    hand: number
+    hand_cards?: ReplayHandCard[]
+    deck: number
+    trash: number
+    don_available: number
+    don_rested: number
+    don_total: number
+    stage: ReplayCard | null
+    characters: ReplayBoardCard[]
+    stats: {
+        damage: number
+        counters: number
+        searchers: number
+        triggers: number
+    }
+}
+
+interface ReplaySnapshot {
+    A: PlayerSnapshot
+    B: PlayerSnapshot
 }
 
 interface ReplayEvent {
@@ -22,6 +57,7 @@ interface ReplayEvent {
     target: ReplayCard | null
     description: string
     count?: number
+    state?: ReplaySnapshot
 }
 
 interface TurnDetail {
@@ -29,7 +65,7 @@ interface TurnDetail {
     events: ReplayEvent[]
 }
 
-interface ReplayResult {
+export interface ReplayResult {
     winner: string
     turns: number
     events: ReplayEvent[]
@@ -71,6 +107,205 @@ const EVENT_COLORS: Record<string, string> = {
     counter: 'text-yellow-300',
     search: 'text-cyan-300',
     default: 'text-gray-300',
+}
+
+function ZoneBox({
+    label,
+    children,
+    className = '',
+}: {
+    label: string
+    children: React.ReactNode
+    className?: string
+}) {
+    return (
+        <div className={`rounded-md border border-gray-800 bg-gray-900/70 px-2 py-1 ${className}`}>
+            <div className="mb-1 text-[10px] uppercase text-gray-500">{label}</div>
+            {children}
+        </div>
+    )
+}
+
+function CountZone({ label, value, className = '' }: { label: string; value: string | number; className?: string }) {
+    return (
+        <ZoneBox label={label} className={`flex min-h-12 flex-col justify-between ${className}`}>
+            <div className="text-base font-bold text-gray-100">{value}</div>
+        </ZoneBox>
+    )
+}
+
+function MiniCard({ children, title, card }: { children: React.ReactNode; title?: string; card?: ReplayCard }) {
+    const [hoveredCard, setHoveredCard] = useState<{ card: ReplayCard; x: number; y: number } | null>(null)
+
+    const handleMouseEnter = (e: React.MouseEvent) => {
+        if (card?.image) setHoveredCard({ card, x: e.clientX, y: e.clientY })
+    }
+    const handleMouseLeave = () => setHoveredCard(null)
+
+    return (
+        <>
+            <span
+                className="inline-flex max-w-[156px] rounded border border-gray-700 bg-gray-950 px-1.5 py-0.5 text-[10px] leading-snug text-gray-200"
+                title={title}
+                onMouseEnter={handleMouseEnter}
+                onMouseLeave={handleMouseLeave}
+            >
+                <span className="truncate">{children}</span>
+            </span>
+            {hoveredCard && (
+                <CardPopup card={hoveredCard.card} x={hoveredCard.x} y={hoveredCard.y} />
+            )}
+        </>
+    )
+}
+
+function HandCardTile({ card }: { card: ReplayHandCard }) {
+    const [hoveredCard, setHoveredCard] = useState<{ card: ReplayCard; x: number; y: number } | null>(null)
+    const [imgError, setImgError] = useState(false)
+    const cost = card.effective_cost ?? card.cost
+
+    const handleMouseEnter = (e: React.MouseEvent) => {
+        if (card.image) setHoveredCard({ card, x: e.clientX, y: e.clientY })
+    }
+    const handleMouseLeave = () => setHoveredCard(null)
+
+    return (
+        <>
+            <div
+                className="relative h-14 min-w-0 overflow-hidden rounded border border-gray-700 bg-gray-950"
+                title={`${card.name} | custo ${cost} | counter ${card.counter ?? 0}`}
+                onMouseEnter={handleMouseEnter}
+                onMouseLeave={handleMouseLeave}
+            >
+                {card.image && !imgError ? (
+                    <img
+                        src={card.image}
+                        alt={card.name}
+                        className="h-full w-full object-cover object-top opacity-85"
+                        onError={() => setImgError(true)}
+                    />
+                ) : (
+                    <div className="h-full bg-gray-900" />
+                )}
+                <div className="absolute inset-x-0 bottom-0 bg-black/75 px-1 py-0.5">
+                    <div className="truncate text-[10px] font-semibold leading-tight text-white">{card.name}</div>
+                    <div className="text-[9px] leading-tight text-gray-300">
+                        c{cost}{(card.counter ?? 0) > 0 ? ` / +${card.counter}` : ''}
+                    </div>
+                </div>
+            </div>
+            {hoveredCard && (
+                <CardPopup card={hoveredCard.card} x={hoveredCard.x} y={hoveredCard.y} />
+            )}
+        </>
+    )
+}
+
+function PlayerStatePanel({ title, state, side }: { title: string; state: PlayerSnapshot; side: 'A' | 'B' }) {
+    const color = side === 'A' ? 'text-blue-300' : 'text-red-300'
+    const donRested = Math.max(0, state.don_rested)
+    const activeCharacters = state.characters.filter(c => !c.rested).length
+    const restedCharacters = state.characters.length - activeCharacters
+    const handCards = state.hand_cards || []
+    const mirrored = side === 'A'
+
+    const handZone = (
+        <ZoneBox label={`Mao (${state.hand})`} className="min-h-20 overflow-visible">
+            <div className="grid grid-cols-5 gap-1">
+                {handCards.length > 0 ? handCards.map((card, idx) => (
+                    <HandCardTile key={`${card.code}-${idx}`} card={card} />
+                )) : (
+                    <span className="text-xs text-gray-500">Sem cartas</span>
+                )}
+            </div>
+        </ZoneBox>
+    )
+
+    const middleZone = (
+        <div className="grid grid-cols-3 gap-2">
+            <ZoneBox label="Stage">
+                <div className="truncate text-xs text-gray-200">{state.stage?.name || '-'}</div>
+            </ZoneBox>
+            <ZoneBox label="Leader">
+                <div className="truncate text-xs text-gray-200">{state.leader?.name || '-'}</div>
+            </ZoneBox>
+            <ZoneBox label="DON">
+                <div className="text-xs text-gray-200">
+                    <span className="text-yellow-300">{state.don_available}</span>
+                    <span className="mx-1 text-gray-600">ativo</span>
+                    <span className="text-orange-300">{donRested}</span>
+                    <span className="mx-1 text-gray-600">rest</span>
+                    <span className="text-gray-300">{state.don_total}</span>
+                    <span className="ml-1 text-gray-600">campo</span>
+                </div>
+            </ZoneBox>
+        </div>
+    )
+
+    const charactersZone = (
+        <ZoneBox label="Personagens" className="min-h-0 overflow-hidden">
+            <div className="mb-1 text-[11px] text-gray-500">
+                <span className="text-emerald-300">{activeCharacters}</span> ativos
+                <span className="mx-1 text-gray-600">/</span>
+                <span className="text-orange-300">{restedCharacters}</span> restados
+            </div>
+            <div className="flex flex-wrap gap-1">
+                {state.characters.length > 0 ? state.characters.map((card, idx) => (
+                    <MiniCard
+                        key={`${card.code}-${idx}`}
+                        card={card}
+                        title={`${card.name} | ${card.current_power ?? card.power} poder | ${card.rested ? 'restado' : 'ativo'}`}
+                    >
+                        {card.name}
+                        <span className={card.rested ? 'ml-1 text-orange-300' : 'ml-1 text-emerald-300'}>
+                            {card.rested ? 'rest' : 'ativo'}
+                        </span>
+                    </MiniCard>
+                )) : (
+                    <span className="text-xs text-gray-500">Sem personagens</span>
+                )}
+            </div>
+        </ZoneBox>
+    )
+
+    return (
+        <div className="flex min-h-0 flex-col rounded-lg border border-gray-800 bg-gray-950/70 p-2">
+            <div className="flex items-center justify-between gap-3">
+                <div className={`truncate text-xs font-bold ${color}`}>{title}</div>
+                <div className="text-xs text-gray-500">
+                    Campo {state.characters.length}/5 · Dano {state.stats.damage}
+                </div>
+            </div>
+
+            <div className="mt-2 grid min-h-0 flex-1 grid-cols-[74px_minmax(0,1fr)_74px] grid-rows-[minmax(44px,auto)_auto_minmax(44px,1fr)] gap-2">
+                <div className="row-span-3 grid content-start gap-2">
+                    <CountZone label="Deck" value={state.deck} />
+                    <CountZone label="Trash" value={state.trash} />
+                </div>
+
+                {mirrored ? charactersZone : handZone}
+
+                <CountZone label="Vida" value={state.life} className="row-span-3" />
+
+                {middleZone}
+
+                {mirrored ? handZone : charactersZone}
+            </div>
+        </div>
+    )
+}
+
+function TurnStateSummary({ snapshot, nameA, nameB }: { snapshot?: ReplaySnapshot; nameA: string; nameB: string }) {
+    if (!snapshot) return null
+
+    return (
+        <div className="flex h-full min-h-0 flex-col p-1.5">
+            <div className="grid min-h-0 flex-1 grid-rows-2 gap-1.5">
+                <PlayerStatePanel title={nameB} state={snapshot.B} side="B" />
+                <PlayerStatePanel title={nameA} state={snapshot.A} side="A" />
+            </div>
+        </div>
+    )
 }
 
 function CardPopup({ card, x, y }: { card: ReplayCard; x: number; y: number }) {
@@ -141,13 +376,13 @@ function EventRow({ event, nameA, nameB }: { event: ReplayEvent; nameA: string; 
                             {event.card.name}
                         </span>
                     )}
-                    {!event.card && event.description.slice(0, 60)}
+                    {!event.card && event.description}
                 </div>
                 {event.card && (
-                    <div className="text-xs text-gray-500 truncate">{event.description.slice(0, 70)}</div>
+                    <div className="text-xs leading-relaxed text-gray-400">{event.description}</div>
                 )}
                 {event.target && (
-                    <div className="text-xs text-gray-400">
+                    <div className="text-xs leading-relaxed text-gray-400">
                         → <span
                             className="cursor-pointer hover:underline hover:text-white"
                             onMouseEnter={(e) => event.target && handleMouseEnter(event.target, e)}
@@ -176,7 +411,7 @@ export default function ReplayViewer({ replayData, nameA, nameB, onClose }: Prop
 
     useEffect(() => {
         if (!autoPlay) return
-        if (currentTurnIdx >= totalTurns - 1) { setAutoPlay(false); return }
+        if (currentTurnIdx >= totalTurns - 1) return
         const timer = setTimeout(() => setCurrentTurnIdx(i => i + 1), 1500)
         return () => clearTimeout(timer)
     }, [autoPlay, currentTurnIdx, totalTurns])
@@ -187,18 +422,22 @@ export default function ReplayViewer({ replayData, nameA, nameB, onClose }: Prop
 
     const prevTurn = () => { setAutoPlay(false); setCurrentTurnIdx(i => Math.max(0, i - 1)) }
     const nextTurn = () => { setAutoPlay(false); setCurrentTurnIdx(i => Math.min(totalTurns - 1, i + 1)) }
-    const toggleAuto = () => setAutoPlay(v => !v)
+    const toggleAuto = () => {
+        if (currentTurnIdx >= totalTurns - 1) setCurrentTurnIdx(0)
+        setAutoPlay(v => !v)
+    }
 
     const turnOwner = currentTurn?.events[0]?.player === 'A' ? nameA : nameB
     const isA = currentTurn?.events[0]?.player === 'A'
+    const snapshot = [...(currentTurn?.events || [])].reverse().find(ev => ev.state)?.state
 
     const winnerName = replayData.winner === 'A' ? nameA : replayData.winner === 'B' ? nameB : 'Empate'
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-            <div className="bg-gray-950 border border-gray-700 rounded-2xl w-full max-w-2xl h-[90vh] flex flex-col shadow-2xl">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-1">
+            <div className="bg-gray-950 border border-gray-700 rounded-2xl w-full max-w-[98vw] h-[98vh] flex flex-col shadow-2xl">
                 {/* Header */}
-                <div className="flex items-center justify-between p-4 border-b border-gray-800">
+                <div className="flex flex-shrink-0 items-center justify-between border-b border-gray-800 px-4 py-2">
                     <div>
                         <h2 className="text-lg font-bold text-white">🎬 Replay da Partida</h2>
                         <div className="text-xs text-gray-400 mt-0.5">
@@ -216,7 +455,7 @@ export default function ReplayViewer({ replayData, nameA, nameB, onClose }: Prop
                 </div>
 
                 {/* Turn timeline */}
-                <div className="flex gap-1 px-4 py-2 border-b border-gray-800 overflow-x-auto flex-shrink-0">
+                <div className="flex flex-shrink-0 gap-1 overflow-x-auto border-b border-gray-800 px-4 py-1.5">
                     {turns.map((td, i) => {
                         const owner = td.events.find(e => e.type !== 'turn_start')?.player || td.events[0]?.player
                         const isActive = i === currentTurnIdx
@@ -224,7 +463,7 @@ export default function ReplayViewer({ replayData, nameA, nameB, onClose }: Prop
                             <button
                                 key={i}
                                 onClick={() => { setAutoPlay(false); setCurrentTurnIdx(i) }}
-                                className={`flex-shrink-0 w-8 h-8 rounded-lg text-xs font-bold transition-all ${
+                                className={`flex-shrink-0 h-7 w-7 rounded-lg text-xs font-bold transition-all ${
                                     isActive
                                         ? 'bg-orange-600 text-white scale-110'
                                         : owner === 'A'
@@ -239,7 +478,7 @@ export default function ReplayViewer({ replayData, nameA, nameB, onClose }: Prop
                 </div>
 
                 {/* Current turn header */}
-                <div className={`px-4 py-3 border-b border-gray-800 flex items-center gap-3 ${isA ? 'bg-blue-950/20' : 'bg-red-950/20'}`}>
+                <div className={`flex flex-shrink-0 items-center gap-3 border-b border-gray-800 px-4 py-2 ${isA ? 'bg-blue-950/20' : 'bg-red-950/20'}`}>
                     <div className={`text-sm font-bold ${isA ? 'text-blue-300' : 'text-red-300'}`}>
                         Turno {currentTurn?.turn} — {turnOwner}
                     </div>
@@ -248,22 +487,33 @@ export default function ReplayViewer({ replayData, nameA, nameB, onClose }: Prop
                     </div>
                 </div>
 
-                {/* Events list */}
-                <div ref={eventsRef} className="flex-1 overflow-y-auto p-3 space-y-1">
-                    {currentTurn?.events.map((ev, i) => (
-                        <EventRow key={i} event={ev} nameA={nameA} nameB={nameB} />
-                    ))}
-                    {(!currentTurn || currentTurn.events.filter(e => e.type !== 'turn_start').length === 0) && (
-                        <div className="text-center text-gray-600 text-sm py-8">Sem eventos neste turno</div>
-                    )}
+                <div className="grid min-h-0 flex-1 grid-cols-[minmax(0,1fr)_360px] border-b border-gray-800">
+                    <div className="min-h-0 overflow-hidden border-r border-gray-800">
+                        <TurnStateSummary snapshot={snapshot} nameA={nameA} nameB={nameB} />
+                    </div>
+
+                    {/* Events list */}
+                    <aside className="flex min-h-0 flex-col bg-gray-950">
+                        <div className="border-b border-gray-800 px-3 py-2 text-[11px] font-semibold uppercase tracking-wide text-gray-500">
+                            Eventos do turno
+                        </div>
+                        <div ref={eventsRef} className="min-h-0 flex-1 overflow-y-auto p-3 space-y-1">
+                            {currentTurn?.events.map((ev, i) => (
+                                <EventRow key={i} event={ev} nameA={nameA} nameB={nameB} />
+                            ))}
+                            {(!currentTurn || currentTurn.events.filter(e => e.type !== 'turn_start').length === 0) && (
+                                <div className="text-center text-gray-600 text-sm py-8">Sem eventos neste turno</div>
+                            )}
+                        </div>
+                    </aside>
                 </div>
 
                 {/* Navigation */}
-                <div className="flex items-center justify-between p-4 border-t border-gray-800">
+                <div className="flex h-10 flex-shrink-0 items-center justify-between border-t border-gray-800 px-4 py-1">
                     <button
                         onClick={prevTurn}
                         disabled={currentTurnIdx === 0}
-                        className="px-4 py-2 bg-gray-800 hover:bg-gray-700 disabled:opacity-30 disabled:cursor-not-allowed rounded-lg text-sm transition"
+                        className="rounded-lg bg-gray-800 px-3 py-1 text-sm transition hover:bg-gray-700 disabled:cursor-not-allowed disabled:opacity-30"
                     >
                         ← Anterior
                     </button>
@@ -271,7 +521,7 @@ export default function ReplayViewer({ replayData, nameA, nameB, onClose }: Prop
                     <div className="flex items-center gap-3">
                         <button
                             onClick={toggleAuto}
-                            className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
+                            className={`rounded-lg px-3 py-1 text-sm font-medium transition ${
                                 autoPlay ? 'bg-orange-600 hover:bg-orange-500' : 'bg-gray-700 hover:bg-gray-600'
                             }`}
                         >
@@ -283,7 +533,7 @@ export default function ReplayViewer({ replayData, nameA, nameB, onClose }: Prop
                     <button
                         onClick={nextTurn}
                         disabled={currentTurnIdx === totalTurns - 1}
-                        className="px-4 py-2 bg-gray-800 hover:bg-gray-700 disabled:opacity-30 disabled:cursor-not-allowed rounded-lg text-sm transition"
+                        className="rounded-lg bg-gray-800 px-3 py-1 text-sm transition hover:bg-gray-700 disabled:cursor-not-allowed disabled:opacity-30"
                     >
                         Próximo →
                     </button>

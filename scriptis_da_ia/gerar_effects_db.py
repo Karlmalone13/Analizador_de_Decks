@@ -916,9 +916,12 @@ def parse_rest_opp(text):
     m = re.search(r"rest (?:up to )?(\d+) of your opponent.{0,20}(?:characters?|cards?)", t)
     if m:
         cost_m = re.search(r'cost of (\d+) or less', t)
+        power_m = re.search(r'(\d+) base power or less', t)
         step = {'action': 'rest_opp_character', 'count': int(m.group(1))}
         if cost_m:
             step['cost_lte'] = int(cost_m.group(1))
+        if power_m:
+            step['power_lte'] = int(power_m.group(1))
         steps.append(step)
 
     return steps

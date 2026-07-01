@@ -52506,7 +52506,8 @@
         "steps": [
           {
             "action": "rest_opp_character",
-            "count": 1
+            "count": 1,
+            "power_lte": 7000
           }
         ]
       },

@@ -507,6 +507,11 @@ def effective_hand_play_cost(p: GameState, card: Card) -> int:
     return max(0, cost)
 
 
+def _norm_type_text(text: str) -> str:
+    """Normaliza typos conhecidos vindos do texto bruto da base."""
+    return (text or '').lower().replace('whitebeard piratess', 'whitebeard pirates')
+
+
 def _ko_sentence(card: 'Card') -> str:
     text = ((card.card_text or '') or get_card_flags(card.code).get('text', '')).lower()
     if not text:
@@ -1885,10 +1890,10 @@ class EffectExecutor:
             if conds['leader_is'].lower() not in me.leader.name.lower():
                 return False
         if 'leader_type_includes' in conds:
-            if conds['leader_type_includes'].lower() not in me.leader.sub_types.lower():
+            if _norm_type_text(conds['leader_type_includes']) not in _norm_type_text(me.leader.sub_types):
                 return False
         if 'leader_type' in conds:
-            if conds['leader_type'].lower() not in me.leader.sub_types.lower():
+            if _norm_type_text(conds['leader_type']) not in _norm_type_text(me.leader.sub_types):
                 return False
         if conds.get('leader_multicolor'):
             colors = set(me.leader.color.replace('/', ' ').split())
@@ -5427,6 +5432,7 @@ class OPTCGMatch:
         # None = modo normal (sem logging extra). Definida para uma lista vazia
         # por simulate_replay() antes de chamar setup()+play_turn().
         self.replay_log: list | None = None
+        self._suppress_replay_log: bool = False
         # nomes dos jogadores para o replay (preenchidos por simulate_replay)
         self._name_a = 'Player A'
         self._name_b = 'Player B'
@@ -6094,11 +6100,12 @@ class OPTCGMatch:
             attacker = obj
             if attacker.rested:
                 return False
-            self._attach_don_for_attack(attacker, ttype, tgt, p, opp, engine, verbose)
+            attached = self._attach_don_for_attack(attacker, ttype, tgt, p, opp, engine, verbose)
             if verbose:
                 tgt_name = 'Leader' if ttype == 'leader' else (tgt.name[:20] if tgt else '?')
                 print(f'    {attacker.name[:20]} ({attacker.effective_power(True)}pwr) ataca {tgt_name}')
-            if self._execute_attack(attacker, ttype, tgt, p, opp, engine, verbose=verbose):
+            if self._execute_attack(attacker, ttype, tgt, p, opp, engine, verbose=verbose,
+                                    attached_don=attached):
                 return True
         return False
 
@@ -6121,14 +6128,19 @@ class OPTCGMatch:
         Se `amostras` for None (ex: chamada legada sem Monte Carlo
         disponível), cai numa única rodada contra o estado real de opp.
         """
-        if not amostras:
-            return self._simulate_sequence_once(p, opp, first_action, max_steps, amostra=None)
+        old_suppress = self._suppress_replay_log
+        self._suppress_replay_log = True
+        try:
+            if not amostras:
+                return self._simulate_sequence_once(p, opp, first_action, max_steps, amostra=None)
 
-        valores = [
-            self._simulate_sequence_once(p, opp, first_action, max_steps, amostra=amostra)
-            for amostra in amostras
-        ]
-        return sum(valores) / len(valores)
+            valores = [
+                self._simulate_sequence_once(p, opp, first_action, max_steps, amostra=amostra)
+                for amostra in amostras
+            ]
+            return sum(valores) / len(valores)
+        finally:
+            self._suppress_replay_log = old_suppress
 
     def _simulate_sequence_once(self, p, opp, first_action, max_steps=8, amostra=None):
         """
@@ -6300,7 +6312,7 @@ class OPTCGMatch:
     def _attach_don_for_attack(self, attacker, ttype, tgt, p, opp, engine, verbose):
         """Anexa DON a este ataque, se ajudar a passar a defesa."""
         if p.don_available <= 0:
-            return
+            return 0
         if ttype == 'leader':
             alvo_power = opp.leader.power
         else:
@@ -6319,6 +6331,8 @@ class OPTCGMatch:
                 p.don_available -= need
                 if verbose:
                     print(f'    anexou {need} DON em {attacker.name[:20]}')
+                return need
+        return 0
 
     def _play_card(self, card: Card, p: GameState, opp: GameState,
                    ee: EffectExecutor, verbose: bool = False):
@@ -6387,7 +6401,7 @@ class OPTCGMatch:
     def _execute_attack(self, attacker: Card, target_type: str,
                         target: Optional[Card], p: GameState,
                         opp: GameState, engine: DecisionEngine,
-                        verbose: bool = False) -> bool:
+                        verbose: bool = False, attached_don: int = 0) -> bool:
         """
         Sequência: tap atacante → blocker → counter → damage.
         Com verbose, narra blocker/counter/dano.
@@ -6403,9 +6417,12 @@ class OPTCGMatch:
             attacker.rested = True
         # Replay event: ataque declarado
         tgt_name = 'Leader' if target_type == 'leader' else (target.name if target else '?')
+        atk_power_preview = attacker.effective_power(True)
+        don_txt = f' anexando {attached_don} DON' if attached_don else ' sem anexar DON'
         self._log_event(p, 'attack', card=attacker, target=target if target_type != 'leader' else opp.leader,
-                        description=f'{attacker.name} ataca {tgt_name}',
-                        phase='attack')
+                        description=f'{attacker.name} ataca {tgt_name}{don_txt} ({atk_power_preview} poder)',
+                        phase='attack',
+                        extra={'attached_don': attached_don, 'attack_power': atk_power_preview})
 
         # Paga o custo de lock_opp_attack_unless_pays (OP08-043), se o
         # atacante estiver sob essa trava. A viabilidade ja foi checada na
@@ -6633,7 +6650,7 @@ class OPTCGMatch:
                    target: 'Card' = None, description: str = '', phase: str = 'main',
                    extra: dict = None):
         """Registra um evento estruturado se replay_log estiver ativo."""
-        if self.replay_log is None:
+        if self.replay_log is None or self._suppress_replay_log:
             return
 
         def card_dict(c):
@@ -6649,6 +6666,42 @@ class OPTCGMatch:
                 'color': c.color or '',
             }
 
+        def state_dict(s: GameState):
+            don_total = 10 - s.don_deck
+            return {
+                'leader': card_dict(s.leader),
+                'life': s.life_count(),
+                'hand': len(s.hand),
+                'hand_cards': [
+                    {
+                        **card_dict(c),
+                        'counter': c.counter,
+                        'effective_cost': effective_hand_play_cost(s, c),
+                    }
+                    for c in s.hand
+                ],
+                'deck': len(s.deck),
+                'trash': len(s.trash),
+                'don_available': s.don_available,
+                'don_rested': s.don_rested,
+                'don_total': don_total,
+                'stage': card_dict(s.field_stage),
+                'characters': [
+                    {
+                        **card_dict(c),
+                        'rested': bool(getattr(c, 'rested', False)),
+                        'current_power': c.effective_power(True),
+                    }
+                    for c in s.field_chars
+                ],
+                'stats': {
+                    'damage': s.dmg_dealt,
+                    'counters': s.counters_used,
+                    'searchers': s.searchers_used,
+                    'triggers': s.triggers_activated,
+                },
+            }
+
         player_id = 'A' if p is self.state_a else 'B'
         player_name = self._name_a if player_id == 'A' else self._name_b
         event = {
@@ -6660,6 +6713,10 @@ class OPTCGMatch:
             'card':        card_dict(card),
             'target':      card_dict(target),
             'description': description,
+            'state':       {
+                'A': state_dict(self.state_a),
+                'B': state_dict(self.state_b),
+            },
         }
         if extra:
             event.update(extra)
@@ -6710,6 +6767,8 @@ class OPTCGMatch:
         if self.main_phase(p, opp, verbose=verbose):
             return 'A' if p is self.state_a else 'B'
         self.end_phase(p, opp, verbose=verbose)
+        self._log_event(p, 'turn_end', phase='end',
+                        description=f'Fim do turno {self.global_turn}')
         if not p.deck:
             return 'B' if p is self.state_a else 'A'
         if not opp.deck:

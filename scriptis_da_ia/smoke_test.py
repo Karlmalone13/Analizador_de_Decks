@@ -1480,6 +1480,29 @@ ee2.execute(op14028, 'your_turn')
 check('OP14-028 nao dispara KO via your_turn (effet agora e when_rested, nao your_turn)',
       opp2_target in opp2.field_chars)
 
+me, opp = me_opp()
+shanks = mk('OP14-027', 'Shanks', power=9000)
+opp_7000 = mk('OPP-7000', 'Alvo 7000', power=7000)
+opp_9000 = mk('OPP-9000', 'Alvo 9000', power=9000)
+opp.field_chars = [opp_9000, opp_7000]
+ee = EffectExecutor(me, opp)
+log = ee.execute(shanks, 'when_rested')
+check('OP14-027 when_rested respeita power_lte=7000 ao restar alvo',
+      opp_7000.rested and not opp_9000.rested and any('restou' in x for x in log))
+
+me, opp = me_opp()
+me.leader = mk('LD-WB', 'Whitebeard Leader', power=5000, card_type='LEADER',
+               sub_types='Whitebeard Pirates')
+atmos = mk('OP08-040', 'Atmos', power=5000, sub_types='Whitebeard Pirates')
+opp_small = mk('OPP-C4', 'Alvo custo 4', cost=4)
+opp_big = mk('OPP-C5', 'Alvo custo 5', cost=5)
+opp.field_chars = [opp_big, opp_small]
+ee = EffectExecutor(me, opp)
+log = ee.execute(atmos, 'on_play')
+check('OP08-040 Atmos tolera typo Piratess e ativa bounce com lider Whitebeard Pirates',
+      opp_small in opp.hand and opp_small not in opp.field_chars and opp_big in opp.field_chars
+      and any('bounce' in x for x in log))
+
 # ── 28. grant_ko_immunity_type (OP09-033 Nico Robin): imunidade temporaria
 # a KO por efeito para Characters do tipo proprio. ──
 me, opp = me_opp()

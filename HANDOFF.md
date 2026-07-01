@@ -1,5 +1,44 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-01 (15) - Claude
+
+**Feito — revisão e commit do trabalho do Codex (sessão anterior).**
+Nenhum código alterado, só commit + push do estado local.
+
+---
+
+## 2026-07-02 - Codex
+
+**Feito — primeira versão do compliance checker:** criado
+`scriptis_da_ia/audit_card_effects.py`. Ele roda partidas reais e instrumenta
+`EffectExecutor.execute()` / `_execute_step()` para medir:
+- triggers parseados chamados;
+- triggers chamados que produziram log observável;
+- actions executadas;
+- actions executadas sem log;
+- triggers de cartas presentes na amostra que nunca foram chamados.
+
+**Validação:** `python -m py_compile scriptis_da_ia\audit_card_effects.py`;
+`python audit_card_effects.py --n 3 --seed 42 --top 8 --min-calls 1`;
+`python audit_card_effects.py --n 10 --seed 42 --top 12 --min-calls 2`.
+As duas execuções terminaram sem exceções.
+
+**Leitura importante:** isto é triagem por evidência de execução, não prova
+oficial carta-a-carta. Suspeitos persistentes da amostra de 10 partidas:
+`OP08-040 Atmos` (`on_play`) e `OP14-027 Shanks` (`when_rested`) foram chamados
+muitas vezes sem log observável; também apareceram actions como `look_top_deck`,
+`lock_opp_don`, `keyword_blocker`, `substitute_removal` e `immunity` sem log,
+que podem ser no-op legítimo ou falta de mensagem/efeito observável.
+
+**Investigação posterior:** `OP08-040 Atmos` era bug real causado por typo no
+dado bruto (`Whitebeard Piratess`). A engine agora normaliza esse typo ao
+checar `leader_type(_includes)`, e o smoke cobre o bounce com Leader
+`Whitebeard Pirates`. `OP14-027 Shanks` tinha filtro perdido no parser/banco:
+`rest_opp_character` agora captura `power_lte` para "base power or less", e o
+banco atual recebeu `power_lte=7000`. No rerun do compliance, Atmos sumiu dos
+suspeitos; Shanks passou de "chamado sem log" para "nunca chamado" na amostra,
+indicando problema de uso/seleção na IA ou baixa oportunidade, não handler.
+
 ## 2026-07-02 (14) - Claude — ÚLTIMA DESTA SESSÃO
 
 **Feito — Replay Viewer com popup de cartas + compliance checker infrastructure.**

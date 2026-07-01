@@ -80079,7 +80079,8 @@
   "effects": [
    {
     "action": "rest_opp_character",
-    "trigger": "when_rested"
+    "trigger": "when_rested",
+    "power_lte": 7000
    },
    {
     "action": "debuff_power",
