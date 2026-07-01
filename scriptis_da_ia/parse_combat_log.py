@@ -85,13 +85,18 @@ RE_LEADER   = re.compile(r'^\[(.+?)\] Leader is (.+?) \["([A-Z0-9]+-\d+)">')
 RE_DRAW_DON = re.compile(r'^\[(.+?)\] Draw (\d+) Don')
 RE_DREW     = re.compile(r'^\[(.+?)\] Drew card from deck: (.+?) \["([A-Z0-9]+-\d+)">')
 RE_DEPLOY   = re.compile(r'^\[(.+?)\] Deploy (.+?) \["([A-Z0-9]+-\d+)">')
-RE_ATTACH   = re.compile(r'^\[(.+?)\] Attach (\d+) Don to (.+?) \["([A-Z0-9]+-\d+)"\] \((\d+) Total\)')
-RE_ATTACK   = re.compile(r'^\[(.+?)\] (.+?) \["[A-Z0-9]+-\d+"\] attacking (.+)')
-RE_BLOCKS   = re.compile(r'^\[(.+?)\] (.+?) \["([A-Z0-9]+-\d+)"\] Blocks')
+# Formato do log: ["CODE">DisplayName]  -- o fechamento e ">NAME]", nao somente "]"
+# Por isso os patterns de card ref usam  \["(CODE)">[^\]]*\]  em vez de  \["(CODE)"\]
+_CR  = r'\["([A-Z0-9]+-\d+)"[^\]]*\]'   # captura code, ignora o resto ate fechar ]
+_CRn = r'\["[A-Z0-9]+-\d+"[^\]]*\]'     # sem captura (so consome o token)
+
+RE_ATTACH   = re.compile(r'^\[(.+?)\] Attach (\d+) Don to (.+?) ' + _CR + r' \((\d+) Total\)')
+RE_ATTACK   = re.compile(r'^\[(.+?)\] (.+?) ' + _CR + r' attacking (.+)')
+RE_BLOCKS   = re.compile(r'^\[(.+?)\] (.+?) ' + _CR + r' Blocks')
 RE_HIT      = re.compile(r'^(.+?) hit for (\d+) damage')
 RE_FAILS    = re.compile(r'^Attack Fails')
-RE_DISCARD  = re.compile(r'^\[(.+?)\] Discard (.+?) \["([A-Z0-9]+-\d+)"\] for Counter')
-RE_EFFECT   = re.compile(r'^\[(.+?)\] (.+?) \["([A-Z0-9]+-\d+)"\]: (.+)')
+RE_DISCARD  = re.compile(r'^\[(.+?)\] Discard (.+?) ' + _CR + r' for Counter')
+RE_EFFECT   = re.compile(r'^\[(.+?)\] (.+?) ' + _CR + r': (.+)')
 RE_END      = re.compile(r'^\[(.+?)\] End Turn')
 RE_HAND     = re.compile(r'^\[(.+?)\] Hand: \[(.*?)\]')
 RE_BOARD    = re.compile(r'^\[(.+?)\] Board: \[(.*?)\]')
@@ -245,12 +250,19 @@ def parse_log(log_path: str) -> tuple:
                 continue
 
             m = RE_ATTACK.match(line)
-            if m and m.group(1) == player:
-                current_attack = {'type': 'attack', 'attacker': m.group(2),
-                                  'target': m.group(3), 'result': None,
-                                  'damage': None, 'blocked_by': None,
-                                  'countered_by': []}
-                actions.append(current_attack); continue
+            if m:
+                # Fecha ataque anterior sem resultado (hit sem "hit for N damage")
+                if current_attack and current_attack['result'] is None:
+                    current_attack['result'] = 'hit'
+                    current_attack = None
+                if m.group(1) == player:
+                    current_attack = {'type': 'attack', 'attacker': m.group(2),
+                                      'attacker_code': m.group(3),
+                                      'target': m.group(4), 'result': None,
+                                      'damage': None, 'blocked_by': None,
+                                      'countered_by': []}
+                    actions.append(current_attack)
+                continue
 
             m = RE_BLOCKS.match(line)
             if m and m.group(1) != player and current_attack:
@@ -285,6 +297,10 @@ def parse_log(log_path: str) -> tuple:
                     actions.append({'type': 'activate', 'card': src_code,
                                     'card_name': src_name, 'effects': [fx]})
                 continue
+
+        # Fecha ataque pendente ao fim do turno (acertou sem linha "hit for N")
+        if current_attack and current_attack['result'] is None:
+            current_attack['result'] = 'hit'
 
         all_snap = ([l for l in blines
                      if RE_HAND.match(l) or RE_BOARD.match(l)

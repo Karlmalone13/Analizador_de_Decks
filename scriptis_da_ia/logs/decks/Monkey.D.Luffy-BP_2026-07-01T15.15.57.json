@@ -1,0 +1,71 @@
+{
+  "cards": [
+    {
+      "code": "OP11-054",
+      "name": "Nami",
+      "count": 4
+    },
+    {
+      "code": "OP05-067",
+      "name": "Zorojuro",
+      "count": 4
+    },
+    {
+      "code": "OP06-119",
+      "name": "Sanji",
+      "count": 3
+    },
+    {
+      "code": "ST18-001",
+      "name": "Usohachi",
+      "count": 3
+    },
+    {
+      "code": "OP08-076",
+      "name": "It's To Die For...!",
+      "count": 3
+    },
+    {
+      "code": "OP09-078",
+      "name": "Gum Gum Giant",
+      "count": 2
+    },
+    {
+      "code": "EB03-034",
+      "name": "Charlotte Linlin",
+      "count": 2
+    },
+    {
+      "code": "P-107",
+      "name": "Gol D. Roger",
+      "count": 2
+    },
+    {
+      "code": "OP16-056",
+      "name": "Mr. 3 (Galdino)",
+      "count": 2
+    },
+    {
+      "code": "OP07-064",
+      "name": "OP07-064",
+      "count": 2
+    },
+    {
+      "code": "OP07-051",
+      "name": "Boa Hancock",
+      "count": 1
+    },
+    {
+      "code": "OP15-078",
+      "name": "Mamaragan",
+      "count": 1
+    },
+    {
+      "code": "OP11-080",
+      "name": "OP11-080",
+      "count": 1
+    }
+  ],
+  "total_seen": 30,
+  "leader": "OP11-040"
+}

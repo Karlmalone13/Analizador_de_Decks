@@ -1,5 +1,30 @@
 [
   {
+    "id": "2026-07-01T14.22.50",
+    "friendly_name": "Nami-BY_x_Imu-B",
+    "date": "2026-07-01",
+    "p1": {
+      "name": "Jack#5459",
+      "leader_code": "OP11-041",
+      "leader_name": "Nami",
+      "slug": "Nami-BY"
+    },
+    "p2": {
+      "name": "Karlmalone#2854",
+      "leader_code": "OP13-079",
+      "leader_name": "Imu",
+      "slug": "Imu-B"
+    },
+    "turns": 17,
+    "winner": null,
+    "log_file": "raw/Nami-BY_x_Imu-B_2026-07-01T14.22.50.log",
+    "parsed_file": "parsed/Nami-BY_x_Imu-B_2026-07-01T14.22.50.json",
+    "deck_files": {
+      "Jack#5459": "decks/Nami-BY_2026-07-01T14.22.50.json",
+      "Karlmalone#2854": "decks/Imu-B_2026-07-01T14.22.50.json"
+    }
+  },
+  {
     "id": "2026-07-01T12.46.16",
     "friendly_name": "Marshall.D.Teach-BY_x_Lucy-RB",
     "date": "2026-07-01",
@@ -25,28 +50,28 @@
     }
   },
   {
-    "id": "2026-07-01T14.22.50",
-    "friendly_name": "Nami-BY_x_Imu-B",
+    "id": "2026-07-01T15.15.57",
+    "friendly_name": "Imu-B_x_Monkey.D.Luffy-BP",
     "date": "2026-07-01",
     "p1": {
-      "name": "Jack#5459",
-      "leader_code": "OP11-041",
-      "leader_name": "Nami",
-      "slug": "Nami-BY"
-    },
-    "p2": {
       "name": "Karlmalone#2854",
       "leader_code": "OP13-079",
       "leader_name": "Imu",
       "slug": "Imu-B"
     },
+    "p2": {
+      "name": "Sebs#6211",
+      "leader_code": "OP11-040",
+      "leader_name": "Monkey D. Luffy",
+      "slug": "Monkey.D.Luffy-BP"
+    },
     "turns": 17,
     "winner": null,
-    "log_file": "raw/Nami-BY_x_Imu-B_2026-07-01T14.22.50.log",
-    "parsed_file": "parsed/Nami-BY_x_Imu-B_2026-07-01T14.22.50.json",
+    "log_file": "raw/Imu-B_x_Monkey.D.Luffy-BP_2026-07-01T15.15.57.log",
+    "parsed_file": "parsed/Imu-B_x_Monkey.D.Luffy-BP_2026-07-01T15.15.57.json",
     "deck_files": {
-      "Jack#5459": "decks/Nami-BY_2026-07-01T14.22.50.json",
-      "Karlmalone#2854": "decks/Imu-B_2026-07-01T14.22.50.json"
+      "Karlmalone#2854": "decks/Imu-B_2026-07-01T15.15.57.json",
+      "Sebs#6211": "decks/Monkey.D.Luffy-BP_2026-07-01T15.15.57.json"
     }
   }
 ]

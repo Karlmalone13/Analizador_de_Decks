@@ -30,7 +30,9 @@
           "type": "play",
           "card": "OP15-053",
           "card_name": "Rebecca",
-          "effects": []
+          "effects": [
+            "<b>Reveal and Draw Rebecca [\"OP15-053\">OP15-053]</b>"
+          ]
         }
       ],
       "snapshot": {
@@ -124,16 +126,37 @@
       "don_drawn": 2,
       "actions": [
         {
+          "type": "attack",
+          "attacker": "Lucy",
+          "attacker_code": "OP15-002",
+          "target": "Marshall D. Teach [\"OP16-080\">OP16-080]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
           "type": "play",
           "card": "OP15-053",
           "card_name": "Rebecca",
-          "effects": []
+          "effects": [
+            "<b>Reveal and Draw Dressrosa Kingdom [\"OP15-057\">OP15-057]</b>"
+          ]
         },
         {
           "type": "play",
           "card": "OP15-057",
           "card_name": "Dressrosa Kingdom",
-          "effects": []
+          "effects": [
+            "Draw 1 Card"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP15-053",
+          "to_name": "Rebecca",
+          "total": 1
         }
       ],
       "snapshot": {
@@ -178,6 +201,26 @@
       },
       "don_drawn": 2,
       "actions": [
+        {
+          "type": "activate",
+          "card": "OP09-099",
+          "card_name": "Fullalead",
+          "effects": [
+            "Rest Fullalead [\"OP09-099\">OP09-099]",
+            "Trash Shiryu [\"OP16-108\">OP16-108]",
+            "<b>Reveal and Draw Catarina Devon [\"OP16-104\">OP16-104]</b>"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Marshall D. Teach",
+          "attacker_code": "OP16-080",
+          "target": "Lucy [\"OP15-002\">OP15-002]",
+          "result": null,
+          "damage": null,
+          "blocked_by": "OP15-053",
+          "countered_by": []
+        },
         {
           "type": "play",
           "card": "OP09-086",
@@ -230,7 +273,37 @@
         "code": "OP06-058"
       },
       "don_drawn": 2,
-      "actions": [],
+      "actions": [
+        {
+          "type": "activate",
+          "card": "OP10-060",
+          "card_name": "Bari-Bari Pistol",
+          "effects": [
+            "Rest 5 Don",
+            "Send Jesus Burgess [\"OP09-086\">OP09-086] to Deck Bottom"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Lucy",
+          "attacker_code": "OP15-002",
+          "target": "Marshall D. Teach [\"OP16-080\">OP16-080]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP16-110"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP15-002",
+          "card_name": "Lucy",
+          "effects": [
+            "Draw 1 Card"
+          ]
+        }
+      ],
       "snapshot": {
         "Karlmalone#2854": {
           "hand": [
@@ -285,10 +358,37 @@
           "effects": []
         },
         {
+          "type": "activate",
+          "card": "OP09-099",
+          "card_name": "Fullalead",
+          "effects": [
+            "Rest Fullalead [\"OP09-099\">OP09-099]",
+            "Trash Catarina Devon [\"OP16-104\">OP16-104]",
+            "<b>Reveal and Draw Jesus Burgess [\"OP09-086\">OP09-086]</b>"
+          ]
+        },
+        {
           "type": "play",
           "card": "OP09-086",
           "card_name": "Jesus Burgess",
           "effects": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP16-080",
+          "to_name": "Marshall D. Teach",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Marshall D. Teach",
+          "attacker_code": "OP16-080",
+          "target": "Lucy [\"OP15-002\">OP15-002]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
         }
       ],
       "snapshot": {
@@ -340,7 +440,36 @@
         "code": "OP15-020"
       },
       "don_drawn": 2,
-      "actions": [],
+      "actions": [
+        {
+          "type": "activate",
+          "card": "OP06-058",
+          "card_name": "Gravity Blade Raging Tiger",
+          "effects": [
+            "Rest 7 Don",
+            "Send Jesus Burgess [\"OP09-086\">OP09-086] to Deck Bottom",
+            "Send Doc Q [\"OP16-109\">OP16-109] to Deck Bottom"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP15-002",
+          "card_name": "Lucy",
+          "effects": [
+            "Draw 1 Card"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Lucy",
+          "attacker_code": "OP15-002",
+          "target": "Marshall D. Teach [\"OP16-080\">OP16-080]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
       "snapshot": {
         "Karlmalone#2854": {
           "hand": [
@@ -394,10 +523,40 @@
       "don_drawn": 2,
       "actions": [
         {
+          "type": "activate",
+          "card": "OP09-096",
+          "card_name": "This is MY AGE!!!!",
+          "effects": [
+            "Rest 1 Don",
+            "<b>Reveal and Draw ZEHAHAHAHA [\"OP16-116\">OP16-116]</b>",
+            "Trash 2 Remaining Cards"
+          ]
+        },
+        {
           "type": "play",
           "card": "OP16-108",
           "card_name": "Shiryu",
-          "effects": []
+          "effects": [
+            "Trash Bartholomew Kuma [\"OP12-119\">OP12-119]",
+            "Add Shiryu [\"OP16-108\">OP16-108] to top of Life"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP16-080",
+          "to_name": "Marshall D. Teach",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Marshall D. Teach",
+          "attacker_code": "OP16-080",
+          "target": "Lucy [\"OP15-002\">OP15-002]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
         }
       ],
       "snapshot": {
@@ -460,13 +619,54 @@
           "type": "play",
           "card": "OP15-046",
           "card_name": "Sabo",
-          "effects": []
+          "effects": [
+            "Activates Fire Fist [\"OP15-020\">OP15-020]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP15-020",
+          "card_name": "Fire Fist",
+          "effects": [
+            "Buff Lucy [\"OP15-002\">OP15-002] 3000",
+            "Grant Shiryu [\"OP16-108\">OP16-108] -8000 until next turn end",
+            "Trash Cavendish [\"OP10-045\">OP10-045]",
+            "Trash It's a Memento of Him, and No One Else Can Have It [\"OP15-054\">OP15-054]",
+            "Destroy Shiryu [\"OP16-108\">OP16-108]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP15-002",
+          "card_name": "Lucy",
+          "effects": [
+            "Draw 1 Card"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Lucy",
+          "attacker_code": "OP15-002",
+          "target": "Marshall D. Teach [\"OP16-080\">OP16-080]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
         },
         {
           "type": "play",
           "card": "OP15-040",
           "card_name": "Viola",
-          "effects": []
+          "effects": [
+            "<b>Reveal and Draw Fire Fist [\"OP15-020\">OP15-020]</b>"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP15-053",
+          "to_name": "Rebecca",
+          "total": 1
         }
       ],
       "snapshot": {
@@ -532,10 +732,50 @@
       "don_drawn": 2,
       "actions": [
         {
+          "type": "activate",
+          "card": "OP09-096",
+          "card_name": "This is MY AGE!!!!",
+          "effects": [
+            "Rest 1 Don",
+            "<b>Reveal and Draw Doc Q [\"OP16-109\">OP16-109]</b>",
+            "Trash 2 Remaining Cards"
+          ]
+        },
+        {
           "type": "play",
           "card": "OP16-109",
           "card_name": "Doc Q",
           "effects": []
+        },
+        {
+          "type": "activate",
+          "card": "OP16-116",
+          "card_name": "ZEHAHAHAHA",
+          "effects": [
+            "Rest 8 Don",
+            "Deploy Marshall D. Teach [\"OP09-093\">OP09-093]",
+            "Send 1 Life to Hand"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP09-093",
+          "card_name": "Marshall D. Teach",
+          "effects": [
+            "Nullify effects of Lucy [\"OP15-002\">OP15-002]",
+            "Sabo [\"OP15-046\">OP15-046] can't attack next turn",
+            "Nullify effects of Sabo [\"OP15-046\">OP15-046] until next turn end!"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Marshall D. Teach",
+          "attacker_code": "OP16-080",
+          "target": "Lucy [\"OP15-002\">OP15-002]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": "OP15-053",
+          "countered_by": []
         }
       ],
       "snapshot": {
@@ -609,7 +849,47 @@
           "type": "play",
           "card": "OP15-040",
           "card_name": "Viola",
-          "effects": []
+          "effects": [
+            "<b>Reveal and Draw Follow... me... and... I... will... guide... you... all...!!!! [\"OP10-059\">OP10-059]</b>"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP15-020",
+          "card_name": "Fire Fist",
+          "effects": [
+            "Rest 7 Don",
+            "Buff Lucy [\"OP15-002\">OP15-002] 3000",
+            "Grant Marshall D. Teach [\"OP09-093\">OP09-093] -8000 until next turn end"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP15-002",
+          "card_name": "Lucy",
+          "effects": [
+            "Draw 1 Card"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP05-019",
+          "card_name": "Fire Fist",
+          "effects": [
+            "Rest 2 Don",
+            "Buff Marshall D. Teach [\"OP09-093\">OP09-093] -4000",
+            "Destroy Marshall D. Teach [\"OP09-093\">OP09-093]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Lucy",
+          "attacker_code": "OP15-002",
+          "target": "Marshall D. Teach [\"OP16-080\">OP16-080]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
         }
       ],
       "snapshot": {
@@ -682,7 +962,63 @@
         "code": "OP09-093"
       },
       "don_drawn": 0,
-      "actions": [],
+      "actions": [
+        {
+          "type": "activate",
+          "card": "OP16-115",
+          "card_name": "Black Vortex",
+          "effects": [
+            "Rest 1 Don"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP16-080",
+          "to_name": "Marshall D. Teach",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Marshall D. Teach",
+          "attacker_code": "OP16-080",
+          "target": "Lucy [\"OP15-002\">OP15-002]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP16-116",
+          "card_name": "ZEHAHAHAHA",
+          "effects": [
+            "Rest 8 Don",
+            "Deploy Marshall D. Teach [\"OP09-093\">OP09-093]",
+            "Send 1 Life to Hand"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP09-093",
+          "card_name": "Marshall D. Teach",
+          "effects": [
+            "Nullify effects of Lucy [\"OP15-002\">OP15-002]",
+            "Sabo [\"OP15-046\">OP15-046] can't attack next turn",
+            "Nullify effects of Sabo [\"OP15-046\">OP15-046] until next turn end!"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP09-099",
+          "card_name": "Fullalead",
+          "effects": [
+            "Rest Fullalead [\"OP09-099\">OP09-099]",
+            "Trash Bartholomew Kuma [\"OP12-119\">OP12-119]",
+            "<b>Reveal and Draw This is MY AGE!!!! [\"OP09-096\">OP09-096]</b>"
+          ]
+        }
+      ],
       "snapshot": {
         "Karlmalone#2854": {
           "hand": [
@@ -761,7 +1097,66 @@
           "type": "play",
           "card": "OP05-015",
           "card_name": "Belo Betty",
-          "effects": []
+          "effects": [
+            "<b>Reveal and Draw Fire Fist [\"OP05-019\">OP05-019]</b>"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP15-021",
+          "card_name": "Just Watch Me... Ace!!!",
+          "effects": [
+            "Rest 1 Don",
+            "Buff Marshall D. Teach [\"OP09-093\">OP09-093] -3000"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP05-019",
+          "card_name": "Fire Fist",
+          "effects": [
+            "Rest 2 Don",
+            "Buff Marshall D. Teach [\"OP09-093\">OP09-093] -4000",
+            "Destroy Doc Q [\"OP16-109\">OP16-109]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP10-060",
+          "card_name": "Bari-Bari Pistol",
+          "effects": [
+            "Rest 5 Don",
+            "Send Marshall D. Teach [\"OP09-093\">OP09-093] to Deck Bottom"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP15-002",
+          "card_name": "Lucy",
+          "effects": [
+            "Draw 1 Card"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Lucy",
+          "attacker_code": "OP15-002",
+          "target": "Marshall D. Teach [\"OP16-080\">OP16-080]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP09-086"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP10-059",
+          "card_name": "Follow... me... and... I... will... guide... you... all...!!!!",
+          "effects": [
+            "Rest 1 Don",
+            "<b>Reveal and Draw Cavendish [\"OP10-045\">OP10-045]</b>"
+          ]
         }
       ],
       "snapshot": {
@@ -846,13 +1241,39 @@
           "type": "play",
           "card": "OP16-119",
           "card_name": "Marshall D. Teach",
-          "effects": []
+          "effects": [
+            "Added card to top of Life from Hand"
+          ]
         },
         {
           "type": "play",
           "card": "OP09-095",
           "card_name": "Laffitte",
-          "effects": []
+          "effects": [
+            "Rest 1 Don",
+            "Rest Laffitte [\"OP09-095\">OP09-095]",
+            "<b>Reveal and Draw Marshall D. Teach [\"OP09-093\">OP09-093]</b>"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Marshall D. Teach",
+          "attacker_code": "OP16-080",
+          "target": "Lucy [\"OP15-002\">OP15-002]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": "OP15-046",
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP09-099",
+          "card_name": "Fullalead",
+          "effects": [
+            "Rest Fullalead [\"OP09-099\">OP09-099]",
+            "Trash This is MY AGE!!!! [\"OP09-096\">OP09-096]",
+            "<b>Reveal and Draw Catarina Devon [\"OP16-104\">OP16-104]</b>"
+          ]
         }
       ],
       "snapshot": {
@@ -937,10 +1358,64 @@
       "don_drawn": 0,
       "actions": [
         {
+          "type": "attack",
+          "attacker": "Belo Betty",
+          "attacker_code": "OP05-015",
+          "target": "Laffitte [\"OP09-095\">OP09-095]",
+          "result": null,
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
           "type": "play",
           "card": "OP15-046",
           "card_name": "Sabo",
-          "effects": []
+          "effects": [
+            "Activates It's a Memento of Him, and No One Else Can Have It [\"OP15-054\">OP15-054]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP15-054",
+          "card_name": "It's a Memento of Him, and No One Else Can Have It",
+          "effects": [
+            "Draw 2 Card",
+            "Trash Would You Let Me Eat... The Flame-Flame Fruit? [\"OP15-056\">OP15-056]",
+            "Deploy Cavendish [\"OP10-045\">OP10-045]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP15-002",
+          "card_name": "Lucy",
+          "effects": [
+            "Draw 1 Card"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP15-002",
+          "to_name": "Lucy",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP15-002",
+          "to_name": "Lucy",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Lucy",
+          "attacker_code": "OP15-002",
+          "target": "Marshall D. Teach [\"OP16-080\">OP16-080]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
         }
       ],
       "snapshot": {
@@ -1033,7 +1508,33 @@
           "type": "play",
           "card": "OP09-093",
           "card_name": "Marshall D. Teach",
-          "effects": []
+          "effects": [
+            "Nullify effects of Lucy [\"OP15-002\">OP15-002]",
+            "Sabo [\"OP15-046\">OP15-046] can't attack next turn",
+            "Nullify effects of Sabo [\"OP15-046\">OP15-046] until next turn end!"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Marshall D. Teach",
+          "attacker_code": "OP16-080",
+          "target": "Lucy [\"OP15-002\">OP15-002]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP15-052"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Marshall D. Teach",
+          "attacker_code": "OP16-119",
+          "target": "Lucy [\"OP15-002\">OP15-002]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": "OP15-046",
+          "countered_by": []
         }
       ],
       "snapshot": {
@@ -1124,10 +1625,76 @@
       "don_drawn": 0,
       "actions": [
         {
+          "type": "activate",
+          "card": "OP15-020",
+          "card_name": "Fire Fist",
+          "effects": [
+            "Rest 7 Don",
+            "Buff Lucy [\"OP15-002\">OP15-002] 3000",
+            "Grant Marshall D. Teach [\"OP16-119\">OP16-119] -8000 until next turn end"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP15-002",
+          "card_name": "Lucy",
+          "effects": [
+            "Draw 1 Card"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Cavendish",
+          "attacker_code": "OP10-045",
+          "target": "Marshall D. Teach [\"OP16-119\">OP16-119]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP10-045",
+          "card_name": "Cavendish",
+          "effects": [
+            "Draw 2 Card",
+            "Trash Cavendish [\"OP10-045\">OP10-045]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Lucy",
+          "attacker_code": "OP15-002",
+          "target": "Marshall D. Teach [\"OP16-119\">OP16-119]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": "OP09-093",
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Sabo",
+          "attacker_code": "OP15-046",
+          "target": "Marshall D. Teach [\"OP16-119\">OP16-119]",
+          "result": null,
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
           "type": "play",
           "card": "OP15-053",
           "card_name": "Rebecca",
-          "effects": []
+          "effects": [
+            "<b>Reveal and Draw Fire Fist [\"OP15-020\">OP15-020]</b>"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP15-053",
+          "to_name": "Rebecca",
+          "total": 1
         }
       ],
       "snapshot": {
@@ -1224,6 +1791,38 @@
       "don_drawn": 0,
       "actions": [
         {
+          "type": "activate",
+          "card": "OP16-115",
+          "card_name": "Black Vortex",
+          "effects": [
+            "Rest 1 Don"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP16-080",
+          "to_name": "Marshall D. Teach",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP16-080",
+          "to_name": "Marshall D. Teach",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Marshall D. Teach",
+          "attacker_code": "OP16-080",
+          "target": "Belo Betty [\"OP05-015\">OP05-015]",
+          "result": null,
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
           "type": "play",
           "card": "OP16-109",
           "card_name": "Doc Q",
@@ -1233,7 +1832,10 @@
           "type": "play",
           "card": "OP16-108",
           "card_name": "Shiryu",
-          "effects": []
+          "effects": [
+            "Trash Baby 5 [\"OP12-112\">OP12-112]",
+            "Add Shiryu [\"OP16-108\">OP16-108] to top of Life"
+          ]
         }
       ],
       "snapshot": {
@@ -1328,7 +1930,72 @@
         "code": "OP10-045"
       },
       "don_drawn": 0,
-      "actions": [],
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Cavendish",
+          "attacker_code": "OP10-045",
+          "target": "Marshall D. Teach [\"OP16-080\">OP16-080]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP10-045",
+          "card_name": "Cavendish",
+          "effects": [
+            "Draw 2 Card",
+            "Trash Dressrosa Kingdom [\"OP15-057\">OP15-057]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP15-020",
+          "card_name": "Fire Fist",
+          "effects": [
+            "Rest 7 Don",
+            "Buff Lucy [\"OP15-002\">OP15-002] 3000",
+            "Grant Marshall D. Teach [\"OP09-093\">OP09-093] -8000 until next turn end"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP15-002",
+          "card_name": "Lucy",
+          "effects": [
+            "Draw 1 Card"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP05-019",
+          "card_name": "Fire Fist",
+          "effects": [
+            "Rest 2 Don",
+            "Buff Marshall D. Teach [\"OP09-093\">OP09-093] -4000",
+            "Destroy Marshall D. Teach [\"OP09-093\">OP09-093]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Lucy",
+          "attacker_code": "OP15-002",
+          "target": "Marshall D. Teach [\"OP16-080\">OP16-080]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP15-053",
+          "to_name": "Rebecca",
+          "total": 1
+        }
+      ],
       "snapshot": {
         "Karlmalone#2854": {
           "hand": [
@@ -1433,10 +2100,44 @@
       "don_drawn": 0,
       "actions": [
         {
+          "type": "activate",
+          "card": "OP09-099",
+          "card_name": "Fullalead",
+          "effects": [
+            "Rest Fullalead [\"OP09-099\">OP09-099]",
+            "Trash Fullalead [\"OP09-099\">OP09-099]",
+            "<b>Reveal and Draw Marshall D. Teach [\"OP09-093\">OP09-093]</b>"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Shiryu",
+          "attacker_code": "OP16-108",
+          "target": "Cavendish [\"OP10-045\">OP10-045]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": "OP15-046",
+          "countered_by": []
+        },
+        {
           "type": "play",
           "card": "OP09-093",
           "card_name": "Marshall D. Teach",
-          "effects": []
+          "effects": [
+            "Nullify effects of Lucy [\"OP15-002\">OP15-002]",
+            "Sabo [\"OP15-046\">OP15-046] can't attack next turn",
+            "Nullify effects of Sabo [\"OP15-046\">OP15-046] until next turn end!"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Marshall D. Teach",
+          "attacker_code": "OP16-080",
+          "target": "Lucy [\"OP15-002\">OP15-002]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": "OP15-053",
+          "countered_by": []
         }
       ],
       "snapshot": {
@@ -1545,16 +2246,76 @@
       "don_drawn": 0,
       "actions": [
         {
+          "type": "attack",
+          "attacker": "Cavendish",
+          "attacker_code": "OP10-045",
+          "target": "Marshall D. Teach [\"OP16-080\">OP16-080]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP16-104"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP10-045",
+          "card_name": "Cavendish",
+          "effects": [
+            "Draw 2 Card",
+            "Trash Cavendish [\"OP10-045\">OP10-045]"
+          ]
+        },
+        {
           "type": "play",
           "card": "OP15-053",
           "card_name": "Rebecca",
-          "effects": []
+          "effects": [
+            "<b>Reveal and Draw Just Watch Me... Ace!!! [\"OP15-021\">OP15-021]</b>"
+          ]
         },
         {
           "type": "play",
           "card": "OP15-046",
           "card_name": "Sabo",
-          "effects": []
+          "effects": [
+            "Activates Bari-Bari Pistol [\"OP10-060\">OP10-060]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP10-060",
+          "card_name": "Bari-Bari Pistol",
+          "effects": [
+            "Send Doc Q [\"OP16-109\">OP16-109] to Deck Bottom"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP15-002",
+          "card_name": "Lucy",
+          "effects": [
+            "Draw 1 Card"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Lucy",
+          "attacker_code": "OP15-002",
+          "target": "Marshall D. Teach [\"OP16-080\">OP16-080]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP09-095"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP15-053",
+          "to_name": "Rebecca",
+          "total": 1
         }
       ],
       "snapshot": {
@@ -1670,13 +2431,36 @@
           "type": "play",
           "card": "OP16-108",
           "card_name": "Shiryu",
-          "effects": []
+          "effects": [
+            "Trash You're the one who should disappear! [\"OP06-115\">OP06-115]",
+            "Add Shiryu [\"OP16-108\">OP16-108] to top of Life"
+          ]
         },
         {
           "type": "play",
           "card": "OP09-086",
           "card_name": "Jesus Burgess",
           "effects": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Marshall D. Teach",
+          "attacker_code": "OP16-080",
+          "target": "Lucy [\"OP15-002\">OP15-002]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": "OP15-046",
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Shiryu",
+          "attacker_code": "OP16-108",
+          "target": "Cavendish [\"OP10-045\">OP10-045]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": "OP15-046",
+          "countered_by": []
         }
       ],
       "snapshot": {
