@@ -1,5 +1,25 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-01 (18) - Claude
+
+**Feito — Mihawk passive corrigido + activate_main aparece no replay log:**
+
+1. **OP14-020 passive condicionado a `opp_leader_attribute: slash`**: O passive do Mihawk (`+1000 power this_turn`) não tinha condição — disparava contra qualquer oponente, incluindo Imu (líder OP13-079 com atributo `?`). Fix: adicionado `"conditions": {"opp_leader_attribute": "slash"}` no `card_effects_db.json`. Novo campo `opp_leader_attribute` em `_check_conditions` do engine.
+
+2. **`_activate_main_effects` agora chama `_log_event`**: Ativações de efeitos [Activate:Main] não apareciam na tabela de eventos do ReplayViewer. Fix: após executar os steps via `ee.execute`, o resultado é logado com `_log_event(p, 'activate_main', card=src, description=...)`.
+
+**Commits desta sessão (2026-07-01):**
+- e96c245: Turn Planner + trash_char_or_hand fix
+- 1a05572: 4 fixes [A] de jogabilidade
+- b7a0388: Mihawk passive + activate_main log
+
+**Pendências conhecidas:**
+- [B] handlers sem log: `look_top_deck`, `negate_effect`, `activate_trash_event_main`, `lock_opp_don`, etc.
+- Frontend (deferred até motor estar satisfatório)
+- Supabase service_role exposta no `.env.local` — rotacionar antes de deploy público
+
+---
+
 ## 2026-07-01 (17) - Claude
 
 **Feito — 2 fixes sistêmicos de qualidade de decisão (Imu e padrão geral):**
