@@ -2100,6 +2100,17 @@ class EffectExecutor:
                     pior_mao = self._choose_to_trash(self.me.hand)
                     if pior_char is None and pior_mao is None:
                         return False
+                    # Chars ATIVOS (podem atacar este turno) nunca são descartados
+                    # enquanto há carta na mão disponível. O jogador correto ataca
+                    # primeiro e só trasha o char depois (ou usa mão).
+                    if pior_mao is not None and pior_char is not None:
+                        if (not pior_char.rested and not pior_char.just_played
+                                and not getattr(pior_char, 'cannot_attack_until', False)):
+                            # char ativo: forçar trash da mão
+                            remove_by_identity(self.me.hand, pior_mao)
+                            self.me.trash.append(pior_mao)
+                            self._cost_logs.append(f'custo: trashou da mão {pior_mao.name[:14]}')
+                            continue
                     # comparar perda real: campo e mao usam escalas proximas.
                     val_char = pior_char.board_value() * 10 if pior_char else 10**9
                     val_mao = self._trash_value(pior_mao) if pior_mao else 10**9
@@ -5844,9 +5855,10 @@ class OPTCGMatch:
                 for log in logs:
                     if log:
                         print(f'      ↳ {log}')
-            # Loga no replay para aparecer nos eventos do turno
-            desc = ' | '.join(l for l in logs if l) or f'[Activate:Main] {src.name}'
-            self._log_event(p, 'activate_main', card=src, description=desc)
+            # Só loga no replay se o efeito produziu algo observável
+            if any(logs):
+                desc = ' | '.join(l for l in logs if l)
+                self._log_event(p, 'activate_main', card=src, description=desc)
 
     def _should_activate_main(self, src, am, p, opp) -> tuple[bool, str]:
         """
@@ -5855,6 +5867,14 @@ class OPTCGMatch:
         O motivo é usado pelo decision audit para categorizar por que um
         efeito não foi ativado — sem precisar caçar caso a caso.
         """
+        # ── 0. Verifica condições do bloco (ex: board_has_cost) ─────────────
+        conds = am.get('conditions', {})
+        if conds:
+            # Reutiliza _check_conditions do EffectExecutor para consistência
+            dummy_ee = EffectExecutor(p, opp)
+            if not dummy_ee._check_conditions(conds, src):
+                return False, 'condições do efeito não satisfeitas (board/estado)'
+
         steps = am.get('steps', [])
         actions = [s.get('action') for s in steps]
         costs = am.get('costs', [])
@@ -5892,6 +5912,14 @@ class OPTCGMatch:
                 if len(chars_ok) + len(hand_ok) < cnt:
                     return False, (f'custo trash_char_or_hand ({ftype or "qualquer"}): '
                                    f'{len(chars_ok)} chars + {len(hand_ok)} na mão, precisa {cnt}')
+                # Se a mão está vazia e só há chars ATIVOS elegíveis (que podem
+                # atacar este turno), adia: melhor atacar antes de trashar.
+                if len(hand_ok) < cnt:
+                    ativos = [c2 for c2 in chars_ok
+                              if not c2.rested and not c2.just_played
+                              and not getattr(c2, 'cannot_attack_until', False)]
+                    if len(ativos) >= cnt:
+                        return False, 'adia trash_char: atacar com chars ativos antes de trashar'
 
             elif ctype == 'trash_char':
                 chars_ok = [c2 for c2 in p.field_chars
@@ -5996,8 +6024,11 @@ class OPTCGMatch:
         habilita_ataque = False
         if 'on_play' in effects:
             if (flags.get('kos') or flags.get('is_removal') or flags.get('bounces')
-                    or flags.get('rests_opponent') or flags.get('power_buff')
+                    or flags.get('power_buff')
                     or flags.get('draws') or flags.get('is_searcher')):
+                habilita_ataque = True
+            # rests_opponent só habilita ataque se o oponente tem alvo para restar
+            if flags.get('rests_opponent') and engine.opp.field_chars:
                 habilita_ataque = True
         if card.has_rush or card.rush_this_turn:
             habilita_ataque = True
