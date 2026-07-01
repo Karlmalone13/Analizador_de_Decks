@@ -12,6 +12,7 @@ Uso:
 """
 
 import re
+import csv
 import json
 import shutil
 import argparse
@@ -21,6 +22,60 @@ from collections import Counter
 # Raiz do banco de logs (relativo a este script)
 DB_ROOT = Path(__file__).parent / 'logs'
 DB_INDEX = DB_ROOT / 'index.json'
+
+# Ordem canonica das cores OPTCG para montar a abreviacao
+_COLOR_ORDER  = ['Red', 'Green', 'Blue', 'Purple', 'Black', 'Yellow']
+_COLOR_LETTER = {'Red': 'R', 'Green': 'G', 'Blue': 'B',
+                 'Purple': 'P', 'Black': 'B', 'Yellow': 'Y'}
+
+# Cache do CSV de cartas
+_CARDS_CSV: dict | None = None
+
+def _load_cards_csv() -> dict:
+    global _CARDS_CSV
+    if _CARDS_CSV is not None:
+        return _CARDS_CSV
+    csv_path = Path(__file__).parent / 'cards_rows.csv'
+    _CARDS_CSV = {}
+    if csv_path.exists():
+        with open(csv_path, encoding='utf-8') as f:
+            for row in csv.DictReader(f):
+                _CARDS_CSV[row['id']] = row
+    return _CARDS_CSV
+
+
+def _color_abbrev(color_str: str) -> str:
+    """'Black Yellow' -> 'BY', 'Blue Red' -> 'RB' (ordem canonica)."""
+    colors = [c.strip() for c in color_str.split() if c.strip()]
+    # ordena pela posicao canonica
+    ordered = sorted(colors, key=lambda c: _COLOR_ORDER.index(c)
+                     if c in _COLOR_ORDER else 99)
+    return ''.join(_COLOR_LETTER.get(c, c[0]) for c in ordered)
+
+
+def _leader_slug(leader_name: str, leader_code: str) -> str:
+    """
+    Retorna 'Marshall.D.Teach-BY' a partir do nome e code do lider.
+    Busca a cor no cards_rows.csv; se nao encontrar, omite a cor.
+    """
+    cards = _load_cards_csv()
+    row = cards.get(leader_code, {})
+    color_str = row.get('card_color', '')
+
+    # Limpa o nome: remove sufixo " (NNN)", colapsa espacos em ponto,
+    # mas nao duplica pontos (nome ja pode ter "D." no meio)
+    name = re.sub(r'\s*\(\d+\)\s*$', '', leader_name).strip()
+    name = re.sub(r'\s+', '.', name)
+    name = re.sub(r'\.{2,}', '.', name)   # colapsa pontos duplos
+
+    if color_str:
+        return f'{name}-{_color_abbrev(color_str)}'
+    return name
+
+
+def _match_slug(p1_slug: str, p2_slug: str) -> str:
+    """'Marshall.D.Teach-BY_x_Lucy-RB'"""
+    return f'{p1_slug}_x_{p2_slug}'
 
 # ---------------------------------------------------------------------------
 # Regex patterns
@@ -370,20 +425,28 @@ def add_to_db(log_path: str, data: dict, decks: dict):
     (DB_ROOT / 'decks').mkdir(exist_ok=True)
 
     log_path = Path(log_path)
-    stem = log_path.stem   # ex: "2026-07-01T12.46.16"
+    timestamp = log_path.stem   # ex: "2026-07-01T12.46.16"
 
-    # Verifica duplicata pelo stem
+    # Verifica duplicata pelo timestamp
     idx = _load_index()
-    if any(e['id'] == stem for e in idx):
-        print(f'  [aviso] {stem} ja esta no banco — ignorado.')
+    if any(e['id'] == timestamp for e in idx):
+        print(f'  [aviso] {timestamp} ja esta no banco — ignorado.')
         return
 
-    # Copia log original
-    raw_dest = DB_ROOT / 'raw' / log_path.name
+    # Monta slugs dos lideres para nome amigavel
+    p1d = data['meta']['players']['p1']
+    p2d = data['meta']['players']['p2']
+    slug1 = _leader_slug(p1d['leader'].get('name', ''), p1d['leader'].get('code', ''))
+    slug2 = _leader_slug(p2d['leader'].get('name', ''), p2d['leader'].get('code', ''))
+    match_slug = _match_slug(slug1, slug2)
+    friendly_stem = f'{match_slug}_{timestamp}'
+
+    # Copia log original com nome amigavel
+    raw_dest = DB_ROOT / 'raw' / f'{friendly_stem}.log'
     shutil.copy2(log_path, raw_dest)
 
     # Salva JSON parsed
-    parsed_dest = DB_ROOT / 'parsed' / f'{stem}.json'
+    parsed_dest = DB_ROOT / 'parsed' / f'{friendly_stem}.json'
     parsed_dest.write_text(
         json.dumps(data, ensure_ascii=False, indent=2),
         encoding='utf-8'
@@ -391,10 +454,11 @@ def add_to_db(log_path: str, data: dict, decks: dict):
 
     # Salva decks
     deck_files = {}
+    players_ordered = [p1d['name'], p2d['name']]
+    slugs = {p1d['name']: slug1, p2d['name']: slug2}
     for player, deck_data in decks.items():
-        safe = player.replace('#', '_').replace(' ', '_')
-        leader_code = deck_data['leader']
-        fname = f'{leader_code}_{safe}_{stem}.json'
+        player_slug = slugs.get(player, player.replace('#', '_'))
+        fname = f'{player_slug}_{timestamp}.json'
         dest  = DB_ROOT / 'decks' / fname
         dest.write_text(
             json.dumps(deck_data, ensure_ascii=False, indent=2),
@@ -403,28 +467,28 @@ def add_to_db(log_path: str, data: dict, decks: dict):
         deck_files[player] = f'decks/{fname}'
 
     # Entrada no index
-    p1d = data['meta']['players']['p1']
-    p2d = data['meta']['players']['p2']
     entry = {
-        'id': stem,
-        'date': stem[:10],
+        'id': timestamp,
+        'friendly_name': match_slug,
+        'date': timestamp[:10],
         'p1': {'name': p1d['name'],
                'leader_code': p1d['leader'].get('code', ''),
-               'leader_name': p1d['leader'].get('name', '')},
+               'leader_name': p1d['leader'].get('name', ''),
+               'slug': slug1},
         'p2': {'name': p2d['name'],
                'leader_code': p2d['leader'].get('code', ''),
-               'leader_name': p2d['leader'].get('name', '')},
+               'leader_name': p2d['leader'].get('name', ''),
+               'slug': slug2},
         'turns': data['total_turns'],
-        'winner': None,   # nao detectado automaticamente ainda
-        'log_file': f'raw/{log_path.name}',
-        'parsed_file': f'parsed/{stem}.json',
+        'winner': None,
+        'log_file': f'raw/{friendly_stem}.log',
+        'parsed_file': f'parsed/{friendly_stem}.json',
         'deck_files': deck_files,
     }
     idx.append(entry)
     _save_index(idx)
-    print(f'  Adicionado ao banco: {stem}')
-    print(f'    {p1d["name"]} ({p1d["leader"]["name"]}) vs '
-          f'{p2d["name"]} ({p2d["leader"]["name"]})')
+    print(f'  Adicionado ao banco: {friendly_stem}')
+    print(f'    {p1d["name"]} ({slug1}) vs {p2d["name"]} ({slug2})')
     for player, deck_data in decks.items():
         total = deck_data['total_seen']
         n_unique = len(deck_data['cards'])
@@ -437,12 +501,13 @@ def list_db():
     if not idx:
         print('Banco vazio. Use --add-to-db para adicionar partidas.')
         return
-    print(f'\n{"ID":25s}  {"P1 (lider)":28s}  {"P2 (lider)":28s}  Turnos')
-    print('-' * 90)
+    print(f'\n{"Data":10s}  {"Partida":52s}  Turnos')
+    print('-' * 72)
     for e in idx:
-        p1 = f"{e['p1']['name'][:12]} ({e['p1']['leader_code']})"
-        p2 = f"{e['p2']['name'][:12]} ({e['p2']['leader_code']})"
-        print(f"{e['id']:25s}  {p1:28s}  {p2:28s}  {e['turns']}")
+        slug1 = e['p1'].get('slug') or e['p1']['leader_code']
+        slug2 = e['p2'].get('slug') or e['p2']['leader_code']
+        match = f"{e['p1']['name'][:10]}({slug1}) x {e['p2']['name'][:10]}({slug2})"
+        print(f"{e['date']:10s}  {match[:52]:52s}  {e['turns']}")
     print(f'\nTotal: {len(idx)} partidas\n')
 
 
