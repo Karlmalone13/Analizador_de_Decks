@@ -1,5 +1,27 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-01 (21) - Claude
+
+**Feito — nomes de arquivo dos logs usam lider+cor em vez de timestamp puro:**
+
+- Adicionadas funções `_color_abbrev`, `_leader_slug`, `_match_slug` ao `parse_combat_log.py`
+- Busca a cor do líder em `cards_rows.csv` (campo `card_color`)
+- Converte cor para abreviação na ordem canônica OPTCG (R, G, B, P, B, Y): "Black Yellow" → "BY", "Blue Red" → "RB"
+- Nome do líder limpo: remove sufixo " (NNN)", colapsa espaços em ponto, remove pontos duplos
+- Arquivos agora se chamam `Marshall.D.Teach-BY_x_Lucy-RB_2026-07-01T12.46.16.{log,json}`
+- Decks: `Marshall.D.Teach-BY_2026-07-01T12.46.16.json`, `Lucy-RB_2026-07-01T12.46.16.json`
+- `index.json` ganhou campo `friendly_name` e `slug` em p1/p2
+- `list_db` atualizado para exibir slugs amigáveis
+- Banco re-populado com a partida Teach vs Lucy já no novo formato
+
+**Pendências conhecidas:**
+- Próximo passo: dado snapshot do log real, rodar engine e comparar decisão IA vs humano
+- [B] handlers sem log: look_top_deck, negate_effect, activate_trash_event_main, lock_opp_don
+- Frontend (deferred até motor estar satisfatório)
+- Supabase service_role exposta no .env.local — rotacionar antes de deploy público
+
+---
+
 ## 2026-07-01 (20) - Claude
 
 **Feito — parse_combat_log.py com reconstrução de decks e banco de partidas:**
