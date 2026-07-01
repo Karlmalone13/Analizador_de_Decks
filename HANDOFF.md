@@ -1,5 +1,17 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-01 (17) - Claude
+
+**Feito — 2 fixes sistêmicos de qualidade de decisão (Imu e padrão geral):**
+
+1. **`_simulate_sequence` agora chama `_activate_main_effects` no loop**: O Turn Planner não chamava `_activate_main_effects` na simulação, então ao avaliar "jogar Saint Shalria", não via que isso habilitaria o líder Imu (trash→draw) e o stage (Empty Throne→play character). Fix: adicionado `_activate_main_effects(p2, opp2, ee2)` antes de cada iteração do loop em `_simulate_sequence`. Agora o planner captura combos multi-ação como jogar personagem → ativar líder → ativar stage → atacar.
+
+2. **`_should_activate_main` trash_char_or_hand**: O filtro de tipo estava sendo aplicado à MÃO indevidamente. O texto correto do Imu é "trash 1 [Celestial Dragons] Character (campo) OR 1 card from your hand" — qualquer carta da mão, sem filtro de tipo. Fix: `hand_ok = p.hand` (sem filtro). Isso resolvia o líder Imu nunca ativando quando a mão não tinha Celestial Dragons.
+
+**Contexto**: User mostrou replay onde Imu tinha 4 DON, 7 cartas, stage no campo, e só atacou+encerrou. A sequência correta (Saint Shalria→líder draw→Empty Throne→Warcury→atacar) agora deve ser capturada.
+
+---
+
 ## 2026-07-01 (16) - Claude
 
 **Feito — 4 correções de jogabilidade [A] no decision_engine.py:**

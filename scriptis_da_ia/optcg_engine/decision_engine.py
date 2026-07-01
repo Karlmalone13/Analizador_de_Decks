@@ -5876,14 +5876,15 @@ class OPTCGMatch:
                     return False, f'custo trash_hand: mão com só {len(p.hand)} cartas'
 
             elif ctype == 'trash_char_or_hand':
-                # pode trashar personagem do campo OU carta da mão com filtro
+                # "trash 1 [Tipo] Character (campo) OU 1 carta da mão"
+                # O filtro de tipo aplica SOMENTE ao personagem de campo.
+                # Qualquer carta da mão qualifica sem restrição de tipo.
                 chars_ok = [c2 for c2 in p.field_chars
                             if not ftype or ftype in c2.sub_types.lower()]
-                hand_ok  = [c2 for c2 in p.hand
-                            if not ftype or ftype in c2.sub_types.lower()]
+                hand_ok  = p.hand   # qualquer carta da mão
                 if len(chars_ok) + len(hand_ok) < cnt:
                     return False, (f'custo trash_char_or_hand ({ftype or "qualquer"}): '
-                                   f'0 chars + {len(hand_ok)} na mão, precisa {cnt}')
+                                   f'{len(chars_ok)} chars + {len(hand_ok)} na mão, precisa {cnt}')
 
             elif ctype == 'trash_char':
                 chars_ok = [c2 for c2 in p.field_chars
@@ -6351,7 +6352,11 @@ class OPTCGMatch:
             return 1e9   # essa linha vence
 
         # Continua gulosamente até o fim do turno
+        # IMPORTANTE: espelha o loop real de main_phase — ativa efeitos
+        # [Activate:Main] a cada passo antes de gerar novas ações, para que
+        # o planner capture o valor de combos como "jogar carta → ativar líder".
         for _ in range(max_steps):
+            self._activate_main_effects(p2, opp2, ee2, verbose=False)
             acts = self._generate_and_score_actions(p2, opp2, eng2)
             if not acts or acts[0][0] < 0:
                 break
