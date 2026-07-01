@@ -1,0 +1,76 @@
+{
+  "cards": [
+    {
+      "code": "OP14-110",
+      "name": "Doctor Hogback",
+      "count": 3
+    },
+    {
+      "code": "OP14-111",
+      "name": "Perona",
+      "count": 3
+    },
+    {
+      "code": "EB03-055",
+      "name": "Nico Robin",
+      "count": 3
+    },
+    {
+      "code": "OP11-106",
+      "name": "Zeus",
+      "count": 2
+    },
+    {
+      "code": "EB03-053",
+      "name": "Nami",
+      "count": 2
+    },
+    {
+      "code": "OP16-056",
+      "name": "Mr. 3 (Galdino)",
+      "count": 2
+    },
+    {
+      "code": "OP14-102",
+      "name": "Kumacy",
+      "count": 2
+    },
+    {
+      "code": "EB04-058",
+      "name": "Borsalino",
+      "count": 2
+    },
+    {
+      "code": "OP14-108",
+      "name": "Silvers Rayleigh",
+      "count": 2
+    },
+    {
+      "code": "OP16-119",
+      "name": "Marshall D. Teach",
+      "count": 2
+    },
+    {
+      "code": "OP14-104",
+      "name": "Gecko Moria",
+      "count": 2
+    },
+    {
+      "code": "OP13-042",
+      "name": "Edward Newgate",
+      "count": 2
+    },
+    {
+      "code": "OP06-058",
+      "name": "OP06-058",
+      "count": 1
+    },
+    {
+      "code": "OP06-104",
+      "name": "Kikunojo",
+      "count": 1
+    }
+  ],
+  "total_seen": 29,
+  "leader": "OP11-041"
+}
