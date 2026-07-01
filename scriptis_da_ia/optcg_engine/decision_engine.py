@@ -5436,6 +5436,9 @@ class OPTCGMatch:
         # nomes dos jogadores para o replay (preenchidos por simulate_replay)
         self._name_a = 'Player A'
         self._name_b = 'Player B'
+        # decision_log: lista de registros de auditoria de decisão.
+        # None = desligado. Ligado via enable_decision_audit().
+        self.decision_log: list | None = None
 
         # OpponentModel de cada lado: construído a partir da decklist
         # COMPLETA do ADVERSÁRIO (state_a usa o deck de state_b para saber
@@ -5749,10 +5752,13 @@ class OPTCGMatch:
                     continue
             # Decide se vale ativar (benefício claro): draw/search/play sempre vale;
             # efeitos que precisam de alvo, só se houver alvo.
-            if not self._should_activate_main(src, am, p, opp):
+            pode, motivo = self._should_activate_main(src, am, p, opp)
+            if not pode:
+                self._log_decision(p, src, 'activate_main', 'skip', motivo)
                 continue
             # Marca uso e executa
             src._am_used_turn = p.turn
+            self._log_decision(p, src, 'activate_main', 'activate', motivo)
             if verbose:
                 print(f'    ⚙ ativou [Activate:Main] de {src.name[:22]}')
             logs = ee.execute(src, 'activate_main')
@@ -5761,56 +5767,92 @@ class OPTCGMatch:
                     if log:
                         print(f'      ↳ {log}')
 
-    def _should_activate_main(self, src, am, p, opp) -> bool:
+    def _should_activate_main(self, src, am, p, opp) -> tuple[bool, str]:
         """
-        Decide se vale ativar um efeito [Activate: Main] — GERAL, para qualquer
-        carta (não só Imu). Considera o custo real (você paga para receber):
-        - benefício de vantagem (draw/search) vale, SE o custo é pagável e compensa
-        - efeito que precisa de alvo só vale se há alvo
-        - se há custo de trash, só ativa com carta descartável (e que valha perder)
+        Decide se vale ativar um efeito [Activate: Main].
+        Retorna (pode_ativar: bool, motivo: str).
+        O motivo é usado pelo decision audit para categorizar por que um
+        efeito não foi ativado — sem precisar caçar caso a caso.
         """
         steps = am.get('steps', [])
         actions = [s.get('action') for s in steps]
-        costs = am.get('costs', [])   # lista (corrigido: era 'cost' singular)
+        costs = am.get('costs', [])
 
-        # Verifica se o custo é PAGÁVEL
+        # ── 1. Verifica pagabilidade de cada custo ───────────────────────────
         for c in costs:
             ctype = c.get('type')
-            cnt = c.get('count', 1)
-            if ctype == 'rest_self' and getattr(src, 'rested', False):
-                return False
-            if ctype == 'rest_don' and p.don_available < cnt:
-                return False
-            if ctype == 'trash_from_hand' and len(p.hand) < cnt:
-                return False   # não tem carta para trashar
-            if ctype == 'don_minus':
-                don_total = p.don_available + p.don_rested + \
-                            sum(x.don_attached for x in p.field_chars) + p.leader.don_attached
+            cnt   = c.get('count', 1)
+            ftype = (c.get('filter_type') or '').lower()
+
+            if ctype == 'rest_self':
+                if getattr(src, 'rested', False):
+                    return False, f'custo rest_self: {src.name} já está restado'
+
+            elif ctype == 'rest_don':
+                if p.don_available < cnt:
+                    return False, f'custo rest_don {cnt}: só {p.don_available} DON disponível'
+
+            elif ctype in ('trash_from_hand', 'trash_hand'):
+                if ftype:
+                    elegíveis = [c2 for c2 in p.hand if ftype in c2.sub_types.lower()]
+                    if len(elegíveis) < cnt:
+                        return False, (f'custo trash_hand ({ftype}): '
+                                       f'só {len(elegíveis)} elegíveis na mão')
+                elif len(p.hand) < cnt:
+                    return False, f'custo trash_hand: mão com só {len(p.hand)} cartas'
+
+            elif ctype == 'trash_char_or_hand':
+                # pode trashar personagem do campo OU carta da mão com filtro
+                chars_ok = [c2 for c2 in p.field_chars
+                            if not ftype or ftype in c2.sub_types.lower()]
+                hand_ok  = [c2 for c2 in p.hand
+                            if not ftype or ftype in c2.sub_types.lower()]
+                if len(chars_ok) + len(hand_ok) < cnt:
+                    return False, (f'custo trash_char_or_hand ({ftype or "qualquer"}): '
+                                   f'0 chars + {len(hand_ok)} na mão, precisa {cnt}')
+
+            elif ctype == 'trash_char':
+                chars_ok = [c2 for c2 in p.field_chars
+                            if not ftype or ftype in c2.sub_types.lower()]
+                if len(chars_ok) < cnt:
+                    return False, (f'custo trash_char ({ftype or "qualquer"}): '
+                                   f'só {len(chars_ok)} no campo')
+
+            elif ctype == 'don_minus':
+                don_total = (p.don_available + p.don_rested
+                             + sum(x.don_attached for x in p.field_chars)
+                             + p.leader.don_attached)
                 if don_total < cnt:
-                    return False
+                    return False, f'custo don_minus {cnt}: só {don_total} DON total'
 
-        tem_custo_trash = any(c.get('type') == 'trash_from_hand' for c in costs)
+        # ── 2. Avalia se o benefício compensa ────────────────────────────────
+        tem_custo_trash = any(c.get('type') in
+                              ('trash_from_hand', 'trash_hand',
+                               'trash_char_or_hand', 'trash_char')
+                              for c in costs)
 
-        # Efeitos de vantagem pura (draw, search) — valem se o custo compensa
+        # Draw / search — vantagem pura, sempre vale se custo foi pago
         if any(a in ('draw', 'look_top_deck', 'add_to_hand') for a in actions):
             if tem_custo_trash:
-                # só ativa se, após trashar, ainda sobra mão útil (não esvazia a mão
-                # por 1 draw). Heurística: ter mais cartas que o custo + 1.
-                cnt = next((c.get('count', 1) for c in costs
-                            if c.get('type') == 'trash_from_hand'), 1)
-                return len(p.hand) > cnt   # sobra ao menos 1 carta após o custo
-            return True
+                cnt_trash = next((c.get('count', 1) for c in costs
+                                  if c.get('type') in ('trash_from_hand', 'trash_hand',
+                                                        'trash_char_or_hand')), 1)
+                if len(p.hand) <= cnt_trash:
+                    return False, (f'custo-benefício draw: mão ({len(p.hand)}) '
+                                   f'não sobra após trashar {cnt_trash}')
+            return True, 'benefício draw/search compensa'
 
-        # Efeitos que afetam o oponente — só com alvo
+        # Efeitos sobre oponente — só com alvo
         if any(a in ('rest_opp', 'ko_opp', 'debuff', 'debuff_power', 'bounce') for a in actions):
-            return bool(opp.field_chars)
+            if not opp.field_chars:
+                return False, 'efeito sobre oponente: nenhum personagem alvo disponível'
+            return True, 'alvo disponível no campo oponente'
 
-        # Efeitos de DON (ramp, reativar) — valem
+        # DON ramp — sempre vale
         if any(a in ('add_don', 'set_don_active') for a in actions):
-            return True
+            return True, 'benefício DON ramp'
 
-        # play_card (jogar carta da mão de graça) — vale se há carta elegível.
-        # GRUPO 1 (source=self) é trigger, não chega aqui. Aqui só GRUPO 2.
+        # play_card de graça — vale se há carta elegível na mão
         if 'play_card' in actions:
             for s in steps:
                 if s.get('action') != 'play_card':
@@ -5824,10 +5866,36 @@ class OPTCGMatch:
                     if cost_lte is not None and c.cost > cost_lte:   continue
                     if ftype and ftype not in c.sub_types.lower():    continue
                     if fcolor and fcolor not in c.color.lower():      continue
-                    return True   # tem ao menos 1 carta jogável de graça
-            return False
+                    return True, f'play_card elegível: {c.name}'
+            return False, 'play_card: sem carta elegível na mão com o filtro'
 
-        return False
+        # buff_power / debuff_power sem alvo explícito — aplica sempre
+        if any(a in ('buff_power', 'set_base_power') for a in actions):
+            return True, 'buff_power incondicionado'
+
+        # play_from_trash — vale se há carta no trash elegível
+        if 'play_from_trash' in actions:
+            for s in steps:
+                if s.get('action') != 'play_from_trash':
+                    continue
+                ftype  = (s.get('filter_type') or '').lower()
+                fcolor = (s.get('color') or '').lower()
+                for c in p.trash:
+                    if ftype  and ftype  not in c.sub_types.lower(): continue
+                    if fcolor and fcolor not in c.color.lower():      continue
+                    return True, f'play_from_trash elegível: {c.name}'
+            return False, 'play_from_trash: sem carta elegível no trash'
+
+        # Efeitos de descarte do oponente — vale se oponente tem mão
+        if any(a in ('opp_trash_from_hand', 'opp_shuffle_hand_into_deck',
+                     'opp_place_hand_bottom_deck') for a in actions):
+            if not opp.hand:
+                return False, 'discard oponente: oponente sem cartas na mão'
+            return True, f'discard oponente ({len(opp.hand)} cartas na mão)'
+
+        # Qualquer outra ação com custo já validado — ativa por omissão.
+        # Melhor ativar e deixar o executor decidir do que silenciosamente ignorar.
+        return True, f'ação ativada por omissão (heurística não cobre): {actions}'
 
     def _score_play_action(self, card, engine) -> float:
         """
@@ -6643,6 +6711,32 @@ class OPTCGMatch:
                 print(f'      ✗ Ataque bloqueado ({atk_power} < {defend_power})')
 
         return False
+
+    # ── Decision audit logger ────────────────────────────────────────────────
+
+    def enable_decision_audit(self):
+        """Ativa o log de auditoria de decisão. Chamar antes de setup()/play_turn()."""
+        self.decision_log = []
+
+    def _log_decision(self, p: GameState, card, trigger: str,
+                      decision: str, reason: str):
+        """
+        Registra uma decisão da IA sobre um efeito.
+        decision: 'skip' | 'activate'
+        reason:   texto livre explicando o motivo
+        """
+        if self.decision_log is None or self._suppress_replay_log:
+            return
+        player_id = 'A' if p is self.state_a else 'B'
+        self.decision_log.append({
+            'turn':    self.global_turn,
+            'player':  player_id,
+            'card':    card.code if card else '',
+            'name':    card.name if card else '',
+            'trigger': trigger,
+            'decision': decision,
+            'reason':  reason,
+        })
 
     # ── Replay logger ────────────────────────────────────────────────────────
 

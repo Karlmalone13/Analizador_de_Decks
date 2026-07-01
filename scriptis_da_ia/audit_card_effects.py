@@ -1,18 +1,24 @@
 """
-Compliance checker por evidencia de execucao.
+Compliance checker por evidencia de execucao + auditoria de decisoes da IA.
 
 Roda partidas reais e instrumenta o motor para responder perguntas praticas:
 - quais triggers parseados foram chamados;
 - quais triggers chamados produziram log/efeito observavel;
 - quais actions do banco chegaram ao executor;
-- quais actions chamadas nunca produziram log na amostra.
+- quais actions chamadas nunca produziram log na amostra;
+- por que a IA decidiu NAO ativar cada efeito activate_main (--decision).
 
-Isto NAO prova fidelidade oficial carta-a-carta. E uma triagem de suspeitos:
-efeito parseado que nunca dispara, action que parece no-op, ou trigger chamado
-repetidamente sem efeito observavel.
+Categorias de problema detectadas:
+  A) Trigger nunca chamado        → parser ok, mas AI nunca usa a carta/efeito
+  B) Trigger chamado sem log      → handler no-op silencioso (engine bug)
+  C) activate_main skip: motivo   → AI viu o efeito mas decidiu nao ativar (e por que)
+  D) activate_main: acao nao reconhecida → heuristica de _should_activate_main tem gap
+
+Isto NAO prova fidelidade oficial carta-a-carta. E uma triagem de suspeitos.
 
 Uso:
     python audit_card_effects.py --n 25 --seed 42
+    python audit_card_effects.py --n 10 --seed 42 --decision
     python audit_card_effects.py --n 50 --seed 7 --json-out effect_audit.json
 """
 import argparse
@@ -22,7 +28,7 @@ import json
 import random
 import sys
 import traceback
-from collections import Counter
+from collections import Counter, defaultdict
 from pathlib import Path
 
 import pandas as pd
@@ -94,13 +100,31 @@ def summarize_counter(counter: Counter, limit: int):
             for k, v in counter.most_common(limit)]
 
 
+def _run_match_with_decision_log(deck_a, deck_b):
+    """Roda uma partida com decision_log ativo, retorna (result, decision_log)."""
+    match = OPTCGMatch(deck_a, deck_b)
+    match.enable_decision_audit()
+    with contextlib.redirect_stdout(io.StringIO()):
+        result = match.simulate()
+    return result, match.decision_log or []
+
+
+def _run_match_normal(deck_a, deck_b):
+    with contextlib.redirect_stdout(io.StringIO()):
+        result = OPTCGMatch(deck_a, deck_b).simulate()
+    return result, []
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--n', type=int, default=25, help='numero de partidas')
     parser.add_argument('--seed', type=int, default=42, help='seed do random')
     parser.add_argument('--decks', type=int, default=16, help='quantos decks reais carregar')
     parser.add_argument('--top', type=int, default=30, help='quantos suspeitos mostrar por bloco')
-    parser.add_argument('--min-calls', type=int, default=2, help='minimo de chamadas para suspeito sem log')
+    parser.add_argument('--min-calls', type=int, default=2,
+                        help='minimo de chamadas para suspeito sem log')
+    parser.add_argument('--decision', action='store_true',
+                        help='ativa auditoria de decisoes activate_main')
     parser.add_argument('--json-out', default='', help='salva relatorio JSON neste caminho')
     args = parser.parse_args()
 
@@ -113,16 +137,19 @@ def main() -> int:
 
     stats = {
         'trigger_calls': Counter(),
-        'trigger_logs': Counter(),
+        'trigger_logs':  Counter(),
         'trigger_steps': Counter(),
-        'action_calls': Counter(),
-        'action_logs': Counter(),
+        'action_calls':  Counter(),
+        'action_logs':   Counter(),
         'sampled_cards': Counter(),
-        'matches': [],
-        'exceptions': [],
+        'matches':       [],
+        'exceptions':    [],
     }
+    # decision audit: {(code, name): Counter(reason)}
+    decision_skips:    defaultdict[tuple, Counter] = defaultdict(Counter)
+    decision_activates: Counter = Counter()  # (code, name) → count
 
-    original_execute = EffectExecutor.execute
+    original_execute      = EffectExecutor.execute
     original_execute_step = EffectExecutor._execute_step
 
     def instrumented_execute(self, card, trigger, *a, **kw):
@@ -146,8 +173,10 @@ def main() -> int:
             stats['action_logs'][action] += 1
         return log
 
-    EffectExecutor.execute = instrumented_execute
+    EffectExecutor.execute       = instrumented_execute
     EffectExecutor._execute_step = instrumented_execute_step
+
+    run_fn = _run_match_with_decision_log if args.decision else _run_match_normal
 
     try:
         for i in range(args.n):
@@ -161,31 +190,35 @@ def main() -> int:
                 stats['sampled_cards'][code] += 1
 
             try:
-                with contextlib.redirect_stdout(io.StringIO()):
-                    result = OPTCGMatch(deck_a, deck_b).simulate()
+                result, dlog = run_fn(deck_a, deck_b)
                 stats['matches'].append({
-                    'i': i,
-                    'deck_a': name_a,
-                    'deck_b': name_b,
-                    'winner': result.get('winner'),
-                    'turns': result.get('turns'),
+                    'i': i, 'deck_a': name_a, 'deck_b': name_b,
+                    'winner': result.get('winner'), 'turns': result.get('turns'),
                 })
                 print(f'  Match {i+1}/{args.n}: {name_a[:20]} vs {name_b[:20]} '
                       f'-> vencedor={result.get("winner")}, turnos={result.get("turns")}')
+
+                # acumula decision log
+                for entry in dlog:
+                    key = (entry['card'], entry['name'])
+                    if entry['decision'] == 'skip':
+                        decision_skips[key][entry['reason']] += 1
+                    else:
+                        decision_activates[key] += 1
+
             except Exception as exc:
                 tb = traceback.format_exc()
                 stats['exceptions'].append({
-                    'i': i,
-                    'deck_a': name_a,
-                    'deck_b': name_b,
+                    'i': i, 'deck_a': name_a, 'deck_b': name_b,
                     'error': f'{type(exc).__name__}: {exc}',
                     'traceback_tail': tb[-1200:],
                 })
                 print(f'  Match {i+1}/{args.n}: EXCECAO {type(exc).__name__}: {exc}')
     finally:
-        EffectExecutor.execute = original_execute
+        EffectExecutor.execute       = original_execute
         EffectExecutor._execute_step = original_execute_step
 
+    # ── Monta listas de suspeitos ────────────────────────────────────────────
     trigger_no_log = []
     for key, calls in stats['trigger_calls'].items():
         if calls < args.min_calls:
@@ -193,8 +226,7 @@ def main() -> int:
         code, name, trigger = key
         if trigger not in ACTIVE_TRIGGERS:
             continue
-        logs = stats['trigger_logs'][key]
-        if stats['trigger_steps'][key] and logs == 0:
+        if stats['trigger_steps'][key] and stats['trigger_logs'][key] == 0:
             trigger_no_log.append((calls, code, name, trigger))
     trigger_no_log.sort(reverse=True)
 
@@ -222,6 +254,7 @@ def main() -> int:
                 never_called.append((stats['sampled_cards'][code], code, name, trigger))
     never_called.sort(reverse=True)
 
+    # ── Imprime relatório ────────────────────────────────────────────────────
     print()
     print('=' * 72)
     print(f'Compliance por execucao: {args.n} partidas, seed={args.seed}, decks={len(decks)}')
@@ -230,26 +263,57 @@ def main() -> int:
           f'Actions chamadas: {len(stats["action_calls"])} tipos')
     print('=' * 72)
 
-    print('\nTriggers chamados com steps, mas sem log observavel:')
+    print('\n[B] Triggers chamados com steps, mas sem log observavel:')
     if trigger_no_log:
         for calls, code, name, trigger in trigger_no_log[:args.top]:
             print(f' - {calls:4d}x {card_label(code, name, trigger)}')
     else:
         print(' - nenhum acima do limiar')
 
-    print('\nActions executadas sem log observavel:')
+    print('\n[B] Actions executadas sem log observavel:')
     if action_no_log:
         for calls, action in action_no_log[:args.top]:
             print(f' - {calls:4d}x {action}')
     else:
         print(' - nenhuma acima do limiar')
 
-    print('\nTriggers de cartas amostradas que nunca foram chamados:')
+    print('\n[A] Triggers de cartas amostradas que nunca foram chamados:')
     if never_called:
         for deck_hits, code, name, trigger in never_called[:args.top]:
             print(f' - visto em {deck_hits:3d} deck-copias | {card_label(code, name, trigger)}')
     else:
         print(' - nenhum na amostra')
+
+    if args.decision:
+        print('\n[C/D] Auditoria de decisoes activate_main (motivos de skip):')
+        # agrupa por motivo dominante, ordena por total de skips
+        skip_summary = []
+        for (code, name), reasons in decision_skips.items():
+            total_skip = sum(reasons.values())
+            total_act  = decision_activates.get((code, name), 0)
+            top_reason = reasons.most_common(1)[0][0]
+            skip_summary.append((total_skip, total_act, code, name, reasons, top_reason))
+        skip_summary.sort(reverse=True)
+
+        # Cartas que SEMPRE pulam (nunca ativam)
+        never_activated = [(ts, ta, c, n, r, tr)
+                           for ts, ta, c, n, r, tr in skip_summary if ta == 0]
+        sometimes_skip  = [(ts, ta, c, n, r, tr)
+                           for ts, ta, c, n, r, tr in skip_summary if ta > 0]
+
+        print(f'\n  Cartas com activate_main NUNCA ativado ({len(never_activated)} cartas):')
+        for total_skip, _, code, name, reasons, _ in never_activated[:args.top]:
+            print(f'   {code} | {name[:30]} | {total_skip}x skip')
+            for reason, cnt in reasons.most_common(3):
+                print(f'     [{cnt:3d}x] {reason}')
+
+        if sometimes_skip:
+            print(f'\n  Cartas com activate_main as vezes ativado ({len(sometimes_skip)} cartas):')
+            for total_skip, total_act, code, name, reasons, _ in sometimes_skip[:args.top]:
+                pct = round(100 * total_act / (total_skip + total_act))
+                print(f'   {code} | {name[:30]} | ativou {total_act}x / pulou {total_skip}x ({pct}% taxa)')
+                for reason, cnt in reasons.most_common(2):
+                    print(f'     [{cnt:3d}x skip] {reason}')
 
     if stats['exceptions']:
         print('\nExcecoes:')
@@ -262,12 +326,16 @@ def main() -> int:
             'matches': stats['matches'],
             'exceptions': stats['exceptions'],
             'trigger_calls': summarize_counter(stats['trigger_calls'], 1000),
-            'trigger_logs': summarize_counter(stats['trigger_logs'], 1000),
-            'action_calls': summarize_counter(stats['action_calls'], 1000),
-            'action_logs': summarize_counter(stats['action_logs'], 1000),
+            'trigger_logs':  summarize_counter(stats['trigger_logs'], 1000),
+            'action_calls':  summarize_counter(stats['action_calls'], 1000),
+            'action_logs':   summarize_counter(stats['action_logs'], 1000),
             'trigger_no_log': trigger_no_log[:1000],
-            'action_no_log': action_no_log[:1000],
-            'never_called': never_called[:1000],
+            'action_no_log':  action_no_log[:1000],
+            'never_called':   never_called[:1000],
+            'decision_skips': [
+                {'code': c, 'name': n, 'skips': dict(r), 'activates': decision_activates.get((c, n), 0)}
+                for (c, n), r in decision_skips.items()
+            ] if args.decision else [],
         }
         with open(args.json_out, 'w', encoding='utf-8') as f:
             json.dump(report, f, ensure_ascii=False, indent=2)
