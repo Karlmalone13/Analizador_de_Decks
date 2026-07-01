@@ -1,5 +1,19 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-01 (23) - Claude
+
+**Feito — 2ª partida adicionada ao banco de logs:**
+
+- Partida: Jack#5459 (Nami-BY, OP11-041) vs Karlmalone#2854 (Imu-B, OP13-079)
+- 17 turnos, Karlmalone foi primeiro e perdeu
+- Deck Imu: 42/50 cartas vistas (shell OP13 completo — Five Elders + quatro arcanjos)
+- Deck Nami: 29/50 (partida curta)
+- Arquivos: `Nami-BY_x_Imu-B_2026-07-01T14.22.50.{log,json}`
+
+**Banco atual:** 2 partidas indexadas (Teach-BY×Lucy-RB, Nami-BY×Imu-B)
+
+---
+
 ## 2026-07-01 (22) - Claude
 
 **Feito — roadmap de análise estatística registrado no TODO:**
