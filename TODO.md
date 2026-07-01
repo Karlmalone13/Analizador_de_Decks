@@ -1,6 +1,6 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 26 de junho de 2026
+**Última atualização:** 01 de julho de 2026
 **Estado:** 2148 cards com efeito (subiu de 2138), parser auditado OP-02 a OP-15
 **Baseline:** commit bbb4d31 (set_don_active + mill) + viabilidade transacional (a commitar)
 **Repo:** github.com/Karlmalone13/Analizador_de_Decks
@@ -61,6 +61,13 @@ implementa → valida (snapshot/diff PERDEU=0 + partidas reais instrumentadas).
   Fonte: DLL 34.127 linhas, 100% lida. 39 cobertos, 28 ausentes (8 relevantes, 7 médios,
   13 raros). CONCLUSÃO: arquitetura está certa (trigger/condition/cost/step espelha
   proc/details/effect). Buracos são de cobertura, finitos.
+
+---
+
+## 🔴 PRÓXIMO (decisão via log real)
+
+- [ ] **Comparação IA vs humano a partir do parse_combat_log**: dado um turno do JSON gerado pelo parser, instanciar o GameState equivalente no engine e ver o que a IA escolheria. Identificar divergências concretas para tunar scores/heurísticas. Script ainda não existe — próxima sessão.
+- [ ] **[B] handlers sem log**: `look_top_deck`, `negate_effect`, `activate_trash_event_main`, `lock_opp_don` — efeitos que executam sem emitir evento no replay.
 
 ---
 

@@ -1,5 +1,44 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-01 (19) - Claude
+
+**Feito — 6 fixes de heurística + parser de combat log do simulador oficial:**
+
+### Fixes no decision_engine.py / card_effects_db.json
+
+1. **`activate_main` vira ação competitiva no Turn Planner** (commit b1ea2f6): Em vez de sempre disparar no início do turno, `_activate_main_effects` foi removido do loop e substituído por entradas `('activate', src, ...)` no `_generate_and_score_actions`. Novo método `_score_activate_main` pontua o benefício vs custo. A IA agora compara "ativar líder (score 120) vs jogar Five Elders (score 190)" e escolhe a ordem certa. `_remap_action` e `_apply_action` atualizados.
+
+2. **`_score_play_action` valoriza `play_from_trash` no `activate_main`** (commit 1179bc7): Se a carta a ser jogada tem `activate_main` com `play_from_trash`, conta alvos no trash + campo e adiciona `n * 50` ao score. Five Elders com 4 alvos recuperáveis → +230 extra.
+
+3. **`_evaluate_state` valoriza chars no trash recuperáveis** (commit 1179bc7): Para cada carta na mão que pode recuperar do trash (`play_from_trash`), o Turn Planner agora enxerga `n * 60` de valor nos chars elegíveis no trash. Faz a sequência atacar → trashar via líder → jogar Five Elders emergir naturalmente.
+
+4. **The Empty Throne só joga CHARACTER** (commit 1056fe3): DB tinha `play_card` sem `card_type`, então escolhia o evento "Never Existed" (sub_type Five Elders) em vez de personagens. Fix: `"card_type": "CHARACTER"` no step + filtro correspondente no engine.
+
+5. **`_trash_value` protege cartas de custo alto** (commit 1056fe3): Chars de custo ≥ 7 agora recebem `20 + custo * 8` (custo 10 → +100) mesmo sem DON disponível. Antes Five Elders era trashado quando o DON do turno era insuficiente para jogá-lo.
+
+6. **`_should_activate_main` verifica condições do efeito** (sessão 18): `board_has_cost` e outros conditions do activate_main eram ignorados. Fix via `dummy_ee._check_conditions(conds, src)` no topo do método.
+
+### parse_combat_log.py (commit f839e27)
+- Script novo em `scriptis_da_ia/parse_combat_log.py`
+- Lê o `.log` do simulador oficial e gera JSON estruturado: metadados, turnos, ações (play/activate/attack com resultado), snapshots (mão/campo/trash/vida)
+- Detecta jogador por Draw Don, Draw Card, ou alternância (quando o log omite "Draw N Don")
+- Uso: `python parse_combat_log.py partida.log --summary`
+- Testado com partida Teach (OP16-080) vs Lucy (OP15-002): 22 turnos extraídos corretamente
+
+### Commits desta sessão (2026-07-01):
+- b1ea2f6: activate_main vira ação competitiva no Turn Planner
+- 1179bc7: _score_play_action e _evaluate_state valorizam chars no trash recuperáveis
+- 1056fe3: The Empty Throne só joga CHARACTER; _trash_value protege cartas de custo alto
+- f839e27: parse_combat_log.py converte log do simulador oficial em JSON estruturado
+
+**Pendências conhecidas:**
+- Próximo passo com o parser: dado um snapshot de estado do log real, rodar o engine e comparar decisão da IA com o que o humano fez → identificar divergências concretas para tunar heurísticas
+- [B] handlers sem log: `look_top_deck`, `negate_effect`, `activate_trash_event_main`, `lock_opp_don`
+- Frontend (deferred até motor estar satisfatório)
+- Supabase service_role exposta no `.env.local` — rotacionar antes de deploy público
+
+---
+
 ## 2026-07-01 (18) - Claude
 
 **Feito — Mihawk passive corrigido + activate_main aparece no replay log:**
