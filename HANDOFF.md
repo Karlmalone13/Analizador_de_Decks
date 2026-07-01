@@ -1,5 +1,23 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-01 (27) - Codex
+
+**Feito - auditoria interna do Turn Planner + lethal com DON anexavel:**
+
+- Novo `scriptis_da_ia/audit_decision_quality.py` para auditar o motor, nao logs humanos.
+- `decision_log` agora registra decisoes do Turn Planner: contexto, top imediato, candidatos, escolha final, valor simulado e `win=X/N`.
+- `_simulate_sequence` deixou de usar `1e9` como valor terminal bruto; agora usa `SIMULATED_WIN_SCORE = 50000.0`, evitando que `win=1/6` esmague linhas estaveis.
+- `_score_activate_main` trata efeitos tipo Imu (`trash 1` + `draw 1`) como filtragem, nao vantagem liquida de carta; isso reduziu activate cedo de score ~120 para 10/45.
+- `can_lethal_this_turn()` agora considera distribuicao de DON disponivel entre ataques, mantendo defesa conservadora com blockers/counters.
+- `smoke_test.py` ganhou cobertura para lethal com DON anexavel e preservou o caso de counters revelados com DON=0.
+- Validacao: `python -m py_compile ...`, `python scriptis_da_ia\smoke_test.py` e `python audit_decision_quality.py --n 10 --seed 42 --examples 8` passaram.
+
+**Proximo passo sugerido:**
+
+Rodar `audit_decision_quality.py --n 50 --seed 42 --examples 12` e olhar os blocos restantes: overrides grandes e ataques em vida 0 com `win=0/N`.
+
+---
+
 ## 2026-07-01 (26) - Codex
 
 **Feito - compare_vs_human corrigido + falso lethal score removido:**

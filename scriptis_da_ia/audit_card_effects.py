@@ -200,6 +200,8 @@ def main() -> int:
 
                 # acumula decision log
                 for entry in dlog:
+                    if entry.get('decision') not in ('skip', 'activate'):
+                        continue
                     key = (entry['card'], entry['name'])
                     if entry['decision'] == 'skip':
                         decision_skips[key][entry['reason']] += 1

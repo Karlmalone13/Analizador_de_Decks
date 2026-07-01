@@ -50,6 +50,9 @@ from typing import List, Optional
 from copy import deepcopy
 
 
+SIMULATED_WIN_SCORE = 50000.0
+
+
 # ===========================================================================
 # Carrega o banco de efeitos
 # ===========================================================================
@@ -4612,76 +4615,73 @@ class GameAnalyzer:
         opp_life = self.opp.life_count()
         leader_power = self.opp.leader.effective_power(False)
 
-        # Ataques disponiveis: (poder, eh_unblockable, hits) -- double attack
-        # e 1 ataque so (1 blocker/counter resolve os 2 hits), mas conta 2
-        # hits de dano se conectar.
+        # Ataques disponiveis: (poder_base, eh_unblockable, hits). DON
+        # disponivel ainda pode ser distribuido entre eles para garantir lethal.
         ataques = []
         if not self.me.cannot_attack_leader_this_turn and not self.me.leader.rested and not is_attack_locked_self(self.me.leader, self.me, self.opp):
-            ataques.append((self.me.leader.effective_power(True), self.me.leader.has_unblockable, 1))
+            ataques.append((self.me.leader.effective_power(True),
+                            self.me.leader.has_unblockable or self.me.leader.unblockable_this_turn,
+                            1))
         for c in self.me.field_chars:
             if (not c.rested and not c.just_played and not c.cannot_attack_until
                     and not c.cannot_be_rested_until and not is_attack_locked_self(c, self.me, self.opp)
                     and can_afford_attack_paywall(c, self.me)):
                 hits = 2 if c.is_double_attack() else 1
-                ataques.append((c.effective_power(True), c.has_unblockable, hits))
+                ataques.append((c.effective_power(True),
+                                c.has_unblockable or c.unblockable_this_turn,
+                                hits))
 
         if not ataques:
             return False  # sem atacantes disponiveis, nunca fecha o jogo
-
-        unblockable = [a for a in ataques if a[1]]
-        bloqueaveis = sorted([a for a in ataques if not a[1]], key=lambda a: -a[0])  # maior poder primeiro
-
+        counters_base = sorted(self.opp_counter_chunks_for_lethal())
         n_blockers = len(self.opp.blockers_active())
-        # Oponente bloqueia os N bloqueaveis de MAIOR poder (pior caso pra mim)
-        bloqueados = bloqueaveis[:n_blockers]
-        nao_bloqueados = bloqueaveis[n_blockers:]
+        don_total = max(0, self.me.don_available)
+        target_hits = opp_life + 1 if opp_life > 0 else 1
 
-        candidatos_dano = unblockable + nao_bloqueados  # estes podem conectar (sujeitos a counter)
+        def hits_after_best_defense(powered_attacks):
+            unblockable = [a for a in powered_attacks if a[1]]
+            bloqueaveis = sorted([a for a in powered_attacks if not a[1]],
+                                 key=lambda a: -a[0])
+            candidatos_dano = unblockable + bloqueaveis[n_blockers:]
+            if not candidatos_dano:
+                return 0
 
-        if not candidatos_dano:
-            return False  # tudo que sobrou foi bloqueado, nada chega na vida/leader
-
-        # Counters disponiveis sem espiar mao oculta.
-        counters_disponiveis = sorted(self.opp_counter_chunks_for_lethal())
-
-        # Greedy: cobre primeiro os ataques que precisam de MENOS counter
-        # (maximiza quantos ataques o oponente sobrevive com o estoque que
-        # tem) -- pior caso pra mim, melhor defesa pra ele.
-        candidatos_dano_ordenados = sorted(candidatos_dano, key=lambda a: a[0])
-        sobrou_counters = list(counters_disponiveis)
-        conecta = []
-        for power, is_unblockable, hits in candidatos_dano_ordenados:
-            necessario = power - leader_power + 1
-            # necessario = quanto de counter o oponente precisa somar para a
-            # defesa (leader_power + counter) IGUALAR ou SUPERAR o ataque.
-            # necessario <= 0 significa power < leader_power -- o ataque NAO
-            # tem poder suficiente para conectar mesmo SEM nenhum counter
-            # (regra do jogo: conecta apenas se atk_power >= defend_power) --
-            # logo nao conecta, e nao consome counter nenhum do oponente.
-            if necessario <= 0:
-                continue  # nao conecta, counters do oponente ficam intactos
-            # tenta cobrir 'necessario' somando counters disponiveis (do menor
-            # pro maior, gastando o minimo de cartas possivel)
-            soma = 0
-            usados = []
-            for ctr in sobrou_counters:
+            sobrou_counters = list(counters_base)
+            conecta = []
+            for power, _is_unblockable, hits in sorted(candidatos_dano, key=lambda a: a[0]):
+                necessario = power - leader_power + 1
+                if necessario <= 0:
+                    continue
+                soma = 0
+                usados = []
+                for ctr in sobrou_counters:
+                    if soma >= necessario:
+                        break
+                    soma += ctr
+                    usados.append(ctr)
                 if soma >= necessario:
-                    break
-                soma += ctr
-                usados.append(ctr)
-            if soma >= necessario:
-                for u in usados:
-                    sobrou_counters.remove(u)
-                # sobreviveu -- nao conecta
-            else:
-                conecta.append((power, hits))  # nao deu pra cobrir -- conecta
+                    for u in usados:
+                        sobrou_counters.remove(u)
+                else:
+                    conecta.append((power, hits))
+            return sum(h for _, h in conecta)
 
-        hits_que_conectam = sum(h for _, h in conecta)
+        def search_alloc(idx: int, don_left: int, current: list):
+            if idx == len(ataques):
+                return hits_after_best_defense(current) >= target_hits
 
-        if opp_life > 0:
-            return hits_que_conectam >= opp_life + 1
-        else:
-            return hits_que_conectam >= 1
+            base_power, unblockable, hits = ataques[idx]
+            # Tenta mais DON primeiro; se houver lethal garantido, acha cedo.
+            for don in range(don_left, -1, -1):
+                if search_alloc(
+                    idx + 1,
+                    don_left - don,
+                    current + [(base_power + don * 1000, unblockable, hits)],
+                ):
+                    return True
+            return False
+
+        return search_alloc(0, don_total, [])
 
     # ── Análise de defesa ────────────────────────────────────────────────────
 
@@ -6139,6 +6139,26 @@ class OPTCGMatch:
                 # Se a carta mais "barata" de trashar ainda é cara (jogável), penaliza
                 base -= min(perda * 0.3, 60)
 
+            # Comprar descartando da mao nao e vantagem liquida de carta.
+            # Ex: leader Imu trasha 1 da mao/campo para comprar 1; isso filtra
+            # a mao, mas nao deveria competir como draw puro de score 120 no
+            # early quando ainda ha cartas jogaveis para desenvolver campo.
+            draw_count = sum(s.get('count', 1) for s in steps
+                             if s.get('action') == 'draw')
+            trash_count = sum(c.get('count', 1) for c in costs
+                              if c.get('type') in ('trash_from_hand',
+                                                   'trash_hand',
+                                                   'trash_char_or_hand'))
+            if draw_count and draw_count <= trash_count:
+                base = min(base, 45)
+                playable = [
+                    c for c in p.hand
+                    if c.card_type in ('CHARACTER', 'STAGE', 'EVENT')
+                    and effective_hand_play_cost(p, c) <= p.don_available
+                ]
+                if GameAnalyzer(p, opp).game_phase() == 'early' and len(p.field_chars) <= 1 and playable:
+                    base -= 35
+
         # Ajustes por prioridade
         if priority == 'LETHAL':
             base -= 30   # prefere atacar quando pode ganhar
@@ -6440,17 +6460,21 @@ class OPTCGMatch:
         Se `amostras` for None (ex: chamada legada sem Monte Carlo
         disponível), cai numa única rodada contra o estado real de opp.
         """
+        valores = self._simulate_sequence_values(p, opp, first_action, max_steps, amostras)
+        return sum(valores) / len(valores) if valores else -1e9
+
+    def _simulate_sequence_values(self, p, opp, first_action, max_steps=8, amostras=None):
+        """Retorna os valores por amostra Monte Carlo para auditoria do planner."""
         old_suppress = self._suppress_replay_log
         self._suppress_replay_log = True
         try:
             if not amostras:
-                return self._simulate_sequence_once(p, opp, first_action, max_steps, amostra=None)
+                return [self._simulate_sequence_once(p, opp, first_action, max_steps, amostra=None)]
 
-            valores = [
+            return [
                 self._simulate_sequence_once(p, opp, first_action, max_steps, amostra=amostra)
                 for amostra in amostras
             ]
-            return sum(valores) / len(valores)
         finally:
             self._suppress_replay_log = old_suppress
 
@@ -6510,7 +6534,7 @@ class OPTCGMatch:
             return -1e9
         won = self._apply_action(first2, p2, opp2, ee2, eng2, verbose=False)
         if won:
-            return 1e9   # essa linha vence
+            return SIMULATED_WIN_SCORE   # essa linha vence
 
         # Continua gulosamente até o fim do turno
         # activate_main agora compete como ação no _generate_and_score_actions,
@@ -6520,7 +6544,7 @@ class OPTCGMatch:
             if not acts or acts[0][0] < 0:
                 break
             if self._apply_action(acts[0], p2, opp2, ee2, eng2, verbose=False):
-                return 1e9
+                return SIMULATED_WIN_SCORE
         return self._evaluate_state(p2, opp2)
 
     def _remap_action(self, action, p, p2, opp, opp2):
@@ -6583,6 +6607,7 @@ class OPTCGMatch:
             actions = self._generate_and_score_actions(p, opp, engine)
             if not actions or actions[0][0] < 0:
                 break
+            priority = engine.analyzer.analysis_priority()
 
             # TURN PLANNER: para as TOP_K ações candidatas, simula a linha de jogo
             # resultante e escolhe a que leva ao MELHOR estado de fim de turno.
@@ -6603,6 +6628,10 @@ class OPTCGMatch:
             ]
             if len(candidatas) == 1:
                 melhor_acao = candidatas[0]
+                self._log_turn_planner_decision(
+                    p, opp, engine, priority, actions, candidatas,
+                    melhor_acao, None, {}
+                )
                 if self._apply_action(melhor_acao, p, opp, ee, engine, verbose=verbose):
                     return True
                 continue
@@ -6613,8 +6642,16 @@ class OPTCGMatch:
 
             melhor_acao = None
             melhor_valor = -1e18
+            sim_values = {}
             for cand in candidatas:
-                valor = self._simulate_sequence(p, opp, cand, amostras=amostras_turno)
+                valores = self._simulate_sequence_values(p, opp, cand, amostras=amostras_turno)
+                valor = sum(valores) / len(valores) if valores else -1e9
+                wins = sum(1 for v in valores if v >= SIMULATED_WIN_SCORE)
+                sim_values[id(cand)] = {
+                    'avg': valor,
+                    'wins': wins,
+                    'samples': len(valores),
+                }
                 if valor > melhor_valor:
                     melhor_valor = valor
                     melhor_acao = cand
@@ -6623,6 +6660,10 @@ class OPTCGMatch:
                 break
 
             # Executa a primeira ação da melhor linha no estado REAL
+            self._log_turn_planner_decision(
+                p, opp, engine, priority, actions, candidatas,
+                melhor_acao, sim_values.get(id(melhor_acao), melhor_valor), sim_values
+            )
             if self._apply_action(melhor_acao, p, opp, ee, engine, verbose=verbose):
                 return True
 
@@ -6989,6 +7030,86 @@ class OPTCGMatch:
             'trigger': trigger,
             'decision': decision,
             'reason':  reason,
+        })
+
+    def _audit_card_brief(self, card):
+        if card is None:
+            return None
+        if not hasattr(card, 'code'):
+            return {'label': str(card)}
+        return {
+            'code': card.code,
+            'name': card.name,
+            'type': card.card_type,
+            'cost': card.cost,
+            'power': card.power,
+            'current_power': card.effective_power(True),
+            'rested': bool(getattr(card, 'rested', False)),
+            'just_played': bool(getattr(card, 'just_played', False)),
+            'don_attached': int(getattr(card, 'don_attached', 0)),
+        }
+
+    def _audit_action_brief(self, action, simulated_value=None):
+        score, kind, obj, target_type, target = action
+        sim_avg = simulated_value
+        sim_wins = None
+        sim_samples = None
+        if isinstance(simulated_value, dict):
+            sim_avg = simulated_value.get('avg')
+            sim_wins = simulated_value.get('wins')
+            sim_samples = simulated_value.get('samples')
+        return {
+            'score': round(float(score), 2),
+            'simulated_value': (None if sim_avg is None
+                                else round(float(sim_avg), 2)),
+            'simulated_wins': sim_wins,
+            'simulated_samples': sim_samples,
+            'kind': kind,
+            'card': self._audit_card_brief(obj),
+            'target_type': target_type,
+            'target': self._audit_card_brief(target),
+        }
+
+    def _log_turn_planner_decision(self, p: GameState, opp: GameState, engine,
+                                   priority: str, actions: list, candidates: list,
+                                   chosen, chosen_value, sim_values: dict):
+        """Registra o ranking que levou o Turn Planner a escolher uma acao."""
+        if self.decision_log is None or self._suppress_replay_log:
+            return
+        player_id = 'A' if p is self.state_a else 'B'
+        top_immediate = actions[0] if actions else None
+        chosen_card = chosen[2] if chosen else None
+        self.decision_log.append({
+            'kind': 'turn_planner',
+            'turn': self.global_turn,
+            'player': player_id,
+            'decision': 'choose_action',
+            'trigger': 'turn_planner',
+            'card': chosen_card.code if chosen_card else '',
+            'name': chosen_card.name if chosen_card else '',
+            'reason': f'priority={priority}',
+            'context': {
+                'priority': priority,
+                'posture': engine.posture(),
+                'phase': engine.analyzer.game_phase(),
+                'profile': engine.analyzer.deck_profile_type(),
+                'life': p.life_count(),
+                'opp_life': opp.life_count(),
+                'hand': len(p.hand),
+                'opp_hand': len(opp.hand),
+                'field': len(p.field_chars),
+                'opp_field': len(opp.field_chars),
+                'don_available': p.don_available,
+                'don_rested': p.don_rested,
+                'can_lethal': engine.analyzer.can_lethal_this_turn(),
+                'opp_lethal_threat': round(float(engine.analyzer.opp_lethal_threat()), 3),
+            },
+            'chosen': self._audit_action_brief(chosen, chosen_value) if chosen else None,
+            'top_immediate': self._audit_action_brief(top_immediate) if top_immediate else None,
+            'candidates': [
+                self._audit_action_brief(a, sim_values.get(id(a)))
+                for a in candidates[:8]
+            ],
         })
 
     # ── Replay logger ────────────────────────────────────────────────────────

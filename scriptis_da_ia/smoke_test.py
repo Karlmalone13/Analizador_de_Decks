@@ -241,6 +241,7 @@ check('Five Elders entra como candidata mesmo com DON reservado para defesa',
 # ── 12. can_lethal_this_turn nao espia counter oculto da mao real ──
 me, opp = me_opp()
 me.leader = mk('LD-ATK', 'Leader atacante', power=6000, card_type='LEADER')
+me.don_available = 0
 opp.leader = mk('LD-DEF', 'Leader defensor', power=5000, card_type='LEADER')
 opp.life = []
 opp.hand = [
@@ -252,6 +253,7 @@ hidden_counter_result = DecisionEngine(me, opp).analyzer.can_lethal_this_turn()
 
 me2, opp2 = me_opp()
 me2.leader = mk('LD-ATK', 'Leader atacante', power=6000, card_type='LEADER')
+me2.don_available = 0
 opp2.leader = mk('LD-DEF', 'Leader defensor', power=5000, card_type='LEADER')
 opp2.life = []
 opp2.hand = [mk('B1', 'Blank 1'), mk('B2', 'Blank 2'), mk('B3', 'Blank 3')]
@@ -264,6 +266,15 @@ check('can_lethal_this_turn ignora counters reais ocultos e usa tamanho da mao',
       hidden_counter_result == blank_hidden_result)
 check('can_lethal_this_turn respeita counters revelados',
       known_counter_result is False and hidden_counter_result is True)
+
+me, opp = me_opp()
+me.leader = mk('LD-ATK-4K', 'Leader atacante 4k', power=4000, card_type='LEADER')
+me.don_available = 1
+opp.leader = mk('LD-DEF-5K', 'Leader defensor 5k', power=5000, card_type='LEADER')
+opp.life = []
+opp.hand = []
+check('can_lethal_this_turn considera DON anexavel no ataque',
+      DecisionEngine(me, opp).analyzer.can_lethal_this_turn() is True)
 
 # ── 13. imunidade source=opp nao protege contra efeito proprio ──
 me, opp = me_opp()
