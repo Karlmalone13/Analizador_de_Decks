@@ -6046,7 +6046,22 @@ class OPTCGMatch:
         # activate_main: valor recorrente por turno em campo — priorizar colocar
         # em campo para acumular esse valor nos turnos seguintes.
         if 'activate_main' in effects and card.card_type == 'CHARACTER':
-            base += 30
+            am = effects['activate_main']
+            am_steps = am.get('steps', [])
+            recupera_trash = next((s for s in am_steps if s.get('action') == 'play_from_trash'), None)
+            if recupera_trash:
+                ft = (recupera_trash.get('filter_type') or '').lower()
+                max_rec = recupera_trash.get('count', 1)
+                # Conta alvos no trash + no campo (que o efeito vai trashar antes de recuperar)
+                def _matches_ft(c2):
+                    return c2.card_type == 'CHARACTER' and (
+                        not ft or ft in (c2.sub_types or '').lower())
+                trash_targets = sum(1 for c2 in engine.me.trash if _matches_ft(c2))
+                field_targets = sum(1 for c2 in engine.me.field_chars if _matches_ft(c2) and c2 is not card)
+                n = min(trash_targets + field_targets, max_rec)
+                base += 30 + n * 50   # cada char recuperável vale ~50
+            else:
+                base += 30
 
         if habilita_ataque:
             base += 60   # prioriza sair antes dos ataques
@@ -6337,6 +6352,19 @@ class OPTCGMatch:
         # Recursos: cartas na mão, DON ainda disponível (flexibilidade)
         score += len(p.hand) * 8
         score += p.don_available * 5
+        # Chars no trash que podem ser recuperados por cartas na mão (ex: Five Elders)
+        for hc in p.hand:
+            hc_eff = get_card_effects(hc.code)
+            am = hc_eff.get('activate_main', {})
+            for step in am.get('steps', []):
+                if step.get('action') == 'play_from_trash':
+                    ft = (step.get('filter_type') or '').lower()
+                    max_rec = step.get('count', 1)
+                    targets = sum(1 for c2 in p.trash
+                                  if c2.card_type == 'CHARACTER'
+                                  and (not ft or ft in (c2.sub_types or '').lower()))
+                    score += min(targets, max_rec) * 60
+                    break
         return score
 
     def _apply_action(self, action, p, opp, ee, engine, verbose=False):
