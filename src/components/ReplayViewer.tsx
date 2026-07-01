@@ -119,8 +119,8 @@ function ZoneBox({
     className?: string
 }) {
     return (
-        <div className={`rounded-md border border-gray-800 bg-gray-900/70 px-2 py-1 ${className}`}>
-            <div className="mb-1 text-[10px] uppercase text-gray-500">{label}</div>
+        <div className={`rounded-md border border-gray-800 bg-gray-900/70 px-1.5 py-0.5 ${className}`}>
+            <div className="mb-0.5 text-[9px] uppercase text-gray-500">{label}</div>
             {children}
         </div>
     )
@@ -128,7 +128,7 @@ function ZoneBox({
 
 function CountZone({ label, value, className = '' }: { label: string; value: string | number; className?: string }) {
     return (
-        <ZoneBox label={label} className={`flex min-h-12 flex-col justify-between ${className}`}>
+        <ZoneBox label={label} className={`flex flex-col justify-between ${className}`}>
             <div className="text-base font-bold text-gray-100">{value}</div>
         </ZoneBox>
     )
@@ -172,7 +172,8 @@ function HandCardTile({ card }: { card: ReplayHandCard }) {
     return (
         <>
             <div
-                className="relative h-14 min-w-0 overflow-hidden rounded border border-gray-700 bg-gray-950"
+                className="relative flex-shrink-0 overflow-hidden rounded border border-gray-700 bg-gray-900"
+                style={{ height: '56px', width: '40px' }}
                 title={`${card.name} | custo ${cost} | counter ${card.counter ?? 0}`}
                 onMouseEnter={handleMouseEnter}
                 onMouseLeave={handleMouseLeave}
@@ -181,18 +182,14 @@ function HandCardTile({ card }: { card: ReplayHandCard }) {
                     <img
                         src={card.image}
                         alt={card.name}
-                        className="h-full w-full object-cover object-top opacity-85"
+                        className="h-full w-full object-contain"
                         onError={() => setImgError(true)}
                     />
                 ) : (
-                    <div className="h-full bg-gray-900" />
-                )}
-                <div className="absolute inset-x-0 bottom-0 bg-black/75 px-1 py-0.5">
-                    <div className="truncate text-[10px] font-semibold leading-tight text-white">{card.name}</div>
-                    <div className="text-[9px] leading-tight text-gray-300">
-                        c{cost}{(card.counter ?? 0) > 0 ? ` / +${card.counter}` : ''}
+                    <div className="flex h-full items-center justify-center">
+                        <span className="text-[7px] text-gray-500 text-center px-0.5 leading-tight">{card.name}</span>
                     </div>
-                </div>
+                )}
             </div>
             {hoveredCard && (
                 <CardPopup card={hoveredCard.card} x={hoveredCard.x} y={hoveredCard.y} />
@@ -210,8 +207,8 @@ function PlayerStatePanel({ title, state, side }: { title: string; state: Player
     const mirrored = side === 'A'
 
     const handZone = (
-        <ZoneBox label={`Mao (${state.hand})`} className="min-h-20 overflow-visible">
-            <div className="grid grid-cols-5 gap-1">
+        <ZoneBox label={`Mao (${state.hand})`} className="overflow-hidden">
+            <div className="flex flex-wrap gap-1">
                 {handCards.length > 0 ? handCards.map((card, idx) => (
                     <HandCardTile key={`${card.code}-${idx}`} card={card} />
                 )) : (
@@ -222,21 +219,21 @@ function PlayerStatePanel({ title, state, side }: { title: string; state: Player
     )
 
     const middleZone = (
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-3 gap-1">
             <ZoneBox label="Stage">
-                <div className="truncate text-xs text-gray-200">{state.stage?.name || '-'}</div>
+                <div className="truncate text-[10px] text-gray-200">{state.stage?.name || '-'}</div>
             </ZoneBox>
             <ZoneBox label="Leader">
-                <div className="truncate text-xs text-gray-200">{state.leader?.name || '-'}</div>
+                <div className="truncate text-[10px] text-gray-200">{state.leader?.name || '-'}</div>
             </ZoneBox>
             <ZoneBox label="DON">
-                <div className="text-xs text-gray-200">
+                <div className="text-[10px] text-gray-200">
                     <span className="text-yellow-300">{state.don_available}</span>
-                    <span className="mx-1 text-gray-600">ativo</span>
+                    <span className="mx-0.5 text-gray-600">atv</span>
                     <span className="text-orange-300">{donRested}</span>
-                    <span className="mx-1 text-gray-600">rest</span>
+                    <span className="mx-0.5 text-gray-600">rst</span>
                     <span className="text-gray-300">{state.don_total}</span>
-                    <span className="ml-1 text-gray-600">campo</span>
+                    <span className="ml-0.5 text-gray-600">ttl</span>
                 </div>
             </ZoneBox>
         </div>
@@ -269,16 +266,16 @@ function PlayerStatePanel({ title, state, side }: { title: string; state: Player
     )
 
     return (
-        <div className="flex min-h-0 flex-col rounded-lg border border-gray-800 bg-gray-950/70 p-2">
-            <div className="flex items-center justify-between gap-3">
-                <div className={`truncate text-xs font-bold ${color}`}>{title}</div>
-                <div className="text-xs text-gray-500">
+        <div className="flex min-h-0 flex-col rounded-lg border border-gray-800 bg-gray-950/70 p-1.5">
+            <div className="flex items-center justify-between gap-2">
+                <div className={`truncate text-[11px] font-bold ${color}`}>{title}</div>
+                <div className="text-[10px] text-gray-500">
                     Campo {state.characters.length}/5 · Dano {state.stats.damage}
                 </div>
             </div>
 
-            <div className="mt-2 grid min-h-0 flex-1 grid-cols-[74px_minmax(0,1fr)_74px] grid-rows-[minmax(44px,auto)_auto_minmax(44px,1fr)] gap-2">
-                <div className="row-span-3 grid content-start gap-2">
+            <div className="mt-1 grid min-h-0 flex-1 grid-cols-[60px_minmax(0,1fr)_60px] grid-rows-[auto_auto_auto] gap-1.5">
+                <div className="row-span-3 grid content-start gap-1">
                     <CountZone label="Deck" value={state.deck} />
                     <CountZone label="Trash" value={state.trash} />
                 </div>
@@ -488,7 +485,7 @@ export default function ReplayViewer({ replayData, nameA, nameB, onClose }: Prop
                 </div>
 
                 <div className="grid min-h-0 flex-1 grid-cols-[minmax(0,1fr)_360px] border-b border-gray-800">
-                    <div className="min-h-0 overflow-hidden border-r border-gray-800">
+                    <div className="min-h-0 overflow-y-auto border-r border-gray-800">
                         <TurnStateSummary snapshot={snapshot} nameA={nameA} nameB={nameB} />
                     </div>
 
