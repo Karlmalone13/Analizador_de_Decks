@@ -1,5 +1,19 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-01 (22) - Claude
+
+**Feito — roadmap de análise estatística registrado no TODO:**
+
+Adicionado ao TODO o plano de uso do banco de logs para estatísticas e tuning da IA:
+- Win rate por matchup (líder × líder)
+- Curva de vida por turno
+- Deck popularity por líder
+- Comparação IA vs humano: snapshot do log → engine decide → compara com jogada real
+
+Nenhuma mudança de código nesta sessão.
+
+---
+
 ## 2026-07-01 (21) - Claude
 
 **Feito — nomes de arquivo dos logs usam lider+cor em vez de timestamp puro:**

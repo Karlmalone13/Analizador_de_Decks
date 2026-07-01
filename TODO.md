@@ -1,6 +1,6 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 01 de julho de 2026 (sessão 20)
+**Última atualização:** 01 de julho de 2026 (sessão 22)
 **Estado:** 2148 cards com efeito (subiu de 2138), parser auditado OP-02 a OP-15
 **Baseline:** commit bbb4d31 (set_don_active + mill) + viabilidade transacional (a commitar)
 **Repo:** github.com/Karlmalone13/Analizador_de_Decks
@@ -723,9 +723,36 @@ de imunidade e stubs antigos listados abaixo.
 
 ---
 
+## 📊 BANCO DE LOGS — análise estatística (planejado)
+
+Banco de partidas reais em `scriptis_da_ia/logs/` (arquivos nomeados por líder+cor).
+Uso: `python parse_combat_log.py partida.log --summary --add-to-db`
+
+### Próximos usos planejados (em ordem de prioridade)
+
+- [ ] **Comparação IA vs humano** — dado um snapshot do log real (campo/mão/vida/DON),
+  rodar o engine no mesmo estado e comparar a decisão da IA com o que o humano fez.
+  Divergências concretas = ponto de tuning de heurística. Este é o uso mais valioso.
+
+- [ ] **Win rate por matchup** — filtrar `logs/decks/` e `logs/index.json` por líder.
+  Ex: quantas partidas Teach-BY × Lucy-RB existem, e qual a taxa de vitória de cada lado.
+
+- [ ] **Curva de vida por turno** — média de vida restante em cada turno por líder.
+  Ajuda a entender ritmo de jogo e quando o matchup costuma ser decidido.
+
+- [ ] **Deck popularity por líder** — quais cartas aparecem em mais listas do mesmo líder.
+  Base para calibrar heurísticas de valor de carta por arquétipo.
+
+- [ ] **ML (futuro)** — behavioral cloning a partir do que os humanos fazem em cada
+  estado. Só faz sentido depois de ter volume (50+ partidas) e de a base heurística
+  estar afinada. Não antes.
+
+---
+
 ## ROADMAP
 1. Consertar lógica — EM ANDAMENTO (vários blocos fechados nesta sessão)
 2. Auditar via replay — iniciado (Imu vs Sanji revelou Problemas 1/2/3)
 3. Tunar heurísticas por simulação em volume — AQUI MORA QUASE TODO O GANHO
+   3a. Comparação IA vs humano via banco de logs reais (ver seção acima)
 4. ML — só se 1-3 prontos e baterem teto. Descartado por ora (25/06): herdaria bugs de
    execução; não "aprende conforme ensina" — quem faz isso é o parser por mecânica.
