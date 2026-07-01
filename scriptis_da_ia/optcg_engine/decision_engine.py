@@ -4210,6 +4210,13 @@ class EffectExecutor:
         if card.card_type == 'CHARACTER' and card.cost >= 8:
             value += 20
 
+        # Carta jogável este turno vale muito mais — não deve ser trashada como
+        # custo quando poderia ser jogada. Bônus proporcional ao custo efetivo
+        # (carta cara e jogável = perda dupla: perde a carta E a jogada).
+        custo = effective_hand_play_cost(self.me, card)
+        if custo <= self.me.don_available:
+            value += 60 + custo * 8   # ex: custo 9 → +132 (nunca trasha jogável premium)
+
         return value
 
     def _choose_to_trash(self, hand: list) -> Optional[Card]:
