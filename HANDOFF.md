@@ -1,5 +1,22 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-01 (26) - Codex
+
+**Feito - compare_vs_human corrigido + falso lethal score removido:**
+
+- `scriptis_da_ia/compare_vs_human.py` agora usa snapshot aproximado de inicio do turno para comparar IA vs humano.
+- O snapshot parseado continua sendo pos-turno; por isso o comparador usa o turno anterior + carta comprada no turno atual.
+- T1 de Nami-BY x Imu-B deixou de acusar falso positivo: IA agora prefere jogar `Saint Shalria`, nao ativar Imu.
+- `scriptis_da_ia/optcg_engine/decision_engine.py` nao da mais score `10000` para atacar leader com vida 0 quando `can_lethal_this_turn()` diz que o lethal nao e garantido.
+- Revalidado nos 3 logs parseados: os scores falsos `9900/9920` sumiram; score alto sobrou apenas em lethal real.
+- Validacao: `python -m py_compile scriptis_da_ia\compare_vs_human.py scriptis_da_ia\optcg_engine\decision_engine.py` e `python scriptis_da_ia\smoke_test.py` passaram.
+
+**Proximo passo sugerido:**
+
+Auditar os turnos em que Imu ainda prefere `activate` cedo, agora que a regua do comparador esta menos contaminada.
+
+---
+
 ## 2026-07-01 (25) - Claude
 
 **Feito — bug crítico no parser corrigido + 3º log adicionado:**

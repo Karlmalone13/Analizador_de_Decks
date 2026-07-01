@@ -19,6 +19,7 @@ Para cada turno mostra:
 import sys
 import json
 import argparse
+import copy
 from pathlib import Path
 
 ENGINE_DIR = Path(__file__).parent / 'optcg_engine'
@@ -83,20 +84,72 @@ def make_life_cards(count: int) -> list:
 # Construcao de GameState a partir de snapshot
 # ---------------------------------------------------------------------------
 
-def build_game_states(turn_data: dict, meta: dict, active_player_name: str):
-    """
-    Retorna (state_active, state_opp) como GameState.
-    Usa o snapshot do turno (estado apos o turno, que e o estado no inicio
-    do turno seguinte do ativo).
-    """
-    snap    = turn_data.get('snapshot', {})
+def _names(meta: dict, active_player_name: str):
     players = meta['players']
     p1_name = players['p1']['name']
     p2_name = players['p2']['name']
     opp_name = p2_name if active_player_name == p1_name else p1_name
-
     active_meta = players['p1'] if active_player_name == p1_name else players['p2']
-    opp_meta    = players['p2'] if active_player_name == p1_name else players['p1']
+    opp_meta = players['p2'] if active_player_name == p1_name else players['p1']
+    return p1_name, p2_name, opp_name, active_meta, opp_meta
+
+
+def _remove_one(seq: list, code: str) -> bool:
+    for i, item in enumerate(seq):
+        if item == code:
+            seq.pop(i)
+            return True
+    return False
+
+
+def _pre_turn_snapshot(turns: list, idx: int, meta: dict) -> dict:
+    """
+    Monta um snapshot aproximado de INICIO do turno.
+
+    O JSON do parser guarda snapshots pos-turno. Para comparar a IA com a
+    escolha humana, o estado correto e o fim do turno anterior + carta
+    comprada no turno atual. Para T1 nao existe turno anterior; usamos o
+    snapshot do proprio T1 e desfazemos apenas plays/activates simples que
+    aparecem no log (fallback imperfeito, mas menos enganoso que pos-turno).
+    """
+    turn = turns[idx]
+    player = turn.get('player')
+    current = copy.deepcopy(turn.get('snapshot', {}))
+
+    if idx > 0:
+        current = copy.deepcopy(turns[idx - 1].get('snapshot', {}))
+
+    if player and player in current:
+        drawn = (turn.get('card_drawn') or {}).get('code')
+        if drawn:
+            current[player].setdefault('hand', []).append(drawn)
+
+    if idx == 0 and player and player in current:
+        st = current[player]
+        hand = st.setdefault('hand', [])
+        board = st.setdefault('board', [])
+        trash = st.setdefault('trash', [])
+        for action in reversed(turn.get('actions', [])):
+            code = action.get('card')
+            if not code:
+                continue
+            if action.get('type') == 'play':
+                if _remove_one(board, code) or _remove_one(trash, code):
+                    hand.append(code)
+
+    return current
+
+
+def build_game_states(turn_data: dict, meta: dict, active_player_name: str,
+                      snapshot: dict | None = None):
+    """
+    Retorna (state_active, state_opp) como GameState.
+    Usa snapshot de inicio de turno quando fornecido. O snapshot armazenado
+    no log parseado e pos-turno, entao chamar sem `snapshot` deve ser evitado
+    para analise IA vs humano.
+    """
+    snap = snapshot if snapshot is not None else turn_data.get('snapshot', {})
+    _p1_name, _p2_name, opp_name, active_meta, opp_meta = _names(meta, active_player_name)
 
     active_snap = snap.get(active_player_name, {})
     opp_snap    = snap.get(opp_name, {})
@@ -148,17 +201,18 @@ def build_game_states(turn_data: dict, meta: dict, active_player_name: str):
 # Execucao do Turn Planner
 # ---------------------------------------------------------------------------
 
-def get_ai_actions(turn_data: dict, meta: dict, active_player: str) -> list:
+def get_ai_actions(turn_data: dict, meta: dict, active_player: str,
+                   snapshot: dict | None = None) -> list:
     """
     Reconstroi o estado e roda _generate_and_score_actions.
     Retorna lista de dicts com score, tipo, carta.
     """
-    snap = turn_data.get('snapshot', {})
+    snap = snapshot if snapshot is not None else turn_data.get('snapshot', {})
     if not snap.get(active_player):
         return [{'error': 'sem snapshot para este jogador'}]
 
     try:
-        state_a, state_o = build_game_states(turn_data, meta, active_player)
+        state_a, state_o = build_game_states(turn_data, meta, active_player, snapshot=snap)
 
         # Instancia OPTCGMatch minimo (sem __init__ completo)
         match = OPTCGMatch.__new__(OPTCGMatch)
@@ -203,8 +257,9 @@ def _card_label(code: str) -> str:
     return f'{code}  {d.get("name", "")[:25]}' if d else code
 
 
-def print_turn(turn: dict, meta: dict, active_player: str, show_state: bool):
-    snap    = turn['snapshot']
+def print_turn(turn: dict, meta: dict, active_player: str, show_state: bool,
+               ai_snapshot: dict | None = None):
+    snap    = ai_snapshot if ai_snapshot is not None else turn['snapshot']
     actions = turn['actions']
     t_num   = turn['turn']
     don     = turn.get('don_drawn', '?')
@@ -266,7 +321,7 @@ def print_turn(turn: dict, meta: dict, active_player: str, show_state: bool):
 
     # IA
     print('\n  [IA — top acoes por score]')
-    ai = get_ai_actions(turn, meta, active_player)
+    ai = get_ai_actions(turn, meta, active_player, snapshot=snap)
     for i, a in enumerate(ai):
         if 'error' in a:
             print(f'    ERRO: {a["error"][:200]}')
@@ -326,7 +381,7 @@ def main():
     print(f'  {data["total_turns"]} turnos')
     print(DIVIDER)
 
-    for turn in turns:
+    for idx, turn in enumerate(turns):
         player = turn.get('player')
         if not player:
             continue
@@ -334,7 +389,9 @@ def main():
             continue
         if args.turn and turn['turn'] != args.turn:
             continue
-        print_turn(turn, meta, player, show_state=not args.no_state)
+        ai_snapshot = _pre_turn_snapshot(turns, idx, meta)
+        print_turn(turn, meta, player, show_state=not args.no_state,
+                   ai_snapshot=ai_snapshot)
 
     print(f'\n{DIVIDER}  Fim  {DIVIDER}\n')
 

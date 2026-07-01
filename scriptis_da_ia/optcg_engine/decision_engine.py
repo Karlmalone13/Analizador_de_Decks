@@ -5295,10 +5295,16 @@ class DecisionEngine:
             if not (passa_sem_don or passa_com_don or vale_restar):
                 return -999  # ataque inútil: não passa e não ativa nada — barra
 
-            # Pontua os ataques válidos
+            # Pontua os ataques validos. Vida 0/1 so vira prioridade maxima
+            # quando o conjunto de ataques realmente garante lethal; com
+            # blockers/counters suficientes, atacar leader ainda e pressao,
+            # mas nao deve soterrar as outras acoes.
+            lethal_now = a.can_lethal_this_turn()
             s = 100
-            if opp_life == 1:  s = 500
-            if opp_life == 0:  s = 10000
+            if opp_life == 1:
+                s = 500 if lethal_now else 220
+            if opp_life == 0:
+                s = 10000 if lethal_now else 250
 
             # Bônus se restar ativa efeito (vale mesmo sem dano)
             if vale_restar and not passa_sem_don:
