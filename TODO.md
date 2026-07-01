@@ -730,9 +730,15 @@ Uso: `python parse_combat_log.py partida.log --summary --add-to-db`
 
 ### Próximos usos planejados (em ordem de prioridade)
 
-- [ ] **Comparação IA vs humano** — dado um snapshot do log real (campo/mão/vida/DON),
-  rodar o engine no mesmo estado e comparar a decisão da IA com o que o humano fez.
-  Divergências concretas = ponto de tuning de heurística. Este é o uso mais valioso.
+- [x] **Comparação IA vs humano** — `compare_vs_human.py` implementado. Reconstrói
+  GameState do snapshot, roda Turn Planner, mostra divergências turno a turno.
+  **Próximos fixes identificados (01/07/2026):**
+  - [ ] Reconstrução de estado usa snapshot do fim do turno (pós-ação) em vez do
+    início do turno — gera falsos positivos onde IA "quer atacar" com chars que
+    já atacaram. Fix: usar snapshot do turno ANTERIOR como estado inicial.
+  - [ ] Activate do Imu supervalorizado no early (DON=1-2, campo vazio): IA prefere
+    activate a jogar Shalria no T01 (mutuamente exclusivos com 1 DON). Penalizar
+    `_score_activate_main` quando campo vazio e poucos DON.
 
 - [ ] **Win rate por matchup** — filtrar `logs/decks/` e `logs/index.json` por líder.
   Ex: quantas partidas Teach-BY × Lucy-RB existem, e qual a taxa de vitória de cada lado.

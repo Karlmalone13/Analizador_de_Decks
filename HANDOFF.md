@@ -28,9 +28,9 @@ Imu-B vs Monkey.D.Luffy-BP (Sebs#6211), 17 turnos. Partida rica: Saturn debuffan
 
 **Banco atual:** 3 partidas (Teach-BY×Lucy-RB, Nami-BY×Imu-B, Imu-B×Luffy-BP)
 
-**Próximos passos prioritários:**
-1. Corrigir reconstrução de estado no compare: usar snapshot do turno ANTERIOR (= início do turno ativo, antes de qualquer ação)
-2. Depois: ajustar heurística de activate early (supervalorizado vs desenvolver campo)
+**Próximos passos prioritários (anotados no TODO):**
+1. `compare_vs_human.py`: usar snapshot do turno ANTERIOR como estado inicial (hoje usa fim do turno atual → falsos positivos onde IA "quer atacar" chars que já atacaram)
+2. `_score_activate_main`: penalizar quando campo vazio e DON ≤ 2 (IA prefere activate a jogar carta no T01 com 1 DON — mutuamente exclusivos)
 
 ---
 
