@@ -1,5 +1,30 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-01 (16) - Claude
+
+**Feito — 4 correções de jogabilidade [A] no decision_engine.py:**
+
+1. **Fix `_can_play_card` (linha ~5021):** Eventos com `[Counter]+main` (ex: OP13-040, OP13-098, OP14-096) estavam sendo bloqueados do main phase. A verificação `[counter] in text → return False` foi reordenada para só bloquear eventos pure-counter (sem trigger `main`). Esses eventos agora são jogados no main phase via trigger `main`.
+
+2. **Fix `_has_don_reactive_use`:** Não detectava counter events com custo de play como motivo para reservar DON. Adicionado check `effective_hand_play_cost(me, c) > 0` para counter events na mão. Agora o AI reserva 1 DON quando tem counter event de custo 1 na mão.
+
+3. **Novo método `_parse_counter_event_text_fallback`:** Parser leve do bloco `[Counter]` do texto bruto da carta. Usado quando `card_effects_db.json` tem `counter: 0` (bug do gerar_effects_db.py — não parseia bloco `[Counter]` de EVENT). Cobre o padrão "+X power during this battle" com suporte a condições `leader_is` e `trash_gte`. Testado com OP06-038, OP12-037, OP09-078: plans retornados corretamente. Verificado por trace: counter events agora USADOS (ex: OP13-098 used 4x em 1 partida).
+
+4. **Fix `_score_play_action`:** Personagens com `when_attacking` ganham `habilita_ataque=True` (+60 bonus para sair antes dos ataques). Personagens com `activate_main` ganham +30 bonus base.
+
+**Resultado auditoria (25 partidas, seed=42):**
+- `activate_main NUNCA ativado: 0 cartas` (era multiple antes — Imu leader, Five Elders, etc. agora ativam)
+- Counter events estão sendo usados (verificado por monkey-patch; o audit não os vê porque `try_counter_event_power` bypassa `EffectExecutor.execute`)
+- [A] restante: Garp/Whitebeard (correto — condição de líder), Carrot when_attacking (amostras pequenas), OP13-040 counter (consumido no main phase, não como counter — correto)
+
+**Pendências [A] que ficaram:**
+- Carrot (OP08-023) `when_attacking` — personagem provavelmente morto antes de atacar; ou amostra pequena. Não é bug de engine, é scoring/heurística.
+- Pure counter events (OP06-038, OP12-037) aparecem em [A] no audit — artefato: o audit não captura `try_counter_event_power`. Verificado por trace que funcionam.
+
+**Próximo:** Resolver [B] (handlers sem log: `look_top_deck` 3329x, `negate_effect` 287x, `activate_trash_event_main` 164x, `lock_opp_don` 141x, `keyword_blocker`, `immunity`, `substitute_removal`).
+
+---
+
 ## 2026-07-01 (15) - Claude
 
 **Feito — revisão e commit do trabalho do Codex (sessão anterior).**

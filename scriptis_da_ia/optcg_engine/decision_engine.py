@@ -1306,10 +1306,75 @@ class EffectExecutor:
                 logs.append(f'devolveu {count} DON')
         return logs
 
+    def _parse_counter_event_text_fallback(
+        self, event: Card, target: Card, target_type: str
+    ) -> dict | None:
+        """
+        Parseia o efeito [Counter] do texto bruto da carta para o caso padrão:
+        "Your Leader [or Character] gains +X power during this battle."
+        Cobre ~90% dos counter events; casos condicionais ou multi-step ficam
+        fora de escopo aqui (retornam None e o engine ignora o evento como
+        counter, sem catastrófico -- só não usa a carta).
+        """
+        text = event.card_text or ''
+        # Extrai o bloco após [Counter]
+        m_block = re.search(r'\[counter\](.*?)(?:\[|$)', text.lower(), re.DOTALL)
+        if not m_block:
+            return None
+        counter_text = m_block.group(1)
+
+        # Condições globais simples — usa as mesmas chaves de _check_conditions
+        conditions: dict = {}
+        m_leader = re.search(r'if your leader is \[(\w+)\]', counter_text)
+        if m_leader:
+            conditions['leader_is'] = m_leader.group(1).lower()
+        m_trash = re.search(r'if you have (\d+) or more cards? in your trash', counter_text)
+        if m_trash:
+            conditions['trash_gte'] = int(m_trash.group(1))
+
+        # Detecta o buff: "+X power during this battle"
+        m_buff = re.search(r'\+(\d+)\s*power\s+during\s+this\s+battle', counter_text)
+        if not m_buff:
+            return None
+        amount = int(m_buff.group(1))
+
+        # Detecta o target
+        if 'your leader or character' in counter_text:
+            target_rule = 'leader_or_character'
+        elif 'your leader' in counter_text:
+            target_rule = 'leader'
+        elif 'your character' in counter_text:
+            target_rule = 'own_character'
+        else:
+            target_rule = 'leader_or_character'
+
+        # Rejeita se target não bate com quem está sendo atacado
+        if target_rule == 'leader' and target_type != 'leader':
+            return None
+        if target_rule == 'own_character' and target_type != 'character':
+            return None
+
+        return {
+            'steps': [{
+                'action': 'buff_power',
+                'amount': amount,
+                'target': target_rule,
+                'duration': 'battle_only',
+            }],
+            'conditions': conditions,
+        }
+
     def _counter_event_power_plan(self, event: Card, target: Card,
                                   target_type: str) -> tuple[int, list[dict]] | None:
         block = get_card_effects(event.code).get('counter', {})
-        if not block or not self._check_conditions(block.get('conditions', {}), event):
+        # Fallback: parser atual não parseia blocos [Counter] de EVENT cards
+        # (armazena counter: 0). Para o padrão mais comum — "gains +X power
+        # during this battle" — extrai o valor direto do texto.
+        if not block:
+            block = self._parse_counter_event_text_fallback(event, target, target_type)
+            if block is None:
+                return None
+        if not self._check_conditions(block.get('conditions', {}), event):
             return None
         steps = block.get('steps', [])
         # 'this_turn' conta igual a 'battle_only' aqui: o Counter Step so
@@ -5018,10 +5083,14 @@ class DecisionEngine:
             don_usable  = max(0, self.me.don_available - don_reserve)
         if effective_hand_play_cost(self.me, card) > don_usable:
             return False
-        if '[counter]' in card.card_text.lower() and card.card_type == 'EVENT':
-            return False
         effects = get_card_effects(card.code)
         has_main = any(t in effects for t in ('on_play', 'main', 'activate_main'))
+        # Eventos pure-counter (só trigger 'counter', sem 'main'): só usáveis
+        # na vez do oponente via try_counter_event_*; não entram no main phase.
+        # Eventos com AMBOS counter+main (ex: Ground Death, Never Existed) SÃO
+        # jogáveis no main phase pelo efeito 'main'.
+        if card.card_type == 'EVENT' and '[counter]' in card.card_text.lower() and not has_main:
+            return False
         if card.card_type == 'EVENT' and not has_main:
             return False
         if not self._effect_conditions_met(card):
@@ -5053,6 +5122,11 @@ class DecisionEngine:
 
         for c in me.hand:
             if c.card_type == 'EVENT' and '[counter]' in c.card_text.lower():
+                # Conta o custo de play da carta (DON!! necessário para jogá-la)
+                # OU texto explícito de DON!! no efeito (efeitos paid-activate)
+                play_cost = effective_hand_play_cost(me, c)
+                if play_cost > 0:
+                    return True
                 if re.search(r'don!!\s*[-x]?\s*\d', c.card_text.lower()):
                     return True
 
@@ -5919,6 +5993,14 @@ class OPTCGMatch:
                 habilita_ataque = True
         if card.has_rush or card.rush_this_turn:
             habilita_ataque = True
+        # when_attacking: o personagem precisa estar em campo para disparar o
+        # efeito; jogar ele agora HABILITA ataques com bônus no mesmo turno.
+        if 'when_attacking' in effects and card.card_type == 'CHARACTER':
+            habilita_ataque = True
+        # activate_main: valor recorrente por turno em campo — priorizar colocar
+        # em campo para acumular esse valor nos turnos seguintes.
+        if 'activate_main' in effects and card.card_type == 'CHARACTER':
+            base += 30
 
         if habilita_ataque:
             base += 60   # prioriza sair antes dos ataques
