@@ -1,5 +1,32 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-01 (24) - Claude
+
+**Feito — compare_vs_human.py: compara IA vs humano turno a turno**
+
+Script novo `scriptis_da_ia/compare_vs_human.py`:
+- Lê um JSON de partida parseado (`logs/parsed/`)
+- Para cada turno, reconstrói `GameState` (mão, campo, trash, vida, DON) a partir do snapshot
+- Roda `_generate_and_score_actions` do Turn Planner no estado reconstruído
+- Mostra: o que o humano fez vs top 8 ações da IA por score
+- Marca `*** DIVERGENCIA` quando IA e humano escolheram diferente
+
+Uso:
+```
+python compare_vs_human.py logs/parsed/<arquivo>.json
+python compare_vs_human.py logs/parsed/<arquivo>.json --player Nome --no-state
+python compare_vs_human.py logs/parsed/<arquivo>.json --turn 7
+```
+
+**Primeiros achados (partida Nami-BY x Imu-B):**
+- T05, T09, T11, T13, T15: humano passou, IA queria atacar (score 470–585) — pode ser IA super-agressiva ou humano guardando DON para counter
+- T01, T03: IA prefere `activate` do líder Imu antes de jogar carta — humano preferiu desenvolver campo
+- T17: IA prefere activate, humano jogou Warcury — provavelmente IA certa (activate tem mais valor no estado terminal)
+
+**Próximo passo:** auditar turno a turno quais divergências são bug de heurística vs decisão legítima do humano. T05 é o candidato mais óbvio (humano não atacou com field inteiro e vida baixa).
+
+---
+
 ## 2026-07-01 (23) - Claude
 
 **Feito — 2ª partida adicionada ao banco de logs:**
