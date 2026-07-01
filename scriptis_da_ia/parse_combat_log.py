@@ -1,20 +1,30 @@
 #!/usr/bin/env python3
 """
-parse_combat_log.py — Converte um combat log do simulador oficial OPTCG
-em JSON estruturado com decisões turno a turno.
+parse_combat_log.py -- Converte um combat log do simulador oficial OPTCG
+em JSON estruturado com decisoes turno a turno, extrai listas de deck e
+gerencia o banco de logs (scriptis_da_ia/logs/).
 
 Uso:
     python parse_combat_log.py partida.log
-    python parse_combat_log.py partida.log --output partida.json
-    python parse_combat_log.py partida.log --summary   (imprime resumo no terminal)
+    python parse_combat_log.py partida.log --summary
+    python parse_combat_log.py partida.log --add-to-db      (salva no banco)
+    python parse_combat_log.py --list-db                    (lista partidas no banco)
 """
 
 import re
 import json
+import shutil
 import argparse
 from pathlib import Path
+from collections import Counter
 
-# ─── Regex patterns ──────────────────────────────────────────────────────────
+# Raiz do banco de logs (relativo a este script)
+DB_ROOT = Path(__file__).parent / 'logs'
+DB_INDEX = DB_ROOT / 'index.json'
+
+# ---------------------------------------------------------------------------
+# Regex patterns
+# ---------------------------------------------------------------------------
 
 RE_LEADER   = re.compile(r'^\[(.+?)\] Leader is (.+?) \["([A-Z0-9]+-\d+)">')
 RE_DRAW_DON = re.compile(r'^\[(.+?)\] Draw (\d+) Don')
@@ -23,7 +33,6 @@ RE_DEPLOY   = re.compile(r'^\[(.+?)\] Deploy (.+?) \["([A-Z0-9]+-\d+)">')
 RE_ATTACH   = re.compile(r'^\[(.+?)\] Attach (\d+) Don to (.+?) \["([A-Z0-9]+-\d+)"\] \((\d+) Total\)')
 RE_ATTACK   = re.compile(r'^\[(.+?)\] (.+?) \["[A-Z0-9]+-\d+"\] attacking (.+)')
 RE_BLOCKS   = re.compile(r'^\[(.+?)\] (.+?) \["([A-Z0-9]+-\d+)"\] Blocks')
-RE_DESTROY  = re.compile(r'^\[(.+?)\] (.+?) \["([A-Z0-9]+-\d+)"\] Destroyed')
 RE_HIT      = re.compile(r'^(.+?) hit for (\d+) damage')
 RE_FAILS    = re.compile(r'^Attack Fails')
 RE_DISCARD  = re.compile(r'^\[(.+?)\] Discard (.+?) \["([A-Z0-9]+-\d+)"\] for Counter')
@@ -33,31 +42,33 @@ RE_HAND     = re.compile(r'^\[(.+?)\] Hand: \[(.*?)\]')
 RE_BOARD    = re.compile(r'^\[(.+?)\] Board: \[(.*?)\]')
 RE_TRASH    = re.compile(r'^\[(.+?)\] Trash: \[(.*?)\]')
 RE_LIFE     = re.compile(r'^\[(.+?)\] Life: (\d+)')
-RE_MULLIGAN = re.compile(r'^\[(.+?)\] Mulligan')
 RE_CHOSE    = re.compile(r'^\[(.+?)\] Chose to go (First|Second)')
+RE_DREW_RAW = re.compile(r'^\[(.+?)\] Drew card from deck: .+? \["([A-Z0-9]+-\d+)">')
+RE_CARD_REF = re.compile(r'"([A-Z0-9]+-\d+)">')   # qualquer referencia a codigo no log
 
 
-def _codes(s: str) -> list[str]:
+def _codes(s: str) -> list:
     return [c.strip() for c in s.split(',') if c.strip()] if s.strip() else []
 
 
 def _clean(line: str) -> str:
-    """Remove zero-width spaces and strip."""
     return line.replace('​', '').strip()
 
 
-# ─── Parser principal ─────────────────────────────────────────────────────────
+# ---------------------------------------------------------------------------
+# Parser principal
+# ---------------------------------------------------------------------------
 
-def parse_log(log_path: str) -> dict:
+def parse_log(log_path: str) -> tuple:
+    """
+    Retorna (data_dict, raw_lines_cleaned).
+    raw_lines e necessario para a reconstrucao de decks.
+    """
     raw = Path(log_path).read_text(encoding='utf-8', errors='replace').splitlines()
     lines = [_clean(l) for l in raw]
 
-    # ── 1. Cabeçalho: jogadores, líderes, ordem ───────────────────────────────
-    players: list[str] = []
-    leaders: dict = {}
-    goes_first: str | None = None
-    goes_second: str | None = None
-
+    # 1. Cabecalho
+    players, leaders, goes_first = [], {}, None
     for line in lines:
         m = RE_LEADER.match(line)
         if m:
@@ -66,31 +77,20 @@ def parse_log(log_path: str) -> dict:
                 players.append(p)
                 leaders[p] = {'name': lname, 'code': lcode}
         m = RE_CHOSE.match(line)
-        if m:
-            if m.group(2) == 'First':
-                goes_first = m.group(1)
-            else:
-                goes_second = m.group(1)
+        if m and m.group(2) == 'First':
+            goes_first = m.group(1)
 
     if len(players) < 2:
-        raise ValueError('Não encontrei 2 jogadores no log.')
+        raise ValueError('Nao encontrei 2 jogadores no log.')
 
     p1, p2 = players[0], players[1]
-    # quem escolheu ir primeiro/segundo
-    if goes_first:
-        turn_order = [goes_first, p1 if goes_first == p2 else p2]
-    else:
-        turn_order = players[:]
 
-    # ── 2. Separar blocos de turno ────────────────────────────────────────────
-    # Um turno começa quando um jogador roba DON e termina no End Turn + snapshot.
-    # Turnos iniciais (sem roubar DON): turno 0 do jogador que vai segundo.
-
-    turn_blocks: list[dict] = []
-    current_player: str | None = None
-    current_lines: list[str] = []
+    # 2. Blocos de turno
+    turn_blocks = []
+    current_player = None
+    current_lines = []
     game_started = False
-    last_player_idx = -1   # para alternância quando Draw Don não aparece no log
+    last_player_idx = -1
 
     i = 0
     while i < len(lines):
@@ -106,7 +106,7 @@ def parse_log(log_path: str) -> dict:
                 current_lines = [line]
             else:
                 m2 = RE_END.match(line)
-                if m2 and not game_started:
+                if m2:
                     p0 = m2.group(1)
                     turn_blocks.append({
                         'player': p0,
@@ -137,172 +137,116 @@ def parse_log(log_path: str) -> dict:
             current_lines = []
             continue
 
-        # Detecta jogador atual por Draw Don, Draw Card ou alternância
         if current_player is None:
             detected = None
-            m_don = RE_DRAW_DON.match(line)
+            m_don  = RE_DRAW_DON.match(line)
             m_draw = re.match(r'^\[(.+?)\] Draw \d+ Card', line)
             m_drew = RE_DREW.match(line)
-            if m_don:
-                detected = m_don.group(1)
-            elif m_draw:
-                detected = m_draw.group(1)
-            elif m_drew:
-                detected = m_drew.group(1)
+            if m_don:   detected = m_don.group(1)
+            elif m_draw: detected = m_draw.group(1)
+            elif m_drew: detected = m_drew.group(1)
 
             if detected and detected in players:
                 current_player = detected
             elif last_player_idx >= 0 and len(players) == 2:
-                # Inferir por alternância se não encontrou pelo log
                 current_player = players[1 - last_player_idx]
 
         current_lines.append(line)
         i += 1
 
-    # ── 3. Parsear cada bloco ─────────────────────────────────────────────────
+    # 3. Parsear blocos
     parsed_turns = []
-
     for t_idx, block in enumerate(turn_blocks):
-        player = block['player']
-        blines = block['lines']
-
-        actions: list[dict] = []
-        don_drawn = 0
-        card_drawn = None
-        current_attack: dict | None = None
+        player  = block['player']
+        blines  = block['lines']
+        actions = []
+        don_drawn, card_drawn, current_attack = 0, None, None
 
         for line in blines:
             if line.startswith('RZ1') or not line:
                 continue
 
-            # DON do turno
             m = RE_DRAW_DON.match(line)
             if m and m.group(1) == player:
-                don_drawn = int(m.group(2))
-                continue
+                don_drawn = int(m.group(2)); continue
 
-            # Carta comprada no início do turno
             m = RE_DREW.match(line)
             if m and m.group(1) == player:
-                card_drawn = {'name': m.group(2), 'code': m.group(3)}
-                continue
+                card_drawn = {'name': m.group(2), 'code': m.group(3)}; continue
 
-            # Jogar carta
             m = RE_DEPLOY.match(line)
             if m and m.group(1) == player:
                 current_attack = None
-                actions.append({
-                    'type': 'play',
-                    'card': m.group(3),
-                    'card_name': m.group(2),
-                    'effects': []
-                })
+                actions.append({'type': 'play', 'card': m.group(3),
+                                'card_name': m.group(2), 'effects': []})
                 continue
 
-            # Anexar DON
             m = RE_ATTACH.match(line)
             if m and m.group(1) == player:
                 current_attack = None
-                actions.append({
-                    'type': 'attach_don',
-                    'amount': int(m.group(2)),
-                    'to': m.group(4),
-                    'to_name': m.group(3),
-                    'total': int(m.group(5))
-                })
+                actions.append({'type': 'attach_don', 'amount': int(m.group(2)),
+                                'to': m.group(4), 'to_name': m.group(3),
+                                'total': int(m.group(5))})
                 continue
 
-            # Declarar ataque
             m = RE_ATTACK.match(line)
             if m and m.group(1) == player:
-                current_attack = {
-                    'type': 'attack',
-                    'attacker': m.group(2),
-                    'target': m.group(3),
-                    'result': None,
-                    'damage': None,
-                    'blocked_by': None,
-                    'countered_by': []
-                }
-                actions.append(current_attack)
-                continue
+                current_attack = {'type': 'attack', 'attacker': m.group(2),
+                                  'target': m.group(3), 'result': None,
+                                  'damage': None, 'blocked_by': None,
+                                  'countered_by': []}
+                actions.append(current_attack); continue
 
-            # Bloqueio (pelo oponente — anota no ataque atual)
             m = RE_BLOCKS.match(line)
             if m and m.group(1) != player and current_attack:
-                current_attack['blocked_by'] = m.group(3)
-                continue
+                current_attack['blocked_by'] = m.group(3); continue
 
-            # Counter (oponente descarta para counter)
             m = RE_DISCARD.match(line)
             if m and m.group(1) != player and current_attack:
-                current_attack['countered_by'].append(m.group(3))
-                continue
+                current_attack['countered_by'].append(m.group(3)); continue
 
-            # Resultado do ataque
             m = RE_HIT.match(line)
             if m and current_attack:
                 current_attack['result'] = 'hit'
                 current_attack['damage'] = int(m.group(2))
-                current_attack = None
-                continue
+                current_attack = None; continue
 
             if RE_FAILS.match(line) and current_attack:
                 current_attack['result'] = 'blocked'
-                current_attack = None
-                continue
+                current_attack = None; continue
 
-            # Efeitos de cartas
             m = RE_EFFECT.match(line)
             if m and m.group(1) == player:
-                src_name = m.group(2)
-                src_code = m.group(3)
-                effect_desc = m.group(4)
-                # Pertence ao último play desta carta?
-                last_play = next(
-                    (a for a in reversed(actions)
-                     if a['type'] == 'play' and a['card'] == src_code),
-                    None
-                )
-                last_activate = next(
-                    (a for a in reversed(actions)
-                     if a['type'] == 'activate' and a.get('card') == src_code),
-                    None
-                )
-                if last_play and not last_activate:
-                    last_play['effects'].append(effect_desc)
-                elif last_activate:
-                    last_activate.setdefault('effects', []).append(effect_desc)
+                src_name, src_code, fx = m.group(2), m.group(3), m.group(4)
+                last_play = next((a for a in reversed(actions)
+                                  if a['type'] == 'play' and a['card'] == src_code), None)
+                last_act  = next((a for a in reversed(actions)
+                                  if a['type'] == 'activate' and a.get('card') == src_code), None)
+                if last_play and not last_act:
+                    last_play['effects'].append(fx)
+                elif last_act:
+                    last_act.setdefault('effects', []).append(fx)
                 else:
-                    actions.append({
-                        'type': 'activate',
-                        'card': src_code,
-                        'card_name': src_name,
-                        'effects': [effect_desc]
-                    })
+                    actions.append({'type': 'activate', 'card': src_code,
+                                    'card_name': src_name, 'effects': [fx]})
                 continue
 
-        # Snapshot do fim do turno — pode aparecer dentro do bloco (antes do
-        # End Turn) ou logo após. Coleta de ambos e mescla (último vence).
-        all_snap_lines = (
-            [l for l in blines if RE_HAND.match(l) or RE_BOARD.match(l)
-             or RE_TRASH.match(l) or RE_LIFE.match(l)]
-            + block['snap_lines']
-        )
-        snap = _parse_snap(all_snap_lines)
+        all_snap = ([l for l in blines
+                     if RE_HAND.match(l) or RE_BOARD.match(l)
+                     or RE_TRASH.match(l) or RE_LIFE.match(l)]
+                    + block['snap_lines'])
+        snap = _parse_snap(all_snap)
 
         parsed_turns.append({
             'turn': t_idx + 1,
             'player': player,
             'card_drawn': card_drawn,
             'don_drawn': don_drawn,
-            'actions': [a for a in actions if a['type'] != 'attach_don' or a['amount'] > 0],
+            'actions': actions,
             'snapshot': snap,
         })
 
-    opp = {p1: p2, p2: p1}
-
-    return {
+    data = {
         'meta': {
             'players': {
                 'p1': {'name': p1, 'leader': leaders.get(p1, {})},
@@ -313,18 +257,205 @@ def parse_log(log_path: str) -> dict:
         'total_turns': len(parsed_turns),
         'turns': parsed_turns,
     }
+    return data, lines
 
 
-# ─── Helpers ──────────────────────────────────────────────────────────────────
+# ---------------------------------------------------------------------------
+# Reconstrucao de deck
+# ---------------------------------------------------------------------------
 
-def _collect_snap(lines: list[str], start: int) -> list[str]:
-    result = []
-    j = start
+def reconstruct_decks(data: dict, raw_lines: list) -> dict:
+    """
+    Reconstroi a lista de deck de cada jogador.
+    Retorna {player: [{code, name, count}, ...]} ordenado por count desc.
+
+    Estrategia:
+      1. Para cada snapshot (hand+board+trash simultaneos), conta quantas copias
+         de cada codigo estao visiveis ao mesmo tempo.
+      2. Toma o maximo por codigo em todos os snapshots.
+      3. Complementa com cartas vistas em draw events que nao apareceram nos snapshots.
+      4. Remove o lider (nao faz parte do deck de 50).
+    """
+    p1 = data['meta']['players']['p1']['name']
+    p2 = data['meta']['players']['p2']['name']
+    leader = {
+        p1: data['meta']['players']['p1']['leader'].get('code', ''),
+        p2: data['meta']['players']['p2']['leader'].get('code', ''),
+    }
+    # Nomes vistos no log: {code: name}
+    name_map = {}
+    for line in raw_lines:
+        m = RE_DREW.match(line)
+        if m: name_map[m.group(3)] = m.group(2)
+        m = RE_DEPLOY.match(line)
+        if m: name_map[m.group(3)] = m.group(2)
+
+    # max simultaneous count por jogador e codigo
+    max_seen: dict = {p1: {}, p2: {}}
+
+    def _update(player, codes):
+        cnt = Counter(codes)
+        d = max_seen[player]
+        for code, n in cnt.items():
+            d[code] = max(d.get(code, 0), n)
+
+    for turn in data['turns']:
+        snap = turn.get('snapshot', {})
+        for player in (p1, p2):
+            if player not in snap:
+                continue
+            st = snap[player]
+            visible = (st.get('hand', []) + st.get('board', [])
+                       + st.get('trash', []))
+            _update(player, visible)
+
+    # draw events do log (cartas que nunca chegaram a aparecer em snapshot)
+    for line in raw_lines:
+        m = RE_DREW_RAW.match(line)
+        if m:
+            p, code = m.group(1), m.group(2)
+            if p in max_seen:
+                max_seen[p][code] = max(max_seen[p].get(code, 0), 1)
+        m = RE_DISCARD.match(line)
+        if m:
+            p, code = m.group(1), m.group(3)
+            if p in max_seen:
+                max_seen[p][code] = max(max_seen[p].get(code, 0), 1)
+
+    result = {}
+    for player in (p1, p2):
+        ldr = leader[player]
+        deck = []
+        total = 0
+        for code, cnt in sorted(max_seen[player].items(),
+                                 key=lambda x: -x[1]):
+            if code == ldr:
+                continue
+            deck.append({
+                'code': code,
+                'name': name_map.get(code, code),
+                'count': cnt,
+            })
+            total += cnt
+        result[player] = {'cards': deck, 'total_seen': total,
+                          'leader': leader[player]}
+    return result
+
+
+# ---------------------------------------------------------------------------
+# Banco de dados de logs
+# ---------------------------------------------------------------------------
+
+def _load_index() -> list:
+    if DB_INDEX.exists():
+        return json.loads(DB_INDEX.read_text(encoding='utf-8'))
+    return []
+
+
+def _save_index(idx: list):
+    DB_INDEX.write_text(
+        json.dumps(idx, ensure_ascii=False, indent=2),
+        encoding='utf-8'
+    )
+
+
+def add_to_db(log_path: str, data: dict, decks: dict):
+    """
+    Copia o .log para logs/raw/, salva o JSON em logs/parsed/,
+    salva os decks em logs/decks/ e atualiza o index.json.
+    """
+    DB_ROOT.mkdir(parents=True, exist_ok=True)
+    (DB_ROOT / 'raw').mkdir(exist_ok=True)
+    (DB_ROOT / 'parsed').mkdir(exist_ok=True)
+    (DB_ROOT / 'decks').mkdir(exist_ok=True)
+
+    log_path = Path(log_path)
+    stem = log_path.stem   # ex: "2026-07-01T12.46.16"
+
+    # Verifica duplicata pelo stem
+    idx = _load_index()
+    if any(e['id'] == stem for e in idx):
+        print(f'  [aviso] {stem} ja esta no banco — ignorado.')
+        return
+
+    # Copia log original
+    raw_dest = DB_ROOT / 'raw' / log_path.name
+    shutil.copy2(log_path, raw_dest)
+
+    # Salva JSON parsed
+    parsed_dest = DB_ROOT / 'parsed' / f'{stem}.json'
+    parsed_dest.write_text(
+        json.dumps(data, ensure_ascii=False, indent=2),
+        encoding='utf-8'
+    )
+
+    # Salva decks
+    deck_files = {}
+    for player, deck_data in decks.items():
+        safe = player.replace('#', '_').replace(' ', '_')
+        leader_code = deck_data['leader']
+        fname = f'{leader_code}_{safe}_{stem}.json'
+        dest  = DB_ROOT / 'decks' / fname
+        dest.write_text(
+            json.dumps(deck_data, ensure_ascii=False, indent=2),
+            encoding='utf-8'
+        )
+        deck_files[player] = f'decks/{fname}'
+
+    # Entrada no index
+    p1d = data['meta']['players']['p1']
+    p2d = data['meta']['players']['p2']
+    entry = {
+        'id': stem,
+        'date': stem[:10],
+        'p1': {'name': p1d['name'],
+               'leader_code': p1d['leader'].get('code', ''),
+               'leader_name': p1d['leader'].get('name', '')},
+        'p2': {'name': p2d['name'],
+               'leader_code': p2d['leader'].get('code', ''),
+               'leader_name': p2d['leader'].get('name', '')},
+        'turns': data['total_turns'],
+        'winner': None,   # nao detectado automaticamente ainda
+        'log_file': f'raw/{log_path.name}',
+        'parsed_file': f'parsed/{stem}.json',
+        'deck_files': deck_files,
+    }
+    idx.append(entry)
+    _save_index(idx)
+    print(f'  Adicionado ao banco: {stem}')
+    print(f'    {p1d["name"]} ({p1d["leader"]["name"]}) vs '
+          f'{p2d["name"]} ({p2d["leader"]["name"]})')
+    for player, deck_data in decks.items():
+        total = deck_data['total_seen']
+        n_unique = len(deck_data['cards'])
+        print(f'    deck {player}: {n_unique} codigos unicos, '
+              f'{total} cartas vistas (de 50)')
+
+
+def list_db():
+    idx = _load_index()
+    if not idx:
+        print('Banco vazio. Use --add-to-db para adicionar partidas.')
+        return
+    print(f'\n{"ID":25s}  {"P1 (lider)":28s}  {"P2 (lider)":28s}  Turnos')
+    print('-' * 90)
+    for e in idx:
+        p1 = f"{e['p1']['name'][:12]} ({e['p1']['leader_code']})"
+        p2 = f"{e['p2']['name'][:12]} ({e['p2']['leader_code']})"
+        print(f"{e['id']:25s}  {p1:28s}  {p2:28s}  {e['turns']}")
+    print(f'\nTotal: {len(idx)} partidas\n')
+
+
+# ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
+
+def _collect_snap(lines, start):
+    result, j = [], start
     while j < len(lines) and j < start + 30:
         l = _clean(lines[j])
         if RE_HAND.match(l) or RE_BOARD.match(l) or RE_TRASH.match(l) or RE_LIFE.match(l):
-            result.append(l)
-            j += 1
+            result.append(l); j += 1
         elif l.startswith('RZ1') or not l:
             j += 1
         else:
@@ -332,7 +463,7 @@ def _collect_snap(lines: list[str], start: int) -> list[str]:
     return result
 
 
-def _skip_snap(lines: list[str], start: int) -> int:
+def _skip_snap(lines, start):
     j = start
     while j < len(lines) and j < start + 30:
         l = _clean(lines[j])
@@ -345,95 +476,118 @@ def _skip_snap(lines: list[str], start: int) -> int:
     return j
 
 
-def _parse_snap(snap_lines: list[str]) -> dict:
-    snap: dict = {}
+def _parse_snap(snap_lines):
+    snap = {}
     for line in snap_lines:
         m = RE_HAND.match(line)
-        if m:
-            snap.setdefault(m.group(1), {})['hand'] = _codes(m.group(2))
-            continue
+        if m: snap.setdefault(m.group(1), {})['hand']  = _codes(m.group(2)); continue
         m = RE_BOARD.match(line)
-        if m:
-            snap.setdefault(m.group(1), {})['board'] = _codes(m.group(2))
-            continue
+        if m: snap.setdefault(m.group(1), {})['board'] = _codes(m.group(2)); continue
         m = RE_TRASH.match(line)
-        if m:
-            snap.setdefault(m.group(1), {})['trash'] = _codes(m.group(2))
-            continue
+        if m: snap.setdefault(m.group(1), {})['trash'] = _codes(m.group(2)); continue
         m = RE_LIFE.match(line)
-        if m:
-            snap.setdefault(m.group(1), {})['life'] = int(m.group(2))
+        if m: snap.setdefault(m.group(1), {})['life']  = int(m.group(2))
     return snap
 
 
-# ─── Summary printer ─────────────────────────────────────────────────────────
+# ---------------------------------------------------------------------------
+# Summary printer
+# ---------------------------------------------------------------------------
 
-def print_summary(data: dict):
+def print_summary(data: dict, decks: dict):
     meta = data['meta']
-    p1 = meta['players']['p1']
-    p2 = meta['players']['p2']
-    print(f"\n{'='*60}")
-    print(f"  {p1['name']} ({p1['leader']['name']}) vs {p2['name']} ({p2['leader']['name']})")
-    print(f"  Primeiro: {meta.get('goes_first', '?')} | {data['total_turns']} turnos")
-    print(f"{'='*60}")
+    p1   = meta['players']['p1']
+    p2   = meta['players']['p2']
+    print(f'\n{"="*65}')
+    print(f'  {p1["name"]} ({p1["leader"]["name"]}) vs '
+          f'{p2["name"]} ({p2["leader"]["name"]})')
+    print(f'  Primeiro: {meta.get("goes_first") or "?"} | '
+          f'{data["total_turns"]} turnos')
+    print(f'{"="*65}')
 
     for t in data['turns']:
         if not t.get('player'):
             continue
         snap = t['snapshot']
-        p = t['player']
-        others = [k for k in snap if k != p]
-        opp = others[0] if others else None
+        p    = t['player']
+        opp  = next((k for k in snap if k != p), None)
 
-        life_p = snap.get(p, {}).get('life', '?')
+        life_p = snap.get(p,   {}).get('life', '?')
         life_o = snap.get(opp, {}).get('life', '?') if opp else '?'
-        board_p = snap.get(p, {}).get('board', [])
-        drawn = t['card_drawn']['code'] if t['card_drawn'] else '-'
-        don = t['don_drawn']
+        board  = snap.get(p,   {}).get('board', [])
+        drawn  = t['card_drawn']['code'] if t['card_drawn'] else '-'
 
-        play_acts = [a for a in t['actions'] if a['type'] == 'play']
-        atk_acts  = [a for a in t['actions'] if a['type'] == 'attack']
-        act_acts  = [a for a in t['actions'] if a['type'] == 'activate']
+        plays  = [a for a in t['actions'] if a['type'] == 'play']
+        acts   = [a for a in t['actions'] if a['type'] == 'activate']
+        atks   = [a for a in t['actions'] if a['type'] == 'attack']
 
-        hits   = sum(1 for a in atk_acts if a['result'] == 'hit')
-        blocks = sum(1 for a in atk_acts if a['result'] == 'blocked')
-
-        print(f"\n  T{t['turn']:02d} {p[:18]:18s} | +{don}DON drew={drawn}")
-        print(f"       vida: eu={life_p}  opp={life_o}  board={len(board_p)} chars")
-        for a in play_acts:
+        print(f'\n  T{t["turn"]:02d} {p[:18]:18s} | '
+              f'+{t["don_drawn"]}DON drew={drawn}')
+        print(f'       vida: eu={life_p}  opp={life_o}  board={len(board)} chars')
+        for a in plays:
             fx = '  -> ' + ' | '.join(a['effects'][:2]) if a['effects'] else ''
-            print(f"       > play  {a['card']:12s} {a['card_name'][:22]}{fx}")
-        for a in act_acts:
+            print(f'       > play  {a["card"]:12s} {a["card_name"][:22]}{fx}')
+        for a in acts:
             fx = '  -> ' + ' | '.join(a.get('effects', [])[:2])
-            print(f"       * activ {a['card']:12s} {a['card_name'][:22]}{fx}")
-        for a in atk_acts:
-            res = f"HIT({a['damage']})" if a['result'] == 'hit' else 'BLOCKED'
-            blk = f"  [bloq: {a['blocked_by'][:10]}]" if a['blocked_by'] else ''
-            ctr = f"  [ctr: {','.join(a['countered_by'][:2])}]" if a['countered_by'] else ''
-            print(f"       ! atk   {a['attacker'][:18]} -> {res}{blk}{ctr}")
+            print(f'       * activ {a["card"]:12s} {a["card_name"][:22]}{fx}')
+        for a in atks:
+            res = f'HIT({a["damage"]})' if a['result'] == 'hit' else 'BLOCKED'
+            blk = f'  [bloq: {a["blocked_by"][:10]}]' if a['blocked_by'] else ''
+            ctr = f'  [ctr: {",".join(a["countered_by"][:2])}]' if a['countered_by'] else ''
+            print(f'       ! atk   {a["attacker"][:18]} -> {res}{blk}{ctr}')
+
+    # Decks reconstruidos
+    print(f'\n{"="*65}')
+    print('  DECKS RECONSTRUIDOS')
+    print(f'{"="*65}')
+    for player, deck_data in decks.items():
+        total  = deck_data['total_seen']
+        cards  = deck_data['cards']
+        leader = deck_data['leader']
+        print(f'\n  [{player}] lider={leader} | {total}/50 cartas vistas')
+        for c in cards:
+            print(f'    {c["count"]}x {c["code"]:12s} {c["name"][:35]}')
 
 
-# ─── CLI ──────────────────────────────────────────────────────────────────────
+# ---------------------------------------------------------------------------
+# CLI
+# ---------------------------------------------------------------------------
 
 def main():
-    ap = argparse.ArgumentParser(description='Parse OPTCG combat log → JSON')
-    ap.add_argument('log_file')
-    ap.add_argument('--output', '-o', help='Arquivo de saída .json')
-    ap.add_argument('--summary', '-s', action='store_true', help='Imprimir resumo no terminal')
+    ap = argparse.ArgumentParser(description='Parse OPTCG combat log -> JSON + banco')
+    ap.add_argument('log_file',  nargs='?', help='Caminho para o .log')
+    ap.add_argument('--output',  '-o',      help='Arquivo de saida .json')
+    ap.add_argument('--summary', '-s', action='store_true',
+                    help='Imprimir resumo e decks no terminal')
+    ap.add_argument('--add-to-db', action='store_true',
+                    help='Adicionar esta partida ao banco (logs/)')
+    ap.add_argument('--list-db', action='store_true',
+                    help='Listar partidas no banco')
     args = ap.parse_args()
 
-    out = args.output or str(Path(args.log_file).with_suffix('.json'))
+    if args.list_db:
+        list_db()
+        return
+
+    if not args.log_file:
+        ap.print_help()
+        return
 
     print(f'Parseando {args.log_file} ...')
-    data = parse_log(args.log_file)
+    data, raw_lines = parse_log(args.log_file)
 
+    out = args.output or str(Path(args.log_file).with_suffix('.json'))
     with open(out, 'w', encoding='utf-8') as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
-
     print(f'OK {data["total_turns"]} turnos -> {out}')
 
+    decks = reconstruct_decks(data, raw_lines)
+
     if args.summary:
-        print_summary(data)
+        print_summary(data, decks)
+
+    if args.add_to_db:
+        add_to_db(args.log_file, data, decks)
 
 
 if __name__ == '__main__':

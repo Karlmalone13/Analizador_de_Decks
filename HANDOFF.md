@@ -1,5 +1,34 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-01 (20) - Claude
+
+**Feito — parse_combat_log.py com reconstrução de decks e banco de partidas:**
+
+### parse_combat_log.py — extensão com deck reconstruction + DB
+
+Adicionadas ao script existente:
+- `reconstruct_decks()`: reconstrói deck de cada jogador a partir dos snapshots (contagem máxima simultânea de cada carta) + eventos de draw. Remove o código do líder. Exibe `N/50 cartas vistas` e lista com counts.
+- `add_to_db()`: copia o `.log` para `logs/raw/`, salva JSON parseado em `logs/parsed/`, salva JSON dos decks em `logs/decks/`, atualiza `logs/index.json` com metadados da partida.
+- `list_db()`: lista todas as partidas indexadas.
+- Flags CLI: `--add-to-db` e `--list-db`.
+- Testado com partida Teach vs Lucy: 37/50 e 45/50 cartas vistas, banco criado corretamente.
+- Estrutura de pastas criada: `scriptis_da_ia/logs/raw/`, `logs/parsed/`, `logs/decks/`.
+
+**Uso:**
+```
+python parse_combat_log.py partida.log --summary --add-to-db
+python parse_combat_log.py --list-db
+```
+
+**Pendências conhecidas:**
+- Próximo passo: dado um snapshot do log real, rodar o engine e comparar decisão da IA com o que o humano fez → divergências concretas para tunar heurísticas
+- Deck reconstruction chega a ~45/50 cartas em partidas longas; decks curtos ficam incompletos (inerente ao método)
+- [B] handlers sem log: `look_top_deck`, `negate_effect`, `activate_trash_event_main`, `lock_opp_don`
+- Frontend (deferred até motor estar satisfatório)
+- Supabase service_role exposta no `.env.local` — rotacionar antes de deploy público
+
+---
+
 ## 2026-07-01 (19) - Claude
 
 **Feito — 6 fixes de heurística + parser de combat log do simulador oficial:**

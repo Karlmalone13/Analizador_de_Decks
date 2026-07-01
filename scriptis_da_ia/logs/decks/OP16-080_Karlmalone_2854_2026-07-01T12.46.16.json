@@ -1,0 +1,86 @@
+{
+  "cards": [
+    {
+      "code": "OP16-108",
+      "name": "Shiryu",
+      "count": 4
+    },
+    {
+      "code": "OP16-104",
+      "name": "Catarina Devon",
+      "count": 4
+    },
+    {
+      "code": "OP09-096",
+      "name": "This is MY AGE!!!!",
+      "count": 4
+    },
+    {
+      "code": "OP16-110",
+      "name": "Vasco Shot",
+      "count": 3
+    },
+    {
+      "code": "OP09-093",
+      "name": "Marshall D. Teach",
+      "count": 3
+    },
+    {
+      "code": "OP09-086",
+      "name": "Jesus Burgess",
+      "count": 2
+    },
+    {
+      "code": "OP12-119",
+      "name": "Bartholomew Kuma",
+      "count": 2
+    },
+    {
+      "code": "OP16-109",
+      "name": "Doc Q",
+      "count": 2
+    },
+    {
+      "code": "OP16-116",
+      "name": "ZEHAHAHAHA",
+      "count": 2
+    },
+    {
+      "code": "OP16-119",
+      "name": "Marshall D. Teach",
+      "count": 2
+    },
+    {
+      "code": "OP16-115",
+      "name": "Black Vortex",
+      "count": 2
+    },
+    {
+      "code": "OP09-095",
+      "name": "Laffitte",
+      "count": 2
+    },
+    {
+      "code": "OP12-112",
+      "name": "Baby 5",
+      "count": 2
+    },
+    {
+      "code": "OP09-099",
+      "name": "Fullalead",
+      "count": 1
+    },
+    {
+      "code": "OP16-102",
+      "name": "OP16-102",
+      "count": 1
+    },
+    {
+      "code": "OP06-115",
+      "name": "You're the one who should disappear!",
+      "count": 1
+    }
+  ],
+  "total_seen": 37,
+  "leader": "OP16-080"
+}

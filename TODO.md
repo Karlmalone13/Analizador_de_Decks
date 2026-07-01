@@ -1,6 +1,6 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 01 de julho de 2026
+**Última atualização:** 01 de julho de 2026 (sessão 20)
 **Estado:** 2148 cards com efeito (subiu de 2138), parser auditado OP-02 a OP-15
 **Baseline:** commit bbb4d31 (set_don_active + mill) + viabilidade transacional (a commitar)
 **Repo:** github.com/Karlmalone13/Analizador_de_Decks

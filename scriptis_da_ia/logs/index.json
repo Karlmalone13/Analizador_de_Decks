@@ -1,0 +1,24 @@
+[
+  {
+    "id": "2026-07-01T12.46.16",
+    "date": "2026-07-01",
+    "p1": {
+      "name": "Karlmalone#2854",
+      "leader_code": "OP16-080",
+      "leader_name": "Marshall D. Teach"
+    },
+    "p2": {
+      "name": "kadomaru#5789",
+      "leader_code": "OP15-002",
+      "leader_name": "Lucy"
+    },
+    "turns": 22,
+    "winner": null,
+    "log_file": "raw/2026-07-01T12.46.16.log",
+    "parsed_file": "parsed/2026-07-01T12.46.16.json",
+    "deck_files": {
+      "Karlmalone#2854": "decks/OP16-080_Karlmalone_2854_2026-07-01T12.46.16.json",
+      "kadomaru#5789": "decks/OP15-002_kadomaru_5789_2026-07-01T12.46.16.json"
+    }
+  }
+]

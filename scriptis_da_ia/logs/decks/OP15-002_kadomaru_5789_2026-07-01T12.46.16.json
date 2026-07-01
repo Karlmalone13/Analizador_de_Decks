@@ -1,0 +1,91 @@
+{
+  "cards": [
+    {
+      "code": "OP10-045",
+      "name": "Cavendish",
+      "count": 4
+    },
+    {
+      "code": "OP15-054",
+      "name": "It's a Memento of Him, and No One Else Can Have It",
+      "count": 4
+    },
+    {
+      "code": "OP15-053",
+      "name": "Rebecca",
+      "count": 4
+    },
+    {
+      "code": "OP10-060",
+      "name": "Bari-Bari Pistol",
+      "count": 4
+    },
+    {
+      "code": "OP15-020",
+      "name": "Fire Fist",
+      "count": 4
+    },
+    {
+      "code": "OP15-046",
+      "name": "Sabo",
+      "count": 4
+    },
+    {
+      "code": "OP15-021",
+      "name": "Just Watch Me... Ace!!!",
+      "count": 3
+    },
+    {
+      "code": "OP05-019",
+      "name": "Fire Fist",
+      "count": 3
+    },
+    {
+      "code": "OP15-040",
+      "name": "Viola",
+      "count": 3
+    },
+    {
+      "code": "OP15-052",
+      "name": "Leo",
+      "count": 3
+    },
+    {
+      "code": "OP15-056",
+      "name": "Would You Let Me Eat... The Flame-Flame Fruit?",
+      "count": 2
+    },
+    {
+      "code": "OP15-006",
+      "name": "Cavendish",
+      "count": 2
+    },
+    {
+      "code": "OP06-058",
+      "name": "Gravity Blade Raging Tiger",
+      "count": 1
+    },
+    {
+      "code": "OP10-059",
+      "name": "Follow... me... and... I... will... guide... you... all...!!!!",
+      "count": 1
+    },
+    {
+      "code": "OP05-015",
+      "name": "Belo Betty",
+      "count": 1
+    },
+    {
+      "code": "OP15-057",
+      "name": "Dressrosa Kingdom",
+      "count": 1
+    },
+    {
+      "code": "OP09-118",
+      "name": "Gol D. Roger",
+      "count": 1
+    }
+  ],
+  "total_seen": 45,
+  "leader": "OP15-002"
+}
