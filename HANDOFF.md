@@ -1,5 +1,40 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-02 (37) - Claude
+
+**Fix /analysis: melhores mãos por posição (1º/2º jogador) + arquétipo do deck**
+
+### Curva de DON corrigida
+- 1º jogador: T1=1 DON (custo≤1), T2=3 DON (custo 2-3), T3=5 DON (custo 4-5)
+- 2º jogador: T1=2 DON (custo≤2), T2=4 DON (custo 3-4), T3=6 DON (custo 5-6)
+- Ambos compram 5 cartas no mulligan (o +1 do 2º é o draw do T1 dele, não da abertura)
+
+### Separação 1º / 2º jogador
+- UI exibe duas seções distintas (laranja / azul) com 3 melhores mãos cada
+- Counter 2k vale +20 pra 2º jogador (vai levar 1º hit de qualquer jeito) vs +16 pra 1º
+- 2 searchers no 2º jogador recebe bônus extra +12 (ramp de 2 DON T1 = joga + busca)
+
+### Arquétipo detectado via heurística client-side
+- `detectarArquetipo()`: classifica `rush / aggro / control / midrange / ramp` pela composição
+  - rush: ≥28% cartas com [Rush]
+  - aggro: ≥14% [Rush] + avg custo ≤3.5
+  - control: ≥18% [Blocker] + avg custo ≥4, ou avg custo ≥4.5
+  - ramp: ≥12% cartas com efeito de adicionar DON
+- `getArqMod()`: retorna modificadores de scoring (t1Bonus, rushBonus, counter2kMult, etc.)
+- Arquétipo exibido na UI ao lado do subtítulo da seção de mãos
+
+### Outros ajustes de scoring
+- Searcher escala com `calcSearcherQuality()`: % de bons alvos no deck
+- Cartas +2k excluídas da contagem de T1/T2/T3 (não se joga counter no campo)
+- Penalidade para mão toda custo 1 (sem gasolina mid-game): -15pts
+- Bomba do deck: penalidade por mão pesada escala com `mod.bombPenMult` (ramp/control toleram mais)
+
+### Estado atual
+- `/analysis`: zero erros TypeScript, servidor rodando na 3000
+- Próximo: testar com diferentes decks (aggro vs control) para validar os modificadores de arquétipo
+
+---
+
 ## 2026-07-02 (36) - Claude
 
 **Fix /analysis: scoring de mão com cobertura T1/T2/T3, bomba do deck, brick preciso**

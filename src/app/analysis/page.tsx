@@ -196,6 +196,71 @@ function simularMaos(deckCards: DeckCard[], totalCards: number, qtd = 10000) {
     }
 }
 
+// ── Arquétipo do deck ────────────────────────────────────────────────────────────
+type Arquetipo = 'rush' | 'aggro' | 'control' | 'midrange' | 'ramp'
+
+function detectarArquetipo(deckCards: DeckCard[]): Arquetipo {
+    const hasKw = (dc: DeckCard, kw: string) => dc.card.card_text?.toLowerCase().includes(kw.toLowerCase())
+    const total = deckCards.reduce((s, dc) => s + dc.quantity, 0)
+    if (total === 0) return 'midrange'
+
+    const rushQty  = deckCards.filter(dc => hasKw(dc, '[Rush]')).reduce((s, dc) => s + dc.quantity, 0)
+    const blockerQty = deckCards.filter(dc => hasKw(dc, '[Blocker]')).reduce((s, dc) => s + dc.quantity, 0)
+    // DON ramp: efeitos que adicionam DON extra ao pool
+    const rampQty  = deckCards.filter(dc => {
+        const t = dc.card.card_text?.toLowerCase() || ''
+        return t.includes('add') && t.includes('don') && (t.includes('your don') || t.includes('don!!'))
+    }).reduce((s, dc) => s + dc.quantity, 0)
+
+    const playable = deckCards.filter(dc => dc.card.counter_amount !== '2000' && parseInt(dc.card.card_cost || '0') > 0)
+    const totalPlayable = playable.reduce((s, dc) => s + dc.quantity, 0)
+    const avgCost = totalPlayable > 0
+        ? playable.reduce((s, dc) => s + parseInt(dc.card.card_cost || '0') * dc.quantity, 0) / totalPlayable
+        : 3
+
+    const rushPct    = rushQty    / total
+    const blockerPct = blockerQty / total
+    const rampPct    = rampQty    / total
+
+    if (rampPct >= 0.12) return 'ramp'
+    if (rushPct >= 0.28) return 'rush'
+    if (rushPct >= 0.14 && avgCost <= 3.5) return 'aggro'
+    if (blockerPct >= 0.18 && avgCost >= 4.0) return 'control'
+    if (avgCost >= 4.5) return 'control'
+    return 'midrange'
+}
+
+// Modificadores de scoring por arquétipo
+interface ArqMod {
+    t1Bonus: number      // bônus adicional pra ter jogada T1
+    t2Bonus: number      // bônus adicional pra ter jogada T2
+    rushBonus: number    // bônus adicional por Rush na mão
+    blockerBonus: number // bônus adicional por Blocker na mão
+    counter2kMult: number // multiplicador do valor do counter 2k (1.0 = sem mudança)
+    searcherBonus: number // bônus adicional por searcher
+    penT1Mult: number    // multiplicador da punição de "sem T1" (>1 = mais punitivo)
+    bombPenMult: number  // multiplicador da punição de bombas (>1 = mais punitivo pra mãos pesadas)
+}
+
+function getArqMod(arq: Arquetipo): ArqMod {
+    switch (arq) {
+        case 'rush':
+            // Rush quer jogar algo todo turno — T1 crítico, rush é ouro, counter menos relevante
+            return { t1Bonus: 15, t2Bonus: 8, rushBonus: 10, blockerBonus: 0, counter2kMult: 0.7, searcherBonus: 5, penT1Mult: 1.4, bombPenMult: 1.3 }
+        case 'aggro':
+            // Aggro quer curva contínua e pressão — T1+T2 importante, counter secundário
+            return { t1Bonus: 8, t2Bonus: 5, rushBonus: 5, blockerBonus: 3, counter2kMult: 0.85, searcherBonus: 3, penT1Mult: 1.2, bombPenMult: 1.2 }
+        case 'control':
+            // Control pode tolerar mão mais lenta — blocker e counter são prioridade
+            return { t1Bonus: -5, t2Bonus: 3, rushBonus: 0, blockerBonus: 12, counter2kMult: 1.3, searcherBonus: 8, penT1Mult: 0.7, bombPenMult: 0.8 }
+        case 'ramp':
+            // Ramp pode segurar peças pesadas — searcher acelera o plano, bomba na mão é ok
+            return { t1Bonus: 0, t2Bonus: 5, rushBonus: 0, blockerBonus: 5, counter2kMult: 1.0, searcherBonus: 15, penT1Mult: 0.8, bombPenMult: 0.6 }
+        default: // midrange
+            return { t1Bonus: 0, t2Bonus: 0, rushBonus: 0, blockerBonus: 0, counter2kMult: 1.0, searcherBonus: 0, penT1Mult: 1.0, bombPenMult: 1.0 }
+    }
+}
+
 // ── Scoring de mão ─────────────────────────────────────────────────────────────
 // Identifica a "bomba" do deck (carta de maior poder/custo — aquela que o deck quer chegar)
 function getDeckBombId(deckCards: DeckCard[]): string | null {
@@ -210,22 +275,54 @@ function getDeckBombId(deckCards: DeckCard[]): string | null {
     return candidates[0].card.card_set_id
 }
 
-function avaliarMao(mao: DeckCard[], bombId: string | null = null): number {
+// Calcula qualidade do deck como alvo de search: % de cartas que valem a pena buscar
+// (não são 2k counter, têm custo > 0, não são bombas pesadas demais pra curva inicial)
+function calcSearcherQuality(deckCards: DeckCard[]): number {
+    const total = deckCards.reduce((s, dc) => s + dc.quantity, 0)
+    if (total === 0) return 0.5
+    const goodTargets = deckCards.reduce((s, dc) => {
+        const cost = parseInt(dc.card.card_cost || '0')
+        const is2k = dc.card.counter_amount === '2000'
+        const isDeadWeight = is2k || cost === 0 || cost >= 8
+        return s + (isDeadWeight ? 0 : dc.quantity)
+    }, 0)
+    return Math.min(1, goodTargets / total)
+}
+
+// DON!! real por turno:
+//   1º jogador: T1=1 DON, T2=3 DON, T3=5 DON, T4=7 DON  (começa com 1, +2/turno)
+//   2º jogador: T1=2 DON, T2=4 DON, T3=6 DON, T4=8 DON  (começa com 2, +2/turno)
+// Custo máximo jogável a cada turno = DON disponível naquele turno
+function avaliarMao(mao: DeckCard[], bombId: string | null = null, goingFirst = true, searcherQuality = 0.7, mod: ArqMod = getArqMod('midrange')): number {
     const hasKw = (dc: DeckCard, kw: string) => dc.card.card_text?.toLowerCase().includes(kw.toLowerCase())
 
-    let hasT1Play = false  // custo 1-2 → joga no T1
-    let hasT2Play = false  // custo 3-4 → joga no T2
-    let hasT3Play = false  // custo 5-6 → joga no T3
+    let hasT1Play = false  // joga no T1 com o DON disponível
+    let hasT2Play = false  // joga no T2
+    let hasT3Play = false  // joga no T3
+    let onlyCost1 = true   // mão só com custo 1 — sem gasolina pra mid-game
     let nSearcher = 0, nCounter2k = 0, nCounter1k = 0, nEventCounter = 0
     let nBlocker = 0, nRush = 0, nBomb = 0, hasDeckBomb = false
 
     mao.forEach(dc => {
         const cost = parseInt(dc.card.card_cost || '99')
-        if (cost <= 2) hasT1Play = true
-        if (cost >= 3 && cost <= 4) hasT2Play = true
-        if (cost >= 5 && cost <= 6) hasT3Play = true
+        const is2kCounter = dc.card.counter_amount === '2000'
+        if (!is2kCounter && cost > 1) onlyCost1 = false
+        // Cartas +2k não contam como jogada de turno — guarda para defesa
+        if (!is2kCounter) {
+            if (goingFirst) {
+                // 1º: T1=custo≤1 (1 DON), T2=custo≤3 (3 DON), T3=custo≤5 (5 DON)
+                if (cost <= 1) hasT1Play = true
+                if (cost >= 2 && cost <= 3) hasT2Play = true
+                if (cost >= 4 && cost <= 5) hasT3Play = true
+            } else {
+                // 2º: T1=custo≤2 (2 DON), T2=custo≤4 (4 DON), T3=custo≤6 (6 DON)
+                if (cost <= 2) hasT1Play = true
+                if (cost >= 3 && cost <= 4) hasT2Play = true
+                if (cost >= 5 && cost <= 6) hasT3Play = true
+            }
+        }
         if (isSearcher(dc)) nSearcher++
-        if (dc.card.counter_amount === '2000') nCounter2k++
+        if (is2kCounter) nCounter2k++
         if (dc.card.counter_amount === '1000') nCounter1k++
         if (isEventCounter(dc)) nEventCounter++
         if (hasKw(dc, '[Blocker]')) nBlocker++
@@ -234,43 +331,61 @@ function avaliarMao(mao: DeckCard[], bombId: string | null = null): number {
         if (bombId && dc.card.card_set_id === bombId) hasDeckBomb = true
     })
 
+    // Searcher compensa peças faltantes na curva — mas escala com qualidade do deck
+    // (buscar em deck raso vale menos)
+    const searcherValue = Math.round(35 * searcherQuality)  // 35 pts se deck cheio de bons alvos
+    const effectiveT2 = hasT2Play || nSearcher >= 1
+    const effectiveT3 = hasT3Play || (nSearcher >= 1 && hasT2Play)
+
     let score = 0
 
-    // ── Cobertura de turnos ──
-    if (hasT1Play) score += 28   // carta para jogar no T1 é fundamental
-    if (hasT2Play) score += 22   // T2 também importante
-    if (hasT3Play) score += 12   // T3 ajuda mas menos urgente
-    if (hasT1Play && hasT2Play) score += 15   // curva T1→T2 = bônus de fluxo
-    if (hasT1Play && hasT2Play && hasT3Play) score += 10  // curva completa
+    // ── Searcher (escala com qualidade dos alvos + bônus de arquétipo) ──
+    if (nSearcher >= 1) score += searcherValue + mod.searcherBonus
+    if (nSearcher >= 2) {
+        // 2º searcher: bônus extra se 2º jogador (2 DON T1 = pode jogar E buscar)
+        score += goingFirst ? 3 : 12
+    }
+    if (nSearcher >= 3) score -= (nSearcher - 2) * 20  // 3+ trava a mão
 
-    // ── Searcher ──
-    if (nSearcher >= 1) score += 26   // 1 searcher = encontra peças-chave
-    if (nSearcher >= 2) score += 2    // 2º tem pouca utilidade adicional
-    if (nSearcher >= 3) score -= (nSearcher - 2) * 16  // 3+ trava a mão
+    // ── Cobertura de turnos (curva de DON correta, ajustada por arquétipo) ──
+    if (hasT1Play) score += 28 + mod.t1Bonus
+    if (hasT2Play) score += 25 + mod.t2Bonus
+    if (hasT3Play) score += 10
+    if (hasT1Play && hasT2Play) score += 12   // curva contínua real
+    if (hasT1Play && effectiveT2 && effectiveT3) score += 5  // curva completa (inclui via search)
 
-    // ── Counter defensivo ──
-    score += Math.min(nCounter2k, 2) * 18   // counter 2k é o mais valioso
+    // ── Counter defensivo (2º jogador vai levar 1º hit; arquétipo também pondera) ──
+    const counter2kBase = goingFirst ? 16 : 20
+    const counter2kValue = Math.round(counter2kBase * mod.counter2kMult)
+    score += Math.min(nCounter2k, 2) * counter2kValue
     score -= Math.max(0, nCounter2k - 2) * 8
     score += Math.min(nCounter1k, 2) * 8
-    score += Math.min(nEventCounter, 1) * 10  // evento-counter é versatile
+    score += Math.min(nEventCounter, 1) * 10  // evento-counter: versatilidade
 
-    // ── Blocker / Rush ──
-    score += Math.min(nBlocker, 1) * 12
-    score += Math.min(nRush, 2) * 7   // pressão imediata
+    // ── Blocker / Rush (ponderados por arquétipo) ──
+    score += Math.min(nBlocker, 1) * (12 + mod.blockerBonus)
+    score += Math.min(nRush, 2) * (7 + mod.rushBonus)
 
-    // ── Bomba do deck ──
-    if (hasDeckBomb) score += 8   // ter a carta-objetivo na mão é bom
-    if (nBomb >= 2) score -= (nBomb - 1) * 20  // 2+ bombas = mão muito pesada
+    // ── Bomba do deck (arquétipo ramp/control tolera mais peso) ──
+    if (hasDeckBomb) score += 6
+    if (nBomb >= 2) score -= Math.round((nBomb - 1) * 22 * mod.bombPenMult)
 
-    // ── Punições ──
-    if (!hasT1Play && !hasT2Play) score -= 30  // sem jogada até T2 é muito ruim
-    if (!hasT1Play && !hasT2Play && !hasT3Play) score -= 20  // sem NENHUMA jogada
+    // ── Punições (severidade ajustada por arquétipo) ──
+    if (!hasT1Play && !effectiveT2) score -= Math.round(35 * mod.penT1Mult)
+    if (!hasT1Play && !effectiveT2 && !effectiveT3) score -= 20
+    // Mão toda de custo 1: boa largada mas sem gasolina no mid-game
+    if (onlyCost1 && mao.filter(dc => parseInt(dc.card.card_cost || '99') === 1 && dc.card.counter_amount !== '2000').length >= 3) score -= 15
 
     return score
 }
 
-function gerarMelhoresMaos(deckCards: DeckCard[], qtd = 50000): DeckCard[][] {
+function gerarMelhoresMaos(deckCards: DeckCard[], qtd = 30000, goingFirst = true): DeckCard[][] {
     const bombId = getDeckBombId(deckCards)
+    const searcherQuality = calcSearcherQuality(deckCards)
+    const arq = detectarArquetipo(deckCards)
+    const mod = getArqMod(arq)
+    // Ambos os jogadores compram 5 cartas no mulligan — o +1 do 2º é o draw do T1 dele, não da abertura
+    const handSize = 5
     const deck: number[] = []
     deckCards.forEach((dc, idx) => {
         for (let q = 0; q < dc.quantity; q++) deck.push(idx)
@@ -278,15 +393,14 @@ function gerarMelhoresMaos(deckCards: DeckCard[], qtd = 50000): DeckCard[][] {
     const melhor: { mao: number[], score: number }[] = []
     for (let i = 0; i < qtd; i++) {
         const shuffled = fisherYates(deck)
-        const maoIdx = shuffled.slice(0, 5)
+        const maoIdx = shuffled.slice(0, handSize)
         const mao = maoIdx.map(idx => deckCards[idx])
-        melhor.push({ mao: maoIdx, score: avaliarMao(mao, bombId) })
+        melhor.push({ mao: maoIdx, score: avaliarMao(mao, bombId, goingFirst, searcherQuality, mod) })
     }
     melhor.sort((a, b) => b.score - a.score)
     const unicas: DeckCard[][] = []
     const vistas = new Set<string>()
     for (const { mao } of melhor) {
-        // chave por composição (sorted card_set_ids), não por posição
         const key = mao.map(idx => deckCards[idx].card.card_set_id).sort().join(',')
         if (!vistas.has(key)) {
             vistas.add(key)
@@ -375,7 +489,9 @@ function AnalysisPageContent() {
     const [selectedCard, setSelectedCard] = useState<Card | null>(null)
     const [simDone, setSimDone] = useState(false)
     const [simResult, setSimResult] = useState<ReturnType<typeof simularMaos> | null>(null)
-    const [melhoresMaos, setMelhoresMaos] = useState<DeckCard[][]>([])
+    const [melhoresMaosP1, setMelhoresMaosP1] = useState<DeckCard[][]>([])
+    const [melhoresMaosP2, setMelhoresMaosP2] = useState<DeckCard[][]>([])
+    const [arqDetectado, setArqDetectado] = useState<Arquetipo>('midrange')
     const [analise, setAnalise] = useState<AnaliseResult | null>(null)
     const [analiseLoading, setAnaliseLoading] = useState(false)
 
@@ -401,9 +517,13 @@ function AnalysisPageContent() {
         setTimeout(() => {
             const total = deck.cards.reduce((s, dc) => s + dc.quantity, 0)
             const result = simularMaos(deck.cards, total, 10000)
-            const maos = gerarMelhoresMaos(deck.cards, 30000)
+            const arq = detectarArquetipo(deck.cards)
+            const maosP1 = gerarMelhoresMaos(deck.cards, 30000, true)
+            const maosP2 = gerarMelhoresMaos(deck.cards, 30000, false)
             setSimResult(result)
-            setMelhoresMaos(maos)
+            setArqDetectado(arq)
+            setMelhoresMaosP1(maosP1)
+            setMelhoresMaosP2(maosP2)
             setSimDone(true)
         }, 100)
     }, [deck])
@@ -1004,26 +1124,64 @@ function AnalysisPageContent() {
                 </div>
 
                 {/* MELHOR MÃO */}
-                {simDone && melhoresMaos.length > 0 && (
+                {simDone && (melhoresMaosP1.length > 0 || melhoresMaosP2.length > 0) && (
                     <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 mb-8">
-                        <div className="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-2">🏆 Melhores Mãos de Abertura</div>
-                        <div className="text-xs text-gray-500 mb-5">Top 3 de 30.000 simulações com embaralhamento Fisher-Yates</div>
-                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                            {melhoresMaos.map((mao, mi) => (
-                                <div key={mi} className="bg-gray-800 rounded-xl p-4">
-                                    <div className="text-sm font-bold text-white mb-3">{mi === 0 ? '🥇 Melhor mão' : mi === 1 ? '🥈 2ª melhor' : '🥉 3ª melhor'}</div>
-                                    <div className="flex gap-1.5 flex-wrap">
-                                        {mao.map((dc, ci) => (
-                                            <div key={ci} className="flex flex-col items-center gap-0.5">
-                                                <img src={dc.card.card_image} className="w-14 h-20 object-cover rounded-lg border border-gray-700 cursor-pointer hover:brightness-110 transition" onClick={() => setSelectedCard(dc.card)} />
-                                                <span className="text-xs text-gray-400 text-center" style={{ width: '56px', fontSize: '9px' }}>
-                                                    {dc.card.card_name.length > 10 ? dc.card.card_name.slice(0, 10) + '…' : dc.card.card_name}
-                                                </span>
-                                            </div>
-                                        ))}
+                        <div className="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-1">🏆 Melhores Mãos de Abertura</div>
+                        <div className="flex items-center gap-3 mb-5">
+                            <span className="text-xs text-gray-500">Top 3 de 30.000 simulações por posição · embaralhamento Fisher-Yates</span>
+                            <span className="text-xs px-2 py-0.5 rounded font-medium bg-gray-700 text-gray-300">
+                                Arquétipo detectado: <span className="text-orange-400 font-bold capitalize">{arqDetectado}</span>
+                            </span>
+                        </div>
+
+                        {/* Jogando em 1º */}
+                        <div className="mb-6">
+                            <div className="flex items-center gap-2 mb-3">
+                                <span className="bg-orange-600 text-white text-xs font-bold px-2 py-0.5 rounded">1º Jogador</span>
+                                <span className="text-xs text-gray-500">5 cartas · T1=custo 1 · T2=custo 2 · T3=custo 3-4</span>
+                            </div>
+                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                                {melhoresMaosP1.map((mao, mi) => (
+                                    <div key={mi} className="bg-gray-800 rounded-xl p-4">
+                                        <div className="text-sm font-bold text-white mb-3">{mi === 0 ? '🥇 Melhor mão' : mi === 1 ? '🥈 2ª melhor' : '🥉 3ª melhor'}</div>
+                                        <div className="flex gap-1.5 flex-wrap">
+                                            {mao.map((dc, ci) => (
+                                                <div key={ci} className="flex flex-col items-center gap-0.5">
+                                                    <img src={dc.card.card_image} className="w-14 h-20 object-cover rounded-lg border border-gray-700 cursor-pointer hover:brightness-110 transition" onClick={() => setSelectedCard(dc.card)} />
+                                                    <span className="text-gray-400 text-center" style={{ width: '56px', fontSize: '9px' }}>
+                                                        {dc.card.card_name.length > 10 ? dc.card.card_name.slice(0, 10) + '…' : dc.card.card_name}
+                                                    </span>
+                                                </div>
+                                            ))}
+                                        </div>
                                     </div>
-                                </div>
-                            ))}
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Jogando em 2º */}
+                        <div>
+                            <div className="flex items-center gap-2 mb-3">
+                                <span className="bg-blue-600 text-white text-xs font-bold px-2 py-0.5 rounded">2º Jogador</span>
+                                <span className="text-xs text-gray-500">6 cartas · T1=custo 1-2 · T2=custo 3-4 · T3=custo 5</span>
+                            </div>
+                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                                {melhoresMaosP2.map((mao, mi) => (
+                                    <div key={mi} className="bg-gray-800 rounded-xl p-4">
+                                        <div className="text-sm font-bold text-white mb-3">{mi === 0 ? '🥇 Melhor mão' : mi === 1 ? '🥈 2ª melhor' : '🥉 3ª melhor'}</div>
+                                        <div className="flex gap-1.5 flex-wrap">
+                                            {mao.map((dc, ci) => (
+                                                <div key={ci} className="flex flex-col items-center gap-0.5">
+                                                    <img src={dc.card.card_image} className="w-14 h-20 object-cover rounded-lg border border-gray-700 cursor-pointer hover:brightness-110 transition" onClick={() => setSelectedCard(dc.card)} />
+                                                    <span className="text-gray-400 text-center" style={{ width: '56px', fontSize: '9px' }}>
+                                                        {dc.card.card_name.length > 10 ? dc.card.card_name.slice(0, 10) + '…' : dc.card.card_name}
+                                                    </span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
                     </div>
                 )}
