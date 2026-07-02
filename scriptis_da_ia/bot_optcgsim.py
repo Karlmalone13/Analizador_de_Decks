@@ -220,6 +220,7 @@ def apply_log_delta(gs, opp_gs, lines: list[str]) -> bool:
         elif 'Draw' in line and 'Card' in line:
             if is_you:
                 needs_hand_rescan = True
+                gs.turn = max(gs.turn + 1, 2)  # garante ataques habilitados
             elif is_opp:
                 m = _RE_DRAW_N.search(line)
                 opp_gs.hand.extend([None] * int(m.group(1))) if m else None
@@ -455,6 +456,25 @@ def _handle_prompts(max_steps: int = 20) -> None:
         else:
             return
 
+def _resolve_post_deploy() -> None:
+    """Após deploy, resolve prompts de 2 botões e modais On Play de 1 botão.
+    Para quando detecta 3 botões únicos consecutivos (= End Turn estável)."""
+    single_streak = 0
+    for _ in range(15):
+        time.sleep(0.3)
+        top, main = _scan_buttons()
+        if not top and not main:
+            break
+        if top and main:
+            pag.click(*C_BTN_MAIN)   # Pass / No Counter / Skip
+            single_streak = 0
+            continue
+        # Botão único
+        single_streak += 1
+        if single_streak >= 3:
+            break  # End Turn estável — não clicar
+        pag.click(*C_BTN_MAIN)       # Confirmar modal On Play
+
 def _try_deploy_card(hand_x: int) -> bool:
     pag.click(hand_x, HAND_Y)
     time.sleep(0.45)
@@ -462,7 +482,7 @@ def _try_deploy_card(hand_x: int) -> bool:
     if top and main:
         pag.click(*C_BTN_TOP)
         time.sleep(0.45)
-        _handle_prompts()
+        _resolve_post_deploy()
         return True
     pag.click(700, 380)
     time.sleep(0.2)
@@ -584,8 +604,11 @@ def play_match(deck_name: str | None = None, timeout: int = 600) -> bool:
             from optcg_engine.decision_engine import OPTCGMatch
             deck_tuple = bridge.load_sim_deck(deck_name)
             match  = OPTCGMatch(deck_tuple, deck_tuple)
+            match.setup()   # inicializa mão + vida (5 cartas) para o engine funcionar
             gs     = match.state_b
             opp_gs = match.state_a
+            gs.turn = 1     # P2 pode atacar a partir do turno 1
+            opp_gs.turn = 1
             print(f"  Deck: {deck_name} (líder: {gs.leader.name})", end=" ")
         except Exception as e:
             print(f"  [engine indisponível: {e}]", end=" ")
@@ -654,9 +677,11 @@ def play_match(deck_name: str | None = None, timeout: int = 600) -> bool:
                 in_main = True
                 print("D", end="", flush=True)
                 _reset_log()
-                # Pular full_scan (muito lento) — usa log delta direto
-                hand_cards = []
+                # Scan rápido: só mão (para o engine saber o que temos)
+                hand_cards = scan_hand()
                 board_cards = []
+                if bridge and gs:
+                    bridge.sync_hand(gs, hand_cards)
                 _log_lines_seen[:] = _read_log_lines()
                 continue
 
@@ -690,7 +715,7 @@ def play_match(deck_name: str | None = None, timeout: int = 600) -> bool:
             # ── Decide via engine ──────────────────────────────────────────────
             action_executed = False
 
-            if gs and bridge and match and hand_cards:
+            if gs and bridge and match and hand_cards and gs.hand:
                 try:
                     action = bridge.choose_action(gs, opp_gs, match, timeout=2.0)
                     if action:

@@ -1,5 +1,31 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-02 (45) - Claude
+
+**Bot: fix modal On Play após deploy — `_resolve_post_deploy()`**
+
+### Bug corrigido
+`_handle_prompts()` saia imediatamente ao ver 1 botão (`else: return`). Quando uma carta tinha efeito On Play (ex: Electrical Luna OP08-036 "Rest 3 Don"), o modal ficava aberto indefinidamente. O bot ficava travado em `in_main=True` sem conseguir avançar.
+
+### Fix em `bot_optcgsim.py`
+- Nova função `_resolve_post_deploy()`: resolve botões pós-deploy com lógica de "consecutive single button counter"
+  - 2 botões → clica C_BTN_MAIN (Pass/Counter)
+  - 1 botão → clica (modal On Play) — mas para após 3 botões únicos consecutivos (= End Turn estável)
+  - 0 botões → para
+- `_try_deploy_card()` chama `_resolve_post_deploy()` em vez de `_handle_prompts()`
+- `_handle_prompts()` inalterado (ainda usada em `_try_attack_*`)
+
+### Resultado
+`DA.DA.DA.DA.D` + "fim detectado" — 5 turnos, jogo encerra naturalmente.
+
+### O que falta (itens restantes da sessão 44)
+- Engine ainda raramente é usado (scan_hand após probe devolve [] se modal ainda abre) → engine path depende de hand_cards não-vazio
+- Não ataca com personagens do campo, só com o leader
+- `activate` e `don_attach` não implementados em `_execute_engine_action()`
+- Probe tenta só x=107..247 (5 posições)
+
+---
+
 ## 2026-07-02 (44) - Claude
 
 **Bot: partida completa funcionando (5 turnos, DA.DA.DA.DA.DA.)**
