@@ -148,7 +148,7 @@ def sync_field(gs: GameState, scanned: list[dict]) -> None:
 
 
 def choose_action(gs: GameState, opp_gs: GameState,
-                  match) -> Optional[tuple]:
+                  match, timeout: float = 4.0) -> Optional[tuple]:
     """
     Pede ao engine a melhor ação para o estado atual.
 
@@ -156,8 +156,19 @@ def choose_action(gs: GameState, opp_gs: GameState,
     O chamador usa action[1] (tipo: 'play'|'attack'|'activate'|...) e
     action[2] (carta) para executar no simulador.
     """
-    engine = DecisionEngine(gs, opp_gs)
-    actions = match._generate_and_score_actions(gs, opp_gs, engine)
-    if not actions or actions[0][0] < 0:
-        return None
-    return actions[0]
+    import threading
+    result: list = [None]
+
+    def _run() -> None:
+        try:
+            engine = DecisionEngine(gs, opp_gs)
+            actions = match._generate_and_score_actions(gs, opp_gs, engine)
+            if actions and actions[0][0] >= 0:
+                result[0] = actions[0]
+        except Exception:
+            pass
+
+    t = threading.Thread(target=_run, daemon=True)
+    t.start()
+    t.join(timeout=timeout)
+    return result[0]

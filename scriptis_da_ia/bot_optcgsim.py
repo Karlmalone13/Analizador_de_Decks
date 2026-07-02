@@ -86,7 +86,9 @@ def _lookup_by_name(name: str, cost: int | None = None) -> dict | None:
 
 # ── Coordenadas fixas (1366×768) ───────────────────────────────────────────────
 C_SOLO_V_SELF  = (684, 438)
-C_START        = (297, 407)
+C_DECK_P1_DD   = (297, 178)   # dropdown P1 na tela de seleção
+C_DECK_P2_DD   = (297, 275)   # dropdown P2 na tela de seleção
+C_START        = (297, 407)   # botão Start na tela de seleção
 C_BTN_TOP      = (1101, 578)
 C_BTN_MAIN     = (1101, 643)
 C_BACK_MAIN    = (1165, 82)
@@ -436,19 +438,20 @@ def _focus_sim() -> bool:
 # ── Tratamento de prompts ──────────────────────────────────────────────────────
 _game_phase = 0
 
-def _handle_prompts(max_steps: int = 30) -> None:
+def _handle_prompts(max_steps: int = 20) -> None:
+    """Resolve prompts pós-ação clicando Pass/Cancel (C_BTN_MAIN)."""
     idle = 0
     for _ in range(max_steps):
         time.sleep(0.35)
         top, main = _scan_buttons()
         if not top and not main:
             idle += 1
-            if idle >= 6:
+            if idle >= 5:
                 return
             continue
         idle = 0
         if top and main:
-            pag.click(*C_BTN_TOP)
+            pag.click(*C_BTN_MAIN)   # Pass / No Counter / Skip effect
         else:
             return
 
@@ -526,6 +529,46 @@ def _execute_engine_action(action: tuple, hand_cards: list[dict],
 
     return False
 
+# ── Seleção de deck no dropdown ────────────────────────────────────────────────
+
+def _select_deck_dropdown(dd_coord: tuple, deck_name: str) -> bool:
+    """
+    Clica no dropdown em dd_coord, espera a lista abrir, procura o item
+    cujo nome coincide com deck_name e clica nele.
+    Retorna True se encontrou e clicou.
+    """
+    pag.click(*dd_coord)
+    time.sleep(0.6)
+
+    # OCR da lista aberta (cobre area do dropdown expandido)
+    LIST_BBOX = (190, 160, 400, 500)
+    img = ImageGrab.grab(bbox=LIST_BBOX)
+    img_big = img.resize((img.width * 3, img.height * 3), Image.LANCZOS)
+    img_big = img_big.convert('L')
+    img_big = ImageEnhance.Contrast(img_big).enhance(2.0)
+    raw = pytesseract.image_to_string(img_big, config='--psm 6').strip()
+    lines = [l.strip() for l in raw.splitlines() if l.strip()]
+
+    target = deck_name.lower()
+    for i, line in enumerate(lines):
+        if target in line.lower():
+            # Estima y pela posição da linha na bbox
+            y_offset = int((i + 0.5) * (LIST_BBOX[3] - LIST_BBOX[1]) / max(len(lines), 1))
+            y_click = LIST_BBOX[1] + y_offset
+            pag.click(dd_coord[0], y_click)
+            time.sleep(0.4)
+            return True
+
+    # Fallback: clica no primeiro item após o título
+    if len(lines) > 1:
+        y_offset = int(1.5 * (LIST_BBOX[3] - LIST_BBOX[1]) / max(len(lines), 1))
+        pag.click(dd_coord[0], LIST_BBOX[1] + y_offset)
+        time.sleep(0.4)
+    else:
+        pag.key('escape')
+    return False
+
+
 # ── Fluxo de uma partida ───────────────────────────────────────────────────────
 
 def play_match(deck_name: str | None = None, timeout: int = 600) -> bool:
@@ -551,6 +594,12 @@ def play_match(deck_name: str | None = None, timeout: int = 600) -> bool:
     print("  Solo v Self...", end=" ", flush=True)
     pag.click(*C_SOLO_V_SELF)
     time.sleep(1.5)
+
+    # ── Seleciona deck nos dropdowns P1/P2 (se deck_name fornecido) ───────────
+    if deck_name:
+        _select_deck_dropdown(C_DECK_P1_DD, deck_name)
+        _select_deck_dropdown(C_DECK_P2_DD, deck_name)
+
     print("Start!", end=" ", flush=True)
     pag.click(*C_START)
     time.sleep(2.5)
@@ -564,6 +613,8 @@ def play_match(deck_name: str | None = None, timeout: int = 600) -> bool:
     board_cards : list[dict] = []   # posições visuais do campo P2
     in_main     = False
     attacked    = False
+    actions_this_turn = 0
+    MAX_ACTIONS_PER_TURN = 6
 
     while time.time() - start < timeout:
         has_top, has_main = _scan_buttons()
@@ -584,28 +635,32 @@ def play_match(deck_name: str | None = None, timeout: int = 600) -> bool:
                 pag.click(*C_BTN_MAIN)   # Keep
                 _game_phase = 1
             else:
-                pag.click(*C_BTN_TOP)    # Confirm / Use Action
+                pag.click(*C_BTN_MAIN)   # Pass / No Counter / Skip
             time.sleep(0.35)
             continue
 
         # ── Botão único ────────────────────────────────────────────────────────
         if _game_phase >= 1 and not in_main:
-            # Proba se é Main Phase clicando na mão
-            test_x = hand_cards[0]['x'] if hand_cards else HAND_X_START
-            if _try_deploy_card(test_x):
+            # Proba Main Phase tentando deploy em posições da mão (P2, y=HAND_Y).
+            # Durante o turno do oponente, cliques em y=HAND_Y não abrem prompt.
+            probe_positions = ([h['x'] for h in hand_cards]
+                               if hand_cards else list(range(HAND_X_START, HAND_X_END + 1, HAND_STEP)))
+            deployed = False
+            for px in probe_positions[:5]:
+                if _try_deploy_card(px):
+                    deployed = True
+                    break
+            if deployed:
                 in_main = True
                 print("D", end="", flush=True)
-
-                # ── SCAN COMPLETO UMA VEZ ──────────────────────────────────────
                 _reset_log()
-                hand_cards, board_cards = full_scan(gs, opp_gs) if (gs and bridge) \
-                    else (scan_hand(), scan_board_p2())
-
-                # Coloca o log em estado inicial após o scan
+                # Pular full_scan (muito lento) — usa log delta direto
+                hand_cards = []
+                board_cards = []
                 _log_lines_seen[:] = _read_log_lines()
                 continue
 
-            # Não é Main Phase: clica o botão (Draw, Don, etc.)
+            # Probe falhou → avança o botão atual (Draw, Don, End Turn oponente, etc.)
             top2, main2 = _scan_buttons()
             if top2 and main2:
                 _handle_prompts()
@@ -614,21 +669,35 @@ def play_match(deck_name: str | None = None, timeout: int = 600) -> bool:
             hand_cards = []
             board_cards = []
             attacked = False
+            actions_this_turn = 0
             pag.click(*C_BTN_MAIN)
             time.sleep(0.5)
             continue
 
         if in_main:
+            # Segurança: se excedeu ações por turno, encerra turno sem loop infinito
+            if actions_this_turn >= MAX_ACTIONS_PER_TURN:
+                in_main = False
+                hand_cards = []
+                board_cards = []
+                attacked = False
+                actions_this_turn = 0
+                pag.click(*C_BTN_MAIN)
+                time.sleep(0.5)
+                print("X", end="", flush=True)
+                continue
+
             # ── Decide via engine ──────────────────────────────────────────────
             action_executed = False
 
-            if gs and bridge and match:
+            if gs and bridge and match and hand_cards:
                 try:
-                    action = bridge.choose_action(gs, opp_gs, match)
+                    action = bridge.choose_action(gs, opp_gs, match, timeout=2.0)
                     if action:
                         action_executed = _execute_engine_action(
                             action, hand_cards, board_cards)
                         if action_executed:
+                            actions_this_turn += 1
                             print(f"E({action[1][0]})", end="", flush=True)
                             time.sleep(0.3)
 
@@ -654,6 +723,7 @@ def play_match(deck_name: str | None = None, timeout: int = 600) -> bool:
             if not action_executed:
                 if not attacked:
                     attacked = True
+                    actions_this_turn += 1
                     _try_attack_leader()
                     print("A", end="", flush=True)
                     continue
@@ -662,6 +732,7 @@ def play_match(deck_name: str | None = None, timeout: int = 600) -> bool:
                 hand_cards = []
                 board_cards = []
                 attacked = False
+                actions_this_turn = 0
                 pag.click(*C_BTN_MAIN)
                 time.sleep(0.5)
                 print(".", end="", flush=True)

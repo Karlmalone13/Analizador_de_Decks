@@ -1,5 +1,38 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-02 (44) - Claude
+
+**Bot: partida completa funcionando (5 turnos, DA.DA.DA.DA.DA.)**
+
+### Bugs corrigidos esta sessão
+
+1. **`_handle_prompts` clicava TOP em vez de MAIN** → trocado para C_BTN_MAIN (Pass/Skip) em todos os dois-botões durante jogo
+2. **Engine `_generate_and_score_actions` travava infinitamente** → `choose_action()` em `sim_bridge.py` agora usa `threading.Thread(daemon=True)` com `t.join(timeout=4.0)` — retorna None em 4s sem bloquear
+   - Tentativa com `ThreadPoolExecutor` falhou: o `with` block chama `shutdown(wait=True)` que trava junto com a thread presa
+3. **`full_scan()` após deploy (~11s) causava atraso excessivo** → removida a chamada de `full_scan` imediatamente após deploy; bot usa `hand_cards=[], board_cards=[]` e o engine só é chamado se `hand_cards` não está vazio
+4. **Segurança de loop infinito** → `actions_this_turn` + `MAX_ACTIONS_PER_TURN=6`: após 6 ações no mesmo turno encerra forçado (print "X")
+
+### Resultado
+Bot completa partida de ponta a ponta: `DA.DA.DA.DA.DA.` = 5 turnos de Deploy+Attack+EndTurn.
+- Primeiro deploy na sonda da Main Phase (`D`)
+- Ataca leader adversário (`A`)  
+- Encerra turno (`.`)
+- Detecta fim de partida → baixa log de combate → volta ao menu
+
+### Estado atual
+- `bot_optcgsim.py`: funcional, completa partidas
+- `sim_bridge.py`: `choose_action()` com daemon thread (timeout 4s)
+- Push pendente de HANDOFF
+
+### O que falta / limitações conhecidas
+- O engine é chamado apenas quando `hand_cards` não está vazio (nunca, pois removemos o full_scan após deploy) → bot joga só attack+endturn sem usar o engine de decisão
+- Não ataca com personagens do campo, só com o leader
+- Não implementa `activate` nem `don_attach`
+- Probe da Main Phase tenta as primeiras 5 posições da mão (x=107..247); se nenhuma carta acessível estiver nesses slots, o bot não entra em Main Phase e apenas encerra o turno
+- Side panel do simulador abre esporadicamente (causa desconhecida, não impede o bot de funcionar pois End Turn pixel ainda detecta corretamente)
+
+---
+
 ## 2026-07-02 (43) - Claude
 
 **Bot: log delta para rastrear estado sem rescan constante**
