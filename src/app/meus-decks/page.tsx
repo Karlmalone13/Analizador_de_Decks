@@ -24,6 +24,7 @@ export default function MeusDecksPage() {
     const [decks, setDecks] = useState<DeckSummary[]>([])
     const [loading, setLoading] = useState(true)
     const [deleting, setDeleting] = useState<string | null>(null)
+    const [duplicating, setDuplicating] = useState<string | null>(null)
     const [search, setSearch] = useState('')
 
     async function loadDecks() {
@@ -67,6 +68,22 @@ export default function MeusDecksPage() {
         await supabase.from('decks').delete().eq('id', id)
         setDecks(d => d.filter(deck => deck.id !== id))
         setDeleting(null)
+    }
+
+    async function duplicateDeck(id: string) {
+        setDuplicating(id)
+        const { data: { user } } = await supabase.auth.getUser()
+        if (!user) { setDuplicating(null); return }
+        const { data } = await supabase.from('decks').select('*').eq('id', id).single()
+        if (data) {
+            await supabase.from('decks').insert({
+                user_id: user.id,
+                name: `${data.name} (cópia)`,
+                cards: data.cards,
+            })
+            loadDecks()
+        }
+        setDuplicating(null)
     }
 
     const filtered = decks.filter(d =>
@@ -168,11 +185,12 @@ export default function MeusDecksPage() {
                                                 {deck.leader_image ? (
                                                     <img
                                                         src={deck.leader_image}
-                                                        className="w-26 h-34 object-cover rounded-xl border border-gray-700"
+                                                        style={{ width: '88px', height: '124px' }}
+                                                        className="object-cover rounded-xl border border-gray-700"
                                                         onError={e => { e.currentTarget.style.display = 'none' }}
                                                     />
                                                 ) : (
-                                                    <div className="w-26 h-34 bg-gray-800 rounded-xl border border-gray-700 flex items-center justify-center text-gray-600 text-2xl">
+                                                    <div style={{ width: '88px', height: '124px' }} className="bg-gray-800 rounded-xl border border-gray-700 flex items-center justify-center text-gray-600 text-2xl">
                                                         🃏
                                                     </div>
                                                 )}
@@ -219,22 +237,30 @@ export default function MeusDecksPage() {
                                         <div className="flex gap-2 mt-4">
                                             <a
                                                 href={`/deck?id=${deck.id}`}
-                                                className="flex-1 bg-gray-800 hover:bg-gray-700 px-3 py-2 rounded-xl text-base text-center transition font-medium"
+                                                className="flex-1 bg-gray-800 hover:bg-gray-700 px-3 py-2 rounded-xl text-sm text-center transition font-medium"
                                             >
                                                 ✏️ Editar
                                             </a>
                                             <a
                                                 href={`/analysis?id=${deck.id}`}
-                                                className="flex-1 bg-blue-600 hover:bg-blue-500 px-3 py-2 rounded-xl text-base text-center transition font-medium"
+                                                className="flex-1 bg-blue-600 hover:bg-blue-500 px-3 py-2 rounded-xl text-sm text-center transition font-medium"
                                             >
                                                 📊 Analisar
                                             </a>
                                             <a
                                                 href={`/simulate?id=${deck.id}`}
-                                                className="flex-1 bg-green-600 hover:bg-green-500 px-3 py-2 rounded-xl text-base text-center transition font-medium"
+                                                className="flex-1 bg-green-600 hover:bg-green-500 px-3 py-2 rounded-xl text-sm text-center transition font-medium"
                                             >
                                                 🎯 Simular
                                             </a>
+                                            <button
+                                                onClick={() => duplicateDeck(deck.id)}
+                                                disabled={duplicating === deck.id}
+                                                title="Duplicar deck"
+                                                className="bg-gray-800 hover:bg-gray-700 px-3 py-2 rounded-xl text-xs transition disabled:opacity-50"
+                                            >
+                                                {duplicating === deck.id ? '...' : '⧉'}
+                                            </button>
                                             <button
                                                 onClick={() => deleteDeck(deck.id)}
                                                 disabled={deleting === deck.id}

@@ -773,6 +773,20 @@ function AnalysisPageContent() {
                 </div>
 
                 {/* ARQUÉTIPO + GOLDEN RATIOS */}
+                {analiseLoading && (
+                    <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 mb-8 animate-pulse">
+                        <div className="h-4 bg-gray-800 rounded w-48 mb-6" />
+                        <div className="space-y-3">
+                            {[1, 2, 3, 4].map(i => <div key={i} className="h-10 bg-gray-800 rounded-xl" />)}
+                        </div>
+                    </div>
+                )}
+                {!analiseLoading && !analise && deck?.leader && (
+                    <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 mb-8 flex items-center gap-3 text-yellow-400 text-sm">
+                        <span>⚠️</span>
+                        <span>Análise de arquétipo indisponível — API offline ou deck sem leader reconhecido.</span>
+                    </div>
+                )}
                 {analise && (
                     <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 mb-8">
                         <div className="flex items-start justify-between mb-6">
@@ -1036,6 +1050,14 @@ function AnalysisPageContent() {
                         </div>
                     </div>
                 </div>
+            </div>
+
+            {/* CTA: Simular */}
+            <div className="max-w-7xl mx-auto px-6 pb-10 w-full">
+                <a href={`/simulate?id=${deck.id}`}
+                    className="flex items-center justify-center gap-3 w-full bg-green-700 hover:bg-green-600 py-4 rounded-2xl font-semibold text-lg transition">
+                    🎯 Simular este deck
+                </a>
             </div>
 
             {/* Modal */}

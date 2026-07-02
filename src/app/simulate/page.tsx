@@ -130,7 +130,11 @@ function SimulatePageContent() {
 
     const [deck, setDeck] = useState<Deck | null>(null)
     const [loading, setLoading] = useState(Boolean(deckId))
-    const [error, setError] = useState(deckId ? '' : 'Nenhum deck selecionado.')
+    const [error, setError] = useState('')
+
+    // Picker de deck (quando não vem com ?id=)
+    const [allDecks, setAllDecks] = useState<DeckSummary[]>([])
+    const [pickerLoading, setPickerLoading] = useState(!deckId)
 
     const [tab, setTab] = useState<Tab>('pasted')
 
@@ -159,6 +163,45 @@ function SimulatePageContent() {
     const [replayData, setReplayData] = useState<any | null>(null)
     const [replayLoading, setReplayLoading] = useState(false)
     const [showReplay, setShowReplay] = useState(false)
+
+    // ── Picker: carrega todos os decks quando não há ?id= ───────────────────
+    useEffect(() => {
+        if (deckId) return
+        async function loadAll() {
+            const { data: { user } } = await supabase.auth.getUser()
+            if (!user) { setPickerLoading(false); return }
+            const { data } = await supabase.from('decks').select('*').eq('user_id', user.id).order('updated_at', { ascending: false })
+            if (data) {
+                const summaries: DeckSummary[] = data.map((d: { id: string; name: string; updated_at: string; cards: string }) => {
+                    let leader_image = null, leader_name = null, leader_color = null, total_cards = 0
+                    try {
+                        const parsed = JSON.parse(d.cards)
+                        leader_image = parsed.leader?.card_image || null
+                        leader_name = parsed.leader?.card_name || null
+                        leader_color = parsed.leader?.card_color || null
+                        total_cards = (parsed.cards || []).reduce((s: number, dc: { quantity: number }) => s + dc.quantity, 0)
+                    } catch { }
+                    return { id: d.id, name: d.name, updated_at: d.updated_at, leader_image, leader_name, leader_color, total_cards }
+                })
+                setAllDecks(summaries)
+            }
+            setPickerLoading(false)
+        }
+        loadAll()
+    }, [deckId])
+
+    function selectDeckFromPicker(d: DeckSummary) {
+        // Reconstrói o objeto Deck a partir do summary — precisa de uma busca completa
+        setLoading(true)
+        supabase.from('decks').select('*').eq('id', d.id).single().then(({ data, error: err }) => {
+            if (err || !data) { setError('Erro ao carregar deck.'); setLoading(false); return }
+            try {
+                const parsed = JSON.parse(data.cards)
+                setDeck({ id: data.id, name: data.name, leader: parsed.leader || null, cards: parsed.cards || [] })
+            } catch { setError('Erro ao carregar deck.') }
+            setLoading(false)
+        })
+    }
 
     // ── Carrega o deck de origem (deck_a, vindo de /meus-decks) ────────────
     useEffect(() => {
@@ -408,12 +451,56 @@ function SimulatePageContent() {
         </div>
     )
 
-    if (error || !deck) return (
+    if (error) return (
         <div className="min-h-screen bg-gray-950 text-white flex flex-col">
             <Navbar />
             <div className="flex-1 flex items-center justify-center flex-col gap-4">
-                <div className="text-red-400 text-lg">{error || 'Erro desconhecido'}</div>
+                <div className="text-red-400 text-lg">{error}</div>
                 <a href="/meus-decks" className="bg-orange-600 hover:bg-orange-500 px-6 py-2 rounded-xl text-sm transition">Voltar aos Meus Decks</a>
+            </div>
+        </div>
+    )
+
+    // ── Picker: nenhum deck selecionado ainda ────────────────────────────────
+    if (!deck) return (
+        <div className="min-h-screen bg-gray-950 text-white flex flex-col">
+            <Navbar />
+            <div className="max-w-3xl mx-auto px-6 py-12 w-full">
+                <div className="text-gray-400 text-sm mb-1">Simulação</div>
+                <h1 className="text-3xl font-bold mb-8">Escolha um deck para simular</h1>
+                {pickerLoading ? (
+                    <div className="text-center text-gray-400 py-16">Carregando decks...</div>
+                ) : allDecks.length === 0 ? (
+                    <div className="text-center py-16">
+                        <div className="text-5xl mb-4">🏴‍☠️</div>
+                        <div className="text-gray-400 mb-4">Você ainda não tem decks salvos.</div>
+                        <a href="/deck" className="bg-orange-600 hover:bg-orange-500 px-6 py-3 rounded-xl font-medium transition">Criar deck</a>
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        {allDecks.map(d => {
+                            const colors = d.leader_color?.split(/[\s\/]/).filter(Boolean) || []
+                            return (
+                                <button key={d.id} onClick={() => selectDeckFromPicker(d)}
+                                    className="bg-gray-900 border border-gray-800 hover:border-orange-500 rounded-2xl overflow-hidden text-left transition group">
+                                    <div className="flex h-1.5">
+                                        {colors.length > 0 ? colors.map((c, i) => <div key={i} className={`flex-1 ${colorClass[c.trim()] || 'bg-gray-500'}`} />) : <div className="flex-1 bg-gray-700" />}
+                                    </div>
+                                    <div className="flex gap-4 p-4 items-center">
+                                        {d.leader_image
+                                            ? <img src={d.leader_image} className="w-14 h-20 object-cover rounded-lg border border-gray-700 flex-shrink-0" />
+                                            : <div className="w-14 h-20 bg-gray-800 rounded-lg border border-gray-700 flex-shrink-0 flex items-center justify-center text-gray-600 text-xl">🃏</div>}
+                                        <div className="min-w-0">
+                                            <div className="font-bold text-white truncate">{d.name}</div>
+                                            <div className="text-sm text-orange-400 truncate">{d.leader_name}</div>
+                                            <div className="text-xs text-gray-500 mt-1">{d.total_cards}/50 cartas</div>
+                                        </div>
+                                    </div>
+                                </button>
+                            )
+                        })}
+                    </div>
+                )}
             </div>
         </div>
     )
@@ -555,13 +642,23 @@ function SimulatePageContent() {
                         Tempo estimado: ~{Math.round(estimatedSeconds)}s ({Math.round(estimatedSeconds / 60 * 10) / 10} min)
                     </div>
 
-                    <button
-                        onClick={startSimulation}
-                        disabled={running || (tab === 'meta' && metaCount === 0)}
-                        className="bg-orange-600 hover:bg-orange-500 disabled:opacity-50 disabled:cursor-not-allowed px-6 py-3 rounded-xl font-medium transition w-full"
-                    >
-                        {running ? 'Simulando...' : '🎯 Iniciar Simulação'}
-                    </button>
+                    <div className="flex gap-3">
+                        <button
+                            onClick={startSimulation}
+                            disabled={running || (tab === 'meta' && metaCount === 0)}
+                            className="flex-1 bg-orange-600 hover:bg-orange-500 disabled:opacity-50 disabled:cursor-not-allowed px-6 py-3 rounded-xl font-medium transition"
+                        >
+                            {running ? 'Simulando...' : '🎯 Iniciar Simulação'}
+                        </button>
+                        <button
+                            onClick={startReplay}
+                            disabled={replayLoading || running || tab === 'meta'}
+                            title={tab === 'meta' ? 'Selecione Deck Colado ou Meus Decks para usar replay direto' : 'Roda 1 partida completa com log detalhado'}
+                            className="bg-indigo-700 hover:bg-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed px-5 py-3 rounded-xl font-medium transition flex items-center gap-2 whitespace-nowrap"
+                        >
+                            {replayLoading ? <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> Carregando...</> : '🎬 Replay direto'}
+                        </button>
+                    </div>
                 </div>
 
                 {/* Resultado */}
