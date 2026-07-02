@@ -1,5 +1,31 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-02 (38) - Claude
+
+**Plano de turnos: DON!! correto + endpoint /leader-stats com dados reais de log**
+
+### Backend — `scriptis_da_ia/api.py`
+- Novo endpoint `GET /leader-stats?leader_name=<nome>` (busca parcial, case-insensitive)
+- Lê `logs/index.json`, filtra logs onde o líder aparece (p1 ou p2)
+- Para cada log encontrado, agrega ações `type=play` por turno do jogador com esse líder
+- Retorna `{total_games, turns: {"1": [{card_code, card_name, count, pct}], ...}}`
+- Usado pelo front para priorizar cartas reais de log no plano de turnos
+
+### Frontend — `src/app/analysis/page.tsx`
+- `gerarPlano()` refatorado: novo tipo `PlanoTurno` com `don1`/`don2` separados
+- Curva de DON!! correta: 1º → T1=1, T2=3, T3=5, T4=7 DON!!; 2º → T1=2, T2=4, T3=6, T4=8
+- Cartas do plano: se `leaderStats` tem dados para o turno, prioriza cartas mais jogadas nos logs; senão usa análise do deck
+- Novo `useEffect` busca `/leader-stats` para o líder do deck ao carregar
+- Estado `leaderStats` + badge "✦ N partidas reais no banco" quando API retorna dados
+- UI do plano: bloco de DON split em dois (laranja=1º / azul=2º)
+- Texto do subtítulo exibe a curva completa de ambas as posições
+
+### Estado atual
+- Zero erros TypeScript; servidor 3000 no ar
+- `/leader-stats` funciona localmente; precisa do deploy Railway para o front em produção consumir
+
+---
+
 ## 2026-07-02 (37) - Claude
 
 **Fix /analysis: melhores mãos por posição (1º/2º jogador) + arquétipo do deck**

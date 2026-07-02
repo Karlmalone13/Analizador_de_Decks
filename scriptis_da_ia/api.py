@@ -253,6 +253,87 @@ async def replay_demo(seed: int = 42):
         raise HTTPException(status_code=500, detail=f'Erro no replay demo: {e}')
 
 
+@app.get("/leader-stats")
+def leader_stats(leader_name: str):
+    """
+    Retorna estatísticas de partidas reais do banco de logs para um líder.
+    Agrega: quais cartas foram jogadas em cada turno (tipo 'play') e com
+    que frequência, baseado em todos os logs onde esse líder aparece.
+
+    Query param: leader_name (parcial, case-insensitive — ex: "Krieg")
+    Resposta: {
+      total_games: int,
+      turns: {
+        "1": [{card_code, card_name, count, pct}],
+        "2": [...],
+        ...
+      }
+    }
+    """
+    import glob as _glob
+
+    logs_dir = os.path.join(os.path.dirname(__file__), 'logs')
+    index_path = os.path.join(logs_dir, 'index.json')
+
+    try:
+        with open(index_path, encoding='utf-8') as f:
+            index = json.load(f)
+    except Exception:
+        raise HTTPException(status_code=500, detail='Índice de logs não encontrado')
+
+    needle = leader_name.lower().strip()
+
+    # Encontra todos os logs onde o líder aparece (como p1 ou p2)
+    matching = []
+    for entry in index:
+        p1_match = needle in entry.get('p1', {}).get('leader_name', '').lower()
+        p2_match = needle in entry.get('p2', {}).get('leader_name', '').lower()
+        if p1_match or p2_match:
+            matching.append({
+                'entry': entry,
+                'player_name': entry['p1']['name'] if p1_match else entry['p2']['name'],
+            })
+
+    if not matching:
+        return {'total_games': 0, 'turns': {}}
+
+    # Agrega plays por turno
+    from collections import defaultdict
+    turn_plays: dict[int, dict[str, dict]] = defaultdict(dict)
+
+    for m in matching:
+        parsed_path = os.path.join(logs_dir, m['entry']['parsed_file'])
+        try:
+            with open(parsed_path, encoding='utf-8') as f:
+                log = json.load(f)
+        except Exception:
+            continue
+
+        player_name = m['player_name']
+        for turn_data in log.get('turns', []):
+            if turn_data.get('player') != player_name:
+                continue
+            turn_num = turn_data.get('turn', 0)
+            for action in turn_data.get('actions', []):
+                if action.get('type') != 'play':
+                    continue
+                code = action.get('card', '')
+                name = action.get('card_name', code)
+                if code not in turn_plays[turn_num]:
+                    turn_plays[turn_num][code] = {'card_code': code, 'card_name': name, 'count': 0}
+                turn_plays[turn_num][code]['count'] += 1
+
+    total = len(matching)
+    result_turns = {}
+    for t_num in sorted(turn_plays.keys()):
+        plays = sorted(turn_plays[t_num].values(), key=lambda x: -x['count'])
+        for p in plays:
+            p['pct'] = round(p['count'] / total, 3)
+        result_turns[str(t_num)] = plays
+
+    return {'total_games': total, 'turns': result_turns}
+
+
 @app.get("/simulate/status/{job_id}")
 async def simulate_status(job_id: str):
     """
