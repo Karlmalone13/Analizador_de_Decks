@@ -1,0 +1,1156 @@
+{
+  "meta": {
+    "source": "autosaved_log",
+    "original_file": "2026-06-27T23.48.47.log",
+    "p1": {
+      "name": "Karlmalone#2854",
+      "leader_name": "Marshall D. Teach",
+      "leader_code": "OP16-080",
+      "goes_first": true
+    },
+    "p2": {
+      "name": "rong#1667",
+      "leader_name": "Krieg",
+      "leader_code": "OP15-001",
+      "goes_first": false
+    },
+    "winner": "p1",
+    "winner_name": "Karlmalone#2854",
+    "total_turns": 30,
+    "mulligan_p1": {
+      "before": [
+        "OP16-110",
+        "EB04-058",
+        "OP06-115",
+        "OP16-109",
+        "OP16-108"
+      ],
+      "after": [
+        "PRB02-015",
+        "OP16-116",
+        "OP09-093",
+        "OP06-115",
+        "OP09-093"
+      ],
+      "took_mulligan": true
+    },
+    "mulligan_p2": {
+      "before": [],
+      "after": [],
+      "took_mulligan": true
+    }
+  },
+  "turns": [
+    {
+      "turn": 1,
+      "player": "rong#1667",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Conqueror's Haki",
+        "code": "OP12-018"
+      },
+      "don_drawn": 3,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP15-026",
+          "card_name": "Jango",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP15-026",
+            "OP15-025",
+            "OP15-026",
+            "OP15-009",
+            "OP15-017"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 1,
+      "player": "rong#1667",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP15-026",
+            "OP15-025",
+            "OP15-009",
+            "OP15-017",
+            "OP12-018",
+            "OP15-023"
+          ],
+          "board": [
+            "OP15-026"
+          ],
+          "trash": [
+            "OP15-037"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 2,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Sanjuan Wolf",
+        "code": "OP16-106"
+      },
+      "don_drawn": 2,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP15-026",
+            "OP15-025",
+            "OP15-009",
+            "OP15-017",
+            "OP12-018",
+            "OP15-023"
+          ],
+          "board": [
+            "OP15-026"
+          ],
+          "trash": [
+            "OP15-037"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 2,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP15-026",
+            "OP15-025",
+            "OP15-009",
+            "OP15-017",
+            "OP12-018",
+            "OP15-023",
+            "OP13-040"
+          ],
+          "board": [
+            "OP15-026"
+          ],
+          "trash": [
+            "OP15-037"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 3,
+      "player": "rong#1667",
+      "player_role": "",
+      "card_drawn": {
+        "name": "It's an Order! Do Not Defy Me!!!",
+        "code": "OP15-038"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP15-023",
+          "card_name": "Arlong",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP15-026",
+            "OP15-025",
+            "OP15-009",
+            "OP15-017",
+            "OP12-018",
+            "OP15-023",
+            "OP13-040"
+          ],
+          "board": [
+            "OP15-026"
+          ],
+          "trash": [
+            "OP15-037"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 3,
+      "player": "rong#1667",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP15-026",
+            "OP15-025",
+            "OP15-009",
+            "OP15-017",
+            "OP12-018",
+            "OP13-040",
+            "OP15-038"
+          ],
+          "board": [
+            "OP15-026",
+            "OP15-023"
+          ],
+          "trash": [
+            "OP15-037"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 5,
+      "player": "rong#1667",
+      "player_role": "",
+      "card_drawn": {
+        "name": "You'll Frighten Me...",
+        "code": "OP14-118"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP09-099",
+          "card_name": "Fullalead",
+          "effects": []
+        },
+        {
+          "type": "play",
+          "card": "PRB02-015",
+          "card_name": "Shiryu",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP15-026",
+            "OP15-025",
+            "OP15-009",
+            "OP15-017",
+            "OP12-018",
+            "OP13-040",
+            "OP15-038"
+          ],
+          "board": [
+            "OP15-026",
+            "OP15-023"
+          ],
+          "trash": [
+            "OP15-037"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 5,
+      "player": "rong#1667",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP15-025",
+            "OP15-009",
+            "OP15-017",
+            "OP12-018",
+            "OP13-040",
+            "OP15-038"
+          ],
+          "board": [
+            "OP15-026",
+            "OP15-023"
+          ],
+          "trash": [
+            "OP15-037",
+            "OP15-026"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 8,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Laffitte",
+        "code": "OP09-095"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP15-017",
+          "card_name": "Morgan",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP15-025",
+            "OP15-009",
+            "OP15-017",
+            "OP12-018",
+            "OP13-040",
+            "OP15-038"
+          ],
+          "board": [
+            "OP15-026",
+            "OP15-023"
+          ],
+          "trash": [
+            "OP15-037",
+            "OP15-026"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 8,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP15-025",
+            "OP15-009",
+            "OP12-018",
+            "OP13-040",
+            "OP15-038",
+            "OP15-003"
+          ],
+          "board": [
+            "OP15-026",
+            "OP15-023",
+            "OP15-017"
+          ],
+          "trash": [
+            "OP15-037",
+            "OP15-026"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 9,
+      "player": "rong#1667",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Van Augur",
+        "code": "OP16-103"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP09-095",
+          "card_name": "Laffitte",
+          "effects": []
+        },
+        {
+          "type": "play",
+          "card": "OP16-103",
+          "card_name": "Van Augur",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP15-025",
+            "OP15-009",
+            "OP12-018",
+            "OP13-040",
+            "OP15-038",
+            "OP15-003"
+          ],
+          "board": [
+            "OP15-026",
+            "OP15-023",
+            "OP15-017"
+          ],
+          "trash": [
+            "OP15-037",
+            "OP15-026"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 9,
+      "player": "rong#1667",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP15-025",
+            "OP13-040",
+            "OP15-038",
+            "OP15-003"
+          ],
+          "board": [
+            "OP15-026",
+            "OP15-023",
+            "OP15-017"
+          ],
+          "trash": [
+            "OP15-037",
+            "OP15-026",
+            "OP12-018",
+            "OP15-009"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 13,
+      "player": "rong#1667",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Shiryu",
+        "code": "OP16-108"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP15-025",
+          "card_name": "Kuro",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP15-025",
+            "OP13-040",
+            "OP15-038",
+            "OP15-003"
+          ],
+          "board": [
+            "OP15-026",
+            "OP15-023",
+            "OP15-017"
+          ],
+          "trash": [
+            "OP15-037",
+            "OP15-026",
+            "OP12-018",
+            "OP15-009"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 13,
+      "player": "rong#1667",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP13-040",
+            "OP15-038",
+            "OP15-003",
+            "OP15-009"
+          ],
+          "board": [
+            "OP15-026",
+            "OP15-023",
+            "OP15-017",
+            "OP15-025"
+          ],
+          "trash": [
+            "OP15-037",
+            "OP15-026",
+            "OP12-018",
+            "OP15-009"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 15,
+      "player": "rong#1667",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Marshall D. Teach",
+        "code": "OP16-119"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP16-108",
+          "card_name": "Shiryu",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP13-040",
+            "OP15-038",
+            "OP15-003",
+            "OP15-009"
+          ],
+          "board": [
+            "OP15-026",
+            "OP15-023",
+            "OP15-017",
+            "OP15-025"
+          ],
+          "trash": [
+            "OP15-037",
+            "OP15-026",
+            "OP12-018",
+            "OP15-009"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 15,
+      "player": "rong#1667",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP13-040",
+            "OP15-038",
+            "OP15-003"
+          ],
+          "board": [
+            "OP15-026",
+            "OP15-023",
+            "OP15-017",
+            "OP15-025"
+          ],
+          "trash": [
+            "OP15-037",
+            "OP15-026",
+            "OP12-018",
+            "OP15-009",
+            "OP15-009"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 18,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Koby",
+        "code": "OP15-009"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP15-003",
+          "card_name": "Alvida",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP13-040",
+            "OP15-038",
+            "OP15-003"
+          ],
+          "board": [
+            "OP15-026",
+            "OP15-023",
+            "OP15-017",
+            "OP15-025"
+          ],
+          "trash": [
+            "OP15-037",
+            "OP15-026",
+            "OP12-018",
+            "OP15-009",
+            "OP15-009"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 18,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP13-040",
+            "OP15-038",
+            "OP15-009"
+          ],
+          "board": [
+            "OP15-026",
+            "OP15-017",
+            "OP15-025",
+            "OP15-003"
+          ],
+          "trash": [
+            "OP15-037",
+            "OP15-026",
+            "OP12-018",
+            "OP15-009",
+            "OP15-009",
+            "OP15-023"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 18,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Vasco Shot",
+        "code": "OP09-091"
+      },
+      "don_drawn": 2,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP13-040",
+            "OP15-038",
+            "OP15-009"
+          ],
+          "board": [
+            "OP15-026",
+            "OP15-017",
+            "OP15-025",
+            "OP15-003"
+          ],
+          "trash": [
+            "OP15-037",
+            "OP15-026",
+            "OP12-018",
+            "OP15-009",
+            "OP15-009",
+            "OP15-023"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 18,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP13-040",
+            "OP15-038",
+            "OP15-009",
+            "OP15-017"
+          ],
+          "board": [
+            "OP15-026",
+            "OP15-017",
+            "OP15-025",
+            "OP15-003"
+          ],
+          "trash": [
+            "OP15-037",
+            "OP15-026",
+            "OP12-018",
+            "OP15-009",
+            "OP15-009",
+            "OP15-023"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 23,
+      "player": "rong#1667",
+      "player_role": "",
+      "card_drawn": {
+        "name": "ZEHAHAHAHA",
+        "code": "OP16-116"
+      },
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP14-027",
+          "card_name": "Shanks",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP13-040",
+            "OP15-038",
+            "OP15-009",
+            "OP15-017"
+          ],
+          "board": [
+            "OP15-026",
+            "OP15-017",
+            "OP15-025",
+            "OP15-003"
+          ],
+          "trash": [
+            "OP15-037",
+            "OP15-026",
+            "OP12-018",
+            "OP15-009",
+            "OP15-009",
+            "OP15-023"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 23,
+      "player": "rong#1667",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP13-040",
+            "OP15-038",
+            "OP15-009",
+            "OP15-017"
+          ],
+          "board": [
+            "OP15-017",
+            "OP15-025",
+            "OP15-003",
+            "OP14-027"
+          ],
+          "trash": [
+            "OP15-037",
+            "OP15-026",
+            "OP12-018",
+            "OP15-009",
+            "OP15-009",
+            "OP15-023",
+            "OP15-037",
+            "OP15-026"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 26,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Borsalino",
+        "code": "EB04-058"
+      },
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP09-091",
+          "card_name": "Vasco Shot",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP13-040",
+            "OP15-038",
+            "OP15-009",
+            "OP15-017"
+          ],
+          "board": [
+            "OP15-017",
+            "OP15-025",
+            "OP15-003",
+            "OP14-027"
+          ],
+          "trash": [
+            "OP15-037",
+            "OP15-026",
+            "OP12-018",
+            "OP15-009",
+            "OP15-009",
+            "OP15-023",
+            "OP15-037",
+            "OP15-026"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 26,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP13-040",
+            "OP15-038",
+            "OP15-017",
+            "OP15-028",
+            "OP12-018"
+          ],
+          "board": [
+            "OP15-017",
+            "OP15-025",
+            "OP15-003",
+            "OP14-027"
+          ],
+          "trash": [
+            "OP15-037",
+            "OP15-026",
+            "OP12-018",
+            "OP15-009",
+            "OP15-009",
+            "OP15-023",
+            "OP15-037",
+            "OP15-026",
+            "OP15-009"
+          ],
+          "life": 0
+        }
+      }
+    },
+    {
+      "turn": 31,
+      "player": "rong#1667",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Kuro",
+        "code": "OP15-025"
+      },
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP15-028",
+          "card_name": "Meowban Brothers",
+          "effects": []
+        },
+        {
+          "type": "play",
+          "card": "OP15-017",
+          "card_name": "Morgan",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP13-040",
+            "OP15-038",
+            "OP15-017",
+            "OP15-028",
+            "OP12-018"
+          ],
+          "board": [
+            "OP15-017",
+            "OP15-025",
+            "OP15-003",
+            "OP14-027"
+          ],
+          "trash": [
+            "OP15-037",
+            "OP15-026",
+            "OP12-018",
+            "OP15-009",
+            "OP15-009",
+            "OP15-023",
+            "OP15-037",
+            "OP15-026",
+            "OP15-009"
+          ],
+          "life": 0
+        }
+      }
+    },
+    {
+      "turn": 31,
+      "player": "rong#1667",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP13-040",
+            "OP15-038",
+            "OP12-018",
+            "OP15-025"
+          ],
+          "board": [
+            "OP15-017",
+            "OP15-025",
+            "OP15-003",
+            "OP14-027",
+            "OP15-017"
+          ],
+          "trash": [
+            "OP15-037",
+            "OP15-026",
+            "OP12-018",
+            "OP15-009",
+            "OP15-009",
+            "OP15-023",
+            "OP15-037",
+            "OP15-026",
+            "OP15-009",
+            "OP15-028"
+          ],
+          "life": 0
+        }
+      }
+    },
+    {
+      "turn": 35,
+      "player": "rong#1667",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Doc Q",
+        "code": "OP16-109"
+      },
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP16-119",
+          "card_name": "Marshall D. Teach",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP13-040",
+            "OP15-038",
+            "OP12-018",
+            "OP15-025"
+          ],
+          "board": [
+            "OP15-017",
+            "OP15-025",
+            "OP15-003",
+            "OP14-027",
+            "OP15-017"
+          ],
+          "trash": [
+            "OP15-037",
+            "OP15-026",
+            "OP12-018",
+            "OP15-009",
+            "OP15-009",
+            "OP15-023",
+            "OP15-037",
+            "OP15-026",
+            "OP15-009",
+            "OP15-028"
+          ],
+          "life": 0
+        }
+      }
+    },
+    {
+      "turn": 35,
+      "player": "rong#1667",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP13-040",
+            "OP12-018"
+          ],
+          "board": [
+            "OP15-017",
+            "OP15-025",
+            "OP15-003",
+            "OP14-027",
+            "OP15-017"
+          ],
+          "trash": [
+            "OP15-037",
+            "OP15-026",
+            "OP12-018",
+            "OP15-009",
+            "OP15-009",
+            "OP15-023",
+            "OP15-037",
+            "OP15-026",
+            "OP15-009",
+            "OP15-028",
+            "OP15-038",
+            "OP15-025"
+          ],
+          "life": 0
+        }
+      }
+    },
+    {
+      "turn": 42,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Vasco Shot",
+        "code": "OP16-110"
+      },
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP15-008",
+          "card_name": "Krieg",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP13-040",
+            "OP12-018"
+          ],
+          "board": [
+            "OP15-017",
+            "OP15-025",
+            "OP15-003",
+            "OP14-027",
+            "OP15-017"
+          ],
+          "trash": [
+            "OP15-037",
+            "OP15-026",
+            "OP12-018",
+            "OP15-009",
+            "OP15-009",
+            "OP15-023",
+            "OP15-037",
+            "OP15-026",
+            "OP15-009",
+            "OP15-028",
+            "OP15-038",
+            "OP15-025"
+          ],
+          "life": 0
+        }
+      }
+    },
+    {
+      "turn": 42,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP13-040",
+            "OP12-018"
+          ],
+          "board": [
+            "OP15-017",
+            "OP15-025",
+            "OP15-003",
+            "OP14-027",
+            "OP15-008"
+          ],
+          "trash": [
+            "OP15-037",
+            "OP15-026",
+            "OP12-018",
+            "OP15-009",
+            "OP15-009",
+            "OP15-023",
+            "OP15-037",
+            "OP15-026",
+            "OP15-009",
+            "OP15-028",
+            "OP15-038",
+            "OP15-025",
+            "OP15-017"
+          ],
+          "life": 0
+        }
+      }
+    }
+  ]
+}

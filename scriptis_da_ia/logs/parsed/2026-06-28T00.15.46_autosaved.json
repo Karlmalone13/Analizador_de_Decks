@@ -1,0 +1,1226 @@
+{
+  "meta": {
+    "source": "autosaved_log",
+    "original_file": "2026-06-28T00.15.46.log",
+    "p1": {
+      "name": "Karlmalone#2854",
+      "leader_name": "Marshall D. Teach",
+      "leader_code": "OP16-080",
+      "goes_first": true
+    },
+    "p2": {
+      "name": "CatalinaWineMixr#4883",
+      "leader_name": "Imu",
+      "leader_code": "OP13-079",
+      "goes_first": false
+    },
+    "winner": "p2",
+    "winner_name": "CatalinaWineMixr#4883",
+    "total_turns": 27,
+    "mulligan_p1": {
+      "before": [
+        "PRB02-015",
+        "OP16-106",
+        "OP10-098",
+        "OP16-110",
+        "OP16-116"
+      ],
+      "after": [
+        "PRB02-015",
+        "OP16-106",
+        "OP10-098",
+        "OP16-110",
+        "OP16-116"
+      ],
+      "took_mulligan": false
+    },
+    "mulligan_p2": {
+      "before": [],
+      "after": [],
+      "took_mulligan": false
+    }
+  },
+  "turns": [
+    {
+      "turn": 1,
+      "player": "CatalinaWineMixr#4883",
+      "player_role": "",
+      "card_drawn": {
+        "name": "St. Jaygarcia Saturn",
+        "code": "OP13-083"
+      },
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP13-086",
+            "OP13-082",
+            "OP13-084",
+            "OP13-096",
+            "OP13-083"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 2,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 1,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP16-110",
+          "card_name": "Vasco Shot",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP13-086",
+            "OP13-082",
+            "OP13-084",
+            "OP13-096",
+            "OP13-083"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 2,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP13-086",
+            "OP13-082",
+            "OP13-084",
+            "OP13-096",
+            "OP13-083"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 3,
+      "player": "CatalinaWineMixr#4883",
+      "player_role": "",
+      "card_drawn": {
+        "name": "The Five Elders... Are At Your Service",
+        "code": "OP13-096"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP13-086",
+          "card_name": "St. Shalria",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP13-086",
+            "OP13-082",
+            "OP13-084",
+            "OP13-096",
+            "OP13-083"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 3,
+      "player": "CatalinaWineMixr#4883",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP13-082",
+            "OP13-084",
+            "OP13-083",
+            "OP13-082",
+            "OP13-098",
+            "OP13-096"
+          ],
+          "board": [],
+          "trash": [
+            "OP13-096",
+            "OP11-097",
+            "OP13-083",
+            "OP13-098",
+            "OP11-097",
+            "OP13-083",
+            "OP13-086"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 7,
+      "player": "CatalinaWineMixr#4883",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Marshall D. Teach",
+        "code": "OP09-093"
+      },
+      "don_drawn": 2,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP13-082",
+            "OP13-084",
+            "OP13-083",
+            "OP13-082",
+            "OP13-098",
+            "OP13-096"
+          ],
+          "board": [],
+          "trash": [
+            "OP13-096",
+            "OP11-097",
+            "OP13-083",
+            "OP13-098",
+            "OP11-097",
+            "OP13-083",
+            "OP13-086"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 7,
+      "player": "CatalinaWineMixr#4883",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP13-082",
+            "OP13-083",
+            "OP13-082",
+            "OP13-098",
+            "OP13-096",
+            "OP13-082"
+          ],
+          "board": [],
+          "trash": [
+            "OP13-096",
+            "OP11-097",
+            "OP13-083",
+            "OP13-098",
+            "OP11-097",
+            "OP13-083",
+            "OP13-086",
+            "OP13-096",
+            "OP13-084",
+            "OP13-092",
+            "OP13-084"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 9,
+      "player": "CatalinaWineMixr#4883",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Doc Q",
+        "code": "OP16-109"
+      },
+      "don_drawn": 2,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP13-082",
+            "OP13-083",
+            "OP13-082",
+            "OP13-098",
+            "OP13-096",
+            "OP13-082"
+          ],
+          "board": [],
+          "trash": [
+            "OP13-096",
+            "OP11-097",
+            "OP13-083",
+            "OP13-098",
+            "OP11-097",
+            "OP13-083",
+            "OP13-086",
+            "OP13-096",
+            "OP13-084",
+            "OP13-092",
+            "OP13-084"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 9,
+      "player": "CatalinaWineMixr#4883",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP13-082",
+            "OP13-082",
+            "OP13-098",
+            "OP13-082",
+            "OP13-080",
+            "OP13-084",
+            "OP13-098"
+          ],
+          "board": [
+            "OP13-083"
+          ],
+          "trash": [
+            "OP13-096",
+            "OP11-097",
+            "OP13-083",
+            "OP13-098",
+            "OP11-097",
+            "OP13-083",
+            "OP13-086",
+            "OP13-096",
+            "OP13-084",
+            "OP13-092",
+            "OP13-084",
+            "OP13-096",
+            "OP13-096",
+            "OP14-096"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 10,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Liberation",
+        "code": "OP10-098"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "PRB02-015",
+          "card_name": "Shiryu",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP13-082",
+            "OP13-082",
+            "OP13-098",
+            "OP13-082",
+            "OP13-080",
+            "OP13-084",
+            "OP13-098"
+          ],
+          "board": [
+            "OP13-083"
+          ],
+          "trash": [
+            "OP13-096",
+            "OP11-097",
+            "OP13-083",
+            "OP13-098",
+            "OP11-097",
+            "OP13-083",
+            "OP13-086",
+            "OP13-096",
+            "OP13-084",
+            "OP13-092",
+            "OP13-084",
+            "OP13-096",
+            "OP13-096",
+            "OP14-096"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 10,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP13-082",
+            "OP13-082",
+            "OP13-098",
+            "OP13-082",
+            "OP13-080",
+            "OP13-084",
+            "OP13-098",
+            "OP13-082"
+          ],
+          "board": [
+            "OP13-083"
+          ],
+          "trash": [
+            "OP13-096",
+            "OP11-097",
+            "OP13-083",
+            "OP13-098",
+            "OP11-097",
+            "OP13-083",
+            "OP13-086",
+            "OP13-096",
+            "OP13-084",
+            "OP13-092",
+            "OP13-084",
+            "OP13-096",
+            "OP13-096",
+            "OP14-096"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 13,
+      "player": "CatalinaWineMixr#4883",
+      "player_role": "",
+      "card_drawn": {
+        "name": "St. Marcus Mars",
+        "code": "OP13-091"
+      },
+      "don_drawn": 2,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP13-082",
+            "OP13-082",
+            "OP13-098",
+            "OP13-082",
+            "OP13-080",
+            "OP13-084",
+            "OP13-098",
+            "OP13-082"
+          ],
+          "board": [
+            "OP13-083"
+          ],
+          "trash": [
+            "OP13-096",
+            "OP11-097",
+            "OP13-083",
+            "OP13-098",
+            "OP11-097",
+            "OP13-083",
+            "OP13-086",
+            "OP13-096",
+            "OP13-084",
+            "OP13-092",
+            "OP13-084",
+            "OP13-096",
+            "OP13-096",
+            "OP14-096"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 13,
+      "player": "CatalinaWineMixr#4883",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP13-082",
+            "OP13-082",
+            "OP13-098",
+            "OP13-082",
+            "OP13-084",
+            "OP13-098",
+            "OP13-082"
+          ],
+          "board": [
+            "OP13-083",
+            "OP13-091"
+          ],
+          "trash": [
+            "OP13-096",
+            "OP11-097",
+            "OP13-083",
+            "OP13-098",
+            "OP11-097",
+            "OP13-083",
+            "OP13-086",
+            "OP13-096",
+            "OP13-084",
+            "OP13-092",
+            "OP13-084",
+            "OP13-096",
+            "OP13-096",
+            "OP14-096",
+            "OP13-080"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 15,
+      "player": "CatalinaWineMixr#4883",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Borsalino",
+        "code": "EB04-058"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP16-106",
+          "card_name": "Sanjuan Wolf",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP13-082",
+            "OP13-082",
+            "OP13-098",
+            "OP13-082",
+            "OP13-084",
+            "OP13-098",
+            "OP13-082"
+          ],
+          "board": [
+            "OP13-083",
+            "OP13-091"
+          ],
+          "trash": [
+            "OP13-096",
+            "OP11-097",
+            "OP13-083",
+            "OP13-098",
+            "OP11-097",
+            "OP13-083",
+            "OP13-086",
+            "OP13-096",
+            "OP13-084",
+            "OP13-092",
+            "OP13-084",
+            "OP13-096",
+            "OP13-096",
+            "OP14-096",
+            "OP13-080"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 15,
+      "player": "CatalinaWineMixr#4883",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP13-082",
+            "OP13-082",
+            "OP13-098",
+            "OP13-082",
+            "OP13-084",
+            "OP13-082"
+          ],
+          "board": [
+            "OP13-083",
+            "OP13-091"
+          ],
+          "trash": [
+            "OP13-096",
+            "OP11-097",
+            "OP13-083",
+            "OP13-098",
+            "OP11-097",
+            "OP13-083",
+            "OP13-086",
+            "OP13-096",
+            "OP13-084",
+            "OP13-092",
+            "OP13-084",
+            "OP13-096",
+            "OP13-096",
+            "OP14-096",
+            "OP13-080",
+            "OP13-098"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 19,
+      "player": "CatalinaWineMixr#4883",
+      "player_role": "",
+      "card_drawn": {
+        "name": "St. Marcus Mars",
+        "code": "OP13-091"
+      },
+      "don_drawn": 2,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP13-082",
+            "OP13-082",
+            "OP13-098",
+            "OP13-082",
+            "OP13-084",
+            "OP13-082"
+          ],
+          "board": [
+            "OP13-083",
+            "OP13-091"
+          ],
+          "trash": [
+            "OP13-096",
+            "OP11-097",
+            "OP13-083",
+            "OP13-098",
+            "OP11-097",
+            "OP13-083",
+            "OP13-086",
+            "OP13-096",
+            "OP13-084",
+            "OP13-092",
+            "OP13-084",
+            "OP13-096",
+            "OP13-096",
+            "OP14-096",
+            "OP13-080",
+            "OP13-098"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 19,
+      "player": "CatalinaWineMixr#4883",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP13-082",
+            "OP13-082",
+            "OP13-098",
+            "OP13-082",
+            "OP13-082",
+            "OP13-091"
+          ],
+          "board": [
+            "OP13-083",
+            "OP13-091",
+            "OP13-084"
+          ],
+          "trash": [
+            "OP13-096",
+            "OP11-097",
+            "OP13-083",
+            "OP13-098",
+            "OP11-097",
+            "OP13-083",
+            "OP13-086",
+            "OP13-096",
+            "OP13-084",
+            "OP13-092",
+            "OP13-084",
+            "OP13-096",
+            "OP13-096",
+            "OP14-096",
+            "OP13-080",
+            "OP13-098",
+            "OP13-091"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 21,
+      "player": "CatalinaWineMixr#4883",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Fullalead",
+        "code": "OP09-099"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP09-099",
+          "card_name": "Fullalead",
+          "effects": []
+        },
+        {
+          "type": "play",
+          "card": "OP16-119",
+          "card_name": "Marshall D. Teach",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP13-082",
+            "OP13-082",
+            "OP13-098",
+            "OP13-082",
+            "OP13-082",
+            "OP13-091"
+          ],
+          "board": [
+            "OP13-083",
+            "OP13-091",
+            "OP13-084"
+          ],
+          "trash": [
+            "OP13-096",
+            "OP11-097",
+            "OP13-083",
+            "OP13-098",
+            "OP11-097",
+            "OP13-083",
+            "OP13-086",
+            "OP13-096",
+            "OP13-084",
+            "OP13-092",
+            "OP13-084",
+            "OP13-096",
+            "OP13-096",
+            "OP14-096",
+            "OP13-080",
+            "OP13-098",
+            "OP13-091"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 21,
+      "player": "CatalinaWineMixr#4883",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP13-082",
+            "OP13-082",
+            "OP13-098",
+            "OP13-082",
+            "OP13-082"
+          ],
+          "board": [
+            "OP13-083",
+            "OP13-091",
+            "OP13-084"
+          ],
+          "trash": [
+            "OP13-096",
+            "OP11-097",
+            "OP13-083",
+            "OP13-098",
+            "OP11-097",
+            "OP13-083",
+            "OP13-086",
+            "OP13-096",
+            "OP13-084",
+            "OP13-092",
+            "OP13-084",
+            "OP13-096",
+            "OP13-096",
+            "OP14-096",
+            "OP13-080",
+            "OP13-098",
+            "OP13-091",
+            "OP13-091"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 25,
+      "player": "CatalinaWineMixr#4883",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Van Augur",
+        "code": "OP16-103"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP13-089",
+          "card_name": "St. Topman Warcury",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP13-082",
+            "OP13-082",
+            "OP13-098",
+            "OP13-082",
+            "OP13-082"
+          ],
+          "board": [
+            "OP13-083",
+            "OP13-091",
+            "OP13-084"
+          ],
+          "trash": [
+            "OP13-096",
+            "OP11-097",
+            "OP13-083",
+            "OP13-098",
+            "OP11-097",
+            "OP13-083",
+            "OP13-086",
+            "OP13-096",
+            "OP13-084",
+            "OP13-092",
+            "OP13-084",
+            "OP13-096",
+            "OP13-096",
+            "OP14-096",
+            "OP13-080",
+            "OP13-098",
+            "OP13-091",
+            "OP13-091"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 25,
+      "player": "CatalinaWineMixr#4883",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP13-082",
+            "OP13-082",
+            "OP13-098",
+            "OP13-082",
+            "OP14-096"
+          ],
+          "board": [
+            "OP13-083",
+            "OP13-091",
+            "OP13-080",
+            "OP13-084",
+            "OP13-089"
+          ],
+          "trash": [
+            "OP13-096",
+            "OP11-097",
+            "OP13-083",
+            "OP13-098",
+            "OP11-097",
+            "OP13-083",
+            "OP13-086",
+            "OP13-096",
+            "OP13-084",
+            "OP13-092",
+            "OP13-096",
+            "OP13-096",
+            "OP14-096",
+            "OP13-098",
+            "OP13-091",
+            "OP13-091",
+            "OP13-091",
+            "OP13-084",
+            "OP13-082"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 30,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Ground Death",
+        "code": "OP14-096"
+      },
+      "don_drawn": 2,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP13-082",
+            "OP13-082",
+            "OP13-098",
+            "OP13-082",
+            "OP14-096"
+          ],
+          "board": [
+            "OP13-083",
+            "OP13-091",
+            "OP13-080",
+            "OP13-084",
+            "OP13-089"
+          ],
+          "trash": [
+            "OP13-096",
+            "OP11-097",
+            "OP13-083",
+            "OP13-098",
+            "OP11-097",
+            "OP13-083",
+            "OP13-086",
+            "OP13-096",
+            "OP13-084",
+            "OP13-092",
+            "OP13-096",
+            "OP13-096",
+            "OP14-096",
+            "OP13-098",
+            "OP13-091",
+            "OP13-091",
+            "OP13-091",
+            "OP13-084",
+            "OP13-082"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 30,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP13-082",
+            "OP13-082",
+            "OP13-082",
+            "OP14-096",
+            "OP13-086",
+            "OP14-096"
+          ],
+          "board": [
+            "OP13-083",
+            "OP13-091",
+            "OP13-080",
+            "OP13-084"
+          ],
+          "trash": [
+            "OP13-096",
+            "OP11-097",
+            "OP13-083",
+            "OP13-098",
+            "OP11-097",
+            "OP13-083",
+            "OP13-086",
+            "OP13-096",
+            "OP13-084",
+            "OP13-092",
+            "OP13-096",
+            "OP13-096",
+            "OP14-096",
+            "OP13-098",
+            "OP13-091",
+            "OP13-091",
+            "OP13-091",
+            "OP13-084",
+            "OP13-082",
+            "OP13-098",
+            "OP13-089"
+          ],
+          "life": 1
+        }
+      }
+    },
+    {
+      "turn": 38,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Van Augur",
+        "code": "OP16-103"
+      },
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP13-082",
+            "OP13-082",
+            "OP13-082",
+            "OP14-096",
+            "OP13-086",
+            "OP14-096"
+          ],
+          "board": [
+            "OP13-083",
+            "OP13-091",
+            "OP13-080",
+            "OP13-084"
+          ],
+          "trash": [
+            "OP13-096",
+            "OP11-097",
+            "OP13-083",
+            "OP13-098",
+            "OP11-097",
+            "OP13-083",
+            "OP13-086",
+            "OP13-096",
+            "OP13-084",
+            "OP13-092",
+            "OP13-096",
+            "OP13-096",
+            "OP14-096",
+            "OP13-098",
+            "OP13-091",
+            "OP13-091",
+            "OP13-091",
+            "OP13-084",
+            "OP13-082",
+            "OP13-098",
+            "OP13-089"
+          ],
+          "life": 1
+        }
+      }
+    },
+    {
+      "turn": 38,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP13-082",
+            "OP13-082",
+            "OP14-096",
+            "OP14-096",
+            "OP13-092",
+            "OP13-080",
+            "OP13-084"
+          ],
+          "board": [
+            "OP13-083",
+            "OP13-091",
+            "OP13-080",
+            "OP13-084",
+            "OP13-089"
+          ],
+          "trash": [
+            "OP13-096",
+            "OP11-097",
+            "OP13-083",
+            "OP13-098",
+            "OP11-097",
+            "OP13-083",
+            "OP13-086",
+            "OP13-096",
+            "OP13-084",
+            "OP13-092",
+            "OP13-096",
+            "OP13-096",
+            "OP14-096",
+            "OP13-098",
+            "OP13-091",
+            "OP13-091",
+            "OP13-091",
+            "OP13-084",
+            "OP13-082",
+            "OP13-098",
+            "OP13-086",
+            "OP13-082"
+          ],
+          "life": 1
+        }
+      }
+    },
+    {
+      "turn": 41,
+      "player": "CatalinaWineMixr#4883",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Marshall D. Teach",
+        "code": "OP16-119"
+      },
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP13-082",
+            "OP13-082",
+            "OP14-096",
+            "OP14-096",
+            "OP13-092",
+            "OP13-080",
+            "OP13-084"
+          ],
+          "board": [
+            "OP13-083",
+            "OP13-091",
+            "OP13-080",
+            "OP13-084",
+            "OP13-089"
+          ],
+          "trash": [
+            "OP13-096",
+            "OP11-097",
+            "OP13-083",
+            "OP13-098",
+            "OP11-097",
+            "OP13-083",
+            "OP13-086",
+            "OP13-096",
+            "OP13-084",
+            "OP13-092",
+            "OP13-096",
+            "OP13-096",
+            "OP14-096",
+            "OP13-098",
+            "OP13-091",
+            "OP13-091",
+            "OP13-091",
+            "OP13-084",
+            "OP13-082",
+            "OP13-098",
+            "OP13-086",
+            "OP13-082"
+          ],
+          "life": 1
+        }
+      }
+    },
+    {
+      "turn": 41,
+      "player": "CatalinaWineMixr#4883",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP13-082",
+            "OP13-082",
+            "OP14-096",
+            "OP13-080"
+          ],
+          "board": [
+            "OP13-083",
+            "OP13-091",
+            "OP13-080",
+            "OP13-084",
+            "OP13-089"
+          ],
+          "trash": [
+            "OP13-096",
+            "OP11-097",
+            "OP13-083",
+            "OP13-098",
+            "OP11-097",
+            "OP13-083",
+            "OP13-086",
+            "OP13-096",
+            "OP13-084",
+            "OP13-092",
+            "OP13-096",
+            "OP13-096",
+            "OP14-096",
+            "OP13-098",
+            "OP13-091",
+            "OP13-091",
+            "OP13-091",
+            "OP13-084",
+            "OP13-082",
+            "OP13-098",
+            "OP13-086",
+            "OP13-082",
+            "OP13-092",
+            "OP13-080",
+            "OP14-096",
+            "OP13-084"
+          ],
+          "life": 0
+        }
+      }
+    }
+  ]
+}

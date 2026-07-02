@@ -1,0 +1,942 @@
+{
+  "meta": {
+    "source": "autosaved_log",
+    "original_file": "2026-06-23T01.45.26.log",
+    "p1": {
+      "name": "nortan69#6772",
+      "leader_name": "Jewelry Bonney",
+      "leader_code": "EB04-001",
+      "goes_first": true
+    },
+    "p2": {
+      "name": "Karlmalone#2854",
+      "leader_name": "Marshall D. Teach",
+      "leader_code": "OP16-080",
+      "goes_first": false
+    },
+    "winner": "p1",
+    "winner_name": "nortan69#6772",
+    "total_turns": 26,
+    "mulligan_p1": {
+      "before": [],
+      "after": [],
+      "took_mulligan": true
+    },
+    "mulligan_p2": {
+      "before": [
+        "OP16-119",
+        "OP09-097",
+        "OP09-099",
+        "OP09-095",
+        "OP16-109"
+      ],
+      "after": [
+        "OP16-119",
+        "OP09-097",
+        "OP09-099",
+        "OP09-095",
+        "OP16-109"
+      ],
+      "took_mulligan": false
+    }
+  },
+  "turns": [
+    {
+      "turn": 1,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Shiryu",
+        "code": "OP16-108"
+      },
+      "don_drawn": 3,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP09-095",
+          "card_name": "Laffitte",
+          "effects": []
+        },
+        {
+          "type": "play",
+          "card": "OP09-099",
+          "card_name": "Fullalead",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "ST21-003",
+            "OP10-005",
+            "OP12-112",
+            "EB04-061",
+            "EB04-007"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 1,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "ST21-003",
+            "OP10-005",
+            "OP12-112",
+            "EB04-061",
+            "EB04-007"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 3,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Kuzan",
+        "code": "OP10-082"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP10-005",
+          "card_name": "Sanji",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "ST21-003",
+            "OP10-005",
+            "OP12-112",
+            "EB04-061",
+            "EB04-007"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 3,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "ST21-003",
+            "OP12-112",
+            "EB04-061",
+            "EB04-007",
+            "EB04-007"
+          ],
+          "board": [
+            "OP10-005"
+          ],
+          "trash": [],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 4,
+      "player": "nortan69#6772",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Baby 5",
+        "code": "OP12-112"
+      },
+      "don_drawn": 2,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "ST21-003",
+            "OP12-112",
+            "EB04-061",
+            "EB04-007",
+            "EB04-007"
+          ],
+          "board": [
+            "OP10-005"
+          ],
+          "trash": [],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 4,
+      "player": "nortan69#6772",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "ST21-003",
+            "OP12-112",
+            "EB04-061",
+            "EB04-007",
+            "EB04-007",
+            "OP12-112"
+          ],
+          "board": [],
+          "trash": [
+            "OP10-005"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 5,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Tony Tony Chopper",
+        "code": "OP10-011"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP10-011",
+          "card_name": "Tony Tony Chopper",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "ST21-003",
+            "OP12-112",
+            "EB04-061",
+            "EB04-007",
+            "EB04-007",
+            "OP12-112"
+          ],
+          "board": [],
+          "trash": [
+            "OP10-005"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 5,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "ST21-003",
+            "OP12-112",
+            "EB04-061",
+            "EB04-007",
+            "EB04-007",
+            "OP12-112"
+          ],
+          "board": [
+            "OP10-011"
+          ],
+          "trash": [
+            "OP10-005"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 6,
+      "player": "nortan69#6772",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Sanji",
+        "code": "ST29-004"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP16-108",
+          "card_name": "Shiryu",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "ST21-003",
+            "OP12-112",
+            "EB04-061",
+            "EB04-007",
+            "EB04-007",
+            "OP12-112"
+          ],
+          "board": [
+            "OP10-011"
+          ],
+          "trash": [
+            "OP10-005"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 6,
+      "player": "nortan69#6772",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "ST21-003",
+            "OP12-112",
+            "EB04-061",
+            "EB04-007",
+            "EB04-007",
+            "OP12-112",
+            "ST29-004"
+          ],
+          "board": [
+            "OP10-011"
+          ],
+          "trash": [
+            "OP10-005",
+            "ST29-015"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 7,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Vasco Shot",
+        "code": "OP09-091"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "EB04-007",
+          "card_name": "Roronoa Zoro",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "ST21-003",
+            "OP12-112",
+            "EB04-061",
+            "EB04-007",
+            "EB04-007",
+            "OP12-112",
+            "ST29-004"
+          ],
+          "board": [
+            "OP10-011"
+          ],
+          "trash": [
+            "OP10-005",
+            "ST29-015"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 7,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "ST21-003",
+            "OP12-112",
+            "EB04-061",
+            "EB04-007",
+            "OP12-112",
+            "ST29-004",
+            "OP09-004"
+          ],
+          "board": [
+            "OP10-011",
+            "EB04-007"
+          ],
+          "trash": [
+            "OP10-005",
+            "ST29-015"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 7,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Borsalino",
+        "code": "EB04-058"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP16-119",
+          "card_name": "Marshall D. Teach",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "ST21-003",
+            "OP12-112",
+            "EB04-061",
+            "EB04-007",
+            "OP12-112",
+            "ST29-004",
+            "OP09-004"
+          ],
+          "board": [
+            "OP10-011",
+            "EB04-007"
+          ],
+          "trash": [
+            "OP10-005",
+            "ST29-015"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 7,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "ST21-003",
+            "OP12-112",
+            "EB04-061",
+            "EB04-007",
+            "OP12-112",
+            "ST29-004",
+            "OP09-004",
+            "EB04-061"
+          ],
+          "board": [
+            "OP10-011",
+            "EB04-007"
+          ],
+          "trash": [
+            "OP10-005",
+            "ST29-015"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 12,
+      "player": "nortan69#6772",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Usopp",
+        "code": "OP07-099"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "EB04-007",
+          "card_name": "Roronoa Zoro",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "ST21-003",
+            "OP12-112",
+            "EB04-061",
+            "EB04-007",
+            "OP12-112",
+            "ST29-004",
+            "OP09-004",
+            "EB04-061"
+          ],
+          "board": [
+            "OP10-011",
+            "EB04-007"
+          ],
+          "trash": [
+            "OP10-005",
+            "ST29-015"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 12,
+      "player": "nortan69#6772",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "ST21-003",
+            "OP12-112",
+            "EB04-061",
+            "OP12-112",
+            "ST29-004",
+            "OP09-004",
+            "EB04-061",
+            "OP07-099"
+          ],
+          "board": [
+            "OP10-011",
+            "EB04-007",
+            "EB04-007"
+          ],
+          "trash": [
+            "OP10-005",
+            "ST29-015"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 14,
+      "player": "nortan69#6772",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Jesus Burgess",
+        "code": "OP16-107"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP09-091",
+          "card_name": "Vasco Shot",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "ST21-003",
+            "OP12-112",
+            "EB04-061",
+            "OP12-112",
+            "ST29-004",
+            "OP09-004",
+            "EB04-061",
+            "OP07-099"
+          ],
+          "board": [
+            "OP10-011",
+            "EB04-007",
+            "EB04-007"
+          ],
+          "trash": [
+            "OP10-005",
+            "ST29-015"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 14,
+      "player": "nortan69#6772",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "ST21-003",
+            "EB04-061",
+            "ST29-004",
+            "OP09-004",
+            "EB04-061",
+            "OP07-099",
+            "EB04-058"
+          ],
+          "board": [
+            "OP10-011",
+            "EB04-007",
+            "EB04-007"
+          ],
+          "trash": [
+            "OP10-005",
+            "ST29-015",
+            "OP12-112",
+            "OP12-112"
+          ],
+          "life": 1
+        }
+      }
+    },
+    {
+      "turn": 20,
+      "player": "nortan69#6772",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Jewelry Bonney",
+        "code": "EB04-002"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "EB04-061",
+          "card_name": "Monkey D. Luffy",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "ST21-003",
+            "EB04-061",
+            "ST29-004",
+            "OP09-004",
+            "EB04-061",
+            "OP07-099",
+            "EB04-058"
+          ],
+          "board": [
+            "OP10-011",
+            "EB04-007",
+            "EB04-007"
+          ],
+          "trash": [
+            "OP10-005",
+            "ST29-015",
+            "OP12-112",
+            "OP12-112"
+          ],
+          "life": 1
+        }
+      }
+    },
+    {
+      "turn": 20,
+      "player": "nortan69#6772",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "ST21-003",
+            "ST29-004",
+            "OP09-004",
+            "EB04-061",
+            "OP07-099",
+            "EB04-058"
+          ],
+          "board": [
+            "OP10-011",
+            "EB04-007",
+            "EB04-007",
+            "EB04-061"
+          ],
+          "trash": [
+            "OP10-005",
+            "ST29-015",
+            "OP12-112",
+            "OP12-112",
+            "EB04-002"
+          ],
+          "life": 1
+        }
+      }
+    },
+    {
+      "turn": 23,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Doc Q",
+        "code": "OP16-109"
+      },
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP09-093",
+          "card_name": "Marshall D. Teach",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "ST21-003",
+            "ST29-004",
+            "OP09-004",
+            "EB04-061",
+            "OP07-099",
+            "EB04-058"
+          ],
+          "board": [
+            "OP10-011",
+            "EB04-007",
+            "EB04-007",
+            "EB04-061"
+          ],
+          "trash": [
+            "OP10-005",
+            "ST29-015",
+            "OP12-112",
+            "OP12-112",
+            "EB04-002"
+          ],
+          "life": 1
+        }
+      }
+    },
+    {
+      "turn": 23,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "ST21-003",
+            "ST29-004",
+            "OP09-004",
+            "EB04-061",
+            "OP07-099",
+            "EB04-058",
+            "EB03-053"
+          ],
+          "board": [
+            "OP10-011",
+            "EB04-007",
+            "EB04-007",
+            "EB04-061"
+          ],
+          "trash": [
+            "OP10-005",
+            "ST29-015",
+            "OP12-112",
+            "OP12-112",
+            "EB04-002"
+          ],
+          "life": 0
+        }
+      }
+    },
+    {
+      "turn": 28,
+      "player": "nortan69#6772",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Baby 5",
+        "code": "OP12-112"
+      },
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "play",
+          "card": "EB04-058",
+          "card_name": "Borsalino",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "ST21-003",
+            "ST29-004",
+            "OP09-004",
+            "EB04-061",
+            "OP07-099",
+            "EB04-058",
+            "EB03-053"
+          ],
+          "board": [
+            "OP10-011",
+            "EB04-007",
+            "EB04-007",
+            "EB04-061"
+          ],
+          "trash": [
+            "OP10-005",
+            "ST29-015",
+            "OP12-112",
+            "OP12-112",
+            "EB04-002"
+          ],
+          "life": 0
+        }
+      }
+    },
+    {
+      "turn": 28,
+      "player": "nortan69#6772",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "ST21-003",
+            "ST29-004",
+            "OP09-004",
+            "EB04-061",
+            "OP07-099",
+            "EB03-053",
+            "OP12-112"
+          ],
+          "board": [
+            "OP10-011",
+            "EB04-007",
+            "EB04-007",
+            "EB04-061",
+            "EB04-058"
+          ],
+          "trash": [
+            "OP10-005",
+            "ST29-015",
+            "OP12-112",
+            "OP12-112",
+            "EB04-002"
+          ],
+          "life": 1
+        }
+      }
+    },
+    {
+      "turn": 32,
+      "player": "nortan69#6772",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Shiryu",
+        "code": "PRB02-015"
+      },
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "ST21-003",
+            "ST29-004",
+            "OP09-004",
+            "EB04-061",
+            "OP07-099",
+            "EB03-053",
+            "OP12-112"
+          ],
+          "board": [
+            "OP10-011",
+            "EB04-007",
+            "EB04-007",
+            "EB04-061",
+            "EB04-058"
+          ],
+          "trash": [
+            "OP10-005",
+            "ST29-015",
+            "OP12-112",
+            "OP12-112",
+            "EB04-002"
+          ],
+          "life": 1
+        }
+      }
+    },
+    {
+      "turn": 32,
+      "player": "nortan69#6772",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "ST21-003",
+            "ST29-004",
+            "OP09-004",
+            "EB04-061",
+            "EB03-053",
+            "EB04-058"
+          ],
+          "board": [
+            "EB04-007",
+            "EB04-007",
+            "EB04-061",
+            "EB04-058"
+          ],
+          "trash": [
+            "OP10-005",
+            "ST29-015",
+            "OP12-112",
+            "OP12-112",
+            "EB04-002",
+            "OP12-112",
+            "OP07-099",
+            "OP10-011"
+          ],
+          "life": 0
+        }
+      }
+    }
+  ]
+}

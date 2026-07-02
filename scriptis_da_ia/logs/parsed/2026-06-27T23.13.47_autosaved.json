@@ -1,0 +1,1404 @@
+{
+  "meta": {
+    "source": "autosaved_log",
+    "original_file": "2026-06-27T23.13.47.log",
+    "p1": {
+      "name": "Karlmalone#2854",
+      "leader_name": "Marshall D. Teach",
+      "leader_code": "OP16-080",
+      "goes_first": true
+    },
+    "p2": {
+      "name": "gBusiness#4347",
+      "leader_name": "Shanks",
+      "leader_code": "OP09-001",
+      "goes_first": false
+    },
+    "winner": "p2",
+    "winner_name": "gBusiness#4347",
+    "total_turns": 36,
+    "mulligan_p1": {
+      "before": [
+        "OP16-108",
+        "OP16-106",
+        "OP09-093",
+        "OP16-109",
+        "OP16-116"
+      ],
+      "after": [
+        "OP16-119",
+        "PRB02-015",
+        "OP16-104",
+        "OP16-119",
+        "OP16-116"
+      ],
+      "took_mulligan": true
+    },
+    "mulligan_p2": {
+      "before": [],
+      "after": [],
+      "took_mulligan": false
+    }
+  },
+  "turns": [
+    {
+      "turn": 1,
+      "player": "gBusiness#4347",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Lucky Roux",
+        "code": "OP09-015"
+      },
+      "don_drawn": 3,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP09-002",
+          "card_name": "Uta",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP14-018",
+            "PRB02-003",
+            "OP16-012",
+            "OP09-002",
+            "OP09-015"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 1,
+      "player": "gBusiness#4347",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP14-018",
+            "PRB02-003",
+            "OP16-012",
+            "OP09-015",
+            "OP09-015",
+            "OP09-004"
+          ],
+          "board": [
+            "OP09-002"
+          ],
+          "trash": [],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 2,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": {
+        "name": "This is MY AGE!!!!",
+        "code": "OP09-096"
+      },
+      "don_drawn": 2,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP14-018",
+            "PRB02-003",
+            "OP16-012",
+            "OP09-015",
+            "OP09-015",
+            "OP09-004"
+          ],
+          "board": [
+            "OP09-002"
+          ],
+          "trash": [],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 2,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP14-018",
+            "PRB02-003",
+            "OP16-012",
+            "OP09-015",
+            "OP09-015",
+            "OP09-004",
+            "OP09-013"
+          ],
+          "board": [
+            "OP09-002"
+          ],
+          "trash": [],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 3,
+      "player": "gBusiness#4347",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Shanks",
+        "code": "OP06-007"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP09-015",
+          "card_name": "Lucky Roux",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP14-018",
+            "PRB02-003",
+            "OP16-012",
+            "OP09-015",
+            "OP09-015",
+            "OP09-004",
+            "OP09-013"
+          ],
+          "board": [
+            "OP09-002"
+          ],
+          "trash": [],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 3,
+      "player": "gBusiness#4347",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP14-018",
+            "PRB02-003",
+            "OP16-012",
+            "OP09-015",
+            "OP09-004",
+            "OP09-013",
+            "OP06-007"
+          ],
+          "board": [
+            "OP09-002",
+            "OP09-015"
+          ],
+          "trash": [],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 4,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Black Vortex",
+        "code": "OP09-097"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP09-099",
+          "card_name": "Fullalead",
+          "effects": []
+        },
+        {
+          "type": "play",
+          "card": "PRB02-015",
+          "card_name": "Shiryu",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP14-018",
+            "PRB02-003",
+            "OP16-012",
+            "OP09-015",
+            "OP09-004",
+            "OP09-013",
+            "OP06-007"
+          ],
+          "board": [
+            "OP09-002",
+            "OP09-015"
+          ],
+          "trash": [],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 4,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP14-018",
+            "PRB02-003",
+            "OP16-012",
+            "OP09-015",
+            "OP09-004",
+            "OP09-013",
+            "OP06-007"
+          ],
+          "board": [
+            "OP09-002",
+            "OP09-015"
+          ],
+          "trash": [],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 6,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Ace & Sabo & Luffy",
+        "code": "OP13-007"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP09-013",
+          "card_name": "Yasopp",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP14-018",
+            "PRB02-003",
+            "OP16-012",
+            "OP09-015",
+            "OP09-004",
+            "OP09-013",
+            "OP06-007"
+          ],
+          "board": [
+            "OP09-002",
+            "OP09-015"
+          ],
+          "trash": [],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 6,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP14-018",
+            "PRB02-003",
+            "OP16-012",
+            "OP09-015",
+            "OP09-004",
+            "OP06-007",
+            "OP13-007"
+          ],
+          "board": [
+            "OP09-002",
+            "OP09-015",
+            "OP09-013"
+          ],
+          "trash": [],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 8,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Laffitte",
+        "code": "OP09-095"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP09-095",
+          "card_name": "Laffitte",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP14-018",
+            "PRB02-003",
+            "OP16-012",
+            "OP09-015",
+            "OP09-004",
+            "OP06-007",
+            "OP13-007"
+          ],
+          "board": [
+            "OP09-002",
+            "OP09-015",
+            "OP09-013"
+          ],
+          "trash": [],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 8,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP14-018",
+            "PRB02-003",
+            "OP16-012",
+            "OP09-015",
+            "OP09-004",
+            "OP06-007",
+            "OP13-007"
+          ],
+          "board": [
+            "OP09-013"
+          ],
+          "trash": [
+            "OP09-015",
+            "OP09-002"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 10,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Lucky Roux",
+        "code": "PRB02-003"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP09-015",
+          "card_name": "Lucky Roux",
+          "effects": []
+        },
+        {
+          "type": "play",
+          "card": "PRB02-003",
+          "card_name": "Lucky Roux",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP14-018",
+            "PRB02-003",
+            "OP16-012",
+            "OP09-015",
+            "OP09-004",
+            "OP06-007",
+            "OP13-007"
+          ],
+          "board": [
+            "OP09-013"
+          ],
+          "trash": [
+            "OP09-015",
+            "OP09-002"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 10,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP14-018",
+            "PRB02-003",
+            "OP16-012",
+            "OP09-004",
+            "OP06-007",
+            "OP13-007"
+          ],
+          "board": [
+            "OP09-013",
+            "OP09-015",
+            "PRB02-003"
+          ],
+          "trash": [
+            "OP09-015",
+            "OP09-002"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 10,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Fullalead",
+        "code": "OP09-099"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP16-119",
+          "card_name": "Marshall D. Teach",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP14-018",
+            "PRB02-003",
+            "OP16-012",
+            "OP09-004",
+            "OP06-007",
+            "OP13-007"
+          ],
+          "board": [
+            "OP09-013",
+            "OP09-015",
+            "PRB02-003"
+          ],
+          "trash": [
+            "OP09-015",
+            "OP09-002"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 10,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP14-018",
+            "PRB02-003",
+            "OP16-012",
+            "OP09-004",
+            "OP06-007",
+            "OP13-007",
+            "EB04-007"
+          ],
+          "board": [
+            "OP09-013",
+            "OP09-015",
+            "PRB02-003"
+          ],
+          "trash": [
+            "OP09-015",
+            "OP09-002"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 13,
+      "player": "gBusiness#4347",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Doc Q",
+        "code": "OP16-109"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP16-012",
+          "card_name": "Benn Beckman",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP14-018",
+            "PRB02-003",
+            "OP16-012",
+            "OP09-004",
+            "OP06-007",
+            "OP13-007",
+            "EB04-007"
+          ],
+          "board": [
+            "OP09-013",
+            "OP09-015",
+            "PRB02-003"
+          ],
+          "trash": [
+            "OP09-015",
+            "OP09-002"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 13,
+      "player": "gBusiness#4347",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP14-018",
+            "PRB02-003",
+            "OP16-012",
+            "OP09-004",
+            "OP13-007",
+            "EB04-007"
+          ],
+          "board": [
+            "OP09-013",
+            "OP09-015",
+            "PRB02-003",
+            "OP16-012",
+            "OP06-007"
+          ],
+          "trash": [
+            "OP09-015",
+            "OP09-002"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 16,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Catarina Devon",
+        "code": "OP16-104"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP16-109",
+          "card_name": "Doc Q",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP14-018",
+            "PRB02-003",
+            "OP16-012",
+            "OP09-004",
+            "OP13-007",
+            "EB04-007"
+          ],
+          "board": [
+            "OP09-013",
+            "OP09-015",
+            "PRB02-003",
+            "OP16-012",
+            "OP06-007"
+          ],
+          "trash": [
+            "OP09-015",
+            "OP09-002"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 16,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP14-018",
+            "PRB02-003",
+            "OP16-012",
+            "OP09-004",
+            "OP13-007",
+            "EB04-007",
+            "ST23-002"
+          ],
+          "board": [
+            "OP09-013",
+            "OP09-015",
+            "OP16-012",
+            "OP06-007"
+          ],
+          "trash": [
+            "OP09-015",
+            "OP09-002",
+            "PRB02-003"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 23,
+      "player": "gBusiness#4347",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Shiryu",
+        "code": "OP16-108"
+      },
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP16-012",
+          "card_name": "Benn Beckman",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP14-018",
+            "PRB02-003",
+            "OP16-012",
+            "OP09-004",
+            "OP13-007",
+            "EB04-007",
+            "ST23-002"
+          ],
+          "board": [
+            "OP09-013",
+            "OP09-015",
+            "OP16-012",
+            "OP06-007"
+          ],
+          "trash": [
+            "OP09-015",
+            "OP09-002",
+            "PRB02-003"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 23,
+      "player": "gBusiness#4347",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP14-018",
+            "PRB02-003",
+            "OP13-007",
+            "EB04-007",
+            "ST23-002",
+            "OP14-018"
+          ],
+          "board": [
+            "OP09-013",
+            "OP16-012",
+            "OP06-007",
+            "OP16-012",
+            "OP09-004"
+          ],
+          "trash": [
+            "OP09-015",
+            "OP09-002",
+            "PRB02-003",
+            "OP09-015"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 28,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Doc Q",
+        "code": "OP16-109"
+      },
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP09-091",
+          "card_name": "Vasco Shot",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP14-018",
+            "PRB02-003",
+            "OP13-007",
+            "EB04-007",
+            "ST23-002",
+            "OP14-018"
+          ],
+          "board": [
+            "OP09-013",
+            "OP16-012",
+            "OP06-007",
+            "OP16-012",
+            "OP09-004"
+          ],
+          "trash": [
+            "OP09-015",
+            "OP09-002",
+            "PRB02-003",
+            "OP09-015"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 28,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP14-018",
+            "PRB02-003",
+            "OP13-007",
+            "EB04-007",
+            "ST23-002",
+            "OP09-004"
+          ],
+          "board": [
+            "OP16-012",
+            "OP06-007",
+            "OP16-012",
+            "OP09-004"
+          ],
+          "trash": [
+            "OP09-015",
+            "OP09-002",
+            "PRB02-003",
+            "OP09-015",
+            "OP14-018",
+            "OP09-013"
+          ],
+          "life": 1
+        }
+      }
+    },
+    {
+      "turn": 35,
+      "player": "gBusiness#4347",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Jesus Burgess",
+        "code": "OP09-086"
+      },
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP09-004",
+          "card_name": "Shanks",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP14-018",
+            "PRB02-003",
+            "OP13-007",
+            "EB04-007",
+            "ST23-002",
+            "OP09-004"
+          ],
+          "board": [
+            "OP16-012",
+            "OP06-007",
+            "OP16-012",
+            "OP09-004"
+          ],
+          "trash": [
+            "OP09-015",
+            "OP09-002",
+            "PRB02-003",
+            "OP09-015",
+            "OP14-018",
+            "OP09-013"
+          ],
+          "life": 1
+        }
+      }
+    },
+    {
+      "turn": 35,
+      "player": "gBusiness#4347",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP14-018",
+            "PRB02-003",
+            "OP13-007",
+            "EB04-007",
+            "ST23-002",
+            "OP09-009"
+          ],
+          "board": [
+            "OP16-012",
+            "OP06-007",
+            "OP16-012",
+            "OP09-004",
+            "OP09-004"
+          ],
+          "trash": [
+            "OP09-015",
+            "OP09-002",
+            "PRB02-003",
+            "OP09-015",
+            "OP14-018",
+            "OP09-013"
+          ],
+          "life": 1
+        }
+      }
+    },
+    {
+      "turn": 38,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Doc Q",
+        "code": "OP16-109"
+      },
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP09-093",
+          "card_name": "Marshall D. Teach",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP14-018",
+            "PRB02-003",
+            "OP13-007",
+            "EB04-007",
+            "ST23-002",
+            "OP09-009"
+          ],
+          "board": [
+            "OP16-012",
+            "OP06-007",
+            "OP16-012",
+            "OP09-004",
+            "OP09-004"
+          ],
+          "trash": [
+            "OP09-015",
+            "OP09-002",
+            "PRB02-003",
+            "OP09-015",
+            "OP14-018",
+            "OP09-013"
+          ],
+          "life": 1
+        }
+      }
+    },
+    {
+      "turn": 38,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP14-018",
+            "OP13-007",
+            "EB04-007",
+            "ST23-002",
+            "OP09-009"
+          ],
+          "board": [
+            "OP16-012",
+            "OP06-007",
+            "OP16-012",
+            "OP09-004",
+            "OP09-004"
+          ],
+          "trash": [
+            "OP09-015",
+            "OP09-002",
+            "PRB02-003",
+            "OP09-015",
+            "OP14-018",
+            "OP09-013",
+            "PRB02-003"
+          ],
+          "life": 1
+        }
+      }
+    },
+    {
+      "turn": 47,
+      "player": "gBusiness#4347",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Shanks",
+        "code": "OP06-007"
+      },
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "play",
+          "card": "ST23-002",
+          "card_name": "Shanks",
+          "effects": []
+        },
+        {
+          "type": "play",
+          "card": "PRB02-003",
+          "card_name": "Lucky Roux",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP14-018",
+            "OP13-007",
+            "EB04-007",
+            "ST23-002",
+            "OP09-009"
+          ],
+          "board": [
+            "OP16-012",
+            "OP06-007",
+            "OP16-012",
+            "OP09-004",
+            "OP09-004"
+          ],
+          "trash": [
+            "OP09-015",
+            "OP09-002",
+            "PRB02-003",
+            "OP09-015",
+            "OP14-018",
+            "OP09-013",
+            "PRB02-003"
+          ],
+          "life": 1
+        }
+      }
+    },
+    {
+      "turn": 47,
+      "player": "gBusiness#4347",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP14-018",
+            "OP13-007",
+            "EB04-007",
+            "OP09-014",
+            "OP06-007"
+          ],
+          "board": [
+            "OP16-012",
+            "OP09-004",
+            "OP09-004",
+            "ST23-002",
+            "PRB02-003"
+          ],
+          "trash": [
+            "OP09-015",
+            "OP09-002",
+            "PRB02-003",
+            "OP09-015",
+            "OP14-018",
+            "OP09-013",
+            "PRB02-003",
+            "OP06-007",
+            "OP16-012",
+            "OP09-009"
+          ],
+          "life": 1
+        }
+      }
+    },
+    {
+      "turn": 49,
+      "player": "gBusiness#4347",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Doc Q",
+        "code": "OP16-109"
+      },
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "play",
+          "card": "EB04-058",
+          "card_name": "Borsalino",
+          "effects": []
+        },
+        {
+          "type": "play",
+          "card": "OP09-095",
+          "card_name": "Laffitte",
+          "effects": []
+        },
+        {
+          "type": "play",
+          "card": "OP16-110",
+          "card_name": "Vasco Shot",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP14-018",
+            "OP13-007",
+            "EB04-007",
+            "OP09-014",
+            "OP06-007"
+          ],
+          "board": [
+            "OP16-012",
+            "OP09-004",
+            "OP09-004",
+            "ST23-002",
+            "PRB02-003"
+          ],
+          "trash": [
+            "OP09-015",
+            "OP09-002",
+            "PRB02-003",
+            "OP09-015",
+            "OP14-018",
+            "OP09-013",
+            "PRB02-003",
+            "OP06-007",
+            "OP16-012",
+            "OP09-009"
+          ],
+          "life": 1
+        }
+      }
+    },
+    {
+      "turn": 49,
+      "player": "gBusiness#4347",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP14-018",
+            "OP13-007",
+            "EB04-007",
+            "OP09-014",
+            "OP06-007"
+          ],
+          "board": [
+            "OP16-012",
+            "OP09-004",
+            "OP09-004",
+            "ST23-002",
+            "PRB02-003"
+          ],
+          "trash": [
+            "OP09-015",
+            "OP09-002",
+            "PRB02-003",
+            "OP09-015",
+            "OP14-018",
+            "OP09-013",
+            "PRB02-003",
+            "OP06-007",
+            "OP16-012",
+            "OP09-009"
+          ],
+          "life": 1
+        }
+      }
+    },
+    {
+      "turn": 54,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Marshall D. Teach",
+        "code": "OP16-119"
+      },
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP06-007",
+          "card_name": "Shanks",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP14-018",
+            "OP13-007",
+            "EB04-007",
+            "OP09-014",
+            "OP06-007"
+          ],
+          "board": [
+            "OP16-012",
+            "OP09-004",
+            "OP09-004",
+            "ST23-002",
+            "PRB02-003"
+          ],
+          "trash": [
+            "OP09-015",
+            "OP09-002",
+            "PRB02-003",
+            "OP09-015",
+            "OP14-018",
+            "OP09-013",
+            "PRB02-003",
+            "OP06-007",
+            "OP16-012",
+            "OP09-009"
+          ],
+          "life": 1
+        }
+      }
+    },
+    {
+      "turn": 54,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP14-018",
+            "OP13-007",
+            "EB04-007",
+            "OP09-014",
+            "EB04-007"
+          ],
+          "board": [
+            "OP16-012",
+            "OP09-004",
+            "OP09-004",
+            "PRB02-003",
+            "OP06-007"
+          ],
+          "trash": [
+            "OP09-015",
+            "OP09-002",
+            "PRB02-003",
+            "OP09-015",
+            "OP14-018",
+            "OP09-013",
+            "PRB02-003",
+            "OP06-007",
+            "OP16-012",
+            "OP09-009",
+            "ST23-002"
+          ],
+          "life": 1
+        }
+      }
+    },
+    {
+      "turn": 55,
+      "player": "gBusiness#4347",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Marshall D. Teach",
+        "code": "OP09-093"
+      },
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP16-119",
+          "card_name": "Marshall D. Teach",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP14-018",
+            "OP13-007",
+            "EB04-007",
+            "OP09-014",
+            "EB04-007"
+          ],
+          "board": [
+            "OP16-012",
+            "OP09-004",
+            "OP09-004",
+            "PRB02-003",
+            "OP06-007"
+          ],
+          "trash": [
+            "OP09-015",
+            "OP09-002",
+            "PRB02-003",
+            "OP09-015",
+            "OP14-018",
+            "OP09-013",
+            "PRB02-003",
+            "OP06-007",
+            "OP16-012",
+            "OP09-009",
+            "ST23-002"
+          ],
+          "life": 1
+        }
+      }
+    },
+    {
+      "turn": 55,
+      "player": "gBusiness#4347",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP14-018",
+            "OP13-007",
+            "EB04-007",
+            "OP09-014",
+            "EB04-007"
+          ],
+          "board": [
+            "OP16-012",
+            "OP09-004",
+            "OP09-004",
+            "PRB02-003",
+            "OP06-007"
+          ],
+          "trash": [
+            "OP09-015",
+            "OP09-002",
+            "PRB02-003",
+            "OP09-015",
+            "OP14-018",
+            "OP09-013",
+            "PRB02-003",
+            "OP06-007",
+            "OP16-012",
+            "OP09-009",
+            "ST23-002"
+          ],
+          "life": 1
+        }
+      }
+    }
+  ]
+}

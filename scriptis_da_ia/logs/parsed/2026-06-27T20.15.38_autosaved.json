@@ -1,0 +1,1394 @@
+{
+  "meta": {
+    "source": "autosaved_log",
+    "original_file": "2026-06-27T20.15.38.log",
+    "p1": {
+      "name": "Karlmalone#2854",
+      "leader_name": "Marshall D. Teach",
+      "leader_code": "OP16-080",
+      "goes_first": true
+    },
+    "p2": {
+      "name": "nanibooty47#7676",
+      "leader_name": "Nami",
+      "leader_code": "OP11-041",
+      "goes_first": false
+    },
+    "winner": "p2",
+    "winner_name": "nanibooty47#7676",
+    "total_turns": 36,
+    "mulligan_p1": {
+      "before": [
+        "OP09-097",
+        "OP16-110",
+        "OP09-096",
+        "OP16-116",
+        "OP09-099"
+      ],
+      "after": [
+        "OP09-097",
+        "OP16-110",
+        "OP09-096",
+        "OP16-116",
+        "OP09-099"
+      ],
+      "took_mulligan": false
+    },
+    "mulligan_p2": {
+      "before": [],
+      "after": [],
+      "took_mulligan": false
+    }
+  },
+  "turns": [
+    {
+      "turn": 1,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Kouzuki Hiyori",
+        "code": "OP06-106"
+      },
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP14-111",
+            "OP06-104",
+            "EB03-055",
+            "OP14-110",
+            "OP06-106"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 1,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 1,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP09-099",
+          "card_name": "Fullalead",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP14-111",
+            "OP06-104",
+            "EB03-055",
+            "OP14-110",
+            "OP06-106"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 1,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP14-111",
+            "OP06-104",
+            "EB03-055",
+            "OP14-110",
+            "OP06-106"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 2,
+      "player": "nanibooty47#7676",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Doctor Hogback",
+        "code": "OP14-110"
+      },
+      "don_drawn": 2,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP14-111",
+            "OP06-104",
+            "EB03-055",
+            "OP14-110",
+            "OP06-106"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 2,
+      "player": "nanibooty47#7676",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP14-111",
+            "OP06-104",
+            "EB03-055",
+            "OP14-110",
+            "OP06-106",
+            "OP14-110"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 3,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Liberation",
+        "code": "OP10-098"
+      },
+      "don_drawn": 2,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP14-111",
+            "OP06-104",
+            "EB03-055",
+            "OP14-110",
+            "OP06-106",
+            "OP14-110"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 3,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP14-111",
+            "OP06-104",
+            "EB03-055",
+            "OP14-110",
+            "OP06-106",
+            "OP14-110",
+            "EB03-053"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 4,
+      "player": "nanibooty47#7676",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Roronoa Zoro",
+        "code": "OP15-113"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP06-106",
+          "card_name": "Kouzuki Hiyori",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP14-111",
+            "OP06-104",
+            "EB03-055",
+            "OP14-110",
+            "OP06-106",
+            "OP14-110",
+            "EB03-053"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 4,
+      "player": "nanibooty47#7676",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP14-111",
+            "EB03-055",
+            "OP14-110",
+            "OP14-110",
+            "EB03-053",
+            "OP14-102",
+            "EB04-058",
+            "OP15-113"
+          ],
+          "board": [
+            "OP06-106"
+          ],
+          "trash": [],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 6,
+      "player": "nanibooty47#7676",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Catarina Devon",
+        "code": "OP16-104"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP16-106",
+          "card_name": "Sanjuan Wolf",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP14-111",
+            "EB03-055",
+            "OP14-110",
+            "OP14-110",
+            "EB03-053",
+            "OP14-102",
+            "EB04-058",
+            "OP15-113"
+          ],
+          "board": [
+            "OP06-106"
+          ],
+          "trash": [],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 6,
+      "player": "nanibooty47#7676",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP14-111",
+            "EB03-055",
+            "OP14-110",
+            "EB03-053",
+            "OP14-102",
+            "EB04-058",
+            "OP15-113"
+          ],
+          "board": [
+            "OP06-106"
+          ],
+          "trash": [
+            "OP14-110"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 7,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": {
+        "name": "ZEHAHAHAHA",
+        "code": "OP16-116"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "EB03-053",
+          "card_name": "Nami",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP14-111",
+            "EB03-055",
+            "OP14-110",
+            "EB03-053",
+            "OP14-102",
+            "EB04-058",
+            "OP15-113"
+          ],
+          "board": [
+            "OP06-106"
+          ],
+          "trash": [
+            "OP14-110"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 7,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP14-111",
+            "EB03-055",
+            "OP14-110",
+            "OP14-102",
+            "EB04-058",
+            "OP15-113",
+            "EB03-055",
+            "OP14-102"
+          ],
+          "board": [
+            "OP06-106",
+            "EB03-053"
+          ],
+          "trash": [
+            "OP14-110"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 9,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Borsalino",
+        "code": "EB04-058"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "EB04-058",
+          "card_name": "Borsalino",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP14-111",
+            "EB03-055",
+            "OP14-110",
+            "OP14-102",
+            "EB04-058",
+            "OP15-113",
+            "EB03-055",
+            "OP14-102"
+          ],
+          "board": [
+            "OP06-106",
+            "EB03-053"
+          ],
+          "trash": [
+            "OP14-110"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 9,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP14-111",
+            "EB03-055",
+            "OP14-102",
+            "EB04-058",
+            "OP15-113",
+            "EB03-055",
+            "OP14-102"
+          ],
+          "board": [
+            "OP06-106",
+            "EB03-053"
+          ],
+          "trash": [
+            "OP14-110",
+            "OP14-110"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 14,
+      "player": "nanibooty47#7676",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Marshall D. Teach",
+        "code": "OP16-119"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP15-113",
+          "card_name": "Roronoa Zoro",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP14-111",
+            "EB03-055",
+            "OP14-102",
+            "EB04-058",
+            "OP15-113",
+            "EB03-055",
+            "OP14-102"
+          ],
+          "board": [
+            "OP06-106",
+            "EB03-053"
+          ],
+          "trash": [
+            "OP14-110",
+            "OP14-110"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 14,
+      "player": "nanibooty47#7676",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "EB03-055",
+            "OP14-102",
+            "EB04-058",
+            "EB03-055",
+            "OP14-102",
+            "EB03-053"
+          ],
+          "board": [
+            "OP06-106",
+            "EB03-053",
+            "OP15-113"
+          ],
+          "trash": [
+            "OP14-110",
+            "OP14-110",
+            "OP14-111"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 17,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Vasco Shot",
+        "code": "OP09-091"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP16-119",
+          "card_name": "Marshall D. Teach",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "EB03-055",
+            "OP14-102",
+            "EB04-058",
+            "EB03-055",
+            "OP14-102",
+            "EB03-053"
+          ],
+          "board": [
+            "OP06-106",
+            "EB03-053",
+            "OP15-113"
+          ],
+          "trash": [
+            "OP14-110",
+            "OP14-110",
+            "OP14-111"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 17,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "EB03-055",
+            "EB04-058",
+            "EB03-055",
+            "OP14-102",
+            "EB03-053"
+          ],
+          "board": [
+            "OP06-106",
+            "EB03-053",
+            "OP15-113"
+          ],
+          "trash": [
+            "OP14-110",
+            "OP14-110",
+            "OP14-111",
+            "OP14-102"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 20,
+      "player": "nanibooty47#7676",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Vasco Shot",
+        "code": "OP16-110"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP14-111",
+          "card_name": "Perona",
+          "effects": []
+        },
+        {
+          "type": "play",
+          "card": "EB03-053",
+          "card_name": "Nami",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "EB03-055",
+            "EB04-058",
+            "EB03-055",
+            "OP14-102",
+            "EB03-053"
+          ],
+          "board": [
+            "OP06-106",
+            "EB03-053",
+            "OP15-113"
+          ],
+          "trash": [
+            "OP14-110",
+            "OP14-110",
+            "OP14-111",
+            "OP14-102"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 20,
+      "player": "nanibooty47#7676",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "EB03-055",
+            "EB04-058",
+            "EB03-055",
+            "OP14-102",
+            "OP11-106"
+          ],
+          "board": [
+            "OP06-106",
+            "EB03-053",
+            "OP15-113",
+            "OP14-111",
+            "EB03-053"
+          ],
+          "trash": [
+            "OP14-110",
+            "OP14-110",
+            "OP14-111",
+            "OP14-102"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 23,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Catarina Devon",
+        "code": "OP16-104"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP16-110",
+          "card_name": "Vasco Shot",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "EB03-055",
+            "EB04-058",
+            "EB03-055",
+            "OP14-102",
+            "OP11-106"
+          ],
+          "board": [
+            "OP06-106",
+            "EB03-053",
+            "OP15-113",
+            "OP14-111",
+            "EB03-053"
+          ],
+          "trash": [
+            "OP14-110",
+            "OP14-110",
+            "OP14-111",
+            "OP14-102"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 23,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "EB03-055",
+            "EB04-058",
+            "EB03-055",
+            "OP11-106",
+            "PRB02-008"
+          ],
+          "board": [
+            "OP06-106",
+            "EB03-053",
+            "OP15-113",
+            "OP14-111",
+            "EB03-053"
+          ],
+          "trash": [
+            "OP14-110",
+            "OP14-110",
+            "OP14-111",
+            "OP14-102",
+            "OP14-102"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 32,
+      "player": "nanibooty47#7676",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Borsalino",
+        "code": "EB04-058"
+      },
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "play",
+          "card": "EB03-055",
+          "card_name": "Nico Robin",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "EB03-055",
+            "EB04-058",
+            "EB03-055",
+            "OP11-106",
+            "PRB02-008"
+          ],
+          "board": [
+            "OP06-106",
+            "EB03-053",
+            "OP15-113",
+            "OP14-111",
+            "EB03-053"
+          ],
+          "trash": [
+            "OP14-110",
+            "OP14-110",
+            "OP14-111",
+            "OP14-102",
+            "OP14-102"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 32,
+      "player": "nanibooty47#7676",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "EB03-055",
+            "EB04-058",
+            "EB03-055",
+            "OP11-106",
+            "PRB02-008",
+            "EB04-058"
+          ],
+          "board": [
+            "EB03-053",
+            "OP15-113",
+            "OP14-111",
+            "EB03-053",
+            "EB03-055"
+          ],
+          "trash": [
+            "OP14-110",
+            "OP14-110",
+            "OP14-111",
+            "OP14-102",
+            "OP14-102",
+            "OP06-106",
+            "OP06-104"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 39,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Nami",
+        "code": "EB03-053"
+      },
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "EB03-055",
+            "EB04-058",
+            "EB03-055",
+            "OP11-106",
+            "PRB02-008",
+            "EB04-058"
+          ],
+          "board": [
+            "EB03-053",
+            "OP15-113",
+            "OP14-111",
+            "EB03-053",
+            "EB03-055"
+          ],
+          "trash": [
+            "OP14-110",
+            "OP14-110",
+            "OP14-111",
+            "OP14-102",
+            "OP14-102",
+            "OP06-106",
+            "OP06-104"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 39,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "EB03-055",
+            "EB04-058",
+            "EB03-055",
+            "EB04-058",
+            "OP16-056",
+            "OP06-104",
+            "EB03-053"
+          ],
+          "board": [
+            "OP15-113",
+            "OP14-111",
+            "EB03-053",
+            "EB03-055"
+          ],
+          "trash": [
+            "OP14-110",
+            "OP14-110",
+            "OP14-111",
+            "OP14-102",
+            "OP14-102",
+            "OP06-106",
+            "OP06-104",
+            "OP11-106",
+            "EB03-053",
+            "PRB02-008"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 46,
+      "player": "nanibooty47#7676",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Zeus",
+        "code": "OP11-106"
+      },
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "play",
+          "card": "EB03-055",
+          "card_name": "Nico Robin",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "EB03-055",
+            "EB04-058",
+            "EB03-055",
+            "EB04-058",
+            "OP16-056",
+            "OP06-104",
+            "EB03-053"
+          ],
+          "board": [
+            "OP15-113",
+            "OP14-111",
+            "EB03-053",
+            "EB03-055"
+          ],
+          "trash": [
+            "OP14-110",
+            "OP14-110",
+            "OP14-111",
+            "OP14-102",
+            "OP14-102",
+            "OP06-106",
+            "OP06-104",
+            "OP11-106",
+            "EB03-053",
+            "PRB02-008"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 46,
+      "player": "nanibooty47#7676",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "EB03-055",
+            "EB04-058",
+            "EB04-058",
+            "OP16-056",
+            "OP06-104",
+            "EB03-053",
+            "OP14-102",
+            "OP11-106"
+          ],
+          "board": [
+            "OP15-113",
+            "OP14-111",
+            "EB03-053",
+            "EB03-055",
+            "EB03-055"
+          ],
+          "trash": [
+            "OP14-110",
+            "OP14-110",
+            "OP14-111",
+            "OP14-102",
+            "OP14-102",
+            "OP06-106",
+            "OP06-104",
+            "OP11-106",
+            "EB03-053",
+            "PRB02-008",
+            "OP14-110"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 52,
+      "player": "nanibooty47#7676",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Shiryu",
+        "code": "PRB02-015"
+      },
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP16-119",
+          "card_name": "Marshall D. Teach",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "EB03-055",
+            "EB04-058",
+            "EB04-058",
+            "OP16-056",
+            "OP06-104",
+            "EB03-053",
+            "OP14-102",
+            "OP11-106"
+          ],
+          "board": [
+            "OP15-113",
+            "OP14-111",
+            "EB03-053",
+            "EB03-055",
+            "EB03-055"
+          ],
+          "trash": [
+            "OP14-110",
+            "OP14-110",
+            "OP14-111",
+            "OP14-102",
+            "OP14-102",
+            "OP06-106",
+            "OP06-104",
+            "OP11-106",
+            "EB03-053",
+            "PRB02-008",
+            "OP14-110"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 52,
+      "player": "nanibooty47#7676",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "EB03-055",
+            "EB04-058",
+            "EB04-058",
+            "OP06-104",
+            "EB03-053",
+            "OP11-106"
+          ],
+          "board": [
+            "OP15-113",
+            "EB03-055",
+            "EB03-055",
+            "OP16-056"
+          ],
+          "trash": [
+            "OP14-110",
+            "OP14-110",
+            "OP14-111",
+            "OP14-102",
+            "OP14-102",
+            "OP06-106",
+            "OP06-104",
+            "OP11-106",
+            "EB03-053",
+            "PRB02-008",
+            "OP14-110",
+            "OP14-102",
+            "EB03-053",
+            "OP14-111"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 56,
+      "player": "nanibooty47#7676",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Marshall D. Teach",
+        "code": "OP09-093"
+      },
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "play",
+          "card": "EB03-055",
+          "card_name": "Nico Robin",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "EB03-055",
+            "EB04-058",
+            "EB04-058",
+            "OP06-104",
+            "EB03-053",
+            "OP11-106"
+          ],
+          "board": [
+            "OP15-113",
+            "EB03-055",
+            "EB03-055",
+            "OP16-056"
+          ],
+          "trash": [
+            "OP14-110",
+            "OP14-110",
+            "OP14-111",
+            "OP14-102",
+            "OP14-102",
+            "OP06-106",
+            "OP06-104",
+            "OP11-106",
+            "EB03-053",
+            "PRB02-008",
+            "OP14-110",
+            "OP14-102",
+            "EB03-053",
+            "OP14-111"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 56,
+      "player": "nanibooty47#7676",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "EB04-058",
+            "EB04-058",
+            "OP06-104",
+            "EB03-053",
+            "OP11-106",
+            "OP15-119",
+            "OP11-106",
+            "OP16-056"
+          ],
+          "board": [
+            "OP15-113",
+            "EB03-055",
+            "EB03-055",
+            "EB03-055"
+          ],
+          "trash": [
+            "OP14-110",
+            "OP14-110",
+            "OP14-111",
+            "OP14-102",
+            "OP14-102",
+            "OP06-106",
+            "OP06-104",
+            "OP11-106",
+            "EB03-053",
+            "PRB02-008",
+            "OP14-110",
+            "OP14-102",
+            "EB03-053",
+            "OP14-111",
+            "OP16-056",
+            "OP14-111"
+          ],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 63,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Van Augur",
+        "code": "OP16-103"
+      },
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP09-093",
+          "card_name": "Marshall D. Teach",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "EB04-058",
+            "EB04-058",
+            "OP06-104",
+            "EB03-053",
+            "OP11-106",
+            "OP15-119",
+            "OP11-106",
+            "OP16-056"
+          ],
+          "board": [
+            "OP15-113",
+            "EB03-055",
+            "EB03-055",
+            "EB03-055"
+          ],
+          "trash": [
+            "OP14-110",
+            "OP14-110",
+            "OP14-111",
+            "OP14-102",
+            "OP14-102",
+            "OP06-106",
+            "OP06-104",
+            "OP11-106",
+            "EB03-053",
+            "PRB02-008",
+            "OP14-110",
+            "OP14-102",
+            "EB03-053",
+            "OP14-111",
+            "OP16-056",
+            "OP14-111"
+          ],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 63,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "EB04-058",
+            "OP06-104",
+            "OP15-119"
+          ],
+          "board": [
+            "OP15-113",
+            "EB03-055",
+            "EB03-055",
+            "EB03-055"
+          ],
+          "trash": [
+            "OP14-110",
+            "OP14-110",
+            "OP14-111",
+            "OP14-102",
+            "OP14-102",
+            "OP06-106",
+            "OP06-104",
+            "OP11-106",
+            "EB03-053",
+            "PRB02-008",
+            "OP14-110",
+            "OP14-102",
+            "EB03-053",
+            "OP14-111",
+            "OP16-056",
+            "OP14-111",
+            "OP11-106",
+            "EB03-053",
+            "OP11-106",
+            "OP16-056",
+            "EB04-058"
+          ],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 70,
+      "player": "nanibooty47#7676",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Borsalino",
+        "code": "EB04-058"
+      },
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP15-119",
+          "card_name": "Monkey D. Luffy",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "EB04-058",
+            "OP06-104",
+            "OP15-119"
+          ],
+          "board": [
+            "OP15-113",
+            "EB03-055",
+            "EB03-055",
+            "EB03-055"
+          ],
+          "trash": [
+            "OP14-110",
+            "OP14-110",
+            "OP14-111",
+            "OP14-102",
+            "OP14-102",
+            "OP06-106",
+            "OP06-104",
+            "OP11-106",
+            "EB03-053",
+            "PRB02-008",
+            "OP14-110",
+            "OP14-102",
+            "EB03-053",
+            "OP14-111",
+            "OP16-056",
+            "OP14-111",
+            "OP11-106",
+            "EB03-053",
+            "OP11-106",
+            "OP16-056",
+            "EB04-058"
+          ],
+          "life": 5
+        }
+      }
+    }
+  ]
+}

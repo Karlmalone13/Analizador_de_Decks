@@ -248,5 +248,473 @@
       "Karlmalone#2854": "decks/Eustass.Captain.Kid-Y_2026-07-02T00.48.19.json",
       "TaxiCab#9855": "decks/Sabo-RB_2026-07-02T00.48.19.json"
     }
+  },
+  {
+    "original_file": "2026-06-16T01.57.48.log",
+    "parsed_file": "parsed/2026-06-16T01.57.48_autosaved.json",
+    "source": "autosaved_log",
+    "p1": {
+      "name": "Karlmalone#2854",
+      "leader_name": "Marshall D. Teach",
+      "leader_code": "OP16-080"
+    },
+    "p2": {
+      "name": "ORANGE#6948",
+      "leader_name": "Yamato",
+      "leader_code": "OP16-079"
+    },
+    "winner": "p2",
+    "winner_name": "ORANGE#6948",
+    "total_turns": 23
+  },
+  {
+    "original_file": "2026-06-22T17.14.18.log",
+    "parsed_file": "parsed/2026-06-22T17.14.18_autosaved.json",
+    "source": "autosaved_log",
+    "p1": {
+      "name": "Gonpa#3961",
+      "leader_name": "Enel",
+      "leader_code": "OP15-058"
+    },
+    "p2": {
+      "name": "Karlmalone#2854",
+      "leader_name": "Marshall D. Teach",
+      "leader_code": "OP16-080"
+    },
+    "winner": "p1",
+    "winner_name": "Gonpa#3961",
+    "total_turns": 16
+  },
+  {
+    "original_file": "2026-06-22T17.37.59.log",
+    "parsed_file": "parsed/2026-06-22T17.37.59_autosaved.json",
+    "source": "autosaved_log",
+    "p1": {
+      "name": "Karlmalone#2854",
+      "leader_name": "Marshall D. Teach",
+      "leader_code": "OP16-080"
+    },
+    "p2": {
+      "name": "Vince3#4219",
+      "leader_name": "Dracule Mihawk",
+      "leader_code": "OP14-020"
+    },
+    "winner": "p2",
+    "winner_name": "Vince3#4219",
+    "total_turns": 34
+  },
+  {
+    "original_file": "2026-06-23T00.45.00.log",
+    "parsed_file": "parsed/2026-06-23T00.45.00_autosaved.json",
+    "source": "autosaved_log",
+    "p1": {
+      "name": "LaoDJ#2305",
+      "leader_name": "Portgas D. Ace",
+      "leader_code": "OP13-002"
+    },
+    "p2": {
+      "name": "Karlmalone#2854",
+      "leader_name": "Marshall D. Teach",
+      "leader_code": "OP16-080"
+    },
+    "winner": "p1",
+    "winner_name": "LaoDJ#2305",
+    "total_turns": 21
+  },
+  {
+    "original_file": "2026-06-23T01.20.25.log",
+    "parsed_file": "parsed/2026-06-23T01.20.25_autosaved.json",
+    "source": "autosaved_log",
+    "p1": {
+      "name": "Karlmalone#2854",
+      "leader_name": "Marshall D. Teach",
+      "leader_code": "OP16-080"
+    },
+    "p2": {
+      "name": "Satoru14#8785",
+      "leader_name": "Monkey D. Luffy",
+      "leader_code": "OP16-022"
+    },
+    "winner": "p2",
+    "winner_name": "Satoru14#8785",
+    "total_turns": 23
+  },
+  {
+    "original_file": "2026-06-23T01.45.26.log",
+    "parsed_file": "parsed/2026-06-23T01.45.26_autosaved.json",
+    "source": "autosaved_log",
+    "p1": {
+      "name": "nortan69#6772",
+      "leader_name": "Jewelry Bonney",
+      "leader_code": "EB04-001"
+    },
+    "p2": {
+      "name": "Karlmalone#2854",
+      "leader_name": "Marshall D. Teach",
+      "leader_code": "OP16-080"
+    },
+    "winner": "p1",
+    "winner_name": "nortan69#6772",
+    "total_turns": 26
+  },
+  {
+    "original_file": "2026-06-23T11.49.36.log",
+    "parsed_file": "parsed/2026-06-23T11.49.36_autosaved.json",
+    "source": "autosaved_log",
+    "p1": {
+      "name": "Karlmalone#2854",
+      "leader_name": "Marshall D. Teach",
+      "leader_code": "OP16-080"
+    },
+    "p2": {
+      "name": "Bouyatetu#1361",
+      "leader_name": "Nami",
+      "leader_code": "OP11-041"
+    },
+    "winner": null,
+    "winner_name": null,
+    "total_turns": 29
+  },
+  {
+    "original_file": "2026-06-27T19.58.09.log",
+    "parsed_file": "parsed/2026-06-27T19.58.09_autosaved.json",
+    "source": "autosaved_log",
+    "p1": {
+      "name": "Karlmalone#2854",
+      "leader_name": "Marshall D. Teach",
+      "leader_code": "OP16-080"
+    },
+    "p2": {
+      "name": "kakasino#6476",
+      "leader_name": "Enel",
+      "leader_code": "OP05-098"
+    },
+    "winner": "p2",
+    "winner_name": "kakasino#6476",
+    "total_turns": 27
+  },
+  {
+    "original_file": "2026-06-27T20.15.38.log",
+    "parsed_file": "parsed/2026-06-27T20.15.38_autosaved.json",
+    "source": "autosaved_log",
+    "p1": {
+      "name": "Karlmalone#2854",
+      "leader_name": "Marshall D. Teach",
+      "leader_code": "OP16-080"
+    },
+    "p2": {
+      "name": "nanibooty47#7676",
+      "leader_name": "Nami",
+      "leader_code": "OP11-041"
+    },
+    "winner": "p2",
+    "winner_name": "nanibooty47#7676",
+    "total_turns": 36
+  },
+  {
+    "original_file": "2026-06-27T23.13.47.log",
+    "parsed_file": "parsed/2026-06-27T23.13.47_autosaved.json",
+    "source": "autosaved_log",
+    "p1": {
+      "name": "Karlmalone#2854",
+      "leader_name": "Marshall D. Teach",
+      "leader_code": "OP16-080"
+    },
+    "p2": {
+      "name": "gBusiness#4347",
+      "leader_name": "Shanks",
+      "leader_code": "OP09-001"
+    },
+    "winner": "p2",
+    "winner_name": "gBusiness#4347",
+    "total_turns": 36
+  },
+  {
+    "original_file": "2026-06-27T23.48.47.log",
+    "parsed_file": "parsed/2026-06-27T23.48.47_autosaved.json",
+    "source": "autosaved_log",
+    "p1": {
+      "name": "Karlmalone#2854",
+      "leader_name": "Marshall D. Teach",
+      "leader_code": "OP16-080"
+    },
+    "p2": {
+      "name": "rong#1667",
+      "leader_name": "Krieg",
+      "leader_code": "OP15-001"
+    },
+    "winner": "p1",
+    "winner_name": "Karlmalone#2854",
+    "total_turns": 30
+  },
+  {
+    "original_file": "2026-06-28T00.15.46.log",
+    "parsed_file": "parsed/2026-06-28T00.15.46_autosaved.json",
+    "source": "autosaved_log",
+    "p1": {
+      "name": "Karlmalone#2854",
+      "leader_name": "Marshall D. Teach",
+      "leader_code": "OP16-080"
+    },
+    "p2": {
+      "name": "CatalinaWineMixr#4883",
+      "leader_name": "Imu",
+      "leader_code": "OP13-079"
+    },
+    "winner": "p2",
+    "winner_name": "CatalinaWineMixr#4883",
+    "total_turns": 27
+  },
+  {
+    "original_file": "2026-06-28T00.46.41.log",
+    "parsed_file": "parsed/2026-06-28T00.46.41_autosaved.json",
+    "source": "autosaved_log",
+    "p1": {
+      "name": "ccarlosdos#5040",
+      "leader_name": "Sengoku",
+      "leader_code": "OP16-060"
+    },
+    "p2": {
+      "name": "Karlmalone#2854",
+      "leader_name": "Marshall D. Teach",
+      "leader_code": "OP16-080"
+    },
+    "winner": null,
+    "winner_name": null,
+    "total_turns": 27
+  },
+  {
+    "original_file": "2026-06-28T01.10.14.log",
+    "parsed_file": "parsed/2026-06-28T01.10.14_autosaved.json",
+    "source": "autosaved_log",
+    "p1": {
+      "name": "Karlmalone#2854",
+      "leader_name": "Marshall D. Teach",
+      "leader_code": "OP16-080"
+    },
+    "p2": {
+      "name": "Zakerga#4479",
+      "leader_name": "Portgas D. Ace",
+      "leader_code": "OP16-001"
+    },
+    "winner": null,
+    "winner_name": null,
+    "total_turns": 16
+  },
+  {
+    "original_file": "2026-06-28T01.27.26.log",
+    "parsed_file": "parsed/2026-06-28T01.27.26_autosaved.json",
+    "source": "autosaved_log",
+    "p1": {
+      "name": "Karlmalone#2854",
+      "leader_name": "Marshall D. Teach",
+      "leader_code": "OP16-080"
+    },
+    "p2": {
+      "name": "Tmart17#68886",
+      "leader_name": "Yamato",
+      "leader_code": "OP16-079"
+    },
+    "winner": null,
+    "winner_name": null,
+    "total_turns": 26
+  },
+  {
+    "original_file": "2026-06-29T02.08.03.log",
+    "parsed_file": "parsed/2026-06-29T02.08.03_autosaved.json",
+    "source": "autosaved_log",
+    "p1": {
+      "name": "Karlmalone#2854",
+      "leader_name": "Marshall D. Teach",
+      "leader_code": "OP16-080"
+    },
+    "p2": {
+      "name": "tonytonychoppington#3658",
+      "leader_name": "Nico Robin",
+      "leader_code": "OP09-062"
+    },
+    "winner": "p2",
+    "winner_name": "tonytonychoppington#3658",
+    "total_turns": 47
+  },
+  {
+    "original_file": "2026-06-29T02.43.18.log",
+    "parsed_file": "parsed/2026-06-29T02.43.18_autosaved.json",
+    "source": "autosaved_log",
+    "p1": {
+      "name": "Karlmalone#2854",
+      "leader_name": "Marshall D. Teach",
+      "leader_code": "OP16-080"
+    },
+    "p2": {
+      "name": "Thorfinn#3951",
+      "leader_name": "Dracule Mihawk",
+      "leader_code": "OP14-020"
+    },
+    "winner": null,
+    "winner_name": null,
+    "total_turns": 30
+  },
+  {
+    "original_file": "2026-06-30T23.13.15.log",
+    "parsed_file": "parsed/2026-06-30T23.13.15_autosaved.json",
+    "source": "autosaved_log",
+    "p1": {
+      "name": "Estarock#2024",
+      "leader_name": "Roronoa Zoro",
+      "leader_code": "OP12-020"
+    },
+    "p2": {
+      "name": "Karlmalone#2854",
+      "leader_name": "Marshall D. Teach",
+      "leader_code": "OP16-080"
+    },
+    "winner": null,
+    "winner_name": null,
+    "total_turns": 19
+  },
+  {
+    "original_file": "2026-07-01T00.13.44.log",
+    "parsed_file": "parsed/2026-07-01T00.13.44_autosaved.json",
+    "source": "autosaved_log",
+    "p1": {
+      "name": "Karlmalone#2854",
+      "leader_name": "Marshall D. Teach",
+      "leader_code": "OP16-080"
+    },
+    "p2": {
+      "name": "harrytat#4060",
+      "leader_name": "Portgas D. Ace",
+      "leader_code": "OP16-001"
+    },
+    "winner": null,
+    "winner_name": null,
+    "total_turns": 28
+  },
+  {
+    "original_file": "2026-07-01T12.45.42.log",
+    "parsed_file": "parsed/2026-07-01T12.45.42_autosaved.json",
+    "source": "autosaved_log",
+    "p1": {
+      "name": "kadomaru#5789",
+      "leader_name": "Lucy",
+      "leader_code": "OP15-002"
+    },
+    "p2": {
+      "name": "Karlmalone#2854",
+      "leader_name": "Marshall D. Teach",
+      "leader_code": "OP16-080"
+    },
+    "winner": "p1",
+    "winner_name": "kadomaru#5789",
+    "total_turns": 44
+  },
+  {
+    "original_file": "2026-07-01T14.00.11.log",
+    "parsed_file": "parsed/2026-07-01T14.00.11_autosaved.json",
+    "source": "autosaved_log",
+    "p1": {
+      "name": "Karlmalone#2854",
+      "leader_name": "Imu",
+      "leader_code": "OP13-079"
+    },
+    "p2": {
+      "name": "Akantorbeast#2603",
+      "leader_name": "Monkey D. Luffy",
+      "leader_code": "ST29-001"
+    },
+    "winner": null,
+    "winner_name": null,
+    "total_turns": 17
+  },
+  {
+    "original_file": "2026-07-01T14.22.36.log",
+    "parsed_file": "parsed/2026-07-01T14.22.36_autosaved.json",
+    "source": "autosaved_log",
+    "p1": {
+      "name": "Karlmalone#2854",
+      "leader_name": "Imu",
+      "leader_code": "OP13-079"
+    },
+    "p2": {
+      "name": "Jack#5459",
+      "leader_name": "Nami",
+      "leader_code": "OP11-041"
+    },
+    "winner": null,
+    "winner_name": null,
+    "total_turns": 35
+  },
+  {
+    "original_file": "2026-07-01T15.15.55.log",
+    "parsed_file": "parsed/2026-07-01T15.15.55_autosaved.json",
+    "source": "autosaved_log",
+    "p1": {
+      "name": "Karlmalone#2854",
+      "leader_name": "Imu",
+      "leader_code": "OP13-079"
+    },
+    "p2": {
+      "name": "Sebs#6211",
+      "leader_name": "Monkey D. Luffy",
+      "leader_code": "OP11-040"
+    },
+    "winner": "p2",
+    "winner_name": "Sebs#6211",
+    "total_turns": 36
+  },
+  {
+    "original_file": "2026-07-02T00.16.23.log",
+    "parsed_file": "parsed/2026-07-02T00.16.23_autosaved.json",
+    "source": "autosaved_log",
+    "p1": {
+      "name": "Karlmalone#2854",
+      "leader_name": "Krieg",
+      "leader_code": "OP15-001"
+    },
+    "p2": {
+      "name": "Shichibukai#4335",
+      "leader_name": "Marshall D. Teach",
+      "leader_code": "OP09-081"
+    },
+    "winner": "p1",
+    "winner_name": "Karlmalone#2854",
+    "total_turns": 25
+  },
+  {
+    "original_file": "2026-07-02T00.33.08.log",
+    "parsed_file": "parsed/2026-07-02T00.33.08_autosaved.json",
+    "source": "autosaved_log",
+    "p1": {
+      "name": "luny#6381",
+      "leader_name": "Brook",
+      "leader_code": "OP15-022"
+    },
+    "p2": {
+      "name": "Karlmalone#2854",
+      "leader_name": "Krieg",
+      "leader_code": "OP15-001"
+    },
+    "winner": "p2",
+    "winner_name": "Karlmalone#2854",
+    "total_turns": 24
+  },
+  {
+    "original_file": "2026-07-02T00.48.17.log",
+    "parsed_file": "parsed/2026-07-02T00.48.17_autosaved.json",
+    "source": "autosaved_log",
+    "p1": {
+      "name": "Karlmalone#2854",
+      "leader_name": "Eustass \"Captain\" Kid",
+      "leader_code": "OP10-099"
+    },
+    "p2": {
+      "name": "TaxiCab#9855",
+      "leader_name": "Sabo",
+      "leader_code": "OP13-004"
+    },
+    "winner": "p2",
+    "winner_name": "TaxiCab#9855",
+    "total_turns": 24
   }
 ]

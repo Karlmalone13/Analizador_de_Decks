@@ -1,0 +1,876 @@
+{
+  "meta": {
+    "source": "autosaved_log",
+    "original_file": "2026-06-23T01.20.25.log",
+    "p1": {
+      "name": "Karlmalone#2854",
+      "leader_name": "Marshall D. Teach",
+      "leader_code": "OP16-080",
+      "goes_first": true
+    },
+    "p2": {
+      "name": "Satoru14#8785",
+      "leader_name": "Monkey D. Luffy",
+      "leader_code": "OP16-022",
+      "goes_first": false
+    },
+    "winner": "p2",
+    "winner_name": "Satoru14#8785",
+    "total_turns": 23,
+    "mulligan_p1": {
+      "before": [
+        "OP09-091",
+        "OP09-093",
+        "OP16-109",
+        "OP16-116",
+        "PRB02-015"
+      ],
+      "after": [
+        "OP09-091",
+        "OP09-093",
+        "OP16-109",
+        "OP16-116",
+        "PRB02-015"
+      ],
+      "took_mulligan": false
+    },
+    "mulligan_p2": {
+      "before": [],
+      "after": [],
+      "took_mulligan": false
+    }
+  },
+  "turns": [
+    {
+      "turn": 1,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Gum Gum Rain",
+        "code": "OP02-068"
+      },
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-055",
+            "OP16-054",
+            "OP16-045",
+            "OP16-045",
+            "OP02-068"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 1,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 1,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP16-109",
+          "card_name": "Doc Q",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-055",
+            "OP16-054",
+            "OP16-045",
+            "OP16-045",
+            "OP02-068"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 1,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-055",
+            "OP16-054",
+            "OP16-045",
+            "OP16-045",
+            "OP02-068"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 2,
+      "player": "Satoru14#8785",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Monkey D. Luffy",
+        "code": "OP16-034"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP16-055",
+          "card_name": "Mr. 2 Bon Clay (Bentham)",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-055",
+            "OP16-054",
+            "OP16-045",
+            "OP16-045",
+            "OP02-068"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 2,
+      "player": "Satoru14#8785",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-054",
+            "OP16-045",
+            "OP16-045",
+            "OP02-068",
+            "OP06-058",
+            "OP16-034"
+          ],
+          "board": [
+            "OP16-055"
+          ],
+          "trash": [],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 3,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Kuzan",
+        "code": "OP10-082"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP09-091",
+          "card_name": "Vasco Shot",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-054",
+            "OP16-045",
+            "OP16-045",
+            "OP02-068",
+            "OP06-058",
+            "OP16-034"
+          ],
+          "board": [
+            "OP16-055"
+          ],
+          "trash": [],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 3,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-054",
+            "OP16-045",
+            "OP16-045",
+            "OP02-068",
+            "OP06-058",
+            "OP16-034",
+            "OP16-042"
+          ],
+          "board": [
+            "OP16-055"
+          ],
+          "trash": [],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 6,
+      "player": "Satoru14#8785",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Boa Hancock",
+        "code": "OP16-032"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP16-054",
+          "card_name": "Mr. 1 (Daz Bonez)",
+          "effects": []
+        },
+        {
+          "type": "play",
+          "card": "OP16-034",
+          "card_name": "Monkey D. Luffy",
+          "effects": []
+        },
+        {
+          "type": "play",
+          "card": "OP16-027",
+          "card_name": "Jinbe",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-054",
+            "OP16-045",
+            "OP16-045",
+            "OP02-068",
+            "OP06-058",
+            "OP16-034",
+            "OP16-042"
+          ],
+          "board": [
+            "OP16-055"
+          ],
+          "trash": [],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 6,
+      "player": "Satoru14#8785",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-054",
+            "OP16-045",
+            "OP16-045",
+            "OP02-068",
+            "OP06-058",
+            "OP16-042",
+            "OP16-032"
+          ],
+          "board": [
+            "OP16-055",
+            "OP16-054",
+            "OP16-034",
+            "OP16-027"
+          ],
+          "trash": [],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 9,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Shiryu",
+        "code": "OP16-108"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP10-082",
+          "card_name": "Kuzan",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-054",
+            "OP16-045",
+            "OP16-045",
+            "OP02-068",
+            "OP06-058",
+            "OP16-042",
+            "OP16-032"
+          ],
+          "board": [
+            "OP16-055",
+            "OP16-054",
+            "OP16-034",
+            "OP16-027"
+          ],
+          "trash": [],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 9,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-054",
+            "OP16-045",
+            "OP16-045",
+            "OP02-068",
+            "OP06-058",
+            "OP16-042",
+            "OP16-032"
+          ],
+          "board": [
+            "OP16-054",
+            "OP16-034",
+            "OP16-027"
+          ],
+          "trash": [
+            "OP16-055"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 10,
+      "player": "Satoru14#8785",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Emporio Ivankov",
+        "code": "OP16-026"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP16-045",
+          "card_name": "Crocodile",
+          "effects": []
+        },
+        {
+          "type": "play",
+          "card": "OP16-045",
+          "card_name": "Crocodile",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-054",
+            "OP16-045",
+            "OP16-045",
+            "OP02-068",
+            "OP06-058",
+            "OP16-042",
+            "OP16-032"
+          ],
+          "board": [
+            "OP16-054",
+            "OP16-034",
+            "OP16-027"
+          ],
+          "trash": [
+            "OP16-055"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 10,
+      "player": "Satoru14#8785",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-054",
+            "OP02-068",
+            "OP06-058",
+            "OP16-042",
+            "OP16-032",
+            "OP15-032",
+            "OP16-042",
+            "OP16-026"
+          ],
+          "board": [
+            "OP16-034",
+            "OP16-027",
+            "OP16-045",
+            "OP16-045",
+            "OP16-054"
+          ],
+          "trash": [
+            "OP16-055"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 14,
+      "player": "Satoru14#8785",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Black Vortex",
+        "code": "OP09-097"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "ST27-005",
+          "card_name": "Marshall D. Teach",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-054",
+            "OP02-068",
+            "OP06-058",
+            "OP16-042",
+            "OP16-032",
+            "OP15-032",
+            "OP16-042",
+            "OP16-026"
+          ],
+          "board": [
+            "OP16-034",
+            "OP16-027",
+            "OP16-045",
+            "OP16-045",
+            "OP16-054"
+          ],
+          "trash": [
+            "OP16-055"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 14,
+      "player": "Satoru14#8785",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP02-068",
+            "OP06-058",
+            "OP16-042",
+            "OP16-032",
+            "OP15-032",
+            "OP16-042",
+            "OP16-026"
+          ],
+          "board": [
+            "OP16-034",
+            "OP16-027",
+            "OP16-045",
+            "OP16-045"
+          ],
+          "trash": [
+            "OP16-055",
+            "OP16-054",
+            "OP16-054"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 20,
+      "player": "Satoru14#8785",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Buggy",
+        "code": "OP16-048"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP16-032",
+          "card_name": "Boa Hancock",
+          "effects": []
+        },
+        {
+          "type": "play",
+          "card": "OP16-055",
+          "card_name": "Mr. 2 Bon Clay (Bentham)",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP02-068",
+            "OP06-058",
+            "OP16-042",
+            "OP16-032",
+            "OP15-032",
+            "OP16-042",
+            "OP16-026"
+          ],
+          "board": [
+            "OP16-034",
+            "OP16-027",
+            "OP16-045",
+            "OP16-045"
+          ],
+          "trash": [
+            "OP16-055",
+            "OP16-054",
+            "OP16-054"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 20,
+      "player": "Satoru14#8785",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP02-068",
+            "OP06-058",
+            "OP16-042",
+            "OP15-032",
+            "OP16-042",
+            "OP16-026",
+            "OP16-048"
+          ],
+          "board": [
+            "OP16-027",
+            "OP16-045",
+            "OP16-045",
+            "OP16-032",
+            "OP16-055"
+          ],
+          "trash": [
+            "OP16-055",
+            "OP16-054",
+            "OP16-054",
+            "OP16-034"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 24,
+      "player": "Satoru14#8785",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Marshall D. Teach",
+        "code": "OP09-093"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "PRB02-015",
+          "card_name": "Shiryu",
+          "effects": []
+        },
+        {
+          "type": "play",
+          "card": "OP16-114",
+          "card_name": "Laffite",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP02-068",
+            "OP06-058",
+            "OP16-042",
+            "OP15-032",
+            "OP16-042",
+            "OP16-026",
+            "OP16-048"
+          ],
+          "board": [
+            "OP16-027",
+            "OP16-045",
+            "OP16-045",
+            "OP16-032",
+            "OP16-055"
+          ],
+          "trash": [
+            "OP16-055",
+            "OP16-054",
+            "OP16-054",
+            "OP16-034"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 24,
+      "player": "Satoru14#8785",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP02-068",
+            "OP06-058",
+            "OP15-032",
+            "OP16-042",
+            "OP16-026",
+            "OP16-048"
+          ],
+          "board": [
+            "OP16-045",
+            "OP16-045",
+            "OP16-032",
+            "OP16-055"
+          ],
+          "trash": [
+            "OP16-055",
+            "OP16-054",
+            "OP16-054",
+            "OP16-034",
+            "OP16-027",
+            "OP16-042"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 32,
+      "player": "Satoru14#8785",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Buggy",
+        "code": "OP16-048"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP16-048",
+          "card_name": "Buggy",
+          "effects": []
+        },
+        {
+          "type": "play",
+          "card": "OP15-032",
+          "card_name": "Brook",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP02-068",
+            "OP06-058",
+            "OP15-032",
+            "OP16-042",
+            "OP16-026",
+            "OP16-048"
+          ],
+          "board": [
+            "OP16-045",
+            "OP16-045",
+            "OP16-032",
+            "OP16-055"
+          ],
+          "trash": [
+            "OP16-055",
+            "OP16-054",
+            "OP16-054",
+            "OP16-034",
+            "OP16-027",
+            "OP16-042"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 32,
+      "player": "Satoru14#8785",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP02-068",
+            "OP06-058",
+            "OP16-042",
+            "OP16-026",
+            "OP16-048"
+          ],
+          "board": [
+            "OP16-045",
+            "OP16-032",
+            "OP16-048",
+            "OP16-042",
+            "OP15-032"
+          ],
+          "trash": [
+            "OP16-055",
+            "OP16-054",
+            "OP16-054",
+            "OP16-034",
+            "OP16-027",
+            "OP16-042",
+            "OP16-055",
+            "OP16-045"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 37,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Marshall D. Teach",
+        "code": "ST27-005"
+      },
+      "don_drawn": 2,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP02-068",
+            "OP06-058",
+            "OP16-042",
+            "OP16-026",
+            "OP16-048"
+          ],
+          "board": [
+            "OP16-045",
+            "OP16-032",
+            "OP16-048",
+            "OP16-042",
+            "OP15-032"
+          ],
+          "trash": [
+            "OP16-055",
+            "OP16-054",
+            "OP16-054",
+            "OP16-034",
+            "OP16-027",
+            "OP16-042",
+            "OP16-055",
+            "OP16-045"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 37,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP02-068",
+            "OP06-058",
+            "OP16-042",
+            "OP16-042"
+          ],
+          "board": [
+            "OP16-045",
+            "OP16-032",
+            "OP16-048",
+            "OP16-042",
+            "OP15-032"
+          ],
+          "trash": [
+            "OP16-055",
+            "OP16-054",
+            "OP16-054",
+            "OP16-034",
+            "OP16-027",
+            "OP16-042",
+            "OP16-055",
+            "OP16-045",
+            "OP16-026",
+            "OP16-048"
+          ],
+          "life": 2
+        }
+      }
+    }
+  ]
+}

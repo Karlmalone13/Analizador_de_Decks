@@ -1,0 +1,529 @@
+{
+  "meta": {
+    "source": "autosaved_log",
+    "original_file": "2026-07-01T14.00.11.log",
+    "p1": {
+      "name": "Karlmalone#2854",
+      "leader_name": "Imu",
+      "leader_code": "OP13-079",
+      "goes_first": true
+    },
+    "p2": {
+      "name": "Akantorbeast#2603",
+      "leader_name": "Monkey D. Luffy",
+      "leader_code": "ST29-001",
+      "goes_first": false
+    },
+    "winner": null,
+    "winner_name": null,
+    "total_turns": 17,
+    "mulligan_p1": {
+      "before": [
+        "OP13-091",
+        "OP14-096",
+        "OP13-080",
+        "OP13-086",
+        "OP13-080"
+      ],
+      "after": [
+        "OP13-091",
+        "OP14-096",
+        "OP13-080",
+        "OP13-086",
+        "OP13-080"
+      ],
+      "took_mulligan": false
+    },
+    "mulligan_p2": {
+      "before": [],
+      "after": [],
+      "took_mulligan": true
+    }
+  },
+  "turns": [
+    {
+      "turn": 1,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Roronoa Zoro",
+        "code": "OP07-113"
+      },
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP15-114",
+            "OP15-113",
+            "OP15-113",
+            "OP15-109",
+            "OP07-113"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 6
+        }
+      }
+    },
+    {
+      "turn": 1,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 1,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP13-086",
+          "card_name": "St. Shalria",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP15-114",
+            "OP15-113",
+            "OP15-113",
+            "OP15-109",
+            "OP07-113"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 6
+        }
+      }
+    },
+    {
+      "turn": 1,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP15-114",
+            "OP15-113",
+            "OP15-113",
+            "OP15-109",
+            "OP07-113"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 6
+        }
+      }
+    },
+    {
+      "turn": 2,
+      "player": "Akantorbeast#2603",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Wyper",
+        "code": "OP15-114"
+      },
+      "don_drawn": 2,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP15-114",
+            "OP15-113",
+            "OP15-113",
+            "OP15-109",
+            "OP07-113"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 6
+        }
+      }
+    },
+    {
+      "turn": 2,
+      "player": "Akantorbeast#2603",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP15-114",
+            "OP15-113",
+            "OP15-113",
+            "OP15-109",
+            "OP07-113",
+            "OP15-114"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 6
+        }
+      }
+    },
+    {
+      "turn": 3,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": {
+        "name": "The Five Elders... Are At Your Service",
+        "code": "OP13-096"
+      },
+      "don_drawn": 2,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP15-114",
+            "OP15-113",
+            "OP15-113",
+            "OP15-109",
+            "OP07-113",
+            "OP15-114"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 6
+        }
+      }
+    },
+    {
+      "turn": 3,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP15-114",
+            "OP15-113",
+            "OP15-113",
+            "OP15-109",
+            "OP07-113",
+            "OP15-114",
+            "OP15-109"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 6,
+      "player": "Akantorbeast#2603",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Nico Robin",
+        "code": "ST29-009"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP15-113",
+          "card_name": "Roronoa Zoro",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP15-114",
+            "OP15-113",
+            "OP15-113",
+            "OP15-109",
+            "OP07-113",
+            "OP15-114",
+            "OP15-109"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 6,
+      "player": "Akantorbeast#2603",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP15-114",
+            "OP15-113",
+            "OP15-109",
+            "OP15-114",
+            "OP15-109",
+            "ST29-009"
+          ],
+          "board": [
+            "OP15-113"
+          ],
+          "trash": [
+            "OP07-113"
+          ],
+          "life": 6
+        }
+      }
+    },
+    {
+      "turn": 8,
+      "player": "Akantorbeast#2603",
+      "player_role": "",
+      "card_drawn": {
+        "name": "...Never Existed...",
+        "code": "OP13-098"
+      },
+      "don_drawn": 2,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP15-114",
+            "OP15-113",
+            "OP15-109",
+            "OP15-114",
+            "OP15-109",
+            "ST29-009"
+          ],
+          "board": [
+            "OP15-113"
+          ],
+          "trash": [
+            "OP07-113"
+          ],
+          "life": 6
+        }
+      }
+    },
+    {
+      "turn": 8,
+      "player": "Akantorbeast#2603",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP15-114",
+            "OP15-113",
+            "OP15-109",
+            "OP15-114",
+            "OP15-109"
+          ],
+          "board": [
+            "OP15-113"
+          ],
+          "trash": [
+            "OP07-113",
+            "ST29-009"
+          ],
+          "life": 6
+        }
+      }
+    },
+    {
+      "turn": 10,
+      "player": "Akantorbeast#2603",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Sanji",
+        "code": "ST29-004"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP15-113",
+          "card_name": "Roronoa Zoro",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP15-114",
+            "OP15-113",
+            "OP15-109",
+            "OP15-114",
+            "OP15-109"
+          ],
+          "board": [
+            "OP15-113"
+          ],
+          "trash": [
+            "OP07-113",
+            "ST29-009"
+          ],
+          "life": 6
+        }
+      }
+    },
+    {
+      "turn": 10,
+      "player": "Akantorbeast#2603",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP15-114",
+            "OP15-109",
+            "OP15-114",
+            "OP15-109"
+          ],
+          "board": [
+            "OP15-113",
+            "OP15-113"
+          ],
+          "trash": [
+            "OP07-113",
+            "ST29-009",
+            "ST29-004"
+          ],
+          "life": 7
+        }
+      }
+    },
+    {
+      "turn": 14,
+      "player": "Akantorbeast#2603",
+      "player_role": "",
+      "card_drawn": {
+        "name": "St. Topman Warcury",
+        "code": "OP13-089"
+      },
+      "don_drawn": 2,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP15-114",
+            "OP15-109",
+            "OP15-114",
+            "OP15-109"
+          ],
+          "board": [
+            "OP15-113",
+            "OP15-113"
+          ],
+          "trash": [
+            "OP07-113",
+            "ST29-009",
+            "ST29-004"
+          ],
+          "life": 7
+        }
+      }
+    },
+    {
+      "turn": 14,
+      "player": "Akantorbeast#2603",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP15-114",
+            "OP15-109"
+          ],
+          "board": [
+            "OP15-113"
+          ],
+          "trash": [
+            "OP07-113",
+            "ST29-009",
+            "ST29-004",
+            "OP15-109",
+            "OP15-114",
+            "OP15-113"
+          ],
+          "life": 7
+        }
+      }
+    },
+    {
+      "turn": 15,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Borsalino",
+        "code": "EB04-058"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP15-109",
+          "card_name": "Nico Robin",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP15-114",
+            "OP15-109"
+          ],
+          "board": [
+            "OP15-113"
+          ],
+          "trash": [
+            "OP07-113",
+            "ST29-009",
+            "ST29-004",
+            "OP15-109",
+            "OP15-114",
+            "OP15-113"
+          ],
+          "life": 7
+        }
+      }
+    },
+    {
+      "turn": 15,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "EB04-058",
+            "OP06-104"
+          ],
+          "board": [
+            "OP15-113",
+            "OP15-109",
+            "OP15-114"
+          ],
+          "trash": [
+            "OP07-113",
+            "ST29-009",
+            "ST29-004",
+            "OP15-109",
+            "OP15-114",
+            "OP15-113"
+          ],
+          "life": 7
+        }
+      }
+    }
+  ]
+}

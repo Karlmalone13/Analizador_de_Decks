@@ -1,0 +1,983 @@
+{
+  "meta": {
+    "source": "autosaved_log",
+    "original_file": "2026-07-02T00.16.23.log",
+    "p1": {
+      "name": "Karlmalone#2854",
+      "leader_name": "Krieg",
+      "leader_code": "OP15-001",
+      "goes_first": true
+    },
+    "p2": {
+      "name": "Shichibukai#4335",
+      "leader_name": "Marshall D. Teach",
+      "leader_code": "OP09-081",
+      "goes_first": false
+    },
+    "winner": "p1",
+    "winner_name": "Karlmalone#2854",
+    "total_turns": 25,
+    "mulligan_p1": {
+      "before": [
+        "OP15-037",
+        "OP15-027",
+        "OP15-023",
+        "OP15-025",
+        "OP13-040"
+      ],
+      "after": [
+        "OP15-037",
+        "OP15-027",
+        "OP15-023",
+        "OP15-025",
+        "OP13-040"
+      ],
+      "took_mulligan": false
+    },
+    "mulligan_p2": {
+      "before": [],
+      "after": [],
+      "took_mulligan": false
+    }
+  },
+  "turns": [
+    {
+      "turn": 1,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": {
+        "name": "I Know You're Strong... So I'll Go All Out",
+        "code": "OP13-040"
+      },
+      "don_drawn": 1,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP09-089",
+            "OP09-086",
+            "OP09-098",
+            "OP09-095",
+            "OP10-086"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 1,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP09-089",
+            "OP09-086",
+            "OP09-098",
+            "OP09-095",
+            "OP10-086"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 2,
+      "player": "Shichibukai#4335",
+      "player_role": "",
+      "card_drawn": {
+        "name": "This is MY AGE!!!!",
+        "code": "OP09-096"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP09-095",
+          "card_name": "Laffitte",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP09-089",
+            "OP09-086",
+            "OP09-098",
+            "OP09-095",
+            "OP10-086"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 2,
+      "player": "Shichibukai#4335",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP09-089",
+            "OP09-086",
+            "OP09-098",
+            "OP10-086",
+            "OP09-096",
+            "OP10-082"
+          ],
+          "board": [
+            "OP09-095"
+          ],
+          "trash": [],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 5,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Gin",
+        "code": "OP15-007"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP15-012",
+          "card_name": "Buggy",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP09-089",
+            "OP09-086",
+            "OP09-098",
+            "OP10-086",
+            "OP09-096",
+            "OP10-082"
+          ],
+          "board": [
+            "OP09-095"
+          ],
+          "trash": [],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 5,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP09-089",
+            "OP09-086",
+            "OP09-098",
+            "OP10-086",
+            "OP09-096",
+            "OP10-082"
+          ],
+          "board": [],
+          "trash": [
+            "OP09-095"
+          ],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 7,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Gin",
+        "code": "OP15-007"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP10-086",
+          "card_name": "Shiryu",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP09-089",
+            "OP09-086",
+            "OP09-098",
+            "OP10-086",
+            "OP09-096",
+            "OP10-082"
+          ],
+          "board": [],
+          "trash": [
+            "OP09-095"
+          ],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 7,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP09-089",
+            "OP09-086",
+            "OP09-098",
+            "OP09-096",
+            "OP10-082",
+            "OP09-083"
+          ],
+          "board": [
+            "OP10-086"
+          ],
+          "trash": [
+            "OP09-095"
+          ],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 7,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Whoever Wins This War Becomes Justice!!",
+        "code": "OP05-037"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP15-023",
+          "card_name": "Arlong",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP09-089",
+            "OP09-086",
+            "OP09-098",
+            "OP09-096",
+            "OP10-082",
+            "OP09-083"
+          ],
+          "board": [
+            "OP10-086"
+          ],
+          "trash": [
+            "OP09-095"
+          ],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 7,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP09-089",
+            "OP09-086",
+            "OP09-098",
+            "OP09-096",
+            "OP10-082",
+            "OP09-083",
+            "OP09-089"
+          ],
+          "board": [
+            "OP10-086"
+          ],
+          "trash": [
+            "OP09-095"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 10,
+      "player": "Shichibukai#4335",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Black Hole",
+        "code": "OP09-098"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP10-082",
+          "card_name": "Kuzan",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP09-089",
+            "OP09-086",
+            "OP09-098",
+            "OP09-096",
+            "OP10-082",
+            "OP09-083",
+            "OP09-089"
+          ],
+          "board": [
+            "OP10-086"
+          ],
+          "trash": [
+            "OP09-095"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 10,
+      "player": "Shichibukai#4335",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP09-089",
+            "OP09-098",
+            "OP09-083",
+            "OP09-089",
+            "OP09-083",
+            "OP10-082",
+            "OP09-098"
+          ],
+          "board": [
+            "OP10-086",
+            "OP09-090"
+          ],
+          "trash": [
+            "OP09-095",
+            "OP09-096",
+            "OP09-095",
+            "OP10-082",
+            "OP09-086"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 13,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Van Augur",
+        "code": "OP09-083"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP15-009",
+          "card_name": "Koby",
+          "effects": []
+        },
+        {
+          "type": "play",
+          "card": "OP15-007",
+          "card_name": "Gin",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP09-089",
+            "OP09-098",
+            "OP09-083",
+            "OP09-089",
+            "OP09-083",
+            "OP10-082",
+            "OP09-098"
+          ],
+          "board": [
+            "OP10-086",
+            "OP09-090"
+          ],
+          "trash": [
+            "OP09-095",
+            "OP09-096",
+            "OP09-095",
+            "OP10-082",
+            "OP09-086"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 13,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP09-089",
+            "OP09-098",
+            "OP09-083",
+            "OP09-089",
+            "OP09-083",
+            "OP10-082",
+            "OP09-098",
+            "OP09-083"
+          ],
+          "board": [
+            "OP10-086"
+          ],
+          "trash": [
+            "OP09-095",
+            "OP09-096",
+            "OP09-095",
+            "OP10-082",
+            "OP09-086",
+            "OP09-090"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 16,
+      "player": "Shichibukai#4335",
+      "player_role": "",
+      "card_drawn": {
+        "name": "This is MY AGE!!!!",
+        "code": "OP09-096"
+      },
+      "don_drawn": 2,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP09-089",
+            "OP09-098",
+            "OP09-083",
+            "OP09-089",
+            "OP09-083",
+            "OP10-082",
+            "OP09-098",
+            "OP09-083"
+          ],
+          "board": [
+            "OP10-086"
+          ],
+          "trash": [
+            "OP09-095",
+            "OP09-096",
+            "OP09-095",
+            "OP10-082",
+            "OP09-086",
+            "OP09-090"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 16,
+      "player": "Shichibukai#4335",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP09-089",
+            "OP09-083",
+            "OP09-089",
+            "OP09-083",
+            "OP10-082",
+            "OP09-083",
+            "OP09-096"
+          ],
+          "board": [
+            "OP10-086"
+          ],
+          "trash": [
+            "OP09-095",
+            "OP09-096",
+            "OP09-095",
+            "OP10-082",
+            "OP09-086",
+            "OP09-090",
+            "OP09-098",
+            "OP09-098"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 17,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Gin",
+        "code": "OP15-007"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP15-025",
+          "card_name": "Kuro",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP09-089",
+            "OP09-083",
+            "OP09-089",
+            "OP09-083",
+            "OP10-082",
+            "OP09-083",
+            "OP09-096"
+          ],
+          "board": [
+            "OP10-086"
+          ],
+          "trash": [
+            "OP09-095",
+            "OP09-096",
+            "OP09-095",
+            "OP10-082",
+            "OP09-086",
+            "OP09-090",
+            "OP09-098",
+            "OP09-098"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 17,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP09-089",
+            "OP09-083",
+            "OP09-089",
+            "OP09-083",
+            "OP10-082",
+            "OP09-083",
+            "OP09-096",
+            "OP09-089"
+          ],
+          "board": [
+            "OP10-086"
+          ],
+          "trash": [
+            "OP09-095",
+            "OP09-096",
+            "OP09-095",
+            "OP10-082",
+            "OP09-086",
+            "OP09-090",
+            "OP09-098",
+            "OP09-098"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 20,
+      "player": "Shichibukai#4335",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Jesus Burgess",
+        "code": "OP09-086"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP09-083",
+          "card_name": "Van Augur",
+          "effects": []
+        },
+        {
+          "type": "play",
+          "card": "OP09-089",
+          "card_name": "Stronger",
+          "effects": []
+        },
+        {
+          "type": "play",
+          "card": "OP09-090",
+          "card_name": "Doc Q",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP09-089",
+            "OP09-083",
+            "OP09-089",
+            "OP09-083",
+            "OP10-082",
+            "OP09-083",
+            "OP09-096",
+            "OP09-089"
+          ],
+          "board": [
+            "OP10-086"
+          ],
+          "trash": [
+            "OP09-095",
+            "OP09-096",
+            "OP09-095",
+            "OP10-082",
+            "OP09-086",
+            "OP09-090",
+            "OP09-098",
+            "OP09-098"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 20,
+      "player": "Shichibukai#4335",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP09-089",
+            "OP09-083",
+            "OP09-089",
+            "OP09-083",
+            "ST27-003"
+          ],
+          "board": [
+            "OP10-086",
+            "OP09-083",
+            "OP09-090"
+          ],
+          "trash": [
+            "OP09-095",
+            "OP09-096",
+            "OP09-095",
+            "OP10-082",
+            "OP09-086",
+            "OP09-090",
+            "OP09-098",
+            "OP09-098",
+            "OP09-096",
+            "OP11-083",
+            "OP11-083",
+            "OP09-089",
+            "OP10-082",
+            "OP09-086"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 24,
+      "player": "Shichibukai#4335",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Kuzan",
+        "code": "ST27-003"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP15-003",
+          "card_name": "Alvida",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP09-089",
+            "OP09-083",
+            "OP09-089",
+            "OP09-083",
+            "ST27-003"
+          ],
+          "board": [
+            "OP10-086",
+            "OP09-083",
+            "OP09-090"
+          ],
+          "trash": [
+            "OP09-095",
+            "OP09-096",
+            "OP09-095",
+            "OP10-082",
+            "OP09-086",
+            "OP09-090",
+            "OP09-098",
+            "OP09-098",
+            "OP09-096",
+            "OP11-083",
+            "OP11-083",
+            "OP09-089",
+            "OP10-082",
+            "OP09-086"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 24,
+      "player": "Shichibukai#4335",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP09-089",
+            "OP09-083",
+            "ST27-003",
+            "ST27-003"
+          ],
+          "board": [
+            "OP10-086",
+            "OP09-083"
+          ],
+          "trash": [
+            "OP09-095",
+            "OP09-096",
+            "OP09-095",
+            "OP10-082",
+            "OP09-086",
+            "OP09-090",
+            "OP09-098",
+            "OP09-098",
+            "OP09-096",
+            "OP11-083",
+            "OP11-083",
+            "OP09-089",
+            "OP10-082",
+            "OP09-086",
+            "OP09-090",
+            "OP09-089",
+            "OP09-083"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 25,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Van Augur",
+        "code": "OP09-083"
+      },
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "play",
+          "card": "ST27-003",
+          "card_name": "Kuzan",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP09-089",
+            "OP09-083",
+            "ST27-003",
+            "ST27-003"
+          ],
+          "board": [
+            "OP10-086",
+            "OP09-083"
+          ],
+          "trash": [
+            "OP09-095",
+            "OP09-096",
+            "OP09-095",
+            "OP10-082",
+            "OP09-086",
+            "OP09-090",
+            "OP09-098",
+            "OP09-098",
+            "OP09-096",
+            "OP11-083",
+            "OP11-083",
+            "OP09-089",
+            "OP10-082",
+            "OP09-086",
+            "OP09-090",
+            "OP09-089",
+            "OP09-083"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 25,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP09-089",
+            "OP09-083",
+            "ST27-003",
+            "OP09-083"
+          ],
+          "board": [
+            "OP10-086",
+            "OP09-083",
+            "ST27-003"
+          ],
+          "trash": [
+            "OP09-095",
+            "OP09-096",
+            "OP09-095",
+            "OP10-082",
+            "OP09-086",
+            "OP09-090",
+            "OP09-098",
+            "OP09-098",
+            "OP09-096",
+            "OP11-083",
+            "OP11-083",
+            "OP09-089",
+            "OP10-082",
+            "OP09-086",
+            "OP09-090",
+            "OP09-089",
+            "OP09-083"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 26,
+      "player": "Shichibukai#4335",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Gin",
+        "code": "OP15-007"
+      },
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP15-008",
+          "card_name": "Krieg",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP09-089",
+            "OP09-083",
+            "ST27-003",
+            "OP09-083"
+          ],
+          "board": [
+            "OP10-086",
+            "OP09-083",
+            "ST27-003"
+          ],
+          "trash": [
+            "OP09-095",
+            "OP09-096",
+            "OP09-095",
+            "OP10-082",
+            "OP09-086",
+            "OP09-090",
+            "OP09-098",
+            "OP09-098",
+            "OP09-096",
+            "OP11-083",
+            "OP11-083",
+            "OP09-089",
+            "OP10-082",
+            "OP09-086",
+            "OP09-090",
+            "OP09-089",
+            "OP09-083"
+          ],
+          "life": 3
+        }
+      }
+    }
+  ]
+}

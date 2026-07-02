@@ -1,0 +1,826 @@
+{
+  "meta": {
+    "source": "autosaved_log",
+    "original_file": "2026-06-23T00.45.00.log",
+    "p1": {
+      "name": "LaoDJ#2305",
+      "leader_name": "Portgas D. Ace",
+      "leader_code": "OP13-002",
+      "goes_first": true
+    },
+    "p2": {
+      "name": "Karlmalone#2854",
+      "leader_name": "Marshall D. Teach",
+      "leader_code": "OP16-080",
+      "goes_first": false
+    },
+    "winner": "p1",
+    "winner_name": "LaoDJ#2305",
+    "total_turns": 21,
+    "mulligan_p1": {
+      "before": [],
+      "after": [],
+      "took_mulligan": true
+    },
+    "mulligan_p2": {
+      "before": [
+        "OP16-119",
+        "OP16-107",
+        "OP16-119",
+        "ST27-005",
+        "PRB02-015"
+      ],
+      "after": [
+        "OP09-090",
+        "OP16-109",
+        "OP16-119",
+        "OP16-119",
+        "OP16-119"
+      ],
+      "took_mulligan": true
+    }
+  },
+  "turns": [
+    {
+      "turn": 2,
+      "player": "LaoDJ#2305",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Jozu",
+        "code": "OP08-047"
+      },
+      "don_drawn": 1,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP13-016",
+          "card_name": "Monkey D. Garp",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "ST22-010",
+            "EB04-008",
+            "OP13-043",
+            "OP08-047",
+            "OP07-051"
+          ],
+          "board": [
+            "OP13-016"
+          ],
+          "trash": [],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 3,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": {
+        "name": "ZEHAHAHAHA",
+        "code": "OP16-116"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP09-090",
+          "card_name": "Doc Q",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "ST22-010",
+            "EB04-008",
+            "OP13-043",
+            "OP08-047",
+            "OP07-051"
+          ],
+          "board": [
+            "OP13-016"
+          ],
+          "trash": [],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 3,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "ST22-010",
+            "EB04-008",
+            "OP13-043",
+            "OP08-047",
+            "OP07-051"
+          ],
+          "board": [],
+          "trash": [
+            "OP13-016"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 6,
+      "player": "LaoDJ#2305",
+      "player_role": "",
+      "card_drawn": {
+        "name": "ZEHAHAHAHA",
+        "code": "OP16-116"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP13-043",
+          "card_name": "Otama",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "ST22-010",
+            "EB04-008",
+            "OP13-043",
+            "OP08-047",
+            "OP07-051"
+          ],
+          "board": [],
+          "trash": [
+            "OP13-016"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 6,
+      "player": "LaoDJ#2305",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "ST22-010",
+            "EB04-008",
+            "OP08-047",
+            "OP07-051",
+            "OP08-047",
+            "OP13-054"
+          ],
+          "board": [
+            "OP13-043"
+          ],
+          "trash": [
+            "OP13-016",
+            "PRB02-008"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 8,
+      "player": "LaoDJ#2305",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Jesus Burgess",
+        "code": "OP16-107"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP16-107",
+          "card_name": "Jesus Burgess",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "ST22-010",
+            "EB04-008",
+            "OP08-047",
+            "OP07-051",
+            "OP08-047",
+            "OP13-054"
+          ],
+          "board": [
+            "OP13-043"
+          ],
+          "trash": [
+            "OP13-016",
+            "PRB02-008"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 8,
+      "player": "LaoDJ#2305",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "ST22-010",
+            "EB04-008",
+            "OP08-047",
+            "OP07-051",
+            "OP13-054"
+          ],
+          "board": [
+            "OP13-043"
+          ],
+          "trash": [
+            "OP13-016",
+            "PRB02-008",
+            "OP08-047"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 8,
+      "player": "LaoDJ#2305",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Moby Dick",
+        "code": "OP16-021"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP13-054",
+          "card_name": "Yamato",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "ST22-010",
+            "EB04-008",
+            "OP08-047",
+            "OP07-051",
+            "OP13-054"
+          ],
+          "board": [
+            "OP13-043"
+          ],
+          "trash": [
+            "OP13-016",
+            "PRB02-008",
+            "OP08-047"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 8,
+      "player": "LaoDJ#2305",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "ST22-010",
+            "EB04-008",
+            "OP08-047",
+            "OP07-051",
+            "OP13-043",
+            "OP08-047",
+            "OP16-021"
+          ],
+          "board": [
+            "OP13-043",
+            "OP13-054"
+          ],
+          "trash": [
+            "OP13-016",
+            "PRB02-008",
+            "OP08-047"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 12,
+      "player": "LaoDJ#2305",
+      "player_role": "",
+      "card_drawn": {
+        "name": "I Am Whitebeard!",
+        "code": "ST22-015"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP16-104",
+          "card_name": "Catarina Devon",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "ST22-010",
+            "EB04-008",
+            "OP08-047",
+            "OP07-051",
+            "OP13-043",
+            "OP08-047",
+            "OP16-021"
+          ],
+          "board": [
+            "OP13-043",
+            "OP13-054"
+          ],
+          "trash": [
+            "OP13-016",
+            "PRB02-008",
+            "OP08-047"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 12,
+      "player": "LaoDJ#2305",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "ST22-010",
+            "EB04-008",
+            "OP08-047",
+            "OP07-051",
+            "OP13-043",
+            "OP16-021",
+            "PRB02-008",
+            "ST22-015"
+          ],
+          "board": [
+            "OP13-043",
+            "OP13-054"
+          ],
+          "trash": [
+            "OP13-016",
+            "PRB02-008",
+            "OP08-047",
+            "OP08-047"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 14,
+      "player": "LaoDJ#2305",
+      "player_role": "",
+      "card_drawn": {
+        "name": "I Am Whitebeard!",
+        "code": "ST22-015"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP08-047",
+          "card_name": "Jozu",
+          "effects": []
+        },
+        {
+          "type": "play",
+          "card": "OP16-021",
+          "card_name": "Moby Dick",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "ST22-010",
+            "EB04-008",
+            "OP08-047",
+            "OP07-051",
+            "OP13-043",
+            "OP16-021",
+            "PRB02-008",
+            "ST22-015"
+          ],
+          "board": [
+            "OP13-043",
+            "OP13-054"
+          ],
+          "trash": [
+            "OP13-016",
+            "PRB02-008",
+            "OP08-047",
+            "OP08-047"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 14,
+      "player": "LaoDJ#2305",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "ST22-010",
+            "EB04-008",
+            "OP07-051",
+            "OP13-043",
+            "PRB02-008",
+            "ST22-015",
+            "ST22-015",
+            "OP13-043",
+            "EB04-007"
+          ],
+          "board": [
+            "OP13-054",
+            "OP08-047"
+          ],
+          "trash": [
+            "OP13-016",
+            "PRB02-008",
+            "OP08-047",
+            "OP08-047",
+            "OP16-021"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 16,
+      "player": "LaoDJ#2305",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Shiryu",
+        "code": "OP16-108"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP16-119",
+          "card_name": "Marshall D. Teach",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "ST22-010",
+            "EB04-008",
+            "OP07-051",
+            "OP13-043",
+            "PRB02-008",
+            "ST22-015",
+            "ST22-015",
+            "OP13-043",
+            "EB04-007"
+          ],
+          "board": [
+            "OP13-054",
+            "OP08-047"
+          ],
+          "trash": [
+            "OP13-016",
+            "PRB02-008",
+            "OP08-047",
+            "OP08-047",
+            "OP16-021"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 16,
+      "player": "LaoDJ#2305",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "ST22-010",
+            "EB04-008",
+            "OP13-043",
+            "PRB02-008",
+            "ST22-015",
+            "ST22-015",
+            "OP13-043",
+            "EB04-007"
+          ],
+          "board": [
+            "OP13-054",
+            "OP08-047"
+          ],
+          "trash": [
+            "OP13-016",
+            "PRB02-008",
+            "OP08-047",
+            "OP08-047",
+            "OP16-021",
+            "OP07-051"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 22,
+      "player": "LaoDJ#2305",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Otama",
+        "code": "OP13-043"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "EB04-007",
+          "card_name": "Roronoa Zoro",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "ST22-010",
+            "EB04-008",
+            "OP13-043",
+            "PRB02-008",
+            "ST22-015",
+            "ST22-015",
+            "OP13-043",
+            "EB04-007"
+          ],
+          "board": [
+            "OP13-054",
+            "OP08-047"
+          ],
+          "trash": [
+            "OP13-016",
+            "PRB02-008",
+            "OP08-047",
+            "OP08-047",
+            "OP16-021",
+            "OP07-051"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 22,
+      "player": "LaoDJ#2305",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "ST22-010",
+            "EB04-008",
+            "OP13-043",
+            "PRB02-008",
+            "ST22-015",
+            "ST22-015",
+            "OP13-043",
+            "OP13-043"
+          ],
+          "board": [
+            "OP13-054",
+            "OP08-047",
+            "EB04-007"
+          ],
+          "trash": [
+            "OP13-016",
+            "PRB02-008",
+            "OP08-047",
+            "OP08-047",
+            "OP16-021",
+            "OP07-051"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 28,
+      "player": "LaoDJ#2305",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Izou",
+        "code": "ST22-002"
+      },
+      "don_drawn": 2,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "ST22-010",
+            "EB04-008",
+            "OP13-043",
+            "PRB02-008",
+            "ST22-015",
+            "ST22-015",
+            "OP13-043",
+            "OP13-043"
+          ],
+          "board": [
+            "OP13-054",
+            "OP08-047",
+            "EB04-007"
+          ],
+          "trash": [
+            "OP13-016",
+            "PRB02-008",
+            "OP08-047",
+            "OP08-047",
+            "OP16-021",
+            "OP07-051"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 28,
+      "player": "LaoDJ#2305",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "ST22-010",
+            "EB04-008",
+            "OP13-043",
+            "PRB02-008",
+            "ST22-015",
+            "OP13-043",
+            "OP13-054",
+            "ST22-002"
+          ],
+          "board": [
+            "OP08-047",
+            "EB04-007"
+          ],
+          "trash": [
+            "OP13-016",
+            "PRB02-008",
+            "OP08-047",
+            "OP08-047",
+            "OP16-021",
+            "OP07-051",
+            "ST22-015",
+            "OP13-043",
+            "OP13-054"
+          ],
+          "life": 1
+        }
+      }
+    },
+    {
+      "turn": 32,
+      "player": "LaoDJ#2305",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Shiryu",
+        "code": "PRB02-015"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP13-054",
+          "card_name": "Yamato",
+          "effects": []
+        },
+        {
+          "type": "play",
+          "card": "PRB02-008",
+          "card_name": "Marco",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "ST22-010",
+            "EB04-008",
+            "OP13-043",
+            "PRB02-008",
+            "ST22-015",
+            "OP13-043",
+            "OP13-054",
+            "ST22-002"
+          ],
+          "board": [
+            "OP08-047",
+            "EB04-007"
+          ],
+          "trash": [
+            "OP13-016",
+            "PRB02-008",
+            "OP08-047",
+            "OP08-047",
+            "OP16-021",
+            "OP07-051",
+            "ST22-015",
+            "OP13-043",
+            "OP13-054"
+          ],
+          "life": 1
+        }
+      }
+    },
+    {
+      "turn": 32,
+      "player": "LaoDJ#2305",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "ST22-010",
+            "EB04-008",
+            "OP13-043",
+            "ST22-015",
+            "OP13-043",
+            "ST22-002",
+            "OP08-047",
+            "EB04-007",
+            "OP09-118",
+            "OP13-016"
+          ],
+          "board": [
+            "OP08-047",
+            "EB04-007",
+            "OP13-054",
+            "PRB02-008"
+          ],
+          "trash": [
+            "OP13-016",
+            "PRB02-008",
+            "OP08-047",
+            "OP08-047",
+            "OP16-021",
+            "OP07-051",
+            "ST22-015",
+            "OP13-043",
+            "OP13-054"
+          ],
+          "life": 0
+        }
+      }
+    }
+  ]
+}

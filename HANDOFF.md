@@ -1,5 +1,41 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-02 (41) - Claude
+
+**Importer de logs do simulador OPTCG (AutoSaved .log) → banco de logs**
+
+### Contexto
+Usuário tem simulador Unity local (`OPTCGSim.exe`) em `E:\Games\OnePieceSimulador\Builds_Windows\`.
+Pasta `CombatLogs/AutoSaved/` tinha 31 logs `.log` de partidas reais humano vs humano — dados não importados ainda.
+
+### `scriptis_da_ia/importar_logs_autosaved.py` (novo)
+Parser de `.log` do AutoSaved → formato `logs/parsed/*.json` + atualiza `logs/index.json`.
+
+**Formato do `.log` (texto com prefixo [jogador]):**
+- Setup: líderes, quem escolheu 1º/2º, mão antes/depois do mulligan, se fez mulligan
+- Ações: Deploy, Attach Don, attacking, hit for N damage, Concedes!
+- Fim de turno: `End Turn` seguido de snapshot completo de ambos os jogadores
+- Linhas `RZ1|...`: estado interno de posição de cartas (ignorado pelo parser)
+
+**Detecção de vencedor (dois caminhos):**
+1. `[player] Concedes!` → o outro jogador vence
+2. Rastreamento de vida em tempo real via snapshots + "X hit for N damage" onde X é líder:
+   - quando `tracked_life[victim] == 0` e recebe hit → hit fatal → outro jogador vence
+
+**Formato de saída:** mesmo padrão que os JSONs do simulador, com campos extras:
+- `meta.mulligan_p1/p2`: `{before: [...], after: [...], took_mulligan: bool}`
+- `meta.source: "autosaved_log"`, `meta.original_file`
+
+**Resultado:** 26/31 importados (5 ignorados: 4 com líderes não identificados por encoding, 1 muito curto). 
+Vencedor detectado em ~18/26 (8 foram partidas abandonadas por desconexão sem "Concedes!" e sem hit fatal detectado).
+
+### Próximos passos óbvios
+- Jogar mais partidas no simulador → `CombatLogs/AutoSaved/` acumula → rodar importer
+- `python importar_logs_autosaved.py "E:/Games/OnePieceSimulador/Builds_Windows/CombatLogs/AutoSaved"` (já pula logs existentes)
+- Bot de decision support: monitorar o `.log` ativo em real-time e mostrar recomendação da IA no terminal
+
+---
+
 ## 2026-07-02 (40) - Claude
 
 **Validação de hand scoring via simulação (#1 #2) — endpoint /hand-stats + UI win rate brackets**

@@ -1,0 +1,1978 @@
+{
+  "meta": {
+    "source": "autosaved_log",
+    "original_file": "2026-06-29T02.08.03.log",
+    "p1": {
+      "name": "Karlmalone#2854",
+      "leader_name": "Marshall D. Teach",
+      "leader_code": "OP16-080",
+      "goes_first": true
+    },
+    "p2": {
+      "name": "tonytonychoppington#3658",
+      "leader_name": "Nico Robin",
+      "leader_code": "OP09-062",
+      "goes_first": false
+    },
+    "winner": "p2",
+    "winner_name": "tonytonychoppington#3658",
+    "total_turns": 47,
+    "mulligan_p1": {
+      "before": [
+        "OP09-093",
+        "OP16-110",
+        "OP16-108",
+        "OP16-104",
+        "OP16-109"
+      ],
+      "after": [
+        "OP09-093",
+        "OP16-110",
+        "OP16-108",
+        "OP16-104",
+        "OP16-109"
+      ],
+      "took_mulligan": false
+    },
+    "mulligan_p2": {
+      "before": [],
+      "after": [],
+      "took_mulligan": true
+    }
+  },
+  "turns": [
+    {
+      "turn": 1,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Kingdom Come",
+        "code": "EB01-059"
+      },
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "EB01-059",
+            "OP16-108",
+            "OP15-114",
+            "OP12-112",
+            "EB01-059"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 1,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 1,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP16-109",
+          "card_name": "Doc Q",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "EB01-059",
+            "OP16-108",
+            "OP15-114",
+            "OP12-112",
+            "EB01-059"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 1,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "EB01-059",
+            "OP16-108",
+            "OP15-114",
+            "OP12-112",
+            "EB01-059"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 2,
+      "player": "tonytonychoppington#3658",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Zeus",
+        "code": "OP11-106"
+      },
+      "don_drawn": 2,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "EB01-059",
+            "OP16-108",
+            "OP15-114",
+            "OP12-112",
+            "EB01-059"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 2,
+      "player": "tonytonychoppington#3658",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "EB01-059",
+            "OP16-108",
+            "OP15-114",
+            "OP12-112",
+            "EB01-059",
+            "OP11-106"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 4,
+      "player": "tonytonychoppington#3658",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Zeus",
+        "code": "OP11-106"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP16-110",
+          "card_name": "Vasco Shot",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "EB01-059",
+            "OP16-108",
+            "OP15-114",
+            "OP12-112",
+            "EB01-059",
+            "OP11-106"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 4,
+      "player": "tonytonychoppington#3658",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "EB01-059",
+            "OP16-108",
+            "OP15-114",
+            "OP12-112",
+            "EB01-059",
+            "OP11-106",
+            "OP09-104",
+            "OP11-106"
+          ],
+          "board": [],
+          "trash": [
+            "OP09-104"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 5,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Marshall D. Teach",
+        "code": "OP09-093"
+      },
+      "don_drawn": 2,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "EB01-059",
+            "OP16-108",
+            "OP15-114",
+            "OP12-112",
+            "EB01-059",
+            "OP11-106",
+            "OP09-104",
+            "OP11-106"
+          ],
+          "board": [],
+          "trash": [
+            "OP09-104"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 5,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "EB01-059",
+            "OP16-108",
+            "OP15-114",
+            "OP12-112",
+            "EB01-059",
+            "OP11-106",
+            "OP09-104",
+            "OP11-106"
+          ],
+          "board": [],
+          "trash": [
+            "OP09-104",
+            "OP16-108"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 7,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Sabo",
+        "code": "OP09-104"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP16-104",
+          "card_name": "Catarina Devon",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "EB01-059",
+            "OP16-108",
+            "OP15-114",
+            "OP12-112",
+            "EB01-059",
+            "OP11-106",
+            "OP09-104",
+            "OP11-106"
+          ],
+          "board": [],
+          "trash": [
+            "OP09-104",
+            "OP16-108"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 7,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "EB01-059",
+            "OP16-108",
+            "OP15-114",
+            "OP12-112",
+            "EB01-059",
+            "OP11-106",
+            "OP09-104",
+            "OP11-106",
+            "OP09-104"
+          ],
+          "board": [],
+          "trash": [
+            "OP09-104",
+            "OP16-108",
+            "OP13-102"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 11,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": {
+        "name": "You're the one who should disappear!",
+        "code": "OP06-115"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP11-106",
+          "card_name": "Zeus",
+          "effects": []
+        },
+        {
+          "type": "play",
+          "card": "OP15-114",
+          "card_name": "Wyper",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "EB01-059",
+            "OP16-108",
+            "OP15-114",
+            "OP12-112",
+            "EB01-059",
+            "OP11-106",
+            "OP09-104",
+            "OP11-106",
+            "OP09-104"
+          ],
+          "board": [],
+          "trash": [
+            "OP09-104",
+            "OP16-108",
+            "OP13-102"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 11,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "EB01-059",
+            "OP12-112",
+            "EB01-059",
+            "OP11-106",
+            "OP09-104",
+            "OP09-104",
+            "OP15-114",
+            "OP16-119"
+          ],
+          "board": [
+            "OP11-106",
+            "OP15-114"
+          ],
+          "trash": [
+            "OP09-104",
+            "OP16-108",
+            "OP13-102",
+            "OP16-108"
+          ],
+          "life": 1
+        }
+      }
+    },
+    {
+      "turn": 12,
+      "player": "tonytonychoppington#3658",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Fullalead",
+        "code": "OP09-099"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP09-099",
+          "card_name": "Fullalead",
+          "effects": []
+        },
+        {
+          "type": "play",
+          "card": "OP16-108",
+          "card_name": "Shiryu",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "EB01-059",
+            "OP12-112",
+            "EB01-059",
+            "OP11-106",
+            "OP09-104",
+            "OP09-104",
+            "OP15-114",
+            "OP16-119"
+          ],
+          "board": [
+            "OP11-106",
+            "OP15-114"
+          ],
+          "trash": [
+            "OP09-104",
+            "OP16-108",
+            "OP13-102",
+            "OP16-108"
+          ],
+          "life": 1
+        }
+      }
+    },
+    {
+      "turn": 12,
+      "player": "tonytonychoppington#3658",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "EB01-059",
+            "OP12-112",
+            "EB01-059",
+            "OP11-106",
+            "OP09-104",
+            "OP15-114",
+            "OP16-119"
+          ],
+          "board": [
+            "OP11-106",
+            "OP15-114"
+          ],
+          "trash": [
+            "OP09-104",
+            "OP16-108",
+            "OP13-102",
+            "OP16-108",
+            "OP09-104"
+          ],
+          "life": 1
+        }
+      }
+    },
+    {
+      "turn": 14,
+      "player": "tonytonychoppington#3658",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Gum Gum Giant",
+        "code": "OP09-078"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP16-119",
+          "card_name": "Marshall D. Teach",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "EB01-059",
+            "OP12-112",
+            "EB01-059",
+            "OP11-106",
+            "OP09-104",
+            "OP15-114",
+            "OP16-119"
+          ],
+          "board": [
+            "OP11-106",
+            "OP15-114"
+          ],
+          "trash": [
+            "OP09-104",
+            "OP16-108",
+            "OP13-102",
+            "OP16-108",
+            "OP09-104"
+          ],
+          "life": 1
+        }
+      }
+    },
+    {
+      "turn": 14,
+      "player": "tonytonychoppington#3658",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "EB01-059",
+            "OP12-112",
+            "EB01-059",
+            "OP11-106",
+            "OP09-104",
+            "OP15-114",
+            "OP09-078"
+          ],
+          "board": [
+            "OP11-106",
+            "OP15-114",
+            "OP16-119"
+          ],
+          "trash": [
+            "OP09-104",
+            "OP16-108",
+            "OP13-102",
+            "OP16-108",
+            "OP09-104"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 15,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Sanjuan Wolf",
+        "code": "OP16-106"
+      },
+      "don_drawn": 2,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "EB01-059",
+            "OP12-112",
+            "EB01-059",
+            "OP11-106",
+            "OP09-104",
+            "OP15-114",
+            "OP09-078"
+          ],
+          "board": [
+            "OP11-106",
+            "OP15-114",
+            "OP16-119"
+          ],
+          "trash": [
+            "OP09-104",
+            "OP16-108",
+            "OP13-102",
+            "OP16-108",
+            "OP09-104"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 15,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "EB01-059",
+            "OP12-112",
+            "EB01-059",
+            "OP11-106",
+            "OP09-104",
+            "OP15-114",
+            "OP09-078",
+            "EB03-055",
+            "EB04-058"
+          ],
+          "board": [
+            "OP11-106",
+            "OP15-114",
+            "OP16-119"
+          ],
+          "trash": [
+            "OP09-104",
+            "OP16-108",
+            "OP13-102",
+            "OP16-108",
+            "OP09-104"
+          ],
+          "life": 0
+        }
+      }
+    },
+    {
+      "turn": 19,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Marshall D. Teach",
+        "code": "OP16-119"
+      },
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "play",
+          "card": "EB04-058",
+          "card_name": "Borsalino",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "EB01-059",
+            "OP12-112",
+            "EB01-059",
+            "OP11-106",
+            "OP09-104",
+            "OP15-114",
+            "OP09-078",
+            "EB03-055",
+            "EB04-058"
+          ],
+          "board": [
+            "OP11-106",
+            "OP15-114",
+            "OP16-119"
+          ],
+          "trash": [
+            "OP09-104",
+            "OP16-108",
+            "OP13-102",
+            "OP16-108",
+            "OP09-104"
+          ],
+          "life": 0
+        }
+      }
+    },
+    {
+      "turn": 19,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "EB01-059",
+            "OP12-112",
+            "EB01-059",
+            "OP11-106",
+            "OP09-104",
+            "OP15-114",
+            "OP09-078",
+            "EB03-055",
+            "OP16-119"
+          ],
+          "board": [
+            "OP11-106",
+            "OP15-114",
+            "OP16-119",
+            "EB04-058"
+          ],
+          "trash": [
+            "OP09-104",
+            "OP16-108",
+            "OP13-102",
+            "OP16-108",
+            "OP09-104"
+          ],
+          "life": 1
+        }
+      }
+    },
+    {
+      "turn": 21,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Fullalead",
+        "code": "OP09-099"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP09-093",
+          "card_name": "Marshall D. Teach",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "EB01-059",
+            "OP12-112",
+            "EB01-059",
+            "OP11-106",
+            "OP09-104",
+            "OP15-114",
+            "OP09-078",
+            "EB03-055",
+            "OP16-119"
+          ],
+          "board": [
+            "OP11-106",
+            "OP15-114",
+            "OP16-119",
+            "EB04-058"
+          ],
+          "trash": [
+            "OP09-104",
+            "OP16-108",
+            "OP13-102",
+            "OP16-108",
+            "OP09-104"
+          ],
+          "life": 1
+        }
+      }
+    },
+    {
+      "turn": 21,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "EB01-059",
+            "OP12-112",
+            "EB01-059",
+            "OP11-106",
+            "OP09-104",
+            "OP15-114",
+            "OP09-078",
+            "EB03-055",
+            "OP16-119"
+          ],
+          "board": [
+            "OP11-106",
+            "OP15-114",
+            "OP16-119",
+            "EB04-058"
+          ],
+          "trash": [
+            "OP09-104",
+            "OP16-108",
+            "OP13-102",
+            "OP16-108",
+            "OP09-104"
+          ],
+          "life": 1
+        }
+      }
+    },
+    {
+      "turn": 24,
+      "player": "tonytonychoppington#3658",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Nico Olvia",
+        "code": "OP09-106"
+      },
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "EB01-059",
+            "OP12-112",
+            "EB01-059",
+            "OP11-106",
+            "OP09-104",
+            "OP15-114",
+            "OP09-078",
+            "EB03-055",
+            "OP16-119"
+          ],
+          "board": [
+            "OP11-106",
+            "OP15-114",
+            "OP16-119",
+            "EB04-058"
+          ],
+          "trash": [
+            "OP09-104",
+            "OP16-108",
+            "OP13-102",
+            "OP16-108",
+            "OP09-104"
+          ],
+          "life": 1
+        }
+      }
+    },
+    {
+      "turn": 24,
+      "player": "tonytonychoppington#3658",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "EB01-059",
+            "OP12-112",
+            "OP11-106",
+            "OP09-104",
+            "OP15-114",
+            "OP09-078",
+            "EB03-055",
+            "OP16-119",
+            "OP09-106"
+          ],
+          "board": [
+            "OP11-106",
+            "OP15-114",
+            "OP16-119",
+            "EB04-058"
+          ],
+          "trash": [
+            "OP09-104",
+            "OP16-108",
+            "OP13-102",
+            "OP16-108",
+            "OP09-104",
+            "EB01-059"
+          ],
+          "life": 1
+        }
+      }
+    },
+    {
+      "turn": 27,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Jesus Burgess",
+        "code": "OP09-086"
+      },
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP09-093",
+          "card_name": "Marshall D. Teach",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "EB01-059",
+            "OP12-112",
+            "OP11-106",
+            "OP09-104",
+            "OP15-114",
+            "OP09-078",
+            "EB03-055",
+            "OP16-119",
+            "OP09-106"
+          ],
+          "board": [
+            "OP11-106",
+            "OP15-114",
+            "OP16-119",
+            "EB04-058"
+          ],
+          "trash": [
+            "OP09-104",
+            "OP16-108",
+            "OP13-102",
+            "OP16-108",
+            "OP09-104",
+            "EB01-059"
+          ],
+          "life": 1
+        }
+      }
+    },
+    {
+      "turn": 27,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "EB01-059",
+            "OP12-112",
+            "OP11-106",
+            "OP09-104",
+            "OP15-114",
+            "OP09-078",
+            "EB03-055",
+            "OP16-119",
+            "OP09-106"
+          ],
+          "board": [
+            "OP11-106",
+            "OP15-114",
+            "OP16-119",
+            "EB04-058"
+          ],
+          "trash": [
+            "OP09-104",
+            "OP16-108",
+            "OP13-102",
+            "OP16-108",
+            "OP09-104",
+            "EB01-059"
+          ],
+          "life": 1
+        }
+      }
+    },
+    {
+      "turn": 30,
+      "player": "tonytonychoppington#3658",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Divine Departure",
+        "code": "OP13-076"
+      },
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "EB01-059",
+            "OP12-112",
+            "OP11-106",
+            "OP09-104",
+            "OP15-114",
+            "OP09-078",
+            "EB03-055",
+            "OP16-119",
+            "OP09-106"
+          ],
+          "board": [
+            "OP11-106",
+            "OP15-114",
+            "OP16-119",
+            "EB04-058"
+          ],
+          "trash": [
+            "OP09-104",
+            "OP16-108",
+            "OP13-102",
+            "OP16-108",
+            "OP09-104",
+            "EB01-059"
+          ],
+          "life": 1
+        }
+      }
+    },
+    {
+      "turn": 30,
+      "player": "tonytonychoppington#3658",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP12-112",
+            "OP11-106",
+            "OP09-104",
+            "OP15-114",
+            "OP09-078",
+            "EB03-055",
+            "OP16-119",
+            "OP09-106",
+            "OP13-076"
+          ],
+          "board": [
+            "OP11-106",
+            "OP15-114",
+            "OP16-119",
+            "EB04-058"
+          ],
+          "trash": [
+            "OP09-104",
+            "OP16-108",
+            "OP13-102",
+            "OP16-108",
+            "OP09-104",
+            "EB01-059",
+            "EB01-059"
+          ],
+          "life": 1
+        }
+      }
+    },
+    {
+      "turn": 32,
+      "player": "tonytonychoppington#3658",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Jesus Burgess",
+        "code": "OP09-086"
+      },
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP09-086",
+          "card_name": "Jesus Burgess",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP12-112",
+            "OP11-106",
+            "OP09-104",
+            "OP15-114",
+            "OP09-078",
+            "EB03-055",
+            "OP16-119",
+            "OP09-106",
+            "OP13-076"
+          ],
+          "board": [
+            "OP11-106",
+            "OP15-114",
+            "OP16-119",
+            "EB04-058"
+          ],
+          "trash": [
+            "OP09-104",
+            "OP16-108",
+            "OP13-102",
+            "OP16-108",
+            "OP09-104",
+            "EB01-059",
+            "EB01-059"
+          ],
+          "life": 1
+        }
+      }
+    },
+    {
+      "turn": 32,
+      "player": "tonytonychoppington#3658",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP12-112",
+            "OP11-106",
+            "OP09-104",
+            "OP15-114",
+            "OP09-078",
+            "EB03-055",
+            "OP16-119",
+            "OP09-106",
+            "OP13-076"
+          ],
+          "board": [
+            "OP11-106",
+            "OP15-114",
+            "OP16-119"
+          ],
+          "trash": [
+            "OP09-104",
+            "OP16-108",
+            "OP13-102",
+            "OP16-108",
+            "OP09-104",
+            "EB01-059",
+            "EB01-059",
+            "EB04-058"
+          ],
+          "life": 1
+        }
+      }
+    },
+    {
+      "turn": 34,
+      "player": "tonytonychoppington#3658",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Monkey D. Luffy",
+        "code": "EB04-061"
+      },
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP16-119",
+          "card_name": "Marshall D. Teach",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP12-112",
+            "OP11-106",
+            "OP09-104",
+            "OP15-114",
+            "OP09-078",
+            "EB03-055",
+            "OP16-119",
+            "OP09-106",
+            "OP13-076"
+          ],
+          "board": [
+            "OP11-106",
+            "OP15-114",
+            "OP16-119"
+          ],
+          "trash": [
+            "OP09-104",
+            "OP16-108",
+            "OP13-102",
+            "OP16-108",
+            "OP09-104",
+            "EB01-059",
+            "EB01-059",
+            "EB04-058"
+          ],
+          "life": 1
+        }
+      }
+    },
+    {
+      "turn": 34,
+      "player": "tonytonychoppington#3658",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP12-112",
+            "OP11-106",
+            "OP09-104",
+            "OP15-114",
+            "OP09-078",
+            "EB03-055",
+            "OP09-106",
+            "OP13-076",
+            "EB04-061"
+          ],
+          "board": [
+            "OP11-106",
+            "OP15-114",
+            "OP16-119",
+            "OP16-119"
+          ],
+          "trash": [
+            "OP09-104",
+            "OP16-108",
+            "OP13-102",
+            "OP16-108",
+            "OP09-104",
+            "EB01-059",
+            "EB01-059",
+            "EB04-058"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 38,
+      "player": "tonytonychoppington#3658",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Nico Robin",
+        "code": "EB03-055"
+      },
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP12-112",
+            "OP11-106",
+            "OP09-104",
+            "OP15-114",
+            "OP09-078",
+            "EB03-055",
+            "OP09-106",
+            "OP13-076",
+            "EB04-061"
+          ],
+          "board": [
+            "OP11-106",
+            "OP15-114",
+            "OP16-119",
+            "OP16-119"
+          ],
+          "trash": [
+            "OP09-104",
+            "OP16-108",
+            "OP13-102",
+            "OP16-108",
+            "OP09-104",
+            "EB01-059",
+            "EB01-059",
+            "EB04-058"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 38,
+      "player": "tonytonychoppington#3658",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP12-112",
+            "OP11-106",
+            "OP09-104",
+            "OP15-114",
+            "OP09-078",
+            "EB03-055",
+            "OP09-106",
+            "OP16-119",
+            "EB03-055"
+          ],
+          "board": [
+            "OP11-106",
+            "OP15-114",
+            "OP16-119",
+            "OP16-119"
+          ],
+          "trash": [
+            "OP09-104",
+            "OP16-108",
+            "OP13-102",
+            "OP16-108",
+            "OP09-104",
+            "EB01-059",
+            "EB01-059",
+            "EB04-058",
+            "OP09-104",
+            "OP09-078",
+            "EB04-061",
+            "OP13-076",
+            "OP16-108"
+          ],
+          "life": 1
+        }
+      }
+    },
+    {
+      "turn": 41,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Nico Olvia",
+        "code": "OP09-106"
+      },
+      "don_drawn": 2,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP12-112",
+            "OP11-106",
+            "OP09-104",
+            "OP15-114",
+            "OP09-078",
+            "EB03-055",
+            "OP09-106",
+            "OP16-119",
+            "EB03-055"
+          ],
+          "board": [
+            "OP11-106",
+            "OP15-114",
+            "OP16-119",
+            "OP16-119"
+          ],
+          "trash": [
+            "OP09-104",
+            "OP16-108",
+            "OP13-102",
+            "OP16-108",
+            "OP09-104",
+            "EB01-059",
+            "EB01-059",
+            "EB04-058",
+            "OP09-104",
+            "OP09-078",
+            "EB04-061",
+            "OP13-076",
+            "OP16-108"
+          ],
+          "life": 1
+        }
+      }
+    },
+    {
+      "turn": 41,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP12-112",
+            "OP11-106",
+            "OP09-104",
+            "OP15-114",
+            "OP09-078",
+            "EB03-055",
+            "OP09-106",
+            "OP16-119",
+            "EB03-055",
+            "OP09-106"
+          ],
+          "board": [
+            "OP11-106",
+            "OP15-114",
+            "OP16-119",
+            "OP16-119"
+          ],
+          "trash": [
+            "OP09-104",
+            "OP16-108",
+            "OP13-102",
+            "OP16-108",
+            "OP09-104",
+            "EB01-059",
+            "EB01-059",
+            "EB04-058",
+            "OP09-104",
+            "OP09-078",
+            "EB04-061",
+            "OP13-076",
+            "OP16-108"
+          ],
+          "life": 1
+        }
+      }
+    },
+    {
+      "turn": 42,
+      "player": "tonytonychoppington#3658",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Marshall D. Teach",
+        "code": "OP16-119"
+      },
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP12-112",
+            "OP11-106",
+            "OP09-104",
+            "OP15-114",
+            "OP09-078",
+            "EB03-055",
+            "OP09-106",
+            "OP16-119",
+            "EB03-055",
+            "OP09-106"
+          ],
+          "board": [
+            "OP11-106",
+            "OP15-114",
+            "OP16-119",
+            "OP16-119"
+          ],
+          "trash": [
+            "OP09-104",
+            "OP16-108",
+            "OP13-102",
+            "OP16-108",
+            "OP09-104",
+            "EB01-059",
+            "EB01-059",
+            "EB04-058",
+            "OP09-104",
+            "OP09-078",
+            "EB04-061",
+            "OP13-076",
+            "OP16-108"
+          ],
+          "life": 1
+        }
+      }
+    },
+    {
+      "turn": 42,
+      "player": "tonytonychoppington#3658",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP12-112",
+            "OP11-106",
+            "OP09-104",
+            "OP15-114",
+            "EB03-055",
+            "OP09-106",
+            "OP16-119",
+            "OP15-116",
+            "OP16-119"
+          ],
+          "board": [
+            "OP11-106",
+            "OP15-114",
+            "OP16-119",
+            "OP16-119"
+          ],
+          "trash": [
+            "OP09-104",
+            "OP16-108",
+            "OP13-102",
+            "OP16-108",
+            "OP09-104",
+            "EB01-059",
+            "EB01-059",
+            "EB04-058",
+            "OP09-104",
+            "OP09-078",
+            "EB04-061",
+            "OP13-076",
+            "OP16-108",
+            "OP09-078",
+            "EB03-055",
+            "OP09-106"
+          ],
+          "life": 1
+        }
+      }
+    },
+    {
+      "turn": 43,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Baby 5",
+        "code": "OP12-112"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP16-119",
+          "card_name": "Marshall D. Teach",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP12-112",
+            "OP11-106",
+            "OP09-104",
+            "OP15-114",
+            "EB03-055",
+            "OP09-106",
+            "OP16-119",
+            "OP15-116",
+            "OP16-119"
+          ],
+          "board": [
+            "OP11-106",
+            "OP15-114",
+            "OP16-119",
+            "OP16-119"
+          ],
+          "trash": [
+            "OP09-104",
+            "OP16-108",
+            "OP13-102",
+            "OP16-108",
+            "OP09-104",
+            "EB01-059",
+            "EB01-059",
+            "EB04-058",
+            "OP09-104",
+            "OP09-078",
+            "EB04-061",
+            "OP13-076",
+            "OP16-108",
+            "OP09-078",
+            "EB03-055",
+            "OP09-106"
+          ],
+          "life": 1
+        }
+      }
+    },
+    {
+      "turn": 43,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP12-112",
+            "OP11-106",
+            "OP09-104",
+            "OP15-114",
+            "EB03-055",
+            "OP09-106",
+            "OP16-119",
+            "OP15-116",
+            "OP12-112"
+          ],
+          "board": [
+            "OP11-106",
+            "OP15-114",
+            "OP16-119",
+            "OP16-119",
+            "OP16-119"
+          ],
+          "trash": [
+            "OP09-104",
+            "OP16-108",
+            "OP13-102",
+            "OP16-108",
+            "OP09-104",
+            "EB01-059",
+            "EB01-059",
+            "EB04-058",
+            "OP09-104",
+            "OP09-078",
+            "EB04-061",
+            "OP13-076",
+            "OP16-108",
+            "OP09-078",
+            "EB03-055",
+            "OP09-106"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 43,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Jesus Burgess",
+        "code": "OP09-086"
+      },
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP10-082",
+          "card_name": "Kuzan",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP12-112",
+            "OP11-106",
+            "OP09-104",
+            "OP15-114",
+            "EB03-055",
+            "OP09-106",
+            "OP16-119",
+            "OP15-116",
+            "OP12-112"
+          ],
+          "board": [
+            "OP11-106",
+            "OP15-114",
+            "OP16-119",
+            "OP16-119",
+            "OP16-119"
+          ],
+          "trash": [
+            "OP09-104",
+            "OP16-108",
+            "OP13-102",
+            "OP16-108",
+            "OP09-104",
+            "EB01-059",
+            "EB01-059",
+            "EB04-058",
+            "OP09-104",
+            "OP09-078",
+            "EB04-061",
+            "OP13-076",
+            "OP16-108",
+            "OP09-078",
+            "EB03-055",
+            "OP09-106"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 43,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP12-112",
+            "OP11-106",
+            "OP09-104",
+            "OP15-114",
+            "EB03-055",
+            "OP09-106",
+            "OP16-119",
+            "OP15-116",
+            "OP12-112",
+            "EB04-058"
+          ],
+          "board": [
+            "OP11-106",
+            "OP15-114",
+            "OP16-119",
+            "OP16-119",
+            "OP16-119"
+          ],
+          "trash": [
+            "OP09-104",
+            "OP16-108",
+            "OP13-102",
+            "OP16-108",
+            "OP09-104",
+            "EB01-059",
+            "EB01-059",
+            "EB04-058",
+            "OP09-104",
+            "OP09-078",
+            "EB04-061",
+            "OP13-076",
+            "OP16-108",
+            "OP09-078",
+            "EB03-055",
+            "OP09-106"
+          ],
+          "life": 1
+        }
+      }
+    },
+    {
+      "turn": 46,
+      "player": "tonytonychoppington#3658",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Zeus",
+        "code": "OP11-106"
+      },
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "play",
+          "card": "EB03-055",
+          "card_name": "Nico Robin",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP12-112",
+            "OP11-106",
+            "OP09-104",
+            "OP15-114",
+            "EB03-055",
+            "OP09-106",
+            "OP16-119",
+            "OP15-116",
+            "OP12-112",
+            "EB04-058"
+          ],
+          "board": [
+            "OP11-106",
+            "OP15-114",
+            "OP16-119",
+            "OP16-119",
+            "OP16-119"
+          ],
+          "trash": [
+            "OP09-104",
+            "OP16-108",
+            "OP13-102",
+            "OP16-108",
+            "OP09-104",
+            "EB01-059",
+            "EB01-059",
+            "EB04-058",
+            "OP09-104",
+            "OP09-078",
+            "EB04-061",
+            "OP13-076",
+            "OP16-108",
+            "OP09-078",
+            "EB03-055",
+            "OP09-106"
+          ],
+          "life": 1
+        }
+      }
+    },
+    {
+      "turn": 46,
+      "player": "tonytonychoppington#3658",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP12-112",
+            "OP11-106",
+            "OP09-104",
+            "OP15-114",
+            "OP09-106",
+            "OP16-119",
+            "OP15-116",
+            "OP12-112",
+            "EB04-058",
+            "OP11-106"
+          ],
+          "board": [
+            "OP15-114",
+            "OP16-119",
+            "OP16-119",
+            "OP16-119",
+            "EB03-055"
+          ],
+          "trash": [
+            "OP09-104",
+            "OP16-108",
+            "OP13-102",
+            "OP16-108",
+            "OP09-104",
+            "EB01-059",
+            "EB01-059",
+            "EB04-058",
+            "OP09-104",
+            "OP09-078",
+            "EB04-061",
+            "OP13-076",
+            "OP16-108",
+            "OP09-078",
+            "EB03-055",
+            "OP09-106",
+            "OP11-106",
+            "OP15-116"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 50,
+      "player": "tonytonychoppington#3658",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Edison",
+        "code": "OP13-102"
+      },
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP16-119",
+          "card_name": "Marshall D. Teach",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP12-112",
+            "OP11-106",
+            "OP09-104",
+            "OP15-114",
+            "OP09-106",
+            "OP16-119",
+            "OP15-116",
+            "OP12-112",
+            "EB04-058",
+            "OP11-106"
+          ],
+          "board": [
+            "OP15-114",
+            "OP16-119",
+            "OP16-119",
+            "OP16-119",
+            "EB03-055"
+          ],
+          "trash": [
+            "OP09-104",
+            "OP16-108",
+            "OP13-102",
+            "OP16-108",
+            "OP09-104",
+            "EB01-059",
+            "EB01-059",
+            "EB04-058",
+            "OP09-104",
+            "OP09-078",
+            "EB04-061",
+            "OP13-076",
+            "OP16-108",
+            "OP09-078",
+            "EB03-055",
+            "OP09-106",
+            "OP11-106",
+            "OP15-116"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 50,
+      "player": "tonytonychoppington#3658",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP12-112",
+            "OP11-106",
+            "OP09-104",
+            "OP15-114",
+            "OP09-106",
+            "OP16-119",
+            "OP12-112",
+            "EB04-058",
+            "OP11-106",
+            "OP16-108",
+            "OP13-102"
+          ],
+          "board": [
+            "OP15-114",
+            "OP16-119",
+            "OP16-119",
+            "OP16-119",
+            "EB03-055"
+          ],
+          "trash": [
+            "OP09-104",
+            "OP16-108",
+            "OP13-102",
+            "OP16-108",
+            "OP09-104",
+            "EB01-059",
+            "EB01-059",
+            "EB04-058",
+            "OP09-104",
+            "OP09-078",
+            "EB04-061",
+            "OP13-076",
+            "OP16-108",
+            "OP09-078",
+            "EB03-055",
+            "OP09-106",
+            "OP11-106",
+            "OP15-116",
+            "OP15-116",
+            "OP12-112"
+          ],
+          "life": 1
+        }
+      }
+    }
+  ]
+}

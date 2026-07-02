@@ -1,0 +1,1098 @@
+{
+  "meta": {
+    "source": "autosaved_log",
+    "original_file": "2026-06-28T01.27.26.log",
+    "p1": {
+      "name": "Karlmalone#2854",
+      "leader_name": "Marshall D. Teach",
+      "leader_code": "OP16-080",
+      "goes_first": true
+    },
+    "p2": {
+      "name": "Tmart17#68886",
+      "leader_name": "Yamato",
+      "leader_code": "OP16-079",
+      "goes_first": false
+    },
+    "winner": null,
+    "winner_name": null,
+    "total_turns": 26,
+    "mulligan_p1": {
+      "before": [
+        "OP16-108",
+        "OP09-095",
+        "OP09-098",
+        "OP09-093",
+        "OP09-096"
+      ],
+      "after": [
+        "OP16-108",
+        "OP09-095",
+        "OP09-098",
+        "OP09-093",
+        "OP09-096"
+      ],
+      "took_mulligan": false
+    },
+    "mulligan_p2": {
+      "before": [],
+      "after": [],
+      "took_mulligan": true
+    }
+  },
+  "turns": [
+    {
+      "turn": 1,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Nico Robin",
+        "code": "OP16-092"
+      },
+      "don_drawn": 1,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-097",
+            "OP16-087",
+            "OP16-086",
+            "OP16-096",
+            "OP16-092"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 1,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-097",
+            "OP16-087",
+            "OP16-086",
+            "OP16-096",
+            "OP16-092"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 2,
+      "player": "Tmart17#68886",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Kouzuki Momonosuke",
+        "code": "OP16-085"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP16-092",
+          "card_name": "Nico Robin",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-097",
+            "OP16-087",
+            "OP16-086",
+            "OP16-096",
+            "OP16-092"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 2,
+      "player": "Tmart17#68886",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-097",
+            "OP16-087",
+            "OP16-086",
+            "OP16-099",
+            "OP16-097",
+            "OP16-085"
+          ],
+          "board": [
+            "OP16-092"
+          ],
+          "trash": [
+            "OP16-096"
+          ],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 3,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Marshall D. Teach",
+        "code": "OP16-119"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP09-095",
+          "card_name": "Laffitte",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-097",
+            "OP16-087",
+            "OP16-086",
+            "OP16-099",
+            "OP16-097",
+            "OP16-085"
+          ],
+          "board": [
+            "OP16-092"
+          ],
+          "trash": [
+            "OP16-096"
+          ],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 3,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-097",
+            "OP16-087",
+            "OP16-086",
+            "OP16-099",
+            "OP16-097",
+            "OP16-085",
+            "OP16-098"
+          ],
+          "board": [
+            "OP16-092"
+          ],
+          "trash": [
+            "OP16-096"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 6,
+      "player": "Tmart17#68886",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Sanji",
+        "code": "OP16-086"
+      },
+      "don_drawn": 2,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-097",
+            "OP16-087",
+            "OP16-086",
+            "OP16-099",
+            "OP16-097",
+            "OP16-085",
+            "OP16-098"
+          ],
+          "board": [
+            "OP16-092"
+          ],
+          "trash": [
+            "OP16-096"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 6,
+      "player": "Tmart17#68886",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-097",
+            "OP16-087",
+            "OP16-086",
+            "OP16-099",
+            "OP16-097",
+            "OP16-085",
+            "OP16-098",
+            "OP16-086"
+          ],
+          "board": [
+            "OP16-092"
+          ],
+          "trash": [
+            "OP16-096"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 9,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Shiryu",
+        "code": "OP16-108"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP10-082",
+          "card_name": "Kuzan",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-097",
+            "OP16-087",
+            "OP16-086",
+            "OP16-099",
+            "OP16-097",
+            "OP16-085",
+            "OP16-098",
+            "OP16-086"
+          ],
+          "board": [
+            "OP16-092"
+          ],
+          "trash": [
+            "OP16-096"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 9,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-097",
+            "OP16-087",
+            "OP16-086",
+            "OP16-099",
+            "OP16-097",
+            "OP16-085",
+            "OP16-098",
+            "OP16-086"
+          ],
+          "board": [],
+          "trash": [
+            "OP16-096",
+            "OP16-092"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 13,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Catarina Devon",
+        "code": "OP16-104"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP16-098",
+          "card_name": "Yamato",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-097",
+            "OP16-087",
+            "OP16-086",
+            "OP16-099",
+            "OP16-097",
+            "OP16-085",
+            "OP16-098",
+            "OP16-086"
+          ],
+          "board": [],
+          "trash": [
+            "OP16-096",
+            "OP16-092"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 13,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-097",
+            "OP16-087",
+            "OP16-086",
+            "OP16-099",
+            "OP16-085",
+            "OP16-086",
+            "OP16-091",
+            "OP16-081",
+            "OP16-084"
+          ],
+          "board": [
+            "OP16-097"
+          ],
+          "trash": [
+            "OP16-096",
+            "OP16-098",
+            "OP16-097",
+            "OP16-092"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 17,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": {
+        "name": "This is MY AGE!!!!",
+        "code": "OP09-096"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP16-108",
+          "card_name": "Shiryu",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-097",
+            "OP16-087",
+            "OP16-086",
+            "OP16-099",
+            "OP16-085",
+            "OP16-086",
+            "OP16-091",
+            "OP16-081",
+            "OP16-084"
+          ],
+          "board": [
+            "OP16-097"
+          ],
+          "trash": [
+            "OP16-096",
+            "OP16-098",
+            "OP16-097",
+            "OP16-092"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 17,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-097",
+            "OP16-087",
+            "OP16-086",
+            "OP16-099",
+            "OP16-086",
+            "OP16-081",
+            "OP16-084"
+          ],
+          "board": [
+            "OP16-097"
+          ],
+          "trash": [
+            "OP16-096",
+            "OP16-098",
+            "OP16-097",
+            "OP16-092",
+            "OP16-085",
+            "OP16-091"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 25,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Fullalead",
+        "code": "OP09-099"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP16-091",
+          "card_name": "Nami",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-097",
+            "OP16-087",
+            "OP16-086",
+            "OP16-099",
+            "OP16-086",
+            "OP16-081",
+            "OP16-084"
+          ],
+          "board": [
+            "OP16-097"
+          ],
+          "trash": [
+            "OP16-096",
+            "OP16-098",
+            "OP16-097",
+            "OP16-092",
+            "OP16-085",
+            "OP16-091"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 25,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-087",
+            "OP16-086",
+            "OP16-086",
+            "OP16-081",
+            "OP16-084",
+            "OP16-092",
+            "OP16-087"
+          ],
+          "board": [
+            "OP16-097",
+            "OP16-096",
+            "OP16-091"
+          ],
+          "trash": [
+            "OP16-096",
+            "OP16-097",
+            "OP16-092",
+            "OP16-085",
+            "OP16-091",
+            "OP16-099",
+            "OP14-096",
+            "OP16-092",
+            "OP16-099",
+            "OP16-088",
+            "OP16-097",
+            "OP16-098",
+            "OP16-099",
+            "OP16-091",
+            "OP16-082"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 27,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": {
+        "name": "ZEHAHAHAHA",
+        "code": "OP16-116"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP16-119",
+          "card_name": "Marshall D. Teach",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-087",
+            "OP16-086",
+            "OP16-086",
+            "OP16-081",
+            "OP16-084",
+            "OP16-092",
+            "OP16-087"
+          ],
+          "board": [
+            "OP16-097",
+            "OP16-096",
+            "OP16-091"
+          ],
+          "trash": [
+            "OP16-096",
+            "OP16-097",
+            "OP16-092",
+            "OP16-085",
+            "OP16-091",
+            "OP16-099",
+            "OP14-096",
+            "OP16-092",
+            "OP16-099",
+            "OP16-088",
+            "OP16-097",
+            "OP16-098",
+            "OP16-099",
+            "OP16-091",
+            "OP16-082"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 27,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-087",
+            "OP16-086",
+            "OP16-086",
+            "OP16-081",
+            "OP16-084",
+            "OP16-087",
+            "OP16-082"
+          ],
+          "board": [
+            "OP16-097",
+            "OP16-096",
+            "OP16-091"
+          ],
+          "trash": [
+            "OP16-096",
+            "OP16-097",
+            "OP16-092",
+            "OP16-085",
+            "OP16-091",
+            "OP16-099",
+            "OP14-096",
+            "OP16-092",
+            "OP16-099",
+            "OP16-088",
+            "OP16-097",
+            "OP16-098",
+            "OP16-099",
+            "OP16-091",
+            "OP16-082",
+            "OP16-092"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 37,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Doc Q",
+        "code": "OP16-109"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP16-084",
+          "card_name": "Kouzuki Momonosuke",
+          "effects": []
+        },
+        {
+          "type": "play",
+          "card": "OP16-087",
+          "card_name": "Shinobu",
+          "effects": []
+        },
+        {
+          "type": "play",
+          "card": "OP16-081",
+          "card_name": "Otama",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-087",
+            "OP16-086",
+            "OP16-086",
+            "OP16-081",
+            "OP16-084",
+            "OP16-087",
+            "OP16-082"
+          ],
+          "board": [
+            "OP16-097",
+            "OP16-096",
+            "OP16-091"
+          ],
+          "trash": [
+            "OP16-096",
+            "OP16-097",
+            "OP16-092",
+            "OP16-085",
+            "OP16-091",
+            "OP16-099",
+            "OP14-096",
+            "OP16-092",
+            "OP16-099",
+            "OP16-088",
+            "OP16-097",
+            "OP16-098",
+            "OP16-099",
+            "OP16-091",
+            "OP16-082",
+            "OP16-092"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 37,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-086",
+            "OP16-086",
+            "OP16-087",
+            "OP16-082",
+            "OP13-093",
+            "OP13-093",
+            "OP16-084"
+          ],
+          "board": [
+            "OP16-097",
+            "OP16-096",
+            "OP16-085",
+            "OP16-081",
+            "OP16-097"
+          ],
+          "trash": [
+            "OP16-096",
+            "OP16-092",
+            "OP16-091",
+            "OP16-099",
+            "OP14-096",
+            "OP16-092",
+            "OP16-099",
+            "OP16-088",
+            "OP16-097",
+            "OP16-099",
+            "OP16-091",
+            "OP16-082",
+            "OP16-092",
+            "OP16-087",
+            "OP16-097",
+            "OP16-091",
+            "OP16-098"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 42,
+      "player": "Tmart17#68886",
+      "player_role": "",
+      "card_drawn": {
+        "name": "You're the one who should disappear!",
+        "code": "OP06-115"
+      },
+      "don_drawn": 2,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-086",
+            "OP16-086",
+            "OP16-087",
+            "OP16-082",
+            "OP13-093",
+            "OP13-093",
+            "OP16-084"
+          ],
+          "board": [
+            "OP16-097",
+            "OP16-096",
+            "OP16-085",
+            "OP16-081",
+            "OP16-097"
+          ],
+          "trash": [
+            "OP16-096",
+            "OP16-092",
+            "OP16-091",
+            "OP16-099",
+            "OP14-096",
+            "OP16-092",
+            "OP16-099",
+            "OP16-088",
+            "OP16-097",
+            "OP16-099",
+            "OP16-091",
+            "OP16-082",
+            "OP16-092",
+            "OP16-087",
+            "OP16-097",
+            "OP16-091",
+            "OP16-098"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 42,
+      "player": "Tmart17#68886",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-087",
+            "OP16-082",
+            "OP13-093",
+            "OP16-084",
+            "OP16-098"
+          ],
+          "board": [
+            "OP16-097",
+            "OP16-096",
+            "OP16-085",
+            "OP16-081",
+            "OP16-097"
+          ],
+          "trash": [
+            "OP16-096",
+            "OP16-092",
+            "OP16-091",
+            "OP16-099",
+            "OP14-096",
+            "OP16-092",
+            "OP16-099",
+            "OP16-088",
+            "OP16-097",
+            "OP16-099",
+            "OP16-091",
+            "OP16-082",
+            "OP16-092",
+            "OP16-087",
+            "OP16-097",
+            "OP16-091",
+            "OP16-098",
+            "OP13-093",
+            "OP16-086",
+            "OP16-086"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 44,
+      "player": "Tmart17#68886",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Yamato",
+        "code": "OP16-098"
+      },
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-087",
+            "OP16-082",
+            "OP13-093",
+            "OP16-084",
+            "OP16-098"
+          ],
+          "board": [
+            "OP16-097",
+            "OP16-096",
+            "OP16-085",
+            "OP16-081",
+            "OP16-097"
+          ],
+          "trash": [
+            "OP16-096",
+            "OP16-092",
+            "OP16-091",
+            "OP16-099",
+            "OP14-096",
+            "OP16-092",
+            "OP16-099",
+            "OP16-088",
+            "OP16-097",
+            "OP16-099",
+            "OP16-091",
+            "OP16-082",
+            "OP16-092",
+            "OP16-087",
+            "OP16-097",
+            "OP16-091",
+            "OP16-098",
+            "OP13-093",
+            "OP16-086",
+            "OP16-086"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 44,
+      "player": "Tmart17#68886",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-087",
+            "OP16-082",
+            "OP13-093",
+            "OP16-084",
+            "OP16-098",
+            "OP16-098"
+          ],
+          "board": [
+            "OP16-097",
+            "OP16-096",
+            "OP16-085",
+            "OP16-081",
+            "OP16-097"
+          ],
+          "trash": [
+            "OP16-096",
+            "OP16-092",
+            "OP16-091",
+            "OP16-099",
+            "OP14-096",
+            "OP16-092",
+            "OP16-099",
+            "OP16-088",
+            "OP16-097",
+            "OP16-099",
+            "OP16-091",
+            "OP16-082",
+            "OP16-092",
+            "OP16-087",
+            "OP16-097",
+            "OP16-091",
+            "OP16-098",
+            "OP13-093",
+            "OP16-086",
+            "OP16-086"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 48,
+      "player": "Tmart17#68886",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Marshall D. Teach",
+        "code": "OP16-119"
+      },
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-087",
+            "OP16-082",
+            "OP13-093",
+            "OP16-084",
+            "OP16-098",
+            "OP16-098"
+          ],
+          "board": [
+            "OP16-097",
+            "OP16-096",
+            "OP16-085",
+            "OP16-081",
+            "OP16-097"
+          ],
+          "trash": [
+            "OP16-096",
+            "OP16-092",
+            "OP16-091",
+            "OP16-099",
+            "OP14-096",
+            "OP16-092",
+            "OP16-099",
+            "OP16-088",
+            "OP16-097",
+            "OP16-099",
+            "OP16-091",
+            "OP16-082",
+            "OP16-092",
+            "OP16-087",
+            "OP16-097",
+            "OP16-091",
+            "OP16-098",
+            "OP13-093",
+            "OP16-086",
+            "OP16-086"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 48,
+      "player": "Tmart17#68886",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-087",
+            "OP16-082",
+            "OP16-084",
+            "OP16-098",
+            "OP16-098"
+          ],
+          "board": [
+            "OP16-097",
+            "OP16-096",
+            "OP16-085",
+            "OP16-081",
+            "OP16-097"
+          ],
+          "trash": [
+            "OP16-096",
+            "OP16-092",
+            "OP16-091",
+            "OP16-099",
+            "OP14-096",
+            "OP16-092",
+            "OP16-099",
+            "OP16-088",
+            "OP16-097",
+            "OP16-099",
+            "OP16-091",
+            "OP16-082",
+            "OP16-092",
+            "OP16-087",
+            "OP16-097",
+            "OP16-091",
+            "OP16-098",
+            "OP13-093",
+            "OP16-086",
+            "OP16-086",
+            "OP13-093",
+            "OP16-087",
+            "OP14-096"
+          ],
+          "life": 0
+        }
+      }
+    }
+  ]
+}

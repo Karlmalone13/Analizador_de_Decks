@@ -1,0 +1,569 @@
+{
+  "meta": {
+    "source": "autosaved_log",
+    "original_file": "2026-06-28T01.10.14.log",
+    "p1": {
+      "name": "Karlmalone#2854",
+      "leader_name": "Marshall D. Teach",
+      "leader_code": "OP16-080",
+      "goes_first": true
+    },
+    "p2": {
+      "name": "Zakerga#4479",
+      "leader_name": "Portgas D. Ace",
+      "leader_code": "OP16-001",
+      "goes_first": false
+    },
+    "winner": null,
+    "winner_name": null,
+    "total_turns": 16,
+    "mulligan_p1": {
+      "before": [
+        "OP16-109",
+        "OP16-109",
+        "OP16-109",
+        "OP16-119",
+        "OP09-095"
+      ],
+      "after": [
+        "OP09-093",
+        "OP09-086",
+        "OP09-095",
+        "OP09-095",
+        "OP16-110"
+      ],
+      "took_mulligan": true
+    },
+    "mulligan_p2": {
+      "before": [],
+      "after": [],
+      "took_mulligan": false
+    }
+  },
+  "turns": [
+    {
+      "turn": 1,
+      "player": "You",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Vasco Shot",
+        "code": "OP16-110"
+      },
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-003",
+            "EB04-007",
+            "OP13-016",
+            "OP16-021",
+            "OP16-021"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 2,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 1,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP09-095",
+          "card_name": "Laffitte",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-003",
+            "EB04-007",
+            "OP13-016",
+            "OP16-021",
+            "OP16-021"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 2,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-003",
+            "EB04-007",
+            "OP13-016",
+            "OP16-021",
+            "OP16-021"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 3,
+      "player": "Zakerga#4479",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Thatch",
+        "code": "OP16-005"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP16-021",
+          "card_name": "Moby Dick",
+          "effects": []
+        },
+        {
+          "type": "play",
+          "card": "OP13-016",
+          "card_name": "Monkey D. Garp",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-003",
+            "EB04-007",
+            "OP13-016",
+            "OP16-021",
+            "OP16-021"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 3,
+      "player": "Zakerga#4479",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-003",
+            "EB04-007",
+            "OP16-021",
+            "OP16-005",
+            "OP16-014",
+            "EB01-002"
+          ],
+          "board": [
+            "OP13-016"
+          ],
+          "trash": [],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 4,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Marshall D. Teach",
+        "code": "OP09-093"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP09-099",
+          "card_name": "Fullalead",
+          "effects": []
+        },
+        {
+          "type": "play",
+          "card": "OP09-095",
+          "card_name": "Laffitte",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-003",
+            "EB04-007",
+            "OP16-021",
+            "OP16-005",
+            "OP16-014",
+            "EB01-002"
+          ],
+          "board": [
+            "OP13-016"
+          ],
+          "trash": [],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 4,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-003",
+            "EB04-007",
+            "OP16-021",
+            "OP16-005",
+            "OP16-014",
+            "EB01-002",
+            "OP16-015"
+          ],
+          "board": [
+            "OP13-016"
+          ],
+          "trash": [],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 7,
+      "player": "Zakerga#4479",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Curiel",
+        "code": "OP16-004"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP16-015",
+          "card_name": "Monkey D. Luffy",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-003",
+            "EB04-007",
+            "OP16-021",
+            "OP16-005",
+            "OP16-014",
+            "EB01-002",
+            "OP16-015"
+          ],
+          "board": [
+            "OP13-016"
+          ],
+          "trash": [],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 7,
+      "player": "Zakerga#4479",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-003",
+            "EB04-007",
+            "OP16-021",
+            "OP16-005",
+            "OP16-014",
+            "EB01-002",
+            "OP16-004"
+          ],
+          "board": [
+            "OP13-016",
+            "OP16-015"
+          ],
+          "trash": [],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 9,
+      "player": "Zakerga#4479",
+      "player_role": "",
+      "card_drawn": {
+        "name": "ZEHAHAHAHA",
+        "code": "OP16-116"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP09-086",
+          "card_name": "Jesus Burgess",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-003",
+            "EB04-007",
+            "OP16-021",
+            "OP16-005",
+            "OP16-014",
+            "EB01-002",
+            "OP16-004"
+          ],
+          "board": [
+            "OP13-016",
+            "OP16-015"
+          ],
+          "trash": [],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 9,
+      "player": "Zakerga#4479",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-003",
+            "EB04-007",
+            "OP16-021",
+            "OP16-005",
+            "OP16-014",
+            "EB01-002",
+            "OP16-004"
+          ],
+          "board": [
+            "OP16-015"
+          ],
+          "trash": [
+            "OP13-016"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 12,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Marco",
+        "code": "OP16-014"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "EB01-002",
+          "card_name": "Izou",
+          "effects": []
+        },
+        {
+          "type": "play",
+          "card": "OP16-021",
+          "card_name": "Moby Dick",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-003",
+            "EB04-007",
+            "OP16-021",
+            "OP16-005",
+            "OP16-014",
+            "EB01-002",
+            "OP16-004"
+          ],
+          "board": [
+            "OP16-015"
+          ],
+          "trash": [
+            "OP13-016"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 12,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-003",
+            "EB04-007",
+            "OP16-005",
+            "OP16-014",
+            "OP16-004",
+            "OP16-014",
+            "OP16-011"
+          ],
+          "board": [
+            "OP16-015",
+            "EB01-002"
+          ],
+          "trash": [
+            "OP13-016",
+            "OP16-021"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 14,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Kuzan",
+        "code": "OP10-082"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP10-082",
+          "card_name": "Kuzan",
+          "effects": []
+        },
+        {
+          "type": "play",
+          "card": "OP16-110",
+          "card_name": "Vasco Shot",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-003",
+            "EB04-007",
+            "OP16-005",
+            "OP16-014",
+            "OP16-004",
+            "OP16-014",
+            "OP16-011"
+          ],
+          "board": [
+            "OP16-015",
+            "EB01-002"
+          ],
+          "trash": [
+            "OP13-016",
+            "OP16-021"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 14,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-003",
+            "EB04-007",
+            "OP16-005",
+            "OP16-004",
+            "OP16-014",
+            "OP16-011"
+          ],
+          "board": [
+            "OP16-015",
+            "EB01-002"
+          ],
+          "trash": [
+            "OP13-016",
+            "OP16-021",
+            "OP16-014"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 20,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Vasco Shot",
+        "code": "OP16-110"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP16-003",
+          "card_name": "Edward Newgate",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-003",
+            "EB04-007",
+            "OP16-005",
+            "OP16-004",
+            "OP16-014",
+            "OP16-011"
+          ],
+          "board": [
+            "OP16-015",
+            "EB01-002"
+          ],
+          "trash": [
+            "OP13-016",
+            "OP16-021",
+            "OP16-014"
+          ],
+          "life": 4
+        }
+      }
+    }
+  ]
+}

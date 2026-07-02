@@ -1,0 +1,956 @@
+{
+  "meta": {
+    "source": "autosaved_log",
+    "original_file": "2026-06-16T01.57.48.log",
+    "p1": {
+      "name": "Karlmalone#2854",
+      "leader_name": "Marshall D. Teach",
+      "leader_code": "OP16-080",
+      "goes_first": true
+    },
+    "p2": {
+      "name": "ORANGE#6948",
+      "leader_name": "Yamato",
+      "leader_code": "OP16-079",
+      "goes_first": false
+    },
+    "winner": "p2",
+    "winner_name": "ORANGE#6948",
+    "total_turns": 23,
+    "mulligan_p1": {
+      "before": [
+        "OP16-110",
+        "EB04-058",
+        "OP09-095",
+        "OP09-099",
+        "OP16-106"
+      ],
+      "after": [
+        "OP16-110",
+        "EB04-058",
+        "OP09-095",
+        "OP09-099",
+        "OP16-106"
+      ],
+      "took_mulligan": false
+    },
+    "mulligan_p2": {
+      "before": [],
+      "after": [],
+      "took_mulligan": false
+    }
+  },
+  "turns": [
+    {
+      "turn": 1,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Sanjuan Wolf",
+        "code": "OP16-106"
+      },
+      "don_drawn": 1,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP09-099",
+          "card_name": "Fullalead",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-084",
+            "OP16-097",
+            "OP16-091",
+            "OP16-099",
+            "OP16-096"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 1,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-084",
+            "OP16-097",
+            "OP16-091",
+            "OP16-099",
+            "OP16-096"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 2,
+      "player": "ORANGE#6948",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Yamato",
+        "code": "OP16-097"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP16-091",
+          "card_name": "Nami",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-084",
+            "OP16-097",
+            "OP16-091",
+            "OP16-099",
+            "OP16-096"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 2,
+      "player": "ORANGE#6948",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-084",
+            "OP16-097",
+            "OP16-099",
+            "OP16-096",
+            "OP16-097",
+            "OP16-098"
+          ],
+          "board": [
+            "OP16-091"
+          ],
+          "trash": [
+            "OP16-088",
+            "OP14-096",
+            "OP16-086"
+          ],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 4,
+      "player": "ORANGE#6948",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Vasco Shot",
+        "code": "OP09-091"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP09-095",
+          "card_name": "Laffitte",
+          "effects": []
+        },
+        {
+          "type": "play",
+          "card": "OP09-091",
+          "card_name": "Vasco Shot",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-084",
+            "OP16-097",
+            "OP16-099",
+            "OP16-096",
+            "OP16-097",
+            "OP16-098"
+          ],
+          "board": [
+            "OP16-091"
+          ],
+          "trash": [
+            "OP16-088",
+            "OP14-096",
+            "OP16-086"
+          ],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 4,
+      "player": "ORANGE#6948",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-084",
+            "OP16-097",
+            "OP16-099",
+            "OP16-097",
+            "OP16-098"
+          ],
+          "board": [
+            "OP16-091"
+          ],
+          "trash": [
+            "OP16-088",
+            "OP14-096",
+            "OP16-086",
+            "OP16-096"
+          ],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 5,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Shinobu",
+        "code": "OP16-087"
+      },
+      "don_drawn": 2,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-084",
+            "OP16-097",
+            "OP16-099",
+            "OP16-097",
+            "OP16-098"
+          ],
+          "board": [
+            "OP16-091"
+          ],
+          "trash": [
+            "OP16-088",
+            "OP14-096",
+            "OP16-086",
+            "OP16-096"
+          ],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 5,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-084",
+            "OP16-097",
+            "OP16-099",
+            "OP16-097",
+            "OP16-098",
+            "OP16-087"
+          ],
+          "board": [
+            "OP16-091"
+          ],
+          "trash": [
+            "OP16-088",
+            "OP14-096",
+            "OP16-086",
+            "OP16-096"
+          ],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 7,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Shiryu",
+        "code": "OP16-108"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "EB04-058",
+          "card_name": "Borsalino",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-084",
+            "OP16-097",
+            "OP16-099",
+            "OP16-097",
+            "OP16-098",
+            "OP16-087"
+          ],
+          "board": [
+            "OP16-091"
+          ],
+          "trash": [
+            "OP16-088",
+            "OP14-096",
+            "OP16-086",
+            "OP16-096"
+          ],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 7,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-084",
+            "OP16-097",
+            "OP16-099",
+            "OP16-097",
+            "OP16-098",
+            "OP16-087",
+            "OP16-099"
+          ],
+          "board": [],
+          "trash": [
+            "OP16-088",
+            "OP14-096",
+            "OP16-086",
+            "OP16-096",
+            "OP16-091"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 11,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Monkey D. Luffy",
+        "code": "OP16-095"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP16-098",
+          "card_name": "Yamato",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-084",
+            "OP16-097",
+            "OP16-099",
+            "OP16-097",
+            "OP16-098",
+            "OP16-087",
+            "OP16-099"
+          ],
+          "board": [],
+          "trash": [
+            "OP16-088",
+            "OP14-096",
+            "OP16-086",
+            "OP16-096",
+            "OP16-091"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 11,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-084",
+            "OP16-097",
+            "OP16-099",
+            "OP16-087",
+            "OP16-099",
+            "OP16-087",
+            "OP16-095"
+          ],
+          "board": [
+            "OP16-096"
+          ],
+          "trash": [
+            "OP16-088",
+            "OP14-096",
+            "OP16-086",
+            "OP16-091",
+            "OP16-097",
+            "OP16-098"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 14,
+      "player": "ORANGE#6948",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Vasco Shot",
+        "code": "OP16-110"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP16-108",
+          "card_name": "Shiryu",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-084",
+            "OP16-097",
+            "OP16-099",
+            "OP16-087",
+            "OP16-099",
+            "OP16-087",
+            "OP16-095"
+          ],
+          "board": [
+            "OP16-096"
+          ],
+          "trash": [
+            "OP16-088",
+            "OP14-096",
+            "OP16-086",
+            "OP16-091",
+            "OP16-097",
+            "OP16-098"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 14,
+      "player": "ORANGE#6948",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-084",
+            "OP16-097",
+            "OP16-099",
+            "OP16-087",
+            "OP16-099"
+          ],
+          "board": [
+            "OP16-096"
+          ],
+          "trash": [
+            "OP16-088",
+            "OP14-096",
+            "OP16-086",
+            "OP16-091",
+            "OP16-097",
+            "OP16-098",
+            "OP16-095",
+            "OP16-087"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 20,
+      "player": "ORANGE#6948",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Kouzuki Momonosuke",
+        "code": "OP16-084"
+      },
+      "don_drawn": 2,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-084",
+            "OP16-097",
+            "OP16-099",
+            "OP16-087",
+            "OP16-099"
+          ],
+          "board": [
+            "OP16-096"
+          ],
+          "trash": [
+            "OP16-088",
+            "OP14-096",
+            "OP16-086",
+            "OP16-091",
+            "OP16-097",
+            "OP16-098",
+            "OP16-095",
+            "OP16-087"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 20,
+      "player": "ORANGE#6948",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-084",
+            "OP16-097",
+            "OP16-099",
+            "OP16-087",
+            "OP16-084",
+            "OP16-098"
+          ],
+          "board": [
+            "OP16-096",
+            "OP16-096"
+          ],
+          "trash": [
+            "OP16-088",
+            "OP14-096",
+            "OP16-086",
+            "OP16-091",
+            "OP16-097",
+            "OP16-095",
+            "OP16-087",
+            "OP16-099",
+            "OP16-098",
+            "OP16-099",
+            "OP14-096",
+            "OP16-082",
+            "OP16-092",
+            "OP16-098"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 24,
+      "player": "ORANGE#6948",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Shinobu",
+        "code": "OP16-087"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP16-110",
+          "card_name": "Vasco Shot",
+          "effects": []
+        },
+        {
+          "type": "play",
+          "card": "OP09-091",
+          "card_name": "Vasco Shot",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-084",
+            "OP16-097",
+            "OP16-099",
+            "OP16-087",
+            "OP16-084",
+            "OP16-098"
+          ],
+          "board": [
+            "OP16-096",
+            "OP16-096"
+          ],
+          "trash": [
+            "OP16-088",
+            "OP14-096",
+            "OP16-086",
+            "OP16-091",
+            "OP16-097",
+            "OP16-095",
+            "OP16-087",
+            "OP16-099",
+            "OP16-098",
+            "OP16-099",
+            "OP14-096",
+            "OP16-082",
+            "OP16-092",
+            "OP16-098"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 24,
+      "player": "ORANGE#6948",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-084",
+            "OP16-099",
+            "OP16-087",
+            "OP16-098",
+            "OP16-087"
+          ],
+          "board": [
+            "OP16-096",
+            "OP16-098"
+          ],
+          "trash": [
+            "OP16-088",
+            "OP14-096",
+            "OP16-086",
+            "OP16-091",
+            "OP16-097",
+            "OP16-095",
+            "OP16-087",
+            "OP16-099",
+            "OP16-099",
+            "OP14-096",
+            "OP16-082",
+            "OP16-092",
+            "OP16-098",
+            "OP16-096",
+            "OP16-097",
+            "OP16-084"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 32,
+      "player": "ORANGE#6948",
+      "player_role": "",
+      "card_drawn": {
+        "name": "You're the one who should disappear!",
+        "code": "OP06-115"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP16-098",
+          "card_name": "Yamato",
+          "effects": []
+        },
+        {
+          "type": "play",
+          "card": "OP16-088",
+          "card_name": "Shimotsuki Ushimaru",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-084",
+            "OP16-099",
+            "OP16-087",
+            "OP16-098",
+            "OP16-087"
+          ],
+          "board": [
+            "OP16-096",
+            "OP16-098"
+          ],
+          "trash": [
+            "OP16-088",
+            "OP14-096",
+            "OP16-086",
+            "OP16-091",
+            "OP16-097",
+            "OP16-095",
+            "OP16-087",
+            "OP16-099",
+            "OP16-099",
+            "OP14-096",
+            "OP16-082",
+            "OP16-092",
+            "OP16-098",
+            "OP16-096",
+            "OP16-097",
+            "OP16-084"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 32,
+      "player": "ORANGE#6948",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-084",
+            "OP16-099",
+            "OP16-087",
+            "OP16-087",
+            "OP16-084"
+          ],
+          "board": [
+            "OP16-096",
+            "OP16-097",
+            "OP16-091",
+            "OP16-096",
+            "OP16-088"
+          ],
+          "trash": [
+            "OP16-088",
+            "OP14-096",
+            "OP16-086",
+            "OP16-097",
+            "OP16-095",
+            "OP16-087",
+            "OP16-099",
+            "OP16-099",
+            "OP14-096",
+            "OP16-082",
+            "OP16-092",
+            "OP16-098",
+            "OP16-084",
+            "OP16-096",
+            "OP16-098",
+            "OP16-092",
+            "OP16-099",
+            "OP16-096",
+            "OP16-098"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 33,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Marshall D. Teach",
+        "code": "OP16-119"
+      },
+      "don_drawn": 2,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-084",
+            "OP16-099",
+            "OP16-087",
+            "OP16-087",
+            "OP16-084"
+          ],
+          "board": [
+            "OP16-096",
+            "OP16-097",
+            "OP16-091",
+            "OP16-096",
+            "OP16-088"
+          ],
+          "trash": [
+            "OP16-088",
+            "OP14-096",
+            "OP16-086",
+            "OP16-097",
+            "OP16-095",
+            "OP16-087",
+            "OP16-099",
+            "OP16-099",
+            "OP14-096",
+            "OP16-082",
+            "OP16-092",
+            "OP16-098",
+            "OP16-084",
+            "OP16-096",
+            "OP16-098",
+            "OP16-092",
+            "OP16-099",
+            "OP16-096",
+            "OP16-098"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 33,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-084",
+            "OP16-099",
+            "OP16-087",
+            "OP16-087",
+            "OP16-084",
+            "OP16-084"
+          ],
+          "board": [
+            "OP16-096",
+            "OP16-097",
+            "OP16-091",
+            "OP16-096",
+            "OP16-088"
+          ],
+          "trash": [
+            "OP16-088",
+            "OP14-096",
+            "OP16-086",
+            "OP16-097",
+            "OP16-095",
+            "OP16-087",
+            "OP16-099",
+            "OP16-099",
+            "OP14-096",
+            "OP16-082",
+            "OP16-092",
+            "OP16-098",
+            "OP16-084",
+            "OP16-096",
+            "OP16-098",
+            "OP16-092",
+            "OP16-099",
+            "OP16-096",
+            "OP16-098"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 34,
+      "player": "ORANGE#6948",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Yamato",
+        "code": "OP16-097"
+      },
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP16-098",
+          "card_name": "Yamato",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-084",
+            "OP16-099",
+            "OP16-087",
+            "OP16-087",
+            "OP16-084",
+            "OP16-084"
+          ],
+          "board": [
+            "OP16-096",
+            "OP16-097",
+            "OP16-091",
+            "OP16-096",
+            "OP16-088"
+          ],
+          "trash": [
+            "OP16-088",
+            "OP14-096",
+            "OP16-086",
+            "OP16-097",
+            "OP16-095",
+            "OP16-087",
+            "OP16-099",
+            "OP16-099",
+            "OP14-096",
+            "OP16-082",
+            "OP16-092",
+            "OP16-098",
+            "OP16-084",
+            "OP16-096",
+            "OP16-098",
+            "OP16-092",
+            "OP16-099",
+            "OP16-096",
+            "OP16-098"
+          ],
+          "life": 2
+        }
+      }
+    }
+  ]
+}

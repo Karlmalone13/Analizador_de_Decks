@@ -1,0 +1,1101 @@
+{
+  "meta": {
+    "source": "autosaved_log",
+    "original_file": "2026-06-29T02.43.18.log",
+    "p1": {
+      "name": "Karlmalone#2854",
+      "leader_name": "Marshall D. Teach",
+      "leader_code": "OP16-080",
+      "goes_first": true
+    },
+    "p2": {
+      "name": "Thorfinn#3951",
+      "leader_name": "Dracule Mihawk",
+      "leader_code": "OP14-020",
+      "goes_first": false
+    },
+    "winner": null,
+    "winner_name": null,
+    "total_turns": 30,
+    "mulligan_p1": {
+      "before": [
+        "OP16-108",
+        "OP16-110",
+        "OP09-095",
+        "OP12-119",
+        "OP16-110"
+      ],
+      "after": [
+        "OP16-108",
+        "OP16-110",
+        "OP09-095",
+        "OP12-119",
+        "OP16-110"
+      ],
+      "took_mulligan": false
+    },
+    "mulligan_p2": {
+      "before": [],
+      "after": [],
+      "took_mulligan": false
+    }
+  },
+  "turns": [
+    {
+      "turn": 1,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Vasco Shot",
+        "code": "OP16-110"
+      },
+      "don_drawn": 1,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP09-095",
+          "card_name": "Laffitte",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP13-040",
+            "OP08-023",
+            "OP12-034",
+            "OP07-026",
+            "ST24-002"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 1,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP13-040",
+            "OP08-023",
+            "OP12-034",
+            "OP07-026",
+            "ST24-002"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 2,
+      "player": "Thorfinn#3951",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Jewelry Bonney",
+        "code": "OP07-026"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP12-034",
+          "card_name": "Perona",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP13-040",
+            "OP08-023",
+            "OP12-034",
+            "OP07-026",
+            "ST24-002"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 2,
+      "player": "Thorfinn#3951",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP13-040",
+            "OP08-023",
+            "OP07-026",
+            "ST24-002",
+            "OP07-026",
+            "OP13-031"
+          ],
+          "board": [
+            "OP12-034"
+          ],
+          "trash": [],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 3,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Catarina Devon",
+        "code": "OP16-104"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP16-110",
+          "card_name": "Vasco Shot",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP13-040",
+            "OP08-023",
+            "OP07-026",
+            "ST24-002",
+            "OP07-026",
+            "OP13-031"
+          ],
+          "board": [
+            "OP12-034"
+          ],
+          "trash": [],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 3,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP13-040",
+            "OP08-023",
+            "OP07-026",
+            "ST24-002",
+            "OP07-026",
+            "OP13-031",
+            "ST24-004"
+          ],
+          "board": [
+            "OP12-034"
+          ],
+          "trash": [],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 7,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Vasco Shot",
+        "code": "OP16-110"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "ST24-002",
+          "card_name": "Kid & Killer",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP13-040",
+            "OP08-023",
+            "OP07-026",
+            "ST24-002",
+            "OP07-026",
+            "OP13-031",
+            "ST24-004"
+          ],
+          "board": [
+            "OP12-034"
+          ],
+          "trash": [],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 7,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP13-040",
+            "OP08-023",
+            "OP07-026",
+            "OP07-026",
+            "OP13-031",
+            "ST24-004",
+            "ST24-004",
+            "OP12-118"
+          ],
+          "board": [
+            "OP12-034",
+            "ST24-002"
+          ],
+          "trash": [],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 8,
+      "player": "Thorfinn#3951",
+      "player_role": "",
+      "card_drawn": {
+        "name": "This is MY AGE!!!!",
+        "code": "OP09-096"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP09-095",
+          "card_name": "Laffitte",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP13-040",
+            "OP08-023",
+            "OP07-026",
+            "OP07-026",
+            "OP13-031",
+            "ST24-004",
+            "ST24-004",
+            "OP12-118"
+          ],
+          "board": [
+            "OP12-034",
+            "ST24-002"
+          ],
+          "trash": [],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 8,
+      "player": "Thorfinn#3951",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP13-040",
+            "OP08-023",
+            "OP07-026",
+            "OP07-026",
+            "OP13-031",
+            "ST24-004",
+            "ST24-004",
+            "OP12-118"
+          ],
+          "board": [
+            "ST24-002"
+          ],
+          "trash": [
+            "OP12-034"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 10,
+      "player": "Thorfinn#3951",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Perona",
+        "code": "OP12-034"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP08-023",
+          "card_name": "Carrot",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP13-040",
+            "OP08-023",
+            "OP07-026",
+            "OP07-026",
+            "OP13-031",
+            "ST24-004",
+            "ST24-004",
+            "OP12-118"
+          ],
+          "board": [
+            "ST24-002"
+          ],
+          "trash": [
+            "OP12-034"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 10,
+      "player": "Thorfinn#3951",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP13-040",
+            "OP07-026",
+            "OP07-026",
+            "OP13-031",
+            "ST24-004",
+            "ST24-004",
+            "OP12-118",
+            "OP12-034"
+          ],
+          "board": [
+            "ST24-002",
+            "OP08-023"
+          ],
+          "trash": [
+            "OP12-034"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 12,
+      "player": "Thorfinn#3951",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Jesus Burgess",
+        "code": "OP09-086"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP12-119",
+          "card_name": "Bartholomew Kuma",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP13-040",
+            "OP07-026",
+            "OP07-026",
+            "OP13-031",
+            "ST24-004",
+            "ST24-004",
+            "OP12-118",
+            "OP12-034"
+          ],
+          "board": [
+            "ST24-002",
+            "OP08-023"
+          ],
+          "trash": [
+            "OP12-034"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 12,
+      "player": "Thorfinn#3951",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP13-040",
+            "OP07-026",
+            "OP13-031",
+            "ST24-004",
+            "ST24-004",
+            "OP12-118"
+          ],
+          "board": [
+            "ST24-002",
+            "OP08-023"
+          ],
+          "trash": [
+            "OP12-034",
+            "OP12-034",
+            "OP07-026"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 16,
+      "player": "Thorfinn#3951",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Carrot",
+        "code": "OP08-023"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP13-031",
+          "card_name": "Trafalgar Law",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP13-040",
+            "OP07-026",
+            "OP13-031",
+            "ST24-004",
+            "ST24-004",
+            "OP12-118"
+          ],
+          "board": [
+            "ST24-002",
+            "OP08-023"
+          ],
+          "trash": [
+            "OP12-034",
+            "OP12-034",
+            "OP07-026"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 16,
+      "player": "Thorfinn#3951",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP13-040",
+            "OP07-026",
+            "ST24-004",
+            "ST24-004",
+            "OP12-118",
+            "ST24-002"
+          ],
+          "board": [
+            "OP08-023",
+            "OP13-031",
+            "OP08-023"
+          ],
+          "trash": [
+            "OP12-034",
+            "OP12-034",
+            "OP07-026"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 20,
+      "player": "Thorfinn#3951",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Shiryu",
+        "code": "OP16-108"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP09-086",
+          "card_name": "Jesus Burgess",
+          "effects": []
+        },
+        {
+          "type": "play",
+          "card": "OP09-086",
+          "card_name": "Jesus Burgess",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP13-040",
+            "OP07-026",
+            "ST24-004",
+            "ST24-004",
+            "OP12-118",
+            "ST24-002"
+          ],
+          "board": [
+            "OP08-023",
+            "OP13-031",
+            "OP08-023"
+          ],
+          "trash": [
+            "OP12-034",
+            "OP12-034",
+            "OP07-026"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 20,
+      "player": "Thorfinn#3951",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP13-040",
+            "ST24-004",
+            "ST24-004"
+          ],
+          "board": [
+            "OP08-023",
+            "OP13-031",
+            "OP08-023"
+          ],
+          "trash": [
+            "OP12-034",
+            "OP12-034",
+            "OP07-026",
+            "ST24-002",
+            "OP07-026",
+            "OP12-118"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 23,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Laboon",
+        "code": "OP15-035"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "ST24-004",
+          "card_name": "Law & Bepo",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP13-040",
+            "ST24-004",
+            "ST24-004"
+          ],
+          "board": [
+            "OP08-023",
+            "OP13-031",
+            "OP08-023"
+          ],
+          "trash": [
+            "OP12-034",
+            "OP12-034",
+            "OP07-026",
+            "ST24-002",
+            "OP07-026",
+            "OP12-118"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 23,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP13-040",
+            "ST24-004",
+            "OP15-035"
+          ],
+          "board": [
+            "OP08-023",
+            "OP13-031",
+            "OP08-023",
+            "ST24-004"
+          ],
+          "trash": [
+            "OP12-034",
+            "OP12-034",
+            "OP07-026",
+            "ST24-002",
+            "OP07-026",
+            "OP12-118"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 26,
+      "player": "Thorfinn#3951",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Doc Q",
+        "code": "OP16-109"
+      },
+      "don_drawn": 2,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP13-040",
+            "ST24-004",
+            "OP15-035"
+          ],
+          "board": [
+            "OP08-023",
+            "OP13-031",
+            "OP08-023",
+            "ST24-004"
+          ],
+          "trash": [
+            "OP12-034",
+            "OP12-034",
+            "OP07-026",
+            "ST24-002",
+            "OP07-026",
+            "OP12-118"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 26,
+      "player": "Thorfinn#3951",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP13-040",
+            "ST24-004",
+            "OP14-039"
+          ],
+          "board": [
+            "OP08-023",
+            "OP13-031",
+            "ST24-004"
+          ],
+          "trash": [
+            "OP12-034",
+            "OP12-034",
+            "OP07-026",
+            "ST24-002",
+            "OP07-026",
+            "OP12-118",
+            "OP15-035",
+            "OP08-023"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 30,
+      "player": "Thorfinn#3951",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Shanks",
+        "code": "OP14-027"
+      },
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP14-039",
+          "card_name": "Coffin Boat",
+          "effects": []
+        },
+        {
+          "type": "play",
+          "card": "OP14-027",
+          "card_name": "Shanks",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP13-040",
+            "ST24-004",
+            "OP14-039"
+          ],
+          "board": [
+            "OP08-023",
+            "OP13-031",
+            "ST24-004"
+          ],
+          "trash": [
+            "OP12-034",
+            "OP12-034",
+            "OP07-026",
+            "ST24-002",
+            "OP07-026",
+            "OP12-118",
+            "OP15-035",
+            "OP08-023"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 30,
+      "player": "Thorfinn#3951",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "ST24-004",
+            "OP14-033"
+          ],
+          "board": [
+            "OP08-023",
+            "OP13-031",
+            "ST24-004",
+            "OP14-027"
+          ],
+          "trash": [
+            "OP12-034",
+            "OP12-034",
+            "OP07-026",
+            "ST24-002",
+            "OP07-026",
+            "OP12-118",
+            "OP15-035",
+            "OP08-023",
+            "OP13-040"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 32,
+      "player": "Thorfinn#3951",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Laffitte",
+        "code": "OP09-095"
+      },
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP16-119",
+          "card_name": "Marshall D. Teach",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "ST24-004",
+            "OP14-033"
+          ],
+          "board": [
+            "OP08-023",
+            "OP13-031",
+            "ST24-004",
+            "OP14-027"
+          ],
+          "trash": [
+            "OP12-034",
+            "OP12-034",
+            "OP07-026",
+            "ST24-002",
+            "OP07-026",
+            "OP12-118",
+            "OP15-035",
+            "OP08-023",
+            "OP13-040"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 32,
+      "player": "Thorfinn#3951",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "ST24-004",
+            "OP14-033"
+          ],
+          "board": [
+            "OP13-031",
+            "ST24-004",
+            "OP14-027"
+          ],
+          "trash": [
+            "OP12-034",
+            "OP12-034",
+            "OP07-026",
+            "ST24-002",
+            "OP07-026",
+            "OP12-118",
+            "OP15-035",
+            "OP08-023",
+            "OP13-040",
+            "OP08-023"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 38,
+      "player": "Thorfinn#3951",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Boa Hancock",
+        "code": "OP14-112"
+      },
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP14-039",
+          "card_name": "Coffin Boat",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "ST24-004",
+            "OP14-033"
+          ],
+          "board": [
+            "OP13-031",
+            "ST24-004",
+            "OP14-027"
+          ],
+          "trash": [
+            "OP12-034",
+            "OP12-034",
+            "OP07-026",
+            "ST24-002",
+            "OP07-026",
+            "OP12-118",
+            "OP15-035",
+            "OP08-023",
+            "OP13-040",
+            "OP08-023"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 38,
+      "player": "Thorfinn#3951",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "ST24-004",
+            "OP14-033"
+          ],
+          "board": [
+            "OP13-031",
+            "ST24-004",
+            "OP14-027"
+          ],
+          "trash": [
+            "OP12-034",
+            "OP12-034",
+            "OP07-026",
+            "ST24-002",
+            "OP07-026",
+            "OP12-118",
+            "OP15-035",
+            "OP08-023",
+            "OP13-040",
+            "OP08-023",
+            "OP14-039",
+            "OP08-036"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 43,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Fullalead",
+        "code": "OP09-099"
+      },
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP14-112",
+          "card_name": "Boa Hancock",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "ST24-004",
+            "OP14-033"
+          ],
+          "board": [
+            "OP13-031",
+            "ST24-004",
+            "OP14-027"
+          ],
+          "trash": [
+            "OP12-034",
+            "OP12-034",
+            "OP07-026",
+            "ST24-002",
+            "OP07-026",
+            "OP12-118",
+            "OP15-035",
+            "OP08-023",
+            "OP13-040",
+            "OP08-023",
+            "OP14-039",
+            "OP08-036"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 43,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "ST24-004",
+            "OP13-031"
+          ],
+          "board": [
+            "ST24-004",
+            "OP14-027"
+          ],
+          "trash": [
+            "OP12-034",
+            "OP12-034",
+            "OP07-026",
+            "ST24-002",
+            "OP07-026",
+            "OP12-118",
+            "OP15-035",
+            "OP08-023",
+            "OP13-040",
+            "OP08-023",
+            "OP14-039",
+            "OP08-036",
+            "OP14-033",
+            "OP13-031"
+          ],
+          "life": 2
+        }
+      }
+    }
+  ]
+}

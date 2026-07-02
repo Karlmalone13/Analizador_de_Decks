@@ -1,0 +1,905 @@
+{
+  "meta": {
+    "source": "autosaved_log",
+    "original_file": "2026-07-02T00.48.17.log",
+    "p1": {
+      "name": "Karlmalone#2854",
+      "leader_name": "Eustass \"Captain\" Kid",
+      "leader_code": "OP10-099",
+      "goes_first": true
+    },
+    "p2": {
+      "name": "TaxiCab#9855",
+      "leader_name": "Sabo",
+      "leader_code": "OP13-004",
+      "goes_first": false
+    },
+    "winner": "p2",
+    "winner_name": "TaxiCab#9855",
+    "total_turns": 24,
+    "mulligan_p1": {
+      "before": [
+        "EB03-062",
+        "OP10-116",
+        "P-088",
+        "OP15-105",
+        "OP10-112"
+      ],
+      "after": [
+        "OP11-101",
+        "OP10-114",
+        "OP15-105",
+        "OP13-116",
+        "OP15-105"
+      ],
+      "took_mulligan": true
+    },
+    "mulligan_p2": {
+      "before": [],
+      "after": [],
+      "took_mulligan": false
+    }
+  },
+  "turns": [
+    {
+      "turn": 1,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Jewelry Bonney",
+        "code": "OP15-105"
+      },
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP05-004",
+            "OP05-021",
+            "OP06-003",
+            "OP05-005",
+            "OP05-004"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 1,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 1,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP05-004",
+            "OP05-021",
+            "OP06-003",
+            "OP05-005",
+            "OP05-004"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 1,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP05-004",
+            "OP05-021",
+            "OP06-003",
+            "OP05-005",
+            "OP05-004"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 2,
+      "player": "TaxiCab#9855",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Belo Betty",
+        "code": "OP05-015"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP05-015",
+          "card_name": "Belo Betty",
+          "effects": []
+        },
+        {
+          "type": "play",
+          "card": "OP05-021",
+          "card_name": "Revolutionary Army General Headquarters",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP05-004",
+            "OP05-021",
+            "OP06-003",
+            "OP05-005",
+            "OP05-004"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 2,
+      "player": "TaxiCab#9855",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP05-004",
+            "OP06-003",
+            "OP05-005",
+            "EB02-002",
+            "EB03-042"
+          ],
+          "board": [
+            "OP05-015"
+          ],
+          "trash": [
+            "OP05-004"
+          ],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 3,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Slam Gibson",
+        "code": "OP12-117"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP11-101",
+          "card_name": "Capone \"Gang\" Bege",
+          "effects": []
+        },
+        {
+          "type": "play",
+          "card": "OP15-105",
+          "card_name": "Jewelry Bonney",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP05-004",
+            "OP06-003",
+            "OP05-005",
+            "EB02-002",
+            "EB03-042"
+          ],
+          "board": [
+            "OP05-015"
+          ],
+          "trash": [
+            "OP05-004"
+          ],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 3,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP05-004",
+            "OP06-003",
+            "OP05-005",
+            "EB02-002",
+            "EB03-042",
+            "P-105"
+          ],
+          "board": [
+            "OP05-015"
+          ],
+          "trash": [
+            "OP05-004"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 4,
+      "player": "TaxiCab#9855",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Koala",
+        "code": "P-069"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "P-105",
+          "card_name": "Sabo",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP05-004",
+            "OP06-003",
+            "OP05-005",
+            "EB02-002",
+            "EB03-042",
+            "P-105"
+          ],
+          "board": [
+            "OP05-015"
+          ],
+          "trash": [
+            "OP05-004"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 4,
+      "player": "TaxiCab#9855",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP05-004",
+            "OP06-003",
+            "OP05-005",
+            "EB02-002",
+            "EB03-042",
+            "EB02-002",
+            "OP05-005"
+          ],
+          "board": [
+            "OP05-015",
+            "P-105"
+          ],
+          "trash": [
+            "OP05-004",
+            "P-069"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 6,
+      "player": "TaxiCab#9855",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Trafalgar Law",
+        "code": "EB03-062"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP11-101",
+          "card_name": "Capone \"Gang\" Bege",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP05-004",
+            "OP06-003",
+            "OP05-005",
+            "EB02-002",
+            "EB03-042",
+            "EB02-002",
+            "OP05-005"
+          ],
+          "board": [
+            "OP05-015",
+            "P-105"
+          ],
+          "trash": [
+            "OP05-004",
+            "P-069"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 6,
+      "player": "TaxiCab#9855",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP05-004",
+            "OP06-003",
+            "OP05-005",
+            "EB03-042",
+            "EB02-002",
+            "OP05-005"
+          ],
+          "board": [
+            "OP05-015",
+            "P-105"
+          ],
+          "trash": [
+            "OP05-004",
+            "P-069",
+            "EB02-002"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 10,
+      "player": "TaxiCab#9855",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Sabo",
+        "code": "EB02-002"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP06-003",
+          "card_name": "Emporio Ivankov",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP05-004",
+            "OP06-003",
+            "OP05-005",
+            "EB03-042",
+            "EB02-002",
+            "OP05-005"
+          ],
+          "board": [
+            "OP05-015",
+            "P-105"
+          ],
+          "trash": [
+            "OP05-004",
+            "P-069",
+            "EB02-002"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 10,
+      "player": "TaxiCab#9855",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP05-004",
+            "OP05-005",
+            "EB02-002",
+            "OP05-005",
+            "EB02-002",
+            "P-105"
+          ],
+          "board": [
+            "OP05-015",
+            "P-105",
+            "OP06-003",
+            "EB03-042"
+          ],
+          "trash": [
+            "OP05-004",
+            "P-069",
+            "EB02-002",
+            "EB03-042"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 11,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Jewelry Bonney",
+        "code": "OP15-105"
+      },
+      "don_drawn": 2,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP05-004",
+            "OP05-005",
+            "EB02-002",
+            "OP05-005",
+            "EB02-002",
+            "P-105"
+          ],
+          "board": [
+            "OP05-015",
+            "P-105",
+            "OP06-003",
+            "EB03-042"
+          ],
+          "trash": [
+            "OP05-004",
+            "P-069",
+            "EB02-002",
+            "EB03-042"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 11,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP05-004",
+            "OP05-005",
+            "EB02-002",
+            "OP05-005",
+            "EB02-002",
+            "P-105",
+            "OP07-015"
+          ],
+          "board": [
+            "OP05-015",
+            "P-105",
+            "OP06-003"
+          ],
+          "trash": [
+            "OP05-004",
+            "P-069",
+            "EB02-002",
+            "EB03-042"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 17,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Revolutionary Army General Headquarters",
+        "code": "OP05-021"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP05-004",
+          "card_name": "Emporio Ivankov",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP05-004",
+            "OP05-005",
+            "EB02-002",
+            "OP05-005",
+            "EB02-002",
+            "P-105",
+            "OP07-015"
+          ],
+          "board": [
+            "OP05-015",
+            "P-105",
+            "OP06-003"
+          ],
+          "trash": [
+            "OP05-004",
+            "P-069",
+            "EB02-002",
+            "EB03-042"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 17,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP05-005",
+            "OP05-005",
+            "EB02-002",
+            "P-105",
+            "OP07-015",
+            "OP12-093"
+          ],
+          "board": [
+            "OP05-015",
+            "P-105",
+            "OP06-003",
+            "OP05-004",
+            "EB02-002"
+          ],
+          "trash": [
+            "OP05-004",
+            "P-069",
+            "EB02-002",
+            "EB03-042",
+            "OP05-021"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 21,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Trafalgar Law",
+        "code": "P-088"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP10-111",
+          "card_name": "Monkey D. Luffy",
+          "effects": []
+        },
+        {
+          "type": "play",
+          "card": "EB03-062",
+          "card_name": "Trafalgar Law",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP05-005",
+            "OP05-005",
+            "EB02-002",
+            "P-105",
+            "OP07-015",
+            "OP12-093"
+          ],
+          "board": [
+            "OP05-015",
+            "P-105",
+            "OP06-003",
+            "OP05-004",
+            "EB02-002"
+          ],
+          "trash": [
+            "OP05-004",
+            "P-069",
+            "EB02-002",
+            "EB03-042",
+            "OP05-021"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 21,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP05-005",
+            "OP05-005",
+            "EB02-002",
+            "P-105",
+            "OP07-015",
+            "OP12-093"
+          ],
+          "board": [
+            "P-105",
+            "OP06-003",
+            "OP05-004"
+          ],
+          "trash": [
+            "OP05-004",
+            "P-069",
+            "EB02-002",
+            "EB03-042",
+            "OP05-021",
+            "OP05-015",
+            "EB02-002"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 24,
+      "player": "TaxiCab#9855",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Karasu",
+        "code": "OP05-005"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP05-005",
+          "card_name": "Karasu",
+          "effects": []
+        },
+        {
+          "type": "play",
+          "card": "P-105",
+          "card_name": "Sabo",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP05-005",
+            "OP05-005",
+            "EB02-002",
+            "P-105",
+            "OP07-015",
+            "OP12-093"
+          ],
+          "board": [
+            "P-105",
+            "OP06-003",
+            "OP05-004"
+          ],
+          "trash": [
+            "OP05-004",
+            "P-069",
+            "EB02-002",
+            "EB03-042",
+            "OP05-021",
+            "OP05-015",
+            "EB02-002"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 24,
+      "player": "TaxiCab#9855",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "EB02-002",
+            "OP07-015",
+            "OP12-093",
+            "OP05-005"
+          ],
+          "board": [
+            "P-105",
+            "OP06-003",
+            "OP05-005",
+            "OP05-005",
+            "P-105"
+          ],
+          "trash": [
+            "OP05-004",
+            "P-069",
+            "EB02-002",
+            "EB03-042",
+            "OP05-021",
+            "OP05-015",
+            "EB02-002",
+            "OP05-004"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 29,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Trafalgar Law",
+        "code": "OP10-119"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP10-119",
+          "card_name": "Trafalgar Law",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "EB02-002",
+            "OP07-015",
+            "OP12-093",
+            "OP05-005"
+          ],
+          "board": [
+            "P-105",
+            "OP06-003",
+            "OP05-005",
+            "OP05-005",
+            "P-105"
+          ],
+          "trash": [
+            "OP05-004",
+            "P-069",
+            "EB02-002",
+            "EB03-042",
+            "OP05-021",
+            "OP05-015",
+            "EB02-002",
+            "OP05-004"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 29,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "EB02-002",
+            "OP07-015",
+            "OP05-005"
+          ],
+          "board": [
+            "P-105",
+            "OP05-005",
+            "OP05-005",
+            "P-105"
+          ],
+          "trash": [
+            "OP05-004",
+            "P-069",
+            "EB02-002",
+            "EB03-042",
+            "OP05-021",
+            "OP05-015",
+            "EB02-002",
+            "OP05-004",
+            "OP12-093",
+            "OP06-003"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 34,
+      "player": "TaxiCab#9855",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Koala",
+        "code": "EB03-042"
+      },
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP07-015",
+          "card_name": "Monkey D. Dragon",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "EB02-002",
+            "OP07-015",
+            "OP05-005"
+          ],
+          "board": [
+            "P-105",
+            "OP05-005",
+            "OP05-005",
+            "P-105"
+          ],
+          "trash": [
+            "OP05-004",
+            "P-069",
+            "EB02-002",
+            "EB03-042",
+            "OP05-021",
+            "OP05-015",
+            "EB02-002",
+            "OP05-004",
+            "OP12-093",
+            "OP06-003"
+          ],
+          "life": 3
+        }
+      }
+    }
+  ]
+}

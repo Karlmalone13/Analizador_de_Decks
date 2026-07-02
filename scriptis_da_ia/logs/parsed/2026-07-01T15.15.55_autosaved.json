@@ -1,0 +1,1337 @@
+{
+  "meta": {
+    "source": "autosaved_log",
+    "original_file": "2026-07-01T15.15.55.log",
+    "p1": {
+      "name": "Karlmalone#2854",
+      "leader_name": "Imu",
+      "leader_code": "OP13-079",
+      "goes_first": true
+    },
+    "p2": {
+      "name": "Sebs#6211",
+      "leader_name": "Monkey D. Luffy",
+      "leader_code": "OP11-040",
+      "goes_first": false
+    },
+    "winner": "p2",
+    "winner_name": "Sebs#6211",
+    "total_turns": 36,
+    "mulligan_p1": {
+      "before": [
+        "OP16-093",
+        "OP13-084",
+        "OP13-084",
+        "OP13-082",
+        "OP16-093"
+      ],
+      "after": [
+        "OP16-093",
+        "OP14-096",
+        "OP13-082",
+        "OP13-096",
+        "OP13-080"
+      ],
+      "took_mulligan": true
+    },
+    "mulligan_p2": {
+      "before": [],
+      "after": [],
+      "took_mulligan": true
+    }
+  },
+  "turns": [
+    {
+      "turn": 1,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": {
+        "name": "St. Ethanbaron V. Nusjuro",
+        "code": "OP13-080"
+      },
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP11-054",
+            "OP11-054",
+            "OP06-119",
+            "OP09-078",
+            "OP11-054"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 1,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 1,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP11-054",
+            "OP11-054",
+            "OP06-119",
+            "OP09-078",
+            "OP11-054"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 1,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP11-054",
+            "OP11-054",
+            "OP06-119",
+            "OP09-078",
+            "OP11-054"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 2,
+      "player": "Sebs#6211",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Boa Hancock",
+        "code": "OP07-051"
+      },
+      "don_drawn": 2,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP11-054",
+            "OP11-054",
+            "OP06-119",
+            "OP09-078",
+            "OP11-054"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 2,
+      "player": "Sebs#6211",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP11-054",
+            "OP11-054",
+            "OP06-119",
+            "OP09-078",
+            "OP11-054",
+            "OP07-051"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 3,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": {
+        "name": "St. Mjosgard",
+        "code": "OP13-092"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP16-093",
+          "card_name": "Bartholomew Kuma",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP11-054",
+            "OP11-054",
+            "OP06-119",
+            "OP09-078",
+            "OP11-054",
+            "OP07-051"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 3,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP11-054",
+            "OP11-054",
+            "OP06-119",
+            "OP09-078",
+            "OP11-054",
+            "OP07-051",
+            "OP06-119"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 4,
+      "player": "Sebs#6211",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Charlotte Linlin",
+        "code": "EB03-034"
+      },
+      "don_drawn": 2,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP11-054",
+            "OP11-054",
+            "OP06-119",
+            "OP09-078",
+            "OP11-054",
+            "OP07-051",
+            "OP06-119"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 4,
+      "player": "Sebs#6211",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP11-054",
+            "OP11-054",
+            "OP06-119",
+            "OP09-078",
+            "OP11-054",
+            "OP07-051",
+            "OP06-119",
+            "EB03-034"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 6,
+      "player": "Sebs#6211",
+      "player_role": "",
+      "card_drawn": {
+        "name": "St. Ethanbaron V. Nusjuro",
+        "code": "OP13-080"
+      },
+      "don_drawn": 2,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP11-054",
+            "OP11-054",
+            "OP06-119",
+            "OP09-078",
+            "OP11-054",
+            "OP07-051",
+            "OP06-119",
+            "EB03-034"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 6,
+      "player": "Sebs#6211",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP11-054",
+            "OP11-054",
+            "OP06-119",
+            "OP09-078",
+            "OP07-051",
+            "OP06-119",
+            "EB03-034"
+          ],
+          "board": [],
+          "trash": [
+            "OP11-054"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 7,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Mamaragan",
+        "code": "OP15-078"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP07-051",
+          "card_name": "Boa Hancock",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP11-054",
+            "OP11-054",
+            "OP06-119",
+            "OP09-078",
+            "OP07-051",
+            "OP06-119",
+            "EB03-034"
+          ],
+          "board": [],
+          "trash": [
+            "OP11-054"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 7,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP11-054",
+            "OP11-054",
+            "OP06-119",
+            "OP09-078",
+            "OP06-119",
+            "EB03-034",
+            "OP15-078"
+          ],
+          "board": [
+            "OP07-051"
+          ],
+          "trash": [
+            "OP11-054"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 13,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Gol D. Roger",
+        "code": "P-107"
+      },
+      "don_drawn": 2,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP11-054",
+            "OP11-054",
+            "OP06-119",
+            "OP09-078",
+            "OP06-119",
+            "EB03-034",
+            "OP15-078"
+          ],
+          "board": [
+            "OP07-051"
+          ],
+          "trash": [
+            "OP11-054"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 13,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP06-119",
+            "OP09-078",
+            "OP06-119",
+            "EB03-034",
+            "P-107"
+          ],
+          "board": [
+            "OP07-051"
+          ],
+          "trash": [
+            "OP11-054",
+            "OP15-078",
+            "OP11-054",
+            "OP11-054"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 16,
+      "player": "Sebs#6211",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Usohachi",
+        "code": "ST18-001"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP16-056",
+          "card_name": "Mr. 3 (Galdino)",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP06-119",
+            "OP09-078",
+            "OP06-119",
+            "EB03-034",
+            "P-107"
+          ],
+          "board": [
+            "OP07-051"
+          ],
+          "trash": [
+            "OP11-054",
+            "OP15-078",
+            "OP11-054",
+            "OP11-054"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 16,
+      "player": "Sebs#6211",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP06-119",
+            "OP09-078",
+            "OP06-119",
+            "EB03-034",
+            "P-107",
+            "OP11-054",
+            "ST18-001"
+          ],
+          "board": [
+            "OP07-051"
+          ],
+          "trash": [
+            "OP11-054",
+            "OP15-078",
+            "OP11-054",
+            "OP11-054",
+            "OP16-056"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 19,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": {
+        "name": "St. Topman Warcury",
+        "code": "OP13-089"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP13-086",
+          "card_name": "St. Shalria",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP06-119",
+            "OP09-078",
+            "OP06-119",
+            "EB03-034",
+            "P-107",
+            "OP11-054",
+            "ST18-001"
+          ],
+          "board": [
+            "OP07-051"
+          ],
+          "trash": [
+            "OP11-054",
+            "OP15-078",
+            "OP11-054",
+            "OP11-054",
+            "OP16-056"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 19,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP06-119",
+            "OP09-078",
+            "OP06-119",
+            "P-107",
+            "OP11-054"
+          ],
+          "board": [
+            "OP07-051"
+          ],
+          "trash": [
+            "OP11-054",
+            "OP15-078",
+            "OP11-054",
+            "OP11-054",
+            "OP16-056",
+            "ST18-001",
+            "EB03-034"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 24,
+      "player": "Sebs#6211",
+      "player_role": "",
+      "card_drawn": {
+        "name": "It's To Die For...!",
+        "code": "OP08-076"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP06-119",
+          "card_name": "Sanji",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP06-119",
+            "OP09-078",
+            "OP06-119",
+            "P-107",
+            "OP11-054"
+          ],
+          "board": [
+            "OP07-051"
+          ],
+          "trash": [
+            "OP11-054",
+            "OP15-078",
+            "OP11-054",
+            "OP11-054",
+            "OP16-056",
+            "ST18-001",
+            "EB03-034"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 24,
+      "player": "Sebs#6211",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP06-119",
+            "OP09-078",
+            "OP06-119",
+            "OP11-054",
+            "OP16-056",
+            "OP08-076"
+          ],
+          "board": [
+            "OP07-051",
+            "OP06-119",
+            "EB03-034"
+          ],
+          "trash": [
+            "OP11-054",
+            "OP15-078",
+            "OP11-054",
+            "OP11-054",
+            "OP16-056",
+            "ST18-001",
+            "EB03-034"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 30,
+      "player": "Sebs#6211",
+      "player_role": "",
+      "card_drawn": {
+        "name": "St. Shepherd Ju Peter",
+        "code": "OP13-084"
+      },
+      "don_drawn": 2,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP06-119",
+            "OP09-078",
+            "OP06-119",
+            "OP11-054",
+            "OP16-056",
+            "OP08-076"
+          ],
+          "board": [
+            "OP07-051",
+            "OP06-119",
+            "EB03-034"
+          ],
+          "trash": [
+            "OP11-054",
+            "OP15-078",
+            "OP11-054",
+            "OP11-054",
+            "OP16-056",
+            "ST18-001",
+            "EB03-034"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 30,
+      "player": "Sebs#6211",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP06-119",
+            "OP09-078",
+            "OP06-119",
+            "OP08-076"
+          ],
+          "board": [
+            "OP06-119",
+            "EB03-034"
+          ],
+          "trash": [
+            "OP11-054",
+            "OP15-078",
+            "OP11-054",
+            "OP11-054",
+            "OP16-056",
+            "ST18-001",
+            "EB03-034",
+            "OP16-056",
+            "OP11-054",
+            "OP07-051"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 34,
+      "player": "Sebs#6211",
+      "player_role": "",
+      "card_drawn": {
+        "name": "St. Jaygarcia Saturn",
+        "code": "OP13-083"
+      },
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP06-119",
+          "card_name": "Sanji",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP06-119",
+            "OP09-078",
+            "OP06-119",
+            "OP08-076"
+          ],
+          "board": [
+            "OP06-119",
+            "EB03-034"
+          ],
+          "trash": [
+            "OP11-054",
+            "OP15-078",
+            "OP11-054",
+            "OP11-054",
+            "OP16-056",
+            "ST18-001",
+            "EB03-034",
+            "OP16-056",
+            "OP11-054",
+            "OP07-051"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 34,
+      "player": "Sebs#6211",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP06-119",
+            "OP09-078",
+            "OP08-076",
+            "OP07-064",
+            "OP05-067"
+          ],
+          "board": [
+            "OP06-119",
+            "EB03-034",
+            "OP06-119",
+            "P-107"
+          ],
+          "trash": [
+            "OP11-054",
+            "OP15-078",
+            "OP11-054",
+            "OP11-054",
+            "OP16-056",
+            "ST18-001",
+            "EB03-034",
+            "OP16-056",
+            "OP11-054",
+            "OP07-051"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 40,
+      "player": "Sebs#6211",
+      "player_role": "",
+      "card_drawn": {
+        "name": "St. Shalria",
+        "code": "OP13-086"
+      },
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP06-119",
+            "OP09-078",
+            "OP08-076",
+            "OP07-064",
+            "OP05-067"
+          ],
+          "board": [
+            "OP06-119",
+            "EB03-034",
+            "OP06-119",
+            "P-107"
+          ],
+          "trash": [
+            "OP11-054",
+            "OP15-078",
+            "OP11-054",
+            "OP11-054",
+            "OP16-056",
+            "ST18-001",
+            "EB03-034",
+            "OP16-056",
+            "OP11-054",
+            "OP07-051"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 40,
+      "player": "Sebs#6211",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP06-119",
+            "OP09-078",
+            "OP08-076",
+            "OP07-064"
+          ],
+          "board": [
+            "OP06-119",
+            "P-107"
+          ],
+          "trash": [
+            "OP11-054",
+            "OP15-078",
+            "OP11-054",
+            "OP11-054",
+            "OP16-056",
+            "ST18-001",
+            "EB03-034",
+            "OP16-056",
+            "OP11-054",
+            "OP07-051",
+            "EB03-034",
+            "OP05-067",
+            "OP06-119"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 44,
+      "player": "Sebs#6211",
+      "player_role": "",
+      "card_drawn": {
+        "name": "St. Marcus Mars",
+        "code": "OP13-091"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP06-119",
+          "card_name": "Sanji",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP06-119",
+            "OP09-078",
+            "OP08-076",
+            "OP07-064"
+          ],
+          "board": [
+            "OP06-119",
+            "P-107"
+          ],
+          "trash": [
+            "OP11-054",
+            "OP15-078",
+            "OP11-054",
+            "OP11-054",
+            "OP16-056",
+            "ST18-001",
+            "EB03-034",
+            "OP16-056",
+            "OP11-054",
+            "OP07-051",
+            "EB03-034",
+            "OP05-067",
+            "OP06-119"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 44,
+      "player": "Sebs#6211",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP09-078",
+            "OP08-076",
+            "OP07-064",
+            "OP07-064",
+            "ST18-001"
+          ],
+          "board": [
+            "OP06-119",
+            "P-107",
+            "OP06-119",
+            "P-107"
+          ],
+          "trash": [
+            "OP11-054",
+            "OP15-078",
+            "OP11-054",
+            "OP11-054",
+            "OP16-056",
+            "ST18-001",
+            "EB03-034",
+            "OP16-056",
+            "OP11-054",
+            "OP07-051",
+            "EB03-034",
+            "OP05-067",
+            "OP06-119"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 52,
+      "player": "Sebs#6211",
+      "player_role": "",
+      "card_drawn": {
+        "name": "It's To Die For...!",
+        "code": "OP08-076"
+      },
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP09-078",
+            "OP08-076",
+            "OP07-064",
+            "OP07-064",
+            "ST18-001"
+          ],
+          "board": [
+            "OP06-119",
+            "P-107",
+            "OP06-119",
+            "P-107"
+          ],
+          "trash": [
+            "OP11-054",
+            "OP15-078",
+            "OP11-054",
+            "OP11-054",
+            "OP16-056",
+            "ST18-001",
+            "EB03-034",
+            "OP16-056",
+            "OP11-054",
+            "OP07-051",
+            "EB03-034",
+            "OP05-067",
+            "OP06-119"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 52,
+      "player": "Sebs#6211",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "ST18-001",
+            "OP05-067",
+            "OP09-078",
+            "OP08-076"
+          ],
+          "board": [
+            "OP06-119",
+            "P-107",
+            "OP06-119",
+            "P-107"
+          ],
+          "trash": [
+            "OP11-054",
+            "OP15-078",
+            "OP11-054",
+            "OP11-054",
+            "OP16-056",
+            "ST18-001",
+            "EB03-034",
+            "OP16-056",
+            "OP11-054",
+            "OP07-051",
+            "EB03-034",
+            "OP05-067",
+            "OP06-119",
+            "OP05-067",
+            "OP07-064",
+            "OP09-078",
+            "OP08-076",
+            "OP07-064"
+          ],
+          "life": 1
+        }
+      }
+    },
+    {
+      "turn": 61,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": {
+        "name": "...Never Existed...",
+        "code": "OP13-098"
+      },
+      "don_drawn": 2,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "ST18-001",
+            "OP05-067",
+            "OP09-078",
+            "OP08-076"
+          ],
+          "board": [
+            "OP06-119",
+            "P-107",
+            "OP06-119",
+            "P-107"
+          ],
+          "trash": [
+            "OP11-054",
+            "OP15-078",
+            "OP11-054",
+            "OP11-054",
+            "OP16-056",
+            "ST18-001",
+            "EB03-034",
+            "OP16-056",
+            "OP11-054",
+            "OP07-051",
+            "EB03-034",
+            "OP05-067",
+            "OP06-119",
+            "OP05-067",
+            "OP07-064",
+            "OP09-078",
+            "OP08-076",
+            "OP07-064"
+          ],
+          "life": 1
+        }
+      }
+    },
+    {
+      "turn": 61,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "ST18-001",
+            "OP05-067",
+            "OP09-078",
+            "OP08-076",
+            "OP11-080",
+            "ST18-001"
+          ],
+          "board": [
+            "OP06-119",
+            "P-107",
+            "OP06-119",
+            "P-107"
+          ],
+          "trash": [
+            "OP11-054",
+            "OP15-078",
+            "OP11-054",
+            "OP11-054",
+            "OP16-056",
+            "ST18-001",
+            "EB03-034",
+            "OP16-056",
+            "OP11-054",
+            "OP07-051",
+            "EB03-034",
+            "OP05-067",
+            "OP06-119",
+            "OP05-067",
+            "OP07-064",
+            "OP09-078",
+            "OP08-076",
+            "OP07-064"
+          ],
+          "life": 1
+        }
+      }
+    },
+    {
+      "turn": 70,
+      "player": "Sebs#6211",
+      "player_role": "",
+      "card_drawn": {
+        "name": "The Five Elders... Are At Your Service",
+        "code": "OP13-096"
+      },
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "ST18-001",
+            "OP05-067",
+            "OP09-078",
+            "OP08-076",
+            "OP11-080",
+            "ST18-001"
+          ],
+          "board": [
+            "OP06-119",
+            "P-107",
+            "OP06-119",
+            "P-107"
+          ],
+          "trash": [
+            "OP11-054",
+            "OP15-078",
+            "OP11-054",
+            "OP11-054",
+            "OP16-056",
+            "ST18-001",
+            "EB03-034",
+            "OP16-056",
+            "OP11-054",
+            "OP07-051",
+            "EB03-034",
+            "OP05-067",
+            "OP06-119",
+            "OP05-067",
+            "OP07-064",
+            "OP09-078",
+            "OP08-076",
+            "OP07-064"
+          ],
+          "life": 1
+        }
+      }
+    },
+    {
+      "turn": 70,
+      "player": "Sebs#6211",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "ST18-001",
+            "OP08-076"
+          ],
+          "board": [
+            "OP06-119",
+            "P-107",
+            "P-107"
+          ],
+          "trash": [
+            "OP11-054",
+            "OP15-078",
+            "OP11-054",
+            "OP11-054",
+            "OP16-056",
+            "ST18-001",
+            "EB03-034",
+            "OP16-056",
+            "OP11-054",
+            "OP07-051",
+            "EB03-034",
+            "OP05-067",
+            "OP06-119",
+            "OP05-067",
+            "OP07-064",
+            "OP09-078",
+            "OP08-076",
+            "OP07-064",
+            "OP11-080",
+            "ST18-001",
+            "OP05-067",
+            "OP09-078",
+            "OP08-076",
+            "OP05-067",
+            "OP06-119"
+          ],
+          "life": 1
+        }
+      }
+    },
+    {
+      "turn": 72,
+      "player": "Sebs#6211",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Gol D. Roger",
+        "code": "P-107"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "ST18-001",
+          "card_name": "Usohachi",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "ST18-001",
+            "OP08-076"
+          ],
+          "board": [
+            "OP06-119",
+            "P-107",
+            "P-107"
+          ],
+          "trash": [
+            "OP11-054",
+            "OP15-078",
+            "OP11-054",
+            "OP11-054",
+            "OP16-056",
+            "ST18-001",
+            "EB03-034",
+            "OP16-056",
+            "OP11-054",
+            "OP07-051",
+            "EB03-034",
+            "OP05-067",
+            "OP06-119",
+            "OP05-067",
+            "OP07-064",
+            "OP09-078",
+            "OP08-076",
+            "OP07-064",
+            "OP11-080",
+            "ST18-001",
+            "OP05-067",
+            "OP09-078",
+            "OP08-076",
+            "OP05-067",
+            "OP06-119"
+          ],
+          "life": 1
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,1070 @@
+{
+  "meta": {
+    "source": "autosaved_log",
+    "original_file": "2026-06-27T19.58.09.log",
+    "p1": {
+      "name": "Karlmalone#2854",
+      "leader_name": "Marshall D. Teach",
+      "leader_code": "OP16-080",
+      "goes_first": true
+    },
+    "p2": {
+      "name": "kakasino#6476",
+      "leader_name": "Enel",
+      "leader_code": "OP05-098",
+      "goes_first": false
+    },
+    "winner": "p2",
+    "winner_name": "kakasino#6476",
+    "total_turns": 27,
+    "mulligan_p1": {
+      "before": [
+        "OP16-109",
+        "OP16-109",
+        "OP09-091",
+        "OP09-093",
+        "PRB02-015"
+      ],
+      "after": [
+        "OP16-109",
+        "OP16-109",
+        "OP09-091",
+        "OP09-093",
+        "PRB02-015"
+      ],
+      "took_mulligan": false
+    },
+    "mulligan_p2": {
+      "before": [],
+      "after": [],
+      "took_mulligan": true
+    }
+  },
+  "turns": [
+    {
+      "turn": 1,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Nami",
+        "code": "EB03-053"
+      },
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-119",
+            "OP15-108",
+            "EB01-056",
+            "OP15-108",
+            "EB03-053"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 1,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 1,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP16-109",
+          "card_name": "Doc Q",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-119",
+            "OP15-108",
+            "EB01-056",
+            "OP15-108",
+            "EB03-053"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 1,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-119",
+            "OP15-108",
+            "EB01-056",
+            "OP15-108",
+            "EB03-053"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 2,
+      "player": "kakasino#6476",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Charlotte Flampe",
+        "code": "EB01-056"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "EB01-056",
+          "card_name": "Charlotte Flampe",
+          "effects": []
+        },
+        {
+          "type": "play",
+          "card": "EB01-056",
+          "card_name": "Charlotte Flampe",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-119",
+            "OP15-108",
+            "EB01-056",
+            "OP15-108",
+            "EB03-053"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 2,
+      "player": "kakasino#6476",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-119",
+            "OP15-108",
+            "OP15-108",
+            "EB03-053",
+            "OP12-099",
+            "EB04-058",
+            "OP12-099",
+            "EB01-056"
+          ],
+          "board": [
+            "EB01-056",
+            "EB01-056"
+          ],
+          "trash": [],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 4,
+      "player": "kakasino#6476",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Borsalino",
+        "code": "EB04-058"
+      },
+      "don_drawn": 2,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-119",
+            "OP15-108",
+            "OP15-108",
+            "EB03-053",
+            "OP12-099",
+            "EB04-058",
+            "OP12-099",
+            "EB01-056"
+          ],
+          "board": [
+            "EB01-056",
+            "EB01-056"
+          ],
+          "trash": [],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 4,
+      "player": "kakasino#6476",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-119",
+            "OP15-108",
+            "OP15-108",
+            "EB03-053",
+            "OP12-099",
+            "EB04-058",
+            "OP12-099",
+            "EB01-056",
+            "OP15-119"
+          ],
+          "board": [
+            "EB01-056",
+            "EB01-056",
+            "OP05-106"
+          ],
+          "trash": [],
+          "life": 1
+        }
+      }
+    },
+    {
+      "turn": 6,
+      "player": "kakasino#6476",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Van Augur",
+        "code": "OP16-103"
+      },
+      "don_drawn": 2,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-119",
+            "OP15-108",
+            "OP15-108",
+            "EB03-053",
+            "OP12-099",
+            "EB04-058",
+            "OP12-099",
+            "EB01-056",
+            "OP15-119"
+          ],
+          "board": [
+            "EB01-056",
+            "EB01-056",
+            "OP05-106"
+          ],
+          "trash": [],
+          "life": 1
+        }
+      }
+    },
+    {
+      "turn": 6,
+      "player": "kakasino#6476",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-119",
+            "OP15-108",
+            "OP15-108",
+            "EB03-053",
+            "OP12-099",
+            "EB04-058",
+            "OP12-099",
+            "EB01-056",
+            "OP15-119",
+            "OP15-114"
+          ],
+          "board": [
+            "OP05-106"
+          ],
+          "trash": [
+            "EB01-056",
+            "EB01-056"
+          ],
+          "life": 1
+        }
+      }
+    },
+    {
+      "turn": 8,
+      "player": "kakasino#6476",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Jesus Burgess",
+        "code": "OP09-086"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP09-086",
+          "card_name": "Jesus Burgess",
+          "effects": []
+        },
+        {
+          "type": "play",
+          "card": "OP16-103",
+          "card_name": "Van Augur",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-119",
+            "OP15-108",
+            "OP15-108",
+            "EB03-053",
+            "OP12-099",
+            "EB04-058",
+            "OP12-099",
+            "EB01-056",
+            "OP15-119",
+            "OP15-114"
+          ],
+          "board": [
+            "OP05-106"
+          ],
+          "trash": [
+            "EB01-056",
+            "EB01-056"
+          ],
+          "life": 1
+        }
+      }
+    },
+    {
+      "turn": 8,
+      "player": "kakasino#6476",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-119",
+            "OP15-108",
+            "OP15-108",
+            "EB03-053",
+            "OP12-099",
+            "EB04-058",
+            "OP12-099",
+            "EB01-056",
+            "OP15-119",
+            "OP15-114"
+          ],
+          "board": [],
+          "trash": [
+            "EB01-056",
+            "EB01-056",
+            "OP05-106"
+          ],
+          "life": 1
+        }
+      }
+    },
+    {
+      "turn": 8,
+      "player": "kakasino#6476",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Charlotte Flampe",
+        "code": "EB01-056"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "EB03-053",
+          "card_name": "Nami",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-119",
+            "OP15-108",
+            "OP15-108",
+            "EB03-053",
+            "OP12-099",
+            "EB04-058",
+            "OP12-099",
+            "EB01-056",
+            "OP15-119",
+            "OP15-114"
+          ],
+          "board": [],
+          "trash": [
+            "EB01-056",
+            "EB01-056",
+            "OP05-106"
+          ],
+          "life": 1
+        }
+      }
+    },
+    {
+      "turn": 8,
+      "player": "kakasino#6476",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-119",
+            "OP15-108",
+            "OP15-108",
+            "OP12-099",
+            "EB04-058",
+            "OP12-099",
+            "EB01-056",
+            "OP15-119",
+            "OP15-114",
+            "EB01-056"
+          ],
+          "board": [
+            "EB03-053"
+          ],
+          "trash": [
+            "EB01-056",
+            "EB01-056",
+            "OP05-106"
+          ],
+          "life": 1
+        }
+      }
+    },
+    {
+      "turn": 10,
+      "player": "kakasino#6476",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Catarina Devon",
+        "code": "OP16-104"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "EB04-058",
+          "card_name": "Borsalino",
+          "effects": []
+        },
+        {
+          "type": "play",
+          "card": "OP09-091",
+          "card_name": "Vasco Shot",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-119",
+            "OP15-108",
+            "OP15-108",
+            "OP12-099",
+            "EB04-058",
+            "OP12-099",
+            "EB01-056",
+            "OP15-119",
+            "OP15-114",
+            "EB01-056"
+          ],
+          "board": [
+            "EB03-053"
+          ],
+          "trash": [
+            "EB01-056",
+            "EB01-056",
+            "OP05-106"
+          ],
+          "life": 1
+        }
+      }
+    },
+    {
+      "turn": 10,
+      "player": "kakasino#6476",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-119",
+            "OP15-108",
+            "OP15-108",
+            "OP12-099",
+            "EB04-058",
+            "EB01-056",
+            "OP15-119",
+            "OP15-114",
+            "EB01-056"
+          ],
+          "board": [
+            "EB03-053"
+          ],
+          "trash": [
+            "EB01-056",
+            "EB01-056",
+            "OP05-106",
+            "OP16-119",
+            "OP12-099"
+          ],
+          "life": 1
+        }
+      }
+    },
+    {
+      "turn": 12,
+      "player": "kakasino#6476",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Marshall D. Teach",
+        "code": "OP16-119"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP16-119",
+          "card_name": "Marshall D. Teach",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-119",
+            "OP15-108",
+            "OP15-108",
+            "OP12-099",
+            "EB04-058",
+            "EB01-056",
+            "OP15-119",
+            "OP15-114",
+            "EB01-056"
+          ],
+          "board": [
+            "EB03-053"
+          ],
+          "trash": [
+            "EB01-056",
+            "EB01-056",
+            "OP05-106",
+            "OP16-119",
+            "OP12-099"
+          ],
+          "life": 1
+        }
+      }
+    },
+    {
+      "turn": 12,
+      "player": "kakasino#6476",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP15-108",
+            "OP15-108",
+            "OP12-099",
+            "EB04-058",
+            "EB01-056",
+            "OP15-119",
+            "OP15-114",
+            "EB01-056",
+            "EB02-052"
+          ],
+          "board": [
+            "EB03-053",
+            "OP16-119"
+          ],
+          "trash": [
+            "EB01-056",
+            "EB01-056",
+            "OP05-106",
+            "OP16-119",
+            "OP12-099"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 13,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Laffitte",
+        "code": "OP09-095"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP09-095",
+          "card_name": "Laffitte",
+          "effects": []
+        },
+        {
+          "type": "play",
+          "card": "OP16-119",
+          "card_name": "Marshall D. Teach",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP15-108",
+            "OP15-108",
+            "OP12-099",
+            "EB04-058",
+            "EB01-056",
+            "OP15-119",
+            "OP15-114",
+            "EB01-056",
+            "EB02-052"
+          ],
+          "board": [
+            "EB03-053",
+            "OP16-119"
+          ],
+          "trash": [
+            "EB01-056",
+            "EB01-056",
+            "OP05-106",
+            "OP16-119",
+            "OP12-099"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 13,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP15-108",
+            "OP15-108",
+            "OP12-099",
+            "EB04-058",
+            "EB01-056",
+            "OP15-119",
+            "OP15-114",
+            "EB01-056",
+            "EB02-052",
+            "EB02-052"
+          ],
+          "board": [
+            "EB03-053",
+            "OP16-119"
+          ],
+          "trash": [
+            "EB01-056",
+            "EB01-056",
+            "OP05-106",
+            "OP16-119",
+            "OP12-099"
+          ],
+          "life": 1
+        }
+      }
+    },
+    {
+      "turn": 20,
+      "player": "kakasino#6476",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Enel",
+        "code": "EB02-052"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "EB02-052",
+          "card_name": "Enel",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP15-108",
+            "OP15-108",
+            "OP12-099",
+            "EB04-058",
+            "EB01-056",
+            "OP15-119",
+            "OP15-114",
+            "EB01-056",
+            "EB02-052",
+            "EB02-052"
+          ],
+          "board": [
+            "EB03-053",
+            "OP16-119"
+          ],
+          "trash": [
+            "EB01-056",
+            "EB01-056",
+            "OP05-106",
+            "OP16-119",
+            "OP12-099"
+          ],
+          "life": 1
+        }
+      }
+    },
+    {
+      "turn": 20,
+      "player": "kakasino#6476",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP15-108",
+            "OP15-108",
+            "EB04-058",
+            "EB01-056",
+            "OP15-119",
+            "OP15-114",
+            "EB01-056",
+            "EB02-052",
+            "EB02-052"
+          ],
+          "board": [
+            "EB03-053",
+            "OP16-119",
+            "EB02-052"
+          ],
+          "trash": [
+            "EB01-056",
+            "EB01-056",
+            "OP05-106",
+            "OP16-119",
+            "OP12-099",
+            "OP12-099"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 23,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Marshall D. Teach",
+        "code": "OP09-093"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP09-093",
+          "card_name": "Marshall D. Teach",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP15-108",
+            "OP15-108",
+            "EB04-058",
+            "EB01-056",
+            "OP15-119",
+            "OP15-114",
+            "EB01-056",
+            "EB02-052",
+            "EB02-052"
+          ],
+          "board": [
+            "EB03-053",
+            "OP16-119",
+            "EB02-052"
+          ],
+          "trash": [
+            "EB01-056",
+            "EB01-056",
+            "OP05-106",
+            "OP16-119",
+            "OP12-099",
+            "OP12-099"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 23,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP15-108",
+            "OP15-108",
+            "EB01-056",
+            "OP15-119",
+            "OP15-114",
+            "EB01-056",
+            "EB02-052",
+            "EB02-052",
+            "OP05-105"
+          ],
+          "board": [
+            "OP16-119",
+            "EB02-052",
+            "EB04-058"
+          ],
+          "trash": [
+            "EB01-056",
+            "EB01-056",
+            "OP05-106",
+            "OP16-119",
+            "OP12-099",
+            "OP12-099",
+            "EB03-053"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 30,
+      "player": "kakasino#6476",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Kalgara",
+        "code": "OP12-099"
+      },
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP15-114",
+          "card_name": "Wyper",
+          "effects": []
+        },
+        {
+          "type": "play",
+          "card": "OP15-119",
+          "card_name": "Monkey D. Luffy",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP15-108",
+            "OP15-108",
+            "EB01-056",
+            "OP15-119",
+            "OP15-114",
+            "EB01-056",
+            "EB02-052",
+            "EB02-052",
+            "OP05-105"
+          ],
+          "board": [
+            "OP16-119",
+            "EB02-052",
+            "EB04-058"
+          ],
+          "trash": [
+            "EB01-056",
+            "EB01-056",
+            "OP05-106",
+            "OP16-119",
+            "OP12-099",
+            "OP12-099",
+            "EB03-053"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 30,
+      "player": "kakasino#6476",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP15-108",
+            "OP15-108",
+            "EB01-056",
+            "EB01-056",
+            "EB02-052",
+            "EB02-052",
+            "OP05-105",
+            "OP12-099"
+          ],
+          "board": [
+            "OP16-119",
+            "EB02-052",
+            "EB04-058",
+            "OP15-114",
+            "OP15-119"
+          ],
+          "trash": [
+            "EB01-056",
+            "EB01-056",
+            "OP05-106",
+            "OP16-119",
+            "OP12-099",
+            "OP12-099",
+            "EB03-053"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 34,
+      "player": "kakasino#6476",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Vasco Shot",
+        "code": "OP16-110"
+      },
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP09-099",
+          "card_name": "Fullalead",
+          "effects": []
+        },
+        {
+          "type": "play",
+          "card": "OP16-119",
+          "card_name": "Marshall D. Teach",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP15-108",
+            "OP15-108",
+            "EB01-056",
+            "EB01-056",
+            "EB02-052",
+            "EB02-052",
+            "OP05-105",
+            "OP12-099"
+          ],
+          "board": [
+            "OP16-119",
+            "EB02-052",
+            "EB04-058",
+            "OP15-114",
+            "OP15-119"
+          ],
+          "trash": [
+            "EB01-056",
+            "EB01-056",
+            "OP05-106",
+            "OP16-119",
+            "OP12-099",
+            "OP12-099",
+            "EB03-053"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 34,
+      "player": "kakasino#6476",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP15-108",
+            "OP15-108",
+            "EB01-056",
+            "EB02-052",
+            "EB02-052",
+            "OP12-099"
+          ],
+          "board": [
+            "OP16-119",
+            "EB02-052",
+            "OP15-114",
+            "OP15-119"
+          ],
+          "trash": [
+            "EB01-056",
+            "EB01-056",
+            "OP05-106",
+            "OP16-119",
+            "OP12-099",
+            "OP12-099",
+            "EB03-053",
+            "EB04-058",
+            "OP05-105",
+            "EB01-056"
+          ],
+          "life": 2
+        }
+      }
+    }
+  ]
+}

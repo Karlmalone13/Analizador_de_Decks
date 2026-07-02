@@ -1,0 +1,1110 @@
+{
+  "meta": {
+    "source": "autosaved_log",
+    "original_file": "2026-06-28T00.46.41.log",
+    "p1": {
+      "name": "ccarlosdos#5040",
+      "leader_name": "Sengoku",
+      "leader_code": "OP16-060",
+      "goes_first": true
+    },
+    "p2": {
+      "name": "Karlmalone#2854",
+      "leader_name": "Marshall D. Teach",
+      "leader_code": "OP16-080",
+      "goes_first": false
+    },
+    "winner": null,
+    "winner_name": null,
+    "total_turns": 27,
+    "mulligan_p1": {
+      "before": [],
+      "after": [],
+      "took_mulligan": true
+    },
+    "mulligan_p2": {
+      "before": [
+        "OP16-110",
+        "OP16-109",
+        "ST27-001",
+        "OP09-093",
+        "OP16-119"
+      ],
+      "after": [
+        "OP16-110",
+        "OP16-109",
+        "ST27-001",
+        "OP09-093",
+        "OP16-119"
+      ],
+      "took_mulligan": false
+    }
+  },
+  "turns": [
+    {
+      "turn": 1,
+      "player": "ccarlosdos#5040",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Koby",
+        "code": "OP16-064"
+      },
+      "don_drawn": 1,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP16-064",
+          "card_name": "Koby",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-064",
+            "OP16-065",
+            "OP16-066",
+            "OP11-067",
+            "OP16-078"
+          ],
+          "board": [
+            "OP16-064"
+          ],
+          "trash": [],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 2,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Avalo Pizarro",
+        "code": "ST27-001"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP16-109",
+          "card_name": "Doc Q",
+          "effects": []
+        },
+        {
+          "type": "play",
+          "card": "ST27-001",
+          "card_name": "Avalo Pizarro",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-064",
+            "OP16-065",
+            "OP16-066",
+            "OP11-067",
+            "OP16-078"
+          ],
+          "board": [
+            "OP16-064"
+          ],
+          "trash": [],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 2,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-064",
+            "OP16-065",
+            "OP16-066",
+            "OP11-067",
+            "OP16-078"
+          ],
+          "board": [
+            "OP16-064"
+          ],
+          "trash": [],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 3,
+      "player": "ccarlosdos#5040",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Sengoku",
+        "code": "OP16-066"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP16-078",
+          "card_name": "Marineford",
+          "effects": []
+        },
+        {
+          "type": "play",
+          "card": "OP16-064",
+          "card_name": "Koby",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-064",
+            "OP16-065",
+            "OP16-066",
+            "OP11-067",
+            "OP16-078"
+          ],
+          "board": [
+            "OP16-064"
+          ],
+          "trash": [],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 3,
+      "player": "ccarlosdos#5040",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-065",
+            "OP16-066",
+            "OP11-067",
+            "OP16-066",
+            "OP16-063",
+            "OP16-073"
+          ],
+          "board": [
+            "OP16-064",
+            "OP16-064"
+          ],
+          "trash": [],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 6,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Vasco Shot",
+        "code": "OP16-110"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "ST27-001",
+          "card_name": "Avalo Pizarro",
+          "effects": []
+        },
+        {
+          "type": "play",
+          "card": "OP09-099",
+          "card_name": "Fullalead",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-065",
+            "OP16-066",
+            "OP11-067",
+            "OP16-066",
+            "OP16-063",
+            "OP16-073"
+          ],
+          "board": [
+            "OP16-064",
+            "OP16-064"
+          ],
+          "trash": [],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 6,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-065",
+            "OP16-066",
+            "OP11-067",
+            "OP16-063",
+            "OP16-073",
+            "OP11-070"
+          ],
+          "board": [
+            "OP16-064",
+            "OP16-064"
+          ],
+          "trash": [
+            "OP16-066"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 10,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Laffitte",
+        "code": "OP09-095"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP16-066",
+          "card_name": "Sengoku",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-065",
+            "OP16-066",
+            "OP11-067",
+            "OP16-063",
+            "OP16-073",
+            "OP11-070"
+          ],
+          "board": [
+            "OP16-064",
+            "OP16-064"
+          ],
+          "trash": [
+            "OP16-066"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 10,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-065",
+            "OP11-067",
+            "OP16-063",
+            "OP16-073",
+            "OP11-070",
+            "OP16-077"
+          ],
+          "board": [
+            "OP16-066"
+          ],
+          "trash": [
+            "OP16-066",
+            "OP11-067",
+            "OP16-063",
+            "OP16-064",
+            "OP16-064"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 10,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Van Augur",
+        "code": "OP16-103"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP09-095",
+          "card_name": "Laffitte",
+          "effects": []
+        },
+        {
+          "type": "play",
+          "card": "OP16-110",
+          "card_name": "Vasco Shot",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-065",
+            "OP11-067",
+            "OP16-063",
+            "OP16-073",
+            "OP11-070",
+            "OP16-077"
+          ],
+          "board": [
+            "OP16-066"
+          ],
+          "trash": [
+            "OP16-066",
+            "OP11-067",
+            "OP16-063",
+            "OP16-064",
+            "OP16-064"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 10,
+      "player": "Karlmalone#2854",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-065",
+            "OP11-067",
+            "OP16-063",
+            "OP16-073",
+            "OP11-070",
+            "OP16-077",
+            "OP16-063",
+            "OP16-070"
+          ],
+          "board": [
+            "OP16-066"
+          ],
+          "trash": [
+            "OP16-066",
+            "OP11-067",
+            "OP16-063",
+            "OP16-064",
+            "OP16-064"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 13,
+      "player": "ccarlosdos#5040",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Liberation",
+        "code": "OP10-098"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP16-070",
+          "card_name": "Donquixote Rosinante",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-065",
+            "OP11-067",
+            "OP16-063",
+            "OP16-073",
+            "OP11-070",
+            "OP16-077",
+            "OP16-063",
+            "OP16-070"
+          ],
+          "board": [
+            "OP16-066"
+          ],
+          "trash": [
+            "OP16-066",
+            "OP11-067",
+            "OP16-063",
+            "OP16-064",
+            "OP16-064"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 13,
+      "player": "ccarlosdos#5040",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP11-067",
+            "OP16-073",
+            "OP11-070",
+            "OP16-067",
+            "OP16-063"
+          ],
+          "board": [
+            "OP16-066",
+            "OP16-073",
+            "OP16-063",
+            "OP16-065",
+            "OP16-070"
+          ],
+          "trash": [
+            "OP16-066",
+            "OP11-067",
+            "OP16-063",
+            "OP16-064",
+            "OP16-064",
+            "OP16-077",
+            "OP16-063"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 15,
+      "player": "ccarlosdos#5040",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Doc Q",
+        "code": "OP16-109"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP16-119",
+          "card_name": "Marshall D. Teach",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP11-067",
+            "OP16-073",
+            "OP11-070",
+            "OP16-067",
+            "OP16-063"
+          ],
+          "board": [
+            "OP16-066",
+            "OP16-073",
+            "OP16-063",
+            "OP16-065",
+            "OP16-070"
+          ],
+          "trash": [
+            "OP16-066",
+            "OP11-067",
+            "OP16-063",
+            "OP16-064",
+            "OP16-064",
+            "OP16-077",
+            "OP16-063"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 15,
+      "player": "ccarlosdos#5040",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP11-067",
+            "OP16-073",
+            "OP11-070",
+            "OP16-067",
+            "OP16-063"
+          ],
+          "board": [
+            "OP16-066",
+            "OP16-073",
+            "OP16-063",
+            "OP16-065"
+          ],
+          "trash": [
+            "OP16-066",
+            "OP11-067",
+            "OP16-063",
+            "OP16-064",
+            "OP16-064",
+            "OP16-077",
+            "OP16-063",
+            "OP16-070"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 23,
+      "player": "ccarlosdos#5040",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Charlotte Pudding",
+        "code": "OP11-070"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP11-067",
+          "card_name": "Charlotte Katakuri",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP11-067",
+            "OP16-073",
+            "OP11-070",
+            "OP16-067",
+            "OP16-063"
+          ],
+          "board": [
+            "OP16-066",
+            "OP16-073",
+            "OP16-063",
+            "OP16-065"
+          ],
+          "trash": [
+            "OP16-066",
+            "OP11-067",
+            "OP16-063",
+            "OP16-064",
+            "OP16-064",
+            "OP16-077",
+            "OP16-063",
+            "OP16-070"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 23,
+      "player": "ccarlosdos#5040",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-073",
+            "OP11-070",
+            "OP16-067",
+            "OP16-063",
+            "OP16-070"
+          ],
+          "board": [
+            "OP16-066",
+            "OP16-073",
+            "OP16-063",
+            "OP16-065",
+            "OP11-067"
+          ],
+          "trash": [
+            "OP16-066",
+            "OP11-067",
+            "OP16-063",
+            "OP16-064",
+            "OP16-064",
+            "OP16-077",
+            "OP16-063",
+            "OP16-070",
+            "OP11-070"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 27,
+      "player": "ccarlosdos#5040",
+      "player_role": "",
+      "card_drawn": {
+        "name": "You'll Frighten Me...",
+        "code": "OP14-118"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP09-093",
+          "card_name": "Marshall D. Teach",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-073",
+            "OP11-070",
+            "OP16-067",
+            "OP16-063",
+            "OP16-070"
+          ],
+          "board": [
+            "OP16-066",
+            "OP16-073",
+            "OP16-063",
+            "OP16-065",
+            "OP11-067"
+          ],
+          "trash": [
+            "OP16-066",
+            "OP11-067",
+            "OP16-063",
+            "OP16-064",
+            "OP16-064",
+            "OP16-077",
+            "OP16-063",
+            "OP16-070",
+            "OP11-070"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 27,
+      "player": "ccarlosdos#5040",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-073",
+            "OP11-070",
+            "OP16-067",
+            "OP16-063"
+          ],
+          "board": [
+            "OP16-066",
+            "OP16-063",
+            "OP16-065",
+            "OP11-067"
+          ],
+          "trash": [
+            "OP16-066",
+            "OP11-067",
+            "OP16-063",
+            "OP16-064",
+            "OP16-064",
+            "OP16-077",
+            "OP16-063",
+            "OP16-070",
+            "OP11-070",
+            "OP16-070",
+            "OP16-073"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 37,
+      "player": "ccarlosdos#5040",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Catarina Devon",
+        "code": "OP16-104"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP16-073",
+          "card_name": "Borsalino",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-073",
+            "OP11-070",
+            "OP16-067",
+            "OP16-063"
+          ],
+          "board": [
+            "OP16-066",
+            "OP16-063",
+            "OP16-065",
+            "OP11-067"
+          ],
+          "trash": [
+            "OP16-066",
+            "OP11-067",
+            "OP16-063",
+            "OP16-064",
+            "OP16-064",
+            "OP16-077",
+            "OP16-063",
+            "OP16-070",
+            "OP11-070",
+            "OP16-070",
+            "OP16-073"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 37,
+      "player": "ccarlosdos#5040",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-073",
+            "OP11-070",
+            "OP16-067",
+            "OP16-063"
+          ],
+          "board": [
+            "OP16-066",
+            "OP16-063",
+            "OP16-065",
+            "OP11-067",
+            "OP16-073"
+          ],
+          "trash": [
+            "OP16-066",
+            "OP11-067",
+            "OP16-063",
+            "OP16-064",
+            "OP16-064",
+            "OP16-077",
+            "OP16-063",
+            "OP16-070",
+            "OP11-070",
+            "OP16-070",
+            "OP16-073"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 41,
+      "player": "ccarlosdos#5040",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Vasco Shot",
+        "code": "OP16-110"
+      },
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP16-108",
+          "card_name": "Shiryu",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-073",
+            "OP11-070",
+            "OP16-067",
+            "OP16-063"
+          ],
+          "board": [
+            "OP16-066",
+            "OP16-063",
+            "OP16-065",
+            "OP11-067",
+            "OP16-073"
+          ],
+          "trash": [
+            "OP16-066",
+            "OP11-067",
+            "OP16-063",
+            "OP16-064",
+            "OP16-064",
+            "OP16-077",
+            "OP16-063",
+            "OP16-070",
+            "OP11-070",
+            "OP16-070",
+            "OP16-073"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 41,
+      "player": "ccarlosdos#5040",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-073",
+            "OP11-070",
+            "OP16-067",
+            "OP16-063"
+          ],
+          "board": [
+            "OP16-065",
+            "OP11-067",
+            "OP16-073"
+          ],
+          "trash": [
+            "OP16-066",
+            "OP11-067",
+            "OP16-063",
+            "OP16-064",
+            "OP16-064",
+            "OP16-077",
+            "OP16-063",
+            "OP16-070",
+            "OP11-070",
+            "OP16-070",
+            "OP16-073",
+            "OP16-066",
+            "OP16-063"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 47,
+      "player": "ccarlosdos#5040",
+      "player_role": "",
+      "card_drawn": {
+        "name": "ZEHAHAHAHA",
+        "code": "OP16-116"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP16-063",
+          "card_name": "Kuzan",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-073",
+            "OP11-070",
+            "OP16-067",
+            "OP16-063"
+          ],
+          "board": [
+            "OP16-065",
+            "OP11-067",
+            "OP16-073"
+          ],
+          "trash": [
+            "OP16-066",
+            "OP11-067",
+            "OP16-063",
+            "OP16-064",
+            "OP16-064",
+            "OP16-077",
+            "OP16-063",
+            "OP16-070",
+            "OP11-070",
+            "OP16-070",
+            "OP16-073",
+            "OP16-066",
+            "OP16-063"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 47,
+      "player": "ccarlosdos#5040",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-073",
+            "OP11-070",
+            "OP16-067"
+          ],
+          "board": [
+            "OP16-065",
+            "OP11-067",
+            "OP16-073",
+            "OP16-063"
+          ],
+          "trash": [
+            "OP16-066",
+            "OP11-067",
+            "OP16-063",
+            "OP16-064",
+            "OP16-064",
+            "OP16-077",
+            "OP16-063",
+            "OP16-070",
+            "OP11-070",
+            "OP16-070",
+            "OP16-073",
+            "OP16-066",
+            "OP16-063",
+            "OP16-078",
+            "OP05-077"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 51,
+      "player": "ccarlosdos#5040",
+      "player_role": "",
+      "card_drawn": {
+        "name": "Vasco Shot",
+        "code": "OP16-110"
+      },
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-073",
+            "OP11-070",
+            "OP16-067"
+          ],
+          "board": [
+            "OP16-065",
+            "OP11-067",
+            "OP16-073",
+            "OP16-063"
+          ],
+          "trash": [
+            "OP16-066",
+            "OP11-067",
+            "OP16-063",
+            "OP16-064",
+            "OP16-064",
+            "OP16-077",
+            "OP16-063",
+            "OP16-070",
+            "OP11-070",
+            "OP16-070",
+            "OP16-073",
+            "OP16-066",
+            "OP16-063",
+            "OP16-078",
+            "OP05-077"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 51,
+      "player": "ccarlosdos#5040",
+      "player_role": "",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {
+        "": {
+          "hand": [
+            "OP16-073",
+            "OP16-075"
+          ],
+          "board": [
+            "OP16-065",
+            "OP11-067",
+            "OP16-073",
+            "OP16-063"
+          ],
+          "trash": [
+            "OP16-066",
+            "OP11-067",
+            "OP16-063",
+            "OP16-064",
+            "OP16-064",
+            "OP16-077",
+            "OP16-063",
+            "OP16-070",
+            "OP11-070",
+            "OP16-070",
+            "OP16-073",
+            "OP16-066",
+            "OP16-063",
+            "OP16-078",
+            "OP05-077",
+            "OP16-067",
+            "OP11-070"
+          ],
+          "life": 1
+        }
+      }
+    }
+  ]
+}
