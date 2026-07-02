@@ -1,5 +1,29 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-02 (31) - Claude
+
+**Feito — +3 logs ao banco + fix de slug com caracteres ilegais**
+
+Adicionados 3 logs novos ao banco (`logs/{raw,parsed,decks}/` + `index.json`):
+- `Krieg-RG_x_Marshall.D.Teach-B_2026-07-02T00.16.32` (12 turnos, Karlmalone wins)
+- `Krieg-RG_x_Brook-GB_2026-07-02T00.33.15` (12 turnos, Karlmalone wins)
+- `Eustass.Captain.Kid-Y_x_Sabo-RB_2026-07-02T00.48.19` (11 turnos, TaxiCab wins)
+
+**Fix `parse_combat_log.py`:** `_leader_slug` agora remove chars ilegais em filesystem
+(`"`, `'`, `/`, `\`, etc.) do nome do líder antes de montar o slug. Necessário para
+`Eustass "Captain" Kid` — as aspas duplas causavam `WinError 123` no `shutil.copy2`.
+
+**Métricas após adição dos 3 logs (10 logs totais, 134 turnos):**
+- top1-kind: **117/134 (87%)** — mantém acima do bar de 85%.
+- 2 novos logs perfeitos (Brook e Marshall), Kid/Sabo tem 2 divergências no T7
+  (humano ativa OP12-117 antes de jogar; comparador vê só 1ª ação).
+
+**Próximos passos:**
+- Fechar contrato de saída para o front (endpoint `/simulate` → resumo de decisões,
+  motivo da jogada, replay visual). Ver TODO.md.
+
+---
+
 ## 2026-07-02 (30) - Claude
 
 **Feito — Fatia A: diagnóstico completo + fixes de score**

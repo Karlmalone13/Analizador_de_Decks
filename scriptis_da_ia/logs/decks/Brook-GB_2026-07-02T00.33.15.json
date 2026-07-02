@@ -1,0 +1,96 @@
+{
+  "cards": [
+    {
+      "code": "OP15-081",
+      "name": "Sanji",
+      "count": 4
+    },
+    {
+      "code": "OP15-032",
+      "name": "Brook",
+      "count": 4
+    },
+    {
+      "code": "EB02-017",
+      "name": "Nami",
+      "count": 4
+    },
+    {
+      "code": "OP15-083",
+      "name": "OP15-083",
+      "count": 4
+    },
+    {
+      "code": "OP15-096",
+      "name": "Swallow Bond en Avant",
+      "count": 4
+    },
+    {
+      "code": "OP15-024",
+      "name": "Usopp",
+      "count": 3
+    },
+    {
+      "code": "OP15-088",
+      "name": "Pirate Docking 6",
+      "count": 3
+    },
+    {
+      "code": "OP15-086",
+      "name": "Nami",
+      "count": 3
+    },
+    {
+      "code": "OP15-085",
+      "name": "Tony Tony Chopper",
+      "count": 3
+    },
+    {
+      "code": "OP15-092",
+      "name": "Monkey D. Luffy",
+      "count": 3
+    },
+    {
+      "code": "OP14-031",
+      "name": "Nami",
+      "count": 2
+    },
+    {
+      "code": "ST30-012",
+      "name": "Monkey D. Luffy",
+      "count": 2
+    },
+    {
+      "code": "OP13-118",
+      "name": "OP13-118",
+      "count": 2
+    },
+    {
+      "code": "OP16-035",
+      "name": "OP16-035",
+      "count": 1
+    },
+    {
+      "code": "PRB02-006",
+      "name": "PRB02-006",
+      "count": 1
+    },
+    {
+      "code": "OP15-094",
+      "name": "OP15-094",
+      "count": 1
+    },
+    {
+      "code": "OP12-037",
+      "name": "OP12-037",
+      "count": 1
+    },
+    {
+      "code": "OP16-039",
+      "name": "OP16-039",
+      "count": 1
+    }
+  ],
+  "total_seen": 46,
+  "leader": "OP15-022"
+}

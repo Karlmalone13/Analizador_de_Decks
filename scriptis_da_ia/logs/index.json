@@ -173,5 +173,80 @@
       "BigRato#5650": "decks/Jinbe-B_2026-07-01T19.29.44.json",
       "Metalbeard#6700": "decks/Portgas.D.Ace-RB_2026-07-01T19.29.44.json"
     }
+  },
+  {
+    "id": "2026-07-02T00.16.32",
+    "friendly_name": "Krieg-RG_x_Marshall.D.Teach-B",
+    "date": "2026-07-02",
+    "p1": {
+      "name": "Karlmalone#2854",
+      "leader_code": "OP15-001",
+      "leader_name": "Krieg",
+      "slug": "Krieg-RG"
+    },
+    "p2": {
+      "name": "Shichibukai#4335",
+      "leader_code": "OP09-081",
+      "leader_name": "Marshall D. Teach",
+      "slug": "Marshall.D.Teach-B"
+    },
+    "turns": 12,
+    "winner": null,
+    "log_file": "raw/Krieg-RG_x_Marshall.D.Teach-B_2026-07-02T00.16.32.log",
+    "parsed_file": "parsed/Krieg-RG_x_Marshall.D.Teach-B_2026-07-02T00.16.32.json",
+    "deck_files": {
+      "Karlmalone#2854": "decks/Krieg-RG_2026-07-02T00.16.32.json",
+      "Shichibukai#4335": "decks/Marshall.D.Teach-B_2026-07-02T00.16.32.json"
+    }
+  },
+  {
+    "id": "2026-07-02T00.33.15",
+    "friendly_name": "Krieg-RG_x_Brook-GB",
+    "date": "2026-07-02",
+    "p1": {
+      "name": "Karlmalone#2854",
+      "leader_code": "OP15-001",
+      "leader_name": "Krieg",
+      "slug": "Krieg-RG"
+    },
+    "p2": {
+      "name": "luny#6381",
+      "leader_code": "OP15-022",
+      "leader_name": "Brook",
+      "slug": "Brook-GB"
+    },
+    "turns": 12,
+    "winner": null,
+    "log_file": "raw/Krieg-RG_x_Brook-GB_2026-07-02T00.33.15.log",
+    "parsed_file": "parsed/Krieg-RG_x_Brook-GB_2026-07-02T00.33.15.json",
+    "deck_files": {
+      "Karlmalone#2854": "decks/Krieg-RG_2026-07-02T00.33.15.json",
+      "luny#6381": "decks/Brook-GB_2026-07-02T00.33.15.json"
+    }
+  },
+  {
+    "id": "2026-07-02T00.48.19",
+    "friendly_name": "Eustass.Captain.Kid-Y_x_Sabo-RB",
+    "date": "2026-07-02",
+    "p1": {
+      "name": "Karlmalone#2854",
+      "leader_code": "OP10-099",
+      "leader_name": "Eustass \"Captain\" Kid",
+      "slug": "Eustass.Captain.Kid-Y"
+    },
+    "p2": {
+      "name": "TaxiCab#9855",
+      "leader_code": "OP13-004",
+      "leader_name": "Sabo",
+      "slug": "Sabo-RB"
+    },
+    "turns": 11,
+    "winner": null,
+    "log_file": "raw/Eustass.Captain.Kid-Y_x_Sabo-RB_2026-07-02T00.48.19.log",
+    "parsed_file": "parsed/Eustass.Captain.Kid-Y_x_Sabo-RB_2026-07-02T00.48.19.json",
+    "deck_files": {
+      "Karlmalone#2854": "decks/Eustass.Captain.Kid-Y_2026-07-02T00.48.19.json",
+      "TaxiCab#9855": "decks/Sabo-RB_2026-07-02T00.48.19.json"
+    }
   }
 ]

@@ -1,0 +1,61 @@
+{
+  "cards": [
+    {
+      "code": "OP15-007",
+      "name": "Gin",
+      "count": 3
+    },
+    {
+      "code": "OP13-040",
+      "name": "I Know You're Strong... So I'll Go All Out",
+      "count": 2
+    },
+    {
+      "code": "OP15-027",
+      "name": "Dracule Mihawk",
+      "count": 1
+    },
+    {
+      "code": "OP15-023",
+      "name": "Arlong",
+      "count": 1
+    },
+    {
+      "code": "OP15-025",
+      "name": "Kuro",
+      "count": 1
+    },
+    {
+      "code": "OP15-012",
+      "name": "Buggy",
+      "count": 1
+    },
+    {
+      "code": "OP15-037",
+      "name": "The Outcome Will Tell Us Who's Strong and Who's Weak",
+      "count": 1
+    },
+    {
+      "code": "OP15-009",
+      "name": "Koby",
+      "count": 1
+    },
+    {
+      "code": "OP05-037",
+      "name": "Whoever Wins This War Becomes Justice!!",
+      "count": 1
+    },
+    {
+      "code": "OP15-008",
+      "name": "Krieg",
+      "count": 1
+    },
+    {
+      "code": "OP15-003",
+      "name": "Alvida",
+      "count": 1
+    }
+  ],
+  "total_seen": 14,
+  "leader": "OP15-001"
+}

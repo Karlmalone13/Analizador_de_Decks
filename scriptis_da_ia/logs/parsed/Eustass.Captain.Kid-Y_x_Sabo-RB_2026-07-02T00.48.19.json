@@ -1,0 +1,1076 @@
+{
+  "meta": {
+    "players": {
+      "p1": {
+        "name": "Karlmalone#2854",
+        "leader": {
+          "name": "Eustass \"Captain\" Kid",
+          "code": "OP10-099"
+        }
+      },
+      "p2": {
+        "name": "TaxiCab#9855",
+        "leader": {
+          "name": "Sabo",
+          "code": "OP13-004"
+        }
+      }
+    },
+    "goes_first": "Karlmalone#2854"
+  },
+  "total_turns": 11,
+  "turns": [
+    {
+      "turn": 1,
+      "player": "Karlmalone#2854",
+      "card_drawn": null,
+      "don_drawn": 1,
+      "actions": [
+        {
+          "type": "activate",
+          "card": "OP13-116",
+          "card_name": "The Pirate King Is Just The Freest Man on the Sea!!!",
+          "effects": [
+            "Rest 1 Don",
+            "<b>Reveal and Draw Trafalgar Law [\"P-088\">P-088]</b>"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "OP11-101",
+            "OP10-114",
+            "OP15-105",
+            "OP15-105",
+            "P-088"
+          ],
+          "board": [],
+          "trash": [
+            "OP13-116"
+          ],
+          "life": 5
+        },
+        "TaxiCab#9855": {
+          "hand": [
+            "OP05-004",
+            "OP05-021",
+            "OP06-003",
+            "OP05-005",
+            "OP05-004"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 2,
+      "player": "TaxiCab#9855",
+      "card_drawn": {
+        "name": "Belo Betty",
+        "code": "OP05-015"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP05-015",
+          "card_name": "Belo Betty",
+          "effects": [
+            "<b>Reveal and Draw Sabo [\"EB02-002\">EB02-002]</b>"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP05-021",
+          "card_name": "Revolutionary Army General Headquarters",
+          "effects": [
+            "<b>Reveal and Draw Koala [\"EB03-042\">EB03-042]</b>"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "OP11-101",
+            "OP10-114",
+            "OP15-105",
+            "OP15-105",
+            "P-088"
+          ],
+          "board": [],
+          "trash": [
+            "OP13-116"
+          ],
+          "life": 5
+        },
+        "TaxiCab#9855": {
+          "hand": [
+            "OP05-004",
+            "OP06-003",
+            "OP05-005",
+            "EB02-002",
+            "EB03-042"
+          ],
+          "trash": [
+            "OP05-004"
+          ],
+          "board": [
+            "OP05-015"
+          ],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 3,
+      "player": "Karlmalone#2854",
+      "card_drawn": {
+        "name": "Slam Gibson",
+        "code": "OP12-117"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Eustass \"Captain\" Kid",
+          "attacker_code": "OP10-099",
+          "target": "Sabo [\"OP13-004\">OP13-004]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP11-101",
+          "card_name": "Capone \"Gang\" Bege",
+          "effects": []
+        },
+        {
+          "type": "play",
+          "card": "OP15-105",
+          "card_name": "Jewelry Bonney",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "OP10-114",
+            "OP15-105",
+            "P-088",
+            "OP12-117"
+          ],
+          "board": [
+            "OP11-101",
+            "OP15-105"
+          ],
+          "trash": [
+            "OP13-116"
+          ],
+          "life": 5
+        },
+        "TaxiCab#9855": {
+          "hand": [
+            "OP05-004",
+            "OP06-003",
+            "OP05-005",
+            "EB02-002",
+            "EB03-042",
+            "P-105"
+          ],
+          "trash": [
+            "OP05-004"
+          ],
+          "board": [
+            "OP05-015"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 4,
+      "player": "TaxiCab#9855",
+      "card_drawn": {
+        "name": "Koala",
+        "code": "P-069"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "P-105",
+          "card_name": "Sabo",
+          "effects": [
+            "Takes Bottom Life",
+            "Attach 1 Rested Don to Sabo [\"OP13-004\">OP13-004]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Sabo",
+          "attacker_code": "OP13-004",
+          "target": "Eustass \"Captain\" Kid [\"OP10-099\">OP10-099]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP05-021",
+          "card_name": "Revolutionary Army General Headquarters",
+          "effects": [
+            "<b>Reveal and Draw Karasu [\"OP05-005\">OP05-005]</b>"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "OP10-114",
+            "OP15-105",
+            "P-088",
+            "OP12-117",
+            "OP11-101"
+          ],
+          "board": [
+            "OP11-101",
+            "OP15-105"
+          ],
+          "trash": [
+            "OP13-116"
+          ],
+          "life": 4
+        },
+        "TaxiCab#9855": {
+          "hand": [
+            "OP05-004",
+            "OP06-003",
+            "OP05-005",
+            "EB02-002",
+            "EB03-042",
+            "EB02-002",
+            "OP05-005"
+          ],
+          "trash": [
+            "OP05-004",
+            "P-069"
+          ],
+          "board": [
+            "OP05-015",
+            "P-105"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 5,
+      "player": "Karlmalone#2854",
+      "card_drawn": {
+        "name": "Trafalgar Law",
+        "code": "EB03-062"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP11-101",
+          "card_name": "Capone \"Gang\" Bege",
+          "effects": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP10-099",
+          "to_name": "Eustass \"Captain\" Kid",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP10-099",
+          "to_name": "Eustass \"Captain\" Kid",
+          "total": 2
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP10-099",
+          "to_name": "Eustass \"Captain\" Kid",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Eustass \"Captain\" Kid",
+          "attacker_code": "OP10-099",
+          "target": "Sabo [\"OP13-004\">OP13-004]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": "P-105",
+          "countered_by": [
+            "EB02-002"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "OP10-114",
+            "OP15-105",
+            "P-088",
+            "OP12-117",
+            "EB03-062"
+          ],
+          "board": [
+            "OP11-101",
+            "OP15-105",
+            "OP11-101"
+          ],
+          "trash": [
+            "OP13-116"
+          ],
+          "life": 4
+        },
+        "TaxiCab#9855": {
+          "hand": [
+            "OP05-004",
+            "OP06-003",
+            "OP05-005",
+            "EB03-042",
+            "EB02-002",
+            "OP05-005"
+          ],
+          "trash": [
+            "OP05-004",
+            "P-069",
+            "EB02-002"
+          ],
+          "board": [
+            "OP05-015",
+            "P-105"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 6,
+      "player": "TaxiCab#9855",
+      "card_drawn": {
+        "name": "Sabo",
+        "code": "EB02-002"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP13-004",
+          "to_name": "Sabo",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Sabo",
+          "attacker_code": "OP13-004",
+          "target": "Eustass \"Captain\" Kid [\"OP10-099\">OP10-099]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": "OP11-101",
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Sabo",
+          "attacker_code": "P-105",
+          "target": "Eustass \"Captain\" Kid [\"OP10-099\">OP10-099]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP15-105",
+            "OP10-114"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP06-003",
+          "card_name": "Emporio Ivankov",
+          "effects": [
+            "Deploy Koala [\"EB03-042\">EB03-042]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP05-021",
+          "card_name": "Revolutionary Army General Headquarters",
+          "effects": [
+            "<b>Reveal and Draw Sabo [\"P-105\">P-105]</b>"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "P-088",
+            "OP12-117",
+            "EB03-062"
+          ],
+          "board": [
+            "OP11-101",
+            "OP15-105"
+          ],
+          "trash": [
+            "OP13-116",
+            "OP11-101",
+            "OP15-105",
+            "OP10-114"
+          ],
+          "life": 4
+        },
+        "TaxiCab#9855": {
+          "hand": [
+            "OP05-004",
+            "OP05-005",
+            "EB02-002",
+            "OP05-005",
+            "EB02-002",
+            "P-105"
+          ],
+          "trash": [
+            "OP05-004",
+            "P-069",
+            "EB02-002",
+            "EB03-042"
+          ],
+          "board": [
+            "OP05-015",
+            "P-105",
+            "OP06-003",
+            "EB03-042"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 7,
+      "player": "Karlmalone#2854",
+      "card_drawn": {
+        "name": "Jewelry Bonney",
+        "code": "OP15-105"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "activate",
+          "card": "OP12-117",
+          "card_name": "Slam Gibson",
+          "effects": [
+            "Rest 1 Don",
+            "Rest 5 Don",
+            "Add Koala [\"EB03-042\">EB03-042] to bottom of Life"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP10-099",
+          "to_name": "Eustass \"Captain\" Kid",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Eustass \"Captain\" Kid",
+          "attacker_code": "OP10-099",
+          "target": "Sabo [\"OP13-004\">OP13-004]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "P-088",
+            "EB03-062",
+            "OP15-105"
+          ],
+          "board": [
+            "OP11-101",
+            "OP15-105"
+          ],
+          "trash": [
+            "OP13-116",
+            "OP11-101",
+            "OP15-105",
+            "OP10-114",
+            "OP12-117"
+          ],
+          "life": 4
+        },
+        "TaxiCab#9855": {
+          "hand": [
+            "OP05-004",
+            "OP05-005",
+            "EB02-002",
+            "OP05-005",
+            "EB02-002",
+            "P-105",
+            "OP07-015"
+          ],
+          "trash": [
+            "OP05-004",
+            "P-069",
+            "EB02-002",
+            "EB03-042"
+          ],
+          "board": [
+            "OP05-015",
+            "P-105",
+            "OP06-003"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 8,
+      "player": "TaxiCab#9855",
+      "card_drawn": {
+        "name": "Revolutionary Army General Headquarters",
+        "code": "OP05-021"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "activate",
+          "card": "OP05-021",
+          "card_name": "Revolutionary Army General Headquarters",
+          "effects": [
+            "<b>Reveal and Draw Morley [\"OP12-093\">OP12-093]</b>"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP13-004",
+          "to_name": "Sabo",
+          "total": 1
+        },
+        {
+          "type": "play",
+          "card": "OP05-004",
+          "card_name": "Emporio Ivankov",
+          "effects": [
+            "Deploy Sabo [\"EB02-002\">EB02-002]"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP05-004",
+          "to_name": "Emporio Ivankov",
+          "total": 1
+        },
+        {
+          "type": "activate",
+          "card": "EB02-002",
+          "card_name": "Sabo",
+          "effects": [
+            "Rest Sabo [\"EB02-002\">EB02-002]",
+            "Buff Belo Betty [\"OP05-015\">OP05-015] 2000"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Belo Betty",
+          "attacker_code": "OP05-015",
+          "target": "Eustass \"Captain\" Kid [\"OP10-099\">OP10-099]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Emporio Ivankov",
+          "attacker_code": "OP06-003",
+          "target": "Eustass \"Captain\" Kid [\"OP10-099\">OP10-099]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP15-105",
+            "P-088"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Sabo",
+          "attacker_code": "OP13-004",
+          "target": "Eustass \"Captain\" Kid [\"OP10-099\">OP10-099]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "P-105",
+          "to_name": "Sabo",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Sabo",
+          "attacker_code": "P-105",
+          "target": "Eustass \"Captain\" Kid [\"OP10-099\">OP10-099]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": "OP11-101",
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "EB03-062",
+            "OP10-111",
+            "OP10-112"
+          ],
+          "board": [
+            "OP15-105"
+          ],
+          "trash": [
+            "OP13-116",
+            "OP11-101",
+            "OP15-105",
+            "OP10-114",
+            "OP12-117",
+            "OP13-116",
+            "OP15-105",
+            "P-088",
+            "OP11-101"
+          ],
+          "life": 2
+        },
+        "TaxiCab#9855": {
+          "hand": [
+            "OP05-005",
+            "OP05-005",
+            "EB02-002",
+            "P-105",
+            "OP07-015",
+            "OP12-093"
+          ],
+          "trash": [
+            "OP05-004",
+            "P-069",
+            "EB02-002",
+            "EB03-042",
+            "OP05-021"
+          ],
+          "board": [
+            "OP05-015",
+            "P-105",
+            "OP06-003",
+            "OP05-004",
+            "EB02-002"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 9,
+      "player": "Karlmalone#2854",
+      "card_drawn": {
+        "name": "Trafalgar Law",
+        "code": "P-088"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP10-111",
+          "card_name": "Monkey D. Luffy",
+          "effects": [
+            "<b>Reveal and Draw Trafalgar Law [\"OP10-119\">OP10-119]</b>"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Eustass \"Captain\" Kid",
+          "attacker_code": "OP10-099",
+          "target": "Belo Betty [\"OP05-015\">OP05-015]",
+          "result": null,
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "EB03-062",
+          "card_name": "Trafalgar Law",
+          "effects": [
+            "Trash Trafalgar Law [\"EB03-062\">EB03-062]",
+            "Trash Eustass \"Captain\" Kid [\"OP10-112\">OP10-112]",
+            "Add card to top of Life from Deck",
+            "Deploy Trafalgar Law [\"OP10-119\">OP10-119]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Trafalgar Law",
+          "attacker_code": "EB03-062",
+          "target": "Sabo [\"EB02-002\">EB02-002]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP10-119",
+          "card_name": "Trafalgar Law",
+          "effects": [
+            "Added card to top of Life from Hand",
+            "Attach 1 Rested Don to Eustass \"Captain\" Kid [\"OP10-099\">OP10-099]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP10-099",
+          "card_name": "Eustass \"Captain\" Kid",
+          "effects": [
+            "Flip 1 Life Face Up",
+            "Set Trafalgar Law [\"OP10-119\">OP10-119] to Active",
+            "Trafalgar Law [\"OP10-119\">OP10-119] Gains Blocker"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [],
+          "board": [
+            "OP15-105",
+            "OP10-111",
+            "OP10-119"
+          ],
+          "trash": [
+            "OP13-116",
+            "OP11-101",
+            "OP15-105",
+            "OP10-114",
+            "OP12-117",
+            "OP13-116",
+            "OP15-105",
+            "P-088",
+            "OP11-101",
+            "EB03-062",
+            "OP10-112"
+          ],
+          "life": 4
+        },
+        "TaxiCab#9855": {
+          "hand": [
+            "OP05-005",
+            "OP05-005",
+            "EB02-002",
+            "P-105",
+            "OP07-015",
+            "OP12-093"
+          ],
+          "trash": [
+            "OP05-004",
+            "P-069",
+            "EB02-002",
+            "EB03-042",
+            "OP05-021",
+            "OP05-015",
+            "EB02-002"
+          ],
+          "board": [
+            "P-105",
+            "OP06-003",
+            "OP05-004"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 10,
+      "player": "TaxiCab#9855",
+      "card_drawn": {
+        "name": "Karasu",
+        "code": "OP05-005"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP13-004",
+          "to_name": "Sabo",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP05-004",
+          "to_name": "Emporio Ivankov",
+          "total": 1
+        },
+        {
+          "type": "play",
+          "card": "OP05-005",
+          "card_name": "Karasu",
+          "effects": [
+            "Give Trafalgar Law [\"OP10-119\">OP10-119] -1000",
+            "Give Trafalgar Law [\"OP10-119\">OP10-119] -1000"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP05-004",
+          "card_name": "Emporio Ivankov",
+          "effects": [
+            "Deploy Karasu [\"OP05-005\">OP05-005]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Emporio Ivankov",
+          "attacker_code": "OP05-004",
+          "target": "Eustass \"Captain\" Kid [\"OP10-099\">OP10-099]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Emporio Ivankov",
+          "attacker_code": "OP06-003",
+          "target": "Eustass \"Captain\" Kid [\"OP10-099\">OP10-099]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Sabo",
+          "attacker_code": "OP13-004",
+          "target": "Eustass \"Captain\" Kid [\"OP10-099\">OP10-099]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Sabo",
+          "attacker_code": "P-105",
+          "target": "Eustass \"Captain\" Kid [\"OP10-099\">OP10-099]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": "OP10-119",
+          "countered_by": [
+            "OP10-111"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "P-105",
+          "card_name": "Sabo",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "P-088",
+            "OP12-117"
+          ],
+          "board": [
+            "OP15-105",
+            "OP10-111",
+            "OP10-119"
+          ],
+          "trash": [
+            "OP13-116",
+            "OP11-101",
+            "OP15-105",
+            "OP10-114",
+            "OP12-117",
+            "OP13-116",
+            "OP15-105",
+            "P-088",
+            "OP11-101",
+            "EB03-062",
+            "OP10-112",
+            "OP10-111"
+          ],
+          "life": 1
+        },
+        "TaxiCab#9855": {
+          "hand": [
+            "EB02-002",
+            "OP07-015",
+            "OP12-093",
+            "OP05-005"
+          ],
+          "trash": [
+            "OP05-004",
+            "P-069",
+            "EB02-002",
+            "EB03-042",
+            "OP05-021",
+            "OP05-015",
+            "EB02-002",
+            "OP05-004"
+          ],
+          "board": [
+            "P-105",
+            "OP06-003",
+            "OP05-005",
+            "OP05-005",
+            "P-105"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 11,
+      "player": "Karlmalone#2854",
+      "card_drawn": {
+        "name": "Trafalgar Law",
+        "code": "OP10-119"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP10-119",
+          "card_name": "Trafalgar Law",
+          "effects": [
+            "Added card to top of Life from Hand",
+            "Attach 1 Rested Don to Eustass \"Captain\" Kid [\"OP10-099\">OP10-099]"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP10-099",
+          "to_name": "Eustass \"Captain\" Kid",
+          "total": 2
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP10-099",
+          "to_name": "Eustass \"Captain\" Kid",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Eustass \"Captain\" Kid",
+          "attacker_code": "OP10-099",
+          "target": "Emporio Ivankov [\"OP06-003\">OP06-003]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP12-093"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Trafalgar Law",
+          "attacker_code": "OP10-119",
+          "target": "Emporio Ivankov [\"OP06-003\">OP06-003]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP10-099",
+          "card_name": "Eustass \"Captain\" Kid",
+          "effects": [
+            "Flip 1 Life Face Up",
+            "Set Trafalgar Law [\"OP10-119\">OP10-119] to Active",
+            "Trafalgar Law [\"OP10-119\">OP10-119] Gains Blocker"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "OP12-117"
+          ],
+          "board": [
+            "OP15-105",
+            "OP10-111",
+            "OP10-119",
+            "OP10-119"
+          ],
+          "trash": [
+            "OP13-116",
+            "OP11-101",
+            "OP15-105",
+            "OP10-114",
+            "OP12-117",
+            "OP13-116",
+            "OP15-105",
+            "P-088",
+            "OP11-101",
+            "EB03-062",
+            "OP10-112",
+            "OP10-111"
+          ],
+          "life": 2
+        },
+        "TaxiCab#9855": {
+          "hand": [
+            "EB02-002",
+            "OP07-015",
+            "OP05-005"
+          ],
+          "trash": [
+            "OP05-004",
+            "P-069",
+            "EB02-002",
+            "EB03-042",
+            "OP05-021",
+            "OP05-015",
+            "EB02-002",
+            "OP05-004",
+            "OP12-093",
+            "OP06-003"
+          ],
+          "board": [
+            "P-105",
+            "OP05-005",
+            "OP05-005",
+            "P-105"
+          ],
+          "life": 3
+        }
+      }
+    }
+  ]
+}

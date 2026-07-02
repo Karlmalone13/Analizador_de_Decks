@@ -1,0 +1,61 @@
+{
+  "cards": [
+    {
+      "code": "OP15-105",
+      "name": "Jewelry Bonney",
+      "count": 3
+    },
+    {
+      "code": "OP11-101",
+      "name": "Capone \"Gang\" Bege",
+      "count": 2
+    },
+    {
+      "code": "P-088",
+      "name": "Trafalgar Law",
+      "count": 2
+    },
+    {
+      "code": "OP13-116",
+      "name": "The Pirate King Is Just The Freest Man on the Sea!!!",
+      "count": 2
+    },
+    {
+      "code": "OP12-117",
+      "name": "Slam Gibson",
+      "count": 2
+    },
+    {
+      "code": "OP10-111",
+      "name": "Monkey D. Luffy",
+      "count": 2
+    },
+    {
+      "code": "OP10-119",
+      "name": "Trafalgar Law",
+      "count": 2
+    },
+    {
+      "code": "OP10-114",
+      "name": "X. Drake",
+      "count": 1
+    },
+    {
+      "code": "EB03-062",
+      "name": "Trafalgar Law",
+      "count": 1
+    },
+    {
+      "code": "OP10-112",
+      "name": "Eustass \"Captain\" Kid",
+      "count": 1
+    },
+    {
+      "code": "OP10-116",
+      "name": "Damned Punk: Electromagnetic Cannon",
+      "count": 1
+    }
+  ],
+  "total_seen": 19,
+  "leader": "OP10-099"
+}

@@ -1,0 +1,1055 @@
+{
+  "meta": {
+    "players": {
+      "p1": {
+        "name": "Karlmalone#2854",
+        "leader": {
+          "name": "Krieg",
+          "code": "OP15-001"
+        }
+      },
+      "p2": {
+        "name": "Shichibukai#4335",
+        "leader": {
+          "name": "Marshall D. Teach",
+          "code": "OP09-081"
+        }
+      }
+    },
+    "goes_first": null
+  },
+  "total_turns": 12,
+  "turns": [
+    {
+      "turn": 1,
+      "player": "Karlmalone#2854",
+      "card_drawn": null,
+      "don_drawn": 1,
+      "actions": [
+        {
+          "type": "activate",
+          "card": "OP15-037",
+          "card_name": "The Outcome Will Tell Us Who's Strong and Who's Weak",
+          "effects": [
+            "Rest 1 Don",
+            "<b>Reveal and Draw Buggy [\"OP15-012\">OP15-012]</b>"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "OP15-027",
+            "OP15-023",
+            "OP15-025",
+            "OP13-040",
+            "OP15-012"
+          ],
+          "board": [],
+          "trash": [
+            "OP15-037"
+          ],
+          "life": 4
+        },
+        "Shichibukai#4335": {
+          "hand": [
+            "OP09-089",
+            "OP09-086",
+            "OP09-098",
+            "OP09-095",
+            "OP10-086"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 2,
+      "player": "Shichibukai#4335",
+      "card_drawn": {
+        "name": "This is MY AGE!!!!",
+        "code": "OP09-096"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP09-095",
+          "card_name": "Laffitte",
+          "effects": [
+            "Rest 1 Don",
+            "Rest Laffitte [\"OP09-095\">OP09-095]",
+            "<b>Reveal and Draw Kuzan [\"OP10-082\">OP10-082]</b>"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "OP15-027",
+            "OP15-023",
+            "OP15-025",
+            "OP13-040",
+            "OP15-012"
+          ],
+          "board": [],
+          "trash": [
+            "OP15-037"
+          ],
+          "life": 4
+        },
+        "Shichibukai#4335": {
+          "hand": [
+            "OP09-089",
+            "OP09-086",
+            "OP09-098",
+            "OP10-086",
+            "OP09-096",
+            "OP10-082"
+          ],
+          "trash": [],
+          "board": [
+            "OP09-095"
+          ],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 3,
+      "player": "Karlmalone#2854",
+      "card_drawn": {
+        "name": "Gin",
+        "code": "OP15-007"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Krieg",
+          "attacker_code": "OP15-001",
+          "target": "Laffitte [\"OP09-095\">OP09-095]",
+          "result": null,
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP15-012",
+          "card_name": "Buggy",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "OP15-027",
+            "OP15-023",
+            "OP15-025",
+            "OP13-040",
+            "OP15-007"
+          ],
+          "board": [
+            "OP15-012"
+          ],
+          "trash": [
+            "OP15-037"
+          ],
+          "life": 4
+        },
+        "Shichibukai#4335": {
+          "hand": [
+            "OP09-089",
+            "OP09-086",
+            "OP09-098",
+            "OP10-086",
+            "OP09-096",
+            "OP10-082"
+          ],
+          "trash": [
+            "OP09-095"
+          ],
+          "board": [],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 4,
+      "player": "Shichibukai#4335",
+      "card_drawn": {
+        "name": "Van Augur",
+        "code": "OP09-083"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Marshall D. Teach",
+          "attacker_code": "OP09-081",
+          "target": "Krieg [\"OP15-001\">OP15-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP10-086",
+          "card_name": "Shiryu",
+          "effects": [
+            "Destroy Buggy [\"OP15-012\">OP15-012]"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "OP15-027",
+            "OP15-023",
+            "OP15-025",
+            "OP13-040",
+            "OP15-007",
+            "OP15-009",
+            "OP15-007"
+          ],
+          "board": [],
+          "trash": [
+            "OP15-037",
+            "OP15-012"
+          ],
+          "life": 3
+        },
+        "Shichibukai#4335": {
+          "hand": [
+            "OP09-089",
+            "OP09-086",
+            "OP09-098",
+            "OP09-096",
+            "OP10-082",
+            "OP09-083"
+          ],
+          "trash": [
+            "OP09-095"
+          ],
+          "board": [
+            "OP10-086"
+          ],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 5,
+      "player": "Karlmalone#2854",
+      "card_drawn": {
+        "name": "Whoever Wins This War Becomes Justice!!",
+        "code": "OP05-037"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP15-023",
+          "card_name": "Arlong",
+          "effects": [
+            "Attach 1 Rested Don to Shiryu [\"OP10-086\">OP10-086]",
+            "Attach 1 Rested Don to Shiryu [\"OP10-086\">OP10-086]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP15-001",
+          "card_name": "Krieg",
+          "effects": [
+            "Rest Shiryu [\"OP10-086\">OP10-086]"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP15-001",
+          "to_name": "Krieg",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Krieg",
+          "attacker_code": "OP15-001",
+          "target": "Marshall D. Teach [\"OP09-081\">OP09-081]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "OP15-027",
+            "OP15-025",
+            "OP13-040",
+            "OP15-007",
+            "OP15-009",
+            "OP15-007",
+            "OP05-037"
+          ],
+          "board": [
+            "OP15-023"
+          ],
+          "trash": [
+            "OP15-037",
+            "OP15-012"
+          ],
+          "life": 3
+        },
+        "Shichibukai#4335": {
+          "hand": [
+            "OP09-089",
+            "OP09-086",
+            "OP09-098",
+            "OP09-096",
+            "OP10-082",
+            "OP09-083",
+            "OP09-089"
+          ],
+          "trash": [
+            "OP09-095"
+          ],
+          "board": [
+            "OP10-086"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 6,
+      "player": "Shichibukai#4335",
+      "card_drawn": {
+        "name": "Black Hole",
+        "code": "OP09-098"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "activate",
+          "card": "OP09-096",
+          "card_name": "This is MY AGE!!!!",
+          "effects": [
+            "Rest 1 Don",
+            "<b>Reveal and Draw Kuzan [\"OP10-082\">OP10-082]</b>",
+            "Trash 2 Remaining Cards"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP10-082",
+          "card_name": "Kuzan",
+          "effects": [
+            "Trash Kuzan [\"OP10-082\">OP10-082]",
+            "Draw 1 Card",
+            "Deployed Doc Q [\"OP09-090\">OP09-090] from Trash"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Marshall D. Teach",
+          "attacker_code": "OP09-081",
+          "target": "Krieg [\"OP15-001\">OP15-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP15-027"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP09-081",
+          "card_name": "Marshall D. Teach",
+          "effects": [
+            "Trash Jesus Burgess [\"OP09-086\">OP09-086]",
+            "Opponent can't activate On Play abilities next turn!"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "OP15-025",
+            "OP13-040",
+            "OP15-007",
+            "OP15-009",
+            "OP15-007",
+            "OP05-037"
+          ],
+          "board": [
+            "OP15-023"
+          ],
+          "trash": [
+            "OP15-037",
+            "OP15-012",
+            "OP15-027"
+          ],
+          "life": 3
+        },
+        "Shichibukai#4335": {
+          "hand": [
+            "OP09-089",
+            "OP09-098",
+            "OP09-083",
+            "OP09-089",
+            "OP09-083",
+            "OP10-082",
+            "OP09-098"
+          ],
+          "trash": [
+            "OP09-095",
+            "OP09-096",
+            "OP09-095",
+            "OP10-082",
+            "OP09-086"
+          ],
+          "board": [
+            "OP10-086",
+            "OP09-090"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 7,
+      "player": "Karlmalone#2854",
+      "card_drawn": {
+        "name": "I Know You're Strong... So I'll Go All Out",
+        "code": "OP13-040"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP15-009",
+          "card_name": "Koby",
+          "effects": []
+        },
+        {
+          "type": "activate",
+          "card": "OP15-023",
+          "card_name": "Arlong",
+          "effects": [
+            "Attach 1 Rested Don to Doc Q [\"OP09-090\">OP09-090]",
+            "Attach 1 Rested Don to Doc Q [\"OP09-090\">OP09-090]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP15-001",
+          "card_name": "Krieg",
+          "effects": [
+            "Rest Doc Q [\"OP09-090\">OP09-090]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Krieg",
+          "attacker_code": "OP15-001",
+          "target": "Doc Q [\"OP09-090\">OP09-090]",
+          "result": null,
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP15-007",
+          "card_name": "Gin",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "OP15-025",
+            "OP13-040",
+            "OP15-007",
+            "OP05-037",
+            "OP13-040"
+          ],
+          "board": [
+            "OP15-023",
+            "OP15-009",
+            "OP15-007"
+          ],
+          "trash": [
+            "OP15-037",
+            "OP15-012",
+            "OP15-027"
+          ],
+          "life": 3
+        },
+        "Shichibukai#4335": {
+          "hand": [
+            "OP09-089",
+            "OP09-098",
+            "OP09-083",
+            "OP09-089",
+            "OP09-083",
+            "OP10-082",
+            "OP09-098",
+            "OP09-083"
+          ],
+          "trash": [
+            "OP09-095",
+            "OP09-096",
+            "OP09-095",
+            "OP10-082",
+            "OP09-086",
+            "OP09-090"
+          ],
+          "board": [
+            "OP10-086"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 8,
+      "player": "Shichibukai#4335",
+      "card_drawn": {
+        "name": "This is MY AGE!!!!",
+        "code": "OP09-096"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "activate",
+          "card": "OP09-098",
+          "card_name": "Black Hole",
+          "effects": [
+            "Rest 4 Don",
+            "Nullify effects of Koby [\"OP15-009\">OP15-009]",
+            "Destroy Koby [\"OP15-009\">OP15-009]",
+            "Rest 4 Don",
+            "Nullify effects of Arlong [\"OP15-023\">OP15-023]",
+            "Destroy Arlong [\"OP15-023\">OP15-023]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Marshall D. Teach",
+          "attacker_code": "OP09-081",
+          "target": "Krieg [\"OP15-001\">OP15-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP15-007"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Shiryu",
+          "attacker_code": "OP10-086",
+          "target": "Krieg [\"OP15-001\">OP15-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "OP15-025",
+            "OP13-040",
+            "OP05-037",
+            "OP13-040",
+            "OP15-008"
+          ],
+          "board": [
+            "OP15-007"
+          ],
+          "trash": [
+            "OP15-037",
+            "OP15-012",
+            "OP15-027",
+            "OP15-009",
+            "OP15-007",
+            "OP15-023"
+          ],
+          "life": 2
+        },
+        "Shichibukai#4335": {
+          "hand": [
+            "OP09-089",
+            "OP09-083",
+            "OP09-089",
+            "OP09-083",
+            "OP10-082",
+            "OP09-083",
+            "OP09-096"
+          ],
+          "trash": [
+            "OP09-095",
+            "OP09-096",
+            "OP09-095",
+            "OP10-082",
+            "OP09-086",
+            "OP09-090",
+            "OP09-098",
+            "OP09-098"
+          ],
+          "board": [
+            "OP10-086"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 9,
+      "player": "Karlmalone#2854",
+      "card_drawn": {
+        "name": "Gin",
+        "code": "OP15-007"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP15-025",
+          "card_name": "Kuro",
+          "effects": [
+            "Attach 1 Rested Don to Shiryu [\"OP10-086\">OP10-086]",
+            "Attach 1 Rested Don to Shiryu [\"OP10-086\">OP10-086]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Gin",
+          "attacker_code": "OP15-007",
+          "target": "Marshall D. Teach [\"OP09-081\">OP09-081]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP15-001",
+          "to_name": "Krieg",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Krieg",
+          "attacker_code": "OP15-001",
+          "target": "Shiryu [\"OP10-086\">OP10-086]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "OP13-040",
+            "OP05-037",
+            "OP13-040",
+            "OP15-008",
+            "OP15-007"
+          ],
+          "board": [
+            "OP15-007",
+            "OP15-025"
+          ],
+          "trash": [
+            "OP15-037",
+            "OP15-012",
+            "OP15-027",
+            "OP15-009",
+            "OP15-007",
+            "OP15-023"
+          ],
+          "life": 2
+        },
+        "Shichibukai#4335": {
+          "hand": [
+            "OP09-089",
+            "OP09-083",
+            "OP09-089",
+            "OP09-083",
+            "OP10-082",
+            "OP09-083",
+            "OP09-096",
+            "OP09-089"
+          ],
+          "trash": [
+            "OP09-095",
+            "OP09-096",
+            "OP09-095",
+            "OP10-082",
+            "OP09-086",
+            "OP09-090",
+            "OP09-098",
+            "OP09-098"
+          ],
+          "board": [
+            "OP10-086"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 10,
+      "player": "Shichibukai#4335",
+      "card_drawn": {
+        "name": "Jesus Burgess",
+        "code": "OP09-086"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "activate",
+          "card": "OP09-096",
+          "card_name": "This is MY AGE!!!!",
+          "effects": [
+            "Rest 1 Don",
+            "<b>Reveal and Draw Doc Q [\"OP09-090\">OP09-090]</b>",
+            "Trash 2 Remaining Cards"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP09-083",
+          "card_name": "Van Augur",
+          "effects": [
+            "Rest Van Augur [\"OP09-083\">OP09-083]",
+            "Gin [\"OP15-007\">OP15-007] Cost -3"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP09-089",
+          "card_name": "Stronger",
+          "effects": [
+            "Trash Stronger [\"OP09-089\">OP09-089]",
+            "Trash Kuzan [\"OP10-082\">OP10-082]",
+            "Draw 1 Card",
+            "Gin [\"OP15-007\">OP15-007] Cost -2"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP09-090",
+          "card_name": "Doc Q",
+          "effects": [
+            "Rest Doc Q [\"OP09-090\">OP09-090]",
+            "Destroy Gin [\"OP15-007\">OP15-007]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Marshall D. Teach",
+          "attacker_code": "OP09-081",
+          "target": "Krieg [\"OP15-001\">OP15-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": "OP15-025",
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP09-081",
+          "card_name": "Marshall D. Teach",
+          "effects": [
+            "Trash Jesus Burgess [\"OP09-086\">OP09-086]",
+            "Opponent can't activate On Play abilities next turn!"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "OP13-040",
+            "OP05-037",
+            "OP13-040",
+            "OP15-008",
+            "OP15-007"
+          ],
+          "board": [
+            "OP15-025"
+          ],
+          "trash": [
+            "OP15-037",
+            "OP15-012",
+            "OP15-027",
+            "OP15-009",
+            "OP15-007",
+            "OP15-023",
+            "OP15-007"
+          ],
+          "life": 2
+        },
+        "Shichibukai#4335": {
+          "hand": [
+            "OP09-089",
+            "OP09-083",
+            "OP09-089",
+            "OP09-083",
+            "ST27-003"
+          ],
+          "trash": [
+            "OP09-095",
+            "OP09-096",
+            "OP09-095",
+            "OP10-082",
+            "OP09-086",
+            "OP09-090",
+            "OP09-098",
+            "OP09-098",
+            "OP09-096",
+            "OP11-083",
+            "OP11-083",
+            "OP09-089",
+            "OP10-082",
+            "OP09-086"
+          ],
+          "board": [
+            "OP10-086",
+            "OP09-083",
+            "OP09-090"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 11,
+      "player": "Karlmalone#2854",
+      "card_drawn": {
+        "name": "Alvida",
+        "code": "OP15-003"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Krieg",
+          "attacker_code": "OP15-001",
+          "target": "Doc Q [\"OP09-090\">OP09-090]",
+          "result": null,
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP15-003",
+          "card_name": "Alvida",
+          "effects": [
+            "Attach 1 Rested Don to Shiryu [\"OP10-086\">OP10-086]",
+            "Attach 1 Rested Don to Shiryu [\"OP10-086\">OP10-086]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP15-001",
+          "card_name": "Krieg",
+          "effects": [
+            "Rest Shiryu [\"OP10-086\">OP10-086]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP13-040",
+          "card_name": "I Know You're Strong... So I'll Go All Out",
+          "effects": [
+            "Rest 1 Don",
+            "Rest 2 Don",
+            "Shiryu [\"OP10-086\">OP10-086] will not Activate during next Refresh",
+            "Van Augur [\"OP09-083\">OP09-083] will not Activate during next Refresh"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP15-001",
+          "to_name": "Krieg",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Kuro",
+          "attacker_code": "OP15-025",
+          "target": "Marshall D. Teach [\"OP09-081\">OP09-081]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP09-089",
+            "OP09-083"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "OP13-040",
+            "OP05-037",
+            "OP15-008",
+            "OP15-007"
+          ],
+          "board": [
+            "OP15-025",
+            "OP15-003"
+          ],
+          "trash": [
+            "OP15-037",
+            "OP15-012",
+            "OP15-027",
+            "OP15-009",
+            "OP15-007",
+            "OP15-023",
+            "OP15-007",
+            "OP13-040"
+          ],
+          "life": 2
+        },
+        "Shichibukai#4335": {
+          "hand": [
+            "OP09-089",
+            "OP09-083",
+            "ST27-003",
+            "ST27-003"
+          ],
+          "trash": [
+            "OP09-095",
+            "OP09-096",
+            "OP09-095",
+            "OP10-082",
+            "OP09-086",
+            "OP09-090",
+            "OP09-098",
+            "OP09-098",
+            "OP09-096",
+            "OP11-083",
+            "OP11-083",
+            "OP09-089",
+            "OP10-082",
+            "OP09-086",
+            "OP09-090",
+            "OP09-089",
+            "OP09-083"
+          ],
+          "board": [
+            "OP10-086",
+            "OP09-083"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 12,
+      "player": "Shichibukai#4335",
+      "card_drawn": {
+        "name": "Van Augur",
+        "code": "OP09-083"
+      },
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "play",
+          "card": "ST27-003",
+          "card_name": "Kuzan",
+          "effects": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 4,
+          "to": "OP09-081",
+          "to_name": "Marshall D. Teach",
+          "total": 4
+        },
+        {
+          "type": "attack",
+          "attacker": "Marshall D. Teach",
+          "attacker_code": "OP09-081",
+          "target": "Kuro [\"OP15-025\">OP15-025]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "OP13-040",
+            "OP15-008"
+          ],
+          "board": [
+            "OP15-025",
+            "OP15-003"
+          ],
+          "trash": [
+            "OP15-037",
+            "OP15-012",
+            "OP15-027",
+            "OP15-009",
+            "OP15-007",
+            "OP15-023",
+            "OP15-007",
+            "OP13-040",
+            "OP15-007",
+            "OP05-037"
+          ],
+          "life": 2
+        },
+        "Shichibukai#4335": {
+          "hand": [
+            "OP09-089",
+            "OP09-083",
+            "ST27-003",
+            "OP09-083"
+          ],
+          "trash": [
+            "OP09-095",
+            "OP09-096",
+            "OP09-095",
+            "OP10-082",
+            "OP09-086",
+            "OP09-090",
+            "OP09-098",
+            "OP09-098",
+            "OP09-096",
+            "OP11-083",
+            "OP11-083",
+            "OP09-089",
+            "OP10-082",
+            "OP09-086",
+            "OP09-090",
+            "OP09-089",
+            "OP09-083"
+          ],
+          "board": [
+            "OP10-086",
+            "OP09-083",
+            "ST27-003"
+          ],
+          "life": 3
+        }
+      }
+    }
+  ]
+}

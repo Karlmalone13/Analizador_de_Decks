@@ -1,0 +1,61 @@
+{
+  "cards": [
+    {
+      "code": "OP05-005",
+      "name": "Karasu",
+      "count": 3
+    },
+    {
+      "code": "EB02-002",
+      "name": "Sabo",
+      "count": 3
+    },
+    {
+      "code": "OP05-004",
+      "name": "Emporio Ivankov",
+      "count": 2
+    },
+    {
+      "code": "EB03-042",
+      "name": "Koala",
+      "count": 2
+    },
+    {
+      "code": "P-105",
+      "name": "Sabo",
+      "count": 2
+    },
+    {
+      "code": "OP05-021",
+      "name": "Revolutionary Army General Headquarters",
+      "count": 1
+    },
+    {
+      "code": "OP06-003",
+      "name": "Emporio Ivankov",
+      "count": 1
+    },
+    {
+      "code": "OP05-015",
+      "name": "Belo Betty",
+      "count": 1
+    },
+    {
+      "code": "P-069",
+      "name": "Koala",
+      "count": 1
+    },
+    {
+      "code": "OP07-015",
+      "name": "Monkey D. Dragon",
+      "count": 1
+    },
+    {
+      "code": "OP12-093",
+      "name": "OP12-093",
+      "count": 1
+    }
+  ],
+  "total_seen": 18,
+  "leader": "OP13-004"
+}

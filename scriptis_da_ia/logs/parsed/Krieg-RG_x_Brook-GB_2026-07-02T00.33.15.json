@@ -1,0 +1,1418 @@
+{
+  "meta": {
+    "players": {
+      "p1": {
+        "name": "Karlmalone#2854",
+        "leader": {
+          "name": "Krieg",
+          "code": "OP15-001"
+        }
+      },
+      "p2": {
+        "name": "luny#6381",
+        "leader": {
+          "name": "Brook",
+          "code": "OP15-022"
+        }
+      }
+    },
+    "goes_first": null
+  },
+  "total_turns": 12,
+  "turns": [
+    {
+      "turn": 1,
+      "player": "luny#6381",
+      "card_drawn": null,
+      "don_drawn": 1,
+      "actions": [
+        {
+          "type": "play",
+          "card": "EB02-017",
+          "card_name": "Nami",
+          "effects": [
+            "<b>Reveal and Draw Brook [\"OP15-032\">OP15-032]</b>"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP15-022",
+          "card_name": "Brook",
+          "effects": [
+            "Trash 4 Cards from Deck"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "OP15-037",
+            "OP15-023",
+            "OP15-025",
+            "OP15-037",
+            "OP15-003"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 4
+        },
+        "luny#6381": {
+          "hand": [
+            "OP15-081",
+            "OP14-031",
+            "OP15-024",
+            "OP15-088",
+            "OP15-032"
+          ],
+          "trash": [
+            "OP15-083",
+            "OP15-083",
+            "OP15-088",
+            "OP15-086"
+          ],
+          "board": [
+            "EB02-017"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 2,
+      "player": "Karlmalone#2854",
+      "card_drawn": {
+        "name": "Kuro",
+        "code": "OP15-025"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "activate",
+          "card": "OP15-037",
+          "card_name": "The Outcome Will Tell Us Who's Strong and Who's Weak",
+          "effects": [
+            "Rest 1 Don",
+            "<b>Reveal and Draw Krieg [\"OP15-008\">OP15-008]</b>",
+            "Rest 1 Don",
+            "<b>Reveal and Draw Koby [\"OP15-009\">OP15-009]</b>"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "OP15-023",
+            "OP15-025",
+            "OP15-003",
+            "OP15-025",
+            "OP15-008",
+            "OP15-009"
+          ],
+          "board": [],
+          "trash": [
+            "OP15-037",
+            "OP15-037"
+          ],
+          "life": 4
+        },
+        "luny#6381": {
+          "hand": [
+            "OP15-081",
+            "OP14-031",
+            "OP15-024",
+            "OP15-088",
+            "OP15-032"
+          ],
+          "trash": [
+            "OP15-083",
+            "OP15-083",
+            "OP15-088",
+            "OP15-086"
+          ],
+          "board": [
+            "EB02-017"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 3,
+      "player": "luny#6381",
+      "card_drawn": {
+        "name": "Monkey D. Luffy",
+        "code": "ST30-012"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP15-081",
+          "card_name": "Sanji",
+          "effects": [
+            "Trash 5 Cards from Deck"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP15-022",
+          "to_name": "Brook",
+          "total": 2
+        },
+        {
+          "type": "activate",
+          "card": "OP15-022",
+          "card_name": "Brook",
+          "effects": [
+            "Trash 4 Cards from Deck"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Brook",
+          "attacker_code": "OP15-022",
+          "target": "Krieg [\"OP15-001\">OP15-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "OP15-023",
+            "OP15-025",
+            "OP15-003",
+            "OP15-025",
+            "OP15-008",
+            "OP15-009",
+            "OP15-017"
+          ],
+          "board": [],
+          "trash": [
+            "OP15-037",
+            "OP15-037"
+          ],
+          "life": 3
+        },
+        "luny#6381": {
+          "hand": [
+            "OP14-031",
+            "OP15-024",
+            "OP15-088",
+            "OP15-032",
+            "ST30-012"
+          ],
+          "trash": [
+            "OP15-083",
+            "OP15-083",
+            "OP15-088",
+            "OP15-086",
+            "OP14-031",
+            "OP15-032",
+            "OP15-085",
+            "OP13-118",
+            "OP16-035",
+            "PRB02-006",
+            "OP15-032",
+            "EB02-017",
+            "OP15-096"
+          ],
+          "board": [
+            "EB02-017",
+            "OP15-081"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 4,
+      "player": "Karlmalone#2854",
+      "card_drawn": {
+        "name": "Zeff",
+        "code": "EB04-004"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP15-023",
+          "card_name": "Arlong",
+          "effects": [
+            "Attach 1 Rested Don to Sanji [\"OP15-081\">OP15-081]",
+            "Attach 1 Rested Don to Krieg [\"OP15-001\">OP15-001]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Krieg",
+          "attacker_code": "OP15-001",
+          "target": "Brook [\"OP15-022\">OP15-022]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "OP15-025",
+            "OP15-003",
+            "OP15-025",
+            "OP15-008",
+            "OP15-009",
+            "OP15-017",
+            "EB04-004"
+          ],
+          "board": [
+            "OP15-023"
+          ],
+          "trash": [
+            "OP15-037",
+            "OP15-037"
+          ],
+          "life": 3
+        },
+        "luny#6381": {
+          "hand": [
+            "OP14-031",
+            "OP15-024",
+            "OP15-088",
+            "OP15-032",
+            "ST30-012",
+            "EB02-017"
+          ],
+          "trash": [
+            "OP15-083",
+            "OP15-083",
+            "OP15-088",
+            "OP15-086",
+            "OP14-031",
+            "OP15-032",
+            "OP15-085",
+            "OP13-118",
+            "OP16-035",
+            "PRB02-006",
+            "OP15-032",
+            "EB02-017",
+            "OP15-096"
+          ],
+          "board": [
+            "EB02-017",
+            "OP15-081"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 5,
+      "player": "luny#6381",
+      "card_drawn": {
+        "name": "Swallow Bond en Avant",
+        "code": "OP15-096"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP15-088",
+          "card_name": "Pirate Docking 6",
+          "effects": [
+            "Trash 3 Cards from Deck",
+            "Deployed Tony Tony Chopper [\"OP15-085\">OP15-085] from Trash"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP15-085",
+          "card_name": "Tony Tony Chopper",
+          "effects": [
+            "Trash 3 Cards from Deck",
+            "Trash Tony Tony Chopper [\"OP15-085\">OP15-085]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP15-022",
+          "card_name": "Brook",
+          "effects": [
+            "Trash 4 Cards from Deck"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Brook",
+          "attacker_code": "OP15-022",
+          "target": "Krieg [\"OP15-001\">OP15-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP15-003"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "OP15-025",
+            "OP15-025",
+            "OP15-008",
+            "OP15-009",
+            "OP15-017",
+            "EB04-004"
+          ],
+          "board": [
+            "OP15-023"
+          ],
+          "trash": [
+            "OP15-037",
+            "OP15-037",
+            "OP15-003"
+          ],
+          "life": 3
+        },
+        "luny#6381": {
+          "hand": [
+            "OP14-031",
+            "OP15-024",
+            "OP15-032",
+            "ST30-012",
+            "EB02-017",
+            "OP15-096",
+            "OP15-086"
+          ],
+          "trash": [
+            "OP15-083",
+            "OP15-083",
+            "OP15-088",
+            "OP15-086",
+            "OP14-031",
+            "OP15-032",
+            "OP13-118",
+            "OP16-035",
+            "PRB02-006",
+            "OP15-032",
+            "EB02-017",
+            "OP15-096",
+            "OP15-086",
+            "OP15-083",
+            "OP15-094",
+            "OP15-083",
+            "OP15-081",
+            "OP15-096",
+            "OP15-092",
+            "OP15-024",
+            "OP15-088",
+            "OP15-085"
+          ],
+          "board": [
+            "EB02-017",
+            "OP15-081",
+            "OP15-088"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 6,
+      "player": "Karlmalone#2854",
+      "card_drawn": {
+        "name": "Koushirou",
+        "code": "OP12-027"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP15-009",
+          "card_name": "Koby",
+          "effects": []
+        },
+        {
+          "type": "play",
+          "card": "OP15-017",
+          "card_name": "Morgan",
+          "effects": [
+            "Attach 1 Rested Don to Pirate Docking 6 [\"OP15-088\">OP15-088]",
+            "Attach 1 Rested Don to Krieg [\"OP15-001\">OP15-001]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP15-023",
+          "card_name": "Arlong",
+          "effects": [
+            "Attach 1 Rested Don to Pirate Docking 6 [\"OP15-088\">OP15-088]",
+            "Attach 1 Rested Don to Krieg [\"OP15-001\">OP15-001]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP15-001",
+          "card_name": "Krieg",
+          "effects": [
+            "Rest Pirate Docking 6 [\"OP15-088\">OP15-088]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Krieg",
+          "attacker_code": "OP15-001",
+          "target": "Brook [\"OP15-022\">OP15-022]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "OP15-025",
+            "OP15-025",
+            "OP15-008",
+            "EB04-004",
+            "OP12-027"
+          ],
+          "board": [
+            "OP15-023",
+            "OP15-009",
+            "OP15-017"
+          ],
+          "trash": [
+            "OP15-037",
+            "OP15-037",
+            "OP15-003"
+          ],
+          "life": 3
+        },
+        "luny#6381": {
+          "hand": [
+            "OP14-031",
+            "OP15-032",
+            "ST30-012",
+            "EB02-017",
+            "OP15-086"
+          ],
+          "trash": [
+            "OP15-083",
+            "OP15-083",
+            "OP15-088",
+            "OP15-086",
+            "OP14-031",
+            "OP15-032",
+            "OP13-118",
+            "OP16-035",
+            "PRB02-006",
+            "OP15-032",
+            "EB02-017",
+            "OP15-096",
+            "OP15-086",
+            "OP15-083",
+            "OP15-094",
+            "OP15-083",
+            "OP15-081",
+            "OP15-096",
+            "OP15-092",
+            "OP15-024",
+            "OP15-088",
+            "OP15-085",
+            "OP15-096",
+            "OP15-024"
+          ],
+          "board": [
+            "EB02-017",
+            "OP15-081",
+            "OP15-088"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 7,
+      "player": "luny#6381",
+      "card_drawn": {
+        "name": "Monkey D. Luffy",
+        "code": "OP15-092"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP15-092",
+          "card_name": "Monkey D. Luffy",
+          "effects": []
+        },
+        {
+          "type": "activate",
+          "card": "OP15-022",
+          "card_name": "Brook",
+          "effects": [
+            "Trash 4 Cards from Deck"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Brook",
+          "attacker_code": "OP15-022",
+          "target": "Krieg [\"OP15-001\">OP15-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP12-027"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "OP15-025",
+            "OP15-025",
+            "OP15-008",
+            "EB04-004"
+          ],
+          "board": [
+            "OP15-023",
+            "OP15-009",
+            "OP15-017"
+          ],
+          "trash": [
+            "OP15-037",
+            "OP15-037",
+            "OP15-003",
+            "OP12-027"
+          ],
+          "life": 3
+        },
+        "luny#6381": {
+          "hand": [
+            "OP14-031",
+            "OP15-032",
+            "ST30-012",
+            "EB02-017",
+            "OP15-086"
+          ],
+          "trash": [
+            "OP15-083",
+            "OP15-083",
+            "OP15-088",
+            "OP15-086",
+            "OP14-031",
+            "OP15-032",
+            "OP13-118",
+            "OP16-035",
+            "PRB02-006",
+            "OP15-032",
+            "EB02-017",
+            "OP15-096",
+            "OP15-086",
+            "OP15-083",
+            "OP15-094",
+            "OP15-083",
+            "OP15-081",
+            "OP15-096",
+            "OP15-092",
+            "OP15-024",
+            "OP15-088",
+            "OP15-085",
+            "OP15-096",
+            "OP15-024",
+            "OP15-092",
+            "OP15-081",
+            "OP12-037",
+            "EB02-017"
+          ],
+          "board": [
+            "EB02-017",
+            "OP15-081",
+            "OP15-088",
+            "OP15-092"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 8,
+      "player": "Karlmalone#2854",
+      "card_drawn": {
+        "name": "Jango",
+        "code": "OP15-026"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "EB04-004",
+          "card_name": "Zeff",
+          "effects": []
+        },
+        {
+          "type": "play",
+          "card": "OP15-026",
+          "card_name": "Jango",
+          "effects": [
+            "<b>Reveal and Draw Dracule Mihawk [\"OP15-027\">OP15-027]</b>"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP15-017",
+          "card_name": "Morgan",
+          "effects": [
+            "Attach 1 Rested Don to Monkey D. Luffy [\"OP15-092\">OP15-092]",
+            "Attach 1 Rested Don to Krieg [\"OP15-001\">OP15-001]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP15-023",
+          "card_name": "Arlong",
+          "effects": [
+            "Attach 1 Rested Don to Monkey D. Luffy [\"OP15-092\">OP15-092]",
+            "Attach 1 Rested Don to Krieg [\"OP15-001\">OP15-001]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP15-001",
+          "card_name": "Krieg",
+          "effects": [
+            "Rest Monkey D. Luffy [\"OP15-092\">OP15-092]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Krieg",
+          "attacker_code": "OP15-001",
+          "target": "Brook [\"OP15-022\">OP15-022]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "EB02-017"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "OP15-025",
+            "OP15-025",
+            "OP15-008",
+            "OP15-027"
+          ],
+          "board": [
+            "OP15-023",
+            "OP15-009",
+            "OP15-017",
+            "EB04-004",
+            "OP15-026"
+          ],
+          "trash": [
+            "OP15-037",
+            "OP15-037",
+            "OP15-003",
+            "OP12-027"
+          ],
+          "life": 3
+        },
+        "luny#6381": {
+          "hand": [
+            "OP14-031",
+            "OP15-032",
+            "ST30-012",
+            "OP15-086"
+          ],
+          "trash": [
+            "OP15-083",
+            "OP15-083",
+            "OP15-088",
+            "OP15-086",
+            "OP14-031",
+            "OP15-032",
+            "OP13-118",
+            "OP16-035",
+            "PRB02-006",
+            "OP15-032",
+            "EB02-017",
+            "OP15-096",
+            "OP15-086",
+            "OP15-083",
+            "OP15-094",
+            "OP15-083",
+            "OP15-081",
+            "OP15-096",
+            "OP15-092",
+            "OP15-024",
+            "OP15-088",
+            "OP15-085",
+            "OP15-096",
+            "OP15-024",
+            "OP15-092",
+            "OP15-081",
+            "OP12-037",
+            "EB02-017",
+            "EB02-017"
+          ],
+          "board": [
+            "EB02-017",
+            "OP15-081",
+            "OP15-088",
+            "OP15-092"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 9,
+      "player": "luny#6381",
+      "card_drawn": {
+        "name": "Tony Tony Chopper",
+        "code": "OP15-085"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP15-032",
+          "card_name": "Brook",
+          "effects": [
+            "Rest Arlong [\"OP15-023\">OP15-023]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP15-022",
+          "card_name": "Brook",
+          "effects": [
+            "Trash 4 Cards from Deck"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Monkey D. Luffy",
+          "attacker_code": "OP15-092",
+          "target": "Arlong [\"OP15-023\">OP15-023]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Brook",
+          "attacker_code": "OP15-022",
+          "target": "Krieg [\"OP15-001\">OP15-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": "OP15-017",
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 3,
+          "to": "OP15-088",
+          "to_name": "Pirate Docking 6",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Pirate Docking 6",
+          "attacker_code": "OP15-088",
+          "target": "Morgan [\"OP15-017\">OP15-017]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP15-027",
+            "OP15-025"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "OP15-025",
+            "OP15-008"
+          ],
+          "board": [
+            "OP15-009",
+            "OP15-017",
+            "EB04-004",
+            "OP15-026"
+          ],
+          "trash": [
+            "OP15-037",
+            "OP15-037",
+            "OP15-003",
+            "OP12-027",
+            "OP15-023",
+            "OP15-027",
+            "OP15-025"
+          ],
+          "life": 3
+        },
+        "luny#6381": {
+          "hand": [
+            "OP14-031",
+            "ST30-012",
+            "OP15-086",
+            "OP15-085"
+          ],
+          "trash": [
+            "OP15-083",
+            "OP15-083",
+            "OP15-088",
+            "OP15-086",
+            "OP14-031",
+            "OP15-032",
+            "OP13-118",
+            "OP16-035",
+            "PRB02-006",
+            "OP15-032",
+            "EB02-017",
+            "OP15-096",
+            "OP15-086",
+            "OP15-083",
+            "OP15-094",
+            "OP15-083",
+            "OP15-081",
+            "OP15-096",
+            "OP15-092",
+            "OP15-024",
+            "OP15-088",
+            "OP15-085",
+            "OP15-096",
+            "OP15-024",
+            "OP15-092",
+            "OP15-081",
+            "OP12-037",
+            "EB02-017",
+            "EB02-017",
+            "ST30-012",
+            "OP15-024",
+            "OP13-118",
+            "OP15-096"
+          ],
+          "board": [
+            "EB02-017",
+            "OP15-081",
+            "OP15-088",
+            "OP15-092",
+            "OP15-032"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 10,
+      "player": "Karlmalone#2854",
+      "card_drawn": {
+        "name": "Buggy",
+        "code": "OP15-012"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP15-008",
+          "card_name": "Krieg",
+          "effects": [
+            "Attach 1 Rested Don to Monkey D. Luffy [\"OP15-092\">OP15-092]",
+            "Attach 1 Rested Don to Monkey D. Luffy [\"OP15-092\">OP15-092]",
+            "Attach 1 Rested Don to Monkey D. Luffy [\"OP15-092\">OP15-092]",
+            "Give Krieg [\"OP15-008\">OP15-008] Rush",
+            "Buff Nami [\"EB02-017\">EB02-017] 0",
+            "Buff Sanji [\"OP15-081\">OP15-081] 0",
+            "Buff Pirate Docking 6 [\"OP15-088\">OP15-088] -3000",
+            "Buff Monkey D. Luffy [\"OP15-092\">OP15-092] -6000",
+            "Buff Brook [\"OP15-032\">OP15-032] 0"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP15-017",
+          "card_name": "Morgan",
+          "effects": [
+            "Attach 1 Rested Don to Monkey D. Luffy [\"OP15-092\">OP15-092]",
+            "Attach 1 Rested Don to Monkey D. Luffy [\"OP15-092\">OP15-092]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP15-026",
+          "card_name": "Jango",
+          "effects": [
+            "Trash Jango [\"OP15-026\">OP15-026]",
+            "Attach 1 Rested Don to Monkey D. Luffy [\"OP15-092\">OP15-092]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Zeff",
+          "attacker_code": "EB04-004",
+          "target": "Monkey D. Luffy [\"OP15-092\">OP15-092]",
+          "result": null,
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "EB04-004",
+          "card_name": "Zeff",
+          "effects": [
+            "Grant Krieg [\"OP15-001\">OP15-001] 2000 until opponent's next turn end"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP15-001",
+          "to_name": "Krieg",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Krieg",
+          "attacker_code": "OP15-008",
+          "target": "Pirate Docking 6 [\"OP15-088\">OP15-088]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Krieg",
+          "attacker_code": "OP15-001",
+          "target": "Brook [\"OP15-022\">OP15-022]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "OP15-025",
+            "OP15-012"
+          ],
+          "board": [
+            "OP15-009",
+            "OP15-017",
+            "EB04-004",
+            "OP15-008"
+          ],
+          "trash": [
+            "OP15-037",
+            "OP15-037",
+            "OP15-003",
+            "OP12-027",
+            "OP15-023",
+            "OP15-027",
+            "OP15-025",
+            "OP15-026"
+          ],
+          "life": 3
+        },
+        "luny#6381": {
+          "hand": [
+            "OP14-031",
+            "ST30-012",
+            "OP15-086",
+            "OP15-085",
+            "OP15-032"
+          ],
+          "trash": [
+            "OP15-083",
+            "OP15-083",
+            "OP15-088",
+            "OP15-086",
+            "OP14-031",
+            "OP15-032",
+            "OP13-118",
+            "OP16-035",
+            "PRB02-006",
+            "OP15-032",
+            "EB02-017",
+            "OP15-096",
+            "OP15-086",
+            "OP15-083",
+            "OP15-094",
+            "OP15-083",
+            "OP15-081",
+            "OP15-096",
+            "OP15-092",
+            "OP15-024",
+            "OP15-088",
+            "OP15-085",
+            "OP15-096",
+            "OP15-024",
+            "OP15-092",
+            "OP15-081",
+            "OP12-037",
+            "EB02-017",
+            "EB02-017",
+            "ST30-012",
+            "OP15-024",
+            "OP13-118",
+            "OP15-096",
+            "OP15-092",
+            "OP15-088"
+          ],
+          "board": [
+            "EB02-017",
+            "OP15-081",
+            "OP15-032"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 11,
+      "player": "luny#6381",
+      "card_drawn": {
+        "name": "Sanji",
+        "code": "OP15-081"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP15-086",
+          "card_name": "Nami",
+          "effects": [
+            "Deployed Monkey D. Luffy [\"OP15-092\">OP15-092] from Trash",
+            "Give Monkey D. Luffy [\"OP15-092\">OP15-092] Rush"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP15-092",
+          "to_name": "Monkey D. Luffy",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Monkey D. Luffy",
+          "attacker_code": "OP15-092",
+          "target": "Krieg [\"OP15-008\">OP15-008]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP15-012"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP15-032",
+          "card_name": "Brook",
+          "effects": [
+            "Trash Brook [\"OP15-032\">OP15-032]",
+            "Set Monkey D. Luffy [\"OP15-092\">OP15-092] to Active"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Monkey D. Luffy",
+          "attacker_code": "OP15-092",
+          "target": "Krieg [\"OP15-008\">OP15-008]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP15-025"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [],
+          "board": [
+            "OP15-009",
+            "OP15-017",
+            "EB04-004",
+            "OP15-008"
+          ],
+          "trash": [
+            "OP15-037",
+            "OP15-037",
+            "OP15-003",
+            "OP12-027",
+            "OP15-023",
+            "OP15-027",
+            "OP15-025",
+            "OP15-026",
+            "OP15-012",
+            "OP15-025"
+          ],
+          "life": 3
+        },
+        "luny#6381": {
+          "hand": [
+            "OP14-031",
+            "ST30-012",
+            "OP15-085",
+            "OP15-032",
+            "OP15-081"
+          ],
+          "trash": [
+            "OP15-083",
+            "OP15-083",
+            "OP15-088",
+            "OP15-086",
+            "OP14-031",
+            "OP15-032",
+            "OP13-118",
+            "OP16-035",
+            "PRB02-006",
+            "OP15-032",
+            "EB02-017",
+            "OP15-096",
+            "OP15-086",
+            "OP15-083",
+            "OP15-094",
+            "OP15-083",
+            "OP15-081",
+            "OP15-096",
+            "OP15-024",
+            "OP15-088",
+            "OP15-085",
+            "OP15-096",
+            "OP15-024",
+            "OP15-092",
+            "OP15-081",
+            "OP12-037",
+            "EB02-017",
+            "EB02-017",
+            "ST30-012",
+            "OP15-024",
+            "OP13-118",
+            "OP15-096",
+            "OP15-092",
+            "OP15-088",
+            "OP15-032"
+          ],
+          "board": [
+            "EB02-017",
+            "OP15-081",
+            "OP15-086",
+            "OP15-092"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 12,
+      "player": "Karlmalone#2854",
+      "card_drawn": {
+        "name": "Ipponmatsu",
+        "code": "OP12-021"
+      },
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP12-021",
+          "card_name": "Ipponmatsu",
+          "effects": []
+        },
+        {
+          "type": "activate",
+          "card": "OP15-017",
+          "card_name": "Morgan",
+          "effects": [
+            "Attach 1 Rested Don to Nami [\"OP15-086\">OP15-086]",
+            "Attach 1 Rested Don to Nami [\"OP15-086\">OP15-086]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP15-001",
+          "card_name": "Krieg",
+          "effects": [
+            "Rest Nami [\"OP15-086\">OP15-086]"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP15-001",
+          "to_name": "Krieg",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "EB04-004",
+          "to_name": "Zeff",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Zeff",
+          "attacker_code": "EB04-004",
+          "target": "Nami [\"OP15-086\">OP15-086]",
+          "result": null,
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "EB04-004",
+          "card_name": "Zeff",
+          "effects": [
+            "Grant Krieg [\"OP15-001\">OP15-001] 2000 until opponent's next turn end"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP15-008",
+          "to_name": "Krieg",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP15-008",
+          "to_name": "Krieg",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Krieg",
+          "attacker_code": "OP15-008",
+          "target": "Brook [\"OP15-022\">OP15-022]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP15-001",
+          "to_name": "Krieg",
+          "total": 2
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP15-001",
+          "to_name": "Krieg",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Krieg",
+          "attacker_code": "OP15-001",
+          "target": "Brook [\"OP15-022\">OP15-022]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [],
+          "board": [
+            "OP15-009",
+            "OP15-017",
+            "EB04-004",
+            "OP15-008",
+            "OP12-021"
+          ],
+          "trash": [
+            "OP15-037",
+            "OP15-037",
+            "OP15-003",
+            "OP12-027",
+            "OP15-023",
+            "OP15-027",
+            "OP15-025",
+            "OP15-026",
+            "OP15-012",
+            "OP15-025"
+          ],
+          "life": 3
+        },
+        "luny#6381": {
+          "hand": [
+            "OP14-031",
+            "ST30-012",
+            "OP15-085",
+            "OP15-032",
+            "OP15-081",
+            "OP16-039",
+            "OP15-085"
+          ],
+          "trash": [
+            "OP15-083",
+            "OP15-083",
+            "OP15-088",
+            "OP15-086",
+            "OP14-031",
+            "OP15-032",
+            "OP13-118",
+            "OP16-035",
+            "PRB02-006",
+            "OP15-032",
+            "EB02-017",
+            "OP15-096",
+            "OP15-086",
+            "OP15-083",
+            "OP15-094",
+            "OP15-083",
+            "OP15-081",
+            "OP15-096",
+            "OP15-024",
+            "OP15-088",
+            "OP15-085",
+            "OP15-096",
+            "OP15-024",
+            "OP15-092",
+            "OP15-081",
+            "OP12-037",
+            "EB02-017",
+            "EB02-017",
+            "ST30-012",
+            "OP15-024",
+            "OP13-118",
+            "OP15-096",
+            "OP15-092",
+            "OP15-088",
+            "OP15-032",
+            "OP15-086"
+          ],
+          "board": [
+            "EB02-017",
+            "OP15-081",
+            "OP15-092"
+          ],
+          "life": 0
+        }
+      }
+    }
+  ]
+}

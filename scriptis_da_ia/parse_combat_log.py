@@ -65,6 +65,7 @@ def _leader_slug(leader_name: str, leader_code: str) -> str:
     # Limpa o nome: remove sufixo " (NNN)", colapsa espacos em ponto,
     # mas nao duplica pontos (nome ja pode ter "D." no meio)
     name = re.sub(r'\s*\(\d+\)\s*$', '', leader_name).strip()
+    name = re.sub(r'["\'/\\|<>:*?]', '', name)  # remove chars ilegais em filesystem
     name = re.sub(r'\s+', '.', name)
     name = re.sub(r'\.{2,}', '.', name)   # colapsa pontos duplos
 
