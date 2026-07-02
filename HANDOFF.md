@@ -1,5 +1,18 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-02 (36) - Claude
+
+**Fix /analysis: scoring de mão com cobertura T1/T2/T3, bomba do deck, brick preciso**
+
+- `avaliarMao`: pontos por jogada em T1(+28), T2(+22), T3(+12) + bônus curva completa T1→T2→T3.
+- `getDeckBombId`: identifica carta mais cara/poderosa do deck como "bomba".
+- Ter 1 bomba na mão = +8pts (sabe o que está construindo), 2+ = -20pts cada.
+- `isEventCounter`: eventos com `counter_amount > 0` contam como defesa.
+- Brick = sem jogada T1 nem T2-T3 E sem defesa nenhuma (counter 2k, 1k ou evento-counter).
+- `gerarMelhoresMaos` passa `bombId` para `avaliarMao`.
+
+---
+
 ## 2026-07-02 (35) - Claude
 
 **Fix /analysis: melhores mãos, dependência, brick e labels**
