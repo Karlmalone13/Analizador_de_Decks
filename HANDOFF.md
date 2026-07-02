@@ -1,5 +1,31 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-02 (32) - Claude
+
+**Feito — Melhorias de front-end (/simulate, /analysis, /meus-decks)**
+
+### `/simulate`
+- Ao abrir sem `?id=`, mostra picker inline com grid de decks do usuário (antes: erro "Nenhum deck selecionado").
+- Botão "🎬 Replay direto" disponível na seção de configuração, sem precisar simular antes.
+
+### `/analysis`
+- Skeleton animado (`animate-pulse`) enquanto a API Python carrega arquétipo/sinergias/coesão.
+- Aviso amarelo se a API falhar ou não retornar resultado.
+- Botão "🎯 Simular este deck" ao final da página, ligando para `/simulate?id=`.
+
+### `/meus-decks`
+- Fix: `w-26 h-34` não são classes Tailwind padrão — substituídas por `style={{ width: '88px', height: '124px' }}`.
+- Botão duplicar deck (⧉) que clona o deck com sufixo "(cópia)" via insert no Supabase.
+- Botões de ação passam de `text-base` para `text-sm` para melhor proporção.
+
+Build `npx next build` + `npx tsc --noEmit`: zero erros.
+
+**Estado:** front funcional, motor em 87% top1-kind.
+
+**Próximos passos:** decidir próxima fatia — mais logs, tuning de heurísticas, ou contrato de API para integrar motor com front.
+
+---
+
 ## 2026-07-02 (31) - Claude
 
 **Feito — +3 logs ao banco + fix de slug com caracteres ilegais**
