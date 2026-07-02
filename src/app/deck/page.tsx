@@ -246,7 +246,7 @@ function DeckBuilderPageContent() {
     }
     // Validação de cor
     if (deck.leader) {
-      const leaderColors = deck.leader.card_color.split(/[\s\/]/).filter(Boolean).map(c => c.trim())
+      const leaderColors = (deck.leader.card_color || '').split(/[\s\/]/).filter(Boolean).map(c => c.trim())
       const cardColors = card.card_color ? card.card_color.split(/[\s\/]/).filter(Boolean).map(c => c.trim()) : []
       const isColorless = cardColors.length === 0 || card.card_color === '' || card.card_color === null
       const isCompatible = isColorless || cardColors.some(c => leaderColors.includes(c))
@@ -613,7 +613,7 @@ function DeckBuilderPageContent() {
                       <div className="text-xs font-mono text-orange-400 truncate">{(card.card_set_id || '').split('_')[0]}</div>
                       <div className="text-xs text-white truncate">{card.card_name}</div>
                       <div className="flex items-center gap-1 mt-0.5 flex-wrap">
-                        {card.card_color.split(/[\s\/]/).filter(Boolean).map((c, ci) => (
+                        {(card.card_color || '').split(/[\s\/]/).filter(Boolean).map((c, ci) => (
                           <span key={ci} className={`text-xs px-1 py-0.5 rounded text-white ${colorClass[c.trim()] || 'bg-gray-700'}`}>{c.trim()}</span>
                         ))}
                         {card.card_cost && (
@@ -715,7 +715,7 @@ function DeckBuilderPageContent() {
               {deck.leader ? (
                 <div className="rounded-xl overflow-hidden border border-gray-700">
                   <div className="flex h-2">
-                    {deck.leader.card_color.split(/[\s\/]/).filter(Boolean).map((c, i) => (
+                    {(deck.leader.card_color || '').split(/[\s\/]/).filter(Boolean).map((c, i) => (
                       <div key={i} className={`flex-1 ${colorClass[c.trim()] || 'bg-gray-500'}`} />
                     ))}
                   </div>
@@ -730,7 +730,7 @@ function DeckBuilderPageContent() {
                       <div className="text-xs font-mono text-orange-400">{(deck.leader.card_set_id || '').split('_')[0]}</div>
                       <div className="text-base font-bold truncate">{deck.leader.card_name}</div>
                       <div className="flex flex-wrap gap-1 mt-0.5">
-                        {deck.leader.card_color.split(/[\s\/]/).filter(Boolean).map((c, i) => (
+                        {(deck.leader.card_color || '').split(/[\s\/]/).filter(Boolean).map((c, i) => (
                           <span key={i} className={`text-sm px-1.5 py-0.5 rounded text-white ${colorClass[c.trim()] || 'bg-gray-600'}`}>{c.trim()}</span>
                         ))}
                       </div>
