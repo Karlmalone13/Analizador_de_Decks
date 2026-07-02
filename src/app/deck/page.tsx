@@ -723,7 +723,8 @@ function DeckBuilderPageContent() {
                     {/* Imagem do leader maior */}
                     <img
                       src={deck.leader.card_image}
-                      className="w-22 h-31 object-cover rounded-lg flex-shrink-0 cursor-pointer hover:opacity-80 transition"
+                      className="object-cover rounded-lg flex-shrink-0 cursor-pointer hover:opacity-80 transition border-2 border-yellow-400 shadow-[0_0_8px_2px_rgba(250,204,21,0.5)]"
+                      style={{ width: '88px', height: '124px' }}
                       onClick={() => setSelectedCard(deck.leader)}
                     />
                     <div className="flex-1 min-w-0">
