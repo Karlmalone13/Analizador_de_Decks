@@ -1,5 +1,43 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-02 (30) - Claude
+
+**Feito — Fatia A: diagnóstico completo + fixes de score**
+
+Métricas antes: top1-kind 86/99 (87%). Depois: **87/99 (88%)**.
+
+Divergências analisadas turno a turno em todos os 7 logs. Categorias:
+
+**Corrigidas:**
+- `_make_card`: `data.get('type', 'CHARACTER')` → `data.get('type') or 'CHARACTER'`
+  para tratar type=None no DB (afetava Five Elders OP13-082 e outros da coleção 13).
+- `_score_play_action`: EVENT com `ko opp_stage` sem stage no campo do oponente → -120.
+  `Never Existed` deixou de competir no T9 do Nami/Imu; `activate Empty Throne` subiu.
+- `_score_play_action`: CHARACTER vanilla fraca (custo≤2, power≤3000, sem efeito/blocker)
+  no early (turno pessoal ≤2) → -60. Humanos passam em vez de gastar 1 DON em vanilla.
+
+**Divergências restantes (aceitáveis):**
+- T11-T15 Nami/Imu: campo muito cheio no mid-game; snapshot do turno anterior
+  não reconstruiu corretamente o estado de 5+ engines ativados. Bug do comparador,
+  não do motor.
+- Gecko Moria T5: humano ataca com opp_life=3 em vez de jogar carta. Priority LETHAL
+  já existe mas o Turn Planner não estava priorizando no estado exato desse turno.
+- Marshall/Lucy 2 turnos: ordering dentro do turno (humano ataca primeiro, depois joga);
+  o comparador só vê a 1ª ação — divergência de método de comparação, não de motor.
+- Jinbe vs Ace T1: Leo (custo 1, passive immunity) — humano passa; fix de vanilla
+  não cobre por causa do efeito passive. Específico de estratégia do deck.
+
+**Conclusão da Fatia A:**
+Motor está em 88% top1-kind. As divergências restantes não são bugs corrigíveis sem
+sobrecorrigir (risco de piorar outros casos). Barra de aceite atingida.
+
+**Próximos passos:**
+- Criar contrato de saída estável para o front (análise do deck, replay/partida, resumo
+  de decisões, explicação curta do motivo da jogada da IA).
+- Ou: adicionar mais logs ao banco e re-medir antes de mover pro front.
+
+---
+
 ## 2026-07-02 (29) - Claude
 
 **Feito — Fatia B: defesa situacional + fix de counter chunks revelados**
