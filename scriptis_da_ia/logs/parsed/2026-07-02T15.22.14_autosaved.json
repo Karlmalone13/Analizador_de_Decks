@@ -1,0 +1,33 @@
+{
+  "meta": {
+    "source": "autosaved_log",
+    "original_file": "2026-07-02T15.22.14.log",
+    "p1": {
+      "name": "You",
+      "leader_name": "Eustass \"Captain\" Kid Y",
+      "leader_code": "OP10-099",
+      "goes_first": true
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_name": "Portgas D. Ace BlR",
+      "leader_code": "OP13-002",
+      "goes_first": false
+    },
+    "winner": null,
+    "winner_name": null,
+    "winner_leader": null,
+    "total_turns": 0,
+    "mulligan_p1": {
+      "before": [],
+      "after": [],
+      "took_mulligan": false
+    },
+    "mulligan_p2": {
+      "before": [],
+      "after": [],
+      "took_mulligan": true
+    }
+  },
+  "turns": []
+}
