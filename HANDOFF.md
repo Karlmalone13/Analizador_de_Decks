@@ -1,5 +1,36 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-02 (43) - Claude
+
+**Bot: log delta para rastrear estado sem rescan constante**
+
+### Problema resolvido
+Rescan completo via hover+OCR após cada ação levava ~10s e travava o simulador. Solução: scan completo UMA VEZ no início da Main Phase, depois só lê o painel de log (esquerda) para atualizar o estado incrementalmente.
+
+### Mudanças em `bot_optcgsim.py`
+- `HOVER_WAIT`: 0.65s → 0.30s (scan inicial mais rápido)
+- `read_log_delta()`: OCR do painel de log (bbox 135,210,390,475), texto claro em fundo escuro (inverte antes do OCR), retorna só linhas novas desde última leitura
+- `apply_log_delta(gs, opp_gs, lines)`: parseia linhas e atualiza GameState:
+  - `[You] Deploy X [CODE]` → remove de gs.hand, adiciona em gs.field_chars
+  - `[Opponent] Deploy X [CODE]` → atualiza opp_gs.field_chars
+  - `[You] Draw N Card` → retorna True (precisa rescan parcial da mão)
+  - `[You] X: Rest N Don` → gs.don_available -= N
+  - `K.O. [CODE]` → remove do campo correto
+  - `hit for N damage` → atualiza gs.life ou opp_gs.life
+- `full_scan()`: escaneia mão + campo P2 + campo P1 + DON — chamado UMA VEZ por Main Phase
+- `scan_opp_board()`: novo, escaneia campo do P1 para estado inicial do oponente
+- Loop principal: após cada ação, chama `read_log_delta()` + `apply_log_delta()` em vez de rescan completo. Só rescaneaia mão quando `apply_log_delta` retorna True (sacou carta)
+
+### Estado atual
+Código commitado, push pendente de atualizar este HANDOFF. Ainda não testado com simulador aberto nesta sessão.
+
+### O que falta
+- Testar o log delta rodando uma partida real e ver se o OCR do painel de log funciona bem (fundo escuro, texto pequeno)
+- Calibrar bbox do log se necessário
+- Implementar ações `activate` e `don_attach` em `_execute_engine_action()`
+
+---
+
 ## 2026-07-02 (42) - Claude
 
 **Bot OPTCGSim com engine real integrado**
