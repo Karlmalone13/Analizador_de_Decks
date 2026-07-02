@@ -376,6 +376,20 @@ function avaliarMao(mao: DeckCard[], bombId: string | null = null, goingFirst = 
     // Mão toda de custo 1: boa largada mas sem gasolina no mid-game
     if (onlyCost1 && mao.filter(dc => parseInt(dc.card.card_cost || '99') === 1 && dc.card.counter_amount !== '2000').length >= 3) score -= 15
 
+    // ── Regra da vida como recurso (dica #1 de gameplay) ──
+    // Mão excessivamente defensiva em deck ofensivo é um problema:
+    // counters na mão ocupam espaço de jogadas reais. Em aggro/rush,
+    // você quer offensiva, não proteção passiva — vida virou carta na sua mão.
+    const nCounterTotal = nCounter2k + nCounter1k + nEventCounter
+    const nOfensiva = (hasT1Play ? 1 : 0) + (hasT2Play ? 1 : 0) + nRush + nSearcher
+    if (nCounterTotal >= 3 && nOfensiva === 0) {
+        // Mão toda de defesa sem nenhuma ofensiva: brick funcional
+        score -= Math.round(25 * mod.penT1Mult)
+    } else if (nCounterTotal >= 3 && (mod.counter2kMult < 1.0)) {
+        // Deck aggro/rush com 3+ counters: excesso de defesa passiva
+        score -= 12
+    }
+
     return score
 }
 
@@ -411,73 +425,97 @@ function gerarMelhoresMaos(deckCards: DeckCard[], qtd = 30000, goingFirst = true
     return unicas
 }
 
-// DON!! real por turno:
-// 1º jog: T1=1, T2=3, T3=5, T4=7, T5=9   (custo máximo jogável = DON disponível)
-// 2º jog: T1=2, T2=4, T3=6, T4=8, T5=10
-// Plano usa as faixas de custo de cada turno para cada posição.
-
-interface PlanoTurno { turno: number; don1: string; don2: string; sugestao: string; cartas: DeckCard[] }
+// DON!! real:  1º → T1=1, T2=3, T3=5, T4=7, T5=9 DON!!
+//              2º → T1=2, T2=4, T3=6, T4=8, T5=10 DON!!
+interface PlanoTurno {
+    turno: number
+    don1: string   // DON disponível para 1º jogador
+    don2: string   // DON disponível para 2º jogador
+    sugestao1: string
+    sugestao2: string
+    cartas1: DeckCard[]  // cartas ideais para 1º jogador neste turno
+    cartas2: DeckCard[]  // cartas ideais para 2º jogador neste turno
+}
 
 function gerarPlano(deckCards: DeckCard[], leader: Card | null, logStats: LeaderStats | null = null): PlanoTurno[] {
     const hasKw = (dc: DeckCard, kw: string) => dc.card.card_text?.toLowerCase().includes(kw.toLowerCase())
 
-    // Retorna cartas do deck na faixa de custo, priorizando cartas reais de log
-    const porCusto = (min: number, max: number): DeckCard[] => {
-        const fromDeck = deckCards
+    const porCusto = (min: number, max: number): DeckCard[] =>
+        deckCards
             .filter(dc => {
                 const c = parseInt(dc.card.card_cost || '99')
                 return c >= min && c <= max && dc.card.counter_amount !== '2000'
             })
             .sort((a, b) => parseInt(b.card.card_power || '0') - parseInt(a.card.card_power || '0'))
-        return fromDeck
-    }
 
-    const searchers  = deckCards.filter(dc => isSearcher(dc))
-    const blockers   = deckCards.filter(dc => hasKw(dc, '[Blocker]'))
-    const rushCards  = deckCards.filter(dc => hasKw(dc, '[Rush]'))
+    const searchers = deckCards.filter(dc => isSearcher(dc))
+    const rushCards = deckCards.filter(dc => hasKw(dc, '[Rush]'))
 
-    // Mescla log stats com sugestões do deck: se temos dados reais de log para o turno,
-    // priorizamos as cartas mais jogadas; senão, usamos análise do deck.
-    const cartasParaTurno = (turno: number, min1: number, max1: number, min2: number, max2: number): DeckCard[] => {
+    // Prioriza cartas dos logs reais para o turno, filtrando por faixa de custo
+    const cartasLog = (turno: number, min: number, max: number): DeckCard[] => {
         if (logStats && logStats.total_games > 0) {
-            const logPlays = logStats.turns[String(turno)] || []
-            const logCodes = logPlays.slice(0, 4).map(p => p.card_code)
-            const fromLog = deckCards.filter(dc => logCodes.includes(dc.card.card_set_id))
-            if (fromLog.length >= 2) return fromLog.slice(0, 4)
+            const logCodes = (logStats.turns[String(turno)] || []).slice(0, 5).map(p => p.card_code)
+            const fromLog = deckCards.filter(dc =>
+                logCodes.includes(dc.card.card_set_id) && dc.card.counter_amount !== '2000'
+            )
+            if (fromLog.length >= 2) return fromLog.slice(0, 3)
         }
-        // fallback: faixa de custo combinada (cobre 1º e 2º jogador)
-        return porCusto(min1, max2).slice(0, 4)
+        return porCusto(min, max).slice(0, 3)
     }
+
+    const hasSearcherUpTo = (maxCost: number) =>
+        searchers.some(dc => parseInt(dc.card.card_cost || '99') <= maxCost)
+
+    const hasRushUpTo = (maxCost: number) =>
+        rushCards.some(dc => parseInt(dc.card.card_cost || '99') <= maxCost)
 
     return [
         {
             turno: 1, don1: '1 DON!!', don2: '2 DON!!',
-            sugestao: searchers.filter(dc => parseInt(dc.card.card_cost || '99') <= 2).length > 0
-                ? '1º: Searcher custo 1 ou carta custo 1 para estabelecer presença. 2º: Searcher custo 2 ou personagem custo 2 para pressionar logo.'
-                : '1º: Jogue carta custo 1 para marcar presença. 2º: Use os 2 DON!! com carta custo 2. Guarde counters para defesa.',
-            cartas: cartasParaTurno(1, 1, 1, 1, 2)
+            sugestao1: hasSearcherUpTo(1)
+                ? 'Searcher custo 1 para buscar peça-chave e estabelecer vantagem imediata.'
+                : 'Carta custo 1 para marcar presença. Guarde counters para o primeiro hit.',
+            sugestao2: hasSearcherUpTo(2)
+                ? 'Searcher custo 2 para buscar peça-chave + vantagem. Ideal para o ramp de 2 DON.'
+                : 'Personagem custo 2 para pressionar logo. Você leva o 1º hit — guarde 1 counter.',
+            cartas1: cartasLog(1, 1, 1),
+            cartas2: cartasLog(1, 1, 2),
         },
         {
             turno: 2, don1: '3 DON!!', don2: '4 DON!!',
-            sugestao: '1º: Custo 2-3. 2º: Custo 3-4. Desenvolva mesa e ative searchers para ganhar vantagem de mão.',
-            cartas: cartasParaTurno(2, 2, 3, 3, 4)
+            sugestao1: hasSearcherUpTo(3)
+                ? 'Searcher custo 2-3 para ganhar vantagem de mão e achar a curva.'
+                : 'Personagem custo 2-3 para desenvolver mesa.',
+            sugestao2: hasRushUpTo(4)
+                ? 'Personagem custo 3-4 com [Rush] para pressão imediata no Leader.'
+                : 'Personagem custo 3-4. Priorize Blocker se adversário já atacou.',
+            cartas1: cartasLog(2, 2, 3),
+            cartas2: cartasLog(2, 3, 4),
         },
         {
             turno: 3, don1: '5 DON!!', don2: '6 DON!!',
-            sugestao: rushCards.filter(dc => parseInt(dc.card.card_cost || '99') <= 6).length > 0
-                ? '1º: Custo 4-5, prefira [Rush] para pressão imediata. 2º: Custo 5-6 com [Rush] ou Blocker para controlar a mesa.'
-                : '1º: Custo 4-5 para consolidar mesa. 2º: Custo 5-6. Estabeleça Blockers para proteger vantagem.',
-            cartas: cartasParaTurno(3, 4, 5, 5, 6)
+            sugestao1: hasRushUpTo(5)
+                ? 'Custo 4-5 com [Rush] para pressão direta. Ataque o Leader para forçar Life cards.'
+                : 'Custo 4-5 para consolidar mesa. Estabeleça Blocker para proteger vantagem.',
+            sugestao2: hasRushUpTo(6)
+                ? 'Custo 5-6 com [Rush]. Você tem mais DON — aproveite para montar mesa + atacar.'
+                : 'Custo 5-6, prefira Blocker para controlar a mesa do adversário.',
+            cartas1: cartasLog(3, 4, 5),
+            cartas2: cartasLog(3, 5, 6),
         },
         {
             turno: 4, don1: '7 DON!!', don2: '8 DON!!',
-            sugestao: '1º: Custo 6-7 para pico de pressão. 2º: Custo 7-8. Foque em remover ameaças e atacar o Leader adversário.',
-            cartas: cartasParaTurno(4, 6, 7, 7, 8)
+            sugestao1: 'Custo 6-7 para pico de pressão. Foque em remover ameaças e atacar o Leader.',
+            sugestao2: 'Custo 7-8. Máximo de pressão — empurre Life cards e force o adversário a usar counters.',
+            cartas1: cartasLog(4, 6, 7),
+            cartas2: cartasLog(4, 7, 8),
         },
         {
             turno: 5, don1: '9 DON!!', don2: '10 DON!!',
-            sugestao: 'Pico de poder. Jogue suas cartas mais fortes (custo 8-10). Fecha o jogo com ataques diretos ao Leader.',
-            cartas: cartasParaTurno(5, 8, 10, 8, 10)
+            sugestao1: 'Pico de poder. Cartas custo 8-9 para fechar o jogo com ataques ao Leader.',
+            sugestao2: 'Pico de poder. 10 DON!! — jogue sua carta mais forte e feche o jogo.',
+            cartas1: cartasLog(5, 8, 9),
+            cartas2: cartasLog(5, 8, 10),
         },
     ]
 }
@@ -1229,32 +1267,63 @@ function AnalysisPageContent() {
                             </span>
                         )}
                     </div>
-                    <div className="text-xs text-gray-500 mb-4">
-                        Curva de DON!! real · <span className="text-orange-400 font-medium">1º jog</span>: T1=1 · T2=3 · T3=5 · T4=7 DON!! &nbsp;|&nbsp;
-                        <span className="text-blue-400 font-medium">2º jog</span>: T1=2 · T2=4 · T3=6 · T4=8 DON!!
+                    <div className="text-xs text-gray-500 mb-5">
+                        Curva real de DON!! · <span className="text-orange-400 font-medium">1º</span>: T1=1 · T2=3 · T3=5 · T4=7 &nbsp;|&nbsp;
+                        <span className="text-blue-400 font-medium">2º</span>: T1=2 · T2=4 · T3=6 · T4=8 DON!!
                     </div>
-                    <div className="space-y-3">
-                        {plano.map(({ turno, don1, don2, sugestao, cartas }) => (
-                            <div key={turno} className="flex gap-4 bg-gray-800 rounded-xl px-4 py-3">
-                                <div className="flex-shrink-0 w-16 rounded-xl overflow-hidden flex flex-col">
-                                    <div className="bg-orange-600 flex-1 flex flex-col items-center justify-center py-1">
-                                        <div className="text-white font-black text-base">T{turno}</div>
-                                        <div className="text-orange-200 text-xs font-bold leading-tight">{don1}</div>
-                                    </div>
-                                    <div className="bg-blue-700 flex items-center justify-center py-1">
-                                        <div className="text-blue-200 text-xs font-bold">{don2}</div>
-                                    </div>
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                    <div className="text-sm text-gray-200 mb-2">{sugestao}</div>
-                                    <div className="flex gap-1.5 flex-wrap">
-                                        {cartas.slice(0, 4).map((dc, i) => (
-                                            <img key={i} src={dc.card.card_image} className="w-8 h-11 object-cover rounded border border-gray-700 cursor-pointer hover:brightness-110 transition" onClick={() => setSelectedCard(dc.card)} title={dc.card.card_name} />
-                                        ))}
-                                    </div>
-                                </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                        {/* Coluna 1º Jogador */}
+                        <div>
+                            <div className="flex items-center gap-2 mb-3">
+                                <span className="bg-orange-600 text-white text-xs font-bold px-2 py-0.5 rounded">1º Jogador</span>
+                                <span className="text-xs text-gray-500">Age primeiro, menos DON</span>
                             </div>
-                        ))}
+                            <div className="space-y-2">
+                                {plano.map(({ turno, don1, sugestao1, cartas1 }) => (
+                                    <div key={turno} className="flex gap-3 bg-gray-800 rounded-xl px-3 py-2.5">
+                                        <div className="flex-shrink-0 w-12 bg-orange-600 rounded-lg flex flex-col items-center justify-center py-1">
+                                            <div className="text-white font-black text-sm">T{turno}</div>
+                                            <div className="text-orange-200 text-xs font-bold leading-tight">{don1}</div>
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <div className="text-xs text-gray-300 mb-1.5 leading-snug">{sugestao1}</div>
+                                            <div className="flex gap-1 flex-wrap">
+                                                {cartas1.map((dc, i) => (
+                                                    <img key={i} src={dc.card.card_image} className="w-7 h-10 object-cover rounded border border-gray-700 cursor-pointer hover:brightness-110 transition" onClick={() => setSelectedCard(dc.card)} title={dc.card.card_name} />
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Coluna 2º Jogador */}
+                        <div>
+                            <div className="flex items-center gap-2 mb-3">
+                                <span className="bg-blue-600 text-white text-xs font-bold px-2 py-0.5 rounded">2º Jogador</span>
+                                <span className="text-xs text-gray-500">Leva 1º hit, mais DON</span>
+                            </div>
+                            <div className="space-y-2">
+                                {plano.map(({ turno, don2, sugestao2, cartas2 }) => (
+                                    <div key={turno} className="flex gap-3 bg-gray-800 rounded-xl px-3 py-2.5">
+                                        <div className="flex-shrink-0 w-12 bg-blue-700 rounded-lg flex flex-col items-center justify-center py-1">
+                                            <div className="text-white font-black text-sm">T{turno}</div>
+                                            <div className="text-blue-200 text-xs font-bold leading-tight">{don2}</div>
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <div className="text-xs text-gray-300 mb-1.5 leading-snug">{sugestao2}</div>
+                                            <div className="flex gap-1 flex-wrap">
+                                                {cartas2.map((dc, i) => (
+                                                    <img key={i} src={dc.card.card_image} className="w-7 h-10 object-cover rounded border border-gray-700 cursor-pointer hover:brightness-110 transition" onClick={() => setSelectedCard(dc.card)} title={dc.card.card_name} />
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
                     </div>
                 </div>
 

@@ -1,5 +1,25 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-02 (39) - Claude
+
+**Plano de turnos em 2 colunas (1º/2º jogador) + heurística de vida como recurso**
+
+### Frontend — `src/app/analysis/page.tsx`
+- `gerarPlano()`: novo tipo `PlanoTurno` com `sugestao1/sugestao2` e `cartas1/cartas2` separados por posição
+- Layout do plano em grid 2 colunas: esquerda = 1º jogador (laranja), direita = 2º jogador (azul)
+- Cada turno tem sugestão e cartas específicas para a faixa de DON de cada posição
+- `cartasLog()`: prioriza cartas dos logs reais para a faixa de custo de cada turno
+
+### Heurística: vida como recurso (dica gameplay #1)
+- Mão com 3+ counters e nenhuma ofensiva → penalidade "brick funcional" (`-25 × penT1Mult`)
+- Deck aggro/rush com 3+ counters → penalidade extra de -12 (excesso de defesa passiva)
+- Fundamentado na regra: "vida = recurso, não HP — em aggro você quer offensiva, não counters"
+
+### Referência salva (local only, .gitignore)
+- `_referencias/dicas_gameplay_optcg.md`: 7 dicas de gameplay com impacto mapeado nas heurísticas
+
+---
+
 ## 2026-07-02 (38) - Claude
 
 **Plano de turnos: DON!! correto + endpoint /leader-stats com dados reais de log**
