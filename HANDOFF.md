@@ -1,5 +1,16 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-02 (33) - Claude
+
+**Fix urgente — Deck Builder crashava com `card_color is null`**
+
+Cartas com `card_color = null` no banco causavam TypeError em 4 lugares no
+`/deck/page.tsx` onde `.split()` era chamado diretamente sem null check.
+Fix: `card.card_color.split(...)` → `(card.card_color || '').split(...)` nos 4 pontos
+(validação de cor, badge da carta no resultado da busca, barra de cor do leader, badges do leader).
+
+---
+
 ## 2026-07-02 (32) - Claude
 
 **Feito — Melhorias de front-end (/simulate, /analysis, /meus-decks)**
