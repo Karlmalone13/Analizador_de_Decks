@@ -125,6 +125,12 @@ function fisherYates<T>(arr: T[]): T[] {
 }
 
 // ── Simulação de mãos ─────────────────────────────────────────────────────────
+function isSearcher(dc: DeckCard): boolean {
+    const t = dc.card.card_text?.toLowerCase() || ''
+    // só conta se busca ao deck — exclui "add up to" genérico que pega efeitos de vida
+    return t.includes('search your deck') || (t.includes('look at the top') && t.includes('add')) || t.includes('look at up to')
+}
+
 function simularMaos(deckCards: DeckCard[], totalCards: number, qtd = 10000) {
     const deck: number[] = []
     deckCards.forEach((dc, idx) => {
@@ -132,30 +138,36 @@ function simularMaos(deckCards: DeckCard[], totalCards: number, qtd = 10000) {
     })
 
     let bricks = 0, comSearcher = 0, comCounter2k = 0, comBlocker = 0, comLow2 = 0
+    // aparicoes conta mãos únicas (não slots), para medir real probabilidade de ver a carta
     const aparicoes: number[] = new Array(deckCards.length).fill(0)
     const hasKw = (dc: DeckCard, kw: string) => dc.card.card_text?.toLowerCase().includes(kw.toLowerCase())
 
     for (let i = 0; i < qtd; i++) {
-        // Fisher-Yates para embaralhamento correto
         const shuffled = fisherYates(deck)
         const mao = shuffled.slice(0, 5)
-        let temSearcher = false, temCounter2k = false, temBlocker = false, temLow2 = false, temJogavel = false
+        let temSearcher = false, temCounter2k = false, temBlocker = false, temLow2 = false, temLow4 = false
+
+        // índices únicos vistos nesta mão (para dependência por carta, não por slot)
+        const seenIdx = new Set<number>()
 
         mao.forEach(cardIdx => {
-            aparicoes[cardIdx]++
+            seenIdx.add(cardIdx)
             const dc = deckCards[cardIdx]
-            if (hasKw(dc, 'look at') || hasKw(dc, 'search your deck') || hasKw(dc, 'add up to')) temSearcher = true
+            if (isSearcher(dc)) temSearcher = true
             if (dc.card.counter_amount === '2000') temCounter2k = true
             if (hasKw(dc, '[Blocker]')) temBlocker = true
             if (parseInt(dc.card.card_cost || '99') <= 2) temLow2 = true
-            if (parseInt(dc.card.card_cost || '99') <= 3) temJogavel = true
+            if (parseInt(dc.card.card_cost || '99') <= 4) temLow4 = true
         })
+
+        seenIdx.forEach(idx => aparicoes[idx]++)
 
         if (temSearcher) comSearcher++
         if (temCounter2k) comCounter2k++
         if (temBlocker) comBlocker++
         if (temLow2) comLow2++
-        if (!temJogavel && !temCounter2k) bricks++
+        // brick = sem jogada de custo ≤4 E sem counter defensivo
+        if (!temLow4 && !temCounter2k) bricks++
     }
 
     const dependencia = deckCards.map((dc, idx) => ({
@@ -173,20 +185,53 @@ function simularMaos(deckCards: DeckCard[], totalCards: number, qtd = 10000) {
 }
 
 function avaliarMao(mao: DeckCard[]): number {
-    let score = 0
     const hasKw = (dc: DeckCard, kw: string) => dc.card.card_text?.toLowerCase().includes(kw.toLowerCase())
+
+    let nSearcher = 0, nCounter2k = 0, nCounter1k = 0, nBlocker = 0, nDraw = 0, nLow2 = 0, nLow4 = 0, nHeavy = 0
+
     mao.forEach(dc => {
         const cost = parseInt(dc.card.card_cost || '99')
-        if (hasKw(dc, 'look at') || hasKw(dc, 'search your deck')) score += 30
-        if (dc.card.counter_amount === '2000') score += 25
-        if (dc.card.counter_amount === '1000') score += 15
-        if (hasKw(dc, '[Blocker]')) score += 20
-        if (hasKw(dc, 'draw 1') || hasKw(dc, 'draw 2')) score += 15
-        if (hasKw(dc, '[Trigger]')) score += 10
-        if (cost <= 2) score += 15
-        if (cost <= 4) score += 5
-        if (cost >= 7) score -= 20
+        if (isSearcher(dc)) nSearcher++
+        if (dc.card.counter_amount === '2000') nCounter2k++
+        if (dc.card.counter_amount === '1000') nCounter1k++
+        if (hasKw(dc, '[Blocker]')) nBlocker++
+        if (hasKw(dc, 'draw 1') || hasKw(dc, 'draw 2') || hasKw(dc, 'draw a card')) nDraw++
+        if (cost <= 2) nLow2++
+        if (cost <= 4) nLow4++
+        if (cost >= 7) nHeavy++
     })
+
+    let score = 0
+
+    // Searcher: 1 é ótimo, 2 marginal, 3+ atrapalha (mão travada)
+    if (nSearcher >= 1) score += 30
+    if (nSearcher >= 2) score += 3
+    if (nSearcher >= 3) score -= (nSearcher - 2) * 18
+
+    // Counter 2k: 1-2 são bons, 3+ diminishing
+    score += Math.min(nCounter2k, 2) * 22
+    score -= Math.max(0, nCounter2k - 2) * 10
+
+    // Counter 1k: utilidade moderada
+    score += Math.min(nCounter1k, 2) * 10
+
+    // Blocker: 1 é bom
+    score += Math.min(nBlocker, 1) * 16
+
+    // Draw power: 1 é bom
+    score += Math.min(nDraw, 1) * 13
+
+    // Cartas jogáveis: 1-2 cartas custo ≤2 são ideais
+    score += Math.min(nLow2, 2) * 16
+    // Cartas custo 3-4 também ajudam mas menos
+    score += Math.min(Math.max(0, nLow4 - nLow2), 2) * 6
+
+    // Penaliza cartas pesadas (custo ≥7) — difíceis de jogar cedo
+    score -= nHeavy * 22
+
+    // Penaliza mão sem nenhuma jogada (custo ≤4) — independente de counters
+    if (nLow4 === 0) score -= 25
+
     return score
 }
 
@@ -197,7 +242,6 @@ function gerarMelhoresMaos(deckCards: DeckCard[], qtd = 50000): DeckCard[][] {
     })
     const melhor: { mao: number[], score: number }[] = []
     for (let i = 0; i < qtd; i++) {
-        // Fisher-Yates
         const shuffled = fisherYates(deck)
         const maoIdx = shuffled.slice(0, 5)
         const mao = maoIdx.map(idx => deckCards[idx])
@@ -207,7 +251,8 @@ function gerarMelhoresMaos(deckCards: DeckCard[], qtd = 50000): DeckCard[][] {
     const unicas: DeckCard[][] = []
     const vistas = new Set<string>()
     for (const { mao } of melhor) {
-        const key = [...mao].sort().join(',')
+        // chave por composição (sorted card_set_ids), não por posição
+        const key = mao.map(idx => deckCards[idx].card.card_set_id).sort().join(',')
         if (!vistas.has(key)) {
             vistas.add(key)
             unicas.push(mao.map(idx => deckCards[idx]))
@@ -729,11 +774,11 @@ function AnalysisPageContent() {
                         </div>
                     </div>
 
-                    {/* ── NOVA SEÇÃO: Probabilidade de Compra ao Longo do Jogo ── */}
+                    {/* ── Probabilidade de Compra ao Longo do Jogo ── */}
                     <div className="border-t border-gray-800 pt-5 mt-5">
-                        <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1">📈 Probabilidade de Encontrar ao Longo do Jogo</div>
+                        <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1">📈 Chance de Tirar a Peça se Não Veio na Mão</div>
                         <div className="text-xs text-gray-500 mb-4">
-                            Deck restante após setup: {deckRestante} cartas (50 - {n} mão - {leaderLife} vidas) · Compras acumuladas por turno
+                            Deck restante após setup: {deckRestante} cartas · Se a peça <strong className="text-gray-400">não veio na abertura</strong>, qual a chance de tirá-la em X compras adicionais?
                         </div>
                         <div className="overflow-x-auto">
                             <table className="w-full text-xs">
@@ -895,8 +940,8 @@ function AnalysisPageContent() {
                                 })}
                             </div>
                             <div className="border-t border-gray-800 pt-5">
-                                <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">📌 Índice de Dependência — Cartas mais críticas</div>
-                                <div className="text-xs text-gray-500 mb-3">% de mãos simuladas que contêm esta carta. Quanto maior, mais o deck depende dela.</div>
+                                <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">📌 Frequência na Abertura — Cartas mais vistas</div>
+                                <div className="text-xs text-gray-500 mb-3">% das 10.000 mãos simuladas em que esta carta apareceu. Alta frequência = muitas cópias ou carta central do deck.</div>
                                 <div className="space-y-2">
                                     {simResult.dependencia.slice(0, 8).map(({ dc, pct: p }, i) => {
                                         const depPct = Math.min(Math.round(p * 100), 100)
