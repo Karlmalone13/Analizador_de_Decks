@@ -124,13 +124,24 @@ function fisherYates<T>(arr: T[]): T[] {
     return a
 }
 
-// ── Simulação de mãos ─────────────────────────────────────────────────────────
+// ── Helpers de classificação ──────────────────────────────────────────────────
 function isSearcher(dc: DeckCard): boolean {
     const t = dc.card.card_text?.toLowerCase() || ''
-    // só conta se busca ao deck — exclui "add up to" genérico que pega efeitos de vida
     return t.includes('search your deck') || (t.includes('look at the top') && t.includes('add')) || t.includes('look at up to')
 }
 
+function isEventCounter(dc: DeckCard): boolean {
+    return dc.card.card_type?.toUpperCase() === 'EVENT' && parseInt(dc.card.counter_amount || '0') > 0
+}
+
+function isBomb(dc: DeckCard): boolean {
+    // "bomba" = carta de alto impacto — custo alto OU poder muito alto
+    const cost = parseInt(dc.card.card_cost || '0')
+    const power = parseInt(dc.card.card_power || '0')
+    return cost >= 7 || power >= 8000
+}
+
+// ── Simulação de mãos ─────────────────────────────────────────────────────────
 function simularMaos(deckCards: DeckCard[], totalCards: number, qtd = 10000) {
     const deck: number[] = []
     deckCards.forEach((dc, idx) => {
@@ -138,26 +149,27 @@ function simularMaos(deckCards: DeckCard[], totalCards: number, qtd = 10000) {
     })
 
     let bricks = 0, comSearcher = 0, comCounter2k = 0, comBlocker = 0, comLow2 = 0
-    // aparicoes conta mãos únicas (não slots), para medir real probabilidade de ver a carta
     const aparicoes: number[] = new Array(deckCards.length).fill(0)
     const hasKw = (dc: DeckCard, kw: string) => dc.card.card_text?.toLowerCase().includes(kw.toLowerCase())
 
     for (let i = 0; i < qtd; i++) {
         const shuffled = fisherYates(deck)
         const mao = shuffled.slice(0, 5)
-        let temSearcher = false, temCounter2k = false, temBlocker = false, temLow2 = false, temLow4 = false
+        let temSearcher = false, temCounter2k = false, temBlocker = false, temLow2 = false
+        let temT1 = false, temT2 = false, temDefesa = false
 
-        // índices únicos vistos nesta mão (para dependência por carta, não por slot)
         const seenIdx = new Set<number>()
-
         mao.forEach(cardIdx => {
             seenIdx.add(cardIdx)
             const dc = deckCards[cardIdx]
+            const cost = parseInt(dc.card.card_cost || '99')
             if (isSearcher(dc)) temSearcher = true
-            if (dc.card.counter_amount === '2000') temCounter2k = true
+            if (dc.card.counter_amount === '2000') { temCounter2k = true; temDefesa = true }
+            if (dc.card.counter_amount === '1000') temDefesa = true
+            if (isEventCounter(dc)) temDefesa = true
             if (hasKw(dc, '[Blocker]')) temBlocker = true
-            if (parseInt(dc.card.card_cost || '99') <= 2) temLow2 = true
-            if (parseInt(dc.card.card_cost || '99') <= 4) temLow4 = true
+            if (cost <= 2) { temLow2 = true; temT1 = true }
+            if (cost >= 3 && cost <= 5) temT2 = true
         })
 
         seenIdx.forEach(idx => aparicoes[idx]++)
@@ -166,8 +178,8 @@ function simularMaos(deckCards: DeckCard[], totalCards: number, qtd = 10000) {
         if (temCounter2k) comCounter2k++
         if (temBlocker) comBlocker++
         if (temLow2) comLow2++
-        // brick = sem jogada de custo ≤4 E sem counter defensivo
-        if (!temLow4 && !temCounter2k) bricks++
+        // brick = sem jogada T1 nem T2-T3, E sem defesa nenhuma (counter ou evento-counter)
+        if (!temT1 && !temT2 && !temDefesa) bricks++
     }
 
     const dependencia = deckCards.map((dc, idx) => ({
@@ -184,58 +196,81 @@ function simularMaos(deckCards: DeckCard[], totalCards: number, qtd = 10000) {
     }
 }
 
-function avaliarMao(mao: DeckCard[]): number {
+// ── Scoring de mão ─────────────────────────────────────────────────────────────
+// Identifica a "bomba" do deck (carta de maior poder/custo — aquela que o deck quer chegar)
+function getDeckBombId(deckCards: DeckCard[]): string | null {
+    const candidates = deckCards.filter(dc => isBomb(dc))
+    if (!candidates.length) return null
+    // prefere a mais cara / mais poderosa com menos cópias (raridade)
+    candidates.sort((a, b) => {
+        const costDiff = parseInt(b.card.card_cost || '0') - parseInt(a.card.card_cost || '0')
+        if (costDiff !== 0) return costDiff
+        return parseInt(b.card.card_power || '0') - parseInt(a.card.card_power || '0')
+    })
+    return candidates[0].card.card_set_id
+}
+
+function avaliarMao(mao: DeckCard[], bombId: string | null = null): number {
     const hasKw = (dc: DeckCard, kw: string) => dc.card.card_text?.toLowerCase().includes(kw.toLowerCase())
 
-    let nSearcher = 0, nCounter2k = 0, nCounter1k = 0, nBlocker = 0, nDraw = 0, nLow2 = 0, nLow4 = 0, nHeavy = 0
+    let hasT1Play = false  // custo 1-2 → joga no T1
+    let hasT2Play = false  // custo 3-4 → joga no T2
+    let hasT3Play = false  // custo 5-6 → joga no T3
+    let nSearcher = 0, nCounter2k = 0, nCounter1k = 0, nEventCounter = 0
+    let nBlocker = 0, nRush = 0, nBomb = 0, hasDeckBomb = false
 
     mao.forEach(dc => {
         const cost = parseInt(dc.card.card_cost || '99')
+        if (cost <= 2) hasT1Play = true
+        if (cost >= 3 && cost <= 4) hasT2Play = true
+        if (cost >= 5 && cost <= 6) hasT3Play = true
         if (isSearcher(dc)) nSearcher++
         if (dc.card.counter_amount === '2000') nCounter2k++
         if (dc.card.counter_amount === '1000') nCounter1k++
+        if (isEventCounter(dc)) nEventCounter++
         if (hasKw(dc, '[Blocker]')) nBlocker++
-        if (hasKw(dc, 'draw 1') || hasKw(dc, 'draw 2') || hasKw(dc, 'draw a card')) nDraw++
-        if (cost <= 2) nLow2++
-        if (cost <= 4) nLow4++
-        if (cost >= 7) nHeavy++
+        if (hasKw(dc, '[Rush]')) nRush++
+        if (isBomb(dc)) nBomb++
+        if (bombId && dc.card.card_set_id === bombId) hasDeckBomb = true
     })
 
     let score = 0
 
-    // Searcher: 1 é ótimo, 2 marginal, 3+ atrapalha (mão travada)
-    if (nSearcher >= 1) score += 30
-    if (nSearcher >= 2) score += 3
-    if (nSearcher >= 3) score -= (nSearcher - 2) * 18
+    // ── Cobertura de turnos ──
+    if (hasT1Play) score += 28   // carta para jogar no T1 é fundamental
+    if (hasT2Play) score += 22   // T2 também importante
+    if (hasT3Play) score += 12   // T3 ajuda mas menos urgente
+    if (hasT1Play && hasT2Play) score += 15   // curva T1→T2 = bônus de fluxo
+    if (hasT1Play && hasT2Play && hasT3Play) score += 10  // curva completa
 
-    // Counter 2k: 1-2 são bons, 3+ diminishing
-    score += Math.min(nCounter2k, 2) * 22
-    score -= Math.max(0, nCounter2k - 2) * 10
+    // ── Searcher ──
+    if (nSearcher >= 1) score += 26   // 1 searcher = encontra peças-chave
+    if (nSearcher >= 2) score += 2    // 2º tem pouca utilidade adicional
+    if (nSearcher >= 3) score -= (nSearcher - 2) * 16  // 3+ trava a mão
 
-    // Counter 1k: utilidade moderada
-    score += Math.min(nCounter1k, 2) * 10
+    // ── Counter defensivo ──
+    score += Math.min(nCounter2k, 2) * 18   // counter 2k é o mais valioso
+    score -= Math.max(0, nCounter2k - 2) * 8
+    score += Math.min(nCounter1k, 2) * 8
+    score += Math.min(nEventCounter, 1) * 10  // evento-counter é versatile
 
-    // Blocker: 1 é bom
-    score += Math.min(nBlocker, 1) * 16
+    // ── Blocker / Rush ──
+    score += Math.min(nBlocker, 1) * 12
+    score += Math.min(nRush, 2) * 7   // pressão imediata
 
-    // Draw power: 1 é bom
-    score += Math.min(nDraw, 1) * 13
+    // ── Bomba do deck ──
+    if (hasDeckBomb) score += 8   // ter a carta-objetivo na mão é bom
+    if (nBomb >= 2) score -= (nBomb - 1) * 20  // 2+ bombas = mão muito pesada
 
-    // Cartas jogáveis: 1-2 cartas custo ≤2 são ideais
-    score += Math.min(nLow2, 2) * 16
-    // Cartas custo 3-4 também ajudam mas menos
-    score += Math.min(Math.max(0, nLow4 - nLow2), 2) * 6
-
-    // Penaliza cartas pesadas (custo ≥7) — difíceis de jogar cedo
-    score -= nHeavy * 22
-
-    // Penaliza mão sem nenhuma jogada (custo ≤4) — independente de counters
-    if (nLow4 === 0) score -= 25
+    // ── Punições ──
+    if (!hasT1Play && !hasT2Play) score -= 30  // sem jogada até T2 é muito ruim
+    if (!hasT1Play && !hasT2Play && !hasT3Play) score -= 20  // sem NENHUMA jogada
 
     return score
 }
 
 function gerarMelhoresMaos(deckCards: DeckCard[], qtd = 50000): DeckCard[][] {
+    const bombId = getDeckBombId(deckCards)
     const deck: number[] = []
     deckCards.forEach((dc, idx) => {
         for (let q = 0; q < dc.quantity; q++) deck.push(idx)
@@ -245,7 +280,7 @@ function gerarMelhoresMaos(deckCards: DeckCard[], qtd = 50000): DeckCard[][] {
         const shuffled = fisherYates(deck)
         const maoIdx = shuffled.slice(0, 5)
         const mao = maoIdx.map(idx => deckCards[idx])
-        melhor.push({ mao: maoIdx, score: avaliarMao(mao) })
+        melhor.push({ mao: maoIdx, score: avaliarMao(mao, bombId) })
     }
     melhor.sort((a, b) => b.score - a.score)
     const unicas: DeckCard[][] = []
