@@ -1,5 +1,18 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-02 (35) - Claude
+
+**Fix /analysis: melhores mãos, dependência, brick e labels**
+
+- `avaliarMao`: diminishing returns — 1 searcher=+30, 2=+3, 3+=-18/cada. Evita mãos com 3 cópias da mesma carta no topo da simulação.
+- `isSearcher()`: nova função com detecção mais precisa ("search your deck" / "look at the top...add" / "look at up to"), descarta "add up to" genérico que pegava cartas de vida.
+- `simularMaos`: dependência agora conta mãos únicas (Set por hand) em vez de slots. Resultado: % de mãos que viram a carta, não proporção de cópias.
+- Brick: `!temLow4 && !temCounter2k` (sem carta ≤4 E sem counter 2k), antes ignorava mãos pesadas que tinham 1 counter.
+- Label tabela probabilidade: "Chance de Tirar a Peça se Não Veio na Mão".
+- Dependência renomeada para "Frequência na Abertura".
+
+---
+
 ## 2026-07-02 (34) - Claude
 
 **Fix + UX: deck builder estável, borda dourada no leader**
