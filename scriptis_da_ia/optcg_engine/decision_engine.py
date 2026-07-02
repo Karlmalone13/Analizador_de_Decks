@@ -65,6 +65,7 @@ _ANALYSIS_DB: dict = {}
 
 _HUMAN_PATTERNS_PATH = os.path.join(os.path.dirname(__file__), '..', 'human_patterns.json')
 _HUMAN_PATTERN_BONUS_BY_LEADER: dict = {}
+_HUMAN_DEFENSE_BY_LEADER: dict = {}
 _HUMAN_PATTERN_MIN_SUPPORT = 2
 _HUMAN_PATTERN_MAX_BONUS = 30.0
 
@@ -83,7 +84,7 @@ _load_effects_db()
 
 def _load_human_patterns():
     """Carrega sinais leves de pilotagem humana extraidos dos logs reais."""
-    global _HUMAN_PATTERN_BONUS_BY_LEADER
+    global _HUMAN_PATTERN_BONUS_BY_LEADER, _HUMAN_DEFENSE_BY_LEADER
     if _HUMAN_PATTERN_BONUS_BY_LEADER:
         return
     try:
@@ -94,6 +95,7 @@ def _load_human_patterns():
         return
 
     by_leader: dict = {}
+    defense_by_leader: dict = {}
     for row in data.get('heuristic_candidates', []):
         count = int(row.get('count') or 0)
         if count < _HUMAN_PATTERN_MIN_SUPPORT:
@@ -114,7 +116,18 @@ def _load_human_patterns():
                 _HUMAN_PATTERN_MAX_BONUS,
                 leader_bonus.get(key, 0.0) + min(4.0 + count * 2.0, 12.0),
             )
+    for leader, rows in data.get('by_defender_response', {}).items():
+        leader_code = leader.split('|', 1)[0]
+        defense = defense_by_leader.setdefault(leader_code, {'counter': 0, 'blocker': 0})
+        for row in rows:
+            pattern = row.get('pattern') or ''
+            count = int(row.get('count') or 0)
+            if pattern.startswith('counter:'):
+                defense['counter'] += count
+            elif pattern.startswith('blocker:'):
+                defense['blocker'] += count
     _HUMAN_PATTERN_BONUS_BY_LEADER = by_leader
+    _HUMAN_DEFENSE_BY_LEADER = defense_by_leader
 
 
 def _load_analysis_db():
@@ -4599,11 +4612,17 @@ class GameAnalyzer:
         se a mao e desconhecida, nao podemos chamar de lethal garantido.
         """
         known = self.opp.known_hand_cards()
-        known_total = sum(c.counter for c in known if c.counter > 0)
         unknown_hand_size = max(0, len(self.opp.hand) - len(known))
 
-        chunks = [2000] * unknown_hand_size
-        chunks.extend([1000] * (known_total // 1000))
+        # Cartas reveladas: valor real de counter (inclui 0 para cartas sem counter)
+        chunks = [c.counter for c in known]
+        # Slots desconhecidos: não sabemos o counter — tratamos como 0 para
+        # não inflar a defesa do oponente com suposições. O cálculo de lethal
+        # é sobre o que podemos GARANTIR, não sobre o que o oponente pode ter.
+        # (Se o oponente tiver counters ocultos ele escolherá usar, mas não
+        # sabemos quantos são — ignorar é conservador para o atacante.)
+        # Ignoramos slots ocultos: nenhum chunk adicional.
+        _ = unknown_hand_size  # reservado para futura estimativa probabilística
         return sorted(chunks)
 
     def opp_counter_in_hand(self) -> int:
@@ -5463,6 +5482,7 @@ class DecisionEngine:
         """
         a = self.analyzer
         my_life = self.me.life_count()
+        opp_life = self.opp.life_count()
 
         # Com muita vida, não usa blocker
         if my_life > 4:
@@ -5476,7 +5496,9 @@ class DecisionEngine:
         # Quanto mais baixa a vida, mais agressivo na defesa
         use_threshold = {5: False, 4: False, 3: True, 2: True, 1: True}
         if not use_threshold.get(my_life, True):
-            return None
+            # Com 4 vidas e oponente pressionando (≤ 2 vidas), vale bloquear
+            if opp_life > 2:
+                return None
 
         # Com 1-2 vidas, sempre usa blocker se tiver
         if my_life <= 2:
@@ -5484,6 +5506,10 @@ class DecisionEngine:
 
         # Com 3 vidas, usa se o atacante é forte
         if my_life == 3 and attacker_power >= self.me.leader.power:
+            return min(blockers, key=lambda c: a.char_value_score(c))
+
+        # Com 4 vidas e oponente com ≤ 2 vidas: bloqueia apenas atacantes fortes
+        if my_life == 4 and opp_life <= 2 and attacker_power >= self.me.leader.power:
             return min(blockers, key=lambda c: a.char_value_score(c))
 
         return None
@@ -5521,7 +5547,10 @@ class DecisionEngine:
 
         # Com 4+ vidas — conserva counters para situações críticas
         if my_life <= 4:
-            return needed <= 1000 and counter_avail >= needed * 2
+            opp_life = self.opp.life_count()
+            # Oponente pressionando (≤ 2 vidas): afrouxar um pouco o threshold
+            ratio = 1.5 if opp_life <= 2 else 2.0
+            return needed <= 1000 and counter_avail >= needed * ratio
 
         return False
 
@@ -6169,7 +6198,7 @@ class OPTCGMatch:
 
         return base
 
-    def _score_activate_main(self, src, am, p, opp, priority) -> float:
+    def _score_activate_main(self, src, am, p, opp, priority, engine=None) -> float:
         """
         Pontua a ação de ATIVAR um efeito [Activate:Main].
         Permite que a ativação compita com plays e ataques no Turn Planner,
@@ -6178,6 +6207,7 @@ class OPTCGMatch:
         steps = am.get('steps', [])
         actions_list = [s.get('action') for s in steps]
         costs = am.get('costs', [])
+        custo_don = sum(c.get('count', 0) for c in costs if c.get('type') == 'rest_don')
 
         # Benefício base pelo tipo de efeito
         if any(a in ('draw', 'look_top_deck', 'add_to_hand') for a in actions_list):
@@ -6186,6 +6216,31 @@ class OPTCGMatch:
             base = 90    # ramp de DON
         elif any(a in ('play_card',) for a in actions_list):
             base = 110   # jogar carta grátis
+            best_play_value = 0.0
+            best_saved_don = 0
+            for step in steps:
+                if step.get('action') != 'play_card':
+                    continue
+                cost_lte = step.get('cost_lte')
+                if cost_lte == 'don_count_self':
+                    cost_lte = p.don_available + p.don_rested
+                ftype = (step.get('filter_type') or '').lower()
+                fcolor = (step.get('color') or '').lower()
+                fcard_type = (step.get('card_type') or '').upper()
+                for candidate in p.hand:
+                    if cost_lte is not None and candidate.cost > cost_lte:
+                        continue
+                    if ftype and ftype not in candidate.sub_types.lower():
+                        continue
+                    if fcolor and fcolor not in candidate.color.lower():
+                        continue
+                    if fcard_type and candidate.card_type.upper() != fcard_type:
+                        continue
+                    value = engine.avaliar_carta(candidate) if engine is not None else candidate.board_value()
+                    best_play_value = max(best_play_value, value)
+                    best_saved_don = max(best_saved_don, effective_hand_play_cost(p, candidate) - custo_don)
+            base += min(best_play_value * 0.55, 95)
+            base += min(max(0, best_saved_don) * 18, 45)
         elif any(a in ('rest_opp', 'rest_opp_character', 'ko', 'ko_opp',
                        'ko_if_cost_eq_don', 'debuff_power', 'debuff_cost',
                        'bounce', 'place_opp_character_bottom_deck') for a in actions_list):
@@ -6194,7 +6249,6 @@ class OPTCGMatch:
             base = 60
 
         # Custo real: quanto a ativação nos custa (trash de mão, DON, etc.)
-        custo_don = sum(c.get('count', 0) for c in costs if c.get('type') == 'rest_don')
         tem_trash_hand = any(c.get('type') in ('trash_from_hand', 'trash_hand', 'trash_char_or_hand')
                              for c in costs)
         tem_ko_own = any(c.get('type') == 'ko_own_character' for c in costs)
@@ -6399,7 +6453,7 @@ class OPTCGMatch:
             pode, _ = self._should_activate_main(src, am, p, opp)
             if not pode:
                 continue
-            score = self._score_activate_main(src, am, p, opp, priority)
+            score = self._score_activate_main(src, am, p, opp, priority, engine=engine)
             score += self._human_pattern_bonus(p, 'activate', src)
             actions.append((score, 'activate', src, None, None))
 
