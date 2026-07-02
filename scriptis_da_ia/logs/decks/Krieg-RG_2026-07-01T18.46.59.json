@@ -1,0 +1,61 @@
+{
+  "cards": [
+    {
+      "code": "OP15-028",
+      "name": "Meowban Brothers",
+      "count": 2
+    },
+    {
+      "code": "OP15-023",
+      "name": "Arlong",
+      "count": 2
+    },
+    {
+      "code": "OP15-008",
+      "name": "Krieg",
+      "count": 1
+    },
+    {
+      "code": "OP15-009",
+      "name": "Koby",
+      "count": 1
+    },
+    {
+      "code": "OP15-015",
+      "name": "Higuma",
+      "count": 1
+    },
+    {
+      "code": "OP15-011",
+      "name": "Pearl",
+      "count": 1
+    },
+    {
+      "code": "OP15-017",
+      "name": "Morgan",
+      "count": 1
+    },
+    {
+      "code": "OP15-003",
+      "name": "OP15-003",
+      "count": 1
+    },
+    {
+      "code": "OP15-007",
+      "name": "Gin",
+      "count": 1
+    },
+    {
+      "code": "OP15-037",
+      "name": "The Outcome Will Tell Us Who's Strong and Who's Weak",
+      "count": 1
+    },
+    {
+      "code": "OP15-026",
+      "name": "Jango",
+      "count": 1
+    }
+  ],
+  "total_seen": 13,
+  "leader": "OP15-001"
+}

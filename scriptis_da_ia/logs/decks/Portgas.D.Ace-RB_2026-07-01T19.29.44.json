@@ -1,0 +1,61 @@
+{
+  "cards": [
+    {
+      "code": "OP08-047",
+      "name": "Jozu",
+      "count": 3
+    },
+    {
+      "code": "ST22-015",
+      "name": "I Am Whitebeard!",
+      "count": 2
+    },
+    {
+      "code": "EB04-007",
+      "name": "Roronoa Zoro",
+      "count": 2
+    },
+    {
+      "code": "ST22-002",
+      "name": "Izou",
+      "count": 2
+    },
+    {
+      "code": "PRB02-008",
+      "name": "Marco",
+      "count": 2
+    },
+    {
+      "code": "OP16-004",
+      "name": "Curiel",
+      "count": 2
+    },
+    {
+      "code": "OP13-054",
+      "name": "Yamato",
+      "count": 2
+    },
+    {
+      "code": "OP13-043",
+      "name": "Otama",
+      "count": 1
+    },
+    {
+      "code": "OP16-010",
+      "name": "Namule",
+      "count": 1
+    },
+    {
+      "code": "OP07-051",
+      "name": "Boa Hancock",
+      "count": 1
+    },
+    {
+      "code": "OP13-042",
+      "name": "Edward Newgate",
+      "count": 1
+    }
+  ],
+  "total_seen": 19,
+  "leader": "OP13-002"
+}

@@ -73,5 +73,105 @@
       "Karlmalone#2854": "decks/Imu-B_2026-07-01T15.15.57.json",
       "Sebs#6211": "decks/Monkey.D.Luffy-BP_2026-07-01T15.15.57.json"
     }
+  },
+  {
+    "id": "2026-07-01T18.46.59",
+    "friendly_name": "Gecko.Moria-BY_x_Krieg-RG",
+    "date": "2026-07-01",
+    "p1": {
+      "name": "BigRato#5650",
+      "leader_code": "OP14-080",
+      "leader_name": "Gecko Moria",
+      "slug": "Gecko.Moria-BY"
+    },
+    "p2": {
+      "name": "Pefforza#4027",
+      "leader_code": "OP15-001",
+      "leader_name": "Krieg",
+      "slug": "Krieg-RG"
+    },
+    "turns": 9,
+    "winner": null,
+    "log_file": "raw/Gecko.Moria-BY_x_Krieg-RG_2026-07-01T18.46.59.log",
+    "parsed_file": "parsed/Gecko.Moria-BY_x_Krieg-RG_2026-07-01T18.46.59.json",
+    "deck_files": {
+      "BigRato#5650": "decks/Gecko.Moria-BY_2026-07-01T18.46.59.json",
+      "Pefforza#4027": "decks/Krieg-RG_2026-07-01T18.46.59.json"
+    }
+  },
+  {
+    "id": "2026-07-01T19.08.01",
+    "friendly_name": "Jinbe-B_x_Sakazuki-BB",
+    "date": "2026-07-01",
+    "p1": {
+      "name": "BigRato#5650",
+      "leader_code": "OP14-040",
+      "leader_name": "Jinbe",
+      "slug": "Jinbe-B"
+    },
+    "p2": {
+      "name": "SnufkinDM#6827",
+      "leader_code": "OP05-041",
+      "leader_name": "Sakazuki",
+      "slug": "Sakazuki-BB"
+    },
+    "turns": 12,
+    "winner": null,
+    "log_file": "raw/Jinbe-B_x_Sakazuki-BB_2026-07-01T19.08.01.log",
+    "parsed_file": "parsed/Jinbe-B_x_Sakazuki-BB_2026-07-01T19.08.01.json",
+    "deck_files": {
+      "BigRato#5650": "decks/Jinbe-B_2026-07-01T19.08.01.json",
+      "SnufkinDM#6827": "decks/Sakazuki-BB_2026-07-01T19.08.01.json"
+    }
+  },
+  {
+    "id": "2026-07-01T19.17.04",
+    "friendly_name": "Jinbe-B_x_Monkey.D.Luffy-Y",
+    "date": "2026-07-01",
+    "p1": {
+      "name": "BigRato#5650",
+      "leader_code": "OP14-040",
+      "leader_name": "Jinbe",
+      "slug": "Jinbe-B"
+    },
+    "p2": {
+      "name": "DucK#6354",
+      "leader_code": "ST29-001",
+      "leader_name": "Monkey D. Luffy",
+      "slug": "Monkey.D.Luffy-Y"
+    },
+    "turns": 10,
+    "winner": null,
+    "log_file": "raw/Jinbe-B_x_Monkey.D.Luffy-Y_2026-07-01T19.17.04.log",
+    "parsed_file": "parsed/Jinbe-B_x_Monkey.D.Luffy-Y_2026-07-01T19.17.04.json",
+    "deck_files": {
+      "BigRato#5650": "decks/Jinbe-B_2026-07-01T19.17.04.json",
+      "DucK#6354": "decks/Monkey.D.Luffy-Y_2026-07-01T19.17.04.json"
+    }
+  },
+  {
+    "id": "2026-07-01T19.29.44",
+    "friendly_name": "Jinbe-B_x_Portgas.D.Ace-RB",
+    "date": "2026-07-01",
+    "p1": {
+      "name": "BigRato#5650",
+      "leader_code": "OP14-040",
+      "leader_name": "Jinbe",
+      "slug": "Jinbe-B"
+    },
+    "p2": {
+      "name": "Metalbeard#6700",
+      "leader_code": "OP13-002",
+      "leader_name": "Portgas D. Ace",
+      "slug": "Portgas.D.Ace-RB"
+    },
+    "turns": 12,
+    "winner": null,
+    "log_file": "raw/Jinbe-B_x_Portgas.D.Ace-RB_2026-07-01T19.29.44.log",
+    "parsed_file": "parsed/Jinbe-B_x_Portgas.D.Ace-RB_2026-07-01T19.29.44.json",
+    "deck_files": {
+      "BigRato#5650": "decks/Jinbe-B_2026-07-01T19.29.44.json",
+      "Metalbeard#6700": "decks/Portgas.D.Ace-RB_2026-07-01T19.29.44.json"
+    }
   }
 ]

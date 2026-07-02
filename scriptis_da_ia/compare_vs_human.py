@@ -80,6 +80,14 @@ def make_life_cards(count: int) -> list:
     return [Card(data=cd) for _ in range(count)]
 
 
+def _total_don_for_turn(personal_turn: int, is_first: bool) -> int:
+    if personal_turn <= 0:
+        return 0
+    if is_first:
+        return min(10, 1 + (personal_turn - 1) * 2)
+    return min(10, personal_turn * 2)
+
+
 # ---------------------------------------------------------------------------
 # Construcao de GameState a partir de snapshot
 # ---------------------------------------------------------------------------
@@ -100,6 +108,24 @@ def _remove_one(seq: list, code: str) -> bool:
             seq.pop(i)
             return True
     return False
+
+
+def _is_stage_code(code: str) -> bool:
+    data = CARDS_DB.get(code) or {}
+    return (data.get('card_type') or data.get('type') or '').upper() == 'STAGE'
+
+
+def _infer_stages_until(turns: list, idx: int) -> dict[str, str]:
+    stages = {}
+    for turn in turns[:idx + 1]:
+        player = turn.get('player')
+        if not player:
+            continue
+        for action in turn.get('actions', []):
+            code = action.get('card')
+            if action.get('type') == 'activate' and code and _is_stage_code(code):
+                stages[player] = code
+    return stages
 
 
 def _pre_turn_snapshot(turns: list, idx: int, meta: dict) -> dict:
@@ -123,6 +149,9 @@ def _pre_turn_snapshot(turns: list, idx: int, meta: dict) -> dict:
         drawn = (turn.get('card_drawn') or {}).get('code')
         if drawn:
             current[player].setdefault('hand', []).append(drawn)
+
+    for stage_player, stage_code in _infer_stages_until(turns, idx).items():
+        current.setdefault(stage_player, {})['stage'] = stage_code
 
     if idx == 0 and player and player in current:
         st = current[player]
@@ -153,45 +182,54 @@ def build_game_states(turn_data: dict, meta: dict, active_player_name: str,
 
     active_snap = snap.get(active_player_name, {})
     opp_snap    = snap.get(opp_name, {})
+    global_turn = turn_data.get('turn', 1)
+    active_is_first = (global_turn % 2) == 1
+    active_personal_turn = (global_turn + 1) // 2
+    opp_personal_turn = max(1, global_turn // 2)
+    active_total_don = _total_don_for_turn(active_personal_turn, active_is_first)
+    opp_total_don = _total_don_for_turn(opp_personal_turn, not active_is_first)
 
     # Jogador ativo
     leader_active = make_leader_card(active_meta['leader'].get('code', ''))
     hand_a   = [make_card_from_code(c) for c in active_snap.get('hand', [])]
     board_a  = [make_card_from_code(c) for c in active_snap.get('board', [])]
     trash_a  = [make_card_from_code(c) for c in active_snap.get('trash', [])]
+    stage_a  = make_card_from_code(active_snap.get('stage')) if active_snap.get('stage') else None
     life_cnt_a = active_snap.get('life', 4)
-    don_drawn  = turn_data.get('don_drawn', 2)
 
     state_a = GameState(
         leader=leader_active,
         hand=hand_a,
         field_chars=board_a,
+        field_stage=stage_a,
         trash=trash_a,
         life=make_life_cards(life_cnt_a),
-        don_available=don_drawn,
-        don_rested=max(0, 10 - don_drawn),
-        don_deck=0,
-        turn=turn_data.get('turn', 1),
-        is_first=True,
+        don_available=active_total_don,
+        don_rested=0,
+        don_deck=max(0, 10 - active_total_don),
+        turn=active_personal_turn,
+        is_first=active_is_first,
     )
 
     # Oponente
     leader_opp = make_leader_card(opp_meta['leader'].get('code', ''))
     board_o  = [make_card_from_code(c) for c in opp_snap.get('board', [])]
     trash_o  = [make_card_from_code(c) for c in opp_snap.get('trash', [])]
+    stage_o  = make_card_from_code(opp_snap.get('stage')) if opp_snap.get('stage') else None
     life_cnt_o = opp_snap.get('life', 4)
 
     state_o = GameState(
         leader=leader_opp,
         hand=[],
         field_chars=board_o,
+        field_stage=stage_o,
         trash=trash_o,
         life=make_life_cards(life_cnt_o),
         don_available=0,
-        don_rested=10,
-        don_deck=0,
-        turn=turn_data.get('turn', 1),
-        is_first=False,
+        don_rested=opp_total_don,
+        don_deck=max(0, 10 - opp_total_don),
+        turn=opp_personal_turn,
+        is_first=not active_is_first,
     )
 
     return state_a, state_o
@@ -234,8 +272,12 @@ def get_ai_actions(turn_data: dict, meta: dict, active_player: str,
         import traceback
         return [{'error': f'{e}\n{traceback.format_exc()[-400:]}'}]
 
+    actionable = [item for item in actions if item[0] > 0]
+    if not actionable:
+        return [{'score': 0, 'type': 'pass', 'card': '', 'card_name': ''}]
+
     result = []
-    for item in sorted(actions, key=lambda x: -x[0])[:8]:
+    for item in sorted(actionable, key=lambda x: -x[0])[:8]:
         score   = item[0]
         kind    = item[1]
         card    = item[2] if len(item) > 2 else None
@@ -257,8 +299,85 @@ def _card_label(code: str) -> str:
     return f'{code}  {d.get("name", "")[:25]}' if d else code
 
 
+def _human_action_key(action: dict) -> tuple[str, str]:
+    kind = action.get('type', '')
+    if kind in ('play', 'activate'):
+        return kind, action.get('card') or ''
+    if kind == 'attack':
+        return kind, action.get('attacker_code') or action.get('attacker') or ''
+    if kind == 'attach_don':
+        return kind, action.get('target_code') or action.get('target') or ''
+    return kind, action.get('card') or ''
+
+
+def _ai_action_key(action: dict) -> tuple[str, str]:
+    return action.get('type', ''), action.get('card') or ''
+
+
+def _human_turn_keys(actions: list[dict]) -> tuple[set[tuple[str, str]], set[str]]:
+    keys = {_human_action_key(a) for a in actions
+            if a.get('type') in ('play', 'activate', 'attack', 'attach_don')}
+    if not keys:
+        keys.add(('pass', ''))
+    return keys, {kind for kind, _code in keys}
+
+
+def _ai_match_label(ai_action: dict, human_keys: set[tuple[str, str]],
+                    human_kinds: set[str]) -> str:
+    key = _ai_action_key(ai_action)
+    if key in human_keys:
+        return 'exact'
+    if key[0] in human_kinds:
+        return 'kind'
+    return 'miss'
+
+
+def summarize_human_vs_ai(data: dict, top_k: int = 5) -> dict:
+    meta = data['meta']
+    stats = {
+        'turns': 0,
+        'errors': 0,
+        'top1_exact': 0,
+        'top1_kind': 0,
+        'topk_exact': 0,
+        'topk_kind': 0,
+        'misses': [],
+    }
+    for idx, turn in enumerate(data.get('turns', [])):
+        player = turn.get('player')
+        if not player:
+            continue
+        stats['turns'] += 1
+        human_keys, human_kinds = _human_turn_keys(turn.get('actions', []))
+        snap = _pre_turn_snapshot(data['turns'], idx, meta)
+        ai_actions = get_ai_actions(turn, meta, player, snapshot=snap)
+        if not ai_actions or 'error' in ai_actions[0]:
+            stats['errors'] += 1
+            continue
+
+        labels = [_ai_match_label(a, human_keys, human_kinds)
+                  for a in ai_actions[:top_k]]
+        if labels and labels[0] == 'exact':
+            stats['top1_exact'] += 1
+        if labels and labels[0] in ('exact', 'kind'):
+            stats['top1_kind'] += 1
+        if 'exact' in labels:
+            stats['topk_exact'] += 1
+        if any(label in ('exact', 'kind') for label in labels):
+            stats['topk_kind'] += 1
+        elif len(stats['misses']) < 12:
+            stats['misses'].append({
+                'turn': turn.get('turn'),
+                'player': player,
+                'human': sorted(human_keys),
+                'ai_top': [_ai_action_key(a) + (a.get('score'),)
+                           for a in ai_actions[:top_k]],
+            })
+    return stats
+
+
 def print_turn(turn: dict, meta: dict, active_player: str, show_state: bool,
-               ai_snapshot: dict | None = None):
+               ai_snapshot: dict | None = None, top_k: int = 5):
     snap    = ai_snapshot if ai_snapshot is not None else turn['snapshot']
     actions = turn['actions']
     t_num   = turn['turn']
@@ -322,28 +441,24 @@ def print_turn(turn: dict, meta: dict, active_player: str, show_state: bool,
     # IA
     print('\n  [IA — top acoes por score]')
     ai = get_ai_actions(turn, meta, active_player, snapshot=snap)
-    for i, a in enumerate(ai):
+    human_keys, human_kinds = _human_turn_keys(actions)
+    for i, a in enumerate(ai[:top_k]):
         if 'error' in a:
             print(f'    ERRO: {a["error"][:200]}')
             return
         marker = '>>>' if i == 0 else '   '
         cinfo  = f'{a["card"]:12s} {a["card_name"]}' if a['card'] else ''
-        print(f'    {marker} [{a["score"]:7.1f}]  {a["type"]:14s} {cinfo}')
+        match = _ai_match_label(a, human_keys, human_kinds)
+        print(f'    {marker} [{a["score"]:7.1f}]  {a["type"]:14s} {cinfo}  [{match}]')
 
     # Divergencia
-    human_cards = {a['card'] for a in plays}
     ai_top = ai[0] if ai and 'error' not in ai[0] else None
 
     if ai_top:
-        ai_card = ai_top['card']
-        if human_cards and ai_card and ai_card not in human_cards:
-            print(f'\n  *** DIVERGENCIA: humano jogou {human_cards} | '
-                  f'IA preferia {ai_card} ({ai_top["card_name"]}) '
-                  f'[score {ai_top["score"]}]')
-        elif not plays and not attacks and ai_top['score'] > 30:
-            print(f'\n  *** DIVERGENCIA: humano passou | '
-                  f'IA teria feito {ai_top["type"]} {ai_card} '
-                  f'[score {ai_top["score"]}]')
+        top_labels = [_ai_match_label(a, human_keys, human_kinds) for a in ai[:top_k]]
+        if top_labels and top_labels[0] == 'miss' and 'exact' not in top_labels:
+            print(f'\n  *** DIVERGENCIA: nenhuma acao exata do humano apareceu no top {top_k} da IA')
+            print(f'      humano: {sorted(human_keys)}')
 
 
 # ---------------------------------------------------------------------------
@@ -357,6 +472,10 @@ def main():
     ap.add_argument('--turn',   type=int, default=None, help='So este turno')
     ap.add_argument('--no-state', action='store_true',
                     help='Omitir mao/campo (saida mais curta)')
+    ap.add_argument('--top-k', type=int, default=5,
+                    help='Quantas acoes da IA comparar contra o turno humano')
+    ap.add_argument('--summary', action='store_true',
+                    help='Resumo agregado; aceita arquivo ou pasta de logs parseados')
     args = ap.parse_args()
 
     csv_path = Path(__file__).parent / 'cards_rows.csv'
@@ -368,6 +487,42 @@ def main():
     if not log_path.exists():
         print(f'Nao encontrado: {log_path}')
         sys.exit(1)
+
+    if args.summary:
+        paths = sorted(log_path.glob('*.json')) if log_path.is_dir() else [log_path]
+        total = {
+            'turns': 0,
+            'errors': 0,
+            'top1_exact': 0,
+            'top1_kind': 0,
+            'topk_exact': 0,
+            'topk_kind': 0,
+        }
+        misses = []
+        for path in paths:
+            data = json.loads(path.read_text(encoding='utf-8'))
+            stats = summarize_human_vs_ai(data, top_k=args.top_k)
+            for key in total:
+                total[key] += stats[key]
+            for miss in stats['misses']:
+                if len(misses) < 12:
+                    miss = dict(miss)
+                    miss['log'] = path.name
+                    misses.append(miss)
+
+        turns = max(1, total['turns'])
+        print(f'\n{DIVIDER}')
+        print(f'  Logs: {len(paths)} | turnos: {total["turns"]} | erros: {total["errors"]}')
+        print(f'  top1 exact: {total["top1_exact"]}/{turns}')
+        print(f'  top1 kind : {total["top1_kind"]}/{turns}')
+        print(f'  top{args.top_k} exact: {total["topk_exact"]}/{turns}')
+        print(f'  top{args.top_k} kind : {total["topk_kind"]}/{turns}')
+        if misses:
+            print('\n  Amostras sem match no top K:')
+            for miss in misses:
+                print(f'    {miss["log"]} T{miss["turn"]}: humano={miss["human"]} ia={miss["ai_top"]}')
+        print(f'{DIVIDER}\n')
+        return
 
     data  = json.loads(log_path.read_text(encoding='utf-8'))
     meta  = data['meta']
@@ -391,7 +546,7 @@ def main():
             continue
         ai_snapshot = _pre_turn_snapshot(turns, idx, meta)
         print_turn(turn, meta, player, show_state=not args.no_state,
-                   ai_snapshot=ai_snapshot)
+                   ai_snapshot=ai_snapshot, top_k=args.top_k)
 
     print(f'\n{DIVIDER}  Fim  {DIVIDER}\n')
 

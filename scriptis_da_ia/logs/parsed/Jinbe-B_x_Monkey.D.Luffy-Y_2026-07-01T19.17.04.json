@@ -1,0 +1,900 @@
+{
+  "meta": {
+    "players": {
+      "p1": {
+        "name": "BigRato#5650",
+        "leader": {
+          "name": "Jinbe",
+          "code": "OP14-040"
+        }
+      },
+      "p2": {
+        "name": "DucK#6354",
+        "leader": {
+          "name": "Monkey D. Luffy",
+          "code": "ST29-001"
+        }
+      }
+    },
+    "goes_first": "DucK#6354"
+  },
+  "total_turns": 10,
+  "turns": [
+    {
+      "turn": 1,
+      "player": "DucK#6354",
+      "card_drawn": null,
+      "don_drawn": 1,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP13-113",
+          "card_name": "Lilith",
+          "effects": [
+            "<b>Reveal and Draw Jesus Burgess [\"OP16-107\">OP16-107]</b>"
+          ]
+        }
+      ],
+      "snapshot": {
+        "BigRato#5650": {
+          "hand": [
+            "ST17-002",
+            "OP14-042",
+            "OP07-046",
+            "OP07-045",
+            "OP14-042"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 5
+        },
+        "DucK#6354": {
+          "hand": [
+            "ST29-005",
+            "EB03-055",
+            "OP12-119",
+            "OP16-119",
+            "OP16-107"
+          ],
+          "trash": [],
+          "board": [
+            "OP13-113"
+          ],
+          "life": 6
+        }
+      }
+    },
+    {
+      "turn": 2,
+      "player": "BigRato#5650",
+      "card_drawn": {
+        "name": "Jinbe",
+        "code": "OP07-045"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP07-046",
+          "card_name": "Sengoku",
+          "effects": [
+            "<b>Reveal and Draw Edward Weevil [\"EB01-023\">EB01-023]</b>"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP14-042",
+          "card_name": "Arlong",
+          "effects": [
+            "<b>Reveal and Draw Edward Weevil [\"EB01-023\">EB01-023]</b>"
+          ]
+        }
+      ],
+      "snapshot": {
+        "BigRato#5650": {
+          "hand": [
+            "ST17-002",
+            "OP07-045",
+            "OP14-042",
+            "OP07-045",
+            "EB01-023",
+            "EB01-023"
+          ],
+          "board": [
+            "OP07-046",
+            "OP14-042"
+          ],
+          "trash": [],
+          "life": 5
+        },
+        "DucK#6354": {
+          "hand": [
+            "ST29-005",
+            "EB03-055",
+            "OP12-119",
+            "OP16-119",
+            "OP16-107"
+          ],
+          "trash": [],
+          "board": [
+            "OP13-113"
+          ],
+          "life": 6
+        }
+      }
+    },
+    {
+      "turn": 3,
+      "player": "DucK#6354",
+      "card_drawn": {
+        "name": "Lilith",
+        "code": "OP13-113"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Monkey D. Luffy",
+          "attacker_code": "ST29-001",
+          "target": "Jinbe [\"OP14-040\">OP14-040]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP07-045"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP16-107",
+          "card_name": "Jesus Burgess",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "BigRato#5650": {
+          "hand": [
+            "ST17-002",
+            "OP14-042",
+            "OP07-045",
+            "EB01-023",
+            "EB01-023"
+          ],
+          "board": [
+            "OP07-046",
+            "OP14-042"
+          ],
+          "trash": [
+            "OP07-045"
+          ],
+          "life": 5
+        },
+        "DucK#6354": {
+          "hand": [
+            "ST29-005",
+            "EB03-055",
+            "OP12-119",
+            "OP16-119",
+            "OP13-113"
+          ],
+          "trash": [],
+          "board": [
+            "OP13-113",
+            "OP16-107"
+          ],
+          "life": 6
+        }
+      }
+    },
+    {
+      "turn": 4,
+      "player": "BigRato#5650",
+      "card_drawn": {
+        "name": "Jinbe",
+        "code": "OP07-045"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP07-045",
+          "card_name": "Jinbe",
+          "effects": [
+            "Deploy Edward Weevil [\"EB01-023\">EB01-023]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "EB01-023",
+          "card_name": "Edward Weevil",
+          "effects": [
+            "Draw 1 Card"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Jinbe",
+          "attacker_code": "OP14-040",
+          "target": "Monkey D. Luffy [\"ST29-001\">ST29-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "BigRato#5650": {
+          "hand": [
+            "ST17-002",
+            "OP14-042",
+            "EB01-023",
+            "OP07-046",
+            "OP07-045"
+          ],
+          "board": [
+            "OP07-046",
+            "OP14-042",
+            "OP07-045",
+            "EB01-023"
+          ],
+          "trash": [
+            "OP07-045"
+          ],
+          "life": 5
+        },
+        "DucK#6354": {
+          "hand": [
+            "ST29-005",
+            "EB03-055",
+            "OP12-119",
+            "OP16-119",
+            "OP13-113",
+            "EB03-053"
+          ],
+          "trash": [],
+          "board": [
+            "OP13-113",
+            "OP16-107"
+          ],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 5,
+      "player": "DucK#6354",
+      "card_drawn": {
+        "name": "Nami",
+        "code": "OP08-106"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Jesus Burgess",
+          "attacker_code": "OP16-107",
+          "target": "Jinbe [\"OP14-040\">OP14-040]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP07-046"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Monkey D. Luffy",
+          "attacker_code": "ST29-001",
+          "target": "Jinbe [\"OP14-040\">OP14-040]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP08-106",
+          "card_name": "Nami",
+          "effects": [
+            "Trash Lilith [\"OP13-113\">OP13-113]",
+            "Destroy Jinbe [\"OP07-045\">OP07-045]"
+          ]
+        }
+      ],
+      "snapshot": {
+        "BigRato#5650": {
+          "hand": [
+            "ST17-002",
+            "OP14-042",
+            "EB01-023",
+            "OP07-045",
+            "OP14-046"
+          ],
+          "board": [
+            "OP07-046",
+            "OP14-042",
+            "EB01-023"
+          ],
+          "trash": [
+            "OP07-045",
+            "OP07-046",
+            "OP07-045"
+          ],
+          "life": 4
+        },
+        "DucK#6354": {
+          "hand": [
+            "ST29-005",
+            "EB03-055",
+            "OP12-119",
+            "OP16-119",
+            "EB03-053"
+          ],
+          "trash": [
+            "OP13-113"
+          ],
+          "board": [
+            "OP13-113",
+            "OP16-107",
+            "OP08-106"
+          ],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 6,
+      "player": "BigRato#5650",
+      "card_drawn": {
+        "name": "Trafalgar Law",
+        "code": "ST17-002"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP07-045",
+          "card_name": "Jinbe",
+          "effects": [
+            "Deploy Trafalgar Law [\"ST17-002\">ST17-002]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "ST17-002",
+          "card_name": "Trafalgar Law",
+          "effects": [
+            "Return Arlong [\"OP14-042\">OP14-042] to Hand",
+            "Send Jesus Burgess [\"OP16-107\">OP16-107] to Hand"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP14-042",
+          "card_name": "Arlong",
+          "effects": [
+            "<b>Reveal and Draw Boa Hancock [\"OP07-051\">OP07-051]</b>"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP14-040",
+          "to_name": "Jinbe",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Jinbe",
+          "attacker_code": "OP14-040",
+          "target": "Monkey D. Luffy [\"ST29-001\">ST29-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "ST29-005"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Edward Weevil",
+          "attacker_code": "EB01-023",
+          "target": "Monkey D. Luffy [\"ST29-001\">ST29-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "BigRato#5650": {
+          "hand": [
+            "ST17-002",
+            "OP14-042",
+            "EB01-023",
+            "OP14-046",
+            "OP07-051"
+          ],
+          "board": [
+            "OP07-046",
+            "EB01-023",
+            "ST17-002",
+            "OP14-042"
+          ],
+          "trash": [
+            "OP07-045",
+            "OP07-046",
+            "OP07-045",
+            "OP07-045"
+          ],
+          "life": 4
+        },
+        "DucK#6354": {
+          "hand": [
+            "EB03-055",
+            "OP12-119",
+            "OP16-119",
+            "EB03-053"
+          ],
+          "trash": [
+            "OP13-113",
+            "ST29-005",
+            "OP08-106",
+            "OP16-107"
+          ],
+          "board": [
+            "OP13-113",
+            "OP08-106"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 7,
+      "player": "DucK#6354",
+      "card_drawn": {
+        "name": "Jinbe",
+        "code": "ST29-005"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Nami",
+          "attacker_code": "OP08-106",
+          "target": "Jinbe [\"OP14-040\">OP14-040]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "ST17-002"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Monkey D. Luffy",
+          "attacker_code": "ST29-001",
+          "target": "Jinbe [\"OP14-040\">OP14-040]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "EB03-055",
+          "card_name": "Nico Robin",
+          "effects": [
+            "Trashes Top Life",
+            "Add card to top of Life from Deck",
+            "Add card to top of Life from Deck"
+          ]
+        }
+      ],
+      "snapshot": {
+        "BigRato#5650": {
+          "hand": [
+            "OP14-042",
+            "EB01-023",
+            "OP14-046",
+            "OP07-051",
+            "ST17-002"
+          ],
+          "board": [
+            "OP07-046",
+            "EB01-023",
+            "ST17-002",
+            "OP14-042"
+          ],
+          "trash": [
+            "OP07-045",
+            "OP07-046",
+            "OP07-045",
+            "OP07-045",
+            "ST17-002"
+          ],
+          "life": 3
+        },
+        "DucK#6354": {
+          "hand": [
+            "OP12-119",
+            "OP16-119",
+            "EB03-053",
+            "ST29-005"
+          ],
+          "trash": [
+            "OP13-113",
+            "ST29-005",
+            "OP08-106",
+            "OP16-107",
+            "OP06-104"
+          ],
+          "board": [
+            "OP13-113",
+            "OP08-106",
+            "EB03-055"
+          ],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 8,
+      "player": "BigRato#5650",
+      "card_drawn": {
+        "name": "Jinbe",
+        "code": "OP14-049"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP07-051",
+          "card_name": "Boa Hancock",
+          "effects": [
+            "Nico Robin [\"EB03-055\">EB03-055] can't attack next turn",
+            "Send Lilith [\"OP13-113\">OP13-113] to Deck Bottom"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Trafalgar Law",
+          "attacker_code": "ST17-002",
+          "target": "Nami [\"OP08-106\">OP08-106]",
+          "result": null,
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP14-040",
+          "to_name": "Jinbe",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Jinbe",
+          "attacker_code": "OP14-040",
+          "target": "Monkey D. Luffy [\"ST29-001\">ST29-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "ST29-005"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Edward Weevil",
+          "attacker_code": "EB01-023",
+          "target": "Monkey D. Luffy [\"ST29-001\">ST29-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "BigRato#5650": {
+          "hand": [
+            "OP14-042",
+            "EB01-023",
+            "OP14-046",
+            "ST17-002",
+            "OP14-049"
+          ],
+          "board": [
+            "OP07-046",
+            "EB01-023",
+            "ST17-002",
+            "OP14-042",
+            "OP07-051"
+          ],
+          "trash": [
+            "OP07-045",
+            "OP07-046",
+            "OP07-045",
+            "OP07-045",
+            "ST17-002"
+          ],
+          "life": 3
+        },
+        "DucK#6354": {
+          "hand": [
+            "OP12-119",
+            "OP16-119",
+            "EB03-053",
+            "ST29-009"
+          ],
+          "trash": [
+            "OP13-113",
+            "ST29-005",
+            "OP08-106",
+            "OP16-107",
+            "OP06-104",
+            "OP08-106",
+            "ST29-005"
+          ],
+          "board": [
+            "EB03-055"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 9,
+      "player": "DucK#6354",
+      "card_drawn": {
+        "name": "Jinbe",
+        "code": "ST29-005"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "EB03-053",
+          "card_name": "Nami",
+          "effects": [
+            "Attach 1 Rested Don to Monkey D. Luffy [\"ST29-001\">ST29-001]",
+            "Send 1 Life to Hand"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 3,
+          "to": "ST29-001",
+          "to_name": "Monkey D. Luffy",
+          "total": 4
+        },
+        {
+          "type": "attack",
+          "attacker": "Monkey D. Luffy",
+          "attacker_code": "ST29-001",
+          "target": "Jinbe [\"OP14-040\">OP14-040]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "BigRato#5650": {
+          "hand": [
+            "OP14-042",
+            "EB01-023",
+            "OP14-046",
+            "ST17-002",
+            "OP14-049",
+            "OP07-051",
+            "OP14-049"
+          ],
+          "board": [
+            "OP07-046",
+            "EB01-023",
+            "ST17-002",
+            "OP14-042",
+            "OP07-051"
+          ],
+          "trash": [
+            "OP07-045",
+            "OP07-046",
+            "OP07-045",
+            "OP07-045",
+            "ST17-002",
+            "OP07-057"
+          ],
+          "life": 1
+        },
+        "DucK#6354": {
+          "hand": [
+            "OP12-119",
+            "OP16-119",
+            "ST29-009",
+            "ST29-005"
+          ],
+          "trash": [
+            "OP13-113",
+            "ST29-005",
+            "OP08-106",
+            "OP16-107",
+            "OP06-104",
+            "OP08-106",
+            "ST29-005"
+          ],
+          "board": [
+            "EB03-055",
+            "EB03-053"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 10,
+      "player": "BigRato#5650",
+      "card_drawn": {
+        "name": "Crocodile",
+        "code": "OP07-040"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP14-049",
+          "card_name": "Jinbe",
+          "effects": [
+            "Rest 2 Don",
+            "Draw 2 Card",
+            "Send Nico Robin [\"EB03-055\">EB03-055] to Hand",
+            "Give Jinbe [\"OP14-049\">OP14-049] Rush",
+            "Give Jinbe [\"OP14-049\">OP14-049] Rush",
+            "Give Jinbe [\"OP14-049\">OP14-049] Rush"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP14-040",
+          "card_name": "Jinbe",
+          "effects": [
+            "Trash Chew [\"OP14-050\">OP14-050]",
+            "Attach 1 Rested Don to Arlong [\"OP14-042\">OP14-042]",
+            "Attach 1 Rested Don to Arlong [\"OP14-042\">OP14-042]",
+            "Trash Edward Weevil [\"EB01-023\">EB01-023]",
+            "Attach 1 Rested Don to Jinbe [\"OP14-040\">OP14-040]",
+            "Attach 1 Rested Don to Jinbe [\"OP14-040\">OP14-040]",
+            "Trash Arlong [\"OP14-042\">OP14-042]",
+            "Attach 1 Rested Don to Jinbe [\"OP14-049\">OP14-049]",
+            "Attach 1 Rested Don to Jinbe [\"OP14-049\">OP14-049]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Arlong",
+          "attacker_code": "OP14-042",
+          "target": "Monkey D. Luffy [\"ST29-001\">ST29-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP12-119"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Trafalgar Law",
+          "attacker_code": "ST17-002",
+          "target": "Monkey D. Luffy [\"ST29-001\">ST29-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Edward Weevil",
+          "attacker_code": "EB01-023",
+          "target": "Monkey D. Luffy [\"ST29-001\">ST29-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "ST29-009"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Jinbe",
+          "attacker_code": "OP14-040",
+          "target": "Monkey D. Luffy [\"ST29-001\">ST29-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Boa Hancock",
+          "attacker_code": "OP07-051",
+          "target": "Monkey D. Luffy [\"ST29-001\">ST29-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Jinbe",
+          "attacker_code": "OP14-049",
+          "target": "Monkey D. Luffy [\"ST29-001\">ST29-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "BigRato#5650": {
+          "hand": [
+            "OP14-046",
+            "ST17-002",
+            "OP14-049",
+            "OP07-051",
+            "OP06-058",
+            "OP07-040"
+          ],
+          "board": [
+            "EB01-023",
+            "ST17-002",
+            "OP14-042",
+            "OP07-051",
+            "OP14-049"
+          ],
+          "trash": [
+            "OP07-045",
+            "OP07-046",
+            "OP07-045",
+            "OP07-045",
+            "ST17-002",
+            "OP07-057",
+            "OP07-046",
+            "OP14-050",
+            "EB01-023",
+            "OP14-042"
+          ],
+          "life": 1
+        },
+        "DucK#6354": {
+          "hand": [
+            "OP16-119",
+            "ST29-009",
+            "ST29-005",
+            "EB03-055",
+            "OP12-119",
+            "OP13-108",
+            "ST29-009"
+          ],
+          "trash": [
+            "OP13-113",
+            "ST29-005",
+            "OP08-106",
+            "OP16-107",
+            "OP06-104",
+            "OP08-106",
+            "ST29-005",
+            "OP12-119",
+            "OP13-113",
+            "ST29-009"
+          ],
+          "board": [
+            "EB03-053"
+          ],
+          "life": 0
+        }
+      }
+    }
+  ]
+}

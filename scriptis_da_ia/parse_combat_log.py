@@ -442,6 +442,8 @@ def add_to_db(log_path: str, data: dict, decks: dict):
 
     log_path = Path(log_path)
     timestamp = log_path.stem   # ex: "2026-07-01T12.46.16"
+    if timestamp.endswith('.log'):
+        timestamp = timestamp[:-4]
 
     # Verifica duplicata pelo timestamp
     idx = _load_index()

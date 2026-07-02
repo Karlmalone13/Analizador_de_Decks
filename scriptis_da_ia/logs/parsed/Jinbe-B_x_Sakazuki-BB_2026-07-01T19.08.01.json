@@ -1,0 +1,1115 @@
+{
+  "meta": {
+    "players": {
+      "p1": {
+        "name": "BigRato#5650",
+        "leader": {
+          "name": "Jinbe",
+          "code": "OP14-040"
+        }
+      },
+      "p2": {
+        "name": "SnufkinDM#6827",
+        "leader": {
+          "name": "Sakazuki",
+          "code": "OP05-041"
+        }
+      }
+    },
+    "goes_first": null
+  },
+  "total_turns": 12,
+  "turns": [
+    {
+      "turn": 1,
+      "player": "BigRato#5650",
+      "card_drawn": null,
+      "don_drawn": 1,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP07-046",
+          "card_name": "Sengoku",
+          "effects": [
+            "<b>Reveal and Draw Crocodile [\"OP07-040\">OP07-040]</b>"
+          ]
+        }
+      ],
+      "snapshot": {
+        "BigRato#5650": {
+          "hand": [
+            "OP14-046",
+            "OP14-049",
+            "ST17-002",
+            "OP07-040",
+            "OP07-040"
+          ],
+          "board": [
+            "OP07-046"
+          ],
+          "trash": [],
+          "life": 5
+        },
+        "SnufkinDM#6827": {
+          "hand": [
+            "OP06-050",
+            "OP06-058",
+            "OP16-056",
+            "EB04-026",
+            "OP05-057"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 2,
+      "player": "SnufkinDM#6827",
+      "card_drawn": {
+        "name": "Isuka",
+        "code": "EB03-022"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP06-050",
+          "card_name": "Tashigi",
+          "effects": [
+            "<b>Reveal and Draw Hound Blaze [\"OP05-057\">OP05-057]</b>"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP05-041",
+          "card_name": "Sakazuki",
+          "effects": [
+            "Draw 1 Card"
+          ]
+        }
+      ],
+      "snapshot": {
+        "BigRato#5650": {
+          "hand": [
+            "OP14-046",
+            "OP14-049",
+            "ST17-002",
+            "OP07-040",
+            "OP07-040"
+          ],
+          "board": [
+            "OP07-046"
+          ],
+          "trash": [],
+          "life": 5
+        },
+        "SnufkinDM#6827": {
+          "hand": [
+            "OP16-056",
+            "EB04-026",
+            "OP05-057",
+            "OP05-091",
+            "OP05-057",
+            "EB03-022"
+          ],
+          "trash": [
+            "OP06-058"
+          ],
+          "board": [
+            "OP06-050"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 3,
+      "player": "BigRato#5650",
+      "card_drawn": {
+        "name": "Perfume Femur",
+        "code": "OP07-057"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP07-046",
+          "to_name": "Sengoku",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP07-046",
+          "to_name": "Sengoku",
+          "total": 2
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP07-046",
+          "to_name": "Sengoku",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Sengoku",
+          "attacker_code": "OP07-046",
+          "target": "Sakazuki [\"OP05-041\">OP05-041]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "EB03-022"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Jinbe",
+          "attacker_code": "OP14-040",
+          "target": "Sakazuki [\"OP05-041\">OP05-041]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "BigRato#5650": {
+          "hand": [
+            "OP14-046",
+            "OP14-049",
+            "ST17-002",
+            "OP07-040",
+            "OP07-040",
+            "OP07-057"
+          ],
+          "board": [
+            "OP07-046"
+          ],
+          "trash": [],
+          "life": 5
+        },
+        "SnufkinDM#6827": {
+          "hand": [
+            "OP16-056",
+            "EB04-026",
+            "OP05-057",
+            "OP05-091",
+            "OP05-057",
+            "OP07-096"
+          ],
+          "trash": [
+            "OP06-058",
+            "EB03-022"
+          ],
+          "board": [
+            "OP06-050"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 4,
+      "player": "SnufkinDM#6827",
+      "card_drawn": {
+        "name": "Mr. 3 (Galdino)",
+        "code": "OP16-056"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "PRB02-008",
+          "card_name": "Marco",
+          "effects": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Tashigi",
+          "attacker_code": "OP06-050",
+          "target": "Sengoku [\"OP07-046\">OP07-046]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP05-041",
+          "card_name": "Sakazuki",
+          "effects": [
+            "Draw 1 Card"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Sakazuki",
+          "attacker_code": "OP05-041",
+          "target": "Jinbe [\"OP14-040\">OP14-040]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "BigRato#5650": {
+          "hand": [
+            "OP14-046",
+            "OP14-049",
+            "ST17-002",
+            "OP07-040",
+            "OP07-040",
+            "OP07-057",
+            "OP07-051"
+          ],
+          "board": [],
+          "trash": [
+            "OP07-046"
+          ],
+          "life": 4
+        },
+        "SnufkinDM#6827": {
+          "hand": [
+            "OP16-056",
+            "EB04-026",
+            "OP05-057",
+            "OP05-091",
+            "OP05-057",
+            "OP16-056"
+          ],
+          "trash": [
+            "OP06-058",
+            "EB03-022",
+            "OP07-096"
+          ],
+          "board": [
+            "OP06-050",
+            "PRB02-008"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 5,
+      "player": "BigRato#5650",
+      "card_drawn": {
+        "name": "Trafalgar Law",
+        "code": "ST17-002"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "ST17-002",
+          "card_name": "Trafalgar Law",
+          "effects": [
+            "Return Trafalgar Law [\"ST17-002\">ST17-002] to Hand",
+            "Send Marco [\"PRB02-008\">PRB02-008] to Hand"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP14-040",
+          "to_name": "Jinbe",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Jinbe",
+          "attacker_code": "OP14-040",
+          "target": "Tashigi [\"OP06-050\">OP06-050]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "BigRato#5650": {
+          "hand": [
+            "OP14-046",
+            "OP14-049",
+            "ST17-002",
+            "OP07-040",
+            "OP07-040",
+            "OP07-057",
+            "OP07-051",
+            "ST17-002"
+          ],
+          "board": [],
+          "trash": [
+            "OP07-046"
+          ],
+          "life": 4
+        },
+        "SnufkinDM#6827": {
+          "hand": [
+            "OP16-056",
+            "EB04-026",
+            "OP05-057",
+            "OP05-091",
+            "OP05-057",
+            "OP16-056",
+            "PRB02-008"
+          ],
+          "trash": [
+            "OP06-058",
+            "EB03-022",
+            "OP07-096",
+            "OP06-050"
+          ],
+          "board": [],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 6,
+      "player": "SnufkinDM#6827",
+      "card_drawn": {
+        "name": "Mr. 3 (Galdino)",
+        "code": "OP16-056"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "PRB02-008",
+          "card_name": "Marco",
+          "effects": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP05-041",
+          "to_name": "Sakazuki",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Sakazuki",
+          "attacker_code": "OP05-041",
+          "target": "Jinbe [\"OP14-040\">OP14-040]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP05-041",
+          "card_name": "Sakazuki",
+          "effects": [
+            "Draw 1 Card"
+          ]
+        }
+      ],
+      "snapshot": {
+        "BigRato#5650": {
+          "hand": [
+            "OP14-046",
+            "OP14-049",
+            "ST17-002",
+            "OP07-040",
+            "OP07-040",
+            "OP07-057",
+            "OP07-051",
+            "ST17-002",
+            "OP14-049"
+          ],
+          "board": [],
+          "trash": [
+            "OP07-046"
+          ],
+          "life": 3
+        },
+        "SnufkinDM#6827": {
+          "hand": [
+            "OP16-056",
+            "OP05-057",
+            "OP05-091",
+            "OP05-057",
+            "OP16-056",
+            "OP12-090",
+            "OP16-056"
+          ],
+          "trash": [
+            "OP06-058",
+            "EB03-022",
+            "OP07-096",
+            "OP06-050",
+            "EB04-026"
+          ],
+          "board": [
+            "PRB02-008"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 7,
+      "player": "BigRato#5650",
+      "card_drawn": {
+        "name": "Arlong",
+        "code": "OP14-042"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP14-042",
+          "card_name": "Arlong",
+          "effects": [
+            "<b>Reveal and Draw Crocodile [\"OP07-040\">OP07-040]</b>"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "ST17-002",
+          "card_name": "Trafalgar Law",
+          "effects": [
+            "Return Arlong [\"OP14-042\">OP14-042] to Hand",
+            "Send Marco [\"PRB02-008\">PRB02-008] to Hand"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP14-042",
+          "card_name": "Arlong",
+          "effects": [
+            "<b>Reveal and Draw Jozu [\"OP08-047\">OP08-047]</b>"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP14-040",
+          "to_name": "Jinbe",
+          "total": 1
+        },
+        {
+          "type": "activate",
+          "card": "OP14-040",
+          "card_name": "Jinbe",
+          "effects": [
+            "Trash Koala [\"OP14-046\">OP14-046]",
+            "Attach 1 Rested Don to Jinbe [\"OP14-040\">OP14-040]",
+            "Attach 1 Rested Don to Jinbe [\"OP14-040\">OP14-040]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Jinbe",
+          "attacker_code": "OP14-040",
+          "target": "Sakazuki [\"OP05-041\">OP05-041]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "BigRato#5650": {
+          "hand": [
+            "OP14-049",
+            "ST17-002",
+            "OP07-040",
+            "OP07-040",
+            "OP07-057",
+            "OP07-051",
+            "OP14-049",
+            "OP07-040",
+            "OP08-047"
+          ],
+          "board": [
+            "ST17-002",
+            "OP14-042"
+          ],
+          "trash": [
+            "OP07-046",
+            "OP14-046"
+          ],
+          "life": 3
+        },
+        "SnufkinDM#6827": {
+          "hand": [
+            "OP16-056",
+            "OP05-057",
+            "OP05-091",
+            "OP05-057",
+            "OP16-056",
+            "OP12-090",
+            "OP16-056",
+            "PRB02-008",
+            "EB03-022"
+          ],
+          "trash": [
+            "OP06-058",
+            "EB03-022",
+            "OP07-096",
+            "OP06-050",
+            "EB04-026"
+          ],
+          "board": [],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 8,
+      "player": "SnufkinDM#6827",
+      "card_drawn": {
+        "name": "Sasaki",
+        "code": "OP08-082"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "EB03-022",
+          "card_name": "Isuka",
+          "effects": [
+            "Send Trafalgar Law [\"ST17-002\">ST17-002] to Deck Bottom"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP05-057",
+          "card_name": "Hound Blaze",
+          "effects": [
+            "Rest 2 Don",
+            "Buff Sakazuki [\"OP05-041\">OP05-041] 3000",
+            "Send Arlong [\"OP14-042\">OP14-042] to Deck Bottom"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP05-041",
+          "card_name": "Sakazuki",
+          "effects": [
+            "Draw 1 Card"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Sakazuki",
+          "attacker_code": "OP05-041",
+          "target": "Jinbe [\"OP14-040\">OP14-040]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP07-040",
+            "OP07-040"
+          ]
+        }
+      ],
+      "snapshot": {
+        "BigRato#5650": {
+          "hand": [
+            "OP14-049",
+            "ST17-002",
+            "OP07-057",
+            "OP07-051",
+            "OP14-049",
+            "OP07-040",
+            "OP08-047"
+          ],
+          "board": [],
+          "trash": [
+            "OP07-046",
+            "OP14-046",
+            "OP07-040",
+            "OP07-040"
+          ],
+          "life": 3
+        },
+        "SnufkinDM#6827": {
+          "hand": [
+            "OP16-056",
+            "OP05-091",
+            "OP05-057",
+            "OP16-056",
+            "OP12-090",
+            "OP16-056",
+            "PRB02-008",
+            "OP08-082"
+          ],
+          "trash": [
+            "OP06-058",
+            "EB03-022",
+            "OP07-096",
+            "OP06-050",
+            "EB04-026",
+            "OP05-057",
+            "OP06-050"
+          ],
+          "board": [
+            "EB03-022"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 9,
+      "player": "BigRato#5650",
+      "card_drawn": {
+        "name": "Trafalgar Law",
+        "code": "ST17-002"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP07-051",
+          "card_name": "Boa Hancock",
+          "effects": [
+            "Isuka [\"EB03-022\">EB03-022] can't attack next turn"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP14-040",
+          "to_name": "Jinbe",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP14-040",
+          "to_name": "Jinbe",
+          "total": 2
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP14-040",
+          "to_name": "Jinbe",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Jinbe",
+          "attacker_code": "OP14-040",
+          "target": "Sakazuki [\"OP05-041\">OP05-041]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": "EB03-022",
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "BigRato#5650": {
+          "hand": [
+            "OP14-049",
+            "ST17-002",
+            "OP07-057",
+            "OP14-049",
+            "OP07-040",
+            "OP08-047",
+            "ST17-002"
+          ],
+          "board": [
+            "OP07-051"
+          ],
+          "trash": [
+            "OP07-046",
+            "OP14-046",
+            "OP07-040",
+            "OP07-040"
+          ],
+          "life": 3
+        },
+        "SnufkinDM#6827": {
+          "hand": [
+            "OP16-056",
+            "OP05-091",
+            "OP05-057",
+            "OP16-056",
+            "OP12-090",
+            "OP16-056",
+            "PRB02-008",
+            "OP08-082"
+          ],
+          "trash": [
+            "OP06-058",
+            "EB03-022",
+            "OP07-096",
+            "OP06-050",
+            "EB04-026",
+            "OP05-057",
+            "OP06-050",
+            "EB03-022"
+          ],
+          "board": [],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 10,
+      "player": "SnufkinDM#6827",
+      "card_drawn": {
+        "name": "Gravity Blade Raging Tiger",
+        "code": "OP06-058"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "ST06-008",
+          "card_name": "Hina",
+          "effects": [
+            "Boa Hancock [\"OP07-051\">OP07-051] Cost -4"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP05-057",
+          "card_name": "Hound Blaze",
+          "effects": [
+            "Rest 2 Don",
+            "Buff Sakazuki [\"OP05-041\">OP05-041] 3000",
+            "Send Boa Hancock [\"OP07-051\">OP07-051] to Deck Bottom"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "PRB02-008",
+          "card_name": "Marco",
+          "effects": []
+        },
+        {
+          "type": "activate",
+          "card": "OP05-041",
+          "card_name": "Sakazuki",
+          "effects": [
+            "Draw 1 Card"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP08-082",
+          "card_name": "Sasaki",
+          "effects": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Sakazuki",
+          "attacker_code": "OP05-041",
+          "target": "Jinbe [\"OP14-040\">OP14-040]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "BigRato#5650": {
+          "hand": [
+            "OP14-049",
+            "ST17-002",
+            "OP07-057",
+            "OP14-049",
+            "OP07-040",
+            "OP08-047",
+            "ST17-002",
+            "OP14-049"
+          ],
+          "board": [],
+          "trash": [
+            "OP07-046",
+            "OP14-046",
+            "OP07-040",
+            "OP07-040"
+          ],
+          "life": 2
+        },
+        "SnufkinDM#6827": {
+          "hand": [
+            "OP16-056",
+            "OP05-091",
+            "OP12-090",
+            "OP16-056",
+            "OP06-058"
+          ],
+          "trash": [
+            "OP06-058",
+            "EB03-022",
+            "OP07-096",
+            "OP06-050",
+            "EB04-026",
+            "OP05-057",
+            "OP06-050",
+            "EB03-022",
+            "OP05-057",
+            "OP16-056"
+          ],
+          "board": [
+            "ST06-008",
+            "PRB02-008",
+            "OP08-082"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 11,
+      "player": "BigRato#5650",
+      "card_drawn": {
+        "name": "Chew",
+        "code": "OP14-050"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP14-049",
+          "card_name": "Jinbe",
+          "effects": [
+            "Rest 2 Don",
+            "Draw 2 Card",
+            "Send Marco [\"PRB02-008\">PRB02-008] to Hand",
+            "Give Jinbe [\"OP14-049\">OP14-049] Rush",
+            "Give Jinbe [\"OP14-049\">OP14-049] Rush"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP14-040",
+          "card_name": "Jinbe",
+          "effects": [
+            "Trash Trafalgar Law [\"ST17-002\">ST17-002]",
+            "Attach 1 Rested Don to Jinbe [\"OP14-040\">OP14-040]",
+            "Attach 1 Rested Don to Jinbe [\"OP14-040\">OP14-040]",
+            "Trash Chew [\"OP14-050\">OP14-050]",
+            "Attach 1 Rested Don to Jinbe [\"OP14-040\">OP14-040]",
+            "Attach 1 Rested Don to Jinbe [\"OP14-040\">OP14-040]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Jinbe",
+          "attacker_code": "OP14-040",
+          "target": "Sakazuki [\"OP05-041\">OP05-041]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Jinbe",
+          "attacker_code": "OP14-049",
+          "target": "Sakazuki [\"OP05-041\">OP05-041]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "BigRato#5650": {
+          "hand": [
+            "OP14-049",
+            "ST17-002",
+            "OP07-057",
+            "OP14-049",
+            "OP07-040",
+            "OP08-047",
+            "ST17-002",
+            "OP07-045"
+          ],
+          "board": [
+            "OP14-049"
+          ],
+          "trash": [
+            "OP07-046",
+            "OP14-046",
+            "OP07-040",
+            "OP07-040",
+            "ST17-002",
+            "OP14-050"
+          ],
+          "life": 2
+        },
+        "SnufkinDM#6827": {
+          "hand": [
+            "OP16-056",
+            "OP05-091",
+            "OP12-090",
+            "OP16-056",
+            "OP06-058",
+            "PRB02-008",
+            "ST06-008",
+            "OP12-090"
+          ],
+          "trash": [
+            "OP06-058",
+            "EB03-022",
+            "OP07-096",
+            "OP06-050",
+            "EB04-026",
+            "OP05-057",
+            "OP06-050",
+            "EB03-022",
+            "OP05-057",
+            "OP16-056"
+          ],
+          "board": [
+            "ST06-008",
+            "OP08-082"
+          ],
+          "life": 0
+        }
+      }
+    },
+    {
+      "turn": 12,
+      "player": "SnufkinDM#6827",
+      "card_drawn": {
+        "name": "Hound Blaze",
+        "code": "OP05-057"
+      },
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP16-056",
+          "card_name": "Mr. 3 (Galdino)",
+          "effects": [
+            "Trash Mr. 3 (Galdino) [\"OP16-056\">OP16-056]",
+            "Draw 2 Card",
+            "Jinbe [\"OP14-049\">OP14-049] can't attack next turn"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP05-091",
+          "card_name": "Rebecca",
+          "effects": [
+            "Deploy Hina [\"ST06-008\">ST06-008]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "ST06-008",
+          "card_name": "Hina",
+          "effects": [
+            "Jinbe [\"OP14-049\">OP14-049] Cost -4"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP05-041",
+          "card_name": "Sakazuki",
+          "effects": [
+            "Draw 1 Card",
+            "Jinbe [\"OP14-049\">OP14-049] Cost -1"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Sakazuki",
+          "attacker_code": "OP05-041",
+          "target": "Jinbe [\"OP14-040\">OP14-040]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP08-047"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "ST06-008",
+          "to_name": "Hina",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Hina",
+          "attacker_code": "ST06-008",
+          "target": "Jinbe [\"OP14-040\">OP14-040]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "BigRato#5650": {
+          "hand": [
+            "OP14-049",
+            "ST17-002",
+            "OP07-057",
+            "OP14-049",
+            "OP07-040",
+            "ST17-002",
+            "OP07-045",
+            "OP07-046"
+          ],
+          "board": [
+            "OP14-049"
+          ],
+          "trash": [
+            "OP07-046",
+            "OP14-046",
+            "OP07-040",
+            "OP07-040",
+            "ST17-002",
+            "OP14-050",
+            "OP08-047"
+          ],
+          "life": 1
+        },
+        "SnufkinDM#6827": {
+          "hand": [
+            "OP16-056",
+            "OP05-091",
+            "OP12-090",
+            "OP06-058",
+            "OP12-090",
+            "OP05-042",
+            "OP07-096",
+            "OP05-057"
+          ],
+          "trash": [
+            "OP06-058",
+            "EB03-022",
+            "OP07-096",
+            "OP06-050",
+            "EB04-026",
+            "OP05-057",
+            "OP06-050",
+            "EB03-022",
+            "OP05-057",
+            "OP16-056",
+            "OP16-056",
+            "PRB02-008"
+          ],
+          "board": [
+            "ST06-008",
+            "OP08-082",
+            "OP05-091",
+            "ST06-008"
+          ],
+          "life": 0
+        }
+      }
+    }
+  ]
+}

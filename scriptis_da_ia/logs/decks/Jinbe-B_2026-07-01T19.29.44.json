@@ -1,0 +1,71 @@
+{
+  "cards": [
+    {
+      "code": "OP15-052",
+      "name": "Leo",
+      "count": 2
+    },
+    {
+      "code": "EB01-023",
+      "name": "Edward Weevil",
+      "count": 2
+    },
+    {
+      "code": "OP08-047",
+      "name": "Jozu",
+      "count": 2
+    },
+    {
+      "code": "OP07-040",
+      "name": "Crocodile",
+      "count": 2
+    },
+    {
+      "code": "OP14-046",
+      "name": "Koala",
+      "count": 2
+    },
+    {
+      "code": "OP07-045",
+      "name": "Jinbe",
+      "count": 1
+    },
+    {
+      "code": "ST17-002",
+      "name": "Trafalgar Law",
+      "count": 1
+    },
+    {
+      "code": "OP07-051",
+      "name": "Boa Hancock",
+      "count": 1
+    },
+    {
+      "code": "OP14-049",
+      "name": "Jinbe",
+      "count": 1
+    },
+    {
+      "code": "OP06-058",
+      "name": "Gravity Blade Raging Tiger",
+      "count": 1
+    },
+    {
+      "code": "OP14-050",
+      "name": "OP14-050",
+      "count": 1
+    },
+    {
+      "code": "OP07-046",
+      "name": "Sengoku",
+      "count": 1
+    },
+    {
+      "code": "OP15-047",
+      "name": "Sanji",
+      "count": 1
+    }
+  ],
+  "total_seen": 18,
+  "leader": "OP14-040"
+}

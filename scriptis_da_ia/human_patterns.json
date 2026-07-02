@@ -1,0 +1,4901 @@
+{
+  "meta": {
+    "logs": 7,
+    "turns": 99,
+    "actions": 487,
+    "defense_events": 95,
+    "min_support": 2,
+    "note": "Padroes observados em logs humanos; usar como sinal, nao como regra absoluta."
+  },
+  "global_action_orders": [
+    {
+      "pattern": "play",
+      "count": 5
+    },
+    {
+      "pattern": "pass",
+      "count": 3
+    },
+    {
+      "pattern": "play > attach_don",
+      "count": 2
+    },
+    {
+      "pattern": "play > play",
+      "count": 2
+    },
+    {
+      "pattern": "attack_countered > attack_hit > play",
+      "count": 2
+    },
+    {
+      "pattern": "play > attach_don > attack_hit",
+      "count": 2
+    },
+    {
+      "pattern": "attach_don > attach_don > attach_don > attack_hit > activate",
+      "count": 1
+    },
+    {
+      "pattern": "attach_don > attach_don > attach_don > attach_don > attack_hit",
+      "count": 1
+    },
+    {
+      "pattern": "play > attack_hit > attack_countered",
+      "count": 1
+    },
+    {
+      "pattern": "play > attach_don > attack_blocked_by_blocker",
+      "count": 1
+    },
+    {
+      "pattern": "play > activate > activate > activate > attack_hit > attack_countered > attack_hit > attack_hit > attack_hit",
+      "count": 1
+    },
+    {
+      "pattern": "attach_don > attach_don > attack_countered > attach_don > attack_countered > activate > play > activate > attack_countered",
+      "count": 1
+    },
+    {
+      "pattern": "activate",
+      "count": 1
+    },
+    {
+      "pattern": "play > attack_hit",
+      "count": 1
+    },
+    {
+      "pattern": "attach_don > attack_hit",
+      "count": 1
+    },
+    {
+      "pattern": "activate > activate > attach_don > attach_don > attack_countered",
+      "count": 1
+    },
+    {
+      "pattern": "play > attack_countered",
+      "count": 1
+    },
+    {
+      "pattern": "activate > activate > attach_don > attack_blocked > attach_don > attack_countered > attach_don > attack_countered",
+      "count": 1
+    },
+    {
+      "pattern": "attack_hit > attach_don > attack_blocked > play",
+      "count": 1
+    },
+    {
+      "pattern": "play > activate > attach_don > attack_countered",
+      "count": 1
+    },
+    {
+      "pattern": "activate > attack_hit > attack_countered > play > activate",
+      "count": 1
+    },
+    {
+      "pattern": "activate > attach_don > attach_don > attack_countered > attach_don > attack_countered > activate > activate > activate > attach_don > attach_don > attach_don > attack_hit > activate",
+      "count": 1
+    },
+    {
+      "pattern": "activate > play > activate > attack_hit > attack_hit > attack_hit",
+      "count": 1
+    },
+    {
+      "pattern": "activate > attach_don > attack_hit > attack_blocked > attach_don > attack_countered > activate > activate > activate > activate > attach_don > attach_don > attack_hit > activate",
+      "count": 1
+    },
+    {
+      "pattern": "activate > play > activate > attack_hit > attack_countered > attack_hit",
+      "count": 1
+    },
+    {
+      "pattern": "attach_don > attack_hit > attach_don > attack_countered > activate > attach_don > attack_hit > attach_don > attack_countered > activate > activate > activate > activate > attack_blocked > attack_countered",
+      "count": 1
+    },
+    {
+      "pattern": "activate > attack_countered > attack_blocked_by_blocker > attach_don > attack_countered > attach_don > attack_blocked_by_blocker > attach_don > attack_countered",
+      "count": 1
+    },
+    {
+      "pattern": "attach_don > attack_blocked > activate > attach_don > attack_countered > attach_don > attack_blocked > activate > activate > activate > attack_countered > attach_don > attack_hit",
+      "count": 1
+    },
+    {
+      "pattern": "attack_countered > play",
+      "count": 1
+    },
+    {
+      "pattern": "play > activate > attack_hit",
+      "count": 1
+    }
+  ],
+  "by_leader_band": {
+    "OP05-041|Sakazuki|early": [
+      {
+        "pattern": "play > activate",
+        "count": 1
+      }
+    ],
+    "OP05-041|Sakazuki|late": [
+      {
+        "pattern": "play > activate > play > activate > play > attack_hit",
+        "count": 1
+      },
+      {
+        "pattern": "play > play > activate > activate > attack_countered > attach_don > attack_hit",
+        "count": 1
+      }
+    ],
+    "OP05-041|Sakazuki|mid": [
+      {
+        "pattern": "play > attack_hit > activate > attack_hit",
+        "count": 1
+      },
+      {
+        "pattern": "play > attach_don > attack_hit > activate",
+        "count": 1
+      },
+      {
+        "pattern": "play > activate > activate > attack_countered",
+        "count": 1
+      }
+    ],
+    "OP11-040|Monkey D. Luffy|early": [
+      {
+        "pattern": "pass",
+        "count": 1
+      }
+    ],
+    "OP11-040|Monkey D. Luffy|late": [
+      {
+        "pattern": "activate > attack_hit > attack_countered > play > activate",
+        "count": 1
+      },
+      {
+        "pattern": "activate > play > activate > attack_hit > attack_hit > attack_hit",
+        "count": 1
+      },
+      {
+        "pattern": "activate > play > activate > attack_hit > attack_countered > attack_hit",
+        "count": 1
+      },
+      {
+        "pattern": "activate > attack_countered > attack_blocked_by_blocker > attach_don > attack_countered > attach_don > attack_blocked_by_blocker > attach_don > attack_countered",
+        "count": 1
+      }
+    ],
+    "OP11-040|Monkey D. Luffy|mid": [
+      {
+        "pattern": "attach_don > attack_hit",
+        "count": 1
+      },
+      {
+        "pattern": "play > attack_countered",
+        "count": 1
+      },
+      {
+        "pattern": "attack_hit > attach_don > attack_blocked > play",
+        "count": 1
+      }
+    ],
+    "OP11-041|Nami|early": [
+      {
+        "pattern": "attach_don",
+        "count": 1
+      }
+    ],
+    "OP11-041|Nami|late": [
+      {
+        "pattern": "play > attack_hit > attack_blocked > attack_blocked",
+        "count": 1
+      },
+      {
+        "pattern": "play > attack_hit > attack_countered > attack_hit",
+        "count": 1
+      },
+      {
+        "pattern": "play > attach_don > attack_hit > attack_blocked > attack_hit > attack_hit",
+        "count": 1
+      },
+      {
+        "pattern": "attach_don > attack_blocked_by_blocker > attach_don > attack_hit > attack_hit > activate > attack_countered > attack_hit > play",
+        "count": 1
+      }
+    ],
+    "OP11-041|Nami|mid": [
+      {
+        "pattern": "attack_hit > activate > play",
+        "count": 1
+      },
+      {
+        "pattern": "play > activate > attack_countered > attach_don > attack_hit > activate",
+        "count": 1
+      },
+      {
+        "pattern": "attack_blocked_by_blocker > attach_don > attack_countered > play > activate",
+        "count": 1
+      }
+    ],
+    "OP13-002|Portgas D. Ace|early": [
+      {
+        "pattern": "play > attach_don",
+        "count": 1
+      }
+    ],
+    "OP13-002|Portgas D. Ace|late": [
+      {
+        "pattern": "play > play > attach_don > attach_don > attack_hit",
+        "count": 1
+      },
+      {
+        "pattern": "play > play > attack_hit > attach_don > attach_don > attack_countered > attack_countered",
+        "count": 1
+      }
+    ],
+    "OP13-002|Portgas D. Ace|mid": [
+      {
+        "pattern": "attack_hit > play",
+        "count": 1
+      },
+      {
+        "pattern": "attack_countered > attack_countered > play",
+        "count": 1
+      },
+      {
+        "pattern": "attack_hit > play > attach_don > attack_hit",
+        "count": 1
+      }
+    ],
+    "OP13-079|Imu|early": [
+      {
+        "pattern": "activate",
+        "count": 1
+      },
+      {
+        "pattern": "play > attack_hit",
+        "count": 1
+      },
+      {
+        "pattern": "play",
+        "count": 1
+      },
+      {
+        "pattern": "play > attack_blocked > activate",
+        "count": 1
+      }
+    ],
+    "OP13-079|Imu|late": [
+      {
+        "pattern": "play > activate > attach_don > attack_countered",
+        "count": 1
+      },
+      {
+        "pattern": "activate > attach_don > attach_don > attack_countered > attach_don > attack_countered > activate > activate > activate > attach_don > attach_don > attach_don > attack_hit > activate",
+        "count": 1
+      },
+      {
+        "pattern": "activate > attach_don > attack_hit > attack_blocked > attach_don > attack_countered > activate > activate > activate > activate > attach_don > attach_don > attack_hit > activate",
+        "count": 1
+      },
+      {
+        "pattern": "attach_don > attack_hit > attach_don > attack_countered > activate > attach_don > attack_hit > attach_don > attack_countered > activate > activate > activate > activate > attack_blocked > attack_countered",
+        "count": 1
+      },
+      {
+        "pattern": "attach_don > attack_blocked > activate > attach_don > attack_countered > attach_don > attack_blocked > activate > activate > activate > attack_countered > attach_don > attack_hit",
+        "count": 1
+      },
+      {
+        "pattern": "activate > activate > attach_don > attach_don > attack_countered > activate > attack_hit",
+        "count": 1
+      },
+      {
+        "pattern": "attack_blocked > activate > attach_don > attach_don > attack_blocked > activate > activate > activate > activate > attach_don > attack_blocked_by_blocker > attach_don > attack_countered",
+        "count": 1
+      },
+      {
+        "pattern": "attach_don > attach_don > attack_hit > activate > attach_don > attack_countered > attach_don > attack_countered > activate > activate > activate > activate > attach_don > attack_blocked_by_blocker",
+        "count": 1
+      },
+      {
+        "pattern": "attach_don > attack_hit > activate > activate > activate > activate > attach_don > attack_countered > activate > attack_hit",
+        "count": 1
+      },
+      {
+        "pattern": "attack_hit > attack_countered > activate > play > attach_don > attack_countered > activate",
+        "count": 1
+      }
+    ],
+    "OP13-079|Imu|mid": [
+      {
+        "pattern": "activate > activate > attach_don > attach_don > attack_countered",
+        "count": 1
+      },
+      {
+        "pattern": "activate > activate > attach_don > attack_blocked > attach_don > attack_countered > attach_don > attack_countered",
+        "count": 1
+      },
+      {
+        "pattern": "activate > activate > attach_don > attack_countered > attack_countered",
+        "count": 1
+      },
+      {
+        "pattern": "activate > attack_blocked > play",
+        "count": 1
+      }
+    ],
+    "OP14-040|Jinbe|early": [
+      {
+        "pattern": "play > play",
+        "count": 1
+      },
+      {
+        "pattern": "pass",
+        "count": 1
+      },
+      {
+        "pattern": "attach_don > attach_don > attach_don > attack_hit",
+        "count": 1
+      },
+      {
+        "pattern": "play",
+        "count": 1
+      },
+      {
+        "pattern": "attach_don > attach_don > attach_don > attack_countered > attack_hit",
+        "count": 1
+      }
+    ],
+    "OP14-040|Jinbe|late": [
+      {
+        "pattern": "play > activate > attack_countered > attack_hit > attack_countered > attack_hit > attack_hit > attack_hit",
+        "count": 1
+      },
+      {
+        "pattern": "play > attach_don > attach_don > attach_don > activate > attack_hit",
+        "count": 1
+      },
+      {
+        "pattern": "play > attack_countered > activate > attack_blocked > attack_countered",
+        "count": 1
+      },
+      {
+        "pattern": "play > attach_don > attach_don > attach_don > attack_hit",
+        "count": 1
+      },
+      {
+        "pattern": "play > activate > attack_hit > attack_hit",
+        "count": 1
+      }
+    ],
+    "OP14-040|Jinbe|mid": [
+      {
+        "pattern": "play > activate > attack_hit",
+        "count": 1
+      },
+      {
+        "pattern": "play > activate > play > attach_don > attack_countered > attack_hit",
+        "count": 1
+      },
+      {
+        "pattern": "play > attack_blocked > attach_don > attack_countered > attack_hit",
+        "count": 1
+      },
+      {
+        "pattern": "play > activate > attach_don > attack_blocked",
+        "count": 1
+      },
+      {
+        "pattern": "play > play > play > attach_don > attack_blocked",
+        "count": 1
+      },
+      {
+        "pattern": "play > attach_don > attack_hit",
+        "count": 1
+      },
+      {
+        "pattern": "play > play > play > attach_don > activate > attack_hit",
+        "count": 1
+      }
+    ],
+    "OP14-080|Gecko Moria|early": [
+      {
+        "pattern": "pass",
+        "count": 1
+      },
+      {
+        "pattern": "attach_don > attach_don > attach_don > attack_hit > activate",
+        "count": 1
+      }
+    ],
+    "OP14-080|Gecko Moria|late": [
+      {
+        "pattern": "attach_don > attach_don > attack_countered > attach_don > attack_countered > activate > play > activate > attack_countered",
+        "count": 1
+      }
+    ],
+    "OP14-080|Gecko Moria|mid": [
+      {
+        "pattern": "attach_don > attach_don > attach_don > attach_don > attack_hit",
+        "count": 1
+      },
+      {
+        "pattern": "play > attach_don > attack_blocked_by_blocker",
+        "count": 1
+      }
+    ],
+    "OP15-001|Krieg|early": [
+      {
+        "pattern": "play > attach_don",
+        "count": 1
+      }
+    ],
+    "OP15-001|Krieg|mid": [
+      {
+        "pattern": "play",
+        "count": 1
+      },
+      {
+        "pattern": "play > attack_hit > attack_countered",
+        "count": 1
+      },
+      {
+        "pattern": "play > activate > activate > activate > attack_hit > attack_countered > attack_hit > attack_hit > attack_hit",
+        "count": 1
+      }
+    ],
+    "OP15-002|Lucy|early": [
+      {
+        "pattern": "play",
+        "count": 1
+      },
+      {
+        "pattern": "attack_hit > play > play > attach_don",
+        "count": 1
+      }
+    ],
+    "OP15-002|Lucy|late": [
+      {
+        "pattern": "play > activate > activate > attack_hit > play > attach_don",
+        "count": 1
+      },
+      {
+        "pattern": "play > activate > activate > activate > attack_hit",
+        "count": 1
+      },
+      {
+        "pattern": "play > activate > activate > activate > activate > attack_countered > activate",
+        "count": 1
+      },
+      {
+        "pattern": "attack_blocked > play > activate > activate > attach_don > attach_don > attack_hit",
+        "count": 1
+      },
+      {
+        "pattern": "activate > activate > attack_hit > activate > attack_blocked_by_blocker > attack_blocked > play > attach_don",
+        "count": 1
+      },
+      {
+        "pattern": "attack_hit > activate > activate > activate > activate > attack_hit > attach_don",
+        "count": 1
+      },
+      {
+        "pattern": "attack_countered > activate > play > play > activate > activate > attack_countered > attach_don",
+        "count": 1
+      }
+    ],
+    "OP15-002|Lucy|mid": [
+      {
+        "pattern": "activate > attack_countered > activate",
+        "count": 1
+      },
+      {
+        "pattern": "activate > activate > attack_hit",
+        "count": 1
+      }
+    ],
+    "OP16-080|Marshall D. Teach|early": [
+      {
+        "pattern": "play > play",
+        "count": 1
+      }
+    ],
+    "OP16-080|Marshall D. Teach|late": [
+      {
+        "pattern": "activate > play > activate > activate > attack_hit",
+        "count": 1
+      },
+      {
+        "pattern": "activate > attach_don > attack_blocked > activate > activate > activate",
+        "count": 1
+      },
+      {
+        "pattern": "play > play > attack_blocked_by_blocker > activate",
+        "count": 1
+      },
+      {
+        "pattern": "play > attack_countered > attack_blocked_by_blocker",
+        "count": 1
+      },
+      {
+        "pattern": "activate > attach_don > attach_don > attack_blocked > play > play",
+        "count": 1
+      },
+      {
+        "pattern": "activate > attack_blocked_by_blocker > play > attack_hit",
+        "count": 1
+      },
+      {
+        "pattern": "play > play > attack_blocked_by_blocker > attack_blocked_by_blocker",
+        "count": 1
+      }
+    ],
+    "OP16-080|Marshall D. Teach|mid": [
+      {
+        "pattern": "activate > attack_blocked_by_blocker > play",
+        "count": 1
+      },
+      {
+        "pattern": "play > activate > play > attach_don > attack_hit",
+        "count": 1
+      },
+      {
+        "pattern": "activate > play > attach_don > attack_hit",
+        "count": 1
+      }
+    ],
+    "ST29-001|Monkey D. Luffy|early": [
+      {
+        "pattern": "play",
+        "count": 1
+      },
+      {
+        "pattern": "attack_countered > play",
+        "count": 1
+      }
+    ],
+    "ST29-001|Monkey D. Luffy|late": [
+      {
+        "pattern": "play > attach_don > attack_hit",
+        "count": 1
+      }
+    ],
+    "ST29-001|Monkey D. Luffy|mid": [
+      {
+        "pattern": "attack_countered > attack_hit > play",
+        "count": 2
+      }
+    ]
+  },
+  "by_leader_exact_orders": {
+    "OP05-041|Sakazuki": [
+      {
+        "pattern": "play:OP06-050 > activate:OP05-041",
+        "count": 1
+      },
+      {
+        "pattern": "play:PRB02-008 > attack:OP06-050 > activate:OP05-041 > attack:OP05-041",
+        "count": 1
+      },
+      {
+        "pattern": "play:PRB02-008 > attach_don:OP05-041 > attack:OP05-041 > activate:OP05-041",
+        "count": 1
+      },
+      {
+        "pattern": "play:EB03-022 > activate:OP05-057 > activate:OP05-041 > attack:OP05-041",
+        "count": 1
+      },
+      {
+        "pattern": "play:ST06-008 > activate:OP05-057 > play:PRB02-008 > activate:OP05-041 > play:OP08-082 > attack:OP05-041",
+        "count": 1
+      },
+      {
+        "pattern": "play:OP16-056 > play:OP05-091 > activate:ST06-008 > activate:OP05-041 > attack:OP05-041 > attach_don:ST06-008 > attack:ST06-008",
+        "count": 1
+      }
+    ],
+    "OP11-040|Monkey D. Luffy": [
+      {
+        "pattern": "pass",
+        "count": 1
+      },
+      {
+        "pattern": "attach_don:OP11-040 > attack:OP11-040",
+        "count": 1
+      },
+      {
+        "pattern": "play:OP07-051 > attack:OP11-040",
+        "count": 1
+      },
+      {
+        "pattern": "attack:OP07-051 > attach_don:OP11-040 > attack:OP11-040 > play:OP16-056",
+        "count": 1
+      },
+      {
+        "pattern": "activate:OP11-040 > attack:OP07-051 > attack:OP11-040 > play:OP06-119 > activate:EB03-034",
+        "count": 1
+      },
+      {
+        "pattern": "activate:OP11-040 > play:OP06-119 > activate:P-107 > attack:EB03-034 > attack:OP11-040 > attack:OP06-119",
+        "count": 1
+      },
+      {
+        "pattern": "activate:OP11-040 > play:OP06-119 > activate:P-107 > attack:OP11-040 > attack:OP06-119 > attack:P-107",
+        "count": 1
+      },
+      {
+        "pattern": "activate:OP11-040 > attack:OP06-119 > attack:OP06-119 > attach_don:P-107 > attack:P-107 > attach_don:P-107 > attack:P-107 > attach_don:OP11-040 > attack:OP11-040",
+        "count": 1
+      }
+    ],
+    "OP11-041|Nami": [
+      {
+        "pattern": "attach_don:OP11-041",
+        "count": 1
+      },
+      {
+        "pattern": "attack:OP11-041 > activate:OP11-041 > play:OP16-056",
+        "count": 1
+      },
+      {
+        "pattern": "play:EB03-053 > activate:OP11-041 > attack:OP16-056 > attach_don:OP11-041 > attack:OP11-041 > activate:OP16-056",
+        "count": 1
+      },
+      {
+        "pattern": "attack:EB03-053 > attach_don:OP11-041 > attack:OP11-041 > play:EB03-055 > activate:OP11-041",
+        "count": 1
+      },
+      {
+        "pattern": "play:OP13-042 > attack:OP11-041 > attack:EB03-055 > attack:EB04-058",
+        "count": 1
+      },
+      {
+        "pattern": "play:OP13-042 > attack:OP11-041 > attack:EB03-055 > attack:OP13-042",
+        "count": 1
+      },
+      {
+        "pattern": "play:OP16-119 > attach_don:OP11-041 > attack:OP11-041 > attack:EB03-055 > attack:OP13-042 > attack:OP13-042",
+        "count": 1
+      },
+      {
+        "pattern": "attach_don:OP11-041 > attack:OP11-041 > attach_don:EB03-055 > attack:EB03-055 > attack:OP16-119 > activate:OP11-041 > attack:OP13-042 > attack:OP13-042 > play:EB03-055",
+        "count": 1
+      }
+    ],
+    "OP13-002|Portgas D. Ace": [
+      {
+        "pattern": "play:OP13-043 > attach_don:OP13-002",
+        "count": 1
+      },
+      {
+        "pattern": "attack:OP13-002 > play:PRB02-008",
+        "count": 1
+      },
+      {
+        "pattern": "attack:PRB02-008 > attack:OP13-002 > play:OP08-047",
+        "count": 1
+      },
+      {
+        "pattern": "attack:OP08-047 > play:EB04-007 > attach_don:OP13-002 > attack:OP13-002",
+        "count": 1
+      },
+      {
+        "pattern": "play:ST22-002 > play:EB04-007 > attach_don:OP13-002 > attach_don:OP13-002 > attack:OP13-002",
+        "count": 1
+      },
+      {
+        "pattern": "play:ST22-002 > play:EB04-007 > attack:EB04-007 > attach_don:OP13-002 > attach_don:OP13-002 > attack:OP13-002 > attack:EB04-007",
+        "count": 1
+      }
+    ],
+    "OP13-079|Imu": [
+      {
+        "pattern": "activate:OP13-096",
+        "count": 1
+      },
+      {
+        "pattern": "play:OP16-093 > attack:OP13-079",
+        "count": 1
+      },
+      {
+        "pattern": "activate:OP13-099 > activate:OP13-083 > attach_don:OP16-093 > attach_don:OP16-093 > attack:OP16-093",
+        "count": 1
+      },
+      {
+        "pattern": "activate:OP13-099 > activate:OP13-079 > attach_don:OP16-093 > attack:OP16-093 > attach_don:OP13-079 > attack:OP13-079 > attach_don:OP13-080 > attack:OP13-080",
+        "count": 1
+      },
+      {
+        "pattern": "play:OP13-086 > activate:OP13-099 > attach_don:OP13-079 > attack:OP13-079",
+        "count": 1
+      },
+      {
+        "pattern": "activate:OP13-079 > attach_don:OP16-093 > attach_don:OP16-093 > attack:OP16-093 > attach_don:OP13-083 > attack:OP13-083 > activate:OP13-099 > activate:OP13-082 > activate:OP13-083 > attach_don:OP13-080 > attach_don:OP13-080 > attach_don:OP13-080 > attack:OP13-080 > activate:OP13-080",
+        "count": 1
+      },
+      {
+        "pattern": "activate:OP13-096 > attach_don:OP13-091 > attack:OP13-091 > attack:OP13-083 > attach_don:OP13-084 > attack:OP13-084 > activate:OP13-079 > activate:OP13-099 > activate:OP13-082 > activate:OP13-083 > attach_don:OP13-080 > attach_don:OP13-080 > attack:OP13-080 > activate:OP13-080",
+        "count": 1
+      },
+      {
+        "pattern": "attach_don:OP13-091 > attack:OP13-091 > attach_don:OP13-080 > attack:OP13-080 > activate:OP13-080 > attach_don:OP13-083 > attack:OP13-083 > attach_don:OP13-084 > attack:OP13-084 > activate:OP13-099 > activate:OP13-079 > activate:OP13-082 > activate:OP13-083 > attack:OP13-080 > attack:OP13-079",
+        "count": 1
+      },
+      {
+        "pattern": "attach_don:OP13-080 > attack:OP13-080 > activate:OP13-080 > attach_don:OP13-083 > attack:OP13-083 > attach_don:OP13-084 > attack:OP13-084 > activate:OP13-079 > activate:OP13-099 > activate:OP13-082 > attack:OP13-079 > attach_don:OP13-080 > attack:OP13-080",
+        "count": 1
+      },
+      {
+        "pattern": "play:OP13-086",
+        "count": 1
+      }
+    ],
+    "OP14-040|Jinbe": [
+      {
+        "pattern": "play:OP07-046 > play:OP14-042",
+        "count": 1
+      },
+      {
+        "pattern": "play:OP07-045 > activate:EB01-023 > attack:OP14-040",
+        "count": 1
+      },
+      {
+        "pattern": "play:OP07-045 > activate:ST17-002 > play:OP14-042 > attach_don:OP14-040 > attack:OP14-040 > attack:EB01-023",
+        "count": 1
+      },
+      {
+        "pattern": "play:OP07-051 > attack:ST17-002 > attach_don:OP14-040 > attack:OP14-040 > attack:EB01-023",
+        "count": 1
+      },
+      {
+        "pattern": "play:OP14-049 > activate:OP14-040 > attack:OP14-042 > attack:ST17-002 > attack:EB01-023 > attack:OP14-040 > attack:OP07-051 > attack:OP14-049",
+        "count": 1
+      },
+      {
+        "pattern": "pass",
+        "count": 1
+      },
+      {
+        "pattern": "attach_don:OP14-040 > attach_don:OP14-040 > attach_don:OP14-040 > attack:OP14-040",
+        "count": 1
+      },
+      {
+        "pattern": "play:OP07-045 > activate:EB01-023 > attach_don:OP14-040 > attack:OP14-040",
+        "count": 1
+      },
+      {
+        "pattern": "play:OP15-052 > play:ST17-002 > play:OP15-052 > attach_don:OP14-040 > attack:OP14-040",
+        "count": 1
+      },
+      {
+        "pattern": "play:OP07-051 > attach_don:OP14-040 > attach_don:OP14-040 > attach_don:OP14-040 > activate:OP14-040 > attack:OP14-040",
+        "count": 1
+      }
+    ],
+    "OP14-080|Gecko Moria": [
+      {
+        "pattern": "pass",
+        "count": 1
+      },
+      {
+        "pattern": "attach_don:OP14-080 > attach_don:OP14-080 > attach_don:OP14-080 > attack:OP14-080 > activate:OP14-080",
+        "count": 1
+      },
+      {
+        "pattern": "attach_don:OP14-080 > attach_don:OP14-080 > attach_don:OP14-080 > attach_don:OP14-080 > attack:OP14-080",
+        "count": 1
+      },
+      {
+        "pattern": "play:PRB02-013 > attach_don:OP14-080 > attack:OP14-080",
+        "count": 1
+      },
+      {
+        "pattern": "attach_don:OP16-107 > attach_don:OP16-107 > attack:OP16-107 > attach_don:OP14-080 > attack:OP14-080 > activate:OP14-080 > play:PRB02-013 > activate:OP15-113 > attack:OP06-090",
+        "count": 1
+      }
+    ],
+    "OP15-001|Krieg": [
+      {
+        "pattern": "play:OP15-009 > attach_don:OP15-001",
+        "count": 1
+      },
+      {
+        "pattern": "play:OP15-023",
+        "count": 1
+      },
+      {
+        "pattern": "play:OP15-007 > attack:OP15-023 > attack:OP15-001",
+        "count": 1
+      },
+      {
+        "pattern": "play:OP15-008 > activate:OP15-017 > activate:OP15-023 > activate:OP15-001 > attack:OP15-017 > attack:OP15-023 > attack:OP15-001 > attack:OP15-007 > attack:OP15-008",
+        "count": 1
+      }
+    ],
+    "OP15-002|Lucy": [
+      {
+        "pattern": "play:OP15-053",
+        "count": 1
+      },
+      {
+        "pattern": "attack:OP15-002 > play:OP15-053 > play:OP15-057 > attach_don:OP15-053",
+        "count": 1
+      },
+      {
+        "pattern": "activate:OP10-060 > attack:OP15-002 > activate:OP15-002",
+        "count": 1
+      },
+      {
+        "pattern": "activate:OP06-058 > activate:OP15-002 > attack:OP15-002",
+        "count": 1
+      },
+      {
+        "pattern": "play:OP15-046 > activate:OP15-020 > activate:OP15-002 > attack:OP15-002 > play:OP15-040 > attach_don:OP15-053",
+        "count": 1
+      },
+      {
+        "pattern": "play:OP15-040 > activate:OP15-020 > activate:OP15-002 > activate:OP05-019 > attack:OP15-002",
+        "count": 1
+      },
+      {
+        "pattern": "play:OP05-015 > activate:OP15-021 > activate:OP05-019 > activate:OP10-060 > activate:OP15-002 > attack:OP15-002 > activate:OP10-059",
+        "count": 1
+      },
+      {
+        "pattern": "attack:OP05-015 > play:OP15-046 > activate:OP15-054 > activate:OP15-002 > attach_don:OP15-002 > attach_don:OP15-002 > attack:OP15-002",
+        "count": 1
+      },
+      {
+        "pattern": "activate:OP15-020 > activate:OP15-002 > attack:OP10-045 > activate:OP10-045 > attack:OP15-002 > attack:OP15-046 > play:OP15-053 > attach_don:OP15-053",
+        "count": 1
+      },
+      {
+        "pattern": "attack:OP10-045 > activate:OP10-045 > activate:OP15-020 > activate:OP15-002 > activate:OP05-019 > attack:OP15-002 > attach_don:OP15-053",
+        "count": 1
+      }
+    ],
+    "OP16-080|Marshall D. Teach": [
+      {
+        "pattern": "play:OP09-099 > play:OP16-110",
+        "count": 1
+      },
+      {
+        "pattern": "activate:OP09-099 > attack:OP16-080 > play:OP09-086",
+        "count": 1
+      },
+      {
+        "pattern": "play:OP16-109 > activate:OP09-099 > play:OP09-086 > attach_don:OP16-080 > attack:OP16-080",
+        "count": 1
+      },
+      {
+        "pattern": "activate:OP09-096 > play:OP16-108 > attach_don:OP16-080 > attack:OP16-080",
+        "count": 1
+      },
+      {
+        "pattern": "activate:OP09-096 > play:OP16-109 > activate:OP16-116 > activate:OP09-093 > attack:OP16-080",
+        "count": 1
+      },
+      {
+        "pattern": "activate:OP16-115 > attach_don:OP16-080 > attack:OP16-080 > activate:OP16-116 > activate:OP09-093 > activate:OP09-099",
+        "count": 1
+      },
+      {
+        "pattern": "play:OP16-119 > play:OP09-095 > attack:OP16-080 > activate:OP09-099",
+        "count": 1
+      },
+      {
+        "pattern": "play:OP09-093 > attack:OP16-080 > attack:OP16-119",
+        "count": 1
+      },
+      {
+        "pattern": "activate:OP16-115 > attach_don:OP16-080 > attach_don:OP16-080 > attack:OP16-080 > play:OP16-109 > play:OP16-108",
+        "count": 1
+      },
+      {
+        "pattern": "activate:OP09-099 > attack:OP16-108 > play:OP09-093 > attack:OP16-080",
+        "count": 1
+      }
+    ],
+    "ST29-001|Monkey D. Luffy": [
+      {
+        "pattern": "play:OP13-113",
+        "count": 1
+      },
+      {
+        "pattern": "attack:ST29-001 > play:OP16-107",
+        "count": 1
+      },
+      {
+        "pattern": "attack:OP16-107 > attack:ST29-001 > play:OP08-106",
+        "count": 1
+      },
+      {
+        "pattern": "attack:OP08-106 > attack:ST29-001 > play:EB03-055",
+        "count": 1
+      },
+      {
+        "pattern": "play:EB03-053 > attach_don:ST29-001 > attack:ST29-001",
+        "count": 1
+      }
+    ]
+  },
+  "by_leader_ngrams_2": {
+    "OP05-041|Sakazuki": [
+      {
+        "pattern": "activate:OP05-041 > attack:OP05-041",
+        "count": 3
+      },
+      {
+        "pattern": "play:OP06-050 > activate:OP05-041",
+        "count": 1
+      },
+      {
+        "pattern": "play:PRB02-008 > attack:OP06-050",
+        "count": 1
+      },
+      {
+        "pattern": "attack:OP06-050 > activate:OP05-041",
+        "count": 1
+      },
+      {
+        "pattern": "play:PRB02-008 > attach_don:OP05-041",
+        "count": 1
+      },
+      {
+        "pattern": "attach_don:OP05-041 > attack:OP05-041",
+        "count": 1
+      },
+      {
+        "pattern": "attack:OP05-041 > activate:OP05-041",
+        "count": 1
+      },
+      {
+        "pattern": "play:EB03-022 > activate:OP05-057",
+        "count": 1
+      },
+      {
+        "pattern": "activate:OP05-057 > activate:OP05-041",
+        "count": 1
+      },
+      {
+        "pattern": "play:ST06-008 > activate:OP05-057",
+        "count": 1
+      },
+      {
+        "pattern": "activate:OP05-057 > play:PRB02-008",
+        "count": 1
+      },
+      {
+        "pattern": "play:PRB02-008 > activate:OP05-041",
+        "count": 1
+      }
+    ],
+    "OP11-040|Monkey D. Luffy": [
+      {
+        "pattern": "attach_don:OP11-040 > attack:OP11-040",
+        "count": 3
+      },
+      {
+        "pattern": "activate:OP11-040 > play:OP06-119",
+        "count": 2
+      },
+      {
+        "pattern": "play:OP06-119 > activate:P-107",
+        "count": 2
+      },
+      {
+        "pattern": "attack:OP11-040 > attack:OP06-119",
+        "count": 2
+      },
+      {
+        "pattern": "attach_don:P-107 > attack:P-107",
+        "count": 2
+      },
+      {
+        "pattern": "play:OP07-051 > attack:OP11-040",
+        "count": 1
+      },
+      {
+        "pattern": "attack:OP07-051 > attach_don:OP11-040",
+        "count": 1
+      },
+      {
+        "pattern": "attack:OP11-040 > play:OP16-056",
+        "count": 1
+      },
+      {
+        "pattern": "activate:OP11-040 > attack:OP07-051",
+        "count": 1
+      },
+      {
+        "pattern": "attack:OP07-051 > attack:OP11-040",
+        "count": 1
+      },
+      {
+        "pattern": "attack:OP11-040 > play:OP06-119",
+        "count": 1
+      },
+      {
+        "pattern": "play:OP06-119 > activate:EB03-034",
+        "count": 1
+      }
+    ],
+    "OP11-041|Nami": [
+      {
+        "pattern": "attach_don:OP11-041 > attack:OP11-041",
+        "count": 4
+      },
+      {
+        "pattern": "attack:OP11-041 > attack:EB03-055",
+        "count": 3
+      },
+      {
+        "pattern": "play:OP13-042 > attack:OP11-041",
+        "count": 2
+      },
+      {
+        "pattern": "attack:EB03-055 > attack:OP13-042",
+        "count": 2
+      },
+      {
+        "pattern": "attack:OP13-042 > attack:OP13-042",
+        "count": 2
+      },
+      {
+        "pattern": "attack:OP11-041 > activate:OP11-041",
+        "count": 1
+      },
+      {
+        "pattern": "activate:OP11-041 > play:OP16-056",
+        "count": 1
+      },
+      {
+        "pattern": "play:EB03-053 > activate:OP11-041",
+        "count": 1
+      },
+      {
+        "pattern": "activate:OP11-041 > attack:OP16-056",
+        "count": 1
+      },
+      {
+        "pattern": "attack:OP16-056 > attach_don:OP11-041",
+        "count": 1
+      },
+      {
+        "pattern": "attack:OP11-041 > activate:OP16-056",
+        "count": 1
+      },
+      {
+        "pattern": "attack:EB03-053 > attach_don:OP11-041",
+        "count": 1
+      }
+    ],
+    "OP13-002|Portgas D. Ace": [
+      {
+        "pattern": "attach_don:OP13-002 > attack:OP13-002",
+        "count": 3
+      },
+      {
+        "pattern": "play:EB04-007 > attach_don:OP13-002",
+        "count": 2
+      },
+      {
+        "pattern": "play:ST22-002 > play:EB04-007",
+        "count": 2
+      },
+      {
+        "pattern": "attach_don:OP13-002 > attach_don:OP13-002",
+        "count": 2
+      },
+      {
+        "pattern": "play:OP13-043 > attach_don:OP13-002",
+        "count": 1
+      },
+      {
+        "pattern": "attack:OP13-002 > play:PRB02-008",
+        "count": 1
+      },
+      {
+        "pattern": "attack:PRB02-008 > attack:OP13-002",
+        "count": 1
+      },
+      {
+        "pattern": "attack:OP13-002 > play:OP08-047",
+        "count": 1
+      },
+      {
+        "pattern": "attack:OP08-047 > play:EB04-007",
+        "count": 1
+      },
+      {
+        "pattern": "play:EB04-007 > attack:EB04-007",
+        "count": 1
+      },
+      {
+        "pattern": "attack:EB04-007 > attach_don:OP13-002",
+        "count": 1
+      },
+      {
+        "pattern": "attack:OP13-002 > attack:EB04-007",
+        "count": 1
+      }
+    ],
+    "OP13-079|Imu": [
+      {
+        "pattern": "attach_don:OP13-080 > attack:OP13-080",
+        "count": 11
+      },
+      {
+        "pattern": "attack:OP13-080 > activate:OP13-080",
+        "count": 8
+      },
+      {
+        "pattern": "activate:OP13-099 > activate:OP13-082",
+        "count": 6
+      },
+      {
+        "pattern": "activate:OP13-082 > activate:OP13-083",
+        "count": 6
+      },
+      {
+        "pattern": "attach_don:OP13-083 > attack:OP13-083",
+        "count": 5
+      },
+      {
+        "pattern": "activate:OP13-083 > attach_don:OP13-080",
+        "count": 5
+      },
+      {
+        "pattern": "attach_don:OP13-080 > attach_don:OP13-080",
+        "count": 5
+      },
+      {
+        "pattern": "attach_don:OP13-084 > attack:OP13-084",
+        "count": 5
+      },
+      {
+        "pattern": "activate:OP13-079 > activate:OP13-099",
+        "count": 5
+      },
+      {
+        "pattern": "attach_don:OP16-093 > attack:OP16-093",
+        "count": 4
+      },
+      {
+        "pattern": "attach_don:OP13-079 > attack:OP13-079",
+        "count": 4
+      },
+      {
+        "pattern": "attack:OP13-083 > attach_don:OP13-084",
+        "count": 3
+      }
+    ],
+    "OP14-040|Jinbe": [
+      {
+        "pattern": "attach_don:OP14-040 > attack:OP14-040",
+        "count": 7
+      },
+      {
+        "pattern": "attach_don:OP14-040 > attach_don:OP14-040",
+        "count": 6
+      },
+      {
+        "pattern": "activate:OP14-040 > attack:OP14-040",
+        "count": 3
+      },
+      {
+        "pattern": "play:OP07-045 > activate:EB01-023",
+        "count": 2
+      },
+      {
+        "pattern": "play:OP14-042 > attach_don:OP14-040",
+        "count": 2
+      },
+      {
+        "pattern": "attack:OP14-040 > attack:EB01-023",
+        "count": 2
+      },
+      {
+        "pattern": "play:OP14-049 > activate:OP14-040",
+        "count": 2
+      },
+      {
+        "pattern": "play:OP07-051 > attach_don:OP14-040",
+        "count": 2
+      },
+      {
+        "pattern": "attach_don:OP14-040 > activate:OP14-040",
+        "count": 2
+      },
+      {
+        "pattern": "attach_don:OP07-046 > attach_don:OP07-046",
+        "count": 2
+      },
+      {
+        "pattern": "play:OP07-046 > play:OP14-042",
+        "count": 1
+      },
+      {
+        "pattern": "activate:EB01-023 > attack:OP14-040",
+        "count": 1
+      }
+    ],
+    "OP14-080|Gecko Moria": [
+      {
+        "pattern": "attach_don:OP14-080 > attach_don:OP14-080",
+        "count": 5
+      },
+      {
+        "pattern": "attach_don:OP14-080 > attack:OP14-080",
+        "count": 4
+      },
+      {
+        "pattern": "attack:OP14-080 > activate:OP14-080",
+        "count": 2
+      },
+      {
+        "pattern": "play:PRB02-013 > attach_don:OP14-080",
+        "count": 1
+      },
+      {
+        "pattern": "attach_don:OP16-107 > attach_don:OP16-107",
+        "count": 1
+      },
+      {
+        "pattern": "attach_don:OP16-107 > attack:OP16-107",
+        "count": 1
+      },
+      {
+        "pattern": "attack:OP16-107 > attach_don:OP14-080",
+        "count": 1
+      },
+      {
+        "pattern": "activate:OP14-080 > play:PRB02-013",
+        "count": 1
+      },
+      {
+        "pattern": "play:PRB02-013 > activate:OP15-113",
+        "count": 1
+      },
+      {
+        "pattern": "activate:OP15-113 > attack:OP06-090",
+        "count": 1
+      }
+    ],
+    "OP15-001|Krieg": [
+      {
+        "pattern": "attack:OP15-023 > attack:OP15-001",
+        "count": 2
+      },
+      {
+        "pattern": "play:OP15-009 > attach_don:OP15-001",
+        "count": 1
+      },
+      {
+        "pattern": "play:OP15-007 > attack:OP15-023",
+        "count": 1
+      },
+      {
+        "pattern": "play:OP15-008 > activate:OP15-017",
+        "count": 1
+      },
+      {
+        "pattern": "activate:OP15-017 > activate:OP15-023",
+        "count": 1
+      },
+      {
+        "pattern": "activate:OP15-023 > activate:OP15-001",
+        "count": 1
+      },
+      {
+        "pattern": "activate:OP15-001 > attack:OP15-017",
+        "count": 1
+      },
+      {
+        "pattern": "attack:OP15-017 > attack:OP15-023",
+        "count": 1
+      },
+      {
+        "pattern": "attack:OP15-001 > attack:OP15-007",
+        "count": 1
+      },
+      {
+        "pattern": "attack:OP15-007 > attack:OP15-008",
+        "count": 1
+      }
+    ],
+    "OP15-002|Lucy": [
+      {
+        "pattern": "activate:OP15-002 > attack:OP15-002",
+        "count": 4
+      },
+      {
+        "pattern": "activate:OP15-020 > activate:OP15-002",
+        "count": 4
+      },
+      {
+        "pattern": "attack:OP10-045 > activate:OP10-045",
+        "count": 3
+      },
+      {
+        "pattern": "activate:OP15-002 > activate:OP05-019",
+        "count": 2
+      },
+      {
+        "pattern": "activate:OP05-019 > attack:OP15-002",
+        "count": 2
+      },
+      {
+        "pattern": "activate:OP10-060 > activate:OP15-002",
+        "count": 2
+      },
+      {
+        "pattern": "attack:OP15-002 > attach_don:OP15-053",
+        "count": 2
+      },
+      {
+        "pattern": "attack:OP15-002 > play:OP15-053",
+        "count": 1
+      },
+      {
+        "pattern": "play:OP15-053 > play:OP15-057",
+        "count": 1
+      },
+      {
+        "pattern": "play:OP15-057 > attach_don:OP15-053",
+        "count": 1
+      },
+      {
+        "pattern": "activate:OP10-060 > attack:OP15-002",
+        "count": 1
+      },
+      {
+        "pattern": "attack:OP15-002 > activate:OP15-002",
+        "count": 1
+      }
+    ],
+    "OP16-080|Marshall D. Teach": [
+      {
+        "pattern": "attach_don:OP16-080 > attack:OP16-080",
+        "count": 4
+      },
+      {
+        "pattern": "activate:OP16-116 > activate:OP09-093",
+        "count": 2
+      },
+      {
+        "pattern": "activate:OP16-115 > attach_don:OP16-080",
+        "count": 2
+      },
+      {
+        "pattern": "play:OP09-093 > attack:OP16-080",
+        "count": 2
+      },
+      {
+        "pattern": "play:OP09-099 > play:OP16-110",
+        "count": 1
+      },
+      {
+        "pattern": "activate:OP09-099 > attack:OP16-080",
+        "count": 1
+      },
+      {
+        "pattern": "attack:OP16-080 > play:OP09-086",
+        "count": 1
+      },
+      {
+        "pattern": "play:OP16-109 > activate:OP09-099",
+        "count": 1
+      },
+      {
+        "pattern": "activate:OP09-099 > play:OP09-086",
+        "count": 1
+      },
+      {
+        "pattern": "play:OP09-086 > attach_don:OP16-080",
+        "count": 1
+      },
+      {
+        "pattern": "activate:OP09-096 > play:OP16-108",
+        "count": 1
+      },
+      {
+        "pattern": "play:OP16-108 > attach_don:OP16-080",
+        "count": 1
+      }
+    ],
+    "ST29-001|Monkey D. Luffy": [
+      {
+        "pattern": "attack:ST29-001 > play:OP16-107",
+        "count": 1
+      },
+      {
+        "pattern": "attack:OP16-107 > attack:ST29-001",
+        "count": 1
+      },
+      {
+        "pattern": "attack:ST29-001 > play:OP08-106",
+        "count": 1
+      },
+      {
+        "pattern": "attack:OP08-106 > attack:ST29-001",
+        "count": 1
+      },
+      {
+        "pattern": "attack:ST29-001 > play:EB03-055",
+        "count": 1
+      },
+      {
+        "pattern": "play:EB03-053 > attach_don:ST29-001",
+        "count": 1
+      },
+      {
+        "pattern": "attach_don:ST29-001 > attack:ST29-001",
+        "count": 1
+      }
+    ]
+  },
+  "by_leader_ngrams_3": {
+    "OP05-041|Sakazuki": [
+      {
+        "pattern": "play:PRB02-008 > attack:OP06-050 > activate:OP05-041",
+        "count": 1
+      },
+      {
+        "pattern": "attack:OP06-050 > activate:OP05-041 > attack:OP05-041",
+        "count": 1
+      },
+      {
+        "pattern": "play:PRB02-008 > attach_don:OP05-041 > attack:OP05-041",
+        "count": 1
+      },
+      {
+        "pattern": "attach_don:OP05-041 > attack:OP05-041 > activate:OP05-041",
+        "count": 1
+      },
+      {
+        "pattern": "play:EB03-022 > activate:OP05-057 > activate:OP05-041",
+        "count": 1
+      },
+      {
+        "pattern": "activate:OP05-057 > activate:OP05-041 > attack:OP05-041",
+        "count": 1
+      },
+      {
+        "pattern": "play:ST06-008 > activate:OP05-057 > play:PRB02-008",
+        "count": 1
+      },
+      {
+        "pattern": "activate:OP05-057 > play:PRB02-008 > activate:OP05-041",
+        "count": 1
+      },
+      {
+        "pattern": "play:PRB02-008 > activate:OP05-041 > play:OP08-082",
+        "count": 1
+      },
+      {
+        "pattern": "activate:OP05-041 > play:OP08-082 > attack:OP05-041",
+        "count": 1
+      },
+      {
+        "pattern": "play:OP16-056 > play:OP05-091 > activate:ST06-008",
+        "count": 1
+      },
+      {
+        "pattern": "play:OP05-091 > activate:ST06-008 > activate:OP05-041",
+        "count": 1
+      }
+    ],
+    "OP11-040|Monkey D. Luffy": [
+      {
+        "pattern": "activate:OP11-040 > play:OP06-119 > activate:P-107",
+        "count": 2
+      },
+      {
+        "pattern": "attack:OP07-051 > attach_don:OP11-040 > attack:OP11-040",
+        "count": 1
+      },
+      {
+        "pattern": "attach_don:OP11-040 > attack:OP11-040 > play:OP16-056",
+        "count": 1
+      },
+      {
+        "pattern": "activate:OP11-040 > attack:OP07-051 > attack:OP11-040",
+        "count": 1
+      },
+      {
+        "pattern": "attack:OP07-051 > attack:OP11-040 > play:OP06-119",
+        "count": 1
+      },
+      {
+        "pattern": "attack:OP11-040 > play:OP06-119 > activate:EB03-034",
+        "count": 1
+      },
+      {
+        "pattern": "play:OP06-119 > activate:P-107 > attack:EB03-034",
+        "count": 1
+      },
+      {
+        "pattern": "activate:P-107 > attack:EB03-034 > attack:OP11-040",
+        "count": 1
+      },
+      {
+        "pattern": "attack:EB03-034 > attack:OP11-040 > attack:OP06-119",
+        "count": 1
+      },
+      {
+        "pattern": "play:OP06-119 > activate:P-107 > attack:OP11-040",
+        "count": 1
+      },
+      {
+        "pattern": "activate:P-107 > attack:OP11-040 > attack:OP06-119",
+        "count": 1
+      },
+      {
+        "pattern": "attack:OP11-040 > attack:OP06-119 > attack:P-107",
+        "count": 1
+      }
+    ],
+    "OP11-041|Nami": [
+      {
+        "pattern": "play:OP13-042 > attack:OP11-041 > attack:EB03-055",
+        "count": 2
+      },
+      {
+        "pattern": "attack:OP11-041 > attack:EB03-055 > attack:OP13-042",
+        "count": 2
+      },
+      {
+        "pattern": "attack:OP11-041 > activate:OP11-041 > play:OP16-056",
+        "count": 1
+      },
+      {
+        "pattern": "play:EB03-053 > activate:OP11-041 > attack:OP16-056",
+        "count": 1
+      },
+      {
+        "pattern": "activate:OP11-041 > attack:OP16-056 > attach_don:OP11-041",
+        "count": 1
+      },
+      {
+        "pattern": "attack:OP16-056 > attach_don:OP11-041 > attack:OP11-041",
+        "count": 1
+      },
+      {
+        "pattern": "attach_don:OP11-041 > attack:OP11-041 > activate:OP16-056",
+        "count": 1
+      },
+      {
+        "pattern": "attack:EB03-053 > attach_don:OP11-041 > attack:OP11-041",
+        "count": 1
+      },
+      {
+        "pattern": "attach_don:OP11-041 > attack:OP11-041 > play:EB03-055",
+        "count": 1
+      },
+      {
+        "pattern": "attack:OP11-041 > play:EB03-055 > activate:OP11-041",
+        "count": 1
+      },
+      {
+        "pattern": "attack:OP11-041 > attack:EB03-055 > attack:EB04-058",
+        "count": 1
+      },
+      {
+        "pattern": "play:OP16-119 > attach_don:OP11-041 > attack:OP11-041",
+        "count": 1
+      }
+    ],
+    "OP13-002|Portgas D. Ace": [
+      {
+        "pattern": "attach_don:OP13-002 > attach_don:OP13-002 > attack:OP13-002",
+        "count": 2
+      },
+      {
+        "pattern": "attack:PRB02-008 > attack:OP13-002 > play:OP08-047",
+        "count": 1
+      },
+      {
+        "pattern": "attack:OP08-047 > play:EB04-007 > attach_don:OP13-002",
+        "count": 1
+      },
+      {
+        "pattern": "play:EB04-007 > attach_don:OP13-002 > attack:OP13-002",
+        "count": 1
+      },
+      {
+        "pattern": "play:ST22-002 > play:EB04-007 > attach_don:OP13-002",
+        "count": 1
+      },
+      {
+        "pattern": "play:EB04-007 > attach_don:OP13-002 > attach_don:OP13-002",
+        "count": 1
+      },
+      {
+        "pattern": "play:ST22-002 > play:EB04-007 > attack:EB04-007",
+        "count": 1
+      },
+      {
+        "pattern": "play:EB04-007 > attack:EB04-007 > attach_don:OP13-002",
+        "count": 1
+      },
+      {
+        "pattern": "attack:EB04-007 > attach_don:OP13-002 > attach_don:OP13-002",
+        "count": 1
+      },
+      {
+        "pattern": "attach_don:OP13-002 > attack:OP13-002 > attack:EB04-007",
+        "count": 1
+      }
+    ],
+    "OP13-079|Imu": [
+      {
+        "pattern": "attach_don:OP13-080 > attack:OP13-080 > activate:OP13-080",
+        "count": 7
+      },
+      {
+        "pattern": "activate:OP13-099 > activate:OP13-082 > activate:OP13-083",
+        "count": 5
+      },
+      {
+        "pattern": "activate:OP13-082 > activate:OP13-083 > attach_don:OP13-080",
+        "count": 5
+      },
+      {
+        "pattern": "activate:OP13-079 > activate:OP13-099 > activate:OP13-082",
+        "count": 5
+      },
+      {
+        "pattern": "attach_don:OP13-080 > attach_don:OP13-080 > attack:OP13-080",
+        "count": 4
+      },
+      {
+        "pattern": "attack:OP13-083 > attach_don:OP13-084 > attack:OP13-084",
+        "count": 3
+      },
+      {
+        "pattern": "attach_don:OP13-084 > attack:OP13-084 > activate:OP13-079",
+        "count": 3
+      },
+      {
+        "pattern": "attack:OP13-084 > activate:OP13-079 > activate:OP13-099",
+        "count": 3
+      },
+      {
+        "pattern": "attack:OP13-080 > activate:OP13-080 > attach_don:OP13-083",
+        "count": 3
+      },
+      {
+        "pattern": "activate:OP13-083 > attach_don:OP13-080 > attack:OP13-080",
+        "count": 3
+      },
+      {
+        "pattern": "activate:OP13-099 > activate:OP13-083 > attach_don:OP16-093",
+        "count": 2
+      },
+      {
+        "pattern": "attach_don:OP16-093 > attach_don:OP16-093 > attack:OP16-093",
+        "count": 2
+      }
+    ],
+    "OP14-040|Jinbe": [
+      {
+        "pattern": "attach_don:OP14-040 > attach_don:OP14-040 > attach_don:OP14-040",
+        "count": 3
+      },
+      {
+        "pattern": "attach_don:OP14-040 > attack:OP14-040 > attack:EB01-023",
+        "count": 2
+      },
+      {
+        "pattern": "attach_don:OP14-040 > attach_don:OP14-040 > attack:OP14-040",
+        "count": 2
+      },
+      {
+        "pattern": "play:OP07-051 > attach_don:OP14-040 > attach_don:OP14-040",
+        "count": 2
+      },
+      {
+        "pattern": "attach_don:OP14-040 > activate:OP14-040 > attack:OP14-040",
+        "count": 2
+      },
+      {
+        "pattern": "play:OP07-045 > activate:EB01-023 > attack:OP14-040",
+        "count": 1
+      },
+      {
+        "pattern": "play:OP07-045 > activate:ST17-002 > play:OP14-042",
+        "count": 1
+      },
+      {
+        "pattern": "activate:ST17-002 > play:OP14-042 > attach_don:OP14-040",
+        "count": 1
+      },
+      {
+        "pattern": "play:OP14-042 > attach_don:OP14-040 > attack:OP14-040",
+        "count": 1
+      },
+      {
+        "pattern": "play:OP07-051 > attack:ST17-002 > attach_don:OP14-040",
+        "count": 1
+      },
+      {
+        "pattern": "attack:ST17-002 > attach_don:OP14-040 > attack:OP14-040",
+        "count": 1
+      },
+      {
+        "pattern": "play:OP14-049 > activate:OP14-040 > attack:OP14-042",
+        "count": 1
+      }
+    ],
+    "OP14-080|Gecko Moria": [
+      {
+        "pattern": "attach_don:OP14-080 > attach_don:OP14-080 > attach_don:OP14-080",
+        "count": 3
+      },
+      {
+        "pattern": "attach_don:OP14-080 > attach_don:OP14-080 > attack:OP14-080",
+        "count": 2
+      },
+      {
+        "pattern": "attach_don:OP14-080 > attack:OP14-080 > activate:OP14-080",
+        "count": 2
+      },
+      {
+        "pattern": "play:PRB02-013 > attach_don:OP14-080 > attack:OP14-080",
+        "count": 1
+      },
+      {
+        "pattern": "attach_don:OP16-107 > attach_don:OP16-107 > attack:OP16-107",
+        "count": 1
+      },
+      {
+        "pattern": "attach_don:OP16-107 > attack:OP16-107 > attach_don:OP14-080",
+        "count": 1
+      },
+      {
+        "pattern": "attack:OP16-107 > attach_don:OP14-080 > attack:OP14-080",
+        "count": 1
+      },
+      {
+        "pattern": "attack:OP14-080 > activate:OP14-080 > play:PRB02-013",
+        "count": 1
+      },
+      {
+        "pattern": "activate:OP14-080 > play:PRB02-013 > activate:OP15-113",
+        "count": 1
+      },
+      {
+        "pattern": "play:PRB02-013 > activate:OP15-113 > attack:OP06-090",
+        "count": 1
+      }
+    ],
+    "OP15-001|Krieg": [
+      {
+        "pattern": "play:OP15-007 > attack:OP15-023 > attack:OP15-001",
+        "count": 1
+      },
+      {
+        "pattern": "play:OP15-008 > activate:OP15-017 > activate:OP15-023",
+        "count": 1
+      },
+      {
+        "pattern": "activate:OP15-017 > activate:OP15-023 > activate:OP15-001",
+        "count": 1
+      },
+      {
+        "pattern": "activate:OP15-023 > activate:OP15-001 > attack:OP15-017",
+        "count": 1
+      },
+      {
+        "pattern": "activate:OP15-001 > attack:OP15-017 > attack:OP15-023",
+        "count": 1
+      },
+      {
+        "pattern": "attack:OP15-017 > attack:OP15-023 > attack:OP15-001",
+        "count": 1
+      },
+      {
+        "pattern": "attack:OP15-023 > attack:OP15-001 > attack:OP15-007",
+        "count": 1
+      },
+      {
+        "pattern": "attack:OP15-001 > attack:OP15-007 > attack:OP15-008",
+        "count": 1
+      }
+    ],
+    "OP15-002|Lucy": [
+      {
+        "pattern": "activate:OP15-020 > activate:OP15-002 > activate:OP05-019",
+        "count": 2
+      },
+      {
+        "pattern": "activate:OP15-002 > activate:OP05-019 > attack:OP15-002",
+        "count": 2
+      },
+      {
+        "pattern": "activate:OP10-060 > activate:OP15-002 > attack:OP15-002",
+        "count": 2
+      },
+      {
+        "pattern": "attack:OP15-002 > play:OP15-053 > play:OP15-057",
+        "count": 1
+      },
+      {
+        "pattern": "play:OP15-053 > play:OP15-057 > attach_don:OP15-053",
+        "count": 1
+      },
+      {
+        "pattern": "activate:OP10-060 > attack:OP15-002 > activate:OP15-002",
+        "count": 1
+      },
+      {
+        "pattern": "activate:OP06-058 > activate:OP15-002 > attack:OP15-002",
+        "count": 1
+      },
+      {
+        "pattern": "play:OP15-046 > activate:OP15-020 > activate:OP15-002",
+        "count": 1
+      },
+      {
+        "pattern": "activate:OP15-020 > activate:OP15-002 > attack:OP15-002",
+        "count": 1
+      },
+      {
+        "pattern": "activate:OP15-002 > attack:OP15-002 > play:OP15-040",
+        "count": 1
+      },
+      {
+        "pattern": "attack:OP15-002 > play:OP15-040 > attach_don:OP15-053",
+        "count": 1
+      },
+      {
+        "pattern": "play:OP15-040 > activate:OP15-020 > activate:OP15-002",
+        "count": 1
+      }
+    ],
+    "OP16-080|Marshall D. Teach": [
+      {
+        "pattern": "activate:OP09-099 > attack:OP16-080 > play:OP09-086",
+        "count": 1
+      },
+      {
+        "pattern": "play:OP16-109 > activate:OP09-099 > play:OP09-086",
+        "count": 1
+      },
+      {
+        "pattern": "activate:OP09-099 > play:OP09-086 > attach_don:OP16-080",
+        "count": 1
+      },
+      {
+        "pattern": "play:OP09-086 > attach_don:OP16-080 > attack:OP16-080",
+        "count": 1
+      },
+      {
+        "pattern": "activate:OP09-096 > play:OP16-108 > attach_don:OP16-080",
+        "count": 1
+      },
+      {
+        "pattern": "play:OP16-108 > attach_don:OP16-080 > attack:OP16-080",
+        "count": 1
+      },
+      {
+        "pattern": "activate:OP09-096 > play:OP16-109 > activate:OP16-116",
+        "count": 1
+      },
+      {
+        "pattern": "play:OP16-109 > activate:OP16-116 > activate:OP09-093",
+        "count": 1
+      },
+      {
+        "pattern": "activate:OP16-116 > activate:OP09-093 > attack:OP16-080",
+        "count": 1
+      },
+      {
+        "pattern": "activate:OP16-115 > attach_don:OP16-080 > attack:OP16-080",
+        "count": 1
+      },
+      {
+        "pattern": "attach_don:OP16-080 > attack:OP16-080 > activate:OP16-116",
+        "count": 1
+      },
+      {
+        "pattern": "attack:OP16-080 > activate:OP16-116 > activate:OP09-093",
+        "count": 1
+      }
+    ],
+    "ST29-001|Monkey D. Luffy": [
+      {
+        "pattern": "attack:OP16-107 > attack:ST29-001 > play:OP08-106",
+        "count": 1
+      },
+      {
+        "pattern": "attack:OP08-106 > attack:ST29-001 > play:EB03-055",
+        "count": 1
+      },
+      {
+        "pattern": "play:EB03-053 > attach_don:ST29-001 > attack:ST29-001",
+        "count": 1
+      }
+    ]
+  },
+  "by_leader_before_attack": {
+    "OP05-041|Sakazuki": [
+      {
+        "pattern": "play:PRB02-008 > attack:OP06-050",
+        "count": 1
+      },
+      {
+        "pattern": "play:PRB02-008 > attach_don:OP05-041 > attack:OP05-041",
+        "count": 1
+      },
+      {
+        "pattern": "play:EB03-022 > activate:OP05-057 > activate:OP05-041 > attack:OP05-041",
+        "count": 1
+      },
+      {
+        "pattern": "play:ST06-008 > activate:OP05-057 > play:PRB02-008 > activate:OP05-041 > play:OP08-082 > attack:OP05-041",
+        "count": 1
+      },
+      {
+        "pattern": "play:OP16-056 > play:OP05-091 > activate:ST06-008 > activate:OP05-041 > attack:OP05-041",
+        "count": 1
+      }
+    ],
+    "OP11-040|Monkey D. Luffy": [
+      {
+        "pattern": "attach_don:OP11-040 > attack:OP11-040",
+        "count": 1
+      },
+      {
+        "pattern": "play:OP07-051 > attack:OP11-040",
+        "count": 1
+      },
+      {
+        "pattern": "attack:OP07-051",
+        "count": 1
+      },
+      {
+        "pattern": "activate:OP11-040 > attack:OP07-051",
+        "count": 1
+      },
+      {
+        "pattern": "activate:OP11-040 > play:OP06-119 > activate:P-107 > attack:EB03-034",
+        "count": 1
+      },
+      {
+        "pattern": "activate:OP11-040 > play:OP06-119 > activate:P-107 > attack:OP11-040",
+        "count": 1
+      },
+      {
+        "pattern": "activate:OP11-040 > attack:OP06-119",
+        "count": 1
+      }
+    ],
+    "OP11-041|Nami": [
+      {
+        "pattern": "play:OP13-042 > attack:OP11-041",
+        "count": 2
+      },
+      {
+        "pattern": "attack:OP11-041",
+        "count": 1
+      },
+      {
+        "pattern": "play:EB03-053 > activate:OP11-041 > attack:OP16-056",
+        "count": 1
+      },
+      {
+        "pattern": "attack:EB03-053",
+        "count": 1
+      },
+      {
+        "pattern": "play:OP16-119 > attach_don:OP11-041 > attack:OP11-041",
+        "count": 1
+      },
+      {
+        "pattern": "attach_don:OP11-041 > attack:OP11-041",
+        "count": 1
+      }
+    ],
+    "OP13-002|Portgas D. Ace": [
+      {
+        "pattern": "attack:OP13-002",
+        "count": 1
+      },
+      {
+        "pattern": "attack:PRB02-008",
+        "count": 1
+      },
+      {
+        "pattern": "attack:OP08-047",
+        "count": 1
+      },
+      {
+        "pattern": "play:ST22-002 > play:EB04-007 > attach_don:OP13-002 > attach_don:OP13-002 > attack:OP13-002",
+        "count": 1
+      },
+      {
+        "pattern": "play:ST22-002 > play:EB04-007 > attack:EB04-007",
+        "count": 1
+      }
+    ],
+    "OP13-079|Imu": [
+      {
+        "pattern": "play:OP16-093 > attack:OP13-079",
+        "count": 2
+      },
+      {
+        "pattern": "activate:OP13-099 > activate:OP13-083 > attach_don:OP16-093 > attach_don:OP16-093 > attack:OP16-093",
+        "count": 1
+      },
+      {
+        "pattern": "activate:OP13-099 > activate:OP13-079 > attach_don:OP16-093 > attack:OP16-093",
+        "count": 1
+      },
+      {
+        "pattern": "play:OP13-086 > activate:OP13-099 > attach_don:OP13-079 > attack:OP13-079",
+        "count": 1
+      },
+      {
+        "pattern": "activate:OP13-079 > attach_don:OP16-093 > attach_don:OP16-093 > attack:OP16-093",
+        "count": 1
+      },
+      {
+        "pattern": "activate:OP13-096 > attach_don:OP13-091 > attack:OP13-091",
+        "count": 1
+      },
+      {
+        "pattern": "attach_don:OP13-091 > attack:OP13-091",
+        "count": 1
+      },
+      {
+        "pattern": "attach_don:OP13-080 > attack:OP13-080",
+        "count": 1
+      },
+      {
+        "pattern": "activate:OP13-099 > activate:OP13-083 > attach_don:OP16-093 > attack:OP16-093",
+        "count": 1
+      },
+      {
+        "pattern": "activate:OP13-099 > attack:OP13-079",
+        "count": 1
+      },
+      {
+        "pattern": "activate:OP13-096 > activate:OP13-099 > attach_don:OP13-080 > attach_don:OP13-080 > attack:OP13-080",
+        "count": 1
+      },
+      {
+        "pattern": "attack:OP13-080",
+        "count": 1
+      }
+    ],
+    "OP14-040|Jinbe": [
+      {
+        "pattern": "play:OP07-045 > activate:EB01-023 > attack:OP14-040",
+        "count": 1
+      },
+      {
+        "pattern": "play:OP07-045 > activate:ST17-002 > play:OP14-042 > attach_don:OP14-040 > attack:OP14-040",
+        "count": 1
+      },
+      {
+        "pattern": "play:OP07-051 > attack:ST17-002",
+        "count": 1
+      },
+      {
+        "pattern": "play:OP14-049 > activate:OP14-040 > attack:OP14-042",
+        "count": 1
+      },
+      {
+        "pattern": "attach_don:OP14-040 > attach_don:OP14-040 > attach_don:OP14-040 > attack:OP14-040",
+        "count": 1
+      },
+      {
+        "pattern": "play:OP07-045 > activate:EB01-023 > attach_don:OP14-040 > attack:OP14-040",
+        "count": 1
+      },
+      {
+        "pattern": "play:OP15-052 > play:ST17-002 > play:OP15-052 > attach_don:OP14-040 > attack:OP14-040",
+        "count": 1
+      },
+      {
+        "pattern": "play:OP07-051 > attach_don:OP14-040 > attach_don:OP14-040 > attach_don:OP14-040 > activate:OP14-040 > attack:OP14-040",
+        "count": 1
+      },
+      {
+        "pattern": "play:OP14-049 > attack:OP07-051",
+        "count": 1
+      },
+      {
+        "pattern": "attach_don:OP07-046 > attach_don:OP07-046 > attach_don:OP07-046 > attack:OP07-046",
+        "count": 1
+      },
+      {
+        "pattern": "play:ST17-002 > attach_don:OP14-040 > attack:OP14-040",
+        "count": 1
+      },
+      {
+        "pattern": "play:OP14-042 > play:ST17-002 > play:OP14-042 > attach_don:OP14-040 > activate:OP14-040 > attack:OP14-040",
+        "count": 1
+      }
+    ],
+    "OP14-080|Gecko Moria": [
+      {
+        "pattern": "attach_don:OP14-080 > attach_don:OP14-080 > attach_don:OP14-080 > attack:OP14-080",
+        "count": 1
+      },
+      {
+        "pattern": "attach_don:OP14-080 > attach_don:OP14-080 > attach_don:OP14-080 > attach_don:OP14-080 > attack:OP14-080",
+        "count": 1
+      },
+      {
+        "pattern": "play:PRB02-013 > attach_don:OP14-080 > attack:OP14-080",
+        "count": 1
+      },
+      {
+        "pattern": "attach_don:OP16-107 > attach_don:OP16-107 > attack:OP16-107",
+        "count": 1
+      }
+    ],
+    "OP15-001|Krieg": [
+      {
+        "pattern": "play:OP15-007 > attack:OP15-023",
+        "count": 1
+      },
+      {
+        "pattern": "play:OP15-008 > activate:OP15-017 > activate:OP15-023 > activate:OP15-001 > attack:OP15-017",
+        "count": 1
+      }
+    ],
+    "OP15-002|Lucy": [
+      {
+        "pattern": "attack:OP10-045",
+        "count": 2
+      },
+      {
+        "pattern": "attack:OP15-002",
+        "count": 1
+      },
+      {
+        "pattern": "activate:OP10-060 > attack:OP15-002",
+        "count": 1
+      },
+      {
+        "pattern": "activate:OP06-058 > activate:OP15-002 > attack:OP15-002",
+        "count": 1
+      },
+      {
+        "pattern": "play:OP15-046 > activate:OP15-020 > activate:OP15-002 > attack:OP15-002",
+        "count": 1
+      },
+      {
+        "pattern": "play:OP15-040 > activate:OP15-020 > activate:OP15-002 > activate:OP05-019 > attack:OP15-002",
+        "count": 1
+      },
+      {
+        "pattern": "play:OP05-015 > activate:OP15-021 > activate:OP05-019 > activate:OP10-060 > activate:OP15-002 > attack:OP15-002",
+        "count": 1
+      },
+      {
+        "pattern": "attack:OP05-015",
+        "count": 1
+      },
+      {
+        "pattern": "activate:OP15-020 > activate:OP15-002 > attack:OP10-045",
+        "count": 1
+      }
+    ],
+    "OP16-080|Marshall D. Teach": [
+      {
+        "pattern": "activate:OP09-099 > attack:OP16-080",
+        "count": 1
+      },
+      {
+        "pattern": "play:OP16-109 > activate:OP09-099 > play:OP09-086 > attach_don:OP16-080 > attack:OP16-080",
+        "count": 1
+      },
+      {
+        "pattern": "activate:OP09-096 > play:OP16-108 > attach_don:OP16-080 > attack:OP16-080",
+        "count": 1
+      },
+      {
+        "pattern": "activate:OP09-096 > play:OP16-109 > activate:OP16-116 > activate:OP09-093 > attack:OP16-080",
+        "count": 1
+      },
+      {
+        "pattern": "activate:OP16-115 > attach_don:OP16-080 > attack:OP16-080",
+        "count": 1
+      },
+      {
+        "pattern": "play:OP16-119 > play:OP09-095 > attack:OP16-080",
+        "count": 1
+      },
+      {
+        "pattern": "play:OP09-093 > attack:OP16-080",
+        "count": 1
+      },
+      {
+        "pattern": "activate:OP16-115 > attach_don:OP16-080 > attach_don:OP16-080 > attack:OP16-080",
+        "count": 1
+      },
+      {
+        "pattern": "activate:OP09-099 > attack:OP16-108",
+        "count": 1
+      },
+      {
+        "pattern": "play:OP16-108 > play:OP09-086 > attack:OP16-080",
+        "count": 1
+      }
+    ],
+    "ST29-001|Monkey D. Luffy": [
+      {
+        "pattern": "attack:ST29-001",
+        "count": 1
+      },
+      {
+        "pattern": "attack:OP16-107",
+        "count": 1
+      },
+      {
+        "pattern": "attack:OP08-106",
+        "count": 1
+      },
+      {
+        "pattern": "play:EB03-053 > attach_don:ST29-001 > attack:ST29-001",
+        "count": 1
+      }
+    ]
+  },
+  "by_defender_response": {
+    "OP05-041|Sakazuki": [
+      {
+        "pattern": "counter:EB03-022",
+        "count": 1
+      },
+      {
+        "pattern": "blocker:EB03-022",
+        "count": 1
+      }
+    ],
+    "OP11-040|Monkey D. Luffy": [
+      {
+        "pattern": "counter:OP11-054",
+        "count": 4
+      },
+      {
+        "pattern": "counter:OP05-067",
+        "count": 4
+      },
+      {
+        "pattern": "counter:ST18-001",
+        "count": 2
+      },
+      {
+        "pattern": "counter:OP07-064",
+        "count": 2
+      },
+      {
+        "pattern": "counter:EB03-034",
+        "count": 1
+      },
+      {
+        "pattern": "counter:OP16-056",
+        "count": 1
+      }
+    ],
+    "OP11-041|Nami": [
+      {
+        "pattern": "blocker:OP13-042",
+        "count": 2
+      },
+      {
+        "pattern": "counter:OP14-102",
+        "count": 2
+      },
+      {
+        "pattern": "counter:OP11-106",
+        "count": 2
+      },
+      {
+        "pattern": "counter:OP14-111",
+        "count": 1
+      },
+      {
+        "pattern": "counter:EB03-053",
+        "count": 1
+      },
+      {
+        "pattern": "counter:OP14-108",
+        "count": 1
+      },
+      {
+        "pattern": "counter:OP14-110",
+        "count": 1
+      },
+      {
+        "pattern": "counter:OP16-056",
+        "count": 1
+      }
+    ],
+    "OP13-002|Portgas D. Ace": [
+      {
+        "pattern": "counter:OP13-054",
+        "count": 2
+      },
+      {
+        "pattern": "counter:OP13-043",
+        "count": 1
+      }
+    ],
+    "OP13-079|Imu": [
+      {
+        "pattern": "blocker:OP13-089",
+        "count": 9
+      },
+      {
+        "pattern": "counter:OP13-084",
+        "count": 6
+      },
+      {
+        "pattern": "counter:OP13-092",
+        "count": 4
+      },
+      {
+        "pattern": "blocker:OP13-091",
+        "count": 3
+      },
+      {
+        "pattern": "counter:OP13-083",
+        "count": 2
+      },
+      {
+        "pattern": "counter:OP13-091",
+        "count": 1
+      },
+      {
+        "pattern": "counter:OP13-080",
+        "count": 1
+      },
+      {
+        "pattern": "counter:OP13-089",
+        "count": 1
+      }
+    ],
+    "OP14-040|Jinbe": [
+      {
+        "pattern": "counter:OP07-040",
+        "count": 4
+      },
+      {
+        "pattern": "counter:OP07-046",
+        "count": 2
+      },
+      {
+        "pattern": "counter:OP14-046",
+        "count": 2
+      },
+      {
+        "pattern": "counter:OP08-047",
+        "count": 2
+      },
+      {
+        "pattern": "counter:OP07-045",
+        "count": 1
+      },
+      {
+        "pattern": "counter:ST17-002",
+        "count": 1
+      },
+      {
+        "pattern": "counter:OP15-052",
+        "count": 1
+      }
+    ],
+    "OP14-080|Gecko Moria": [
+      {
+        "pattern": "counter:OP06-090",
+        "count": 1
+      },
+      {
+        "pattern": "counter:OP16-104",
+        "count": 1
+      }
+    ],
+    "OP15-001|Krieg": [
+      {
+        "pattern": "blocker:OP15-017",
+        "count": 1
+      },
+      {
+        "pattern": "counter:OP15-015",
+        "count": 1
+      },
+      {
+        "pattern": "counter:OP15-023",
+        "count": 1
+      },
+      {
+        "pattern": "counter:OP15-028",
+        "count": 1
+      },
+      {
+        "pattern": "counter:OP15-003",
+        "count": 1
+      }
+    ],
+    "OP15-002|Lucy": [
+      {
+        "pattern": "blocker:OP15-046",
+        "count": 5
+      },
+      {
+        "pattern": "blocker:OP15-053",
+        "count": 3
+      },
+      {
+        "pattern": "counter:OP15-052",
+        "count": 1
+      }
+    ],
+    "OP16-080|Marshall D. Teach": [
+      {
+        "pattern": "counter:OP16-110",
+        "count": 1
+      },
+      {
+        "pattern": "counter:OP09-086",
+        "count": 1
+      },
+      {
+        "pattern": "blocker:OP09-093",
+        "count": 1
+      },
+      {
+        "pattern": "counter:OP16-104",
+        "count": 1
+      },
+      {
+        "pattern": "counter:OP09-095",
+        "count": 1
+      }
+    ],
+    "ST29-001|Monkey D. Luffy": [
+      {
+        "pattern": "counter:ST29-005",
+        "count": 2
+      },
+      {
+        "pattern": "counter:OP12-119",
+        "count": 1
+      },
+      {
+        "pattern": "counter:ST29-009",
+        "count": 1
+      }
+    ]
+  },
+  "context_examples": {
+    "OP05-041|Sakazuki|early": [
+      {
+        "log": "Jinbe-B_x_Sakazuki-BB_2026-07-01T19.08.01.json",
+        "turn": 2,
+        "context": {
+          "my_life": 4,
+          "opp_life": 5,
+          "my_hand": 5,
+          "opp_hand": 5,
+          "my_board": 0,
+          "opp_board": 1,
+          "my_trash": 0,
+          "opp_trash": 0
+        },
+        "sequence": [
+          "play:OP06-050",
+          "activate:OP05-041"
+        ]
+      }
+    ],
+    "OP05-041|Sakazuki|late": [
+      {
+        "log": "Jinbe-B_x_Sakazuki-BB_2026-07-01T19.08.01.json",
+        "turn": 10,
+        "context": {
+          "my_life": 2,
+          "opp_life": 3,
+          "my_hand": 8,
+          "opp_hand": 7,
+          "my_board": 0,
+          "opp_board": 1,
+          "my_trash": 8,
+          "opp_trash": 4
+        },
+        "sequence": [
+          "play:ST06-008",
+          "activate:OP05-057",
+          "play:PRB02-008",
+          "activate:OP05-041",
+          "play:OP08-082",
+          "attack:OP05-041"
+        ]
+      },
+      {
+        "log": "Jinbe-B_x_Sakazuki-BB_2026-07-01T19.08.01.json",
+        "turn": 12,
+        "context": {
+          "my_life": 0,
+          "opp_life": 2,
+          "my_hand": 8,
+          "opp_hand": 8,
+          "my_board": 2,
+          "opp_board": 1,
+          "my_trash": 10,
+          "opp_trash": 6
+        },
+        "sequence": [
+          "play:OP16-056",
+          "play:OP05-091",
+          "activate:ST06-008",
+          "activate:OP05-041",
+          "attack:OP05-041",
+          "attach_don:ST06-008",
+          "attack:ST06-008"
+        ]
+      }
+    ],
+    "OP05-041|Sakazuki|mid": [
+      {
+        "log": "Jinbe-B_x_Sakazuki-BB_2026-07-01T19.08.01.json",
+        "turn": 4,
+        "context": {
+          "my_life": 3,
+          "opp_life": 5,
+          "my_hand": 6,
+          "opp_hand": 6,
+          "my_board": 1,
+          "opp_board": 1,
+          "my_trash": 2,
+          "opp_trash": 0
+        },
+        "sequence": [
+          "play:PRB02-008",
+          "attack:OP06-050",
+          "activate:OP05-041",
+          "attack:OP05-041"
+        ]
+      },
+      {
+        "log": "Jinbe-B_x_Sakazuki-BB_2026-07-01T19.08.01.json",
+        "turn": 6,
+        "context": {
+          "my_life": 3,
+          "opp_life": 4,
+          "my_hand": 7,
+          "opp_hand": 8,
+          "my_board": 0,
+          "opp_board": 0,
+          "my_trash": 4,
+          "opp_trash": 1
+        },
+        "sequence": [
+          "play:PRB02-008",
+          "attach_don:OP05-041",
+          "attack:OP05-041",
+          "activate:OP05-041"
+        ]
+      },
+      {
+        "log": "Jinbe-B_x_Sakazuki-BB_2026-07-01T19.08.01.json",
+        "turn": 8,
+        "context": {
+          "my_life": 2,
+          "opp_life": 3,
+          "my_hand": 9,
+          "opp_hand": 9,
+          "my_board": 0,
+          "opp_board": 2,
+          "my_trash": 5,
+          "opp_trash": 2
+        },
+        "sequence": [
+          "play:EB03-022",
+          "activate:OP05-057",
+          "activate:OP05-041",
+          "attack:OP05-041"
+        ]
+      }
+    ],
+    "OP11-040|Monkey D. Luffy|early": [
+      {
+        "log": "Imu-B_x_Monkey.D.Luffy-BP_2026-07-01T15.15.57.json",
+        "turn": 2,
+        "context": {
+          "my_life": 3,
+          "opp_life": 4,
+          "my_hand": 5,
+          "opp_hand": 5,
+          "my_board": 0,
+          "opp_board": 0,
+          "my_trash": 0,
+          "opp_trash": 3
+        },
+        "sequence": [
+          "pass"
+        ]
+      }
+    ],
+    "OP11-040|Monkey D. Luffy|late": [
+      {
+        "log": "Imu-B_x_Monkey.D.Luffy-BP_2026-07-01T15.15.57.json",
+        "turn": 10,
+        "context": {
+          "my_life": 2,
+          "opp_life": 2,
+          "my_hand": 5,
+          "opp_hand": 6,
+          "my_board": 1,
+          "opp_board": 4,
+          "my_trash": 7,
+          "opp_trash": 11
+        },
+        "sequence": [
+          "activate:OP11-040",
+          "attack:OP07-051",
+          "attack:OP11-040",
+          "play:OP06-119",
+          "activate:EB03-034"
+        ]
+      },
+      {
+        "log": "Imu-B_x_Monkey.D.Luffy-BP_2026-07-01T15.15.57.json",
+        "turn": 12,
+        "context": {
+          "my_life": 2,
+          "opp_life": 2,
+          "my_hand": 4,
+          "opp_hand": 7,
+          "my_board": 2,
+          "opp_board": 5,
+          "my_trash": 10,
+          "opp_trash": 13
+        },
+        "sequence": [
+          "activate:OP11-040",
+          "play:OP06-119",
+          "activate:P-107",
+          "attack:EB03-034",
+          "attack:OP11-040",
+          "attack:OP06-119"
+        ]
+      },
+      {
+        "log": "Imu-B_x_Monkey.D.Luffy-BP_2026-07-01T15.15.57.json",
+        "turn": 14,
+        "context": {
+          "my_life": 3,
+          "opp_life": 1,
+          "my_hand": 4,
+          "opp_hand": 10,
+          "my_board": 2,
+          "opp_board": 5,
+          "my_trash": 13,
+          "opp_trash": 18
+        },
+        "sequence": [
+          "activate:OP11-040",
+          "play:OP06-119",
+          "activate:P-107",
+          "attack:OP11-040",
+          "attack:OP06-119",
+          "attack:P-107"
+        ]
+      },
+      {
+        "log": "Imu-B_x_Monkey.D.Luffy-BP_2026-07-01T15.15.57.json",
+        "turn": 16,
+        "context": {
+          "my_life": 1,
+          "opp_life": 0,
+          "my_hand": 4,
+          "opp_hand": 11,
+          "my_board": 4,
+          "opp_board": 5,
+          "my_trash": 18,
+          "opp_trash": 22
+        },
+        "sequence": [
+          "activate:OP11-040",
+          "attack:OP06-119",
+          "attack:OP06-119",
+          "attach_don:P-107",
+          "attack:P-107",
+          "attach_don:P-107",
+          "attack:P-107",
+          "attach_don:OP11-040",
+          "attack:OP11-040"
+        ]
+      }
+    ],
+    "OP11-040|Monkey D. Luffy|mid": [
+      {
+        "log": "Imu-B_x_Monkey.D.Luffy-BP_2026-07-01T15.15.57.json",
+        "turn": 4,
+        "context": {
+          "my_life": 2,
+          "opp_life": 4,
+          "my_hand": 7,
+          "opp_hand": 5,
+          "my_board": 0,
+          "opp_board": 1,
+          "my_trash": 0,
+          "opp_trash": 5
+        },
+        "sequence": [
+          "attach_don:OP11-040",
+          "attack:OP11-040"
+        ]
+      },
+      {
+        "log": "Imu-B_x_Monkey.D.Luffy-BP_2026-07-01T15.15.57.json",
+        "turn": 6,
+        "context": {
+          "my_life": 2,
+          "opp_life": 3,
+          "my_hand": 7,
+          "opp_hand": 7,
+          "my_board": 0,
+          "opp_board": 2,
+          "my_trash": 1,
+          "opp_trash": 5
+        },
+        "sequence": [
+          "play:OP07-051",
+          "attack:OP11-040"
+        ]
+      },
+      {
+        "log": "Imu-B_x_Monkey.D.Luffy-BP_2026-07-01T15.15.57.json",
+        "turn": 8,
+        "context": {
+          "my_life": 2,
+          "opp_life": 3,
+          "my_hand": 5,
+          "opp_hand": 6,
+          "my_board": 1,
+          "opp_board": 3,
+          "my_trash": 4,
+          "opp_trash": 7
+        },
+        "sequence": [
+          "attack:OP07-051",
+          "attach_don:OP11-040",
+          "attack:OP11-040",
+          "play:OP16-056"
+        ]
+      }
+    ],
+    "OP11-041|Nami|early": [
+      {
+        "log": "Nami-BY_x_Imu-B_2026-07-01T14.22.50.json",
+        "turn": 2,
+        "context": {
+          "my_life": 4,
+          "opp_life": 4,
+          "my_hand": 5,
+          "opp_hand": 4,
+          "my_board": 0,
+          "opp_board": 1,
+          "my_trash": 0,
+          "opp_trash": 3
+        },
+        "sequence": [
+          "attach_don:OP11-041"
+        ]
+      }
+    ],
+    "OP11-041|Nami|late": [
+      {
+        "log": "Nami-BY_x_Imu-B_2026-07-01T14.22.50.json",
+        "turn": 10,
+        "context": {
+          "my_life": 5,
+          "opp_life": 2,
+          "my_hand": 4,
+          "opp_hand": 5,
+          "my_board": 2,
+          "opp_board": 3,
+          "my_trash": 9,
+          "opp_trash": 17
+        },
+        "sequence": [
+          "play:OP13-042",
+          "attack:OP11-041",
+          "attack:EB03-055",
+          "attack:EB04-058"
+        ]
+      },
+      {
+        "log": "Nami-BY_x_Imu-B_2026-07-01T14.22.50.json",
+        "turn": 12,
+        "context": {
+          "my_life": 5,
+          "opp_life": 2,
+          "my_hand": 3,
+          "opp_hand": 5,
+          "my_board": 2,
+          "opp_board": 5,
+          "my_trash": 13,
+          "opp_trash": 19
+        },
+        "sequence": [
+          "play:OP13-042",
+          "attack:OP11-041",
+          "attack:EB03-055",
+          "attack:OP13-042"
+        ]
+      },
+      {
+        "log": "Nami-BY_x_Imu-B_2026-07-01T14.22.50.json",
+        "turn": 14,
+        "context": {
+          "my_life": 4,
+          "opp_life": 2,
+          "my_hand": 2,
+          "opp_hand": 5,
+          "my_board": 3,
+          "opp_board": 5,
+          "my_trash": 17,
+          "opp_trash": 23
+        },
+        "sequence": [
+          "play:OP16-119",
+          "attach_don:OP11-041",
+          "attack:OP11-041",
+          "attack:EB03-055",
+          "attack:OP13-042",
+          "attack:OP13-042"
+        ]
+      },
+      {
+        "log": "Nami-BY_x_Imu-B_2026-07-01T14.22.50.json",
+        "turn": 16,
+        "context": {
+          "my_life": 3,
+          "opp_life": 2,
+          "my_hand": 2,
+          "opp_hand": 6,
+          "my_board": 4,
+          "opp_board": 5,
+          "my_trash": 19,
+          "opp_trash": 26
+        },
+        "sequence": [
+          "attach_don:OP11-041",
+          "attack:OP11-041",
+          "attach_don:EB03-055",
+          "attack:EB03-055",
+          "attack:OP16-119",
+          "activate:OP11-041",
+          "attack:OP13-042",
+          "attack:OP13-042",
+          "play:EB03-055"
+        ]
+      }
+    ],
+    "OP11-041|Nami|mid": [
+      {
+        "log": "Nami-BY_x_Imu-B_2026-07-01T14.22.50.json",
+        "turn": 4,
+        "context": {
+          "my_life": 4,
+          "opp_life": 4,
+          "my_hand": 5,
+          "opp_hand": 5,
+          "my_board": 0,
+          "opp_board": 1,
+          "my_trash": 1,
+          "opp_trash": 6
+        },
+        "sequence": [
+          "attack:OP11-041",
+          "activate:OP11-041",
+          "play:OP16-056"
+        ]
+      },
+      {
+        "log": "Nami-BY_x_Imu-B_2026-07-01T14.22.50.json",
+        "turn": 6,
+        "context": {
+          "my_life": 4,
+          "opp_life": 3,
+          "my_hand": 4,
+          "opp_hand": 7,
+          "my_board": 1,
+          "opp_board": 2,
+          "my_trash": 3,
+          "opp_trash": 6
+        },
+        "sequence": [
+          "play:EB03-053",
+          "activate:OP11-041",
+          "attack:OP16-056",
+          "attach_don:OP11-041",
+          "attack:OP11-041",
+          "activate:OP16-056"
+        ]
+      },
+      {
+        "log": "Nami-BY_x_Imu-B_2026-07-01T14.22.50.json",
+        "turn": 8,
+        "context": {
+          "my_life": 4,
+          "opp_life": 2,
+          "my_hand": 6,
+          "opp_hand": 5,
+          "my_board": 1,
+          "opp_board": 3,
+          "my_trash": 5,
+          "opp_trash": 9
+        },
+        "sequence": [
+          "attack:EB03-053",
+          "attach_don:OP11-041",
+          "attack:OP11-041",
+          "play:EB03-055",
+          "activate:OP11-041"
+        ]
+      }
+    ],
+    "OP13-002|Portgas D. Ace|early": [
+      {
+        "log": "Jinbe-B_x_Portgas.D.Ace-RB_2026-07-01T19.29.44.json",
+        "turn": 2,
+        "context": {
+          "my_life": 3,
+          "opp_life": 5,
+          "my_hand": 5,
+          "opp_hand": 5,
+          "my_board": 0,
+          "opp_board": 0,
+          "my_trash": 0,
+          "opp_trash": 0
+        },
+        "sequence": [
+          "play:OP13-043",
+          "attach_don:OP13-002"
+        ]
+      }
+    ],
+    "OP13-002|Portgas D. Ace|late": [
+      {
+        "log": "Jinbe-B_x_Portgas.D.Ace-RB_2026-07-01T19.29.44.json",
+        "turn": 10,
+        "context": {
+          "my_life": 2,
+          "opp_life": 2,
+          "my_hand": 9,
+          "opp_hand": 5,
+          "my_board": 1,
+          "opp_board": 4,
+          "my_trash": 4,
+          "opp_trash": 4
+        },
+        "sequence": [
+          "play:ST22-002",
+          "play:EB04-007",
+          "attach_don:OP13-002",
+          "attach_don:OP13-002",
+          "attack:OP13-002"
+        ]
+      },
+      {
+        "log": "Jinbe-B_x_Portgas.D.Ace-RB_2026-07-01T19.29.44.json",
+        "turn": 12,
+        "context": {
+          "my_life": 2,
+          "opp_life": 1,
+          "my_hand": 6,
+          "opp_hand": 6,
+          "my_board": 1,
+          "opp_board": 5,
+          "my_trash": 9,
+          "opp_trash": 6
+        },
+        "sequence": [
+          "play:ST22-002",
+          "play:EB04-007",
+          "attack:EB04-007",
+          "attach_don:OP13-002",
+          "attach_don:OP13-002",
+          "attack:OP13-002",
+          "attack:EB04-007"
+        ]
+      }
+    ],
+    "OP13-002|Portgas D. Ace|mid": [
+      {
+        "log": "Jinbe-B_x_Portgas.D.Ace-RB_2026-07-01T19.29.44.json",
+        "turn": 4,
+        "context": {
+          "my_life": 2,
+          "opp_life": 5,
+          "my_hand": 8,
+          "opp_hand": 6,
+          "my_board": 1,
+          "opp_board": 0,
+          "my_trash": 1,
+          "opp_trash": 0
+        },
+        "sequence": [
+          "attack:OP13-002",
+          "play:PRB02-008"
+        ]
+      },
+      {
+        "log": "Jinbe-B_x_Portgas.D.Ace-RB_2026-07-01T19.29.44.json",
+        "turn": 6,
+        "context": {
+          "my_life": 2,
+          "opp_life": 4,
+          "my_hand": 7,
+          "opp_hand": 7,
+          "my_board": 2,
+          "opp_board": 2,
+          "my_trash": 2,
+          "opp_trash": 0
+        },
+        "sequence": [
+          "attack:PRB02-008",
+          "attack:OP13-002",
+          "play:OP08-047"
+        ]
+      },
+      {
+        "log": "Jinbe-B_x_Portgas.D.Ace-RB_2026-07-01T19.29.44.json",
+        "turn": 8,
+        "context": {
+          "my_life": 2,
+          "opp_life": 4,
+          "my_hand": 8,
+          "opp_hand": 5,
+          "my_board": 1,
+          "opp_board": 3,
+          "my_trash": 3,
+          "opp_trash": 2
+        },
+        "sequence": [
+          "attack:OP08-047",
+          "play:EB04-007",
+          "attach_don:OP13-002",
+          "attack:OP13-002"
+        ]
+      }
+    ],
+    "OP13-079|Imu|early": [
+      {
+        "log": "Imu-B_x_Monkey.D.Luffy-BP_2026-07-01T15.15.57.json",
+        "turn": 1,
+        "context": {
+          "my_life": 4,
+          "opp_life": 3,
+          "my_hand": 5,
+          "opp_hand": 5,
+          "my_board": 0,
+          "opp_board": 0,
+          "my_trash": 3,
+          "opp_trash": 0
+        },
+        "sequence": [
+          "activate:OP13-096"
+        ]
+      },
+      {
+        "log": "Imu-B_x_Monkey.D.Luffy-BP_2026-07-01T15.15.57.json",
+        "turn": 3,
+        "context": {
+          "my_life": 4,
+          "opp_life": 3,
+          "my_hand": 5,
+          "opp_hand": 6,
+          "my_board": 0,
+          "opp_board": 0,
+          "my_trash": 3,
+          "opp_trash": 0
+        },
+        "sequence": [
+          "play:OP16-093",
+          "attack:OP13-079"
+        ]
+      },
+      {
+        "log": "Nami-BY_x_Imu-B_2026-07-01T14.22.50.json",
+        "turn": 1,
+        "context": {
+          "my_life": 4,
+          "opp_life": 4,
+          "my_hand": 4,
+          "opp_hand": 5,
+          "my_board": 1,
+          "opp_board": 0,
+          "my_trash": 3,
+          "opp_trash": 0
+        },
+        "sequence": [
+          "play:OP13-086"
+        ]
+      },
+      {
+        "log": "Nami-BY_x_Imu-B_2026-07-01T14.22.50.json",
+        "turn": 3,
+        "context": {
+          "my_life": 4,
+          "opp_life": 4,
+          "my_hand": 4,
+          "opp_hand": 6,
+          "my_board": 1,
+          "opp_board": 0,
+          "my_trash": 3,
+          "opp_trash": 0
+        },
+        "sequence": [
+          "play:OP16-093",
+          "attack:OP13-079",
+          "activate:OP13-079"
+        ]
+      }
+    ],
+    "OP13-079|Imu|late": [
+      {
+        "log": "Imu-B_x_Monkey.D.Luffy-BP_2026-07-01T15.15.57.json",
+        "turn": 9,
+        "context": {
+          "my_life": 2,
+          "opp_life": 2,
+          "my_hand": 7,
+          "opp_hand": 7,
+          "my_board": 2,
+          "opp_board": 1,
+          "my_trash": 8,
+          "opp_trash": 5
+        },
+        "sequence": [
+          "play:OP13-086",
+          "activate:OP13-099",
+          "attach_don:OP13-079",
+          "attack:OP13-079"
+        ]
+      },
+      {
+        "log": "Imu-B_x_Monkey.D.Luffy-BP_2026-07-01T15.15.57.json",
+        "turn": 11,
+        "context": {
+          "my_life": 2,
+          "opp_life": 2,
+          "my_hand": 6,
+          "opp_hand": 6,
+          "my_board": 3,
+          "opp_board": 3,
+          "my_trash": 13,
+          "opp_trash": 7
+        },
+        "sequence": [
+          "activate:OP13-079",
+          "attach_don:OP16-093",
+          "attach_don:OP16-093",
+          "attack:OP16-093",
+          "attach_don:OP13-083",
+          "attack:OP13-083",
+          "activate:OP13-099",
+          "activate:OP13-082",
+          "activate:OP13-083",
+          "attach_don:OP13-080",
+          "attach_don:OP13-080",
+          "attach_don:OP13-080",
+          "attack:OP13-080",
+          "activate:OP13-080"
+        ]
+      },
+      {
+        "log": "Imu-B_x_Monkey.D.Luffy-BP_2026-07-01T15.15.57.json",
+        "turn": 13,
+        "context": {
+          "my_life": 1,
+          "opp_life": 2,
+          "my_hand": 9,
+          "opp_hand": 5,
+          "my_board": 3,
+          "opp_board": 4,
+          "my_trash": 15,
+          "opp_trash": 10
+        },
+        "sequence": [
+          "activate:OP13-096",
+          "attach_don:OP13-091",
+          "attack:OP13-091",
+          "attack:OP13-083",
+          "attach_don:OP13-084",
+          "attack:OP13-084",
+          "activate:OP13-079",
+          "activate:OP13-099",
+          "activate:OP13-082",
+          "activate:OP13-083",
+          "attach_don:OP13-080",
+          "attach_don:OP13-080",
+          "attack:OP13-080",
+          "activate:OP13-080"
+        ]
+      },
+      {
+        "log": "Imu-B_x_Monkey.D.Luffy-BP_2026-07-01T15.15.57.json",
+        "turn": 15,
+        "context": {
+          "my_life": 0,
+          "opp_life": 3,
+          "my_hand": 10,
+          "opp_hand": 5,
+          "my_board": 4,
+          "opp_board": 4,
+          "my_trash": 21,
+          "opp_trash": 13
+        },
+        "sequence": [
+          "attach_don:OP13-091",
+          "attack:OP13-091",
+          "attach_don:OP13-080",
+          "attack:OP13-080",
+          "activate:OP13-080",
+          "attach_don:OP13-083",
+          "attack:OP13-083",
+          "attach_don:OP13-084",
+          "attack:OP13-084",
+          "activate:OP13-099",
+          "activate:OP13-079",
+          "activate:OP13-082",
+          "activate:OP13-083",
+          "attack:OP13-080",
+          "attack:OP13-079"
+        ]
+      },
+      {
+        "log": "Imu-B_x_Monkey.D.Luffy-BP_2026-07-01T15.15.57.json",
+        "turn": 17,
+        "context": {
+          "my_life": 0,
+          "opp_life": 1,
+          "my_hand": 3,
+          "opp_hand": 6,
+          "my_board": 3,
+          "opp_board": 4,
+          "my_trash": 33,
+          "opp_trash": 18
+        },
+        "sequence": [
+          "attach_don:OP13-080",
+          "attack:OP13-080",
+          "activate:OP13-080",
+          "attach_don:OP13-083",
+          "attack:OP13-083",
+          "attach_don:OP13-084",
+          "attack:OP13-084",
+          "activate:OP13-079",
+          "activate:OP13-099",
+          "activate:OP13-082",
+          "attack:OP13-079",
+          "attach_don:OP13-080",
+          "attack:OP13-080"
+        ]
+      }
+    ],
+    "OP13-079|Imu|mid": [
+      {
+        "log": "Imu-B_x_Monkey.D.Luffy-BP_2026-07-01T15.15.57.json",
+        "turn": 5,
+        "context": {
+          "my_life": 3,
+          "opp_life": 2,
+          "my_hand": 6,
+          "opp_hand": 8,
+          "my_board": 1,
+          "opp_board": 0,
+          "my_trash": 5,
+          "opp_trash": 0
+        },
+        "sequence": [
+          "activate:OP13-099",
+          "activate:OP13-083",
+          "attach_don:OP16-093",
+          "attach_don:OP16-093",
+          "attack:OP16-093"
+        ]
+      },
+      {
+        "log": "Imu-B_x_Monkey.D.Luffy-BP_2026-07-01T15.15.57.json",
+        "turn": 7,
+        "context": {
+          "my_life": 3,
+          "opp_life": 2,
+          "my_hand": 6,
+          "opp_hand": 7,
+          "my_board": 2,
+          "opp_board": 1,
+          "my_trash": 6,
+          "opp_trash": 1
+        },
+        "sequence": [
+          "activate:OP13-099",
+          "activate:OP13-079",
+          "attach_don:OP16-093",
+          "attack:OP16-093",
+          "attach_don:OP13-079",
+          "attack:OP13-079",
+          "attach_don:OP13-080",
+          "attack:OP13-080"
+        ]
+      },
+      {
+        "log": "Nami-BY_x_Imu-B_2026-07-01T14.22.50.json",
+        "turn": 5,
+        "context": {
+          "my_life": 3,
+          "opp_life": 4,
+          "my_hand": 6,
+          "opp_hand": 6,
+          "my_board": 1,
+          "opp_board": 1,
+          "my_trash": 6,
+          "opp_trash": 1
+        },
+        "sequence": [
+          "activate:OP13-099",
+          "activate:OP13-083",
+          "attach_don:OP16-093",
+          "attack:OP16-093",
+          "attack:OP13-079"
+        ]
+      },
+      {
+        "log": "Nami-BY_x_Imu-B_2026-07-01T14.22.50.json",
+        "turn": 7,
+        "context": {
+          "my_life": 2,
+          "opp_life": 4,
+          "my_hand": 6,
+          "opp_hand": 7,
+          "my_board": 1,
+          "opp_board": 1,
+          "my_trash": 9,
+          "opp_trash": 4
+        },
+        "sequence": [
+          "activate:OP13-099",
+          "attack:OP13-079",
+          "play:OP13-089"
+        ]
+      }
+    ],
+    "OP14-040|Jinbe|early": [
+      {
+        "log": "Jinbe-B_x_Monkey.D.Luffy-Y_2026-07-01T19.17.04.json",
+        "turn": 2,
+        "context": {
+          "my_life": 5,
+          "opp_life": 6,
+          "my_hand": 5,
+          "opp_hand": 5,
+          "my_board": 0,
+          "opp_board": 1,
+          "my_trash": 0,
+          "opp_trash": 0
+        },
+        "sequence": [
+          "play:OP07-046",
+          "play:OP14-042"
+        ]
+      },
+      {
+        "log": "Jinbe-B_x_Portgas.D.Ace-RB_2026-07-01T19.29.44.json",
+        "turn": 1,
+        "context": {
+          "my_life": 5,
+          "opp_life": 3,
+          "my_hand": 5,
+          "opp_hand": 5,
+          "my_board": 0,
+          "opp_board": 0,
+          "my_trash": 0,
+          "opp_trash": 0
+        },
+        "sequence": [
+          "pass"
+        ]
+      },
+      {
+        "log": "Jinbe-B_x_Portgas.D.Ace-RB_2026-07-01T19.29.44.json",
+        "turn": 3,
+        "context": {
+          "my_life": 5,
+          "opp_life": 3,
+          "my_hand": 5,
+          "opp_hand": 6,
+          "my_board": 0,
+          "opp_board": 1,
+          "my_trash": 0,
+          "opp_trash": 1
+        },
+        "sequence": [
+          "attach_don:OP14-040",
+          "attach_don:OP14-040",
+          "attach_don:OP14-040",
+          "attack:OP14-040"
+        ]
+      },
+      {
+        "log": "Jinbe-B_x_Sakazuki-BB_2026-07-01T19.08.01.json",
+        "turn": 1,
+        "context": {
+          "my_life": 5,
+          "opp_life": 4,
+          "my_hand": 5,
+          "opp_hand": 5,
+          "my_board": 1,
+          "opp_board": 0,
+          "my_trash": 0,
+          "opp_trash": 0
+        },
+        "sequence": [
+          "play:OP07-046"
+        ]
+      },
+      {
+        "log": "Jinbe-B_x_Sakazuki-BB_2026-07-01T19.08.01.json",
+        "turn": 3,
+        "context": {
+          "my_life": 5,
+          "opp_life": 4,
+          "my_hand": 5,
+          "opp_hand": 6,
+          "my_board": 1,
+          "opp_board": 1,
+          "my_trash": 0,
+          "opp_trash": 1
+        },
+        "sequence": [
+          "attach_don:OP07-046",
+          "attach_don:OP07-046",
+          "attach_don:OP07-046",
+          "attack:OP07-046",
+          "attack:OP14-040"
+        ]
+      }
+    ],
+    "OP14-040|Jinbe|late": [
+      {
+        "log": "Jinbe-B_x_Monkey.D.Luffy-Y_2026-07-01T19.17.04.json",
+        "turn": 10,
+        "context": {
+          "my_life": 1,
+          "opp_life": 4,
+          "my_hand": 7,
+          "opp_hand": 4,
+          "my_board": 5,
+          "opp_board": 2,
+          "my_trash": 6,
+          "opp_trash": 7
+        },
+        "sequence": [
+          "play:OP14-049",
+          "activate:OP14-040",
+          "attack:OP14-042",
+          "attack:ST17-002",
+          "attack:EB01-023",
+          "attack:OP14-040",
+          "attack:OP07-051",
+          "attack:OP14-049"
+        ]
+      },
+      {
+        "log": "Jinbe-B_x_Portgas.D.Ace-RB_2026-07-01T19.29.44.json",
+        "turn": 9,
+        "context": {
+          "my_life": 2,
+          "opp_life": 2,
+          "my_hand": 7,
+          "opp_hand": 8,
+          "my_board": 3,
+          "opp_board": 2,
+          "my_trash": 2,
+          "opp_trash": 3
+        },
+        "sequence": [
+          "play:OP07-051",
+          "attach_don:OP14-040",
+          "attach_don:OP14-040",
+          "attach_don:OP14-040",
+          "activate:OP14-040",
+          "attack:OP14-040"
+        ]
+      },
+      {
+        "log": "Jinbe-B_x_Portgas.D.Ace-RB_2026-07-01T19.29.44.json",
+        "turn": 11,
+        "context": {
+          "my_life": 1,
+          "opp_life": 2,
+          "my_hand": 6,
+          "opp_hand": 9,
+          "my_board": 4,
+          "opp_board": 3,
+          "my_trash": 4,
+          "opp_trash": 4
+        },
+        "sequence": [
+          "play:OP14-049",
+          "attack:OP07-051",
+          "activate:OP14-040",
+          "attack:OP07-045",
+          "attack:OP14-049"
+        ]
+      },
+      {
+        "log": "Jinbe-B_x_Sakazuki-BB_2026-07-01T19.08.01.json",
+        "turn": 9,
+        "context": {
+          "my_life": 3,
+          "opp_life": 2,
+          "my_hand": 7,
+          "opp_hand": 8,
+          "my_board": 0,
+          "opp_board": 1,
+          "my_trash": 4,
+          "opp_trash": 7
+        },
+        "sequence": [
+          "play:OP07-051",
+          "attach_don:OP14-040",
+          "attach_don:OP14-040",
+          "attach_don:OP14-040",
+          "attack:OP14-040"
+        ]
+      },
+      {
+        "log": "Jinbe-B_x_Sakazuki-BB_2026-07-01T19.08.01.json",
+        "turn": 11,
+        "context": {
+          "my_life": 2,
+          "opp_life": 2,
+          "my_hand": 8,
+          "opp_hand": 5,
+          "my_board": 0,
+          "opp_board": 3,
+          "my_trash": 4,
+          "opp_trash": 10
+        },
+        "sequence": [
+          "play:OP14-049",
+          "activate:OP14-040",
+          "attack:OP14-040",
+          "attack:OP14-049"
+        ]
+      }
+    ],
+    "OP14-040|Jinbe|mid": [
+      {
+        "log": "Jinbe-B_x_Monkey.D.Luffy-Y_2026-07-01T19.17.04.json",
+        "turn": 4,
+        "context": {
+          "my_life": 5,
+          "opp_life": 6,
+          "my_hand": 5,
+          "opp_hand": 5,
+          "my_board": 2,
+          "opp_board": 2,
+          "my_trash": 1,
+          "opp_trash": 0
+        },
+        "sequence": [
+          "play:OP07-045",
+          "activate:EB01-023",
+          "attack:OP14-040"
+        ]
+      },
+      {
+        "log": "Jinbe-B_x_Monkey.D.Luffy-Y_2026-07-01T19.17.04.json",
+        "turn": 6,
+        "context": {
+          "my_life": 4,
+          "opp_life": 5,
+          "my_hand": 5,
+          "opp_hand": 5,
+          "my_board": 3,
+          "opp_board": 3,
+          "my_trash": 3,
+          "opp_trash": 1
+        },
+        "sequence": [
+          "play:OP07-045",
+          "activate:ST17-002",
+          "play:OP14-042",
+          "attach_don:OP14-040",
+          "attack:OP14-040",
+          "attack:EB01-023"
+        ]
+      },
+      {
+        "log": "Jinbe-B_x_Monkey.D.Luffy-Y_2026-07-01T19.17.04.json",
+        "turn": 8,
+        "context": {
+          "my_life": 3,
+          "opp_life": 5,
+          "my_hand": 5,
+          "opp_hand": 4,
+          "my_board": 4,
+          "opp_board": 3,
+          "my_trash": 5,
+          "opp_trash": 5
+        },
+        "sequence": [
+          "play:OP07-051",
+          "attack:ST17-002",
+          "attach_don:OP14-040",
+          "attack:OP14-040",
+          "attack:EB01-023"
+        ]
+      },
+      {
+        "log": "Jinbe-B_x_Portgas.D.Ace-RB_2026-07-01T19.29.44.json",
+        "turn": 5,
+        "context": {
+          "my_life": 4,
+          "opp_life": 2,
+          "my_hand": 7,
+          "opp_hand": 8,
+          "my_board": 0,
+          "opp_board": 2,
+          "my_trash": 0,
+          "opp_trash": 1
+        },
+        "sequence": [
+          "play:OP07-045",
+          "activate:EB01-023",
+          "attach_don:OP14-040",
+          "attack:OP14-040"
+        ]
+      },
+      {
+        "log": "Jinbe-B_x_Portgas.D.Ace-RB_2026-07-01T19.29.44.json",
+        "turn": 7,
+        "context": {
+          "my_life": 4,
+          "opp_life": 2,
+          "my_hand": 6,
+          "opp_hand": 8,
+          "my_board": 1,
+          "opp_board": 2,
+          "my_trash": 2,
+          "opp_trash": 2
+        },
+        "sequence": [
+          "play:OP15-052",
+          "play:ST17-002",
+          "play:OP15-052",
+          "attach_don:OP14-040",
+          "attack:OP14-040"
+        ]
+      }
+    ],
+    "OP14-080|Gecko Moria|early": [
+      {
+        "log": "Gecko.Moria-BY_x_Krieg-RG_2026-07-01T18.46.59.json",
+        "turn": 1,
+        "context": {
+          "my_life": 4,
+          "opp_life": 4,
+          "my_hand": 5,
+          "opp_hand": 5,
+          "my_board": 0,
+          "opp_board": 0,
+          "my_trash": 0,
+          "opp_trash": 0
+        },
+        "sequence": [
+          "pass"
+        ]
+      },
+      {
+        "log": "Gecko.Moria-BY_x_Krieg-RG_2026-07-01T18.46.59.json",
+        "turn": 3,
+        "context": {
+          "my_life": 4,
+          "opp_life": 4,
+          "my_hand": 5,
+          "opp_hand": 5,
+          "my_board": 0,
+          "opp_board": 1,
+          "my_trash": 0,
+          "opp_trash": 0
+        },
+        "sequence": [
+          "attach_don:OP14-080",
+          "attach_don:OP14-080",
+          "attach_don:OP14-080",
+          "attack:OP14-080",
+          "activate:OP14-080"
+        ]
+      }
+    ],
+    "OP14-080|Gecko Moria|late": [
+      {
+        "log": "Gecko.Moria-BY_x_Krieg-RG_2026-07-01T18.46.59.json",
+        "turn": 9,
+        "context": {
+          "my_life": 1,
+          "opp_life": 2,
+          "my_hand": 7,
+          "opp_hand": 5,
+          "my_board": 2,
+          "opp_board": 5,
+          "my_trash": 3,
+          "opp_trash": 1
+        },
+        "sequence": [
+          "attach_don:OP16-107",
+          "attach_don:OP16-107",
+          "attack:OP16-107",
+          "attach_don:OP14-080",
+          "attack:OP14-080",
+          "activate:OP14-080",
+          "play:PRB02-013",
+          "activate:OP15-113",
+          "attack:OP06-090"
+        ]
+      }
+    ],
+    "OP14-080|Gecko Moria|mid": [
+      {
+        "log": "Gecko.Moria-BY_x_Krieg-RG_2026-07-01T18.46.59.json",
+        "turn": 5,
+        "context": {
+          "my_life": 5,
+          "opp_life": 3,
+          "my_hand": 3,
+          "opp_hand": 6,
+          "my_board": 0,
+          "opp_board": 2,
+          "my_trash": 3,
+          "opp_trash": 0
+        },
+        "sequence": [
+          "attach_don:OP14-080",
+          "attach_don:OP14-080",
+          "attach_don:OP14-080",
+          "attach_don:OP14-080",
+          "attack:OP14-080"
+        ]
+      },
+      {
+        "log": "Gecko.Moria-BY_x_Krieg-RG_2026-07-01T18.46.59.json",
+        "turn": 7,
+        "context": {
+          "my_life": 4,
+          "opp_life": 2,
+          "my_hand": 5,
+          "opp_hand": 6,
+          "my_board": 0,
+          "opp_board": 4,
+          "my_trash": 5,
+          "opp_trash": 0
+        },
+        "sequence": [
+          "play:PRB02-013",
+          "attach_don:OP14-080",
+          "attack:OP14-080"
+        ]
+      }
+    ],
+    "OP15-001|Krieg|early": [
+      {
+        "log": "Gecko.Moria-BY_x_Krieg-RG_2026-07-01T18.46.59.json",
+        "turn": 2,
+        "context": {
+          "my_life": 4,
+          "opp_life": 4,
+          "my_hand": 5,
+          "opp_hand": 5,
+          "my_board": 0,
+          "opp_board": 0,
+          "my_trash": 0,
+          "opp_trash": 0
+        },
+        "sequence": [
+          "play:OP15-009",
+          "attach_don:OP15-001"
+        ]
+      }
+    ],
+    "OP15-001|Krieg|mid": [
+      {
+        "log": "Gecko.Moria-BY_x_Krieg-RG_2026-07-01T18.46.59.json",
+        "turn": 4,
+        "context": {
+          "my_life": 3,
+          "opp_life": 5,
+          "my_hand": 6,
+          "opp_hand": 3,
+          "my_board": 1,
+          "opp_board": 0,
+          "my_trash": 0,
+          "opp_trash": 3
+        },
+        "sequence": [
+          "play:OP15-023"
+        ]
+      },
+      {
+        "log": "Gecko.Moria-BY_x_Krieg-RG_2026-07-01T18.46.59.json",
+        "turn": 6,
+        "context": {
+          "my_life": 2,
+          "opp_life": 5,
+          "my_hand": 7,
+          "opp_hand": 4,
+          "my_board": 2,
+          "opp_board": 0,
+          "my_trash": 0,
+          "opp_trash": 3
+        },
+        "sequence": [
+          "play:OP15-007",
+          "attack:OP15-023",
+          "attack:OP15-001"
+        ]
+      },
+      {
+        "log": "Gecko.Moria-BY_x_Krieg-RG_2026-07-01T18.46.59.json",
+        "turn": 8,
+        "context": {
+          "my_life": 2,
+          "opp_life": 4,
+          "my_hand": 5,
+          "opp_hand": 5,
+          "my_board": 4,
+          "opp_board": 2,
+          "my_trash": 1,
+          "opp_trash": 4
+        },
+        "sequence": [
+          "play:OP15-008",
+          "activate:OP15-017",
+          "activate:OP15-023",
+          "activate:OP15-001",
+          "attack:OP15-017",
+          "attack:OP15-023",
+          "attack:OP15-001",
+          "attack:OP15-007",
+          "attack:OP15-008"
+        ]
+      }
+    ],
+    "OP15-002|Lucy|early": [
+      {
+        "log": "Marshall.D.Teach-BY_x_Lucy-RB_2026-07-01T12.46.16.json",
+        "turn": 1,
+        "context": {
+          "my_life": 4,
+          "opp_life": 4,
+          "my_hand": 5,
+          "opp_hand": 5,
+          "my_board": 1,
+          "opp_board": 0,
+          "my_trash": 0,
+          "opp_trash": 0
+        },
+        "sequence": [
+          "play:OP15-053"
+        ]
+      },
+      {
+        "log": "Marshall.D.Teach-BY_x_Lucy-RB_2026-07-01T12.46.16.json",
+        "turn": 3,
+        "context": {
+          "my_life": 4,
+          "opp_life": 4,
+          "my_hand": 5,
+          "opp_hand": 4,
+          "my_board": 1,
+          "opp_board": 1,
+          "my_trash": 0,
+          "opp_trash": 0
+        },
+        "sequence": [
+          "attack:OP15-002",
+          "play:OP15-053",
+          "play:OP15-057",
+          "attach_don:OP15-053"
+        ]
+      }
+    ],
+    "OP15-002|Lucy|late": [
+      {
+        "log": "Marshall.D.Teach-BY_x_Lucy-RB_2026-07-01T12.46.16.json",
+        "turn": 9,
+        "context": {
+          "my_life": 2,
+          "opp_life": 3,
+          "my_hand": 10,
+          "opp_hand": 3,
+          "my_board": 1,
+          "opp_board": 3,
+          "my_trash": 3,
+          "opp_trash": 6
+        },
+        "sequence": [
+          "play:OP15-046",
+          "activate:OP15-020",
+          "activate:OP15-002",
+          "attack:OP15-002",
+          "play:OP15-040",
+          "attach_don:OP15-053"
+        ]
+      },
+      {
+        "log": "Marshall.D.Teach-BY_x_Lucy-RB_2026-07-01T12.46.16.json",
+        "turn": 11,
+        "context": {
+          "my_life": 1,
+          "opp_life": 2,
+          "my_hand": 9,
+          "opp_hand": 3,
+          "my_board": 2,
+          "opp_board": 4,
+          "my_trash": 7,
+          "opp_trash": 12
+        },
+        "sequence": [
+          "play:OP15-040",
+          "activate:OP15-020",
+          "activate:OP15-002",
+          "activate:OP05-019",
+          "attack:OP15-002"
+        ]
+      },
+      {
+        "log": "Marshall.D.Teach-BY_x_Lucy-RB_2026-07-01T12.46.16.json",
+        "turn": 13,
+        "context": {
+          "my_life": 0,
+          "opp_life": 1,
+          "my_hand": 9,
+          "opp_hand": 3,
+          "my_board": 3,
+          "opp_board": 4,
+          "my_trash": 10,
+          "opp_trash": 15
+        },
+        "sequence": [
+          "play:OP05-015",
+          "activate:OP15-021",
+          "activate:OP05-019",
+          "activate:OP10-060",
+          "activate:OP15-002",
+          "attack:OP15-002",
+          "activate:OP10-059"
+        ]
+      },
+      {
+        "log": "Marshall.D.Teach-BY_x_Lucy-RB_2026-07-01T12.46.16.json",
+        "turn": 15,
+        "context": {
+          "my_life": 0,
+          "opp_life": 2,
+          "my_hand": 8,
+          "opp_hand": 3,
+          "my_board": 2,
+          "opp_board": 4,
+          "my_trash": 16,
+          "opp_trash": 18
+        },
+        "sequence": [
+          "attack:OP05-015",
+          "play:OP15-046",
+          "activate:OP15-054",
+          "activate:OP15-002",
+          "attach_don:OP15-002",
+          "attach_don:OP15-002",
+          "attack:OP15-002"
+        ]
+      },
+      {
+        "log": "Marshall.D.Teach-BY_x_Lucy-RB_2026-07-01T12.46.16.json",
+        "turn": 17,
+        "context": {
+          "my_life": 0,
+          "opp_life": 2,
+          "my_hand": 6,
+          "opp_hand": 3,
+          "my_board": 4,
+          "opp_board": 3,
+          "my_trash": 20,
+          "opp_trash": 21
+        },
+        "sequence": [
+          "activate:OP15-020",
+          "activate:OP15-002",
+          "attack:OP10-045",
+          "activate:OP10-045",
+          "attack:OP15-002",
+          "attack:OP15-046",
+          "play:OP15-053",
+          "attach_don:OP15-053"
+        ]
+      }
+    ],
+    "OP15-002|Lucy|mid": [
+      {
+        "log": "Marshall.D.Teach-BY_x_Lucy-RB_2026-07-01T12.46.16.json",
+        "turn": 5,
+        "context": {
+          "my_life": 4,
+          "opp_life": 3,
+          "my_hand": 6,
+          "opp_hand": 5,
+          "my_board": 1,
+          "opp_board": 2,
+          "my_trash": 1,
+          "opp_trash": 1
+        },
+        "sequence": [
+          "activate:OP10-060",
+          "attack:OP15-002",
+          "activate:OP15-002"
+        ]
+      },
+      {
+        "log": "Marshall.D.Teach-BY_x_Lucy-RB_2026-07-01T12.46.16.json",
+        "turn": 7,
+        "context": {
+          "my_life": 3,
+          "opp_life": 3,
+          "my_hand": 8,
+          "opp_hand": 3,
+          "my_board": 1,
+          "opp_board": 3,
+          "my_trash": 2,
+          "opp_trash": 3
+        },
+        "sequence": [
+          "activate:OP06-058",
+          "activate:OP15-002",
+          "attack:OP15-002"
+        ]
+      }
+    ],
+    "OP16-080|Marshall D. Teach|early": [
+      {
+        "log": "Marshall.D.Teach-BY_x_Lucy-RB_2026-07-01T12.46.16.json",
+        "turn": 2,
+        "context": {
+          "my_life": 4,
+          "opp_life": 4,
+          "my_hand": 5,
+          "opp_hand": 5,
+          "my_board": 0,
+          "opp_board": 1,
+          "my_trash": 0,
+          "opp_trash": 0
+        },
+        "sequence": [
+          "play:OP09-099",
+          "play:OP16-110"
+        ]
+      }
+    ],
+    "OP16-080|Marshall D. Teach|late": [
+      {
+        "log": "Marshall.D.Teach-BY_x_Lucy-RB_2026-07-01T12.46.16.json",
+        "turn": 10,
+        "context": {
+          "my_life": 2,
+          "opp_life": 2,
+          "my_hand": 5,
+          "opp_hand": 8,
+          "my_board": 2,
+          "opp_board": 3,
+          "my_trash": 8,
+          "opp_trash": 6
+        },
+        "sequence": [
+          "activate:OP09-096",
+          "play:OP16-109",
+          "activate:OP16-116",
+          "activate:OP09-093",
+          "attack:OP16-080"
+        ]
+      },
+      {
+        "log": "Marshall.D.Teach-BY_x_Lucy-RB_2026-07-01T12.46.16.json",
+        "turn": 12,
+        "context": {
+          "my_life": 1,
+          "opp_life": 1,
+          "my_hand": 4,
+          "opp_hand": 9,
+          "my_board": 3,
+          "opp_board": 3,
+          "my_trash": 13,
+          "opp_trash": 9
+        },
+        "sequence": [
+          "activate:OP16-115",
+          "attach_don:OP16-080",
+          "attack:OP16-080",
+          "activate:OP16-116",
+          "activate:OP09-093",
+          "activate:OP09-099"
+        ]
+      },
+      {
+        "log": "Marshall.D.Teach-BY_x_Lucy-RB_2026-07-01T12.46.16.json",
+        "turn": 14,
+        "context": {
+          "my_life": 1,
+          "opp_life": 0,
+          "my_hand": 3,
+          "opp_hand": 8,
+          "my_board": 2,
+          "opp_board": 2,
+          "my_trash": 17,
+          "opp_trash": 16
+        },
+        "sequence": [
+          "play:OP16-119",
+          "play:OP09-095",
+          "attack:OP16-080",
+          "activate:OP09-099"
+        ]
+      },
+      {
+        "log": "Marshall.D.Teach-BY_x_Lucy-RB_2026-07-01T12.46.16.json",
+        "turn": 16,
+        "context": {
+          "my_life": 2,
+          "opp_life": 0,
+          "my_hand": 3,
+          "opp_hand": 8,
+          "my_board": 2,
+          "opp_board": 4,
+          "my_trash": 21,
+          "opp_trash": 18
+        },
+        "sequence": [
+          "play:OP09-093",
+          "attack:OP16-080",
+          "attack:OP16-119"
+        ]
+      },
+      {
+        "log": "Marshall.D.Teach-BY_x_Lucy-RB_2026-07-01T12.46.16.json",
+        "turn": 18,
+        "context": {
+          "my_life": 2,
+          "opp_life": 0,
+          "my_hand": 3,
+          "opp_hand": 8,
+          "my_board": 1,
+          "opp_board": 5,
+          "my_trash": 24,
+          "opp_trash": 22
+        },
+        "sequence": [
+          "activate:OP16-115",
+          "attach_don:OP16-080",
+          "attach_don:OP16-080",
+          "attack:OP16-080",
+          "play:OP16-109",
+          "play:OP16-108"
+        ]
+      }
+    ],
+    "OP16-080|Marshall D. Teach|mid": [
+      {
+        "log": "Marshall.D.Teach-BY_x_Lucy-RB_2026-07-01T12.46.16.json",
+        "turn": 4,
+        "context": {
+          "my_life": 3,
+          "opp_life": 4,
+          "my_hand": 5,
+          "opp_hand": 6,
+          "my_board": 1,
+          "opp_board": 2,
+          "my_trash": 0,
+          "opp_trash": 0
+        },
+        "sequence": [
+          "activate:OP09-099",
+          "attack:OP16-080",
+          "play:OP09-086"
+        ]
+      },
+      {
+        "log": "Marshall.D.Teach-BY_x_Lucy-RB_2026-07-01T12.46.16.json",
+        "turn": 6,
+        "context": {
+          "my_life": 3,
+          "opp_life": 4,
+          "my_hand": 4,
+          "opp_hand": 7,
+          "my_board": 1,
+          "opp_board": 1,
+          "my_trash": 2,
+          "opp_trash": 2
+        },
+        "sequence": [
+          "play:OP16-109",
+          "activate:OP09-099",
+          "play:OP09-086",
+          "attach_don:OP16-080",
+          "attack:OP16-080"
+        ]
+      },
+      {
+        "log": "Marshall.D.Teach-BY_x_Lucy-RB_2026-07-01T12.46.16.json",
+        "turn": 8,
+        "context": {
+          "my_life": 2,
+          "opp_life": 3,
+          "my_hand": 4,
+          "opp_hand": 9,
+          "my_board": 2,
+          "opp_board": 1,
+          "my_trash": 3,
+          "opp_trash": 3
+        },
+        "sequence": [
+          "activate:OP09-096",
+          "play:OP16-108",
+          "attach_don:OP16-080",
+          "attack:OP16-080"
+        ]
+      }
+    ],
+    "ST29-001|Monkey D. Luffy|early": [
+      {
+        "log": "Jinbe-B_x_Monkey.D.Luffy-Y_2026-07-01T19.17.04.json",
+        "turn": 1,
+        "context": {
+          "my_life": 6,
+          "opp_life": 5,
+          "my_hand": 5,
+          "opp_hand": 5,
+          "my_board": 1,
+          "opp_board": 0,
+          "my_trash": 0,
+          "opp_trash": 0
+        },
+        "sequence": [
+          "play:OP13-113"
+        ]
+      },
+      {
+        "log": "Jinbe-B_x_Monkey.D.Luffy-Y_2026-07-01T19.17.04.json",
+        "turn": 3,
+        "context": {
+          "my_life": 6,
+          "opp_life": 5,
+          "my_hand": 5,
+          "opp_hand": 6,
+          "my_board": 1,
+          "opp_board": 2,
+          "my_trash": 0,
+          "opp_trash": 0
+        },
+        "sequence": [
+          "attack:ST29-001",
+          "play:OP16-107"
+        ]
+      }
+    ],
+    "ST29-001|Monkey D. Luffy|late": [
+      {
+        "log": "Jinbe-B_x_Monkey.D.Luffy-Y_2026-07-01T19.17.04.json",
+        "turn": 9,
+        "context": {
+          "my_life": 4,
+          "opp_life": 3,
+          "my_hand": 4,
+          "opp_hand": 5,
+          "my_board": 1,
+          "opp_board": 5,
+          "my_trash": 7,
+          "opp_trash": 5
+        },
+        "sequence": [
+          "play:EB03-053",
+          "attach_don:ST29-001",
+          "attack:ST29-001"
+        ]
+      }
+    ],
+    "ST29-001|Monkey D. Luffy|mid": [
+      {
+        "log": "Jinbe-B_x_Monkey.D.Luffy-Y_2026-07-01T19.17.04.json",
+        "turn": 5,
+        "context": {
+          "my_life": 5,
+          "opp_life": 5,
+          "my_hand": 6,
+          "opp_hand": 5,
+          "my_board": 2,
+          "opp_board": 4,
+          "my_trash": 0,
+          "opp_trash": 1
+        },
+        "sequence": [
+          "attack:OP16-107",
+          "attack:ST29-001",
+          "play:OP08-106"
+        ]
+      },
+      {
+        "log": "Jinbe-B_x_Monkey.D.Luffy-Y_2026-07-01T19.17.04.json",
+        "turn": 7,
+        "context": {
+          "my_life": 4,
+          "opp_life": 4,
+          "my_hand": 4,
+          "opp_hand": 5,
+          "my_board": 2,
+          "opp_board": 4,
+          "my_trash": 4,
+          "opp_trash": 4
+        },
+        "sequence": [
+          "attack:OP08-106",
+          "attack:ST29-001",
+          "play:EB03-055"
+        ]
+      }
+    ]
+  },
+  "heuristic_candidates": [
+    {
+      "type": "sequence_2",
+      "leader": "OP13-079|Imu",
+      "pattern": "attach_don:OP13-080 > attack:OP13-080",
+      "count": 11
+    },
+    {
+      "type": "sequence_2",
+      "leader": "OP13-079|Imu",
+      "pattern": "attack:OP13-080 > activate:OP13-080",
+      "count": 8
+    },
+    {
+      "type": "sequence_3",
+      "leader": "OP13-079|Imu",
+      "pattern": "attach_don:OP13-080 > attack:OP13-080 > activate:OP13-080",
+      "count": 7
+    },
+    {
+      "type": "sequence_2",
+      "leader": "OP14-040|Jinbe",
+      "pattern": "attach_don:OP14-040 > attack:OP14-040",
+      "count": 7
+    },
+    {
+      "type": "sequence_2",
+      "leader": "OP13-079|Imu",
+      "pattern": "activate:OP13-082 > activate:OP13-083",
+      "count": 6
+    },
+    {
+      "type": "sequence_2",
+      "leader": "OP13-079|Imu",
+      "pattern": "activate:OP13-099 > activate:OP13-082",
+      "count": 6
+    },
+    {
+      "type": "sequence_2",
+      "leader": "OP14-040|Jinbe",
+      "pattern": "attach_don:OP14-040 > attach_don:OP14-040",
+      "count": 6
+    },
+    {
+      "type": "sequence_2",
+      "leader": "OP13-079|Imu",
+      "pattern": "activate:OP13-079 > activate:OP13-099",
+      "count": 5
+    },
+    {
+      "type": "sequence_3",
+      "leader": "OP13-079|Imu",
+      "pattern": "activate:OP13-079 > activate:OP13-099 > activate:OP13-082",
+      "count": 5
+    },
+    {
+      "type": "sequence_3",
+      "leader": "OP13-079|Imu",
+      "pattern": "activate:OP13-082 > activate:OP13-083 > attach_don:OP13-080",
+      "count": 5
+    },
+    {
+      "type": "sequence_2",
+      "leader": "OP13-079|Imu",
+      "pattern": "activate:OP13-083 > attach_don:OP13-080",
+      "count": 5
+    },
+    {
+      "type": "sequence_3",
+      "leader": "OP13-079|Imu",
+      "pattern": "activate:OP13-099 > activate:OP13-082 > activate:OP13-083",
+      "count": 5
+    },
+    {
+      "type": "sequence_2",
+      "leader": "OP13-079|Imu",
+      "pattern": "attach_don:OP13-080 > attach_don:OP13-080",
+      "count": 5
+    },
+    {
+      "type": "sequence_2",
+      "leader": "OP13-079|Imu",
+      "pattern": "attach_don:OP13-083 > attack:OP13-083",
+      "count": 5
+    },
+    {
+      "type": "sequence_2",
+      "leader": "OP13-079|Imu",
+      "pattern": "attach_don:OP13-084 > attack:OP13-084",
+      "count": 5
+    },
+    {
+      "type": "sequence_2",
+      "leader": "OP14-080|Gecko Moria",
+      "pattern": "attach_don:OP14-080 > attach_don:OP14-080",
+      "count": 5
+    },
+    {
+      "type": "sequence_2",
+      "leader": "OP11-041|Nami",
+      "pattern": "attach_don:OP11-041 > attack:OP11-041",
+      "count": 4
+    },
+    {
+      "type": "sequence_2",
+      "leader": "OP13-079|Imu",
+      "pattern": "attach_don:OP13-079 > attack:OP13-079",
+      "count": 4
+    },
+    {
+      "type": "sequence_3",
+      "leader": "OP13-079|Imu",
+      "pattern": "attach_don:OP13-080 > attach_don:OP13-080 > attack:OP13-080",
+      "count": 4
+    },
+    {
+      "type": "sequence_2",
+      "leader": "OP13-079|Imu",
+      "pattern": "attach_don:OP16-093 > attack:OP16-093",
+      "count": 4
+    },
+    {
+      "type": "sequence_2",
+      "leader": "OP14-080|Gecko Moria",
+      "pattern": "attach_don:OP14-080 > attack:OP14-080",
+      "count": 4
+    },
+    {
+      "type": "sequence_2",
+      "leader": "OP15-002|Lucy",
+      "pattern": "activate:OP15-002 > attack:OP15-002",
+      "count": 4
+    },
+    {
+      "type": "sequence_2",
+      "leader": "OP15-002|Lucy",
+      "pattern": "activate:OP15-020 > activate:OP15-002",
+      "count": 4
+    },
+    {
+      "type": "sequence_2",
+      "leader": "OP16-080|Marshall D. Teach",
+      "pattern": "attach_don:OP16-080 > attack:OP16-080",
+      "count": 4
+    },
+    {
+      "type": "sequence_2",
+      "leader": "OP05-041|Sakazuki",
+      "pattern": "activate:OP05-041 > attack:OP05-041",
+      "count": 3
+    },
+    {
+      "type": "sequence_2",
+      "leader": "OP11-040|Monkey D. Luffy",
+      "pattern": "attach_don:OP11-040 > attack:OP11-040",
+      "count": 3
+    },
+    {
+      "type": "sequence_2",
+      "leader": "OP11-041|Nami",
+      "pattern": "attack:OP11-041 > attack:EB03-055",
+      "count": 3
+    },
+    {
+      "type": "sequence_2",
+      "leader": "OP13-002|Portgas D. Ace",
+      "pattern": "attach_don:OP13-002 > attack:OP13-002",
+      "count": 3
+    },
+    {
+      "type": "sequence_2",
+      "leader": "OP13-079|Imu",
+      "pattern": "activate:OP13-080 > attach_don:OP13-083",
+      "count": 3
+    },
+    {
+      "type": "sequence_3",
+      "leader": "OP13-079|Imu",
+      "pattern": "activate:OP13-083 > attach_don:OP13-080 > attack:OP13-080",
+      "count": 3
+    },
+    {
+      "type": "sequence_3",
+      "leader": "OP13-079|Imu",
+      "pattern": "attach_don:OP13-084 > attack:OP13-084 > activate:OP13-079",
+      "count": 3
+    },
+    {
+      "type": "sequence_3",
+      "leader": "OP13-079|Imu",
+      "pattern": "attack:OP13-080 > activate:OP13-080 > attach_don:OP13-083",
+      "count": 3
+    },
+    {
+      "type": "sequence_2",
+      "leader": "OP13-079|Imu",
+      "pattern": "attack:OP13-083 > attach_don:OP13-084",
+      "count": 3
+    },
+    {
+      "type": "sequence_3",
+      "leader": "OP13-079|Imu",
+      "pattern": "attack:OP13-083 > attach_don:OP13-084 > attack:OP13-084",
+      "count": 3
+    },
+    {
+      "type": "sequence_2",
+      "leader": "OP13-079|Imu",
+      "pattern": "attack:OP13-084 > activate:OP13-079",
+      "count": 3
+    },
+    {
+      "type": "sequence_3",
+      "leader": "OP13-079|Imu",
+      "pattern": "attack:OP13-084 > activate:OP13-079 > activate:OP13-099",
+      "count": 3
+    },
+    {
+      "type": "sequence_2",
+      "leader": "OP14-040|Jinbe",
+      "pattern": "activate:OP14-040 > attack:OP14-040",
+      "count": 3
+    },
+    {
+      "type": "sequence_3",
+      "leader": "OP14-040|Jinbe",
+      "pattern": "attach_don:OP14-040 > attach_don:OP14-040 > attach_don:OP14-040",
+      "count": 3
+    },
+    {
+      "type": "sequence_3",
+      "leader": "OP14-080|Gecko Moria",
+      "pattern": "attach_don:OP14-080 > attach_don:OP14-080 > attach_don:OP14-080",
+      "count": 3
+    },
+    {
+      "type": "sequence_2",
+      "leader": "OP15-002|Lucy",
+      "pattern": "attack:OP10-045 > activate:OP10-045",
+      "count": 3
+    },
+    {
+      "type": "sequence_2",
+      "leader": "OP11-040|Monkey D. Luffy",
+      "pattern": "activate:OP11-040 > play:OP06-119",
+      "count": 2
+    },
+    {
+      "type": "sequence_3",
+      "leader": "OP11-040|Monkey D. Luffy",
+      "pattern": "activate:OP11-040 > play:OP06-119 > activate:P-107",
+      "count": 2
+    },
+    {
+      "type": "sequence_2",
+      "leader": "OP11-040|Monkey D. Luffy",
+      "pattern": "attach_don:P-107 > attack:P-107",
+      "count": 2
+    },
+    {
+      "type": "sequence_2",
+      "leader": "OP11-040|Monkey D. Luffy",
+      "pattern": "attack:OP11-040 > attack:OP06-119",
+      "count": 2
+    },
+    {
+      "type": "sequence_2",
+      "leader": "OP11-040|Monkey D. Luffy",
+      "pattern": "play:OP06-119 > activate:P-107",
+      "count": 2
+    },
+    {
+      "type": "sequence_2",
+      "leader": "OP11-041|Nami",
+      "pattern": "attack:EB03-055 > attack:OP13-042",
+      "count": 2
+    },
+    {
+      "type": "sequence_3",
+      "leader": "OP11-041|Nami",
+      "pattern": "attack:OP11-041 > attack:EB03-055 > attack:OP13-042",
+      "count": 2
+    },
+    {
+      "type": "sequence_2",
+      "leader": "OP11-041|Nami",
+      "pattern": "attack:OP13-042 > attack:OP13-042",
+      "count": 2
+    },
+    {
+      "type": "sequence_2",
+      "leader": "OP11-041|Nami",
+      "pattern": "play:OP13-042 > attack:OP11-041",
+      "count": 2
+    },
+    {
+      "type": "before_attack",
+      "leader": "OP11-041|Nami",
+      "pattern": "play:OP13-042 > attack:OP11-041",
+      "count": 2
+    },
+    {
+      "type": "sequence_3",
+      "leader": "OP11-041|Nami",
+      "pattern": "play:OP13-042 > attack:OP11-041 > attack:EB03-055",
+      "count": 2
+    },
+    {
+      "type": "sequence_2",
+      "leader": "OP13-002|Portgas D. Ace",
+      "pattern": "attach_don:OP13-002 > attach_don:OP13-002",
+      "count": 2
+    },
+    {
+      "type": "sequence_3",
+      "leader": "OP13-002|Portgas D. Ace",
+      "pattern": "attach_don:OP13-002 > attach_don:OP13-002 > attack:OP13-002",
+      "count": 2
+    },
+    {
+      "type": "sequence_2",
+      "leader": "OP13-002|Portgas D. Ace",
+      "pattern": "play:EB04-007 > attach_don:OP13-002",
+      "count": 2
+    },
+    {
+      "type": "sequence_2",
+      "leader": "OP13-002|Portgas D. Ace",
+      "pattern": "play:ST22-002 > play:EB04-007",
+      "count": 2
+    },
+    {
+      "type": "sequence_2",
+      "leader": "OP13-079|Imu",
+      "pattern": "activate:OP13-079 > attach_don:OP16-093",
+      "count": 2
+    },
+    {
+      "type": "sequence_3",
+      "leader": "OP13-079|Imu",
+      "pattern": "activate:OP13-080 > attach_don:OP13-083 > attack:OP13-083",
+      "count": 2
+    },
+    {
+      "type": "sequence_2",
+      "leader": "OP13-079|Imu",
+      "pattern": "activate:OP13-080 > attack:OP13-079",
+      "count": 2
+    },
+    {
+      "type": "sequence_3",
+      "leader": "OP13-079|Imu",
+      "pattern": "activate:OP13-083 > attach_don:OP13-080 > attach_don:OP13-080",
+      "count": 2
+    },
+    {
+      "type": "sequence_2",
+      "leader": "OP13-079|Imu",
+      "pattern": "activate:OP13-083 > attach_don:OP16-093",
+      "count": 2
+    },
+    {
+      "type": "sequence_2",
+      "leader": "OP13-079|Imu",
+      "pattern": "activate:OP13-099 > activate:OP13-079",
+      "count": 2
+    },
+    {
+      "type": "sequence_2",
+      "leader": "OP13-079|Imu",
+      "pattern": "activate:OP13-099 > activate:OP13-083",
+      "count": 2
+    },
+    {
+      "type": "sequence_3",
+      "leader": "OP13-079|Imu",
+      "pattern": "activate:OP13-099 > activate:OP13-083 > attach_don:OP16-093",
+      "count": 2
+    },
+    {
+      "type": "sequence_3",
+      "leader": "OP13-079|Imu",
+      "pattern": "attach_don:OP13-083 > attack:OP13-083 > activate:OP13-079",
+      "count": 2
+    },
+    {
+      "type": "sequence_3",
+      "leader": "OP13-079|Imu",
+      "pattern": "attach_don:OP13-083 > attack:OP13-083 > attach_don:OP13-084",
+      "count": 2
+    },
+    {
+      "type": "sequence_2",
+      "leader": "OP13-079|Imu",
+      "pattern": "attach_don:OP13-091 > attack:OP13-091",
+      "count": 2
+    },
+    {
+      "type": "sequence_2",
+      "leader": "OP13-079|Imu",
+      "pattern": "attach_don:OP16-093 > attach_don:OP16-093",
+      "count": 2
+    },
+    {
+      "type": "sequence_3",
+      "leader": "OP13-079|Imu",
+      "pattern": "attach_don:OP16-093 > attach_don:OP16-093 > attack:OP16-093",
+      "count": 2
+    },
+    {
+      "type": "sequence_2",
+      "leader": "OP13-079|Imu",
+      "pattern": "attack:OP13-079 > activate:OP13-079",
+      "count": 2
+    },
+    {
+      "type": "sequence_2",
+      "leader": "OP13-079|Imu",
+      "pattern": "attack:OP13-079 > attach_don:OP13-080",
+      "count": 2
+    },
+    {
+      "type": "sequence_3",
+      "leader": "OP13-079|Imu",
+      "pattern": "attack:OP13-079 > attach_don:OP13-080 > attack:OP13-080",
+      "count": 2
+    },
+    {
+      "type": "sequence_3",
+      "leader": "OP13-079|Imu",
+      "pattern": "attack:OP13-080 > activate:OP13-080 > attack:OP13-079",
+      "count": 2
+    },
+    {
+      "type": "sequence_2",
+      "leader": "OP13-079|Imu",
+      "pattern": "attack:OP13-083 > activate:OP13-079",
+      "count": 2
+    },
+    {
+      "type": "sequence_3",
+      "leader": "OP13-079|Imu",
+      "pattern": "attack:OP13-083 > activate:OP13-079 > activate:OP13-099",
+      "count": 2
+    },
+    {
+      "type": "sequence_2",
+      "leader": "OP13-079|Imu",
+      "pattern": "attack:OP13-084 > activate:OP13-099",
+      "count": 2
+    },
+    {
+      "type": "sequence_2",
+      "leader": "OP13-079|Imu",
+      "pattern": "play:OP16-093 > attack:OP13-079",
+      "count": 2
+    },
+    {
+      "type": "before_attack",
+      "leader": "OP13-079|Imu",
+      "pattern": "play:OP16-093 > attack:OP13-079",
+      "count": 2
+    },
+    {
+      "type": "sequence_2",
+      "leader": "OP14-040|Jinbe",
+      "pattern": "attach_don:OP07-046 > attach_don:OP07-046",
+      "count": 2
+    },
+    {
+      "type": "sequence_2",
+      "leader": "OP14-040|Jinbe",
+      "pattern": "attach_don:OP14-040 > activate:OP14-040",
+      "count": 2
+    },
+    {
+      "type": "sequence_3",
+      "leader": "OP14-040|Jinbe",
+      "pattern": "attach_don:OP14-040 > activate:OP14-040 > attack:OP14-040",
+      "count": 2
+    }
+  ],
+  "card_names": {
+    "EB01-023": "",
+    "EB03-055": "",
+    "EB04-007": "",
+    "OP05-019": "",
+    "OP05-041": "",
+    "OP06-119": "",
+    "OP07-045": "",
+    "OP07-046": "",
+    "OP07-051": "",
+    "OP09-093": "",
+    "OP10-045": "",
+    "OP10-060": "",
+    "OP11-040": "",
+    "OP11-041": "",
+    "OP13-002": "",
+    "OP13-042": "",
+    "OP13-079": "",
+    "OP13-080": "",
+    "OP13-082": "",
+    "OP13-083": "",
+    "OP13-084": "",
+    "OP13-091": "",
+    "OP13-099": "",
+    "OP14-040": "",
+    "OP14-042": "",
+    "OP14-049": "",
+    "OP14-080": "",
+    "OP15-001": "",
+    "OP15-002": "",
+    "OP15-020": "",
+    "OP15-023": "",
+    "OP15-053": "",
+    "OP16-080": "",
+    "OP16-093": "",
+    "OP16-115": "",
+    "OP16-116": "",
+    "P-107": "",
+    "ST22-002": ""
+  }
+}

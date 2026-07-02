@@ -1,0 +1,71 @@
+{
+  "cards": [
+    {
+      "code": "ST17-002",
+      "name": "Trafalgar Law",
+      "count": 3
+    },
+    {
+      "code": "OP07-045",
+      "name": "Jinbe",
+      "count": 3
+    },
+    {
+      "code": "OP14-042",
+      "name": "Arlong",
+      "count": 2
+    },
+    {
+      "code": "OP07-046",
+      "name": "Sengoku",
+      "count": 2
+    },
+    {
+      "code": "EB01-023",
+      "name": "EB01-023",
+      "count": 2
+    },
+    {
+      "code": "OP07-051",
+      "name": "Boa Hancock",
+      "count": 2
+    },
+    {
+      "code": "OP14-049",
+      "name": "Jinbe",
+      "count": 2
+    },
+    {
+      "code": "OP14-046",
+      "name": "OP14-046",
+      "count": 1
+    },
+    {
+      "code": "OP07-057",
+      "name": "Perfume Femur",
+      "count": 1
+    },
+    {
+      "code": "OP06-058",
+      "name": "Gravity Blade Raging Tiger",
+      "count": 1
+    },
+    {
+      "code": "OP07-040",
+      "name": "Crocodile",
+      "count": 1
+    },
+    {
+      "code": "OP14-050",
+      "name": "Chew",
+      "count": 1
+    },
+    {
+      "code": "OP15-047",
+      "name": "Sanji",
+      "count": 1
+    }
+  ],
+  "total_seen": 22,
+  "leader": "OP14-040"
+}

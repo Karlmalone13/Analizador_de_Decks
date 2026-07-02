@@ -96,9 +96,13 @@ def summarize(entries: list[dict], examples_limit: int):
                 and ctx.get('field', 0) <= 1):
             early_activates.append(e)
 
+        chosen_wins = chosen.get('simulated_wins')
+        chosen_samples = chosen.get('simulated_samples')
         if (chosen.get('kind') == 'attack'
+                and chosen.get('target_type') == 'leader'
                 and ctx.get('opp_life') == 0
-                and not ctx.get('can_lethal')):
+                and not ctx.get('can_lethal')
+                and (not chosen_samples or chosen_wins == 0)):
             nonlethal_zero_life_attacks.append(e)
 
     overrides.sort(key=lambda x: x[0], reverse=True)

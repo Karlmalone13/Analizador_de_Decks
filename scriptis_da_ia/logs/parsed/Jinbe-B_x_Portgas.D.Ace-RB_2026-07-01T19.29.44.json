@@ -1,0 +1,1074 @@
+{
+  "meta": {
+    "players": {
+      "p1": {
+        "name": "BigRato#5650",
+        "leader": {
+          "name": "Jinbe",
+          "code": "OP14-040"
+        }
+      },
+      "p2": {
+        "name": "Metalbeard#6700",
+        "leader": {
+          "name": "Portgas D. Ace",
+          "code": "OP13-002"
+        }
+      }
+    },
+    "goes_first": null
+  },
+  "total_turns": 12,
+  "turns": [
+    {
+      "turn": 1,
+      "player": "BigRato#5650",
+      "card_drawn": null,
+      "don_drawn": 1,
+      "actions": [],
+      "snapshot": {
+        "BigRato#5650": {
+          "hand": [
+            "OP15-052",
+            "EB01-023",
+            "OP07-045",
+            "OP08-047",
+            "OP07-040"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 5
+        },
+        "Metalbeard#6700": {
+          "hand": [
+            "OP13-043",
+            "OP08-047",
+            "OP16-010",
+            "ST22-015",
+            "EB04-007"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 2,
+      "player": "Metalbeard#6700",
+      "card_drawn": {
+        "name": "Roronoa Zoro",
+        "code": "EB04-007"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP13-043",
+          "card_name": "Otama",
+          "effects": [
+            "Draw 2 Card",
+            "Trash I Am Whitebeard! [\"ST22-015\">ST22-015]"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP13-002",
+          "to_name": "Portgas D. Ace",
+          "total": 1
+        }
+      ],
+      "snapshot": {
+        "BigRato#5650": {
+          "hand": [
+            "OP15-052",
+            "EB01-023",
+            "OP07-045",
+            "OP08-047",
+            "OP07-040"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 5
+        },
+        "Metalbeard#6700": {
+          "hand": [
+            "OP08-047",
+            "OP16-010",
+            "EB04-007",
+            "ST22-002",
+            "ST22-015",
+            "EB04-007"
+          ],
+          "trash": [
+            "ST22-015"
+          ],
+          "board": [
+            "OP13-043"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 3,
+      "player": "BigRato#5650",
+      "card_drawn": {
+        "name": "Jozu",
+        "code": "OP08-047"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP14-040",
+          "to_name": "Jinbe",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP14-040",
+          "to_name": "Jinbe",
+          "total": 2
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP14-040",
+          "to_name": "Jinbe",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Jinbe",
+          "attacker_code": "OP14-040",
+          "target": "Portgas D. Ace [\"OP13-002\">OP13-002]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "BigRato#5650": {
+          "hand": [
+            "OP15-052",
+            "EB01-023",
+            "OP07-045",
+            "OP08-047",
+            "OP07-040",
+            "OP08-047"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 5
+        },
+        "Metalbeard#6700": {
+          "hand": [
+            "OP08-047",
+            "OP16-010",
+            "EB04-007",
+            "ST22-002",
+            "ST22-015",
+            "EB04-007",
+            "PRB02-008",
+            "PRB02-008"
+          ],
+          "trash": [
+            "ST22-015"
+          ],
+          "board": [
+            "OP13-043"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 4,
+      "player": "Metalbeard#6700",
+      "card_drawn": {
+        "name": "Curiel",
+        "code": "OP16-004"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Portgas D. Ace",
+          "attacker_code": "OP13-002",
+          "target": "Jinbe [\"OP14-040\">OP14-040]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "PRB02-008",
+          "card_name": "Marco",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "BigRato#5650": {
+          "hand": [
+            "OP15-052",
+            "EB01-023",
+            "OP07-045",
+            "OP08-047",
+            "OP07-040",
+            "OP08-047",
+            "OP14-046"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 4
+        },
+        "Metalbeard#6700": {
+          "hand": [
+            "OP08-047",
+            "OP16-010",
+            "EB04-007",
+            "ST22-002",
+            "ST22-015",
+            "EB04-007",
+            "PRB02-008",
+            "OP16-004"
+          ],
+          "trash": [
+            "ST22-015"
+          ],
+          "board": [
+            "OP13-043",
+            "PRB02-008"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 5,
+      "player": "BigRato#5650",
+      "card_drawn": {
+        "name": "Crocodile",
+        "code": "OP07-040"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP07-045",
+          "card_name": "Jinbe",
+          "effects": [
+            "Deploy Edward Weevil [\"EB01-023\">EB01-023]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "EB01-023",
+          "card_name": "Edward Weevil",
+          "effects": [
+            "Draw 1 Card"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP14-040",
+          "to_name": "Jinbe",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Jinbe",
+          "attacker_code": "OP14-040",
+          "target": "Portgas D. Ace [\"OP13-002\">OP13-002]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "BigRato#5650": {
+          "hand": [
+            "OP15-052",
+            "OP08-047",
+            "OP07-040",
+            "OP08-047",
+            "OP14-046",
+            "OP14-046",
+            "OP07-040"
+          ],
+          "board": [
+            "OP07-045",
+            "EB01-023"
+          ],
+          "trash": [],
+          "life": 4
+        },
+        "Metalbeard#6700": {
+          "hand": [
+            "OP08-047",
+            "OP16-010",
+            "EB04-007",
+            "ST22-002",
+            "ST22-015",
+            "EB04-007",
+            "OP16-004"
+          ],
+          "trash": [
+            "ST22-015",
+            "PRB02-008"
+          ],
+          "board": [
+            "OP13-043",
+            "PRB02-008"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 6,
+      "player": "Metalbeard#6700",
+      "card_drawn": {
+        "name": "Boa Hancock",
+        "code": "OP07-051"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Marco",
+          "attacker_code": "PRB02-008",
+          "target": "Jinbe [\"OP14-040\">OP14-040]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP07-040"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Portgas D. Ace",
+          "attacker_code": "OP13-002",
+          "target": "Jinbe [\"OP14-040\">OP14-040]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP14-046"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP08-047",
+          "card_name": "Jozu",
+          "effects": [
+            "Return Otama [\"OP13-043\">OP13-043] to Hand",
+            "Send Edward Weevil [\"EB01-023\">EB01-023] to Hand"
+          ]
+        }
+      ],
+      "snapshot": {
+        "BigRato#5650": {
+          "hand": [
+            "OP15-052",
+            "OP08-047",
+            "OP07-040",
+            "OP08-047",
+            "OP14-046",
+            "EB01-023"
+          ],
+          "board": [
+            "OP07-045"
+          ],
+          "trash": [
+            "OP07-040",
+            "OP14-046"
+          ],
+          "life": 4
+        },
+        "Metalbeard#6700": {
+          "hand": [
+            "OP16-010",
+            "EB04-007",
+            "ST22-002",
+            "ST22-015",
+            "EB04-007",
+            "OP16-004",
+            "OP07-051",
+            "OP13-043"
+          ],
+          "trash": [
+            "ST22-015",
+            "PRB02-008"
+          ],
+          "board": [
+            "PRB02-008",
+            "OP08-047"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 7,
+      "player": "BigRato#5650",
+      "card_drawn": {
+        "name": "Trafalgar Law",
+        "code": "ST17-002"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP15-052",
+          "card_name": "Leo",
+          "effects": []
+        },
+        {
+          "type": "play",
+          "card": "ST17-002",
+          "card_name": "Trafalgar Law",
+          "effects": [
+            "Return Leo [\"OP15-052\">OP15-052] to Hand",
+            "Send Marco [\"PRB02-008\">PRB02-008] to Hand"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP15-052",
+          "card_name": "Leo",
+          "effects": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP14-040",
+          "to_name": "Jinbe",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Jinbe",
+          "attacker_code": "OP14-040",
+          "target": "Portgas D. Ace [\"OP13-002\">OP13-002]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "BigRato#5650": {
+          "hand": [
+            "OP08-047",
+            "OP07-040",
+            "OP08-047",
+            "OP14-046",
+            "EB01-023"
+          ],
+          "board": [
+            "OP07-045",
+            "ST17-002",
+            "OP15-052"
+          ],
+          "trash": [
+            "OP07-040",
+            "OP14-046"
+          ],
+          "life": 4
+        },
+        "Metalbeard#6700": {
+          "hand": [
+            "OP16-010",
+            "EB04-007",
+            "ST22-002",
+            "ST22-015",
+            "EB04-007",
+            "OP16-004",
+            "OP07-051",
+            "OP13-043"
+          ],
+          "trash": [
+            "ST22-015",
+            "PRB02-008",
+            "PRB02-008"
+          ],
+          "board": [
+            "OP08-047"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 8,
+      "player": "Metalbeard#6700",
+      "card_drawn": {
+        "name": "Yamato",
+        "code": "OP13-054"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Jozu",
+          "attacker_code": "OP08-047",
+          "target": "Jinbe [\"OP14-040\">OP14-040]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "EB04-007",
+          "card_name": "Roronoa Zoro",
+          "effects": [
+            "Grant Portgas D. Ace [\"OP13-002\">OP13-002] 2000 until opponent's next turn end"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP13-002",
+          "to_name": "Portgas D. Ace",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Portgas D. Ace",
+          "attacker_code": "OP13-002",
+          "target": "Jinbe [\"OP14-040\">OP14-040]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "BigRato#5650": {
+          "hand": [
+            "OP08-047",
+            "OP07-040",
+            "OP08-047",
+            "OP14-046",
+            "EB01-023",
+            "OP07-051",
+            "OP14-049"
+          ],
+          "board": [
+            "OP07-045",
+            "ST17-002",
+            "OP15-052"
+          ],
+          "trash": [
+            "OP07-040",
+            "OP14-046"
+          ],
+          "life": 2
+        },
+        "Metalbeard#6700": {
+          "hand": [
+            "OP16-010",
+            "EB04-007",
+            "ST22-002",
+            "ST22-015",
+            "OP16-004",
+            "OP07-051",
+            "OP13-043",
+            "OP13-054"
+          ],
+          "trash": [
+            "ST22-015",
+            "PRB02-008",
+            "PRB02-008"
+          ],
+          "board": [
+            "OP08-047",
+            "EB04-007"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 9,
+      "player": "BigRato#5650",
+      "card_drawn": {
+        "name": "Gravity Blade Raging Tiger",
+        "code": "OP06-058"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP07-051",
+          "card_name": "Boa Hancock",
+          "effects": [
+            "Roronoa Zoro [\"EB04-007\">EB04-007] can't attack next turn"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP14-040",
+          "to_name": "Jinbe",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP14-040",
+          "to_name": "Jinbe",
+          "total": 2
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP14-040",
+          "to_name": "Jinbe",
+          "total": 3
+        },
+        {
+          "type": "activate",
+          "card": "OP14-040",
+          "card_name": "Jinbe",
+          "effects": [
+            "Trash Edward Weevil [\"EB01-023\">EB01-023]",
+            "Attach 1 Rested Don to Jinbe [\"OP14-040\">OP14-040]",
+            "Attach 1 Rested Don to Jinbe [\"OP14-040\">OP14-040]",
+            "Trash Gravity Blade Raging Tiger [\"OP06-058\">OP06-058]",
+            "Attach 1 Rested Don to Jinbe [\"OP14-040\">OP14-040]",
+            "Attach 1 Rested Don to Jinbe [\"OP14-040\">OP14-040]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Jinbe",
+          "attacker_code": "OP14-040",
+          "target": "Jozu [\"OP08-047\">OP08-047]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "BigRato#5650": {
+          "hand": [
+            "OP08-047",
+            "OP07-040",
+            "OP08-047",
+            "OP14-046",
+            "OP14-049"
+          ],
+          "board": [
+            "OP07-045",
+            "ST17-002",
+            "OP15-052",
+            "OP07-051"
+          ],
+          "trash": [
+            "OP07-040",
+            "OP14-046",
+            "EB01-023",
+            "OP06-058"
+          ],
+          "life": 2
+        },
+        "Metalbeard#6700": {
+          "hand": [
+            "OP16-010",
+            "EB04-007",
+            "ST22-002",
+            "ST22-015",
+            "OP16-004",
+            "OP07-051",
+            "OP13-043",
+            "OP13-054",
+            "OP16-004"
+          ],
+          "trash": [
+            "ST22-015",
+            "PRB02-008",
+            "PRB02-008",
+            "OP08-047"
+          ],
+          "board": [
+            "EB04-007"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 10,
+      "player": "Metalbeard#6700",
+      "card_drawn": {
+        "name": "Yamato",
+        "code": "OP13-054"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "ST22-002",
+          "card_name": "Izou",
+          "effects": [
+            "<b>Reveal and Draw Jozu [\"OP08-047\">OP08-047]</b>"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "EB04-007",
+          "card_name": "Roronoa Zoro",
+          "effects": [
+            "Grant Portgas D. Ace [\"OP13-002\">OP13-002] 2000 until opponent's next turn end"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP13-002",
+          "to_name": "Portgas D. Ace",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP13-002",
+          "to_name": "Portgas D. Ace",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Portgas D. Ace",
+          "attacker_code": "OP13-002",
+          "target": "Jinbe [\"OP14-040\">OP14-040]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "BigRato#5650": {
+          "hand": [
+            "OP08-047",
+            "OP07-040",
+            "OP08-047",
+            "OP14-046",
+            "OP14-049",
+            "OP14-050"
+          ],
+          "board": [
+            "OP07-045",
+            "ST17-002",
+            "OP15-052",
+            "OP07-051"
+          ],
+          "trash": [
+            "OP07-040",
+            "OP14-046",
+            "EB01-023",
+            "OP06-058"
+          ],
+          "life": 1
+        },
+        "Metalbeard#6700": {
+          "hand": [
+            "OP16-010",
+            "ST22-015",
+            "OP16-004",
+            "OP07-051",
+            "OP13-043",
+            "OP13-054",
+            "OP16-004",
+            "OP13-054",
+            "OP08-047"
+          ],
+          "trash": [
+            "ST22-015",
+            "PRB02-008",
+            "PRB02-008",
+            "OP08-047"
+          ],
+          "board": [
+            "EB04-007",
+            "ST22-002",
+            "EB04-007"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 11,
+      "player": "BigRato#5650",
+      "card_drawn": {
+        "name": "Leo",
+        "code": "OP15-052"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP14-049",
+          "card_name": "Jinbe",
+          "effects": [
+            "Rest 2 Don",
+            "Draw 2 Card",
+            "Send Roronoa Zoro [\"EB04-007\">EB04-007] to Hand",
+            "Give Jinbe [\"OP14-049\">OP14-049] Rush",
+            "Give Jinbe [\"OP14-049\">OP14-049] Rush"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Boa Hancock",
+          "attacker_code": "OP07-051",
+          "target": "Portgas D. Ace [\"OP13-002\">OP13-002]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP13-054"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP14-040",
+          "card_name": "Jinbe",
+          "effects": [
+            "Trash Edward Weevil [\"EB01-023\">EB01-023]",
+            "Attach 1 Rested Don to Jinbe [\"OP07-045\">OP07-045]",
+            "Attach 1 Rested Don to Jinbe [\"OP07-045\">OP07-045]",
+            "Trash Chew [\"OP14-050\">OP14-050]",
+            "Attach 1 Rested Don to Jinbe [\"OP07-045\">OP07-045]",
+            "Attach 1 Rested Don to Jinbe [\"OP07-045\">OP07-045]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Jinbe",
+          "attacker_code": "OP07-045",
+          "target": "Portgas D. Ace [\"OP13-002\">OP13-002]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Jinbe",
+          "attacker_code": "OP14-049",
+          "target": "Portgas D. Ace [\"OP13-002\">OP13-002]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP13-043",
+            "OP13-054"
+          ]
+        }
+      ],
+      "snapshot": {
+        "BigRato#5650": {
+          "hand": [
+            "OP08-047",
+            "OP07-040",
+            "OP08-047",
+            "OP14-046",
+            "OP07-046",
+            "OP15-052"
+          ],
+          "board": [
+            "OP07-045",
+            "ST17-002",
+            "OP15-052",
+            "OP07-051",
+            "OP14-049"
+          ],
+          "trash": [
+            "OP07-040",
+            "OP14-046",
+            "EB01-023",
+            "OP06-058",
+            "EB01-023",
+            "OP14-050"
+          ],
+          "life": 1
+        },
+        "Metalbeard#6700": {
+          "hand": [
+            "OP16-010",
+            "OP16-004",
+            "OP16-004",
+            "OP08-047",
+            "EB04-007",
+            "ST22-002"
+          ],
+          "trash": [
+            "ST22-015",
+            "PRB02-008",
+            "PRB02-008",
+            "OP08-047",
+            "ST22-002",
+            "OP13-054",
+            "ST22-015",
+            "OP13-043",
+            "OP13-054"
+          ],
+          "board": [
+            "EB04-007"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 12,
+      "player": "Metalbeard#6700",
+      "card_drawn": {
+        "name": "Jozu",
+        "code": "OP08-047"
+      },
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "play",
+          "card": "ST22-002",
+          "card_name": "Izou",
+          "effects": [
+            "<b>Reveal and Draw Edward Newgate [\"OP13-042\">OP13-042]</b>"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "EB04-007",
+          "card_name": "Roronoa Zoro",
+          "effects": [
+            "Grant Portgas D. Ace [\"OP13-002\">OP13-002] 2000 until opponent's next turn end",
+            "Give Roronoa Zoro [\"EB04-007\">EB04-007] Character Rush"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Roronoa Zoro",
+          "attacker_code": "EB04-007",
+          "target": "Jinbe [\"OP14-040\">OP14-040]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP13-002",
+          "to_name": "Portgas D. Ace",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP13-002",
+          "to_name": "Portgas D. Ace",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Portgas D. Ace",
+          "attacker_code": "OP13-002",
+          "target": "Jinbe [\"OP14-040\">OP14-040]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP07-040",
+            "OP14-046",
+            "OP15-052"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Roronoa Zoro",
+          "attacker_code": "EB04-007",
+          "target": "Boa Hancock [\"OP07-051\">OP07-051]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP07-046",
+            "OP08-047"
+          ]
+        }
+      ],
+      "snapshot": {
+        "BigRato#5650": {
+          "hand": [
+            "OP08-047",
+            "OP15-047"
+          ],
+          "board": [
+            "OP07-045",
+            "ST17-002",
+            "OP15-052",
+            "OP07-051",
+            "OP14-049"
+          ],
+          "trash": [
+            "OP07-040",
+            "OP14-046",
+            "EB01-023",
+            "OP06-058",
+            "EB01-023",
+            "OP14-050",
+            "OP07-040",
+            "OP14-046",
+            "OP15-052",
+            "OP07-046",
+            "OP08-047"
+          ],
+          "life": 0
+        },
+        "Metalbeard#6700": {
+          "hand": [
+            "OP16-010",
+            "OP16-004",
+            "OP16-004",
+            "OP08-047",
+            "OP08-047",
+            "OP13-042"
+          ],
+          "trash": [
+            "ST22-015",
+            "PRB02-008",
+            "PRB02-008",
+            "OP08-047",
+            "ST22-002",
+            "OP13-054",
+            "ST22-015",
+            "OP13-043",
+            "OP13-054"
+          ],
+          "board": [
+            "EB04-007",
+            "ST22-002",
+            "EB04-007"
+          ],
+          "life": 2
+        }
+      }
+    }
+  ]
+}

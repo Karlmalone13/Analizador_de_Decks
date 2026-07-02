@@ -1,0 +1,776 @@
+{
+  "meta": {
+    "players": {
+      "p1": {
+        "name": "BigRato#5650",
+        "leader": {
+          "name": "Gecko Moria",
+          "code": "OP14-080"
+        }
+      },
+      "p2": {
+        "name": "Pefforza#4027",
+        "leader": {
+          "name": "Krieg",
+          "code": "OP15-001"
+        }
+      }
+    },
+    "goes_first": null
+  },
+  "total_turns": 9,
+  "turns": [
+    {
+      "turn": 1,
+      "player": "BigRato#5650",
+      "card_drawn": null,
+      "don_drawn": 1,
+      "actions": [],
+      "snapshot": {
+        "BigRato#5650": {
+          "hand": [
+            "OP16-104",
+            "OP14-110",
+            "OP06-090",
+            "PRB02-013",
+            "OP16-107"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 4
+        },
+        "Pefforza#4027": {
+          "hand": [
+            "OP15-008",
+            "OP15-009",
+            "OP15-028",
+            "OP15-015",
+            "OP15-023"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 2,
+      "player": "Pefforza#4027",
+      "card_drawn": {
+        "name": "Pearl",
+        "code": "OP15-011"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP15-009",
+          "card_name": "Koby",
+          "effects": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP15-001",
+          "to_name": "Krieg",
+          "total": 1
+        }
+      ],
+      "snapshot": {
+        "BigRato#5650": {
+          "hand": [
+            "OP16-104",
+            "OP14-110",
+            "OP06-090",
+            "PRB02-013",
+            "OP16-107"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 4
+        },
+        "Pefforza#4027": {
+          "hand": [
+            "OP15-008",
+            "OP15-028",
+            "OP15-015",
+            "OP15-023",
+            "OP15-011"
+          ],
+          "trash": [],
+          "board": [
+            "OP15-009"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 3,
+      "player": "BigRato#5650",
+      "card_drawn": {
+        "name": "Doctor Hogback",
+        "code": "OP14-110"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP14-080",
+          "to_name": "Gecko Moria",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP14-080",
+          "to_name": "Gecko Moria",
+          "total": 2
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP14-080",
+          "to_name": "Gecko Moria",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Gecko Moria",
+          "attacker_code": "OP14-080",
+          "target": "Krieg [\"OP15-001\">OP15-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP14-080",
+          "card_name": "Gecko Moria",
+          "effects": [
+            "Trash Doctor Hogback [\"OP14-110\">OP14-110]",
+            "Trash Jesus Burgess [\"OP16-107\">OP16-107]",
+            "Trash Doctor Hogback [\"OP14-110\">OP14-110]",
+            "Add card to top of Life from Deck"
+          ]
+        }
+      ],
+      "snapshot": {
+        "BigRato#5650": {
+          "hand": [
+            "OP16-104",
+            "OP06-090",
+            "PRB02-013"
+          ],
+          "board": [],
+          "trash": [
+            "OP14-110",
+            "OP16-107",
+            "OP14-110"
+          ],
+          "life": 5
+        },
+        "Pefforza#4027": {
+          "hand": [
+            "OP15-008",
+            "OP15-028",
+            "OP15-015",
+            "OP15-023",
+            "OP15-011",
+            "OP15-017"
+          ],
+          "trash": [],
+          "board": [
+            "OP15-009"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 4,
+      "player": "Pefforza#4027",
+      "card_drawn": {
+        "name": "Meowban Brothers",
+        "code": "OP15-028"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP15-023",
+          "card_name": "Arlong",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "BigRato#5650": {
+          "hand": [
+            "OP16-104",
+            "OP06-090",
+            "PRB02-013"
+          ],
+          "board": [],
+          "trash": [
+            "OP14-110",
+            "OP16-107",
+            "OP14-110"
+          ],
+          "life": 5
+        },
+        "Pefforza#4027": {
+          "hand": [
+            "OP15-008",
+            "OP15-028",
+            "OP15-015",
+            "OP15-011",
+            "OP15-017",
+            "OP15-028"
+          ],
+          "trash": [],
+          "board": [
+            "OP15-009",
+            "OP15-023"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 5,
+      "player": "BigRato#5650",
+      "card_drawn": {
+        "name": "Catarina Devon",
+        "code": "OP16-104"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP14-080",
+          "to_name": "Gecko Moria",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP14-080",
+          "to_name": "Gecko Moria",
+          "total": 2
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP14-080",
+          "to_name": "Gecko Moria",
+          "total": 3
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP14-080",
+          "to_name": "Gecko Moria",
+          "total": 4
+        },
+        {
+          "type": "attack",
+          "attacker": "Gecko Moria",
+          "attacker_code": "OP14-080",
+          "target": "Krieg [\"OP15-001\">OP15-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "BigRato#5650": {
+          "hand": [
+            "OP16-104",
+            "OP06-090",
+            "PRB02-013",
+            "OP16-104"
+          ],
+          "board": [],
+          "trash": [
+            "OP14-110",
+            "OP16-107",
+            "OP14-110"
+          ],
+          "life": 5
+        },
+        "Pefforza#4027": {
+          "hand": [
+            "OP15-008",
+            "OP15-028",
+            "OP15-015",
+            "OP15-011",
+            "OP15-017",
+            "OP15-028",
+            "OP15-003"
+          ],
+          "trash": [],
+          "board": [
+            "OP15-009",
+            "OP15-023"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 6,
+      "player": "Pefforza#4027",
+      "card_drawn": {
+        "name": "Gin",
+        "code": "OP15-007"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP15-007",
+          "card_name": "Gin",
+          "effects": [
+            "Deploy Morgan [\"OP15-017\">OP15-017]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Arlong",
+          "attacker_code": "OP15-023",
+          "target": "Gecko Moria [\"OP14-080\">OP14-080]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Krieg",
+          "attacker_code": "OP15-001",
+          "target": "Gecko Moria [\"OP14-080\">OP14-080]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP06-090"
+          ]
+        }
+      ],
+      "snapshot": {
+        "BigRato#5650": {
+          "hand": [
+            "OP16-104",
+            "PRB02-013",
+            "OP16-104",
+            "PRB02-013",
+            "OP14-104"
+          ],
+          "board": [],
+          "trash": [
+            "OP14-110",
+            "OP16-107",
+            "OP14-110",
+            "OP16-108",
+            "OP06-090"
+          ],
+          "life": 4
+        },
+        "Pefforza#4027": {
+          "hand": [
+            "OP15-008",
+            "OP15-028",
+            "OP15-015",
+            "OP15-011",
+            "OP15-028",
+            "OP15-003"
+          ],
+          "trash": [],
+          "board": [
+            "OP15-009",
+            "OP15-023",
+            "OP15-007",
+            "OP15-017"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 7,
+      "player": "BigRato#5650",
+      "card_drawn": {
+        "name": "Gecko Moria",
+        "code": "PRB02-013"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "PRB02-013",
+          "card_name": "Gecko Moria",
+          "effects": [
+            "Deployed Jesus Burgess [\"OP16-107\">OP16-107] from Trash",
+            "Attach 1 Rested Don to Gecko Moria [\"OP14-080\">OP14-080]"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP14-080",
+          "to_name": "Gecko Moria",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Gecko Moria",
+          "attacker_code": "OP14-080",
+          "target": "Arlong [\"OP15-023\">OP15-023]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": "OP15-017",
+          "countered_by": [
+            "OP15-015"
+          ]
+        }
+      ],
+      "snapshot": {
+        "BigRato#5650": {
+          "hand": [
+            "OP16-104",
+            "PRB02-013",
+            "OP16-104",
+            "PRB02-013",
+            "OP14-104"
+          ],
+          "board": [
+            "PRB02-013",
+            "OP16-107"
+          ],
+          "trash": [
+            "OP14-110",
+            "OP14-110",
+            "OP16-108",
+            "OP06-090"
+          ],
+          "life": 4
+        },
+        "Pefforza#4027": {
+          "hand": [
+            "OP15-008",
+            "OP15-028",
+            "OP15-011",
+            "OP15-028",
+            "OP15-003"
+          ],
+          "trash": [
+            "OP15-015"
+          ],
+          "board": [
+            "OP15-009",
+            "OP15-023",
+            "OP15-007",
+            "OP15-017"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 8,
+      "player": "Pefforza#4027",
+      "card_drawn": {
+        "name": "Arlong",
+        "code": "OP15-023"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP15-008",
+          "card_name": "Krieg",
+          "effects": [
+            "Attach 1 Rested Don to Gecko Moria [\"PRB02-013\">PRB02-013]",
+            "Attach 1 Rested Don to Gecko Moria [\"PRB02-013\">PRB02-013]",
+            "Attach 1 Rested Don to Gecko Moria [\"PRB02-013\">PRB02-013]",
+            "Give Krieg [\"OP15-008\">OP15-008] Rush",
+            "Buff Gecko Moria [\"PRB02-013\">PRB02-013] -3000",
+            "Buff Jesus Burgess [\"OP16-107\">OP16-107] 0"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP15-017",
+          "card_name": "Morgan",
+          "effects": [
+            "Attach 1 Rested Don to Gecko Moria [\"PRB02-013\">PRB02-013]",
+            "Attach 1 Rested Don to Arlong [\"OP15-023\">OP15-023]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP15-023",
+          "card_name": "Arlong",
+          "effects": [
+            "Attach 1 Rested Don to Gecko Moria [\"PRB02-013\">PRB02-013]",
+            "Attach 1 Rested Don to Krieg [\"OP15-001\">OP15-001]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP15-001",
+          "card_name": "Krieg",
+          "effects": [
+            "Rest Gecko Moria [\"PRB02-013\">PRB02-013]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Morgan",
+          "attacker_code": "OP15-017",
+          "target": "Gecko Moria [\"PRB02-013\">PRB02-013]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Arlong",
+          "attacker_code": "OP15-023",
+          "target": "Gecko Moria [\"OP14-080\">OP14-080]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP16-104"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Krieg",
+          "attacker_code": "OP15-001",
+          "target": "Gecko Moria [\"OP14-080\">OP14-080]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Gin",
+          "attacker_code": "OP15-007",
+          "target": "Gecko Moria [\"OP14-080\">OP14-080]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Krieg",
+          "attacker_code": "OP15-008",
+          "target": "Gecko Moria [\"OP14-080\">OP14-080]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "BigRato#5650": {
+          "hand": [
+            "OP16-104",
+            "PRB02-013",
+            "PRB02-013",
+            "OP14-104",
+            "OP15-113",
+            "EB04-058",
+            "PRB02-013"
+          ],
+          "board": [
+            "OP16-107",
+            "OP06-090"
+          ],
+          "trash": [
+            "OP14-110",
+            "OP14-110",
+            "OP14-110"
+          ],
+          "life": 1
+        },
+        "Pefforza#4027": {
+          "hand": [
+            "OP15-028",
+            "OP15-011",
+            "OP15-028",
+            "OP15-003",
+            "OP15-023"
+          ],
+          "trash": [
+            "OP15-015"
+          ],
+          "board": [
+            "OP15-009",
+            "OP15-023",
+            "OP15-007",
+            "OP15-017",
+            "OP15-008"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 9,
+      "player": "BigRato#5650",
+      "card_drawn": {
+        "name": "Kumacy",
+        "code": "OP14-102"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP16-107",
+          "to_name": "Jesus Burgess",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP16-107",
+          "to_name": "Jesus Burgess",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Jesus Burgess",
+          "attacker_code": "OP16-107",
+          "target": "Arlong [\"OP15-023\">OP15-023]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP15-023"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP14-080",
+          "to_name": "Gecko Moria",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Gecko Moria",
+          "attacker_code": "OP14-080",
+          "target": "Arlong [\"OP15-023\">OP15-023]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP15-028"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP14-080",
+          "card_name": "Gecko Moria",
+          "effects": [
+            "Trash Gecko Moria [\"PRB02-013\">PRB02-013]",
+            "Trash Gecko Moria [\"PRB02-013\">PRB02-013]",
+            "Trash Roronoa Zoro [\"OP15-113\">OP15-113]",
+            "Add card to top of Life from Deck",
+            "Destroy Gecko Moria [\"PRB02-013\">PRB02-013]",
+            "Buff Jesus Burgess [\"OP16-107\">OP16-107] 1000",
+            "Buff Doctor Hogback [\"OP06-090\">OP06-090] 1000",
+            "Buff Gecko Moria [\"PRB02-013\">PRB02-013] 1000",
+            "Buff Roronoa Zoro [\"OP15-113\">OP15-113] 1000",
+            "Buff Gecko Moria [\"OP14-080\">OP14-080] 1000"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "PRB02-013",
+          "card_name": "Gecko Moria",
+          "effects": [
+            "Deployed Roronoa Zoro [\"OP15-113\">OP15-113] from Trash",
+            "Attach 1 Rested Don to Doctor Hogback [\"OP06-090\">OP06-090]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP15-113",
+          "card_name": "Roronoa Zoro",
+          "effects": [
+            "Trash Gecko Moria [\"OP14-104\">OP14-104]",
+            "Add card to top of Life from Deck"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Doctor Hogback",
+          "attacker_code": "OP06-090",
+          "target": "Arlong [\"OP15-023\">OP15-023]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP15-003"
+          ]
+        }
+      ],
+      "snapshot": {
+        "BigRato#5650": {
+          "hand": [
+            "OP16-104",
+            "EB04-058",
+            "OP14-102"
+          ],
+          "board": [
+            "OP16-107",
+            "OP06-090",
+            "OP15-113"
+          ],
+          "trash": [
+            "OP14-110",
+            "OP14-110",
+            "OP14-110",
+            "PRB02-013",
+            "PRB02-013",
+            "OP14-104",
+            "PRB02-013"
+          ],
+          "life": 3
+        },
+        "Pefforza#4027": {
+          "hand": [
+            "OP15-011",
+            "OP15-028"
+          ],
+          "trash": [
+            "OP15-015",
+            "OP15-023",
+            "OP15-028",
+            "OP15-003"
+          ],
+          "board": [
+            "OP15-009",
+            "OP15-023",
+            "OP15-007",
+            "OP15-017",
+            "OP15-008"
+          ],
+          "life": 2
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,451 @@
+Waiting for a Connection with Room ID:MKP777
+BigRato​#5650 Has Connected
+Version is 1.40a.60
+[BigRato​#5650] Leader is Gecko Moria ["OP14-080">OP14-080]
+Pefforza​#4027 Has Connected
+Version is 1.40a.60
+[Pefforza​#4027] Leader is Krieg ["OP15-001">OP15-001]
+[Pefforza​#4027] Chose to go Second
+[Pefforza​#4027] Drew card from deck: The Outcome Will Tell Us Who's Strong and Who's Weak ["OP15-037">OP15-037]
+RZ1|HDR|1.40a|1|RZ1
+RZ1|1|2|OP15-037|0|49|1|0|0|1|0|0|0
+[Pefforza​#4027] Drew card from deck: Koby ["OP15-009">OP15-009]
+RZ1|2|2|OP15-009|0|48|1|1|0|1|0|0|0
+[Pefforza​#4027] Drew card from deck: Morgan ["OP15-017">OP15-017]
+RZ1|3|2|OP15-017|0|47|1|2|0|1|0|0|0
+[Pefforza​#4027] Drew card from deck: Jango ["OP15-026">OP15-026]
+RZ1|4|2|OP15-026|0|46|1|3|0|1|0|0|0
+[Pefforza​#4027] Drew card from deck: Koby ["OP15-009">OP15-009]
+RZ1|5|2|OP15-009|0|45|1|4|0|1|0|0|0
+[BigRato​#5650] Drew card from deck: Catarina Devon ["OP16-104">OP16-104]
+RZ1|6|1|OP16-104|0|49|1|0|1|1|0|0|0
+[BigRato​#5650] Drew card from deck: Doctor Hogback ["OP14-110">OP14-110]
+RZ1|7|1|OP14-110|0|48|1|1|1|1|0|0|0
+[BigRato​#5650] Drew card from deck: Doctor Hogback ["OP06-090">OP06-090]
+RZ1|8|1|OP06-090|0|47|1|2|1|1|0|0|0
+[BigRato​#5650] Drew card from deck: Gecko Moria ["PRB02-013">PRB02-013]
+RZ1|9|1|PRB02-013|0|46|1|3|1|1|0|0|0
+[BigRato​#5650] Drew card from deck: Jesus Burgess ["OP16-107">OP16-107]
+RZ1|10|1|OP16-107|0|45|1|4|1|1|0|0|0
+[BigRato​#5650] Hand before Mulligan: [OP16-104,OP14-110,OP06-090,PRB02-013,OP16-107]
+RZ1|11|2|OP15-037|1|0|0|45|0|0|0|0|0
+RZ1|12|2|OP15-009|1|0|0|46|0|0|0|0|0
+RZ1|13|2|OP15-017|1|0|0|47|0|0|0|0|0
+RZ1|14|2|OP15-026|1|0|0|48|0|0|0|0|0
+RZ1|15|2|OP15-009|1|0|0|49|0|0|0|0|0
+[Pefforza​#4027] Drew card from deck: Krieg ["OP15-008">OP15-008]
+RZ1|16|2|OP15-008|0|49|1|0|0|1|0|0|0
+[Pefforza​#4027] Drew card from deck: Koby ["OP15-009">OP15-009]
+RZ1|17|2|OP15-009|0|48|1|1|0|1|0|0|0
+[Pefforza​#4027] Drew card from deck: Meowban Brothers ["OP15-028">OP15-028]
+RZ1|18|2|OP15-028|0|47|1|2|0|1|0|0|0
+[Pefforza​#4027] Drew card from deck: Higuma ["OP15-015">OP15-015]
+RZ1|19|2|OP15-015|0|46|1|3|0|1|0|0|0
+[Pefforza​#4027] Drew card from deck: Arlong ["OP15-023">OP15-023]
+RZ1|20|2|OP15-023|0|45|1|4|0|1|0|0|0
+[Pefforza​#4027] Mulligan
+[BigRato​#5650] Hand: [OP16-104,OP14-110,OP06-090,PRB02-013,OP16-107]
+[BigRato​#5650] Board: []
+[BigRato​#5650] Trash: []
+[BigRato​#5650] Life: 4
+[Pefforza​#4027] Hand: [OP15-008,OP15-009,OP15-028,OP15-015,OP15-023]
+[Pefforza​#4027] Trash: []
+[Pefforza​#4027] Board: []
+[Pefforza​#4027] Life: 4
+RZ1|21|1|Don|4|9|5|0|1|1|0|0|0
+[BigRato​#5650] Draw 1 Don
+[BigRato​#5650] Hand: [OP16-104,OP14-110,OP06-090,PRB02-013,OP16-107]
+[BigRato​#5650] Board: []
+[BigRato​#5650] Trash: []
+[BigRato​#5650] Life: 4
+[Pefforza​#4027] Hand: [OP15-008,OP15-009,OP15-028,OP15-015,OP15-023]
+[Pefforza​#4027] Trash: []
+[Pefforza​#4027] Board: []
+[Pefforza​#4027] Life: 4
+[BigRato​#5650] End Turn
+[Pefforza​#4027] Draw 1 Card
+[Pefforza​#4027] Drew card from deck: Pearl ["OP15-011">OP15-011]
+RZ1|22|2|OP15-011|0|40|1|5|0|1|0|0|0
+RZ1|23|2|Don|4|9|5|0|1|1|0|0|0
+RZ1|24|2|Don|4|8|5|1|1|1|0|0|0
+[Pefforza​#4027] Draw 2 Don
+RZ1|25|2|Don|5|0|5|0|1|1|1|0|0
+[Pefforza​#4027] Deploy Koby ["OP15-009">OP15-009]
+RZ1|26|2|OP15-009|1|1|2|0|1|1|0|0|0
+[Pefforza​#4027] Attach 1 Don to Krieg ["OP15-001">OP15-001] (1 Total)
+RZ1|27|2|Don|5|1|9|9900|1|1|0|0|0
+[Pefforza​#4027] End Turn
+[BigRato​#5650] Hand: [OP16-104,OP14-110,OP06-090,PRB02-013,OP16-107]
+[BigRato​#5650] Board: []
+[BigRato​#5650] Trash: []
+[BigRato​#5650] Life: 4
+[Pefforza​#4027] Hand: [OP15-008,OP15-028,OP15-015,OP15-023,OP15-011]
+[Pefforza​#4027] Trash: []
+[Pefforza​#4027] Board: [OP15-009]
+[Pefforza​#4027] Life: 4
+[BigRato​#5650] Draw 1 Card
+[BigRato​#5650] Drew card from deck: Doctor Hogback ["OP14-110">OP14-110]
+RZ1|28|1|OP14-110|0|40|1|5|1|1|0|0|0
+RZ1|29|1|Don|4|8|5|1|1|1|0|0|0
+RZ1|30|1|Don|4|7|5|2|1|1|0|0|0
+[BigRato​#5650] Draw 2 Don
+[BigRato​#5650] Attach 1 Don to Gecko Moria ["OP14-080">OP14-080] (1 Total)
+RZ1|31|1|Don|5|2|9|9900|1|1|0|0|0
+[BigRato​#5650] Attach 1 Don to Gecko Moria ["OP14-080">OP14-080] (2 Total)
+RZ1|32|1|Don|5|1|9|9901|1|1|0|0|0
+[BigRato​#5650] Attach 1 Don to Gecko Moria ["OP14-080">OP14-080] (3 Total)
+RZ1|33|1|Don|5|0|9|9902|1|1|0|0|0
+[BigRato​#5650] Gecko Moria ["OP14-080">OP14-080] attacking Krieg ["OP15-001">OP15-001]
+RZ1|34|1|OP14-110|1|5|6|0|1|1|0|0|0
+[BigRato​#5650] Gecko Moria ["OP14-080">OP14-080]: Trash Doctor Hogback ["OP14-110">OP14-110]
+RZ1|35|1|OP16-107|1|4|6|1|1|1|0|0|0
+[BigRato​#5650] Gecko Moria ["OP14-080">OP14-080]: Trash Jesus Burgess ["OP16-107">OP16-107]
+RZ1|36|1|OP14-110|1|1|6|2|1|1|0|0|0
+[BigRato​#5650] Gecko Moria ["OP14-080">OP14-080]: Trash Doctor Hogback ["OP14-110">OP14-110]
+[BigRato​#5650] Gecko Moria ["OP14-080">OP14-080]: Add card to top of Life from Deck
+Gecko Moria ["OP14-080">OP14-080][8000] vs Krieg ["OP15-001">OP15-001][5000]
+Krieg ["OP15-001">OP15-001] hit for 1 damage
+[BigRato​#5650] Hand: [OP16-104,OP06-090,PRB02-013]
+[BigRato​#5650] Board: []
+[BigRato​#5650] Trash: [OP14-110,OP16-107,OP14-110]
+[BigRato​#5650] Life: 5
+[Pefforza​#4027] Hand: [OP15-008,OP15-028,OP15-015,OP15-023,OP15-011,OP15-017]
+[Pefforza​#4027] Trash: []
+[Pefforza​#4027] Board: [OP15-009]
+[Pefforza​#4027] Life: 3
+[BigRato​#5650] End Turn
+RZ1|37|2|Don|9|9900|5|0|1|1|1|0|0
+[Pefforza​#4027] Draw 1 Card
+[Pefforza​#4027] Drew card from deck: Meowban Brothers ["OP15-028">OP15-028]
+RZ1|38|2|OP15-028|0|39|1|6|0|1|0|0|0
+RZ1|39|2|Don|4|7|5|2|1|1|0|0|0
+RZ1|40|2|Don|4|6|5|3|1|1|0|0|0
+[Pefforza​#4027] Draw 2 Don
+RZ1|41|2|Don|5|0|5|0|1|1|1|0|0
+RZ1|42|2|Don|5|1|5|1|1|1|1|0|0
+RZ1|43|2|Don|5|2|5|2|1|1|1|0|0
+RZ1|44|2|Don|5|3|5|3|1|1|1|0|0
+[Pefforza​#4027] Deploy Arlong ["OP15-023">OP15-023]
+RZ1|45|2|OP15-023|1|3|2|1|1|1|0|0|0
+[Pefforza​#4027] End Turn
+[BigRato​#5650] Hand: [OP16-104,OP06-090,PRB02-013]
+[BigRato​#5650] Board: []
+[BigRato​#5650] Trash: [OP14-110,OP16-107,OP14-110]
+[BigRato​#5650] Life: 5
+[Pefforza​#4027] Hand: [OP15-008,OP15-028,OP15-015,OP15-011,OP15-017,OP15-028]
+[Pefforza​#4027] Trash: []
+[Pefforza​#4027] Board: [OP15-009,OP15-023]
+[Pefforza​#4027] Life: 3
+RZ1|46|1|Don|9|9900|5|0|1|1|1|0|0
+RZ1|47|1|Don|9|9900|5|0|1|1|1|0|0
+RZ1|48|1|Don|9|9900|5|0|1|1|1|0|0
+[BigRato​#5650] Draw 1 Card
+[BigRato​#5650] Drew card from deck: Catarina Devon ["OP16-104">OP16-104]
+RZ1|49|1|OP16-104|0|38|1|3|1|1|0|0|0
+RZ1|50|1|Don|4|6|5|3|1|1|0|0|0
+RZ1|51|1|Don|4|5|5|4|1|1|0|0|0
+[BigRato​#5650] Draw 2 Don
+[BigRato​#5650] Attach 1 Don to Gecko Moria ["OP14-080">OP14-080] (1 Total)
+RZ1|52|1|Don|5|4|9|9900|1|1|0|0|0
+[BigRato​#5650] Attach 1 Don to Gecko Moria ["OP14-080">OP14-080] (2 Total)
+RZ1|53|1|Don|5|3|9|9901|1|1|0|0|0
+[BigRato​#5650] Attach 1 Don to Gecko Moria ["OP14-080">OP14-080] (3 Total)
+RZ1|54|1|Don|5|2|9|9902|1|1|0|0|0
+[BigRato​#5650] Attach 1 Don to Gecko Moria ["OP14-080">OP14-080] (4 Total)
+RZ1|55|1|Don|5|1|9|9903|1|1|0|0|0
+[BigRato​#5650] Gecko Moria ["OP14-080">OP14-080] attacking Krieg ["OP15-001">OP15-001]
+Gecko Moria ["OP14-080">OP14-080][9000] vs Krieg ["OP15-001">OP15-001][5000]
+Krieg ["OP15-001">OP15-001] hit for 1 damage
+[BigRato​#5650] Hand: [OP16-104,OP06-090,PRB02-013,OP16-104]
+[BigRato​#5650] Board: []
+[BigRato​#5650] Trash: [OP14-110,OP16-107,OP14-110]
+[BigRato​#5650] Life: 5
+[Pefforza​#4027] Hand: [OP15-008,OP15-028,OP15-015,OP15-011,OP15-017,OP15-028,OP15-003]
+[Pefforza​#4027] Trash: []
+[Pefforza​#4027] Board: [OP15-009,OP15-023]
+[Pefforza​#4027] Life: 2
+[BigRato​#5650] End Turn
+[Pefforza​#4027] Draw 1 Card
+[Pefforza​#4027] Drew card from deck: Gin ["OP15-007">OP15-007]
+RZ1|56|2|OP15-007|0|38|1|7|0|1|0|0|0
+RZ1|57|2|Don|4|5|5|4|1|1|0|0|0
+RZ1|58|2|Don|4|4|5|5|1|1|0|0|0
+[Pefforza​#4027] Draw 2 Don
+RZ1|59|2|Don|5|0|5|0|1|1|1|0|0
+RZ1|60|2|Don|5|1|5|1|1|1|1|0|0
+RZ1|61|2|Don|5|2|5|2|1|1|1|0|0
+RZ1|62|2|Don|5|3|5|3|1|1|1|0|0
+RZ1|63|2|Don|5|4|5|4|1|1|1|0|0
+RZ1|64|2|Don|5|5|5|5|1|1|1|0|0
+[Pefforza​#4027] Deploy Gin ["OP15-007">OP15-007]
+RZ1|65|2|OP15-007|1|7|2|2|1|1|0|0|0
+RZ1|66|2|OP15-017|1|4|2|3|1|1|0|0|0
+[Pefforza​#4027] Gin ["OP15-007">OP15-007]: Deploy Morgan ["OP15-017">OP15-017]
+[Pefforza​#4027] Arlong ["OP15-023">OP15-023] attacking Gecko Moria ["OP14-080">OP14-080]
+Arlong ["OP15-023">OP15-023][5000] vs Gecko Moria ["OP14-080">OP14-080][5000]
+Gecko Moria ["OP14-080">OP14-080] hit for 1 damage
+[BigRato​#5650] Shiryu ["OP16-108">OP16-108]: Activate Trigger
+RZ1|67|1|OP16-108|1|4|6|3|1|1|0|0|0
+[BigRato​#5650] Drew card from deck: Gecko Moria ["PRB02-013">PRB02-013]
+RZ1|68|1|PRB02-013|0|37|1|4|1|1|0|0|0
+[BigRato​#5650] Drew card from deck: Gecko Moria ["OP14-104">OP14-104]
+RZ1|69|1|OP14-104|0|36|1|5|1|1|0|0|0
+[BigRato​#5650] Shiryu ["OP16-108">OP16-108]: Draw 2 Card
+[Pefforza​#4027] Krieg ["OP15-001">OP15-001] attacking Gecko Moria ["OP14-080">OP14-080]
+[BigRato​#5650] Discard Doctor Hogback ["OP06-090">OP06-090] for Counter 1000
+RZ1|70|1|OP06-090|1|1|6|4|1|1|0|0|0
+Krieg ["OP15-001">OP15-001][5000] vs Gecko Moria ["OP14-080">OP14-080][6000]
+Attack Fails
+[Pefforza​#4027] End Turn
+[BigRato​#5650] Hand: [OP16-104,PRB02-013,OP16-104,PRB02-013,OP14-104]
+[BigRato​#5650] Board: []
+[BigRato​#5650] Trash: [OP14-110,OP16-107,OP14-110,OP16-108,OP06-090]
+[BigRato​#5650] Life: 4
+[Pefforza​#4027] Hand: [OP15-008,OP15-028,OP15-015,OP15-011,OP15-028,OP15-003]
+[Pefforza​#4027] Trash: []
+[Pefforza​#4027] Board: [OP15-009,OP15-023,OP15-007,OP15-017]
+[Pefforza​#4027] Life: 2
+RZ1|71|1|Don|9|9900|5|0|1|1|1|0|0
+RZ1|72|1|Don|9|9900|5|0|1|1|1|0|0
+RZ1|73|1|Don|9|9900|5|0|1|1|1|0|0
+RZ1|74|1|Don|9|9900|5|0|1|1|1|0|0
+[BigRato​#5650] Draw 1 Card
+[BigRato​#5650] Drew card from deck: Gecko Moria ["PRB02-013">PRB02-013]
+RZ1|75|1|PRB02-013|0|35|1|5|1|1|0|0|0
+RZ1|76|1|Don|4|4|5|5|1|1|0|0|0
+RZ1|77|1|Don|4|3|5|6|1|1|0|0|0
+[BigRato​#5650] Draw 2 Don
+RZ1|78|1|Don|5|0|5|0|1|1|1|0|0
+RZ1|79|1|Don|5|1|5|1|1|1|1|0|0
+RZ1|80|1|Don|5|2|5|2|1|1|1|0|0
+RZ1|81|1|Don|5|3|5|3|1|1|1|0|0
+RZ1|82|1|Don|5|4|5|4|1|1|1|0|0
+RZ1|83|1|Don|5|5|5|5|1|1|1|0|0
+[BigRato​#5650] Deploy Gecko Moria ["PRB02-013">PRB02-013]
+RZ1|84|1|PRB02-013|1|5|2|0|1|1|0|0|0
+[BigRato​#5650] Gecko Moria ["PRB02-013">PRB02-013]: Deployed Jesus Burgess ["OP16-107">OP16-107] from Trash
+RZ1|85|1|OP16-107|6|1|2|1|1|1|1|0|0
+[BigRato​#5650] Gecko Moria ["PRB02-013">PRB02-013]: Attach 1 Rested Don to Gecko Moria ["OP14-080">OP14-080]
+RZ1|86|1|Don|5|0|9|9900|1|1|1|0|0
+[BigRato​#5650] Attach 1 Don to Gecko Moria ["OP14-080">OP14-080] (2 Total)
+RZ1|87|1|Don|5|5|9|9901|1|1|0|0|0
+[BigRato​#5650] Gecko Moria ["OP14-080">OP14-080] attacking Arlong ["OP15-023">OP15-023]
+[Pefforza​#4027] Morgan ["OP15-017">OP15-017] Blocks
+[Pefforza​#4027] Discard Higuma ["OP15-015">OP15-015] for Counter 2000
+RZ1|88|2|OP15-015|1|2|6|0|1|1|0|0|0
+Gecko Moria ["OP14-080">OP14-080][7000] vs Morgan ["OP15-017">OP15-017][8000]
+Attack Fails
+[BigRato​#5650] Hand: [OP16-104,PRB02-013,OP16-104,PRB02-013,OP14-104]
+[BigRato​#5650] Board: [PRB02-013,OP16-107]
+[BigRato​#5650] Trash: [OP14-110,OP14-110,OP16-108,OP06-090]
+[BigRato​#5650] Life: 4
+[Pefforza​#4027] Hand: [OP15-008,OP15-028,OP15-011,OP15-028,OP15-003]
+[Pefforza​#4027] Trash: [OP15-015]
+[Pefforza​#4027] Board: [OP15-009,OP15-023,OP15-007,OP15-017]
+[Pefforza​#4027] Life: 2
+[BigRato​#5650] End Turn
+[Pefforza​#4027] Draw 1 Card
+[Pefforza​#4027] Drew card from deck: Arlong ["OP15-023">OP15-023]
+RZ1|89|2|OP15-023|0|37|1|5|0|1|0|0|0
+RZ1|90|2|Don|4|3|5|6|1|1|0|0|0
+RZ1|91|2|Don|4|2|5|7|1|1|0|0|0
+[Pefforza​#4027] Draw 2 Don
+RZ1|92|2|Don|5|0|5|0|1|1|1|0|0
+RZ1|93|2|Don|5|1|5|1|1|1|1|0|0
+RZ1|94|2|Don|5|2|5|2|1|1|1|0|0
+RZ1|95|2|Don|5|3|5|3|1|1|1|0|0
+RZ1|96|2|Don|5|4|5|4|1|1|1|0|0
+RZ1|97|2|Don|5|5|5|5|1|1|1|0|0
+RZ1|98|2|Don|5|6|5|6|1|1|1|0|0
+RZ1|99|2|Don|5|7|5|7|1|1|1|0|0
+[Pefforza​#4027] Deploy Krieg ["OP15-008">OP15-008]
+RZ1|100|2|OP15-008|1|0|2|4|1|1|0|0|0
+[Pefforza​#4027] Krieg ["OP15-008">OP15-008]: Attach 1 Rested Don to Gecko Moria ["PRB02-013">PRB02-013]
+RZ1|101|1|Don|5|0|9|0|1|1|1|0|0
+[Pefforza​#4027] Krieg ["OP15-008">OP15-008]: Attach 1 Rested Don to Gecko Moria ["PRB02-013">PRB02-013]
+RZ1|102|1|Don|5|0|9|1|1|1|1|0|0
+[Pefforza​#4027] Krieg ["OP15-008">OP15-008]: Attach 1 Rested Don to Gecko Moria ["PRB02-013">PRB02-013]
+RZ1|103|1|Don|5|0|9|2|1|1|1|0|0
+[Pefforza​#4027] Krieg ["OP15-008">OP15-008]: Give Krieg ["OP15-008">OP15-008] Rush
+[Pefforza​#4027] Krieg ["OP15-008">OP15-008]: Buff Gecko Moria ["PRB02-013">PRB02-013] -3000
+[Pefforza​#4027] Krieg ["OP15-008">OP15-008]: Buff Jesus Burgess ["OP16-107">OP16-107] 0
+[Pefforza​#4027] Morgan ["OP15-017">OP15-017]: Attach 1 Rested Don to Gecko Moria ["PRB02-013">PRB02-013]
+RZ1|104|1|Don|5|0|9|3|1|1|1|0|0
+[Pefforza​#4027] Morgan ["OP15-017">OP15-017]: Attach 1 Rested Don to Arlong ["OP15-023">OP15-023]
+RZ1|105|2|Don|5|0|9|100|1|1|1|0|0
+[Pefforza​#4027] Arlong ["OP15-023">OP15-023]: Attach 1 Rested Don to Gecko Moria ["PRB02-013">PRB02-013]
+RZ1|106|1|Don|5|0|9|4|1|1|1|0|0
+[Pefforza​#4027] Arlong ["OP15-023">OP15-023]: Attach 1 Rested Don to Krieg ["OP15-001">OP15-001]
+RZ1|107|2|Don|5|0|9|9900|1|1|1|0|0
+[Pefforza​#4027] Krieg ["OP15-001">OP15-001]: Rest Gecko Moria ["PRB02-013">PRB02-013]
+[Pefforza​#4027] Morgan ["OP15-017">OP15-017] attacking Gecko Moria ["PRB02-013">PRB02-013]
+Morgan ["OP15-017">OP15-017][6000] vs Gecko Moria ["PRB02-013">PRB02-013][4000]
+[BigRato​#5650] Gecko Moria ["PRB02-013">PRB02-013] Destroyed
+RZ1|108|1|Don|9|0|5|0|1|1|1|0|0
+RZ1|109|1|Don|9|0|5|0|1|1|1|0|0
+RZ1|110|1|Don|9|0|5|0|1|1|1|0|0
+RZ1|111|1|Don|9|0|5|0|1|1|1|0|0
+RZ1|112|1|Don|9|0|5|0|1|1|1|0|0
+RZ1|113|1|PRB02-013|2|0|6|4|1|1|0|0|0
+[Pefforza​#4027] Arlong ["OP15-023">OP15-023] attacking Gecko Moria ["OP14-080">OP14-080]
+[BigRato​#5650] Discard Catarina Devon ["OP16-104">OP16-104] for Counter 2000
+RZ1|114|1|OP16-104|1|2|6|5|1|1|0|0|0
+Arlong ["OP15-023">OP15-023][6000] vs Gecko Moria ["OP14-080">OP14-080][7000]
+Attack Fails
+[Pefforza​#4027] Krieg ["OP15-001">OP15-001] attacking Gecko Moria ["OP14-080">OP14-080]
+Krieg ["OP15-001">OP15-001][6000] vs Gecko Moria ["OP14-080">OP14-080][5000]
+Gecko Moria ["OP14-080">OP14-080] hit for 1 damage
+[Pefforza​#4027] Gin ["OP15-007">OP15-007] attacking Gecko Moria ["OP14-080">OP14-080]
+Gin ["OP15-007">OP15-007][7000] vs Gecko Moria ["OP14-080">OP14-080][5000]
+Gecko Moria ["OP14-080">OP14-080] hit for 1 damage
+[Pefforza​#4027] Krieg ["OP15-008">OP15-008] attacking Gecko Moria ["OP14-080">OP14-080]
+Krieg ["OP15-008">OP15-008][9000] vs Gecko Moria ["OP14-080">OP14-080][5000]
+Gecko Moria ["OP14-080">OP14-080] hit for 1 damage
+[BigRato​#5650] Doctor Hogback ["OP14-110">OP14-110]: Activate Trigger
+RZ1|115|1|OP14-110|1|6|6|6|1|1|0|0|0
+[BigRato​#5650] Doctor Hogback ["OP14-110">OP14-110]: Deployed Doctor Hogback ["OP06-090">OP06-090] from Trash
+RZ1|116|1|OP06-090|6|3|2|1|1|1|1|0|0
+[BigRato​#5650] Doctor Hogback ["OP06-090">OP06-090]: Sent Catarina Devon ["OP16-104">OP16-104] to Deck Bottom from Trash
+[BigRato​#5650] Doctor Hogback ["OP06-090">OP06-090]: Sent Shiryu ["OP16-108">OP16-108] to Deck Bottom from Trash
+[BigRato​#5650] <b>Draw Gecko Moria ["PRB02-013">PRB02-013] from Trash</b>
+RZ1|117|1|PRB02-013|6|2|1|6|1|1|0|0|0
+[Pefforza​#4027] End Turn
+[BigRato​#5650] Hand: [OP16-104,PRB02-013,PRB02-013,OP14-104,OP15-113,EB04-058,PRB02-013]
+[BigRato​#5650] Board: [OP16-107,OP06-090]
+[BigRato​#5650] Trash: [OP14-110,OP14-110,OP14-110]
+[BigRato​#5650] Life: 1
+[Pefforza​#4027] Hand: [OP15-028,OP15-011,OP15-028,OP15-003,OP15-023]
+[Pefforza​#4027] Trash: [OP15-015]
+[Pefforza​#4027] Board: [OP15-009,OP15-023,OP15-007,OP15-017,OP15-008]
+[Pefforza​#4027] Life: 2
+RZ1|118|1|Don|9|9900|5|0|1|1|1|0|0
+RZ1|119|1|Don|9|9900|5|0|1|1|1|0|0
+[BigRato​#5650] Draw 1 Card
+[BigRato​#5650] Drew card from deck: Kumacy ["OP14-102">OP14-102]
+RZ1|120|1|OP14-102|0|36|1|7|1|1|0|0|0
+RZ1|121|1|Don|4|2|5|7|1|1|0|0|0
+RZ1|122|1|Don|4|1|5|8|1|1|0|0|0
+[BigRato​#5650] Draw 2 Don
+[BigRato​#5650] Attach 1 Don to Jesus Burgess ["OP16-107">OP16-107] (1 Total)
+RZ1|123|1|Don|5|8|9|0|1|1|0|0|0
+[BigRato​#5650] Attach 1 Don to Jesus Burgess ["OP16-107">OP16-107] (2 Total)
+RZ1|124|1|Don|5|7|9|1|1|1|0|0|0
+[BigRato​#5650] Jesus Burgess ["OP16-107">OP16-107] attacking Arlong ["OP15-023">OP15-023]
+[Pefforza​#4027] Discard Arlong ["OP15-023">OP15-023] for Counter 1000
+RZ1|125|2|OP15-023|1|4|6|1|1|1|0|0|0
+Jesus Burgess ["OP16-107">OP16-107][5000] vs Arlong ["OP15-023">OP15-023][6000]
+Attack Fails
+[BigRato​#5650] Attach 1 Don to Gecko Moria ["OP14-080">OP14-080] (1 Total)
+RZ1|126|1|Don|5|6|9|9900|1|1|0|0|0
+[BigRato​#5650] Gecko Moria ["OP14-080">OP14-080] attacking Arlong ["OP15-023">OP15-023]
+RZ1|127|1|PRB02-013|1|6|6|3|1|1|0|0|0
+[BigRato​#5650] Gecko Moria ["OP14-080">OP14-080]: Trash Gecko Moria ["PRB02-013">PRB02-013]
+RZ1|128|1|PRB02-013|1|2|6|4|1|1|0|0|0
+[BigRato​#5650] Gecko Moria ["OP14-080">OP14-080]: Trash Gecko Moria ["PRB02-013">PRB02-013]
+RZ1|129|1|OP15-113|1|3|6|5|1|1|0|0|0
+[BigRato​#5650] Gecko Moria ["OP14-080">OP14-080]: Trash Roronoa Zoro ["OP15-113">OP15-113]
+[BigRato​#5650] Gecko Moria ["OP14-080">OP14-080]: Add card to top of Life from Deck
+[Pefforza​#4027] Discard Meowban Brothers ["OP15-028">OP15-028] for Counter 2000
+RZ1|130|2|OP15-028|1|0|6|2|1|1|0|0|0
+Gecko Moria ["OP14-080">OP14-080][6000] vs Arlong ["OP15-023">OP15-023][7000]
+Attack Fails
+RZ1|131|1|Don|5|0|5|0|1|1|1|0|0
+RZ1|132|1|Don|5|1|5|1|1|1|1|0|0
+RZ1|133|1|Don|5|2|5|2|1|1|1|0|0
+RZ1|134|1|Don|5|3|5|3|1|1|1|0|0
+RZ1|135|1|Don|5|4|5|4|1|1|1|0|0
+RZ1|136|1|Don|5|5|5|5|1|1|1|0|0
+[BigRato​#5650] Deploy Gecko Moria ["PRB02-013">PRB02-013]
+RZ1|137|1|PRB02-013|1|1|2|2|1|1|0|-2000|0
+[BigRato​#5650] Gecko Moria ["PRB02-013">PRB02-013]: Deployed Roronoa Zoro ["OP15-113">OP15-113] from Trash
+RZ1|138|1|OP15-113|6|5|2|3|1|1|1|-2000|0
+[BigRato​#5650] Gecko Moria ["PRB02-013">PRB02-013]: Attach 1 Rested Don to Doctor Hogback ["OP06-090">OP06-090]
+RZ1|139|1|Don|5|0|9|100|1|1|1|0|0
+RZ1|140|1|OP14-104|1|1|6|5|1|1|0|0|0
+[BigRato​#5650] Roronoa Zoro ["OP15-113">OP15-113]: Trash Gecko Moria ["OP14-104">OP14-104]
+[BigRato​#5650] Roronoa Zoro ["OP15-113">OP15-113]: Add card to top of Life from Deck
+[BigRato​#5650] Gecko Moria ["OP14-080">OP14-080]: Destroy Gecko Moria ["PRB02-013">PRB02-013]
+[BigRato​#5650] Gecko Moria ["OP14-080">OP14-080]: Buff Jesus Burgess ["OP16-107">OP16-107] 1000
+[BigRato​#5650] Gecko Moria ["OP14-080">OP14-080]: Buff Doctor Hogback ["OP06-090">OP06-090] 1000
+[BigRato​#5650] Gecko Moria ["OP14-080">OP14-080]: Buff Gecko Moria ["PRB02-013">PRB02-013] 1000
+[BigRato​#5650] Gecko Moria ["OP14-080">OP14-080]: Buff Roronoa Zoro ["OP15-113">OP15-113] 1000
+[BigRato​#5650] Gecko Moria ["OP14-080">OP14-080]: Buff Gecko Moria ["OP14-080">OP14-080] 1000
+RZ1|141|1|PRB02-013|2|2|6|6|1|1|0|0|0
+[BigRato​#5650] Doctor Hogback ["OP06-090">OP06-090] attacking Arlong ["OP15-023">OP15-023]
+[Pefforza​#4027] Discard Alvida ["OP15-003">OP15-003] for Counter 1000
+RZ1|142|2|OP15-003|1|2|6|3|1|1|0|0|0
+Doctor Hogback ["OP06-090">OP06-090][5000] vs Arlong ["OP15-023">OP15-023][6000]
+Attack Fails
+[BigRato​#5650] Hand: [OP16-104,EB04-058,OP14-102]
+[BigRato​#5650] Board: [OP16-107,OP06-090,OP15-113]
+[BigRato​#5650] Trash: [OP14-110,OP14-110,OP14-110,PRB02-013,PRB02-013,OP14-104,PRB02-013]
+[BigRato​#5650] Life: 3
+[Pefforza​#4027] Hand: [OP15-011,OP15-028]
+[Pefforza​#4027] Trash: [OP15-015,OP15-023,OP15-028,OP15-003]
+[Pefforza​#4027] Board: [OP15-009,OP15-023,OP15-007,OP15-017,OP15-008]
+[Pefforza​#4027] Life: 2
+[BigRato​#5650] End Turn
+RZ1|143|2|Don|9|9900|5|0|1|1|1|0|0
+RZ1|144|2|Don|9|100|5|0|1|1|1|0|0
+[Pefforza​#4027] Draw 1 Card
+[Pefforza​#4027] Drew card from deck: Pearl ["OP15-011">OP15-011]
+RZ1|145|2|OP15-011|0|36|1|2|0|1|0|0|0
+RZ1|146|2|Don|4|1|5|8|1|1|0|0|0
+RZ1|147|2|Don|4|0|5|9|1|1|0|0|0
+[Pefforza​#4027] Draw 2 Don
+RZ1|148|2|Don|5|0|5|0|1|1|1|0|0
+RZ1|149|2|Don|5|1|5|1|1|1|1|0|0
+RZ1|150|2|Don|5|2|5|2|1|1|1|0|0
+RZ1|151|2|Don|5|3|5|3|1|1|1|0|0
+[Pefforza​#4027] Trash Koby ["OP15-009">OP15-009]
+[Pefforza​#4027] Deploy Pearl ["OP15-011">OP15-011]
+RZ1|152|2|OP15-009|2|0|6|4|1|1|0|0|0
+RZ1|153|2|OP15-011|1|2|2|4|1|1|0|0|0
+[Pefforza​#4027] Arlong ["OP15-023">OP15-023]: Attach 1 Rested Don to Roronoa Zoro ["OP15-113">OP15-113]
+RZ1|154|1|Don|5|0|9|200|1|1|1|0|0
+[Pefforza​#4027] Arlong ["OP15-023">OP15-023]: Attach 1 Rested Don to Krieg ["OP15-001">OP15-001]
+RZ1|155|2|Don|5|0|9|9900|1|1|1|0|0
+[Pefforza​#4027] Morgan ["OP15-017">OP15-017]: Attach 1 Rested Don to Roronoa Zoro ["OP15-113">OP15-113]
+RZ1|156|1|Don|5|0|9|201|1|1|1|0|0
+[Pefforza​#4027] Morgan ["OP15-017">OP15-017]: Attach 1 Rested Don to Krieg ["OP15-001">OP15-001]
+RZ1|157|2|Don|5|0|9|9901|1|1|1|0|0
+[Pefforza​#4027] Krieg ["OP15-001">OP15-001] attacking Gecko Moria ["OP14-080">OP14-080]
+Krieg ["OP15-001">OP15-001][7000] vs Gecko Moria ["OP14-080">OP14-080][5000]
+Gecko Moria ["OP14-080">OP14-080] hit for 1 damage
+[Pefforza​#4027] Gin ["OP15-007">OP15-007] attacking Gecko Moria ["OP14-080">OP14-080]
+Gin ["OP15-007">OP15-007][7000] vs Gecko Moria ["OP14-080">OP14-080][5000]
+Gecko Moria ["OP14-080">OP14-080] hit for 1 damage
+[BigRato​#5650] Perona ["OP14-111">OP14-111]: Activate Trigger
+RZ1|158|1|OP14-111|1|4|6|7|1|1|0|0|0
+[BigRato​#5650] Perona ["OP14-111">OP14-111]: Deployed Doctor Hogback ["OP14-110">OP14-110] from Trash
+RZ1|159|1|OP14-110|6|2|2|3|1|1|1|0|0
+[Pefforza​#4027] Attach 2 Don to Arlong ["OP15-023">OP15-023] (2 Total)
+RZ1|160|2|Don|5|7|9|0|1|1|0|0|0
+RZ1|161|2|Don|5|6|9|1|1|1|0|0|0
+[Pefforza​#4027] Arlong ["OP15-023">OP15-023] attacking Gecko Moria ["OP14-080">OP14-080]
+[BigRato​#5650] Discard Kumacy ["OP14-102">OP14-102] for Counter 2000
+RZ1|162|1|OP14-102|1|2|6|7|1|1|0|0|0
+[BigRato​#5650] Discard Doctor Hogback ["OP15-084">OP15-084] for Counter 1000
+RZ1|163|1|OP15-084|1|2|6|8|1|1|0|0|0
+Arlong ["OP15-023">OP15-023][7000] vs Gecko Moria ["OP14-080">OP14-080][8000]
+Attack Fails
+[Pefforza​#4027] Krieg ["OP15-008">OP15-008] attacking Gecko Moria ["OP14-080">OP14-080]
+Krieg ["OP15-008">OP15-008][9000] vs Gecko Moria ["OP14-080">OP14-080][5000]
+Gecko Moria ["OP14-080">OP14-080] hit for 1 damage
+[Pefforza​#4027] Attach 4 Don to Morgan ["OP15-017">OP15-017] (4 Total)
+RZ1|164|2|Don|5|5|9|200|1|1|0|0|0
+RZ1|165|2|Don|5|4|9|201|1|1|0|0|0
+RZ1|166|2|Don|5|3|9|202|1|1|0|0|0
+RZ1|167|2|Don|5|2|9|203|1|1|0|0|0
+[Pefforza​#4027] Morgan ["OP15-017">OP15-017] attacking Gecko Moria ["OP14-080">OP14-080]
+[BigRato​#5650] Discard Catarina Devon ["OP16-104">OP16-104] for Counter 2000
+RZ1|168|1|OP16-104|1|0|6|9|1|1|0|0|0
+[BigRato​#5650] Discard Borsalino ["EB04-058">EB04-058] for Counter 1000
+RZ1|169|1|EB04-058|1|0|6|10|1|1|0|0|0
+Morgan ["OP15-017">OP15-017][10000] vs Gecko Moria ["OP14-080">OP14-080][8000]
+Gecko Moria ["OP14-080">OP14-080] hit for 1 damage
+[Pefforza​#4027] <b><size=24>gg wp</size></b>
+[Pefforza​#4027] Quits!
+Opponent Has Disconnected!
+[BigRato​#5650] <b>Downloaded the Combat Log!</b>
+OpponentDisconnect

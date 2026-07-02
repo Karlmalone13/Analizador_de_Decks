@@ -1,0 +1,71 @@
+{
+  "cards": [
+    {
+      "code": "OP16-056",
+      "name": "Mr. 3 (Galdino)",
+      "count": 3
+    },
+    {
+      "code": "OP05-057",
+      "name": "Hound Blaze",
+      "count": 3
+    },
+    {
+      "code": "OP06-050",
+      "name": "Tashigi",
+      "count": 2
+    },
+    {
+      "code": "OP06-058",
+      "name": "Gravity Blade Raging Tiger",
+      "count": 2
+    },
+    {
+      "code": "OP05-091",
+      "name": "Rebecca",
+      "count": 2
+    },
+    {
+      "code": "EB03-022",
+      "name": "Isuka",
+      "count": 2
+    },
+    {
+      "code": "OP07-096",
+      "name": "Tempest Kick",
+      "count": 2
+    },
+    {
+      "code": "OP12-090",
+      "name": "Belo Betty",
+      "count": 2
+    },
+    {
+      "code": "ST06-008",
+      "name": "Hina",
+      "count": 2
+    },
+    {
+      "code": "EB04-026",
+      "name": "Bluegrass",
+      "count": 1
+    },
+    {
+      "code": "PRB02-008",
+      "name": "Marco",
+      "count": 1
+    },
+    {
+      "code": "OP08-082",
+      "name": "Sasaki",
+      "count": 1
+    },
+    {
+      "code": "OP05-042",
+      "name": "Issho",
+      "count": 1
+    }
+  ],
+  "total_seen": 24,
+  "leader": "OP05-041"
+}

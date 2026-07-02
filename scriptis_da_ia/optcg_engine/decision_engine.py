@@ -63,6 +63,11 @@ _EFFECTS_DB: dict = {}
 _ANALYSIS_PATH = os.path.join(os.path.dirname(__file__), '..', 'card_analysis_db.json')
 _ANALYSIS_DB: dict = {}
 
+_HUMAN_PATTERNS_PATH = os.path.join(os.path.dirname(__file__), '..', 'human_patterns.json')
+_HUMAN_PATTERN_BONUS_BY_LEADER: dict = {}
+_HUMAN_PATTERN_MIN_SUPPORT = 2
+_HUMAN_PATTERN_MAX_BONUS = 30.0
+
 def _load_effects_db():
     global _EFFECTS_DB
     if _EFFECTS_DB:
@@ -74,6 +79,42 @@ def _load_effects_db():
         pass
 
 _load_effects_db()
+
+
+def _load_human_patterns():
+    """Carrega sinais leves de pilotagem humana extraidos dos logs reais."""
+    global _HUMAN_PATTERN_BONUS_BY_LEADER
+    if _HUMAN_PATTERN_BONUS_BY_LEADER:
+        return
+    try:
+        with open(_HUMAN_PATTERNS_PATH, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+    except FileNotFoundError:
+        _HUMAN_PATTERN_BONUS_BY_LEADER = {}
+        return
+
+    by_leader: dict = {}
+    for row in data.get('heuristic_candidates', []):
+        count = int(row.get('count') or 0)
+        if count < _HUMAN_PATTERN_MIN_SUPPORT:
+            continue
+        leader = row.get('leader') or ''
+        pattern = row.get('pattern') or ''
+        if not leader or not pattern:
+            continue
+        leader_bonus = by_leader.setdefault(leader.split('|', 1)[0], {})
+        for token in pattern.split(' > '):
+            if ':' not in token:
+                continue
+            kind, code = token.split(':', 1)
+            if kind not in ('play', 'activate', 'attack'):
+                continue
+            key = (kind, code)
+            leader_bonus[key] = min(
+                _HUMAN_PATTERN_MAX_BONUS,
+                leader_bonus.get(key, 0.0) + min(4.0 + count * 2.0, 12.0),
+            )
+    _HUMAN_PATTERN_BONUS_BY_LEADER = by_leader
 
 
 def _load_analysis_db():
@@ -2128,6 +2169,14 @@ class EffectExecutor:
                 if contains_identity(self.me.field_chars, card):
                     remove_character_from_field(self.me, card, 'trash')
                     self._cost_logs.append(f'custo: trashou {card.name[:18]} (ele mesmo)')
+            elif ctype == 'ko_own_character':
+                chars_ok = [c2 for c2 in p.field_chars
+                            if c2 is not src
+                            and (not ftype or ftype in c2.sub_types.lower())]
+                if len(chars_ok) < cnt:
+                    return False, (f'custo ko_own_character ({ftype or "qualquer"}): '
+                                   f'sÃ³ {len(chars_ok)} no campo')
+
             elif ctype == 'don_minus':
                 count = cost.get('count', 1)
                 if not self._return_don_to_deck(count):
@@ -4544,21 +4593,18 @@ class GameAnalyzer:
 
     def opp_counter_chunks_for_lethal(self) -> list[int]:
         """
-        Counter disponivel para analise de lethal sem espiar a mao oculta.
-        Cartas reveladas contam pelo valor real; slots desconhecidos usam a
-        mesma estimativa tipica de `opp_counter_potential`, quebrada em blocos
-        de 1000 para ser conservador na defesa do oponente.
+        Counter disponivel para analise de lethal GARANTIDO sem espiar a mao
+        oculta. Cartas reveladas contam pelo valor real; slots desconhecidos
+        contam como possiveis counters de 2000. Isso e conservador de proposito:
+        se a mao e desconhecida, nao podemos chamar de lethal garantido.
         """
         known = self.opp.known_hand_cards()
         known_total = sum(c.counter for c in known if c.counter > 0)
         unknown_hand_size = max(0, len(self.opp.hand) - len(known))
 
-        estimated_1k = int(unknown_hand_size * 0.4)
-        estimated_2k = int(unknown_hand_size * 0.2)
-        estimated_unknown_total = estimated_1k * 1000 + estimated_2k * 2000
-
-        total = known_total + estimated_unknown_total
-        return [1000] * (total // 1000)
+        chunks = [2000] * unknown_hand_size
+        chunks.extend([1000] * (known_total // 1000))
+        return sorted(chunks)
 
     def opp_counter_in_hand(self) -> int:
         """Counter real do oponente (se visível — normalmente 0 em simulação)."""
@@ -5304,7 +5350,7 @@ class DecisionEngine:
             if opp_life == 1:
                 s = 500 if lethal_now else 220
             if opp_life == 0:
-                s = 10000 if lethal_now else 250
+                s = 10000 if lethal_now else 130
 
             # Bônus se restar ativa efeito (vale mesmo sem dano)
             if vale_restar and not passa_sem_don:
@@ -5552,6 +5598,16 @@ class OPTCGMatch:
         # mão/vida REAL do oponente por amostras Monte Carlo plausíveis.
         self.model_for_a = OpponentModel(full_decklist=list(self.state_b.deck))
         self.model_for_b = OpponentModel(full_decklist=list(self.state_a.deck))
+
+    def _human_pattern_bonus(self, p: GameState, kind: str, card: Optional[Card]) -> float:
+        """Pequeno bonus por padroes humanos observados para este leader."""
+        if card is None or not p or not p.leader:
+            return 0.0
+        _load_human_patterns()
+        if not _HUMAN_PATTERN_BONUS_BY_LEADER:
+            return 0.0
+        leader_bonus = _HUMAN_PATTERN_BONUS_BY_LEADER.get(p.leader.code, {})
+        return float(leader_bonus.get((kind, card.code), 0.0))
 
     # ── Setup (CheckStartOfGameActions das 34k linhas) ───────────────────────
 
@@ -5967,7 +6023,13 @@ class OPTCGMatch:
             return True, 'benefício draw/search compensa'
 
         # Efeitos sobre oponente — só com alvo
-        if any(a in ('rest_opp', 'ko_opp', 'debuff', 'debuff_power', 'bounce') for a in actions):
+        control_actions = (
+            'rest_opp', 'rest_opp_character', 'ko', 'ko_opp',
+            'ko_if_cost_eq_don', 'debuff', 'debuff_power', 'debuff_cost',
+            'bounce', 'place_opp_character_bottom_deck',
+            'lock_opp_character_refresh', 'lock_opp_character_attack',
+        )
+        if any(a in control_actions for a in actions):
             if not opp.field_chars:
                 return False, 'efeito sobre oponente: nenhum personagem alvo disponível'
             return True, 'alvo disponível no campo oponente'
@@ -5995,6 +6057,12 @@ class OPTCGMatch:
 
         # buff_power / debuff_power sem alvo explícito — aplica sempre
         if any(a in ('buff_power', 'set_base_power') for a in actions):
+            if any(c.get('type') == 'ko_own_character' for c in costs):
+                attackers = [c for c in p.field_chars
+                             if not c.rested and not c.just_played
+                             and not getattr(c, 'cannot_attack_until', False)]
+                if not attackers and getattr(p.leader, 'rested', False):
+                    return False, 'buff_power com K.O. proprio sem ataques para aproveitar'
             return True, 'buff_power incondicionado'
 
         # play_from_trash — vale se há carta no trash elegível
@@ -6118,7 +6186,9 @@ class OPTCGMatch:
             base = 90    # ramp de DON
         elif any(a in ('play_card',) for a in actions_list):
             base = 110   # jogar carta grátis
-        elif any(a in ('rest_opp', 'ko_opp', 'debuff_power', 'bounce') for a in actions_list):
+        elif any(a in ('rest_opp', 'rest_opp_character', 'ko', 'ko_opp',
+                       'ko_if_cost_eq_don', 'debuff_power', 'debuff_cost',
+                       'bounce', 'place_opp_character_bottom_deck') for a in actions_list):
             base = 100   # remoção/controle
         else:
             base = 60
@@ -6127,8 +6197,28 @@ class OPTCGMatch:
         custo_don = sum(c.get('count', 0) for c in costs if c.get('type') == 'rest_don')
         tem_trash_hand = any(c.get('type') in ('trash_from_hand', 'trash_hand', 'trash_char_or_hand')
                              for c in costs)
+        tem_ko_own = any(c.get('type') == 'ko_own_character' for c in costs)
 
         base -= custo_don * 15   # cada DON gasto tem custo de oportunidade
+
+        if tem_ko_own:
+            sacrifice_pool = []
+            for card in p.field_chars:
+                ok = True
+                for cost in costs:
+                    if cost.get('type') != 'ko_own_character':
+                        continue
+                    ftype = (cost.get('filter_type') or '').lower()
+                    if ftype and ftype not in card.sub_types.lower():
+                        ok = False
+                        break
+                if ok and card is not src:
+                    sacrifice_pool.append(card)
+            if sacrifice_pool:
+                sacrifice_value = min(c.board_value() for c in sacrifice_pool)
+                base -= min(sacrifice_value * 8, 80)
+            else:
+                base -= 100
 
         if tem_trash_hand:
             # Estimar qual carta seria trashada e quanto ela vale
@@ -6167,6 +6257,62 @@ class OPTCGMatch:
 
         return base
 
+    def _card_action_key(self, card):
+        if card is None:
+            return None
+        return (
+            getattr(card, 'code', ''),
+            getattr(card, 'name', ''),
+            getattr(card, 'card_type', ''),
+            getattr(card, 'cost', 0),
+            getattr(card, 'power', 0),
+            getattr(card, 'power_buff', 0),
+            getattr(card, 'don_attached', 0),
+            bool(getattr(card, 'rested', False)),
+            bool(getattr(card, 'just_played', False)),
+            getattr(card, '_am_used_turn', -1),
+        )
+
+    def _action_dedupe_key(self, action):
+        _score, kind, obj, ttype, tgt = action
+        if kind == 'play':
+            return (kind, getattr(obj, 'code', ''), getattr(obj, 'name', ''))
+        if kind == 'activate':
+            return (kind, self._card_action_key(obj))
+        if kind == 'attack':
+            return (kind, self._card_action_key(obj), ttype, self._card_action_key(tgt))
+        if kind == 'attach_don':
+            trig = tgt or {}
+            trig_key = (
+                trig.get('trigger') if isinstance(trig, dict) else str(trig),
+                trig.get('action') if isinstance(trig, dict) else '',
+            )
+            return (kind, self._card_action_key(obj), ttype, trig_key)
+        return (kind, self._card_action_key(obj), ttype, self._card_action_key(tgt))
+
+    def _dedupe_scored_actions(self, actions):
+        best_by_key = {}
+        order = []
+        for action in actions:
+            key = self._action_dedupe_key(action)
+            if key not in best_by_key:
+                order.append(key)
+                best_by_key[key] = action
+            elif action[0] > best_by_key[key][0]:
+                best_by_key[key] = action
+        return [best_by_key[key] for key in order]
+
+    def _is_unsafe_zero_life_leader_attack(self, action, p, opp, engine) -> bool:
+        """Ataque ao leader com 0 vidas so deve sair se for lethal garantido
+        ou se a simulacao Monte Carlo encontrar alguma linha vencedora."""
+        _score, kind, _obj, target_type, _target = action
+        return (
+            kind == 'attack'
+            and target_type == 'leader'
+            and opp.life_count() == 0
+            and not engine.analyzer.can_lethal_this_turn()
+        )
+
     def _generate_and_score_actions(self, p, opp, engine):
         """
         Gera TODAS as ações possíveis no estado atual e as pontua.
@@ -6189,6 +6335,7 @@ class OPTCGMatch:
             if not engine._can_play_card(card, don_usable=don_usable):
                 continue
             score = self._score_play_action(card, engine)
+            score += self._human_pattern_bonus(p, 'play', card)
             # Inclinação: desenvolver ganha peso no modo DEVELOP; perde no LETHAL/DEFENSIVE
             if priority == 'DEVELOP':
                 score += 40
@@ -6215,6 +6362,7 @@ class OPTCGMatch:
                 if pode_atacar_leader and not p.cannot_attack_leader_this_turn:
                     s_leader = engine.score_attack_target(att, 'leader', None)
                     if s_leader > -500:
+                        s_leader += self._human_pattern_bonus(p, 'attack', att)
                         s_leader -= self._trigger_risk_penalty(opp)   # desconto de trigger
                         # Banish: prioriza atacar a vida (nega trigger e remove a carta
                         # de vez). Inclinação forte, mas a ameaça crítica ainda vem antes.
@@ -6225,9 +6373,10 @@ class OPTCGMatch:
                         elif priority == 'REMOVE_THREAT': s_leader -= 100 # remova antes
                         actions.append((s_leader, 'attack', att, 'leader', None))
                 # alvos personagem
-                for tgt in opp.field_chars:
+                for tgt in opp.rested_chars(att):
                     s_char = engine.score_attack_target(att, 'character', tgt)
                     if s_char > -500:
+                        s_char += self._human_pattern_bonus(p, 'attack', att)
                         # Inclinação: remover a AMEAÇA CRÍTICA ganha prioridade alta
                         if tgt in threats:
                             s_char += 300   # acima de atacar o líder
@@ -6251,11 +6400,13 @@ class OPTCGMatch:
             if not pode:
                 continue
             score = self._score_activate_main(src, am, p, opp, priority)
+            score += self._human_pattern_bonus(p, 'activate', src)
             actions.append((score, 'activate', src, None, None))
 
         # ── Ações de ANEXAR DON para ligar efeitos/keywords [DON!! ×N] ──
         actions.extend(self._generate_attach_don_actions(p, opp, engine, priority=priority))
 
+        actions = self._dedupe_scored_actions(actions)
         actions.sort(key=lambda x: x[0], reverse=True)
         return actions
 
@@ -6366,9 +6517,9 @@ class OPTCGMatch:
         # Dano causado ao oponente (vidas tiradas) — peso alto
         score += p.dmg_dealt * 200
         score -= opp.life_count() * 150          # quanto menos vida o opp tem, melhor
-        # Vitória/derrota
-        if opp.life_count() <= 0 and p.dmg_dealt > 0:
-            score += 10000
+        # Vitoria real na simulacao ja retorna SIMULATED_WIN_SCORE em
+        # _simulate_sequence_values. Vida 0 sem dano final conectado ainda
+        # e apenas pressao, nao deve receber bonus de vitoria.
         # Board próprio vs oponente
         score += sum(c.board_value() for c in p.field_chars) * 10
         score -= sum(c.board_value() for c in opp.field_chars) * 8
@@ -6624,10 +6775,34 @@ class OPTCGMatch:
             top_score = actions[0][0]
             candidatas = [
                 acao for idx, acao in enumerate(actions[:TOP_K])
-                if idx < MIN_PLANNER_CANDIDATES or acao[0] >= top_score - PLANNER_SCORE_WINDOW
+                if acao[0] >= 0
+                and (idx < MIN_PLANNER_CANDIDATES or acao[0] >= top_score - PLANNER_SCORE_WINDOW)
             ]
+            if priority == 'REMOVE_THREAT':
+                # A remocao de uma ameaca critica pode receber score imediato
+                # muito alto (ex.: Roger/Shanks), estreitando demais a janela.
+                # Mantem essa pressao, mas garante diversidade para a simulacao
+                # comparar pelo menos algumas linhas de desenvolvimento.
+                seen_candidate_ids = {id(acao) for acao in candidatas}
+
+                def include_best_kind(kind: str, limit: int):
+                    current = sum(1 for acao in candidatas if acao[1] == kind)
+                    for acao in actions:
+                        if current >= limit:
+                            break
+                        if acao[0] < 0 or acao[1] != kind or id(acao) in seen_candidate_ids:
+                            continue
+                        candidatas.append(acao)
+                        seen_candidate_ids.add(id(acao))
+                        current += 1
+
+                include_best_kind('play', 1)
+                include_best_kind('activate', 1)
+                candidatas.sort(key=lambda acao: acao[0], reverse=True)
             if len(candidatas) == 1:
                 melhor_acao = candidatas[0]
+                if self._is_unsafe_zero_life_leader_attack(melhor_acao, p, opp, engine):
+                    break
                 self._log_turn_planner_decision(
                     p, opp, engine, priority, actions, candidatas,
                     melhor_acao, None, {}
@@ -6652,6 +6827,8 @@ class OPTCGMatch:
                     'wins': wins,
                     'samples': len(valores),
                 }
+                if self._is_unsafe_zero_life_leader_attack(cand, p, opp, engine) and wins == 0:
+                    continue
                 if valor > melhor_valor:
                     melhor_valor = valor
                     melhor_acao = cand

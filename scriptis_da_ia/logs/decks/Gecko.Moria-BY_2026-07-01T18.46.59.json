@@ -1,0 +1,61 @@
+{
+  "cards": [
+    {
+      "code": "OP14-110",
+      "name": "Doctor Hogback",
+      "count": 3
+    },
+    {
+      "code": "PRB02-013",
+      "name": "Gecko Moria",
+      "count": 3
+    },
+    {
+      "code": "OP16-104",
+      "name": "Catarina Devon",
+      "count": 2
+    },
+    {
+      "code": "OP06-090",
+      "name": "Doctor Hogback",
+      "count": 1
+    },
+    {
+      "code": "OP16-107",
+      "name": "Jesus Burgess",
+      "count": 1
+    },
+    {
+      "code": "OP14-104",
+      "name": "Gecko Moria",
+      "count": 1
+    },
+    {
+      "code": "OP16-108",
+      "name": "OP16-108",
+      "count": 1
+    },
+    {
+      "code": "OP15-113",
+      "name": "OP15-113",
+      "count": 1
+    },
+    {
+      "code": "EB04-058",
+      "name": "EB04-058",
+      "count": 1
+    },
+    {
+      "code": "OP14-102",
+      "name": "Kumacy",
+      "count": 1
+    },
+    {
+      "code": "OP15-084",
+      "name": "OP15-084",
+      "count": 1
+    }
+  ],
+  "total_seen": 16,
+  "leader": "OP14-080"
+}

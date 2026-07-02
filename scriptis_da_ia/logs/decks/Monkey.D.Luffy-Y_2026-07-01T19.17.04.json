@@ -1,0 +1,61 @@
+{
+  "cards": [
+    {
+      "code": "ST29-005",
+      "name": "Jinbe",
+      "count": 3
+    },
+    {
+      "code": "ST29-009",
+      "name": "ST29-009",
+      "count": 3
+    },
+    {
+      "code": "OP12-119",
+      "name": "Bartholomew Kuma",
+      "count": 2
+    },
+    {
+      "code": "OP13-113",
+      "name": "Lilith",
+      "count": 2
+    },
+    {
+      "code": "OP08-106",
+      "name": "Nami",
+      "count": 2
+    },
+    {
+      "code": "EB03-055",
+      "name": "Nico Robin",
+      "count": 1
+    },
+    {
+      "code": "OP16-119",
+      "name": "Marshall D. Teach",
+      "count": 1
+    },
+    {
+      "code": "OP16-107",
+      "name": "Jesus Burgess",
+      "count": 1
+    },
+    {
+      "code": "EB03-053",
+      "name": "Nami",
+      "count": 1
+    },
+    {
+      "code": "OP06-104",
+      "name": "OP06-104",
+      "count": 1
+    },
+    {
+      "code": "OP13-108",
+      "name": "Jewelry Bonney",
+      "count": 1
+    }
+  ],
+  "total_seen": 18,
+  "leader": "ST29-001"
+}
