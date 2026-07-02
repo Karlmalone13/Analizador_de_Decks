@@ -1,5 +1,42 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-02 (42) - Claude
+
+**Bot OPTCGSim com engine real integrado**
+
+### Contexto
+Bot para jogar partidas Solo v Self no OPTCGSim usando o `decision_engine.py` real para decisões (não heurísticas).
+
+### `scriptis_da_ia/bot_optcgsim.py` (reescrito completo)
+- **Seleção de deck**: `--deck NOME` lista decks de `E:\Games\...\Decks\*.deck`, menu interativo se não passado
+- **Engine integrado**: cria `OPTCGMatch(deck_tuple, deck_tuple)`, usa `state_b` como P2 (nós)
+- **Leitura de estado** via hover+OCR:
+  - `scan_hand()`: hover em y=648, x=107..410, step=35 → OCR nome/custo/power
+  - `scan_board_p2()`: hover nas posições da character area P2 → OCR
+  - `_read_don_active(hover_pos)`: badge "N(M)" → ativo = N-M
+  - `_read_counter_badge(hover_pos)`: lê número de qualquer badge (deck, mão oponente)
+- **Fluxo Main Phase**: detecta Main Phase clicando carta (se Deploy aparecer = Main Phase), sincroniza com `bridge.sync_hand/sync_field`, chama `bridge.choose_action()`, executa via `_execute_engine_action()`
+- **Execução de ação**: `play` → clica carta na mão; `attack` → drag líder/char até P1; outros tipos retornam False (fallback para ataque com líder + End Turn)
+
+### `scriptis_da_ia/optcg_engine/sim_bridge.py` (sem mudança nesta sessão)
+- `choose_action(gs, opp_gs, match)` → engine decide melhor ação
+
+### Posições mapeadas via hover (1366×768):
+- DON P2: hover (495, 634) → badge "N(M)"
+- DON P1: hover (865, 100) → badge "N(M)"
+- Deck P2: hover (480, 545) → badge count = 6
+- Deck P1: hover (870, 200) → badge count = 3
+- Trash P2: hover (855, 640) → mostra preview topo do trash (Slam Gibson OP12-117)
+- Mão P1 count: hover (250, 90) → badge count
+- Life P2/P1: posições ainda não mapeadas precisamente (LIFE_P2_HOVER=(480,460) e LIFE_P1_HOVER=(463,210) são estimativas)
+
+### O que falta:
+- Mapear posições precisas de life P2 e P1 (o jogo estava turn 19 com P2 talvez com 0 vidas)
+- Implementar ações `activate` e `don_attach` em `_execute_engine_action()`
+- Testar bot rodando de verdade em uma partida do início
+
+---
+
 ## 2026-07-02 (41) - Claude
 
 **Importer de logs do simulador OPTCG (AutoSaved .log) → banco de logs**

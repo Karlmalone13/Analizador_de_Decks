@@ -742,5 +742,81 @@
     "winner_name": "TaxiCab#9855",
     "winner_leader": "Sabo BR",
     "total_turns": 24
+  },
+  {
+    "original_file": "2026-07-02T15.09.38.log",
+    "parsed_file": "parsed/2026-07-02T15.09.38_autosaved.json",
+    "source": "autosaved_log",
+    "p1": {
+      "name": "You",
+      "leader_name": "Eustass \"Captain\" Kid Y",
+      "leader_code": "OP10-099"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_name": "Portgas D. Ace BlR",
+      "leader_code": "OP13-002"
+    },
+    "winner": null,
+    "winner_name": null,
+    "winner_leader": null,
+    "total_turns": 0
+  },
+  {
+    "original_file": "2026-07-02T15.18.20.log",
+    "parsed_file": "parsed/2026-07-02T15.18.20_autosaved.json",
+    "source": "autosaved_log",
+    "p1": {
+      "name": "You",
+      "leader_name": "Eustass \"Captain\" Kid Y",
+      "leader_code": "OP10-099"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_name": "Portgas D. Ace BlR",
+      "leader_code": "OP13-002"
+    },
+    "winner": null,
+    "winner_name": null,
+    "winner_leader": null,
+    "total_turns": 0
+  },
+  {
+    "original_file": "2026-07-02T15.20.15.log",
+    "parsed_file": "parsed/2026-07-02T15.20.15_autosaved.json",
+    "source": "autosaved_log",
+    "p1": {
+      "name": "You",
+      "leader_name": "Eustass \"Captain\" Kid Y",
+      "leader_code": "OP10-099"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_name": "Portgas D. Ace BlR",
+      "leader_code": "OP13-002"
+    },
+    "winner": null,
+    "winner_name": null,
+    "winner_leader": null,
+    "total_turns": 0
+  },
+  {
+    "original_file": "2026-07-02T15.22.14.log",
+    "parsed_file": "parsed/2026-07-02T15.22.14_autosaved.json",
+    "source": "autosaved_log",
+    "p1": {
+      "name": "You",
+      "leader_name": "Eustass \"Captain\" Kid Y",
+      "leader_code": "OP10-099"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_name": "Portgas D. Ace BlR",
+      "leader_code": "OP13-002"
+    },
+    "winner": null,
+    "winner_name": null,
+    "winner_leader": null,
+    "total_turns": 0
   }
 ]
