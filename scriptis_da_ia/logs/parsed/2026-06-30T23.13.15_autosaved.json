@@ -16,6 +16,7 @@
     },
     "winner": null,
     "winner_name": null,
+    "winner_leader": null,
     "total_turns": 19,
     "mulligan_p1": {
       "before": [],

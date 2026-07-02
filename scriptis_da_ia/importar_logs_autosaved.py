@@ -440,8 +440,10 @@ def parse_log(path: Path) -> dict | None:
                 break
 
     winner_role = None
+    winner_leader = None
     if winner_name:
         winner_role = players.get(winner_name, {}).get('role')
+        winner_leader = players.get(winner_name, {}).get('leader_name')
 
     # ── Mulligans ─────────────────────────────────────────────────────────────
     def build_mulligan(name: str) -> dict:
@@ -466,8 +468,9 @@ def parse_log(path: Path) -> dict | None:
                 'leader_code': players.get(p2_name, {}).get('leader_code', ''),
                 'goes_first':  False,
             },
-            'winner':      winner_role,
-            'winner_name': winner_name,
+            'winner':        winner_role,
+            'winner_name':   winner_name,
+            'winner_leader': winner_leader,
             'total_turns': len(turns),
             'mulligan_p1': build_mulligan(p1_name),
             'mulligan_p2': build_mulligan(p2_name),
@@ -529,7 +532,8 @@ def importar(autosaved_dir: str, dry_run: bool = False) -> None:
             continue
 
         print(f'    {p1["name"]} ({p1["leader_name"]}) vs {p2["name"]} ({p2["leader_name"]})')
-        print(f'    Turnos: {meta["total_turns"]} | Vencedor: {meta.get("winner_name", "?")}')
+        wl = meta.get('winner_leader') or meta.get('winner_name') or '?'
+        print(f'    Turnos: {meta["total_turns"]} | Vencedor: {wl}')
         print(f'    Mulligan P1: {meta["mulligan_p1"]["took_mulligan"]} | P2: {meta["mulligan_p2"]["took_mulligan"]}')
 
         # Nome do arquivo parsed: mesmo timestamp do .log
@@ -556,7 +560,8 @@ def importar(autosaved_dir: str, dry_run: bool = False) -> None:
                     'leader_code': p2['leader_code'],
                 },
                 'winner':      meta.get('winner'),
-                'winner_name': meta.get('winner_name'),
+                'winner_name':   meta.get('winner_name'),
+                'winner_leader': meta.get('winner_leader'),
                 'total_turns': meta['total_turns'],
             })
 
