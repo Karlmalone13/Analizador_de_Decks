@@ -4,19 +4,19 @@
     "original_file": "2026-06-22T17.14.18.log",
     "p1": {
       "name": "Gonpa#3961",
-      "leader_name": "Enel",
+      "leader_name": "Enel P",
       "leader_code": "OP15-058",
       "goes_first": true
     },
     "p2": {
       "name": "Karlmalone#2854",
-      "leader_name": "Marshall D. Teach",
+      "leader_name": "Marshall D. Teach BY",
       "leader_code": "OP16-080",
       "goes_first": false
     },
     "winner": "p1",
     "winner_name": "Gonpa#3961",
-    "winner_leader": "Enel",
+    "winner_leader": "Enel P",
     "total_turns": 16,
     "mulligan_p1": {
       "before": [],

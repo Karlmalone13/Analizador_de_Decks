@@ -4,19 +4,19 @@
     "original_file": "2026-07-01T12.45.42.log",
     "p1": {
       "name": "kadomaru#5789",
-      "leader_name": "Lucy",
+      "leader_name": "Lucy BlR",
       "leader_code": "OP15-002",
       "goes_first": true
     },
     "p2": {
       "name": "Karlmalone#2854",
-      "leader_name": "Marshall D. Teach",
+      "leader_name": "Marshall D. Teach BY",
       "leader_code": "OP16-080",
       "goes_first": false
     },
     "winner": "p1",
     "winner_name": "kadomaru#5789",
-    "winner_leader": "Lucy",
+    "winner_leader": "Lucy BlR",
     "total_turns": 44,
     "mulligan_p1": {
       "before": [],

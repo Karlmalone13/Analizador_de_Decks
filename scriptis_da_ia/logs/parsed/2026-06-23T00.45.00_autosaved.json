@@ -4,19 +4,19 @@
     "original_file": "2026-06-23T00.45.00.log",
     "p1": {
       "name": "LaoDJ#2305",
-      "leader_name": "Portgas D. Ace",
+      "leader_name": "Portgas D. Ace BlR",
       "leader_code": "OP13-002",
       "goes_first": true
     },
     "p2": {
       "name": "Karlmalone#2854",
-      "leader_name": "Marshall D. Teach",
+      "leader_name": "Marshall D. Teach BY",
       "leader_code": "OP16-080",
       "goes_first": false
     },
     "winner": "p1",
     "winner_name": "LaoDJ#2305",
-    "winner_leader": "Portgas D. Ace",
+    "winner_leader": "Portgas D. Ace BlR",
     "total_turns": 21,
     "mulligan_p1": {
       "before": [],

@@ -4,19 +4,19 @@
     "original_file": "2026-07-02T00.16.23.log",
     "p1": {
       "name": "Karlmalone#2854",
-      "leader_name": "Krieg",
+      "leader_name": "Krieg GR",
       "leader_code": "OP15-001",
       "goes_first": true
     },
     "p2": {
       "name": "Shichibukai#4335",
-      "leader_name": "Marshall D. Teach",
+      "leader_name": "Marshall D. Teach B",
       "leader_code": "OP09-081",
       "goes_first": false
     },
     "winner": "p1",
     "winner_name": "Karlmalone#2854",
-    "winner_leader": "Krieg",
+    "winner_leader": "Krieg GR",
     "total_turns": 25,
     "mulligan_p1": {
       "before": [

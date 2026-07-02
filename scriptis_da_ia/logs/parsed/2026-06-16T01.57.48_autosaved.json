@@ -4,19 +4,19 @@
     "original_file": "2026-06-16T01.57.48.log",
     "p1": {
       "name": "Karlmalone#2854",
-      "leader_name": "Marshall D. Teach",
+      "leader_name": "Marshall D. Teach BY",
       "leader_code": "OP16-080",
       "goes_first": true
     },
     "p2": {
       "name": "ORANGE#6948",
-      "leader_name": "Yamato",
+      "leader_name": "Yamato B",
       "leader_code": "OP16-079",
       "goes_first": false
     },
     "winner": "p2",
     "winner_name": "ORANGE#6948",
-    "winner_leader": "Yamato",
+    "winner_leader": "Yamato B",
     "total_turns": 23,
     "mulligan_p1": {
       "before": [

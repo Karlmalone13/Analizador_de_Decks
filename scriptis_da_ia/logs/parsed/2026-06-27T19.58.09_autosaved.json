@@ -4,19 +4,19 @@
     "original_file": "2026-06-27T19.58.09.log",
     "p1": {
       "name": "Karlmalone#2854",
-      "leader_name": "Marshall D. Teach",
+      "leader_name": "Marshall D. Teach BY",
       "leader_code": "OP16-080",
       "goes_first": true
     },
     "p2": {
       "name": "kakasino#6476",
-      "leader_name": "Enel",
+      "leader_name": "Enel Y",
       "leader_code": "OP05-098",
       "goes_first": false
     },
     "winner": "p2",
     "winner_name": "kakasino#6476",
-    "winner_leader": "Enel",
+    "winner_leader": "Enel Y",
     "total_turns": 27,
     "mulligan_p1": {
       "before": [

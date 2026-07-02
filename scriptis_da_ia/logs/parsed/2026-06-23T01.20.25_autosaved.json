@@ -4,19 +4,19 @@
     "original_file": "2026-06-23T01.20.25.log",
     "p1": {
       "name": "Karlmalone#2854",
-      "leader_name": "Marshall D. Teach",
+      "leader_name": "Marshall D. Teach BY",
       "leader_code": "OP16-080",
       "goes_first": true
     },
     "p2": {
       "name": "Satoru14#8785",
-      "leader_name": "Monkey D. Luffy",
+      "leader_name": "Monkey D. Luffy BlG",
       "leader_code": "OP16-022",
       "goes_first": false
     },
     "winner": "p2",
     "winner_name": "Satoru14#8785",
-    "winner_leader": "Monkey D. Luffy",
+    "winner_leader": "Monkey D. Luffy BlG",
     "total_turns": 23,
     "mulligan_p1": {
       "before": [

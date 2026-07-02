@@ -4,19 +4,19 @@
     "original_file": "2026-06-22T17.37.59.log",
     "p1": {
       "name": "Karlmalone#2854",
-      "leader_name": "Marshall D. Teach",
+      "leader_name": "Marshall D. Teach BY",
       "leader_code": "OP16-080",
       "goes_first": true
     },
     "p2": {
       "name": "Vince3#4219",
-      "leader_name": "Dracule Mihawk",
+      "leader_name": "Dracule Mihawk G",
       "leader_code": "OP14-020",
       "goes_first": false
     },
     "winner": "p2",
     "winner_name": "Vince3#4219",
-    "winner_leader": "Dracule Mihawk",
+    "winner_leader": "Dracule Mihawk G",
     "total_turns": 34,
     "mulligan_p1": {
       "before": [

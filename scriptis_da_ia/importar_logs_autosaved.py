@@ -51,9 +51,56 @@ import re
 import json
 import os
 import sys
+import csv
 import hashlib
 from pathlib import Path
 from datetime import datetime
+
+
+# ── Cores dos líderes ─────────────────────────────────────────────────────────
+
+_COLOR_ABBR: dict[str, str] = {
+    'red': 'R',
+    'blue': 'Bl',
+    'green': 'G',
+    'yellow': 'Y',
+    'black': 'B',
+    'purple': 'P',
+}
+
+
+def _load_card_db() -> dict[str, dict]:
+    """Carrega cards_rows.csv e retorna {code: {color, name}}."""
+    db: dict[str, dict] = {}
+    csv_path = Path(__file__).parent / 'cards_rows.csv'
+    if not csv_path.exists():
+        return db
+    with csv_path.open(encoding='utf-8') as f:
+        for row in csv.DictReader(f):
+            code = row.get('id', '').strip()
+            if code:
+                db[code] = {
+                    'color': row.get('card_color', '').strip(),
+                    'name':  row.get('card_name', '').strip(),
+                }
+    return db
+
+
+def _color_abbr(color_str: str) -> str:
+    """'Green Red' → 'GR', 'Black Yellow' → 'BY', etc."""
+    if not color_str:
+        return ''
+    # Trata variantes com '/' (ex: 'Blue/Black') como espaço
+    parts = color_str.replace('/', ' ').split()
+    abbrs = [_COLOR_ABBR.get(p.lower(), p[0].upper()) for p in parts if p]
+    abbrs.sort()
+    return ''.join(abbrs)
+
+
+def _leader_with_color(leader_name: str, leader_code: str, card_db: dict) -> str:
+    """'Krieg', 'OP15-001' → 'Krieg GR'  (sem cor se não encontrado)."""
+    abbr = _color_abbr(card_db.get(leader_code, {}).get('color', ''))
+    return f'{leader_name} {abbr}' if abbr else leader_name
 
 
 # ── Regex helpers ─────────────────────────────────────────────────────────────
@@ -490,6 +537,8 @@ def importar(autosaved_dir: str, dry_run: bool = False) -> None:
     if not dry_run:
         parsed_dir.mkdir(parents=True, exist_ok=True)
 
+    card_db = _load_card_db()
+
     # Carrega index existente
     existing: list[dict] = []
     if index_path.exists():
@@ -525,6 +574,15 @@ def importar(autosaved_dir: str, dry_run: bool = False) -> None:
         meta = result['meta']
         p1 = meta['p1']
         p2 = meta['p2']
+
+        # Enriquece leader_name com cor (ex: "Krieg" → "Krieg GR")
+        for player in (p1, p2):
+            player['leader_name'] = _leader_with_color(
+                player['leader_name'], player['leader_code'], card_db
+            )
+        if meta.get('winner'):
+            winner_p = p1 if meta['winner'] == 'p1' else p2
+            meta['winner_leader'] = winner_p['leader_name']
 
         if not p1['leader_code'] or not p2['leader_code']:
             print(f'    -> IGNORADO (líderes não identificados)')

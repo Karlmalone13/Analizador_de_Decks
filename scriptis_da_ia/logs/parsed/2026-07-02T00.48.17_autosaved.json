@@ -4,19 +4,19 @@
     "original_file": "2026-07-02T00.48.17.log",
     "p1": {
       "name": "Karlmalone#2854",
-      "leader_name": "Eustass \"Captain\" Kid",
+      "leader_name": "Eustass \"Captain\" Kid Y",
       "leader_code": "OP10-099",
       "goes_first": true
     },
     "p2": {
       "name": "TaxiCab#9855",
-      "leader_name": "Sabo",
+      "leader_name": "Sabo BR",
       "leader_code": "OP13-004",
       "goes_first": false
     },
     "winner": "p2",
     "winner_name": "TaxiCab#9855",
-    "winner_leader": "Sabo",
+    "winner_leader": "Sabo BR",
     "total_turns": 24,
     "mulligan_p1": {
       "before": [

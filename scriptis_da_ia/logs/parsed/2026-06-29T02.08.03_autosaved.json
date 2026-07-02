@@ -4,19 +4,19 @@
     "original_file": "2026-06-29T02.08.03.log",
     "p1": {
       "name": "Karlmalone#2854",
-      "leader_name": "Marshall D. Teach",
+      "leader_name": "Marshall D. Teach BY",
       "leader_code": "OP16-080",
       "goes_first": true
     },
     "p2": {
       "name": "tonytonychoppington#3658",
-      "leader_name": "Nico Robin",
+      "leader_name": "Nico Robin PY",
       "leader_code": "OP09-062",
       "goes_first": false
     },
     "winner": "p2",
     "winner_name": "tonytonychoppington#3658",
-    "winner_leader": "Nico Robin",
+    "winner_leader": "Nico Robin PY",
     "total_turns": 47,
     "mulligan_p1": {
       "before": [

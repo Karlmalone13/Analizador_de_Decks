@@ -255,17 +255,17 @@
     "source": "autosaved_log",
     "p1": {
       "name": "Karlmalone#2854",
-      "leader_name": "Marshall D. Teach",
+      "leader_name": "Marshall D. Teach BY",
       "leader_code": "OP16-080"
     },
     "p2": {
       "name": "ORANGE#6948",
-      "leader_name": "Yamato",
+      "leader_name": "Yamato B",
       "leader_code": "OP16-079"
     },
     "winner": "p2",
     "winner_name": "ORANGE#6948",
-    "winner_leader": "Yamato",
+    "winner_leader": "Yamato B",
     "total_turns": 23
   },
   {
@@ -274,17 +274,17 @@
     "source": "autosaved_log",
     "p1": {
       "name": "Gonpa#3961",
-      "leader_name": "Enel",
+      "leader_name": "Enel P",
       "leader_code": "OP15-058"
     },
     "p2": {
       "name": "Karlmalone#2854",
-      "leader_name": "Marshall D. Teach",
+      "leader_name": "Marshall D. Teach BY",
       "leader_code": "OP16-080"
     },
     "winner": "p1",
     "winner_name": "Gonpa#3961",
-    "winner_leader": "Enel",
+    "winner_leader": "Enel P",
     "total_turns": 16
   },
   {
@@ -293,17 +293,17 @@
     "source": "autosaved_log",
     "p1": {
       "name": "Karlmalone#2854",
-      "leader_name": "Marshall D. Teach",
+      "leader_name": "Marshall D. Teach BY",
       "leader_code": "OP16-080"
     },
     "p2": {
       "name": "Vince3#4219",
-      "leader_name": "Dracule Mihawk",
+      "leader_name": "Dracule Mihawk G",
       "leader_code": "OP14-020"
     },
     "winner": "p2",
     "winner_name": "Vince3#4219",
-    "winner_leader": "Dracule Mihawk",
+    "winner_leader": "Dracule Mihawk G",
     "total_turns": 34
   },
   {
@@ -312,17 +312,17 @@
     "source": "autosaved_log",
     "p1": {
       "name": "LaoDJ#2305",
-      "leader_name": "Portgas D. Ace",
+      "leader_name": "Portgas D. Ace BlR",
       "leader_code": "OP13-002"
     },
     "p2": {
       "name": "Karlmalone#2854",
-      "leader_name": "Marshall D. Teach",
+      "leader_name": "Marshall D. Teach BY",
       "leader_code": "OP16-080"
     },
     "winner": "p1",
     "winner_name": "LaoDJ#2305",
-    "winner_leader": "Portgas D. Ace",
+    "winner_leader": "Portgas D. Ace BlR",
     "total_turns": 21
   },
   {
@@ -331,17 +331,17 @@
     "source": "autosaved_log",
     "p1": {
       "name": "Karlmalone#2854",
-      "leader_name": "Marshall D. Teach",
+      "leader_name": "Marshall D. Teach BY",
       "leader_code": "OP16-080"
     },
     "p2": {
       "name": "Satoru14#8785",
-      "leader_name": "Monkey D. Luffy",
+      "leader_name": "Monkey D. Luffy BlG",
       "leader_code": "OP16-022"
     },
     "winner": "p2",
     "winner_name": "Satoru14#8785",
-    "winner_leader": "Monkey D. Luffy",
+    "winner_leader": "Monkey D. Luffy BlG",
     "total_turns": 23
   },
   {
@@ -350,17 +350,17 @@
     "source": "autosaved_log",
     "p1": {
       "name": "nortan69#6772",
-      "leader_name": "Jewelry Bonney",
+      "leader_name": "Jewelry Bonney RY",
       "leader_code": "EB04-001"
     },
     "p2": {
       "name": "Karlmalone#2854",
-      "leader_name": "Marshall D. Teach",
+      "leader_name": "Marshall D. Teach BY",
       "leader_code": "OP16-080"
     },
     "winner": "p1",
     "winner_name": "nortan69#6772",
-    "winner_leader": "Jewelry Bonney",
+    "winner_leader": "Jewelry Bonney RY",
     "total_turns": 26
   },
   {
@@ -369,12 +369,12 @@
     "source": "autosaved_log",
     "p1": {
       "name": "Karlmalone#2854",
-      "leader_name": "Marshall D. Teach",
+      "leader_name": "Marshall D. Teach BY",
       "leader_code": "OP16-080"
     },
     "p2": {
       "name": "Bouyatetu#1361",
-      "leader_name": "Nami",
+      "leader_name": "Nami BlY",
       "leader_code": "OP11-041"
     },
     "winner": null,
@@ -388,17 +388,17 @@
     "source": "autosaved_log",
     "p1": {
       "name": "Karlmalone#2854",
-      "leader_name": "Marshall D. Teach",
+      "leader_name": "Marshall D. Teach BY",
       "leader_code": "OP16-080"
     },
     "p2": {
       "name": "kakasino#6476",
-      "leader_name": "Enel",
+      "leader_name": "Enel Y",
       "leader_code": "OP05-098"
     },
     "winner": "p2",
     "winner_name": "kakasino#6476",
-    "winner_leader": "Enel",
+    "winner_leader": "Enel Y",
     "total_turns": 27
   },
   {
@@ -407,17 +407,17 @@
     "source": "autosaved_log",
     "p1": {
       "name": "Karlmalone#2854",
-      "leader_name": "Marshall D. Teach",
+      "leader_name": "Marshall D. Teach BY",
       "leader_code": "OP16-080"
     },
     "p2": {
       "name": "nanibooty47#7676",
-      "leader_name": "Nami",
+      "leader_name": "Nami BlY",
       "leader_code": "OP11-041"
     },
     "winner": "p2",
     "winner_name": "nanibooty47#7676",
-    "winner_leader": "Nami",
+    "winner_leader": "Nami BlY",
     "total_turns": 36
   },
   {
@@ -426,17 +426,17 @@
     "source": "autosaved_log",
     "p1": {
       "name": "Karlmalone#2854",
-      "leader_name": "Marshall D. Teach",
+      "leader_name": "Marshall D. Teach BY",
       "leader_code": "OP16-080"
     },
     "p2": {
       "name": "gBusiness#4347",
-      "leader_name": "Shanks",
+      "leader_name": "Shanks R",
       "leader_code": "OP09-001"
     },
     "winner": "p2",
     "winner_name": "gBusiness#4347",
-    "winner_leader": "Shanks",
+    "winner_leader": "Shanks R",
     "total_turns": 36
   },
   {
@@ -445,17 +445,17 @@
     "source": "autosaved_log",
     "p1": {
       "name": "Karlmalone#2854",
-      "leader_name": "Marshall D. Teach",
+      "leader_name": "Marshall D. Teach BY",
       "leader_code": "OP16-080"
     },
     "p2": {
       "name": "rong#1667",
-      "leader_name": "Krieg",
+      "leader_name": "Krieg GR",
       "leader_code": "OP15-001"
     },
     "winner": "p1",
     "winner_name": "Karlmalone#2854",
-    "winner_leader": "Marshall D. Teach",
+    "winner_leader": "Marshall D. Teach BY",
     "total_turns": 30
   },
   {
@@ -464,17 +464,17 @@
     "source": "autosaved_log",
     "p1": {
       "name": "Karlmalone#2854",
-      "leader_name": "Marshall D. Teach",
+      "leader_name": "Marshall D. Teach BY",
       "leader_code": "OP16-080"
     },
     "p2": {
       "name": "CatalinaWineMixr#4883",
-      "leader_name": "Imu",
+      "leader_name": "Imu B",
       "leader_code": "OP13-079"
     },
     "winner": "p2",
     "winner_name": "CatalinaWineMixr#4883",
-    "winner_leader": "Imu",
+    "winner_leader": "Imu B",
     "total_turns": 27
   },
   {
@@ -483,12 +483,12 @@
     "source": "autosaved_log",
     "p1": {
       "name": "ccarlosdos#5040",
-      "leader_name": "Sengoku",
+      "leader_name": "Sengoku P",
       "leader_code": "OP16-060"
     },
     "p2": {
       "name": "Karlmalone#2854",
-      "leader_name": "Marshall D. Teach",
+      "leader_name": "Marshall D. Teach BY",
       "leader_code": "OP16-080"
     },
     "winner": null,
@@ -502,12 +502,12 @@
     "source": "autosaved_log",
     "p1": {
       "name": "Karlmalone#2854",
-      "leader_name": "Marshall D. Teach",
+      "leader_name": "Marshall D. Teach BY",
       "leader_code": "OP16-080"
     },
     "p2": {
       "name": "Zakerga#4479",
-      "leader_name": "Portgas D. Ace",
+      "leader_name": "Portgas D. Ace R",
       "leader_code": "OP16-001"
     },
     "winner": null,
@@ -521,12 +521,12 @@
     "source": "autosaved_log",
     "p1": {
       "name": "Karlmalone#2854",
-      "leader_name": "Marshall D. Teach",
+      "leader_name": "Marshall D. Teach BY",
       "leader_code": "OP16-080"
     },
     "p2": {
       "name": "Tmart17#68886",
-      "leader_name": "Yamato",
+      "leader_name": "Yamato B",
       "leader_code": "OP16-079"
     },
     "winner": null,
@@ -540,17 +540,17 @@
     "source": "autosaved_log",
     "p1": {
       "name": "Karlmalone#2854",
-      "leader_name": "Marshall D. Teach",
+      "leader_name": "Marshall D. Teach BY",
       "leader_code": "OP16-080"
     },
     "p2": {
       "name": "tonytonychoppington#3658",
-      "leader_name": "Nico Robin",
+      "leader_name": "Nico Robin PY",
       "leader_code": "OP09-062"
     },
     "winner": "p2",
     "winner_name": "tonytonychoppington#3658",
-    "winner_leader": "Nico Robin",
+    "winner_leader": "Nico Robin PY",
     "total_turns": 47
   },
   {
@@ -559,12 +559,12 @@
     "source": "autosaved_log",
     "p1": {
       "name": "Karlmalone#2854",
-      "leader_name": "Marshall D. Teach",
+      "leader_name": "Marshall D. Teach BY",
       "leader_code": "OP16-080"
     },
     "p2": {
       "name": "Thorfinn#3951",
-      "leader_name": "Dracule Mihawk",
+      "leader_name": "Dracule Mihawk G",
       "leader_code": "OP14-020"
     },
     "winner": null,
@@ -578,12 +578,12 @@
     "source": "autosaved_log",
     "p1": {
       "name": "Estarock#2024",
-      "leader_name": "Roronoa Zoro",
+      "leader_name": "Roronoa Zoro G",
       "leader_code": "OP12-020"
     },
     "p2": {
       "name": "Karlmalone#2854",
-      "leader_name": "Marshall D. Teach",
+      "leader_name": "Marshall D. Teach BY",
       "leader_code": "OP16-080"
     },
     "winner": null,
@@ -597,12 +597,12 @@
     "source": "autosaved_log",
     "p1": {
       "name": "Karlmalone#2854",
-      "leader_name": "Marshall D. Teach",
+      "leader_name": "Marshall D. Teach BY",
       "leader_code": "OP16-080"
     },
     "p2": {
       "name": "harrytat#4060",
-      "leader_name": "Portgas D. Ace",
+      "leader_name": "Portgas D. Ace R",
       "leader_code": "OP16-001"
     },
     "winner": null,
@@ -616,17 +616,17 @@
     "source": "autosaved_log",
     "p1": {
       "name": "kadomaru#5789",
-      "leader_name": "Lucy",
+      "leader_name": "Lucy BlR",
       "leader_code": "OP15-002"
     },
     "p2": {
       "name": "Karlmalone#2854",
-      "leader_name": "Marshall D. Teach",
+      "leader_name": "Marshall D. Teach BY",
       "leader_code": "OP16-080"
     },
     "winner": "p1",
     "winner_name": "kadomaru#5789",
-    "winner_leader": "Lucy",
+    "winner_leader": "Lucy BlR",
     "total_turns": 44
   },
   {
@@ -635,12 +635,12 @@
     "source": "autosaved_log",
     "p1": {
       "name": "Karlmalone#2854",
-      "leader_name": "Imu",
+      "leader_name": "Imu B",
       "leader_code": "OP13-079"
     },
     "p2": {
       "name": "Akantorbeast#2603",
-      "leader_name": "Monkey D. Luffy",
+      "leader_name": "Monkey D. Luffy Y",
       "leader_code": "ST29-001"
     },
     "winner": null,
@@ -654,12 +654,12 @@
     "source": "autosaved_log",
     "p1": {
       "name": "Karlmalone#2854",
-      "leader_name": "Imu",
+      "leader_name": "Imu B",
       "leader_code": "OP13-079"
     },
     "p2": {
       "name": "Jack#5459",
-      "leader_name": "Nami",
+      "leader_name": "Nami BlY",
       "leader_code": "OP11-041"
     },
     "winner": null,
@@ -673,17 +673,17 @@
     "source": "autosaved_log",
     "p1": {
       "name": "Karlmalone#2854",
-      "leader_name": "Imu",
+      "leader_name": "Imu B",
       "leader_code": "OP13-079"
     },
     "p2": {
       "name": "Sebs#6211",
-      "leader_name": "Monkey D. Luffy",
+      "leader_name": "Monkey D. Luffy BlP",
       "leader_code": "OP11-040"
     },
     "winner": "p2",
     "winner_name": "Sebs#6211",
-    "winner_leader": "Monkey D. Luffy",
+    "winner_leader": "Monkey D. Luffy BlP",
     "total_turns": 36
   },
   {
@@ -692,17 +692,17 @@
     "source": "autosaved_log",
     "p1": {
       "name": "Karlmalone#2854",
-      "leader_name": "Krieg",
+      "leader_name": "Krieg GR",
       "leader_code": "OP15-001"
     },
     "p2": {
       "name": "Shichibukai#4335",
-      "leader_name": "Marshall D. Teach",
+      "leader_name": "Marshall D. Teach B",
       "leader_code": "OP09-081"
     },
     "winner": "p1",
     "winner_name": "Karlmalone#2854",
-    "winner_leader": "Krieg",
+    "winner_leader": "Krieg GR",
     "total_turns": 25
   },
   {
@@ -711,17 +711,17 @@
     "source": "autosaved_log",
     "p1": {
       "name": "luny#6381",
-      "leader_name": "Brook",
+      "leader_name": "Brook BG",
       "leader_code": "OP15-022"
     },
     "p2": {
       "name": "Karlmalone#2854",
-      "leader_name": "Krieg",
+      "leader_name": "Krieg GR",
       "leader_code": "OP15-001"
     },
     "winner": "p2",
     "winner_name": "Karlmalone#2854",
-    "winner_leader": "Krieg",
+    "winner_leader": "Krieg GR",
     "total_turns": 24
   },
   {
@@ -730,17 +730,17 @@
     "source": "autosaved_log",
     "p1": {
       "name": "Karlmalone#2854",
-      "leader_name": "Eustass \"Captain\" Kid",
+      "leader_name": "Eustass \"Captain\" Kid Y",
       "leader_code": "OP10-099"
     },
     "p2": {
       "name": "TaxiCab#9855",
-      "leader_name": "Sabo",
+      "leader_name": "Sabo BR",
       "leader_code": "OP13-004"
     },
     "winner": "p2",
     "winner_name": "TaxiCab#9855",
-    "winner_leader": "Sabo",
+    "winner_leader": "Sabo BR",
     "total_turns": 24
   }
 ]

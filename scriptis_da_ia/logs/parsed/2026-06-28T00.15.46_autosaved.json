@@ -4,19 +4,19 @@
     "original_file": "2026-06-28T00.15.46.log",
     "p1": {
       "name": "Karlmalone#2854",
-      "leader_name": "Marshall D. Teach",
+      "leader_name": "Marshall D. Teach BY",
       "leader_code": "OP16-080",
       "goes_first": true
     },
     "p2": {
       "name": "CatalinaWineMixr#4883",
-      "leader_name": "Imu",
+      "leader_name": "Imu B",
       "leader_code": "OP13-079",
       "goes_first": false
     },
     "winner": "p2",
     "winner_name": "CatalinaWineMixr#4883",
-    "winner_leader": "Imu",
+    "winner_leader": "Imu B",
     "total_turns": 27,
     "mulligan_p1": {
       "before": [
