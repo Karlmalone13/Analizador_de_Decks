@@ -1,5 +1,44 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-02 (40) - Claude
+
+**Validação de hand scoring via simulação (#1 #2) — endpoint /hand-stats + UI win rate brackets**
+
+### Backend — `scriptis_da_ia/hand_scorer.py` (novo)
+- Port Python da lógica `avaliarMao()` do TypeScript: `score_hand()`, `detect_archetype()`, `searcher_quality()`
+- Mesmo sistema de modificadores por arquétipo (rush/aggro/control/ramp/midrange)
+- `card_to_handcard()`: converte Card do engine → HandCard para scoring
+- Detecta searcher via texto do card (look at the top / search your deck / look at up to)
+
+### Backend — `scriptis_da_ia/api.py`
+- Novo endpoint `POST /hand-stats` (aceita lista de CardEntry igual ao `/analyze`)
+- Cria `InstrumentedMatch(OPTCGMatch)`: subclasse que captura `_opening_hand_a/b` pós-setup
+- Carrega deck do usuário via `load_deck()` e até 8 oponentes de `decklists_raw.csv`
+- Roda ~80 partidas (n_per_opp × len(opponent_pool)), alternando 1º/2º jogador
+- Para cada partida: score a mão real capturada → registra se ganhou
+- Agrega em 5 brackets fixos (Ruim/Abaixo da média/Médio/Bom/Excelente)
+- Retorna `{archetype, n_games_ran, overall_win_rate, avg_hand_score, score_brackets, mulligan_threshold}`
+- Threshold = max_score do último bracket com win_rate < 0.45
+
+### Frontend — `src/app/analysis/page.tsx`
+- Interfaces `HandStatsBracket` e `HandStats` declaradas ao nível de módulo
+- Estado `handStats` + `handStatsLoading`; fetch `POST /hand-stats` no useEffect de análise
+- Spinner "Simulando partidas vs decks de meta..." enquanto carrega (~30s)
+- Seção "🎲 Validação por Simulação" (entre melhores mãos e plano de turnos):
+  - Cards resumo: Win Rate Geral · Score Médio de Mão · Threshold de Mulligan
+  - Barra por bracket: cor verde/amarelo/vermelho pelo win rate (≥55% / 45-55% / <45%)
+  - Banner "limite mulligan" no bracket de threshold
+  - Dica textual quando threshold está definido
+- Fix: badge "6 cartas" do 2º jogador corrigido para "5 cartas"
+- Timeout de 120s no fetch (partidas podem levar ~30-60s)
+
+### Estado atual
+- Zero erros TypeScript + ESLint (apenas warnings de `<img>` pré-existentes)
+- `/hand-stats` funciona localmente; endpoint síncrono (~30-60s para 80 partidas)
+- Feature #3 (turn plan real da simulação) decidido usar `/leader-stats` já existente em vez de dados de IA (dados humanos = ground truth mais confiável)
+
+---
+
 ## 2026-07-02 (39) - Claude
 
 **Plano de turnos em 2 colunas (1º/2º jogador) + heurística de vida como recurso**

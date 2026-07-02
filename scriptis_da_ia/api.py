@@ -334,6 +334,177 @@ def leader_stats(leader_name: str):
     return {'total_games': total, 'turns': result_turns}
 
 
+@app.post("/hand-stats")
+async def hand_stats(req: DeckRequest, n_games: int = 80):
+    """
+    Valida a heurística de scoring de mão simulando N partidas reais.
+
+    Para cada partida:
+    - Captura a mão de abertura real de 5 cartas do jogador A (nosso deck)
+    - Pontua com hand_scorer.score_hand()
+    - Registra vitória/derrota
+
+    Retorna:
+    - score_brackets: win rate por faixa de score
+    - mulligan_threshold: score abaixo do qual win rate < 45%
+    - archetype: arquétipo detectado
+    - n_games_ran: partidas efetivamente simuladas
+
+    Complexidade: ~1-3s por partida. Com 80 jogos espere ~30-60s.
+    """
+    import random
+    import math
+    import pandas as pd
+    from collections import defaultdict
+    from optcg_engine.decision_engine import (
+        OPTCGMatch,
+        build_real_deck,
+        load_cards_db,
+        validar_deck,
+    )
+    from simulation_worker import load_deck, DeckLoadError
+    from hand_scorer import (
+        card_to_handcard,
+        deck_to_handcards,
+        detect_archetype,
+        searcher_quality,
+        score_hand as hs_score,
+    )
+
+    # ── Deck do usuário ────────────────────────────────────────────────────────
+    try:
+        user_deck = load_deck([{'code': c.code, 'qty': c.qty} for c in req.cards])
+    except DeckLoadError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f'Erro ao montar deck: {e}')
+
+    user_leader, user_cards, *_ = user_deck
+
+    hand_cards_all = deck_to_handcards(user_cards)
+    arq = detect_archetype(hand_cards_all)
+    sq  = searcher_quality(hand_cards_all)
+
+    # Código da carta mais cara (bomba) para bonus na mão
+    bomb_code = None
+    if user_cards:
+        bomb_cand = max(user_cards, key=lambda c: getattr(c, 'cost', 0))
+        if getattr(bomb_cand, 'cost', 0) >= 7:
+            bomb_code = getattr(bomb_cand, 'code', None)
+
+    # ── Pool de oponentes (decks de meta) ─────────────────────────────────────
+    base_dir = os.path.dirname(__file__)
+    try:
+        cards_db = load_cards_db(os.path.join(base_dir, 'cards_rows.csv'))
+        df_raw   = pd.read_csv(os.path.join(base_dir, 'decklists_raw.csv'))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f'Erro ao carregar base de cartas: {e}')
+
+    urls = df_raw.groupby('deck_url')['deck_name'].first()
+    opponent_pool = []
+    for url, name in urls.items():
+        built = build_real_deck(name, url, df_raw, cards_db)
+        if not built:
+            continue
+        opp_leader, opp_cards, opp_stage = built
+        valido, _ = validar_deck(opp_leader, opp_cards, cards_db)
+        if valido and len(opp_cards) >= 40:
+            opponent_pool.append((name, (opp_leader, opp_cards, opp_stage)))
+        if len(opponent_pool) >= 8:
+            break
+
+    if not opponent_pool:
+        raise HTTPException(status_code=500, detail='Nenhum deck oponente disponível')
+
+    # ── Subclass que captura mão de abertura pós-setup ─────────────────────────
+    class InstrumentedMatch(OPTCGMatch):
+        def setup(self):
+            super().setup()
+            self._opening_hand_a = list(self.state_a.hand)
+            self._opening_hand_b = list(self.state_b.hand)
+
+    # ── Loop de simulação ──────────────────────────────────────────────────────
+    records: list[dict] = []  # {score, going_first, won}
+    n_per_opp = max(1, n_games // len(opponent_pool))
+    rng = random.Random()
+
+    for _opp_name, opp_deck in opponent_pool:
+        for g in range(n_per_opp):
+            going_first = (g % 2 == 0)
+            try:
+                if going_first:
+                    match = InstrumentedMatch(user_deck, opp_deck)
+                    match.state_a.is_first = True
+                    match.state_b.is_first = False
+                    result = match.simulate()
+                    initial_hand = match._opening_hand_a
+                    user_player = 'A'
+                else:
+                    match = InstrumentedMatch(opp_deck, user_deck)
+                    match.state_a.is_first = True
+                    match.state_b.is_first = False
+                    result = match.simulate()
+                    initial_hand = match._opening_hand_b
+                    user_player = 'B'
+
+                hand_hc = [card_to_handcard(c) for c in initial_hand]
+                sc = hs_score(hand_hc, going_first=going_first, arq=arq, sq=sq, bomb_code=bomb_code)
+                won = result.get('winner') == user_player
+                records.append({'score': sc, 'going_first': going_first, 'won': won})
+            except Exception:
+                continue
+
+    if not records:
+        raise HTTPException(status_code=500, detail='Nenhuma partida completou com sucesso')
+
+    # ── Agregar em brackets ────────────────────────────────────────────────────
+    # Brackets fixos; podem aparecer vazios se todos os scores estiverem concentrados
+    BRACKETS = [
+        {'label': 'Ruim',          'min': -9999, 'max': 50},
+        {'label': 'Abaixo da média', 'min': 50,  'max': 80},
+        {'label': 'Médio',         'min': 80,    'max': 110},
+        {'label': 'Bom',           'min': 110,   'max': 140},
+        {'label': 'Excelente',     'min': 140,   'max': 9999},
+    ]
+
+    score_brackets = []
+    for b in BRACKETS:
+        in_bracket = [r for r in records if b['min'] <= r['score'] < b['max']]
+        if not in_bracket:
+            continue
+        wins = sum(1 for r in in_bracket if r['won'])
+        wr = wins / len(in_bracket)
+        score_brackets.append({
+            'label':     b['label'],
+            'min_score': b['min'] if b['min'] > -9999 else None,
+            'max_score': b['max'] if b['max'] < 9999  else None,
+            'n_games':   len(in_bracket),
+            'wins':      wins,
+            'win_rate':  round(wr, 3),
+        })
+
+    # Mulligan threshold: menor score onde win_rate < 45%
+    mulligan_threshold: int | None = None
+    for b_info in score_brackets:
+        if b_info['win_rate'] < 0.45 and b_info['max_score'] is not None:
+            mulligan_threshold = b_info['max_score']
+            break
+
+    # Score médio geral e overall win rate
+    all_scores = [r['score'] for r in records]
+    avg_score  = round(sum(all_scores) / len(all_scores))
+    overall_wr = round(sum(1 for r in records if r['won']) / len(records), 3)
+
+    return {
+        'archetype':          arq,
+        'n_games_ran':        len(records),
+        'overall_win_rate':   overall_wr,
+        'avg_hand_score':     avg_score,
+        'score_brackets':     score_brackets,
+        'mulligan_threshold': mulligan_threshold,
+    }
+
+
 @app.get("/simulate/status/{job_id}")
 async def simulate_status(job_id: str):
     """

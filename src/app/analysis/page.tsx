@@ -525,6 +525,24 @@ interface LeaderStats {
     turns: Record<string, { card_code: string; card_name: string; count: number; pct: number }[]>
 }
 
+interface HandStatsBracket {
+    label: string
+    min_score: number | null
+    max_score: number | null
+    n_games: number
+    wins: number
+    win_rate: number
+}
+
+interface HandStats {
+    archetype: string
+    n_games_ran: number
+    overall_win_rate: number
+    avg_hand_score: number
+    score_brackets: HandStatsBracket[]
+    mulligan_threshold: number | null
+}
+
 // ── IA ────────────────────────────────────────────────────────────────────────
 const ARCHETYPE_COLOR: Record<string, string> = {
     'Aggro': 'text-red-400',
@@ -558,6 +576,9 @@ function AnalysisPageContent() {
     const [analise, setAnalise] = useState<AnaliseResult | null>(null)
     const [analiseLoading, setAnaliseLoading] = useState(false)
     const [leaderStats, setLeaderStats] = useState<LeaderStats | null>(null)
+
+    const [handStats, setHandStats] = useState<HandStats | null>(null)
+    const [handStatsLoading, setHandStatsLoading] = useState(false)
 
     useEffect(() => {
         if (!deckId) {
@@ -617,6 +638,19 @@ function AnalysisPageContent() {
             .then(r => r.ok ? r.json() : Promise.reject(r.status))
             .then(data => setLeaderStats(data))
             .catch(() => setLeaderStats(null))
+
+        // Validação de hand scoring via simulação (#1 e #2)
+        queueMicrotask(() => { setHandStatsLoading(true) })
+        fetch(`${API_URL}/hand-stats`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ cards }),
+            signal: AbortSignal.timeout(120000),
+        })
+            .then(r => r.ok ? r.json() : Promise.reject(r.status))
+            .then(data => setHandStats(data))
+            .catch(err => console.warn('hand-stats indisponível:', err))
+            .finally(() => setHandStatsLoading(false))
     }, [deck])
 
     if (loading) return (
@@ -1234,7 +1268,7 @@ function AnalysisPageContent() {
                         <div>
                             <div className="flex items-center gap-2 mb-3">
                                 <span className="bg-blue-600 text-white text-xs font-bold px-2 py-0.5 rounded">2º Jogador</span>
-                                <span className="text-xs text-gray-500">6 cartas · T1=custo 1-2 · T2=custo 3-4 · T3=custo 5</span>
+                                <span className="text-xs text-gray-500">5 cartas · T1=custo 1-2 · T2=custo 3-4 · T3=custo 5-6</span>
                             </div>
                             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                                 {melhoresMaosP2.map((mao, mi) => (
@@ -1256,6 +1290,96 @@ function AnalysisPageContent() {
                         </div>
                     </div>
                 )}
+
+                {/* HAND STATS — validação via simulação */}
+                <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 mb-8">
+                    <div className="flex items-center gap-3 mb-1">
+                        <div className="text-sm font-semibold text-gray-400 uppercase tracking-wide">🎲 Validação por Simulação</div>
+                        {handStats && (
+                            <span className="text-xs bg-gray-700 text-gray-300 px-2 py-0.5 rounded">
+                                {handStats.n_games_ran} partidas simuladas vs meta
+                            </span>
+                        )}
+                    </div>
+                    <div className="text-xs text-gray-500 mb-4">
+                        Win rate real por faixa de score de mão · recomendação de mulligan baseada em dados
+                    </div>
+
+                    {handStatsLoading && !handStats && (
+                        <div className="flex items-center gap-3 py-6 text-gray-500 text-sm">
+                            <svg className="animate-spin h-4 w-4 text-orange-400" fill="none" viewBox="0 0 24 24">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                            </svg>
+                            Simulando partidas vs decks de meta... pode levar ~30s
+                        </div>
+                    )}
+
+                    {handStats && (
+                        <div>
+                            {/* Resumo */}
+                            <div className="grid grid-cols-3 gap-3 mb-5">
+                                <div className="bg-gray-800 rounded-xl p-3 text-center">
+                                    <div className="text-xs text-gray-400 mb-1">Win Rate Geral</div>
+                                    <div className={`text-xl font-black ${handStats.overall_win_rate >= 0.5 ? 'text-green-400' : 'text-red-400'}`}>
+                                        {(handStats.overall_win_rate * 100).toFixed(0)}%
+                                    </div>
+                                </div>
+                                <div className="bg-gray-800 rounded-xl p-3 text-center">
+                                    <div className="text-xs text-gray-400 mb-1">Score Médio de Mão</div>
+                                    <div className="text-xl font-black text-orange-400">{handStats.avg_hand_score}</div>
+                                </div>
+                                <div className="bg-gray-800 rounded-xl p-3 text-center">
+                                    <div className="text-xs text-gray-400 mb-1">Threshold Mulligan</div>
+                                    <div className={`text-xl font-black ${handStats.mulligan_threshold ? 'text-yellow-400' : 'text-gray-500'}`}>
+                                        {handStats.mulligan_threshold != null ? `< ${handStats.mulligan_threshold}` : '—'}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Brackets */}
+                            <div className="space-y-2">
+                                {handStats.score_brackets.map((b, i) => {
+                                    const isThreshold = handStats.mulligan_threshold != null && b.max_score === handStats.mulligan_threshold
+                                    const wr = b.win_rate
+                                    const barColor = wr >= 0.55 ? 'bg-green-500' : wr >= 0.45 ? 'bg-yellow-500' : 'bg-red-500'
+                                    const labelColor = wr >= 0.55 ? 'text-green-400' : wr >= 0.45 ? 'text-yellow-400' : 'text-red-400'
+                                    return (
+                                        <div key={i} className={`bg-gray-800 rounded-xl px-4 py-2.5 ${isThreshold ? 'ring-1 ring-yellow-500' : ''}`}>
+                                            <div className="flex items-center justify-between mb-1.5">
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-xs font-semibold text-white">{b.label}</span>
+                                                    {isThreshold && <span className="text-xs bg-yellow-900 text-yellow-300 px-1.5 py-0.5 rounded">limite mulligan</span>}
+                                                    <span className="text-xs text-gray-500">
+                                                        score {b.min_score ?? '—'} – {b.max_score ?? '∞'} · {b.n_games} partidas
+                                                    </span>
+                                                </div>
+                                                <span className={`text-sm font-black ${labelColor}`}>
+                                                    {(wr * 100).toFixed(0)}% WR
+                                                </span>
+                                            </div>
+                                            <div className="w-full bg-gray-700 rounded-full h-1.5">
+                                                <div className={`h-1.5 rounded-full ${barColor}`} style={{ width: `${Math.min(wr * 100, 100)}%` }} />
+                                            </div>
+                                        </div>
+                                    )
+                                })}
+                            </div>
+
+                            {handStats.mulligan_threshold != null && (
+                                <div className="mt-4 bg-yellow-900/30 border border-yellow-700/50 rounded-xl px-4 py-3 text-sm text-yellow-200">
+                                    💡 <strong>Recomendação:</strong> faça mulligan se o score da sua mão for abaixo de{' '}
+                                    <span className="font-black text-yellow-300">{handStats.mulligan_threshold}</span>.
+                                    Mãos abaixo desse threshold tiveram win rate inferior a 45% nas simulações.
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {!handStatsLoading && !handStats && (
+                        <div className="text-xs text-gray-600 py-2">API de simulação indisponível — execute o backend local para ativar.</div>
+                    )}
+                </div>
 
                 {/* PLANO */}
                 <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 mb-8">
