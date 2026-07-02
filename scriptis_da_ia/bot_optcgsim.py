@@ -6,8 +6,9 @@ engine de decisão real (decision_engine.py) via sim_bridge.py.
 
 Fluxo por turno:
   1. Detecta fase via pixels (botões no canto inferior direito)
-  2. Lê estado visual: mão (hover+OCR), campo, DON
-  3. Sincroniza com GameState via sim_bridge
+  2. Scan completo UMA VEZ no início da Main Phase (hover+OCR)
+  3. Após cada ação: OCR do painel de log (esquerda) → aplica delta
+     ao GameState sem rescanear o tabuleiro inteiro
   4. engine.choose_action() decide a melhor ação
   5. Executa a ação no simulador (clique/drag)
 
@@ -20,6 +21,7 @@ from __future__ import annotations
 import time, sys, re, json, argparse, subprocess
 from pathlib import Path
 from typing import Optional
+from PIL import ImageOps
 
 try:
     import pyautogui as pag
@@ -32,11 +34,10 @@ except ImportError:
 
 pag.PAUSE = 0.05
 
-# ── Adiciona o dir do engine ao path ──────────────────────────────────────────
+# ── Path do engine ─────────────────────────────────────────────────────────────
 _SCRIPTS_DIR = Path(__file__).parent
 sys.path.insert(0, str(_SCRIPTS_DIR))
 
-# Import do bridge (lazy para não crashar se faltar dependência)
 _bridge = None
 def _get_bridge():
     global _bridge
@@ -48,7 +49,7 @@ def _get_bridge():
             print(f"[AVISO] sim_bridge não disponível: {e}")
     return _bridge
 
-# ── Banco de cartas para lookup nome → código ─────────────────────────────────
+# ── Banco de cartas (nome → código) ───────────────────────────────────────────
 _DB_PATH = _SCRIPTS_DIR / "card_analysis_db.json"
 _CARD_DB: dict[str, list[dict]] = {}
 
@@ -84,55 +85,181 @@ def _lookup_by_name(name: str, cost: int | None = None) -> dict | None:
     return candidates[0]
 
 # ── Coordenadas fixas (1366×768) ───────────────────────────────────────────────
-# Menu principal
-C_SOLO_V_SELF = (684, 438)
+C_SOLO_V_SELF  = (684, 438)
 C_START        = (297, 407)
-
-# Botões de ação (canto inferior direito)
-C_BTN_TOP  = (1101, 578)   # Deploy / Confirm / Mulligan
-C_BTN_MAIN = (1101, 643)   # Cancel / End Turn / Draw Card / Keep
-
-# Controles em jogo
-C_BACK_MAIN   = (1165, 82)
+C_BTN_TOP      = (1101, 578)
+C_BTN_MAIN     = (1101, 643)
+C_BACK_MAIN    = (1165, 82)
 C_DOWNLOAD_LOG = (1165, 172)
-
-# Líderes e alvos de ataque
 C_P2_LEADER    = (700, 527)
 C_P1_LEADER    = (632, 223)
 C_P1_CHAR_AREA = (680, 310)
 
-# Mão P2: strip inferior esquerda
+# Mão P2
 HAND_Y       = 648
 HAND_X_START = 107
 HAND_X_END   = 410
 HAND_STEP    = 35
+HOVER_WAIT   = 0.30   # reduzido de 0.65 → 0.30s
 
-# Preview de carta (lado direito, aparece ao hover)
+# Preview de carta (lado direito)
 PREVIEW_NAME_BBOX  = (945, 415, 1185, 445)
 PREVIEW_COST_BBOX  = (930,  58,  975,  98)
 PREVIEW_POWER_BBOX = (1130,  58, 1230,  95)
 
-# Posições de hover para counters (mostram badge com número)
-DON_P2_HOVER   = (495, 634)      # hover → badge "N(M)" = total(restados)
-DON_P1_HOVER   = (865, 100)      # hover → badge P1 DON
-DECK_P2_HOVER  = (480, 545)      # hover → badge count do deck P2
-DECK_P1_HOVER  = (870, 200)      # hover → badge count do deck P1
-LIFE_P2_HOVER  = (480, 460)      # hover → badge count das vidas P2 (posição estimada)
-LIFE_P1_HOVER  = (463, 210)      # hover → badge count das vidas P1 (posição estimada)
-TRASH_P2_HOVER = (855, 640)      # hover → preview do topo do trash P2
-TRASH_P1_HOVER = (463, 160)      # hover → preview do topo do trash P1
-OPP_HAND_HOVER = (250, 90)       # hover → badge com número de cartas na mão do oponente
-
-# Bboxes dos badges de counter (aparecem após hover, círculo com número)
-# Localização aproximada: canto superior do objeto hovereado
-_BADGE_OFFSET_Y = -45   # badge fica ~45px acima do centro do objeto hovereado
+# DON e outros counters
+DON_P2_HOVER = (495, 634)
+DON_P1_HOVER = (865, 100)
+OPP_HAND_HOVER = (250, 90)
 
 def _badge_bbox(hover_x: int, hover_y: int) -> tuple:
-    """Bbox estimado do badge de counter baseado na posição de hover."""
-    x, y = hover_x, hover_y + _BADGE_OFFSET_Y
+    x, y = hover_x, hover_y - 45
     return (x - 25, y - 20, x + 25, y + 20)
 
-# ── OCR utilitário ─────────────────────────────────────────────────────────────
+# ── Painel de log (esquerda) ───────────────────────────────────────────────────
+LOG_BBOX = (135, 210, 390, 475)
+
+# Regex para parsear linhas do log
+_RE_CODE    = re.compile(r'\[([A-Z]{1,4}\d{2}-\d{3}[a-z]?)\]')
+_RE_DRAW_N  = re.compile(r'Draw (\d+) Card')
+_RE_REST_N  = re.compile(r'Rest (\d+) Don')
+_RE_SEND_LIFE = re.compile(r'Send (\d+) Life to Hand')
+_RE_HIT     = re.compile(r'hit for (\d+) damage')
+
+# Estado acumulado do log (reset a cada partida)
+_log_lines_seen: list[str] = []
+
+def _reset_log():
+    global _log_lines_seen
+    _log_lines_seen = []
+
+def _read_log_lines() -> list[str]:
+    """OCR do painel de log. Retorna lista de linhas visíveis."""
+    img = ImageGrab.grab(bbox=LOG_BBOX)
+    img = img.convert('L')
+    img = ImageOps.invert(img)   # texto claro em fundo escuro → inverte
+    img = img.resize((img.width * 3, img.height * 3), Image.LANCZOS)
+    img = ImageEnhance.Contrast(img).enhance(2.0)
+    raw = pytesseract.image_to_string(img, config='--psm 6').strip()
+    return [l.strip() for l in raw.splitlines() if l.strip()]
+
+def read_log_delta() -> list[str]:
+    """
+    Lê o painel de log e retorna apenas as linhas novas
+    desde a última chamada.
+    """
+    global _log_lines_seen
+    current = _read_log_lines()
+    if not current:
+        return []
+    if not _log_lines_seen:
+        _log_lines_seen = current
+        return current
+
+    # Procura a última linha conhecida dentro do current para encontrar o delta
+    last = _log_lines_seen[-1]
+    try:
+        idx = len(current) - 1 - list(reversed(current)).index(last)
+        new_lines = current[idx + 1:]
+    except ValueError:
+        # OCR leu diferente — tudo é novo
+        new_lines = current
+
+    _log_lines_seen = current
+    return new_lines
+
+def apply_log_delta(gs, opp_gs, lines: list[str]) -> bool:
+    """
+    Aplica novas linhas do log ao GameState do bot e do oponente.
+
+    Retorna True se a mão do bot mudou (carta sacada/recebida)
+    e portanto precisa de rescan parcial da mão.
+    """
+    needs_hand_rescan = False
+
+    try:
+        from optcg_engine.decision_engine import _make_card, load_cards_db
+        cards_db = getattr(_get_bridge(), '_cards_db', {})
+    except Exception:
+        cards_db = {}
+
+    def _get_card(code: str):
+        data = cards_db.get(code)
+        if not data:
+            return None
+        try:
+            return _make_card(code, data)
+        except Exception:
+            return None
+
+    for line in lines:
+        codes = _RE_CODE.findall(line)
+        is_you = '[You]' in line or line.startswith('You')
+        is_opp = '[Opponent]' in line or line.startswith('Opponent')
+
+        # ── Deploy ────────────────────────────────────────────────────────────
+        if 'Deploy' in line and codes:
+            code = codes[-1]
+            if is_you:
+                # Remove da mão
+                gs.hand = [c for c in gs.hand if c.code != code]
+                # Adiciona ao campo se ainda não estiver
+                if not any(c.code == code for c in gs.field_chars):
+                    card = _get_card(code)
+                    if card:
+                        gs.field_chars.append(card)
+            elif is_opp:
+                if not any(c.code == code for c in opp_gs.field_chars):
+                    card = _get_card(code)
+                    if card:
+                        opp_gs.field_chars.append(card)
+
+        # ── Saque de cartas ───────────────────────────────────────────────────
+        elif 'Draw' in line and 'Card' in line:
+            if is_you:
+                needs_hand_rescan = True
+            elif is_opp:
+                m = _RE_DRAW_N.search(line)
+                opp_gs.hand.extend([None] * int(m.group(1))) if m else None
+
+        # ── Vida para mão (ON PLAY de certas cartas) ──────────────────────────
+        elif 'Life to Hand' in line and is_you:
+            m = _RE_SEND_LIFE.search(line)
+            if m:
+                n = int(m.group(1))
+                gs.life = gs.life[n:] if len(gs.life) >= n else []
+                needs_hand_rescan = True  # carta nova na mão
+
+        # ── DON restado por efeito ────────────────────────────────────────────
+        elif 'Rest' in line and 'Don' in line and is_you:
+            m = _RE_REST_N.search(line)
+            if m:
+                gs.don_available = max(0, gs.don_available - int(m.group(1)))
+
+        # ── K.O. ─────────────────────────────────────────────────────────────
+        elif 'K.O.' in line and codes:
+            code = codes[-1]
+            if is_you:
+                gs.field_chars = [c for c in gs.field_chars if c.code != code]
+            elif is_opp:
+                opp_gs.field_chars = [c for c in opp_gs.field_chars
+                                       if c.code != code]
+
+        # ── Dano na vida ──────────────────────────────────────────────────────
+        elif 'hit for' in line:
+            m = _RE_HIT.search(line)
+            if m:
+                dmg = int(m.group(1))
+                # Heurística: se "You" foi atingido → nossa vida diminui
+                if is_you or 'Player 2' in line:
+                    gs.life = gs.life[dmg:] if len(gs.life) >= dmg else []
+                else:
+                    opp_gs.life = (opp_gs.life[dmg:]
+                                   if len(opp_gs.life) >= dmg else [])
+
+    return needs_hand_rescan
+
+# ── OCR do preview de carta ────────────────────────────────────────────────────
 _NAME_NOISE = re.compile(r'^[^A-Za-z]+')
 
 def _ocr_crop(bbox: tuple, whitelist: str | None = None,
@@ -150,8 +277,7 @@ def _ocr_crop(bbox: tuple, whitelist: str | None = None,
 def _read_preview_name() -> str:
     raw = _ocr_crop(PREVIEW_NAME_BBOX, psm=7)
     clean = _NAME_NOISE.sub('', raw).strip()
-    clean = re.sub(r'^[^A-Z]+', '', clean)
-    return clean
+    return re.sub(r'^[^A-Z]+', '', clean)
 
 def _read_preview_cost() -> int | None:
     raw = _ocr_crop(PREVIEW_COST_BBOX, whitelist='0123456789', psm=8)
@@ -165,39 +291,21 @@ def _read_preview_power() -> int | None:
     digits = re.sub(r'\D', '', raw)
     return int(digits) if digits else None
 
-def _read_counter_badge(hover_pos: tuple) -> int | None:
-    """
-    Hover sobre hover_pos, aguarda badge aparecer, OCR para ler número.
-    Retorna int ou None.
-    """
-    pag.moveTo(*hover_pos, duration=0.04)
-    time.sleep(0.7)
-    bbox = _badge_bbox(*hover_pos)
-    raw = _ocr_crop(bbox, whitelist='0123456789()', psm=8, scale=6)
-    digits = re.findall(r'\d+', raw)
-    return int(digits[0]) if digits else None
-
 def _read_don_active(hover_pos: tuple) -> int:
-    """
-    Lê DON ativo de um jogador via hover.
-    Badge mostra "N(M)" onde N=total DON, M=restados. Ativo = N - M.
-    Retorna 0 se falhar.
-    """
     pag.moveTo(*hover_pos, duration=0.04)
-    time.sleep(0.7)
+    time.sleep(0.5)
     bbox = _badge_bbox(*hover_pos)
     raw = _ocr_crop(bbox, whitelist='0123456789()', psm=8, scale=6)
     m = re.search(r'(\d+)\((\d+)\)', raw)
     if m:
-        total, rested = int(m.group(1)), int(m.group(2))
-        return max(0, total - rested)
+        return max(0, int(m.group(1)) - int(m.group(2)))
     digits = re.findall(r'\d+', raw)
     return int(digits[0]) if digits else 0
 
-# ── Scan de mão e campo ────────────────────────────────────────────────────────
+# ── Scan completo (feito UMA VEZ por Main Phase) ───────────────────────────────
 
 def scan_hand() -> list[dict]:
-    """Varre posições da mão via hover+OCR. Retorna lista de dicts por carta."""
+    """Varre posições da mão via hover+OCR. Hover wait = HOVER_WAIT."""
     cards: list[dict] = []
     seen: set[str] = set()
     empty_streak = 0
@@ -205,7 +313,7 @@ def scan_hand() -> list[dict]:
     x = HAND_X_START
     while x <= HAND_X_END + HAND_STEP:
         pag.moveTo(x, HAND_Y, duration=0.04)
-        time.sleep(0.65)
+        time.sleep(HOVER_WAIT)
 
         name  = _read_preview_name()
         cost  = _read_preview_cost()
@@ -213,7 +321,7 @@ def scan_hand() -> list[dict]:
 
         if not name:
             empty_streak += 1
-            if empty_streak >= 4:
+            if empty_streak >= 3:
                 break
             x += HAND_STEP
             continue
@@ -233,16 +341,16 @@ def scan_hand() -> list[dict]:
     return cards
 
 def scan_board_p2() -> list[dict]:
-    """Escaneia cartas na Character Area P2 via hover+OCR."""
+    """Escaneia personagens no campo P2 via hover+OCR."""
     POSITIONS = [
         (510, 430), (575, 430), (640, 430), (705, 430),
-        (770, 430), (835, 430), (510, 460), (575, 460),
+        (770, 430), (835, 430),
     ]
     cards: list[dict] = []
     seen: set[str] = set()
     for bx, by in POSITIONS:
         pag.moveTo(bx, by, duration=0.04)
-        time.sleep(0.55)
+        time.sleep(HOVER_WAIT)
         name  = _read_preview_name()
         cost  = _read_preview_cost()
         power = _read_preview_power()
@@ -254,28 +362,49 @@ def scan_board_p2() -> list[dict]:
                       'power': power, 'code': db.get('code') if db else None})
     return cards
 
-# ── Leitura de estado completo ─────────────────────────────────────────────────
+def scan_opp_board() -> list[dict]:
+    """Escaneia personagens no campo P1 (oponente) via hover+OCR."""
+    POSITIONS = [
+        (510, 310), (575, 310), (640, 310), (705, 310),
+        (770, 310), (835, 310),
+    ]
+    cards: list[dict] = []
+    seen: set[str] = set()
+    for bx, by in POSITIONS:
+        pag.moveTo(bx, by, duration=0.04)
+        time.sleep(HOVER_WAIT)
+        name  = _read_preview_name()
+        cost  = _read_preview_cost()
+        power = _read_preview_power()
+        if not name or name.lower() in seen:
+            continue
+        seen.add(name.lower())
+        db = _lookup_by_name(name, cost)
+        cards.append({'x': bx, 'y': by, 'name': name, 'cost': cost,
+                      'power': power, 'code': db.get('code') if db else None})
+    return cards
 
-def read_game_state() -> dict:
+def full_scan(gs, opp_gs) -> tuple[list[dict], list[dict]]:
     """
-    Lê o estado completo do jogo via hover+OCR.
-    Retorna dict com: hand, board_p2, don_p2_active, don_p1_active, opp_hand_count.
+    Scan completo do estado visual: mão, campo P2, campo P1, DON.
+    Sincroniza gs e opp_gs. Retorna (hand_cards, board_cards) para referência de posição.
     """
-    state: dict = {}
+    bridge = _get_bridge()
 
-    # DON
-    state['don_p2_active'] = _read_don_active(DON_P2_HOVER)
-    state['don_p1_active'] = _read_don_active(DON_P1_HOVER)
+    hand_cards  = scan_hand()
+    board_cards = scan_board_p2()
+    opp_board   = scan_opp_board()
+    don_p2      = _read_don_active(DON_P2_HOVER)
+    don_p1      = _read_don_active(DON_P1_HOVER)
 
-    # Mão e campo
-    state['hand']     = scan_hand()
-    state['board_p2'] = scan_board_p2()
+    if bridge:
+        bridge.sync_hand(gs, hand_cards)
+        bridge.sync_field(gs, board_cards)
+        bridge.sync_field(opp_gs, opp_board)
+    gs.don_available     = don_p2
+    opp_gs.don_available = don_p1
 
-    # Contagem mão oponente (badge)
-    opp = _read_counter_badge(OPP_HAND_HOVER)
-    state['opp_hand_count'] = opp if opp is not None else 5
-
-    return state
+    return hand_cards, board_cards
 
 # ── Detecção de botões ─────────────────────────────────────────────────────────
 BTN_LO = (115, 100, 75)
@@ -289,15 +418,6 @@ def _scan_buttons() -> tuple[bool, bool]:
     top  = _is_beige(img.getpixel((1220, 578)))
     main = _is_beige(img.getpixel((1220, 643)))
     return top, main
-
-def _wait_for_button(timeout: float = 8.0) -> tuple[bool, bool]:
-    end = time.time() + timeout
-    while time.time() < end:
-        t, m = _scan_buttons()
-        if t or m:
-            return t, m
-        time.sleep(0.2)
-    return False, False
 
 # ── Foco na janela ─────────────────────────────────────────────────────────────
 
@@ -317,10 +437,6 @@ def _focus_sim() -> bool:
 _game_phase = 0
 
 def _handle_prompts(max_steps: int = 30) -> None:
-    """
-    Clica prompts de efeito (ON PLAY, Choose Target, etc.) até
-    botão único reaparecer ou inatividade.
-    """
     idle = 0
     for _ in range(max_steps):
         time.sleep(0.35)
@@ -332,30 +448,24 @@ def _handle_prompts(max_steps: int = 30) -> None:
             continue
         idle = 0
         if top and main:
-            pag.click(*C_BTN_TOP)   # Confirm / Use / escolhe primeiro alvo
+            pag.click(*C_BTN_TOP)
         else:
             return
 
 def _try_deploy_card(hand_x: int) -> bool:
-    """
-    Clica carta em hand_x. Se aparecer Deploy (dois botões) → deploya e trata ON PLAY.
-    Retorna True se jogou, False se não (carta cara ou sem Deploy).
-    """
     pag.click(hand_x, HAND_Y)
     time.sleep(0.45)
     top, main = _scan_buttons()
     if top and main:
-        pag.click(*C_BTN_TOP)   # Deploy
+        pag.click(*C_BTN_TOP)
         time.sleep(0.45)
         _handle_prompts()
         return True
-    # Fecha preview clicando no tabuleiro
     pag.click(700, 380)
     time.sleep(0.2)
     return False
 
 def _try_attack_leader() -> None:
-    """Arrasta líder P2 até líder P1 para atacar."""
     pag.moveTo(*C_P2_LEADER, duration=0.12)
     pag.mouseDown()
     time.sleep(0.08)
@@ -368,7 +478,6 @@ def _try_attack_leader() -> None:
         _handle_prompts()
 
 def _try_attack_char(field_x: int, field_y: int) -> None:
-    """Arrasta personagem P2 no campo até a área de personagens P1."""
     pag.moveTo(field_x, field_y, duration=0.12)
     pag.mouseDown()
     time.sleep(0.08)
@@ -379,91 +488,62 @@ def _try_attack_char(field_x: int, field_y: int) -> None:
     if top or main:
         _handle_prompts()
 
-# ── Execução de ação do engine ──────────────────────────────────────────────────
+# ── Execução de ação do engine ─────────────────────────────────────────────────
 
 def _execute_engine_action(action: tuple, hand_cards: list[dict],
-                           board_cards: list[dict]) -> bool:
-    """
-    Recebe a tupla de ação do engine e a executa no simulador.
-    Retorna True se executou algo, False se não houve ação.
-
-    Formatos de action conhecidos (decision_engine.py):
-      (score, 'play',    card, ...)
-      (score, 'attack',  attacker, target, ...)
-      (score, 'activate', card, ...)
-      (score, 'don_attach', card, ...)
-      (score, 'end_turn')
-    """
+                            board_cards: list[dict]) -> bool:
     if not action:
         return False
-
-    score      = action[0]
+    score       = action[0]
     action_type = action[1] if len(action) > 1 else 'end_turn'
-    card       = action[2] if len(action) > 2 else None
+    card        = action[2] if len(action) > 2 else None
 
     if score < 0 or action_type == 'end_turn':
         return False
 
     if action_type == 'play' and card is not None:
-        # Encontra posição na mão pelo código da carta
-        code = getattr(card, 'code', None)
+        code   = getattr(card, 'code', None)
         hand_x = None
         for h in hand_cards:
-            if h.get('code') == code or h.get('name', '').lower() == getattr(card, 'name', '').lower():
+            if h.get('code') == code or \
+               h.get('name', '').lower() == getattr(card, 'name', '').lower():
                 hand_x = h['x']
                 break
         if hand_x is None and hand_cards:
-            hand_x = hand_cards[0]['x']   # fallback: primeira carta
-        if hand_x:
-            return _try_deploy_card(hand_x)
-        return False
+            hand_x = hand_cards[0]['x']
+        return _try_deploy_card(hand_x) if hand_x else False
 
     if action_type == 'attack' and card is not None:
-        attacker_code = getattr(card, 'code', None)
-        # Verifica se é o líder
-        if card and getattr(card, 'card_type', '') == 'LEADER':
+        if getattr(card, 'card_type', '') == 'LEADER':
             _try_attack_leader()
             return True
-        # Personagem no campo
         for b in board_cards:
-            if b.get('code') == attacker_code:
+            if b.get('code') == getattr(card, 'code', None):
                 _try_attack_char(b['x'], b['y'])
                 return True
-        # Fallback: ataca com líder
         _try_attack_leader()
         return True
 
-    # Outros tipos de ação (activate, don_attach) não implementados ainda
     return False
 
 # ── Fluxo de uma partida ───────────────────────────────────────────────────────
 
 def play_match(deck_name: str | None = None, timeout: int = 600) -> bool:
-    """
-    Joga uma partida completa usando o engine para decidir.
-    Retorna True se concluída normalmente.
-    """
     global _game_phase
     _game_phase = 0
+    _reset_log()
 
     bridge = _get_bridge()
-
-    # Carrega o deck e monta estado inicial
-    gs      = None
-    opp_gs  = None
-    match   = None
+    gs = opp_gs = match = None
 
     if bridge and deck_name:
         try:
             from optcg_engine.decision_engine import OPTCGMatch
             deck_tuple = bridge.load_sim_deck(deck_name)
-            # Cria partida com dois decks iguais (bot vs bot - o oponente é stub)
             match  = OPTCGMatch(deck_tuple, deck_tuple)
-            # state_b = P2 = nós; state_a = P1 = oponente
             gs     = match.state_b
             opp_gs = match.state_a
-            leader = gs.leader
-            print(f"  Deck: {deck_name} (líder: {leader.name})", end=" ")
+            print(f"  Deck: {deck_name} (líder: {gs.leader.name})", end=" ")
         except Exception as e:
             print(f"  [engine indisponível: {e}]", end=" ")
             bridge = None
@@ -471,7 +551,6 @@ def play_match(deck_name: str | None = None, timeout: int = 600) -> bool:
     print("  Solo v Self...", end=" ", flush=True)
     pag.click(*C_SOLO_V_SELF)
     time.sleep(1.5)
-
     print("Start!", end=" ", flush=True)
     pag.click(*C_START)
     time.sleep(2.5)
@@ -480,16 +559,15 @@ def play_match(deck_name: str | None = None, timeout: int = 600) -> bool:
     idle_ticks = 0
     MAX_IDLE   = 20
 
-    hand_cards  : list[dict] = []
-    board_cards : list[dict] = []
+    # Estado da Main Phase
+    hand_cards  : list[dict] = []   # posições visuais da mão (para cliques)
+    board_cards : list[dict] = []   # posições visuais do campo P2
     in_main     = False
     attacked    = False
-    main_actions_done = 0
 
     while time.time() - start < timeout:
         has_top, has_main = _scan_buttons()
 
-        # ── Sem botão ──────────────────────────────────────────────────────────
         if not has_top and not has_main:
             idle_ticks += 1
             if idle_ticks >= MAX_IDLE:
@@ -499,107 +577,101 @@ def play_match(deck_name: str | None = None, timeout: int = 600) -> bool:
             continue
         idle_ticks = 0
 
-        # ── Dois botões (TOP + MAIN) ────────────────────────────────────────────
+        # ── Dois botões ────────────────────────────────────────────────────────
         if has_top and has_main:
             in_main = False
             if _game_phase == 0:
-                pag.click(*C_BTN_MAIN)   # Keep (Mulligan)
+                pag.click(*C_BTN_MAIN)   # Keep
                 _game_phase = 1
             else:
                 pag.click(*C_BTN_TOP)    # Confirm / Use Action
             time.sleep(0.35)
             continue
 
-        # ── Botão único (MAIN) ─────────────────────────────────────────────────
-        # Pode ser: Draw Card, Draw Don, End Turn, Return Cards...
-        # Detecção de Main Phase: testa clicando na mão (se Deploy aparecer = Main Phase)
-
+        # ── Botão único ────────────────────────────────────────────────────────
         if _game_phase >= 1 and not in_main:
-            # Testa se estamos na Main Phase clicando na primeira carta da mão
+            # Proba se é Main Phase clicando na mão
             test_x = hand_cards[0]['x'] if hand_cards else HAND_X_START
             if _try_deploy_card(test_x):
-                # Confirmado: Main Phase
                 in_main = True
-                main_actions_done = 1
                 print("D", end="", flush=True)
 
-                # Lê estado completo e sincroniza com engine
-                state = read_game_state()
-                hand_cards  = state['hand']
-                board_cards = state['board_p2']
+                # ── SCAN COMPLETO UMA VEZ ──────────────────────────────────────
+                _reset_log()
+                hand_cards, board_cards = full_scan(gs, opp_gs) if (gs and bridge) \
+                    else (scan_hand(), scan_board_p2())
 
-                if gs and bridge:
-                    bridge.sync_hand(gs, hand_cards)
-                    bridge.sync_field(gs, board_cards)
-                    gs.don_available = state['don_p2_active']
-                    opp_gs.hand = [None] * state['opp_hand_count']  # stub mão oponente
-
+                # Coloca o log em estado inicial após o scan
+                _log_lines_seen[:] = _read_log_lines()
                 continue
 
-            # Deploy não apareceu → não é Main Phase (Draw Card/Don ou fim)
+            # Não é Main Phase: clica o botão (Draw, Don, etc.)
             top2, main2 = _scan_buttons()
             if top2 and main2:
                 _handle_prompts()
                 continue
-            # Botão único ainda presente → clica (Draw Card, Draw Don, etc.)
             in_main = False
-            hand_cards  = []
+            hand_cards = []
             board_cards = []
-            attacked    = False
-            main_actions_done = 0
+            attacked = False
             pag.click(*C_BTN_MAIN)
             time.sleep(0.5)
             continue
 
         if in_main:
-            # ── Main Phase: usa engine para decidir ────────────────────────────
+            # ── Decide via engine ──────────────────────────────────────────────
             action_executed = False
 
             if gs and bridge and match:
                 try:
                     action = bridge.choose_action(gs, opp_gs, match)
                     if action:
-                        action_executed = _execute_engine_action(action, hand_cards, board_cards)
+                        action_executed = _execute_engine_action(
+                            action, hand_cards, board_cards)
                         if action_executed:
-                            main_actions_done += 1
                             print(f"E({action[1][0]})", end="", flush=True)
-                            # Re-sincroniza estado após ação
                             time.sleep(0.3)
-                            state = read_game_state()
-                            hand_cards  = state['hand']
-                            board_cards = state['board_p2']
-                            bridge.sync_hand(gs, hand_cards)
-                            bridge.sync_field(gs, board_cards)
-                            gs.don_available = state['don_p2_active']
+
+                            # ── DELTA DO LOG (sem rescan completo) ────────────
+                            new_lines = read_log_delta()
+                            needs_rescan = apply_log_delta(gs, opp_gs, new_lines)
+
+                            if needs_rescan:
+                                # Sacou carta — só rescaneamos a mão
+                                hand_cards = scan_hand()
+                                if bridge:
+                                    bridge.sync_hand(gs, hand_cards)
+                                print("R", end="", flush=True)
+
+                            # Atualiza posições visuais da mão para cliques futuros
+                            hand_cards = [h for h in hand_cards
+                                          if any(c.code == h.get('code')
+                                                 for c in gs.hand)]
                             continue
                 except Exception as e:
                     print(f"[eng:{e}]", end="", flush=True)
 
             if not action_executed:
-                # Sem ação do engine (ou engine indisponível) → ataca e encerra
                 if not attacked:
                     attacked = True
                     _try_attack_leader()
                     print("A", end="", flush=True)
                     continue
                 # Encerra turno
-                in_main    = False
-                hand_cards  = []
+                in_main = False
+                hand_cards = []
                 board_cards = []
-                attacked    = False
-                main_actions_done = 0
+                attacked = False
                 pag.click(*C_BTN_MAIN)
                 time.sleep(0.5)
                 print(".", end="", flush=True)
                 continue
 
-        # Fase 0 / botão pre-jogo
         pag.click(*C_BTN_MAIN)
         if _game_phase == 0:
             _game_phase = 1
         time.sleep(0.35)
 
-    # Download log e volta ao menu
     time.sleep(0.5)
     print(" Download...", end=" ", flush=True)
     pag.click(*C_DOWNLOAD_LOG)
@@ -623,7 +695,6 @@ def _select_deck(deck_arg: str | None) -> str | None:
         if matches:
             return matches[0]
         print(f"Deck '{deck_arg}' não encontrado. Disponíveis:")
-    # Menu interativo
     print("Decks disponíveis:")
     for i, d in enumerate(decks, 1):
         print(f"  {i:2d}. {d}")
@@ -635,19 +706,19 @@ def _select_deck(deck_arg: str | None) -> str | None:
 
 def main() -> None:
     ap = argparse.ArgumentParser(description="Bot OPTCGSim — P2 com engine")
-    ap.add_argument("--deck",          default=None, help="Nome do deck (.deck)")
-    ap.add_argument("--partidas",      type=int, default=3)
-    ap.add_argument("--importar",      action="store_true")
-    ap.add_argument("--delay-inicio",  type=int, default=4)
+    ap.add_argument("--deck",         default=None)
+    ap.add_argument("--partidas",     type=int, default=3)
+    ap.add_argument("--importar",     action="store_true")
+    ap.add_argument("--delay-inicio", type=int, default=4)
     args = ap.parse_args()
 
     deck_name = _select_deck(args.deck)
     print(f"\nBot OPTCGSim — deck: {deck_name or '(sem engine)'} | {args.partidas} partidas")
-    print(f"Aguardando {args.delay_inicio}s para focar o simulador...")
+    print(f"Aguardando {args.delay_inicio}s...")
     time.sleep(args.delay_inicio)
 
     if not _focus_sim():
-        print("AVISO: janela OPTCGSim não encontrada — certifique-se que está aberta no menu principal")
+        print("AVISO: janela OPTCGSim não encontrada")
 
     ok = 0
     for i in range(args.partidas):
