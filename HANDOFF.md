@@ -1,5 +1,24 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-02 (28) - Codex
+
+**Feito - padroes humanos de pilotagem + ajuste leve no Turn Planner:**
+
+- Adicionado `scriptis_da_ia/audit_human_patterns.py` para extrair padroes humanos dos logs parseados: ordem de acoes, n-grams por leader, acoes antes do ataque e respostas defensivas/counter.
+- Gerado `scriptis_da_ia/human_patterns.json` a partir de 7 logs humanos: 99 turnos, 487 acoes e 95 eventos defensivos/counter.
+- `decision_engine.py` agora carrega `human_patterns.json` quando disponivel e aplica bonus leve/capado para `play`, `activate` e `attack` vistos em padroes humanos do leader.
+- `compare_vs_human.py` ganhou `--summary`, `--top-k`, normalizacao de ataques por `attacker_code`, comparacao `exact/kind/miss`, DON por turno pessoal e inferencia de Stage ativado (ex.: `The Empty Throne`) no snapshot reconstruido.
+- Importados 4 logs humanos novos para `scriptis_da_ia/logs/{raw,parsed,decks}` e atualizado `logs/index.json`.
+- `parse_combat_log.py` ajustado para remover sufixo `.log` de timestamps vindos de arquivos `.log.txt`.
+- Validacao leve: `python -m py_compile scriptis_da_ia\optcg_engine\decision_engine.py scriptis_da_ia\compare_vs_human.py scriptis_da_ia\audit_human_patterns.py scriptis_da_ia\audit_decision_quality.py scriptis_da_ia\parse_combat_log.py`.
+- Metricas atuais do comparador: `top1 exact 41/99`, `top1 kind 84/99`, `top5 exact 87/99`, `top5 kind 96/99`.
+
+**Proximo passo sugerido:**
+
+Tunar prioridade de engines recorrentes (Imu/Five Elders/The Empty Throne) versus jogar carta forte da mao, agora que o comparador ja reconstrui Stage e DON de forma menos contaminada.
+
+---
+
 ## 2026-07-01 (27) - Codex
 
 **Feito - auditoria interna do Turn Planner + lethal com DON anexavel:**
