@@ -4446,7 +4446,7 @@ def _make_card(code: str, data: dict) -> Card:
         card_data = CardData(
             code=code,
             name=data.get('name', code),
-            card_type=data.get('type', 'CHARACTER'),
+            card_type=data.get('type') or 'CHARACTER',
             color=data.get('color', ''),
             cost=data.get('cost', 0),
             power=data.get('power', 0),
@@ -6195,6 +6195,30 @@ class OPTCGMatch:
                 if bloqueada:
                     perdidas += engine.avaliar_carta(c)
             base -= perdidas * 0.5   # peso TUNÁVEL (fase 3)
+
+        # EVENT com efeito principal que exige alvo ausente: penalidade forte.
+        # Ex.: "Never Existed" remove Stage do opp — mas sem Stage no campo, o
+        # efeito não faz nada; a carta não deve competir com activates valiosos.
+        if card.card_type == 'EVENT':
+            main = effects.get('main', {})
+            main_steps = main.get('steps', [])
+            for step in main_steps:
+                if step.get('action') == 'ko' and step.get('target') == 'opp_stage':
+                    if not engine.opp.field_stage:
+                        base -= 120  # sem stage alvo, jogar é quase inútil
+                    break
+
+        # Vanilla fraca (custo ≤ 2, poder ≤ 3000, sem efeito) no early game:
+        # humanos normalmente passam em vez de gastar o único DON do T1/T3 em
+        # cartas que não mudam o estado do jogo significativamente.
+        if (card.card_type == 'CHARACTER'
+                and card.cost <= 2
+                and card.power <= 3000
+                and not effects
+                and not card.has_blocker):
+            personal_turn = (engine.me.turn + 1) // 2
+            if personal_turn <= 2:
+                base -= 60  # penaliza fortemente no early; o humano prefere passar
 
         return base
 
