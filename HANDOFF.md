@@ -1,5 +1,15 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-02 (34) - Claude
+
+**Fix + UX: deck builder estável, borda dourada no leader**
+
+- Fix: `card_color is null` em 4 pontos do `/deck/page.tsx` → `(card_color || '').split(...)`.
+- UX: imagem do leader ganha `border-2 border-yellow-400` + `shadow glow` dourado.
+- Fix tamanho: `w-22 h-31` (classes inexistentes no Tailwind) → inline style `88×124px`.
+
+---
+
 ## 2026-07-02 (33) - Claude
 
 **Fix urgente — Deck Builder crashava com `card_color is null`**
