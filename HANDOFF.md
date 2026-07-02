@@ -1,5 +1,40 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-02 (29) - Claude
+
+**Feito — Fatia B: defesa situacional + fix de counter chunks revelados**
+
+- **`should_use_blocker`**: com 4 vidas e `opp_life <= 2`, agora bloqueia atacantes
+  com poder >= poder do líder. Antes nunca bloqueava com 4 vidas, mesmo sob pressão
+  de lethal iminente.
+- **`should_use_counter`**: com 4 vidas e `opp_life <= 2`, ratio cai de 2x para 1.5x.
+  Afrouxar o threshold quando oponente está próximo de ganhar reflete o comportamento
+  humano observado nos logs sem depender de padrões por líder (base de 7 partidas
+  é insuficiente para isso).
+- **`opp_counter_chunks_for_lethal` (bug fix)**: o Codex havia quebrado o teste
+  `can_lethal respeita counters revelados` ao assumir `[2000] * unknown_hand_size`
+  para slots ocultos. Restaurado para "ocultos = ignora (0), revelados = valor real" —
+  contrato correto para cálculo de lethal garantido. Todos os smoke tests passam.
+- **`_score_activate_main`** (mudança do Codex, agora commitada): avalia melhor alvo
+  elegível da mão quando o efeito é `play_card`. Empty Throne sobe de score 95 para
+  ~180, competindo melhor com jogar carta forte da mão.
+- Revisão dos commits do Codex (sess. 28): mudanças sólidas no geral. Ponto de atenção:
+  bonus de padrões humanos (`_human_pattern_bonus`) com 7 partidas é frágil — monitorar
+  se divergências sobem com mais logs.
+
+**Estado atual:**
+- Fatia A (tuning Imu/Empty Throne): feita pelo Codex (sess. 28), métricas 43/99 top1-exact.
+- Fatia B (defesa/counter): feita agora.
+- Smoke tests: todos passando.
+
+**Próximos passos:**
+1. Decidir se motor está bom o suficiente para o front (barra de aceite: top1-kind >= 85/99).
+2. Se sim: criar contrato de saída estável para o front consumir (análise, replay, decisões, explicação).
+3. Se não: identificar os 15/99 turnos em que top1-kind ainda diverge e checar se são
+   bugs de regra (corrigir) ou heurística (tunar mais).
+
+---
+
 ## 2026-07-02 (28) - Codex
 
 **Feito - padroes humanos de pilotagem + ajuste leve no Turn Planner:**
