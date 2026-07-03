@@ -495,6 +495,21 @@ def _try_deploy_card(hand_x: int) -> bool:
     time.sleep(0.2)
     return False
 
+
+def _probe_main_phase(hand_x: int) -> bool:
+    """Detecta Main Phase clicando carta e cancelando o prompt sem deploia-la.
+    Retorna True se estamos na Main Phase (prompt Deploy/Cancel apareceu)."""
+    pag.click(hand_x, HAND_Y)
+    time.sleep(0.45)
+    top, main = _scan_buttons()
+    if top and main:
+        pag.click(*C_BTN_MAIN)  # Cancela sem deploia
+        time.sleep(0.3)
+        return True
+    pag.click(700, 380)
+    time.sleep(0.2)
+    return False
+
 def _try_attack_leader() -> None:
     pag.moveTo(*C_P2_LEADER, duration=0.12)
     pag.mouseDown()
@@ -763,28 +778,22 @@ def play_match(deck_name: str | None = None, timeout: int = 600) -> bool:
         if _game_phase >= 1 and not in_main:
             # Proba Main Phase tentando deploy em posicoes da mao (P2, y=HAND_Y).
             # Durante o turno do oponente, cliques em y=HAND_Y nao abrem prompt.
-            probe_cards = (hand_cards[:5] if hand_cards
-                           else [{'x': x, 'cost': 0}
-                                 for x in range(HAND_X_START, HAND_X_END + 1, HAND_STEP)][:5])
-            deployed = False
-            for h in probe_cards:
-                if _try_deploy_card(h['x']):
-                    deployed = True
+            probe_xs = ([h['x'] for h in hand_cards[:5]]
+                        if hand_cards
+                        else list(range(HAND_X_START, HAND_X_END + 1, HAND_STEP))[:5])
+            detected = False
+            for px in probe_xs:
+                if _probe_main_phase(px):
+                    detected = True
                     break
-            if deployed:
+            if detected:
                 in_main = True
-                print("D", end="", flush=True)
-                # Le linhas acumuladas antes do probe (Draw Don do inicio do turno)
+                print("M", end="", flush=True)
+                # Le DON real da tela (sem deploy: DON nao foi gasto pelo probe)
                 if gs and opp_gs:
                     pre_lines = read_log_delta()
                     apply_log_delta(gs, opp_gs, pre_lines)
-                # Aguarda animacao do probe e le DON real da tela para sincronizar
-                time.sleep(0.4)
-                if gs:
-                    don_real = _read_don_active(DON_P2_HOVER)
-                    if don_real >= 0:
-                        gs.don_available = don_real
-                        print(f"[DON_SYNC={don_real}]", end="", flush=True)
+                    print(f"[DON={gs.don_available}]", end="", flush=True)
                 _reset_log()
                 # Scan rapido: so a mao (full_scan ~11s trava o loop)
                 hand_cards = scan_hand()

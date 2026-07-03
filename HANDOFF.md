@@ -1,5 +1,38 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-03 (49) - Claude
+**Engine jogando cartas: fix probe sem deploy + DON correto**
+
+### Bug corrigido
+O probe anterior deployava uma carta (gastando todo DON) e depois o `_read_don_active`
+sobrescrevia o DON rastreado pelo log com 0. Engine sempre via `don=0` e nunca propunha plays.
+
+### Fix em 2 partes
+1. **`_probe_main_phase(x)`** (nova funcao): detecta Main Phase clicando carta e
+   **cancelando** o prompt (C_BTN_MAIN), sem deployar nada. DON nao e gasto.
+2. **Remove `_read_don_active` do probe**: o log ja captura corretamente o DON ganho
+   via `[DON+N=M]`. Printa `[DON=N]` mostrando o valor real ao engine.
+
+### Resultado (test23)
+```
+M[DON+1=1][DON+2=3][DON+2=5][DON=5]  <- engine ve 5 DON
+[ENG] 7 acoes | hand=7 don=5 turn=4   <- 7 opcoes!
+E(play:OP13-086)                       <- ENGINE JOGOU CARTA ✅
+```
+
+### Problema residual
+Apos E(play:OP13-086) → [fim detectado]. Provavelmente On Play effect de OP13-086
+gerou prompt que o bot nao tratou. `_resolve_post_deploy` tem 10x0.3s = 3s de janela;
+se o prompt demora mais, o bot volta pro loop sem resolver.
+
+### Proximo passo
+- Investigar OP13-086 (qual efeito On Play?) e ver se _resolve_post_deploy precisa
+  de mais iteracoes ou de um check no loop principal apos action_executed
+- DON_SYNC apos engine play ainda usa _read_don_active (retorna 0 por OCR); avaliar
+  se deve ser removido tambem (o log pode capturar Rest Don apos deploy)
+
+---
+
 ## 2026-07-03 (48) - Claude
 **Fix: engine play actions falhavam por DON desatualizado apos probe deploy**
 
