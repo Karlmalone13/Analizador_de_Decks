@@ -1,5 +1,27 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-03 (61) - Claude
+
+### Item 3: steps do on_play guiam seleção de alvos nos prompts
+
+**Motivação**: `resolve_prompt_choice` escolhia alvos de forma genérica (maior board_value no campo oponente). Com `action_system.py` como referência, percebemos que cada step de efeito tem filtros precisos (cost_lte, rested_only, power_lte...) que determinam quais alvos são válidos. Extraímos essa informação do nosso `card_effects_db.json` existente.
+
+**Mudanças em `sim_bridge.py`**:
+- `get_card_on_play_steps(card_code)` — devolve lista de steps do on_play do effects_db
+- `_step_matches_zone(step, zone)` — heurística: o step corresponde à zona OCR detectada?
+- `_choose_opp_target_filtered(candidates, step)` — filtra alvos oponente por cost_lte/cost_eq/rested_only/power_lte; para `bounce` prefere maior custo, para `ko` prefere maior ameaça
+- `resolve_prompt_choice` agora aceita `steps: list[dict]` — se o step matchado tiver filtros, aplica antes do fallback genérico; se nenhum alvo válido sobrar, retorna `click_button` (efeito opcional/sem alvo)
+
+**Mudanças em `bot_optcgsim.py`**:
+- `_resolve_post_deploy(card_code=None)` — carrega on_play steps do bridge e repassa para `_resolve_prompt_with_engine`
+- `_try_deploy_card(card_code=None)` — recebe e passa o code da carta deployada
+- `_execute_engine_action` — passa `card_code=code` para `_try_deploy_card`
+- `_resolve_prompt_with_engine(on_play_steps=None)` — passa steps para `resolve_prompt_choice`
+
+**Efeito prático**: ao jogar uma carta como Brook (on_play: `ko opp_character cost_eq=0`), o bot agora só clica em personagens do oponente com custo 0, em vez de clicar no mais forte. Se não houver, retorna `click_button` (cancela).
+
+---
+
 ## 2026-07-03 (60) - Claude
 
 ### Item 1: eventos faltantes do log em apply_log_delta

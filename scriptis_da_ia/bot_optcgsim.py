@@ -821,12 +821,22 @@ def _handle_prompts(max_steps: int = 20) -> None:
 
 def _resolve_post_deploy(gs=None, opp_gs=None, hand_cards: list[dict] | None = None,
                          board_cards: list[dict] | None = None,
-                         opp_board_cards: list[dict] | None = None) -> None:
+                         opp_board_cards: list[dict] | None = None,
+                         card_code: str | None = None) -> None:
     """Apos deploy/activate, resolve prompts de 2 botoes e modais On Play/Activate de 1 botao.
-    Para quando detecta 3 botoes unicos consecutivos (= End Turn estavel)."""
+    Para quando detecta 3 botoes unicos consecutivos (= End Turn estavel).
+    Se `card_code` for informado, usa os steps do on_play para filtrar alvos com precisao."""
     hand_cards = hand_cards or []
     board_cards = board_cards or []
     opp_board_cards = opp_board_cards or []
+    # Carrega steps do on_play para guiar selecao de alvos
+    bridge = _get_bridge()
+    on_play_steps: list[dict] = []
+    if card_code and bridge:
+        try:
+            on_play_steps = bridge.get_card_on_play_steps(card_code)
+        except Exception:
+            pass
     single_streak = 0
     for _ in range(25):  # 25 para cobrir sequencias longas (Five Elders: DON+trash+5 elders)
         time.sleep(0.3)
@@ -841,7 +851,8 @@ def _resolve_post_deploy(gs=None, opp_gs=None, hand_cards: list[dict] | None = N
         if single_streak >= 3:
             break  # End Turn estavel; nao clicar
         if _resolve_prompt_with_engine(gs, opp_gs, hand_cards, board_cards,
-                                       opp_board_cards, top, main):
+                                       opp_board_cards, top, main,
+                                       on_play_steps=on_play_steps):
             single_streak = 0
             continue
         _click_detected_button(top, main)  # Confirmar modal On Play
@@ -849,14 +860,16 @@ def _resolve_post_deploy(gs=None, opp_gs=None, hand_cards: list[dict] | None = N
 def _try_deploy_card(hand_x: int, gs=None, opp_gs=None,
                      hand_cards: list[dict] | None = None,
                      board_cards: list[dict] | None = None,
-                     opp_board_cards: list[dict] | None = None) -> bool:
+                     opp_board_cards: list[dict] | None = None,
+                     card_code: str | None = None) -> bool:
     pag.click(hand_x, HAND_Y)
     time.sleep(0.45)
     top, main = _scan_buttons()
     if top and main:
         pag.click(*C_BTN_TOP)
         time.sleep(0.45)
-        _resolve_post_deploy(gs, opp_gs, hand_cards, board_cards, opp_board_cards)
+        _resolve_post_deploy(gs, opp_gs, hand_cards, board_cards, opp_board_cards,
+                             card_code=card_code)
         return True
     pag.click(700, 380)
     time.sleep(0.2)
@@ -1030,13 +1043,14 @@ def _execute_prompt_intent(intent: dict | None, hand_cards: list[dict],
 def _resolve_prompt_with_engine(gs, opp_gs, hand_cards: list[dict],
                                 board_cards: list[dict],
                                 opp_board_cards: list[dict],
-                                top: bool, main: bool) -> bool:
+                                top: bool, main: bool,
+                                on_play_steps: list[dict] | None = None) -> bool:
     bridge = _get_bridge()
     if not bridge or not gs or not opp_gs:
         return False
     prompt_text = _read_prompt_text()
-    intent = bridge.resolve_prompt_choice(gs, opp_gs, prompt_text)
-    # Sempre loga o texto OCR e a intencao (None = fallback para quem chama)
+    intent = bridge.resolve_prompt_choice(gs, opp_gs, prompt_text,
+                                          steps=on_play_steps or [])
     label  = intent.get('zone', intent.get('action', '?')) if intent else 'None'
     reason = intent.get('reason', '') if intent else ''
     print(f"P[{prompt_text[:35]}->{label}:{reason[:15]}]", end="", flush=True)
@@ -1072,7 +1086,8 @@ def _execute_engine_action(action: tuple, hand_cards: list[dict],
             hand_x = hand_cards[0]['x']
         print(f"[PLAY] code={code} hand_x={hand_x} vis={[(h.get('code'),h['x']) for h in hand_cards[:3]]}", flush=True)
         result = (_try_deploy_card(hand_x, gs, opp_gs, hand_cards,
-                                   board_cards, opp_board_cards)
+                                   board_cards, opp_board_cards,
+                                   card_code=code)
                   if hand_x else False)
         print(f"[PLAY] _try_deploy_card={result}", flush=True)
         return result

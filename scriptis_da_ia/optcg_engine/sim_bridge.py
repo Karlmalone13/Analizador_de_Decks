@@ -260,6 +260,81 @@ _OCR_FIXES: list[tuple[str, str]] = [
 
 import re as _re
 
+
+def get_card_on_play_steps(card_code: str) -> list[dict]:
+    """
+    Retorna a lista de steps do efeito on_play de uma carta a partir do
+    card_effects_db.json. Cada step tem 'action', 'target', 'count' e filtros
+    (cost_lte, cost_eq, power_lte, rested_only, etc.).
+
+    Usado pelo bot para saber quais prompts esperar ANTES que apareçam, e
+    para filtrar alvos corretamente ao responder cada prompt.
+    """
+    return _effects_db.get(card_code, {}).get('on_play', {}).get('steps', [])
+
+
+def _step_matches_zone(step: dict, zone: str) -> bool:
+    """Heuristica: o step corresponde à zona detectada pelo OCR?"""
+    target = step.get('target', '')
+    action = step.get('action', '')
+    if zone == 'opp_field':
+        return 'opp' in target or action in ('ko', 'bounce', 'rest_opp')
+    if zone == 'own_field':
+        return target in ('self', 'own_character', 'character') or action in ('buff_power', 'rest')
+    if zone == 'hand':
+        return 'hand' in target or action in ('trash', 'discard', 'return_to_hand')
+    if zone == 'trash':
+        return 'trash' in target or action in ('draw_from_trash', 'play_from_trash')
+    if zone == 'don':
+        return action in ('give_don', 'trash_don', 'rest_don')
+    return False
+
+
+def _choose_opp_target_filtered(candidates: list, step: dict):
+    """
+    Escolhe o melhor alvo oponente aplicando os filtros do step:
+      - cost_lte / cost_gte / cost_eq
+      - power_lte / power_gte
+      - rested_only
+
+    Para ação 'ko': prefere alvo de maior board_value (mais ameaçador).
+    Para ação 'bounce': prefere alvo de maior custo (mais valor devolvido).
+    """
+    if not candidates:
+        return None
+
+    filtered = list(candidates)
+
+    cost_lte = step.get('cost_lte')
+    cost_gte = step.get('cost_gte')
+    cost_eq  = step.get('cost_eq')
+    pwr_lte  = step.get('power_lte')
+    pwr_gte  = step.get('power_gte')
+    rested   = step.get('rested_only', False)
+
+    if cost_lte is not None:
+        filtered = [c for c in filtered if getattr(c, 'cost', 0) <= cost_lte]
+    if cost_gte is not None:
+        filtered = [c for c in filtered if getattr(c, 'cost', 0) >= cost_gte]
+    if cost_eq is not None:
+        filtered = [c for c in filtered if getattr(c, 'cost', 0) == cost_eq]
+    if pwr_lte is not None:
+        filtered = [c for c in filtered if getattr(c, 'power', 0) <= pwr_lte]
+    if pwr_gte is not None:
+        filtered = [c for c in filtered if getattr(c, 'power', 0) >= pwr_gte]
+    if rested:
+        filtered = [c for c in filtered if getattr(c, 'rested', False)]
+
+    if not filtered:
+        return None  # nenhum alvo valido com os filtros → prompt vai ser cancelavel
+
+    action = step.get('action', '')
+    if action == 'bounce':
+        return max(filtered, key=lambda c: getattr(c, 'cost', 0))
+    # ko, rest_opp, debuff: prioriza maior ameaça
+    return max(filtered, key=lambda c: c.board_value() if hasattr(c, 'board_value') else 0)
+
+
 def _normalize_prompt(raw: str) -> str:
     """Corrige erros tipicos de OCR em textos de prompt do OPTCGSim."""
     text = raw
@@ -321,11 +396,15 @@ def _prompt_count(text: str) -> int:
 
 
 def resolve_prompt_choice(gs: GameState, opp_gs: GameState,
-                          prompt_text: str) -> Optional[dict]:
+                          prompt_text: str,
+                          steps: list[dict] | None = None) -> Optional[dict]:
     """
     Traduz um prompt visual do OPTCGSim em uma intencao clicavel.
 
-    Logica puramente generica: detecta ZONA + ACAO + CONTAGEM pelo texto OCR.
+    Logica generica: detecta ZONA + ACAO + CONTAGEM pelo texto OCR.
+    Se `steps` for passado (lista de steps do on_play da carta recém-jogada),
+    usa filtros de alvo mais precisos (cost_lte, rested_only, etc.) antes de
+    cair no fallback genérico.
     Nenhuma referencia a carta especifica — toda decisao vai para o engine.
     """
     text = _normalize_prompt(prompt_text or "")
@@ -339,6 +418,36 @@ def resolve_prompt_choice(gs: GameState, opp_gs: GameState,
         return {"action": "click_button", "prefer": "main", "reason": "count=0 no targets"}
 
     zone = _prompt_zone(text)
+
+    # --- Usa steps do on_play para filtrar alvos mais precisamente -------
+    if steps:
+        matched_step = next(
+            (s for s in steps if _step_matches_zone(s, zone)),
+            None
+        )
+        if matched_step:
+            action = matched_step.get('action', '')
+            if zone == 'opp_field':
+                chosen = _choose_opp_target_filtered(opp_gs.field_chars, matched_step)
+                if chosen:
+                    return _card_intent("opp_board", chosen,
+                                        f"step:{action} filtered")
+                # Sem alvo valido com filtros → cancela (efeito opcional)
+                return {"action": "click_button", "prefer": "main",
+                        "reason": f"no valid opp target for {action}"}
+            if zone == 'own_field':
+                if action in ('trash', 'ko'):
+                    chosen = (min(gs.field_chars, key=lambda c: c.board_value())
+                              if gs.field_chars else None)
+                else:
+                    chosen = choose_highest_board_value(gs.field_chars)
+                if chosen:
+                    return _card_intent("own_board", chosen, f"step:{action}")
+            if zone == 'hand':
+                count = matched_step.get('count', 1)
+                chosen = engine.choose_to_trash(gs.hand)
+                if chosen:
+                    return _card_intent("hand", chosen, f"step:{action} count={count}")
 
     # --- DON: pagar custo de Activate:Main ("Select/Rest 1 DON") --------
     if zone == "don":
