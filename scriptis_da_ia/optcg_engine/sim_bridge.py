@@ -320,7 +320,7 @@ def resolve_prompt_choice(gs: GameState, opp_gs: GameState,
 
     # --- Confirmacoes sem escolha real -----------------------------------
     _CONFIRM_KWS = ("draw", "confirm", "ok", "place on top", "place on bottom",
-                    "add to hand", "remaining", "rest of")
+                    "add to hand", "remaining", "rest of", "use card action", "cancel")
     if any(kw in text for kw in _CONFIRM_KWS):
         return {"action": "click_button", "prefer": "main", "reason": "confirm prompt"}
 
@@ -347,6 +347,8 @@ def resolve_prompt_choice(gs: GameState, opp_gs: GameState,
             chosen = choose_highest_board_value(gs.field_chars)
         if chosen:
             return _card_intent("own_board", chosen, "choose own char")
+        # Sem cartas no campo (field stale) -> confirma/cancela
+        return {"action": "click_button", "prefer": "main", "reason": "no own chars"}
 
     # Prompt nao reconhecido: None para que o chamador use fallback
     return None

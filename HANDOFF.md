@@ -1,5 +1,19 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-03 (57) - Claude
+
+### Fixes desta sessão (rodada de observação)
+
+**`bot_optcgsim.py` — `_read_prompt_text` filtra lixo OCR**
+- A segunda bbox `(930,490,1275,610)` lia arte de carta durante o jogo normal e gerava texto garbage ("se oe oe al: Xt - on yeaa")
+- Fix: só inclui o texto de uma bbox se contiver pelo menos 1 palavra-chave de prompt (`_PROMPT_KEYWORDS` regex). Elimina ruído sem precisar remover a bbox útil para Blocker/Counter Step.
+
+**`sim_bridge.py` — `resolve_prompt_choice` dois fixes**
+- `own_field` com `gs.field_chars` vazio → antes retornava `None` (sem intent); agora retorna `click_button/main` ("no own chars")
+- `"Use Card Action"` e `"Cancel"` adicionados em `_CONFIRM_KWS` → clica botão principal em vez de retornar None
+
+---
+
 ## 2026-07-03 (56) - Claude
 
 ### Fixes desta sessão

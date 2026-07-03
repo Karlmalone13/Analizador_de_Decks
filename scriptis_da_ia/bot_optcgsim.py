@@ -346,12 +346,18 @@ def _read_preview_power() -> int | None:
     digits = re.sub(r'\D', '', raw)
     return int(digits) if digits else None
 
+_PROMPT_KEYWORDS = re.compile(
+    r'\b(choose|select|drag|return|blocker|counter|don|trash|hand|reveal|life|'
+    r'cancel|attack|target|character|friendly|opponent|draw|place|rest|add|use|card|action)\b',
+    re.IGNORECASE)
+
 def _read_prompt_text() -> str:
     texts = []
     for bbox in PROMPT_TEXT_BBOXES:
         raw = _ocr_crop(bbox, psm=6, scale=3)
         clean = re.sub(r'\s+', ' ', raw).strip()
-        if clean:
+        # Filtra lixo de OCR: so inclui se tiver pelo menos 1 palavra-chave de prompt
+        if clean and _PROMPT_KEYWORDS.search(clean):
             texts.append(clean)
     return " | ".join(texts)
 
