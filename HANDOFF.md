@@ -1,5 +1,31 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-03 (59) - Claude
+
+### Refatoração: leitura direta do arquivo .log (abandona OCR do painel de log)
+
+**Motivação**: OCR do painel esquerdo era impreciso, lento e só via as últimas linhas visíveis. O OPTCGSim escreve um arquivo `.log` em `CombatLogs/AutoSaved/` com todo o histórico da partida em tempo real.
+
+**O que mudou em `bot_optcgsim.py`**:
+- Removido: `LOG_BBOX`, `_read_log_lines()`, `read_log_delta()` via OCR, import `ImageOps`
+- Adicionado: `COMBAT_LOG_DIR`, `_current_log_file`, `_log_file_offset`, `_our_name`, `_opp_name`, `_log_search_after`
+- `_find_current_log()`: acha o `.log` mais recente criado após o reset da partida
+- `_detect_names_from_log()`: detecta nome do jogador local via `"NAME Has Connected"` no cabeçalho
+- `read_log_delta()`: lê bytes novos do arquivo por offset, filtra linhas `RZ1|` (protocolo de máquina)
+- `_codes_from_log_line()`: extrai codes do formato `<link="CODE">` (e fallback `[CODE]`)
+- `apply_log_delta()`: adicionado parser de **snapshots completos** emitidos após cada turno:
+  - `[NAME] Hand: [CODE1,CODE2,...]` → sync completo da mão (inclui `needs_hand_rescan=True`)
+  - `[NAME] Board: [CODE1,...]` → sync do campo
+  - `[NAME] Trash: [CODE1,...]` → sync do trash
+  - `[NAME] Life: N` → sync de vida
+  - Detecção `is_you`/`is_opp` agora usa `_our_name`/`_opp_name` em vez de `[You]`/`[Opponent]`
+
+**Estado atual**: código salvo, sintaxe OK. **Não testado ainda em partida real** — próxima sessão deve rodar o bot e observar se os snapshots são lidos corretamente (procurar `[LOG] arquivo=...` no output).
+
+**Atenção**: formato do snapshot no log real pode precisar de ajuste. Verificar arquivo `.log` gerado durante a partida para confirmar o padrão exato de `Hand:`, `Board:`, `Trash:`, `Life:` (pode ser diferente do esperado — ver log de 2026-07-03T13.28.12.log como referência).
+
+---
+
 ## 2026-07-03 (58) - Claude
 
 ### Bug crítico resolvido: posições stale causavam F em cascata

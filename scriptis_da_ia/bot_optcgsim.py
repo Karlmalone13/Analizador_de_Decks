@@ -21,7 +21,6 @@ from __future__ import annotations
 import time, sys, re, json, argparse, subprocess
 from pathlib import Path
 from typing import Optional
-from PIL import ImageOps
 
 try:
     import pyautogui as pag
@@ -134,57 +133,145 @@ def _badge_bbox(hover_x: int, hover_y: int) -> tuple:
     x, y = hover_x, hover_y - 45
     return (x - 25, y - 20, x + 25, y + 20)
 
-# -- Painel de log (esquerda) ---------------------------------------------------
-LOG_BBOX = (135, 210, 390, 475)
+# -- Leitura direta do arquivo de log do OPTCGSim --------------------------------
+COMBAT_LOG_DIR = Path(r"E:\Games\OnePieceSimulador\Builds_Windows\CombatLogs")
 
-# Regex para parsear linhas do log
-_RE_CODE    = re.compile(r'\[([A-Z]{1,4}\d{2}-\d{3}[a-z]?)\]')
-_RE_DRAW_N  = re.compile(r'Draw (\d+) Card')
-_RE_REST_N  = re.compile(r'Rest (\d+) Don')
+# Regex para parsear codes no formato do arquivo: <link="CODE">CODE</link>
+# tambem aceita o formato antigo [CODE] como fallback
+_RE_CODE      = re.compile(r'<link="([A-Z]{1,4}\d{2}-\d{3}[a-z]?)">')
+_RE_CODE_BARE = re.compile(r'\[([A-Z]{1,4}\d{2}-\d{3}[a-z]?)\]')
+_RE_DRAW_N    = re.compile(r'Draw (\d+) Card')
+_RE_REST_N    = re.compile(r'Rest (\d+) Don')
 _RE_SEND_LIFE = re.compile(r'Send (\d+) Life to Hand')
-_RE_HIT     = re.compile(r'hit for (\d+) damage')
+_RE_HIT       = re.compile(r'hit for (\d+) damage')
+# Snapshots de estado emitidos apos cada turno:
+# "[NAME] Hand: [CODE1,CODE2,...]" / "Board:" / "Trash:" / "Life: N"
+_RE_SNAP_HAND  = re.compile(r'^\[([^\]]+)\] Hand: \[([^\]]*)\]')
+_RE_SNAP_BOARD = re.compile(r'^\[([^\]]+)\] Board: \[([^\]]*)\]')
+_RE_SNAP_TRASH = re.compile(r'^\[([^\]]+)\] Trash: \[([^\]]*)\]')
+_RE_SNAP_LIFE  = re.compile(r'^\[([^\]]+)\] Life: (\d+)')
+# Linha "NAME Has Connected" identifica o jogador local
+_RE_CONNECTED  = re.compile(r'^([^\s\[]+) Has Connected')
 
-# Estado acumulado do log (reset a cada partida)
-_log_lines_seen: list[str] = []
+# Estado do arquivo de log (reset a cada partida)
+_current_log_file: Path | None = None
+_log_file_offset: int = 0
+_our_name: str = ""          # ex: "Karlmalone#2854"
+_opp_name: str = ""          # ex: "gombomb#2131"
+_log_search_after: float = 0.0  # timestamp minimo do arquivo de log a procurar
+
+
+def _find_current_log() -> Path | None:
+    """Retorna o arquivo .log mais recente criado apos _log_search_after."""
+    candidates = list(COMBAT_LOG_DIR.glob("AutoSaved/*.log"))
+    if not candidates:
+        candidates = list(COMBAT_LOG_DIR.glob("*.log"))
+    if not candidates:
+        return None
+    # Filtra arquivos criados antes do reset (partidas anteriores)
+    fresh = [p for p in candidates
+             if p.stat().st_mtime >= _log_search_after - 5]
+    if not fresh:
+        fresh = candidates  # fallback: usa o mais recente de qualquer forma
+    return max(fresh, key=lambda p: p.stat().st_mtime)
+
+
+def _detect_names_from_log(path: Path) -> tuple[str, str]:
+    """
+    Le o cabecalho do arquivo de log para detectar o nome do jogador local
+    ('NAME Has Connected') e o nome do oponente (outro [NAME] Leader is).
+    Retorna (our_name, opp_name).
+    """
+    try:
+        header = path.read_text(encoding="utf-8", errors="replace")[:4096]
+    except OSError:
+        return "", ""
+
+    our = ""
+    all_leaders: list[str] = []
+
+    for line in header.splitlines():
+        m = _RE_CONNECTED.match(line)
+        if m:
+            our = m.group(1)
+        m2 = re.match(r'^\[([^\]]+)\] Leader is ', line)
+        if m2:
+            n = m2.group(1)
+            if n not in all_leaders:
+                all_leaders.append(n)
+
+    opp = next((n for n in all_leaders if n != our), "")
+    # Se nao achou "Has Connected", usa primeiro lider como nosso
+    if not our and all_leaders:
+        our = all_leaders[0]
+        opp = all_leaders[1] if len(all_leaders) > 1 else ""
+    return our, opp
+
 
 def _reset_log():
-    global _log_lines_seen
-    _log_lines_seen = []
+    global _current_log_file, _log_file_offset, _our_name, _opp_name, _log_search_after
+    _current_log_file  = None
+    _log_file_offset   = 0
+    _our_name          = ""
+    _opp_name          = ""
+    _log_search_after  = time.time()  # so aceita arquivos criados daqui em diante
 
-def _read_log_lines() -> list[str]:
-    """OCR do painel de log. Retorna lista de linhas visiveis."""
-    img = ImageGrab.grab(bbox=LOG_BBOX)
-    img = img.convert('L')
-    img = ImageOps.invert(img)   # texto claro em fundo escuro -> inverte
-    img = img.resize((img.width * 3, img.height * 3), Image.LANCZOS)
-    img = ImageEnhance.Contrast(img).enhance(2.0)
-    raw = pytesseract.image_to_string(img, config='--psm 6').strip()
-    return [l.strip() for l in raw.splitlines() if l.strip()]
 
 def read_log_delta() -> list[str]:
     """
-    Le o painel de log e retorna apenas as linhas novas
-    desde a ultima chamada.
+    Le as linhas novas do arquivo .log do OPTCGSim desde a ultima chamada.
+    Ignora linhas de protocolo RZ1 (maquina) e devolve so texto legivel.
     """
-    global _log_lines_seen
-    current = _read_log_lines()
-    if not current:
+    global _current_log_file, _log_file_offset, _our_name, _opp_name
+
+    # Na primeira chamada da partida, encontra o arquivo mais recente
+    if _current_log_file is None:
+        _current_log_file = _find_current_log()
+        if _current_log_file is None:
+            return []
+        _our_name, _opp_name = _detect_names_from_log(_current_log_file)
+        if _our_name:
+            print(f"[LOG] arquivo={_current_log_file.name} "
+                  f"nos={_our_name} opp={_opp_name}", flush=True)
+        # Arquivo novo da partida atual: le desde o inicio
+        _log_file_offset = 0
         return []
-    if not _log_lines_seen:
-        _log_lines_seen = current
-        return current
 
-    # Procura a ultima linha conhecida dentro do current para encontrar o delta
-    last = _log_lines_seen[-1]
+    # Le apenas os bytes novos desde a ultima chamada
     try:
-        idx = len(current) - 1 - list(reversed(current)).index(last)
-        new_lines = current[idx + 1:]
-    except ValueError:
-        # OCR leu diferente  tudo e novo
-        new_lines = current
+        size = _current_log_file.stat().st_size
+    except OSError:
+        return []
+    if size <= _log_file_offset:
+        return []
 
-    _log_lines_seen = current
-    return new_lines
+    try:
+        with _current_log_file.open("rb") as f:
+            f.seek(_log_file_offset)
+            raw_bytes = f.read(size - _log_file_offset)
+    except OSError:
+        return []
+
+    _log_file_offset = size
+    raw = raw_bytes.decode("utf-8", errors="replace")
+    lines = []
+    for line in raw.splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        # Ignora linhas do protocolo RZ1 (telemetria de maquina)
+        if line.startswith("RZ1|"):
+            continue
+        lines.append(line)
+    return lines
+
+def _codes_from_log_line(line: str) -> list[str]:
+    """Extrai codigos de carta de uma linha do log (formato link= ou [CODE])."""
+    found = _RE_CODE.findall(line)
+    if not found:
+        found = _RE_CODE_BARE.findall(line)
+    return found
+
 
 def apply_log_delta(gs, opp_gs, lines: list[str]) -> bool:
     """
@@ -196,7 +283,7 @@ def apply_log_delta(gs, opp_gs, lines: list[str]) -> bool:
     needs_hand_rescan = False
 
     try:
-        from optcg_engine.decision_engine import _make_card, load_cards_db
+        from optcg_engine.decision_engine import _make_card
         cards_db = getattr(_get_bridge(), '_cards_db', {})
     except Exception:
         cards_db = {}
@@ -210,10 +297,81 @@ def apply_log_delta(gs, opp_gs, lines: list[str]) -> bool:
         except Exception:
             return None
 
+    def _snap_codes(raw: str) -> list[str]:
+        """Parseia lista de codigos de snapshot: 'CODE1,CODE2,...'"""
+        return [c.strip() for c in raw.split(',') if c.strip()]
+
     for line in lines:
-        codes = _RE_CODE.findall(line)
-        is_you = '[You]' in line or line.startswith('You')
-        is_opp = '[Opponent]' in line or line.startswith('Opponent')
+        # --- Snapshots completos de estado (emitidos apos cada turno) ----------
+        m = _RE_SNAP_HAND.match(line)
+        if m:
+            name, raw = m.group(1), m.group(2)
+            is_snap_ours = (_our_name and name == _our_name) or (
+                not _our_name and name not in (_opp_name,))
+            codes_list = _snap_codes(raw)
+            if is_snap_ours:
+                # Sync completo da mao: reconstroi a partir dos codigos
+                new_hand = []
+                for code in codes_list:
+                    card = _get_card(code)
+                    if card:
+                        # Preserva _sim_x se ja existia na mao
+                        old = next((c for c in gs.hand if c.code == code), None)
+                        card._sim_x = getattr(old, '_sim_x', 0)
+                        new_hand.append(card)
+                if new_hand or not codes_list:
+                    gs.hand = new_hand
+                    needs_hand_rescan = True
+            else:
+                # Mao do oponente: so contamos (sem posicoes)
+                opp_gs.hand = [c for c in (_get_card(c) for c in codes_list) if c]
+            continue
+
+        m = _RE_SNAP_BOARD.match(line)
+        if m:
+            name, raw = m.group(1), m.group(2)
+            codes_list = _snap_codes(raw)
+            target_gs = gs if (_our_name and name == _our_name) else opp_gs
+            new_field = []
+            for code in codes_list:
+                card = _get_card(code)
+                if card:
+                    old = next((c for c in target_gs.field_chars if c.code == code), None)
+                    card._sim_x = getattr(old, '_sim_x', 0)
+                    card._sim_y = getattr(old, '_sim_y', 0)
+                    new_field.append(card)
+            target_gs.field_chars = new_field
+            continue
+
+        m = _RE_SNAP_TRASH.match(line)
+        if m:
+            name, raw = m.group(1), m.group(2)
+            codes_list = _snap_codes(raw)
+            target_gs = gs if (_our_name and name == _our_name) else opp_gs
+            target_gs.trash = [c for c in (_get_card(c) for c in codes_list) if c]
+            continue
+
+        m = _RE_SNAP_LIFE.match(line)
+        if m:
+            name, n = m.group(1), int(m.group(2))
+            target_gs = gs if (_our_name and name == _our_name) else opp_gs
+            # Ajusta tamanho da lista de vida sem alterar os objetos existentes
+            while len(target_gs.life) > n:
+                target_gs.life.pop(0)
+            while len(target_gs.life) < n:
+                target_gs.life.append(None)
+            continue
+
+        # --- Linhas de acao (formato legivel) ----------------------------------
+        codes = _codes_from_log_line(line)
+        # Detecta de quem e a linha: pelo nome registrado ou fallback texto
+        if _our_name:
+            is_you = line.startswith(f'[{_our_name}]')
+            is_opp = line.startswith(f'[{_opp_name}]') if _opp_name else (
+                not is_you and line.startswith('['))
+        else:
+            is_you = '[You]' in line or line.startswith('You')
+            is_opp = '[Opponent]' in line or line.startswith('Opponent')
 
         # -- Deploy ------------------------------------------------------------
         if 'Deploy' in line and codes:
