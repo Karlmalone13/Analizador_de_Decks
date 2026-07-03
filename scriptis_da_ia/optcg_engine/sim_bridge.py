@@ -28,6 +28,7 @@ from optcg_engine.decision_engine import (
     _load_effects_db,
     _load_analysis_db,
 )
+from optcg_engine.rules_facade import choose_highest_board_value
 
 DECKS_DIR = Path(r"E:\Games\OnePieceSimulador\Builds_Windows\Decks")
 CSV_PATH  = _SCRIPTS_DIR / "cards_rows.csv"
@@ -176,3 +177,100 @@ def choose_action(gs: GameState, opp_gs: GameState,
     t.start()
     t.join(timeout=timeout)
     return result[0]
+
+
+def _card_intent(zone: str, card: Card, reason: str) -> dict:
+    return {
+        "action": "click_card",
+        "zone": zone,
+        "code": getattr(card, "code", ""),
+        "name": getattr(card, "name", ""),
+        "reason": reason,
+    }
+
+
+_OCR_FIXES: list[tuple[str, str]] = [
+    # erros de reconhecimento de letras em palavras-chave de prompt
+    (r'\bTras\b',     'Trash'),
+    (r'\bTrah\b',     'Trash'),
+    (r'\bCaracter\b', 'Character'),
+    (r'\bCharater\b', 'Character'),
+    (r'\bChose\b',    'Choose'),
+    (r'\bEnemys?\b',  'Opponent'),
+    (r'\bOpponent\b', 'Opponent'),  # normaliza maiusculas
+    (r'\bYours?\b',   'your'),
+    (r'\b(\d+)\s+Cards?\b', r'\1 card'),  # "1 Cards" -> "1 card"
+    (r'\bUp To\b',    'up to'),
+]
+
+import re as _re
+
+def _normalize_prompt(raw: str) -> str:
+    """Corrige erros tipicos de OCR em textos de prompt do OPTCGSim."""
+    text = raw
+    for pattern, repl in _OCR_FIXES:
+        text = _re.sub(pattern, repl, text, flags=_re.IGNORECASE)
+    return " ".join(text.lower().split())
+
+
+def resolve_prompt_choice(gs: GameState, opp_gs: GameState,
+                          prompt_text: str) -> Optional[dict]:
+    """
+    Traduz um prompt visual do OPTCGSim em uma intencao clicavel.
+
+    O bot so classifica o tipo do prompt via OCR. A escolha concreta da carta
+    usa heuristicas ja existentes do engine; nao cadastrar carta por carta aqui.
+    """
+    text = _normalize_prompt(prompt_text or "")
+    if not text:
+        return None
+
+    engine = DecisionEngine(gs, opp_gs)
+
+    # Confirmacoes sem escolha real: reveal, draw, add ao topo/fundo, look at top
+    if any(kw in text for kw in ("reveal", "draw", "confirm", "ok",
+                                  "place on top", "place on bottom",
+                                  "look at", "add to hand")):
+        return {"action": "click_button", "prefer": "main", "reason": "confirm prompt"}
+
+    # "Trash remaining/rest" — confirma destino das cartas reveladas, sem nova escolha
+    if "trash" in text and ("remaining" in text or "rest" in text):
+        return {"action": "click_button", "prefer": "main", "reason": "confirm trash rest"}
+
+    # "Choose 0 / Select 0" — sem alvo valido
+    if ("choose 0" in text or "select 0" in text):
+        return {"action": "click_button", "prefer": "main", "reason": "no valid targets"}
+
+    # Descarte de mao (trash/discard card from hand)
+    if "trash" in text and ("hand" in text or "card" in text) and "character" not in text:
+        chosen = engine.choose_to_trash(gs.hand)
+        if chosen:
+            return _card_intent("hand", chosen, "engine chose card to trash")
+        return {"action": "click_button", "prefer": "main", "reason": "no card to trash"}
+
+    # Descartar personagem proprio do campo
+    if "trash" in text and "character" in text and ("your" in text or "own" in text):
+        chosen = (min(gs.field_chars, key=lambda c: c.board_value())
+                  if gs.field_chars else None)
+        if chosen:
+            return _card_intent("own_board", chosen, "engine chose own character to trash")
+
+    # Alvo de personagem do oponente
+    if ("choose" in text or "select" in text or "up to" in text) and "character" in text:
+        if "opponent" in text or "enemy" in text:
+            chosen = choose_highest_board_value(opp_gs.field_chars)
+            if chosen:
+                return _card_intent("opp_board", chosen, "engine chose opponent target")
+            # Sem personagens do oponente — passa
+            return {"action": "click_button", "prefer": "main", "reason": "no opp chars"}
+        if "your" in text or "own" in text:
+            chosen = choose_highest_board_value(gs.field_chars)
+            if chosen:
+                return _card_intent("own_board", chosen, "engine chose own target")
+
+    # Escolher carta de vida (trigger de vida levada)
+    if "life" in text and ("choose" in text or "select" in text or "add" in text):
+        return {"action": "click_button", "prefer": "main", "reason": "confirm life card"}
+
+    # Prompt nao reconhecido: None para que o chamador use fallback
+    return None

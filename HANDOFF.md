@@ -1,5 +1,152 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-03 (54) - Codex
+**PROMPT_TEXT_BBOX calibrado em prompt real**
+
+### Feito
+- Novo script: `scriptis_da_ia/calibrar_prompt_bbox.py`.
+- Ele nao clica e nao roda partida; apenas captura a tela atual, testa candidatos de bbox, salva crops e imprime OCR.
+- Saida em: `scriptis_da_ia/_debug_prompt_bbox/`.
+- `PROMPT_TEXT_BBOX` em `bot_optcgsim.py` atualizado para `(915, 500, 1265, 585)`.
+
+### Resultado da calibracao real
+- Tela do OPTCGSim estava em prompt textual.
+- Melhor candidato: `prompt_text_wide = (915, 500, 1265, 585)`.
+- OCR lido exatamente:
+```
+Select 1 Cards to Trash
+```
+- O bbox antigo `(930, 445, 1240, 620)` misturava preview da carta e leu principalmente `Saint.Marcus.Mars`, portanto estava alto demais.
+- Segunda leitura em outro prompt mostrou:
+```
+Choose 0 Enemy Characters
+```
+- Esse texto fica mais baixo; `bot_optcgsim.py` agora usa `PROMPT_TEXT_BBOXES` com:
+  - `(915, 500, 1265, 585)` para prompts altos;
+  - `(910, 500, 1265, 690)` para prompts baixos.
+- `sim_bridge.resolve_prompt_choice()` agora trata `Choose 0/Select 0 ... Character` como `click_button` sem inventar alvo, e aceita `enemy` como sinonimo de oponente.
+
+### Como recalibrar se a UI mudar
+1. Deixar o OPTCGSim visivel exatamente em um prompt textual.
+2. Rodar:
+```
+python scriptis_da_ia\calibrar_prompt_bbox.py
+```
+3. Conferir `overlay.png` e os crops em `_debug_prompt_bbox`.
+4. Copiar o melhor bbox para `PROMPT_TEXT_BBOX` em `bot_optcgsim.py`.
+
+---
+
+## 2026-07-03 (53) - Codex
+**Prompt resolver: bot classifica OCR, engine escolhe o clique**
+
+### Decisao arquitetural
+- O bot NAO deve decidir "melhor alvo", "pior carta para trash" ou "melhor carta para add".
+- O bot so deve:
+  1. ler/classificar o prompt visual do OPTCGSim;
+  2. pedir ao bridge/engine a intencao clicavel;
+  3. clicar carta/botao.
+- Isso evita criar um segundo motor dentro do bot.
+
+### Mudancas
+- `sim_bridge.py`
+  - Novo `resolve_prompt_choice(gs, opp_gs, prompt_text)`.
+  - Usa heuristicas ja existentes do engine:
+    - `DecisionEngine.choose_to_trash(gs.hand)` para discard/trash de mao.
+    - `choose_highest_board_value()` para alvos de personagem proprio/oponente.
+  - Retorna intencoes simples: `click_card` com `zone/code/name` ou `click_button`.
+  - Trata `Trash Remaining/Rest` como confirmacao de botao, nao como descarte de mao.
+- `bot_optcgsim.py`
+  - Novo `PROMPT_TEXT_BBOX` e `_read_prompt_text()`.
+  - Novo `_resolve_prompt_with_engine(...)`.
+  - `_resolve_post_deploy()` tenta resolver prompt via engine antes de clicar botao unico.
+  - Loop pos-ataque tambem tenta resolver prompt via engine antes de clicar botao.
+  - `play`/`activate` passam `gs/opp_gs/hand_cards/board_cards/opp_board_cards` para o resolvedor.
+
+### Validacao
+- `python -m py_compile scriptis_da_ia\bot_optcgsim.py scriptis_da_ia\optcg_engine\sim_bridge.py`
+
+### Risco restante
+- `PROMPT_TEXT_BBOX = (930, 445, 1240, 620)` e estimado; precisa calibrar com screenshot real do prompt.
+- O resolvedor ainda cobre classes genericas iniciais: trash de mao, trash de personagem proprio, escolher personagem proprio/oponente e confirmacoes. Nao cobre ainda prompts de cartas reveladas com coordenadas proprias fora de mao/campo.
+
+---
+
+## 2026-07-03 (52) - Codex
+**Auditoria estatica: bot executava mal activate/attach/attack mesmo com engine certo**
+
+### Achados corrigidos sem rodar simulacao
+1. **Campo visual cego**: no inicio da Main Phase o bot fazia `scan_hand()` e zerava `board_cards`. Resultado: engine podia escolher `activate`, `attach_don` ou ataque com personagem, mas o bot nao tinha coordenadas confiaveis para clicar.
+   - Fix: scan leve `scan_hand()` + `scan_board_p2()` + `scan_opp_board()` no inicio da Main Phase; sincroniza `gs.field_chars` e `opp_gs.field_chars` no bridge.
+2. **Ataque ignorava alvo do engine**: `attack` em personagem inimigo podia virar fallback para leader se nao achasse a fonte.
+   - Fix: `_execute_engine_action()` agora usa `action[3]`/`action[4]`, arrasta da fonte real para leader ou para o alvo personagem real. Se nao souber posicao, falha fechado em vez de atacar alvo errado.
+3. **Duplicatas com mesmo code**: activate/attack/attach podiam clicar a primeira copia do codigo, nao a copia escolhida pelo engine.
+   - Fix: preferir `_sim_x/_sim_y` gravado pelo `sync_field`; `_action_once_key()` inclui posicao quando existe.
+4. **Activate marcava tudo como rested**: `_consume_engine_action_locally()` marcava `activate` como rested sempre. Para Imu (`OP13-079`), Activate:Main compra carta/trasha Celestial Dragon e NAO resta o leader; isso podia impedir ataque depois.
+   - Fix: activate so marca rested se o custo em `card_effects_db.json` inclui `rest_self`, `rest_self_and_trash_hand` ou `rest_self_and_leader_or_stage`; tambem marca `_am_used_turn = gs.turn`.
+5. **Prompt unico clicava coordenada errada**: em alguns handlers, quando so havia botao de cima, o bot ainda clicava `C_BTN_MAIN`.
+   - Fix: helper `_click_detected_button(top, main)` clica no botao realmente detectado.
+6. **Campo apos play ficava stale**: apos jogar personagem, o estado local tinha a carta, mas `board_cards` nao tinha coordenada visual.
+   - Fix: apos `play`, reescaneia `scan_board_p2()` e sincroniza campo.
+
+### Validacao
+- `python -m py_compile scriptis_da_ia\bot_optcgsim.py scriptis_da_ia\optcg_engine\sim_bridge.py`
+
+### Risco restante
+- Ainda sem teste real no simulador por decisao do usuario para poupar creditos.
+- Efeitos On Play que exigem selecao de alvo especifico continuam dependendo do comportamento generico dos prompts; a proxima auditoria barata deve procurar cartas do deck Imu com On Play/Activate que abrem selecao de alvo e mapear se o bot precisa clicar alvo, nao apenas confirmar botao.
+
+---
+
+## 2026-07-03 (51) - Codex
+**Fix residual: OP13-086 nao causa fim de jogo; resolver prompt unico pos-deploy**
+
+### Achado
+- `AGENTS.md` nao existe na raiz do repo; busca por `AGENTS.md/agents.md/.agents/**` nao retornou arquivo.
+- `main` esta alinhada com `origin/main` em `498f3b7`.
+- `OP13-086` = Saint Shalria. Efeito: olha 3 do topo, adiciona 1 Celestial Dragons, trasha o resto e trasha 1 da mao. Nao causa dano massivo; a hipotese de fim correto por dano cai.
+- Regressao encontrada: em `115acd2`, `_resolve_post_deploy()` resolvia modais On Play de 1 botao e parava ao ver 3 botoes unicos consecutivos. No `HEAD`, ela parava imediatamente em qualquer botao unico, deixando o modal da OP13-086 para o loop principal, que em `in_main=True` tenta continuar via engine.
+
+### Mudanca
+- `scriptis_da_ia/bot_optcgsim.py`: restaurei `_resolve_post_deploy()` para clicar prompts unicos pos-deploy ate 2 vezes e parar no 3o botao unico estavel (= provavel End Turn), mantendo pass/counter em prompts de 2 botoes.
+
+### Validacao
+- `python -m py_compile scriptis_da_ia\bot_optcgsim.py`
+
+### Proximo teste sugerido
+- Rodar um teste curto, com simulador ja na tela de selecao de deck:
+```
+python scriptis_da_ia\bot_optcgsim.py --deck "Imu" --partidas 1 --timeout 90
+```
+- Esperado: apos `E(play:OP13-086)`, o bot deve resolver prompts On Play e nao travar/finalizar imediatamente por `[fim detectado]`.
+
+---
+
+## 2026-07-03 (51) - Claude
+**Prompts genéricos + Activate:Main**
+
+### Mudancas
+**sim_bridge.py — resolve_prompt_choice:**
+- `_normalize_prompt()`: corrige OCR antes de parsear (Tras->Trash, Chose->Choose, Enemy->Opponent, "1 Cards"->"1 card", etc.)
+- Novos padroes: "place on top/bottom", "look at", "add to hand", "up to N character", "life card"
+- "choose 0/select 0" passa direto sem exigir "character" no texto
+- Fallback explicito quando nao ha personagens (opp sem chars -> click_button)
+
+**bot_optcgsim.py — _resolve_prompt_with_engine:**
+- Sempre imprime OCR + intencao (antes so imprimia quando resolvia)
+
+**bot_optcgsim.py — _execute_engine_action activate:**
+- Imprime [ACT] code/type/clicked e buttons para diagnostico
+- Se board_cards vazio e carta nao e LEADER/STAGE: faz rescan do campo antes de clicar
+- Se nenhum botao apos clicar carta: deseleciona e retorna False (nao travar)
+
+### Proximo passo
+- Rodar partida e verificar se P[...] aparece em prompts e [ACT] em activate
+- Se "activate" do engine nunca dispara, checar scoring em decision_engine.py
+- Resolver [fim detectado] pos-End Turn (MAX_IDLE=50 ainda pode ser pouco)
+
+---
+
 ## 2026-07-03 (50) - Claude
 **4 fixes aplicados — bot joga e ataca via engine**
 

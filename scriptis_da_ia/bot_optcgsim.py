@@ -113,6 +113,10 @@ HOVER_WAIT   = 0.30   # reduzido de 0.65 -> 0.30s
 PREVIEW_NAME_BBOX  = (945, 415, 1185, 445)
 PREVIEW_COST_BBOX  = (930,  58,  975,  98)
 PREVIEW_POWER_BBOX = (1130,  58, 1230,  95)
+PROMPT_TEXT_BBOXES = [
+    (915, 500, 1265, 585),  # texto alto: ex. Select 1 Cards to Trash
+    (910, 500, 1265, 690),  # texto baixo: ex. Choose 0 Enemy Characters
+]
 
 # DON e outros counters
 DON_P2_HOVER = (495, 634)
@@ -306,6 +310,15 @@ def _read_preview_power() -> int | None:
     digits = re.sub(r'\D', '', raw)
     return int(digits) if digits else None
 
+def _read_prompt_text() -> str:
+    texts = []
+    for bbox in PROMPT_TEXT_BBOXES:
+        raw = _ocr_crop(bbox, psm=6, scale=3)
+        clean = re.sub(r'\s+', ' ', raw).strip()
+        if clean:
+            texts.append(clean)
+    return " | ".join(texts)
+
 def _read_don_active(hover_pos: tuple) -> int:
     pag.moveTo(*hover_pos, duration=0.04)
     time.sleep(0.5)
@@ -434,6 +447,29 @@ def _scan_buttons() -> tuple[bool, bool]:
     main = _is_beige(img.getpixel((1220, 643)))
     return top, main
 
+def _click_detected_button(top: bool, main: bool, prefer_main: bool = True) -> bool:
+    """Clica em um botao detectado; retorna False se nao ha botao."""
+    if prefer_main and main:
+        pag.click(*C_BTN_MAIN)
+        return True
+    if top:
+        pag.click(*C_BTN_TOP)
+        return True
+    if main:
+        pag.click(*C_BTN_MAIN)
+        return True
+    return False
+
+def _click_activate_button(top: bool, main: bool) -> bool:
+    """Clica no botao de acao apos selecionar carta com Activate:Main."""
+    if top:
+        pag.click(*C_BTN_TOP)
+        return True
+    if main:
+        pag.click(*C_BTN_MAIN)
+        return True
+    return False
+
 # -- Foco na janela -------------------------------------------------------------
 
 def _focus_sim() -> bool:
@@ -468,28 +504,44 @@ def _handle_prompts(max_steps: int = 20) -> None:
         else:
             return
 
-def _resolve_post_deploy() -> None:
-    """Apos deploy, resolve apenas prompts de 2 botoes (counter do oponente).
-    Para imediatamente em 1 botao — seja End Turn ou modal On Play.
-    O loop principal resolve o que restar."""
-    for _ in range(10):
+def _resolve_post_deploy(gs=None, opp_gs=None, hand_cards: list[dict] | None = None,
+                         board_cards: list[dict] | None = None,
+                         opp_board_cards: list[dict] | None = None) -> None:
+    """Apos deploy, resolve prompts de 2 botoes e modais On Play de 1 botao.
+    Para quando detecta 3 botoes unicos consecutivos (= End Turn estavel)."""
+    hand_cards = hand_cards or []
+    board_cards = board_cards or []
+    opp_board_cards = opp_board_cards or []
+    single_streak = 0
+    for _ in range(15):
         time.sleep(0.3)
         top, main = _scan_buttons()
         if not top and not main:
             break
         if top and main:
-            pag.click(*C_BTN_MAIN)   # Pass / No Counter
+            pag.click(*C_BTN_MAIN)   # Pass / No Counter / Skip
+            single_streak = 0
             continue
-        break  # 1 botao: End Turn ou On Play modal — parar aqui
+        single_streak += 1
+        if single_streak >= 3:
+            break  # End Turn estavel; nao clicar
+        if _resolve_prompt_with_engine(gs, opp_gs, hand_cards, board_cards,
+                                       opp_board_cards, top, main):
+            single_streak = 0
+            continue
+        _click_detected_button(top, main)  # Confirmar modal On Play
 
-def _try_deploy_card(hand_x: int) -> bool:
+def _try_deploy_card(hand_x: int, gs=None, opp_gs=None,
+                     hand_cards: list[dict] | None = None,
+                     board_cards: list[dict] | None = None,
+                     opp_board_cards: list[dict] | None = None) -> bool:
     pag.click(hand_x, HAND_Y)
     time.sleep(0.45)
     top, main = _scan_buttons()
     if top and main:
         pag.click(*C_BTN_TOP)
         time.sleep(0.45)
-        _resolve_post_deploy()
+        _resolve_post_deploy(gs, opp_gs, hand_cards, board_cards, opp_board_cards)
         return True
     pag.click(700, 380)
     time.sleep(0.2)
@@ -510,11 +562,11 @@ def _probe_main_phase(hand_x: int) -> bool:
     time.sleep(0.2)
     return False
 
-def _try_attack_leader() -> None:
-    pag.moveTo(*C_P2_LEADER, duration=0.12)
+def _try_attack_leader(source: tuple = C_P2_LEADER) -> None:
+    pag.moveTo(*source, duration=0.12)
     pag.mouseDown()
     time.sleep(0.08)
-    pag.moveTo(C_P2_LEADER[0], C_P1_CHAR_AREA[1], duration=0.18)
+    pag.moveTo(source[0], C_P1_CHAR_AREA[1], duration=0.18)
     pag.moveTo(*C_P1_LEADER, duration=0.18)
     pag.mouseUp()
     time.sleep(0.5)
@@ -522,11 +574,12 @@ def _try_attack_leader() -> None:
     if top or main:
         _handle_prompts()
 
-def _try_attack_char(field_x: int, field_y: int) -> None:
-    pag.moveTo(field_x, field_y, duration=0.12)
+def _try_attack_char(source: tuple, target: tuple) -> None:
+    pag.moveTo(*source, duration=0.12)
     pag.mouseDown()
     time.sleep(0.08)
-    pag.moveTo(C_P1_CHAR_AREA[0], C_P1_CHAR_AREA[1], duration=0.25)
+    pag.moveTo(target[0], C_P1_CHAR_AREA[1], duration=0.18)
+    pag.moveTo(*target, duration=0.18)
     pag.mouseUp()
     time.sleep(0.5)
     top, main = _scan_buttons()
@@ -547,15 +600,106 @@ def _click_card_source(card, board_cards: list[dict]) -> bool:
     if ctype == 'STAGE':
         pag.click(*C_P2_STAGE)
         return True
+    x = getattr(card, '_sim_x', 0)
+    y = getattr(card, '_sim_y', 0)
+    if x and y:
+        pag.click(x, y)
+        return True
     for b in board_cards:
         if b.get('code') == code:
             pag.click(b['x'], b['y'])
             return True
     return False
 
+def _visual_pos_for_card(card, board_cards: list[dict]) -> tuple | None:
+    """Retorna a posicao visual conhecida de leader, stage ou personagem."""
+    if card is None:
+        return None
+    ctype = getattr(card, 'card_type', '')
+    code = getattr(card, 'code', None)
+    if ctype == 'LEADER':
+        return C_P2_LEADER
+    if ctype == 'STAGE':
+        return C_P2_STAGE
+    x = getattr(card, '_sim_x', 0)
+    y = getattr(card, '_sim_y', 0)
+    if x and y:
+        return (x, y)
+    for b in board_cards:
+        if b.get('code') == code:
+            return (b['x'], b['y'])
+    return None
+
+def _visual_pos_for_opp_target(card, opp_board_cards: list[dict]) -> tuple | None:
+    """Retorna a posicao visual de um alvo do oponente."""
+    if card is None:
+        return C_P1_LEADER
+    code = getattr(card, 'code', None)
+    x = getattr(card, '_sim_x', 0)
+    y = getattr(card, '_sim_y', 0)
+    if x and y:
+        return (x, y)
+    for b in opp_board_cards:
+        if b.get('code') == code:
+            return (b['x'], b['y'])
+    return None
+
+def _click_card_by_code(code: str, cards: list[dict]) -> bool:
+    for info in cards:
+        if info.get('code') == code:
+            x = info.get('x', 0)
+            y = info.get('y', HAND_Y)
+            if x:
+                pag.click(x, y)
+                return True
+    return False
+
+def _execute_prompt_intent(intent: dict | None, hand_cards: list[dict],
+                           board_cards: list[dict],
+                           opp_board_cards: list[dict],
+                           top: bool, main: bool) -> bool:
+    if not intent:
+        return False
+    action = intent.get('action')
+    if action == 'click_button':
+        return _click_detected_button(top, main)
+    if action != 'click_card':
+        return False
+
+    code = intent.get('code', '')
+    zone = intent.get('zone', '')
+    if zone == 'hand':
+        return _click_card_by_code(code, hand_cards)
+    if zone == 'own_board':
+        return _click_card_by_code(code, board_cards)
+    if zone == 'opp_board':
+        return _click_card_by_code(code, opp_board_cards)
+    return False
+
+def _resolve_prompt_with_engine(gs, opp_gs, hand_cards: list[dict],
+                                board_cards: list[dict],
+                                opp_board_cards: list[dict],
+                                top: bool, main: bool) -> bool:
+    bridge = _get_bridge()
+    if not bridge or not gs or not opp_gs:
+        return False
+    prompt_text = _read_prompt_text()
+    intent = bridge.resolve_prompt_choice(gs, opp_gs, prompt_text)
+    # Sempre loga o texto OCR e a intencao (None = fallback para quem chama)
+    label  = intent.get('zone', intent.get('action', '?')) if intent else 'None'
+    reason = intent.get('reason', '') if intent else ''
+    print(f"P[{prompt_text[:35]}->{label}:{reason[:15]}]", end="", flush=True)
+    if intent and _execute_prompt_intent(
+            intent, hand_cards, board_cards, opp_board_cards, top, main):
+        time.sleep(0.35)
+        return True
+    return False
+
 
 def _execute_engine_action(action: tuple, hand_cards: list[dict],
-                            board_cards: list[dict]) -> bool:
+                            board_cards: list[dict],
+                            opp_board_cards: list[dict],
+                            gs=None, opp_gs=None) -> bool:
     if not action:
         return False
     score       = action[0]
@@ -576,47 +720,55 @@ def _execute_engine_action(action: tuple, hand_cards: list[dict],
         if hand_x is None and hand_cards:
             hand_x = hand_cards[0]['x']
         print(f"[PLAY] code={code} hand_x={hand_x} vis={[(h.get('code'),h['x']) for h in hand_cards[:3]]}", flush=True)
-        result = _try_deploy_card(hand_x) if hand_x else False
+        result = (_try_deploy_card(hand_x, gs, opp_gs, hand_cards,
+                                   board_cards, opp_board_cards)
+                  if hand_x else False)
         print(f"[PLAY] _try_deploy_card={result}", flush=True)
         return result
 
     if action_type == 'attack' and card is not None:
-        if getattr(card, 'card_type', '') == 'LEADER':
-            _try_attack_leader()
+        source = _visual_pos_for_card(card, board_cards)
+        if not source:
+            return False
+        target_type = action[3] if len(action) > 3 else 'leader'
+        target_card = action[4] if len(action) > 4 else None
+        if target_type == 'leader':
+            _try_attack_leader(source)
             return True
-        for b in board_cards:
-            if b.get('code') == getattr(card, 'code', None):
-                _try_attack_char(b['x'], b['y'])
-                return True
-        _try_attack_leader()
+        target = _visual_pos_for_opp_target(target_card, opp_board_cards)
+        if not target:
+            return False
+        _try_attack_char(source, target)
         return True
 
     if action_type == 'activate' and card is not None:
-        if not _click_card_source(card, board_cards):
+        code = getattr(card, 'code', '?')
+        ctype = getattr(card, 'card_type', '')
+        # Se campo nao escaneado ainda mas eh leader/stage, posicao e conhecida
+        local_board = board_cards
+        if not local_board and ctype not in ('LEADER', 'STAGE'):
+            local_board = scan_board_p2()
+        clicked = _click_card_source(card, local_board)
+        print(f"[ACT] code={code} type={ctype} clicked={clicked}", flush=True)
+        if not clicked:
             return False
-        time.sleep(0.45)
+        time.sleep(0.5)
         top, main = _scan_buttons()
-        if top and main:
-            pag.click(*C_BTN_TOP)
-            time.sleep(0.35)
-            _resolve_post_deploy()
-            return True
-        if top or main:
-            _handle_prompts()
-            return True
-        return False
+        print(f"[ACT] buttons top={top} main={main}", flush=True)
+        if not top and not main:
+            # Nenhum botao — carta sem activate disponivel ou ja usada
+            pag.click(700, 380)  # deseleciona
+            return False
+        if not _click_activate_button(top, main):
+            return False
+        time.sleep(0.35)
+        _resolve_post_deploy(gs, opp_gs, hand_cards, local_board, opp_board_cards)
+        return True
 
     if action_type == 'attach_don' and card is not None:
         amount = int(action[3]) if len(action) > 3 and isinstance(action[3], int) else 1
         source = DON_P2_HOVER
-        target = None
-        if getattr(card, 'card_type', '') == 'LEADER':
-            target = C_P2_LEADER
-        else:
-            for b in board_cards:
-                if b.get('code') == getattr(card, 'code', None):
-                    target = (b['x'], b['y'])
-                    break
+        target = _visual_pos_for_card(card, board_cards)
         if not target:
             return False
         for _ in range(max(1, amount)):
@@ -631,15 +783,28 @@ def _execute_engine_action(action: tuple, hand_cards: list[dict],
     return False
 
 
-def _consume_engine_action_locally(action: tuple) -> None:
+def _consume_engine_action_locally(action: tuple, current_turn: int | None = None) -> None:
     """Marca no estado local a parte da acao que o OCR do log pode nao ver."""
     if not action or len(action) < 3:
         return
     action_type = action[1]
     card = action[2]
-    if action_type in ('attack', 'activate') and card is not None:
+    if action_type == 'attack' and card is not None:
         try:
             card.rested = True
+        except Exception:
+            pass
+    elif action_type == 'activate' and card is not None:
+        try:
+            from optcg_engine.decision_engine import get_card_effects
+            if current_turn is not None:
+                card._am_used_turn = current_turn
+            am = get_card_effects(card.code).get('activate_main', {})
+            costs = am.get('costs', []) if isinstance(am, dict) else []
+            if any(c.get('type') in ('rest_self', 'rest_self_and_trash_hand',
+                                     'rest_self_and_leader_or_stage')
+                   for c in costs if isinstance(c, dict)):
+                card.rested = True
         except Exception:
             pass
 
@@ -663,7 +828,10 @@ def _action_once_key(action: tuple) -> tuple[str, str] | None:
         return None
     card = action[2]
     code = getattr(card, 'code', '') if card is not None else ''
-    return (action_type, code)
+    x = getattr(card, '_sim_x', 0) if card is not None else 0
+    y = getattr(card, '_sim_y', 0) if card is not None else 0
+    suffix = f"@{x},{y}" if x and y else ""
+    return (action_type, f"{code}{suffix}")
 
 # -- Selecao de deck no dropdown ----------------------------------------------
 
@@ -760,6 +928,7 @@ def play_match(deck_name: str | None = None, timeout: int = 600) -> bool:
     # Estado da Main Phase
     hand_cards  : list[dict] = []   # posicoes visuais da mao (para cliques)
     board_cards : list[dict] = []   # posicoes visuais do campo P2
+    opp_board_cards: list[dict] = []  # posicoes visuais do campo P1
     in_main     = False
     attacked    = False
     actions_this_turn = 0
@@ -810,11 +979,16 @@ def play_match(deck_name: str | None = None, timeout: int = 600) -> bool:
                     apply_log_delta(gs, opp_gs, pre_lines)
                     print(f"[DON={gs.don_available}]", end="", flush=True)
                 _reset_log()
-                # Scan rapido: so a mao (full_scan ~11s trava o loop)
+                # Scan leve: mao + campos. Evita full_scan porque DON via OCR
+                # deixava o loop lento e instavel, mas precisamos das posicoes
+                # visuais para activate/attach/attack em personagens.
                 hand_cards = scan_hand()
-                board_cards = []
+                board_cards = scan_board_p2()
+                opp_board_cards = scan_opp_board()
                 if bridge and gs:
                     bridge.sync_hand(gs, hand_cards)
+                    bridge.sync_field(gs, board_cards)
+                    bridge.sync_field(opp_gs, opp_board_cards)
                 _log_lines_seen[:] = _read_log_lines()
                 continue
 
@@ -826,6 +1000,7 @@ def play_match(deck_name: str | None = None, timeout: int = 600) -> bool:
             in_main = False
             hand_cards = []
             board_cards = []
+            opp_board_cards = []
             attacked = False
             actions_this_turn = 0
             used_engine_actions.clear()
@@ -839,6 +1014,7 @@ def play_match(deck_name: str | None = None, timeout: int = 600) -> bool:
                 in_main = False
                 hand_cards = []
                 board_cards = []
+                opp_board_cards = []
                 attacked = False
                 actions_this_turn = 0
                 used_engine_actions.clear()
@@ -858,12 +1034,13 @@ def play_match(deck_name: str | None = None, timeout: int = 600) -> bool:
                     if action:
                         once_key = _action_once_key(action)
                         if once_key and once_key in used_engine_actions:
-                            _consume_engine_action_locally(action)
+                            _consume_engine_action_locally(action, getattr(gs, 'turn', None))
                             print(f"S({_action_debug_label(action)})", end="", flush=True)
                             actions_this_turn = MAX_ACTIONS_PER_TURN
                             continue
                         action_executed = _execute_engine_action(
-                            action, hand_cards, board_cards)
+                            action, hand_cards, board_cards, opp_board_cards,
+                            gs, opp_gs)
                         if action_executed:
                             idle_ticks = 0  # reseta idle apos acao (animacoes On Play)
                             once_key = _action_once_key(action)
@@ -874,7 +1051,7 @@ def play_match(deck_name: str | None = None, timeout: int = 600) -> bool:
                                 attacked = True  # evita tentativa dupla via fallback A
                             print(f"E({_action_debug_label(action)})", end="", flush=True)
                             time.sleep(0.3)
-                            _consume_engine_action_locally(action)
+                            _consume_engine_action_locally(action, getattr(gs, 'turn', None))
                             # Apos ataque: aguarda e resolve prompts do oponente
                             if action[1] == 'attack':
                                 time.sleep(0.8)
@@ -882,7 +1059,11 @@ def play_match(deck_name: str | None = None, timeout: int = 600) -> bool:
                                     t2, m2 = _scan_buttons()
                                     if not t2 and not m2:
                                         break
-                                    pag.click(*C_BTN_MAIN)
+                                    if _resolve_prompt_with_engine(
+                                            gs, opp_gs, hand_cards, board_cards,
+                                            opp_board_cards, t2, m2):
+                                        continue
+                                    _click_detected_button(t2, m2)
                                     time.sleep(0.35)
                             # Remove carta jogada de gs.hand imediatamente (log pode perder)
                             if gs and action[1] == 'play' and len(action) > 2 and action[2] is not None:
@@ -891,6 +1072,9 @@ def play_match(deck_name: str | None = None, timeout: int = 600) -> bool:
                                     if c is played or c.code == played.code:
                                         gs.hand.pop(i)
                                         break
+                                board_cards = scan_board_p2()
+                                if bridge:
+                                    bridge.sync_field(gs, board_cards)
 
                             # -- DELTA DO LOG (sem rescan completo) ------------
                             new_lines = read_log_delta()
@@ -922,6 +1106,7 @@ def play_match(deck_name: str | None = None, timeout: int = 600) -> bool:
                 in_main = False
                 hand_cards = []
                 board_cards = []
+                opp_board_cards = []
                 attacked = False
                 actions_this_turn = 0
                 used_engine_actions.clear()
@@ -1012,4 +1197,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-
