@@ -122,6 +122,35 @@ python scriptis_da_ia\bot_optcgsim.py --deck "Imu" --partidas 1 --timeout 90
 
 ---
 
+## 2026-07-03 (52) - Claude
+**Fix DON apos play e fallback errado quando deploy falha**
+
+### Problema identificado no log
+- `[PLAY] _try_deploy_card=False` repetido para mesma carta (ex. OP14-096):
+  engine propunha carta com custo > DON disponivel porque `gs.don_available`
+  nao era decrementado apos play bem-sucedido anterior.
+- Apos deploy falhar, bot caía direto no fallback `A` (ataca lider) em vez
+  de tentar outra acao do engine.
+
+### Fixes
+1. **DON decrement apos play**: `gs.don_available -= played.cost` imediatamente
+   apos `_try_deploy_card=True`. Imprime `[DON-N=M]`.
+2. **`_action_once_key` agora inclui 'play'**: permite rastrear deploys falhos
+   em `used_engine_actions`.
+3. **Skip de play falho**: quando `once_key in used_engine_actions` para 'play',
+   faz `continue` (engine propoe proxima acao) em vez de encerrar o turno.
+4. **Fallback de deploy falho**: quando `_execute_engine_action` retorna False
+   para 'play', adiciona codigo a `used_engine_actions` e `continue`; fallback
+   de ataque so dispara quando nao ha mais acoes de play validas.
+
+### Proximos itens
+- OCR do prompt (`PROMPT_TEXT_BBOXES`) esta lendo area errada (retorna lixo).
+  Calibrar as coordenadas com `calibrar_prompt_bbox.py`.
+- [fim detectado] apos OP13-086 pode ser fim de jogo legitimo (On Play poderoso).
+  Verificar se o jogo realmente termina ou se e timeout de animacao.
+
+---
+
 ## 2026-07-03 (51) - Claude
 **Prompts genéricos + Activate:Main**
 
