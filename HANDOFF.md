@@ -1,5 +1,33 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-03 (48) - Claude
+**Fix: engine play actions falhavam por DON desatualizado apos probe deploy**
+
+### Causa raiz confirmada
+Apos o probe (`_try_deploy_card` na deteccao de Main Phase), o jogo gastava DON mas
+`gs.don_available` nao era decrementado. Engine via don=5, propunha plays, mas o jogo
+rejeitava (`_try_deploy_card=False`) porque DON real = 0.
+
+Confirmado no log de test20:
+```
+[PLAY] code=OP05-089 hand_x=212 vis=[..., ('OP05-089', 212)]
+[PLAY] _try_deploy_card=False   <- jogo sem DON, engine nao sabia
+```
+
+### Fix implementado (`bot_optcgsim.py`)
+1. **Probe**: apos deploy do probe, aguarda 0.4s e le DON real da tela via
+   `_read_don_active(DON_P2_HOVER)` -> `gs.don_available = don_real`. Imprime
+   `[DON_SYNC=N]` para debug.
+2. **Engine play**: apos `E(play:...)` executado, le DON real da tela (mesmo mecanismo)
+   antes de rodar o delta do log. Engine da proxima iteracao ve DON correto.
+
+### Estado atual
+- Engine propoe play e attack com DON/turno corretos
+- `[DON_SYNC=N]` aparece no log apos cada deploy (probe e engine)
+- Proximo passo: testar em partida real e confirmar `E(play:...)` executando com sucesso
+
+---
+
 ## 2026-07-03 (47) - Claude
 **Fix typos de regressao do Codex: pag.maouseDown/Up e amaount**
 

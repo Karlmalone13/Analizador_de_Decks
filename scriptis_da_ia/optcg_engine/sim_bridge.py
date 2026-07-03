@@ -163,10 +163,14 @@ def choose_action(gs: GameState, opp_gs: GameState,
         try:
             engine = DecisionEngine(gs, opp_gs)
             actions = match._generate_and_score_actions(gs, opp_gs, engine)
+            print(f"[ENG] {len(actions)} acoes | hand={len(gs.hand)} don={gs.don_available} turn={gs.turn}", flush=True)
+            if actions:
+                print(f"[ENG] top3: {[(a[0],a[1]) for a in actions[:3]]}", flush=True)
             if actions and actions[0][0] >= 0:
                 result[0] = actions[0]
-        except Exception:
-            pass
+        except Exception as e:
+            import traceback
+            print(f"[ENG-ERR] {e}\n{traceback.format_exc()}", flush=True)
 
     t = threading.Thread(target=_run, daemon=True)
     t.start()

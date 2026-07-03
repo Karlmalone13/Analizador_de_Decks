@@ -238,6 +238,13 @@ def apply_log_delta(gs, opp_gs, lines: list[str]) -> bool:
                 gs.life = gs.life[n:] if len(gs.life) >= n else []
                 needs_hand_rescan = True  # carta nova na mao
 
+        # -- Ganho de DON (fase de DON do turno) --------------------------------
+        elif 'Draw' in line and 'Don' in line and is_you:
+            m = re.search(r'Draw (\d+) Don', line)
+            if m:
+                gs.don_available += int(m.group(1))
+                print(f"[DON+{m.group(1)}={gs.don_available}]", end="", flush=True)
+
         # -- DON restado por efeito --------------------------------------------
         elif 'Rest' in line and 'Don' in line and is_you:
             m = _RE_REST_N.search(line)
@@ -462,23 +469,18 @@ def _handle_prompts(max_steps: int = 20) -> None:
             return
 
 def _resolve_post_deploy() -> None:
-    """Apos deploy, resolve prompts de 2 botoes e modais On Play de 1 botao.
-    Para quando detecta 3 botoes unicos consecutivos (= End Turn estavel)."""
-    single_streak = 0
-    for _ in range(15):
+    """Apos deploy, resolve apenas prompts de 2 botoes (counter do oponente).
+    Para imediatamente em 1 botao — seja End Turn ou modal On Play.
+    O loop principal resolve o que restar."""
+    for _ in range(10):
         time.sleep(0.3)
         top, main = _scan_buttons()
         if not top and not main:
             break
         if top and main:
-            pag.click(*C_BTN_MAIN)   # Pass / No Counter / Skip
-            single_streak = 0
+            pag.click(*C_BTN_MAIN)   # Pass / No Counter
             continue
-        # Botao unico
-        single_streak += 1
-        if single_streak >= 3:
-            break  # End Turn estavel - nao clicar
-        pag.click(*C_BTN_MAIN)       # Confirmar modal On Play
+        break  # 1 botao: End Turn ou On Play modal — parar aqui
 
 def _try_deploy_card(hand_x: int) -> bool:
     pag.click(hand_x, HAND_Y)
@@ -558,7 +560,10 @@ def _execute_engine_action(action: tuple, hand_cards: list[dict],
                 break
         if hand_x is None and hand_cards:
             hand_x = hand_cards[0]['x']
-        return _try_deploy_card(hand_x) if hand_x else False
+        print(f"[PLAY] code={code} hand_x={hand_x} vis={[(h.get('code'),h['x']) for h in hand_cards[:3]]}", flush=True)
+        result = _try_deploy_card(hand_x) if hand_x else False
+        print(f"[PLAY] _try_deploy_card={result}", flush=True)
+        return result
 
     if action_type == 'attack' and card is not None:
         if getattr(card, 'card_type', '') == 'LEADER':
@@ -647,62 +652,36 @@ def _action_once_key(action: tuple) -> tuple[str, str] | None:
 
 # -- Selecao de deck no dropdown ----------------------------------------------
 
-def _norm_deck_name(name: str) -> str:
-    return re.sub(r'\s+', ' ', name.strip().lower())
-
-
-def _find_deck_index(deck_name: str, decks: list[str]) -> int | None:
-    target = _norm_deck_name(deck_name)
-    for i, deck in enumerate(decks):
-        if _norm_deck_name(deck) == target:
-            return i
-    for i, deck in enumerate(decks):
-        if target in _norm_deck_name(deck):
-            return i
-    return None
-
-
-def _selected_deck_matches(dd_coord: tuple, deck_name: str) -> bool:
-    box = (dd_coord[0] - 100, dd_coord[1] - 18,
-           dd_coord[0] + 105, dd_coord[1] + 18)
-    img = ImageGrab.grab(bbox=box)
-    img = img.resize((img.width * 3, img.height * 3), Image.LANCZOS)
-    img = ImageEnhance.Contrast(img.convert('L')).enhance(2.0)
-    raw = pytesseract.image_to_string(img, config='--psm 7').strip()
-    return _norm_deck_name(deck_name) in _norm_deck_name(raw)
-
-
 def _select_deck_dropdown(dd_coord: tuple, deck_name: str) -> bool:
     """
-    Seleciona o deck no dropdown rolando a lista ate encontrar o nome.
-    Falha fechado: se nao confirmar o deck, nao escolhe fallback.
+    Clica no dropdown, tenta OCR para achar o deck pelo nome.
+    Se OCR falhar, clica no primeiro item visivel (Unity lembra a ultima selecao).
+    Nunca pressiona Escape — isso fecharia dialogs errados.
+    Retorna True se OCR confirmou o nome; False se usou clique cego.
     """
-    bridge = _get_bridge()
-    decks = bridge.list_decks() if bridge else []
-    target_idx = _find_deck_index(deck_name, decks)
-    if target_idx is None:
-        return False
-
-    list_top = dd_coord[1] + 17
-
     pag.click(*dd_coord)
-    time.sleep(0.5)
+    time.sleep(0.6)
 
-    first_visible = 0
-    if target_idx >= DECK_DD_VISIBLE_COUNT:
-        first_visible = min(target_idx - 1,
-                            max(0, len(decks) - DECK_DD_VISIBLE_COUNT))
-        drag_from = list_top + 29
-        drag_to = min(list_top + 185,
-                      drag_from + int(first_visible * DECK_DD_SCROLL_FACTOR))
-        pag.moveTo(DECK_DD_SCROLL_X, drag_from, duration=0.05)
-        pag.dragTo(DECK_DD_SCROLL_X, drag_to, duration=0.25, button='left')
-        time.sleep(0.25)
+    LIST_BBOX = (190, 160, 400, 500)
+    img = ImageGrab.grab(bbox=LIST_BBOX)
+    img_big = img.resize((img.width * 3, img.height * 3), Image.LANCZOS)
+    img_big = img_big.convert('L')
+    img_big = ImageEnhance.Contrast(img_big).enhance(2.0)
+    raw = pytesseract.image_to_string(img_big, config='--psm 6').strip()
+    lines = [l.strip() for l in raw.splitlines() if l.strip()]
 
-    row = max(0, target_idx - first_visible)
-    pag.click(dd_coord[0], list_top + int((row + 0.5) * DECK_DD_ITEM_H))
-    time.sleep(0.35)
-    return _selected_deck_matches(dd_coord, deck_name)
+    target = deck_name.lower()
+    for i, line in enumerate(lines):
+        if target in line.lower():
+            y_offset = int((i + 0.5) * (LIST_BBOX[3] - LIST_BBOX[1]) / max(len(lines), 1))
+            pag.click(dd_coord[0], LIST_BBOX[1] + y_offset)
+            time.sleep(0.4)
+            return True
+
+    # Fallback: clica no primeiro item da lista (sem Escape)
+    pag.click(dd_coord[0], LIST_BBOX[1] + 20)
+    time.sleep(0.4)
+    return False
 
 
 # -- Fluxo de uma partida -------------------------------------------------------
@@ -723,8 +702,8 @@ def play_match(deck_name: str | None = None, timeout: int = 600) -> bool:
             match.setup()   # inicializa mao + vida (5 cartas) para o engine funcionar
             gs     = match.state_b
             opp_gs = match.state_a
-            gs.turn = 1     # P2 pode atacar a partir do turno 1
-            opp_gs.turn = 1
+            gs.turn = 2     # can_attack_this_turn() = turn > 1: começa em 2
+            opp_gs.turn = 2
             print(f"  Deck: {deck_name} (lider: {gs.leader.name})", end=" ")
         except Exception as e:
             print(f"  [engine indisponivel: {e}]", end=" ")
@@ -739,11 +718,6 @@ def play_match(deck_name: str | None = None, timeout: int = 600) -> bool:
         p1_ok = _select_deck_dropdown(C_DECK_P1_DD, deck_name)
         p2_ok = _select_deck_dropdown(C_DECK_P2_DD, deck_name)
         print(f"SelectDeck(P1={p1_ok},P2={p2_ok})", end=" ", flush=True)
-        if not (p1_ok and p2_ok):
-            print("[deck selection failed]", end=" ", flush=True)
-            pag.click(*C_BACK_MAIN)
-            time.sleep(0.8)
-            return False
 
     print("Start!", end=" ", flush=True)
     pag.click(*C_START)
@@ -789,23 +763,34 @@ def play_match(deck_name: str | None = None, timeout: int = 600) -> bool:
         if _game_phase >= 1 and not in_main:
             # Proba Main Phase tentando deploy em posicoes da mao (P2, y=HAND_Y).
             # Durante o turno do oponente, cliques em y=HAND_Y nao abrem prompt.
-            probe_positions = ([h['x'] for h in hand_cards]
-                               if hand_cards else list(range(HAND_X_START, HAND_X_END + 1, HAND_STEP)))
+            probe_cards = (hand_cards[:5] if hand_cards
+                           else [{'x': x, 'cost': 0}
+                                 for x in range(HAND_X_START, HAND_X_END + 1, HAND_STEP)][:5])
             deployed = False
-            for px in probe_positions[:5]:
-                if _try_deploy_card(px):
+            for h in probe_cards:
+                if _try_deploy_card(h['x']):
                     deployed = True
                     break
             if deployed:
                 in_main = True
                 print("D", end="", flush=True)
+                # Le linhas acumuladas antes do probe (Draw Don do inicio do turno)
+                if gs and opp_gs:
+                    pre_lines = read_log_delta()
+                    apply_log_delta(gs, opp_gs, pre_lines)
+                # Aguarda animacao do probe e le DON real da tela para sincronizar
+                time.sleep(0.4)
+                if gs:
+                    don_real = _read_don_active(DON_P2_HOVER)
+                    if don_real >= 0:
+                        gs.don_available = don_real
+                        print(f"[DON_SYNC={don_real}]", end="", flush=True)
                 _reset_log()
-                # Scan rapido: so a mao (para o engine saber o que temos)
-                if bridge and gs and opp_gs:
-                    hand_cards, board_cards = full_scan(gs, opp_gs)
-                else:
-                    hand_cards = scan_hand()
-                    board_cards = []
+                # Scan rapido: so a mao (full_scan ~11s trava o loop)
+                hand_cards = scan_hand()
+                board_cards = []
+                if bridge and gs:
+                    bridge.sync_hand(gs, hand_cards)
                 _log_lines_seen[:] = _read_log_lines()
                 continue
 
@@ -843,7 +828,9 @@ def play_match(deck_name: str | None = None, timeout: int = 600) -> bool:
 
             if gs and bridge and match:
                 try:
+                    print(f"[BOT] calling engine hand={len(gs.hand)} don={gs.don_available} turn={gs.turn} vis={len(hand_cards)}", flush=True)
                     action = bridge.choose_action(gs, opp_gs, match, timeout=2.0)
+                    print(f"[BOT] engine->{'None' if action is None else action[:2]}", flush=True)
                     if action:
                         once_key = _action_once_key(action)
                         if once_key and once_key in used_engine_actions:
@@ -861,6 +848,12 @@ def play_match(deck_name: str | None = None, timeout: int = 600) -> bool:
                             print(f"E({_action_debug_label(action)})", end="", flush=True)
                             time.sleep(0.3)
                             _consume_engine_action_locally(action)
+                            # Sincroniza DON real da tela apos play
+                            if gs and action[1] == 'play':
+                                don_real = _read_don_active(DON_P2_HOVER)
+                                if don_real >= 0:
+                                    gs.don_available = don_real
+                                    print(f"[DON_SYNC={don_real}]", end="", flush=True)
 
                             # -- DELTA DO LOG (sem rescan completo) ------------
                             new_lines = read_log_delta()
