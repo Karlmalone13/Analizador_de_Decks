@@ -213,13 +213,65 @@ def _normalize_prompt(raw: str) -> str:
     return " ".join(text.lower().split())
 
 
+def _prompt_zone(text: str) -> str:
+    """
+    Detecta a zona/tipo do prompt a partir do texto OCR do painel direito.
+    Ordem importa: mais especificos primeiro.
+    """
+    # DON: "Select/Rest 1 DON!! card"
+    if _re.search(r'\bdon\b', text):
+        return "don"
+    # Deck order: "Drag to Choose Bottom of Deck Order", "Return Cards to Deck"
+    if _re.search(r'(bottom of deck|deck order|return cards|drag to choose)', text):
+        return "deck_order"
+    # Trash area: "Choose X cards from your Trash"
+    if _re.search(r'\btrash\b', text) and _re.search(r'(from|in|your)\s+(your\s+)?trash', text):
+        return "trash"
+    # Mao: "Trash/Choose 1 card from your hand"
+    if _re.search(r'\b(from|in|your)\s+(your\s+)?hand\b', text):
+        return "hand"
+    # Campo oponente: "Choose opponent's Character"
+    if _re.search(r'\bopponent\b', text) or _re.search(r'\benemy\b', text):
+        return "opp_field"
+    # Campo proprio: "Choose your Character" / "Select 1 More Friendly Targets"
+    if _re.search(r'\b(your|own|friendly)\s+(character|field|target)\b', text):
+        return "own_field"
+    # Cartas reveladas: "Look at top 3", "Reveal up to 1"
+    if _re.search(r'\b(reveal|top of (your )?deck|look at)\b', text):
+        return "revealed"
+    # Blocker step: "Blocker Step" — oponente atacou, decidir bloqueador
+    if "blocker step" in text or "blocker" in text:
+        return "blocker"
+    # Counter step: "Counter Step" — decidir se joga counter
+    if "counter step" in text:
+        return "counter"
+    # Vida: "Choose 1 life card"
+    if _re.search(r'\blife\b', text):
+        return "life"
+    return "unknown"
+
+
+def _prompt_count(text: str) -> int:
+    """Extrai contagem numerica do prompt (0 = nenhum alvo valido)."""
+    m = _re.search(r'\b(choose|select)\s+0\b', text)
+    if m:
+        return 0
+    m = _re.search(r'\bup to\s+(\d+)\b', text)
+    if m:
+        return int(m.group(1))
+    m = _re.search(r'\b(choose|select|trash|rest)\s+(\d+)\b', text)
+    if m:
+        return int(m.group(2))
+    return 1  # default: 1 alvo
+
+
 def resolve_prompt_choice(gs: GameState, opp_gs: GameState,
                           prompt_text: str) -> Optional[dict]:
     """
     Traduz um prompt visual do OPTCGSim em uma intencao clicavel.
 
-    O bot so classifica o tipo do prompt via OCR. A escolha concreta da carta
-    usa heuristicas ja existentes do engine; nao cadastrar carta por carta aqui.
+    Logica puramente generica: detecta ZONA + ACAO + CONTAGEM pelo texto OCR.
+    Nenhuma referencia a carta especifica — toda decisao vai para o engine.
     """
     text = _normalize_prompt(prompt_text or "")
     if not text:
@@ -227,50 +279,74 @@ def resolve_prompt_choice(gs: GameState, opp_gs: GameState,
 
     engine = DecisionEngine(gs, opp_gs)
 
-    # Confirmacoes sem escolha real: reveal, draw, add ao topo/fundo, look at top
-    if any(kw in text for kw in ("reveal", "draw", "confirm", "ok",
-                                  "place on top", "place on bottom",
-                                  "look at", "add to hand")):
+    # --- Nenhum alvo valido (count = 0) ----------------------------------
+    if _prompt_count(text) == 0:
+        return {"action": "click_button", "prefer": "main", "reason": "count=0 no targets"}
+
+    zone = _prompt_zone(text)
+
+    # --- DON: pagar custo de Activate:Main ("Select/Rest 1 DON") --------
+    if zone == "don":
+        return {"action": "click_don", "reason": "pay activate don cost"}
+
+    # --- Blocker Step: oponente atacou — sem bloqueador por ora -----------
+    if zone == "blocker":
+        return {"action": "click_button", "prefer": "main", "reason": "no blocker"}
+
+    # --- Counter Step: engine decide se joga counter ----------------------
+    if zone == "counter":
+        # Tenta escolher melhor counter da mao (carta com counter value)
+        counters = [c for c in gs.hand if getattr(c, 'counter', 0) > 0]
+        if counters:
+            best = max(counters, key=lambda c: getattr(c, 'counter', 0))
+            return _card_intent("hand", best, "play counter")
+        return {"action": "click_button", "prefer": "main", "reason": "no counter/resolve attack"}
+
+    # --- Trash zone: usa gs.trash rastreado pelo log ---------------------
+    if zone == "trash":
+        if gs.trash:
+            # Engine escolhe melhor carta do trash (maior board_value)
+            best = max(gs.trash, key=lambda c: c.board_value())
+            return _card_intent("trash", best, "choose from trash")
+        return {"action": "click_button", "prefer": "main", "reason": "trash empty"}
+
+    if zone == "revealed":
+        return {"action": "click_button", "prefer": "main", "reason": "revealed zone confirm"}
+    if zone == "life":
+        return {"action": "click_button", "prefer": "main", "reason": "life confirm"}
+    # Ordenar deck ("Drag to Choose Bottom of Deck Order" / "Return Cards to Deck")
+    if zone == "deck_order":
+        return {"action": "click_button", "prefer": "main", "reason": "accept deck order"}
+
+    # --- Confirmacoes sem escolha real -----------------------------------
+    _CONFIRM_KWS = ("draw", "confirm", "ok", "place on top", "place on bottom",
+                    "add to hand", "remaining", "rest of")
+    if any(kw in text for kw in _CONFIRM_KWS):
         return {"action": "click_button", "prefer": "main", "reason": "confirm prompt"}
 
-    # "Trash remaining/rest" — confirma destino das cartas reveladas, sem nova escolha
-    if "trash" in text and ("remaining" in text or "rest" in text):
-        return {"action": "click_button", "prefer": "main", "reason": "confirm trash rest"}
-
-    # "Choose 0 / Select 0" — sem alvo valido
-    if ("choose 0" in text or "select 0" in text):
-        return {"action": "click_button", "prefer": "main", "reason": "no valid targets"}
-
-    # Descarte de mao (trash/discard card from hand)
-    if "trash" in text and ("hand" in text or "card" in text) and "character" not in text:
+    # --- Mao: descarte/trash da mao -------------------------------------
+    if zone == "hand" or ("trash" in text and "hand" in text):
         chosen = engine.choose_to_trash(gs.hand)
         if chosen:
-            return _card_intent("hand", chosen, "engine chose card to trash")
-        return {"action": "click_button", "prefer": "main", "reason": "no card to trash"}
+            return _card_intent("hand", chosen, "trash from hand")
+        return {"action": "click_button", "prefer": "main", "reason": "hand empty"}
 
-    # Descartar personagem proprio do campo
-    if "trash" in text and "character" in text and ("your" in text or "own" in text):
-        chosen = (min(gs.field_chars, key=lambda c: c.board_value())
-                  if gs.field_chars else None)
+    # --- Campo do oponente ----------------------------------------------
+    if zone == "opp_field":
+        chosen = choose_highest_board_value(opp_gs.field_chars)
         if chosen:
-            return _card_intent("own_board", chosen, "engine chose own character to trash")
+            return _card_intent("opp_board", chosen, "choose opp char")
+        return {"action": "click_button", "prefer": "main", "reason": "no opp chars"}
 
-    # Alvo de personagem do oponente
-    if ("choose" in text or "select" in text or "up to" in text) and "character" in text:
-        if "opponent" in text or "enemy" in text:
-            chosen = choose_highest_board_value(opp_gs.field_chars)
-            if chosen:
-                return _card_intent("opp_board", chosen, "engine chose opponent target")
-            # Sem personagens do oponente — passa
-            return {"action": "click_button", "prefer": "main", "reason": "no opp chars"}
-        if "your" in text or "own" in text:
+    # --- Campo proprio --------------------------------------------------
+    if zone == "own_field":
+        if "trash" in text:
+            chosen = (min(gs.field_chars, key=lambda c: c.board_value())
+                      if gs.field_chars else None)
+        else:
             chosen = choose_highest_board_value(gs.field_chars)
-            if chosen:
-                return _card_intent("own_board", chosen, "engine chose own target")
-
-    # Escolher carta de vida (trigger de vida levada)
-    if "life" in text and ("choose" in text or "select" in text or "add" in text):
-        return {"action": "click_button", "prefer": "main", "reason": "confirm life card"}
+        if chosen:
+            return _card_intent("own_board", chosen, "choose own char")
 
     # Prompt nao reconhecido: None para que o chamador use fallback
     return None

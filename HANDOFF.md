@@ -1,5 +1,107 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-03 (56) - Claude
+
+### Fixes desta sessão
+
+**`sim_bridge.py` — `_prompt_zone`**
+- "Select 1 More Friendly Targets" agora mapeia para `own_field` (regex expandido para incluir "friendly" e "target")
+
+**`bot_optcgsim.py` — trash zone handler**
+- Constantes: `TRASH_P2 = (863, 634)`, `TRASH_VIEW_Y = 550`, `TRASH_VIEW_XS = [120,195,265,335,395]`, `TRASH_ARROW_R = (427, 550)`
+- Nova função `_click_card_in_trash_view(target_code)`: abre trash via clique em `TRASH_P2`, hover-scan cada posição na row y≈550, lê preview para identificar code, clica o alvo; pagina com seta direita até 3x; fallback: clica primeira posição
+- `_execute_prompt_intent`: novo branch `zone == 'trash'` → chama `_click_card_in_trash_view`
+
+**`bot_optcgsim.py` — botão extra y≈515 (multi-efeito Activate:Main)**
+- `_click_activate_button` verifica pixel em y≈515 antes do top normal (y≈578) — cobre cartas com 2 opções de efeito como Kouzuki Oden ("Attach All Active Don" / "Action:(3)...")
+
+### Pendências abertas
+- **Confirmar `TRASH_P2 = (863, 634)`**: rodar bot e mandar screenshot quando trash precisar ser aberto para calibrar posição exata
+- **Confirmar y=515 para botão extra do Oden**: verificar após teste se o pixel detecta corretamente
+- **OP13-082 deploy com 7 cartas**: posição 282 falha consistentemente — investigar hitbox da mão cheia
+- **Trigger Step**: após dano de ataque, o trigger step pode pedir interação — não mapeado ainda
+- **Rotacionar chave Supabase** antes de deploy público (pendência de segurança)
+
+---
+
+## 2026-07-03 (55) - Claude
+
+### Observação arquitetural (IMPORTANTE — nunca violar)
+
+> **O Engine é o cérebro. O Bot é os olhos e as mãos.**
+
+- **Bot (`bot_optcgsim.py`)**: só lê a tela (OCR, scan de cartas/campo), converte em dados estruturados e clica nos botões. Não toma decisões de jogo.
+- **Engine (`decision_engine.py` via `sim_bridge.py`)**: recebe o `GameState` montado pelo bot e decide qual ação tomar.
+- **Regra**: nunca implementar lógica de "qual carta jogar", "qual alvo atacar" ou "qual carta descartar" no bot. Toda decisão vai para o engine. O bot apenas executa a intenção devolvida.
+- Isso evita o problema de ter dois motores divergindo. O `sim_bridge.py` é a ponte: recebe dados visuais do bot → alimenta o engine → devolve intenção clicável.
+
+### Fix aplicado nesta sessão
+- **Loop infinito `S(play:OP14-096)`**: quando um `play` estava em `used_engine_actions` e o skip disparava, o `continue` re-chamava o engine sem remover a carta de `gs.hand`, causando loop eterno.
+- Fix: ao skippar um `play`, o bot agora remove a carta de `gs.hand` localmente (`gs.hand = [c for c in gs.hand if c is not skip_card and c.code != skip_code]`) antes do `continue`, quebra o loop.
+- Arquivo: `scriptis_da_ia/bot_optcgsim.py` (~linha 1038).
+
+### Problema aberto: bot não joga cartas (engine parece não funcionar)
+Sintoma reportado: bot roda mas não executa plays. Hipóteses prováveis:
+
+1. **`gs.hand` vazio quando engine é chamado** — `sync_hand()` no bridge pode não estar sendo chamado antes de `choose_action()`, ou o scan visual retorna lista vazia.
+2. **`gs.don_available` = 0** — DON não está sendo sincronizado corretamente do estado visual para o `GameState` antes da chamada ao engine.
+3. **Engine retorna `None`** — `_generate_and_score_actions` não encontra ação viável (score < 0) porque o `GameState` está incompleto (sem mão, sem DON, turn=0).
+4. **`hand_x` não encontrado** — `_execute_engine_action` acha action de `play` mas `hand_cards` visual não tem o código da carta escolhida pelo engine (mismatch entre código no banco e código escaneado pela OCR).
+
+### Análise real do log (3 partidas rodadas)
+- **O engine funciona**: DON e hand estão sendo sincronizados corretamente. O engine propõe ações válidas e o bot executa: OP05-089, OP14-096, OP13-098, OP01-074, OP13-086 foram jogados com sucesso.
+- **`_try_deploy_card=False`** ocorre quando o simulador NÃO abre o prompt Deploy/Cancel após o clique. Dois padrões:
+  1. **`OP13-082` sempre falha** (hand_x=282) — provável regra do jogo que o engine não modela. O sim verifica uma condição de jogo que bloqueia o deploy silenciosamente.
+  2. **`OP14-096` falha às vezes** (hand_x=317 falha, hand_x=282 funciona mesmo turno seguinte) — posição stale em `hand_cards`; a carta estava na posição 317 durante o scan mas o clique não acertou o hitbox.
+- **`[fim detectado]` após OP13-086** — parece CORRETO: Imu (OP13-086) tem efeito que pode finalizar o jogo (DON explode para 7+), o simulador encerrou a partida.
+- **Fix aplicado**: após `F(code)` (deploy falhou), `scan_hand()` é chamada imediatamente para garantir posições frescas antes da próxima tentativa.
+
+### Cards identificados e fluxo de prompts (imagens vistas)
+- **OP13-082 (Five Elders)** — CHARACTER 10/12000 com `Activate:Main`: rest 1 DON + trash 1 da mão → trash TODOS os personagens do campo → jogar até 5 [Five Elders] do trash. O deploy (custo 10) deveria funcionar normalmente; as falhas provavelmente são posição stale (282 com 7 cartas na mão). Após o activate, sequência de prompts: DON select → trash mão → trash personagens próprios → escolher Five Elders do trash.
+- **OP13-086 (Saint Shalria)** — CHARACTER 1/0 Counter+1000 com `On Play`: olhar 3 cartas do topo → revelar até 1 [Celestial Dragons] → adicionar à mão → trashar o resto → trashar 1 da mão. Após o deploy, sequência de prompts: escolher Celestial Dragons (ou confirmar) → trash restantes → trash 1 da mão.
+
+### Princípio arquitetural aplicado nos prompts (IMPORTANTE — não reverter)
+O bot NÃO deve ter lógica por carta ("if five elders, do X"). Ele lê a tela e identifica
+genericamente ZONA + AÇÃO + CONTAGEM a partir do texto OCR. O engine/bridge decide o que clicar.
+
+### Mudanças aplicadas
+- `sim_bridge.py`: `resolve_prompt_choice` reescrito com parser genérico (`_prompt_zone` + `_prompt_count`).
+  Detecta por estrutura do texto, sem mencionar nenhuma carta:
+  - zona `don` → `click_don`; zona `trash` → confirma (bot não escaneia trash ainda)
+  - zona `revealed` → confirma; zona `hand` → engine escolhe pior carta
+  - zona `opp_field` → engine escolhe maior valor; zona `own_field` → engine decide
+  - count `0` → confirma sem escolha
+- `bot_optcgsim.py`: `_execute_prompt_intent` trata `click_don` → clica `DON_P2_HOVER`
+- `bot_optcgsim.py`: `_resolve_post_deploy` de 15 → 25 iterações
+
+### Mapeamento de UI obtido por screenshots (partida observada)
+- Botão `main` em y≈638 cobre: "No Blocker", "Resolve Attack", "Return Cards to Deck", "Choose 0 Targets"
+- "Blocker Step" / "Counter Step" textos aparecem em y≈490–610 (ACIMA do bbox antigo)
+- Trash P2: clicável em ~x=863, y=633 no board; abre visualização **acima da mão**
+- Setas scroll da mão (mão cheia): esquerda ~x=83, direita ~x=427, y≈553
+
+### Sequência de ataque (novo conhecimento)
+Quando oponente ataca: Blocker Step → Counter Step → (Trigger Step se dano)
+- Blocker Step: bot clica "No Blocker" (main button) — por ora não bloqueia
+- Counter Step: bot verifica gs.hand por counter cards; se tiver joga o melhor, senão "Resolve Attack"
+
+### Mudanças implementadas
+- `apply_log_delta`: rastreia cartas para `gs.trash` via log ("Discard [CODE] for Counter", "Trash [CODE]", "K.O.")
+  — sem precisar de scan visual do trash
+- `PROMPT_TEXT_BBOXES`: adicionado bbox (930, 490, 1275, 610) para capturar textos de fase mais altos
+- `_prompt_zone`: zonas "blocker" e "counter" adicionadas
+- `resolve_prompt_choice`:
+  - zone "blocker" → "No Blocker" (main)
+  - zone "counter" → engine escolhe melhor counter da mão; senão "Resolve Attack"
+  - zone "trash" → engine escolhe maior board_value de `gs.trash` (rastreado pelo log)
+
+### O que ainda falta
+- **Clicar carta do trash** (zona "trash"): `_execute_prompt_intent` recebe `zone="trash"` mas não sabe onde clicar visualmente — o trash precisa ser aberto (clicar em x=863, y=633) e então as cartas ficam acima da mão. Implementar scan do trash aberto.
+- **Deploy de OP13-082 com 7 cartas na mão**: posição 282 pode estar fora do hitbox. Investigar.
+- **Counter step**: bot hoje joga o counter de maior valor mas não avalia se o ataque vale ser bloqueado. Lógica futura: comparar poder do ataque vs vida restante.
+
+---
+
 ## 2026-07-03 (54) - Codex
 **PROMPT_TEXT_BBOX calibrado em prompt real**
 

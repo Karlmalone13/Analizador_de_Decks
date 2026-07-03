@@ -115,12 +115,20 @@ PREVIEW_COST_BBOX  = (930,  58,  975,  98)
 PREVIEW_POWER_BBOX = (1130,  58, 1230,  95)
 PROMPT_TEXT_BBOXES = [
     (930, 608, 1275, 682),  # caixa bege de prompt (Choose/Select) — fundo-direita
+    (930, 490, 1275, 610),  # texto de fase (Blocker Step, Counter Step, Drag to Choose...)
 ]
 
 # DON e outros counters
 DON_P2_HOVER = (495, 634)
 DON_P1_HOVER = (865, 100)
 OPP_HAND_HOVER = (250, 90)
+
+# Trash P2: pilha de descarte (lado direito do campo P2)
+TRASH_P2      = (863, 634)
+# Posicoes das cartas visiveis na view de trash (abre sobre a area da mao)
+TRASH_VIEW_Y  = 550
+TRASH_VIEW_XS = [120, 195, 265, 335, 395]  # ate 5 cartas visiveis
+TRASH_ARROW_R = (427, 550)  # seta direita para paginar o trash
 
 def _badge_bbox(hover_x: int, hover_y: int) -> tuple:
     x, y = hover_x, hover_y - 45
@@ -254,14 +262,43 @@ def apply_log_delta(gs, opp_gs, lines: list[str]) -> bool:
             if m:
                 gs.don_available = max(0, gs.don_available - int(m.group(1)))
 
-        # -- K.O. -------------------------------------------------------------
+        # -- Descarte para counter ("Discard [CODE] for Counter") -----------
+        elif 'Discard' in line and 'Counter' in line and codes:
+            code = codes[0]
+            if is_you:
+                gs.hand = [c for c in gs.hand if c.code != code]
+                card = _get_card(code)
+                if card and not any(c.code == code for c in gs.trash):
+                    gs.trash.append(card)
+
+        # -- Carta vai para o trash explicitamente ("Trash [CODE]") ----------
+        elif 'Trash' in line and codes and 'Remaining' not in line:
+            code = codes[0]
+            if is_you:
+                gs.hand = [c for c in gs.hand if c.code != code]
+                gs.field_chars = [c for c in gs.field_chars if c.code != code]
+                card = _get_card(code)
+                if card and not any(c.code == code for c in gs.trash):
+                    gs.trash.append(card)
+            elif is_opp:
+                opp_gs.field_chars = [c for c in opp_gs.field_chars if c.code != code]
+                card = _get_card(code)
+                if card and not any(c.code == code for c in opp_gs.trash):
+                    opp_gs.trash.append(card)
+
+        # -- K.O. (vai para o trash) ------------------------------------------
         elif 'K.O.' in line and codes:
             code = codes[-1]
             if is_you:
+                card = next((c for c in gs.field_chars if c.code == code), None)
                 gs.field_chars = [c for c in gs.field_chars if c.code != code]
+                if card and not any(c.code == code for c in gs.trash):
+                    gs.trash.append(card)
             elif is_opp:
-                opp_gs.field_chars = [c for c in opp_gs.field_chars
-                                       if c.code != code]
+                card = next((c for c in opp_gs.field_chars if c.code == code), None)
+                opp_gs.field_chars = [c for c in opp_gs.field_chars if c.code != code]
+                if card and not any(c.code == code for c in opp_gs.trash):
+                    opp_gs.trash.append(card)
 
         # -- Dano na vida ------------------------------------------------------
         elif 'hit for' in line:
@@ -441,9 +478,13 @@ def _is_beige(rgb) -> bool:
     return all(BTN_LO[i] <= rgb[i] <= BTN_HI[i] for i in range(3))
 
 def _scan_buttons() -> tuple[bool, bool]:
-    img = ImageGrab.grab()
+    img  = ImageGrab.grab()
     top  = _is_beige(img.getpixel((1220, 578)))
-    main = _is_beige(img.getpixel((1220, 643)))
+    # Botao main: verifica pixel padrao (1220,643) e tambem centro do botao largo
+    # "Return Cards to Deck" que aparece na mesma area mas com cor ligeiramente diferente
+    main = (_is_beige(img.getpixel((1220, 643)))
+            or _is_beige(img.getpixel((1101, 643)))
+            or _is_beige(img.getpixel((1180, 643))))
     return top, main
 
 def _click_detected_button(top: bool, main: bool, prefer_main: bool = True) -> bool:
@@ -460,7 +501,14 @@ def _click_detected_button(top: bool, main: bool, prefer_main: bool = True) -> b
     return False
 
 def _click_activate_button(top: bool, main: bool) -> bool:
-    """Clica no botao de acao apos selecionar carta com Activate:Main."""
+    """Clica no botao de acao apos selecionar carta com Activate:Main.
+    Detecta botao extra em y~515 para cartas com multiplas opcoes de efeito (ex: Oden)."""
+    img = ImageGrab.grab()
+    # Botao extra: efeito ativo aparece acima do botao top normal
+    if (_is_beige(img.getpixel((1220, 515)))
+            or _is_beige(img.getpixel((1101, 515)))):
+        pag.click(1101, 515)
+        return True
     if top:
         pag.click(*C_BTN_TOP)
         return True
@@ -506,13 +554,13 @@ def _handle_prompts(max_steps: int = 20) -> None:
 def _resolve_post_deploy(gs=None, opp_gs=None, hand_cards: list[dict] | None = None,
                          board_cards: list[dict] | None = None,
                          opp_board_cards: list[dict] | None = None) -> None:
-    """Apos deploy, resolve prompts de 2 botoes e modais On Play de 1 botao.
+    """Apos deploy/activate, resolve prompts de 2 botoes e modais On Play/Activate de 1 botao.
     Para quando detecta 3 botoes unicos consecutivos (= End Turn estavel)."""
     hand_cards = hand_cards or []
     board_cards = board_cards or []
     opp_board_cards = opp_board_cards or []
     single_streak = 0
-    for _ in range(15):
+    for _ in range(25):  # 25 para cobrir sequencias longas (Five Elders: DON+trash+5 elders)
         time.sleep(0.3)
         top, main = _scan_buttons()
         if not top and not main:
@@ -653,6 +701,35 @@ def _click_card_by_code(code: str, cards: list[dict]) -> bool:
                 return True
     return False
 
+def _click_card_in_trash_view(target_code: str) -> bool:
+    """
+    Abre a view de trash de P2 e clica na carta com o codigo alvo.
+    Pagina com a seta direita ate 3 vezes se nao encontrar na primeira pagina.
+    """
+    pag.click(*TRASH_P2)
+    time.sleep(0.55)
+    for _page in range(4):
+        for tx in TRASH_VIEW_XS:
+            pag.moveTo(tx, TRASH_VIEW_Y, duration=0.04)
+            time.sleep(HOVER_WAIT)
+            name = _read_preview_name()
+            if not name:
+                continue
+            db = _lookup_by_name(name)
+            code = db.get('code') if db else None
+            if code and code == target_code:
+                pag.click(tx, TRASH_VIEW_Y)
+                print(f"[TRASH] clicou {target_code} em x={tx}", flush=True)
+                return True
+        # Nao encontrou nessa pagina — pagina
+        pag.click(*TRASH_ARROW_R)
+        time.sleep(0.35)
+    # Fallback: clica primeira posicao visivel
+    print(f"[TRASH] {target_code} nao encontrado — clicando primeira posicao", flush=True)
+    pag.click(TRASH_VIEW_XS[0], TRASH_VIEW_Y)
+    return True
+
+
 def _execute_prompt_intent(intent: dict | None, hand_cards: list[dict],
                            board_cards: list[dict],
                            opp_board_cards: list[dict],
@@ -662,6 +739,11 @@ def _execute_prompt_intent(intent: dict | None, hand_cards: list[dict],
     action = intent.get('action')
     if action == 'click_button':
         return _click_detected_button(top, main)
+    # Clicar em um DON para pagar custo de Activate:Main (ex: Five Elders)
+    if action == 'click_don':
+        pag.click(*DON_P2_HOVER)
+        time.sleep(0.25)
+        return True
     if action != 'click_card':
         return False
 
@@ -673,6 +755,8 @@ def _execute_prompt_intent(intent: dict | None, hand_cards: list[dict],
         return _click_card_by_code(code, board_cards)
     if zone == 'opp_board':
         return _click_card_by_code(code, opp_board_cards)
+    if zone == 'trash':
+        return _click_card_in_trash_view(code)
     return False
 
 def _resolve_prompt_with_engine(gs, opp_gs, hand_cards: list[dict],
@@ -1036,7 +1120,12 @@ def play_match(deck_name: str | None = None, timeout: int = 600) -> bool:
                         if once_key and once_key in used_engine_actions:
                             print(f"S({_action_debug_label(action)})", end="", flush=True)
                             if action[1] == 'play':
-                                # Deploy falhou antes — engine deve propor proxima acao
+                                # Remove carta da mao local para engine nao re-propor (loop infinito)
+                                skip_card = action[2] if len(action) > 2 else None
+                                if skip_card is not None and gs is not None:
+                                    skip_code = getattr(skip_card, 'code', '')
+                                    gs.hand = [c for c in gs.hand
+                                               if c is not skip_card and c.code != skip_code]
                                 continue
                             _consume_engine_action_locally(action, getattr(gs, 'turn', None))
                             actions_this_turn = MAX_ACTIONS_PER_TURN
@@ -1109,6 +1198,10 @@ def play_match(deck_name: str | None = None, timeout: int = 600) -> bool:
                     if failed_code:
                         used_engine_actions.add(('play', failed_code))
                     print(f"F({failed_code})", end="", flush=True)
+                    # Rescan mao para garantir posicoes frescas antes da proxima tentativa
+                    hand_cards = scan_hand()
+                    if bridge:
+                        bridge.sync_hand(gs, hand_cards)
                     continue  # engine vai propor proxima melhor acao
 
                 if not attacked:
