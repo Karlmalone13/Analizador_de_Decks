@@ -824,13 +824,14 @@ def _action_once_key(action: tuple) -> tuple[str, str] | None:
     if not action or len(action) < 3:
         return None
     action_type = str(action[1])
-    if action_type not in ('activate', 'attack'):
+    if action_type not in ('activate', 'attack', 'play'):
         return None
     card = action[2]
     code = getattr(card, 'code', '') if card is not None else ''
     x = getattr(card, '_sim_x', 0) if card is not None else 0
     y = getattr(card, '_sim_y', 0) if card is not None else 0
-    suffix = f"@{x},{y}" if x and y else ""
+    # play nao usa coordenada (carta sai da mao apos deploy)
+    suffix = f"@{x},{y}" if x and y and action_type != 'play' else ""
     return (action_type, f"{code}{suffix}")
 
 # -- Selecao de deck no dropdown ----------------------------------------------
@@ -1034,8 +1035,11 @@ def play_match(deck_name: str | None = None, timeout: int = 600) -> bool:
                     if action:
                         once_key = _action_once_key(action)
                         if once_key and once_key in used_engine_actions:
-                            _consume_engine_action_locally(action, getattr(gs, 'turn', None))
                             print(f"S({_action_debug_label(action)})", end="", flush=True)
+                            if action[1] == 'play':
+                                # Deploy falhou antes — engine deve propor proxima acao
+                                continue
+                            _consume_engine_action_locally(action, getattr(gs, 'turn', None))
                             actions_this_turn = MAX_ACTIONS_PER_TURN
                             continue
                         action_executed = _execute_engine_action(
@@ -1065,9 +1069,12 @@ def play_match(deck_name: str | None = None, timeout: int = 600) -> bool:
                                         continue
                                     _click_detected_button(t2, m2)
                                     time.sleep(0.35)
-                            # Remove carta jogada de gs.hand imediatamente (log pode perder)
+                            # Remove carta jogada de gs.hand e desconta DON imediatamente
                             if gs and action[1] == 'play' and len(action) > 2 and action[2] is not None:
                                 played = action[2]
+                                cost = getattr(played, 'cost', 0) or 0
+                                gs.don_available = max(0, gs.don_available - cost)
+                                print(f"[DON-{cost}={gs.don_available}]", end="", flush=True)
                                 for i, c in enumerate(gs.hand):
                                     if c is played or c.code == played.code:
                                         gs.hand.pop(i)
@@ -1096,6 +1103,15 @@ def play_match(deck_name: str | None = None, timeout: int = 600) -> bool:
                     print(f"[eng:{e}]", end="", flush=True)
 
             if not action_executed:
+                # Play falhou (carta nao encontrada visualmente ou DON insuficiente):
+                # registra o codigo na lista de bloqueio e re-chama o engine
+                if action and action[1] == 'play' and len(action) > 2 and action[2] is not None:
+                    failed_code = getattr(action[2], 'code', '')
+                    if failed_code:
+                        used_engine_actions.add(('play', failed_code))
+                    print(f"F({failed_code})", end="", flush=True)
+                    continue  # engine vai propor proxima melhor acao
+
                 if not attacked:
                     attacked = True
                     actions_this_turn += 1
