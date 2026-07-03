@@ -1,5 +1,43 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-03 (50) - Claude
+**4 fixes aplicados — bot joga e ataca via engine**
+
+### Fixes desta sessão
+1. **SelectDeck por teclado** (P1=True,P2=True): `_select_deck_dropdown` usa `Home`+`Down`×N+`Enter` em vez de OCR. Funcionou nos testes 24-27.
+2. **attacked=True** apos engine attack: evita tentativa dupla via fallback A.
+3. **DON_SYNC removido** apos play: log captura DON corretamente (sem sobrescrever com 0).
+4. **gs.hand atualizado** imediatamente apos E(play): remove a carta jogada sem depender do log. Fix critico — engine repetia a mesma carta.
+5. **idle_ticks=0** apos E(action) e apos End Turn: animacoes longas nao trigam fim detectado.
+6. **Post-attack prompt handler**: apos E(attack), 0.8s + loop de 15x resolve counter/trigger do oponente.
+7. **MAX_IDLE=50** (15s): aguarda animacoes On Play longas.
+
+### Resultado (test27)
+```
+SelectDeck(P1=True,P2=True)
+M[DON=2] → E(play:OP13-086) → E(attack:OP07-019) → .
+[fim detectado]   <- pos-ataque, provavel fim de jogo ou trigger longo
+```
+
+### Problema residual: [fim detectado] apos primeiro ataque
+Consistente nos testes 25-27. Pos-ataque, nao aparecem botoes por 15s.
+Causas possiveis (a investigar):
+- OP13-086 tem On Play que causa dano massivo → jogo acaba em turno 1 (correto?)
+- Trigger de vida do P1 tem animacao > 15s (aumentar MAX_IDLE para 100?)
+- Post-attack prompt handler resolveu prompts mas em seguida end-turn click
+  causou estado inesperado no jogo
+
+### test28: [fim detectado] logo apos Start
+Estado do simulador provavelmente era de tela de resultado anterior.
+Bot precisa que o simulador esteja na tela de selecao de deck ao iniciar.
+
+### Proximo passo
+- Checar o que OP13-086 faz (se faz dano em On Play, o jogo pode estar terminando corretamente)
+- Se necessario: aumentar MAX_IDLE para 100 (30s) para trigger animacoes
+- Garantir que o simulador reseta para a tela correta entre partidas (ou aguardar manualmente)
+
+---
+
 ## 2026-07-03 (49) - Claude
 **Engine jogando cartas: fix probe sem deploy + DON correto**
 

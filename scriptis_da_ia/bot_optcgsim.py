@@ -669,34 +669,49 @@ def _action_once_key(action: tuple) -> tuple[str, str] | None:
 
 def _select_deck_dropdown(dd_coord: tuple, deck_name: str) -> bool:
     """
-    Clica no dropdown, tenta OCR para achar o deck pelo nome.
-    Se OCR falhar, clica no primeiro item visivel (Unity lembra a ultima selecao).
-    Nunca pressiona Escape — isso fecharia dialogs errados.
-    Retorna True se OCR confirmou o nome; False se usou clique cego.
+    Seleciona deck no dropdown sem depender de OCR.
+    Usa lista de arquivos .deck (ordem alfabetica = ordem do dropdown Unity)
+    para calcular o indice e navegar com teclado ate o item correto.
+    Retorna True se conseguiu selecionar, False se usou fallback cego.
     """
+    from optcg_engine.sim_bridge import DECKS_DIR
+
+    # Lista decks ordenados — Unity exibe em ordem alfabetica
+    try:
+        all_decks = sorted(p.stem for p in DECKS_DIR.glob("*.deck"))
+    except Exception:
+        all_decks = []
+
+    # Acha indice do deck alvo (case-insensitive)
+    target_idx = next(
+        (i for i, d in enumerate(all_decks) if d.lower() == deck_name.lower()),
+        None,
+    )
+    if target_idx is None:
+        # Match parcial
+        target_idx = next(
+            (i for i, d in enumerate(all_decks) if deck_name.lower() in d.lower()),
+            None,
+        )
+
     pag.click(*dd_coord)
-    time.sleep(0.6)
+    time.sleep(0.7)
 
-    LIST_BBOX = (190, 160, 400, 500)
-    img = ImageGrab.grab(bbox=LIST_BBOX)
-    img_big = img.resize((img.width * 3, img.height * 3), Image.LANCZOS)
-    img_big = img_big.convert('L')
-    img_big = ImageEnhance.Contrast(img_big).enhance(2.0)
-    raw = pytesseract.image_to_string(img_big, config='--psm 6').strip()
-    lines = [l.strip() for l in raw.splitlines() if l.strip()]
+    if target_idx is None:
+        # Sem info de posicao: clica no primeiro item
+        pag.click(dd_coord[0], 195)
+        time.sleep(0.4)
+        return False
 
-    target = deck_name.lower()
-    for i, line in enumerate(lines):
-        if target in line.lower():
-            y_offset = int((i + 0.5) * (LIST_BBOX[3] - LIST_BBOX[1]) / max(len(lines), 1))
-            pag.click(dd_coord[0], LIST_BBOX[1] + y_offset)
-            time.sleep(0.4)
-            return True
-
-    # Fallback: clica no primeiro item da lista (sem Escape)
-    pag.click(dd_coord[0], LIST_BBOX[1] + 20)
+    # Navega com teclado: Home vai para o primeiro item, Down avanca
+    pag.press('home')
+    time.sleep(0.1)
+    for _ in range(target_idx):
+        pag.press('down')
+        time.sleep(0.05)
+    pag.press('return')
     time.sleep(0.4)
-    return False
+    return True
 
 
 # -- Fluxo de uma partida -------------------------------------------------------
@@ -740,7 +755,7 @@ def play_match(deck_name: str | None = None, timeout: int = 600) -> bool:
 
     start      = time.time()
     idle_ticks = 0
-    MAX_IDLE   = 20
+    MAX_IDLE   = 50  # ~15s — aguarda animacoes longas de On Play effects
 
     # Estado da Main Phase
     hand_cards  : list[dict] = []   # posicoes visuais da mao (para cliques)
@@ -850,19 +865,32 @@ def play_match(deck_name: str | None = None, timeout: int = 600) -> bool:
                         action_executed = _execute_engine_action(
                             action, hand_cards, board_cards)
                         if action_executed:
+                            idle_ticks = 0  # reseta idle apos acao (animacoes On Play)
                             once_key = _action_once_key(action)
                             if once_key:
                                 used_engine_actions.add(once_key)
                             actions_this_turn += 1
+                            if action[1] == 'attack':
+                                attacked = True  # evita tentativa dupla via fallback A
                             print(f"E({_action_debug_label(action)})", end="", flush=True)
                             time.sleep(0.3)
                             _consume_engine_action_locally(action)
-                            # Sincroniza DON real da tela apos play
-                            if gs and action[1] == 'play':
-                                don_real = _read_don_active(DON_P2_HOVER)
-                                if don_real >= 0:
-                                    gs.don_available = don_real
-                                    print(f"[DON_SYNC={don_real}]", end="", flush=True)
+                            # Apos ataque: aguarda e resolve prompts do oponente
+                            if action[1] == 'attack':
+                                time.sleep(0.8)
+                                for _ in range(15):
+                                    t2, m2 = _scan_buttons()
+                                    if not t2 and not m2:
+                                        break
+                                    pag.click(*C_BTN_MAIN)
+                                    time.sleep(0.35)
+                            # Remove carta jogada de gs.hand imediatamente (log pode perder)
+                            if gs and action[1] == 'play' and len(action) > 2 and action[2] is not None:
+                                played = action[2]
+                                for i, c in enumerate(gs.hand):
+                                    if c is played or c.code == played.code:
+                                        gs.hand.pop(i)
+                                        break
 
                             # -- DELTA DO LOG (sem rescan completo) ------------
                             new_lines = read_log_delta()
@@ -897,6 +925,7 @@ def play_match(deck_name: str | None = None, timeout: int = 600) -> bool:
                 attacked = False
                 actions_this_turn = 0
                 used_engine_actions.clear()
+                idle_ticks = 0  # reseta idle — P1 pode ter animacoes longas
                 pag.click(*C_BTN_MAIN)
                 time.sleep(0.5)
                 print(".", end="", flush=True)
