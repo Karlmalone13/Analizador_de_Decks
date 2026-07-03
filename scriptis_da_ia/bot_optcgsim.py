@@ -1182,16 +1182,14 @@ def play_match(deck_name: str | None = None, timeout: int = 600) -> bool:
                             needs_rescan = apply_log_delta(gs, opp_gs, new_lines)
 
                             if needs_rescan:
-                                # Sacou carta - so rescaneamos a mao
-                                hand_cards = scan_hand()
-                                if bridge:
-                                    bridge.sync_hand(gs, hand_cards)
                                 print("R", end="", flush=True)
 
-                            # Atualiza posicoes visuais da mao para cliques futuros
-                            hand_cards = [h for h in hand_cards
-                                          if any(c.code == h.get('code')
-                                                 for c in gs.hand)]
+                            # Sempre rescaneamos a mao apos play bem-sucedido:
+                            # o simulador reposiciona as cartas restantes ao retirar uma,
+                            # entao as posicoes x antigas ficam stale e causam F em cascata.
+                            hand_cards = scan_hand()
+                            if bridge:
+                                bridge.sync_hand(gs, hand_cards)
                             continue
                 except Exception as e:
                     print(f"[eng:{e}]", end="", flush=True)

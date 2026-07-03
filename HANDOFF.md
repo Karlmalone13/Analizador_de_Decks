@@ -1,5 +1,19 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-03 (58) - Claude
+
+### Bug crítico resolvido: posições stale causavam F em cascata
+
+**Sintoma observado**: bot fazia muitos `F(código)` seguidos mesmo com DON suficiente — visualmente parecia "só passar o mouse e passar a vez".
+
+**Causa raiz**: após um deploy bem-sucedido, o código filtrava `hand_cards` mas mantinha os `_sim_x` antigos. O OPTCGSim reposiciona as cartas restantes ao retirar uma, então as posições x ficavam stale. O bot clicava no lugar errado → simulador não abria Deploy prompt → `_try_deploy_card=False`.
+
+**Fix** (`bot_optcgsim.py` ~linha 1186): após cada play bem-sucedido, chama `scan_hand()` + `bridge.sync_hand()` para obter posições frescas antes da próxima ação.
+
+**Investigação via `validators.py`**: confirmado que a validação do engine está correta — o problema NÃO era custo de DON, era posição visual stale.
+
+---
+
 ## 2026-07-03 (57) - Claude
 
 ### Fixes desta sessão (rodada de observação)
