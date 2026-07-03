@@ -122,6 +122,24 @@ python scriptis_da_ia\bot_optcgsim.py --deck "Imu" --partidas 1 --timeout 90
 
 ---
 
+## 2026-07-03 (53) - Claude
+**Corrige bbox do OCR de prompt**
+
+Problema: `PROMPT_TEXT_BBOXES` apontava para y=500-585/690, que captura
+o texto do card preview (Saint Marcus Mars etc.) junto com o prompt.
+OCR retornava lixo: `'<i 5 es ee oe = ye ee per wae Yom`.
+
+Diagnosticado via `_debug_prompt_bbox/full.png`: caixa de prompt fica
+em y≈615-673, x≈935-1270 (fundo bege, fundo-direita da tela).
+
+Fix: `PROMPT_TEXT_BBOXES = [(930, 608, 1275, 682)]` — apenas a caixa
+do prompt, sem o card preview acima.
+
+`calibrar_prompt_bbox.py` atualizado com novos candidatos centrados
+na posicao correta.
+
+---
+
 ## 2026-07-03 (52) - Claude
 **Fix DON apos play e fallback errado quando deploy falha**
 

@@ -114,8 +114,7 @@ PREVIEW_NAME_BBOX  = (945, 415, 1185, 445)
 PREVIEW_COST_BBOX  = (930,  58,  975,  98)
 PREVIEW_POWER_BBOX = (1130,  58, 1230,  95)
 PROMPT_TEXT_BBOXES = [
-    (915, 500, 1265, 585),  # texto alto: ex. Select 1 Cards to Trash
-    (910, 500, 1265, 690),  # texto baixo: ex. Choose 0 Enemy Characters
+    (930, 608, 1275, 682),  # caixa bege de prompt (Choose/Select) — fundo-direita
 ]
 
 # DON e outros counters
