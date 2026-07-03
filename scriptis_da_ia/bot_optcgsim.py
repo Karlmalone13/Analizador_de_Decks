@@ -373,28 +373,54 @@ def apply_log_delta(gs, opp_gs, lines: list[str]) -> bool:
             is_you = '[You]' in line or line.startswith('You')
             is_opp = '[Opponent]' in line or line.startswith('Opponent')
 
-        # -- Deploy ------------------------------------------------------------
-        if 'Deploy' in line and codes:
+        # -- Deploy (da mao) ---------------------------------------------------
+        # Log.Deploy / Log.ActionDeploy — "Deploy CODE" (da mao)
+        # Nota: "from Trash" e "from Deck" sao tratados abaixo separadamente
+        if 'Deploy' in line and codes and 'from Trash' not in line and 'from Deck' not in line:
             code = codes[-1]
             if is_you:
-                # Remove da mao
                 gs.hand = [c for c in gs.hand if c.code != code]
-                # Adiciona ao campo se ainda nao estiver
                 if not any(c.code == code for c in gs.field_chars):
                     card = _get_card(code)
                     if card:
+                        card.rested = False
+                        card.just_played = True
                         gs.field_chars.append(card)
             elif is_opp:
                 if not any(c.code == code for c in opp_gs.field_chars):
                     card = _get_card(code)
                     if card:
+                        card.just_played = True
                         opp_gs.field_chars.append(card)
 
+        # -- Deploy do trash (Log.PlayFromTrash / Log.PlayOtherFromTrash) -----
+        elif 'Deploy' in line and codes and 'from Trash' in line:
+            code = codes[-1]
+            tgs = gs if is_you else (opp_gs if is_opp else None)
+            if tgs:
+                tgs.trash = [c for c in tgs.trash if c.code != code]
+                if not any(c.code == code for c in tgs.field_chars):
+                    card = _get_card(code)
+                    if card:
+                        card.just_played = True
+                        tgs.field_chars.append(card)
+
+        # -- Deploy do deck (Log.DeployFromDeck / Log.ActionDeployFromDeck) ---
+        elif 'Deploy' in line and codes and 'from Deck' in line:
+            code = codes[-1]
+            tgs = gs if is_you else (opp_gs if is_opp else None)
+            if tgs:
+                if not any(c.code == code for c in tgs.field_chars):
+                    card = _get_card(code)
+                    if card:
+                        card.just_played = True
+                        tgs.field_chars.append(card)
+
         # -- Saque de cartas ---------------------------------------------------
-        elif 'Draw' in line and 'Card' in line:
+        elif 'Draw' in line and 'Card' in line and 'from' not in line.lower():
             if is_you:
                 needs_hand_rescan = True
-                gs.turn = max(gs.turn + 1, 2)  # garante ataques habilitados
+                gs.turn = max(gs.turn + 1, 2)
             elif is_opp:
                 m = _RE_DRAW_N.search(line)
                 opp_gs.hand.extend([None] * int(m.group(1))) if m else None
@@ -405,22 +431,88 @@ def apply_log_delta(gs, opp_gs, lines: list[str]) -> bool:
             if m:
                 n = int(m.group(1))
                 gs.life = gs.life[n:] if len(gs.life) >= n else []
-                needs_hand_rescan = True  # carta nova na mao
+                needs_hand_rescan = True
 
-        # -- Ganho de DON (fase de DON do turno) --------------------------------
+        # -- Carta retorna para a mao (Log.SelfToHand / Log.OpponentToHand) --
+        # "Return $2 to Hand" / "Send $2 to Hand"
+        elif 'to Hand' in line and codes and 'Life' not in line:
+            code = codes[-1]
+            if is_you:
+                # Carta nossa voltou para a mao (via efeito)
+                gs.field_chars = [c for c in gs.field_chars if c.code != code]
+                gs.trash       = [c for c in gs.trash       if c.code != code]
+                card = _get_card(code)
+                if card and not any(c.code == code for c in gs.hand):
+                    gs.hand.append(card)
+                needs_hand_rescan = True
+            elif is_opp:
+                # Carta do oponente voltou para a mao dele
+                opp_gs.field_chars = [c for c in opp_gs.field_chars if c.code != code]
+
+        # -- Ganho de DON (Log.DrawDon / Log.ActionDrawDon) -------------------
         elif 'Draw' in line and 'Don' in line and is_you:
             m = re.search(r'Draw (\d+) Don', line)
             if m:
                 gs.don_available += int(m.group(1))
                 print(f"[DON+{m.group(1)}={gs.don_available}]", end="", flush=True)
 
-        # -- DON restado por efeito --------------------------------------------
+        # -- DON ativado no fim do turno (Log.ActionActivateDon) ---------------
+        # "$1: Activate #1 Don" — nosso DON volta a ficar disponivel
+        elif 'Activate' in line and 'Don' in line and is_you:
+            m = re.search(r'Activate (\d+) Don', line)
+            if m:
+                restored = int(m.group(1))
+                gs.don_available += restored
+                gs.don_rested    = max(0, gs.don_rested - restored)
+                print(f"[DON~{restored}={gs.don_available}]", end="", flush=True)
+
+        # -- DON removido permanentemente (Log.DonMinus) ----------------------
+        elif 'Minus' in line and 'Don' in line and is_you:
+            m = re.search(r'Minus (\d+) Don', line)
+            if m:
+                lost = int(m.group(1))
+                if gs.don_available >= lost:
+                    gs.don_available -= lost
+                else:
+                    gs.don_rested = max(0, gs.don_rested - (lost - gs.don_available))
+                    gs.don_available = 0
+                print(f"[DON-perm{lost}={gs.don_available}]", end="", flush=True)
+
+        # -- DON restado por efeito (Log.RestDon) -----------------------------
         elif 'Rest' in line and 'Don' in line and is_you:
             m = _RE_REST_N.search(line)
             if m:
-                gs.don_available = max(0, gs.don_available - int(m.group(1)))
+                n = int(m.group(1))
+                moved = min(n, gs.don_available)
+                gs.don_available -= moved
+                gs.don_rested    += moved
 
-        # -- Descarte para counter ("Discard [CODE] for Counter") -----------
+        # -- Personagem restado por efeito (Log.SetOtherRest) -----------------
+        # "$1: Rest $2" — marca o personagem como rested no campo
+        elif 'Rest' in line and codes and 'Don' not in line:
+            code = codes[-1]
+            tgs = gs if is_you else (opp_gs if is_opp else None)
+            if tgs:
+                for c in tgs.field_chars:
+                    if c.code == code:
+                        c.rested = True
+
+        # -- Personagem ativado (Log.SetActive / Log.SetOtherActive) ----------
+        # "Set to Active" / "Set $2 to Active"
+        elif 'Set' in line and 'Active' in line:
+            if codes:
+                code = codes[-1]
+                tgs = gs if is_you else (opp_gs if is_opp else None)
+                if tgs:
+                    for c in tgs.field_chars:
+                        if c.code == code:
+                            c.rested = False
+            elif is_you and 'to Active' in line:
+                # Refresh geral (sem codigo especifico)
+                for c in gs.field_chars:
+                    c.rested = False
+
+        # -- Descarte para counter (Log.Counter) ------------------------------
         elif 'Discard' in line and 'Counter' in line and codes:
             code = codes[0]
             if is_you:
@@ -429,11 +521,16 @@ def apply_log_delta(gs, opp_gs, lines: list[str]) -> bool:
                 if card and not any(c.code == code for c in gs.trash):
                     gs.trash.append(card)
 
-        # -- Carta vai para o trash explicitamente ("Trash [CODE]") ----------
-        elif 'Trash' in line and codes and 'Remaining' not in line:
+        # -- Trash de carta (Log.TrashCard / Log.ActionTrashCard) -------------
+        # Exclui: "from Trash" (saques do trash), "Remaining" (limpeza de turno)
+        # e "Draw" (que podem conter "Trash" no contexto)
+        elif ('Trash' in line and codes
+              and 'Remaining' not in line
+              and 'from Trash' not in line
+              and 'Draw' not in line):
             code = codes[0]
             if is_you:
-                gs.hand = [c for c in gs.hand if c.code != code]
+                gs.hand       = [c for c in gs.hand       if c.code != code]
                 gs.field_chars = [c for c in gs.field_chars if c.code != code]
                 card = _get_card(code)
                 if card and not any(c.code == code for c in gs.trash):
@@ -444,8 +541,8 @@ def apply_log_delta(gs, opp_gs, lines: list[str]) -> bool:
                 if card and not any(c.code == code for c in opp_gs.trash):
                     opp_gs.trash.append(card)
 
-        # -- K.O. (vai para o trash) ------------------------------------------
-        elif 'K.O.' in line and codes:
+        # -- K.O. / Destroyed -------------------------------------------------
+        elif ('K.O.' in line or 'Destroyed' in line) and codes:
             code = codes[-1]
             if is_you:
                 card = next((c for c in gs.field_chars if c.code == code), None)
@@ -458,12 +555,19 @@ def apply_log_delta(gs, opp_gs, lines: list[str]) -> bool:
                 if card and not any(c.code == code for c in opp_gs.trash):
                     opp_gs.trash.append(card)
 
-        # -- Dano na vida ------------------------------------------------------
+        # -- Ataque (Log.Attack) — atacante fica rested -----------------------
+        elif 'attacking' in line and codes:
+            attacker_code = codes[0]
+            if is_you:
+                for c in gs.field_chars:
+                    if c.code == attacker_code:
+                        c.rested = True
+
+        # -- Dano na vida (Log.LeaderHit) -------------------------------------
         elif 'hit for' in line:
             m = _RE_HIT.search(line)
             if m:
                 dmg = int(m.group(1))
-                # Heuristica: se "You" foi atingido -> nossa vida diminui
                 if is_you or 'Player 2' in line:
                     gs.life = gs.life[dmg:] if len(gs.life) >= dmg else []
                 else:
@@ -1237,7 +1341,6 @@ def play_match(deck_name: str | None = None, timeout: int = 600) -> bool:
                     bridge.sync_hand(gs, hand_cards)
                     bridge.sync_field(gs, board_cards)
                     bridge.sync_field(opp_gs, opp_board_cards)
-                _log_lines_seen[:] = _read_log_lines()
                 continue
 
             # Probe falhou -> avanca o botao atual (Draw, Don, End Turn oponente, etc.)
@@ -1294,6 +1397,23 @@ def play_match(deck_name: str | None = None, timeout: int = 600) -> bool:
                             _consume_engine_action_locally(action, getattr(gs, 'turn', None))
                             actions_this_turn = MAX_ACTIONS_PER_TURN
                             continue
+                        # Pre-validacao: checa se a acao ainda e executavel
+                        # com o estado local atual (DON, posicao, rested)
+                        ok, reason = bridge.can_execute_action(action, gs)
+                        if not ok:
+                            print(f"[PRE-FAIL] {_action_debug_label(action)}: {reason}", flush=True)
+                            if action[1] == 'play':
+                                # Remove da mao para engine nao re-propor
+                                skip_card = action[2] if len(action) > 2 else None
+                                if skip_card is not None:
+                                    gs.hand = [c for c in gs.hand
+                                               if c is not skip_card
+                                               and c.code != getattr(skip_card, 'code', '')]
+                            elif action[1] == 'attack':
+                                _consume_engine_action_locally(action, getattr(gs, 'turn', None))
+                                actions_this_turn = MAX_ACTIONS_PER_TURN
+                            continue
+
                         action_executed = _execute_engine_action(
                             action, hand_cards, board_cards, opp_board_cards,
                             gs, opp_gs)

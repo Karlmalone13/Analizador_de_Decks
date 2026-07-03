@@ -148,6 +148,61 @@ def sync_field(gs: GameState, scanned: list[dict]) -> None:
     gs.field_chars = new_field
 
 
+def can_execute_action(action: tuple, gs: GameState) -> tuple[bool, str]:
+    """
+    Pre-validacao rapida antes de tentar executar uma acao no simulador.
+
+    Filtra acoes que o engine gerou mas que o estado local mostra como
+    invalidas (ex: carta nao esta mais na mao, personagem esta rested,
+    DON insuficiente). Evita F em cascata sem precisar de rescan completo.
+
+    Retorna (ok: bool, motivo: str).
+    """
+    if action is None:
+        return False, "action=None"
+    if len(action) < 3:
+        return False, "action curta"
+
+    score, atype, card = action[0], action[1], action[2]
+
+    if atype == 'play':
+        if card is None:
+            return False, "card=None"
+        cost = getattr(card, 'cost', 0) or 0
+        if gs.don_available < cost:
+            return False, f"DON insuf: {gs.don_available}<{cost}"
+        # Carta deve estar na mao com posicao visual valida
+        in_hand = any(c.code == card.code for c in gs.hand)
+        if not in_hand:
+            return False, f"{card.code} nao esta na mao"
+        has_pos = any(c.code == card.code and getattr(c, '_sim_x', 0) > 0
+                      for c in gs.hand)
+        if not has_pos:
+            return False, f"{card.code} sem _sim_x (mao stale?)"
+
+    elif atype == 'attack':
+        if card is None:
+            return False, "card=None"
+        c = next((c for c in gs.field_chars if c.code == card.code), None)
+        if c is None:
+            return False, f"{card.code} nao esta no campo"
+        if getattr(c, 'rested', False):
+            return False, f"{card.code} esta rested"
+        if getattr(c, 'just_played', False) and not getattr(c, 'rush', False):
+            return False, f"{card.code} just_played sem Rush"
+
+    elif atype == 'activate':
+        if card is None:
+            return False, "card=None"
+        ctype = getattr(card, 'card_type', '')
+        if ctype not in ('LEADER', 'STAGE'):
+            c = next((c for c in gs.field_chars if c.code == card.code), None)
+            if c is None:
+                return False, f"{card.code} nao esta no campo"
+
+    return True, "ok"
+
+
 def choose_action(gs: GameState, opp_gs: GameState,
                   match, timeout: float = 4.0) -> Optional[tuple]:
     """

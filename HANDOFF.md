@@ -1,5 +1,39 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-03 (60) - Claude
+
+### Item 1: eventos faltantes do log em apply_log_delta
+
+Usando os templates `Log.*` do `TRANSLATION.txt` do simulador, adicionamos eventos que antes eram ignorados:
+
+- **`SelfToHand`** `Return $2 to Hand`: carta nossa voltou da field/trash para a mão (`needs_hand_rescan=True`)
+- **`Destroyed`** `$1 Destroyed`: alias do K.O., remove do campo e vai pro trash (juntado ao elif de K.O.)
+- **`Deploy from Trash`** / **`Deploy from Deck`**: tratados separados do deploy da mão (não tenta remover da mão)
+- **`ActionActivateDon`** `Activate #1 Don`: DON ativado (fim de turno oponente) → `don_available += N`, `don_rested -= N`
+- **`DonMinus`** `Minus #1 Don`: DON removido permanentemente por efeito do oponente
+- **`RestDon`** `Rest #1 Don`: agora move `don_available→don_rested` corretamente (antes só subtraía)
+- **`SetOtherRest`** `Rest $2`: marca `card.rested = True` no personagem do campo
+- **`SetActive` / `SetOtherActive`**: marca `card.rested = False` no refresh/reativação
+- **`Attack` attacking**: marca atacante como `card.rested = True`
+- **`just_played = True`** no Deploy: personagens recém-entrados ficam marcados (sem Rush não atacam)
+- Fix colateral: `'Draw ... Card'` agora exclui `'from'` para não conflitar com `DrawFromTrash`
+- Fix: `'Trash'` check agora exclui `'Draw'` e `'from Trash'` para não comer saques do trash
+
+### Item 2: pré-validação em sim_bridge.py antes de executar ação
+
+Nova função `can_execute_action(action, gs) -> (bool, str)` em `sim_bridge.py`:
+- **play**: checa `don_available >= cost`, carta na mão, `_sim_x > 0`
+- **attack**: checa carta no campo, `not rested`, `not just_played` (sem Rush)
+- **activate**: checa carta no campo (exceto LEADER/STAGE)
+
+Integrada no loop principal de `bot_optcgsim.py` antes de `_execute_engine_action`:
+- Se `PRE-FAIL`: para play → remove da mão (engine não re-propõe); para attack → encerra ações do turno
+- Loga `[PRE-FAIL] TIPO código: motivo` para diagnóstico
+
+Também removida linha órfã `_log_lines_seen[:] = _read_log_lines()` que ficou da refatoração anterior.
+
+---
+
 ## 2026-07-03 (59) - Claude
 
 ### Refatoração: leitura direta do arquivo .log (abandona OCR do painel de log)
