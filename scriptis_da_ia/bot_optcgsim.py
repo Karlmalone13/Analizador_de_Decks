@@ -1,21 +1,21 @@
-"""
-bot_optcgsim.py — Bot para jogar partidas automáticas no OPTCGSim
+﻿"""
+bot_optcgsim.py  Bot para jogar partidas automaticas no OPTCGSim
 =================================================================
-O bot joga como P2 (jogador de baixo). Decisões são tomadas pelo
-engine de decisão real (decision_engine.py) via sim_bridge.py.
+O bot joga como P2 (jogador de baixo). Decisoes sao tomadas pelo
+engine de decisao real (decision_engine.py) via sim_bridge.py.
 
 Fluxo por turno:
-  1. Detecta fase via pixels (botões no canto inferior direito)
-  2. Scan completo UMA VEZ no início da Main Phase (hover+OCR)
-  3. Após cada ação: OCR do painel de log (esquerda) → aplica delta
+  1. Detecta fase via pixels (botoes no canto inferior direito)
+  2. Scan completo UMA VEZ no inicio da Main Phase (hover+OCR)
+  3. Apos cada acao: OCR do painel de log (esquerda) -> aplica delta
      ao GameState sem rescanear o tabuleiro inteiro
-  4. engine.choose_action() decide a melhor ação
-  5. Executa a ação no simulador (clique/drag)
+  4. engine.choose_action() decide a melhor acao
+  5. Executa a acao no simulador (clique/drag)
 
 Uso:
     python bot_optcgsim.py [--deck NOME] [--partidas N] [--delay-inicio N]
 
-Coordenadas: resolução 1366×768, janela maximizada.
+Coordenadas: resolucao 1366x768, janela maximizada.
 """
 from __future__ import annotations
 import time, sys, re, json, argparse, subprocess
@@ -34,7 +34,7 @@ except ImportError:
 
 pag.PAUSE = 0.05
 
-# ── Path do engine ─────────────────────────────────────────────────────────────
+# -- Path do engine -------------------------------------------------------------
 _SCRIPTS_DIR = Path(__file__).parent
 sys.path.insert(0, str(_SCRIPTS_DIR))
 
@@ -46,10 +46,10 @@ def _get_bridge():
             from optcg_engine import sim_bridge
             _bridge = sim_bridge
         except Exception as e:
-            print(f"[AVISO] sim_bridge não disponível: {e}")
+            print(f"[AVISO] sim_bridge nao disponivel: {e}")
     return _bridge
 
-# ── Banco de cartas (nome → código) ───────────────────────────────────────────
+# -- Banco de cartas (nome -> codigo) -------------------------------------------
 _DB_PATH = _SCRIPTS_DIR / "card_analysis_db.json"
 _CARD_DB: dict[str, list[dict]] = {}
 
@@ -84,11 +84,15 @@ def _lookup_by_name(name: str, cost: int | None = None) -> dict | None:
             return c
     return candidates[0]
 
-# ── Coordenadas fixas (1366×768) ───────────────────────────────────────────────
+# -- Coordenadas fixas (1366x768) -----------------------------------------------
 C_SOLO_V_SELF  = (684, 438)
-C_DECK_P1_DD   = (297, 178)   # dropdown P1 na tela de seleção
-C_DECK_P2_DD   = (297, 275)   # dropdown P2 na tela de seleção
-C_START        = (297, 407)   # botão Start na tela de seleção
+C_DECK_P1_DD   = (297, 178)   # dropdown P1 na tela de selecao
+C_DECK_P2_DD   = (297, 275)   # dropdown P2 na tela de selecao
+C_START        = (297, 407)   # botao Start na tela de selecao
+DECK_DD_SCROLL_X = 392
+DECK_DD_ITEM_H = 26
+DECK_DD_VISIBLE_COUNT = 8
+DECK_DD_SCROLL_FACTOR = 8.5
 C_BTN_TOP      = (1101, 578)
 C_BTN_MAIN     = (1101, 643)
 C_BACK_MAIN    = (1165, 82)
@@ -96,13 +100,14 @@ C_DOWNLOAD_LOG = (1165, 172)
 C_P2_LEADER    = (700, 527)
 C_P1_LEADER    = (632, 223)
 C_P1_CHAR_AREA = (680, 310)
+C_P2_STAGE     = (765, 545)
 
-# Mão P2
+# Mao P2
 HAND_Y       = 648
 HAND_X_START = 107
 HAND_X_END   = 410
 HAND_STEP    = 35
-HOVER_WAIT   = 0.30   # reduzido de 0.65 → 0.30s
+HOVER_WAIT   = 0.30   # reduzido de 0.65 -> 0.30s
 
 # Preview de carta (lado direito)
 PREVIEW_NAME_BBOX  = (945, 415, 1185, 445)
@@ -118,7 +123,7 @@ def _badge_bbox(hover_x: int, hover_y: int) -> tuple:
     x, y = hover_x, hover_y - 45
     return (x - 25, y - 20, x + 25, y + 20)
 
-# ── Painel de log (esquerda) ───────────────────────────────────────────────────
+# -- Painel de log (esquerda) ---------------------------------------------------
 LOG_BBOX = (135, 210, 390, 475)
 
 # Regex para parsear linhas do log
@@ -136,10 +141,10 @@ def _reset_log():
     _log_lines_seen = []
 
 def _read_log_lines() -> list[str]:
-    """OCR do painel de log. Retorna lista de linhas visíveis."""
+    """OCR do painel de log. Retorna lista de linhas visiveis."""
     img = ImageGrab.grab(bbox=LOG_BBOX)
     img = img.convert('L')
-    img = ImageOps.invert(img)   # texto claro em fundo escuro → inverte
+    img = ImageOps.invert(img)   # texto claro em fundo escuro -> inverte
     img = img.resize((img.width * 3, img.height * 3), Image.LANCZOS)
     img = ImageEnhance.Contrast(img).enhance(2.0)
     raw = pytesseract.image_to_string(img, config='--psm 6').strip()
@@ -147,8 +152,8 @@ def _read_log_lines() -> list[str]:
 
 def read_log_delta() -> list[str]:
     """
-    Lê o painel de log e retorna apenas as linhas novas
-    desde a última chamada.
+    Le o painel de log e retorna apenas as linhas novas
+    desde a ultima chamada.
     """
     global _log_lines_seen
     current = _read_log_lines()
@@ -158,13 +163,13 @@ def read_log_delta() -> list[str]:
         _log_lines_seen = current
         return current
 
-    # Procura a última linha conhecida dentro do current para encontrar o delta
+    # Procura a ultima linha conhecida dentro do current para encontrar o delta
     last = _log_lines_seen[-1]
     try:
         idx = len(current) - 1 - list(reversed(current)).index(last)
         new_lines = current[idx + 1:]
     except ValueError:
-        # OCR leu diferente — tudo é novo
+        # OCR leu diferente  tudo e novo
         new_lines = current
 
     _log_lines_seen = current
@@ -174,8 +179,8 @@ def apply_log_delta(gs, opp_gs, lines: list[str]) -> bool:
     """
     Aplica novas linhas do log ao GameState do bot e do oponente.
 
-    Retorna True se a mão do bot mudou (carta sacada/recebida)
-    e portanto precisa de rescan parcial da mão.
+    Retorna True se a mao do bot mudou (carta sacada/recebida)
+    e portanto precisa de rescan parcial da mao.
     """
     needs_hand_rescan = False
 
@@ -199,13 +204,13 @@ def apply_log_delta(gs, opp_gs, lines: list[str]) -> bool:
         is_you = '[You]' in line or line.startswith('You')
         is_opp = '[Opponent]' in line or line.startswith('Opponent')
 
-        # ── Deploy ────────────────────────────────────────────────────────────
+        # -- Deploy ------------------------------------------------------------
         if 'Deploy' in line and codes:
             code = codes[-1]
             if is_you:
-                # Remove da mão
+                # Remove da mao
                 gs.hand = [c for c in gs.hand if c.code != code]
-                # Adiciona ao campo se ainda não estiver
+                # Adiciona ao campo se ainda nao estiver
                 if not any(c.code == code for c in gs.field_chars):
                     card = _get_card(code)
                     if card:
@@ -216,7 +221,7 @@ def apply_log_delta(gs, opp_gs, lines: list[str]) -> bool:
                     if card:
                         opp_gs.field_chars.append(card)
 
-        # ── Saque de cartas ───────────────────────────────────────────────────
+        # -- Saque de cartas ---------------------------------------------------
         elif 'Draw' in line and 'Card' in line:
             if is_you:
                 needs_hand_rescan = True
@@ -225,21 +230,21 @@ def apply_log_delta(gs, opp_gs, lines: list[str]) -> bool:
                 m = _RE_DRAW_N.search(line)
                 opp_gs.hand.extend([None] * int(m.group(1))) if m else None
 
-        # ── Vida para mão (ON PLAY de certas cartas) ──────────────────────────
+        # -- Vida para mao (ON PLAY de certas cartas) --------------------------
         elif 'Life to Hand' in line and is_you:
             m = _RE_SEND_LIFE.search(line)
             if m:
                 n = int(m.group(1))
                 gs.life = gs.life[n:] if len(gs.life) >= n else []
-                needs_hand_rescan = True  # carta nova na mão
+                needs_hand_rescan = True  # carta nova na mao
 
-        # ── DON restado por efeito ────────────────────────────────────────────
+        # -- DON restado por efeito --------------------------------------------
         elif 'Rest' in line and 'Don' in line and is_you:
             m = _RE_REST_N.search(line)
             if m:
                 gs.don_available = max(0, gs.don_available - int(m.group(1)))
 
-        # ── K.O. ─────────────────────────────────────────────────────────────
+        # -- K.O. -------------------------------------------------------------
         elif 'K.O.' in line and codes:
             code = codes[-1]
             if is_you:
@@ -248,12 +253,12 @@ def apply_log_delta(gs, opp_gs, lines: list[str]) -> bool:
                 opp_gs.field_chars = [c for c in opp_gs.field_chars
                                        if c.code != code]
 
-        # ── Dano na vida ──────────────────────────────────────────────────────
+        # -- Dano na vida ------------------------------------------------------
         elif 'hit for' in line:
             m = _RE_HIT.search(line)
             if m:
                 dmg = int(m.group(1))
-                # Heurística: se "You" foi atingido → nossa vida diminui
+                # Heuristica: se "You" foi atingido -> nossa vida diminui
                 if is_you or 'Player 2' in line:
                     gs.life = gs.life[dmg:] if len(gs.life) >= dmg else []
                 else:
@@ -262,7 +267,7 @@ def apply_log_delta(gs, opp_gs, lines: list[str]) -> bool:
 
     return needs_hand_rescan
 
-# ── OCR do preview de carta ────────────────────────────────────────────────────
+# -- OCR do preview de carta ----------------------------------------------------
 _NAME_NOISE = re.compile(r'^[^A-Za-z]+')
 
 def _ocr_crop(bbox: tuple, whitelist: str | None = None,
@@ -305,10 +310,10 @@ def _read_don_active(hover_pos: tuple) -> int:
     digits = re.findall(r'\d+', raw)
     return int(digits[0]) if digits else 0
 
-# ── Scan completo (feito UMA VEZ por Main Phase) ───────────────────────────────
+# -- Scan completo (feito UMA VEZ por Main Phase) -------------------------------
 
 def scan_hand() -> list[dict]:
-    """Varre posições da mão via hover+OCR. Hover wait = HOVER_WAIT."""
+    """Varre posicoes da mao via hover+OCR. Hover wait = HOVER_WAIT."""
     cards: list[dict] = []
     seen: set[str] = set()
     empty_streak = 0
@@ -389,8 +394,8 @@ def scan_opp_board() -> list[dict]:
 
 def full_scan(gs, opp_gs) -> tuple[list[dict], list[dict]]:
     """
-    Scan completo do estado visual: mão, campo P2, campo P1, DON.
-    Sincroniza gs e opp_gs. Retorna (hand_cards, board_cards) para referência de posição.
+    Scan completo do estado visual: mao, campo P2, campo P1, DON.
+    Sincroniza gs e opp_gs. Retorna (hand_cards, board_cards) para referencia de posicao.
     """
     bridge = _get_bridge()
 
@@ -409,7 +414,7 @@ def full_scan(gs, opp_gs) -> tuple[list[dict], list[dict]]:
 
     return hand_cards, board_cards
 
-# ── Detecção de botões ─────────────────────────────────────────────────────────
+# -- Deteccao de botoes ---------------------------------------------------------
 BTN_LO = (115, 100, 75)
 BTN_HI = (235, 215, 170)
 
@@ -422,7 +427,7 @@ def _scan_buttons() -> tuple[bool, bool]:
     main = _is_beige(img.getpixel((1220, 643)))
     return top, main
 
-# ── Foco na janela ─────────────────────────────────────────────────────────────
+# -- Foco na janela -------------------------------------------------------------
 
 def _focus_sim() -> bool:
     try:
@@ -436,11 +441,11 @@ def _focus_sim() -> bool:
         pass
     return False
 
-# ── Tratamento de prompts ──────────────────────────────────────────────────────
+# -- Tratamento de prompts ------------------------------------------------------
 _game_phase = 0
 
 def _handle_prompts(max_steps: int = 20) -> None:
-    """Resolve prompts pós-ação clicando Pass/Cancel (C_BTN_MAIN)."""
+    """Resolve prompts pos-acao clicando Pass/Cancel (C_BTN_MAIN)."""
     idle = 0
     for _ in range(max_steps):
         time.sleep(0.35)
@@ -457,8 +462,8 @@ def _handle_prompts(max_steps: int = 20) -> None:
             return
 
 def _resolve_post_deploy() -> None:
-    """Após deploy, resolve prompts de 2 botões e modais On Play de 1 botão.
-    Para quando detecta 3 botões únicos consecutivos (= End Turn estável)."""
+    """Apos deploy, resolve prompts de 2 botoes e modais On Play de 1 botao.
+    Para quando detecta 3 botoes unicos consecutivos (= End Turn estavel)."""
     single_streak = 0
     for _ in range(15):
         time.sleep(0.3)
@@ -469,10 +474,10 @@ def _resolve_post_deploy() -> None:
             pag.click(*C_BTN_MAIN)   # Pass / No Counter / Skip
             single_streak = 0
             continue
-        # Botão único
+        # Botao unico
         single_streak += 1
         if single_streak >= 3:
-            break  # End Turn estável — não clicar
+            break  # End Turn estavel - nao clicar
         pag.click(*C_BTN_MAIN)       # Confirmar modal On Play
 
 def _try_deploy_card(hand_x: int) -> bool:
@@ -511,7 +516,26 @@ def _try_attack_char(field_x: int, field_y: int) -> None:
     if top or main:
         _handle_prompts()
 
-# ── Execução de ação do engine ─────────────────────────────────────────────────
+# -- Execucao de acao do engine -----------------------------------------------
+
+def _click_card_source(card, board_cards: list[dict]) -> bool:
+    """Clica na fonte de uma acao do engine: leader, stage ou personagem."""
+    if card is None:
+        return False
+    ctype = getattr(card, 'card_type', '')
+    code = getattr(card, 'code', None)
+    if ctype == 'LEADER':
+        pag.click(*C_P2_LEADER)
+        return True
+    if ctype == 'STAGE':
+        pag.click(*C_P2_STAGE)
+        return True
+    for b in board_cards:
+        if b.get('code') == code:
+            pag.click(b['x'], b['y'])
+            return True
+    return False
+
 
 def _execute_engine_action(action: tuple, hand_cards: list[dict],
                             board_cards: list[dict]) -> bool:
@@ -547,49 +571,141 @@ def _execute_engine_action(action: tuple, hand_cards: list[dict],
         _try_attack_leader()
         return True
 
+    if action_type == 'activate' and card is not None:
+        if not _click_card_source(card, board_cards):
+            return False
+        time.sleep(0.45)
+        top, main = _scan_buttons()
+        if top and main:
+            pag.click(*C_BTN_TOP)
+            time.sleep(0.35)
+            _resolve_post_deploy()
+            return True
+        if top or main:
+            _handle_prompts()
+            return True
+        return False
+
+    if action_type == 'attach_don' and card is not None:
+        amount = int(action[3]) if len(action) > 3 and isinstance(action[3], int) else 1
+        source = DON_P2_HOVER
+        target = None
+        if getattr(card, 'card_type', '') == 'LEADER':
+            target = C_P2_LEADER
+        else:
+            for b in board_cards:
+                if b.get('code') == getattr(card, 'code', None):
+                    target = (b['x'], b['y'])
+                    break
+        if not target:
+            return False
+        for _ in range(max(1, amount)):
+            pag.moveTo(*source, duration=0.08)
+            pag.mouseDown()
+            time.sleep(0.05)
+            pag.moveTo(*target, duration=0.18)
+            pag.mouseUp()
+            time.sleep(0.15)
+        return True
+
     return False
 
-# ── Seleção de deck no dropdown ────────────────────────────────────────────────
+
+def _consume_engine_action_locally(action: tuple) -> None:
+    """Marca no estado local a parte da acao que o OCR do log pode nao ver."""
+    if not action or len(action) < 3:
+        return
+    action_type = action[1]
+    card = action[2]
+    if action_type in ('attack', 'activate') and card is not None:
+        try:
+            card.rested = True
+        except Exception:
+            pass
+
+
+def _action_debug_label(action: tuple) -> str:
+    if not action or len(action) < 2:
+        return "?"
+    action_type = str(action[1])
+    card = action[2] if len(action) > 2 else None
+    code = getattr(card, 'code', '') if card is not None else ''
+    name = getattr(card, 'name', '') if card is not None else ''
+    label = code or name[:12] or '-'
+    return f"{action_type}:{label}"
+
+
+def _action_once_key(action: tuple) -> tuple[str, str] | None:
+    if not action or len(action) < 3:
+        return None
+    action_type = str(action[1])
+    if action_type not in ('activate', 'attack'):
+        return None
+    card = action[2]
+    code = getattr(card, 'code', '') if card is not None else ''
+    return (action_type, code)
+
+# -- Selecao de deck no dropdown ----------------------------------------------
+
+def _norm_deck_name(name: str) -> str:
+    return re.sub(r'\s+', ' ', name.strip().lower())
+
+
+def _find_deck_index(deck_name: str, decks: list[str]) -> int | None:
+    target = _norm_deck_name(deck_name)
+    for i, deck in enumerate(decks):
+        if _norm_deck_name(deck) == target:
+            return i
+    for i, deck in enumerate(decks):
+        if target in _norm_deck_name(deck):
+            return i
+    return None
+
+
+def _selected_deck_matches(dd_coord: tuple, deck_name: str) -> bool:
+    box = (dd_coord[0] - 100, dd_coord[1] - 18,
+           dd_coord[0] + 105, dd_coord[1] + 18)
+    img = ImageGrab.grab(bbox=box)
+    img = img.resize((img.width * 3, img.height * 3), Image.LANCZOS)
+    img = ImageEnhance.Contrast(img.convert('L')).enhance(2.0)
+    raw = pytesseract.image_to_string(img, config='--psm 7').strip()
+    return _norm_deck_name(deck_name) in _norm_deck_name(raw)
+
 
 def _select_deck_dropdown(dd_coord: tuple, deck_name: str) -> bool:
     """
-    Clica no dropdown em dd_coord, espera a lista abrir, procura o item
-    cujo nome coincide com deck_name e clica nele.
-    Retorna True se encontrou e clicou.
+    Seleciona o deck no dropdown rolando a lista ate encontrar o nome.
+    Falha fechado: se nao confirmar o deck, nao escolhe fallback.
     """
+    bridge = _get_bridge()
+    decks = bridge.list_decks() if bridge else []
+    target_idx = _find_deck_index(deck_name, decks)
+    if target_idx is None:
+        return False
+
+    list_top = dd_coord[1] + 17
+
     pag.click(*dd_coord)
-    time.sleep(0.6)
+    time.sleep(0.5)
 
-    # OCR da lista aberta (cobre area do dropdown expandido)
-    LIST_BBOX = (190, 160, 400, 500)
-    img = ImageGrab.grab(bbox=LIST_BBOX)
-    img_big = img.resize((img.width * 3, img.height * 3), Image.LANCZOS)
-    img_big = img_big.convert('L')
-    img_big = ImageEnhance.Contrast(img_big).enhance(2.0)
-    raw = pytesseract.image_to_string(img_big, config='--psm 6').strip()
-    lines = [l.strip() for l in raw.splitlines() if l.strip()]
+    first_visible = 0
+    if target_idx >= DECK_DD_VISIBLE_COUNT:
+        first_visible = min(target_idx - 1,
+                            max(0, len(decks) - DECK_DD_VISIBLE_COUNT))
+        drag_from = list_top + 29
+        drag_to = min(list_top + 185,
+                      drag_from + int(first_visible * DECK_DD_SCROLL_FACTOR))
+        pag.moveTo(DECK_DD_SCROLL_X, drag_from, duration=0.05)
+        pag.dragTo(DECK_DD_SCROLL_X, drag_to, duration=0.25, button='left')
+        time.sleep(0.25)
 
-    target = deck_name.lower()
-    for i, line in enumerate(lines):
-        if target in line.lower():
-            # Estima y pela posição da linha na bbox
-            y_offset = int((i + 0.5) * (LIST_BBOX[3] - LIST_BBOX[1]) / max(len(lines), 1))
-            y_click = LIST_BBOX[1] + y_offset
-            pag.click(dd_coord[0], y_click)
-            time.sleep(0.4)
-            return True
-
-    # Fallback: clica no primeiro item após o título
-    if len(lines) > 1:
-        y_offset = int(1.5 * (LIST_BBOX[3] - LIST_BBOX[1]) / max(len(lines), 1))
-        pag.click(dd_coord[0], LIST_BBOX[1] + y_offset)
-        time.sleep(0.4)
-    else:
-        pag.key('escape')
-    return False
+    row = max(0, target_idx - first_visible)
+    pag.click(dd_coord[0], list_top + int((row + 0.5) * DECK_DD_ITEM_H))
+    time.sleep(0.35)
+    return _selected_deck_matches(dd_coord, deck_name)
 
 
-# ── Fluxo de uma partida ───────────────────────────────────────────────────────
+# -- Fluxo de uma partida -------------------------------------------------------
 
 def play_match(deck_name: str | None = None, timeout: int = 600) -> bool:
     global _game_phase
@@ -604,24 +720,30 @@ def play_match(deck_name: str | None = None, timeout: int = 600) -> bool:
             from optcg_engine.decision_engine import OPTCGMatch
             deck_tuple = bridge.load_sim_deck(deck_name)
             match  = OPTCGMatch(deck_tuple, deck_tuple)
-            match.setup()   # inicializa mão + vida (5 cartas) para o engine funcionar
+            match.setup()   # inicializa mao + vida (5 cartas) para o engine funcionar
             gs     = match.state_b
             opp_gs = match.state_a
             gs.turn = 1     # P2 pode atacar a partir do turno 1
             opp_gs.turn = 1
-            print(f"  Deck: {deck_name} (líder: {gs.leader.name})", end=" ")
+            print(f"  Deck: {deck_name} (lider: {gs.leader.name})", end=" ")
         except Exception as e:
-            print(f"  [engine indisponível: {e}]", end=" ")
+            print(f"  [engine indisponivel: {e}]", end=" ")
             bridge = None
 
     print("  Solo v Self...", end=" ", flush=True)
     pag.click(*C_SOLO_V_SELF)
     time.sleep(1.5)
 
-    # ── Seleciona deck nos dropdowns P1/P2 (se deck_name fornecido) ───────────
+    # -- Seleciona deck nos dropdowns P1/P2 (se deck_name fornecido) -----------
     if deck_name:
-        _select_deck_dropdown(C_DECK_P1_DD, deck_name)
-        _select_deck_dropdown(C_DECK_P2_DD, deck_name)
+        p1_ok = _select_deck_dropdown(C_DECK_P1_DD, deck_name)
+        p2_ok = _select_deck_dropdown(C_DECK_P2_DD, deck_name)
+        print(f"SelectDeck(P1={p1_ok},P2={p2_ok})", end=" ", flush=True)
+        if not (p1_ok and p2_ok):
+            print("[deck selection failed]", end=" ", flush=True)
+            pag.click(*C_BACK_MAIN)
+            time.sleep(0.8)
+            return False
 
     print("Start!", end=" ", flush=True)
     pag.click(*C_START)
@@ -632,12 +754,13 @@ def play_match(deck_name: str | None = None, timeout: int = 600) -> bool:
     MAX_IDLE   = 20
 
     # Estado da Main Phase
-    hand_cards  : list[dict] = []   # posições visuais da mão (para cliques)
-    board_cards : list[dict] = []   # posições visuais do campo P2
+    hand_cards  : list[dict] = []   # posicoes visuais da mao (para cliques)
+    board_cards : list[dict] = []   # posicoes visuais do campo P2
     in_main     = False
     attacked    = False
     actions_this_turn = 0
     MAX_ACTIONS_PER_TURN = 6
+    used_engine_actions: set[tuple[str, str]] = set()
 
     while time.time() - start < timeout:
         has_top, has_main = _scan_buttons()
@@ -651,7 +774,7 @@ def play_match(deck_name: str | None = None, timeout: int = 600) -> bool:
             continue
         idle_ticks = 0
 
-        # ── Dois botões ────────────────────────────────────────────────────────
+        # -- Dois botoes --------------------------------------------------------
         if has_top and has_main:
             in_main = False
             if _game_phase == 0:
@@ -662,10 +785,10 @@ def play_match(deck_name: str | None = None, timeout: int = 600) -> bool:
             time.sleep(0.35)
             continue
 
-        # ── Botão único ────────────────────────────────────────────────────────
+        # -- Botao unico --------------------------------------------------------
         if _game_phase >= 1 and not in_main:
-            # Proba Main Phase tentando deploy em posições da mão (P2, y=HAND_Y).
-            # Durante o turno do oponente, cliques em y=HAND_Y não abrem prompt.
+            # Proba Main Phase tentando deploy em posicoes da mao (P2, y=HAND_Y).
+            # Durante o turno do oponente, cliques em y=HAND_Y nao abrem prompt.
             probe_positions = ([h['x'] for h in hand_cards]
                                if hand_cards else list(range(HAND_X_START, HAND_X_END + 1, HAND_STEP)))
             deployed = False
@@ -677,15 +800,16 @@ def play_match(deck_name: str | None = None, timeout: int = 600) -> bool:
                 in_main = True
                 print("D", end="", flush=True)
                 _reset_log()
-                # Scan rápido: só mão (para o engine saber o que temos)
-                hand_cards = scan_hand()
-                board_cards = []
-                if bridge and gs:
-                    bridge.sync_hand(gs, hand_cards)
+                # Scan rapido: so a mao (para o engine saber o que temos)
+                if bridge and gs and opp_gs:
+                    hand_cards, board_cards = full_scan(gs, opp_gs)
+                else:
+                    hand_cards = scan_hand()
+                    board_cards = []
                 _log_lines_seen[:] = _read_log_lines()
                 continue
 
-            # Probe falhou → avança o botão atual (Draw, Don, End Turn oponente, etc.)
+            # Probe falhou -> avanca o botao atual (Draw, Don, End Turn oponente, etc.)
             top2, main2 = _scan_buttons()
             if top2 and main2:
                 _handle_prompts()
@@ -695,49 +819,61 @@ def play_match(deck_name: str | None = None, timeout: int = 600) -> bool:
             board_cards = []
             attacked = False
             actions_this_turn = 0
+            used_engine_actions.clear()
             pag.click(*C_BTN_MAIN)
             time.sleep(0.5)
             continue
 
         if in_main:
-            # Segurança: se excedeu ações por turno, encerra turno sem loop infinito
+            # Seguranca: se excedeu acoes por turno, encerra turno sem loop infinito
             if actions_this_turn >= MAX_ACTIONS_PER_TURN:
                 in_main = False
                 hand_cards = []
                 board_cards = []
                 attacked = False
                 actions_this_turn = 0
+                used_engine_actions.clear()
                 pag.click(*C_BTN_MAIN)
                 time.sleep(0.5)
                 print("X", end="", flush=True)
                 continue
 
-            # ── Decide via engine ──────────────────────────────────────────────
+            # -- Decide via engine ----------------------------------------------
             action_executed = False
 
-            if gs and bridge and match and hand_cards and gs.hand:
+            if gs and bridge and match:
                 try:
                     action = bridge.choose_action(gs, opp_gs, match, timeout=2.0)
                     if action:
+                        once_key = _action_once_key(action)
+                        if once_key and once_key in used_engine_actions:
+                            _consume_engine_action_locally(action)
+                            print(f"S({_action_debug_label(action)})", end="", flush=True)
+                            actions_this_turn = MAX_ACTIONS_PER_TURN
+                            continue
                         action_executed = _execute_engine_action(
                             action, hand_cards, board_cards)
                         if action_executed:
+                            once_key = _action_once_key(action)
+                            if once_key:
+                                used_engine_actions.add(once_key)
                             actions_this_turn += 1
-                            print(f"E({action[1][0]})", end="", flush=True)
+                            print(f"E({_action_debug_label(action)})", end="", flush=True)
                             time.sleep(0.3)
+                            _consume_engine_action_locally(action)
 
-                            # ── DELTA DO LOG (sem rescan completo) ────────────
+                            # -- DELTA DO LOG (sem rescan completo) ------------
                             new_lines = read_log_delta()
                             needs_rescan = apply_log_delta(gs, opp_gs, new_lines)
 
                             if needs_rescan:
-                                # Sacou carta — só rescaneamos a mão
+                                # Sacou carta - so rescaneamos a mao
                                 hand_cards = scan_hand()
                                 if bridge:
                                     bridge.sync_hand(gs, hand_cards)
                                 print("R", end="", flush=True)
 
-                            # Atualiza posições visuais da mão para cliques futuros
+                            # Atualiza posicoes visuais da mao para cliques futuros
                             hand_cards = [h for h in hand_cards
                                           if any(c.code == h.get('code')
                                                  for c in gs.hand)]
@@ -758,6 +894,7 @@ def play_match(deck_name: str | None = None, timeout: int = 600) -> bool:
                 board_cards = []
                 attacked = False
                 actions_this_turn = 0
+                used_engine_actions.clear()
                 pag.click(*C_BTN_MAIN)
                 time.sleep(0.5)
                 print(".", end="", flush=True)
@@ -776,7 +913,7 @@ def play_match(deck_name: str | None = None, timeout: int = 600) -> bool:
     time.sleep(2.0)
     return True
 
-# ── CLI ────────────────────────────────────────────────────────────────────────
+# -- CLI ------------------------------------------------------------------------
 
 def _select_deck(deck_arg: str | None) -> str | None:
     bridge = _get_bridge()
@@ -790,38 +927,39 @@ def _select_deck(deck_arg: str | None) -> str | None:
         matches = [d for d in decks if deck_arg.lower() in d.lower()]
         if matches:
             return matches[0]
-        print(f"Deck '{deck_arg}' não encontrado. Disponíveis:")
-    print("Decks disponíveis:")
+        print(f"Deck '{deck_arg}' nao encontrado. Disponiveis:")
+    print("Decks disponiveis:")
     for i, d in enumerate(decks, 1):
         print(f"  {i:2d}. {d}")
     try:
-        idx = int(input("Escolha o número do deck: ")) - 1
+        idx = int(input("Escolha o numero do deck: ")) - 1
         return decks[idx]
     except (ValueError, IndexError):
         return decks[0]
 
 def main() -> None:
-    ap = argparse.ArgumentParser(description="Bot OPTCGSim — P2 com engine")
+    ap = argparse.ArgumentParser(description="Bot OPTCGSim - P2 com engine")
     ap.add_argument("--deck",         default=None)
     ap.add_argument("--partidas",     type=int, default=3)
+    ap.add_argument("--timeout",      type=int, default=600)
     ap.add_argument("--importar",     action="store_true")
     ap.add_argument("--delay-inicio", type=int, default=4)
     args = ap.parse_args()
 
     deck_name = _select_deck(args.deck)
-    print(f"\nBot OPTCGSim — deck: {deck_name or '(sem engine)'} | {args.partidas} partidas")
+    print(f"\nBot OPTCGSim - deck: {deck_name or '(sem engine)'} | {args.partidas} partidas")
     print(f"Aguardando {args.delay_inicio}s...")
     time.sleep(args.delay_inicio)
 
     if not _focus_sim():
-        print("AVISO: janela OPTCGSim não encontrada")
+        print("AVISO: janela OPTCGSim nao encontrada")
 
     ok = 0
     for i in range(args.partidas):
         print(f"\n[{i+1}/{args.partidas}] ", end="", flush=True)
         _focus_sim()
         try:
-            if play_match(deck_name=deck_name):
+            if play_match(deck_name=deck_name, timeout=args.timeout):
                 ok += 1
                 print("OK")
         except Exception as e:
@@ -832,7 +970,7 @@ def main() -> None:
             except Exception:
                 pass
 
-    print(f"\nConcluído: {ok}/{args.partidas} partidas.")
+    print(f"\nConcluido: {ok}/{args.partidas} partidas.")
 
     if args.importar:
         autosaved = r"E:\Games\OnePieceSimulador\Builds_Windows\CombatLogs\AutoSaved"
@@ -843,3 +981,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+

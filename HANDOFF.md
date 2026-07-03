@@ -1,5 +1,47 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-03 (47) - Claude
+**Fix typos de regressao do Codex: pag.maouseDown/Up e amaount**
+
+Codex (sessao 46) introduziu `pag.maouseDown()` e `pag.maouseUp()` em 3 lugares
+(`_try_attack_leader`, `_try_attack_char`, `attach_don`) e `amaount` como nome de
+variavel. Todos corridos para `mouseDown`/`mouseUp`/`amount` sem mudar logica.
+Arquivo compila OK.
+
+---
+
+## 2026-07-03 (46) - Codex
+
+**Bot OPTCGSim: selecao de deck validada, engine actions e limpeza ASCII**
+
+### O que foi feito
+- `bot_optcgsim.py` agora confirma P1/P2 no dropdown antes de iniciar a partida. Se a selecao visual nao bater com `--deck`, aborta e volta ao menu, evitando logs contaminados.
+- `--timeout` foi exposto na CLI para testes curtos de automacao sem esperar partida completa.
+- `_execute_engine_action()` passou a tratar tambem:
+  - `activate` em leader/stage/personagem de campo
+  - `attach_don` por drag do DON para leader/personagem
+- No inicio da Main Phase, o bot volta a usar `full_scan(gs, opp_gs)` quando o bridge esta disponivel, para o engine ter mao/campo/DON.
+- A condicao de chamada do engine deixou de depender de `hand_cards and gs.hand`; isso permite decisoes com campo/leader mesmo sem carta na mao.
+- Adicionada trava local por turno para evitar repetir `activate`/`attack` da mesma carta quando OCR/log nao atualiza o estado rapido o suficiente.
+- `bot_optcgsim.py` foi normalizado para ASCII para remover mojibake (`Ã`, `â`, `�`, etc.) que atrapalhava patches e revisao.
+
+### Evidencias de teste
+- `python -m py_compile scriptis_da_ia\bot_optcgsim.py scriptis_da_ia\optcg_engine\sim_bridge.py`
+- `python scriptis_da_ia\bot_optcgsim.py --help`
+- Testes manuais curtos com `--deck "Imu"` validaram:
+  - `SelectDeck(P1=True,P2=True)`
+  - log recente com `Imu` vs `Imu`
+  - engine executando cartas reais, incluindo evento e `Bartholomew Kuma`
+
+### Riscos / dividas
+- A selecao do deck ainda depende de coordenadas e calibracao do scrollbar do dropdown do Unity. Agora falha fechado, mas ainda merece uma solucao mais robusta no futuro.
+- A trava local de `activate/attack` e pragmatica. A solucao estrutural correta e o engine/modelo de turno entender "once per turn"/acao ja usada.
+- `C_P2_STAGE = (765, 545)` e uma coordenada estimada; precisa validacao em partidas com stage/activate.
+- `attach_don` foi implementado por drag visual, mas ainda precisa teste dedicado em partida.
+- O `HANDOFF.md` antigo ainda contem mojibake em entradas anteriores; esta entrada nova ficou em ASCII para nao aumentar o problema.
+
+---
+
 ## 2026-07-02 (45) - Claude
 
 **Bot: fix modal On Play após deploy — `_resolve_post_deploy()`**
