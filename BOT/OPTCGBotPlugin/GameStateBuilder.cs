@@ -4,6 +4,10 @@ using UnityEngine;
 namespace OPTCGBotPlugin
 {
     // Converte PlayerState (objetos vivos do Unity) em GameStateDto (JSON-serializavel)
+    // Nomes de campos verificados contra o decompilado (dnspy-export):
+    //   LiveCard: cardDef, deckUniqueID, cardPower, bTapped, bSummonSick (struct!)
+    //   CardDefinition: cardID, cardCost
+    //   PlayerState: Lgo_MyHand, Lgo_MyDeploy, Lgo_MyLifeDeck, Lgo_MyLeader, Lgo_MyDonCostArea
     public static class GameStateBuilder
     {
         public static GameStateDto Build(PlayerState p1, PlayerState p2, GameplayLogicScript gls)
@@ -18,70 +22,70 @@ namespace OPTCGBotPlugin
 
         private static PlayerDto BuildPlayer(PlayerState ps)
         {
-            var dto = new PlayerDto
-            {
-                activeDon = ps.Lgo_MyDonCostArea?.Count ?? 0,
-                restedDon = CountRestedDon(ps),
-            };
+            var dto = new PlayerDto();
+            CountDon(ps, out dto.activeDon, out dto.restedDon);
 
             // Mao
             foreach (var go in ps.Lgo_MyHand ?? new List<GameObject>())
             {
-                var card = go?.GetComponent<CardLogicScript>()?.myCard;
-                if (card != null)
-                    dto.hand.Add(CardToDto(card));
+                var cls = go != null ? go.GetComponent<CardLogicScript>() : null;
+                if (cls != null)
+                    dto.hand.Add(CardToDto(cls.myCard));
             }
 
-            // Campo (personagens)
-            foreach (var go in ps.Lgo_MyBoard ?? new List<GameObject>())
+            // Campo (personagens em jogo = deploy area)
+            foreach (var go in ps.Lgo_MyDeploy ?? new List<GameObject>())
             {
-                var card = go?.GetComponent<CardLogicScript>()?.myCard;
-                if (card != null)
-                    dto.board.Add(CardToDto(card));
+                var cls = go != null ? go.GetComponent<CardLogicScript>() : null;
+                if (cls != null)
+                    dto.board.Add(CardToDto(cls.myCard));
             }
 
             // Vida
-            foreach (var go in ps.Lgo_MyLife ?? new List<GameObject>())
+            foreach (var go in ps.Lgo_MyLifeDeck ?? new List<GameObject>())
             {
-                var card = go?.GetComponent<CardLogicScript>()?.myCard;
-                if (card != null)
-                    dto.life.Add(CardToDto(card));
+                var cls = go != null ? go.GetComponent<CardLogicScript>() : null;
+                if (cls != null)
+                    dto.life.Add(CardToDto(cls.myCard));
             }
 
             // Lider
-            if (ps.Lgo_MyLeader?.Count > 0)
+            if (ps.Lgo_MyLeader != null && ps.Lgo_MyLeader.Count > 0 && ps.Lgo_MyLeader[0] != null)
             {
-                var leaderCard = ps.Lgo_MyLeader[0]?.GetComponent<CardLogicScript>()?.myCard;
-                if (leaderCard != null)
-                    dto.leader = CardToDto(leaderCard);
+                var cls = ps.Lgo_MyLeader[0].GetComponent<CardLogicScript>();
+                if (cls != null)
+                    dto.leader = CardToDto(cls.myCard);
             }
 
             return dto;
         }
 
+        // LiveCard e struct — recebemos uma copia, leitura apenas
         private static CardDto CardToDto(LiveCard card)
         {
             return new CardDto
             {
-                code        = card.cardDef?.sCode ?? "",
-                cost        = card.cardDef?.iCost ?? 0,
-                power       = card.iPower,
-                rested      = card.bTapped,
-                justPlayed  = card.bJustPlayed,
+                code         = card.cardDef != null ? card.cardDef.cardID : "",
+                cost         = card.cardDef != null ? card.cardDef.cardCost : 0,
+                power        = card.cardPower,
+                rested       = card.bTapped,
+                justPlayed   = card.bSummonSick,
                 deckUniqueId = card.deckUniqueID,
             };
         }
 
-        private static int CountRestedDon(PlayerState ps)
+        // DON ativo = nao-tapped na cost area; rested = tapped
+        private static void CountDon(PlayerState ps, out int active, out int rested)
         {
-            int count = 0;
+            active = 0;
+            rested = 0;
             foreach (var go in ps.Lgo_MyDonCostArea ?? new List<GameObject>())
             {
-                var card = go?.GetComponent<CardLogicScript>()?.myCard;
-                if (card != null && card.bTapped)
-                    count++;
+                var cls = go != null ? go.GetComponent<CardLogicScript>() : null;
+                if (cls == null) continue;
+                if (cls.myCard.bTapped) rested++;
+                else active++;
             }
-            return count;
         }
     }
 }

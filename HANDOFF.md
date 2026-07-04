@@ -1,5 +1,36 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-03 (67) - Claude
+
+### fix(BOT): nomes de campos/metodos verificados contra o decompilado
+
+Auditoria dos nomes usados no plugin C# vs `dnspy-export/Assembly-CSharp/`:
+
+| Estava no plugin | Nome real verificado |
+|---|---|
+| `bJustPlayed` | `bSummonSick` (LiveCard e **struct** — leitura ok, escrita nao persiste) |
+| `iPower` | `cardPower` |
+| `cardDef.sCode` | `cardDef.cardID` |
+| `cardDef.iCost` | `cardDef.cardCost` |
+| `Lgo_MyBoard` | `Lgo_MyDeploy` |
+| `Lgo_MyLife` | `Lgo_MyLifeDeck` |
+| `StartAttackInternal()` | nao existe — fluxo real: `go_PendingChoice = atacante` → `StartAttack()` → `HandleMouseClickCardAttackTarget(alvo, false)` |
+
+Membros **private** (precisam de AccessTools/Harmony):
+- `GameplayLogicScript.go_PendingChoice`, `DeployCardFromHand`, `StartAttack`, `HandleMouseClickCardAttackTarget`
+- `GameStateManager.gls` → resolvido com injecao `___gls` no patch Harmony
+
+Publicos confirmados: `EndTurn_Internal()`, `Lps_Players`, `gsv_CurrentGame`, `Lgo_MyHand`, `Lgo_MyLeader`, `Lgo_MyDonCostArea`.
+
+Outras correcoes:
+- `activeDon` agora conta so DON **nao-tapped** na cost area (antes contava tudo)
+- `GameStateBuilder` reescrito com null-checks estilo Unity (`go != null ? GetComponent : null`)
+- `.csproj` ganhou `<LangVersion>latest</LangVersion>` (sintaxe C# 9 com target net46)
+
+Ainda falta: instalar BepInEx, compilar (`dotnet build`), testar em Solo vs Self.
+
+---
+
 ## 2026-07-03 (66) - Claude
 
 ### feat: BOT/ — arquitetura BepInEx para integrar engine diretamente no OPTCGSim

@@ -1,19 +1,37 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
+using HarmonyLib;
 using UnityEngine;
 
 namespace OPTCGBotPlugin
 {
-    // Traduz a acao retornada pelo engine Python em chamadas reais do GLS
+    // Traduz a acao retornada pelo engine Python em chamadas reais do GLS.
+    //
+    // Membros privados do GLS acessados via AccessTools (verificados no decompilado):
+    //   private GameObject go_PendingChoice
+    //   private void DeployCardFromHand(GameObject, bool, bool, GameObject)
+    //   private void StartAttack()
+    //   private void HandleMouseClickCardAttackTarget(GameObject, bool)
+    // Publicos: EndTurn_Internal(), Lps_Players, gsv_CurrentGame
     public static class BotExecutor
     {
         private const int MAX_ACTIONS = 20;
 
+        private static readonly FieldInfo  _fPendingChoice =
+            AccessTools.Field(typeof(GameplayLogicScript), "go_PendingChoice");
+        private static readonly MethodInfo _mDeployFromHand =
+            AccessTools.Method(typeof(GameplayLogicScript), "DeployCardFromHand");
+        private static readonly MethodInfo _mStartAttack =
+            AccessTools.Method(typeof(GameplayLogicScript), "StartAttack");
+        private static readonly MethodInfo _mClickAttackTarget =
+            AccessTools.Method(typeof(GameplayLogicScript), "HandleMouseClickCardAttackTarget");
+
         public static void RunTurn(GameplayLogicScript gls, GameStateDto dto)
         {
             // P2 = indice 1 nos arrays internos do GLS
-            PlayerState botPs  = gls.Lps_Players[1];
-            PlayerState oppPs  = gls.Lps_Players[0];
+            PlayerState botPs = gls.Lps_Players[1];
+            PlayerState oppPs = gls.Lps_Players[0];
 
             for (int i = 0; i < MAX_ACTIONS; i++)
             {
@@ -51,10 +69,6 @@ namespace OPTCGBotPlugin
                 case "attack":
                     return TryAttack(gls, botPs, oppPs, action.cardId, action.targetId);
 
-                case "end_turn":
-                    gls.EndTurn_Internal();
-                    return true;
-
                 default:
                     Plugin.Log.LogWarning($"[Bot] tipo de acao desconhecido: {action.type}");
                     return false;
@@ -63,34 +77,33 @@ namespace OPTCGBotPlugin
 
         private static bool TryPlay(GameplayLogicScript gls, PlayerState botPs, int cardId)
         {
-            var go = FindCardInHand(botPs, cardId);
+            var go = FindCard(botPs.Lgo_MyHand, cardId);
             if (go == null)
             {
                 Plugin.Log.LogWarning($"[Bot] play: carta {cardId} nao encontrada na mao");
                 return false;
             }
 
-            // Simula o drag da mao para o deploy area usando o metodo interno do GLS
-            // O GLS usa go_PendingChoice para saber qual carta foi selecionada
-            gls.go_PendingChoice = go;
-            gls.DeployCardFromHand(go, false, false, null);
-            Plugin.Log.LogInfo($"[Bot] play: {go.GetComponent<CardLogicScript>()?.myCard?.cardDef?.sCode}");
+            // DeployCardFromHand(go_Card, bFromTrigger=false, bRested=false, go_DeployedBy=null)
+            _mDeployFromHand.Invoke(gls, new object?[] { go, false, false, null });
+            Plugin.Log.LogInfo($"[Bot] play: {CodeOf(go)}");
             return true;
         }
 
         private static bool TryAttack(GameplayLogicScript gls, PlayerState botPs, PlayerState oppPs, int attackerId, int targetId)
         {
-            var attacker = FindCardOnBoard(botPs, attackerId) ?? FindLeader(botPs, attackerId);
+            var attacker = FindCard(botPs.Lgo_MyDeploy, attackerId)
+                        ?? FindCard(botPs.Lgo_MyLeader, attackerId);
             if (attacker == null)
             {
-                Plugin.Log.LogWarning($"[Bot] attack: atacante {attackerId} nao encontrado no campo");
+                Plugin.Log.LogWarning($"[Bot] attack: atacante {attackerId} nao encontrado");
                 return false;
             }
 
             // targetId == 0 = lider oponente
             GameObject? target = targetId == 0
-                ? (oppPs.Lgo_MyLeader?.Count > 0 ? oppPs.Lgo_MyLeader[0] : null)
-                : FindCardOnBoard(oppPs, targetId);
+                ? (oppPs.Lgo_MyLeader != null && oppPs.Lgo_MyLeader.Count > 0 ? oppPs.Lgo_MyLeader[0] : null)
+                : FindCard(oppPs.Lgo_MyDeploy, targetId);
 
             if (target == null)
             {
@@ -98,22 +111,31 @@ namespace OPTCGBotPlugin
                 return false;
             }
 
-            gls.go_PendingChoice = attacker;
-            gls.StartAttackInternal(attacker, target);
-            Plugin.Log.LogInfo($"[Bot] attack: {attackerId} -> {targetId}");
+            // Fluxo real do jogo (mesmo caminho do clique humano):
+            // 1. go_PendingChoice = atacante  2. StartAttack()  3. clique no alvo
+            _fPendingChoice.SetValue(gls, attacker);
+            _mStartAttack.Invoke(gls, null);
+            _mClickAttackTarget.Invoke(gls, new object[] { target, false });
+            Plugin.Log.LogInfo($"[Bot] attack: {CodeOf(attacker)} -> {CodeOf(target)}");
             return true;
         }
 
-        private static GameObject? FindCardInHand(PlayerState ps, int deckUniqueId)
-            => ps.Lgo_MyHand?.FirstOrDefault(go =>
-                go?.GetComponent<CardLogicScript>()?.myCard?.deckUniqueID == deckUniqueId);
+        private static GameObject? FindCard(List<GameObject>? list, int deckUniqueId)
+        {
+            if (list == null) return null;
+            foreach (var go in list)
+            {
+                var cls = go != null ? go.GetComponent<CardLogicScript>() : null;
+                if (cls != null && cls.myCard.deckUniqueID == deckUniqueId)
+                    return go;
+            }
+            return null;
+        }
 
-        private static GameObject? FindCardOnBoard(PlayerState ps, int deckUniqueId)
-            => ps.Lgo_MyBoard?.FirstOrDefault(go =>
-                go?.GetComponent<CardLogicScript>()?.myCard?.deckUniqueID == deckUniqueId);
-
-        private static GameObject? FindLeader(PlayerState ps, int deckUniqueId)
-            => ps.Lgo_MyLeader?.FirstOrDefault(go =>
-                go?.GetComponent<CardLogicScript>()?.myCard?.deckUniqueID == deckUniqueId);
+        private static string CodeOf(GameObject go)
+        {
+            var cls = go.GetComponent<CardLogicScript>();
+            return cls != null && cls.myCard.cardDef != null ? cls.myCard.cardDef.cardID : "?";
+        }
     }
 }
