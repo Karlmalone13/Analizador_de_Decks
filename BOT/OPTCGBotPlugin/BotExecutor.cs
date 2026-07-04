@@ -23,6 +23,88 @@ namespace OPTCGBotPlugin
         private static readonly MethodInfo _mClickAttackTarget =
             AccessTools.Method(typeof(GameplayLogicScript), "HandleMouseClickCardAttackTarget");
 
+        // Defesa (membros privados verificados no decompilado)
+        private static readonly FieldInfo _fAttacker =
+            AccessTools.Field(typeof(GameplayLogicScript), "go_Attacker");
+        private static readonly FieldInfo _fDefender =
+            AccessTools.Field(typeof(GameplayLogicScript), "go_Defender");
+        private static readonly MethodInfo _mClickBlocker =
+            AccessTools.Method(typeof(GameplayLogicScript), "HandleMouseClickCardAttackBlocker");
+        private static readonly MethodInfo _mDiscardCounter =
+            AccessTools.Method(typeof(GameplayLogicScript), "DiscardCardForCounter");
+        private static readonly MethodInfo _mLastDrawnCard =
+            AccessTools.Method(typeof(GameplayLogicScript), "LastDrawnCard");
+
+        public static GameObject? Attacker(GameplayLogicScript gls)
+            => _fAttacker.GetValue(gls) as GameObject;
+
+        public static GameObject? Defender(GameplayLogicScript gls)
+            => _fDefender.GetValue(gls) as GameObject;
+
+        // Poder atual do atacante/defensor via metodo do proprio jogo (inclui buffs/DON)
+        public static int PowerOf(GameplayLogicScript gls, GameObject go, bool attacking)
+        {
+            try { return gls.CardPower(go, attacking, false); }
+            catch { return 0; }
+        }
+
+        // Bloqueia com o personagem indicado (mesmo caminho do clique humano;
+        // o jogo valida CardCanBlock). Retorna false se a carta nao foi achada.
+        public static bool TryBlock(GameplayLogicScript gls, PlayerState botPs, int blockerId)
+        {
+            var blocker = FindCard(botPs.Lgo_MyDeploy, blockerId);
+            if (blocker == null)
+            {
+                Plugin.Log.LogWarning($"[Bot] block: blocker {blockerId} nao encontrado");
+                return false;
+            }
+            _mClickBlocker.Invoke(gls, new object[] { blocker });
+            Plugin.Log.LogInfo($"[Bot] block: {CodeOf(blocker)}");
+            return true;
+        }
+
+        public static void NoBlocker(GameplayLogicScript gls)
+        {
+            gls.ChoiceButtonClicked(ButtonChoiceType.NoBlocker, -1);
+            Plugin.Log.LogInfo("[Bot] no blocker");
+        }
+
+        // Descarta as cartas de counter indicadas e resolve o ataque
+        public static void PlayCounters(GameplayLogicScript gls, PlayerState botPs, List<int> counterIds)
+        {
+            gls.bConfirmCounter = false;   // descarta direto, sem dialogo de confirmacao
+            foreach (int id in counterIds)
+            {
+                var go = FindCard(botPs.Lgo_MyHand, id);
+                if (go == null)
+                {
+                    Plugin.Log.LogWarning($"[Bot] counter: carta {id} nao encontrada na mao");
+                    continue;
+                }
+                _mDiscardCounter.Invoke(gls, new object[] { go });
+                Plugin.Log.LogInfo($"[Bot] counter: {CodeOf(go)}");
+            }
+            gls.ChoiceButtonClicked(ButtonChoiceType.ResolveAttack, -1);
+        }
+
+        public static void ResolveTrigger(GameplayLogicScript gls, bool use)
+        {
+            gls.ChoiceButtonClicked(use ? ButtonChoiceType.Trigger : ButtonChoiceType.NoTrigger, -1);
+            Plugin.Log.LogInfo($"[Bot] trigger: {(use ? "USAR" : "nao usar")}");
+        }
+
+        // Codigo da carta de vida revelada (LastDrawnCard) para a decisao de trigger
+        public static string? TriggerCardCode(GameplayLogicScript gls)
+        {
+            try
+            {
+                var go = _mLastDrawnCard.Invoke(gls, null) as GameObject;
+                var cls = go != null ? go.GetComponent<CardLogicScript>() : null;
+                return cls != null && cls.myCard.cardDef != null ? cls.myCard.cardDef.cardID : null;
+            }
+            catch { return null; }
+        }
+
         public static bool ExecuteOne(GameplayLogicScript gls, PlayerState botPs, PlayerState oppPs,
                                       BotAction action, GameStateDto dto)
         {

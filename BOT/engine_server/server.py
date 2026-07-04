@@ -134,6 +134,14 @@ class MulliganRequest(BaseModel):
     hand: list[CardDto] = []
 
 
+class DefenseRequest(BaseModel):
+    state: GameStateDto
+    phase: str                    # "blocker" | "counter" | "trigger"
+    attackerPower: int = 0
+    defenderPower: int = 0
+    triggerCode: Optional[str] = None
+
+
 @app.get("/health")
 def health():
     return {"status": "ok"}
@@ -156,6 +164,63 @@ def mulligan(req: MulliganRequest):
         import traceback
         traceback.print_exc()
         return {"mulligan": False, "reason": f"erro: {e} — keep por seguranca"}
+
+
+@app.post("/defense")
+def defense(req: DefenseRequest):
+    """
+    Decisoes de defesa quando o humano ataca o bot.
+    Resposta: {"blockerId": int, "counterIds": [int], "useTrigger": bool}
+    (campos nao usados pela fase vem zerados/vazios)
+    """
+    try:
+        from optcg_engine.decision_engine import DecisionEngine
+        bridge = _get_bridge()
+        gs     = _dto_to_gs(req.state.bot, req.state.turnNumber)
+        opp_gs = _dto_to_gs(req.state.opp, req.state.turnNumber)
+
+        out = {"blockerId": 0, "counterIds": [], "useTrigger": False}
+
+        if req.phase == "blocker":
+            engine = DecisionEngine(gs, opp_gs)
+            blocker = engine.should_use_blocker(req.attackerPower)
+            if blocker is not None:
+                out["blockerId"] = getattr(blocker, '_deck_uid', 0)
+            print(f"[DEF] blocker atk={req.attackerPower} -> "
+                  f"{blocker.name if blocker else 'NAO bloqueia'}", flush=True)
+
+        elif req.phase == "counter":
+            engine = DecisionEngine(gs, opp_gs)
+            if engine.should_use_counter(req.attackerPower, req.defenderPower):
+                # Mesma politica do use_counter: menores primeiro, minimo necessario
+                needed = req.attackerPower - req.defenderPower + 1
+                counters = sorted([c for c in gs.hand if c.counter > 0],
+                                  key=lambda c: c.counter)
+                total, ids = 0, []
+                for c in counters:
+                    if total >= needed:
+                        break
+                    uid = getattr(c, '_deck_uid', 0)
+                    if uid:
+                        ids.append(uid)
+                        total += c.counter
+                # So counteriza se realmente cobre o ataque
+                if total >= needed:
+                    out["counterIds"] = ids
+            print(f"[DEF] counter atk={req.attackerPower} def={req.defenderPower} "
+                  f"-> {len(out['counterIds'])} cartas", flush=True)
+
+        elif req.phase == "trigger":
+            out["useTrigger"] = bool(bridge.resolve_trigger_choice(gs, req.triggerCode))
+            print(f"[DEF] trigger {req.triggerCode} -> {out['useTrigger']}", flush=True)
+
+        return out
+
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        # Defesa conservadora em erro: nao bloqueia, nao counteriza, nao usa trigger
+        return {"blockerId": 0, "counterIds": [], "useTrigger": False}
 
 
 @app.post("/decide")

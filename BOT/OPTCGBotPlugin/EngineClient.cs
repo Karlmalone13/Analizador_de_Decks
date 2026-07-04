@@ -51,6 +51,38 @@ namespace OPTCGBotPlugin
             public string reason = "";
         }
 
+        public class DefenseResponse
+        {
+            public int blockerId;
+            public System.Collections.Generic.List<int> counterIds = new();
+            public bool useTrigger;
+        }
+
+        // phase: "blocker" | "counter" | "trigger". Null em erro (defesa conservadora).
+        public static DefenseResponse? Defense(GameStateDto state, string phase,
+                                               int attackerPower, int defenderPower,
+                                               string? triggerCode = null)
+        {
+            try
+            {
+                string json = JsonConvert.SerializeObject(new
+                {
+                    state, phase, attackerPower, defenderPower, triggerCode
+                });
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+                var resp = _http.PostAsync($"{BASE}/defense", content).GetAwaiter().GetResult();
+                if (!resp.IsSuccessStatusCode)
+                    return null;
+                string body = resp.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+                return JsonConvert.DeserializeObject<DefenseResponse>(body);
+            }
+            catch (Exception ex)
+            {
+                Plugin.Log.LogError($"[EngineClient] defense: {ex.Message}");
+                return null;
+            }
+        }
+
         // true = trocar a mao; false = manter (default seguro em erro)
         public static bool ShouldMulligan(System.Collections.Generic.List<CardDto> hand)
         {

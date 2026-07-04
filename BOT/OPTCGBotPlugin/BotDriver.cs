@@ -54,9 +54,12 @@ namespace OPTCGBotPlugin
                 return;
             }
 
-            // So age no turno do bot
+            // Turno do humano: bot pode precisar DEFENDER (blocker/counter/trigger)
             if (gls.gsv_CurrentGame.iPlayerTurn != BotPlayerIndex)
+            {
+                HandleDefense(gls);
                 return;
+            }
 
             // Fases de inicio de turno: clica Draw Card / Draw Don sozinho.
             // Os botoes ESPERAM nos estados *Wait (PlayerDrawPhase/PlayerDonPhase
@@ -136,6 +139,94 @@ namespace OPTCGBotPlugin
             }
 
             _cooldown = ActionCooldown;
+        }
+
+        // Estado da defesa: evita loop se o blocker escolhido for recusado pelo jogo
+        private GameplayState _lastDefenseState;
+        private bool _blockerTried;
+
+        // Defesa quando o HUMANO ataca o bot. Durante o blocker/counter step o
+        // jogo poe iPlayerAction no DEFENSOR (SetupBlockerPhase alterna o indice),
+        // entao so agimos quando iPlayerAction == BotPlayerIndex.
+        private void HandleDefense(GameplayLogicScript gls)
+        {
+            var st = gls.e_CurrentState;
+            if (st != _lastDefenseState)
+            {
+                _lastDefenseState = st;
+                if (st == GameplayState.Attack_WaitOnBlocker)
+                    _blockerTried = false;
+            }
+
+            bool actionIsMine = gls.gsv_CurrentGame.iPlayerAction == BotPlayerIndex;
+
+            // ── Blocker step ──────────────────────────────────────────────
+            if (st == GameplayState.Attack_WaitOnBlocker && actionIsMine)
+            {
+                var botPs = gls.Lps_Players[BotPlayerIndex];
+                var oppPs = gls.Lps_Players[1 - BotPlayerIndex];
+                var attacker = BotExecutor.Attacker(gls);
+                var defender = BotExecutor.Defender(gls);
+                int atkPower = attacker != null ? BotExecutor.PowerOf(gls, attacker, true) : 0;
+                int defPower = defender != null ? BotExecutor.PowerOf(gls, defender, false) : 0;
+
+                var dto = GameStateBuilder.Build(botPs, oppPs, gls);
+                var resp = EngineClient.IsAlive()
+                    ? EngineClient.Defense(dto, "blocker", atkPower, defPower)
+                    : null;
+
+                if (resp != null && resp.blockerId != 0 && !_blockerTried)
+                {
+                    _blockerTried = true;   // se o jogo recusar, proximo tick vai de NoBlocker
+                    if (!BotExecutor.TryBlock(gls, botPs, resp.blockerId))
+                        BotExecutor.NoBlocker(gls);
+                }
+                else
+                {
+                    BotExecutor.NoBlocker(gls);
+                }
+                _cooldown = 1f;
+                return;
+            }
+
+            // ── Counter step ──────────────────────────────────────────────
+            if (st == GameplayState.Attack_WaitOnCounters && actionIsMine)
+            {
+                var botPs = gls.Lps_Players[BotPlayerIndex];
+                var oppPs = gls.Lps_Players[1 - BotPlayerIndex];
+                var attacker = BotExecutor.Attacker(gls);
+                var defender = BotExecutor.Defender(gls);
+                int atkPower = attacker != null ? BotExecutor.PowerOf(gls, attacker, true) : 0;
+                int defPower = defender != null ? BotExecutor.PowerOf(gls, defender, false) : 0;
+
+                var dto = GameStateBuilder.Build(botPs, oppPs, gls);
+                var resp = EngineClient.IsAlive()
+                    ? EngineClient.Defense(dto, "counter", atkPower, defPower)
+                    : null;
+
+                BotExecutor.PlayCounters(gls, botPs,
+                    resp?.counterIds ?? new System.Collections.Generic.List<int>());
+                _cooldown = 1f;
+                return;
+            }
+
+            // ── Trigger step ──────────────────────────────────────────────
+            // (dano na vida do bot durante o turno do humano = trigger e do bot)
+            if (st == GameplayState.Life_ActivateTrigger || st == GameplayState.Life_DoubleTriggering)
+            {
+                var botPs = gls.Lps_Players[BotPlayerIndex];
+                var oppPs = gls.Lps_Players[1 - BotPlayerIndex];
+                string? code = BotExecutor.TriggerCardCode(gls);
+
+                var dto = GameStateBuilder.Build(botPs, oppPs, gls);
+                var resp = EngineClient.IsAlive()
+                    ? EngineClient.Defense(dto, "trigger", 0, 0, code)
+                    : null;
+
+                BotExecutor.ResolveTrigger(gls, resp?.useTrigger ?? false);
+                _cooldown = 1f;
+                return;
+            }
         }
 
         private GameplayLogicScript? FindGls()

@@ -1,5 +1,32 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-04 (75) - Claude
+
+### feat: defesa do bot (blocker / counter / trigger)
+
+Decisoes 100% no engine (sem logica de carta no plugin — regra dos dois motores respeitada).
+
+**Fluxo do jogo (verificado no decompilado):**
+- `SetupBlockerPhase` alterna `iPlayerAction` para o DEFENSOR → durante `Attack_WaitOnBlocker`/`Attack_WaitOnCounters`, `iPlayerAction == defensor`
+- Blocker: clique no personagem via `HandleMouseClickCardAttackBlocker` (jogo valida `CardCanBlock`); recusa = `NoBlocker`
+- Counter: `bConfirmCounter = false` (public) + `DiscardCardForCounter(carta)` por counter + `ChoiceButtonClicked(ResolveAttack)`
+- Trigger: estado `Life_ActivateTrigger`/`Life_DoubleTriggering`; carta revelada = `LastDrawnCard()`; botoes `Trigger`/`NoTrigger`
+- Poder atual (buffs/DON inclusos): `gls.CardPower(go, bAttacking)` — public
+
+**server.py — `POST /defense`** `{state, phase, attackerPower, defenderPower, triggerCode}`:
+- blocker → `DecisionEngine.should_use_blocker(atk)` → `{blockerId}` (0 = nao bloqueia)
+- counter → `should_use_counter(atk, def)` + selecao minima (menores primeiro, so se cobre o ataque) → `{counterIds}`
+- trigger → `sim_bridge.resolve_trigger_choice(gs, code)` → `{useTrigger}`
+- Erro → defesa conservadora (nao bloqueia/counteriza/usa trigger)
+
+**Plugin:** `BotDriver.HandleDefense()` roda no turno do humano; `BotExecutor` ganhou `TryBlock`/`NoBlocker`/`PlayCounters`/`ResolveTrigger`/`Attacker`/`Defender`/`PowerOf`/`TriggerCardCode`. Guard `_blockerTried` evita loop se o jogo recusar o blocker.
+
+**Testes (endpoint):** blocker com vida 2 + OP01-014 no campo → bloqueia ✓; counter 6000 vs 5000 (needed 1001) → escolhe exatamente 2x1000 ✓; trigger → decisao do engine ✓.
+
+**Falta testar in-game** (reiniciar servidor + jogo). Trigger do bot em `Life_DoubleTriggering` durante o proprio turno do bot (Double Attack do humano? nao existe — double attack e do atacante; ok) — cobrir depois se aparecer caso.
+
+---
+
 ## 2026-07-04 (74) - Claude
 
 ### TESTE COMPLETO OK — bot joga turno inteiro sozinho no Solo vs Self
