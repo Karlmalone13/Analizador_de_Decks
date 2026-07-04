@@ -301,6 +301,91 @@ def resolve_trigger_choice(gs: GameState, card_code: str | None) -> bool:
     return True  # default: usa
 
 
+def select_counter_cards(gs: GameState, atk_power: int, def_power: int) -> list[int]:
+    """
+    Seleciona as cartas de counter (por _deck_uid) para defender um ataque.
+    Mesma politica do DecisionEngine.use_counter: menores primeiro, minimo
+    necessario — e so counteriza se realmente cobre o ataque.
+    Retorna [] se o engine decidir nao counterizar.
+    """
+    opp_stub = GameState(leader=deepcopy(gs.leader))
+    engine = DecisionEngine(gs, opp_stub)
+    if not engine.should_use_counter(atk_power, def_power):
+        return []
+    needed = atk_power - def_power + 1
+    counters = sorted([c for c in gs.hand if c.counter > 0], key=lambda c: c.counter)
+    total, ids = 0, []
+    for c in counters:
+        if total >= needed:
+            break
+        uid = getattr(c, '_deck_uid', 0)
+        if uid:
+            ids.append(uid)
+            total += c.counter
+    return ids if total >= needed else []
+
+
+def resolve_reaction(gs: GameState, opp_gs: GameState,
+                     atk_power: int, def_power: int) -> bool:
+    """
+    Efeito opcional com custo oferecido durante o ataque do oponente
+    (ex: lider Teach — trash 1 carta para reagir). Mesma logica do counter:
+    so gasta recurso se o ataque for serio para a vida atual.
+    """
+    engine = DecisionEngine(gs, opp_gs)
+    return bool(engine.should_use_counter(atk_power, def_power))
+
+
+def resolve_optional_effect(gs: GameState, opp_gs: GameState) -> bool:
+    """
+    Efeito opcional com custo no PROPRIO turno (downside pos-play, ex:
+    "you may trash 1 card: ..."). Usa se a mao tem carta dispensavel:
+    mais de 1 carta e a pior delas tem valor situacional baixo.
+    """
+    if len(gs.hand) < 2:
+        return False
+    engine = DecisionEngine(gs, opp_gs)
+    worst = engine.choose_to_trash(gs.hand)
+    if worst is None:
+        return False
+    # Carta de valor baixo na mao -> o custo e barato, efeito compensa
+    return engine.avaliar_carta(worst) <= 60
+
+
+def order_target_candidates(gs: GameState, opp_gs: GameState,
+                            candidates: list[dict]) -> list[int]:
+    """
+    Ordena candidatos de alvo de um efeito pendente por preferencia.
+    candidates: [{'id': uid, 'zone': 'own_hand'|'own_board'|'opp_board'|...}]
+
+    Heuristica por zona:
+    - own_hand: pior carta primeiro (descarte — choose_to_trash)
+    - own_board: menor valor primeiro (sacrificio/substituicao)
+    - opp_board: maior valor primeiro (remocao/bounce)
+    - leaders/stages: por ultimo
+    """
+    engine = DecisionEngine(gs, opp_gs)
+
+    by_uid = {}
+    for c in gs.hand + gs.field_chars + opp_gs.field_chars:
+        uid = getattr(c, '_deck_uid', 0)
+        if uid:
+            by_uid[uid] = c
+
+    def sort_key(cand: dict):
+        card = by_uid.get(cand.get('id'))
+        zone = cand.get('zone', '')
+        if zone == 'own_hand':
+            return (0, engine.avaliar_carta(card) if card else 0)
+        if zone == 'own_board':
+            return (1, engine.analyzer.char_value_score(card) if card else 0)
+        if zone == 'opp_board':
+            return (2, -(engine.analyzer.char_value_score(card) if card else 0))
+        return (3, 0)
+
+    return [c.get('id') for c in sorted(candidates, key=sort_key)]
+
+
 def get_card_on_play_steps(card_code: str) -> list[dict]:
     """
     Retorna a lista de steps do efeito on_play de uma carta a partir do

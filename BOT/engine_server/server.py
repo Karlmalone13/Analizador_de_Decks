@@ -201,23 +201,8 @@ def defense(req: DefenseRequest):
                   f"{blocker.name if blocker else 'NAO bloqueia'}", flush=True)
 
         elif req.phase == "counter":
-            engine = DecisionEngine(gs, opp_gs)
-            if engine.should_use_counter(req.attackerPower, req.defenderPower):
-                # Mesma politica do use_counter: menores primeiro, minimo necessario
-                needed = req.attackerPower - req.defenderPower + 1
-                counters = sorted([c for c in gs.hand if c.counter > 0],
-                                  key=lambda c: c.counter)
-                total, ids = 0, []
-                for c in counters:
-                    if total >= needed:
-                        break
-                    uid = getattr(c, '_deck_uid', 0)
-                    if uid:
-                        ids.append(uid)
-                        total += c.counter
-                # So counteriza se realmente cobre o ataque
-                if total >= needed:
-                    out["counterIds"] = ids
+            out["counterIds"] = bridge.select_counter_cards(
+                gs, req.attackerPower, req.defenderPower)
             print(f"[DEF] counter atk={req.attackerPower} def={req.defenderPower} "
                   f"-> {len(out['counterIds'])} cartas", flush=True)
 
@@ -226,14 +211,15 @@ def defense(req: DefenseRequest):
             print(f"[DEF] trigger {req.triggerCode} -> {out['useTrigger']}", flush=True)
 
         elif req.phase == "reaction":
-            # Efeito opcional com custo oferecido durante o ataque do humano
-            # (ex: lider Teach — trash 1 carta para reagir). Mesma logica do
-            # counter: so gasta recurso se o ataque for serio para a vida atual.
-            engine = DecisionEngine(gs, opp_gs)
-            out["useReaction"] = bool(
-                engine.should_use_counter(req.attackerPower, req.defenderPower))
+            out["useReaction"] = bridge.resolve_reaction(
+                gs, opp_gs, req.attackerPower, req.defenderPower)
             print(f"[DEF] reaction atk={req.attackerPower} def={req.defenderPower} "
                   f"-> {out['useReaction']}", flush=True)
+
+        elif req.phase == "optional":
+            # Efeito opcional com custo no proprio turno do bot
+            out["useReaction"] = bridge.resolve_optional_effect(gs, opp_gs)
+            print(f"[DEF] optional -> {out['useReaction']}", flush=True)
 
         return out
 
@@ -257,32 +243,12 @@ def choose_target(req: ChooseTargetRequest):
     - leaders/stages: por ultimo
     """
     try:
-        from optcg_engine.decision_engine import DecisionEngine
+        bridge = _get_bridge()
         gs     = _dto_to_gs(req.state.bot, req.state.turnNumber)
         opp_gs = _dto_to_gs(req.state.opp, req.state.turnNumber)
-        engine = DecisionEngine(gs, opp_gs)
 
-        by_uid = {}
-        for c in gs.hand + gs.field_chars + opp_gs.field_chars:
-            uid = getattr(c, '_deck_uid', 0)
-            if uid:
-                by_uid[uid] = c
-
-        def sort_key(cand: TargetCandidate):
-            card = by_uid.get(cand.id)
-            if cand.zone == "own_hand":
-                val = engine.avaliar_carta(card) if card else 0
-                return (0, val)                      # pior primeiro
-            if cand.zone == "own_board":
-                val = engine.analyzer.char_value_score(card) if card else 0
-                return (1, val)                      # menor valor primeiro
-            if cand.zone == "opp_board":
-                val = engine.analyzer.char_value_score(card) if card else 0
-                return (2, -val)                     # maior valor primeiro
-            return (3, 0)                            # leaders/stages por ultimo
-
-        ordered = sorted(req.candidates, key=sort_key)
-        out = [c.id for c in ordered]
+        out = bridge.order_target_candidates(
+            gs, opp_gs, [{"id": c.id, "zone": c.zone} for c in req.candidates])
         print(f"[TGT] {len(req.candidates)} candidatos (actor={req.actorCode}) -> ordem {out[:5]}", flush=True)
         return {"orderedIds": out}
 

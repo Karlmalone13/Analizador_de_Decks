@@ -88,33 +88,24 @@ namespace OPTCGBotPlugin
                     var dsBotPs = gls.Lps_Players[BotPlayerIndex];
                     if (BotExecutor.PendingActionIsMine(gls, dsBotPs))
                     {
-                        bool use;
+                        // Engine decide (sem logica estrategica no plugin):
+                        //   durante ataque → phase "reaction" (vale gastar recurso?)
+                        //   proprio turno  → phase "optional" (custo e barato?)
                         bool duringAttack =
                             gls.e_CurrentState == GameplayState.Attack_WaitOnBlocker ||
                             gls.e_CurrentState == GameplayState.Attack_BeforeBlocker ||
                             gls.e_CurrentState == GameplayState.Attack_WaitOnCounters;
 
-                        if (duringAttack)
-                        {
-                            // Reacao a ataque (ex: Teach): engine decide se o
-                            // ataque e serio o bastante para gastar recurso
-                            var attacker = BotExecutor.Attacker(gls);
-                            var defender = BotExecutor.Defender(gls);
-                            int atkP = attacker != null ? BotExecutor.PowerOf(gls, attacker, true) : 0;
-                            int defP = defender != null ? BotExecutor.PowerOf(gls, defender, false) : 0;
-                            var dsOppPs = gls.Lps_Players[1 - BotPlayerIndex];
-                            var dsDto = GameStateBuilder.Build(dsBotPs, dsOppPs, gls);
-                            var resp = EngineClient.IsAlive()
-                                ? EngineClient.Defense(dsDto, "reaction", atkP, defP)
-                                : null;
-                            use = resp?.useReaction ?? false;
-                        }
-                        else
-                        {
-                            // Efeito opcional no proprio turno (pos-play):
-                            // usa se tiver carta sobrando pro custo
-                            use = dsBotPs.Lgo_MyHand != null && dsBotPs.Lgo_MyHand.Count >= 2;
-                        }
+                        var attacker = BotExecutor.Attacker(gls);
+                        var defender = BotExecutor.Defender(gls);
+                        int atkP = duringAttack && attacker != null ? BotExecutor.PowerOf(gls, attacker, true) : 0;
+                        int defP = duringAttack && defender != null ? BotExecutor.PowerOf(gls, defender, false) : 0;
+                        var dsOppPs = gls.Lps_Players[1 - BotPlayerIndex];
+                        var dsDto = GameStateBuilder.Build(dsBotPs, dsOppPs, gls);
+                        var resp = EngineClient.IsAlive()
+                            ? EngineClient.Defense(dsDto, duringAttack ? "reaction" : "optional", atkP, defP)
+                            : null;
+                        bool use = resp?.useReaction ?? false;
 
                         var btn = !use ? ButtonChoiceType.Cancel
                                 : gls.acaActive.UsesV3() ? ButtonChoiceType.UseV3OnPlay

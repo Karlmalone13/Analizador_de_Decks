@@ -1,5 +1,25 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-04 (81) - Claude
+
+### refactor: decisoes movidas do plugin/server para sim_bridge (regra dos dois motores)
+
+Usuario lembrou da regra ANTES do teste — auditoria achou 2 violacoes introduzidas nas sessoes 75-80:
+1. Plugin C# decidia "usa efeito opcional se mao >= 2" (BotDriver)
+2. server.py continha heuristicas (selecao de counters, ordenacao de alvos)
+
+**Novas funcoes no sim_bridge.py (unico lugar com logica de decisao):**
+- `select_counter_cards(gs, atk, def) -> [uids]` — politica do use_counter
+- `resolve_reaction(gs, opp, atk, def) -> bool` — efeito com custo durante ataque
+- `resolve_optional_effect(gs, opp) -> bool` — efeito com custo no proprio turno (mao >= 2 E pior carta com avaliar_carta <= 60)
+- `order_target_candidates(gs, opp, candidates) -> [uids]` — ordenacao por zona
+
+server.py agora so delega (transporte puro). Plugin: downside no proprio turno chama `/defense phase=optional` (zero logica em C#).
+
+Testes das 4 funcoes OK. Memoria `feedback_dois_motores.md` atualizada com o caso.
+
+---
+
 ## 2026-07-04 (80) - Claude
 
 ### Defesa FUNCIONANDO in-game + reacao via engine + deploy swap
