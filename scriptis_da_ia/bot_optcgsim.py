@@ -137,28 +137,32 @@ def _badge_bbox(hover_x: int, hover_y: int) -> tuple:
 COMBAT_LOG_DIR = Path(r"E:\Games\OnePieceSimulador\Builds_Windows\CombatLogs")
 
 # Regex para parsear codes no formato do arquivo: <link="CODE">CODE</link>
-# tambem aceita o formato antigo [CODE] como fallback
-_RE_CODE      = re.compile(r'<link="([A-Z]{1,4}\d{2}-\d{3}[a-z]?)">')
+# Formato real do log: ["OP13-043">OP13-043] — tambem aceita <link=> e [CODE] legado
+_RE_CODE      = re.compile(r'"([A-Z]{1,4}\d{2}-\d{3}[a-z]?)">')
 _RE_CODE_BARE = re.compile(r'\[([A-Z]{1,4}\d{2}-\d{3}[a-z]?)\]')
 _RE_DRAW_N    = re.compile(r'Draw (\d+) Card')
 _RE_REST_N    = re.compile(r'Rest (\d+) Don')
 _RE_SEND_LIFE = re.compile(r'Send (\d+) Life to Hand')
 _RE_HIT       = re.compile(r'hit for (\d+) damage')
-# Snapshots de estado emitidos apos cada turno:
-# "[NAME] Hand: [CODE1,CODE2,...]" / "Board:" / "Trash:" / "Life: N"
-_RE_SNAP_HAND  = re.compile(r'^\[([^\]]+)\] Hand: \[([^\]]*)\]')
-_RE_SNAP_BOARD = re.compile(r'^\[([^\]]+)\] Board: \[([^\]]*)\]')
-_RE_SNAP_TRASH = re.compile(r'^\[([^\]]+)\] Trash: \[([^\]]*)\]')
-_RE_SNAP_LIFE  = re.compile(r'^\[([^\]]+)\] Life: (\d+)')
+# Solo vs Self: snapshots usam [] sem nome, em pares apos cada turno
+# Multiplayer: podem usar [Nome] — suportamos os dois formatos
+_RE_SNAP_HAND  = re.compile(r'^\[([^\]]*)\] Hand: \[([^\]]*)\]')
+_RE_SNAP_BOARD = re.compile(r'^\[([^\]]*)\] Board: \[([^\]]*)\]')
+_RE_SNAP_TRASH = re.compile(r'^\[([^\]]*)\] Trash: \[([^\]]*)\]')
+_RE_SNAP_LIFE  = re.compile(r'^\[([^\]]*)\] Life: (\d+)')
 # Linha "NAME Has Connected" identifica o jogador local
 _RE_CONNECTED  = re.compile(r'^([^\s\[]+) Has Connected')
 
 # Estado do arquivo de log (reset a cada partida)
 _current_log_file: Path | None = None
 _log_file_offset: int = 0
-_our_name: str = ""          # ex: "Karlmalone#2854"
-_opp_name: str = ""          # ex: "gombomb#2131"
+_our_name: str = ""          # ex: "Karlmalone#2854" | "Opponent" no Solo vs Self
+_opp_name: str = ""          # ex: "gombomb#2131"   | "You" no Solo vs Self
 _log_search_after: float = 0.0  # timestamp minimo do arquivo de log a procurar
+# Solo vs Self: rastreia quem passou o turno por ultimo para ordenar snapshots anonimos.
+# "You" = P1 passou → proximo par [] e [Opponent=bot, You=opp]
+# "Opponent" ou "" = P2/inicio → proximo par [] e [You=opp, Opponent=bot]
+_last_end_turn: str = ""
 
 
 def _find_current_log() -> Path | None:
@@ -201,7 +205,11 @@ def _detect_names_from_log(path: Path) -> tuple[str, str]:
                 all_leaders.append(n)
 
     opp = next((n for n in all_leaders if n != our), "")
-    # Se nao achou "Has Connected", usa primeiro lider como nosso
+    # Solo vs Self: nomes sao literais "You" e "Opponent"
+    # Bot joga como P2 (baixo) = Opponent; P1 (cima) = You
+    if not our and "You" in all_leaders and "Opponent" in all_leaders:
+        return "Opponent", "You"
+    # Fallback generico: sem Has Connected, usa primeiro lider como nosso
     if not our and all_leaders:
         our = all_leaders[0]
         opp = all_leaders[1] if len(all_leaders) > 1 else ""
@@ -209,12 +217,13 @@ def _detect_names_from_log(path: Path) -> tuple[str, str]:
 
 
 def _reset_log():
-    global _current_log_file, _log_file_offset, _our_name, _opp_name, _log_search_after
+    global _current_log_file, _log_file_offset, _our_name, _opp_name, _log_search_after, _last_end_turn
     _current_log_file  = None
     _log_file_offset   = 0
     _our_name          = ""
     _opp_name          = ""
     _log_search_after  = time.time()  # so aceita arquivos criados daqui em diante
+    _last_end_turn     = ""
 
 
 def read_log_delta() -> list[str]:
@@ -280,7 +289,14 @@ def apply_log_delta(gs, opp_gs, lines: list[str]) -> bool:
     Retorna True se a mao do bot mudou (carta sacada/recebida)
     e portanto precisa de rescan parcial da mao.
     """
+    global _last_end_turn
     needs_hand_rescan = False
+    # Solo vs Self: snapshots usam [] sem nome.
+    # Ordem: apos [You] End Turn → [Opponent, You]; apos [Opponent] End Turn → [You, Opponent].
+    # Game start (sem End Turn ainda) → [You, Opponent].
+    # _snap_anon_turn rastreia quem foi o ultimo a passar o turno.
+    # "first" = primeiro [] bloco visto apos o ultimo End Turn
+    _snap_anon_idx = [0]   # quantos blocos [] anonimos foram vistos no chunk atual
 
     try:
         from optcg_engine.decision_engine import _make_card
@@ -303,19 +319,32 @@ def apply_log_delta(gs, opp_gs, lines: list[str]) -> bool:
 
     for line in lines:
         # --- Snapshots completos de estado (emitidos apos cada turno) ----------
+        # Suporta dois formatos:
+        #   Multiplayer: "[Nome] Hand: [...]"  → name = nome real do jogador
+        #   Solo vs Self: "[] Hand: [...]"     → name = "" (par anonimo)
+        #
+        # Para pares anonimos, a ordem depende de quem passou o turno por ultimo:
+        #   _last_end_turn == "You" (P1 passou) → 1o bloco = Opponent (bot), 2o = You
+        #   _last_end_turn == "Opponent" ou "" → 1o bloco = You (opp), 2o = Opponent (bot)
         m = _RE_SNAP_HAND.match(line)
         if m:
             name, raw = m.group(1), m.group(2)
-            is_snap_ours = (_our_name and name == _our_name) or (
-                not _our_name and name not in (_opp_name,))
+            if name == "":
+                # Par anonimo: usa _snap_anon_idx para determinar dono
+                idx = _snap_anon_idx[0]
+                _snap_anon_idx[0] += 1
+                if _last_end_turn == "You":
+                    is_snap_ours = (idx == 0)   # 1o = bot (Opponent)
+                else:
+                    is_snap_ours = (idx == 1)   # 2o = bot (Opponent)
+            else:
+                is_snap_ours = (name == _our_name)
             codes_list = _snap_codes(raw)
             if is_snap_ours:
-                # Sync completo da mao: reconstroi a partir dos codigos
                 new_hand = []
                 for code in codes_list:
                     card = _get_card(code)
                     if card:
-                        # Preserva _sim_x se ja existia na mao
                         old = next((c for c in gs.hand if c.code == code), None)
                         card._sim_x = getattr(old, '_sim_x', 0)
                         new_hand.append(card)
@@ -323,7 +352,6 @@ def apply_log_delta(gs, opp_gs, lines: list[str]) -> bool:
                     gs.hand = new_hand
                     needs_hand_rescan = True
             else:
-                # Mao do oponente: so contamos (sem posicoes)
                 opp_gs.hand = [c for c in (_get_card(c) for c in codes_list) if c]
             continue
 
@@ -331,7 +359,15 @@ def apply_log_delta(gs, opp_gs, lines: list[str]) -> bool:
         if m:
             name, raw = m.group(1), m.group(2)
             codes_list = _snap_codes(raw)
-            target_gs = gs if (_our_name and name == _our_name) else opp_gs
+            if name == "":
+                idx = _snap_anon_idx[0]
+                _snap_anon_idx[0] += 1
+                if _last_end_turn == "You":
+                    target_gs = gs if idx == 0 else opp_gs
+                else:
+                    target_gs = opp_gs if idx == 0 else gs
+            else:
+                target_gs = gs if name == _our_name else opp_gs
             new_field = []
             for code in codes_list:
                 card = _get_card(code)
@@ -347,15 +383,30 @@ def apply_log_delta(gs, opp_gs, lines: list[str]) -> bool:
         if m:
             name, raw = m.group(1), m.group(2)
             codes_list = _snap_codes(raw)
-            target_gs = gs if (_our_name and name == _our_name) else opp_gs
+            if name == "":
+                idx = _snap_anon_idx[0]
+                _snap_anon_idx[0] += 1
+                if _last_end_turn == "You":
+                    target_gs = gs if idx == 0 else opp_gs
+                else:
+                    target_gs = opp_gs if idx == 0 else gs
+            else:
+                target_gs = gs if name == _our_name else opp_gs
             target_gs.trash = [c for c in (_get_card(c) for c in codes_list) if c]
             continue
 
         m = _RE_SNAP_LIFE.match(line)
         if m:
             name, n = m.group(1), int(m.group(2))
-            target_gs = gs if (_our_name and name == _our_name) else opp_gs
-            # Ajusta tamanho da lista de vida sem alterar os objetos existentes
+            if name == "":
+                idx = _snap_anon_idx[0]
+                _snap_anon_idx[0] += 1
+                if _last_end_turn == "You":
+                    target_gs = gs if idx == 0 else opp_gs
+                else:
+                    target_gs = opp_gs if idx == 0 else gs
+            else:
+                target_gs = gs if name == _our_name else opp_gs
             while len(target_gs.life) > n:
                 target_gs.life.pop(0)
             while len(target_gs.life) < n:
@@ -365,6 +416,9 @@ def apply_log_delta(gs, opp_gs, lines: list[str]) -> bool:
         # --- Linhas de acao (formato legivel) ----------------------------------
         codes = _codes_from_log_line(line)
         # Detecta de quem e a linha: pelo nome registrado ou fallback texto
+        # Qualquer linha de acao reseta o contador de snapshots anonimos
+        _snap_anon_idx[0] = 0
+
         if _our_name:
             is_you = line.startswith(f'[{_our_name}]')
             is_opp = line.startswith(f'[{_opp_name}]') if _opp_name else (
@@ -372,6 +426,13 @@ def apply_log_delta(gs, opp_gs, lines: list[str]) -> bool:
         else:
             is_you = '[You]' in line or line.startswith('You')
             is_opp = '[Opponent]' in line or line.startswith('Opponent')
+
+        # Rastreia quem passou o turno (para ordenar proximos snapshots anonimos)
+        if 'End Turn' in line:
+            if '[You]' in line or (_our_name and f'[{_our_name}]' in line):
+                _last_end_turn = "You"
+            elif '[Opponent]' in line or (_opp_name and f'[{_opp_name}]' in line):
+                _last_end_turn = "Opponent"
 
         # -- Deploy (da mao) ---------------------------------------------------
         # Log.Deploy / Log.ActionDeploy — "Deploy CODE" (da mao)

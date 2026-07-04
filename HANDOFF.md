@@ -1,5 +1,30 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-03 (65) - Claude
+
+### Fix: suporte a Solo vs Self (log formato real do simulador)
+
+Análise do arquivo `.log` real revelou 3 problemas que impediam o bot de funcionar:
+
+**1. Regex de código de carta errada**
+Formato real: `["OP13-043">OP13-043]` — não `<link="...">` nem `[CODE]`.
+Fix: `_RE_CODE = re.compile(r'"([A-Z]{1,4}\d{2}-\d{3}[a-z]?)">')` — casa o formato real; fallback `_RE_CODE_BARE` mantido para compatibilidade.
+
+**2. Snapshots usam `[]` sem nome**
+Formato real: `[] Hand: [OP13-042,...]` — não `[You] Hand:`.
+Fix: `_RE_SNAP_*` agora aceita nome vazio `([^\]]*)`; lógica de atribuição usa `_snap_anon_idx` (contador por chamada) + `_last_end_turn` para determinar dono:
+- `_last_end_turn == "You"` → 1° bloco = bot (Opponent), 2° = opp (You)
+- `_last_end_turn == "Opponent"` ou `""` (game start) → 1° = opp (You), 2° = bot (Opponent)
+Counter reseta a cada linha de ação não-snapshot.
+
+**3. Detecção de nome no Solo vs Self**
+`_detect_names_from_log` sem `Has Connected` caía no fallback que retornava `You` como `_our_name` (errado — bot é Opponent/P2).
+Fix: se `You` e `Opponent` estão nos leaders sem `Has Connected` → retorna `("Opponent", "You")`.
+
+Globais adicionados: `_last_end_turn` (resetado em `_reset_log`), `global _last_end_turn` em `apply_log_delta`.
+
+---
+
 ## 2026-07-03 (64) - Claude
 
 ### CLAUDE.md atualizado: leitura de memórias obrigatória antes de cada commit
