@@ -25,6 +25,8 @@
 Fluxo de teste: `python BOT/engine_server/server.py` → abrir OPTCGSim → Solo vs Self.
 Log do plugin: `BepInEx\LogOutput.log`.
 
+Housekeeping: `BOT/.gitignore` criado (bin/obj do plugin fora do repo; tinham sido commitados por engano e foram removidos do tracking).
+
 ---
 
 ## 2026-07-03 (67) - Claude
