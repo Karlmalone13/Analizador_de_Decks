@@ -1,5 +1,39 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-04 (87) - Claude
+
+### Fixes da 2ª rodada de teste in-game (partida CombatLogs/2026-07-04T11.58.22.log)
+
+Teste in-game do bloco 86 validou: redirect do Teach 3x sem alvo original,
+personagens atacando, attach de DON pre-ataque funcionando (2/2 na Devon →
+9000 matou Arlong), evento com custo OK. 4 problemas novos corrigidos:
+
+1. **Engine cego a buffs/debuffs** (Devon -2000 do Krieg): o server usava o
+   poder do BANCO. Agora GameStateBuilder envia `CardPower(go, false, true)`
+   (poder vivo, sem When Attacking, sem DON — engine soma DON sozinho) e o
+   `_make` troca o CardData da instancia via `dataclasses.replace`.
+   **CUIDADO (bug ja cometido e corrigido aqui): NUNCA passar poder alterado
+   no dict para `_make_card` — o `_CARD_DATA_CACHE` e por codigo e o valor
+   envenena todas as copias futuras da carta, inclusive nas simulacoes.**
+2. **Lider parado em turno de 5 DON**: postura DEFENSIVE (-80) + risco de
+   trigger deixavam o ataque de lider validado com score -4 → bot passava o
+   turno sem atacar. Piso `max(score, 15)` p/ ataque de LIDER (ele resta de
+   qualquer forma, nao expoe personagem).
+3. **Teach 5000 vs Arlong 5000 falhou por counter de 1000**:
+   `don_needed_for_attack` agora poe margem de 1000 em alvos PERSONAGEM se o
+   oponente tem mao (no lider ja usava opp_counter_potential).
+4. **DON desperdicado no turno 1**: o `max(2, turn)` do `_dto_to_gs` fazia o
+   engine gerar ataque no turno 1; o plugin anexava o DON e SO ENTAO recusava
+   o ataque. Removido o hack (turno real; engine ja barra ataque em turn 1) e
+   o attach movido para DENTRO do TryAttack, depois de todas as validacoes.
+
+Validacao: TestClient (turno 1 → end_turn; Devon debufada nao ataca o Gin;
+donToAttach=2 com margem; lider defensivo ataca com score 15; cache do
+CardData intacto apos request com debuff), 3 simulacoes completas OK, plugin
+recompilado (0 erros). Falta: proxima partida in-game para confirmar.
+
+---
+
 ## 2026-07-04 (86) - Claude
 
 ### As 5 pendencias dos blocos 84/85 implementadas (falta testar in-game)
