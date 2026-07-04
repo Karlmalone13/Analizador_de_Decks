@@ -1,5 +1,30 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-04 (85) - Claude
+
+### Mais pendencias observadas em partidas (2ª e 3ª partidas completas)
+
+Partidas rodando de ponta a ponta com estabilidade (logs em CombatLogs/). Novas observacoes do usuario, somando as do bloco 84:
+
+3. **Search do "My Era...Begins!!" (OP09-096) sem escolha**: o evento resolve
+   mas o bot nao escolhe nenhuma carta na tela de search ("look at top X,
+   reveal and add"). As cartas reveladas ficam numa zona propria
+   (`lgo_TopDeck` no GLS) que NAO esta no `CollectTargetCandidates` — mesma
+   familia do bug do trash (bloco 84 item 2). Adicionar zonas top_deck/trash
+   aos candidatos + botoes de finalize (`FinalizeTopDeck`/`ConfirmRevealedCard`).
+
+4. **Bot so ataca com o lider (quase nunca com personagens)**: personagens
+   raramente atacam (Shiryu atacou 1x na 1ª partida, mas o padrao e so leader).
+   Investigar: `bSummonSick` pode nao estar sendo limpo na leitura do DTO
+   (justPlayed sempre true?) ou o engine esta descartando ataques de chars.
+
+5. **Bot ataca com poder menor** (ex: Teach 5000 vs Jozu 7000 → Attack Fails,
+   turno desperdicado): score de ataque do engine aceita ataques perdidos.
+   Revisar `score_attack_target` — ataque que falha sem forcar counter/blocker
+   do oponente nao deveria ter score positivo.
+
+---
+
 ## 2026-07-04 (84) - Claude
 
 ### 🎉 PRIMEIRA PARTIDA COMPLETA (Solo vs Self, bot 100% automatico)
