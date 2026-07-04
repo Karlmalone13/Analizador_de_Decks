@@ -1,5 +1,33 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-03 (66) - Claude
+
+### feat: BOT/ — arquitetura BepInEx para integrar engine diretamente no OPTCGSim
+
+Criada pasta `BOT/` com duas sub-partes:
+
+**`BOT/OPTCGBotPlugin/`** — plugin C# para BepInEx 5.x (Unity Mono)
+- `OPTCGBotPlugin.csproj` — projeto .NET 4.6, referencia BepInEx + DLLs do jogo
+- `Plugin.cs` — entrada BepInEx, inicia o servidor Python e aplica patches Harmony
+- `GameStateDto.cs` — DTOs para serializar estado do jogo em JSON
+- `GameStateBuilder.cs` — converte `PlayerState` (objetos Unity vivos) → `GameStateDto`
+- `EngineClient.cs` — cliente HTTP que chama `localhost:8765/decide`
+- `TurnPatch.cs` — `[HarmonyPatch] GameStateManager.AddTurn` → detecta turno P2, chama engine
+- `BotExecutor.cs` — traduz ação JSON do engine → chama `EndTurn_Internal`, `DeployCardFromHand`, `StartAttackInternal`
+- `EngineServer.cs` — inicia `server.py` como processo filho
+
+**`BOT/engine_server/server.py`** — FastAPI em `localhost:8765`
+- `GET /health` — verifica se server está vivo
+- `POST /decide` — recebe `GameStateDto`, converte para `GameState` do engine, chama `bridge.choose_action`, retorna `{type, cardId, targetId}`
+
+**Próximos passos:**
+1. Instalar BepInEx 5.x em `E:\Games\OnePieceSimulador\Builds_Windows\`
+2. Compilar o plugin: `dotnet build BOT/OPTCGBotPlugin/`
+3. Verificar nomes exatos dos campos de `LiveCard`, `PlayerState`, `GameplayLogicScript` — alguns podem diferir do decompilado (ex: `bJustPlayed`, `Lgo_MyHand`, `StartAttackInternal`)
+4. Testar com Solo vs Self
+
+---
+
 ## 2026-07-03 (65) - Claude
 
 ### Fix: suporte a Solo vs Self (log formato real do simulador)

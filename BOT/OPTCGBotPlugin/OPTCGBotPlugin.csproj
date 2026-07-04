@@ -1,0 +1,40 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net46</TargetFramework>
+    <AssemblyName>OPTCGBotPlugin</AssemblyName>
+    <RootNamespace>OPTCGBotPlugin</RootNamespace>
+    <Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Optimize>true</Optimize>
+    <!-- Copia o .dll final para a pasta de plugins do BepInEx automaticamente -->
+    <PostBuildEvent>xcopy /y "$(TargetPath)" "E:\Games\OnePieceSimulador\Builds_Windows\BepInEx\plugins\"</PostBuildEvent>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- BepInEx 5 + HarmonyX (via NuGet) -->
+    <PackageReference Include="BepInEx.Core" Version="5.4.23.2" />
+    <PackageReference Include="BepInEx.Harmony" Version="2.3.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- DLLs do jogo (nao distribuir, uso apenas local para compilar) -->
+    <Reference Include="Assembly-CSharp">
+      <HintPath>E:\Games\OnePieceSimulador\Builds_Windows\OPTCGSim_Data\Managed\Assembly-CSharp.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine">
+      <HintPath>E:\Games\OnePieceSimulador\Builds_Windows\OPTCGSim_Data\Managed\UnityEngine.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.CoreModule">
+      <HintPath>E:\Games\OnePieceSimulador\Builds_Windows\OPTCGSim_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>E:\Games\OnePieceSimulador\Builds_Windows\OPTCGSim_Data\Managed\Newtonsoft.Json.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+</Project>
