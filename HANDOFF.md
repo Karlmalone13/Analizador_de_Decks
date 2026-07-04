@@ -1,5 +1,31 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-04 (84) - Claude
+
+### 🎉 PRIMEIRA PARTIDA COMPLETA (Solo vs Self, bot 100% automatico)
+
+Partida inteira sem intervencao no lado do bot — log salvo em
+`CombatLogs/2026-07-04T02.30.14.log` (bot perdeu no turno 5, mas jogou tudo):
+- Mulligan, draw/don, deploys, EVENTS resolvendo (custo pago certo)
+- Ataques com alvo do engine; defesa: counters (2x Catarina Devon fizeram o
+  Ace de 6000 falhar contra 8000!), triggers, reacao do lider Teach com
+  redirect de alvo, deploy pos-combate — tudo decidido pelo engine
+
+**2 bugs observados na partida (proxima sessao):**
+1. **Reacao do Teach com alvo ruim/nulo**: linha 207 do log — redirecionou o
+   ataque para O PROPRIO TEACH (alvo original; pagou 1 carta por nada). Linha
+   405: redirecionou para Doc Q [0 power] que morreu (deu 1 draw pelo on-KO,
+   mas duvidoso). A decisao de USAR vem do should_use_counter, ok — mas o
+   ALVO do redirect precisa de logica propria no engine (redirecionar so se
+   existir personagem que sobrevive ao ataque ou que valha o sacrificio;
+   nunca redirecionar para o proprio alvo original).
+2. **Shiryu (OP16-108) on-play incompleto**: trashou da mao (custo ok) mas a
+   parte de escolher carta DO TRASH nao aconteceu — `CollectTargetCandidates`
+   nao inclui a zona TRASH (nem deck/vida). Adicionar own_trash/opp_trash
+   como zonas de candidato + ordenacao no order_target_candidates.
+
+---
+
 ## 2026-07-04 (83) - Claude
 
 ### docs: BOT/README.md com a arquitetura em camadas
