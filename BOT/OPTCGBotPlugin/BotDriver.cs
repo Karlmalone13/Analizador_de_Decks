@@ -21,6 +21,8 @@ namespace OPTCGBotPlugin
         private int   _actionsThisTurn;
         private int   _lastTurnSeen = -1;
         private int   _consecutiveFails;
+        private float _heartbeat;
+        private string _lastHeartbeatMsg = "";
 
         private void Update()
         {
@@ -35,6 +37,26 @@ namespace OPTCGBotPlugin
             {
                 _cooldown = 1f;
                 return;
+            }
+
+            // Heartbeat de diagnostico: loga o estado do jogo a cada 3s
+            // (so quando muda) para depurar travamentos
+            _heartbeat += Time.deltaTime;
+            if (_heartbeat >= 3f)
+            {
+                _heartbeat = 0f;
+                var botPsHb = gls.Lps_Players[BotPlayerIndex];
+                string msg = $"[HB] state={gls.e_CurrentState} turn={gls.gsv_CurrentGame.iPlayerTurn} " +
+                             $"action={gls.gsv_CurrentGame.iPlayerAction} aca={(gls.acaActive != null)} " +
+                             $"downside={BotExecutor.IsOfferingDownside(gls)} " +
+                             $"mine={(gls.acaActive != null && BotExecutor.PendingActionIsMine(gls, botPsHb))} " +
+                             $"actor={BotExecutor.ActorCode(gls) ?? "-"} " +
+                             $"oppResolving={gls.bOpponentResolving} forcing={gls.bForcingOpponentAction}";
+                if (msg != _lastHeartbeatMsg)
+                {
+                    _lastHeartbeatMsg = msg;
+                    Plugin.Log.LogInfo(msg);
+                }
             }
 
             // Mulligan da mao inicial: no SoloVSelf cada lado decide em sequencia,
