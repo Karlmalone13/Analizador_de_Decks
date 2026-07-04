@@ -271,7 +271,8 @@ def choose_target(req: ChooseTargetRequest):
             gs, opp_gs,
             [{"id": c.id, "zone": c.zone, "code": c.code} for c in req.candidates],
             attacker_power=req.attackerPower,
-            defender_uid=req.defenderId)
+            defender_uid=req.defenderId,
+            actor_code=req.actorCode)
         print(f"[TGT] {len(req.candidates)} candidatos (actor={req.actorCode} "
               f"atk={req.attackerPower} def={req.defenderId}) -> ordem {out[:5]}", flush=True)
         return {"orderedIds": out}

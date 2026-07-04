@@ -1,5 +1,33 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-04 (92) - Claude
+
+### Varredura de consciencia de efeito no engine (pedido do usuario)
+
+Auditoria dos pontos de decisao: char_value_score, should_use_blocker,
+avaliar_carta e o branch de personagem do score_attack_target JA eram
+effect-aware. 3 pontos cegos corrigidos:
+
+1. **Alvo do copy-power (Devon OP16-104)**: `/choose_target` agora passa
+   `actorCode` ao `order_target_candidates`; se o ator tem when_attacking
+   `set_base_power` de `selected_opp_character`, opp_board ordena por
+   MAIOR PODER (copiar o maior), nao por valor generico.
+2. **Remocao de personagem do oponente**: opp_board ordena por
+   `char_value_score - on_ko_value` — KO-zar personagem com on-KO rico
+   presenteia o efeito ao oponente (o Doc Q DELES cai pro fim da fila).
+3. **Pitch de counter** (`select_counter_cards`): empate no valor de
+   counter desempata por `avaliar_carta` — nao joga fora carta com efeito
+   bom junto com o counter (validado: pitchou Van Augur 135, guardou
+   Shiryu 195).
+
+Pontos cegos CONHECIDOS e nao corrigidos (baixo impacto, proxima leva):
+- `should_use_counter` nao conta eventos [Counter] da mao (so card.counter);
+- fallbacks raros de prompt usam choose_highest_board_value (so keywords).
+
+So Python — reiniciar o server antes da proxima partida.
+
+---
+
 ## 2026-07-04 (91) - Claude
 
 ### Redirect CASO A CASO por ganho liquido (refina o bloco 90)

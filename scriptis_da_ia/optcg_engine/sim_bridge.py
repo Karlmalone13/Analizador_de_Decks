@@ -371,7 +371,10 @@ def select_counter_cards(gs: GameState, atk_power: int, def_power: int) -> list[
     if not engine.should_use_counter(atk_power, def_power):
         return []
     needed = atk_power - def_power + 1
-    counters = sorted([c for c in gs.hand if c.counter > 0], key=lambda c: c.counter)
+    # menor counter primeiro; empate = pitcha a carta de MENOR valor
+    # situacional (nao jogar fora efeito bom junto com o counter)
+    counters = sorted([c for c in gs.hand if c.counter > 0],
+                      key=lambda c: (c.counter, engine.avaliar_carta(c)))
     total, ids = 0, []
     for c in counters:
         if total >= needed:
@@ -458,7 +461,8 @@ def resolve_optional_effect(gs: GameState, opp_gs: GameState) -> bool:
 def order_target_candidates(gs: GameState, opp_gs: GameState,
                             candidates: list[dict],
                             attacker_power: int = 0,
-                            defender_uid: int = 0) -> list[int]:
+                            defender_uid: int = 0,
+                            actor_code: str | None = None) -> list[int]:
     """
     Ordena candidatos de alvo de um efeito pendente por preferencia.
     candidates: [{'id': uid, 'zone': 'own_hand'|'own_board'|'top_deck'|...,
@@ -501,12 +505,24 @@ def order_target_candidates(gs: GameState, opp_gs: GameState,
         return card
 
     from optcg_engine.decision_engine import (redirect_option_value,
-                                              life_redirect_cost)
+                                              life_redirect_cost,
+                                              get_card_effects, on_ko_value)
 
     # Redirect: o alvo original e um personagem NOSSO? (lider como escape)
     defender_is_own_char = (
         attacker_power > 0 and defender_uid
         and any(getattr(c, '_deck_uid', 0) == defender_uid for c in gs.field_chars))
+
+    # O efeito resolvendo e um COPY-POWER (ex: Devon OP16-104: "base power
+    # becomes the same as the selected Character's")? Entao o alvo certo no
+    # campo do oponente e o de MAIOR PODER, nao o de maior valor.
+    actor_copia_poder = False
+    if actor_code:
+        wa = get_card_effects(actor_code).get('when_attacking', {})
+        actor_copia_poder = any(
+            s.get('action') == 'set_base_power'
+            and s.get('source') == 'selected_opp_character'
+            for s in wa.get('steps', []))
 
     def sort_key(cand: dict):
         card = card_of(cand)
@@ -535,7 +551,14 @@ def order_target_candidates(gs: GameState, opp_gs: GameState,
                 return (3, life_redirect_cost(gs.life_count()), 0)
             return (6, 0, 0)
         if zone == 'opp_board':
-            return (4, -(engine.analyzer.char_value_score(card) if card else 0))
+            if actor_copia_poder:
+                # copy-power: maior poder = maior ataque copiado
+                return (4, -(getattr(card, 'power', 0) if card else 0))
+            # remocao: valor do alvo DESCONTADO do on-KO dele (KO-zar um
+            # personagem com on-KO rico presenteia o efeito ao oponente)
+            valor = engine.analyzer.char_value_score(card) if card else 0
+            ko_deles = on_ko_value(card.code, gs) if card else 0
+            return (4, -(valor - ko_deles))
         if zone == 'opp_trash':
             return (5, -(engine.avaliar_carta(card) if card else 0))
         return (6, 0)
