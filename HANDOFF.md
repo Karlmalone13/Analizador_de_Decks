@@ -1,5 +1,23 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-04 (78) - Claude
+
+### fix grave: bot pagava DON de EVENT sem efeito + heartbeat de debug
+
+Usuario reportou: bot "jogou" 2x o evento My Era...Begins!! (OP09-096) — DON pago, sem log no jogo, sem carta no trash, carta continuou na mao.
+
+**Causa**: `TryPlay` clicava `Deploy` para qualquer carta. `Deploy()` roda `TapDon(custo)` INCONDICIONALMENTE e depois so tem branch para Character/Stage — para EVENT: paga o DON e nao faz nada.
+
+**Fluxo correto de EVENT** (decompilado): clique na carta → `EventFindPossibleActions` seta `go_PendingChoice` e adiciona botoes **CardAction** (um por acao, extra = indice) → clique no CardAction → `ActivateCardAction(idx)` → evento vira acaActive, custo pago pelo pipeline da acao.
+
+**Fix**: `TryPlay` agora detecta `cardDef.cardType == CardType.Event` e clica `ChoiceButtonClicked(CardAction, idx)` com o indice da primeira acao ativavel (replica a busca do EventFindPossibleActions: V3 `proc.ActivateMain && CanActivateAction(i)` primeiro, old-style `actionTrigger.ActivateMain` depois). Sem acao ativavel → Cancel.
+
+**Debug**: heartbeat no BotDriver loga estado do jogo a cada 3s (state/turn/action/aca/downside/mine/actor) quando muda — para diagnosticar o travamento do prompt do Teach que continua silencioso (handlers novos na dll confirmados, mas nada logado; proximo teste com heartbeat vai revelar).
+
+Teach: efeito e ANTES do dano (reacao ao ataque), nao depois — corrigido o entendimento.
+
+---
+
 ## 2026-07-04 (77) - Claude
 
 ### fix: prompt "Select 1 Cards to Trash" era downside offer (bOfferingDownside)

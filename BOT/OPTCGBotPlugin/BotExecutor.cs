@@ -217,7 +217,7 @@ namespace OPTCGBotPlugin
             }
 
             // Caminho do clique humano: seleciona a carta (o jogo valida custo
-            // e adiciona a opcao Deploy + seta go_PendingChoice)...
+            // e adiciona as opcoes + seta go_PendingChoice)...
             _mClickDuringAction.Invoke(gls, new object[] { go });
 
             // ...e confirma se o jogo aceitou a selecao
@@ -226,6 +226,36 @@ namespace OPTCGBotPlugin
             {
                 Plugin.Log.LogWarning($"[Bot] play: jogo recusou {CodeOf(go)} (custo? restricao?)");
                 return false;
+            }
+
+            var cls = go.GetComponent<CardLogicScript>();
+            bool isEvent = cls != null && cls.myCard.cardDef != null
+                        && cls.myCard.cardDef.cardType == CardType.Event;
+
+            if (isEvent)
+            {
+                // EVENT nao usa Deploy (Deploy() pagaria o DON sem efeito!).
+                // O clique adicionou botoes CardAction — replica a busca do
+                // indice da primeira acao ativavel (EventFindPossibleActions).
+                int idx = -1;
+                var v3 = cls!.V3Actions(false);
+                for (int i = 0; i < v3.Count; i++)
+                    if (v3[i].proc.ActivateMain && cls.CanActivateAction(i)) { idx = i; break; }
+                if (idx < 0)
+                {
+                    var cas = cls.GetCardActions();
+                    for (int j = 0; j < cas.Count; j++)
+                        if (cas[j].actionTrigger.ActivateMain) { idx = j; break; }
+                }
+                if (idx < 0)
+                {
+                    Plugin.Log.LogWarning($"[Bot] play: evento {CodeOf(go)} sem acao ativavel — cancel");
+                    gls.ChoiceButtonClicked(ButtonChoiceType.Cancel, -1);
+                    return false;
+                }
+                gls.ChoiceButtonClicked(ButtonChoiceType.CardAction, idx);
+                Plugin.Log.LogInfo($"[Bot] play EVENT: {CodeOf(go)} (acao {idx})");
+                return true;
             }
 
             gls.ChoiceButtonClicked(ButtonChoiceType.Deploy, -1);
