@@ -29,9 +29,9 @@ namespace OPTCGBotPlugin
 
         public static void RunTurn(GameplayLogicScript gls, GameStateDto dto)
         {
-            // P2 = indice 1 nos arrays internos do GLS
-            PlayerState botPs = gls.Lps_Players[1];
-            PlayerState oppPs = gls.Lps_Players[0];
+            // Bot = lado de baixo (ver AddTurnPatch.BotPlayerIndex)
+            PlayerState botPs = gls.Lps_Players[AddTurnPatch.BotPlayerIndex];
+            PlayerState oppPs = gls.Lps_Players[1 - AddTurnPatch.BotPlayerIndex];
 
             for (int i = 0; i < MAX_ACTIONS; i++)
             {

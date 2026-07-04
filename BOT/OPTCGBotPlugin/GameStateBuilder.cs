@@ -10,13 +10,13 @@ namespace OPTCGBotPlugin
     //   PlayerState: Lgo_MyHand, Lgo_MyDeploy, Lgo_MyLifeDeck, Lgo_MyLeader, Lgo_MyDonCostArea
     public static class GameStateBuilder
     {
-        public static GameStateDto Build(PlayerState p1, PlayerState p2, GameplayLogicScript gls)
+        public static GameStateDto Build(PlayerState botPs, PlayerState oppPs, GameplayLogicScript gls)
         {
             return new GameStateDto
             {
                 turnNumber = gls.gsv_CurrentGame.iTurnNumber,
-                bot = BuildPlayer(p2),   // bot = P2
-                opp = BuildPlayer(p1),   // oponente = P1
+                bot = BuildPlayer(botPs),
+                opp = BuildPlayer(oppPs),
             };
         }
 

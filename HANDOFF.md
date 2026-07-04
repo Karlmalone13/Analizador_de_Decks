@@ -1,5 +1,26 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-03 (69) - Claude
+
+### fix(BOT): lados dos jogadores corrigidos no plugin
+
+Usuario questionou "como sabe que o P1 e o topo?" — auditoria no decompilado revelou que o plugin estava INVERTIDO:
+
+- `GameStartSolo()`: `LoadMyDeck(Lps_Players[0])` / `LoadEnemyDeck(Lps_Players[1])`
+- **Lps_Players[0] = "You" = lado de BAIXO** (orientacao normal na tela)
+- **Lps_Players[1] = "Opponent" = lado de CIMA** (cartas invertidas)
+- `AddTurn(..., isPlayer1TurnStarting = CurrentPlayer() == Lps_Players[0])`
+
+O plugin agia quando `isPlayer1TurnStarting == false` (= turno do lado de CIMA). Corrigido: bot agora e o **player 0 (baixo, [You])** — igual sera no multiplayer (lado local = baixo). Constante `AddTurnPatch.BotPlayerIndex = 0` centraliza a escolha; `GameStateBuilder.Build(botPs, oppPs, gls)` recebe os lados explicitos; `BotExecutor` usa o indice.
+
+Nota: no Solo vs Self o humano joga o lado de CIMA ([Opponent]) e o bot responde pelo de baixo. Os snapshots do bot antigo (bot_optcgsim.py OCR) assumiam bot = [Opponent] — o bot OCR e o plugin usam convencoes OPOSTAS; nao misturar.
+
+Recompilado com sucesso, dll atualizada em BepInEx\plugins.
+
+Limitacao conhecida: `AddTurn` so dispara apos o primeiro `EndTurn` — se o bot (player 0) comecar a partida, ele nao age no turno 1 (o humano precisa passar o primeiro turno dele para destravar o fluxo). Resolver depois se incomodar.
+
+---
+
 ## 2026-07-03 (68) - Claude
 
 ### BOT compilado + servidor testado de ponta a ponta
