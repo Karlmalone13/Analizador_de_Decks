@@ -1,5 +1,17 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-04 (77) - Claude
+
+### fix: prompt "Select 1 Cards to Trash" era downside offer (bOfferingDownside)
+
+Bot travou de novo no efeito do lider Teach. Log do BepInEx: silencio apos "no blocker" — o handler de acaActive nem rodava, porque o prompt e uma **oferta de downside cost** (`bOfferingDownside = true`, linha 30794 do GLS): efeito opcional com custo (trash 1 carta) mostra botoes **Cancel / UseOnPlay** e IGNORA cliques em cartas ate decidir. Meu branch excluia exatamente esse caso.
+
+Fix no `BotDriver`: quando `acaActive != null && bOfferingDownside && efeito e do bot` → decide usar (mao >= 2 cartas → `UseOnPlay`; V3 → `UseV3OnPlay`) ou `Cancel`. Depois do UseOnPlay o jogo zera bOfferingDownside e a selecao do custo (trash) cai no `HandlePendingAction` normal (engine escolhe a pior carta).
+
+Heuristica MVP do "usar ou nao": mao >= 2 cartas. Refinar depois com decisao do engine se necessario.
+
+---
+
 ## 2026-07-04 (76) - Claude
 
 ### Teste de defesa in-game + 2 fixes: crash do trigger e prompts de efeito

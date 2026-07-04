@@ -54,11 +54,28 @@ namespace OPTCGBotPlugin
                 return;
             }
 
-            // Efeito pendente pedindo alvo (On Play do bot, efeito do lider ao
-            // tomar dano, etc.) — vale nos DOIS turnos
-            if (gls.acaActive != null && !gls.bOpponentResolving && !gls.bForcingOpponentAction
-                && !BotExecutor.IsOfferingDownside(gls))
+            // Efeito pendente (On Play do bot, efeito do lider ao tomar dano,
+            // etc.) — vale nos DOIS turnos
+            if (gls.acaActive != null && !gls.bOpponentResolving && !gls.bForcingOpponentAction)
             {
+                // Oferta de "downside cost" (ex: Teach — trash 1 carta para usar
+                // o efeito): botoes Cancel / UseOnPlay; cliques em cartas sao
+                // ignorados ate decidir. Usa se tiver carta sobrando pro custo.
+                if (BotExecutor.IsOfferingDownside(gls))
+                {
+                    var dsBotPs = gls.Lps_Players[BotPlayerIndex];
+                    if (BotExecutor.PendingActionIsMine(gls, dsBotPs))
+                    {
+                        bool use = dsBotPs.Lgo_MyHand != null && dsBotPs.Lgo_MyHand.Count >= 2;
+                        var btn = !use ? ButtonChoiceType.Cancel
+                                : gls.acaActive.UsesV3() ? ButtonChoiceType.UseV3OnPlay
+                                : ButtonChoiceType.UseOnPlay;
+                        Plugin.Log.LogInfo($"[Bot] downside offer: {(use ? "USAR efeito" : "Cancel")}");
+                        gls.ChoiceButtonClicked(btn, -1);
+                        _cooldown = 1f;
+                    }
+                    return;
+                }
                 HandlePendingAction(gls);
                 return;
             }
