@@ -1,5 +1,13 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-04 (83) - Claude
+
+### docs: BOT/README.md com a arquitetura em camadas
+
+Criado `BOT/README.md`: diagrama Plugin C# → server.py → sim_bridge.py → decision_engine.py (regra do motor unico), como rodar, como recompilar, tabela de endpoints, cobertura atual e pendencias.
+
+---
+
 ## 2026-07-04 (82) - Claude
 
 ### Hook pre-commit: regras de memoria impressas em todo commit
