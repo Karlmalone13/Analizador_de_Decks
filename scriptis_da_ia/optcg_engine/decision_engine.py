@@ -789,13 +789,22 @@ def can_afford_attack_paywall(card: 'Card', owner: 'GameState') -> bool:
 
 
 def don_needed_for_attack(attacker: 'Card', ttype: str, tgt: 'Optional[Card]',
-                          p: 'GameState', opp: 'GameState', engine) -> int:
+                          p: 'GameState', opp: 'GameState', engine,
+                          don_livre: 'Optional[int]' = None) -> int:
     """
-    Quantos DON anexar ao atacante para este ataque passar (0 = nenhum).
-    Considera o COUNTER provável do oponente em ataques ao líder (alinha com
-    score_attack_target): anexa para superar alvo + counter estimado, limitado
-    ao DON disponível. Função pura — quem anexa de fato é o chamador
-    (_attach_don_for_attack na simulação; o plugin do bot via /decide).
+    Quantos DON anexar ao atacante para este ataque (0 = nenhum). Função pura
+    — quem anexa de fato é o chamador (_attach_don_for_attack na simulação;
+    o plugin do bot via /decide). Duas parcelas distintas:
+
+    1. DÉFICIT BASE (alvo - poder): obrigatório. Sem ele o ataque é
+       matematicamente perdido — nunca declarar sem cobrir.
+    2. MARGEM DE COUNTER (counter provável do oponente): LUXO. Atacar "seco"
+       no empate (5000 vs 5000) é jogada legítima de pressão — força o
+       oponente a escolher entre gastar counter/blocker ou perder a carta /
+       tomar o dano (regra do usuário, 04/07/2026). A margem só é paga com
+       `don_livre`: DON que o plano do turno deixaria OCIOSO depois das
+       jogadas pretendidas e da reserva de defesa. don_livre=None mantém o
+       comportamento antigo (margem limitada só pelo DON disponível).
     """
     if p.don_available <= 0:
         return 0
@@ -804,17 +813,27 @@ def don_needed_for_attack(attacker: 'Card', ttype: str, tgt: 'Optional[Card]',
     else:
         alvo_power = tgt.power if tgt else 0
     atk = attacker.effective_power(True)
+
+    falta_base = alvo_power - atk
+    need_base = (falta_base + 999) // 1000 if falta_base > 0 else 0
+    if need_base >= p.don_available:
+        return min(p.don_available, need_base)
+
     if ttype == 'leader':
         counter_prov = engine.analyzer.opp_counter_potential()
     else:
-        # Alvo personagem: o oponente costuma pagar 1 counter barato para
-        # salvar a carta (visto em partida real: Teach 5000 vs Arlong 5000
-        # falhou por um counter de 1000). 1000 de margem se ele tem mão.
+        # Alvo personagem: 1 counter barato salva a carta (visto em partida
+        # real: Teach 5000 vs Arlong 5000 falhou por um counter de 1000).
         counter_prov = 1000 if opp.hand else 0
-    falta = alvo_power + counter_prov - atk
-    if falta <= 0:
-        return 0
-    return min(p.don_available, (falta + 999) // 1000)
+    need_margem = (counter_prov + 999) // 1000
+
+    if don_livre is None:
+        don_livre = p.don_available
+    # O deficit base deste ataque tambem e gasto OBRIGATORIO do plano —
+    # desconta antes de liberar margem (senao a margem rouba DON do plano)
+    livre_para_margem = max(0, min(don_livre - need_base,
+                                   p.don_available - need_base))
+    return need_base + min(need_margem, livre_para_margem)
 
 
 def remove_by_identity(lst: list, obj) -> bool:

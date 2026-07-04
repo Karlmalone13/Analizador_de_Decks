@@ -1,5 +1,29 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-04 (88) - Claude
+
+### Margem de counter virou LUXO — ataque "seco" de pressao (regra do usuario)
+
+Refinamento do item 3 do bloco 87. Atacar 5000 vs 5000 SEM don e jogada
+legitima: forca o oponente a escolher entre gastar counter/blocker ou perder
+a carta/tomar dano. `don_needed_for_attack` agora separa duas parcelas:
+- **Deficit base** (alvo - poder): obrigatorio, sempre anexado.
+- **Margem de counter**: so paga com DON LIVRE do plano do turno —
+  `don_available - jogadas que o engine ainda pretende fazer (plays com
+  score >= 0, em ordem, enquanto o don alcanca) - reserva de defesa
+  (_don_reserve_for_defense) - o proprio deficit base`.
+
+`sim_bridge.don_for_attack(gs, opp, action, match=...)` calcula o don livre
+(match da acesso ao plano); `/decide` passa o match. Simulacao continua com
+don_livre=None (comportamento identico ao anterior — verificado).
+
+Cenarios validados (TestClient + unit): plano cheio → so o base (probe seco
+no 5000v5000); don ocioso → base + margem; margem 0 quando o oponente nao
+tem counter potencial (correto, nao e bug). 3 simulacoes completas OK.
+So Python — dll do bloco 87 continua valida, mas reiniciar o server.
+
+---
+
 ## 2026-07-04 (87) - Claude
 
 ### Fixes da 2ª rodada de teste in-game (partida CombatLogs/2026-07-04T11.58.22.log)

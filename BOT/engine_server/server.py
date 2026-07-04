@@ -335,9 +335,10 @@ def decide(state: GameStateDto):
                     return {"type": "end_turn", "cardId": 0, "targetId": 0, "donToAttach": 0}
             # ttype == 'leader' -> targetId = 0 (lider oponente)
 
-            # DON a anexar ANTES de declarar (mesma conta da simulacao —
-            # sem isso o ataque que o engine aprovou "com DON" sai pelado e falha)
-            don_attach = bridge.don_for_attack(gs, opp_gs, action)
+            # DON a anexar ANTES de declarar. Deficit base sempre; margem de
+            # counter so com DON ocioso no plano do turno (match da acesso as
+            # jogadas planejadas + reserva de defesa)
+            don_attach = bridge.don_for_attack(gs, opp_gs, action, match=match)
 
         elif action_type == "attach_don" and len(action) > 3:
             card = action[2]
