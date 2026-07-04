@@ -37,6 +37,23 @@ namespace OPTCGBotPlugin
                 return;
             }
 
+            // Mulligan da mao inicial: no SoloVSelf cada lado decide em sequencia,
+            // controlado por iPlayerAction (CurrentPlayer = Lps_Players[iPlayerAction])
+            if (gls.e_CurrentState == GameplayState.Start_WaitOnMulliganChoice)
+            {
+                if (gls.gsv_CurrentGame.iPlayerAction == BotPlayerIndex)
+                {
+                    var mulBotPs = gls.Lps_Players[BotPlayerIndex];
+                    var mulDto = GameStateBuilder.Build(mulBotPs, gls.Lps_Players[1 - BotPlayerIndex], gls);
+                    bool mull = EngineClient.IsAlive() && EngineClient.ShouldMulligan(mulDto.bot.hand);
+                    Plugin.Log.LogInfo($"[Bot] mao inicial: {(mull ? "MULLIGAN" : "KEEP")}");
+                    gls.ChoiceButtonClicked(
+                        mull ? ButtonChoiceType.StartingHand_Mulligan : ButtonChoiceType.StartingHand_Keep, -1);
+                    _cooldown = 1f;
+                }
+                return;
+            }
+
             // So age no turno do bot
             if (gls.gsv_CurrentGame.iPlayerTurn != BotPlayerIndex)
                 return;

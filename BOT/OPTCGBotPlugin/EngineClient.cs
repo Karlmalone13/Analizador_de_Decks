@@ -44,5 +44,34 @@ namespace OPTCGBotPlugin
             }
             catch { return false; }
         }
+
+        private class MulliganResponse
+        {
+            public bool mulligan;
+            public string reason = "";
+        }
+
+        // true = trocar a mao; false = manter (default seguro em erro)
+        public static bool ShouldMulligan(System.Collections.Generic.List<CardDto> hand)
+        {
+            try
+            {
+                string json = JsonConvert.SerializeObject(new { hand });
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+                var resp = _http.PostAsync($"{BASE}/mulligan", content).GetAwaiter().GetResult();
+                if (!resp.IsSuccessStatusCode)
+                    return false;
+                string body = resp.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+                var r = JsonConvert.DeserializeObject<MulliganResponse>(body);
+                if (r != null)
+                    Plugin.Log.LogInfo($"[Bot] mulligan={r.mulligan} ({r.reason})");
+                return r?.mulligan ?? false;
+            }
+            catch (Exception ex)
+            {
+                Plugin.Log.LogError($"[EngineClient] mulligan: {ex.Message}");
+                return false;
+            }
+        }
     }
 }

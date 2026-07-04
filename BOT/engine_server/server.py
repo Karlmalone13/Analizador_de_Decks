@@ -130,9 +130,32 @@ def _dto_to_gs(player: PlayerDto, turn: int):
 
 # ── Endpoints ─────────────────────────────────────────────────────────────────
 
+class MulliganRequest(BaseModel):
+    hand: list[CardDto] = []
+
+
 @app.get("/health")
 def health():
     return {"status": "ok"}
+
+
+@app.post("/mulligan")
+def mulligan(req: MulliganRequest):
+    """
+    Decide mulligan da mao inicial usando o engine (_mulligan_decision).
+    Resposta: {"mulligan": bool, "reason": str}
+    """
+    try:
+        match = _get_match()
+        hand_cards = [c for c in (_make(d) for d in req.hand) if c]
+        if not hand_cards:
+            return {"mulligan": False, "reason": "mao vazia/desconhecida — keep"}
+        deve_trocar, resumo = match._mulligan_decision(hand_cards, deck=None)
+        return {"mulligan": bool(deve_trocar), "reason": resumo}
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return {"mulligan": False, "reason": f"erro: {e} — keep por seguranca"}
 
 
 @app.post("/decide")

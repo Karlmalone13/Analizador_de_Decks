@@ -1,5 +1,21 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-04 (73) - Claude
+
+### feat: mulligan automatico decidido pelo engine
+
+Teste anterior confirmou: draw/don/end turn automaticos OK. Faltava a decisao de mao inicial.
+
+Fluxo do SoloVSelf no decompilado: `OfferMulligan` → `Start_WaitOnMulliganChoice`; cada lado decide EM SEQUENCIA, controlado por `iPlayerAction` (`CurrentPlayer() = Lps_Players[iPlayerAction]`); apos cada Keep/Mulligan o jogo alterna `iPlayerAction` e re-oferece para o outro lado.
+
+- `server.py`: novo `POST /mulligan` — recebe a mao, chama `match._mulligan_decision(hand, deck=None)` do engine (avalia curva T1/T2/T3, searcher, ramp, counters), retorna `{mulligan, reason}`. Testado: responde com motivo ("curva ok (T1:s T2:s T3:s); tem searcher").
+- `EngineClient.ShouldMulligan(hand)` no plugin (default keep em erro).
+- `BotDriver`: em `Start_WaitOnMulliganChoice`, se `iPlayerAction == BotPlayerIndex`, decide e clica `StartingHand_Keep`/`StartingHand_Mulligan`.
+
+**IMPORTANTE para o teste**: reiniciar o servidor Python (Ctrl+C e rodar de novo) — o processo antigo nao tem o endpoint /mulligan. E reabrir o jogo (dll nova).
+
+---
+
 ## 2026-07-04 (72) - Claude
 
 ### fix: auto Draw Card/Don usava estados errados
