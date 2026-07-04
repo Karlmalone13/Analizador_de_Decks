@@ -1,5 +1,30 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-04 (91) - Claude
+
+### Redirect CASO A CASO por ganho liquido (refina o bloco 90)
+
+Usuario corrigiu a prioridade fixa do bloco 90 ("sobrevivente primeiro"):
+as vezes QUEREMOS o on-KO (Doc Q) mesmo com sobrevivente disponivel. Agora
+cada opcao e pontuada pelo ganho liquido no campo atual e comparada:
+- `redirect_option_value(card, atk, opp, engine)`: sobrevive = 0;
+  morre = on_ko_value - char_value_score (Doc Q = +55 → vem ANTES de
+  sobrevivente; sem chars do oponente o on-KO de KO vale 0 e ele cai).
+- `life_redirect_cost(life)`: 15/25/45/90 p/ vida 4+/3/2/1 — o lider
+  compete de igual (golpe em personagem → lider pode ser o melhor escape).
+- `resolve_reaction`: reage se max(opcoes) + [valor salvo no alvo original]
+  >= 25 (custo de 1 carta). Vida 4 + Doc Q → reage (troca paga); so
+  sobrevivente → precisa vida <= 3; guardas de mao mantidas.
+- `order_target_candidates` usa a MESMA conta (fonte unica) — nada de
+  grupos fixos.
+
+Testes: Doc Q antes de sobrevivente; lider antes de sacrificio seco; sem
+chars do opp o sobrevivente volta a frente; reage com vida cheia so quando
+a troca paga. 2 simulacoes OK. So Python — reiniciar o server (dll do 90
+continua valida).
+
+---
+
 ## 2026-07-04 (90) - Claude
 
 ### Redirect do Teach EFFECT-AWARE (regra do usuario)

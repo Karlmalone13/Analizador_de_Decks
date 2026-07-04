@@ -818,6 +818,31 @@ def on_ko_value(code: str, opp: 'Optional[GameState]' = None) -> float:
     return total
 
 
+def redirect_option_value(card: 'Card', atk_power: int,
+                          opp: 'GameState', engine) -> float:
+    """
+    Valor LIQUIDO de redirecionar um ataque inimigo para `card` (personagem
+    nosso), avaliado caso a caso no campo atual (regra do usuario):
+    - sobrevive (poder > atacante): 0 — nada perdido, golpe anulado;
+    - morre: on_ko_value - valor da carta. Um Doc Q (on-KO 75, valor ~20)
+      da +55: MELHOR que um sobrevivente, porque QUEREMOS o efeito dele.
+    """
+    if card.power > atk_power:
+        return 0.0
+    return on_ko_value(card.code, opp) - engine.analyzer.char_value_score(card)
+
+
+def life_redirect_cost(life_count: int) -> float:
+    """
+    Custo de deixar o golpe (ou mandar o golpe) na VIDA do lider, na mesma
+    escala de char_value_score/on_ko_value. Vida alta = barato; cada vida a
+    menos pesa mais.
+    """
+    if life_count >= 4:
+        return 15.0
+    return {3: 25.0, 2: 45.0, 1: 90.0}.get(life_count, 90.0)
+
+
 def attack_time_power(attacker: 'Card', opp: 'GameState') -> int:
     """
     Poder do atacante NO MOMENTO do ataque: effective_power + buffs próprios
