@@ -15,12 +15,12 @@ namespace OPTCGBotPlugin
             return new GameStateDto
             {
                 turnNumber = gls.gsv_CurrentGame.iTurnNumber,
-                bot = BuildPlayer(botPs),
-                opp = BuildPlayer(oppPs),
+                bot = BuildPlayer(botPs, gls),
+                opp = BuildPlayer(oppPs, gls),
             };
         }
 
-        private static PlayerDto BuildPlayer(PlayerState ps)
+        private static PlayerDto BuildPlayer(PlayerState ps, GameplayLogicScript gls)
         {
             var dto = new PlayerDto();
             CountDon(ps, out dto.activeDon, out dto.restedDon);
@@ -30,7 +30,7 @@ namespace OPTCGBotPlugin
             {
                 var cls = go != null ? go.GetComponent<CardLogicScript>() : null;
                 if (cls != null)
-                    dto.hand.Add(CardToDto(cls));
+                    dto.hand.Add(CardToDto(cls, go, gls));
             }
 
             // Campo (personagens em jogo = deploy area)
@@ -38,7 +38,7 @@ namespace OPTCGBotPlugin
             {
                 var cls = go != null ? go.GetComponent<CardLogicScript>() : null;
                 if (cls != null)
-                    dto.board.Add(CardToDto(cls));
+                    dto.board.Add(CardToDto(cls, go, gls));
             }
 
             // Vida
@@ -46,15 +46,16 @@ namespace OPTCGBotPlugin
             {
                 var cls = go != null ? go.GetComponent<CardLogicScript>() : null;
                 if (cls != null)
-                    dto.life.Add(CardToDto(cls));
+                    dto.life.Add(CardToDto(cls, go, gls));
             }
 
             // Lider
             if (ps.Lgo_MyLeader != null && ps.Lgo_MyLeader.Count > 0 && ps.Lgo_MyLeader[0] != null)
             {
-                var cls = ps.Lgo_MyLeader[0].GetComponent<CardLogicScript>();
+                var goLeader = ps.Lgo_MyLeader[0];
+                var cls = goLeader.GetComponent<CardLogicScript>();
                 if (cls != null)
-                    dto.leader = CardToDto(cls);
+                    dto.leader = CardToDto(cls, goLeader, gls);
             }
 
             return dto;
@@ -62,14 +63,20 @@ namespace OPTCGBotPlugin
 
         // LiveCard e struct — recebemos uma copia, leitura apenas.
         // Recebe o CardLogicScript inteiro porque lgo_AttachedDon vive nele.
-        private static CardDto CardToDto(CardLogicScript cls)
+        // power = poder ATUAL via CardPower do jogo (inclui buffs/debuffs e
+        // passivas de campo, ex: -2000 do Krieg — invisiveis no myCard.cardPower),
+        // sem contar When Attacking nem DON anexado (o engine soma o DON sozinho).
+        private static CardDto CardToDto(CardLogicScript cls, GameObject go, GameplayLogicScript gls)
         {
             var card = cls.myCard;
+            int power;
+            try { power = gls.CardPower(go, false, true); }
+            catch { power = card.cardPower; }
             return new CardDto
             {
                 code         = card.cardDef != null ? card.cardDef.cardID : "",
                 cost         = card.cardDef != null ? card.cardDef.cardCost : 0,
-                power        = card.cardPower,
+                power        = power,
                 rested       = card.bTapped,
                 justPlayed   = card.bSummonSick,
                 deckUniqueId = card.deckUniqueID,
@@ -92,4 +99,5 @@ namespace OPTCGBotPlugin
         }
     }
 }
+
 

@@ -804,7 +804,13 @@ def don_needed_for_attack(attacker: 'Card', ttype: str, tgt: 'Optional[Card]',
     else:
         alvo_power = tgt.power if tgt else 0
     atk = attacker.effective_power(True)
-    counter_prov = engine.analyzer.opp_counter_potential() if ttype == 'leader' else 0
+    if ttype == 'leader':
+        counter_prov = engine.analyzer.opp_counter_potential()
+    else:
+        # Alvo personagem: o oponente costuma pagar 1 counter barato para
+        # salvar a carta (visto em partida real: Teach 5000 vs Arlong 5000
+        # falhou por um counter de 1000). 1000 de margem se ele tem mão.
+        counter_prov = 1000 if opp.hand else 0
     falta = alvo_power + counter_prov - atk
     if falta <= 0:
         return 0
@@ -6472,6 +6478,13 @@ class OPTCGMatch:
                         if priority == 'LETHAL':       s_leader += 500   # foco em fechar
                         elif priority == 'DEFENSIVE':  s_leader -= 80    # não exponha à toa
                         elif priority == 'REMOVE_THREAT': s_leader -= 100 # remova antes
+                        # Ataque de LÍDER validado é quase grátis (ele resta de
+                        # qualquer jeito no fim do turno, não expõe personagem):
+                        # postura defensiva + risco de trigger não podem
+                        # negativá-lo a ponto de passar o turno sem atacar
+                        # (visto em partida real: score -4 → líder ficou parado).
+                        if att is p.leader:
+                            s_leader = max(s_leader, 15)
                         actions.append((s_leader, 'attack', att, 'leader', None))
                 # alvos personagem
                 for tgt in opp.rested_chars(att):

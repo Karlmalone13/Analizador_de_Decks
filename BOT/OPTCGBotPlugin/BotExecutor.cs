@@ -297,11 +297,8 @@ namespace OPTCGBotPlugin
                 case "play":
                     return TryPlay(gls, botPs, action.cardId);
                 case "attack":
-                    // Engine mandou anexar DON antes de declarar (o ataque so
-                    // passa com o pump — sem isso sai "pelado" e falha)
-                    if (action.donToAttach > 0)
-                        TryAttachDon(gls, botPs, action.cardId, action.donToAttach, dto);
-                    return TryAttack(gls, botPs, oppPs, action.cardId, action.targetId, dto);
+                    return TryAttack(gls, botPs, oppPs, action.cardId, action.targetId,
+                                     action.donToAttach, dto);
                 case "attach_don":
                     return TryAttachDon(gls, botPs, action.cardId, action.donToAttach, dto);
                 default:
@@ -415,7 +412,7 @@ namespace OPTCGBotPlugin
         }
 
         private static bool TryAttack(GameplayLogicScript gls, PlayerState botPs, PlayerState oppPs,
-                                      int attackerId, int targetId, GameStateDto dto)
+                                      int attackerId, int targetId, int donToAttach, GameStateDto dto)
         {
             // Regra do jogo (mesma validacao do FindPossibleCardActions):
             // sem ataque no turno 1 do jogo
@@ -463,6 +460,11 @@ namespace OPTCGBotPlugin
                 Plugin.Log.LogWarning($"[Bot] attack: alvo {targetId} nao encontrado");
                 return false;
             }
+
+            // DON do engine SO depois de todas as validacoes — um ataque
+            // recusado nao pode desperdicar DON (aconteceu no turno 1)
+            if (donToAttach > 0)
+                TryAttachDon(gls, botPs, attackerId, donToAttach, dto);
 
             // Fluxo real: go_PendingChoice -> StartAttack() -> clique no alvo
             _fPendingChoice.SetValue(gls, attacker);

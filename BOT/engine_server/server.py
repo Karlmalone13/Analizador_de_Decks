@@ -94,6 +94,16 @@ def _make(dto: CardDto):
         return None
     try:
         card = _make_card(dto.code, data)
+        # Poder ATUAL vindo do jogo (CardPower sem DON): inclui buffs/debuffs
+        # e passivas de campo que o banco nao tem como saber (ex: -2000 do
+        # Krieg). Troca o CardData DESTA instancia por uma copia com o poder
+        # vivo — nunca mexer no dict do banco nem no _CARD_DATA_CACHE do
+        # _make_card (CardData e compartilhado entre todas as copias do
+        # codigo; ja envenenou o cache numa versao anterior deste fix).
+        # O DON anexado o engine soma por conta propria via don_attached.
+        if dto.power > 0 and dto.power != card.data.power:
+            from dataclasses import replace
+            card.data = replace(card.data, power=dto.power)
         card.rested       = dto.rested
         card.just_played  = dto.justPlayed
         card.don_attached = dto.donAttached
@@ -124,8 +134,10 @@ def _dto_to_gs(player: PlayerDto, turn: int):
     gs.life          = [c for c in (_make(d) for d in player.life) if c]
     gs.don_available = player.activeDon
     gs.don_rested    = player.restedDon
-    # can_attack_this_turn() exige turn > 1
-    gs.turn          = max(2, turn)
+    # Turno REAL do jogo: no turno 1 nao pode atacar (can_attack_this_turn),
+    # e o engine nao deve gerar ataque/attach que o jogo vai recusar.
+    # (o antigo max(2, turn) fazia o bot anexar DON num ataque impossivel)
+    gs.turn          = turn
     gs.global_turn   = turn
     return gs
 
