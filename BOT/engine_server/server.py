@@ -142,6 +142,17 @@ class DefenseRequest(BaseModel):
     triggerCode: Optional[str] = None
 
 
+class TargetCandidate(BaseModel):
+    id: int
+    zone: str    # own_hand | own_board | opp_board | own_leader | opp_leader | own_stage | opp_stage
+
+
+class ChooseTargetRequest(BaseModel):
+    state: GameStateDto
+    candidates: list[TargetCandidate] = []
+    actorCode: Optional[str] = None   # carta cujo efeito esta resolvendo (debug/futuro)
+
+
 @app.get("/health")
 def health():
     return {"status": "ok"}
@@ -221,6 +232,55 @@ def defense(req: DefenseRequest):
         traceback.print_exc()
         # Defesa conservadora em erro: nao bloqueia, nao counteriza, nao usa trigger
         return {"blockerId": 0, "counterIds": [], "useTrigger": False}
+
+
+@app.post("/choose_target")
+def choose_target(req: ChooseTargetRequest):
+    """
+    Ordena candidatos de alvo de um efeito pendente por preferencia do engine.
+    O plugin clica na ordem — o jogo valida cada clique (no-op se invalido).
+
+    Heuristica por zona:
+    - own_hand: pior carta primeiro (descarte — choose_to_trash)
+    - own_board: menor valor primeiro (sacrificio)
+    - opp_board: maior valor primeiro (remocao/bounce)
+    - leaders/stages: por ultimo
+    """
+    try:
+        from optcg_engine.decision_engine import DecisionEngine
+        gs     = _dto_to_gs(req.state.bot, req.state.turnNumber)
+        opp_gs = _dto_to_gs(req.state.opp, req.state.turnNumber)
+        engine = DecisionEngine(gs, opp_gs)
+
+        by_uid = {}
+        for c in gs.hand + gs.field_chars + opp_gs.field_chars:
+            uid = getattr(c, '_deck_uid', 0)
+            if uid:
+                by_uid[uid] = c
+
+        def sort_key(cand: TargetCandidate):
+            card = by_uid.get(cand.id)
+            if cand.zone == "own_hand":
+                val = engine.avaliar_carta(card) if card else 0
+                return (0, val)                      # pior primeiro
+            if cand.zone == "own_board":
+                val = engine.analyzer.char_value_score(card) if card else 0
+                return (1, val)                      # menor valor primeiro
+            if cand.zone == "opp_board":
+                val = engine.analyzer.char_value_score(card) if card else 0
+                return (2, -val)                     # maior valor primeiro
+            return (3, 0)                            # leaders/stages por ultimo
+
+        ordered = sorted(req.candidates, key=sort_key)
+        out = [c.id for c in ordered]
+        print(f"[TGT] {len(req.candidates)} candidatos (actor={req.actorCode}) -> ordem {out[:5]}", flush=True)
+        return {"orderedIds": out}
+
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        # Fallback: ordem original
+        return {"orderedIds": [c.id for c in req.candidates]}
 
 
 @app.post("/decide")

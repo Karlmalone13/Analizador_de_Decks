@@ -34,8 +34,14 @@ DECKS_DIR = Path(r"E:\Games\OnePieceSimulador\Builds_Windows\Decks")
 CSV_PATH  = _SCRIPTS_DIR / "cards_rows.csv"
 
 # ── Carrega banco de cartas uma vez ───────────────────────────────────────────
-_effects_db  = _load_effects_db()
-_analysis_db = _load_analysis_db()
+# _load_effects_db/_load_analysis_db populam globals do decision_engine e
+# retornam None — ler o global depois de carregar (bug corrigido: _effects_db
+# era sempre None aqui).
+from optcg_engine import decision_engine as _de
+_load_effects_db()
+_load_analysis_db()
+_effects_db  = getattr(_de, '_EFFECTS_DB', None) or {}
+_analysis_db = getattr(_de, '_ANALYSIS_DB', None) or {}
 _cards_db    = load_cards_db(str(CSV_PATH))
 
 

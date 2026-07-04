@@ -54,6 +54,15 @@ namespace OPTCGBotPlugin
                 return;
             }
 
+            // Efeito pendente pedindo alvo (On Play do bot, efeito do lider ao
+            // tomar dano, etc.) — vale nos DOIS turnos
+            if (gls.acaActive != null && !gls.bOpponentResolving && !gls.bForcingOpponentAction
+                && !BotExecutor.IsOfferingDownside(gls))
+            {
+                HandlePendingAction(gls);
+                return;
+            }
+
             // Turno do humano: bot pode precisar DEFENDER (blocker/counter/trigger)
             if (gls.gsv_CurrentGame.iPlayerTurn != BotPlayerIndex)
             {
@@ -144,6 +153,54 @@ namespace OPTCGBotPlugin
         // Estado da defesa: evita loop se o blocker escolhido for recusado pelo jogo
         private GameplayState _lastDefenseState;
         private bool _blockerTried;
+
+        // Estado do efeito pendente: tenta candidatos em ordem; Cancel se esgotar
+        private object? _pendingRef;
+        private System.Collections.Generic.List<int>? _pendingOrder;
+        private int _pendingAttempt;
+
+        // Efeito pendente (acaActive) pedindo selecao de alvo. O engine ordena
+        // os candidatos; clicamos um por tick — o jogo ignora cliques invalidos,
+        // entao um "nao avancou" vira tentativa do proximo da lista.
+        private void HandlePendingAction(GameplayLogicScript gls)
+        {
+            var botPs = gls.Lps_Players[BotPlayerIndex];
+            var oppPs = gls.Lps_Players[1 - BotPlayerIndex];
+
+            // Efeito do humano? nao toca (ele clica os proprios prompts)
+            if (!BotExecutor.PendingActionIsMine(gls, botPs))
+                return;
+
+            // Novo prompt? busca a ordem de preferencia no engine
+            if (!ReferenceEquals(_pendingRef, gls.acaActive))
+            {
+                _pendingRef = gls.acaActive;
+                _pendingAttempt = 0;
+                _pendingOrder = null;
+
+                if (EngineClient.IsAlive())
+                {
+                    var dto = GameStateBuilder.Build(botPs, oppPs, gls);
+                    var candidates = BotExecutor.CollectTargetCandidates(botPs, oppPs);
+                    _pendingOrder = EngineClient.ChooseTarget(dto, candidates, BotExecutor.ActorCode(gls));
+                }
+            }
+
+            if (_pendingOrder == null || _pendingAttempt >= _pendingOrder.Count)
+            {
+                // Sem ordem do engine ou candidatos esgotados: tenta cancelar
+                Plugin.Log.LogWarning("[Bot] efeito pendente sem alvo viavel — Cancel");
+                BotExecutor.CancelPendingAction(gls);
+                _pendingRef = null;
+                _cooldown = 1f;
+                return;
+            }
+
+            int targetId = _pendingOrder[_pendingAttempt];
+            _pendingAttempt++;
+            BotExecutor.ClickTargetCandidate(gls, botPs, oppPs, targetId);
+            _cooldown = 0.8f;
+        }
 
         // Defesa quando o HUMANO ataca o bot. Durante o blocker/counter step o
         // jogo poe iPlayerAction no DEFENSOR (SetupBlockerPhase alterna o indice),

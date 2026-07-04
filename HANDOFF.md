@@ -1,5 +1,25 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-04 (76) - Claude
+
+### Teste de defesa in-game + 2 fixes: crash do trigger e prompts de efeito
+
+**Teste in-game da defesa**: blocker OK (`NAO bloqueia` clicou NoBlocker), counter OK (`0 cartas` → ResolveAttack, dano passou). Mas: (1) crash no trigger; (2) bot travou no prompt "Select 1 Cards to Trash" do proprio lider Teach (efeito ao tomar dano).
+
+**Fix 1 — bug pre-existente no sim_bridge**: `_effects_db = _load_effects_db()` era sempre None (`_load_effects_db()` popula o global `_EFFECTS_DB` do decision_engine e retorna None). `_analysis_db` idem. Fix: carregar e ler os globals do modulo. `resolve_trigger_choice` nunca tinha sido exercitada de verdade.
+
+**Fix 2 — handler generico de prompts de efeito (acaActive)**: resolve tanto o efeito do lider Teach quanto os prompts de On Play (item 2 da fila!).
+- Fluxo do jogo: `acaActive != null` → clique em carta vai para `HandleMouseClickDuringCardAction` que valida via `CardIsViableTarget`/V3 e IGNORA cliques invalidos — podemos tentar candidatos em ordem sem risco.
+- `POST /choose_target` no server: engine ordena candidatos por zona — own_hand pior primeiro (`avaliar_carta`), own_board menor valor, opp_board maior valor (`char_value_score`), leaders/stages por ultimo.
+- `BotDriver.HandlePendingAction`: detecta acaActive novo (por referencia), pede ordem ao engine 1x, clica um candidato por tick (cooldown 0.8s); esgotou → `Cancel`. So age se `FindCardOwner(acaActive.goActor) == botPs` (prompt do humano fica pro humano).
+- Roda nos DOIS turnos (On Play no turno do bot; efeitos reativos no turno do humano).
+
+Testes: `resolve_trigger_choice` com effects_db carregado ✓; `/choose_target` ordena corretamente (descarta pior carta primeiro, leader por ultimo) ✓.
+
+Falta testar in-game (reiniciar servidor + jogo).
+
+---
+
 ## 2026-07-04 (75) - Claude
 
 ### feat: defesa do bot (blocker / counter / trigger)

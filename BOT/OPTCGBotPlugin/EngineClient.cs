@@ -58,6 +58,40 @@ namespace OPTCGBotPlugin
             public bool useTrigger;
         }
 
+        public class TargetCandidate
+        {
+            public int id;
+            public string zone = "";
+        }
+
+        private class ChooseTargetResponse
+        {
+            public System.Collections.Generic.List<int> orderedIds = new();
+        }
+
+        // Ordena candidatos de alvo por preferencia do engine. Null em erro.
+        public static System.Collections.Generic.List<int>? ChooseTarget(
+            GameStateDto state,
+            System.Collections.Generic.List<TargetCandidate> candidates,
+            string? actorCode = null)
+        {
+            try
+            {
+                string json = JsonConvert.SerializeObject(new { state, candidates, actorCode });
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+                var resp = _http.PostAsync($"{BASE}/choose_target", content).GetAwaiter().GetResult();
+                if (!resp.IsSuccessStatusCode)
+                    return null;
+                string body = resp.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+                return JsonConvert.DeserializeObject<ChooseTargetResponse>(body)?.orderedIds;
+            }
+            catch (Exception ex)
+            {
+                Plugin.Log.LogError($"[EngineClient] choose_target: {ex.Message}");
+                return null;
+            }
+        }
+
         // phase: "blocker" | "counter" | "trigger". Null em erro (defesa conservadora).
         public static DefenseResponse? Defense(GameStateDto state, string phase,
                                                int attackerPower, int defenderPower,

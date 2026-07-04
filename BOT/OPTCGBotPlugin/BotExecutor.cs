@@ -105,6 +105,87 @@ namespace OPTCGBotPlugin
             catch { return null; }
         }
 
+        // ── Prompt de selecao de alvo de efeito (acaActive != null) ──────────
+
+        private static readonly MethodInfo _mClickDuringCardAction =
+            AccessTools.Method(typeof(GameplayLogicScript), "HandleMouseClickDuringCardAction");
+        private static readonly FieldInfo _fOfferingDownside =
+            AccessTools.Field(typeof(GameplayLogicScript), "bOfferingDownside");
+
+        public static bool IsOfferingDownside(GameplayLogicScript gls)
+            => _fOfferingDownside.GetValue(gls) is bool b && b;
+
+        // Codigo da carta cujo efeito esta resolvendo
+        public static string? ActorCode(GameplayLogicScript gls)
+        {
+            var actor = gls.acaActive?.goActor;
+            var cls = actor != null ? actor.GetComponent<CardLogicScript>() : null;
+            return cls != null && cls.myCard.cardDef != null ? cls.myCard.cardDef.cardID : null;
+        }
+
+        // O efeito pendente pertence ao bot?
+        public static bool PendingActionIsMine(GameplayLogicScript gls, PlayerState botPs)
+        {
+            var actor = gls.acaActive?.goActor;
+            if (actor == null) return false;
+            try { return gls.FindCardOwner(actor) == botPs; }
+            catch { return false; }
+        }
+
+        // Todos os alvos clicaveis possiveis, com zona (o jogo valida cada clique)
+        public static List<EngineClient.TargetCandidate> CollectTargetCandidates(
+            PlayerState botPs, PlayerState oppPs)
+        {
+            var list = new List<EngineClient.TargetCandidate>();
+            void Add(List<GameObject>? zone, string name)
+            {
+                if (zone == null) return;
+                foreach (var go in zone)
+                {
+                    var cls = go != null ? go.GetComponent<CardLogicScript>() : null;
+                    if (cls != null)
+                        list.Add(new EngineClient.TargetCandidate
+                        {
+                            id = cls.myCard.deckUniqueID,
+                            zone = name,
+                        });
+                }
+            }
+            Add(botPs.Lgo_MyHand,   "own_hand");
+            Add(botPs.Lgo_MyDeploy, "own_board");
+            Add(oppPs.Lgo_MyDeploy, "opp_board");
+            Add(botPs.Lgo_MyLeader, "own_leader");
+            Add(oppPs.Lgo_MyLeader, "opp_leader");
+            Add(botPs.Lgo_MyStage,  "own_stage");
+            Add(oppPs.Lgo_MyStage,  "opp_stage");
+            return list;
+        }
+
+        // Clica num candidato (mesmo caminho do clique humano; o jogo valida
+        // via CardIsViableTarget/V3 e ignora cliques invalidos)
+        public static bool ClickTargetCandidate(GameplayLogicScript gls, PlayerState botPs,
+                                                PlayerState oppPs, int targetId)
+        {
+            var go = FindCard(botPs.Lgo_MyHand, targetId)
+                  ?? FindCard(botPs.Lgo_MyDeploy, targetId)
+                  ?? FindCard(oppPs.Lgo_MyDeploy, targetId)
+                  ?? FindCard(botPs.Lgo_MyLeader, targetId)
+                  ?? FindCard(oppPs.Lgo_MyLeader, targetId)
+                  ?? FindCard(botPs.Lgo_MyStage, targetId)
+                  ?? FindCard(oppPs.Lgo_MyStage, targetId);
+            if (go == null)
+                return false;
+            _mClickDuringCardAction.Invoke(gls, new object[] { go });
+            Plugin.Log.LogInfo($"[Bot] alvo de efeito: {CodeOf(go)}");
+            return true;
+        }
+
+        public static void CancelPendingAction(GameplayLogicScript gls)
+        {
+            gls.ChoiceButtonClicked(ButtonChoiceType.Cancel, -1);
+            Plugin.Log.LogInfo("[Bot] efeito pendente: Cancel");
+        }
+
         public static bool ExecuteOne(GameplayLogicScript gls, PlayerState botPs, PlayerState oppPs,
                                       BotAction action, GameStateDto dto)
         {
