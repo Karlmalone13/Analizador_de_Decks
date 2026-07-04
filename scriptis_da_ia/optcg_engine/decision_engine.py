@@ -788,12 +788,40 @@ def can_afford_attack_paywall(card: 'Card', owner: 'GameState') -> bool:
     return True
 
 
+def _step_matching_targets(step: dict, chars: list) -> int:
+    """Quantos personagens de `chars` passam nos FILTROS do step
+    (cost_lte/gte/eq, power_lte/gte, rested_only, filter_type)."""
+    n = 0
+    for c in chars:
+        if step.get('cost_lte') is not None and c.cost > step['cost_lte']:
+            continue
+        if step.get('cost_gte') is not None and c.cost < step['cost_gte']:
+            continue
+        if step.get('cost_eq') is not None and c.cost != step['cost_eq']:
+            continue
+        if step.get('power_lte') is not None and c.power > step['power_lte']:
+            continue
+        if step.get('power_gte') is not None and c.power < step['power_gte']:
+            continue
+        if step.get('rested_only') and not getattr(c, 'rested', False):
+            continue
+        ft = (step.get('filter_type') or '').lower()
+        if ft and ft not in c.sub_types.lower():
+            continue
+        n += 1
+    return n
+
+
 def on_ko_value(code: str, opp: 'Optional[GameState]' = None) -> float:
     """
     Valor dos efeitos [On K.O.] de uma carta — o que GANHAMOS se ela morrer.
-    Usado para escolher sacrifícios (ex: redirect do Teach): Doc Q OP16-109
-    morre KO-zando até 2 personagens do oponente + draw, o que muitas vezes
-    vale MAIS que a própria carta. Escala compatível com char_value_score.
+    Usado para escolher sacrifícios (ex: redirect do Teach). Escala
+    compatível com char_value_score.
+
+    Os FILTROS dos steps são aplicados contra o campo REAL do oponente
+    (partida 04/07: Doc Q "KO até 2 de custo <= 1" foi escolhido com o
+    oponente sem nenhum custo <= 1 — morreu por um draw seco; o Vasco Shot,
+    cujo rest custo <= 6 tinha alvo, era o sacrifício certo).
     """
     steps = get_card_effects(code).get('on_ko', {}).get('steps', [])
     total = 0.0
@@ -801,14 +829,19 @@ def on_ko_value(code: str, opp: 'Optional[GameState]' = None) -> float:
         action = step.get('action', '')
         count = int(step.get('count', 1) or 1)
         if action in ('ko', 'trash'):
-            # remocao real so vale se o oponente tem personagem no campo
-            if opp is None or opp.field_chars:
+            if opp is None:
                 total += 30 * count
+            else:
+                total += 30 * min(count, _step_matching_targets(step, opp.field_chars))
         elif action in ('draw', 'draw_cards'):
             total += 15 * count
         elif action in ('rest_opp', 'rest_opp_character'):
-            if opp is None or opp.field_chars:
-                total += 15 * count
+            # restar personagem do oponente nega um ataque/bloqueio — tempo
+            # real (partida 04/07: Vasco Shot era o sacrificio certo)
+            if opp is None:
+                total += 25 * count
+            else:
+                total += 25 * min(count, _step_matching_targets(step, opp.field_chars))
         elif action in ('play_card', 'play_from_trash'):
             total += 30
         elif action in ('life_to_hand', 'send_life_to_hand'):
@@ -6378,7 +6411,12 @@ class OPTCGMatch:
 
         # Benefício base pelo tipo de efeito
         if any(a in ('draw', 'look_top_deck', 'add_to_hand') for a in actions_list):
-            base = 120   # vantagem de carta — muito valioso
+            # vantagem de carta — muito valioso, custa quase nada (rest) e
+            # buscar PRIMEIRO e estritamente melhor (filtra o deck antes de
+            # decidir os deploys). 170 para vir antes de deploys baratos:
+            # em partida real (04/07) o search do Laffitte (105) perdia para
+            # 3 deploys e o DON acabava antes de ativar.
+            base = 170
         elif any(a in ('add_don', 'set_don_active') for a in actions_list):
             base = 90    # ramp de DON
         elif any(a in ('play_card',) for a in actions_list):

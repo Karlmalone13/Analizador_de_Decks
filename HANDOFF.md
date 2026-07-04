@@ -1,5 +1,31 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-04 (93) - Claude
+
+### Fixes da 4ª rodada in-game: on-KO com FILTROS reais + search antes de deploy
+
+Duas observacoes do usuario na partida das 18:55:
+
+1. **Redirect escolheu Doc Q com o efeito MORTO**: o on-KO dele so KO-za
+   custo <= 1 e o oponente nao tinha nenhum (morreu por um draw seco; o
+   Vasco Shot, cujo rest custo <= 6 tinha alvo, era o certo). Fix:
+   `on_ko_value` agora aplica os FILTROS dos steps (cost_lte/power_lte/
+   rested_only/filter_type via `_step_matching_targets`) contra o campo
+   real do oponente — KO sem alvo vale 0. Rest de personagem subiu de 15
+   para 25 (nega ataque/bloqueio = tempo real). Validado na cena real:
+   Vasco vem antes de Doc Q; com um custo 1 no campo (Otama), Doc Q volta
+   a frente.
+2. **Laffitte de novo sem ativar o search**: activate (135 pos-descontos)
+   perdia para deploys baratos (135.5-150.5) e o DON acabava. Base de
+   vantagem de carta em _score_activate_main: 120 → 170 (search PRIMEIRO e
+   estritamente melhor: filtra o deck antes de decidir os deploys).
+   Validado: activate 155 vira a 1ª acao do turno.
+
+So Python — reiniciar o server. Simulacoes OK (ate uma vitoria do lado A,
+variancia normal).
+
+---
+
 ## 2026-07-04 (92) - Claude
 
 ### Varredura de consciencia de efeito no engine (pedido do usuario)
