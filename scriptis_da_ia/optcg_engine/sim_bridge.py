@@ -261,6 +261,40 @@ _OCR_FIXES: list[tuple[str, str]] = [
 import re as _re
 
 
+def resolve_trigger_choice(gs: GameState, card_code: str | None) -> bool:
+    """
+    Decide se o bot deve usar o Trigger Effect de uma carta revelada da vida.
+
+    Estrategia:
+      - Sem codigo conhecido -> usa (melhor que perder o trigger)
+      - Carta sem steps de trigger no effects_db -> nao usa (provavelmente e counter)
+      - KO / bounce / draw / buff / give_don / play_card -> usa sempre
+      - Trash da mao -> usa so se tiver carta na mao
+      - Trash da vida -> usa so se vida > 1
+      - Desconhecido -> usa por precaucao
+    """
+    if not card_code:
+        return True
+
+    trigger_steps = _effects_db.get(card_code, {}).get('trigger', {}).get('steps', [])
+
+    if not trigger_steps:
+        return False  # sem trigger declarado (ex: carta com counter mas sem trigger)
+
+    for step in trigger_steps:
+        action = step.get('action', '')
+        if action in ('ko', 'bounce', 'draw', 'draw_cards', 'buff_power',
+                      'give_don', 'rest_opp', 'play_card', 'play_from_trash',
+                      'debuff_power', 'activate_main_effect'):
+            return True
+        if action in ('trash', 'trash_from_hand', 'discard'):
+            return len(gs.hand) > 0
+        if action == 'trash_life':
+            return len(gs.life) > 1
+
+    return True  # default: usa
+
+
 def get_card_on_play_steps(card_code: str) -> list[dict]:
     """
     Retorna a lista de steps do efeito on_play de uma carta a partir do

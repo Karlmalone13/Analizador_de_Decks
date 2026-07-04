@@ -775,48 +775,14 @@ def _is_trigger_step() -> bool:
     return 'trigger' in txt and 'no' not in txt
 
 def _should_use_trigger(gs=None) -> bool:
-    """
-    Decide se deve usar o Trigger Effect baseado nos steps da carta
-    que entrou na vida (identifica pelo preview da carta revelada).
-
-    Estrategia conservadora:
-      - Triggers que dao K.O., bounce, draw ou buff -> usa sempre
-      - Triggers que exigem carta na mao/trash sem garantia -> usa se tiver recurso
-      - Triggers complexos desconhecidos -> usa (melhor que perder)
-    """
+    """Delega decisao de trigger para sim_bridge (toda logica de carta fica la)."""
     bridge = _get_bridge()
     if not bridge or not gs:
-        return True  # default: usa o trigger
-
-    # Tenta identificar a carta pelo preview (aparece na area direita)
+        return True
     name = _read_preview_name()
     db   = _lookup_by_name(name) if name else None
     code = db.get('code') if db else None
-
-    if not code:
-        return True  # carta desconhecida -> usa por precaucao
-
-    effects_db = getattr(bridge, '_effects_db', {})
-    trigger_steps = effects_db.get(code, {}).get('trigger', {}).get('steps', [])
-
-    if not trigger_steps:
-        return False  # carta sem trigger real (ex: counter sem trigger declarado)
-
-    for step in trigger_steps:
-        action = step.get('action', '')
-        target = step.get('target', '')
-        # Efeitos sempre bons: usa
-        if action in ('ko', 'bounce', 'draw', 'draw_cards', 'buff_power',
-                      'give_don', 'rest_opp', 'play_card', 'play_from_trash'):
-            return True
-        # Trash da mao: so usa se tiver mao
-        if action in ('trash', 'trash_from_hand'):
-            return len(gs.hand) > 0
-        # Descarte de vida: arriscado, so usa se vida > 1
-        if action in ('trash_life',):
-            return len(gs.life) > 1
-
-    return True  # default: usa
+    return bridge.resolve_trigger_choice(gs, code)
 
 def _click_detected_button(top: bool, main: bool, prefer_main: bool = True) -> bool:
     """Clica em um botao detectado; retorna False se nao ha botao."""
