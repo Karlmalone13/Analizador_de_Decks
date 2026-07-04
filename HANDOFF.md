@@ -1,5 +1,27 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-03 (62) - Claude
+
+### 4 bugs corrigidos proativamente
+
+**Bug 2 — `_reset_log()` mid-game (grave)**
+`_reset_log()` era chamado toda vez que a Main Phase era detectada (turno 2+). Isso zerava `_log_file_offset` e `_log_search_after`, fazendo o bot parar de receber eventos do log a partir do segundo turno.
+Fix: removido o `_reset_log()` do bloco `if detected`. O arquivo de log é único por partida, o offset continua válido entre turnos.
+
+**Bug 1 — `just_played` nunca limpo**
+Personagens marcados `just_played=True` ao entrar no campo nunca tinham esse flag removido. `PRE-FAIL: just_played sem Rush` impedia ataques para sempre.
+Fix (duplo): (1) no início de cada Main Phase detectada, itera `gs.field_chars` e zera `just_played`; (2) em `apply_log_delta` ao ver `Draw #N Card` nosso, também zera (garante mesmo se a Main Phase não for re-detectada).
+
+**Bug 3 — DON drift entre turnos**
+`don_available` acumulava entre turnos: `ActionActivateDon` somava DON, e o `Draw Don` do turno seguinte somava de novo. Podia inflar sem teto.
+Fix: ao detectar Main Phase, lê o DON real via OCR hover badge (`_read_don_active`) e usa esse valor como ground truth, sobrescrevendo o acumulado.
+
+**Bug 4 — Triggers ignorados (448 cartas afetadas)**
+Quando uma carta de vida era revelada com Trigger, apareciam dois botões `Use Trigger Effect` / `No Trigger Effect`. O bot sempre clicava `No Trigger Effect`.
+Fix: nova função `_is_trigger_step()` faz OCR rápido do botão TOP e checa se contém "trigger" sem "no". Nova função `_should_use_trigger(gs)` lê o nome da carta via preview OCR, busca no effects_db os steps do trigger, e decide: triggers de ko/bounce/draw/buff → usa sempre; trash da mão → só usa se tiver mão; default → usa. Integrado em: loop principal (dois botões fora da Main Phase), `_handle_prompts`. Logs: `T+` (usou) ou `T-` (não usou).
+
+---
+
 ## 2026-07-03 (61) - Claude
 
 ### Item 3: steps do on_play guiam seleção de alvos nos prompts

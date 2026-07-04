@@ -416,11 +416,16 @@ def apply_log_delta(gs, opp_gs, lines: list[str]) -> bool:
                         card.just_played = True
                         tgs.field_chars.append(card)
 
-        # -- Saque de cartas ---------------------------------------------------
+        # -- Saque de cartas (Draw #N Card — inicio de turno) -----------------
         elif 'Draw' in line and 'Card' in line and 'from' not in line.lower():
             if is_you:
                 needs_hand_rescan = True
                 gs.turn = max(gs.turn + 1, 2)
+                # Novo turno: personagens recém-deployados no turno anterior
+                # agora podem atacar (just_played limpo via log também,
+                # alem do clear feito no inicio da Main Phase detection).
+                for c in gs.field_chars:
+                    c.just_played = False
             elif is_opp:
                 m = _RE_DRAW_N.search(line)
                 opp_gs.hand.extend([None] * int(m.group(1))) if m else None
@@ -755,6 +760,64 @@ def _scan_buttons() -> tuple[bool, bool]:
             or _is_beige(img.getpixel((1180, 643))))
     return top, main
 
+# Bboxes dos textos dos botoes TOP e MAIN (usado para detectar Trigger step)
+_BTN_TOP_TEXT_BBOX  = (990, 562, 1215, 598)
+_BTN_MAIN_TEXT_BBOX = (990, 628, 1215, 663)
+
+def _read_button_text(bbox: tuple) -> str:
+    """OCR rapido de baixa resolucao do texto de um botao."""
+    raw = _ocr_crop(bbox, psm=7, scale=2)
+    return raw.strip().lower()
+
+def _is_trigger_step() -> bool:
+    """Retorna True se o botao TOP for 'Use Trigger Effect' (Trigger Step)."""
+    txt = _read_button_text(_BTN_TOP_TEXT_BBOX)
+    return 'trigger' in txt and 'no' not in txt
+
+def _should_use_trigger(gs=None) -> bool:
+    """
+    Decide se deve usar o Trigger Effect baseado nos steps da carta
+    que entrou na vida (identifica pelo preview da carta revelada).
+
+    Estrategia conservadora:
+      - Triggers que dao K.O., bounce, draw ou buff -> usa sempre
+      - Triggers que exigem carta na mao/trash sem garantia -> usa se tiver recurso
+      - Triggers complexos desconhecidos -> usa (melhor que perder)
+    """
+    bridge = _get_bridge()
+    if not bridge or not gs:
+        return True  # default: usa o trigger
+
+    # Tenta identificar a carta pelo preview (aparece na area direita)
+    name = _read_preview_name()
+    db   = _lookup_by_name(name) if name else None
+    code = db.get('code') if db else None
+
+    if not code:
+        return True  # carta desconhecida -> usa por precaucao
+
+    effects_db = getattr(bridge, '_effects_db', {})
+    trigger_steps = effects_db.get(code, {}).get('trigger', {}).get('steps', [])
+
+    if not trigger_steps:
+        return False  # carta sem trigger real (ex: counter sem trigger declarado)
+
+    for step in trigger_steps:
+        action = step.get('action', '')
+        target = step.get('target', '')
+        # Efeitos sempre bons: usa
+        if action in ('ko', 'bounce', 'draw', 'draw_cards', 'buff_power',
+                      'give_don', 'rest_opp', 'play_card', 'play_from_trash'):
+            return True
+        # Trash da mao: so usa se tiver mao
+        if action in ('trash', 'trash_from_hand'):
+            return len(gs.hand) > 0
+        # Descarte de vida: arriscado, so usa se vida > 1
+        if action in ('trash_life',):
+            return len(gs.life) > 1
+
+    return True  # default: usa
+
 def _click_detected_button(top: bool, main: bool, prefer_main: bool = True) -> bool:
     """Clica em um botao detectado; retorna False se nao ha botao."""
     if prefer_main and main:
@@ -802,8 +865,9 @@ def _focus_sim() -> bool:
 # -- Tratamento de prompts ------------------------------------------------------
 _game_phase = 0
 
-def _handle_prompts(max_steps: int = 20) -> None:
-    """Resolve prompts pos-acao clicando Pass/Cancel (C_BTN_MAIN)."""
+def _handle_prompts(max_steps: int = 20, gs=None) -> None:
+    """Resolve prompts pos-acao clicando Pass/Cancel (C_BTN_MAIN).
+    Detecta Trigger Step e decide usar ou nao baseado nos efeitos da carta."""
     idle = 0
     for _ in range(max_steps):
         time.sleep(0.35)
@@ -815,7 +879,16 @@ def _handle_prompts(max_steps: int = 20) -> None:
             continue
         idle = 0
         if top and main:
-            pag.click(*C_BTN_MAIN)   # Pass / No Counter / Skip effect
+            if _is_trigger_step():
+                # Trigger Step: decide se usa ou nao
+                if _should_use_trigger(gs):
+                    print("T+", end="", flush=True)
+                    pag.click(*C_BTN_TOP)   # Use Trigger Effect
+                else:
+                    print("T-", end="", flush=True)
+                    pag.click(*C_BTN_MAIN)  # No Trigger Effect
+            else:
+                pag.click(*C_BTN_MAIN)  # Pass / No Counter / Skip effect
         else:
             return
 
@@ -1318,8 +1391,20 @@ def play_match(deck_name: str | None = None, timeout: int = 600) -> bool:
         if has_top and has_main:
             in_main = False
             if _game_phase == 0:
-                pag.click(*C_BTN_MAIN)   # Keep
+                pag.click(*C_BTN_MAIN)   # Keep (mao inicial)
                 _game_phase = 1
+            elif _is_trigger_step():
+                # Trigger Step: carta de vida revelada com trigger
+                if _should_use_trigger(gs):
+                    print("T+", end="", flush=True)
+                    pag.click(*C_BTN_TOP)   # Use Trigger Effect
+                    time.sleep(0.4)
+                    # Resolve prompts do trigger (pode pedir alvo)
+                    _resolve_post_deploy(gs, opp_gs, hand_cards,
+                                        board_cards, opp_board_cards)
+                else:
+                    print("T-", end="", flush=True)
+                    pag.click(*C_BTN_MAIN)  # No Trigger Effect
             else:
                 pag.click(*C_BTN_MAIN)   # Pass / No Counter / Skip
             time.sleep(0.35)
@@ -1340,15 +1425,28 @@ def play_match(deck_name: str | None = None, timeout: int = 600) -> bool:
             if detected:
                 in_main = True
                 print("M", end="", flush=True)
-                # Le DON real da tela (sem deploy: DON nao foi gasto pelo probe)
+                # Aplica delta do log acumulado desde o ultimo turno
                 if gs and opp_gs:
                     pre_lines = read_log_delta()
                     apply_log_delta(gs, opp_gs, pre_lines)
+                # Bug fix: NÃO chamar _reset_log() aqui — zeraria o offset
+                # do arquivo de log e faria o bot parar de receber eventos.
+                # O log file e unico por partida; o offset continua valido.
+
+                # Fix DON drift: sincroniza DON via OCR hover badge (fonte mais
+                # confiavel no inicio da Main Phase, antes de qualquer gasto).
+                if gs:
+                    don_ocr = _read_don_active(DON_P2_HOVER)
+                    if don_ocr > 0 or gs.don_available == 0:
+                        gs.don_available = don_ocr
                     print(f"[DON={gs.don_available}]", end="", flush=True)
-                _reset_log()
-                # Scan leve: mao + campos. Evita full_scan porque DON via OCR
-                # deixava o loop lento e instavel, mas precisamos das posicoes
-                # visuais para activate/attach/attack em personagens.
+
+                # Fix just_played: novo turno = personagens podem atacar.
+                if gs:
+                    for c in gs.field_chars:
+                        c.just_played = False
+
+                # Scan leve: mao + campos para posicoes visuais de clique.
                 hand_cards = scan_hand()
                 board_cards = scan_board_p2()
                 opp_board_cards = scan_opp_board()
@@ -1361,7 +1459,7 @@ def play_match(deck_name: str | None = None, timeout: int = 600) -> bool:
             # Probe falhou -> avanca o botao atual (Draw, Don, End Turn oponente, etc.)
             top2, main2 = _scan_buttons()
             if top2 and main2:
-                _handle_prompts()
+                _handle_prompts(gs=gs)
                 continue
             in_main = False
             hand_cards = []
