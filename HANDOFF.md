@@ -1,5 +1,25 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-04 (74) - Claude
+
+### TESTE COMPLETO OK — bot joga turno inteiro sozinho no Solo vs Self
+
+Confirmado pelo usuario com o servidor + dll novos:
+- `/mulligan` chamado e respondido no inicio da partida ✓
+- Draw Card / Draw Don automaticos ✓
+- Plays e attacks executados pelo engine (varios `/decide` por turno, don pago corretamente) ✓
+- End turn automatico quando `0 acoes` ✓
+
+**Estado atual do BOT (BepInEx v1.1)**: turno do bot 100% automatico no Solo vs Self.
+
+**Proximos passos sugeridos (por prioridade):**
+1. Defesa do bot quando o humano ataca (Blocker/Counter/Trigger — hoje o usuario clica pelos prompts do lado do bot; ha `bAutoNoBlock` nativo como paliativo)
+2. Prompts de escolha pos-deploy (efeitos On Play que pedem alvo — ex: "Select 1 Cards to Trash" do Ace)
+3. Acoes `activate` e `attach_don` do engine (hoje viram end_turn no server.py)
+4. Multiplayer: mudar deteccao de turno/lado (bot = jogador local; testar como o fluxo de rede difere do SoloVSelf)
+
+---
+
 ## 2026-07-04 (73) - Claude
 
 ### feat: mulligan automatico decidido pelo engine
