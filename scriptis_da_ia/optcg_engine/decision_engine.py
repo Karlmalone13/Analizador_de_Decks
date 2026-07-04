@@ -788,6 +788,36 @@ def can_afford_attack_paywall(card: 'Card', owner: 'GameState') -> bool:
     return True
 
 
+def on_ko_value(code: str, opp: 'Optional[GameState]' = None) -> float:
+    """
+    Valor dos efeitos [On K.O.] de uma carta — o que GANHAMOS se ela morrer.
+    Usado para escolher sacrifícios (ex: redirect do Teach): Doc Q OP16-109
+    morre KO-zando até 2 personagens do oponente + draw, o que muitas vezes
+    vale MAIS que a própria carta. Escala compatível com char_value_score.
+    """
+    steps = get_card_effects(code).get('on_ko', {}).get('steps', [])
+    total = 0.0
+    for step in steps:
+        action = step.get('action', '')
+        count = int(step.get('count', 1) or 1)
+        if action in ('ko', 'trash'):
+            # remocao real so vale se o oponente tem personagem no campo
+            if opp is None or opp.field_chars:
+                total += 30 * count
+        elif action in ('draw', 'draw_cards'):
+            total += 15 * count
+        elif action in ('rest_opp', 'rest_opp_character'):
+            if opp is None or opp.field_chars:
+                total += 15 * count
+        elif action in ('play_card', 'play_from_trash'):
+            total += 30
+        elif action in ('life_to_hand', 'send_life_to_hand'):
+            total += 10
+        else:
+            total += 8
+    return total
+
+
 def attack_time_power(attacker: 'Card', opp: 'GameState') -> int:
     """
     Poder do atacante NO MOMENTO do ataque: effective_power + buffs próprios

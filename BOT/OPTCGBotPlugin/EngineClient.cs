@@ -98,16 +98,19 @@ namespace OPTCGBotPlugin
             }
         }
 
-        // phase: "blocker" | "counter" | "trigger". Null em erro (defesa conservadora).
+        // phase: "blocker" | "counter" | "trigger" | "reaction" | "optional".
+        // defenderId: uid do alvo atual do ataque (contexto p/ redirect).
+        // Null em erro (defesa conservadora).
         public static DefenseResponse? Defense(GameStateDto state, string phase,
                                                int attackerPower, int defenderPower,
-                                               string? triggerCode = null)
+                                               string? triggerCode = null,
+                                               int defenderId = 0)
         {
             try
             {
                 string json = JsonConvert.SerializeObject(new
                 {
-                    state, phase, attackerPower, defenderPower, triggerCode
+                    state, phase, attackerPower, defenderPower, defenderId, triggerCode
                 });
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
                 var resp = _http.PostAsync($"{BASE}/defense", content).GetAwaiter().GetResult();

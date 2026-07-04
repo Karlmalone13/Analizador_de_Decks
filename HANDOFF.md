@@ -1,5 +1,35 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-04 (90) - Claude
+
+### Redirect do Teach EFFECT-AWARE (regra do usuario)
+
+O engine agora sabe o que as cartas fazem ao decidir usar e escolher o alvo
+do redirect:
+
+- Nova `on_ko_value(code, opp)` no decision_engine: valor dos efeitos
+  [On K.O.] (ko 30/un, draw 15, rest 15, play 30...) — Doc Q OP16-109 vale
+  75 (2 KOs + draw), Laffitte 0.
+- `resolve_reaction(..., defender_uid)`: alem de sobrevivente/sacrificio,
+  reage quando (a) o alvo original e um personagem NOSSO valioso
+  (board_value >= 4) prestes a morrer — redireciona para o LIDER, 1 vida
+  salva o personagem; (b) existe sacrificio barato com on-KO rico
+  (on_ko_value >= 20) — vale ate vida 3.
+- `order_target_candidates` com contexto de ataque prioriza:
+  1. sobrevivente (maior poder), 2. sacrificio com on-KO rico,
+  3. o proprio LIDER quando o alvo original e personagem nosso (vida > 1),
+  4. sacrificio seco (valor descontado do on-KO). Alvo original sempre
+  por ultimo.
+- Plumbing: /defense reaction agora recebe `defenderId` (plugin envia
+  UidOf(go_Defender)); EngineClient.Defense ganhou o parametro.
+
+Testes: Doc Q escolhido antes do lider, lider antes de sacrificio seco,
+sobrevivente sempre primeiro, alvo original sempre ultimo; reacao dispara
+p/ salvar Shiryu 8000 e p/ trocar Doc Q com vida 3. 2 simulacoes OK,
+plugin recompilado. Falta teste in-game (reabrir jogo + reiniciar server).
+
+---
+
 ## 2026-07-04 (89) - Claude
 
 ### Fixes da 3ª rodada in-game (partida CombatLogs/2026-07-04T12.49.05.log)

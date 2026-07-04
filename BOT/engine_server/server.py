@@ -150,9 +150,10 @@ class MulliganRequest(BaseModel):
 
 class DefenseRequest(BaseModel):
     state: GameStateDto
-    phase: str                    # "blocker" | "counter" | "trigger"
+    phase: str                    # "blocker" | "counter" | "trigger" | "reaction" | "optional"
     attackerPower: int = 0
     defenderPower: int = 0
+    defenderId: int = 0           # uid do alvo atual do ataque (contexto p/ redirect)
     triggerCode: Optional[str] = None
 
 
@@ -230,9 +231,10 @@ def defense(req: DefenseRequest):
 
         elif req.phase == "reaction":
             out["useReaction"] = bridge.resolve_reaction(
-                gs, opp_gs, req.attackerPower, req.defenderPower)
+                gs, opp_gs, req.attackerPower, req.defenderPower,
+                defender_uid=req.defenderId)
             print(f"[DEF] reaction atk={req.attackerPower} def={req.defenderPower} "
-                  f"-> {out['useReaction']}", flush=True)
+                  f"defId={req.defenderId} -> {out['useReaction']}", flush=True)
 
         elif req.phase == "optional":
             # Efeito opcional com custo no proprio turno do bot

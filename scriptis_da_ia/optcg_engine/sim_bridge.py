@@ -384,23 +384,26 @@ def select_counter_cards(gs: GameState, atk_power: int, def_power: int) -> list[
 
 
 def resolve_reaction(gs: GameState, opp_gs: GameState,
-                     atk_power: int, def_power: int) -> bool:
+                     atk_power: int, def_power: int,
+                     defender_uid: int = 0) -> bool:
     """
     Efeito opcional com custo oferecido durante o ataque do oponente
     (ex: lider Teach — trash 1 carta da mao para REDIRECIONAR o ataque).
 
-    Alem da seriedade do ataque (should_use_counter), o redirect so vale se:
-    - a mao aguenta o custo (>= 2 cartas; a ultima carta vale mais que 1
-      vida, salvo vida critica) — visto em partida real: bot pagou reacao
-      toda rodada e ficou de mao vazia;
-    - existe um ALVO de redirect que compensa: personagem que SOBREVIVE ao
-      golpe, ou sacrificio barato quando a vida esta baixa. Pagar 1 carta
-      para jogar o golpe num personagem que morre, com vida sobrando, e
-      trocar 2 recursos por 1.
+    Effect-aware (regra do usuario, 04/07/2026): o engine sabe o que as
+    cartas fazem e considera TODAS as saidas de redirect:
+    - personagem que SOBREVIVE ao golpe (poder > atacante);
+    - sacrificio com [On K.O.] valioso (Doc Q morre KO-zando 2 do oponente
+      — as vezes vale mais que a carta) — on_ko_value;
+    - alvo original e um PERSONAGEM valioso prestes a morrer → redireciona
+      para o LIDER (paga 1 vida para salvar o personagem);
+    - sacrificio barato so quando a vida aperta.
+
+    Guardas: ataque precisa estar ganhando; mao >= 2 (a ultima carta vale
+    mais que 1 vida, salvo vida critica) — bot ficou de mao vazia pagando
+    reacao toda rodada em partida real.
     """
-    # Nao usar should_use_counter aqui: ele exige counter NUMERICO na mao,
-    # e o redirect nao joga counter — paga 1 carta qualquer. Criterios
-    # proprios:
+    from optcg_engine.decision_engine import on_ko_value
     engine = DecisionEngine(gs, opp_gs)
     my_life = gs.life_count()
 
@@ -408,18 +411,36 @@ def resolve_reaction(gs: GameState, opp_gs: GameState,
         return False   # o ataque ja perde sozinho — nao gasta nada
     if len(gs.hand) < 2 and my_life > 1:
         return False   # ultima carta vale mais que 1 vida (salvo vida critica)
+
+    # Alvo original e personagem NOSSO valioso que vai morrer → redirect
+    # para o lider (1 vida < personagem forte), desde que aguentemos a vida
+    defender_char = next((c for c in gs.field_chars
+                          if getattr(c, '_deck_uid', 0) == defender_uid), None)
+    if defender_char is not None and defender_char.board_value() >= 4 and my_life > 1:
+        return True
+
     if not gs.field_chars:
-        return False   # sem alvo de redirect
+        return False   # sem personagem e o alvo ja e o lider — nada a fazer
 
     # Personagem que SOBREVIVE ao golpe: melhor caso — mas 1 carta por 1
     # vida so compensa quando a vida ja aperta (<= 3)
-    if any(c.power > atk_power for c in gs.field_chars):
+    if any(c.power > atk_power for c in gs.field_chars
+           if getattr(c, '_deck_uid', 0) != defender_uid):
         return my_life <= 3
 
-    # Sacrificio: personagem barato morre no lugar da vida — so perto de
-    # morrer (<= 2), senao e trocar 2 recursos por 1
-    barato = min(c.board_value() for c in gs.field_chars)
-    return my_life <= 2 and barato <= 3
+    # Sacrificio com [On K.O.] valioso: morrer DISPARA efeito que paga a
+    # troca (ex: Doc Q) — vale com vida <= 3
+    sacrificaveis = [c for c in gs.field_chars
+                     if getattr(c, '_deck_uid', 0) != defender_uid]
+    if any(c.board_value() <= 3 and on_ko_value(c.code, opp_gs) >= 20
+           for c in sacrificaveis):
+        return my_life <= 3
+
+    # Sacrificio seco: personagem barato morre no lugar da vida — so perto
+    # de morrer (<= 2), senao e trocar 2 recursos por 1
+    if any(c.board_value() <= 3 for c in sacrificaveis):
+        return my_life <= 2
+    return False
 
 
 def resolve_optional_effect(gs: GameState, opp_gs: GameState) -> bool:
@@ -457,11 +478,17 @@ def order_target_candidates(gs: GameState, opp_gs: GameState,
     - leaders/stages: por ultimo
 
     attacker_power > 0 = efeito resolvendo DURANTE um ataque do oponente
-    (ex: redirect do lider Teach). Muda a logica do proprio campo:
+    (ex: redirect do lider Teach). Muda a logica do proprio campo
+    (effect-aware — o engine sabe o que as cartas fazem):
     - NUNCA o alvo original do ataque (defender_uid) — redirecionar para ele
       e um no-op que paga o custo por nada;
-    - preferir personagem que SOBREVIVE (poder > poder do atacante);
-    - senao, o sacrificio mais barato (menor valor de board).
+    1. personagem que SOBREVIVE (poder > poder do atacante), maior primeiro;
+    2. sacrificio com [On K.O.] valioso (on_ko_value >= 20 e barato) —
+       morrer dispara efeito que paga a troca (ex: Doc Q);
+    3. o PROPRIO LIDER, quando o alvo original e um personagem nosso
+       (paga 1 vida para salvar o personagem);
+    4. demais sacrificios, ordenados por valor de board descontado do que
+       o on-KO devolve.
 
     Cartas de trash/top_deck nao vem no DTO — o 'code' do candidato permite
     montar a carta do banco so para valorar.
@@ -482,6 +509,13 @@ def order_target_candidates(gs: GameState, opp_gs: GameState,
                 card = _make_card(cand['code'], data)
         return card
 
+    from optcg_engine.decision_engine import on_ko_value
+
+    # Redirect: o alvo original e um personagem NOSSO? (lider como escape)
+    defender_is_own_char = (
+        attacker_power > 0 and defender_uid
+        and any(getattr(c, '_deck_uid', 0) == defender_uid for c in gs.field_chars))
+
     def sort_key(cand: dict):
         card = card_of(cand)
         zone = cand.get('zone', '')
@@ -497,12 +531,25 @@ def order_target_candidates(gs: GameState, opp_gs: GameState,
         if zone == 'own_board':
             if attacker_power > 0:
                 power = getattr(card, 'power', 0) if card else 0
+                valor = engine.analyzer.char_value_score(card) if card else 0
+                ko_val = on_ko_value(card.code, opp_gs) if card else 0
                 if power > attacker_power:
-                    # sobrevive ao golpe: melhor redirect possivel
-                    return (3, -power)
-                # morre: sacrificio mais barato primeiro
-                return (3.5, engine.analyzer.char_value_score(card) if card else 0)
+                    # 1. sobrevive ao golpe: melhor redirect possivel
+                    return (3.0, -power)
+                if ko_val >= 20 and (card.board_value() if card else 99) <= 3:
+                    # 2. morrer DISPARA efeito que paga a troca (ex: Doc Q)
+                    return (3.1, -ko_val)
+                # 4. sacrificio seco: mais barato primeiro, descontando o
+                #    que o on-KO devolve
+                return (3.5, valor - ko_val)
             return (3, engine.analyzer.char_value_score(card) if card else 0)
+        if zone == 'own_leader':
+            # 3. redirect de ataque-em-personagem para o LIDER: paga 1 vida
+            #    para salvar o personagem (so quando o alvo original e char
+            #    nosso e a vida aguenta)
+            if defender_is_own_char and gs.life_count() > 1:
+                return (3.2, 0)
+            return (6, 0)
         if zone == 'opp_board':
             return (4, -(engine.analyzer.char_value_score(card) if card else 0))
         if zone == 'opp_trash':

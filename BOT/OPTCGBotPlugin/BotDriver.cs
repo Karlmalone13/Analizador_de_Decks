@@ -104,8 +104,9 @@ namespace OPTCGBotPlugin
                         int defP = duringAttack && defender != null ? BotExecutor.PowerOf(gls, defender, false) : 0;
                         var dsOppPs = gls.Lps_Players[1 - BotPlayerIndex];
                         var dsDto = GameStateBuilder.Build(dsBotPs, dsOppPs, gls);
+                        int defId = duringAttack && defender != null ? BotExecutor.UidOf(defender) : 0;
                         var resp = EngineClient.IsAlive()
-                            ? EngineClient.Defense(dsDto, duringAttack ? "reaction" : "optional", atkP, defP)
+                            ? EngineClient.Defense(dsDto, duringAttack ? "reaction" : "optional", atkP, defP, null, defId)
                             : null;
                         bool use = resp?.useReaction ?? false;
 
