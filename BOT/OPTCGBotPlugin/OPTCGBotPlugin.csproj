@@ -8,14 +8,24 @@
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Optimize>true</Optimize>
-    <!-- Copia o .dll final para a pasta de plugins do BepInEx automaticamente -->
-    <PostBuildEvent>xcopy /y "$(TargetPath)" "E:\Games\OnePieceSimulador\Builds_Windows\BepInEx\plugins\"</PostBuildEvent>
   </PropertyGroup>
 
+  <!-- Copia o .dll final para a pasta de plugins do BepInEx automaticamente -->
+  <Target Name="CopyToPlugins" AfterTargets="Build">
+    <Copy SourceFiles="$(TargetDir)$(TargetFileName)"
+          DestinationFolder="E:\Games\OnePieceSimulador\Builds_Windows\BepInEx\plugins\" />
+  </Target>
+
   <ItemGroup>
-    <!-- BepInEx 5 + HarmonyX (via NuGet) -->
-    <PackageReference Include="BepInEx.Core" Version="5.4.23.2" />
-    <PackageReference Include="BepInEx.Harmony" Version="2.3.0" />
+    <!-- BepInEx 5 + Harmony (DLLs locais da instalacao do jogo) -->
+    <Reference Include="BepInEx">
+      <HintPath>E:\Games\OnePieceSimulador\Builds_Windows\BepInEx\core\BepInEx.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="0Harmony">
+      <HintPath>E:\Games\OnePieceSimulador\Builds_Windows\BepInEx\core\0Harmony.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
   </ItemGroup>
 
   <ItemGroup>
@@ -34,6 +44,15 @@
     </Reference>
     <Reference Include="Newtonsoft.Json">
       <HintPath>E:\Games\OnePieceSimulador\Builds_Windows\OPTCGSim_Data\Managed\Newtonsoft.Json.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <!-- Facades do runtime do jogo (Unity Mono = netstandard 2.1) -->
+    <Reference Include="netstandard">
+      <HintPath>E:\Games\OnePieceSimulador\Builds_Windows\OPTCGSim_Data\Managed\netstandard.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="System.Net.Http">
+      <HintPath>E:\Games\OnePieceSimulador\Builds_Windows\OPTCGSim_Data\Managed\System.Net.Http.dll</HintPath>
       <Private>false</Private>
     </Reference>
   </ItemGroup>

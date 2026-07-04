@@ -1,5 +1,32 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-03 (68) - Claude
+
+### BOT compilado + servidor testado de ponta a ponta
+
+**Setup concluido:**
+- .NET SDK 8.0.422 instalado (winget)
+- BepInEx 5.4.23.2 (binario win x64) extraido em `E:\Games\OnePieceSimulador\Builds_Windows\` (`winhttp.dll` + `BepInEx\core\`); pasta de codigo-fonte baixada por engano foi removida
+- `OPTCGBotPlugin.dll` compilado com sucesso e copiado para `BepInEx\plugins\`
+
+**Correcoes no build:**
+- `.csproj`: pacotes NuGet BepInEx nao existem no nuget.org → referencia direta as DLLs locais (`BepInEx\core\BepInEx.dll`, `0Harmony.dll`)
+- Jogo usa netstandard 2.1 (Unity Mono moderna) → adicionadas referencias a `netstandard.dll` e `System.Net.Http.dll` do `Managed\` do jogo
+- PostBuildEvent xcopy falhava (`$(TargetPath)` vazio) → trocado por `<Target Name="CopyToPlugins">` com task `<Copy>`
+
+**server.py reescrito e validado:**
+- `choose_action` exige `OPTCGMatch` → `_get_match()` lazy cria um com o primeiro deck disponivel (match e so maquinaria; GameStates reais vem do DTO)
+- `GameState` exige `leader` → construido a partir do leader do DTO
+- Formato da action confirmado no engine: `(score, tipo, card, ttype, tgt)` — attack usa `action[3]='leader'|'character'` e `action[4]=tgt_card`
+- `gs.turn = max(2, turnNumber)` (can_attack_this_turn exige turn > 1)
+- **Smoke test OK**: `/health` → ok; `/decide` com estado realista → `{"type":"attack","cardId":100,"targetId":0}` (lider ataca lider — decisao correta)
+
+**Falta**: rodar o OPTCGSim com o plugin carregado e testar Solo vs Self de verdade.
+Fluxo de teste: `python BOT/engine_server/server.py` → abrir OPTCGSim → Solo vs Self.
+Log do plugin: `BepInEx\LogOutput.log`.
+
+---
+
 ## 2026-07-03 (67) - Claude
 
 ### fix(BOT): nomes de campos/metodos verificados contra o decompilado
