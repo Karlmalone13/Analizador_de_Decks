@@ -1,5 +1,31 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-03 (70) - Claude
+
+### refactor(BOT): v1.1 — driver Update() substitui hook AddTurn
+
+**Primeiro teste real** (Solo vs Self): plugin carregou, hooks dispararam, engine respondeu — mas nenhuma acao aconteceu no campo. Dois problemas de raiz encontrados no decompilado:
+
+1. **Timing**: em SoloVSelf o `AddTurn` dispara no estado `PlayerTurn_Start` (linha 29071 do GLS), ANTES do untap/draw/don — por isso `mao=5 don=0`. O state machine nao esta em `PlayerTurn_Action`, entao Deploy/StartAttack nao funcionam nesse momento. Alem disso o RunTurn sincrono dentro do hook nao dava tempo do state machine resolver combates.
+2. **`atacante -1 nao encontrado`**: leader tem `deckUniqueID = -1`; a busca por uid falhava.
+
+**Nova arquitetura (v1.1):**
+- `TurnPatch.cs` e `EngineServer.cs` REMOVIDOS (sem Harmony patch; server inicia manual)
+- `BotDriver.cs` (novo): MonoBehaviour criado no Awake do plugin. A cada frame verifica: `e_GameStyle == SoloVSelf`, `iPlayerTurn == BotPlayerIndex(0)`, `e_CurrentState == PlayerTurn_Action`, `acaActive == null`, `acaPending` vazio. Se tudo ok: monta DTO, chama `/decide`, executa UMA acao, cooldown de 1s. Fail-safes: MAX 25 acoes/turno, 2 falhas consecutivas → end turn.
+- `BotExecutor.cs` reescrito com o **caminho do clique humano** (o jogo valida e paga custos sozinho):
+  - play: `HandleMouseClickCardDuringActionState(card)` → verifica `go_PendingChoice == card` (jogo aceitou) → `ChoiceButtonClicked(Deploy)` → `Deploy()` paga custo via `TapDon` (chamar `DeployCardFromHand` direto NAO paga custo = trapaça!)
+  - attack: valida turno > 1 e nao-rested → `go_PendingChoice = atacante` → `StartAttack()` → `HandleMouseClickCardAttackTarget(alvo, false)`
+  - end turn: `bConfirmEnd = false` (public) → `ChoiceButtonClicked(EndTurn)`
+  - Lider com uid -1: fallback compara `action.cardId` com o uid que NOS enviamos no DTO (`dto.bot.leader.deckUniqueId`)
+- Recompilado; dll atualizada em BepInEx\plugins.
+
+**Pendencias conhecidas (MVP):**
+- Defesa do bot (blocker/counter/trigger quando o humano ataca): NAO implementada — o usuario clica pelos prompts do lado do bot durante o teste (ou ativar bAutoNoBlock do jogo)
+- Tipos de acao `activate`/`attach_don` do engine viram end_turn no server.py
+- Precisa fechar e reabrir o OPTCGSim para carregar a dll nova
+
+---
+
 ## 2026-07-03 (69) - Claude
 
 ### fix(BOT): lados dos jogadores corrigidos no plugin
