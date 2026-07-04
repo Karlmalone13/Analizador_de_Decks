@@ -294,10 +294,11 @@ def decide(state: GameStateDto):
         gs     = _dto_to_gs(state.bot, state.turnNumber)
         opp_gs = _dto_to_gs(state.opp, state.turnNumber)
 
-        # So tipos que o plugin sabe executar — os demais (activate...) sao
-        # pulados pelo bridge em vez de encerrar o turno.
+        # So tipos que o plugin sabe executar — os demais sao pulados pelo
+        # bridge em vez de encerrar o turno.
         action = bridge.choose_action(gs, opp_gs, match, timeout=3.0,
-                                      allowed_types={"play", "attack", "attach_don"})
+                                      allowed_types={"play", "attack",
+                                                     "attach_don", "activate"})
 
         if action is None:
             return {"type": "end_turn", "cardId": 0, "targetId": 0, "donToAttach": 0}
@@ -346,6 +347,17 @@ def decide(state: GameStateDto):
             don_attach = int(action[3] or 0)
             if card_id == 0 or don_attach <= 0:
                 return {"type": "end_turn", "cardId": 0, "targetId": 0, "donToAttach": 0}
+
+        elif action_type == "activate" and len(action) > 2:
+            # [Activate: Main] de lider/personagem/stage em campo (ex:
+            # Laffitte OP09-095 — search). O jogo valida e paga o custo.
+            card = action[2]
+            card_id = getattr(card, '_deck_uid', 0)
+            if card_id == 0:
+                if card is gs.leader:
+                    card_id = getattr(gs.leader, '_deck_uid', 0)
+                if card_id == 0:
+                    return {"type": "end_turn", "cardId": 0, "targetId": 0, "donToAttach": 0}
 
         else:
             return {"type": "end_turn", "cardId": 0, "targetId": 0, "donToAttach": 0}

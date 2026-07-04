@@ -21,6 +21,8 @@ namespace OPTCGBotPlugin
         private int   _actionsThisTurn;
         private int   _lastTurnSeen = -1;
         private int   _consecutiveFails;
+        private string _lastActionKey = "";
+        private int    _sameActionCount;
         private float _heartbeat;
         private string _lastHeartbeatMsg = "";
 
@@ -216,6 +218,19 @@ namespace OPTCGBotPlugin
             if (action == null || action.type == "end_turn")
             {
                 Plugin.Log.LogInfo("[Bot] end_turn");
+                BotExecutor.EndTurn(gls);
+                _cooldown = ActionCooldown;
+                return;
+            }
+
+            // Mesma acao repetida = o jogo esta recusando silenciosamente
+            // (ex: ataque invalido que nao muda o estado) — corta o loop
+            string key = $"{action.type}:{action.cardId}:{action.targetId}";
+            _sameActionCount = (key == _lastActionKey) ? _sameActionCount + 1 : 0;
+            _lastActionKey = key;
+            if (_sameActionCount >= 3)
+            {
+                Plugin.Log.LogWarning($"[Bot] acao {key} repetida {_sameActionCount}x sem efeito — end turn");
                 BotExecutor.EndTurn(gls);
                 _cooldown = ActionCooldown;
                 return;

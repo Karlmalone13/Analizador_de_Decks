@@ -1,5 +1,46 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-04 (89) - Claude
+
+### Fixes da 3ª rodada in-game (partida CombatLogs/2026-07-04T12.49.05.log)
+
+5 observacoes do usuario + 2 bugs achados na investigacao:
+
+1. **[Activate: Main] agora executa** (Laffitte OP09-095 search nunca rodava):
+   o server excluia 'activate' dos allowed_types e o bridge pulava — o log
+   mostrava `(105.0, 'activate')` sendo ignorado toda rodada. Novo
+   `TryActivate` no plugin (clique na carta em campo → CardAction idx, mesma
+   busca de acao do fluxo de evento, extraida em `FindActivatableMainIndex`).
+2. **BUG GRAVE: sim_bridge lia `_effects_db[code]['trigger']` sem o nivel
+   `'effects'`** — steps sempre {} → o bot NUNCA usava trigger de vida
+   (todos os `[DEF] trigger -> False` dos logs) e `get_card_on_play_steps`
+   sempre []. Corrigido usando `get_card_effects` (que resolve o nesting).
+3. **`attack_time_power`**: poder no momento do ataque inclui buffs proprios
+   de [When Attacking] (buff_power self e set_base_power copiando personagem
+   do oponente — Catarina Devon OP16-104 3000 agora vale o maior char do opp
+   no score e no calculo de DON). Usado em score_attack_target e
+   don_needed_for_attack.
+4. **Margem de counter no lider = PROVAVEL (cap 2000), tudo-ou-nada**: o
+   potencial cheio afundava DON demais; margem parcial e DON queimado (o
+   oponente cobre a diferenca) — ou cobre o provavel inteiro ou vai seco.
+5. **resolve_reaction criterioso** (Teach pagava carta toda rodada e ficou
+   de mao vazia): nao usa mais should_use_counter (exigia counter numerico;
+   redirect paga carta qualquer). Regras: ataque precisa ganhar; mao >= 2
+   (salvo vida 1); redirect para SOBREVIVENTE so com vida <= 3; sacrificio
+   barato (board_value <= 3) so com vida <= 2. Sem alvo viavel → nao paga.
+6. **Preservacao de mao**: plays com mao <= 3 levam penalidade crescente
+   (-30/-60/-90) — deixa carta para counter/custo de reacao.
+7. **Guarda de loop no BotDriver**: mesma acao 3x seguidas sem mudar o estado
+   (jogo recusando em silencio; turno 7 do log repetiu `(20.0, 'attack')`
+   ~20x) → end turn.
+
+Validacao: unit tests de attack_time_power (Devon 3000 → 12000 com Newgate
+no campo), trigger OP16-104 → True, /decide devolve activate p/ Laffitte,
+5 cenarios de resolve_reaction OK, 3 simulacoes completas sem regressao,
+plugin recompilado (0 erros). Falta teste in-game.
+
+---
+
 ## 2026-07-04 (88) - Claude
 
 ### Margem de counter virou LUXO — ataque "seco" de pressao (regra do usuario)

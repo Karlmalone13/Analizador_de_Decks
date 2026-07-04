@@ -301,6 +301,8 @@ namespace OPTCGBotPlugin
                                      action.donToAttach, dto);
                 case "attach_don":
                     return TryAttachDon(gls, botPs, action.cardId, action.donToAttach, dto);
+                case "activate":
+                    return TryActivate(gls, botPs, action.cardId, dto);
                 default:
                     Plugin.Log.LogWarning($"[Bot] tipo de acao desconhecido: {action.type}");
                     return false;
@@ -385,16 +387,7 @@ namespace OPTCGBotPlugin
                 // EVENT nao usa Deploy (Deploy() pagaria o DON sem efeito!).
                 // O clique adicionou botoes CardAction — replica a busca do
                 // indice da primeira acao ativavel (EventFindPossibleActions).
-                int idx = -1;
-                var v3 = cls!.V3Actions(false);
-                for (int i = 0; i < v3.Count; i++)
-                    if (v3[i].proc.ActivateMain && cls.CanActivateAction(i)) { idx = i; break; }
-                if (idx < 0)
-                {
-                    var cas = cls.GetCardActions();
-                    for (int j = 0; j < cas.Count; j++)
-                        if (cas[j].actionTrigger.ActivateMain) { idx = j; break; }
-                }
+                int idx = FindActivatableMainIndex(cls!);
                 if (idx < 0)
                 {
                     Plugin.Log.LogWarning($"[Bot] play: evento {CodeOf(go)} sem acao ativavel — cancel");
@@ -408,6 +401,59 @@ namespace OPTCGBotPlugin
 
             gls.ChoiceButtonClicked(ButtonChoiceType.Deploy, -1);
             Plugin.Log.LogInfo($"[Bot] play: {CodeOf(go)}");
+            return true;
+        }
+
+        // Indice da primeira acao [Activate: Main] ativavel da carta
+        // (V3 com CanActivateAction; fallback old-style por actionTrigger)
+        private static int FindActivatableMainIndex(CardLogicScript cls)
+        {
+            var v3 = cls.V3Actions(false);
+            for (int i = 0; i < v3.Count; i++)
+                if (v3[i].proc.ActivateMain && cls.CanActivateAction(i)) return i;
+            var cas = cls.GetCardActions();
+            for (int j = 0; j < cas.Count; j++)
+                if (cas[j].actionTrigger.ActivateMain) return j;
+            return -1;
+        }
+
+        // [Activate: Main] de carta EM CAMPO (lider/personagem/stage) — ex:
+        // Laffitte OP09-095 (search). Mesmo caminho do clique humano: o jogo
+        // valida e paga o custo (rest da carta/DON) sozinho.
+        public static bool TryActivate(GameplayLogicScript gls, PlayerState botPs,
+                                       int cardId, GameStateDto dto)
+        {
+            var go = FindCard(botPs.Lgo_MyDeploy, cardId)
+                  ?? FindCard(botPs.Lgo_MyStage, cardId);
+            if (go == null && dto.bot.leader != null && dto.bot.leader.deckUniqueId == cardId
+                && botPs.Lgo_MyLeader != null && botPs.Lgo_MyLeader.Count > 0)
+            {
+                go = botPs.Lgo_MyLeader[0];
+            }
+            if (go == null)
+            {
+                Plugin.Log.LogWarning($"[Bot] activate: carta {cardId} nao encontrada em campo");
+                return false;
+            }
+
+            _mClickDuringAction.Invoke(gls, new object[] { go });
+            var pending = _fPendingChoice.GetValue(gls) as GameObject;
+            if (pending != go)
+            {
+                Plugin.Log.LogWarning($"[Bot] activate: jogo recusou selecao de {CodeOf(go)}");
+                return false;
+            }
+
+            var cls = go.GetComponent<CardLogicScript>();
+            int idx = cls != null ? FindActivatableMainIndex(cls) : -1;
+            if (idx < 0)
+            {
+                Plugin.Log.LogWarning($"[Bot] activate: {CodeOf(go)} sem acao ativavel — cancel");
+                gls.ChoiceButtonClicked(ButtonChoiceType.Cancel, -1);
+                return false;
+            }
+            gls.ChoiceButtonClicked(ButtonChoiceType.CardAction, idx);
+            Plugin.Log.LogInfo($"[Bot] activate: {CodeOf(go)} (acao {idx})");
             return true;
         }
 

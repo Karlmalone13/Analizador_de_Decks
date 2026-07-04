@@ -336,7 +336,11 @@ def resolve_trigger_choice(gs: GameState, card_code: str | None) -> bool:
     if not card_code:
         return True
 
-    trigger_steps = _effects_db.get(card_code, {}).get('trigger', {}).get('steps', [])
+    # ATENCAO: efeitos ficam aninhados sob 'effects' no card_effects_db —
+    # get_card_effects resolve isso (leitura direta de _effects_db[code]['trigger']
+    # sempre devolvia {} e o bot NUNCA usava trigger; bug corrigido 04/07/2026)
+    from optcg_engine.decision_engine import get_card_effects
+    trigger_steps = get_card_effects(card_code).get('trigger', {}).get('steps', [])
 
     if not trigger_steps:
         return False  # sem trigger declarado (ex: carta com counter mas sem trigger)
@@ -383,11 +387,39 @@ def resolve_reaction(gs: GameState, opp_gs: GameState,
                      atk_power: int, def_power: int) -> bool:
     """
     Efeito opcional com custo oferecido durante o ataque do oponente
-    (ex: lider Teach — trash 1 carta para reagir). Mesma logica do counter:
-    so gasta recurso se o ataque for serio para a vida atual.
+    (ex: lider Teach — trash 1 carta da mao para REDIRECIONAR o ataque).
+
+    Alem da seriedade do ataque (should_use_counter), o redirect so vale se:
+    - a mao aguenta o custo (>= 2 cartas; a ultima carta vale mais que 1
+      vida, salvo vida critica) — visto em partida real: bot pagou reacao
+      toda rodada e ficou de mao vazia;
+    - existe um ALVO de redirect que compensa: personagem que SOBREVIVE ao
+      golpe, ou sacrificio barato quando a vida esta baixa. Pagar 1 carta
+      para jogar o golpe num personagem que morre, com vida sobrando, e
+      trocar 2 recursos por 1.
     """
+    # Nao usar should_use_counter aqui: ele exige counter NUMERICO na mao,
+    # e o redirect nao joga counter — paga 1 carta qualquer. Criterios
+    # proprios:
     engine = DecisionEngine(gs, opp_gs)
-    return bool(engine.should_use_counter(atk_power, def_power))
+    my_life = gs.life_count()
+
+    if atk_power < def_power:
+        return False   # o ataque ja perde sozinho — nao gasta nada
+    if len(gs.hand) < 2 and my_life > 1:
+        return False   # ultima carta vale mais que 1 vida (salvo vida critica)
+    if not gs.field_chars:
+        return False   # sem alvo de redirect
+
+    # Personagem que SOBREVIVE ao golpe: melhor caso — mas 1 carta por 1
+    # vida so compensa quando a vida ja aperta (<= 3)
+    if any(c.power > atk_power for c in gs.field_chars):
+        return my_life <= 3
+
+    # Sacrificio: personagem barato morre no lugar da vida — so perto de
+    # morrer (<= 2), senao e trocar 2 recursos por 1
+    barato = min(c.board_value() for c in gs.field_chars)
+    return my_life <= 2 and barato <= 3
 
 
 def resolve_optional_effect(gs: GameState, opp_gs: GameState) -> bool:
@@ -489,7 +521,8 @@ def get_card_on_play_steps(card_code: str) -> list[dict]:
     Usado pelo bot para saber quais prompts esperar ANTES que apareçam, e
     para filtrar alvos corretamente ao responder cada prompt.
     """
-    return _effects_db.get(card_code, {}).get('on_play', {}).get('steps', [])
+    from optcg_engine.decision_engine import get_card_effects
+    return get_card_effects(card_code).get('on_play', {}).get('steps', [])
 
 
 def _step_matches_zone(step: dict, zone: str) -> bool:

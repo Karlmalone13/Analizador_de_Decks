@@ -788,6 +788,37 @@ def can_afford_attack_paywall(card: 'Card', owner: 'GameState') -> bool:
     return True
 
 
+def attack_time_power(attacker: 'Card', opp: 'GameState') -> int:
+    """
+    Poder do atacante NO MOMENTO do ataque: effective_power + buffs próprios
+    de [When Attacking] (buff_power em si mesmo, ou set_base_power copiando
+    um personagem do oponente — ex: Catarina Devon OP16-104, cuja base vira
+    o poder do personagem escolhido). Sem isso o engine subestima esses
+    atacantes e barra/superpaga ataques que na prática passam fácil.
+    """
+    power = attacker.effective_power(True)
+    wa = get_card_effects(attacker.code).get('when_attacking')
+    if not isinstance(wa, dict):
+        return power
+    req = wa.get('don_requirement', 0)
+    if req and getattr(attacker, 'don_attached', 0) < req:
+        return power
+    for step in wa.get('steps', []):
+        action = step.get('action', '')
+        target = step.get('target', 'self')
+        if target not in ('self', ''):
+            continue
+        if action == 'buff_power':
+            power += int(step.get('amount', 0) or 0)
+        elif action == 'set_base_power' and step.get('source') == 'selected_opp_character':
+            if opp.field_chars:
+                best = max(c.power for c in opp.field_chars)
+                ganho = best - attacker.power
+                if ganho > 0:
+                    power += ganho
+    return power
+
+
 def don_needed_for_attack(attacker: 'Card', ttype: str, tgt: 'Optional[Card]',
                           p: 'GameState', opp: 'GameState', engine,
                           don_livre: 'Optional[int]' = None) -> int:
@@ -812,7 +843,7 @@ def don_needed_for_attack(attacker: 'Card', ttype: str, tgt: 'Optional[Card]',
         alvo_power = opp.leader.power
     else:
         alvo_power = tgt.power if tgt else 0
-    atk = attacker.effective_power(True)
+    atk = attack_time_power(attacker, opp)
 
     falta_base = alvo_power - atk
     need_base = (falta_base + 999) // 1000 if falta_base > 0 else 0
@@ -820,7 +851,10 @@ def don_needed_for_attack(attacker: 'Card', ttype: str, tgt: 'Optional[Card]',
         return min(p.don_available, need_base)
 
     if ttype == 'leader':
-        counter_prov = engine.analyzer.opp_counter_potential()
+        # Counter PROVAVEL, nao potencial maximo: o oponente raramente gasta
+        # mais de ~2 cartas para negar dano de chip no lider (o potencial
+        # cheio faria o bot afundar DON demais num unico ataque).
+        counter_prov = min(engine.analyzer.opp_counter_potential(), 2000)
     else:
         # Alvo personagem: 1 counter barato salva a carta (visto em partida
         # real: Teach 5000 vs Arlong 5000 falhou por um counter de 1000).
@@ -833,7 +867,12 @@ def don_needed_for_attack(attacker: 'Card', ttype: str, tgt: 'Optional[Card]',
     # desconta antes de liberar margem (senao a margem rouba DON do plano)
     livre_para_margem = max(0, min(don_livre - need_base,
                                    p.don_available - need_base))
-    return need_base + min(need_margem, livre_para_margem)
+    # Margem e TUDO-OU-NADA: cobrir so metade do counter provavel nao muda o
+    # resultado (o oponente cobre a diferenca) — e DON queimado. Ou cobre o
+    # provavel inteiro, ou vai seco (probe) so com o base.
+    if livre_para_margem < need_margem:
+        return need_base
+    return need_base + need_margem
 
 
 def remove_by_identity(lst: list, obj) -> bool:
@@ -5384,14 +5423,15 @@ class DecisionEngine:
         a = self.analyzer
         s = 0.0
         opp_life  = self.opp.life_count()
-        atk_power = attacker.effective_power(True)
+        # Poder NO ATAQUE: inclui buffs de [When Attacking] proprios
+        # (ex: Devon OP16-104 copia o poder de um personagem do oponente)
+        atk_power = attack_time_power(attacker, self.opp)
 
         # Custo de restar um atacante que tem [Activate: Main] útil:
         # atacar com ele perde o efeito do turno. Desconta, salvo letal/ameaça grande.
         activate_cost = self._activate_main_value(attacker)
 
         if target_type == 'leader':
-            atk_power = attacker.effective_power(True)
             don_disp  = self.me.don_available
             leader_power = self.opp.leader.power
 
@@ -6470,6 +6510,11 @@ class OPTCGMatch:
             # Carta defensiva (blocker/counter) ganha peso no modo DEFENSIVE
             if priority == 'DEFENSIVE' and (card.has_blocker or card.blocker_this_turn or card.counter > 0):
                 score += 120
+            # Preservacao de mao (partida real 04/07: bot esvaziou a mao em
+            # deploys e ficou sem counter/custo de reacao para defender).
+            # Mao encolhendo = cada play adicional fica mais caro.
+            if len(p.hand) <= 3:
+                score -= (4 - len(p.hand)) * 30
             actions.append((score, 'play', card, None, None))
 
         # ── Ações de ATACAR (com risco de trigger descontado) ──
