@@ -115,10 +115,19 @@ namespace OPTCGBotPlugin
         public static bool IsOfferingDownside(GameplayLogicScript gls)
             => _fOfferingDownside.GetValue(gls) is bool b && b;
 
+        // Ator do efeito pendente. goActor e null em acoes V3 — ActorObject()
+        // resolve os dois estilos (V3 busca por iActorID).
+        private static GameObject? PendingActor(GameplayLogicScript gls)
+        {
+            if (gls.acaActive == null) return null;
+            try { return gls.acaActive.ActorObject(); }
+            catch { return null; }
+        }
+
         // Codigo da carta cujo efeito esta resolvendo
         public static string? ActorCode(GameplayLogicScript gls)
         {
-            var actor = gls.acaActive?.goActor;
+            var actor = PendingActor(gls);
             var cls = actor != null ? actor.GetComponent<CardLogicScript>() : null;
             return cls != null && cls.myCard.cardDef != null ? cls.myCard.cardDef.cardID : null;
         }
@@ -126,10 +135,29 @@ namespace OPTCGBotPlugin
         // O efeito pendente pertence ao bot?
         public static bool PendingActionIsMine(GameplayLogicScript gls, PlayerState botPs)
         {
-            var actor = gls.acaActive?.goActor;
+            var actor = PendingActor(gls);
             if (actor == null) return false;
             try { return gls.FindCardOwner(actor) == botPs; }
             catch { return false; }
+        }
+
+        // Alvos que ainda faltam selecionar num step V3 (<= 0 = pode confirmar)
+        private static readonly MethodInfo _mRemainingTargets =
+            AccessTools.Method(typeof(GameplayLogicScript), "RemainingTargetsToSelect");
+
+        public static int RemainingV3Targets(GameplayLogicScript gls)
+        {
+            if (gls.acaActive == null || !gls.acaActive.UsesV3())
+                return -1;
+            try { return (int)_mRemainingTargets.Invoke(gls, new object[] { gls.acaActive }); }
+            catch { return -1; }
+        }
+
+        // Confirma a selecao V3 atual ("Choose N Targets" -> V3NextStep)
+        public static void ConfirmV3Targets(GameplayLogicScript gls)
+        {
+            gls.ChoiceButtonClicked(ButtonChoiceType.SelectTargets, -1);
+            Plugin.Log.LogInfo("[Bot] V3: confirmar selecao (NextStep)");
         }
 
         // Todos os alvos clicaveis possiveis, com zona (o jogo valida cada clique)

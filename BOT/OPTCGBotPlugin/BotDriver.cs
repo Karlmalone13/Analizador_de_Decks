@@ -193,10 +193,12 @@ namespace OPTCGBotPlugin
         private GameplayState _lastDefenseState;
         private bool _blockerTried;
 
-        // Estado do efeito pendente: tenta candidatos em ordem; Cancel se esgotar
+        // Estado do efeito pendente: tenta candidatos em ordem; confirma/cancela se esgotar
         private object? _pendingRef;
+        private int _pendingStep = -1;
         private System.Collections.Generic.List<int>? _pendingOrder;
         private int _pendingAttempt;
+        private bool _pendingConfirmTried;
 
         // Efeito pendente (acaActive) pedindo selecao de alvo. O engine ordena
         // os candidatos; clicamos um por tick — o jogo ignora cliques invalidos,
@@ -210,12 +212,15 @@ namespace OPTCGBotPlugin
             if (!BotExecutor.PendingActionIsMine(gls, botPs))
                 return;
 
-            // Novo prompt? busca a ordem de preferencia no engine
-            if (!ReferenceEquals(_pendingRef, gls.acaActive))
+            // Novo prompt (ou novo step do mesmo efeito V3)? refaz a ordem
+            int step = gls.acaActive.iActionStep;
+            if (!ReferenceEquals(_pendingRef, gls.acaActive) || step != _pendingStep)
             {
                 _pendingRef = gls.acaActive;
+                _pendingStep = step;
                 _pendingAttempt = 0;
                 _pendingOrder = null;
+                _pendingConfirmTried = false;
 
                 if (EngineClient.IsAlive())
                 {
@@ -225,20 +230,38 @@ namespace OPTCGBotPlugin
                 }
             }
 
-            if (_pendingOrder == null || _pendingAttempt >= _pendingOrder.Count)
+            // V3 sem alvos faltando (ex: "Choose 0 Targets") → confirma direto
+            int remaining = BotExecutor.RemainingV3Targets(gls);
+            if (remaining == 0)
             {
-                // Sem ordem do engine ou candidatos esgotados: tenta cancelar
-                Plugin.Log.LogWarning("[Bot] efeito pendente sem alvo viavel — Cancel");
-                BotExecutor.CancelPendingAction(gls);
-                _pendingRef = null;
+                BotExecutor.ConfirmV3Targets(gls);
                 _cooldown = 1f;
                 return;
             }
 
-            int targetId = _pendingOrder[_pendingAttempt];
-            _pendingAttempt++;
-            BotExecutor.ClickTargetCandidate(gls, botPs, oppPs, targetId);
-            _cooldown = 0.8f;
+            if (_pendingOrder != null && _pendingAttempt < _pendingOrder.Count)
+            {
+                int targetId = _pendingOrder[_pendingAttempt];
+                _pendingAttempt++;
+                BotExecutor.ClickTargetCandidate(gls, botPs, oppPs, targetId);
+                _cooldown = 0.8f;
+                return;
+            }
+
+            // Candidatos esgotados: confirma selecao parcial (V3) uma vez...
+            if (!_pendingConfirmTried && gls.acaActive.UsesV3())
+            {
+                _pendingConfirmTried = true;
+                BotExecutor.ConfirmV3Targets(gls);
+                _cooldown = 1f;
+                return;
+            }
+
+            // ...e se ainda travado, cancela
+            Plugin.Log.LogWarning("[Bot] efeito pendente sem alvo viavel — Cancel");
+            BotExecutor.CancelPendingAction(gls);
+            _pendingRef = null;
+            _cooldown = 1f;
         }
 
         // Defesa quando o HUMANO ataca o bot. Durante o blocker/counter step o

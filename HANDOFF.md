@@ -1,5 +1,22 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-04 (79) - Claude
+
+### fix: actor V3 null — causa raiz dos travamentos em prompts de efeito
+
+Heartbeat revelou: em TODOS os prompts pendentes, `aca=True mine=False actor=-` — `acaActive.goActor` e **null em acoes V3** (a maioria das cartas modernas). `PendingActionIsMine` retornava false e os handlers silenciavam.
+
+**Fix**: usar `acaActive.ActorObject()` (metodo publico que resolve os dois estilos: old-style usa goActor; V3 busca `FindCardByUniqueDeckID(iActorID)`).
+
+**Melhorias no HandlePendingAction:**
+- `RemainingV3Targets(gls)` via `RemainingTargetsToSelect` (private): se 0 alvos faltando (ex: "Choose 0 Friendly Targets") → confirma direto via `ChoiceButtonClicked(SelectTargets)` → `V3NextStep(acaActive)` (todos os botoes Select*/ConfirmInfiniteTargets roteiam para V3NextStep)
+- Rastreia `iActionStep`: novo step do mesmo acaActive → refaz a ordem de candidatos
+- Esgotou candidatos: confirma selecao parcial V3 uma vez; ainda travado → Cancel
+
+Evento agora resolve e vai pro trash ✓ (confirmado in-game pelo usuario). Teach: o prompt acontece com acaActive setado durante Attack_WaitOnCounters — com o actor fix o handler agora assume.
+
+---
+
 ## 2026-07-04 (78) - Claude
 
 ### fix grave: bot pagava DON de EVENT sem efeito + heartbeat de debug
