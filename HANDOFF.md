@@ -1,5 +1,15 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-04 (72) - Claude
+
+### fix: auto Draw Card/Don usava estados errados
+
+Os botoes Draw Card/Draw Don ESPERAM em `PlayerTurn_DrawCardWait`/`PlayerTurn_DrawDonWait` — os estados sem "Wait" sao transitorios (PlayerDrawPhase adiciona o choice e troca pro Wait no mesmo frame). Driver corrigido para os estados *Wait. Recompilado.
+
+Descoberta util: o jogo tem `bAutoDraw` (setting) que auto-clica esses botoes para qualquer jogador — alternativa nativa se quisermos.
+
+---
+
 ## 2026-07-03 (71) - Claude
 
 ### PRIMEIRO TESTE FUNCIONAL + auto Draw Card/Don

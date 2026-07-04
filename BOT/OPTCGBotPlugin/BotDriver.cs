@@ -41,14 +41,16 @@ namespace OPTCGBotPlugin
             if (gls.gsv_CurrentGame.iPlayerTurn != BotPlayerIndex)
                 return;
 
-            // Fases de inicio de turno: clica Draw Card / Draw Don sozinho
-            if (gls.e_CurrentState == GameplayState.PlayerTurn_DrawCard)
+            // Fases de inicio de turno: clica Draw Card / Draw Don sozinho.
+            // Os botoes ESPERAM nos estados *Wait (PlayerDrawPhase/PlayerDonPhase
+            // adicionam o choice e mudam para DrawCardWait/DrawDonWait).
+            if (gls.e_CurrentState == GameplayState.PlayerTurn_DrawCardWait)
             {
                 gls.ChoiceButtonClicked(ButtonChoiceType.DrawCard, -1);
                 _cooldown = 0.5f;
                 return;
             }
-            if (gls.e_CurrentState == GameplayState.PlayerTurn_DrawDon)
+            if (gls.e_CurrentState == GameplayState.PlayerTurn_DrawDonWait)
             {
                 gls.ChoiceButtonClicked(ButtonChoiceType.DrawDon, -1);
                 _cooldown = 0.5f;
