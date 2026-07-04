@@ -1,0 +1,28 @@
+#!/bin/sh
+# Imprime as regras de memoria do projeto em TODO commit.
+# Para sessoes de IA (Claude/Codex), o texto aparece no resultado do proprio
+# comando `git commit` — ou seja, a IA le as regras no exato momento do commit.
+# Nao bloqueia; e um lembrete forcado, nao um gate.
+
+MEMORY_DIR="$HOME/.claude/projects/C--Projetos-TI-analidador-de-decks-optcg/memory"
+
+echo ""
+echo "=============================================================="
+echo " REGRAS DO PROJETO (memory) — leia antes de finalizar o commit"
+echo "=============================================================="
+
+if [ -f "$MEMORY_DIR/MEMORY.md" ]; then
+    cat "$MEMORY_DIR/MEMORY.md"
+    echo "--------------------------------------------------------------"
+fi
+
+echo "1. UM MOTOR SO: decisao estrategica vive em decision_engine.py,"
+echo "   exposta via sim_bridge.py. Plugin C# = olhos/maos."
+echo "   server.py = transporte puro. NADA de heuristica em C#/server."
+echo "2. Objetivo do bot: captar logs contra humanos -> validar engine"
+echo "   -> front-end. Nao otimizar o bot alem disso."
+echo "3. HANDOFF.md: escreva um bloco novo antes do push (hook pre-push)."
+echo "=============================================================="
+echo ""
+
+exit 0

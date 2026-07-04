@@ -1,5 +1,15 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-04 (82) - Claude
+
+### Hook pre-commit: regras de memoria impressas em todo commit
+
+Novo `scripts/hooks/pre-commit` (instalado via `setup-git-hooks.sh`, igual ao pre-push): imprime `memory/MEMORY.md` + as 3 regras-chave (um motor so / objetivo do bot / HANDOFF antes do push) na saida de TODO `git commit`. Para sessoes de IA o texto entra no resultado do comando — leitura forcada no momento do commit. Nao bloqueia (lembrete, nao gate).
+
+Lembrete: em maquina/clone novo rodar `sh scripts/setup-git-hooks.sh`.
+
+---
+
 ## 2026-07-04 (81) - Claude
 
 ### refactor: decisoes movidas do plugin/server para sim_bridge (regra dos dois motores)
