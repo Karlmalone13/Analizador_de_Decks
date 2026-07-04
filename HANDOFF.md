@@ -1,5 +1,15 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-03 (63) - Claude
+
+### Refactor: lógica de trigger movida do bot para sim_bridge
+
+`_should_use_trigger()` em `bot_optcgsim.py` consultava o effects_db e tomava decisão estratégica — violação da regra "bot = olhos/mãos, engine = cérebro, sem dois motores".
+
+Fix: bot agora só detecta pixels (`_is_trigger_step`) e lê o nome da carta pelo preview OCR, depois delega para `bridge.resolve_trigger_choice(gs, card_code)` em `sim_bridge.py`. Toda a lógica de decisão (quais actions valem o trigger, checagem de mão/vida) ficou em `sim_bridge.resolve_trigger_choice`.
+
+---
+
 ## 2026-07-03 (62) - Claude
 
 ### 4 bugs corrigidos proativamente
