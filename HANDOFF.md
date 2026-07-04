@@ -1,5 +1,53 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-04 (86) - Claude
+
+### As 5 pendencias dos blocos 84/85 implementadas (falta testar in-game)
+
+**Itens 4+5 (so lider ataca / ataques perdedores) — mesma raiz dupla:**
+1. `/decide` devolvia `end_turn` quando a acao top do engine era um tipo que o
+   plugin nao executa (`attach_don`/`activate`) → turno morria antes dos
+   personagens atacarem. Fix: `choose_action(allowed_types=...)` no sim_bridge
+   pula tipos nao-executaveis e pega a proxima acao de score >= 0 (ordem de
+   preferencia continua 100% do engine).
+2. O engine aprovava ataque contando com DON (`passa_com_don` +
+   `_attach_don_for_attack` na simulacao), mas o bot declarava o ataque SEM
+   anexar → Teach 5000 vs Jozu 7000 falhava. Fix: extraida
+   `don_needed_for_attack()` (pura, decision_engine) usada pela simulacao e
+   pelo `/decide`, que agora responde `donToAttach`; o plugin anexa via
+   `AttachDonToCard` (publico no GLS; lider = iDeployIdx -1; dispara
+   `CheckForAttachDonAction` como o fluxo humano). Acao `attach_don`
+   (ligar keyword/efeito [DON!! xN]) tambem suportada. DTO ganhou
+   `donAttached` por carta (lgo_AttachedDon.Count) para o engine ver DON ja
+   anexado.
+
+**Itens 2+3 (zonas trash/top_deck nos candidatos):**
+- `CollectTargetCandidates` agora inclui `own_trash`/`opp_trash`
+  (Lgo_MyTrash) e `top_deck` (lgo_TopDeck privado, via reflection); cada
+  candidato leva `code` para o engine valorar cartas fora do DTO.
+- `order_target_candidates`: top_deck = melhor carta primeiro (search),
+  own_trash = melhor primeiro (recuperacao), opp_trash = melhor primeiro.
+- Confirmacao de selecao agora clica o botao de finalize CERTO ofertado
+  (le go_ChoiceButton1..4 ativos): `FinalizeTopDeck` → `ConfirmRevealedCard`
+  → `SelectTargets` (fallback = comportamento antigo).
+
+**Item 1 (redirect do Teach com alvo ruim/nulo):**
+- `/choose_target` ganhou `attackerPower`/`defenderId`; o BotDriver os envia
+  quando um efeito resolve durante estados Attack_*. Com contexto de ataque,
+  `order_target_candidates`: alvo original SEMPRE por ultimo (redirect pra ele
+  = no-op pago), personagem que sobrevive (poder > atacante) primeiro, senao
+  sacrificio mais barato. Testado: sobrevivente 8000 vs golpe 6000 vem
+  primeiro; sem sobrevivente, o 0-power vem primeiro; defensor sempre ultimo.
+
+**Validacao:** unit tests via TestClient (decide/choose_target/health OK),
+don_needed_for_attack (2 DON p/ 5000 vs 7000; -999 com DON insuficiente),
+3 partidas simuladas completas (regressao do refactor OK), plugin compilado
+(`dotnet build` 0 erros, dll copiada). **Falta: reabrir o jogo e testar
+in-game** — personagens atacando, DON anexado pre-ataque, search do
+OP09-096 escolhendo carta, Shiryu pegando do trash, redirect do Teach.
+
+---
+
 ## 2026-07-04 (85) - Claude
 
 ### Mais pendencias observadas em partidas (2ª e 3ª partidas completas)
