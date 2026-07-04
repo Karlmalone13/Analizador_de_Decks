@@ -190,7 +190,7 @@ def defense(req: DefenseRequest):
         gs     = _dto_to_gs(req.state.bot, req.state.turnNumber)
         opp_gs = _dto_to_gs(req.state.opp, req.state.turnNumber)
 
-        out = {"blockerId": 0, "counterIds": [], "useTrigger": False}
+        out = {"blockerId": 0, "counterIds": [], "useTrigger": False, "useReaction": False}
 
         if req.phase == "blocker":
             engine = DecisionEngine(gs, opp_gs)
@@ -225,13 +225,23 @@ def defense(req: DefenseRequest):
             out["useTrigger"] = bool(bridge.resolve_trigger_choice(gs, req.triggerCode))
             print(f"[DEF] trigger {req.triggerCode} -> {out['useTrigger']}", flush=True)
 
+        elif req.phase == "reaction":
+            # Efeito opcional com custo oferecido durante o ataque do humano
+            # (ex: lider Teach — trash 1 carta para reagir). Mesma logica do
+            # counter: so gasta recurso se o ataque for serio para a vida atual.
+            engine = DecisionEngine(gs, opp_gs)
+            out["useReaction"] = bool(
+                engine.should_use_counter(req.attackerPower, req.defenderPower))
+            print(f"[DEF] reaction atk={req.attackerPower} def={req.defenderPower} "
+                  f"-> {out['useReaction']}", flush=True)
+
         return out
 
     except Exception as e:
         import traceback
         traceback.print_exc()
-        # Defesa conservadora em erro: nao bloqueia, nao counteriza, nao usa trigger
-        return {"blockerId": 0, "counterIds": [], "useTrigger": False}
+        # Defesa conservadora em erro: nao bloqueia, nao counteriza, nao reage
+        return {"blockerId": 0, "counterIds": [], "useTrigger": False, "useReaction": False}
 
 
 @app.post("/choose_target")

@@ -1,5 +1,19 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-04 (80) - Claude
+
+### Defesa FUNCIONANDO in-game + reacao via engine + deploy swap
+
+Usuario confirmou: bot reage aos ataques (blocker/counter/trigger/prompt do Teach OK). Dois refinamentos pedidos:
+
+**1. Reacao do lider (Teach) em TODO ataque** — a heuristica "mao >= 2 → usa" era do plugin (paliativo). Agora: downside offer durante estados de ataque (`Attack_WaitOnBlocker/BeforeBlocker/WaitOnCounters`) → `POST /defense phase=reaction` → `engine.should_use_counter(atkPower, defPower)` decide (so gasta carta se o ataque e serio para a vida atual). Downside no proprio turno (pos-play) mantem heuristica mao >= 2.
+
+**2. Deploy com campo cheio (5 chars)** — estado `Action_SelectingDeploySwap` ("Select Character to Replace") nao era tratado → freeze. Agora: engine ordena o proprio campo por menor valor (`/choose_target` zona own_board), `DeploySwap(go, false)` substitui o pior personagem. Sem candidato → Cancel.
+
+Recompilado; falta reabrir o jogo e testar.
+
+---
+
 ## 2026-07-04 (79) - Claude
 
 ### fix: actor V3 null — causa raiz dos travamentos em prompts de efeito

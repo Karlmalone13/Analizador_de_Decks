@@ -56,6 +56,7 @@ namespace OPTCGBotPlugin
             public int blockerId;
             public System.Collections.Generic.List<int> counterIds = new();
             public bool useTrigger;
+            public bool useReaction;
         }
 
         public class TargetCandidate

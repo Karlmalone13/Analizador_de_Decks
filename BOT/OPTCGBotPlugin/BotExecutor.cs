@@ -214,6 +214,24 @@ namespace OPTCGBotPlugin
             Plugin.Log.LogInfo("[Bot] efeito pendente: Cancel");
         }
 
+        // Deploy com campo cheio (Action_SelectingDeploySwap): substitui o
+        // personagem indicado pelo pendente (DeploySwap trasha + deploya)
+        private static readonly MethodInfo _mDeploySwap =
+            AccessTools.Method(typeof(GameplayLogicScript), "DeploySwap");
+
+        public static bool TryDeploySwap(GameplayLogicScript gls, PlayerState botPs, int replaceId)
+        {
+            var go = FindCard(botPs.Lgo_MyDeploy, replaceId);
+            if (go == null)
+            {
+                Plugin.Log.LogWarning($"[Bot] deploy swap: personagem {replaceId} nao encontrado");
+                return false;
+            }
+            _mDeploySwap.Invoke(gls, new object[] { go, false });
+            Plugin.Log.LogInfo($"[Bot] deploy swap: substitui {CodeOf(go)}");
+            return true;
+        }
+
         public static bool ExecuteOne(GameplayLogicScript gls, PlayerState botPs, PlayerState oppPs,
                                       BotAction action, GameStateDto dto)
         {
