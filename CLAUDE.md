@@ -1,5 +1,25 @@
 # CLAUDE.md — guia para qualquer sessão nova (Claude Code / Codex)
 
+## LEITURA OBRIGATÓRIA ANTES DE QUALQUER COMMIT
+
+Antes de commitar qualquer coisa, leia as memórias do projeto:
+
+```
+C:\Users\arthu\.claude\projects\C--Projetos-TI-analidador-de-decks-optcg\memory\MEMORY.md
+```
+
+As memórias contêm regras arquiteturais e feedbacks do usuário que DEVEM ser
+seguidos. Ignorar essas memórias pode levar a violações de arquitetura que o
+usuário já corrigiu explicitamente. Regras-chave (resumo — leia os arquivos
+completos):
+
+- **Bot = olhos/mãos only** (`bot_optcgsim.py`). Engine = cérebro. Sem lógica
+  de carta no bot. Sem dois motores. Ver `memory/feedback_dois_motores.md`.
+- **Objetivo do bot**: captar logs contra humanos → validar engine → front-end.
+  Não otimizar o bot além disso. Ver `memory/project_objetivo_bot.md`.
+
+---
+
 Este arquivo é lido automaticamente no início de cada sessão do Claude Code.
 Leia também o [HANDOFF.md](HANDOFF.md) (registro do que foi feito na sessão
 anterior, por qual IA) antes de tocar em qualquer coisa, e rode

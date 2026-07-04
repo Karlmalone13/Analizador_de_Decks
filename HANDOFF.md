@@ -1,5 +1,19 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-03 (64) - Claude
+
+### CLAUDE.md atualizado: leitura de memórias obrigatória antes de cada commit
+
+Adicionado bloco "LEITURA OBRIGATÓRIA ANTES DE QUALQUER COMMIT" no topo de `CLAUDE.md`.
+O bloco aponta para `memory/MEMORY.md` e resume as duas regras críticas:
+- Bot = olhos/mãos; engine = cérebro; sem dois motores (`feedback_dois_motores.md`)
+- Objetivo do bot: logs → engine → front-end (`project_objetivo_bot.md`)
+
+Arquivos de memória criados na sessão anterior (fora do repo, em
+`C:\Users\arthu\.claude\projects\...\memory\`): `MEMORY.md`, `feedback_dois_motores.md`, `project_objetivo_bot.md`.
+
+---
+
 ## 2026-07-03 (63) - Claude
 
 ### Refactor: lógica de trigger movida do bot para sim_bridge
