@@ -788,6 +788,29 @@ def can_afford_attack_paywall(card: 'Card', owner: 'GameState') -> bool:
     return True
 
 
+def don_needed_for_attack(attacker: 'Card', ttype: str, tgt: 'Optional[Card]',
+                          p: 'GameState', opp: 'GameState', engine) -> int:
+    """
+    Quantos DON anexar ao atacante para este ataque passar (0 = nenhum).
+    Considera o COUNTER provável do oponente em ataques ao líder (alinha com
+    score_attack_target): anexa para superar alvo + counter estimado, limitado
+    ao DON disponível. Função pura — quem anexa de fato é o chamador
+    (_attach_don_for_attack na simulação; o plugin do bot via /decide).
+    """
+    if p.don_available <= 0:
+        return 0
+    if ttype == 'leader':
+        alvo_power = opp.leader.power
+    else:
+        alvo_power = tgt.power if tgt else 0
+    atk = attacker.effective_power(True)
+    counter_prov = engine.analyzer.opp_counter_potential() if ttype == 'leader' else 0
+    falta = alvo_power + counter_prov - atk
+    if falta <= 0:
+        return 0
+    return min(p.don_available, (falta + 999) // 1000)
+
+
 def remove_by_identity(lst: list, obj) -> bool:
     """
     Remove de `lst` EXATAMENTE o objeto `obj` (comparando por identidade,
@@ -6928,28 +6951,13 @@ class OPTCGMatch:
 
     def _attach_don_for_attack(self, attacker, ttype, tgt, p, opp, engine, verbose):
         """Anexa DON a este ataque, se ajudar a passar a defesa."""
-        if p.don_available <= 0:
-            return 0
-        if ttype == 'leader':
-            alvo_power = opp.leader.power
-        else:
-            alvo_power = tgt.power if tgt else 0
-        atk = attacker.effective_power(True)
-        # Considera o COUNTER provável do oponente (alinha com score_attack_target):
-        # anexa DON para superar o alvo + counter estimado, não só o poder base.
-        # Mas não exagera: limita o counter considerado ao que a mão dele comporta.
-        counter_prov = engine.analyzer.opp_counter_potential() if ttype == 'leader' else 0
-        alvo_total = alvo_power + counter_prov
-        falta = alvo_total - atk
-        if falta > 0:
-            need = min(p.don_available, (falta + 999) // 1000)
-            if need > 0:
-                attacker.don_attached += need
-                p.don_available -= need
-                if verbose:
-                    print(f'    anexou {need} DON em {attacker.name[:20]}')
-                return need
-        return 0
+        need = don_needed_for_attack(attacker, ttype, tgt, p, opp, engine)
+        if need > 0:
+            attacker.don_attached += need
+            p.don_available -= need
+            if verbose:
+                print(f'    anexou {need} DON em {attacker.name[:20]}')
+        return need
 
     def _play_card(self, card: Card, p: GameState, opp: GameState,
                    ee: EffectExecutor, verbose: bool = False):

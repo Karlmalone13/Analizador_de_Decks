@@ -63,6 +63,7 @@ namespace OPTCGBotPlugin
         {
             public int id;
             public string zone = "";
+            public string code = "";   // cardID — engine valora cartas fora do DTO (trash/top deck)
         }
 
         private class ChooseTargetResponse
@@ -71,14 +72,18 @@ namespace OPTCGBotPlugin
         }
 
         // Ordena candidatos de alvo por preferencia do engine. Null em erro.
+        // attackerPower/defenderId: contexto de ataque em andamento (redirect) —
+        // 0 quando o efeito resolve fora de combate.
         public static System.Collections.Generic.List<int>? ChooseTarget(
             GameStateDto state,
             System.Collections.Generic.List<TargetCandidate> candidates,
-            string? actorCode = null)
+            string? actorCode = null,
+            int attackerPower = 0,
+            int defenderId = 0)
         {
             try
             {
-                string json = JsonConvert.SerializeObject(new { state, candidates, actorCode });
+                string json = JsonConvert.SerializeObject(new { state, candidates, actorCode, attackerPower, defenderId });
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
                 var resp = _http.PostAsync($"{BASE}/choose_target", content).GetAwaiter().GetResult();
                 if (!resp.IsSuccessStatusCode)

@@ -151,7 +151,7 @@ namespace OPTCGBotPlugin
 
                 // So candidatos do proprio campo; engine ordena por menor valor
                 var swCandidates = new System.Collections.Generic.List<EngineClient.TargetCandidate>();
-                foreach (var c in BotExecutor.CollectTargetCandidates(swBotPs, swOppPs))
+                foreach (var c in BotExecutor.CollectTargetCandidates(swBotPs, swOppPs, gls))
                     if (c.zone == "own_board")
                         swCandidates.Add(c);
 
@@ -275,16 +275,34 @@ namespace OPTCGBotPlugin
                 if (EngineClient.IsAlive())
                 {
                     var dto = GameStateBuilder.Build(botPs, oppPs, gls);
-                    var candidates = BotExecutor.CollectTargetCandidates(botPs, oppPs);
-                    _pendingOrder = EngineClient.ChooseTarget(dto, candidates, BotExecutor.ActorCode(gls));
+                    var candidates = BotExecutor.CollectTargetCandidates(botPs, oppPs, gls);
+
+                    // Efeito resolvendo DURANTE um ataque (ex: redirect do
+                    // Teach)? Passa o contexto — o engine nunca escolhe o alvo
+                    // original e prefere quem sobrevive ao golpe.
+                    int atkPower = 0, defenderId = 0;
+                    var attacker = BotExecutor.Attacker(gls);
+                    var defender = BotExecutor.Defender(gls);
+                    if (attacker != null && defender != null &&
+                        (gls.e_CurrentState == GameplayState.Attack_WaitOnBlocker ||
+                         gls.e_CurrentState == GameplayState.Attack_BeforeBlocker ||
+                         gls.e_CurrentState == GameplayState.Attack_WaitOnCounters))
+                    {
+                        atkPower   = BotExecutor.PowerOf(gls, attacker, true);
+                        defenderId = BotExecutor.UidOf(defender);
+                    }
+
+                    _pendingOrder = EngineClient.ChooseTarget(
+                        dto, candidates, BotExecutor.ActorCode(gls), atkPower, defenderId);
                 }
             }
 
             // V3 sem alvos faltando (ex: "Choose 0 Targets") → confirma direto
+            // (com o botao de finalize certo: search do topo usa FinalizeTopDeck)
             int remaining = BotExecutor.RemainingV3Targets(gls);
             if (remaining == 0)
             {
-                BotExecutor.ConfirmV3Targets(gls);
+                BotExecutor.ConfirmPendingSelection(gls);
                 _cooldown = 1f;
                 return;
             }
@@ -302,7 +320,7 @@ namespace OPTCGBotPlugin
             if (!_pendingConfirmTried && gls.acaActive.UsesV3())
             {
                 _pendingConfirmTried = true;
-                BotExecutor.ConfirmV3Targets(gls);
+                BotExecutor.ConfirmPendingSelection(gls);
                 _cooldown = 1f;
                 return;
             }

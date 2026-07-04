@@ -35,6 +35,7 @@ class CardDto(BaseModel):
     rested: bool
     justPlayed: bool
     deckUniqueId: int
+    donAttached: int = 0   # DON anexados a carta (default 0 p/ plugin antigo)
 
 class PlayerDto(BaseModel):
     hand: list[CardDto] = []
@@ -93,9 +94,10 @@ def _make(dto: CardDto):
         return None
     try:
         card = _make_card(dto.code, data)
-        card.rested      = dto.rested
-        card.just_played = dto.justPlayed
-        card._deck_uid   = dto.deckUniqueId
+        card.rested       = dto.rested
+        card.just_played  = dto.justPlayed
+        card.don_attached = dto.donAttached
+        card._deck_uid    = dto.deckUniqueId
         return card
     except Exception:
         return None
@@ -144,13 +146,17 @@ class DefenseRequest(BaseModel):
 
 class TargetCandidate(BaseModel):
     id: int
-    zone: str    # own_hand | own_board | opp_board | own_leader | opp_leader | own_stage | opp_stage
+    zone: str        # own_hand | own_board | own_trash | opp_board | opp_trash |
+                     # top_deck | own_leader | opp_leader | own_stage | opp_stage
+    code: str = ""   # cardID p/ valorar cartas fora do DTO (trash/top deck)
 
 
 class ChooseTargetRequest(BaseModel):
     state: GameStateDto
     candidates: list[TargetCandidate] = []
     actorCode: Optional[str] = None   # carta cujo efeito esta resolvendo (debug/futuro)
+    attackerPower: int = 0            # > 0 = efeito resolvendo durante um ataque (redirect)
+    defenderId: int = 0               # uid do alvo original do ataque (nunca redirecionar p/ ele)
 
 
 @app.get("/health")
@@ -248,8 +254,12 @@ def choose_target(req: ChooseTargetRequest):
         opp_gs = _dto_to_gs(req.state.opp, req.state.turnNumber)
 
         out = bridge.order_target_candidates(
-            gs, opp_gs, [{"id": c.id, "zone": c.zone} for c in req.candidates])
-        print(f"[TGT] {len(req.candidates)} candidatos (actor={req.actorCode}) -> ordem {out[:5]}", flush=True)
+            gs, opp_gs,
+            [{"id": c.id, "zone": c.zone, "code": c.code} for c in req.candidates],
+            attacker_power=req.attackerPower,
+            defender_uid=req.defenderId)
+        print(f"[TGT] {len(req.candidates)} candidatos (actor={req.actorCode} "
+              f"atk={req.attackerPower} def={req.defenderId}) -> ordem {out[:5]}", flush=True)
         return {"orderedIds": out}
 
     except Exception as e:
@@ -263,7 +273,8 @@ def choose_target(req: ChooseTargetRequest):
 def decide(state: GameStateDto):
     """
     Recebe o estado do jogo e retorna a proxima acao do bot.
-    Resposta: {"type": "play"|"attack"|"end_turn", "cardId": int, "targetId": int}
+    Resposta: {"type": "play"|"attack"|"attach_don"|"end_turn",
+               "cardId": int, "targetId": int, "donToAttach": int}
     """
     try:
         bridge = _get_bridge()
@@ -271,24 +282,29 @@ def decide(state: GameStateDto):
         gs     = _dto_to_gs(state.bot, state.turnNumber)
         opp_gs = _dto_to_gs(state.opp, state.turnNumber)
 
-        action = bridge.choose_action(gs, opp_gs, match, timeout=3.0)
+        # So tipos que o plugin sabe executar — os demais (activate...) sao
+        # pulados pelo bridge em vez de encerrar o turno.
+        action = bridge.choose_action(gs, opp_gs, match, timeout=3.0,
+                                      allowed_types={"play", "attack", "attach_don"})
 
         if action is None:
-            return {"type": "end_turn", "cardId": 0, "targetId": 0}
+            return {"type": "end_turn", "cardId": 0, "targetId": 0, "donToAttach": 0}
 
-        # Formato da action: (score, tipo, card, ttype, tgt)
-        #   play:   (score, 'play',   card, None, None)
-        #   attack: (score, 'attack', att, 'leader'|'character', tgt_card|None)
+        # Formato da action: (score, tipo, card, ...)
+        #   play:       (score, 'play',       card, None, None)
+        #   attack:     (score, 'attack',     att, 'leader'|'character', tgt_card|None)
+        #   attach_don: (score, 'attach_don', card, falta, keyword/trigger)
         action_type = action[1] if len(action) > 1 else "end_turn"
-        card_id   = 0
-        target_id = 0
+        card_id    = 0
+        target_id  = 0
+        don_attach = 0
 
         if action_type == "play" and len(action) > 2:
             card = action[2]
             # A carta veio do proprio gs.hand — tem _deck_uid direto
             card_id = getattr(card, '_deck_uid', 0)
             if card_id == 0:
-                return {"type": "end_turn", "cardId": 0, "targetId": 0}
+                return {"type": "end_turn", "cardId": 0, "targetId": 0, "donToAttach": 0}
 
         elif action_type == "attack" and len(action) > 2:
             attacker = action[2]
@@ -298,20 +314,31 @@ def decide(state: GameStateDto):
                 if attacker is gs.leader:
                     card_id = getattr(gs.leader, '_deck_uid', 0)
                 if card_id == 0:
-                    return {"type": "end_turn", "cardId": 0, "targetId": 0}
+                    return {"type": "end_turn", "cardId": 0, "targetId": 0, "donToAttach": 0}
 
             ttype = action[3] if len(action) > 3 else 'leader'
             if ttype == 'character' and len(action) > 4 and action[4] is not None:
                 target_id = getattr(action[4], '_deck_uid', 0)
                 if target_id == 0:
-                    return {"type": "end_turn", "cardId": 0, "targetId": 0}
+                    return {"type": "end_turn", "cardId": 0, "targetId": 0, "donToAttach": 0}
             # ttype == 'leader' -> targetId = 0 (lider oponente)
 
-        else:
-            # Tipos ainda nao suportados no plugin (activate, attach_don...)
-            return {"type": "end_turn", "cardId": 0, "targetId": 0}
+            # DON a anexar ANTES de declarar (mesma conta da simulacao —
+            # sem isso o ataque que o engine aprovou "com DON" sai pelado e falha)
+            don_attach = bridge.don_for_attack(gs, opp_gs, action)
 
-        return {"type": action_type, "cardId": card_id, "targetId": target_id}
+        elif action_type == "attach_don" and len(action) > 3:
+            card = action[2]
+            card_id    = getattr(card, '_deck_uid', 0)
+            don_attach = int(action[3] or 0)
+            if card_id == 0 or don_attach <= 0:
+                return {"type": "end_turn", "cardId": 0, "targetId": 0, "donToAttach": 0}
+
+        else:
+            return {"type": "end_turn", "cardId": 0, "targetId": 0, "donToAttach": 0}
+
+        return {"type": action_type, "cardId": card_id,
+                "targetId": target_id, "donToAttach": don_attach}
 
     except Exception as e:
         import traceback

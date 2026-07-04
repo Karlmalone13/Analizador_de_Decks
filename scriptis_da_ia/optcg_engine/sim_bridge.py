@@ -210,13 +210,19 @@ def can_execute_action(action: tuple, gs: GameState) -> tuple[bool, str]:
 
 
 def choose_action(gs: GameState, opp_gs: GameState,
-                  match, timeout: float = 4.0) -> Optional[tuple]:
+                  match, timeout: float = 4.0,
+                  allowed_types: Optional[set] = None) -> Optional[tuple]:
     """
     Pede ao engine a melhor ação para o estado atual.
 
     Retorna a tuple de ação (score, tipo, carta, ...) ou None se não há ação.
     O chamador usa action[1] (tipo: 'play'|'attack'|'activate'|...) e
     action[2] (carta) para executar no simulador.
+
+    allowed_types: se dado, retorna a melhor ação de score >= 0 cujo TIPO o
+    executor sabe realizar (ex: o plugin só executa play/attack/attach_don).
+    A ordem de preferência continua sendo 100% do engine — isto só pula
+    ações que o executor não tem como fazer, em vez de encerrar o turno.
     """
     import threading
     result: list = [None]
@@ -228,8 +234,12 @@ def choose_action(gs: GameState, opp_gs: GameState,
             print(f"[ENG] {len(actions)} acoes | hand={len(gs.hand)} don={gs.don_available} turn={gs.turn}", flush=True)
             if actions:
                 print(f"[ENG] top3: {[(a[0],a[1]) for a in actions[:3]]}", flush=True)
-            if actions and actions[0][0] >= 0:
-                result[0] = actions[0]
+            for a in actions:
+                if a[0] < 0:
+                    break
+                if allowed_types is None or a[1] in allowed_types:
+                    result[0] = a
+                    break
         except Exception as e:
             import traceback
             print(f"[ENG-ERR] {e}\n{traceback.format_exc()}", flush=True)
@@ -238,6 +248,22 @@ def choose_action(gs: GameState, opp_gs: GameState,
     t.start()
     t.join(timeout=timeout)
     return result[0]
+
+
+def don_for_attack(gs: GameState, opp_gs: GameState, action: tuple) -> int:
+    """
+    Quantos DON o executor deve anexar ao atacante ANTES de declarar o
+    ataque escolhido pelo engine (mesma conta do _attach_don_for_attack da
+    simulação). 0 = declara direto.
+    """
+    from optcg_engine.decision_engine import don_needed_for_attack
+    if action is None or len(action) < 3 or action[1] != 'attack':
+        return 0
+    attacker = action[2]
+    ttype = action[3] if len(action) > 3 else 'leader'
+    tgt = action[4] if len(action) > 4 else None
+    engine = DecisionEngine(gs, opp_gs)
+    return don_needed_for_attack(attacker, ttype or 'leader', tgt, gs, opp_gs, engine)
 
 
 def _card_intent(zone: str, card: Card, reason: str) -> dict:
@@ -353,16 +379,32 @@ def resolve_optional_effect(gs: GameState, opp_gs: GameState) -> bool:
 
 
 def order_target_candidates(gs: GameState, opp_gs: GameState,
-                            candidates: list[dict]) -> list[int]:
+                            candidates: list[dict],
+                            attacker_power: int = 0,
+                            defender_uid: int = 0) -> list[int]:
     """
     Ordena candidatos de alvo de um efeito pendente por preferencia.
-    candidates: [{'id': uid, 'zone': 'own_hand'|'own_board'|'opp_board'|...}]
+    candidates: [{'id': uid, 'zone': 'own_hand'|'own_board'|'top_deck'|...,
+                  'code': cardID (opcional)}]
 
     Heuristica por zona:
+    - top_deck: melhor carta primeiro (search — vai para a mao)
     - own_hand: pior carta primeiro (descarte — choose_to_trash)
+    - own_trash: melhor carta primeiro (recuperacao/play from trash)
     - own_board: menor valor primeiro (sacrificio/substituicao)
     - opp_board: maior valor primeiro (remocao/bounce)
+    - opp_trash: melhor carta primeiro (negar recuperacao/exile)
     - leaders/stages: por ultimo
+
+    attacker_power > 0 = efeito resolvendo DURANTE um ataque do oponente
+    (ex: redirect do lider Teach). Muda a logica do proprio campo:
+    - NUNCA o alvo original do ataque (defender_uid) — redirecionar para ele
+      e um no-op que paga o custo por nada;
+    - preferir personagem que SOBREVIVE (poder > poder do atacante);
+    - senao, o sacrificio mais barato (menor valor de board).
+
+    Cartas de trash/top_deck nao vem no DTO — o 'code' do candidato permite
+    montar a carta do banco so para valorar.
     """
     engine = DecisionEngine(gs, opp_gs)
 
@@ -372,16 +414,40 @@ def order_target_candidates(gs: GameState, opp_gs: GameState,
         if uid:
             by_uid[uid] = c
 
-    def sort_key(cand: dict):
+    def card_of(cand: dict):
         card = by_uid.get(cand.get('id'))
+        if card is None and cand.get('code'):
+            data = _cards_db.get(cand['code'])
+            if data:
+                card = _make_card(cand['code'], data)
+        return card
+
+    def sort_key(cand: dict):
+        card = card_of(cand)
         zone = cand.get('zone', '')
+        # Contexto de ataque: alvo original sempre por ULTIMO, em qualquer zona
+        if attacker_power > 0 and defender_uid and cand.get('id') == defender_uid:
+            return (9, 0)
+        if zone == 'top_deck':
+            return (0, -(engine.avaliar_carta(card) if card else 0))
         if zone == 'own_hand':
-            return (0, engine.avaliar_carta(card) if card else 0)
+            return (1, engine.avaliar_carta(card) if card else 0)
+        if zone == 'own_trash':
+            return (2, -(engine.avaliar_carta(card) if card else 0))
         if zone == 'own_board':
-            return (1, engine.analyzer.char_value_score(card) if card else 0)
+            if attacker_power > 0:
+                power = getattr(card, 'power', 0) if card else 0
+                if power > attacker_power:
+                    # sobrevive ao golpe: melhor redirect possivel
+                    return (3, -power)
+                # morre: sacrificio mais barato primeiro
+                return (3.5, engine.analyzer.char_value_score(card) if card else 0)
+            return (3, engine.analyzer.char_value_score(card) if card else 0)
         if zone == 'opp_board':
-            return (2, -(engine.analyzer.char_value_score(card) if card else 0))
-        return (3, 0)
+            return (4, -(engine.analyzer.char_value_score(card) if card else 0))
+        if zone == 'opp_trash':
+            return (5, -(engine.avaliar_carta(card) if card else 0))
+        return (6, 0)
 
     return [c.get('id') for c in sorted(candidates, key=sort_key)]
 

@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 namespace OPTCGBotPlugin
@@ -30,7 +30,7 @@ namespace OPTCGBotPlugin
             {
                 var cls = go != null ? go.GetComponent<CardLogicScript>() : null;
                 if (cls != null)
-                    dto.hand.Add(CardToDto(cls.myCard));
+                    dto.hand.Add(CardToDto(cls));
             }
 
             // Campo (personagens em jogo = deploy area)
@@ -38,7 +38,7 @@ namespace OPTCGBotPlugin
             {
                 var cls = go != null ? go.GetComponent<CardLogicScript>() : null;
                 if (cls != null)
-                    dto.board.Add(CardToDto(cls.myCard));
+                    dto.board.Add(CardToDto(cls));
             }
 
             // Vida
@@ -46,7 +46,7 @@ namespace OPTCGBotPlugin
             {
                 var cls = go != null ? go.GetComponent<CardLogicScript>() : null;
                 if (cls != null)
-                    dto.life.Add(CardToDto(cls.myCard));
+                    dto.life.Add(CardToDto(cls));
             }
 
             // Lider
@@ -54,15 +54,17 @@ namespace OPTCGBotPlugin
             {
                 var cls = ps.Lgo_MyLeader[0].GetComponent<CardLogicScript>();
                 if (cls != null)
-                    dto.leader = CardToDto(cls.myCard);
+                    dto.leader = CardToDto(cls);
             }
 
             return dto;
         }
 
-        // LiveCard e struct — recebemos uma copia, leitura apenas
-        private static CardDto CardToDto(LiveCard card)
+        // LiveCard e struct — recebemos uma copia, leitura apenas.
+        // Recebe o CardLogicScript inteiro porque lgo_AttachedDon vive nele.
+        private static CardDto CardToDto(CardLogicScript cls)
         {
+            var card = cls.myCard;
             return new CardDto
             {
                 code         = card.cardDef != null ? card.cardDef.cardID : "",
@@ -71,6 +73,7 @@ namespace OPTCGBotPlugin
                 rested       = card.bTapped,
                 justPlayed   = card.bSummonSick,
                 deckUniqueId = card.deckUniqueID,
+                donAttached  = cls.lgo_AttachedDon != null ? cls.lgo_AttachedDon.Count : 0,
             };
         }
 
@@ -89,3 +92,4 @@ namespace OPTCGBotPlugin
         }
     }
 }
+

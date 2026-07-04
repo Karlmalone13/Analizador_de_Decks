@@ -11,6 +11,7 @@ namespace OPTCGBotPlugin
         public bool rested;
         public bool justPlayed;
         public int deckUniqueId;  // ID unico dentro da partida (para identificar alvos)
+        public int donAttached;   // DON anexados a esta carta (+1000 poder cada no proprio turno)
     }
 
     public class PlayerDto
@@ -33,11 +34,14 @@ namespace OPTCGBotPlugin
     // Acao retornada pelo servidor Python
     public class BotAction
     {
-        // "play" | "attack" | "end_turn" | "activate"
+        // "play" | "attack" | "attach_don" | "end_turn"
         public string type = "end_turn";
-        // Para play/attack/activate: deckUniqueId da carta do bot
+        // Para play/attack/attach_don: deckUniqueId da carta do bot
         public int cardId;
         // Para attack: deckUniqueId do alvo (0 = lider oponente)
         public int targetId;
+        // attack: DON a anexar no atacante ANTES de declarar;
+        // attach_don: quantos DON anexar na carta (ligar efeito/keyword)
+        public int donToAttach;
     }
 }

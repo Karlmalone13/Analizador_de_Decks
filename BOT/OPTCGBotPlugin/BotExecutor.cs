@@ -48,6 +48,13 @@ namespace OPTCGBotPlugin
             catch { return 0; }
         }
 
+        // deckUniqueID de qualquer carta em jogo (0 se nao der para ler)
+        public static int UidOf(GameObject go)
+        {
+            var cls = go != null ? go.GetComponent<CardLogicScript>() : null;
+            return cls != null ? cls.myCard.deckUniqueID : 0;
+        }
+
         // Bloqueia com o personagem indicado (mesmo caminho do clique humano;
         // o jogo valida CardCanBlock). Retorna false se a carta nao foi achada.
         public static bool TryBlock(GameplayLogicScript gls, PlayerState botPs, int blockerId)
@@ -160,9 +167,19 @@ namespace OPTCGBotPlugin
             Plugin.Log.LogInfo("[Bot] V3: confirmar selecao (NextStep)");
         }
 
-        // Todos os alvos clicaveis possiveis, com zona (o jogo valida cada clique)
+        // Cartas reveladas do topo do deck (search/look at top X) — zona
+        // privada do GLS, fora dos PlayerStates
+        private static readonly FieldInfo _fTopDeck =
+            AccessTools.Field(typeof(GameplayLogicScript), "lgo_TopDeck");
+
+        private static List<GameObject>? TopDeck(GameplayLogicScript gls)
+            => _fTopDeck.GetValue(gls) as List<GameObject>;
+
+        // Todos os alvos clicaveis possiveis, com zona e codigo (o jogo valida
+        // cada clique; o codigo permite ao engine valorar cartas fora do DTO,
+        // como trash e top deck)
         public static List<EngineClient.TargetCandidate> CollectTargetCandidates(
-            PlayerState botPs, PlayerState oppPs)
+            PlayerState botPs, PlayerState oppPs, GameplayLogicScript gls)
         {
             var list = new List<EngineClient.TargetCandidate>();
             void Add(List<GameObject>? zone, string name)
@@ -176,12 +193,16 @@ namespace OPTCGBotPlugin
                         {
                             id = cls.myCard.deckUniqueID,
                             zone = name,
+                            code = cls.myCard.cardDef != null ? cls.myCard.cardDef.cardID : "",
                         });
                 }
             }
+            Add(TopDeck(gls),       "top_deck");
             Add(botPs.Lgo_MyHand,   "own_hand");
             Add(botPs.Lgo_MyDeploy, "own_board");
+            Add(botPs.Lgo_MyTrash,  "own_trash");
             Add(oppPs.Lgo_MyDeploy, "opp_board");
+            Add(oppPs.Lgo_MyTrash,  "opp_trash");
             Add(botPs.Lgo_MyLeader, "own_leader");
             Add(oppPs.Lgo_MyLeader, "opp_leader");
             Add(botPs.Lgo_MyStage,  "own_stage");
@@ -194,9 +215,12 @@ namespace OPTCGBotPlugin
         public static bool ClickTargetCandidate(GameplayLogicScript gls, PlayerState botPs,
                                                 PlayerState oppPs, int targetId)
         {
-            var go = FindCard(botPs.Lgo_MyHand, targetId)
+            var go = FindCard(TopDeck(gls), targetId)
+                  ?? FindCard(botPs.Lgo_MyHand, targetId)
                   ?? FindCard(botPs.Lgo_MyDeploy, targetId)
+                  ?? FindCard(botPs.Lgo_MyTrash, targetId)
                   ?? FindCard(oppPs.Lgo_MyDeploy, targetId)
+                  ?? FindCard(oppPs.Lgo_MyTrash, targetId)
                   ?? FindCard(botPs.Lgo_MyLeader, targetId)
                   ?? FindCard(oppPs.Lgo_MyLeader, targetId)
                   ?? FindCard(botPs.Lgo_MyStage, targetId)
@@ -206,6 +230,39 @@ namespace OPTCGBotPlugin
             _mClickDuringCardAction.Invoke(gls, new object[] { go });
             Plugin.Log.LogInfo($"[Bot] alvo de efeito: {CodeOf(go)}");
             return true;
+        }
+
+        // ── Botoes de escolha atualmente ofertados (go_ChoiceButton1..4) ─────
+        private static IEnumerable<ButtonChoiceType> OfferedButtons(GameplayLogicScript gls)
+        {
+            foreach (var go in new[] { gls.go_ChoiceButton1, gls.go_ChoiceButton2,
+                                       gls.go_ChoiceButton3, gls.go_ChoiceButton4 })
+            {
+                if (go == null || !go.activeSelf) continue;
+                var btn = go.GetComponent<ChoiceButtonScript>();
+                if (btn != null) yield return btn.myType;
+            }
+        }
+
+        // Confirma a selecao atual clicando o botao de finalize CORRETO
+        // ofertado pelo jogo (search do topo do deck usa FinalizeTopDeck /
+        // ConfirmRevealedCard, que roteiam diferente de SelectTargets).
+        public static void ConfirmPendingSelection(GameplayLogicScript gls)
+        {
+            var preferidos = new[] { ButtonChoiceType.FinalizeTopDeck,
+                                     ButtonChoiceType.ConfirmRevealedCard,
+                                     ButtonChoiceType.SelectTargets };
+            foreach (var alvo in preferidos)
+                foreach (var oferecido in OfferedButtons(gls))
+                    if (oferecido == alvo)
+                    {
+                        gls.ChoiceButtonClicked(alvo, -1);
+                        Plugin.Log.LogInfo($"[Bot] confirmar selecao: {alvo}");
+                        return;
+                    }
+            // Nenhum botao de finalize visivel — mantem o comportamento antigo
+            gls.ChoiceButtonClicked(ButtonChoiceType.SelectTargets, -1);
+            Plugin.Log.LogInfo("[Bot] confirmar selecao (fallback SelectTargets)");
         }
 
         public static void CancelPendingAction(GameplayLogicScript gls)
@@ -240,11 +297,59 @@ namespace OPTCGBotPlugin
                 case "play":
                     return TryPlay(gls, botPs, action.cardId);
                 case "attack":
+                    // Engine mandou anexar DON antes de declarar (o ataque so
+                    // passa com o pump — sem isso sai "pelado" e falha)
+                    if (action.donToAttach > 0)
+                        TryAttachDon(gls, botPs, action.cardId, action.donToAttach, dto);
                     return TryAttack(gls, botPs, oppPs, action.cardId, action.targetId, dto);
+                case "attach_don":
+                    return TryAttachDon(gls, botPs, action.cardId, action.donToAttach, dto);
                 default:
                     Plugin.Log.LogWarning($"[Bot] tipo de acao desconhecido: {action.type}");
                     return false;
             }
+        }
+
+        // ── Anexar DON (mesma mutacao do drag humano: AttachDonToCard e publico;
+        //    lider = iDeployIdx -1). CheckForAttachDonAction dispara eventuais
+        //    triggers "when DON attached" do lider, como no fluxo original. ──
+        private static readonly MethodInfo _mCheckForAttachDon =
+            AccessTools.Method(typeof(GameplayLogicScript), "CheckForAttachDonAction");
+
+        public static bool TryAttachDon(GameplayLogicScript gls, PlayerState botPs,
+                                        int cardId, int count, GameStateDto dto)
+        {
+            int deployIdx;
+            var go = FindCard(botPs.Lgo_MyDeploy, cardId);
+            if (go != null)
+            {
+                deployIdx = botPs.Lgo_MyDeploy.IndexOf(go);
+            }
+            else if (dto.bot.leader != null && dto.bot.leader.deckUniqueId == cardId
+                     && botPs.Lgo_MyLeader != null && botPs.Lgo_MyLeader.Count > 0)
+            {
+                go = botPs.Lgo_MyLeader[0];
+                deployIdx = -1;
+            }
+            else
+            {
+                Plugin.Log.LogWarning($"[Bot] attach_don: carta {cardId} nao encontrada");
+                return false;
+            }
+
+            int attached = 0;
+            for (int i = 0; i < count; i++)
+            {
+                var don = botPs.FirstAvailableDon();
+                if (don == null) break;
+                gls.AttachDonToCard(botPs, deployIdx, botPs.FindIndexOfDonCard(don));
+                attached++;
+            }
+            if (attached > 0)
+                _mCheckForAttachDon.Invoke(gls, new object[] { attached });
+
+            Plugin.Log.LogInfo($"[Bot] attach_don: {attached}/{count} DON em {CodeOf(go)}");
+            return attached > 0;
         }
 
         public static void EndTurn(GameplayLogicScript gls)
