@@ -37,9 +37,25 @@ namespace OPTCGBotPlugin
                 return;
             }
 
-            // So age no turno do bot, na Main Phase, com o state machine ocioso
+            // So age no turno do bot
             if (gls.gsv_CurrentGame.iPlayerTurn != BotPlayerIndex)
                 return;
+
+            // Fases de inicio de turno: clica Draw Card / Draw Don sozinho
+            if (gls.e_CurrentState == GameplayState.PlayerTurn_DrawCard)
+            {
+                gls.ChoiceButtonClicked(ButtonChoiceType.DrawCard, -1);
+                _cooldown = 0.5f;
+                return;
+            }
+            if (gls.e_CurrentState == GameplayState.PlayerTurn_DrawDon)
+            {
+                gls.ChoiceButtonClicked(ButtonChoiceType.DrawDon, -1);
+                _cooldown = 0.5f;
+                return;
+            }
+
+            // Main Phase: so com o state machine ocioso
             if (gls.e_CurrentState != GameplayState.PlayerTurn_Action)
                 return;
             if (gls.acaActive != null || (gls.acaPending != null && gls.acaPending.Count > 0))

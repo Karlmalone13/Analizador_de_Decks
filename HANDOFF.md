@@ -1,5 +1,15 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-03 (71) - Claude
+
+### PRIMEIRO TESTE FUNCIONAL + auto Draw Card/Don
+
+**v1.1 FUNCIONOU no Solo vs Self**: log do jogo mostra `[You] Deploy Catarina Devon`, ataques com trigger ativado, `[You] End Turn` — o bot jogou de verdade pelo engine, pagando custos.
+
+Feedback do usuario: no inicio do turno do bot era preciso clicar Draw Card e Draw Don manualmente. Fix: `BotDriver.Update` agora detecta `PlayerTurn_DrawCard`/`PlayerTurn_DrawDon` e clica `ChoiceButtonClicked(DrawCard/DrawDon)` sozinho (cooldown 0.5s). Recompilado, dll em plugins — precisa reabrir o jogo.
+
+---
+
 ## 2026-07-03 (70) - Claude
 
 ### refactor(BOT): v1.1 — driver Update() substitui hook AddTurn
