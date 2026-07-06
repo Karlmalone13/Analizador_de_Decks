@@ -32,6 +32,7 @@ class CardDto(BaseModel):
     code: str
     cost: int
     power: int
+    powerAtk: int = 0        # CardPower(..., attacking=true), sem DON
     rested: bool
     justPlayed: bool
     deckUniqueId: int
@@ -109,6 +110,13 @@ def _make(dto: CardDto):
             # apos efeitos de set_base_power (copy da Devon)
             card._db_base_power = card.data.power
             card.data = replace(card.data, power=dto.power)
+        # Poder vivo especificamente ao ATACAR, calculado pelo proprio jogo.
+        # Nao troca card.data.power: fora do ataque o engine deve continuar
+        # usando dto.power. attack_time_power soma DON e When Attacking.
+        if dto.powerAtk > 0 and dto.powerAtk != dto.power:
+            card._attack_power_override = dto.powerAtk
+            if not hasattr(card, '_db_base_power'):
+                card._db_base_power = card.data.power
         card.rested       = dto.rested
         card.just_played  = dto.justPlayed
         card.don_attached = dto.donAttached

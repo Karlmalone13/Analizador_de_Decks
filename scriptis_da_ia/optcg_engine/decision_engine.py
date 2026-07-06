@@ -281,6 +281,9 @@ class Card:
                       'cost_buff', 'cost_buff_permanent', 'frozen_next_refresh',
                       'life_face_up', 'immunity_ko_until'):
             setattr(novo, campo, getattr(self, campo))
+        for campo in ('_db_base_power', '_attack_power_override'):
+            if hasattr(self, campo):
+                setattr(novo, campo, getattr(self, campo))
         novo.attack_paywall = self.attack_paywall  # dict sempre REASSIGNED (nunca mutado in-place), referencia compartilhada e segura
         return novo
 
@@ -876,6 +879,19 @@ def life_redirect_cost(life_count: int) -> float:
     return {3: 25.0, 2: 45.0, 1: 90.0}.get(life_count, 90.0)
 
 
+def live_attack_power(attacker: 'Card') -> int:
+    """Poder vivo de ataque vindo do jogo, sem projetar When Attacking."""
+    atk_override = getattr(attacker, '_attack_power_override', None)
+    if atk_override is None:
+        return attacker.effective_power(True)
+    # powerAtk vem do CardPower(..., attacking=true) do jogo sem DON.
+    # Reaplica somente os buffs/custos simulados pelo engine e o DON
+    # anexado, mantendo o jogo como fonte da passiva "ao atacar".
+    base = int(atk_override)
+    return max(0, base + attacker.power_buff +
+               getattr(attacker, 'don_attached', 0) * 1000)
+
+
 def attack_time_power(attacker: 'Card', opp: 'GameState') -> int:
     """
     Poder do atacante NO MOMENTO do ataque: effective_power + buffs próprios
@@ -884,7 +900,7 @@ def attack_time_power(attacker: 'Card', opp: 'GameState') -> int:
     o poder do personagem escolhido). Sem isso o engine subestima esses
     atacantes e barra/superpaga ataques que na prática passam fácil.
     """
-    power = attacker.effective_power(True)
+    power = live_attack_power(attacker)
     wa = get_card_effects(attacker.code).get('when_attacking')
     if not isinstance(wa, dict):
         return power
@@ -4756,12 +4772,12 @@ class GameAnalyzer:
 
     def my_attack_power(self) -> int:
         """Poder total de ataque disponível (sem DON)."""
-        total = self.me.leader.effective_power(True) if not self.me.leader.rested and not self.me.cannot_attack_leader_this_turn else 0
+        total = attack_time_power(self.me.leader, self.opp) if not self.me.leader.rested and not self.me.cannot_attack_leader_this_turn else 0
         for c in self.me.field_chars:
             if (not c.rested and not c.just_played and not c.cannot_attack_until
                     and not c.cannot_be_rested_until and not is_attack_locked_self(c, self.me, self.opp)
                     and can_afford_attack_paywall(c, self.me)):
-                total += c.effective_power(True)
+                total += attack_time_power(c, self.opp)
         return total
 
     def my_available_don(self) -> int:
@@ -4865,7 +4881,7 @@ class GameAnalyzer:
         # disponivel ainda pode ser distribuido entre eles para garantir lethal.
         ataques = []
         if not self.me.cannot_attack_leader_this_turn and not self.me.leader.rested and not is_attack_locked_self(self.me.leader, self.me, self.opp):
-            ataques.append((self.me.leader.effective_power(True),
+            ataques.append((attack_time_power(self.me.leader, self.opp),
                             self.me.leader.has_unblockable or self.me.leader.unblockable_this_turn,
                             1))
         for c in self.me.field_chars:
@@ -4873,7 +4889,7 @@ class GameAnalyzer:
                     and not c.cannot_be_rested_until and not is_attack_locked_self(c, self.me, self.opp)
                     and can_afford_attack_paywall(c, self.me)):
                 hits = 2 if c.is_double_attack() else 1
-                ataques.append((c.effective_power(True),
+                ataques.append((attack_time_power(c, self.opp),
                                 c.has_unblockable or c.unblockable_this_turn,
                                 hits))
 
@@ -6880,7 +6896,7 @@ class OPTCGMatch:
             attached = self._attach_don_for_attack(attacker, ttype, tgt, p, opp, engine, verbose)
             if verbose:
                 tgt_name = 'Leader' if ttype == 'leader' else (tgt.name[:20] if tgt else '?')
-                print(f'    {attacker.name[:20]} ({attacker.effective_power(True)}pwr) ataca {tgt_name}')
+                print(f'    {attacker.name[:20]} ({attack_time_power(attacker, opp)}pwr) ataca {tgt_name}')
             if self._execute_attack(attacker, ttype, tgt, p, opp, engine, verbose=verbose,
                                     attached_don=attached):
                 return True
@@ -7235,7 +7251,7 @@ class OPTCGMatch:
             attacker.rested = True
         # Replay event: ataque declarado
         tgt_name = 'Leader' if target_type == 'leader' else (target.name if target else '?')
-        atk_power_preview = attacker.effective_power(True)
+        atk_power_preview = live_attack_power(attacker)
         don_txt = f' anexando {attached_don} DON' if attached_don else ' sem anexar DON'
         self._log_event(p, 'attack', card=attacker, target=target if target_type != 'leader' else opp.leader,
                         description=f'{attacker.name} ataca {tgt_name}{don_txt} ({atk_power_preview} poder)',
@@ -7293,7 +7309,7 @@ class OPTCGMatch:
                     if log:
                         print(f'      ↳ [on opp attack: {reagente.name[:15]}] {log}')
 
-        atk_power = attacker.effective_power(True)
+        atk_power = live_attack_power(attacker)
         damage    = 2 if attacker.is_double_attack() else 1
 
         # Block step

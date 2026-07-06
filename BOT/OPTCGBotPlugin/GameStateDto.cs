@@ -13,6 +13,10 @@ namespace OPTCGBotPlugin
         public int deckUniqueId;  // ID unico dentro da partida (para identificar alvos)
         public int donAttached;   // DON anexados a esta carta (+1000 poder cada no proprio turno)
         public bool actionUsed;   // alguma acao da carta ja usada neste turno (lb_ActionsUsed)
+        // Poder ao ATACAR (CardPower bAttacking=true, sem DON): inclui passivas
+        // de campo que so valem no ataque (ex: -2000 do deck do Krieg) — o
+        // CardPower com bAttacking=false NAO soma essas (gap visto 06/07)
+        public int powerAtk;
     }
 
     public class PlayerDto

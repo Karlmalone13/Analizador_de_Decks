@@ -69,9 +69,11 @@ namespace OPTCGBotPlugin
         private static CardDto CardToDto(CardLogicScript cls, GameObject go, GameplayLogicScript gls)
         {
             var card = cls.myCard;
-            int power;
+            int power, powerAtk;
             try { power = gls.CardPower(go, false, true); }
             catch { power = card.cardPower; }
+            try { powerAtk = gls.CardPower(go, true, true); }
+            catch { powerAtk = power; }
             bool used = false;
             if (card.lb_ActionsUsed != null)
                 foreach (bool b in card.lb_ActionsUsed)
@@ -86,6 +88,7 @@ namespace OPTCGBotPlugin
                 deckUniqueId = card.deckUniqueID,
                 donAttached  = cls.lgo_AttachedDon != null ? cls.lgo_AttachedDon.Count : 0,
                 actionUsed   = used,
+                powerAtk     = powerAtk,
             };
         }
 

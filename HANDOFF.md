@@ -1,5 +1,39 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-06 (97) - Codex
+
+### Fix: engine consome `powerAtk` do jogo para ataque com debuff/passiva ao atacar
+
+Contexto: depois do bloco 96, o plugin C# ja calculava `powerAtk` via
+`CardPower(..., attacking=true)`, mas o server Python ainda ignorava esse
+campo. Resultado provavel: o engine decidia ataques usando `dto.power` normal
+e podia atacar como se nao existisse debuff/passiva que so aparece no momento
+do ataque (caso observado: ataques sem considerar -2000 do lider/efeito opp).
+
+Mudancas:
+- `BOT/engine_server/server.py`: `CardDto` agora aceita `powerAtk`; `_make`
+  guarda `_attack_power_override` na instancia da carta sem trocar
+  `card.data.power` (fora do ataque continua usando `dto.power`).
+- `scriptis_da_ia/optcg_engine/decision_engine.py`: novo `live_attack_power`
+  usa `_attack_power_override + power_buff + DON`; `attack_time_power` parte
+  desse valor e so depois projeta `[When Attacking]`.
+- `Card.__deepcopy__` preserva `_db_base_power` e `_attack_power_override`
+  para o Turn Planner nao perder os poderes vivos ao clonar estados.
+- Potencial ofensivo, lethal planner e logs de ataque relevantes passaram a
+  usar `attack_time_power`/`live_attack_power` em vez de `effective_power(True)`
+  direto.
+
+Validacao curta (sem simulacao longa):
+- `python -m py_compile BOT\engine_server\server.py scriptis_da_ia\optcg_engine\decision_engine.py scriptis_da_ia\optcg_engine\sim_bridge.py`
+- teste inline: atacante com `powerAtk=3000` + 1 DON vira 4000 e
+  `don_needed_for_attack` pede +1 DON contra lider 5000.
+
+Operacional: por mexer em `.py`, reiniciar o server antes do proximo teste
+in-game. Por mexer no DTO/plugin C#, recompilar/recarregar a DLL se essas
+mudancas ainda nao tiverem sido compiladas no build atual.
+
+---
+
 ## 2026-07-06 (96) - Claude
 
 ### Diagnostico: partida das 10:29 rodou com SERVER ANTIGO
