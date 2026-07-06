@@ -1,5 +1,23 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-06 (96) - Claude
+
+### Diagnostico: partida das 10:29 rodou com SERVER ANTIGO
+
+A partida CombatLogs/2026-07-06T10.29.31.log mostrou a reacao do Teach
+disparando num caso que o codigo do bloco 95 (commit 09:55) bloqueia
+(redirect p/ Van Augur com ganho liquido -2 << 25). A dll era nova (09:52)
+mas o processo Python do server nao foi reiniciado. LEMBRETE OPERACIONAL:
+apos mudanca em .py, Ctrl+C no server + rodar de novo; apos mudanca na dll,
+fechar e reabrir o jogo.
+
+Achado da analise: Krieg OP15-008 tem 9000 de BASE (custo 8) e o -2000 nos
+nossos personagens vem do [Activate: Main] dele — o engine novo ve ambos ao
+vivo via dto.power. Log do plugin agora imprime o don anexado no ataque
+("[Bot] attack: X -> Y (don N)") para fechar auditorias como essa.
+
+---
+
 ## 2026-07-06 (95) - Claude
 
 ### Fixes da 6ª rodada (partida CombatLogs/2026-07-06T09.48.13.log)
