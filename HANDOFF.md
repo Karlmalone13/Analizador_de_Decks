@@ -1,5 +1,30 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-06 (95) - Claude
+
+### Fixes da 6ª rodada (partida CombatLogs/2026-07-06T09.48.13.log)
+
+1. **"Turno perdido" com 4+ DON em pe (turnos de 5 e 7 don)** — causa: apos
+   ativar o Laffitte, o engine REOFERECIA o mesmo activate como acao top
+   (nao sabia que ele restou / ja usou a acao); o jogo recusava em silencio
+   e o guarda de 3 repeticoes ENCERRAVA o turno (sem ataque do lider, DON
+   parado). Fix em 2 camadas no gerador de activate:
+   - fonte RESTADA nao gera activate (parser nem sempre captura rest_self);
+   - `actionUsed` novo no DTO (lb_ActionsUsed do jogo) → `_am_used_turn`
+     do engine, bloqueando QUALQUER re-activate no turno (com ou sem
+     once_per_turn — o estado do jogo e a verdade; loops da Devon idem).
+2. **Reacao do lider (Teach) sempre no 1º ataque** — a reacao e 1x/turno;
+   agora `resolve_reaction` segura quando ainda vem atacante MAIOR
+   (personagem ativo do opp ou lider em pe) e o ganho atual e marginal
+   (< 2x o custo da carta). Ganho alto (ex: Doc Q com on-KO cheio) continua
+   disparando na hora. Validado: Jango 2000 com Krieg 9000 por vir → False;
+   Krieg 9000 atual → True.
+
+Plugin recompilado (actionUsed no CardDto), 3 simulacoes OK.
+Reabrir o jogo (dll nova) + reiniciar o server.
+
+---
+
 ## 2026-07-06 (94) - Claude
 
 ### Fixes da 5ª rodada in-game (partida CombatLogs/2026-07-06T09.12.31.log)

@@ -6677,7 +6677,18 @@ class OPTCGMatch:
             am = effects.get('activate_main')
             if not am:
                 continue
-            if am.get('once_per_turn') and getattr(src, '_am_used_turn', -1) == p.turn:
+            # Fonte RESTADA nao ativa: a maioria dos [Activate: Main] de
+            # personagem custa restar a propria carta, e o parser nem sempre
+            # captura o rest_self (Laffitte OP09-095 06/07: engine reofereceu
+            # o activate com ele restado, o jogo recusou em silencio e o
+            # guarda de loop encerrou o turno com 4 DON em pe).
+            if getattr(src, 'rested', False):
+                continue
+            # Ja usado NESTE turno: rastreado pelo engine na simulacao, ou
+            # pelo jogo (lb_ActionsUsed -> actionUsed no DTO) no caminho do
+            # bot. Vale para qualquer activate, com ou sem once_per_turn —
+            # o estado do jogo e a verdade (loops do Laffitte/Devon 06/07).
+            if getattr(src, '_am_used_turn', -1) == p.turn:
                 continue
             pode, _ = self._should_activate_main(src, am, p, opp)
             if not pode:

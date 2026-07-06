@@ -72,6 +72,10 @@ namespace OPTCGBotPlugin
             int power;
             try { power = gls.CardPower(go, false, true); }
             catch { power = card.cardPower; }
+            bool used = false;
+            if (card.lb_ActionsUsed != null)
+                foreach (bool b in card.lb_ActionsUsed)
+                    if (b) { used = true; break; }
             return new CardDto
             {
                 code         = card.cardDef != null ? card.cardDef.cardID : "",
@@ -81,6 +85,7 @@ namespace OPTCGBotPlugin
                 justPlayed   = card.bSummonSick,
                 deckUniqueId = card.deckUniqueID,
                 donAttached  = cls.lgo_AttachedDon != null ? cls.lgo_AttachedDon.Count : 0,
+                actionUsed   = used,
             };
         }
 

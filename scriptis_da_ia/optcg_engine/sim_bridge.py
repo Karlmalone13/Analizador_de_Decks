@@ -446,7 +446,24 @@ def resolve_reaction(gs: GameState, opp_gs: GameState,
     if not opcoes:
         return False
 
-    return max(opcoes) + salva >= CUSTO_CARTA
+    ganho = max(opcoes) + salva
+    if ganho < CUSTO_CARTA:
+        return False
+
+    # A reacao e 1x POR TURNO: se ainda vem atacante MAIOR neste turno
+    # (personagem ativo do oponente ou o lider dele em pe), gastar a reacao
+    # num ataque pequeno de ganho marginal desperdica o uso no golpe grande
+    # (visto em partida real 06/07: pagou no Jango 2000 e o Krieg 9000
+    # entrou de graca). Ganho alto (ex: sacrificio de Doc Q com on-KO cheio)
+    # continua valendo agora.
+    por_vir = [c.power for c in opp_gs.field_chars if not getattr(c, 'rested', False)]
+    if opp_gs.leader is not None and not getattr(opp_gs.leader, 'rested', False):
+        por_vir.append(opp_gs.leader.power)
+    maior_por_vir = max(por_vir, default=0)
+    if maior_por_vir > atk_power and ganho < CUSTO_CARTA * 2:
+        return False   # segura a reacao para o ataque maior
+
+    return True
 
 
 def resolve_optional_effect(gs: GameState, opp_gs: GameState) -> bool:

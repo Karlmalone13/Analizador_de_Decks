@@ -12,6 +12,7 @@ namespace OPTCGBotPlugin
         public bool justPlayed;
         public int deckUniqueId;  // ID unico dentro da partida (para identificar alvos)
         public int donAttached;   // DON anexados a esta carta (+1000 poder cada no proprio turno)
+        public bool actionUsed;   // alguma acao da carta ja usada neste turno (lb_ActionsUsed)
     }
 
     public class PlayerDto

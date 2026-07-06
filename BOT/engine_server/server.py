@@ -35,7 +35,8 @@ class CardDto(BaseModel):
     rested: bool
     justPlayed: bool
     deckUniqueId: int
-    donAttached: int = 0   # DON anexados a carta (default 0 p/ plugin antigo)
+    donAttached: int = 0     # DON anexados a carta (default 0 p/ plugin antigo)
+    actionUsed: bool = False # acao da carta ja usada neste turno (lb_ActionsUsed)
 
 class PlayerDto(BaseModel):
     hand: list[CardDto] = []
@@ -112,6 +113,7 @@ def _make(dto: CardDto):
         card.just_played  = dto.justPlayed
         card.don_attached = dto.donAttached
         card._deck_uid    = dto.deckUniqueId
+        card._action_used = dto.actionUsed
         return card
     except Exception:
         return None
@@ -138,6 +140,13 @@ def _dto_to_gs(player: PlayerDto, turn: int):
     gs.life          = [c for c in (_make(d) for d in player.life) if c]
     gs.don_available = player.activeDon
     gs.don_rested    = player.restedDon
+    # Estado REAL de once-per-turn vindo do jogo (lb_ActionsUsed): marca a
+    # acao como ja usada NESTE turno para o engine nao reoferecer activate
+    # (a gs e reconstruida a cada /decide — sem isso o _am_used_turn se perdia
+    # e o engine loopava o mesmo activate ate o guarda encerrar o turno)
+    for c in ([gs.leader] if gs.leader else []) + gs.field_chars:
+        if getattr(c, '_action_used', False):
+            c._am_used_turn = turn
     # Turno REAL do jogo: no turno 1 nao pode atacar (can_attack_this_turn),
     # e o engine nao deve gerar ataque/attach que o jogo vai recusar.
     # (o antigo max(2, turn) fazia o bot anexar DON num ataque impossivel)
