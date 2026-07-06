@@ -321,17 +321,22 @@ _OCR_FIXES: list[tuple[str, str]] = [
 import re as _re
 
 
-def resolve_trigger_choice(gs: GameState, card_code: str | None) -> bool:
+def resolve_trigger_choice(gs: GameState, card_code: str | None,
+                           opp_gs: GameState | None = None) -> bool:
     """
     Decide se o bot deve usar o Trigger Effect de uma carta revelada da vida.
 
-    Estrategia:
-      - Sem codigo conhecido -> usa (melhor que perder o trigger)
-      - Carta sem steps de trigger no effects_db -> nao usa (provavelmente e counter)
-      - KO / bounce / draw / buff / give_don / play_card -> usa sempre
-      - Trash da mao -> usa so se tiver carta na mao
-      - Trash da vida -> usa so se vida > 1
-      - Desconhecido -> usa por precaucao
+    NAO usar o trigger = a carta vai para a MAO (counter/corpo garantido).
+    Usar = efeito resolve e a carta vai pro trash. Entao o efeito precisa
+    valer MAIS que a carta na mao:
+      - KO / bounce / play_card / give_don / rest / debuff -> ganho real, usa
+      - draw seco -> troca carta conhecida por carta aleatoria: NAO usa
+        (partida 06/07: Sanjuan Wolf trigou por draw + buff situacional
+        inutil naquela fase — era melhor +1 counter na mao)
+      - activate_main_effect (trigga o proprio on-KO) -> usa so se o on-KO
+        tem ganho real no campo atual (on_ko_value >= 25)
+      - Trash da mao / da vida -> so se o custo cabe
+      - Sem trigger declarado ou desconhecido -> NAO usa (carta na mao)
     """
     if not card_code:
         return True
@@ -339,7 +344,7 @@ def resolve_trigger_choice(gs: GameState, card_code: str | None) -> bool:
     # ATENCAO: efeitos ficam aninhados sob 'effects' no card_effects_db —
     # get_card_effects resolve isso (leitura direta de _effects_db[code]['trigger']
     # sempre devolvia {} e o bot NUNCA usava trigger; bug corrigido 04/07/2026)
-    from optcg_engine.decision_engine import get_card_effects
+    from optcg_engine.decision_engine import get_card_effects, on_ko_value
     trigger_steps = get_card_effects(card_code).get('trigger', {}).get('steps', [])
 
     if not trigger_steps:
@@ -347,16 +352,18 @@ def resolve_trigger_choice(gs: GameState, card_code: str | None) -> bool:
 
     for step in trigger_steps:
         action = step.get('action', '')
-        if action in ('ko', 'bounce', 'draw', 'draw_cards', 'buff_power',
-                      'give_don', 'rest_opp', 'play_card', 'play_from_trash',
-                      'debuff_power', 'activate_main_effect'):
+        if action in ('ko', 'bounce', 'give_don', 'rest_opp',
+                      'rest_opp_character', 'play_card', 'play_from_trash',
+                      'debuff_power'):
             return True
+        if action == 'activate_main_effect':
+            return on_ko_value(card_code, opp_gs) >= 25
         if action in ('trash', 'trash_from_hand', 'discard'):
             return len(gs.hand) > 0
         if action == 'trash_life':
             return len(gs.life) > 1
 
-    return True  # default: usa
+    return False  # draw seco / buff situacional / desconhecido: carta na mao
 
 
 def select_counter_cards(gs: GameState, atk_power: int, def_power: int) -> list[int]:

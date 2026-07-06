@@ -901,7 +901,15 @@ def attack_time_power(attacker: 'Card', opp: 'GameState') -> int:
         elif action == 'set_base_power' and step.get('source') == 'selected_opp_character':
             if opp.field_chars:
                 best = max(c.power for c in opp.field_chars)
-                ganho = best - attacker.power
+                # Modificadores VIVOS do atacante (ex: -2000 do lider Krieg)
+                # persistem depois da copia: base nova + mod, nao base crua.
+                # _db_base_power e setado pelo server quando o poder vivo
+                # difere do banco (partida 06/07: Devon copiou 7000 mas
+                # bateu 6000 por causa do -1000 residual e o engine aprovou
+                # ataque perdido).
+                mod = attacker.power - getattr(attacker, '_db_base_power',
+                                               attacker.power)
+                ganho = (best + mod) - attacker.power
                 if ganho > 0:
                     power += ganho
     return power
@@ -955,12 +963,11 @@ def don_needed_for_attack(attacker: 'Card', ttype: str, tgt: 'Optional[Card]',
     # desconta antes de liberar margem (senao a margem rouba DON do plano)
     livre_para_margem = max(0, min(don_livre - need_base,
                                    p.don_available - need_base))
-    # Margem e TUDO-OU-NADA: cobrir so metade do counter provavel nao muda o
-    # resultado (o oponente cobre a diferenca) — e DON queimado. Ou cobre o
-    # provavel inteiro, ou vai seco (probe) so com o base.
-    if livre_para_margem < need_margem:
-        return need_base
-    return need_base + need_margem
+    # Margem PARCIAL vale: don_livre ja exclui plano e reserva, entao esse
+    # DON esta OCIOSO — anexar e pressao gratis (força o oponente a pagar
+    # mais counter para negar; visto em partida real 06/07: bot passou o
+    # turno com 1 DON parado e atacou 5000 seco em vez de 6000).
+    return need_base + min(need_margem, livre_para_margem)
 
 
 def remove_by_identity(lst: list, obj) -> bool:
@@ -4768,16 +4775,15 @@ class GameAnalyzer:
 
     def opp_counter_potential(self) -> int:
         """
-        Potencial máximo de counter do oponente.
-        Cada carta na mão pode ter counter de 1000 ou 2000.
-        Estimativa: média de 1000 por carta na mão.
+        Potencial de counter do oponente. As cartas da mão dele existem como
+        objetos Card tanto na simulação quanto no caminho do bot (SoloVSelf)
+        — soma REAL dos counters, não estimativa estatística (a estimativa
+        antiga por tamanho de mão devolvia 0 para mão de 2 cartas mesmo com
+        2 Kobys de counter 2000; visto em partida real 06/07). Se no futuro
+        a mão for oculta (multiplayer vs humano), voltar à estimativa para
+        os slots desconhecidos, como opp_counter_chunks_for_lethal faz.
         """
-        hand_size = len(self.opp.hand)
-        # Estima baseado em proporção típica de counters em decks
-        # ~40% das cartas têm counter 1000, ~20% têm counter 2000
-        estimated_1k = int(hand_size * 0.4)
-        estimated_2k = int(hand_size * 0.2)
-        return estimated_1k * 1000 + estimated_2k * 2000
+        return sum(getattr(c, 'counter', 0) for c in self.opp.hand)
 
     def opp_counter_chunks_for_lethal(self) -> list[int]:
         """
@@ -6417,6 +6423,12 @@ class OPTCGMatch:
             # em partida real (04/07) o search do Laffitte (105) perdia para
             # 3 deploys e o DON acabava antes de ativar.
             base = 170
+            # Se ativar NAO trava o plano (sobra DON para continuar jogando
+            # depois), buscar primeiro nao tem downside nenhum — bonus para
+            # vencer qualquer deploy (partida 06/07: play 166 > activate 155
+            # e o Laffitte ficou parado de novo, num turno de 3 DON).
+            if p.don_available >= custo_don + 2:
+                base += 60
         elif any(a in ('add_don', 'set_don_active') for a in actions_list):
             base = 90    # ramp de DON
         elif any(a in ('play_card',) for a in actions_list):

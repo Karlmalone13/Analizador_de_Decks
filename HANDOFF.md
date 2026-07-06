@@ -1,5 +1,41 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-06 (94) - Claude
+
+### Fixes da 5ª rodada in-game (partida CombatLogs/2026-07-06T09.12.31.log)
+
+4 observacoes do usuario, 4 fixes (+1 causa raiz achada):
+
+1. **Laffitte de novo sem search em turno de 3 DON**: bonus +60 no
+   _score_activate_main quando ativar nao trava o plano
+   (don_available >= custo_don + 2) — activate 215 vence deploys (~125-166).
+2. **Passou o turno com 1 DON ocioso e atacou 5000 seco**: margem parcial
+   REABILITADA no don_needed_for_attack (o tudo-ou-nada do bloco 88 caiu):
+   don_livre ja exclui plano+reserva, entao e DON ocioso — anexar e pressao
+   gratis (força mais counter do oponente). CAUSA RAIZ junto:
+   `opp_counter_potential` era estimativa estatistica por tamanho de mao
+   (mao de 2 Kobys counter 2000 → devolvia 0!); agora soma REAL dos
+   counters da mao do opp (objetos Card existem na sim e no SoloVSelf;
+   docstring anota o caso futuro de mao oculta vs humano).
+3. **Trigger do Sanjuan Wolf desperdicado**: resolve_trigger_choice
+   reescrito — NAO usar trigger = carta vai pra MAO (valor garantido).
+   draw seco/desconhecido → False; activate_main_effect (trigga o on-KO,
+   caso Sanjuan/Vasco) → so se on_ko_value >= 25 no campo atual; ko/bounce/
+   play/give_don/rest/debuff → True. Devon continua True (play_from_trash).
+   Server passa opp_gs para o resolve.
+4. **Engine cego ao -2000 do campo no copy-power**: modificadores vivos do
+   atacante persistem apos set_base_power. Server guarda
+   `card._db_base_power` (poder de banco) quando o vivo difere;
+   attack_time_power aplica mod = vivo - banco na base copiada (Devon viva
+   1000/banco 3000 copiando 5000 → 3000, nao 5000). Krieg OP15-001 tem
+   opp_turn debuff_power 2000 all_opp_characters (confirmado no effects_db).
+
+Validado: attach parcial de 1 DON ocioso, activate 215 primeiro no turno
+de 3 DON, triggers Sanjuan False/Vasco True/Devon True, copy c/ debuff
+3000. 3 simulacoes OK (1 vitoria do lado A). So Python — reiniciar server.
+
+---
+
 ## 2026-07-04 (93) - Claude
 
 ### Fixes da 4ª rodada in-game: on-KO com FILTROS reais + search antes de deploy

@@ -103,6 +103,10 @@ def _make(dto: CardDto):
         # O DON anexado o engine soma por conta propria via don_attached.
         if dto.power > 0 and dto.power != card.data.power:
             from dataclasses import replace
+            # guarda o poder de BANCO antes do override: modificadores vivos
+            # (ex: -2000 do Krieg/Morgan) = dto.power - base, e eles persistem
+            # apos efeitos de set_base_power (copy da Devon)
+            card._db_base_power = card.data.power
             card.data = replace(card.data, power=dto.power)
         card.rested       = dto.rested
         card.just_played  = dto.justPlayed
@@ -226,7 +230,7 @@ def defense(req: DefenseRequest):
                   f"-> {len(out['counterIds'])} cartas", flush=True)
 
         elif req.phase == "trigger":
-            out["useTrigger"] = bool(bridge.resolve_trigger_choice(gs, req.triggerCode))
+            out["useTrigger"] = bool(bridge.resolve_trigger_choice(gs, req.triggerCode, opp_gs))
             print(f"[DEF] trigger {req.triggerCode} -> {out['useTrigger']}", flush=True)
 
         elif req.phase == "reaction":
