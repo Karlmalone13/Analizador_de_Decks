@@ -551,6 +551,12 @@ def order_target_candidates(gs: GameState, opp_gs: GameState,
     def sort_key(cand: dict):
         card = card_of(cand)
         zone = cand.get('zone', '')
+        if actor_copia_poder:
+            if zone == 'opp_board':
+                # copy-power: maior poder = maior ataque copiado. Precisa vir
+                # antes de zonas genericas, mesmo durante a janela de ataque.
+                return (0, -(card.effective_power(False) if card else 0))
+            return (8, 0)
         # Contexto de ataque: alvo original sempre por ULTIMO, em qualquer zona
         if attacker_power > 0 and defender_uid and cand.get('id') == defender_uid:
             return (9, 0)
@@ -575,9 +581,6 @@ def order_target_candidates(gs: GameState, opp_gs: GameState,
                 return (3, life_redirect_cost(gs.life_count()), 0)
             return (6, 0, 0)
         if zone == 'opp_board':
-            if actor_copia_poder:
-                # copy-power: maior poder = maior ataque copiado
-                return (4, -(getattr(card, 'power', 0) if card else 0))
             # remocao: valor do alvo DESCONTADO do on-KO dele (KO-zar um
             # personagem com on-KO rico presenteia o efeito ao oponente)
             valor = engine.analyzer.char_value_score(card) if card else 0

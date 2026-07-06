@@ -1,5 +1,42 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-06 (98) - Claude
+
+### Fecha o trabalho do Codex (bloco 97): piso prematuro em `live_attack_power`
+
+Retomei a sessão onde o Codex ficou sem uso diário — ele já tinha commitado
+o `powerAtk` end-to-end (97/8d01686) e deixado uncommitted: a correção do
+alvo do copy-power da Devon (`EffectExecutor` usa `choose_highest_effective_power`
+em vez de `choose_highest_board_value`; `order_target_candidates` prioriza
+copy-power antes das zonas genéricas) e testes de regressão no
+`smoke_test.py`. `python smoke_test.py` mostrava **1 teste falhando**:
+exatamente o caso relatado pelo usuário (Doc Q -2000 vivo atacando Krieg
+9000 com 9 DON — matematicamente perdido, mas o engine liberava a ação).
+
+**Causa raiz**: `live_attack_power` aplicava `max(0, ...)` no poder vivo
+**antes** de somar o DON que ainda seria anexado. Com Doc Q em -2000 e
+`don_disp=9`, o cálculo virava `max(0,-2000) + 9000 = 9000` (empata com o
+alvo — parece válido), quando o real é `-2000 + 9000 = 7000` (perde). O
+log da partida confirma: com 9 DON anexados o combate real saiu **7000**,
+nunca 9000 — o próprio `CardPower` do jogo não pisa em zero (achado do
+Codex). Fix: removido o piso de `live_attack_power`; o piso só faz sentido
+depois de somar TODO o DON (já anexado + o que ainda será), e os
+consumidores (`score_attack_target`, `don_needed_for_attack`) já fazem essa
+soma por cima — pisar antes é que causava a subestimação do déficit.
+
+Validação: `python smoke_test.py` → TODOS OS TESTES PASSARAM (era só esse).
+3 simulações completas sem regressão. Teste end-to-end via `/decide` e
+`/choose_target` replicando a cena exata da partida (Doc Q/Devon com -2000
+vivo, Krieg 9000 e Buggy 4000 em campo): o engine não gera mais o ataque
+perdido (topo da lista vira ataque de líder com DON, score 15) e a Devon
+escolhe Krieg (maior poder) antes de Buggy no copy-power. Plugin
+recompilado (dll já tinha o `powerAtk` do commit anterior, só Python mudou
+nesta rodada — ainda assim recompilei para garantir dll == fonte commitada).
+
+Reiniciar o server antes da próxima partida (só `.py` mudou de fato).
+
+---
+
 ## 2026-07-06 (97) - Codex
 
 ### Fix: engine consome `powerAtk` do jogo para ataque com debuff/passiva ao atacar

@@ -887,9 +887,17 @@ def live_attack_power(attacker: 'Card') -> int:
     # powerAtk vem do CardPower(..., attacking=true) do jogo sem DON.
     # Reaplica somente os buffs/custos simulados pelo engine e o DON
     # anexado, mantendo o jogo como fonte da passiva "ao atacar".
+    #
+    # SEM PISO em 0 aqui: o proprio CardPower do jogo nao pisa (achado
+    # confirmado 06/07 -- Doc Q base 0, -2000 do Activate do lider Krieg,
+    # fica -2000 vivo de verdade). Pisar ANTES de somar o DON ainda-nao-
+    # anexado (em score_attack_target/don_needed_for_attack, que somam
+    # don_disp*1000 por cima deste retorno) subestimava o deficit: achava
+    # que 9 DON bastavam pra Doc Q -2000 vs Krieg 9000 (0+9000=9000), mas
+    # o real e -2000+11000=9000 -- precisa de 11. Log da partida confirma:
+    # com 9 DON anexados o combate saiu 7000 (-2000+9000), nunca 9000.
     base = int(atk_override)
-    return max(0, base + attacker.power_buff +
-               getattr(attacker, 'don_attached', 0) * 1000)
+    return base + attacker.power_buff + getattr(attacker, 'don_attached', 0) * 1000
 
 
 def attack_time_power(attacker: 'Card', opp: 'GameState') -> int:
@@ -3284,12 +3292,13 @@ class EffectExecutor:
                 elif source == 'selected_opp_character':
                     from optcg_engine.rules_facade import (
                         eligible_cards,
-                        choose_highest_board_value,
+                        choose_highest_effective_power,
                     )
                     candidatos = eligible_cards(opp.field_chars)
                     if not candidatos:
                         return ''
-                    alvo = choose_highest_board_value(candidatos)
+                    alvo = choose_highest_effective_power(candidatos,
+                                                          your_turn=False)
                     amount = alvo.effective_power(False)
                 else:
                     return None

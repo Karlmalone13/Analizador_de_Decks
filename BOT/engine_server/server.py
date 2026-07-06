@@ -103,7 +103,7 @@ def _make(dto: CardDto):
         # _make_card (CardData e compartilhado entre todas as copias do
         # codigo; ja envenenou o cache numa versao anterior deste fix).
         # O DON anexado o engine soma por conta propria via don_attached.
-        if dto.power > 0 and dto.power != card.data.power:
+        if dto.power != card.data.power:
             from dataclasses import replace
             # guarda o poder de BANCO antes do override: modificadores vivos
             # (ex: -2000 do Krieg/Morgan) = dto.power - base, e eles persistem
@@ -113,7 +113,7 @@ def _make(dto: CardDto):
         # Poder vivo especificamente ao ATACAR, calculado pelo proprio jogo.
         # Nao troca card.data.power: fora do ataque o engine deve continuar
         # usando dto.power. attack_time_power soma DON e When Attacking.
-        if dto.powerAtk > 0 and dto.powerAtk != dto.power:
+        if dto.powerAtk != dto.power:
             card._attack_power_override = dto.powerAtk
             if not hasattr(card, '_db_base_power'):
                 card._db_base_power = card.data.power

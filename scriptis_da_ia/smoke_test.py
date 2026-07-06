@@ -9,8 +9,9 @@ import optcg_engine.decision_engine as de
 from optcg_engine.decision_engine import (
     Card, CardData, GameState, EffectExecutor, DecisionEngine, OPTCGMatch,
     effective_hand_play_cost, get_card_effects, is_immune, can_afford_attack_paywall,
-    is_attack_locked_self
+    is_attack_locked_self, attack_time_power, don_needed_for_attack
 )
+from optcg_engine.sim_bridge import order_target_candidates
 
 FAIL = 0
 def check(label, cond):
@@ -49,6 +50,41 @@ check('your_turn=False: sem DON, com override',
       c.effective_power(False) == 7000 + 1000)
 
 # ── 2. set_base_power real: EB04-003 (leader, filter_type=navy, GATE) ───────
+me, opp = me_opp()
+docq = mk('OP16-109', 'Doc Q', power=0)
+krieg = mk('OP15-008', 'Krieg', power=9000)
+opp.field_chars = [krieg]
+docq._attack_power_override = -2000
+docq.don_attached = 9
+check('attack_time_power preserva powerAtk negativo e soma DON depois',
+      attack_time_power(docq, opp) == 7000)
+docq.don_attached = 0
+me.don_available = 9
+check('score_attack_target barra Doc Q 0 power: mesmo 9 DON nao cobre -2000 vivo vs 9000',
+      DecisionEngine(me, opp).score_attack_target(docq, 'character', krieg) < -500)
+
+me, opp = me_opp()
+devon = mk('OP16-104', 'Catarina Devon', power=3000)
+buggy = mk('OP15-012', 'Buggy', power=4000)
+krieg = mk('OP15-008', 'Krieg', power=9000)
+opp.field_chars = [buggy, krieg]
+EffectExecutor(me, opp).execute(devon, 'when_attacking')
+check('Devon set_base_power escolhe personagem oponente de maior poder',
+      devon.base_power_override == 9000)
+
+devon._deck_uid = 99
+buggy._deck_uid = 12
+krieg._deck_uid = 8
+me.field_chars = [devon]
+order = order_target_candidates(
+    me, opp,
+    [{'id': 99, 'zone': 'own_board', 'code': 'OP16-104'},
+     {'id': 12, 'zone': 'opp_board', 'code': 'OP15-012'},
+     {'id': 8, 'zone': 'opp_board', 'code': 'OP15-008'}],
+    attacker_power=1000, defender_uid=-210, actor_code='OP16-104')
+check('choose_target de Devon prioriza maior poder do opp_board',
+      order and order[0] == 8)
+
 me, opp = me_opp()
 ee = EffectExecutor(me, opp)
 card_eb04003 = mk('EB04-003', 'Smoker & Tashigi')
