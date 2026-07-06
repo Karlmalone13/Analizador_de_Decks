@@ -516,7 +516,7 @@ namespace OPTCGBotPlugin
             _fPendingChoice.SetValue(gls, attacker);
             _mStartAttack.Invoke(gls, null);
             _mClickAttackTarget.Invoke(gls, new object[] { target, false });
-            Plugin.Log.LogInfo($"[Bot] attack: {CodeOf(attacker)} -> {CodeOf(target)}");
+            Plugin.Log.LogInfo($"[Bot] attack: {CodeOf(attacker)} -> {CodeOf(target)} (don {donToAttach})");
             return true;
         }
 
