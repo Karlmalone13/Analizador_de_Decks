@@ -25,6 +25,11 @@ namespace OPTCGBotPlugin
         public List<CardDto> board = new();
         public List<CardDto> life = new();
         public CardDto? leader;
+        // Carta STAGE em campo (zona propria, Lgo_MyStage no jogo — nunca
+        // veio junto com board/Lgo_MyDeploy, que so tem personagens).
+        // Achado 07/07: sem isso o motor nao sabia que uma stage existia
+        // (ex: Fullalead), entao nunca oferecia o Activate:Main dela.
+        public CardDto? stage;
         public int activeDon;
         public int restedDon;
     }

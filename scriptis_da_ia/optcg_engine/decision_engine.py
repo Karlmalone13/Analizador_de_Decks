@@ -815,7 +815,44 @@ def _step_matching_targets(step: dict, chars: list) -> int:
     return n
 
 
-def on_ko_value(code: str, opp: 'Optional[GameState]' = None) -> float:
+def _on_ko_play_card_value(step: dict, owner: 'Optional[GameState]') -> float:
+    """
+    Valor do step play_card/play_from_trash de um on-KO: só conta se
+    existir alvo de verdade na mão/trash do DONO da carta, e escala pelo
+    valor situacional da melhor carta elegível — não um bônus fixo.
+
+    Achado 07/07: partida real teve o Avalo Pizarro (on-KO: draw + play até
+    1 Fullalead da mão/trash) escolhido como sacrifício do redirect do Teach
+    em vez do Vasco Shot (on-KO: draw + restar personagem <= custo 6 do
+    oponente, com o Kuma do oponente em campo como alvo real). O Fullalead
+    já tinha sido jogado antes (nenhum alvo disponível), mas o bônus fixo de
+    30 não sabia disso — Pizarro (15+30=45 fantasma) venceu o Vasco Shot
+    (25+15=40 real) por pontos que não existiam.
+    """
+    if owner is None:
+        return 30.0   # sem GameState do dono para checar — mantém o antigo
+    from optcg_engine.rules_facade import eligible_cards
+    cost_lte = step.get('cost_lte')
+    if cost_lte == 99:   # "até custo X" usado como "sem limite" no parser
+        cost_lte = None
+    fontes = [owner.hand]
+    if step.get('source_alt') == 'trash':
+        fontes.append(owner.trash)
+    elegiveis = []
+    for fonte in fontes:
+        elegiveis.extend(eligible_cards(
+            fonte, cost_lte=cost_lte, name_or_code=step.get('filter_name', ''),
+            filter_text=step.get('filter_type', ''), color=step.get('color', ''),
+            exclude_name=step.get('exclude', ''),
+        ))
+    if not elegiveis:
+        return 0.0   # sem alvo — jogar no vácuo não vale nada
+    melhor = max(elegiveis, key=lambda c: c.board_value())
+    return min(30.0, 12.0 + melhor.board_value() * 2.0)
+
+
+def on_ko_value(code: str, opp: 'Optional[GameState]' = None,
+                owner: 'Optional[GameState]' = None) -> float:
     """
     Valor dos efeitos [On K.O.] de uma carta — o que GANHAMOS se ela morrer.
     Usado para escolher sacrifícios (ex: redirect do Teach). Escala
@@ -825,6 +862,10 @@ def on_ko_value(code: str, opp: 'Optional[GameState]' = None) -> float:
     (partida 04/07: Doc Q "KO até 2 de custo <= 1" foi escolhido com o
     oponente sem nenhum custo <= 1 — morreu por um draw seco; o Vasco Shot,
     cujo rest custo <= 6 tinha alvo, era o sacrifício certo).
+
+    `owner` (opcional): GameState de quem é dono da carta — usado só para
+    validar play_card/play_from_trash contra a mão/trash reais dele (ver
+    `_on_ko_play_card_value`). Sem `owner`, mantém o bônus fixo antigo.
     """
     steps = get_card_effects(code).get('on_ko', {}).get('steps', [])
     total = 0.0
@@ -846,7 +887,7 @@ def on_ko_value(code: str, opp: 'Optional[GameState]' = None) -> float:
             else:
                 total += 25 * min(count, _step_matching_targets(step, opp.field_chars))
         elif action in ('play_card', 'play_from_trash'):
-            total += 30
+            total += _on_ko_play_card_value(step, owner)
         elif action in ('life_to_hand', 'send_life_to_hand'):
             total += 10
         else:
@@ -865,7 +906,7 @@ def redirect_option_value(card: 'Card', atk_power: int,
     """
     if card.power > atk_power:
         return 0.0
-    return on_ko_value(card.code, opp) - engine.analyzer.char_value_score(card)
+    return on_ko_value(card.code, opp, owner=engine.me) - engine.analyzer.char_value_score(card)
 
 
 def life_redirect_cost(life_count: int) -> float:
@@ -976,9 +1017,12 @@ def don_needed_for_attack(attacker: 'Card', ttype: str, tgt: 'Optional[Card]',
         # cheio faria o bot afundar DON demais num unico ataque).
         counter_prov = min(engine.analyzer.opp_counter_potential(), 2000)
     else:
-        # Alvo personagem: 1 counter barato salva a carta (visto em partida
-        # real: Teach 5000 vs Arlong 5000 falhou por um counter de 1000).
-        counter_prov = 1000 if opp.hand else 0
+        # Alvo personagem: mesma conta do lider (counter real da mao,
+        # incluindo efeitos [Counter] tipo Ground Death/Never Existed, nao
+        # so o stat impresso — achado 07/07: o flat "1000 if opp.hand"
+        # nunca previa os +4000 desses efeitos, e o Teach empatado falhava
+        # contra eles repetidamente na mesma partida).
+        counter_prov = min(engine.analyzer.opp_counter_potential(), 2000)
     need_margem = (counter_prov + 999) // 1000
 
     if don_livre is None:
@@ -2388,14 +2432,6 @@ class EffectExecutor:
                 if contains_identity(self.me.field_chars, card):
                     remove_character_from_field(self.me, card, 'trash')
                     self._cost_logs.append(f'custo: trashou {card.name[:18]} (ele mesmo)')
-            elif ctype == 'ko_own_character':
-                chars_ok = [c2 for c2 in p.field_chars
-                            if c2 is not src
-                            and (not ftype or ftype in c2.sub_types.lower())]
-                if len(chars_ok) < cnt:
-                    return False, (f'custo ko_own_character ({ftype or "qualquer"}): '
-                                   f'sÃ³ {len(chars_ok)} no campo')
-
             elif ctype == 'don_minus':
                 count = cost.get('count', 1)
                 if not self._return_don_to_deck(count):
@@ -2611,8 +2647,15 @@ class EffectExecutor:
 
             count = step.get('count', 1)
             taken = []
+            # avaliar_carta (situacional: custo jogavel agora, fase do turno,
+            # flags de efeito -- draw/search/KO/bounce/etc, postura) em vez
+            # de board_value puro (so poder+keyword) -- achado 07/07: search
+            # do Laffitte/Shiryu trazia sempre o corpo mais "parrudo" pra mao,
+            # ignorando cartas mais uteis pra situacao real (ex: Doc Q com
+            # on-KO rico perdia sempre pra um vanilla de poder maior).
+            eng = DecisionEngine(me, opp) if filtered else None
             for _ in range(min(count, len(filtered))):
-                best = max(filtered, key=lambda x: x.board_value()) if filtered else None
+                best = max(filtered, key=lambda x: eng.avaliar_carta(x)) if filtered else None
                 if best:
                     taken.append(best)
                     remove_by_identity(filtered, best)
@@ -3451,14 +3494,28 @@ class EffectExecutor:
                     c.power_buff -= amount
                 return f'-{amount} power em todos os Characters do oponente'
             if target == 'opp_leader_or_character':
-                candidatos = list(opp.field_chars) + [opp.leader]
+                # duration='this_turn': só tem efeito em algo que ainda pode
+                # agir neste turno -- achado em partida real 07/07: Van Augur
+                # (on-KO, opp_turn_only) debuffou -3000 no St. Marcus Mars
+                # bem depois dele já ter atacado e resolvido o combate (já
+                # restado) -- board_value puro escolhia o "maior" personagem
+                # sem checar se ele ainda ia agir, jogando o debuff fora.
+                # Prioriza ativo (char não-restado ou líder não-restado);
+                # só cai pra qualquer um se não sobrar nenhuma opção ativa
+                # (debuff sem efeito nenhum é melhor que travar a execução).
+                ativos = [c for c in opp.field_chars if not c.rested]
+                if not getattr(opp.leader, 'rested', False):
+                    ativos.append(opp.leader)
+                candidatos = ativos or (list(opp.field_chars) + [opp.leader])
                 alvo = choose_highest_board_value(candidatos)
                 alvo.power_buff -= amount
                 return f'{alvo.name[:18]} -{amount} power'
             if target == 'opp_character':
                 if not opp.field_chars:
                     return ''
-                alvo = choose_highest_board_value(opp.field_chars)
+                ativos = [c for c in opp.field_chars if not c.rested]
+                candidatos = ativos or opp.field_chars
+                alvo = choose_highest_board_value(candidatos)
                 alvo.power_buff -= amount
                 return f'{alvo.name[:18]} -{amount} power'
             return ''
@@ -4800,15 +4857,40 @@ class GameAnalyzer:
 
     def opp_counter_potential(self) -> int:
         """
-        Potencial de counter do oponente. As cartas da mão dele existem como
-        objetos Card tanto na simulação quanto no caminho do bot (SoloVSelf)
-        — soma REAL dos counters, não estimativa estatística (a estimativa
+        Potencial de counter do oponente: soma REAL do stat impresso
+        (counter) + efeitos [Counter] parseados (buff_power em
+        effects.counter.steps, respeitando as condições do efeito contra o
+        estado real dele) das cartas da mão. As cartas da mão dele existem
+        como objetos Card tanto na simulação quanto no caminho do bot
+        (SoloVSelf) — soma REAL, não estimativa estatística (a estimativa
         antiga por tamanho de mão devolvia 0 para mão de 2 cartas mesmo com
-        2 Kobys de counter 2000; visto em partida real 06/07). Se no futuro
-        a mão for oculta (multiplayer vs humano), voltar à estimativa para
-        os slots desconhecidos, como opp_counter_chunks_for_lethal faz.
+        2 Kobys de counter 2000; visto em partida real 06/07).
+
+        Achado 07/07: cartas como Ground Death e "...Never Existed..." têm
+        counter=0 no stat impresso — o bônus delas é um efeito [Counter]
+        Activate condicional (+4000, ex: trash_gte 10 / leader_is imu), que
+        esse cálculo ignorava por completo. Isso fazia o bot atacar
+        empatado sem margem e falhar contra elas (Teach 5000 e depois 9000
+        vs Ethanbaron bufado, mesma partida, duas vezes).
+
+        Se no futuro a mão for oculta de verdade (multiplayer vs humano),
+        voltar à estimativa para os slots desconhecidos, como
+        opp_counter_chunks_for_lethal faz — regra do usuário 07/07: o banco
+        de cartas/efeitos permite estimar a densidade média de counter do
+        formato para os slots que não dá pra ver.
         """
-        return sum(getattr(c, 'counter', 0) for c in self.opp.hand)
+        ee = EffectExecutor(self.opp, self.me)   # perspectiva do DONO da carta
+        total = 0
+        for c in self.opp.hand:
+            total += getattr(c, 'counter', 0)
+            counter_block = get_card_effects(c.code).get('counter', {})
+            steps = counter_block.get('steps', [])
+            if not steps:
+                continue
+            if ee._check_conditions(counter_block.get('conditions', {}), c):
+                total += sum(s.get('amount', 0) for s in steps
+                            if s.get('action') == 'buff_power')
+        return total
 
     def opp_counter_chunks_for_lethal(self) -> list[int]:
         """
@@ -6335,6 +6417,20 @@ class OPTCGMatch:
         base = engine.avaliar_carta(card)
         flags = get_card_flags(card.code)
         effects = get_card_effects(card.code)
+
+        # Guarda de campo cheio: jogar um Character com o campo cheio (5)
+        # KO a pior carta ja em campo pra abrir espaco (main_phase, sem volta
+        # depois de pago o custo). Se a nova carta nao supera a pior ja em
+        # campo, a troca e liquido zero ou negativo -- desqualifica a jogada
+        # aqui, ANTES do DON ser gasto (mesma regra que o outro caminho de
+        # play_card, GRUPO 2, ja aplica). Achado em partida real 07/07: o
+        # planner reofereceu "jogar Doc Q" repetidas vezes com o campo cheio
+        # de Doc Qs/Laffittes, trocando carta fraca por carta fraca a troco
+        # de nada, turno apos turno.
+        if card.card_type == 'CHARACTER' and len(engine.me.field_chars) >= 5:
+            pior = min(engine.me.field_chars, key=lambda c: c.board_value())
+            if card.board_value() <= pior.board_value():
+                return -999.0
 
         # Carta que PRECISA entrar para ativar efeito que ajuda o ataque agora:
         # On Play de remoção/buff/rest/draw, ou rush. Bônus para sair antes do

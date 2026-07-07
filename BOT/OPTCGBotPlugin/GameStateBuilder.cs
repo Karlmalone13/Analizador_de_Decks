@@ -7,7 +7,7 @@ namespace OPTCGBotPlugin
     // Nomes de campos verificados contra o decompilado (dnspy-export):
     //   LiveCard: cardDef, deckUniqueID, cardPower, bTapped, bSummonSick (struct!)
     //   CardDefinition: cardID, cardCost
-    //   PlayerState: Lgo_MyHand, Lgo_MyDeploy, Lgo_MyLifeDeck, Lgo_MyLeader, Lgo_MyDonCostArea
+    //   PlayerState: Lgo_MyHand, Lgo_MyDeploy, Lgo_MyStage, Lgo_MyLifeDeck, Lgo_MyLeader, Lgo_MyDonCostArea
     public static class GameStateBuilder
     {
         public static GameStateDto Build(PlayerState botPs, PlayerState oppPs, GameplayLogicScript gls)
@@ -39,6 +39,15 @@ namespace OPTCGBotPlugin
                 var cls = go != null ? go.GetComponent<CardLogicScript>() : null;
                 if (cls != null)
                     dto.board.Add(CardToDto(cls, go, gls));
+            }
+
+            // Stage (zona propria, Lgo_MyStage — so comporta 1 carta)
+            if (ps.Lgo_MyStage != null && ps.Lgo_MyStage.Count > 0 && ps.Lgo_MyStage[0] != null)
+            {
+                var goStage = ps.Lgo_MyStage[0];
+                var clsStage = goStage.GetComponent<CardLogicScript>();
+                if (clsStage != null)
+                    dto.stage = CardToDto(clsStage, goStage, gls);
             }
 
             // Vida

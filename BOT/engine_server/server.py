@@ -44,6 +44,7 @@ class PlayerDto(BaseModel):
     board: list[CardDto] = []
     life: list[CardDto] = []
     leader: Optional[CardDto] = None
+    stage: Optional[CardDto] = None   # carta STAGE em campo (zona propria)
     activeDon: int = 0
     restedDon: int = 0
 
@@ -145,6 +146,7 @@ def _dto_to_gs(player: PlayerDto, turn: int):
     gs = GameState(leader=leader)
     gs.hand          = [c for c in (_make(d) for d in player.hand) if c]
     gs.field_chars   = [c for c in (_make(d) for d in player.board) if c]
+    gs.field_stage   = _make(player.stage) if player.stage else None
     gs.life          = [c for c in (_make(d) for d in player.life) if c]
     gs.don_available = player.activeDon
     gs.don_rested    = player.restedDon
@@ -152,7 +154,8 @@ def _dto_to_gs(player: PlayerDto, turn: int):
     # acao como ja usada NESTE turno para o engine nao reoferecer activate
     # (a gs e reconstruida a cada /decide — sem isso o _am_used_turn se perdia
     # e o engine loopava o mesmo activate ate o guarda encerrar o turno)
-    for c in ([gs.leader] if gs.leader else []) + gs.field_chars:
+    for c in ([gs.leader] if gs.leader else []) + gs.field_chars + \
+             ([gs.field_stage] if gs.field_stage else []):
         if getattr(c, '_action_used', False):
             c._am_used_turn = turn
     # Turno REAL do jogo: no turno 1 nao pode atacar (can_attack_this_turn),

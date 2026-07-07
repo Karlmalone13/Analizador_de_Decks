@@ -357,7 +357,7 @@ def resolve_trigger_choice(gs: GameState, card_code: str | None,
                       'debuff_power'):
             return True
         if action == 'activate_main_effect':
-            return on_ko_value(card_code, opp_gs) >= 25
+            return on_ko_value(card_code, opp_gs, owner=gs) >= 25
         if action in ('trash', 'trash_from_hand', 'discard'):
             return len(gs.hand) > 0
         if action == 'trash_life':
@@ -408,22 +408,31 @@ def resolve_reaction(gs: GameState, opp_gs: GameState,
       valer MAIS que um sobrevivente — queremos o efeito);
     - lider = -life_redirect_cost (1 vida, pesa conforme a vida atual).
     Reage se [melhor opcao] + [o que o redirect SALVA no alvo original]
-    paga o custo de 1 carta da mao (~25).
+    paga o custo REAL da carta que seria trashada (nao mais um flat ~25 —
+    achado 07/07: mao com personagens jogaveis bons vale MUITO mais que 25
+    pelo `_trash_value` real, e o flat baixo fazia a reacao disparar fácil
+    demais, esvaziando a mao ao longo da partida com cartas que valiam mais
+    em campo).
 
     Guardas: ataque precisa estar ganhando; mao >= 2 (a ultima carta vale
     mais que 1 vida, salvo vida critica) — bot ficou de mao vazia pagando
     reacao toda rodada em partida real.
     """
     from optcg_engine.decision_engine import (redirect_option_value,
-                                              life_redirect_cost)
+                                              life_redirect_cost, EffectExecutor)
     engine = DecisionEngine(gs, opp_gs)
     my_life = gs.life_count()
-    CUSTO_CARTA = 25.0
 
     if atk_power < def_power:
         return False   # o ataque ja perde sozinho — nao gasta nada
     if len(gs.hand) < 2 and my_life > 1:
         return False   # ultima carta vale mais que 1 vida (salvo vida critica)
+
+    # Custo real: a carta mais barata de perder na mao (mesma régua usada
+    # em _score_activate_main) — nao um numero fixo que ignora o que tem
+    # na mao.
+    ee = EffectExecutor(gs, opp_gs)
+    custo_carta = min((ee._trash_value(c) for c in gs.hand), default=25.0)
 
     # O que o redirect SALVA: o alvo original deixa de tomar o golpe
     defender_char = next((c for c in gs.field_chars
@@ -447,7 +456,7 @@ def resolve_reaction(gs: GameState, opp_gs: GameState,
         return False
 
     ganho = max(opcoes) + salva
-    if ganho < CUSTO_CARTA:
+    if ganho < custo_carta:
         return False
 
     # A reacao e 1x POR TURNO: se ainda vem atacante MAIOR neste turno
@@ -460,7 +469,7 @@ def resolve_reaction(gs: GameState, opp_gs: GameState,
     if opp_gs.leader is not None and not getattr(opp_gs.leader, 'rested', False):
         por_vir.append(opp_gs.leader.power)
     maior_por_vir = max(por_vir, default=0)
-    if maior_por_vir > atk_power and ganho < CUSTO_CARTA * 2:
+    if maior_por_vir > atk_power and ganho < custo_carta * 2:
         return False   # segura a reacao para o ataque maior
 
     return True
@@ -530,7 +539,8 @@ def order_target_candidates(gs: GameState, opp_gs: GameState,
 
     from optcg_engine.decision_engine import (redirect_option_value,
                                               life_redirect_cost,
-                                              get_card_effects, on_ko_value)
+                                              get_card_effects, on_ko_value,
+                                              EffectExecutor)
 
     # Redirect: o alvo original e um personagem NOSSO? (lider como escape)
     defender_is_own_char = (
@@ -563,6 +573,14 @@ def order_target_candidates(gs: GameState, opp_gs: GameState,
         if zone == 'top_deck':
             return (0, -(engine.avaliar_carta(card) if card else 0))
         if zone == 'own_hand':
+            if attacker_power > 0:
+                # custo do redirect do lider (Teach): mesma régua de
+                # _score_activate_main, protege carta jogavel agora / ameaça
+                # cara em vez do avaliar_carta puro (achado 07/07 — trashava
+                # personagens bons so porque avaliar_carta nao tem esses
+                # bonus de "vou precisar disso nos proximos turnos")
+                ee_tmp = EffectExecutor(gs, opp_gs)
+                return (1, ee_tmp._trash_value(card) if card else 0)
             return (1, engine.avaliar_carta(card) if card else 0)
         if zone == 'own_trash':
             return (2, -(engine.avaliar_carta(card) if card else 0))
@@ -584,7 +602,7 @@ def order_target_candidates(gs: GameState, opp_gs: GameState,
             # remocao: valor do alvo DESCONTADO do on-KO dele (KO-zar um
             # personagem com on-KO rico presenteia o efeito ao oponente)
             valor = engine.analyzer.char_value_score(card) if card else 0
-            ko_deles = on_ko_value(card.code, gs) if card else 0
+            ko_deles = on_ko_value(card.code, gs, owner=opp_gs) if card else 0
             return (4, -(valor - ko_deles))
         if zone == 'opp_trash':
             return (5, -(engine.avaliar_carta(card) if card else 0))
