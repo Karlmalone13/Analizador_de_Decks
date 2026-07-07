@@ -1,5 +1,116 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-07 (99) - Claude
+
+### 2 partidas reais instrumentadas + 8 fixes (redirect/on-KO, margem de counter, campo-cheio, search, Stage no DTO)
+
+Rodei 2 partidas reais contra o bot (server + plugin, SoloVSelf), auditando
+decisão por decisão via log ao vivo (BepInEx LogOutput.log) + CombatLog
+completo no fim de cada uma. Achados e fixes, todos em `decision_engine.py`
+salvo indicação contrária:
+
+1. **`on_ko_value` creditava `play_card` sem checar disponibilidade real**
+   (partida 1: redirect do líder Teach escolheu Avalo Pizarro em vez de
+   Vasco Shot — o bônus fixo de "jogar Fullalead do trash" valia +30 mesmo
+   com o Fullalead já jogado antes, enquanto o Vasco Shot teria restado o
+   Kuma do oponente de verdade). Fix: `_on_ko_play_card_value` (nova
+   função) só credita se existir alvo elegível de verdade na mão/trash do
+   dono (via `eligible_cards`), escalado pelo `board_value()` do achado.
+   Testado com carta sem relação nenhuma (Brook/Laboon) pra confirmar que
+   não é hardcoded pro caso reportado.
+2. **Custo do redirect do líder era um número fixo (~25)**, ignorando o
+   que realmente tem na mão. `resolve_reaction`/`order_target_candidates`
+   (`sim_bridge.py`) trocados pra usar `EffectExecutor._trash_value` real
+   (mesma régua de `_score_activate_main`) — protege carta jogável agora /
+   ameaça cara em vez de sacrificar qualquer coisa por ganho marginal.
+3. **`opp_counter_potential` só somava o stat impresso de counter**, nunca
+   efeitos `[Counter] Activate` condicionais (Ground Death +4000 com
+   trash≥10, "...Never Existed..." +4000 com líder Imu) — o bot atacava
+   empatado sem margem e falhava contra essas cartas repetidas vezes na
+   mesma partida. Fix: soma stat + `effects.counter.steps` (buff_power),
+   validando as condições contra o estado real do oponente via
+   `EffectExecutor._check_conditions`. Também trocado o
+   `1000 if opp.hand else 0` do alvo-personagem em `don_needed_for_attack`
+   pela mesma conta real (antes só o alvo-líder usava isso).
+4. **Stage nunca chegava ao motor** — confirmado no `PlayerState.cs`
+   decompilado: o jogo tem `Lgo_MyStage` dedicado, nunca lido pelo plugin
+   (só `Lgo_MyDeploy`, que é só personagem). O Fullalead (stage do próprio
+   bot) ficava em campo a partida toda sem nunca ser oferecido pro
+   Activate:Main. Fix: `dto.stage` em `GameStateDto.cs`/`GameStateBuilder.cs`
+   (lê `Lgo_MyStage`) + `PlayerDto.stage`/`gs.field_stage` em `server.py`.
+   Validado end-to-end em Python e via Turn Planner real (Fullalead passou
+   a ser oferecido, score 154). **DLL recompilada e copiada nesta sessão**
+   — qualquer sessão nova que reabrir o jogo sem essa DLL não tem o fix.
+5. **Bug pré-existente achado incidentalmente**: `_pay_costs` tinha uma
+   branch `ko_own_character` DUPLICADA e quebrada (variável `p` indefinida,
+   claramente colada de `_should_activate_main` por engano) — código morto
+   até os fixes acima mudarem o scoring e o Turn Planner escolher, pela
+   primeira vez num seed fixo do `smoke_test_broad.py`, uma ação que
+   passava por ali. Removida a duplicata (a branch correta já existia logo
+   depois, usando `self.me`).
+6. **`debuff_power` (target `opp_leader_or_character`) escolhia por
+   `board_value` puro, incluindo personagem JÁ RESTADO** (partida 2: Van
+   Augur debuffou -3000 no St. Marcus Mars bem depois dele já ter atacado
+   — efeito `this_turn` desperdiçado). Fix: prioriza ativo (não restado);
+   só cai pra qualquer um se não sobrar opção ativa.
+7. **Busca (`add_to_hand`) escolhia por `board_value` puro** (poder+keyword,
+   sem contexto) em vez de `avaliar_carta` (situacional: custo jogável
+   agora, fase, flags de efeito, postura) — mesmo padrão usado em ~12
+   lugares do `_execute_step`, mas só troquei este (Laffitte/Shiryu-search)
+   por ser o caso concreto reportado; os outros 11 ficam pendentes (ver
+   abaixo — pra "sacrifício" a lógica se inverte, quer o MENOR valor).
+8. **Guarda de campo cheio ausente no caminho principal de jogar carta**:
+   a execução real (`main_phase`, ~linha 7290) sempre KO a pior carta do
+   campo ao jogar um Character com campo cheio, SEM comparar se a nova é
+   melhor — só um caminho secundário (efeito trigger-driven, GRUPO 2) tinha
+   essa comparação. Causava troca Doc Q→Doc Q→Van Augur repetida no mesmo
+   turno (visto em partida real: `Trash Doc Q / Deploy Doc Q / Trash Doc Q
+   / Deploy Van Augur` 3x seguidas, turno de 9 DON). Fix: `_score_play_action`
+   desqualifica (-999) jogar um Character quando o campo já tem 5 e ele não
+   supera o pior lá, ANTES do DON ser gasto.
+
+### Pendências (achadas, não corrigidas)
+- **Shiryu (OP16-108) nunca jogado com 3 cópias na mão e DON de sobra**:
+  causa raiz é o PARSER, não o scoring — `[On Play] trash 1: add card do
+  trash pro topo da vida face-up` não está em `card_effects_db.json` (só o
+  `[Trigger] draw 2` foi parseado). `card_analysis_db.json` (flags) está
+  correto (`gains_life`, etc.), então a carta não é totalmente ignorada,
+  mas perde o bônus de `_score_play_action` que depende de
+  `'on_play' in effects`. Corrigir isso é trabalho de PARSER (workflow
+  próprio: snapshot → fix → `diff_parser.py` PERDEU=0 → gerar_dbs →
+  re-snapshot), não fiz nesta sessão.
+- **9 outros lugares com `max(..., key=board_value)`** no `_execute_step`
+  (K.O. por efeito, roubo, etc.) — mesmo padrão do achado #7, revisar um a
+  um se faz sentido trocar pra `avaliar_carta` (contexto muda o sinal em
+  alguns, ex: escolha de sacrifício quer o MENOR valor, não o maior).
+- **Coordenação de múltiplos atacantes no mesmo alvo**: investigado e
+  descartado como bug — usuário confirmou que atacar 2x o mesmo alvo pode
+  ser drenar recurso de defesa do oponente de propósito (o bot não sabe de
+  antemão se o 2º ataque vai passar de graça ou não). Sem ação.
+
+### Validação
+`smoke_test.py` (100%) e `smoke_test_broad.py` (40/40 sem exceção) rodados
+depois de CADA fix acima; usei `git stash` pra comparar com baseline
+quando a causa de uma falha não era óbvia (achado #5 veio assim).
+`audit_replay.py` está quebrado no baseline por motivo não relacionado
+(`_suppress_replay_log`/`decision_log` ausentes no `OPTCGMatch` construído
+por esse script) — confirmado via stash, não é regressão desta sessão, não
+investigado.
+
+Logs das 2 partidas reais (SoloVSelf, mesma decklist nos dois lados):
+`CombatLogs/2026-07-07T16.41.20.log` (antes dos fixes 1-3) e
+`2026-07-07T18.27.45.log` (com os fixes 1-4, gerou os achados 5-8). Nas
+duas o bot perdeu pra recursão Five Elders/Ethanbaron do oponente — não
+investigado ainda (deck/estratégia de longo prazo, não bug pontual).
+
+### Operacional
+Server precisa reiniciar (.py mudou nos itens 1-3 e 5-8). DLL só muda pro
+item 4 (Stage) — já recompilada e copiada pro BepInEx nesta sessão; se
+abrir o jogo numa sessão nova sem rodar `dotnet build` de novo, o Stage
+volta a ficar invisível pro motor.
+
+---
+
 ## 2026-07-06 (98) - Claude
 
 ### Fecha o trabalho do Codex (bloco 97): piso prematuro em `live_attack_power`
