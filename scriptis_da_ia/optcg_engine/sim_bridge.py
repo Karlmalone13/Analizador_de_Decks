@@ -558,6 +558,21 @@ def order_target_candidates(gs: GameState, opp_gs: GameState,
             and s.get('source') == 'selected_opp_character'
             for s in wa.get('steps', []))
 
+    # O efeito resolvendo e um debuff de poder no oponente (duration
+    # tipicamente 'this_turn', ex: Van Augur on-KO)? A ordenacao generica de
+    # opp_board (linha ~601) e feita pra REMOCAO (maior valor, sem olhar
+    # rested) e opp_leader cai no catch-all de prioridade baixa -- pra esse
+    # tipo de efeito o lider e um alvo tao valido quanto um personagem, e um
+    # alvo JA RESTADO (ja atacou este turno) nunca aproveita o debuff.
+    # Achado em partida real 07/07: Van Augur debuffou -3000 num personagem
+    # que ja tinha atacado, quando o lider do oponente ainda estava ativo.
+    actor_debuff_swing = False
+    if actor_code and not actor_copia_poder:
+        for block in get_card_effects(actor_code).values():
+            if any(s.get('action') == 'debuff_power' for s in block.get('steps', [])):
+                actor_debuff_swing = True
+                break
+
     def sort_key(cand: dict):
         card = card_of(cand)
         zone = cand.get('zone', '')
@@ -567,6 +582,10 @@ def order_target_candidates(gs: GameState, opp_gs: GameState,
                 # antes de zonas genericas, mesmo durante a janela de ataque.
                 return (0, -(card.effective_power(False) if card else 0))
             return (8, 0)
+        if actor_debuff_swing and zone in ('opp_board', 'opp_leader'):
+            rested = bool(getattr(card, 'rested', False)) if card else True
+            valor = engine.analyzer.char_value_score(card) if card else 0
+            return (0 if not rested else 1, -valor)
         # Contexto de ataque: alvo original sempre por ULTIMO, em qualquer zona
         if attacker_power > 0 and defender_uid and cand.get('id') == defender_uid:
             return (9, 0)
