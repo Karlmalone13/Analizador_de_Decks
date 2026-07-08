@@ -297,8 +297,17 @@ def choose_target(req: ChooseTargetRequest):
             attacker_power=req.attackerPower,
             defender_uid=req.defenderId,
             actor_code=req.actorCode)
+        zonas = sorted({c.zone for c in req.candidates})
         print(f"[TGT] {len(req.candidates)} candidatos (actor={req.actorCode} "
-              f"atk={req.attackerPower} def={req.defenderId}) -> ordem {out[:5]}", flush=True)
+              f"atk={req.attackerPower} def={req.defenderId} zonas={zonas}) -> ordem {out[:5]}",
+              flush=True)
+        # Diagnostico 07/07: confirmar se um redirect (attackerPower>0) esta
+        # escolhendo o proprio alvo original (no-op) por falta de opcao —
+        # ajuda a achar se a ability do Teach passa por /defense phase=reaction
+        # antes disso ou vai direto pro choose_target sem gate de aceitar/recusar.
+        if req.attackerPower > 0 and req.defenderId and out and out[0] == req.defenderId:
+            print(f"[TGT][AVISO] top escolhido == alvo original (defId={req.defenderId}) "
+                  f"-- possivel redirect sem efeito (no-op)", flush=True)
         return {"orderedIds": out}
 
     except Exception as e:

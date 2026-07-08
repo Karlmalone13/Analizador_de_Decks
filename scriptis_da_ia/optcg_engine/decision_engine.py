@@ -888,6 +888,27 @@ def on_ko_value(code: str, opp: 'Optional[GameState]' = None,
                 total += 25 * min(count, _step_matching_targets(step, opp.field_chars))
         elif action in ('play_card', 'play_from_trash'):
             total += _on_ko_play_card_value(step, owner)
+        elif action == 'debuff_power':
+            # enfraquece o oponente -- so vale se sobrar alvo que AINDA vai
+            # agir este turno (duration tipicamente 'this_turn'). Achado
+            # 07/07: caia no fallback generico (+8) e perdia pro play_card
+            # do Pizarro mesmo sem alvo real, e depois de corrigido ainda
+            # empatava (23 vs 23) com set_base_power do Sanjuan Wolf, um
+            # efeito bem mais forte -- os dois ficavam invisiveis aqui.
+            amount = step.get('amount', 0) or 0
+            peso = 12 + min(amount / 1000 * 4, 20)
+            if opp is None:
+                total += peso
+            else:
+                tem_char_ativo = any(not getattr(c, 'rested', False) for c in opp.field_chars)
+                tem_lider_ativo = opp.leader is not None and not getattr(opp.leader, 'rested', False)
+                if tem_char_ativo or tem_lider_ativo:
+                    total += peso
+        elif action in ('set_base_power', 'buff_power') and 'opp' not in (step.get('target') or ''):
+            # buff/fixa poder do NOSSO lado -- swing ofensivo real (ex:
+            # Sanjuan Wolf: ate 1 dos nossos vira 7000 de poder este turno)
+            amount = step.get('amount', 0) or 0
+            total += 15 + min(amount / 1000 * 3, 25)
         elif action in ('life_to_hand', 'send_life_to_hand'):
             total += 10
         else:
