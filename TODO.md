@@ -7,6 +7,53 @@
 
 ---
 
+## 🔴 PRÓXIMO TÓPICO (aberto 07/07/2026): consciência de combos estratégicos do oponente
+
+4 partidas reais instrumentadas na sessão de 07/07 (ver HANDOFF 99/100) — o
+bot perdeu as 4, e as 4 pelo **mesmo padrão exato**: o oponente (Imu/Five
+Elders) monta uma mão de custo alto no trash (Ju Peter, Ethanbaron, Warcury,
+Marcus Mars, Saturn) através de descartes forçados de outros efeitos, e
+depois o Five Elders reanima TODOS eles de uma vez num único turno
+("Deployed X from Trash" 4-5x seguidas), fechando o jogo com o Ethanbaron
+bufado (DON + counters empilhados) num único ataque de 8-9k que o bot não
+tem resposta pra segurar.
+
+Os 8+ fixes táticos da sessão de 07/07 (redirect com alvo real, margem de
+counter effect-aware, guarda de campo cheio, etc. — ver HANDOFF 99/100)
+são todos válidos e testados, mas **nenhum deles ataca esse padrão**,
+porque são todos correções de qualidade de decisão PONTUAL (qual carta
+sacrificar agora, quanto DON anexar neste ataque). O buraco real é
+ESTRATÉGICO: o motor não tem noção de "esse oponente está montando um
+combo de virada, preciso desarmar/acelerar/guardar recurso ANTES dele
+disparar" — só reage turno a turno sem olhar pro padrão.
+
+**Ideia (ainda não desenhada)**: usar os logs de partidas reais (`CombatLogs/`)
+pra identificar, por arquétipo/deck, qual é o "combo de virada" característico
+(ex: Five Elders = reanimação em massa; outros decks vão ter outros
+padrões — DON ramp pra lethal, mill, etc.), e alimentar isso de volta no
+motor como um sinal de ameaça agregada (não só "quanto poder esse
+personagem tem agora", mas "quanto poder esse BOARD PODE virar se o
+oponente disparar o combo dele"). Precisa decidir:
+- Onde isso vive: um módulo novo de "leitura de combo" (parecido com
+  `opponent_model.py`, que já faz leitura probabilística de mão) ou uma
+  extensão do `GameAnalyzer` (`opp_lethal_threat`/`critical_threats` já
+  fazem algo parecido pra ameaça imediata — talvez baste generalizar pra
+  ameaça "daqui a N turnos" olhando o trash do oponente).
+- Como detectar o padrão sem hardcode por card_id: contar characters de
+  alto custo/poder no trash do oponente + presença de uma carta com
+  `play_from_trash`/`play_card source_alt=trash` em massa (o Five Elders é
+  um caso desse tipo) já dá pra generalizar sem precisar saber o nome da
+  carta.
+- Resposta esperada do motor quando o sinal aparece: acelerar o clock
+  (raça), guardar counter/blocker pro turno da virada, ou remover peças-chave
+  do trash antes (`exile`/negação de recursão, se o deck do bot tiver isso).
+
+Não escopado nem começado ainda — próxima sessão que pegar isso deve
+começar por reler os 4 logs de 07/07 (`CombatLogs/2026-07-07T*.log`) e
+`HANDOFF.md` blocos 99-100 antes de desenhar a solução.
+
+---
+
 ## Dívida técnica ativa — Turn Planner
 
 - [x] **Reduzir `deepcopy` em `_simulate_sequence*`** — **implementado (02/07/2026).** `_SimDeck` (list subclass copy-on-pop lazy) aplicada ao `p.deck` + mesmo truque do `opp.deck`. Speedup 2.8× (0.85ms → 0.30ms/call, 31ms → 11ms/main_phase). Ver HANDOFF (13). a poda de orçamento já

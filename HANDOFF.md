@@ -1,5 +1,70 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-07 (100) - Claude
+
+### 2 achados novos + fecha a sessão: on_ko_value sem peso pra debuff/set_power, self-redirect no-op (raiz incerta), abre tópico de combo estratégico
+
+Sequência do bloco 99: rodei mais uma partida real (server reiniciado com
+todos os fixes commitados) e o usuário auditou o log completo de novo.
+2 achados novos, ambos em `on_ko_value`/redirect:
+
+1. **`on_ko_value` não tinha peso pra `debuff_power`/`set_base_power`** —
+   caíam no fallback genérico (`else: +8`). Sanjuan Wolf (`set_base_power`
+   7000 no líder/personagem próprio) e Van Augur (`debuff_power` -3000 no
+   oponente) empatavam em 23.0 apesar de serem efeitos MUITO diferentes em
+   impacto — isso fez o Van Augur "ganhar" a escolha de redirect por ser
+   mais barato de sacrificar (custo 1 vs 4), quando o Sanjuan Wolf (efeito
+   bem mais forte: líder a 7000 de poder) devia ter sido escolhido. Fix:
+   branch dedicado pra `debuff_power` (só conta se o oponente tem alvo
+   ATIVO — mesma lição do achado #6 do bloco 99) e pra
+   `set_base_power`/`buff_power` do NOSSO lado (peso pelo tamanho do
+   swing). Validado: Sanjuan Wolf 51 vs Van Augur 39 com alvo ativo, Van
+   Augur cai pra 15 sem alvo ativo nenhum.
+2. **Self-redirect no-op**: no início de uma partida (log
+   `2026-07-07T21.31.01.log`), o Teach "redirecionou" um ataque do líder
+   PRA ELE MESMO (alvo original já era o líder, campo do bot vazio) —
+   trashou o Black Hole à toa, zero ganho. Investiguei a fundo: testei
+   `resolve_reaction` isolado com o cenário exato (campo vazio, alvo
+   original = líder) e ele retorna `False` corretamente — MAS procurei no
+   log real do server (155 linhas de stdout da partida inteira) por
+   `[DEF] reaction` e **não achei NENHUMA ocorrência**, apesar de pelo
+   menos 3 redirects reais terem acontecido nessa partida. Isso sugere que
+   a ability do Teach pode não estar passando pelo gate
+   `IsOfferingDownside` → `phase="reaction"` que o C# usa (ver
+   `BotDriver.cs` ~linha 85-120) — foi direto pra escolha de alvo sem uma
+   etapa de aceitar/recusar. **Não confirmei a causa raiz** (só dá pra
+   confirmar com instrumentação ao vivo, não só lendo o combat log em
+   texto) — não fiz um fix especulativo em cima de teoria não confirmada.
+   Em vez disso, adicionei diagnóstico em `server.py` `/choose_target`:
+   loga as zonas dos candidatos recebidos e um aviso explícito
+   `[TGT][AVISO]` quando o alvo escolhido bate com o alvo original
+   (self-redirect no-op detectado). Isso fica no stdout do server
+   (`bvjlwph6w.output`-like, não no LogOutput.log do jogo) — checar isso
+   manualmente na próxima partida, não pelo monitor ao vivo.
+
+Ambos os fixes de `on_ko_value` validados (`smoke_test.py` 100%,
+`smoke_test_broad.py` 40/40). Só Python, servidor precisa reiniciar.
+
+### Resultado das 4 partidas reais de hoje: 4 derrotas, mesmo padrão
+
+Rodei 4 partidas reais instrumentadas ao longo da sessão (2 antes dos
+fixes, 2 depois). **O bot perdeu as 4**, sempre pelo mesmo motivo: Five
+Elders do oponente reanima um board inteiro do trash num turno só
+(Ju Peter + Ethanbaron + Warcury + Marcus Mars + Saturn) e fecha com o
+Ethanbaron bufado. Os fixes de hoje (redirect, margem de counter, campo
+cheio, on_ko_value) são reais e validados individualmente, mas nenhum
+ataca esse padrão — são tudo correção tática pontual, não resposta
+estratégica a um combo de virada. **Abri um tópico novo no TODO.md**
+("consciência de combos estratégicos do oponente") documentando o padrão
+observado e as perguntas de design em aberto — não escopado nem começado,
+fica pra próxima sessão (ou continuação desta).
+
+### Operacional
+Server precisa reiniciar (server.py + decision_engine.py mudaram nesta
+rodada). Nenhuma mudança em C#/DLL desta vez.
+
+---
+
 ## 2026-07-07 (99) - Claude
 
 ### 2 partidas reais instrumentadas + 8 fixes (redirect/on-KO, margem de counter, campo-cheio, search, Stage no DTO)
