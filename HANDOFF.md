@@ -1,5 +1,76 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-07 (101) - Claude
+
+### Fix real do debuff_power no caminho AO VIVO + achado grande: `IsOfferingDownside` nunca detecta a ability do Teach
+
+Mais uma partida real (5ª de hoje) auditada pelo usuário. 2 coisas importantes:
+
+**1. Fix #6 do bloco 100 só valia pra simulação, não pro jogo real — corrigido agora.**
+O usuário reportou de novo o Van Augur debuffando -3000 num personagem já
+restado (dessa vez o St. Jaygarcia Saturn) em vez do líder (ainda ativo).
+Investiguei e achei a causa raiz certa dessa vez: meu fix de ontem no
+`_execute_step`/`debuff_power` (decision_engine.py) só é usado pela
+simulação INTERNA do Turn Planner. A escolha de alvo AO VIVO (quando o
+jogo de verdade pede via `/choose_target`) passa por
+`order_target_candidates` (sim_bridge.py), que eu não tinha tocado pra
+esse caso — a zona `opp_board` lá é genérica pra REMOÇÃO (maior valor,
+sem olhar `rested`) e `opp_leader` cai num catch-all de prioridade baixa,
+então o líder quase nunca competia. Fix: detecção do padrão de efeito
+(`actor_debuff_swing`, igual ao `actor_copia_poder` que já existia pra
+copy-power) — quando o ator tem um step `debuff_power`, `opp_board` e
+`opp_leader` são tratados juntos, priorizando quem está ATIVO (não
+restado) antes de olhar valor. Testado isolado (líder ativo bate
+personagem restado) e validado (`smoke_test.py` 100%, `smoke_test_broad.py`
+40/40). Commit `4155623`.
+
+**2. `IsOfferingDownside` nunca retorna true pra ability do Teach — confirmado, não é mais suspeita.**
+O usuário reportou (e confirmou visualmente, existe um botão real no jogo)
+que o "trash 1 [Trigger]: redirecionar ataque" do Teach parece ter uma
+escolha de aceitar/recusar. Mas em NENHUMA das 5 partidas de hoje o
+server Python imprimiu `[DEF] reaction` nem `[DEF] optional` — e o
+heartbeat do próprio plugin (`[HB] ... downside=...`, já existia no
+código, imprime toda vez que o estado muda) **nunca** mostrou
+`downside=True` em nenhum momento do LogOutput.log inteiro (rodei
+`grep "downside=True"` no log completo — zero ocorrências). Ou seja: a
+função `BotExecutor.IsOfferingDownside(gls)` (que lê o campo
+`_fOfferingDownside` via reflection) está checando o campo ERRADO do
+estado interno do jogo pra essa ability específica — o jogo mostra um
+botão real (usuário confirmou visualmente), mas nosso código nunca detecta
+essa janela de decisão, então a ability é usada sem nunca passar pelo
+`resolve_reaction`/`resolve_optional_effect` do motor. Isso explica os
+achados dos blocos 99-100 que pareciam "o fix não pegou" (self-redirect
+sem efeito, redirect de ataque de 0 poder que já ia falhar sozinho,
+trashando carta à toa) — não é bug de decisão no Python, é a ability
+sendo forçada sem nunca perguntar pro motor se vale a pena.
+
+### Pendências pra próxima sessão (usuário pediu explicitamente)
+1. **Achar o campo certo no jogo pra detectar essa ability.** Próximo
+   passo: procurar no `_referencias/simulador-oficial/dnspy-export/`
+   (GameplayLogicScript.cs e o V3 action script específico do Teach) por
+   qual state/flag realmente controla esse diálogo — `_fOfferingDownside`
+   está descartado como candidato (confirmado errado agora). Pode ser um
+   state diferente de `PlayerTurn_Action`/downside, ou um campo novo que
+   ninguém tinha mapeado ainda.
+2. **Criar um toggle (tecla de atalho) pra ligar/desligar o bot em tempo
+   real**, sem precisar reiniciar o jogo nem trocar a DLL de lugar —
+   usuário quer isso pra poder jogar manualmente e printar telas de
+   decisão sem o plugin clicar automaticamente antes de dar tempo. Dá pra
+   fazer em `BotDriver.cs` (`Update()`, ~linha 29): checar uma tecla via
+   Unity `Input.GetKeyDown` no início do método, com um `bool _botEnabled`
+   que dá `return` cedo quando false. `Plugin.cs`/`BotDriver.cs` já são
+   `MonoBehaviour`/`BaseUnityPlugin` com acesso a `UnityEngine`, então
+   `Input` já está disponível sem dependência nova.
+
+### Operacional
+Server (porta 8765) está DESLIGADO no fim desta sessão (parado a pedido
+do usuário pra tentar isolar o diálogo do Teach) — subir de novo com
+`python BOT/engine_server/server.py` antes de qualquer teste novo. DLL do
+plugin não mudou nesta rodada (só o fix de `order_target_candidates`, que
+é Python puro).
+
+---
+
 ## 2026-07-07 (100) - Claude
 
 ### 2 achados novos + fecha a sessão: on_ko_value sem peso pra debuff/set_power, self-redirect no-op (raiz incerta), abre tópico de combo estratégico
