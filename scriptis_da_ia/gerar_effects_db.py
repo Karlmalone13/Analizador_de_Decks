@@ -3389,11 +3389,22 @@ def parse_block(block_text, trigger_name):
         steps.append({'action': 'place_opp_character_bottom_deck',
                       'count': 99, 'cost_lte': int(m_mass.group(1))})
 
-    # "Change the attack target to the selected card" -- OP14-060 Doflamingo.
-    # Parser apenas (engine: redirect durante combate exige interrupcao da
-    # resolucao de ataque -- nao implementado; registrado para analysis_db).
-    if 'change the attack target' in t:
-        filter_m_d = re.search(r'select your leader or 1 of your \{([^}]+)\} type characters?', t)
+    # "Change the attack target to the selected card" -- OP14-060 Doflamingo,
+    # EB01-038 Oh Come My Way. Tambem cobre a variacao de ordem de palavras
+    # "Change the target of that/this attack..." -- OP16-080 Teach (achado
+    # 07/07: o texto dele nao batia com a regex antiga, "change the attack
+    # target" != "change the target of that attack", entao o redirect do
+    # Teach nunca virava step nenhum no banco). Parser apenas (engine:
+    # redirect durante combate exige interrupcao da resolucao de ataque --
+    # nao implementado; registrado para analysis_db).
+    if re.search(r'change the (?:attack target|target of (?:that|this) attack)', t):
+        # Filtro do alvo (ex: "{Blackbeard Pirates} type Character cards")
+        # aparece com fraseado diferente em cada carta (Doflamingo: "select
+        # your leader or 1 of your {X} type characters"; Teach: "to this
+        # leader or to one of your {X} type character cards") -- so o
+        # conteudo entre chaves + "type character(s)" e comum aos dois,
+        # entao busca so por isso em vez de tentar casar a frase inteira.
+        filter_m_d = re.search(r'\{([^}]+)\}\s*type\s*characters?', t)
         step_rd = {'action': 'redirect_attack_target'}
         if filter_m_d:
             step_rd['filter_type'] = filter_m_d.group(1).strip()
@@ -3686,6 +3697,28 @@ def parse_block(block_text, trigger_name):
     _gains_lista_m = re.search(r'gains?\s+(\[[a-z: ]+\]\s*,?\s*)+(or\s*\[[a-z: ]+\]\s*)?', t)
     _lista_txt = _gains_lista_m.group(0) if _gains_lista_m else ''
 
+    # "gains [A], [B] or [C]" (com "or") = ESCOLHA mutuamente exclusiva (o
+    # jogador pega 1), NAO concessao simultanea das keywords -- achado
+    # 08/07 (OP09-084 Catarina Devon: "gains [Double Attack], [Banish] or
+    # [Blocker]"). Sem isto, os 3 blocos abaixo appendavam cada keyword
+    # como step INCONDICIONAL separado -- o engine aplicava as 3 de graca
+    # em vez de oferecer a escolha, entao a acao nunca aparecia como
+    # "escolher efeito" pro bot (efeito computado errado silenciosamente
+    # concedia tudo, mascarando o bug). Vira {'_choice': [[gain_x], [gain_y]]},
+    # mesmo formato usado por "Choose one: • ...". As keywords aqui
+    # consumidas ficam de fora dos blocos individuais abaixo (guardas
+    # 'not in _lista_choice_keywords') para nao duplicar como step solto.
+    _lista_choice_keywords = []
+    if ' or ' in _lista_txt:
+        for _kw, _acao in (('[rush: character]', 'gain_rush_character'),
+                            ('[rush]', 'gain_rush'), ('[blocker]', 'gain_blocker'),
+                            ('[double attack]', 'gain_double_attack'),
+                            ('[banish]', 'gain_banish'), ('[unblockable]', 'gain_unblockable')):
+            if _kw in _lista_txt:
+                _lista_choice_keywords.append(_acao)
+        if len(_lista_choice_keywords) >= 2:
+            steps.append({'_choice': [[{'action': a}] for a in _lista_choice_keywords]})
+
     # Auditoria 27/06: gain_rush/gain_double_attack/gain_blocker/
     # gain_unblockable nunca expiravam (setavam has_* permanente mesmo
     # quando o texto diz "during this turn"/"during this battle"). Captura
@@ -3703,38 +3736,39 @@ def parse_block(block_text, trigger_name):
         return None
 
     m_rc = re.search(r'gains?\s+\[rush: character\]', t)
-    if m_rc or '[rush: character]' in _lista_txt:
+    if 'gain_rush_character' not in _lista_choice_keywords and (m_rc or '[rush: character]' in _lista_txt):
         step = {'action': 'gain_rush_character'}
         dur = _duration_apos(m_rc.end()) if m_rc else None
         if dur:
             step['duration'] = dur
         steps.append(step)
-    else:
+    elif 'gain_rush_character' not in _lista_choice_keywords:
         m_r = re.search(r'gains?\s+\[rush\]', t)
-        if m_r or '[rush]' in _lista_txt:
+        if 'gain_rush' not in _lista_choice_keywords and (m_r or '[rush]' in _lista_txt):
             step = {'action': 'gain_rush'}
             dur = _duration_apos(m_r.end()) if m_r else None
             if dur:
                 step['duration'] = dur
             steps.append(step)
     m_b = re.search(r'gains?\s+\[blocker\]', t)
-    if m_b or '[blocker]' in _lista_txt:
+    if 'gain_blocker' not in _lista_choice_keywords and (m_b or '[blocker]' in _lista_txt):
         step = {'action': 'gain_blocker'}
         dur = _duration_apos(m_b.end()) if m_b else None
         if dur:
             step['duration'] = dur
         steps.append(step)
     m_da = re.search(r'gains?\s+\[double attack\]', t)
-    if m_da or '[double attack]' in _lista_txt:
+    if 'gain_double_attack' not in _lista_choice_keywords and (m_da or '[double attack]' in _lista_txt):
         step = {'action': 'gain_double_attack'}
         dur = _duration_apos(m_da.end()) if m_da else None
         if dur:
             step['duration'] = dur
         steps.append(step)
-    if 'gain [banish]' in t or 'gains [banish]' in t or '[banish]' in _lista_txt:
+    if 'gain_banish' not in _lista_choice_keywords and (
+            'gain [banish]' in t or 'gains [banish]' in t or '[banish]' in _lista_txt):
         steps.append({'action': 'gain_banish'})
     m_u = re.search(r'gains?\s+\[unblockable\]', t)
-    if m_u or '[unblockable]' in _lista_txt:
+    if 'gain_unblockable' not in _lista_choice_keywords and (m_u or '[unblockable]' in _lista_txt):
         step = {'action': 'gain_unblockable'}
         dur = _duration_apos(m_u.end()) if m_u else None
         if dur:

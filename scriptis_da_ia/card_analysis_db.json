@@ -80486,7 +80486,8 @@
   "effects": [
    {
     "action": "rest_opp_character",
-    "trigger": "trigger"
+    "trigger": "trigger",
+    "power_lte": 7000
    },
    {
     "action": "buff_power",
@@ -80596,7 +80597,8 @@
    },
    {
     "action": "rest_opp_character",
-    "trigger": "main"
+    "trigger": "main",
+    "power_lte": 7000
    },
    {
     "action": "draw",
@@ -93058,6 +93060,10 @@
   "sub_types": "Blackbeard Pirates The Seven Warlords of the Sea",
   "attribute": "Special",
   "effects": [
+   {
+    "action": "redirect_attack_target",
+    "trigger": "on_opp_attack"
+   },
    {
     "action": "buff_cost",
     "trigger": "opp_turn",

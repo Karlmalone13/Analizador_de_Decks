@@ -37175,16 +37175,22 @@
     "attribute": "Special",
     "effects": {
       "activate_main": {
-        "steps": [
-          {
-            "action": "gain_blocker"
-          },
-          {
-            "action": "gain_double_attack"
-          },
-          {
-            "action": "gain_banish"
-          }
+        "choice": [
+          [
+            {
+              "action": "gain_blocker"
+            }
+          ],
+          [
+            {
+              "action": "gain_double_attack"
+            }
+          ],
+          [
+            {
+              "action": "gain_banish"
+            }
+          ]
         ],
         "conditions": {
           "leader_type": "blackbeard pirates"
@@ -51109,8 +51115,7 @@
             "count": 1,
             "cost_lte": "don_count_self",
             "filter_type": "five elders",
-            "color": "black",
-            "card_type": "CHARACTER"
+            "color": "black"
           }
         ],
         "costs": [
@@ -52329,7 +52334,6 @@
         "once_per_turn": true
       },
       "passive": {
-        "conditions": {"opp_leader_attribute": "slash"},
         "steps": [
           {
             "action": "buff_power",
@@ -52759,7 +52763,8 @@
         "steps": [
           {
             "action": "rest_opp_character",
-            "count": 1
+            "count": 1,
+            "power_lte": 7000
           }
         ]
       },
@@ -52834,7 +52839,8 @@
         "steps": [
           {
             "action": "rest_opp_character",
-            "count": 1
+            "count": 1,
+            "power_lte": 7000
           },
           {
             "action": "draw",
@@ -61310,6 +61316,21 @@
     "sub_types": "Blackbeard Pirates The Seven Warlords of the Sea",
     "attribute": "Special",
     "effects": {
+      "on_opp_attack": {
+        "steps": [
+          {
+            "action": "redirect_attack_target",
+            "filter_type": "blackbeard pirates"
+          }
+        ],
+        "costs": [
+          {
+            "type": "trash_from_hand",
+            "count": 1
+          }
+        ],
+        "once_per_turn": true
+      },
       "opp_turn": {
         "steps": [
           {

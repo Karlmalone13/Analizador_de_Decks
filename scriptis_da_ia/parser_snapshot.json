@@ -22997,21 +22997,27 @@
  },
  "OP09-084": {
   "activate_main": {
+   "choice": [
+    [
+     {
+      "action": "gain_blocker"
+     }
+    ],
+    [
+     {
+      "action": "gain_double_attack"
+     }
+    ],
+    [
+     {
+      "action": "gain_banish"
+     }
+    ]
+   ],
    "conditions": {
     "leader_type": "blackbeard pirates"
    },
-   "once_per_turn": true,
-   "steps": [
-    {
-     "action": "gain_blocker"
-    },
-    {
-     "action": "gain_double_attack"
-    },
-    {
-     "action": "gain_banish"
-    }
-   ]
+   "once_per_turn": true
   }
  },
  "OP09-085": {
@@ -32409,7 +32415,8 @@
    "steps": [
     {
      "action": "rest_opp_character",
-     "count": 1
+     "count": 1,
+     "power_lte": 7000
     }
    ]
   }
@@ -32560,7 +32567,8 @@
    "steps": [
     {
      "action": "rest_opp_character",
-     "count": 1
+     "count": 1,
+     "power_lte": 7000
     }
    ]
   }
@@ -32603,7 +32611,8 @@
    "steps": [
     {
      "action": "rest_opp_character",
-     "count": 1
+     "count": 1,
+     "power_lte": 7000
     },
     {
      "action": "draw",
@@ -37988,6 +37997,21 @@
   }
  },
  "OP16-080": {
+  "on_opp_attack": {
+   "costs": [
+    {
+     "count": 1,
+     "type": "trash_from_hand"
+    }
+   ],
+   "once_per_turn": true,
+   "steps": [
+    {
+     "action": "redirect_attack_target",
+     "filter_type": "blackbeard pirates"
+    }
+   ]
+  },
   "opp_turn": {
    "once_per_turn": true,
    "steps": [

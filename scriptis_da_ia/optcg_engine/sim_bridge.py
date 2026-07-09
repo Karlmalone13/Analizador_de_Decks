@@ -239,6 +239,20 @@ def choose_action(gs: GameState, opp_gs: GameState,
                     break
                 if allowed_types is None or a[1] in allowed_types:
                     result[0] = a
+                    # Diagnostico de gerenciamento de mao (08/07: usuario
+                    # reportou o bot jogando cartas de counter alto custo
+                    # 1-2 ate ficar sem mao) -- so loga quando a mao ja
+                    # esta fina (<=3 ANTES desta jogada), pra nao poluir o
+                    # log em turnos normais. Numeros reais aqui permitem
+                    # auditar se a régua de preservacao de mao (hand<=3 em
+                    # _generate_and_score_actions) esta protegendo cartas
+                    # de counter alto o suficiente, em vez de so contar
+                    # cartas.
+                    if a[1] == 'play' and len(gs.hand) <= 3:
+                        c = a[2]
+                        print(f"[PLAY] mao fina ({len(gs.hand)} cartas): "
+                              f"jogou {c.code} custo={c.cost} counter={c.counter} "
+                              f"score={a[0]:.1f}", flush=True)
                     break
         except Exception as e:
             import traceback
@@ -423,10 +437,21 @@ def resolve_reaction(gs: GameState, opp_gs: GameState,
     engine = DecisionEngine(gs, opp_gs)
     my_life = gs.life_count()
 
+    # Log de diagnostico (07/07: auditoria manual offline nao e confiavel --
+    # _trash_value depende de gs.don_available, que uma reconstrucao a
+    # partir do Combat Log nao reproduz com precisao. Log ao vivo aqui e a
+    # unica fonte confiavel dos numeros REAIS que levaram a decisao).
+    def _log(motivo, resultado, **extra):
+        partes = ' '.join(f'{k}={v}' for k, v in extra.items())
+        print(f'[REACTION] atk={atk_power} def={def_power} life={my_life} '
+              f'hand={len(gs.hand)} don_disp={gs.don_available} {partes} '
+              f'-> {resultado} ({motivo})')
+        return resultado
+
     if atk_power < def_power:
-        return False   # o ataque ja perde sozinho — nao gasta nada
+        return _log('ataque ja perde sozinho', False)
     if len(gs.hand) < 2 and my_life > 1:
-        return False   # ultima carta vale mais que 1 vida (salvo vida critica)
+        return _log('mao pequena, vida nao critica', False)
 
     # Custo real: a carta mais barata de perder na mao (mesma régua usada
     # em _score_activate_main) — nao um numero fixo que ignora o que tem
@@ -453,11 +478,26 @@ def resolve_reaction(gs: GameState, opp_gs: GameState,
         # mandar o golpe para o LIDER (so quando o alvo original e um char)
         opcoes.append(-life_redirect_cost(my_life))
     if not opcoes:
-        return False
+        return _log('sem alvo legal de redirect', False, custo_carta=round(custo_carta, 1))
+
+    # Ataque no LIDER com a vida JA em 0: esse golpe ENCERRA O JOGO se
+    # conectar (regra: tomar dano com vida 0 = derrota) -- nao e "perder
+    # mais 1 vida", e perder a partida inteira. Nenhuma conta de ganho
+    # liquido/custo de carta ou a guarda de "segurar a reacao pro ataque
+    # maior" (abaixo) fazem sentido aqui -- nao existe "turno que vem" se
+    # perdermos agora. Redireciona se existir QUALQUER alvo legal, mesmo
+    # que va morrer sem on-KO bom. Achado em partida real 07/07: o bot
+    # recusou o redirect exatamente no golpe que terminou o jogo, porque
+    # life_redirect_cost(0) caia no mesmo teto (90) usado pra "custo de 1
+    # carta" em vez de ser tratado como valor infinito/prioridade maxima.
+    if defender_char is None and my_life == 0:
+        return _log('vida 0, golpe letal -- redireciona sempre', True, opcoes=opcoes)
 
     ganho = max(opcoes) + salva
     if ganho < custo_carta:
-        return False
+        return _log('ganho < custo da carta', False,
+                     custo_carta=round(custo_carta, 1), salva=round(salva, 1),
+                     opcoes=[round(o, 1) for o in opcoes], ganho=round(ganho, 1))
 
     # A reacao e 1x POR TURNO: se ainda vem atacante MAIOR neste turno
     # (personagem ativo do oponente ou o lider dele em pe), gastar a reacao
@@ -470,9 +510,12 @@ def resolve_reaction(gs: GameState, opp_gs: GameState,
         por_vir.append(opp_gs.leader.power)
     maior_por_vir = max(por_vir, default=0)
     if maior_por_vir > atk_power and ganho < custo_carta * 2:
-        return False   # segura a reacao para o ataque maior
+        return _log('segura reacao pro ataque maior que vem', False,
+                     custo_carta=round(custo_carta, 1), ganho=round(ganho, 1),
+                     maior_por_vir=maior_por_vir)
 
-    return True
+    return _log('aceita', True, custo_carta=round(custo_carta, 1),
+                 salva=round(salva, 1), ganho=round(ganho, 1))
 
 
 def resolve_optional_effect(gs: GameState, opp_gs: GameState) -> bool:
@@ -542,9 +585,28 @@ def order_target_candidates(gs: GameState, opp_gs: GameState,
                                               get_card_effects, on_ko_value,
                                               EffectExecutor)
 
+    # O ATOR do efeito pendente e uma habilidade de REDIRECT de ataque de
+    # verdade (redirect_attack_target em algum bloco dele)? Achado real
+    # 08/07: attacker_power>0 so significa "estamos numa janela de ataque"
+    # -- QUALQUER selecao de alvo que aconteca nessa janela (ex: um trigger
+    # de vida como o Sanjuan Wolf, que so escolhe onde por +poder, nada a
+    # ver com redirecionar o ataque) reutilizava as heuristicas de redirect
+    # abaixo (own_hand/own_board/own_leader), tratando um efeito
+    # completamente nao-relacionado como se fosse "quanto vale sacrificar
+    # isso pra pagar o redirect" -- gerava escolha de alvo sem sentido pra
+    # qualquer carta cujo prompt calhasse de aparecer durante um ataque.
+    # Sem isto, so o CODIGO do ator sendo resolvido, nao o contexto de
+    # janela, deve decidir se as heuristicas de redirect valem.
+    actor_is_redirect = False
+    if actor_code:
+        for block in get_card_effects(actor_code).values():
+            if any(s.get('action') == 'redirect_attack_target' for s in block.get('steps', [])):
+                actor_is_redirect = True
+                break
+
     # Redirect: o alvo original e um personagem NOSSO? (lider como escape)
     defender_is_own_char = (
-        attacker_power > 0 and defender_uid
+        attacker_power > 0 and actor_is_redirect and defender_uid
         and any(getattr(c, '_deck_uid', 0) == defender_uid for c in gs.field_chars))
 
     # O efeito resolvendo e um COPY-POWER (ex: Devon OP16-104: "base power
@@ -573,9 +635,51 @@ def order_target_candidates(gs: GameState, opp_gs: GameState,
                 actor_debuff_swing = True
                 break
 
+    # O ator resolvendo e um AUTO-BUFF de poder fixo em "seu lider OU seu
+    # personagem" (ex: Sanjuan Wolf on-KO: "up to 1 of your Leader or
+    # Character's power becomes 7000")? Lider e personagem competem pelo
+    # MESMO papel aqui (nao e remocao nem redirect). Guarda o AMOUNT (valor
+    # fixo, ex: 7000) pra poder comparar contra o ataque em andamento.
+    # Achado real 08/07: sem regra dedicada, o lider caia no catch-all
+    # generico (baixa prioridade) e um personagem fraco de custo 1 quase
+    # sempre "ganhava" por estar em own_board (prioridade 3) contra
+    # own_leader (prioridade 6) -- nao porque fosse a melhor escolha, so
+    # porque a zona dele tinha prioridade estrutural maior.
+    actor_self_power_target = None
+    if actor_code and not actor_copia_poder and not actor_debuff_swing:
+        for block in get_card_effects(actor_code).values():
+            for s in block.get('steps', []):
+                if (s.get('action') in ('set_base_power', 'buff_power')
+                        and s.get('target') in ('leader_or_own_character', 'leader_or_character')):
+                    actor_self_power_target = s.get('amount', 0)
+                    break
+            if actor_self_power_target is not None:
+                break
+
+    # O ator so tem steps que miram o lado do OPONENTE (ex: OP09-093 Teach —
+    # "negate the effect of up to 1 of your opponent's Character")? Entao
+    # NENHUMA zona own_* e alvo valido nunca, pra QUALQUER carta com esse
+    # padrao -- sem essa deteccao, o bot clicava candidato por candidato
+    # (own_hand e own_board vem primeiro nas zonas genericas, prioridade
+    # 1 e 3) so pra o jogo ignorar cada clique invalido, um por tick
+    # (~0,8s), ate finalmente chegar num alvo opp_* valido. Achado real
+    # 08/07: usuario reportou ter precisado escolher o alvo manualmente —
+    # o bot NAO tinha travado, so estava visivelmente lento clicando lixo
+    # primeiro. Generico: olha os targets declarados de TODOS os blocos do
+    # ator: se todos comecam com 'opp', nenhuma zona own_* compete.
+    actor_opp_only = False
+    if actor_code and not (actor_copia_poder or actor_debuff_swing
+                            or actor_self_power_target is not None):
+        alvos = [s.get('target', '') for block in get_card_effects(actor_code).values()
+                 for s in block.get('steps', []) if s.get('target')]
+        if alvos and all(t.startswith('opp') for t in alvos):
+            actor_opp_only = True
+
     def sort_key(cand: dict):
         card = card_of(cand)
         zone = cand.get('zone', '')
+        if actor_opp_only and zone.startswith('own'):
+            return (9, 0)   # nunca e alvo valido pra essa habilidade
         if actor_copia_poder:
             if zone == 'opp_board':
                 # copy-power: maior poder = maior ataque copiado. Precisa vir
@@ -586,13 +690,45 @@ def order_target_candidates(gs: GameState, opp_gs: GameState,
             rested = bool(getattr(card, 'rested', False)) if card else True
             valor = engine.analyzer.char_value_score(card) if card else 0
             return (0 if not rested else 1, -valor)
+        if actor_self_power_target is not None and zone in ('own_board', 'own_leader'):
+            # own_leader nao vem no by_uid (so hand/field_chars/opp field_chars)
+            # -- usa o lider AO VIVO pra refletir DON/buffs atuais, nao uma
+            # reconstrucao "de fabrica" a partir so do codigo da carta.
+            live = gs.leader if zone == 'own_leader' else card
+            p = live.effective_power(True) if live else 0
+            # O lider tem uma ameaca REAL no campo do oponente (personagem ou
+            # lider dele ainda ATIVO, nao restado) que ele hoje NAO sobrevive
+            # mas SOBREVIVERIA com o boost fixo? Isso vale mais que qualquer
+            # delta de poder solto -- prioridade maxima. NAO usa
+            # `attacker_power>0` aqui (tentativa anterior, 08/07 bloco 107):
+            # esse parametro so vem preenchido pelo C# durante
+            # Attack_WaitOnBlocker/BeforeBlocker/WaitOnCounters -- triggers de
+            # vida (o caso real do Sanjuan Wolf) resolvem o alvo em
+            # `Life_ActivateTrigger`, fora dessa lista, entao attacker_power
+            # chegava sempre 0 e a regra nunca disparava (confirmado no log
+            # do plugin: mesma partida, mesmo resultado errado de novo).
+            # Mesma conta de `maior_por_vir` do resolve_reaction, mas lida
+            # direto do estado do oponente em vez de um parametro que nem
+            # sempre reflete o contexto real.
+            if zone == 'own_leader':
+                ameacas = [c.power for c in opp_gs.field_chars if not getattr(c, 'rested', False)]
+                if opp_gs.leader is not None and not getattr(opp_gs.leader, 'rested', False):
+                    ameacas.append(opp_gs.leader.power)
+                maior_ameaca = max(ameacas, default=0)
+                if maior_ameaca > 0 and p < maior_ameaca <= actor_self_power_target:
+                    return (-1, 0)
+            # Caso contrario, prefere quem tem MENOR poder atual -- fixar um
+            # valor alto beneficia mais quem estava mais fraco (maior delta).
+            return (3, p)
         # Contexto de ataque: alvo original sempre por ULTIMO, em qualquer zona
-        if attacker_power > 0 and defender_uid and cand.get('id') == defender_uid:
+        # (so faz sentido pra uma habilidade de redirect de verdade -- ver
+        # actor_is_redirect acima)
+        if attacker_power > 0 and actor_is_redirect and defender_uid and cand.get('id') == defender_uid:
             return (9, 0)
         if zone == 'top_deck':
             return (0, -(engine.avaliar_carta(card) if card else 0))
         if zone == 'own_hand':
-            if attacker_power > 0:
+            if attacker_power > 0 and actor_is_redirect:
                 # custo do redirect do lider (Teach): mesma régua de
                 # _score_activate_main, protege carta jogavel agora / ameaça
                 # cara em vez do avaliar_carta puro (achado 07/07 — trashava
@@ -604,7 +740,7 @@ def order_target_candidates(gs: GameState, opp_gs: GameState,
         if zone == 'own_trash':
             return (2, -(engine.avaliar_carta(card) if card else 0))
         if zone == 'own_board':
-            if attacker_power > 0:
+            if attacker_power > 0 and actor_is_redirect:
                 # ganho liquido caso a caso; desempate: maior poder segura
                 # golpes maiores
                 valor = redirect_option_value(card, attacker_power, opp_gs,

@@ -45,6 +45,13 @@ como função de tradução no `sim_bridge.py`) — nunca no plugin ou no server
 Logs do plugin: `E:\Games\OnePieceSimulador\Builds_Windows\BepInEx\LogOutput.log`
 (heartbeat `[HB]` a cada 3s para debug). Decisões do engine: saída do server.
 
+**Shift+B**: liga/desliga o bot em tempo real, sem reiniciar o jogo nem
+recarregar a dll (`BotDriver.cs`, campo `_botEnabled`). Útil pra jogar
+manualmente e printar telas de decisão sem o plugin clicar antes de dar
+tempo. Checado a cada frame antes de qualquer leitura de estado do jogo —
+funciona mesmo com o bot pausado no meio de uma ação. O log confirma com
+`[Bot] ATIVADO`/`[Bot] DESATIVADO (Shift+B)`.
+
 ## Recompilar o plugin (após editar os .cs)
 
 ```cmd

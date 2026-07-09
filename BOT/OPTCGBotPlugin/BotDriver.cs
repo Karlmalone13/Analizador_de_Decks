@@ -13,6 +13,14 @@ namespace OPTCGBotPlugin
         // Lado do bot em Lps_Players: 0 = "You" = baixo (LoadMyDeck)
         public const int BotPlayerIndex = 0;
 
+        // Liga/desliga o bot em tempo real (sem reiniciar o jogo nem trocar a
+        // DLL) — pra jogar manualmente e printar telas de decisao sem o
+        // plugin clicar antes de dar tempo. Checado TODO frame, antes de
+        // qualquer leitura de estado do jogo, entao funciona mesmo com o bot
+        // pausado no meio de uma acao. Atalho: Shift+B.
+        private const KeyCode ToggleKey = KeyCode.B;
+        private bool _botEnabled = true;
+
         private const float ActionCooldown = 1.0f;
         private const int   MaxActionsPerTurn = 25;
 
@@ -26,12 +34,19 @@ namespace OPTCGBotPlugin
         private float _heartbeat;
         private string _lastHeartbeatMsg = "";
 
+        // Evita perguntar pro engine de novo a cada tick pela mesma acao
+        // pendente (custo opcional sem tela dedicada — ver Update())
+        private object? _downsideCheckedFor;
+
         private void Update()
         {
-            if (_cooldown > 0f)
+            bool shiftHeld = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
+            if (shiftHeld && Input.GetKeyDown(ToggleKey))
             {
-                _cooldown -= Time.deltaTime;
-                return;
+                _botEnabled = !_botEnabled;
+                Plugin.Log.LogWarning($"[Bot] {(_botEnabled ? "ATIVADO" : "DESATIVADO")} (Shift+{ToggleKey})");
+                if (_botEnabled)
+                    _cooldown = ActionCooldown;   // pausa curta ao reativar, evita agir no mesmo frame
             }
 
             var gls = FindGls();
@@ -41,14 +56,17 @@ namespace OPTCGBotPlugin
                 return;
             }
 
-            // Heartbeat de diagnostico: loga o estado do jogo a cada 3s
-            // (so quando muda) para depurar travamentos
+            // Heartbeat de diagnostico: SEMPRE roda, mesmo com o bot pausado
+            // (Shift+B) — e exatamente pra observar estado/decisao numa janela
+            // pausada (ex: "downside=True" apareceu quando o Cancel apareceu
+            // na tela?) que o toggle existe. So a EXECUCAO de acoes (abaixo)
+            // fica condicionada a _botEnabled.
             _heartbeat += Time.deltaTime;
             if (_heartbeat >= 3f)
             {
                 _heartbeat = 0f;
                 var botPsHb = gls.Lps_Players[BotPlayerIndex];
-                string msg = $"[HB] state={gls.e_CurrentState} turn={gls.gsv_CurrentGame.iPlayerTurn} " +
+                string msg = $"[HB] enabled={_botEnabled} state={gls.e_CurrentState} turn={gls.gsv_CurrentGame.iPlayerTurn} " +
                              $"action={gls.gsv_CurrentGame.iPlayerAction} aca={(gls.acaActive != null)} " +
                              $"downside={BotExecutor.IsOfferingDownside(gls)} " +
                              $"mine={(gls.acaActive != null && BotExecutor.PendingActionIsMine(gls, botPsHb))} " +
@@ -59,6 +77,15 @@ namespace OPTCGBotPlugin
                     _lastHeartbeatMsg = msg;
                     Plugin.Log.LogInfo(msg);
                 }
+            }
+
+            if (!_botEnabled)
+                return;
+
+            if (_cooldown > 0f)
+            {
+                _cooldown -= Time.deltaTime;
+                return;
             }
 
             // Mulligan da mao inicial: no SoloVSelf cada lado decide em sequencia,
@@ -82,34 +109,20 @@ namespace OPTCGBotPlugin
             // etc.) — vale nos DOIS turnos
             if (gls.acaActive != null && !gls.bOpponentResolving && !gls.bForcingOpponentAction)
             {
-                // Oferta de "downside cost" (ex: Teach — trash 1 carta para usar
-                // o efeito): botoes Cancel / UseOnPlay; cliques em cartas sao
-                // ignorados ate decidir.
+                var pdBotPs = gls.Lps_Players[BotPlayerIndex];
+                bool duringAttack =
+                    gls.e_CurrentState == GameplayState.Attack_WaitOnBlocker ||
+                    gls.e_CurrentState == GameplayState.Attack_BeforeBlocker ||
+                    gls.e_CurrentState == GameplayState.Attack_WaitOnCounters;
+
+                // Oferta de "downside cost" com tela dedicada (botoes Cancel /
+                // UseOnPlay|UseV3OnPlay): cliques em cartas sao ignorados ate
+                // decidir.
                 if (BotExecutor.IsOfferingDownside(gls))
                 {
-                    var dsBotPs = gls.Lps_Players[BotPlayerIndex];
-                    if (BotExecutor.PendingActionIsMine(gls, dsBotPs))
+                    if (BotExecutor.PendingActionIsMine(gls, pdBotPs))
                     {
-                        // Engine decide (sem logica estrategica no plugin):
-                        //   durante ataque → phase "reaction" (vale gastar recurso?)
-                        //   proprio turno  → phase "optional" (custo e barato?)
-                        bool duringAttack =
-                            gls.e_CurrentState == GameplayState.Attack_WaitOnBlocker ||
-                            gls.e_CurrentState == GameplayState.Attack_BeforeBlocker ||
-                            gls.e_CurrentState == GameplayState.Attack_WaitOnCounters;
-
-                        var attacker = BotExecutor.Attacker(gls);
-                        var defender = BotExecutor.Defender(gls);
-                        int atkP = duringAttack && attacker != null ? BotExecutor.PowerOf(gls, attacker, true) : 0;
-                        int defP = duringAttack && defender != null ? BotExecutor.PowerOf(gls, defender, false) : 0;
-                        var dsOppPs = gls.Lps_Players[1 - BotPlayerIndex];
-                        var dsDto = GameStateBuilder.Build(dsBotPs, dsOppPs, gls);
-                        int defId = duringAttack && defender != null ? BotExecutor.UidOf(defender) : 0;
-                        var resp = EngineClient.IsAlive()
-                            ? EngineClient.Defense(dsDto, duringAttack ? "reaction" : "optional", atkP, defP, null, defId)
-                            : null;
-                        bool use = resp?.useReaction ?? false;
-
+                        bool use = ShouldUseOptionalCost(gls, duringAttack);
                         var btn = !use ? ButtonChoiceType.Cancel
                                 : gls.acaActive.UsesV3() ? ButtonChoiceType.UseV3OnPlay
                                 : ButtonChoiceType.UseOnPlay;
@@ -119,6 +132,35 @@ namespace OPTCGBotPlugin
                     }
                     return;
                 }
+
+                // Custo "trash 1 carta da mao" SEM tela dedicada (ex: redirect
+                // do lider Teach — "You may trash 1 card..." pula direto pra
+                // selecao do alvo do custo, so com Cancel; achado em partida
+                // real 07/07 via print do usuario + confirmado no log:
+                // downside=False mesmo durante o ataque). Sinal GERAL, valido
+                // pra qualquer carta V3 com esse padrao (nao so o Teach): o
+                // step atual pede TrashCard (mesmo campo que o jogo usa pra
+                // montar o botao "Select N Cards to Trash") e o Cancel esta
+                // realmente na tela (ou seja, e opcional). Pergunta pro engine
+                // so na 1a vez que essa acao aparece; se recusar, cancela em
+                // vez de deixar HandlePendingAction trashar a pior carta da
+                // mao automaticamente (o bug reportado: Teach trashava toda
+                // vez, mesmo quando nao valia a pena).
+                if (!ReferenceEquals(_downsideCheckedFor, gls.acaActive) &&
+                    BotExecutor.PendingActionIsMine(gls, pdBotPs) &&
+                    BotExecutor.IsOptionalHandTrashCost(gls))
+                {
+                    _downsideCheckedFor = gls.acaActive;
+                    bool use = ShouldUseOptionalCost(gls, duringAttack);
+                    Plugin.Log.LogInfo($"[Bot] custo opcional sem tela dedicada ({(duringAttack ? "reacao" : "proprio turno")}): {(use ? "USAR efeito" : "Cancel")}");
+                    if (!use)
+                    {
+                        BotExecutor.CancelPendingAction(gls);
+                        _cooldown = 1f;
+                        return;
+                    }
+                }
+
                 HandlePendingAction(gls);
                 return;
             }
@@ -253,6 +295,26 @@ namespace OPTCGBotPlugin
             }
 
             _cooldown = ActionCooldown;
+        }
+
+        // Pergunta pro engine se vale usar um efeito de custo opcional — a
+        // MESMA pergunta serve pra tela de oferta dedicada (Cancel/UseOnPlay)
+        // e pro custo de trash-da-mao sem tela dedicada (Update()); so muda
+        // como a resposta e executada (clicar o botao vs cancelar a acao).
+        private bool ShouldUseOptionalCost(GameplayLogicScript gls, bool duringAttack)
+        {
+            var botPs = gls.Lps_Players[BotPlayerIndex];
+            var oppPs = gls.Lps_Players[1 - BotPlayerIndex];
+            var attacker = BotExecutor.Attacker(gls);
+            var defender = BotExecutor.Defender(gls);
+            int atkP = duringAttack && attacker != null ? BotExecutor.PowerOf(gls, attacker, true) : 0;
+            int defP = duringAttack && defender != null ? BotExecutor.PowerOf(gls, defender, false) : 0;
+            int defId = duringAttack && defender != null ? BotExecutor.UidOf(defender) : 0;
+            var dto = GameStateBuilder.Build(botPs, oppPs, gls);
+            var resp = EngineClient.IsAlive()
+                ? EngineClient.Defense(dto, duringAttack ? "reaction" : "optional", atkP, defP, null, defId)
+                : null;
+            return resp?.useReaction ?? false;
         }
 
         // Estado da defesa: evita loop se o blocker escolhido for recusado pelo jogo

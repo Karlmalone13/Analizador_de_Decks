@@ -116,11 +116,50 @@ namespace OPTCGBotPlugin
 
         private static readonly MethodInfo _mClickDuringCardAction =
             AccessTools.Method(typeof(GameplayLogicScript), "HandleMouseClickDuringCardAction");
-        private static readonly FieldInfo _fOfferingDownside =
-            AccessTools.Field(typeof(GameplayLogicScript), "bOfferingDownside");
 
+        // bOfferingDownside (campo interno do jogo) so e setado pelo sistema
+        // de acoes LEGADO (StartUsingAction_DEPRECATEME) — o sistema V3, usado
+        // pela maioria das cartas novas, resolve o mesmo dialogo Cancel/Usar
+        // em SetupPendingActionTargets/ConfirmAction sem nunca tocar nesse
+        // campo. Em vez de depender de um flag que so metade do jogo
+        // preenche, lemos os botoes REAIS na tela (mesmo sinal que o jogador
+        // ve) — funciona pra qualquer carta/lider nos dois sistemas QUE
+        // MOSTRAM uma tela de oferta dedicada. Algumas cartas V3 (Teach
+        // confirmado) nunca marcam ConfirmAction pra esse step — o "aceitar/
+        // recusar" fica embutido na propria selecao do alvo do custo, so com
+        // Cancel. Pra esses, ver IsOptionalHandTrashCost().
         public static bool IsOfferingDownside(GameplayLogicScript gls)
-            => _fOfferingDownside.GetValue(gls) is bool b && b;
+        {
+            foreach (var btn in OfferedButtons(gls))
+                if (btn == ButtonChoiceType.UseOnPlay || btn == ButtonChoiceType.UseV3OnPlay)
+                    return true;
+            return false;
+        }
+
+        // Custo V3 "trash N carta(s) da mao" oferecido SEM tela de oferta
+        // dedicada (IsOfferingDownside acima nao pega esse caso — a selecao
+        // do alvo do custo JA e a tela de aceitar/recusar). Sinal GERAL,
+        // valido pra qualquer carta com esse padrao: o step atual do efeito
+        // pendente marca effect.TrashCard (mesmo campo que o jogo usa pra
+        // montar o botao "Select N Cards to Trash" em PopulateV3Choice) e o
+        // Cancel esta realmente na tela — se nao tem Cancel, o custo e
+        // obrigatorio (parte de uma acao ja confirmada), nao opcional.
+        public static bool IsOptionalHandTrashCost(GameplayLogicScript gls)
+        {
+            if (gls.acaActive == null || !gls.acaActive.UsesV3())
+                return false;
+            try
+            {
+                if (!gls.acaActive.V3Step().effect.TrashCard)
+                    return false;
+            }
+            catch { return false; }
+
+            foreach (var btn in OfferedButtons(gls))
+                if (btn == ButtonChoiceType.Cancel)
+                    return true;
+            return false;
+        }
 
         // Ator do efeito pendente. goActor e null em acoes V3 — ActorObject()
         // resolve os dois estilos (V3 busca por iActorID).

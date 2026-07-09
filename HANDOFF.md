@@ -1,5 +1,529 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-08 (108) - Claude
+
+### Fix do Sanjuan Wolf (bloco 107) NÃO tinha pegado de verdade — causa raiz real era outra + achado grosso na função central de avaliação de carta
+
+Usuário testou de novo (`2026-07-08T02.20.14.log`) e reportou 3 pontos.
+
+**1. Fix do Sanjuan Wolf do bloco 107 confirmado FALHO — causa raiz real
+achada e corrigida.** Mesmo comportamento de novo (Pizarro em vez do
+líder). Investigando o `LogOutput.log` desta partida: o estado do jogo no
+momento da escolha é `Life_ActivateTrigger` — NÃO está na lista de estados
+`Attack_WaitOnBlocker/BeforeBlocker/WaitOnCounters` que o C#
+(`BotDriver.cs HandlePendingAction`) usa pra calcular `atkPower`. Ou seja
+`attacker_power` chega **sempre 0** nesse cenário (qualquer trigger de
+vida), e minha regra de "líder sobrevive ao boost" (bloco 107) dependia
+justamente de `attacker_power > 0` — nunca tinha chance de disparar.
+Fix real: a regra agora usa o ESTADO DO TABULEIRO do oponente diretamente
+(`opp_gs.field_chars`/`opp_gs.leader` ainda ativos = ameaça real), mesma
+conta de `maior_por_vir` já usada em `resolve_reaction`, em vez de
+depender do parâmetro `attacker_power` que só o C# preenche em 3 estados
+específicos de ataque. Isso é mais robusto E mais geral: funciona
+independente de QUAL estado do jogo a escolha de alvo aparece. Validado
+com 2 cenários diretos (ameaça ativa suficiente pra matar sem boost mas
+não com boost → prioriza líder; sem ameaça ativa → volta pro "quem
+beneficia mais"). `smoke_test.py` 100%, `smoke_test_broad.py` 40/40.
+
+**Lição reforçada**: o fix de ontem (107) tinha teste direto que PASSOU,
+mas o teste testava um cenário sintético (`attacker_power=6000`) que eu
+inventei sem confirmar que o C# realmente preenche esse valor pra ESSE
+tipo de trigger. Teste passando != cenário real coberto — só o log real
+do usuário revelou isso. Reforça [[feedback-fixes-globais-nao-pontuais]].
+
+**2. Black Hole vs Shiryu no custo do redirect — observação válida, NÃO
+corrigida.** Usuário sugeriu trashar 1 Shiryu (`OP16-108`, tinha 3-4
+cópias na mão) em vez do Black Hole (`OP09-098`) como custo do redirect do
+Teach, porque Shiryu tem sinergia recursiva (`[On Play] trash 1 carta:
+recupera até 1 Blackbeard Pirates custo≤6 da lixeira pra vida face-up` —
+uma cópia trashada podia ser recuperada por OUTRA cópia jogada depois).
+`_trash_value`/`avaliar_carta` não sabem raciocinar sobre "essa carta é
+recuperável porque tenho outra cópia sinérgica na mão" — é um tipo de
+avaliação bem mais sofisticado (contar cópias, cross-referenciar
+`play_from_trash`/`add_from_trash_to_life` na mão) que não tentei
+implementar às pressas. Registrado pra sessão futura com mais tempo
+dedicado — não é um bug simples, é uma lacuna de sofisticação real.
+
+**3. "Bot desce carta de custo baixo e evita as bombas do deck" — achado
+GRANDE, raiz confirmada, NÃO corrigido (escopo grande demais pra essa
+sessão).** Testei diretamente `avaliar_carta` (função central, usada em
+`_trash_value`, `_score_play_action`, `choose_to_trash` — dezenas de
+pontos de decisão) com cartas reais do banco, DON e vida realistas:
+
+```
+OP16-102 Avalo Pizarro (custo=1, poder=2000):  avaliar_carta=125
+OP16-109 Doc Q          (custo=1, poder=0):     avaliar_carta=120
+OP16-108 Shiryu         (custo=6, poder=8000):  avaliar_carta=140
+OP09-093 Teach          (custo=10,poder=12000,Blocker): avaliar_carta=100
+```
+
+Confirma o padrão relatado: o Teach de custo 10 (uma "bomba" de verdade —
+12000 de poder, Blocker, Activate:Main forte) pontua MENOS que um
+personagem de custo 1. Causa: `card.power / 1000 * 5` (escala de poder)
+é fraco (+60 pro Teach de 12000) comparado à pilha de bônus fixos que
+cartas baratas de sinergia acumulam (draw +25, busca +30, on-KO +35,
+trigger +10, jogabilidade imediata +40) — o "tamanho"/investimento de
+DON da carta não é recompensado proporcionalmente. Essa é a MESMA função
+usada em dezenas de lugares do engine (não só "jogar carta") — mudar os
+pesos sem validação ampla é arriscado. **Decisão consciente: não mexi
+nisso agora** (sessão já muito longa, mudança de escopo grande, função
+central demais pra alterar sem tempo de validar direito) — registrado
+aqui com números concretos pra próxima sessão focar nisso com atenção
+dedicada, não como patch rápido no fim de uma sessão de 6+ horas.
+
+### Operacional
+Server reiniciado com o fix real do Sanjuan Wolf. Pendências claras pra
+próxima sessão, em ordem de impacto: (a) rebalancear `avaliar_carta`
+pra recompensar poder/custo proporcionalmente — achado #3, maior
+impacto; (b) ensinar `_trash_value` a reconhecer sinergia recursiva
+(cópias recuperáveis) — achado #2, mais raro/específico; (c) gap do
+parser de `OP09-093` (só captura 1 de 3 efeitos, bloco 107) ainda
+pendente.
+
+---
+
+## 2026-07-08 (107) - Claude
+
+### Achado GRANDE: "contexto de ataque" vazando pra QUALQUER escolha de alvo — causa raiz comum dos 2 reports desta partida (Sanjuan Wolf + Teach OP09-093)
+
+Usuário mandou combat log de partida nova (`2026-07-08T01.18.57.log`) com
+2 observações, e pediu explicitamente pra não resolver só pra carta
+específica. As duas investigações levaram à MESMA causa raiz em
+`order_target_candidates` (`scriptis_da_ia/optcg_engine/sim_bridge.py`).
+
+**Causa raiz**: a variável `attacker_power > 0` era usada como proxy pra
+"estamos resolvendo um redirect" — mas na verdade só significa "estamos
+numa janela de ataque" (`Attack_WaitOnBlocker/BeforeBlocker/WaitOnCounters`
+no C#). QUALQUER escolha de alvo que aconteça durante essa janela —
+inclusive de uma ability completamente diferente, sem nenhuma relação com
+redirecionar ataque — reaproveitava as heurísticas de redirect
+(`own_hand`/`own_board`/`own_leader` pontuados por `_trash_value`/
+`redirect_option_value`/`life_redirect_cost`). Corrigido: nova flag
+`actor_is_redirect` (mesmo padrão de `actor_copia_poder`/
+`actor_debuff_swing` — inspeciona os steps do `actor_code` procurando
+`redirect_attack_target`) agora GATE-KEEPER de todo `attacker_power > 0`
+nessas zonas. Só entra na lógica de redirect quem realmente TEM essa
+ability.
+
+**1. Sanjuan Wolf redirecionado pro Pizarro em vez do líder** — a ability
+real (`OP16-106`, on-KO: "up to 1 of your Leader or Character's power
+becomes 7000") não é redirect nenhum, é um auto-buff que o usuário viu
+disparar durante uma janela de ataque (life trigger). Sem o gate acima,
+ela caía nas heurísticas de redirect por acidente. Fix adicional (não só
+o gate): nova detecção genérica `actor_self_power_target` (mesmo padrão —
+qualquer carta com `set_base_power`/`buff_power` target=
+`leader_or_own_character`) que:
+  - por padrão prefere quem tem MENOR poder atual (fixar um valor alto
+    beneficia mais quem estava mais fraco — maior delta);
+  - EXCETO quando o líder está sob ataque AGORA e o boost fixo é
+    suficiente pra ele SOBREVIVER um golpe que hoje não sobreviveria —
+    aí o líder ganha prioridade máxima (sobreviver > qualquer delta de
+    poder solto). Isso bate com a intuição do usuário nesse caso
+    específico, sem hardcode pro Sanjuan Wolf — qualquer carta futura com
+    esse padrão textual ("gains X or Y" trocado por "power becomes N")
+    herda o comportamento.
+
+**2. Teach OP09-093 — usuário "teve que escolher os alvos"** — log do
+plugin (`LogOutput.log`) confirma que o bot NÃO travou: ativou a
+habilidade (`activate: OP09-093`) e ficou tentando alvo por alvo, só que
+a ORDEM começava pela própria mão/campo (candidatos genéricos de zona
+`own_hand`/`own_board`, prioridade estrutural 1/3) antes de chegar nos
+candidatos válidos do oponente (`opp_board`, prioridade 4) — 15+ cliques
+inválidos (~0,8s cada, ~12s+) até acertar, tempo suficiente pro usuário
+perder a paciência e clicar primeiro. A ability real (`OP09-093`: "negate
+the effect of up to 1 of your opponent's Leader/Character") só tem alvo
+do lado do OPONENTE — nenhuma zona `own_*` é válida nunca. Fix genérico:
+nova flag `actor_opp_only` — se TODOS os `target` declarados nos steps do
+`actor_code` começam com `opp` (qualquer carta, não só essa), todas as
+zonas `own_*` caem pra prioridade mínima (9), garantindo que candidatos
+do oponente sempre vêm primeiro.
+
+**Gap secundário achado, não corrigido**: `card_effects_db.json` de
+`OP09-093` só capturou 1 dos 3 efeitos do texto real (falta "negate
+opponent's Leader" e "can't attack until end of next turn" — só
+"negate opp Character" foi parseado). Não afeta o bug corrigido acima
+(que dependia só do `target` do step existente), mas o bot provavelmente
+subestima o valor de ativar essa ability na hora de decidir. Registrado
+pra próxima sessão avaliar o parser dessa carta.
+
+Validado: 3 cenários de teste direto (Sanjuan Wolf com líder sobrevivendo
+ao boost / sem ataque em andamento / boost insuficiente) todos bateram
+com o esperado; teste direto do Teach OP09-093 confirmou candidato do
+oponente vindo primeiro. `smoke_test.py` 100% (múltiplas rodadas ao longo
+do trabalho). Mudança é 100% Python puro (`sim_bridge.py`) — não precisou
+`gerar_dbs.py`, só reiniciar o server.
+
+### Operacional
+Ambiente com bastante flakiness de processos em background nesta sessão
+(vários `smoke_test_broad.py` ficaram presos/mudos sem razão aparente,
+não relacionado ao código do projeto) — rodei o smoke test amplo várias
+vezes até confirmar 40/40 limpo. Server será reiniciado com todos os
+fixes de hoje (blocos 105+106+107) antes do usuário testar de novo.
+
+---
+
+## 2026-07-08 (106) - Claude
+
+### Nova partida real: 2 reports do usuário viraram "não é bug" (Nusjuro condicional, trash vazio) + achado de verdade (Catarina Devon OP09-084) + log de mão fina
+
+Usuário mandou combat log de outra partida (`2026-07-08T00.37.06.log`) com
+2 reports:
+
+**1. "Nusjuro atacou e não consegui usar meu when attacking, o bot já saiu
+trashando carta antes"** — investigado e é **comportamento correto, não
+bug**. Texto real do Nusjuro (`OP13-080`): "[When Attacking] **If you have
+10 or more cards in your trash**, give up to 1 opponent Character -2000
+power". No ataque reportado (turno 3), a lixeira do atacante tinha
+**9 cartas** (contado direto no combat log) — condição não bate, o jogo
+não oferece a habilidade, não tem nada pra "roubar" via timing. No 2º
+ataque do mesmo Nusjuro (lixeira com 11), o debuff disparou normalmente,
+confirmando que a condição É respeitada nos dois casos.
+
+**2. "BOT não sabe ativar/escolher o efeito da Catarina Devon"** —
+usuário citou o código errado (`OP09-081`, que na verdade é uma variante
+do líder Teach, efeito totalmente diferente). Card real (foto confirmada
+pelo usuário): **`OP09-084`** — "[Activate: Main][Once Per Turn] If your
+Leader has the Blackbeard Pirates type, this Character gains **[Double
+Attack], [Banish] or [Blocker]** until the end of your opponent's next
+turn." **Achado real aqui, e é geral (não pontual)**: o parser
+(`gerar_effects_db.py`) tem uma regex pra "gains [A], [B] or [C]" (janela
+de lista compartilhada) que appenda cada keyword como STEP INCONDICIONAL
+SEPARADO — ou seja, o motor achava que a carta ganhava as 3 keywords DE
+GRAÇA simultaneamente, em vez de ser uma ESCOLHA de 1. Isso silenciosamente
+"funcionava" (dava tudo de graça) só que como um efeito enorme e errado —
+não bate com o sintoma relatado ("bot não sabe escolher"), mas de qualquer
+forma estava semanticamente errado e merecia fix. Fix: quando a lista
+compartilhada contém `' or '`, vira `{'_choice': [[gain_a],[gain_b],[gain_c]]}`
+em vez de steps paralelos — mesmo formato usado por 19+ cartas com "Choose
+one: • ...". Só 1 carta no banco inteiro tinha esse padrão específico
+(`OP09-084`, a `_p1` parallel não conta separado), mas o fix é genérico
+(detecta pelo padrão textual "or" na lista, não hardcoded pro código da
+carta) — qualquer carta futura com esse texto ganha o comportamento
+certo automaticamente. `EffectExecutor.execute()` já resolve `choice`
+genericamente pra QUALQUER trigger (`activate_main` incluso, confirmado
+lendo o código) via `_resolve_choice`, que escolhe a opção viável de
+maior peso heurístico — sem peso específico pra
+double_attack/banish/blocker (todas caem no default=1), então empate
+sempre escolhe a primeira da lista (`gain_blocker`, pela ordem que
+construí) — não é estratégico, mas é MUITO melhor que "ganha as 3 de
+graça" ou "nunca ativa". Validado: `diff_parser.py` GANHOU=0 PERDEU=0
+MUDOU=1, `smoke_test.py` 100%, `smoke_test_broad.py` 40/40 (2x, antes e
+depois do log de mão fina).
+
+**Achado à parte, NÃO investigado a fundo (duration)**: o texto real diz
+"until the end of your opponent's next turn" — esse padrão de duração
+específico NÃO é reconhecido em lugar nenhum do código (`grep` zero
+ocorrências). O keyword-grant provavelmente vira permanente em vez de
+expirar no tempo certo. Pré-existente, não piorado por este fix, mas
+registrado aqui pra próxima sessão avaliar.
+
+### 3. Usuário reportou (sem log ainda, observação de partida ao vivo): bot
+jogando excessivas cartas de custo 1-2 (algumas com Counter alto, tipo
++2000) até ficar sem carta na mão, facilitando o ataque do oponente.
+Investigado: **já existe uma proteção** (`_generate_and_score_actions`,
+achado de uma partida real de 04/07 documentado no próprio código) que
+penaliza jogar quando `len(hand) <= 3`, mas essa penalidade é POR
+CONTAGEM, não pesa se a carta específica tem Counter alto (mais valiosa
+guardada pra defesa). Decidi **não ajustar a heurística às cegas** —
+mesmo espírito das auditorias de hoje (não repetir o erro que já cometi
+uma vez nesta sessão, de quase declarar bug sem prova sólida; aqui seria o
+inverso, ajustar peso sem prova de que o ajuste certo). Em vez disso,
+adicionei log `[PLAY]` em `sim_bridge.py choose_action()` (só dispara
+quando a mão já está com ≤3 cartas ANTES da jogada, pra não poluir turnos
+normais): mostra código/custo/counter da carta jogada e o score. Vai
+aparecer no stdout do server na próxima partida — dá pra auditar com
+números reais se a régua de preservação de mão está ou não protegendo
+carta de counter alto o suficiente, em vez de eu ficar comparando na mão.
+
+### Operacional
+Server reiniciado com todos os fixes de hoje (bloco 105 + este). Matei
+vários processos `smoke_test_broad.py` que ficaram presos em background
+por causa do harness (não sei a causa raiz, mas não tem relação com o
+código do projeto). `card_effects_db.json`/`card_analysis_db.json`
+regenerados e ressincronizados (`gerar_dbs.py`) com o fix da Catarina
+Devon. `C:/Users/arthu/AppData/Local/Temp/optcg_server.log` continua
+sendo o arquivo de log persistente do server — ler depois da próxima
+partida (`grep "\[REACTION\]\|\[PLAY\]"`).
+
+---
+
+## 2026-07-07 (105) - Claude
+
+### Tentativa de auditar as outras 6 recusas offline — abandonada por falta de confiabilidade; log de diagnóstico ao vivo adicionado no lugar
+
+Usuário pediu pra auditar as outras 6 recusas (não-letais) da mesma
+partida do bloco 104 antes de testar de novo. Reconstruí manualmente o
+estado (mão/campo/vida) de cada golpe usando os codes reais do Combat Log
+e chamei `resolve_reaction`/`redirect_option_value`/`life_redirect_cost`
+de verdade (script em `C:/Users/arthu/AppData/Local/Temp/audit_teach.py`,
+não versionado). Pra 2 dos golpes reconstruídos (vida 4 e vida 3), o
+resultado deu `True` — ou seja, minha reconstrução dizia que o engine
+DEVERIA ter aceitado, contrariando o que o log real mostrou (`Cancel`
+nos 2 casos).
+
+**Não tratei isso como bug confirmado.** Investiguei a causa mais provável
+da divergência: `_trash_value` (usada pra `custo_carta`) tem um bônus de
+até `60 + custo*6` se a carta for jogável AGORA (`custo <=
+self.me.don_available`) — e meus `GameState` sintéticos tinham
+`don_available=0` (default), o que SUBESTIMA `custo_carta` artificialmente
+baixo comparado à partida real (onde o bot tinha DON de verdade
+disponível). Reconstruir `don_available` exato por turno a partir só do
+Combat Log é frágil (o log não expõe isso de forma direta e não auditei
+com confiança suficiente pra apontar um segundo bug). **Decisão: não
+declarar bug sem certeza — isso violaria a mesma lição que guardei na
+memória ontem** (fix "genérico" não é sinônimo de "completo"; aqui o
+risco seria o oposto, declarar bug sem prova sólida).
+
+**Em vez de continuar adivinhando offline, adicionei log de diagnóstico
+DIRETO no `resolve_reaction`** (`scriptis_da_ia/optcg_engine/
+sim_bridge.py`): toda chamada agora imprime uma linha `[REACTION] atk=...
+def=... life=... don_disp=... -> True/False (motivo)` no stdout do server,
+com os números REAIS (`custo_carta`, `salva`, `opcoes`, `ganho`,
+`maior_por_vir`) usados na decisão — em vez de eu reconstruir o estado de
+memória, a próxima partida real vai gerar os números de fato. Validado:
+`smoke_test.py` 100%, `smoke_test_broad.py` 40/40 (print não quebra nada).
+
+### Operacional
+Server reiniciado (matei o processo antigo na porta 8765) redirecionando
+stdout/stderr pra um arquivo persistente:
+`C:/Users/arthu/AppData/Local/Temp/optcg_server.log` — os processos
+`run_in_background` anteriores morreram sozinhos entre turnos desta sessão
+(motivo não investigado, pode ser o processo pai da sessão encerrando);
+usar esse arquivo de log é mais confiável pra checar depois do teste do
+usuário do que depender do rastreamento do harness. Health check OK.
+
+### Pendente
+Próxima sessão (ou eu mesmo, se o usuário testar ainda nesta sessão): ler
+`C:/Users/arthu/AppData/Local/Temp/optcg_server.log` (grep `[REACTION]`)
+depois da próxima partida real e comparar os números de verdade contra o
+que o bot decidiu — aí sim dá pra confirmar ou descartar bug nas recusas
+não-letais. O fix do golpe letal (vida 0, bloco 104) continua válido e
+já está no server rodando.
+
+---
+
+## 2026-07-07 (104) - Claude
+
+### Partida real pós-fix #103: detecção funciona, mas `resolve_reaction` recusava até o golpe que perdeu o jogo — bug de heurística achado e corrigido
+
+Usuário jogou uma partida completa com a DLL do bloco 103 e mandou o
+Combat Log (`2026-07-07T23.46.53.log`) + feedback: "achei que deu uma
+melhorada, mas precisamos melhorar algumas coisas ainda". Cruzando o
+Combat Log com o `LogOutput.log` do plugin (mesma sessão):
+
+**Boa notícia**: a detecção funciona. `[Bot] custo opcional sem tela
+dedicada (reacao): ...` apareceu 8 vezes ao longo da partida — o bot não
+trashou mais carta às cegas em todo ataque (bug do bloco 102/103
+efetivamente resolvido).
+
+**Problema novo**: em TODAS as 8 vezes o engine respondeu `Cancel` —
+inclusive na última, que foi o golpe que **terminou o jogo** (5º acerto no
+líder Teach; os primeiros 4 levaram a vida de 4 a 0, e por regra do OPTCG
+tomar dano com vida 0 = derrota imediata). Confirmado via
+`grep "hit for 1 damage"` no Combat Log (5 ocorrências) + a última entrada
+`[Bot] custo opcional... Cancel` no `LogOutput.log` bate exatamente com
+esse 5º golpe (`actor=OP13-080`, St. Ethanbaron V. Nusjuro, mesmo atacante
+do Combat Log).
+
+**Causa raiz** (`resolve_reaction`, `scriptis_da_ia/optcg_engine/
+sim_bridge.py`): `life_redirect_cost(life_count)` trata vida=0 igual a
+vida=1 (cai no mesmo teto de 90, `dict.get(0, 90.0)`), na MESMA régua
+numérica usada pra comparar contra o custo de sacrificar uma carta
+(`custo_carta`, tipicamente 40-90+ pra mão boa). Conceitualmente errado:
+com vida 0, esse golpe não é "perder mais 1 vida" — é perder a PARTIDA
+INTEIRA, que não é comparável a nenhum valor de carta. Fix: bypass
+explícito — quando o ataque é no líder (`defender_char is None`) e
+`my_life == 0`, redireciona sempre que existir QUALQUER alvo legal (mesmo
+que vá morrer sem on-KO bom), sem passar pela conta normal de
+ganho/custo nem pela guarda de "segurar a reação pro ataque maior" (não
+existe "turno que vem" se perder agora).
+
+Validado com teste direto (`Card`/`GameState` construídos à mão, 3
+cenários: vida=0 com alvo → `True`; vida=4 mesmo cenário → comportamento
+normal preservado; vida=0 sem nenhum personagem no campo → `False`,
+correto, sem alvo legal pra redirecionar). `smoke_test.py` 100%,
+`smoke_test_broad.py` 40/40. Engine puro (Python), sem mudança de parser
+— não precisou `gerar_dbs`. Server reiniciado (matei o processo antigo na
+porta 8765 e subi de novo) pra carregar o fix.
+
+### Pendente
+Usuário mencionou "algumas coisas" no plural — só achei e confirmei UM bug
+concreto (o de vida 0) com evidência forte (log real). As outras 7 recusas
+da partida não foram auditadas uma a uma (podem estar corretas — mão
+disponível vs. ameaça pequena, ou podem esconder outro problema de tunagem
+não tão óbvio quanto o de vida 0). Não fiz DLL nova nesta rodada (mudança
+foi só Python/server) — não precisa reabrir o jogo, só o server já
+reiniciado é suficiente. Próximo passo: jogar mais uma partida e ver se o
+Teach agora redireciona corretamente perto de vida 0; se sobrar tempo,
+auditar as outras recusas dessa mesma partida uma a uma pra achar o que
+mais o usuário quis dizer com "algumas coisas".
+
+---
+
+## 2026-07-07 (103) - Claude
+
+### Causa raiz real do Teach achada e corrigida (fix #1 do bloco 102 era necessário mas insuficiente) + gap do parser fechado
+
+Usuário testou de novo (ataque com Saint Shalria) e confirmou que o Teach
+continuava trashando toda vez, mesmo sem valer a pena. Log real
+(`LogOutput.log`) confirmou: `downside=False` mesmo com o fix do heartbeat
+ativo, no exato momento em que `actor=OP16-080` aparece com `aca=True
+mine=True` — ou seja, essa ability específica **nunca** passa pela tela de
+oferta dedicada (Cancel/UseOnPlay ou Cancel/UseV3OnPlay). Ela pula direto
+pra seleção do alvo do custo ("Select 1 Cards to Trash", só com Cancel),
+que é exatamente o que o print do usuário já tinha mostrado no bloco
+anterior.
+
+**Causa raiz confirmada no decompilado**: `SetupPendingActionTargets`
+(V3) só monta a tela dedicada quando `actV3Step.details.ConfirmAction ==
+true`. Pra essa habilidade do Teach esse flag não está setado — o
+"aceitar/recusar" fica embutido na própria seleção do alvo do custo. Isso
+significa que o fix #1 do bloco 102 (ler `UseOnPlay`/`UseV3OnPlay` na tela)
+continua válido e necessário pra cartas que TÊM a tela dedicada, mas não
+cobre esse padrão — precisava de um segundo sinal.
+
+**Fix novo, também GERAL (não hardcode pro Teach)**: `ActV3Effect.TrashCard`
+é o mesmo campo que o próprio jogo usa (`PopulateV3Choice`) pra montar o
+botão "Select N Cards to Trash" — presente em QUALQUER carta com esse
+padrão de custo, não só o Teach. `BotExecutor.IsOptionalHandTrashCost(gls)`
+(novo, `BotExecutor.cs`) verifica: step atual é V3, marca `effect.TrashCard`,
+e o botão `Cancel` está realmente disponível na tela (se não tem Cancel, o
+custo é obrigatório — parte de uma ação já confirmada, não deve ser
+perguntado). `BotDriver.cs` (`Update()`) agora, antes de deixar
+`HandlePendingAction` escolher automaticamente um alvo, checa esse sinal na
+1ª vez que a ação pendente aparece (`_downsideCheckedFor`, mesmo padrão de
+`_pendingRef`) e pergunta pro engine via `resolve_reaction`/
+`resolve_optional_effect` (extraído pro helper `ShouldUseOptionalCost`,
+compartilhado com o branch da tela dedicada — elimina a duplicação que
+existia antes). Se o engine recusar, cancela a ação em vez de trashar a
+pior carta da mão automaticamente.
+
+**Gap do parser também fechado** (`scriptis_da_ia/gerar_effects_db.py`):
+o texto do redirect do Teach ("Change the target of **that** attack...")
+não batia com a regex antiga (`'change the attack target' in t` — ordem de
+palavras diferente da de Doflamingo OP14-060/"Oh Come My Way" EB01-038,
+que usam "Change the **attack target**..."). Regex trocada por
+`change the (?:attack target|target of (?:that|this) attack)` (cobre as
+duas ordens) + filtro de tipo simplificado pra casar só `\{X\} type
+character(s)` (em vez de tentar casar a frase inteira ao redor, que também
+variava). Validado: `diff_parser.py` → GANHOU=0 PERDEU=0 MUDOU=1 (só
+OP16-080), `card_effects_db.json` agora tem
+`on_opp_attack: {steps: [redirect_attack_target filter_type=blackbeard
+pirates], costs: [trash_from_hand count=1]}` pra ele (o campo `costs` veio
+de um mecanismo do parser que já existia, só nunca disparava porque o
+bloco inteiro ficava vazio antes). `smoke_test.py` 100%,
+`smoke_test_broad.py` 40/40 depois do `gerar_dbs.py` + re-snapshot.
+Esse gap não bloqueava o fix comportamental acima (`resolve_reaction`/
+`order_target_candidates` já eram genéricos, não liam o banco pra esse
+caso), mas deixava a `card_analysis_db.json` incompleta pra qualquer coisa
+que dependa de conhecer essa ability (auditoria, front-end, etc.).
+
+### Pendente pra confirmar
+DLL recompilada de novo com o fix novo (`IsOptionalHandTrashCost` +
+`ShouldUseOptionalCost`) e copiada pro `BepInEx\plugins\` — **precisa
+fechar e reabrir o jogo** (a instância que estava rodando ainda tem a DLL
+anterior, sem esse fix). Server Python reiniciado (matou a instância antiga
+que não respondia mais a `/health` — pode ter caído sozinha entre as
+sessões — e subiu de novo com `card_effects_db.json` atualizado). Depois de
+reabrir o jogo: repetir o mesmo teste (atacar o Teach com Saint Shalria ou
+qualquer outro atacante) e confirmar no log `[Bot] custo opcional sem tela
+dedicada (reacao): USAR efeito / Cancel` aparecendo — e principalmente,
+que o Teach **não trasha mais em todo ataque indiscriminadamente**.
+
+---
+
+## 2026-07-07 (102) - Claude
+
+### Pendência 1 resolvida (fix GERAL, não hardcode do Teach) + pendência 2 (toggle de tecla)
+
+Seguindo a ordem pedida pelo usuário no bloco 101.
+
+**1. `IsOfferingDownside` (`BOT/OPTCGBotPlugin/BotExecutor.cs`) reescrito pra
+ler os botões REAIS na tela em vez do campo interno `bOfferingDownside`.**
+Causa raiz confirmada no decompilado
+(`_referencias/simulador-oficial/dnspy-export/Assembly-CSharp/GameplayLogicScript.cs`):
+`bOfferingDownside` só é setado em `StartUsingAction_DEPRECATEME` (linha
+~30796), o sistema de ações **legado**. O sistema **V3** — usado pela
+maioria das cartas novas, Teach incluso — resolve o mesmo diálogo
+Cancel/Usar em `SetupPendingActionTargets` → branch `ConfirmAction` (linha
+~30567-30580) e nunca toca esse campo. Ou seja, não era um bug específico
+do Teach: **qualquer carta/líder com custo opcional portado pro V3** tinha
+esse mesmo problema (o bot nunca perguntava pro engine, sempre usava a
+ability "no escuro"). Os dois sistemas, porém, ativam os MESMOS botões de
+UI (`ButtonChoiceType.UseOnPlay` no legado, `UseV3OnPlay` no V3) via
+`AddChoice` — sinal público (`go_ChoiceButtonN` + `ChoiceButtonScript.myType`,
+ambos `public`), igual ao que o jogador vê na tela. Fix: reaproveitado o
+helper `OfferedButtons` que já existia no arquivo (usado por
+`ConfirmPendingSelection`) — `IsOfferingDownside` agora verifica se algum
+botão ofertado é `UseOnPlay` OU `UseV3OnPlay`, cobrindo os dois sistemas
+pra qualquer carta. Reflection do campo antigo (`_fOfferingDownside`)
+removida.
+
+**2. Toggle de tecla Shift+B pra ligar/desligar o bot em tempo real**
+(`BOT/OPTCGBotPlugin/BotDriver.cs`, `Update()`; documentado em
+`BOT/README.md`). Campo `_botEnabled` (bool, default true) checado logo no
+início do `Update()`, antes de qualquer leitura de estado do jogo — Shift
+(esquerdo ou direito) segurado + `Input.GetKeyDown(KeyCode.B)` alterna e
+loga `[Bot] ATIVADO/DESATIVADO (Shift+B)`; quando desativado, `Update()`
+retorna imediatamente (nenhum side effect). Ao reativar, dá um cooldown de
+1s antes de agir de novo (evita ação no mesmo frame que o usuário acabou de
+mexer). Precisou adicionar referência nova no `.csproj`
+(`UnityEngine.InputLegacyModule.dll`, já existe em
+`OPTCGSim_Data/Managed/`) — `UnityEngine`/`UnityEngine.CoreModule` sozinhos
+não expõem a classe `Input` nessa versão do Unity. (Primeira versão usava
+F9 isolado; trocado pra Shift+B a pedido do usuário — tecla única sozinha
+tinha mais chance de colidir com algum atalho do jogo/OS.)
+
+Ambos os itens só têm testado até "compila limpo" (`dotnet build`, 0
+erros) — **não testado em partida real ainda** (não é algo que dê pra
+validar por script/smoke test, precisa rodar o jogo). Próxima sessão (ou
+o usuário jogando manualmente) deve confirmar: (a) o log agora mostra
+`[DEF] reaction`/`[DEF] optional` quando o Teach ou qualquer outra carta
+V3 oferece o diálogo de custo opcional; (b) a tecla F9 liga/desliga o bot
+sem quebrar nada.
+
+### Ajustes ao vivo (mesma sessão, depois do primeiro teste do usuário)
+
+1. **Tecla trocada de F9 pra Shift+B** (a pedido do usuário — F9 sozinha
+   tinha mais chance de colidir com algum atalho do OS/jogo). Documentado em
+   `BOT/README.md`.
+2. **Bug achado no próprio toggle**: o heartbeat de diagnóstico (`[HB] ...
+   downside=...`) só rodava quando `_botEnabled=true` — pausar com Shift+B
+   também SILENCIAVA os logs que a gente precisa pra ver se `downside=True`
+   aparece no momento certo (o motivo de existir o toggle). Corrigido:
+   heartbeat agora roda sempre (adicionado campo `enabled=` na mensagem);
+   só a execução de ações fica condicionada a `_botEnabled`.
+3. **Achado novo**: a habilidade de redirect do Teach ("You may trash 1
+   card with a [Trigger] from your hand: Change the target of that
+   attack...") **não está no `card_effects_db.json`** — só o efeito de
+   custo (`opp_turn: buff_cost`) foi parseado, o redirect ficou de fora.
+   Gap do parser (`gerar_effects_db.py`), registrado aqui mas não
+   investigado ainda — não deveria travar `resolve_reaction` (que é
+   genérico e não lê o banco pra esse caso específico), mas fica pendente
+   de confirmação.
+4. **Print real do usuário** (Imu [OP13-079] atacando o líder Teach,
+   turno 2) mostrou a tela **"Select 1 Cards to Trash" com só o botão
+   Cancel** — sem um par Cancel/UseOnPlay separado antes. Isso sugere que
+   essa habilidade específica pode pular a etapa de "oferta" inteiramente
+   (o Cancel já embutido na própria seleção do alvo do custo), o que
+   invalidaria parte da hipótese do fix #1 pra ESSE caso específico —
+   ainda não confirmado ao vivo (o log carregado no momento do print era de
+   sessão anterior à DLL nova, sem o fix do heartbeat). **Próximo passo
+   assim que o usuário reabrir o jogo com a DLL nova**: reproduzir o mesmo
+   cenário, pausar com Shift+B, e ler o `LogOutput.log` pra ver se
+   `downside=` vira `True` nesse instante ou não.
+
+### Operacional
+DLL recompilada e copiada automaticamente pro
+`E:\Games\OnePieceSimulador\Builds_Windows\BepInEx\plugins\` (o `.csproj`
+já tem um target `CopyToPlugins` pós-build) — **precisa fechar e reabrir o
+jogo** pra carregar a versão mais nova (a que tem o fix do heartbeat).
+Server Python (porta 8765) foi religado nesta sessão
+(`python BOT/engine_server/server.py`, rodando em background) — health
+check OK (`{"status":"ok"}`).
+
+---
+
 ## 2026-07-07 (101) - Claude
 
 ### Fix real do debuff_power no caminho AO VIVO + achado grande: `IsOfferingDownside` nunca detecta a ability do Teach
