@@ -446,9 +446,11 @@ def add_to_db(log_path: str, data: dict, decks: dict):
     if timestamp.endswith('.log'):
         timestamp = timestamp[:-4]
 
-    # Verifica duplicata pelo timestamp
+    # Verifica duplicata pelo timestamp. get() em vez de e['id']: entradas
+    # antigas do lote 'autosaved_log' (schema diferente, sem campo 'id' --
+    # usam 'original_file') quebravam isso com KeyError (achado 09/07).
     idx = _load_index()
-    if any(e['id'] == timestamp for e in idx):
+    if any(e.get('id') == timestamp for e in idx):
         print(f'  [aviso] {timestamp} ja esta no banco — ignorado.')
         return
 
@@ -523,10 +525,15 @@ def list_db():
     print(f'\n{"Data":10s}  {"Partida":52s}  Turnos')
     print('-' * 72)
     for e in idx:
+        # Entradas antigas do lote 'autosaved_log' (schema diferente, sem
+        # 'date'/'turns' -- usam 'original_file'/'total_turns') quebravam
+        # isto com KeyError (achado 09/07, mesma causa do bug em add_to_db).
+        date = e.get('date') or e.get('original_file', '')[:10] or '?'
+        turns = e.get('turns', e.get('total_turns', '?'))
         slug1 = e['p1'].get('slug') or e['p1']['leader_code']
         slug2 = e['p2'].get('slug') or e['p2']['leader_code']
         match = f"{e['p1']['name'][:10]}({slug1}) x {e['p2']['name'][:10]}({slug2})"
-        print(f"{e['date']:10s}  {match[:52]:52s}  {e['turns']}")
+        print(f"{date:10s}  {match[:52]:52s}  {turns}")
     print(f'\nTotal: {len(idx)} partidas\n')
 
 

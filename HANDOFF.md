@@ -1,5 +1,340 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-09 (113) - Claude
+
+### 4 achados estruturais em sequência, a partir de 3 logs reais novos (16.39/17.52/18.39 — todos salvos no banco, Imu vs Teach)
+
+Usuário continuou testando ao vivo enquanto eu investigava em paralelo.
+Cada observação virou um achado genérico (custo duplicado, viés de
+recursão de deck, gate de defesa sem noção de valor, custo fantasma),
+não um patch pontual — seguindo a mesma diretriz de sessões anteriores.
+
+**1) Mão cheia + DON parado + líder do Imu sem ciclar carta**
+(`_score_activate_main`, `decision_engine.py`): a habilidade do líder
+(trashar 1 da mão/campo → comprar 1) era penalizada DUAS VEZES pelo
+mesmo custo — uma vez pelo cap `min(base, 45)` (efeito não é vantagem
+líquida de carta) e de novo subtraindo `perda*0.3` da carta trashada.
+Empilhados, o score ia facilmente pra negativo mesmo sem nada melhor
+pra fazer, e o loop do turno (`main_phase`) para assim que a MELHOR ação
+disponível é negativa — terminando o turno com mão cheia e DON parado.
+Fix: pula a subtração de `perda` quando é um ciclo card-neutro
+(`draw_count <= trash_count`), já que o cap já precifica esse trade-off.
+
+**2) Bot trashando evento `[Counter]` em vez de personagem reanimável**
+(`_trash_value`, `EffectExecutor`): ao escolher qual carta trashar pro
+custo da habilidade do líder, o motor não tinha noção de que o Five
+Elders (`OP13-082`) em campo reanima cópias de 5000 de poder do próprio
+trash — protegia eventos counter (bônus fixo) e ignorava que perder um
+Elder de 5000 é temporário. Fix genérico: qualquer personagem na mão que
+bata o filtro de um `play_from_trash` disponível (campo ou mão, condições
+checadas) tem o valor de trash descontado em 60% — a própria carta de 10
+custo (que não bate `power_eq=5000`) continua protegida. Também suavizei
+a proteção de eventos `[Counter]` com retorno decrescente conforme a
+quantidade já na mão (1 counter protege forte, 3+ protege pouco).
+
+**3) Bot gastou 2 eventos counter pra salvar 1 personagem de baixo valor**
+(`should_use_counter`/`select_counter_cards`): o gate de "vale counterizar"
+usava a MESMA lógica de vida do jogador tanto pra defender o líder quanto
+pra defender um personagem qualquer — sem comparar o valor do personagem
+defendido com o valor gasto. Fix: quando o alvo do ataque é um
+personagem (via `defender_uid`), a decisão passa a comparar
+`char_value_score(defendido)` vs soma de `avaliar_carta` das cartas de
+counter gastas — só counteriza se compensar. **Achado no caminho**: o
+C# (`BotDriver.cs`) nunca mandava o `defenderId` pra fase "counter" do
+`/defense` (só pra "reaction"/"optional") — sem isso o fix em Python não
+teria efeito nenhum ao vivo. Corrigido e recompilado (build OK).
+
+**4) Líder quase não ataca mesmo com DON parado sem outro uso possível**
+(`_activate_main_value`): essa função desconta o score de QUALQUER ataque
+(líder ou personagem) assumindo que atacar sempre custa a chance de usar
+o `[Activate: Main]` no mesmo turno — verdade só quando a habilidade
+exige a carta ATIVA (custo `rest_self`). A habilidade do líder Imu não
+tem `rest_self` (atacar e comprar carta são independentes), mas o
+desconto de -70 era aplicado do mesmo jeito, e somado ao desconto de
+risco de trigger derrubava o ataque do líder pra negativo — o turno
+terminava sem atacar e com DON sem nenhum outro uso possível. Fix:
+só desconta quando a habilidade tem custo `rest_self` de fato. Testado
+isolado: cenário antes tinha 0 ações candidatas (só a inválida, negativa);
+depois, atacar com o líder pontua +72.4 e é escolhido.
+
+**Ressalva do usuário (registrar para não regredir)**: passar o turno com
+DON ativo/parado É válido quando esse DON está reservado pra usar uma
+habilidade ou counter no turno do OPONENTE (`_don_reserve_for_defense`
+já existe pra isso) — o problema era especificamente DON sem NENHUM uso
+possível, nem agora nem reservado pra depois.
+
+Validado: `smoke_test.py` 100% e `smoke_test_broad.py` (40/40 sem
+exceção) rodados após CADA um dos 4 fixes, isolado.
+
+### Operacional
+Python (`decision_engine.py`, `sim_bridge.py`) + C# (`BotDriver.cs`,
+já recompilado). Logs salvos no banco:
+`Imu-B_x_Marshall.D.Teach-BY_2026-07-09T{17.52.14,18.39.46}` (o de
+17.42.21 já tinha sido salvo antes da investigação começar).
+
+---
+
+## 2026-07-09 (112) - Claude
+
+### Achado ESTRUTURAL importante: `_score_activate_main` tem taxonomia FIXA de "tipos de efeito bons" — qualquer ação fora da lista cai num fallback de 60 pontos, subestimando efeitos poderosos
+
+Usuário reportou (3ª partida, `2026-07-09T17.22.22.log`, salva no banco):
+bot ficou sem mão de novo, "quase não usou" o Stage, jogou Five Elders
+(`OP13-082`, custo 10 — o personagem do combo "trash seu campo inteiro,
+reanima até 5 diferentes Five Elders da lixeira") e nunca ativou o efeito
+dele. **E fez uma observação crítica**: isso é o MESMO tipo de problema
+já visto antes com Teach não usando o Stage — "estamos resolvendo
+situações pontuais de cada líder e jogada, precisamos fazer o bot pensar
+melhor". Levei isso a sério em vez de investigar só a carta reportada.
+
+**Achado**: `_score_activate_main` (`decision_engine.py`, `OPTCGMatch`)
+pontua a ação de ativar um Activate:Main por uma lista FIXA de categorias
+reconhecidas — `draw/busca=170`, `play_card=110+`, `remoção/controle=100`,
+`don-ramp=90`, **e qualquer ação que não bate com nenhuma delas cai no
+`else: base = 60`**, a MESMA pontuação genérica de qualquer efeito
+irrelevante. Empty Throne usa `play_card` (categoria reconhecida — por
+isso FUNCIONA, o "quase não usou" foi só o ramp natural de DON até ter
+7 disponível, não bug). Five Elders usa `trash_character` +
+`play_from_trash` — **nenhuma das duas está na lista** — caía no
+fallback de 60, e ainda levava a penalidade de custo (`trash_from_hand`,
+`rest_don`), ficando com score baixo/negativo, sempre perdendo pra
+qualquer outra ação (inclusive "não fazer nada"). Confirmado: **8 cartas
+diferentes no banco inteiro** têm `play_from_trash` no Activate:Main
+(`Blueno, Lily Carnation, Thriller Bark, Kuzan, Coribou, Five Elders,
+Kouzuki Momonosuke, Yamato`) — todas sofriam da mesma subestimação, não
+só o Five Elders.
+
+**Fix genérico**: nova categoria reconhecida `play_from_trash` em
+`_score_activate_main` — soma o valor real dos alvos elegíveis na
+lixeira (respeitando `filter_type`/`distinct_names`/`count` do step,
+mesma lógica que `play_card` já usa pra mão) em vez de um número fixo.
+Quando o custo inclui "trash TODOS os seus personagens" (`trash_character`
+com `count>=99`), desconta o valor do board atual sendo sacrificado —
+senão a IA acharia que ganhou os reanimados de graça em vez de ter
+TROCADO o campo. Validado: cenário da partida real (board quase vazio,
+lixeira cheia de alvos, vida crítica) score subiu de ~45 pra **175**
+(compete de verdade com outras ações); cenário sem alvos na lixeira
+mantém score baixo/negativo (-55, não força ativação sem motivo).
+`smoke_test.py` 100%, `smoke_test_broad.py` rodando.
+
+**Sobre "ficou sem mão de novo"**: não investigado a fundo nesta rodada —
+é provavelmente o mesmo achado #3 de ontem (`avaliar_carta` favorecendo
+custo baixo), ainda pendente de rebalanceamento dedicado. Não é um bug
+novo, é o mesmo already-flagged issue se manifestando de novo.
+
+### Reflexão sobre o padrão do dia (registrado, não é ação)
+O usuário tem razão que hoje foram VÁRIOS achados parecendo pontuais
+(Sanjuan Wolf, Kuma, Teach OP09-093, contadores de evento, busca do Imu,
+agora Five Elders) — mas cada um foi corrigido generalizando a CAUSA
+RAIZ (contexto de ataque vazando, viés de DON em escolhas sem custo,
+taxonomia incompleta de categorias de efeito), não a carta específica,
+e cada fix comprovadamente afeta múltiplas cartas do banco (confirmado
+numericamente em quase todos). Ainda assim, o padrão de "descobrir uma
+categoria inteira faltando toda vez que uma carta nova aparece" sugere
+que a arquitetura de scoring (`avaliar_carta`/`_score_activate_main`/
+`_score_play_action`) tem mais buracos de taxonomia por aí — vale
+considerar, numa sessão futura, uma auditoria preventiva de TODAS as
+`action` que aparecem em `card_effects_db.json` vs. quais são
+reconhecidas por essas 3 funções de score, em vez de esperar a próxima
+partida real expor a próxima categoria faltando.
+
+### Operacional
+Só Python (`decision_engine.py`). Server reiniciado. Logs salvos no
+banco (`Imu-B_x_Marshall.D.Teach-BY_2026-07-09T17.22.22`).
+
+---
+
+## 2026-07-09 (111) - Claude
+
+### 3 fixes reais no motor: counters de evento, gate de "vale counterizar", viés de custo em buscas grátis
+
+Usuário reportou 2 observações jogando de Teach contra o bot de Imu, que
+viraram 3 fixes (a terceira era a mesma causa em dois pontos):
+
+**(a) Counters de EVENTO nunca eram usados na defesa ao vivo.**
+`select_counter_cards` (`sim_bridge.py`, usada de verdade pelo
+`/defense counter`) só somava o stat impresso de Counter em personagens
+(`c.counter > 0`) — nunca considerava eventos com bloco `[Counter]` no
+texto (ex: `OP13-098` "...Never Existed...", Imu: "+4000 power during
+this battle"). O motor JÁ TINHA toda a lógica de avaliação desses eventos
+(`EffectExecutor.try_counter_event_power`/`_check_conditions`/
+`_counter_event_cost_payable`), só nunca era chamada nesse caminho ao
+vivo — só pelo simulador interno. Fix: `select_counter_cards` agora monta
+um pool combinado (personagens + eventos elegíveis, em modo SÓ LEITURA,
+sem mutar estado — a mutação real acontece no jogo quando o C# descarta a
+carta) e ordena tudo pela mesma régua.
+
+**(b) O GATE que decide "vale a pena counterizar" também só via o stat
+impresso.** `should_use_counter` (que `select_counter_cards` chama ANTES
+de sequer montar a lista) usava `self.me.counter_in_hand()` — mesma
+lacuna, sem awareness de eventos. Corrigido: `should_use_counter` ganhou
+parâmetro opcional `counter_avail` (default preserva comportamento
+antigo pra todo resto do código); `select_counter_cards` monta o pool
+combinado PRIMEIRO e passa o total real pro gate.
+
+**(c) Viés de custo/DON aplicado em escolhas SEM custo — achado maior,
+generaliza pra qualquer efeito de busca no jogo, não só o Imu.** Usuário
+relatou que o bot escolhe sempre Mary Geoise (custo 1) em vez de Empty
+Throne (custo 7) na busca gratuita de stage do líder Imu ("at the start
+of the game, play up to 1 [Mary Geoise] type Stage card from your deck"
+— achado extra: o parser nunca capturou essa ability específica do Imu,
+mas não precisou consertar isso — ver abaixo). Causa: `order_target_
+candidates`, zona `top_deck`, ordena por `avaliar_carta()` — que pesa
+"dá pra pagar AGORA" (+40/+20/-15 conforme DON disponível). Numa busca
+GRÁTIS (sem custo, comparando 2 opções que já estão technically "de
+graça"), esse peso não faz sentido nenhum — e com 0 DON em campo no
+início do jogo, SEMPRE favorece a carta mais barata, não a melhor. Fix:
+`engine_busca` — clone raso de `DecisionEngine` com `don_available`
+artificialmente alto (99), usado só pra zona `top_deck`, zera o
+bônus/penalidade de jogabilidade sem perder o resto do sinal de
+`avaliar_carta` (poder, keywords, on-KO etc). Validado numericamente:
+Mary Geoise 20→40 vs Empty Throne 0→55 (don=0 vs don=99) — a ordem
+inverte corretamente. **Não precisou tocar no parser do Imu**: a zona
+`top_deck` já cobre a busca dele igual cobre qualquer outro efeito de
+busca do jogo — o fix é genérico por construção, não por-carta.
+
+Validado: testes diretos dos 3 cenários (evento cobre ataque / evento não
+cobre / condição do evento falha; Mary Geoise vs Empty Throne com DON
+neutro) todos bateram com o esperado. `smoke_test.py` 100%,
+`smoke_test_broad.py` rodando (aguardando confirmação).
+
+### Pendência (não bloqueante)
+Parser ainda não captura a ability única do Imu ("at the start of the
+game, play up to 1 [X] type card from your deck") — não é usada por
+nenhuma OUTRA carta no banco hoje (`grep` confirmou), então baixa
+prioridade; registrado só pra completude futura caso o simulador interno
+(`OPTCGMatch`) precise dela algum dia (o fix de hoje resolve o caminho AO
+VIVO sem precisar dela).
+
+### Operacional
+Só Python (`sim_bridge.py`, `decision_engine.py`, `server.py`) — sem
+mudança de C#/DLL, sem `gerar_dbs`. Server reiniciado com os 3 fixes.
+
+---
+
+## 2026-07-09 (110) - Claude
+
+### Banco de logs: obrigação nova no CLAUDE.md + 2 bugs pré-existentes corrigidos na ferramenta
+
+Usuário perguntou se eu estava salvando os combat logs que ele manda — não
+estava (só existiam na conversa; o update do simulador do bloco 109 apagou
+os originais). Ele revelou que **já existe um banco de logs de verdade**
+(`scriptis_da_ia/logs/{raw,parsed,decks}/` + `index.json`, ferramenta
+`parse_combat_log.py --add-to-db`, documentado em `TODO.md` seção
+`📊 BANCO DE LOGS`) — eu não sabia e tinha criado `BOT/test_logs/` por
+conta própria no bloco anterior (desfeito agora, `rm -rf`).
+
+**Obrigação nova escrita no `CLAUDE.md`** (seção "Banco de logs de
+partidas reais — OBRIGATÓRIO salvar"): toda vez que o usuário mandar um
+combat log, a sessão (Claude ou Codex) tem que rodar
+`python parse_combat_log.py <log> --add-to-db` antes de considerar a
+tarefa terminada. Vale pra Codex também — `CLAUDE.md` é lido por qualquer
+sessão nova, é o lugar certo pra regras assim.
+
+**2 bugs pré-existentes achados e corrigidos ao tentar usar a ferramenta
+pela primeira vez** (`parse_combat_log.py`): `index.json` tem 2 schemas
+diferentes (10 entradas antigas do lote "autosaved_log" usam
+`original_file`/`total_turns`, sem `id`/`date`/`turns`; as demais 30+ usam
+o schema novo com `id`/`date`/`turns`). `add_to_db()` e `list_db()`
+assumiam TODAS as entradas tinham o schema novo (`e['id']`, `e['date']`,
+`e['turns']`) — `KeyError` em ambas ao rodar contra o banco real. Fix:
+`.get()` com fallback (`e.get('id')`, `e.get('date') or
+e.get('original_file','')[:10]`, `e.get('turns', e.get('total_turns'))`)
+nos dois lugares. Validado: `--add-to-db` das 2 partidas do bloco 109
+funcionou (`Imu-B_x_Marshall.D.Teach-BY_2026-07-09T16.07.36` e `...16.12.30`,
+42 entradas no índice agora), `--list-db` lista as 42 sem quebrar,
+`smoke_test.py` 100% (não testa esse arquivo diretamente, mas confirma
+nada mais quebrou).
+
+### Operacional
+Nada de C#/DLL nesta rodada — só Python (`parse_combat_log.py`) +
+`CLAUDE.md`. Server não precisa reiniciar. Considerar se `BOT/vendor/`
+(zip do BepInEx, ~622KB) deve ir pro git ou pro `.gitignore` — ainda não
+decidido.
+
+---
+
+## 2026-07-09 (109) - Claude
+
+### Sessão nova: bot jogando de IMU (usuário jogando de Teach) — reinstalação do BepInEx + 2 fixes reais
+
+**Contexto novo**: usuário propôs inverter os papéis pra testar generalização —
+ele joga de Teach, o bot joga de Imu (carrega os decks trocados nos slots do
+SoloVSelf; o bot so controla `Lps_Players[0]`, é agnóstico de qual deck tá lá).
+
+**0. Simulador atualizou e apagou a pasta BepInEx inteira** (reinstall/update
+do jogo às 15:44 de hoje zerou `E:\Games\...\Builds_Windows\BepInEx\`).
+Sem backup local do instalador. Baixei a versão oficial certa (BepInEx
+5.4.23.2, Windows x64 — confirmada pela versão que já aparecia no
+`LogOutput.log` antigo) do GitHub oficial, salvei em `BOT/vendor/` (não
+depende de internet nas próximas vezes), e criei **`BOT/setup_bepinex.ps1`**
++ **`BOT/setup_bepinex.bat`** (duplo-clique): reinstala o BepInEx se
+ausente, recompila o plugin, copia pro `BepInEx/plugins/`. Rodar sempre que
+o jogo atualizar de novo e apagar a pasta (fechar o jogo antes — o
+`winhttp.dll` do BepInEx fica travado com o processo aberto).
+
+**Combat logs agora sendo salvos**: usuário perguntou se eu estava
+guardando os logs que ele manda — não estava (só existiam na conversa, e
+o update do simulador apagou os originais). Criei `BOT/test_logs/` e
+copiei os 2 logs desta sessão (`2026-07-09T16.07.36.log`,
+`2026-07-09T16.12.30.log`) pra lá. Adotar esse hábito daqui pra frente.
+
+**1. Bartholomew Kuma dando DON restado pra si mesmo em vez do líder —
+MESMA causa raiz do Sanjuan Wolf (bloco 108), ainda não generalizada.**
+`OP16-093`: "[On Play] ... give up to 1 rested DON!! to your Leader or 1
+of your Characters" — o parser nunca captura `target` pra `give_don`
+(só decide `give_don` vs `give_don_opp`, sem granularidade lider/personagem
+dentro do próprio lado), então esse padrão não caía em NENHUMA das
+detecções `actor_*` de `order_target_candidates` — ficava no fallback
+genérico de zona, e como o Kuma tinha acabado de entrar e era o único
+personagem em campo, "ganhava" por eliminação. Fix: unifiquei
+`actor_self_power_target` pra guardar `('set', valor)` (Sanjuan Wolf,
+Devon etc — poder vira N fixo) OU `('delta', +1000*count)` (`give_don` —
+cada DON soma 1000 permanente). Mesma checagem de sobrevivência do líder
+nos dois casos; pro caso `delta` (onde o ganho é IGUAL em qualquer alvo,
+não existe "quem se beneficia mais"), desempate novo: nunca prefere o
+próprio ator se ele acabou de entrar em campo (`just_played`, sem Rush
+não briga esse turno) — o líder, que nunca tem `just_played`, ganha por
+padrão. Validado com teste direto + `smoke_test.py` 100% +
+`smoke_test_broad.py` 40/40.
+
+**2. Bot atacou com St. Topman Warcury travado pelo Teach OP09-093 do
+usuário — bug REAL confirmado (não falso alarme de expiração natural),
+causa raiz achada e corrigida no C#.** Contei os turnos no combat log:
+o lock ("can't attack next turn") foi aplicado no turno do usuário, e o
+Warcury atacou no EXATO turno seguinte (dentro da janela do lock) — não é
+coincidência de timing. Investigando o decompilado: `StartAttack()`
+(chamado pelo bot via reflection em `BotExecutor.cs`) **não valida** se o
+personagem pode atacar — só checa `iConfusion` (mecânica diferente). A
+checagem real (`CardCantAttack()`, que confere `bCantAttack`/`bCantRest`/
+travas V3/`CantAttack` de card action) só roda na camada de CLIQUE do
+jogo (`FindPossibleCardActions`), que decide se ele SEQUER oferece o
+personagem como atacante clicável — nosso bot pula essa camada
+inteiramente (seta `go_PendingChoice` direto e chama `StartAttack()`).
+**Fix de verdade, não workaround**: `GameStateDto.cs` ganhou o campo
+`cantAttack`; `GameStateBuilder.cs` chama `CardCantAttack()` via reflection
+(mesmo método que o jogo usa) ao montar o DTO de cada personagem;
+`server.py` seta `card.cannot_attack_until = 'live_lock'` quando
+`cantAttack=true` — reaproveitando o filtro que **já existia** em
+`_generate_and_score_actions` (`not c.cannot_attack_until`), nunca
+alimentado por dados reais do jogo ao vivo antes disso (só por simulação
+interna). Isso é geral: cobre QUALQUER efeito de trava de ataque
+(`bCantAttack`, travas V3, `CantAttack` de card action), não só o Teach
+especificamente. Validado: teste direto ponta-a-ponta (DTO→Card→
+`cannot_attack_until`), `smoke_test.py` 100%, `smoke_test_broad.py` 40/40.
+
+### Operacional
+DLL recompilada com o fix do `cantAttack` e copiada automaticamente pro
+`BepInEx/plugins/` (confirmado: mesmo tamanho/timestamp nos dois lugares).
+**O jogo estava ABERTO com a DLL antiga carregada em memória — precisa
+fechar e reabrir pra pegar esse fix.** Server reiniciado com os 2 fixes
+Python (`give_don` + `cantAttack` plumbing). `BOT/vendor/` (zip do
+BepInEx) e `BOT/test_logs/` são novos, considerar se devem entrar no git
+(binário de terceiro + logs de teste — talvez `.gitignore` seja melhor
+pro zip, mas os logs valem a pena versionar).
+
+---
+
 ## 2026-07-08 (108) - Claude
 
 ### Fix do Sanjuan Wolf (bloco 107) NÃO tinha pegado de verdade — causa raiz real era outra + achado grosso na função central de avaliação de carta

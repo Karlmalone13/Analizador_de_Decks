@@ -10,6 +10,15 @@ namespace OPTCGBotPlugin
         public int power;
         public bool rested;
         public bool justPlayed;
+        // Travado de atacar por efeito do oponente (ex: Teach OP09-093:
+        // "that Character cannot attack until the end of your opponent's
+        // next turn") — lido via CardCantAttack(), o mesmo metodo que o
+        // jogo usa pra decidir se deixa o HUMANO clicar num atacante.
+        // Achado real 09/07: StartAttack() (chamado pelo bot via reflection)
+        // NAO valida isso sozinho — so a camada de clique que normalmente
+        // filtra antes de chegar la, que o bot pula. Sem ler esse campo,
+        // o bot atacava com personagens travados e o jogo deixava.
+        public bool cantAttack;
         public int deckUniqueId;  // ID unico dentro da partida (para identificar alvos)
         public int donAttached;   // DON anexados a esta carta (+1000 poder cada no proprio turno)
         public bool actionUsed;   // alguma acao da carta ja usada neste turno (lb_ActionsUsed)

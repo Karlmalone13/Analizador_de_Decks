@@ -1,0 +1,26 @@
+{
+  "cards": [
+    {
+      "code": "OP16-102",
+      "name": "OP16-102",
+      "count": 1
+    },
+    {
+      "code": "OP16-104",
+      "name": "OP16-104",
+      "count": 1
+    },
+    {
+      "code": "OP16-109",
+      "name": "OP16-109",
+      "count": 1
+    },
+    {
+      "code": "OP09-086",
+      "name": "Jesus Burgess",
+      "count": 1
+    }
+  ],
+  "total_seen": 4,
+  "leader": "OP16-080"
+}

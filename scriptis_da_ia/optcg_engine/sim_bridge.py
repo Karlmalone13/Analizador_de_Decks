@@ -9,7 +9,7 @@ Responsabilidades:
 """
 from __future__ import annotations
 import os, sys
-from copy import deepcopy
+from copy import copy, deepcopy
 from pathlib import Path
 from typing import Optional
 
@@ -380,30 +380,117 @@ def resolve_trigger_choice(gs: GameState, card_code: str | None,
     return False  # draw seco / buff situacional / desconhecido: carta na mao
 
 
-def select_counter_cards(gs: GameState, atk_power: int, def_power: int) -> list[int]:
+def select_counter_cards(gs: GameState, atk_power: int, def_power: int,
+                         opp_gs: GameState | None = None,
+                         defender_uid: int = 0) -> list[int]:
     """
     Seleciona as cartas de counter (por _deck_uid) para defender um ataque.
     Mesma politica do DecisionEngine.use_counter: menores primeiro, minimo
     necessario — e so counteriza se realmente cobre o ataque.
     Retorna [] se o engine decidir nao counterizar.
+
+    defender_uid: uid do alvo do ataque. Quando aponta pra um PERSONAGEM
+    (nao o lider), a decisao de counterizar troca de eixo -- nao e sobre
+    vida, e sobre TROCA de recursos: so vale gastar counter(s) se o valor
+    do personagem defendido supera o valor das cartas de counter gastas.
+    Achado real 09/07 (log 18.39.46): bot gastou 2 eventos [Counter] pra
+    salvar 1 personagem de baixo valor de um unico ataque, esvaziando a
+    mao por pouco ganho -- should_use_counter usava o MESMO gate baseado
+    em vida do lider pra decidir defender um personagem qualquer, que nao
+    tem nada a ver com a vida do jogador.
+
+    Cobre DOIS tipos de counter, na MESMA regua (poder que a carta
+    adiciona contra este ataque especifico):
+    - Character com stat de Counter impresso (c.counter > 0) — ja existia.
+    - EVENT com bloco [Counter] "gains +X power during this battle/turn"
+      (ex: OP13-098 Imu "...Never Existed..." +4000) — achado real 09/07:
+      o motor JA TEM toda a logica de avaliacao desses eventos
+      (EffectExecutor.try_counter_event_power/_check_conditions/
+      _counter_event_cost_payable), so nunca era chamada neste caminho AO
+      VIVO — a IA jogando Imu nunca usava os proprios counters de evento,
+      só os counters de personagem. Reaproveita os dados JA PARSEADOS
+      (get_card_effects) em modo SO LEITURA (sem mutar estado — a mutacao
+      de verdade acontece no jogo real quando o C# descarta a carta),
+      diferente de try_counter_event_power (que muta o GameState pro
+      simulador interno). Escopo: so o padrao mais comum, "Leader/
+      Character ganha +X de poder" incondicional de QUAL personagem
+      (leader/own_character/leader_or_character) — cobre o caso reportado
+      sem precisar saber qual carta especifica esta sendo atacada (o
+      /defense "counter" nao recebe esse contexto ainda).
     """
-    opp_stub = GameState(leader=deepcopy(gs.leader))
+    opp_stub = opp_gs if opp_gs is not None else GameState(leader=deepcopy(gs.leader))
     engine = DecisionEngine(gs, opp_stub)
-    if not engine.should_use_counter(atk_power, def_power):
-        return []
+
+    from optcg_engine.decision_engine import EffectExecutor, get_card_effects
+    ee = EffectExecutor(gs, opp_stub)
+
+    # (valor_counter, carta) — personagens (stat impresso) + eventos [Counter].
+    # Montado ANTES do gate should_use_counter: esse gate decide "vale a
+    # pena counterizar" a partir do total disponivel, que precisa incluir
+    # os eventos tambem (senao rejeita ANTES de sequer considerar usar um
+    # evento como unico counter disponivel — achado real 09/07).
+    pool: list[tuple[int, 'Card']] = [(c.counter, c) for c in gs.hand if c.counter > 0]
+    for event in gs.hand:
+        if event.card_type != 'EVENT':
+            continue
+        block = get_card_effects(event.code).get('counter', {})
+        if not block or not ee._check_conditions(block.get('conditions', {}), event):
+            continue
+        buff_step = next(
+            (s for s in block.get('steps', [])
+             if s.get('action') == 'buff_power'
+             and s.get('duration') in ('battle_only', 'this_turn')
+             and s.get('target') in ('leader', 'own_character', 'leader_or_character')),
+            None)
+        if buff_step is None:
+            continue
+        costs = block.get('costs', [])
+        if not ee._counter_event_cost_payable(event, costs):
+            continue
+        pool.append((buff_step.get('amount', 0), event))
+
+    defender_char = None
+    if defender_uid:
+        defender_char = next((c for c in gs.field_chars
+                              if getattr(c, '_deck_uid', 0) == defender_uid), None)
+
     needed = atk_power - def_power + 1
-    # menor counter primeiro; empate = pitcha a carta de MENOR valor
+
+    if defender_char is not None:
+        # Defendendo um PERSONAGEM: troca de recursos, nao vida. Sem
+        # comparar com should_use_counter (que so faz sentido pro lider).
+        if not pool or needed <= 0:
+            return []
+        pool.sort(key=lambda item: (item[0], engine.avaliar_carta(item[1])))
+        total, ids, gasto = 0, [], 0.0
+        for valor, c in pool:
+            if total >= needed:
+                break
+            gasto += engine.avaliar_carta(c)
+            uid = getattr(c, '_deck_uid', 0)
+            if uid:
+                ids.append(uid)
+                total += valor
+        if total < needed:
+            return []
+        valor_defendido = engine.analyzer.char_value_score(defender_char)
+        return ids if valor_defendido > gasto else []
+
+    counter_avail = sum(v for v, _ in pool)
+    if not engine.should_use_counter(atk_power, def_power, counter_avail=counter_avail):
+        return []
+
+    # menor cobertura primeiro; empate = pitcha a carta de MENOR valor
     # situacional (nao jogar fora efeito bom junto com o counter)
-    counters = sorted([c for c in gs.hand if c.counter > 0],
-                      key=lambda c: (c.counter, engine.avaliar_carta(c)))
+    pool.sort(key=lambda item: (item[0], engine.avaliar_carta(item[1])))
     total, ids = 0, []
-    for c in counters:
+    for valor, c in pool:
         if total >= needed:
             break
         uid = getattr(c, '_deck_uid', 0)
         if uid:
             ids.append(uid)
-            total += c.counter
+            total += valor
     return ids if total >= needed else []
 
 
@@ -566,6 +653,22 @@ def order_target_candidates(gs: GameState, opp_gs: GameState,
     """
     engine = DecisionEngine(gs, opp_gs)
 
+    # Engine "DON-neutro": mesma GameState, mas com don_available artificial
+    # bem alto, so pra zerar o bonus/penalidade de jogabilidade imediata
+    # dentro de avaliar_carta (+40 se pagavel agora / -15 se nao). Usado SO
+    # pra valorar candidatos de BUSCA (zona top_deck, "olhe/pegue a melhor
+    # carta"), onde nao existe custo diferencial entre as opcoes -- o
+    # jogador so esta ESCOLHENDO, nao pagando por nenhuma delas ainda.
+    # Achado real 09/07: Imu busca 1 stage [Mary Geoise] tipo de graca no
+    # inicio do jogo (Empty Throne custo 7 vs Mary Geoise custo 1, 0 DON em
+    # campo) -- avaliar_carta() penalizava Empty Throne por "nao pagavel
+    # agora" numa escolha que nunca teve custo nenhum, entao o bot sempre
+    # buscava a carta mais fraca e mais barata. Mesmo vies afeta QUALQUER
+    # efeito de busca/look-and-play do jogo, nao so essa carta do Imu.
+    gs_don_neutro = copy(gs)
+    gs_don_neutro.don_available = 99
+    engine_busca = DecisionEngine(gs_don_neutro, opp_gs)
+
     by_uid = {}
     for c in gs.hand + gs.field_chars + opp_gs.field_chars:
         uid = getattr(c, '_deck_uid', 0)
@@ -645,13 +748,21 @@ def order_target_candidates(gs: GameState, opp_gs: GameState,
     # sempre "ganhava" por estar em own_board (prioridade 3) contra
     # own_leader (prioridade 6) -- nao porque fosse a melhor escolha, so
     # porque a zona dele tinha prioridade estrutural maior.
+    # ('set', valor_fixo) pra "power becomes N" (Sanjuan Wolf) ou
+    # ('delta', +1000*count) pra "give up to N DON!!" (Bartholomew Kuma —
+    # cada DON anexado vale +1000 de poder permanente, mesmo restado).
+    # Mesmo alvo estrutural nos dois casos (lider OU 1 personagem proprio),
+    # so muda a conta de quanto poder resulta.
     actor_self_power_target = None
     if actor_code and not actor_copia_poder and not actor_debuff_swing:
         for block in get_card_effects(actor_code).values():
             for s in block.get('steps', []):
                 if (s.get('action') in ('set_base_power', 'buff_power')
                         and s.get('target') in ('leader_or_own_character', 'leader_or_character')):
-                    actor_self_power_target = s.get('amount', 0)
+                    actor_self_power_target = ('set', s.get('amount', 0))
+                    break
+                if s.get('action') == 'give_don':   # give_don_opp e acao distinta, ja exclusiva
+                    actor_self_power_target = ('delta', s.get('count', 1) * 1000)
                     break
             if actor_self_power_target is not None:
                 break
@@ -696,37 +807,50 @@ def order_target_candidates(gs: GameState, opp_gs: GameState,
             # reconstrucao "de fabrica" a partir so do codigo da carta.
             live = gs.leader if zone == 'own_leader' else card
             p = live.effective_power(True) if live else 0
+            kind, amount = actor_self_power_target
+            resultante = amount if kind == 'set' else p + amount
+
             # O lider tem uma ameaca REAL no campo do oponente (personagem ou
             # lider dele ainda ATIVO, nao restado) que ele hoje NAO sobrevive
-            # mas SOBREVIVERIA com o boost fixo? Isso vale mais que qualquer
-            # delta de poder solto -- prioridade maxima. NAO usa
-            # `attacker_power>0` aqui (tentativa anterior, 08/07 bloco 107):
-            # esse parametro so vem preenchido pelo C# durante
-            # Attack_WaitOnBlocker/BeforeBlocker/WaitOnCounters -- triggers de
-            # vida (o caso real do Sanjuan Wolf) resolvem o alvo em
-            # `Life_ActivateTrigger`, fora dessa lista, entao attacker_power
-            # chegava sempre 0 e a regra nunca disparava (confirmado no log
-            # do plugin: mesma partida, mesmo resultado errado de novo).
-            # Mesma conta de `maior_por_vir` do resolve_reaction, mas lida
-            # direto do estado do oponente em vez de um parametro que nem
-            # sempre reflete o contexto real.
+            # mas SOBREVIVERIA com o boost/delta? Isso vale mais que qualquer
+            # outro criterio -- prioridade maxima. NAO usa `attacker_power>0`
+            # aqui (tentativa anterior, 08/07 bloco 107): esse parametro so
+            # vem preenchido pelo C# durante Attack_WaitOnBlocker/
+            # BeforeBlocker/WaitOnCounters -- triggers de vida e on-plays
+            # (os casos reais do Sanjuan Wolf e do Kuma) resolvem o alvo fora
+            # dessa lista de estados, entao attacker_power chegava sempre 0 e
+            # a regra nunca disparava (confirmado no log do plugin). Mesma
+            # conta de `maior_por_vir` do resolve_reaction, mas lida direto
+            # do estado do oponente em vez de um parametro que nem sempre
+            # reflete o contexto real.
             if zone == 'own_leader':
                 ameacas = [c.power for c in opp_gs.field_chars if not getattr(c, 'rested', False)]
                 if opp_gs.leader is not None and not getattr(opp_gs.leader, 'rested', False):
                     ameacas.append(opp_gs.leader.power)
                 maior_ameaca = max(ameacas, default=0)
-                if maior_ameaca > 0 and p < maior_ameaca <= actor_self_power_target:
+                if maior_ameaca > 0 and p < maior_ameaca <= resultante:
                     return (-1, 0)
-            # Caso contrario, prefere quem tem MENOR poder atual -- fixar um
-            # valor alto beneficia mais quem estava mais fraco (maior delta).
-            return (3, p)
+
+            if kind == 'set':
+                # Fixar um valor alto beneficia mais quem estava mais fraco
+                # (maior delta ganho) -- prefere MENOR poder atual.
+                return (3, p)
+            # 'delta' (ex: give_don): o ganho de poder e o MESMO (+1000*N)
+            # em qualquer alvo -- nao ha "quem se beneficia mais". O que
+            # importa e nao desperdicar num alvo que nem vai brigar este
+            # turno. Achado real 09/07 (Kuma): o proprio ator, recem-jogado
+            # (just_played, sem Rush, nao ataca este turno), "ganhava" so
+            # por ser o unico candidato em own_board -- sem comparar com o
+            # lider, que compete por ataques/defesas TODO turno. Prioriza
+            # quem NAO acabou de entrar (lider nunca tem just_played).
+            return (3, 1 if getattr(live, 'just_played', False) else 0)
         # Contexto de ataque: alvo original sempre por ULTIMO, em qualquer zona
         # (so faz sentido pra uma habilidade de redirect de verdade -- ver
         # actor_is_redirect acima)
         if attacker_power > 0 and actor_is_redirect and defender_uid and cand.get('id') == defender_uid:
             return (9, 0)
         if zone == 'top_deck':
-            return (0, -(engine.avaliar_carta(card) if card else 0))
+            return (0, -(engine_busca.avaliar_carta(card) if card else 0))
         if zone == 'own_hand':
             if attacker_power > 0 and actor_is_redirect:
                 # custo do redirect do lider (Teach): mesma régua de

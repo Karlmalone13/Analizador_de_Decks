@@ -1,0 +1,544 @@
+{
+  "meta": {
+    "players": {
+      "p1": {
+        "name": "You",
+        "leader": {
+          "name": "Imu",
+          "code": "OP13-079"
+        }
+      },
+      "p2": {
+        "name": "Opponent",
+        "leader": {
+          "name": "Marshall D. Teach",
+          "code": "OP16-080"
+        }
+      }
+    },
+    "goes_first": null
+  },
+  "total_turns": 20,
+  "turns": [
+    {
+      "turn": 1,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 1,
+      "actions": [
+        {
+          "type": "activate",
+          "card": "OP13-079",
+          "card_name": "Imu",
+          "effects": [
+            "Trash St. Marcus Mars [\"OP13-091\">OP13-091]",
+            "Draw 1 Card"
+          ]
+        }
+      ],
+      "snapshot": {}
+    },
+    {
+      "turn": 2,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP16-110",
+          "card_name": "Vasco Shot",
+          "effects": []
+        }
+      ],
+      "snapshot": {}
+    },
+    {
+      "turn": 3,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP16-093",
+          "card_name": "Bartholomew Kuma",
+          "effects": [
+            "Draw 2 Card",
+            "Trash The Empty Throne [\"OP13-099\">OP13-099]",
+            "Trash Five Elders [\"OP13-082\">OP13-082]",
+            "Attach 1 Rested Don to Bartholomew Kuma [\"OP16-093\">OP16-093]"
+          ]
+        }
+      ],
+      "snapshot": {}
+    },
+    {
+      "turn": 4,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Marshall D. Teach",
+          "attacker_code": "OP16-080",
+          "target": "Imu [\"OP13-079\">OP13-079]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP16-093"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "PRB02-015",
+          "card_name": "Shiryu",
+          "effects": []
+        }
+      ],
+      "snapshot": {}
+    },
+    {
+      "turn": 5,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP16-093",
+          "card_name": "Bartholomew Kuma",
+          "effects": [
+            "Draw 2 Card",
+            "Trash Ground Death [\"OP14-096\">OP14-096]",
+            "Trash St. Shepherd Ju Peter [\"OP13-084\">OP13-084]",
+            "Attach 1 Rested Don to Bartholomew Kuma [\"OP16-093\">OP16-093]"
+          ]
+        }
+      ],
+      "snapshot": {}
+    },
+    {
+      "turn": 6,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP16-080",
+          "to_name": "Marshall D. Teach",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Marshall D. Teach",
+          "attacker_code": "OP16-080",
+          "target": "Imu [\"OP13-079\">OP13-079]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP09-084",
+          "card_name": "Catarina Devon",
+          "effects": []
+        }
+      ],
+      "snapshot": {}
+    },
+    {
+      "turn": 7,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP13-091",
+          "card_name": "St. Marcus Mars",
+          "effects": []
+        },
+        {
+          "type": "activate",
+          "card": "OP13-096",
+          "card_name": "The Five Elders... Are At Your Service",
+          "effects": [
+            "Rest 1 Don",
+            "<b>Reveal and Draw St. Topman Warcury [\"OP13-089\">OP13-089]</b>",
+            "Trash 2 Remaining Cards"
+          ]
+        }
+      ],
+      "snapshot": {}
+    },
+    {
+      "turn": 8,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP16-107",
+          "card_name": "Jesus Burgess",
+          "effects": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP16-080",
+          "to_name": "Marshall D. Teach",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Marshall D. Teach",
+          "attacker_code": "OP16-080",
+          "target": "Imu [\"OP13-079\">OP13-079]",
+          "result": null,
+          "damage": null,
+          "blocked_by": "OP13-091",
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 3,
+          "to": "OP09-084",
+          "to_name": "Catarina Devon",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Catarina Devon",
+          "attacker_code": "OP09-084",
+          "target": "Imu [\"OP13-079\">OP13-079]",
+          "result": "hit",
+          "damage": 2,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {}
+    },
+    {
+      "turn": 9,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Imu",
+          "attacker_code": "OP13-079",
+          "target": "Catarina Devon [\"OP09-084\">OP09-084]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Bartholomew Kuma",
+          "attacker_code": "OP16-093",
+          "target": "Catarina Devon [\"OP09-084\">OP09-084]",
+          "result": null,
+          "damage": null,
+          "blocked_by": "PRB02-015",
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP13-089",
+          "card_name": "St. Topman Warcury",
+          "effects": []
+        },
+        {
+          "type": "activate",
+          "card": "OP14-096",
+          "card_name": "Ground Death",
+          "effects": [
+            "Rest 1 Don"
+          ]
+        }
+      ],
+      "snapshot": {}
+    },
+    {
+      "turn": 10,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP09-093",
+          "card_name": "Marshall D. Teach",
+          "effects": [
+            "Nullify effects of Imu [\"OP13-079\">OP13-079]",
+            "St. Topman Warcury [\"OP13-089\">OP13-089] can't attack next turn",
+            "Nullify effects of St. Topman Warcury [\"OP13-089\">OP13-089] until next turn end!"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Jesus Burgess",
+          "attacker_code": "OP16-107",
+          "target": "Imu [\"OP13-079\">OP13-079]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP13-083"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP09-084",
+          "card_name": "Catarina Devon",
+          "effects": [
+            "Give Catarina Devon [\"OP09-084\">OP09-084] Banish"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Catarina Devon",
+          "attacker_code": "OP09-084",
+          "target": "Imu [\"OP13-079\">OP13-079]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP13-083",
+            "OP16-093"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Marshall D. Teach",
+          "attacker_code": "OP16-080",
+          "target": "Imu [\"OP13-079\">OP13-079]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP13-080"
+          ]
+        }
+      ],
+      "snapshot": {}
+    },
+    {
+      "turn": 11,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Imu",
+          "attacker_code": "OP13-079",
+          "target": "Catarina Devon [\"OP09-084\">OP09-084]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Bartholomew Kuma",
+          "attacker_code": "OP16-093",
+          "target": "Catarina Devon [\"OP09-084\">OP09-084]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP09-095"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "St. Topman Warcury",
+          "attacker_code": "OP13-089",
+          "target": "Catarina Devon [\"OP09-084\">OP09-084]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": "OP09-093",
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP13-089",
+          "card_name": "St. Topman Warcury",
+          "effects": []
+        }
+      ],
+      "snapshot": {}
+    },
+    {
+      "turn": 12,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP16-080",
+          "to_name": "Marshall D. Teach",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP16-080",
+          "to_name": "Marshall D. Teach",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Marshall D. Teach",
+          "attacker_code": "OP16-080",
+          "target": "Imu [\"OP13-079\">OP13-079]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": "OP13-089",
+          "countered_by": [
+            "OP13-083",
+            "OP13-084"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP09-084",
+          "to_name": "Catarina Devon",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP09-084",
+          "to_name": "Catarina Devon",
+          "total": 2
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP09-084",
+          "to_name": "Catarina Devon",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Catarina Devon",
+          "attacker_code": "OP09-084",
+          "target": "Imu [\"OP13-079\">OP13-079]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {}
+    },
+    {
+      "turn": 13,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {}
+    },
+    {
+      "turn": 14,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {}
+    },
+    {
+      "turn": 15,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {}
+    },
+    {
+      "turn": 16,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "activate",
+          "card": "OP16-103",
+          "card_name": "Van Augur",
+          "effects": [
+            "Draw 1 Card",
+            "Buff Imu [\"OP13-079\">OP13-079] -3000"
+          ]
+        }
+      ],
+      "snapshot": {}
+    },
+    {
+      "turn": 17,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {}
+    },
+    {
+      "turn": 18,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {}
+    },
+    {
+      "turn": 19,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [],
+      "snapshot": {}
+    },
+    {
+      "turn": 20,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "activate",
+          "card": "OP16-080",
+          "card_name": "Marshall D. Teach",
+          "effects": [
+            "Trash Avalo Pizarro [\"OP16-102\">OP16-102]",
+            "Target of Attack changed to Vasco Shot [\"OP16-110\">OP16-110]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP16-110",
+          "card_name": "Vasco Shot",
+          "effects": [
+            "Draw 1 Card",
+            "Rest St. Marcus Mars [\"OP13-091\">OP13-091]"
+          ]
+        }
+      ],
+      "snapshot": {}
+    }
+  ]
+}

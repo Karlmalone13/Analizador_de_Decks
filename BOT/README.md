@@ -30,6 +30,22 @@ decision_engine.py (CÉREBRO: todas as decisões)
 Se uma decisão nova precisar existir, ela nasce no `decision_engine.py` (ou
 como função de tradução no `sim_bridge.py`) — nunca no plugin ou no server.
 
+## ⚠️ Jogo atualizou e o bot parou de funcionar?
+
+O Steam (ou verificação de integridade) apaga a pasta `BepInEx` inteira da
+instalação do jogo quando atualiza — isso já aconteceu (09/07/2026) e vai
+acontecer de novo. Sintoma: `LogOutput.log` não existe mais, ou o bot não
+reage a nada.
+
+**Fix**: feche o jogo (o BepInEx trava `winhttp.dll` enquanto o jogo está
+aberto) e rode:
+```
+C:\Projetos_TI\analidador_de_decks_optcg\BOT\setup_bepinex.bat
+```
+(duplo-clique funciona). Reinstala o BepInEx (usa o zip já salvo em
+`BOT/vendor/`, não precisa internet) + recompila e copia o plugin. Depois
+é só abrir o jogo de novo.
+
 ## Como rodar (Solo vs Self)
 
 1. Servidor do engine (primeiro):

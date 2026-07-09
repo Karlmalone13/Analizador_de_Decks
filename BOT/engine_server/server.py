@@ -38,6 +38,7 @@ class CardDto(BaseModel):
     deckUniqueId: int
     donAttached: int = 0     # DON anexados a carta (default 0 p/ plugin antigo)
     actionUsed: bool = False # acao da carta ja usada neste turno (lb_ActionsUsed)
+    cantAttack: bool = False # travado de atacar por efeito do oponente (CardCantAttack real do jogo)
 
 class PlayerDto(BaseModel):
     hand: list[CardDto] = []
@@ -123,6 +124,15 @@ def _make(dto: CardDto):
         card.don_attached = dto.donAttached
         card._deck_uid    = dto.deckUniqueId
         card._action_used = dto.actionUsed
+        # Lock de ataque REAL vindo do jogo (CardCantAttack, ex: Teach
+        # OP09-093 "cannot attack until end of opponent's next turn").
+        # Achado real 09/07: sem isso o bot oferecia esse personagem como
+        # atacante mesmo travado -- StartAttack() nao valida sozinho, so a
+        # camada de clique humano (que o bot pula via reflection). O filtro
+        # de ataque (`_generate_and_score_actions`) ja checa
+        # `cannot_attack_until` truthy; qualquer string nao-vazia basta.
+        if dto.cantAttack:
+            card.cannot_attack_until = 'live_lock'
         return card
     except Exception:
         return None
@@ -245,7 +255,8 @@ def defense(req: DefenseRequest):
 
         elif req.phase == "counter":
             out["counterIds"] = bridge.select_counter_cards(
-                gs, req.attackerPower, req.defenderPower)
+                gs, req.attackerPower, req.defenderPower, opp_gs=opp_gs,
+                defender_uid=req.defenderId)
             print(f"[DEF] counter atk={req.attackerPower} def={req.defenderPower} "
                   f"-> {len(out['counterIds'])} cartas", flush=True)
 

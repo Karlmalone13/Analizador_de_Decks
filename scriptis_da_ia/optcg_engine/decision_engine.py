@@ -4548,7 +4548,15 @@ class EffectExecutor:
 
         if card.card_type == 'EVENT':
             if '[counter]' in text:
-                value += 35
+                # Protecao com retorno decrescente: 1 counter na mao e uma
+                # rede de seguranca real, mas o 2o/3o valem cada vez menos
+                # (redundantes) -- achado 09/07: bot trashando evento
+                # counter em vez de personagem reanimavel, mesmo com varios
+                # counters acumulados na mao.
+                counters_na_mao = sum(
+                    1 for c2 in self.me.hand
+                    if c2.card_type == 'EVENT' and '[counter]' in (c2.card_text or '').lower())
+                value += 35 / max(1, counters_na_mao)
                 if self.me.life_count() <= 2:
                     value += 35
             if flags.get('kos') or flags.get('is_removal') or flags.get('bounces'):
@@ -4567,6 +4575,34 @@ class EffectExecutor:
         custo = effective_hand_play_cost(self.me, card)
         if custo <= self.me.don_available:
             value += 60 + custo * 6   # bônus adicional por ser jogável agora
+
+        # Personagem recuperavel via play_from_trash da propria engine do
+        # deck (ex: Five Elders OP13-082 reanima ate 5 copias de 5000 power
+        # com esse mesmo nome/tipo) e descarte SEGURO: a perda e temporaria.
+        # Achado 09/07 (log 17.52.14): bot trashando evento [Counter] em vez
+        # de um Elder reanimavel para o custo trash_char_or_hand do lider
+        # Imu -- generico pra qualquer carta+reanimador que bata o filtro,
+        # nao hardcoded pro Five Elders.
+        if card.card_type == 'CHARACTER':
+            for src in list(self.me.field_chars) + list(self.me.hand):
+                if src is card:
+                    continue
+                am = get_card_effects(src.code).get('activate_main', {})
+                pft = next((s for s in am.get('steps', [])
+                            if s.get('action') == 'play_from_trash'), None)
+                if not pft:
+                    continue
+                conds = am.get('conditions', {})
+                if conds and not EffectExecutor(self.me, self.opp)._check_conditions(conds, src):
+                    continue
+                ft = (pft.get('filter_type') or '').lower()
+                if ft and ft not in (card.sub_types or '').lower():
+                    continue
+                peq = pft.get('power_eq')
+                if peq is not None and card.power != peq:
+                    continue
+                value *= 0.4   # a maior parte do valor volta via reanimacao
+                break
 
         return value
 
@@ -5773,6 +5809,15 @@ class DecisionEngine:
         # Respeita once_per_turn: se já usou, não há efeito a preservar neste turno
         if am.get('once_per_turn') and getattr(card, '_am_used_turn', -1) == self.me.turn:
             return 0.0
+        # So existe custo real se a habilidade EXIGE a carta ativa (rest_self).
+        # Sem isso, atacar nao impede usar o Activate:Main no mesmo turno --
+        # achado 09/07 (log 18.39.46): o lider Imu (trash_char_or_hand -> draw,
+        # SEM rest_self) sofria esse desconto como se atacar custasse a
+        # habilidade, quando as duas coisas sao independentes. Descontava
+        # score de ataque do lider ate ficar negativo e o turno terminava com
+        # DON parado e nada mais pra fazer com ele.
+        if not any(c.get('type') == 'rest_self' for c in am.get('costs', [])):
+            return 0.0
         steps = am.get('steps', [])
         actions = [s.get('action') for s in steps]
         if any(x in ('draw', 'look_top_deck', 'add_to_hand') for x in actions):
@@ -5824,17 +5869,27 @@ class DecisionEngine:
 
         return None
 
-    def should_use_counter(self, atk_power: int, def_power: int) -> bool:
+    def should_use_counter(self, atk_power: int, def_power: int,
+                           counter_avail: int | None = None) -> bool:
         """
         Decide se usa counter considerando:
         - Vida atual
         - Quantidade de counters na mão
         - Probabilidade de precisar de counters no próximo ataque
         - DON ativo para ativar eventos
+
+        counter_avail: override do total disponivel — por padrao usa so o
+        stat impresso (self.me.counter_in_hand()), mas quem chama pode
+        passar um total maior incluindo EVENTOS [Counter] elegiveis (ex:
+        select_counter_cards em sim_bridge.py), que counter_in_hand() nao
+        enxerga (so soma Character.counter, nunca avalia bloco [Counter]
+        de Event -- achado real 09/07, bot jogando Imu nunca contava
+        "...Never Existed..." nem pra decidir SE valia counterizar).
         """
         a = self.analyzer
         my_life       = self.me.life_count()
-        counter_avail = self.me.counter_in_hand()
+        if counter_avail is None:
+            counter_avail = self.me.counter_in_hand()
 
         if counter_avail == 0:
             return False
@@ -6604,6 +6659,54 @@ class OPTCGMatch:
                        'ko_if_cost_eq_don', 'debuff_power', 'debuff_cost',
                        'bounce', 'place_opp_character_bottom_deck') for a in actions_list):
             base = 100   # remoção/controle
+        elif any(a == 'play_from_trash' for a in actions_list):
+            # Achado real 09/07 (Five Elders OP13-082 nunca ativava, mesmo
+            # com o board quase morrendo e a lixeira cheia de alvos
+            # reanimaveis): 'play_from_trash' nao estava em NENHUMA
+            # categoria reconhecida acima, entao caia no fallback generico
+            # de 60 -- a mesma pontuacao de um efeito qualquer sem
+            # categoria, mesmo quando reanima ATE 5 personagens de uma vez
+            # (Five Elders). Nao e um problema so dessa carta: e QUALQUER
+            # carta cujo Activate:Main usa essa acao (Kuma tambem tem, em
+            # menor escala). Fix generico: soma o valor real dos alvos
+            # elegiveis na lixeira (respeitando filter_type/distinct_names/
+            # count do proprio step), igual 'play_card' ja faz pra mao.
+            base = 120
+            reanimados_valor = 0.0
+            for step in steps:
+                if step.get('action') != 'play_from_trash':
+                    continue
+                count = step.get('count', 1)
+                ftype = (step.get('filter_type') or '').lower()
+                elegiveis = [c for c in p.trash
+                             if c.card_type == 'CHARACTER'
+                             and (not ftype or ftype in c.sub_types.lower())]
+                if step.get('distinct_names'):
+                    vistos, unicos = set(), []
+                    for c in elegiveis:
+                        if c.name not in vistos:
+                            unicos.append(c)
+                            vistos.add(c.name)
+                    elegiveis = unicos
+                elegiveis.sort(key=lambda c: -(engine.analyzer.char_value_score(c) if engine is not None else c.board_value()))
+                for c in elegiveis[:count]:
+                    reanimados_valor += engine.analyzer.char_value_score(c) if engine is not None else c.board_value()
+            base += min(reanimados_valor * 0.4, 280)
+
+            # Se o custo INCLUI trashar o proprio campo inteiro (Five
+            # Elders: "trash all your Characters"), desconta o que esta
+            # sendo sacrificado -- senao a IA acha que ganhou os
+            # reanimados de graca quando na verdade TROCOU o campo atual
+            # pelo novo. So desconta quando e "trash ALL" (count>=99,
+            # convencao do parser pra "todos") -- custo de sacrificio
+            # pontual (1 personagem) ja e capturado por tem_ko_own abaixo.
+            if any(s.get('action') == 'trash_character' and s.get('count', 0) >= 99
+                   for s in steps):
+                sacrificio = sum(
+                    (engine.analyzer.char_value_score(c) if engine is not None else c.board_value())
+                    for c in p.field_chars if c is not src
+                )
+                base -= min(sacrificio * 0.5, 220)
         else:
             base = 60
 
@@ -6634,14 +6737,6 @@ class OPTCGMatch:
                 base -= 100
 
         if tem_trash_hand:
-            # Estimar qual carta seria trashada e quanto ela vale
-            if p.hand:
-                ee_tmp = EffectExecutor(p, opp)
-                pior = min(p.hand, key=ee_tmp._trash_value)
-                perda = ee_tmp._trash_value(pior)
-                # Se a carta mais "barata" de trashar ainda é cara (jogável), penaliza
-                base -= min(perda * 0.3, 60)
-
             # Comprar descartando da mao nao e vantagem liquida de carta.
             # Ex: leader Imu trasha 1 da mao/campo para comprar 1; isso filtra
             # a mao, mas nao deveria competir como draw puro de score 120 no
@@ -6652,7 +6747,23 @@ class OPTCGMatch:
                               if c.get('type') in ('trash_from_hand',
                                                    'trash_hand',
                                                    'trash_char_or_hand'))
-            if draw_count and draw_count <= trash_count:
+            is_ciclo_neutro = bool(draw_count) and draw_count <= trash_count
+
+            # Estimar qual carta seria trashada e quanto ela vale. Só penaliza
+            # aqui quando NAO for ciclo card-neutro (draw>=trash já cobre o
+            # trade-off via o cap abaixo) -- achado 09/07: penalizar os dois
+            # (perda*0.3 aqui E o cap min(base,45)+early-penalty embaixo)
+            # duplo-conta o mesmo custo "abriu mao de 1 carta da mao" e
+            # derrubava o score do Imu pra negativo mesmo sem nada melhor
+            # pra fazer, encerrando o turno com mao cheia e DON parado.
+            if p.hand and not is_ciclo_neutro:
+                ee_tmp = EffectExecutor(p, opp)
+                pior = min(p.hand, key=ee_tmp._trash_value)
+                perda = ee_tmp._trash_value(pior)
+                # Se a carta mais "barata" de trashar ainda é cara (jogável), penaliza
+                base -= min(perda * 0.3, 60)
+
+            if is_ciclo_neutro:
                 base = min(base, 45)
                 playable = [
                     c for c in p.hand

@@ -1,0 +1,36 @@
+{
+  "cards": [
+    {
+      "code": "OP16-093",
+      "name": "Bartholomew Kuma",
+      "count": 1
+    },
+    {
+      "code": "OP13-083",
+      "name": "St. Jaygarcia Saturn",
+      "count": 1
+    },
+    {
+      "code": "OP13-080",
+      "name": "OP13-080",
+      "count": 1
+    },
+    {
+      "code": "OP13-084",
+      "name": "St. Shepherd Ju Peter",
+      "count": 1
+    },
+    {
+      "code": "OP13-086",
+      "name": "OP13-086",
+      "count": 1
+    },
+    {
+      "code": "OP13-089",
+      "name": "St. Topman Warcury",
+      "count": 1
+    }
+  ],
+  "total_seen": 6,
+  "leader": "OP13-079"
+}

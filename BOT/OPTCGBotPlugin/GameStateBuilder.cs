@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using System.Reflection;
+using HarmonyLib;
 using UnityEngine;
 
 namespace OPTCGBotPlugin
@@ -10,6 +12,13 @@ namespace OPTCGBotPlugin
     //   PlayerState: Lgo_MyHand, Lgo_MyDeploy, Lgo_MyStage, Lgo_MyLifeDeck, Lgo_MyLeader, Lgo_MyDonCostArea
     public static class GameStateBuilder
     {
+        // Mesmo metodo que o jogo usa pra decidir se um clique de ataque e
+        // valido (bCantAttack/bCantRest + travas V3 + CantAttack de card
+        // action) — StartAttack() (chamado pelo bot) NAO valida isso
+        // sozinho, so essa camada de clique que o bot pula via reflection.
+        private static readonly MethodInfo _mCardCantAttack =
+            AccessTools.Method(typeof(GameplayLogicScript), "CardCantAttack");
+
         public static GameStateDto Build(PlayerState botPs, PlayerState oppPs, GameplayLogicScript gls)
         {
             return new GameStateDto
@@ -87,6 +96,9 @@ namespace OPTCGBotPlugin
             if (card.lb_ActionsUsed != null)
                 foreach (bool b in card.lb_ActionsUsed)
                     if (b) { used = true; break; }
+            bool cantAttack = false;
+            try { cantAttack = (bool)_mCardCantAttack.Invoke(gls, new object[] { go }); }
+            catch { /* conservador: assume que pode atacar se a checagem falhar */ }
             return new CardDto
             {
                 code         = card.cardDef != null ? card.cardDef.cardID : "",
@@ -94,6 +106,7 @@ namespace OPTCGBotPlugin
                 power        = power,
                 rested       = card.bTapped,
                 justPlayed   = card.bSummonSick,
+                cantAttack   = cantAttack,
                 deckUniqueId = card.deckUniqueID,
                 donAttached  = cls.lgo_AttachedDon != null ? cls.lgo_AttachedDon.Count : 0,
                 actionUsed   = used,

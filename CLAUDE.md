@@ -117,6 +117,40 @@ ML só se 1-3 baterem teto).
   && uvicorn api:app --reload --port 8000`.
 - Chaves Supabase: `.env.local` tem `service_role` exposta — **rotacionar
   antes de deploy público** (pendência de segurança conhecida, ver TODO.md).
+- **Bot parou de responder / `LogOutput.log` sumiu?** O jogo apaga a pasta
+  `BepInEx` inteira quando atualiza (já aconteceu, 09/07/2026). Feche o
+  jogo e rode `BOT\setup_bepinex.bat` (reinstala BepInEx + recompila/copia
+  o plugin, sem precisar de internet). Ver `BOT/README.md`.
+
+## Banco de logs de partidas reais — OBRIGATÓRIO salvar
+
+Sempre que o usuário mandar um combat log (cola o conteúdo, referencia um
+caminho `.log`, ou pede pra investigar uma partida), **Claude ou Codex —
+quem estiver na sessão — tem que adicionar esse log ao banco antes de
+considerar a tarefa terminada**, seguindo a regra de nomenclatura já
+existente do projeto. Não é opcional e não é "se sobrar tempo": os logs
+somem quando o simulador atualiza/reinstala (já aconteceu, ver HANDOFF
+bloco 109) e são a matéria-prima do roadmap de "banco de logs" (ver
+TODO.md, seção `📊 BANCO DE LOGS`).
+
+**Como fazer** (ferramenta já existe, não reinventar):
+```bash
+cd scriptis_da_ia
+python parse_combat_log.py <caminho_do.log> --add-to-db
+```
+Isso copia/renomeia automaticamente pra `scriptis_da_ia/logs/{raw,parsed,decks}/`
+e atualiza `logs/index.json` com a convenção de nome certa
+(`{LiderSlug-Cores}_x_{LiderSlugOponente-Cores}_{timestamp}.log/json` pros
+combat logs, `{LiderSlug-Cores}_{timestamp}.json` pros decks reconstruídos).
+**Nunca inventar outra pasta/convenção pra guardar log de teste** (erro
+cometido em 09/07: criei `BOT/test_logs/` sem saber que esse banco já
+existia — teve que ser desfeito).
+
+Se o combat log não estiver disponível como arquivo local (usuário colou
+o conteúdo direto na conversa, ou o caminho já não existe mais), salvar o
+conteúdo bruto num arquivo temporário primeiro e então rodar o comando
+acima nele — nunca pular a etapa de adicionar ao banco só porque não veio
+como path pronto.
 
 ## Trabalhando junto com outra IA (Codex ou outra sessão Claude)
 Nenhuma sessão vê o histórico de conversa da outra — só o estado dos

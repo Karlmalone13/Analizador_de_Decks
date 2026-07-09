@@ -463,10 +463,11 @@ namespace OPTCGBotPlugin
                 var defender = BotExecutor.Defender(gls);
                 int atkPower = attacker != null ? BotExecutor.PowerOf(gls, attacker, true) : 0;
                 int defPower = defender != null ? BotExecutor.PowerOf(gls, defender, false) : 0;
+                int defId = defender != null ? BotExecutor.UidOf(defender) : 0;
 
                 var dto = GameStateBuilder.Build(botPs, oppPs, gls);
                 var resp = EngineClient.IsAlive()
-                    ? EngineClient.Defense(dto, "counter", atkPower, defPower)
+                    ? EngineClient.Defense(dto, "counter", atkPower, defPower, null, defId)
                     : null;
 
                 BotExecutor.PlayCounters(gls, botPs,

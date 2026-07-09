@@ -1,0 +1,345 @@
+{
+  "meta": {
+    "players": {
+      "p1": {
+        "name": "You",
+        "leader": {
+          "name": "Imu",
+          "code": "OP13-079"
+        }
+      },
+      "p2": {
+        "name": "Opponent",
+        "leader": {
+          "name": "Marshall D. Teach",
+          "code": "OP16-080"
+        }
+      }
+    },
+    "goes_first": null
+  },
+  "total_turns": 9,
+  "turns": [
+    {
+      "turn": 1,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 1,
+      "actions": [
+        {
+          "type": "activate",
+          "card": "OP13-079",
+          "card_name": "Imu",
+          "effects": [
+            "Trash Five Elders [\"OP13-082\">OP13-082]",
+            "Draw 1 Card"
+          ]
+        }
+      ],
+      "snapshot": {}
+    },
+    {
+      "turn": 2,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP16-110",
+          "card_name": "Vasco Shot",
+          "effects": []
+        }
+      ],
+      "snapshot": {}
+    },
+    {
+      "turn": 3,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP16-093",
+          "card_name": "Bartholomew Kuma",
+          "effects": [
+            "Draw 2 Card",
+            "Trash ...Never Existed... [\"OP13-098\">OP13-098]",
+            "Trash St. Topman Warcury [\"OP13-089\">OP13-089]",
+            "Attach 1 Rested Don to Imu [\"OP13-079\">OP13-079]"
+          ]
+        }
+      ],
+      "snapshot": {}
+    },
+    {
+      "turn": 4,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP16-110",
+          "to_name": "Vasco Shot",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP16-110",
+          "to_name": "Vasco Shot",
+          "total": 2
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP16-110",
+          "to_name": "Vasco Shot",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Vasco Shot",
+          "attacker_code": "OP16-110",
+          "target": "Imu [\"OP13-079\">OP13-079]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP13-083"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP16-080",
+          "to_name": "Marshall D. Teach",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Marshall D. Teach",
+          "attacker_code": "OP16-080",
+          "target": "Imu [\"OP13-079\">OP13-079]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {}
+    },
+    {
+      "turn": 5,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP16-093",
+          "card_name": "Bartholomew Kuma",
+          "effects": [
+            "Draw 2 Card",
+            "Trash St. Ethanbaron V. Nusjuro [\"OP13-080\">OP13-080]",
+            "Trash St. Shepherd Ju Peter [\"OP13-084\">OP13-084]",
+            "Attach 1 Rested Don to Bartholomew Kuma [\"OP16-093\">OP16-093]"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP13-086",
+          "card_name": "St. Shalria",
+          "effects": [
+            "<b>Reveal and Draw St. Marcus Mars [\"OP13-091\">OP13-091]</b>",
+            "Trash 2 Remaining Cards",
+            "Trash ...Never Existed... [\"OP13-098\">OP13-098]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Bartholomew Kuma",
+          "attacker_code": "OP16-093",
+          "target": "Vasco Shot [\"OP16-110\">OP16-110]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {}
+    },
+    {
+      "turn": 6,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP16-108",
+          "card_name": "Shiryu",
+          "effects": [
+            "Trash You're the one who should disappear! [\"OP06-115\">OP06-115]",
+            "Add Shiryu [\"OP16-108\">OP16-108] to top of Life"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Marshall D. Teach",
+          "attacker_code": "OP16-080",
+          "target": "Bartholomew Kuma [\"OP16-093\">OP16-093]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP13-083",
+            "OP13-091"
+          ]
+        }
+      ],
+      "snapshot": {}
+    },
+    {
+      "turn": 7,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "activate",
+          "card": "OP13-099",
+          "card_name": "The Empty Throne",
+          "effects": [
+            "Rest 3 Don",
+            "Rest The Empty Throne [\"OP13-099\">OP13-099]",
+            "Deploy St. Shepherd Ju Peter [\"OP13-084\">OP13-084]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP13-079",
+          "card_name": "Imu",
+          "effects": [
+            "Trash Ground Death [\"OP14-096\">OP14-096]",
+            "Draw 1 Card"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP13-086",
+          "card_name": "St. Shalria",
+          "effects": [
+            "Trash 3 Remaining Cards",
+            "Trash ...Never Existed... [\"OP13-098\">OP13-098]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Imu",
+          "attacker_code": "OP13-079",
+          "target": "Marshall D. Teach [\"OP16-080\">OP16-080]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {}
+    },
+    {
+      "turn": 8,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Marshall D. Teach",
+          "attacker_code": "OP16-080",
+          "target": "Imu [\"OP13-079\">OP13-079]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP09-096",
+          "card_name": "This is MY AGE!!!!",
+          "effects": [
+            "Rest 1 Don",
+            "<b>Reveal and Draw ZEHAHAHAHA [\"OP16-116\">OP16-116]</b>",
+            "Trash 2 Remaining Cards",
+            "Rest 1 Don",
+            "<b>Reveal and Draw Jesus Burgess [\"OP09-086\">OP09-086]</b>",
+            "Trash 2 Remaining Cards"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP09-086",
+          "card_name": "Jesus Burgess",
+          "effects": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Shiryu",
+          "attacker_code": "OP16-108",
+          "target": "Imu [\"OP13-079\">OP13-079]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {}
+    },
+    {
+      "turn": 9,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "St. Shepherd Ju Peter",
+          "attacker_code": "OP13-084",
+          "target": "Marshall D. Teach [\"OP16-080\">OP16-080]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Bartholomew Kuma",
+          "attacker_code": "OP16-093",
+          "target": "Marshall D. Teach [\"OP16-080\">OP16-080]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP09-095"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Imu",
+          "attacker_code": "OP13-079",
+          "target": "Shiryu [\"OP16-108\">OP16-108]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP09-086"
+          ]
+        }
+      ],
+      "snapshot": {}
+    }
+  ]
+}

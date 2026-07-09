@@ -1,0 +1,488 @@
+{
+  "meta": {
+    "players": {
+      "p1": {
+        "name": "You",
+        "leader": {
+          "name": "Imu",
+          "code": "OP13-079"
+        }
+      },
+      "p2": {
+        "name": "Opponent",
+        "leader": {
+          "name": "Marshall D. Teach",
+          "code": "OP16-080"
+        }
+      }
+    },
+    "goes_first": null
+  },
+  "total_turns": 11,
+  "turns": [
+    {
+      "turn": 1,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 1,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP13-086",
+          "card_name": "St. Shalria",
+          "effects": [
+            "<b>Reveal and Draw St. Marcus Mars [\"OP13-091\">OP13-091]</b>",
+            "Trash 2 Remaining Cards",
+            "Trash Ground Death [\"OP14-096\">OP14-096]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP13-079",
+          "card_name": "Imu",
+          "effects": [
+            "Trash Ground Death [\"OP14-096\">OP14-096]",
+            "Draw 1 Card"
+          ]
+        }
+      ],
+      "snapshot": {}
+    },
+    {
+      "turn": 2,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP09-095",
+          "card_name": "Laffitte",
+          "effects": [
+            "Rest 1 Don",
+            "Rest Laffitte [\"OP09-095\">OP09-095]",
+            "<b>Reveal and Draw Shiryu [\"OP16-108\">OP16-108]</b>"
+          ]
+        }
+      ],
+      "snapshot": {}
+    },
+    {
+      "turn": 3,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "activate",
+          "card": "OP13-099",
+          "card_name": "The Empty Throne",
+          "effects": [
+            "Rest 3 Don",
+            "Rest The Empty Throne [\"OP13-099\">OP13-099]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Imu",
+          "attacker_code": "OP13-079",
+          "target": "Laffitte [\"OP09-095\">OP09-095]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {}
+    },
+    {
+      "turn": 4,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "activate",
+          "card": "OP09-096",
+          "card_name": "This is MY AGE!!!!",
+          "effects": [
+            "Rest 1 Don",
+            "<b>Reveal and Draw Jesus Burgess [\"OP09-086\">OP09-086]</b>",
+            "Trash 2 Remaining Cards",
+            "Rest 1 Don",
+            "<b>Reveal and Draw Doc Q [\"OP16-109\">OP16-109]</b>",
+            "Trash 2 Remaining Cards"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP16-109",
+          "card_name": "Doc Q",
+          "effects": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP16-080",
+          "to_name": "Marshall D. Teach",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Marshall D. Teach",
+          "attacker_code": "OP16-080",
+          "target": "Imu [\"OP13-079\">OP13-079]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {}
+    },
+    {
+      "turn": 5,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP13-083",
+          "card_name": "St. Jaygarcia Saturn",
+          "effects": [
+            "<b>Reveal and Draw St. Topman Warcury [\"OP13-089\">OP13-089]</b>"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP13-086",
+          "card_name": "St. Shalria",
+          "effects": [
+            "<b>Reveal and Draw St. Shepherd Ju Peter [\"OP13-084\">OP13-084]</b>",
+            "Trash 2 Remaining Cards",
+            "Trash The Holy Land Mary Geoise [\"OP05-097\">OP05-097]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP13-079",
+          "card_name": "Imu",
+          "effects": [
+            "Trash St. Ethanbaron V. Nusjuro [\"OP13-080\">OP13-080]",
+            "Draw 1 Card"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Imu",
+          "attacker_code": "OP13-079",
+          "target": "Marshall D. Teach [\"OP16-080\">OP16-080]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {}
+    },
+    {
+      "turn": 6,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP16-108",
+          "card_name": "Shiryu",
+          "effects": [
+            "Trash Fullalead [\"OP09-099\">OP09-099]",
+            "Add Shiryu [\"OP16-108\">OP16-108] to top of Life"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Marshall D. Teach",
+          "attacker_code": "OP16-080",
+          "target": "Imu [\"OP13-079\">OP13-079]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP16-093"
+          ]
+        }
+      ],
+      "snapshot": {}
+    },
+    {
+      "turn": 7,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP13-091",
+          "card_name": "St. Marcus Mars",
+          "effects": []
+        },
+        {
+          "type": "activate",
+          "card": "OP13-096",
+          "card_name": "The Five Elders... Are At Your Service",
+          "effects": [
+            "Rest 1 Don",
+            "<b>Reveal and Draw St. Ethanbaron V. Nusjuro [\"OP13-080\">OP13-080]</b>",
+            "Trash 2 Remaining Cards"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP13-079",
+          "card_name": "Imu",
+          "effects": [
+            "Trash St. Ethanbaron V. Nusjuro [\"OP13-080\">OP13-080]",
+            "Draw 1 Card"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Imu",
+          "attacker_code": "OP13-079",
+          "target": "Marshall D. Teach [\"OP16-080\">OP16-080]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {}
+    },
+    {
+      "turn": 8,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP09-086",
+          "card_name": "Jesus Burgess",
+          "effects": []
+        },
+        {
+          "type": "play",
+          "card": "OP16-110",
+          "card_name": "Vasco Shot",
+          "effects": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Shiryu",
+          "attacker_code": "OP16-108",
+          "target": "Imu [\"OP13-079\">OP13-079]",
+          "result": null,
+          "damage": null,
+          "blocked_by": "OP13-091",
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP16-080",
+          "to_name": "Marshall D. Teach",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP16-080",
+          "to_name": "Marshall D. Teach",
+          "total": 2
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP16-080",
+          "to_name": "Marshall D. Teach",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Marshall D. Teach",
+          "attacker_code": "OP16-080",
+          "target": "Imu [\"OP13-079\">OP13-079]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {}
+    },
+    {
+      "turn": 9,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "St. Jaygarcia Saturn",
+          "attacker_code": "OP13-083",
+          "target": "Shiryu [\"OP16-108\">OP16-108]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP16-104"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Imu",
+          "attacker_code": "OP13-079",
+          "target": "Shiryu [\"OP16-108\">OP16-108]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP16-104"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP13-086",
+          "card_name": "St. Shalria",
+          "effects": [
+            "<b>Reveal and Draw St. Topman Warcury [\"OP13-089\">OP13-089]</b>",
+            "Trash 2 Remaining Cards",
+            "Trash Ground Death [\"OP14-096\">OP14-096]"
+          ]
+        }
+      ],
+      "snapshot": {}
+    },
+    {
+      "turn": 10,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "activate",
+          "card": "OP16-116",
+          "card_name": "ZEHAHAHAHA",
+          "effects": [
+            "Rest 8 Don",
+            "Deploy Marshall D. Teach [\"OP09-093\">OP09-093]",
+            "Send 1 Life to Hand"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP09-093",
+          "card_name": "Marshall D. Teach",
+          "effects": [
+            "Nullify effects of Imu [\"OP13-079\">OP13-079]",
+            "St. Jaygarcia Saturn [\"OP13-083\">OP13-083] can't attack next turn",
+            "Nullify effects of St. Jaygarcia Saturn [\"OP13-083\">OP13-083] until next turn end!"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Shiryu",
+          "attacker_code": "OP16-108",
+          "target": "Imu [\"OP13-079\">OP13-079]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP13-083",
+            "OP13-089",
+            "OP13-089",
+            "OP13-084"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Jesus Burgess",
+          "attacker_code": "OP09-086",
+          "target": "Imu [\"OP13-079\">OP13-079]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP13-084",
+            "OP13-084"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP16-080",
+          "to_name": "Marshall D. Teach",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP16-080",
+          "to_name": "Marshall D. Teach",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Marshall D. Teach",
+          "attacker_code": "OP16-080",
+          "target": "Imu [\"OP13-079\">OP13-079]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {}
+    },
+    {
+      "turn": 11,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP13-089",
+          "card_name": "St. Topman Warcury",
+          "effects": []
+        },
+        {
+          "type": "play",
+          "card": "OP16-093",
+          "card_name": "Bartholomew Kuma",
+          "effects": [
+            "Draw 2 Card",
+            "Trash Five Elders [\"OP13-082\">OP13-082]",
+            "Trash The Five Elders... Are At Your Service [\"OP13-096\">OP13-096]",
+            "Attach 1 Rested Don to St. Jaygarcia Saturn [\"OP13-083\">OP13-083]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Imu",
+          "attacker_code": "OP13-079",
+          "target": "Shiryu [\"OP16-108\">OP16-108]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP12-112"
+          ]
+        }
+      ],
+      "snapshot": {}
+    }
+  ]
+}
