@@ -1,5 +1,74 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-10 (117) - Claude
+
+### Primeira partida real do bot jogando Teach: 3 achados, o principal explica a "baixa agressividade"
+
+Log `2026-07-10T13.35.57.log` — primeira vez que o bot jogou Teach-BY contra o
+usuário jogando Imu-B (papéis invertidos da sessão anterior). Usuário reportou
+3 observações; usuário venceu sem sofrer dano.
+
+**1) Baby 5 / Teach-10 turno 6-7 — não era bug.** Conferido: DON disponível
+(~4) tornava o Teach-10 (custo 10) literalmente impagável ali; Baby 5 (custo
+4) era a única jogada real. O setup anterior (Marshall D. Teach `OP16-119`
+colocando Baby 5 no topo da vida, buscando o gatilho "líder multicolor: compre
+2") foi jogada correta do bot — só não disparou por variância (vida não foi
+revelada em ataque depois).
+
+**2) Trashar Shiryu no redirect do líder — escolha correta, mas achei bug
+separado.** `_trash_value` já protegia Black Vortex mais que Shiryu (231 vs
+130) entre as opções válidas. Mas nem o parser nem o engine aplicavam o
+filtro "**com** [Trigger]" do custo do líder Teach ("trash 1 card with a
+[Trigger] from your hand") — tratavam como "trash qualquer carta da mão".
+Achado em mais 8 cartas com o mesmo padrão de texto (`OP03-105`, `OP03-115`,
+`OP04-105`, `OP08-106`, `OP09-062`, `OP16-117`, `PRB02-017`, `ST29-014`).
+Fix em 3 pontos: parser (`gerar_effects_db.py`, tag `has_trigger` no custo),
+`_pay_costs` (filtra a mão por `has_trigger` antes de escolher o que
+trashar), `resolve_reaction` em `sim_bridge.py` (estimava custo/guard de mão
+pequena olhando a mão INTEIRA, não só as cartas elegíveis).
+
+**3) Baixa agressividade (0 dano causado o jogo inteiro) — achado principal,
+NÃO era desbalanceamento de peso.** Testei o cenário exato do jogo (ataque
+5000 vs 5000 empatado): matar St. Marcus Mars pontuava 180 vs atacar o líder
+Imu pontuando só 100. Rastreando a origem do 180, achei a causa raiz: `Card.
+has_blocker` (e o mesmo padrão em `has_rush`/`has_double_attack`/`has_banish`/
+`has_unblockable`) ficava permanentemente `True` pra qualquer carta cujo
+texto contivesse "gains [Blocker]" em QUALQUER LUGAR do texto — inclusive
+dentro de uma condição nunca satisfeita. Marcus Mars ("**se** você tem 7+
+cartas na lixeira, ... ganha [Blocker]") contava como blocker desde o turno 1
+com a lixeira vazia, inflando `score_attack_target` (+60 de bônus
+"tem_blocker") pro jogo inteiro, não só quando a condição batia de verdade.
+
+Fix: nova heurística `_leading_keyword()` em `decision_engine.py` —
+`parse_card_effects_basic` só marca a keyword como incondicional se ela
+aparece entre os tags NO INÍCIO do texto (convenção do jogo: keywords
+incondicionais sempre vêm coladas no começo, ex: "[Blocker] (After your
+opponent declares...)"). Validado contra 9-11 cartas condicionais conhecidas
+(`OP02-050`, `OP11-046`, `OP11-058`, `OP12-063`, `OP15-013`, `OP15-119`,
+`OP16-005`, `PRB02-014`, `ST23-001`, `OP13-091`, `OP06-010` — todas
+corretamente NÃO detectadas como incondicionais) e uma amostra de blockers
+de verdade (todas corretamente detectadas). **Cuidado**: NÃO aplicar essa
+heurística a `has_trigger` — `[Trigger]` segue convenção OPOSTA (sempre no
+FINAL do texto); confirmado numericamente antes de aplicar (só 42/475 cartas
+com `[Trigger]` teriam o tag "no início" — quase todas quebrariam).
+
+Com o fix isolado, o mesmo cenário de teste virou 75×100 (líder vence sozinho)
+— **não foi necessário tocar no peso de `score_attack_target`**. Recomendado
+testar de novo só com esse fix antes de considerar qualquer ajuste de peso,
+pra isolar causa e efeito.
+
+Validado com `smoke_test.py` 100% e `smoke_test_broad.py` 40/40 sem exceção
+após CADA fix (isolado), mais um teste de integração direto reproduzindo o
+cenário exato do jogo (antes/depois do fix).
+
+### Operacional
+Python (`decision_engine.py`, `sim_bridge.py`) + parser (`gerar_effects_db.py`,
+`card_effects_db.json`, `parser_snapshot.json` via `gerar_dbs.py` +
+`snapshot_parser.py`). Log salvo no banco:
+`Marshall.D.Teach-BY_x_Imu-B_2026-07-10T13.35.57`.
+
+---
+
 ## 2026-07-10 (116) - Claude
 
 ### Prep pro teste do bot jogando Teach: parser de OP09-093 + implementação completa de `negate_effect`

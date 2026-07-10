@@ -10415,6 +10415,7 @@
    "costs": [
     {
      "count": 1,
+     "has_trigger": true,
      "type": "trash_from_hand"
     }
    ],
@@ -10584,6 +10585,7 @@
    "costs": [
     {
      "count": 1,
+     "has_trigger": true,
      "type": "trash_from_hand"
     }
    ],
@@ -12783,6 +12785,7 @@
    "costs": [
     {
      "count": 1,
+     "has_trigger": true,
      "type": "trash_from_hand"
     }
    ],
@@ -21285,6 +21288,7 @@
    "costs": [
     {
      "count": 1,
+     "has_trigger": true,
      "type": "trash_from_hand"
     }
    ],
@@ -22682,6 +22686,7 @@
    "costs": [
     {
      "count": 1,
+     "has_trigger": true,
      "type": "trash_from_hand"
     }
    ],
@@ -38012,6 +38017,7 @@
    "costs": [
     {
      "count": 1,
+     "has_trigger": true,
      "type": "trash_from_hand"
     }
    ],
@@ -38791,6 +38797,7 @@
    "costs": [
     {
      "count": 1,
+     "has_trigger": true,
      "type": "trash_from_hand"
     }
    ],
@@ -40354,6 +40361,7 @@
    "costs": [
     {
      "count": 1,
+     "has_trigger": true,
      "type": "trash_from_hand"
     }
    ],
@@ -45804,6 +45812,7 @@
    "costs": [
     {
      "count": 1,
+     "has_trigger": true,
      "type": "trash_from_hand"
     }
    ],

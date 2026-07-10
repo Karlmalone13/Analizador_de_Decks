@@ -993,5 +993,30 @@
       "You": "decks/Imu-B_2026-07-09T19.25.50.json",
       "Opponent": "decks/Marshall.D.Teach-BY_2026-07-09T19.25.50.json"
     }
+  },
+  {
+    "id": "2026-07-10T13.35.57",
+    "friendly_name": "Marshall.D.Teach-BY_x_Imu-B",
+    "date": "2026-07-10",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP16-080",
+      "leader_name": "Marshall D. Teach",
+      "slug": "Marshall.D.Teach-BY"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP13-079",
+      "leader_name": "Imu",
+      "slug": "Imu-B"
+    },
+    "turns": 11,
+    "winner": null,
+    "log_file": "raw/Marshall.D.Teach-BY_x_Imu-B_2026-07-10T13.35.57.log",
+    "parsed_file": "parsed/Marshall.D.Teach-BY_x_Imu-B_2026-07-10T13.35.57.json",
+    "deck_files": {
+      "You": "decks/Marshall.D.Teach-BY_2026-07-10T13.35.57.json",
+      "Opponent": "decks/Imu-B_2026-07-10T13.35.57.json"
+    }
   }
 ]

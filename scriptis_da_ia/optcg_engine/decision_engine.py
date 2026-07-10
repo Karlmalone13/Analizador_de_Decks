@@ -2429,13 +2429,20 @@ class EffectExecutor:
                 self._cost_logs.append(f'custo: restou {count} DON')
             elif ctype == 'trash_from_hand':
                 count = cost.get('count', 1)
-                if len(self.me.hand) < count:
+                # "trash N card(s) with a [Trigger] from your hand" (leader
+                # Teach OP16-080 e outras 8 cartas): custo so pode ser pago
+                # com carta que TEM [Trigger] -- sem esse filtro o engine
+                # considerava a mao inteira como elegivel.
+                pool = ([c for c in self.me.hand if c.has_trigger]
+                        if cost.get('has_trigger') else self.me.hand)
+                if len(pool) < count:
                     return False
                 trashed = []
                 for _ in range(count):
-                    worst = self._choose_to_trash(self.me.hand)
+                    worst = self._choose_to_trash(pool)
                     if worst:
                         remove_by_identity(self.me.hand, worst)
+                        remove_by_identity(pool, worst)
                         self.me.trash.append(worst)
                         trashed.append(worst.name[:15])
                 if trashed:
@@ -4727,6 +4734,25 @@ class EffectExecutor:
 # Carregamento de dados
 # ===========================================================================
 
+def _leading_keyword(t: str, kw: str) -> bool:
+    """
+    True so se `kw` aparece entre os keyword tags no INICIO do texto (ex:
+    "[Blocker] (After your opponent...)", "[Rush][Blocker] [On Play]...").
+    Convencao do jogo: keywords INCONDICIONAIS sempre vem colados no
+    comeco, um colchete atras do outro. Distingue de "gains [Blocker]"/
+    "this Character gains [Rush]" embutido no MEIO de uma frase condicional
+    ("If you have 7+ cards in your trash, ... gains [Blocker]") -- achado
+    real 10/07 (St. Marcus Mars OP13-091 sempre contava como blocker na
+    pontuacao de ataque, mesmo com a lixeira vazia no turno 1, porque
+    `'[blocker]' in t` acha a substring em QUALQUER lugar do texto,
+    inclusive dentro da condicao). NAO aplicar a has_trigger: [Trigger]
+    e convenção OPOSTA (sempre no FINAL do texto, apos as outras
+    habilidades) -- confirmado numericamente (so 42/475 cartas com
+    [Trigger] teriam o tag "no inicio").
+    """
+    return bool(re.match(r'^(?:\[[^\]]+\]\s*)*\[' + re.escape(kw) + r'\]', t.strip()))
+
+
 def parse_card_effects_basic(text: str, counter_amount: str) -> dict:
     """Parser básico de keywords para cartas sem entrada no banco."""
     t = (text or '').lower()
@@ -4738,12 +4764,12 @@ def parse_card_effects_basic(text: str, counter_amount: str) -> dict:
     except:
         pass
     return {
-        'has_rush':          '[rush]' in t,
-        'has_blocker':       '[blocker]' in t,
-        'has_double_attack': '[double attack]' in t,
-        'has_banish':        '[banish]' in t,
+        'has_rush':          _leading_keyword(t, 'rush'),
+        'has_blocker':       _leading_keyword(t, 'blocker'),
+        'has_double_attack': _leading_keyword(t, 'double attack'),
+        'has_banish':        _leading_keyword(t, 'banish'),
         'has_trigger':       '[trigger]' in t,
-        'has_unblockable':   '[unblockable]' in t,
+        'has_unblockable':   _leading_keyword(t, 'unblockable'),
         'counter':           c_val,
     }
 

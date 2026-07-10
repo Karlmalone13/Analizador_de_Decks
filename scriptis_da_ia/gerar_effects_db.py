@@ -383,7 +383,16 @@ def parse_costs(text):
         else:
             m = re.search(r'you may trash (\d+)[^:]*?(?:from your hand|character|card)[^:]*:', t)
             if m:
-                costs.append({'type': 'trash_from_hand', 'count': int(m.group(1))})
+                cost_th = {'type': 'trash_from_hand', 'count': int(m.group(1))}
+                # "trash N card(s) with a [Trigger] from your hand" (ex: leader
+                # Teach OP16-080, 9 cartas no total) -- so pode trashar carta
+                # que TEM [Trigger], nao qualquer carta da mao. Sem isso o
+                # engine oferecia/escolhia entre a mao inteira, podendo achar
+                # "melhor" trashar uma carta sem Trigger que nem seria opcao
+                # valida no jogo real.
+                if re.search(r'trash \d+ cards? with a \[trigger\]', m.group(0)):
+                    cost_th['has_trigger'] = True
+                costs.append(cost_th)
             else:
                 # padrão mais simples sem "you may" (custo obrigatório com ':')
                 m = re.search(r'\btrash (\d+) cards? from your hand\s*:', t)

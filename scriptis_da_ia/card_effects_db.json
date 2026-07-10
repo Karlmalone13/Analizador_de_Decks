@@ -16994,7 +16994,8 @@
         "costs": [
           {
             "type": "trash_from_hand",
-            "count": 1
+            "count": 1,
+            "has_trigger": true
           }
         ],
         "don_requirement": 1
@@ -17273,7 +17274,8 @@
         "costs": [
           {
             "type": "trash_from_hand",
-            "count": 1
+            "count": 1,
+            "has_trigger": true
           }
         ]
       }
@@ -20714,7 +20716,8 @@
         "costs": [
           {
             "type": "trash_from_hand",
-            "count": 1
+            "count": 1,
+            "has_trigger": true
           }
         ],
         "once_per_turn": true
@@ -34445,7 +34448,8 @@
         "costs": [
           {
             "type": "trash_from_hand",
-            "count": 1
+            "count": 1,
+            "has_trigger": true
           }
         ]
       },
@@ -36617,7 +36621,8 @@
         "costs": [
           {
             "type": "trash_from_hand",
-            "count": 1
+            "count": 1,
+            "has_trigger": true
           }
         ]
       },
@@ -61337,7 +61342,8 @@
         "costs": [
           {
             "type": "trash_from_hand",
-            "count": 1
+            "count": 1,
+            "has_trigger": true
           }
         ],
         "once_per_turn": true
@@ -62534,7 +62540,8 @@
         "costs": [
           {
             "type": "trash_from_hand",
-            "count": 1
+            "count": 1,
+            "has_trigger": true
           }
         ]
       }
@@ -65199,7 +65206,8 @@
         "costs": [
           {
             "type": "trash_from_hand",
-            "count": 1
+            "count": 1,
+            "has_trigger": true
           }
         ],
         "once_per_turn": true
@@ -74315,7 +74323,8 @@
         "costs": [
           {
             "type": "trash_from_hand",
-            "count": 1
+            "count": 1,
+            "has_trigger": true
           }
         ],
         "once_per_turn": true
