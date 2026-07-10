@@ -1,5 +1,48 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-09 (115) - Claude
+
+### Comparação humano-vs-bot jogando Imu revela por que o bot quase nunca monta o combo Stage→Five Elders→reanimação
+
+Usuário pediu pra comparar TODOS os logs em que ele jogou de Imu (2 no banco,
+`Nami-BY_x_Imu-B_2026-07-01` e `Imu-B_x_Monkey.D.Luffy-BP_2026-07-01`, ~17
+turnos cada) contra os 7 logs desta sessão do bot jogando Imu. Matchups
+diferentes (Teach vs Nami/Luffy), mas dá pra comparar tendência estrutural.
+
+**Diferença gritante**: o usuário NUNCA trashou Five Elders (`OP13-082`,
+custo 10, a carta-motor do combo "reanima até 5 personagens do trash") em
+nenhuma das 2 partidas — o bot trashou em 4 das 7 (3 delas era a ÚNICA cópia
+na mão, não uma duplicata descartável). O usuário jogou Five Elders de graça
+via Empty Throne 3-4x POR PARTIDA (quase todo turno, montando um exército
+reanimado); o bot só em 2 de 7 partidas, e a reanimação em si só disparou
+UMA vez em todas as 7.
+
+**Causa raiz**: `order_target_candidates` (`sim_bridge.py`) resolve qualquer
+prompt AO VIVO de "selecione 1 carta pra descartar" (a tela real do jogo,
+tipo a do print que o usuário mandou). A zona `own_hand` usava
+`engine.avaliar_carta(card)` (heurística fraca — acha caro/injogável AGORA
+= ruim) — EXCETO no caso especial de redirect do líder Teach (achado
+07/07), que já usava `EffectExecutor._trash_value(card)` (heurística rica,
+protege carta de custo≥7 mesmo sem DON pra jogar agora). O caso GERAL
+(custo do próprio líder Imu, "trash 1 da mão" da Saint Shalria, etc) ainda
+caía na versão fraca. `avaliar_carta(Five Elders)=45` vs
+`avaliar_carta(Saturn)=115` — o motor escolhia sacrificar a peça mais
+valiosa do deck pra comprar 1 carta genérica, logo no turno 1.
+
+**Fix**: zona `own_hand` agora usa `_trash_value` SEMPRE, não só no caso do
+redirect — mesma régua pra qualquer prompt de descarte. Testado
+reproduzindo a mão exata de um log real (Five Elders + 2x Ju Peter + Saturn
++ Never Existed): antes do fix a ordem colocava Five Elders primeiro
+(descarte); depois, Saturn vai primeiro e Five Elders fica protegido —
+igual ao que o usuário sempre fez. `smoke_test.py` 100%,
+`smoke_test_broad.py` 40/40 sem exceção.
+
+### Operacional
+Só Python (`sim_bridge.py`). Nenhum log novo salvo neste bloco (comparação
+usou logs já existentes no banco).
+
+---
+
 ## 2026-07-09 (114) - Claude
 
 ### Achado de "dois motores" real (não só suspeita) + gate mecânico novo pra pegar isso automaticamente

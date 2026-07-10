@@ -885,15 +885,19 @@ def order_target_candidates(gs: GameState, opp_gs: GameState,
         if zone == 'top_deck':
             return (0, -(engine_busca.avaliar_carta(card) if card else 0))
         if zone == 'own_hand':
-            if attacker_power > 0 and actor_is_redirect:
-                # custo do redirect do lider (Teach): mesma régua de
-                # _score_activate_main, protege carta jogavel agora / ameaça
-                # cara em vez do avaliar_carta puro (achado 07/07 — trashava
-                # personagens bons so porque avaliar_carta nao tem esses
-                # bonus de "vou precisar disso nos proximos turnos")
-                ee_tmp = EffectExecutor(gs, opp_gs)
-                return (1, ee_tmp._trash_value(card) if card else 0)
-            return (1, engine.avaliar_carta(card) if card else 0)
+            # SEMPRE _trash_value (protege carta cara/jogavel em breve,
+            # sacrificio real vs teorico), nunca avaliar_carta puro. Achado
+            # 07/07 corrigiu isso so pro caso de redirect do lider Teach --
+            # deixou o caso GERAL (ex: custo "trash 1 da mao" do lider Imu)
+            # ainda usando avaliar_carta, que nao tem a protecao de carta
+            # cara (cost>=7). Achado real 09/07, comparando logs do usuario
+            # jogando Imu vs o bot jogando Imu: o bot trashava Five Elders
+            # (custo 10, a carta MAIS importante do deck) no turno 1 do
+            # proprio custo do lider, porque avaliar_carta(Five Elders)=45
+            # < avaliar_carta(qualquer carta barata) -- o usuario NUNCA
+            # trashava Five Elders pelo lider em nenhuma partida real.
+            ee_tmp = EffectExecutor(gs, opp_gs)
+            return (1, ee_tmp._trash_value(card) if card else 0)
         if zone == 'own_trash':
             return (2, -(engine.avaliar_carta(card) if card else 0))
         if zone == 'own_board':
