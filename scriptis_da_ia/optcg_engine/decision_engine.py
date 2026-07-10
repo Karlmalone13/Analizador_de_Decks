@@ -1339,6 +1339,16 @@ class EffectExecutor:
         if steps_all and not any(self._step_is_viable(s, card) for s in steps_all):
             return []
 
+        # Custo opcional ("you may pagar X: Y") vale a pena? So aplica em
+        # on_play/main -- gatilhos que resolvem automaticamente ao jogar a
+        # carta, sem uma etapa de scoring PRÉVIA que já tenha decidido se
+        # vale ativar (diferente de activate_main, já filtrado por
+        # _score_activate_main antes de chegar aqui). Mesma pergunta feita
+        # ao vivo via resolve_optional_effect em sim_bridge.py.
+        if trigger in ('on_play', 'main') and not self._worth_paying_optional_costs(
+                ef_data.get('costs', []), card):
+            return []
+
         # Paga custos
         if not self._pay_costs(ef_data.get('costs', []), card):
             return []
@@ -2430,9 +2440,17 @@ class EffectExecutor:
                         return False
                     # Chars ATIVOS (podem atacar este turno) nunca são descartados
                     # enquanto há carta na mão disponível. O jogador correto ataca
-                    # primeiro e só trasha o char depois (ou usa mão).
+                    # primeiro e só trasha o char depois (ou usa mão). MAS só
+                    # protege quem tem poder > 0 -- um char de 0 poder (ex: Saint
+                    # Shalria, cujo valor inteiro já foi gasto no On Play e nunca
+                    # conecta um ataque) não ganha nada de ficar "ativo", e a
+                    # guarda achava real 09/07 (log 19.25.50, usuário: "Imu pode
+                    # dar alvo em Shalria") que a guarda protegia ele do mesmo
+                    # jeito que um atacante de verdade, forçando trash de carta
+                    # da mão sem necessidade.
                     if pior_mao is not None and pior_char is not None:
-                        if (not pior_char.rested and not pior_char.just_played
+                        if (pior_char.power > 0 and not pior_char.rested
+                                and not pior_char.just_played
                                 and not getattr(pior_char, 'cannot_attack_until', False)):
                             # char ativo: forçar trash da mão
                             remove_by_identity(self.me.hand, pior_mao)
@@ -4611,6 +4629,34 @@ class EffectExecutor:
         if not hand:
             return None
         return min(hand, key=self._trash_value)
+
+    _SACRIFICE_COST_TYPES = {'trash_from_hand', 'trash_hand', 'trash_char_or_hand',
+                             'ko_own_character', 'trash_self', 'trash_own_life'}
+
+    def _worth_paying_optional_costs(self, costs: list, card: Card) -> bool:
+        """
+        Em OPTCG, um bloco de efeito com custo é sempre "you may pagar X: Y"
+        -- decide se vale a pena. ÚNICA fonte de verdade pra essa pergunta,
+        usada tanto por `execute()` (simulador interno) quanto por
+        `resolve_optional_effect()` em sim_bridge.py (caminho ao vivo).
+        Achado real 09/07: existiam DUAS heurísticas diferentes pra essa
+        MESMA decisão -- o simulador interno pagava sempre que havia alvo
+        (sem julgar se compensava), e o caminho ao vivo tinha sua própria
+        régua isolada, sem nem saber qual carta/efeito estava perguntando.
+        Isso e exatamente o que a regra "sem dois motores" existe pra
+        evitar (ver memory/feedback_dois_motores.md) -- consolidado aqui.
+        Custos de RECURSO (rest_self/rest_don/don_minus) não entram nessa
+        conta -- já são filtrados por pagabilidade antes de chegar aqui;
+        só custos de SACRIFÍCIO (mão/campo/vida) exigem julgamento de valor.
+        """
+        if not any(c.get('type') in self._SACRIFICE_COST_TYPES for c in costs):
+            return True
+        if len(self.me.hand) < 2:
+            return False
+        worst = self._choose_to_trash(self.me.hand)
+        if worst is None:
+            return False
+        return self._trash_value(worst) <= 60
 
 
 # ===========================================================================

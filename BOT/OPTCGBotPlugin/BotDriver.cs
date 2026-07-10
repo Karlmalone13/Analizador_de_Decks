@@ -311,8 +311,14 @@ namespace OPTCGBotPlugin
             int defP = duringAttack && defender != null ? BotExecutor.PowerOf(gls, defender, false) : 0;
             int defId = duringAttack && defender != null ? BotExecutor.UidOf(defender) : 0;
             var dto = GameStateBuilder.Build(botPs, oppPs, gls);
+            // Codigo da carta cujo custo opcional esta sendo oferecido (ex:
+            // Marcus Mars "you may trash 1 card: K.O. ..."). Sem isso o
+            // engine nao tem como checar se o beneficio tem alvo antes de
+            // aceitar pagar o custo (achado 09/07, log 19.25.50: bot
+            // trashou carta da mao pro Mars sem nenhum alvo elegivel pro K.O.).
+            string? actorCode = BotExecutor.ActorCode(gls);
             var resp = EngineClient.IsAlive()
-                ? EngineClient.Defense(dto, duringAttack ? "reaction" : "optional", atkP, defP, null, defId)
+                ? EngineClient.Defense(dto, duringAttack ? "reaction" : "optional", atkP, defP, actorCode, defId)
                 : null;
             return resp?.useReaction ?? false;
         }

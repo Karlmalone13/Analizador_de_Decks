@@ -605,20 +605,53 @@ def resolve_reaction(gs: GameState, opp_gs: GameState,
                  salva=round(salva, 1), ganho=round(ganho, 1))
 
 
-def resolve_optional_effect(gs: GameState, opp_gs: GameState) -> bool:
+def resolve_optional_effect(gs: GameState, opp_gs: GameState,
+                            actor_code: str | None = None) -> bool:
     """
     Efeito opcional com custo no PROPRIO turno (downside pos-play, ex:
-    "you may trash 1 card: ..."). Usa se a mao tem carta dispensavel:
-    mais de 1 carta e a pior delas tem valor situacional baixo.
+    "you may trash 1 card: ..."). SEM heuristica propria -- delega pra
+    `EffectExecutor._step_is_viable` + `_worth_paying_optional_costs`,
+    exatamente o que `execute()` usa no simulador interno pra essa MESMA
+    decisao. Achado real 09/07 (log 19.25.50): existiam DUAS reguas
+    diferentes pra "vale pagar esse custo opcional" -- o caminho ao vivo
+    nem sabia qual carta/efeito estava perguntando (aceitava sem checar
+    se o beneficio tinha alvo, ex: Marcus Mars "K.O. cost<=5" sem nenhum
+    personagem elegivel no campo do oponente) e ainda usava um corte de
+    valor proprio, divergente do simulador. Violava a regra "sem dois
+    motores" (memory/feedback_dois_motores.md) -- consolidado aqui.
+
+    actor_code: codigo da carta oferecendo o custo. Sem ele (contexto
+    desconhecido), decide so pelo tamanho/qualidade da mao (fallback
+    conservador — mesma regua de sacrificio, sem checar alvo do beneficio
+    porque nao sabemos qual efeito e).
     """
-    if len(gs.hand) < 2:
-        return False
-    engine = DecisionEngine(gs, opp_gs)
-    worst = engine.choose_to_trash(gs.hand)
-    if worst is None:
-        return False
-    # Carta de valor baixo na mao -> o custo e barato, efeito compensa
-    return engine.avaliar_carta(worst) <= 60
+    from optcg_engine.decision_engine import get_card_effects, EffectExecutor
+    ee = EffectExecutor(gs, opp_gs)
+
+    if not actor_code:
+        return ee._worth_paying_optional_costs(
+            [{'type': 'trash_from_hand'}], card=None)
+
+    card_obj = next((c for c in gs.hand + gs.field_chars
+                     if c.code == actor_code), None)
+    if card_obj is None:
+        return ee._worth_paying_optional_costs(
+            [{'type': 'trash_from_hand'}], card=None)
+
+    effects = get_card_effects(actor_code)
+    for trig in ('on_play', 'main'):
+        ef = effects.get(trig)
+        if not ef:
+            continue
+        custos = ef.get('costs', [])
+        if not any(c.get('type') in EffectExecutor._SACRIFICE_COST_TYPES for c in custos):
+            continue
+        steps = ef.get('steps', [])
+        if steps and not any(ee._step_is_viable(s, card_obj) for s in steps):
+            return False
+        return ee._worth_paying_optional_costs(custos, card_obj)
+
+    return False
 
 
 def order_target_candidates(gs: GameState, opp_gs: GameState,

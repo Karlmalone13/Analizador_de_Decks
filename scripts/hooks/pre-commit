@@ -1,8 +1,14 @@
 #!/bin/sh
-# Imprime as regras de memoria do projeto em TODO commit.
-# Para sessoes de IA (Claude/Codex), o texto aparece no resultado do proprio
-# comando `git commit` — ou seja, a IA le as regras no exato momento do commit.
-# Nao bloqueia; e um lembrete forcado, nao um gate.
+# Imprime as regras de memoria do projeto em TODO commit (lembrete, nao
+# bloqueia sozinho) E bloqueia de verdade se o diff staged de sim_bridge.py
+# ou server.py cheira a uma SEGUNDA decisao reimplementada fora do engine
+# ("dois motores" — achado real 09/07/2026: resolve_optional_effect em
+# sim_bridge.py tinha sua propria regua de "vale pagar esse custo?" em vez
+# de delegar pro EffectExecutor, e so foi pego porque o usuario notou ao
+# vivo, nao porque o lembrete impresso aqui bastou).
+#
+# Para sessoes de IA (Claude/Codex), o texto aparece no resultado do
+# proprio comando `git commit`.
 
 MEMORY_DIR="$HOME/.claude/projects/C--Projetos-TI-analidador-de-decks-optcg/memory"
 
@@ -24,5 +30,69 @@ echo "   -> front-end. Nao otimizar o bot alem disso."
 echo "3. HANDOFF.md: escreva um bloco novo antes do push (hook pre-push)."
 echo "=============================================================="
 echo ""
+
+# ── Gate mecanico: "dois motores" ────────────────────────────────────────
+# Pontos de entrada conhecidos do engine unico (decision_engine.py). Se o
+# diff staged de sim_bridge.py/server.py adiciona uma comparacao numerica
+# (jeito de codificar "vale a pena?"/"passa do limiar?") sem NENHUM desses
+# tocando o engine em algum lugar do mesmo arquivo, e sinal de heuristica
+# reimplementada por fora. Atualize esta lista se novos pontos de entrada
+# forem criados em decision_engine.py.
+ENGINE_TOUCHPOINTS='DecisionEngine|EffectExecutor|avaliar_carta|_trash_value|should_use_counter|char_value_score|_step_is_viable|_worth_paying_optional_costs|get_card_effects|score_attack_target|_score_activate_main|_should_activate_main|don_needed_for_attack'
+
+BRIDGE_FILES="scriptis_da_ia/optcg_engine/sim_bridge.py BOT/engine_server/server.py"
+suspeitos=""
+
+for f in $BRIDGE_FILES; do
+    # Checagem por HUNK (bloco de mudanca do diff), nao por arquivo/diff
+    # inteiro -- um commit tipico mistura a mudanca legitima (que toca o
+    # engine em algum ponto) com outras edicoes no MESMO arquivo, entao
+    # "o diff inteiro toca o engine em algum lugar" sempre passa e nao
+    # pega nada (achado ao testar este proprio hook, 09/07). -U0 tira
+    # contexto extra, entao cada hunk fica restrito as linhas realmente
+    # mudadas/proximas -- proxy razoavel de "mesma funcao".
+    hunk_suspeito=$(git diff --cached -U0 -- "$f" | awk -v thr='(<=?|>=?|==)[ ]*[0-9]+' -v tp="$ENGINE_TOUCHPOINTS" '
+        function flush() {
+            if (has_thr && !has_tp && buf != "") { printf "%s", buf }
+            buf = ""; has_thr = 0; has_tp = 0
+        }
+        /^@@/ { flush(); next }
+        /^\+\+\+/ { next }
+        /^\+/ {
+            line = $0
+            sub(/^\+/, "", line)
+            trimmed = line
+            sub(/^[ \t]+/, "", trimmed)
+            if (trimmed ~ /^#/ || trimmed ~ /^"""/) { next }
+            if (line ~ thr) has_thr = 1
+            if (line ~ tp)  has_tp = 1
+            buf = buf line "\n"
+        }
+        END { flush() }
+    ')
+    [ -z "$hunk_suspeito" ] && continue
+
+    suspeitos="$suspeitos\n[$f]\n$hunk_suspeito\n"
+done
+
+if [ -n "$suspeitos" ]; then
+    echo "=============================================================="
+    echo " BLOQUEADO: possivel SEGUNDO MOTOR (regra 'sem dois motores')"
+    echo "=============================================================="
+    echo "sim_bridge.py/server.py adicionaram comparacao(oes) numerica(s)"
+    echo "sem nenhuma chamada visivel ao engine unico (DecisionEngine/"
+    echo "EffectExecutor/etc) no arquivo. Isso e o padrao exato do achado"
+    echo "de 09/07 (resolve_optional_effect com regua propria)."
+    printf "%b" "$suspeitos"
+    echo ""
+    echo "Antes de commitar, confirme: essa decisao ja existe em"
+    echo "decision_engine.py (delegue pra la) ou e genuinamente so"
+    echo "transporte/formatacao (falso positivo)?"
+    echo ""
+    echo "Se for falso positivo confirmado, pule esta checagem UMA VEZ:"
+    echo "  git commit --no-verify"
+    echo "=============================================================="
+    exit 1
+fi
 
 exit 0

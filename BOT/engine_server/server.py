@@ -273,7 +273,8 @@ def defense(req: DefenseRequest):
 
         elif req.phase == "optional":
             # Efeito opcional com custo no proprio turno do bot
-            out["useReaction"] = bridge.resolve_optional_effect(gs, opp_gs)
+            out["useReaction"] = bridge.resolve_optional_effect(
+                gs, opp_gs, actor_code=req.triggerCode)
             print(f"[DEF] optional -> {out['useReaction']}", flush=True)
 
         return out

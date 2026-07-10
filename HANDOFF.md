@@ -1,5 +1,75 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-09 (114) - Claude
+
+### Achado de "dois motores" real (não só suspeita) + gate mecânico novo pra pegar isso automaticamente
+
+A partir do log `19.25.50.log` (Imu vs Teach, salvo no banco), 3 novas observações do
+usuário levaram a mais 2 achados e uma pergunta de fundo importante.
+
+**1) Guarda do custo `trash_char_or_hand` protegia personagem "morto"**: no custo do
+líder Imu (trashar 1 Celestial Dragon do campo OU 1 carta da mão), uma guarda evitava
+trashar qualquer personagem "ativo" (não restado/just_played), forçando trash da mão
+em vez dele — mas não checava se esse personagem tinha ALGUM motivo real pra continuar
+ativo. Saint Shalria (0 de poder, efeito só no On Play, já gasto) era protegida do
+mesmo jeito que um atacante de verdade, custando carta da mão à toa. Fix: a guarda só
+protege personagens com poder > 0 (`decision_engine.py`, `_pay_costs`).
+
+**2) "Dois motores" de verdade (não suspeita — achado confirmado)**: rastreei o caso
+do usuário "Marcus Mars jogado sem alvo pro K.O., mas custou 1 carta da mão mesmo
+assim" até `resolve_optional_effect` em `sim_bridge.py` — o caminho AO VIVO ("you may
+trash 1: K.O...") tinha sua PRÓPRIA régua (`avaliar_carta(pior) <= 60`), completamente
+separada da que o simulador interno usa (`EffectExecutor.execute()`, que só paga custo
+se `_step_is_viable` confirma que o benefício tem alvo). Pior: o caminho ao vivo nem
+sabia qual carta estava perguntando (sem `actorCode`), então não tinha como checar
+viabilidade nem que quisesse. Reproduzi exatamente o caso (Shiryu custo 6 em campo,
+Mars pede alvo custo≤5): confirmado que o custo era pago sem alvo válido.
+
+**O usuário apontou a causa raiz certa**: isso é a violação exata que a regra "sem
+dois motores" existe pra evitar ([[feedback_dois_motores]]). Fix de verdade (não só
+band-aid): extraí a decisão "vale pagar esse custo opcional?" pra um ÚNICO método,
+`EffectExecutor._worth_paying_optional_costs` (`decision_engine.py`) — chamado tanto
+por `execute()` (simulador interno, antes de `_pay_costs`, só pra triggers on_play/main)
+quanto por `resolve_optional_effect()` (sim_bridge.py, caminho ao vivo, que agora é só
+um wrapper fino sem heurística própria). C# (`BotDriver.cs`) passa a mandar o
+`actorCode` (`BotExecutor.ActorCode`, já existia pra outro uso) pra fase
+"optional"/"reaction" do `/defense`, resolvendo o "não sabia qual carta perguntou".
+Validado: os dois caminhos concordam exatamente no mesmo cenário de teste (nenhum dos
+dois paga sem alvo). `smoke_test.py` 100%, `smoke_test_broad.py` 40/40 sem exceção.
+
+**3) Pergunta de fundo do usuário**: "estamos balanceando só o Imu ou melhorando o
+motor?" — resposta honesta: o código é genérico (nenhum fix tem `if code ==`), mas
+testamos só com Imu vs Teach, então todo bug novo aparece "vestido" de Imu. O caso
+Mjosgard (deploy de um vanilla 0-poder quando valia mais como counter de 2000 na mão)
+é provavelmente mais um sintoma do achado #3 já conhecido (`avaliar_carta` favorecendo
+custo baixo, ainda pendente — ver blocos anteriores). Ainda não atacado diretamente.
+
+### Gate mecânico novo: `scripts/hooks/pre-commit` agora BLOQUEIA, não só lembra
+
+O hook antigo só imprimia as regras de memória (lembrete passivo — não impediu o achado
+#2 acima, que só foi pego porque o usuário notou jogando, não porque a IA releu o
+lembrete e conectou os pontos). Adicionei um gate mecânico: se o diff staged de
+`sim_bridge.py`/`server.py` adiciona, num mesmo HUNK do diff, uma comparação numérica
+literal (`<= 60`, `== 5`, etc — assinatura de limiar de decisão) SEM nenhuma chamada
+visível a um ponto de entrada conhecido do engine (`DecisionEngine`, `EffectExecutor`,
+`avaliar_carta`, etc — lista mantida no topo do hook), bloqueia o commit com instruções
+claras (delegar pro engine, ou `--no-verify` se for falso positivo confirmado).
+Checagem é por HUNK (`git diff -U0`), não por arquivo inteiro — testei e confirmei que
+checar "o arquivo inteiro toca o engine em algum lugar" sempre passa (todo arquivo do
+bridge importa `DecisionEngine` por definição), então não pegava nada na prática.
+Testado nos dois sentidos: uma função fake reimplementando uma régua própria foi
+bloqueada; o diff real desta sessão (que delega corretamente) passou limpo.
+Reinstalar em cada clone/máquina: `sh scripts/setup-git-hooks.sh` (já cobre o
+pre-commit novo, não só o pre-push).
+
+### Operacional
+Python (`decision_engine.py`, `sim_bridge.py`) + C# (`BotDriver.cs`, recompilado) +
+hook novo (`scripts/hooks/pre-commit`, precisa reinstalar via setup-git-hooks.sh nas
+outras máquinas/clones). Log salvo no banco:
+`Imu-B_x_Marshall.D.Teach-BY_2026-07-09T19.25.50`.
+
+---
+
 ## 2026-07-09 (113) - Claude
 
 ### 4 achados estruturais em sequência, a partir de 3 logs reais novos (16.39/17.52/18.39 — todos salvos no banco, Imu vs Teach)

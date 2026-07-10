@@ -1,0 +1,36 @@
+{
+  "cards": [
+    {
+      "code": "OP13-083",
+      "name": "OP13-083",
+      "count": 1
+    },
+    {
+      "code": "OP13-089",
+      "name": "OP13-089",
+      "count": 1
+    },
+    {
+      "code": "OP13-091",
+      "name": "St. Marcus Mars",
+      "count": 1
+    },
+    {
+      "code": "OP13-098",
+      "name": "OP13-098",
+      "count": 1
+    },
+    {
+      "code": "OP16-093",
+      "name": "OP16-093",
+      "count": 1
+    },
+    {
+      "code": "OP13-092",
+      "name": "St. Mjosgard",
+      "count": 1
+    }
+  ],
+  "total_seen": 6,
+  "leader": "OP13-079"
+}
