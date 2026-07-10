@@ -57016,7 +57016,16 @@
    {
     "action": "negate_effect",
     "trigger": "activate_main",
+    "target": "opp_leader"
+   },
+   {
+    "action": "negate_effect",
+    "trigger": "activate_main",
     "target": "opp_character"
+   },
+   {
+    "action": "lock_opp_character_attack",
+    "trigger": "activate_main"
    },
    {
     "action": "keyword_blocker",

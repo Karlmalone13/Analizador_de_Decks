@@ -37449,8 +37449,19 @@
           {
             "action": "negate_effect",
             "count": 1,
+            "target": "opp_leader",
+            "duration": "this_turn"
+          },
+          {
+            "action": "negate_effect",
+            "count": 1,
             "target": "opp_character",
             "duration": "this_turn"
+          },
+          {
+            "action": "lock_opp_character_attack",
+            "count": 1,
+            "duration": "until_opp_turn_end"
           }
         ],
         "conditions": {

@@ -1,5 +1,62 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-10 (116) - Claude
+
+### Prep pro teste do bot jogando Teach: parser de OP09-093 + implementação completa de `negate_effect`
+
+Usuário pediu pra analisar os 7 logs onde ele jogou de Teach (lado `[Opponent]`
+dos jogos Imu-bot desta sessão) e ir atrás dos padrões de jogo antes de testar
+o bot jogando Teach pela primeira vez. Redirect, empilhar counters e o
+investimento pesado (ZEHAHAHAHA) já estavam cobertos — sem mudança. Achado
+novo: `OP09-093` (Marshall D. Teach personagem, aparece nas 7 partidas) tinha
+duas lacunas.
+
+**1) Parser perdia 2 das 3 partes do texto**: `[Activate: Main]` do
+OP09-093 é "nega o efeito do líder oponente. Depois, nega o efeito de 1
+personagem E trava o ataque dele até o fim do próximo turno do oponente" —
+`parse_negate_effect` (`gerar_effects_db.py`) só capturava a cláusula do
+personagem (via `re.search`, que só acha a 1ª ocorrência, e o padrão
+genérico não reconhecia "...opponent's Leader" sozinho, só "leader or
+character"). Fix: novo padrão composto que detecta as DUAS cláusulas
+("Leader... Then... Character... cannot attack") e emite os 3 steps
+corretos. Cuidado: a 1ª versão do fix capturava demais — confundia com o
+idioma "Leader or Character cards" (escolha de UM alvo) usado em 3 outras
+cartas (`OP09-097`, `OP09-098`, `OP16-115`), duplicando a cláusula.
+Corrigido com negative lookahead `(?!\s*or\s*character)`. `diff_parser.py`
+confirmou PERDEU=0 e só o OP09-093 mudou de conteúdo.
+
+**2) `negate_effect` não tinha handler de execução nem categoria de score**
+— a action já aparecia em 4 cartas parseadas mas era no-op silencioso
+(mesmo padrão do achado do `play_from_trash`/Five Elders, blocos
+anteriores). Implementado ponta a ponta:
+- Campo novo `effects_negated_until: str` no `Card` (mesmo padrão de
+  `cannot_attack_until`), resetado no `refresh_phase` do dono e incluído
+  no `__deepcopy__` customizado (campo faltando aqui = perdido em todo
+  clone do Turn Planner, silenciosamente).
+- Gate no topo de `EffectExecutor.execute()`: carta negada não dispara
+  NENHUM trigger futuro (não desfaz on_play já resolvido).
+- Handler em `_execute_step` pra `negate_effect` (targets: `opp_leader`,
+  `opp_character`, `opp_leader_or_character` — escolhe entre líder/melhor
+  personagem por `board_value()`).
+- Viabilidade em `_step_is_viable` (líder sempre viável; personagem precisa
+  de alvo elegível).
+- Categoria própria em `_score_activate_main` (bucket de remoção/controle,
+  base=100 — antes caía no fallback genérico de 60). Também adicionei
+  `lock_opp_character_attack` nesse bucket (mesma lacuna, mesma carta).
+
+Validado com teste de integração direto (OP09-093 nega o líder Imu +
+nega/trava um personagem; confirmado que o líder Imu negado não consegue
+mais usar a própria habilidade depois) e `smoke_test.py`/`smoke_test_broad.py`
+(100% / 40-40) rodados após CADA mudança (parser e engine, separadamente).
+
+### Operacional
+Parser (`gerar_effects_db.py`, `card_effects_db.json`,
+`card_analysis_db.json`, `parser_snapshot.json` via `gerar_dbs.py` +
+`snapshot_parser.py`) + engine (`decision_engine.py`). Nenhum log novo
+salvo neste bloco.
+
+---
+
 ## 2026-07-09 (115) - Claude
 
 ### Comparação humano-vs-bot jogando Imu revela por que o bot quase nunca monta o combo Stage→Five Elders→reanimação

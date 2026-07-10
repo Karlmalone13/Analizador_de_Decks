@@ -248,6 +248,7 @@ class Card:
     can_attack_active: bool = False  # "This Character can also attack active Characters" PERMANENTE (Cavendish OP04-081, Luffy OP04-090) -- keyword nunca implementada antes (achado 27/06, 9 cartas).
     can_attack_active_this_turn: bool = False  # mesma habilidade, mas CONCEDIDA so neste turno via select (Hibari, Gyats, Borsalino, Aramaki, Kuzan, Koby) -- resetada no refresh_phase.
     cannot_be_rested_until: str = ''  # mesma semantica de duracao, para lock_opp_cannot_be_rested (mecanica DISTINTA de cannot_attack)
+    effects_negated_until: str = ''  # mesma semantica de duracao, para negate_effect (OP09-093 etc: "negate the effect of up to N of your opponent's Leader/Character"). Serve tanto pra Character quanto pra Leader (p.leader e um Card). Checado no topo de EffectExecutor.execute() -- bloqueia QUALQUER trigger disparado via execute() enquanto ativo (on_play ja resolvido nao e afetado retroativamente, so triggers futuros: activate_main, when_attacking, on_ko, your_turn/opp_turn, trigger). NAO cobre passivas lidas fora de execute() (is_blocker(), immunity, keyword boosts direto de get_card_effects) -- limitacao conhecida, mesmo padrao de divida tecnica ja documentado pro sistema de imunidade (TODO.md).
     immunity_ko_until: str = ''       # imunidade a KO por efeito TEMPORARIA concedida por outro efeito (ex: OP09-033 Nico Robin -- "none of your X type Characters can be K.O.'d by effects until end of opp's next turn"). Mesma semantica de duracao. Checada em is_immune().
     attack_paywall: dict = field(default_factory=dict)  # {'cost_type','cost_amount'} ou {} -- lock_opp_attack_unless_pays (OP08-043): PODE atacar, mas o DONO paga o custo a cada ataque enquanto ativo. Distinto de cannot_attack_until (bloqueio total). Resetado no refresh_phase do dono junto com cannot_attack_until (mesma simplificacao de duration ja usada la).
     frozen_next_refresh: bool = False  # Freeze (lock_opp_character_refresh / lock_self_character_refresh com target='this_card') -- pula APENAS o untap (c.rested=False) na PROXIMA refresh_phase do dono, consumido uma vez (refresh_phase zera este campo, fica rested mesmo se nao tiver sido atacado/restado por outro motivo). DISTINTO de cannot_be_rested_until (que trava o character de FICAR rested -- aqui e o oposto, ele PERMANECE rested ignorando o untap).
@@ -275,6 +276,7 @@ class Card:
                       'has_double_attack', 'has_banish', 'has_unblockable',
                       'rested', 'just_played', 'rush_character_only_this_turn',
                       'don_attached', 'cannot_attack_until', 'cannot_be_rested_until', 'cannot_block_until',
+                      'effects_negated_until',
                       'unblockable_this_turn', 'rush_this_turn', 'double_attack_this_turn', 'blocker_this_turn',
                       'can_attack_active', 'can_attack_active_this_turn',
                       'power_buff', 'base_power_override',
@@ -1190,6 +1192,16 @@ class EffectExecutor:
                 exclude_name=step.get('exclude', ''),
             )
             return bool(candidates)
+        # negate_effect: alvo pode ser opp_leader (sempre existe -- viavel),
+        # opp_leader_or_character (idem, lider sempre cobre) ou opp_character
+        # (precisa de personagem elegivel, mesmo filtro dos outros acima).
+        if a == 'negate_effect':
+            target = step.get('target', 'opp_character')
+            if target in ('opp_leader', 'opp_leader_or_character'):
+                return True
+            from optcg_engine.rules_facade import eligible_cards
+            cost_lte = self._resolve_cost_lte(step, default=None)
+            return bool(eligible_cards(opp.field_chars, cost_lte=cost_lte))
         if a == 'opp_choose_trash_our_hand':
             return len(me.hand) > 0
         if a == 'opp_bounce_own_character':
@@ -1304,6 +1316,14 @@ class EffectExecutor:
         """
         effects = get_card_effects(card.code)
         if trigger not in effects:
+            return []
+
+        # Efeito negado (negate_effect, ex: OP09-093): a carta nao produz
+        # NENHUM efeito enquanto a negacao estiver ativa. So bloqueia
+        # gatilhos FUTUROS -- nao desfaz um on_play que ja resolveu antes
+        # da negacao ser aplicada (execute() e sempre disparo pontual no
+        # momento do gatilho, nunca reexecucao de algo passado).
+        if getattr(card, 'effects_negated_until', ''):
             return []
 
         ef_data = effects[trigger]
@@ -3558,6 +3578,50 @@ class EffectExecutor:
                 alvo.power_buff -= amount
                 return f'{alvo.name[:18]} -{amount} power'
             return ''
+
+        if action == 'negate_effect':
+            # "Negate the effect of up to N of your opponent's Leader/
+            # Character(s)" (OP09-093, OP09-097, OP09-098, OP16-115, etc):
+            # marca effects_negated_until no(s) alvo(s) -- checado no topo
+            # de execute() (bloqueia qualquer trigger FUTURO da carta
+            # enquanto ativo). Achado real 09/07: a action ja aparecia em 4
+            # cartas parseadas mas nunca tinha handler de execucao (virava
+            # no-op silencioso), mesmo padrao do achado do debuff_power
+            # (30/06) documentado acima.
+            from optcg_engine.rules_facade import choose_highest_board_value
+
+            target = step.get('target', 'opp_character')
+            DUR_MAP = {
+                'until_opp_turn_end': 'opp_turn_end',
+                'until_opp_end_phase': 'opp_end_phase',
+                'until_my_next_turn_start': 'my_next_turn_start',
+            }
+            dur = DUR_MAP.get(step.get('duration', 'this_turn'), 'opp_turn_end')
+            cost_lte = self._resolve_cost_lte(step, default=None)
+
+            def _negar_character():
+                candidatos = eligible_cards(opp.field_chars, cost_lte=cost_lte)
+                if not candidatos:
+                    return None
+                alvo = choose_highest_board_value(candidatos)
+                alvo.effects_negated_until = dur
+                return alvo
+
+            if target == 'opp_leader':
+                opp.leader.effects_negated_until = dur
+                return f'negou o efeito do lider {opp.leader.name[:18]}'
+            if target == 'opp_leader_or_character':
+                # escolhe o mais ameacador entre lider e o melhor character
+                # (mesma ideia do debuff_power opp_leader_or_character:
+                # so vale negar quem ainda vai agir/importar)
+                melhor_char = choose_highest_board_value(opp.field_chars) if opp.field_chars else None
+                if melhor_char is None or opp.leader.board_value() >= melhor_char.board_value():
+                    opp.leader.effects_negated_until = dur
+                    return f'negou o efeito do lider {opp.leader.name[:18]}'
+                melhor_char.effects_negated_until = dur
+                return f'negou o efeito de {melhor_char.name[:18]}'
+            alvo = _negar_character()
+            return f'negou o efeito de {alvo.name[:18]}' if alvo else ''
 
         if action == 'buff_power_per_count':
             source = step.get('source', 'trash')
@@ -6246,6 +6310,7 @@ class OPTCGMatch:
             c.cannot_attack_until = ''
             c.cannot_be_rested_until = ''
             c.cannot_block_until = ''
+            c.effects_negated_until = ''
             c.attack_paywall = {}
             c.unblockable_this_turn = False
             c.rush_this_turn = False
@@ -6258,6 +6323,7 @@ class OPTCGMatch:
         p.leader.power_buff = 0
         p.leader.cost_buff = 0
         p.leader.cannot_attack_until = ''
+        p.leader.effects_negated_until = ''
         p.leader.unblockable_this_turn = False
         if p.field_stage:
             if p.field_stage.frozen_next_refresh:
@@ -6703,7 +6769,8 @@ class OPTCGMatch:
             base += min(max(0, best_saved_don) * 18, 45)
         elif any(a in ('rest_opp', 'rest_opp_character', 'ko', 'ko_opp',
                        'ko_if_cost_eq_don', 'debuff_power', 'debuff_cost',
-                       'bounce', 'place_opp_character_bottom_deck') for a in actions_list):
+                       'bounce', 'place_opp_character_bottom_deck',
+                       'negate_effect', 'lock_opp_character_attack') for a in actions_list):
             base = 100   # remoção/controle
         elif any(a == 'play_from_trash' for a in actions_list):
             # Achado real 09/07 (Five Elders OP13-082 nunca ativava, mesmo

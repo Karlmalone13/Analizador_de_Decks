@@ -3017,6 +3017,42 @@ def parse_negate_effect(text):
             steps.append({'action': 'negate_on_play_effects', 'target': 'opponent', 'duration': duration})
             return steps
 
+    # padrao composto: "negate the effect of up to N of your opponent's
+    # Leader ... Then, negate the effect of up to M of your opponent's
+    # Character(s) [and that Character cannot attack until ...]" -- DUAS
+    # clausulas de negate no mesmo texto (ex: OP09-093, Marshall D. Teach
+    # personagem). O padrao generico abaixo (re.search, so a 1a ocorrencia)
+    # perdia a clausula do Leader inteira -- ela nao bate com o padrao
+    # generico (que exige "leader or character"/"characters", nao "leader"
+    # sozinho) -- e perdia o lock de ataque anexado a clausula do Character.
+    # (?!\s*or\s*character): exclui o idioma "Leader or Character cards"
+    # (escolha de UM alvo, ja coberto pelo padrao generico opp_leader_or_
+    # character abaixo) -- sem isso, OP09-097/098, OP16-115 (que usam essa
+    # frase) eram lidos como as DUAS clausulas separadas por engano.
+    leader_m = re.search(
+        r"negate the effects? of up to (\d+) of your opponent.{0,15}leader"
+        r"(?!\s*or\s*character)"
+        r"(?: with a cost of (\d+) or less)?",
+        t)
+    char_m = re.search(
+        r"negate the effects? of up to (\d+) of your opponent.{0,15}characters?"
+        r"(?: with a cost of (\d+) or less)?"
+        r"(?:\s+and that character cannot attack until ([^.\[]+))?",
+        t)
+    if leader_m and char_m:
+        steps.append({'action': 'negate_effect', 'count': int(leader_m.group(1)),
+                      'target': 'opp_leader', 'duration': 'this_turn'})
+        char_step = {'action': 'negate_effect', 'count': int(char_m.group(1)),
+                     'target': 'opp_character', 'duration': 'this_turn'}
+        if char_m.group(2):
+            char_step['cost_lte'] = int(char_m.group(2))
+        steps.append(char_step)
+        if char_m.group(3):
+            steps.append({'action': 'lock_opp_character_attack',
+                         'count': int(char_m.group(1)),
+                         'duration': 'until_opp_turn_end'})
+        return steps
+
     # padrao generico: 'negate the effects of up to N of your opponent's
     # leader or character cards/characters [with a cost of X or less]'
     m = re.search(r"negate the effects? of up to (\d+) of your opponent.{0,30}?(?:leader or character cards?|characters?)", t)
