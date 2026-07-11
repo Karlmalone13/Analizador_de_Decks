@@ -1,5 +1,89 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-10 (119) - Claude
+
+### 2 fixes reais (desconto de counter em play, resolve_optional_effect sempre recusando custo só-DON) + decisão de arquitetura: "GamePlan" pré-partida (NÃO IMPLEMENTADO AINDA — ler antes de reabrir isso do zero)
+
+Terceira partida real do bot jogando Imu contra o usuário de Teach
+(`2026-07-10T21.41.10.log` e `2026-07-10T22.32.09.log`, ambos salvos no
+banco). 2 achados novos, 1 decisão de arquitetura grande registrada aqui
+pra não se perder entre sessões.
+
+**1) Desconto de counter em `_score_play_action`.** `avaliar_carta` dá
+bônus de valor pra carta com `counter>0` (pensado pra contexto "vale
+manter na mão"), mas `_score_play_action` usava esse valor como BASE sem
+descontar — ou seja, jogar uma carta com counter alto (Doc Q counter=2000
+poder=0, Baby 5 counter=2000) herdava o bônus e pontuava artificialmente
+alto pra ir pro campo, esvaziando a mão de counters. Achado real: 2x Doc Q
++ 1x Baby 5 jogados em 2 turnos, bot terminou sem NENHUM counter na mão.
+Fix: desconto simétrico do mesmo valor em `_score_play_action` quando
+`card.counter>0` (`decision_engine.py`, logo após `base = engine.avaliar_carta(card)`).
+
+**2) `resolve_optional_effect` sempre recusava custo só de `rest_don`.**
+A versão anterior (achado de sessão passada) só entrava no bloco de
+decisão se o custo tivesse tipo "sacrifício" (`_SACRIFICE_COST_TYPES`) —
+custo SÓ `rest_don` (ex: "...Never Existed..." OP13-098, `[Main] You may
+rest 1 DON: KO até 1 Stage do oponente custo≤7`) caía no fallback final e
+SEMPRE recusava, mesmo com alvo válido e efeito bom. Sem custo real
+descontado, o estado não muda quando recusa — a MESMA ativação de score
+alto era reoferecida a cada `/decide` seguinte, travando o turno inteiro
+em loop (achado via log real: 4 propostas idênticas seguidas, turno
+terminou sem jogar a única carta que sobrava na mão, mesmo com 3 DON
+livres). `execute()` (simulador interno) chama `_worth_paying_optional_costs`
+incondicionalmente pra `on_play`/`main`, sem filtrar por tipo de custo —
+o filtro em `resolve_optional_effect` era outra divergência real dos dois
+motores. Fix: removido o filtro (`sim_bridge.py`).
+
+Validado com `smoke_test.py` 100% e `smoke_test_broad.py` 40/40 sem
+exceção após cada fix, isolado.
+
+**3) Decisão de arquitetura (aprovada pelo usuário, ainda NÃO
+implementada nesta sessão — próxima sessão deve continuar daqui, não
+redesenhar do zero):** o usuário observou que o bot joga sem noção do
+"plano de jogo" do deck — ex: Imu tem o combo Five Elders (custo 10,
+reanima até 5 do trash) como bomba, e 5 personagens Celestial Dragons com
+`passive: {conditions: {trash_gte: 7}}` (imunidade a remoção). Hoje o
+engine só pontua ganho IMEDIATO por turno, sem nenhum alvo de médio prazo
+("chegar a 7 no trash", "proteger a bomba até ter 10 DON").
+
+Proposta acordada — um `GamePlan` calculado 1x no início da partida
+(varre `card_effects_db.json` do próprio deck, SEM parser novo, os dados
+já existem):
+- `trash_target`: maior `trash_gte` encontrado em `conditions` de
+  qualquer carta do deck (ex: 7 pro Imu). Genérico — funciona pra
+  qualquer deck com esse padrão, não hardcode pro Imu.
+- `win_con_card`: carta com maior bônus de `play_from_trash`/maior swing
+  já identificada pelo scoring existente (`_score_activate_main` já tem
+  a lógica de valor de reanimação — reaproveitar, não duplicar).
+- `don_target`: custo do `win_con_card`.
+- (fase 2, NÃO fazer agora): postura defensiva geral baseada em
+  razão de blockers/counters no deck até bater `don_target`.
+
+**Escopo combinado com o usuário pra primeira versão** (não fazer o
+`don_target`/postura defensiva ainda): só `trash_target` + proteção do
+`win_con_card`. Pontos de plugue já identificados (ainda sem código):
+- Custo `trash_char_or_hand` do líder Imu (`_pay_costs`,
+  `decision_engine.py` ~linha 2464): bônus pra trashar personagem quando
+  `len(self.me.trash) < plan.trash_target`.
+- `_trash_value`: proteger `win_con_card` na mão até
+  `don_available >= plan.don_target` (parecido com o bônus de carta
+  cara custo≥7 que já existe ali, mas ligado explicitamente ao win-con
+  identificado, não só ao custo bruto).
+
+Log-mining de partidas humanas foi descartado como fonte PRIMÁRIA (dados
+estruturais do `card_effects_db.json` já bastam e generalizam pra
+qualquer deck); logs humanos continuam servindo só pra validar/tunar
+pesos depois, como já é feito hoje.
+
+### Operacional
+Python (`decision_engine.py`, `sim_bridge.py`). Logs salvos no banco:
+`Marshall.D.Teach-BY_x_Imu-B_2026-07-10T21.41.10`,
+`Imu-B_x_Marshall.D.Teach-BY_2026-07-10T22.32.09`,
+`Eustass.Captain.Kid-Y_x_Kuzan-B_2026-07-10T22.05.14` (partida avulsa
+não relacionada, salva a pedido do usuário).
+
+---
+
 ## 2026-07-10 (118) - Claude
 
 ### 3 fixes reais de "agressividade" + conclusão: o gargalo virou balanceamento de deck, não mais bug de decisão

@@ -1,0 +1,96 @@
+{
+  "cards": [
+    {
+      "code": "OP12-047",
+      "name": "Sengoku",
+      "count": 4
+    },
+    {
+      "code": "OP06-050",
+      "name": "Tashigi",
+      "count": 4
+    },
+    {
+      "code": "OP12-057",
+      "name": "Ice Block: Pheasant Peck",
+      "count": 4
+    },
+    {
+      "code": "OP12-044",
+      "name": "Sakazuki",
+      "count": 3
+    },
+    {
+      "code": "ST33-003",
+      "name": "Smoker",
+      "count": 3
+    },
+    {
+      "code": "EB04-022",
+      "name": "Issho",
+      "count": 3
+    },
+    {
+      "code": "OP12-051",
+      "name": "Hina",
+      "count": 3
+    },
+    {
+      "code": "ST33-005",
+      "name": "Monkey D. Garp",
+      "count": 3
+    },
+    {
+      "code": "OP06-043",
+      "name": "Aramaki",
+      "count": 2
+    },
+    {
+      "code": "OP06-044",
+      "name": "Gion",
+      "count": 2
+    },
+    {
+      "code": "ST33-004",
+      "name": "Borsalino",
+      "count": 2
+    },
+    {
+      "code": "EB04-026",
+      "name": "Bluegrass",
+      "count": 2
+    },
+    {
+      "code": "EB04-028",
+      "name": "Ice Time",
+      "count": 2
+    },
+    {
+      "code": "OP12-056",
+      "name": "Monkey D. Garp",
+      "count": 2
+    },
+    {
+      "code": "ST33-002",
+      "name": "Sakazuki",
+      "count": 2
+    },
+    {
+      "code": "OP06-058",
+      "name": "Gravity Blade Raging Tiger",
+      "count": 2
+    },
+    {
+      "code": "OP12-043",
+      "name": "Kuzan",
+      "count": 2
+    },
+    {
+      "code": "ST33-001",
+      "name": "Koby",
+      "count": 1
+    }
+  ],
+  "total_seen": 46,
+  "leader": "OP12-040"
+}

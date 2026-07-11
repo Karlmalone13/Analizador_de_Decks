@@ -1043,5 +1043,80 @@
       "You": "decks/Marshall.D.Teach-BY_2026-07-10T17.00.33.json",
       "Opponent": "decks/Imu-B_2026-07-10T17.00.33.json"
     }
+  },
+  {
+    "id": "2026-07-10T21.41.10",
+    "friendly_name": "Marshall.D.Teach-BY_x_Imu-B",
+    "date": "2026-07-10",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP16-080",
+      "leader_name": "Marshall D. Teach",
+      "slug": "Marshall.D.Teach-BY"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP13-079",
+      "leader_name": "Imu",
+      "slug": "Imu-B"
+    },
+    "turns": 7,
+    "winner": null,
+    "log_file": "raw/Marshall.D.Teach-BY_x_Imu-B_2026-07-10T21.41.10.log",
+    "parsed_file": "parsed/Marshall.D.Teach-BY_x_Imu-B_2026-07-10T21.41.10.json",
+    "deck_files": {
+      "You": "decks/Marshall.D.Teach-BY_2026-07-10T21.41.10.json",
+      "Opponent": "decks/Imu-B_2026-07-10T21.41.10.json"
+    }
+  },
+  {
+    "id": "2026-07-10T22.05.14",
+    "friendly_name": "Eustass.Captain.Kid-Y_x_Kuzan-B",
+    "date": "2026-07-10",
+    "p1": {
+      "name": "Karlmalone#2854",
+      "leader_code": "OP10-099",
+      "leader_name": "Eustass \"Captain\" Kid",
+      "slug": "Eustass.Captain.Kid-Y"
+    },
+    "p2": {
+      "name": "Proxh#4377",
+      "leader_code": "OP12-040",
+      "leader_name": "Kuzan",
+      "slug": "Kuzan-B"
+    },
+    "turns": 17,
+    "winner": null,
+    "log_file": "raw/Eustass.Captain.Kid-Y_x_Kuzan-B_2026-07-10T22.05.14.log",
+    "parsed_file": "parsed/Eustass.Captain.Kid-Y_x_Kuzan-B_2026-07-10T22.05.14.json",
+    "deck_files": {
+      "Karlmalone#2854": "decks/Eustass.Captain.Kid-Y_2026-07-10T22.05.14.json",
+      "Proxh#4377": "decks/Kuzan-B_2026-07-10T22.05.14.json"
+    }
+  },
+  {
+    "id": "2026-07-10T22.32.09",
+    "friendly_name": "Imu-B_x_Marshall.D.Teach-BY",
+    "date": "2026-07-10",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP13-079",
+      "leader_name": "Imu",
+      "slug": "Imu-B"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP16-080",
+      "leader_name": "Marshall D. Teach",
+      "slug": "Marshall.D.Teach-BY"
+    },
+    "turns": 11,
+    "winner": null,
+    "log_file": "raw/Imu-B_x_Marshall.D.Teach-BY_2026-07-10T22.32.09.log",
+    "parsed_file": "parsed/Imu-B_x_Marshall.D.Teach-BY_2026-07-10T22.32.09.json",
+    "deck_files": {
+      "You": "decks/Imu-B_2026-07-10T22.32.09.json",
+      "Opponent": "decks/Marshall.D.Teach-BY_2026-07-10T22.32.09.json"
+    }
   }
 ]

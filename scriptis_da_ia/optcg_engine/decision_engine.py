@@ -6674,6 +6674,29 @@ class OPTCGMatch:
         flags = get_card_flags(card.code)
         effects = get_card_effects(card.code)
 
+        # Contra-parte do bônus de counter em avaliar_carta: aquele bônus
+        # existe pra contexto "vale manter essa carta na mão" (ex: _trash_value).
+        # Jogar a carta FAZ O OPOSTO — ela sai da mão e perde o valor de counter
+        # (e, se veio de um Life card recém-revelado, o próprio
+        # resolve_trigger_choice já decidiu deliberadamente NÃO usar o trigger
+        # porque a carta vale mais como counter garantido na mão). Sem este
+        # desconto, cartas com counter alto e pouco poder (achado real 10/07:
+        # Doc Q counter=2000/poder=0, Baby 5 counter=2000) herdavam o bônus de
+        # avaliar_carta e pontuavam artificialmente alto pra JOGAR, esvaziando
+        # a mão de counters — 2x Doc Q + 1x Baby 5 jogados em 2 turnos, bot
+        # terminou o resto da partida sem nenhum counter na mão.
+        if card.counter > 0:
+            my_life = engine.me.life_count()
+            v = card.counter / 1000 * 15
+            if my_life <= 1: v *= 4.0
+            elif my_life <= 2: v *= 2.5
+            elif my_life <= 3: v *= 1.5
+            counters_em_mao = sum(1 for c in engine.me.hand
+                                  if c.counter > 0 and c is not card)
+            if counters_em_mao >= 4: v *= 0.4
+            elif counters_em_mao >= 2: v *= 0.7
+            base -= v
+
         # Guarda de campo cheio: jogar um Character com o campo cheio (5)
         # KO a pior carta ja em campo pra abrir espaco (main_phase, sem volta
         # depois de pago o custo). Se a nova carta nao supera a pior ja em

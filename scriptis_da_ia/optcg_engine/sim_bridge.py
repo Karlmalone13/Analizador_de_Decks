@@ -620,6 +620,19 @@ def resolve_optional_effect(gs: GameState, opp_gs: GameState,
     valor proprio, divergente do simulador. Violava a regra "sem dois
     motores" (memory/feedback_dois_motores.md) -- consolidado aqui.
 
+    Achado real 10/07 (log 22.32.09, turno 4): a versao anterior deste fix
+    so entrava no bloco de decisao se o custo fosse do tipo "sacrificio"
+    (_SACRIFICE_COST_TYPES) -- custo SO de rest_don (ex: "...Never
+    Existed..." OP13-098, "[Main] You may rest 1 DON: KO ate 1 Stage do
+    oponente cost<=7") caia no fallback final e SEMPRE recusava, mesmo com
+    alvo valido e efeito bom. Como nada muda no estado quando recusa, a
+    MESMA ativacao de score alto era reoferecida a cada /decide seguinte
+    -- travava o turno em loop (4x identico no log) sem nunca chegar nas
+    jogadas de score mais baixo que sobravam na mao. execute() (linha
+    ~1382) chama _worth_paying_optional_costs incondicionalmente pra
+    on_play/main, sem filtrar por tipo de custo -- o filtro aqui era outra
+    divergencia real dos dois motores, ja removido.
+
     actor_code: codigo da carta oferecendo o custo. Sem ele (contexto
     desconhecido), decide so pelo tamanho/qualidade da mao (fallback
     conservador — mesma regua de sacrificio, sem checar alvo do beneficio
@@ -644,8 +657,6 @@ def resolve_optional_effect(gs: GameState, opp_gs: GameState,
         if not ef:
             continue
         custos = ef.get('costs', [])
-        if not any(c.get('type') in EffectExecutor._SACRIFICE_COST_TYPES for c in custos):
-            continue
         steps = ef.get('steps', [])
         if steps and not any(ee._step_is_viable(s, card_obj) for s in steps):
             return False

@@ -1,0 +1,2011 @@
+{
+  "meta": {
+    "players": {
+      "p1": {
+        "name": "Karlmalone#2854",
+        "leader": {
+          "name": "Eustass \"Captain\" Kid",
+          "code": "OP10-099"
+        }
+      },
+      "p2": {
+        "name": "Proxh#4377",
+        "leader": {
+          "name": "Kuzan",
+          "code": "OP12-040"
+        }
+      }
+    },
+    "goes_first": null
+  },
+  "total_turns": 17,
+  "turns": [
+    {
+      "turn": 1,
+      "player": "Karlmalone#2854",
+      "card_drawn": null,
+      "don_drawn": 1,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP10-111",
+          "card_name": "Monkey D. Luffy",
+          "effects": [
+            "<b>Reveal and Draw Jewelry Bonney [\"OP15-105\">OP15-105]</b>"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "OP11-101",
+            "ST36-002",
+            "ST36-002",
+            "ST36-003",
+            "OP15-105"
+          ],
+          "board": [
+            "OP10-111"
+          ],
+          "trash": [],
+          "life": 5
+        },
+        "Proxh#4377": {
+          "hand": [
+            "OP06-043",
+            "OP06-044",
+            "OP06-044",
+            "ST33-004",
+            "OP12-047"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 2,
+      "player": "Proxh#4377",
+      "card_drawn": {
+        "name": "Bluegrass",
+        "code": "EB04-026"
+      },
+      "don_drawn": 2,
+      "actions": [],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "OP11-101",
+            "ST36-002",
+            "ST36-002",
+            "ST36-003",
+            "OP15-105"
+          ],
+          "board": [
+            "OP10-111"
+          ],
+          "trash": [],
+          "life": 5
+        },
+        "Proxh#4377": {
+          "hand": [
+            "OP06-043",
+            "OP06-044",
+            "OP06-044",
+            "ST33-004",
+            "OP12-047",
+            "EB04-026"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 3,
+      "player": "Karlmalone#2854",
+      "card_drawn": {
+        "name": "Trafalgar Law",
+        "code": "OP10-119"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Eustass \"Captain\" Kid",
+          "attacker_code": "OP10-099",
+          "target": "Kuzan [\"OP12-040\">OP12-040]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP11-101",
+          "card_name": "Capone \"Gang\" Bege",
+          "effects": []
+        },
+        {
+          "type": "play",
+          "card": "OP15-105",
+          "card_name": "Jewelry Bonney",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "ST36-002",
+            "ST36-002",
+            "ST36-003",
+            "OP10-119"
+          ],
+          "board": [
+            "OP10-111",
+            "OP11-101",
+            "OP15-105"
+          ],
+          "trash": [],
+          "life": 5
+        },
+        "Proxh#4377": {
+          "hand": [
+            "OP06-043",
+            "OP06-044",
+            "OP06-044",
+            "ST33-004",
+            "OP12-047",
+            "EB04-026",
+            "OP12-044"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 4,
+      "player": "Proxh#4377",
+      "card_drawn": {
+        "name": "Tashigi",
+        "code": "OP06-050"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Kuzan",
+          "attacker_code": "OP12-040",
+          "target": "Eustass \"Captain\" Kid [\"OP10-099\">OP10-099]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "EB04-026",
+          "card_name": "Bluegrass",
+          "effects": [
+            "Send Jewelry Bonney [\"OP15-105\">OP15-105] to Deck Bottom"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "ST36-002",
+            "ST36-002",
+            "ST36-003",
+            "OP10-119",
+            "OP10-119"
+          ],
+          "board": [
+            "OP10-111",
+            "OP11-101"
+          ],
+          "trash": [],
+          "life": 5
+        },
+        "Proxh#4377": {
+          "hand": [
+            "OP06-043",
+            "OP06-044",
+            "OP06-044",
+            "ST33-004",
+            "OP12-047",
+            "OP12-044",
+            "OP06-050"
+          ],
+          "trash": [],
+          "board": [
+            "EB04-026"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 5,
+      "player": "Karlmalone#2854",
+      "card_drawn": {
+        "name": "Trafalgar Law",
+        "code": "P-088"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP10-099",
+          "to_name": "Eustass \"Captain\" Kid",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Eustass \"Captain\" Kid",
+          "attacker_code": "OP10-099",
+          "target": "Kuzan [\"OP12-040\">OP12-040]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP06-044"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "ST36-002",
+          "card_name": "Killer",
+          "effects": [
+            "Add card to top of Life from Deck"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP10-099",
+          "card_name": "Eustass \"Captain\" Kid",
+          "effects": [
+            "Flip 1 Life Face Up",
+            "Set Killer [\"ST36-002\">ST36-002] to Active",
+            "Killer [\"ST36-002\">ST36-002] Gains Blocker"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "ST36-002",
+            "ST36-003",
+            "OP10-119",
+            "OP10-119",
+            "P-088"
+          ],
+          "board": [
+            "OP10-111",
+            "OP11-101",
+            "ST36-002"
+          ],
+          "trash": [],
+          "life": 6
+        },
+        "Proxh#4377": {
+          "hand": [
+            "OP06-043",
+            "OP06-044",
+            "ST33-004",
+            "OP12-047",
+            "OP12-044",
+            "OP06-050"
+          ],
+          "trash": [
+            "OP06-044"
+          ],
+          "board": [
+            "EB04-026"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 6,
+      "player": "Proxh#4377",
+      "card_drawn": {
+        "name": "Smoker",
+        "code": "ST33-003"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Bluegrass",
+          "attacker_code": "EB04-026",
+          "target": "Eustass \"Captain\" Kid [\"OP10-099\">OP10-099]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "ST36-003"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "EB04-026",
+          "card_name": "Bluegrass",
+          "effects": [
+            "Draw 1 Card",
+            "Trash Sengoku [\"OP12-047\">OP12-047]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP12-040",
+          "card_name": "Kuzan",
+          "effects": [
+            "Draw 1 Card",
+            "Draw 1 Card"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP06-050",
+          "card_name": "Tashigi",
+          "effects": [
+            "<b>Reveal and Draw Monkey D. Garp [\"OP12-056\">OP12-056]</b>"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "ST33-003",
+          "card_name": "Smoker",
+          "effects": [
+            "Trash Issho [\"EB04-022\">EB04-022]",
+            "Send Capone \"Gang\" Bege [\"OP11-101\">OP11-101] to Deck Bottom",
+            "Send Monkey D. Luffy [\"OP10-111\">OP10-111] to Deck Bottom"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP12-040",
+          "to_name": "Kuzan",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Kuzan",
+          "attacker_code": "OP12-040",
+          "target": "Eustass \"Captain\" Kid [\"OP10-099\">OP10-099]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": "ST36-002",
+          "countered_by": [
+            "P-088"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "ST36-002",
+            "OP10-119",
+            "OP10-119"
+          ],
+          "board": [
+            "OP10-111",
+            "ST36-002"
+          ],
+          "trash": [
+            "ST36-003",
+            "P-088"
+          ],
+          "life": 6
+        },
+        "Proxh#4377": {
+          "hand": [
+            "OP06-043",
+            "OP06-044",
+            "ST33-004",
+            "OP12-044",
+            "EB04-028",
+            "OP12-056",
+            "ST33-003"
+          ],
+          "trash": [
+            "OP06-044",
+            "OP12-047",
+            "EB04-022"
+          ],
+          "board": [
+            "EB04-026",
+            "OP06-050",
+            "ST33-003"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 7,
+      "player": "Karlmalone#2854",
+      "card_drawn": {
+        "name": "Killer",
+        "code": "ST36-002"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP10-119",
+          "card_name": "Trafalgar Law",
+          "effects": [
+            "Added card to top of Life from Hand",
+            "Attach 1 Rested Don to Eustass \"Captain\" Kid [\"OP10-099\">OP10-099]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Killer",
+          "attacker_code": "ST36-002",
+          "target": "Kuzan [\"OP12-040\">OP12-040]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Eustass \"Captain\" Kid",
+          "attacker_code": "OP10-099",
+          "target": "Bluegrass [\"EB04-026\">EB04-026]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP12-051"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP10-099",
+          "card_name": "Eustass \"Captain\" Kid",
+          "effects": [
+            "Flip 1 Life Face Up",
+            "Set Killer [\"ST36-002\">ST36-002] to Active",
+            "Killer [\"ST36-002\">ST36-002] Gains Blocker"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "ST36-002",
+            "OP10-119"
+          ],
+          "board": [
+            "OP10-111",
+            "ST36-002",
+            "OP10-119"
+          ],
+          "trash": [
+            "ST36-003",
+            "P-088"
+          ],
+          "life": 7
+        },
+        "Proxh#4377": {
+          "hand": [
+            "OP06-043",
+            "OP06-044",
+            "ST33-004",
+            "OP12-044",
+            "EB04-028",
+            "OP12-056",
+            "ST33-003"
+          ],
+          "trash": [
+            "OP06-044",
+            "OP12-047",
+            "EB04-022",
+            "OP12-051"
+          ],
+          "board": [
+            "EB04-026",
+            "OP06-050",
+            "ST33-003"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 8,
+      "player": "Proxh#4377",
+      "card_drawn": {
+        "name": "Sengoku",
+        "code": "OP12-047"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Bluegrass",
+          "attacker_code": "EB04-026",
+          "target": "Eustass \"Captain\" Kid [\"OP10-099\">OP10-099]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "EB04-026",
+          "card_name": "Bluegrass",
+          "effects": [
+            "Draw 1 Card",
+            "Trash Sakazuki [\"OP12-044\">OP12-044]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP12-040",
+          "card_name": "Kuzan",
+          "effects": [
+            "Draw 1 Card",
+            "Draw 1 Card"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Kuzan",
+          "attacker_code": "OP12-040",
+          "target": "Eustass \"Captain\" Kid [\"OP10-099\">OP10-099]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": "ST36-002",
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP12-056",
+          "card_name": "Monkey D. Garp",
+          "effects": [
+            "Trash Monkey D. Garp [\"ST33-005\">ST33-005]",
+            "Deploy Aramaki [\"OP06-043\">OP06-043]"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "ST36-002",
+            "OP10-119"
+          ],
+          "board": [
+            "OP10-111",
+            "ST36-002",
+            "OP10-119",
+            "ST36-002"
+          ],
+          "trash": [
+            "ST36-003",
+            "P-088"
+          ],
+          "life": 6
+        },
+        "Proxh#4377": {
+          "hand": [
+            "OP06-044",
+            "ST33-004",
+            "OP12-044",
+            "EB04-028",
+            "ST33-003",
+            "OP06-050",
+            "OP12-047"
+          ],
+          "trash": [
+            "OP06-044",
+            "OP12-047",
+            "EB04-022",
+            "OP12-051",
+            "OP12-044",
+            "ST33-005"
+          ],
+          "board": [
+            "EB04-026",
+            "OP06-050",
+            "ST33-003",
+            "OP12-056",
+            "OP06-043"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 9,
+      "player": "Karlmalone#2854",
+      "card_drawn": {
+        "name": "Basil Hawkins",
+        "code": "OP10-109"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Killer",
+          "attacker_code": "ST36-002",
+          "target": "Kuzan [\"OP12-040\">OP12-040]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "ST36-002",
+          "to_name": "Killer",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Killer",
+          "attacker_code": "ST36-002",
+          "target": "Kuzan [\"OP12-040\">OP12-040]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": "OP06-043",
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Trafalgar Law",
+          "attacker_code": "OP10-119",
+          "target": "Kuzan [\"OP12-040\">OP12-040]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP10-119",
+          "card_name": "Trafalgar Law",
+          "effects": [
+            "Added card to top of Life from Hand",
+            "Attach 1 Rested Don to Eustass \"Captain\" Kid [\"OP10-099\">OP10-099]"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP10-099",
+          "to_name": "Eustass \"Captain\" Kid",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Eustass \"Captain\" Kid",
+          "attacker_code": "OP10-099",
+          "target": "Kuzan [\"OP12-040\">OP12-040]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP12-047",
+            "ST33-003"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP10-099",
+          "card_name": "Eustass \"Captain\" Kid",
+          "effects": [
+            "Flip 1 Life Face Up",
+            "Set Trafalgar Law [\"OP10-119\">OP10-119] to Active",
+            "Trafalgar Law [\"OP10-119\">OP10-119] Gains Blocker"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "OP10-109"
+          ],
+          "board": [
+            "OP10-111",
+            "ST36-002",
+            "OP10-119",
+            "ST36-002",
+            "OP10-119"
+          ],
+          "trash": [
+            "ST36-003",
+            "P-088"
+          ],
+          "life": 7
+        },
+        "Proxh#4377": {
+          "hand": [
+            "OP06-044",
+            "ST33-004",
+            "OP12-044",
+            "EB04-028",
+            "OP06-050",
+            "EB04-022",
+            "OP06-043"
+          ],
+          "trash": [
+            "OP06-044",
+            "OP12-047",
+            "EB04-022",
+            "OP12-051",
+            "OP12-044",
+            "ST33-005",
+            "OP12-047",
+            "ST33-003"
+          ],
+          "board": [
+            "EB04-026",
+            "OP06-050",
+            "ST33-003",
+            "OP12-056",
+            "OP06-043"
+          ],
+          "life": 1
+        }
+      }
+    },
+    {
+      "turn": 10,
+      "player": "Proxh#4377",
+      "card_drawn": {
+        "name": "Ice Time",
+        "code": "EB04-028"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "activate",
+          "card": "OP06-043",
+          "card_name": "Aramaki",
+          "effects": [
+            "Trash Issho [\"EB04-022\">EB04-022]",
+            "Send Monkey D. Luffy [\"OP10-111\">OP10-111] to Deck Bottom",
+            "Buff Aramaki [\"OP06-043\">OP06-043] 3000"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP12-040",
+          "card_name": "Kuzan",
+          "effects": [
+            "Draw 1 Card",
+            "Draw 1 Card",
+            "Draw 1 Card"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Aramaki",
+          "attacker_code": "OP06-043",
+          "target": "Killer [\"ST36-002\">ST36-002]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Bluegrass",
+          "attacker_code": "EB04-026",
+          "target": "Killer [\"ST36-002\">ST36-002]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": "OP10-119",
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "EB04-026",
+          "card_name": "Bluegrass",
+          "effects": [
+            "Draw 1 Card",
+            "Trash Bluegrass [\"EB04-026\">EB04-026]"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP12-040",
+          "to_name": "Kuzan",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Kuzan",
+          "attacker_code": "OP12-040",
+          "target": "Killer [\"ST36-002\">ST36-002]",
+          "result": null,
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP12-056",
+          "to_name": "Monkey D. Garp",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Monkey D. Garp",
+          "attacker_code": "OP12-056",
+          "target": "Trafalgar Law [\"OP10-119\">OP10-119]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP10-109"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "EB04-028",
+          "card_name": "Ice Time",
+          "effects": [
+            "Rest 5 Don",
+            "Trash Sakazuki [\"OP12-044\">OP12-044]",
+            "Trafalgar Law [\"OP10-119\">OP10-119] can't attack next turn",
+            "Trafalgar Law [\"OP10-119\">OP10-119] can't attack next turn"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP06-050",
+          "card_name": "Tashigi",
+          "effects": [
+            "<b>Reveal and Draw Monkey D. Garp [\"ST33-005\">ST33-005]</b>"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [],
+          "board": [
+            "OP10-119",
+            "OP10-119"
+          ],
+          "trash": [
+            "ST36-003",
+            "P-088",
+            "ST36-002",
+            "ST36-002",
+            "OP10-109"
+          ],
+          "life": 7
+        },
+        "Proxh#4377": {
+          "hand": [
+            "OP06-044",
+            "ST33-004",
+            "OP12-044",
+            "OP06-043",
+            "ST33-002",
+            "OP06-058",
+            "EB04-028",
+            "ST33-005"
+          ],
+          "trash": [
+            "OP06-044",
+            "OP12-047",
+            "EB04-022",
+            "OP12-051",
+            "OP12-044",
+            "ST33-005",
+            "OP12-047",
+            "ST33-003",
+            "EB04-022",
+            "EB04-026",
+            "EB04-028",
+            "OP12-044",
+            "OP06-050"
+          ],
+          "board": [
+            "EB04-026",
+            "ST33-003",
+            "OP12-056",
+            "OP06-043",
+            "OP06-050"
+          ],
+          "life": 1
+        }
+      }
+    },
+    {
+      "turn": 11,
+      "player": "Karlmalone#2854",
+      "card_drawn": {
+        "name": "Damned Punk: Electromagnetic Cannon",
+        "code": "OP10-116"
+      },
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 9,
+          "to": "OP10-099",
+          "to_name": "Eustass \"Captain\" Kid",
+          "total": 9
+        },
+        {
+          "type": "attack",
+          "attacker": "Eustass \"Captain\" Kid",
+          "attacker_code": "OP10-099",
+          "target": "Kuzan [\"OP12-040\">OP12-040]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "OP10-116"
+          ],
+          "board": [
+            "OP10-119",
+            "OP10-119"
+          ],
+          "trash": [
+            "ST36-003",
+            "P-088",
+            "ST36-002",
+            "ST36-002",
+            "OP10-109"
+          ],
+          "life": 7
+        },
+        "Proxh#4377": {
+          "hand": [
+            "OP06-044",
+            "ST33-004",
+            "OP12-044",
+            "OP06-043",
+            "ST33-002",
+            "OP06-058",
+            "EB04-028",
+            "ST33-005",
+            "ST33-004"
+          ],
+          "trash": [
+            "OP06-044",
+            "OP12-047",
+            "EB04-022",
+            "OP12-051",
+            "OP12-044",
+            "ST33-005",
+            "OP12-047",
+            "ST33-003",
+            "EB04-022",
+            "EB04-026",
+            "EB04-028",
+            "OP12-044",
+            "OP06-050"
+          ],
+          "board": [
+            "EB04-026",
+            "ST33-003",
+            "OP12-056",
+            "OP06-043",
+            "OP06-050"
+          ],
+          "life": 0
+        }
+      }
+    },
+    {
+      "turn": 12,
+      "player": "Proxh#4377",
+      "card_drawn": {
+        "name": "Ice Block: Pheasant Peck",
+        "code": "OP12-057"
+      },
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Bluegrass",
+          "attacker_code": "EB04-026",
+          "target": "Eustass \"Captain\" Kid [\"OP10-099\">OP10-099]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "EB04-026",
+          "card_name": "Bluegrass",
+          "effects": [
+            "Draw 1 Card",
+            "Trash Kuzan [\"OP12-043\">OP12-043]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP12-040",
+          "card_name": "Kuzan",
+          "effects": [
+            "Draw 1 Card",
+            "Draw 1 Card"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Monkey D. Garp",
+          "attacker_code": "OP12-056",
+          "target": "Eustass \"Captain\" Kid [\"OP10-099\">OP10-099]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "EB04-028",
+          "card_name": "Ice Time",
+          "effects": [
+            "Rest 5 Don",
+            "Trash Sengoku [\"OP12-047\">OP12-047]",
+            "Trafalgar Law [\"OP10-119\">OP10-119] can't attack next turn",
+            "Trafalgar Law [\"OP10-119\">OP10-119] can't attack next turn"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP12-040",
+          "to_name": "Kuzan",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Kuzan",
+          "attacker_code": "OP12-040",
+          "target": "Eustass \"Captain\" Kid [\"OP10-099\">OP10-099]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "ST33-004",
+          "card_name": "Borsalino",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "OP10-116",
+            "OP10-112",
+            "OP15-105"
+          ],
+          "board": [
+            "OP10-119",
+            "OP10-119",
+            "ST36-002"
+          ],
+          "trash": [
+            "ST36-003",
+            "P-088",
+            "ST36-002",
+            "ST36-002",
+            "OP10-109"
+          ],
+          "life": 4
+        },
+        "Proxh#4377": {
+          "hand": [
+            "OP06-044",
+            "ST33-004",
+            "OP12-044",
+            "OP06-043",
+            "ST33-002",
+            "OP06-058",
+            "ST33-005",
+            "OP12-057",
+            "OP12-057"
+          ],
+          "trash": [
+            "OP06-044",
+            "OP12-047",
+            "EB04-022",
+            "OP12-051",
+            "OP12-044",
+            "ST33-005",
+            "OP12-047",
+            "ST33-003",
+            "EB04-022",
+            "EB04-026",
+            "EB04-028",
+            "OP12-044",
+            "OP06-050",
+            "OP12-043",
+            "EB04-028",
+            "OP12-047",
+            "OP06-050"
+          ],
+          "board": [
+            "EB04-026",
+            "ST33-003",
+            "OP12-056",
+            "OP06-043",
+            "ST33-004"
+          ],
+          "life": 0
+        }
+      }
+    },
+    {
+      "turn": 13,
+      "player": "Karlmalone#2854",
+      "card_drawn": {
+        "name": "Capone \"Gang\" Bege",
+        "code": "OP11-101"
+      },
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP10-112",
+          "card_name": "Eustass \"Captain\" Kid",
+          "effects": [
+            "Rest Eustass \"Captain\" Kid [\"OP10-112\">OP10-112]",
+            "Draw 1 Card",
+            "Trash Damned Punk: Electromagnetic Cannon [\"OP10-116\">OP10-116]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Killer",
+          "attacker_code": "ST36-002",
+          "target": "Kuzan [\"OP12-040\">OP12-040]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP06-044"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP10-099",
+          "to_name": "Eustass \"Captain\" Kid",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP10-099",
+          "to_name": "Eustass \"Captain\" Kid",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Eustass \"Captain\" Kid",
+          "attacker_code": "OP10-099",
+          "target": "Kuzan [\"OP12-040\">OP12-040]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP10-099",
+          "card_name": "Eustass \"Captain\" Kid",
+          "effects": [
+            "Flip 1 Life Face Up",
+            "Set Eustass \"Captain\" Kid [\"OP10-112\">OP10-112] to Active",
+            "Eustass \"Captain\" Kid [\"OP10-112\">OP10-112] Gains Blocker"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "OP15-105",
+            "P-088",
+            "OP11-101"
+          ],
+          "board": [
+            "OP10-119",
+            "OP10-119",
+            "ST36-002",
+            "OP10-112"
+          ],
+          "trash": [
+            "ST36-003",
+            "P-088",
+            "ST36-002",
+            "ST36-002",
+            "OP10-109",
+            "OP10-116"
+          ],
+          "life": 4
+        },
+        "Proxh#4377": {
+          "hand": [
+            "ST33-004",
+            "OP12-044",
+            "OP06-043",
+            "ST33-002",
+            "ST33-005",
+            "OP12-057",
+            "ST33-003"
+          ],
+          "trash": [
+            "OP06-044",
+            "OP12-047",
+            "EB04-022",
+            "OP12-051",
+            "OP12-044",
+            "ST33-005",
+            "OP12-047",
+            "ST33-003",
+            "EB04-022",
+            "EB04-026",
+            "EB04-028",
+            "OP12-044",
+            "OP06-050",
+            "OP12-043",
+            "EB04-028",
+            "OP12-047",
+            "OP06-050",
+            "OP06-044",
+            "OP12-057",
+            "OP06-058"
+          ],
+          "board": [
+            "EB04-026",
+            "ST33-003",
+            "OP12-056",
+            "OP06-043",
+            "ST33-004"
+          ],
+          "life": 0
+        }
+      }
+    },
+    {
+      "turn": 14,
+      "player": "Proxh#4377",
+      "card_drawn": {
+        "name": "Hina",
+        "code": "OP12-051"
+      },
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Bluegrass",
+          "attacker_code": "EB04-026",
+          "target": "Eustass \"Captain\" Kid [\"OP10-099\">OP10-099]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "P-088"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "EB04-026",
+          "card_name": "Bluegrass",
+          "effects": [
+            "Draw 1 Card",
+            "Trash Monkey D. Garp [\"OP12-056\">OP12-056]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP12-040",
+          "card_name": "Kuzan",
+          "effects": [
+            "Draw 1 Card",
+            "Draw 1 Card"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP12-056",
+          "to_name": "Monkey D. Garp",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Monkey D. Garp",
+          "attacker_code": "OP12-056",
+          "target": "Killer [\"ST36-002\">ST36-002]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Kuzan",
+          "attacker_code": "OP12-040",
+          "target": "Eustass \"Captain\" Kid [\"OP10-099\">OP10-099]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP06-043",
+          "card_name": "Aramaki",
+          "effects": [
+            "Trash Issho [\"EB04-022\">EB04-022]",
+            "Return Smoker [\"ST33-003\">ST33-003] to Deck Bottom",
+            "Buff Aramaki [\"OP06-043\">OP06-043] 3000"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP06-043",
+          "card_name": "Aramaki",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "OP15-105",
+            "OP11-101",
+            "OP10-114"
+          ],
+          "board": [
+            "OP10-119",
+            "OP10-119",
+            "OP10-112"
+          ],
+          "trash": [
+            "ST36-003",
+            "P-088",
+            "ST36-002",
+            "ST36-002",
+            "OP10-109",
+            "OP10-116",
+            "P-088",
+            "ST36-002"
+          ],
+          "life": 3
+        },
+        "Proxh#4377": {
+          "hand": [
+            "ST33-004",
+            "OP12-044",
+            "ST33-002",
+            "ST33-005",
+            "OP12-057",
+            "ST33-003",
+            "OP12-057",
+            "OP12-051"
+          ],
+          "trash": [
+            "OP06-044",
+            "OP12-047",
+            "EB04-022",
+            "OP12-051",
+            "OP12-044",
+            "ST33-005",
+            "OP12-047",
+            "ST33-003",
+            "EB04-022",
+            "EB04-026",
+            "EB04-028",
+            "OP12-044",
+            "OP06-050",
+            "OP12-043",
+            "EB04-028",
+            "OP12-047",
+            "OP06-050",
+            "OP06-044",
+            "OP12-057",
+            "OP06-058",
+            "OP12-056",
+            "EB04-022"
+          ],
+          "board": [
+            "EB04-026",
+            "OP12-056",
+            "OP06-043",
+            "ST33-004",
+            "OP06-043"
+          ],
+          "life": 0
+        }
+      }
+    },
+    {
+      "turn": 15,
+      "player": "Karlmalone#2854",
+      "card_drawn": {
+        "name": "The Pirate King Is Just The Freest Man on the Sea!!!",
+        "code": "OP13-116"
+      },
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP10-112",
+          "to_name": "Eustass \"Captain\" Kid",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP10-112",
+          "to_name": "Eustass \"Captain\" Kid",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Eustass \"Captain\" Kid",
+          "attacker_code": "OP10-112",
+          "target": "Kuzan [\"OP12-040\">OP12-040]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP12-051",
+            "ST33-002"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP10-119",
+          "to_name": "Trafalgar Law",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP10-119",
+          "to_name": "Trafalgar Law",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Trafalgar Law",
+          "attacker_code": "OP10-119",
+          "target": "Kuzan [\"OP12-040\">OP12-040]",
+          "result": null,
+          "damage": null,
+          "blocked_by": "ST33-004",
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP10-119",
+          "to_name": "Trafalgar Law",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP10-119",
+          "to_name": "Trafalgar Law",
+          "total": 2
+        },
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP10-119",
+          "to_name": "Trafalgar Law",
+          "total": 4
+        },
+        {
+          "type": "attack",
+          "attacker": "Trafalgar Law",
+          "attacker_code": "OP10-119",
+          "target": "Kuzan [\"OP12-040\">OP12-040]",
+          "result": null,
+          "damage": null,
+          "blocked_by": "OP06-043",
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP11-101",
+          "card_name": "Capone \"Gang\" Bege",
+          "effects": []
+        },
+        {
+          "type": "activate",
+          "card": "OP10-112",
+          "card_name": "Eustass \"Captain\" Kid",
+          "effects": [
+            "Draw 1 Card",
+            "Trash The Pirate King Is Just The Freest Man on the Sea!!! [\"OP13-116\">OP13-116]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP10-099",
+          "card_name": "Eustass \"Captain\" Kid",
+          "effects": [
+            "Flip 1 Life Face Up",
+            "Set Eustass \"Captain\" Kid [\"OP10-112\">OP10-112] to Active",
+            "Eustass \"Captain\" Kid [\"OP10-112\">OP10-112] Gains Blocker"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "OP15-105",
+            "OP10-114",
+            "ST36-001"
+          ],
+          "board": [
+            "OP10-119",
+            "OP10-119",
+            "OP10-112",
+            "OP11-101"
+          ],
+          "trash": [
+            "ST36-003",
+            "P-088",
+            "ST36-002",
+            "ST36-002",
+            "OP10-109",
+            "OP10-116",
+            "P-088",
+            "ST36-002",
+            "OP13-116"
+          ],
+          "life": 3
+        },
+        "Proxh#4377": {
+          "hand": [
+            "ST33-004",
+            "OP12-044",
+            "OP12-057",
+            "ST33-003",
+            "OP12-043"
+          ],
+          "trash": [
+            "OP06-044",
+            "OP12-047",
+            "EB04-022",
+            "OP12-051",
+            "OP12-044",
+            "ST33-005",
+            "OP12-047",
+            "ST33-003",
+            "EB04-022",
+            "EB04-026",
+            "EB04-028",
+            "OP12-044",
+            "OP06-050",
+            "OP12-043",
+            "EB04-028",
+            "OP12-047",
+            "OP06-050",
+            "OP06-044",
+            "OP12-057",
+            "OP06-058",
+            "OP12-056",
+            "EB04-022",
+            "OP12-057",
+            "ST33-005",
+            "OP12-051",
+            "ST33-002",
+            "ST33-004",
+            "OP06-043"
+          ],
+          "board": [
+            "EB04-026",
+            "OP12-056",
+            "OP06-043"
+          ],
+          "life": 0
+        }
+      }
+    },
+    {
+      "turn": 16,
+      "player": "Proxh#4377",
+      "card_drawn": {
+        "name": "Sakazuki",
+        "code": "ST33-002"
+      },
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP06-050",
+          "card_name": "Tashigi",
+          "effects": [
+            "<b>Reveal and Draw Ice Block: Pheasant Peck [\"OP12-057\">OP12-057]</b>"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP06-043",
+          "card_name": "Aramaki",
+          "effects": [
+            "Trash Kuzan [\"OP12-043\">OP12-043]",
+            "Send Capone \"Gang\" Bege [\"OP11-101\">OP11-101] to Deck Bottom",
+            "Buff Aramaki [\"OP06-043\">OP06-043] 3000"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP12-040",
+          "card_name": "Kuzan",
+          "effects": [
+            "Draw 1 Card",
+            "Draw 1 Card",
+            "Draw 1 Card"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "EB04-026",
+          "to_name": "Bluegrass",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Bluegrass",
+          "attacker_code": "EB04-026",
+          "target": "Eustass \"Captain\" Kid [\"OP10-099\">OP10-099]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "ST36-001",
+            "OP10-114"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "EB04-026",
+          "card_name": "Bluegrass",
+          "effects": [
+            "Draw 1 Card",
+            "Trash Sengoku [\"OP12-047\">OP12-047]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Aramaki",
+          "attacker_code": "OP06-043",
+          "target": "Trafalgar Law [\"OP10-119\">OP10-119]",
+          "result": null,
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP12-056",
+          "to_name": "Monkey D. Garp",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Monkey D. Garp",
+          "attacker_code": "OP12-056",
+          "target": "Trafalgar Law [\"OP10-119\">OP10-119]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP15-105"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "ST33-001",
+          "card_name": "Koby",
+          "effects": [
+            "Trash Sakazuki [\"OP12-044\">OP12-044]",
+            "Draw 1 Card"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "ST33-004",
+          "card_name": "Borsalino",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [],
+          "board": [
+            "OP10-119",
+            "OP10-112"
+          ],
+          "trash": [
+            "ST36-003",
+            "P-088",
+            "ST36-002",
+            "ST36-002",
+            "OP10-109",
+            "OP10-116",
+            "P-088",
+            "ST36-002",
+            "OP13-116",
+            "ST36-001",
+            "OP10-114",
+            "OP10-119",
+            "OP15-105"
+          ],
+          "life": 3
+        },
+        "Proxh#4377": {
+          "hand": [
+            "OP12-057",
+            "ST33-003",
+            "OP12-057",
+            "OP12-051",
+            "OP06-058",
+            "ST33-002"
+          ],
+          "trash": [
+            "OP06-044",
+            "OP12-047",
+            "EB04-022",
+            "OP12-051",
+            "OP12-044",
+            "ST33-005",
+            "OP12-047",
+            "ST33-003",
+            "EB04-022",
+            "EB04-026",
+            "EB04-028",
+            "OP12-044",
+            "OP06-050",
+            "OP12-043",
+            "EB04-028",
+            "OP12-047",
+            "OP06-050",
+            "OP06-044",
+            "OP12-057",
+            "OP06-058",
+            "OP12-056",
+            "EB04-022",
+            "OP12-057",
+            "ST33-005",
+            "OP12-051",
+            "ST33-002",
+            "ST33-004",
+            "OP06-043",
+            "OP12-043",
+            "OP12-047",
+            "OP12-044",
+            "OP06-050"
+          ],
+          "board": [
+            "EB04-026",
+            "OP12-056",
+            "OP06-043",
+            "ST33-001",
+            "ST33-004"
+          ],
+          "life": 0
+        }
+      }
+    },
+    {
+      "turn": 17,
+      "player": "Karlmalone#2854",
+      "card_drawn": {
+        "name": "Bartolomeo",
+        "code": "ST36-004"
+      },
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP10-099",
+          "to_name": "Eustass \"Captain\" Kid",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP10-099",
+          "to_name": "Eustass \"Captain\" Kid",
+          "total": 2
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP10-099",
+          "to_name": "Eustass \"Captain\" Kid",
+          "total": 3
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP10-099",
+          "to_name": "Eustass \"Captain\" Kid",
+          "total": 4
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP10-099",
+          "to_name": "Eustass \"Captain\" Kid",
+          "total": 5
+        },
+        {
+          "type": "attack",
+          "attacker": "Eustass \"Captain\" Kid",
+          "attacker_code": "OP10-099",
+          "target": "Kuzan [\"OP12-040\">OP12-040]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP12-051"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP10-112",
+          "to_name": "Eustass \"Captain\" Kid",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Eustass \"Captain\" Kid",
+          "attacker_code": "OP10-112",
+          "target": "Kuzan [\"OP12-040\">OP12-040]",
+          "result": null,
+          "damage": null,
+          "blocked_by": "ST33-001",
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 3,
+          "to": "OP10-119",
+          "to_name": "Trafalgar Law",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Trafalgar Law",
+          "attacker_code": "OP10-119",
+          "target": "Kuzan [\"OP12-040\">OP12-040]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": "ST33-004",
+          "countered_by": [
+            "ST33-003",
+            "ST33-002"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP10-112",
+          "card_name": "Eustass \"Captain\" Kid",
+          "effects": [
+            "Draw 1 Card",
+            "Trash Eustass \"Captain\" Kid [\"OP10-112\">OP10-112]"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Karlmalone#2854": {
+          "hand": [
+            "ST36-004"
+          ],
+          "board": [
+            "OP10-119",
+            "OP10-112"
+          ],
+          "trash": [
+            "ST36-003",
+            "P-088",
+            "ST36-002",
+            "ST36-002",
+            "OP10-109",
+            "OP10-116",
+            "P-088",
+            "ST36-002",
+            "OP13-116",
+            "ST36-001",
+            "OP10-114",
+            "OP10-119",
+            "OP15-105",
+            "OP10-112"
+          ],
+          "life": 3
+        },
+        "Proxh#4377": {
+          "hand": [
+            "ST33-005"
+          ],
+          "trash": [
+            "OP06-044",
+            "OP12-047",
+            "EB04-022",
+            "OP12-051",
+            "OP12-044",
+            "ST33-005",
+            "OP12-047",
+            "ST33-003",
+            "EB04-022",
+            "EB04-026",
+            "EB04-028",
+            "OP12-044",
+            "OP06-050",
+            "OP12-043",
+            "EB04-028",
+            "OP12-047",
+            "OP06-050",
+            "OP06-044",
+            "OP12-057",
+            "OP06-058",
+            "OP12-056",
+            "EB04-022",
+            "OP12-057",
+            "ST33-005",
+            "OP12-051",
+            "ST33-002",
+            "ST33-004",
+            "OP06-043",
+            "OP12-043",
+            "OP12-047",
+            "OP12-044",
+            "OP06-050",
+            "OP12-057",
+            "OP06-058",
+            "OP12-051",
+            "ST33-001",
+            "OP12-057",
+            "OP06-050",
+            "ST33-003",
+            "ST33-002"
+          ],
+          "board": [
+            "EB04-026",
+            "OP12-056",
+            "OP06-043",
+            "ST33-004"
+          ],
+          "life": 0
+        }
+      }
+    }
+  ]
+}
