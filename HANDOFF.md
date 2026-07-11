@@ -92,8 +92,26 @@ existe no código de hoje). Causas achadas:
    custo 7+ e eventos, Empty Throne ativava mesmo assim (3 DON + stage
    por nada). Fix: gate novo usando o próprio `_step_is_viable`.
 
-**PENDÊNCIAS (reportadas pelo usuário nesta partida, NÃO corrigidas —
-começar por aqui na próxima sessão):**
+**PENDÊNCIA PRIORIDADE #1 (próxima sessão — decidido com o usuário ao
+encerrar, 11/07 ~2h):** o DTO do plugin C# NÃO transmite o TRASH (nem
+contagem do deck) — `PlayerDto` só tem hand/board/life/leader/stage/don
+(`server.py` ~linha 90; confirmado também em `EngineClient.cs`). Isso é
+a MESMA classe do bug #8 (deck vazio): o motor é um só, mas ao vivo ele
+recebe um retrato incompleto do jogo. Consequências REAIS já observadas:
+`gs.trash = []` ao vivo → (a) o bloco [Counter] do Ground Death
+(OP14-096, exige `trash_gte: 10`) NUNCA é usável ao vivo — provável
+causa direta da observação do usuário "tinha 2 eventos counter na mão e
+não counterou"; (b) a imunidade dos Celestial Dragons (`trash_gte: 7`)
+nunca é vista como ativa pelo caminho ao vivo; (c) o progresso do
+GamePlan (`len(trash) < trash_target`) fica sempre em 0. Fix certo:
+plugin C# enviar a lista do trash (informação PÚBLICA no jogo real — o
+oponente vê a lixeira) + contagem do deck no `PlayerDto`
+(`EngineClient.cs` captura, `server.py` reconstrói em `_dto_to_gs`,
+substituindo os 10 placeholders por contagem real). Exige recompilar o
+plugin (`BOT/setup_bepinex.bat`) e testar com o usuário presente.
+
+**Demais pendências (reportadas pelo usuário nesta partida, NÃO
+corrigidas):**
 - **Kuma anexou o DON restado na Shalria (0 poder) em vez do líder** —
   branch 'delta' (give_don) de `order_target_candidates` desempata só por
   just_played; falta desempate por poder efetivo/utilidade do alvo.
