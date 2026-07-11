@@ -271,15 +271,16 @@ def don_for_attack(gs: GameState, opp_gs: GameState, action: tuple,
     ataque escolhido pelo engine. 0 = declara direto (ataque "seco" de
     pressão — o oponente que escolha entre counter e perder a carta/vida).
 
-    Com `match`, calcula o DON LIVRE do plano do turno: o que sobra do
-    don_available depois (a) das jogadas que o engine ainda pretende fazer
-    (ações 'play' com score >= 0, na ordem de preferência, enquanto o DON
-    alcança) e (b) da reserva de defesa. A margem de counter do
-    don_needed_for_attack só é paga com essa sobra — DON comprometido com o
-    plano nunca vira margem.
+    Com `match`, calcula o DON LIVRE do plano do turno via
+    `OPTCGMatch._don_livre_for_plan` (fonte única compartilhada com o
+    simulador interno — achado real 10/07: essa conta existia SÓ aqui,
+    duplicada; `_attach_don_for_attack` no simulador chamava
+    don_needed_for_attack sem don_livre, tratando TODO o don_available
+    como ocioso, o que inflava a margem de ataque muito além do
+    necessário e esvaziava o DON que sobraria pra jogar outras cartas no
+    mesmo turno).
     """
-    from optcg_engine.decision_engine import (don_needed_for_attack,
-                                              effective_hand_play_cost)
+    from optcg_engine.decision_engine import don_needed_for_attack
     if action is None or len(action) < 3 or action[1] != 'attack':
         return 0
     attacker = action[2]
@@ -287,22 +288,7 @@ def don_for_attack(gs: GameState, opp_gs: GameState, action: tuple,
     tgt = action[4] if len(action) > 4 else None
     engine = DecisionEngine(gs, opp_gs)
 
-    don_livre = None
-    if match is not None:
-        planejado = 0
-        try:
-            acts = match._generate_and_score_actions(gs, opp_gs, engine)
-            for a in acts:
-                if a[0] < 0:
-                    break
-                if a[1] == 'play':
-                    custo = effective_hand_play_cost(gs, a[2])
-                    if planejado + custo <= gs.don_available:
-                        planejado += custo
-            reserva = engine._don_reserve_for_defense()
-        except Exception:
-            planejado, reserva = 0, 0
-        don_livre = max(0, gs.don_available - planejado - reserva)
+    don_livre = match._don_livre_for_plan(gs, opp_gs, engine) if match is not None else None
 
     return don_needed_for_attack(attacker, ttype or 'leader', tgt,
                                  gs, opp_gs, engine, don_livre=don_livre)

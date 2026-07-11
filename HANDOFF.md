@@ -1,5 +1,86 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-10 (118) - Claude
+
+### 3 fixes reais de "agressividade" + conclusão: o gargalo virou balanceamento de deck, não mais bug de decisão
+
+Segundo log real do bot jogando Teach (`2026-07-10T17.00.33.log`, salvo no
+banco). Usuário reportou: turno com Laffitte+Fullalead+ataque não completados
+(Fullalead na mão duplicado, DON sobrando), Catarina Devon atacando sem
+ninguém pra copiar poder, e o padrão recorrente "desce carta barata, carta de
+peso fica na mão o jogo inteiro". Investigação levou a 3 fixes confirmados:
+
+**1) `_rest_activates_effect` cego a alvo** — mesma família do achado de
+sessões anteriores (viabilidade). Qualquer carta com `[When Attacking]`
+"valia atacar mesmo sem chance de passar" (regra de pressão), SEM checar se
+o efeito tinha material/alvo. Catarina Devon ("select 1 personagem do
+oponente, copie o poder") atacava a 3000 contra um líder de 5000 quando o
+oponente não tinha NENHUM personagem em campo — sem chance e sem benefício
+nenhum. Fix: novo branch em `_step_is_viable` pra `source: selected_opp_character`
++ `_rest_activates_effect` agora chama `_step_is_viable` de verdade em vez
+de confiar só na presença da chave `when_attacking`. Mesmo padrão afeta
+Mr.2 Bon Kurei (`EB01-061`).
+
+**2) `don_needed_for_attack` sem `don_livre` no simulador interno — achado
+via simulação, não log.** Rodei 60 partidas Teach vs Imu motor-contra-motor
+(decks reais, `Barba Negra BY.deck` x `Imu.deck`) pra medir "agressividade"
+com número, não impressão: **winrate do Teach = 4/60 (6.7%)**, dano médio
+2.67 causado vs 4.88 sofrido. Rastreei uma partida verbose passo a passo:
+o líder do Teach anexava DON em excesso numa única declaração de ataque
+(ex: 9 DON de uma vez, poder final 14000 quando só ~8000 já garantia
+passar) — MUITO além do necessário, sem ganho nenhum (1 ataque = 1 dano de
+vida, não importa o excedente), e isso ZERAVA o DON que sobraria pra jogar
+Catarina Devon e outras cartas no MESMO turno. Causa raiz: essa conta de
+"DON ocioso do plano" (quanto sobra depois das jogadas que o Turn Planner
+ainda quer fazer) só existia no caminho AO VIVO (`sim_bridge.don_for_attack`)
+— o simulador interno (`_attach_don_for_attack`) chamava
+`don_needed_for_attack` sem `don_livre`, tratando TODO don_available como
+ocioso. Fix: extraído pra `OPTCGMatch._don_livre_for_plan`, fonte única
+usada pelos dois caminhos (eliminou uma duplicação real de "dois motores").
+Também removi o teto fixo de 2000 na margem de counter (`opp_counter_potential()`
+sem cap) que mascarava parte do sintoma sem resolver a causa.
+
+**3) Achado #3 rebalanceado** (ver bloco anterior) já estava aplicado nesta
+rodada de testes.
+
+**Resultado honesto**: os 3 fixes são reais e válidos (cada um confirmado
+isoladamente, com teste de integração direto antes de qualquer smoke test),
+mas NENHUM moveu o winrate Teach-vs-Imu — ficou em 3-4/60 (~5-7%) em TODAS
+as rodadas de teste, antes e depois de cada fix. Rodei um espelho Teach vs
+Teach (30 partidas) pra descartar "o motor joga mal o Teach" como causa:
+deu quase 50/50 (16-14) com dano parecido dos dois lados (3.9 vs 3.7) —
+bem mais alto que qualquer coisa que o Teach conseguiu contra o Imu.
+**Conclusão**: o motor pilota o Teach razoavelmente bem contra um
+adversário igual; o desempenho ruim contra o Imu especificamente é
+desbalanceamento real de deck/matchup (o combo Stage→Five Elders→
+reanimação do Imu, turbinado pelos fixes de sessões anteriores, é
+simplesmente mais forte que esse Teach nesse confronto), não mais um bug
+de decisão do motor. Registrado aqui pra não reabrir essa investigação do
+zero numa sessão futura sem essa conclusão.
+
+Validado com `smoke_test.py` 100% e `smoke_test_broad.py` 40/40 sem
+exceção após CADA fix, isolado.
+
+### Log persistente do `engine_server` (novo)
+
+`BOT/engine_server/server.py` agora duplica TUDO que passa por `print()`
+(aqui e em `sim_bridge.py`, mesmo processo/stdout) pra um arquivo em
+`BOT/engine_server/logs/session_<timestamp>.log`, criado sozinho toda vez
+que o server sobe — sem precisar depender do usuário deixar o terminal
+aberto (scrollback tem limite, janela fecha). Antes, quando o bot parava
+de agir no meio de um turno (achado do Fullalead/turno 3 do log anterior),
+não tinha como investigar isso só pelo combat log — só o console do
+server mostra os `[ENG]`/`[DEF]`/`[PLAY]` de cada chamada de
+`/decide`/`/defense`. Pasta `BOT/engine_server/logs/` no `.gitignore`
+(diagnóstico efêmero, não é o banco de combat logs).
+
+### Operacional
+Python (`decision_engine.py`, `sim_bridge.py`, `server.py`) +
+documentação (`BOT/README.md`, `.gitignore`). Log salvo no banco:
+`Marshall.D.Teach-BY_x_Imu-B_2026-07-10T17.00.33`.
+
+---
+
 ## 2026-07-10 (117) - Claude
 
 ### Primeira partida real do bot jogando Teach: 3 achados, o principal explica a "baixa agressividade"

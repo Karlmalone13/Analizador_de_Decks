@@ -1034,18 +1034,21 @@ def don_needed_for_attack(attacker: 'Card', ttype: str, tgt: 'Optional[Card]',
     if need_base >= p.don_available:
         return min(p.don_available, need_base)
 
-    if ttype == 'leader':
-        # Counter PROVAVEL, nao potencial maximo: o oponente raramente gasta
-        # mais de ~2 cartas para negar dano de chip no lider (o potencial
-        # cheio faria o bot afundar DON demais num unico ataque).
-        counter_prov = min(engine.analyzer.opp_counter_potential(), 2000)
-    else:
-        # Alvo personagem: mesma conta do lider (counter real da mao,
-        # incluindo efeitos [Counter] tipo Ground Death/Never Existed, nao
-        # so o stat impresso — achado 07/07: o flat "1000 if opp.hand"
-        # nunca previa os +4000 desses efeitos, e o Teach empatado falhava
-        # contra eles repetidamente na mesma partida).
-        counter_prov = min(engine.analyzer.opp_counter_potential(), 2000)
+    # Counter REAL da mao do oponente (stat impresso + efeitos [Counter],
+    # ex: Ground Death/Never Existed — achado 07/07: um flat "1000 if
+    # opp.hand" nunca previa os +4000 desses efeitos). Achado 10/07,
+    # simulacao Teach vs Imu (100 partidas, winrate 6.7%): um teto fixo de
+    # 2000 aqui fazia o bot atacar sistematicamente "seco demais" contra
+    # counters reais de 3000-4000 (Imu tem varios), levando ataque atras de
+    # ataque bloqueado com DON ocioso sobrando no campo (visto no trace:
+    # "Counter! +3000/+4000 -> defesa 8000/9000", ataque falha, personagens
+    # nunca atacam pq so o lider e forte o bastante pra tentar). O teto de
+    # 2000 vinha de uma regra de nao "afundar DON demais" -- mas
+    # `livre_para_margem` (abaixo) ja e o limitador real: so paga margem
+    # com DON que sobraria ocioso mesmo assim, nunca rouba DON do plano do
+    # turno. Sem o teto fixo, a margem escala com a ameaca real, nao um
+    # numero arbitrario.
+    counter_prov = engine.analyzer.opp_counter_potential()
     need_margem = (counter_prov + 999) // 1000
 
     if don_livre is None:
@@ -1172,6 +1175,17 @@ class EffectExecutor:
         """
         a = step.get('action', '')
         me, opp = self.me, self.opp
+
+        # Efeito cuja fonte e "escolha 1 personagem do oponente" (ex: Catarina
+        # Devon [When Attacking] "select up to 1 opponent Character, copia o
+        # poder dele") -- sem NENHUM personagem no campo do oponente, o step
+        # nao produz nada (fica no poder base). Achado real 10/07: sem essa
+        # checagem, _rest_activates_effect() achava que atacar SEMPRE valia
+        # a pena (so por ter [When Attacking]), mesmo com campo do oponente
+        # vazio -- o bot atacava com 3000 de poder puro contra um lider de
+        # 5000, sem chance de passar e sem nenhum beneficio.
+        if step.get('source') == 'selected_opp_character':
+            return bool(opp.field_chars)
 
         # ── Efeitos que precisam de ALVO no oponente ──────────────────────────
         if a in ('ko', 'rest_opp_character', 'debuff_power', 'debuff_cost',
@@ -5460,11 +5474,21 @@ class DecisionEngine:
         opp_life = self.opp.life_count()
         don_now  = self.me.don_available
 
-        # Jogabilidade imediata
+        # Jogabilidade imediata -- empurrão de DESEMPATE entre cartas de
+        # valor parecido, NÃO um substituto pro valor intrínseco da carta.
+        # Achado #3 (multissessão, finalmente atacado 10/07): antes disso
+        # tinha +40/+20/-15 (span de 55), maior que boa parte dos bônus de
+        # keyword/flag abaixo -- uma vanilla barata e jogável agora (ex:
+        # Saint Mjosgard, 0 de poder) pontuava ACIMA de uma bomba de custo
+        # alto só injogável neste turno (ex: Five Elders, 12000 de poder),
+        # mesmo a bomba tendo poder/impacto muito maior. Reduzido pra
+        # span de 23 (+15/+8/-8) -- ainda favorece jogar o que cabe no DON
+        # de agora quando os valores são próximos, mas não afoga mais a
+        # diferença real de poder/efeito entre as opções.
         play_cost = effective_hand_play_cost(self.me, card)
-        if play_cost <= don_now:       s += 40
-        elif play_cost <= don_now + 2: s += 20
-        else:                          s -= 15
+        if play_cost <= don_now:       s += 15
+        elif play_cost <= don_now + 2: s += 8
+        else:                          s -= 8
 
         s += card.power / 1000 * 5
 
@@ -5793,13 +5817,31 @@ class DecisionEngine:
         justificando o ataque mesmo sem chance de passar.
 
         Verdadeiro quando:
-        - tem [When Attacking] (o ato de atacar dispara o efeito), OU
+        - tem [When Attacking] que vai produzir efeito real agora (checado
+          via _step_is_viable -- achado real 10/07: antes bastava TER a
+          chave when_attacking, sem checar se o efeito tem alvo/material.
+          Catarina Devon "select 1 personagem do oponente, copia o poder"
+          contava como "vale atacar mesmo sem chance de passar" mesmo com
+          o campo do oponente VAZIO -- o bot declarava um ataque de 3000
+          contra lider de 5000 sem nenhum beneficio real, so por ter a
+          chave presente), OU
         - tem efeito [Your Turn]/[Opponent's Turn] que depende de estar restado
           (ex: Shanks — restado dá -1000 a todos os personagens do oponente).
         """
         effects = get_card_effects(card.code)
-        if 'when_attacking' in effects:
-            return True
+        wa = effects.get('when_attacking')
+        if wa:
+            steps = wa.get('steps', [])
+            # Sem steps parseados (so texto cru): mantem comportamento antigo,
+            # nao ha como checar viabilidade sem estrutura. _step_is_viable e
+            # metodo de EffectExecutor, nao de DecisionEngine -- instancia
+            # local so pra essa checagem (mesmo padrao usado em
+            # _should_activate_main).
+            if not steps:
+                return True
+            ee = EffectExecutor(self.me, self.opp)
+            if any(ee._step_is_viable(s, card) for s in steps):
+                return True
         # efeitos que se beneficiam de estar restado
         txt = (card.card_text or '').lower()
         if ('when this character becomes rested' in txt or
@@ -7534,9 +7576,47 @@ class OPTCGMatch:
             c.just_played = False
         return False
 
+    def _don_livre_for_plan(self, p, opp, engine) -> int:
+        """
+        DON ocioso do plano do turno: o que sobra do don_available depois
+        (a) das jogadas que o Turn Planner ainda pretende fazer (acoes
+        'play' com score >= 0, na ordem de preferencia, enquanto o DON
+        alcanca) e (b) da reserva de defesa. So esse sobra vira margem de
+        counter num ataque -- DON comprometido com o plano nunca e gasto
+        a mais numa unica margem.
+
+        Fonte unica: antes so existia essa conta no caminho AO VIVO
+        (sim_bridge.don_for_attack) -- o simulador interno
+        (_attach_don_for_attack) chamava don_needed_for_attack sem
+        don_livre (default None -> usa TODO o don_available como se
+        estivesse ocioso). Achado real 10/07 (simulacao Teach vs Imu,
+        winrate 6.7%): o Turn Planner anexava 9 DON numa unica declaracao
+        de ataque (muito alem do necessario pra passar, sem ganho nenhum
+        alem de 1 vida), esvaziando o DON que sobraria pra jogar Catarina
+        Devon e outras cartas na mao no MESMO turno -- exatamente o padrao
+        "desce carta barata, carta de peso fica parada" que o usuario
+        reportou, so que a causa raiz era DON sendo desperdicado no
+        ataque, nao um viés de avaliar_carta.
+        """
+        planejado = 0
+        try:
+            acts = self._generate_and_score_actions(p, opp, engine)
+            for a in acts:
+                if a[0] < 0:
+                    break
+                if a[1] == 'play':
+                    custo = effective_hand_play_cost(p, a[2])
+                    if planejado + custo <= p.don_available:
+                        planejado += custo
+            reserva = engine._don_reserve_for_defense()
+        except Exception:
+            planejado, reserva = 0, 0
+        return max(0, p.don_available - planejado - reserva)
+
     def _attach_don_for_attack(self, attacker, ttype, tgt, p, opp, engine, verbose):
         """Anexa DON a este ataque, se ajudar a passar a defesa."""
-        need = don_needed_for_attack(attacker, ttype, tgt, p, opp, engine)
+        don_livre = self._don_livre_for_plan(p, opp, engine)
+        need = don_needed_for_attack(attacker, ttype, tgt, p, opp, engine, don_livre=don_livre)
         if need > 0:
             attacker.don_attached += need
             p.don_available -= need

@@ -23,6 +23,41 @@ from pydantic import BaseModel
 import uvicorn
 from typing import Optional
 
+# ── Log de sessao em arquivo (alem do console) ───────────────────────────────
+# Duplica tudo que passa por print() (aqui e em sim_bridge.py, que roda no
+# MESMO processo/stdout) pra um arquivo, alem do terminal. Sem isso, o unico
+# jeito de investigar por que o bot parou de agir no meio de um turno era
+# depender do usuario deixar o terminal aberto e rolar o scrollback -- o
+# scrollback tem limite e a janela fecha; um arquivo persiste. Achado real
+# 10/07: precisei pedir pro usuario "deixa o terminal aberto da proxima vez"
+# porque nao tinha como investigar um loop ao vivo so pelo combat log.
+import datetime as _dt
+
+class _TeeStream:
+    def __init__(self, *streams):
+        self._streams = streams
+    def write(self, data):
+        for s in self._streams:
+            try:
+                s.write(data)
+            except Exception:
+                pass
+        return len(data)
+    def flush(self):
+        for s in self._streams:
+            try:
+                s.flush()
+            except Exception:
+                pass
+
+_LOG_DIR = Path(__file__).parent / "logs"
+_LOG_DIR.mkdir(exist_ok=True)
+_LOG_PATH = _LOG_DIR / f"session_{_dt.datetime.now():%Y-%m-%dT%H.%M.%S}.log"
+_log_file = open(_LOG_PATH, "a", encoding="utf-8", buffering=1)
+sys.stdout = _TeeStream(sys.stdout, _log_file)
+sys.stderr = _TeeStream(sys.stderr, _log_file)
+print(f"[SERVER] log desta sessao (manda pra mim se algo der errado): {_LOG_PATH}", flush=True)
+
 app = FastAPI(title="OPTCG Bot Engine Server")
 
 

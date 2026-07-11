@@ -59,7 +59,16 @@ C:\Projetos_TI\analidador_de_decks_optcg\BOT\setup_bepinex.bat
    o humano joga o lado de cima.
 
 Logs do plugin: `E:\Games\OnePieceSimulador\Builds_Windows\BepInEx\LogOutput.log`
-(heartbeat `[HB]` a cada 3s para debug). Decisões do engine: saída do server.
+(heartbeat `[HB]` a cada 3s para debug). Decisões do engine: saída do server
+— e desde 10/07 essa saída TAMBÉM fica salva automaticamente em
+`BOT/engine_server/logs/session_<timestamp>.log` (arquivo criado sozinho
+toda vez que o server sobe, sem precisar deixar o terminal aberto). Se o bot
+parar de agir no meio de um turno ou fizer algo estranho, manda esse arquivo
+junto com o combat log — sem ele só dá pra ver O QUE o bot decidiu (via
+combat log), não POR QUE ele parou de decidir (só o console/log do server
+mostra os `[ENG]`/`[DEF]`/`[PLAY]` de cada chamada de `/decide`/`/defense`).
+Esses logs não vão pro git (`.gitignore`) — são diagnóstico efêmero, não o
+banco de combat logs.
 
 **Shift+B**: liga/desliga o bot em tempo real, sem reiniciar o jogo nem
 recarregar a dll (`BotDriver.cs`, campo `_botEnabled`). Útil pra jogar

@@ -44,6 +44,11 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
+# logs de sessao do engine_server (diagnostico ao vivo do bot, efemero --
+# NAO e o banco de combat logs, que fica em scriptis_da_ia/logs/ e E
+# versionado de proposito, ver CLAUDE.md)
+BOT/engine_server/logs/
+
 # env files (can opt-in for committing if needed)
 .env*
 
