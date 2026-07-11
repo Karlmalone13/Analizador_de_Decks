@@ -1118,5 +1118,105 @@
       "You": "decks/Imu-B_2026-07-10T22.32.09.json",
       "Opponent": "decks/Marshall.D.Teach-BY_2026-07-10T22.32.09.json"
     }
+  },
+  {
+    "id": "2026-07-10T23.19.23",
+    "friendly_name": "Imu-B_x_Marshall.D.Teach-BY",
+    "date": "2026-07-10",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP13-079",
+      "leader_name": "Imu",
+      "slug": "Imu-B"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP16-080",
+      "leader_name": "Marshall D. Teach",
+      "slug": "Marshall.D.Teach-BY"
+    },
+    "turns": 9,
+    "winner": null,
+    "log_file": "raw/Imu-B_x_Marshall.D.Teach-BY_2026-07-10T23.19.23.log",
+    "parsed_file": "parsed/Imu-B_x_Marshall.D.Teach-BY_2026-07-10T23.19.23.json",
+    "deck_files": {
+      "You": "decks/Imu-B_2026-07-10T23.19.23.json",
+      "Opponent": "decks/Marshall.D.Teach-BY_2026-07-10T23.19.23.json"
+    }
+  },
+  {
+    "id": "2026-07-10T23.38.05",
+    "friendly_name": "Imu-B_x_Marshall.D.Teach-BY",
+    "date": "2026-07-10",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP13-079",
+      "leader_name": "Imu",
+      "slug": "Imu-B"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP16-080",
+      "leader_name": "Marshall D. Teach",
+      "slug": "Marshall.D.Teach-BY"
+    },
+    "turns": 9,
+    "winner": null,
+    "log_file": "raw/Imu-B_x_Marshall.D.Teach-BY_2026-07-10T23.38.05.log",
+    "parsed_file": "parsed/Imu-B_x_Marshall.D.Teach-BY_2026-07-10T23.38.05.json",
+    "deck_files": {
+      "You": "decks/Imu-B_2026-07-10T23.38.05.json",
+      "Opponent": "decks/Marshall.D.Teach-BY_2026-07-10T23.38.05.json"
+    }
+  },
+  {
+    "id": "2026-07-11T00.49.30",
+    "friendly_name": "Imu-B_x_Marshall.D.Teach-BY",
+    "date": "2026-07-11",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP13-079",
+      "leader_name": "Imu",
+      "slug": "Imu-B"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP16-080",
+      "leader_name": "Marshall D. Teach",
+      "slug": "Marshall.D.Teach-BY"
+    },
+    "turns": 7,
+    "winner": null,
+    "log_file": "raw/Imu-B_x_Marshall.D.Teach-BY_2026-07-11T00.49.30.log",
+    "parsed_file": "parsed/Imu-B_x_Marshall.D.Teach-BY_2026-07-11T00.49.30.json",
+    "deck_files": {
+      "You": "decks/Imu-B_2026-07-11T00.49.30.json",
+      "Opponent": "decks/Marshall.D.Teach-BY_2026-07-11T00.49.30.json"
+    }
+  },
+  {
+    "id": "2026-07-11T01.36.16",
+    "friendly_name": "Imu-B_x_Marshall.D.Teach-BY",
+    "date": "2026-07-11",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP13-079",
+      "leader_name": "Imu",
+      "slug": "Imu-B"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP16-080",
+      "leader_name": "Marshall D. Teach",
+      "slug": "Marshall.D.Teach-BY"
+    },
+    "turns": 9,
+    "winner": null,
+    "log_file": "raw/Imu-B_x_Marshall.D.Teach-BY_2026-07-11T01.36.16.log",
+    "parsed_file": "parsed/Imu-B_x_Marshall.D.Teach-BY_2026-07-11T01.36.16.json",
+    "deck_files": {
+      "You": "decks/Imu-B_2026-07-11T01.36.16.json",
+      "Opponent": "decks/Marshall.D.Teach-BY_2026-07-11T01.36.16.json"
+    }
   }
 ]

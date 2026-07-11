@@ -107,6 +107,18 @@ class GameStateDto(BaseModel):
 _bridge = None
 _match  = None   # OPTCGMatch: maquinaria de regras usada por choose_action
 
+# ── Ativacoes opcionais ja recusadas neste turno ──────────────────────────────
+# Achado real 10/07 (log 23.19.23, turno 4): mesmo com resolve_optional_effect
+# avaliando corretamente (fix anterior), quando a resposta e False o estado do
+# jogo nao muda -- a MESMA acao 'activate' de score alto era reoferecida a
+# cada /decide seguinte (GameState e reconstruido do zero por chamada, sem
+# memoria própria), travando o turno em loop ate o retry do plugin desistir
+# sem nunca tentar a jogada de score mais baixo que sobrava. (codigo, turno) ->
+# marca que ESSA ativacao ja foi oferecida e recusada nesse turno; /decide
+# passa a excluir do proximo /decide desse mesmo turno, deixando o Turn
+# Planner cair pra proxima acao da lista.
+_declined_optional: set[tuple[str, int]] = set()
+
 
 def _get_bridge():
     global _bridge
@@ -207,6 +219,19 @@ def _dto_to_gs(player: PlayerDto, turn: int):
     gs.life          = [c for c in (_make(d) for d in player.life) if c]
     gs.don_available = player.activeDon
     gs.don_rested    = player.restedDon
+    # Deck oculto: o DTO nao traz o deck (informacao que o bot nao ve), mas
+    # um GameState com deck=[] faz _step_is_viable de 'draw'/'look_top_deck'
+    # dar False SEMPRE no caminho ao vivo -- achado real 11/07 (log 01.36.16):
+    # o draw do lider Imu era recusado todo turno AO VIVO ([DEF] optional ->
+    # False) enquanto o simulador interno (deck completo) funcionava; por
+    # isso o auditor dava 0 e o jogo real falhava. Placeholders bastam pros
+    # checks de "tem carta no deck?" -- em jogo real o deck nunca esta vazio
+    # (deck vazio = derrota imediata), e nada no caminho ao vivo compra do
+    # gs.deck de verdade (o jogo C# resolve as compras).
+    data_dummy = {"name": "?", "type": "CHARACTER", "cost": 1, "power": 0,
+                  "text": "", "color": "", "sub_types": "", "life": 0,
+                  "has_trigger": False}
+    gs.deck = [_make_card("UNKNOWN-000", data_dummy) for _ in range(10)]
     # Estado REAL de once-per-turn vindo do jogo (lb_ActionsUsed): marca a
     # acao como ja usada NESTE turno para o engine nao reoferecer activate
     # (a gs e reconstruida a cada /decide — sem isso o _am_used_turn se perdia
@@ -265,6 +290,11 @@ def mulligan(req: MulliganRequest):
     Resposta: {"mulligan": bool, "reason": str}
     """
     try:
+        # Partida nova: limpa recusas da partida anterior. Sem isso, uma
+        # ativacao recusada no turno N da partida passada continuava
+        # excluida no turno N de TODAS as partidas seguintes do mesmo
+        # processo (o set e chaveado por (codigo, turno), sem nocao de jogo).
+        _declined_optional.clear()
         match = _get_match()
         hand_cards = [c for c in (_make(d) for d in req.hand) if c]
         if not hand_cards:
@@ -322,6 +352,8 @@ def defense(req: DefenseRequest):
             # Efeito opcional com custo no proprio turno do bot
             out["useReaction"] = bridge.resolve_optional_effect(
                 gs, opp_gs, actor_code=req.triggerCode)
+            if not out["useReaction"] and req.triggerCode:
+                _declined_optional.add((req.triggerCode, req.state.turnNumber))
             print(f"[DEF] optional -> {out['useReaction']}", flush=True)
 
         return out
@@ -390,10 +422,15 @@ def decide(state: GameStateDto):
         opp_gs = _dto_to_gs(state.opp, state.turnNumber)
 
         # So tipos que o plugin sabe executar — os demais sao pulados pelo
-        # bridge em vez de encerrar o turno.
+        # bridge em vez de encerrar o turno. exclude_activate_codes: ativacoes
+        # opcionais ja recusadas ESTE turno (ver _declined_optional acima) —
+        # sem isso o Turn Planner reoferece a mesma 'activate' de score alto
+        # pra sempre, sem nunca cair pra proxima acao da lista.
+        excluir = {code for (code, t) in _declined_optional if t == state.turnNumber}
         action = bridge.choose_action(gs, opp_gs, match, timeout=3.0,
                                       allowed_types={"play", "attack",
-                                                     "attach_don", "activate"})
+                                                     "attach_don", "activate"},
+                                      exclude_activate_codes=excluir)
 
         if action is None:
             return {"type": "end_turn", "cardId": 0, "targetId": 0, "donToAttach": 0}

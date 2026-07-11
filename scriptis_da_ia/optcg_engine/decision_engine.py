@@ -159,6 +159,75 @@ def get_card_flags(code: str) -> dict:
     return _ANALYSIS_DB.get(code, {})
 
 
+def compute_game_plan(p: 'GameState') -> dict:
+    """
+    Plano de jogo do deck: escaneia TODAS as zonas do próprio jogador
+    (deck+mão+campo+trash+vida+stage — a união reconstrói a lista completa
+    do deck a qualquer momento da partida, já que cartas próprias não saem
+    dessas zonas em jogo normal) atrás de dois sinais estruturais já
+    presentes no card_effects_db, sem parser novo:
+
+    - trash_target: maior `trash_gte` declarado em `conditions` de
+      qualquer carta do deck (ex: Imu — 5 Celestial Dragons com "7+ no
+      trash = imune a remoção"). 0 se o deck não tem esse padrão.
+    - win_con_code / don_target: carta com maior valor de reanimação via
+      `play_from_trash` no próprio `activate_main` (ex: Five Elders,
+      reanima até 5). don_target = custo dela. None se o deck não tem
+      combo desse tipo.
+
+    Decisão de arquitetura 10/07 (ver HANDOFF #119): derivar do estado
+    estrutural do deck, não de heurística por nome de carta — generaliza
+    pra qualquer deck com os mesmos padrões, não só o Imu. Barato o
+    bastante (deck tem ~50 cartas, get_card_effects é O(1)) pra recomputar
+    a cada chamada em vez de cachear — sem estado extra pra manter
+    sincronizado entre os polls do caminho ao vivo.
+    """
+    zonas = list(p.deck) + list(p.hand) + list(p.field_chars) + list(p.trash) + list(p.life)
+    if getattr(p, 'field_stage', None) is not None:
+        zonas.append(p.field_stage)
+
+    # Contagem de trash_gte por VALOR (nao o maximo): o objetivo real do
+    # deck e o threshold que MAIS cartas compartilham (ex: Imu, 5
+    # personagens em 7 pra imunidade), nao o threshold mais alto que
+    # apareceu (ex: Empty Throne tem um bonus a parte em 19, so 1 carta —
+    # pegar o maximo cru escolheria a meta errada, muito mais dificil e
+    # menos representativa do plano do deck).
+    trash_gte_contagem: dict[int, int] = {}
+    win_con_code = None
+    win_con_value = 0
+    win_con_cost = None
+    vistos = set()
+    for c in zonas:
+        if c.code in vistos:
+            continue
+        vistos.add(c.code)
+        effects = get_card_effects(c.code)
+        for trig_data in effects.values():
+            conds = trig_data.get('conditions', {}) if isinstance(trig_data, dict) else {}
+            if 'trash_gte' in conds:
+                v = conds['trash_gte']
+                trash_gte_contagem[v] = trash_gte_contagem.get(v, 0) + 1
+
+        am = effects.get('activate_main', {})
+        for step in am.get('steps', []):
+            if step.get('action') == 'play_from_trash':
+                valor = step.get('count', 1)
+                if valor > win_con_value:
+                    win_con_value = valor
+                    win_con_code = c.code
+                    win_con_cost = c.cost
+
+    trash_target = 0
+    if trash_gte_contagem:
+        trash_target = max(trash_gte_contagem, key=lambda v: (trash_gte_contagem[v], -v))
+
+    return {
+        'trash_target': trash_target,
+        'win_con_code': win_con_code,
+        'don_target': win_con_cost,
+    }
+
+
 # ===========================================================================
 # Estruturas de dados
 # ===========================================================================
@@ -1193,6 +1262,17 @@ class EffectExecutor:
                  'opp_trash_from_hand', 'place_opp_character_bottom_deck'):
             if a == 'opp_trash_from_hand':
                 return len(opp.hand) > 0
+            # Alvo e o STAGE do oponente, nao personagem (ex: Never Existed
+            # OP13-098, "KO up to 1 opponent's Stage cost<=7") -- achado real
+            # 11/07 (log 00.49.30): a checagem generica abaixo olhava
+            # field_chars e dava viavel com o oponente SEM stage nenhum; o
+            # evento foi jogado no vacuo (1 DON + a carta, efeito nulo).
+            if step.get('target') == 'opp_stage':
+                stage = getattr(opp, 'field_stage', None)
+                if stage is None:
+                    return False
+                cost_lte = self._resolve_cost_lte(step, default=None)
+                return cost_lte is None or stage.cost <= cost_lte
             from optcg_engine.rules_facade import eligible_cards
             cost_lte = self._resolve_cost_lte(step, default=None)
             candidates = eligible_cards(
@@ -2500,6 +2580,15 @@ class EffectExecutor:
                             continue
                     # comparar perda real: campo e mao usam escalas proximas.
                     val_char = pior_char.board_value() * 10 if pior_char else 10**9
+                    # GamePlan (HANDOFF #119): enquanto o trash ainda nao
+                    # bateu o alvo do deck (ex: Imu, 7 pra imunidade dos
+                    # Celestial Dragons), trashar personagem pesa MENOS —
+                    # o proprio deck foi construido pra usar a lixeira como
+                    # recurso, nao so como perda de campo.
+                    if pior_char is not None:
+                        plano = compute_game_plan(self.me)
+                        if plano['trash_target'] and len(self.me.trash) < plano['trash_target']:
+                            val_char *= 0.5
                     val_mao = self._trash_value(pior_mao) if pior_mao else 10**9
                     if pior_char is not None and val_char <= val_mao:
                         remove_character_from_field(self.me, pior_char, 'trash')
@@ -4674,6 +4763,16 @@ class EffectExecutor:
         if card.card_type == 'CHARACTER' and card.cost >= 7:
             value += 20 + card.cost * 8   # custo 10 → +100 extra
 
+        # GamePlan (HANDOFF #119): a carta identificada como combo/bomba do
+        # deck (maior play_from_trash, ex: Five Elders) ganha proteção
+        # extra explícita enquanto o DON ainda não bate o custo dela —
+        # diferente do bônus genérico de custo≥7 acima, este é ligado à
+        # carta CERTA do deck, não a qualquer carta cara.
+        plano = compute_game_plan(self.me)
+        if (plano['win_con_code'] and card.code == plano['win_con_code']
+                and plano['don_target'] and self.me.don_available < plano['don_target']):
+            value += 150
+
         # Carta jogável ESTE turno vale ainda mais — perda dupla se trashada.
         custo = effective_hand_play_cost(self.me, card)
         if custo <= self.me.don_available:
@@ -4736,6 +4835,24 @@ class EffectExecutor:
         """
         if not any(c.get('type') in self._SACRIFICE_COST_TYPES for c in costs):
             return True
+
+        # trash_char_or_hand (ex: lider Imu): o custo tambem pode ser pago
+        # com um personagem do CAMPO -- um corpo de 0 poder cujo On Play ja
+        # foi gasto (ex: Saint Shalria) e sacrificio quase gratis, e trashar
+        # ele ainda alimenta o plano de lixeira do deck. Achado real 11/07
+        # (log 00.49.30): sem esta checagem, a decisao olhava SO a mao --
+        # mao com cartas valiosas => recusava o draw do lider todo turno,
+        # mesmo com 2 Shalrias gastas paradas no campo. Mesmo criterio de
+        # escala do _pay_costs (board_value*10 comparavel a _trash_value).
+        for c in costs:
+            if c.get('type') != 'trash_char_or_hand':
+                continue
+            from optcg_engine.rules_facade import eligible_cards
+            chars = eligible_cards(self.me.field_chars,
+                                   filter_text=c.get('filter_type', ''))
+            if chars and min(ch.board_value() * 10 for ch in chars) <= 60:
+                return True
+
         if len(self.me.hand) < 2:
             return False
         worst = self._choose_to_trash(self.me.hand)
@@ -6523,6 +6640,17 @@ class OPTCGMatch:
         actions = [s.get('action') for s in steps]
         costs = am.get('costs', [])
 
+        # ── 0b. play_card sem carta elegível na mão: ativar é jogar o custo
+        # fora (achado real 11/07, log 01.36.16: Empty Throne ativado com a
+        # mão só de custo-7+ e eventos, 3 DON + stage restados pra "Choose 0
+        # Friendly Targets"). Usa o MESMO _step_is_viable do executor — fonte
+        # única da regra de elegibilidade.
+        if 'play_card' in actions:
+            dummy_ee = EffectExecutor(p, opp)
+            passos_play = [s for s in steps if s.get('action') == 'play_card']
+            if not any(dummy_ee._step_is_viable(s, src) for s in passos_play):
+                return False, 'play_card: nenhuma carta elegível na mão'
+
         # ── 1. Verifica pagabilidade de cada custo ───────────────────────────
         for c in costs:
             ctype = c.get('type')
@@ -6696,6 +6824,24 @@ class OPTCGMatch:
             if counters_em_mao >= 4: v *= 0.4
             elif counters_em_mao >= 2: v *= 0.7
             base -= v
+
+        # GamePlan fase 2 (HANDOFF #119/#120): DON!! não é perdido entre
+        # turnos (refresh no início do turno devolve TUDO que foi anexado,
+        # + o ramp de +2) — o que trava a carta-bomba (ex: Five Elders,
+        # custo 10) não é "não guardei DON ao longo de várias partidas", é
+        # gastar o DON deste MESMO turno em margem de ataque ANTES dela
+        # competir pela vez, no turno exato em que ela já ficou pagável.
+        # Achado real 10/07 (log 23.38.05): don=9 no turno 5 foi todo pra
+        # 2 ataques (top3 480/480/470, tudo 'attack') — no turno em que o
+        # DON bater o alvo, a jogada precisa vencer qualquer ataque na
+        # ordem, não só competir normalmente. Mesma lógica do ZEHAHAHAHA
+        # do usuário: joga a bomba PRIMEIRO quando o DON permite, ataque
+        # "seco" (sem margem) depois com o que sobrar.
+        plano = compute_game_plan(engine.me)
+        if (plano['win_con_code'] and card.code == plano['win_con_code']
+                and plano['don_target']
+                and engine.me.don_available >= plano['don_target']):
+            base += 600
 
         # Guarda de campo cheio: jogar um Character com o campo cheio (5)
         # KO a pior carta ja em campo pra abrir espaco (main_phase, sem volta
@@ -6969,12 +7115,24 @@ class OPTCGMatch:
 
             if is_ciclo_neutro:
                 base = min(base, 45)
+                # GamePlan (HANDOFF #119/#121): num deck cujo plano usa a
+                # LIXEIRA como recurso (trash_target > 0, ex: Imu — imunidade
+                # com 7+ e Five Elders reanimando do trash), o ciclo "trasha 1
+                # → compra 1" não é neutro: cada ativação alimenta o plano.
+                # Auditor 11/07 (check F): com o cap de 45 + as penalidades
+                # genéricas abaixo, o draw do líder Imu pontuava NEGATIVO em
+                # ~25% dos turnos com material sobrando e nunca era ativado.
+                plano = compute_game_plan(p)
+                alimenta_plano = bool(plano['trash_target']) and len(p.trash) < plano['trash_target']
+                if alimenta_plano:
+                    base += 30
                 playable = [
                     c for c in p.hand
                     if c.card_type in ('CHARACTER', 'STAGE', 'EVENT')
                     and effective_hand_play_cost(p, c) <= p.don_available
                 ]
-                if GameAnalyzer(p, opp).game_phase() == 'early' and len(p.field_chars) <= 1 and playable:
+                if (not alimenta_plano and playable and len(p.field_chars) <= 1
+                        and GameAnalyzer(p, opp).game_phase() == 'early'):
                     base -= 35
 
         # Ajustes por prioridade
@@ -7139,8 +7297,18 @@ class OPTCGMatch:
             # captura o rest_self (Laffitte OP09-095 06/07: engine reofereceu
             # o activate com ele restado, o jogo recusou em silencio e o
             # guarda de loop encerrou o turno com 4 DON em pe).
+            # EXCECAO (auditor 11/07, check F): o LIDER cujo activate nao
+            # custa rest_self (ex: Imu — custo e so trash) PODE ativar
+            # restado; regra oficial nao exige a fonte ativa. A guarda
+            # derrubava o draw do lider em todo turno em que ele atacava
+            # ANTES de ativar (~25% dos turnos auditados). Personagens/
+            # stages continuam conservadores (risco de rest_self perdido
+            # pelo parser).
             if getattr(src, 'rested', False):
-                continue
+                exige_rest_self = any(c.get('type') == 'rest_self'
+                                      for c in am.get('costs', []))
+                if exige_rest_self or src is not p.leader:
+                    continue
             # Ja usado NESTE turno: rastreado pelo engine na simulacao, ou
             # pelo jogo (lb_ActionsUsed -> actionUsed no DTO) no caminho do
             # bot. Vale para qualquer activate, com ou sem once_per_turn —
@@ -7510,6 +7678,26 @@ class OPTCGMatch:
             if not actions or actions[0][0] < 0:
                 break
             priority = engine.analyzer.analysis_priority()
+
+            # GamePlan fase 2b (auditor 10/07, flag D_win_con_parado): quando a
+            # acao do topo e JOGAR a carta-bomba do plano e o DON ja paga, executa
+            # DIRETO, sem passar pelo Monte Carlo. O valor da bomba se realiza no
+            # turno SEGUINTE (ex: Five Elders reanima via activate_main no
+            # proximo turno) — a simulacao de fim de turno nao enxerga isso e
+            # escolhia linhas que gastavam o DON em outra coisa (Empty Throne
+            # 3 DON primeiro), deixando a bomba impagavel de novo, todo turno.
+            # O caminho AO VIVO (choose_action) ja pega o topo da lista direto —
+            # este bypass so alinha o simulador interno ao mesmo comportamento.
+            # Nao dispara em LETHAL: fechar a partida vem antes de desenvolver.
+            if actions[0][1] == 'play' and priority != 'LETHAL':
+                _top_card = actions[0][2]
+                _plano = compute_game_plan(p)
+                if (_plano['win_con_code'] and _top_card.code == _plano['win_con_code']
+                        and _plano['don_target']
+                        and p.don_available >= _plano['don_target']):
+                    if self._apply_action(actions[0], p, opp, ee, engine, verbose=verbose):
+                        return True
+                    continue
 
             # TURN PLANNER: para as TOP_K ações candidatas, simula a linha de jogo
             # resultante e escolhe a que leva ao MELHOR estado de fim de turno.

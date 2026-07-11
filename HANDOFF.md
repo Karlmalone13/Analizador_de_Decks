@@ -1,5 +1,194 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-11 (121) - Claude
+
+### Mudança de método: auditor automático de anti-padrões + 6 fixes achados por ele (sem gastar partida do usuário)
+
+Depois de mais 2 partidas reais com problemas (logs `2026-07-10T23.38.05` e
+`2026-07-11T00.49.30`, salvos no banco) e frustração explícita do usuário
+com o ciclo "joga → acha bug → fix → joga de novo", mudei o método:
+**`scriptis_da_ia/audit_antipatterns.py`** (novo, permanente) roda partidas
+motor-contra-motor com os decks reais e acusa turno a turno os anti-padrões
+que o usuário apontou ao vivo. Iterar contra ele ANTES de pedir partida real.
+Uso: `python audit_antipatterns.py --n 20 [--deck-a Imu --deck-b "Barba Negra BY"] [--detalhes]`.
+Checks: A don ocioso c/ jogada disponível; B líder não atacou; C win-con
+trashado da mão; D win-con pagável não jogado; E stage não usado c/ alvo;
+F líder com draw de activate_main não usado (genéricos — win-con/alvos vêm
+do compute_game_plan/card_effects_db, não hardcode). Turnos que TERMINAM a
+partida não contam (1ª versão flagava DON "parado" de turno de lethal).
+
+**Fixes achados pelo auditor + pelos 2 logs reais (cada um validado
+re-rodando o auditor com o mesmo seed):**
+
+1. **GamePlan fase 2b — bypass do Monte Carlo pro win-con** (flag D, era
+   2x/20 jogos): o +600 do fase 2 colocava Five Elders no topo da lista,
+   mas a escolha final do main_phase é por simulação MC de fim de turno —
+   que NÃO enxerga o valor da reanimação (realiza-se no turno seguinte).
+   Linhas "Empty Throne primeiro" (3 DON) venciam e a bomba ficava
+   impagável de novo, todo turno. Fix: `main_phase` executa DIRETO a ação
+   do topo quando é play do win_con_code com don_available >= don_target e
+   priority != LETHAL (o caminho ao vivo já pega o topo direto — bypass só
+   alinha o simulador interno). D caiu 2→0 (voltou 3x depois do fix do F
+   mudar a forma das partidas — casos restantes são postura LETHAL
+   segurando a bomba pra tentar matar, decisão discutível, NÃO investigada
+   ainda; próxima sessão pode olhar).
+2. **resolve_optional_effect não achava o LÍDER nem checava activate_main**
+   (obs. do usuário: "Imu não trashou nenhuma Shalria, tá perdendo draw"):
+   busca era só hand+field_chars (líder nunca achado → fallback genérico
+   olhando só a mão → mão valiosa = recusa TODO turno), e o loop de
+   triggers era só on_play/main (activate_main do líder nunca visto).
+   Fix: pool inclui gs.leader e field_stage; loop inclui 'activate_main'.
+3. **_worth_paying_optional_costs ignora o campo pro custo
+   trash_char_or_hand**: Shalria de 0 poder gasta no campo é sacrifício
+   quase grátis (e alimenta o plano de lixeira) — agora se
+   min(board_value*10) <= 60 nos personagens elegíveis, paga. (Motor
+   compartilhado — vale pros dois caminhos.)
+4. **_step_is_viable: ko com target opp_stage olhava field_chars** — Never
+   Existed (OP13-098) foi jogado no vácuo com o oponente SEM stage (1 DON +
+   carta por nada, log 00.49.30). Agora checa opp.field_stage e cost_lte.
+5. **order_target_candidates: prompt de "JOGUE carta da mão" usava régua de
+   DESCARTE** (obs. do usuário: "usou o stage à toa"): own_hand rankeava
+   por _trash_value (fix #115, correto pra descarte) — num deploy do Empty
+   Throne o plugin clicava primeiro na carta mais descartável (evento
+   INELEGÍVEL), o jogo recusava e o deploy fizzlava (3 DON + stage por
+   nada) mesmo com Ju Peter elegível na mão. Fix: detecção de intenção
+   (actor com step play_card source != self) → elegíveis primeiro por
+   avaliar_carta desc, inelegíveis por último.
+6. **Leader restado não oferecia activate_main** (flag F, 29x/20 jogos →
+   0): guarda "fonte restada não ativa" (criada pra personagens com
+   rest_self perdido pelo parser) pegava o LÍDER — Imu que atacava antes
+   de ativar perdia o draw do turno. Fix: líder sem rest_self nos custos
+   pode ativar restado (regra oficial não exige fonte ativa); personagens/
+   stages continuam conservadores. TAMBÉM: bônus +30 no _score_activate_main
+   pro ciclo trasha→compra quando o deck tem trash_target não batido
+   (GamePlan) e a penalidade de early-game não se aplica nesse caso (antes
+   o draw do Imu pontuava NEGATIVO em ~25% dos turnos).
+7. **server.py: _declined_optional.clear() no /mulligan** — o cache de
+   recusas (fix do bloco #120) é chaveado por (código, turno) e vazava
+   entre PARTIDAS do mesmo processo.
+
+Validação final: smoke_test 100%, smoke_test_broad 40/40, auditor com
+A/C/E/F zerados e D=3 (casos LETHAL, ver item 1).
+
+### Partida de teste 01:36 (log `2026-07-11T01.36.16`, salvo) — 2 fixes a quente + PENDÊNCIAS pra próxima sessão
+
+O usuário testou ao vivo e vários sintomas persistiram. NÃO era arquivo
+desatualizado (confirmado: server novo, PID 15064, score 105 do draw só
+existe no código de hoje). Causas achadas:
+
+8. **DTO sem deck → viabilidade de 'draw' sempre False AO VIVO**: o
+   GameState reconstruído em `_dto_to_gs` tinha `deck=[]` (informação
+   oculta) — `_step_is_viable('draw')` exige `len(deck)>0`, então
+   `resolve_optional_effect` recusava o draw do líder TODO turno ao vivo,
+   enquanto o simulador interno (deck completo) funcionava — POR ISSO o
+   auditor dava F=0 e o jogo real falhava. Fix: `_dto_to_gs` preenche
+   `gs.deck` com 10 placeholders (deck real nunca está vazio em jogo;
+   nada do caminho ao vivo compra do gs.deck de verdade). LIÇÃO GERAL:
+   diferença simulador-com-informação-completa vs ao-vivo-com-informação-
+   oculta é uma CLASSE de bug que o auditor não pega — checar sempre que
+   um comportamento diverge entre auditor e partida real.
+9. **Stage ativado sem carta elegível** ("Choose 0 Friendly Targets"):
+   `_should_activate_main` não validava steps `play_card` — mão só com
+   custo 7+ e eventos, Empty Throne ativava mesmo assim (3 DON + stage
+   por nada). Fix: gate novo usando o próprio `_step_is_viable`.
+
+**PENDÊNCIAS (reportadas pelo usuário nesta partida, NÃO corrigidas —
+começar por aqui na próxima sessão):**
+- **Kuma anexou o DON restado na Shalria (0 poder) em vez do líder** —
+  branch 'delta' (give_don) de `order_target_candidates` desempata só por
+  just_played; falta desempate por poder efetivo/utilidade do alvo.
+- **Política de counter ruim nas duas pontas** (obs. do usuário): gasta
+  counter cedo em jab 5000v5000 com vida 4 (incl. Saturn, personagem
+  jogável de custo 4 — `select_counter_cards` ordena só por counter stat,
+  sem olhar _trash_value da carta), e depois NÃO countera 3 ataques no
+  turno 5 com +2000/+1000/2 eventos na mão. Verificar: Ground Death
+  (OP14-096) tem `counter` com `conditions: {trash_gte: 10}` — pode ter
+  sido recusa LEGÍTIMA (trash < 10); e a possível causa de não-counter
+  dos +1000/+2000: should_use_counter/maior_por_vir. Auditor ainda não
+  tem check de defesa — criar check G (counter gasto em ataque barato
+  early) e H (ataque letal/valioso não counterado com counter na mão).
+
+### Operacional
+Python (`decision_engine.py`, `sim_bridge.py`, `server.py`) + novo
+`audit_antipatterns.py`. Logs salvos:
+`Imu-B_x_Marshall.D.Teach-BY_2026-07-10T23.38.05`,
+`Imu-B_x_Marshall.D.Teach-BY_2026-07-11T00.49.30`.
+
+---
+
+## 2026-07-10 (120) - Claude
+
+### GamePlan fase 2 (prioridade de win-con quando DON bate o alvo) + fix real do loop de ativação recusada
+
+Continuação direta do bloco #119 (GamePlan v1 recém-commitado). Terceira e
+quarta partida real do bot jogando Imu no mesmo dia (`2026-07-10T23.19.23.log`
+e `2026-07-10T23.38.05.log`, ambos salvos no banco) — usuário reportou que
+o turno 4 travava de novo do MESMO jeito que o achado anterior descrevia
+("resolve_optional_effect sempre recusando custo só-DON", bloco #119),
+mesmo já corrigido.
+
+**1) O fix de ontem resolveu só metade do bug — loop de ativação
+recusada.** Cruzando com o log do engine: mesmo com `resolve_optional_effect`
+avaliando CORRETAMENTE (podendo legitimamente recusar por falta de alvo,
+ex: Empty Throne sem "Five Elders" tipo certo na mão pra jogar de graça),
+o `GameState` é reconstruído do ZERO a cada `/decide` — quando a resposta
+é `False`, nada no estado muda, e a MESMA ativação de score alto é
+reoferecida no próximo `/decide`, travando o turno em loop até o plugin
+desistir sem nunca tentar a ação de score mais baixo que sobrava (achado
+real: 4 propostas idênticas seguidas, `hand=5 don=4` parado o turno
+inteiro). Fix: cache `_declined_optional: set[(codigo, turno)]` em
+`server.py`, populado no handler `/defense` fase "optional" quando a
+resposta é `False`; `choose_action` (`sim_bridge.py`) ganhou parâmetro
+`exclude_activate_codes` que filtra essas ativações do próximo `/decide`
+do MESMO turno, deixando o Turn Planner cair pra próxima ação da lista.
+Confirmado em log real subsequente: turno trava no máximo 2x (não mais
+4x) e progride normalmente até `0 acoes`.
+
+**2) GamePlan fase 2 — prioridade do win-con quando o DON bate o alvo.**
+Mesmo com o loop corrigido, o log seguinte (23.38.05) mostrou o problema
+de fundo que a fase 1 (bloco #119) não cobria: turno 5, `don=9`
+(quase o alvo de 10 do Five Elders), `top3: [(480,'attack'),(480,'attack'),
+(470,'attack')]` — TODO o DON vai pra margem de ataque, turno após turno,
+e a jogada da bomba nunca chega a competir. Usuário deu o exemplo
+concreto: o próprio adversário (jogando Teach) fechou a partida
+executando ZEHAHAHAHA (`OP16-116`, rest 8 DON: deploy Teach 093 de graça
++ nega efeito do Imu + ataque letal) — um "plano de jogo" deliberado de
+guardar DON pro momento exato do combo, não gastar aos poucos.
+
+Achado técnico importante: DON!! NÃO se perde entre turnos (refresh no
+início do turno devolve tudo que foi anexado, + o ramp de +2) — o que
+trava a carta-bomba não é "preciso guardar DON ao longo de várias
+partidas", é gastar o DON DESTE MESMO turno em margem de ataque ANTES da
+bomba competir pela vez, no turno exato em que ela já ficou pagável. Fix
+mais simples que "reservar DON com antecedência": quando
+`don_available >= plano['don_target']` (calculado por `compute_game_plan`,
+já existente da fase 1) e a carta é o `win_con_code`, `_score_play_action`
+soma `+600` — supera qualquer ataque normal observado (480-510) mas fica
+ABAIXO do bônus de postura LETHAL em ataques (`+500` sobre base já alta,
+facilmente 900+) — não deve nunca impedir fechar a partida quando dá pra
+matar neste turno. Verificado numericamente: Five Elders com don=9 pontua
+98 (não afordável), com don=10 pontua 705 (dispara o bônus).
+
+Validado com `smoke_test.py` 100% e `smoke_test_broad.py` 40/40 sem
+exceção após cada fix, isolado.
+
+**Estado emocional do usuário (registrar pra próxima sessão não repetir o
+erro de tom):** o dia inteiro foi gasto nesse ciclo comparação→achado→fix→
+teste→achado novo, e o usuário expressou frustração explícita ("estamos o
+dia inteiro nisso e não estou vendo melhoras, mesmo mandando log de como
+se jogar o bot continua tomando péssimas decisões") depois do 3º log
+seguido mostrando problema. Isso é justo — cada fix individual foi real e
+validado, mas a percepção de progresso pro usuário depende do jogo AO VIVO
+melhorar, não só do smoke test passar. Não prometer "resolvido" sem
+partida real confirmando.
+
+### Operacional
+Python (`decision_engine.py`, `sim_bridge.py`, `server.py`). Logs salvos
+no banco: `Imu-B_x_Marshall.D.Teach-BY_2026-07-10T23.19.23`,
+`Imu-B_x_Marshall.D.Teach-BY_2026-07-10T23.38.05`.
+
+---
+
 ## 2026-07-10 (119) - Claude
 
 ### 2 fixes reais (desconto de counter em play, resolve_optional_effect sempre recusando custo só-DON) + decisão de arquitetura: "GamePlan" pré-partida (NÃO IMPLEMENTADO AINDA — ler antes de reabrir isso do zero)

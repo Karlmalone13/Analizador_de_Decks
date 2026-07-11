@@ -211,7 +211,8 @@ def can_execute_action(action: tuple, gs: GameState) -> tuple[bool, str]:
 
 def choose_action(gs: GameState, opp_gs: GameState,
                   match, timeout: float = 4.0,
-                  allowed_types: Optional[set] = None) -> Optional[tuple]:
+                  allowed_types: Optional[set] = None,
+                  exclude_activate_codes: Optional[set] = None) -> Optional[tuple]:
     """
     Pede ao engine a melhor ação para o estado atual.
 
@@ -223,9 +224,19 @@ def choose_action(gs: GameState, opp_gs: GameState,
     executor sabe realizar (ex: o plugin só executa play/attack/attach_don).
     A ordem de preferência continua sendo 100% do engine — isto só pula
     ações que o executor não tem como fazer, em vez de encerrar o turno.
+
+    exclude_activate_codes: códigos de carta cuja ativação já foi OFERECIDA
+    e RECUSADA neste turno (via /defense fase "optional", ver
+    _declined_optional em server.py). Achado real 10/07 (log 23.19.23): o
+    GameState é reconstruído do zero a cada /decide — sem esse filtro, uma
+    ativação recusada (custo opcional não vale a pena) continua com o MESMO
+    score alto na próxima chamada, porque nada no estado mudou, e é
+    reoferecida indefinidamente, travando o turno em loop sem nunca
+    tentar a próxima ação da lista.
     """
     import threading
     result: list = [None]
+    exclude_activate_codes = exclude_activate_codes or set()
 
     def _run() -> None:
         try:
@@ -237,6 +248,8 @@ def choose_action(gs: GameState, opp_gs: GameState,
             for a in actions:
                 if a[0] < 0:
                     break
+                if a[1] == 'activate' and len(a) > 2 and getattr(a[2], 'code', None) in exclude_activate_codes:
+                    continue
                 if allowed_types is None or a[1] in allowed_types:
                     result[0] = a
                     # Diagnostico de gerenciamento de mao (08/07: usuario
@@ -645,14 +658,24 @@ def resolve_optional_effect(gs: GameState, opp_gs: GameState,
         return ee._worth_paying_optional_costs(
             [{'type': 'trash_from_hand'}], card=None)
 
-    card_obj = next((c for c in gs.hand + gs.field_chars
-                     if c.code == actor_code), None)
+    # Inclui lider e stage na busca: o prompt opcional mais frequente do Imu
+    # e a habilidade do PROPRIO LIDER (activate_main, custo trash_char_or_hand)
+    # -- achado real 11/07 (log 00.49.30): lider nunca aparecia em
+    # hand+field_chars, caia no fallback generico que so olha a mao, e o bot
+    # recusou o draw do lider TODOS os turnos apos o 1o (mao so com cartas
+    # valiosas), mesmo tendo Shalria de 0 poder no campo pra pagar o custo.
+    pool = list(gs.hand) + list(gs.field_chars) + [gs.leader]
+    if getattr(gs, 'field_stage', None) is not None:
+        pool.append(gs.field_stage)
+    card_obj = next((c for c in pool if c is not None and c.code == actor_code), None)
     if card_obj is None:
         return ee._worth_paying_optional_costs(
             [{'type': 'trash_from_hand'}], card=None)
 
     effects = get_card_effects(actor_code)
-    for trig in ('on_play', 'main'):
+    # 'activate_main' incluido -- e o gatilho do lider Imu e de stages; o loop
+    # anterior (on_play/main) nao achava nada e retornava False sempre.
+    for trig in ('on_play', 'main', 'activate_main'):
         ef = effects.get(trig)
         if not ef:
             continue
@@ -830,6 +853,43 @@ def order_target_candidates(gs: GameState, opp_gs: GameState,
         if alvos and all(t.startswith('opp') for t in alvos):
             actor_opp_only = True
 
+    # O ator resolvendo e um "JOGUE uma carta da mao" (ex: Empty Throne
+    # OP13-099: play 1 black Five Elders da mao)? Entao o prompt de own_hand
+    # e de INTENCAO OPOSTA a de descarte: a regua _trash_value (protege carta
+    # boa = poe ela por ULTIMO) faria o plugin clicar primeiro na carta mais
+    # DESCARTAVEL — achado real 11/07 (log 00.49.30): com um evento inelegivel
+    # ranqueado primeiro, o jogo recusou o clique e o deploy fizzlou (3 DON +
+    # stage restados por nada), mesmo com Ju Peter elegivel na mao. Aqui:
+    # elegiveis primeiro, por valor de jogo DESCENDENTE; inelegiveis por
+    # ultimo (nunca clicar neles).
+    actor_play_step = None
+    if actor_code and not (actor_copia_poder or actor_debuff_swing
+                            or actor_self_power_target is not None or actor_opp_only):
+        for block in get_card_effects(actor_code).values():
+            for s in block.get('steps', []):
+                if s.get('action') == 'play_card' and s.get('source') != 'self':
+                    actor_play_step = s
+                    break
+            if actor_play_step is not None:
+                break
+
+    def _elegivel_para_play(card) -> bool:
+        if card is None or actor_play_step is None:
+            return False
+        s = actor_play_step
+        if card.card_type != (s.get('card_type') or 'CHARACTER').upper():
+            return False
+        ft = (s.get('filter_type') or '').lower()
+        if ft and ft not in (card.sub_types or '').lower():
+            return False
+        fcolor = (s.get('color') or '').lower()
+        if fcolor and fcolor not in (card.color or '').lower():
+            return False
+        cost_lte = s.get('cost_lte')
+        if cost_lte == 'don_count_self':
+            cost_lte = gs.don_available + gs.don_rested
+        return cost_lte is None or card.cost <= cost_lte
+
     def sort_key(cand: dict):
         card = card_of(cand)
         zone = cand.get('zone', '')
@@ -896,6 +956,12 @@ def order_target_candidates(gs: GameState, opp_gs: GameState,
         if zone == 'top_deck':
             return (0, -(engine_busca.avaliar_carta(card) if card else 0))
         if zone == 'own_hand':
+            # Prompt de JOGAR da mao (ver actor_play_step acima): melhor
+            # carta ELEGIVEL primeiro; inelegivel nunca.
+            if actor_play_step is not None:
+                if _elegivel_para_play(card):
+                    return (0, -(engine.avaliar_carta(card)))
+                return (9, 0)
             # SEMPRE _trash_value (protege carta cara/jogavel em breve,
             # sacrificio real vs teorico), nunca avaliar_carta puro. Achado
             # 07/07 corrigiu isso so pro caso de redirect do lider Teach --

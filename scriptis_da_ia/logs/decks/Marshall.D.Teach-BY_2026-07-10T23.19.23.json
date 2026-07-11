@@ -1,0 +1,16 @@
+{
+  "cards": [
+    {
+      "code": "OP12-112",
+      "name": "OP12-112",
+      "count": 1
+    },
+    {
+      "code": "OP16-110",
+      "name": "Vasco Shot",
+      "count": 1
+    }
+  ],
+  "total_seen": 2,
+  "leader": "OP16-080"
+}
