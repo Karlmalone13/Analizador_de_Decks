@@ -49,6 +49,18 @@ class _TeeStream:
                 s.flush()
             except Exception:
                 pass
+    def isatty(self):
+        # uvicorn's default log config chama sys.stdout.isatty() pra decidir
+        # cor no terminal -- sem esse metodo o startup quebra com
+        # AttributeError. Repassa do stream original (o 1o = o real).
+        try:
+            return self._streams[0].isatty()
+        except Exception:
+            return False
+    def __getattr__(self, name):
+        # Qualquer outro atributo/metodo de arquivo que algo pergunte
+        # (encoding, fileno, etc) repassa pro stream original.
+        return getattr(self._streams[0], name)
 
 _LOG_DIR = Path(__file__).parent / "logs"
 _LOG_DIR.mkdir(exist_ok=True)

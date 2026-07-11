@@ -74,6 +74,14 @@ server mostra os `[ENG]`/`[DEF]`/`[PLAY]` de cada chamada de
 `/decide`/`/defense`. Pasta `BOT/engine_server/logs/` no `.gitignore`
 (diagnóstico efêmero, não é o banco de combat logs).
 
+**Correção no ato de testar** (mesmo bloco, achado ao ligar o server de
+verdade): `_TeeStream` não implementava `isatty()` — o uvicorn chama
+`sys.stdout.isatty()` ao configurar o log e quebrava a inicialização
+inteira (`AttributeError`). Corrigido (`isatty()` repassa pro stream
+original + `__getattr__` genérico pra qualquer outro atributo de arquivo
+que uvicorn/logging perguntem). Testado ao vivo: server sobe limpo,
+`/health` responde.
+
 ### Operacional
 Python (`decision_engine.py`, `sim_bridge.py`, `server.py`) +
 documentação (`BOT/README.md`, `.gitignore`). Log salvo no banco:
