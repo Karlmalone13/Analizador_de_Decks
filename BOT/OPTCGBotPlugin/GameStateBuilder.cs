@@ -67,6 +67,17 @@ namespace OPTCGBotPlugin
                     dto.life.Add(CardToDto(cls, go, gls));
             }
 
+            // Lixeira (publica) — condicoes trash_gte e progresso do GamePlan
+            foreach (var go in ps.Lgo_MyTrash ?? new List<GameObject>())
+            {
+                var cls = go != null ? go.GetComponent<CardLogicScript>() : null;
+                if (cls != null)
+                    dto.trash.Add(CardToDto(cls, go, gls));
+            }
+
+            // Contagem do deck (conteudo oculto, tamanho publico)
+            dto.deckCount = ps.Lgo_MyDeck != null ? ps.Lgo_MyDeck.Count : 0;
+
             // Lider
             if (ps.Lgo_MyLeader != null && ps.Lgo_MyLeader.Count > 0 && ps.Lgo_MyLeader[0] != null)
             {

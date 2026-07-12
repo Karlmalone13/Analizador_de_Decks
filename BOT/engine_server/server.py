@@ -93,6 +93,8 @@ class PlayerDto(BaseModel):
     life: list[CardDto] = []
     leader: Optional[CardDto] = None
     stage: Optional[CardDto] = None   # carta STAGE em campo (zona propria)
+    trash: list[CardDto] = []         # lixeira (publica) — trash_gte, GamePlan
+    deckCount: int = 0                # tamanho do deck (0 = plugin antigo)
     activeDon: int = 0
     restedDon: int = 0
 
@@ -219,6 +221,11 @@ def _dto_to_gs(player: PlayerDto, turn: int):
     gs.life          = [c for c in (_make(d) for d in player.life) if c]
     gs.don_available = player.activeDon
     gs.don_rested    = player.restedDon
+    # Lixeira REAL (plugin novo, 12/07): informacao publica do jogo. Sem ela
+    # gs.trash=[] fazia trash_gte (Ground Death [Counter], imunidade dos
+    # Celestial Dragons) nunca ativar ao vivo e o progresso do GamePlan
+    # (len(trash) < trash_target) ficar sempre em 0.
+    gs.trash = [c for c in (_make(d) for d in player.trash) if c]
     # Deck oculto: o DTO nao traz o deck (informacao que o bot nao ve), mas
     # um GameState com deck=[] faz _step_is_viable de 'draw'/'look_top_deck'
     # dar False SEMPRE no caminho ao vivo -- achado real 11/07 (log 01.36.16):
@@ -227,11 +234,13 @@ def _dto_to_gs(player: PlayerDto, turn: int):
     # isso o auditor dava 0 e o jogo real falhava. Placeholders bastam pros
     # checks de "tem carta no deck?" -- em jogo real o deck nunca esta vazio
     # (deck vazio = derrota imediata), e nada no caminho ao vivo compra do
-    # gs.deck de verdade (o jogo C# resolve as compras).
+    # gs.deck de verdade (o jogo C# resolve as compras). Plugin novo (12/07)
+    # manda deckCount real; 0 = plugin antigo, cai no fallback de 10.
     data_dummy = {"name": "?", "type": "CHARACTER", "cost": 1, "power": 0,
                   "text": "", "color": "", "sub_types": "", "life": 0,
                   "has_trigger": False}
-    gs.deck = [_make_card("UNKNOWN-000", data_dummy) for _ in range(10)]
+    n_deck = player.deckCount if player.deckCount > 0 else 10
+    gs.deck = [_make_card("UNKNOWN-000", data_dummy) for _ in range(n_deck)]
     # Estado REAL de once-per-turn vindo do jogo (lb_ActionsUsed): marca a
     # acao como ja usada NESTE turno para o engine nao reoferecer activate
     # (a gs e reconstruida a cada /decide — sem isso o _am_used_turn se perdia

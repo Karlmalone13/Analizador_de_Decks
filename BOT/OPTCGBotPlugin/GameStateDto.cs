@@ -39,6 +39,15 @@ namespace OPTCGBotPlugin
         // Achado 07/07: sem isso o motor nao sabia que uma stage existia
         // (ex: Fullalead), entao nunca oferecia o Activate:Main dela.
         public CardDto? stage;
+        // Lixeira (informacao PUBLICA no jogo real — o oponente ve o trash).
+        // Achado 11/07: sem isso o motor via gs.trash=[] ao vivo e (a) o
+        // [Counter] do Ground Death (trash_gte:10) nunca era usavel, (b) a
+        // imunidade dos Celestial Dragons (trash_gte:7) nunca ativava, (c) o
+        // progresso do GamePlan (len(trash) < trash_target) ficava em 0.
+        public List<CardDto> trash = new();
+        // Contagem do deck (tamanho e publico; conteudo continua oculto) —
+        // substitui os 10 placeholders que o server.py inventava.
+        public int deckCount;
         public int activeDon;
         public int restedDon;
     }

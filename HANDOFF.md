@@ -1,5 +1,34 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-12 (122) - Claude
+
+### DTO com trash + deckCount (prioridade #1 do bloco 121) — IMPLEMENTADO, falta teste ao vivo
+
+O plugin C# agora transmite a lixeira (lista de `CardDto`, info pública) e a
+contagem do deck no `PlayerDto`, e `server.py` reconstrói `gs.trash` real e
+usa `deckCount` no lugar dos 10 placeholders (fallback 10 mantido pra plugin
+antigo). Arquivos: `GameStateDto.cs` (campos `trash`/`deckCount`),
+`GameStateBuilder.cs` (lê `Lgo_MyTrash`/`Lgo_MyDeck` — nomes confirmados no
+dnspy-export `PlayerState.cs`), `server.py` (`PlayerDto` + `_dto_to_gs`).
+Vale pros DOIS jogadores (BuildPlayer/_dto_to_gs são compartilhados).
+
+Validação: `dotnet build` OK (warnings pré-existentes); smoke do
+`_dto_to_gs` com trash=11/deckCount=37 reconstruiu certo. **NÃO testado em
+partida real** — o efeito esperado ao vivo (condicional, ver memória
+`feedback_nao_declarar_resolvido_sem_partida_real`): Ground Death
+(OP14-096) counterar com trash>=10, imunidade dos Celestial Dragons
+(trash_gte:7) reconhecida, progresso do GamePlan > 0. Requer rodar
+`BOT\setup_bepinex.bat` (recompila/copia o plugin) com o jogo fechado e
+jogar uma partida com o usuário.
+
+**Pendências que seguem abertas (do bloco 121):** give_don do Kuma desempata
+mal (Shalria 0 poder em vez do líder); política de counter ruim nas duas
+pontas (`select_counter_cards`/`should_use_counter`); checks G/H de defesa
+no `audit_antipatterns.py`; flag D residual (postura LETHAL segurando
+win-con).
+
+---
+
 ## 2026-07-11 (121) - Claude
 
 ### Mudança de método: auditor automático de anti-padrões + 6 fixes achados por ele (sem gastar partida do usuário)
