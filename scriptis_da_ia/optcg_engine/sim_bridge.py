@@ -454,43 +454,29 @@ def select_counter_cards(gs: GameState, atk_power: int, def_power: int,
                               if getattr(c, '_deck_uid', 0) == defender_uid), None)
 
     needed = atk_power - def_power + 1
+    if needed <= 0 or not pool:
+        return []
+
+    # Selecao unica pros dois casos (lider/personagem): cobre `needed`
+    # minimizando o valor PERDIDO (pitch_cost_as_counter, que desconta o
+    # papel de counter da carta — avaliar_carta puro deixava um Saturn
+    # jogavel "barato" de pitchar e um evento counter "caro" de usar,
+    # achado real 11/07).
+    escolha, gasto, total = engine.pick_counters(needed, pool=pool)
+    if total < needed:
+        return []
+    ids = [uid for c in escolha if (uid := getattr(c, '_deck_uid', 0))]
 
     if defender_char is not None:
         # Defendendo um PERSONAGEM: troca de recursos, nao vida. Sem
         # comparar com should_use_counter (que so faz sentido pro lider).
-        if not pool or needed <= 0:
-            return []
-        pool.sort(key=lambda item: (item[0], engine.avaliar_carta(item[1])))
-        total, ids, gasto = 0, [], 0.0
-        for valor, c in pool:
-            if total >= needed:
-                break
-            gasto += engine.avaliar_carta(c)
-            uid = getattr(c, '_deck_uid', 0)
-            if uid:
-                ids.append(uid)
-                total += valor
-        if total < needed:
-            return []
         valor_defendido = engine.analyzer.char_value_score(defender_char)
         return ids if valor_defendido > gasto else []
 
-    counter_avail = sum(v for v, _ in pool)
-    if not engine.should_use_counter(atk_power, def_power, counter_avail=counter_avail):
+    if not engine.should_use_counter(atk_power, def_power,
+                                     counter_avail=total, gasto=gasto):
         return []
-
-    # menor cobertura primeiro; empate = pitcha a carta de MENOR valor
-    # situacional (nao jogar fora efeito bom junto com o counter)
-    pool.sort(key=lambda item: (item[0], engine.avaliar_carta(item[1])))
-    total, ids = 0, []
-    for valor, c in pool:
-        if total >= needed:
-            break
-        uid = getattr(c, '_deck_uid', 0)
-        if uid:
-            ids.append(uid)
-            total += valor
-    return ids if total >= needed else []
+    return ids
 
 
 def resolve_reaction(gs: GameState, opp_gs: GameState,
@@ -946,8 +932,16 @@ def order_target_candidates(gs: GameState, opp_gs: GameState,
             # (just_played, sem Rush, nao ataca este turno), "ganhava" so
             # por ser o unico candidato em own_board -- sem comparar com o
             # lider, que compete por ataques/defesas TODO turno. Prioriza
-            # quem NAO acabou de entrar (lider nunca tem just_played).
-            return (3, 1 if getattr(live, 'just_played', False) else 0)
+            # quem NAO acabou de entrar (lider nunca tem just_played) nem
+            # ja atacou (restado = DON anexado volta no refresh sem nunca
+            # ter valido nada). Desempate: MAIOR poder efetivo -- achado
+            # real 11/07 (Kuma de novo): lider 5000 e Shalria 0 empatavam
+            # em (3, 0) e a ordem dos candidatos decidia; o DON foi parar
+            # na Shalria de 0 poder, cujo ataque buffado continua morrendo
+            # pra qualquer corpo, em vez do lider.
+            desperdicado = (getattr(live, 'just_played', False)
+                            or getattr(live, 'rested', False))
+            return (3, 1 if desperdicado else 0, -p)
         # Contexto de ataque: alvo original sempre por ULTIMO, em qualquer zona
         # (so faz sentido pra uma habilidade de redirect de verdade -- ver
         # actor_is_redirect acima)

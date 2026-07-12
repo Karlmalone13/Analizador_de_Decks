@@ -20,6 +20,13 @@ Anti-padrões checados (lado auditado = deck A):
   F. leader_draw_nao_usado — líder com activate_main de draw (ex: Imu) não
                          usado no turno, tendo material barato pra pagar
                          (personagem de 0 poder no campo ou carta fraca na mão)
+  G. counter_em_jab_early — gastou counter defendendo o LÍDER com 4+ vidas
+                         (vida alta = golpe barato de tomar; counter guardado
+                         vale mais depois — reclamação real 11/07)
+  H. nao_counterou_serio — tomou golpe no líder com vida crítica (<=2, ou
+                         letal com vida 0) tendo counter na mão que cobria
+                         o ataque (reclamação real 11/07: 3 ataques no turno
+                         5 sem counter com +2000/+1000 na mão)
 
 Uso:
   python audit_antipatterns.py                     # 20 partidas Imu vs Teach
@@ -100,16 +107,28 @@ def audit_match(deck_a, deck_b, match_idx: int) -> list[dict]:
             # C. win_con trashado da mão
             wc = plan['win_con_code']
             if wc:
+                # Win-con JOGADA neste turno = combo executando (ex: Five
+                # Elders joga, trasha o proprio campo — incluindo ela — e
+                # reanima 5 do trash). Mao cai + trash sobe + fora do campo
+                # e exatamente a assinatura do combo SAUDAVEL; sem este
+                # guarda, C/D flagavam o motor por ter feito a coisa certa
+                # (falso positivo achado 12/07 — a 2a copia na mao tambem
+                # disparava D no mesmo turno).
+                wc_jogado = any(
+                    e.get('type') == 'play_card'
+                    and (e.get('card') or {}).get('code') == wc
+                    for e in eventos_turno)
                 saiu_da_mao = hand_before.get(wc, 0) > _hand_codes(p).get(wc, 0)
                 entrou_no_trash = _trash_codes(p).get(wc, 0) > trash_before.get(wc, 0)
                 em_campo = any(c.code == wc for c in p.field_chars)
-                if saiu_da_mao and entrou_no_trash and not em_campo:
+                if saiu_da_mao and entrou_no_trash and not em_campo and not wc_jogado:
                     flags.append({**ctx, 'tipo': 'C_win_con_trashado',
                                   'detalhe': f"{wc} saiu da mão pro trash"})
 
                 # D. win_con pagável e não jogado
                 if (plan['don_target'] and _hand_codes(p).get(wc, 0) > 0
-                        and p.don_on_field() >= plan['don_target']):
+                        and p.don_on_field() >= plan['don_target']
+                        and not wc_jogado):
                     flags.append({**ctx, 'tipo': 'D_win_con_parado',
                                   'detalhe': f"{wc} na mão, DON no campo="
                                              f"{p.don_on_field()} >= {plan['don_target']}"})
@@ -161,6 +180,56 @@ def audit_match(deck_a, deck_b, match_idx: int) -> list[dict]:
 
         if result:
             break
+
+    # ── G/H: defesa do lado auditado (ataques de B no líder de A) ──────────
+    # Auditados via replay_log: cada evento 'attack' guarda snapshot dos dois
+    # lados ANTES da resolução; o evento SEGUINTE (life_damage/attack/turn_end)
+    # mostra o depois — delta de stats.counters = counter gasto, delta de
+    # life = golpe levado. Blocker usado aparece como vida intacta sem gasto
+    # (não flagra). Só counter de STAT é visível no snapshot (hand_cards);
+    # eventos [Counter] não contam pra "cobria" — H é conservador.
+    eventos = match.replay_log
+    for i, e in enumerate(eventos):
+        if e.get('type') != 'attack' or e.get('player') != 'B':
+            continue
+        tgt = e.get('target') or {}
+        if tgt.get('type') != 'LEADER':
+            continue
+        pre = e['state']['A']
+        post = eventos[i + 1]['state']['A'] if i + 1 < len(eventos) else None
+        atk = e.get('attack_power', 0)
+        lider_def = (pre.get('leader') or {}).get('power', 5000)
+        needed = atk - lider_def + 1
+        counter_mao = sum(c.get('counter', 0) for c in pre.get('hand_cards', []))
+        cobria = needed > 0 and counter_mao >= needed
+        ctx = {'match': match_idx, 'turn': e.get('turn', 0)}
+
+        if post is None:
+            # ataque que ENCERROU a partida (sem evento depois): letal levado
+            # com counter suficiente na mão é exatamente o pior caso do H
+            if pre.get('life', 9) == 0 and cobria:
+                flags.append({**ctx, 'tipo': 'H_nao_counterou_serio',
+                              'detalhe': f"LETAL levado (vida 0) com "
+                                         f"{counter_mao} de counter na mão "
+                                         f"(needed={needed})"})
+            continue
+
+        gastou = (post['stats']['counters'] - pre['stats']['counters'])
+        perdeu_vida = pre['life'] - post['life']
+
+        # G: counter gasto defendendo o líder com vida alta
+        if gastou > 0 and pre['life'] >= 4:
+            flags.append({**ctx, 'tipo': 'G_counter_em_jab_early',
+                          'detalhe': f"gastou {gastou} de counter com "
+                                     f"{pre['life']} vidas (atk {atk} vs "
+                                     f"líder {lider_def})"})
+
+        # H: golpe levado com vida crítica tendo counter que cobria
+        if perdeu_vida > 0 and pre['life'] <= 2 and cobria:
+            flags.append({**ctx, 'tipo': 'H_nao_counterou_serio',
+                          'detalhe': f"levou golpe com {pre['life']} vidas, "
+                                     f"{counter_mao} de counter na mão "
+                                     f"(needed={needed})"})
 
     return flags
 

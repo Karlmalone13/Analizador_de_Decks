@@ -21,11 +21,66 @@ partida real** — o efeito esperado ao vivo (condicional, ver memória
 `BOT\setup_bepinex.bat` (recompila/copia o plugin) com o jogo fechado e
 jogar uma partida com o usuário.
 
-**Pendências que seguem abertas (do bloco 121):** give_don do Kuma desempata
-mal (Shalria 0 poder em vez do líder); política de counter ruim nas duas
-pontas (`select_counter_cards`/`should_use_counter`); checks G/H de defesa
-no `audit_antipatterns.py`; flag D residual (postura LETHAL segurando
-win-con).
+### Segunda leva da mesma sessão: counter por ganho líquido + give_don + 2 achados novos do auditor
+
+Todas as pendências do bloco 121 atacadas (engine puro, sem partida real —
+condicional até o próximo teste ao vivo):
+
+1. **Política de counter reescrita por ganho líquido** (`should_use_counter`
+   em `decision_engine.py` + `select_counter_cards` em `sim_bridge.py`).
+   As duas pontas do bug real eram o mesmo defeito (gates fixos por faixa
+   de vida): com 4 vidas, needed=1 passava no gate `<=1000` e gastava
+   counter em jab 5000v5000; com vida baixa, needed>2000 estourava o gate
+   da faixa e recusava mesmo cobrindo. Agora: countera se o PITCH das
+   cartas gastas < valor da vida. Peças novas:
+   - `pitch_cost_as_counter`: avaliar_carta MENOS o componente de counter
+     (extraído como `_counter_stat_bonus`) — sem isso a decisão era
+     circular (counter caro de usar por ser counter). O componente-base
+     volta escalado por vida (opção futura: 1.0 com 4+ vidas → 0.1 com 1).
+   - `pick_counters`: seleção que MINIMIZA pitch (não counter stat) —
+     não pitcha mais Saturn jogável tendo vanilla na mão; usada pelos
+     DOIS caminhos (use_counter do simulador e select_counter_cards ao
+     vivo, incl. eventos [Counter] no pool).
+   - Curva de vida própria na escala do avaliar_carta (12/65/150/250 para
+     4+/3/2/1 vidas; vida 0 = sempre countera). `life_redirect_cost` roda
+     frio demais nessa escala (corpo custo 5 avalia 100-150).
+   Validado com teste dirigido: vida 4 não gasta; vida 2 countera jab
+   escolhendo a vanilla e preservando Saturn.
+2. **give_don (Kuma)**: branch 'delta' de `order_target_candidates`
+   desempatava só por just_played — líder e Shalria 0-poder empatavam e a
+   ordem dos candidatos decidia. Agora: alvo restado/recém-jogado por
+   último, desempate por MAIOR poder efetivo (líder 5000 > Shalria 0).
+3. **Checks G/H no auditor** (via replay_log, eventos 'attack' com snapshot
+   antes/depois): G = counter gasto defendendo líder com 4+ vidas; H =
+   golpe levado com vida <=2 (ou letal com vida 0) tendo counter que
+   cobria. G foi de 5→0 e H de 12→1 (caso restante: precisar 2+ cartas
+   por 1 vida, recusa defensável) ao longo da iteração.
+4. **Achado novo (spy de trash, 13x/20 partidas): searchers milavam a
+   win-con** — take-choice do look_top_deck usava avaliar_carta puro
+   (Five Elders ~45 perdia pra qualquer corpo jogável e ia pro trash no
+   trash_rest; a cópia milada é irrecuperável — o play_from_trash dela
+   filtra power 5000). Fix: take-choice usa `_trash_value` (avaliar_carta
+   + proteções de GamePlan/carta cara/counter event).
+5. **Sacrifício próprio escolhia a carta MAIS valiosa**: executor de
+   ko/trash_character com pool próprio (self_character/all_character)
+   usava choose_highest_board_value (correto só pra remoção no oponente).
+   Novo `choose_lowest_board_value` (rules_facade) — consistente com a
+   régua de _worth_paying_optional_costs.
+6. **Falso positivo C/D do auditor**: win-con jogada no turno (combo da
+   Five Elders trasha o próprio campo incluindo ela mesma — assinatura
+   idêntica a "trashou da mão") flagava C, e a 2ª cópia na mão flagava D.
+   Guarda novo: play_card da win-con no turno suprime C/D.
+
+Validação final: smoke_test 100%, smoke_test_broad 40/40, auditor
+A/B/C/D/E/F/G zerados, H=1 (defensável). NÃO testado em partida real.
+Obs: partidas motor-vs-motor NÃO são determinísticas entre processos
+(hash randomization em iteração de set) — flags variam um pouco por run;
+comparar tendência, não igualdade exata.
+
+**Pendência restante do bloco 121:** flag D residual em postura LETHAL
+(segurando a bomba pra tentar matar) — hoje zerou nos runs, mas não foi
+investigada a fundo. E a prioridade #1 (DTO trash/deckCount) segue
+aguardando teste ao vivo com o usuário.
 
 ---
 

@@ -2816,15 +2816,20 @@ class EffectExecutor:
 
             count = step.get('count', 1)
             taken = []
-            # avaliar_carta (situacional: custo jogavel agora, fase do turno,
-            # flags de efeito -- draw/search/KO/bounce/etc, postura) em vez
-            # de board_value puro (so poder+keyword) -- achado 07/07: search
-            # do Laffitte/Shiryu trazia sempre o corpo mais "parrudo" pra mao,
-            # ignorando cartas mais uteis pra situacao real (ex: Doc Q com
-            # on-KO rico perdia sempre pra um vanilla de poder maior).
-            eng = DecisionEngine(me, opp) if filtered else None
+            # _trash_value = avaliar_carta (situacional, achado 07/07: search
+            # do Laffitte/Shiryu trazia sempre o corpo mais "parrudo",
+            # ignorando cartas mais uteis pra situacao — preservado, e a
+            # base da conta) + as protecoes de MANTER NA MAO: win-con do
+            # GamePlan (+150 enquanto o DON nao bate o alvo), carta cara
+            # (custo>=7), evento counter. "Qual carta eu mais quero na mao"
+            # e exatamente a pergunta do search — achado real 12/07 (spy de
+            # trash, 13x/20 partidas): searchers do Imu viam a Five Elders
+            # no top 5, avaliar_carta puro (~45, sem protecao) perdia pra
+            # qualquer corpo jogavel e a win-con ia pro trash com o resto
+            # (mill do trash_rest) — e OP13-082 nao e reanimavel (o
+            # play_from_trash dela filtra power 5000; a copia milada morre).
             for _ in range(min(count, len(filtered))):
-                best = max(filtered, key=lambda x: eng.avaliar_carta(x)) if filtered else None
+                best = max(filtered, key=self._trash_value) if filtered else None
                 if best:
                     taken.append(best)
                     remove_by_identity(filtered, best)
@@ -3019,6 +3024,7 @@ class EffectExecutor:
         if action in ('ko', 'trash_character'):
             from optcg_engine.rules_facade import (
                 choose_highest_board_value,
+                choose_lowest_board_value,
                 eligible_cards,
             )
             # 'trash_character' usa a MESMA mecanica de remocao de campo que
@@ -3076,8 +3082,18 @@ class EffectExecutor:
             immune_skipped = []
             imm_kind = 'ko' if action == 'ko' else 'removal'
             for owner, candidates in pools:
+                # Alvo no OPONENTE = remocao, mira o mais valioso. Alvo no
+                # PROPRIO campo = sacrificio/drawback ("trash 1 dos seus"),
+                # mira o MENOS valioso — mesma regua que
+                # _worth_paying_optional_costs usou pra aprovar o custo
+                # (min board_value); escolher o mais caro aqui pagaria um
+                # custo aprovado como "quase gratis" com a melhor carta do
+                # campo. Pra "trash all" (count 99, ex: Five Elders) a
+                # ordem nao muda nada.
+                escolhe = (choose_lowest_board_value if owner is me
+                           else choose_highest_board_value)
                 for _ in range(min(count, len(candidates))):
-                    target = choose_highest_board_value(candidates)
+                    target = escolhe(candidates)
                     # Imunidade: o alvo pode ser imune a KO/remoção por efeito do
                     # oponente. Pula o alvo (não conta como removido).
                     other = me if owner is opp else opp
@@ -5582,6 +5598,49 @@ class DecisionEngine:
 
     # ── Avaliação de cartas ──────────────────────────────────────────────────
 
+    def _counter_stat_bonus(self, card: 'Card', life_mult: bool = True) -> float:
+        """
+        Componente de avaliar_carta que vem do STAT de counter da carta
+        (rede de seguranca na mao). Extraido como metodo proprio porque
+        pitch_cost_as_counter precisa recalcular exatamente este componente
+        sem o multiplicador de urgencia (life_mult=False).
+        """
+        if card.counter <= 0:
+            return 0.0
+        my_life = self.me.life_count()
+        v = card.counter / 1000 * 15
+        if life_mult:
+            if my_life <= 1: v *= 4.0
+            elif my_life <= 2: v *= 2.5
+            elif my_life <= 3: v *= 1.5
+        # Penaliza se já tem muitos counters na mão
+        counters_em_mao = sum(1 for c in self.me.hand
+                              if c.counter > 0 and c is not card)
+        if counters_em_mao >= 4: v *= 0.4
+        elif counters_em_mao >= 2: v *= 0.7
+        return v
+
+    def pitch_cost_as_counter(self, card: 'Card') -> float:
+        """
+        Quanto se PERDE gastando a carta como counter AGORA: o valor
+        situacional dela, trocando o componente de counter (que inclui um
+        multiplicador de urgencia por vida baixa — circular na hora de
+        USAR: a carta ficaria cara demais justamente quando o counter e
+        mais necessario) pela OPCAO FUTURA de counter que se abre mao ao
+        gastar. Essa opcao vale o componente-base cheio com vida alta
+        (muitos golpes ainda por vir — guardar tem valor real) e quase
+        nada com vida 1 (defender AGORA e o proprio uso pra que a carta
+        foi guardada). Um Saturn jogavel (corpo + efeito) continua caro de
+        pitchar em qualquer vida; uma vanilla injogavel de 2000 counter e
+        quase gratis com vida baixa (achado real 11/07: bot pitchou Saturn
+        num jab 5000v5000 com vida 4 e depois recusou counter com vida 2).
+        """
+        my_life = self.me.life_count()
+        opcao_futura = {0: 0.0, 1: 0.1, 2: 0.4, 3: 0.7}.get(my_life, 1.0)
+        return max(0.0, self.avaliar_carta(card)
+                   - self._counter_stat_bonus(card)
+                   + self._counter_stat_bonus(card, life_mult=False) * opcao_futura)
+
     def avaliar_carta(self, card: 'Card') -> float:
         """Avalia o valor situacional de uma carta para jogar/guardar/descartar."""
         a       = self.analyzer
@@ -5635,17 +5694,7 @@ class DecisionEngine:
             if a.opp_attack_count() >= 3: v += 20
             s += v
 
-        if card.counter > 0:
-            v = card.counter / 1000 * 15
-            if my_life <= 1: v *= 4.0
-            elif my_life <= 2: v *= 2.5
-            elif my_life <= 3: v *= 1.5
-            # Penaliza se já tem muitos counters na mão
-            counters_em_mao = sum(1 for c in self.me.hand
-                                  if c.counter > 0 and c is not card)
-            if counters_em_mao >= 4: v *= 0.4
-            elif counters_em_mao >= 2: v *= 0.7
-            s += v
+        s += self._counter_stat_bonus(card)
 
         if card.has_trigger:
             s += 10
@@ -6164,72 +6213,105 @@ class DecisionEngine:
 
         return None
 
+    def pick_counters(self, needed: int,
+                      pool: 'list[tuple[int, Card]] | None' = None
+                      ) -> tuple[list['Card'], float, int]:
+        """
+        Escolhe o conjunto de counters que cobre `needed` MINIMIZANDO o
+        valor perdido (pitch_cost_as_counter), nao o stat de counter.
+        pool: [(valor_de_counter, carta)] — por padrao os personagens com
+        stat impresso na mao; sim_bridge passa um pool maior incluindo
+        EVENTOS [Counter] elegiveis.
+        Retorna (cartas, gasto, total_coberto). total < needed = nao cobre
+        (cartas vem vazias nesse caso — nunca counter parcial).
+        Guloso por pitch crescente + alternativa de carta unica: cobre o
+        caso "uma carta grande barata de pitchar vale mais que tres
+        pequenas caras" sem precisar de knapsack completo.
+        """
+        if pool is None:
+            pool = [(c.counter, c) for c in self.me.hand if c.counter > 0]
+        if needed <= 0 or not pool:
+            return [], 0.0, 0
+
+        custo = {id(c): self.pitch_cost_as_counter(c) for _, c in pool}
+        # pitch menor primeiro; empate = counter maior (cobre mais rapido)
+        ordenado = sorted(pool, key=lambda item: (custo[id(item[1])], -item[0]))
+        escolha, gasto, total = [], 0.0, 0
+        for valor, c in ordenado:
+            if total >= needed:
+                break
+            escolha.append(c)
+            gasto += custo[id(c)]
+            total += valor
+        if total < needed:
+            return [], 0.0, total
+
+        # Alternativa: UMA carta que cobre sozinha por gasto menor
+        singles = [(custo[id(c)], valor, c) for valor, c in pool if valor >= needed]
+        if singles:
+            g1, v1, c1 = min(singles, key=lambda t: t[0])
+            if g1 < gasto:
+                return [c1], g1, v1
+        return escolha, gasto, total
+
     def should_use_counter(self, atk_power: int, def_power: int,
-                           counter_avail: int | None = None) -> bool:
+                           counter_avail: int | None = None,
+                           gasto: float | None = None) -> bool:
         """
-        Decide se usa counter considerando:
-        - Vida atual
-        - Quantidade de counters na mão
-        - Probabilidade de precisar de counters no próximo ataque
-        - DON ativo para ativar eventos
+        Decide se countera um ataque no LIDER por GANHO LIQUIDO (regra do
+        usuario: caso a caso, nunca threshold fixo por categoria):
+        countera se o CUSTO das cartas gastas (pitch_cost_as_counter, que
+        desconta o proprio papel de counter) fica ABAIXO do valor da vida
+        que o golpe tiraria (life_redirect_cost — mesma regua ja usada em
+        redirect/reaction). Substitui os gates fixos por faixa de vida
+        (achado real 11/07, duas pontas do mesmo bug: com 4 vidas gastava
+        counter em jab 5000v5000 [needed=1 passava no gate <=1000]; com
+        menos vida recusava ataque serio porque needed>2000 estourava o
+        gate da faixa — mesmo com +2000/+1000 na mao cobrindo).
 
-        counter_avail: override do total disponivel — por padrao usa so o
-        stat impresso (self.me.counter_in_hand()), mas quem chama pode
-        passar um total maior incluindo EVENTOS [Counter] elegiveis (ex:
-        select_counter_cards em sim_bridge.py), que counter_in_hand() nao
-        enxerga (so soma Character.counter, nunca avalia bloco [Counter]
-        de Event -- achado real 09/07, bot jogando Imu nunca contava
-        "...Never Existed..." nem pra decidir SE valia counterizar).
+        counter_avail/gasto: override de quem ja montou o pool completo
+        (sim_bridge inclui eventos [Counter], que counter_in_hand() nao
+        enxerga). Sem override, calcula dos personagens da mao via
+        pick_counters (mesma selecao que use_counter executa).
         """
-        a = self.analyzer
-        my_life       = self.me.life_count()
-        if counter_avail is None:
-            counter_avail = self.me.counter_in_hand()
-
-        if counter_avail == 0:
-            return False
         if atk_power < def_power:
             return False  # defesa já suficiente
-
         needed = atk_power - def_power + 1
+        my_life = self.me.life_count()
 
-        # Com 1 vida — sempre usa counter se tiver
-        if my_life <= 1:
-            return counter_avail >= needed
+        if counter_avail is None or gasto is None:
+            _, gasto, total = self.pick_counters(needed)
+            counter_avail = total
 
-        # Com 2 vidas — usa se tem counter suficiente
-        if my_life <= 2:
-            return counter_avail >= needed
+        if counter_avail < needed:
+            return False  # nunca counter parcial
 
-        # Com 3 vidas — usa só se o ataque é sério
-        if my_life <= 3:
-            return counter_avail >= needed and needed <= 2000
+        # Vida 0: qualquer golpe no líder = derrota. Paga o que for.
+        if my_life <= 0:
+            return True
 
-        # Com 4+ vidas — conserva counters para situações críticas
-        if my_life <= 4:
-            opp_life = self.opp.life_count()
-            # Oponente pressionando (≤ 2 vidas): afrouxar um pouco o threshold
-            ratio = 1.5 if opp_life <= 2 else 2.0
-            return needed <= 1000 and counter_avail >= needed * ratio
-
-        return False
+        # Valor da vida na ESCALA do avaliar_carta (que roda bem mais
+        # quente que a de char_value_score usada por life_redirect_cost —
+        # um corpo jogavel de custo 5 avalia 100-150). Curva ingreme de
+        # proposito, casada com o feedback real das duas pontas (11/07):
+        # 4+ vidas = golpe barato de tomar, nao gasta nem carta lixo;
+        # <=2 vidas = countera ate pitchando corpo bom (so nao entrega a
+        # win-con, que avalia acima de 150 com a protecao do GamePlan).
+        valor_vida = {1: 250.0, 2: 150.0, 3: 65.0}.get(my_life, 12.0)
+        return gasto < valor_vida
 
     def use_counter(self, needed: int) -> int:
         """
-        Usa o mínimo de counter necessário.
-        Prefere usar counters de menor valor primeiro para conservar os maiores.
+        Usa counters cobrindo `needed` com o MENOR valor perdido (mesma
+        selecao de pick_counters que should_use_counter usou pra decidir
+        — as duas pontas nao podem divergir).
         """
-        counters = sorted([c for c in self.me.hand if c.counter > 0],
-                          key=lambda c: c.counter)
-        total = 0
-        for c in counters:
-            if total >= needed:
-                break
+        escolha, _, total = self.pick_counters(needed)
+        for c in escolha:
             remove_by_identity(self.me.hand, c)
             self.me.trash.append(c)
-            total += c.counter
             self.me.counters_used += c.counter
-        return total
+        return sum(c.counter for c in escolha)
 
     # ── Helpers ───────────────────────────────────────────────────────────────
 

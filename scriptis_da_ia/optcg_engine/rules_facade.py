@@ -126,6 +126,20 @@ def choose_highest_board_value(cards: list["Card"]) -> "Card | None":
     return max(cards, key=lambda card: card.board_value()) if cards else None
 
 
+def choose_lowest_board_value(cards: list["Card"]) -> "Card | None":
+    """
+    Escolhe o alvo MENOS valioso — para sacrificio do PROPRIO campo
+    (custo/drawback "trash/KO 1 dos seus"). Espelha a regua de
+    _worth_paying_optional_costs (min board_value), que decide SE o custo
+    vale — a execucao tem que escolher a MESMA carta que a decisao
+    assumiu, senao paga-se um custo aprovado como "quase gratis" com a
+    carta mais cara do campo (achado real 12/07: Five Elders recem-jogada
+    sacrificada pelo executor de trash self_character, que usava
+    choose_highest_board_value — correto so pra remocao no OPONENTE).
+    """
+    return min(cards, key=lambda card: card.board_value()) if cards else None
+
+
 def choose_highest_effective_power(
     cards: list["Card"],
     your_turn: bool = True,
