@@ -89,6 +89,22 @@ depois pra tunagem de heurística (mesmo conjunto de partidas).
 investigada a fundo. E a prioridade #1 (DTO trash/deckCount) segue
 aguardando teste ao vivo com o usuário.
 
+### Terceira leva: análise "Imu humano vs Imu bot" (passividade)
+
+A pedido do usuário ("ganho sem levar dano"), comparei as 5 partidas dele
+de Imu com as 12 do bot (banco de logs) + 10 motor-vs-motor com o engine
+de hoje. Relatório completo com tabela e plano:
+`scriptis_da_ia/analise_imu_humano_vs_bot_2026-07-12.md` (+ seção nova no
+topo do TODO.md). Conclusão-chave: bot ao vivo 0.88 atk/turno e 42% no
+líder vs humano 2.03 e 82% — mas o MOTOR com informação completa faz 91%
+no líder; a causa raiz principal era o DTO sem trash (Nusjuro OP13-080,
+o beater do deck, tem Rush+imunidade com trash>=7 — ao vivo era avaliado
+como vanilla e ia pro descarte). Já corrigido hoje, validação ao vivo
+pendente. Detalhe de análise: attach de DON do bot NÃO gera linha no
+combat log (reflection pula o log do jogo) — parse subconta agressividade
+do bot; os counters baratos do usuário (1000-2000 sempre bastaram) provam
+os ataques quase secos.
+
 ---
 
 ## 2026-07-11 (121) - Claude

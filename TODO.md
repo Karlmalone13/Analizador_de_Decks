@@ -7,6 +7,23 @@
 
 ---
 
+## 🔴 PASSIVIDADE DO BOT (12/07/2026) — análise humano vs bot pronta, teste ao vivo pendente
+
+Ver [analise_imu_humano_vs_bot_2026-07-12.md](scriptis_da_ia/analise_imu_humano_vs_bot_2026-07-12.md)
+(números completos + já-corrigido vs a-corrigir). Resumo: bot ao vivo
+atacava 0.88/turno (humano 2.03), 42% no líder (humano 82%, motor com
+info completa 91%) — causa raiz principal era o DTO sem trash (Nusjuro
+sem Rush/imunidade, Ground Death nunca counterava), JÁ corrigida junto
+com a política de counter por ganho líquido. **Próximo passo: rodar
+`BOT\setup_bepinex.bat` e jogar 1-2 partidas de validação.** Se a
+passividade persistir: (a) volume de ataque 1.28/t vs 2.03 mesmo com
+info completa — peso de corpo agressivo vs utilitário em _score_to_play;
+(b) `_don_reserve_for_defense` possivelmente guardando DON demais;
+(c) attach de DON do bot não aparece no combat log (gap de logging do
+plugin — subconta agressividade nas análises).
+
+---
+
 ## 🔴 PRÓXIMO TÓPICO (aberto 07/07/2026): consciência de combos estratégicos do oponente
 
 4 partidas reais instrumentadas na sessão de 07/07 (ver HANDOFF 99/100) — o
