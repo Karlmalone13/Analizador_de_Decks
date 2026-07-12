@@ -35,10 +35,24 @@ Uso:
 """
 from __future__ import annotations
 import argparse
+import os
 import random
+import subprocess
 import sys
 from collections import Counter
 from pathlib import Path
+
+# Reprodutibilidade REAL: random.seed fixa embaralhamento/cara-ou-coroa, mas
+# o hash aleatorio de strings do Python (novo a cada processo) muda a ordem
+# de iteracao de qualquer `set` — e ha desempates de decisao no engine
+# sensiveis a essa ordem, entao a MESMA seed gerava partidas DIFERENTES
+# entre execucoes (achado 12/07: rastreio instrumentado da "partida m01"
+# nao reproduziu o flag que o auditor tinha acabado de acusar nela).
+# PYTHONHASHSEED precisa existir ANTES do interpretador subir — se nao
+# esta fixo, relanca o proprio script com ele setado.
+if os.environ.get('PYTHONHASHSEED') != '0':
+    os.environ['PYTHONHASHSEED'] = '0'
+    raise SystemExit(subprocess.call([sys.executable] + sys.argv))
 
 sys.path.insert(0, str(Path(__file__).parent))
 

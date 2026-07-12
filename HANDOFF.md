@@ -73,9 +73,16 @@ condicional até o próximo teste ao vivo):
 
 Validação final: smoke_test 100%, smoke_test_broad 40/40, auditor
 A/B/C/D/E/F/G zerados, H=1 (defensável). NÃO testado em partida real.
-Obs: partidas motor-vs-motor NÃO são determinísticas entre processos
-(hash randomization em iteração de set) — flags variam um pouco por run;
-comparar tendência, não igualdade exata.
+
+**Auditor agora é determinístico**: partidas motor-vs-motor variavam
+entre processos com a MESMA seed (hash randomization de string muda a
+ordem de iteração de `set`, e há desempates sensíveis a isso no engine) —
+pista de flag evaporava antes de dar pra instrumentar. O
+`audit_antipatterns.py` agora se relança com `PYTHONHASHSEED=0`; dois
+runs com a mesma seed saem byte a byte idênticos (validado). Flag do
+auditor virou caso reprodutível: re-rodar com a mesma seed + spy na
+partida acusada. Também é o pré-requisito de comparação limpa antes/
+depois pra tunagem de heurística (mesmo conjunto de partidas).
 
 **Pendência restante do bloco 121:** flag D residual em postura LETHAL
 (segurando a bomba pra tentar matar) — hoje zerou nos runs, mas não foi
