@@ -1,0 +1,21 @@
+{
+  "cards": [
+    {
+      "code": "OP16-104",
+      "name": "OP16-104",
+      "count": 1
+    },
+    {
+      "code": "OP16-109",
+      "name": "Doc Q",
+      "count": 1
+    },
+    {
+      "code": "OP12-112",
+      "name": "OP12-112",
+      "count": 1
+    }
+  ],
+  "total_seen": 3,
+  "leader": "OP16-080"
+}

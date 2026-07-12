@@ -420,7 +420,8 @@ def select_counter_cards(gs: GameState, atk_power: int, def_power: int,
     opp_stub = opp_gs if opp_gs is not None else GameState(leader=deepcopy(gs.leader))
     engine = DecisionEngine(gs, opp_stub)
 
-    from optcg_engine.decision_engine import EffectExecutor, get_card_effects
+    from optcg_engine.decision_engine import (EffectExecutor, get_card_effects,
+                                              effective_hand_play_cost)
     ee = EffectExecutor(gs, opp_stub)
 
     # (valor_counter, carta) — personagens (stat impresso) + eventos [Counter].
@@ -445,6 +446,14 @@ def select_counter_cards(gs: GameState, atk_power: int, def_power: int,
             continue
         costs = block.get('costs', [])
         if not ee._counter_event_cost_payable(event, costs):
+            continue
+        # Custo da PROPRIA carta (DON ativo, o jogo resta ao ativar):
+        # _counter_event_cost_payable so cobre custos extras do bloco.
+        # O simulador interno (try_counter_event_power) ja checa e paga
+        # isso; sem o espelho aqui o engine propunha o evento com 0 DON,
+        # o jogo recusava o clique e o bot tomava o hit "achando que
+        # defendeu" (classe do achado real 12/07, partida 14.30.52).
+        if effective_hand_play_cost(gs, event) > gs.don_available:
             continue
         pool.append((buff_step.get('amount', 0), event))
 

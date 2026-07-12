@@ -32,6 +32,8 @@ namespace OPTCGBotPlugin
             AccessTools.Method(typeof(GameplayLogicScript), "HandleMouseClickCardAttackBlocker");
         private static readonly MethodInfo _mDiscardCounter =
             AccessTools.Method(typeof(GameplayLogicScript), "DiscardCardForCounter");
+        private static readonly MethodInfo _mClickWaitOnCounters =
+            AccessTools.Method(typeof(GameplayLogicScript), "HandleMouseClickCardWaitOnCounters");
         private static readonly MethodInfo _mLastDrawnCard =
             AccessTools.Method(typeof(GameplayLogicScript), "LastDrawnCard");
 
@@ -76,7 +78,27 @@ namespace OPTCGBotPlugin
             Plugin.Log.LogInfo("[Bot] no blocker");
         }
 
-        // Descarta as cartas de counter indicadas e resolve o ataque
+        // Eventos [Counter] ja tentados NESTE counter step (uid). Se o jogo
+        // recusar o clique (condicao/DON), a carta continua na mao e o
+        // /defense devolve o mesmo id no proximo tick — sem isto o driver
+        // loopava clicando pra sempre. Limpo pelo driver ao iniciar a defesa
+        // de um NOVO ataque (Attack_WaitOnBlocker) e ao fechar o step aqui.
+        private static readonly HashSet<int> _counterEventTried = new();
+
+        public static void ResetCounterStep() => _counterEventTried.Clear();
+
+        // Usa as cartas de counter indicadas e resolve o ataque.
+        // Personagem com stat de counter -> DiscardCardForCounter (instantaneo).
+        // EVENTO [Counter] (stat 0, ex: OP13-098 "...Never Existed..." +4000)
+        // -> HandleMouseClickCardWaitOnCounters, o MESMO handler do clique
+        // humano, que enfileira a acao [Counter] do evento (QueueUpV3Counter
+        // Actions/QueueUpAction). Achado real 12/07 (2 partidas): descartar o
+        // evento via DiscardCardForCounter registrava "for Counter 0" — o bot
+        // jogou fora 2x Never Existed por ZERO de defesa e perdeu com counter
+        // na mao. A acao do evento resolve em ticks seguintes (prompt de alvo
+        // etc. cai na maquinaria existente do driver), entao NAO clicamos
+        // ResolveAttack neste tick: o jogo reabre Attack_WaitOnCounters, o
+        // /defense reavalia com o buff ja aplicado e decide o que falta.
         public static void PlayCounters(GameplayLogicScript gls, PlayerState botPs, List<int> counterIds)
         {
             gls.bConfirmCounter = false;   // descarta direto, sem dialogo de confirmacao
@@ -88,9 +110,22 @@ namespace OPTCGBotPlugin
                     Plugin.Log.LogWarning($"[Bot] counter: carta {id} nao encontrada na mao");
                     continue;
                 }
+                var cls = go.GetComponent<CardLogicScript>();
+                bool isEvent = cls != null && cls.myCard.cardDef != null
+                               && cls.myCard.cardDef.cardType == CardType.Event;
+                if (isEvent)
+                {
+                    if (_counterEventTried.Contains(id))
+                        continue;   // jogo ja recusou este evento neste step
+                    _counterEventTried.Add(id);
+                    _mClickWaitOnCounters.Invoke(gls, new object[] { go });
+                    Plugin.Log.LogInfo($"[Bot] counter EVENT: {CodeOf(go)} (acao enfileirada, resolve sem clicar ResolveAttack)");
+                    return;
+                }
                 _mDiscardCounter.Invoke(gls, new object[] { go });
                 Plugin.Log.LogInfo($"[Bot] counter: {CodeOf(go)}");
             }
+            _counterEventTried.Clear();
             gls.ChoiceButtonClicked(ButtonChoiceType.ResolveAttack, -1);
         }
 

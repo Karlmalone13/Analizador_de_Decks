@@ -88,6 +88,21 @@ namespace OPTCGBotPlugin
                 return;
             }
 
+            // Escolha de 1o/2o: o estado Start_WaitOnTurnOrder so existe no
+            // cliente que GANHOU o dado (WaitOnTurnSelection retorna cedo no
+            // perdedor) — se chegou aqui, a escolha e do bot. 50/50 aleatorio
+            // de proposito (pedido do usuario 12/07: ver o bot tambem na
+            // curva par; decisao estrategica de curva seria logica de deck,
+            // que nao vive no plugin).
+            if (gls.e_CurrentState == GameplayState.Start_WaitOnTurnOrder)
+            {
+                bool first = UnityEngine.Random.value < 0.5f;
+                Plugin.Log.LogInfo($"[Bot] ganhou o dado: vai de {(first ? "PRIMEIRO" : "SEGUNDO")}");
+                gls.ChoiceButtonClicked(first ? ButtonChoiceType.GoFirst : ButtonChoiceType.GoSecond, -1);
+                _cooldown = 1f;
+                return;
+            }
+
             // Mulligan da mao inicial: no SoloVSelf cada lado decide em sequencia,
             // controlado por iPlayerAction (CurrentPlayer = Lps_Players[iPlayerAction])
             if (gls.e_CurrentState == GameplayState.Start_WaitOnMulliganChoice)
@@ -426,7 +441,12 @@ namespace OPTCGBotPlugin
             {
                 _lastDefenseState = st;
                 if (st == GameplayState.Attack_WaitOnBlocker)
+                {
                     _blockerTried = false;
+                    // novo ataque = novo counter step; eventos [Counter]
+                    // recusados no ataque anterior voltam a ser candidatos
+                    BotExecutor.ResetCounterStep();
+                }
             }
 
             bool actionIsMine = gls.gsv_CurrentGame.iPlayerAction == BotPlayerIndex;

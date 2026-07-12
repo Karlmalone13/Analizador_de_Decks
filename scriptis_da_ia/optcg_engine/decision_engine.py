@@ -7006,17 +7006,39 @@ class OPTCGMatch:
                     perdidas += engine.avaliar_carta(c)
             base -= perdidas * 0.5   # peso TUNÁVEL (fase 3)
 
-        # EVENT com efeito principal que exige alvo ausente: penalidade forte.
-        # Ex.: "Never Existed" remove Stage do opp — mas sem Stage no campo, o
-        # efeito não faz nada; a carta não deve competir com activates valiosos.
+        # EVENT cujo [Main] não PRODUZ nada no estado atual: jogar é pagar
+        # custo + carta no vácuo. Era um caso hardcoded ko+opp_stage ("Never
+        # Existed" sem stage, 11/07) — achado real 12/07 (partida 14.30.52):
+        # Ground Death (negate_effect em opp_character) foi jogado com o
+        # campo do oponente VAZIO porque o padrão não era coberto.
+        # Generalizado via _step_is_viable/_check_conditions — a MESMA régua
+        # do gate de activate_main (regra do projeto: viabilidade ampla,
+        # nunca ativar no vácuo), cobre qualquer evento/step, não uma carta.
         if card.card_type == 'EVENT':
             main = effects.get('main', {})
             main_steps = main.get('steps', [])
-            for step in main_steps:
-                if step.get('action') == 'ko' and step.get('target') == 'opp_stage':
-                    if not engine.opp.field_stage:
-                        base -= 120  # sem stage alvo, jogar é quase inútil
-                    break
+            if main_steps:
+                ee_viab = EffectExecutor(engine.me, engine.opp)
+                cond_ok = ee_viab._check_conditions(main.get('conditions', {}), card)
+                if not cond_ok or not any(ee_viab._step_is_viable(s, card)
+                                          for s in main_steps):
+                    base -= 120  # efeito nulo agora: não compete com nada útil
+
+        # CHARACTER cujo on_play não dispara AGORA (condição falha ou nenhum
+        # step com material): o play perde o valor de efeito e vira só o
+        # corpo. Corpo de 0 poder com on_play morto é um play quase inútil
+        # que ainda alimenta remoção/KO do oponente — reclamação real 12/07:
+        # Mjosgard (on_play reanimar Mary Geoise custo 1, condição vida<=3)
+        # descido com vida 4 e trash sem alvo, 2 DON num vanilla de 0 poder.
+        if card.card_type == 'CHARACTER':
+            op_block = effects.get('on_play', {})
+            if op_block.get('steps'):
+                ee_viab = EffectExecutor(engine.me, engine.opp)
+                op_vivo = (ee_viab._check_conditions(op_block.get('conditions', {}), card)
+                           and any(ee_viab._step_is_viable(s, card)
+                                   for s in op_block['steps']))
+                if not op_vivo:
+                    base -= 40 if card.power > 0 else 90
 
         # Vanilla fraca (custo ≤ 2, poder ≤ 3000, sem efeito) no early game:
         # humanos normalmente passam em vez de gastar o único DON do T1/T3 em

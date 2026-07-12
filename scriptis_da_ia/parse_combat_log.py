@@ -113,6 +113,17 @@ def _codes(s: str) -> list:
 
 
 def _clean(line: str) -> str:
+    # Logs AUTOSAVED vem com rich-text do Unity nas referencias de carta:
+    #   Imu [<mark><link="OP13-079">OP13-079</link></mark>]
+    # enquanto o log final salvo pelo jogo vem sem as tags:
+    #   Imu ["OP13-079">OP13-079]
+    # Converte o markup pro formato final ANTES dos patterns (achado 12/07:
+    # parse de autosaved falhava em 'Nao encontrei 2 jogadores' porque
+    # RE_LEADER nao casava). O codigo vive no ATRIBUTO do <link=...> — e
+    # preciso preserva-lo como o prefixo "CODE"> do formato final, nao
+    # apagar a tag inteira.
+    line = re.sub(r'<link=("[A-Z0-9]+-\d+")>', r'\1>', line)
+    line = line.replace('<mark>', '').replace('</mark>', '').replace('</link>', '')
     return line.replace('​', '').strip()
 
 

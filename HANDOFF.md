@@ -89,6 +89,49 @@ depois pra tunagem de heurística (mesmo conjunto de partidas).
 investigada a fundo. E a prioridade #1 (DTO trash/deckCount) segue
 aguardando teste ao vivo com o usuário.
 
+### Quarta leva: teste ao vivo do usuário (2 partidas 14:25/14:30) — INVÁLIDO + 5 fixes achados
+
+**O teste rodou com o SERVIDOR DE ONTEM**: o processo na porta 8765 era o
+PID 12932, iniciado 11/07 01:44 — NENHUM fix de hoje (DTO trash, counter
+policy etc.) estava ativo. Lição operacional: SEMPRE checar
+`Get-NetTCPConnection -LocalPort 8765` + data do processo antes de validar
+ao vivo. Reiniciei (novo PID em 15:00, health 200). Os 2 logs foram salvos
+no banco (`Imu-B_x_Marshall.D.Teach-BY_2026-07-12T14.25.08` e `14.30.52` —
+ATENÇÃO: são a MESMA partida, o autosaved é snapshot parcial do final).
+
+Mesmo assim o log rendeu 5 fixes novos (commitados nesta leva):
+
+1. **Plugin descartava evento [Counter] como counter de stat 0**
+   (`BotExecutor.PlayCounters`): "Discard ...Never Existed... for Counter
+   0" — 2x na partida, ZERO defesa, bot morreu com counter na mão. Agora
+   evento → `HandleMouseClickCardWaitOnCounters` (o handler do clique
+   humano, enfileira a ação [Counter] de verdade) SEM clicar ResolveAttack
+   no mesmo tick (o step reabre e o /defense reavalia com o buff);
+   `_counterEventTried` evita loop se o jogo recusar. Personagem com stat
+   continua no DiscardCardForCounter.
+2. **select_counter_cards não checava o custo da PRÓPRIA carta do evento**
+   (1 DON ativo, o jogo resta ao ativar) — o simulador interno já checava
+   (try_counter_event_power); espelhado no caminho ao vivo.
+3. **Ground Death jogado no vácuo** (negate_effect com board do opp vazio):
+   a penalidade de evento-sem-alvo era hardcoded ko+opp_stage (fix pontual
+   do Never Existed, 11/07). Generalizada em `_score_to_play` via
+   _step_is_viable/_check_conditions pra QUALQUER evento.
+4. **Mjosgard descido com on_play morto** (reanimar Mary Geoise exige
+   vida<=3, bot tinha 4): penalidade nova em _score_to_play pra CHARACTER
+   cujo on_play não dispara agora (-90 se corpo 0 de poder, -40 senão).
+5. **Bot agora decide 1º/2º quando ganha o dado** (`Start_WaitOnTurnOrder`
+   não era tratado; 50/50 aleatório de propósito — pedido do usuário pra
+   ver a curva par também; escolha estratégica de curva seria lógica de
+   deck, não vive no plugin).
+
+Também: `parse_combat_log.py` aceita logs AUTOSAVED (rich-text
+`<mark><link=...>` do Unity convertido pro formato final antes dos
+patterns).
+
+Validação: smoke 100%, auditor 10 partidas A-G=0 H=1 (defensável), plugin
+compila. Plugin PRECISA ser reinstalado: **jogo fechado →
+`BOT\setup_bepinex.bat` → abrir jogo** (server novo já está no ar).
+
 ### Terceira leva: análise "Imu humano vs Imu bot" (passividade)
 
 A pedido do usuário ("ganho sem levar dano"), comparei as 5 partidas dele
