@@ -115,13 +115,21 @@ R2. **Sequenciamento de curva na abertura** — que ordem jogar as cartas nos
     decide por simulação por turno, mas não tem "plano de abertura" ciente do
     objetivo do deck.
 
-R3. **Combos ARBITRÁRIOS de múltiplas cartas** — hoje o perfil só captura o
-    motor PRINCIPAL (reanimation_bottleneck). Falta detecção GENÉRICA de sinergia
-    2-3 peças a partir das mecânicas: carta A habilita carta B (A enche trash → B
-    exige trash_gte; A dá DON → B custa DON alto; A reduz custo → B caro; A busca →
-    B é o alvo do filtro). Provável CONVERGÊNCIA com o front (`synergy_states.py`/
-    `tribal_cohesion.py` já detectam sinergia) — mesma jogada do arquétipo: reusar/
-    estender em vez de reinventar. Vira eixo/termo novo no perfil + na evaluate_state.
+R3. **Combos ARBITRÁRIOS de múltiplas cartas.** CUIDADO COM A LEITURA: hoje o
+    perfil já captura, de forma UNIVERSAL, UM padrão de motor — o gargalo
+    `recurso→payoff` (`reanimation_bottleneck`). Isso NÃO é "do Imu": o mesmo
+    código acha o engine de qualquer deck de recursão (provado 13/07: Imu→OP13-082,
+    Sakazuki→OP05-088, moria→OP15-079; Yamato→nenhum, correto). A limitação é que
+    só capturamos ESSE padrão único; falta detecção GENÉRICA de sinergia 2-3 peças:
+    carta A habilita carta B (A enche trash → B exige trash_gte; A dá DON → B custa
+    DON alto; A reduz custo → B caro; A busca → B é o alvo do filtro).
+    DUAS REGRAS DO USUÁRIO (não violar): (a) NÃO individual — é padrão de sinergia
+    aplicado a QUALQUER deck (um detector, N decks, zero nomes, como o resto do
+    deck_profile); (b) NÃO motor novo — vira EIXO/TERMO no `deck_profile`→
+    `evaluate_state` (o mesmo e único cérebro), NÃO um solver de combo à parte.
+    Convergência com `synergy_states.py`/`tribal_cohesion.py` do front = REUSO de
+    dados/padrões (igual `ACTION_WEIGHTS` do deck_analyzer); eles são ANÁLISE, não
+    decisão — alimentam o perfil, não decidem jogada.
 
 R4. **ONGOING: enriquecer os papéis ao máximo** — sempre mecanicamente
     fundamentado (card_effects_db), nunca prosa. Cada papel novo deve GANHAR seu
