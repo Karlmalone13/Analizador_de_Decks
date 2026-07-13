@@ -36,6 +36,11 @@ from copy import deepcopy as _deepcopy
 USE_EVAL_V2 = False   # medido 13/07: terms OK, pesos-prior regridem Krieg
 #                       (melhora Kid/Teach). Só liga quando a tunagem (item 5)
 #                       achar pesos que batem a v1 no gauntlet inteiro.
+
+# Amostras Monte Carlo do Turn Planner por decisão. 6 no jogo real; a tunagem
+# (tune_weights.py) baixa pra 4 pra acelerar a BUSCA (a validação final volta
+# a 6). Knob global — não muda a régua, só o custo da simulação.
+PLANNER_MC_SAMPLES = 6
 try:
     from deck_profile import build_profile_from_codes as _build_profile_from_codes
 except Exception:
@@ -8145,7 +8150,7 @@ class OPTCGMatch:
                 continue
 
             model = self.model_for_a if p is self.state_a else self.model_for_b
-            n_monte_carlo = 6
+            n_monte_carlo = PLANNER_MC_SAMPLES
             amostras_turno = [model.sample(opp, rng=random.Random()) for _ in range(n_monte_carlo)]
 
             melhor_acao = None

@@ -74,11 +74,23 @@ def _imu_winrate(deck_imu, deck_opp, weights: dict, n: int, seed: int) -> float:
     return wins / n
 
 
-def _score(weights, gauntlet, decks_imu, decks_opp, n, seed) -> tuple[float, dict]:
-    """(maximin da margem, winrates) — quanto maior, melhor; sem regredir."""
+def _score(weights, gauntlet, decks_imu, decks_opp, n, seed,
+           beat_maximin=None) -> tuple[tuple, dict]:
+    """
+    (maximin da margem, soma) + winrates. maximin = min sobre matchups de
+    (winrate − v1). EARLY-STOP: o objetivo é maximin; como maximin ≤ QUALQUER
+    margem, assim que uma margem cai abaixo do `beat_maximin` atual o candidato
+    já não pode vencer — aborta e economiza os matchups restantes. Avalia os
+    matchups do MAIS DIFÍCIL pro mais fácil (menor v1 primeiro) pra o corte
+    disparar cedo.
+    """
     wr = {}
-    for name in gauntlet:
+    ordem = sorted(gauntlet, key=lambda nm: _V1.get(nm, 0.5))
+    for name in ordem:
         wr[name] = _imu_winrate(decks_imu, decks_opp[name], weights, n, seed)
+        margem = wr[name] - _V1.get(name, 0.5)
+        if beat_maximin is not None and margem <= beat_maximin:
+            return (margem, -999.0), wr   # não vence — poda o resto
     margens = [wr[name] - _V1.get(name, 0.5) for name in gauntlet]
     return (min(margens), sum(margens)), wr
 
@@ -89,14 +101,20 @@ def main():
     ap.add_argument('--iters', type=int, default=3)
     ap.add_argument('--seed', type=int, default=1)
     ap.add_argument('--gauntlet', nargs='*', default=['Krieg', 'Kid', 'Barba Negra BY'])
+    ap.add_argument('--mc', type=int, default=4, help='amostras Monte Carlo na busca (6 no jogo real)')
     args = ap.parse_args()
+
+    # amostragem Monte Carlo mais leve DURANTE a busca (acelera; validação
+    # final volta a 6). Não muda a régua, só o custo por partida.
+    de.PLANNER_MC_SAMPLES = args.mc
+    print(f"[tuner] MC={de.PLANNER_MC_SAMPLES} n={args.n} gauntlet={args.gauntlet}")
 
     decks_imu = load_sim_deck('Imu')
     decks_opp = {name: load_sim_deck(name) for name in args.gauntlet}
 
     best = dict(de.EVAL_WEIGHTS)
     best_key, best_wr = _score(best, args.gauntlet, decks_imu, decks_opp, args.n, args.seed)
-    print(f"PRIOR  maximin={best_key[0]:+.3f} soma={best_key[1]:+.3f}  {best_wr}")
+    print(f"PRIOR  maximin={best_key[0]:+.3f} soma={best_key[1]:+.3f}  {best_wr}", flush=True)
 
     for it in range(args.iters):
         melhorou = False
@@ -104,11 +122,14 @@ def main():
             for fator in (1.5, 0.67):
                 cand = dict(best)
                 cand[w] = round(best[w] * fator, 4)
-                key, wr = _score(cand, args.gauntlet, decks_imu, decks_opp, args.n, args.seed)
+                # early-stop: só interessa quem SUPERA o maximin atual
+                key, wr = _score(cand, args.gauntlet, decks_imu, decks_opp,
+                                 args.n, args.seed, beat_maximin=best_key[0])
                 if key > best_key:
                     best, best_key, best_wr = cand, key, wr
                     melhorou = True
-                    print(f"  it{it} {w}×{fator}: maximin={key[0]:+.3f} soma={key[1]:+.3f}  {wr}")
+                    print(f"  it{it} {w}×{fator}: maximin={key[0]:+.3f} "
+                          f"soma={key[1]:+.3f}  {wr}", flush=True)
         if not melhorou:
             print(f"  it{it}: sem melhora — convergiu")
             break
