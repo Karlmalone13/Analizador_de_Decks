@@ -872,6 +872,22 @@ def order_target_candidates(gs: GameState, opp_gs: GameState,
         if alvos and all(t.startswith('opp') for t in alvos):
             actor_opp_only = True
 
+    # O ator tem CUSTO "trash 1 Character seu OU 1 carta da mao"
+    # (trash_char_or_hand — ex: draw do lider Imu)? Entao own_board e
+    # own_hand competem pelo MESMO papel (o que doi menos perder) e a
+    # prioridade estrutural por zona (own_hand=1 < own_board=3) esta
+    # ERRADA: o bot pagava o custo TODO turno com carta da MAO (ate
+    # Saturn jogavel), com a Shalria de 0 poder ja usada parada no campo
+    # — reclamacao real 12/07 (3a partida), "nao trashou a Shalria pro
+    # draw". Independente das deteccoes acima (olha CUSTOS, nao steps).
+    actor_trash_cost = False
+    if actor_code:
+        for block in get_card_effects(actor_code).values():
+            if any((c.get('type') or '').startswith('trash_char')
+                   for c in block.get('costs', [])):
+                actor_trash_cost = True
+                break
+
     # O ator resolvendo e um "JOGUE uma carta da mao" (ex: Empty Throne
     # OP13-099: play 1 black Five Elders da mao)? Entao o prompt de own_hand
     # e de INTENCAO OPOSTA a de descarte: a regua _trash_value (protege carta
@@ -1011,6 +1027,11 @@ def order_target_candidates(gs: GameState, opp_gs: GameState,
                 valor = redirect_option_value(card, attacker_power, opp_gs,
                                               engine) if card else -999
                 return (3, -valor, -(getattr(card, 'power', 0) if card else 0))
+            if actor_trash_cost:
+                # custo trash_char_or_hand: MESMO tier da mao (1), perda
+                # medida por char_value_score — Shalria 0-poder ja usada
+                # custa menos que qualquer carta util da mao
+                return (1, engine.analyzer.char_value_score(card) if card else 0)
             return (3, engine.analyzer.char_value_score(card) if card else 0, 0)
         if zone == 'own_leader':
             if defender_is_own_char and gs.life_count() > 0:

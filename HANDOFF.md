@@ -89,6 +89,38 @@ depois pra tunagem de heurística (mesmo conjunto de partidas).
 investigada a fundo. E a prioridade #1 (DTO trash/deckCount) segue
 aguardando teste ao vivo com o usuário.
 
+### Sexta leva: partidas 23:03/23:09 (vs Krieg) — 3 fixes dos reports do usuário
+
+Logs `Imu-B_x_Krieg-RG_2026-07-12T23.03.36` e `23.09.31` salvos no banco.
+O trigger de evento (leva 5) FUNCIONOU ao vivo ("Activate Trigger" no
+combat log + `[DEF] trigger OP13-096 -> True` no session log 22.41.02).
+
+1. **Empty Throne no vácuo (3º report!) — CAUSA RAIZ ACHADA**: a regra
+   "play_card sem card_type = CHARACTER" existia SÓ no _elegivel_para_play
+   (sim_bridge); as outras TRÊS cópias da elegibilidade aceitavam o EVENTO
+   "The Five Elders Are at Your Service!!!" (custo 1, 'five elders' nos
+   sub_types/nome): `_step_is_viable` (gate), executor de play_card, e a
+   varredura própria do `_should_activate_main` (~linha 6835). Com o
+   evento na mão o gate dizia "elegível" e a ativação fizzlava no jogo.
+   Default CHARACTER aplicado nas 3; reproduzido antes/depois com o estado
+   real do turno 3 (gate False agora). LIÇÃO: regra duplicada em N lugares
+   = bug sobrevive a N-1 fixes.
+2. **Custo do líder Imu nunca trashava a Shalria do campo**: zona
+   own_hand (prio 1) sempre vencia own_board (prio 3) no
+   order_target_candidates — pagava o draw com Saturn da MÃO todo turno.
+   Novo: ator com custo `trash_char*` põe own_board no MESMO tier da mão,
+   perda por char_value_score (Shalria 0-poder usada « qualquer carta útil).
+3. **Mary Geoise descida POR CIMA do Empty Throne**: jogar STAGE com stage
+   própria em campo substitui — `_score_to_play` agora desconta
+   avaliar_carta da stage atual (stage nova só compete se vale MAIS).
+
+Validação: repro dos 3 cenários OK, smoke 100%, auditor 10 partidas com
+ruído baixo (A=1, H=2 borderline — precisa olhar na próxima sessão:
+m04 t11 needed=1 com 1000 na mão recusado). Server reiniciado 23:20 com
+tudo. Obs de infra: `Get-ChildItem Length` MENTE pra session log aberto
+(NTFS metadata) — o log de 22:41 parecia 0 bytes e tinha 34KB; ler o
+conteúdo antes de concluir que não logou.
+
 ### Quinta leva: partida 15:27 — PRIMEIRO teste válido (server+plugin novos confirmados) + fix do trigger de evento
 
 Log `Imu-B_x_Marshall.D.Teach-BY_2026-07-12T15.27.45` salvo no banco.

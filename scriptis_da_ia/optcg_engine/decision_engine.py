@@ -1311,8 +1311,16 @@ class EffectExecutor:
             cost_lte = step.get('cost_lte')
             if cost_lte == 'don_count_self':
                 cost_lte = me.don_available + me.don_rested
+            # "Play 1 [tipo] ..." sem card_type explicito = CHARACTER — mesma
+            # regra do _elegivel_para_play (sim_bridge). Achado real 12/07
+            # (partida 23.03.36, 3a vez reportado pelo usuario): o EVENTO
+            # "The Five Elders Are at Your Service!!!" (custo 1, 'five
+            # elders' no NOME) passava neste filtro e o gate do Empty Throne
+            # dizia "elegivel" — o jogo so aceita personagem, a ativacao
+            # fizzlava (3 DON + stage restados por nada).
+            req_type = (step.get('card_type') or 'CHARACTER').upper()
             return bool(eligible_cards(
-                me.hand,
+                [c for c in me.hand if c.card_type == req_type],
                 cost_lte=cost_lte,
                 cost_eq=step.get('cost_eq'),
                 filter_text=step.get('filter_type', ''),
@@ -4576,8 +4584,9 @@ class EffectExecutor:
                         color=step.get('color', ''),
                         exclude_name=step.get('exclude', ''),
                     )
-                    if c.card_type in ('CHARACTER', 'STAGE', 'EVENT')
-                    and (not step.get('card_type') or c.card_type == step.get('card_type'))
+                    # sem card_type explicito no step = CHARACTER (mesma regra
+                    # de _step_is_viable e _elegivel_para_play — 12/07)
+                    if c.card_type == (step.get('card_type') or 'CHARACTER').upper()
                 )
 
             if not elegiveis:
@@ -6822,7 +6831,14 @@ class OPTCGMatch:
         if any(a in ('add_don', 'set_don_active') for a in actions):
             return True, 'benefício DON ramp'
 
-        # play_card de graça — vale se há carta elegível na mão
+        # play_card de graça — vale se há carta elegível na mão.
+        # ATENÇÃO (12/07): esta era a TERCEIRA cópia da regra de
+        # elegibilidade (0b/_step_is_viable, executor, aqui), e foi assim
+        # que o bug do "Empty Throne no vácuo" sobreviveu a 3 reports —
+        # cada cópia com um detalhe faltando. Mesmo default de tipo aqui:
+        # play_card sem card_type explícito = CHARACTER (o evento "The
+        # Five Elders Are at Your Service!!!" tem 'five elders' nos
+        # sub_types e passava neste laço).
         if 'play_card' in actions:
             for s in steps:
                 if s.get('action') != 'play_card':
@@ -6832,7 +6848,9 @@ class OPTCGMatch:
                     cost_lte = p.don_available + p.don_rested
                 ftype = (s.get('filter_type') or '').lower()
                 fcolor = (s.get('color') or '').lower()
+                req_type = (s.get('card_type') or 'CHARACTER').upper()
                 for c in p.hand:
+                    if c.card_type != req_type:                       continue
                     if cost_lte is not None and c.cost > cost_lte:   continue
                     if ftype and ftype not in c.sub_types.lower():    continue
                     if fcolor and fcolor not in c.color.lower():      continue
@@ -7023,6 +7041,15 @@ class OPTCGMatch:
                 if not cond_ok or not any(ee_viab._step_is_viable(s, card)
                                           for s in main_steps):
                     base -= 120  # efeito nulo agora: não compete com nada útil
+
+        # STAGE com stage própria já em campo: jogar SUBSTITUI a atual (regra
+        # do jogo, 1 stage por lado) — o custo real do play inclui perder o
+        # que a stage atual entrega. Achado real 12/07 (partida 23.09.31):
+        # Mary Geoise (custo 1) descida POR CIMA do Empty Throne, jogando
+        # fora o motor de deploy grátis do deck. Caso a caso: uma stage
+        # nova só compete se vale MAIS que a que sai.
+        if card.card_type == 'STAGE' and engine.me.field_stage is not None:
+            base -= engine.avaliar_carta(engine.me.field_stage)
 
         # CHARACTER cujo on_play não dispara AGORA (condição falha ou nenhum
         # step com material): o play perde o valor de efeito e vira só o

@@ -1293,5 +1293,55 @@
       "You": "decks/Imu-B_2026-07-12T15.27.45.json",
       "Opponent": "decks/Marshall.D.Teach-BY_2026-07-12T15.27.45.json"
     }
+  },
+  {
+    "id": "2026-07-12T23.03.36",
+    "friendly_name": "Imu-B_x_Krieg-RG",
+    "date": "2026-07-12",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP13-079",
+      "leader_name": "Imu",
+      "slug": "Imu-B"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP15-001",
+      "leader_name": "Krieg",
+      "slug": "Krieg-RG"
+    },
+    "turns": 9,
+    "winner": null,
+    "log_file": "raw/Imu-B_x_Krieg-RG_2026-07-12T23.03.36.log",
+    "parsed_file": "parsed/Imu-B_x_Krieg-RG_2026-07-12T23.03.36.json",
+    "deck_files": {
+      "You": "decks/Imu-B_2026-07-12T23.03.36.json",
+      "Opponent": "decks/Krieg-RG_2026-07-12T23.03.36.json"
+    }
+  },
+  {
+    "id": "2026-07-12T23.09.31",
+    "friendly_name": "Imu-B_x_Krieg-RG",
+    "date": "2026-07-12",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP13-079",
+      "leader_name": "Imu",
+      "slug": "Imu-B"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP15-001",
+      "leader_name": "Krieg",
+      "slug": "Krieg-RG"
+    },
+    "turns": 16,
+    "winner": null,
+    "log_file": "raw/Imu-B_x_Krieg-RG_2026-07-12T23.09.31.log",
+    "parsed_file": "parsed/Imu-B_x_Krieg-RG_2026-07-12T23.09.31.json",
+    "deck_files": {
+      "You": "decks/Imu-B_2026-07-12T23.09.31.json",
+      "Opponent": "decks/Krieg-RG_2026-07-12T23.09.31.json"
+    }
   }
 ]

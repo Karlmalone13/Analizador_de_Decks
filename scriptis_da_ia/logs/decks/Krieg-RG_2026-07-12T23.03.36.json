@@ -1,0 +1,21 @@
+{
+  "cards": [
+    {
+      "code": "OP15-007",
+      "name": "Gin",
+      "count": 1
+    },
+    {
+      "code": "OP15-009",
+      "name": "Koby",
+      "count": 1
+    },
+    {
+      "code": "OP15-017",
+      "name": "OP15-017",
+      "count": 1
+    }
+  ],
+  "total_seen": 3,
+  "leader": "OP15-001"
+}
