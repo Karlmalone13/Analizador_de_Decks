@@ -1,5 +1,42 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-13 (124) - Claude — pré-teste-ao-vivo: log de DON do bot + watch-list
+
+Sessão curta de preparo ANTES da validação ao vivo (leva 7 + DTO trash seguem
+pendentes de teste em partida real). Foco: tornar o teste caro uma CONFIRMAÇÃO
+MEDIDA, não sessão de debug.
+
+**1. FIX (habilitador de medição) — log de DON anexado pelo bot.** Achado
+empírico: no último log real (`Imu-B_x_Kid...23.41.50`) as 7 linhas
+`Attach N Don` eram TODAS do humano (`[Opponent]`); o DON do bot (`[You]`) nunca
+aparecia. Causa raiz no decompilado: o arraste humano chama `LogLine(
+"Log.AttachDonMulti", ...)` (GameplayLogicScript.cs:8002/8269); o bot chamava
+`AttachDonToCard` direto (BotExecutor `TryAttachDon`) e pulava o LogLine.
+Resultado: `don_por_atk` — a métrica MAIS sensível da investigação de
+passividade (marco-zero: bot ~0.6 vs opp ~1.2–1.5) — subcontava o bot, tornando
+o teste ao vivo cego justamente no que mede. Fix: `TryAttachDon`
+(`BOT/OPTCGBotPlugin/BotExecutor.cs`) emite a MESMA linha via reflection do
+`LogLine` privado (`_mLogLine`), com `CardName` + count + total. Sai
+`[You] Attach N Don to X (Total)`, formato que o `parse_combat_log` (RE_ATTACH)
+já lê e atribui ao turno do bot (mesma máquina que já parseava o `[Opponent]`).
+**Compilado: 0 erros** (só warnings pré-existentes). Runtime só confirma no jogo.
+
+**2. `scriptis_da_ia/WATCHLIST_TESTE_AO_VIVO.md`** — checklist ÚNICA
+consolidando o que estava espalhado (DTO trash bloco 122 + leva 7 blocos
+122/123 + fix de DON desta sessão + métricas de passividade).
+
+**3. Pré-flight verde**: smoke_test todos passam, smoke_test_broad 40/40
+(`PYTHONHASHSEED=0`).
+
+**4. Limpeza**: `nul` órfão removido; `decision_audit_*.json` + `_debug_prompt_bbox/`
+adicionados ao `.gitignore` (saídas efêmeras do auditor, não são o banco de logs).
+
+**PENDÊNCIA IMEDIATA (usuário):** fechar o jogo → `BOT\setup_bepinex.bat` (copia
+a DLL nova) → reabrir → jogar seguindo a WATCH-LIST. Confirmar as linhas
+`[You] Attach...` no combat log e `don_por_atk` do bot subindo vs ~0.6.
+Resto do roadmap (R1 mulligan, item 3 busca prof.2, pipeline self-service)
+inalterado — ver bloco 123 e PLANO_AVALIACAO_E_BUSCA.md.
+
 ## 2026-07-13 (123) - Claude — SESSÃO GRANDE: núcleo de avaliação + busca (plano mestre)
 
 **LEIA PRIMEIRO:** [scriptis_da_ia/PLANO_AVALIACAO_E_BUSCA.md](scriptis_da_ia/PLANO_AVALIACAO_E_BUSCA.md)

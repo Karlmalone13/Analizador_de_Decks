@@ -388,6 +388,12 @@ namespace OPTCGBotPlugin
         //    triggers "when DON attached" do lider, como no fluxo original. ──
         private static readonly MethodInfo _mCheckForAttachDon =
             AccessTools.Method(typeof(GameplayLogicScript), "CheckForAttachDonAction");
+        // Mesmo helper de combat log que o arraste humano usa (LogLine privado).
+        // Sem chama-lo, o DON anexado pelo bot nao aparece no combat log e a
+        // metrica de agressao (don_por_atk) subconta o bot. Ver comentario no
+        // TryAttachDon.
+        private static readonly MethodInfo _mLogLine =
+            AccessTools.Method(typeof(GameplayLogicScript), "LogLine");
 
         public static bool TryAttachDon(GameplayLogicScript gls, PlayerState botPs,
                                         int cardId, int count, GameStateDto dto)
@@ -419,7 +425,30 @@ namespace OPTCGBotPlugin
                 attached++;
             }
             if (attached > 0)
+            {
                 _mCheckForAttachDon.Invoke(gls, new object[] { attached });
+                // Emite a MESMA linha de combat log que o arraste humano
+                // (Log.AttachDonMulti, GameplayLogicScript:8002/8269). O bot
+                // chamava AttachDonToCard direto e pulava o LogLine, entao seu
+                // DON nunca aparecia no combat log ([You] Attach ... Don to ...)
+                // e o parse_combat_log (RE_ATTACH) subcontava a agressao dele —
+                // don_por_atk e a metrica-chave da investigacao de passividade.
+                // total = DON anexado na carta APOS este attach (i2 do log).
+                try
+                {
+                    var acls = go.GetComponent<CardLogicScript>();
+                    int total = acls != null ? acls.lgo_AttachedDon.Count : attached;
+                    _mLogLine.Invoke(gls, new object[]
+                    {
+                        "Log.AttachDonMulti", true, gls.CardName(go), "", attached, total,
+                        ulong.MaxValue
+                    });
+                }
+                catch (System.Exception e)
+                {
+                    Plugin.Log.LogWarning($"[Bot] attach_don: LogLine falhou ({e.Message})");
+                }
+            }
 
             Plugin.Log.LogInfo($"[Bot] attach_don: {attached}/{count} DON em {CodeOf(go)}");
             return attached > 0;

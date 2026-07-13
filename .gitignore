@@ -52,6 +52,11 @@ BOT/engine_server/logs/
 # env files (can opt-in for committing if needed)
 .env*
 
+# saidas efemeras do auditor de decisao (audit_antipatterns.py) e debug de
+# OCR/bbox — experimentos descartaveis, nao sao o banco de logs versionado
+scriptis_da_ia/decision_audit_*.json
+scriptis_da_ia/_debug_prompt_bbox/
+
 # vercel
 .vercel
 
