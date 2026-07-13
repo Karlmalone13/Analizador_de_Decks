@@ -1,0 +1,16 @@
+{
+  "cards": [
+    {
+      "code": "OP16-093",
+      "name": "Bartholomew Kuma",
+      "count": 1
+    },
+    {
+      "code": "OP13-086",
+      "name": "St. Shalria",
+      "count": 1
+    }
+  ],
+  "total_seen": 2,
+  "leader": "OP13-079"
+}

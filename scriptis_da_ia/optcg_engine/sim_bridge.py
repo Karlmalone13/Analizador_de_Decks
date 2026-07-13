@@ -370,6 +370,30 @@ def resolve_trigger_choice(gs: GameState, card_code: str | None,
                       'debuff_power'):
             return True
         if action == 'activate_main_effect':
+            # Em EVENTO, este trigger significa "jogue o [Main] de graça"
+            # (ex: Are At Your Service — search). A régua antiga (on_ko_value,
+            # feita pro padrão de PERSONAGEM que trigga o próprio on-KO) dá 0
+            # pra evento → recusava sempre — achado real 12/07 (partida
+            # 15.27.45): a busca grátis foi pra mão, onde um evento sem
+            # [Counter] não é rede de segurança (sem stat de counter; usar
+            # depois custa DON + main phase) e a carta usada ainda alimenta
+            # o trash (recurso deste deck). Usa se o main PRODUZ algo agora
+            # (mesma régua _step_is_viable do resto do motor); evento COM
+            # bloco [Counter] continua indo pra mão (defesa futura > efeito
+            # grátis agora).
+            data_ev = _cards_db.get(card_code) or {}
+            if (data_ev.get('type') or '').upper() == 'EVENT':
+                effects_ev = get_card_effects(card_code)
+                if effects_ev.get('counter'):
+                    return False
+                main_steps = effects_ev.get('main', {}).get('steps', [])
+                if not main_steps:
+                    return False
+                from optcg_engine.decision_engine import EffectExecutor
+                opp_stub = opp_gs if opp_gs is not None else GameState(leader=deepcopy(gs.leader))
+                ee_trig = EffectExecutor(gs, opp_stub)
+                card_obj = _make_card(card_code, data_ev)
+                return any(ee_trig._step_is_viable(s, card_obj) for s in main_steps)
             return on_ko_value(card_code, opp_gs, owner=gs) >= 25
         if action in ('trash', 'trash_from_hand', 'discard'):
             return len(gs.hand) > 0

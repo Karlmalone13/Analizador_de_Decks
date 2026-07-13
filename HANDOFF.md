@@ -89,6 +89,34 @@ depois pra tunagem de heurística (mesmo conjunto de partidas).
 investigada a fundo. E a prioridade #1 (DTO trash/deckCount) segue
 aguardando teste ao vivo com o usuário.
 
+### Quinta leva: partida 15:27 — PRIMEIRO teste válido (server+plugin novos confirmados) + fix do trigger de evento
+
+Log `Imu-B_x_Marshall.D.Teach-BY_2026-07-12T15.27.45` salvo no banco.
+Perícia: server PID 4208 (15:00, código de hoje) + plugin 14:59:50 no jogo
+— dessa vez os fixes RODARAM. Resultado mensurável vs baseline da análise:
+bot fez 3 de dano (média anterior 1.3, três partidas anteriores 0-2),
+counterou certo (Kuma/Shalria 1000, ZERO "for Counter 0"), give_don foi no
+LÍDER, nenhum play no vácuo, 7 ataques em 5 turnos (1.4/t vs 0.88). Ainda
+perdeu: passividade relativa continua (humano 2.0 atk/t) e o combo Five
+Elders não disparou na partida.
+
+Fix novo (reportado pelo usuário): **trigger de EVENTO recusado sempre** —
+`resolve_trigger_choice` avaliava `activate_main_effect` com `on_ko_value`
+(régua do padrão de PERSONAGEM; evento dá 0 → recusa). "Are At Your
+Service" da vida ia pra mão em vez da busca grátis. Agora: EVENTO sem
+bloco [Counter] usa o trigger se o main é viável (`_step_is_viable`);
+evento COM [Counter] segue indo pra mão. Validado unitário (096→True,
+Ground Death→False), smoke 100%, auditor 10 partidas ZERADO (até o H
+residual sumiu). Server reiniciado com o código (health 200).
+
+**Discussão estratégica com o usuário (pergunta "hora de ML?")**: ver
+resposta na sessão — resumo: 3 camadas de bugs de encanamento (server
+velho 2x, plugin descartando counter-event, DTO cego) consumiram os testes
+ao vivo; a linhagem de pontuação não está esgotada nem foi de fato testada
+com informação completa até 15:27. Próximo degrau proposto: tunagem de
+pesos por volume de simulação (auditor determinístico + winrate
+motor-vs-motor já permitem A/B limpo) antes de qualquer ML de verdade.
+
 ### Quarta leva: teste ao vivo do usuário (2 partidas 14:25/14:30) — INVÁLIDO + 5 fixes achados
 
 **O teste rodou com o SERVIDOR DE ONTEM**: o processo na porta 8765 era o
