@@ -309,32 +309,69 @@ def don_for_attack(gs: GameState, opp_gs: GameState, action: tuple,
 
 def choose_turn_order(deck_codes: list[str]) -> dict:
     """
-    Decide ir de 1o ou 2o pela CURVA do deck pilotado (pedido do usuario
-    12/07: nada de 50/50 — analisar o deck e escolher).
+    Decide ir de 1o ou 2o pelo PERFIL do deck pilotado (pedido do usuario
+    12-13/07: nada de 50/50, e nao so a curva crua — usar o retrato completo
+    que o bot ja deriva do deck: arquetipo + papeis + curva).
 
-    Regra do jogo: 1o ataca antes (tempo), mas nao compra no t1 e comeca
-    com 1 DON; 2o compra no t1 e ja abre com 2 DON (chega antes ao
-    mid-game). Caso a caso pela estrutura do deck:
-    - aggro de curva baixa com Rush quer TEMPO -> primeiro;
-    - curva alta / combo (win-con cara, ramp, stage-engine) quer RECURSO
-      -> segundo (ex: Imu, bomba de 10 com Empty Throne).
+    Regra do jogo (por que importa pra CURVA DE DON): 1o ataca antes (tempo)
+    mas NAO compra no t1 e abre com 1 DON; 2o compra no t1 e abre com 2 DON,
+    chegando antes ao mid-game. Entao:
+    - deck que converte tempo/pressao cedo (Aggro, curva baixa, Rush) quer
+      ser PRIMEIRO;
+    - deck que precisa de RECURSO/rampa/combo caro (Controle, Ramp, recursao,
+      win-con de custo alto) quer ser SEGUNDO.
+
+    Score transparente e UNIVERSAL (deriva do deck_profile, zero nome de
+    carta). >0 = primeiro (tempo); <=0 = segundo (recurso).
     """
-    dados = [(_cards_db.get(code) or {}) for code in deck_codes]
+    prof = _profile_or_none(deck_codes)
+    dados = [(_cards_db.get(c) or {}) for c in deck_codes]
     dados = [d for d in dados if d and (d.get('type') or '').upper() != 'LEADER']
     if not dados:
-        return {'goFirst': False,
-                'reason': 'deck desconhecido -> segundo (recurso)'}
-    custos = [d.get('cost', 0) for d in dados]
-    media = sum(custos) / len(custos)
-    n_rush = sum(1 for code in set(deck_codes)
-                 if (_cards_db.get(code) or {}).get('has_rush'))
-    n_bombas = sum(1 for c in custos if c >= 7)
-    go_first = media <= 3.2 and n_rush >= 3 and n_bombas <= 2
+        return {'goFirst': False, 'reason': 'deck desconhecido -> segundo (recurso)'}
+    media = sum(d.get('cost', 0) for d in dados) / len(dados)
+
+    score = 0.0
+    partes = []
+    # curva: baixa empurra pra tempo, alta pra recurso (centro ~3.5)
+    curva_term = (3.5 - media) * 2.0
+    score += curva_term
+    partes.append(f'curva {media:.1f}({curva_term:+.1f})')
+
+    if prof:
+        mix = prof.get('archetype', {}).get('mix', {})
+        roles = prof.get('roles', {})
+        # arquetipo: Aggro puxa tempo; Controle/Ramp puxam recurso; Vida leve recurso
+        arch_term = (mix.get('Aggro', 0) - mix.get('Controle', 0)
+                     - mix.get('Tempo/Ramp', 0) * 0.5 - mix.get('Vida/Triggers', 0) * 0.3) / 15.0
+        score += arch_term
+        partes.append(f"arq({arch_term:+.1f})")
+        # papeis: rush/evasive/beater = tempo; ramp/recursion/finisher = recurso
+        tempo_roles = roles.get('rush', 0) + roles.get('evasive', 0) + roles.get('beater', 0) * 0.5
+        recurso_roles = (roles.get('ramp', 0) + roles.get('recursion', 0)
+                         + roles.get('finisher', 0) + roles.get('don_recovery', 0))
+        papel_term = (tempo_roles - recurso_roles) * 0.15
+        score += papel_term
+        partes.append(f"papeis({papel_term:+.1f})")
+        # eixo de combo caro (reanimacao) reforca "segundo"
+        if any(a.get('kind') == 'bottleneck' for a in prof.get('derived_axes', [])):
+            score -= 1.0
+            partes.append('combo(-1.0)')
+
+    go_first = score > 0
     return {'goFirst': go_first,
-            'reason': (f'curva media {media:.1f}, rush={n_rush}, '
-                       f'custo7+={n_bombas} -> '
-                       + ('primeiro (aggro/tempo)' if go_first
-                          else 'segundo (recurso/curva)'))}
+            'reason': f"score {score:+.1f} [{', '.join(partes)}] -> "
+                      + ('PRIMEIRO (tempo)' if go_first else 'SEGUNDO (recurso)')}
+
+
+def _profile_or_none(deck_codes: list[str]):
+    """Perfil do deck (deck_profile) ou None se indisponivel — guardado."""
+    try:
+        from deck_profile import build_profile_from_codes
+        return build_profile_from_codes([c for c in deck_codes
+                                         if (_cards_db.get(c) or {}).get('type', '').upper() != 'LEADER'])
+    except Exception:
+        return None
 
 
 def _card_intent(zone: str, card: Card, reason: str) -> dict:
