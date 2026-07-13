@@ -101,7 +101,8 @@ def _fmt(s: dict, n: int) -> dict:
         'pct_atk_lider':  round(100 * s['atk_leader'] / a, 1),
         'dano_por_jogo':  round(s['dmg'] / n, 2),
         'don_por_atk':    round(s['don_attached'] / a, 2),
-        'counters_por_jogo': round(s['counters'] / n, 2),
+        # counters_used acumula PODER de counter (c.counter), não contagem
+        'counter_power_por_jogo': round(s['counters'] / n, 0),
     }
 
 
@@ -134,7 +135,7 @@ def main():
     print(f"\n=== BASELINE: {args.deck_a} (A) vs {args.deck_b} (B) — "
           f"{args.n} jogos, seed={args.seed}, {resumo['turnos_medios']} turnos/jogo ===")
     cols = ['winrate', 'atk_por_turno', 'pct_atk_lider', 'dano_por_jogo',
-            'don_por_atk', 'counters_por_jogo']
+            'don_por_atk', 'counter_power_por_jogo']
     print(f"  {'métrica':18s} {'A (' + args.deck_a[:10] + ')':>16s} {'B (' + args.deck_b[:10] + ')':>16s}")
     for c in cols:
         print(f"  {c:18s} {resA[c]:>16} {resB[c]:>16}")

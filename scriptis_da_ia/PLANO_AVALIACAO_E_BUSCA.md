@@ -16,6 +16,31 @@ oponente), reaproveitando o simulador que já temos.
 
 ---
 
+## 📊 MARCO-ZERO medido (13/07, 50 jogos/matchup, seed=1, motor-vs-motor)
+
+Reproduzir: `python baseline_metrics.py --deck-a Imu --deck-b <X>`. JSONs em
+`baseline_imu_vs_{teach,krieg,kid}.json`. Toda etapa compara contra ISTO.
+
+| matchup | winrate Imu | atk/turno (Imu·opp) | %líder (Imu·opp) | dano/jogo (Imu·opp) | **DON/atk (Imu·opp)** |
+|---|---|---|---|---|---|
+| vs Teach BY | **0.88** | 1.41 · 1.54 | 86.7 · 81.3 | 3.94 · 2.70 | **0.56 · 1.53** |
+| vs Krieg | **0.38** | 1.67 · 1.84 | 67.5 · 76.9 | 2.76 · 3.76 | **0.60 · 1.22** |
+| vs Kid | **0.34** | 1.46 · 1.65 | 77.4 · 83.5 | 3.78 · 2.90 | **0.65 · 1.25** |
+
+**Leituras que guiam o plano:**
+1. **A passividade é sistêmica e está na régua do DON, não do alvo.** Em TODOS
+   os matchups o Imu anexa ~0.6 DON/ataque vs ~1.2–1.5 do oponente — ataca
+   quase seco, oponente countera barato e devolve. Mira do líder já está ok
+   (67–87%, a cegueira do trash foi resolvida). → **`don_por_atk` e
+   `dano_por_jogo` são as métricas SENSÍVEIS pra medir as etapas 1–3.** É o
+   gap que a busca do item 3 ("anexo DON ou ataco seco?") deve fechar.
+2. **Winrate vs Teach (0.88) é TETO — sinal fraco pra tunagem.** Motor-vs-motor
+   o Imu esmaga o Teach; a dificuldade que o usuário sente é a assimetria
+   humano-vs-bot, não força do deck. → **Gauntlet do item 5 deve priorizar os
+   matchups EQUILIBRADOS (Krieg 0.38, Kid 0.34) + espelho Imu-vs-Imu**, onde
+   há gradiente. Teach entra só como sanity, não como alvo de otimização.
+   (Decisão pendente do usuário sobre o gauntlet agora é INFORMADA por isto.)
+
 ## Ordem de prioridade
 
 ### 0. Baseline medido — PRÉ-REQUISITO DE TUDO
