@@ -179,7 +179,16 @@ de fim de turno do Turn Planner avalia hoje (swap drop-in), mede, depois migra
 os outros consumidores (defesa, escolha de alvo) um a um.
 *Esforço: 1 sessão. Junto com o item 2.*
 
-**STATUS 13/07 — CONSTRUÍDO + MEDIDO, flag OFF (`USE_EVAL_V2=False`).**
+**STATUS 13/07 — ✅ CONCLUÍDO E LIGADO (`USE_EVAL_V2=True`).** Tunagem
+(item 5) convergiu: `dmg` 120→180, `counter_hand` 6→9 (só 2 pesos, self-play
+confirmou o diagnóstico). Validação RIGOROSA (MC=6, n=50, Imu-v2 vs opp-v1,
+o cenário de deployment): winrate Krieg 0.38→0.40, Kid 0.34→0.36, Teach
+0.88→0.96 — SEM regressão, dano e %líder sobem nos 3, DON/ataque cai
+(agressão mais eficiente). Pesos em `eval_weights.json`; validações em
+`v2val_{krieg,kid,teach}.json`. Ressalva: pesos globais/Imu-tunados por ora —
+cache PER-DECK é o pipeline self-service do item 5 (ainda a fazer). Próximo:
+R1 mulligan / R2 sequenciamento / R4b gaps de gramática.
+Histórico do caminho até aqui:
 `_evaluate_state_v2` (decision_engine.py): vida em curva íngreme, board via
 `char_value_score`, mão com retorno decrescente + poder de counter, DON,
 cobertura defensiva, + eixos derivados do perfil (trash-staircase saturante,

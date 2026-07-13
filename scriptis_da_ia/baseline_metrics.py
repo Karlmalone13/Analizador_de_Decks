@@ -50,11 +50,17 @@ def _side_stats() -> dict:
             'don_attached': 0, 'counters': 0, 'turnos_proprios': 0}
 
 
-def run_match(deck_a, deck_b, sa: dict, sb: dict) -> int:
-    """Roda 1 partida instrumentada; acumula em sa (A) e sb (B). Retorna turnos."""
+def run_match(deck_a, deck_b, sa: dict, sb: dict, side_a_v2: dict | None = None) -> int:
+    """Roda 1 partida instrumentada; acumula em sa (A) e sb (B). Retorna turnos.
+    side_a_v2: se dado, lado A usa evaluate_state_v2 com ESSES pesos e lado B
+    fica na v1 — mede o deployment real (nosso bot em v2 vs oponente v1)."""
     match = OPTCGMatch(deck_a, deck_b)
     match.setup()
     match.replay_log = []
+    if side_a_v2 is not None:
+        match.state_a.use_eval_v2 = True
+        match.state_a.eval_weights = side_a_v2
+        match.state_b.use_eval_v2 = False
 
     turnos = 0
     winner = None
@@ -113,16 +119,29 @@ def main():
     ap.add_argument('--deck-a', default='Imu')
     ap.add_argument('--deck-b', default='Barba Negra BY')
     ap.add_argument('--json', default='', help='salva o resumo em JSON pra diff entre etapas')
+    ap.add_argument('--side-a-v2', action='store_true',
+                    help='lado A usa evaluate_state_v2 + eval_weights.json; B fica v1 (deployment real)')
     args = ap.parse_args()
 
     random.seed(args.seed)
     deck_a = load_sim_deck(args.deck_a)
     deck_b = load_sim_deck(args.deck_b)
 
+    side_a_v2 = None
+    if args.side_a_v2:
+        import json as _json
+        from optcg_engine import decision_engine as _de
+        wpath = Path(__file__).parent / 'eval_weights.json'
+        side_a_v2 = dict(_de.EVAL_WEIGHTS)
+        if wpath.exists():
+            side_a_v2.update({k: v for k, v in _json.loads(wpath.read_text()).items()
+                              if k != '_meta'})
+        print(f'[v2] lado A = evaluate_state_v2 tunado; lado B = v1')
+
     sa, sb = _side_stats(), _side_stats()
     turnos_total = 0
     for _ in range(args.n):
-        turnos_total += run_match(deck_a, deck_b, sa, sb)
+        turnos_total += run_match(deck_a, deck_b, sa, sb, side_a_v2=side_a_v2)
 
     resA, resB = _fmt(sa, args.n), _fmt(sb, args.n)
     resumo = {

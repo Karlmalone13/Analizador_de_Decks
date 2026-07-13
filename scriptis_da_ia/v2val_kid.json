@@ -1,0 +1,23 @@
+{
+  "deck_a": "Imu",
+  "deck_b": "Kid",
+  "n": 50,
+  "seed": 1,
+  "turnos_medios": 11.4,
+  "A": {
+    "winrate": 0.36,
+    "atk_por_turno": 1.52,
+    "pct_atk_lider": 78.1,
+    "dano_por_jogo": 3.96,
+    "don_por_atk": 0.45,
+    "counter_power_por_jogo": 5440.0
+  },
+  "B": {
+    "winrate": 0.64,
+    "atk_por_turno": 1.63,
+    "pct_atk_lider": 80.4,
+    "dano_por_jogo": 2.88,
+    "don_por_atk": 1.1,
+    "counter_power_por_jogo": 3960.0
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "dmg": 180.0,
+  "life_mult": 1.0,
+  "board_mine": 1.0,
+  "board_opp": 0.8,
+  "opp_blocker": 25.0,
+  "hand_first": 8.0,
+  "hand_extra": 3.0,
+  "counter_hand": 9.0,
+  "don_field": 4.0,
+  "coverage": 7.0,
+  "ax_trash": 0.05,
+  "ax_reanim": 12.0,
+  "ax_inversion": 0.5
+}

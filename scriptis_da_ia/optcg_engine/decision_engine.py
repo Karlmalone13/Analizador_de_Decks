@@ -33,9 +33,13 @@ from copy import deepcopy as _deepcopy
 # abaixo, pra medir A/B com baseline_metrics antes de virar padrão. Import
 # GUARDADO: se deck_profile/deck_analyzer não estiverem no path, cai no
 # fallback (só termos genéricos) sem quebrar o motor.
-USE_EVAL_V2 = False   # medido 13/07: terms OK, pesos-prior regridem Krieg
-#                       (melhora Kid/Teach). Só liga quando a tunagem (item 5)
-#                       achar pesos que batem a v1 no gauntlet inteiro.
+USE_EVAL_V2 = True    # LIGADA 13/07: validação rigorosa (MC=6, n=50, Imu-v2 vs
+#                       opp-v1) confirmou ganho SEM regressão nos 3 matchups —
+#                       winrate Krieg 0.38→0.40, Kid 0.34→0.36, Teach 0.88→0.96;
+#                       dano e %líder sobem nos três. Pesos tunados em
+#                       eval_weights.json (dmg 120→180, counter_hand 6→9). Item 1
+#                       CONCLUÍDO. (Pesos são globais/Imu-tunados por ora; cache
+#                       per-deck = pipeline self-service do item 5, ainda a fazer.)
 
 # Amostras Monte Carlo do Turn Planner por decisão. 6 no jogo real; a tunagem
 # (tune_weights.py) baixa pra 4 pra acelerar a BUSCA (a validação final volta
