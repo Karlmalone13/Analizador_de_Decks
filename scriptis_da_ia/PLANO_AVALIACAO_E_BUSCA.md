@@ -127,15 +127,42 @@ Counter/blocker via `eval(tomar o hit)` vs `eval(gastar counter X)` — aposenta
 as curvas manuais (12/65/150/250, mão gorda). Barato, sem simulação.
 *Esforço: meia sessão, depois do item 1 estabilizar.*
 
-### 5. Tunagem automática de pesos (self-play) — o "ML" útil
-Otimiza os pesos da `evaluate_state` por winrate em milhares de partidas
-determinísticas contra um GAUNTLET. Ablação liga/desliga cada eixo (mesma
-bateria de seeds) → eixo que não move winrate é descartado pelo sistema, não
-por debate; peso→0 = termo é ruído. Pesos cacheados por hash do deck; deck novo
-joga com priors (impacto×proximidade) e tuna offline depois.
-**DECISÃO PENDENTE DO USUÁRIO:** gauntlet = Teach BY, Krieg RG, Kid Y (os que
-ele pilota) + espelho? Quanto mais variado, menos overfit.
-*Esforço: roda offline; setup 1 sessão após o item 1.*
+### 5. Tunagem automática de pesos — PIPELINE SELF-SERVICE (o "ML" útil)
+**Exigência do usuário (13/07, reforçada 2×):** "toda vez que um deck novo for
+adicionado no banco ele otimiza o peso sozinho". NADA de gauntlet manual — o
+sistema se auto-tuna. Desenho travado:
+
+**Registry** `deck_weights.json`: `hash(decklist) -> {profile, weights, gauntlet,
+winrates, timestamp}`. O hash da lista é a chave — muda a lista, muda o hash,
+re-tuna. Só isso já dá o "self-service": nada de nome de deck hardcoded.
+
+**Gatilho (automático):** ao carregar um deck cujo hash não está no registry (ou
+mudou), dispara o pipeline:
+  1. `deck_profile` → perfil (eixos + arquétipo). Cacheia.
+  2. **Gauntlet = o próprio banco de decks existentes** (todos os `.deck`) +
+     ESPELHO (deck vs si mesmo). Sem lista curada — é "contra tudo que existe".
+     Cresce sozinho conforme o banco cresce.
+  3. Self-play determinístico (seed fixa, `baseline_metrics` como juiz):
+     otimiza o VETOR DE PESOS dos eixos (genéricos + derivados do perfil) por
+     winrate agregado no gauntlet. Ablação liga/desliga cada eixo → eixo que não
+     move winrate morre; peso→0 = ruído.
+  4. Cacheia os pesos por hash. (Opcional/lazy: re-tunar os decks do banco que
+     enfrentam o novato — custo alto, fazer sob demanda, não a cada inserção.)
+
+**Cold-start:** antes da tunagem terminar, o deck joga com os PRIORS do perfil
+(impacto×dependentes que o `deck_profile` já calcula) — funcional na hora; a
+tunagem só REFINA, offline, quando rodar.
+
+**Sinal (do baseline, item 0):** matchup-teto (winrate >85%, ex: Imu vs Teach)
+dá gradiente fraco — o otimizador pondera pelo quão contestado é o matchup
+(peso maior onde 40–60%, ex: Krieg/Kid). Não exclui nenhum: o teto vira
+sanity-check ("não regredir onde já ganho").
+
+**O que é universal vs por-deck:** a `evaluate_state` e a gramática de eixos são
+UMA só (universais). O que é por-deck = as SAÍDAS geradas sozinhas: o perfil e o
+vetor de pesos cacheado. Zero código por deck.
+*Esforço: roda offline; setup 1 sessão após o item 1. Otimizador: começar com
+coordinate-ascent/CMA simples sobre poucos pesos; sem ML pesado.*
 
 ### Descartado por ora (reavaliar SÓ se 1–5 baterem teto)
 - **MCTS** — sem throughput pra milhares de rollouts/decisão; info oculta vira determinized-MCTS (pesquisa).
