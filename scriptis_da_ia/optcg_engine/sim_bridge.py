@@ -307,6 +307,36 @@ def don_for_attack(gs: GameState, opp_gs: GameState, action: tuple,
                                  gs, opp_gs, engine, don_livre=don_livre)
 
 
+def choose_turn_order(deck_codes: list[str]) -> dict:
+    """
+    Decide ir de 1o ou 2o pela CURVA do deck pilotado (pedido do usuario
+    12/07: nada de 50/50 — analisar o deck e escolher).
+
+    Regra do jogo: 1o ataca antes (tempo), mas nao compra no t1 e comeca
+    com 1 DON; 2o compra no t1 e ja abre com 2 DON (chega antes ao
+    mid-game). Caso a caso pela estrutura do deck:
+    - aggro de curva baixa com Rush quer TEMPO -> primeiro;
+    - curva alta / combo (win-con cara, ramp, stage-engine) quer RECURSO
+      -> segundo (ex: Imu, bomba de 10 com Empty Throne).
+    """
+    dados = [(_cards_db.get(code) or {}) for code in deck_codes]
+    dados = [d for d in dados if d and (d.get('type') or '').upper() != 'LEADER']
+    if not dados:
+        return {'goFirst': False,
+                'reason': 'deck desconhecido -> segundo (recurso)'}
+    custos = [d.get('cost', 0) for d in dados]
+    media = sum(custos) / len(custos)
+    n_rush = sum(1 for code in set(deck_codes)
+                 if (_cards_db.get(code) or {}).get('has_rush'))
+    n_bombas = sum(1 for c in custos if c >= 7)
+    go_first = media <= 3.2 and n_rush >= 3 and n_bombas <= 2
+    return {'goFirst': go_first,
+            'reason': (f'curva media {media:.1f}, rush={n_rush}, '
+                       f'custo7+={n_bombas} -> '
+                       + ('primeiro (aggro/tempo)' if go_first
+                          else 'segundo (recurso/curva)'))}
+
+
 def _card_intent(zone: str, card: Card, reason: str) -> dict:
     return {
         "action": "click_card",
@@ -843,9 +873,19 @@ def order_target_candidates(gs: GameState, opp_gs: GameState,
     if actor_code and not actor_copia_poder and not actor_debuff_swing:
         for block in get_card_effects(actor_code).values():
             for s in block.get('steps', []):
-                if (s.get('action') in ('set_base_power', 'buff_power')
+                if (s.get('action') == 'set_base_power'
                         and s.get('target') in ('leader_or_own_character', 'leader_or_character')):
                     actor_self_power_target = ('set', s.get('amount', 0))
+                    break
+                # buff_power e DELTA (+X), nao "vira X" — tratado como 'set'
+                # fazia o Never Existed (+4000) parecer "power vira 4000" e
+                # a regra preferia o alvo mais FRACO; ao vivo (12/07,
+                # 23.41.50) o buff foi no Mars parado em vez do LIDER que
+                # estava levando o golpe, e o bot pagou +2000 de counter
+                # por cima pra sobreviver.
+                if (s.get('action') == 'buff_power'
+                        and s.get('target') in ('leader_or_own_character', 'leader_or_character')):
+                    actor_self_power_target = ('delta', s.get('amount', 0))
                     break
                 if s.get('action') == 'give_don':   # give_don_opp e acao distinta, ja exclusiva
                     actor_self_power_target = ('delta', s.get('count', 1) * 1000)
@@ -949,6 +989,19 @@ def order_target_candidates(gs: GameState, opp_gs: GameState,
             kind, amount = actor_self_power_target
             resultante = amount if kind == 'set' else p + amount
 
+            # JANELA DE DEFESA (buff resolvendo durante ataque do oponente,
+            # ex: [Counter] do Never Existed): o alvo certo e quem esta
+            # LEVANDO o golpe, se o buff o salva — buffar outro corpo nao
+            # muda o combate em andamento (achado real 12/07: +4000 no Mars
+            # parado com o lider sob ataque de 7000).
+            if attacker_power > 0:
+                eh_defensor = ((defender_uid and cand.get('id') == defender_uid)
+                               or (not defender_uid and zone == 'own_leader'))
+                # perdendo agora (empate favorece o ATACANTE) e salvo pelo
+                # buff (defensor precisa ficar ESTRITAMENTE acima)
+                if eh_defensor and p <= attacker_power < resultante:
+                    return (-2, 0)
+
             # O lider tem uma ameaca REAL no campo do oponente (personagem ou
             # lider dele ainda ATIVO, nao restado) que ele hoje NAO sobrevive
             # mas SOBREVIVERIA com o boost/delta? Isso vale mais que qualquer
@@ -1029,9 +1082,25 @@ def order_target_candidates(gs: GameState, opp_gs: GameState,
                 return (3, -valor, -(getattr(card, 'power', 0) if card else 0))
             if actor_trash_cost:
                 # custo trash_char_or_hand: MESMO tier da mao (1), perda
-                # medida por char_value_score — Shalria 0-poder ja usada
-                # custa menos que qualquer carta util da mao
-                return (1, engine.analyzer.char_value_score(card) if card else 0)
+                # medida por char_value_score MAIS o custo situacional que
+                # a regua de board nao ve (achado real 12/07, 23.41.50: o
+                # tier unificado sem isso fez o pendulo bater no outro
+                # extremo — Mars 5000 recem-descido via stage foi trashado
+                # pelo custo no MESMO turno, 2x na partida):
+                # - recem-entrado: ainda nao fez nada (corpo+efeito a
+                #   realizar no proximo turno);
+                # - blocker (incl. condicional via passiva, ja aplicada):
+                #   defesa recorrente;
+                # - ultimo corpo: campo vazio = lider exposto a tudo.
+                perda = engine.analyzer.char_value_score(card) if card else 0
+                if card is not None:
+                    if getattr(card, 'just_played', False):
+                        perda += 35
+                    if card.has_blocker or card.blocker_this_turn:
+                        perda += 25
+                    if len(gs.field_chars) <= 1:
+                        perda += 40
+                return (1, perda)
             return (3, engine.analyzer.char_value_score(card) if card else 0, 0)
         if zone == 'own_leader':
             if defender_is_own_char and gs.life_count() > 0:

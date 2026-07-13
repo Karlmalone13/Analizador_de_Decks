@@ -5526,6 +5526,46 @@ class GameAnalyzer:
         return opp_threats >= 3 or self.opp_attack_count() >= 3
 
 
+_KEYWORD_GRANTS = {
+    'gain_blocker':        'has_blocker',
+    'gain_rush':           'has_rush',
+    'gain_rush_character': 'has_rush_character',
+    'gain_double_attack':  'has_double_attack',
+    'gain_banish':         'has_banish',
+    'gain_unblockable':    'has_unblockable',
+}
+
+
+def apply_conditional_keyword_passives(gs: 'GameState', opp: 'GameState') -> None:
+    """
+    Liga keywords vindas de PASSIVA CONDICIONAL (ex: Mars OP13-091
+    gain_blocker e Nusjuro OP13-080 gain_rush, ambos com trash_gte 7).
+    _make_card so aplica keyword_* incondicional — essas NUNCA ligavam,
+    entao o engine nao via o Mars como blocker nem dava Rush ao Nusjuro
+    mesmo com o trash cheio (achado real 12/07, partida 23.41.50 — duas
+    reclamacoes do usuario com a mesma causa raiz).
+
+    GRANT-ONLY e idempotente: as condicoes deste padrao (trash_gte) so
+    crescem durante a partida; nao ha revogacao. Chamada barata (cartas
+    visiveis x lookup cacheado) feita no __init__ do DecisionEngine —
+    todo ponto de decisao passa por la.
+    """
+    ee = EffectExecutor(gs, opp)
+    pool = list(gs.field_chars) + list(gs.hand)
+    if gs.leader is not None:
+        pool.append(gs.leader)
+    for c in pool:
+        passive = get_card_effects(c.code).get('passive', {})
+        steps = passive.get('steps', [])
+        grants = [s for s in steps if s.get('action') in _KEYWORD_GRANTS]
+        if not grants:
+            continue
+        if not ee._check_conditions(passive.get('conditions', {}), c):
+            continue
+        for s in grants:
+            setattr(c, _KEYWORD_GRANTS[s['action']], True)
+
+
 class DecisionEngine:
     """
     Motor de decisão com análise probabilística completa.
@@ -5543,6 +5583,11 @@ class DecisionEngine:
         self.me   = me
         self.opp  = opp
         self.analyzer = GameAnalyzer(me, opp)
+        # Keywords de passiva condicional (trash_gte etc.) — ver docstring
+        # de apply_conditional_keyword_passives. Nos DOIS lados: a decisão
+        # também precisa saber que o blocker/rush DO OPONENTE está ativo.
+        apply_conditional_keyword_passives(me, opp)
+        apply_conditional_keyword_passives(opp, me)
 
     # ── Postura ──────────────────────────────────────────────────────────────
 
@@ -5650,8 +5695,14 @@ class DecisionEngine:
                    - self._counter_stat_bonus(card)
                    + self._counter_stat_bonus(card, life_mult=False) * opcao_futura)
 
-    def avaliar_carta(self, card: 'Card') -> float:
-        """Avalia o valor situacional de uma carta para jogar/guardar/descartar."""
+    def avaliar_carta(self, card: 'Card', stage_redundancy: bool = True) -> float:
+        """
+        Avalia o valor situacional de uma carta para jogar/guardar/descartar.
+        stage_redundancy=False: pula o desconto de "2a stage com stage em
+        campo" — usado por stage_worth pra comparar substituicao com os
+        valores CRUS dos dois lados (senao o desconto entra em dupla
+        contagem e bloqueia ate upgrade legitimo).
+        """
         a       = self.analyzer
         posture = self.posture()
         s       = 0.0
@@ -5766,7 +5817,34 @@ class DecisionEngine:
             if has_search: s += 25
             if has_draw:   s += 20
 
+        # STAGE redundante: com stage propria ja em campo, a 2a copia na
+        # mao so vale o UPGRADE liquido sobre a atual — e vira o pitch mais
+        # barato pra custos/counter (achado real 12/07, 23.41.50: o custo
+        # do lider trashou o Mars recem-descido tendo Mary Geoise inutil
+        # na mao). Guarda `is not field_stage` corta a recursao (a stage
+        # de campo avalia cheia).
+        if (stage_redundancy
+                and card.card_type == 'STAGE' and self.me.field_stage is not None
+                and card is not self.me.field_stage):
+            s = max(5.0, s - self.stage_worth(self.me.field_stage))
+
         return s
+
+    def stage_worth(self, stage: 'Card') -> float:
+        """
+        Valor de uma STAGE pra comparacao de substituicao: avaliar_carta +
+        o motor recorrente de [Activate: Main] — o bonus equivalente em
+        _score_play_action so existe pra CHARACTER, entao o Empty Throne
+        (deploy gratis todo turno) avaliava quase nada e a Mary Geoise
+        (custo 1, passiva situacional) o substituia (2x em partida real,
+        12/07). Nao chamar para carta na MAO com stage em campo (avaliar
+        ja desconta a redundancia nesse caso).
+        """
+        v = self.avaliar_carta(stage, stage_redundancy=False)
+        am = get_card_effects(stage.code).get('activate_main', {})
+        if am.get('steps'):
+            v += 40
+        return v
 
     # ── Escolher carta para jogar ─────────────────────────────────────────────
 
@@ -6307,6 +6385,14 @@ class DecisionEngine:
         # <=2 vidas = countera ate pitchando corpo bom (so nao entrega a
         # win-con, que avalia acima de 150 com a protecao do GamePlan).
         valor_vida = {1: 250.0, 2: 150.0, 3: 65.0}.get(my_life, 12.0)
+        # MAO GORDA: com 6+ cartas o valor marginal de cada carta cai (nao
+        # da pra jogar tudo) e counter fica proporcionalmente barato —
+        # feedback real 12/07: "8 cartas na mao e levando dano toda hora".
+        # +8 de orcamento por carta acima de 5 (mao 8 com 4+ vidas: 12->36,
+        # cobre pitchar carta fraca num jab; nao chega perto de corpo bom).
+        folga = len(self.me.hand) - 5
+        if folga > 0:
+            valor_vida += 8.0 * min(folga, 5)
         return gasto < valor_vida
 
     def use_counter(self, needed: int) -> int:
@@ -7043,13 +7129,19 @@ class OPTCGMatch:
                     base -= 120  # efeito nulo agora: não compete com nada útil
 
         # STAGE com stage própria já em campo: jogar SUBSTITUI a atual (regra
-        # do jogo, 1 stage por lado) — o custo real do play inclui perder o
-        # que a stage atual entrega. Achado real 12/07 (partida 23.09.31):
-        # Mary Geoise (custo 1) descida POR CIMA do Empty Throne, jogando
-        # fora o motor de deploy grátis do deck. Caso a caso: uma stage
-        # nova só compete se vale MAIS que a que sai.
+        # do jogo, 1 stage por lado). A 1ª versão deste fix descontava só
+        # avaliar_carta da atual — o Empty Throne (motor de deploy grátis)
+        # avalia baixo e a Mary Geoise substituiu DE NOVO na partida
+        # seguinte (23.41.50, 2º report). Agora régua composta stage_worth
+        # (avaliar + motor de activate_main) dos DOIS lados: substituição
+        # com ganho líquido <= 0 é bloqueada dura (-999, nunca compete);
+        # uma stage genuinamente melhor continua podendo entrar.
         if card.card_type == 'STAGE' and engine.me.field_stage is not None:
-            base -= engine.avaliar_carta(engine.me.field_stage)
+            worth_nova  = engine.stage_worth(card)
+            worth_atual = engine.stage_worth(engine.me.field_stage)
+            if worth_nova <= worth_atual:
+                return -999.0
+            base -= worth_atual
 
         # CHARACTER cujo on_play não dispara AGORA (condição falha ou nenhum
         # step com material): o play perde o valor de efeito e vira só o

@@ -51,6 +51,36 @@ namespace OPTCGBotPlugin
             public string reason = "";
         }
 
+        private class TurnOrderResponse
+        {
+            public bool goFirst;
+            public string reason = "";
+        }
+
+        // Bot ganhou o dado: engine decide 1o/2o pela curva do deck.
+        // false em erro (segundo = escolha conservadora de recurso).
+        public static bool GoFirst(System.Collections.Generic.List<string> deckCodes)
+        {
+            try
+            {
+                string json = JsonConvert.SerializeObject(new { deckCodes });
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+                var resp = _http.PostAsync($"{BASE}/turn_order", content).GetAwaiter().GetResult();
+                if (!resp.IsSuccessStatusCode)
+                    return false;
+                string body = resp.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+                var r = JsonConvert.DeserializeObject<TurnOrderResponse>(body);
+                if (r != null)
+                    Plugin.Log.LogInfo($"[Bot] turn_order: goFirst={r.goFirst} ({r.reason})");
+                return r?.goFirst ?? false;
+            }
+            catch (Exception ex)
+            {
+                Plugin.Log.LogError($"[EngineClient] turn_order: {ex.Message}");
+                return false;
+            }
+        }
+
         public class DefenseResponse
         {
             public int blockerId;

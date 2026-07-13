@@ -89,6 +89,50 @@ depois pra tunagem de heurística (mesmo conjunto de partidas).
 investigada a fundo. E a prioridade #1 (DTO trash/deckCount) segue
 aguardando teste ao vivo com o usuário.
 
+### Sétima leva: partida 23:41 (vs Kid) — 6 fixes dos reports detalhados do usuário
+
+Log `Imu-B_x_Eustass.Captain.Kid-Y_2026-07-12T23.41.50` salvo. Confirmado
+no log: Never Existed ATIVOU (+4000 de verdade — fix da leva 4 funcionou)
+mas mirou errado; counters em vida baixa funcionaram; ponto positivo
+reportado pelo usuário (stage→Mars→Shalria→líder mirando Shalria).
+
+1. **Passivas condicionais de keyword nunca ligavam** (causa raiz dupla:
+   "Mars não é blocker" + parte da passividade do Nusjuro): _make_card só
+   aplica keyword_* incondicional; gain_blocker/gain_rush com trash_gte 7
+   (padrão dos Celestial Dragons) não tinham NENHUM caminho de aplicação.
+   Novo `apply_conditional_keyword_passives` (grant-only, idempotente —
+   trash só cresce) chamado no __init__ do DecisionEngine pros DOIS lados.
+2. **Never Existed buffou o Mars parado em vez do líder sob ataque**:
+   buff_power era tratado como ('set', 4000) ("poder vira 4000" → preferia
+   o alvo mais fraco). Agora é ('delta') e, em janela de defesa, o alvo
+   que está LEVANDO o golpe tem prioridade máxima se o buff o salva
+   (empate favorece atacante — precisa ficar estritamente acima).
+3. **Pêndulo do trash de custo** (leva 6 exagerou): Mars 5000 recém-descido
+   via stage foi sacrificado pelo custo do líder/Shalria 2x. A perda do
+   campo agora soma custo situacional: recém-entrado +35, blocker (incl.
+   condicional) +25, último corpo +40.
+4. **Mary Geoise substituiu o Empty Throne DE NOVO** (2º report): o
+   desconto por avaliar_carta era raso demais (Empty Throne avalia baixo;
+   o bônus de "activate_main recorrente" só existia pra CHARACTER). Nova
+   régua `stage_worth` (avaliar cru + 40 se tem activate_main) dos dois
+   lados; substituição com ganho <= 0 = -999 (bloqueio duro). E stage
+   REDUNDANTE na mão avalia só o upgrade líquido (vira pitch barato —
+   resolve também "tinha stage inútil na mão e trashou o Mars").
+5. **Counter com mão gorda**: "8 cartas na mão levando dano toda hora" —
+   orçamento de vida ganha +8 por carta acima de 5 na mão (vida 4, mão 8:
+   12→36 — countera jab pitchando carta fraca; corpo bom continua caro).
+6. **1º/2º decidido pelo ENGINE pela curva do deck** (pedido: nada de
+   50/50): novo `choose_turn_order` (sim_bridge) + endpoint /turn_order +
+   plugin coleta os códigos do deck e clica. Imu (curva 3.8, 9 cartas 7+,
+   0 rush) → SEGUNDO. Aggro barato com rush → primeiro.
+
+Validação: 6 cenários dirigidos reproduzindo a partida (todos passam),
+smoke 100%, auditor 10 partidas quase zerado (A=1: bot SEGURANDO Mjosgard
+jogável — comportamento pedido pelo usuário no item 5, o check A não
+distingue reserva de counter), plugin compilado e copiado pro jogo
+(23:57:17), server reiniciado com tudo. **Usuário precisa REABRIR O JOGO**
+(DLL nova) antes de testar. NÃO testado ao vivo ainda.
+
 ### Sexta leva: partidas 23:03/23:09 (vs Krieg) — 3 fixes dos reports do usuário
 
 Logs `Imu-B_x_Krieg-RG_2026-07-12T23.03.36` e `23.09.31` salvos no banco.

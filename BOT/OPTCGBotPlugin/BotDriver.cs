@@ -90,13 +90,25 @@ namespace OPTCGBotPlugin
 
             // Escolha de 1o/2o: o estado Start_WaitOnTurnOrder so existe no
             // cliente que GANHOU o dado (WaitOnTurnSelection retorna cedo no
-            // perdedor) — se chegou aqui, a escolha e do bot. 50/50 aleatorio
-            // de proposito (pedido do usuario 12/07: ver o bot tambem na
-            // curva par; decisao estrategica de curva seria logica de deck,
-            // que nao vive no plugin).
+            // perdedor) — se chegou aqui, a escolha e do bot. Quem decide e
+            // o ENGINE pela curva do deck (/turn_order — pedido do usuario
+            // 12/07: nada de 50/50); o plugin so coleta os codigos (olhos)
+            // e clica (maos). Server fora do ar = segundo (conservador).
             if (gls.e_CurrentState == GameplayState.Start_WaitOnTurnOrder)
             {
-                bool first = UnityEngine.Random.value < 0.5f;
+                var toPs = gls.Lps_Players[BotPlayerIndex];
+                var codes = new System.Collections.Generic.List<string>();
+                foreach (var lista in new[] { toPs.Lgo_MyDeck, toPs.Lgo_MyHand, toPs.Lgo_MyLeader })
+                {
+                    if (lista == null) continue;
+                    foreach (var go in lista)
+                    {
+                        var cls = go != null ? go.GetComponent<CardLogicScript>() : null;
+                        if (cls != null && cls.myCard.cardDef != null)
+                            codes.Add(cls.myCard.cardDef.cardID);
+                    }
+                }
+                bool first = EngineClient.IsAlive() && EngineClient.GoFirst(codes);
                 Plugin.Log.LogInfo($"[Bot] ganhou o dado: vai de {(first ? "PRIMEIRO" : "SEGUNDO")}");
                 gls.ChoiceButtonClicked(first ? ButtonChoiceType.GoFirst : ButtonChoiceType.GoSecond, -1);
                 _cooldown = 1f;

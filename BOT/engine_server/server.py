@@ -263,6 +263,24 @@ class MulliganRequest(BaseModel):
     hand: list[CardDto] = []
 
 
+class TurnOrderRequest(BaseModel):
+    deckCodes: list[str] = []
+
+
+@app.post("/turn_order")
+def turn_order(req: TurnOrderRequest):
+    """Bot ganhou o dado: 1o ou 2o pela curva do deck (engine decide)."""
+    try:
+        bridge = _get_bridge()
+        out = bridge.choose_turn_order(req.deckCodes)
+        print(f"[DEF] turn_order -> {out}", flush=True)
+        return out
+    except Exception:
+        import traceback
+        traceback.print_exc()
+        return {"goFirst": False, "reason": "erro -> segundo (conservador)"}
+
+
 class DefenseRequest(BaseModel):
     state: GameStateDto
     phase: str                    # "blocker" | "counter" | "trigger" | "reaction" | "optional"
