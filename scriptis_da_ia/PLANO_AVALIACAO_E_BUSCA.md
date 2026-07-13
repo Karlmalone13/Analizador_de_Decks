@@ -131,6 +131,20 @@ R3. **Combos ARBITRÁRIOS de múltiplas cartas.** CUIDADO COM A LEITURA: hoje o
     dados/padrões (igual `ACTION_WEIGHTS` do deck_analyzer); eles são ANÁLISE, não
     decisão — alimentam o perfil, não decidem jogada.
 
+R4b. **QA da gramática (crosscheck_archetypes.py) — 3 GAPS achados 13/07**, a
+    consertar COM MEDIÇÃO (não mid-tunagem). Raiz comum: falta SALIÊNCIA RELATIVA
+    (distinguir sinal de BASE, que todo deck tem, de sinal CARACTERÍSTICO).
+    - GAP1: `disruption` dispara em 100% dos 56 decks → não discrimina. Causa:
+      ko/debuff/bounce são universais. Fix: separar REMOÇÃO genérica (ko/bounce)
+      de DENIAL definidor (give_don_opp/lock/freeze); ou eixo só conta acima da
+      baseline. Isso enviesa quase tudo pra "Controle".
+    - GAP2: counter_1000/2000 dominam os papéis de TODO deck (counter é universal)
+      → ruído de base, normalizar/rebaixar pra papéis distintivos subirem.
+    - GAP3: aggro/swarm (Rebecca, Vivi) lidos como Controle — consequência de
+      GAP1/GAP2 abafarem o sinal de aggro (curva baixa/rush/muitos corpos).
+    Validou bem: recursão generaliza (Moria/Crocodile/Lucci); DON-decks pegam
+    don_gte. Rodar `knowledge/crosscheck_archetypes.py` de novo após cada fix.
+
 R4. **ONGOING: enriquecer os papéis ao máximo** — sempre mecanicamente
     fundamentado (card_effects_db), nunca prosa. Cada papel novo deve GANHAR seu
     lugar sendo consumido por uma decisão (R1/R2/R3/eval), não virar enfeite.
