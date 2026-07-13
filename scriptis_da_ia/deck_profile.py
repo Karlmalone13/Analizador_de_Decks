@@ -89,10 +89,35 @@ def _iter_blocks(card_eff: dict):
             yield trig, block
 
 
-def build_profile(deck_name: str) -> dict:
-    db = json.loads(_DB_PATH.read_text(encoding='utf-8'))
-    deck = _load_deck_codes(deck_name)
+_DB_CACHE: dict | None = None
 
+
+def _get_db() -> dict:
+    global _DB_CACHE
+    if _DB_CACHE is None:
+        _DB_CACHE = json.loads(_DB_PATH.read_text(encoding='utf-8'))
+    return _DB_CACHE
+
+
+def build_profile(deck_name: str) -> dict:
+    """Perfil a partir do NOME do deck (lê o .deck). Usado pelo CLI/front."""
+    prof = build_profile_from_deck(_load_deck_codes(deck_name), _get_db())
+    prof['deck'] = deck_name
+    return prof
+
+
+def build_profile_from_codes(codes: list[str], db: dict | None = None) -> dict:
+    """
+    Perfil a partir de uma LISTA DE CÓDIGOS (com repetição = cópias). Entrada
+    do MOTOR: o estado reconstruído (união das zonas próprias) vira o deck.
+    Deck-agnóstico, mesma gramática do CLI.
+    """
+    from collections import Counter as _C
+    deck = [(n, code) for code, n in _C(codes).items()]
+    return build_profile_from_deck(deck, db or _get_db())
+
+
+def build_profile_from_deck(deck: list[tuple[int, str]], db: dict) -> dict:
     # ── coleta bruta ──────────────────────────────────────────────────────────
     # threshold de recurso -> {valor: {'copias':N, 'payoffs':Counter, 'impacto':float}}
     resource_thresholds: dict[str, dict] = defaultdict(lambda: defaultdict(
@@ -237,7 +262,7 @@ def build_profile(deck_name: str) -> dict:
     dominante = max(arch_mix, key=arch_mix.get) if arch_mix else 'Indefinido'
 
     return {
-        'deck': deck_name,
+        'deck': '?',   # sobrescrito por build_profile(deck_name) no caminho do CLI
         'n_cards': n_cards,
         'archetype': {'dominante': dominante, 'mix': arch_mix},
         'generic_axes': ['vida', 'board', 'mao', 'don', 'cobertura_counter', 'tempo'],

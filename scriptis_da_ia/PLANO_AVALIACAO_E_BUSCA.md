@@ -76,6 +76,24 @@ de fim de turno do Turn Planner avalia hoje (swap drop-in), mede, depois migra
 os outros consumidores (defesa, escolha de alvo) um a um.
 *Esforço: 1 sessão. Junto com o item 2.*
 
+**STATUS 13/07 — CONSTRUÍDO + MEDIDO, flag OFF (`USE_EVAL_V2=False`).**
+`_evaluate_state_v2` (decision_engine.py): vida em curva íngreme, board via
+`char_value_score`, mão com retorno decrescente + poder de counter, DON,
+cobertura defensiva, + eixos derivados do perfil (trash-staircase saturante,
+reanimação-gargalo, life-inversão; disrupção NÃO entra — já contada nos termos
+simétricos do opp). Perfil 1×/deck via `deck_profile.build_profile_from_codes`
+(cache por assinatura). Medição A/B (50 jogos, seed 1, lado Imu):
+- **Kid: winrate 0.34→0.40, dano 3.78→4.22** (melhora clara)
+- **Teach: 0.88→0.92** (leve, teto)
+- **Krieg: 0.38→0.28** (REGRIDE); don/atk cai em TODOS (−0.04 a −0.19).
+Diagnóstico: TERMOS certos (melhora 2/3), PESOS-prior descalibrados vs a v1 (que
+carrega tunagem implícita). v2 desenvolve board e ataca menos → contra disrupção
+(Krieg) isso é durdle, que é o que o denial quer. **Prova viva: um vetor de
+pesos único não é ótimo em todo matchup → tunagem (item 5) é necessária.**
+Próximo: NÃO hand-tunar (é o whack-a-mole que estamos matando) — construir o
+otimizador de pesos com alvo "v2-tunado ≥ v1 no gauntlet". Baselines v2 em
+`baseline_v2_{krieg,kid,teach}.json`.
+
 ### 2. Extrator de perfil do deck — os termos ESPECÍFICOS sem hardcode
 A `evaluate_state` se instancia sozinha varrendo o `card_effects_db` do deck
 (generalização do `compute_game_plan`). Não citar carta nenhuma. Com as 6

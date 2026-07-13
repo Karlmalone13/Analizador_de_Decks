@@ -1,0 +1,23 @@
+{
+  "deck_a": "Imu",
+  "deck_b": "Krieg",
+  "n": 50,
+  "seed": 1,
+  "turnos_medios": 12.4,
+  "A": {
+    "winrate": 0.28,
+    "atk_por_turno": 1.66,
+    "pct_atk_lider": 65.5,
+    "dano_por_jogo": 2.58,
+    "don_por_atk": 0.43,
+    "counter_power_por_jogo": 6340.0
+  },
+  "B": {
+    "winrate": 0.72,
+    "atk_por_turno": 1.76,
+    "pct_atk_lider": 70.8,
+    "dano_por_jogo": 3.72,
+    "don_por_atk": 1.19,
+    "counter_power_por_jogo": 5300.0
+  }
+}

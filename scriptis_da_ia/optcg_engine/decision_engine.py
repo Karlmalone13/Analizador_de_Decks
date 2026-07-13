@@ -27,6 +27,20 @@ import random
 import pandas as pd
 from copy import deepcopy as _deepcopy
 
+# ── evaluate_state v2 (item 1 do PLANO_AVALIACAO_E_BUSCA.md) ──────────────────
+# Régua ÚNICA de avaliação de estado: genéricos + eixos derivados do perfil do
+# deck (deck_profile). Entra como DROP-IN no fim do Turn Planner atrás do flag
+# abaixo, pra medir A/B com baseline_metrics antes de virar padrão. Import
+# GUARDADO: se deck_profile/deck_analyzer não estiverem no path, cai no
+# fallback (só termos genéricos) sem quebrar o motor.
+USE_EVAL_V2 = False   # medido 13/07: terms OK, pesos-prior regridem Krieg
+#                       (melhora Kid/Teach). Só liga quando a tunagem (item 5)
+#                       achar pesos que batem a v1 no gauntlet inteiro.
+try:
+    from deck_profile import build_profile_from_codes as _build_profile_from_codes
+except Exception:
+    _build_profile_from_codes = None
+
 
 class _SimDeck(list):
     """Deck lazy para simulacao do Turn Planner: contem referencias rasas de
@@ -7687,6 +7701,134 @@ class OPTCGMatch:
                     break
         return score
 
+    # ── evaluate_state v2: régua ÚNICA (item 1) ───────────────────────────────
+    # Curva de vida ÍNGREME (marginal decrescente): 1ª vida vale muito mais que
+    # a 5ª. Índice = quantas vidas tenho; valor = soma dos marginais. Mesma
+    # filosofia da curva de counter (vida 1 » vida alta).
+    _LIFE_MARGINAL = [0, 95, 55, 35, 22, 15, 11, 9, 8, 8, 8]
+
+    def _life_value(self, n: int) -> float:
+        m = self._LIFE_MARGINAL
+        return float(sum(m[1:min(n, len(m) - 1) + 1]))
+
+    def _turn_profile_for(self, p) -> dict | None:
+        """
+        Perfil do deck (eixos + pesos) do jogador p. Identidade estável do
+        deck = união das zonas próprias (mesma lógica do compute_game_plan;
+        cartas próprias não saem dessas zonas). Cacheado por assinatura de
+        códigos no engine — recomputa só se o pool mudar (não muda mid-game).
+        """
+        if _build_profile_from_codes is None:
+            return None
+        zonas = list(p.deck) + list(p.hand) + list(p.field_chars) + \
+            list(p.trash) + list(p.life)
+        if getattr(p, 'field_stage', None) is not None:
+            zonas.append(p.field_stage)
+        if p.leader is not None:
+            zonas.append(p.leader)
+        codes = [c.code for c in zonas]
+        sig = tuple(sorted(codes))
+        cache = getattr(self, '_profile_cache', None)
+        if cache is not None and cache[0] == sig:
+            return cache[1]
+        try:
+            prof = _build_profile_from_codes(codes)
+        except Exception:
+            prof = None
+        self._profile_cache = (sig, prof)
+        return prof
+
+    def _derived_axes_value(self, p, profile) -> float:
+        """
+        Contribuição dos eixos DERIVADOS do perfil ao estado de p. Só os eixos
+        de AUTO-MOTOR (trash/reanimação/inversão): o valor da disrupção já
+        entra pelos termos simétricos (o estado degradado do oponente é contado
+        no board/DON dele), então NÃO se adiciona de novo aqui (evita dupla
+        contagem). Escalas são PRIORS — a tunagem do item 5 ajusta.
+        """
+        if not profile:
+            return 0.0
+        total = 0.0
+        trash_n = len(p.trash)
+        for ax in profile.get('derived_axes', []):
+            kind = ax.get('kind')
+            if kind == 'resource_staircase' and str(ax.get('resource', '')).startswith('trash'):
+                # progresso SATURANTE até cada degrau: cresce até o threshold,
+                # depois não vale mais (anti "mill pra sempre").
+                for step in ax.get('steps', []):
+                    if step.get('pruned'):
+                        continue
+                    thr = step.get('threshold') or 1
+                    frac = min(1.0, trash_n / thr)
+                    total += step.get('impacto', 0) * frac * 0.05
+            elif kind == 'bottleneck':   # reanimação = min(motor, combustível)
+                eng = ax.get('engine_card', {})
+                ff = ax.get('fuel_filter', {})
+                has_engine = any(c.code == eng.get('code')
+                                 for c in (list(p.hand) + list(p.deck)))
+                ft = (ff.get('filter_type') or '').lower()
+                peq = ff.get('power_eq')
+                fuel = sum(1 for c in p.trash
+                           if c.card_type == 'CHARACTER'
+                           and (not ft or ft in (c.sub_types or '').lower())
+                           and (peq is None or c.power == peq))
+                val = min(eng.get('reanima_ate', 0), fuel) if has_engine else 0
+                total += val * 12
+            elif kind == 'inversion':    # life_lte: achata o pânico
+                try:
+                    thr = int(str(ax.get('condition', '')).split()[-1])
+                except (ValueError, IndexError):
+                    thr = 0
+                if p.life_count() <= thr:
+                    total += ax.get('prior_weight', 0) * 0.5
+        return total
+
+    def _evaluate_state_v2(self, p, opp) -> float:
+        """
+        Régua ÚNICA de estado (item 1): termos GENÉRICOS simétricos + eixos
+        DERIVADOS do perfil do deck. Substitui o _evaluate_state ad-hoc.
+        Recebe (p, opp) do estado a julgar — usa GameAnalyzer local ligado a
+        ESSES args (não a self.me/self.opp, que são o estado real).
+        """
+        an = GameAnalyzer(p, opp)
+        score = 0.0
+
+        # dano feito NESTE turno — delta que faz o planner preferir a linha que
+        # de fato conecta dano (não só "desenvolve")
+        score += p.dmg_dealt * 120
+
+        # vida (curva íngreme, simétrica)
+        score += self._life_value(p.life_count())
+        score -= self._life_value(opp.life_count())
+
+        # board (reusa char_value_score — já vê blocker/rush/imunidade/efeito)
+        score += sum(an.char_value_score(c) for c in p.field_chars)
+        score -= sum(an.char_value_score(c) for c in opp.field_chars) * 0.8
+
+        # blockers do oponente vivos travam meu ataque
+        score -= len(opp.blockers_active()) * 25
+
+        # mão: retorno decrescente (as primeiras cartas valem mais)
+        nh = len(p.hand)
+        score += (min(nh, 5) * 8 + max(0, nh - 5) * 3)
+        # poder de counter na mão = vida futura
+        score += p.counter_in_hand() / 1000 * 6
+
+        # DON no campo (ramp = chegar na bomba) — leve
+        score += p.don_on_field() * 4
+
+        # cobertura defensiva: counter na mão vs ataques que o opp faz no
+        # próximo turno (líder + chars ativos). min = ter counter além do
+        # necessário satura (não vale acumular counter infinito).
+        opp_atk = 1 + sum(1 for c in opp.field_chars if not c.rested)
+        cobertura = min(p.counter_in_hand(), opp_atk * 2000)
+        score += cobertura / 1000 * 7
+
+        # eixos derivados do perfil (auto-motor: trash/reanimação/inversão)
+        score += self._derived_axes_value(p, self._turn_profile_for(p))
+
+        return score
+
     def _apply_action(self, action, p, opp, ee, engine, verbose=False):
         """
         Executa UMA ação no estado dado (real ou cópia). Retorna True se venceu.
@@ -7838,6 +7980,8 @@ class OPTCGMatch:
                 break
             if self._apply_action(acts[0], p2, opp2, ee2, eng2, verbose=False):
                 return SIMULATED_WIN_SCORE
+        if USE_EVAL_V2:
+            return self._evaluate_state_v2(p2, opp2)
         return self._evaluate_state(p2, opp2)
 
     def _remap_action(self, action, p, p2, opp, opp2):
