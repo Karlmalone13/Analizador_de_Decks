@@ -7,6 +7,20 @@
 
 ---
 
+## 🟣 PLANO MESTRE DE EVOLUÇÃO DO MOTOR (13/07/2026) — LER PRIMEIRO
+
+Depois de 3 dias de whack-a-mole de heurística (patch local por report →
+pêndulos), foi decidido com o usuário mudar de método: núcleo de avaliação
+único + busca, em vez de dezenas de notas locais. **Plano completo e vivo
+em [PLANO_AVALIACAO_E_BUSCA.md](scriptis_da_ia/PLANO_AVALIACAO_E_BUSCA.md).**
+Ordem: 0) baseline medido → 1) `evaluate_state` (régua única) → 2) extrator
+de perfil do deck (termos derivados do banco, sem hardcode) → 3) resposta do
+oponente (busca prof. 2) → 4) defesa pela mesma régua → 5) tunagem de pesos
+por self-play. ML/MCTS descartados por ora. Estado atual: **item 0 em
+execução.**
+
+---
+
 ## 🔴 PASSIVIDADE DO BOT (12/07/2026) — análise humano vs bot pronta, teste ao vivo pendente
 
 Ver [analise_imu_humano_vs_bot_2026-07-12.md](scriptis_da_ia/analise_imu_humano_vs_bot_2026-07-12.md)
