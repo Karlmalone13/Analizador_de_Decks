@@ -51,6 +51,44 @@ Reproduzir: `python baseline_metrics.py --deck-a Imu --deck-b <X>`. JSONs em
    há gradiente. Teach entra só como sanity, não como alvo de otimização.
    (Decisão pendente do usuário sobre o gauntlet agora é INFORMADA por isto.)
 
+## 🟦 TRILHA PARALELA: conhecimento/dados (aberta 13/07, a partir do PDF do usuário)
+
+O usuário trouxe o `IA_Compendium/ONE_PIECE_AI_COMPENDIUM_Volume_1.pdf` (feito
+com ChatGPT) + 3 repos de IA de MTG. Avaliação (registrada aqui pra não perder):
+
+**Repos MTG — o que aproveitar:** `open-mtg` = referência de determinized-MCTS
+p/ o item 3. `MageZero` (AlphaZero+Transformer) = (1) usa "deck-local training"
+= VALIDA nosso per-deck; (2) mesmo assim fica ~13pts ABAIXO de humano → NN não é
+atalho, reforça o plano faseado. `MTGAI` = espelha nosso bot (log→engine→UI),
+estamos à frente. Nenhum código pra adotar inteiro; borrow = MCTS do open-mtg.
+
+**PDF Volume 1 — ~80% DESCREVE o que já construímos** (o `V(s)` dele = nossa
+`evaluate_state_v2`; a busca com info oculta = nosso MC+OpponentModel; o self-play
+"promover só se superar bateria" = nosso `tune_weights` maximin). Validação
+externa. **3 ideias baratas pra roubar (EM EXECUÇÃO):**
+1. Camadas de confiança nos pesos (`official/derived/empirical/learned`) —
+   procedência de cada número (ataca "é chute ou foi medido?").
+2. DecisionTrace formal (por que alternativas foram descartadas) — melhora
+   explicabilidade + vira conteúdo de front.
+3. Vocabulário de papéis de carta no `deck_profile` (searcher/finisher/
+   counter_2000/freeze/bounce/trash_setup/recursion/combo_piece/protector…).
+
+**Proposta do pipeline (crawler→KB→SQLite→vetorial→livro 300-1000pg):**
+- ✅ FAZER AGORA (núcleo valioso): crawler ESTREITO de decklists oficiais/meta
+  (+ cartas de sets novos) — alimenta o gauntlet (item 5: mais decks reais =
+  menos overfit) e mantém `card_effects_db` atual. Site: `en.onepiece-cardgame.com/feature/deck/`,
+  páginas `deck_[N].php` (líder/cores/data/estratégia/thumb), até 2023.
+- ⏸️ ADIAR: livro, SQLite, banco vetorial, busca semântica — trilha de
+  front-end/conteúdo pra quando o motor platôir. Não ferver o oceano.
+- ⚠️ PRINCÍPIO (não violar): número do MOTOR vem de mecânica + self-play
+  (`empirical/learned`), NUNCA de prosa raspada. Conteúdo raspado = referência/
+  validação/front-end. O PDF concorda (separa `derived` de `learned`). Nosso
+  `deck_profile` já deriva arquétipo/eixos das MECÂNICAS — o catálogo do PDF
+  (ex: Imu="trash control, tratar trash como recurso") VALIDA a derivação, não
+  a substitui.
+
+Crawler vive em `knowledge/` (separado do motor). Saída consumida pelo gauntlet.
+
 ## Ordem de prioridade
 
 ### 0. Baseline medido — PRÉ-REQUISITO DE TUDO
