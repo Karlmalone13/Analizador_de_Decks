@@ -1,6 +1,14 @@
 {
   "deck": "Imu",
-  "n_cards": 51,
+  "n_cards": 50,
+  "archetype": {
+    "dominante": "Controle",
+    "mix": {
+      "Controle": 39.7,
+      "Aggro": 30.3,
+      "Tempo/Ramp": 29.9
+    }
+  },
   "generic_axes": [
     "vida",
     "board",
@@ -30,7 +38,7 @@
         {
           "threshold": 10,
           "dependentes": 8,
-          "impacto": 140.0,
+          "impacto": 68.0,
           "payoffs": [
             "debuff_power",
             "buff_power"
@@ -40,14 +48,42 @@
         {
           "threshold": 19,
           "dependentes": 1,
-          "impacto": 15.0,
+          "impacto": 10.5,
           "payoffs": [
             "buff_power"
           ],
           "pruned": true
         }
       ],
-      "prior_weight": 1040.0
+      "prior_weight": 968.0
+    },
+    {
+      "id": "disruption",
+      "kind": "disruption",
+      "nota": "negar recurso/ação do oponente (DON, lock, rest, remoção, negate) — o valor está em REDUZIR o estado dele, não crescer o meu",
+      "acoes": [
+        {
+          "action": "ko",
+          "dependentes": 8,
+          "impacto": 320.0
+        },
+        {
+          "action": "trash_character",
+          "dependentes": 4,
+          "impacto": 160.0
+        },
+        {
+          "action": "negate_effect",
+          "dependentes": 4,
+          "impacto": 140.0
+        },
+        {
+          "action": "debuff_power",
+          "dependentes": 4,
+          "impacto": 44.0
+        }
+      ],
+      "prior_weight": 664.0
     },
     {
       "id": "reanimation_bottleneck",

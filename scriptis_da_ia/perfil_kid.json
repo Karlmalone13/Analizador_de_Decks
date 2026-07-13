@@ -1,0 +1,42 @@
+{
+  "deck": "Kid",
+  "n_cards": 35,
+  "archetype": {
+    "dominante": "Vida/Triggers",
+    "mix": {
+      "Vida/Triggers": 39.3,
+      "Aggro": 29.2,
+      "Controle": 26.4,
+      "Tempo/Ramp": 5.1
+    }
+  },
+  "generic_axes": [
+    "vida",
+    "board",
+    "mao",
+    "don",
+    "cobertura_counter",
+    "tempo"
+  ],
+  "derived_axes": [
+    {
+      "id": "disruption",
+      "kind": "disruption",
+      "nota": "negar recurso/ação do oponente (DON, lock, rest, remoção, negate) — o valor está em REDUZIR o estado dele, não crescer o meu",
+      "acoes": [
+        {
+          "action": "ko",
+          "dependentes": 2,
+          "impacto": 80.0
+        },
+        {
+          "action": "rest_opp_character",
+          "dependentes": 3,
+          "impacto": 15.0
+        }
+      ],
+      "prior_weight": 95.0
+    }
+  ],
+  "nota_geral": "generic_axes valem pra QUALQUER deck; derived_axes saem da varredura deste deck. Pesos aqui são PRIORS de cold-start (impacto×dependentes) — a tunagem por self-play (item 5) ajusta e a ablação mata eixo inútil."
+}

@@ -14,6 +14,16 @@ oponente), reaproveitando o simulador que já temos.
 > até a sobrevivência de cada eixo saem de MEDIÇÃO (self-play + ablação), nunca
 > de debate. Ver memória [[feedback_fixes_globais_nao_pontuais]].
 
+> **Princípio DECK-AGNÓSTICO (confirmado com o usuário 13/07):** NADA neste
+> sistema é específico de um deck. O extrator lê QUALQUER deck do banco (mesmo
+> código, zero nome de carta — Imu foi só exemplo pra criticar). Corolário
+> operacional exigido pelo usuário: **pipeline self-service** — deck novo
+> largado no banco é automaticamente (a) perfilado pelo deck_profile e (b)
+> tem os pesos da evaluate_state tunados por self-play contra o pool existente,
+> resultado cacheado por hash do deck. Zero trabalho manual por deck. A
+> gramática de padrões é UNIVERSAL: completá-la (ex: família de disrupção)
+> melhora a leitura de todos os decks, não de um.
+
 ---
 
 ## 📊 MARCO-ZERO medido (13/07, 50 jogos/matchup, seed=1, motor-vs-motor)
@@ -79,8 +89,24 @@ melhorias debatidas:
 
 **Perfil vira artefato inspecionável** (1 JSON por deck): usuário lê e critica em
 português sem conhecer a lista; dobra como auditoria do parser (eixo ausente =
-condição não parseada) e futuro conteúdo do analisador do front-end
-(`deck_analyzer.py` — mesma família de sinal, convergir depois).
+condição não parseada).
+
+**ARQUÉTIPO no topo (convergência com o front, feita 13/07):** o usuário nomeou
+o conceito — cada deck tem seu arquétipo, e o perfil deve mapeá-lo. O
+`deck_profile.py` REUSA a gramática de arquétipo do `deck_analyzer.py`
+(`ACTION_WEIGHTS` × `TRIGGER_RELIABILITY`, fonte única) → o perfil abre com
+`archetype: {dominante, mix%}` e os derived_axes REFINAM dentro dele. 4ª família
+de eixo adicionada: **disrupção/denial** (give_don_opp, lock, rest_opp, debuff,
+bounce, ko, negate — mira o oponente). Resultado universal (mesmo código, zero
+nome de carta):
+- **Imu** → Controle 40%/Aggro 30%/Tempo 30%; eixos: trash_staircase(968),
+  disruption(664), reanimation(250), life_inversion(32).
+- **Krieg** → Controle 64%; eixo disruption(227): give_don_opp×15, debuff,
+  lock, rest_opp. (Antes saía VAZIO — era gramática incompleta, não deck sem
+  arquétipo. LIÇÃO: perfil vazio = alerta de gramática, nunca "validação".)
+- **Kid** → Vida/Triggers 39%/Aggro 29%; eixo disruption(95).
+
+Perfis salvos: `perfil_{imu,krieg,kid}.json`. Reproduzir: `python deck_profile.py <Deck>`.
 *Esforço: junto com o item 1.*
 
 ### 3. Resposta do oponente — profundidade 2 (onde a passividade morre)

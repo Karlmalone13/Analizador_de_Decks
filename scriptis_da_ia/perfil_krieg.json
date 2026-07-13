@@ -1,0 +1,56 @@
+{
+  "deck": "Krieg",
+  "n_cards": 50,
+  "archetype": {
+    "dominante": "Controle",
+    "mix": {
+      "Controle": 64.5,
+      "Aggro": 19.9,
+      "Tempo/Ramp": 15.7
+    }
+  },
+  "generic_axes": [
+    "vida",
+    "board",
+    "mao",
+    "don",
+    "cobertura_counter",
+    "tempo"
+  ],
+  "derived_axes": [
+    {
+      "id": "disruption",
+      "kind": "disruption",
+      "nota": "negar recurso/ação do oponente (DON, lock, rest, remoção, negate) — o valor está em REDUZIR o estado dele, não crescer o meu",
+      "acoes": [
+        {
+          "action": "debuff_power",
+          "dependentes": 5,
+          "impacto": 92.0
+        },
+        {
+          "action": "give_don_opp",
+          "dependentes": 15,
+          "impacto": 75.0
+        },
+        {
+          "action": "lock_opp_character_refresh",
+          "dependentes": 7,
+          "impacto": 21.0
+        },
+        {
+          "action": "lock_opp_don",
+          "dependentes": 4,
+          "impacto": 20.0
+        },
+        {
+          "action": "rest_opp_character",
+          "dependentes": 6,
+          "impacto": 18.8
+        }
+      ],
+      "prior_weight": 226.8
+    }
+  ],
+  "nota_geral": "generic_axes valem pra QUALQUER deck; derived_axes saem da varredura deste deck. Pesos aqui são PRIORS de cold-start (impacto×dependentes) — a tunagem por self-play (item 5) ajusta e a ablação mata eixo inútil."
+}

@@ -26,8 +26,27 @@ import json
 from collections import defaultdict
 from pathlib import Path
 
+# Gramática de arquétipo — FONTE ÚNICA reusada do analisador do front-end
+# (deck_analyzer.py). O usuário nomeou o conceito: "isso é o que chamamos de
+# arquétipo". Em vez de manter um vocabulário paralelo, o perfil do MOTOR
+# converge com o do front (mesma família de sinal, prevista no plano). Só
+# importamos as TABELAS (dados puros) + constantes; a lógica de varredura é
+# nossa (card_effects_db é aninhado {gatilho:{steps}}, o do front é achatado).
+from deck_analyzer import (ACTION_WEIGHTS, TRIGGER_RELIABILITY,
+                           AGGRO, CONTROLE, RAMP, VIDA)
+
 _DB_PATH = Path(__file__).parent / 'card_effects_db.json'
 _DECKS_DIR = Path(r"E:\Games\OnePieceSimulador\Builds_Windows\Decks")
+
+# Ações de DISRUPÇÃO/denial (miram o OPONENTE) — a 4ª família de eixo, que o
+# Krieg exemplifica e a gramática anterior (só recurso/reanimação/inversão)
+# não via. Universal: qualquer deck com essas ações ganha o eixo.
+_DISRUPTION_ACTIONS = {
+    'give_don_opp', 'lock_opp_don', 'lock_opp_character_refresh',
+    'lock_opp_character_attack', 'rest_opp_character', 'debuff_power',
+    'debuff_cost', 'bounce', 'ko', 'trash_character', 'negate_effect',
+    'opp_trash_from_hand', 'place_opp_character_bottom_deck',
+}
 
 # Magnitude relativa do que cada AÇÃO/keyword destrava (proxy pro prior;
 # a tunagem por self-play ajusta depois). Escala grosseira, só pra ORDENAR
@@ -74,23 +93,32 @@ def build_profile(deck_name: str) -> dict:
         lambda: {'copias': 0, 'payoffs': defaultdict(int), 'impacto': 0.0}))
     inversions: dict[str, dict] = defaultdict(lambda: defaultdict(
         lambda: {'copias': 0, 'effects': defaultdict(int)}))
-    # combos de reanimação: play_from_trash com filtro
     reanim: list[dict] = []
+    # disrupção -> {ação: {'copias':N, 'impacto':float}}  (peso × confiabilidade)
+    disruption: dict[str, dict] = defaultdict(lambda: {'copias': 0, 'impacto': 0.0})
+    # arquétipo (reusa vocabulário do deck_analyzer) -> pontuação por eixo
+    arch_score: dict[str, float] = {AGGRO: 0.0, CONTROLE: 0.0, RAMP: 0.0, VIDA: 0.0}
     n_cards = 0
 
     for qty, code in deck:
         c = db.get(code)
         if not c:
             continue
-        n_cards += qty
-        ctype = (c.get('type') or '').upper()
-        if ctype == 'LEADER':
-            pass  # líder conta pros eixos mas não pro n_cards de deck? mantém simples
+        if (c.get('type') or '').upper() != 'LEADER':
+            n_cards += qty
         for trig, block in _iter_blocks(c):
             conds = block.get('conditions', {})
             steps = block.get('steps', [])
             step_actions = [s.get('action') for s in steps]
-            block_impact = sum(_ACTION_MAGNITUDE.get(a, 5) for a in step_actions)
+            # confiabilidade do gatilho: on_play/main valem cheio, counter/trigger
+            # /on_ko valem menos (reusado do deck_analyzer — melhoria de impacto)
+            rel = TRIGGER_RELIABILITY.get(trig, 0.7)
+            block_impact = sum(_ACTION_MAGNITUDE.get(a, 5) for a in step_actions) * rel
+
+            # arquétipo: soma peso-de-ação × confiabilidade (mesma conta do front)
+            for a in step_actions:
+                for arche, pts in ACTION_WEIGHTS.get(a, {}).items():
+                    arch_score[arche] += pts * rel * qty
 
             for k, v in conds.items():
                 if k in _GATE_CONDS:
@@ -101,7 +129,6 @@ def build_profile(deck_name: str) -> dict:
                     for a in step_actions:
                         node['effects'][a] += qty
                     continue
-                # recurso "bom" com threshold (trash_gte, don_gte, hand_gte, ...)
                 if isinstance(v, (int, float)):
                     node = resource_thresholds[k][v]
                     node['copias'] += qty
@@ -109,9 +136,10 @@ def build_profile(deck_name: str) -> dict:
                     for a in step_actions:
                         node['payoffs'][a] += qty
 
-            # reanimação (motor de win-con) — carrega o FILTRO (melhoria 3)
             for s in steps:
-                if s.get('action') in ('play_from_trash', 'add_from_trash'):
+                a = s.get('action')
+                # reanimação (motor de win-con) — carrega o FILTRO (melhoria 3)
+                if a in ('play_from_trash', 'add_from_trash'):
                     reanim.append({
                         'code': code, 'name': c.get('name', '?'), 'copias': qty,
                         'count': s.get('count', 1),
@@ -119,9 +147,26 @@ def build_profile(deck_name: str) -> dict:
                         'power_eq': s.get('power_eq'),
                         'cost': c.get('cost'),
                     })
+                # disrupção (4ª família) — ação que mira o oponente
+                if a in _DISRUPTION_ACTIONS:
+                    node = disruption[a]
+                    node['copias'] += qty
+                    node['impacto'] += qty * _ACTION_MAGNITUDE.get(a, 5) * rel
 
     # ── monta os eixos derivados ──────────────────────────────────────────────
     axes = []
+
+    # 4ª família: DISRUPÇÃO/denial (miram o oponente) — o eixo do Krieg
+    if disruption:
+        acoes = sorted(disruption.items(), key=lambda kv: kv[1]['impacto'], reverse=True)
+        axes.append({
+            'id': 'disruption', 'kind': 'disruption',
+            'nota': ('negar recurso/ação do oponente (DON, lock, rest, remoção, '
+                     'negate) — o valor está em REDUZIR o estado dele, não crescer o meu'),
+            'acoes': [{'action': a, 'dependentes': d['copias'],
+                       'impacto': round(d['impacto'], 1)} for a, d in acoes],
+            'prior_weight': round(sum(d['impacto'] for _, d in acoes), 1),
+        })
 
     # 1+2+3: recursos com escadaria de threshold (saturação nos degraus)
     for res, degraus in resource_thresholds.items():
@@ -175,9 +220,18 @@ def build_profile(deck_name: str) -> dict:
 
     axes.sort(key=lambda a: a.get('prior_weight', 0), reverse=True)
 
+    # arquétipo normalizado (mix % que soma 100) — o "guarda-chuva" do deck,
+    # reusando a gramática do deck_analyzer. Os derived_axes REFINAM dentro dele.
+    total_arch = sum(arch_score.values())
+    arch_mix = ({a: round(100 * v / total_arch, 1)
+                 for a, v in sorted(arch_score.items(), key=lambda kv: -kv[1]) if v > 0}
+                if total_arch else {})
+    dominante = max(arch_mix, key=arch_mix.get) if arch_mix else 'Indefinido'
+
     return {
         'deck': deck_name,
         'n_cards': n_cards,
+        'archetype': {'dominante': dominante, 'mix': arch_mix},
         'generic_axes': ['vida', 'board', 'mao', 'don', 'cobertura_counter', 'tempo'],
         'derived_axes': axes,
         'nota_geral': ('generic_axes valem pra QUALQUER deck; derived_axes saem '
