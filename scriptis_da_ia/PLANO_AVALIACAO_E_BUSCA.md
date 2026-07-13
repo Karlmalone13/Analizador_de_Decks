@@ -131,19 +131,25 @@ R3. **Combos ARBITRÁRIOS de múltiplas cartas.** CUIDADO COM A LEITURA: hoje o
     dados/padrões (igual `ACTION_WEIGHTS` do deck_analyzer); eles são ANÁLISE, não
     decisão — alimentam o perfil, não decidem jogada.
 
-R4b. **QA da gramática (crosscheck_archetypes.py) — 3 GAPS achados 13/07**, a
-    consertar COM MEDIÇÃO (não mid-tunagem). Raiz comum: falta SALIÊNCIA RELATIVA
-    (distinguir sinal de BASE, que todo deck tem, de sinal CARACTERÍSTICO).
-    - GAP1: `disruption` dispara em 100% dos 56 decks → não discrimina. Causa:
-      ko/debuff/bounce são universais. Fix: separar REMOÇÃO genérica (ko/bounce)
-      de DENIAL definidor (give_don_opp/lock/freeze); ou eixo só conta acima da
-      baseline. Isso enviesa quase tudo pra "Controle".
-    - GAP2: counter_1000/2000 dominam os papéis de TODO deck (counter é universal)
-      → ruído de base, normalizar/rebaixar pra papéis distintivos subirem.
-    - GAP3: aggro/swarm (Rebecca, Vivi) lidos como Controle — consequência de
-      GAP1/GAP2 abafarem o sinal de aggro (curva baixa/rush/muitos corpos).
-    Validou bem: recursão generaliza (Moria/Crocodile/Lucci); DON-decks pegam
-    don_gte. Rodar `knowledge/crosscheck_archetypes.py` de novo após cada fix.
+R4b. **QA da gramática (crosscheck_archetypes.py) — 3 GAPS, ATACADOS 13/07.**
+    Antes disso: UNIFICAÇÃO — `card_taxonomy.py` virou o vocabulário ÚNICO
+    (arquétipo+disrupção+papéis+magnitude+conds) compartilhado por deck_analyzer
+    (front) e deck_profile (motor); acabou a duplicação. Fase A neutra (crosscheck
+    idêntico). Depois os fixes (Fase B):
+    - GAP1 ✅ RESOLVIDO: `disruption` separado em DENIAL (give_don_opp/lock/freeze/
+      negate/rest — define controle) vs REMOÇÃO genérica (ko/bounce/debuff —
+      universal, vira só papel). disruption caiu de 102/102 → 51/102 decks.
+    - GAP3 ✅ MUITO melhor: rebaixado peso de controle da remoção universal +
+      `negate_effect` ganhou peso de controle (faltava; salvou o Imu de virar
+      "Aggro"). Rebecca/Jinbe/Zoro-Red agora Aggro; Krieg/Teach/Imu seguem
+      Controle. RESTA: híbridos (Vivi/Enel/Moria) — precisam de sinal AGGRO-POR-
+      ESTATÍSTICA (curva baixa/corpos vanilla, invisível ao arquétipo por-ação).
+      Follow-up de retorno decrescente, não perseguir agora.
+    - GAP2 (counter domina papéis) — cosmético (não afeta arquétipo/eixos/turn-
+      order/eval), ADIADO.
+    IMPORTANTE: `evaluate_state` NÃO usa disruption/arquétipo (só trash/reanim/
+    inversão) → fix não afeta o motor nem invalida a v2. Melhora o front
+    (deck_analyzer) e o turn-order. Re-rodar crosscheck após cada mudança futura.
 
 R4. **ONGOING: enriquecer os papéis ao máximo** — sempre mecanicamente
     fundamentado (card_effects_db), nunca prosa. Cada papel novo deve GANHAR seu

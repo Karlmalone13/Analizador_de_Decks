@@ -39,15 +39,20 @@ ACTION_WEIGHTS: dict[str, dict[str, int]] = {
     'gain_banish':           {AGGRO: 2},
     'buff_power':            {AGGRO: 2},
     'give_don':              {AGGRO: 2},
-    # Controle
-    'ko':                    {CONTROLE: 2},
-    'debuff_power':          {CONTROLE: 2},
+    # Controle — DENIAL (ataca recurso/tempo/EFEITO) define controle: peso cheio
+    'give_don_opp':          {CONTROLE: 3},
+    'lock_opp_don':          {CONTROLE: 3},
+    'lock_opp_character_refresh': {CONTROLE: 2},
+    'lock_opp_character_attack':  {CONTROLE: 2},
+    'negate_effect':         {CONTROLE: 2},   # denial de EFEITO (faltava; Imu/Ground Death)
     'rest_opp_character':    {CONTROLE: 2},
-    'bounce':                {CONTROLE: 2},
-    'debuff_cost':           {CONTROLE: 2},
     'trash_from_hand':       {CONTROLE: 2},
-    'give_don_opp':          {CONTROLE: 2},
-    'lock_opp_don':          {CONTROLE: 2},
+    # Remoção GENÉRICA (todo deck tem) — peso baixo, não caracteriza controle
+    # (GAP3 do crosscheck: aggro com ko/bounce era lido como controle)
+    'ko':                    {CONTROLE: 1},
+    'debuff_power':          {CONTROLE: 1},
+    'bounce':                {CONTROLE: 1},
+    'debuff_cost':           {CONTROLE: 1},
     # Ramp / Aceleração
     'add_don':               {RAMP: 3},
     'set_don_active':        {RAMP: 3},
@@ -76,12 +81,21 @@ TRIGGER_RELIABILITY: dict[str, float] = {
 }
 
 
-# ── Disrupção/denial (miram o OPONENTE) — eixo do deck_profile ────────────────
-DISRUPTION_ACTIONS = {
+# ── DENIAL vs REMOÇÃO (SALIÊNCIA RELATIVA — fix dos gaps do crosscheck 13/07) ──
+# GAP1: antes 'disruption' juntava denial + remoção genérica e disparava em
+# 100% dos decks (não discriminava). Agora SÓ denial (ataca RECURSO/TEMPO do
+# oponente) faz o eixo disruption — isso CARACTERIZA controle. Remoção genérica
+# (ko/bounce/debuff — quase todo deck tem) NÃO define controle: vira só o papel
+# 'removal'. Assim Krieg (give_don×15/lock/rest) tem disruption alta e um aggro
+# com só ko/bounce não é mais lido como controle (GAP3).
+DISRUPTION_ACTIONS = {   # = DENIAL definidor
     'give_don_opp', 'lock_opp_don', 'lock_opp_character_refresh',
-    'lock_opp_character_attack', 'rest_opp_character', 'debuff_power',
-    'debuff_cost', 'bounce', 'ko', 'trash_character', 'negate_effect',
-    'opp_trash_from_hand', 'place_opp_character_bottom_deck',
+    'lock_opp_character_attack', 'rest_opp_character', 'negate_effect',
+    'opp_trash_from_hand',
+}
+REMOVAL_ACTIONS = {      # interação de board universal, NÃO define arquétipo
+    'ko', 'trash_character', 'bounce', 'debuff_power',
+    'place_opp_character_bottom_deck', 'debuff_cost',
 }
 
 # Magnitude relativa do que cada AÇÃO destrava (prior de cold-start p/ ordenar
