@@ -41,6 +41,24 @@ try:
 except Exception:
     _build_profile_from_codes = None
 
+# Pesos da evaluate_state_v2 — VETOR TUNÁVEL (item 5). O otimizador
+# (tune_weights.py) varia estes valores por self-play e escreve o vencedor em
+# eval_weights.json; aqui carregamos esse cache se existir. Defaults = os
+# priors medidos em 13/07 (que regridem Krieg — por isso a tunagem).
+EVAL_WEIGHTS = {
+    'dmg': 120.0, 'life_mult': 1.0, 'board_mine': 1.0, 'board_opp': 0.8,
+    'opp_blocker': 25.0, 'hand_first': 8.0, 'hand_extra': 3.0,
+    'counter_hand': 6.0, 'don_field': 4.0, 'coverage': 7.0,
+    'ax_trash': 0.05, 'ax_reanim': 12.0, 'ax_inversion': 0.5,
+}
+try:
+    _wpath = os.path.join(os.path.dirname(__file__), '..', 'eval_weights.json')
+    if os.path.exists(_wpath):
+        with open(_wpath, encoding='utf-8') as _f:
+            EVAL_WEIGHTS.update(json.load(_f))
+except Exception:
+    pass
+
 
 class _SimDeck(list):
     """Deck lazy para simulacao do Turn Planner: contem referencias rasas de
@@ -7748,6 +7766,7 @@ class OPTCGMatch:
         """
         if not profile:
             return 0.0
+        W = getattr(p, 'eval_weights', None) or EVAL_WEIGHTS
         total = 0.0
         trash_n = len(p.trash)
         for ax in profile.get('derived_axes', []):
@@ -7760,7 +7779,7 @@ class OPTCGMatch:
                         continue
                     thr = step.get('threshold') or 1
                     frac = min(1.0, trash_n / thr)
-                    total += step.get('impacto', 0) * frac * 0.05
+                    total += step.get('impacto', 0) * frac * W['ax_trash']
             elif kind == 'bottleneck':   # reanimação = min(motor, combustível)
                 eng = ax.get('engine_card', {})
                 ff = ax.get('fuel_filter', {})
@@ -7773,14 +7792,14 @@ class OPTCGMatch:
                            and (not ft or ft in (c.sub_types or '').lower())
                            and (peq is None or c.power == peq))
                 val = min(eng.get('reanima_ate', 0), fuel) if has_engine else 0
-                total += val * 12
+                total += val * W['ax_reanim']
             elif kind == 'inversion':    # life_lte: achata o pânico
                 try:
                     thr = int(str(ax.get('condition', '')).split()[-1])
                 except (ValueError, IndexError):
                     thr = 0
                 if p.life_count() <= thr:
-                    total += ax.get('prior_weight', 0) * 0.5
+                    total += ax.get('prior_weight', 0) * W['ax_inversion']
         return total
 
     def _evaluate_state_v2(self, p, opp) -> float:
@@ -7791,38 +7810,40 @@ class OPTCGMatch:
         ESSES args (não a self.me/self.opp, que são o estado real).
         """
         an = GameAnalyzer(p, opp)
+        # pesos POR JOGADOR (tunagem per-deck) — cai no global se não setado
+        W = getattr(p, 'eval_weights', None) or EVAL_WEIGHTS
         score = 0.0
 
         # dano feito NESTE turno — delta que faz o planner preferir a linha que
         # de fato conecta dano (não só "desenvolve")
-        score += p.dmg_dealt * 120
+        score += p.dmg_dealt * W['dmg']
 
         # vida (curva íngreme, simétrica)
-        score += self._life_value(p.life_count())
-        score -= self._life_value(opp.life_count())
+        score += self._life_value(p.life_count()) * W['life_mult']
+        score -= self._life_value(opp.life_count()) * W['life_mult']
 
         # board (reusa char_value_score — já vê blocker/rush/imunidade/efeito)
-        score += sum(an.char_value_score(c) for c in p.field_chars)
-        score -= sum(an.char_value_score(c) for c in opp.field_chars) * 0.8
+        score += sum(an.char_value_score(c) for c in p.field_chars) * W['board_mine']
+        score -= sum(an.char_value_score(c) for c in opp.field_chars) * W['board_opp']
 
         # blockers do oponente vivos travam meu ataque
-        score -= len(opp.blockers_active()) * 25
+        score -= len(opp.blockers_active()) * W['opp_blocker']
 
         # mão: retorno decrescente (as primeiras cartas valem mais)
         nh = len(p.hand)
-        score += (min(nh, 5) * 8 + max(0, nh - 5) * 3)
+        score += min(nh, 5) * W['hand_first'] + max(0, nh - 5) * W['hand_extra']
         # poder de counter na mão = vida futura
-        score += p.counter_in_hand() / 1000 * 6
+        score += p.counter_in_hand() / 1000 * W['counter_hand']
 
         # DON no campo (ramp = chegar na bomba) — leve
-        score += p.don_on_field() * 4
+        score += p.don_on_field() * W['don_field']
 
         # cobertura defensiva: counter na mão vs ataques que o opp faz no
         # próximo turno (líder + chars ativos). min = ter counter além do
         # necessário satura (não vale acumular counter infinito).
         opp_atk = 1 + sum(1 for c in opp.field_chars if not c.rested)
         cobertura = min(p.counter_in_hand(), opp_atk * 2000)
-        score += cobertura / 1000 * 7
+        score += cobertura / 1000 * W['coverage']
 
         # eixos derivados do perfil (auto-motor: trash/reanimação/inversão)
         score += self._derived_axes_value(p, self._turn_profile_for(p))
@@ -7980,7 +8001,13 @@ class OPTCGMatch:
                 break
             if self._apply_action(acts[0], p2, opp2, ee2, eng2, verbose=False):
                 return SIMULATED_WIN_SCORE
-        if USE_EVAL_V2:
+        # config de avaliação POR JOGADOR (p é quem age): permite Imu usar v2 e
+        # o oponente v1 na mesma partida — como o sistema per-deck vai operar
+        # (cada deck tem sua régua/pesos). None = cai no global USE_EVAL_V2.
+        use_v2 = getattr(p, 'use_eval_v2', None)
+        if use_v2 is None:
+            use_v2 = USE_EVAL_V2
+        if use_v2:
             return self._evaluate_state_v2(p2, opp2)
         return self._evaluate_state(p2, opp2)
 
