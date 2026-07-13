@@ -30,11 +30,11 @@ SYNERGY_WEIGHT = 0.5
 # Arquétipos
 # ===========================================================================
 
-AGGRO = 'Aggro'
-CONTROLE = 'Controle'
-RAMP = 'Tempo/Ramp'
-VIDA = 'Vida/Triggers'
-ARCHETYPES = (AGGRO, CONTROLE, RAMP, VIDA)
+# Arquétipos + pesos de ação vêm do VOCABULÁRIO ÚNICO (card_taxonomy),
+# compartilhado com o motor (deck_profile). Antes eram definidos aqui e
+# duplicavam a gramática — unificado 13/07.
+from card_taxonomy import (AGGRO, CONTROLE, RAMP, VIDA, ARCHETYPES,  # noqa: F401
+                           ACTION_WEIGHTS, TRIGGER_RELIABILITY)      # noqa: F401
 
 
 # ── Camada 1: mapa de líder conhecido → arquétipo ───────────────────────────
@@ -68,57 +68,8 @@ COLOR_ARCHETYPE: dict[str, str] = {
 }
 
 
-# ── Pesos: ação da carta → arquétipo ───────────────────────────────────────
-# Pontuação ponderada por AÇÃO (do campo 'effects'), multiplicada pelo fator
-# de confiabilidade do GATILHO que dispara a ação. has_counter_value foi
-# REMOVIDO (era ruído onipresente). Ramp e Controle separados.
-ACTION_WEIGHTS: dict[str, dict[str, int]] = {
-    # Aggro (enriquecido)
-    'keyword_rush':          {AGGRO: 3},
-    'gain_rush':             {AGGRO: 3},
-    'keyword_double_attack': {AGGRO: 3},
-    'gain_double_attack':    {AGGRO: 3},
-    'keyword_unblockable':   {AGGRO: 3},
-    'gain_unblockable':      {AGGRO: 3},
-    'keyword_banish':        {AGGRO: 2},
-    'gain_banish':           {AGGRO: 2},
-    'buff_power':            {AGGRO: 2},
-    'give_don':              {AGGRO: 2},  # DON a aliado = +1000 poder = buff ofensivo
-    # Controle (desinflado: KO/debuff de +3 para +2, pois são comuns demais)
-    'ko':                    {CONTROLE: 2},
-    'debuff_power':          {CONTROLE: 2},
-    'rest_opp_character':    {CONTROLE: 2},
-    'bounce':                {CONTROLE: 2},
-    'debuff_cost':           {CONTROLE: 2},
-    'trash_from_hand':       {CONTROLE: 2},
-    'give_don_opp':          {CONTROLE: 2},  # DON ao oponente = setup p/ rest/freeze/debuff
-    'lock_opp_don':          {CONTROLE: 2},
-    # Ramp / Aceleração
-    'add_don':               {RAMP: 3},
-    'set_don_active':        {RAMP: 3},
-    'buff_cost':             {RAMP: 2},
-    'play_card':             {RAMP: 2},
-    'play_from_deck':        {RAMP: 2},
-    'play_from_trash':       {RAMP: 2},
-    'add_from_trash':        {RAMP: 2},
-    # Vida (estreito e puro: só ganho/manipulação de vida)
-    'gain_life':             {VIDA: 4},
-    'attack_life':           {AGGRO: 2, CONTROLE: 1},
-    'trash_own_life':        {VIDA: 1, RAMP: 1},
-    # Defensivo: blocker dá tempo/controle (NÃO é Vida)
-    'keyword_blocker':       {CONTROLE: 1, RAMP: 1},
-    'gain_blocker':          {CONTROLE: 1, RAMP: 1},
-}
-
-# Fator de confiabilidade por gatilho (multiplica o peso da ação)
-TRIGGER_RELIABILITY: dict[str, float] = {
-    'on_play': 1.0, 'activate_main': 1.0, 'main': 1.0, 'passive': 1.0,
-    'your_turn': 0.7, 'opp_turn': 0.6, 'end_of_turn': 0.6,
-    'when_attacking': 0.55,
-    'counter': 0.4,
-    'on_ko': 0.3,
-    'trigger': 0.25,
-}
+# ACTION_WEIGHTS e TRIGGER_RELIABILITY agora vêm de card_taxonomy (import no
+# topo) — vocabulário único compartilhado com o motor.
 
 
 # ===========================================================================

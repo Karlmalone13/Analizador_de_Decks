@@ -32,70 +32,20 @@ from pathlib import Path
 # converge com o do front (mesma família de sinal, prevista no plano). Só
 # importamos as TABELAS (dados puros) + constantes; a lógica de varredura é
 # nossa (card_effects_db é aninhado {gatilho:{steps}}, o do front é achatado).
-from deck_analyzer import (ACTION_WEIGHTS, TRIGGER_RELIABILITY,
-                           AGGRO, CONTROLE, RAMP, VIDA)
+# Vocabulário ÚNICO (card_taxonomy) — compartilhado com o front (deck_analyzer).
+from card_taxonomy import (
+    ACTION_WEIGHTS, TRIGGER_RELIABILITY, AGGRO, CONTROLE, RAMP, VIDA,
+    DISRUPTION_ACTIONS as _DISRUPTION_ACTIONS,
+    ACTION_MAGNITUDE as _ACTION_MAGNITUDE,
+    ROLE_BY_ACTION as _ROLE_BY_ACTION,
+    INVERSION_CONDS as _INVERSION_CONDS,
+    RESOURCE_CONDS as _RESOURCE_CONDS,
+)
 
 _DB_PATH = Path(__file__).parent / 'card_effects_db.json'
 _DECKS_DIR = Path(r"E:\Games\OnePieceSimulador\Builds_Windows\Decks")
-
-# Ações de DISRUPÇÃO/denial (miram o OPONENTE) — a 4ª família de eixo, que o
-# Krieg exemplifica e a gramática anterior (só recurso/reanimação/inversão)
-# não via. Universal: qualquer deck com essas ações ganha o eixo.
-_DISRUPTION_ACTIONS = {
-    'give_don_opp', 'lock_opp_don', 'lock_opp_character_refresh',
-    'lock_opp_character_attack', 'rest_opp_character', 'debuff_power',
-    'debuff_cost', 'bounce', 'ko', 'trash_character', 'negate_effect',
-    'opp_trash_from_hand', 'place_opp_character_bottom_deck',
-}
-
-# Magnitude relativa do que cada AÇÃO/keyword destrava (proxy pro prior;
-# a tunagem por self-play ajusta depois). Escala grosseira, só pra ORDENAR
-# os eixos de forma sensata no cold-start.
-_ACTION_MAGNITUDE = {
-    'immunity': 30, 'negate_effect': 35, 'ko': 40, 'trash_character': 40,
-    'bounce': 30, 'debuff_power': 20, 'gain_blocker': 25, 'gain_rush': 25,
-    'gain_double_attack': 25, 'gain_unblockable': 20, 'buff_power': 15,
-    'play_from_trash': 50, 'play_card': 30, 'give_don': 20,
-    'draw': 20, 'look_top_deck': 15, 'add_to_hand': 15, 'add_from_trash': 25,
-}
-# Vocabulário de PAPÉIS de carta (ideia 3 do PDF do usuário) — universal, por
-# AÇÃO/estrutura. Uma carta pode ter vários papéis. Enriquece o perfil sem
-# hardcode; a fonte é sempre a mecânica (card_effects_db), nunca prosa raspada.
-_ROLE_BY_ACTION = {
-    'look_top_deck': 'searcher', 'add_to_hand': 'searcher',
-    'draw': 'draw_engine',
-    'ko': 'removal', 'trash_character': 'removal',
-    'debuff_power': 'power_reduction',
-    'debuff_cost': 'cost_reduction', 'buff_cost': 'cost_reduction',
-    'rest_opp_character': 'rest', 'lock_opp_character_refresh': 'freeze',
-    'lock_opp_character_attack': 'freeze', 'lock_opp_don': 'don_denial',
-    'give_don_opp': 'don_denial',
-    'bounce': 'bounce', 'place_opp_character_bottom_deck': 'bounce',
-    'add_don': 'ramp', 'set_don_active': 'ramp', 'give_don': 'ramp',
-    'play_from_trash': 'recursion', 'add_from_trash': 'recursion',
-    'gain_life': 'life_manipulation', 'trash_life': 'life_manipulation',
-    'attack_life': 'life_manipulation',
-    'gain_blocker': 'blocker', 'keyword_blocker': 'blocker',
-    'immunity': 'protector', 'substitute_ko': 'protector',
-    'substitute_removal': 'protector', 'negate_effect': 'protector',
-    'trash_from_hand': 'trash_setup', 'trash_rest': 'trash_setup',
-    'gain_rush': 'rush', 'keyword_rush': 'rush',
-    'gain_double_attack': 'evasive', 'keyword_double_attack': 'evasive',
-    'gain_unblockable': 'evasive', 'keyword_unblockable': 'evasive',
-    'set_don_active': 'don_recovery', 'add_don': 'ramp',
-    'play_card': 'combo_piece', 'play_from_deck': 'combo_piece',
-}
-
-# Recursos "ruins" cuja condição INVERTE o sinal do termo (tomar/gastar = ativar)
-_INVERSION_CONDS = {'life_lte'}
-# RECURSOS acumuláveis reais que viram escadaria (whitelist — evita tratar
-# gate/flag numérica como se fosse motor de recurso, ex: leader_multicolor,
-# opp_turn_only, que apareciam como staircase espúria de peso ~0). Universal.
-_RESOURCE_CONDS = {
-    'trash_gte', 'trash_lte', 'don_gte', 'don_lte',
-    'don_on_field_gte', 'don_on_field_lte', 'deck_gte', 'deck_lte',
-    'hand_gte', 'events_in_trash_gte', 'chars_gte',
-}
+# _DISRUPTION_ACTIONS/_ACTION_MAGNITUDE/_ROLE_BY_ACTION/_INVERSION_CONDS/
+# _RESOURCE_CONDS agora vêm de card_taxonomy (import no topo) — vocabulário único.
 
 
 def _load_deck_codes(deck_name: str) -> list[tuple[int, str]]:

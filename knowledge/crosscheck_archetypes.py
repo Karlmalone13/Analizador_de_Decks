@@ -14,9 +14,16 @@ Uso: python crosscheck_archetypes.py
 from __future__ import annotations
 import glob
 import json
+import os
 import re
+import subprocess
 import sys
 from pathlib import Path
+
+# determinístico (set iteration order estável) — prova de neutralidade limpa
+if os.environ.get('PYTHONHASHSEED') != '0':
+    os.environ['PYTHONHASHSEED'] = '0'
+    raise SystemExit(subprocess.call([sys.executable] + sys.argv))
 
 HERE = Path(__file__).parent
 sys.path.insert(0, str(HERE.parent / 'scriptis_da_ia'))
