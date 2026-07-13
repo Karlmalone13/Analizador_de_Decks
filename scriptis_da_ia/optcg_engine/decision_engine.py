@@ -60,7 +60,9 @@ try:
     _wpath = os.path.join(os.path.dirname(__file__), '..', 'eval_weights.json')
     if os.path.exists(_wpath):
         with open(_wpath, encoding='utf-8') as _f:
-            EVAL_WEIGHTS.update(json.load(_f))
+            # ignora _meta (camada de confiança: procedência, não é peso)
+            EVAL_WEIGHTS.update({k: v for k, v in json.load(_f).items()
+                                 if k != '_meta'})
 except Exception:
     pass
 
@@ -8649,6 +8651,21 @@ class OPTCGMatch:
                 for a in candidates[:8]
             ],
         })
+        # DecisionTrace (ideia 2 do PDF): torna EXPLÍCITO "por que a alternativa
+        # foi descartada" = margem de valor esperado abaixo da escolhida. Já
+        # tínhamos os candidatos+valores; isto só rotula o gap pra leitura
+        # humana/front (o valor bruto continua disponível pra depuração).
+        rec = self.decision_log[-1]
+        chosen_val = (rec['chosen'] or {}).get('simulated_value')
+        if chosen_val is not None:
+            for c in rec['candidates']:
+                cv = c.get('simulated_value')
+                if cv is None:
+                    c['descartada_porque'] = 'linha inviável / sem simulação'
+                elif abs(cv - chosen_val) < 1e-6:
+                    c['descartada_porque'] = None   # é a escolhida (ou empate)
+                else:
+                    c['descartada_porque'] = f'valor esperado {round(chosen_val - cv, 1)} abaixo da escolhida'
 
     # ── Replay logger ────────────────────────────────────────────────────────
 

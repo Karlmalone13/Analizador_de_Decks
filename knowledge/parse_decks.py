@@ -93,31 +93,40 @@ def write_deck_file(data: dict):
         return None
     DECKS.mkdir(parents=True, exist_ok=True)
     path = DECKS / f"{_slug(data['leader']['name'], data['leader']['colors'])}.deck"
-    lines = [f'1x{lead}'] + [f"{d['qty']}x{d['code']}" for d in data['decklist']]
+    # o guia oficial exibe o LÍDER na grade (x1) junto das 50 do deck — exclui
+    # pra não duplicar (linha do líder + cópia na main list quebraria o motor)
+    main = [d for d in data['decklist'] if d['code'] != lead]
+    lines = [f'1x{lead}'] + [f"{d['qty']}x{d['code']}" for d in main]
     path.write_text('\n'.join(lines) + '\n', encoding='utf-8')
-    return path
+    return path, sum(d['qty'] for d in main)
 
 
 def main():
     PARSED.mkdir(parents=True, exist_ok=True)
     leaders = _load_leaders()
     raws = sorted(RAW.glob('deck_*.html'))
-    ok = semlider = 0
+    ok = semlider = completos = 0
     for raw in raws:
         did = raw.stem.replace('deck_', '')
         data = parse_html(raw.read_text(encoding='utf-8'), did, leaders)
         (PARSED / f'deck_{did}.json').write_text(
             json.dumps(data, indent=2, ensure_ascii=False), encoding='utf-8')
-        deckfile = write_deck_file(data)
-        if deckfile:
+        res = write_deck_file(data)
+        if res:
+            deckfile, main_n = res
+            data['main_deck_cards'] = main_n
             ok += 1
+            if main_n == 50:
+                completos += 1
         else:
+            deckfile, main_n = None, 0
             semlider += 1
         print(f"deck_{did}: {data['leader']['name'][:22]:22s} "
               f"[{'/'.join(data['leader']['colors'])}] "
-              f"{data['total_cards']} cartas lider={data['leader']['code']} "
+              f"main={main_n} lider={data['leader']['code']} "
               f"{'-> ' + deckfile.name if deckfile else '(sem .deck)'}")
-    print(f"\n{len(raws)} guias parseados | {ok} com .deck | {semlider} sem líder resolvido")
+    print(f"\n{len(raws)} guias parseados | {ok} com .deck | {completos} completos (main=50) "
+          f"| {semlider} sem líder resolvido")
 
 
 if __name__ == '__main__':

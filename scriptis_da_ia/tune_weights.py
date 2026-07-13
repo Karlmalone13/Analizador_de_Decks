@@ -141,8 +141,19 @@ def main():
     # só salva se NÃO regride nenhum matchup (maximin >= 0)
     if best_key[0] >= -0.02:
         out = Path(__file__).parent / 'eval_weights.json'
-        out.write_text(json.dumps(best, indent=2), encoding='utf-8')
-        print(f"\n-> salvo em {out} (nenhuma regressão relevante). "
+        # CAMADA DE CONFIANÇA (ideia 1 do PDF): procedência do número. Pesos
+        # tunados = 'learned' (medidos por self-play, versionáveis); os priors
+        # do deck_profile são 'derived'. Assim nunca se confunde chute com
+        # medição — o motor ignora _meta ao carregar (só lê os pesos).
+        import datetime as _dt
+        payload = dict(best)
+        payload['_meta'] = {
+            'origin': 'learned', 'when': _dt.datetime.now().isoformat(timespec='seconds'),
+            'gauntlet': args.gauntlet, 'n': args.n, 'mc': args.mc, 'seed': args.seed,
+            'maximin': round(best_key[0], 3), 'winrates': best_wr,
+        }
+        out.write_text(json.dumps(payload, indent=2, ensure_ascii=False), encoding='utf-8')
+        print(f"\n-> salvo em {out} (origin=learned, nenhuma regressão relevante). "
               f"Ligar USE_EVAL_V2=True e re-medir com baseline_metrics.")
     else:
         print(f"\n-> NÃO salvo: ainda regride (maximin {best_key[0]:+.3f}). "

@@ -58,6 +58,29 @@ _ACTION_MAGNITUDE = {
     'play_from_trash': 50, 'play_card': 30, 'give_don': 20,
     'draw': 20, 'look_top_deck': 15, 'add_to_hand': 15, 'add_from_trash': 25,
 }
+# Vocabulário de PAPÉIS de carta (ideia 3 do PDF do usuário) — universal, por
+# AÇÃO/estrutura. Uma carta pode ter vários papéis. Enriquece o perfil sem
+# hardcode; a fonte é sempre a mecânica (card_effects_db), nunca prosa raspada.
+_ROLE_BY_ACTION = {
+    'look_top_deck': 'searcher', 'add_to_hand': 'searcher',
+    'draw': 'draw_engine',
+    'ko': 'removal', 'trash_character': 'removal',
+    'debuff_power': 'power_reduction',
+    'debuff_cost': 'cost_reduction', 'buff_cost': 'cost_reduction',
+    'rest_opp_character': 'rest', 'lock_opp_character_refresh': 'freeze',
+    'lock_opp_character_attack': 'freeze', 'lock_opp_don': 'don_denial',
+    'give_don_opp': 'don_denial',
+    'bounce': 'bounce', 'place_opp_character_bottom_deck': 'bounce',
+    'add_don': 'ramp', 'set_don_active': 'ramp', 'give_don': 'ramp',
+    'play_from_trash': 'recursion', 'add_from_trash': 'recursion',
+    'gain_life': 'life_manipulation', 'trash_life': 'life_manipulation',
+    'attack_life': 'life_manipulation',
+    'gain_blocker': 'blocker', 'keyword_blocker': 'blocker',
+    'immunity': 'protector', 'substitute_ko': 'protector',
+    'substitute_removal': 'protector', 'negate_effect': 'protector',
+    'trash_from_hand': 'trash_setup', 'trash_rest': 'trash_setup',
+}
+
 # Recursos "ruins" cuja condição INVERTE o sinal do termo (tomar/gastar = ativar)
 _INVERSION_CONDS = {'life_lte'}
 # RECURSOS acumuláveis reais que viram escadaria (whitelist — evita tratar
@@ -129,6 +152,7 @@ def build_profile_from_deck(deck: list[tuple[int, str]], db: dict) -> dict:
     disruption: dict[str, dict] = defaultdict(lambda: {'copias': 0, 'impacto': 0.0})
     # arquétipo (reusa vocabulário do deck_analyzer) -> pontuação por eixo
     arch_score: dict[str, float] = {AGGRO: 0.0, CONTROLE: 0.0, RAMP: 0.0, VIDA: 0.0}
+    roles: dict[str, int] = defaultdict(int)   # papel -> nº de cópias que o exercem
     n_cards = 0
 
     for qty, code in deck:
@@ -137,6 +161,20 @@ def build_profile_from_deck(deck: list[tuple[int, str]], db: dict) -> dict:
             continue
         if (c.get('type') or '').upper() != 'LEADER':
             n_cards += qty
+        # papéis da carta (ideia 3 do PDF): por ação/estrutura, uma vez por carta
+        card_roles = set()
+        for _t, _b in _iter_blocks(c):
+            for s in _b.get('steps', []):
+                r = _ROLE_BY_ACTION.get(s.get('action'))
+                if r:
+                    card_roles.add(r)
+        cnt_val = c.get('counter', 0) or 0
+        if cnt_val >= 2000:   card_roles.add('counter_2000')
+        elif cnt_val >= 1000: card_roles.add('counter_1000')
+        if c.get('cost', 0) >= 7 or c.get('power', 0) >= 8000:
+            card_roles.add('finisher')
+        for r in card_roles:
+            roles[r] += qty
         for trig, block in _iter_blocks(c):
             conds = block.get('conditions', {})
             steps = block.get('steps', [])
@@ -265,8 +303,12 @@ def build_profile_from_deck(deck: list[tuple[int, str]], db: dict) -> dict:
         'deck': '?',   # sobrescrito por build_profile(deck_name) no caminho do CLI
         'n_cards': n_cards,
         'archetype': {'dominante': dominante, 'mix': arch_mix},
+        'roles': dict(sorted(roles.items(), key=lambda kv: -kv[1])),
         'generic_axes': ['vida', 'board', 'mao', 'don', 'cobertura_counter', 'tempo'],
         'derived_axes': axes,
+        # camada de confiança (ideia 1 do PDF): estes pesos são PRIORS
+        # 'derived' das mecânicas; viram 'learned' só após a tunagem (item 5).
+        'provenance': 'derived',
         'nota_geral': ('generic_axes valem pra QUALQUER deck; derived_axes saem '
                        'da varredura deste deck. Pesos aqui são PRIORS de '
                        'cold-start (impacto×dependentes) — a tunagem por '
