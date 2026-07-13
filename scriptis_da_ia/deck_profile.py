@@ -79,6 +79,11 @@ _ROLE_BY_ACTION = {
     'immunity': 'protector', 'substitute_ko': 'protector',
     'substitute_removal': 'protector', 'negate_effect': 'protector',
     'trash_from_hand': 'trash_setup', 'trash_rest': 'trash_setup',
+    'gain_rush': 'rush', 'keyword_rush': 'rush',
+    'gain_double_attack': 'evasive', 'keyword_double_attack': 'evasive',
+    'gain_unblockable': 'evasive', 'keyword_unblockable': 'evasive',
+    'set_don_active': 'don_recovery', 'add_don': 'ramp',
+    'play_card': 'combo_piece', 'play_from_deck': 'combo_piece',
 }
 
 # Recursos "ruins" cuja condição INVERTE o sinal do termo (tomar/gastar = ativar)
@@ -171,8 +176,17 @@ def build_profile_from_deck(deck: list[tuple[int, str]], db: dict) -> dict:
         cnt_val = c.get('counter', 0) or 0
         if cnt_val >= 2000:   card_roles.add('counter_2000')
         elif cnt_val >= 1000: card_roles.add('counter_1000')
-        if c.get('cost', 0) >= 7 or c.get('power', 0) >= 8000:
-            card_roles.add('finisher')
+        # papéis por STAT/keyword da carta (fundamentado na mecânica)
+        ctype = (c.get('type') or '').upper()
+        power = c.get('power', 0) or 0
+        cost = c.get('cost', 0) or 0
+        if ctype == 'CHARACTER':
+            if cost >= 7 or power >= 8000:
+                card_roles.add('finisher')
+            elif power >= 6000:
+                card_roles.add('beater')     # corpo de ameaça real, não finisher
+        if c.get('has_trigger') or '[trigger]' in (c.get('text') or '').lower():
+            card_roles.add('trigger_payoff')
         for r in card_roles:
             roles[r] += qty
         for trig, block in _iter_blocks(c):

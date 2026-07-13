@@ -89,6 +89,31 @@ externa. **3 ideias baratas pra roubar (EM EXECUÇÃO):**
 
 Crawler vive em `knowledge/` (separado do motor). Saída consumida pelo gauntlet.
 
+## 🟩 "O BOT ENTENDE O DECK QUE PILOTA" — conexão feita 13/07 (pedido antigo do usuário)
+
+O `deck_profile` (arquétipo + eixos + PAPÉIS + win-con via game_plan) É o
+"bot analisa o deck no início e entende curva/combos/objetivo" que o usuário
+queria. Ex. Imu, derivado só das mecânicas: Controle; objetivo=Five Elders
+(10 DON, 7 trash); papéis=protector×24/searcher×16/removal×12/finisher×9;
+combo=reanimação. **Duas metades:**
+- METADE 1 (entender o deck, estática): ✅ PRONTA e universal.
+- METADE 2 (USAR o entendimento em cada decisão): ⚠️ parcial. Hoje alimenta:
+  turn order (1º/2º por curva), proteção da win-con, e — via tunagem em curso —
+  os eixos da evaluate_state. FALTA ligar: **mulligan** guiado pelo plano,
+  **sequenciamento de abertura** (ordem de jogar), combos de múltiplas cartas.
+
+**ROADMAP acordado com o usuário (13/07):**
+1. DEPOIS da tunagem: ligar o perfil ao **mulligan** e ao **sequenciamento de
+   abertura** (as 2 decisões que mais aproximam do "jogar o deck segundo o que
+   entendeu").
+2. ONGOING: **enriquecer os papéis ao máximo** — sempre mecanicamente
+   fundamentado (card_effects_db), nunca prosa. Cada papel novo deve GANHAR seu
+   lugar sendo consumido por uma decisão (mulligan/sequenciamento/eval), não
+   virar enfeite. Vocabulário-alvo (PDF): searcher, draw_engine, attacker/beater,
+   finisher, blocker, counter_1000/2000, removal, power_reduction, cost_reduction,
+   rest, freeze, don_denial, bounce, ramp, DON_recovery, life_manipulation,
+   trigger_payoff, trash_setup, recursion, combo_piece, protector, evasive, tech_card.
+
 ## Ordem de prioridade
 
 ### 0. Baseline medido — PRÉ-REQUISITO DE TUDO
