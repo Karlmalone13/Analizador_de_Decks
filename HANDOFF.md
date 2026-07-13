@@ -1,5 +1,51 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-13 (123) - Claude — SESSÃO GRANDE: núcleo de avaliação + busca (plano mestre)
+
+**LEIA PRIMEIRO:** [scriptis_da_ia/PLANO_AVALIACAO_E_BUSCA.md](scriptis_da_ia/PLANO_AVALIACAO_E_BUSCA.md)
+(doc vivo, tem tudo com detalhe) + memória `project_plano_avaliacao_busca.md`.
+Mudança de método decidida com o usuário: parar o whack-a-mole de heurística
+(pêndulos) e construir UMA função de avaliação global + perfil derivado do deck
++ busca + tunagem por self-play. Itens 0/1/2/5 avançados nesta sessão.
+
+**O QUE FOI ENTREGUE (tudo commitado):**
+1. **`evaluate_state_v2` LIGADA (`USE_EVAL_V2=True`) — item 1 CONCLUÍDO.** Régua
+   única (vida curva/board/mão/DON/cobertura/tempo + eixos do perfil). Validação
+   rigorosa MC=6/n=50, Imu-v2 vs opp-v1: winrate Krieg 0.38→0.40, Kid 0.34→0.36,
+   Teach 0.88→0.96, dano e %líder sobem nos 3, SEM regressão. Ponto de drop-in:
+   `_simulate_sequence_once` → `_evaluate_state_v2`.
+2. **Tunagem (item 5 núcleo): `tune_weights.py`** (coordinate-ascent, self-play
+   A=v2 vs B=v1, maximin sem-regressão, MC=4+early-stop). Achou dmg 120→180 e
+   counter_hand 6→9 (só 2 pesos, confirmou diagnóstico). Pesos em
+   `eval_weights.json` (com camada de confiança `_meta` origin=learned).
+3. **Perfil do deck `deck_profile.py` (item 2)** — UNIVERSAL (provado em 7+ decks:
+   Imu/Sakazuki/moria/Crocodile todos com reanimação, engines diferentes).
+   Deriva arquétipo + eixos (trash-staircase/reanimação-gargalo/inversão/
+   disrupção) + PAPÉIS de carta. Alimenta a evaluate_state.
+4. **Trilha conhecimento/dados**: `knowledge/crawl_decks.py`+`parse_decks.py`
+   baixaram os 103 guias oficiais → **55 decks completos** p/ gauntlet.
+   `crosscheck_archetypes.py` = QA (perfil derivado vs rótulo do PDF nos 55).
+5. **`card_taxonomy.py` = vocabulário ÚNICO** (arquétipo+disrupção+papéis+
+   magnitude+conds) compartilhado por deck_analyzer(front) e deck_profile(motor).
+   Acabou a duplicação. NÃO é 2º motor (dado, não decisão).
+6. **Gramática R4b (GAP1/GAP3 do crosscheck)**: disruption = denial-only
+   (102/102→51/102 decks), remoção genérica desinflada, negate ganha peso de
+   controle. NÃO afeta a evaluate_state (que só usa trash/reanim/inversão).
+7. **1º/2º ciente do perfil** (`choose_turn_order`), 3 ideias baratas do PDF
+   (papéis / camadas de confiança / DecisionTrace), avaliação de 3 repos MTG.
+
+**ESTADO / SALVAGUARDAS:** smoke_test 100%; v2 ligada e validada; front (api.py)
+importando; fix de gramática não invalida a v2. Pesos são globais/Imu-tunados
+por ora (cache per-deck = pipeline self-service do item 5, a fazer).
+
+**PRÓXIMO (roadmap comprometido, ver PLANO seção "O BOT ENTENDE O DECK"):**
+R1 mulligan guiado pelo perfil · R2 sequenciamento de abertura · R3 combos
+arbitrários (sinergia genérica; DUAS REGRAS: não individual, não 2º motor;
+convergir c/ synergy_states) · R4 enriquecer papéis · R4b resíduo (aggro-por-
+estatística p/ híbridos Vivi/Enel/Moria) · item 3 busca c/ resposta do oponente
+(quebra o teto do vetor-de-pesos-único) · item 5 full (tunagem per-deck cacheada).
+PENDÊNCIA ANTIGA: validar ao vivo a leva 7 (Mars blocker etc.) — reabrir jogo.
+
 ## 2026-07-12 (122) - Claude
 
 ### DTO com trash + deckCount (prioridade #1 do bloco 121) — IMPLEMENTADO, falta teste ao vivo
