@@ -102,17 +102,35 @@ combo=reanimação. **Duas metades:**
   os eixos da evaluate_state. FALTA ligar: **mulligan** guiado pelo plano,
   **sequenciamento de abertura** (ordem de jogar), combos de múltiplas cartas.
 
-**ROADMAP acordado com o usuário (13/07):**
-1. DEPOIS da tunagem: ligar o perfil ao **mulligan** e ao **sequenciamento de
-   abertura** (as 2 decisões que mais aproximam do "jogar o deck segundo o que
-   entendeu").
-2. ONGOING: **enriquecer os papéis ao máximo** — sempre mecanicamente
-   fundamentado (card_effects_db), nunca prosa. Cada papel novo deve GANHAR seu
-   lugar sendo consumido por uma decisão (mulligan/sequenciamento/eval), não
-   virar enfeite. Vocabulário-alvo (PDF): searcher, draw_engine, attacker/beater,
-   finisher, blocker, counter_1000/2000, removal, power_reduction, cost_reduction,
-   rest, freeze, don_denial, bounce, ramp, DON_recovery, life_manipulation,
-   trigger_payoff, trash_setup, recursion, combo_piece, protector, evasive, tech_card.
+**ROADMAP acordado com o usuário (13/07) — COMPROMETIDO, fazer DEPOIS da tunagem:**
+
+R1. **Mulligan guiado pelo plano do deck** — manter mãos que avançam o objetivo
+    (win-con/eixos/papéis do perfil), não regra genérica. Consome o `deck_profile`
+    + `compute_game_plan`. Ex: Imu quer manter searcher + peça de trash-setup;
+    descartar mão só de finishers impagáveis cedo.
+
+R2. **Sequenciamento de curva na abertura** — que ordem jogar as cartas nos
+    primeiros turnos, guiado pelo perfil (habilitar o eixo dominante primeiro:
+    trash-setup antes de reanimação; ramp antes da bomba). Hoje o Turn Planner
+    decide por simulação por turno, mas não tem "plano de abertura" ciente do
+    objetivo do deck.
+
+R3. **Combos ARBITRÁRIOS de múltiplas cartas** — hoje o perfil só captura o
+    motor PRINCIPAL (reanimation_bottleneck). Falta detecção GENÉRICA de sinergia
+    2-3 peças a partir das mecânicas: carta A habilita carta B (A enche trash → B
+    exige trash_gte; A dá DON → B custa DON alto; A reduz custo → B caro; A busca →
+    B é o alvo do filtro). Provável CONVERGÊNCIA com o front (`synergy_states.py`/
+    `tribal_cohesion.py` já detectam sinergia) — mesma jogada do arquétipo: reusar/
+    estender em vez de reinventar. Vira eixo/termo novo no perfil + na evaluate_state.
+
+R4. **ONGOING: enriquecer os papéis ao máximo** — sempre mecanicamente
+    fundamentado (card_effects_db), nunca prosa. Cada papel novo deve GANHAR seu
+    lugar sendo consumido por uma decisão (R1/R2/R3/eval), não virar enfeite.
+    Vocabulário-alvo (PDF): searcher, draw_engine, attacker/beater, finisher,
+    blocker, counter_1000/2000, removal, power_reduction, cost_reduction, rest,
+    freeze, don_denial, bounce, ramp, DON_recovery, life_manipulation,
+    trigger_payoff, trash_setup, recursion, combo_piece, protector, evasive, tech_card.
+    (1ª leva feita 13/07: +beater/rush/evasive/trigger_payoff/don_recovery/combo_piece.)
 
 ## Ordem de prioridade
 
