@@ -60,8 +60,14 @@ _ACTION_MAGNITUDE = {
 }
 # Recursos "ruins" cuja condição INVERTE o sinal do termo (tomar/gastar = ativar)
 _INVERSION_CONDS = {'life_lte'}
-# Condições que são só GATE (não viram eixo de recurso)
-_GATE_CONDS = {'leader_is', 'leader_type', 'only_field_type'}
+# RECURSOS acumuláveis reais que viram escadaria (whitelist — evita tratar
+# gate/flag numérica como se fosse motor de recurso, ex: leader_multicolor,
+# opp_turn_only, que apareciam como staircase espúria de peso ~0). Universal.
+_RESOURCE_CONDS = {
+    'trash_gte', 'trash_lte', 'don_gte', 'don_lte',
+    'don_on_field_gte', 'don_on_field_lte', 'deck_gte', 'deck_lte',
+    'hand_gte', 'events_in_trash_gte', 'chars_gte',
+}
 
 
 def _load_deck_codes(deck_name: str) -> list[tuple[int, str]]:
@@ -121,15 +127,14 @@ def build_profile(deck_name: str) -> dict:
                     arch_score[arche] += pts * rel * qty
 
             for k, v in conds.items():
-                if k in _GATE_CONDS:
-                    continue
                 if k in _INVERSION_CONDS:
                     node = inversions[k][v]
                     node['copias'] += qty
                     for a in step_actions:
                         node['effects'][a] += qty
                     continue
-                if isinstance(v, (int, float)):
+                # só recursos acumuláveis REAIS viram escadaria (whitelist)
+                if k in _RESOURCE_CONDS and isinstance(v, (int, float)):
                     node = resource_thresholds[k][v]
                     node['copias'] += qty
                     node['impacto'] += qty * block_impact
@@ -218,6 +223,9 @@ def build_profile(deck_name: str) -> dict:
                 'prior_weight': round(node['copias'] * 8.0, 1),
             })
 
+    # descarta eixos de peso desprezível (ruído estrutural — a ablação do
+    # item 5 mataria mesmo; não poluir o artefato que o usuário lê)
+    axes = [a for a in axes if a.get('prior_weight', 0) >= 5]
     axes.sort(key=lambda a: a.get('prior_weight', 0), reverse=True)
 
     # arquétipo normalizado (mix % que soma 100) — o "guarda-chuva" do deck,
