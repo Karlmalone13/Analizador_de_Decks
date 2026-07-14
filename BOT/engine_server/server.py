@@ -254,6 +254,21 @@ def _dto_to_gs(player: PlayerDto, turn: int):
     # (o antigo max(2, turn) fazia o bot anexar DON num ataque impossivel)
     gs.turn          = turn
     gs.global_turn   = turn
+
+    # full_deck_census (curva completa, base do posture() aggressive/control/
+    # midrange): achado 14/07 -- nunca era populado ao vivo, entao posture()
+    # sempre caia no fallback 'midrange' pra QUALQUER deck (Kid, Imu, tanto
+    # faz). Mesmo lookup lider->arquivo .deck ja usado pra OpponentModel
+    # (bridge.opponent_model_for_leader) -- aproximacao (nao garante bater se
+    # o usuario customizar a lista), mas e a MESMA decklist que ja usamos pra
+    # tudo mais. Sem match (lider desconhecido) fica None -- posture() ja
+    # degrada pra 'midrange' nesse caso, comportamento antigo preservado.
+    if gs.leader is not None:
+        cards = bridge.deck_cards_for_leader(gs.leader.code)
+        if cards:
+            from optcg_engine.decision_engine import deck_census
+            gs.full_deck_census = deck_census(cards)
+
     return gs
 
 

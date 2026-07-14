@@ -285,6 +285,31 @@ def test_salvar_blocker_desconta_on_ko_e_ataques_restantes() -> None:
           bool(ids))
 
 
+def test_full_deck_census_populado_offline_e_ao_vivo() -> None:
+    # ACHADO ESTRUTURAL 14/07 (usuario: "consertamos so o Imu, o bot nao sabe
+    # jogar outro deck"): full_deck_census (base do posture() aggressive/
+    # control/midrange, ja existente e bem calibrado) NUNCA era populado em
+    # lugar nenhum do motor -- so numa ferramenta de visualizacao isolada
+    # (replay_optcg.py). posture() sempre caia no fallback 'midrange' pra
+    # QUALQUER deck, offline e ao vivo. Fix: OPTCGMatch.__init__ popula pros
+    # dois lados (decklist completa ja conhecida); sim_bridge.
+    # deck_cards_for_leader (mesmo lookup do OpponentModel) alimenta o
+    # caminho ao vivo via server.py _dto_to_gs.
+    match = OPTCGMatch((real_card("OP13-079"), []), (mk("OP10-099", "Kid", card_type="LEADER", color="Red"), []))
+    check("OPTCGMatch popula full_deck_census pros dois lados (offline)",
+          match.state_a.full_deck_census is not None
+          and match.state_b.full_deck_census is not None)
+
+    cards = sim_bridge.deck_cards_for_leader("OP10-099")
+    if cards is None:
+        print("[SKIP] deck Kid.deck nao encontrado")
+        return
+    from optcg_engine.decision_engine import deck_census
+    census = deck_census(cards)
+    check("deck_cards_for_leader + deck_census populam o mesmo formato usado ao vivo",
+          census.get("total") == 50)
+
+
 def test_ciclo_do_lider_nao_trava_com_corpo_morto_ativo() -> None:
     # Deadlock real (log 13.08.24): "adia ciclo do lider: atacar com chars
     # ativos antes de trashar" so olhava LEGALIDADE (character_can_attack_now),
@@ -475,6 +500,7 @@ def main() -> int:
     test_avaliar_carta_prioriza_wincon_sobre_corpo_barato_vida_baixa()
     test_execucao_play_card_prioriza_wincon_sobre_searcher()
     test_salvar_blocker_desconta_on_ko_e_ataques_restantes()
+    test_full_deck_census_populado_offline_e_ao_vivo()
     test_ciclo_do_lider_nao_trava_com_corpo_morto_ativo()
     test_don_reservado_para_ativar_wincon_em_campo()
     test_opponent_model_ao_vivo_por_lider_e_fallback_seguro()

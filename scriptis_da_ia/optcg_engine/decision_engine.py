@@ -115,6 +115,7 @@ class _SimDeck(list):
         # retorna lista normal -- evita recursao.
         return list(self)
 from optcg_engine.opponent_model import OpponentModel
+from optcg_engine.deck_census import deck_census
 from dataclasses import dataclass, field
 from typing import List, Optional
 from copy import deepcopy
@@ -356,6 +357,45 @@ def compute_game_plan(p: 'GameState') -> dict:
         'win_con_code': win_con_code,
         'don_target': win_con_cost,
     }
+
+
+def deck_profile_for(p: 'GameState') -> dict | None:
+    """
+    Perfil do deck (arquetipo + eixos derivados) do jogador p -- MODULE-LEVEL
+    (nao metodo de OPTCGMatch) pra poder ser chamado tambem de DecisionEngine
+    (avaliar_carta, etc.), que nao tem acesso ao cache que so existia em
+    OPTCGMatch._turn_profile_for. Decisao 14/07 (pedido do usuario: parar de
+    so consertar o Imu -- o arquetipo universal (deck_profile.py, ja provado
+    em Imu/Krieg/Kid/Sakazuki/Moria) so era usado em turn_order e no
+    simulador OFFLINE (_evaluate_state_v2); NUNCA nas funcoes que realmente
+    decidem jogada/ataque AO VIVO (avaliar_carta etc.) -- por isso so decks
+    de combo/reanimacao (o padrao que compute_game_plan reconhece) sentiam
+    os consertos recentes.
+
+    Identidade estavel do deck = uniao das zonas proprias (mesma logica de
+    compute_game_plan; cartas proprias nao saem dessas zonas). Cacheado
+    DIRETO no GameState (p._profile_cache, nao no engine) -- estavel entre
+    as MUITAS instancias de DecisionEngine/OPTCGMatch criadas por decisao.
+    """
+    if _build_profile_from_codes is None:
+        return None
+    zonas = list(p.deck) + list(p.hand) + list(p.field_chars) + \
+        list(p.trash) + list(p.life)
+    if getattr(p, 'field_stage', None) is not None:
+        zonas.append(p.field_stage)
+    if p.leader is not None:
+        zonas.append(p.leader)
+    codes = [c.code for c in zonas]
+    sig = tuple(sorted(codes))
+    cache = getattr(p, '_profile_cache', None)
+    if cache is not None and cache[0] == sig:
+        return cache[1]
+    try:
+        prof = _build_profile_from_codes(codes)
+    except Exception:
+        prof = None
+    p._profile_cache = (sig, prof)
+    return prof
 
 
 # ===========================================================================
@@ -6734,6 +6774,18 @@ class OPTCGMatch:
         self.state_b = GameState(leader=deepcopy(leader_b),
                                  deck=[deepcopy(c) for c in cards_b])
 
+        # full_deck_census (curva completa do deck, base do posture()
+        # aggressive/control/midrange): achado 14/07 (pedido do usuario --
+        # parar de so consertar o Imu) -- este campo NUNCA era populado em
+        # lugar nenhum do motor (so em replay_optcg.py, uma ferramenta de
+        # visualizacao isolada). posture() SEMPRE caia no fallback 'midrange'
+        # pra QUALQUER deck, sempre, offline e ao vivo -- a logica aggressive/
+        # control ja existia e ja era boa (curva calibrada com decks reais do
+        # Limitless), so nunca recebia dado nenhum. Aqui e trivial: a decklist
+        # completa ja e conhecida (cards_a/cards_b).
+        self.state_a.full_deck_census = deck_census(cards_a)
+        self.state_b.full_deck_census = deck_census(cards_b)
+
         if random.random() < 0.5:
             self.state_a.is_first = True
             self.state_b.is_first = False
@@ -8111,31 +8163,10 @@ class OPTCGMatch:
         return float(sum(m[1:min(n, len(m) - 1) + 1]))
 
     def _turn_profile_for(self, p) -> dict | None:
-        """
-        Perfil do deck (eixos + pesos) do jogador p. Identidade estável do
-        deck = união das zonas próprias (mesma lógica do compute_game_plan;
-        cartas próprias não saem dessas zonas). Cacheado por assinatura de
-        códigos no engine — recomputa só se o pool mudar (não muda mid-game).
-        """
-        if _build_profile_from_codes is None:
-            return None
-        zonas = list(p.deck) + list(p.hand) + list(p.field_chars) + \
-            list(p.trash) + list(p.life)
-        if getattr(p, 'field_stage', None) is not None:
-            zonas.append(p.field_stage)
-        if p.leader is not None:
-            zonas.append(p.leader)
-        codes = [c.code for c in zonas]
-        sig = tuple(sorted(codes))
-        cache = getattr(self, '_profile_cache', None)
-        if cache is not None and cache[0] == sig:
-            return cache[1]
-        try:
-            prof = _build_profile_from_codes(codes)
-        except Exception:
-            prof = None
-        self._profile_cache = (sig, prof)
-        return prof
+        """Compatibilidade: delega pro modulo (deck_profile_for), que cacheia
+        no proprio GameState -- assim DecisionEngine.avaliar_carta usa o
+        MESMO cache sem precisar de acesso a instancia de OPTCGMatch."""
+        return deck_profile_for(p)
 
     def _derived_axes_value(self, p, profile) -> float:
         """

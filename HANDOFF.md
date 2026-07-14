@@ -1,5 +1,65 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-14 (141) - Claude - CORRECAO ESTRUTURAL: posture() nunca recebia dado de deck algum (nem offline nem ao vivo, pra NENHUM deck)
+
+**Contexto:** usuario expressou frustracao real e legitima -- "sinto que nada
+do que fizemos cumpre os objetivos do projeto... se o bot trocar de deck ele
+nao sabe jogar, nao da pra ficar consertando deck por deck". Pediu solucao
+DEFINITIVA, nao mais um patch pontual. Investigacao (nao suposicao) achou a
+causa: os consertos recentes (avaliar_carta/`_score_to_play` win-con bonus)
+sao genericos no CODIGO (zero nome de carta) mas SO produzem efeito pra
+decks com o padrao especifico que `compute_game_plan` reconhece (combo de
+reanimacao) -- Kid (deck de Arthur nas 2 ultimas partidas, bot jogando)
+nao tem esse padrao, entao nunca sentiu nenhum dos consertos.
+
+**Achado MAIOR (nao era so isso):** `posture()` (o classificador aggressive/
+control/midrange que JA EXISTE, ja bem desenhado, calibrado com decks reais
+do Limitless, e alimenta o bloco de "Ajuste por postura" de `avaliar_carta`
++ `analysis_priority()` etc.) depende de `GameState.full_deck_census` --
+campo que **NUNCA era populado em lugar nenhum do motor**, nem em
+`OPTCGMatch.__init__` (offline/self-play/gauntlet/tunagem) nem em
+`server.py._dto_to_gs` (ao vivo) -- SO em `replay_optcg.py`, uma ferramenta
+de VISUALIZACAO isolada, nunca usada pelas decisoes de verdade. Resultado:
+`posture()` SEMPRE caia no fallback `'midrange'`, pra QUALQUER deck,
+offline E ao vivo, esta sessao inteira e todas as anteriores. Nao e "so
+Imu" -- e um buraco estrutural que afetava TODAS as decisoes de TODOS os
+decks, sempre.
+
+**Fix (2 pontas, ambas triviais depois de achado o buraco):**
+1. `OPTCGMatch.__init__`: popula `state_a.full_deck_census`/
+   `state_b.full_deck_census` via `deck_census(cards_a/cards_b)` -- a
+   decklist completa ja e conhecida ali, zero lookup necessario.
+2. `server.py._dto_to_gs` (ao vivo): usa o MESMO lookup lider->`.deck` ja
+   construido pro `OpponentModel` (bloco 137) -- extrai
+   `sim_bridge.deck_cards_for_leader(leader_code)` (refatorado de
+   `opponent_model_for_leader` pra reuso) e popula o census. Mesma
+   aproximacao/ressalva de sempre: nao garante bater se o usuario
+   customizar a lista, mas e a MESMA decklist ja usada em tudo mais.
+
+**Nuance importante pro usuario saber:** o Kid.deck ESPECIFICO que esta no
+banco classificou como **'control'** (curva media 2.6, mas 18% custo>=6
+estoura o limiar), NAO 'aggressive' como a intuicao sugeria. Isso NAO
+invalida o fix -- antes o campo simplesmente NUNCA recebia dado nenhum
+(sempre None -> sempre midrange); agora recebe dado REAL, seja qual for o
+resultado. Mas significa que o sintoma exato (board vazio, so lider
+atacando) pode nao sumir so com isso -- pode precisar de investigacao
+adicional especifica do Kid (ex: o bug do Black Rope Dragon Twister achado
+no mesmo dia, ainda sem causa raiz fechada) ou reavaliar os limiares de
+`deck_census.deck_profile()` pra esse deck em particular.
+
+**Validado:** `smoke_fast` (32 checks, 1 novo dirigido: census populado nos
+dois lados offline + pipeline live identico) + `smoke_test` amplo verdes.
+Testado end-to-end (choose_action real com census populado, nao so
+unidade). Server precisa reiniciar pra pegar o fix (nao fiz ainda -- proxima
+acao).
+
+**PROXIMO PASSO NATURAL (nao feito ainda):** medir se isso muda algo de
+verdade — rodar `baseline_metrics.py` Imu vs Kid ANTES/DEPOIS pra ver se
+`posture()` recebendo dado real move winrate/agressividade, e trazer o
+usuario pra outra rodada de partidas reais (agora COM o fix) pra confirmar
+ao vivo. Comparador de decisoes humanas (Imu) do usuario ainda pendente
+(bloco 140), nao esquecer.
+
 ## 2026-07-14 (140) - Claude - MUDANCA DE METODO combinada com o usuario + fix do parser (snapshot vazio)
 
 **Novo metodo de validacao (pedido do usuario 14/07):** em vez de caçar bug

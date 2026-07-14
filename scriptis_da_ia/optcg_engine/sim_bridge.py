@@ -249,6 +249,31 @@ def _leader_deck_index_build() -> dict[str, str]:
     return index
 
 
+_deck_cards_cache: dict[str, Optional[list]] = {}
+
+
+def deck_cards_for_leader(leader_code: str) -> Optional[list]:
+    """
+    Lista completa de cartas (sem o lider) do arquivo .deck cujo lider bate
+    com `leader_code`, ou None se nenhum .deck conhecido tiver esse lider.
+    Extraido de `opponent_model_for_leader` (14/07) pra ser reusado tambem
+    pra popular `full_deck_census` do PROPRIO bot ao vivo (server.py
+    _dto_to_gs) -- sem isso `posture()` (aggressive/control/midrange) nunca
+    recebia dado nenhum, nem ao vivo nem offline, pra NENHUM deck.
+    """
+    if leader_code in _deck_cards_cache:
+        return _deck_cards_cache[leader_code]
+    cards: Optional[list] = None
+    deck_name = _leader_deck_index_build().get(leader_code)
+    if deck_name:
+        try:
+            _leader, cards, _stage = load_sim_deck(deck_name)
+        except Exception:
+            cards = None
+    _deck_cards_cache[leader_code] = cards
+    return cards
+
+
 def opponent_model_for_leader(leader_code: str) -> Optional[OpponentModel]:
     """
     OpponentModel com a decklist REAL do arquivo .deck cujo lider bate com
@@ -258,14 +283,8 @@ def opponent_model_for_leader(leader_code: str) -> Optional[OpponentModel]:
     """
     if leader_code in _opponent_model_cache:
         return _opponent_model_cache[leader_code]
-    model: Optional[OpponentModel] = None
-    deck_name = _leader_deck_index_build().get(leader_code)
-    if deck_name:
-        try:
-            _leader, cards, _stage = load_sim_deck(deck_name)
-            model = OpponentModel(full_decklist=cards)
-        except Exception:
-            model = None
+    cards = deck_cards_for_leader(leader_code)
+    model = OpponentModel(full_decklist=cards) if cards else None
     _opponent_model_cache[leader_code] = model
     return model
 
