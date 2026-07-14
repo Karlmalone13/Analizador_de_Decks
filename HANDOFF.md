@@ -1,5 +1,47 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-14 (140) - Claude - MUDANCA DE METODO combinada com o usuario + fix do parser (snapshot vazio)
+
+**Novo metodo de validacao (pedido do usuario 14/07):** em vez de caçar bug
+log a log (o que temos feito ha varias sessoes), o usuario vai jogar 2
+partidas pilotando o IMU ele mesmo (nao o bot) e mandar os logs. Objetivo:
+simular as MESMAS partidas com o engine e medir se o bot teria tomado pelo
+menos 80% das MESMAS decisoes que o usuario tomou -- so DEPOIS listar as
+diferencas e decidir se regula o motor. Muito mais rigoroso que o que
+vinhamos fazendo (achar 1 decisao ruim por vez via inspecao manual).
+
+**Pre-requisito resolvido antes do usuario jogar:** `parse_combat_log.py`
+tinha um bug real que inviabilizava a comparacao -- a maioria dos
+snapshots (Hand/Board/Trash/Life) do jogo vem com TAG VAZIA (`[] Hand:
+[...]`, nao `[You] Hand:`), e a regex antiga (`(.+?)`, 1+ char) nunca
+casava tag vazia, entao o campo `snapshot` de cada turno saia SEMPRE
+vazio (`{}`), inviabilizando reconstruir o estado do jogo turno a turno.
+
+**Fix (2 partes):**
+1. `RE_HAND/BOARD/TRASH/LIFE`: `(.+?)` -> `(.*?)` (aceita tag vazia).
+2. Atribuicao de DONO pra tag vazia: tentei por POSICAO (par alterna
+   You/Opponent) primeiro -- **deu resultado INVERTIDO num teste real**
+   (o par logo apos o mulligan sai numa ordem, os pares seguintes saem na
+   ordem OPOSTA -- nao e fixo). Fix real: `_build_known_codes` escaneia
+   TODAS as linhas com tag REAL (Deploy/Draw/Attack, que sempre tem tag)
+   e monta o conjunto de codigos de carta ja vistos de cada lado; blocos
+   de snapshot sem tag sao atribuidos por CRUZAMENTO (qual lado tem mais
+   codigos em comum com o bloco), com alternancia posicional so como
+   fallback de ultimo recurso (empate/bloco sem cruzamento nenhum).
+
+**Validado:** testado em 3 logs reais (10/10 turnos com snapshot em cada,
+antes 0/10) — atribuicao conferida manualmente (You=Kid com cartas OP10-xxx,
+Opponent=Imu com cartas OP13-xxx, batendo com o cabecalho). `smoke_fast`/
+`smoke_test` (nao tocam este arquivo, mas rodados por seguranca) verdes.
+
+**PROXIMO PASSO (em andamento):** construir o comparador propriamente dito
+-- dado um log real onde o USUARIO pilotou o Imu, reconstruir o GameState
+antes de cada decisao dele (play/attack/etc, usando os snapshots agora
+confiaveis) e perguntar ao engine o que ELE escolheria no mesmo ponto,
+comparando com o que o usuario realmente fez. Ainda nao commitado/pronto
+nesta sessao -- aguardando os 2 logs do usuario pra validar contra caso
+real.
+
 ## 2026-07-14 (139) - Claude - 3a copia do bug de win-con achada (a REAL causa do combo nunca ativar) + blocker-save agora desconta on_ko/ataques restantes
 
 Log `Eustass.Captain.Kid-Y_x_Imu-B_2026-07-14T14.16.10`. Usuario confirmou

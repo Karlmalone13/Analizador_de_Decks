@@ -99,10 +99,17 @@ RE_FAILS    = re.compile(r'^Attack Fails')
 RE_DISCARD  = re.compile(r'^\[(.+?)\] Discard (.+?) ' + _CR + r' for Counter')
 RE_EFFECT   = re.compile(r'^\[(.+?)\] (.+?) ' + _CR + r': (.+)')
 RE_END      = re.compile(r'^\[(.+?)\] End Turn')
-RE_HAND     = re.compile(r'^\[(.+?)\] Hand: \[(.*?)\]')
-RE_BOARD    = re.compile(r'^\[(.+?)\] Board: \[(.*?)\]')
-RE_TRASH    = re.compile(r'^\[(.+?)\] Trash: \[(.*?)\]')
-RE_LIFE     = re.compile(r'^\[(.+?)\] Life: (\d+)')
+# Tag do jogador nestas 4 vem VAZIA (`[] Hand: [...]`) na maioria dos
+# snapshots do jogo -- achado 14/07 ao construir o comparador de decisao
+# humana: `(.+?)` (1+ char) nunca casava `[]`, entao _collect_snap parava
+# no PRIMEIRO snapshot de cada bloco (nunca eram 4 linhas coletadas) e o
+# campo `snapshot` de cada turno saia vazio. `(.*?)` (0+ char) aceita os
+# dois formatos; a atribuicao do dono (tag vazia) e feita por POSICAO em
+# _parse_snap (blocos de 4 linhas alternam You/Opponent -- ver ali).
+RE_HAND     = re.compile(r'^\[(.*?)\] Hand: \[(.*?)\]')
+RE_BOARD    = re.compile(r'^\[(.*?)\] Board: \[(.*?)\]')
+RE_TRASH    = re.compile(r'^\[(.*?)\] Trash: \[(.*?)\]')
+RE_LIFE     = re.compile(r'^\[(.*?)\] Life: (\d+)')
 RE_CHOSE    = re.compile(r'^\[(.+?)\] Chose to go (First|Second)')
 RE_DREW_RAW = re.compile(r'^\[(.+?)\] Drew card from deck: .+? \["([A-Z0-9]+-\d+)">')
 RE_CARD_REF = re.compile(r'"([A-Z0-9]+-\d+)">')   # qualquer referencia a codigo no log
@@ -156,6 +163,7 @@ def parse_log(log_path: str) -> tuple:
         raise ValueError('Nao encontrei 2 jogadores no log.')
 
     p1, p2 = players[0], players[1]
+    known_codes = _build_known_codes(lines, p1, p2)
 
     # 2. Blocos de turno
     turn_blocks = []
@@ -318,7 +326,7 @@ def parse_log(log_path: str) -> tuple:
                      if RE_HAND.match(l) or RE_BOARD.match(l)
                      or RE_TRASH.match(l) or RE_LIFE.match(l)]
                     + block['snap_lines'])
-        snap = _parse_snap(all_snap)
+        snap = _parse_snap(all_snap, p1, p2, known_codes)
 
         parsed_turns.append({
             'turn': t_idx + 1,
@@ -578,17 +586,83 @@ def _skip_snap(lines, start):
     return j
 
 
-def _parse_snap(snap_lines):
+def _build_known_codes(raw_lines, p1, p2):
+    """
+    Codigos de carta ja vistos com tag REAL ([You]/[Opponent], via Deploy/
+    Draw/Attack/etc, que sempre tem tag preenchida) -- usado por _parse_snap
+    pra atribuir os blocos de snapshot com tag VAZIA por CRUZAMENTO de
+    carta, nao posicao (achado 14/07: a ordem do par de snapshot NAO e fixa
+    -- o par logo apos o mulligan sai numa ordem, os pares seguintes saem
+    na ordem OPOSTA -- atribuicao posicional simples deu resultado
+    invertido num teste real).
+    """
+    known = {p1: set(), p2: set()}
+    for line in raw_lines:
+        for tag in (p1, p2):
+            if line.startswith(f'[{tag}]'):
+                known[tag].update(RE_CARD_REF.findall(line))
+                break
+    return known
+
+
+def _parse_snap(snap_lines, p1=None, p2=None, known_codes=None):
+    """
+    A maioria dos snapshots do jogo vem com tag VAZIA (`[] Hand: [...]`),
+    sempre em blocos de 4 linhas (1x Hand/Board/Trash/Life, ORDEM interna
+    varia) por jogador -- achado 14/07: sem atribuicao, esses blocos
+    ficavam colididos numa chave '' ou eram descartados (regex antiga nem
+    casava tag vazia). A ordem do PAR (quem vem primeiro) NAO e fixa entre
+    blocos -- por isso a atribuicao e por CRUZAMENTO de codigo de carta
+    contra `known_codes` (cartas ja vistas com tag real de cada lado),
+    nao por posicao. Fallback pra alternancia posicional so se nenhuma
+    carta do bloco bater com nenhum lado (bloco bem no inicio do jogo,
+    antes de qualquer acao tagueada).
+    """
+    known_codes = known_codes or {}
     snap = {}
+    bloco_linhas, bloco_dono_fixo = [], None
+    tag_atual, count_no_bloco = None, 0
+
+    def _flush(linhas, dono):
+        for line in linhas:
+            m = RE_HAND.match(line)
+            if m: snap.setdefault(dono, {})['hand']  = _codes(m.group(2)); continue
+            m = RE_BOARD.match(line)
+            if m: snap.setdefault(dono, {})['board'] = _codes(m.group(2)); continue
+            m = RE_TRASH.match(line)
+            if m: snap.setdefault(dono, {})['trash'] = _codes(m.group(2)); continue
+            m = RE_LIFE.match(line)
+            if m: snap.setdefault(dono, {})['life']  = int(m.group(2))
+
     for line in snap_lines:
-        m = RE_HAND.match(line)
-        if m: snap.setdefault(m.group(1), {})['hand']  = _codes(m.group(2)); continue
-        m = RE_BOARD.match(line)
-        if m: snap.setdefault(m.group(1), {})['board'] = _codes(m.group(2)); continue
-        m = RE_TRASH.match(line)
-        if m: snap.setdefault(m.group(1), {})['trash'] = _codes(m.group(2)); continue
-        m = RE_LIFE.match(line)
-        if m: snap.setdefault(m.group(1), {})['life']  = int(m.group(2))
+        m = RE_HAND.match(line) or RE_BOARD.match(line) or RE_TRASH.match(line) or RE_LIFE.match(line)
+        if not m:
+            continue
+        tag = m.group(1)
+        if tag:
+            _flush([line], tag)
+            continue
+
+        bloco_linhas.append(line)
+        count_no_bloco += 1
+        if count_no_bloco == 4:
+            codigos_bloco = set()
+            for l in bloco_linhas:
+                codigos_bloco.update(RE_CARD_REF.findall(l) or _codes(
+                    (RE_HAND.match(l) or RE_BOARD.match(l) or RE_TRASH.match(l)).group(2)
+                ) if (RE_HAND.match(l) or RE_BOARD.match(l) or RE_TRASH.match(l)) else [])
+            score_p1 = len(codigos_bloco & known_codes.get(p1, set()))
+            score_p2 = len(codigos_bloco & known_codes.get(p2, set()))
+            if score_p1 != score_p2:
+                dono = p1 if score_p1 > score_p2 else p2
+            else:
+                # empate (ou bloco sem cruzamento nenhum): alterna por
+                # posicao como ultimo recurso
+                tag_atual = p1 if (tag_atual is None or tag_atual == p2) else p2
+                dono = tag_atual
+            _flush(bloco_linhas, dono)
+            bloco_linhas, count_no_bloco = [], 0
+
     return snap
 
 
