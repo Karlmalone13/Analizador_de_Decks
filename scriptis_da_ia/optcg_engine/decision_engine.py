@@ -45,6 +45,26 @@ USE_EVAL_V2 = True    # LIGADA 13/07: validação rigorosa (MC=6, n=50, Imu-v2 v
 # (tune_weights.py) baixa pra 4 pra acelerar a BUSCA (a validação final volta
 # a 6). Knob global — não muda a régua, só o custo da simulação.
 PLANNER_MC_SAMPLES = 6
+
+# ── busca prof.2 / resposta do oponente (item 3 do PLANO_AVALIACAO_E_BUSCA.md) ─
+# Depois de simular MINHA linha ate o fim do turno, simula o TURNO INTEIRO de
+# resposta do oponente (proprio engine, modo GULOSO -- ver _play_turn_greedy,
+# sem aninhar main_phase/Monte Carlo: evitaria explosao K x MC x K x MC) antes
+# de avaliar. E o que torna visivel "ataquei seco -> ele countera barato e
+# devolve" vs "anexei DON -> passa/drena counter", que a foto no fim do MEU
+# turno sozinha nao capta. Knob global, mesmo padrao do USE_EVAL_V2 -- liga por
+# padrao pro simulador OFFLINE (self-play/gauntlet/tunagem), onde o
+# OpponentModel tem decklist REAL dos dois lados. NAO esta fiado no caminho AO
+# VIVO ainda (choose_action/sim_bridge): o /decide hoje nao chama
+# _simulate_sequence_once nenhuma vez (decide so pelo score imediato de
+# _generate_and_score_actions) porque o OPTCGMatch ao vivo (server.py
+# _get_match) usa um deck PLACEHOLDER pros dois lados (so pra ter a
+# maquinaria) -- ligar a busca ali com esse deck errado geraria previsao de
+# mao/vida do oponente LIXO, podendo piorar decisao ao vivo. Fio pendente
+# documentado no TODO/HANDOFF: precisa de decklist REAL do oponente
+# server-side (registro por partida ou lookup leader->arquivo .deck) antes de
+# vale a pena religar ao vivo.
+USE_OPPONENT_RESPONSE_SEARCH = True
 try:
     from deck_profile import build_profile_from_codes as _build_profile_from_codes
 except Exception:
@@ -8357,6 +8377,19 @@ class OPTCGMatch:
                 break
             if self._apply_action(acts[0], p2, opp2, ee2, eng2, verbose=False):
                 return SIMULATED_WIN_SCORE
+
+        # ITEM 3 do plano (busca prof.2): simula o TURNO INTEIRO de RESPOSTA
+        # do oponente (proprio engine dele, guloso — ver _play_turn_greedy)
+        # ANTES de avaliar. Sem isto a avaliacao so via a foto no fim do MEU
+        # turno, cega pra "ataquei seco -> ele countera barato e devolve" vs
+        # "anexei DON -> passa/drena counter" -- a passividade sistemica que
+        # o marco-zero mediu (don_por_atk baixo). `amostra` (mao/vida
+        # ficticia de opp2, ja aplicada acima) e a mesma usada na resposta —
+        # ficcao interna consistente, nao resorteia.
+        if USE_OPPONENT_RESPONSE_SEARCH:
+            if self._play_turn_greedy(opp2, p2):
+                return -SIMULATED_WIN_SCORE   # a resposta dele me mata -> linha ruim
+
         # config de avaliação POR JOGADOR (p é quem age): permite Imu usar v2 e
         # o oponente v1 na mesma partida — como o sistema per-deck vai operar
         # (cada deck tem sua régua/pesos). None = cai no global USE_EVAL_V2.
@@ -8417,7 +8450,15 @@ class OPTCGMatch:
             print('  -- Turno (Turn Planner: simula sequências) --')
 
         MAX_ACOES = 30
-        TOP_K = 6        # simula só as K ações mais promissoras (custo controlado)
+        # simula so as K acoes mais promissoras (custo controlado). Com a busca
+        # de resposta do oponente (item 3) LIGADA, cada simulacao agora inclui
+        # o turno INTEIRO de resposta dele -- medido 14/07: board cheio late-
+        # game fez 1 partida ir de 5s pra 147s com K=6/S=6 (explosao O(board²)
+        # por passo, multiplicada pelos dois turnos). Corta pro K≈3/S≈3 que o
+        # PROPRIO plano ja recomendava ("top-K≈3 linhas minhas... S≈3
+        # amostras") quando a busca de resposta esta ativa; K=6/S=6 (validado
+        # em 13/07 sem a resposta) continua valendo com a flag desligada.
+        TOP_K = 3 if USE_OPPONENT_RESPONSE_SEARCH else 6
         MIN_PLANNER_CANDIDATES = 3
         PLANNER_SCORE_WINDOW = 180
         n = 0
@@ -8501,7 +8542,9 @@ class OPTCGMatch:
                 continue
 
             model = self.model_for_a if p is self.state_a else self.model_for_b
-            n_monte_carlo = PLANNER_MC_SAMPLES
+            # mesmo corte de custo do TOP_K acima (ver comentario la): S≈3 com
+            # a busca de resposta ligada, S=6 (ja validado) sem ela.
+            n_monte_carlo = 3 if USE_OPPONENT_RESPONSE_SEARCH else PLANNER_MC_SAMPLES
             amostras_turno = [model.sample(opp, rng=random.Random()) for _ in range(n_monte_carlo)]
 
             melhor_acao = None
@@ -9116,6 +9159,39 @@ class OPTCGMatch:
             for t, evs in sorted(turns_detail.items())
         ]
         return result
+
+    def _play_turn_greedy(self, p: 'GameState', opp: 'GameState', max_steps: int = 6) -> bool:
+        """
+        Joga UM turno completo de `p` (refresh->draw->don->acoes) GULOSAMENTE:
+        sempre a acao de maior score IMEDIATO (_generate_and_score_actions),
+        SEM Monte Carlo e SEM aninhar main_phase. Item 3 do plano
+        (PLANO_AVALIACAO_E_BUSCA.md): usado por `_simulate_sequence_once` pra
+        simular a RESPOSTA do oponente depois da MINHA linha, com o PROPRIO
+        engine dele -- "modo guloso, sem aninhar" e explicito no plano
+        justamente pra evitar explosao (main_phase ja roda TOP_K x MC
+        simulacoes por decisao; chamar main_phase() de novo aqui multiplicaria
+        isso por turno de resposta simulado). Motor unico: mesma
+        _generate_and_score_actions/_apply_action que decide QUALQUER turno,
+        sem regua propria -- serve pra qualquer deck de qualquer lado.
+
+        Retorna True se `p` (quem esta jogando este turno) vence.
+        """
+        p.turn += 1
+        self.refresh_phase(p)
+        self.draw_phase(p)
+        self.don_phase(p)
+        engine = DecisionEngine(p, opp)
+        ee = EffectExecutor(p, opp)
+        for _ in range(max_steps):
+            acts = self._generate_and_score_actions(p, opp, engine)
+            if not acts or acts[0][0] < 0:
+                break
+            if self._apply_action(acts[0], p, opp, ee, engine, verbose=False):
+                return True
+        self.end_phase(p, opp)
+        for c in p.field_chars:
+            c.just_played = False
+        return False
 
     def play_turn(self, p: GameState, opp: GameState, verbose: bool = False) -> Optional[str]:
         self.global_turn += 1

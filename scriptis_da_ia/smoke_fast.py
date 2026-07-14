@@ -199,6 +199,42 @@ def test_shalria_na_mao_protegida_enquanto_precisa_de_trash() -> None:
           trash_value_com(0) > trash_value_com(8))
 
 
+def test_play_turn_greedy_opponent_response() -> None:
+    # Item 3 do plano (busca prof.2): _play_turn_greedy simula o turno de
+    # RESPOSTA do oponente (motor proprio, guloso, sem aninhar main_phase).
+    # Sanity funcional: joga a carta jogavel, avanca o turno, nao quebra --
+    # `me` precisa de VIDA REAL (default e [] = life_count 0), senao qualquer
+    # ataque do oponente "vence" trivialmente sem exercitar o loop de acoes.
+    opp = GameState(leader=mk("OP10-099", "Kid", power=5000, card_type="LEADER", color="Red"),
+                     don_available=0, don_deck=8, turn=2)
+    body = mk("OP10-111", "Corpo", power=5000, cost=2)   # cabe nos 2 DON do turno (nao-T1)
+    opp.hand = [body]
+    me = GameState(leader=mk("OP13-079", "Imu", power=5000, card_type="LEADER"), turn=2)
+    me.life = [real_card("OP13-080") for _ in range(4)]
+    match = OPTCGMatch((opp.leader, []), (me.leader, []))
+    won = match._play_turn_greedy(opp, me)
+    check("_play_turn_greedy nao quebra e avanca o turno do oponente",
+          opp.turn == 3 and not won)
+    check("_play_turn_greedy joga a carta jogavel disponivel (motor age de verdade)",
+          body in opp.field_chars)
+
+
+def test_play_turn_greedy_detecta_letal_do_oponente() -> None:
+    # Fio central do item 3: a simulacao do turno de RESPOSTA do oponente
+    # precisa enxergar quando ELE fecha letal contra MIM -- e o que
+    # _simulate_sequence_once usa (via _play_turn_greedy) pra punir (-SIMULATED_
+    # WIN_SCORE) uma linha minha que deixa o oponente com ataque letal pronto.
+    me = GameState(leader=real_card("OP13-079"))
+    me.life = [real_card("OP13-080")]   # 1 vida so, sem counter na mao
+    opp = GameState(leader=mk("OP10-099", "Kid", power=5000, card_type="LEADER", color="Red"),
+                    don_available=0, don_deck=8, turn=2)   # turn>1 pos-increment: pode atacar
+    opp.field_chars = [mk("OP10-111", "Ameaca", power=9000)]  # ativo, poder > minha vida
+    match = OPTCGMatch((opp.leader, []), (me.leader, []))
+    letal = match._play_turn_greedy(opp, me)
+    check("resposta do oponente com ameaca 9000 vs minha vida 1 fecha LETAL",
+          letal or me.life_count() == 0)
+
+
 def test_imu_waits_for_active_elder_attack() -> None:
     me = GameState(leader=real_card("OP13-079"), don_available=8)
     opp = GameState(leader=mk("OP11-021", "Jinbe", card_type="LEADER", color="Green"))
@@ -280,6 +316,8 @@ def main() -> int:
     test_counter_buff_vai_pro_lider_defensor_no_empate()
     test_draw_cost_trasha_corpo_morto_antes_da_mao()
     test_shalria_na_mao_protegida_enquanto_precisa_de_trash()
+    test_play_turn_greedy_opponent_response()
+    test_play_turn_greedy_detecta_letal_do_oponente()
     test_imu_waits_for_active_elder_attack()
     test_nusjuro_rush_at_trash_7()
     test_nusjuro_rush_known_in_hand_for_planner()

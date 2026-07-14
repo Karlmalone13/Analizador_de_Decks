@@ -258,6 +258,44 @@ simulações por `/decide` dentro do timeout de 3s — perfilar; se estourar, re
 K/S ao vivo, profundidade cheia só no auditor/tunagem.
 *Esforço: 1 sessão.*
 
+**STATUS 14/07 — NÚCLEO IMPLEMENTADO, OFFLINE (self-play/gauntlet/tunagem);
+LIVE AINDA NÃO LIGADO (ver ressalva abaixo).**
+- `OPTCGMatch._play_turn_greedy(p, opp)`: turno de resposta guloso (próprio
+  engine, sem Monte Carlo, sem aninhar `main_phase`) — exatamente o "modo
+  guloso, sem aninhar" do parágrafo acima.
+- `_simulate_sequence_once` agora, depois de simular a MINHA linha até o fim
+  do turno, chama `_play_turn_greedy(opp2, p2)` (a resposta dele) ANTES de
+  avaliar — se ele fecha letal na resposta, a linha recebe `-SIMULATED_
+  WIN_SCORE` (punição dura). Isso é o "ataquei seco → ele countera barato →
+  nota ruim" virando visível pra régua, em vez de só a foto no fim do meu
+  turno. Flag `USE_OPPONENT_RESPONSE_SEARCH` (mesmo padrão do `USE_EVAL_V2`).
+- **Custo medido e cortado**: 1a versão (K=6/S=6, max_steps=12) fez 1 partida
+  ir de 5s → 147s (board cheio late-game = O(board²) por passo, ao quadrado
+  com os dois turnos). Perfilado (cProfile) e corrigido: **K=3/S=3** quando a
+  flag está ligada (exatamente o "top-K≈3... S≈3 amostras" que o parágrafo
+  acima já previa) + `max_steps=6` na resposta. Resultado: **~5-15s/partida**
+  (era 5s sem a busca) — viável pro gauntlet offline. K=6/S=6 (validado em
+  13/07) continua valendo com a flag desligada.
+- Validado: `smoke_fast`/`smoke_test` verdes (19+ checks, incl. 3 novos
+  dirigidos: turno de resposta não quebra, joga carta real, detecta letal do
+  oponente corretamente). `baseline_metrics.py` roda ponta a ponta sem
+  exceção. **NÃO validado por winrate** — mesma ressalva dos blocos 131-133:
+  n pequeno é ruidoso demais; validação real é gauntlet n=50 (item 5).
+- **RESSALVA — por que NÃO está ligado no caminho AO VIVO ainda**: o
+  `OpponentModel` (mão/vida fictícia do oponente) exige a decklist REAL dele
+  (`full_decklist`); o `OPTCGMatch` do servidor ao vivo (`server.py
+  _get_match()`) usa um deck PLACEHOLDER pros dois lados só pra ter a
+  maquinaria de `_generate_and_score_actions` — ligar a busca ali leria
+  previsão de mão do oponente LIXO (deck errado), podendo PIORAR a decisão ao
+  vivo em vez de melhorar. Descoberta lateral relevante: o caminho AO VIVO
+  (`choose_action`/`/decide`) hoje **não tem NENHUM lookahead** — decide só
+  pelo score imediato de `_generate_and_score_actions`, sem sequer o Turn
+  Planner offline (que só roda dentro de `simulate()`/`main_phase()` do
+  self-play). Fio pendente pra religar ao vivo: decklist REAL do oponente
+  server-side (registro por partida, ou lookup leader→arquivo `.deck` já
+  existente no banco — os decks de teste têm nome de arquétipo, ex. Kid.deck,
+  Krieg.deck, que plausivelmente batem com o que humanos jogam).
+
 ### 4. Defesa pela mesma régua
 Counter/blocker via `eval(tomar o hit)` vs `eval(gastar counter X)` — aposenta
 as curvas manuais (12/65/150/250, mão gorda). Barato, sem simulação.

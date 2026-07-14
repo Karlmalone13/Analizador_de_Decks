@@ -1,5 +1,52 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-14 (134) - Claude - ITEM 3 do plano: busca de resposta do oponente (nucleo, offline)
+
+Decidido com o usuario 14/07: PAUSAR whack-a-mole de leak, atacar o lever
+estrutural. Detalhe completo/tecnico em
+[PLANO_AVALIACAO_E_BUSCA.md secao 3](scriptis_da_ia/PLANO_AVALIACAO_E_BUSCA.md).
+Resumo pra quem retomar:
+
+**O que foi construido:** `OPTCGMatch._play_turn_greedy` (motor unico, novo
+metodo) joga o turno de resposta do oponente com o PROPRIO engine dele, modo
+GULOSO (sem Monte Carlo, sem aninhar `main_phase` — evita explosao). Ligado em
+`_simulate_sequence_once`: depois de simular MINHA linha ate o fim do turno,
+simula a resposta INTEIRA dele antes de avaliar o estado — e o que faz "ataquei
+seco -> ele countera barato e devolve" virar visivel pra `evaluate_state`, em
+vez de so a foto no fim do meu turno (a passividade sistemica do marco-zero,
+`don_por_atk` baixo). Flag `USE_OPPONENT_RESPONSE_SEARCH=True`.
+
+**Custo: achado e corrigido na mesma sessao.** 1a versao explodiu — 1 partida
+foi de 5s pra 147s (perfilado com cProfile: O(board²) por passo de acao-
+geracao, ao quadrado por ter os DOIS turnos simulados, board cheio no late-
+game). Cortado pra K=3/S=3 (era K=6/S=6) + max_steps=6 na resposta — EXATAMENTE
+os numeros que o proprio texto do plano ja recomendava ("top-K≈3... S≈3
+amostras"), so nao estavam sendo respeitados. Resultado: ~5-15s/partida,
+comparavel ao baseline sem a busca. K=6/S=6 (ja validado 13/07) continua
+valendo com a flag desligada.
+
+**IMPORTANTE — achado lateral que muda o proximo passo:** o caminho AO VIVO
+(`/decide` -> `sim_bridge.choose_action`) **nao tem NENHUM lookahead hoje** —
+decide so pelo score imediato de `_generate_and_score_actions`, nunca chamou
+`_simulate_sequence_once`/`main_phase` (esses so rodam dentro do `simulate()`
+do self-play/gauntlet offline). E TAMBEM por isso a busca nova NAO foi ligada
+ao vivo ainda: o `OpponentModel` (mao ficticia do oponente) exige a decklist
+REAL dele, e o `OPTCGMatch` do server ao vivo usa um deck PLACEHOLDER pros
+dois lados (so pra ter a maquinaria) — ligar ali leria previsao de mao LIXO.
+Pendencia clara pro proximo passo: decklist real do oponente server-side
+(lookup leader->arquivo .deck existente no banco, ex. Kid.deck/Krieg.deck ja
+batem com o que os humanos jogam nos testes) ANTES de religar ao vivo.
+
+**Validacao:** smoke_fast (19 checks, 3 novos dirigidos: resposta nao quebra,
+joga carta real, detecta letal do oponente) + smoke_test amplo verdes.
+`baseline_metrics.py` roda ponta a ponta sem excecao. NAO validado por
+winrate ainda (n pequeno e ruidoso, mesma ressalva dos blocos 131-133) — isso
+e trabalho do item 5 (gauntlet n=50).
+
+**PROXIMO (nesta ordem):** (a) decklist real do oponente ao vivo -> religar a
+busca no `/decide`; (b) item 4 (defesa pela mesma regua, barato, depois disto
+estabilizar); (c) gauntlet n=50 pra validar ganho de winrate de verdade.
+
 ## 2026-07-14 (133) - Claude - Shalria da MAO protegida (trash-filler) + turn order reinvestigado
 
 **Shalria na MAO (FIX, engine):** o efeito dela (on_play trash_rest+trash_from_hand)
