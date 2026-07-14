@@ -242,6 +242,33 @@ def test_avaliar_carta_prioriza_wincon_sobre_corpo_barato_vida_baixa() -> None:
           eng.avaliar_carta(five) > eng.avaliar_carta(nos))
 
 
+def test_opponent_model_ao_vivo_por_lider_e_fallback_seguro() -> None:
+    # Item 3 ligado AO VIVO (14/07): lookup do .deck real por codigo do lider
+    # (os decks de teste sao nomeados por arquetipo -- Kid.deck, Krieg.deck)
+    # alimenta o OpponentModel que o offline sempre teve. Kid.deck precisa
+    # existir no banco de decks pra este check ter sentido.
+    deck_path = Path(r"E:\Games\OnePieceSimulador\Builds_Windows\Decks\Kid.deck")
+    if not deck_path.exists():
+        print("[SKIP] deck Kid.deck nao encontrado")
+        return
+    model = sim_bridge.opponent_model_for_leader("OP10-099")
+    check("opponent_model_for_leader acha o Kid.deck real (50 cartas) pelo lider",
+          model is not None and len(model.full_decklist) == 50)
+    check("lider desconhecido cai em None (busca fica indisponivel, nao quebra)",
+          sim_bridge.opponent_model_for_leader("ZZ99-999") is None)
+
+    me = GameState(leader=real_card("OP13-079"), don_available=5, turn=3)
+    me.hand = [real_card("OP13-083"), real_card("OP13-089")]
+    me.life = [real_card("OP13-080") for _ in range(4)]
+    opp = GameState(leader=mk("OP10-099", "Kid", card_type="LEADER", color="Red"), turn=3)
+    opp.life = [real_card("OP13-080") for _ in range(4)]
+    match = OPTCGMatch((me.leader, []), (opp.leader, []))
+    action = sim_bridge.choose_action(me, opp, match, timeout=3.0,
+                                      allowed_types={"play", "attack", "attach_don", "activate"})
+    check("choose_action com busca ao vivo retorna uma acao valida (nao None)",
+          action is not None)
+
+
 def test_play_turn_greedy_opponent_response() -> None:
     # Item 3 do plano (busca prof.2): _play_turn_greedy simula o turno de
     # RESPOSTA do oponente (motor proprio, guloso, sem aninhar main_phase).
@@ -361,6 +388,7 @@ def main() -> int:
     test_shalria_na_mao_protegida_enquanto_precisa_de_trash()
     test_debuff_when_attacking_mira_o_defensor_que_vira_o_combate()
     test_avaliar_carta_prioriza_wincon_sobre_corpo_barato_vida_baixa()
+    test_opponent_model_ao_vivo_por_lider_e_fallback_seguro()
     test_play_turn_greedy_opponent_response()
     test_play_turn_greedy_detecta_letal_do_oponente()
     test_imu_waits_for_active_elder_attack()

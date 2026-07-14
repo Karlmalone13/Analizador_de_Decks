@@ -1,5 +1,62 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-14 (137) - Claude - ITEM 3 LIGADO AO VIVO: busca de resposta do oponente no /decide
+
+Log `Eustass.Captain.Kid-Y_x_Imu-B_2026-07-14T12.39.23`: usuario ganhou facil,
+bot "sem counter na mao". Investigacao (sem fix pontual — achado estrutural):
+o bot atacou 6x, so 1 conectou (5 bloqueadas/counteradas), tomou 4 hits — nao
+foi ma gestao de recurso (os counters usados foram TODOS justificados por vida
+critica), foi FALTA DE PRESSAO: o mesmo padrao "ataca seco -> ele countera
+barato" que o item 3 (bloco 134) foi desenhado pra resolver, mas que so
+existia OFFLINE ate agora. Usuario pediu pra ligar ao vivo.
+
+**O que destravava (documentado no bloco 134):** `OpponentModel` (mao/vida
+ficticia do oponente) exige a decklist REAL dele; o match ao vivo (`server.py
+_get_match`) usa deck PLACEHOLDER pros dois lados. Sem decklist real, ligar a
+busca daria previsao de mao LIXO.
+
+**Solucao (pedido explicito do usuario, aproximacao deliberada):** os decks de
+teste em `DECKS_DIR` sao nomeados por arquetipo (Kid.deck, Krieg.deck...) — os
+MESMOS que o usuario sempre usa pra jogar contra o bot, e os MESMOS que a
+tunagem/gauntlet offline ja usa. Lookup por CODIGO DO LIDER acha o `.deck`
+correspondente. Nao e garantido bater se o usuario customizar a lista, mas e
+infinitamente melhor que nao ter busca nenhuma.
+
+**Implementado em `sim_bridge.py` (transporte puro, decisao 100% no motor):**
+- `opponent_model_for_leader(leader_code)`: lookup lider->`.deck` (indice
+  lazy, 22 lideres encontrados nos 31 arquivos) + `OpponentModel` cacheado.
+  Lider desconhecido -> None (busca fica indisponivel, NUNCA quebra).
+- `choose_action` ganhou busca: coleta ate 2 candidatos elegiveis (era so o
+  1o); **fallback seguro IMEDIATO** — `result[0]` = candidato top ANTES de
+  tentar a busca, entao mesmo se o timeout cortar a espera pela busca, o
+  caller (server.py, que trata `None` como "encerra o turno" — pior que o
+  score imediato de sempre) ja tem uma acao valida. Se ha >1 candidato E
+  modelo disponivel, refina via `match._simulate_sequence_values` (MESMO
+  metodo do motor usado no `main_phase` offline — minha linha ate o fim do
+  turno + resposta do oponente + `_evaluate_state_v2`), K=2/S=2 (menor que
+  offline K=3/S=3 -- orcamento e por ACAO, nao por turno inteiro).
+- **Custo medido:** 0.1s (cenario simples) a 0.55s (board CHEIO late-game, o
+  mesmo cenario que custou 60-70s/TURNO no profiling offline do bloco 134) —
+  bem dentro do timeout de 3s do `/decide`. Diferenca: offline simula um TURNO
+  INTEIRO (varios pontos de decisao); ao vivo e UMA acao por chamada.
+
+**Hook sem-dois-motores:** `_simulate_sequence_values`/
+`_generate_and_score_actions`/`OpponentModel` adicionados ao
+`ENGINE_TOUCHPOINTS` (`scripts/hooks/pre-commit`, sincronizado em
+`.git/hooks/`) — essas chamadas ja existiam (nao mudaram), so ficaram
+invisiveis ao scanner por hunk (`-U0` corta contexto nao-modificado).
+
+**Validado:** `smoke_fast` (24 checks, 3 novos: lookup real do Kid.deck,
+fallback None em lider desconhecido, `choose_action` com busca retorna acao
+valida) + `smoke_test` amplo verdes. Testado end-to-end (funcao real, nao so
+unidade): board simples 0.1s, board cheio 0.55s, ambos escolhendo acao valida
+e a busca REFINANDO a escolha (score imediato != valor simulado, log
+`[ENG] busca refinou` confirma). Server reiniciado.
+
+**PENDENTE (proximo teste ao vivo do usuario):** confirmar que o `/decide`
+responde a tempo em partida real (nao so cenarios sinteticos) e que a
+qualidade de decisao melhora (mais ataques conectando, menos ataque seco).
+
 ## 2026-07-14 (136) - Claude - CRITICO resolvido: win-con nao competia no avaliar_carta AO VIVO
 
 Log `Eustass.Captain.Kid-Y_x_Imu-B_2026-07-14T12.02.31` (usuario testou o

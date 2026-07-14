@@ -258,8 +258,8 @@ simulações por `/decide` dentro do timeout de 3s — perfilar; se estourar, re
 K/S ao vivo, profundidade cheia só no auditor/tunagem.
 *Esforço: 1 sessão.*
 
-**STATUS 14/07 — NÚCLEO IMPLEMENTADO, OFFLINE (self-play/gauntlet/tunagem);
-LIVE AINDA NÃO LIGADO (ver ressalva abaixo).**
+**STATUS 14/07 — NÚCLEO OFFLINE + LIGADO AO VIVO NO /decide (mesmo dia,
+pedido explícito do usuário — ver bloco 137 do HANDOFF).**
 - `OPTCGMatch._play_turn_greedy(p, opp)`: turno de resposta guloso (próprio
   engine, sem Monte Carlo, sem aninhar `main_phase`) — exatamente o "modo
   guloso, sem aninhar" do parágrafo acima.
@@ -281,20 +281,22 @@ LIVE AINDA NÃO LIGADO (ver ressalva abaixo).**
   oponente corretamente). `baseline_metrics.py` roda ponta a ponta sem
   exceção. **NÃO validado por winrate** — mesma ressalva dos blocos 131-133:
   n pequeno é ruidoso demais; validação real é gauntlet n=50 (item 5).
-- **RESSALVA — por que NÃO está ligado no caminho AO VIVO ainda**: o
-  `OpponentModel` (mão/vida fictícia do oponente) exige a decklist REAL dele
-  (`full_decklist`); o `OPTCGMatch` do servidor ao vivo (`server.py
-  _get_match()`) usa um deck PLACEHOLDER pros dois lados só pra ter a
-  maquinaria de `_generate_and_score_actions` — ligar a busca ali leria
-  previsão de mão do oponente LIXO (deck errado), podendo PIORAR a decisão ao
-  vivo em vez de melhorar. Descoberta lateral relevante: o caminho AO VIVO
-  (`choose_action`/`/decide`) hoje **não tem NENHUM lookahead** — decide só
-  pelo score imediato de `_generate_and_score_actions`, sem sequer o Turn
-  Planner offline (que só roda dentro de `simulate()`/`main_phase()` do
-  self-play). Fio pendente pra religar ao vivo: decklist REAL do oponente
-  server-side (registro por partida, ou lookup leader→arquivo `.deck` já
-  existente no banco — os decks de teste têm nome de arquétipo, ex. Kid.deck,
-  Krieg.deck, que plausivelmente batem com o que humanos jogam).
+- **LIGADO AO VIVO (14/07, bloco 137)**: `OpponentModel` exige a decklist REAL
+  do oponente (`full_decklist`) — o `OPTCGMatch` do server ao vivo usa deck
+  PLACEHOLDER só pra ter a maquinaria, então faltava decklist real pra ligar
+  sem risco. Solução (aproximação deliberada, pedida pelo usuário): os decks
+  de teste em `DECKS_DIR` são nomeados por arquétipo (Kid.deck, Krieg.deck) —
+  os MESMOS que o usuário sempre usa pra jogar contra o bot e que a
+  tunagem/gauntlet já usa. `sim_bridge.opponent_model_for_leader(leader_code)`
+  faz o lookup lider→`.deck` (índice lazy, cacheado); líder desconhecido →
+  `None` (busca fica indisponível, nunca quebra). `choose_action` ganhou
+  fallback seguro IMEDIATO (guarda o candidato top ANTES de tentar a busca —
+  se o timeout cortar, ainda sai uma ação válida, nunca `None`/encerra turno)
+  e refina via `_simulate_sequence_values` (mesmo método do motor) quando há
+  >1 candidato e modelo disponível. K=2/S=2 (menor que offline K=3/S=3 —
+  orçamento é por AÇÃO, não por turno). Custo medido: 0.1s (simples) a 0.55s
+  (board cheio late-game, o mesmo cenário que custava 60-70s/TURNO offline) —
+  a diferença é que ao vivo é uma ação por chamada, não um turno inteiro.
 
 ### 4. Defesa pela mesma régua
 Counter/blocker via `eval(tomar o hit)` vs `eval(gastar counter X)` — aposenta

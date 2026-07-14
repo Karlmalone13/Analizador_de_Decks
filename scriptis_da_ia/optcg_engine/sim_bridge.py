@@ -29,6 +29,7 @@ from optcg_engine.decision_engine import (
     _load_analysis_db,
 )
 from optcg_engine.rules_facade import choose_highest_board_value
+from optcg_engine.opponent_model import OpponentModel
 
 DECKS_DIR = Path(r"E:\Games\OnePieceSimulador\Builds_Windows\Decks")
 CSV_PATH  = _SCRIPTS_DIR / "cards_rows.csv"
@@ -216,6 +217,59 @@ def can_execute_action(action: tuple, gs: GameState) -> tuple[bool, str]:
     return True, "ok"
 
 
+# ── OpponentModel ao vivo (item 3 do plano, ligacao 14/07) ───────────────────
+# O simulador OFFLINE (main_phase/_evaluate_state_v2) sempre teve a decklist
+# REAL dos dois lados (OpponentModel construido no __init__ do OPTCGMatch a
+# partir dos decks passados). O caminho AO VIVO nunca teve isso -- o match do
+# server (_get_match) usa um deck PLACEHOLDER pros dois lados so pra ter a
+# maquinaria (_generate_and_score_actions). Sem decklist real do oponente, ligar
+# a busca daria previsao de mao LIXO. Fix: os decks de teste em DECKS_DIR sao
+# nomeados por arquetipo (Kid.deck, Krieg.deck...) e o usuario sempre testa
+# contra esses mesmos decks conhecidos -- lookup por CODIGO DO LIDER acha o
+# arquivo .deck correspondente e usa a lista real dele. Aproximacao (nao e
+# GARANTIDO bater se o usuario customizar a lista), mas e a MESMA decklist que
+# a tunagem/gauntlet offline ja usa -- muito melhor que nao ter busca nenhuma.
+_leader_deck_index: dict[str, str] | None = None
+_opponent_model_cache: dict[str, Optional[OpponentModel]] = {}
+
+
+def _leader_deck_index_build() -> dict[str, str]:
+    global _leader_deck_index
+    if _leader_deck_index is not None:
+        return _leader_deck_index
+    index: dict[str, str] = {}
+    for name in list_decks():
+        try:
+            leader, _cards, _stage = load_sim_deck(name)
+        except Exception:
+            continue
+        if leader.code not in index:
+            index[leader.code] = name
+    _leader_deck_index = index
+    return index
+
+
+def opponent_model_for_leader(leader_code: str) -> Optional[OpponentModel]:
+    """
+    OpponentModel com a decklist REAL do arquivo .deck cujo lider bate com
+    `leader_code`, ou None se nenhum .deck conhecido tiver esse lider (busca
+    fica indisponivel pra esse oponente -- caller deve cair no score imediato,
+    nunca travar/piorar a decisao por falta de modelo).
+    """
+    if leader_code in _opponent_model_cache:
+        return _opponent_model_cache[leader_code]
+    model: Optional[OpponentModel] = None
+    deck_name = _leader_deck_index_build().get(leader_code)
+    if deck_name:
+        try:
+            _leader, cards, _stage = load_sim_deck(deck_name)
+            model = OpponentModel(full_decklist=cards)
+        except Exception:
+            model = None
+    _opponent_model_cache[leader_code] = model
+    return model
+
+
 def choose_action(gs: GameState, opp_gs: GameState,
                   match, timeout: float = 4.0,
                   allowed_types: Optional[set] = None,
@@ -241,9 +295,13 @@ def choose_action(gs: GameState, opp_gs: GameState,
     reoferecida indefinidamente, travando o turno em loop sem nunca
     tentar a próxima ação da lista.
     """
+    import random
     import threading
     result: list = [None]
     exclude_activate_codes = exclude_activate_codes or set()
+    SEARCH_TOP_K = 2
+    SEARCH_SAMPLES = 2
+    SEARCH_MAX_STEPS = 4
 
     def _run() -> None:
         try:
@@ -252,28 +310,65 @@ def choose_action(gs: GameState, opp_gs: GameState,
             print(f"[ENG] {len(actions)} acoes | hand={len(gs.hand)} don={gs.don_available} turn={gs.turn}", flush=True)
             if actions:
                 print(f"[ENG] top3: {[(a[0],a[1]) for a in actions[:3]]}", flush=True)
+
+            # Coleta os candidatos ELEGIVEIS (score>=0, tipo executavel, nao
+            # recusado este turno) na ordem do score imediato -- antes so o
+            # PRIMEIRO era guardado; agora ate SEARCH_TOP_K ficam disponiveis
+            # pra busca (item 3), sem mudar QUEM e elegivel.
+            candidatos = []
             for a in actions:
                 if a[0] < 0:
                     break
                 if a[1] == 'activate' and len(a) > 2 and getattr(a[2], 'code', None) in exclude_activate_codes:
                     continue
                 if allowed_types is None or a[1] in allowed_types:
-                    result[0] = a
-                    # Diagnostico de gerenciamento de mao (08/07: usuario
-                    # reportou o bot jogando cartas de counter alto custo
-                    # 1-2 ate ficar sem mao) -- so loga quando a mao ja
-                    # esta fina (<=3 ANTES desta jogada), pra nao poluir o
-                    # log em turnos normais. Numeros reais aqui permitem
-                    # auditar se a régua de preservacao de mao (hand<=3 em
-                    # _generate_and_score_actions) esta protegendo cartas
-                    # de counter alto o suficiente, em vez de so contar
-                    # cartas.
-                    if a[1] == 'play' and len(gs.hand) <= 3:
-                        c = a[2]
-                        print(f"[PLAY] mao fina ({len(gs.hand)} cartas): "
-                              f"jogou {c.code} custo={c.cost} counter={c.counter} "
-                              f"score={a[0]:.1f}", flush=True)
-                    break
+                    candidatos.append(a)
+                    if len(candidatos) >= SEARCH_TOP_K:
+                        break
+            if not candidatos:
+                return
+
+            # Fallback seguro IMEDIATO: mesmo que a busca abaixo nunca termine
+            # dentro do timeout (thread.join so para de ESPERAR, nao mata a
+            # thread), o CALLER ja tem uma acao valida -- nunca cai pra
+            # end_turn por causa do custo da busca (server.py trata None como
+            # "encerra o turno", pior que o score imediato de sempre).
+            result[0] = candidatos[0]
+            a = candidatos[0]
+            # Diagnostico de gerenciamento de mao (08/07: usuario reportou o
+            # bot jogando cartas de counter alto custo 1-2 ate ficar sem mao)
+            # -- so loga quando a mao ja esta fina (<=3 ANTES desta jogada),
+            # pra nao poluir o log em turnos normais.
+            if a[1] == 'play' and len(gs.hand) <= 3:
+                c = a[2]
+                print(f"[PLAY] mao fina ({len(gs.hand)} cartas): "
+                      f"jogou {c.code} custo={c.cost} counter={c.counter} "
+                      f"score={a[0]:.1f}", flush=True)
+
+            # ITEM 3 do plano: com >1 candidato de score proximo e decklist
+            # REAL do oponente disponivel (lookup por lider, ver
+            # opponent_model_for_leader), refina a escolha simulando a linha
+            # ate o fim do MEU turno + o turno de resposta dele (mesmo motor
+            # do main_phase offline: _simulate_sequence_values). K/S bem
+            # menores que o offline (2/2 vs 3/3) -- orcamento de /decide e por
+            # ACAO, nao por turno inteiro, mas o board late-game ja mostrou
+            # custo O(board²) no profiling de 14/07.
+            if len(candidatos) > 1:
+                model = opponent_model_for_leader(getattr(opp_gs.leader, 'code', ''))
+                if model is not None:
+                    amostras = [model.sample(opp_gs, rng=random.Random())
+                               for _ in range(SEARCH_SAMPLES)]
+                    melhor, melhor_valor = candidatos[0], None
+                    for cand in candidatos:
+                        valores = match._simulate_sequence_values(
+                            gs, opp_gs, cand, max_steps=SEARCH_MAX_STEPS, amostras=amostras)
+                        valor = sum(valores) / len(valores) if valores else -1e9
+                        if melhor_valor is None or valor > melhor_valor:
+                            melhor_valor = valor
+                            melhor = cand
+                    result[0] = melhor
+                    print(f"[ENG] busca refinou: {melhor[1]} (score imediato {melhor[0]:.1f}, "
+                          f"valor simulado {melhor_valor:.1f})", flush=True)
         except Exception as e:
             import traceback
             print(f"[ENG-ERR] {e}\n{traceback.format_exc()}", flush=True)
