@@ -1,5 +1,34 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-14 (135) - Claude - turn order: causa raiz FINAL + toggle P1/P2 + popup no bot
+
+**Causa raiz confirmada pelo USUARIO (fecha a investigacao dos blocos 122/123/
+131/133/134):** Solo vs Self **nao tem tela de cara-ou-coroa** — nao e o bot
+suprimindo nada, nao e o dado sendo perdido; o MODO simplesmente nao pergunta
+1o/2o (so faz sentido decidir isso contra um oponente de verdade). P1/P2 sao
+fixos desde o inicio da partida. **NAO HA MAIS O QUE INVESTIGAR NO ENGINE
+sobre isso.**
+
+**Feature pedida pelo usuario:** como nao da pra escolher 1o/2o por tela, a
+unica forma de TESTAR o bot nos dois papeis e trocar qual LADO (P1/P2) ele
+controla. Implementado no plugin (`BotDriver.cs`/`TurnOrderPatch.cs`, camada
+olhos/maos — zero logica de carta, so troca QUAL jogador o driver le/clica):
+
+1. `BotDriver.BotPlayerIndex` virou `static` (era `const`) — mutavel em tempo
+   real. `TurnOrderPatch.cs` foi corrigido pra ler o MESMO campo (tinha um
+   `const=0` DUPLICADO e proprio — ficaria dessincronizado assim que o toggle
+   fosse usado, achado ao consolidar).
+2. **Atalho Shift+P**: troca o bot entre P1/P2 a qualquer momento (mesmo
+   padrao do Shift+B ja existente pra ligar/desligar).
+3. **Popup permanente** (canto superior esquerdo, `OnGUI`): mostra `[Bot] P1/P2
+   — ATIVADO/DESATIVADO` + lembrete dos atalhos. Precisou adicionar a
+   referencia `UnityEngine.IMGUIModule` no `.csproj` (DLL ja existe na
+   instalacao do jogo, so faltava referenciar).
+
+**Build:** `dotnet build` 0 erros, DLL copiada automaticamente (timestamp
+11:39). **Pendente: usuario reabrir o jogo** (DLL nova) e testar Shift+P +
+o popup.
+
 ## 2026-07-14 (134) - Claude - ITEM 3 do plano: busca de resposta do oponente (nucleo, offline)
 
 Decidido com o usuario 14/07: PAUSAR whack-a-mole de leak, atacar o lever

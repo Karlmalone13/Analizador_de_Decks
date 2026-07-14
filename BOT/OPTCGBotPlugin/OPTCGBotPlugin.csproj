@@ -46,6 +46,10 @@
       <HintPath>E:\Games\OnePieceSimulador\Builds_Windows\OPTCGSim_Data\Managed\UnityEngine.InputLegacyModule.dll</HintPath>
       <Private>false</Private>
     </Reference>
+    <Reference Include="UnityEngine.IMGUIModule">
+      <HintPath>E:\Games\OnePieceSimulador\Builds_Windows\OPTCGSim_Data\Managed\UnityEngine.IMGUIModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
     <Reference Include="Newtonsoft.Json">
       <HintPath>E:\Games\OnePieceSimulador\Builds_Windows\OPTCGSim_Data\Managed\Newtonsoft.Json.dll</HintPath>
       <Private>false</Private>

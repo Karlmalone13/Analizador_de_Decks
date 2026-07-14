@@ -6,8 +6,6 @@ namespace OPTCGBotPlugin
     [HarmonyPatch(typeof(GameplayLogicScript), "WaitOnTurnSelection")]
     internal static class TurnOrderPatch
     {
-        private const int BotPlayerIndex = 0;
-
         private static void Postfix(GameplayLogicScript __instance)
         {
             if (__instance == null || __instance.e_GameStyle != GameStyle.SoloVSelf)
@@ -15,7 +13,11 @@ namespace OPTCGBotPlugin
             if (__instance.e_CurrentState != GameplayState.Start_WaitOnTurnOrder)
                 return;
 
-            var ps = __instance.Lps_Players[BotPlayerIndex];
+            // Le o MESMO indice que BotDriver usa (Shift+P troca os dois juntos)
+            // -- antes este arquivo tinha seu PROPRIO const=0 duplicado, que
+            // divergiria silenciosamente do BotDriver assim que o toggle novo
+            // fosse usado (achado ao consolidar 14/07).
+            var ps = __instance.Lps_Players[BotDriver.BotPlayerIndex];
             var codes = new List<string>();
             foreach (var lista in new[] { ps.Lgo_MyDeck, ps.Lgo_MyHand, ps.Lgo_MyLeader })
             {

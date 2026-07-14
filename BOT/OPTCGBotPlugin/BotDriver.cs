@@ -10,8 +10,15 @@ namespace OPTCGBotPlugin
     // entre acoes para as animacoes e o state machine resolverem.
     public class BotDriver : MonoBehaviour
     {
-        // Lado do bot em Lps_Players: 0 = "You" = baixo (LoadMyDeck)
-        public const int BotPlayerIndex = 0;
+        // Lado do bot em Lps_Players: 0 = "You" = baixo (LoadMyDeck), 1 = "Opponent"
+        // = cima. Solo vs Self NAO tem tela de cara-ou-coroa (achado real 14/07,
+        // usuario confirmou: a opcao de 1o/2o simplesmente nao existe nesse modo —
+        // Start_WaitOnTurnOrder so ocorre com um oponente de verdade decidindo o
+        // dado). Os dois lados (P1/P2) sao fixos desde o inicio da partida; pra
+        // testar o bot indo primeiro OU segundo, e preciso trocar QUAL lado ele
+        // controla — daqui o toggle Shift+P abaixo. static (nao const) pra poder
+        // mudar em tempo real; TurnOrderPatch.cs le o MESMO valor (nao duplicar).
+        public static int BotPlayerIndex = 0;
 
         // Liga/desliga o bot em tempo real (sem reiniciar o jogo nem trocar a
         // DLL) — pra jogar manualmente e printar telas de decisao sem o
@@ -20,6 +27,12 @@ namespace OPTCGBotPlugin
         // pausado no meio de uma acao. Atalho: Shift+B.
         private const KeyCode ToggleKey = KeyCode.B;
         private bool _botEnabled = true;
+
+        // Troca qual lado (P1/P2) o bot controla — pedido do usuario 14/07, pra
+        // poder simular o bot indo primeiro (impar) ou segundo (par) em Solo vs
+        // Self. Atalho: Shift+P. Seguro trocar a qualquer momento (o driver le
+        // BotPlayerIndex fresco todo frame, nao ha estado preso ao indice antigo).
+        private const KeyCode SwapSideKey = KeyCode.P;
 
         private const float ActionCooldown = 1.0f;
         private const int   MaxActionsPerTurn = 25;
@@ -47,6 +60,11 @@ namespace OPTCGBotPlugin
                 Plugin.Log.LogWarning($"[Bot] {(_botEnabled ? "ATIVADO" : "DESATIVADO")} (Shift+{ToggleKey})");
                 if (_botEnabled)
                     _cooldown = ActionCooldown;   // pausa curta ao reativar, evita agir no mesmo frame
+            }
+            if (shiftHeld && Input.GetKeyDown(SwapSideKey))
+            {
+                BotPlayerIndex = 1 - BotPlayerIndex;
+                Plugin.Log.LogWarning($"[Bot] agora controla P{BotPlayerIndex + 1} (Shift+{SwapSideKey})");
             }
 
             var gls = FindGls();
@@ -549,6 +567,25 @@ namespace OPTCGBotPlugin
             var go = GameObject.Find("GameplayLogic");
             _gls = go != null ? go.GetComponent<GameplayLogicScript>() : null;
             return _gls;
+        }
+
+        // Popup permanente (canto superior esquerdo) mostrando lado/estado do
+        // bot — pedido do usuario 14/07, pra conferir de relance se o bot esta
+        // em P1 ou P2 e ativado/desativado, sem precisar abrir o LogOutput.log.
+        // IMGUI simples (GUI.Label), sem dependencia nova; nao intercepta clique
+        // (nao ha botao real na tela, so texto) — zero risco de atrapalhar os
+        // cliques do proprio bot (BotExecutor) ou do jogador.
+        private void OnGUI()
+        {
+            string lado = $"P{BotPlayerIndex + 1}";
+            string estado = _botEnabled ? "ATIVADO" : "DESATIVADO";
+            Color corAntes = GUI.color;
+            GUI.color = _botEnabled ? Color.green : Color.red;
+            GUI.Box(new Rect(8, 8, 190, 46), "");
+            GUI.Label(new Rect(14, 10, 200, 20), $"[Bot] {lado} — {estado}");
+            GUI.color = Color.white;
+            GUI.Label(new Rect(14, 28, 220, 20), "Shift+B liga/desliga · Shift+P troca lado");
+            GUI.color = corAntes;
         }
     }
 }
