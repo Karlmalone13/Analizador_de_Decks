@@ -4658,6 +4658,22 @@ class EffectExecutor:
                 if f.get('is_blocker'):                 s += 30
                 if f.get('power_buff'):                 s += 20
                 if f.get('has_trigger'):                s += 10
+                # Carta CERTA do game_plan (a bomba do combo, ex: Five Elders):
+                # 3a copia do MESMO bug ja corrigido em avaliar_carta (14/07) e
+                # em order_target_candidates/own_hand (09/07) -- esta selecao
+                # (usada pela EXECUCAO real de qualquer 'play_card' dentro de
+                # QUALQUER trigger, incl. Empty Throne activate_main) nunca
+                # tinha sido tocada. Sem isso, um searcher generico (+40 de
+                # flag) batia a bomba de 12000 poder (board_value=12, zero
+                # flags) por larga margem -- achado ao vivo indireto 14/07
+                # (Empty Throne jogou Ju Peter em vez de Five Elders com
+                # ambos na mao). Generico via compute_game_plan, zero nome de
+                # carta.
+                try:
+                    if compute_game_plan(me).get('win_con_code') == c.code:
+                        s += 90
+                except Exception:
+                    pass
                 return s
 
             def _pior_para_trocar(field_chars):

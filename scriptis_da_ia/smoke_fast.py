@@ -242,6 +242,49 @@ def test_avaliar_carta_prioriza_wincon_sobre_corpo_barato_vida_baixa() -> None:
           eng.avaliar_carta(five) > eng.avaliar_carta(nos))
 
 
+def test_execucao_play_card_prioriza_wincon_sobre_searcher() -> None:
+    # 3a copia do mesmo bug (avaliar_carta 14/07, order_target_candidates/
+    # own_hand 09/07): _score_to_play, usada pela EXECUCAO real de QUALQUER
+    # 'play_card' dentro de QUALQUER trigger (incl. Empty Throne
+    # activate_main), nao tinha nocao de game_plan -- um searcher generico
+    # (Ju Peter, +40 de flag is_searcher) batia a bomba do deck (Five
+    # Elders, 12000 poder, zero flags) so por causa das flags. Achado ao
+    # vivo indireto 14/07: usuario reportou "nunca ativa o combo" -- rastreado
+    # ate aqui, a Empty Throne literalmente jogava a carta ERRADA da mao.
+    match = OPTCGMatch((real_card("OP13-079"), []), (mk("OP10-099", "Kid", card_type="LEADER", color="Red"), []))
+    gs = GameState(leader=real_card("OP13-079"), don_available=10)
+    gs.hand = [real_card("OP13-082"), real_card("OP13-084")]   # Five Elders + Ju Peter (searcher)
+    gs.field_stage = real_card("OP13-099")   # Empty Throne
+    opp = GameState(leader=mk("OP10-099", "Kid", card_type="LEADER", color="Red"))
+    ee = EffectExecutor(gs, opp)
+    ee.execute(gs.field_stage, "activate_main")
+    codes_no_campo = [c.code for c in gs.field_chars]
+    check("Empty Throne joga a win-con (Five Elders) em vez do searcher generico",
+          "OP13-082" in codes_no_campo and "OP13-084" not in codes_no_campo)
+
+
+def test_salvar_blocker_desconta_on_ko_e_ataques_restantes() -> None:
+    # Usuario apontou (14/07): salvar um blocker com counter nao e ganho puro
+    # -- Warcury tem on_ko (draw 1), entao salva-lo abre mao desse gatilho
+    # (custo de oportunidade); e se o oponente ainda tem mais atacantes
+    # ativos este turno, gastar o counter agora compete com precisar dele de
+    # novo. select_counter_cards['defender_char'] agora desconta os dois.
+    me = GameState(leader=real_card("OP13-079"), don_available=2)
+    warcury = real_card("OP13-089")
+    warcury._deck_uid = 99
+    warcury.rested = True
+    me.field_chars = [warcury]
+    gd = real_card("OP14-096")
+    gd._deck_uid = 50
+    me.hand = [gd]
+    me.trash = [real_card("OP13-080") for _ in range(10)]   # trash_gte:10 do Ground Death
+    opp = GameState(leader=mk("OP10-099", "Kid", card_type="LEADER", color="Red"))
+    ids = sim_bridge.select_counter_cards(me, atk_power=7000, def_power=5000,
+                                          opp_gs=opp, defender_uid=99)
+    check("select_counter_cards salva Warcury quando o ganho liquido (com on_ko descontado) supera o gasto",
+          bool(ids))
+
+
 def test_ciclo_do_lider_nao_trava_com_corpo_morto_ativo() -> None:
     # Deadlock real (log 13.08.24): "adia ciclo do lider: atacar com chars
     # ativos antes de trashar" so olhava LEGALIDADE (character_can_attack_now),
@@ -430,6 +473,8 @@ def main() -> int:
     test_shalria_na_mao_protegida_enquanto_precisa_de_trash()
     test_debuff_when_attacking_mira_o_defensor_que_vira_o_combate()
     test_avaliar_carta_prioriza_wincon_sobre_corpo_barato_vida_baixa()
+    test_execucao_play_card_prioriza_wincon_sobre_searcher()
+    test_salvar_blocker_desconta_on_ko_e_ataques_restantes()
     test_ciclo_do_lider_nao_trava_com_corpo_morto_ativo()
     test_don_reservado_para_ativar_wincon_em_campo()
     test_opponent_model_ao_vivo_por_lider_e_fallback_seguro()

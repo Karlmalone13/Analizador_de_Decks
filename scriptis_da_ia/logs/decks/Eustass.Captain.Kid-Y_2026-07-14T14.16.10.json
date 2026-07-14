@@ -1,0 +1,26 @@
+{
+  "cards": [
+    {
+      "code": "P-088",
+      "name": "P-088",
+      "count": 1
+    },
+    {
+      "code": "OP10-111",
+      "name": "Monkey D. Luffy",
+      "count": 1
+    },
+    {
+      "code": "OP10-114",
+      "name": "OP10-114",
+      "count": 1
+    },
+    {
+      "code": "ST36-004",
+      "name": "ST36-004",
+      "count": 1
+    }
+  ],
+  "total_seen": 4,
+  "leader": "OP10-099"
+}

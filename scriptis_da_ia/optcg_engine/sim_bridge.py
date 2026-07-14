@@ -614,7 +614,7 @@ def select_counter_cards(gs: GameState, atk_power: int, def_power: int,
     engine = DecisionEngine(gs, opp_stub)
 
     from optcg_engine.decision_engine import (EffectExecutor, get_card_effects,
-                                              effective_hand_play_cost)
+                                              effective_hand_play_cost, on_ko_value)
     ee = EffectExecutor(gs, opp_stub)
 
     # (valor_counter, carta) — personagens (stat impresso) + eventos [Counter].
@@ -672,8 +672,26 @@ def select_counter_cards(gs: GameState, atk_power: int, def_power: int,
     if defender_char is not None:
         # Defendendo um PERSONAGEM: troca de recursos, nao vida. Sem
         # comparar com should_use_counter (que so faz sentido pro lider).
-        valor_defendido = engine.analyzer.char_value_score(defender_char)
-        return ids if valor_defendido > gasto else []
+        #
+        # NET, nao bruto (achado ao vivo 14/07, log 14.16.10 -- usuario
+        # apontou 2 pontas que faltavam):
+        # 1) o que a carta DA se morrer (on_ko_value, ex: Warcury "draw 1")
+        #    e o CUSTO DE OPORTUNIDADE de salva-la -- salvar um corpo com
+        #    on-KO bom vale menos do que o char_value_score bruto sugere,
+        #    porque abre mao do gatilho. Mesma logica ja usada pra escolher
+        #    SACRIFICIO (redirect do Teach); nunca tinha sido aplicada aqui,
+        #    do lado de "vale salvar".
+        # 2) se o OPONENTE ainda tem mais atacantes ativos este turno (nao
+        #    so este), gastar o counter AGORA compete com precisar dele DE
+        #    NOVO na mesma sequencia de combate -- sobe a barra proporcional
+        #    aos ataques restantes (nao reserva fixo, ganho liquido caso a
+        #    caso: usuario pediu pra "pensar" se sobra defesa pro resto).
+        valor_liquido = (engine.analyzer.char_value_score(defender_char)
+                         - on_ko_value(defender_char.code, opp_stub, owner=gs))
+        ataques_restantes = max(0, engine.analyzer.opp_attack_count() - 1)
+        if ataques_restantes:
+            valor_liquido -= gasto * 0.5 * min(ataques_restantes, 2)
+        return ids if valor_liquido > gasto else []
 
     if not engine.should_use_counter(atk_power, def_power,
                                      counter_avail=total, gasto=gasto):

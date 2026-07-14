@@ -1,5 +1,48 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-14 (139) - Claude - 3a copia do bug de win-con achada (a REAL causa do combo nunca ativar) + blocker-save agora desconta on_ko/ataques restantes
+
+Log `Eustass.Captain.Kid-Y_x_Imu-B_2026-07-14T14.16.10`. Usuario confirmou
+Shalria resolvida (bloco 138) e trouxe 2 pontos NOVOS e concretos.
+
+**1. Sequenciamento com 10 DON — investigado, achou o bug REAL por baixo.**
+Reproduzi o cenario exato (10 DON, Five Elders + Nosjuro + Ju Peter na mao,
+fuel no trash, Empty Throne em campo) rodando o `choose_action` (busca ao
+vivo) passo a passo de verdade. Achado: a Empty Throne jogava **Ju Peter**
+(searcher generico) em vez da **Five Elders** (a bomba) -- e essa e a causa
+raiz real de "nunca ativa o combo", nao prioridade de ataque como eu supus
+antes. Rastreei ate `_score_to_play` (dentro de `_execute_step`, a funcao
+que EXECUTA de verdade qualquer `play_card` de QUALQUER trigger, incl.
+`activate_main` da Empty Throne) -- **3a copia INDEPENDENTE do mesmo bug**
+ja corrigido 2x este mes (`avaliar_carta` bloco 136, `order_target_candidates`
+/own_hand bloco 136): sem nocao de game_plan, um searcher (+40 de flag
+is_searcher) batia a bomba (12000 poder, zero flags) por larga margem
+(Ju Peter=45 vs Five Elders=12). FIX: mesmo bonus (+90 se
+`code==game_plan.win_con_code`) aplicado em `_score_to_play`. Resimulei o
+turno INTEIRO pos-fix: Empty Throne -> Five Elders em campo -> ativa a
+PROPRIA habilidade no PASSO SEGUINTE (reanima 5 do trash, sacrifica a si
+mesma) -> Nosjuro jogado -> ataca. O combo agora DISPARA -- antes nunca
+disparava, ponto final. Sequenciamento "atacar com o board ANTES de
+sacrifica-lo" (o pedido especifico do usuario) ainda nao e perfeito (o
+board reanimado entra e ataca no MESMO turno sem extrair valor do board
+ANTERIOR primeiro), mas o bloqueio raiz (combo nunca executava) esta
+resolvido -- refinamento de ordem fica pra sessao futura, ja documentado.
+
+**2. Salvar blocker com counter — desconta on_ko_value + ataques restantes
+do oponente.** `select_counter_cards`'s ramo `defender_char` (bloco 09/07)
+comparava `char_value_score(defender) > gasto` — bruto, sem descontar o que
+a carta DARIA se morresse (Warcury tem on_ko: draw 1) nem considerar se o
+oponente ainda tem mais atacantes ativos este turno (gastar o counter agora
+compete com precisar dele de novo). FIX: `valor_liquido = char_value_score -
+on_ko_value`, com desconto proporcional a `min(ataques_restantes,2)` quando
+o oponente ainda tem atacantes ativos alem do atual. Testado: Warcury (net
+95) continua salvo mesmo com 2 atacantes restantes (desconto de 30 nao vira
+a decisao — corpo valioso o suficiente), mecanismo confirmado numericamente
+sensivel aos dois fatores.
+
+**Validado:** `smoke_fast` (30 checks, 2 novos dirigidos) + `smoke_test`
+amplo verdes. Server reiniciado.
+
 ## 2026-07-14 (138) - Claude - DOIS bugs REAIS achados e corrigidos: deadlock do ciclo do lider + DON nunca reservado pra ativar a win-con
 
 Log `Eustass.Captain.Kid-Y_x_Imu-B_2026-07-14T13.08.24`. Usuario, com razao,

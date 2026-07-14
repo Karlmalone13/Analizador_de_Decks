@@ -1618,5 +1618,30 @@
       "You": "decks/Eustass.Captain.Kid-Y_2026-07-14T13.08.24.json",
       "Opponent": "decks/Imu-B_2026-07-14T13.08.24.json"
     }
+  },
+  {
+    "id": "2026-07-14T14.16.10",
+    "friendly_name": "Eustass.Captain.Kid-Y_x_Imu-B",
+    "date": "2026-07-14",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP10-099",
+      "leader_name": "Eustass \"Captain\" Kid",
+      "slug": "Eustass.Captain.Kid-Y"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP13-079",
+      "leader_name": "Imu",
+      "slug": "Imu-B"
+    },
+    "turns": 10,
+    "winner": null,
+    "log_file": "raw/Eustass.Captain.Kid-Y_x_Imu-B_2026-07-14T14.16.10.log",
+    "parsed_file": "parsed/Eustass.Captain.Kid-Y_x_Imu-B_2026-07-14T14.16.10.json",
+    "deck_files": {
+      "You": "decks/Eustass.Captain.Kid-Y_2026-07-14T14.16.10.json",
+      "Opponent": "decks/Imu-B_2026-07-14T14.16.10.json"
+    }
   }
 ]
