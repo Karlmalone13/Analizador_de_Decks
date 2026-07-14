@@ -1,5 +1,76 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-14 (136) - Claude - CRITICO resolvido: win-con nao competia no avaliar_carta AO VIVO
+
+Log `Eustass.Captain.Kid-Y_x_Imu-B_2026-07-14T12.02.31` (usuario testou o
+popup P1/P2 — funcionou). 4 reports; 2 fixes reais, 1 investigado e explicado
+(nao e bug), 1 e consequencia do mesmo root cause do 1o fix.
+
+**1. CRITICO (raiz do "bot nao faz o combo" que persiste desde blocos 121+):**
+survivor chegou aos 10 DON (bloco 131 funcionou) mas jogou Nosjuro em vez de
+Five Elders (OP13-082) via Empty Throne. Causa raiz: **`avaliar_carta` — a
+funcao que decide QUAL carta jogar em TODO o caminho AO VIVO — nao tinha
+NENHUMA nocao de game_plan/win-con**, diferente de `_trash_value` (que ja
+protegia a bomba no custo de trash desde 09/07). Um corpo mais barato com
+counter alto (Nosjuro, 1000 counter) podia pontuar ACIMA da bomba (12000
+poder) em vida baixa (multiplicador de panico do counter na formula existente)
+— e mesmo em vida saudavel a diferenca era pequena. **Achado importante:**
+`wincon_ready`/`survival_premium` (blocos 130-131) SO valem no simulador
+OFFLINE (`_evaluate_state_v2`, usado por `main_phase`) — o caminho AO VIVO
+(`choose_action`) nunca chama isso, decide so por `avaliar_carta`/
+`_score_play_action` (confirmado ao investigar o item 3 — `/decide` nao tem
+NENHUM lookahead). Ou seja, meu trabalho de sobrevivencia ate 10 DON ajudou
+(via `avaliar_carta`? nao — via outros termos), mas a PARTE FINAL do combo
+(jogar a bomba) nunca foi protegida no caminho que o bot realmente usa ao
+vivo. FIX: `avaliar_carta` ganha +90 quando `card.code == game_plan.
+win_con_code` (mesmo raciocinio de `_trash_value`, aplicado ao lado de
+JOGAR). Testado no PIOR CASO (vida=1, onde o counter da Nosjuro recebe o
+maior multiplicador): Five Elders ainda vence (165 vs 100). Tambem corrigi
+`order_target_candidates`/`own_hand` (play-from-hand, ex: Empty Throne "play
+1 five elders da mao"): usava `engine.avaliar_carta` (contaminado por
+affordability) em vez de `engine_busca` (DON-neutro) — mesmo padrao ja
+corrigido pro `top_deck` search em 09/07, nunca estendido pra este caso. Nao
+foi a causa PRINCIPAL desta partida (DON=10 ja cobria ambas as cartas), mas e
+correcao real e generica (protege quando DON estiver curto).
+
+**2. Debuff [When Attacking] mirava alvo errado (Nosjuro atacando Law 9000 com
+7000 de poder, debuffou Hawkins — sem ligacao com o combate).** Causa raiz:
+`order_target_candidates`'s ramo `actor_debuff_swing` ignorava
+`attacker_power`/`defender_uid` (que JA chegavam populados — confirmado no
+`[TGT]` do session log: `atk=7000 def=360`) e so olhava "maior ameaca ATIVA"
+generica. FIX: nova regra no motor unico, `DecisionEngine.
+debuff_flips_attack_in_my_favor` (espelho de `buff_wins_combat`: eu sou o
+ATACANTE, empate ja me favorece, entao debuffar o DEFENSOR do meu ataque pra
+`<= meu poder` vira o combate) — prioridade maxima quando o alvo e o defensor
+do ataque em andamento E o debuff vira o resultado. `order_target_candidates`
+so chama, sem regua propria (hook sem-dois-motores exigiu atualizar
+`ENGINE_TOUCHPOINTS` em `scripts/hooks/pre-commit` — mantido em sincronia
+com `.git/hooks/pre-commit`, acao sancionada pelo proprio comentario do hook).
+
+**3. Turno 3, mao "gorda" (6 cartas), nao counterou um empate 5000v5000 (regra
+do jogo: empate favorece o ATACANTE) — INVESTIGADO, NAO E BUG.** `pick_counters
+(needed=1)` escolheu a carta mais barata disponivel (Warcury, pitch=75.5), mas
+`valor_vida` (vida 4, folga de mao pequena) so autorizava ate 20 — recusou.
+Mecanicamente correto: counter e por CARTA INTEIRA (nao ha opcao mais barata
+que "sacrificar o corpo mais fraco disponivel"), e a mao nao tinha NENHUMA
+carta "lixo" pra pitchar de graca (todos Celestial Dragons uteis). A
+calibracao (vida 4+ = golpe barato de tomar, nao gasta corpo bom por 1 vida)
+segue a regra do usuario (ganho liquido caso a caso, memoria
+`feedback_ganho_liquido_caso_a_caso`) — NAO mudei sem evidencia clara de erro.
+Se o usuario achar que empates especificamente deveriam quase sempre counterar
+(needed minimo = 1), e uma decisao de DESIGN a validar, nao um bug corrigido
+sozinho.
+
+**4. "Bot esquece de jogar outros Elders, ex: Jupiter que bufa todo mundo" —
+NAO ha carta "Jupiter"/buff-geral entre os 5 Elders (Saturn/Mars/Warcury/
+Nusjuro/Ju Peter — nenhum buffa aliados; cada um tem IMUNIDADE INDIVIDUAL
+condicional a trash_gte:7, que com VARIOS em campo simultaneamente PARECE um
+buff coletivo). E CONSEQUENCIA do item 1 (combo nunca executa -> nunca ha
+"varios Elders em campo" pra sentir esse efeito), nao um bug separado.
+
+**Validado:** `smoke_fast` (21 checks) + `smoke_test` amplo verdes; hook
+sem-dois-motores atualizado e passando. Server reiniciado com os 2 fixes.
+
 ## 2026-07-14 (135) - Claude - turn order: causa raiz FINAL + toggle P1/P2 + popup no bot
 
 **Causa raiz confirmada pelo USUARIO (fecha a investigacao dos blocos 122/123/

@@ -892,10 +892,15 @@ def order_target_candidates(gs: GameState, opp_gs: GameState,
     # Achado em partida real 07/07: Van Augur debuffou -3000 num personagem
     # que ja tinha atacado, quando o lider do oponente ainda estava ativo.
     actor_debuff_swing = False
+    actor_debuff_amount = 0
     if actor_code and not actor_copia_poder:
         for block in get_card_effects(actor_code).values():
-            if any(s.get('action') == 'debuff_power' for s in block.get('steps', [])):
-                actor_debuff_swing = True
+            for s in block.get('steps', []):
+                if s.get('action') == 'debuff_power':
+                    actor_debuff_swing = True
+                    actor_debuff_amount = s.get('amount', 0)
+                    break
+            if actor_debuff_swing:
                 break
 
     # O ator resolvendo e um AUTO-BUFF de poder fixo em "seu lider OU seu
@@ -1021,6 +1026,18 @@ def order_target_candidates(gs: GameState, opp_gs: GameState,
                 return (0, -(card.effective_power(False) if card else 0))
             return (8, 0)
         if actor_debuff_swing and zone in ('opp_board', 'opp_leader'):
+            # Janela de ATAQUE (when_attacking, ex: Nosjuro): se o alvo e o
+            # DEFENSOR deste ataque e o debuff VIRA o combate a meu favor
+            # (defensor cai pra <= meu ataque -- empate favorece o ATACANTE,
+            # que sou eu aqui), prioridade maxima -- e o proprio motivo da
+            # carta ter [When Attacking]. Sem isso a regra generica (maior
+            # ameaca ativa) debuffava um personagem qualquer sem nenhum
+            # ganho no combate em andamento (achado ao vivo 14/07, log
+            # 12.02.31: Nosjuro atacando Law 9000 com 7000 de poder debuffou
+            # Hawkins, que nao tinha nada a ver com esse combate).
+            eh_alvo_do_meu_ataque = attacker_power > 0 and defender_uid and card and cand.get('id') == defender_uid
+            if eh_alvo_do_meu_ataque and engine.debuff_flips_attack_in_my_favor(card.effective_power(False), actor_debuff_amount, attacker_power):
+                return (-1, 0)
             rested = bool(getattr(card, 'rested', False)) if card else True
             valor = engine.analyzer.char_value_score(card) if card else 0
             return (0 if not rested else 1, -valor)
@@ -1104,10 +1121,20 @@ def order_target_candidates(gs: GameState, opp_gs: GameState,
             return (0, -(engine_busca.avaliar_carta(card) if card else 0))
         if zone == 'own_hand':
             # Prompt de JOGAR da mao (ver actor_play_step acima): melhor
-            # carta ELEGIVEL primeiro; inelegivel nunca.
+            # carta ELEGIVEL primeiro; inelegivel nunca. DON-NEUTRO
+            # (engine_busca, mesma ideia da linha ~1104 pro top_deck): este
+            # play e GRATIS (custo pago pela HABILIDADE do ator, ex: Empty
+            # Throne "rest 3 don + rest self: play 1 black Five Elders da
+            # mao", cost_lte='don_count_self' e so ELEGIBILIDADE, nao custo
+            # da carta) -- `engine.avaliar_carta` penaliza carta "nao
+            # pagavel agora", que aqui e um FALSO SINAL: a bomba de custo 10
+            # (Five Elders, o proprio win-con) perdia pro Nosjuro de custo 6
+            # so por parecer mais cara, quando as DUAS saem de graca. Achado
+            # ao vivo 14/07 (log 12.02.31): bot jogou Nosjuro via Throne com
+            # Five Elders disponivel na mao e 10 DON no pool.
             if actor_play_step is not None:
                 if _elegivel_para_play(card):
-                    return (0, -(engine.avaliar_carta(card)))
+                    return (0, -(engine_busca.avaliar_carta(card)))
                 return (9, 0)
             # SEMPRE _trash_value (protege carta cara/jogavel em breve,
             # sacrificio real vs teorico), nunca avaliar_carta puro. Achado

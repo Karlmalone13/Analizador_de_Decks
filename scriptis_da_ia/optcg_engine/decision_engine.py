@@ -5998,6 +5998,20 @@ class DecisionEngine:
             if has_search: s += 25
             if has_draw:   s += 20
 
+        # Carta CERTA do game_plan (a bomba do combo do deck, ex: Five Elders):
+        # avaliar_carta hoje trata qualquer character so pelos termos genericos
+        # (poder/keyword/counter) — SEM nenhuma nocao de plano, diferente de
+        # `_trash_value` (que ja protege o win-con no CUSTO de trash). Sem isso,
+        # um corpo mais barato com counter alto (ex: Nosjuro, 1000 counter) podia
+        # pontuar ACIMA da bomba de 12000 poder em vida baixa (multiplicador de
+        # panico do counter), e a bomba nunca era jogada mesmo saindo DE GRACA
+        # (ex: Empty Throne "play 1 Five Elders da mao") -- achado ao vivo 14/07
+        # (log 12.02.31): bot jogou Nosjuro em vez do Five Elders com 10 DON no
+        # pool. Generico via compute_game_plan (zero nome de carta).
+        plano_bomba = compute_game_plan(self.me)
+        if plano_bomba['win_con_code'] and card.code == plano_bomba['win_con_code']:
+            s += 90
+
         # STAGE redundante: com stage propria ja em campo, a 2a copia na
         # mao so vale o UPGRADE liquido sobre a atual — e vira o pitch mais
         # barato pra custos/counter (achado real 12/07, 23.41.50: o custo
@@ -6535,6 +6549,21 @@ class DecisionEngine:
         empate (Ground Death, log 21.01.22).
         """
         return defender_power <= threat_power < buffed_power
+
+    def debuff_flips_attack_in_my_favor(self, target_power: int, debuff_amount: int,
+                                        my_attacker_power: int) -> bool:
+        """
+        Espelho de `buff_wins_combat`, do lado OFENSIVO: eu sou o ATACANTE
+        (empate ja favorece MIM), entao um debuff no DEFENSOR vira o combate a
+        meu favor se ele cair pra <= meu poder: `target_power - debuff <=
+        my_attacker_power`. Motor unico, generico (so numeros) -- decide se um
+        debuff [When Attacking] (ex: Nosjuro) deve mirar o alvo do MEU proprio
+        ataque em vez de "a maior ameaca ativa" generica, que ignorava o
+        combate em andamento (achado ao vivo 14/07, log 12.02.31: Nosjuro
+        atacando Law 9000 com 7000 de poder debuffou Hawkins, sem ligacao
+        nenhuma com esse ataque).
+        """
+        return target_power - debuff_amount <= my_attacker_power
 
     def would_lose_last_defender(self, p, card) -> bool:
         """

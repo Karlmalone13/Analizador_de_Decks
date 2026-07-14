@@ -199,6 +199,49 @@ def test_shalria_na_mao_protegida_enquanto_precisa_de_trash() -> None:
           trash_value_com(0) > trash_value_com(8))
 
 
+def test_debuff_when_attacking_mira_o_defensor_que_vira_o_combate() -> None:
+    # Nosjuro [When Attacking] debuff -2000: se o alvo do MEU ataque (Law,
+    # 9000) cai pra <= meu poder (7000) com o debuff, DEVE mirar ele -- e o
+    # motivo da carta ter essa habilidade. A regra generica antiga (maior
+    # ameaca ATIVA) ignorava attacker_power/defender_uid (que ja chegavam
+    # populados) e mirava outro personagem sem nenhum ganho no combate em
+    # andamento. Achado ao vivo 14/07 (log 12.02.31): debuffou Hawkins (nao
+    # envolvido) atacando Law (o alvo real).
+    me = GameState(leader=mk("OP13-079", "Imu", card_type="LEADER"))
+    opp = GameState(leader=mk("OP10-099", "Kid", card_type="LEADER", color="Red"))
+    law = mk("OP10-119", "Law", power=9000)
+    law._deck_uid = 360
+    hawkins = mk("OP10-109", "Hawkins", power=8000)
+    hawkins._deck_uid = 190
+    opp.field_chars = [law, hawkins]
+    cands = [{"id": 360, "zone": "opp_board", "code": "OP10-119"},
+             {"id": 190, "zone": "opp_board", "code": "OP10-109"}]
+    order = sim_bridge.order_target_candidates(
+        me, opp, cands, attacker_power=7000, defender_uid=360, actor_code="OP13-080")
+    check("debuff when_attacking mira o defensor do ataque quando vira o combate",
+          bool(order) and order[0] == 360)
+
+
+def test_avaliar_carta_prioriza_wincon_sobre_corpo_barato_vida_baixa() -> None:
+    # avaliar_carta nao tinha NENHUMA nocao de game_plan (diferente de
+    # _trash_value, que ja protegia o win-con no custo de trash) — um corpo
+    # mais barato com counter alto (Nosjuro, 1000 counter) podia pontuar ACIMA
+    # da bomba do deck (Five Elders, 12000 poder) em vida baixa (multiplicador
+    # de panico do counter). Cenario adversarial: vida=1 (o counter da Nosjuro
+    # recebe o MAIOR multiplicador possivel) — mesmo assim a bomba do plano
+    # deve vencer. Achado ao vivo 14/07 (log 12.02.31): Empty Throne jogou
+    # Nosjuro em vez do Five Elders com 10 DON disponiveis.
+    me = GameState(leader=real_card("OP13-079"), don_available=10)
+    five = real_card("OP13-082")
+    nos = real_card("OP13-080")
+    me.hand = [five, nos]
+    me.life = [real_card("OP13-080")]   # vida 1 -- pior caso pro fix
+    opp = GameState(leader=mk("OP10-099", "Kid", card_type="LEADER", color="Red"))
+    eng = DecisionEngine(me, opp)
+    check("avaliar_carta prioriza a win-con (Five Elders) sobre Nosjuro mesmo em vida baixa",
+          eng.avaliar_carta(five) > eng.avaliar_carta(nos))
+
+
 def test_play_turn_greedy_opponent_response() -> None:
     # Item 3 do plano (busca prof.2): _play_turn_greedy simula o turno de
     # RESPOSTA do oponente (motor proprio, guloso, sem aninhar main_phase).
@@ -316,6 +359,8 @@ def main() -> int:
     test_counter_buff_vai_pro_lider_defensor_no_empate()
     test_draw_cost_trasha_corpo_morto_antes_da_mao()
     test_shalria_na_mao_protegida_enquanto_precisa_de_trash()
+    test_debuff_when_attacking_mira_o_defensor_que_vira_o_combate()
+    test_avaliar_carta_prioriza_wincon_sobre_corpo_barato_vida_baixa()
     test_play_turn_greedy_opponent_response()
     test_play_turn_greedy_detecta_letal_do_oponente()
     test_imu_waits_for_active_elder_attack()

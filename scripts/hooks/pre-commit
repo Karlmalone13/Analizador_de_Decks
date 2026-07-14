@@ -38,7 +38,7 @@ echo ""
 # tocando o engine em algum lugar do mesmo arquivo, e sinal de heuristica
 # reimplementada por fora. Atualize esta lista se novos pontos de entrada
 # forem criados em decision_engine.py.
-ENGINE_TOUCHPOINTS='DecisionEngine|EffectExecutor|avaliar_carta|_trash_value|should_use_counter|char_value_score|_step_is_viable|_worth_paying_optional_costs|get_card_effects|score_attack_target|_score_activate_main|_should_activate_main|don_needed_for_attack'
+ENGINE_TOUCHPOINTS='DecisionEngine|EffectExecutor|avaliar_carta|_trash_value|should_use_counter|char_value_score|_step_is_viable|_worth_paying_optional_costs|get_card_effects|score_attack_target|_score_activate_main|_should_activate_main|don_needed_for_attack|buff_wins_combat|debuff_flips_attack_in_my_favor|body_provides_defense|would_lose_last_defender|trash_cost_board_perda'
 
 BRIDGE_FILES="scriptis_da_ia/optcg_engine/sim_bridge.py BOT/engine_server/server.py"
 suspeitos=""
