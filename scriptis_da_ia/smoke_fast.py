@@ -158,6 +158,7 @@ def test_draw_cost_trasha_corpo_morto_antes_da_mao() -> None:
     # defende (achado ao vivo 14/07, log 01.23.31: "nao trashou a Shalria").
     me = GameState(leader=real_card("OP13-079"), don_available=3)
     shalria = real_card("OP13-086"); shalria._deck_uid = 10
+    shalria.just_played = True   # recem-jogada (on-play ja resolveu) segue dead weight
     me.field_chars = [shalria]
     mars = real_card("OP13-091"); mars._deck_uid = 20
     saturn = real_card("OP13-083"); saturn._deck_uid = 30

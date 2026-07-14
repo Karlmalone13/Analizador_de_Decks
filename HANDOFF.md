@@ -1,5 +1,36 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-14 (132) - Claude - Shalria dead-weight robusto (log 02.34.18) + nota estrategica
+
+Log `02.34.18` (Imu vs Kid): o fix da Shalria do bloco 131 FUNCIONOU parcial
+(lider trashou a Shalria #1, linha 384), mas uma 2a copia RECEM-JOGADA ficou no
+campo -- o lider trashou a Mary Geoise (stage redundante da MAO) em vez dela. 2
+causas: (a) a Shalria #2 tinha `just_played=True`, e a guarda anterior protegia
+just_played; (b) comparacao cruzava duas reguas (char_value_score no campo vs
+_trash_value na mao) e o stage pontuou mais baixo. FIX: toda a valoracao do
+custo-de-trash-de-campo virou `DecisionEngine.trash_cost_board_perda(card,p)`
+(motor unico) -- dead-weight = sem defesa (0 poder/sem blocker) E sem efeito
+ATIVO futuro (when_attacking/activate_main), REGARDLESS de just_played (o on-play
+ja resolveu na entrada) -> perda -999, trasha antes de qualquer carta da mao.
+Generico (checa efeitos do banco, zero nome de carta). sim_bridge so chama.
+Reproduzido (Shalria just_played -> trasha antes de Mary Geoise) + smoke_fast.
+
+**TURN ORDER -- ENCERRADO (nao reabrir):** o bot vai 1o porque PERDE O DADO. O
+estado `Start_WaitOnTurnOrder` so existe pra quem GANHA o dado; nos 3 logs o bot
+perdeu, foi direto pro mulligan. Nem o TurnOrderPatch nem heuristica do engine
+mudam isso -- o dado e do jogo, o vencedor (humano) escolhe 2o (vantajoso) e
+deixa o bot 1o. NAO E BUG. Parar de investigar turn order.
+
+**NOTA ESTRATEGICA (competitividade vs humano):** o usuario quer o bot
+COMPETITIVO contra humanos (proxy de qualidade do engine = objetivo). O
+whack-a-mole de leaks (Never Existed, Ground Death, Shalria...) tem retorno
+DECRESCENTE -- e exatamente o que o PLANO_AVALIACAO_E_BUSCA foi criado pra
+escapar. O lever estrutural real e o **item 3 (busca prof.2 / resposta do
+oponente)**: e o que para o bot de jogar no vacuo / atacar em counter / nao ver
+letal. Proximo passo recomendado = ATACAR O ITEM 3, nao mais patch de leak.
+Ceiling honesto: info assimetrica (bot nao ve a mao do humano) + humano se
+adapta ao padrao do bot limitam "competitivo", mas da pra fechar MUITO o gap.
+
 ## 2026-07-14 (131) - Claude - 3 leaks taticos (log 01.23.31) + survival opp-aware
 
 Partida ao vivo `Imu-B_x_Kid_01.23.31` (usuario amassou o bot). Confirmado:

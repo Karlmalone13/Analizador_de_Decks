@@ -6524,6 +6524,42 @@ class DecisionEngine:
                 or getattr(card, 'has_blocker', False)
                 or getattr(card, 'blocker_this_turn', False))
 
+    def trash_cost_board_perda(self, card, p) -> float:
+        """
+        Custo situacional de trashar `card` do MEU campo pra pagar um custo de
+        trash (draw do lider Imu, etc.). Motor unico, generico (zero nome de
+        carta). Um corpo DEAD-WEIGHT (sem valor defensivo E que ja passou o
+        turno de entrada -> 0 poder parado, nao ataca nem defende, on-play ja
+        gasto) e o MAIS BARATO de largar: perda minima, pra vir antes de cartas
+        da MAO (que guardam opcionalidade). Antes o corpo morto "sobrevivia"
+        porque a comparacao cruzava duas reguas (char_value_score no campo vs
+        _trash_value na mao) e um stage redundante da mao pontuava mais baixo --
+        o lider trashava a mao e mantinha a Shalria morta no campo a partida
+        toda (achado ao vivo 14/07, logs 01.23.31 e 02.34.18).
+        """
+        if card is None:
+            return 0.0
+        # dead weight = sem valor defensivo (0 poder, sem blocker) E sem efeito
+        # ATIVO futuro (when_attacking/activate_main). Um corpo assim nao ataca,
+        # nao defende e nao vai fazer nada -- mesmo RECEM-JOGADO (o on-play ja
+        # resolveu na entrada). Largar nao perde nada -> trasha PRIMEIRO, antes
+        # de cartas da mao. (So poder>0/blocker/efeito futuro merece o just_played
+        # +35 abaixo; Shalria de 0 poder so tinha on_play.)
+        if not self.body_provides_defense(card):
+            _eff = get_card_effects(card.code)
+            _tem_futuro = bool(_eff.get('when_attacking', {}).get('steps')
+                               or _eff.get('activate_main', {}).get('steps'))
+            if not _tem_futuro:
+                return -999.0
+        perda = self.analyzer.char_value_score(card)
+        if getattr(card, 'just_played', False):
+            perda += 35            # recem-entrado: corpo+efeito a realizar
+        if card.has_blocker or getattr(card, 'blocker_this_turn', False):
+            perda += 25            # defesa recorrente
+        if self.would_lose_last_defender(p, card):
+            perda += 40            # ultimo defensor real: lider exposto
+        return perda
+
     def should_use_counter(self, atk_power: int, def_power: int,
                            counter_avail: int | None = None,
                            gasto: float | None = None) -> bool:

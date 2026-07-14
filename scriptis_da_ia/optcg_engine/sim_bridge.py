@@ -1132,31 +1132,11 @@ def order_target_candidates(gs: GameState, opp_gs: GameState,
                                               engine) if card else -999
                 return (3, -valor, -(getattr(card, 'power', 0) if card else 0))
             if actor_trash_cost:
-                # custo trash_char_or_hand: MESMO tier da mao (1), perda
-                # medida por char_value_score MAIS o custo situacional que
-                # a regua de board nao ve (achado real 12/07, 23.41.50: o
-                # tier unificado sem isso fez o pendulo bater no outro
-                # extremo — Mars 5000 recem-descido via stage foi trashado
-                # pelo custo no MESMO turno, 2x na partida):
-                # - recem-entrado: ainda nao fez nada (corpo+efeito a
-                #   realizar no proximo turno);
-                # - blocker (incl. condicional via passiva, ja aplicada):
-                #   defesa recorrente;
-                # - ultimo corpo: campo vazio = lider exposto a tudo.
-                perda = engine.analyzer.char_value_score(card) if card else 0
-                if card is not None:
-                    if getattr(card, 'just_played', False):
-                        perda += 35
-                    if card.has_blocker or card.blocker_this_turn:
-                        perda += 25
-                    # "ultimo corpo" so vale proteger se ele REALMENTE defende
-                    # -> engine.body_provides_defense (motor unico). Um corpo de
-                    # 0 poder sem blocker nao segura NADA; o +40 fazia o lider
-                    # manter o corpo morto e trashar fuel/mao no custo do draw
-                    # (achado ao vivo 14/07, log 01.23.31: "nao trashou a Shalria").
-                    if engine.would_lose_last_defender(gs, card):
-                        perda += 40
-                return (1, perda)
+                # custo trash_char_or_hand: MESMO tier da mao (1); a perda
+                # situacional (dead-weight barato, recem-entrado/blocker/ultimo
+                # defensor caros) e decidida pelo MOTOR UNICO, sem regua propria
+                # aqui (achado real 12/07 + 14/07: ver trash_cost_board_perda).
+                return (1, engine.trash_cost_board_perda(card, gs))
             return (3, engine.analyzer.char_value_score(card) if card else 0, 0)
         if zone == 'own_leader':
             if defender_is_own_char and gs.life_count() > 0:
