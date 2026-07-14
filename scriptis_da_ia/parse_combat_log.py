@@ -725,6 +725,35 @@ def print_summary(data: dict, decks: dict):
             print(f'    {c["count"]}x {c["code"]:12s} {c["name"][:35]}')
 
 
+def split_multigame_log(log_path: str) -> list[str]:
+    """
+    Um arquivo .log pode conter VARIAS partidas concatenadas (rematch salvo
+    no mesmo download) -- achado 14/07: um arquivo real tinha 2 partidas,
+    a 2a com os lados [You]/[Opponent] TROCADOS em relacao a 1a (mesmo
+    jogador, deck diferente por partida). Processar como uma partida so
+    corrompe a reconstrucao de estado (mistura mao/campo de 2 jogos
+    diferentes). Detecta por "Version is" (aparece 1x no INICIO de cada
+    partida) e escreve cada uma em um .log temporario separado (sufixo
+    _p2, _p3...), devolvendo os caminhos. Se so ha 1 partida, devolve
+    [log_path] sem tocar em nada.
+    """
+    raw = Path(log_path).read_text(encoding='utf-8', errors='replace').splitlines()
+    starts = [i for i, l in enumerate(raw) if l.strip().startswith('Version is')]
+    if len(starts) <= 1:
+        return [log_path]
+
+    paths = []
+    base = Path(log_path)
+    for idx, start in enumerate(starts):
+        end = starts[idx + 1] if idx + 1 < len(starts) else len(raw)
+        segmento = raw[start:end]
+        sufixo = '' if idx == 0 else f'_p{idx + 1}'
+        out_path = base.with_name(f'{base.stem}{sufixo}{base.suffix}')
+        out_path.write_text('\n'.join(segmento), encoding='utf-8')
+        paths.append(str(out_path))
+    return paths
+
+
 # ---------------------------------------------------------------------------
 # CLI
 # ---------------------------------------------------------------------------
@@ -749,21 +778,27 @@ def main():
         ap.print_help()
         return
 
-    print(f'Parseando {args.log_file} ...')
-    data, raw_lines = parse_log(args.log_file)
+    sub_logs = split_multigame_log(args.log_file)
+    if len(sub_logs) > 1:
+        print(f'Detectadas {len(sub_logs)} partidas concatenadas no mesmo arquivo -- separando.')
 
-    out = args.output or str(Path(args.log_file).with_suffix('.json'))
-    with open(out, 'w', encoding='utf-8') as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)
-    print(f'OK {data["total_turns"]} turnos -> {out}')
+    for log_file in sub_logs:
+        print(f'Parseando {log_file} ...')
+        data, raw_lines = parse_log(log_file)
 
-    decks = reconstruct_decks(data, raw_lines)
+        out = (args.output if len(sub_logs) == 1 and args.output
+               else str(Path(log_file).with_suffix('.json')))
+        with open(out, 'w', encoding='utf-8') as f:
+            json.dump(data, f, ensure_ascii=False, indent=2)
+        print(f'OK {data["total_turns"]} turnos -> {out}')
 
-    if args.summary:
-        print_summary(data, decks)
+        decks = reconstruct_decks(data, raw_lines)
 
-    if args.add_to_db:
-        add_to_db(args.log_file, data, decks)
+        if args.summary:
+            print_summary(data, decks)
+
+        if args.add_to_db:
+            add_to_db(log_file, data, decks)
 
 
 if __name__ == '__main__':

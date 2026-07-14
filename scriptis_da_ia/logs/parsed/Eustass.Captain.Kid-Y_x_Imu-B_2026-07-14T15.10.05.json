@@ -1,0 +1,781 @@
+{
+  "meta": {
+    "players": {
+      "p1": {
+        "name": "You",
+        "leader": {
+          "name": "Eustass \"Captain\" Kid",
+          "code": "OP10-099"
+        }
+      },
+      "p2": {
+        "name": "Opponent",
+        "leader": {
+          "name": "Imu",
+          "code": "OP13-079"
+        }
+      }
+    },
+    "goes_first": null
+  },
+  "total_turns": 9,
+  "turns": [
+    {
+      "turn": 1,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 1,
+      "actions": [],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "ST36-005",
+            "OP10-119",
+            "OP11-101",
+            "OP10-114",
+            "OP12-117"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 5
+        },
+        "Opponent": {
+          "hand": [
+            "OP13-091",
+            "OP13-080",
+            "OP13-086",
+            "OP13-089",
+            "OP13-096"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 2,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP13-086",
+          "card_name": "St. Shalria",
+          "effects": [
+            "<b>Reveal and Draw St. Shepherd Ju Peter [\"OP13-084\">OP13-084]</b>",
+            "Trash 2 Remaining Cards",
+            "Trash St. Marcus Mars [\"OP13-091\">OP13-091]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP13-079",
+          "card_name": "Imu",
+          "effects": [
+            "Trash St. Shalria [\"OP13-086\">OP13-086]",
+            "Draw 1 Card"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP13-096",
+          "card_name": "The Five Elders... Are At Your Service",
+          "effects": [
+            "Rest 1 Don",
+            "<b>Reveal and Draw St. Shalria [\"OP13-086\">OP13-086]</b>",
+            "Trash 2 Remaining Cards"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP13-080",
+            "OP13-089",
+            "OP13-083",
+            "OP13-084",
+            "OP13-091",
+            "OP13-086"
+          ],
+          "board": [],
+          "trash": [
+            "OP13-092",
+            "OP14-096",
+            "OP13-091",
+            "OP13-086",
+            "OP13-096",
+            "OP13-086",
+            "OP13-084"
+          ],
+          "life": 4
+        },
+        "You": {
+          "hand": [
+            "ST36-005",
+            "OP10-119",
+            "OP11-101",
+            "OP10-114",
+            "OP12-117"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 3,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP11-101",
+          "card_name": "Capone \"Gang\" Bege",
+          "effects": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Eustass \"Captain\" Kid",
+          "attacker_code": "OP10-099",
+          "target": "Imu [\"OP13-079\">OP13-079]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP13-080"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "ST36-005",
+            "OP10-119",
+            "OP10-114",
+            "OP12-117",
+            "EB04-059"
+          ],
+          "board": [
+            "OP11-101"
+          ],
+          "trash": [],
+          "life": 5
+        },
+        "Opponent": {
+          "hand": [
+            "OP13-089",
+            "OP13-083",
+            "OP13-084",
+            "OP13-091",
+            "OP13-086"
+          ],
+          "trash": [
+            "OP13-092",
+            "OP14-096",
+            "OP13-091",
+            "OP13-086",
+            "OP13-096",
+            "OP13-086",
+            "OP13-084",
+            "OP13-080"
+          ],
+          "board": [],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 4,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP13-086",
+          "card_name": "St. Shalria",
+          "effects": [
+            "<b>Reveal and Draw Five Elders [\"OP13-082\">OP13-082]</b>",
+            "Trash 2 Remaining Cards",
+            "Trash St. Marcus Mars [\"OP13-091\">OP13-091]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP13-079",
+          "card_name": "Imu",
+          "effects": [
+            "Trash St. Shalria [\"OP13-086\">OP13-086]",
+            "Draw 1 Card"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Imu",
+          "attacker_code": "OP13-079",
+          "target": "Eustass \"Captain\" Kid [\"OP10-099\">OP10-099]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": "OP11-101",
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP13-099",
+          "card_name": "The Empty Throne",
+          "effects": [
+            "Rest 3 Don",
+            "Rest The Empty Throne [\"OP13-099\">OP13-099]",
+            "Deploy St. Jaygarcia Saturn [\"OP13-083\">OP13-083]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP13-083",
+          "card_name": "St. Jaygarcia Saturn",
+          "effects": [
+            "<b>Reveal and Draw St. Topman Warcury [\"OP13-089\">OP13-089]</b>"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP13-089",
+            "OP13-083",
+            "OP13-084",
+            "OP14-096",
+            "OP13-082",
+            "OP13-089"
+          ],
+          "board": [
+            "OP13-083"
+          ],
+          "trash": [
+            "OP13-092",
+            "OP14-096",
+            "OP13-091",
+            "OP13-086",
+            "OP13-096",
+            "OP13-086",
+            "OP13-084",
+            "OP13-080",
+            "OP13-092",
+            "OP13-098",
+            "OP13-091",
+            "OP13-086"
+          ],
+          "life": 4
+        },
+        "You": {
+          "hand": [
+            "ST36-005",
+            "OP10-119",
+            "OP10-114",
+            "OP12-117",
+            "EB04-059"
+          ],
+          "trash": [
+            "OP11-101"
+          ],
+          "board": [],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 5,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Eustass \"Captain\" Kid",
+          "attacker_code": "OP10-099",
+          "target": "Imu [\"OP13-079\">OP13-079]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP13-089"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP10-114",
+          "card_name": "X. Drake",
+          "effects": [
+            "Rest X. Drake [\"OP10-114\">OP10-114]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP12-117",
+          "card_name": "Slam Gibson",
+          "effects": [
+            "Rest 1 Don"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "ST36-005",
+            "OP10-119",
+            "EB04-059",
+            "OP10-112"
+          ],
+          "board": [
+            "OP10-114"
+          ],
+          "trash": [
+            "OP11-101",
+            "OP12-117"
+          ],
+          "life": 5
+        },
+        "Opponent": {
+          "hand": [
+            "OP13-089",
+            "OP13-083",
+            "OP13-084",
+            "OP14-096",
+            "OP13-082"
+          ],
+          "trash": [
+            "OP13-092",
+            "OP14-096",
+            "OP13-091",
+            "OP13-086",
+            "OP13-096",
+            "OP13-086",
+            "OP13-084",
+            "OP13-080",
+            "OP13-092",
+            "OP13-098",
+            "OP13-091",
+            "OP13-086",
+            "OP13-089"
+          ],
+          "board": [
+            "OP13-083"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 6,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "activate",
+          "card": "OP13-099",
+          "card_name": "The Empty Throne",
+          "effects": [
+            "Rest 3 Don",
+            "Rest The Empty Throne [\"OP13-099\">OP13-099]",
+            "Deploy St. Ethanbaron V. Nusjuro [\"OP13-080\">OP13-080]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "St. Ethanbaron V. Nusjuro",
+          "attacker_code": "OP13-080",
+          "target": "Eustass \"Captain\" Kid [\"OP10-099\">OP10-099]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP13-080",
+          "card_name": "St. Ethanbaron V. Nusjuro",
+          "effects": [
+            "Buff X. Drake [\"OP10-114\">OP10-114] -2000"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "St. Jaygarcia Saturn",
+          "attacker_code": "OP13-083",
+          "target": "X. Drake [\"OP10-114\">OP10-114]",
+          "result": null,
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP13-079",
+          "to_name": "Imu",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP13-079",
+          "to_name": "Imu",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Imu",
+          "attacker_code": "OP13-079",
+          "target": "Eustass \"Captain\" Kid [\"OP10-099\">OP10-099]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP13-089",
+            "OP13-083",
+            "OP13-084",
+            "OP14-096",
+            "OP13-082"
+          ],
+          "board": [
+            "OP13-083",
+            "OP13-080"
+          ],
+          "trash": [
+            "OP13-092",
+            "OP14-096",
+            "OP13-091",
+            "OP13-086",
+            "OP13-096",
+            "OP13-086",
+            "OP13-084",
+            "OP13-080",
+            "OP13-092",
+            "OP13-098",
+            "OP13-091",
+            "OP13-086",
+            "OP13-089"
+          ],
+          "life": 4
+        },
+        "You": {
+          "hand": [
+            "ST36-005",
+            "OP10-119",
+            "EB04-059",
+            "OP10-112",
+            "OP10-119",
+            "ST36-004"
+          ],
+          "trash": [
+            "OP11-101",
+            "OP12-117",
+            "OP10-114"
+          ],
+          "board": [],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 7,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP10-099",
+          "to_name": "Eustass \"Captain\" Kid",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Eustass \"Captain\" Kid",
+          "attacker_code": "OP10-099",
+          "target": "St. Ethanbaron V. Nusjuro [\"OP13-080\">OP13-080]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP13-084"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "EB04-059",
+          "card_name": "Black Rope Dragon Twister",
+          "effects": [
+            "Rest 6 Don"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "ST36-005",
+            "OP10-119",
+            "OP10-112",
+            "OP10-119",
+            "ST36-004",
+            "ST36-005"
+          ],
+          "board": [],
+          "trash": [
+            "OP11-101",
+            "OP12-117",
+            "OP10-114",
+            "EB04-059"
+          ],
+          "life": 3
+        },
+        "Opponent": {
+          "hand": [
+            "OP13-089",
+            "OP13-083",
+            "OP14-096",
+            "OP13-082"
+          ],
+          "trash": [
+            "OP13-092",
+            "OP14-096",
+            "OP13-091",
+            "OP13-086",
+            "OP13-096",
+            "OP13-086",
+            "OP13-084",
+            "OP13-080",
+            "OP13-092",
+            "OP13-098",
+            "OP13-091",
+            "OP13-086",
+            "OP13-089",
+            "OP13-084"
+          ],
+          "board": [
+            "OP13-083",
+            "OP13-080"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 8,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "activate",
+          "card": "OP13-099",
+          "card_name": "The Empty Throne",
+          "effects": [
+            "Rest 3 Don",
+            "Rest The Empty Throne [\"OP13-099\">OP13-099]",
+            "Deploy St. Jaygarcia Saturn [\"OP13-083\">OP13-083]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP13-083",
+          "card_name": "St. Jaygarcia Saturn",
+          "effects": [
+            "<b>Reveal and Draw ...Never Existed... [\"OP13-098\">OP13-098]</b>"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "St. Ethanbaron V. Nusjuro",
+          "attacker_code": "OP13-080",
+          "target": "Eustass \"Captain\" Kid [\"OP10-099\">OP10-099]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "St. Jaygarcia Saturn",
+          "attacker_code": "OP13-083",
+          "target": "Eustass \"Captain\" Kid [\"OP10-099\">OP10-099]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP10-114"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP13-089",
+          "card_name": "St. Topman Warcury",
+          "effects": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Imu",
+          "attacker_code": "OP13-079",
+          "target": "Eustass \"Captain\" Kid [\"OP10-099\">OP10-099]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP14-096",
+            "OP13-082",
+            "OP16-093",
+            "OP13-098"
+          ],
+          "board": [
+            "OP13-083",
+            "OP13-080",
+            "OP13-083",
+            "OP13-089"
+          ],
+          "trash": [
+            "OP13-092",
+            "OP14-096",
+            "OP13-091",
+            "OP13-086",
+            "OP13-096",
+            "OP13-086",
+            "OP13-084",
+            "OP13-080",
+            "OP13-092",
+            "OP13-098",
+            "OP13-091",
+            "OP13-086",
+            "OP13-089",
+            "OP13-084"
+          ],
+          "life": 4
+        },
+        "You": {
+          "hand": [
+            "ST36-005",
+            "OP10-119",
+            "OP10-112",
+            "OP10-119",
+            "ST36-004",
+            "ST36-005",
+            "OP10-119"
+          ],
+          "trash": [
+            "OP11-101",
+            "OP12-117",
+            "OP10-114",
+            "EB04-059",
+            "OP10-114"
+          ],
+          "board": [],
+          "life": 1
+        }
+      }
+    },
+    {
+      "turn": 9,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP10-099",
+          "to_name": "Eustass \"Captain\" Kid",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Eustass \"Captain\" Kid",
+          "attacker_code": "OP10-099",
+          "target": "St. Ethanbaron V. Nusjuro [\"OP13-080\">OP13-080]",
+          "result": null,
+          "damage": null,
+          "blocked_by": "OP13-089",
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP10-119",
+          "card_name": "Trafalgar Law",
+          "effects": [
+            "Added card to top of Life from Hand",
+            "Attach 1 Rested Don to Eustass \"Captain\" Kid [\"OP10-099\">OP10-099]"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP10-112",
+            "OP10-119",
+            "ST36-004",
+            "ST36-005",
+            "OP10-119",
+            "ST36-002"
+          ],
+          "board": [
+            "OP10-119"
+          ],
+          "trash": [
+            "OP11-101",
+            "OP12-117",
+            "OP10-114",
+            "EB04-059",
+            "OP10-114"
+          ],
+          "life": 2
+        },
+        "Opponent": {
+          "hand": [
+            "OP14-096",
+            "OP13-082",
+            "OP16-093",
+            "OP13-098",
+            "OP13-083"
+          ],
+          "trash": [
+            "OP13-092",
+            "OP14-096",
+            "OP13-091",
+            "OP13-086",
+            "OP13-096",
+            "OP13-086",
+            "OP13-084",
+            "OP13-080",
+            "OP13-092",
+            "OP13-098",
+            "OP13-091",
+            "OP13-086",
+            "OP13-089",
+            "OP13-084",
+            "OP13-089"
+          ],
+          "board": [
+            "OP13-083",
+            "OP13-080",
+            "OP13-083"
+          ],
+          "life": 4
+        }
+      }
+    }
+  ]
+}

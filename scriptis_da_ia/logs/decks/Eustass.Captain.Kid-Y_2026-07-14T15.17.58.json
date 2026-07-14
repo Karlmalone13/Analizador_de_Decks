@@ -1,0 +1,116 @@
+{
+  "cards": [
+    {
+      "code": "OP10-119",
+      "name": "Trafalgar Law",
+      "count": 3
+    },
+    {
+      "code": "OP13-089",
+      "name": "St. Topman Warcury",
+      "count": 3
+    },
+    {
+      "code": "OP13-083",
+      "name": "St. Jaygarcia Saturn",
+      "count": 3
+    },
+    {
+      "code": "OP13-086",
+      "name": "St. Shalria",
+      "count": 3
+    },
+    {
+      "code": "OP13-092",
+      "name": "OP13-092",
+      "count": 3
+    },
+    {
+      "code": "OP14-096",
+      "name": "OP14-096",
+      "count": 3
+    },
+    {
+      "code": "ST36-005",
+      "name": "ST36-005",
+      "count": 2
+    },
+    {
+      "code": "OP10-114",
+      "name": "X. Drake",
+      "count": 2
+    },
+    {
+      "code": "OP13-080",
+      "name": "OP13-080",
+      "count": 2
+    },
+    {
+      "code": "OP13-084",
+      "name": "OP13-084",
+      "count": 2
+    },
+    {
+      "code": "OP13-091",
+      "name": "OP13-091",
+      "count": 2
+    },
+    {
+      "code": "OP13-082",
+      "name": "OP13-082",
+      "count": 2
+    },
+    {
+      "code": "OP13-098",
+      "name": "OP13-098",
+      "count": 2
+    },
+    {
+      "code": "OP11-101",
+      "name": "Capone \"Gang\" Bege",
+      "count": 1
+    },
+    {
+      "code": "OP12-117",
+      "name": "OP12-117",
+      "count": 1
+    },
+    {
+      "code": "OP13-096",
+      "name": "OP13-096",
+      "count": 1
+    },
+    {
+      "code": "EB04-059",
+      "name": "EB04-059",
+      "count": 1
+    },
+    {
+      "code": "OP10-112",
+      "name": "OP10-112",
+      "count": 1
+    },
+    {
+      "code": "ST36-004",
+      "name": "ST36-004",
+      "count": 1
+    },
+    {
+      "code": "OP16-093",
+      "name": "OP16-093",
+      "count": 1
+    },
+    {
+      "code": "ST36-002",
+      "name": "ST36-002",
+      "count": 1
+    },
+    {
+      "code": "OP05-097",
+      "name": "OP05-097",
+      "count": 1
+    }
+  ],
+  "total_seen": 41,
+  "leader": "OP10-099"
+}

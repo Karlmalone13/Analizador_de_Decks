@@ -1,0 +1,51 @@
+{
+  "cards": [
+    {
+      "code": "OP10-119",
+      "name": "Trafalgar Law",
+      "count": 3
+    },
+    {
+      "code": "ST36-005",
+      "name": "ST36-005",
+      "count": 2
+    },
+    {
+      "code": "OP10-114",
+      "name": "X. Drake",
+      "count": 2
+    },
+    {
+      "code": "OP11-101",
+      "name": "Capone \"Gang\" Bege",
+      "count": 1
+    },
+    {
+      "code": "OP12-117",
+      "name": "OP12-117",
+      "count": 1
+    },
+    {
+      "code": "EB04-059",
+      "name": "EB04-059",
+      "count": 1
+    },
+    {
+      "code": "OP10-112",
+      "name": "OP10-112",
+      "count": 1
+    },
+    {
+      "code": "ST36-004",
+      "name": "ST36-004",
+      "count": 1
+    },
+    {
+      "code": "ST36-002",
+      "name": "ST36-002",
+      "count": 1
+    }
+  ],
+  "total_seen": 13,
+  "leader": "OP10-099"
+}
