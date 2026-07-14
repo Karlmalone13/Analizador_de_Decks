@@ -1041,9 +1041,9 @@ def order_target_candidates(gs: GameState, opp_gs: GameState,
             if attacker_power > 0:
                 eh_defensor = ((defender_uid and cand.get('id') == defender_uid)
                                or (not defender_uid and zone == 'own_leader'))
-                # perdendo agora (empate favorece o ATACANTE) e salvo pelo
-                # buff (defensor precisa ficar ESTRITAMENTE acima)
-                if eh_defensor and p <= attacker_power < resultante:
+                # perdendo agora e salvo pelo buff -> regra de combate do MOTOR
+                # unico (empate vai pro atacante), nao regua propria aqui
+                if eh_defensor and engine.buff_wins_combat(p, attacker_power, resultante):
                     return (-2, 0)
 
             # O lider tem uma ameaca REAL no campo do oponente (personagem ou
@@ -1064,7 +1064,14 @@ def order_target_candidates(gs: GameState, opp_gs: GameState,
                 if opp_gs.leader is not None and not getattr(opp_gs.leader, 'rested', False):
                     ameacas.append(opp_gs.leader.power)
                 maior_ameaca = max(ameacas, default=0)
-                if maior_ameaca > 0 and p < maior_ameaca <= resultante:
+                # EMPATE vai pro ATACANTE no OPTCG: um lider em poder IGUAL a
+                # ameaca TOMA o golpe, e o buff so salva se ficar ESTRITAMENTE
+                # acima -> MESMA regra de combate do motor (buff_wins_combat),
+                # nao regua propria. Antes esta usava `p < ... <= ...` (empate
+                # nos dois lados) e nao disparava no caso real (Kaido 5000 vs
+                # lider 5000): o buff ia pro personagem ATIVO mais forte em vez
+                # do lider sob ataque (achado ao vivo 13/07, log 21.01.22).
+                if engine.buff_wins_combat(p, maior_ameaca, resultante):
                     return (-1, 0)
 
             if kind == 'set':
@@ -1142,7 +1149,12 @@ def order_target_candidates(gs: GameState, opp_gs: GameState,
                         perda += 35
                     if card.has_blocker or card.blocker_this_turn:
                         perda += 25
-                    if len(gs.field_chars) <= 1:
+                    # "ultimo corpo" so vale proteger se ele REALMENTE defende
+                    # -> engine.body_provides_defense (motor unico). Um corpo de
+                    # 0 poder sem blocker nao segura NADA; o +40 fazia o lider
+                    # manter o corpo morto e trashar fuel/mao no custo do draw
+                    # (achado ao vivo 14/07, log 01.23.31: "nao trashou a Shalria").
+                    if engine.would_lose_last_defender(gs, card):
                         perda += 40
                 return (1, perda)
             return (3, engine.analyzer.char_value_score(card) if card else 0, 0)

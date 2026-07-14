@@ -62,6 +62,10 @@ EVAL_WEIGHTS = {
     # win-con JOGÁVEL (peça-motor na mão + fuel no trash + DON pro custo):
     # "arma carregada". Prior — a tunagem por self-play (item 5) ajusta.
     'wincon_ready': 20.0,
+    # sobrevivencia ciente do plano: com win-con de combo caro ainda nao
+    # disparavel E vida baixa (risco real de morrer antes), premio por ponto
+    # de panico (vida<=3). Prior — tunagem (item 5) ajusta.
+    'survival_premium': 25.0,
 }
 try:
     _wpath = os.path.join(os.path.dirname(__file__), '..', 'eval_weights.json')
@@ -6483,6 +6487,43 @@ class DecisionEngine:
                 return [c1], g1, v1
         return escolha, gasto, total
 
+    def buff_wins_combat(self, defender_power: int, threat_power: int,
+                         buffed_power: int) -> bool:
+        """
+        Regra de COMBATE do OPTCG (motor unico): um defensor so sobrevive a uma
+        ameaca se ficar ESTRITAMENTE acima -- EMPATE vai pro ATACANTE. Decide se
+        um buff de poder (counter/reacao) SALVA quem esta/ficara sob ataque:
+        `defender_power <= threat_power < buffed_power`. Generica (so numeros),
+        serve pra QUALQUER carta/lider de qualquer deck. Consolidada aqui pra o
+        sim_bridge (ordenacao de alvo de buff) NAO ter regua propria -- antes as
+        duas checagens divergiam (`<` vs `<=`) e o buff ia pro corpo errado no
+        empate (Ground Death, log 21.01.22).
+        """
+        return defender_power <= threat_power < buffed_power
+
+    def would_lose_last_defender(self, p, card) -> bool:
+        """
+        Trashar/perder `card` deixa p SEM defensor real? = e o ultimo corpo E
+        ele de fato defende (body_provides_defense). Motor unico decide se vale
+        proteger o "ultimo corpo" no custo de trash; generico, sem nome de
+        carta (log 01.23.31: corpo morto nao conta como ultimo defensor).
+        """
+        return len(p.field_chars) <= 1 and self.body_provides_defense(card)
+
+    def body_provides_defense(self, card) -> bool:
+        """
+        Um personagem em campo oferece valor DEFENSIVO real (segura um golpe)?
+        So com poder > 0 OU Blocker. Corpo de 0 poder sem blocker (ex: enabler
+        ja usado) nao protege o lider de nada -- generico, sem nome de carta.
+        Usado pra o custo de trash nao "proteger" um corpo morto como se fosse
+        ultimo defensor (log 01.23.31).
+        """
+        if card is None:
+            return False
+        return (getattr(card, 'power', 0) > 0
+                or getattr(card, 'has_blocker', False)
+                or getattr(card, 'blocker_this_turn', False))
+
     def should_use_counter(self, atk_power: int, def_power: int,
                            counter_avail: int | None = None,
                            gasto: float | None = None) -> bool:
@@ -7344,7 +7385,15 @@ class OPTCGMatch:
                 cond_ok = ee_viab._check_conditions(main.get('conditions', {}), card)
                 if not cond_ok or not any(ee_viab._step_is_viable(s, card)
                                           for s in main_steps):
-                    base -= 120  # efeito nulo agora: não compete com nada útil
+                    # Evento cujo [Main] nao produz NADA agora: jogar e pagar
+                    # custo + a carta no vacuo -- e, se ela tambem for um
+                    # [Counter] (ex: Never Existed OP13-098, ko opp_stage sem
+                    # stage do oponente), ainda QUEIMA a defesa por zero. Nunca
+                    # vale na propria main phase. BLOQUEIO DURO: o -120 anterior
+                    # era mole e o bot jogava quando sobrava DON e nada melhor
+                    # (achado ao vivo 14/07, log 01.23.31 -- "Never Existed do
+                    # nada"). A carta fica na mao pra defender.
+                    return -999.0
 
         # STAGE com stage própria já em campo: jogar SUBSTITUI a atual (regra
         # do jogo, 1 stage por lado). A 1ª versão deste fix descontava só
@@ -8043,6 +8092,40 @@ class OPTCGMatch:
         # vida (curva íngreme, simétrica)
         score += self._life_value(p.life_count()) * W['life_mult']
         score -= self._life_value(opp.life_count()) * W['life_mult']
+
+        # SOBREVIVENCIA ciente do game_plan (pedido do usuario 14/07): se a
+        # win-con do deck e um combo de CUSTO ALTO que ainda NAO da pra
+        # disparar, minha propria vida vale mais — perder antes de chegar no
+        # combo = derrota certa, entao o planner prefere a linha que preserva
+        # vida/defesa a uma agressao arriscada. Generico via compute_game_plan
+        # (zero nome de carta). Escala com a distancia ate poder disparar
+        # (pending) e SATURA em 0 quando ja da (ai a "arma carregada"/dano
+        # assumem) ou quando o deck nao tem combo caro (don_target baixo/None).
+        # NAO impede racar: e premio sobre a MINHA vida, atacar o opp continua
+        # valendo pelos termos de dano/vida do oponente.
+        # So dispara sob RISCO REAL de morrer (vida <= 3): panico cresce quanto
+        # mais baixa a vida. Vida alta = sem urgencia, NAO durdla (senao vira
+        # passividade contra controle, que quer exatamente que voce durdle —
+        # medido 14/07: premio ligado a vida cheia feria Krieg 0.53->0.27).
+        try:
+            _plano_surv = compute_game_plan(p)
+            _dt = _plano_surv.get('don_target')
+            if _dt and _dt >= 6:
+                # So vale sobreviver pro combo se o OPONENTE me RACA (aggro): vs
+                # CONTROLE, durdlar e exatamente o que ele quer -- ali eu preciso
+                # PRESSIONAR. O perfil do opp decide (plano item 2 ponto 5: o
+                # perfil do oponente muda o valor do MEU estado). Medido 14/07:
+                # premio incondicional feria Krieg (controle) 0.53->0.27; gated
+                # pelo arquetipo do opp, so liga vs Kid/aggro.
+                _opp_prof = self._turn_profile_for(opp)
+                _opp_ctrl = (_opp_prof or {}).get('archetype', {}).get('dominante') == 'Controle'
+                if _opp_prof and not _opp_ctrl:
+                    _pending = 1.0 - min(1.0, p.don_on_field() / _dt)
+                    _panic = max(0, 4 - p.life_count())   # 0 em vida>=4, ate 3 em vida 1
+                    if _pending > 0 and _panic > 0:
+                        score += _panic * W['survival_premium'] * _pending
+        except Exception:
+            pass
 
         # board (reusa char_value_score — já vê blocker/rush/imunidade/efeito)
         score += sum(an.char_value_score(c) for c in p.field_chars) * W['board_mine']

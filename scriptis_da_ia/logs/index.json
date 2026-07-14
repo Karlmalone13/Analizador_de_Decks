@@ -1493,5 +1493,30 @@
       "You": "decks/Imu-B_2026-07-14T00.40.32.json",
       "Opponent": "decks/Donquixote.Doflamingo-GP_2026-07-14T00.40.32.json"
     }
+  },
+  {
+    "id": "2026-07-14T01.23.31",
+    "friendly_name": "Imu-B_x_Eustass.Captain.Kid-Y",
+    "date": "2026-07-14",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP13-079",
+      "leader_name": "Imu",
+      "slug": "Imu-B"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP10-099",
+      "leader_name": "Eustass \"Captain\" Kid",
+      "slug": "Eustass.Captain.Kid-Y"
+    },
+    "turns": 9,
+    "winner": null,
+    "log_file": "raw/Imu-B_x_Eustass.Captain.Kid-Y_2026-07-14T01.23.31.log",
+    "parsed_file": "parsed/Imu-B_x_Eustass.Captain.Kid-Y_2026-07-14T01.23.31.json",
+    "deck_files": {
+      "You": "decks/Imu-B_2026-07-14T01.23.31.json",
+      "Opponent": "decks/Eustass.Captain.Kid-Y_2026-07-14T01.23.31.json"
+    }
   }
 ]

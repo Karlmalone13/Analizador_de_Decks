@@ -115,6 +115,62 @@ def test_ground_death_no_low_value_negate() -> None:
     check("Ground Death nao gasta DON negando Camie sem texto futuro relevante", score < 0)
 
 
+def test_never_existed_no_stage_is_hard_blocked() -> None:
+    # OP13-098 [Main] = ko opp_stage; sem stage do oponente o efeito e nulo e
+    # jogar ainda QUEIMA o [Counter] +4000. Deve ser bloqueio DURO, nao so
+    # penalizado (achado ao vivo 14/07, log 01.23.31: "Never Existed do nada").
+    me = GameState(leader=real_card("OP13-079"), don_available=6)
+    opp = GameState(leader=mk("OP10-099", "Kid", card_type="LEADER", color="Red"))
+    opp.field_chars = [mk("OP10-111", "Luffy", power=5000, color="Red")]
+    opp.field_stage = None
+    never = real_card("OP13-098")
+    me.hand = [never]
+    match = OPTCGMatch((me.leader, []), (opp.leader, []))
+    score = match._score_play_action(never, DecisionEngine(me, opp))
+    check("Never Existed no vacuo (sem stage do opp) e bloqueio duro", score <= -900)
+
+
+def test_counter_buff_vai_pro_lider_defensor_no_empate() -> None:
+    # Ground Death/Never Existed [Counter] +4000: com o LIDER (5000) sob ataque
+    # de 5000 (empate = atacante vence) e um personagem ATIVO mais forte no
+    # campo, o buff DEVE ir pro lider (quem leva o golpe), nao pro corpo forte
+    # parado (achado ao vivo 13/07, Ground Death log 21.01.22 buffou o Kuma).
+    leader = mk("OP13-079", "Imu", power=5000, card_type="LEADER")
+    leader._deck_uid = 500
+    me = GameState(leader=leader, don_available=5)
+    saturn = mk("OP13-083", "Saturn", power=8000)
+    saturn._deck_uid = 320
+    saturn.rested = False
+    me.field_chars = [saturn]
+    opp = GameState(leader=mk("ST04-001", "Kaido", power=5000, card_type="LEADER"))
+    cands = [{"id": 320, "zone": "own_board", "code": "OP13-083"},
+             {"id": 500, "zone": "own_leader", "code": "OP13-079"}]
+    order = sim_bridge.order_target_candidates(
+        me, opp, cands, attacker_power=5000, defender_uid=1, actor_code="OP14-096")
+    check("counter buff vai pro lider defensor no empate (nao pro corpo forte)",
+          bool(order) and order[0] == 500)
+
+
+def test_draw_cost_trasha_corpo_morto_antes_da_mao() -> None:
+    # Custo do draw do lider Imu (trash_char_or_hand celestial dragons): um
+    # corpo de 0 poder ja usado no campo (Shalria) deve ser trashado ANTES de
+    # cartas jogaveis da mao. O +40 "ultimo corpo" nao vale pra corpo que nao
+    # defende (achado ao vivo 14/07, log 01.23.31: "nao trashou a Shalria").
+    me = GameState(leader=real_card("OP13-079"), don_available=3)
+    shalria = real_card("OP13-086"); shalria._deck_uid = 10
+    me.field_chars = [shalria]
+    mars = real_card("OP13-091"); mars._deck_uid = 20
+    saturn = real_card("OP13-083"); saturn._deck_uid = 30
+    me.hand = [mars, saturn]
+    opp = GameState(leader=mk("OP10-099", "Kid", card_type="LEADER", color="Red"))
+    cands = [{"id": 10, "zone": "own_board", "code": "OP13-086"},
+             {"id": 20, "zone": "own_hand", "code": "OP13-091"},
+             {"id": 30, "zone": "own_hand", "code": "OP13-083"}]
+    order = sim_bridge.order_target_candidates(me, opp, cands, actor_code="OP13-079")
+    check("draw do Imu trasha o corpo morto (Shalria) antes da mao",
+          bool(order) and order[0] == 10)
+
+
 def test_imu_waits_for_active_elder_attack() -> None:
     me = GameState(leader=real_card("OP13-079"), don_available=8)
     opp = GameState(leader=mk("OP11-021", "Jinbe", card_type="LEADER", color="Green"))
@@ -192,6 +248,9 @@ def main() -> int:
     test_turn_order_imu_prefers_second()
     test_empty_throne_beats_direct_five_elders_play()
     test_ground_death_no_low_value_negate()
+    test_never_existed_no_stage_is_hard_blocked()
+    test_counter_buff_vai_pro_lider_defensor_no_empate()
+    test_draw_cost_trasha_corpo_morto_antes_da_mao()
     test_imu_waits_for_active_elder_attack()
     test_nusjuro_rush_at_trash_7()
     test_nusjuro_rush_known_in_hand_for_planner()

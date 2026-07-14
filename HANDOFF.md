@@ -1,5 +1,60 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-14 (131) - Claude - 3 leaks taticos (log 01.23.31) + survival opp-aware
+
+Partida ao vivo `Imu-B_x_Kid_01.23.31` (usuario amassou o bot). Confirmado:
+DLL atual (`Harmony PatchAll executado` no log), server meu atendeu. Turn order:
+bot foi 1o porque PERDEU O DADO (`Start_WaitOnTurnOrder` nunca ocorreu) -> NAO e
+bug do engine, o `turn_order patch` nao tem o que interceptar quando perde o
+dado. 3 leaks corrigidos + 1 termo novo (todos com check no `smoke_fast.py`):
+
+1. **Never Existed "do nada" (FIX):** ativou o [Main] `ko opp_stage` sem stage
+   do oponente = jogou a carta no vacuo E queimou o [Counter] +4000. A
+   viabilidade (`_step_is_viable`) ja retornava False, mas o gate em
+   `_score_play_action` era so -120 (mole). Agora **bloqueio DURO** (return
+   -999) pra EVENTO cujo [Main] nao produz nada. Check: "Never Existed no
+   vacuo e bloqueio duro".
+2. **Ground Death alvo errado (FIX):** counter +4000 foi no corpo ATIVO mais
+   forte em vez do lider sob ataque (empate Kaido 5000 vs lider 5000 = atacante
+   vence). Causa: `order_target_candidates` (sim_bridge ~1067) usava
+   `p < maior_ameaca <= resultante` (empate nos dois lados); a regra irma usa
+   `p <= X < resultante`. Corrigido pra `p <= maior_ameaca < resultante`.
+   Reproduzido (corpo ativo 8000 -> buff ia nele) e check no smoke_fast.
+3. **Shalria nao trashada no draw (FIX):** o +40 "ultimo corpo" protegia a
+   Shalria (0 poder, on-play gasto) que NAO defende nada -> lider trashava fuel/
+   mao. Agora o +40 so vale se o corpo REALMENTE defende (poder>0 ou blocker).
+   Ordem pos-fix: Shalria(morta)->MarcusMars(fuel)->Saturn->FiveElders. Valiosos
+   seguem protegidos. Check no smoke_fast.
+4. **Sobrevivencia ciente do plano (TERMO NOVO, prior gated):** pedido do
+   usuario -- se a win-con e combo de 10 DON, sobreviver ate la. `evaluate_state`
+   ganha premio na MINHA vida quando: win-con caro (don_target>=6) + nao
+   disparavel ainda (don<target) + vida baixa (panico<=3) + **oponente NAO e
+   controle-dominante** (gate por arquetipo do opp, plano item 2 ponto 5). O
+   gate e a salvaguarda: vs CONTROLE durdlar e ruim (Krieg feriu 0.53->0.27 sem
+   gate), entao o premio DESLIGA vs controle e so liga vs aggro (Kid subiu).
+   Peso `survival_premium`=15 (prior pendente tunagem n=50).
+
+**SEM DOIS MOTORES (regra do usuario reforcada 14/07):** os fixes 2 e 3 NAO
+duplicam regua no sim_bridge -- a aritmetica de combate virou metodo GENERICO no
+motor unico: `DecisionEngine.buff_wins_combat(def,threat,buffed)` (regra do
+empate do OPTCG, usada pelas DUAS checagens de buff, consolidando a divergencia
+que era a raiz do bug), `body_provides_defense(card)` e `would_lose_last_defender
+(p,card)`. `order_target_candidates` (sim_bridge) so CHAMA esses metodos, sem
+comparacao numerica propria. Tudo generico (so numeros/flags, zero nome de
+carta) = qualquer deck. pre-commit hook (sem-dois-motores) passa limpo.
+
+**RESSALVA DE MEDICAO (importante):** o A/B n=15 seed=1 OSCILOU MUITO entre runs
+(Krieg 0.53/0.27/0.33/0.20) mesmo com PYTHONHASHSEED=0 -- n=15 e ruidoso demais
+pra validar termos de eval. Os 3 FIXES sao validados por TESTES DIRIGIDOS
+deterministicos (nao dependem do winrate). O survival e prior gated (seguro por
+construcao vs controle), a validar no gauntlet n=50 do item 5. NAO confiar em
+winrate n=15 pra decidir termo de eval daqui pra frente.
+
+**ESTADO:** smoke_fast 12->15 checks, todos verdes. Server precisa REINICIAR
+(mudou decision_engine/sim_bridge). DLL inalterada (so Python). Pendente = novo
+teste ao vivo. Proximo estrutural: item 3 (busca prof.2) = o que de fato para
+"joga no vacuo/ataca em counter".
+
 ## 2026-07-14 (130) - Claude - win-con "arma carregada" na eval + commit unindo sessoes
 
 **Contexto:** sessao paralela a do Codex (blocos 125-129). Este commit UNE o

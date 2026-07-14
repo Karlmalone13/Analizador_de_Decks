@@ -11,5 +11,6 @@
   "coverage": 7.0,
   "ax_trash": 0.05,
   "ax_reanim": 12.0,
-  "ax_inversion": 0.5
+  "ax_inversion": 0.5,
+  "survival_premium": 15.0
 }
