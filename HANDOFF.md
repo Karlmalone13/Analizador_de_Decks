@@ -1,5 +1,32 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-14 (133) - Claude - Shalria da MAO protegida (trash-filler) + turn order reinvestigado
+
+**Shalria na MAO (FIX, engine):** o efeito dela (on_play trash_rest+trash_from_hand)
+ENCHE o trash -> rumo ao trash_gte 7 (imunidade CD + combo). `_trash_value` agora
+protege QUALQUER character cujo on_play tem acao de trash-fill enquanto
+`len(trash) < game_plan.trash_target` (Shalria _trash_value 186->236 com trash<7).
+Generico (game_plan + acoes do banco, zero nome de carta). Complementa o fix do
+bloco 132 (Shalria MORTA no CAMPO trasha 1o) -- agora os dois lados certos:
+campo morta=descartavel, mao=jogar pra encher o trash. Check no smoke_fast.
+
+**TURN ORDER reinvestigado (log 02.34.18) -- NAO e o bot matando a escolha:** o
+usuario relatou que a opcao de 1o/2o nao aparece nem pra ele e suspeitou do bot.
+Evidencia (LogOutput.log): o codigo de turn-order do bot (BotDriver:97 +
+TurnOrderPatch) so dispara em `Start_WaitOnTurnOrder`, que SO existe pra quem
+GANHA o dado; nos 3 logs esse estado NUNCA ocorreu no cliente do bot (vai direto
+pro mulligan) e NENHUM log de `turn_order patch`/`ganhou o dado` aparece. Ou
+seja, o bot NAO toca na escolha. A opcao nao aparecer parece comportamento do
+modo (Solo vs Self auto-atribui / o dado decide sem prompt), nao o plugin. NAO
+mexer as cegas (risco de quebrar mulligan/fluxo que funcionam). Se persistir,
+DEBUG AO VIVO (Shift+B pra pausar o bot no game-start e observar a tela). Pista
+solta a investigar live: linha 20 do log = `[Bot] alvo de efeito: OP13-099`
+(clique de efeito no game-start, antes do mulligan) -- origem nao esclarecida.
+
+**PROXIMO: PAUSAR whack-a-mole, COMECAR ITEM 3 (busca prof.2)** -- decidido com o
+usuario 14/07. Meta: jogo DISPUTADO vs humano (nao ganhar todas). Ver
+PLANO_AVALIACAO_E_BUSCA secao 3.
+
 ## 2026-07-14 (132) - Claude - Shalria dead-weight robusto (log 02.34.18) + nota estrategica
 
 Log `02.34.18` (Imu vs Kid): o fix da Shalria do bloco 131 FUNCIONOU parcial

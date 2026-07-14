@@ -172,6 +172,33 @@ def test_draw_cost_trasha_corpo_morto_antes_da_mao() -> None:
           bool(order) and order[0] == 10)
 
 
+def test_shalria_na_mao_protegida_enquanto_precisa_de_trash() -> None:
+    # Shalria da MAO enche o trash no on-play (trash_rest/trash_from_hand);
+    # enquanto o trash < alvo do game_plan (7 no Imu) ela deve ser PROTEGIDA de
+    # ser trashada como custo (guardar pra JOGAR). Pedido do usuario 14/07.
+    deck_path = Path(r"E:\Games\OnePieceSimulador\Builds_Windows\Decks\Imu.deck")
+    if not deck_path.exists():
+        print("[SKIP] deck Imu.deck nao encontrado")
+        return
+    codes: list[str] = []
+    for line in deck_path.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        qty, code = line.split("x", 1)
+        codes.extend([code] * int(qty))
+
+    def trash_value_com(n_trash: int) -> float:
+        me = GameState(leader=real_card("OP13-079"), don_available=1)
+        me.deck = [real_card(c) for c in codes]
+        me.trash = [real_card("OP13-080") for _ in range(n_trash)]
+        opp = GameState(leader=mk("OP10-099", "Kid", card_type="LEADER", color="Red"))
+        return EffectExecutor(me, opp)._trash_value(real_card("OP13-086"))
+
+    check("Shalria na mao mais protegida com trash baixo (precisa encher) que cheio",
+          trash_value_com(0) > trash_value_com(8))
+
+
 def test_imu_waits_for_active_elder_attack() -> None:
     me = GameState(leader=real_card("OP13-079"), don_available=8)
     opp = GameState(leader=mk("OP11-021", "Jinbe", card_type="LEADER", color="Green"))
@@ -252,6 +279,7 @@ def main() -> int:
     test_never_existed_no_stage_is_hard_blocked()
     test_counter_buff_vai_pro_lider_defensor_no_empate()
     test_draw_cost_trasha_corpo_morto_antes_da_mao()
+    test_shalria_na_mao_protegida_enquanto_precisa_de_trash()
     test_imu_waits_for_active_elder_attack()
     test_nusjuro_rush_at_trash_7()
     test_nusjuro_rush_known_in_hand_for_planner()

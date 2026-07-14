@@ -4940,6 +4940,21 @@ class EffectExecutor:
                 and plano['don_target'] and self.me.don_available < plano['don_target']):
             value += 150
 
+        # Carta que ENCHE O TRASH no on_play (self-mill: trash_rest/
+        # trash_from_hand/mill) e trash_SETUP do deck: enquanto o trash ainda
+        # nao bateu o alvo do game_plan (ex: Imu precisa de 7 pra imunidade dos
+        # Celestial Dragons + combo), joga-la ADIANTA o plano -> NAO trashar
+        # como custo, guardar pra JOGAR. Pedido do usuario 14/07 (Shalria da mao
+        # no early nao deve ser trashada). Generico via game_plan.trash_target +
+        # acoes de trash no proprio on_play (zero nome de carta).
+        if (card.card_type == 'CHARACTER' and plano.get('trash_target')
+                and len(self.me.trash) < plano['trash_target']):
+            _TRASH_FILL = {'trash_rest', 'trash_from_hand', 'mill', 'mill_self',
+                           'trash_deck_top', 'self_mill'}
+            op_steps = get_card_effects(card.code).get('on_play', {}).get('steps', [])
+            if any(s.get('action') in _TRASH_FILL for s in op_steps):
+                value += 50
+
         # Carta jogável ESTE turno vale ainda mais — perda dupla se trashada.
         custo = effective_hand_play_cost(self.me, card)
         if custo <= self.me.don_available:
