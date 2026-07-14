@@ -266,8 +266,23 @@ def _dto_to_gs(player: PlayerDto, turn: int):
     if gs.leader is not None:
         cards = bridge.deck_cards_for_leader(gs.leader.code)
         if cards:
-            from optcg_engine.decision_engine import deck_census
+            from optcg_engine.decision_engine import (
+                deck_census, compute_game_plan_from_cards)
             gs.full_deck_census = deck_census(cards)
+            # full_deck_plan (win-con/trash_target) e full_deck_profile
+            # (arquetipo+eixos+papeis) UMA VEZ do deck INTEIRO -- pedido do
+            # usuario 14/07: o bot deve ler isso antes da partida e lembrar
+            # em TODA decisao, como um jogador humano conhece o proprio
+            # deck desde o T1 (nao so o que ja comprou). compute_game_plan/
+            # deck_profile_for (decision_engine.py) preferem estes campos
+            # quando presentes.
+            gs.full_deck_plan = compute_game_plan_from_cards(cards)
+            try:
+                from deck_profile import build_profile_from_codes
+                gs.full_deck_profile = build_profile_from_codes(
+                    [c.code for c in cards] + [gs.leader.code])
+            except Exception:
+                gs.full_deck_profile = None
 
     return gs
 

@@ -290,13 +290,15 @@ def get_card_flags(code: str) -> dict:
     return _ANALYSIS_DB.get(code, {})
 
 
-def compute_game_plan(p: 'GameState') -> dict:
+def compute_game_plan_from_cards(cards: list) -> dict:
     """
-    Plano de jogo do deck: escaneia TODAS as zonas do próprio jogador
-    (deck+mão+campo+trash+vida+stage — a união reconstrói a lista completa
-    do deck a qualquer momento da partida, já que cartas próprias não saem
-    dessas zonas em jogo normal) atrás de dois sinais estruturais já
-    presentes no card_effects_db, sem parser novo:
+    Nucleo puro de compute_game_plan: deriva trash_target/win_con_code/
+    don_target de uma lista de Card (nao GameState). Extraido 14/07 pra ser
+    compartilhado por `compute_game_plan(p)` (zonas REVELADAS -- muda
+    conforme a partida progride, so sabe o que ja viu) e o "plano completo"
+    calculado UMA VEZ a partir do deck INTEIRO conhecido (pedido do usuario
+    14/07: o bot deve saber arquetipo/combo do proprio deck como um jogador
+    humano sabe, nao so o que ja comprou -- ver full_deck_plan_for).
 
     - trash_target: maior `trash_gte` declarado em `conditions` de
       qualquer carta do deck (ex: Imu — 5 Celestial Dragons com "7+ no
@@ -305,30 +307,13 @@ def compute_game_plan(p: 'GameState') -> dict:
       `play_from_trash` no próprio `activate_main` (ex: Five Elders,
       reanima até 5). don_target = custo dela. None se o deck não tem
       combo desse tipo.
-
-    Decisão de arquitetura 10/07 (ver HANDOFF #119): derivar do estado
-    estrutural do deck, não de heurística por nome de carta — generaliza
-    pra qualquer deck com os mesmos padrões, não só o Imu. Barato o
-    bastante (deck tem ~50 cartas, get_card_effects é O(1)) pra recomputar
-    a cada chamada em vez de cachear — sem estado extra pra manter
-    sincronizado entre os polls do caminho ao vivo.
     """
-    zonas = list(p.deck) + list(p.hand) + list(p.field_chars) + list(p.trash) + list(p.life)
-    if getattr(p, 'field_stage', None) is not None:
-        zonas.append(p.field_stage)
-
-    # Contagem de trash_gte por VALOR (nao o maximo): o objetivo real do
-    # deck e o threshold que MAIS cartas compartilham (ex: Imu, 5
-    # personagens em 7 pra imunidade), nao o threshold mais alto que
-    # apareceu (ex: Empty Throne tem um bonus a parte em 19, so 1 carta —
-    # pegar o maximo cru escolheria a meta errada, muito mais dificil e
-    # menos representativa do plano do deck).
     trash_gte_contagem: dict[int, int] = {}
     win_con_code = None
     win_con_value = 0
     win_con_cost = None
     vistos = set()
-    for c in zonas:
+    for c in cards:
         if c.code in vistos:
             continue
         vistos.add(c.code)
@@ -359,6 +344,26 @@ def compute_game_plan(p: 'GameState') -> dict:
     }
 
 
+def compute_game_plan(p: 'GameState') -> dict:
+    """
+    Plano de jogo do deck. PREFERE o plano COMPLETO ja calculado uma vez do
+    deck inteiro (`p.full_deck_plan`, ver full_deck_plan_for -- pedido do
+    usuario 14/07: bot deve saber o proprio deck como um jogador humano
+    sabe) -- se nao disponivel (contexto sem lookup de deck, ex: testes
+    isolados), cai no fallback ANTIGO: escaneia as zonas REVELADAS
+    (deck+mão+campo+trash+vida+stage — a união reconstrói a lista completa
+    do deck a qualquer momento da partida, já que cartas próprias não saem
+    dessas zonas em jogo normal), que só sabe o que já foi visto.
+    """
+    if getattr(p, 'full_deck_plan', None) is not None:
+        return p.full_deck_plan
+
+    zonas = list(p.deck) + list(p.hand) + list(p.field_chars) + list(p.trash) + list(p.life)
+    if getattr(p, 'field_stage', None) is not None:
+        zonas.append(p.field_stage)
+    return compute_game_plan_from_cards(zonas)
+
+
 def deck_profile_for(p: 'GameState') -> dict | None:
     """
     Perfil do deck (arquetipo + eixos derivados) do jogador p -- MODULE-LEVEL
@@ -372,11 +377,19 @@ def deck_profile_for(p: 'GameState') -> dict | None:
     de combo/reanimacao (o padrao que compute_game_plan reconhece) sentiam
     os consertos recentes.
 
-    Identidade estavel do deck = uniao das zonas proprias (mesma logica de
-    compute_game_plan; cartas proprias nao saem dessas zonas). Cacheado
-    DIRETO no GameState (p._profile_cache, nao no engine) -- estavel entre
-    as MUITAS instancias de DecisionEngine/OPTCGMatch criadas por decisao.
+    PREFERE o perfil COMPLETO ja calculado uma vez do deck inteiro
+    (`p.full_deck_profile` -- pedido do usuario 14/07: bot deve saber
+    arquetipo/papeis/eixos do proprio deck como um jogador humano sabe, nao
+    so o que ja comprou). Sem isso disponivel, cai no fallback ANTIGO:
+    identidade instavel = uniao das zonas REVELADAS (mesma logica de
+    compute_game_plan; cartas proprias nao saem dessas zonas), cacheado por
+    assinatura DIRETO no GameState (p._profile_cache) -- estavel entre as
+    MUITAS instancias de DecisionEngine/OPTCGMatch criadas por decisao, mas
+    ainda incompleto ate a partida revelar tudo.
     """
+    full = getattr(p, 'full_deck_profile', None)
+    if full is not None:
+        return full
     if _build_profile_from_codes is None:
         return None
     zonas = list(p.deck) + list(p.hand) + list(p.field_chars) + \
@@ -6785,6 +6798,28 @@ class OPTCGMatch:
         # completa ja e conhecida (cards_a/cards_b).
         self.state_a.full_deck_census = deck_census(cards_a)
         self.state_b.full_deck_census = deck_census(cards_b)
+
+        # full_deck_plan (win_con_code/don_target/trash_target) e
+        # full_deck_profile (arquetipo+eixos+papeis, deck_profile.py):
+        # MESMO principio do census acima, pedido explicito do usuario
+        # 14/07 -- "o bot tem que ler arquetipo/papeis/eixos antes da
+        # partida e guardar na memoria pra toda decisao lembrar", como um
+        # jogador humano conhece o proprio deck desde o T1, nao so o que ja
+        # comprou. Calculado UMA VEZ do deck INTEIRO (cards_a/cards_b, ja
+        # conhecidos aqui), nao das zonas reveladas -- compute_game_plan/
+        # deck_profile_for preferem esses campos quando presentes (ver
+        # docstrings). Custo desprezivel (~50 cartas, 1x por partida).
+        self.state_a.full_deck_plan = compute_game_plan_from_cards(cards_a)
+        self.state_b.full_deck_plan = compute_game_plan_from_cards(cards_b)
+        if _build_profile_from_codes is not None:
+            try:
+                self.state_a.full_deck_profile = _build_profile_from_codes(
+                    [c.code for c in cards_a] + [leader_a.code])
+                self.state_b.full_deck_profile = _build_profile_from_codes(
+                    [c.code for c in cards_b] + [leader_b.code])
+            except Exception:
+                self.state_a.full_deck_profile = None
+                self.state_b.full_deck_profile = None
 
         if random.random() < 0.5:
             self.state_a.is_first = True

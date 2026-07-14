@@ -1,5 +1,74 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-14 (142) - Claude - Bot passa a "conhecer o proprio deck inteiro" (game_plan + arquetipo/eixos/papeis) igual jogador humano, offline E ao vivo
+
+**Pedido explicito do usuario:** apos o fix estrutural do bloco 141
+(`full_deck_census`), usuario pediu mais 2 coisas na mesma mensagem:
+1. **"Proibir whack-a-mole ate eu liberar"** -- constraint valendo pra
+   qualquer sessao futura (Claude ou Codex): NAO caçar bug log a log até o
+   usuario autorizar de novo explicitamente.
+2. **Bot deve ler arquetipo/papeis/eixos ANTES da partida e lembrar em toda
+   decisao** -- "ele tem que saber que carta tem no deck, combos,
+   arquetipo, eixos, curva, etc.", igual um jogador humano conhece o
+   proprio deck desde o T1, nao so o que ja comprou/revelou.
+
+**Fix (mesmo padrao do `full_deck_census`, aplicado a mais 2 campos):**
+- `decision_engine.py`: extraida `compute_game_plan_from_cards(cards: list)
+  -> dict` (logica pura de `compute_game_plan`, recebe `list[Card]` direto
+  em vez de escanear zonas incrementalmente reveladas). `compute_game_plan(p)`
+  e `deck_profile_for(p)` agora preferem `p.full_deck_plan`/
+  `p.full_deck_profile` quando presentes, com fallback pro scan de zonas
+  antigo se nao setado (degrada gracefully, zero regressao pros
+  caminhos que ainda nao populam esses campos).
+- `OPTCGMatch.__init__` (offline): popula `full_deck_plan` (via
+  `compute_game_plan_from_cards`) e `full_deck_profile` (via
+  `build_profile_from_codes`, guarded) pros dois lados, logo apos o
+  `full_deck_census` do bloco 141.
+- `server.py._dto_to_gs` (ao vivo): mesmo lookup lider->`.deck` ja usado
+  pro census (`bridge.deck_cards_for_leader`) agora tambem popula
+  `gs.full_deck_plan` e `gs.full_deck_profile`, no mesmo bloco `if
+  gs.leader is not None`.
+
+**Opiniao tecnica sobre o design (usuario perguntou "acha que fica
+bom?"):** sim, e o design certo. Motivo: replica exatamente o padrao ja
+validado do `full_deck_census` (bloco 141) -- computa 1x do deck REAL e
+COMPLETO (nao do que foi revelado ate agora), cacheia como atributo simples
+no `GameState` (sem `__slots__`, custo zero), e os consumidores existentes
+(`compute_game_plan`, `deck_profile_for`) so precisam de 1 checagem "se
+setado, usa; senao, cai no scan antigo" -- risco baixo, sem quebrar nenhum
+caminho que ainda nao popula esses campos (ex: se algum teste cria
+GameState manual sem full_deck_plan, comportamento antigo preservado
+identico). Fecha exatamente o gap que fazia `compute_game_plan`/
+`deck_profile_for` verem so "o que ja foi comprado/jogado" em vez do que um
+humano sabe desde o mulligan.
+
+**Medido (offline, `baseline_metrics.py --deck-a Imu --deck-b Kid --n 15
+--seed 1`, pedido explicito do usuario "meça agora o offline rápido"):**
+```
+winrate:       Imu 0.667  vs  Kid 0.333
+dano_por_jogo: Imu 4.13   vs  Kid 2.73
+don_por_atk:   Imu 0.84   vs  Kid 1.34
+```
+Kid ainda perde a maioria dos jogos simulados, mas `don_por_atk` mais alto
+sugere que o Kid do bot esta gastando mais DON por ataque realizado agora
+(menos ataques "de graca"/desperdicados) -- compativel com `posture()`
+finalmente enxergando o census real do Kid ('control', ver bloco 141) e
+ajustando o comportamento de acordo. Nao e uma prova definitiva de melhora
+de qualidade de jogo (winrate offline sozinho nao captura isso), so um
+sinal de que o dado estrutural agora influencia o jogo de fato. Confirmacao
+real ainda depende de partida ao vivo (proximo passo natural, nao feito
+nesta sessao).
+
+**Validado:** `smoke_fast` (32 checks) + `smoke_test` (amplo) verdes.
+Server AINDA NAO reiniciado com este fix -- proxima acao antes de testar ao
+vivo.
+
+**Constraint ativa pra proxima sessao:** NAO voltar a caçar bug log a log
+sem autorizacao explicita do usuario ("ate eu liberar"). Proximo passo
+natural quando liberado: nova rodada de partidas reais do usuario (Imu) pra
+validar se o comportamento do bot com Kid melhorou de fato, e retomar o
+comparador de decisoes humanas pendente desde o bloco 140.
+
 ## 2026-07-14 (141) - Claude - CORRECAO ESTRUTURAL: posture() nunca recebia dado de deck algum (nem offline nem ao vivo, pra NENHUM deck)
 
 **Contexto:** usuario expressou frustracao real e legitima -- "sinto que nada
