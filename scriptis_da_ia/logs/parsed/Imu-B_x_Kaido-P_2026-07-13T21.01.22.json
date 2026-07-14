@@ -1,0 +1,550 @@
+{
+  "meta": {
+    "players": {
+      "p1": {
+        "name": "You",
+        "leader": {
+          "name": "Imu",
+          "code": "OP13-079"
+        }
+      },
+      "p2": {
+        "name": "Opponent",
+        "leader": {
+          "name": "Kaido",
+          "code": "ST04-001"
+        }
+      }
+    },
+    "goes_first": null
+  },
+  "total_turns": 11,
+  "turns": [
+    {
+      "turn": 1,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 1,
+      "actions": [
+        {
+          "type": "activate",
+          "card": "OP13-079",
+          "card_name": "Imu",
+          "effects": [
+            "Trash St. Mjosgard [\"OP13-092\">OP13-092]",
+            "Draw 1 Card"
+          ]
+        }
+      ],
+      "snapshot": {}
+    },
+    {
+      "turn": 2,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP07-066",
+          "card_name": "Tony Tony Chopper",
+          "effects": []
+        }
+      ],
+      "snapshot": {}
+    },
+    {
+      "turn": 3,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP16-093",
+          "card_name": "Bartholomew Kuma",
+          "effects": [
+            "Draw 2 Card",
+            "Trash St. Ethanbaron V. Nusjuro [\"OP13-080\">OP13-080]",
+            "Trash St. Marcus Mars [\"OP13-091\">OP13-091]",
+            "Attach 1 Rested Don to Imu [\"OP13-079\">OP13-079]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP13-079",
+          "card_name": "Imu",
+          "effects": [
+            "Trash St. Marcus Mars [\"OP13-091\">OP13-091]",
+            "Draw 1 Card"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Imu",
+          "attacker_code": "OP13-079",
+          "target": "Kaido [\"ST04-001\">ST04-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {}
+    },
+    {
+      "turn": 4,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "activate",
+          "card": "ST04-014",
+          "card_name": "Lead Performer \"Disaster\"",
+          "effects": [
+            "Rest 4 Don",
+            "Draw 1 Card"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP07-077",
+          "card_name": "We're Going to Claim the One Piece!!!",
+          "effects": [
+            "Rest 1 Don",
+            "<b>Reveal and Draw Sanji & Pudding [\"EB02-035\">EB02-035]</b>"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Kaido",
+          "attacker_code": "ST04-001",
+          "target": "Imu [\"OP13-079\">OP13-079]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {}
+    },
+    {
+      "turn": 5,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "activate",
+          "card": "OP13-099",
+          "card_name": "The Empty Throne",
+          "effects": [
+            "Rest 3 Don",
+            "Rest The Empty Throne [\"OP13-099\">OP13-099]",
+            "Deploy St. Jaygarcia Saturn [\"OP13-083\">OP13-083]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP13-083",
+          "card_name": "St. Jaygarcia Saturn",
+          "effects": [
+            "<b>Reveal and Draw St. Jaygarcia Saturn [\"OP13-083\">OP13-083]</b>"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP13-079",
+          "card_name": "Imu",
+          "effects": [
+            "Trash St. Topman Warcury [\"OP13-089\">OP13-089]",
+            "Draw 1 Card"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP13-086",
+          "card_name": "St. Shalria",
+          "effects": [
+            "<b>Reveal and Draw ...Never Existed... [\"OP13-098\">OP13-098]</b>",
+            "Trash 2 Remaining Cards",
+            "Trash St. Mjosgard [\"OP13-092\">OP13-092]"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP13-079",
+          "to_name": "Imu",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Imu",
+          "attacker_code": "OP13-079",
+          "target": "Kaido [\"ST04-001\">ST04-001]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": "OP07-066",
+          "countered_by": []
+        }
+      ],
+      "snapshot": {}
+    },
+    {
+      "turn": 6,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "EB02-035",
+          "card_name": "Sanji & Pudding",
+          "effects": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "ST04-001",
+          "to_name": "Kaido",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Kaido",
+          "attacker_code": "ST04-001",
+          "target": "Imu [\"OP13-079\">OP13-079]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {}
+    },
+    {
+      "turn": 7,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "activate",
+          "card": "OP13-099",
+          "card_name": "The Empty Throne",
+          "effects": [
+            "Rest 3 Don",
+            "Rest The Empty Throne [\"OP13-099\">OP13-099]",
+            "Deploy St. Jaygarcia Saturn [\"OP13-083\">OP13-083]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP13-079",
+          "card_name": "Imu",
+          "effects": [
+            "Trash St. Shalria [\"OP13-086\">OP13-086]",
+            "Draw 1 Card"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP13-092",
+          "card_name": "St. Mjosgard",
+          "effects": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Imu",
+          "attacker_code": "OP13-079",
+          "target": "Kaido [\"ST04-001\">ST04-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "ST04-005"
+          ]
+        }
+      ],
+      "snapshot": {}
+    },
+    {
+      "turn": 8,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "ST04-005",
+          "card_name": "Queen",
+          "effects": [
+            "Minus 1 Don",
+            "Draw 2 Card",
+            "Trash Blast Breath [\"ST04-016\">ST04-016]"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "ST04-017",
+          "card_name": "Onigashima Island",
+          "effects": [
+            "Rest Onigashima Island [\"ST04-017\">ST04-017]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Kaido",
+          "attacker_code": "ST04-001",
+          "target": "Imu [\"OP13-079\">OP13-079]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP13-084"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "ST04-001",
+          "card_name": "Kaido",
+          "effects": [
+            "Minus 7 Don",
+            "Trash 1 Life"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Sanji & Pudding",
+          "attacker_code": "EB02-035",
+          "target": "Imu [\"OP13-079\">OP13-079]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {}
+    },
+    {
+      "turn": 9,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP13-083",
+          "to_name": "St. Jaygarcia Saturn",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "St. Jaygarcia Saturn",
+          "attacker_code": "OP13-083",
+          "target": "Sanji & Pudding [\"EB02-035\">EB02-035]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP01-114"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP13-083",
+          "to_name": "St. Jaygarcia Saturn",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "St. Jaygarcia Saturn",
+          "attacker_code": "OP13-083",
+          "target": "Sanji & Pudding [\"EB02-035\">EB02-035]",
+          "result": null,
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP16-093",
+          "card_name": "Bartholomew Kuma",
+          "effects": [
+            "Draw 2 Card",
+            "Trash The Holy Land Mary Geoise [\"OP05-097\">OP05-097]",
+            "Trash St. Shepherd Ju Peter [\"OP13-084\">OP13-084]",
+            "Attach 1 Rested Don to Imu [\"OP13-079\">OP13-079]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP13-079",
+          "card_name": "Imu",
+          "effects": [
+            "Trash St. Mjosgard [\"OP13-092\">OP13-092]",
+            "Draw 1 Card"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Imu",
+          "attacker_code": "OP13-079",
+          "target": "Kaido [\"ST04-001\">ST04-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {}
+    },
+    {
+      "turn": 10,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP01-114",
+          "card_name": "X.Drake",
+          "effects": [
+            "Forcing opponent to Trash 1 Cards"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "ST04-017",
+          "card_name": "Onigashima Island",
+          "effects": [
+            "Rest Onigashima Island [\"ST04-017\">ST04-017]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Kaido",
+          "attacker_code": "ST04-001",
+          "target": "Imu [\"OP13-079\">OP13-079]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP13-084"
+          ]
+        }
+      ],
+      "snapshot": {}
+    },
+    {
+      "turn": 11,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "St. Jaygarcia Saturn",
+          "attacker_code": "OP13-083",
+          "target": "Kaido [\"ST04-001\">ST04-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": "ST04-005",
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "St. Jaygarcia Saturn",
+          "attacker_code": "OP13-083",
+          "target": "Kaido [\"ST04-001\">ST04-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Imu",
+          "attacker_code": "OP13-079",
+          "target": "Kaido [\"ST04-001\">ST04-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP16-093",
+          "to_name": "Bartholomew Kuma",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Bartholomew Kuma",
+          "attacker_code": "OP16-093",
+          "target": "Kaido [\"ST04-001\">ST04-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP07-066"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP16-093",
+          "to_name": "Bartholomew Kuma",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Bartholomew Kuma",
+          "attacker_code": "OP16-093",
+          "target": "Queen [\"ST04-005\">ST04-005]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP08-074"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP13-099",
+          "card_name": "The Empty Throne",
+          "effects": [
+            "Rest 3 Don",
+            "Rest The Empty Throne [\"OP13-099\">OP13-099]",
+            "Deploy St. Topman Warcury [\"OP13-089\">OP13-089]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP13-079",
+          "card_name": "Imu",
+          "effects": [
+            "Trash St. Jaygarcia Saturn [\"OP13-083\">OP13-083]",
+            "Draw 1 Card"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP13-096",
+          "card_name": "The Five Elders... Are At Your Service",
+          "effects": [
+            "Rest 1 Don",
+            "<b>Reveal and Draw St. Topman Warcury [\"OP13-089\">OP13-089]</b>",
+            "Trash 2 Remaining Cards"
+          ]
+        }
+      ],
+      "snapshot": {}
+    }
+  ]
+}

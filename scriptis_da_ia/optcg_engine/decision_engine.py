@@ -59,6 +59,9 @@ EVAL_WEIGHTS = {
     'opp_blocker': 25.0, 'hand_first': 8.0, 'hand_extra': 3.0,
     'counter_hand': 6.0, 'don_field': 4.0, 'coverage': 7.0,
     'ax_trash': 0.05, 'ax_reanim': 12.0, 'ax_inversion': 0.5,
+    # win-con JOGÁVEL (peça-motor na mão + fuel no trash + DON pro custo):
+    # "arma carregada". Prior — a tunagem por self-play (item 5) ajusta.
+    'wincon_ready': 20.0,
 }
 try:
     _wpath = os.path.join(os.path.dirname(__file__), '..', 'eval_weights.json')
@@ -102,6 +105,7 @@ SIMULATED_WIN_SCORE = 50000.0
 
 _DB_PATH = os.path.join(os.path.dirname(__file__), '..', 'card_effects_db.json')
 _EFFECTS_DB: dict = {}
+_EFFECTS_ENRICHED_CACHE: dict = {}
 
 _ANALYSIS_PATH = os.path.join(os.path.dirname(__file__), '..', 'card_analysis_db.json')
 _ANALYSIS_DB: dict = {}
@@ -189,6 +193,65 @@ _load_analysis_db()
 def get_card_effects(code: str) -> dict:
     """Retorna os efeitos de uma carta pelo código."""
     return _EFFECTS_DB.get(code, {}).get('effects', {})
+
+
+def _quoted_types_before_play_turn_attack(text: str) -> list[str]:
+    marker = 'can attack characters on the turn in which it is played'
+    low = (text or '').lower()
+    idx = low.find(marker)
+    if idx < 0:
+        return []
+    prefix = text[:idx]
+    quoted = re.findall(r'["{]([^"}]+)["}]', prefix)
+    out = []
+    seen = set()
+    for q in quoted:
+        q = q.strip()
+        key = q.lower()
+        if q and key not in seen:
+            out.append(q)
+            seen.add(key)
+    return out
+
+
+def _enrich_effects_from_analysis_text(code: str, effects: dict) -> dict:
+    """
+    Corrige lacunas do card_effects_db usando texto ja presente no
+    card_analysis_db. Caso real: OP11-031 Jinbe tinha Activate Main no texto,
+    mas o effects_db so continha o On Play.
+    """
+    text = str(_ANALYSIS_DB.get(code, {}).get('text', '') or '')
+    low = text.lower()
+    if 'activate: main' in low and 'can attack characters on the turn in which it is played' in low:
+        am = effects.setdefault('activate_main', {'steps': [], 'once_per_turn': True})
+        am.setdefault('steps', [])
+        has_step = any(s.get('action') == 'select_grant_can_attack_active_turn'
+                       and s.get('allow_played_this_turn')
+                       for s in am['steps'])
+        if not has_step:
+            step = {
+                'action': 'select_grant_can_attack_active_turn',
+                'allow_played_this_turn': True,
+            }
+            types = _quoted_types_before_play_turn_attack(text)
+            if types:
+                step['filter_types'] = types
+            am['steps'].append(step)
+        if 'may rest this character' in low:
+            costs = am.setdefault('costs', [])
+            if not any(c.get('type') == 'rest_self' for c in costs):
+                costs.append({'type': 'rest_self'})
+    return effects
+
+
+def get_card_effects(code: str) -> dict:
+    """Retorna os efeitos de uma carta pelo codigo."""
+    if code in _EFFECTS_ENRICHED_CACHE:
+        return _EFFECTS_ENRICHED_CACHE[code]
+    effects = deepcopy(_EFFECTS_DB.get(code, {}).get('effects', {}))
+    effects = _enrich_effects_from_analysis_text(code, effects)
+    _EFFECTS_ENRICHED_CACHE[code] = effects
+    return effects
 
 
 def get_card_flags(code: str) -> dict:
@@ -618,7 +681,10 @@ class GameState:
         return len(self.life)
 
     def active_chars(self) -> List[Card]:
-        return [c for c in self.field_chars if not c.rested and not c.just_played]
+        return [c for c in self.field_chars
+                if not c.rested and (not c.just_played or c.is_rush()
+                                     or c.is_rush_character()
+                                     or c.rush_character_only_this_turn)]
 
     def rested_chars(self, attacker: 'Card' = None) -> List[Card]:
         # "This Character can also attack active Characters" (permanente ou
@@ -905,6 +971,26 @@ def can_afford_attack_paywall(card: 'Card', owner: 'GameState') -> bool:
     return True
 
 
+def character_can_attack_now(card: 'Card', owner: 'GameState', opp: 'GameState') -> bool:
+    """True if a field character can be offered as an attacker right now."""
+    if getattr(card, 'rested', False):
+        return False
+    if getattr(card, 'cannot_attack_until', False):
+        return False
+    if getattr(card, 'cannot_be_rested_until', False):
+        return False
+    if (getattr(card, 'just_played', False)
+            and not (card.is_rush()
+                     or card.is_rush_character()
+                     or getattr(card, 'rush_character_only_this_turn', False))):
+        return False
+    if is_attack_locked_self(card, owner, opp):
+        return False
+    if not can_afford_attack_paywall(card, owner):
+        return False
+    return True
+
+
 def _step_matching_targets(step: dict, chars: list) -> int:
     """Quantos personagens de `chars` passam nos FILTROS do step
     (cost_lte/gte/eq, power_lte/gte, rested_only, filter_type)."""
@@ -922,8 +1008,11 @@ def _step_matching_targets(step: dict, chars: list) -> int:
             continue
         if step.get('rested_only') and not getattr(c, 'rested', False):
             continue
+        filters = step.get('filter_types') or []
         ft = (step.get('filter_type') or '').lower()
-        if ft and ft not in c.sub_types.lower():
+        if ft:
+            filters = [ft]
+        if filters and not any(str(f).lower() in c.sub_types.lower() for f in filters):
             continue
         n += 1
     return n
@@ -3986,9 +4075,10 @@ class EffectExecutor:
                             me.trash.append(me.field_stage)
                         me.field_stage = self_card
                     else:
+                        me.field_chars.append(self_card)
+                        apply_conditional_keyword_passives(me, opp)
                         self_card.just_played = not (self_card.has_rush or self_card.rush_this_turn or self_card.is_rush_character())
                         self_card.rush_character_only_this_turn = self_card.is_rush_character() and not self_card.is_rush()
-                        me.field_chars.append(self_card)
                     return f'jogou do trash (self): {self_card.name[:15]}'
                 return ''
 
@@ -4025,9 +4115,10 @@ class EffectExecutor:
                     if len(me.field_chars) >= 5:
                         worst = min(me.field_chars, key=lambda x: x.board_value())
                         remove_character_from_field(me, worst, 'trash')
+                    me.field_chars.append(best)
+                    apply_conditional_keyword_passives(me, opp)
                     best.just_played = not (best.has_rush or best.rush_this_turn or best.is_rush_character())
                     best.rush_character_only_this_turn = best.is_rush_character() and not best.is_rush()
-                    me.field_chars.append(best)
 
                 played.append(best.name[:15])
                 played_names_lower.add(best.name.lower())
@@ -4086,9 +4177,10 @@ class EffectExecutor:
                 if len(me.field_chars) >= 5:
                     worst = min(me.field_chars, key=lambda x: x.board_value())
                     remove_character_from_field(me, worst, 'trash')
+                me.field_chars.append(best)
+                apply_conditional_keyword_passives(me, opp)
                 best.just_played = not (best.has_rush or best.rush_this_turn or best.is_rush_character())
                 best.rush_character_only_this_turn = best.is_rush_character() and not best.is_rush()
-                me.field_chars.append(best)
                 remove_by_identity(candidates, best)
                 played.append(best.name[:15])
 
@@ -4572,9 +4664,10 @@ class EffectExecutor:
                         if worst is not None:
                             remove_character_from_field(me, worst, 'trash')
                     c.rested = False
+                    me.field_chars.append(c)
+                    apply_conditional_keyword_passives(me, opp)
                     c.just_played = not (c.has_rush or c.rush_this_turn or c.is_rush_character())
                     c.rush_character_only_this_turn = c.is_rush_character() and not c.is_rush()
-                    me.field_chars.append(c)
                 elif c.card_type == 'STAGE':
                     if me.field_stage:
                         me.trash.append(me.field_stage)
@@ -4778,7 +4871,7 @@ class EffectExecutor:
                 eligible_cards,
             )
 
-            filter_type = step.get('filter_type', '')
+            filter_type = step.get('filter_types') or step.get('filter_type', '')
             candidatos = eligible_cards(me.field_chars, filter_text=filter_type)
             if step.get('include_leader') and card_matches_filter(me.leader, filter_type):
                 candidatos.append(me.leader)
@@ -4786,6 +4879,8 @@ class EffectExecutor:
                 return ''
             alvo = choose_highest_board_value(candidatos)
             alvo.can_attack_active_this_turn = True
+            if step.get('allow_played_this_turn'):
+                alvo.rush_character_only_this_turn = True
             return f'{alvo.name[:18]} pode atacar characters ativos este turno'
 
         # Keywords passivas (apenas registra, já vem do banco)
@@ -5232,9 +5327,7 @@ class GameAnalyzer:
         """Poder total de ataque disponível (sem DON)."""
         total = attack_time_power(self.me.leader, self.opp) if not self.me.leader.rested and not self.me.cannot_attack_leader_this_turn else 0
         for c in self.me.field_chars:
-            if (not c.rested and not c.just_played and not c.cannot_attack_until
-                    and not c.cannot_be_rested_until and not is_attack_locked_self(c, self.me, self.opp)
-                    and can_afford_attack_paywall(c, self.me)):
+            if character_can_attack_now(c, self.me, self.opp):
                 total += attack_time_power(c, self.opp)
         return total
 
@@ -5368,9 +5461,7 @@ class GameAnalyzer:
                             self.me.leader.has_unblockable or self.me.leader.unblockable_this_turn,
                             1))
         for c in self.me.field_chars:
-            if (not c.rested and not c.just_played and not c.cannot_attack_until
-                    and not c.cannot_be_rested_until and not is_attack_locked_self(c, self.me, self.opp)
-                    and can_afford_attack_paywall(c, self.me)):
+            if character_can_attack_now(c, self.me, self.opp):
                 hits = 2 if c.is_double_attack() else 1
                 ataques.append((attack_time_power(c, self.opp),
                                 c.has_unblockable or c.unblockable_this_turn,
@@ -5778,6 +5869,12 @@ class DecisionEngine:
             if opp_life == 0: v += 100
             s += v
 
+        if card.has_rush_character or card.rush_character_only_this_turn:
+            v = 18
+            if self.opp.field_chars: v += 18
+            if a.should_clear_field(): v += 12
+            s += v
+
         if card.has_double_attack or card.double_attack_this_turn:
             s += 25
             if opp_life <= 2: s += 35
@@ -5842,10 +5939,12 @@ class DecisionEngine:
         # Ajuste por postura
         if posture == 'LETHAL':
             if card.has_rush or card.rush_this_turn:          s += 50
+            if card.has_rush_character or card.rush_character_only_this_turn: s += 20
             if card.has_double_attack or card.double_attack_this_turn: s += 40
             if card.has_unblockable or card.unblockable_this_turn:   s += 30
         elif posture == 'AGGRESSIVE':
             if card.has_rush or card.rush_this_turn:          s += 30
+            if card.has_rush_character or card.rush_character_only_this_turn: s += 15
             if card.has_double_attack or card.double_attack_this_turn: s += 20
             if card.counter > 0:       s -= 10
         elif posture == 'DEFENSIVE':
@@ -6908,10 +7007,18 @@ class OPTCGMatch:
                 # atacar este turno), adia: melhor atacar antes de trashar.
                 if len(hand_ok) < cnt:
                     ativos = [c2 for c2 in chars_ok
-                              if not c2.rested and not c2.just_played
-                              and not getattr(c2, 'cannot_attack_until', False)]
+                              if character_can_attack_now(c2, p, opp)]
                     if len(ativos) >= cnt:
                         return False, 'adia trash_char: atacar com chars ativos antes de trashar'
+                # Imu leader: mesmo com carta na mao para pagar o custo, o
+                # alvo real do simulador pode acabar sendo um Elder ativo no
+                # campo. Nao cicla antes de extrair ataques ja disponiveis.
+                if src is p.leader and any(a in ('draw', 'look_top_deck', 'add_to_hand')
+                                           for a in actions):
+                    ativos = [c2 for c2 in chars_ok
+                              if character_can_attack_now(c2, p, opp)]
+                    if ativos:
+                        return False, 'adia ciclo do lider: atacar com chars ativos antes de trashar'
 
             elif ctype == 'trash_char':
                 chars_ok = [c2 for c2 in p.field_chars
@@ -6990,8 +7097,7 @@ class OPTCGMatch:
         if any(a in ('buff_power', 'set_base_power') for a in actions):
             if any(c.get('type') == 'ko_own_character' for c in costs):
                 attackers = [c for c in p.field_chars
-                             if not c.rested and not c.just_played
-                             and not getattr(c, 'cannot_attack_until', False)]
+                             if character_can_attack_now(c, p, opp)]
                 if not attackers and getattr(p.leader, 'rested', False):
                     return False, 'buff_power com K.O. proprio sem ataques para aproveitar'
             return True, 'buff_power incondicionado'
@@ -7020,6 +7126,71 @@ class OPTCGMatch:
         # Melhor ativar e deixar o executor decidir do que silenciosamente ignorar.
         return True, f'ação ativada por omissão (heurística não cobre): {actions}'
 
+    def _negate_effect_target_value(self, target) -> float:
+        """Valor futuro de negar efeito; on_play ja resolvido nao conta."""
+        if target is None or getattr(target, 'effects_negated_until', ''):
+            return 0.0
+        effects = get_card_effects(target.code)
+        if not effects:
+            return 0.0
+
+        value = 0.0
+        future_blocks = (
+            'activate_main', 'when_attacking', 'on_ko', 'on_opponent_attack',
+            'your_turn', 'opp_turn', 'end_of_turn', 'start_of_turn',
+            'passive', 'continuous', 'trigger',
+        )
+        for key in future_blocks:
+            if effects.get(key):
+                value += 55 if key in ('activate_main', 'when_attacking') else 30
+
+        if getattr(target, 'has_blocker', False) or getattr(target, 'blocker_this_turn', False):
+            value += 25
+        return value
+
+    def _best_negate_effect_target_value(self, opp, target_scope='opp_leader_or_character') -> float:
+        targets = []
+        scope = (target_scope or 'opp_leader_or_character').lower()
+        if 'leader' in scope and getattr(opp, 'leader', None) is not None:
+            targets.append(opp.leader)
+        if 'character' in scope or scope in ('opp', 'opponent'):
+            targets.extend(getattr(opp, 'field_chars', []))
+        return max((self._negate_effect_target_value(t) for t in targets), default=0.0)
+
+    def _stage_play_saves_don_for_card(self, p, card) -> int:
+        stage = getattr(p, 'field_stage', None)
+        if stage is None or getattr(stage, 'rested', False):
+            return 0
+        effects = get_card_effects(stage.code)
+        am = effects.get('activate_main', {})
+        steps = am.get('steps', [])
+        if not any(s.get('action') == 'play_card' for s in steps):
+            return 0
+        costs = am.get('costs', [])
+        stage_don_cost = sum(c.get('count', 0) for c in costs if c.get('type') == 'rest_don')
+        if p.don_available < stage_don_cost:
+            return 0
+
+        for step in steps:
+            if step.get('action') != 'play_card':
+                continue
+            cost_lte = step.get('cost_lte')
+            if cost_lte == 'don_count_self':
+                cost_lte = p.don_available + p.don_rested
+            ftype = (step.get('filter_type') or '').lower()
+            fcolor = (step.get('color') or '').lower()
+            fcard_type = (step.get('card_type') or 'CHARACTER').upper()
+            if fcard_type and card.card_type.upper() != fcard_type:
+                continue
+            if cost_lte is not None and card.cost > cost_lte:
+                continue
+            if ftype and ftype not in card.sub_types.lower():
+                continue
+            if fcolor and fcolor not in card.color.lower():
+                continue
+            return max(0, effective_hand_play_cost(p, card) - stage_don_cost)
+        return 0
+
     def _score_play_action(self, card, engine) -> float:
         """
         Pontua JOGAR uma carta. Cartas cujo efeito HABILITA o ataque
@@ -7027,6 +7198,10 @@ class OPTCGMatch:
         ANTES dos ataques. Cartas só-desenvolvimento (blocker defensivo, vanilla)
         pontuam como dev e saem DEPOIS dos ataques (regra de ordem do usuário).
         """
+        stage_saves = self._stage_play_saves_don_for_card(engine.me, card)
+        if stage_saves >= 3:
+            return -999.0
+
         base = engine.avaliar_carta(card)
         flags = get_card_flags(card.code)
         effects = get_card_effects(card.code)
@@ -7179,6 +7354,19 @@ class OPTCGMatch:
         # (avaliar + motor de activate_main) dos DOIS lados: substituição
         # com ganho líquido <= 0 é bloqueada dura (-999, nunca compete);
         # uma stage genuinamente melhor continua podendo entrar.
+        if card.card_type == 'EVENT':
+            main = effects.get('main', {})
+            main_steps = main.get('steps', [])
+            if main_steps and any(s.get('action') == 'negate_effect' for s in main_steps):
+                negate_value = max(
+                    self._best_negate_effect_target_value(engine.opp, s.get('target'))
+                    for s in main_steps if s.get('action') == 'negate_effect'
+                )
+                if negate_value <= 0:
+                    base = min(base - 140, -80)  # on_play ja resolvido/sem texto futuro: nao gaste DON
+                else:
+                    base += min(negate_value, 70)
+
         if card.card_type == 'STAGE' and engine.me.field_stage is not None:
             worth_nova  = engine.stage_worth(card)
             worth_atual = engine.stage_worth(engine.me.field_stage)
@@ -7270,11 +7458,20 @@ class OPTCGMatch:
                     best_saved_don = max(best_saved_don, effective_hand_play_cost(p, candidate) - custo_don)
             base += min(best_play_value * 0.55, 95)
             base += min(max(0, best_saved_don) * 18, 45)
+            if src is getattr(p, 'field_stage', None) and best_saved_don >= 3:
+                base += min(best_saved_don * 80, 520)
+                base += min(best_play_value * 0.20, 180)
         elif any(a in ('rest_opp', 'rest_opp_character', 'ko', 'ko_opp',
                        'ko_if_cost_eq_don', 'debuff_power', 'debuff_cost',
                        'bounce', 'place_opp_character_bottom_deck',
                        'negate_effect', 'lock_opp_character_attack') for a in actions_list):
             base = 100   # remoção/controle
+            if 'negate_effect' in actions_list and engine is not None:
+                negate_value = max(
+                    self._best_negate_effect_target_value(opp, s.get('target'))
+                    for s in steps if s.get('action') == 'negate_effect'
+                )
+                base = -60 if negate_value <= 0 else 100 + min(negate_value, 70)
         elif any(a == 'play_from_trash' for a in actions_list):
             # Achado real 09/07 (Five Elders OP13-082 nunca ativava, mesmo
             # com o board quase morrendo e a lixeira cheia de alvos
@@ -7506,9 +7703,7 @@ class OPTCGMatch:
         # ── Ações de ATACAR (com risco de trigger descontado) ──
         if p.can_attack_this_turn():
             attackers = [c for c in p.field_chars
-                         if not c.rested and not c.just_played and not c.cannot_attack_until
-                         and not c.cannot_be_rested_until and not is_attack_locked_self(c, p, opp)
-                         and can_afford_attack_paywall(c, p)]
+                         if character_can_attack_now(c, p, opp)]
             if not p.leader.rested:
                 attackers.append(p.leader)
             for att in attackers:
@@ -7674,7 +7869,7 @@ class OPTCGMatch:
         else:
             valor = 40
         # gatilhos de ataque só valem se o personagem pode atacar
-        if trig == 'when_attacking' and (card.rested or card.just_played):
+        if trig == 'when_attacking' and not character_can_attack_now(card, p, opp):
             valor = 0
         return valor
 
@@ -7804,6 +7999,22 @@ class OPTCGMatch:
                            and (peq is None or c.power == peq))
                 val = min(eng.get('reanima_ate', 0), fuel) if has_engine else 0
                 total += val * W['ax_reanim']
+                # win-con JOGÁVEL = "arma carregada": a peça-motor está na MÃO
+                # (não só buscável no deck), há fuel real no trash E há progresso
+                # de DON NO CAMPO rumo ao custo. DON usado/anexado neste turno
+                # volta ativo no refresh, então `don_available` sozinho
+                # subvaloriza a linha no fim da simulação. Faz a busca preferir a linha que
+                # PRESERVA/desenvolve rumo ao combo em vez de trocá-lo por dano
+                # marginal — e, quando o custo já é pagável (ramp satura em 1),
+                # valoriza fortemente o estado que dispara o payoff. Genérico:
+                # código/custo/fuel vêm do perfil, zero nome de carta. (Achado
+                # ao vivo 13/07: OP13-082 ficou na mão a partida inteira, fuel
+                # pronto, mas o combo nunca foi valorizado — ver HANDOFF.)
+                engine_in_hand = any(c.code == eng.get('code') for c in p.hand)
+                custo = eng.get('custo') or 0
+                if engine_in_hand and fuel >= 1 and custo:
+                    ramp = min(1.0, p.don_on_field() / custo)
+                    total += val * ramp * W['wincon_ready']
             elif kind == 'inversion':    # life_lte: achata o pânico
                 try:
                     thr = int(str(ax.get('condition', '')).split()[-1])
@@ -8275,9 +8486,10 @@ class OPTCGMatch:
                 if verbose:
                     print(f'    campo cheio -> descartou {worst.name[:25]}')
             card.rested = False
+            p.field_chars.append(card)
+            apply_conditional_keyword_passives(p, opp)
             card.just_played = not (card.has_rush or card.rush_this_turn or card.is_rush_character())
             card.rush_character_only_this_turn = card.is_rush_character() and not card.is_rush()
-            p.field_chars.append(card)
 
         elif card.card_type == 'EVENT':
             p.trash.append(card)

@@ -111,6 +111,19 @@ ML só se 1-3 baterem teto).
 # engine puro: editar → partida real instrumentada (replay) → commit (sem gerar_dbs)
 # NUNCA `git add -A`; commits em linha única (ambiente CMD/PowerShell)
 ```
+- **Validacao rapida do bot ao vivo:** antes de liberar um novo teste no
+  OPTCGSim, rode:
+  ```powershell
+  cd scriptis_da_ia
+  $env:PYTHONDONTWRITEBYTECODE='1'
+  python smoke_fast.py
+  ```
+  Este e o pre-flight padrao para ajustes do bot/engine vistos em combat log
+  recente (turn order Imu, Empty Throne antes do play direto de `OP13-082`,
+  Ground Death sem alvo util, Imu nao trashar Elder ativo antes de atacar).
+  `smoke_test.py` NAO e mais smoke curto: trate como regressao ampla e rode
+  so quando mexer em parser, counters, imunidade, substituicao, gramatica de
+  efeitos ou outra area compartilhada de alto risco.
 - Front: `npm run dev` (porta 3000), `npx eslint`, `npx tsc --noEmit`,
   `npx next build` antes de considerar uma tarefa de front concluída.
 - API Python local: `cd scriptis_da_ia && pip install -r requirements.txt

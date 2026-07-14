@@ -1368,5 +1368,130 @@
       "You": "decks/Imu-B_2026-07-12T23.41.50.json",
       "Opponent": "decks/Eustass.Captain.Kid-Y_2026-07-12T23.41.50.json"
     }
+  },
+  {
+    "id": "2026-07-13T21.01.22",
+    "friendly_name": "Imu-B_x_Kaido-P",
+    "date": "2026-07-13",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP13-079",
+      "leader_name": "Imu",
+      "slug": "Imu-B"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "ST04-001",
+      "leader_name": "Kaido",
+      "slug": "Kaido-P"
+    },
+    "turns": 11,
+    "winner": null,
+    "log_file": "raw/Imu-B_x_Kaido-P_2026-07-13T21.01.22.log",
+    "parsed_file": "parsed/Imu-B_x_Kaido-P_2026-07-13T21.01.22.json",
+    "deck_files": {
+      "You": "decks/Imu-B_2026-07-13T21.01.22.json",
+      "Opponent": "decks/Kaido-P_2026-07-13T21.01.22.json"
+    }
+  },
+  {
+    "id": "2026-07-13T22.54.47",
+    "friendly_name": "Imu-B_x_Jinbe-G",
+    "date": "2026-07-13",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP13-079",
+      "leader_name": "Imu",
+      "slug": "Imu-B"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP11-021",
+      "leader_name": "Jinbe",
+      "slug": "Jinbe-G"
+    },
+    "turns": 9,
+    "winner": null,
+    "log_file": "raw/Imu-B_x_Jinbe-G_2026-07-13T22.54.47.log",
+    "parsed_file": "parsed/Imu-B_x_Jinbe-G_2026-07-13T22.54.47.json",
+    "deck_files": {
+      "You": "decks/Imu-B_2026-07-13T22.54.47.json",
+      "Opponent": "decks/Jinbe-G_2026-07-13T22.54.47.json"
+    }
+  },
+  {
+    "id": "2026-07-13T23.26.58",
+    "friendly_name": "Imu-B_x_Jewelry.Bonney-G",
+    "date": "2026-07-13",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP13-079",
+      "leader_name": "Imu",
+      "slug": "Imu-B"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP07-019",
+      "leader_name": "Jewelry Bonney",
+      "slug": "Jewelry.Bonney-G"
+    },
+    "turns": 11,
+    "winner": null,
+    "log_file": "raw/Imu-B_x_Jewelry.Bonney-G_2026-07-13T23.26.58.log",
+    "parsed_file": "parsed/Imu-B_x_Jewelry.Bonney-G_2026-07-13T23.26.58.json",
+    "deck_files": {
+      "You": "decks/Imu-B_2026-07-13T23.26.58.json",
+      "Opponent": "decks/Jewelry.Bonney-G_2026-07-13T23.26.58.json"
+    }
+  },
+  {
+    "id": "2026-07-14T00.19.39",
+    "friendly_name": "Imu-B_x_Jewelry.Bonney-G",
+    "date": "2026-07-14",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP13-079",
+      "leader_name": "Imu",
+      "slug": "Imu-B"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP07-019",
+      "leader_name": "Jewelry Bonney",
+      "slug": "Jewelry.Bonney-G"
+    },
+    "turns": 9,
+    "winner": null,
+    "log_file": "raw/Imu-B_x_Jewelry.Bonney-G_2026-07-14T00.19.39.log",
+    "parsed_file": "parsed/Imu-B_x_Jewelry.Bonney-G_2026-07-14T00.19.39.json",
+    "deck_files": {
+      "You": "decks/Imu-B_2026-07-14T00.19.39.json",
+      "Opponent": "decks/Jewelry.Bonney-G_2026-07-14T00.19.39.json"
+    }
+  },
+  {
+    "id": "2026-07-14T00.40.32",
+    "friendly_name": "Imu-B_x_Donquixote.Doflamingo-GP",
+    "date": "2026-07-14",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP13-079",
+      "leader_name": "Imu",
+      "slug": "Imu-B"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP04-019",
+      "leader_name": "Donquixote Doflamingo",
+      "slug": "Donquixote.Doflamingo-GP"
+    },
+    "turns": 9,
+    "winner": null,
+    "log_file": "raw/Imu-B_x_Donquixote.Doflamingo-GP_2026-07-14T00.40.32.log",
+    "parsed_file": "parsed/Imu-B_x_Donquixote.Doflamingo-GP_2026-07-14T00.40.32.json",
+    "deck_files": {
+      "You": "decks/Imu-B_2026-07-14T00.40.32.json",
+      "Opponent": "decks/Donquixote.Doflamingo-GP_2026-07-14T00.40.32.json"
+    }
   }
 ]

@@ -1,0 +1,26 @@
+{
+  "cards": [
+    {
+      "code": "ST04-005",
+      "name": "Queen",
+      "count": 1
+    },
+    {
+      "code": "OP01-114",
+      "name": "X.Drake",
+      "count": 1
+    },
+    {
+      "code": "OP07-066",
+      "name": "Tony Tony Chopper",
+      "count": 1
+    },
+    {
+      "code": "OP08-074",
+      "name": "OP08-074",
+      "count": 1
+    }
+  ],
+  "total_seen": 4,
+  "leader": "ST04-001"
+}

@@ -1,5 +1,6 @@
 using BepInEx;
 using BepInEx.Logging;
+using HarmonyLib;
 using UnityEngine;
 
 namespace OPTCGBotPlugin
@@ -9,10 +10,14 @@ namespace OPTCGBotPlugin
     {
         internal static ManualLogSource Log = null!;
         private GameObject? _driverGo;
+        private Harmony? _harmony;
 
         private void Awake()
         {
             Log = base.Logger;
+            _harmony = new Harmony("com.optcgbot.plugin");
+            _harmony.PatchAll();
+            Log.LogInfo("[Bot] Harmony PatchAll executado");
 
             // Driver do bot: MonoBehaviour persistente que age via Update()
             _driverGo = new GameObject("OPTCGBotDriver");
@@ -25,6 +30,7 @@ namespace OPTCGBotPlugin
 
         private void OnDestroy()
         {
+            _harmony?.UnpatchSelf();
             if (_driverGo != null)
                 Object.Destroy(_driverGo);
         }

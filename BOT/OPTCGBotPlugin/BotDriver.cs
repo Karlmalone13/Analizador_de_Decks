@@ -82,7 +82,16 @@ namespace OPTCGBotPlugin
             if (!_botEnabled)
                 return;
 
-            if (_cooldown > 0f)
+            string stateName = gls.e_CurrentState.ToString();
+            bool turnOrderState =
+                gls.e_CurrentState == GameplayState.Start_WaitOnTurnOrder ||
+                (stateName.Contains("Turn") &&
+                 (stateName.Contains("Order") || stateName.Contains("Selection")));
+            bool setupChoiceState =
+                turnOrderState ||
+                gls.e_CurrentState == GameplayState.Start_WaitOnMulliganChoice;
+
+            if (_cooldown > 0f && !setupChoiceState)
             {
                 _cooldown -= Time.deltaTime;
                 return;
@@ -94,7 +103,7 @@ namespace OPTCGBotPlugin
             // o ENGINE pela curva do deck (/turn_order — pedido do usuario
             // 12/07: nada de 50/50); o plugin so coleta os codigos (olhos)
             // e clica (maos). Server fora do ar = segundo (conservador).
-            if (gls.e_CurrentState == GameplayState.Start_WaitOnTurnOrder)
+            if (turnOrderState)
             {
                 var toPs = gls.Lps_Players[BotPlayerIndex];
                 var codes = new System.Collections.Generic.List<string>();
@@ -109,7 +118,7 @@ namespace OPTCGBotPlugin
                     }
                 }
                 bool first = EngineClient.IsAlive() && EngineClient.GoFirst(codes);
-                Plugin.Log.LogInfo($"[Bot] ganhou o dado: vai de {(first ? "PRIMEIRO" : "SEGUNDO")}");
+                Plugin.Log.LogInfo($"[Bot] escolha de turno state={stateName} codes={codes.Count}: vai de {(first ? "PRIMEIRO" : "SEGUNDO")}");
                 gls.ChoiceButtonClicked(first ? ButtonChoiceType.GoFirst : ButtonChoiceType.GoSecond, -1);
                 _cooldown = 1f;
                 return;

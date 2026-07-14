@@ -1,0 +1,16 @@
+{
+  "cards": [
+    {
+      "code": "OP07-021",
+      "name": "Uroge",
+      "count": 1
+    },
+    {
+      "code": "OP05-030",
+      "name": "OP05-030",
+      "count": 1
+    }
+  ],
+  "total_seen": 2,
+  "leader": "OP07-019"
+}

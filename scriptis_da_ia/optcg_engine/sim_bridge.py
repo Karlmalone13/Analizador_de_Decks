@@ -194,7 +194,14 @@ def can_execute_action(action: tuple, gs: GameState) -> tuple[bool, str]:
             return False, f"{card.code} nao esta no campo"
         if getattr(c, 'rested', False):
             return False, f"{card.code} esta rested"
-        if getattr(c, 'just_played', False) and not getattr(c, 'rush', False):
+        has_rush = (
+            getattr(c, 'has_rush', False)
+            or getattr(c, 'rush_this_turn', False)
+            or getattr(c, 'rush_character_only_this_turn', False)
+            or (hasattr(c, 'is_rush') and c.is_rush())
+            or (hasattr(c, 'is_rush_character') and c.is_rush_character())
+        )
+        if getattr(c, 'just_played', False) and not has_rush:
             return False, f"{card.code} just_played sem Rush"
 
     elif atype == 'activate':

@@ -1,5 +1,226 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-14 (130) - Claude - win-con "arma carregada" na eval + commit unindo sessoes
+
+**Contexto:** sessao paralela a do Codex (blocos 125-129). Este commit UNE o
+trabalho nao-commitado das duas: `wincon_ready` (meu) + TurnOrderPatch/Rush/
+smoke_fast (Codex). Verifiquei que coexistem — `smoke_fast.py` 12/12 verde com
+tudo junto, nada conflitou. O Codex ate REFINOU minha logica (trocou
+`don_available`→`don_on_field()` no ramp da win-con, com razao: DON anexado
+volta ativo no refresh, entao `don_available` subconta a linha no fim da sim).
+
+**O que eu entreguei (item 1 do plano — win-con):**
+- `_evaluate_state_v2` agora valoriza a win-con JOGAVEL ("arma carregada"):
+  peca-motor na MAO + fuel no trash + progresso de DON rumo ao custo. Peso
+  `wincon_ready`=20 (prior tunavel, item 5). Generico via perfil (eixo
+  bottleneck ja tinha engine_card.custo + fuel), zero nome de carta. Ataca o
+  CRITICO reportado ao vivo (Five Elders/OP13-082 ficou na mao a partida
+  inteira, fuel pronto, combo nunca valorizado). A/B n=15 seed=1: Imu vs Krieg
+  0.13→0.53, vs Kid 0.40→0.33 (ruido). Sem regressao real.
+- ANTES disso (commit f90a77d, ja no git): log de DON anexado pelo bot no
+  combat log (LogLine Log.AttachDonMulti) — don_por_atk agora mensuravel.
+  Confirmado AO VIVO 13/07 (log Imu vs Kaido): 5 linhas `[You] Attach` (antes 0).
+
+**Achados ao vivo 13/07 (log Imu-B_x_Kaido-P_21.01.22) que guiam o proximo passo:**
+1. **Win-con precisa de POSTURA DE SOBREVIVENCIA (pedido do usuario 14/07):** se
+   o plano e combo com 10 DON, o bot tem que SOBREVIVER ate os 10 (ou fechar
+   antes) — nao pode perder todas as vidas antes. Hoje: eval valoriza a arma
+   carregada (meu) + sequenciamento (Codex), FALTA a defesa/durdle ciente do
+   game_plan quando falta DON. PROXIMO passo do fio da win-con.
+2. **Ground Death (OP14-096) alvo errado — BUG ABERTO:** counter buff +4000 foi
+   no Kuma (parado) em vez do lider Imu que LEVAVA o golpe do Kaido (5000 vs
+   5000, empate = atacante vence). Suspeito: `order_target_candidates`
+   (sim_bridge) regra do lider defensor usa `p < maior_ameaca` (ESTRITO) na
+   linha ~1060 — deveria ser `<=` (empate vai pro atacante, buff salva). A
+   regra irma (linha ~1039) ja usa `<=`. NAO reproduzi ate o fim (classifier
+   caiu). O smoke_fast do Codex cobre o MODO MAIN (nao gastar DON no negate),
+   nao o counter-buff-target — bug distinto, ainda aberto.
+3. **turn_order:** o bot foi PRIMEIRO porque PERDEU o dado (estado
+   `Start_WaitOnTurnOrder` nunca ocorreu no LogOutput.log — so aparece pra quem
+   ganha o dado). Mulligan DID rodar (KEEP, engine-reasoned). O TurnOrderPatch
+   do Codex so dispara se esse estado ocorrer → teste ao vivo vai revelar se o
+   patch pega (aparece `[Bot] turn_order patch`) ou se e sempre die-loss.
+
+**ESTADO:** server Python reiniciado (8765 ok, session_2026-07-14T01.01.43.log);
+DLL no jogo atual (build 01:02: TurnOrderPatch + PatchAll log + DON log);
+smoke_fast 12/12. **Pendente = teste ao vivo do usuario** conferindo
+`[Bot] Harmony PatchAll executado` + `[Bot] turn_order patch` no LogOutput.log.
+
+## 2026-07-14 (129) - Codex - Rush condicional antes do campo + Jinbe OP11-031
+
+**Contexto:** o usuario apontou dois casos que o engine precisava diferenciar:
+`OP13-080` Nosjuro deve ser reconhecido com Rush condicional ainda na mao
+quando `trash_gte: 7`, e `OP11-031` Jinbe (custo 6 do deck `jimbe.deck`) nao
+usa a palavra `[Rush]`, mas seu `[Activate: Main]` permite que um Fish-Man /
+Merfolk recem-baixado ataque Characters naquele turno.
+
+**Fix feito:**
+- `decision_engine.py`: `get_card_effects()` agora enriquece lacunas do
+  `card_effects_db` usando texto ja presente no `card_analysis_db`. Caso real:
+  `OP11-031` tinha o Activate Main no texto, mas o effects_db so continha o
+  On Play.
+- `select_grant_can_attack_active_turn` ganhou `allow_played_this_turn` para
+  representar "can attack Characters on the turn in which it is played" sem
+  transformar isso em Rush completo. O alvo ganha `rush_character_only_this_turn`
+  e `can_attack_active_this_turn`, entao pode atacar Character ativo/descansado,
+  mas nao Leader.
+- `character_can_attack_now`, `active_chars()` e `sim_bridge.can_execute_action`
+  passam a aceitar `rush_character_only_this_turn` como permissao temporaria
+  para ignorar `just_played`.
+- `avaliar_carta()` agora pontua `has_rush_character` /
+  `rush_character_only_this_turn`, para o planner valorizar cartas que atacam
+  no turno de entrada antes/depois de entrarem em campo.
+
+**Validacao:** `python smoke_fast.py` OK. Novos checks:
+- planner reconhece Rush condicional do Nosjuro ainda na mao;
+- `OP11-031` recupera o Activate Main ausente do effects_db;
+- Jinbe permite Fish-Man recem-baixado atacar Character;
+- essa permissao nao gera ataque ilegal ao Leader.
+
+## 2026-07-14 (128) - Codex - turn order ainda sem patch visivel + log Doflamingo
+
+**Log analisado:** `E:\Games\OnePieceSimulador\Builds_Windows\CombatLogs\2026-07-14T00.40.32.log`.
+Imu continuou indo primeiro; log salvo no banco via `parse_combat_log.py --add-to-db`.
+
+**Diagnostico:** `LogOutput.log` nao mostrou `turn_order patch`, `turn_order` ou
+`escolha de turno`, so mulligan e fluxo de jogo. Portanto o endpoint ainda nao
+foi chamado; o problema continua na interceptacao da tela/estado de escolha de
+turno, nao na heuristica do engine (que em `smoke_fast.py` retorna Imu segundo).
+
+**Mudanca aplicada:** `Plugin.cs` agora loga `[Bot] Harmony PatchAll executado`
+logo apos `_harmony.PatchAll()`. Recompilado OK e DLL copiada para
+`E:\Games\OnePieceSimulador\Builds_Windows\BepInEx\plugins\OPTCGBotPlugin.dll`.
+No proximo teste, se essa linha nao aparecer, o jogo esta com DLL antiga ou nao
+reabriu depois da copia. Se aparecer mas `turn_order patch` nao aparecer, o
+patch no metodo privado `WaitOnTurnSelection` nao esta disparando e precisa ser
+substituido por hook em outro ponto do start flow.
+
+**Correcao posterior sobre Nosjuro:** a leitura acima estava incompleta.
+`OP13-080` ganha Rush com `trash_gte: 7` e so ganha o debuff de poder no
+`when_attacking` com `trash_gte: 10`. O bug real era duplo: algumas listas de
+atacantes ainda filtravam `just_played` diretamente, e o bridge recusava ataque
+recem-baixado olhando `getattr(c, 'rush', False)` em vez de `has_rush` /
+`rush_this_turn` / `is_rush()`. Corrigido em `decision_engine.py` e
+`sim_bridge.py`; `smoke_fast.py` agora cobre Nosjuro recem-baixado com 7 no
+trash e tambem valida que o bridge aceita executar o ataque.
+## 2026-07-14 (127) - Codex - turn order ainda nao acionava; patch Harmony em WaitOnTurnSelection
+
+**Log analisado:** `E:\Games\OnePieceSimulador\Builds_Windows\CombatLogs\2026-07-14T00.19.39.log`.
+Adicionado ao banco como `Imu-B_x_Jewelry.Bonney-G_2026-07-14T00.19.39`.
+
+**Achado:** Imu continuou indo primeiro. `LogOutput.log` nao tinha nenhuma linha
+`turn_order`/`escolha de turno`; o log comecava no mulligan. Portanto o engine
+nao escolheu errado: o plugin nao estava pegando a janela de escolha. O polling
+em `BotDriver.Update()` e fragil porque `Start_WaitOnTurnSelection` pode passar
+antes do primeiro tick do driver.
+
+**Fix feito:** criado `BOT/OPTCGBotPlugin/TurnOrderPatch.cs`, Harmony postfix em
+`GameplayLogicScript.WaitOnTurnSelection`. Quando o jogo cria
+`Start_WaitOnTurnOrder`, o patch coleta os codigos do deck/mao/lider do bot,
+chama `EngineClient.GoFirst(codes)` e clica `GoFirst`/`GoSecond`. `Plugin.cs`
+agora cria `Harmony("com.optcgbot.plugin").PatchAll()`.
+
+**Validacao/instalacao:**
+- `python smoke_fast.py`: OK.
+- `dotnet build BOT\OPTCGBotPlugin\OPTCGBotPlugin.csproj`: OK (warnings antigos).
+- `BOT\setup_bepinex.ps1`: DLL copiada para
+  `E:\Games\OnePieceSimulador\Builds_Windows\BepInEx\plugins\OPTCGBotPlugin.dll`
+  com timestamp `2026-07-14 00:21:58`.
+- O jogo estava aberto (`OPTCGSim.exe` rodando), entao a DLL nova so sera usada
+  depois de fechar e reabrir o jogo. A copia do `.pdb` falhou por arquivo
+  travado; `setup_bepinex.ps1` foi ajustado para avisar e nao falhar quando isso
+  acontecer, pois a DLL e o que importa para teste.
+
+**Proximo teste:** fechar e reabrir OPTCGSim. No `LogOutput.log`, procurar
+`turn_order patch ... SEGUNDO` e no server log procurar `/turn_order`.
+## 2026-07-13 (126) - Codex - pos-log Imu vs Jinbe: Saturn antes do lider + Ground Death sem alvo
+
+**Log analisado:** `E:\Games\OnePieceSimulador\Builds_Windows\CombatLogs\2026-07-13T22.54.47.log`.
+Foi adicionado ao banco como `Imu-B_x_Jinbe-G_2026-07-13T22.54.47`
+(`logs/raw`, `logs/parsed`, `logs/decks` e `logs/index.json`).
+
+**Achados do log:**
+- Imu ficou em 9 DON com `OP13-082` na mao e morreu antes de chegar no turno de
+10 DON. O problema principal desta partida foi sobreviver/ordenar as acoes, nao
+o custo do Five Elders em si.
+- `St. Jaygarcia Saturn` entrou pelo `The Empty Throne`, mas o lider Imu usou
+draw/trash antes de atacar com ele e acabou trashando Saturn.
+- `Ground Death` foi jogado para negar Camie depois do on-play ja ter resolvido;
+como Camie nao tinha texto futuro relevante para aquele turno, o evento gastou
+DON sem retorno real.
+- Nao houve chamada `/turn_order` no server log desta partida. Como no SoloVSelf
+usado aqui P1 e sempre o bot e P1 escolhe a ordem, isso aponta para falha de
+fluxo no plugin antes da consulta ao engine.
+
+**Fix feito em `scriptis_da_ia/optcg_engine/decision_engine.py`:**
+- `_should_activate_main`: para o lider Imu, efeitos de draw/search com custo
+`trash_char_or_hand` agora sao adiados quando ha personagem elegivel ativo que
+ainda pode atacar. Isso evita trashar Elder ativo antes de extrair o ataque.
+- `_score_play_action` / `_score_activate_main`: `negate_effect` agora pontua
+alvos pelo valor futuro do texto negado. Efeito `on_play` ja resolvido nao conta.
+Tambem respeita o escopo real do alvo (`opp_character` nao pode ganhar credito
+por texto do lider). Ground Death contra Camie pos-on-play cai para score
+negativo.
+
+**Validacao:**
+- `ast.parse` de `decision_engine.py`: OK.
+- `PYTHONDONTWRITEBYTECODE=1 python smoke_fast.py`: OK (~2.6s). Esse e o
+pre-flight padrao para teste ao vivo; `smoke_test.py` virou regressao ampla e
+nao deve ser usado como smoke curto.
+- Teste dirigido: `Ground Death` vs Camie pos-on-play pontuou `-85.0`.
+- Teste dirigido: lider Imu com Saturn ativo retorna `False` (`adia ciclo do
+lider...`); apos Saturn restado, retorna `True`.
+
+**Correcao adicional apos feedback do usuario:** no SoloVSelf usado aqui, P1 e
+sempre o bot e quem escolhe primeiro/segundo. O problema de turno era fluxo do
+plugin: `Start_WaitOnTurnOrder` estava depois do cooldown, entao a tela critica
+podia passar sem consulta ao engine. `BotDriver.cs` agora ignora cooldown em
+`Start_WaitOnTurnOrder` e `Start_WaitOnMulliganChoice`. Plugin recompilado e
+instalado via `BOT\setup_bepinex.ps1` em
+`E:\Games\OnePieceSimulador\Builds_Windows\BepInEx\plugins`.
+
+**Pendente para teste ao vivo:** repetir Imu vs Jinbe-G. No novo log, confirmar
+se aparece `/turn_order` no server log, se Imu escolhe segundo, se Saturn ataca
+antes do draw/trash do lider e se Ground Death deixa de ser usado em Camie sem
+texto futuro relevante.
+
+## 2026-07-13 (125) - Codex — ajuste win-con Imu/Five Elders no clone correto
+
+**Contexto:** o trabalho foi retomado no root correto
+`C:\Projetos_TI\analidador_de_decks_optcg` (não mais no clone antigo do
+OneDrive). Foram lidos `CLAUDE.md`, topo do `HANDOFF.md`, `git log -10` e
+`git status`.
+
+**Estado encontrado:** já havia log salvo da partida
+`Imu-B_x_Kaido-P_2026-07-13T21.01.22` (`logs/raw`, `logs/parsed`,
+`logs/decks` + `logs/index.json`) e uma mudança parcial em
+`decision_engine.py` adicionando `wincon_ready` na `evaluate_state_v2`.
+`sim_bridge.py` já continha a correção relevante do Ground Death/Never
+Existed: buff `leader_or_character` em janela defensiva prioriza o defensor
+sob ataque, incluindo empate (ataque 5000 vs líder 5000) como situação que
+precisa de buff.
+
+**Fix feito:** `_derived_axes_value` agora calcula o progresso da win-con pelo
+DON total em campo (`p.don_on_field() / custo`), não por `p.don_available`.
+Motivo: no fim da simulação o DON pode estar restado/anexado, mas ele volta
+ativo no refresh; usar só DON ativo subvalorizava a linha de sobreviver e
+chegar ao turno da bomba de 10 DON (`OP13-082`).
+
+**Validação:**
+- Import com `PYTHONDONTWRITEBYTECODE=1`: OK.
+- `python smoke_test.py`: OK, todos os testes passaram.
+- Teste dirigido: Imu com `OP13-082` na mão, 5 Elders no trash, 8 DON total e
+0 DON ativo passou a receber valor maior que o mesmo estado sem DON total.
+- Teste dirigido: `OP13-082` em campo + 1 DON ativo + fuel no trash ativou e
+trouxe 5 Elders.
+- `python smoke_test_broad.py`: imprimiu `40/40 partidas completaram sem exceção`,
+mas o runner encerrou por timeout antes do processo sair.
+
+**Observações:** `python -m py_compile` falhou por permissão ao escrever em
+`__pycache__`, não por sintaxe; por isso a checagem foi feita via import sem
+bytecode. Não mexi nos arquivos não relacionados nem na pasta `.claude/`
+untracked.
+
 ## 2026-07-13 (124) - Claude — pré-teste-ao-vivo: log de DON do bot + watch-list
 
 Sessão curta de preparo ANTES da validação ao vivo (leva 7 + DTO trash seguem

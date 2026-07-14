@@ -1,0 +1,21 @@
+{
+  "cards": [
+    {
+      "code": "EB01-015",
+      "name": "EB01-015",
+      "count": 1
+    },
+    {
+      "code": "OP05-030",
+      "name": "Donquixote Rosinante",
+      "count": 1
+    },
+    {
+      "code": "OP05-034",
+      "name": "OP05-034",
+      "count": 1
+    }
+  ],
+  "total_seen": 3,
+  "leader": "OP07-019"
+}

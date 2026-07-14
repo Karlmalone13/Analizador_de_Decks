@@ -49,7 +49,12 @@ try {
 # copia de novo aqui pra garantir mesmo se o target mudar/falhar silencioso.
 Write-Host "[3/3] Copiando OPTCGBotPlugin.dll para $PluginsDir ..."
 Copy-Item -Path $BuiltDll -Destination $PluginsDir -Force
-Copy-Item -Path ($BuiltDll -replace '\.dll$', '.pdb') -Destination $PluginsDir -Force -ErrorAction SilentlyContinue
+$BuiltPdb = ($BuiltDll -replace '\.dll$', '.pdb')
+try {
+    Copy-Item -Path $BuiltPdb -Destination $PluginsDir -Force -ErrorAction Stop
+} catch {
+    Write-Warning "PDB nao copiado (provavelmente jogo aberto segurando o arquivo). DLL ja foi copiada; pode ignorar para teste."
+}
 
 Write-Host ""
 Write-Host "Pronto. BepInEx + plugin instalados em $GameDir."
