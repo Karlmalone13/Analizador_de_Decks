@@ -7145,19 +7145,29 @@ class OPTCGMatch:
                     return False, (f'custo trash_char_or_hand ({ftype or "qualquer"}): '
                                    f'{len(chars_ok)} chars + {len(hand_ok)} na mão, precisa {cnt}')
                 # Se a mão está vazia e só há chars ATIVOS elegíveis (que podem
-                # atacar este turno), adia: melhor atacar antes de trashar.
+                # atacar este turno) E que REALMENTE valem a pena atacar (poder
+                # > 0 -- um corpo de 0 poder nunca conecta dano nem justifica
+                # nada, "pode atacar" e so legalidade, nao valor), adia: melhor
+                # atacar antes de trashar. SEM o filtro de poder, um corpo
+                # dead-weight (ex: Shalria pos on-play, 0 poder) fica pra
+                # SEMPRE "tecnicamente ativo" -- o bot corretamente nunca
+                # ataca com ele (0 poder nao vale) -> ele nunca fica restado
+                # -> este guard nunca libera -> DEADLOCK: o ciclo do lider
+                # trava pro resto da partida (achado ao vivo 14/07, log
+                # 13.08.24: Shalria nunca foi trashada em 10 turnos).
                 if len(hand_ok) < cnt:
                     ativos = [c2 for c2 in chars_ok
-                              if character_can_attack_now(c2, p, opp)]
+                              if c2.power > 0 and character_can_attack_now(c2, p, opp)]
                     if len(ativos) >= cnt:
                         return False, 'adia trash_char: atacar com chars ativos antes de trashar'
                 # Imu leader: mesmo com carta na mao para pagar o custo, o
                 # alvo real do simulador pode acabar sendo um Elder ativo no
-                # campo. Nao cicla antes de extrair ataques ja disponiveis.
+                # campo. Nao cicla antes de extrair ataques ja disponiveis
+                # (mesmo filtro de poder>0 acima -- mesmo deadlock).
                 if src is p.leader and any(a in ('draw', 'look_top_deck', 'add_to_hand')
                                            for a in actions):
                     ativos = [c2 for c2 in chars_ok
-                              if character_can_attack_now(c2, p, opp)]
+                              if c2.power > 0 and character_can_attack_now(c2, p, opp)]
                     if ativos:
                         return False, 'adia ciclo do lider: atacar com chars ativos antes de trashar'
 
@@ -8612,11 +8622,18 @@ class OPTCGMatch:
     def _don_livre_for_plan(self, p, opp, engine) -> int:
         """
         DON ocioso do plano do turno: o que sobra do don_available depois
-        (a) das jogadas que o Turn Planner ainda pretende fazer (acoes
-        'play' com score >= 0, na ordem de preferencia, enquanto o DON
-        alcanca) e (b) da reserva de defesa. So esse sobra vira margem de
-        counter num ataque -- DON comprometido com o plano nunca e gasto
-        a mais numa unica margem.
+        (a) das jogadas/ativacoes que o Turn Planner ainda pretende fazer
+        (acoes 'play'/'activate' com score >= 0, na ordem de preferencia,
+        enquanto o DON alcanca) e (b) da reserva de defesa. So esse sobra
+        vira margem de counter num ataque -- DON comprometido com o plano
+        nunca e gasto a mais numa unica margem.
+
+        'activate' entrou 14/07 (achado ao vivo, log 13.08.24): so 'play'
+        reservava DON -- o Activate:Main da PROPRIA win-con ja em campo (ex:
+        Five Elders, rest_don:1 pra reanimar 5 do trash) nunca tinha DON
+        protegido, e o ataque seguinte (margem de counter) consumia o DON
+        que faltava pra ativar o combo no MESMO turno. Mesmo padrao de
+        reserva, so estende a cobertura pro tipo de acao que faltava.
 
         Fonte unica: antes so existia essa conta no caminho AO VIVO
         (sim_bridge.don_for_attack) -- o simulador interno
@@ -8640,6 +8657,12 @@ class OPTCGMatch:
                 if a[1] == 'play':
                     custo = effective_hand_play_cost(p, a[2])
                     if planejado + custo <= p.don_available:
+                        planejado += custo
+                elif a[1] == 'activate':
+                    am = get_card_effects(a[2].code).get('activate_main', {})
+                    custo = sum(c.get('count', 0) for c in am.get('costs', [])
+                               if c.get('type') == 'rest_don')
+                    if custo and planejado + custo <= p.don_available:
                         planejado += custo
             reserva = engine._don_reserve_for_defense()
         except Exception:

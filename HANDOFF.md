@@ -1,5 +1,64 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-14 (138) - Claude - DOIS bugs REAIS achados e corrigidos: deadlock do ciclo do lider + DON nunca reservado pra ativar a win-con
+
+Log `Eustass.Captain.Kid-Y_x_Imu-B_2026-07-14T13.08.24`. Usuario, com razao,
+apontou que "Shalria nunca trashada" e "Five Elders desceu mas nunca ativou"
+JA TINHAM SIDO REPORTADOS e continuavam sem evoluir. Desta vez a causa raiz
+de CADA UM e diferente do que foi mexido antes (blocos 131-133 mexeram em
+QUAL carta trashar; o bug real era o CICLO NUNCA RODAR) — achados via
+reproducao direta, nao suposicao.
+
+**1. DEADLOCK do ciclo do lider (CONFIRMADO, causa raiz da Shalria nos
+blocos 131-138):** `_should_activate_main` (custo `trash_char_or_hand` do
+lider Imu) tem um guard "adia ciclo do lider: atacar com chars ativos antes
+de trashar" que so checava `character_can_attack_now` (LEGALIDADE — pode
+atacar?), nunca se atacar VALE A PENA. Um corpo de 0 poder (Shalria, on-play
+ja gasto) e "tecnicamente ativo" PRA SEMPRE — o bot corretamente NUNCA ataca
+com ela (0 poder nao conecta nada), entao ela nunca fica restada, entao o
+guard NUNCA libera, entao o lider trava o ciclo pelo RESTO DA PARTIDA.
+Confirmado por reproducao direta: `_should_activate_main` retornava
+`(False, 'adia ciclo do lider...')` com Shalria parada no campo, MESMO com
+mao pagavel. No log real: leader ability usada exatamente 2x (turnos 1-2,
+ANTES da Shalria entrar) e nunca mais nos 8 turnos seguintes — Shalria
+sentada o jogo inteiro. FIX: os dois guards ('trash_char' e o do lider)
+agora exigem `power > 0` alem de `character_can_attack_now` — corpo morto
+nunca justifica adiar o ciclo. Reproduzido pos-fix: retorna True.
+
+**2. DON nunca reservado pra ATIVAR a win-con ja em campo (causa real do
+"Five Elders desceu e nao ativou"):** `_don_livre_for_plan` (a reserva de
+DON pro plano do turno, usada tanto no simulador quanto ao vivo via
+`sim_bridge.don_for_attack`) SO reservava DON pra acoes `'play'` (jogar
+carta), NUNCA pra `'activate'` (ativar habilidade de carta ja em campo).
+Investigacao do log real: turno 5, Five Elders foi jogado via Empty Throne
+(10 DON), mas o Activate:Main dele (rest_don:1 + trash 1 da mao -> reanima
+5 do trash) SEMPRE perdia a competicao por DON contra margem de ataque
+(Warcury/lider atacando) — nao porque o score fosse baixo por si so (o
+score de 118 refletia corretamente que so 3 dos 5 Elders estavam no trash
+naquele momento, nao um bug de calibracao), mas porque o DON que faltava pra
+pagar o rest_don:1 da ativacao ERA CONSUMIDO PRIMEIRO pelos ataques, sem
+NENHUMA reserva protegendo. FIX: `_don_livre_for_plan` agora reserva DON
+tambem pra acoes `'activate'` com score>=0 na lista (mesmo padrao ja usado
+pra 'play' — le o custo real via `get_card_effects(...)['activate_main']
+['costs']`). Reproduzido: cenario com Five Elders em campo + fuel no trash +
+4 DON -> `don_livre` cai de 4 pra 3 (1 protegido pro activate).
+
+**Ambos sao fixes GENERICOS** (zero nome de carta — qualquer deck com corpo
+0-poder ou win-con com Activate:Main de custo DON se beneficia) e vivem no
+motor unico (`decision_engine.py`, `OPTCGMatch`/`_should_activate_main` e
+`_don_livre_for_plan`). Hook sem-dois-motores passa limpo (mudanca so no
+proprio decision_engine.py).
+
+**Validado:** `smoke_fast` (26 checks, 2 novos dirigidos reproduzindo os dois
+bugs) + `smoke_test` amplo verdes. Server reiniciado.
+
+**Nota de honestidade pro usuario:** os blocos 131-133 mexeram na ORDEM de
+quem trashar quando o ciclo RODA — mas nunca tinham verificado se o ciclo
+CHEGAVA A RODAR depois do primeiro uso. Esse era o gap real. Peço desculpa
+pela demora em achar — a diferenca desta vez foi reproduzir o
+`_should_activate_main`/`_don_livre_for_plan` DIRETO com o estado do jogo
+real, em vez de só olhar os logs de decisão de fora.
+
 ## 2026-07-14 (137) - Claude - ITEM 3 LIGADO AO VIVO: busca de resposta do oponente no /decide
 
 Log `Eustass.Captain.Kid-Y_x_Imu-B_2026-07-14T12.39.23`: usuario ganhou facil,

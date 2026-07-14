@@ -242,6 +242,48 @@ def test_avaliar_carta_prioriza_wincon_sobre_corpo_barato_vida_baixa() -> None:
           eng.avaliar_carta(five) > eng.avaliar_carta(nos))
 
 
+def test_ciclo_do_lider_nao_trava_com_corpo_morto_ativo() -> None:
+    # Deadlock real (log 13.08.24): "adia ciclo do lider: atacar com chars
+    # ativos antes de trashar" so olhava LEGALIDADE (character_can_attack_now),
+    # nao VALOR. Shalria (0 poder) e "tecnicamente ativa" pra sempre (o bot
+    # corretamente nunca ataca com ela, 0 poder nao conecta nada) -> o guard
+    # nunca liberava -> o lider nunca mais ciclava a partida inteira (Shalria
+    # nunca era trashada). Fix: so conta como "vale esperar o ataque" corpos
+    # com poder>0.
+    match = OPTCGMatch((real_card("OP13-079"), []), (mk("OP10-099", "Kid", card_type="LEADER", color="Red"), []))
+    me = GameState(leader=real_card("OP13-079"), don_available=5, turn=4)
+    shalria = real_card("OP13-086")
+    shalria.rested = False
+    shalria.just_played = False
+    me.field_chars = [shalria]
+    me.hand = [real_card("OP13-083"), real_card("OP13-089"), real_card("OP13-084")]
+    opp = GameState(leader=mk("OP10-099", "Kid", card_type="LEADER", color="Red"))
+    am = get_card_effects("OP13-079")["activate_main"]
+    pode, motivo = match._should_activate_main(me.leader, am, me, opp)
+    check("ciclo do lider nao trava com Shalria (0 poder) 'ativa' no campo", pode)
+
+
+def test_don_reservado_para_ativar_wincon_em_campo() -> None:
+    # _don_livre_for_plan so reservava DON pra acoes 'play', nunca 'activate'
+    # -- o Activate:Main da propria win-con ja em campo (Five Elders, rest_
+    # don:1 pra reanimar 5 do trash) nunca tinha DON protegido, e o ataque
+    # seguinte consumia o DON que faltava pra ativar o combo no MESMO turno
+    # (achado ao vivo 14/07, log 13.08.24). Cenario: 4 DON, Five Elders em
+    # campo com fuel no trash -- deve sobrar so 3 livres pra margem de ataque
+    # (1 reservado pro activate).
+    me = GameState(leader=real_card("OP13-079"), don_available=4, turn=5)
+    me.field_chars = [real_card("OP13-089"), real_card("OP13-082")]
+    me.trash = ([real_card("OP13-083"), real_card("OP13-080"), real_card("OP13-091")]
+                + [real_card("OP13-080") for _ in range(8)])
+    me.hand = [real_card("OP13-084")]
+    opp = GameState(leader=mk("OP10-099", "Kid", card_type="LEADER", color="Red"))
+    match = OPTCGMatch((me.leader, []), (opp.leader, []))
+    eng = DecisionEngine(me, opp)
+    don_livre = match._don_livre_for_plan(me, opp, eng)
+    check("DON reservado pra ativar a win-con em campo (don_livre cai de 4 pra 3)",
+          don_livre == 3)
+
+
 def test_opponent_model_ao_vivo_por_lider_e_fallback_seguro() -> None:
     # Item 3 ligado AO VIVO (14/07): lookup do .deck real por codigo do lider
     # (os decks de teste sao nomeados por arquetipo -- Kid.deck, Krieg.deck)
@@ -388,6 +430,8 @@ def main() -> int:
     test_shalria_na_mao_protegida_enquanto_precisa_de_trash()
     test_debuff_when_attacking_mira_o_defensor_que_vira_o_combate()
     test_avaliar_carta_prioriza_wincon_sobre_corpo_barato_vida_baixa()
+    test_ciclo_do_lider_nao_trava_com_corpo_morto_ativo()
+    test_don_reservado_para_ativar_wincon_em_campo()
     test_opponent_model_ao_vivo_por_lider_e_fallback_seguro()
     test_play_turn_greedy_opponent_response()
     test_play_turn_greedy_detecta_letal_do_oponente()
