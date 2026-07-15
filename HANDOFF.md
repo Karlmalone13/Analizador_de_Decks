@@ -1,5 +1,33 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-15 (185) - Familia global "Under the rules": 381 -> 379
+
+O censo completo de `Under the rules of this game` encontrou 8 codigos-base:
+EB04-038, OP01-075, OP08-072, OP12-001, OP13-079, OP15-022, OP15-058 e
+OP16-042. Nao eram um unico efeito: havia identidade alternativa, copias
+ilimitadas, restricoes de construcao, Stage inicial, derrota por deck vazio e
+tamanho especial do DON deck.
+
+O parser agora concentra a familia em `game_rules.rules`, com subtipos
+explicitos. `validar_deck` respeita copias ilimitadas e as restricoes de
+Rayleigh/Imu; filtros globais reconhecem os nomes Trafalgar Law e Donquixote
+Rosinante de EB04-038 via `CardData` imutavel; Enel inicia com 6 DON; e o Stage
+do Imu e colocado pela regra estruturada, na ordem oficial (apos definir quem
+comeca e antes da mao inicial), sem reler texto cru. A regra de Brook foi
+estruturada; o comportamento atual ja encerra a partida no fim do turno com
+deck vazio, e a semantica normal de deck-out deve ser auditada globalmente
+antes de qualquer mudanca adicional.
+
+Card List e Q&A oficiais confirmaram os textos e a ordem do Stage do Imu.
+Validacao: diff GANHOU 1 / PERDEU 0 / MUDOU 7; snapshot final atualizado;
+smoke direcionado passou; smoke amplo 40/40; auditor **379 suspeitos**
+(381 -> 379). Registro mecanico:
+`parser_audits/2026-07-15_under_rules_game_rules.json`.
+
+Proximo candidato material no auditor: ST05-005 Carina, cujo parse atual perde
+a condicao de DON proprio menor que o oponente e o custo de trash de carta
+FILM da mao. Antes de corrigir, censar globalmente ambas as gramaticas.
+
 ## 2026-07-15 (184) - Gate obrigatorio de auditoria global por carta
 
 Pedido do usuario: impedir Claude/Codex de corrigir uma carta pontualmente

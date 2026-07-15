@@ -269,6 +269,11 @@ def _enrich_effects_from_analysis_text(code: str, effects: dict) -> dict:
     return effects
 
 
+def get_card_game_rules(code: str) -> list[dict]:
+    """Regras estruturadas de construcao/setup/identidade da carta."""
+    return get_card_effects(code).get('game_rules', {}).get('rules', [])
+
+
 def get_card_effects(code: str) -> dict:
     """Retorna os efeitos de uma carta pelo codigo."""
     if code in _EFFECTS_ENRICHED_CACHE:
@@ -462,6 +467,7 @@ class CardData:
     has_start_of_game: bool = False
     has_power_minus: bool = False
     trash_opp_char: bool = False
+    alternate_names: tuple = ()  # aliases oficiais de identidade, imutaveis
 
     def don_cond_keywords_dict(self) -> dict:
         """Converte a tupla imutável de volta para dict, para uso em _kw_active."""
@@ -603,6 +609,8 @@ class Card:
     def has_power_minus(self) -> bool: return self.data.has_power_minus
     @property
     def trash_opp_char(self) -> bool: return self.data.trash_opp_char
+    @property
+    def alternate_names(self) -> tuple: return self.data.alternate_names
 
     def effective_cost(self) -> int:
         from optcg_engine.rules_facade import effective_card_cost
@@ -5870,8 +5878,23 @@ def validar_deck(leader: Card, cards: list, cards_db: dict) -> tuple:
         erros.append(f'Total: {len(cards)} (deve ser 50)')
     contagem = Counter(c.code for c in cards)
     for code, qty in contagem.items():
-        if qty > 4:
+        unlimited = any(r.get('type') == 'unlimited_copies'
+                        for r in get_card_game_rules(code))
+        if qty > 4 and not unlimited:
             erros.append(f'{code}: {qty} copias (max 4)')
+    for rule in get_card_game_rules(leader.code):
+        if rule.get('type') == 'forbid_cards_cost_gte':
+            invalidos = sorted({c.code for c in cards if c.cost >= rule['cost_gte']})
+            if invalidos:
+                erros.append(f"{leader.code}: cartas de custo {rule['cost_gte']}+ proibidas: "
+                             + ', '.join(invalidos))
+        elif rule.get('type') == 'forbid_card_type_cost_gte':
+            invalidos = sorted({c.code for c in cards
+                                if c.card_type == rule['card_type']
+                                and c.cost >= rule['cost_gte']})
+            if invalidos:
+                erros.append(f"{leader.code}: {rule['card_type']} de custo "
+                             f"{rule['cost_gte']}+ proibidos: " + ', '.join(invalidos))
     return len(erros) == 0, erros
 
 
@@ -5889,6 +5912,12 @@ _CARD_IMAGE_CACHE: dict = {}
 def _make_card(code: str, data: dict) -> Card:
     """Cria Card a partir do banco de dados, usando o effects_db para keywords."""
     effects = get_card_effects(code)
+    alternate_names = tuple(
+        name
+        for rule in get_card_game_rules(code)
+        if rule.get('type') == 'alternate_names'
+        for name in rule.get('names', [])
+    )
 
     # Keywords do banco ou do parse básico
     has_blocker      = data.get('has_blocker', False)
@@ -5977,6 +6006,7 @@ def _make_card(code: str, data: dict) -> Card:
             has_start_of_game=has_start_of_game,
             has_power_minus=has_power_minus,
             trash_opp_char=trash_opp_char,
+            alternate_names=alternate_names,
         )
         _CARD_DATA_CACHE[cache_key] = card_data
 
@@ -7579,14 +7609,11 @@ class OPTCGMatch:
           Ver deck do oponente no setup é legítimo (decklist é conhecida nas 3 análises;
           só a MÃO não pode ser vista).
         """
-        if not p.leader.card_text:
+        rule = next((r for r in get_card_game_rules(p.leader.code)
+                     if r.get('type') == 'start_stage_from_deck'), None)
+        if not rule:
             return
-        t = p.leader.card_text.lower()
-        if 'at the start of the game' not in t:
-            return
-
-        m = re.search(r'start of the game[^.]*play.*?\[([^\]]+)\].*?stage', t)
-        wanted = m.group(1).lower() if m else None
+        wanted = str(rule.get('filter_type', '')).lower()
 
         candidates = [c for c in p.deck if c.card_type == 'STAGE'
                       and (not wanted or wanted in c.sub_types.lower()
@@ -7707,7 +7734,20 @@ class OPTCGMatch:
         CheckStartOfGameActions → DrawCard(5) → OfferMulligan → StartGame
         """
         for p in [self.state_a, self.state_b]:
+            don_rule = next((r for r in get_card_game_rules(p.leader.code)
+                             if r.get('type') == 'don_deck_size'), None)
+            p.don_deck = int(don_rule['count']) if don_rule else 10
             random.shuffle(p.deck)
+
+        # Regra oficial: efeitos "at the start of the game" resolvem depois
+        # de definir o primeiro jogador, mas antes da mao inicial.
+        ordered = ([self.state_a, self.state_b] if self.state_a.is_first
+                   else [self.state_b, self.state_a])
+        for p in ordered:
+            opp_state = self.state_b if p is self.state_a else self.state_a
+            self._place_start_stage(p, opp_state)
+
+        for p in [self.state_a, self.state_b]:
             p.hand = [p.deck.pop() for _ in range(min(5, len(p.deck)))]
 
             # Mulligan se mão sem cartas de custo <= 2
@@ -7719,9 +7759,6 @@ class OPTCGMatch:
             life_count = p.leader.life if p.leader.life > 0 else 5
             p.life = [p.deck.pop() for _ in range(min(life_count, len(p.deck)))]
 
-            # Stage inicial (CheckStartOfGameActions)
-            opp_state = self.state_b if p is self.state_a else self.state_a
-            self._place_start_stage(p, opp_state)
 
     # ── Fases do turno ───────────────────────────────────────────────────────
 

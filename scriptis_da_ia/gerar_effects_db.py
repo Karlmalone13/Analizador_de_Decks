@@ -5372,6 +5372,47 @@ def parse_card_effect(card_text, card_type):
                        'target': 'self', 'duration': 'your_turn'}]
         }
 
+    # Regras que existem fora da janela normal de efeitos. Mantemos todas sob
+    # uma unica chave estruturada para que validacao, setup e filtros consultem
+    # a mesma fonte, sem reler/procurar frases no texto cru.
+    game_rules = []
+    if 'under the rules of this game' in t_low:
+        aliases_m = re.search(
+            r"also treat this card's name as\s+\[([^\]]+)\]\s+and\s+\[([^\]]+)\]",
+            t, re.IGNORECASE)
+        if aliases_m:
+            game_rules.append({'type': 'alternate_names',
+                               'names': [aliases_m.group(1), aliases_m.group(2)]})
+        if re.search(r'may have any number of this card in your deck', t_low):
+            game_rules.append({'type': 'unlimited_copies'})
+        cost_m = re.search(r'cannot include cards with a cost of (\d+) or more', t_low)
+        if cost_m:
+            game_rules.append({'type': 'forbid_cards_cost_gte',
+                               'cost_gte': int(cost_m.group(1))})
+        typed_cost_m = re.search(
+            r'cannot include (characters|events|stages) with a cost of (\d+) or more',
+            t_low)
+        if typed_cost_m:
+            game_rules.append({'type': 'forbid_card_type_cost_gte',
+                               'card_type': typed_cost_m.group(1)[:-1].upper(),
+                               'cost_gte': int(typed_cost_m.group(2))})
+        stage_m = re.search(
+            r'at the start of the game, play up to (\d+) \[([^\]]+)\] type stage card from your deck',
+            t, re.IGNORECASE)
+        if stage_m:
+            game_rules.append({'type': 'start_stage_from_deck',
+                               'count': int(stage_m.group(1)),
+                               'filter_type': stage_m.group(2)})
+        if ('you do not lose when your deck has 0 cards' in t_low
+                and 'you lose at the end of the turn in which your deck becomes 0 cards' in t_low):
+            game_rules.append({'type': 'deck_out_loss_timing',
+                               'timing': 'end_of_turn_became_empty'})
+        don_m = re.search(r'your don!! deck consists of (\d+) cards', t_low)
+        if don_m:
+            game_rules.append({'type': 'don_deck_size', 'count': int(don_m.group(1))})
+    if game_rules:
+        result['game_rules'] = {'rules': game_rules}
+
     return result
 
 

@@ -9,7 +9,8 @@ import optcg_engine.decision_engine as de
 from optcg_engine.decision_engine import (
     Card, CardData, GameState, EffectExecutor, DecisionEngine, OPTCGMatch,
     effective_hand_play_cost, get_card_effects, is_immune, can_afford_attack_paywall,
-    is_attack_locked_self, attack_time_power, don_needed_for_attack
+    is_attack_locked_self, attack_time_power, don_needed_for_attack,
+    get_card_game_rules, validar_deck
 )
 from optcg_engine.sim_bridge import order_target_candidates
 
@@ -1663,6 +1664,54 @@ for _cid, _t, _ctype in [
 ]:
     _eff = _g.parse_card_effect(_t, _ctype)
     check(f'{_cid} parseia corretamente (dispatch corrigido)', bool(_eff))
+
+# 34. Familia global "Under the rules of this game": oito cartas-base,
+# cinco consumidores distintos, uma unica representacao estruturada.
+expected_rule_types = {
+    'EB04-038': {'alternate_names'},
+    'OP01-075': {'unlimited_copies'},
+    'OP08-072': {'unlimited_copies'},
+    'OP12-001': {'forbid_cards_cost_gte'},
+    'OP13-079': {'forbid_card_type_cost_gte', 'start_stage_from_deck'},
+    'OP15-022': {'deck_out_loss_timing'},
+    'OP15-058': {'don_deck_size'},
+    'OP16-042': {'unlimited_copies'},
+}
+for code, expected in expected_rule_types.items():
+    actual = {r.get('type') for r in get_card_game_rules(code)}
+    check(f'{code} preserva game_rules {sorted(expected)}', expected <= actual)
+
+from optcg_engine.rules_facade import card_matches_filter
+rosinante_law = de._make_card('EB04-038', {
+    'name': 'Rosinante & Law', 'type': 'CHARACTER', 'power': 8000,
+})
+check('nome alternativo Trafalgar Law participa de filtros globais',
+      card_matches_filter(rosinante_law, 'Trafalgar Law'))
+check('nome alternativo Donquixote Rosinante participa de filtros globais',
+      card_matches_filter(rosinante_law, 'Donquixote Rosinante'))
+
+pacifista = mk('OP01-075', 'Pacifista')
+leader_test = mk('LD-01', 'Leader', card_type='LEADER')
+ok, errors = validar_deck(leader_test, [pacifista] * 50, {})
+check('Pacifista permite qualquer numero de copias', ok and not errors)
+
+rayleigh = mk('OP12-001', 'Silvers Rayleigh', card_type='LEADER')
+invalid_cost = mk('COST5', 'Custo 5', cost=5)
+ok, errors = validar_deck(rayleigh, [invalid_cost] * 4 + [pacifista] * 46, {})
+check('Rayleigh rejeita carta de custo 5 ou mais',
+      not ok and any('custo 5+' in error for error in errors))
+
+imu = mk('OP13-079', 'Imu', card_type='LEADER')
+event2 = mk('EVENT2', 'Evento 2', cost=2, card_type='EVENT')
+ok, errors = validar_deck(imu, [event2] * 4 + [pacifista] * 46, {})
+check('Imu rejeita Event de custo 2 ou mais',
+      not ok and any('EVENT de custo 2+' in error for error in errors))
+
+enel = mk('OP15-058', 'Enel', card_type='LEADER')
+enel_match = OPTCGMatch((enel, [pacifista] * 50, None),
+                        (leader_test, [pacifista] * 50, None))
+enel_match.setup()
+check('Enel inicia com DON deck de 6 cartas', enel_match.state_a.don_deck == 6)
 
 print()
 print(f'{"TODOS OS TESTES PASSARAM" if FAIL == 0 else f"{FAIL} TESTE(S) FALHARAM"}')

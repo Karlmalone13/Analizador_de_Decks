@@ -7140,6 +7140,17 @@
             "action": "keyword_blocker"
           }
         ]
+      },
+      "game_rules": {
+        "rules": [
+          {
+            "type": "alternate_names",
+            "names": [
+              "Trafalgar Law",
+              "Donquixote Rosinante"
+            ]
+          }
+        ]
       }
     }
   },
@@ -9863,6 +9874,13 @@
         "steps": [
           {
             "action": "keyword_blocker"
+          }
+        ]
+      },
+      "game_rules": {
+        "rules": [
+          {
+            "type": "unlimited_copies"
           }
         ]
       }
@@ -33952,6 +33970,13 @@
             "action": "keyword_blocker"
           }
         ]
+      },
+      "game_rules": {
+        "rules": [
+          {
+            "type": "unlimited_copies"
+          }
+        ]
       }
     }
   },
@@ -45831,6 +45856,14 @@
           }
         ],
         "once_per_turn": true
+      },
+      "game_rules": {
+        "rules": [
+          {
+            "type": "forbid_cards_cost_gte",
+            "cost_gte": 5
+          }
+        ]
       }
     }
   },
@@ -51381,6 +51414,20 @@
           }
         ],
         "once_per_turn": true
+      },
+      "game_rules": {
+        "rules": [
+          {
+            "type": "forbid_card_type_cost_gte",
+            "card_type": "EVENT",
+            "cost_gte": 2
+          },
+          {
+            "type": "start_stage_from_deck",
+            "count": 1,
+            "filter_type": "Mary Geoise"
+          }
+        ]
       }
     }
   },
@@ -57064,6 +57111,14 @@
           }
         ],
         "once_per_turn": true
+      },
+      "game_rules": {
+        "rules": [
+          {
+            "type": "deck_out_loss_timing",
+            "timing": "end_of_turn_became_empty"
+          }
+        ]
       }
     }
   },
@@ -58132,6 +58187,14 @@
           }
         ],
         "once_per_turn": true
+      },
+      "game_rules": {
+        "rules": [
+          {
+            "type": "don_deck_size",
+            "count": 6
+          }
+        ]
       }
     }
   },
@@ -61320,7 +61383,15 @@
     "color": "Blue",
     "sub_types": "Impel Down",
     "attribute": "Strike",
-    "effects": {}
+    "effects": {
+      "game_rules": {
+        "rules": [
+          {
+            "type": "unlimited_copies"
+          }
+        ]
+      }
+    }
   },
   "OP16-043": {
     "name": "Usopp",

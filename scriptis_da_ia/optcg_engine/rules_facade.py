@@ -54,6 +54,9 @@ def card_matches_filter(
         getattr(card, "name", ""),
         getattr(card, "card_type", ""),
     ]
+    # Nome alternativo e uma regra de identidade global: qualquer efeito que
+    # procure o nome deve enxergar os aliases, nao apenas buscas especificas.
+    fields.extend(getattr(card, "alternate_names", ()) or ())
     if include_color:
         fields.append(getattr(card, "color", ""))
     if include_text:

@@ -4618,6 +4618,17 @@
   }
  },
  "EB04-038": {
+  "game_rules": {
+   "rules": [
+    {
+     "names": [
+      "Trafalgar Law",
+      "Donquixote Rosinante"
+     ],
+     "type": "alternate_names"
+    }
+   ]
+  },
   "on_play": {
    "conditions": {
     "don_on_field_lte_opp": true
@@ -6280,6 +6291,13 @@
   }
  },
  "OP01-075": {
+  "game_rules": {
+   "rules": [
+    {
+     "type": "unlimited_copies"
+    }
+   ]
+  },
   "passive": {
    "steps": [
     {
@@ -21175,6 +21193,13 @@
   }
  },
  "OP08-072": {
+  "game_rules": {
+   "rules": [
+    {
+     "type": "unlimited_copies"
+    }
+   ]
+  },
   "passive": {
    "steps": [
     {
@@ -28639,6 +28664,14 @@
      "target": "own_character"
     }
    ]
+  },
+  "game_rules": {
+   "rules": [
+    {
+     "cost_gte": 5,
+     "type": "forbid_cards_cost_gte"
+    }
+   ]
   }
  },
  "OP12-002": {},
@@ -32020,6 +32053,20 @@
     {
      "action": "draw",
      "count": 1
+    }
+   ]
+  },
+  "game_rules": {
+   "rules": [
+    {
+     "card_type": "EVENT",
+     "cost_gte": 2,
+     "type": "forbid_card_type_cost_gte"
+    },
+    {
+     "count": 1,
+     "filter_type": "Mary Geoise",
+     "type": "start_stage_from_deck"
     }
    ]
   }
@@ -35692,6 +35739,14 @@
      "count": 4
     }
    ]
+  },
+  "game_rules": {
+   "rules": [
+    {
+     "timing": "end_of_turn_became_empty",
+     "type": "deck_out_loss_timing"
+    }
+   ]
   }
  },
  "OP15-023": {
@@ -36362,6 +36417,14 @@
      "action": "add_don",
      "count": 4,
      "rested": true
+    }
+   ]
+  },
+  "game_rules": {
+   "rules": [
+    {
+     "count": 6,
+     "type": "don_deck_size"
     }
    ]
   }
@@ -38419,7 +38482,15 @@
    ]
   }
  },
- "OP16-042": {},
+ "OP16-042": {
+  "game_rules": {
+   "rules": [
+    {
+     "type": "unlimited_copies"
+    }
+   ]
+  }
+ },
  "OP16-043": {
   "passive": {
    "steps": [

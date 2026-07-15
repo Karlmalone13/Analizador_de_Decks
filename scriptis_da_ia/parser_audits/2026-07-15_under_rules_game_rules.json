@@ -1,0 +1,28 @@
+{
+  "trigger_card": "OP13-079",
+  "problem": "Regras fora das janelas normais de efeito eram ignoradas ou relidas do texto cru.",
+  "grammar_family": "Under the rules of this game",
+  "queries": [
+    "Under the rules of this game",
+    "also treat this card's name as|any number of this card|cannot include|at the start of the game|deck has 0 cards|DON!! deck consists"
+  ],
+  "cards_found": [
+    "EB04-038",
+    "OP01-075",
+    "OP08-072",
+    "OP12-001",
+    "OP13-079",
+    "OP15-022",
+    "OP15-058",
+    "OP16-042"
+  ],
+  "resolution_scope": "global",
+  "decision": "Modelar a familia em game_rules com subtipos explicitos e consumidores unicos para identidade, validacao e setup.",
+  "validated_by": [
+    "Card List oficial",
+    "censo completo de cards_rows.csv",
+    "smoke_test.py",
+    "smoke_test_broad.py",
+    "diff_parser.py PERDEU=0"
+  ]
+}
