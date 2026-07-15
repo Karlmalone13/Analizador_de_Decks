@@ -41079,7 +41079,8 @@
             "count": 1,
             "target": "own_character",
             "filter_type": "supernovas",
-            "cost_eq": 3
+            "cost_gte": 3,
+            "cost_lte": 8
           },
           {
             "action": "gain_blocker"
@@ -55469,7 +55470,7 @@
           {
             "action": "rest_opp_character",
             "count": 1,
-            "cost_lte": 99
+            "don_attached_gte": 2
           }
         ],
         "once_per_turn": true

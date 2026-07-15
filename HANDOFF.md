@@ -1,5 +1,92 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-14 (143) - Claude - Fase 1 do plano "bot entende antes de jogar melhor": audit_leader_and_goal.py + 2 bugs REAIS de parser achados e corrigidos
+
+**Contexto:** depois do bloco 142, usuario jogou mais 1 partida ao vivo
+(bot pilotando Krieg vs usuario no Kid) e perdeu feio -- log do engine
+mostrava `_simulate_sequence_values` ja avaliando -50000.0 por volta do T5
+(posicao ja perdida ha turnos). Usuario decretou: chega de whack-a-mole,
+seguir uma ORDEM FIXA: (1) confirmar que o bot entende o lider+objetivo,
+(2) confirmar que conhece o proprio deck, (3) so entao mapear combinacoes
+de jogada por turno, (4) so entao pesar lethal/sobrevivencia. Plano de 4
+fases aprovado (`C:\Users\arthu\.claude\plans\cheeky-nibbling-lecun.md`),
+ver tambem [[project_full_deck_knowledge]].
+
+**Fase 1 entregue:** `scriptis_da_ia/audit_leader_and_goal.py` -- script
+novo (familia dos `audit_*.py` existentes), roda `python
+audit_leader_and_goal.py <Deck>` e mostra: texto CRU da carta do lider
+(cards_rows.csv) lado a lado com o que `get_card_effects` parseou, o que
+`full_deck_profile` derivou (archetype.mix/roles/derived_axes) marcando
+pra cada item se INFLUENCIA algum score hoje ou nao, e confirma
+`can_lethal_this_turn()`/`analysis_priority()` em 2 cenarios sinteticos
+(lethal obvio vs sem lethal). Reescrito 1x nesta sessao depois do usuario
+apontar que a 1a versao (a) escondia campos do bloco parseado
+(`don_requirement` sumia da tela por eu so imprimir `conditions`/`steps`)
+e (b) a linguagem "CONSOME NO SCORE: nao" soava como estado aceitavel em
+vez do BUG que realmente e -- reescrito pra "usado na decisao hoje? NAO --
+isso e um GAP a corrigir na Fase 2, nao uma escolha de design".
+
+**2 bugs REAIS de parser achados rodando o proprio script (nao suposicao --
+o usuario literalmente leu a saida e falou "tem coisa errada"):**
+
+1. **Krieg (OP15-001), `activate_main`**: texto real e "Rest up to 1 of
+   your opponent's Characters **that has 2 or more DON!! cards given**".
+   `parse_rest_opp` (gerar_effects_db.py) nunca teve gramatica pra
+   "personagem com N+ DON anexado" como filtro de ALVO -- caia sempre no
+   fallback `cost_lte: 99` (sem filtro nenhum). Ou seja: o Krieg real do
+   usuario, jogando ao vivo, restava QUALQUER personagem do oponente, nao
+   so os com 2+ DON -- um erro de REGRA, nao so de heuristica. Busca no
+   banco inteiro achou 17 cartas com esse padrao de texto, mas so
+   `parse_rest_opp` tinha esse bug especifico (as outras usam acoes/parsers
+   diferentes -- ex. OP15-025/038 nao passam por essa funcao -- fica
+   documentado como pendencia, nao consertado agora pra nao explodir
+   escopo).
+2. **Kid (OP10-099), `end_of_turn`**: texto real e "Supernovas type
+   Characters with a **cost of 3 to 8**" (intervalo). `parse_set_active`
+   so tinha gramatica pra "cost of N" e "cost of N or less" -- o regex
+   `cost of (\d+)` casava so o primeiro numero e o resto ("to 8") ficava
+   ignorado, virando `cost_eq: 3` (SO custo exatamente 3, perdendo
+   4-8 inteiro). Achado por INSPECAO VISUAL do usuario comparando a saida
+   do script com o texto real da carta -- exatamente o motivo de eu ter
+   reescrito o script pra mostrar as duas caixas lado a lado. Busca no
+   banco achou mais 3 cartas com "cost of N to M" (EB03-060, OP05-088,
+   OP05-091), mas passam por parsers DIFERENTES (busca em deck/trash, nao
+   `set_active`) -- fica documentado como pendencia, nao consertado agora.
+
+**Fix de cada um (mesmo padrao, workflow padrao do parser):**
+- `don_attached_gte` (novo param em `eligible_cards`, `rules_facade.py`)
+  + `parse_rest_opp` emite o filtro quando o texto tem "that has N or more
+  DON!! cards given" + os 2 pontos de consumo real (`_step_is_viable` e
+  execucao de `rest_opp_character`, `decision_engine.py`) passam o filtro
+  adiante.
+- `cost_gte` (novo param em `eligible_cards`) + `parse_set_active` detecta
+  "cost of N to M" ANTES do fallback de `cost_eq` + o consumo real de
+  `set_active` passa `cost_gte` adiante.
+- Ambos: `snapshot_parser.json` antes -> fix -> `diff_parser.py` (PERDEU=0,
+  exatamente 1 carta mudou por vez, sem regressao) -> `python gerar_dbs.py`
+  -> re-`snapshot_parser.py` -> `diff_parser.py` limpo de novo.
+- 4 testes dirigidos novos em `smoke_fast.py`
+  (`test_krieg_rest_opp_requires_2_don_attached`,
+  `test_kid_leader_set_active_respects_cost_range`) confirmando NAO SO o
+  parse, mas a EXECUCAO real (EffectExecutor de verdade resta/ativa o alvo
+  certo e nao o errado).
+
+**Validado:** `smoke_fast` (36 checks agora) + `smoke_test` amplo verdes.
+Server AINDA NAO reiniciado com esses fixes -- proxima acao antes de
+qualquer teste ao vivo novo.
+
+**Pendencias documentadas (NAO consertadas agora, fora do escopo dos 2
+lideres em teste):** OP15-025/038 (mesmo padrao "N+ DON anexado" como
+filtro, mas via `give_don_opp`/`lock_opp_don`, parsers diferentes de
+`parse_rest_opp`); EB03-060/OP05-088/OP05-091 (mesmo padrao "cost of N to
+M", mas via parsers de busca em deck/trash, nao `parse_set_active`).
+
+**Proximo passo:** usuario ainda revisando a saida do `audit_leader_and_goal.py`
+pros 2 decks (Krieg/Kid) antes de autorizar a Fase 2 (fazer
+`archetype.mix`/`roles` pesarem no score + generalizar `win_con_code`) --
+NAO comecar a Fase 2 sem essa confirmacao explicita, e exatamente o ponto
+que motivou o plano de 4 fases.
+
 ## 2026-07-14 (142) - Claude - Bot passa a "conhecer o proprio deck inteiro" (game_plan + arquetipo/eixos/papeis) igual jogador humano, offline E ao vivo
 
 **Pedido explicito do usuario:** apos o fix estrutural do bloco 141

@@ -1,0 +1,66 @@
+{
+  "cards": [
+    {
+      "code": "OP10-112",
+      "name": "Eustass \"Captain\" Kid",
+      "count": 3
+    },
+    {
+      "code": "OP11-101",
+      "name": "OP11-101",
+      "count": 2
+    },
+    {
+      "code": "ST36-005",
+      "name": "ST36-005",
+      "count": 2
+    },
+    {
+      "code": "OP10-119",
+      "name": "Trafalgar Law",
+      "count": 2
+    },
+    {
+      "code": "P-088",
+      "name": "P-088",
+      "count": 2
+    },
+    {
+      "code": "ST36-004",
+      "name": "Bartolomeo",
+      "count": 1
+    },
+    {
+      "code": "ST36-002",
+      "name": "Killer",
+      "count": 1
+    },
+    {
+      "code": "OP10-111",
+      "name": "Monkey D. Luffy",
+      "count": 1
+    },
+    {
+      "code": "OP12-117",
+      "name": "OP12-117",
+      "count": 1
+    },
+    {
+      "code": "OP15-105",
+      "name": "OP15-105",
+      "count": 1
+    },
+    {
+      "code": "ST36-003",
+      "name": "ST36-003",
+      "count": 1
+    },
+    {
+      "code": "EB04-059",
+      "name": "EB04-059",
+      "count": 1
+    }
+  ],
+  "total_seen": 18,
+  "leader": "OP10-099"
+}

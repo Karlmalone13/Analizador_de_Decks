@@ -1718,5 +1718,30 @@
       "You": "decks/Imu-B_2026-07-14T15.17.58_p2.json",
       "Opponent": "decks/Eustass.Captain.Kid-Y_2026-07-14T15.17.58_p2.json"
     }
+  },
+  {
+    "id": "2026-07-14T17.11.29",
+    "friendly_name": "Eustass.Captain.Kid-Y_x_Krieg-RG",
+    "date": "2026-07-14",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP10-099",
+      "leader_name": "Eustass \"Captain\" Kid",
+      "slug": "Eustass.Captain.Kid-Y"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP15-001",
+      "leader_name": "Krieg",
+      "slug": "Krieg-RG"
+    },
+    "turns": 10,
+    "winner": null,
+    "log_file": "raw/Eustass.Captain.Kid-Y_x_Krieg-RG_2026-07-14T17.11.29.log",
+    "parsed_file": "parsed/Eustass.Captain.Kid-Y_x_Krieg-RG_2026-07-14T17.11.29.json",
+    "deck_files": {
+      "You": "decks/Eustass.Captain.Kid-Y_2026-07-14T17.11.29.json",
+      "Opponent": "decks/Krieg-RG_2026-07-14T17.11.29.json"
+    }
   }
 ]

@@ -62580,6 +62580,7 @@
    {
     "action": "set_active",
     "trigger": "end_of_turn",
+    "cost_lte": 8,
     "target": "own_character"
    },
    {
@@ -84358,8 +84359,7 @@
   "effects": [
    {
     "action": "rest_opp_character",
-    "trigger": "activate_main",
-    "cost_lte": 99
+    "trigger": "activate_main"
    },
    {
     "action": "debuff_power",

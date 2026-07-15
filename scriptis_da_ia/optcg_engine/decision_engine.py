@@ -1489,6 +1489,7 @@ class EffectExecutor:
                 cost_lte=cost_lte,
                 cost_eq=step.get('cost_eq'),
                 power_lte=step.get('power_lte'),
+                don_attached_gte=step.get('don_attached_gte'),
                 rested_only=step.get('rested_only', False),
                 active_only=(a == 'rest_opp_character'),
                 filter_text=step.get('filter_type', ''),
@@ -3406,6 +3407,7 @@ class EffectExecutor:
                 cost_lte=cost_lte,
                 cost_eq=step.get('cost_eq'),
                 power_lte=step.get('power_lte'),
+                don_attached_gte=step.get('don_attached_gte'),
                 active_only=True,
                 filter_text=step.get('filter_type', ''),
             )
@@ -4481,6 +4483,7 @@ class EffectExecutor:
                 color=step.get('color', ''),
                 attribute=step.get('attribute', ''),
                 cost_lte=step.get('cost_lte'),
+                cost_gte=step.get('cost_gte'),
                 cost_eq=step.get('cost_eq'),
                 power_lte=step.get('power_lte'),
                 power_eq=step.get('power_eq'),

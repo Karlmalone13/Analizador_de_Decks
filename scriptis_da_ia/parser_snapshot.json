@@ -25429,7 +25429,8 @@
    "steps": [
     {
      "action": "set_active",
-     "cost_eq": 3,
+     "cost_gte": 3,
+     "cost_lte": 8,
      "count": 1,
      "filter_type": "supernovas",
      "target": "own_character"
@@ -34328,8 +34329,8 @@
    "steps": [
     {
      "action": "rest_opp_character",
-     "cost_lte": 99,
-     "count": 1
+     "count": 1,
+     "don_attached_gte": 2
     }
    ]
   },

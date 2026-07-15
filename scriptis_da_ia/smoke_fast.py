@@ -488,6 +488,62 @@ def test_jinbe_grants_play_turn_character_attack() -> None:
     check("Jinbe OP11-031 nao transforma isso em ataque ao Leader", not leader_attacks)
 
 
+def test_krieg_rest_opp_requires_2_don_attached() -> None:
+    # Achado 14/07 via audit_leader_and_goal.py: o activate_main do Krieg
+    # (OP15-001, "Rest up to 1 of your opponent's Characters that has 2 or
+    # more DON!! cards given") caia sempre no fallback cost_lte=99 (sem
+    # filtro nenhum) -- o parser nunca tinha gramatica pra "personagem com
+    # N+ DON anexado" como filtro de ALVO. Fix: parse_rest_opp emite
+    # don_attached_gte, eligible_cards() ganhou o parametro.
+    me = GameState(leader=real_card("OP15-001"), don_available=4, turn=3)
+    opp = GameState(leader=mk("OP11-051", "Doflamingo", card_type="LEADER", color="Purple"), turn=3)
+    alvo_valido = mk("XOPP1", "Com 2+ DON", power=5000, cost=4, color="Black")
+    alvo_valido.don_attached = 2
+    alvo_invalido = mk("XOPP2", "Sem DON suficiente", power=5000, cost=4, color="Black")
+    alvo_invalido.don_attached = 1
+    opp.field_chars = [alvo_invalido, alvo_valido]
+
+    effects = get_card_effects("OP15-001")
+    step = effects.get("activate_main", {}).get("steps", [{}])[0]
+    check("OP15-001 parseia don_attached_gte=2 no rest_opp_character",
+          step.get("don_attached_gte") == 2)
+
+    EffectExecutor(me, opp).execute(me.leader, "activate_main")
+    check("Krieg resta apenas o alvo com 2+ DON anexado", alvo_valido.rested)
+    check("Krieg NAO resta o alvo com DON insuficiente", not alvo_invalido.rested)
+
+
+def test_kid_leader_set_active_respects_cost_range() -> None:
+    # Achado 14/07 via audit_leader_and_goal.py: o end_of_turn do lider do
+    # Kid (OP10-099, "Supernovas type Characters with a cost of 3 to 8")
+    # virava cost_eq=3 (perdia o intervalo 4-8 inteiro) -- parse_set_active
+    # so tinha gramatica pra "cost of N" e "cost of N or less", nunca "cost
+    # of N to M". Fix: novo ramo de intervalo emite cost_gte/cost_lte,
+    # eligible_cards() ganhou cost_gte.
+    effects = get_card_effects("OP10-099")
+    step = effects.get("end_of_turn", {}).get("steps", [{}])[0]
+    check("OP10-099 parseia intervalo cost_gte=3/cost_lte=8 (nao cost_eq=3)",
+          step.get("cost_gte") == 3 and step.get("cost_lte") == 8
+          and "cost_eq" not in step)
+
+    me = GameState(leader=real_card("OP10-099"), don_available=4, turn=5)
+    opp = GameState(leader=mk("OP11-051", "Doflamingo", card_type="LEADER", color="Purple"), turn=5)
+    fora_do_intervalo = mk("XSN1", "Supernova custo 2", power=5000, cost=2,
+                            sub_types="Supernovas")
+    fora_do_intervalo.rested = True
+    dentro_do_intervalo = mk("XSN2", "Supernova custo 6", power=5000, cost=6,
+                              sub_types="Supernovas")
+    dentro_do_intervalo.rested = True
+    me.field_chars = [fora_do_intervalo, dentro_do_intervalo]
+    me.life = [mk("XLIFE", "Vida", cost=0)]
+
+    EffectExecutor(me, opp).execute(me.leader, "end_of_turn")
+    check("Kid ativa Supernova de custo 6 (dentro do intervalo 3-8)",
+          not dentro_do_intervalo.rested)
+    check("Kid NAO ativa Supernova de custo 2 (fora do intervalo 3-8)",
+          fora_do_intervalo.rested)
+
+
 def main() -> int:
     test_turn_order_imu_prefers_second()
     test_empty_throne_beats_direct_five_elders_play()
@@ -510,6 +566,8 @@ def main() -> int:
     test_nusjuro_rush_at_trash_7()
     test_nusjuro_rush_known_in_hand_for_planner()
     test_jinbe_grants_play_turn_character_attack()
+    test_krieg_rest_opp_requires_2_don_attached()
+    test_kid_leader_set_active_respects_cost_range()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0

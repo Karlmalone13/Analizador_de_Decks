@@ -1,0 +1,818 @@
+{
+  "meta": {
+    "players": {
+      "p1": {
+        "name": "You",
+        "leader": {
+          "name": "Eustass \"Captain\" Kid",
+          "code": "OP10-099"
+        }
+      },
+      "p2": {
+        "name": "Opponent",
+        "leader": {
+          "name": "Krieg",
+          "code": "OP15-001"
+        }
+      }
+    },
+    "goes_first": null
+  },
+  "total_turns": 10,
+  "turns": [
+    {
+      "turn": 1,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 1,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP10-111",
+          "card_name": "Monkey D. Luffy",
+          "effects": [
+            "<b>Reveal and Draw Killer [\"ST36-002\">ST36-002]</b>"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "ST36-004",
+            "OP11-101",
+            "OP10-112",
+            "OP10-112",
+            "ST36-002"
+          ],
+          "board": [
+            "OP10-111"
+          ],
+          "trash": [],
+          "life": 5
+        },
+        "Opponent": {
+          "hand": [
+            "OP15-007",
+            "OP15-017",
+            "OP15-009",
+            "OP15-017",
+            "OP15-028"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 2,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "activate",
+          "card": "OP13-040",
+          "card_name": "I Know You're Strong... So I'll Go All Out",
+          "effects": [
+            "Rest 1 Don"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP15-007",
+            "OP15-017",
+            "OP15-009",
+            "OP15-017",
+            "OP15-028"
+          ],
+          "board": [],
+          "trash": [
+            "OP13-040"
+          ],
+          "life": 4
+        },
+        "You": {
+          "hand": [
+            "ST36-004",
+            "OP11-101",
+            "OP10-112",
+            "OP10-112",
+            "ST36-002"
+          ],
+          "trash": [],
+          "board": [
+            "OP10-111"
+          ],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 3,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "ST36-004",
+          "card_name": "Bartolomeo",
+          "effects": [
+            "Trash Capone \"Gang\" Bege [\"OP11-101\">OP11-101]",
+            "Draw 2 Card"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP10-099",
+          "to_name": "Eustass \"Captain\" Kid",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP10-099",
+          "to_name": "Eustass \"Captain\" Kid",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Eustass \"Captain\" Kid",
+          "attacker_code": "OP10-099",
+          "target": "Krieg [\"OP15-001\">OP15-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP10-112",
+            "OP10-112",
+            "ST36-002",
+            "ST36-005",
+            "OP11-101",
+            "OP10-119"
+          ],
+          "board": [
+            "OP10-111",
+            "ST36-004"
+          ],
+          "trash": [
+            "OP11-101"
+          ],
+          "life": 5
+        },
+        "Opponent": {
+          "hand": [
+            "OP15-007",
+            "OP15-017",
+            "OP15-009",
+            "OP15-017",
+            "OP15-028",
+            "OP15-026"
+          ],
+          "trash": [
+            "OP13-040"
+          ],
+          "board": [],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 4,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP15-026",
+          "card_name": "Jango",
+          "effects": [
+            "<b>Reveal and Draw Ipponmatsu [\"OP12-021\">OP12-021]</b>"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP12-021",
+          "card_name": "Ipponmatsu",
+          "effects": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Krieg",
+          "attacker_code": "OP15-001",
+          "target": "Eustass \"Captain\" Kid [\"OP10-099\">OP10-099]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP15-007",
+            "OP15-017",
+            "OP15-009",
+            "OP15-017",
+            "OP15-028",
+            "EB04-004"
+          ],
+          "board": [
+            "OP15-026",
+            "OP12-021"
+          ],
+          "trash": [
+            "OP13-040"
+          ],
+          "life": 3
+        },
+        "You": {
+          "hand": [
+            "OP10-112",
+            "OP10-112",
+            "ST36-002",
+            "ST36-005",
+            "OP11-101",
+            "OP10-119",
+            "OP10-112"
+          ],
+          "trash": [
+            "OP11-101"
+          ],
+          "board": [
+            "OP10-111",
+            "ST36-004"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 5,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "ST36-002",
+          "card_name": "Killer",
+          "effects": [
+            "Add card to top of Life from Deck"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP10-099",
+          "to_name": "Eustass \"Captain\" Kid",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Eustass \"Captain\" Kid",
+          "attacker_code": "OP10-099",
+          "target": "Krieg [\"OP15-001\">OP15-001]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": "OP12-021",
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP10-099",
+          "card_name": "Eustass \"Captain\" Kid",
+          "effects": [
+            "Flip 1 Life Face Up",
+            "Set Killer [\"ST36-002\">ST36-002] to Active",
+            "Killer [\"ST36-002\">ST36-002] Gains Blocker"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP10-112",
+            "OP10-112",
+            "ST36-005",
+            "OP11-101",
+            "OP10-119",
+            "OP10-112",
+            "OP12-117"
+          ],
+          "board": [
+            "OP10-111",
+            "ST36-004",
+            "ST36-002"
+          ],
+          "trash": [
+            "OP11-101"
+          ],
+          "life": 5
+        },
+        "Opponent": {
+          "hand": [
+            "OP15-007",
+            "OP15-017",
+            "OP15-009",
+            "OP15-017",
+            "OP15-028",
+            "EB04-004"
+          ],
+          "trash": [
+            "OP13-040",
+            "OP12-021"
+          ],
+          "board": [
+            "OP15-026"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 6,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP15-007",
+          "card_name": "Gin",
+          "effects": [
+            "Deploy Morgan [\"OP15-017\">OP15-017]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Krieg",
+          "attacker_code": "OP15-001",
+          "target": "Eustass \"Captain\" Kid [\"OP10-099\">OP10-099]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": "ST36-002",
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP15-017",
+          "card_name": "Morgan",
+          "effects": [
+            "Attach 1 Rested Don to Monkey D. Luffy [\"OP10-111\">OP10-111]",
+            "Attach 1 Rested Don to Jango [\"OP15-026\">OP15-026]"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP15-009",
+            "OP15-017",
+            "OP15-028",
+            "EB04-004",
+            "OP15-009"
+          ],
+          "board": [
+            "OP15-026",
+            "OP15-007",
+            "OP15-017"
+          ],
+          "trash": [
+            "OP13-040",
+            "OP12-021"
+          ],
+          "life": 3
+        },
+        "You": {
+          "hand": [
+            "OP10-112",
+            "OP10-112",
+            "ST36-005",
+            "OP11-101",
+            "OP10-119",
+            "OP10-112",
+            "OP12-117"
+          ],
+          "trash": [
+            "OP11-101"
+          ],
+          "board": [
+            "OP10-111",
+            "ST36-004",
+            "ST36-002"
+          ],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 7,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP10-119",
+          "card_name": "Trafalgar Law",
+          "effects": [
+            "Added card to top of Life from Hand",
+            "Attach 1 Rested Don to Eustass \"Captain\" Kid [\"OP10-099\">OP10-099]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Killer",
+          "attacker_code": "ST36-002",
+          "target": "Krieg [\"OP15-001\">OP15-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP15-009"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Eustass \"Captain\" Kid",
+          "attacker_code": "OP10-099",
+          "target": "Krieg [\"OP15-001\">OP15-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP15-009"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP10-099",
+          "card_name": "Eustass \"Captain\" Kid",
+          "effects": [
+            "Flip 1 Life Face Up",
+            "Set Killer [\"ST36-002\">ST36-002] to Active",
+            "Killer [\"ST36-002\">ST36-002] Gains Blocker"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP10-112",
+            "ST36-005",
+            "OP11-101",
+            "OP10-119",
+            "OP10-112",
+            "OP12-117"
+          ],
+          "board": [
+            "OP10-111",
+            "ST36-004",
+            "ST36-002",
+            "OP10-119"
+          ],
+          "trash": [
+            "OP11-101"
+          ],
+          "life": 6
+        },
+        "Opponent": {
+          "hand": [
+            "OP15-017",
+            "OP15-028",
+            "EB04-004"
+          ],
+          "trash": [
+            "OP13-040",
+            "OP12-021",
+            "OP15-009",
+            "OP15-009"
+          ],
+          "board": [
+            "OP15-026",
+            "OP15-007",
+            "OP15-017"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 8,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "EB04-004",
+          "card_name": "Zeff",
+          "effects": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP15-001",
+          "to_name": "Krieg",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Krieg",
+          "attacker_code": "OP15-001",
+          "target": "Eustass \"Captain\" Kid [\"OP10-099\">OP10-099]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP15-017",
+          "card_name": "Morgan",
+          "effects": [
+            "Attach 1 Rested Don to Trafalgar Law [\"OP10-119\">OP10-119]",
+            "Attach 1 Rested Don to Jango [\"OP15-026\">OP15-026]"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP15-017",
+            "OP15-028",
+            "OP15-003"
+          ],
+          "board": [
+            "OP15-026",
+            "OP15-007",
+            "OP15-017",
+            "EB04-004"
+          ],
+          "trash": [
+            "OP13-040",
+            "OP12-021",
+            "OP15-009",
+            "OP15-009"
+          ],
+          "life": 3
+        },
+        "You": {
+          "hand": [
+            "OP10-112",
+            "ST36-005",
+            "OP11-101",
+            "OP10-119",
+            "OP10-112",
+            "OP12-117",
+            "OP10-112"
+          ],
+          "trash": [
+            "OP11-101"
+          ],
+          "board": [
+            "OP10-111",
+            "ST36-004",
+            "ST36-002",
+            "OP10-119"
+          ],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 9,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP10-112",
+          "card_name": "Eustass \"Captain\" Kid",
+          "effects": [
+            "Rest Eustass \"Captain\" Kid [\"OP10-112\">OP10-112]",
+            "Trash 1 Life",
+            "Draw 1 Card",
+            "Trash Eustass \"Captain\" Kid [\"ST36-005\">ST36-005]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Trafalgar Law",
+          "attacker_code": "OP10-119",
+          "target": "Krieg [\"OP15-001\">OP15-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP15-017",
+            "OP15-003",
+            "OP15-028"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Eustass \"Captain\" Kid",
+          "attacker_code": "OP10-099",
+          "target": "Krieg [\"OP15-001\">OP15-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP10-112",
+            "ST36-005",
+            "OP11-101",
+            "OP10-119",
+            "OP12-117",
+            "OP10-112",
+            "OP15-105"
+          ],
+          "board": [
+            "OP10-111",
+            "ST36-004",
+            "ST36-002",
+            "OP10-119",
+            "OP10-112"
+          ],
+          "trash": [
+            "OP11-101",
+            "ST36-005"
+          ],
+          "life": 5
+        },
+        "Opponent": {
+          "hand": [
+            "OP15-037"
+          ],
+          "trash": [
+            "OP13-040",
+            "OP12-021",
+            "OP15-009",
+            "OP15-009",
+            "OP15-007",
+            "OP15-017",
+            "OP15-003",
+            "OP15-028"
+          ],
+          "board": [
+            "OP15-026",
+            "OP15-007",
+            "OP15-017",
+            "EB04-004"
+          ],
+          "life": 1
+        }
+      }
+    },
+    {
+      "turn": 10,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 6,
+          "to": "OP15-007",
+          "to_name": "Gin",
+          "total": 6
+        },
+        {
+          "type": "attack",
+          "attacker": "Gin",
+          "attacker_code": "OP15-007",
+          "target": "Eustass \"Captain\" Kid [\"OP10-099\">OP10-099]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP15-017",
+          "to_name": "Morgan",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Morgan",
+          "attacker_code": "OP15-017",
+          "target": "Eustass \"Captain\" Kid [\"OP10-099\">OP10-099]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP11-101"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "EB04-004",
+          "to_name": "Zeff",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Zeff",
+          "attacker_code": "EB04-004",
+          "target": "Trafalgar Law [\"OP10-119\">OP10-119]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP15-105"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "EB04-004",
+          "card_name": "Zeff",
+          "effects": [
+            "Grant Krieg [\"OP15-001\">OP15-001] 2000 until opponent's next turn end"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Krieg",
+          "attacker_code": "OP15-001",
+          "target": "Eustass \"Captain\" Kid [\"OP10-099\">OP10-099]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP15-037",
+            "OP14-036"
+          ],
+          "board": [
+            "OP15-026",
+            "OP15-007",
+            "OP15-017",
+            "EB04-004"
+          ],
+          "trash": [
+            "OP13-040",
+            "OP12-021",
+            "OP15-009",
+            "OP15-009",
+            "OP15-007",
+            "OP15-017",
+            "OP15-003",
+            "OP15-028"
+          ],
+          "life": 1
+        },
+        "You": {
+          "hand": [
+            "OP10-112",
+            "ST36-005",
+            "OP10-119",
+            "ST36-003",
+            "P-088"
+          ],
+          "trash": [
+            "OP11-101",
+            "ST36-005",
+            "OP10-111",
+            "OP12-117",
+            "OP11-101",
+            "OP15-105",
+            "EB04-059",
+            "OP10-112"
+          ],
+          "board": [
+            "ST36-004",
+            "ST36-002",
+            "OP10-119",
+            "OP10-112",
+            "P-088"
+          ],
+          "life": 3
+        }
+      }
+    }
+  ]
+}

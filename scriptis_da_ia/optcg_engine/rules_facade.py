@@ -66,10 +66,12 @@ def eligible_cards(
     cards: list["Card"],
     *,
     cost_lte: int | None = None,
+    cost_gte: int | None = None,
     cost_eq: int | None = None,
     power_lte: int | None = None,
     power_eq: int | None = None,
     power_gte: int | None = None,
+    don_attached_gte: int | None = None,
     rested_only: bool = False,
     active_only: bool = False,
     filter_text: str | list | tuple = "",
@@ -91,6 +93,8 @@ def eligible_cards(
             continue
         if cost_lte is not None and card.cost > cost_lte:
             continue
+        if cost_gte is not None and card.cost < cost_gte:
+            continue
         if cost_eq is not None and card.cost != cost_eq:
             continue
         if power_lte is not None and card.power > power_lte:
@@ -98,6 +102,8 @@ def eligible_cards(
         if power_eq is not None and card.power != power_eq:
             continue
         if power_gte is not None and card.power < power_gte:
+            continue
+        if don_attached_gte is not None and getattr(card, "don_attached", 0) < don_attached_gte:
             continue
         if rested_only and not getattr(card, "rested", False):
             continue

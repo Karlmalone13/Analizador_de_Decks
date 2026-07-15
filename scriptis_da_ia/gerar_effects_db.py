@@ -909,11 +909,24 @@ def parse_rest_opp(text):
     m = re.search(r"rest up to (\d+) of your opponent.{0,10} characters? (?:with a cost of (\d+) or|that has)", t)
     if m:
         cost_m = re.search(r'cost of (\d+) or', t)
-        steps.append({
+        # "that has N or more DON!! cards given" -- filtro de ALVO (nao
+        # confundir com "[DON!! xN]" ou "if you have N or more DON!! cards
+        # given", que sao condicoes do PROPRIO jogador tratadas em outro
+        # lugar). Achado 14/07 via audit_leader_and_goal.py: sem isso, o
+        # Krieg (OP15-001) restava QUALQUER personagem do oponente, nao so
+        # os com 2+ DON anexado -- caia sempre no fallback cost_lte=99 (sem
+        # filtro). Mesmo padrao em pelo menos mais 4 cartas reais do banco
+        # (OP15-025, OP15-038 entre outras, ver HANDOFF).
+        don_m = re.search(r'that has (\d+) or more don!{0,2}\s*cards? given', t)
+        step = {
             'action': 'rest_opp_character',
             'count': int(m.group(1)),
-            'cost_lte': int(cost_m.group(1)) if cost_m else 99
-        })
+        }
+        if don_m:
+            step['don_attached_gte'] = int(don_m.group(1))
+        else:
+            step['cost_lte'] = int(cost_m.group(1)) if cost_m else 99
+        steps.append(step)
         return steps
 
     # Variante sem "up to" (exacta): "rest N of your opponent's Characters"
@@ -1044,12 +1057,22 @@ def parse_set_active(text):
                 r'(?:[\[{"][a-z][a-z0-9 .\'-]+[\]}"]\s+type\s+)?characters', desc)
             if color_m:
                 step['color'] = color_m.group(1)
-            cost_m = re.search(r'cost of (\d+)( or less)?', desc)
-            if cost_m:
-                if cost_m.group(2):
-                    step['cost_lte'] = int(cost_m.group(1))
-                else:
-                    step['cost_eq'] = int(cost_m.group(1))
+            # "cost of X to Y" -- intervalo (achado 14/07 via
+            # audit_leader_and_goal.py: lider do Kid OP10-099, "Supernovas
+            # type Characters with a cost of 3 to 8", virava cost_eq=3 e
+            # perdia o intervalo inteiro 4-8). Checar ANTES do cost_eq
+            # generico, senao "cost of (\d+)" ja casa so o primeiro numero.
+            range_m = re.search(r'cost of (\d+) to (\d+)', desc)
+            if range_m:
+                step['cost_gte'] = int(range_m.group(1))
+                step['cost_lte'] = int(range_m.group(2))
+            else:
+                cost_m = re.search(r'cost of (\d+)( or less)?', desc)
+                if cost_m:
+                    if cost_m.group(2):
+                        step['cost_lte'] = int(cost_m.group(1))
+                    else:
+                        step['cost_eq'] = int(cost_m.group(1))
             power_m = re.search(r'(\d+) power( or less)?', desc)
             if power_m:
                 if power_m.group(2):
