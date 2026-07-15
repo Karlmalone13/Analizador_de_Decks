@@ -39337,10 +39337,6 @@
    {
     "action": "trash_from_deck_top",
     "trigger": "your_turn"
-   },
-   {
-    "action": "keyword_blocker",
-    "trigger": "passive"
    }
   ],
   "synergy_states": {},
@@ -39349,7 +39345,7 @@
   "draws": false,
   "has_counter_value": true,
   "has_counter_event": false,
-  "is_blocker": true,
+  "is_blocker": false,
   "is_removal": false,
   "kos": false,
   "rests_opponent": false,
@@ -58239,11 +58235,11 @@
   "attribute": "Slash",
   "effects": [
    {
-    "action": "keyword_blocker",
+    "action": "keyword_rush",
     "trigger": "passive"
    },
    {
-    "action": "keyword_rush",
+    "action": "win_game_on_opp_blocker",
     "trigger": "passive"
    }
   ],
@@ -58253,7 +58249,7 @@
   "draws": false,
   "has_counter_value": false,
   "has_counter_event": false,
-  "is_blocker": true,
+  "is_blocker": false,
   "is_removal": false,
   "kos": false,
   "rests_opponent": false,
@@ -69518,6 +69514,12 @@
     "trigger": "activate_main",
     "don_requirement": 3,
     "target": "leader"
+   },
+   {
+    "action": "lock_self_attack_opp_chars_cost_lte",
+    "trigger": "activate_main",
+    "don_requirement": 3,
+    "cost_lte": 7
    }
   ],
   "synergy_states": {},
@@ -100307,7 +100309,7 @@
     "action": "set_active",
     "trigger": "your_turn",
     "don_requirement": 1,
-    "target": "own_character"
+    "target": "self"
    }
   ],
   "synergy_states": {},
@@ -100416,7 +100418,7 @@
     "action": "set_active",
     "trigger": "end_of_turn",
     "don_requirement": 1,
-    "target": "own_character"
+    "target": "self"
    },
    {
     "action": "keyword_blocker",
@@ -114079,10 +114081,6 @@
    {
     "action": "rest_opp_character",
     "trigger": "when_attacking"
-   },
-   {
-    "action": "keyword_blocker",
-    "trigger": "passive"
    }
   ],
   "synergy_states": {
@@ -114096,7 +114094,7 @@
   "draws": false,
   "has_counter_value": false,
   "has_counter_event": false,
-  "is_blocker": true,
+  "is_blocker": false,
   "is_removal": true,
   "kos": false,
   "rests_opponent": true,

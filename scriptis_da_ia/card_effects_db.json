@@ -25935,13 +25935,6 @@
         "conditions": {
           "leader_type": "east blue"
         }
-      },
-      "passive": {
-        "steps": [
-          {
-            "action": "keyword_blocker"
-          }
-        ]
       }
     }
   },
@@ -38397,10 +38390,10 @@
       "passive": {
         "steps": [
           {
-            "action": "keyword_blocker"
+            "action": "keyword_rush"
           },
           {
-            "action": "keyword_rush"
+            "action": "win_game_on_opp_blocker"
           }
         ]
       }
@@ -45758,8 +45751,16 @@
           {
             "action": "set_active",
             "target": "leader"
+          },
+          {
+            "action": "lock_self_attack_opp_chars_cost_lte",
+            "cost_lte": 7,
+            "duration": "this_turn"
           }
         ],
+        "conditions": {
+          "battled_opp_character_this_turn": true
+        },
         "once_per_turn": true,
         "don_requirement": 3
       }
@@ -66257,10 +66258,12 @@
         "steps": [
           {
             "action": "set_active",
-            "count": 1,
-            "target": "own_character"
+            "target": "self"
           }
         ],
+        "conditions": {
+          "battled_opp_character_this_turn": true
+        },
         "once_per_turn": true,
         "don_requirement": 1
       }
@@ -66305,8 +66308,7 @@
         "steps": [
           {
             "action": "set_active",
-            "count": 1,
-            "target": "own_character"
+            "target": "self"
           }
         ],
         "don_requirement": 1
@@ -75154,13 +75156,6 @@
           {
             "action": "rest_opp_character",
             "count": 1
-          }
-        ]
-      },
-      "passive": {
-        "steps": [
-          {
-            "action": "keyword_blocker"
           }
         ]
       }

@@ -139,6 +139,15 @@ def parse_conditions(text):
     m = re.search(r'if you have (\d+) or more rested characters?', t)
     if m: conds['chars_rested_gte'] = int(m.group(1))
 
+    # "if this Leader/Character battles your opponent's Character during
+    # this turn" -- exige rastreio de combate (achado 15/07, usuario:
+    # OP12-020 Zoro lider + familia OP04-047/ST02-010/ST08-013, mesmo
+    # padrao textual). Checado via card.battled_opp_character_this_turn,
+    # setado em _execute_attack no momento em que o alvo final (pos-
+    # blocker) e confirmado como Character do oponente.
+    if re.search(r"if (?:this (?:leader|character)|.{0,20}) battles your opponent.?s character", t):
+        conds['battled_opp_character_this_turn'] = True
+
     m = re.search(r'if you have (\d+) or less cards? in your hand', t)
     if m: conds['hand_lte'] = int(m.group(1))
 
@@ -1067,7 +1076,10 @@ def parse_set_active(text):
         step = {'action': 'set_active'}
 
         desc_strip = desc.strip()
-        if desc_strip == 'this character':
+        # "this card" (ex: ST02-010, ST02-013) e sinonimo de "this
+        # character" nesse contexto -- achado 15/07 ao investigar
+        # OP12-020, mesmo bloco de codigo.
+        if desc_strip in ('this character', 'this card'):
             step['target'] = 'self'
         elif desc_strip == 'this leader':
             step['target'] = 'leader'
@@ -3174,6 +3186,45 @@ def parse_substitute_rest(text):
     return steps
 
 
+def parse_lock_self_attack_cost(text):
+    """
+    "this Leader/Character cannot attack your opponent's Characters with a
+    base cost of N or less during this turn" -- AUTO-restricao de qual
+    ALVO pode atacar, distinta de lock_opp_character_attack (que trava o
+    OPONENTE de atacar, mecanica oposta). Achado 15/07 (OP12-020 Zoro
+    lider): so 1 carta real usa esse padrao exato no banco hoje, mas o
+    banco cresce (so 50 decks catalogados por enquanto) -- nao pular por
+    baixo uso atual.
+    """
+    steps = []
+    t = text.lower()
+    m = re.search(
+        r"cannot attack your opponent'?s characters? with a (?:base )?cost of (\d+) or less",
+        t)
+    if m:
+        steps.append({
+            'action': 'lock_self_attack_opp_chars_cost_lte',
+            'cost_lte': int(m.group(1)),
+            'duration': 'this_turn',
+        })
+    return steps
+
+
+def parse_win_game_on_opp_blocker(text):
+    """
+    "When your opponent activates [Blocker], if either you or your
+    opponent has 0 Life cards, you win the game." -- condicao de VITORIA
+    ALTERNATIVA (achado 15/07, OP09-118 Gol.D.Roger). Muito rara (so 1
+    carta no banco), mas o usuario corrigiu a decisao de pular por baixo
+    uso -- implementado.
+    """
+    steps = []
+    t = text.lower()
+    if re.search(r"when your opponent activates \[blocker\].{0,80}you win the game", t):
+        steps.append({'action': 'win_game_on_opp_blocker'})
+    return steps
+
+
 def parse_negate_effect(text):
     """
     Cobre dois padroes distintos:
@@ -3718,6 +3769,18 @@ def parse_block(block_text, trigger_name):
     # don!! explicitamente dentro da função (set_don_active já cobre).
     if ' as active' in t and 'set ' in t:
         steps.extend(parse_set_active(t))
+
+    # Auto-restricao de alvo de ataque (OP12-020 Zoro lider): "this
+    # Leader/Character cannot attack your opponent's Characters with a
+    # cost of N or less during this turn". Achado 15/07.
+    if 'cannot attack your opponent' in t and 'cost of' in t:
+        steps.extend(parse_lock_self_attack_cost(t))
+
+    # Vitoria alternativa (OP09-118 Gol.D.Roger): "when your opponent
+    # activates [Blocker], if either you or your opponent has 0 Life
+    # cards, you win the game". Achado 15/07.
+    if 'you win the game' in t:
+        steps.extend(parse_win_game_on_opp_blocker(t))
 
     # Trava de ataque / trava de ser restado / trava de Blocker persistente
     # (mecanicas distintas, cobertas pela mesma funcao por compartilharem
@@ -4589,6 +4652,17 @@ def parse_card_effect(card_text, card_type):
                         ('[unblockable]', 'keyword_unblockable')]:
         if tag not in t_low:
             continue
+        # Ignora mencao ao keyword do OPONENTE ("your opponent activates
+        # [Blocker]", "opponent's [Blocker]") -- referencia a mecanica do
+        # OUTRO jogador, nao uma concessao nativa pra esta carta. Achado
+        # 15/07 (OP09-118 Gol.D.Roger, "When your opponent activates
+        # [Blocker], if either you or your opponent has 0 Life cards, you
+        # win the game" -- virava keyword_blocker nativo por engano, sem
+        # nenhuma "gains" por perto pra cair no ramo de exclusao seguinte).
+        _tag_idx = t_low.find(tag)
+        if _tag_idx >= 0 and re.search(r"(?:your opponent activates?|opponent'?s)\s*$",
+                                        t_low[max(0, _tag_idx-30):_tag_idx]):
+            continue
         # evita capturar "gains [X]" como keyword nativa passiva quando na
         # verdade e concedida CONDICIONALMENTE (tratada pelo fallback/segmento
         # solto como gain_X, ou condicionada a DON como cond_keywords).
@@ -4616,6 +4690,16 @@ def parse_card_effect(card_text, card_type):
             cond_keywords.append({'action': action, 'don_requirement': req})
         else:
             passive_steps.append({'action': action})
+
+    # Vitoria alternativa (OP09-118 Gol.D.Roger, achado 15/07): "when your
+    # opponent activates [Blocker], if either you or your opponent has 0
+    # Life cards, you win the game" -- conectado AQUI (nao no fallback
+    # generico de parse_block) porque cartas com keyword nativa (ex:
+    # [Rush]) ja preenchem `result` e desligam o fallback de prosa solta
+    # (guardas `if not result` + `sem_tags_de_trigger`, ambas bloqueadas
+    # por qualquer tag reconhecida em TODAS_TAGS, incluindo [Rush]).
+    if 'you win the game' in t_low:
+        passive_steps.extend(parse_win_game_on_opp_blocker(t_low))
 
     if passive_steps:
         if 'passive' in result:

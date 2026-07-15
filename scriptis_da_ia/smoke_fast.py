@@ -843,6 +843,94 @@ def test_whitebeard_reveal_conditional_play() -> None:
     check("Personagem jogado ganha Rush neste turno", topo.rush_this_turn)
 
 
+def test_zoro_lider_battled_character_e_restricao_de_ataque() -> None:
+    # Achado 15/07 -- o usuario corrigiu minha avaliacao de escopo (eu
+    # tinha deixado OP12-020 de fora por "so 1 carta usa isso hoje", mas
+    # ele apontou que o banco so tem 50 decks catalogados, uso atual nao
+    # e bom criterio pra decidir o que consertar). OP12-020 (Zoro lider):
+    # "If this Leader battles your opponent's Character during this turn,
+    # set this Leader as active. Then, this Leader cannot attack your
+    # opponent's Characters with a base cost of 7 or less during this
+    # turn." Implementado: rastreio de combate
+    # (battled_opp_character_this_turn, setado em _execute_attack, usado
+    # tambem por OP04-047/ST02-010/ST08-013) + nova restricao de alvo de
+    # ataque (cannot_attack_opp_chars_cost_lte, distinta de
+    # lock_opp_character_attack que trava o OPONENTE).
+    lider_zoro = real_card("OP12-020")
+    me = GameState(leader=lider_zoro, turn=3, don_available=5)
+    opp = GameState(leader=mk("XOPPL", "Lider", card_type="LEADER"), turn=3)
+
+    check("OP12-020 parseia condicao battled_opp_character_this_turn",
+          get_card_effects("OP12-020").get("activate_main", {}).get("conditions", {})
+          .get("battled_opp_character_this_turn") is True)
+
+    # Sem ter batido personagem ainda -- ativar nao deve fazer nada.
+    log_sem = EffectExecutor(me, opp).execute(me.leader, "activate_main")
+    check("Zoro NAO ativa sem ter batido um Character do oponente",
+          not any(log_sem))
+
+    # Simula uma batalha do lider contra um Character do oponente.
+    fraco_opp = mk("XFRACO", "Fraco", power=1000, cost=3)
+    opp.field_chars = [fraco_opp]
+    match = OPTCGMatch((me.leader, []), (opp.leader, []))
+    eng = DecisionEngine(me, opp)
+    match._execute_attack(me.leader, "character", fraco_opp, me, opp, eng, verbose=False)
+    check("battled_opp_character_this_turn liga apos bater um Character",
+          me.leader.battled_opp_character_this_turn)
+
+    # Agora ativa de verdade (DON anexado cobre o don_requirement=3).
+    me.leader.don_attached = 3
+    log_com = EffectExecutor(me, opp).execute(me.leader, "activate_main")
+    check("Zoro ativa e aplica a restricao apos bater um Character",
+          any(log_com) and me.leader.cannot_attack_opp_chars_cost_lte == 7)
+
+    # Gera acoes de ataque -- personagem custo 3 (<=7) fica de fora,
+    # custo 9 (>7) continua disponivel.
+    custo3 = mk("XC3", "Custo3", power=1000, cost=3)
+    custo3.rested = True
+    custo9 = mk("XC9", "Custo9", power=1000, cost=9)
+    custo9.rested = True
+    opp.field_chars = [custo3, custo9]
+    actions = match._generate_and_score_actions(me, opp, eng)
+    alvos_character = {getattr(a[4], "name", None)
+                        for a in actions if a[1] == "attack" and a[3] == "character"}
+    check("Restricao exclui alvo de custo <=7 da lista de ataques gerados",
+          "Custo3" not in alvos_character and "Custo9" in alvos_character)
+
+
+def test_roger_vitoria_alternativa_ao_oponente_bloquear() -> None:
+    # Achado 15/07 -- OP09-118 (Gol.D.Roger): "When your opponent
+    # activates [Blocker], if either you or your opponent has 0 Life
+    # cards, you win the game." Descoberto durante a implementacao: essa
+    # carta tinha um bug PRE-EXISTENTE nao relacionado (nao da sessao
+    # atual) -- o scanner de keywords nativas lia "[Blocker]" dentro da
+    # frase "your opponent activates [Blocker]" como se fosse Blocker
+    # NATIVO da propria carta (sem checar contexto). Corrigido junto:
+    # scanner agora ignora tag precedida por "your opponent activates"/
+    # "opponent's" (mesmo fix pegou OP06-048 e ST30-012 de bonus).
+    conds_pass = get_card_effects("OP09-118").get("passive", {}).get("steps", [])
+    check("OP09-118 NAO tem keyword_blocker nativo por engano (bug pre-existente corrigido)",
+          not any(s.get("action") == "keyword_blocker" for s in conds_pass))
+    check("OP09-118 parseia win_game_on_opp_blocker",
+          any(s.get("action") == "win_game_on_opp_blocker" for s in conds_pass))
+
+    roger = real_card("OP09-118")
+    me = GameState(leader=mk("XLD", "Lider", card_type="LEADER"), turn=3, don_available=5)
+    me.field_chars = [roger]
+    me.life = []  # 0 vidas -- satisfaz "either you or your opponent has 0 life"
+    opp = GameState(leader=mk("XOPPL", "Lider Opp", card_type="LEADER"), turn=3)
+    opp.life = [mk("XL1", "Vida1", cost=0)]
+    blocker_char = mk("XBLK", "Blocker", power=3000, cost=3)
+    blocker_char.has_blocker = True
+    opp.field_chars = [blocker_char]
+
+    match = OPTCGMatch((me.leader, []), (opp.leader, []))
+    eng = DecisionEngine(me, opp)
+    resultado = match._execute_attack(roger, "leader", None, me, opp, eng, verbose=False)
+    check("Roger vence a partida quando oponente bloqueia com alguem em 0 vida",
+          resultado is True)
+
+
 def main() -> int:
     test_turn_order_imu_prefers_second()
     test_empty_throne_beats_direct_five_elders_play()
@@ -878,6 +966,8 @@ def main() -> int:
     test_opp_life_lte_gte_condicao_ausente()
     test_zoro_substitui_rest_por_aliado()
     test_whitebeard_reveal_conditional_play()
+    test_zoro_lider_battled_character_e_restricao_de_ataque()
+    test_roger_vitoria_alternativa_ao_oponente_bloquear()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0

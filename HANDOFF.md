@@ -1,5 +1,80 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-15 (155) - Claude - CORRECAO DE RUMO do usuario: "uso baixo em deck real" NAO e criterio valido pra pular mecanica -- OP12-020 e OP09-118 IMPLEMENTADOS de verdade (bloco 154 estava errado)
+
+**O usuario corrigiu uma decisao minha do bloco 154.** Eu tinha deixado
+OP12-020 (Zoro lider) e OP09-118 (Roger) documentados como "fora de
+escopo" citando baixo uso em deck real (1 deck) como justificativa. O
+usuario apontou 2 coisas: (1) ele lembrava de outra carta com restricao
+de combate parecida (acabou nao sendo o padrao exato, mas o instinto de
+"nao e so 1 carta" estava certo pro rastreio de combate -- 4 cartas
+reais usam "battles your opponent's Character": OP04-047, OP12-020,
+ST02-010, ST08-013); (2) mais importante, o CRITERIO em si estava
+errado -- **"uso baixo hoje" nao e sinal confiavel, o banco so tem 50
+decks catalogados por enquanto, o motor precisa funcionar pra qualquer
+carta dos 2614 no banco**, nao so as que aparecem nos decks atuais.
+Registrar isso como principio pra sessoes futuras: nao usar contagem de
+uso em deck como criterio de prioridade de correcao de REGRA (heuristica
+de qualidade de decisao pode ponderar por frequencia real; correcao de
+REGRA nao deveria).
+
+**OP12-020 (Zoro lider) -- implementado:**
+- Novo rastreio de combate: `Card.battled_opp_character_this_turn`
+  (bool, resetado no refresh_phase junto com just_played/rush_this_turn)
+  -- setado em `_execute_attack` no momento em que o alvo FINAL (ja
+  pos-blocker-redirect) e confirmado como Character do oponente. Serve
+  tambem OP04-047/ST02-010/ST08-013 (mesma condicao textual), nao so
+  Zoro.
+- Nova condicao `battled_opp_character_this_turn` em `parse_conditions`/
+  `_check_conditions`.
+- Nova acao `lock_self_attack_opp_chars_cost_lte` -- "cannot attack your
+  opponent's Characters with a cost of N or less during this turn",
+  DISTINTA de `lock_opp_character_attack` (que trava o OPONENTE, mecanica
+  oposta). Novo campo `Card.cannot_attack_opp_chars_cost_lte` (-1 =
+  sem restricao), consumido na geracao de alvos de ataque
+  (`_generate_and_score_actions`, filtra `opp.rested_chars(att)`).
+- Bonus achado no caminho: "set this **card** as active" (ST02-010,
+  ST02-013) nao era reconhecido como auto-referencia (so "this
+  character"/"this leader" eram) -- `target` saia `own_character`
+  generico em vez de `self`. Corrigido no mesmo lugar.
+
+**OP09-118 (Roger) -- implementado, com um bug PRE-EXISTENTE achado no
+caminho:**
+- Nova acao `win_game_on_opp_blocker`. Achado real ao debugar: o card
+  tem `[Rush]` (keyword nativa reconhecida), e isso desliga o mecanismo
+  de fallback que capturaria a frase solta "when your opponent
+  activates..." (2 guardas: `if not result` + `sem_tags_de_trigger`,
+  ambas bloqueadas por QUALQUER tag em TODAS_TAGS incluindo `[Rush]`) --
+  conectado direto no scanner de keywords em vez de depender do
+  fallback.
+- No caminho, achei que o MESMO scanner de keywords tinha um bug
+  PRE-EXISTENTE (nao introduzido nesta sessao, ja estava no snapshot
+  antigo): lia `[Blocker]` dentro de "your opponent activates
+  [Blocker]" como Blocker NATIVO da propria carta, sem checar contexto
+  (nenhuma janela de "gains" por perto pra cair no ramo de exclusao
+  existente). Corrigido com guarda de contexto ("your opponent
+  activates"/"opponent's" antes da tag => ignora). Bonus: OP06-048 e
+  ST30-012 tambem tinham esse mesmo bug, corrigidos junto.
+- Executor: apos o passo de Blocker em `_execute_attack`, se
+  `p.life_count()==0 or opp.life_count()==0` E `p` tem algum
+  Character/Leader com `win_game_on_opp_blocker`, retorna `True`
+  (mesmo canal de sinal "venceu a partida" ja usado pelo win normal por
+  vida).
+
+**Validado com EXECUCAO real (nao so parse) nos 2 casos:** Zoro nao
+ativa sem ter batido Character, ativa e aplica a restricao depois de
+bater, a lista de alvos de ataque gerados exclui corretamente quem tem
+custo <=7. Roger: `_execute_attack` retorna `True` (vitoria) no cenario
+"oponente bloqueia com alguem em 0 vida". `smoke_fast` (68 checks
+agora) + `smoke_test` amplo, ambos verdes. `diff_parser.py` PERDEU=0 em
+cada etapa (4 rodadas: Zoro condicao+restricao, "this card" self-target,
+Roger keyword bug, Roger win-condition).
+
+**Lista do bloco 149 agora DE VERDADE encerrada, sem pendencias.**
+Proximo passo: perguntar ao usuario se a Fase 1 do plano de 4 fases
+pode ser liberada agora, ou se ele quer continuar descendo a lista de
+suspeitos restante do `audit_parser_coverage.py` antes.
+
 ## 2026-07-15 (154) - Claude - Lista do bloco 149 ENCERRADA: OP09-118 (Roger) documentado como fora de escopo, ultimo item pendente
 
 **Ultimo item da lista de 8 suspeitos que o usuario revisou manualmente

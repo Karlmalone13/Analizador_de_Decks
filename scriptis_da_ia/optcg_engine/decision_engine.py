@@ -510,6 +510,17 @@ class Card:
     base_power_override: Optional[int] = None
     cost_buff: int = 0       # resetado no fim do turno do oponente (duration until_opp_turn_end)
     cost_buff_permanent: int = 0  # nunca resetado (duration permanent, ex: leader_type condicional)
+    # Rastreio de combate (achado 15/07, OP12-020 Zoro lider e familia --
+    # OP04-047, ST02-010, ST08-013 tambem usam "battles your opponent's
+    # Character" como condicao/gatilho): True se esta carta participou de
+    # uma batalha CONTRA UM CHARACTER do oponente (nao Leader) neste
+    # turno -- setado em _execute_attack apos o alvo final (pos-blocker)
+    # ser resolvido. Resetado no refresh_phase do dono, igual just_played.
+    battled_opp_character_this_turn: bool = False
+    # "cannot attack opponent's Characters with a cost of N or less
+    # during this turn" (OP12-020) -- auto-restricao de ALVO, DISTINTA de
+    # cannot_attack_until (bloqueio TOTAL de ataque). -1 = sem restricao.
+    cannot_attack_opp_chars_cost_lte: int = -1
 
     def __deepcopy__(self, memo):
         """
@@ -533,7 +544,8 @@ class Card:
                       'can_attack_active', 'can_attack_active_this_turn',
                       'power_buff', 'base_power_override',
                       'cost_buff', 'cost_buff_permanent', 'frozen_next_refresh',
-                      'life_face_up', 'immunity_ko_until'):
+                      'life_face_up', 'immunity_ko_until',
+                      'battled_opp_character_this_turn', 'cannot_attack_opp_chars_cost_lte'):
             setattr(novo, campo, getattr(self, campo))
         for campo in ('_db_base_power', '_attack_power_override'):
             if hasattr(self, campo):
@@ -2628,6 +2640,9 @@ class EffectExecutor:
             return False
         if 'opp_life_gte' in conds and opp.life_count() < conds['opp_life_gte']:
             return False
+        if conds.get('battled_opp_character_this_turn') and not getattr(
+                card, 'battled_opp_character_this_turn', False):
+            return False
         if 'trash_gte' in conds and len(me.trash) < conds['trash_gte']:
             return False
         if 'don_gte' in conds and me.don_available < conds['don_gte']:
@@ -4565,6 +4580,15 @@ class EffectExecutor:
         # set_don_active (DON!! cards) -- nunca confundir. Sempre exige
         # candidato JÁ RESTED (reativar algo já ativo é no-op sem sentido,
         # mesmo quando o texto não diz "rested" explicitamente).
+        # Auto-restricao de alvo de ataque (OP12-020 Zoro lider, achado
+        # 15/07): "cannot attack your opponent's Characters with a cost
+        # of N or less during this turn" -- distinta de
+        # lock_opp_character_attack (trava o OPONENTE, mecanica oposta).
+        # Consumida na geracao de acoes de ataque (_generate_and_score_actions).
+        if action == 'lock_self_attack_opp_chars_cost_lte':
+            card.cannot_attack_opp_chars_cost_lte = step.get('cost_lte', 0)
+            return f'{card.name[:18]} nao pode atacar Characters custo<={step.get("cost_lte", 0)} este turno'
+
         if action == 'set_active':
             from optcg_engine.rules_facade import (
                 card_matches_filter,
@@ -7188,6 +7212,8 @@ class OPTCGMatch:
             c.blocker_this_turn = False
             c.can_attack_active_this_turn = False
             c.immunity_ko_until = ''  # imunidade temporaria (grant_ko_immunity_type)
+            c.battled_opp_character_this_turn = False
+            c.cannot_attack_opp_chars_cost_lte = -1
         p.leader.don_attached = 0
         p.leader.rested = False
         p.leader.power_buff = 0
@@ -7195,6 +7221,8 @@ class OPTCGMatch:
         p.leader.cannot_attack_until = ''
         p.leader.effects_negated_until = ''
         p.leader.unblockable_this_turn = False
+        p.leader.battled_opp_character_this_turn = False
+        p.leader.cannot_attack_opp_chars_cost_lte = -1
         if p.field_stage:
             if p.field_stage.frozen_next_refresh:
                 p.field_stage.frozen_next_refresh = False
@@ -8116,7 +8144,12 @@ class OPTCGMatch:
                             s_leader = max(s_leader, 15)
                         actions.append((s_leader, 'attack', att, 'leader', None))
                 # alvos personagem
+                cost_lock = getattr(att, 'cannot_attack_opp_chars_cost_lte', -1)
                 for tgt in opp.rested_chars(att):
+                    # Auto-restricao de alvo (OP12-020): nao pode atacar
+                    # Characters do oponente com custo <= N neste turno.
+                    if cost_lock >= 0 and tgt.cost <= cost_lock:
+                        continue
                     s_char = engine.score_attack_target(att, 'character', tgt)
                     if s_char > -500:
                         s_char += self._human_pattern_bonus(p, 'attack', att)
@@ -9050,11 +9083,37 @@ class OPTCGMatch:
                         if log:
                             print(f'      ⚡ [On Block] {log}')
 
+            # Vitoria alternativa (OP09-118 Gol.D.Roger, achado 15/07):
+            # "When your opponent activates [Blocker], if either you or
+            # your opponent has 0 Life cards, you win the game." `p` aqui
+            # e o ATACANTE (dono do Roger, se houver) -- `opp` acabou de
+            # usar Blocker, ou seja e o "your opponent" da perspectiva de
+            # `p`. Checa qualquer Character/Leader de `p` com essa
+            # passiva; se algum tiver, e a vida de QUALQUER um dos dois
+            # lados esta em 0, `p` vence a partida imediatamente.
+            if p.life_count() == 0 or opp.life_count() == 0:
+                fontes = [p.leader] + list(p.field_chars)
+                for fonte in fontes:
+                    passive = get_card_effects(fonte.code).get('passive', {})
+                    if any(s.get('action') == 'win_game_on_opp_blocker'
+                           for s in passive.get('steps', [])):
+                        if verbose:
+                            print(f'      🏆 {fonte.name[:20]}: vitoria alternativa '
+                                  f'(oponente ativou Blocker com alguem em 0 vida)')
+                        return True
+
         # Define poder de defesa
         if target_type == 'leader':
             defend_power = opp.leader.power + opp.leader.power_buff
         elif target and target in opp.field_chars:
             defend_power = target.power + target.power_buff
+            # Rastreio de combate (achado 15/07, OP12-020 Zoro lider e
+            # familia -- OP04-047/ST02-010/ST08-013): alvo final (ja
+            # pos-blocker) e um Character do oponente -- registra que o
+            # ATACANTE "battled" um Character neste turno. Setado aqui (nao
+            # so na declaracao) pra cobrir corretamente o caso de blocker
+            # redirect (atacar o Leader mas acabar batendo num Character).
+            attacker.battled_opp_character_this_turn = True
         else:
             return False
 
