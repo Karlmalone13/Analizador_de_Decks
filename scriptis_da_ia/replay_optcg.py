@@ -280,7 +280,7 @@ class ReplayMatch:
 
         # Fases de início: delegadas ao ENGINE (fonte única), com verbose
         engine_match = self._get_engine_match()
-        engine_match.refresh_phase(p)
+        engine_match.refresh_phase(p, opp)
         engine_match.draw_phase(p, verbose=True)
         engine_match.don_phase(p, verbose=True)
         print_field(p, col, self.name(p))

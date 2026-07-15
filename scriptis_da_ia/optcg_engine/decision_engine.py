@@ -7233,7 +7233,7 @@ class OPTCGMatch:
 
     # ── Fases do turno ───────────────────────────────────────────────────────
 
-    def refresh_phase(self, p: GameState):
+    def refresh_phase(self, p: GameState, opp: 'GameState | None' = None):
         """
         PlayerUntap das 34k linhas:
         - Retorna DON dado a cartas
@@ -7249,7 +7249,28 @@ class OPTCGMatch:
           entre os dois so importaria se algum efeito pudesse agir
           especificamente NA End Phase antes do refresh, o que o engine
           ainda nao simula.
+
+        `opp` (opcional, so usado por lock_both_character_refresh): passiva
+        SIMETRICA de Stage (achado 15/07, OP05-040 Birdcage/Doflamingo) que
+        trava "nao ficar ativo" em AMBOS os campos, cost<=N, enquanto a
+        fonte estiver em jogo (nao e freeze-1x como frozen_next_refresh).
+        A fonte pode estar no campo de QUALQUER um dos 2 jogadores -- por
+        isso verifica os dois field_stage antes de decidir o cost_lte.
         """
+        lock_both_cost_lte = None
+        for owner in (p, opp):
+            if owner is None or owner.field_stage is None:
+                continue
+            passive = get_card_effects(owner.field_stage.code).get('passive', {})
+            for step in passive.get('steps', []):
+                if step.get('action') != 'lock_both_character_refresh':
+                    continue
+                conds = passive.get('conditions', {})
+                leader_is = conds.get('leader_is', '').lower()
+                if leader_is and leader_is not in owner.leader.name.lower():
+                    continue
+                lock_both_cost_lte = step.get('cost_lte', 99)
+
         don_from_cards = sum(c.don_attached for c in p.field_chars) + p.leader.don_attached
         for c in p.field_chars:
             c.don_attached = 0
@@ -7260,6 +7281,8 @@ class OPTCGMatch:
             # acontece normalmente, igual a qualquer outro character.
             if c.frozen_next_refresh:
                 c.frozen_next_refresh = False
+            elif lock_both_cost_lte is not None and c.cost <= lock_both_cost_lte:
+                pass  # Birdcage: nao ativa, mas NAO consome frozen_next_refresh (persistente)
             else:
                 c.rested = False
             c.just_played = False
@@ -9556,7 +9579,7 @@ class OPTCGMatch:
         Retorna True se `p` (quem esta jogando este turno) vence.
         """
         p.turn += 1
-        self.refresh_phase(p)
+        self.refresh_phase(p, opp)
         self.draw_phase(p)
         self.don_phase(p)
         engine = DecisionEngine(p, opp)
@@ -9579,7 +9602,7 @@ class OPTCGMatch:
 
         self._log_event(p, 'turn_start', phase='refresh',
                         description=f'Turno {self.global_turn} — refresh/compra/DON')
-        self.refresh_phase(p)
+        self.refresh_phase(p, opp)
 
         # Log de compra de carta
         hand_before = len(p.hand)

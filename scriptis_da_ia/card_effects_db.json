@@ -22393,6 +22393,17 @@
         "conditions": {
           "don_on_field_gte": 10
         }
+      },
+      "passive": {
+        "steps": [
+          {
+            "action": "lock_both_character_refresh",
+            "cost_lte": 5
+          }
+        ],
+        "conditions": {
+          "leader_is": "donquixote doflamingo"
+        }
       }
     }
   },

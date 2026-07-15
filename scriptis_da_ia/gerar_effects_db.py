@@ -2055,6 +2055,25 @@ def parse_give_don(text):
     if re.search(r'at the end of this turn, return don!! cards from your field to your don!! deck until you have the same number of don!! cards on your field as your opponent', t):
         steps.append({'action': 'return_don_until_match_opp', 'timing': 'end_of_turn'})
 
+    # Trava SIMETRICA (ambos os lados): "all Characters with a cost of N or
+    # less do not become active in your and your opponent's Refresh Phases"
+    # -- passiva PERSISTENTE de Stage (achado 15/07, OP05-040 Birdcage/
+    # Doflamingo, revisao do usuario), distinta de TODAS as outras travas
+    # desta funcao: (1) fraseado "do not" (nao "will not", que e sempre
+    # efeito de UM disparo so); (2) afeta os DOIS jogadores ao mesmo tempo,
+    # nao so o oponente; (3) enquanto a fonte (Stage) estiver em campo, nao
+    # um "congela so 1x" como frozen_next_refresh. Verificada ANTES do
+    # self-lock pra nao cair no ramo errado por engano (nenhuma sobreposicao
+    # de fraseado real hoje, mas a ordem e proposital).
+    m_both = re.search(
+        r"all characters with a cost of (\d+) or less do not become active "
+        r"in your and your opponent.?s refresh phases",
+        t
+    )
+    if m_both:
+        steps.append({'action': 'lock_both_character_refresh', 'cost_lte': int(m_both.group(1))})
+        return steps
+
     # Trava de "nao ficar ativo no Refresh" -- distinguir alvo: DON especifico,
     # Character/Leader especifico (do OPONENTE, com filtro opcional de custo),
     # ou self-lock (o proprio Character do efeito, sem "opponent" no texto --
@@ -4023,7 +4042,8 @@ def parse_block(block_text, trigger_name):
 
     # DON: give, add (ramp), set active -- ou trava de "will not become
     # active" (que pode mirar Character/Leader sem mencionar a palavra "don")
-    if ('don' in t and ('give' in t or 'add' in t or 'set' in t)) or 'will not become active' in t:
+    if (('don' in t and ('give' in t or 'add' in t or 'set' in t))
+            or 'will not become active' in t or 'do not become active' in t):
         steps.extend(parse_give_don(t))
 
     # Negar efeito (On Play especifico, ou generico com filtro de custo)

@@ -13901,6 +13901,17 @@
      "target": "all_character"
     }
    ]
+  },
+  "passive": {
+   "conditions": {
+    "leader_is": "donquixote doflamingo"
+   },
+   "steps": [
+    {
+     "action": "lock_both_character_refresh",
+     "cost_lte": 5
+    }
+   ]
   }
  },
  "OP05-041": {

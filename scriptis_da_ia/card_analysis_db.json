@@ -33750,6 +33750,11 @@
     "cost_lte": 5,
     "rested_only": true,
     "target": "all_character"
+   },
+   {
+    "action": "lock_both_character_refresh",
+    "trigger": "passive",
+    "cost_lte": 5
    }
   ],
   "synergy_states": {

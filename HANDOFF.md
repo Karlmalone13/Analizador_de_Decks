@@ -1,5 +1,51 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-15 (160) - Claude - OP05-040 Birdcage: passiva de Stage simetrica "nao ficar ativo" (item 3/6 do lote de 10)
+
+**Continuacao do lote de 10 do usuario.** OP05-040 (Birdcage, Stage) so
+tinha o KO de fim de turno parseado; a clausula inicial inteira estava
+ausente: "If your Leader is [Donquixote Doflamingo], all Characters with
+a cost of 5 or less do not become active in your and your opponent's
+Refresh Phases."
+
+**Por que nao caia em nenhum mecanismo existente:** o motor ja tinha uma
+familia de travas "nao ficar ativo no Refresh" (`lock_opp_character_refresh`,
+`lock_self_character_refresh`), mas todas elas: (1) so reconheciam o
+fraseado "will not become active" (efeito de UM disparo so, geralmente
+custo de uma habilidade forte) -- Birdcage usa "do not become active"
+(passiva persistente, sempre ativa enquanto a Stage estiver em campo);
+(2) so afetavam UM lado (oponente OU self) -- Birdcage afeta os DOIS
+jogadores ao mesmo tempo, simetricamente. Mecanismo novo:
+`lock_both_character_refresh` (novo action, `cost_lte`), condicionado a
+`leader_is` (ja existia como tipo de condicao, so nao tinha uso aqui).
+
+**Mudanca estrutural em `refresh_phase`:** precisou passar a receber
+`opp` (antes so recebia `p`, o jogador sendo refrescado) porque a fonte
+do lock (a Stage) pode estar no campo de QUALQUER um dos 2 jogadores, e o
+efeito se aplica ao `p` sendo processado independente de quem possui a
+Stage. Atualizados os 3 call sites (`_play_turn_greedy`, `play_turn`,
+`replay_optcg.py`). Verifica os dois `field_stage` (de `p` e `opp`) antes
+de decidir o `cost_lte` da trava, e a condicao `leader_is` e checada
+contra o LIDER DO DONO da Stage (nao do `p` sendo refrescado). Distinto
+de `frozen_next_refresh` (freeze 1x, consumido): esta trava e
+PERSISTENTE, nunca "gasta" -- se reavalia a cada refresh_phase.
+
+**Validado:** `diff_parser.py` PERDEU=0, mudanca isolada em OP05-040. 1
+teste dirigido novo com EXECUCAO real
+(`test_birdcage_trava_refresh_simetrica_cost_lte`): confirma que
+personagens custo<=5 do DONO da Birdcage continuam rested apos o proprio
+refresh, custo>5 ativa normal, E que personagens custo<=5 do OPONENTE
+tambem ficam presos quando o `refresh_phase` dele roda (prova a simetria
+via 2 chamadas separadas, 1 pra cada lado). `smoke_fast.py` (84 checks) +
+`smoke_test.py` amplo, ambos verdes (a mudanca de assinatura de
+`refresh_phase` nao quebrou nenhum teste existente).
+
+**Ainda pendente do lote de 10:** OP16-116 (segunda clausula de roubo de
+carta da vida), OP16-108 Shiryu (bloco `on_play` inteiro), OP10-098
+Liberation (condicao de comparacao relativa de board + segundo alvo de
+KO + bloco `[Trigger]` inteiro), OP15-008 Krieg (condicao `just_played`
++ debuff dinamico por DON do proprio alvo).
+
 ## 2026-07-15 (159) - Claude - OP05-091 Rebecca: add_from_trash tinha exclude invertido pra INCLUDE (18 cartas afetadas), faixa de custo nunca capturada (6), tipo entre chaves nunca capturado (4), ordem de step trocada
 
 **Continuacao direta do lote de 10 do usuario (item 2/6 pendente do bloco

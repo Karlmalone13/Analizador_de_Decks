@@ -1090,6 +1090,46 @@ def test_rebecca_add_from_trash_range_exclude_e_ordem() -> None:
           alvo_barato in me.field_chars and alvo_barato not in me.hand and alvo_barato.rested)
 
 
+def test_birdcage_trava_refresh_simetrica_cost_lte() -> None:
+    # Achado 15/07 -- OP05-040 Birdcage (Stage): "If your Leader is
+    # [Donquixote Doflamingo], all Characters with a cost of 5 or less do
+    # not become active in your AND your opponent's Refresh Phases."
+    # Antes, essa clausula inteira nao existia no parse (so o KO de fim de
+    # turno sobrevivia) -- passiva SIMETRICA (afeta os 2 lados) e
+    # PERSISTENTE (nao e freeze de 1x), distinta de toda a familia
+    # lock_opp_character_refresh/lock_self_character_refresh existente.
+    passive = get_card_effects("OP05-040").get("passive", {})
+    check("OP05-040 parseia lock_both_character_refresh cost_lte=5",
+          any(s.get("action") == "lock_both_character_refresh" and s.get("cost_lte") == 5
+              for s in passive.get("steps", [])))
+    check("OP05-040 parseia leader_is=donquixote doflamingo",
+          passive.get("conditions", {}).get("leader_is") == "donquixote doflamingo")
+
+    leader_dofla = mk("XDOFLA", "Donquixote Doflamingo", card_type="LEADER")
+    birdcage = real_card("OP05-040")
+    baixo_custo = mk("XBC1", "Baixo Custo", cost=4)
+    alto_custo = mk("XBC2", "Alto Custo", cost=8)
+    baixo_custo.rested = True
+    alto_custo.rested = True
+    me = GameState(leader=leader_dofla, turn=3)
+    me.field_stage = birdcage
+    me.field_chars = [baixo_custo, alto_custo]
+    opp_baixo = mk("XBC3", "Opp Baixo Custo", cost=3)
+    opp_baixo.rested = True
+    opp = GameState(leader=mk("XOPPDF", "Lider Opp", card_type="LEADER"), turn=3)
+    opp.field_chars = [opp_baixo]
+
+    match = OPTCGMatch((me.leader, []), (opp.leader, []))
+    match.refresh_phase(me, opp)
+    check("Cost<=5 do DONO da Birdcage continua rested apos o proprio refresh",
+          baixo_custo.rested)
+    check("Cost>5 do dono da Birdcage ativa normalmente", not alto_custo.rested)
+
+    match.refresh_phase(opp, me)
+    check("Cost<=5 do OPONENTE da Birdcage tambem continua rested (trava simetrica)",
+          opp_baixo.rested)
+
+
 def main() -> int:
     test_turn_order_imu_prefers_second()
     test_empty_throne_beats_direct_five_elders_play()
@@ -1132,6 +1172,7 @@ def main() -> int:
     test_don_on_field_lte_condicao_ausente()
     test_black_hole_negate_e_ko_encadeado()
     test_rebecca_add_from_trash_range_exclude_e_ordem()
+    test_birdcage_trava_refresh_simetrica_cost_lte()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0
