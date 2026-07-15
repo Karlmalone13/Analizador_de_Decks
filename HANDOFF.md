@@ -1,10 +1,10 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
-## 2026-07-15 (168) - Codex - auditor rerodado e mapa oficial reconstruido (428 suspeitos)
+## 2026-07-15 (168) - Codex - auditor rerodado e fila oficial reconstruida (428 suspeitos)
 
 `audit_parser_coverage.py --show 40` rerodado depois dos tres clusters desta
-sessao: fila caiu de 433 para 428. Criado
-`scriptis_da_ia/PARSER_AUDIT_MAP.md` com estados separados: CONFIRMADO ERRO,
+sessao: fila caiu de 433 para 428. A classificacao foi mantida neste bloco do
+HANDOFF, sem criar outro arquivo de tracking/fonte paralela: CONFIRMADO ERRO,
 SUSPEITO FORTE, PROVAVEL FALSO POSITIVO e REVISAR ESCOPO.
 
 Mudanca de metodo exigida pelo usuario: texto de `cards_rows.csv` x JSON serve
@@ -17,6 +17,15 @@ consulta oficial.
 
 Proxima acao: corrigir OP06-115 primeiro, depois OP03-078; validar semantica de
 EB02-019 pelo Q&A antes de alterar.
+
+**Limpeza arquitetural pedida pelo usuario:** o arquivo temporariamente criado
+`scriptis_da_ia/PARSER_AUDIT_MAP.md` foi removido no commit seguinte para nao
+duplicar a fila do `HANDOFF.md`. `audit_parser_coverage.py` permanece apenas
+como ferramenta que calcula o estado atual; nao e importado pelo engine. Achado
+adicional a auditar separadamente: `decision_engine.get_card_effects()` le
+`card_effects_db` e possui fallback por texto do `card_analysis_db`; isso pode
+mascarar gaps do parser estruturado e deve ser consolidado depois da varredura,
+sem misturar essa mudanca arquitetural com a correcao imediata de OP06-115.
 
 ## 2026-07-15 (167) - Codex - OP02-110 Hina: On Block indireto com "during this turn"
 
