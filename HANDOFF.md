@@ -1,5 +1,52 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-15 (147) - Claude - Bug de CONTABILIDADE de DON achado pelo USUARIO (give_don/give_don_opp inventava DON quando o banco nao tinha o suficiente)
+
+**Como foi achado:** o usuario estava investigando os suspeitos da
+varredura (bloco 145/146) e reparou em ST01-011 (Brook, "Give up to 2
+rested DON!! cards to your Leader or 1 of your Characters" -> parsed
+`{'action': 'give_don', 'count': 2, 'rested': True}`) e perguntou se
+"up to 2" virar um `count` fixo de 2 estava certo. Investigando a duvida,
+achei algo mais serio que semantica de "up to": em `give_don` E
+`give_don_opp` (`decision_engine.py`), o codigo fazia
+`best.don_attached += count` (o valor CHEIO pedido pela carta) ANTES de
+calcular quanto o banco de DON realmente tinha disponivel pra debitar. Se
+o banco tivesse MENOS que `count` (ex: carta pede ate 2, banco so tem 1
+rested), o personagem recebia os 2 DON anexados mesmo assim -- o debito
+real do banco era so parcial (`min(count, don_rested)`), entao o DON
+extra vinha do NADA. Ironia: o comentario do proprio codigo ja dizia "a
+IA nao inventa DON" -- a intencao estava certa, a ordem das operacoes
+que estava errada.
+
+**Reproduzido e confirmado antes do fix** (banco com 1 don_rested, carta
+pede ate 2): `don_rested` ia pra 0 (debito correto), mas `don_attached`
+subia pra 2 (deveria ser 1) -- 1 DON fantasma criado por execucao.
+
+**Fix:** os dois blocos (`give_don`, `give_don_opp`) agora calculam
+`transferido` (o que foi de fato debitado do banco, considerando
+prioridade rested/available conforme o texto da carta) ANTES de anexar,
+e anexam exatamente esse valor -- nunca mais o `count` bruto. Mensagem de
+log tambem corrigida pra refletir o valor real transferido.
+
+**Sobre a pergunta original do usuario ("up to" vira count fixo, ta
+certo?):** sim, isso em si e uma simplificacao aceitavel -- dar o MAXIMO
+de DON permitido pro melhor atacante e quase sempre a jogada correta
+estrategicamente (mais DON no atacante certo raramente e errado), entao
+tratar "up to N" como "sempre tenta dar N" nao e bug de heuristica. O bug
+real era so a dessincronia entre o que era ANEXADO e o que era DEBITADO
+quando o banco nao cobria o pedido.
+
+**Auditoria de escopo (fixes globais, nao pontuais):** busquei todos os
+outros lugares que fazem `card.don_attached +=` no motor
+(`attach_don`/`_attach_don_for_attack`) -- ambos JA calculavam o valor
+minimo/limitado ANTES de anexar (`anexar = min(falta, p.don_available)`),
+sem o mesmo bug. So `give_don`/`give_don_opp` tinham o problema.
+
+**Validado:** `smoke_fast` (46 checks agora, 1 teste dirigido novo
+reproduzindo o cenario banco-insuficiente com ST01-011) + `smoke_test`
+amplo, ambos verdes. Sem mudanca de parser aqui (e bug de EXECUCAO, nao
+de `gerar_effects_db.py`) -- nao precisou de `diff_parser`/`gerar_dbs`.
+
 ## 2026-07-15 (146) - Claude - 9 cartas reais corrigidas via varredura sistemica (3 causas raiz compartilhadas, nao carta a carta)
 
 **Pedido do usuario:** "vamos corrigir!" (autorizacao explicita pra sair do

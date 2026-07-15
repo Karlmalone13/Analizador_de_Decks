@@ -4075,18 +4075,26 @@ class EffectExecutor:
             rested = step.get('rested', False)
             # Dá DON ao personagem mais forte ativo
             targets = [c for c in me.field_chars if not c.rested] + [me.leader]
+            transferido = 0
             if targets:
                 best = max(targets, key=lambda c: c.effective_power(True))
-                best.don_attached += count
                 # Debita do banco de DON real (don_rested + don_available),
                 # nunca de uma fonte gratuita externa -- ambos os tipos vêm
-                # do mesmo banco do jogador.
+                # do mesmo banco do jogador. Achado 15/07 via
+                # audit_parser_coverage.py (ST01-011 Brook): o comentario
+                # ja dizia "a IA nao inventa DON", mas o codigo anexava
+                # `count` cheio no character ANTES de saber quanto o banco
+                # realmente tinha pra debitar -- se o banco tivesse MENOS
+                # que `count`, o personagem recebia o valor cheio mesmo
+                # assim (DON criado do nada, banco e campo dessincronizam).
+                # Fix: anexa exatamente o que foi de fato debitado do banco.
                 if rested:
                     # "give up to N RESTED DON" -- exige especificamente DON
                     # rested do banco. Se não houver o suficiente, usa o que
                     # tiver (parcial) -- a IA não inventa DON.
                     do_rested = min(count, me.don_rested)
                     me.don_rested -= do_rested
+                    transferido = do_rested
                 else:
                     # "give up to N DON" (sem qualificador) -- a IA escolhe.
                     # Prioriza DON rested primeiro (preserva don_available
@@ -4095,10 +4103,11 @@ class EffectExecutor:
                     do_rested = min(count, me.don_rested)
                     me.don_rested -= do_rested
                     restante = count - do_rested
-                    if restante > 0:
-                        do_available = min(restante, me.don_available)
-                        me.don_available -= do_available
-            return f'+{count} DON'
+                    do_available = min(restante, me.don_available) if restante > 0 else 0
+                    me.don_available -= do_available
+                    transferido = do_rested + do_available
+                best.don_attached += transferido
+            return f'+{transferido} DON'
 
         # ── Give DON ao oponente (controle/setup) ───────────────────────────────
         # Mecanica distinta de give_don: o DON sai do BANCO DO OPONENTE (nao do
@@ -4110,12 +4119,16 @@ class EffectExecutor:
             rested = step.get('rested', False)
 
             targets_opp = [c for c in opp.field_chars] + [opp.leader]
+            transferido = 0
             if targets_opp:
                 best = max(targets_opp, key=lambda c: c.effective_power(True))
-                best.don_attached += count
+                # Mesmo fix do give_don (15/07, achado via ST01-011 Brook):
+                # anexa so o que foi de fato debitado do banco do oponente,
+                # nunca o `count` cheio se o banco tiver menos que isso.
                 if rested:
                     do_rested = min(count, opp.don_rested)
                     opp.don_rested -= do_rested
+                    transferido = do_rested
                 else:
                     # sem qualificador / "from cost area" -- usa o banco
                     # ativo do oponente primeiro (e o DON que ele "gastou"
@@ -4124,10 +4137,11 @@ class EffectExecutor:
                     do_available = min(count, opp.don_available)
                     opp.don_available -= do_available
                     restante = count - do_available
-                    if restante > 0:
-                        do_rested = min(restante, opp.don_rested)
-                        opp.don_rested -= do_rested
-            return f'deu {count} DON ao character do oponente'
+                    do_rested = min(restante, opp.don_rested) if restante > 0 else 0
+                    opp.don_rested -= do_rested
+                    transferido = do_available + do_rested
+                best.don_attached += transferido
+            return f'deu {transferido} DON ao character do oponente'
 
         # ── Play from trash ───────────────────────────────────────────────────
         if action == 'play_from_trash':

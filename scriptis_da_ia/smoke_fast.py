@@ -615,6 +615,28 @@ def test_give_don_opp_com_of_your_opponent_no_meio_da_frase() -> None:
               any(s.get("action") == "give_don_opp" and s.get("rested") for s in steps))
 
 
+def test_give_don_nao_inventa_don_quando_banco_insuficiente() -> None:
+    # Achado 15/07 -- o USUARIO reparou olhando a saida do
+    # audit_parser_coverage.py pra ST01-011 (Brook, "Give up to 2 rested
+    # DON!! cards..." -> count=2) e perguntou se "up to" bater com um
+    # 'count' fixo estava certo. Investigando, achei algo pior que
+    # semantica de "up to": give_don/give_don_opp anexava o `count` CHEIO
+    # no character ANTES de saber quanto o banco realmente tinha pra
+    # debitar -- com banco insuficiente, o character recebia o valor cheio
+    # mesmo assim (DON criado do nada, campo e banco dessincronizam). Fix:
+    # anexa exatamente o que foi debitado de verdade.
+    me = GameState(leader=real_card("ST01-001"), don_available=0, turn=3)
+    me.don_rested = 1  # banco so tem 1 DON rested, carta pede ate 2
+    opp = GameState(leader=real_card("ST01-001"), turn=3)
+    brook = real_card("ST01-011")
+    me.field_chars = [brook]
+    EffectExecutor(me, opp).execute(brook, "on_play")
+    check("give_don debita o banco de verdade (nao fica negativo)",
+          me.don_rested == 0)
+    check("give_don anexa so o que o banco tinha (1), nao o count pedido (2)",
+          me.leader.don_attached == 1)
+
+
 def main() -> int:
     test_turn_order_imu_prefers_second()
     test_empty_throne_beats_direct_five_elders_play()
@@ -642,6 +664,7 @@ def main() -> int:
     test_lock_opp_character_refresh_variantes_de_fraseado()
     test_rest_opp_alvo_misto_character_ou_don()
     test_give_don_opp_com_of_your_opponent_no_meio_da_frase()
+    test_give_don_nao_inventa_don_quando_banco_insuficiente()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0
