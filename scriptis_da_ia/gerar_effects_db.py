@@ -134,6 +134,18 @@ def parse_conditions(text):
         if m.group(2):
             conds['chars_gte_cost_filter'] = int(m.group(2))
 
+    # "if you have N or more {TIPO}/[TIPO]/"TIPO" type Characters" -- tipo
+    # vem ANTES de "Characters" (ordem diferente de chars_gte_cost_filter,
+    # que tem o filtro DEPOIS de "characters"). Achado 15/07 (varredura
+    # ampla, EB03-020 e familia -- 5 cartas reais): "Then, if you have 2
+    # or more {FILM} type Characters, that card gains an additional +2000
+    # power..." aplicava o buff SEMPRE, sem checar o tipo.
+    if 'chars_gte' not in conds:
+        m = re.search(r'if you have (\d+) or more [\[{"]([^\]}"]+)[\]}"] type characters?', t)
+        if m:
+            conds['chars_gte'] = int(m.group(1))
+            conds['chars_gte_type_filter'] = m.group(2).strip()
+
     # "if you have N or more rested Characters" -- conta PROPRIOS Characters
     # que estao rested, distinto de chars_gte (que conta todos). OP09-033.
     m = re.search(r'if you have (\d+) or more rested characters?', t)
@@ -1796,6 +1808,16 @@ def parse_power_buff(text):
             step['power_lte'] = power_lte_own
         if exclude_own:
             step['exclude'] = exclude_own
+        # "give up to N of your opponent's Characters -X power" -- N>1
+        # (achado 15/07, varredura ampla): o executor de debuff_power so
+        # aplicava a 1 alvo sempre, mesmo com N=2 no texto (13 cartas reais
+        # no banco pedem N=2, ex: OP01-022, OP11-020). So extrai count
+        # quando > 1 -- N=1 fica sem o campo (comportamento antigo
+        # preservado, default implicito continua 1).
+        if target == 'opp_character':
+            m_cnt = re.search(r'up to (\d+) of your opponent', contexto_antes)
+            if m_cnt and int(m_cnt.group(1)) > 1:
+                step['count'] = int(m_cnt.group(1))
         steps.append(step)
 
     return steps

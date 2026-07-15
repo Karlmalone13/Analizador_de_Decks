@@ -762,16 +762,30 @@ check('Counter event com buff + debuff_power aplica os dois efeitos',
 
 # ── 15c. Counter event com 2 buff_power(battle_only): o 2º (target='self')
 # e BONUS condicional ao MESMO alvo escolhido no 1º ("that card gains an
-# additional +X power"), nao um 2º alvo independente. EB03-020 sem condicao,
-# OP04-095 com condicao (trash_gte 15) ──
+# additional +X power"), nao um 2º alvo independente. EB03-020 tem
+# condicao "if you have 2 or more {FILM} type Characters" (achado 15/07 --
+# chars_gte_type_filter, antes essa condicao nem existia no parser e o
+# bonus somava sempre; teste antigo aqui testava esse BUG sem querer,
+# corrigido pra montar o cenario com a condicao satisfeita/nao satisfeita,
+# mesmo padrao do OP04-095 abaixo). OP04-095 com condicao (trash_gte 15) ──
 me, opp = me_opp()
 me.don_available = 2
+me.field_chars = [mk('FILM1', 'Film 1', sub_types='FILM'), mk('FILM2', 'Film 2', sub_types='FILM')]
 evento_multi_buff = mk('EB03-020', 'There You Are Sore Loser', card_type='EVENT', cost=2)
 me.hand = [evento_multi_buff]
 ee = EffectExecutor(me, opp)
 counter = ee.try_counter_event_power(me.leader, 'leader', needed=4000)
-check('Counter event com 2 buffs battle_only soma os dois (sem condicao)',
+check('Counter event com 2 buffs battle_only soma os dois quando condicao FILM passa',
       counter and counter[0] == 4000 and evento_multi_buff in me.trash)
+
+me, opp = me_opp()
+me.don_available = 2
+evento_multi_buff2 = mk('EB03-020', 'There You Are Sore Loser', card_type='EVENT', cost=2)
+me.hand = [evento_multi_buff2]
+ee = EffectExecutor(me, opp)
+counter = ee.try_counter_event_power(me.leader, 'leader', needed=4000)
+check('Counter event com 2 buffs battle_only NAO soma o bonus sem 2+ FILM Characters',
+      counter is None and evento_multi_buff2 in me.hand)
 
 me, opp = me_opp()
 me.don_available = 2

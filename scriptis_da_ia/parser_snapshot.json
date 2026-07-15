@@ -2649,6 +2649,10 @@
     {
      "action": "buff_power",
      "amount": 2000,
+     "conditions": {
+      "chars_gte": 2,
+      "chars_gte_type_filter": "film"
+     },
      "duration": "battle_only",
      "target": "self"
     }
@@ -3962,6 +3966,10 @@
    ]
   },
   "when_attacking": {
+   "conditions": {
+    "chars_gte": 3,
+    "chars_gte_type_filter": "neptunian"
+   },
    "steps": [
     {
      "action": "rest_opp_character",
@@ -3986,6 +3994,10 @@
    ]
   },
   "your_turn": {
+   "conditions": {
+    "chars_gte": 3,
+    "chars_gte_type_filter": "minks"
+   },
    "steps": [
     {
      "action": "debuff_cost",
@@ -4394,6 +4406,10 @@
  },
  "EB04-033": {
   "on_play": {
+   "conditions": {
+    "chars_gte": 3,
+    "chars_gte_type_filter": "foxy pirates"
+   },
    "costs": [
     {
      "count": 1,
@@ -5378,6 +5394,7 @@
     {
      "action": "debuff_power",
      "amount": 2000,
+     "count": 2,
      "duration": "this_turn",
      "target": "opp_character"
     }
@@ -6988,6 +7005,7 @@
     {
      "action": "debuff_power",
      "amount": 3000,
+     "count": 2,
      "duration": "this_turn",
      "target": "opp_character"
     },
@@ -11121,6 +11139,7 @@
     {
      "action": "debuff_power",
      "amount": 2000,
+     "count": 2,
      "duration": "this_turn",
      "target": "opp_character"
     }
@@ -14361,6 +14380,7 @@
     {
      "action": "debuff_power",
      "amount": 2000,
+     "count": 2,
      "duration": "this_turn",
      "target": "opp_character"
     }
@@ -17460,6 +17480,7 @@
     {
      "action": "debuff_power",
      "amount": 2000,
+     "count": 2,
      "duration": "this_turn",
      "target": "opp_character"
     }
@@ -18463,6 +18484,10 @@
  },
  "OP07-059": {
   "when_attacking": {
+   "conditions": {
+    "chars_gte": 3,
+    "chars_gte_type_filter": "foxy pirates"
+   },
    "costs": [
     {
      "count": 3,
@@ -21705,12 +21730,14 @@
     {
      "action": "debuff_power",
      "amount": 3000,
+     "count": 2,
      "duration": "this_turn",
      "target": "opp_character"
     },
     {
      "action": "debuff_power",
      "amount": 2000,
+     "count": 2,
      "duration": "until_opp_turn_end",
      "target": "opp_character"
     }
@@ -22942,6 +22969,7 @@
     {
      "action": "debuff_power",
      "amount": 2000,
+     "count": 2,
      "duration": "this_turn",
      "target": "opp_character"
     }
@@ -26295,6 +26323,7 @@
     {
      "action": "debuff_power",
      "amount": 2000,
+     "count": 2,
      "duration": "this_turn",
      "target": "opp_character"
     }
@@ -45688,6 +45717,7 @@
     {
      "action": "debuff_power",
      "amount": 2000,
+     "count": 2,
      "duration": "this_turn",
      "target": "opp_character"
     }

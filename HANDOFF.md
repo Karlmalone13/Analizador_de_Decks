@@ -1,5 +1,69 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-15 (156) - Claude - Retomada da varredura ampla (476 suspeitos restantes): 2 causas raiz corrigidas (18 cartas), metodo de clustering programatico introduzido
+
+**Pedido do usuario:** "vamos corrigir e conferir aqueles 493 suspeitos"
+-- retomar a lista completa do `audit_parser_coverage.py` (476 restantes
+apos os fixes anteriores), nao so os 8 que ele ja tinha revisado a mao.
+
+**Metodo novo (necessario pra escala de 476 itens):** em vez de ler cada
+suspeito manualmente, escrevi um script auxiliar que agrupa os
+"numeros perdidos" por CONTEXTO DE TEXTO normalizado (janela de ~65
+chars ao redor de cada numero, digitos trocados por "N" pra clusterizar
+fraseados iguais). Isso revela rapidamente quais padroes se repetem em
+varias cartas (alto ROI) vs quais sao unicos (baixo ROI, avaliar
+individualmente depois). 475 contextos distintos entre 476 cartas --
+maioria e unica, mas os clusters do topo respondem por boa parte do
+volume.
+
+**Achado importante sobre falso-positivo:** o maior cluster ("Up to 1 of
+your Leader or Character cards gains +N power during this battle", ~16
+cartas) e MAJORITARIAMENTE FALSO POSITIVO -- o metodo numerico marca "1"
+como perdido porque `buff_power`/`debuff_power` nao guardam um campo
+`count` explicito pra alvo unico (implicito), entao o "1" nunca aparece
+literalmente no JSON mesmo quando a carta esta parseada CORRETAMENTE.
+Confirmado revisando 7 cartas desse cluster -- 6 ja estavam certas, 1
+(EB03-020) tinha bug real (ver abaixo). Registrar isso: o metodo de
+varredura tem uma classe de falso-positivo conhecida (contagem implicita
+de 1 alvo), nao vale a pena caçar 1-por-1 nesse cluster especifico sem
+confirmar primeiro se ha uma clausula condicional ou multiplos alvos de
+verdade por trás do "1".
+
+**Causa raiz #1 -- `chars_gte_type_filter` (condicao nova, 5 cartas):**
+"if you have N or more {TIPO} type Characters" nunca existia como
+condicao (so existia por CUSTO -- `chars_gte_cost_filter`). EB03-020 e
+familia (EB04-016, EB04-017, EB04-033, OP07-059) tinham um efeito
+condicional aplicando SEMPRE, sem checar o tipo. Corrigido em
+`parse_conditions`/`_check_conditions`, mesma convencao de
+`chars_gte_cost_filter` ja existente. Corrigiu tambem um teste antigo em
+`smoke_test.py` (secao 15c) que sem querer testava esse bug (EB03-020
+sem nenhuma condicao configurada no cenario).
+
+**Causa raiz #2 -- `debuff_power` com `count>1` (13 cartas):** o
+executor de `debuff_power` (comentario no proprio codigo ja avisava:
+"parser nunca emite count pra estes alvos -- sempre 1 alvo") sempre
+debuffava exatamente 1 personagem do oponente, mesmo quando o texto
+pedia "up to 2" (ex: OP01-022, OP11-020). Parser ganhou extracao de
+`count` quando >1 (preserva comportamento antigo pra N=1, nao adiciona
+campo desnecessario); executor ganhou loop respeitando `count`
+(reaproveita `choose_highest_board_value` + remove_by_identity, mesmo
+padrao ja usado em `rest_opp_character`/outras acoes multi-alvo).
+
+**Validado:** 2 testes dirigidos novos com EXECUCAO real (nao so parse)
+-- debuff com count=2 afeta 2 alvos de verdade, priorizando os de maior
+valor. `smoke_fast` (70 checks) + `smoke_test` amplo, ambos verdes (1
+teste antigo corrigido pra nao testar o bug do EB03-020 por engano).
+`diff_parser.py` PERDEU=0 em cada etapa, `gerar_dbs.py` + re-snapshot
+feitos.
+
+**Estado da varredura:** de ~509 suspeitos originais, restam ~458 apos
+esta rodada (18 fechados). Proxima sessao deve continuar usando o
+metodo de clustering (nao ler item por item) -- rodar o script de
+agrupamento, revisar os proximos clusters de maior contagem, e ter
+cuidado especial com o padrao de falso-positivo "alvo unico implicito"
+antes de investir tempo em qualquer cluster de "+N power"/"-N power"
+sem clausula condicional visivel.
+
 ## 2026-07-15 (155) - Claude - CORRECAO DE RUMO do usuario: "uso baixo em deck real" NAO e criterio valido pra pular mecanica -- OP12-020 e OP09-118 IMPLEMENTADOS de verdade (bloco 154 estava errado)
 
 **O usuario corrigiu uma decisao minha do bloco 154.** Eu tinha deixado

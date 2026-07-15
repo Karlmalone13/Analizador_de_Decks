@@ -2661,8 +2661,12 @@ class EffectExecutor:
             return False
         if 'chars_gte' in conds:
             cost_filter = conds.get('chars_gte_cost_filter')
+            type_filter = conds.get('chars_gte_type_filter')
             if cost_filter is not None:
                 contagem = sum(1 for c in me.field_chars if c.cost >= cost_filter)
+            elif type_filter is not None:
+                contagem = sum(1 for c in me.field_chars
+                                if type_filter.lower() in (c.sub_types or '').lower())
             else:
                 contagem = len(me.field_chars)
             if contagem < conds['chars_gte']:
@@ -3993,10 +3997,19 @@ class EffectExecutor:
                 if not opp.field_chars:
                     return ''
                 ativos = [c for c in opp.field_chars if not c.rested]
-                candidatos = ativos or opp.field_chars
-                alvo = choose_highest_board_value(candidatos)
-                alvo.power_buff -= amount
-                return f'{alvo.name[:18]} -{amount} power'
+                candidatos = list(ativos or opp.field_chars)
+                # "up to N" com N>1 (achado 15/07, ex: OP01-022/OP11-020,
+                # 13 cartas reais): antes so debuffava 1 alvo sempre, mesmo
+                # quando o texto pedia 2. count>1 agora repete a escolha do
+                # melhor alvo restante ate N ou os candidatos acabarem.
+                count = step.get('count', 1)
+                alvos = []
+                for _ in range(min(count, len(candidatos))):
+                    alvo = choose_highest_board_value(candidatos)
+                    alvo.power_buff -= amount
+                    remove_by_identity(candidatos, alvo)
+                    alvos.append(alvo.name[:15])
+                return f'-{amount} power em: {", ".join(alvos)}' if alvos else ''
             return ''
 
         if action == 'negate_effect':

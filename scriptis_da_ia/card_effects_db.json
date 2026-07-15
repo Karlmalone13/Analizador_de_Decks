@@ -4271,7 +4271,11 @@
             "action": "buff_power",
             "amount": 2000,
             "target": "self",
-            "duration": "battle_only"
+            "duration": "battle_only",
+            "conditions": {
+              "chars_gte": 2,
+              "chars_gte_type_filter": "film"
+            }
           }
         ]
       }
@@ -6227,7 +6231,11 @@
             "count": 1,
             "cost_lte": 8
           }
-        ]
+        ],
+        "conditions": {
+          "chars_gte": 3,
+          "chars_gte_type_filter": "neptunian"
+        }
       }
     }
   },
@@ -6263,7 +6271,11 @@
             "target": "opp_character",
             "count": 99
           }
-        ]
+        ],
+        "conditions": {
+          "chars_gte": 3,
+          "chars_gte_type_filter": "minks"
+        }
       }
     }
   },
@@ -6848,6 +6860,10 @@
             "power_lte": 6000
           }
         ],
+        "conditions": {
+          "chars_gte": 3,
+          "chars_gte_type_filter": "foxy pirates"
+        },
         "costs": [
           {
             "type": "don_minus",
@@ -8374,7 +8390,8 @@
             "action": "debuff_power",
             "amount": 2000,
             "target": "opp_character",
-            "duration": "this_turn"
+            "duration": "this_turn",
+            "count": 2
           }
         ],
         "don_requirement": 1
@@ -11217,7 +11234,8 @@
             "action": "debuff_power",
             "amount": 3000,
             "target": "opp_character",
-            "duration": "this_turn"
+            "duration": "this_turn",
+            "count": 2
           },
           {
             "action": "gain_rush",
@@ -18093,7 +18111,8 @@
             "action": "debuff_power",
             "amount": 2000,
             "target": "opp_character",
-            "duration": "this_turn"
+            "duration": "this_turn",
+            "count": 2
           }
         ],
         "conditions": {
@@ -23202,7 +23221,8 @@
             "action": "debuff_power",
             "amount": 2000,
             "target": "opp_character",
-            "duration": "this_turn"
+            "duration": "this_turn",
+            "count": 2
           }
         ],
         "conditions": {
@@ -28159,7 +28179,8 @@
             "action": "debuff_power",
             "amount": 2000,
             "target": "opp_character",
-            "duration": "this_turn"
+            "duration": "this_turn",
+            "count": 2
           }
         ],
         "costs": [
@@ -29787,6 +29808,10 @@
             "action": "lock_opp_don"
           }
         ],
+        "conditions": {
+          "chars_gte": 3,
+          "chars_gte_type_filter": "foxy pirates"
+        },
         "costs": [
           {
             "type": "don_minus",
@@ -34983,13 +35008,15 @@
             "action": "debuff_power",
             "amount": 3000,
             "target": "opp_character",
-            "duration": "this_turn"
+            "duration": "this_turn",
+            "count": 2
           },
           {
             "action": "debuff_power",
             "amount": 2000,
             "target": "opp_character",
-            "duration": "until_opp_turn_end"
+            "duration": "until_opp_turn_end",
+            "count": 2
           }
         ]
       }
@@ -37000,7 +37027,8 @@
             "action": "debuff_power",
             "amount": 2000,
             "target": "opp_character",
-            "duration": "this_turn"
+            "duration": "this_turn",
+            "count": 2
           }
         ]
       }
@@ -42398,7 +42426,8 @@
             "action": "debuff_power",
             "amount": 2000,
             "target": "opp_character",
-            "duration": "this_turn"
+            "duration": "this_turn",
+            "count": 2
           }
         ]
       }
@@ -73907,7 +73936,8 @@
             "action": "debuff_power",
             "amount": 2000,
             "target": "opp_character",
-            "duration": "this_turn"
+            "duration": "this_turn",
+            "count": 2
           }
         ],
         "costs": [

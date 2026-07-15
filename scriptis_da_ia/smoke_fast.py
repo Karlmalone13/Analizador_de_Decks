@@ -931,6 +931,39 @@ def test_roger_vitoria_alternativa_ao_oponente_bloquear() -> None:
           resultado is True)
 
 
+def test_debuff_power_multiplo_alvo_e_condicao_por_tipo() -> None:
+    # Achado 15/07 (varredura ampla do audit_parser_coverage.py, dois
+    # padroes distintos corrigidos juntos):
+    # 1. chars_gte_type_filter: "if you have N or more {TIPO} type
+    #    Characters" nunca existia como condicao -- EB03-020 (e 4 outras
+    #    cartas reais) aplicava um buff condicional SEMPRE. Ja coberto
+    #    pelo teste corrigido em smoke_test.py (15c); aqui so confirma o
+    #    parse.
+    # 2. debuff_power com count>1: "give up to N of your opponent's
+    #    Characters -X power" com N=2 (13 cartas reais, ex: OP01-022) so
+    #    debuffava 1 alvo sempre -- o parser nunca extraia o count, e o
+    #    executor nunca respeitava. Ambos corrigidos.
+    step_op01022 = get_card_effects("OP01-022").get("when_attacking", {}).get("steps", [{}])[0]
+    check("OP01-022 parseia debuff_power com count=2 (antes sempre 1)",
+          step_op01022.get("count") == 2)
+
+    me = GameState(leader=mk("XLD", "Lider", card_type="LEADER"), turn=3, don_available=5)
+    kid = real_card("OP01-022")
+    kid.don_attached = 1  # satisfaz [DON!! x1]
+    me.field_chars = [kid]
+    opp = GameState(leader=mk("XOPPL", "Lider Opp", card_type="LEADER"), turn=3)
+    forte = mk("XFORTE", "Forte", power=8000, cost=6)
+    medio = mk("XMEDIO", "Medio", power=5000, cost=4)
+    fraco = mk("XFRACO", "Fraco", power=3000, cost=2)
+    opp.field_chars = [forte, medio, fraco]
+    EffectExecutor(me, opp).execute(kid, "when_attacking")
+    debuffados = [c for c in opp.field_chars if c.power_buff < 0]
+    check("debuff_power com count=2 afeta 2 alvos de verdade (nao so 1)",
+          len(debuffados) == 2)
+    check("debuff_power prioriza os 2 alvos de maior valor (Forte e Medio, nao Fraco)",
+          forte in debuffados and medio in debuffados and fraco not in debuffados)
+
+
 def main() -> int:
     test_turn_order_imu_prefers_second()
     test_empty_throne_beats_direct_five_elders_play()
@@ -968,6 +1001,7 @@ def main() -> int:
     test_whitebeard_reveal_conditional_play()
     test_zoro_lider_battled_character_e_restricao_de_ataque()
     test_roger_vitoria_alternativa_ao_oponente_bloquear()
+    test_debuff_power_multiplo_alvo_e_condicao_por_tipo()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0
