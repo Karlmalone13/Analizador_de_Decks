@@ -95,4 +95,11 @@ if [ -n "$suspeitos" ]; then
     exit 1
 fi
 
+# Gate mecanico: toda alteracao do parser/banco de efeitos precisa trazer
+# evidencia staged de que a mesma gramatica foi buscada no banco inteiro.
+# Caso a busca encontre somente a carta inicial, o registro permite uma
+# correcao isolada, mas deixa explicito que ela veio DEPOIS do censo global.
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+python "$REPO_ROOT/scripts/verify_parser_global_audit.py" || exit 1
+
 exit 0

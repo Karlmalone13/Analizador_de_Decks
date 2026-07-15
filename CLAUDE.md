@@ -2,6 +2,14 @@
 
 ## LEITURA OBRIGATÓRIA ANTES DE QUALQUER COMMIT
 
+### Gate obrigatório: auditoria global do parser
+
+Ao encontrar erro em uma carta, busque a mesma gramática em todo o banco
+antes de corrigir. Mudanças em `gerar_effects_db.py` ou
+`card_effects_db.json` exigem um registro em `scriptis_da_ia/parser_audits/`.
+O hook de pre-commit bloqueia a ausência desse registro. Se a busca encontrar
+apenas a carta inicial, use `isolated_after_global_scan`.
+
 Antes de commitar qualquer coisa, leia as memórias do projeto:
 
 ```

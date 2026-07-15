@@ -1,0 +1,13 @@
+{
+  "trigger_card": "OP13-002",
+  "problem": "O draw por dano ou K.O. estava fundido ao debuff defensivo anterior.",
+  "grammar_family": "When you take damage or your Character with N base power or more is K.O.'d",
+  "queries": [
+    "Busca regex global por gatilhos When com operador or em cards_rows.csv",
+    "Busca global por take damage e Character com base power seguido de K.O."
+  ],
+  "cards_found": ["OP13-002"],
+  "resolution_scope": "isolated_after_global_scan",
+  "decision": "A redacao ocorre em uma carta, mas foi modelada como evento parametrizado e dispatcher reutilizavel.",
+  "validated_by": ["Card List oficial da Bandai", "diff_parser PERDEU=0", "smoke_fast", "smoke_test"]
+}

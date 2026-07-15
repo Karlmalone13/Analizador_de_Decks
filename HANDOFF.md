@@ -1,5 +1,28 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-15 (184) - Gate obrigatorio de auditoria global por carta
+
+Pedido do usuario: impedir Claude/Codex de corrigir uma carta pontualmente
+sem antes mapear a mesma gramatica no banco inteiro. Lembrete textual nao era
+suficiente; foi criado um gate mecanico de pre-commit.
+
+`scripts/verify_parser_global_audit.py` detecta mudancas staged em
+`gerar_effects_db.py` ou `card_effects_db.json` e exige um JSON NOVO em
+`scriptis_da_ia/parser_audits/`. O schema obriga carta-gatilho, problema,
+familia gramatical, consultas globais executadas, todos os codigos encontrados,
+decisao, validacoes e escopo `global` ou `isolated_after_global_scan`. Caso
+isolado so passa com exatamente uma carta em `cards_found`.
+
+O hook versionado chama o validador e foi instalado em `.git/hooks` nesta
+maquina. `scripts/setup-git-hooks.sh` continua instalando-o em clones novos.
+`CLAUDE.md` registra a regra para ambas as IAs; README da pasta traz modelo e
+explica que os JSONs sao evidencia de processo, nunca fonte de regras para o
+engine. O registro da auditoria OP13-002 foi adicionado como primeiro exemplo.
+
+Prova em indice Git temporario: parser alterado sem JSON novo retornou exit 1;
+o mesmo parser com registro valido retornou exit 0. O gate exige arquivo novo,
+portanto editar/reutilizar auditoria antiga nao libera outro lote.
+
 ## 2026-07-15 (183) - Ace: dano OU K.O. proprio 6000+: 382 -> 381
 
 OP13-002 Portgas.D.Ace tinha dois efeitos fundidos em `on_opp_attack`: o draw
