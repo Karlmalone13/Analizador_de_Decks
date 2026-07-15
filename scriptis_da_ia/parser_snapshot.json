@@ -31217,6 +31217,9 @@
  },
  "OP13-061": {
   "on_play": {
+   "conditions": {
+    "has_don_attached": true
+   },
    "steps": [
     {
      "action": "ko",
@@ -31233,6 +31236,9 @@
  },
  "OP13-062": {
   "on_play": {
+   "conditions": {
+    "has_don_attached": true
+   },
    "steps": [
     {
      "action": "add_don",
@@ -31252,6 +31258,9 @@
  },
  "OP13-063": {
   "on_play": {
+   "conditions": {
+    "has_don_attached": true
+   },
    "steps": [
     {
      "action": "add_don",
@@ -31315,6 +31324,9 @@
  },
  "OP13-066": {
   "on_play": {
+   "conditions": {
+    "has_don_attached": true
+   },
    "steps": [
     {
      "action": "rest_opp_character",
@@ -31488,6 +31500,9 @@
    ]
   },
   "main": {
+   "conditions": {
+    "has_don_attached": true
+   },
    "costs": [
     {
      "count": 5,
@@ -31516,6 +31531,9 @@
    ]
   },
   "main": {
+   "conditions": {
+    "has_don_attached": true
+   },
    "costs": [
     {
      "count": 3,

@@ -1,5 +1,39 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-15 (165) - Codex - varredura ampla: condicao "any DON!! cards given" recuperada (6 cartas OP13)
+
+**Retomada direta do clustering do bloco 164.** A familia OP13-061/062/
+063/066/076/077 continha a mesma condicao: "If you have any DON!! cards
+given". As acoes estavam presentes no JSON, mas a condicao inteira era
+descartada; por isso On Play/Main ativavam mesmo sem nenhum DON anexado.
+
+**Causa raiz:** `parse_conditions` nao tinha uma representacao para "algum
+DON anexado". Adicionado `has_don_attached=True`, distinto de
+`don_available`, `don_rested` e `don_on_field`: so satisfaz quando existe ao
+menos 1 DON anexado ao Leader ou a um Character proprio. A condicao foi
+ligada nos 2 checadores (`EffectExecutor._check_conditions` e
+`DecisionEngine._effect_conditions_met`) para execucao e planejamento
+concordarem.
+
+**Limite descoberto no auditor:** `audit_parser_coverage.py` continua em 433
+suspeitos porque esta condicao usa a palavra "any", sem numero perdido. O
+auditor numerico nao detecta esta classe de gap; o cluster veio da comparacao
+manual texto cru x JSON registrada no bloco 164. Futuras rodadas precisam
+combinar clustering numerico com busca por clausulas condicionais ausentes.
+
+**Validado:** `diff_parser.py` PERDEU=0/MUDOU=6 antes do snapshot (exatamente
+as 6 cartas), `gerar_dbs.py` sincronizou 2614 cartas, snapshot atualizado e
+diff final 0/0/0. `smoke_fast.py` passou com 105 checks, incluindo: DON apenas
+na cost area NAO satisfaz; DON anexado ao Leader ou Character satisfaz.
+`smoke_test.py` amplo passou integralmente. `py_compile` verde.
+
+**Proxima sessao:** continuar a varredura por agrupamentos. Candidatos de uso
+real que apareceram no topo do auditor atual e ainda exigem comparacao manual:
+ST28-003 (condicao de vida do oponente), OP02-110 (`On Block`), OP03-078
+(`On Play`), ST13-010 (reveal/play da Life), OP05-088 (custo de devolver trash
+ao deck) e OP11-070 (`Activate: Main`). Nao assumir que todos sao bugs sem
+comparar texto e JSON.
+
 ## 2026-07-15 (164) - Claude - OP15-008 Krieg: condicao just_played + debuff escalado por DON do proprio alvo (ULTIMO item do lote de 10 -- LOTE CONCLUIDO)
 
 **Fecha o lote de 10 cartas revisadas manualmente pelo usuario** (blocos

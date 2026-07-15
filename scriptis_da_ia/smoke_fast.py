@@ -1264,6 +1264,33 @@ def test_krieg_just_played_e_debuff_escalado_por_don() -> None:
     check("Alvo sem DON nao leva debuff nenhum", sem_don.power_buff == 0)
 
 
+def test_condicao_any_don_cards_given() -> None:
+    # Familia OP13-061/062/063/066/076/077: "If you have any DON!! cards
+    # given" olha DON anexado as proprias cartas, nao DON na cost area.
+    entry = get_card_effects("OP13-061").get("on_play", {})
+    check("OP13-061 parseia has_don_attached=True",
+          entry.get("conditions", {}).get("has_don_attached") is True)
+
+    source = real_card("OP13-061")
+    me = GameState(leader=mk("XDONL", "Lider", card_type="LEADER"),
+                   don_available=10, don_rested=0)
+    opp = GameState(leader=mk("XDONO", "Lider Opp", card_type="LEADER"))
+    executor = EffectExecutor(me, opp)
+    check("DON apenas na cost area nao satisfaz any DON given",
+          executor._check_conditions(entry.get("conditions", {}), source) is False)
+
+    me.leader.don_attached = 1
+    check("DON anexado ao Leader satisfaz any DON given",
+          executor._check_conditions(entry.get("conditions", {}), source) is True)
+
+    me.leader.don_attached = 0
+    corpo = mk("XDONC", "Corpo com DON")
+    corpo.don_attached = 1
+    me.field_chars = [corpo]
+    check("DON anexado a Character satisfaz any DON given",
+          executor._check_conditions(entry.get("conditions", {}), source) is True)
+
+
 def main() -> int:
     test_turn_order_imu_prefers_second()
     test_empty_throne_beats_direct_five_elders_play()
@@ -1311,6 +1338,7 @@ def main() -> int:
     test_shiryu_add_from_trash_to_life_com_filtro()
     test_liberation_condicao_relativa_ko_duplo_e_trigger_1_de_cada()
     test_krieg_just_played_e_debuff_escalado_por_don()
+    test_condicao_any_don_cards_given()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0

@@ -104,6 +104,14 @@ def parse_conditions(text):
     m = re.search(r'if you have (\d+) or more don!!', t)
     if m: conds['don_gte'] = int(m.group(1))
 
+    # "If you have any DON!! cards given" -- exige ao menos 1 DON anexado
+    # a uma carta propria (Leader ou Character). Nao e don_gte/don_on_field:
+    # DON ativo ou rested na cost area nao satisfaz a condicao. Familia OP13
+    # (061/062/063/066/076/077); por nao conter numero, esta lacuna era
+    # invisivel ao audit_parser_coverage.py.
+    if re.search(r'if you have any don!{0,2}\s*cards? given', t):
+        conds['has_don_attached'] = True
+
     # "you have N or more RESTED DON!! cards" -- distinto de don_gte (que
     # olha don_available/ativo) e de don_on_field_gte (total no campo,
     # ativo+rested). Achado 15/07 (revisao do usuario, OP12-021 Ipponmatsu):

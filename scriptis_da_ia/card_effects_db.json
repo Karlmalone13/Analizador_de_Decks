@@ -50389,7 +50389,10 @@
             "action": "add_don",
             "count": 1
           }
-        ]
+        ],
+        "conditions": {
+          "has_don_attached": true
+        }
       }
     }
   },
@@ -50410,7 +50413,10 @@
             "action": "add_don",
             "count": 1
           }
-        ]
+        ],
+        "conditions": {
+          "has_don_attached": true
+        }
       },
       "when_attacking": {
         "steps": [
@@ -50440,7 +50446,10 @@
             "action": "add_don",
             "count": 1
           }
-        ]
+        ],
+        "conditions": {
+          "has_don_attached": true
+        }
       },
       "passive": {
         "steps": [
@@ -50541,7 +50550,10 @@
             "action": "add_don",
             "count": 1
           }
-        ]
+        ],
+        "conditions": {
+          "has_don_attached": true
+        }
       },
       "passive": {
         "steps": [
@@ -50822,6 +50834,9 @@
             "duration": "this_turn"
           }
         ],
+        "conditions": {
+          "has_don_attached": true
+        },
         "costs": [
           {
             "type": "rest_don",
@@ -50867,6 +50882,9 @@
             "power_lte": 3000
           }
         ],
+        "conditions": {
+          "has_don_attached": true
+        },
         "costs": [
           {
             "type": "rest_don",
