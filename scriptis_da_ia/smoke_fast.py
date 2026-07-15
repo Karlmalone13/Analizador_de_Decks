@@ -1039,6 +1039,48 @@ def test_zero_life_condicao_e_scoping_then_if() -> None:
           alvo.power_buff == 4000 and len(me.hand) == 1 and len(me.deck) == 0)
 
 
+def test_descarte_mao_oponente_variantes_e_escolha_cega() -> None:
+    # OP03-078/OP06-097 usam imperativo "trash ... from your opponent's
+    # hand": quem ativa escolhe cartas face-down (Q&A oficial), diferente
+    # de "your opponent trashes", em que o dono da mao escolhe.
+    issho = get_card_effects("OP03-078").get("on_play", {})
+    step = issho.get("steps", [{}])[0]
+    check("OP03-078 recupera On Play com gate de 6 cartas",
+          issho.get("conditions", {}).get("opp_hand_gte") == 6
+          and step.get("action") == "opp_trash_from_hand"
+          and step.get("count") == 2
+          and step.get("chosen_by") == "effect_owner_blind")
+
+    negative = get_card_effects("OP06-097").get("main", {}).get("steps", [{}])[0]
+    check("OP06-097 parseia a mesma variante imperativa como escolha cega",
+          negative.get("action") == "opp_trash_from_hand"
+          and negative.get("chosen_by") == "effect_owner_blind")
+
+    brook = get_card_effects("OP09-111").get("trigger", {}).get("conditions", {})
+    karasu = get_card_effects("OP12-085").get("when_attacking", {}).get("conditions", {})
+    check("Condicao encadeada preserva opp_hand_gte em Brook e Karasu",
+          brook.get("opp_hand_gte") == 6 and karasu.get("opp_hand_gte") == 5)
+
+    law = get_card_effects("ST10-010").get("on_play", {})
+    check("ST10-010 recupera On Play, gate 7 e custo DON -1",
+          law.get("conditions", {}).get("opp_hand_gte") == 7
+          and law.get("steps", [{}])[0].get("chosen_by") == "effect_owner_blind"
+          and law.get("costs", [{}])[0].get("type") == "don_minus")
+
+    card = real_card("OP03-078")
+    me = GameState(leader=mk("XLDI", "Lider", card_type="LEADER"), turn=3)
+    opp = GameState(leader=mk("XOPI", "Lider Opp", card_type="LEADER"), turn=3)
+    opp.hand = [mk(f"XH{i}", f"Mao{i}") for i in range(5)]
+    EffectExecutor(me, opp).execute(card, "on_play")
+    check("OP03-078 nao descarta com apenas 5 cartas na mao adversaria",
+          len(opp.hand) == 5 and len(opp.trash) == 0)
+
+    opp.hand.append(mk("XH5", "Mao5"))
+    EffectExecutor(me, opp).execute(card, "on_play")
+    check("OP03-078 descarta exatamente 2 quando o gate de 6 passa",
+          len(opp.hand) == 4 and len(opp.trash) == 2)
+
+
 def test_don_on_field_lte_condicao_ausente() -> None:
     # Achado 15/07 -- "if you have N or less DON!! cards on your field"
     # (proprio lado) nunca existia, so o "N or more" (don_on_field_gte).
@@ -1433,6 +1475,7 @@ def main() -> int:
     test_debuff_power_multiplo_alvo_e_condicao_por_tipo()
     test_total_life_lte_condicao_combinada()
     test_zero_life_condicao_e_scoping_then_if()
+    test_descarte_mao_oponente_variantes_e_escolha_cega()
     test_don_on_field_lte_condicao_ausente()
     test_black_hole_negate_e_ko_encadeado()
     test_rebecca_add_from_trash_range_exclude_e_ordem()

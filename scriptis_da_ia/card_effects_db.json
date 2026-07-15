@@ -16416,6 +16416,18 @@
     "sub_types": "Navy",
     "attribute": "Slash",
     "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "opp_trash_from_hand",
+            "count": 2,
+            "chosen_by": "effect_owner_blind"
+          }
+        ],
+        "conditions": {
+          "opp_hand_gte": 6
+        }
+      },
       "your_turn": {
         "steps": [
           {
@@ -27518,6 +27530,15 @@
             "action": "activate_main_effect"
           }
         ]
+      },
+      "main": {
+        "steps": [
+          {
+            "action": "opp_trash_from_hand",
+            "count": 1,
+            "chosen_by": "effect_owner_blind"
+          }
+        ]
       }
     }
   },
@@ -38361,6 +38382,7 @@
           }
         ],
         "conditions": {
+          "opp_hand_gte": 6,
           "leader_type": "egghead"
         }
       }
@@ -47774,6 +47796,7 @@
           }
         ],
         "conditions": {
+          "opp_hand_gte": 5,
           "leader_type": "revolutionary army"
         }
       },
@@ -69936,6 +69959,25 @@
     "sub_types": "Heart Pirates",
     "attribute": "Slash",
     "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "opp_trash_from_hand",
+            "count": 2,
+            "chosen_by": "effect_owner_blind"
+          }
+        ],
+        "conditions": {
+          "opp_hand_gte": 7
+        },
+        "costs": [
+          {
+            "type": "don_minus",
+            "count": 1,
+            "optional": true
+          }
+        ]
+      },
       "passive": {
         "steps": [
           {

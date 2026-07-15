@@ -24679,6 +24679,10 @@
   "attribute": "Slash",
   "effects": [
    {
+    "action": "opp_trash_from_hand",
+    "trigger": "on_play"
+   },
+   {
     "action": "debuff_cost",
     "trigger": "your_turn",
     "don_requirement": 1,
@@ -41495,6 +41499,10 @@
    {
     "action": "activate_main_effect",
     "trigger": "trigger"
+   },
+   {
+    "action": "opp_trash_from_hand",
+    "trigger": "main"
    }
   ],
   "synergy_states": {
@@ -105920,6 +105928,10 @@
   "sub_types": "Heart Pirates",
   "attribute": "Slash",
   "effects": [
+   {
+    "action": "opp_trash_from_hand",
+    "trigger": "on_play"
+   },
    {
     "action": "keyword_blocker",
     "trigger": "passive"

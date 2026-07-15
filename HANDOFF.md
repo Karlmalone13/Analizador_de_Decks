@@ -1,5 +1,32 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-15 (172) - Familia descarte da mao adversaria: 5 cartas; fila 424 -> 419
+
+OP03-078 revelou duas variantes globais ausentes. A busca no banco inteiro e
+a comparacao com Card List/Q&A oficial produziram 5 correcoes:
+- OP03-078 e OP06-097: variante imperativa `trash N cards from your
+  opponent's hand` agora gera `opp_trash_from_hand` com
+  `chosen_by=effect_owner_blind`.
+- OP09-111 e OP12-085: `and your opponent has N or more cards...` agora
+  preserva `opp_hand_gte`, alem da outra condicao do bloco.
+- ST10-010: On Play inteiro recuperado, incluindo DON!! -1, gate de 7 cartas
+  e descarte cego de 2.
+
+Distincao mecanica confirmada pelo Q&A de OP03-078: em `your opponent
+trashes`, o dono da mao escolhe o descarte; no imperativo de Issho, o
+controlador do efeito escolhe cartas face-down e nao conhece os valores.
+Por isso o engine usa escolha aleatoria somente quando
+`chosen_by=effect_owner_blind`; a variante em que o oponente escolhe continua
+preservando as cartas de maior valor dele.
+
+Validacao: diff inicial GANHOU 0 / PERDEU 0 / MUDOU 5, todas conferidas;
+`gerar_dbs.py` sincronizou 2614 cartas; `smoke_fast.py` e `smoke_test.py`
+passaram; teste de execucao confirmou que OP03-078 nao descarta com 5 cartas
+e descarta exatamente 2 com 6. Auditor recalculado: **419 suspeitos**.
+
+Proximo da fila: ST13-010. Antes de corrigir, buscar globalmente a familia
+`Reveal ... Life; If that card is [nome] with cost N, play` e variantes.
+
 ## 2026-07-15 (171) - Familia 0 Life: 4 gates corrigidos; fila 428 -> 424
 
 Varredura global de `If you have 0 Life cards` encontrou 7 cartas unicas.

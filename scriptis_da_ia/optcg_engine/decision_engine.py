@@ -4492,11 +4492,17 @@ class EffectExecutor:
             count = step.get('count', 1)
             trashed = []
             for _ in range(min(count, len(opp.hand))):
-                worst = self._choose_to_trash(opp.hand)
-                if worst:
-                    remove_by_identity(opp.hand, worst)
-                    opp.trash.append(worst)
-                    trashed.append(worst.name[:12])
+                # "your opponent trashes" = o dono da mao escolhe e
+                # preserva suas melhores cartas. Ja "trash ... from your
+                # opponent's hand" = controlador do efeito escolhe cartas
+                # face-down (Q&A OP03-078), logo a escolha e cega/aleatoria.
+                chosen = (random.choice(opp.hand)
+                          if step.get('chosen_by') == 'effect_owner_blind'
+                          else self._choose_to_trash(opp.hand))
+                if chosen:
+                    remove_by_identity(opp.hand, chosen)
+                    opp.trash.append(chosen)
+                    trashed.append(chosen.name[:12])
             return f'oponente descartou: {", ".join(trashed)}' if trashed else ''
 
         # ── Mesma familia: forca o OPONENTE a mover 1 dos PROPRIOS

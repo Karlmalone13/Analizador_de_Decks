@@ -10142,6 +10142,18 @@
   }
  },
  "OP03-078": {
+  "on_play": {
+   "conditions": {
+    "opp_hand_gte": 6
+   },
+   "steps": [
+    {
+     "action": "opp_trash_from_hand",
+     "chosen_by": "effect_owner_blind",
+     "count": 2
+    }
+   ]
+  },
   "your_turn": {
    "don_requirement": 1,
    "steps": [
@@ -17084,6 +17096,15 @@
   }
  },
  "OP06-097": {
+  "main": {
+   "steps": [
+    {
+     "action": "opp_trash_from_hand",
+     "chosen_by": "effect_owner_blind",
+     "count": 1
+    }
+   ]
+  },
   "trigger": {
    "steps": [
     {
@@ -23880,7 +23901,8 @@
  "OP09-111": {
   "trigger": {
    "conditions": {
-    "leader_type": "egghead"
+    "leader_type": "egghead",
+    "opp_hand_gte": 6
    },
    "steps": [
     {
@@ -29665,7 +29687,8 @@
   },
   "when_attacking": {
    "conditions": {
-    "leader_type": "revolutionary army"
+    "leader_type": "revolutionary army",
+    "opp_hand_gte": 5
    },
    "steps": [
     {
@@ -43339,6 +43362,25 @@
   }
  },
  "ST10-010": {
+  "on_play": {
+   "conditions": {
+    "opp_hand_gte": 7
+   },
+   "costs": [
+    {
+     "count": 1,
+     "optional": true,
+     "type": "don_minus"
+    }
+   ],
+   "steps": [
+    {
+     "action": "opp_trash_from_hand",
+     "chosen_by": "effect_owner_blind",
+     "count": 2
+    }
+   ]
+  },
   "passive": {
    "steps": [
     {

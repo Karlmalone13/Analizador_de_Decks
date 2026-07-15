@@ -175,7 +175,7 @@ def parse_conditions(text):
     # caso). Sem isso, o "vazio => no-op" so coincide com a regra real
     # quando a mao esta em 0; com 1..N-1 cartas a simplificacao tirava uma
     # carta que a regra nao tiraria.
-    m = re.search(r"if your opponent has (\d+) or more cards? in (?:their|his|her) hand", t)
+    m = re.search(r"(?:if|and) your opponent has (\d+) or more cards? in (?:their|his|her) hand", t)
     if m: conds['opp_hand_gte'] = int(m.group(1))
 
     m = re.search(r'if you have (\d+) or more characters?(?: with an? (?:base|original) cost of (\d+) or more)?', t)
@@ -3648,6 +3648,16 @@ def parse_opp_trash_from_hand(text):
     m = re.search(r'your opponent trashes (\d+) cards? from (?:their|his|her) hand', t)
     if m:
         steps.append({'action': 'opp_trash_from_hand', 'count': int(m.group(1))})
+    # Variante imperativa em que o jogador do efeito escolhe diretamente
+    # da mao adversaria: "trash N cards from your opponent's hand"
+    # (OP03-078 e OP06-097). A acao de runtime e a mesma remocao da mao
+    # oponente; a heuristica ja escolhe as cartas menos valiosas para o
+    # oponente, coerente com a escolha feita por quem aplica o efeito.
+    m_direct = re.search(r"trash (\d+) cards? from your opponent'?s hand", t)
+    if m_direct:
+        steps.append({'action': 'opp_trash_from_hand',
+                      'count': int(m_direct.group(1)),
+                      'chosen_by': 'effect_owner_blind'})
     m2 = re.search(r'your opponent chooses (\d+) cards? from your hand;? trash', t)
     if m2:
         steps.append({'action': 'opp_choose_trash_our_hand', 'count': int(m2.group(1))})
@@ -4404,7 +4414,9 @@ def parse_block(block_text, trigger_name):
     # from their hand". Alvo oposto de trash_from_hand (sempre 'their hand',
     # nunca 'your hand'), por isso guard textual distinto e nao precisa de
     # exclusao mutua: as duas regexes nunca casam no mesmo texto.
-    if 'opponent trashes' in t or ('opponent chooses' in t and 'from your hand' in t and 'trash' in t):
+    if ('opponent trashes' in t
+            or re.search(r"trash \d+ cards? from your opponent'?s hand", t)
+            or ('opponent chooses' in t and 'from your hand' in t and 'trash' in t)):
         steps.extend(parse_opp_trash_from_hand(t))
 
     # Mesma familia (forca o oponente a mover 1 dos PROPRIOS characters
