@@ -1739,7 +1739,7 @@ class EffectExecutor:
 
             for step in block.get('steps', []):
                 action = step.get('action')
-                aplica = (action == 'substitute_ko' and removal_kind == 'ko') or action == 'substitute_removal'
+                aplica = ((action == 'substitute_ko' and removal_kind == 'ko') or (action == 'substitute_removal' and removal_kind != 'rest') or (action == 'substitute_rest' and removal_kind == 'rest'))
                 if not aplica:
                     continue
 
@@ -1868,7 +1868,7 @@ class EffectExecutor:
                 continue
             for step in block.get('steps', []):
                 action = step.get('action')
-                aplica = (action == 'substitute_ko' and removal_kind == 'ko') or action == 'substitute_removal'
+                aplica = ((action == 'substitute_ko' and removal_kind == 'ko') or (action == 'substitute_removal' and removal_kind != 'rest') or (action == 'substitute_rest' and removal_kind == 'rest'))
                 if not aplica:
                     continue
                 key = (source.code, f'{trigger}_substitute')
@@ -1924,7 +1924,7 @@ class EffectExecutor:
 
             for step in block.get('steps', []):
                 action = step.get('action')
-                aplica = (action == 'substitute_ko' and removal_kind == 'ko') or action == 'substitute_removal'
+                aplica = ((action == 'substitute_ko' and removal_kind == 'ko') or (action == 'substitute_removal' and removal_kind != 'rest') or (action == 'substitute_rest' and removal_kind == 'rest'))
                 if not aplica:
                     continue
                 target_keys = (
@@ -2431,6 +2431,25 @@ class EffectExecutor:
             alvo = max(candidatos, key=lambda c: c.board_value())
             alvo.rested = True
             return f'{card.name[:18]} evitou K.O./remoção restando {alvo.name[:15]}'
+
+        if ctype == 'rest_own_other_character':
+            # PRB02-006 (Zoro): "you may rest 1 of your OTHER Characters
+            # instead" -- substituicao PROPRIA (a carta se protege restando
+            # uma ALIADA, nao qualquer character -- precisa excluir `card`,
+            # a propria carta que esta se substituindo, dos candidatos.
+            # Distinto de rest_own_character (substituicao EXTERNA, onde
+            # `card` ja e outra carta e a exclusao nao se aplica).
+            count = cost.get('count', 1)
+            candidatos = [c for c in me.field_chars if not c.rested and c is not card]
+            if len(candidatos) < count:
+                return None
+            restados = []
+            for _ in range(count):
+                alvo = max(candidatos, key=lambda c: c.board_value())
+                alvo.rested = True
+                remove_by_identity(candidatos, alvo)
+                restados.append(alvo.name[:15])
+            return f'{card.name[:18]} evitou rest restando: {", ".join(restados)}'
 
         if ctype == 'rest_own_card':
             # OP14-029/OP15-035: "you may rest N of your cards instead" --
@@ -3434,12 +3453,29 @@ class EffectExecutor:
                 filter_text=step.get('filter_type', ''),
             )
             rested = []
+            sub_logs = []
             for _ in range(min(count, len(candidates))):
                 target = choose_highest_board_value(candidates)
+                # Substituicao de rest (achado 15/07, PRB02-006 Zoro): "If
+                # this Character would be rested by your opponent's
+                # Character's effect, you may rest 1 of your other
+                # Characters instead". Checado do ponto de vista do DONO
+                # do alvo (mesmo padrao ja usado por KO/removal acima --
+                # EffectExecutor(opp, self.me), 'opp' aqui e quem SERIA
+                # restado).
+                ee_target = EffectExecutor(opp, self.me)
+                sub_log = ee_target.try_any_substitute(target, 'rest', source_is_opp=True)
+                if sub_log:
+                    sub_logs.append(sub_log)
+                    remove_by_identity(candidates, target)
+                    continue
                 target.rested = True
                 remove_by_identity(candidates, target)
                 rested.append(target.name[:15])
-            return f'restou: {", ".join(rested)}' if rested else ''
+            out = []
+            if rested: out.append(f'restou: {", ".join(rested)}')
+            if sub_logs: out.append(' | '.join(sub_logs))
+            return ' | '.join(out)
 
         # ── rest_opp_don: restar DON!! do OPONENTE -- desvantagem de tempo
         # (ele tem menos DON ativo pro turno dele), DISTINTA de

@@ -98618,6 +98618,10 @@
   "attribute": "Slash",
   "effects": [
    {
+    "action": "substitute_rest",
+    "trigger": "opp_turn"
+   },
+   {
     "action": "keyword_blocker",
     "trigger": "passive"
    }

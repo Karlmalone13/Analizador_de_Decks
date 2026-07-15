@@ -1,5 +1,61 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-15 (152) - Claude - Nova mecanica: substituicao de REST (PRB02-006 Zoro) -- 3a familia de substitute_*, reusando quase toda a infra de KO/removal
+
+**Continuacao da lista do bloco 149/151.** PRB02-006 (Roronoa Zoro):
+"[Opponent's Turn] If this Character would be rested by your opponent's
+Character's effect, you may rest 1 of your other Characters instead."
+Zero cobertura -- so 1 carta real no banco (3 reprints), mas e a MESMA
+familia mecanica de `substitute_ko`/`substitute_removal` (ja usadas por
+dezenas de cartas), so que pro efeito de "restar" em vez de K.O./remocao.
+
+**Implementado (reuso quase total da infra existente):**
+- Parser: nova `parse_substitute_rest` (gatilho "would be rested by your
+  opponent"), dispatch identico ao de substitute_removal (claim do bloco
+  a partir da clausula, preserva prefixo incondicional se houver).
+- Novo custo `rest_own_other_character` (distinto do `rest_own_character`
+  ja existente): exclui a PROPRIA carta que esta se substituindo dos
+  candidatos -- Zoro nao pode "restar a si mesmo" como substituicao,
+  precisa ser OUTRO character. `rest_own_character` (substituicao
+  EXTERNA, onde quem paga e diferente de quem e protegido) nao precisava
+  dessa exclusao, por isso ficou como um custo separado, nao alterei o
+  existente.
+- `try_substitute`/`try_any_substitute`: a condicao `aplica` (3
+  ocorrencias) ganhou o 3o ramo (`action=='substitute_rest' and
+  removal_kind=='rest'`) -- e CORRIGI um risco real ao mexer aqui: antes,
+  `action=='substitute_removal'` casava incondicionalmente (sem checar
+  removal_kind), o que teria feito cartas de substitute_removal
+  aplicarem erroneamente tambem pra 'rest' se eu so tivesse ADICIONADO o
+  novo ramo sem excluir 'rest' do ramo antigo. Adicionei
+  `and removal_kind != 'rest'` no ramo de substitute_removal pra evitar
+  esse cruzamento.
+- `rest_opp_character` (execucao): antes de restar cada alvo, chama
+  `EffectExecutor(opp, self.me).try_any_substitute(target, 'rest',
+  source_is_opp=True)` -- mesmo padrao ja usado pelos loops de KO/removal
+  (`EffectExecutor(owner, ...)` construido do ponto de vista do DONO do
+  alvo, ja que quem paga o custo da substituicao e o dono, nao quem
+  ataca).
+
+**Validado com EXECUCAO real, nao so parse:** Zoro com um aliado no
+campo, oponente tenta restar o Zoro -> Zoro fica ATIVO, aliado fica
+RESTADO no lugar (log: "Roronoa Zoro evitou rest restando: Aliado").
+`smoke_fast` (61 checks) + `smoke_test` amplo, ambos verdes. `diff_parser.py`
+PERDEU=0 (so PRB02-006 mudou, como esperado pra carta unica), `gerar_dbs.py`
++ re-snapshot feitos.
+
+**Nota de processo:** errei a ordem uma vez nesta tarefa -- rodei
+`diff_parser.py` (confirma o que o GERADOR produziria) mas testei
+execucao ANTES de rodar `gerar_dbs.py` de verdade, entao `get_card_effects`
+ainda lia o JSON antigo e a substituicao "nao funcionava" (falso alarme,
+so faltava regenerar). Lembrete pra proxima sessao: `diff_parser.py`
+verde nao significa que `card_effects_db.json` ja foi atualizado --
+sempre rodar `gerar_dbs.py` antes de testar execucao de verdade.
+
+**Restam da lista do bloco 149:** OP12-058 (Whitebeard reveal-play
+condicional), OP12-020 (Zoro lider, 2 clausulas), OP09-118 (Roger
+win-condition unica, muito rara -- considerar se vale a pena construir
+mecanica nova pra 1 carta so).
+
 ## 2026-07-15 (151) - Claude - OP10-112 (Kid) investigado: `attack_life` JA fazia trash-sem-trigger corretamente (nao era bug); `opp_life_lte`/`opp_life_gte` novos (45 cartas)
 
 **Continuacao da lista do bloco 149.** Usuario reportou 3 problemas em

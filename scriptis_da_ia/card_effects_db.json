@@ -65197,6 +65197,17 @@
     "sub_types": "Straw Hat Crew Supernovas",
     "attribute": "Slash",
     "effects": {
+      "opp_turn": {
+        "steps": [
+          {
+            "action": "substitute_rest",
+            "cost": {
+              "action": "rest_own_other_character",
+              "count": 1
+            }
+          }
+        ]
+      },
       "passive": {
         "steps": [
           {

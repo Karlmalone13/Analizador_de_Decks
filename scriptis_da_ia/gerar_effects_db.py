@@ -3000,6 +3000,15 @@ def _parse_substitute_cost(t):
         filtro = next((g for g in m.groups()[1:4] if g), '').strip()
         return {'action': 'rest_own_filtered', 'count': int(m.group(1)), 'filter_type': filtro}, extra_steps
 
+    # "rest N of your OTHER Characters instead" -- distinto de
+    # rest_own_character (esse aceita QUALQUER character proprio, inclusive
+    # a que esta se substituindo; aqui exclui a propria carta, achado 15/07
+    # via revisao do usuario, PRB02-006 Zoro). Testado ANTES da variante
+    # generica pra nao perder o "other".
+    m = re.search(r"you may rest (\d+) of your other characters? instead", t)
+    if m:
+        return {'action': 'rest_own_other_character', 'count': int(m.group(1))}, extra_steps
+
     m = re.search(r"you may rest (\d+) of your characters? instead", t)
     if m:
         return {'action': 'rest_own_character', 'count': int(m.group(1))}, extra_steps
@@ -3125,6 +3134,33 @@ def parse_substitute_removal(text):
         if extra_steps:
             step['extra_steps'] = extra_steps
         steps.append(_apply_substitute_target_filters(step, t, 'removal'))
+
+    return steps
+
+
+def parse_substitute_rest(text):
+    """
+    Cobre 'If [this Character] would be rested by your opponent's
+    Character's effect, you may [custo] instead' -- substituicao de REST
+    forcado (achado 15/07 via revisao do usuario, PRB02-006 Zoro): mesma
+    familia de substitute_ko/substitute_removal, mas pro efeito de
+    "restar" em vez de K.O./remocao -- ate entao SEM cobertura nenhuma no
+    parser (so 1 carta real no banco, mas e a mesma infraestrutura de
+    try_substitute ja usada pelas outras 2, reuso quase total).
+    """
+    steps = []
+    t = text.lower()
+
+    if not re.search(r"would be rested by your opponent", t):
+        return steps
+
+    cost, extra_steps = _parse_substitute_cost(t)
+
+    if cost:
+        step = {'action': 'substitute_rest', 'cost': cost}
+        if extra_steps:
+            step['extra_steps'] = extra_steps
+        steps.append(_apply_substitute_target_filters(step, t, 'rest'))
 
     return steps
 
@@ -3481,6 +3517,20 @@ def parse_block(block_text, trigger_name):
             # removed").
             _m_rem = re.search(r"would be removed from the field", t)
             _if_pos = t.rfind('if ', 0, _m_rem.start()) if _m_rem else -1
+            prefix = t[:_if_pos].strip() if _if_pos >= 0 else ''
+            prefix_steps = parse_block(prefix, trigger_name) if prefix else []
+            if prefix_steps and not (len(prefix_steps) == 1 and '_choice' in prefix_steps[0]):
+                return prefix_steps + sub_steps
+            return sub_steps
+
+    # Substitute rest: "would be rested by your opponent's Character's
+    # effect... you may [custo] instead" -- mesma familia/dispatch de
+    # substitute_ko/removal acima, achado 15/07 (PRB02-006 Zoro).
+    if re.search(r"would be rested by your opponent", t):
+        sub_steps = parse_substitute_rest(t)
+        if sub_steps:
+            _m_rest = re.search(r"would be rested by your opponent", t)
+            _if_pos = t.rfind('if ', 0, _m_rest.start()) if _m_rest else -1
             prefix = t[:_if_pos].strip() if _if_pos >= 0 else ''
             prefix_steps = parse_block(prefix, trigger_name) if prefix else []
             if prefix_steps and not (len(prefix_steps) == 1 and '_choice' in prefix_steps[0]):

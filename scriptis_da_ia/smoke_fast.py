@@ -789,6 +789,30 @@ def test_opp_life_lte_gte_condicao_ausente() -> None:
           len(me_baixo.deck) == 0)
 
 
+def test_zoro_substitui_rest_por_aliado() -> None:
+    # Achado 15/07 -- usuario revisou PRB02-006 (Zoro): "If this Character
+    # would be rested by your opponent's Character's effect, you may rest
+    # 1 of your other Characters instead" -- clausula de SUBSTITUICAO
+    # (mesma familia de substitute_ko/substitute_removal, mas pra "rest",
+    # sem cobertura nenhuma antes). Novo action substitute_rest + custo
+    # rest_own_other_character (exclui a propria carta dos candidatos,
+    # distinto de rest_own_character que nao exclui -- usado por
+    # substituicao EXTERNA onde a exclusao nao faz sentido).
+    conds_step = get_card_effects("PRB02-006").get("opp_turn", {}).get("steps", [{}])[0]
+    check("PRB02-006 parseia substitute_rest com custo rest_own_other_character",
+          conds_step.get("action") == "substitute_rest"
+          and conds_step.get("cost", {}).get("action") == "rest_own_other_character")
+
+    me = GameState(leader=real_card("ST01-001"), turn=3)
+    opp = GameState(leader=mk("XOPPL", "Lider", card_type="LEADER"), turn=3)
+    zoro = real_card("PRB02-006")
+    aliado = mk("XALIADO", "Aliado", power=3000, cost=2)
+    opp.field_chars = [zoro, aliado]
+    EffectExecutor(me, opp)._execute_step({"action": "rest_opp_character", "count": 1}, me.leader)
+    check("Zoro NAO fica rested (substituiu)", not zoro.rested)
+    check("Aliado fica rested no lugar do Zoro", aliado.rested)
+
+
 def main() -> int:
     test_turn_order_imu_prefers_second()
     test_empty_throne_beats_direct_five_elders_play()
@@ -822,6 +846,7 @@ def main() -> int:
     test_ipponmatsu_immunity_exige_leader_slash_e_don_rested()
     test_don_minus_sem_sinal_de_menos_na_fonte()
     test_opp_life_lte_gte_condicao_ausente()
+    test_zoro_substitui_rest_por_aliado()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0
