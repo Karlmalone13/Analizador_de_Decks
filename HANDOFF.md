@@ -1,5 +1,52 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-15 (154) - Claude - Lista do bloco 149 ENCERRADA: OP09-118 (Roger) documentado como fora de escopo, ultimo item pendente
+
+**Ultimo item da lista de 8 suspeitos que o usuario revisou manualmente
+(bloco 149).** OP09-118 (Gol.D.Roger): "When your opponent activates
+[Blocker], if either you or your opponent has 0 Life cards, you win the
+game." -- condicao de vitoria ALTERNATIVA, unica no banco (so 4
+reprints da MESMA carta, usada em 1 deck real salvo). Exigiria construir
+um subsistema novo (rastrear "oponente ativou Blocker" como evento
+disparavel + checagem de vitoria alternativa fora do fluxo normal de
+"vida chega a 0"). Mesma decisao de custo-beneficio do OP12-020 (bloco
+153): 1 carta muito rara nao justifica infraestrutura nova agora.
+Documentado, nao implementado.
+
+**RESUMO DA LISTA INTEIRA (blocos 149-154), pra quem retomar:**
+- ✅ `hand_to_deck` (5 cartas, incl. Nami) -- bloco 149
+- ✅ imunidade condicional (`leader_attribute`/`don_rested_gte`, 9 cartas,
+  incl. Ipponmatsu) -- bloco 149
+- ✅ `don_minus` sem sinal de menos na fonte (28 cartas, incl. Bullet
+  String) -- bloco 150
+- ✅ `attack_life` confirmado CORRETO (nao era bug) + `opp_life_lte`/
+  `opp_life_gte` novos (45 cartas, incl. Kid) -- bloco 151
+- ✅ `substitute_rest` (mecanica nova, PRB02-006 Zoro) -- bloco 152
+- ✅ `parse_reveal_top_play` generalizado + alvo do Rush corrigido
+  (OP12-058 Whitebeard) -- bloco 153
+- ⏸ OP12-020 (Zoro lider, 2 clausulas) -- fora de escopo, exigiria 2
+  mecanismos novos pra 1 carta
+- ⏸ OP09-118 (Roger, win-condition alternativa) -- fora de escopo,
+  exigiria 1 mecanismo novo pra 1 carta
+
+**Total: 87+ cartas reais corrigidas nesta sessao (14/07-15/07) via
+causa raiz compartilhada, mais 2 casos documentados como fora de escopo
+com justificativa clara.** Todos os fixes seguiram o mesmo workflow
+(`diff_parser.py` PERDEU=0 -> `gerar_dbs.py` -> re-snapshot -> teste
+dirigido com EXECUCAO real, nao so parse -> `smoke_fast`+`smoke_test`
+verdes -> commit -> push).
+
+**Proximo passo natural:** a Fase 1 do plano de 4 fases
+(`C:\Users\arthu\.claude\plans\cheeky-nibbling-lecun.md`) ainda esta EM
+ABERTO -- a preocupacao do usuario sobre escopo do parser (bloco 144) foi
+endereçada com uma varredura sistemica + revisao manual de 8 cartas +
+correcao de tudo que fazia sentido corrigir agora. Perguntar ao usuario
+se ele considera isso suficiente pra liberar a Fase 2 (fazer
+archetype.mix/roles pesarem no score + generalizar win_con_code), ou se
+quer continuar descendo a lista de ~490 suspeitos restantes (a grande
+maioria sem uso em deck real, ver `audit_parser_coverage.py`) antes de
+avancar.
+
 ## 2026-07-15 (153) - Claude - OP12-058 (Whitebeard) corrigido -- reveal-conditional-play + alvo do Rush (nao mais no Event, no personagem jogado); OP12-020 (Zoro lider) documentado como fora de escopo
 
 **Continuacao da lista do bloco 149.**
