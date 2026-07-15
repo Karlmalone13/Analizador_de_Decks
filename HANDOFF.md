@@ -1,5 +1,78 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-15 (146) - Claude - 9 cartas reais corrigidas via varredura sistemica (3 causas raiz compartilhadas, nao carta a carta)
+
+**Pedido do usuario:** "vamos corrigir!" (autorizacao explicita pra sair do
+modo so-diagnostico e comecar a consertar a lista do bloco 145) + pediu
+pro script mostrar texto cru + efeito parseado juntos na propria listagem
+(nao so no `--code`) -- feito, `print_report` agora imprime as duas caixas
+completas por suspeito, nao so um resumo de 220 caracteres.
+
+**Metodo seguido:** revisar o top-N da lista priorizada
+(`audit_parser_coverage.py`), agrupar por CAUSA RAIZ compartilhada (nao
+consertar carta por carta -- ver [[feedback_fixes_globais_nao_pontuais]]),
+e para cada grupo: 1 fix no `parse_*` certo -> `diff_parser.py` (PERDEU=0)
+-> proxima carta do MESMO grupo -> so entao `gerar_dbs.py` + re-snapshot +
+teste dirigido + `smoke_fast`/`smoke_test` pro grupo inteiro.
+
+**3 causas raiz corrigidas, 9 cartas reais fechadas:**
+
+1. **`lock_opp_character_refresh` perdendo TODOS os filtros** (4 cartas:
+   OP04-031, OP07-026, OP15-025, OP15-038) -- o regex principal de
+   "will not become active in next Refresh Phase" (`gerar_effects_db.py`,
+   funcao de trava de refresh) so aceitava "up to N of your opponent's
+   rested X [with a cost of Y or less]" -- 3 variantes reais de fraseado
+   quebravam isso e caiam no fallback `lock_opp_don` SEM NENHUM filtro
+   (nem count): "up to A TOTAL OF N" (OP04-031), filtro de "N+ DON anexado"
+   em vez de custo com "with"/"that has" variando (OP15-025/038), e posse
+   ("of your opponent's") implicita so no FIM da frase em vez do inicio
+   (OP15-025). Regex generalizado sem perder os casos antigos. Consumidor
+   (`lock_opp_character_refresh` em `decision_engine.py`) ganhou filtro
+   `don_attached_gte` (nao tinha, so cost_lte/cost_eq).
+2. **Alvo MISTO "Characters or DON!! cards" sem parser nenhum** (2 cartas:
+   OP06-035 Hody Jones **7x em deck real**, OP12-037) -- a clausula inteira
+   "Rest up to a total of 2 of your opponent's Characters or DON!! cards"
+   ficava 100% ausente do parseado (so a clausula SEGUINTE da mesma carta
+   sobrevivia). `parse_rest_opp` ganhou ramo pra esse alvo misto
+   (aproximado como `rest_opp_character` -- engine ainda nao modela
+   "escolha entre 2 tipos de alvo" nessa acao, documentado no comentario).
+3. **`give_don_opp` com "of your opponent's" ENTRE o numero e "DON!!
+   cards"** (3 cartas: OP15-008 Krieg **4x em deck real**, +2 de BONUS
+   achadas pelo mesmo fix sem estarem no top-15: OP15-015, OP15-026) --
+   "Give up to 3 OF YOUR OPPONENT'S RESTED DON!! cards to..." nao casava
+   porque o regex exigia "(rested )?don!!" logo apos o numero. Consumidor
+   (`give_don_opp`) ja suportava `count`/`rested` direito, so precisou do
+   fix de parser.
+
+**Validado:** `smoke_fast` (agora 44 checks, 4 novos dirigidos cobrindo os
+3 grupos, incluindo EXECUCAO real -- Kuro congela so o alvo com DON
+suficiente, nao so o parse) + `smoke_test` amplo, ambos verdes.
+`diff_parser.py` PERDEU=0 em cada etapa, `gerar_dbs.py` + re-snapshot
+feitos. Varredura geral caiu de 509 para 502 suspeitos (a contagem nao cai
+1:1 com cartas corrigidas -- o metodo numerico tem falso-negativo quando
+um numero do texto coincide por acaso com outro numero ja presente em
+outro lugar do JSON, ex: OP15-015/026 nao apareciam entre os 509 originais
+mas tinham o MESMO bug real, so nao foram sinalizados por essa coincidencia
+-- limitacao conhecida do metodo, documentada no proprio script).
+
+**NAO FEITO ainda (lista ainda tem ~493 suspeitos, a maioria baixo/zero
+uso em deck real):** os proximos da lista priorizada por uso
+(`python audit_parser_coverage.py --show 20`) sao majoritariamente bugs
+DISTINTOS um do outro (condicao de vida do oponente/propria faltando,
+clausula de trigger inteira ausente, etc.) -- nao tem mais causa-raiz
+compartilhada obvia nos top itens restantes, cada um provavelmente exige
+fix pontual (o que esta OK -- "fixes globais nao pontuais" significa achar
+a causa raiz quando ELA EXISTE compartilhada, nao proibir fix de carta
+unica quando o bug realmente e so daquela carta).
+
+**Proxima sessao:** continuar a lista com `python audit_parser_coverage.py
+--show 20` (a partir de `OP10-098 Liberation`, `OP16-108 Shiryu`,
+`OP06-104 Kikunojo`, etc.), revisando cada suspeito antes de assumir bug
+(o metodo aponta suspeitos, nao bugs confirmados). Fase 1 do plano de 4
+fases segue EM ABERTO -- perguntar ao usuario se ele quer fechar mais da
+lista antes de liberar a Fase 2, ou se aceita seguir com o que ja foi
+corrigido.
+
 ## 2026-07-14 (145) - Claude - Varredura SISTEMATICA do parser (audit_parser_coverage.py) -- 57 cartas usadas em decks reais com numero(s) do texto ausentes do parseado
 
 **Resposta direta a preocupacao do bloco 144:** usuario pediu a varredura

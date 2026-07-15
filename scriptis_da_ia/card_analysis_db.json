@@ -27962,7 +27962,7 @@
   "attribute": "Special",
   "effects": [
    {
-    "action": "lock_opp_don",
+    "action": "lock_opp_character_refresh",
     "trigger": "on_play"
    }
   ],
@@ -38735,6 +38735,10 @@
   "attribute": "Strike",
   "effects": [
    {
+    "action": "rest_opp_character",
+    "trigger": "on_play"
+   },
+   {
     "action": "life_to_hand",
     "trigger": "on_play"
    },
@@ -38750,9 +38754,9 @@
   "has_counter_value": false,
   "has_counter_event": false,
   "is_blocker": false,
-  "is_removal": false,
+  "is_removal": true,
   "kos": false,
-  "rests_opponent": false,
+  "rests_opponent": true,
   "bounces": false,
   "gives_don": false,
   "power_buff": false,
@@ -43575,7 +43579,7 @@
   "attribute": "Special",
   "effects": [
    {
-    "action": "lock_opp_don",
+    "action": "lock_opp_character_refresh",
     "trigger": "on_play"
    }
   ],
@@ -70234,6 +70238,10 @@
     "action": "buff_power",
     "trigger": "counter",
     "target": "leader"
+   },
+   {
+    "action": "rest_opp_character",
+    "trigger": "main"
    }
   ],
   "synergy_states": {},
@@ -70243,9 +70251,9 @@
   "has_counter_value": false,
   "has_counter_event": true,
   "is_blocker": false,
-  "is_removal": false,
+  "is_removal": true,
   "kos": false,
-  "rests_opponent": false,
+  "rests_opponent": true,
   "bounces": false,
   "gives_don": false,
   "power_buff": true,
@@ -84669,6 +84677,10 @@
   "attribute": "Slash",
   "effects": [
    {
+    "action": "give_don_opp",
+    "trigger": "on_play"
+   },
+   {
     "action": "gain_rush",
     "trigger": "on_play"
    },
@@ -84971,6 +84983,10 @@
     "action": "debuff_power",
     "trigger": "on_play",
     "target": "opp_character"
+   },
+   {
+    "action": "give_don_opp",
+    "trigger": "on_play"
    }
   ],
   "synergy_states": {},
@@ -85431,7 +85447,7 @@
     "trigger": "on_play"
    },
    {
-    "action": "lock_opp_don",
+    "action": "lock_opp_character_refresh",
     "trigger": "on_play"
    },
    {
@@ -85493,6 +85509,10 @@
    {
     "action": "deck_bottom_rest",
     "trigger": "on_play"
+   },
+   {
+    "action": "give_don_opp",
+    "trigger": "activate_main"
    }
   ],
   "synergy_states": {},
@@ -86027,8 +86047,9 @@
     "target": "select_filtered"
    },
    {
-    "action": "lock_opp_don",
-    "trigger": "main"
+    "action": "lock_opp_character_refresh",
+    "trigger": "main",
+    "cost_lte": 8
    }
   ],
   "synergy_states": {

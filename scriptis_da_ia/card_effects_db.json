@@ -18400,7 +18400,8 @@
       "on_play": {
         "steps": [
           {
-            "action": "lock_opp_don"
+            "action": "lock_opp_character_refresh",
+            "count": 3
           }
         ]
       }
@@ -25493,6 +25494,10 @@
       "on_play": {
         "steps": [
           {
+            "action": "rest_opp_character",
+            "count": 2
+          },
+          {
             "action": "life_to_hand",
             "source": "life_top",
             "count": 1,
@@ -28734,7 +28739,8 @@
       "on_play": {
         "steps": [
           {
-            "action": "lock_opp_don"
+            "action": "lock_opp_character_refresh",
+            "count": 1
           }
         ]
       }
@@ -46013,6 +46019,20 @@
             "duration": "battle_only"
           }
         ]
+      },
+      "main": {
+        "steps": [
+          {
+            "action": "rest_opp_character",
+            "count": 2
+          }
+        ],
+        "costs": [
+          {
+            "type": "rest_don",
+            "count": 3
+          }
+        ]
       }
     }
   },
@@ -55685,6 +55705,11 @@
       "on_play": {
         "steps": [
           {
+            "action": "give_don_opp",
+            "count": 3,
+            "rested": true
+          },
+          {
             "action": "gain_rush",
             "duration": "this_turn"
           }
@@ -55897,6 +55922,11 @@
             "amount": 1000,
             "target": "opp_character",
             "duration": "this_turn"
+          },
+          {
+            "action": "give_don_opp",
+            "count": 1,
+            "rested": true
           }
         ]
       }
@@ -56187,7 +56217,9 @@
             "count": 2
           },
           {
-            "action": "lock_opp_don"
+            "action": "lock_opp_character_refresh",
+            "count": 1,
+            "don_attached_gte": 3
           }
         ]
       },
@@ -56224,6 +56256,20 @@
           },
           {
             "action": "deck_bottom_rest"
+          }
+        ]
+      },
+      "activate_main": {
+        "steps": [
+          {
+            "action": "give_don_opp",
+            "count": 1,
+            "rested": true
+          }
+        ],
+        "costs": [
+          {
+            "type": "trash_self"
           }
         ]
       }
@@ -56562,7 +56608,10 @@
       "main": {
         "steps": [
           {
-            "action": "lock_opp_don"
+            "action": "lock_opp_character_refresh",
+            "count": 1,
+            "cost_lte": 8,
+            "don_attached_gte": 2
           }
         ]
       }

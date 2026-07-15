@@ -3661,10 +3661,12 @@ class EffectExecutor:
             count = step.get('count', 1)
             cost_lte = step.get('cost_lte')
             cost_eq = step.get('cost_eq')
+            don_attached_gte = step.get('don_attached_gte')
             candidates = [c for c in opp.field_chars
                           if c.rested
                           and (cost_lte is None or c.cost <= cost_lte)
-                          and (cost_eq is None or c.cost == cost_eq)]
+                          and (cost_eq is None or c.cost == cost_eq)
+                          and (don_attached_gte is None or c.don_attached >= don_attached_gte)]
             locked = []
             for _ in range(min(count, len(candidates))):
                 target = max(candidates, key=lambda x: x.board_value())

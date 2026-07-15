@@ -906,6 +906,22 @@ def parse_rest_opp(text):
         })
         return steps
 
+    # Alvo MISTO "Characters or DON!! cards" (o jogador escolhe entre restar
+    # um Character ou um DON!! do oponente) -- achado 15/07 via
+    # audit_parser_coverage.py: OP06-035 (Hody Jones, 7x em deck real) e
+    # OP12-037 tinham essa clausula inteira AUSENTE do parseado (nenhum dos
+    # 2 ramos acima casava "Characters or DON!! cards" nem "up to a total
+    # of N"). Aproximacao (documentada, nao ideal): trata como
+    # rest_opp_character -- o engine ainda nao modela "escolha entre 2
+    # tipos de alvo" nessa acao, mas pelo menos produz UM step de verdade
+    # em vez de silencio total.
+    m_mixed = re.search(
+        r"rest up to (?:a total of )?(\d+) of your opponent.{0,10} "
+        r"characters? or don!{0,2}\s*cards?", t)
+    if m_mixed:
+        steps.append({'action': 'rest_opp_character', 'count': int(m_mixed.group(1))})
+        return steps
+
     m = re.search(r"rest up to (\d+) of your opponent.{0,10} characters? (?:with a cost of (\d+) or|that has)", t)
     if m:
         cost_m = re.search(r'cost of (\d+) or', t)
@@ -1853,7 +1869,15 @@ def parse_give_don(text):
             step['rested'] = True
         steps.append(step)
 
-    m = re.search(r'give up to (\d+) (rested )?don!! cards?[^.]{0,60}', t)
+    # "of your opponent's" (ou so "of your") pode aparecer ENTRE o numero e
+    # "(rested )?don!! cards" -- achado 15/07 via audit_parser_coverage.py:
+    # OP15-008 ("Give up to 3 OF YOUR OPPONENT'S RESTED DON!! cards to 1 of
+    # your opponent's Characters") nao casava porque o regex antigo exigia
+    # "(rested )?don!!" logo apos o numero, sem essa clausula intermediaria
+    # -- a acao inteira ficava de fora (so o keyword_rush da mesma carta
+    # sobrevivia).
+    m = re.search(
+        r'give up to (\d+)(?: of your(?: opponent.?s)?)? (rested )?don!! cards?[^.]{0,60}', t)
     if m:
         cnt = int(m.group(1))
         is_rested = bool(m.group(2))
@@ -1922,13 +1946,32 @@ def parse_give_don(text):
         return steps
 
     # Padrao principal (cobre a maioria): "up to N / all of your opponent's
-    # rested Characters [with a cost of X or less] will not become active".
-    # cost_lte so e anexado quando o texto realmente traz o filtro -- nunca
+    # rested Characters [with a cost of X or less] [that has N or more
+    # DON!! cards given] will not become active". cost_lte/don_attached_gte
+    # so sao anexados quando o texto realmente traz o filtro -- nunca
     # assumir um valor default que nao esta escrito na carta.
+    #
+    # Achado 15/07 via audit_parser_coverage.py: 3 variantes de fraseado
+    # caiam no fallback generico (lock_opp_don SEM NENHUM filtro, count
+    # perdido inclusive) porque o regex antigo so aceitava "up to N" (nao
+    # "up to a total of N", OP04-031), so filtro de custo (nao filtro de
+    # DON anexado, OP15-025/OP15-038), e so um substantivo puro (nao
+    # "Character or DON!! cards" misto, OP07-026). Estendido pra cobrir os
+    # 3 sem perder o comportamento antigo (grupos de filtro continuam
+    # opcionais).
+    # "of your opponent's" antes de "rested" e opcional -- variante achada
+    # em OP15-025: "up to 1 rested Character with 3+ DON given will not
+    # become active in YOUR OPPONENT'S next Refresh Phase" (a posse do
+    # personagem fica implicita pelo "opponent's" no FIM da frase, nao no
+    # inicio). Sem risco de pegar auto-lock por engano: o self-lock (m_self,
+    # acima) ja intercepta "this character"/"the selected character(s)"
+    # ANTES desta regra rodar, com fraseado bem distinto.
     m = re.search(
-        r"(up to (\d+)|all) of your opponent.?s rested "
-        r"(don!! cards?|leader and character cards?|characters?|character cards?|leader cards?|cards?)"
+        r"(up to (?:a total of )?(\d+)|all)(?: of your opponent.?s)? rested "
+        r"(don!! cards?|leader and character cards?|characters? or don!{0,2}\s*cards?"
+        r"|characters?|character cards?|leader cards?|cards?)"
         r"(?: with a cost of (\d+) or less)?"
+        r"(?: (?:with|that has) (\d+) or more don!{0,2}\s*cards? given)?"
         r" will not become active",
         t
     )
@@ -1936,15 +1979,19 @@ def parse_give_don(text):
         cnt = 99 if m.group(1) == 'all' else int(m.group(2))
         tipo = m.group(3)
         cost_lte = m.group(4)
+        don_gte = m.group(5)
         if tipo.startswith('don'):
             step = {'action': 'lock_opp_don_refresh', 'count': cnt}
         else:
-            # 'cards'/'card' generico (sem especificar Character/Leader) e
-            # tambem modelado como character_refresh -- caso mais comum
-            # nesse fraseado quando o substantivo nao e explicito.
+            # 'cards'/'card' generico e "Character or DON!! cards" misto
+            # (aproximacao: trata como character_refresh -- e o caso mais
+            # comum nesse fraseado quando o substantivo nao especifica so
+            # DON) tambem modelados como character_refresh.
             step = {'action': 'lock_opp_character_refresh', 'count': cnt}
         if cost_lte:
             step['cost_lte'] = int(cost_lte)
+        if don_gte:
+            step['don_attached_gte'] = int(don_gte)
         steps.append(step)
         return steps
 

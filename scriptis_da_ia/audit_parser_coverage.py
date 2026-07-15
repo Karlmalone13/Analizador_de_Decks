@@ -154,6 +154,7 @@ def scan() -> list[dict]:
             'code': code,
             'name': eff.get('name', ''),
             'text': text,
+            'effects': eff.get('effects', eff),
             'perdidos': perdidos,
             'usos_em_decks': usos,
         })
@@ -176,8 +177,13 @@ def print_report(resultados: list[dict], show: int, min_sev: int) -> None:
         tag_uso = f"[{r['usos_em_decks']}x em decks reais]" if r['usos_em_decks'] else "[nao usado em deck salvo]"
         print(f"{'='*78}")
         print(f"{r['code']} - {r['name']}  {tag_uso}")
-        print(f"  numeros no texto sem match no parsed: {r['perdidos']}")
-        print(f"  texto: {r['text'][:220]}")
+        print(f"  numeros suspeitos (no texto, ausentes do parsed): {r['perdidos']}")
+        print(f"\n  Texto cru (comparar com o efeito parseado abaixo):")
+        for linha in r['text'].split('\n'):
+            print(f"    {linha}")
+        print(f"\n  Efeito parseado:")
+        for linha in json.dumps(r['effects'], ensure_ascii=False, indent=2).split('\n'):
+            print(f"    {linha}")
         print()
 
 

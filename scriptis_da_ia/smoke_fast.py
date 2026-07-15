@@ -544,6 +544,77 @@ def test_kid_leader_set_active_respects_cost_range() -> None:
           fora_do_intervalo.rested)
 
 
+def test_lock_opp_character_refresh_variantes_de_fraseado() -> None:
+    # Achado 15/07 via audit_parser_coverage.py: 4 cartas reais caiam no
+    # fallback 'lock_opp_don' SEM NENHUM filtro (nem count) porque o regex
+    # principal de parse_lock_refresh so aceitava "up to N of your
+    # opponent's rested X [with a cost of Y or less] will not become
+    # active" -- 3 variantes de fraseado reais quebravam isso: "up to A
+    # TOTAL OF N" (OP04-031), filtro de "N+ DON anexado" em vez de custo
+    # (OP15-025/038, com "with"/"that has" variando), e "of your
+    # opponent's" ausente quando a posse aparece so no final da frase
+    # (OP15-025). Fix generalizou o regex sem perder os casos antigos.
+    step_op04031 = get_card_effects("OP04-031").get("on_play", {}).get("steps", [{}])[0]
+    check("OP04-031 parseia 'up to a total of 3' -> count=3 (nao lock_opp_don generico)",
+          step_op04031.get("action") == "lock_opp_character_refresh"
+          and step_op04031.get("count") == 3)
+
+    step_op15025 = get_card_effects("OP15-025").get("on_play", {}).get("steps", [{}])
+    step_op15025 = step_op15025[-1] if step_op15025 else {}
+    check("OP15-025 parseia don_attached_gte=3 (posse implicita no fim da frase)",
+          step_op15025.get("action") == "lock_opp_character_refresh"
+          and step_op15025.get("don_attached_gte") == 3)
+
+    step_op15038 = get_card_effects("OP15-038").get("main", {}).get("steps", [{}])[0]
+    check("OP15-038 parseia cost_lte=8 E don_attached_gte=2 juntos (2 filtros encadeados)",
+          step_op15038.get("cost_lte") == 8 and step_op15038.get("don_attached_gte") == 2)
+
+    # Execucao real: alvo com DON insuficiente nao pode ser travado, alvo
+    # com DON suficiente pode.
+    me = GameState(leader=real_card("OP15-025"), don_available=4, turn=3)
+    opp = GameState(leader=mk("OP11-051", "Doflamingo", card_type="LEADER", color="Purple"), turn=3)
+    alvo_valido = mk("XOPP1", "Com 3+ DON", power=5000, cost=4, color="Black")
+    alvo_valido.don_attached = 3
+    alvo_valido.rested = True
+    alvo_invalido = mk("XOPP2", "Sem DON suficiente", power=5000, cost=4, color="Black")
+    alvo_invalido.don_attached = 2
+    alvo_invalido.rested = True
+    opp.field_chars = [alvo_invalido, alvo_valido]
+    EffectExecutor(me, opp).execute(me.leader, "on_play")
+    check("Kuro congela (frozen_next_refresh) so o alvo com 3+ DON anexado",
+          alvo_valido.frozen_next_refresh and not alvo_invalido.frozen_next_refresh)
+
+
+def test_rest_opp_alvo_misto_character_ou_don() -> None:
+    # Achado 15/07 via audit_parser_coverage.py: OP06-035 (Hody Jones, 7x em
+    # deck real) tinha "Rest up to a total of 2 of your opponent's
+    # Characters or DON!! cards" -- clausula INTEIRA ausente do parseado (so
+    # a parte seguinte, "add 1 card from Life to hand", tinha sido
+    # capturada). parse_rest_opp ganhou ramo pra alvo misto
+    # Character-ou-DON (aproximado como rest_opp_character).
+    steps = get_card_effects("OP06-035").get("on_play", {}).get("steps", [])
+    check("OP06-035 parseia o rest misto (Character ou DON) como step real",
+          any(s.get("action") == "rest_opp_character" and s.get("count") == 2 for s in steps))
+    check("OP06-035 mantem o 2o step (add 1 card da Life pra mao) intacto",
+          any(s.get("action") == "life_to_hand" for s in steps))
+
+
+def test_give_don_opp_com_of_your_opponent_no_meio_da_frase() -> None:
+    # Achado 15/07 via audit_parser_coverage.py: OP15-008 (Krieg, 4x em
+    # deck real) tinha "Give up to 3 OF YOUR OPPONENT'S RESTED DON!! cards
+    # to 1 of your opponent's Characters" -- a clausula inteira ausente do
+    # parseado (so o 'gain_rush' da mesma carta sobrevivia) porque o regex
+    # de parse_give_don exigia "(rested )?don!!" logo apos o numero, sem a
+    # clausula "of your opponent's" no meio. Mesmo fix pegou mais 2 cartas
+    # de bonus (OP15-015, OP15-026) com o mesmo padrao, nem estavam no
+    # top-15 da varredura.
+    for code, trig in (("OP15-008", "on_play"), ("OP15-015", "on_play"),
+                        ("OP15-026", "activate_main")):
+        steps = get_card_effects(code).get(trig, {}).get("steps", [])
+        check(f"{code} parseia give_don_opp (antes ausente por completo)",
+              any(s.get("action") == "give_don_opp" and s.get("rested") for s in steps))
+
+
 def main() -> int:
     test_turn_order_imu_prefers_second()
     test_empty_throne_beats_direct_five_elders_play()
@@ -568,6 +639,9 @@ def main() -> int:
     test_jinbe_grants_play_turn_character_attack()
     test_krieg_rest_opp_requires_2_don_attached()
     test_kid_leader_set_active_respects_cost_range()
+    test_lock_opp_character_refresh_variantes_de_fraseado()
+    test_rest_opp_alvo_misto_character_ou_don()
+    test_give_don_opp_com_of_your_opponent_no_meio_da_frase()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0
