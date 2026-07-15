@@ -4352,6 +4352,11 @@ class EffectExecutor:
                 best.rush_character_only_this_turn = best.is_rush_character() and not best.is_rush()
                 remove_by_identity(candidates, best)
                 played.append(best.name[:15])
+                # Grava pra um step POSTERIOR no mesmo bloco poder alvejar
+                # "that Character" (ex: OP12-058 Whitebeard, "gains [Rush]"
+                # apos jogar do deck) -- mesma memoria ja usada por
+                # buff_power/lock_self_character_refresh target='selected'.
+                self._last_selected = best
 
             if not look_count:
                 # so embaralha quando a busca expos o deck inteiro -- o
@@ -4975,10 +4980,17 @@ class EffectExecutor:
 
         # ── Keywords ──────────────────────────────────────────────────────────
         if action == 'gain_rush':
+            # target='selected': "that Character gains [Rush]" refere-se a
+            # carta selecionada/jogada por um step ANTERIOR no mesmo bloco
+            # (ex: OP12-058 Whitebeard, play_from_deck + gain_rush), nao a
+            # propria `card` (o Event/Character que carrega o efeito).
+            alvo = self._last_selected if step.get('target') == 'selected' else card
+            if alvo is None:
+                return ''
             if step.get('duration') == 'this_turn':
-                card.rush_this_turn = True
+                alvo.rush_this_turn = True
                 return 'ganhou Rush (so este turno)'
-            card.has_rush = True
+            alvo.has_rush = True
             return 'ganhou Rush'
         if action == 'gain_rush_character':
             card.has_rush_character = True

@@ -1,5 +1,58 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-15 (153) - Claude - OP12-058 (Whitebeard) corrigido -- reveal-conditional-play + alvo do Rush (nao mais no Event, no personagem jogado); OP12-020 (Zoro lider) documentado como fora de escopo
+
+**Continuacao da lista do bloco 149.**
+
+**OP12-058 (Whitebeard) -- 2 bugs na mesma carta:**
+1. `parse_reveal_top_play` (funcao que JA existia pro padrao "reveal 1
+   card... if that card is [Tipo] with a cost of N or less, you may play
+   that card") nao casava porque o fraseado do Whitebeard usa "with a
+   TYPE INCLUDING "X" AND a cost of N or less" -- conjuncao "and" em vez
+   de "with", e o tipo vem via "with a type including" em vez de "is
+   [Tipo] type". Generalizado sem perder os casos antigos.
+2. Depois de corrigido o play, achei um SEGUNDO bug ao testar execucao
+   de verdade: "If you do, THAT CHARACTER gains [Rush]" aplicava o Rush
+   na propria carta de Event (quem carrega o efeito), nao no personagem
+   REVELADO E JOGADO do deck. Causa: o scanner generico de "gains
+   [Rush]" (usado por dezenas de cartas) sempre aplicava a `card` (o
+   dono do bloco), sem conceito de "carta selecionada por um step
+   anterior". Fix: `play_from_deck` agora grava `self._last_selected`
+   (mesma memoria ja usada por `buff_power`/`lock_self_character_refresh`
+   target='selected'); o scanner de gain_rush detecta "that
+   Character/card gains" ANTES do match E exige que ja exista um
+   `play_from_deck` no MESMO bloco antes de marcar target='selected' --
+   essa 2a guarda foi adicionada DEPOIS de eu quase quebrar OP16-079
+   (passiva reativa "quando um Character e jogado do trash, esse
+   Character ganha Rush" -- contexto de gatilho EXTERNO ao bloco, onde
+   `_last_selected` nao seria confiavel; sem a guarda o Rush teria
+   silenciosamente deixado de aplicar a qualquer coisa nessa carta).
+
+**Validado com EXECUCAO real (nao so parse):** personagem revelado sai do
+deck, entra em campo, E ganha Rush de verdade (`rush_this_turn=True`) --
+nao mais no Event. `smoke_fast` (65 checks) + `smoke_test` amplo, ambos
+verdes. `diff_parser.py` PERDEU=0 em cada etapa (2 rodadas: 1a so o
+reveal-play, 2a so o alvo do Rush, isolando os 2 bugs).
+
+**OP12-020 (Zoro lider) -- decidido NAO implementar, documentado:**
+"If this Leader battles your opponent's Character during this turn, set
+this Leader as active. Then, this Leader cannot attack your opponent's
+Characters with a base cost of 7 or less during this turn." Exigiria 2
+pecas de infraestrutura NOVAS que nao existem hoje: (1) rastreamento de
+"o lider bateu um Character (nao Leader) este turno" -- nao existe
+tracking de historico de combate no engine; (2) uma restricao de ataque
+"nao pode atacar Characters do oponente com custo <= N" -- distinta de
+tudo que ja existe (`lock_opp_character_attack` trava o OPONENTE,
+`cannot_attack_self*` trava ataque total, nenhum filtra por CUSTO do
+ALVO). So 1 carta real usa esse padrao exato -- custo de construir 2
+mecanismos novos pra 1 carta nao compensa agora. Documentado aqui pra
+nao esquecer, retomar se aparecer mais alguma carta com padrao
+parecido.
+
+**Resta da lista do bloco 149:** OP09-118 (Roger, win-condition
+alternativa muito rara -- mesma decisao de escopo que OP12-020, avaliar
+se vale a pena).
+
 ## 2026-07-15 (152) - Claude - Nova mecanica: substituicao de REST (PRB02-006 Zoro) -- 3a familia de substitute_*, reusando quase toda a infra de KO/removal
 
 **Continuacao da lista do bloco 149/151.** PRB02-006 (Roronoa Zoro):

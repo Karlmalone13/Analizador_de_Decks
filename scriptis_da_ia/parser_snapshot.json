@@ -28992,8 +28992,17 @@
    },
    "steps": [
     {
+     "action": "play_from_deck",
+     "cost_lte": 9,
+     "count": 1,
+     "filter_type": "whitebeard pirates",
+     "rested": false,
+     "reveal_count": 1
+    },
+    {
      "action": "gain_rush",
-     "duration": "this_turn"
+     "duration": "this_turn",
+     "target": "selected"
     }
    ]
   },

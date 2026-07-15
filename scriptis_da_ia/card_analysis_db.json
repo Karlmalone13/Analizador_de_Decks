@@ -71144,8 +71144,14 @@
     "trigger": "trigger"
    },
    {
+    "action": "play_from_deck",
+    "trigger": "main",
+    "cost_lte": 9
+   },
+   {
     "action": "gain_rush",
-    "trigger": "main"
+    "trigger": "main",
+    "target": "selected"
    }
   ],
   "synergy_states": {

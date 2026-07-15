@@ -813,6 +813,36 @@ def test_zoro_substitui_rest_por_aliado() -> None:
     check("Aliado fica rested no lugar do Zoro", aliado.rested)
 
 
+def test_whitebeard_reveal_conditional_play() -> None:
+    # Achado 15/07 -- usuario revisou OP12-058 (Whitebeard): "reveal 1
+    # card... If that card is a Character card with a type including
+    # 'Whitebeard Pirates' AND a cost of 9 or less, you may play that
+    # card." O parser ja tinha uma funcao pra esse padrao
+    # (parse_reveal_top_play, variante condicional) mas exigia "with a
+    # cost of" logo apos "is [Tipo]" -- o fraseado do Whitebeard usa "with
+    # a type including "X" AND a cost of" (conjuncao diferente + tipo
+    # nomeado de outro jeito), quebrava os 2 regexes (cost E tipo).
+    steps = get_card_effects("OP12-058").get("main", {}).get("steps", [])
+    play_step = next((s for s in steps if s.get("action") == "play_from_deck"), None)
+    check("Whitebeard parseia play_from_deck com filtro de tipo e cost_lte=9",
+          play_step is not None and play_step.get("cost_lte") == 9
+          and play_step.get("filter_type") == "whitebeard pirates")
+    check("Whitebeard mantem o gain_rush condicional (If you do, gains Rush)",
+          any(s.get("action") == "gain_rush" for s in steps))
+
+    lider_wb = mk("XWB", "Lider Whitebeard", card_type="LEADER", color="Red",
+                   sub_types="Whitebeard Pirates")
+    me = GameState(leader=lider_wb, turn=3, don_available=5)
+    opp = GameState(leader=mk("XOPPL", "Lider", card_type="LEADER"), turn=3)
+    carta_evento = real_card("OP12-058")
+    topo = mk("XTOPO", "Personagem Whitebeard", cost=5, sub_types="Whitebeard Pirates")
+    me.deck = [topo]
+    EffectExecutor(me, opp).execute(carta_evento, "main")
+    check("Whitebeard joga de verdade o personagem revelado (sai do deck, entra em campo)",
+          len(me.deck) == 0 and topo in me.field_chars)
+    check("Personagem jogado ganha Rush neste turno", topo.rush_this_turn)
+
+
 def main() -> int:
     test_turn_order_imu_prefers_second()
     test_empty_throne_beats_direct_five_elders_play()
@@ -847,6 +877,7 @@ def main() -> int:
     test_don_minus_sem_sinal_de_menos_na_fonte()
     test_opp_life_lte_gte_condicao_ausente()
     test_zoro_substitui_rest_por_aliado()
+    test_whitebeard_reveal_conditional_play()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0

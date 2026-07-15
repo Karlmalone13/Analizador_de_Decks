@@ -2344,12 +2344,21 @@ def parse_reveal_top_play(text):
     # cost of N or less, you may play that card [rested]." -- sem "play up to
     # N character card" mas ainda joga da deck condicional. Ex: OP01-060,
     # OP07-048. Mapeado como play_from_deck com reveal_count=1.
-    m_cond = re.search(r'if that card is [^,.]+ with a cost of (\d+) or less.{0,40}you may play that card', t)
+    # Aceita "with"/"and" antes de "a cost of" -- achado 15/07 (revisao do
+    # usuario, OP12-058 Whitebeard): "...with a type including "X" AND a
+    # cost of N or less" usa "and", nao "with", quebrava o match antigo.
+    m_cond = re.search(r'if that card is [^,.]+ (?:with|and) a cost of (\d+) or less.{0,40}you may play that card', t)
     if m_cond:
         type_m_cond = (re.search(r'if that card is "([^"]+)" type', t)
                        or re.search(r'if that card is \[([^\]]+)\] type', t)
                        or re.search(r'if that card is a "([^"]+)" type', t)
-                       or re.search(r'if that card is a \[([^\]]+)\] type', t))
+                       or re.search(r'if that card is a \[([^\]]+)\] type', t)
+                       # "if that card is a Character card with a type
+                       # including "X" and a cost..." -- fraseado diferente
+                       # (Whitebeard), tipo vem depois de "with a type
+                       # including", nao logo apos "is".
+                       or re.search(r'with a type including "([^"]+)"', t)
+                       or re.search(r'with a type including \[([^\]]+)\]', t))
         rested_cond = 'play that card rested' in t or 'play it rested' in t
         step_cond = {
             'action': 'play_from_deck',
@@ -3967,6 +3976,28 @@ def parse_block(block_text, trigger_name):
             dur = _duration_apos(m_r.end()) if m_r else None
             if dur:
                 step['duration'] = dur
+            # "that Character/card gains [Rush]" -- refere-se a uma carta
+            # SELECIONADA/JOGADA por um step ANTERIOR no mesmo bloco (ex:
+            # OP12-058 Whitebeard: "reveal 1 card... you may play that
+            # card. If you do, that Character gains [Rush]"), nao a propria
+            # carta que carrega o efeito. Achado 15/07 (revisao do
+            # usuario): sem isso, o Rush ia pro Event que ativou o efeito
+            # em vez do personagem jogado do deck. play_from_deck (e
+            # outras actions de selecao) gravam _last_selected pra esses
+            # casos, mesma memoria ja usada por lock_self_character_refresh/
+            # buff_power target='selected'.
+            # So marca target='selected' se ja existe um step ANTERIOR
+            # NESTE MESMO bloco que grava _last_selected (hoje so
+            # play_from_deck) -- sem essa guarda, "that Character gains
+            # [Rush]" em blocos SEM selecao previa no mesmo bloco (ex:
+            # OP16-079, passiva reativa "when a Character is played from
+            # trash..." -- o gatilho vem de FORA do bloco, _last_selected
+            # nao é confiavel ali) silenciosamente deixaria de aplicar o
+            # Rush a ninguem (alvo=None). Escopo estrito: so o padrao
+            # comprovado (reveal-then-play-then-rush, ex: OP12-058).
+            if m_r and any(s.get('action') == 'play_from_deck' for s in steps) and re.search(
+                    r'that (?:character|card)\s*$', t[max(0, m_r.start()-30):m_r.start()]):
+                step['target'] = 'selected'
             steps.append(step)
     m_b = re.search(r'gains?\s+\[blocker\]', t)
     if 'gain_blocker' not in _lista_choice_keywords and (m_b or '[blocker]' in _lista_txt):
