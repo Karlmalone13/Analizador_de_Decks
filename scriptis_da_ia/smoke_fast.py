@@ -753,6 +753,42 @@ def test_don_minus_sem_sinal_de_menos_na_fonte() -> None:
           me.don_available == 2 and me.don_deck == 8)
 
 
+def test_opp_life_lte_gte_condicao_ausente() -> None:
+    # Achado 15/07 -- usuario revisou OP10-112 (Kid) e apontou que o
+    # end_of_turn ("If your opponent has 2 or less Life cards, draw 1
+    # card...") nao tinha NENHUMA condicao de vida do oponente no
+    # parseado -- so existiam life_lte/life_gte (vida PROPRIA), nunca o
+    # espelho pro lado do oponente. 45 cartas reais no banco usam esse
+    # padrao textual.
+    conds = get_card_effects("OP10-112").get("end_of_turn", {}).get("conditions", {})
+    check("OP10-112 (Kid) parseia opp_life_lte=2 no end_of_turn",
+          conds.get("opp_life_lte") == 2)
+
+    kid = real_card("OP10-112")
+
+    # Vida do oponente ACIMA do limiar -> condicao NAO satisfeita, deck
+    # intacto (draw nunca dispara).
+    me_alto = GameState(leader=real_card("OP10-099"), turn=3)
+    me_alto.field_chars = [kid]
+    me_alto.deck = [mk("XDECK1", "Deck", cost=1)]
+    opp_alto = GameState(leader=mk("XOPPL", "Lider", card_type="LEADER"), turn=3)
+    opp_alto.life = [mk(f"XL{i}", f"Vida{i}", cost=0) for i in range(3)]
+    EffectExecutor(me_alto, opp_alto).execute(kid, "end_of_turn")
+    check("Kid NAO compra se vida do oponente > 2 (condicao nao satisfeita)",
+          len(me_alto.deck) == 1)
+
+    # Vida do oponente NO limiar -> condicao satisfeita, deck esvazia (1
+    # carta comprada de verdade, mesmo que depois trashada da mao).
+    me_baixo = GameState(leader=real_card("OP10-099"), turn=3)
+    me_baixo.field_chars = [kid]
+    me_baixo.deck = [mk("XDECK2", "Deck", cost=1)]
+    opp_baixo = GameState(leader=mk("XOPPL2", "Lider2", card_type="LEADER"), turn=3)
+    opp_baixo.life = [mk(f"XL{i}", f"Vida{i}", cost=0) for i in range(2)]
+    EffectExecutor(me_baixo, opp_baixo).execute(kid, "end_of_turn")
+    check("Kid compra de verdade se vida do oponente <= 2 (condicao satisfeita)",
+          len(me_baixo.deck) == 0)
+
+
 def main() -> int:
     test_turn_order_imu_prefers_second()
     test_empty_throne_beats_direct_five_elders_play()
@@ -785,6 +821,7 @@ def main() -> int:
     test_hand_to_deck_clausula_loot_apos_draw()
     test_ipponmatsu_immunity_exige_leader_slash_e_don_rested()
     test_don_minus_sem_sinal_de_menos_na_fonte()
+    test_opp_life_lte_gte_condicao_ausente()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0

@@ -68,6 +68,18 @@ def parse_conditions(text):
     m = re.search(r'(?:if|and) you have (\d+) or more life', t)
     if m: conds['life_gte'] = int(m.group(1))
 
+    # "if your opponent has N or less/more Life cards" -- simetrico aos 2
+    # acima, mas sobre a vida do OPONENTE (mesma convencao ja usada por
+    # opp_don_on_field_gte/opp_hand_gte). Achado 15/07 (revisao do
+    # usuario, OP10-112 Kid: "[End of Your Turn] If your opponent has 2 or
+    # less Life cards, draw 1 card..."): condicao ausente por completo,
+    # 45 cartas reais no banco usam esse padrao.
+    m = re.search(r"if your opponent has (\d+) or less life", t)
+    if m: conds['opp_life_lte'] = int(m.group(1))
+
+    m = re.search(r"if your opponent has (\d+) or more life", t)
+    if m: conds['opp_life_gte'] = int(m.group(1))
+
     m = re.search(r'(?:if (?:you have|there are)|and you have) (\d+) or more cards? in your trash', t)
     if m: conds['trash_gte'] = int(m.group(1))
 

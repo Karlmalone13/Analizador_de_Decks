@@ -50,6 +50,9 @@
    ]
   },
   "when_attacking": {
+   "conditions": {
+    "opp_life_lte": 2
+   },
    "steps": [
     {
      "action": "buff_power",
@@ -922,6 +925,9 @@
  },
  "EB01-054": {
   "on_play": {
+   "conditions": {
+    "opp_life_lte": 1
+   },
    "steps": [
     {
      "action": "ko",
@@ -3355,6 +3361,9 @@
    ]
   },
   "on_play": {
+   "conditions": {
+    "opp_life_gte": 3
+   },
    "steps": [
     {
      "action": "give_don",
@@ -10749,6 +10758,9 @@
  },
  "OP03-120": {
   "main": {
+   "conditions": {
+    "opp_life_gte": 4
+   },
    "steps": [
     {
      "action": "attack_life",
@@ -15097,6 +15109,9 @@
     {
      "action": "buff_power",
      "amount": 2000,
+     "conditions": {
+      "opp_life_lte": 2
+     },
      "duration": "battle_only",
      "target": "self"
     }
@@ -15188,6 +15203,9 @@
  },
  "OP05-118": {
   "on_play": {
+   "conditions": {
+    "opp_life_lte": 3
+   },
    "steps": [
     {
      "action": "draw",
@@ -15552,6 +15570,9 @@
  },
  "OP06-022": {
   "activate_main": {
+   "conditions": {
+    "opp_life_lte": 3
+   },
    "once_per_turn": true,
    "steps": [
     {
@@ -16989,6 +17010,9 @@
  },
  "OP06-100": {
   "trigger": {
+   "conditions": {
+    "opp_life_lte": 3
+   },
    "steps": [
     {
      "action": "play_card",
@@ -17069,6 +17093,9 @@
  },
  "OP06-104": {
   "on_ko": {
+   "conditions": {
+    "opp_life_lte": 3
+   },
    "steps": [
     {
      "action": "gain_life",
@@ -17080,6 +17107,9 @@
    ]
   },
   "trigger": {
+   "conditions": {
+    "opp_life_lte": 3
+   },
    "steps": [
     {
      "action": "play_card",
@@ -17140,6 +17170,9 @@
  },
  "OP06-109": {
   "passive": {
+   "conditions": {
+    "opp_life_lte": 3
+   },
    "don_requirement": 2,
    "steps": [
     {
@@ -17150,6 +17183,9 @@
    ]
   },
   "trigger": {
+   "conditions": {
+    "opp_life_lte": 3
+   },
    "steps": [
     {
      "action": "play_card",
@@ -17169,6 +17205,9 @@
    ]
   },
   "trigger": {
+   "conditions": {
+    "opp_life_lte": 3
+   },
    "steps": [
     {
      "action": "play_card",
@@ -17205,6 +17244,9 @@
  },
  "OP06-112": {
   "trigger": {
+   "conditions": {
+    "opp_life_lte": 3
+   },
    "steps": [
     {
      "action": "play_card",
@@ -19473,30 +19515,36 @@
   "counter": {
    "steps": [
     {
-     "action": "rest_opp_character",
-     "cost_lte": 4,
-     "count": 1
-    },
-    {
      "action": "buff_power",
      "amount": 1000,
      "duration": "this_turn",
      "target": "leader_or_character"
+    },
+    {
+     "action": "rest_opp_character",
+     "conditions": {
+      "opp_life_lte": 2
+     },
+     "cost_lte": 4,
+     "count": 1
     }
    ]
   },
   "main": {
    "steps": [
     {
-     "action": "rest_opp_character",
-     "cost_lte": 4,
-     "count": 1
-    },
-    {
      "action": "buff_power",
      "amount": 1000,
      "duration": "this_turn",
      "target": "leader_or_character"
+    },
+    {
+     "action": "rest_opp_character",
+     "conditions": {
+      "opp_life_lte": 2
+     },
+     "cost_lte": 4,
+     "count": 1
     }
    ]
   },
@@ -23585,6 +23633,9 @@
  },
  "OP09-107": {
   "on_play": {
+   "conditions": {
+    "opp_life_gte": 3
+   },
    "steps": [
     {
      "action": "attack_life",
@@ -25729,6 +25780,9 @@
  },
  "OP10-112": {
   "end_of_turn": {
+   "conditions": {
+    "opp_life_lte": 2
+   },
    "steps": [
     {
      "action": "draw",
@@ -27677,6 +27731,9 @@
  },
  "OP11-102": {
   "your_turn": {
+   "conditions": {
+    "opp_life_gte": 2
+   },
    "once_per_turn": true,
    "steps": [
     {
@@ -32021,6 +32078,9 @@
     {
      "action": "buff_power",
      "amount": 1000,
+     "conditions": {
+      "opp_life_lte": 2
+     },
      "duration": "this_turn",
      "target": "leader_or_character"
     }
@@ -34134,6 +34194,9 @@
  },
  "OP14-107": {
   "on_play": {
+   "conditions": {
+    "opp_life_lte": 3
+   },
    "steps": [
     {
      "action": "draw",
@@ -43272,6 +43335,9 @@
  },
  "ST12-007": {
   "on_play": {
+   "conditions": {
+    "opp_life_gte": 3
+   },
    "costs": [
     {
      "count": 2,

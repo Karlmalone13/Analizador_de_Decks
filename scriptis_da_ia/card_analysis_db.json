@@ -47596,24 +47596,24 @@
     "cost_lte": 4
    },
    {
-    "action": "rest_opp_character",
-    "trigger": "main",
-    "cost_lte": 4
-   },
-   {
     "action": "buff_power",
     "trigger": "main",
     "target": "leader_or_character"
    },
    {
     "action": "rest_opp_character",
-    "trigger": "counter",
+    "trigger": "main",
     "cost_lte": 4
    },
    {
     "action": "buff_power",
     "trigger": "counter",
     "target": "leader_or_character"
+   },
+   {
+    "action": "rest_opp_character",
+    "trigger": "counter",
+    "cost_lte": 4
    }
   ],
   "synergy_states": {

@@ -1,5 +1,55 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-15 (151) - Claude - OP10-112 (Kid) investigado: `attack_life` JA fazia trash-sem-trigger corretamente (nao era bug); `opp_life_lte`/`opp_life_gte` novos (45 cartas)
+
+**Continuacao da lista do bloco 149.** Usuario reportou 3 problemas em
+OP10-112 (Kid): (1) action deveria ser trash, nao attack (sem dano, sem
+trigger, sem compra do oponente); (2) custo deveria ser opcional; (3)
+falta condicao de vida do oponente no end_of_turn.
+
+**(1) NAO era bug -- confirmado por execucao real, nao suposicao:**
+apesar do nome `attack_life` sugerir "ataque", a execucao (`decision_engine.py`)
+ja faz exatamente `opp.life.pop() -> opp.trash.append(c)`, SEM checar
+`has_trigger`, SEM tocar `opp.hand`. Testei diretamente com uma vida
+`has_trigger=True` no topo: foi pro trash, trigger nao disparou, mao do
+oponente nao mudou. `attack_life` (nome ruim, comportamento certo) e
+DIFERENTE de `deal_damage` (esse sim vai pra mao + pode disparar
+trigger) -- as 2 acoes ja existiam separadas, corretas. Nao mexi em nada
+aqui, so verifiquei.
+
+**(2) Custo opcional -- decidido NAO mexer, e simplificacao deliberada
+documentada:** `_worth_paying_optional_costs` (decision_engine.py:~5161)
+tem docstring explicita: "Custos de RECURSO (rest_self/rest_don/don_minus)
+não entram nessa conta -- já são filtrados por pagabilidade antes de
+chegar aqui; só custos de SACRIFÍCIO (mão/campo/vida) exigem julgamento
+de valor." Ou seja: pagar "you may rest this Character" e tratado como
+sempre-vale-a-pena, por design (resting geralmente e barato). Mudar isso
+afetaria MUITAS cartas com o mesmo padrao, nao so o Kid -- fora de escopo
+pra correcao pontual, fica catalogado junto com a pendencia geral de
+"up to N" da Fase 3 (ver bloco 148).
+
+**(3) `opp_life_lte`/`opp_life_gte` -- gap real, corrigido:** condicao
+"if your opponent has N or less/more Life cards" nunca tinha equivalente
+no parser (so existiam `life_lte`/`life_gte` pro lado PROPRIO). Busca no
+banco achou 45 cartas reais com esse padrao. Adicionado em
+`parse_conditions` + `_check_conditions`, mesma convencao de
+`opp_don_on_field_gte`/`opp_hand_gte` ja existentes. Confirmado por
+amostragem que o parser ja distingue corretamente condicao por-STEP (ex:
+OP05-114, so o 2o buff de uma cadeia de 2 e condicional) vs por-BLOCO
+(ex: OP06-100, condicao no bloco `trigger` inteiro) -- nao precisou fix
+adicional pra isso, ja funcionava.
+
+**Validado:** teste dirigido novo com EXECUCAO real (nao so parse) -- Kid
+compra de verdade (deck esvazia) quando vida do oponente <= 2, nao compra
+nada quando > 2. `smoke_fast` (58 checks) + `smoke_test` amplo, ambos
+verdes. `diff_parser.py` PERDEU=0 (19 cartas mudaram), `gerar_dbs.py` +
+re-snapshot feitos.
+
+**Restam da lista do bloco 149:** PRB02-006 (Zoro substituicao de rest),
+OP12-058 (Whitebeard reveal-play condicional), OP12-020 (Zoro lider, 2
+clausulas), OP09-118 (Roger win-condition unica) -- ainda nao
+investigados/corrigidos.
+
 ## 2026-07-15 (150) - Claude - Bug de DADO sistemico achado (sinal "-" ausente em "DON!! -N:"): 28 cartas corrigidas, MAS 1a tentativa de fix introduziu duplicacao (autocorrigida antes de commitar)
 
 **Contexto:** proxima pendencia da revisao do usuario no bloco 149 --

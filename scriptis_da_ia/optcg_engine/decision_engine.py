@@ -2605,6 +2605,10 @@ class EffectExecutor:
             return False
         if 'life_gte' in conds and me.life_count() < conds['life_gte']:
             return False
+        if 'opp_life_lte' in conds and opp.life_count() > conds['opp_life_lte']:
+            return False
+        if 'opp_life_gte' in conds and opp.life_count() < conds['opp_life_gte']:
+            return False
         if 'trash_gte' in conds and len(me.trash) < conds['trash_gte']:
             return False
         if 'don_gte' in conds and me.don_available < conds['don_gte']:

@@ -82,7 +82,10 @@
             "target": "self",
             "duration": "this_turn"
           }
-        ]
+        ],
+        "conditions": {
+          "opp_life_lte": 2
+        }
       },
       "passive": {
         "steps": [
@@ -1522,7 +1525,10 @@
             "target": "opp_character",
             "cost_lte": 3
           }
-        ]
+        ],
+        "conditions": {
+          "opp_life_lte": 1
+        }
       },
       "passive": {
         "steps": [
@@ -5331,7 +5337,10 @@
             "count": 1,
             "rested": true
           }
-        ]
+        ],
+        "conditions": {
+          "opp_life_gte": 3
+        }
       },
       "on_ko": {
         "steps": [
@@ -17498,7 +17507,10 @@
             "count": 1,
             "up_to": true
           }
-        ]
+        ],
+        "conditions": {
+          "opp_life_gte": 4
+        }
       }
     }
   },
@@ -24413,7 +24425,10 @@
             "action": "buff_power",
             "amount": 2000,
             "target": "self",
-            "duration": "battle_only"
+            "duration": "battle_only",
+            "conditions": {
+              "opp_life_lte": 2
+            }
           }
         ]
       }
@@ -24543,7 +24558,10 @@
             "action": "draw",
             "count": 4
           }
-        ]
+        ],
+        "conditions": {
+          "opp_life_lte": 3
+        }
       }
     }
   },
@@ -25162,6 +25180,9 @@
             "rested": true
           }
         ],
+        "conditions": {
+          "opp_life_lte": 3
+        },
         "once_per_turn": true
       },
       "passive": {
@@ -27472,7 +27493,10 @@
             "count": 1,
             "source": "self"
           }
-        ]
+        ],
+        "conditions": {
+          "opp_life_lte": 3
+        }
       }
     }
   },
@@ -27582,7 +27606,10 @@
             "count": 1,
             "up_to": true
           }
-        ]
+        ],
+        "conditions": {
+          "opp_life_lte": 3
+        }
       },
       "trigger": {
         "steps": [
@@ -27591,7 +27618,10 @@
             "count": 1,
             "source": "self"
           }
-        ]
+        ],
+        "conditions": {
+          "opp_life_lte": 3
+        }
       }
     }
   },
@@ -27706,7 +27736,10 @@
             "count": 1,
             "source": "self"
           }
-        ]
+        ],
+        "conditions": {
+          "opp_life_lte": 3
+        }
       },
       "passive": {
         "steps": [
@@ -27716,6 +27749,9 @@
             "source": "any"
           }
         ],
+        "conditions": {
+          "opp_life_lte": 3
+        },
         "don_requirement": 2
       }
     }
@@ -27738,7 +27774,10 @@
             "count": 1,
             "source": "self"
           }
-        ]
+        ],
+        "conditions": {
+          "opp_life_lte": 3
+        }
       },
       "passive": {
         "steps": [
@@ -27818,7 +27857,10 @@
             "count": 1,
             "source": "self"
           }
-        ]
+        ],
+        "conditions": {
+          "opp_life_lte": 3
+        }
       }
     }
   },
@@ -31428,30 +31470,36 @@
       "main": {
         "steps": [
           {
-            "action": "rest_opp_character",
-            "count": 1,
-            "cost_lte": 4
-          },
-          {
             "action": "buff_power",
             "amount": 1000,
             "target": "leader_or_character",
             "duration": "this_turn"
+          },
+          {
+            "action": "rest_opp_character",
+            "count": 1,
+            "cost_lte": 4,
+            "conditions": {
+              "opp_life_lte": 2
+            }
           }
         ]
       },
       "counter": {
         "steps": [
           {
-            "action": "rest_opp_character",
-            "count": 1,
-            "cost_lte": 4
-          },
-          {
             "action": "buff_power",
             "amount": 1000,
             "target": "leader_or_character",
             "duration": "this_turn"
+          },
+          {
+            "action": "rest_opp_character",
+            "count": 1,
+            "cost_lte": 4,
+            "conditions": {
+              "opp_life_lte": 2
+            }
           }
         ]
       }
@@ -38022,7 +38070,10 @@
             "count": 1,
             "up_to": true
           }
-        ]
+        ],
+        "conditions": {
+          "opp_life_gte": 3
+        }
       },
       "trigger": {
         "steps": [
@@ -41544,7 +41595,10 @@
             "count": 1,
             "then_trash": 1
           }
-        ]
+        ],
+        "conditions": {
+          "opp_life_lte": 2
+        }
       }
     }
   },
@@ -44678,6 +44732,9 @@
             "up_to": false
           }
         ],
+        "conditions": {
+          "opp_life_gte": 2
+        },
         "once_per_turn": true
       }
     }
@@ -51785,7 +51842,10 @@
             "action": "buff_power",
             "amount": 1000,
             "target": "leader_or_character",
-            "duration": "this_turn"
+            "duration": "this_turn",
+            "conditions": {
+              "opp_life_lte": 2
+            }
           }
         ]
       }
@@ -55127,7 +55187,10 @@
             "count": 2,
             "then_trash": 2
           }
-        ]
+        ],
+        "conditions": {
+          "opp_life_lte": 3
+        }
       },
       "trigger": {
         "steps": [
@@ -70087,6 +70150,9 @@
             "cost_lte": 4
           }
         ],
+        "conditions": {
+          "opp_life_gte": 3
+        },
         "costs": [
           {
             "type": "rest_don",
