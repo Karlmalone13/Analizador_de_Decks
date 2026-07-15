@@ -1,5 +1,79 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-14 (145) - Claude - Varredura SISTEMATICA do parser (audit_parser_coverage.py) -- 57 cartas usadas em decks reais com numero(s) do texto ausentes do parseado
+
+**Resposta direta a preocupacao do bloco 144:** usuario pediu a varredura
+ampla, mas avisou que nao lembra de cabeca todos os padroes de condicao
+possiveis ("intervalo N a M" e "N+ DON anexado" foram so os 2 que a gente
+JA tinha achado por acaso). Em vez de tentar listar padroes conhecidos
+(sempre incompleto), o script usa um criterio GENERICO: compara o CONJUNTO
+de numeros do texto cru de cada carta com o CONJUNTO de numeros que
+aparecem em QUALQUER LUGAR do JSON parseado daquela carta. Numero no texto
+que nao aparece em lugar nenhum do parseado = candidato a "perdido pelo
+parser" -- independe de eu ter pensado nesse tipo de condicao antes.
+
+**Validacao do metodo:** rodado contra OP15-001 (Krieg, ja corrigido no
+bloco 143) -> zero suspeitos (confirma que o fix realmente fechou o gap).
+Rodado contra OP15-025 (Kuro, "3+ DON anexado", identificado no bloco 143
+mas NAO corrigido por estar fora do escopo do Krieg) -> aponta os numeros
+`1` e `3` perdidos, batendo exatamente com o bug real ja conhecido. Ou
+seja: o metodo pega o mesmo tipo de bug que a inspecao manual pegou, sem
+eu ter codificado o padrao especifico.
+
+**Resultado da varredura completa (2614 cartas, dedupe por texto -- reprints
+com texto identico contam 1x):**
+- 509 cartas (texto unico) tem pelo menos 1 numero do texto ausente do
+  parseado.
+- Dessas, **57 sao usadas em pelo menos 1 deck real** salvo em
+  `E:\Games\OnePieceSimulador\Builds_Windows\Decks` -- lista PRIORIZADA por
+  quantidade de decks que usam (nao adianta revisar as ~450 cartas que
+  ninguem joga primeiro).
+- Achado NOVO e maior que os 2 do bloco 143 durante a validacao: **OP06-035
+  (Hody Jones, usado em 7 decks)** tem a clausula inteira "Rest up to a
+  total of 2 of your opponent's Characters or DON!! cards" **COMPLETAMENTE
+  AUSENTE** do parseado -- so a parte "add 1 card from Life to hand" foi
+  parseada, o rest de ate 2 alvos do oponente sumiu por inteiro. Nao
+  corrigido ainda (achado durante a validacao do script, nao o alvo da
+  sessao).
+- Top 15 por uso em deck real (ver saida completa rodando o script):
+  OP06-035 (7x), OP12-037 (6x), OP15-008/OP15-025/OP04-031/OP06-115 (4x
+  cada), OP10-098/OP16-108/OP06-104/OP07-026/ST12-003 (3x cada),
+  OP06-022/OP15-038/OP05-040/OP05-091 (2x cada).
+
+**IMPORTANTE -- isso NAO prova 57 bugs confirmados.** E uma lista de
+SUSPEITOS por criterio numerico, nao uma auditoria carta-a-carta manual.
+Vai ter falso positivo (numero redundante, coberto por logica fora do
+step tipo `costs`, ou numero de flavor text que escapou do filtro de
+parenteses). Cada item da lista precisa de 5-10s de revisao humana (rodar
+`python audit_parser_coverage.py --code XXXX` mostra texto+parsed+numeros
+perdidos lado a lado) antes de virar fix de verdade -- mesmo workflow do
+bloco 143 (fix pontual na funcao `parse_*` certa + `eligible_cards`/consumo
+se for filtro de alvo + diff_parser PERDEU=0 + gerar_dbs + re-snapshot +
+teste dirigido no smoke_fast).
+
+**Uso do script:**
+```
+python audit_parser_coverage.py                 # varre tudo, resumo
+python audit_parser_coverage.py --show 60        # lista mais itens
+python audit_parser_coverage.py --code OP06-035  # 1 carta, detalhado
+```
+
+**NAO FEITO NESTA SESSAO (creditos acabando, usuario vai pro Codex):**
+nenhum dos 57 suspeitos foi corrigido ainda (so os 2 do bloco 143,
+Krieg/Kid, ja fechados). Esta e a tarefa que fica pra proxima sessao --
+revisar a lista prioritizada por uso em deck, confirmar cada suspeito de
+verdade (nao assumir bug so pelo flag), corrigir na funcao `parse_*`
+certa, seguindo o mesmo workflow ja rodado 2x nesta sessao.
+
+**Fase 1 do plano de 4 fases:** com essa varredura entregue, a preocupacao
+do usuario ("nao adianta consertar so 1 lider") tem agora uma resposta
+CONCRETA (lista de 57 suspeitos priorizados, nao mais uma suspeita vaga).
+Ainda assim, tratar Fase 1 como EM ABERTO ate o usuario revisar essa lista
+e decidir se quer corrigir tudo antes da Fase 2, corrigir so os
+top-N, ou seguir pra Fase 2 aceitando que mais bugs vao aparecer aos
+poucos conforme decks forem testados -- NAO decidir isso sozinho na
+proxima sessao, perguntar.
+
 ## 2026-07-14 (144) - Claude - HANDOFF de troca de sessao (creditos acabando): preocupacao do usuario sobre escopo real do problema de parser
 
 **Mensagem do usuario, literal, IMPORTANTE pra quem pegar a sessao (Codex ou
