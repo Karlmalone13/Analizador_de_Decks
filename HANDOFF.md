@@ -1,5 +1,48 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-15 (162) - Claude - OP16-108 Shiryu: bloco on_play inteiro faltando por exclusao generica demais em parse_life (item 5/6 do lote de 10)
+
+**Continuacao do lote de 10 do usuario.** OP16-108: "[On Play] You may
+trash 1 card from your hand: Add up to 1 {Blackbeard Pirates} type card
+with a cost of 6 or less from your trash to the top of your Life cards
+face-up." O bloco `on_play` inteiro estava ausente (so o `[Trigger]`
+sobrevivia).
+
+**Causa raiz:** `parse_life` ja tinha `source_from()` reconhecendo "from
+your trash" -> `source: 'trash'` para `gain_life` havia tempo, mas o
+bloco geral que monta o step (`if m and 'trash' not in m.group(0)`)
+EXCLUIA qualquer match contendo a palavra 'trash' -- inclusive quando
+'trash' era exatamente a FONTE legitima do efeito, nao uma colisao com
+outro padrao. A exclusao so precisava cobrir a variante "hand or
+trash"/"trash or hand" (ja tratada por um bloco especifico ANTERIOR,
+`m_hand_trash_life`, pra nao duplicar o step) -- refinada pra isso
+especificamente. So 1 carta no banco bate esse padrao exato hoje
+(`source: trash` puro, nao a variante hand-or-trash), mas o bug de
+design bloqueava qualquer carta futura igual.
+
+**Faltava tambem:** `gain_life` com `source: trash` nunca tinha filtro
+de tipo/custo (so `own_field` tinha `power_eq`) -- adicionado
+`filter_type`/`cost_lte` no parser e consumidos no executor via
+`eligible_cards`/`choose_highest_board_value` (mesmo padrao ja usado por
+`add_from_trash`), no lugar do antigo `me.trash.pop(0)` sem filtro
+nenhum.
+
+**Validado:** `diff_parser.py` PERDEU=0, mudanca isolada em OP16-108. 1
+teste dirigido novo com EXECUCAO real (`test_shiryu_add_from_trash_to_life_com_filtro`):
+confirma que o custo opcional e o step novo parseiam certo, e que SO o
+alvo dentro do filtro (tipo Blackbeard Pirates + custo<=6) vai pra vida
+face-up, alvo caro e alvo de tipo errado ficam no trash. Testa o step
+via `_execute_step` direto (bypassa `_worth_paying_optional_costs`,
+decisao estrategica separada ja coberta por outros testes -- aqui o
+alvo era validar so o mecanismo fonte=trash+filtros). `smoke_fast.py`
+(93 checks) + `smoke_test.py` amplo, ambos verdes.
+
+**Ainda pendente do lote de 10:** OP10-098 Liberation (condicao de
+comparacao relativa de board + segundo alvo de KO + bloco `[Trigger]`
+inteiro), OP15-008 Krieg (condicao `just_played` + debuff dinamico por
+DON do proprio alvo) -- os 2 itens mais complexos do lote, ficam pra
+proxima sessao.
+
 ## 2026-07-15 (161) - Claude - OP16-116 Zehahahahaha: segunda clausula era so um fraseado alternativo de deal_damage (8 cartas fechadas de uma vez, item 4/6 do lote de 10)
 
 **Continuacao do lote de 10 do usuario.** OP16-116: "...play up to 1

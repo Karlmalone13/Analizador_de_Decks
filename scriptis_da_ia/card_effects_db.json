@@ -62807,6 +62807,26 @@
     "sub_types": "Blackbeard Pirates Impel Down",
     "attribute": "Slash",
     "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "gain_life",
+            "source": "trash",
+            "dest": "life_top",
+            "count": 1,
+            "up_to": true,
+            "filter_type": "blackbeard pirates",
+            "cost_lte": 6,
+            "face": "up"
+          }
+        ],
+        "costs": [
+          {
+            "type": "trash_from_hand",
+            "count": 1
+          }
+        ]
+      },
       "trigger": {
         "steps": [
           {

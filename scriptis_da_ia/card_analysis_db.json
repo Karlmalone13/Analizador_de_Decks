@@ -94442,6 +94442,11 @@
   "attribute": "Slash",
   "effects": [
    {
+    "action": "gain_life",
+    "trigger": "on_play",
+    "cost_lte": 6
+   },
+   {
     "action": "draw",
     "trigger": "trigger"
    }
@@ -94464,7 +94469,7 @@
   "bounces": false,
   "gives_don": false,
   "power_buff": false,
-  "heals": false,
+  "heals": true,
   "gains_life": true,
   "attacks_life": false,
   "trashes_own_life": true,

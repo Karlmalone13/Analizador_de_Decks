@@ -39180,6 +39180,26 @@
   }
  },
  "OP16-108": {
+  "on_play": {
+   "costs": [
+    {
+     "count": 1,
+     "type": "trash_from_hand"
+    }
+   ],
+   "steps": [
+    {
+     "action": "gain_life",
+     "cost_lte": 6,
+     "count": 1,
+     "dest": "life_top",
+     "face": "up",
+     "filter_type": "blackbeard pirates",
+     "source": "trash",
+     "up_to": true
+    }
+   ]
+  },
   "trigger": {
    "steps": [
     {

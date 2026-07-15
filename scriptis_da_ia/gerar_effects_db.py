@@ -2862,7 +2862,14 @@ def parse_life(text):
         steps.append(step_ht)
 
     m = re.search(r'(add|put)[^.:]*?to (?:the (?:top|bottom|top or bottom) of )?(?:your|the owner.?s) life(?: cards?)?', t)
-    if m and 'trash' not in m.group(0):
+    # "from your trash to ... life" (fonte PURA trash, ex: OP16-108
+    # Shiryu, achado 15/07) e um caso valido de `source_from` ('from your
+    # trash' -> 'trash', ja suportado) que a exclusao generica de 'trash'
+    # bloqueava sem necessidade -- so exclui de fato quando e a variante
+    # "hand or trash"/"trash or hand" (ja tratada por m_hand_trash_life
+    # ACIMA, iria duplicar o step se caisse aqui tambem).
+    trash_ja_tratado = m and re.search(r'(?:hand or trash|trash or hand)', m.group(0))
+    if m and not trash_ja_tratado:
         seg = m.group(0)
         step = {
             'action': 'gain_life',
@@ -2879,6 +2886,19 @@ def parse_life(text):
             power_m = re.search(r'with (\d+) power', seg)
             if power_m:
                 step['power_eq'] = int(power_m.group(1))
+        # Filtros de tipo/custo quando source == trash (ex: OP16-108
+        # Shiryu, achado 15/07: "{Blackbeard Pirates} type card with a
+        # cost of 6 or less from your trash"). Mesmos filtros ja usados
+        # por add_from_trash, so que o destino aqui e a vida, nao a mao.
+        if step['source'] == 'trash':
+            type_m_gl = (re.search(r'"([^"]+)" type', seg)
+                         or re.search(r'\{([^}]+)\}\s*type', seg)
+                         or re.search(r'\[([^\]]+)\]\s*type', seg))
+            if type_m_gl:
+                step['filter_type'] = type_m_gl.group(1)
+            cost_m_gl = re.search(r'cost of (\d+) or less', seg)
+            if cost_m_gl:
+                step['cost_lte'] = int(cost_m_gl.group(1))
         face_window = t[m.start():m.end() + 25]
         if 'face-up' in face_window or 'face up' in face_window:
             step['face'] = 'up'

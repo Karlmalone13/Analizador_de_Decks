@@ -4779,8 +4779,19 @@ class EffectExecutor:
                     if not me.hand: break
                     c = me.hand.pop(0)          # escolha refinável depois
                 elif source == 'trash':
-                    if not me.trash: break
-                    c = me.trash.pop(0)
+                    from optcg_engine.rules_facade import (
+                        choose_highest_board_value,
+                        eligible_cards,
+                    )
+                    candidatos_trash = eligible_cards(
+                        me.trash,
+                        cost_lte=step.get('cost_lte'),
+                        filter_text=step.get('filter_type', ''),
+                    )
+                    if not candidatos_trash:
+                        break
+                    c = choose_highest_board_value(candidatos_trash)
+                    remove_by_identity(me.trash, c)
                 elif source == 'own_field':
                     # Character do PRÓPRIO campo virando life card (ex:
                     # Kawamatsu OP06-103, "with 0 power" -> power_eq=0).

@@ -1155,6 +1155,45 @@ def test_zehahahahaha_segunda_clausula_dano_direto() -> None:
           topo_vida in opp.hand and len(opp.life) == 2)
 
 
+def test_shiryu_add_from_trash_to_life_com_filtro() -> None:
+    # Achado 15/07 -- OP16-108 Shiryu: "[On Play] You may trash 1 card
+    # from your hand: Add up to 1 {Blackbeard Pirates} type card with a
+    # cost of 6 or less from your trash to the top of your Life cards
+    # face-up." O bloco on_play inteiro estava ausente (so o [Trigger]
+    # sobrevivia) por causa de uma exclusao genérica demais em
+    # `parse_life`: qualquer match de "add ... to life" contendo a
+    # palavra 'trash' era descartado, mesmo quando 'trash' e a FONTE
+    # legitima (source_from ja suportava 'from your trash' -> 'trash',
+    # so nunca chegava a ser usado por essa carta).
+    entry = get_card_effects("OP16-108").get("on_play", {})
+    check("OP16-108 parseia custo opcional trash_from_hand=1",
+          any(c.get("type") == "trash_from_hand" and c.get("count") == 1
+              for c in entry.get("costs", [])))
+    steps = entry.get("steps", [])
+    check("OP16-108 parseia gain_life com source=trash, filtro de tipo e custo",
+          steps and steps[0].get("action") == "gain_life" and steps[0].get("source") == "trash"
+          and steps[0].get("filter_type") == "blackbeard pirates" and steps[0].get("cost_lte") == 6
+          and steps[0].get("face") == "up")
+
+    shiryu = real_card("OP16-108")
+    alvo_certo = mk("XSH1", "Alvo BB Custo 5", cost=5, sub_types="Blackbeard Pirates")
+    alvo_caro = mk("XSH2", "Alvo BB Custo 8", cost=8, sub_types="Blackbeard Pirates")
+    alvo_tipo_errado = mk("XSH3", "Alvo Tipo Errado", cost=2, sub_types="Straw Hat Crew")
+    me = GameState(leader=mk("XSHLD", "Lider", card_type="LEADER"), turn=4, don_available=3)
+    me.field_chars = [shiryu]
+    me.trash = [alvo_caro, alvo_tipo_errado, alvo_certo]
+    opp = GameState(leader=mk("XSHOPP", "Lider Opp", card_type="LEADER"), turn=4)
+    # Testa o step gain_life diretamente (bypassa o julgamento de "vale a
+    # pena pagar o custo opcional?" de _worth_paying_optional_costs, que e
+    # uma decisao estrategica separada ja coberta em outros testes -- aqui
+    # o alvo e so provar que o mecanismo fonte=trash+filtros funciona).
+    EffectExecutor(me, opp)._execute_step(steps[0], shiryu)
+    check("Alvo dentro do filtro (tipo+custo) foi pra vida face-up",
+          alvo_certo in me.life and alvo_certo.life_face_up)
+    check("Alvo caro (custo>6) e alvo de tipo errado continuam no trash",
+          alvo_caro in me.trash and alvo_tipo_errado in me.trash)
+
+
 def main() -> int:
     test_turn_order_imu_prefers_second()
     test_empty_throne_beats_direct_five_elders_play()
@@ -1199,6 +1238,7 @@ def main() -> int:
     test_rebecca_add_from_trash_range_exclude_e_ordem()
     test_birdcage_trava_refresh_simetrica_cost_lte()
     test_zehahahahaha_segunda_clausula_dano_direto()
+    test_shiryu_add_from_trash_to_life_com_filtro()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0
