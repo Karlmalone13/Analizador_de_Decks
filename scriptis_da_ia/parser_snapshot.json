@@ -476,9 +476,6 @@
  },
  "EB01-031": {
   "on_play": {
-   "conditions": {
-    "leader_type": "water seven"
-   },
    "costs": [
     {
      "count": 1,
@@ -489,6 +486,9 @@
    "steps": [
     {
      "action": "add_from_trash",
+     "conditions": {
+      "leader_type": "water seven"
+     },
      "cost_lte": 4,
      "count": 2
     }
@@ -498,9 +498,6 @@
  "EB01-032": {},
  "EB01-033": {
   "on_play": {
-   "conditions": {
-    "leader_type": "water seven"
-   },
    "costs": [
     {
      "count": 1,
@@ -511,6 +508,9 @@
    "steps": [
     {
      "action": "play_card",
+     "conditions": {
+      "leader_type": "water seven"
+     },
      "cost_eq": 5,
      "count": 1,
      "exclude": "blueno",
@@ -522,9 +522,6 @@
  },
  "EB01-034": {
   "on_opp_attack": {
-   "conditions": {
-    "leader_type_includes": "baroque works"
-   },
    "costs": [
     {
      "count": 1,
@@ -536,6 +533,9 @@
    "steps": [
     {
      "action": "add_don",
+     "conditions": {
+      "leader_type_includes": "baroque works"
+     },
      "count": 1
     }
    ]
@@ -622,9 +622,6 @@
  },
  "EB01-038": {
   "counter": {
-   "conditions": {
-    "leader_type_includes": "baroque works"
-   },
    "costs": [
     {
      "count": 1,
@@ -634,7 +631,10 @@
    ],
    "steps": [
     {
-     "action": "redirect_attack_target"
+     "action": "redirect_attack_target",
+     "conditions": {
+      "leader_type_includes": "baroque works"
+     }
     }
    ]
   },
@@ -1220,9 +1220,6 @@
  },
  "EB02-010": {
   "activate_main": {
-   "conditions": {
-    "only_field_type": "straw hat crew"
-   },
    "costs": [
     {
      "count": 2,
@@ -1235,11 +1232,17 @@
     {
      "action": "buff_power",
      "amount": 1000,
+     "conditions": {
+      "only_field_type": "straw hat crew"
+     },
      "duration": "until_opp_turn_end",
      "target": "self"
     },
     {
      "action": "set_don_active",
+     "conditions": {
+      "only_field_type": "straw hat crew"
+     },
      "count": 2,
      "up_to": true
     }
@@ -1504,9 +1507,6 @@
  },
  "EB02-025": {
   "activate_main": {
-   "conditions": {
-    "leader_is": "donquixote rosinante"
-   },
    "costs": [
     {
      "count": 1,
@@ -1516,15 +1516,24 @@
    "steps": [
     {
      "action": "look_top_deck",
+     "conditions": {
+      "leader_is": "donquixote rosinante"
+     },
      "count": 5
     },
     {
      "action": "play_from_deck",
+     "conditions": {
+      "leader_is": "donquixote rosinante"
+     },
      "cost_lte": 2,
      "count": 1
     },
     {
-     "action": "deck_bottom_rest"
+     "action": "deck_bottom_rest",
+     "conditions": {
+      "leader_is": "donquixote rosinante"
+     }
     }
    ]
   }
@@ -1755,9 +1764,6 @@
  },
  "EB02-039": {
   "main": {
-   "conditions": {
-    "don_on_field_lte_opp": true
-   },
    "costs": [
     {
      "count": 1,
@@ -1768,11 +1774,17 @@
     {
      "action": "buff_power",
      "amount": 7000,
+     "conditions": {
+      "don_on_field_lte_opp": true
+     },
      "duration": "this_turn",
      "target": "self"
     },
     {
      "action": "play_from_trash",
+     "conditions": {
+      "don_on_field_lte_opp": true
+     },
      "cost_lte": 99,
      "count": 1
     }
@@ -1806,9 +1818,6 @@
  },
  "EB02-041": {
   "activate_main": {
-   "conditions": {
-    "don_on_field_lte_opp": true
-   },
    "costs": [
     {
      "type": "rest_self"
@@ -1818,6 +1827,9 @@
     {
      "action": "buff_cost",
      "amount": 2,
+     "conditions": {
+      "don_on_field_lte_opp": true
+     },
      "count": 1,
      "duration": "until_opp_turn_end",
      "filter_type": "straw hat crew",
@@ -1954,9 +1966,6 @@
  },
  "EB02-049": {
   "activate_main": {
-   "conditions": {
-    "leader_is": "monkey.d.garp"
-   },
    "costs": [
     {
      "type": "rest_self"
@@ -1965,6 +1974,9 @@
    "steps": [
     {
      "action": "ko",
+     "conditions": {
+      "leader_is": "monkey.d.garp"
+     },
      "cost_lte": 1,
      "count": 1,
      "target": "opp_character"
@@ -2040,9 +2052,6 @@
    ]
   },
   "when_attacking": {
-   "conditions": {
-    "life_lte": 1
-   },
    "costs": [
     {
      "count": 1,
@@ -2053,11 +2062,17 @@
     {
      "action": "buff_power",
      "amount": 1000,
+     "conditions": {
+      "life_lte": 1
+     },
      "duration": "this_turn",
      "target": "self"
     },
     {
      "action": "gain_life",
+     "conditions": {
+      "life_lte": 1
+     },
      "count": 1,
      "dest": "life_top",
      "source": "deck_top",
@@ -2818,9 +2833,6 @@
  },
  "EB03-028": {
   "activate_main": {
-   "conditions": {
-    "hand_lte": 4
-   },
    "costs": [
     {
      "type": "trash_self"
@@ -2829,6 +2841,9 @@
    "steps": [
     {
      "action": "draw",
+     "conditions": {
+      "hand_lte": 4
+     },
      "count": 2
     }
    ]
@@ -2856,9 +2871,6 @@
    ]
   },
   "main": {
-   "conditions": {
-    "leader_is": "boa hancock"
-   },
    "costs": [
     {
      "count": 4,
@@ -2868,6 +2880,9 @@
    "steps": [
     {
      "action": "play_card",
+     "conditions": {
+      "leader_is": "boa hancock"
+     },
      "cost_lte": 6,
      "count": 1,
      "filter_name": "boa hancock"
@@ -2878,9 +2893,6 @@
  "EB03-030": {},
  "EB03-031": {
   "on_play": {
-   "conditions": {
-    "leader_is": "sanji"
-   },
    "costs": [
     {
      "count": 1,
@@ -2891,15 +2903,15 @@
    "steps": [
     {
      "action": "activate_trash_event_main",
+     "conditions": {
+      "leader_is": "sanji"
+     },
      "cost_lte": 7,
      "count": 1
     }
    ]
   },
   "your_turn": {
-   "conditions": {
-    "leader_is": "sanji"
-   },
    "costs": [
     {
      "count": 1,
@@ -2910,6 +2922,9 @@
    "steps": [
     {
      "action": "activate_trash_event_main",
+     "conditions": {
+      "leader_is": "sanji"
+     },
      "cost_lte": 7,
      "count": 1
     }
@@ -3053,9 +3068,6 @@
    ]
   },
   "main": {
-   "conditions": {
-    "don_on_field_lte_opp": true
-   },
    "costs": [
     {
      "count": 1,
@@ -3065,6 +3077,9 @@
    "steps": [
     {
      "action": "add_don",
+     "conditions": {
+      "don_on_field_lte_opp": true
+     },
      "count": 2,
      "rested": true
     }
@@ -3309,9 +3324,6 @@
    ]
   },
   "main": {
-   "conditions": {
-    "leader_is": "perona"
-   },
    "costs": [
     {
      "count": 7,
@@ -3321,6 +3333,9 @@
    "steps": [
     {
      "action": "play_card",
+     "conditions": {
+      "leader_is": "perona"
+     },
      "cost_lte": 6,
      "count": 1,
      "filter_type": "thriller bark pirates",
@@ -3361,9 +3376,6 @@
  },
  "EB03-052": {
   "activate_main": {
-   "conditions": {
-    "leader_is": "shirahoshi"
-   },
    "costs": [
     {
      "type": "trash_self"
@@ -3373,11 +3385,17 @@
     {
      "action": "buff_power",
      "amount": 1000,
+     "conditions": {
+      "leader_is": "shirahoshi"
+     },
      "duration": "this_turn",
      "target": "self"
     },
     {
      "action": "gain_life",
+     "conditions": {
+      "leader_is": "shirahoshi"
+     },
      "count": 1,
      "dest": "life_top",
      "source": "deck_top",
@@ -3473,9 +3491,6 @@
    ]
   },
   "on_play": {
-   "conditions": {
-    "leader_type": "straw hat crew"
-   },
    "costs": [
     {
      "count": 1,
@@ -3485,6 +3500,9 @@
    "steps": [
     {
      "action": "gain_life",
+     "conditions": {
+      "leader_type": "straw hat crew"
+     },
      "count": 2,
      "dest": "life_top",
      "source": "deck_top",
@@ -3492,6 +3510,9 @@
     },
     {
      "action": "trash_own_life",
+     "conditions": {
+      "leader_type": "straw hat crew"
+     },
      "count": 1,
      "up_to": false
     }
@@ -4158,9 +4179,6 @@
  },
  "EB04-022": {
   "on_play": {
-   "conditions": {
-    "opp_hand_gte": 6
-   },
    "costs": [
     {
      "count": 2,
@@ -4170,6 +4188,9 @@
    "steps": [
     {
      "action": "opp_place_hand_bottom_deck",
+     "conditions": {
+      "opp_hand_gte": 6
+     },
      "count": 2
     }
    ]
@@ -4296,9 +4317,6 @@
  },
  "EB04-028": {
   "main": {
-   "conditions": {
-    "leader_type": "navy"
-   },
    "costs": [
     {
      "count": 1,
@@ -4308,6 +4326,9 @@
    "steps": [
     {
      "action": "lock_opp_character_attack",
+     "conditions": {
+      "leader_type": "navy"
+     },
      "count": 2,
      "duration": "until_opp_end_phase",
      "power_lte": 10000
@@ -4357,9 +4378,6 @@
  },
  "EB04-030": {
   "on_play": {
-   "conditions": {
-    "leader_type": "animal kingdom pirates"
-   },
    "costs": [
     {
      "count": 2,
@@ -4370,6 +4388,9 @@
    "steps": [
     {
      "action": "rest_opp_character",
+     "conditions": {
+      "leader_type": "animal kingdom pirates"
+     },
      "cost_lte": 7,
      "count": 1
     }
@@ -4419,9 +4440,6 @@
  },
  "EB04-032": {
   "activate_main": {
-   "conditions": {
-    "leader_type": "animal kingdom pirates"
-   },
    "costs": [
     {
      "count": 2,
@@ -4432,6 +4450,9 @@
    "steps": [
     {
      "action": "add_don",
+     "conditions": {
+      "leader_type": "animal kingdom pirates"
+     },
      "count": 1,
      "rested": true
     }
@@ -4455,10 +4476,6 @@
  },
  "EB04-033": {
   "on_play": {
-   "conditions": {
-    "chars_gte": 3,
-    "chars_gte_type_filter": "foxy pirates"
-   },
    "costs": [
     {
      "count": 1,
@@ -4469,6 +4486,10 @@
    "steps": [
     {
      "action": "ko",
+     "conditions": {
+      "chars_gte": 3,
+      "chars_gte_type_filter": "foxy pirates"
+     },
      "count": 1,
      "power_lte": 6000,
      "target": "opp_character"
@@ -4478,9 +4499,6 @@
  },
  "EB04-034": {
   "on_opp_attack": {
-   "conditions": {
-    "events_in_trash_gte": 4
-   },
    "costs": [
     {
      "count": 1,
@@ -4492,6 +4510,9 @@
     {
      "action": "buff_power",
      "amount": 2000,
+     "conditions": {
+      "events_in_trash_gte": 4
+     },
      "duration": "battle_only",
      "target": "leader_or_character"
     }
@@ -4541,9 +4562,6 @@
    ]
   },
   "on_play": {
-   "conditions": {
-    "leader_type": "foxy pirates"
-   },
    "costs": [
     {
      "count": 1,
@@ -4555,11 +4573,17 @@
    "steps": [
     {
      "action": "rest_opp_character",
+     "conditions": {
+      "leader_type": "foxy pirates"
+     },
      "cost_lte": 9,
      "count": 1
     },
     {
      "action": "draw",
+     "conditions": {
+      "leader_type": "foxy pirates"
+     },
      "count": 2,
      "then_trash": 1
     }
@@ -5093,9 +5117,6 @@
  },
  "EB04-059": {
   "main": {
-   "conditions": {
-    "chars_fewer_than_opp_by_gte": 1
-   },
    "costs": [
     {
      "type": "turn_life_face_up"
@@ -5104,12 +5125,18 @@
    "steps": [
     {
      "action": "ko",
+     "conditions": {
+      "chars_fewer_than_opp_by_gte": 1
+     },
      "cost_lte": 6,
      "count": 1,
      "target": "opp_character"
     },
     {
      "action": "ko",
+     "conditions": {
+      "chars_fewer_than_opp_by_gte": 1
+     },
      "cost_lte": 5,
      "count": 1,
      "target": "opp_character"
@@ -5795,9 +5822,6 @@
  },
  "OP01-042": {
   "on_play": {
-   "conditions": {
-    "leader_is": "kouzuki oden"
-   },
    "costs": [
     {
      "count": 3,
@@ -5807,6 +5831,9 @@
    "steps": [
     {
      "action": "set_active",
+     "conditions": {
+      "leader_is": "kouzuki oden"
+     },
      "cost_lte": 3,
      "count": 1,
      "filter_type": "land of wano",
@@ -6520,9 +6547,6 @@
  },
  "OP01-094": {
   "on_play": {
-   "conditions": {
-    "leader_type": "animal kingdom pirates"
-   },
    "costs": [
     {
      "count": 6,
@@ -6533,6 +6557,9 @@
    "steps": [
     {
      "action": "ko",
+     "conditions": {
+      "leader_type": "animal kingdom pirates"
+     },
      "count": 99,
      "exclude_self": true,
      "target": "all_character"
@@ -7168,9 +7195,6 @@
  },
  "OP02-018": {
   "on_ko": {
-   "conditions": {
-    "life_lte": 2
-   },
    "costs": [
     {
      "count": 1,
@@ -7180,6 +7204,9 @@
    "steps": [
     {
      "action": "play_from_trash",
+     "conditions": {
+      "life_lte": 2
+     },
      "count": 1,
      "filter_self": true
     }
@@ -8000,9 +8027,6 @@
  },
  "OP02-070": {
   "activate_main": {
-   "conditions": {
-    "leader_is": "emporio.ivankov"
-   },
    "costs": [
     {
      "type": "rest_self"
@@ -8011,6 +8035,9 @@
    "steps": [
     {
      "action": "draw",
+     "conditions": {
+      "leader_is": "emporio.ivankov"
+     },
      "count": 1,
      "then_trash": 1
     }
@@ -9183,9 +9210,6 @@
  },
  "OP03-020": {
   "activate_main": {
-   "conditions": {
-    "leader_is": "portgas.d.ace"
-   },
    "costs": [
     {
      "type": "rest_self"
@@ -9198,15 +9222,24 @@
    "steps": [
     {
      "action": "look_top_deck",
+     "conditions": {
+      "leader_is": "portgas.d.ace"
+     },
      "count": 5
     },
     {
      "action": "add_to_hand",
+     "conditions": {
+      "leader_is": "portgas.d.ace"
+     },
      "count": 1,
      "revealed_to_opponent": true
     },
     {
-     "action": "deck_bottom_rest"
+     "action": "deck_bottom_rest",
+     "conditions": {
+      "leader_is": "portgas.d.ace"
+     }
     }
    ]
   }
@@ -9892,9 +9925,6 @@
  },
  "OP03-063": {
   "on_play": {
-   "conditions": {
-    "leader_type": "water seven"
-   },
    "costs": [
     {
      "count": 1,
@@ -9905,6 +9935,9 @@
    "steps": [
     {
      "action": "draw",
+     "conditions": {
+      "leader_type": "water seven"
+     },
      "count": 1
     }
    ]
@@ -10083,9 +10116,6 @@
  },
  "OP03-073": {
   "main": {
-   "conditions": {
-    "leader_type": "water seven"
-   },
    "costs": [
     {
      "count": 1,
@@ -10096,6 +10126,9 @@
    "steps": [
     {
      "action": "ko",
+     "conditions": {
+      "leader_type": "water seven"
+     },
      "cost_lte": 2,
      "count": 1,
      "target": "opp_character"
@@ -10137,9 +10170,6 @@
  },
  "OP03-075": {
   "activate_main": {
-   "conditions": {
-    "leader_is": "iceburg"
-   },
    "costs": [
     {
      "type": "rest_self"
@@ -10148,6 +10178,9 @@
    "steps": [
     {
      "action": "add_don",
+     "conditions": {
+      "leader_is": "iceburg"
+     },
      "count": 1,
      "rested": true
     }
@@ -10173,9 +10206,6 @@
  },
  "OP03-077": {
   "when_attacking": {
-   "conditions": {
-    "life_lte": 1
-   },
    "costs": [
     {
      "count": 2,
@@ -10190,6 +10220,9 @@
    "steps": [
     {
      "action": "gain_life",
+     "conditions": {
+      "life_lte": 1
+     },
      "count": 1,
      "dest": "life_top",
      "source": "deck_top",
@@ -10407,9 +10440,6 @@
  },
  "OP03-093": {
   "on_play": {
-   "conditions": {
-    "leader_type_includes": "cp"
-   },
    "costs": [
     {
      "count": 1,
@@ -10419,6 +10449,9 @@
    "steps": [
     {
      "action": "ko",
+     "conditions": {
+      "leader_type_includes": "cp"
+     },
      "cost_lte": 1,
      "count": 1,
      "target": "opp_character"
@@ -10529,9 +10562,6 @@
  },
  "OP03-098": {
   "activate_main": {
-   "conditions": {
-    "leader_type_includes": "cp"
-   },
    "costs": [
     {
      "type": "rest_self"
@@ -10541,6 +10571,9 @@
     {
      "action": "debuff_cost",
      "amount": 2,
+     "conditions": {
+      "leader_type_includes": "cp"
+     },
      "count": 1,
      "target": "opp_character"
     }
@@ -11413,9 +11446,6 @@
  },
  "OP04-026": {
   "when_attacking": {
-   "conditions": {
-    "leader_type": "donquixote pirates"
-   },
    "costs": [
     {
      "count": 1,
@@ -11425,11 +11455,17 @@
    "steps": [
     {
      "action": "rest_opp_character",
+     "conditions": {
+      "leader_type": "donquixote pirates"
+     },
      "cost_lte": 4,
      "count": 1
     },
     {
      "action": "set_don_active",
+     "conditions": {
+      "leader_type": "donquixote pirates"
+     },
      "count": 1,
      "timing": "end_of_turn",
      "up_to": true
@@ -11688,9 +11724,6 @@
  },
  "OP04-039": {
   "activate_main": {
-   "conditions": {
-    "hand_lte": 6
-   },
    "costs": [
     {
      "count": 1,
@@ -11701,16 +11734,25 @@
    "steps": [
     {
      "action": "look_top_deck",
+     "conditions": {
+      "hand_lte": 6
+     },
      "count": 2
     },
     {
      "action": "add_to_hand",
+     "conditions": {
+      "hand_lte": 6
+     },
      "count": 1,
      "filter_type": "dressrosa",
      "revealed_to_opponent": true
     },
     {
-     "action": "trash_rest"
+     "action": "trash_rest",
+     "conditions": {
+      "hand_lte": 6
+     }
     }
    ]
   }
@@ -12035,9 +12077,6 @@
  },
  "OP04-059": {
   "on_opp_attack": {
-   "conditions": {
-    "leader_type": "water seven"
-   },
    "costs": [
     {
      "type": "rest_self"
@@ -12051,6 +12090,9 @@
    "steps": [
     {
      "action": "gain_blocker",
+     "conditions": {
+      "leader_type": "water seven"
+     },
      "duration": "this_turn"
     }
    ]
@@ -12075,9 +12117,6 @@
    ]
   },
   "on_play": {
-   "conditions": {
-    "leader_type_includes": "baroque works"
-   },
    "costs": [
     {
      "count": 2,
@@ -12089,6 +12128,9 @@
    "steps": [
     {
      "action": "gain_life",
+     "conditions": {
+      "leader_type_includes": "baroque works"
+     },
      "count": 1,
      "dest": "life_top",
      "source": "deck_top",
@@ -12099,9 +12141,6 @@
  },
  "OP04-061": {
   "activate_main": {
-   "conditions": {
-    "leader_type": "water seven"
-   },
    "costs": [
     {
      "type": "trash_self"
@@ -12110,6 +12149,9 @@
    "steps": [
     {
      "action": "add_don",
+     "conditions": {
+      "leader_type": "water seven"
+     },
      "count": 1,
      "rested": true
     }
@@ -12119,9 +12161,6 @@
  "OP04-062": {},
  "OP04-063": {
   "on_opp_attack": {
-   "conditions": {
-    "leader_type": "water seven"
-   },
    "costs": [
     {
      "count": 1,
@@ -12134,6 +12173,9 @@
     {
      "action": "buff_power",
      "amount": 1000,
+     "conditions": {
+      "leader_type": "water seven"
+     },
      "duration": "battle_only",
      "target": "leader_or_character"
     }
@@ -12864,9 +12906,6 @@
  },
  "OP04-098": {
   "on_play": {
-   "conditions": {
-    "life_lte": 1
-   },
    "costs": [
     {
      "count": 2,
@@ -12876,6 +12915,9 @@
    "steps": [
     {
      "action": "gain_life",
+     "conditions": {
+      "life_lte": 1
+     },
      "count": 1,
      "dest": "life_top",
      "source": "deck_top",
@@ -13520,9 +13562,6 @@
    ]
   },
   "trigger": {
-   "conditions": {
-    "leader_multicolor": true
-   },
    "costs": [
     {
      "count": 1,
@@ -13532,6 +13571,9 @@
    "steps": [
     {
      "action": "play_card",
+     "conditions": {
+      "leader_multicolor": true
+     },
      "count": 1,
      "source": "self"
     }
@@ -13550,9 +13592,6 @@
  },
  "OP05-017": {
   "trigger": {
-   "conditions": {
-    "leader_multicolor": true
-   },
    "costs": [
     {
      "count": 1,
@@ -13562,6 +13601,9 @@
    "steps": [
     {
      "action": "play_card",
+     "conditions": {
+      "leader_multicolor": true
+     },
      "count": 1,
      "source": "self"
     }
@@ -14752,17 +14794,21 @@
  },
  "OP05-082": {
   "activate_main": {
-   "conditions": {
-    "opp_hand_gte": 6
-   },
    "costs": [
     {
      "type": "rest_self"
+    },
+    {
+     "count": 2,
+     "type": "place_from_trash_bottom_deck"
     }
    ],
    "steps": [
     {
      "action": "opp_trash_from_hand",
+     "conditions": {
+      "opp_hand_gte": 6
+     },
      "count": 1
     }
    ]
@@ -14842,6 +14888,10 @@
    "costs": [
     {
      "type": "rest_self"
+    },
+    {
+     "count": 2,
+     "type": "place_from_trash_bottom_deck"
     },
     {
      "count": 1,
@@ -16451,9 +16501,6 @@
  },
  "OP06-060": {
   "activate_main": {
-   "conditions": {
-    "leader_type": "germa 66"
-   },
    "costs": [
     {
      "type": "trash_self"
@@ -16467,6 +16514,9 @@
    "steps": [
     {
      "action": "play_card",
+     "conditions": {
+      "leader_type": "germa 66"
+     },
      "cost_eq": 7,
      "count": 1,
      "filter_name": "vinsmoke ichiji",
@@ -16536,9 +16586,6 @@
  },
  "OP06-063": {
   "on_play": {
-   "conditions": {
-    "don_on_field_lte_opp": true
-   },
    "costs": [
     {
      "count": 1,
@@ -16548,6 +16595,9 @@
    "steps": [
     {
      "action": "add_from_trash",
+     "conditions": {
+      "don_on_field_lte_opp": true
+     },
      "count": 1,
      "filter_name": "the vinsmoke family"
     }
@@ -16556,9 +16606,6 @@
  },
  "OP06-064": {
   "activate_main": {
-   "conditions": {
-    "leader_type": "germa 66"
-   },
    "costs": [
     {
      "type": "trash_self"
@@ -16572,6 +16619,9 @@
    "steps": [
     {
      "action": "play_card",
+     "conditions": {
+      "leader_type": "germa 66"
+     },
      "cost_eq": 5,
      "count": 1,
      "filter_name": "vinsmoke niji",
@@ -16607,9 +16657,6 @@
  },
  "OP06-066": {
   "activate_main": {
-   "conditions": {
-    "leader_type": "germa 66"
-   },
    "costs": [
     {
      "type": "trash_self"
@@ -16623,6 +16670,9 @@
    "steps": [
     {
      "action": "play_card",
+     "conditions": {
+      "leader_type": "germa 66"
+     },
      "cost_eq": 4,
      "count": 1,
      "filter_name": "vinsmoke yonji",
@@ -16651,9 +16701,6 @@
  },
  "OP06-068": {
   "activate_main": {
-   "conditions": {
-    "leader_type": "germa 66"
-   },
    "costs": [
     {
      "type": "trash_self"
@@ -16667,6 +16714,9 @@
    "steps": [
     {
      "action": "play_card",
+     "conditions": {
+      "leader_type": "germa 66"
+     },
      "cost_eq": 4,
      "count": 1,
      "filter_name": "vinsmoke reiju",
@@ -16691,9 +16741,6 @@
  "OP06-070": {},
  "OP06-071": {
   "on_play": {
-   "conditions": {
-    "leader_type": "film"
-   },
    "costs": [
     {
      "count": 1,
@@ -16704,6 +16751,9 @@
    "steps": [
     {
      "action": "add_from_trash",
+     "conditions": {
+      "leader_type": "film"
+     },
      "cost_lte": 4,
      "count": 2,
      "filter_name": "film"
@@ -17204,9 +17254,6 @@
  },
  "OP06-098": {
   "activate_main": {
-   "conditions": {
-    "leader_type": "thriller bark pirates"
-   },
    "costs": [
     {
      "type": "rest_self"
@@ -17219,6 +17266,9 @@
    "steps": [
     {
      "action": "play_from_trash",
+     "conditions": {
+      "leader_type": "thriller bark pirates"
+     },
      "cost_lte": 2,
      "count": 1,
      "filter_type": "thriller bark pirates",
@@ -18681,9 +18731,6 @@
  },
  "OP07-058": {
   "activate_main": {
-   "conditions": {
-    "leader_type": "kuja pirates"
-   },
    "costs": [
     {
      "type": "rest_self"
@@ -18696,6 +18743,9 @@
    "steps": [
     {
      "action": "bounce",
+     "conditions": {
+      "leader_type": "kuja pirates"
+     },
      "count": 1,
      "filter_type": "amazon lily",
      "target": "own_character"
@@ -18705,10 +18755,6 @@
  },
  "OP07-059": {
   "when_attacking": {
-   "conditions": {
-    "chars_gte": 3,
-    "chars_gte_type_filter": "foxy pirates"
-   },
    "costs": [
     {
      "count": 3,
@@ -18718,7 +18764,11 @@
    ],
    "steps": [
     {
-     "action": "lock_opp_don"
+     "action": "lock_opp_don",
+     "conditions": {
+      "chars_gte": 3,
+      "chars_gte_type_filter": "foxy pirates"
+     }
     }
    ]
   }
@@ -18740,9 +18790,6 @@
  },
  "OP07-061": {
   "on_play": {
-   "conditions": {
-    "leader_type": "the vinsmoke family"
-   },
    "costs": [
     {
      "count": 1,
@@ -18753,6 +18800,9 @@
    "steps": [
     {
      "action": "draw",
+     "conditions": {
+      "leader_type": "the vinsmoke family"
+     },
      "count": 1
     }
    ]
@@ -18775,9 +18825,6 @@
  },
  "OP07-063": {
   "on_play": {
-   "conditions": {
-    "leader_type": "foxy pirates"
-   },
    "costs": [
     {
      "count": 1,
@@ -18788,6 +18835,9 @@
    "steps": [
     {
      "action": "lock_opp_character_attack",
+     "conditions": {
+      "leader_type": "foxy pirates"
+     },
      "cost_lte": 6,
      "count": 1,
      "duration": "until_opp_turn_end"
@@ -18944,9 +18994,6 @@
  },
  "OP07-073": {
   "activate_main": {
-   "conditions": {
-    "opp_chars_gte": 3
-   },
    "costs": [
     {
      "count": 3,
@@ -18958,6 +19005,9 @@
    "steps": [
     {
      "action": "set_active",
+     "conditions": {
+      "opp_chars_gte": 3
+     },
      "target": "self"
     }
    ]
@@ -18965,9 +19015,6 @@
  },
  "OP07-074": {
   "activate_main": {
-   "conditions": {
-    "leader_type": "foxy pirates"
-   },
    "costs": [
     {
      "type": "trash_self"
@@ -18976,6 +19023,9 @@
    "steps": [
     {
      "action": "add_don",
+     "conditions": {
+      "leader_type": "foxy pirates"
+     },
      "count": 1,
      "rested": true
     }
@@ -19597,9 +19647,6 @@
  "OP07-108": {},
  "OP07-109": {
   "activate_main": {
-   "conditions": {
-    "life_lte": 2
-   },
    "costs": [
     {
      "type": "trash_self"
@@ -19608,12 +19655,18 @@
    "steps": [
     {
      "action": "ko",
+     "conditions": {
+      "life_lte": 2
+     },
      "cost_lte": 4,
      "count": 1,
      "target": "opp_character"
     },
     {
      "action": "draw",
+     "conditions": {
+      "life_lte": 2
+     },
      "count": 1
     }
    ]
@@ -20147,9 +20200,6 @@
  },
  "OP08-016": {
   "activate_main": {
-   "conditions": {
-    "leader_is": "tony tony.chopper"
-   },
    "costs": [
     {
      "type": "rest_self"
@@ -20159,6 +20209,9 @@
     {
      "action": "buff_power",
      "amount": 2000,
+     "conditions": {
+      "leader_is": "tony tony.chopper"
+     },
      "duration": "this_turn",
      "target": "all_allies_and_leader"
     }
@@ -20422,9 +20475,6 @@
  },
  "OP08-032": {
   "activate_main": {
-   "conditions": {
-    "leader_type": "minks"
-   },
    "costs": [
     {
      "type": "rest_self"
@@ -20433,6 +20483,9 @@
    "steps": [
     {
      "action": "set_don_active",
+     "conditions": {
+      "leader_type": "minks"
+     },
      "count": 1,
      "up_to": true
     }
@@ -20528,9 +20581,6 @@
  },
  "OP08-039": {
   "activate_main": {
-   "conditions": {
-    "leader_type": "minks"
-   },
    "costs": [
     {
      "type": "rest_self"
@@ -20539,6 +20589,9 @@
    "steps": [
     {
      "action": "set_don_active",
+     "conditions": {
+      "leader_type": "minks"
+     },
      "count": 1,
      "up_to": true
     }
@@ -20557,9 +20610,6 @@
  },
  "OP08-040": {
   "on_play": {
-   "conditions": {
-    "leader_type_includes": "whitebeard piratess"
-   },
    "costs": [
     {
      "count": 2,
@@ -20570,6 +20620,9 @@
    "steps": [
     {
      "action": "bounce",
+     "conditions": {
+      "leader_type_includes": "whitebeard piratess"
+     },
      "cost_lte": 4,
      "count": 1,
      "target": "opp_character"
@@ -20900,9 +20953,6 @@
  },
  "OP08-059": {
   "activate_main": {
-   "conditions": {
-    "leader_type": "animal kingdom pirates"
-   },
    "costs": [
     {
      "type": "trash_self"
@@ -20911,6 +20961,9 @@
    "steps": [
     {
      "action": "play_card",
+     "conditions": {
+      "leader_type": "animal kingdom pirates"
+     },
      "cost_lte": 7,
      "count": 1,
      "filter_name": "king"
@@ -20945,9 +20998,6 @@
  },
  "OP08-062": {
   "activate_main": {
-   "conditions": {
-    "leader_type": "big mom pirates"
-   },
    "costs": [
     {
      "type": "trash_self"
@@ -20956,6 +21006,9 @@
    "steps": [
     {
      "action": "play_card",
+     "conditions": {
+      "leader_type": "big mom pirates"
+     },
      "cost_lte": "don_count_opp",
      "count": 1,
      "filter_name": "charlotte katakuri"
@@ -21191,9 +21244,6 @@
  "OP08-078": {},
  "OP08-079": {
   "activate_main": {
-   "conditions": {
-    "just_played": true
-   },
    "costs": [
     {
      "count": 1,
@@ -21204,12 +21254,18 @@
    "steps": [
     {
      "action": "trash_character",
+     "conditions": {
+      "just_played": true
+     },
      "cost_lte": 7,
      "count": 1,
      "target": "opp_character"
     },
     {
      "action": "opp_trash_from_hand",
+     "conditions": {
+      "just_played": true
+     },
      "count": 1
     }
    ]
@@ -21608,9 +21664,6 @@
  },
  "OP08-101": {
   "activate_main": {
-   "conditions": {
-    "leader_type": "big mom pirates"
-   },
    "costs": [
     {
      "count": 1,
@@ -21621,6 +21674,9 @@
    "steps": [
     {
      "action": "gain_life",
+     "conditions": {
+      "leader_type": "big mom pirates"
+     },
      "count": 1,
      "dest": "life_top",
      "source": "deck_top",
@@ -21628,6 +21684,9 @@
     },
     {
      "action": "trash_own_life",
+     "conditions": {
+      "leader_type": "big mom pirates"
+     },
      "count": 1,
      "up_to": false
     }
@@ -21805,9 +21864,6 @@
    ]
   },
   "trigger": {
-   "conditions": {
-    "life_lte": 2
-   },
    "costs": [
     {
      "count": 1,
@@ -21817,6 +21873,9 @@
    "steps": [
     {
      "action": "play_card",
+     "conditions": {
+      "life_lte": 2
+     },
      "count": 1,
      "source": "self"
     }
@@ -21853,9 +21912,6 @@
  },
  "OP08-113": {
   "trigger": {
-   "conditions": {
-    "life_lte": 2
-   },
    "costs": [
     {
      "count": 1,
@@ -21865,12 +21921,18 @@
    "steps": [
     {
      "action": "ko",
+     "conditions": {
+      "life_lte": 2
+     },
      "cost_lte": 3,
      "count": 1,
      "target": "opp_character"
     },
     {
      "action": "play_card",
+     "conditions": {
+      "life_lte": 2
+     },
      "count": 1,
      "source": "self"
     }
@@ -21895,9 +21957,6 @@
    ]
   },
   "trigger": {
-   "conditions": {
-    "life_lte": 2
-   },
    "costs": [
     {
      "count": 1,
@@ -21907,6 +21966,9 @@
    "steps": [
     {
      "action": "play_card",
+     "conditions": {
+      "life_lte": 2
+     },
      "count": 1,
      "source": "self"
     }
@@ -22212,9 +22274,6 @@
  },
  "OP09-011": {
   "activate_main": {
-   "conditions": {
-    "leader_type": "red-haired pirates"
-   },
    "costs": [
     {
      "type": "rest_self"
@@ -22224,6 +22283,9 @@
     {
      "action": "debuff_power",
      "amount": 2000,
+     "conditions": {
+      "leader_type": "red-haired pirates"
+     },
      "duration": "this_turn",
      "target": "opp_character"
     }
@@ -22394,9 +22456,6 @@
  },
  "OP09-021": {
   "activate_main": {
-   "conditions": {
-    "leader_type": "red-haired pirates"
-   },
    "costs": [
     {
      "type": "rest_self"
@@ -22406,6 +22465,9 @@
     {
      "action": "debuff_power",
      "amount": 1000,
+     "conditions": {
+      "leader_type": "red-haired pirates"
+     },
      "duration": "this_turn",
      "target": "opp_character"
     }
@@ -23075,9 +23137,6 @@
  },
  "OP09-060": {
   "activate_main": {
-   "conditions": {
-    "leader_type": "cross guild"
-   },
    "costs": [
     {
      "type": "rest_self"
@@ -23086,6 +23145,9 @@
    "steps": [
     {
      "action": "draw",
+     "conditions": {
+      "leader_type": "cross guild"
+     },
      "count": 2
     }
    ]
@@ -23335,9 +23397,6 @@
  },
  "OP09-078": {
   "counter": {
-   "conditions": {
-    "leader_type": "straw hat crew"
-   },
    "costs": [
     {
      "count": 1,
@@ -23347,11 +23406,17 @@
    "steps": [
     {
      "action": "draw",
+     "conditions": {
+      "leader_type": "straw hat crew"
+     },
      "count": 2
     },
     {
      "action": "buff_power",
      "amount": 4000,
+     "conditions": {
+      "leader_type": "straw hat crew"
+     },
      "duration": "battle_only",
      "target": "leader_or_character"
     }
@@ -23426,9 +23491,6 @@
  "OP09-082": {},
  "OP09-083": {
   "activate_main": {
-   "conditions": {
-    "leader_type": "blackbeard pirates"
-   },
    "costs": [
     {
      "type": "rest_self"
@@ -23438,6 +23500,9 @@
     {
      "action": "debuff_cost",
      "amount": 3,
+     "conditions": {
+      "leader_type": "blackbeard pirates"
+     },
      "count": 1,
      "target": "opp_character"
     }
@@ -23544,9 +23609,6 @@
  },
  "OP09-089": {
   "activate_main": {
-   "conditions": {
-    "leader_type": "blackbeard pirates"
-   },
    "costs": [
     {
      "type": "trash_self"
@@ -23559,11 +23621,17 @@
    "steps": [
     {
      "action": "draw",
+     "conditions": {
+      "leader_type": "blackbeard pirates"
+     },
      "count": 1
     },
     {
      "action": "debuff_cost",
      "amount": 2,
+     "conditions": {
+      "leader_type": "blackbeard pirates"
+     },
      "count": 1,
      "target": "opp_character"
     }
@@ -23572,9 +23640,6 @@
  },
  "OP09-090": {
   "activate_main": {
-   "conditions": {
-    "leader_type": "blackbeard pirates"
-   },
    "costs": [
     {
      "type": "rest_self"
@@ -23583,6 +23648,9 @@
    "steps": [
     {
      "action": "ko",
+     "conditions": {
+      "leader_type": "blackbeard pirates"
+     },
      "cost_lte": 1,
      "count": 1,
      "target": "opp_character"
@@ -24550,9 +24618,6 @@
  },
  "OP10-021": {
   "activate_main": {
-   "conditions": {
-    "leader_is": "caesar clown"
-   },
    "costs": [
     {
      "type": "rest_self"
@@ -24561,6 +24626,9 @@
    "steps": [
     {
      "action": "give_don",
+     "conditions": {
+      "leader_is": "caesar clown"
+     },
      "count": 1,
      "rested": true
     }
@@ -25217,9 +25285,6 @@
  },
  "OP10-062": {
   "on_ko": {
-   "conditions": {
-    "leader_type": "donquixote pirates"
-   },
    "costs": [
     {
      "count": 1,
@@ -25231,6 +25296,9 @@
     {
      "action": "add_from_trash",
      "color": "purple",
+     "conditions": {
+      "leader_type": "donquixote pirates"
+     },
      "count": 1
     }
    ]
@@ -25446,9 +25514,6 @@
  },
  "OP10-075": {
   "activate_main": {
-   "conditions": {
-    "don_on_field_lte_opp": true
-   },
    "costs": [
     {
      "type": "trash_self"
@@ -25457,6 +25522,9 @@
    "steps": [
     {
      "action": "draw",
+     "conditions": {
+      "don_on_field_lte_opp": true
+     },
      "count": 1
     }
    ]
@@ -25464,9 +25532,6 @@
  },
  "OP10-076": {
   "on_play": {
-   "conditions": {
-    "leader_type": "donquixote pirates"
-   },
    "costs": [
     {
      "count": 1,
@@ -25476,6 +25541,9 @@
    "steps": [
     {
      "action": "add_don",
+     "conditions": {
+      "leader_type": "donquixote pirates"
+     },
      "count": 1
     }
    ]
@@ -25705,9 +25773,6 @@
  },
  "OP10-087": {
   "activate_main": {
-   "conditions": {
-    "opp_hand_gte": 5
-   },
    "costs": [
     {
      "filter_type": "dressrosa",
@@ -25717,10 +25782,16 @@
    "steps": [
     {
      "action": "trash_from_deck_top",
+     "conditions": {
+      "opp_hand_gte": 5
+     },
      "count": 2
     },
     {
      "action": "opp_trash_from_hand",
+     "conditions": {
+      "opp_hand_gte": 5
+     },
      "count": 1
     }
    ]
@@ -26197,9 +26268,6 @@
    ]
   },
   "trigger": {
-   "conditions": {
-    "leader_type": "supernovas"
-   },
    "costs": [
     {
      "count": 1,
@@ -26209,6 +26277,9 @@
    "steps": [
     {
      "action": "play_card",
+     "conditions": {
+      "leader_type": "supernovas"
+     },
      "count": 1,
      "source": "self"
     }
@@ -26325,9 +26396,6 @@
    ]
   },
   "when_attacking": {
-   "conditions": {
-    "opp_hand_gte": 5
-   },
    "costs": [
     {
      "count": 3,
@@ -26337,6 +26405,9 @@
    "steps": [
     {
      "action": "opp_trash_from_hand",
+     "conditions": {
+      "opp_hand_gte": 5
+     },
      "count": 1
     }
    ]
@@ -26464,9 +26535,6 @@
  },
  "OP11-007": {
   "activate_main": {
-   "conditions": {
-    "leader_type": "navy"
-   },
    "costs": [
     {
      "type": "rest_self"
@@ -26476,6 +26544,9 @@
     {
      "action": "buff_power",
      "amount": 2000,
+     "conditions": {
+      "leader_type": "navy"
+     },
      "count": 1,
      "duration": "this_turn",
      "filter_type": "navy",
@@ -26486,9 +26557,6 @@
  },
  "OP11-008": {
   "on_play": {
-   "conditions": {
-    "leader_type": "navy"
-   },
    "costs": [
     {
      "count": 1,
@@ -26499,6 +26567,9 @@
     {
      "action": "debuff_power",
      "amount": 6000,
+     "conditions": {
+      "leader_type": "navy"
+     },
      "duration": "this_turn",
      "target": "opp_character"
     }
@@ -27819,9 +27890,6 @@
  },
  "OP11-082": {
   "activate_main": {
-   "conditions": {
-    "leader_type": "navy"
-   },
    "costs": [
     {
      "type": "trash_self"
@@ -27830,11 +27898,17 @@
    "steps": [
     {
      "action": "select_grant_can_attack_active_turn",
+     "conditions": {
+      "leader_type": "navy"
+     },
      "count": 1,
      "filter_type": "navy"
     },
     {
      "action": "trash_from_deck_top",
+     "conditions": {
+      "leader_type": "navy"
+     },
      "count": 2
     }
    ]
@@ -28863,9 +28937,6 @@
  },
  "OP12-028": {
   "activate_main": {
-   "conditions": {
-    "leader_is": "roronoa zoro"
-   },
    "costs": [
     {
      "count": 1,
@@ -28875,15 +28946,24 @@
    "steps": [
     {
      "action": "look_top_deck",
+     "conditions": {
+      "leader_is": "roronoa zoro"
+     },
      "count": 5
     },
     {
      "action": "add_to_hand",
+     "conditions": {
+      "leader_is": "roronoa zoro"
+     },
      "count": 1,
      "revealed_to_opponent": true
     },
     {
-     "action": "deck_bottom_rest"
+     "action": "deck_bottom_rest",
+     "conditions": {
+      "leader_is": "roronoa zoro"
+     }
     }
    ]
   }
@@ -29566,9 +29646,6 @@
  "OP12-068": {},
  "OP12-069": {
   "on_opp_attack": {
-   "conditions": {
-    "leader_type_includes": "baroque works"
-   },
    "costs": [
     {
      "count": 1,
@@ -29581,6 +29658,9 @@
     {
      "action": "buff_power",
      "amount": 2000,
+     "conditions": {
+      "leader_type_includes": "baroque works"
+     },
      "duration": "battle_only",
      "target": "leader_or_character"
     }
@@ -29662,9 +29742,6 @@
  },
  "OP12-074": {
   "on_play": {
-   "conditions": {
-    "leader_is": "sanji"
-   },
    "costs": [
     {
      "count": 1,
@@ -29674,6 +29751,9 @@
    "steps": [
     {
      "action": "add_don",
+     "conditions": {
+      "leader_is": "sanji"
+     },
      "count": 1
     }
    ]
@@ -29901,9 +29981,6 @@
  },
  "OP12-087": {
   "on_play": {
-   "conditions": {
-    "opp_hand_gte": 5
-   },
    "costs": [
     {
      "count": 1,
@@ -29913,6 +29990,9 @@
    "steps": [
     {
      "action": "opp_trash_from_hand",
+     "conditions": {
+      "opp_hand_gte": 5
+     },
      "count": 2
     }
    ]
@@ -30011,9 +30091,6 @@
  },
  "OP12-094": {
   "on_play": {
-   "conditions": {
-    "leader_type": "revolutionary army"
-   },
    "costs": [
     {
      "count": 3,
@@ -30024,6 +30101,9 @@
    "steps": [
     {
      "action": "play_from_trash",
+     "conditions": {
+      "leader_type": "revolutionary army"
+     },
      "cost_lte": 6,
      "count": 1
     }
@@ -30416,9 +30496,6 @@
    ]
   },
   "main": {
-   "conditions": {
-    "leader_type": "supernovas"
-   },
    "costs": [
     {
      "count": 5,
@@ -30428,6 +30505,9 @@
    "steps": [
     {
      "action": "gain_life",
+     "conditions": {
+      "leader_type": "supernovas"
+     },
      "count": 1,
      "dest": "life_bottom",
      "face": "down",
@@ -31362,9 +31442,6 @@
    ]
   },
   "main": {
-   "conditions": {
-    "life_lte": 1
-   },
    "costs": [
     {
      "count": 1,
@@ -31374,6 +31451,9 @@
    "steps": [
     {
      "action": "select_grant_unblockable_turn",
+     "conditions": {
+      "life_lte": 1
+     },
      "target": "leader_only"
     }
    ]
@@ -31701,9 +31781,6 @@
    ]
   },
   "main": {
-   "conditions": {
-    "leader_is": "gol.d.roger"
-   },
    "costs": [
     {
      "count": 1,
@@ -31713,6 +31790,9 @@
    "steps": [
     {
      "action": "add_don",
+     "conditions": {
+      "leader_is": "gol.d.roger"
+     },
      "count": 1,
      "rested": true
     }
@@ -31737,9 +31817,6 @@
    ]
   },
   "main": {
-   "conditions": {
-    "has_don_attached": true
-   },
    "costs": [
     {
      "count": 5,
@@ -31750,6 +31827,9 @@
     {
      "action": "debuff_power",
      "amount": 8000,
+     "conditions": {
+      "has_don_attached": true
+     },
      "duration": "this_turn",
      "target": "opp_character"
     }
@@ -31768,9 +31848,6 @@
    ]
   },
   "main": {
-   "conditions": {
-    "has_don_attached": true
-   },
    "costs": [
     {
      "count": 3,
@@ -31780,12 +31857,18 @@
    "steps": [
     {
      "action": "ko",
+     "conditions": {
+      "has_don_attached": true
+     },
      "count": 1,
      "power_lte": 4000,
      "target": "opp_character"
     },
     {
      "action": "ko",
+     "conditions": {
+      "has_don_attached": true
+     },
      "count": 1,
      "power_lte": 3000,
      "target": "opp_character"
@@ -32187,9 +32270,6 @@
    ]
   },
   "main": {
-   "conditions": {
-    "only_field_type": "celestial dragons"
-   },
    "costs": [
     {
      "count": 5,
@@ -32199,6 +32279,9 @@
    "steps": [
     {
      "action": "ko",
+     "conditions": {
+      "only_field_type": "celestial dragons"
+     },
      "cost_lte": 6,
      "count": 1,
      "target": "opp_character"
@@ -32221,9 +32304,6 @@
    ]
   },
   "main": {
-   "conditions": {
-    "leader_is": "imu"
-   },
    "costs": [
     {
      "count": 1,
@@ -32233,6 +32313,9 @@
    "steps": [
     {
      "action": "ko",
+     "conditions": {
+      "leader_is": "imu"
+     },
      "cost_lte": 7,
      "count": 1,
      "target": "opp_stage"
@@ -32324,9 +32407,6 @@
  "OP13-103": {},
  "OP13-104": {
   "on_ko": {
-   "conditions": {
-    "leader_multicolor": true
-   },
    "costs": [
     {
      "count": 1,
@@ -32336,6 +32416,9 @@
    "steps": [
     {
      "action": "gain_life",
+     "conditions": {
+      "leader_multicolor": true
+     },
      "count": 1,
      "dest": "life_top",
      "source": "deck_top",
@@ -34026,9 +34109,6 @@
    ]
   },
   "main": {
-   "conditions": {
-    "leader_type": "donquixote pirates"
-   },
    "costs": [
     {
      "count": 2,
@@ -34038,6 +34118,9 @@
    "steps": [
     {
      "action": "add_don",
+     "conditions": {
+      "leader_type": "donquixote pirates"
+     },
      "count": 1,
      "rested": true
     }
@@ -34066,9 +34149,6 @@
  },
  "OP14-078": {
   "counter": {
-   "conditions": {
-    "leader_type": "donquixote pirates"
-   },
    "costs": [
     {
      "count": 1,
@@ -34080,12 +34160,18 @@
     {
      "action": "buff_power",
      "amount": 2000,
+     "conditions": {
+      "leader_type": "donquixote pirates"
+     },
      "duration": "battle_only",
      "target": "leader_or_character"
     },
     {
      "action": "buff_power",
      "amount": 2000,
+     "conditions": {
+      "leader_type": "donquixote pirates"
+     },
      "duration": "this_turn",
      "target": "self"
     }
@@ -35635,9 +35721,6 @@
  },
  "OP15-032": {
   "activate_main": {
-   "conditions": {
-    "leader_type": "straw hat crew"
-   },
    "costs": [
     {
      "type": "trash_self"
@@ -35646,6 +35729,9 @@
    "steps": [
     {
      "action": "set_active",
+     "conditions": {
+      "leader_type": "straw hat crew"
+     },
      "cost_lte": 8,
      "count": 1,
      "target": "own_character"
@@ -35848,9 +35934,6 @@
  },
  "OP15-042": {
   "on_play": {
-   "conditions": {
-    "leader_is": "rebecca"
-   },
    "costs": [
     {
      "count": 1,
@@ -35860,6 +35943,9 @@
    "steps": [
     {
      "action": "gain_rush",
+     "conditions": {
+      "leader_is": "rebecca"
+     },
      "duration": "this_turn"
     }
    ]
@@ -36461,9 +36547,6 @@
    ]
   },
   "main": {
-   "conditions": {
-    "leader_is": "enel"
-   },
    "costs": [
     {
      "count": 1,
@@ -36474,11 +36557,17 @@
    "steps": [
     {
      "action": "draw",
+     "conditions": {
+      "leader_is": "enel"
+     },
      "count": 1
     },
     {
      "action": "buff_cost",
      "amount": 2,
+     "conditions": {
+      "leader_is": "enel"
+     },
      "count": 1,
      "duration": "until_opp_end_phase",
      "target": "own_character"
@@ -36500,9 +36589,6 @@
    ]
   },
   "main": {
-   "conditions": {
-    "leader_is": "enel"
-   },
    "costs": [
     {
      "count": 1,
@@ -36513,6 +36599,9 @@
    "steps": [
     {
      "action": "ko",
+     "conditions": {
+      "leader_is": "enel"
+     },
      "count": 1,
      "power_lte": 3000,
      "target": "opp_character"
@@ -36520,6 +36609,9 @@
     {
      "action": "buff_power",
      "amount": 1000,
+     "conditions": {
+      "leader_is": "enel"
+     },
      "duration": "this_turn",
      "target": "leader_or_character"
     }
@@ -36540,9 +36632,6 @@
    ]
   },
   "main": {
-   "conditions": {
-    "leader_is": "enel"
-   },
    "costs": [
     {
      "count": 1,
@@ -36553,11 +36642,17 @@
    "steps": [
     {
      "action": "draw",
+     "conditions": {
+      "leader_is": "enel"
+     },
      "count": 1
     },
     {
      "action": "debuff_power",
      "amount": 1000,
+     "conditions": {
+      "leader_is": "enel"
+     },
      "duration": "this_turn",
      "target": "opp_character"
     }
@@ -36701,9 +36796,6 @@
  },
  "OP15-083": {
   "activate_main": {
-   "conditions": {
-    "trash_gte": 15
-   },
    "costs": [
     {
      "type": "trash_self"
@@ -36712,6 +36804,9 @@
    "steps": [
     {
      "action": "give_don",
+     "conditions": {
+      "trash_gte": 15
+     },
      "count": 1,
      "rested": true
     }
@@ -36752,9 +36847,6 @@
  },
  "OP15-085": {
   "activate_main": {
-   "conditions": {
-    "leader_type": "straw hat crew"
-   },
    "costs": [
     {
      "type": "trash_self"
@@ -36763,6 +36855,9 @@
    "steps": [
     {
      "action": "add_from_trash",
+     "conditions": {
+      "leader_type": "straw hat crew"
+     },
      "count": 1,
      "exclude_name": "tony tony.chopper",
      "filter_type": "straw hat crew"
@@ -36971,9 +37066,6 @@
    ]
   },
   "main": {
-   "conditions": {
-    "trash_gte": 15
-   },
    "costs": [
     {
      "count": 1,
@@ -36984,6 +37076,9 @@
     {
      "action": "buff_power",
      "amount": 3000,
+     "conditions": {
+      "trash_gte": 15
+     },
      "count": 1,
      "duration": "this_turn",
      "filter_type": "straw hat crew",
@@ -37010,9 +37105,6 @@
    ]
   },
   "main": {
-   "conditions": {
-    "leader_type": "straw hat crew"
-   },
    "costs": [
     {
      "count": 1,
@@ -37022,6 +37114,9 @@
    "steps": [
     {
      "action": "trash_from_deck_top",
+     "conditions": {
+      "leader_type": "straw hat crew"
+     },
      "count": 5
     }
    ]
@@ -37672,9 +37767,6 @@
  },
  "OP16-012": {
   "on_play": {
-   "conditions": {
-    "leader_type": "red-haired pirates"
-   },
    "costs": [
     {
      "count": 1,
@@ -37684,6 +37776,9 @@
    "steps": [
     {
      "action": "play_card",
+     "conditions": {
+      "leader_type": "red-haired pirates"
+     },
      "cost_lte": 99,
      "count": 1,
      "filter_name": "shanks"
@@ -38235,9 +38330,6 @@
  "OP16-046": {},
  "OP16-047": {
   "activate_main": {
-   "conditions": {
-    "opp_hand_gte": 8
-   },
    "costs": [
     {
      "type": "rest_self"
@@ -38246,6 +38338,9 @@
    "steps": [
     {
      "action": "opp_place_hand_bottom_deck",
+     "conditions": {
+      "opp_hand_gte": 8
+     },
      "count": 2
     }
    ]
@@ -38566,9 +38661,6 @@
  },
  "OP16-065": {
   "activate_main": {
-   "conditions": {
-    "leader_type": "navy"
-   },
    "costs": [
     {
      "count": 1,
@@ -38579,6 +38671,9 @@
    "steps": [
     {
      "action": "add_don",
+     "conditions": {
+      "leader_type": "navy"
+     },
      "count": 2
     }
    ]
@@ -38686,9 +38781,6 @@
  },
  "OP16-070": {
   "on_play": {
-   "conditions": {
-    "leader_type": "navy"
-   },
    "costs": [
     {
      "count": 2,
@@ -38698,6 +38790,9 @@
    "steps": [
     {
      "action": "add_don",
+     "conditions": {
+      "leader_type": "navy"
+     },
      "count": 1,
      "rested": true
     }
@@ -38949,9 +39044,6 @@
  },
  "OP16-081": {
   "activate_main": {
-   "conditions": {
-    "other_char_cost_gte": 8
-   },
    "costs": [
     {
      "type": "rest_self"
@@ -38961,6 +39053,9 @@
     {
      "action": "debuff_power",
      "amount": 2000,
+     "conditions": {
+      "other_char_cost_gte": 8
+     },
      "duration": "this_turn",
      "target": "opp_character"
     }
@@ -39023,10 +39118,6 @@
  },
  "OP16-084": {
   "activate_main": {
-   "conditions": {
-    "don_gte": 9,
-    "don_on_field_gte": 9
-   },
    "costs": [
     {
      "type": "trash_self"
@@ -39035,6 +39126,10 @@
    "steps": [
     {
      "action": "play_from_trash",
+     "conditions": {
+      "don_gte": 9,
+      "don_on_field_gte": 9
+     },
      "cost_eq": 9,
      "count": 1,
      "filter_name": "kouzuki momonosuke"
@@ -39065,9 +39160,6 @@
  "OP16-086": {},
  "OP16-087": {
   "on_play": {
-   "conditions": {
-    "leader_type": "land of wano"
-   },
    "costs": [
     {
      "type": "trash_self"
@@ -39076,11 +39168,17 @@
    "steps": [
     {
      "action": "draw",
+     "conditions": {
+      "leader_type": "land of wano"
+     },
      "count": 1
     },
     {
      "action": "buff_cost",
      "amount": 20,
+     "conditions": {
+      "leader_type": "land of wano"
+     },
      "count": 1,
      "duration": "permanent",
      "filter_name": "kouzuki momonosuke",
@@ -41167,10 +41265,6 @@
  },
  "PRB02-010": {
   "on_play": {
-   "conditions": {
-    "leader_type": "big mom pirates",
-    "opp_don_on_field_gte": 6
-   },
    "costs": [
     {
      "count": 2,
@@ -41181,10 +41275,18 @@
    "steps": [
     {
      "action": "draw",
+     "conditions": {
+      "leader_type": "big mom pirates",
+      "opp_don_on_field_gte": 6
+     },
      "count": 2
     },
     {
      "action": "play_card",
+     "conditions": {
+      "leader_type": "big mom pirates",
+      "opp_don_on_field_gte": 6
+     },
      "cost_lte": 99,
      "count": 1,
      "filter_type": "big mom pirates"
@@ -42273,9 +42375,6 @@
  },
  "ST04-017": {
   "activate_main": {
-   "conditions": {
-    "leader_type": "animal kingdom pirates"
-   },
    "costs": [
     {
      "type": "rest_self"
@@ -42284,6 +42383,9 @@
    "steps": [
     {
      "action": "add_don",
+     "conditions": {
+      "leader_type": "animal kingdom pirates"
+     },
      "count": 1,
      "rested": true
     }
@@ -42761,9 +42863,6 @@
  },
  "ST06-017": {
   "activate_main": {
-   "conditions": {
-    "leader_type": "navy"
-   },
    "costs": [
     {
      "type": "rest_self"
@@ -42773,6 +42872,9 @@
     {
      "action": "debuff_cost",
      "amount": 1,
+     "conditions": {
+      "leader_type": "navy"
+     },
      "count": 1,
      "target": "opp_character"
     }
@@ -43613,9 +43715,6 @@
  },
  "ST10-010": {
   "on_play": {
-   "conditions": {
-    "opp_hand_gte": 7
-   },
    "costs": [
     {
      "count": 1,
@@ -43627,6 +43726,9 @@
     {
      "action": "opp_trash_from_hand",
      "chosen_by": "effect_owner_blind",
+     "conditions": {
+      "opp_hand_gte": 7
+     },
      "count": 2
     }
    ]
@@ -44005,9 +44107,6 @@
  },
  "ST12-007": {
   "on_play": {
-   "conditions": {
-    "opp_life_gte": 3
-   },
    "costs": [
     {
      "count": 2,
@@ -44018,6 +44117,9 @@
     {
      "action": "set_active",
      "attribute": "slash",
+     "conditions": {
+      "opp_life_gte": 3
+     },
      "cost_lte": 4,
      "count": 1,
      "target": "own_character"
@@ -45112,9 +45214,6 @@
  },
  "ST17-002": {
   "on_play": {
-   "conditions": {
-    "leader_type": "the seven warlords of the sea"
-   },
    "costs": [
     {
      "count": 1,
@@ -45124,6 +45223,9 @@
    "steps": [
     {
      "action": "bounce",
+     "conditions": {
+      "leader_type": "the seven warlords of the sea"
+     },
      "cost_lte": 4,
      "count": 1,
      "target": "opp_character"
@@ -45294,9 +45396,6 @@
  },
  "ST19-002": {
   "on_play": {
-   "conditions": {
-    "leader_type": "navy"
-   },
    "costs": [
     {
      "count": 2,
@@ -45306,6 +45405,9 @@
    "steps": [
     {
      "action": "draw",
+     "conditions": {
+      "leader_type": "navy"
+     },
      "count": 3
     }
    ]
@@ -46033,9 +46135,6 @@
  },
  "ST23-003": {
   "on_play": {
-   "conditions": {
-    "leader_type": "red-haired pirates"
-   },
    "costs": [
     {
      "count": 1,
@@ -46045,6 +46144,9 @@
    "steps": [
     {
      "action": "ko",
+     "conditions": {
+      "leader_type": "red-haired pirates"
+     },
      "count": 1,
      "power_lte": 4000,
      "target": "opp_character"
@@ -46270,9 +46372,6 @@
  },
  "ST25-004": {
   "activate_main": {
-   "conditions": {
-    "leader_is": "buggy"
-   },
    "costs": [
     {
      "type": "trash_self"
@@ -46285,6 +46384,9 @@
    "steps": [
     {
      "action": "play_card",
+     "conditions": {
+      "leader_is": "buggy"
+     },
      "cost_lte": 6,
      "count": 1,
      "filter_type": "cross guild"
@@ -46395,10 +46497,6 @@
  },
  "ST26-005": {
   "on_play": {
-   "conditions": {
-    "leader_multicolor": true,
-    "opp_don_on_field_gte": 5
-   },
    "costs": [
     {
      "count": 2,
@@ -46410,6 +46508,10 @@
     {
      "action": "set_base_power",
      "amount": 7000,
+     "conditions": {
+      "leader_multicolor": true,
+      "opp_don_on_field_gte": 5
+     },
      "duration": "until_opp_turn_end",
      "filter_type": "straw hat crew",
      "target": "leader"
@@ -46417,10 +46519,6 @@
    ]
   },
   "when_attacking": {
-   "conditions": {
-    "leader_multicolor": true,
-    "opp_don_on_field_gte": 5
-   },
    "costs": [
     {
      "count": 2,
@@ -46432,6 +46530,10 @@
     {
      "action": "set_base_power",
      "amount": 7000,
+     "conditions": {
+      "leader_multicolor": true,
+      "opp_don_on_field_gte": 5
+     },
      "duration": "until_opp_turn_end",
      "filter_type": "straw hat crew",
      "target": "leader"
@@ -46466,9 +46568,6 @@
  },
  "ST27-002": {
   "activate_main": {
-   "conditions": {
-    "leader_type": "blackbeard pirates"
-   },
    "costs": [
     {
      "type": "trash_self"
@@ -46478,6 +46577,9 @@
     {
      "action": "debuff_cost",
      "amount": 1,
+     "conditions": {
+      "leader_type": "blackbeard pirates"
+     },
      "count": 1,
      "target": "opp_character"
     }

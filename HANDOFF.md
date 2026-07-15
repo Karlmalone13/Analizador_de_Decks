@@ -1,5 +1,35 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-15 (178) - Custo composto trash->fundo + escopo pos-custo: 410 -> 408
+
+OP05-088 Mansherry e OP05-082 Shirahoshi revelaram a variante que faltava da
+familia `place_from_trash_bottom_deck`: `rest this Character AND place N cards
+from your trash...`. O suporte central ja cobria formas diretas, quantidade e
+filtro; a regex composta agora preserva `rest_self` e `count=2` nas duas. O
+engine faz preflight do material antes de qualquer mutacao, impedindo restar a
+carta/DON parcialmente quando o trash nao paga o custo completo.
+
+O censo encontrou 24 codigos-base: 20 custos normais, 3 substituicoes ja
+separadas e EB04-044 como falso ausente causado por texto contaminado numa
+arte alternativa (a carta-base Koby usa descarte da mao). Nenhuma regra foi
+alterada com base nessa variante inconsistente.
+
+O Q&A oficial de OP05-082 confirmou uma gramatica maior: em `[custos]: If C,
+efeito`, C governa o beneficio, nao o pagamento. O parser agora move essas
+condicoes para `steps[].conditions` em 131 cartas, preservando eventuais gates
+antes do `:`. `_step_is_viable` consulta a condicao do step antes de pagar; a
+regra permite pagar sem beneficio, mas a politica da IA continua corretamente
+sem desperdiçar recursos quando nenhum step produz resultado.
+
+Card List e Q&A oficiais confirmaram Shirahoshi e Mansherry. Validacao: diff
+GANHOU 0 / PERDEU 0 / MUDOU 131 (mudanca estrutural de escopo, incluindo as 2
+cartas com custo recuperado); 2614 cartas; smokes curto e amplo passaram.
+Auditor: **408 suspeitos** (410 -> 408). Snapshot final 0/0/0.
+
+Proximo: retomar a fila em OP05-097/OP07-064, depois de marcar OP15-008 e
+OP06-022 como falsos positivos confirmados. Manter substituicoes de trash ao
+fundo como subtipo separado, sem misturar com custos normais.
+
 ## 2026-07-15 (177) - Evento parametrizado de DON devolvido + estado ativo/restado
 
 A observacao do usuario impediu um hardcode de EB02-035. O banco foi censado

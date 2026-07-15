@@ -1482,6 +1482,12 @@ class EffectExecutor:
         a = step.get('action', '')
         me, opp = self.me, self.opp
 
+        # Condicao com escopo do proprio step deve participar da viabilidade
+        # ANTES do pagamento. Sem isto, o executor pagaria custos para um
+        # beneficio que _execute_step descartaria logo depois.
+        if step.get('conditions') and not self._check_conditions(step['conditions'], card):
+            return False
+
         # Efeito cuja fonte e "escolha 1 personagem do oponente" (ex: Catarina
         # Devon [When Attacking] "select up to 1 opponent Character, copia o
         # poder dele") -- sem NENHUM personagem no campo do oponente, o step
@@ -2806,6 +2812,19 @@ class EffectExecutor:
         """Verifica e paga custos. Retorna False se não pode pagar.
         Registra o que foi pago em self._cost_logs (para o replay mostrar)."""
         self._cost_logs = []
+        # Preflight de trash -> fundo antes de qualquer mutacao. Em custos
+        # compostos, rest_self aparece primeiro; sem isto a carta ficaria
+        # restada mesmo quando o restante do custo fosse impagavel.
+        from optcg_engine.rules_facade import eligible_cards
+        for pending in costs:
+            if pending.get('type') != 'place_from_trash_bottom_deck':
+                continue
+            candidates = eligible_cards(
+                self.me.trash,
+                filter_text=pending.get('filter_type', ''),
+            )
+            if len(candidates) < pending.get('count', 1):
+                return False
         for cost in costs:
             ctype = cost['type']
             if ctype == 'rest_self':

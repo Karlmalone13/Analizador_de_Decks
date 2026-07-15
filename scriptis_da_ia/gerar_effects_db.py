@@ -471,7 +471,16 @@ def parse_costs(text):
     m_c = re.search(
         r'you may (?:place|return) (\d+) cards? from your trash'
         r' (?:at|to) the bottom of your deck', t)
-    if m_a:
+    # Forma composta: "You may rest this Character AND place N cards...".
+    # O rest_self ja foi capturado acima; aqui preservamos o segundo custo.
+    # Encontrada em OP05-082 Shirahoshi e OP05-088 Mansherry.
+    m_composite = re.search(
+        r'you may rest this (?:character|card|stage) and (?:place|return) '
+        r'(\d+) cards? from your trash (?:at|to) the bottom of your deck', t)
+    if m_composite:
+        costs.append({'type': 'place_from_trash_bottom_deck',
+                      'count': int(m_composite.group(1))})
+    elif m_a:
         costs.append({'type': 'place_from_trash_bottom_deck',
                        'count': int(m_a.group(1)), 'filter_type': m_a.group(2).strip()})
     elif m_b2:
@@ -4740,6 +4749,21 @@ def parse_card_effect(card_text, card_type):
                     # a condicao global do entry deixa de existir -- ela
                     # agora vive nos steps individuais (de A e/ou B).
                     conds = {}
+
+        # Condicao depois do delimitador de CUSTO: "[custos]: If C, efeito".
+        # C governa o beneficio, nao a possibilidade de pagar/ativar. Faz o
+        # split apenas quando o sufixo do ULTIMO ':' comeca por If, evitando
+        # atingir Choose one:, tags e outros usos de dois-pontos.
+        if costs and not is_choice and not is_substitute and ':' in block:
+            cost_prefix, benefit = block.rsplit(':', 1)
+            if re.match(r'\s*if\b', benefit, re.IGNORECASE):
+                benefit_conds = parse_conditions(benefit)
+                if benefit_conds:
+                    for s in steps:
+                        s['conditions'] = benefit_conds
+                    # Condicoes antes do ':' continuam sendo gates globais;
+                    # a condicao do beneficio deixa de contaminar o entry.
+                    conds = parse_conditions(cost_prefix)
 
         # DON x requisito antes do trigger. Usa a posição real do match (m.start)
         # em vez de reconstruir o nome — assim funciona para [Activate: Main],

@@ -1063,7 +1063,7 @@ def test_descarte_mao_oponente_variantes_e_escolha_cega() -> None:
 
     law = get_card_effects("ST10-010").get("on_play", {})
     check("ST10-010 recupera On Play, gate 7 e custo DON -1",
-          law.get("conditions", {}).get("opp_hand_gte") == 7
+          law.get("steps", [{}])[0].get("conditions", {}).get("opp_hand_gte") == 7
           and law.get("steps", [{}])[0].get("chosen_by") == "effect_owner_blind"
           and law.get("costs", [{}])[0].get("type") == "don_minus")
 
@@ -1310,6 +1310,60 @@ def test_evento_parametrizado_de_don_devolvido() -> None:
     check("P-077 preserva ordem: adiciona DON antes de reativar Stage",
           [s.get("action") for s in p077_steps] == ["add_don", "set_active"])
     check("P-077 reativa o Stage roxo quando o evento dispara", not stage.rested)
+
+
+def test_custo_composto_trash_para_fundo() -> None:
+    for code in ("OP05-082", "OP05-088"):
+        costs = get_card_effects(code).get("activate_main", {}).get("costs", [])
+        check(f"{code} preserva rest_self + 2 cartas do trash ao fundo",
+              {"rest_self", "place_from_trash_bottom_deck"}.issubset(
+                  {c.get("type") for c in costs})
+              and next(c for c in costs
+                       if c.get("type") == "place_from_trash_bottom_deck").get("count") == 2)
+
+    shira_entry = get_card_effects("OP05-082")["activate_main"]
+    check("Shirahoshi limita apenas o descarte a opp_hand_gte=6",
+          not shira_entry.get("conditions")
+          and shira_entry["steps"][0].get("conditions", {}).get("opp_hand_gte") == 6)
+
+    mansherry = real_card("OP05-088")
+    target = mk("XREC", "Alvo Preto", cost=4, color="Black")
+    filler1 = mk("XF01", "Filler 1", card_type="EVENT", color="Red")
+    filler2 = mk("XF02", "Filler 2", card_type="EVENT", color="Red")
+    me = GameState(leader=mk("XCL1", "Lider", card_type="LEADER"),
+                   field_chars=[mansherry], trash=[target, filler1, filler2],
+                   don_available=1)
+    opp = GameState(leader=mk("XCO1", "Opp", card_type="LEADER"))
+    EffectExecutor(me, opp).execute(mansherry, "activate_main")
+    check("Mansherry paga os 3 custos e recupera o alvo elegivel",
+          mansherry.rested and me.don_available == 0 and me.don_rested == 1
+          and target in me.hand and len(me.trash) == 0 and len(me.deck) == 2)
+
+    mansherry2 = real_card("OP05-088")
+    only = mk("XONE", "Unica no trash", cost=4, color="Black")
+    me2 = GameState(leader=mk("XCL2", "Lider", card_type="LEADER"),
+                    field_chars=[mansherry2], trash=[only], don_available=1)
+    opp2 = GameState(leader=mk("XCO2", "Opp", card_type="LEADER"))
+    EffectExecutor(me2, opp2).execute(mansherry2, "activate_main")
+    check("custo composto impagavel nao resta Mansherry nem DON parcialmente",
+          not mansherry2.rested and me2.don_available == 1
+          and me2.don_rested == 0 and me2.trash == [only])
+
+    shira = real_card("OP05-082")
+    me3 = GameState(leader=mk("XSL3", "Lider", card_type="LEADER"),
+                    field_chars=[shira],
+                    trash=[mk("XSF1", "Filler 1"), mk("XSF2", "Filler 2")])
+    opp3 = GameState(leader=mk("XSO3", "Opp", card_type="LEADER"),
+                     hand=[mk(f"XH{i}", f"Mao {i}") for i in range(5)])
+    EffectExecutor(me3, opp3).execute(shira, "activate_main")
+    check("engine nao paga Shirahoshi sem beneficio util apesar de ser legal",
+          not shira.rested and len(me3.trash) == 2 and len(opp3.hand) == 5)
+
+    opp3.hand.append(mk("XH5", "Mao 5"))
+    EffectExecutor(me3, opp3).execute(shira, "activate_main")
+    check("Shirahoshi paga custo e descarta quando o gate do step passa",
+          shira.rested and not me3.trash and len(me3.deck) == 2
+          and len(opp3.hand) == 5)
 
 
 def test_don_on_field_lte_condicao_ausente() -> None:
@@ -1712,6 +1766,7 @@ def main() -> int:
     test_rush_character_fraseado_condicional_e_auras()
     test_comparacao_don_proprio_lte_oponente()
     test_evento_parametrizado_de_don_devolvido()
+    test_custo_composto_trash_para_fundo()
     test_don_on_field_lte_condicao_ausente()
     test_black_hole_negate_e_ko_encadeado()
     test_rebecca_add_from_trash_range_exclude_e_ordem()
