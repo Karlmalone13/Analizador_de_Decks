@@ -641,6 +641,20 @@ def parse_costs(text):
             'alternate_name': typed_or_named.group(4).strip(),
         })
 
+    # Custo de retirar carta da propria Life para a mao antes de ":".
+    # Distinto da action life_to_hand: aqui a perda de Life e o preco para
+    # obter o beneficio posterior (familia global de 42 cartas-base).
+    life_hand_cost = re.search(
+        r'you may add (\d+) cards? from the (top|bottom|top or bottom) '
+        r'of your life cards? to your hand\s*:', t)
+    if life_hand_cost:
+        where = life_hand_cost.group(2)
+        source = ('life_top_or_bottom' if where == 'top or bottom'
+                  else 'life_bottom' if where == 'bottom' else 'life_top')
+        costs.append({'type': 'life_to_hand',
+                      'count': int(life_hand_cost.group(1)),
+                      'source': source})
+
     # Custo de REVELAR N cartas da mao com filtro de tipo (ex: OP08-044
     # Kingdew, "you may reveal 2 cards with a type including 'Whitebeard
     # Piratess' from your hand: [efeito]"). Achado 15/07 (revisao do

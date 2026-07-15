@@ -3057,6 +3057,19 @@ class EffectExecutor:
                     self.me.trash.append(chosen)
                     unique = [item for item in unique if item[1] is not chosen]
                 self._cost_logs.append(f'custo: trashou {count} carta(s) por tipo/nome')
+            elif ctype == 'life_to_hand':
+                count = cost.get('count', 1)
+                if self.me.cant_take_life_this_turn or len(self.me.life) < count:
+                    return False
+                source = cost.get('source', 'life_top')
+                taken = []
+                for _ in range(count):
+                    idx = 0 if source == 'life_bottom' else -1
+                    life_card = self.me.life.pop(idx)
+                    life_card.life_face_up = False
+                    self.me.hand.append(life_card)
+                    taken.append(life_card.name[:15])
+                self._cost_logs.append(f'custo: pegou da Life: {", ".join(taken)}')
             elif ctype == 'trash_char_or_hand':
                 from optcg_engine.rules_facade import eligible_cards
 
@@ -8077,6 +8090,12 @@ class OPTCGMatch:
                 available = {id(c2) for c2 in typed + named_hand + named_field}
                 if len(available) < cnt:
                     return False, 'custo tipo/nome: nenhuma opcao valida na mao ou campo'
+
+            elif ctype == 'life_to_hand':
+                if p.cant_take_life_this_turn:
+                    return False, 'custo life_to_hand bloqueado neste turno'
+                if len(p.life) < cnt:
+                    return False, f'custo life_to_hand: Life com so {len(p.life)} cartas'
 
             elif ctype == 'trash_char_or_hand':
                 # "trash 1 [Tipo] Character (campo) OU 1 carta da mão"

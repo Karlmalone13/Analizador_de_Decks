@@ -1569,6 +1569,13 @@
             "action": "draw",
             "count": 1
           }
+        ],
+        "costs": [
+          {
+            "type": "life_to_hand",
+            "count": 1,
+            "source": "life_top_or_bottom"
+          }
         ]
       }
     }
@@ -3486,6 +3493,13 @@
             "count": 1,
             "cost_lte": 3,
             "dest": "life_top_or_bottom"
+          }
+        ],
+        "costs": [
+          {
+            "type": "life_to_hand",
+            "count": 1,
+            "source": "life_top_or_bottom"
           }
         ]
       }
@@ -7941,6 +7955,13 @@
             "count": 1,
             "up_to": true,
             "face": "up"
+          }
+        ],
+        "costs": [
+          {
+            "type": "life_to_hand",
+            "count": 1,
+            "source": "life_top_or_bottom"
           }
         ]
       }
@@ -17211,6 +17232,13 @@
             "up_to": true
           }
         ],
+        "costs": [
+          {
+            "type": "life_to_hand",
+            "count": 1,
+            "source": "life_top_or_bottom"
+          }
+        ],
         "don_requirement": 2
       }
     }
@@ -17409,6 +17437,13 @@
             "amount": 2000,
             "target": "self",
             "duration": "battle_only"
+          }
+        ],
+        "costs": [
+          {
+            "type": "life_to_hand",
+            "count": 1,
+            "source": "life_top_or_bottom"
           }
         ]
       }
@@ -20925,6 +20960,11 @@
           {
             "type": "rest_don",
             "count": 1
+          },
+          {
+            "type": "life_to_hand",
+            "count": 1,
+            "source": "life_top_or_bottom"
           }
         ],
         "once_per_turn": true
@@ -21311,6 +21351,13 @@
             "action": "gain_double_attack",
             "duration": "this_turn"
           }
+        ],
+        "costs": [
+          {
+            "type": "life_to_hand",
+            "count": 1,
+            "source": "life_top_or_bottom"
+          }
         ]
       }
     }
@@ -21374,6 +21421,13 @@
             "dest": "life_top",
             "count": 1,
             "up_to": true
+          }
+        ],
+        "costs": [
+          {
+            "type": "life_to_hand",
+            "count": 1,
+            "source": "life_top_or_bottom"
           }
         ]
       },
@@ -23156,6 +23210,13 @@
           {
             "action": "add_don",
             "count": 1
+          }
+        ],
+        "costs": [
+          {
+            "type": "life_to_hand",
+            "count": 1,
+            "source": "life_top"
           }
         ],
         "once_per_turn": true
@@ -25317,6 +25378,13 @@
             "target": "leader_or_character",
             "duration": "this_turn"
           }
+        ],
+        "costs": [
+          {
+            "type": "life_to_hand",
+            "count": 1,
+            "source": "life_top"
+          }
         ]
       },
       "counter": {
@@ -25326,6 +25394,13 @@
             "amount": 3000,
             "target": "leader_or_character",
             "duration": "this_turn"
+          }
+        ],
+        "costs": [
+          {
+            "type": "life_to_hand",
+            "count": 1,
+            "source": "life_top"
           }
         ]
       }
@@ -27986,6 +28061,13 @@
             "dest": "life_top",
             "count": 1,
             "up_to": true
+          }
+        ],
+        "costs": [
+          {
+            "type": "life_to_hand",
+            "count": 1,
+            "source": "life_top_or_bottom"
           }
         ]
       }
@@ -31625,6 +31707,13 @@
             "target": "opp_character",
             "cost_lte": 2
           }
+        ],
+        "costs": [
+          {
+            "type": "life_to_hand",
+            "count": 1,
+            "source": "life_top_or_bottom"
+          }
         ]
       },
       "trigger": {
@@ -31713,6 +31802,13 @@
             "conditions": {
               "life_lte": 1
             }
+          }
+        ],
+        "costs": [
+          {
+            "type": "life_to_hand",
+            "count": 1,
+            "source": "life_top_or_bottom"
           }
         ],
         "once_per_turn": true
@@ -32230,6 +32326,13 @@
           {
             "action": "gain_rush",
             "duration": "this_turn"
+          }
+        ],
+        "costs": [
+          {
+            "type": "life_to_hand",
+            "count": 1,
+            "source": "life_top"
           }
         ],
         "once_per_turn": true,
@@ -34898,6 +35001,13 @@
             "duration": "until_opp_turn_end"
           }
         ],
+        "costs": [
+          {
+            "type": "life_to_hand",
+            "count": 1,
+            "source": "life_top"
+          }
+        ],
         "once_per_turn": true
       }
     }
@@ -35372,6 +35482,13 @@
             "dest": "life_top",
             "count": 1,
             "up_to": true
+          }
+        ],
+        "costs": [
+          {
+            "type": "life_to_hand",
+            "count": 1,
+            "source": "life_top"
           }
         ]
       },
@@ -36258,6 +36375,13 @@
             "cost_lte": 4,
             "filter_type": "straw hat crew",
             "rested": true
+          }
+        ],
+        "costs": [
+          {
+            "type": "life_to_hand",
+            "count": 1,
+            "source": "life_top_or_bottom"
           }
         ]
       }
@@ -37506,12 +37630,19 @@
         "steps": [
           {
             "action": "add_don",
-            "count": 1
+            "count": 1,
+            "conditions": {
+              "leader_type": "kid pirates"
+            }
           }
         ],
-        "conditions": {
-          "leader_type": "kid pirates"
-        }
+        "costs": [
+          {
+            "type": "life_to_hand",
+            "count": 1,
+            "source": "life_top"
+          }
+        ]
       }
     }
   },
@@ -38399,6 +38530,13 @@
             "count": 1,
             "cost_lte": 4,
             "filter_type": "revolutionary army"
+          }
+        ],
+        "costs": [
+          {
+            "type": "life_to_hand",
+            "count": 1,
+            "source": "life_top_or_bottom"
           }
         ]
       },
@@ -41865,6 +42003,13 @@
             "up_to": true,
             "face": "up"
           }
+        ],
+        "costs": [
+          {
+            "type": "life_to_hand",
+            "count": 1,
+            "source": "life_top_or_bottom"
+          }
         ]
       }
     }
@@ -41961,6 +42106,13 @@
             "count": 1,
             "up_to": true,
             "face": "up"
+          }
+        ],
+        "costs": [
+          {
+            "type": "life_to_hand",
+            "count": 1,
+            "source": "life_top_or_bottom"
           }
         ]
       },
@@ -44368,12 +44520,19 @@
         "steps": [
           {
             "action": "add_don",
-            "count": 1
+            "count": 1,
+            "conditions": {
+              "leader_type": "big mom pirates"
+            }
           }
         ],
-        "conditions": {
-          "leader_type": "big mom pirates"
-        }
+        "costs": [
+          {
+            "type": "life_to_hand",
+            "count": 1,
+            "source": "life_top"
+          }
+        ]
       }
     }
   },
@@ -45454,6 +45613,13 @@
             "target": "opp_character",
             "cost_lte": 5
           }
+        ],
+        "costs": [
+          {
+            "type": "life_to_hand",
+            "count": 1,
+            "source": "life_top_or_bottom"
+          }
         ]
       }
     }
@@ -45566,6 +45732,13 @@
             "count": 1,
             "target": "opp_character",
             "cost_lte": 1
+          }
+        ],
+        "costs": [
+          {
+            "type": "life_to_hand",
+            "count": 1,
+            "source": "life_top_or_bottom"
           }
         ]
       },
@@ -48690,6 +48863,13 @@
             "action": "draw",
             "count": 2,
             "then_trash": 1
+          }
+        ],
+        "costs": [
+          {
+            "type": "life_to_hand",
+            "count": 1,
+            "source": "life_top"
           }
         ]
       },
@@ -55825,6 +56005,13 @@
             "count": 1,
             "up_to": true
           }
+        ],
+        "costs": [
+          {
+            "type": "life_to_hand",
+            "count": 1,
+            "source": "life_top_or_bottom"
+          }
         ]
       },
       "trigger": {
@@ -59880,19 +60067,29 @@
             "action": "play_card",
             "count": 1,
             "cost_lte": 5,
-            "filter_type": "sky island"
+            "filter_type": "sky island",
+            "conditions": {
+              "leader_type": "straw hat crew"
+            }
           },
           {
             "action": "gain_life",
             "source": "deck_top",
             "dest": "life_top",
             "count": 1,
-            "up_to": true
+            "up_to": true,
+            "conditions": {
+              "leader_type": "straw hat crew"
+            }
           }
         ],
-        "conditions": {
-          "leader_type": "straw hat crew"
-        }
+        "costs": [
+          {
+            "type": "life_to_hand",
+            "count": 1,
+            "source": "life_top"
+          }
+        ]
       }
     }
   },
@@ -64684,6 +64881,13 @@
             "target": "leader",
             "duration": "this_turn"
           }
+        ],
+        "costs": [
+          {
+            "type": "life_to_hand",
+            "count": 1,
+            "source": "life_top_or_bottom"
+          }
         ]
       }
     }
@@ -65419,6 +65623,13 @@
             "duration": "this_turn"
           }
         ],
+        "costs": [
+          {
+            "type": "life_to_hand",
+            "count": 1,
+            "source": "life_top_or_bottom"
+          }
+        ],
         "once_per_turn": true
       }
     }
@@ -65907,6 +66118,13 @@
             "action": "give_don",
             "count": 1,
             "rested": true
+          }
+        ],
+        "costs": [
+          {
+            "type": "life_to_hand",
+            "count": 1,
+            "source": "life_top_or_bottom"
           }
         ]
       },
@@ -69120,12 +69338,19 @@
             "source": "hand",
             "dest": "life_top",
             "count": 1,
-            "up_to": true
+            "up_to": true,
+            "conditions": {
+              "life_lte": 2
+            }
           }
         ],
-        "conditions": {
-          "life_lte": 2
-        },
+        "costs": [
+          {
+            "type": "life_to_hand",
+            "count": 1,
+            "source": "life_top_or_bottom"
+          }
+        ],
         "don_requirement": 2
       }
     }
@@ -69191,6 +69416,13 @@
             "action": "gain_banish"
           }
         ],
+        "costs": [
+          {
+            "type": "life_to_hand",
+            "count": 1,
+            "source": "life_top_or_bottom"
+          }
+        ],
         "don_requirement": 1
       }
     }
@@ -69214,6 +69446,13 @@
             "dest": "life_top",
             "count": 1,
             "up_to": true
+          }
+        ],
+        "costs": [
+          {
+            "type": "life_to_hand",
+            "count": 1,
+            "source": "life_top_or_bottom"
           }
         ],
         "don_requirement": 1
@@ -69882,6 +70121,13 @@
             "target": "opp_character",
             "count": 1
           }
+        ],
+        "costs": [
+          {
+            "type": "life_to_hand",
+            "count": 1,
+            "source": "life_top"
+          }
         ]
       }
     }
@@ -70073,6 +70319,13 @@
             "target": "self",
             "duration": "battle_only"
           }
+        ],
+        "costs": [
+          {
+            "type": "life_to_hand",
+            "count": 1,
+            "source": "life_top_or_bottom"
+          }
         ]
       },
       "passive": {
@@ -70103,6 +70356,13 @@
             "cost_lte": 4,
             "filter_type": "land of wano",
             "color": "yellow"
+          }
+        ],
+        "costs": [
+          {
+            "type": "life_to_hand",
+            "count": 1,
+            "source": "life_top_or_bottom"
           }
         ],
         "don_requirement": 1
@@ -70187,6 +70447,13 @@
             "amount": 2000,
             "target": "self",
             "duration": "until_my_turn_start"
+          }
+        ],
+        "costs": [
+          {
+            "type": "life_to_hand",
+            "count": 1,
+            "source": "life_top_or_bottom"
           }
         ]
       }
@@ -71825,6 +72092,13 @@
             "target": "self",
             "count": "all"
           }
+        ],
+        "costs": [
+          {
+            "type": "life_to_hand",
+            "count": 1,
+            "source": "life_top_or_bottom"
+          }
         ]
       }
     }
@@ -71985,6 +72259,13 @@
             "count": 1,
             "up_to": true
           }
+        ],
+        "costs": [
+          {
+            "type": "life_to_hand",
+            "count": 1,
+            "source": "life_top_or_bottom"
+          }
         ]
       },
       "counter": {
@@ -72023,6 +72304,13 @@
             "dest": "life_top",
             "count": 1,
             "up_to": true
+          }
+        ],
+        "costs": [
+          {
+            "type": "life_to_hand",
+            "count": 1,
+            "source": "life_top_or_bottom"
           }
         ]
       },
@@ -73454,6 +73742,13 @@
             "target": "own_character",
             "filter_type": "big mom pirates",
             "cost_lte": 3
+          }
+        ],
+        "costs": [
+          {
+            "type": "life_to_hand",
+            "count": 1,
+            "source": "life_top"
           }
         ]
       },
@@ -75571,6 +75866,13 @@
             "dest": "life_top",
             "count": 1,
             "up_to": true
+          }
+        ],
+        "costs": [
+          {
+            "type": "life_to_hand",
+            "count": 1,
+            "source": "life_top_or_bottom"
           }
         ]
       },

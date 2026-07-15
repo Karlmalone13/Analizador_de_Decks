@@ -1,5 +1,24 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-15 (188) - Life para mao como custo: 376 -> 368
+
+ST09-012 revelou uma familia de **42 cartas-base** com "You may add N card
+from the top/bottom of your Life to your hand: efeito". O parser descartava
+esse trecho por reconhecer corretamente que nao era beneficio, mas `parse_costs`
+nao o recriava como custo; assim buffs, KO, draw, ramp e play resolviam gratis.
+
+O parser agora emite `life_to_hand` em `costs`, preservando `life_top`,
+`life_bottom` ou `life_top_or_bottom`. Executor e pagabilidade exigem Life,
+movem a carta para a mao antes do efeito e respeitam `cant_take_life_this_turn`.
+Teste de ST09-012 prova pagamento + buff e bloqueio integral sem Life; censo
+programatico confirmou custo presente nas 42 cartas. Card List oficial
+confirmou Yamato, Flampe e Chopper.
+
+Validacao barata conforme pedido do usuario: py_compile, smoke direcionado,
+diff inicial MUDOU 42 / PERDEU 0, auditor **368 suspeitos** (376 -> 368),
+snapshot final 0/0/0. O smoke amplo 40/40 foi deliberadamente adiado para um
+checkpoint posterior, nao executado neste lote.
+
 ## 2026-07-15 (187) - Vander Decken: custo alternativo mao/campo
 
 O censo global de "trash [tipo] from hand OR [nome] from hand or field"

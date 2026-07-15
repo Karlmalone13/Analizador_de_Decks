@@ -1801,6 +1801,39 @@ me, opp, target, logs = vander_case([other])
 check('OP06-033 nao aceita carta sem tipo/nome valido',
       other in me.hand and target in opp.field_chars and not logs)
 
+# 37. Custo life_to_hand em 42 cartas: nao conceder beneficio gratis.
+yamato = de._make_card('ST09-012', {
+    'name': 'Yamato', 'type': 'CHARACTER', 'power': 3000,
+    'sub_types': 'Land of Wano',
+})
+life_bottom = mk('LIFE-B', 'Life fundo', power=0)
+life_top = mk('LIFE-T', 'Life topo', power=0)
+me, opp = me_opp()
+me.life = [life_bottom, life_top]
+logs = EffectExecutor(me, opp).execute(yamato, 'when_attacking')
+check('ST09-012 paga Life para a mao antes de ganhar +2000',
+      len(me.life) == 1 and life_top in me.hand
+      and yamato.power_buff == 2000 and bool(logs))
+
+yamato2 = de._make_card('ST09-012', {
+    'name': 'Yamato', 'type': 'CHARACTER', 'power': 3000,
+    'sub_types': 'Land of Wano',
+})
+me, opp = me_opp()
+me.life = []
+logs = EffectExecutor(me, opp).execute(yamato2, 'when_attacking')
+check('ST09-012 sem Life nao paga custo nem recebe buff',
+      yamato2.power_buff == 0 and not logs)
+
+for code in ['EB01-056', 'OP04-102', 'OP07-112', 'OP11-106',
+             'P-036', 'ST07-004', 'ST09-012', 'ST29-007']:
+    blocks = [b for b in get_card_effects(code).values() if isinstance(b, dict)]
+    check(f'{code} preserva life_to_hand como custo', any(
+        any(c.get('type') == 'life_to_hand'
+            and c.get('source') == 'life_top_or_bottom'
+            for c in b.get('costs', []))
+        for b in blocks))
+
 print()
 print(f'{"TODOS OS TESTES PASSARAM" if FAIL == 0 else f"{FAIL} TESTE(S) FALHARAM"}')
 sys.exit(1 if FAIL else 0)

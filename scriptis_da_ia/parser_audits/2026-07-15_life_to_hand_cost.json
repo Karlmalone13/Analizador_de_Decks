@@ -1,0 +1,29 @@
+{
+  "trigger_card": "ST09-012",
+  "problem": "O parser descartava o custo de mover carta da Life para a mao antes de resolver o efeito.",
+  "grammar_family": "you may add N card from top or bottom of Life to hand: effect",
+  "queries": [
+    "you may add N card from the top or bottom of your Life cards to your hand:",
+    "you may add N card from the top of your Life cards to your hand:",
+    "you may add N card from the bottom of your Life cards to your hand:"
+  ],
+  "cards_found": [
+    "EB01-056", "EB02-057", "EB04-060", "OP03-102", "OP03-110",
+    "OP04-102", "OP04-115", "OP04-117", "OP05-060", "OP06-017",
+    "OP06-106", "OP07-110", "OP07-112", "OP08-008", "OP08-103",
+    "OP08-117", "OP09-028", "OP09-075", "OP09-103", "OP10-103",
+    "OP10-107", "OP11-069", "OP11-106", "OP11-110", "OP12-100",
+    "OP14-103", "OP15-109", "P-036", "P-073", "P-105", "ST07-001",
+    "ST07-004", "ST07-005", "ST08-014", "ST09-007", "ST09-008",
+    "ST09-012", "ST13-012", "ST13-017", "ST13-018", "ST20-004",
+    "ST29-007"
+  ],
+  "resolution_scope": "global",
+  "decision": "Representar life_to_hand como custo com origem top, bottom ou top_or_bottom e consumi-lo no executor e na pagabilidade.",
+  "validated_by": [
+    "Card List oficial",
+    "censo completo de cards_rows.csv",
+    "smoke_test.py",
+    "diff_parser.py PERDEU=0"
+  ]
+}

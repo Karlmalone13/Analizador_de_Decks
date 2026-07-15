@@ -949,6 +949,13 @@
  "EB01-055": {},
  "EB01-056": {
   "on_play": {
+   "costs": [
+    {
+     "count": 1,
+     "source": "life_top_or_bottom",
+     "type": "life_to_hand"
+    }
+   ],
    "steps": [
     {
      "action": "draw",
@@ -2183,6 +2190,13 @@
  },
  "EB02-057": {
   "when_attacking": {
+   "costs": [
+    {
+     "count": 1,
+     "source": "life_top_or_bottom",
+     "type": "life_to_hand"
+    }
+   ],
    "steps": [
     {
      "action": "place_opp_char_to_opp_life",
@@ -5175,6 +5189,13 @@
  },
  "EB04-060": {
   "main": {
+   "costs": [
+    {
+     "count": 1,
+     "source": "life_top_or_bottom",
+     "type": "life_to_hand"
+    }
+   ],
    "steps": [
     {
      "action": "debuff_power",
@@ -10664,6 +10685,13 @@
  "OP03-101": {},
  "OP03-102": {
   "when_attacking": {
+   "costs": [
+    {
+     "count": 1,
+     "source": "life_top_or_bottom",
+     "type": "life_to_hand"
+    }
+   ],
    "don_requirement": 2,
    "steps": [
     {
@@ -10777,6 +10805,13 @@
  },
  "OP03-110": {
   "when_attacking": {
+   "costs": [
+    {
+     "count": 1,
+     "source": "life_top_or_bottom",
+     "type": "life_to_hand"
+    }
+   ],
    "steps": [
     {
      "action": "buff_power",
@@ -13028,6 +13063,11 @@
     {
      "count": 1,
      "type": "rest_don"
+    },
+    {
+     "count": 1,
+     "source": "life_top_or_bottom",
+     "type": "life_to_hand"
     }
    ],
    "once_per_turn": true,
@@ -13262,6 +13302,13 @@
  "OP04-114": {},
  "OP04-115": {
   "main": {
+   "costs": [
+    {
+     "count": 1,
+     "source": "life_top_or_bottom",
+     "type": "life_to_hand"
+    }
+   ],
    "steps": [
     {
      "action": "gain_double_attack",
@@ -13321,6 +13368,13 @@
    ]
   },
   "trigger": {
+   "costs": [
+    {
+     "count": 1,
+     "source": "life_top_or_bottom",
+     "type": "life_to_hand"
+    }
+   ],
    "steps": [
     {
      "action": "gain_life",
@@ -14440,6 +14494,13 @@
  },
  "OP05-060": {
   "activate_main": {
+   "costs": [
+    {
+     "count": 1,
+     "source": "life_top",
+     "type": "life_to_hand"
+    }
+   ],
    "once_per_turn": true,
    "steps": [
     {
@@ -15762,6 +15823,13 @@
  },
  "OP06-017": {
   "counter": {
+   "costs": [
+    {
+     "count": 1,
+     "source": "life_top",
+     "type": "life_to_hand"
+    }
+   ],
    "steps": [
     {
      "action": "buff_power",
@@ -15772,6 +15840,13 @@
    ]
   },
   "main": {
+   "costs": [
+    {
+     "count": 1,
+     "source": "life_top",
+     "type": "life_to_hand"
+    }
+   ],
    "steps": [
     {
      "action": "buff_power",
@@ -17452,6 +17527,13 @@
  "OP06-105": {},
  "OP06-106": {
   "on_play": {
+   "costs": [
+    {
+     "count": 1,
+     "source": "life_top_or_bottom",
+     "type": "life_to_hand"
+    }
+   ],
    "steps": [
     {
      "action": "gain_life",
@@ -19738,6 +19820,13 @@
  },
  "OP07-110": {
   "on_play": {
+   "costs": [
+    {
+     "count": 1,
+     "source": "life_top_or_bottom",
+     "type": "life_to_hand"
+    }
+   ],
    "steps": [
     {
      "action": "ko",
@@ -19796,6 +19885,13 @@
  },
  "OP07-112": {
   "when_attacking": {
+   "costs": [
+    {
+     "count": 1,
+     "source": "life_top_or_bottom",
+     "type": "life_to_hand"
+    }
+   ],
    "once_per_turn": true,
    "steps": [
     {
@@ -20148,6 +20244,13 @@
  },
  "OP08-008": {
   "activate_main": {
+   "costs": [
+    {
+     "count": 1,
+     "source": "life_top",
+     "type": "life_to_hand"
+    }
+   ],
    "don_requirement": 1,
    "once_per_turn": true,
    "steps": [
@@ -21778,6 +21881,13 @@
  },
  "OP08-103": {
   "activate_main": {
+   "costs": [
+    {
+     "count": 1,
+     "source": "life_top",
+     "type": "life_to_hand"
+    }
+   ],
    "once_per_turn": true,
    "steps": [
     {
@@ -22120,6 +22230,13 @@
    ]
   },
   "trigger": {
+   "costs": [
+    {
+     "count": 1,
+     "source": "life_top",
+     "type": "life_to_hand"
+    }
+   ],
    "steps": [
     {
      "action": "gain_life",
@@ -22655,6 +22772,13 @@
  },
  "OP09-028": {
   "on_ko": {
+   "costs": [
+    {
+     "count": 1,
+     "source": "life_top_or_bottom",
+     "type": "life_to_hand"
+    }
+   ],
    "steps": [
     {
      "action": "play_from_trash",
@@ -23424,12 +23548,19 @@
  },
  "OP09-075": {
   "on_play": {
-   "conditions": {
-    "leader_type": "kid pirates"
-   },
+   "costs": [
+    {
+     "count": 1,
+     "source": "life_top",
+     "type": "life_to_hand"
+    }
+   ],
    "steps": [
     {
      "action": "add_don",
+     "conditions": {
+      "leader_type": "kid pirates"
+     },
      "count": 1
     }
    ]
@@ -24002,6 +24133,13 @@
  },
  "OP09-103": {
   "on_play": {
+   "costs": [
+    {
+     "count": 1,
+     "source": "life_top_or_bottom",
+     "type": "life_to_hand"
+    }
+   ],
    "steps": [
     {
      "action": "draw",
@@ -26160,6 +26298,13 @@
  },
  "OP10-103": {
   "on_play": {
+   "costs": [
+    {
+     "count": 1,
+     "source": "life_top_or_bottom",
+     "type": "life_to_hand"
+    }
+   ],
    "steps": [
     {
      "action": "gain_life",
@@ -26213,6 +26358,13 @@
  },
  "OP10-107": {
   "on_play": {
+   "costs": [
+    {
+     "count": 1,
+     "source": "life_top_or_bottom",
+     "type": "life_to_hand"
+    }
+   ],
    "steps": [
     {
      "action": "gain_life",
@@ -27734,12 +27886,19 @@
  "OP11-068": {},
  "OP11-069": {
   "on_play": {
-   "conditions": {
-    "leader_type": "big mom pirates"
-   },
+   "costs": [
+    {
+     "count": 1,
+     "source": "life_top",
+     "type": "life_to_hand"
+    }
+   ],
    "steps": [
     {
      "action": "add_don",
+     "conditions": {
+      "leader_type": "big mom pirates"
+     },
      "count": 1
     }
    ]
@@ -28409,6 +28568,13 @@
  "OP11-105": {},
  "OP11-106": {
   "on_play": {
+   "costs": [
+    {
+     "count": 1,
+     "source": "life_top_or_bottom",
+     "type": "life_to_hand"
+    }
+   ],
    "steps": [
     {
      "action": "ko",
@@ -28478,6 +28644,13 @@
  },
  "OP11-110": {
   "on_play": {
+   "costs": [
+    {
+     "count": 1,
+     "source": "life_top_or_bottom",
+     "type": "life_to_hand"
+    }
+   ],
    "steps": [
     {
      "action": "ko",
@@ -30404,6 +30577,13 @@
  },
  "OP12-100": {
   "on_play": {
+   "costs": [
+    {
+     "count": 1,
+     "source": "life_top",
+     "type": "life_to_hand"
+    }
+   ],
    "steps": [
     {
      "action": "draw",
@@ -34874,6 +35054,13 @@
  },
  "OP14-103": {
   "on_play": {
+   "costs": [
+    {
+     "count": 1,
+     "source": "life_top_or_bottom",
+     "type": "life_to_hand"
+    }
+   ],
    "steps": [
     {
      "action": "gain_life",
@@ -37546,18 +37733,28 @@
  },
  "OP15-109": {
   "on_play": {
-   "conditions": {
-    "leader_type": "straw hat crew"
-   },
+   "costs": [
+    {
+     "count": 1,
+     "source": "life_top",
+     "type": "life_to_hand"
+    }
+   ],
    "steps": [
     {
      "action": "play_card",
+     "conditions": {
+      "leader_type": "straw hat crew"
+     },
      "cost_lte": 5,
      "count": 1,
      "filter_type": "sky island"
     },
     {
      "action": "gain_life",
+     "conditions": {
+      "leader_type": "straw hat crew"
+     },
      "count": 1,
      "dest": "life_top",
      "source": "deck_top",
@@ -40533,6 +40730,13 @@
  },
  "P-036": {
   "when_attacking": {
+   "costs": [
+    {
+     "count": 1,
+     "source": "life_top_or_bottom",
+     "type": "life_to_hand"
+    }
+   ],
    "steps": [
     {
      "action": "buff_power",
@@ -40926,6 +41130,13 @@
  },
  "P-073": {
   "activate_main": {
+   "costs": [
+    {
+     "count": 1,
+     "source": "life_top_or_bottom",
+     "type": "life_to_hand"
+    }
+   ],
    "once_per_turn": true,
    "steps": [
     {
@@ -41263,6 +41474,13 @@
  },
  "P-105": {
   "on_play": {
+   "costs": [
+    {
+     "count": 1,
+     "source": "life_top_or_bottom",
+     "type": "life_to_hand"
+    }
+   ],
    "steps": [
     {
      "action": "give_don",
@@ -43133,13 +43351,20 @@
  },
  "ST07-001": {
   "when_attacking": {
-   "conditions": {
-    "life_lte": 2
-   },
+   "costs": [
+    {
+     "count": 1,
+     "source": "life_top_or_bottom",
+     "type": "life_to_hand"
+    }
+   ],
    "don_requirement": 2,
    "steps": [
     {
      "action": "gain_life",
+     "conditions": {
+      "life_lte": 2
+     },
      "count": 1,
      "dest": "life_top",
      "source": "hand",
@@ -43166,6 +43391,13 @@
  },
  "ST07-004": {
   "when_attacking": {
+   "costs": [
+    {
+     "count": 1,
+     "source": "life_top_or_bottom",
+     "type": "life_to_hand"
+    }
+   ],
    "don_requirement": 1,
    "steps": [
     {
@@ -43182,6 +43414,13 @@
  },
  "ST07-005": {
   "when_attacking": {
+   "costs": [
+    {
+     "count": 1,
+     "source": "life_top_or_bottom",
+     "type": "life_to_hand"
+    }
+   ],
    "don_requirement": 1,
    "steps": [
     {
@@ -43554,6 +43793,13 @@
  },
  "ST08-014": {
   "main": {
+   "costs": [
+    {
+     "count": 1,
+     "source": "life_top",
+     "type": "life_to_hand"
+    }
+   ],
    "steps": [
     {
      "action": "debuff_cost",
@@ -43667,6 +43913,13 @@
  "ST09-006": {},
  "ST09-007": {
   "on_block": {
+   "costs": [
+    {
+     "count": 1,
+     "source": "life_top_or_bottom",
+     "type": "life_to_hand"
+    }
+   ],
    "steps": [
     {
      "action": "buff_power",
@@ -43686,6 +43939,13 @@
  },
  "ST09-008": {
   "when_attacking": {
+   "costs": [
+    {
+     "count": 1,
+     "source": "life_top_or_bottom",
+     "type": "life_to_hand"
+    }
+   ],
    "don_requirement": 1,
    "steps": [
     {
@@ -43727,6 +43987,13 @@
  "ST09-011": {},
  "ST09-012": {
   "when_attacking": {
+   "costs": [
+    {
+     "count": 1,
+     "source": "life_top_or_bottom",
+     "type": "life_to_hand"
+    }
+   ],
    "steps": [
     {
      "action": "buff_power",
@@ -44771,6 +45038,13 @@
  },
  "ST13-012": {
   "on_play": {
+   "costs": [
+    {
+     "count": 1,
+     "source": "life_top_or_bottom",
+     "type": "life_to_hand"
+    }
+   ],
    "steps": [
     {
      "action": "peek_life",
@@ -44889,6 +45163,13 @@
    ]
   },
   "trigger": {
+   "costs": [
+    {
+     "count": 1,
+     "source": "life_top_or_bottom",
+     "type": "life_to_hand"
+    }
+   ],
    "steps": [
     {
      "action": "gain_life",
@@ -44919,6 +45200,13 @@
    ]
   },
   "trigger": {
+   "costs": [
+    {
+     "count": 1,
+     "source": "life_top_or_bottom",
+     "type": "life_to_hand"
+    }
+   ],
    "steps": [
     {
      "action": "gain_life",
@@ -45816,6 +46104,13 @@
  },
  "ST20-004": {
   "on_play": {
+   "costs": [
+    {
+     "count": 1,
+     "source": "life_top",
+     "type": "life_to_hand"
+    }
+   ],
    "steps": [
     {
      "action": "set_active",
@@ -47141,6 +47436,13 @@
  "ST29-006": {},
  "ST29-007": {
   "on_ko": {
+   "costs": [
+    {
+     "count": 1,
+     "source": "life_top_or_bottom",
+     "type": "life_to_hand"
+    }
+   ],
    "steps": [
     {
      "action": "gain_life",
