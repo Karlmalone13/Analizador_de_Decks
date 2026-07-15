@@ -1216,6 +1216,13 @@
    "conditions": {
     "only_field_type": "straw hat crew"
    },
+   "costs": [
+    {
+     "count": 2,
+     "optional": false,
+     "type": "don_minus"
+    }
+   ],
    "once_per_turn": true,
    "steps": [
     {
@@ -1657,6 +1664,13 @@
  },
  "EB02-036": {
   "on_ko": {
+   "costs": [
+    {
+     "count": 1,
+     "optional": false,
+     "type": "don_minus"
+    }
+   ],
    "steps": [
     {
      "action": "look_top_deck",
@@ -2832,6 +2846,13 @@
    "conditions": {
     "leader_is": "sanji"
    },
+   "costs": [
+    {
+     "count": 1,
+     "optional": false,
+     "type": "don_minus"
+    }
+   ],
    "steps": [
     {
      "action": "activate_trash_event_main",
@@ -2844,6 +2865,13 @@
    "conditions": {
     "leader_is": "sanji"
    },
+   "costs": [
+    {
+     "count": 1,
+     "optional": false,
+     "type": "don_minus"
+    }
+   ],
    "steps": [
     {
      "action": "activate_trash_event_main",
@@ -2895,6 +2923,13 @@
  },
  "EB03-034": {
   "on_ko": {
+   "costs": [
+    {
+     "count": 1,
+     "optional": false,
+     "type": "don_minus"
+    }
+   ],
    "steps": [
     {
      "action": "gain_life",
@@ -4350,6 +4385,13 @@
  },
  "EB04-033": {
   "on_play": {
+   "costs": [
+    {
+     "count": 1,
+     "optional": false,
+     "type": "don_minus"
+    }
+   ],
    "steps": [
     {
      "action": "ko",
@@ -4515,6 +4557,13 @@
  },
  "EB04-040": {
   "counter": {
+   "costs": [
+    {
+     "count": 1,
+     "optional": false,
+     "type": "don_minus"
+    }
+   ],
    "steps": [
     {
      "action": "buff_power",
@@ -21629,6 +21678,13 @@
  },
  "OP08-119": {
   "when_attacking": {
+   "costs": [
+    {
+     "count": 10,
+     "optional": false,
+     "type": "don_minus"
+    }
+   ],
    "steps": [
     {
      "action": "ko",
@@ -24763,6 +24819,13 @@
    "conditions": {
     "leader_type": "donquixote pirates"
    },
+   "costs": [
+    {
+     "count": 1,
+     "optional": false,
+     "type": "don_minus"
+    }
+   ],
    "steps": [
     {
      "action": "add_from_trash",
@@ -24916,6 +24979,13 @@
    ]
   },
   "on_play": {
+   "costs": [
+    {
+     "count": 1,
+     "optional": false,
+     "type": "don_minus"
+    }
+   ],
    "once_per_turn": true,
    "steps": [
     {
@@ -26941,6 +27011,13 @@
  },
  "OP11-062": {
   "on_opp_attack": {
+   "costs": [
+    {
+     "count": 1,
+     "optional": false,
+     "type": "don_minus"
+    }
+   ],
    "once_per_turn": true,
    "steps": [
     {
@@ -26952,6 +27029,13 @@
    ]
   },
   "when_attacking": {
+   "costs": [
+    {
+     "count": 1,
+     "optional": false,
+     "type": "don_minus"
+    }
+   ],
    "once_per_turn": true,
    "steps": [
     {
@@ -27115,6 +27199,13 @@
  },
  "OP11-073": {
   "on_opp_attack": {
+   "costs": [
+    {
+     "count": 5,
+     "optional": false,
+     "type": "don_minus"
+    }
+   ],
    "once_per_turn": true,
    "steps": [
     {
@@ -29002,6 +29093,13 @@
    "conditions": {
     "leader_type_includes": "baroque works"
    },
+   "costs": [
+    {
+     "count": 1,
+     "optional": false,
+     "type": "don_minus"
+    }
+   ],
    "once_per_turn": true,
    "steps": [
     {
@@ -29113,6 +29211,13 @@
    ]
   },
   "trigger": {
+   "costs": [
+    {
+     "count": 1,
+     "optional": false,
+     "type": "don_minus"
+    }
+   ],
    "steps": [
     {
      "action": "play_card",
@@ -30896,6 +31001,13 @@
  },
  "OP13-064": {
   "on_play": {
+   "costs": [
+    {
+     "count": 3,
+     "optional": false,
+     "type": "don_minus"
+    }
+   ],
    "steps": [
     {
      "action": "buff_power",
@@ -33114,6 +33226,13 @@
    ]
   },
   "when_attacking": {
+   "costs": [
+    {
+     "count": 1,
+     "optional": false,
+     "type": "don_minus"
+    }
+   ],
    "once_per_turn": true,
    "steps": [
     {
@@ -33280,6 +33399,13 @@
  },
  "OP14-072": {
   "on_ko": {
+   "costs": [
+    {
+     "count": 1,
+     "optional": false,
+     "type": "don_minus"
+    }
+   ],
    "steps": [
     {
      "action": "gain_life",
@@ -33395,6 +33521,13 @@
    "conditions": {
     "leader_type": "donquixote pirates"
    },
+   "costs": [
+    {
+     "count": 1,
+     "optional": false,
+     "type": "don_minus"
+    }
+   ],
    "steps": [
     {
      "action": "buff_power",
@@ -35480,6 +35613,13 @@
  },
  "OP15-060": {
   "activate_main": {
+   "costs": [
+    {
+     "count": 1,
+     "optional": false,
+     "type": "don_minus"
+    }
+   ],
    "steps": [
     {
      "action": "gain_blocker"
@@ -35504,6 +35644,13 @@
  },
  "OP15-061": {
   "on_play": {
+   "costs": [
+    {
+     "count": 1,
+     "optional": false,
+     "type": "don_minus"
+    }
+   ],
    "steps": [
     {
      "action": "draw",
@@ -35535,6 +35682,13 @@
    ]
   },
   "on_play": {
+   "costs": [
+    {
+     "count": 1,
+     "optional": false,
+     "type": "don_minus"
+    }
+   ],
    "steps": [
     {
      "action": "draw",
@@ -35570,6 +35724,13 @@
  },
  "OP15-066": {
   "on_play": {
+   "costs": [
+    {
+     "count": 1,
+     "optional": false,
+     "type": "don_minus"
+    }
+   ],
    "steps": [
     {
      "action": "draw",
@@ -35596,6 +35757,13 @@
  },
  "OP15-067": {
   "on_play": {
+   "costs": [
+    {
+     "count": 1,
+     "optional": false,
+     "type": "don_minus"
+    }
+   ],
    "steps": [
     {
      "action": "draw",
@@ -35749,6 +35917,13 @@
    "conditions": {
     "leader_is": "enel"
    },
+   "costs": [
+    {
+     "count": 1,
+     "optional": false,
+     "type": "don_minus"
+    }
+   ],
    "steps": [
     {
      "action": "ko",
@@ -35782,6 +35957,13 @@
    "conditions": {
     "leader_is": "enel"
    },
+   "costs": [
+    {
+     "count": 1,
+     "optional": false,
+     "type": "don_minus"
+    }
+   ],
    "steps": [
     {
      "action": "draw",
@@ -35798,6 +35980,13 @@
  },
  "OP15-077": {
   "main": {
+   "costs": [
+    {
+     "count": 1,
+     "optional": false,
+     "type": "don_minus"
+    }
+   ],
    "steps": [
     {
      "action": "draw",
@@ -35825,6 +36014,13 @@
    ]
   },
   "main": {
+   "costs": [
+    {
+     "count": 2,
+     "optional": false,
+     "type": "don_minus"
+    }
+   ],
    "steps": [
     {
      "action": "rest_opp_character",
@@ -36643,6 +36839,13 @@
  },
  "OP15-118": {
   "on_play": {
+   "costs": [
+    {
+     "count": 1,
+     "optional": false,
+     "type": "don_minus"
+    }
+   ],
    "steps": [
     {
      "action": "look_top_deck",
@@ -37709,6 +37912,13 @@
  "OP16-062": {},
  "OP16-063": {
   "activate_main": {
+   "costs": [
+    {
+     "count": 1,
+     "optional": false,
+     "type": "don_minus"
+    }
+   ],
    "once_per_turn": true,
    "steps": [
     {

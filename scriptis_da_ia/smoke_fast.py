@@ -730,6 +730,29 @@ def test_ipponmatsu_immunity_exige_leader_slash_e_don_rested() -> None:
           is_immune(ipponmatsu2, "rest", me_com, opp, source_is_opp=True))
 
 
+def test_don_minus_sem_sinal_de_menos_na_fonte() -> None:
+    # Achado 15/07 -- usuario suspeitou que OP14-078 (Bullet String,
+    # "[Counter] DON!! 1: ...") tinha o sinal de menos faltando no dado
+    # cru (deveria ser "DON!! -1:"). Confirmado: cards_rows.csv realmente
+    # nao tem o "-", e o parser de don_minus so aceitava a forma COM sinal
+    # -- 51 cartas reais no banco tinham esse mesmo problema de dado (vs
+    # 33 com o sinal certo, que ja funcionavam). Fallback: quando o numero
+    # e imediatamente seguido de ':' (a notacao de custo oficial sempre
+    # tem o ':' colado), trata como don_minus mesmo sem o sinal.
+    costs = get_card_effects("OP14-078").get("counter", {}).get("costs", [])
+    check("OP14-078 parseia don_minus:1 mesmo sem o sinal de menos na fonte",
+          any(c.get("type") == "don_minus" and c.get("count") == 1 for c in costs))
+
+    lider_doflamingo = mk("XDOFL", "Lider Doflamingo", card_type="LEADER",
+                           color="Yellow", sub_types="Donquixote Pirates")
+    me = GameState(leader=lider_doflamingo, turn=3, don_available=3, don_deck=7)
+    opp = GameState(leader=mk("XOPPL", "Lider Oponente", card_type="LEADER"), turn=3)
+    bullet = real_card("OP14-078")
+    EffectExecutor(me, opp).execute(bullet, "counter")
+    check("OP14-078 paga o custo de verdade: 1 DON sai do campo, volta pro deck de DON",
+          me.don_available == 2 and me.don_deck == 8)
+
+
 def main() -> int:
     test_turn_order_imu_prefers_second()
     test_empty_throne_beats_direct_five_elders_play()
@@ -761,6 +784,7 @@ def main() -> int:
     test_give_don_da_so_o_necessario_nao_sempre_o_teto()
     test_hand_to_deck_clausula_loot_apos_draw()
     test_ipponmatsu_immunity_exige_leader_slash_e_don_rested()
+    test_don_minus_sem_sinal_de_menos_na_fonte()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0

@@ -419,6 +419,16 @@ def parse_costs(text):
     # "you may" perto (antes ou depois, ex: dentro do parêntese explicativo)
     # -> opcional; senão -> obrigatório.
     m = re.search(r'don!!\s*[−\-‐]\s*(\d+)', t)
+    if not m:
+        # Fallback pra sinal de menos AUSENTE na fonte (achado 15/07 via
+        # revisao do usuario, OP14-078 Bullet String, "DON!! 1:" deveria
+        # ser "DON!! -1:" -- busca no banco achou 51 cartas reais com esse
+        # mesmo problema de dado no cards_rows.csv, vs 33 com o sinal
+        # certo). So casa quando o numero e IMEDIATAMENTE seguido de ':'
+        # (a notacao de custo oficial sempre tem o ':' colado -- prosa que
+        # so MENCIONA DON!! cards, tipo "add up to 1 DON!! card", nao tem
+        # esse padrao, entao o fallback nao dispara por engano).
+        m = re.search(r'don!{0,2}\s*(\d+)\s*:', t)
     if m:
         x = int(m.group(1))
         idx = m.start()

@@ -1,5 +1,50 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-15 (150) - Claude - Bug de DADO sistemico achado (sinal "-" ausente em "DON!! -N:"): 28 cartas corrigidas, MAS 1a tentativa de fix introduziu duplicacao (autocorrigida antes de commitar)
+
+**Contexto:** proxima pendencia da revisao do usuario no bloco 149 --
+OP14-078 (Bullet String), usuario suspeitou "aqui tá faltando o sinal de
+-, é DON!! -1". Confirmado: `cards_rows.csv` realmente tem "DON!! 1:" sem
+o sinal de menos pra essa carta. Busca no banco inteiro achou **84
+cartas** com a notacao curta de custo "DON!! N:" -- 51 SEM o sinal
+(problema de dado na fonte) e 33 COM o sinal correto.
+
+**Erro cometido e autocorrigido nesta sessao (registrar pra nao repetir):**
+1a tentativa tratou "DON!! N:" como uma acao NOVA (`rest_don`), sem
+perceber que o parser JA tinha um regex pra "DON!! -N:" (`don_minus`,
+"devolve N DON do campo pro deck de DON" -- mecanica de ramp reverso,
+DIFERENTE de rest_don que so tapa o DON temporariamente). Isso teria
+CRIADO UM CUSTO DUPLICADO nas 33 cartas que ja tinham o sinal certo (a
+carta pagaria rest_don E don_minus pro mesmo "DON!! -1:"). Pego pelo
+`diff_parser.py` (EB01-038 mostrou os 2 custos juntos na mesma
+comparacao) ANTES de rodar `gerar_dbs`/commitar -- corrigido removendo a
+action nova e em vez disso estendendo o regex EXISTENTE de `don_minus`
+(`gerar_effects_db.py`) pra aceitar fallback sem sinal de menos QUANDO o
+numero e imediatamente seguido de ':' (a notacao oficial de custo sempre
+tem o ':' colado, entao o fallback nao pega prosa que so MENCIONA DON!!
+cards por acaso).
+
+**Fix final (1 regex estendido, 28 cartas mudaram):** `don_minus` agora
+tenta o regex com sinal primeiro; se nao casar, tenta
+`don!!\s*(\d+)\s*:` (sem sinal, colon obrigatorio). OP14-078 e outras 27
+cartas reais ganharam o custo `don_minus` que faltava -- antes a IA
+ativava essas habilidades de graca, sem pagar o DON.
+
+**Validado:** teste dirigido novo confirma NAO SO o parse, mas a EXECUCAO
+real (OP14-078: 1 DON sai do campo, vai pro deck de DON, o buff so
+acontece se o custo for pago). `smoke_fast` (54 checks) + `smoke_test`
+amplo, ambos verdes. `diff_parser.py` PERDEU=0, `gerar_dbs.py` +
+re-snapshot feitos.
+
+**Nota pra quem continuar:** o processo de pegar o erro ANTES de commitar
+(rodar `diff_parser.py` e OLHAR as mudancas, nao so checar PERDEU=0) foi o
+que evitou consolidar um bug novo -- reforca que `diff_parser.py` serve
+tambem pra AUDITORIA de conteudo, nao so regressao. Continuar essa
+disciplina nos itens restantes da lista do usuario (ver bloco 149:
+PRB02-006 Zoro substituicao, OP12-058 Whitebeard reveal-play, OP12-020
+Zoro lider 2 clausulas, OP10-112 Kid trash-vs-attack, OP09-118 Roger
+win-condition unica -- ainda nao corrigidos).
+
 ## 2026-07-15 (149) - Claude - Usuario revisou 8 suspeitos manualmente -- 14 cartas corrigidas via 2 causas raiz (loot pos-draw, imunidade condicional com checador dedicado)
 
 **Contexto:** usuario leu a saida do `audit_parser_coverage.py` linha a

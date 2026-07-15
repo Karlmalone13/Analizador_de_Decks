@@ -2009,6 +2009,13 @@
         "conditions": {
           "only_field_type": "straw hat crew"
         },
+        "costs": [
+          {
+            "type": "don_minus",
+            "count": 2,
+            "optional": false
+          }
+        ],
         "once_per_turn": true
       }
     }
@@ -2736,6 +2743,13 @@
           },
           {
             "action": "deck_bottom_rest"
+          }
+        ],
+        "costs": [
+          {
+            "type": "don_minus",
+            "count": 1,
+            "optional": false
           }
         ]
       },
@@ -4580,7 +4594,14 @@
         ],
         "conditions": {
           "leader_is": "sanji"
-        }
+        },
+        "costs": [
+          {
+            "type": "don_minus",
+            "count": 1,
+            "optional": false
+          }
+        ]
       },
       "your_turn": {
         "steps": [
@@ -4592,7 +4613,14 @@
         ],
         "conditions": {
           "leader_is": "sanji"
-        }
+        },
+        "costs": [
+          {
+            "type": "don_minus",
+            "count": 1,
+            "optional": false
+          }
+        ]
       }
     }
   },
@@ -4689,6 +4717,13 @@
             "dest": "life_top",
             "count": 1,
             "up_to": true
+          }
+        ],
+        "costs": [
+          {
+            "type": "don_minus",
+            "count": 1,
+            "optional": false
           }
         ]
       }
@@ -6803,6 +6838,13 @@
             "target": "opp_character",
             "power_lte": 6000
           }
+        ],
+        "costs": [
+          {
+            "type": "don_minus",
+            "count": 1,
+            "optional": false
+          }
         ]
       }
     }
@@ -7044,6 +7086,13 @@
             "amount": 4000,
             "target": "leader",
             "duration": "battle_only"
+          }
+        ],
+        "costs": [
+          {
+            "type": "don_minus",
+            "count": 1,
+            "optional": false
           }
         ]
       },
@@ -34936,6 +34985,13 @@
             "count": 1,
             "up_to": true
           }
+        ],
+        "costs": [
+          {
+            "type": "don_minus",
+            "count": 10,
+            "optional": false
+          }
         ]
       }
     }
@@ -40013,7 +40069,14 @@
         ],
         "conditions": {
           "leader_type": "donquixote pirates"
-        }
+        },
+        "costs": [
+          {
+            "type": "don_minus",
+            "count": 1,
+            "optional": false
+          }
+        ]
       },
       "passive": {
         "steps": [
@@ -40251,6 +40314,13 @@
             "count": 1,
             "cost_lte": 5,
             "filter_type": "donquixote pirates"
+          }
+        ],
+        "costs": [
+          {
+            "type": "don_minus",
+            "count": 1,
+            "optional": false
           }
         ],
         "once_per_turn": true
@@ -43503,6 +43573,13 @@
             "duration": "battle_only"
           }
         ],
+        "costs": [
+          {
+            "type": "don_minus",
+            "count": 1,
+            "optional": false
+          }
+        ],
         "once_per_turn": true
       },
       "on_opp_attack": {
@@ -43512,6 +43589,13 @@
             "amount": 1000,
             "target": "self",
             "duration": "battle_only"
+          }
+        ],
+        "costs": [
+          {
+            "type": "don_minus",
+            "count": 1,
+            "optional": false
           }
         ],
         "once_per_turn": true
@@ -43796,6 +43880,13 @@
             "amount": 2000,
             "target": "leader",
             "duration": "this_turn"
+          }
+        ],
+        "costs": [
+          {
+            "type": "don_minus",
+            "count": 5,
+            "optional": false
           }
         ],
         "once_per_turn": true
@@ -46950,6 +47041,13 @@
         "conditions": {
           "leader_type_includes": "baroque works"
         },
+        "costs": [
+          {
+            "type": "don_minus",
+            "count": 1,
+            "optional": false
+          }
+        ],
         "once_per_turn": true
       }
     }
@@ -47124,6 +47222,13 @@
             "action": "play_card",
             "count": 1,
             "source": "self"
+          }
+        ],
+        "costs": [
+          {
+            "type": "don_minus",
+            "count": 1,
+            "optional": false
           }
         ]
       }
@@ -50102,6 +50207,13 @@
             "amount": 2000,
             "target": "all_opp_characters",
             "duration": "until_opp_turn_end"
+          }
+        ],
+        "costs": [
+          {
+            "type": "don_minus",
+            "count": 3,
+            "optional": false
           }
         ]
       }
@@ -53587,6 +53699,13 @@
             "duration": "this_turn"
           }
         ],
+        "costs": [
+          {
+            "type": "don_minus",
+            "count": 1,
+            "optional": false
+          }
+        ],
         "once_per_turn": true
       },
       "passive": {
@@ -53898,6 +54017,13 @@
             "count": 1,
             "up_to": true
           }
+        ],
+        "costs": [
+          {
+            "type": "don_minus",
+            "count": 1,
+            "optional": false
+          }
         ]
       }
     }
@@ -54076,7 +54202,14 @@
         ],
         "conditions": {
           "leader_type": "donquixote pirates"
-        }
+        },
+        "costs": [
+          {
+            "type": "don_minus",
+            "count": 1,
+            "optional": false
+          }
+        ]
       }
     }
   },
@@ -57274,6 +57407,13 @@
           {
             "action": "gain_blocker"
           }
+        ],
+        "costs": [
+          {
+            "type": "don_minus",
+            "count": 1,
+            "optional": false
+          }
         ]
       },
       "passive": {
@@ -57309,6 +57449,13 @@
           {
             "action": "draw",
             "count": 1
+          }
+        ],
+        "costs": [
+          {
+            "type": "don_minus",
+            "count": 1,
+            "optional": false
           }
         ]
       },
@@ -57352,6 +57499,13 @@
           {
             "action": "draw",
             "count": 1
+          }
+        ],
+        "costs": [
+          {
+            "type": "don_minus",
+            "count": 1,
+            "optional": false
           }
         ]
       },
@@ -57431,6 +57585,13 @@
             "action": "draw",
             "count": 1
           }
+        ],
+        "costs": [
+          {
+            "type": "don_minus",
+            "count": 1,
+            "optional": false
+          }
         ]
       },
       "when_attacking": {
@@ -57467,6 +57628,13 @@
           {
             "action": "draw",
             "count": 1
+          }
+        ],
+        "costs": [
+          {
+            "type": "don_minus",
+            "count": 1,
+            "optional": false
           }
         ]
       },
@@ -57717,7 +57885,14 @@
         ],
         "conditions": {
           "leader_is": "enel"
-        }
+        },
+        "costs": [
+          {
+            "type": "don_minus",
+            "count": 1,
+            "optional": false
+          }
+        ]
       }
     }
   },
@@ -57759,7 +57934,14 @@
         ],
         "conditions": {
           "leader_is": "enel"
-        }
+        },
+        "costs": [
+          {
+            "type": "don_minus",
+            "count": 1,
+            "optional": false
+          }
+        ]
       }
     }
   },
@@ -57782,6 +57964,13 @@
           },
           {
             "action": "lock_opp_don"
+          }
+        ],
+        "costs": [
+          {
+            "type": "don_minus",
+            "count": 1,
+            "optional": false
           }
         ]
       }
@@ -57821,6 +58010,13 @@
           {
             "action": "draw",
             "count": 1
+          }
+        ],
+        "costs": [
+          {
+            "type": "don_minus",
+            "count": 2,
+            "optional": false
           }
         ]
       }
@@ -59087,6 +59283,13 @@
           {
             "action": "trash_from_hand",
             "count": 1
+          }
+        ],
+        "costs": [
+          {
+            "type": "don_minus",
+            "count": 1,
+            "optional": false
           }
         ]
       },
@@ -60855,6 +61058,13 @@
             "action": "lock_opp_blocker_turn",
             "count": 1,
             "duration": "until_opp_turn_end"
+          }
+        ],
+        "costs": [
+          {
+            "type": "don_minus",
+            "count": 1,
+            "optional": false
           }
         ],
         "once_per_turn": true
