@@ -25810,8 +25810,11 @@
         ],
         "costs": [
           {
-            "type": "trash_from_hand",
-            "count": 1
+            "type": "trash_typed_hand_or_named_hand_field",
+            "count": 1,
+            "filter_type": "fish-man",
+            "alternate_count": 1,
+            "alternate_name": "the ark noah"
           }
         ]
       }

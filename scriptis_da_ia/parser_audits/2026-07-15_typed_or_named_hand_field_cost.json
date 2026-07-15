@@ -1,0 +1,19 @@
+{
+  "trigger_card": "OP06-033",
+  "problem": "Custo alternativo era reduzido a trashar qualquer carta da mao e ignorava The Ark Noah no campo.",
+  "grammar_family": "trash typed card from hand OR named card from hand or field",
+  "queries": [
+    "trash N type card from your hand or N named card from your hand or field",
+    "from your hand or field as an effect cost"
+  ],
+  "cards_found": ["OP06-033"],
+  "resolution_scope": "isolated_after_global_scan",
+  "decision": "Criar um custo composto declarativo consumido pelo mesmo executor e planner; nenhuma outra carta do banco usa esta gramatica hoje.",
+  "validated_by": [
+    "Card List oficial",
+    "censo completo de cards_rows.csv",
+    "smoke_test.py",
+    "smoke_test_broad.py",
+    "diff_parser.py PERDEU=0"
+  ]
+}

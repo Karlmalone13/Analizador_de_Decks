@@ -3022,6 +3022,41 @@ class EffectExecutor:
                         trashed.append(worst.name[:15])
                 if trashed:
                     self._cost_logs.append(f'custo: trashou da mão: {", ".join(trashed)}')
+            elif ctype == 'trash_typed_hand_or_named_hand_field':
+                from optcg_engine.rules_facade import eligible_cards
+
+                count = cost.get('count', 1)
+                typed_hand = eligible_cards(
+                    self.me.hand, filter_text=cost.get('filter_type', ''))
+                named = (cost.get('alternate_name') or '').lower()
+                named_hand = [c for c in self.me.hand if named in c.name.lower()]
+                named_field = [c for c in self.me.field_chars if named in c.name.lower()]
+                if self.me.field_stage and named in self.me.field_stage.name.lower():
+                    named_field.append(self.me.field_stage)
+                options = [('hand', c) for c in typed_hand + named_hand]
+                options.extend(('field', c) for c in named_field)
+                unique = []
+                seen = set()
+                for zone, candidate in options:
+                    if id(candidate) not in seen:
+                        unique.append((zone, candidate))
+                        seen.add(id(candidate))
+                if len(unique) < count:
+                    return False
+                for _ in range(count):
+                    zone, chosen = min(
+                        unique,
+                        key=lambda item: (self._trash_value(item[1]) if item[0] == 'hand'
+                                          else item[1].board_value() * 10))
+                    if zone == 'hand':
+                        remove_by_identity(self.me.hand, chosen)
+                    elif chosen is self.me.field_stage:
+                        self.me.field_stage = None
+                    else:
+                        remove_by_identity(self.me.field_chars, chosen)
+                    self.me.trash.append(chosen)
+                    unique = [item for item in unique if item[1] is not chosen]
+                self._cost_logs.append(f'custo: trashou {count} carta(s) por tipo/nome')
             elif ctype == 'trash_char_or_hand':
                 from optcg_engine.rules_facade import eligible_cards
 
@@ -5751,6 +5786,7 @@ class EffectExecutor:
         return min(hand, key=self._trash_value)
 
     _SACRIFICE_COST_TYPES = {'trash_from_hand', 'trash_hand', 'trash_char_or_hand',
+                             'trash_typed_hand_or_named_hand_field',
                              'ko_own_character', 'trash_self', 'trash_own_life'}
 
     def _worth_paying_optional_costs(self, costs: list, card: Card) -> bool:
@@ -5788,6 +5824,22 @@ class EffectExecutor:
                                    filter_text=c.get('filter_type', ''))
             if chars and min(ch.board_value() * 10 for ch in chars) <= 60:
                 return True
+
+        for c in costs:
+            if c.get('type') != 'trash_typed_hand_or_named_hand_field':
+                continue
+            from optcg_engine.rules_facade import eligible_cards
+            named = (c.get('alternate_name') or '').lower()
+            hand = eligible_cards(self.me.hand, filter_text=c.get('filter_type', ''))
+            hand.extend(x for x in self.me.hand if named in x.name.lower())
+            field = [x for x in self.me.field_chars if named in x.name.lower()]
+            if self.me.field_stage and named in self.me.field_stage.name.lower():
+                field.append(self.me.field_stage)
+            values = [self._trash_value(x) for x in hand]
+            values.extend(x.board_value() * 10 for x in field)
+            # _trash_value tem piso estrutural 75 mesmo para carta 0/0 sem
+            # counter; usar 60 tornaria as alternativas da mao impossiveis.
+            return bool(values) and min(values) <= 80
 
         if len(self.me.hand) < 2:
             return False
@@ -8015,6 +8067,17 @@ class OPTCGMatch:
                 elif len(p.hand) < cnt:
                     return False, f'custo trash_hand: mão com só {len(p.hand)} cartas'
 
+            elif ctype == 'trash_typed_hand_or_named_hand_field':
+                named = (c.get('alternate_name') or '').lower()
+                typed = [c2 for c2 in p.hand if ftype in c2.sub_types.lower()]
+                named_hand = [c2 for c2 in p.hand if named in c2.name.lower()]
+                named_field = [c2 for c2 in p.field_chars if named in c2.name.lower()]
+                if p.field_stage and named in p.field_stage.name.lower():
+                    named_field.append(p.field_stage)
+                available = {id(c2) for c2 in typed + named_hand + named_field}
+                if len(available) < cnt:
+                    return False, 'custo tipo/nome: nenhuma opcao valida na mao ou campo'
+
             elif ctype == 'trash_char_or_hand':
                 # "trash 1 [Tipo] Character (campo) OU 1 carta da mão"
                 # O filtro de tipo aplica SOMENTE ao personagem de campo.
@@ -8069,7 +8132,8 @@ class OPTCGMatch:
         # ── 2. Avalia se o benefício compensa ────────────────────────────────
         tem_custo_trash = any(c.get('type') in
                               ('trash_from_hand', 'trash_hand',
-                               'trash_char_or_hand', 'trash_char')
+                               'trash_char_or_hand', 'trash_char',
+                               'trash_typed_hand_or_named_hand_field')
                               for c in costs)
 
         # Draw / search — vantagem pura, sempre vale se custo foi pago
@@ -8077,7 +8141,8 @@ class OPTCGMatch:
             if tem_custo_trash:
                 cnt_trash = next((c.get('count', 1) for c in costs
                                   if c.get('type') in ('trash_from_hand', 'trash_hand',
-                                                        'trash_char_or_hand')), 1)
+                                                        'trash_char_or_hand',
+                                                        'trash_typed_hand_or_named_hand_field')), 1)
                 if len(p.hand) <= cnt_trash:
                     return False, (f'custo-benefício draw: mão ({len(p.hand)}) '
                                    f'não sobra após trashar {cnt_trash}')
@@ -8565,7 +8630,8 @@ class OPTCGMatch:
             base = 60
 
         # Custo real: quanto a ativação nos custa (trash de mão, DON, etc.)
-        tem_trash_hand = any(c.get('type') in ('trash_from_hand', 'trash_hand', 'trash_char_or_hand')
+        tem_trash_hand = any(c.get('type') in ('trash_from_hand', 'trash_hand', 'trash_char_or_hand',
+                                               'trash_typed_hand_or_named_hand_field')
                              for c in costs)
         tem_ko_own = any(c.get('type') == 'ko_own_character' for c in costs)
 
@@ -8600,7 +8666,8 @@ class OPTCGMatch:
             trash_count = sum(c.get('count', 1) for c in costs
                               if c.get('type') in ('trash_from_hand',
                                                    'trash_hand',
-                                                   'trash_char_or_hand'))
+                                                   'trash_char_or_hand',
+                                                   'trash_typed_hand_or_named_hand_field'))
             is_ciclo_neutro = bool(draw_count) and draw_count <= trash_count
 
             # Estimar qual carta seria trashada e quanto ela vale. Só penaliza

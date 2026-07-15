@@ -626,6 +626,21 @@ def parse_costs(text):
             typed_cost['color'] = typed_composite.group(2)
         costs.append(typed_cost)
 
+    # Escolha composta (1 carta no censo atual, OP06-033): carta de um TIPO
+    # da mao OU carta de NOME especifico da mao/campo.
+    typed_or_named = re.search(
+        r'trash (\d+)\s+[\[\{"\']([^\]\}"\']+)[\]\}"\']\s+type cards? '
+        r'from your hand or (\d+)\s+\[([^\]]+)\] from your hand or field\s*:', t)
+    if typed_or_named:
+        costs[:] = [c for c in costs if c.get('type') != 'trash_from_hand']
+        costs.append({
+            'type': 'trash_typed_hand_or_named_hand_field',
+            'count': int(typed_or_named.group(1)),
+            'filter_type': typed_or_named.group(2).strip(),
+            'alternate_count': int(typed_or_named.group(3)),
+            'alternate_name': typed_or_named.group(4).strip(),
+        })
+
     # Custo de REVELAR N cartas da mao com filtro de tipo (ex: OP08-044
     # Kingdew, "you may reveal 2 cards with a type including 'Whitebeard
     # Piratess' from your hand: [efeito]"). Achado 15/07 (revisao do

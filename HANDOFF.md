@@ -1,5 +1,24 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-15 (187) - Vander Decken: custo alternativo mao/campo
+
+O censo global de "trash [tipo] from hand OR [nome] from hand or field"
+encontrou uma unica carta-base: OP06-033 Vander Decken IX. O custo anterior
+era `trash_from_hand` sem filtro, portanto aceitava qualquer carta e ignorava
+The Ark Noah no campo.
+
+O parser agora emite o custo declarativo
+`trash_typed_hand_or_named_hand_field`: Fish-Man da mao OU The Ark Noah da
+mao/campo. Executor, pagabilidade e avaliacao opcional consultam a mesma
+estrutura; ao pagar pelo campo, a Stage sai corretamente para o trash. Testes
+cobrem as tres rotas validas e a rejeicao de carta sem tipo/nome elegivel.
+
+Validacao: Card List oficial; censo completo; diff inicial MUDOU 1 / PERDEU
+0; smoke direcionado passou; smoke amplo 40/40; snapshot final 0/0/0. Auditor
+permaneceu em **376 suspeitos**, pois o parse antigo ja continha o numero 1 e
+o auditor numerico nao detectava a semantica perdida. Registro:
+`parser_audits/2026-07-15_typed_or_named_hand_field_cost.json`.
+
 ## 2026-07-15 (186) - DON estritamente menor + trash tipado: 379 -> 376
 
 ST05-005 Carina revelou duas familias globais. O censo encontrou 5 cartas

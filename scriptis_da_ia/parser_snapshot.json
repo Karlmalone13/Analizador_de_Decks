@@ -16078,8 +16078,11 @@
   "on_play": {
    "costs": [
     {
+     "alternate_count": 1,
+     "alternate_name": "the ark noah",
      "count": 1,
-     "type": "trash_from_hand"
+     "filter_type": "fish-man",
+     "type": "trash_typed_hand_or_named_hand_field"
     }
    ],
    "steps": [

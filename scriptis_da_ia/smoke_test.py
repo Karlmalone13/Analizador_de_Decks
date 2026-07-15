@@ -1759,6 +1759,48 @@ check('ST19-002 preserva simultaneamente tipo Navy e cor black no custo',
       and sengoku_cost.get('color') == 'black'
       and sengoku_cost.get('count') == 2)
 
+# 36. OP06-033 Vander Decken: Fish-Man da mao OU The Ark Noah da mao/campo.
+vander_cost = get_card_effects('OP06-033')['on_play']['costs'][0]
+check('OP06-033 preserva as duas alternativas e suas zonas',
+      vander_cost.get('type') == 'trash_typed_hand_or_named_hand_field'
+      and vander_cost.get('filter_type') == 'fish-man'
+      and vander_cost.get('alternate_name') == 'the ark noah')
+
+def vander_case(hand=None, stage=None):
+    me, opp = me_opp()
+    vander = de._make_card('OP06-033', {
+        'name': 'Vander Decken IX', 'type': 'CHARACTER', 'power': 2000,
+        'sub_types': 'Fish-Man/Flying Pirates',
+    })
+    target = mk('RESTED', 'Alvo rested', cost=5)
+    target.rested = True
+    opp.field_chars = [target]
+    me.hand = list(hand or [])
+    me.field_stage = stage
+    logs = EffectExecutor(me, opp).execute(vander, 'on_play')
+    return me, opp, target, logs
+
+fish = mk('FISH', 'Fish-Man barato', sub_types='Fish-Man', power=0, cost=0)
+other = mk('OTHER', 'Carta qualquer', sub_types='Navy', power=0, cost=0)
+me, opp, target, logs = vander_case([fish, other])
+check('OP06-033 pode pagar com Fish-Man da mao e resolver KO',
+      fish in me.trash and other in me.hand and target not in opp.field_chars and bool(logs))
+
+ark_hand = mk('ARK-H', 'The Ark Noah', card_type='STAGE', power=0, cost=0)
+me, opp, target, logs = vander_case([ark_hand, other])
+check('OP06-033 pode pagar com The Ark Noah da mao',
+      ark_hand in me.trash and target not in opp.field_chars and bool(logs))
+
+ark_field = mk('ARK-F', 'The Ark Noah', card_type='STAGE', power=0)
+me, opp, target, logs = vander_case([], ark_field)
+check('OP06-033 pode pagar com The Ark Noah do campo',
+      me.field_stage is None and ark_field in me.trash
+      and target not in opp.field_chars and bool(logs))
+
+me, opp, target, logs = vander_case([other])
+check('OP06-033 nao aceita carta sem tipo/nome valido',
+      other in me.hand and target in opp.field_chars and not logs)
+
 print()
 print(f'{"TODOS OS TESTES PASSARAM" if FAIL == 0 else f"{FAIL} TESTE(S) FALHARAM"}')
 sys.exit(1 if FAIL else 0)
