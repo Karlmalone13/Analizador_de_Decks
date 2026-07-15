@@ -1515,6 +1515,41 @@ def test_evento_parametrizado_de_don_devolvido() -> None:
     check("P-077 reativa o Stage roxo quando o evento dispara", not stage.rested)
 
 
+def test_ace_evento_dano_ou_ko_proprio() -> None:
+    effects = get_card_effects("OP13-002")
+    first = effects["on_opp_attack"]
+    event = effects["when_damage_or_own_char_ko"]
+    check("Ace separa debuff defensivo do draw por evento",
+          [s.get("action") for s in first["steps"]] == ["debuff_power"]
+          and [s.get("action") for s in event["steps"]] == ["draw"])
+    check("Ace preserva DON x1, once e base power 6000+",
+          event.get("don_requirement") == 1
+          and event.get("once_per_turn") is True
+          and event.get("own_char_base_power_gte") == 6000)
+
+    ace = real_card("OP13-002")
+    ace.don_attached = 1
+    draw1, draw2 = mk("XAD1", "Compra dano"), mk("XAD2", "Compra KO")
+    me = GameState(leader=ace, deck=[draw2, draw1], global_turn=3)
+    opp = GameState(leader=mk("XAOL", "Opp", card_type="LEADER"), global_turn=3)
+    ee = EffectExecutor(me, opp)
+    ee._dispatch_damage_or_own_char_ko(me)
+    check("Ace compra ao receber dano", draw1 in me.hand)
+    ee._dispatch_damage_or_own_char_ko(me, mk("XAK6", "KO 6000", power=6000))
+    check("Ace respeita once per turn entre dano e KO", draw2 not in me.hand)
+
+    ace2 = real_card("OP13-002")
+    ace2.don_attached = 1
+    draw3 = mk("XAD3", "Compra valida")
+    me2 = GameState(leader=ace2, deck=[draw3], global_turn=4)
+    opp2 = GameState(leader=mk("XAO2", "Opp", card_type="LEADER"), global_turn=4)
+    ee2 = EffectExecutor(me2, opp2)
+    ee2._dispatch_damage_or_own_char_ko(me2, mk("XAK5", "KO 5000", power=5000))
+    check("Ace nao compra por KO abaixo de base power 6000", draw3 in me2.deck)
+    ee2._dispatch_damage_or_own_char_ko(me2, mk("XAK7", "KO 7000", power=7000))
+    check("Ace compra por KO de base power 6000+", draw3 in me2.hand)
+
+
 def test_custo_composto_trash_para_fundo() -> None:
     for code in ("OP05-082", "OP05-088"):
         costs = get_card_effects(code).get("activate_main", {}).get("costs", [])
@@ -2088,6 +2123,7 @@ def main() -> int:
     test_custos_condicionais_da_propria_carta_na_mao()
     test_searcher_cost_gte_e_peek_deck_oponente()
     test_evento_parametrizado_de_don_devolvido()
+    test_ace_evento_dano_ou_ko_proprio()
     test_custo_composto_trash_para_fundo()
     test_reducao_de_custo_com_limite()
     test_don_on_field_lte_condicao_ausente()

@@ -30714,14 +30714,21 @@
    "once_per_turn": true,
    "steps": [
     {
-     "action": "draw",
-     "count": 1
-    },
-    {
      "action": "debuff_power",
      "amount": 2000,
      "duration": "battle_only",
      "target": "opp_leader_or_character"
+    }
+   ]
+  },
+  "when_damage_or_own_char_ko": {
+   "don_requirement": 1,
+   "once_per_turn": true,
+   "own_char_base_power_gte": 6000,
+   "steps": [
+    {
+     "action": "draw",
+     "count": 1
     }
    ]
   }

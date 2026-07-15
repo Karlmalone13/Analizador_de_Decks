@@ -49219,10 +49219,6 @@
       "on_opp_attack": {
         "steps": [
           {
-            "action": "draw",
-            "count": 1
-          },
-          {
             "action": "debuff_power",
             "amount": 2000,
             "target": "opp_leader_or_character",
@@ -49236,6 +49232,17 @@
           }
         ],
         "once_per_turn": true
+      },
+      "when_damage_or_own_char_ko": {
+        "steps": [
+          {
+            "action": "draw",
+            "count": 1
+          }
+        ],
+        "own_char_base_power_gte": 6000,
+        "once_per_turn": true,
+        "don_requirement": 1
       }
     }
   },

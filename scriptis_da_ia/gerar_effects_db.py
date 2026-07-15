@@ -4973,12 +4973,41 @@ def parse_card_effect(card_text, card_type):
             result['when_don_returned'] = event_entry
 
             # Os regex genericos [Your Turn]/[Opponent's Turn] capturam o
-            # mesmo corpo como se fosse uma aura continua. Remove somente a
-            # duplicata estrutural; outros efeitos da carta permanecem.
+            # mesmo corpo como aura. Mantem apenas o evento parametrizado.
             for generic in ('your_turn', 'opp_turn'):
                 if (generic in result
                         and result[generic].get('steps') == event_steps):
                     del result[generic]
+
+    # Evento alternativo: dano ao jogador OU K.O. de Character proprio com
+    # limiar de base power. A redacao e unica hoje (OP13-002), mas o entry
+    # parametrizado evita fundir este draw ao [On Your Opponent's Attack].
+    damage_or_ko_m = re.search(
+        r'(?:\[don!! x(\d+)\]\s*)?(?:\[once per turn\]\s*)?'
+        r'when you take damage or your character with (\d+) base power or more '
+        r'is k\.o\.?[,.]?\s*(.+?)' + LOOKAHEAD_DELIM,
+        t_low, re.DOTALL | re.IGNORECASE)
+    if damage_or_ko_m:
+        event_steps = parse_block(damage_or_ko_m.group(3).strip(),
+                                  'when_damage_or_own_char_ko')
+        if event_steps:
+            event_entry = {
+                'steps': event_steps,
+                'own_char_base_power_gte': int(damage_or_ko_m.group(2)),
+                'once_per_turn': True,
+            }
+            if damage_or_ko_m.group(1):
+                event_entry['don_requirement'] = int(damage_or_ko_m.group(1))
+            result['when_damage_or_own_char_ko'] = event_entry
+            # Sem uma tag formal entre os dois efeitos, o extrator generico
+            # de [On Your Opponent's Attack] enxerga tambem o draw posterior.
+            # Remove apenas a copia exata que pertence ao novo evento.
+            defensive = result.get('on_opp_attack')
+            if defensive:
+                defensive['steps'] = [
+                    s for s in defensive.get('steps', [])
+                    if s.get('action') != 'draw'
+                ]
 
     # Tags ADJACENTES COLADAS sem barra, ex: "[Opponent's Turn] [On K.O.]
     # efeito" -- diferente do caso "[A]/[B]" (que SAO dois triggers

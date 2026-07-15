@@ -73972,13 +73972,14 @@
   "attribute": "Special",
   "effects": [
    {
-    "action": "draw",
-    "trigger": "on_opp_attack"
-   },
-   {
     "action": "debuff_power",
     "trigger": "on_opp_attack",
     "target": "opp_leader_or_character"
+   },
+   {
+    "action": "draw",
+    "trigger": "when_damage_or_own_char_ko",
+    "don_requirement": 1
    }
   ],
   "synergy_states": {},

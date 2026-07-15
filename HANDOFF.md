@@ -1,5 +1,40 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-15 (183) - Ace: dano OU K.O. proprio 6000+: 382 -> 381
+
+OP13-002 Portgas.D.Ace tinha dois efeitos fundidos em `on_opp_attack`: o draw
+por dano/K.O. era executado junto do debuff defensivo e exigia trash da mao
+incorretamente. O censo exato de `When you take damage or your Character...
+is K.O.'d` encontrou uma unica redacao no banco; o censo mais amplo mostrou
+que outros `or` pertencem a eventos diferentes e nao foram misturados nesta
+gramatica.
+
+O parser agora emite `when_damage_or_own_char_ko` com `DON x1`, once per turn,
+`own_char_base_power_gte=6000` e draw separado. O dispatcher central resolve
+o evento ao receber dano (inclusive Banish) ou quando Character proprio
+elegivel e K.O.ado. O marcador once-per-turn vive na carta, nao na instancia
+temporaria do executor.
+
+O trabalho revelou e corrigiu uma lacuna adjacente real: K.O. por efeito no
+handler generico e em `ko_selected` agora dispara o `[On K.O.]` da carta e o
+evento do dono; antes o engine fazia isso apenas em batalha, apesar do TODO no
+proprio codigo. Trash continua distinto de K.O. e nao dispara esses eventos.
+
+Card List oficial confirmou os dois efeitos, DON x1, base power 6000+ e once
+per turn. Validacao: diff GANHOU 0 / PERDEU 0 / MUDOU 1; 2614 cartas; smokes
+curto e amplo passaram. Auditor: **381 suspeitos** (382 -> 381).
+
+Competitividade: a fidelidade objetiva aumentou (menos efeito fantasma, K.O.
+por efeito agora encadeia triggers reais), mas ainda nao ha prova de aumento
+de win rate. A fila numerica caiu de 433 para 381 (-52; -12,0%); isso mede
+cobertura do parser, nao forca de jogo. Win rate exige benchmark pareado com
+seeds/decks fixos ou partidas reais apos a auditoria.
+
+Proximo suspeito real: OP13-079 Imu (regra de deckbuilding custo de Event 2+)
+ou, priorizando efeito de partida, OP13-080 e apenas falso positivo de alvo;
+ST01-011 tambem e falso positivo. O primeiro gap material seguinte deve ser
+confirmado no auditor reordenado antes da edicao.
+
 ## 2026-07-15 (182) - Character para Life do dono: 386 -> 382
 
 OP12-117 Slam Gibson nao perdia apenas `cost_lte=9`: o parser interpretava

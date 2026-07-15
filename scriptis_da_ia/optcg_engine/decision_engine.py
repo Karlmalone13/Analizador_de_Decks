@@ -3233,6 +3233,33 @@ class EffectExecutor:
             if logs and entry.get('once_per_turn'):
                 source._event_once_marker = marker
 
+    def _dispatch_damage_or_own_char_ko(self, owner: 'GameState',
+                                        ko_card: 'Card | None' = None) -> None:
+        """Dispara evento de dano recebido OU K.O. de Character proprio.
+
+        ``ko_card=None`` representa dano. Com carta, valida o base power
+        minimo antes de resolver. O requisito DON anexado e o once-per-turn
+        continuam centralizados em ``execute``.
+        """
+        other = self.opp if owner is self.me else self.me
+        cards = [owner.leader, *owner.field_chars]
+        for source in list(cards):
+            entry = get_card_effects(source.code).get(
+                'when_damage_or_own_char_ko')
+            if not entry:
+                continue
+            if (ko_card is not None
+                    and ko_card.power < entry.get('own_char_base_power_gte', 0)):
+                continue
+            marker = (owner.global_turn, 'when_damage_or_own_char_ko')
+            if (entry.get('once_per_turn')
+                    and getattr(source, '_damage_ko_once_marker', None) == marker):
+                continue
+            logs = EffectExecutor(owner, other).execute(
+                source, 'when_damage_or_own_char_ko')
+            if logs and entry.get('once_per_turn'):
+                source._damage_ko_once_marker = marker
+
     # ── Execução de steps individuais ────────────────────────────────────────
 
     def _resolve_cost_lte(self, step: dict, default=99):
@@ -3675,6 +3702,9 @@ class EffectExecutor:
                         remove_by_identity(candidates, target)
                         continue
                     remove_character_from_field(owner, target, 'trash')
+                    if action == 'ko':
+                        ee_target.execute(target, 'on_ko', is_opp_turn=owner is opp)
+                        ee_target._dispatch_damage_or_own_char_ko(owner, target)
                     remove_by_identity(candidates, target)
                     koed.append(target.name[:15])
             label = 'KO' if action == 'ko' else 'Trash'
@@ -3707,6 +3737,8 @@ class EffectExecutor:
                 return sub_log
             ko_name = alvo.name[:15]
             remove_character_from_field(opp, alvo, 'trash')
+            ee_target.execute(alvo, 'on_ko', is_opp_turn=True)
+            ee_target._dispatch_damage_or_own_char_ko(opp, alvo)
             return f'KO: {ko_name}'
 
         # ── Bounce ───────────────────────────────────────────────────────────
@@ -9756,6 +9788,9 @@ class OPTCGMatch:
                             phase='attack')
                         if verbose:
                             print(f'      💥 DANO! vida do oponente: {opp.life_count()}')
+                    # O dano foi recebido mesmo em Banish; apenas o Trigger
+                    # da carta de Life e bloqueado por Banish.
+                    EffectExecutor(opp, p)._dispatch_damage_or_own_char_ko(opp)
                     if life_card.has_trigger and not attacker.has_banish:
                         opp.triggers_activated += 1
                         ee_opp = EffectExecutor(opp, p)
@@ -9795,6 +9830,7 @@ class OPTCGMatch:
                 if verbose:
                     print(f'      💀 {target.name[:20]} foi KO!')
                 ko_logs = ee_opp.execute(target, 'on_ko', is_opp_turn=True)
+                ee_opp._dispatch_damage_or_own_char_ko(opp, target)
                 if verbose:
                     for log in ko_logs:
                         if log:
