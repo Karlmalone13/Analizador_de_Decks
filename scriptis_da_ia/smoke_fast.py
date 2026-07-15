@@ -1119,6 +1119,52 @@ def test_reveal_top_life_play_nome_custo_e_if_you_do() -> None:
           and me_ok.leader.power_buff == 2000)
 
 
+def test_op10_022_condicao_custo_e_play_life_por_tipo() -> None:
+    effect = get_card_effects("OP10-022").get("activate_main", {})
+    step = effect.get("steps", [{}])[0]
+    check("OP10-022 estrutura condicao, custo e play da Life",
+          effect.get("conditions", {}).get("total_chars_cost_gte") == 5
+          and effect.get("costs", [{}])[0].get("type") == "return_own_character_to_hand"
+          and step.get("action") == "play_from_life_top"
+          and step.get("filter_type") == "supernovas"
+          and step.get("cost_lte") == 5)
+
+    law = real_card("OP10-022")
+    law.don_attached = 1
+    me_fail = GameState(leader=law, turn=3)
+    opp_fail = GameState(leader=mk("XOPL", "Lider Opp", card_type="LEADER"), turn=3)
+    cheap = mk("XC1", "Cheap", cost=4)
+    wrong_top = mk("XWT", "Wrong", cost=4, sub_types="Navy")
+    me_fail.field_chars = [cheap]
+    me_fail.life = [wrong_top]
+    EffectExecutor(me_fail, opp_fail).execute(law, "activate_main")
+    check("OP10-022 nao paga bounce se condicao total cost <5",
+          cheap in me_fail.field_chars and not me_fail.hand)
+
+    law2 = real_card("OP10-022")
+    law2.don_attached = 1
+    me_wrong = GameState(leader=law2, turn=3)
+    opp_wrong = GameState(leader=mk("XOP2", "Lider Opp", card_type="LEADER"), turn=3)
+    body5 = mk("XC5", "Body5", cost=5)
+    me_wrong.field_chars = [body5]
+    me_wrong.life = [wrong_top]
+    EffectExecutor(me_wrong, opp_wrong).execute(law2, "activate_main")
+    check("OP10-022 nao paga bounce quando topo da Life falha o filtro",
+          body5 in me_wrong.field_chars and not me_wrong.hand)
+
+    law3 = real_card("OP10-022")
+    law3.don_attached = 1
+    me_ok = GameState(leader=law3, turn=3)
+    opp_ok = GameState(leader=mk("XOP3", "Lider Opp", card_type="LEADER"), turn=3)
+    body6 = mk("XC6", "Body6", cost=6)
+    target = mk("XSUP", "Supernova alvo", cost=5, sub_types="Supernovas")
+    me_ok.field_chars = [body6]
+    me_ok.life = [target]
+    EffectExecutor(me_ok, opp_ok).execute(law3, "activate_main")
+    check("OP10-022 paga bounce e joga topo elegivel da Life",
+          body6 in me_ok.hand and target in me_ok.field_chars and not me_ok.life)
+
+
 def test_don_on_field_lte_condicao_ausente() -> None:
     # Achado 15/07 -- "if you have N or less DON!! cards on your field"
     # (proprio lado) nunca existia, so o "N or more" (don_on_field_gte).
@@ -1515,6 +1561,7 @@ def main() -> int:
     test_zero_life_condicao_e_scoping_then_if()
     test_descarte_mao_oponente_variantes_e_escolha_cega()
     test_reveal_top_life_play_nome_custo_e_if_you_do()
+    test_op10_022_condicao_custo_e_play_life_por_tipo()
     test_don_on_field_lte_condicao_ausente()
     test_black_hole_negate_e_ko_encadeado()
     test_rebecca_add_from_trash_range_exclude_e_ordem()

@@ -59288,10 +59288,10 @@
   "attribute": "Slash",
   "effects": [
    {
-    "action": "bounce",
+    "action": "play_from_life_top",
     "trigger": "activate_main",
     "don_requirement": 1,
-    "target": "own_character"
+    "cost_lte": 5
    }
   ],
   "synergy_states": {},
@@ -59301,10 +59301,10 @@
   "has_counter_value": false,
   "has_counter_event": false,
   "is_blocker": false,
-  "is_removal": true,
+  "is_removal": false,
   "kos": false,
   "rests_opponent": false,
-  "bounces": true,
+  "bounces": false,
   "gives_don": false,
   "power_buff": false,
   "heals": false,

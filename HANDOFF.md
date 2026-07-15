@@ -1,5 +1,25 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-15 (174) - OP10-022 + custo global de auto-bounce: fila 416 -> 415
+
+OP10-022 foi fechado como subtipo da familia de jogar o topo da Life. Agora
+preserva DON x1/once per turn, condicao `total_chars_cost_gte=5`, custo real
+`return_own_character_to_hand` e `play_from_life_top` filtrado por Supernovas
+e custo<=5. O custo nao e pago quando a condicao falha nem quando o topo da
+Life e inelegivel; teste de execucao cobre os tres cenarios.
+
+A busca global do novo custo encontrou 5 cartas adicionais: OP07-055,
+OP09-030, OP13-031, OP13-059 e ST17-002. Os textos foram conferidos: em todos,
+`You may return 1 of your Characters ...:` e custo antes do beneficio. O
+parser agora representa isso genericamente, em vez de deixar gratuito.
+
+Validacao: diff GANHOU 0 / PERDEU 0 / MUDOU 6, todas conferidas;
+`gerar_dbs.py` 2614; smoke curto e amplo passaram. Auditor: **415 suspeitos**.
+
+Proximo confirmado da fila: EB02-019, permissao condicional de atacar apenas
+Characters no turno de entrada. Antes de corrigir, validar Q&A e buscar todas
+as variantes de Rush parcial/condicional.
+
 ## 2026-07-15 (173) - Trio ST13 joga topo da Life: fila 419 -> 416
 
 Varredura da familia de ST13-010 encontrou o trio de fraseado identico

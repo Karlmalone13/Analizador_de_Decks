@@ -1508,6 +1508,20 @@ class EffectExecutor:
                 return cost_lte is None or stage.cost <= cost_lte
             from optcg_engine.rules_facade import eligible_cards
             cost_lte = self._resolve_cost_lte(step, default=None)
+
+        if a == 'play_from_life_top':
+            if not me.life:
+                return False
+            top = me.life[-1]
+            if step.get('filter_name') and step['filter_name'].lower() not in top.name.lower():
+                return False
+            if step.get('filter_type') and _norm_type_text(step['filter_type']) not in _norm_type_text(top.sub_types):
+                return False
+            if step.get('cost_eq') is not None and top.cost != step['cost_eq']:
+                return False
+            if step.get('cost_lte') is not None and top.cost > step['cost_lte']:
+                return False
+            return top.card_type == 'CHARACTER'
             candidates = eligible_cards(
                 opp.field_chars,
                 cost_lte=cost_lte,
@@ -2686,6 +2700,9 @@ class EffectExecutor:
             diff = len(opp.field_chars) - len(me.field_chars)
             if diff < conds['chars_fewer_than_opp_by_gte']:
                 return False
+        if 'total_chars_cost_gte' in conds:
+            if sum(c.cost for c in me.field_chars) < conds['total_chars_cost_gte']:
+                return False
         if 'hand_lte' in conds and len(me.hand) > conds['hand_lte']:
             return False
         if 'hand_gte' in conds and len(me.hand) < conds['hand_gte']:
@@ -2908,6 +2925,16 @@ class EffectExecutor:
                 if contains_identity(self.me.field_chars, card):
                     remove_character_from_field(self.me, card, 'trash')
                     self._cost_logs.append(f'custo: trashou {card.name[:18]} (ele mesmo)')
+            elif ctype == 'return_own_character_to_hand':
+                count = cost.get('count', 1)
+                if len(self.me.field_chars) < count:
+                    return False
+                returned = []
+                for _ in range(count):
+                    target = min(self.me.field_chars, key=lambda c: c.board_value())
+                    remove_character_from_field(self.me, target, 'hand')
+                    returned.append(target.name[:15])
+                self._cost_logs.append(f'custo: devolveu para a mao: {", ".join(returned)}')
             elif ctype == 'don_minus':
                 count = cost.get('count', 1)
                 if not self._return_don_to_deck(count):
@@ -4853,7 +4880,12 @@ class EffectExecutor:
             wanted_name = (step.get('filter_name') or '').lower()
             if wanted_name and wanted_name not in candidate.name.lower():
                 return ''
+            wanted_type = step.get('filter_type') or ''
+            if wanted_type and _norm_type_text(wanted_type) not in _norm_type_text(candidate.sub_types):
+                return ''
             if step.get('cost_eq') is not None and candidate.cost != step['cost_eq']:
+                return ''
+            if step.get('cost_lte') is not None and candidate.cost > step['cost_lte']:
                 return ''
             if candidate.card_type != 'CHARACTER':
                 return ''
@@ -6462,6 +6494,8 @@ class DecisionEngine:
                 if not (contagem >= v): return False
             if k == 'chars_fewer_than_opp_by_gte':
                 if not ((len(self.opp.field_chars) - my_chars) >= v): return False
+            if k == 'total_chars_cost_gte':
+                if not (sum(c.cost for c in me.field_chars) >= v): return False
             if k == 'leader_type':
                 if str(v).lower() not in ' '.join(leader_types): return False
             if k == 'leader_is':

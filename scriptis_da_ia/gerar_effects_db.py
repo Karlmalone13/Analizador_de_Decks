@@ -372,6 +372,10 @@ def parse_conditions(text):
     if m:
         conds['opp_chars_power_gte_count'] = {'count': int(m.group(1)), 'power_gte': int(m.group(2))}
 
+    m = re.search(r'if the total cost of your characters is (\d+) or more', t)
+    if m:
+        conds['total_chars_cost_gte'] = int(m.group(1))
+
     return conds
 
 
@@ -400,6 +404,12 @@ def parse_costs(text):
 
     if re.search(r'trash this (character|card)', t):
         costs.append({'type': 'trash_self'})
+
+    m_return_own = re.search(
+        r'you may return (\d+) of your characters to the owner.?s hand\s*:', t)
+    if m_return_own:
+        costs.append({'type': 'return_own_character_to_hand',
+                      'count': int(m_return_own.group(1))})
 
     m_face_cost = re.search(
         r'you may turn 1 card from the top of your life cards face-(up|down)\s*:',
@@ -2597,14 +2607,26 @@ def parse_reveal_life_play_exact_name(text):
         r'reveal 1 card from the top of your life cards?\.\s*'
         r'if that card is a \[([^\]]+)\] with a cost of (\d+),?\s*'
         r'you may play that card', t)
-    if not m:
-        return []
-    step = {
-        'action': 'play_from_life_top',
-        'count': 1,
-        'filter_name': m.group(1).strip(),
-        'cost_eq': int(m.group(2)),
-    }
+    if m:
+        step = {
+            'action': 'play_from_life_top',
+            'count': 1,
+            'filter_name': m.group(1).strip(),
+            'cost_eq': int(m.group(2)),
+        }
+    else:
+        m_type = re.search(
+            r'reveal 1 card from the top of your life cards?\.\s*'
+            r'if that card is a ["\[]([^"\]]+)["\]] type character card '
+            r'with a cost of (\d+) or less,?\s*you may play that card', t)
+        if not m_type:
+            return []
+        step = {
+            'action': 'play_from_life_top',
+            'count': 1,
+            'filter_type': m_type.group(1).strip(),
+            'cost_lte': int(m_type.group(2)),
+        }
     buff = re.search(
         r'if you do, up to 1 of your leader gains \+(\d+) power '
         r'until the end of your opponent.?s next turn', t)
@@ -4025,18 +4047,6 @@ def parse_block(block_text, trigger_name):
             steps.append({'action': 'activate_trash_event_main',
                           'count': int(m_act.group(1)),
                           'cost_lte': int(m_act.group(2))})
-
-    # "you may return 1 of your Characters to the owner's hand" as COST for
-    # OP10-022 Law Leader, followed by reveal_life + conditional play.
-    # O efeito apos o custo e capturado pela parse_reveal_top_play / parse_life
-    # normalmente. O custo (bounce_own_char) nao aparece na lista de parse_costs
-    # padrao -- adicionado aqui como step extra de custo implicito (simplificacao).
-    # Heuristica: registrar bounce + play_from_deck para analysis_db.
-    if 'return 1 of your characters to the owner' in t and 'life cards' in t:
-        if not any(s.get('action') == 'bounce' for s in steps):
-            cond_chars_m = re.search(r'if the total cost of your characters is (\d+) or more', t)
-            step_b = {'action': 'bounce', 'count': 1, 'target': 'own_character'}
-            steps.append(step_b)
 
     # Bounce (oponente OU auto-bounce do proprio character)
     if 'return' in t and 'hand' in t:

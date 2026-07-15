@@ -18526,6 +18526,12 @@
    ]
   },
   "trigger": {
+   "costs": [
+    {
+     "count": 1,
+     "type": "return_own_character_to_hand"
+    }
+   ],
    "steps": [
     {
      "action": "bounce",
@@ -22428,6 +22434,12 @@
  },
  "OP09-030": {
   "on_play": {
+   "costs": [
+    {
+     "count": 1,
+     "type": "return_own_character_to_hand"
+    }
+   ],
    "steps": [
     {
      "action": "play_card",
@@ -24428,13 +24440,23 @@
  },
  "OP10-022": {
   "activate_main": {
+   "conditions": {
+    "total_chars_cost_gte": 5
+   },
+   "costs": [
+    {
+     "count": 1,
+     "type": "return_own_character_to_hand"
+    }
+   ],
    "don_requirement": 1,
    "once_per_turn": true,
    "steps": [
     {
-     "action": "bounce",
+     "action": "play_from_life_top",
+     "cost_lte": 5,
      "count": 1,
-     "target": "own_character"
+     "filter_type": "supernovas"
     }
    ]
   }
@@ -30788,6 +30810,12 @@
  },
  "OP13-031": {
   "on_play": {
+   "costs": [
+    {
+     "count": 1,
+     "type": "return_own_character_to_hand"
+    }
+   ],
    "steps": [
     {
      "action": "play_card",
@@ -31233,6 +31261,12 @@
  },
  "OP13-059": {
   "main": {
+   "costs": [
+    {
+     "count": 1,
+     "type": "return_own_character_to_hand"
+    }
+   ],
    "steps": [
     {
      "action": "bounce",
@@ -44849,6 +44883,12 @@
    "conditions": {
     "leader_type": "the seven warlords of the sea"
    },
+   "costs": [
+    {
+     "count": 1,
+     "type": "return_own_character_to_hand"
+    }
+   ],
    "steps": [
     {
      "action": "bounce",

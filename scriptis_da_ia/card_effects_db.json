@@ -29798,6 +29798,12 @@
             "target": "opp_character",
             "cost_lte": 5
           }
+        ],
+        "costs": [
+          {
+            "type": "return_own_character_to_hand",
+            "count": 1
+          }
         ]
       },
       "counter": {
@@ -36054,6 +36060,12 @@
             "filter_type": "odyssey",
             "exclude": "trafalgar law"
           }
+        ],
+        "costs": [
+          {
+            "type": "return_own_character_to_hand",
+            "count": 1
+          }
         ]
       }
     }
@@ -39235,9 +39247,19 @@
       "activate_main": {
         "steps": [
           {
-            "action": "bounce",
+            "action": "play_from_life_top",
             "count": 1,
-            "target": "own_character"
+            "filter_type": "supernovas",
+            "cost_lte": 5
+          }
+        ],
+        "conditions": {
+          "total_chars_cost_gte": 5
+        },
+        "costs": [
+          {
+            "type": "return_own_character_to_hand",
+            "count": 1
           }
         ],
         "once_per_turn": true,
@@ -49626,6 +49648,12 @@
             "cost_lte": 5,
             "enters_rested": true
           }
+        ],
+        "costs": [
+          {
+            "type": "return_own_character_to_hand",
+            "count": 1
+          }
         ]
       },
       "passive": {
@@ -50378,6 +50406,12 @@
             "count": 1,
             "target": "opp_character",
             "cost_lte": 6
+          }
+        ],
+        "costs": [
+          {
+            "type": "return_own_character_to_hand",
+            "count": 1
           }
         ]
       }
@@ -72300,7 +72334,13 @@
         ],
         "conditions": {
           "leader_type": "the seven warlords of the sea"
-        }
+        },
+        "costs": [
+          {
+            "type": "return_own_character_to_hand",
+            "count": 1
+          }
+        ]
       }
     }
   },
