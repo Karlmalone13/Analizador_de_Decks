@@ -13853,6 +13853,16 @@
     "sub_types": "Navy",
     "attribute": "Special",
     "effects": {
+      "on_block": {
+        "steps": [
+          {
+            "action": "lock_opp_character_attack",
+            "count": 1,
+            "duration": "until_opp_turn_end",
+            "cost_lte": 6
+          }
+        ]
+      },
       "passive": {
         "steps": [
           {

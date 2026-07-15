@@ -1541,12 +1541,17 @@ def parse_lock_attack(text):
     m_select = (re.search(r"select up to (\d+) of your opponent.{0,15}characters?(?: with a cost of (\d+) or less)?", t)
                 or re.search(r"select all of your opponent.{0,15}characters?(?: with a cost of (\d+) or less)?", t))
     is_select_all = m_select and 'up to' not in m_select.group(0)
-    m_efeito = re.search(r"the selected character.{0,5} cannot (attack|be rested) until ([^.]+)", t)
+    m_efeito = re.search(
+        r"the selected character.{0,5} cannot (attack|be rested) "
+        r"(until|during this) ([^.]+)", t)
     if m_select and m_efeito:
         action = 'lock_opp_character_attack' if m_efeito.group(1) == 'attack' else 'lock_opp_cannot_be_rested'
         count = 99 if is_select_all else int(m_select.group(1))
         cost_group = m_select.group(2) if not is_select_all else m_select.group(1)
-        step = {'action': action, 'count': count, 'duration': parse_duration(m_efeito.group(2))}
+        duration_txt = m_efeito.group(3)
+        dur = ('until_opp_turn_end' if m_efeito.group(2) == 'during this'
+               and 'turn' in duration_txt else parse_duration(duration_txt))
+        step = {'action': action, 'count': count, 'duration': dur}
         if cost_group:
             step['cost_lte'] = int(cost_group)
         steps.append(step)

@@ -1,5 +1,36 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-15 (167) - Codex - OP02-110 Hina: On Block indireto com "during this turn"
+
+**Suspeito seguinte da varredura confirmado como bug real.** Entre as 14
+cartas unicas com `[On Block]`, 13 ja tinham entry estruturada; apenas
+OP02-110 Hina continha somente `keyword_blocker`. Texto: `Select up to 1 ...
+cost of 6 or less. The selected Character cannot attack during this turn.`
+
+**Causa raiz:** `parse_lock_attack` ja suportava a variante indireta
+`Select... The selected Character cannot attack`, mas exigia duracao iniciada
+por `until`. A variante direta ja aceitava `during this turn`; a indireta nao.
+Generalizado o mesmo tratamento de duracao na variante indireta. Nenhuma
+mecanica nova no engine: reutiliza `lock_opp_character_attack` e
+`cannot_attack_until` existentes.
+
+**Validado:** diff inicial `PERDEU=0`, `MUDOU=1` (somente OP02-110). O JSON
+ganhou `on_block` com `count=1`, `cost_lte=6` e
+`duration=until_opp_turn_end`. Teste dirigido executa o step: trava o alvo de
+custo 6 e preserva o de custo 7. `smoke_fast.py` verde. Snapshot atualizado,
+diff final 0/0/0, `py_compile` verde e `smoke_test.py` amplo passou.
+
+**Fonte oficial conferida depois do alerta do usuario:** Card List da Bandai
+para OP02-110 confirma literalmente o mesmo `[On Block]`, alvo `up to 1`,
+`cost of 6 or less` e `cannot attack during this turn`. O Q&A oficial OP-02
+confirma ainda: (1) alvo com Rush nao pode atacar; (2) alvo rested que depois
+fica active continua sem poder atacar; (3) se o alvo ja estava atacando, o
+ataque atual continua, pois ja foi declarado. Isso coincide com
+`cannot_attack_until`: bloqueia novas declaracoes, sem cancelar a batalha em
+andamento. Regra de metodo daqui em diante: CSV x parse localiza o suspeito,
+mas a correcao so e considerada fiel depois de conferir Card List/Q&A oficial
+quando disponivel.
+
 ## 2026-07-15 (166) - Codex - clustering: condicao de vida do oponente apos "and" (4 cartas)
 
 **Proximo suspeito de uso real revisado:** ST28-003 tinha texto `[Trigger] If

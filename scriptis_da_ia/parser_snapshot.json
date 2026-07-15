@@ -8558,6 +8558,16 @@
  },
  "OP02-109": {},
  "OP02-110": {
+  "on_block": {
+   "steps": [
+    {
+     "action": "lock_opp_character_attack",
+     "cost_lte": 6,
+     "count": 1,
+     "duration": "until_opp_turn_end"
+    }
+   ]
+  },
   "passive": {
    "steps": [
     {

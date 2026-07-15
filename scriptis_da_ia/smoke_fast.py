@@ -1327,6 +1327,30 @@ def test_opp_life_condition_after_and() -> None:
           executor._check_conditions(kin.get("conditions", {}), source) is True)
 
 
+def test_hina_on_block_lock_during_this_turn() -> None:
+    # OP02-110 era a unica carta [On Block] sem entry: a variante indireta
+    # "Select... The selected Character cannot attack during this turn"
+    # aceitava apenas duracao iniciada por "until".
+    entry = get_card_effects("OP02-110").get("on_block", {})
+    step = entry.get("steps", [{}])[0]
+    check("OP02-110 parseia On Block como trava de ataque cost<=6",
+          step.get("action") == "lock_opp_character_attack"
+          and step.get("count") == 1 and step.get("cost_lte") == 6
+          and step.get("duration") == "until_opp_turn_end")
+
+    hina = real_card("OP02-110")
+    me = GameState(leader=mk("XHINAL", "Lider", card_type="LEADER"))
+    opp = GameState(leader=mk("XHINAO", "Lider Opp", card_type="LEADER"))
+    elegivel = mk("XHINA1", "Alvo custo 6", cost=6, power=7000)
+    caro = mk("XHINA2", "Alvo custo 7", cost=7, power=9000)
+    opp.field_chars = [elegivel, caro]
+    EffectExecutor(me, opp)._execute_step(step, hina)
+    check("Hina trava um alvo elegivel ate o fim do turno do oponente",
+          elegivel.cannot_attack_until == "opp_turn_end")
+    check("Hina nao trava Character acima de custo 6",
+          caro.cannot_attack_until == "")
+
+
 def main() -> int:
     test_turn_order_imu_prefers_second()
     test_empty_throne_beats_direct_five_elders_play()
@@ -1376,6 +1400,7 @@ def main() -> int:
     test_krieg_just_played_e_debuff_escalado_por_don()
     test_condicao_any_don_cards_given()
     test_opp_life_condition_after_and()
+    test_hina_on_block_lock_during_this_turn()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0
