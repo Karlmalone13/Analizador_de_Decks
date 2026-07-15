@@ -1,5 +1,24 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-15 (166) - Codex - clustering: condicao de vida do oponente apos "and" (4 cartas)
+
+**Proximo suspeito de uso real revisado:** ST28-003 tinha texto `[Trigger] If
+your Leader has ... and your opponent has 3 or less Life cards, play this
+card`, mas o JSON guardava apenas `leader_type`; `opp_life_lte` sumia e o
+Trigger podia jogar a carta com 4+ vidas do oponente.
+
+**Causa raiz compartilhada:** `parse_conditions` aceitava somente `if your
+opponent has N or less/more Life`, nao a variante encadeada `and your opponent
+has ...`. Generalizar o prefixo para `(?:if|and)` corrigiu exatamente 4 cartas:
+ST28-003 e OP14-108 (`opp_life_lte: 3`), OP10-104 e ST28-001
+(`opp_life_gte: 3`). Texto cru e JSON das quatro foram conferidos; todas
+preservam tambem o primeiro requisito (`leader_type` ou `leader_multicolor`).
+
+**Validado:** diff inicial `PERDEU=0`, `MUDOU=4`; smoke_fast verde com testes
+de parse das quatro cartas e execucao real de ST28-003 bloqueado em 4
+vidas/liberado em 3. Snapshot atualizado, diff final 0/0/0, `py_compile` verde
+e `smoke_test.py` amplo passou integralmente.
+
 ## 2026-07-15 (165) - Codex - varredura ampla: condicao "any DON!! cards given" recuperada (6 cartas OP13)
 
 **Retomada direta do clustering do bloco 164.** A familia OP13-061/062/

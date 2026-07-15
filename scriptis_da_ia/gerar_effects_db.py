@@ -86,10 +86,10 @@ def parse_conditions(text):
     # usuario, OP10-112 Kid: "[End of Your Turn] If your opponent has 2 or
     # less Life cards, draw 1 card..."): condicao ausente por completo,
     # 45 cartas reais no banco usam esse padrao.
-    m = re.search(r"if your opponent has (\d+) or less life", t)
+    m = re.search(r"(?:if|and) your opponent has (\d+) or less life", t)
     if m: conds['opp_life_lte'] = int(m.group(1))
 
-    m = re.search(r"if your opponent has (\d+) or more life", t)
+    m = re.search(r"(?:if|and) your opponent has (\d+) or more life", t)
     if m: conds['opp_life_gte'] = int(m.group(1))
 
     m = re.search(r'(?:if (?:you have|there are)|and you have) (\d+) or more cards? in your trash', t)

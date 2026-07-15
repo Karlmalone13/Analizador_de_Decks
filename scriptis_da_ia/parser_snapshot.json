@@ -25838,7 +25838,8 @@
  "OP10-104": {
   "passive": {
    "conditions": {
-    "leader_type": "supernovas"
+    "leader_type": "supernovas",
+    "opp_life_gte": 3
    },
    "don_requirement": 1,
    "steps": [
@@ -34462,7 +34463,8 @@
  "OP14-108": {
   "on_play": {
    "conditions": {
-    "leader_multicolor": true
+    "leader_multicolor": true,
+    "opp_life_lte": 3
    },
    "steps": [
     {
@@ -46204,7 +46206,8 @@
  "ST28-001": {
   "on_play": {
    "conditions": {
-    "leader_type": "land of wano"
+    "leader_type": "land of wano",
+    "opp_life_gte": 3
    },
    "steps": [
     {
@@ -46237,7 +46240,8 @@
  "ST28-003": {
   "trigger": {
    "conditions": {
-    "leader_type": "land of wano"
+    "leader_type": "land of wano",
+    "opp_life_lte": 3
    },
    "steps": [
     {

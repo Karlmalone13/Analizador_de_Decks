@@ -41552,6 +41552,7 @@
           }
         ],
         "conditions": {
+          "opp_life_gte": 3,
           "leader_type": "supernovas"
         },
         "don_requirement": 1
@@ -55468,6 +55469,7 @@
           }
         ],
         "conditions": {
+          "opp_life_lte": 3,
           "leader_multicolor": true
         }
       },
@@ -74514,6 +74516,7 @@
           }
         ],
         "conditions": {
+          "opp_life_gte": 3,
           "leader_type": "land of wano"
         }
       }
@@ -74568,6 +74571,7 @@
           }
         ],
         "conditions": {
+          "opp_life_lte": 3,
           "leader_type": "land of wano"
         }
       }

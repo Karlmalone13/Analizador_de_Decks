@@ -1291,6 +1291,42 @@ def test_condicao_any_don_cards_given() -> None:
           executor._check_conditions(entry.get("conditions", {}), source) is True)
 
 
+def test_opp_life_condition_after_and() -> None:
+    # ST28-003/OP14-108 encadeiam 2 requisitos com "and your opponent has";
+    # o parser antigo so reconhecia a variante iniciada por "if".
+    kin = get_card_effects("ST28-003").get("trigger", {})
+    check("ST28-003 preserva leader_type e opp_life_lte=3",
+          kin.get("conditions", {}).get("leader_type") == "land of wano"
+          and kin.get("conditions", {}).get("opp_life_lte") == 3)
+
+    rayleigh = get_card_effects("OP14-108").get("on_play", {})
+    check("OP14-108 preserva leader_multicolor e opp_life_lte=3",
+          rayleigh.get("conditions", {}).get("leader_multicolor") is True
+          and rayleigh.get("conditions", {}).get("opp_life_lte") == 3)
+
+    caribou = get_card_effects("OP10-104").get("passive", {})
+    check("OP10-104 preserva leader_type e opp_life_gte=3",
+          caribou.get("conditions", {}).get("leader_type") == "supernovas"
+          and caribou.get("conditions", {}).get("opp_life_gte") == 3)
+
+    doji = get_card_effects("ST28-001").get("on_play", {})
+    check("ST28-001 preserva leader_type e opp_life_gte=3",
+          doji.get("conditions", {}).get("leader_type") == "land of wano"
+          and doji.get("conditions", {}).get("opp_life_gte") == 3)
+
+    source = real_card("ST28-003")
+    me = GameState(leader=mk("XLIFE", "Lider", card_type="LEADER",
+                             sub_types="Land of Wano"))
+    opp = GameState(leader=mk("XLIFEO", "Lider Opp", card_type="LEADER"))
+    opp.life = [mk(f"XL{i}", "Life") for i in range(4)]
+    executor = EffectExecutor(me, opp)
+    check("ST28-003 NAO ativa com oponente acima de 3 vidas",
+          executor._check_conditions(kin.get("conditions", {}), source) is False)
+    opp.life.pop()
+    check("ST28-003 ativa com tipo correto e oponente em 3 vidas",
+          executor._check_conditions(kin.get("conditions", {}), source) is True)
+
+
 def main() -> int:
     test_turn_order_imu_prefers_second()
     test_empty_throne_beats_direct_five_elders_play()
@@ -1339,6 +1375,7 @@ def main() -> int:
     test_liberation_condicao_relativa_ko_duplo_e_trigger_1_de_cada()
     test_krieg_just_played_e_debuff_escalado_por_don()
     test_condicao_any_don_cards_given()
+    test_opp_life_condition_after_and()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0
