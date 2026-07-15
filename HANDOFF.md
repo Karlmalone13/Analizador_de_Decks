@@ -1,5 +1,30 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-15 (179) - Reducao de custo parametrizada e caminho unico: 408 -> 405
+
+OP05-097 Mary Geoise revelou que `buff_cost` perdia o limite de custo original.
+A familia global de "the next time you play" foi auditada e corrigida sem
+hardcode por carta: OP02-025 Kin'emon preserva tipo Wano + `cost_gte=3`,
+OP12-061 Rosinante recupera o Activate Main inteiro (DON -1, nome Trafalgar
+Law, `cost_gte=4`, reducao 2) e Mary preserva Celestial Dragons +
+`cost_gte=2`.
+
+O engine nao possui mais a excecao nominal de Mary. `buff_cost` de Stage e
+reducao pendente usam o mesmo step parseado, com filtros por tipo, nome e
+custo original. Jogar carta inelegivel nao consome a reducao; ela expira ao
+fim do turno. O Q&A oficial de OP12-061 confirmou ainda que Law jogado gratis
+por outro efeito nao consome a reducao, comportamento coberto por teste.
+
+Card List oficial confirmou os textos de Mary e Kin'emon; Card List/Q&A de
+OP12 confirmou Rosinante. Validacao: diff GANHOU 0 / PERDEU 0 / MUDOU 3;
+2614 cartas; smokes curto e amplo passaram. Auditor: **405 suspeitos**
+(408 -> 405). Snapshot final 0/0/0.
+
+Proximo: investigar OP07-064 Sanji (comparacao de DON "at least 2 less"),
+fazendo primeiro o censo global de todas as variantes comparativas antes de
+alterar parser e engine. OP15-008 e OP06-022 permanecem falsos positivos
+confirmados do auditor numerico.
+
 ## 2026-07-15 (178) - Custo composto trash->fundo + escopo pos-custo: 410 -> 408
 
 OP05-088 Mansherry e OP05-082 Shirahoshi revelaram a variante que faltava da

@@ -71377,6 +71377,11 @@
   "attribute": "Special",
   "effects": [
    {
+    "action": "buff_cost",
+    "trigger": "activate_main",
+    "target": "own_play_hand"
+   },
+   {
     "action": "substitute_ko",
     "trigger": "passive"
    }

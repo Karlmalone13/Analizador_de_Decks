@@ -703,6 +703,7 @@ class GameState:
     # batalha. None = sem trava. dict = {'power_lte'|'power_gte'|'cost_lte': N}.
     blocker_lock_battle: Optional[dict] = None
     end_of_turn_queue: List[dict] = field(default_factory=list)
+    pending_play_cost_reductions: List[dict] = field(default_factory=list)
 
     def __deepcopy__(self, memo):
         """
@@ -751,6 +752,7 @@ class GameState:
         novo.revealed_to_opponent = set(self.revealed_to_opponent)
         novo.blocker_lock_battle = _dc(self.blocker_lock_battle, memo)
         novo.end_of_turn_queue = _dc(self.end_of_turn_queue, memo)
+        novo.pending_play_cost_reductions = _dc(self.pending_play_cost_reductions, memo)
         return novo
 
     def known_hand_cards(self) -> List['Card']:
@@ -825,19 +827,41 @@ class GameState:
         return self.don_available + self.don_rested
 
 
+def _play_cost_rule_matches(card: Card, rule: dict) -> bool:
+    if card.card_type != 'CHARACTER':
+        return False
+    if card.cost < rule.get('cost_gte', 0):
+        return False
+    if rule.get('filter_type') and _norm_type_text(rule['filter_type']) not in _norm_type_text(card.sub_types):
+        return False
+    if rule.get('filter_name') and rule['filter_name'].lower() not in card.name.lower():
+        return False
+    return True
+
+
 def effective_hand_play_cost(p: GameState, card: Card) -> int:
     """Custo para jogar uma carta da mao no estado simplificado atual."""
     cost = card.effective_cost()
     stage = p.field_stage
-    stage_text = (stage.card_text or '').lower() if stage else ''
-    if (stage
-            and card.card_type == 'CHARACTER'
-            and card.cost >= 2
-            and 'celestial dragons' in card.sub_types.lower()
-            and 'cost of playing' in stage_text
-            and 'celestial dragons' in stage_text):
-        cost -= 1
+    if stage:
+        for entry in get_card_effects(stage.code).values():
+            for step in entry.get('steps', []):
+                if (step.get('action') == 'buff_cost'
+                        and step.get('target') == 'own_play_hand'
+                        and _play_cost_rule_matches(card, step)):
+                    cost -= step.get('amount', 0)
+    for rule in p.pending_play_cost_reductions:
+        if _play_cost_rule_matches(card, rule):
+            cost -= rule.get('amount', 0)
     return max(0, cost)
+
+
+def consume_play_cost_reductions(p: GameState, card: Card) -> None:
+    """Consome buffs one-shot que casam com a carta efetivamente jogada."""
+    p.pending_play_cost_reductions = [
+        rule for rule in p.pending_play_cost_reductions
+        if not _play_cost_rule_matches(card, rule)
+    ]
 
 
 def _norm_type_text(text: str) -> str:
@@ -4271,6 +4295,18 @@ class EffectExecutor:
             count = step.get('count', 1)
             filter_name = step.get('filter_name', '').lower()
             cost_gte = step.get('cost_gte')
+
+            if target == 'own_play_hand':
+                if duration == 'next_play_only':
+                    me.pending_play_cost_reductions.append({
+                        k: step[k] for k in
+                        ('amount', 'filter_type', 'filter_name', 'cost_gte')
+                        if k in step
+                    })
+                    return f'proxima carta elegivel custa -{amount}'
+                # Auras de Stage sao lidas diretamente por
+                # effective_hand_play_cost; nao mutam cartas na mao.
+                return f'aura de custo -{amount} para cartas elegiveis'
 
             campo_alvo = me if target in ('self', 'own_character') else opp
             if target == 'self':
@@ -9235,6 +9271,9 @@ class OPTCGMatch:
         (simulação em massa não passa verbose).
         """
         play_cost = effective_hand_play_cost(p, card)
+        # "The next time you play...": consome apenas regras cujo filtro
+        # casa com ESTA carta. Jogar uma carta inelegivel nao gasta o buff.
+        consume_play_cost_reductions(p, card)
         remove_by_identity(p.hand, card)
         p.don_rested  += play_cost
         p.don_available -= play_cost
@@ -9803,6 +9842,7 @@ class OPTCGMatch:
         p.turn += 1
         p.is_active_turn = True
         opp.is_active_turn = False
+        p.pending_play_cost_reductions.clear()
         self.refresh_phase(p, opp)
         self.draw_phase(p)
         self.don_phase(p)
@@ -9826,6 +9866,7 @@ class OPTCGMatch:
         opp.global_turn = self.global_turn
         p.is_active_turn = True
         opp.is_active_turn = False
+        p.pending_play_cost_reductions.clear()
 
         self._log_event(p, 'turn_start', phase='refresh',
                         description=f'Turno {self.global_turn} — refresh/compra/DON')

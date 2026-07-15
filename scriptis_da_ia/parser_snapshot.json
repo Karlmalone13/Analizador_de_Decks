@@ -7340,6 +7340,7 @@
     {
      "action": "buff_cost",
      "amount": 1,
+     "cost_gte": 3,
      "duration": "next_play_only",
      "filter_type": "land of wano",
      "target": "own_play_hand"
@@ -15125,6 +15126,7 @@
     {
      "action": "buff_cost",
      "amount": 1,
+     "cost_gte": 2,
      "filter_type": "celestial dragons",
      "target": "own_play_hand"
     }
@@ -29554,6 +29556,26 @@
   }
  },
  "OP12-061": {
+  "activate_main": {
+   "costs": [
+    {
+     "count": 1,
+     "optional": false,
+     "type": "don_minus"
+    }
+   ],
+   "once_per_turn": true,
+   "steps": [
+    {
+     "action": "buff_cost",
+     "amount": 2,
+     "cost_gte": 4,
+     "duration": "next_play_only",
+     "filter_name": "trafalgar law",
+     "target": "own_play_hand"
+    }
+   ]
+  },
   "passive": {
    "once_per_turn": true,
    "steps": [

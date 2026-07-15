@@ -11698,7 +11698,8 @@
             "amount": 1,
             "target": "own_play_hand",
             "duration": "next_play_only",
-            "filter_type": "land of wano"
+            "filter_type": "land of wano",
+            "cost_gte": 3
           }
         ],
         "conditions": {
@@ -24245,7 +24246,8 @@
             "action": "buff_cost",
             "amount": 1,
             "target": "own_play_hand",
-            "filter_type": "celestial dragons"
+            "filter_type": "celestial dragons",
+            "cost_gte": 2
           }
         ]
       }
@@ -47406,6 +47408,26 @@
     "sub_types": "Donquixote Pirates Navy",
     "attribute": "Special",
     "effects": {
+      "activate_main": {
+        "steps": [
+          {
+            "action": "buff_cost",
+            "amount": 2,
+            "target": "own_play_hand",
+            "duration": "next_play_only",
+            "filter_name": "trafalgar law",
+            "cost_gte": 4
+          }
+        ],
+        "costs": [
+          {
+            "type": "don_minus",
+            "count": 1,
+            "optional": false
+          }
+        ],
+        "once_per_turn": true
+      },
       "passive": {
         "steps": [
           {

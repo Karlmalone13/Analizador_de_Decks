@@ -21,6 +21,8 @@ from optcg_engine.decision_engine import (  # noqa: E402
     OPTCGMatch,
     _make_card,
     apply_conditional_keyword_passives,
+    consume_play_cost_reductions,
+    effective_hand_play_cost,
     get_card_effects,
     is_immune,
     load_cards_db,
@@ -1366,6 +1368,81 @@ def test_custo_composto_trash_para_fundo() -> None:
           and len(opp3.hand) == 5)
 
 
+def test_reducao_de_custo_com_limite() -> None:
+    mary_step = get_card_effects("OP05-097")["your_turn"]["steps"][0]
+    check("Mary Geoise preserva custo minimo 2",
+          mary_step.get("action") == "buff_cost"
+          and mary_step.get("cost_gte") == 2
+          and mary_step.get("filter_type") == "celestial dragons")
+
+    kinemon_step = get_card_effects("OP02-025")["activate_main"]["steps"][0]
+    check("Kin'emon preserva proximo play Wano de custo minimo 3",
+          kinemon_step.get("duration") == "next_play_only"
+          and kinemon_step.get("cost_gte") == 3
+          and kinemon_step.get("filter_type") == "land of wano")
+
+    rosinante_entry = get_card_effects("OP12-061")["activate_main"]
+    rosinante_step = rosinante_entry["steps"][0]
+    check("Rosinante preserva DON -1 e proximo Law de custo minimo 4",
+          any(c.get("type") == "don_minus" and c.get("count") == 1
+              for c in rosinante_entry.get("costs", []))
+          and rosinante_step.get("amount") == 2
+          and rosinante_step.get("filter_name") == "trafalgar law"
+          and rosinante_step.get("cost_gte") == 4)
+
+    mary = real_card("OP05-097")
+    me = GameState(leader=mk("XMGL", "Lider", card_type="LEADER"),
+                   field_stage=mary)
+    celestial_1 = mk("XMC1", "Celestial 1", cost=1,
+                     sub_types="Celestial Dragons")
+    celestial_2 = mk("XMC2", "Celestial 2", cost=2,
+                     sub_types="Celestial Dragons")
+    outsider = mk("XMO", "Outro", cost=4, sub_types="Navy")
+    check("Mary reduz apenas Celestial Dragons de custo original 2+",
+          effective_hand_play_cost(me, celestial_1) == 1
+          and effective_hand_play_cost(me, celestial_2) == 1
+          and effective_hand_play_cost(me, outsider) == 4)
+
+    kinemon = real_card("OP02-025")
+    me2 = GameState(leader=kinemon, don_available=3)
+    opp2 = GameState(leader=mk("XKOP", "Opp", card_type="LEADER"))
+    EffectExecutor(me2, opp2).execute(kinemon, "activate_main")
+    wano_2 = mk("XKW2", "Wano barato", cost=2, sub_types="Land of Wano")
+    wano_4 = mk("XKW4", "Wano elegivel", cost=4, sub_types="Land of Wano")
+    other_4 = mk("XKO4", "Outro", cost=4, sub_types="Navy")
+    check("Kin'emon aplica a reducao somente ao proximo Wano elegivel",
+          effective_hand_play_cost(me2, wano_2) == 2
+          and effective_hand_play_cost(me2, wano_4) == 3
+          and effective_hand_play_cost(me2, other_4) == 4)
+    consume_play_cost_reductions(me2, wano_2)
+    check("Play inelegivel nao consome a reducao de Kin'emon",
+          len(me2.pending_play_cost_reductions) == 1)
+    consume_play_cost_reductions(me2, wano_4)
+    check("Play elegivel consome a reducao de Kin'emon",
+          not me2.pending_play_cost_reductions)
+
+    rosinante = real_card("OP12-061")
+    me3 = GameState(leader=rosinante, don_available=5, don_deck=5)
+    opp3 = GameState(leader=mk("XROP", "Opp", card_type="LEADER"))
+    EffectExecutor(me3, opp3).execute(rosinante, "activate_main")
+    law_3 = mk("XRL3", "Trafalgar Law", cost=3)
+    law_5 = mk("XRL5", "Trafalgar Law", cost=5)
+    not_law = mk("XRNL", "Bepo", cost=5)
+    check("Rosinante devolve 1 DON e reduz apenas Law de custo original 4+",
+          me3.don_available == 4 and me3.don_deck == 6
+          and effective_hand_play_cost(me3, law_3) == 3
+          and effective_hand_play_cost(me3, law_5) == 3
+          and effective_hand_play_cost(me3, not_law) == 5)
+    me3.hand = [law_5]
+    EffectExecutor(me3, opp3)._execute_step(
+        {"action": "play_card", "filter_name": "trafalgar law", "cost_lte": 99},
+        rosinante,
+    )
+    check("Law jogado gratis por efeito nao consome reducao pendente de Rosinante",
+          law_5 in me3.field_chars
+          and len(me3.pending_play_cost_reductions) == 1)
+
+
 def test_don_on_field_lte_condicao_ausente() -> None:
     # Achado 15/07 -- "if you have N or less DON!! cards on your field"
     # (proprio lado) nunca existia, so o "N or more" (don_on_field_gte).
@@ -1767,6 +1844,7 @@ def main() -> int:
     test_comparacao_don_proprio_lte_oponente()
     test_evento_parametrizado_de_don_devolvido()
     test_custo_composto_trash_para_fundo()
+    test_reducao_de_custo_com_limite()
     test_don_on_field_lte_condicao_ausente()
     test_black_hole_negate_e_ko_encadeado()
     test_rebecca_add_from_trash_range_exclude_e_ordem()

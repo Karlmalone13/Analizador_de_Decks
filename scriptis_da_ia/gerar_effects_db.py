@@ -4198,8 +4198,12 @@ def parse_block(block_text, trigger_name):
     # esta Stage; o step serve para a analysis_db reconhecer a mecanica.
     m_red = re.search(r"cost of playing \[?([a-z][a-z0-9 ]+)\]? type.+?reduced by (\d+)", t)
     if m_red:
-        steps.append({'action': 'buff_cost', 'amount': int(m_red.group(2)),
-                      'target': 'own_play_hand', 'filter_type': m_red.group(1).strip()})
+        step_red = {'action': 'buff_cost', 'amount': int(m_red.group(2)),
+                    'target': 'own_play_hand', 'filter_type': m_red.group(1).strip()}
+        min_cost = re.search(r'with a cost of (\d+) or more', m_red.group(0))
+        if min_cost:
+            step_red['cost_gte'] = int(min_cost.group(1))
+        steps.append(step_red)
 
     # Versao para o OPONENTE: "your opponent returns all cards in their hand
     # to their deck and shuffles their deck. Then, your opponent draws N cards."
@@ -4257,15 +4261,20 @@ def parse_block(block_text, trigger_name):
     # "proximo jogo" exato no engine, onde o custo e reduzido via
     # effective_hand_play_cost na proxima chamada).
     m_next = re.search(
-        r"the next time you play a .{0,40}type character card.{0,80}the cost will be reduced by (\d+)",
-        t)
+        r"the next time you play (.{1,140}?)the cost will be reduced by (\d+)", t)
     if m_next:
         type_m_n = (re.search(r'\[([^\]]+)\] type', t)
                     or re.search(r'\{([^}]+)\} type', t))
-        step_n = {'action': 'buff_cost', 'amount': int(m_next.group(1)),
+        name_m_n = re.search(r'the next time you play \[([^\]]+)\]', t)
+        step_n = {'action': 'buff_cost', 'amount': int(m_next.group(2)),
                   'target': 'own_play_hand', 'duration': 'next_play_only'}
         if type_m_n:
             step_n['filter_type'] = type_m_n.group(1).strip()
+        elif name_m_n:
+            step_n['filter_name'] = name_m_n.group(1).strip()
+        min_cost_n = re.search(r'with a cost of (\d+) or more', m_next.group(1))
+        if min_cost_n:
+            step_n['cost_gte'] = int(min_cost_n.group(1))
         steps.append(step_n)
 
     # Play genérico (sem origem explícita)
