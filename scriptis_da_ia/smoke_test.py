@@ -832,7 +832,12 @@ check('Counter event com peek_life ativa sem erro',
 
 me, opp = me_opp()
 me.don_available = 2
-me.trash = [mk(f'TR{i}', f'Trash {i}', cost=2) for i in range(11)]
+# Achado 15/07 -- OP11-097 texto real e "add up to 1 BLACK Character card
+# ... from your trash", cor agora e filtrada de verdade (antes nao
+# existia filtro de cor nenhum). mk() default deste arquivo e Red, entao
+# as cartas de teste precisam ser explicitamente Black pra continuar
+# elegiveis.
+me.trash = [mk(f'TR{i}', f'Trash {i}', cost=2, color='Black') for i in range(11)]
 recuperavel = me.trash[0]
 evento_add_trash = mk('OP11-097', "After All These Years", card_type='EVENT', cost=2)
 me.hand = [evento_add_trash]
@@ -844,7 +849,7 @@ check('Counter event com add_from_trash recupera carta quando condicao passa (tr
 
 me, opp = me_opp()
 me.don_available = 2
-me.trash = [mk(f'TR{i}', f'Trash {i}', cost=2) for i in range(3)]
+me.trash = [mk(f'TR{i}', f'Trash {i}', cost=2, color='Black') for i in range(3)]
 evento_add_trash2 = mk('OP11-097', "After All These Years", card_type='EVENT', cost=2)
 me.hand = [evento_add_trash2]
 ee = EffectExecutor(me, opp)

@@ -7997,8 +7997,9 @@
           {
             "action": "add_from_trash",
             "count": 1,
-            "filter_name": "uta",
-            "cost_lte": 3
+            "exclude_name": "uta",
+            "cost_lte": 3,
+            "color": "red"
           }
         ]
       }
@@ -8214,7 +8215,8 @@
           {
             "action": "add_from_trash",
             "count": 1,
-            "filter_name": "tony tony.chopper",
+            "exclude_name": "tony tony.chopper",
+            "filter_type": "straw hat crew",
             "cost_lte": 4
           }
         ],
@@ -12562,7 +12564,8 @@
         "steps": [
           {
             "action": "add_from_trash",
-            "count": 1
+            "count": 1,
+            "color": "blue"
           }
         ]
       }
@@ -15332,7 +15335,8 @@
         "steps": [
           {
             "action": "add_from_trash",
-            "count": 1
+            "count": 1,
+            "color": "blue"
           }
         ]
       }
@@ -23716,7 +23720,10 @@
         "steps": [
           {
             "action": "add_from_trash",
-            "count": 1
+            "count": 1,
+            "cost_gte": 3,
+            "cost_lte": 5,
+            "color": "black"
           }
         ],
         "costs": [
@@ -23746,7 +23753,8 @@
         "steps": [
           {
             "action": "add_from_trash",
-            "count": 1
+            "count": 1,
+            "color": "black"
           }
         ],
         "costs": [
@@ -23819,16 +23827,19 @@
       "on_play": {
         "steps": [
           {
+            "action": "add_from_trash",
+            "count": 1,
+            "exclude_name": "rebecca",
+            "cost_gte": 3,
+            "cost_lte": 7,
+            "color": "black"
+          },
+          {
             "action": "play_card",
             "count": 1,
             "cost_lte": 3,
             "color": "black",
             "enters_rested": true
-          },
-          {
-            "action": "add_from_trash",
-            "count": 1,
-            "filter_name": "rebecca"
           }
         ]
       },
@@ -27217,7 +27228,8 @@
           {
             "action": "add_from_trash",
             "count": 1,
-            "filter_name": "dr. hogback"
+            "exclude_name": "dr. hogback",
+            "filter_type": "thriller bark pirates"
           }
         ],
         "costs": [
@@ -40198,7 +40210,8 @@
         "steps": [
           {
             "action": "add_from_trash",
-            "count": 1
+            "count": 1,
+            "color": "purple"
           }
         ],
         "conditions": {
@@ -40359,7 +40372,8 @@
           {
             "action": "add_from_trash",
             "count": 1,
-            "cost_lte": 5
+            "cost_lte": 5,
+            "color": "purple"
           }
         ]
       }
@@ -44662,6 +44676,7 @@
             "action": "add_from_trash",
             "count": 1,
             "cost_lte": 3,
+            "color": "black",
             "conditions": {
               "trash_gte": 10
             }
@@ -58226,7 +58241,8 @@
         "steps": [
           {
             "action": "add_from_trash",
-            "count": 1
+            "count": 1,
+            "filter_type": "thriller bark pirates"
           }
         ]
       },
@@ -58428,7 +58444,8 @@
           {
             "action": "add_from_trash",
             "count": 1,
-            "filter_name": "tony tony.chopper"
+            "exclude_name": "tony tony.chopper",
+            "filter_type": "straw hat crew"
           }
         ],
         "conditions": {
@@ -62338,14 +62355,15 @@
       "on_play": {
         "steps": [
           {
+            "action": "add_from_trash",
+            "count": 1,
+            "filter_type": "land of wano",
+            "cost_lte": 6
+          },
+          {
             "action": "play_card",
             "count": 1,
             "cost_lte": 2
-          },
-          {
-            "action": "add_from_trash",
-            "count": 1,
-            "cost_lte": 6
           }
         ]
       }
@@ -62955,7 +62973,7 @@
           {
             "action": "add_from_trash",
             "count": 1,
-            "filter_name": "trigger"
+            "exclude_name": "black vortex"
           }
         ],
         "conditions": {
@@ -63014,7 +63032,8 @@
         "steps": [
           {
             "action": "add_from_trash",
-            "count": 1
+            "count": 1,
+            "filter_type": "blackbeard pirates"
           }
         ]
       },
@@ -66647,6 +66666,7 @@
             "action": "add_from_trash",
             "count": 1,
             "filter_name": "gecko moria",
+            "filter_type": "thriller bark pirates",
             "cost_lte": 4
           }
         ]
@@ -69050,7 +69070,8 @@
           {
             "action": "add_from_trash",
             "count": 1,
-            "cost_lte": 2
+            "cost_lte": 2,
+            "color": "black"
           }
         ]
       },
@@ -74295,7 +74316,8 @@
         "steps": [
           {
             "action": "add_from_trash",
-            "count": 1
+            "count": 1,
+            "color": "black"
           }
         ]
       }

@@ -5050,11 +5050,13 @@ class EffectExecutor:
             found = eligible_cards(
                 me.trash,
                 cost_lte=step.get('cost_lte'),
+                cost_gte=step.get('cost_gte'),
                 cost_eq=step.get('cost_eq'),
                 power_lte=step.get('power_lte'),
                 filter_text=step.get('filter_type', ''),
                 name_or_code=filter_name,
                 color=step.get('color', ''),
+                exclude_name=step.get('exclude_name', ''),
             )
             added = []
             for c in found[:count]:

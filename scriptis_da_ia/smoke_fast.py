@@ -1056,6 +1056,40 @@ def test_black_hole_negate_e_ko_encadeado() -> None:
     check("Alvo custo > 4 NAO foi KOed (so negado)", alvo_caro in opp2.field_chars)
 
 
+def test_rebecca_add_from_trash_range_exclude_e_ordem() -> None:
+    # Achado 15/07 -- OP05-091 Rebecca: "Add up to 1 black Character card
+    # with a cost of 3 to 7 OTHER THAN [Rebecca] from your trash to your
+    # hand. Then, play up to 1 black Character card with a cost of 3 or
+    # less from your hand rested." 3 bugs reais no mesmo parse: (1)
+    # "other than [Rebecca]" virava filter_name='rebecca' (INCLUI so
+    # Rebecca -- exatamente o oposto do texto), (2) faixa "3 to 7" nunca
+    # batia em nenhuma regex (sem limite de custo nenhum), (3) o step de
+    # play vinha ANTES do add no parse, embora narrativamente o add
+    # aconteca primeiro.
+    steps = get_card_effects("OP05-091").get("on_play", {}).get("steps", [])
+    check("OP05-091 parseia exclude_name=rebecca (nao filter_name)",
+          steps and steps[0].get("action") == "add_from_trash"
+          and steps[0].get("exclude_name") == "rebecca" and "filter_name" not in steps[0])
+    check("OP05-091 parseia faixa de custo 3-7", steps[0].get("cost_gte") == 3 and steps[0].get("cost_lte") == 7)
+    check("OP05-091 add_from_trash vem ANTES do play_card na lista de steps",
+          any(s.get("action") == "play_card" for s in steps[1:]))
+
+    rebecca = real_card("OP05-091")
+    alvo_barato = mk("XRB1", "Zoro Custo 3", cost=3, color="Black")
+    rebecca_no_trash = mk("XRB2", "Rebecca no Trash", cost=2, color="Black", sub_types="Dressrosa")
+    fora_de_faixa = mk("XRB3", "Custo 1 Fora de Faixa", cost=1, color="Black")
+    me = GameState(leader=mk("XLDR", "Lider", card_type="LEADER"), turn=4, don_available=3)
+    me.field_chars = [rebecca]
+    me.trash = [rebecca_no_trash, alvo_barato, fora_de_faixa]
+    opp = GameState(leader=mk("XOPPR", "Lider Opp", card_type="LEADER"), turn=4)
+    EffectExecutor(me, opp).execute(rebecca, "on_play")
+    check("Recuperou o alvo dentro da faixa 3-7 (nao a copia de Rebecca no trash)",
+          alvo_barato not in me.trash and rebecca_no_trash in me.trash)
+    check("Alvo fora da faixa (custo 1) permanece no trash", fora_de_faixa in me.trash)
+    check("Personagem recuperado foi jogado de verdade, ja restado",
+          alvo_barato in me.field_chars and alvo_barato not in me.hand and alvo_barato.rested)
+
+
 def main() -> int:
     test_turn_order_imu_prefers_second()
     test_empty_throne_beats_direct_five_elders_play()
@@ -1097,6 +1131,7 @@ def main() -> int:
     test_total_life_lte_condicao_combinada()
     test_don_on_field_lte_condicao_ausente()
     test_black_hole_negate_e_ko_encadeado()
+    test_rebecca_add_from_trash_range_exclude_e_ordem()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0

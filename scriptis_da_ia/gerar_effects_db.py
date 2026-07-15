@@ -3428,20 +3428,45 @@ def parse_add_from_trash(text):
 
     step = {'action': 'add_from_trash', 'count': count}
 
-    # filtro de nome/tipo entre colchetes (ex: [Nico Robin])
-    name_m = re.search(r'\[([^\]]+)\]', desc)
-    if name_m:
-        step['filter_name'] = name_m.group(1)
-    # filtro de tipo entre aspas (ex: "CP" type)
+    # filtro de nome/tipo entre colchetes (ex: [Nico Robin]) -- mas "other
+    # than [X]" e o OPOSTO (EXCLUI a carta nomeada, ex: OP05-091 Rebecca
+    # "Add up to 1 black Character card ... other than [Rebecca]"), achado
+    # 15/07 revisao do usuario: antes ia pro `filter_name` (INCLUI so essa
+    # carta), invertendo a semantica por completo -- corrigido pra
+    # `exclude_name` (mesmo campo ja consumido por eligible_cards).
+    other_than_m = re.search(r'other than \[([^\]]+)\]', desc)
+    if other_than_m:
+        step['exclude_name'] = other_than_m.group(1)
     else:
-        type_m = re.search(r'"([^"]+)" type', desc)
-        if type_m:
-            step['filter_type'] = type_m.group(1)
+        name_m = re.search(r'\[([^\]]+)\]', desc)
+        if name_m:
+            step['filter_name'] = name_m.group(1)
+    # filtro de tipo entre aspas ou chaves (ex: "CP" type / {Land of Wano}
+    # type) -- achado 15/07, curly nunca era aceito aqui (OP15-085,
+    # OP16-097 e familia perdiam o filtro de arquetipo por completo).
+    type_m = (re.search(r'"([^"]+)" type', desc)
+              or re.search(r'\{([^}]+)\}\s*type', desc))
+    if type_m:
+        step['filter_type'] = type_m.group(1)
 
-    # filtro de custo (ex: with a cost of 4 or less)
-    cost_m = re.search(r'cost of (\d+) or less', desc)
-    if cost_m:
-        step['cost_lte'] = int(cost_m.group(1))
+    # filtro de custo -- aceita faixa "cost of A to B" (ex: OP05-091 "cost
+    # of 3 to 7", achado 15/07) alem do "N or less" ja existente. Faixa
+    # nunca batia antes, deixando o add_from_trash sem NENHUM limite de
+    # custo (podia trazer qualquer carta do trash).
+    range_m = re.search(r'cost of (\d+) to (\d+)', desc)
+    if range_m:
+        step['cost_gte'] = int(range_m.group(1))
+        step['cost_lte'] = int(range_m.group(2))
+    else:
+        cost_m = re.search(r'cost of (\d+) or less', desc)
+        if cost_m:
+            step['cost_lte'] = int(cost_m.group(1))
+
+    # filtro de cor (ex: "black Character card", achado 15/07) -- cor vem
+    # como primeira palavra da descricao, antes de "character"/"leader".
+    color_m = re.match(r'(black|red|green|blue|yellow|purple)\b', desc.strip())
+    if color_m:
+        step['color'] = color_m.group(1)
 
     steps.append(step)
     return steps
@@ -4054,7 +4079,24 @@ def parse_block(block_text, trigger_name):
 
     # Add from trash
     if 'from your trash to your hand' in t:
-        steps.extend(parse_add_from_trash(t))
+        _add_trash_steps = parse_add_from_trash(t)
+        # "Add up to N ... from your trash to your hand. Then, play up to
+        # N ... from your hand [rested]" (ex: OP05-091 Rebecca e familia
+        # Blocker "add from trash" -- achado 15/07, revisao do usuario):
+        # o play_card ja foi appendado ANTES por parse_play_generic
+        # (chamado mais cedo neste mesmo bloco), mas narrativamente a
+        # busca no trash acontece PRIMEIRO (a carta precisa estar na mao
+        # antes de poder ser jogada). Reordena inserindo o add_from_trash
+        # antes do primeiro play_card ja presente, em vez de so appendar
+        # no fim -- ordem de `steps` e a ordem de EXECUCAO real.
+        if _add_trash_steps and re.search(r'from your trash to your hand.{0,20}then,? play', t):
+            play_idx = next((i for i, s in enumerate(steps) if s.get('action') == 'play_card'), None)
+            if play_idx is not None:
+                steps[play_idx:play_idx] = _add_trash_steps
+            else:
+                steps.extend(_add_trash_steps)
+        else:
+            steps.extend(_add_trash_steps)
 
     # Keywords concedidas. IMPORTANTE: '[Rush: Character]' e MECANICA
     # DIFERENTE de '[Rush]' -- Rush comum permite atacar Leader OU

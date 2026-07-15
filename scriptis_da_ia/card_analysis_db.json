@@ -35796,7 +35796,8 @@
   "effects": [
    {
     "action": "add_from_trash",
-    "trigger": "activate_main"
+    "trigger": "activate_main",
+    "cost_lte": 5
    }
   ],
   "synergy_states": {},
@@ -35922,13 +35923,14 @@
   "attribute": "Wisdom",
   "effects": [
    {
+    "action": "add_from_trash",
+    "trigger": "on_play",
+    "cost_lte": 7
+   },
+   {
     "action": "play_card",
     "trigger": "on_play",
     "cost_lte": 3
-   },
-   {
-    "action": "add_from_trash",
-    "trigger": "on_play"
    },
    {
     "action": "keyword_blocker",
@@ -93857,14 +93859,14 @@
   "attribute": "Strike",
   "effects": [
    {
-    "action": "play_card",
-    "trigger": "on_play",
-    "cost_lte": 2
-   },
-   {
     "action": "add_from_trash",
     "trigger": "on_play",
     "cost_lte": 6
+   },
+   {
+    "action": "play_card",
+    "trigger": "on_play",
+    "cost_lte": 2
    }
   ],
   "synergy_states": {},

@@ -1,5 +1,72 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-15 (159) - Claude - OP05-091 Rebecca: add_from_trash tinha exclude invertido pra INCLUDE (18 cartas afetadas), faixa de custo nunca capturada (6), tipo entre chaves nunca capturado (4), ordem de step trocada
+
+**Continuacao direta do lote de 10 do usuario (item 2/6 pendente do bloco
+158).** `parse_add_from_trash` acumulava 3 bugs de causa raiz distintos,
+todos expostos pela mesma carta (OP05-091):
+
+**"other than [X]" virava INCLUDE, nao EXCLUDE (achado mais grave, 10
+cartas reais):** `filter_name` era preenchido com QUALQUER `[Nome]` entre
+colchetes na descricao, sem distinguir "other than [X]" (exclui X) de
+"[X]" puro (so aceita X). Pra OP05-091 isso significava que o efeito so
+aceitava recuperar OUTRAS COPIAS DE REBECCA do trash -- o oposto exato do
+texto real ("cost 3 to 7 OTHER THAN [Rebecca]"). Corrigido: `other than
+[X]` checado primeiro -> `exclude_name` (campo que `eligible_cards` ja
+suportava mas o parser nunca usava aqui); sem esse prefixo, mantem
+`filter_name` como antes. OP01-005 (Uta), OP01-015/OP15-085 (Tony Tony
+Chopper), OP06-090 (Dr. Hogback), OP16-115 (Black Vortex) e mais 5.
+
+**Faixa de custo "N to M" nunca era capturada (6 cartas):** so existia
+`cost of N or less`; "cost of 3 to 7" (Rebecca) e similares ficavam SEM
+NENHUM limite de custo -- o efeito podia recuperar qualquer coisa do
+trash, custo 10 incluso. Adicionado `cost_gte`/`cost_lte` como par
+quando bate a faixa.
+
+**Cor nunca era capturada (16 cartas):** "add up to 1 BLACK Character
+card..." ignorava a cor completamente. Adicionado (primeira palavra da
+descricao, quando bate uma das 6 cores).
+
+**Tipo entre CHAVES nunca era capturado (4 cartas):** so aspas
+("X" type) eram aceitas; `{Land of Wano} type`/`{Straw Hat Crew} type`
+etc ficavam sem filtro de arquetipo nenhum (OP15-085, OP16-097 e mais 2).
+
+**Ordem de step invertida (achado especifico do usuario, Rebecca e
+familia "Blocker on-play recover+play"):** textos no formato "Add ...
+from trash to hand. THEN, play ... from hand" tinham o `play_card`
+appendado ANTES do `add_from_trash` no array de `steps` (porque
+`parse_play_generic` roda mais cedo no dispatch que `parse_add_from_trash`).
+`steps` e a ordem de EXECUCAO real -- rodar o play antes do add
+significava tentar jogar uma carta que ainda nao tinha voltado pra mao.
+Corrigido com deteccao do padrao encadeado + insercao do add ANTES do
+primeiro `play_card` ja presente na lista (nao mexe na ordem quando o
+padrao encadeado nao existe).
+
+**Bug pego durante a validacao (nao no parser):** o executor de
+`add_from_trash` em `decision_engine.py` nunca repassava `cost_gte` nem
+`exclude_name` pra `eligible_cards` (so tinha os parametros antigos) --
+corrigido junto, senao os campos novos do parser ficariam mortos.
+
+**Validado:** `diff_parser.py` PERDEU=0, MUDOU=19 cartas (todas
+conferidas manualmente contra o `card_text` cru antes de aceitar --
+nenhuma regressao, todas ganhos reais). 2 testes dirigidos novos com
+EXECUCAO real: `test_rebecca_add_from_trash_range_exclude_e_ordem`
+(recupera o alvo certo dentro da faixa, ignora a copia da propria
+Rebecca no trash, ignora alvo fora da faixa, confirma que o personagem
+recuperado e jogado de verdade e entra restado). `smoke_fast.py` (79
+checks) verde. `smoke_test.py` amplo verde apos corrigir 1 teste
+desatualizado (`OP11-097` contava com trash SEM cor definida -- default
+Red do helper local, texto real exige Black -- ajustado pra `color='Black'`
+nas cartas de teste, o comportamento novo esta certo).
+
+**Ainda pendente do lote de 10 do usuario:** OP05-040 Birdcage (condicao
+de lider Doflamingo + clausula de "nao ficam ativos no Refresh Phase"),
+OP16-116 (segunda clausula de roubo de carta da vida), OP16-108 Shiryu
+(bloco `on_play` inteiro), OP10-098 Liberation (condicao de comparacao
+relativa de board + segundo alvo de KO + bloco `[Trigger]` inteiro),
+OP15-008 Krieg (condicao `just_played` + debuff dinamico por DON do
+proprio alvo).
+
 ## 2026-07-15 (158) - Claude - Lote de 10 cartas revisadas manualmente pelo usuario: 4 causas raiz fechadas (don_on_field_gte sem "or more", chars_lte, reveal_from_hand, ko_selected encadeado)
 
 **Contexto:** usuario colou uma revisao manual de 10 cartas (nao veio do
