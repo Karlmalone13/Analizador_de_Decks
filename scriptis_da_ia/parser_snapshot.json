@@ -5043,6 +5043,9 @@
  },
  "EB04-059": {
   "main": {
+   "conditions": {
+    "chars_fewer_than_opp_by_gte": 1
+   },
    "costs": [
     {
      "type": "turn_life_face_up"
@@ -5052,6 +5055,12 @@
     {
      "action": "ko",
      "cost_lte": 6,
+     "count": 1,
+     "target": "opp_character"
+    },
+    {
+     "action": "ko",
+     "cost_lte": 5,
      "count": 1,
      "target": "opp_character"
     }
@@ -6507,6 +6516,12 @@
     {
      "action": "ko",
      "cost_lte": 3,
+     "count": 1,
+     "target": "opp_character"
+    },
+    {
+     "action": "ko",
+     "cost_lte": 2,
      "count": 1,
      "target": "opp_character"
     }
@@ -9054,6 +9069,12 @@
      "action": "ko",
      "count": 1,
      "power_lte": 5000,
+     "target": "opp_character"
+    },
+    {
+     "action": "ko",
+     "count": 1,
+     "power_lte": 4000,
      "target": "opp_character"
     }
    ]
@@ -14854,6 +14875,12 @@
      "cost_lte": 2,
      "count": 1,
      "target": "opp_character"
+    },
+    {
+     "action": "ko",
+     "cost_lte": 1,
+     "count": 1,
+     "target": "opp_character"
     }
    ]
   }
@@ -19677,6 +19704,12 @@
     {
      "action": "ko",
      "cost_lte": 5,
+     "count": 1,
+     "target": "opp_character"
+    },
+    {
+     "action": "ko",
+     "cost_lte": 3,
      "count": 1,
      "target": "opp_character"
     }
@@ -25679,11 +25712,36 @@
  },
  "OP10-098": {
   "main": {
+   "conditions": {
+    "chars_fewer_than_opp_by_gte": 2
+   },
    "steps": [
     {
      "action": "ko",
      "cost_lte": 6,
      "count": 1,
+     "target": "opp_character"
+    },
+    {
+     "action": "ko",
+     "cost_lte": 4,
+     "count": 1,
+     "target": "opp_character"
+    }
+   ]
+  },
+  "trigger": {
+   "steps": [
+    {
+     "action": "negate_effect",
+     "count": 1,
+     "duration": "this_turn",
+     "target": "opp_leader"
+    },
+    {
+     "action": "negate_effect",
+     "count": 1,
+     "duration": "this_turn",
      "target": "opp_character"
     }
    ]
@@ -31463,6 +31521,12 @@
      "action": "ko",
      "count": 1,
      "power_lte": 4000,
+     "target": "opp_character"
+    },
+    {
+     "action": "ko",
+     "count": 1,
+     "power_lte": 3000,
      "target": "opp_character"
     }
    ]

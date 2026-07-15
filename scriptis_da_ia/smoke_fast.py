@@ -1194,6 +1194,43 @@ def test_shiryu_add_from_trash_to_life_com_filtro() -> None:
           alvo_caro in me.trash and alvo_tipo_errado in me.trash)
 
 
+def test_liberation_condicao_relativa_ko_duplo_e_trigger_1_de_cada() -> None:
+    # Achado 15/07 -- OP10-098 Liberation: "[Main] If the number of your
+    # Characters is at least 2 less than the number of your opponent's
+    # Characters, K.O. up to 1 of your opponent's Characters with a base
+    # cost of 6 or less and up to 1 of your opponent's Characters with a
+    # base cost of 4 or less. [Trigger] Negate the effect of up to 1 of
+    # EACH of your opponent's Leader and Character cards during this
+    # turn." 3 bugs: (1) condicao de comparacao RELATIVA entre boards
+    # nunca existia (so contra numero fixo); (2) 2a clausula de KO (custo
+    # <=4) nunca era capturada -- o "and up to N..." sem repetir o verbo
+    # K.O. nao batia em nenhum regex; (3) [Trigger] inteiro ausente (1 de
+    # CADA tipo, nao uma escolha entre um ou outro).
+    main_entry = get_card_effects("OP10-098").get("main", {})
+    check("OP10-098 parseia condicao chars_fewer_than_opp_by_gte=2",
+          main_entry.get("conditions", {}).get("chars_fewer_than_opp_by_gte") == 2)
+    ko_steps = main_entry.get("steps", [])
+    check("OP10-098 parseia os 2 alvos de KO (custo<=6 e custo<=4)",
+          any(s.get("cost_lte") == 6 for s in ko_steps) and any(s.get("cost_lte") == 4 for s in ko_steps))
+    trig_steps = get_card_effects("OP10-098").get("trigger", {}).get("steps", [])
+    check("OP10-098 parseia negate_effect de 1 Leader E 1 Character (nao escolha)",
+          any(s.get("target") == "opp_leader" for s in trig_steps)
+          and any(s.get("target") == "opp_character" for s in trig_steps))
+
+    liberation = real_card("OP10-098")
+    me = GameState(leader=mk("XLIB", "Lider", card_type="LEADER"), turn=4, don_available=3)
+    me.field_chars = [liberation]
+    opp = GameState(leader=mk("XLIBOPP", "Lider Opp", card_type="LEADER"), turn=4)
+    caro = mk("XLB1", "Alvo Custo 6", cost=6)
+    barato = mk("XLB2", "Alvo Custo 4", cost=4)
+    muito_caro = mk("XLB3", "Alvo Custo 8", cost=8)
+    opp.field_chars = [caro, barato, muito_caro]  # oponente com 3, eu com 1: diferenca=2, condicao bate
+    EffectExecutor(me, opp)._execute_step(ko_steps[0], liberation)
+    EffectExecutor(me, opp)._execute_step(ko_steps[1], liberation)
+    check("KOed o alvo custo<=6 e o alvo custo<=4, poupou o custo 8",
+          caro not in opp.field_chars and barato not in opp.field_chars and muito_caro in opp.field_chars)
+
+
 def main() -> int:
     test_turn_order_imu_prefers_second()
     test_empty_throne_beats_direct_five_elders_play()
@@ -1239,6 +1276,7 @@ def main() -> int:
     test_birdcage_trava_refresh_simetrica_cost_lte()
     test_zehahahahaha_segunda_clausula_dano_direto()
     test_shiryu_add_from_trash_to_life_com_filtro()
+    test_liberation_condicao_relativa_ko_duplo_e_trigger_1_de_cada()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0

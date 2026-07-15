@@ -2677,6 +2677,10 @@ class EffectExecutor:
                 return False
         if 'chars_lte' in conds and len(me.field_chars) > conds['chars_lte']:
             return False
+        if 'chars_fewer_than_opp_by_gte' in conds:
+            diff = len(opp.field_chars) - len(me.field_chars)
+            if diff < conds['chars_fewer_than_opp_by_gte']:
+                return False
         if 'hand_lte' in conds and len(me.hand) > conds['hand_lte']:
             return False
         if 'hand_gte' in conds and len(me.hand) < conds['hand_gte']:
@@ -6391,6 +6395,8 @@ class DecisionEngine:
                 contagem = (sum(1 for c in me.field_chars if c.cost >= cost_filter)
                             if cost_filter is not None else my_chars)
                 if not (contagem >= v): return False
+            if k == 'chars_fewer_than_opp_by_gte':
+                if not ((len(self.opp.field_chars) - my_chars) >= v): return False
             if k == 'leader_type':
                 if str(v).lower() not in ' '.join(leader_types): return False
             if k == 'leader_is':

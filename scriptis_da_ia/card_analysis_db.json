@@ -10888,6 +10888,12 @@
     "trigger": "main",
     "cost_lte": 6,
     "target": "opp_character"
+   },
+   {
+    "action": "ko",
+    "trigger": "main",
+    "cost_lte": 5,
+    "target": "opp_character"
    }
   ],
   "synergy_states": {
@@ -15047,6 +15053,12 @@
     "action": "ko",
     "trigger": "on_play",
     "cost_lte": 3,
+    "target": "opp_character"
+   },
+   {
+    "action": "ko",
+    "trigger": "on_play",
+    "cost_lte": 2,
     "target": "opp_character"
    }
   ],
@@ -21993,6 +22005,12 @@
     "action": "ko",
     "trigger": "main",
     "power_lte": 5000,
+    "target": "opp_character"
+   },
+   {
+    "action": "ko",
+    "trigger": "main",
+    "power_lte": 4000,
     "target": "opp_character"
    }
   ],
@@ -36031,6 +36049,12 @@
     "trigger": "on_play",
     "cost_lte": 2,
     "target": "opp_character"
+   },
+   {
+    "action": "ko",
+    "trigger": "on_play",
+    "cost_lte": 1,
+    "target": "opp_character"
    }
   ],
   "synergy_states": {},
@@ -47726,6 +47750,12 @@
     "action": "ko",
     "trigger": "on_play",
     "cost_lte": 5,
+    "target": "opp_character"
+   },
+   {
+    "action": "ko",
+    "trigger": "on_play",
+    "cost_lte": 3,
     "target": "opp_character"
    }
   ],
@@ -62571,9 +62601,25 @@
   "attribute": "",
   "effects": [
    {
+    "action": "negate_effect",
+    "trigger": "trigger",
+    "target": "opp_leader"
+   },
+   {
+    "action": "negate_effect",
+    "trigger": "trigger",
+    "target": "opp_character"
+   },
+   {
     "action": "ko",
     "trigger": "main",
     "cost_lte": 6,
+    "target": "opp_character"
+   },
+   {
+    "action": "ko",
+    "trigger": "main",
+    "cost_lte": 4,
     "target": "opp_character"
    }
   ],
@@ -62603,7 +62649,7 @@
   "has_double_attack": false,
   "has_unblockable": false,
   "has_banish": false,
-  "has_trigger": false
+  "has_trigger": true
  },
  "OP10-099": {
   "name": "Eustass\"Captain\"Kid (099)",
@@ -77044,6 +77090,12 @@
     "action": "ko",
     "trigger": "main",
     "power_lte": 4000,
+    "target": "opp_character"
+   },
+   {
+    "action": "ko",
+    "trigger": "main",
+    "power_lte": 3000,
     "target": "opp_character"
    }
   ],

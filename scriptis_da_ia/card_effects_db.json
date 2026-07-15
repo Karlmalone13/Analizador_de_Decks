@@ -7790,8 +7790,17 @@
             "count": 1,
             "target": "opp_character",
             "cost_lte": 6
+          },
+          {
+            "action": "ko",
+            "count": 1,
+            "target": "opp_character",
+            "cost_lte": 5
           }
         ],
+        "conditions": {
+          "chars_fewer_than_opp_by_gte": 1
+        },
         "costs": [
           {
             "type": "turn_life_face_up"
@@ -10312,6 +10321,12 @@
             "count": 1,
             "target": "opp_character",
             "cost_lte": 3
+          },
+          {
+            "action": "ko",
+            "count": 1,
+            "target": "opp_character",
+            "cost_lte": 2
           }
         ],
         "costs": [
@@ -14673,6 +14688,12 @@
             "count": 1,
             "target": "opp_character",
             "power_lte": 5000
+          },
+          {
+            "action": "ko",
+            "count": 1,
+            "target": "opp_character",
+            "power_lte": 4000
           }
         ],
         "costs": [
@@ -23923,6 +23944,12 @@
             "count": 1,
             "target": "opp_character",
             "cost_lte": 2
+          },
+          {
+            "action": "ko",
+            "count": 1,
+            "target": "opp_character",
+            "cost_lte": 1
           }
         ],
         "costs": [
@@ -31641,6 +31668,12 @@
             "count": 1,
             "target": "opp_character",
             "cost_lte": 5
+          },
+          {
+            "action": "ko",
+            "count": 1,
+            "target": "opp_character",
+            "cost_lte": 3
           }
         ],
         "costs": [
@@ -41319,6 +41352,22 @@
     "sub_types": "Blackbeard Pirates",
     "attribute": "",
     "effects": {
+      "trigger": {
+        "steps": [
+          {
+            "action": "negate_effect",
+            "count": 1,
+            "target": "opp_leader",
+            "duration": "this_turn"
+          },
+          {
+            "action": "negate_effect",
+            "count": 1,
+            "target": "opp_character",
+            "duration": "this_turn"
+          }
+        ]
+      },
       "main": {
         "steps": [
           {
@@ -41326,8 +41375,17 @@
             "count": 1,
             "target": "opp_character",
             "cost_lte": 6
+          },
+          {
+            "action": "ko",
+            "count": 1,
+            "target": "opp_character",
+            "cost_lte": 4
           }
-        ]
+        ],
+        "conditions": {
+          "chars_fewer_than_opp_by_gte": 2
+        }
       }
     }
   },
@@ -50795,6 +50853,12 @@
             "count": 1,
             "target": "opp_character",
             "power_lte": 4000
+          },
+          {
+            "action": "ko",
+            "count": 1,
+            "target": "opp_character",
+            "power_lte": 3000
           }
         ],
         "costs": [

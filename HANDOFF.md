@@ -1,5 +1,66 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-15 (163) - Claude - OP10-098 Liberation: condicao relativa de board + KO duplo + trigger "1 de cada" (item 6/6, lote de 10 CONCLUIDO -- so falta Krieg)
+
+**Continuacao do lote de 10 do usuario.** OP10-098: "[Main] If the number
+of your Characters is at least 2 less than the number of your opponent's
+Characters, K.O. up to 1 of your opponent's Characters with a base cost
+of 6 or less and up to 1 of your opponent's Characters with a base cost
+of 4 or less. [Trigger] Negate the effect of up to 1 of EACH of your
+opponent's Leader and Character cards during this turn." 3 bugs
+distintos na mesma carta:
+
+**1) Condicao de comparacao RELATIVA entre boards (nova, `chars_fewer_than_opp_by_gte`):**
+toda a familia `chars_gte`/`chars_lte` so comparava contra um numero
+FIXO -- nunca existia "meu board tem N a menos que o do oponente".
+Tambem cobre a variante mais simples "if you have less/fewer Characters
+than your opponent" (sem "at least N", so precisa de qualquer diferenca
+>=1) -- fechou EB04-059 de brinde (achado ao investigar o proximo bug).
+Adicionada nos 2 checadores (`_check_conditions` E `_effect_conditions_met`,
+mesma licao recorrente da sessao).
+
+**2) 2a clausula de KO com "and" sem repetir o verbo (6 cartas fechadas
+de uma vez):** `parse_ko` ja usava `finditer` pra pegar multiplas
+clausulas "K.O. up to N ... Character...", mas cada match EXIGIA o verbo
+K.O./trash no INICIO -- a 2a clausula ("and up to 1 of your opponent's
+Characters with a base cost of 4 or less") e uma CONTINUACAO implicita,
+sem repetir "K.O.". Adicionado um `re.match` logo apos cada match
+principal pra capturar essa continuacao (herda o mesmo verbo/action do
+1o match), suportando tanto filtro de custo quanto de power. Alem de
+OP10-098: EB04-059, OP01-096, OP03-018, OP05-093, OP07-118, OP13-077 --
+todas essas cartas ja tinham esse EXATO padrao de 2 clausulas de KO
+encadeadas e so a 1a sobrevivia no parse ate agora.
+
+**3) `[Trigger]` "1 de CADA" (novo target, distinto de opp_leader_or_character):**
+"negate the effect of up to N of EACH of your opponent's Leader and
+Character cards" significa negar 1 Leader E 1 Character (2 negacoes
+independentes), nao uma escolha entre um ou outro (que e o que
+`opp_leader_or_character` ja modelava). Emite 2 steps `negate_effect`
+separados (`opp_leader` + `opp_character`).
+
+**Gaps notados, fora de escopo desta rodada:** EB04-059 e OP13-077
+tinham SUA PROPRIA condicao adicional alem da que foi corrigida aqui
+(EB04-059: "you may turn 1 Life card face-up" como custo opcional, ja
+capturado; OP13-077: "if you have any DON!! cards given" -- condicao de
+DON anexado na PROPRIA carta, tipo novo ainda nao suportado, 6 cartas
+reais no banco: OP13-061/062/063/066/076/077). Registrado aqui pra nao
+esquecer numa proxima varredura.
+
+**Validado:** `diff_parser.py` PERDEU=0, MUDOU=7 (todas conferidas
+contra `card_text` cru -- nenhuma regressao, todas ganhos reais). 1
+teste dirigido novo com EXECUCAO real
+(`test_liberation_condicao_relativa_ko_duplo_e_trigger_1_de_cada`):
+confirma que os 2 alvos de KO (custo<=6 e custo<=4) sao aplicados de
+verdade, poupando o alvo fora da faixa. `smoke_fast.py` (98 checks) +
+`smoke_test.py` amplo, ambos verdes.
+
+**Lote de 10 do usuario: 5/6 itens fechados nesta sessao** (OP09-098,
+OP05-091, OP05-040, OP16-116, OP16-108, OP10-098) mais os 3 primeiros do
+bloco 158 (don_on_field_gte, chars_lte, reveal_from_hand) = TODOS menos
+OP15-008 Krieg (condicao `just_played` + debuff dinamico por DON do
+proprio alvo -- mecanica nova, fica pra proxima sessao). OP06-022 Yamato
+ja estava correto (confirmado no bloco 158, sem acao necessaria).
+
 ## 2026-07-15 (162) - Claude - OP16-108 Shiryu: bloco on_play inteiro faltando por exclusao generica demais em parse_life (item 5/6 do lote de 10)
 
 **Continuacao do lote de 10 do usuario.** OP16-108: "[On Play] You may

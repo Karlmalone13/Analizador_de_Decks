@@ -169,6 +169,22 @@ def parse_conditions(text):
     m = re.search(r'if you have (\d+) or less characters?(?! with)', t)
     if m: conds['chars_lte'] = int(m.group(1))
 
+    # "If the number of your Characters is at least N less than the
+    # number of your opponent's Characters" -- comparacao RELATIVA entre
+    # os 2 lados (nao contra um numero fixo, distinta de chars_gte/
+    # chars_lte). Achado 15/07 (revisao do usuario, OP10-098 Liberation):
+    # sem essa condicao o KO disparava sempre, mesmo com boards
+    # equivalentes ou o proprio lado na frente.
+    m = re.search(
+        r"if the number of your characters is at least (\d+) less than "
+        r"the number of your opponent.?s characters", t)
+    if m:
+        conds['chars_fewer_than_opp_by_gte'] = int(m.group(1))
+    elif re.search(r"if you have (?:less|fewer) characters than your opponent", t):
+        # Variante mais simples, sem "at least N" (achado 15/07, EB04-059):
+        # qualquer diferenca >=1 ja satisfaz.
+        conds['chars_fewer_than_opp_by_gte'] = 1
+
     # "if you have N or more {TIPO}/[TIPO]/"TIPO" type Characters" -- tipo
     # vem ANTES de "Characters" (ordem diferente de chars_gte_cost_filter,
     # que tem o filtro DEPOIS de "characters"). Achado 15/07 (varredura
@@ -736,6 +752,34 @@ def parse_ko(text):
         if 'rested' in m.group(0):
             step['rested_only'] = True
         steps.append(step)
+
+        # "K.O. up to N of your opponent's Characters with cost X or
+        # less AND up to M of your opponent's Characters with cost Y or
+        # less" -- 2o alvo NAO repete o verbo (K.O./trash implicito por
+        # continuacao com "and"), entao o finditer acima nunca casava a
+        # 2a clausula. Achado 15/07, OP10-098 Liberation (revisao do
+        # usuario): checa logo apos o fim do match atual por "and up to N
+        # of your opponent's Characters ... cost of Y or less" e injeta
+        # um 2o step com o MESMO verbo/action do primeiro.
+        cont_m = re.match(
+            r"\s*and up to (\d+) of your opponent.?s"
+            r"(?:\s+\"([a-z][a-z0-9 .\'-]+)\"\s+type)?"
+            r" characters?(?: with a (?:base )?cost of (\d+)( or less)?)?"
+            r"(?: with (?:a )?(\d+) (?:base )?power(?: or less)?)?",
+            t[m.end():]
+        )
+        if cont_m:
+            step2 = {'action': action, 'count': int(cont_m.group(1)), 'target': 'opp_character'}
+            if cont_m.group(2):
+                step2['filter_type'] = cont_m.group(2).strip()
+            if cont_m.group(3):
+                if cont_m.group(4):
+                    step2['cost_lte'] = int(cont_m.group(3))
+                else:
+                    step2['cost_eq'] = int(cont_m.group(3))
+            if cont_m.group(5):
+                step2['power_lte'] = int(cont_m.group(5))
+            steps.append(step2)
 
     if steps:
         return steps
@@ -3373,6 +3417,24 @@ def parse_negate_effect(text):
             duration = 'until_opp_turn_end' if 'until the end' in t else 'this_turn'
             steps.append({'action': 'negate_on_play_effects', 'target': 'opponent', 'duration': duration})
             return steps
+
+    # padrao "up to N of EACH of your opponent's Leader and Character
+    # cards" -- 1 clausula SO, mas alvo e "1 do Leader E 1 do Character"
+    # (2 negacoes independentes, nao uma escolha entre um ou outro como
+    # opp_leader_or_character). Achado 15/07 (revisao do usuario,
+    # OP10-098 Liberation [Trigger]): distinto do padrao leader_m+char_m
+    # abaixo, que exige 2 clausulas "Then, negate..." separadas -- aqui e
+    # uma frase compacta so.
+    each_m = re.search(
+        r"negate the effects? of up to (\d+) of each of your opponent.{0,15}"
+        r"leader and character cards?", t)
+    if each_m:
+        cnt = int(each_m.group(1))
+        steps.append({'action': 'negate_effect', 'count': cnt,
+                      'target': 'opp_leader', 'duration': 'this_turn'})
+        steps.append({'action': 'negate_effect', 'count': cnt,
+                      'target': 'opp_character', 'duration': 'this_turn'})
+        return steps
 
     # padrao composto: "negate the effect of up to N of your opponent's
     # Leader ... Then, negate the effect of up to M of your opponent's
