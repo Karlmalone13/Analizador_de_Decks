@@ -57284,6 +57284,11 @@
     "action": "negate_effect",
     "trigger": "main",
     "target": "opp_character"
+   },
+   {
+    "action": "ko_selected",
+    "trigger": "main",
+    "cost_lte": 4
    }
   ],
   "synergy_states": {

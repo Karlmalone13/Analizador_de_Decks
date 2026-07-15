@@ -1022,6 +1022,40 @@ def test_don_on_field_lte_condicao_ausente() -> None:
     check("Com DON <= 6 no campo, ganha Rush de verdade", rush_char2.has_rush)
 
 
+def test_black_hole_negate_e_ko_encadeado() -> None:
+    # Achado 15/07 -- OP09-098 Black Hole: "negate the effect of up to 1 of
+    # your opponent's Characters during this turn. Then, if that Character
+    # has a cost of 4 or less, K.O. it." A segunda clausula (ko_selected)
+    # faltava por completo -- so o negate_effect sobrevivia no parse.
+    steps = get_card_effects("OP09-098").get("main", {}).get("steps", [])
+    check("OP09-098 parseia ko_selected cost_lte=4",
+          any(s.get("action") == "ko_selected" and s.get("cost_lte") == 4 for s in steps))
+
+    black_hole = real_card("OP09-098")
+    leader_bb = mk("XBB", "Lider BB", card_type="LEADER", sub_types="Blackbeard Pirates")
+
+    # Caso 1: alvo custo <= 4 -- deve ser negado E KOed.
+    alvo_barato = mk("XA1", "Alvo Barato", cost=3)
+    me = GameState(leader=leader_bb, turn=3)
+    me.field_chars = [black_hole]
+    opp = GameState(leader=mk("XOPPL", "Lider Opp", card_type="LEADER"), turn=3)
+    opp.field_chars = [alvo_barato]
+    log = EffectExecutor(me, opp).execute(black_hole, "main")
+    log_str = " | ".join(log) if isinstance(log, list) else str(log)
+    check("Negou e KOed alvo de custo <= 4", "KO" in log_str and alvo_barato not in opp.field_chars)
+    check("Alvo custo <= 4 foi pro trash", alvo_barato in opp.trash)
+
+    # Caso 2: alvo custo > 4 -- so nega, nao mata.
+    black_hole2 = real_card("OP09-098")
+    alvo_caro = mk("XA2", "Alvo Caro", cost=6)
+    me2 = GameState(leader=leader_bb, turn=3)
+    me2.field_chars = [black_hole2]
+    opp2 = GameState(leader=mk("XOPPL2", "Lider Opp", card_type="LEADER"), turn=3)
+    opp2.field_chars = [alvo_caro]
+    EffectExecutor(me2, opp2).execute(black_hole2, "main")
+    check("Alvo custo > 4 NAO foi KOed (so negado)", alvo_caro in opp2.field_chars)
+
+
 def main() -> int:
     test_turn_order_imu_prefers_second()
     test_empty_throne_beats_direct_five_elders_play()
@@ -1062,6 +1096,7 @@ def main() -> int:
     test_debuff_power_multiplo_alvo_e_condicao_por_tipo()
     test_total_life_lte_condicao_combinada()
     test_don_on_field_lte_condicao_ausente()
+    test_black_hole_negate_e_ko_encadeado()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0

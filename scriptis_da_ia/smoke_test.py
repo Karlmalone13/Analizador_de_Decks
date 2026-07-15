@@ -1566,11 +1566,19 @@ atmos = mk('OP08-040', 'Atmos', power=5000, sub_types='Whitebeard Pirates')
 opp_small = mk('OPP-C4', 'Alvo custo 4', cost=4)
 opp_big = mk('OPP-C5', 'Alvo custo 5', cost=5)
 opp.field_chars = [opp_big, opp_small]
+# Achado 15/07 -- texto real tem custo opcional "You may reveal 2 cards
+# with a type including 'Whitebeard Piratess' from your hand:" que o
+# parser nao capturava (agora capturado via novo cost type
+# reveal_from_hand); precisa de 2 cartas do tipo na mao pra pagar.
+me.hand = [mk('WBH-1', 'Aliado WB 1', sub_types='Whitebeard Pirates'),
+           mk('WBH-2', 'Aliado WB 2', sub_types='Whitebeard Pirates')]
 ee = EffectExecutor(me, opp)
 log = ee.execute(atmos, 'on_play')
 check('OP08-040 Atmos tolera typo Piratess e ativa bounce com lider Whitebeard Pirates',
       opp_small in opp.hand and opp_small not in opp.field_chars and opp_big in opp.field_chars
       and any('bounce' in x for x in log))
+check('OP08-040 nao trashou/removeu as cartas reveladas da mao (so verificou posse)',
+      len(me.hand) == 2)
 
 # ── 28. grant_ko_immunity_type (OP09-033 Nico Robin): imunidade temporaria
 # a KO por efeito para Characters do tipo proprio. ──

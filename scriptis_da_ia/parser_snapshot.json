@@ -1451,6 +1451,9 @@
  },
  "EB02-022": {
   "on_play": {
+   "conditions": {
+    "chars_lte": 2
+   },
    "steps": [
     {
      "action": "play_card",
@@ -6407,6 +6410,9 @@
  },
  "OP01-091": {
   "your_turn": {
+   "conditions": {
+    "don_on_field_gte": 10
+   },
    "steps": [
     {
      "action": "debuff_power",
@@ -7211,6 +7217,9 @@
  },
  "OP02-025": {
   "activate_main": {
+   "conditions": {
+    "chars_lte": 1
+   },
    "once_per_turn": true,
    "steps": [
     {
@@ -7225,6 +7234,9 @@
  },
  "OP02-026": {
   "passive": {
+   "conditions": {
+    "chars_lte": 3
+   },
    "once_per_turn": true,
    "steps": [
     {
@@ -13873,6 +13885,9 @@
  },
  "OP05-040": {
   "end_of_turn": {
+   "conditions": {
+    "don_on_field_gte": 10
+   },
    "steps": [
     {
      "action": "ko",
@@ -14228,6 +14243,9 @@
  },
  "OP05-062": {
   "passive": {
+   "conditions": {
+    "don_on_field_gte": 10
+   },
    "costs": [
     {
      "type": "rest_self"
@@ -14281,6 +14299,9 @@
  "OP05-065": {},
  "OP05-066": {
   "opp_turn": {
+   "conditions": {
+    "don_on_field_gte": 10
+   },
    "steps": [
     {
      "action": "buff_power",
@@ -20310,6 +20331,13 @@
    "conditions": {
     "leader_type_includes": "whitebeard piratess"
    },
+   "costs": [
+    {
+     "count": 2,
+     "filter_type": "whitebeard piratess",
+     "type": "reveal_from_hand"
+    }
+   ],
    "steps": [
     {
      "action": "bounce",
@@ -20375,6 +20403,13 @@
  },
  "OP08-044": {
   "activate_main": {
+   "costs": [
+    {
+     "count": 2,
+     "filter_type": "whitebeard piratess",
+     "type": "reveal_from_hand"
+    }
+   ],
    "once_per_turn": true,
    "steps": [
     {
@@ -20558,6 +20593,13 @@
  },
  "OP08-055": {
   "main": {
+   "costs": [
+    {
+     "count": 2,
+     "filter_type": "whitebeard piratess",
+     "type": "reveal_from_hand"
+    }
+   ],
    "steps": [
     {
      "action": "place_opp_character_bottom_deck",
@@ -23453,6 +23495,10 @@
      "count": 1,
      "duration": "this_turn",
      "target": "opp_character"
+    },
+    {
+     "action": "ko_selected",
+     "cost_lte": 4
     }
    ]
   },
@@ -24069,6 +24115,9 @@
  },
  "OP10-010": {
   "when_attacking": {
+   "conditions": {
+    "chars_lte": 1
+   },
    "steps": [
     {
      "action": "buff_power",
@@ -37994,6 +38043,9 @@
    ]
   },
   "main": {
+   "conditions": {
+    "don_on_field_gte": 10
+   },
    "steps": [
     {
      "action": "set_base_power",
@@ -39209,6 +39261,9 @@
  },
  "OP16-116": {
   "main": {
+   "conditions": {
+    "don_on_field_gte": 10
+   },
    "steps": [
     {
      "action": "play_card",
@@ -43391,6 +43446,9 @@
  },
  "ST12-003": {
   "on_play": {
+   "conditions": {
+    "chars_lte": 2
+   },
    "steps": [
     {
      "action": "play_card",
@@ -45121,6 +45179,13 @@
  },
  "ST22-001": {
   "activate_main": {
+   "costs": [
+    {
+     "count": 1,
+     "filter_type": "whitebeard pirates",
+     "type": "reveal_from_hand"
+    }
+   ],
    "once_per_turn": true,
    "steps": [
     {
@@ -45342,6 +45407,13 @@
  },
  "ST22-017": {
   "main": {
+   "costs": [
+    {
+     "count": 2,
+     "filter_type": "whitebeard pirates",
+     "type": "reveal_from_hand"
+    }
+   ],
    "steps": [
     {
      "action": "place_opp_character_bottom_deck",

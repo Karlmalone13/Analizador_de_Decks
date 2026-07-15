@@ -113,7 +113,16 @@ def parse_conditions(text):
     if m: conds['don_rested_gte'] = int(m.group(1))
 
     m = re.search(r'if you have (\d+) or more don!! cards? on your field', t)
-    if m: conds['don_on_field_gte'] = int(m.group(1))
+    if m:
+        conds['don_on_field_gte'] = int(m.group(1))
+    else:
+        # "if you have N DON!! cards on your field" SEM "or more" (achado
+        # 15/07, revisao do usuario, OP05-040/OP16-116 e familia -- 6
+        # cartas reais, sempre N=10). Semantica equivalente a "or more"
+        # porque 10 e o teto do DON deck (nunca da pra ter mais) -- nao e
+        # ambiguo na pratica, so uma variante de redacao mais curta.
+        m = re.search(r'if you have (\d+) don!! cards? on your field(?! or)', t)
+        if m: conds['don_on_field_gte'] = int(m.group(1))
 
     # "if you have N or less DON!! cards on your field" -- simetrico ao
     # gte acima, faltava o lado "ou menos" (achado 15/07, varredura ampla,
@@ -153,6 +162,12 @@ def parse_conditions(text):
         conds['chars_gte'] = int(m.group(1))
         if m.group(2):
             conds['chars_gte_cost_filter'] = int(m.group(2))
+
+    # "if you have N or less Characters" -- simetrico ao chars_gte acima,
+    # faltava o lado "ou menos" (achado 15/07, revisao do usuario,
+    # ST12-003 Dracule Mihawk e familia -- 4 cartas reais).
+    m = re.search(r'if you have (\d+) or less characters?(?! with)', t)
+    if m: conds['chars_lte'] = int(m.group(1))
 
     # "if you have N or more {TIPO}/[TIPO]/"TIPO" type Characters" -- tipo
     # vem ANTES de "Characters" (ordem diferente de chars_gte_cost_filter,
@@ -467,6 +482,19 @@ def parse_costs(text):
                 m = re.search(r'\btrash (\d+) cards? from your hand\s*:', t)
                 if m:
                     costs.append({'type': 'trash_from_hand', 'count': int(m.group(1))})
+
+    # Custo de REVELAR N cartas da mao com filtro de tipo (ex: OP08-044
+    # Kingdew, "you may reveal 2 cards with a type including 'Whitebeard
+    # Piratess' from your hand: [efeito]"). Achado 15/07 (revisao do
+    # usuario, 4 cartas reais): distinto de trash_from_hand -- reveal NAO
+    # remove as cartas da mao, so exige TER as cartas (prova de posse) pra
+    # poder pagar.
+    m_reveal = re.search(
+        r"you may reveal (\d+) cards? with a type including "
+        r"[\"']([a-z][a-z0-9 .'-]+?)[\"'] from your hand\s*:", t)
+    if m_reveal:
+        costs.append({'type': 'reveal_from_hand', 'count': int(m_reveal.group(1)),
+                       'filter_type': m_reveal.group(2).strip()})
 
     # DON!! −X: devolve X DON do campo para o deck de DON.
     # "you may" perto (antes ou depois, ex: dentro do parêntese explicativo)
@@ -3334,6 +3362,14 @@ def parse_negate_effect(text):
         if 'during this turn' in t:
             step['duration'] = 'this_turn'
         steps.append(step)
+
+        # "Then, if that Character has a cost of N or less, K.O. it" --
+        # segunda clausula encadeada, mira a MESMA carta ja negada (achado
+        # 15/07, OP09-098 Black Hole). Alvo = 'selected' (memoria
+        # _last_selected, gravada pelo executor de negate_effect).
+        ko_m = re.search(r'then, if that character has a cost of (\d+) or less, k\.?o\.? it', t)
+        if ko_m:
+            steps.append({'action': 'ko_selected', 'cost_lte': int(ko_m.group(1))})
 
     return steps
 

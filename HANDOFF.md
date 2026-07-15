@@ -1,5 +1,73 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-15 (158) - Claude - Lote de 10 cartas revisadas manualmente pelo usuario: 4 causas raiz fechadas (don_on_field_gte sem "or more", chars_lte, reveal_from_hand, ko_selected encadeado)
+
+**Contexto:** usuario colou uma revisao manual de 10 cartas (nao veio do
+script de clustering, foi leitura carta a carta) com bugs anotados
+diretamente por ele. Fechado o primeiro sub-lote de 3 causas raiz
+compartilhadas + 1 mecanismo novo pontual desta leva:
+
+**`don_on_field_gte` sem "or more" (6 cartas):** "if you have N DON!! cards
+on your field" (sem o "or more") nao batia na regex existente, que exigia
+literalmente "or more". Fallback adicionado -- semanticamente equivalente
+porque N e sempre 10 (teto do deck de DON, nunca da pra ter mais).
+OP05-040 (Birdcage/Doflamingo) e OP16-116 (Zehahahahaha) e familia.
+
+**`chars_lte` (condicao nova, 4 cartas):** simetrico ao `chars_gte`
+existente -- faltava o lado "ou menos" ("if you have N or less
+Characters"). ST12-003 (Dracule Mihawk) e familia.
+
+**`reveal_from_hand` (custo novo, 6 cartas):** "you may reveal N cards with
+a type including "X" from your hand: [efeito]" nunca existia como tipo de
+custo -- distinto de `trash_from_hand` porque REVELAR nao remove as cartas
+da mao, so exige prova de posse. OP08-044 (Kingdew) e familia. **Bug
+pego na validacao, nao no parser**: o check de `filter_type` usava
+substring simples (`filter_type in sub_types.lower()`), que falha contra
+o typo real do banco ("Whitebeard Piratess" vs "Whitebeard Pirates" sem
+o segundo s) -- trocado para `_norm_type_text()` (mesma normalizacao ja
+usada em `leader_type`/`leader_type_includes`), que tolera esse tipo de
+divergencia de pluralizacao. Sem esse ajuste o smoke_test.py regredia
+(`OP08-040 Atmos` deixava de conseguir pagar o proprio custo).
+
+**`ko_selected` (acao nova, 1 carta -- OP09-098 Black Hole):** "negate the
+effect of up to 1 of your opponent's Characters during this turn. Then,
+if that Character has a cost of 4 or less, K.O. it." A segunda clausula
+inteira estava ausente do parse -- so o `negate_effect` sobrevivia.
+Implementado reaproveitando a memoria `_last_selected` (mesmo mecanismo
+ja usado por `play_from_deck`/`buff_power` com `target: 'selected'`):
+`negate_effect` agora grava o alvo negado em `_last_selected`, e o novo
+step `ko_selected` mira essa mesma carta (checando `cost_lte`, imunidade
+e substituicao antes de mandar pro trash -- mesma logica do `ko`
+generico, so que sem busca de candidato, o alvo ja e conhecido).
+
+**Ainda pendente do lote de 10 do usuario** (nao mexido nesta rodada,
+ver TODO de continuidade): OP05-091 Rebecca (custo `add_from_trash` com
+faixa 3-7 + ordem de step invertida), OP05-040 Birdcage (condicao de
+lider Doflamingo + clausula inteira de "nao ficam ativos no Refresh
+Phase" faltando), OP16-116 (segunda clausula de roubo de carta da vida),
+OP16-108 Shiryu (bloco `on_play` inteiro faltando), OP10-098 Liberation
+(condicao nova de comparacao relativa de board + segundo alvo de KO +
+bloco `[Trigger]` inteiro faltando), OP15-008 Krieg (condicao
+`just_played` + debuff dinamico por DON do proprio alvo -- mecanica nova).
+OP06-022 Yamato: **confirmado que ja estava correto** desde o bloco 151
+(`opp_life_lte:3` presente) -- o relato do usuario provavelmente veio de
+saida desatualizada, nao precisa de acao.
+
+**Validado:** `diff_parser.py` PERDEU=0 em cada etapa (isolou OP09-098
+como unica mudanca na 1a rodada, depois confirmou clean apos
+`gerar_dbs.py`+`snapshot_parser.py`). 1 teste dirigido novo com EXECUCAO
+real (`test_black_hole_negate_e_ko_encadeado`): confirma que alvo custo
+<=4 e negado E vai pro trash, e que alvo custo >4 so e negado (nao
+morre). `smoke_fast.py` (77 checks) verde. `smoke_test.py` amplo verde
+apos corrigir o teste desatualizado do Atmos (precisava de 2 cartas
+"Whitebeard Pirates" na mao pra pagar o custo agora corretamente
+detectado).
+
+**Proxima sessao:** continuar o lote de 10 (6 itens pendentes acima),
+depois retomar a varredura ampla por clustering nos suspeitos restantes
+-- instrucao do usuario e permanente ("precisamos fazer uma varredura"),
+nao e tarefa pontual.
+
 ## 2026-07-15 (157) - Claude - Mais 2 causas raiz da varredura ampla: total_life_lte (7 cartas) + don_on_field_lte (10 cartas)
 
 **Continuacao direta do bloco 156, mesmo metodo de clustering.**

@@ -2369,7 +2369,10 @@
             "count": 1,
             "cost_lte": 99
           }
-        ]
+        ],
+        "conditions": {
+          "chars_lte": 2
+        }
       }
     }
   },
@@ -10169,7 +10172,10 @@
             "target": "all_opp_characters",
             "duration": "this_turn"
           }
-        ]
+        ],
+        "conditions": {
+          "don_on_field_gte": 10
+        }
       }
     }
   },
@@ -11580,6 +11586,9 @@
             "filter_type": "land of wano"
           }
         ],
+        "conditions": {
+          "chars_lte": 1
+        },
         "once_per_turn": true
       }
     }
@@ -11603,6 +11612,9 @@
             "up_to": true
           }
         ],
+        "conditions": {
+          "chars_lte": 3
+        },
         "once_per_turn": true
       }
     }
@@ -22373,7 +22385,10 @@
             "cost_lte": 5,
             "rested_only": true
           }
-        ]
+        ],
+        "conditions": {
+          "don_on_field_gte": 10
+        }
       }
     }
   },
@@ -22967,6 +22982,9 @@
             "action": "gain_blocker"
           }
         ],
+        "conditions": {
+          "don_on_field_gte": 10
+        },
         "costs": [
           {
             "type": "rest_self"
@@ -23066,7 +23084,10 @@
             "target": "self",
             "duration": "this_turn"
           }
-        ]
+        ],
+        "conditions": {
+          "don_on_field_gte": 10
+        }
       },
       "passive": {
         "steps": [
@@ -32736,7 +32757,14 @@
         ],
         "conditions": {
           "leader_type_includes": "whitebeard piratess"
-        }
+        },
+        "costs": [
+          {
+            "type": "reveal_from_hand",
+            "count": 2,
+            "filter_type": "whitebeard piratess"
+          }
+        ]
       }
     }
   },
@@ -32844,6 +32872,13 @@
             "amount": 2000,
             "target": "self",
             "duration": "this_turn"
+          }
+        ],
+        "costs": [
+          {
+            "type": "reveal_from_hand",
+            "count": 2,
+            "filter_type": "whitebeard piratess"
           }
         ],
         "once_per_turn": true
@@ -33147,6 +33182,13 @@
             "action": "place_opp_character_bottom_deck",
             "count": 1,
             "cost_lte": 6
+          }
+        ],
+        "costs": [
+          {
+            "type": "reveal_from_hand",
+            "count": 2,
+            "filter_type": "whitebeard piratess"
           }
         ]
       }
@@ -37792,6 +37834,10 @@
             "count": 1,
             "target": "opp_character",
             "duration": "this_turn"
+          },
+          {
+            "action": "ko_selected",
+            "cost_lte": 4
           }
         ],
         "conditions": {
@@ -38749,7 +38795,10 @@
             "target": "self",
             "duration": "this_turn"
           }
-        ]
+        ],
+        "conditions": {
+          "chars_lte": 1
+        }
       }
     }
   },
@@ -61079,7 +61128,10 @@
             "filter_type": "prisoner of impel down",
             "duration": "this_turn"
           }
-        ]
+        ],
+        "conditions": {
+          "don_on_field_gte": 10
+        }
       }
     }
   },
@@ -62940,7 +62992,10 @@
             "cost_lte": 99,
             "filter_name": "marshall.d.teach"
           }
-        ]
+        ],
+        "conditions": {
+          "don_on_field_gte": 10
+        }
       }
     }
   },
@@ -70162,7 +70217,10 @@
             "exclude": "dracule mihawk",
             "enters_rested": true
           }
-        ]
+        ],
+        "conditions": {
+          "chars_lte": 2
+        }
       }
     }
   },
@@ -72967,6 +73025,13 @@
             "count": 1
           }
         ],
+        "costs": [
+          {
+            "type": "reveal_from_hand",
+            "count": 1,
+            "filter_type": "whitebeard pirates"
+          }
+        ],
         "once_per_turn": true
       }
     }
@@ -73377,6 +73442,13 @@
           {
             "action": "draw",
             "count": 1
+          }
+        ],
+        "costs": [
+          {
+            "type": "reveal_from_hand",
+            "count": 2,
+            "filter_type": "whitebeard pirates"
           }
         ]
       }

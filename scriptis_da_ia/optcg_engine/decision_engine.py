@@ -2675,6 +2675,8 @@ class EffectExecutor:
                 contagem = len(me.field_chars)
             if contagem < conds['chars_gte']:
                 return False
+        if 'chars_lte' in conds and len(me.field_chars) > conds['chars_lte']:
+            return False
         if 'hand_lte' in conds and len(me.hand) > conds['hand_lte']:
             return False
         if 'hand_gte' in conds and len(me.hand) < conds['hand_gte']:
@@ -2803,6 +2805,18 @@ class EffectExecutor:
                 self.me.don_available -= count
                 self.me.don_rested += count
                 self._cost_logs.append(f'custo: restou {count} DON')
+            elif ctype == 'reveal_from_hand':
+                # Custo de REVELAR N cartas com filtro de tipo (achado
+                # 15/07, OP08-044 Kingdew) -- so exige TER as cartas na
+                # mao, nao remove nada (revelar != trashar/descartar).
+                count = cost.get('count', 1)
+                filter_type = _norm_type_text(cost.get('filter_type') or '')
+                matches = [c for c in self.me.hand
+                           if filter_type in _norm_type_text(c.sub_types or '')]
+                if len(matches) < count:
+                    return False
+                self._cost_logs.append(f'custo: revelou {count} carta(s) '
+                                        f'com tipo {cost.get("filter_type","")}')
             elif ctype == 'trash_from_hand':
                 count = cost.get('count', 1)
                 # "trash N card(s) with a [Trigger] from your hand" (leader
@@ -3416,6 +3430,29 @@ class EffectExecutor:
                 partes.append(f'imune: {", ".join(immune_skipped)}')
             partes.extend(sub_logs)
             return ' | '.join(partes)
+
+        # ── KO condicional sobre a carta selecionada anteriormente no bloco ──
+        if action == 'ko_selected':
+            # "Then, if that Character has a cost of N or less, K.O. it" --
+            # segunda clausula encadeada apos negate_effect (achado 15/07,
+            # OP09-098 Black Hole). Alvo = self._last_selected, gravado pelo
+            # step anterior no MESMO bloco (negate_effect). Mira sempre o
+            # campo do OPONENTE (e o unico caso ate agora).
+            alvo = self._last_selected
+            cost_lte = step.get('cost_lte')
+            if alvo is None or alvo not in opp.field_chars:
+                return ''
+            if cost_lte is not None and alvo.cost > cost_lte:
+                return ''
+            if is_immune(alvo, 'ko', opp, me, source_is_opp=True, ko_context='effect'):
+                return f'imune: {alvo.name[:15]}'
+            ee_target = EffectExecutor(opp, me)
+            sub_log = ee_target.try_any_substitute(alvo, 'ko', source_is_opp=True)
+            if sub_log:
+                return sub_log
+            ko_name = alvo.name[:15]
+            remove_character_from_field(opp, alvo, 'trash')
+            return f'KO: {ko_name}'
 
         # ── Bounce ───────────────────────────────────────────────────────────
         if action == 'bounce':
@@ -4058,6 +4095,13 @@ class EffectExecutor:
                 melhor_char.effects_negated_until = dur
                 return f'negou o efeito de {melhor_char.name[:18]}'
             alvo = _negar_character()
+            if alvo is not None:
+                # Grava pra um step POSTERIOR no mesmo bloco poder alvejar
+                # "that Character" (ex: OP09-098 Black Hole, "negate the
+                # effect... Then, if that Character has a cost of 4 or
+                # less, K.O. it" -- achado 15/07). Mesma memoria ja usada
+                # por play_from_deck/buff_power target='selected'.
+                self._last_selected = alvo
             return f'negou o efeito de {alvo.name[:18]}' if alvo else ''
 
         if action == 'buff_power_per_count':
