@@ -1,5 +1,75 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-14 (144) - Claude - HANDOFF de troca de sessao (creditos acabando): preocupacao do usuario sobre escopo real do problema de parser
+
+**Mensagem do usuario, literal, IMPORTANTE pra quem pegar a sessao (Codex ou
+outra Claude):** "é isso que eu digo sobre entender o efeito do líder e da
+carta, nosso bot tá cego e jogando errado porque não compreende direito
+cada texto. e não adianta corrigimos só para o krieg agora sendo que ele
+irá errar para outros líderes e cartas. Por exemplo pelo jogo do bot tenho
+certeza de que ele não sabia que o kid líder desvirava um supernova de
+custo 3 a 8 e dava blocker para ele, isso se flipasse a vida para cima."
+
+**Leitura correta disso:** os 2 bugs do bloco 143 (Krieg `don_attached_gte`,
+Kid `cost_gte` no intervalo 3-8) NAO sao um caso isolado resolvido -- sao
+prova de que o parser (`gerar_effects_db.py`, ~2600 cartas, dezenas de
+funcoes `parse_*`) tem gaps de gramatica ESPALHADOS, e cada carta/lider
+NUNCA testado especificamente pode ter o mesmo tipo de erro silencioso
+(campo cai no fallback errado sem nenhum erro/warning). O bloco 143 ja
+achou, so DE PASSAGEM buscando o padrao exato do Krieg/Kid, mais 4 cartas
+com o MESMO tipo de padrao mas em parsers diferentes (OP15-025/038 --
+"N+ DON anexado" via `give_don_opp`/`lock_opp_don`; EB03-060/OP05-088/
+OP05-091 -- "cost of N to M" via parsers de busca em deck/trash) que
+NAO foram corrigidas (fora do escopo dos 2 lideres em teste hoje).
+
+**Pendencia real e prioritaria pra quem continuar:** nao existe hoje uma
+auditoria SISTEMATICA que rode sobre as ~2600 cartas do banco e sinalize
+"este texto tem um padrao (intervalo 'N to M', filtro de DON anexado,
+condicao composta, etc.) que pode nao estar totalmente capturado pelo
+parser". O que existe (`audit_card_effects.py`) precisa ser conferido se
+ja cobre isso ou se e outra coisa -- NAO CONFERIDO ainda nesta sessao,
+verificar antes de propor solucao nova. Ideia a considerar (nao decidida,
+nao comecar sem validar com o usuario): um "linter" de gramatica que rode
+sobre o card_effects_db.json inteiro e aponte padroes de texto conhecidos
+por serem tramposos (intervalos, contadores de DON anexado, condicoes
+"if you have N cards given", multiplos filtros na mesma clausula) SEM
+representacao correspondente no step parseado -- silencioso ate agora
+porque ninguem tinha comparado texto cru vs parseado em escala, so carta a
+carta via `audit_leader_and_goal.py`.
+
+**Estado do plano de 4 fases (ver `C:\Users\arthu\.claude\plans\cheeky-nibbling-lecun.md`,
+aprovado pelo usuario nesta sessao):**
+- Fase 1 (script `audit_leader_and_goal.py` + confirmar entendimento do
+  lider/objetivo): ENTREGUE, 2 bugs reais achados e corrigidos (bloco 143).
+  **AINDA NAO CONFIRMADA pelo usuario como concluida** -- ele levantou a
+  preocupacao acima em vez de liberar a Fase 2. Tratar como Fase 1 EM
+  ABERTO ate ele confirmar explicitamente, nao assumir que esta pronta.
+- Fase 2 (archetype.mix/roles pesarem no score + generalizar win_con_code):
+  NAO COMECADA. Bloqueada ate Fase 1 ser de fato confirmada -- e agora
+  bloqueada tambem pela pergunta em aberto "quantos outros lideres/cartas
+  tem esse tipo de bug?".
+- Fase 3 (enumerador combinatorio de turno): NAO COMECADA, depende da 2.
+- Fase 4 (peso fino lethal/sobrevivencia): NAO COMECADA, depende da 3.
+
+**Constraint ainda ativa:** "nao whack-a-mole ate eu liberar" (ver
+[[feedback_no_whack_a_mole_ate_liberar]]) -- os 2 fixes de parser do
+bloco 143 NAO violam isso porque nasceram do proprio script de diagnostico
+estrutural da Fase 1, nao de cacar bug em log ao vivo. Mas a proxima acao
+NAO deveria ser "ir carta por carta" tambem -- e exatamente o padrao que
+o usuario quer evitar. Antes de continuar, avaliar com o usuario se a
+resposta certa e (a) uma auditoria automatica ampla do parser (ver ideia
+acima) antes de seguir pra Fase 2, ou (b) ele aceitar que Fase 2/3
+vao naturalmente expor mais desses bugs conforme aparecem em decks
+testados, sem precisar caçar todos de uma vez agora.
+
+**Proxima sessao (Codex ou outra Claude) deve:**
+1. Ler este bloco + bloco 143 antes de tocar em qualquer coisa.
+2. NAO comecar a Fase 2 sem o usuario confirmar que a preocupacao acima
+   foi endereçada (auditoria ampla feita, ou ele decidir seguir mesmo
+   assim).
+3. Rodar `smoke_fast.py` + `smoke_test.py` pra confirmar que o estado
+   commitado (`61a4830`) segue verde antes de qualquer mudanca nova.
+
 ## 2026-07-14 (143) - Claude - Fase 1 do plano "bot entende antes de jogar melhor": audit_leader_and_goal.py + 2 bugs REAIS de parser achados e corrigidos
 
 **Contexto:** depois do bloco 142, usuario jogou mais 1 partida ao vivo
