@@ -44071,10 +44071,18 @@
    ],
    "steps": [
     {
-     "action": "buff_power",
-     "amount": 2000,
-     "duration": "until_opp_turn_end",
-     "target": "leader"
+     "action": "play_from_life_top",
+     "cost_eq": 5,
+     "count": 1,
+     "filter_name": "sabo",
+     "on_success_steps": [
+      {
+       "action": "buff_power",
+       "amount": 2000,
+       "duration": "until_opp_turn_end",
+       "target": "leader"
+      }
+     ]
     }
    ]
   }
@@ -44120,10 +44128,18 @@
    ],
    "steps": [
     {
-     "action": "buff_power",
-     "amount": 2000,
-     "duration": "until_opp_turn_end",
-     "target": "leader"
+     "action": "play_from_life_top",
+     "cost_eq": 5,
+     "count": 1,
+     "filter_name": "portgas.d.ace",
+     "on_success_steps": [
+      {
+       "action": "buff_power",
+       "amount": 2000,
+       "duration": "until_opp_turn_end",
+       "target": "leader"
+      }
+     ]
     }
    ]
   }
@@ -44180,10 +44196,18 @@
    ],
    "steps": [
     {
-     "action": "buff_power",
-     "amount": 2000,
-     "duration": "until_opp_turn_end",
-     "target": "leader"
+     "action": "play_from_life_top",
+     "cost_eq": 5,
+     "count": 1,
+     "filter_name": "monkey.d.luffy",
+     "on_success_steps": [
+      {
+       "action": "buff_power",
+       "amount": 2000,
+       "duration": "until_opp_turn_end",
+       "target": "leader"
+      }
+     ]
     }
    ]
   }

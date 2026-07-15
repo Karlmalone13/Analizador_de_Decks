@@ -1,5 +1,25 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-15 (173) - Trio ST13 joga topo da Life: fila 419 -> 416
+
+Varredura da familia de ST13-010 encontrou o trio de fraseado identico
+ST13-007/010/014 e a variante mais complexa OP10-022. Card List oficial
+confirmou nome, custo 5, play do topo da Life e buff subordinado a `If you do`.
+
+O trio agora usa `play_from_life_top` com `filter_name`, `cost_eq=5` e
+`on_success_steps`. O executor mantem a carta na Life quando nome/custo falham;
+quando passam, joga gratuitamente exatamente o topo revelado e somente entao
+aplica +2000 ao Leader. O antigo buff solto foi removido para nao ativar sem
+play. Testes reais cobrem filtro falho e sucesso.
+
+Validacao: diff inicial GANHOU 0 / PERDEU 0 / MUDOU 3; `gerar_dbs.py` 2614;
+smoke curto e amplo passaram. Auditor: **416 suspeitos**.
+
+Pendente obrigatorio da mesma familia: OP10-022, que combina play do topo da
+Life por tipo/custo<=5 com DON x1, condicao `total cost of your Characters >=5`
+e custo opcional de devolver 1 Character proprio a mao. Nao tratar a
+simplificacao atual (bounce como step e play ausente) como correta.
+
 ## 2026-07-15 (172) - Familia descarte da mao adversaria: 5 cartas; fila 424 -> 419
 
 OP03-078 revelou duas variantes globais ausentes. A busca no banco inteiro e

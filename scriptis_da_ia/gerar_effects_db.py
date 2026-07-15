@@ -2587,6 +2587,37 @@ def parse_reveal_top_play(text):
     return steps
 
 
+def parse_reveal_life_play_exact_name(text):
+    """Revela o topo da propria Life e joga aquela carta somente se nome e
+    custo exatos baterem. Familia ST13-007/010/014. A Life nao se move quando
+    o filtro falha; quando joga, sai diretamente da Life sem custo de DON.
+    O bonus de "If you do" fica aninhado para depender do play real."""
+    t = text.lower()
+    m = re.search(
+        r'reveal 1 card from the top of your life cards?\.\s*'
+        r'if that card is a \[([^\]]+)\] with a cost of (\d+),?\s*'
+        r'you may play that card', t)
+    if not m:
+        return []
+    step = {
+        'action': 'play_from_life_top',
+        'count': 1,
+        'filter_name': m.group(1).strip(),
+        'cost_eq': int(m.group(2)),
+    }
+    buff = re.search(
+        r'if you do, up to 1 of your leader gains \+(\d+) power '
+        r'until the end of your opponent.?s next turn', t)
+    if buff:
+        step['on_success_steps'] = [{
+            'action': 'buff_power',
+            'amount': int(buff.group(1)),
+            'target': 'leader',
+            'duration': 'until_opp_turn_end',
+        }]
+    return [step]
+
+
 def parse_play_generic(text):
     """Play sem origem explícita: 'Play this card', 'Play up to N ... Character card'."""
     steps = []
@@ -4225,6 +4256,11 @@ def parse_block(block_text, trigger_name):
     if re.search(r'reveal 1 card from the top of (?:your|the) deck', t):
         steps.extend(parse_reveal_top_play(t))
 
+    # Topo da Life, nao do deck: joga exatamente a carta revelada se nome e
+    # custo baterem (familia ST13 dos tres irmaos).
+    if 'reveal 1 card from the top of your life' in t:
+        steps.extend(parse_reveal_life_play_exact_name(t))
+
     # Play from deck
     if 'from your deck' in t and 'play up to' in t and 'look at' not in t:
         steps.extend(parse_play_from_deck(t))
@@ -4443,6 +4479,19 @@ def parse_block(block_text, trigger_name):
     # Trigger especial: "Activate this card's [Main] effect"
     if trigger_name == 'trigger' and 'activate this card' in t:
         return [{'action': 'activate_main_effect'}]
+
+    # Nesta familia o buff esta subordinado a "If you do". parse_buff o
+    # encontra isoladamente; remova essa copia solta porque o mesmo buff ja
+    # vive em on_success_steps do play_from_life_top.
+    life_play = next((s for s in steps if s.get('action') == 'play_from_life_top'), None)
+    if life_play and life_play.get('on_success_steps'):
+        nested = life_play['on_success_steps'][0]
+        steps = [s for s in steps if not (
+            s is not life_play
+            and s.get('action') == nested.get('action')
+            and s.get('amount') == nested.get('amount')
+            and s.get('target') == nested.get('target')
+            and s.get('duration') == nested.get('duration'))]
 
     # Memoria de alvo entre steps (SaveTargetName, 28/06/2026): a ordem de
     # despacho dos sub-parsers acima NAO segue a ordem do texto original

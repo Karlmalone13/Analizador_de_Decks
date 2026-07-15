@@ -1081,6 +1081,44 @@ def test_descarte_mao_oponente_variantes_e_escolha_cega() -> None:
           len(opp.hand) == 4 and len(opp.trash) == 2)
 
 
+def test_reveal_top_life_play_nome_custo_e_if_you_do() -> None:
+    effects = get_card_effects("ST13-010").get("activate_main", {})
+    steps = effects.get("steps", [])
+    check("ST13-010 tem um unico play_from_life_top, sem buff solto",
+          len(steps) == 1 and steps[0].get("action") == "play_from_life_top")
+    step = steps[0]
+    check("ST13-010 preserva nome, custo exato e buff subordinado",
+          step.get("filter_name") == "portgas.d.ace"
+          and step.get("cost_eq") == 5
+          and step.get("on_success_steps", [{}])[0].get("amount") == 2000)
+    for code, nome in (("ST13-007", "sabo"), ("ST13-014", "monkey.d.luffy")):
+        sibling = get_card_effects(code).get("activate_main", {}).get("steps", [{}])[0]
+        check(f"{code} usa a mesma gramatica com filtro {nome}",
+              sibling.get("action") == "play_from_life_top"
+              and sibling.get("filter_name") == nome)
+
+    source_bad = real_card("ST13-010")
+    me_bad = GameState(leader=mk("XLDA", "Lider", card_type="LEADER"), turn=3)
+    opp_bad = GameState(leader=mk("XOPA", "Lider Opp", card_type="LEADER"), turn=3)
+    me_bad.field_chars = [source_bad]
+    wrong = mk("XWRONG", "Portgas.D.Ace", cost=4)
+    me_bad.life = [wrong]
+    EffectExecutor(me_bad, opp_bad).execute(source_bad, "activate_main")
+    check("Filtro falho mantem Life e nao concede buff If you do",
+          me_bad.life == [wrong] and me_bad.leader.power_buff == 0)
+
+    source_ok = real_card("ST13-010")
+    me_ok = GameState(leader=mk("XLDB", "Lider", card_type="LEADER"), turn=3)
+    opp_ok = GameState(leader=mk("XOPB", "Lider Opp", card_type="LEADER"), turn=3)
+    me_ok.field_chars = [source_ok]
+    ace5 = mk("XACE5", "Portgas.D.Ace", cost=5)
+    me_ok.life = [ace5]
+    EffectExecutor(me_ok, opp_ok).execute(source_ok, "activate_main")
+    check("Filtro correto joga da Life gratuitamente e concede +2000",
+          not me_ok.life and ace5 in me_ok.field_chars
+          and me_ok.leader.power_buff == 2000)
+
+
 def test_don_on_field_lte_condicao_ausente() -> None:
     # Achado 15/07 -- "if you have N or less DON!! cards on your field"
     # (proprio lado) nunca existia, so o "N or more" (don_on_field_gte).
@@ -1476,6 +1514,7 @@ def main() -> int:
     test_total_life_lte_condicao_combinada()
     test_zero_life_condicao_e_scoping_then_if()
     test_descarte_mao_oponente_variantes_e_escolha_cega()
+    test_reveal_top_life_play_nome_custo_e_if_you_do()
     test_don_on_field_lte_condicao_ausente()
     test_black_hole_negate_e_ko_encadeado()
     test_rebecca_add_from_trash_range_exclude_e_ordem()

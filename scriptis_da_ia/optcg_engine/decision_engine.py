@@ -4843,6 +4843,40 @@ class EffectExecutor:
                 added += 1
             return f'+{added} vida ({source}->{dest})' if added else ''
 
+        # Revela o TOPO da propria Life e joga exatamente aquela carta se
+        # os filtros baterem. Se falhar, a carta permanece na Life. Play por
+        # efeito e gratuito; on_success_steps implementa o "If you do".
+        if action == 'play_from_life_top':
+            if not me.life:
+                return ''
+            candidate = me.life[-1]
+            wanted_name = (step.get('filter_name') or '').lower()
+            if wanted_name and wanted_name not in candidate.name.lower():
+                return ''
+            if step.get('cost_eq') is not None and candidate.cost != step['cost_eq']:
+                return ''
+            if candidate.card_type != 'CHARACTER':
+                return ''
+            me.life.pop()
+            candidate.life_face_up = False
+            if len(me.field_chars) >= 5:
+                worst = min(me.field_chars, key=lambda x: x.board_value())
+                remove_character_from_field(me, worst, 'trash')
+            me.field_chars.append(candidate)
+            candidate.just_played = not (
+                candidate.has_rush or candidate.rush_this_turn or candidate.is_rush_character())
+            candidate.rush_character_only_this_turn = (
+                candidate.is_rush_character() and not candidate.is_rush())
+            apply_conditional_keyword_passives(me, opp)
+            self._last_selected = candidate
+            nested_logs = []
+            for nested in step.get('on_success_steps', []):
+                nested_log = self._execute_step(nested, card)
+                if nested_log:
+                    nested_logs.append(nested_log)
+            suffix = f' | {" | ".join(nested_logs)}' if nested_logs else ''
+            return f'jogou da Life: {candidate.name[:15]}{suffix}'
+
         # ── LIFE: "comprar" da própria vida para a mão (Hiyori OP06-106) ──────
         if action == 'life_to_hand':
             # ST15-001 Atmos: "cannot add Life cards to your hand using your

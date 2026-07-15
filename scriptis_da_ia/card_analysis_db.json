@@ -107587,9 +107587,8 @@
   "attribute": "Strike",
   "effects": [
    {
-    "action": "buff_power",
-    "trigger": "activate_main",
-    "target": "leader"
+    "action": "play_from_life_top",
+    "trigger": "activate_main"
    }
   ],
   "synergy_states": {},
@@ -107604,7 +107603,7 @@
   "rests_opponent": false,
   "bounces": false,
   "gives_don": false,
-  "power_buff": true,
+  "power_buff": false,
   "heals": false,
   "gains_life": false,
   "attacks_life": false,
@@ -107707,9 +107706,8 @@
   "attribute": "Strike",
   "effects": [
    {
-    "action": "buff_power",
-    "trigger": "activate_main",
-    "target": "leader"
+    "action": "play_from_life_top",
+    "trigger": "activate_main"
    }
   ],
   "synergy_states": {},
@@ -107724,7 +107722,7 @@
   "rests_opponent": false,
   "bounces": false,
   "gives_don": false,
-  "power_buff": true,
+  "power_buff": false,
   "heals": false,
   "gains_life": false,
   "attacks_life": false,
@@ -107874,9 +107872,8 @@
   "attribute": "Strike",
   "effects": [
    {
-    "action": "buff_power",
-    "trigger": "activate_main",
-    "target": "leader"
+    "action": "play_from_life_top",
+    "trigger": "activate_main"
    }
   ],
   "synergy_states": {},
@@ -107891,7 +107888,7 @@
   "rests_opponent": false,
   "bounces": false,
   "gives_don": false,
-  "power_buff": true,
+  "power_buff": false,
   "heals": false,
   "gains_life": false,
   "attacks_life": false,
