@@ -1,5 +1,32 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-15 (169) - Decisao arquitetural: eliminar fallback de efeitos somente apos fechar a auditoria
+
+**Decisao explicita do usuario — NAO ESQUECER:** o objetivo final e o engine
+ter um unico caminho estruturado de efeitos. Hoje
+`decision_engine.get_card_effects()` ainda complementa lacunas de
+`card_effects_db` lendo texto de `card_analysis_db`. Esse fallback pode
+mascarar falhas do parser, mas remove-lo agora quebraria cartas que ainda
+dependem dele.
+
+**Ordem obrigatoria:**
+1. Corrigir os parses confirmados por texto oficial/Card List/Q&A.
+2. Rerodar `audit_parser_coverage.py` e reduzir/revalidar a fila atual de 428
+   suspeitos.
+3. Auditar programaticamente quais cartas ainda mudam quando o fallback de
+   `card_analysis_db` esta ligado versus desligado.
+4. Corrigir no parser estruturado todas as dependencias reais encontradas.
+5. Remover o fallback somente quando essa comparacao der zero dependencias e
+   as regressoes curta/ampla passarem.
+6. Estado final: `card_effects_db` como unico caminho de efeitos consumido
+   pelo engine; `card_analysis_db` permanece banco derivado para analise/API,
+   nao reparador de efeitos em runtime.
+
+**Proibido:** remover o fallback antes dos passos 1-4, declarar o banco
+completo apenas porque o auditor numerico chegou a zero, ou criar outro
+arquivo paralelo de tracking. A fila ativa permanece neste `HANDOFF.md` e o
+auditor continua sendo apenas ferramenta diagnostica.
+
 ## 2026-07-15 (168) - Codex - auditor rerodado e fila oficial reconstruida (428 suspeitos)
 
 `audit_parser_coverage.py --show 40` rerodado depois dos tres clusters desta
