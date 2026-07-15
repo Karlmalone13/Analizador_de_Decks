@@ -1841,6 +1841,48 @@ def test_shiryu_add_from_trash_to_life_com_filtro() -> None:
           alvo_caro in me.trash and alvo_tipo_errado in me.trash)
 
 
+def test_character_para_life_do_dono_com_filtros() -> None:
+    expected = {
+        "OP03-123": ("on_play", "any", 8),
+        "OP06-103": ("when_attacking", "own", None),
+        "OP06-107": ("on_play", "own", None),
+        "OP11-116": ("main", "any", 6),
+        "OP12-117": ("main", "any", 9),
+        "P-085": ("on_play", "opponent", 4),
+        "ST09-015": ("counter", "opponent", 3),
+    }
+    for code, (trigger, target, cost_lte) in expected.items():
+        step = next(s for s in get_card_effects(code)[trigger]["steps"]
+                    if s.get("action") == "character_to_owner_life")
+        check(f"{code} preserva campo->Life do dono, alvo e custo",
+              step.get("target") == target
+              and step.get("dest") == "life_top_or_bottom"
+              and step.get("cost_lte") == cost_lte)
+
+    kawa = next(s for s in get_card_effects("OP06-103")["when_attacking"]["steps"]
+                if s.get("action") == "character_to_owner_life")
+    momo = next(s for s in get_card_effects("OP06-107")["on_play"]["steps"]
+                if s.get("action") == "character_to_owner_life")
+    check("Kawamatsu preserva power exato 0", kawa.get("power_eq") == 0)
+    check("Momonosuke preserva tipo Wano e exclusao do proprio nome",
+          momo.get("filter_type") == "land of wano"
+          and momo.get("exclude") == "kouzuki momonosuke")
+
+    slam = real_card("OP12-117")
+    elegivel = mk("XSL8", "Alvo custo 8", cost=8)
+    caro = mk("XSL10", "Alvo custo 10", cost=10)
+    me = GameState(leader=mk("XSLL", "Lider", card_type="LEADER",
+                             sub_types="Supernovas"),
+                   hand=[slam], don_available=5)
+    opp = GameState(leader=mk("XSLO", "Opp", card_type="LEADER"),
+                    field_chars=[elegivel, caro])
+    EffectExecutor(me, opp).execute(slam, "main")
+    check("Slam Gibson move somente Character custo 9- para a Life do dono",
+          elegivel in opp.life and elegivel not in opp.field_chars
+          and caro in opp.field_chars and elegivel not in opp.hand)
+    check("Slam Gibson coloca a carta face-down", not elegivel.life_face_up)
+
+
 def test_liberation_condicao_relativa_ko_duplo_e_trigger_1_de_cada() -> None:
     # Achado 15/07 -- OP10-098 Liberation: "[Main] If the number of your
     # Characters is at least 2 less than the number of your opponent's
@@ -2054,6 +2096,7 @@ def main() -> int:
     test_birdcage_trava_refresh_simetrica_cost_lte()
     test_zehahahahaha_segunda_clausula_dano_direto()
     test_shiryu_add_from_trash_to_life_com_filtro()
+    test_character_para_life_do_dono_com_filtros()
     test_liberation_condicao_relativa_ko_duplo_e_trigger_1_de_cada()
     test_krieg_just_played_e_debuff_escalado_por_don()
     test_condicao_any_don_cards_given()

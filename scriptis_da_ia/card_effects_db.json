@@ -17798,12 +17798,12 @@
       "on_play": {
         "steps": [
           {
-            "action": "gain_life",
-            "source": "deck_top",
-            "dest": "life_bottom",
+            "action": "character_to_owner_life",
             "count": 1,
-            "up_to": true,
-            "face": "up"
+            "target": "any",
+            "dest": "life_top_or_bottom",
+            "face": "up",
+            "cost_lte": 8
           }
         ]
       }
@@ -27858,13 +27858,12 @@
       "when_attacking": {
         "steps": [
           {
-            "action": "gain_life",
-            "source": "own_field",
-            "dest": "life_bottom",
+            "action": "character_to_owner_life",
             "count": 1,
-            "up_to": true,
-            "power_eq": 0,
-            "face": "up"
+            "target": "own",
+            "dest": "life_top_or_bottom",
+            "face": "up",
+            "power_eq": 0
           }
         ],
         "costs": [
@@ -27965,12 +27964,13 @@
       "on_play": {
         "steps": [
           {
-            "action": "gain_life",
-            "source": "own_field",
-            "dest": "life_bottom",
+            "action": "character_to_owner_life",
             "count": 1,
-            "up_to": true,
-            "face": "up"
+            "target": "own",
+            "dest": "life_top_or_bottom",
+            "face": "up",
+            "filter_type": "land of wano",
+            "exclude": "kouzuki momonosuke"
           }
         ]
       },
@@ -45676,24 +45676,24 @@
       "trigger": {
         "steps": [
           {
-            "action": "gain_life",
-            "source": "own_field",
-            "dest": "life_bottom",
+            "action": "character_to_owner_life",
             "count": 1,
-            "up_to": true,
-            "face": "up"
+            "target": "opponent",
+            "dest": "life_top_or_bottom",
+            "face": "up",
+            "cost_lte": 4
           }
         ]
       },
       "main": {
         "steps": [
           {
-            "action": "gain_life",
-            "source": "deck_top",
-            "dest": "life_bottom",
+            "action": "character_to_owner_life",
             "count": 1,
-            "up_to": true,
-            "face": "up"
+            "target": "any",
+            "dest": "life_top_or_bottom",
+            "face": "up",
+            "cost_lte": 6
           }
         ]
       }
@@ -49075,12 +49075,12 @@
       "main": {
         "steps": [
           {
-            "action": "gain_life",
-            "source": "deck_top",
-            "dest": "life_bottom",
+            "action": "character_to_owner_life",
             "count": 1,
-            "up_to": true,
+            "target": "any",
+            "dest": "life_top_or_bottom",
             "face": "down",
+            "cost_lte": 9,
             "conditions": {
               "leader_type": "supernovas"
             }
@@ -65649,12 +65649,12 @@
       "on_play": {
         "steps": [
           {
-            "action": "gain_life",
-            "source": "own_field",
-            "dest": "life_bottom",
+            "action": "character_to_owner_life",
             "count": 1,
-            "up_to": true,
-            "face": "up"
+            "target": "opponent",
+            "dest": "life_top_or_bottom",
+            "face": "up",
+            "cost_lte": 4
           }
         ],
         "conditions": {
@@ -69429,11 +69429,10 @@
       "activate_main": {
         "steps": [
           {
-            "action": "gain_life",
-            "source": "own_field",
-            "dest": "life_top",
+            "action": "character_to_owner_life",
             "count": 1,
-            "up_to": true,
+            "target": "own",
+            "dest": "life_top",
             "face": "up"
           }
         ],
@@ -70160,12 +70159,12 @@
             "duration": "battle_only"
           },
           {
-            "action": "gain_life",
-            "source": "own_field",
-            "dest": "life_bottom",
+            "action": "character_to_owner_life",
             "count": 1,
-            "up_to": true,
+            "target": "opponent",
+            "dest": "life_top_or_bottom",
             "face": "up",
+            "cost_lte": 3,
             "conditions": {
               "life_lte": 2
             }

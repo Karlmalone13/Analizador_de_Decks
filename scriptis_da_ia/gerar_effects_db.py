@@ -2668,6 +2668,53 @@ def parse_reveal_top_play(text):
     return steps
 
 
+def parse_character_to_owner_life(text):
+    """Move Character do campo para a Life do proprio dono.
+
+    "the owner's Life" e deliberadamente relativo ao dono da carta movida:
+    o alvo pode ser proprio, do oponente ou de qualquer lado. Nao e compra
+    do deck nem cura generica, portanto usa uma action separada.
+    """
+    t = text.lower()
+    m = re.search(
+        r'add up to (\d+)\s+(.*?)characters?\s+(.*?)'
+        r'to the (top or bottom|top|bottom) of the owner.?s life cards?'
+        r'(?:\s+face-(up|down))?',
+        t)
+    if not m:
+        return []
+    selector = (m.group(2) + ' ' + m.group(3)).strip()
+    target = ('opponent' if "your opponent" in selector
+              else 'own' if re.search(r'\bof your\b|\byour\s+', selector)
+              else 'any')
+    dest_text = m.group(4)
+    step = {
+        'action': 'character_to_owner_life',
+        'count': int(m.group(1)),
+        'target': target,
+        'dest': ('life_top_or_bottom' if 'or bottom' in dest_text
+                 else 'life_bottom' if dest_text == 'bottom'
+                 else 'life_top'),
+    }
+    if m.group(5):
+        step['face'] = m.group(5)
+    cost_m = re.search(r'cost of (\d+) or less', selector)
+    if cost_m:
+        step['cost_lte'] = int(cost_m.group(1))
+    power_m = re.search(r'with (\d+) power', selector)
+    if power_m:
+        step['power_eq'] = int(power_m.group(1))
+    type_m = (re.search(r'"([^"]+)"\s*type', selector)
+              or re.search(r'\{([^}]+)\}\s*type', selector)
+              or re.search(r'\[([^]]+)\]\s*type', selector))
+    if type_m:
+        step['filter_type'] = type_m.group(1)
+    exclude_m = re.search(r'other than \[([^]]+)\]', selector)
+    if exclude_m:
+        step['exclude'] = exclude_m.group(1)
+    return [step]
+
+
 def parse_reveal_life_play_exact_name(text):
     """Revela o topo da propria Life e joga aquela carta somente se nome e
     custo exatos baterem. Familia ST13-007/010/014. A Life nao se move quando
@@ -3088,7 +3135,8 @@ def parse_life(text):
     # "hand or trash"/"trash or hand" (ja tratada por m_hand_trash_life
     # ACIMA, iria duplicar o step se caisse aqui tambem).
     trash_ja_tratado = m and re.search(r'(?:hand or trash|trash or hand)', m.group(0))
-    if m and not trash_ja_tratado:
+    owner_life_character = m and "owner" in m.group(0) and "character" in m.group(0)
+    if m and not trash_ja_tratado and not owner_life_character:
         seg = m.group(0)
         step = {
             'action': 'gain_life',
@@ -4592,6 +4640,10 @@ def parse_block(block_text, trigger_name):
     if ('to the' in t and 'opponent' in t and 'life' in t
             and 'character' in t and 'add up to' in t):
         steps.extend(parse_opp_char_to_opp_life(t))
+
+    if ("owner" in t and 'life' in t and 'character' in t
+            and 'add up to' in t):
+        steps.extend(parse_character_to_owner_life(t))
 
     # Trigger especial: "Activate this card's [Main] effect"
     if trigger_name == 'trigger' and 'activate this card' in t:

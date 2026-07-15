@@ -2205,6 +2205,7 @@ class EffectExecutor:
             'draw', 'set_active', 'rest_opp_character', 'add_don', 'set_don_active',
             'ko', 'bounce', 'place_opp_character_bottom_deck', 'debuff_power',
             'trash_from_deck_top', 'peek_life', 'add_from_trash', 'gain_life',
+            'character_to_owner_life',
             'play_card', 'play_from_deck', 'look_top_deck', 'add_to_hand',
             'deck_bottom_rest', 'deck_reorder_rest', 'deck_top_rest',
         }
@@ -3936,16 +3937,58 @@ class EffectExecutor:
             placed = []
             for _ in range(min(count, len(candidates))):
                 worst = min(candidates, key=lambda c: c.board_value())
-                remove_character_from_field(opp, worst, 'hand')  # remove do campo sem KO
+                # Move direto campo -> Life. Usar 'hand' aqui duplicava a
+                # carta na mao e na Life ao mesmo tempo.
                 worst.life_face_up = True
                 dest = step.get('dest', 'life_top')
-                if dest == 'life_top':
-                    opp.life.append(worst)   # topo = fim da lista
-                else:
-                    opp.life.insert(0, worst)  # fundo = inicio da lista
+                real_dest = 'life_bottom' if dest == 'life_bottom' else 'life_top'
+                remove_character_from_field(opp, worst, real_dest)
                 remove_by_identity(candidates, worst)
                 placed.append(worst.name[:12])
             return f'mandou {", ".join(placed)} pra vida do oponente face-up' if placed else ''
+
+        if action == 'character_to_owner_life':
+            from optcg_engine.rules_facade import card_matches_filter
+            target_scope = step.get('target', 'any')
+            cost_lte = step.get('cost_lte')
+            power_eq = step.get('power_eq')
+            filter_type = step.get('filter_type', '')
+            exclude = step.get('exclude', '').lower()
+
+            def eligible(owner, c):
+                return ((cost_lte is None or c.cost <= cost_lte)
+                        and (power_eq is None or c.power == power_eq)
+                        and card_matches_filter(c, filter_type)
+                        and (not exclude or exclude not in c.name.lower()))
+
+            pools = []
+            if target_scope in ('own', 'any'):
+                pools.extend((me, c, False) for c in me.field_chars if eligible(me, c))
+            if target_scope in ('opponent', 'any'):
+                pools.extend((opp, c, True) for c in opp.field_chars if eligible(opp, c))
+            moved = []
+            for _ in range(min(step.get('count', 1), len(pools))):
+                # Para alvo livre, remover a maior ameaca adversaria tem
+                # precedencia; em alvo proprio, salva o menor board value.
+                opp_pool = [x for x in pools if x[2]]
+                if opp_pool:
+                    owner, chosen, is_opp = max(
+                        opp_pool, key=lambda x: x[1].board_value())
+                    if is_immune(chosen, 'removal', opp, me, source_is_opp=True):
+                        pools.remove((owner, chosen, is_opp))
+                        continue
+                else:
+                    owner, chosen, is_opp = min(
+                        pools, key=lambda x: x[1].board_value())
+                dest = step.get('dest', 'life_top')
+                # top_or_bottom e escolha do controlador; topo e o default
+                # deterministico atual, preservando a carta como proxima Life.
+                real_dest = 'life_bottom' if dest == 'life_bottom' else 'life_top'
+                remove_character_from_field(owner, chosen, real_dest)
+                chosen.life_face_up = step.get('face') == 'up'
+                pools.remove((owner, chosen, is_opp))
+                moved.append(chosen.name[:14])
+            return f'campo -> Life do dono: {", ".join(moved)}' if moved else ''
 
         # ── Trava de ataque / trava de rest / trava de Blocker (persistente) ────
         # Mecanicas DISTINTAS apesar de compartilharem estrutura de

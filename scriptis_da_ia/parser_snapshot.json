@@ -11029,12 +11029,12 @@
   "on_play": {
    "steps": [
     {
-     "action": "gain_life",
+     "action": "character_to_owner_life",
+     "cost_lte": 8,
      "count": 1,
-     "dest": "life_bottom",
+     "dest": "life_top_or_bottom",
      "face": "up",
-     "source": "deck_top",
-     "up_to": true
+     "target": "any"
     }
    ]
   }
@@ -17370,13 +17370,12 @@
    ],
    "steps": [
     {
-     "action": "gain_life",
+     "action": "character_to_owner_life",
      "count": 1,
-     "dest": "life_bottom",
+     "dest": "life_top_or_bottom",
      "face": "up",
      "power_eq": 0,
-     "source": "own_field",
-     "up_to": true
+     "target": "own"
     }
    ]
   }
@@ -17427,12 +17426,13 @@
   "on_play": {
    "steps": [
     {
-     "action": "gain_life",
+     "action": "character_to_owner_life",
      "count": 1,
-     "dest": "life_bottom",
+     "dest": "life_top_or_bottom",
+     "exclude": "kouzuki momonosuke",
      "face": "up",
-     "source": "own_field",
-     "up_to": true
+     "filter_type": "land of wano",
+     "target": "own"
     }
    ]
   },
@@ -28528,24 +28528,24 @@
   "main": {
    "steps": [
     {
-     "action": "gain_life",
+     "action": "character_to_owner_life",
+     "cost_lte": 6,
      "count": 1,
-     "dest": "life_bottom",
+     "dest": "life_top_or_bottom",
      "face": "up",
-     "source": "deck_top",
-     "up_to": true
+     "target": "any"
     }
    ]
   },
   "trigger": {
    "steps": [
     {
-     "action": "gain_life",
+     "action": "character_to_owner_life",
+     "cost_lte": 4,
      "count": 1,
-     "dest": "life_bottom",
+     "dest": "life_top_or_bottom",
      "face": "up",
-     "source": "own_field",
-     "up_to": true
+     "target": "opponent"
     }
    ]
   }
@@ -30613,15 +30613,15 @@
    ],
    "steps": [
     {
-     "action": "gain_life",
+     "action": "character_to_owner_life",
      "conditions": {
       "leader_type": "supernovas"
      },
+     "cost_lte": 9,
      "count": 1,
-     "dest": "life_bottom",
+     "dest": "life_top_or_bottom",
      "face": "down",
-     "source": "deck_top",
-     "up_to": true
+     "target": "any"
     }
    ]
   }
@@ -41046,12 +41046,12 @@
    },
    "steps": [
     {
-     "action": "gain_life",
+     "action": "character_to_owner_life",
+     "cost_lte": 4,
      "count": 1,
-     "dest": "life_bottom",
+     "dest": "life_top_or_bottom",
      "face": "up",
-     "source": "own_field",
-     "up_to": true
+     "target": "opponent"
     }
    ]
   }
@@ -43277,12 +43277,11 @@
    ],
    "steps": [
     {
-     "action": "gain_life",
+     "action": "character_to_owner_life",
      "count": 1,
      "dest": "life_top",
      "face": "up",
-     "source": "own_field",
-     "up_to": true
+     "target": "own"
     }
    ]
   }
@@ -43665,15 +43664,15 @@
      "target": "leader_or_character"
     },
     {
-     "action": "gain_life",
+     "action": "character_to_owner_life",
      "conditions": {
       "life_lte": 2
      },
+     "cost_lte": 3,
      "count": 1,
-     "dest": "life_bottom",
+     "dest": "life_top_or_bottom",
      "face": "up",
-     "source": "own_field",
-     "up_to": true
+     "target": "opponent"
     }
    ]
   },

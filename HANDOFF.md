@@ -1,5 +1,38 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-15 (182) - Character para Life do dono: 386 -> 382
+
+OP12-117 Slam Gibson nao perdia apenas `cost_lte=9`: o parser interpretava
+"add Character ... to the owner's Life" como se adicionasse uma carta do
+topo do proprio deck. O censo global encontrou 8 codigos-base nessa familia:
+OP03-123, OP06-103, OP06-107, OP11-116, OP12-117, P-085, ST07-017 e
+ST09-015.
+
+Foi criada a action unica `character_to_owner_life`, distinta de `gain_life`.
+Ela preserva alvo proprio/oponente/qualquer lado, custo maximo, power exato,
+tipo, exclusao de nome, face-up/down e destino topo/fundo/topo-ou-fundo. O
+engine remove o Character do campo sem K.O., devolve DON anexado ao dono e
+coloca a carta na Life do mesmo dono. Para alvo livre, prioriza a maior
+ameaca adversaria; `life_top_or_bottom` usa topo como escolha deterministica.
+
+Slam Gibson foi comparada ao Card List oficial: exige lider Supernovas, paga
+5 DON restados, escolhe Character de custo 9 ou menos, envia ao topo ou fundo
+da Life do dono face-down e mantem o Counter +3000. Teste de execucao prova
+que custo 8 e movido, custo 10 permanece e a carta nao e duplicada na mao.
+
+A auditoria adjacente corrigiu ainda um bug antigo de
+`place_opp_char_to_opp_life`: o handler usava destino `hand` e depois tambem
+inseria na Life, duplicando a mesma carta entre duas zonas. Agora move direto
+campo -> Life. A rota de Counter reconhece a nova action como extra seguro.
+
+Validacao: diff GANHOU 0 / PERDEU 0 / MUDOU 8; 2614 cartas; smokes curto e
+amplo passaram. Auditor: **382 suspeitos** (386 -> 382).
+
+Proximo suspeito real: OP13-002 Portgas.D.Ace. O segundo gatilho com
+`[DON!! x1]`, dano recebido OU Character proprio de base power 6000+ K.O.,
+e draw esta fundido incorretamente no primeiro `on_opp_attack`; exige censo
+global de gatilhos compostos "When A or B" antes da correcao.
+
 ## 2026-07-15 (181) - Searchers por custo + topo do deck adversario: 394 -> 386
 
 OP11-070 Charlotte Pudding revelou duas familias. O censo global encontrou

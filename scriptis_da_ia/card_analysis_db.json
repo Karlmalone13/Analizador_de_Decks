@@ -26679,8 +26679,10 @@
   "attribute": "Strike",
   "effects": [
    {
-    "action": "gain_life",
-    "trigger": "on_play"
+    "action": "character_to_owner_life",
+    "trigger": "on_play",
+    "cost_lte": 8,
+    "target": "any"
    }
   ],
   "synergy_states": {},
@@ -26696,7 +26698,7 @@
   "bounces": false,
   "gives_don": false,
   "power_buff": false,
-  "heals": true,
+  "heals": false,
   "gains_life": false,
   "attacks_life": false,
   "trashes_own_life": false,
@@ -41770,8 +41772,9 @@
   "attribute": "Slash",
   "effects": [
    {
-    "action": "gain_life",
-    "trigger": "when_attacking"
+    "action": "character_to_owner_life",
+    "trigger": "when_attacking",
+    "target": "own"
    }
   ],
   "synergy_states": {},
@@ -41787,7 +41790,7 @@
   "bounces": false,
   "gives_don": false,
   "power_buff": false,
-  "heals": true,
+  "heals": false,
   "gains_life": false,
   "attacks_life": false,
   "trashes_own_life": false,
@@ -41935,8 +41938,9 @@
   "attribute": "Wisdom",
   "effects": [
    {
-    "action": "gain_life",
-    "trigger": "on_play"
+    "action": "character_to_owner_life",
+    "trigger": "on_play",
+    "target": "own"
    },
    {
     "action": "keyword_blocker",
@@ -41956,7 +41960,7 @@
   "bounces": false,
   "gives_don": false,
   "power_buff": false,
-  "heals": true,
+  "heals": false,
   "gains_life": false,
   "attacks_life": false,
   "trashes_own_life": false,
@@ -68636,12 +68640,16 @@
   "attribute": "",
   "effects": [
    {
-    "action": "gain_life",
-    "trigger": "trigger"
+    "action": "character_to_owner_life",
+    "trigger": "trigger",
+    "cost_lte": 4,
+    "target": "opponent"
    },
    {
-    "action": "gain_life",
-    "trigger": "main"
+    "action": "character_to_owner_life",
+    "trigger": "main",
+    "cost_lte": 6,
+    "target": "any"
    }
   ],
   "synergy_states": {
@@ -68662,7 +68670,7 @@
   "bounces": false,
   "gives_don": false,
   "power_buff": false,
-  "heals": true,
+  "heals": false,
   "gains_life": false,
   "attacks_life": false,
   "trashes_own_life": false,
@@ -73782,8 +73790,10 @@
     "target": "leader"
    },
    {
-    "action": "gain_life",
-    "trigger": "main"
+    "action": "character_to_owner_life",
+    "trigger": "main",
+    "cost_lte": 9,
+    "target": "any"
    }
   ],
   "synergy_states": {},
@@ -73799,7 +73809,7 @@
   "bounces": false,
   "gives_don": false,
   "power_buff": true,
-  "heals": true,
+  "heals": false,
   "gains_life": false,
   "attacks_life": false,
   "trashes_own_life": false,
@@ -98271,8 +98281,10 @@
   "attribute": "Special",
   "effects": [
    {
-    "action": "gain_life",
-    "trigger": "on_play"
+    "action": "character_to_owner_life",
+    "trigger": "on_play",
+    "cost_lte": 4,
+    "target": "opponent"
    }
   ],
   "synergy_states": {},
@@ -98288,7 +98300,7 @@
   "bounces": false,
   "gives_don": false,
   "power_buff": false,
-  "heals": true,
+  "heals": false,
   "gains_life": false,
   "attacks_life": true,
   "trashes_own_life": false,
@@ -104315,8 +104327,9 @@
   "attribute": "",
   "effects": [
    {
-    "action": "gain_life",
-    "trigger": "activate_main"
+    "action": "character_to_owner_life",
+    "trigger": "activate_main",
+    "target": "own"
    }
   ],
   "synergy_states": {},
@@ -104332,7 +104345,7 @@
   "bounces": false,
   "gives_don": false,
   "power_buff": false,
-  "heals": true,
+  "heals": false,
   "gains_life": false,
   "attacks_life": false,
   "trashes_own_life": false,
@@ -105548,8 +105561,10 @@
     "target": "leader_or_character"
    },
    {
-    "action": "gain_life",
-    "trigger": "counter"
+    "action": "character_to_owner_life",
+    "trigger": "counter",
+    "cost_lte": 3,
+    "target": "opponent"
    }
   ],
   "synergy_states": {
@@ -105570,7 +105585,7 @@
   "bounces": false,
   "gives_don": false,
   "power_buff": true,
-  "heals": true,
+  "heals": false,
   "gains_life": false,
   "attacks_life": false,
   "trashes_own_life": false,
