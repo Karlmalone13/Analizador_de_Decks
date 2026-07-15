@@ -7769,6 +7769,11 @@
     "trigger": "on_play"
    },
    {
+    "action": "deal_damage",
+    "trigger": "on_play",
+    "target": "opponent"
+   },
+   {
     "action": "play_card",
     "trigger": "on_ko",
     "cost_lte": 99
@@ -10649,6 +10654,11 @@
    {
     "action": "gain_life",
     "trigger": "on_play"
+   },
+   {
+    "action": "deal_damage",
+    "trigger": "on_ko",
+    "target": "opponent"
    }
   ],
   "synergy_states": {
@@ -80788,6 +80798,11 @@
    {
     "action": "draw",
     "trigger": "opp_turn"
+   },
+   {
+    "action": "deal_damage",
+    "trigger": "opp_turn",
+    "target": "opponent"
    }
   ],
   "synergy_states": {},
@@ -83958,6 +83973,11 @@
    {
     "action": "gain_life",
     "trigger": "on_play"
+   },
+   {
+    "action": "deal_damage",
+    "trigger": "on_play",
+    "target": "opponent"
    },
    {
     "action": "play_card",
@@ -94373,6 +94393,11 @@
   "attribute": "Strike",
   "effects": [
    {
+    "action": "deal_damage",
+    "trigger": "on_ko",
+    "target": "opponent"
+   },
+   {
     "action": "play_card",
     "trigger": "trigger"
    }
@@ -94808,6 +94833,11 @@
     "action": "play_card",
     "trigger": "main",
     "cost_lte": 99
+   },
+   {
+    "action": "deal_damage",
+    "trigger": "main",
+    "target": "opponent"
    }
   ],
   "synergy_states": {

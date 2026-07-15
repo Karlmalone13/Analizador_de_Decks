@@ -5343,11 +5343,17 @@
             "action": "give_don",
             "count": 1,
             "rested": true
+          },
+          {
+            "action": "deal_damage",
+            "count": 1,
+            "up_to": true,
+            "target": "opponent",
+            "conditions": {
+              "opp_life_gte": 3
+            }
           }
-        ],
-        "conditions": {
-          "opp_life_gte": 3
-        }
+        ]
       },
       "on_ko": {
         "steps": [
@@ -7616,6 +7622,16 @@
         "conditions": {
           "life_lte": 2
         }
+      },
+      "on_ko": {
+        "steps": [
+          {
+            "action": "deal_damage",
+            "count": 1,
+            "up_to": true,
+            "target": "opponent"
+          }
+        ]
       }
     }
   },
@@ -53303,6 +53319,12 @@
           {
             "action": "draw",
             "count": 1
+          },
+          {
+            "action": "deal_damage",
+            "count": 1,
+            "up_to": true,
+            "target": "opponent"
           }
         ],
         "once_per_turn": true
@@ -55505,6 +55527,12 @@
             "dest": "life_top",
             "count": 1,
             "up_to": true
+          },
+          {
+            "action": "deal_damage",
+            "count": 1,
+            "up_to": true,
+            "target": "opponent"
           }
         ],
         "conditions": {
@@ -62741,6 +62769,16 @@
     "sub_types": "Blackbeard Pirates",
     "attribute": "Strike",
     "effects": {
+      "on_ko": {
+        "steps": [
+          {
+            "action": "deal_damage",
+            "count": 1,
+            "up_to": true,
+            "target": "opponent"
+          }
+        ]
+      },
       "trigger": {
         "steps": [
           {
@@ -63020,6 +63058,12 @@
             "count": 1,
             "cost_lte": 99,
             "filter_name": "marshall.d.teach"
+          },
+          {
+            "action": "deal_damage",
+            "count": 1,
+            "up_to": true,
+            "target": "opponent"
           }
         ],
         "conditions": {

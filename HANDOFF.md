@@ -1,5 +1,54 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-15 (161) - Claude - OP16-116 Zehahahahaha: segunda clausula era so um fraseado alternativo de deal_damage (8 cartas fechadas de uma vez, item 4/6 do lote de 10)
+
+**Continuacao do lote de 10 do usuario.** OP16-116: "...play up to 1
+[Marshall.D.Teach] from your hand. Then, add up to 1 card from the top
+of your opponent's Life cards to the owner's hand." A segunda clausula
+estava totalmente ausente do parse.
+
+**Insight que evitou mecanismo novo:** vida SEMPRE pertence ao proprio
+dono -- "to the owner's hand" quando a vida e do OPONENTE significa
+literalmente "vai pra mao do proprio oponente", que e EXATAMENTE a regra
+que `deal_damage` ja executa (pop do topo da vida do oponente + trigger
+check). E so um segundo idioma textual pra descrever dano direto, nao
+uma mecanica distinta -- reaproveitado o action existente em vez de
+inventar um novo. Regex nova em `parse_life` ancorada em "from the top of
+your opponent's life cards to the owner's hand", mapeando pra
+`deal_damage` com `up_to`/`count` extraidos via `qty_in`/`up_to_in` (mesmos
+helpers ja usados no resto da funcao).
+
+**Bonus (nao intencional, mas correto):** EB03-053 tinha uma condicao
+`opp_life_gte: 3` incorretamente aplicada ao ENTRY inteiro (contaminando
+o `give_don` incondicional do mesmo bloco) -- ao virar 2 steps
+distintos, a condicao "Then, if opponent has 3+ life..." ficou
+corretamente escopada SO no novo step de `deal_damage`, liberando o
+`give_don` de uma trava que nunca deveria ter tido.
+
+**8 cartas fechadas:** OP16-116 (Zehahahahaha), OP16-107, EB03-053,
+EB04-054, OP14-041, OP14-112 e mais 2 duplicatas de linha no CSV.
+**Gap pre-existente notado, fora de escopo desta rodada:** OP14-041 tem
+2 gatilhos DISTINTOS no mesmo texto cru ("[Opponent's Turn] When you
+play a Character..." e "[DON!!x1][Once Per Turn] When one of your
+{Amazon Lily}/{Kuja Pirates} Character... is K.O.'d...") que o parser ja
+colapsava incorretamente num unico bloco `opp_turn` ANTES desta sessao
+(bug de fusao de tags adjacentes, nao meu fix) -- meu fix so capturou
+corretamente o efeito que faltava dentro do bloco ja mal-agrupado, nao
+corrigiu o agrupamento. Registrado aqui pra nao ser esquecido numa
+proxima varredura.
+
+**Validado:** `diff_parser.py` PERDEU=0, MUDOU=6 (todas conferidas
+contra `card_text` cru). 1 teste dirigido novo com EXECUCAO real
+(`test_zehahahahaha_segunda_clausula_dano_direto`): confirma que Teach e
+jogado da mao E a vida do topo do oponente vai pra mao DELE (nao da
+minha) apos o efeito. `smoke_fast.py` (89 checks) + `smoke_test.py`
+amplo, ambos verdes sem nenhum ajuste necessario.
+
+**Ainda pendente do lote de 10:** OP16-108 Shiryu (bloco `on_play`
+inteiro), OP10-098 Liberation (condicao de comparacao relativa de board
++ segundo alvo de KO + bloco `[Trigger]` inteiro), OP15-008 Krieg
+(condicao `just_played` + debuff dinamico por DON do proprio alvo).
+
 ## 2026-07-15 (160) - Claude - OP05-040 Birdcage: passiva de Stage simetrica "nao ficar ativo" (item 3/6 do lote de 10)
 
 **Continuacao do lote de 10 do usuario.** OP05-040 (Birdcage, Stage) so

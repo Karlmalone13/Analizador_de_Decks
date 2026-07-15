@@ -3368,14 +3368,20 @@
    ]
   },
   "on_play": {
-   "conditions": {
-    "opp_life_gte": 3
-   },
    "steps": [
     {
      "action": "give_don",
      "count": 1,
      "rested": true
+    },
+    {
+     "action": "deal_damage",
+     "conditions": {
+      "opp_life_gte": 3
+     },
+     "count": 1,
+     "target": "opponent",
+     "up_to": true
     }
    ]
   }
@@ -4926,6 +4932,16 @@
   }
  },
  "EB04-054": {
+  "on_ko": {
+   "steps": [
+    {
+     "action": "deal_damage",
+     "count": 1,
+     "target": "opponent",
+     "up_to": true
+    }
+   ]
+  },
   "on_play": {
    "conditions": {
     "life_lte": 2
@@ -33043,6 +33059,12 @@
     {
      "action": "draw",
      "count": 1
+    },
+    {
+     "action": "deal_damage",
+     "count": 1,
+     "target": "opponent",
+     "up_to": true
     }
    ]
   }
@@ -34465,6 +34487,12 @@
      "count": 1,
      "dest": "life_top",
      "source": "deck_top",
+     "up_to": true
+    },
+    {
+     "action": "deal_damage",
+     "count": 1,
+     "target": "opponent",
      "up_to": true
     }
    ]
@@ -39125,6 +39153,16 @@
   }
  },
  "OP16-107": {
+  "on_ko": {
+   "steps": [
+    {
+     "action": "deal_damage",
+     "count": 1,
+     "target": "opponent",
+     "up_to": true
+    }
+   ]
+  },
   "trigger": {
    "costs": [
     {
@@ -39299,6 +39337,12 @@
      "cost_lte": 99,
      "count": 1,
      "filter_name": "marshall.d.teach"
+    },
+    {
+     "action": "deal_damage",
+     "count": 1,
+     "target": "opponent",
+     "up_to": true
     }
    ]
   },

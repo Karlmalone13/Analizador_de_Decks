@@ -2941,6 +2941,26 @@ def parse_life(text):
             'target': 'opponent',
         })
 
+    # ── deal_damage (fraseado alternativo, achado 15/07, OP16-116 e
+    # familia -- 8 cartas): "add up to N cards from the top of your
+    # opponent's Life cards to THE OWNER'S hand" e semanticamente
+    # IDENTICO a dano direto -- a vida sempre pertence ao proprio dono
+    # (o oponente), entao "to the owner's hand" = "to seu proprio oponente
+    # hand" = exatamente o que deal_damage ja executa (pop do topo da
+    # vida do oponente + trigger check). So um idioma textual diferente
+    # pra descrever a MESMA regra, reaproveita a mesma action em vez de
+    # criar mecanismo novo.
+    m_dmg2 = re.search(
+        r"add[^.:]*?from the top of your opponent'?s life cards? to the owner'?s hand", t)
+    if m_dmg2:
+        seg = m_dmg2.group(0)
+        steps.append({
+            'action': 'deal_damage',
+            'count': qty_in(seg),
+            'up_to': up_to_in(seg),
+            'target': 'opponent',
+        })
+
     return steps
 
 

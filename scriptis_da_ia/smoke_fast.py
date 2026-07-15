@@ -1130,6 +1130,31 @@ def test_birdcage_trava_refresh_simetrica_cost_lte() -> None:
           opp_baixo.rested)
 
 
+def test_zehahahahaha_segunda_clausula_dano_direto() -> None:
+    # Achado 15/07 -- OP16-116 Zehahahahaha: "Then, add up to 1 card from
+    # the top of your opponent's Life cards to the owner's hand." A vida
+    # SEMPRE pertence ao proprio dono, entao "to the owner's hand" e so um
+    # fraseado alternativo pra "dano direto" (a mesma regra que
+    # deal_damage ja executa) -- reaproveitado em vez de criar mecanismo
+    # novo. Clausula inteira estava ausente do parse antes.
+    steps = get_card_effects("OP16-116").get("main", {}).get("steps", [])
+    check("OP16-116 parseia deal_damage encadeado apos o play_card",
+          any(s.get("action") == "deal_damage" and s.get("target") == "opponent" for s in steps))
+
+    teach_card = mk("MDT", "Marshall.D.Teach", cost=3)
+    zeha = real_card("OP16-116")
+    me = GameState(leader=mk("XZLD", "Lider", card_type="LEADER"), turn=4, don_available=10)
+    me.field_chars = [zeha]
+    me.hand = [teach_card]
+    opp = GameState(leader=mk("XZOPPLD", "Lider Opp", card_type="LEADER"), turn=4)
+    opp.life = [mk(f"OL{i}", f"Vida {i}") for i in range(3)]
+    topo_vida = opp.life[-1]
+    EffectExecutor(me, opp).execute(zeha, "main")
+    check("Teach foi jogado do deck de verdade", teach_card in me.field_chars and teach_card not in me.hand)
+    check("Vida do topo do oponente foi pra mao dele (dano direto)",
+          topo_vida in opp.hand and len(opp.life) == 2)
+
+
 def main() -> int:
     test_turn_order_imu_prefers_second()
     test_empty_throne_beats_direct_five_elders_play()
@@ -1173,6 +1198,7 @@ def main() -> int:
     test_black_hole_negate_e_ko_encadeado()
     test_rebecca_add_from_trash_range_exclude_e_ordem()
     test_birdcage_trava_refresh_simetrica_cost_lte()
+    test_zehahahahaha_segunda_clausula_dano_direto()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0
