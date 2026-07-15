@@ -1,5 +1,26 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-15 (176) - Comparacao global de DON no campo: 25 cartas
+
+EB02-035 revelou duas lacunas independentes. Este lote corrigiu apenas a
+condicao global `If the number of DON!! cards on your field is equal to or less
+than the number on your opponent's field`: 25 cartas agora preservam
+`don_on_field_lte_opp`, e os dois caminhos de execucao do engine bloqueiam o
+efeito quando o jogador tem mais DON no campo que o oponente.
+
+Card List oficial confirmou a redacao e a semantica em EB02-035, OP06-061 e
+EB04-038. O teste de execucao cobre EB02-035 em 5 vs 4 DON (nao compra) e 4 vs
+4 DON (compra), alem de amostras de OP06, OP07 e OP12.
+
+Validacao: diff GANHOU 0 / PERDEU 0 / MUDOU 25, todas mudancas restritas a
+adicionar a condicao; 2614 cartas; smokes curto e amplo passaram. Auditor:
+**414 suspeitos** (sem queda, pois EB02-035 ainda conserva o numero 2 abaixo).
+
+Proximo subtipo obrigatorio: modelar o gatilho de EB02-035 `When 2 or more
+DON!! cards ... are returned to your DON!! deck`. Ele exige rastreamento do
+total de DON devolvido durante o turno; nao confundir com a condicao comparativa
+ja corrigida neste lote.
+
 ## 2026-07-15 (175) - Rush: Character textual e condicional: fila 415 -> 414
 
 EB02-019 revelou que `can attack Characters on the turn in which it is played`

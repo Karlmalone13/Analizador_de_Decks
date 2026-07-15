@@ -2717,6 +2717,9 @@
             "count": 1
           }
         ],
+        "conditions": {
+          "don_on_field_lte_opp": true
+        },
         "once_per_turn": true
       },
       "your_turn": {
@@ -2793,6 +2796,7 @@
           }
         ],
         "conditions": {
+          "don_on_field_lte_opp": true,
           "leader_type": "straw hat crew"
         }
       },
@@ -2804,6 +2808,7 @@
           }
         ],
         "conditions": {
+          "don_on_field_lte_opp": true,
           "leader_type": "straw hat crew"
         }
       }
@@ -2857,6 +2862,9 @@
             "cost_lte": 99
           }
         ],
+        "conditions": {
+          "don_on_field_lte_opp": true
+        },
         "costs": [
           {
             "type": "trash_from_hand",
@@ -2935,6 +2943,9 @@
             "duration": "until_opp_turn_end"
           }
         ],
+        "conditions": {
+          "don_on_field_lte_opp": true
+        },
         "costs": [
           {
             "type": "rest_self"
@@ -4765,7 +4776,10 @@
             "action": "add_don",
             "count": 1
           }
-        ]
+        ],
+        "conditions": {
+          "don_on_field_lte_opp": true
+        }
       },
       "passive": {
         "steps": [
@@ -4854,6 +4868,9 @@
             "count": 2
           }
         ],
+        "conditions": {
+          "don_on_field_lte_opp": true
+        },
         "costs": [
           {
             "type": "rest_don",
@@ -7061,7 +7078,10 @@
             "action": "add_don",
             "count": 1
           }
-        ]
+        ],
+        "conditions": {
+          "don_on_field_lte_opp": true
+        }
       },
       "passive": {
         "steps": [
@@ -26453,7 +26473,10 @@
           {
             "action": "gain_rush"
           }
-        ]
+        ],
+        "conditions": {
+          "don_on_field_lte_opp": true
+        }
       }
     }
   },
@@ -26528,6 +26551,9 @@
             "filter_name": "the vinsmoke family"
           }
         ],
+        "conditions": {
+          "don_on_field_lte_opp": true
+        },
         "costs": [
           {
             "type": "trash_from_hand",
@@ -26603,7 +26629,10 @@
               "cost_lte": 4
             }
           ]
-        ]
+        ],
+        "conditions": {
+          "don_on_field_lte_opp": true
+        }
       }
     }
   },
@@ -26666,7 +26695,10 @@
           {
             "action": "keyword_blocker"
           }
-        ]
+        ],
+        "conditions": {
+          "don_on_field_lte_opp": true
+        }
       }
     }
   },
@@ -26724,7 +26756,10 @@
             "action": "draw",
             "count": 2
           }
-        ]
+        ],
+        "conditions": {
+          "don_on_field_lte_opp": true
+        }
       }
     }
   },
@@ -26944,7 +26979,10 @@
             "count": 1,
             "cost_lte": 5
           }
-        ]
+        ],
+        "conditions": {
+          "don_on_field_lte_opp": true
+        }
       }
     }
   },
@@ -30032,7 +30070,10 @@
             "target": "own_character",
             "filter_type": "the vinsmoke family"
           }
-        ]
+        ],
+        "conditions": {
+          "don_on_field_lte_opp": true
+        }
       }
     }
   },
@@ -30113,6 +30154,7 @@
           }
         ],
         "conditions": {
+          "don_on_field_lte_opp": true,
           "leader_type": "foxy pirates"
         }
       }
@@ -30135,7 +30177,10 @@
             "action": "add_don",
             "count": 1
           }
-        ]
+        ],
+        "conditions": {
+          "don_on_field_lte_opp": true
+        }
       },
       "passive": {
         "steps": [
@@ -30176,6 +30221,9 @@
             "count": 1
           }
         ],
+        "conditions": {
+          "don_on_field_lte_opp": true
+        },
         "don_requirement": 1
       }
     }
@@ -30198,7 +30246,10 @@
             "imm_type": "ko",
             "source": "opp"
           }
-        ]
+        ],
+        "conditions": {
+          "don_on_field_lte_opp": true
+        }
       }
     }
   },
@@ -30221,7 +30272,10 @@
             "cost_lte": "don_count_self",
             "filter_type": "foxy pirates"
           }
-        ]
+        ],
+        "conditions": {
+          "don_on_field_lte_opp": true
+        }
       }
     }
   },
@@ -30496,7 +30550,10 @@
             "target": "own_character",
             "filter_name": "foxy"
           }
-        ]
+        ],
+        "conditions": {
+          "don_on_field_lte_opp": true
+        }
       }
     }
   },
@@ -40712,6 +40769,9 @@
             "count": 1
           }
         ],
+        "conditions": {
+          "don_on_field_lte_opp": true
+        },
         "costs": [
           {
             "type": "trash_self"
@@ -46597,6 +46657,9 @@
             "count": 1
           }
         ],
+        "conditions": {
+          "don_on_field_lte_opp": true
+        },
         "once_per_turn": true
       }
     }
@@ -47223,6 +47286,7 @@
           }
         ],
         "conditions": {
+          "don_on_field_lte_opp": true,
           "leader_is": "sanji"
         }
       }
@@ -47495,7 +47559,10 @@
             "action": "add_don",
             "count": 1
           }
-        ]
+        ],
+        "conditions": {
+          "don_on_field_lte_opp": true
+        }
       }
     }
   },
@@ -47647,7 +47714,10 @@
             "target": "opp_character",
             "duration": "this_turn"
           }
-        ]
+        ],
+        "conditions": {
+          "don_on_field_lte_opp": true
+        }
       }
     }
   },

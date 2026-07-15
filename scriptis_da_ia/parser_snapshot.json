@@ -1656,6 +1656,9 @@
  "EB02-034": {},
  "EB02-035": {
   "on_play": {
+   "conditions": {
+    "don_on_field_lte_opp": true
+   },
    "once_per_turn": true,
    "steps": [
     {
@@ -1710,6 +1713,7 @@
  "EB02-037": {
   "on_play": {
    "conditions": {
+    "don_on_field_lte_opp": true,
     "leader_type": "straw hat crew"
    },
    "steps": [
@@ -1721,6 +1725,7 @@
   },
   "when_attacking": {
    "conditions": {
+    "don_on_field_lte_opp": true,
     "leader_type": "straw hat crew"
    },
    "steps": [
@@ -1745,6 +1750,9 @@
  },
  "EB02-039": {
   "main": {
+   "conditions": {
+    "don_on_field_lte_opp": true
+   },
    "costs": [
     {
      "count": 1,
@@ -1793,6 +1801,9 @@
  },
  "EB02-041": {
   "activate_main": {
+   "conditions": {
+    "don_on_field_lte_opp": true
+   },
    "costs": [
     {
      "type": "rest_self"
@@ -2974,6 +2985,9 @@
  },
  "EB03-035": {
   "on_play": {
+   "conditions": {
+    "don_on_field_lte_opp": true
+   },
    "steps": [
     {
      "action": "add_don",
@@ -3029,6 +3043,9 @@
    ]
   },
   "main": {
+   "conditions": {
+    "don_on_field_lte_opp": true
+   },
    "costs": [
     {
      "count": 1,
@@ -4551,6 +4568,9 @@
  },
  "EB04-038": {
   "on_play": {
+   "conditions": {
+    "don_on_field_lte_opp": true
+   },
    "steps": [
     {
      "action": "draw",
@@ -16411,6 +16431,9 @@
  },
  "OP06-061": {
   "on_play": {
+   "conditions": {
+    "don_on_field_lte_opp": true
+   },
    "steps": [
     {
      "action": "debuff_power",
@@ -16467,6 +16490,9 @@
  },
  "OP06-063": {
   "on_play": {
+   "conditions": {
+    "don_on_field_lte_opp": true
+   },
    "costs": [
     {
      "count": 1,
@@ -16527,7 +16553,10 @@
       "target": "opp_character"
      }
     ]
-   ]
+   ],
+   "conditions": {
+    "don_on_field_lte_opp": true
+   }
   }
  },
  "OP06-066": {
@@ -16558,6 +16587,9 @@
  },
  "OP06-067": {
   "passive": {
+   "conditions": {
+    "don_on_field_lte_opp": true
+   },
    "steps": [
     {
      "action": "buff_power",
@@ -16599,6 +16631,9 @@
  },
  "OP06-069": {
   "on_play": {
+   "conditions": {
+    "don_on_field_lte_opp": true
+   },
    "steps": [
     {
      "action": "draw",
@@ -16721,6 +16756,9 @@
  },
  "OP06-077": {
   "main": {
+   "conditions": {
+    "don_on_field_lte_opp": true
+   },
    "steps": [
     {
      "action": "place_opp_character_bottom_deck",
@@ -18673,6 +18711,9 @@
  },
  "OP07-062": {
   "on_play": {
+   "conditions": {
+    "don_on_field_lte_opp": true
+   },
    "steps": [
     {
      "action": "bounce",
@@ -18722,6 +18763,7 @@
  "OP07-065": {
   "on_play": {
    "conditions": {
+    "don_on_field_lte_opp": true,
     "leader_type": "foxy pirates"
    },
    "steps": [
@@ -18734,6 +18776,9 @@
  },
  "OP07-066": {
   "on_play": {
+   "conditions": {
+    "don_on_field_lte_opp": true
+   },
    "steps": [
     {
      "action": "add_don",
@@ -18752,6 +18797,9 @@
  "OP07-067": {},
  "OP07-068": {
   "when_attacking": {
+   "conditions": {
+    "don_on_field_lte_opp": true
+   },
    "don_requirement": 1,
    "steps": [
     {
@@ -18763,6 +18811,9 @@
  },
  "OP07-069": {
   "passive": {
+   "conditions": {
+    "don_on_field_lte_opp": true
+   },
    "steps": [
     {
      "action": "immunity",
@@ -18774,6 +18825,9 @@
  },
  "OP07-070": {
   "on_play": {
+   "conditions": {
+    "don_on_field_lte_opp": true
+   },
    "steps": [
     {
      "action": "play_card",
@@ -18953,6 +19007,9 @@
  },
  "OP07-078": {
   "main": {
+   "conditions": {
+    "don_on_field_lte_opp": true
+   },
    "steps": [
     {
      "action": "set_active",
@@ -25318,6 +25375,9 @@
  },
  "OP10-075": {
   "activate_main": {
+   "conditions": {
+    "don_on_field_lte_opp": true
+   },
    "costs": [
     {
      "type": "trash_self"
@@ -28959,6 +29019,9 @@
  },
  "OP12-041": {
   "when_attacking": {
+   "conditions": {
+    "don_on_field_lte_opp": true
+   },
    "once_per_turn": true,
    "steps": [
     {
@@ -29350,6 +29413,7 @@
  "OP12-062": {
   "on_play": {
    "conditions": {
+    "don_on_field_lte_opp": true,
     "leader_is": "sanji"
    },
    "steps": [
@@ -29500,6 +29564,9 @@
  },
  "OP12-073": {
   "on_play": {
+   "conditions": {
+    "don_on_field_lte_opp": true
+   },
    "steps": [
     {
      "action": "buff_power",
@@ -29597,6 +29664,9 @@
  },
  "OP12-078": {
   "main": {
+   "conditions": {
+    "don_on_field_lte_opp": true
+   },
    "steps": [
     {
      "action": "draw",

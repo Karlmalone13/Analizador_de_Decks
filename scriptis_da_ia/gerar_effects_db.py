@@ -165,6 +165,11 @@ def parse_conditions(text):
     m = re.search(r"your opponent has (\d+) or less don!! cards? on (?:their|his|her) field", t)
     if m: conds['opp_don_on_field_lte'] = int(m.group(1))
 
+    if re.search(
+            r'the number of don!! cards? on your field is equal to or less than '
+            r'the number on your opponent.?s field', t):
+        conds['don_on_field_lte_opp'] = True
+
     # "if your opponent has N or more cards in their hand" -- gate sobre o
     # tamanho da MAO DO OPONENTE, distinto de hand_gte (mao do PROPRIO
     # jogador). Achado 02/07/2026: prefixava 5 das 13 cartas de

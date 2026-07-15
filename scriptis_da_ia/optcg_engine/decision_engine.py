@@ -2676,6 +2676,8 @@ class EffectExecutor:
             return False
         if 'opp_don_on_field_lte' in conds and opp.don_on_field() > conds['opp_don_on_field_lte']:
             return False
+        if conds.get('don_on_field_lte_opp') and me.don_on_field() > opp.don_on_field():
+            return False
         if 'chars_rested_gte' in conds:
             n_rested = sum(1 for c in me.field_chars if c.rested)
             if n_rested < conds['chars_rested_gte']:
@@ -6506,6 +6508,8 @@ class DecisionEngine:
             if k == 'don_on_field_lte' and not ((my_don + me.don_rested) <= v): return False
             if k == 'opp_don_on_field_gte' and not (self.opp.don_on_field() >= v): return False
             if k == 'opp_don_on_field_lte' and not (self.opp.don_on_field() <= v): return False
+            if k == 'don_on_field_lte_opp' and v:
+                if not (me.don_on_field() <= self.opp.don_on_field()): return False
             if k == 'opp_hand_gte' and not (len(self.opp.hand) >= v): return False
             if k == 'opp_chars_gte' and not (len(self.opp.field_chars) >= v): return False
             if k == 'trash_gte' and not (my_trash >= v): return False

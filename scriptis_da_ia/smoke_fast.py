@@ -1215,6 +1215,36 @@ def test_rush_character_fraseado_condicional_e_auras() -> None:
           shira.rested and nept.has_rush_character and not nept.has_rush)
 
 
+def test_comparacao_don_proprio_lte_oponente() -> None:
+    cond = get_card_effects("EB02-035").get("on_play", {}).get("conditions", {})
+    check("EB02-035 parseia comparacao DON proprio <= DON oponente",
+          cond.get("don_on_field_lte_opp") is True)
+    for code, trigger in (("OP06-061", "on_play"), ("OP07-068", "when_attacking"),
+                          ("OP12-078", "main")):
+        card_cond = get_card_effects(code).get(trigger, {}).get("conditions", {})
+        check(f"{code} preserva o mesmo gate comparativo",
+              card_cond.get("don_on_field_lte_opp") is True)
+
+    card = real_card("EB02-035")
+    me_high = GameState(leader=mk("XLDH", "Lider", card_type="LEADER"), turn=3,
+                        don_available=5)
+    opp_low = GameState(leader=mk("XOPL", "Lider Opp", card_type="LEADER"), turn=3,
+                        don_available=4)
+    me_high.deck = [mk("XD1", "Compra1")]
+    EffectExecutor(me_high, opp_low).execute(card, "on_play")
+    check("EB02-035 nao compra quando possui mais DON que o oponente",
+          len(me_high.hand) == 0 and len(me_high.deck) == 1)
+
+    me_equal = GameState(leader=mk("XLDE", "Lider", card_type="LEADER"), turn=3,
+                         don_available=4)
+    opp_equal = GameState(leader=mk("XOPE", "Lider Opp", card_type="LEADER"), turn=3,
+                          don_available=4)
+    me_equal.deck = [mk("XD2", "Compra2")]
+    EffectExecutor(me_equal, opp_equal).execute(card, "on_play")
+    check("EB02-035 compra quando os totais de DON sao iguais",
+          len(me_equal.hand) == 1 and not me_equal.deck)
+
+
 def test_don_on_field_lte_condicao_ausente() -> None:
     # Achado 15/07 -- "if you have N or less DON!! cards on your field"
     # (proprio lado) nunca existia, so o "N or more" (don_on_field_gte).
@@ -1613,6 +1643,7 @@ def main() -> int:
     test_reveal_top_life_play_nome_custo_e_if_you_do()
     test_op10_022_condicao_custo_e_play_life_por_tipo()
     test_rush_character_fraseado_condicional_e_auras()
+    test_comparacao_don_proprio_lte_oponente()
     test_don_on_field_lte_condicao_ausente()
     test_black_hole_negate_e_ko_encadeado()
     test_rebecca_add_from_trash_range_exclude_e_ordem()
