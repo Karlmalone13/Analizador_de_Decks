@@ -2497,6 +2497,9 @@
  },
  "EB03-013": {
   "activate_main": {
+   "conditions": {
+    "just_played": true
+   },
    "once_per_turn": true,
    "steps": [
     {
@@ -21027,6 +21030,9 @@
  "OP08-078": {},
  "OP08-079": {
   "activate_main": {
+   "conditions": {
+    "just_played": true
+   },
    "costs": [
     {
      "count": 1,
@@ -34937,12 +34943,16 @@
  },
  "OP15-008": {
   "activate_main": {
+   "conditions": {
+    "just_played": true
+   },
    "once_per_turn": true,
    "steps": [
     {
      "action": "debuff_power",
      "amount": 1000,
      "duration": "this_turn",
+     "per_don_attached": true,
      "target": "all_opp_characters"
     }
    ]
@@ -44923,6 +44933,9 @@
  },
  "ST19-003": {
   "activate_main": {
+   "conditions": {
+    "just_played": true
+   },
    "once_per_turn": true,
    "steps": [
     {

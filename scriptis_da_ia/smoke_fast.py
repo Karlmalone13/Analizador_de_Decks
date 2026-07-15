@@ -1231,6 +1231,39 @@ def test_liberation_condicao_relativa_ko_duplo_e_trigger_1_de_cada() -> None:
           caro not in opp.field_chars and barato not in opp.field_chars and muito_caro in opp.field_chars)
 
 
+def test_krieg_just_played_e_debuff_escalado_por_don() -> None:
+    # Achado 15/07 -- OP15-008 Krieg [Activate: Main]: "If this Character
+    # was played on this turn, give all of your opponent's Characters
+    # -1000 power during this turn for every DON!! card given to that
+    # Character." 2 bugs: (1) condicao 'was played this turn' nunca
+    # existia (disparava sempre, mesmo turnos depois); (2) o debuff era
+    # um -1000 FIXO pra todos, ignorando que deveria escalar pelo proprio
+    # don_attached de CADA alvo (-1000 * N, individual por character).
+    entry = get_card_effects("OP15-008").get("activate_main", {})
+    check("OP15-008 parseia condicao just_played=True",
+          entry.get("conditions", {}).get("just_played") is True)
+    step = entry.get("steps", [{}])[0]
+    check("OP15-008 parseia debuff_power com per_don_attached=True",
+          step.get("action") == "debuff_power" and step.get("per_don_attached") is True
+          and step.get("amount") == 1000)
+
+    krieg = real_card("OP15-008")
+    krieg.just_played = True
+    me = GameState(leader=mk("XKRLD", "Lider", card_type="LEADER"), turn=4, don_available=5)
+    me.field_chars = [krieg]
+    opp = GameState(leader=mk("XKROPP", "Lider Opp", card_type="LEADER"), turn=4)
+    com_2_don = mk("XKR1", "Alvo 2 DON", power=8000)
+    com_2_don.don_attached = 2
+    com_1_don = mk("XKR2", "Alvo 1 DON", power=8000)
+    com_1_don.don_attached = 1
+    sem_don = mk("XKR3", "Alvo Sem DON", power=8000)
+    opp.field_chars = [com_2_don, com_1_don, sem_don]
+    EffectExecutor(me, opp)._execute_step(step, krieg)
+    check("Alvo com 2 DON leva -2000 power (escalado)", com_2_don.power_buff == -2000)
+    check("Alvo com 1 DON leva -1000 power", com_1_don.power_buff == -1000)
+    check("Alvo sem DON nao leva debuff nenhum", sem_don.power_buff == 0)
+
+
 def main() -> int:
     test_turn_order_imu_prefers_second()
     test_empty_throne_beats_direct_five_elders_play()
@@ -1277,6 +1310,7 @@ def main() -> int:
     test_zehahahahaha_segunda_clausula_dano_direto()
     test_shiryu_add_from_trash_to_life_com_filtro()
     test_liberation_condicao_relativa_ko_duplo_e_trigger_1_de_cada()
+    test_krieg_just_played_e_debuff_escalado_por_don()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0

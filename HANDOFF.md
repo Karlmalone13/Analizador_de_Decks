@@ -1,5 +1,55 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-15 (164) - Claude - OP15-008 Krieg: condicao just_played + debuff escalado por DON do proprio alvo (ULTIMO item do lote de 10 -- LOTE CONCLUIDO)
+
+**Fecha o lote de 10 cartas revisadas manualmente pelo usuario** (blocos
+158-164, sessao de 15/07). OP15-008 Krieg `[Activate: Main]`: "If this
+Character was played on this turn, give all of your opponent's
+Characters -1000 power during this turn for every DON!! card given to
+that Character." 2 bugs:
+
+**1) `just_played` (condicao nova, 4 cartas):** "if this Character was
+played this turn" nunca existia como tipo de condicao -- checa
+`card.just_played` (campo ja existente no engine, so nunca consumido por
+`_check_conditions`). Sem isso, `activate_main` disparava em QUALQUER
+turno, nao so no turno em que a carta foi jogada. Fechou tambem
+EB03-013, OP08-079, ST19-003 (mesmo padrao textual exato). Adicionado
+nos 2 checadores (`_check_conditions` + `_effect_conditions_met`).
+
+**2) `per_don_attached` (escalonamento novo em `debuff_power`, 1 carta):**
+"-1000 power ... for every DON!! card given to THAT Character" nao e um
+-1000 fixo pra todo o campo do oponente -- e -1000 MULTIPLICADO pelo
+proprio `don_attached` de CADA alvo, individualmente (um character com 3
+DON leva -3000, um sem DON nenhum nao leva nada). Antes disparava um
+-1000 uniforme pra todo mundo, ignorando quanto DON cada um tinha
+(mecanica de "quanto mais forte fica o alvo com DON, mais ele apanha" --
+sinergia com o `on_play` do mesmo Krieg, que empilha ate 3 DON num unico
+character do oponente antes desse `activate_main` rodar). Regex de
+deteccao usa uma janela propria de 80 chars apos "power" (a clausula
+"for every DON..." vem DEPOIS de "during this turn", passando dos 40
+chars do `JANELA_DEPOIS` padrao usado pelo resto de `parse_power_buff`).
+
+**Validado:** `diff_parser.py` PERDEU=0, MUDOU=4 (todas conferidas
+contra `card_text` cru). 1 teste dirigido novo com EXECUCAO real
+(`test_krieg_just_played_e_debuff_escalado_por_don`): confirma que um
+alvo com 2 DON anexado leva -2000, um com 1 DON leva -1000, um sem DON
+nao leva debuff nenhum -- prova a escala POR ALVO, nao um valor global.
+`smoke_fast.py` (102 checks) + `smoke_test.py` amplo, ambos verdes.
+
+**LOTE DE 10 DO USUARIO: 100% CONCLUIDO** (blocos 158-164): OP05-040,
+OP05-091, OP06-022 (ja estava correto), OP08-044/Kingdew, OP09-098,
+OP10-098, OP15-008, OP16-108, OP16-116, ST12-003 -- todos os itens
+anotados manualmente pelo usuario foram corrigidos ou confirmados. Gaps
+notados ao longo do caminho, fora do lote original, para uma proxima
+varredura: OP13-061/062/063/066/076/077 (`if you have any DON!! cards
+given` -- condicao de DON anexado na PROPRIA carta, tipo ainda nao
+suportado, ~6 cartas).
+
+**Proxima sessao:** retomar a varredura ampla por clustering nos
+suspeitos restantes de `audit_parser_coverage.py` -- instrucao
+permanente do usuario ("precisamos fazer uma varredura"), nao e tarefa
+pontual encerrada com este lote.
+
 ## 2026-07-15 (163) - Claude - OP10-098 Liberation: condicao relativa de board + KO duplo + trigger "1 de cada" (item 6/6, lote de 10 CONCLUIDO -- so falta Krieg)
 
 **Continuacao do lote de 10 do usuario.** OP10-098: "[Main] If the number

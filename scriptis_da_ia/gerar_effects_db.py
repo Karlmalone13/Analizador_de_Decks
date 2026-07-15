@@ -202,6 +202,14 @@ def parse_conditions(text):
     m = re.search(r'if you have (\d+) or more rested characters?', t)
     if m: conds['chars_rested_gte'] = int(m.group(1))
 
+    # "If this Character was played this turn/on this turn" -- condicao
+    # sobre a PROPRIA carta (checado via card.just_played), distinta de
+    # tudo que conta estado do jogador. Achado 15/07 (revisao do usuario,
+    # OP15-008 Krieg e familia -- 4 cartas reais): activate_main disparava
+    # SEMPRE, mesmo em turnos depois de jogado.
+    if re.search(r"if this character was played (?:on |this )?this turn", t):
+        conds['just_played'] = True
+
     # "if this Leader/Character battles your opponent's Character during
     # this turn" -- exige rastreio de combate (achado 15/07, usuario:
     # OP12-020 Zoro lider + familia OP04-047/ST02-010/ST08-013, mesmo
@@ -1910,6 +1918,17 @@ def parse_power_buff(text):
             m_cnt = re.search(r'up to (\d+) of your opponent', contexto_antes)
             if m_cnt and int(m_cnt.group(1)) > 1:
                 step['count'] = int(m_cnt.group(1))
+        # "-N power ... for every DON!! card given to that Character" --
+        # amount ESCALA por alvo (multiplica pelo proprio don_attached de
+        # CADA character, nao um count global do lado do efeito). Achado
+        # 15/07 (revisao do usuario, OP15-008 Krieg): antes era sempre um
+        # -1000 fixo pra todos, ignorando quanto DON cada um tinha.
+        # Janela propria (mais larga que contexto_depois -- a clausula "for
+        # every DON..." vem DEPOIS da clausula de duracao "during this
+        # turn", passando dos 40 chars padrao de JANELA_DEPOIS).
+        janela_don_scaling = t[m.end():m.end() + 80]
+        if re.search(r'for every don!{0,2}\s*cards? given to that character', janela_don_scaling):
+            step['per_don_attached'] = True
         steps.append(step)
 
     return steps

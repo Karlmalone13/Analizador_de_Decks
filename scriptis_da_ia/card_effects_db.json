@@ -4056,6 +4056,9 @@
             "filter_name": "zou"
           }
         ],
+        "conditions": {
+          "just_played": true
+        },
         "once_per_turn": true
       }
     }
@@ -33887,6 +33890,9 @@
             "count": 1
           }
         ],
+        "conditions": {
+          "just_played": true
+        },
         "costs": [
           {
             "type": "trash_from_hand",
@@ -56174,9 +56180,13 @@
             "action": "debuff_power",
             "amount": 1000,
             "target": "all_opp_characters",
-            "duration": "this_turn"
+            "duration": "this_turn",
+            "per_don_attached": true
           }
         ],
+        "conditions": {
+          "just_played": true
+        },
         "once_per_turn": true
       }
     }
@@ -72510,6 +72520,9 @@
             "cost_eq": 0
           }
         ],
+        "conditions": {
+          "just_played": true
+        },
         "once_per_turn": true
       }
     }

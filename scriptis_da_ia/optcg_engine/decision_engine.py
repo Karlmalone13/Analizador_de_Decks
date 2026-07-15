@@ -2685,6 +2685,8 @@ class EffectExecutor:
             return False
         if 'hand_gte' in conds and len(me.hand) < conds['hand_gte']:
             return False
+        if conds.get('just_played') and not getattr(card, 'just_played', False):
+            return False
         if 'leader_is' in conds:
             if conds['leader_is'].lower() not in me.leader.name.lower():
                 return False
@@ -4018,6 +4020,19 @@ class EffectExecutor:
             if target == 'all_opp_characters':
                 if not opp.field_chars:
                     return ''
+                if step.get('per_don_attached'):
+                    # "-N power for every DON!! card given to that
+                    # Character" (achado 15/07, OP15-008 Krieg): escala
+                    # POR ALVO, multiplicando pelo don_attached de CADA
+                    # character, nao um -N fixo pra todos.
+                    afetados = []
+                    for c in opp.field_chars:
+                        n_don = getattr(c, 'don_attached', 0)
+                        if n_don <= 0:
+                            continue
+                        c.power_buff -= amount * n_don
+                        afetados.append(f'{c.name[:12]}(-{amount * n_don})')
+                    return f'debuff por DON anexado: {", ".join(afetados)}' if afetados else ''
                 for c in opp.field_chars:
                     c.power_buff -= amount
                 return f'-{amount} power em todos os Characters do oponente'
@@ -6378,6 +6393,7 @@ class DecisionEngine:
             if k == 'opp_don_on_field_lte' and not (self.opp.don_on_field() <= v): return False
             if k == 'opp_hand_gte' and not (len(self.opp.hand) >= v): return False
             if k == 'trash_gte' and not (my_trash >= v): return False
+            if k == 'just_played' and v and not getattr(card, 'just_played', False): return False
             if k == 'events_in_trash_gte':
                 n_events = sum(1 for c in me.trash if c.card_type.lower() == 'event')
                 if not (n_events >= v): return False
