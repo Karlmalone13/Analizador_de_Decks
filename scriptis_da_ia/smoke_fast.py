@@ -1245,6 +1245,73 @@ def test_comparacao_don_proprio_lte_oponente() -> None:
           len(me_equal.hand) == 1 and not me_equal.deck)
 
 
+def test_evento_parametrizado_de_don_devolvido() -> None:
+    for code, threshold in (("OP06-042", 1), ("EB02-035", 2),
+                            ("OP09-061", 2), ("P-077", 2)):
+        entry = get_card_effects(code).get("when_don_returned", {})
+        check(f"{code} parseia limiar {threshold} por resolucao",
+              entry.get("return_count_gte") == threshold)
+    luffy_steps = get_card_effects("OP09-061")["when_don_returned"]["steps"]
+    check("OP09-061 preserva 1 DON ativo e 1 DON adicional restado",
+          luffy_steps == [{"action": "add_don", "count": 1},
+                          {"action": "add_don", "count": 1, "rested": True}])
+
+    # Duas devolucoes separadas de 1 nao equivalem a uma devolucao de 2+.
+    sanji = real_card("EB02-035")
+    me = GameState(leader=mk("XDRL", "Lider", card_type="LEADER"),
+                   field_chars=[sanji], don_available=4, don_deck=6,
+                   global_turn=1, is_active_turn=True)
+    opp = GameState(leader=mk("XDRO", "Opp", card_type="LEADER"),
+                    global_turn=1, is_active_turn=False)
+    ee = EffectExecutor(me, opp)
+    ee._return_don_to_deck(1)
+    ee._return_don_to_deck(1)
+    check("EB02-035 nao acumula duas resolucoes separadas de DON -1",
+          me.don_available == 2 and me.don_deck == 8)
+
+    sanji2 = real_card("EB02-035")
+    me2 = GameState(leader=mk("XDR2", "Lider", card_type="LEADER"),
+                    field_chars=[sanji2], don_available=6, don_deck=4,
+                    global_turn=2, is_active_turn=True)
+    opp2 = GameState(leader=mk("XDO2", "Opp", card_type="LEADER"),
+                     global_turn=2, is_active_turn=False)
+    ee2 = EffectExecutor(me2, opp2)
+    ee2._return_don_to_deck(2)
+    check("EB02-035 dispara ao devolver 2 DON na mesma resolucao",
+          me2.don_available == 5 and me2.don_deck == 5)
+    ee2._return_don_to_deck(2)
+    check("EB02-035 respeita once per turn no evento central",
+          me2.don_available == 3 and me2.don_deck == 7)
+
+    reiju = real_card("OP06-042")
+    me3 = GameState(leader=reiju, deck=[mk("XBUY", "Compra")],
+                    don_available=2, don_deck=8, global_turn=3,
+                    is_active_turn=True)
+    opp3 = GameState(leader=mk("XDO3", "Opp", card_type="LEADER"),
+                     global_turn=3, is_active_turn=False)
+    EffectExecutor(me3, opp3)._return_don_to_deck(1)
+    check("gatilho de 1 DON da OP06-042 dispara no turno correto",
+          len(me3.hand) == 1)
+
+    ulti = real_card("P-077")
+    stage = mk("XSTG", "Stage Roxo", card_type="STAGE", color="Purple")
+    stage.rested = True
+    me4 = GameState(leader=mk("XDR4", "Lider", card_type="LEADER"),
+                    field_chars=[ulti], field_stage=stage,
+                    don_available=4, don_deck=6, global_turn=4,
+                    is_active_turn=True)
+    opp4 = GameState(leader=mk("XDO4", "Opp", card_type="LEADER"),
+                     global_turn=4, is_active_turn=False)
+    EffectExecutor(me4, opp4)._return_don_to_deck(2)
+    p077_steps = get_card_effects("P-077")["when_don_returned"]["steps"]
+    p077 = next(s for s in p077_steps if s.get("action") == "set_active")
+    check("P-077 aponta para Stage roxo, nao Character",
+          p077.get("target") == "own_stage" and p077.get("color") == "purple")
+    check("P-077 preserva ordem: adiciona DON antes de reativar Stage",
+          [s.get("action") for s in p077_steps] == ["add_don", "set_active"])
+    check("P-077 reativa o Stage roxo quando o evento dispara", not stage.rested)
+
+
 def test_don_on_field_lte_condicao_ausente() -> None:
     # Achado 15/07 -- "if you have N or less DON!! cards on your field"
     # (proprio lado) nunca existia, so o "N or more" (don_on_field_gte).
@@ -1644,6 +1711,7 @@ def main() -> int:
     test_op10_022_condicao_custo_e_play_life_por_tipo()
     test_rush_character_fraseado_condicional_e_auras()
     test_comparacao_don_proprio_lte_oponente()
+    test_evento_parametrizado_de_don_devolvido()
     test_don_on_field_lte_condicao_ausente()
     test_black_hole_negate_e_ko_encadeado()
     test_rebecca_add_from_trash_range_exclude_e_ordem()

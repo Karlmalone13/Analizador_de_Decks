@@ -4153,7 +4153,7 @@
    },
    {
     "action": "add_don",
-    "trigger": "your_turn"
+    "trigger": "when_don_returned"
    }
   ],
   "synergy_states": {},
@@ -6880,7 +6880,7 @@
   "effects": [
    {
     "action": "add_don",
-    "trigger": "opp_turn"
+    "trigger": "when_don_returned"
    }
   ],
   "synergy_states": {},
@@ -9618,6 +9618,10 @@
     "trigger": "activate_main"
    },
    {
+    "action": "add_don",
+    "trigger": "activate_main"
+   },
+   {
     "action": "substitute_ko",
     "trigger": "passive"
    }
@@ -9786,7 +9790,7 @@
   "effects": [
    {
     "action": "add_don",
-    "trigger": "your_turn"
+    "trigger": "when_don_returned"
    },
    {
     "action": "keyword_blocker",
@@ -19121,7 +19125,7 @@
   "effects": [
    {
     "action": "buff_power",
-    "trigger": "your_turn",
+    "trigger": "when_don_returned",
     "target": "self"
    }
   ],
@@ -29251,7 +29255,7 @@
   "effects": [
    {
     "action": "add_don",
-    "trigger": "opp_turn"
+    "trigger": "when_don_returned"
    }
   ],
   "synergy_states": {},
@@ -35246,7 +35250,7 @@
   "effects": [
    {
     "action": "add_don",
-    "trigger": "your_turn"
+    "trigger": "when_don_returned"
    },
    {
     "action": "keyword_blocker",
@@ -39141,7 +39145,7 @@
   "effects": [
    {
     "action": "draw",
-    "trigger": "your_turn"
+    "trigger": "when_don_returned"
    }
   ],
   "synergy_states": {},
@@ -40572,7 +40576,7 @@
   "effects": [
    {
     "action": "ko",
-    "trigger": "your_turn",
+    "trigger": "when_don_returned",
     "cost_lte": 2,
     "target": "opp_character"
    }
@@ -50751,7 +50755,7 @@
   "effects": [
    {
     "action": "add_don",
-    "trigger": "your_turn"
+    "trigger": "when_don_returned"
    }
   ],
   "synergy_states": {},
@@ -55740,8 +55744,11 @@
   "effects": [
    {
     "action": "add_don",
-    "trigger": "your_turn",
-    "don_requirement": 1
+    "trigger": "when_don_returned"
+   },
+   {
+    "action": "add_don",
+    "trigger": "when_don_returned"
    },
    {
     "action": "buff_cost",
@@ -56284,7 +56291,7 @@
   "effects": [
    {
     "action": "buff_power",
-    "trigger": "your_turn",
+    "trigger": "when_don_returned",
     "target": "leader_or_character"
    }
   ],
@@ -66987,7 +66994,7 @@
   "effects": [
    {
     "action": "buff_cost",
-    "trigger": "your_turn",
+    "trigger": "when_don_returned",
     "target": "own_character"
    }
   ],
@@ -71812,7 +71819,7 @@
   "effects": [
    {
     "action": "gain_rush",
-    "trigger": "passive"
+    "trigger": "when_don_returned"
    }
   ],
   "synergy_states": {},
@@ -82035,7 +82042,7 @@
   "effects": [
    {
     "action": "add_don",
-    "trigger": "opp_turn"
+    "trigger": "when_don_returned"
    }
   ],
   "synergy_states": {},
@@ -87050,6 +87057,10 @@
   "effects": [
    {
     "action": "give_don",
+    "trigger": "activate_main"
+   },
+   {
+    "action": "add_don",
     "trigger": "activate_main"
    },
    {
@@ -92913,6 +92924,10 @@
     "trigger": "on_play"
    },
    {
+    "action": "add_don",
+    "trigger": "on_play"
+   },
+   {
     "action": "set_active",
     "trigger": "end_of_turn",
     "target": "self"
@@ -92999,6 +93014,10 @@
   "sub_types": "Navy",
   "attribute": "Strike",
   "effects": [
+   {
+    "action": "add_don",
+    "trigger": "on_play"
+   },
    {
     "action": "add_don",
     "trigger": "on_play"
@@ -97928,13 +97947,13 @@
   "attribute": "Strike",
   "effects": [
    {
-    "action": "set_active",
-    "trigger": "passive",
-    "target": "own_character"
+    "action": "add_don",
+    "trigger": "when_don_returned"
    },
    {
-    "action": "add_don",
-    "trigger": "passive"
+    "action": "set_active",
+    "trigger": "when_don_returned",
+    "target": "own_stage"
    }
   ],
   "synergy_states": {},
@@ -105813,7 +105832,7 @@
   "effects": [
    {
     "action": "ko",
-    "trigger": "your_turn",
+    "trigger": "when_don_returned",
     "cost_lte": 3,
     "rested_only": true,
     "target": "opp_character"
@@ -105981,7 +106000,7 @@
   "effects": [
    {
     "action": "buff_power",
-    "trigger": "your_turn",
+    "trigger": "when_don_returned",
     "target": "self"
    }
   ],
@@ -106107,6 +106126,10 @@
   "sub_types": "Kid Pirates",
   "attribute": "Slash",
   "effects": [
+   {
+    "action": "draw",
+    "trigger": "when_don_returned"
+   },
    {
     "action": "draw",
     "trigger": "passive"

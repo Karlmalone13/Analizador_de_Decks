@@ -979,7 +979,8 @@
         "steps": [
           {
             "action": "add_don",
-            "count": 1
+            "count": 1,
+            "rested": true
           }
         ],
         "conditions": {
@@ -2722,13 +2723,15 @@
         },
         "once_per_turn": true
       },
-      "your_turn": {
+      "when_don_returned": {
         "steps": [
           {
             "action": "add_don",
             "count": 1
           }
         ],
+        "return_count_gte": 2,
+        "owner_turn": "your",
         "once_per_turn": true
       }
     }
@@ -2792,7 +2795,8 @@
         "steps": [
           {
             "action": "add_don",
-            "count": 1
+            "count": 1,
+            "rested": true
           }
         ],
         "conditions": {
@@ -2804,7 +2808,8 @@
         "steps": [
           {
             "action": "add_don",
-            "count": 1
+            "count": 1,
+            "rested": true
           }
         ],
         "conditions": {
@@ -4702,17 +4707,21 @@
     "sub_types": "Big Mom Pirates",
     "attribute": "Special",
     "effects": {
-      "opp_turn": {
+      "when_don_returned": {
         "steps": [
           {
             "action": "add_don",
-            "count": 1
+            "count": 1,
+            "rested": true
           }
         ],
+        "return_count_gte": 1,
+        "owner_turn": "opponent",
+        "by_own_effect": true,
+        "once_per_turn": true,
         "conditions": {
           "leader_type": "big mom pirates"
-        },
-        "once_per_turn": true
+        }
       }
     }
   },
@@ -4774,7 +4783,8 @@
         "steps": [
           {
             "action": "add_don",
-            "count": 1
+            "count": 1,
+            "rested": true
           }
         ],
         "conditions": {
@@ -4865,7 +4875,8 @@
         "steps": [
           {
             "action": "add_don",
-            "count": 2
+            "count": 2,
+            "rested": true
           }
         ],
         "conditions": {
@@ -6806,6 +6817,11 @@
           {
             "action": "add_don",
             "count": 1
+          },
+          {
+            "action": "add_don",
+            "count": 1,
+            "rested": true
           }
         ],
         "conditions": {
@@ -6856,7 +6872,8 @@
         "steps": [
           {
             "action": "add_don",
-            "count": 1
+            "count": 1,
+            "rested": true
           }
         ],
         "conditions": {
@@ -6957,17 +6974,20 @@
     "sub_types": "Kid Pirates Supernovas SMILE",
     "attribute": "Slash",
     "effects": {
-      "your_turn": {
+      "when_don_returned": {
         "steps": [
           {
             "action": "add_don",
-            "count": 1
+            "count": 1,
+            "rested": true
           }
         ],
+        "return_count_gte": 1,
+        "owner_turn": "your",
+        "once_per_turn": true,
         "conditions": {
           "leader_type": "kid pirates"
-        },
-        "once_per_turn": true
+        }
       },
       "passive": {
         "steps": [
@@ -7018,7 +7038,8 @@
         "steps": [
           {
             "action": "add_don",
-            "count": 1
+            "count": 1,
+            "rested": true
           }
         ],
         "once_per_turn": true
@@ -10262,7 +10283,8 @@
         "steps": [
           {
             "action": "add_don",
-            "count": 1
+            "count": 1,
+            "rested": true
           }
         ],
         "costs": [
@@ -10471,7 +10493,8 @@
         "steps": [
           {
             "action": "add_don",
-            "count": 1
+            "count": 1,
+            "rested": true
           }
         ],
         "costs": [
@@ -10573,7 +10596,8 @@
         "steps": [
           {
             "action": "add_don",
-            "count": 1
+            "count": 1,
+            "rested": true
           }
         ]
       },
@@ -10750,7 +10774,8 @@
         "steps": [
           {
             "action": "add_don",
-            "count": 1
+            "count": 1,
+            "rested": true
           }
         ]
       }
@@ -10948,6 +10973,7 @@
           {
             "action": "add_don",
             "count": 1,
+            "rested": true,
             "conditions": {
               "life_lte": 2
             }
@@ -12858,7 +12884,7 @@
     "sub_types": "Impel Down",
     "attribute": "Special",
     "effects": {
-      "your_turn": {
+      "when_don_returned": {
         "steps": [
           {
             "action": "buff_power",
@@ -12867,6 +12893,8 @@
             "duration": "this_turn"
           }
         ],
+        "return_count_gte": 1,
+        "owner_turn": "your",
         "once_per_turn": true
       }
     }
@@ -13243,7 +13271,8 @@
         "steps": [
           {
             "action": "add_don",
-            "count": 1
+            "count": 1,
+            "rested": true
           }
         ],
         "conditions": {
@@ -13274,7 +13303,8 @@
         "steps": [
           {
             "action": "add_don",
-            "count": 1
+            "count": 1,
+            "rested": true
           }
         ],
         "conditions": {
@@ -16012,7 +16042,8 @@
         "steps": [
           {
             "action": "add_don",
-            "count": 1
+            "count": 1,
+            "rested": true
           }
         ],
         "conditions": {
@@ -16093,7 +16124,8 @@
         "steps": [
           {
             "action": "add_don",
-            "count": 1
+            "count": 1,
+            "rested": true
           }
         ],
         "conditions": {
@@ -16118,7 +16150,8 @@
         "steps": [
           {
             "action": "add_don",
-            "count": 1
+            "count": 1,
+            "rested": true
           }
         ],
         "conditions": {
@@ -16348,7 +16381,8 @@
         "steps": [
           {
             "action": "add_don",
-            "count": 1
+            "count": 1,
+            "rested": true
           }
         ],
         "conditions": {
@@ -19393,13 +19427,16 @@
     "sub_types": "Baroque Works The Seven Warlords of the Sea",
     "attribute": "Special",
     "effects": {
-      "opp_turn": {
+      "when_don_returned": {
         "steps": [
           {
             "action": "add_don",
             "count": 1
           }
         ],
+        "return_count_gte": 1,
+        "owner_turn": "opponent",
+        "by_own_effect": true,
         "once_per_turn": true
       }
     }
@@ -19505,7 +19542,8 @@
         "steps": [
           {
             "action": "add_don",
-            "count": 1
+            "count": 1,
+            "rested": true
           }
         ],
         "conditions": {
@@ -19580,7 +19618,8 @@
         "steps": [
           {
             "action": "add_don",
-            "count": 1
+            "count": 1,
+            "rested": true
           },
           {
             "action": "draw",
@@ -20009,6 +20048,7 @@
           {
             "action": "add_don",
             "count": 1,
+            "rested": true,
             "conditions": {
               "life_lte": 2
             }
@@ -23375,7 +23415,8 @@
         "steps": [
           {
             "action": "add_don",
-            "count": 1
+            "count": 1,
+            "rested": true
           }
         ],
         "costs": [
@@ -23414,13 +23455,15 @@
     "sub_types": "Kid Pirates",
     "attribute": "Special",
     "effects": {
-      "your_turn": {
+      "when_don_returned": {
         "steps": [
           {
             "action": "add_don",
             "count": 1
           }
         ],
+        "return_count_gte": 1,
+        "owner_turn": "your",
         "once_per_turn": true
       },
       "passive": {
@@ -24769,7 +24812,8 @@
           },
           {
             "action": "add_don",
-            "count": 1
+            "count": 1,
+            "rested": true
           }
         ],
         "costs": [
@@ -25936,13 +25980,15 @@
     "sub_types": "The Vinsmoke Family GERMA 66",
     "attribute": "Special",
     "effects": {
-      "your_turn": {
+      "when_don_returned": {
         "steps": [
           {
             "action": "draw",
             "count": 1
           }
         ],
+        "return_count_gte": 1,
+        "owner_turn": "your",
         "once_per_turn": true
       }
     }
@@ -26939,7 +26985,7 @@
     "sub_types": "Kid Pirates Supernovas SMILE",
     "attribute": "Slash",
     "effects": {
-      "your_turn": {
+      "when_don_returned": {
         "steps": [
           {
             "action": "ko",
@@ -26948,6 +26994,8 @@
             "cost_lte": 2
           }
         ],
+        "return_count_gte": 1,
+        "owner_turn": "your",
         "once_per_turn": true
       }
     }
@@ -30010,7 +30058,8 @@
         "steps": [
           {
             "action": "add_don",
-            "count": 1
+            "count": 1,
+            "rested": true
           }
         ],
         "conditions": {
@@ -30175,7 +30224,8 @@
         "steps": [
           {
             "action": "add_don",
-            "count": 1
+            "count": 1,
+            "rested": true
           }
         ],
         "conditions": {
@@ -30218,7 +30268,8 @@
         "steps": [
           {
             "action": "add_don",
-            "count": 1
+            "count": 1,
+            "rested": true
           }
         ],
         "conditions": {
@@ -30294,7 +30345,8 @@
         "steps": [
           {
             "action": "add_don",
-            "count": 1
+            "count": 1,
+            "rested": true
           }
         ],
         "once_per_turn": true
@@ -30400,7 +30452,8 @@
         "steps": [
           {
             "action": "add_don",
-            "count": 1
+            "count": 1,
+            "rested": true
           }
         ],
         "conditions": {
@@ -33456,7 +33509,8 @@
         "steps": [
           {
             "action": "add_don",
-            "count": 1
+            "count": 1,
+            "rested": true
           }
         ]
       }
@@ -33648,7 +33702,8 @@
         "steps": [
           {
             "action": "add_don",
-            "count": 1
+            "count": 1,
+            "rested": true
           }
         ]
       },
@@ -33672,13 +33727,16 @@
     "sub_types": "Big Mom Pirates",
     "attribute": "Wisdom",
     "effects": {
-      "your_turn": {
+      "when_don_returned": {
         "steps": [
           {
             "action": "add_don",
-            "count": 1
+            "count": 1,
+            "rested": true
           }
         ],
+        "return_count_gte": 1,
+        "owner_turn": "your",
         "once_per_turn": true
       }
     }
@@ -33698,7 +33756,8 @@
         "steps": [
           {
             "action": "add_don",
-            "count": 1
+            "count": 1,
+            "rested": true
           }
         ]
       },
@@ -33866,7 +33925,8 @@
         "steps": [
           {
             "action": "add_don",
-            "count": 5
+            "count": 5,
+            "rested": true
           },
           {
             "action": "return_don_until_match_opp",
@@ -35893,7 +35953,8 @@
           },
           {
             "action": "add_don",
-            "count": 1
+            "count": 1,
+            "rested": true
           }
         ],
         "costs": [
@@ -36956,15 +37017,21 @@
     "sub_types": "Straw Hat Crew The Four Emperors",
     "attribute": "Strike",
     "effects": {
-      "your_turn": {
+      "when_don_returned": {
         "steps": [
           {
             "action": "add_don",
             "count": 1
+          },
+          {
+            "action": "add_don",
+            "count": 1,
+            "rested": true
           }
         ],
-        "once_per_turn": true,
-        "don_requirement": 1
+        "return_count_gte": 2,
+        "owner_turn": "your",
+        "once_per_turn": true
       },
       "passive": {
         "steps": [
@@ -36995,7 +37062,8 @@
         "steps": [
           {
             "action": "add_don",
-            "count": 1
+            "count": 1,
+            "rested": true
           }
         ],
         "costs": [
@@ -37276,7 +37344,7 @@
     "sub_types": "Heart Pirates Minks",
     "attribute": "Strike",
     "effects": {
-      "your_turn": {
+      "when_don_returned": {
         "steps": [
           {
             "action": "buff_power",
@@ -37285,6 +37353,8 @@
             "duration": "this_turn"
           }
         ],
+        "return_count_gte": 1,
+        "owner_turn": "your",
         "once_per_turn": true
       }
     }
@@ -37450,7 +37520,8 @@
         "steps": [
           {
             "action": "add_don",
-            "count": 1
+            "count": 1,
+            "rested": true
           }
         ],
         "costs": [
@@ -44058,7 +44129,8 @@
           },
           {
             "action": "add_don",
-            "count": 1
+            "count": 1,
+            "rested": true
           }
         ],
         "costs": [
@@ -44091,7 +44163,8 @@
           },
           {
             "action": "add_don",
-            "count": 1
+            "count": 1,
+            "rested": true
           }
         ]
       },
@@ -44379,7 +44452,7 @@
     "sub_types": "Big Mom Pirates Homies",
     "attribute": "Slash",
     "effects": {
-      "your_turn": {
+      "when_don_returned": {
         "steps": [
           {
             "action": "buff_cost",
@@ -44390,6 +44463,8 @@
             "duration": "until_opp_turn_end"
           }
         ],
+        "return_count_gte": 1,
+        "owner_turn": "your",
         "once_per_turn": true
       }
     }
@@ -44462,7 +44537,8 @@
         "steps": [
           {
             "action": "add_don",
-            "count": 1
+            "count": 1,
+            "rested": true
           }
         ],
         "costs": [
@@ -46654,7 +46730,8 @@
         "steps": [
           {
             "action": "add_don",
-            "count": 1
+            "count": 1,
+            "rested": true
           }
         ],
         "conditions": {
@@ -47282,7 +47359,8 @@
           },
           {
             "action": "add_don",
-            "count": 1
+            "count": 1,
+            "rested": true
           }
         ],
         "conditions": {
@@ -47523,13 +47601,14 @@
     "sub_types": "East Blue",
     "attribute": "Strike",
     "effects": {
-      "passive": {
+      "when_don_returned": {
         "steps": [
           {
             "action": "gain_rush",
             "duration": "this_turn"
           }
         ],
+        "return_count_gte": 1,
         "conditions": {
           "leader_is": "sanji"
         }
@@ -50539,7 +50618,8 @@
           },
           {
             "action": "add_don",
-            "count": 1
+            "count": 1,
+            "rested": true
           }
         ],
         "conditions": {
@@ -50596,7 +50676,8 @@
         "steps": [
           {
             "action": "add_don",
-            "count": 1
+            "count": 1,
+            "rested": true
           }
         ],
         "conditions": {
@@ -50736,7 +50817,8 @@
           },
           {
             "action": "add_don",
-            "count": 1
+            "count": 1,
+            "rested": true
           }
         ],
         "conditions": {
@@ -50760,7 +50842,8 @@
         "steps": [
           {
             "action": "add_don",
-            "count": 1
+            "count": 1,
+            "rested": true
           }
         ],
         "conditions": {
@@ -50866,7 +50949,8 @@
         "steps": [
           {
             "action": "add_don",
-            "count": 1
+            "count": 1,
+            "rested": true
           }
         ],
         "conditions": {
@@ -50935,7 +51019,8 @@
         "steps": [
           {
             "action": "add_don",
-            "count": 1
+            "count": 1,
+            "rested": true
           }
         ],
         "conditions": {
@@ -51061,7 +51146,8 @@
         "steps": [
           {
             "action": "add_don",
-            "count": 1
+            "count": 1,
+            "rested": true
           }
         ],
         "once_per_turn": true
@@ -54254,7 +54340,8 @@
           },
           {
             "action": "add_don",
-            "count": 1
+            "count": 1,
+            "rested": true
           }
         ]
       }
@@ -54320,7 +54407,8 @@
           },
           {
             "action": "add_don",
-            "count": 1
+            "count": 1,
+            "rested": true
           }
         ]
       }
@@ -54337,17 +54425,20 @@
     "sub_types": "Donquixote Pirates",
     "attribute": "Special",
     "effects": {
-      "opp_turn": {
+      "when_don_returned": {
         "steps": [
           {
             "action": "add_don",
-            "count": 1
+            "count": 1,
+            "rested": true
           }
         ],
+        "return_count_gte": 1,
+        "owner_turn": "opponent",
+        "once_per_turn": true,
         "conditions": {
           "leader_type": "donquixote pirates"
-        },
-        "once_per_turn": true
+        }
       }
     }
   },
@@ -54524,7 +54615,8 @@
           },
           {
             "action": "add_don",
-            "count": 2
+            "count": 2,
+            "rested": true
           }
         ]
       }
@@ -54551,7 +54643,8 @@
           },
           {
             "action": "add_don",
-            "count": 1
+            "count": 1,
+            "rested": true
           }
         ]
       }
@@ -54582,7 +54675,8 @@
         "steps": [
           {
             "action": "add_don",
-            "count": 1
+            "count": 1,
+            "rested": true
           }
         ],
         "conditions": {
@@ -54619,6 +54713,7 @@
           {
             "action": "add_don",
             "count": 1,
+            "rested": true,
             "conditions": {
               "opp_char_power_gte": 6000
             }
@@ -57824,6 +57919,11 @@
           {
             "action": "add_don",
             "count": 1
+          },
+          {
+            "action": "add_don",
+            "count": 4,
+            "rested": true
           }
         ],
         "once_per_turn": true
@@ -58038,7 +58138,8 @@
         "steps": [
           {
             "action": "add_don",
-            "count": 1
+            "count": 1,
+            "rested": true
           }
         ]
       }
@@ -61543,7 +61644,8 @@
         "steps": [
           {
             "action": "add_don",
-            "count": 2
+            "count": 2,
+            "rested": true
           }
         ],
         "once_per_turn": true
@@ -61675,7 +61777,8 @@
           },
           {
             "action": "add_don",
-            "count": 2
+            "count": 2,
+            "rested": true
           }
         ],
         "conditions": {
@@ -61795,7 +61898,8 @@
         "steps": [
           {
             "action": "add_don",
-            "count": 1
+            "count": 1,
+            "rested": true
           }
         ],
         "conditions": {
@@ -61832,7 +61936,8 @@
         "steps": [
           {
             "action": "add_don",
-            "count": 1
+            "count": 1,
+            "rested": true
           }
         ],
         "costs": [
@@ -61846,7 +61951,8 @@
         "steps": [
           {
             "action": "add_don",
-            "count": 1
+            "count": 1,
+            "rested": true
           }
         ]
       }
@@ -61897,6 +62003,11 @@
           {
             "action": "add_don",
             "count": 1
+          },
+          {
+            "action": "add_don",
+            "count": 1,
+            "rested": true
           }
         ]
       },
@@ -61968,6 +62079,11 @@
           {
             "action": "add_don",
             "count": 1
+          },
+          {
+            "action": "add_don",
+            "count": 1,
+            "rested": true
           }
         ],
         "conditions": {
@@ -64111,7 +64227,8 @@
         "steps": [
           {
             "action": "add_don",
-            "count": 1
+            "count": 1,
+            "rested": true
           }
         ]
       }
@@ -65083,18 +65200,21 @@
     "sub_types": "Animal Kingdom Pirates",
     "attribute": "Strike",
     "effects": {
-      "passive": {
+      "when_don_returned": {
         "steps": [
+          {
+            "action": "add_don",
+            "count": 1,
+            "rested": true
+          },
           {
             "action": "set_active",
             "count": 1,
-            "target": "own_character"
-          },
-          {
-            "action": "add_don",
-            "count": 1
+            "target": "own_stage",
+            "color": "purple"
           }
         ],
+        "return_count_gte": 2,
         "once_per_turn": true
       }
     }
@@ -65848,7 +65968,8 @@
         "steps": [
           {
             "action": "add_don",
-            "count": 1
+            "count": 1,
+            "rested": true
           }
         ],
         "conditions": {
@@ -67751,7 +67872,8 @@
         "steps": [
           {
             "action": "add_don",
-            "count": 1
+            "count": 1,
+            "rested": true
           }
         ],
         "conditions": {
@@ -67811,7 +67933,8 @@
         "steps": [
           {
             "action": "add_don",
-            "count": 1
+            "count": 1,
+            "rested": true
           }
         ]
       }
@@ -67888,7 +68011,8 @@
         "steps": [
           {
             "action": "add_don",
-            "count": 2
+            "count": 2,
+            "rested": true
           }
         ],
         "costs": [
@@ -70006,7 +70130,7 @@
     "sub_types": "Kid Pirates",
     "attribute": "Slash",
     "effects": {
-      "your_turn": {
+      "when_don_returned": {
         "steps": [
           {
             "action": "ko",
@@ -70016,6 +70140,8 @@
             "rested_only": true
           }
         ],
+        "return_count_gte": 1,
+        "owner_turn": "your",
         "once_per_turn": true
       }
     }
@@ -70035,7 +70161,8 @@
         "steps": [
           {
             "action": "add_don",
-            "count": 2
+            "count": 2,
+            "rested": true
           }
         ],
         "conditions": {
@@ -70121,7 +70248,7 @@
     "sub_types": "Kid Pirates",
     "attribute": "Special",
     "effects": {
-      "your_turn": {
+      "when_don_returned": {
         "steps": [
           {
             "action": "buff_power",
@@ -70130,6 +70257,8 @@
             "duration": "until_my_turn_start"
           }
         ],
+        "return_count_gte": 1,
+        "owner_turn": "your",
         "once_per_turn": true
       }
     }
@@ -70149,7 +70278,8 @@
         "steps": [
           {
             "action": "add_don",
-            "count": 1
+            "count": 1,
+            "rested": true
           }
         ]
       },
@@ -70157,7 +70287,8 @@
         "steps": [
           {
             "action": "add_don",
-            "count": 1
+            "count": 1,
+            "rested": true
           }
         ]
       }
@@ -70221,6 +70352,17 @@
     "sub_types": "Kid Pirates",
     "attribute": "Slash",
     "effects": {
+      "when_don_returned": {
+        "steps": [
+          {
+            "action": "draw",
+            "count": 1,
+            "then_trash": 1
+          }
+        ],
+        "return_count_gte": 1,
+        "once_per_turn": true
+      },
       "passive": {
         "steps": [
           {
@@ -70326,7 +70468,8 @@
           },
           {
             "action": "add_don",
-            "count": 1
+            "count": 1,
+            "rested": true
           }
         ]
       }

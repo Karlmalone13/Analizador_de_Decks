@@ -1,5 +1,32 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-15 (177) - Evento parametrizado de DON devolvido + estado ativo/restado
+
+A observacao do usuario impediu um hardcode de EB02-035. O banco foi censado
+por familia e agora possui um unico timing `when_don_returned`, parametrizado
+por `return_count_gte` (1 ou 2 hoje), `owner_turn` e `by_own_effect`. Foram
+recuperadas 18 cartas unicas: 14 com limiar 1 e 4 com limiar 2. A quantidade
+vale por uma unica resolucao; devolver 1 DON duas vezes nao satisfaz "2 or
+more". O dispatcher central percorre Leader, Characters e Stage, respeita
+turno, origem e once-per-turn e recebe todas as devolucoes por
+`_return_don_to_deck`.
+
+A varredura revelou uma gramatica adjacente global: `add DON` antes ignorava
+se o DON entrava ativo ou restado. As 87 mudancas do diff incluem os 18
+timings acima e a preservacao de `rested=true` em toda a familia textual.
+OP09-061 agora adiciona corretamente 1 DON ativo e 1 adicional restado.
+P-077 agora adiciona DON antes de reativar um Stage roxo (antes apontava
+incorretamente para Character). Thunder Bagua OP01-119 teve o teste antigo
+corrigido: o Counter adiciona DON restado, conforme o texto real.
+
+Card List oficial confirmou EB02-035, OP04-058 e P-077. Validacao: 2614
+cartas; diff inicial GANHOU 0 / PERDEU 0 / MUDOU 87; smokes curto e amplo
+passaram. Auditor: **410 suspeitos** (414 -> 410). Snapshot final 0/0/0.
+
+Proximo da fila: OP15-008 continua no topo por um falso positivo do numeral
+"1" no alvo textual; o primeiro gap material de alta prioridade deve ser
+escolhido comparando texto cru, parse e Card List oficial.
+
 ## 2026-07-15 (176) - Comparacao global de DON no campo: 25 cartas
 
 EB02-035 revelou duas lacunas independentes. Este lote corrigiu apenas a

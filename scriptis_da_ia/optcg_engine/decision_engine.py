@@ -663,6 +663,9 @@ class GameState:
     trash: List[Card] = field(default_factory=list)
     turn: int = 0
     global_turn: int = 0
+    # Verdadeiro apenas para o jogador cujo turno esta em andamento. Usado
+    # por eventos reativos que distinguem [Your Turn]/[Opponent's Turn].
+    is_active_turn: bool = True
     # Auto-restrição "cannot play this turn" (combo set DON active + você se trava).
     # Resetados no início do próprio turno. Valores:
     #   cant_play_from_hand_this_turn: True = não pode jogar NADA da mão
@@ -726,6 +729,7 @@ class GameState:
         novo.frozen_don_count = self.frozen_don_count
         novo.turn = self.turn
         novo.global_turn = self.global_turn
+        novo.is_active_turn = self.is_active_turn
         novo.cant_play_from_hand_this_turn = self.cant_play_from_hand_this_turn
         novo.cant_take_life_this_turn = self.cant_take_life_this_turn
         novo.face_up_life_to_deck = self.face_up_life_to_deck
@@ -3060,7 +3064,39 @@ class EffectExecutor:
                 me.don_deck += 1
                 devolvidos += 1
 
+        if devolvidos:
+            self._dispatch_don_returned(me, devolvidos, source_owner=self.me)
         return devolvidos >= count
+
+    def _dispatch_don_returned(self, owner: 'GameState', amount: int,
+                               source_owner: 'GameState') -> None:
+        """Dispara a familia parametrizada ``when_don_returned``.
+
+        ``amount`` e a quantidade devolvida na MESMA resolucao. Portanto duas
+        devolucoes separadas de 1 nao satisfazem um limiar 2. ``source_owner``
+        permite respeitar o fraseado restrito "by your effect".
+        """
+        other = self.opp if owner is self.me else self.me
+        cards = [owner.leader, *owner.field_chars]
+        if owner.field_stage:
+            cards.append(owner.field_stage)
+        for source in list(cards):
+            entry = get_card_effects(source.code).get('when_don_returned')
+            if not entry or amount < entry.get('return_count_gte', 1):
+                continue
+            timing = entry.get('owner_turn')
+            if timing == 'your' and not owner.is_active_turn:
+                continue
+            if timing == 'opponent' and owner.is_active_turn:
+                continue
+            if entry.get('by_own_effect') and source_owner is not owner:
+                continue
+            marker = (owner.global_turn, 'when_don_returned')
+            if entry.get('once_per_turn') and getattr(source, '_event_once_marker', None) == marker:
+                continue
+            logs = EffectExecutor(owner, other).execute(source, 'when_don_returned')
+            if logs and entry.get('once_per_turn'):
+                source._event_once_marker = marker
 
     # ── Execução de steps individuais ────────────────────────────────────────
 
@@ -4686,6 +4722,9 @@ class EffectExecutor:
             count = step.get('count', 1)
             moved = min(count, me.don_deck)
             me.don_deck -= moved
+            if step.get('rested'):
+                me.don_rested += moved
+                return f'adicionou {moved} DON restado' if moved else ''
             me.don_available += moved
             return f'adicionou {moved} DON ativo' if moved else ''
 
@@ -4731,6 +4770,15 @@ class EffectExecutor:
                     me.leader.rested = False
                     return f'{me.leader.name[:18]} (leader) ficou ativo'
                 return ''
+            if target == 'own_stage':
+                stage = me.field_stage
+                if not stage or not stage.rested:
+                    return ''
+                wanted_color = step.get('color', '')
+                if wanted_color and wanted_color.lower() not in stage.color.lower():
+                    return ''
+                stage.rested = False
+                return f'{stage.name[:18]} (stage) ficou ativo'
 
             count = step.get('count', 1)
             candidatos = eligible_cards(
@@ -9734,6 +9782,8 @@ class OPTCGMatch:
         Retorna True se `p` (quem esta jogando este turno) vence.
         """
         p.turn += 1
+        p.is_active_turn = True
+        opp.is_active_turn = False
         self.refresh_phase(p, opp)
         self.draw_phase(p)
         self.don_phase(p)
@@ -9754,6 +9804,9 @@ class OPTCGMatch:
         self.global_turn += 1
         p.turn += 1
         p.global_turn = self.global_turn
+        opp.global_turn = self.global_turn
+        p.is_active_turn = True
+        opp.is_active_turn = False
 
         self._log_event(p, 'turn_start', phase='refresh',
                         description=f'Turno {self.global_turn} — refresh/compra/DON')

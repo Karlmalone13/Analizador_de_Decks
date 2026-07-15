@@ -1251,6 +1251,8 @@ def parse_set_active(text):
                 step['target'] = 'own_character_and_leader'
             elif 'leader or character' in desc:
                 step['target'] = 'leader_or_character'
+            elif 'stage' in desc:
+                step['target'] = 'own_stage'
             elif 'leader' in desc and 'character' not in desc:
                 step['target'] = 'leader'
             else:
@@ -1272,7 +1274,7 @@ def parse_set_active(text):
                 step['attribute'] = attr_m.group(1).strip()
             color_m = re.search(
                 r'your (purple|red|green|blue|yellow|black)\s+'
-                r'(?:[\[{"][a-z][a-z0-9 .\'-]+[\]}"]\s+type\s+)?characters', desc)
+                r'(?:[\[{"][a-z][a-z0-9 .\'-]+[\]}"]\s+type\s+)?(?:characters|stages)', desc)
             if color_m:
                 step['color'] = color_m.group(1)
             # "cost of X to Y" -- intervalo (achado 14/07 via
@@ -2155,10 +2157,14 @@ def parse_give_don(text):
         steps.append(step)
 
     # Aceleração REAL: adicionar DON do seu deck de DON ao seu campo (ramp)
-    if re.search(r'add up to \d+ don!! cards? from your don!! deck|add \d+ don!! cards? from your don!! deck', t):
-        m2 = re.search(r'add up to (\d+) don!! cards?|add (\d+) don!! cards?', t)
-        if m2:
-            steps.append({'action': 'add_don', 'count': int(m2.group(1) or m2.group(2))})
+    if 'from your don!! deck' in t:
+        for m2 in re.finditer(
+                r'add(?: up to)? (\d+) (additional )?don!! cards?'
+                r'(?: from your don!! deck)?(?: and (set it as active|rest (?:it|them)))?', t):
+            step = {'action': 'add_don', 'count': int(m2.group(1))}
+            if m2.group(3) and m2.group(3).startswith('rest'):
+                step['rested'] = True
+            steps.append(step)
 
     # Reativar DON (set as active) = aceleração
     m = re.search(r'set (up to )?(\d+)? ?(?:of your )?don!! cards?.* as active', t)
@@ -4769,6 +4775,53 @@ def parse_card_effect(card_text, card_type):
         if par and par != trigger_name and par not in result:
             result[par] = json.loads(json.dumps(entry))
 
+    # Evento parametrizado de devolucao de DON. A quantidade pertence a UMA
+    # resolucao ("a DON" = 1; "N or more" = N), nao a um acumulador do turno.
+    # Mantem turno e origem como metadados do evento para o dispatcher central.
+    don_return_m = re.search(
+        r'(?:\[(your turn|opponent.{0,3}s? turn)\]\s*)?'
+        r'(?:\[once per turn\]\s*)?when\s+(a|\d+\s+or more)\s+'
+        r'don!! cards? on your field (?:is|are) returned to your don!! deck'
+        r'(\s+by your effect)?\s*,\s*(.+?)' + LOOKAHEAD_DELIM,
+        t_low, re.DOTALL | re.IGNORECASE)
+    if don_return_m:
+        amount_text = don_return_m.group(2).strip()
+        threshold = 1 if amount_text == 'a' else int(re.search(r'\d+', amount_text).group())
+        body = don_return_m.group(4).strip()
+        event_steps = parse_block(body, 'when_don_returned')
+        if event_steps:
+            # parse_block agrupa por familia de acao, nao necessariamente
+            # pela ordem textual. Nesta composicao a ordem e explicita:
+            # adicionar DON primeiro, "Then, set ... as active" depois.
+            if ('then, set' in body and any(s.get('action') == 'add_don' for s in event_steps)
+                    and any(s.get('action') == 'set_active' for s in event_steps)):
+                event_steps.sort(key=lambda s: 0 if s.get('action') == 'add_don' else 1)
+            event_entry = {
+                'steps': event_steps,
+                'return_count_gte': threshold,
+            }
+            timing = (don_return_m.group(1) or '').lower()
+            if timing.startswith('your turn'):
+                event_entry['owner_turn'] = 'your'
+            elif timing:
+                event_entry['owner_turn'] = 'opponent'
+            if don_return_m.group(3):
+                event_entry['by_own_effect'] = True
+            if '[once per turn]' in don_return_m.group(0):
+                event_entry['once_per_turn'] = True
+            body_conds = parse_conditions(body)
+            if body_conds:
+                event_entry['conditions'] = body_conds
+            result['when_don_returned'] = event_entry
+
+            # Os regex genericos [Your Turn]/[Opponent's Turn] capturam o
+            # mesmo corpo como se fosse uma aura continua. Remove somente a
+            # duplicata estrutural; outros efeitos da carta permanecem.
+            for generic in ('your_turn', 'opp_turn'):
+                if (generic in result
+                        and result[generic].get('steps') == event_steps):
+                    del result[generic]
+
     # Tags ADJACENTES COLADAS sem barra, ex: "[Opponent's Turn] [On K.O.]
     # efeito" -- diferente do caso "[A]/[B]" (que SAO dois triggers
     # distintos de propósito, mesmo efeito). Aqui e UMA UNICA condicao
@@ -4805,6 +4858,9 @@ def parse_card_effect(card_text, card_type):
             or 'you may have any number of this card' in segmento_solto
             or re.fullmatch(r'(\[don!! x\d+\]\s*)+', segmento_solto or '')
         )
+        if ('when_don_returned' in result
+                and re.search(r'when\s+(?:a|\d+\s+or more)\s+don!!', segmento_solto)):
+            segmento_solto = ''
         if segmento_solto and len(segmento_solto) > 10 and not eh_ruido:
             solto_steps = parse_block(segmento_solto, 'passive')
             if solto_steps:

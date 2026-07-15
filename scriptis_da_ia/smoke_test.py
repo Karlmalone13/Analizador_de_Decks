@@ -650,9 +650,9 @@ evento_add_don = mk('OP01-119', 'Thunder Bagua', card_type='EVENT', cost=2)
 me.hand = [evento_add_don]
 ee = EffectExecutor(me, opp)
 counter = ee.try_counter_event_power(me.leader, 'leader', needed=4000)
-check('Counter event com add_don adiciona DON ativo quando condicao passa',
+check('Counter event Thunder Bagua adiciona DON restado como diz o texto',
       counter and counter[0] == 4000 and evento_add_don in me.trash
-      and me.don_available == 1 and me.don_rested == 2 and me.don_deck == 4)
+      and me.don_available == 0 and me.don_rested == 3 and me.don_deck == 4)
 
 me, opp = me_opp()
 me.life = [mk('L1', 'Life 1'), mk('L2', 'Life 2'), mk('L3', 'Life 3')]

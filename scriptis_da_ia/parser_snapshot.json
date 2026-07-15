@@ -587,7 +587,8 @@
    "steps": [
     {
      "action": "add_don",
-     "count": 1
+     "count": 1,
+     "rested": true
     }
    ]
   },
@@ -1667,8 +1668,10 @@
     }
    ]
   },
-  "your_turn": {
+  "when_don_returned": {
    "once_per_turn": true,
+   "owner_turn": "your",
+   "return_count_gte": 2,
    "steps": [
     {
      "action": "add_don",
@@ -1719,7 +1722,8 @@
    "steps": [
     {
      "action": "add_don",
-     "count": 1
+     "count": 1,
+     "rested": true
     }
    ]
   },
@@ -1731,7 +1735,8 @@
    "steps": [
     {
      "action": "add_don",
-     "count": 1
+     "count": 1,
+     "rested": true
     }
    ]
   }
@@ -2938,15 +2943,19 @@
   }
  },
  "EB03-033": {
-  "opp_turn": {
+  "when_don_returned": {
+   "by_own_effect": true,
    "conditions": {
     "leader_type": "big mom pirates"
    },
    "once_per_turn": true,
+   "owner_turn": "opponent",
+   "return_count_gte": 1,
    "steps": [
     {
      "action": "add_don",
-     "count": 1
+     "count": 1,
+     "rested": true
     }
    ]
   }
@@ -2991,7 +3000,8 @@
    "steps": [
     {
      "action": "add_don",
-     "count": 1
+     "count": 1,
+     "rested": true
     }
    ]
   },
@@ -3055,7 +3065,8 @@
    "steps": [
     {
      "action": "add_don",
-     "count": 2
+     "count": 2,
+     "rested": true
     }
    ]
   }
@@ -4386,6 +4397,11 @@
     {
      "action": "add_don",
      "count": 1
+    },
+    {
+     "action": "add_don",
+     "count": 1,
+     "rested": true
     }
    ]
   },
@@ -4416,7 +4432,8 @@
    "steps": [
     {
      "action": "add_don",
-     "count": 1
+     "count": 1,
+     "rested": true
     }
    ]
   },
@@ -4496,15 +4513,18 @@
     }
    ]
   },
-  "your_turn": {
+  "when_don_returned": {
    "conditions": {
     "leader_type": "kid pirates"
    },
    "once_per_turn": true,
+   "owner_turn": "your",
+   "return_count_gte": 1,
    "steps": [
     {
      "action": "add_don",
-     "count": 1
+     "count": 1,
+     "rested": true
     }
    ]
   }
@@ -4515,7 +4535,8 @@
    "steps": [
     {
      "action": "add_don",
-     "count": 1
+     "count": 1,
+     "rested": true
     }
    ]
   },
@@ -6491,7 +6512,8 @@
    "steps": [
     {
      "action": "add_don",
-     "count": 1
+     "count": 1,
+     "rested": true
     }
    ]
   }
@@ -6613,7 +6635,8 @@
    "steps": [
     {
      "action": "add_don",
-     "count": 1
+     "count": 1,
+     "rested": true
     }
    ]
   }
@@ -6653,7 +6676,8 @@
    "steps": [
     {
      "action": "add_don",
-     "count": 1
+     "count": 1,
+     "rested": true
     }
    ]
   },
@@ -6753,7 +6777,8 @@
    "steps": [
     {
      "action": "add_don",
-     "count": 1
+     "count": 1,
+     "rested": true
     }
    ]
   }
@@ -6879,7 +6904,8 @@
      "conditions": {
       "life_lte": 2
      },
-     "count": 1
+     "count": 1,
+     "rested": true
     }
    ]
   },
@@ -7992,8 +8018,10 @@
   }
  },
  "OP02-071": {
-  "your_turn": {
+  "when_don_returned": {
    "once_per_turn": true,
+   "owner_turn": "your",
+   "return_count_gte": 1,
    "steps": [
     {
      "action": "buff_power",
@@ -8215,7 +8243,8 @@
    "steps": [
     {
      "action": "add_don",
-     "count": 1
+     "count": 1,
+     "rested": true
     }
    ]
   },
@@ -8235,7 +8264,8 @@
    "steps": [
     {
      "action": "add_don",
-     "count": 1
+     "count": 1,
+     "rested": true
     }
    ]
   },
@@ -9895,7 +9925,8 @@
    "steps": [
     {
      "action": "add_don",
-     "count": 1
+     "count": 1,
+     "rested": true
     }
    ]
   }
@@ -9944,7 +9975,8 @@
    "steps": [
     {
      "action": "add_don",
-     "count": 1
+     "count": 1,
+     "rested": true
     }
    ]
   }
@@ -9957,7 +9989,8 @@
    "steps": [
     {
      "action": "add_don",
-     "count": 1
+     "count": 1,
+     "rested": true
     }
    ]
   },
@@ -10115,7 +10148,8 @@
    "steps": [
     {
      "action": "add_don",
-     "count": 1
+     "count": 1,
+     "rested": true
     }
    ]
   }
@@ -11986,8 +12020,11 @@
   }
  },
  "OP04-058": {
-  "opp_turn": {
+  "when_don_returned": {
+   "by_own_effect": true,
    "once_per_turn": true,
+   "owner_turn": "opponent",
+   "return_count_gte": 1,
    "steps": [
     {
      "action": "add_don",
@@ -12073,7 +12110,8 @@
    "steps": [
     {
      "action": "add_don",
-     "count": 1
+     "count": 1,
+     "rested": true
     }
    ]
   }
@@ -12107,7 +12145,8 @@
    "steps": [
     {
      "action": "add_don",
-     "count": 1
+     "count": 1,
+     "rested": true
     },
     {
      "action": "draw",
@@ -12409,7 +12448,8 @@
      "conditions": {
       "life_lte": 2
      },
-     "count": 1
+     "count": 1,
+     "rested": true
     }
    ]
   },
@@ -14526,7 +14566,8 @@
    "steps": [
     {
      "action": "add_don",
-     "count": 1
+     "count": 1,
+     "rested": true
     }
    ]
   },
@@ -14555,8 +14596,10 @@
     }
    ]
   },
-  "your_turn": {
+  "when_don_returned": {
    "once_per_turn": true,
+   "owner_turn": "your",
+   "return_count_gte": 1,
    "steps": [
     {
      "action": "add_don",
@@ -15403,7 +15446,8 @@
     },
     {
      "action": "add_don",
-     "count": 1
+     "count": 1,
+     "rested": true
     }
    ]
   }
@@ -16113,8 +16157,10 @@
   }
  },
  "OP06-042": {
-  "your_turn": {
+  "when_don_returned": {
    "once_per_turn": true,
+   "owner_turn": "your",
+   "return_count_gte": 1,
    "steps": [
     {
      "action": "draw",
@@ -16742,8 +16788,10 @@
   }
  },
  "OP06-076": {
-  "your_turn": {
+  "when_don_returned": {
    "once_per_turn": true,
+   "owner_turn": "your",
+   "return_count_gte": 1,
    "steps": [
     {
      "action": "ko",
@@ -18684,7 +18732,8 @@
    "steps": [
     {
      "action": "add_don",
-     "count": 1
+     "count": 1,
+     "rested": true
     }
    ]
   }
@@ -18782,7 +18831,8 @@
    "steps": [
     {
      "action": "add_don",
-     "count": 1
+     "count": 1,
+     "rested": true
     }
    ]
   },
@@ -18804,7 +18854,8 @@
    "steps": [
     {
      "action": "add_don",
-     "count": 1
+     "count": 1,
+     "rested": true
     }
    ]
   }
@@ -18844,7 +18895,8 @@
    "steps": [
     {
      "action": "add_don",
-     "count": 1
+     "count": 1,
+     "rested": true
     }
    ]
   },
@@ -18924,7 +18976,8 @@
    "steps": [
     {
      "action": "add_don",
-     "count": 1
+     "count": 1,
+     "rested": true
     }
    ]
   }
@@ -20839,7 +20892,8 @@
    "steps": [
     {
      "action": "add_don",
-     "count": 1
+     "count": 1,
+     "rested": true
     }
    ]
   }
@@ -20943,7 +20997,8 @@
    "steps": [
     {
      "action": "add_don",
-     "count": 1
+     "count": 1,
+     "rested": true
     }
    ]
   },
@@ -20956,12 +21011,15 @@
   }
  },
  "OP08-067": {
-  "your_turn": {
+  "when_don_returned": {
    "once_per_turn": true,
+   "owner_turn": "your",
+   "return_count_gte": 1,
    "steps": [
     {
      "action": "add_don",
-     "count": 1
+     "count": 1,
+     "rested": true
     }
    ]
   }
@@ -20971,7 +21029,8 @@
    "steps": [
     {
      "action": "add_don",
-     "count": 1
+     "count": 1,
+     "rested": true
     }
    ]
   },
@@ -21074,7 +21133,8 @@
    "steps": [
     {
      "action": "add_don",
-     "count": 5
+     "count": 5,
+     "rested": true
     },
     {
      "action": "return_don_until_match_opp",
@@ -22370,7 +22430,8 @@
     },
     {
      "action": "add_don",
-     "count": 1
+     "count": 1,
+     "rested": true
     }
    ]
   }
@@ -23043,13 +23104,19 @@
     }
    ]
   },
-  "your_turn": {
-   "don_requirement": 1,
+  "when_don_returned": {
    "once_per_turn": true,
+   "owner_turn": "your",
+   "return_count_gte": 2,
    "steps": [
     {
      "action": "add_don",
      "count": 1
+    },
+    {
+     "action": "add_don",
+     "count": 1,
+     "rested": true
     }
    ]
   }
@@ -23073,7 +23140,8 @@
    "steps": [
     {
      "action": "add_don",
-     "count": 1
+     "count": 1,
+     "rested": true
     }
    ]
   }
@@ -23208,8 +23276,10 @@
   }
  },
  "OP09-074": {
-  "your_turn": {
+  "when_don_returned": {
    "once_per_turn": true,
+   "owner_turn": "your",
+   "return_count_gte": 1,
    "steps": [
     {
      "action": "buff_power",
@@ -23321,7 +23391,8 @@
    "steps": [
     {
      "action": "add_don",
-     "count": 1
+     "count": 1,
+     "rested": true
     }
    ]
   }
@@ -27465,7 +27536,8 @@
     },
     {
      "action": "add_don",
-     "count": 1
+     "count": 1,
+     "rested": true
     }
    ]
   }
@@ -27482,7 +27554,8 @@
     },
     {
      "action": "add_don",
-     "count": 1
+     "count": 1,
+     "rested": true
     }
    ]
   },
@@ -27660,8 +27733,10 @@
   }
  },
  "OP11-077": {
-  "your_turn": {
+  "when_don_returned": {
    "once_per_turn": true,
+   "owner_turn": "your",
+   "return_count_gte": 1,
    "steps": [
     {
      "action": "buff_cost",
@@ -27716,7 +27791,8 @@
    "steps": [
     {
      "action": "add_don",
-     "count": 1
+     "count": 1,
+     "rested": true
     }
    ]
   }
@@ -29026,7 +29102,8 @@
    "steps": [
     {
      "action": "add_don",
-     "count": 1
+     "count": 1,
+     "rested": true
     }
    ]
   }
@@ -29423,7 +29500,8 @@
     },
     {
      "action": "add_don",
-     "count": 1
+     "count": 1,
+     "rested": true
     }
    ]
   }
@@ -29550,10 +29628,11 @@
   }
  },
  "OP12-072": {
-  "passive": {
+  "when_don_returned": {
    "conditions": {
     "leader_is": "sanji"
    },
+   "return_count_gte": 1,
    "steps": [
     {
      "action": "gain_rush",
@@ -31381,7 +31460,8 @@
     },
     {
      "action": "add_don",
-     "count": 1
+     "count": 1,
+     "rested": true
     }
    ]
   }
@@ -31416,7 +31496,8 @@
    "steps": [
     {
      "action": "add_don",
-     "count": 1
+     "count": 1,
+     "rested": true
     }
    ]
   },
@@ -31512,7 +31593,8 @@
     },
     {
      "action": "add_don",
-     "count": 1
+     "count": 1,
+     "rested": true
     }
    ]
   }
@@ -31525,7 +31607,8 @@
    "steps": [
     {
      "action": "add_don",
-     "count": 1
+     "count": 1,
+     "rested": true
     }
    ]
   },
@@ -31587,7 +31670,8 @@
    "steps": [
     {
      "action": "add_don",
-     "count": 1
+     "count": 1,
+     "rested": true
     }
    ]
   }
@@ -31629,7 +31713,8 @@
    "steps": [
     {
      "action": "add_don",
-     "count": 1
+     "count": 1,
+     "rested": true
     }
    ]
   }
@@ -31714,7 +31799,8 @@
    "steps": [
     {
      "action": "add_don",
-     "count": 1
+     "count": 1,
+     "rested": true
     }
    ]
   }
@@ -33740,7 +33826,8 @@
     },
     {
      "action": "add_don",
-     "count": 1
+     "count": 1,
+     "rested": true
     }
    ]
   }
@@ -33773,21 +33860,25 @@
     },
     {
      "action": "add_don",
-     "count": 1
+     "count": 1,
+     "rested": true
     }
    ]
   }
  },
  "OP14-068": {
-  "opp_turn": {
+  "when_don_returned": {
    "conditions": {
     "leader_type": "donquixote pirates"
    },
    "once_per_turn": true,
+   "owner_turn": "opponent",
+   "return_count_gte": 1,
    "steps": [
     {
      "action": "add_don",
-     "count": 1
+     "count": 1,
+     "rested": true
     }
    ]
   }
@@ -33889,7 +33980,8 @@
     },
     {
      "action": "add_don",
-     "count": 2
+     "count": 2,
+     "rested": true
     }
    ]
   },
@@ -33916,7 +34008,8 @@
     },
     {
      "action": "add_don",
-     "count": 1
+     "count": 1,
+     "rested": true
     }
    ]
   }
@@ -33945,7 +34038,8 @@
    "steps": [
     {
      "action": "add_don",
-     "count": 1
+     "count": 1,
+     "rested": true
     }
    ]
   }
@@ -33964,7 +34058,8 @@
      "conditions": {
       "opp_char_power_gte": 6000
      },
-     "count": 1
+     "count": 1,
+     "rested": true
     }
    ]
   }
@@ -36057,6 +36152,11 @@
     {
      "action": "add_don",
      "count": 1
+    },
+    {
+     "action": "add_don",
+     "count": 4,
+     "rested": true
     }
    ]
   }
@@ -36193,7 +36293,8 @@
    "steps": [
     {
      "action": "add_don",
-     "count": 1
+     "count": 1,
+     "rested": true
     }
    ]
   }
@@ -38429,7 +38530,8 @@
    "steps": [
     {
      "action": "add_don",
-     "count": 2
+     "count": 2,
+     "rested": true
     }
    ]
   },
@@ -38513,7 +38615,8 @@
     },
     {
      "action": "add_don",
-     "count": 2
+     "count": 2,
+     "rested": true
     }
    ]
   }
@@ -38595,7 +38698,8 @@
    "steps": [
     {
      "action": "add_don",
-     "count": 1
+     "count": 1,
+     "rested": true
     }
    ]
   },
@@ -38612,7 +38716,8 @@
    "steps": [
     {
      "action": "add_don",
-     "count": 1
+     "count": 1,
+     "rested": true
     }
    ]
   },
@@ -38626,7 +38731,8 @@
    "steps": [
     {
      "action": "add_don",
-     "count": 1
+     "count": 1,
+     "rested": true
     }
    ]
   }
@@ -38673,6 +38779,11 @@
     {
      "action": "add_don",
      "count": 1
+    },
+    {
+     "action": "add_don",
+     "count": 1,
+     "rested": true
     }
    ]
   }
@@ -38707,6 +38818,11 @@
     {
      "action": "add_don",
      "count": 1
+    },
+    {
+     "action": "add_don",
+     "count": 1,
+     "rested": true
     }
    ]
   }
@@ -40022,7 +40138,8 @@
    "steps": [
     {
      "action": "add_don",
-     "count": 1
+     "count": 1,
+     "rested": true
     }
    ]
   }
@@ -40554,17 +40671,20 @@
   }
  },
  "P-077": {
-  "passive": {
+  "when_don_returned": {
    "once_per_turn": true,
+   "return_count_gte": 2,
    "steps": [
     {
-     "action": "set_active",
+     "action": "add_don",
      "count": 1,
-     "target": "own_character"
+     "rested": true
     },
     {
-     "action": "add_don",
-     "count": 1
+     "action": "set_active",
+     "color": "purple",
+     "count": 1,
+     "target": "own_stage"
     }
    ]
   }
@@ -41080,7 +41200,8 @@
    "steps": [
     {
      "action": "add_don",
-     "count": 1
+     "count": 1,
+     "rested": true
     }
    ]
   },
@@ -42163,7 +42284,8 @@
    "steps": [
     {
      "action": "add_don",
-     "count": 1
+     "count": 1,
+     "rested": true
     }
    ]
   }
@@ -42193,7 +42315,8 @@
    "steps": [
     {
      "action": "add_don",
-     "count": 1
+     "count": 1,
+     "rested": true
     }
    ]
   }
@@ -42243,7 +42366,8 @@
    "steps": [
     {
      "action": "add_don",
-     "count": 2
+     "count": 2,
+     "rested": true
     }
    ]
   }
@@ -43442,8 +43566,10 @@
   }
  },
  "ST10-007": {
-  "your_turn": {
+  "when_don_returned": {
    "once_per_turn": true,
+   "owner_turn": "your",
+   "return_count_gte": 1,
    "steps": [
     {
      "action": "ko",
@@ -43463,7 +43589,8 @@
    "steps": [
     {
      "action": "add_don",
-     "count": 2
+     "count": 2,
+     "rested": true
     }
    ]
   }
@@ -43513,8 +43640,10 @@
   }
  },
  "ST10-011": {
-  "your_turn": {
+  "when_don_returned": {
    "once_per_turn": true,
+   "owner_turn": "your",
+   "return_count_gte": 1,
    "steps": [
     {
      "action": "buff_power",
@@ -43530,7 +43659,8 @@
    "steps": [
     {
      "action": "add_don",
-     "count": 1
+     "count": 1,
+     "rested": true
     }
    ]
   },
@@ -43538,7 +43668,8 @@
    "steps": [
     {
      "action": "add_don",
-     "count": 1
+     "count": 1,
+     "rested": true
     }
    ]
   }
@@ -43590,6 +43721,17 @@
     },
     {
      "action": "keyword_blocker"
+    }
+   ]
+  },
+  "when_don_returned": {
+   "once_per_turn": true,
+   "return_count_gte": 1,
+   "steps": [
+    {
+     "action": "draw",
+     "count": 1,
+     "then_trash": 1
     }
    ]
   }
@@ -43644,7 +43786,8 @@
     },
     {
      "action": "add_don",
-     "count": 1
+     "count": 1,
+     "rested": true
     }
    ]
   },
