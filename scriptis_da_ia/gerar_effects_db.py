@@ -696,6 +696,7 @@ def parse_look_at(text):
         exclude = [ex.group(1)]
 
     cost_m = re.search(r'with a cost of (\d+) or less', t)
+    cost_gte_m = re.search(r'with a cost of (\d+) or more', t)
     power_m = re.search(r'with (\d+) power or less', t)
 
     take_step = {
@@ -719,6 +720,8 @@ def parse_look_at(text):
         take_step['exclude'] = exclude
     if cost_m:
         take_step['cost_lte'] = int(cost_m.group(1))
+    if cost_gte_m:
+        take_step['cost_gte'] = int(cost_gte_m.group(1))
     if power_m:
         take_step['power_lte'] = int(power_m.group(1))
 
@@ -3922,6 +3925,27 @@ def parse_block(block_text, trigger_name):
     lugar de entry['steps'], preservando o contrato de 'steps' para todo
     o resto do parser (cada item de 'steps' sempre tem 'action').
     """
+    # "Choose a cost and reveal" e uma aposta: o efeito depois de "If the
+    # revealed card has the chosen cost" so resolve quando a aposta acerta.
+    # Mantemos a revelacao e seus efeitos condicionais em um unico step para
+    # o engine nunca executar K.O./rest/buff incondicionalmente. O "Then"
+    # posterior (OP11-066: adicionar DON) fica fora da condicao.
+    reveal_cost_m = re.search(
+        r'choose a cost and reveal 1 card from the top of your opponent.?s deck\.\s*'
+        r'if the revealed card has the chosen cost,\s*(.*?)'
+        r'(?:\.\s*then,\s*(.*))?$',
+        block_text, re.IGNORECASE | re.DOTALL)
+    if reveal_cost_m:
+        on_match = parse_block(reveal_cost_m.group(1).strip(), trigger_name)
+        steps = [{
+            'action': 'reveal_opp_deck_top_choose_cost',
+            'count': 1,
+            'on_match_steps': on_match,
+        }]
+        if reveal_cost_m.group(2):
+            steps.extend(parse_block(reveal_cost_m.group(2).strip(), trigger_name))
+        return steps
+
     if re.search(r'choose(?:s)? one\s*:', block_text, re.IGNORECASE):
         opcoes_raw = re.split(r'[•\u2022]', block_text)
         # primeiro item e o texto antes do primeiro bullet (geralmente so
@@ -4586,6 +4610,10 @@ def parse_block(block_text, trigger_name):
             and s.get('target') == nested.get('target')
             and s.get('duration') == nested.get('duration'))]
 
+    if (re.search(r'look at 1 card from the top of your opponent.?s deck', t)
+            and 'choose a cost' not in t):
+        steps.append({'action': 'peek_opp_deck_top', 'count': 1})
+
     # Memoria de alvo entre steps (SaveTargetName, 28/06/2026): a ordem de
     # despacho dos sub-parsers acima NAO segue a ordem do texto original
     # (ex: select_unblockable_turn e chamado antes de power_buff), o que
@@ -4823,6 +4851,11 @@ def parse_card_effect(card_text, card_type):
         don_m = re.search(r'\[don!! x(\d+)\]', pre_trigger[-50:])
         if don_m:
             don_req = int(don_m.group(1))
+        if (not don_req and trigger_name == 'activate_main'
+                and any(c.get('type') == 'rest_self' for c in costs)):
+            don_after = re.search(r'don!!\s*x?\s*(\d+)\s*,', block.lower())
+            if don_after:
+                don_req = int(don_after.group(1))
 
         if is_choice:
             entry = {'choice': steps[0]['_choice']}

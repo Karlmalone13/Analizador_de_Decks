@@ -1373,6 +1373,81 @@ def test_custos_condicionais_da_propria_carta_na_mao() -> None:
           and op10_conds.get("other_char_power_gte_type") == "donquixote pirates")
 
 
+def test_searcher_cost_gte_e_peek_deck_oponente() -> None:
+    for code, trigger, minimum in (
+        ("EB02-008", "main", 4), ("OP09-069", "on_play", 2),
+        ("OP11-048", "on_play", 2), ("OP11-070", "on_play", 2),
+        ("OP12-017", "main", 3), ("OP13-012", "on_play", 2),
+        ("OP13-016", "on_play", 3), ("OP14-042", "on_play", 2),
+        ("ST28-005", "on_play", 2),
+    ):
+        add = next(s for s in get_card_effects(code)[trigger]["steps"]
+                   if s.get("action") == "add_to_hand")
+        check(f"{code} preserva cost_gte={minimum} no searcher",
+              add.get("cost_gte") == minimum)
+
+    pudding = real_card("OP11-070")
+    cheap = mk("XPCH", "Big Mom barata", cost=1, sub_types="Big Mom Pirates")
+    eligible = mk("XPEL", "Big Mom elegivel", cost=2, sub_types="Big Mom Pirates")
+    me = GameState(leader=mk("XPL", "Lider", card_type="LEADER"),
+                   deck=[cheap, eligible], field_chars=[pudding])
+    opp = GameState(leader=mk("XPO", "Opp", card_type="LEADER"),
+                    deck=[mk("XTOP", "Topo oculto")])
+    EffectExecutor(me, opp).execute(pudding, "on_play")
+    check("Pudding busca custo 2+ e rejeita Big Mom de custo 1",
+          eligible in me.hand and cheap not in me.hand)
+
+    pudding.don_attached = 1
+    before = list(opp.deck)
+    EffectExecutor(me, opp).execute(pudding, "activate_main")
+    entry = get_card_effects("OP11-070")["activate_main"]
+    check("Pudding preserva DON x1, rest_self e peek do topo adversario",
+          entry.get("don_requirement") == 1
+          and any(c.get("type") == "rest_self" for c in entry.get("costs", []))
+          and any(s.get("action") == "peek_opp_deck_top" for s in entry["steps"])
+          and pudding.rested and opp.deck == before)
+    check("OP11-074 tambem recupera DON x1 normalizado sem letra x",
+          get_card_effects("OP11-074")["activate_main"].get("don_requirement") == 1)
+
+    for code, trigger, nested_action in (
+        ("OP11-066", "activate_main", "ko"),
+        ("OP11-071", "activate_main", "draw"),
+        ("OP11-073", "on_opp_attack", "buff_power"),
+        ("OP11-074", "activate_main", "rest_opp_character"),
+    ):
+        reveal = next(
+            s for s in get_card_effects(code)[trigger]["steps"]
+            if s.get("action") == "reveal_opp_deck_top_choose_cost")
+        check(f"{code} condiciona efeito ao custo revelado",
+              any(s.get("action") == nested_action
+                  for s in reveal.get("on_match_steps", [])))
+
+    # OP11-066: o palpite usa o custo modal do censo (2), nunca o topo
+    # oculto. Errar nao causa K.O., mas o "Then, add DON" resolve mesmo
+    # assim; acertar permite o K.O. subsequente.
+    oven = real_card("OP11-066")
+    victim = mk("XRV", "Vitima", cost=3)
+    me_r = GameState(leader=mk("XRML", "Lider", card_type="LEADER"),
+                     field_chars=[oven], don_deck=2)
+    opp_r = GameState(leader=mk("XROL", "Opp", card_type="LEADER"),
+                      field_chars=[victim], deck=[mk("XRT3", "Topo 3", cost=3)])
+    opp_r.full_deck_census = {"by_cost": {2: 8, 3: 4}}
+    EffectExecutor(me_r, opp_r).execute(oven, "activate_main")
+    check("OP11-066 erra custo sem K.O. e ainda adiciona DON restado",
+          victim in opp_r.field_chars and me_r.don_rested == 1)
+
+    oven2 = real_card("OP11-066")
+    victim2 = mk("XRV2", "Vitima 2", cost=3)
+    me_r2 = GameState(leader=mk("XRML2", "Lider", card_type="LEADER"),
+                      field_chars=[oven2], don_deck=2)
+    opp_r2 = GameState(leader=mk("XROL2", "Opp", card_type="LEADER"),
+                       field_chars=[victim2], deck=[mk("XRT2", "Topo 2", cost=2)])
+    opp_r2.full_deck_census = {"by_cost": {2: 8, 3: 4}}
+    EffectExecutor(me_r2, opp_r2).execute(oven2, "activate_main")
+    check("OP11-066 acerta custo e executa K.O. condicional",
+          victim2 not in opp_r2.field_chars and victim2 in opp_r2.trash)
+
+
 def test_evento_parametrizado_de_don_devolvido() -> None:
     for code, threshold in (("OP06-042", 1), ("EB02-035", 2),
                             ("OP09-061", 2), ("P-077", 2)):
@@ -1969,6 +2044,7 @@ def main() -> int:
     test_rush_character_fraseado_condicional_e_auras()
     test_comparacao_don_proprio_lte_oponente()
     test_custos_condicionais_da_propria_carta_na_mao()
+    test_searcher_cost_gte_e_peek_deck_oponente()
     test_evento_parametrizado_de_don_devolvido()
     test_custo_composto_trash_para_fundo()
     test_reducao_de_custo_com_limite()

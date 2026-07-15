@@ -1185,6 +1185,7 @@
     },
     {
      "action": "add_to_hand",
+     "cost_gte": 4,
      "count": 1,
      "revealed_to_opponent": true
     },
@@ -1412,6 +1413,7 @@
     },
     {
      "action": "add_to_hand",
+     "cost_gte": 4,
      "count": 1,
      "revealed_to_opponent": true
     },
@@ -1615,6 +1617,7 @@
     },
     {
      "action": "add_to_hand",
+     "cost_gte": 4,
      "count": 1,
      "revealed_to_opponent": true
     },
@@ -1800,6 +1803,7 @@
     },
     {
      "action": "add_to_hand",
+     "cost_gte": 4,
      "count": 1,
      "revealed_to_opponent": true
     },
@@ -2002,6 +2006,7 @@
     },
     {
      "action": "add_to_hand",
+     "cost_gte": 4,
      "count": 1,
      "revealed_to_opponent": true
     },
@@ -2197,6 +2202,7 @@
     },
     {
      "action": "add_to_hand",
+     "cost_gte": 4,
      "count": 1,
      "revealed_to_opponent": true
     },
@@ -23283,6 +23289,7 @@
     },
     {
      "action": "add_to_hand",
+     "cost_gte": 2,
      "count": 1,
      "filter_type": "straw hat crew",
      "revealed_to_opponent": true
@@ -27293,6 +27300,7 @@
     },
     {
      "action": "add_to_hand",
+     "cost_gte": 2,
      "count": 1,
      "filter_type": "firetank pirates",
      "revealed_to_opponent": true
@@ -27558,6 +27566,10 @@
      "amount": 1000,
      "duration": "battle_only",
      "target": "self"
+    },
+    {
+     "action": "peek_opp_deck_top",
+     "count": 1
     }
    ]
   },
@@ -27576,6 +27588,10 @@
      "amount": 1000,
      "duration": "battle_only",
      "target": "self"
+    },
+    {
+     "action": "peek_opp_deck_top",
+     "count": 1
     }
    ]
   }
@@ -27618,10 +27634,16 @@
    ],
    "steps": [
     {
-     "action": "ko",
-     "cost_lte": 3,
+     "action": "reveal_opp_deck_top_choose_cost",
      "count": 1,
-     "target": "opp_character"
+     "on_match_steps": [
+      {
+       "action": "ko",
+       "cost_lte": 3,
+       "count": 1,
+       "target": "opp_character"
+      }
+     ]
     },
     {
      "action": "add_don",
@@ -27671,6 +27693,20 @@
   }
  },
  "OP11-070": {
+  "activate_main": {
+   "costs": [
+    {
+     "type": "rest_self"
+    }
+   ],
+   "don_requirement": 1,
+   "steps": [
+    {
+     "action": "peek_opp_deck_top",
+     "count": 1
+    }
+   ]
+  },
   "on_play": {
    "steps": [
     {
@@ -27679,6 +27715,7 @@
     },
     {
      "action": "add_to_hand",
+     "cost_gte": 2,
      "count": 1,
      "filter_type": "big mom pirates",
      "revealed_to_opponent": true
@@ -27700,12 +27737,18 @@
    "once_per_turn": true,
    "steps": [
     {
-     "action": "draw",
-     "count": 1
-    },
-    {
-     "action": "add_don",
-     "count": 1
+     "action": "reveal_opp_deck_top_choose_cost",
+     "count": 1,
+     "on_match_steps": [
+      {
+       "action": "draw",
+       "count": 1
+      },
+      {
+       "action": "add_don",
+       "count": 1
+      }
+     ]
     }
    ]
   }
@@ -27717,6 +27760,7 @@
      "type": "rest_self"
     }
    ],
+   "don_requirement": 1,
    "once_per_turn": true,
    "steps": [
     {
@@ -27744,10 +27788,16 @@
    "once_per_turn": true,
    "steps": [
     {
-     "action": "buff_power",
-     "amount": 2000,
-     "duration": "this_turn",
-     "target": "leader"
+     "action": "reveal_opp_deck_top_choose_cost",
+     "count": 1,
+     "on_match_steps": [
+      {
+       "action": "buff_power",
+       "amount": 2000,
+       "duration": "this_turn",
+       "target": "leader"
+      }
+     ]
     }
    ]
   },
@@ -27769,12 +27819,19 @@
      "type": "rest_self"
     }
    ],
+   "don_requirement": 1,
    "once_per_turn": true,
    "steps": [
     {
-     "action": "rest_opp_character",
-     "cost_lte": 4,
-     "count": 1
+     "action": "reveal_opp_deck_top_choose_cost",
+     "count": 1,
+     "on_match_steps": [
+      {
+       "action": "rest_opp_character",
+       "cost_lte": 4,
+       "count": 1
+      }
+     ]
     }
    ]
   }
@@ -27844,10 +27901,16 @@
   "counter": {
    "steps": [
     {
-     "action": "buff_power",
-     "amount": 5000,
-     "duration": "battle_only",
-     "target": "leader_or_character"
+     "action": "reveal_opp_deck_top_choose_cost",
+     "count": 1,
+     "on_match_steps": [
+      {
+       "action": "buff_power",
+       "amount": 5000,
+       "duration": "battle_only",
+       "target": "leader_or_character"
+      }
+     ]
     }
    ]
   },
@@ -27891,10 +27954,16 @@
   "main": {
    "steps": [
     {
-     "action": "ko",
-     "cost_lte": 8,
+     "action": "reveal_opp_deck_top_choose_cost",
      "count": 1,
-     "target": "opp_character"
+     "on_match_steps": [
+      {
+       "action": "ko",
+       "cost_lte": 8,
+       "count": 1,
+       "target": "opp_character"
+      }
+     ]
     }
    ]
   },
@@ -28785,6 +28854,7 @@
     },
     {
      "action": "add_to_hand",
+     "cost_gte": 3,
      "count": 1,
      "revealed_to_opponent": true
     },
@@ -30768,6 +30838,7 @@
     },
     {
      "action": "add_to_hand",
+     "cost_gte": 2,
      "count": 1,
      "filter_type": "alabasta",
      "revealed_to_opponent": true
@@ -30835,6 +30906,7 @@
     },
     {
      "action": "add_to_hand",
+     "cost_gte": 3,
      "count": 1,
      "revealed_to_opponent": true
     },
@@ -33529,6 +33601,7 @@
     },
     {
      "action": "add_to_hand",
+     "cost_gte": 2,
      "count": 1,
      "revealed_to_opponent": true
     },
@@ -36405,6 +36478,7 @@
      "type": "rest_self"
     }
    ],
+   "don_requirement": 2,
    "steps": [
     {
      "action": "rest_opp_character",
@@ -36543,6 +36617,7 @@
      "type": "rest_self"
     }
    ],
+   "don_requirement": 2,
    "steps": [
     {
      "action": "debuff_power",
@@ -39025,6 +39100,7 @@
      "type": "rest_self"
     }
    ],
+   "don_requirement": 1,
    "steps": [
     {
      "action": "draw",
@@ -46813,6 +46889,7 @@
     },
     {
      "action": "add_to_hand",
+     "cost_gte": 2,
      "count": 1,
      "filter_type": "land of wano",
      "revealed_to_opponent": true

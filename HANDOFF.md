@@ -1,5 +1,33 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-15 (181) - Searchers por custo + topo do deck adversario: 394 -> 386
+
+OP11-070 Charlotte Pudding revelou duas familias. O censo global encontrou
+14 searchers com "cost N or more"; todos agora preservam `cost_gte` no
+`add_to_hand`, e o engine aplica o limite na selecao. O Activate Main da
+Pudding recuperou o requisito de DON anexado, `rest_self` e a consulta ao
+topo adversario sem mover nem reordenar a carta.
+
+A pontuacao perdida no CSV exigiu separar duas notacoes: `DON!! N:` continua
+sendo `don_minus` (o sinal de menos sumiu da fonte, como OP11-062/OP14-078),
+enquanto `DON!! N,` antes de `rest this Character` representa o requisito
+`DON!! xN` em OP11-070/072/074. Nao foi feita conversao global equivocada.
+
+O censo de "Choose a cost and reveal" encontrou 4 cartas: OP11-066, 071,
+073 e 074. O parser agora guarda os efeitos apos "If the revealed card has
+the chosen cost" em `on_match_steps`; K.O., draw/add DON, buff e rest nao
+resolvem mais incondicionalmente. Em OP11-066, o "Then, add DON rested" fica
+fora da condicao. O engine escolhe o custo modal do censo adversario antes
+de consultar o topo, revela sem mover a carta e executa os steps aninhados
+somente no acerto. Testes cobrem acerto, erro e o `Then` incondicional.
+
+Validacao: diff GANHOU 0 / PERDEU 0 / MUDOU 25; 2614 cartas; smokes curto e
+amplo passaram. Auditor: **386 suspeitos** (394 -> 386).
+
+Proximo suspeito real, depois dos falsos positivos OP15-008, OP06-022 e
+OP09-118: OP12-117 Slam Gibson, cujo `gain_life` perde o filtro de Character
+com custo 9 ou menos e a escolha de topo OU fundo da Life.
+
 ## 2026-07-15 (180) - Diferenca de DON + familia de custo na mao: 405 -> 394
 
 O acrescimo do usuario ampliou o censo de comparacoes relativas de DON. Foram

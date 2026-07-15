@@ -3312,6 +3312,7 @@ class EffectExecutor:
             filtered = eligible_cards(
                 candidates,
                 cost_lte=cost_lte,
+                cost_gte=step.get('cost_gte'),
                 power_lte=step.get('power_lte', 999999),
                 filter_text=step.get('filter_type', ''),
                 include_text=True,
@@ -3355,6 +3356,47 @@ class EffectExecutor:
                 return f'olhou {look} do topo -> pegou: {names}'
             else:
                 return f'olhou {look} do topo -> nada para pegar'
+
+        if action == 'peek_opp_deck_top':
+            # Efeito apenas informacional: nao move nem reordena a carta.
+            return 'olhou o topo do deck do oponente' if opp.deck else ''
+
+        if action == 'reveal_opp_deck_top_choose_cost':
+            # A escolha acontece ANTES da revelacao, portanto nunca usamos a
+            # carta do topo para decidir o palpite. O censo representa a
+            # informacao de decklist que a IA possui e escolhe o custo modal;
+            # empates favorecem o menor custo para manter determinismo.
+            if not opp.deck:
+                return ''
+            census = getattr(opp, 'full_deck_census', None) or {}
+            by_cost = census.get('by_cost', {})
+            if by_cost:
+                chosen_cost = max(
+                    ((int(cost), qty) for cost, qty in by_cost.items()),
+                    key=lambda item: (item[1], -item[0]),
+                )[0]
+            else:
+                # Estados unitarios/bridge antigos podem nao ter censo. Usa
+                # um palpite fixo plausivel e, principalmente, nao consulta
+                # o topo oculto para fabricar um acerto.
+                chosen_cost = 3
+            revealed = opp.deck[-1]
+            matched = revealed.cost == chosen_cost
+            nested_logs = []
+            if matched:
+                for nested in step.get('on_match_steps', []):
+                    nested_log = self._execute_step(nested, card)
+                    if nested_log:
+                        nested_logs.append(nested_log)
+            result = (f'escolheu custo {chosen_cost}, revelou '
+                      f'{revealed.name[:15]} (custo {revealed.cost})')
+            if matched:
+                result += ': acertou'
+                if nested_logs:
+                    result += ' | ' + ' | '.join(nested_logs)
+            else:
+                result += ': errou'
+            return result
 
         if action == 'trash_rest':
             # Cartas que foram vistas mas não pegas vão ao trash

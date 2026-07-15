@@ -66355,9 +66355,17 @@
     "target": "self"
    },
    {
+    "action": "peek_opp_deck_top",
+    "trigger": "when_attacking"
+   },
+   {
     "action": "buff_power",
     "trigger": "on_opp_attack",
     "target": "self"
+   },
+   {
+    "action": "peek_opp_deck_top",
+    "trigger": "on_opp_attack"
    }
   ],
   "synergy_states": {},
@@ -66513,10 +66521,8 @@
   "attribute": "Special",
   "effects": [
    {
-    "action": "ko",
-    "trigger": "activate_main",
-    "cost_lte": 3,
-    "target": "opp_character"
+    "action": "reveal_opp_deck_top_choose_cost",
+    "trigger": "activate_main"
    },
    {
     "action": "add_don",
@@ -66530,8 +66536,8 @@
   "has_counter_value": true,
   "has_counter_event": false,
   "is_blocker": false,
-  "is_removal": true,
-  "kos": true,
+  "is_removal": false,
+  "kos": false,
   "rests_opponent": false,
   "bounces": false,
   "gives_don": false,
@@ -66689,6 +66695,11 @@
    {
     "action": "deck_bottom_rest",
     "trigger": "on_play"
+   },
+   {
+    "action": "peek_opp_deck_top",
+    "trigger": "activate_main",
+    "don_requirement": 1
    }
   ],
   "synergy_states": {},
@@ -66726,18 +66737,14 @@
   "attribute": "Special",
   "effects": [
    {
-    "action": "draw",
-    "trigger": "activate_main"
-   },
-   {
-    "action": "add_don",
+    "action": "reveal_opp_deck_top_choose_cost",
     "trigger": "activate_main"
    }
   ],
   "synergy_states": {},
   "text": "[Activate: Main] [Once Per Turn] You may trash 1 card from your hand: Choose a cost and reveal 1 card from the top of your opponent's deck. If the revealed card has the chosen cost, draw 1 card and add up to 1 DON!! card from your DON!! deck and set it as active.",
   "is_searcher": false,
-  "draws": true,
+  "draws": false,
   "has_counter_value": false,
   "has_counter_event": false,
   "is_blocker": false,
@@ -66770,11 +66777,13 @@
   "effects": [
    {
     "action": "life_to_hand",
-    "trigger": "activate_main"
+    "trigger": "activate_main",
+    "don_requirement": 1
    },
    {
     "action": "opp_place_trash_bottom_deck",
-    "trigger": "activate_main"
+    "trigger": "activate_main",
+    "don_requirement": 1
    }
   ],
   "synergy_states": {},
@@ -66812,9 +66821,8 @@
   "attribute": "Special",
   "effects": [
    {
-    "action": "buff_power",
-    "trigger": "on_opp_attack",
-    "target": "leader"
+    "action": "reveal_opp_deck_top_choose_cost",
+    "trigger": "on_opp_attack"
    },
    {
     "action": "gain_rush",
@@ -66833,7 +66841,7 @@
   "rests_opponent": false,
   "bounces": false,
   "gives_don": false,
-  "power_buff": true,
+  "power_buff": false,
   "heals": false,
   "gains_life": false,
   "attacks_life": false,
@@ -66856,9 +66864,9 @@
   "attribute": "Slash",
   "effects": [
    {
-    "action": "rest_opp_character",
+    "action": "reveal_opp_deck_top_choose_cost",
     "trigger": "activate_main",
-    "cost_lte": 4
+    "don_requirement": 1
    }
   ],
   "synergy_states": {
@@ -66873,9 +66881,9 @@
   "has_counter_value": true,
   "has_counter_event": false,
   "is_blocker": false,
-  "is_removal": true,
+  "is_removal": false,
   "kos": false,
-  "rests_opponent": true,
+  "rests_opponent": false,
   "bounces": false,
   "gives_don": false,
   "power_buff": false,
@@ -67071,9 +67079,8 @@
     "trigger": "trigger"
    },
    {
-    "action": "buff_power",
-    "trigger": "counter",
-    "target": "leader_or_character"
+    "action": "reveal_opp_deck_top_choose_cost",
+    "trigger": "counter"
    }
   ],
   "synergy_states": {
@@ -67093,7 +67100,7 @@
   "rests_opponent": false,
   "bounces": false,
   "gives_don": false,
-  "power_buff": true,
+  "power_buff": false,
   "heals": false,
   "gains_life": false,
   "attacks_life": false,
@@ -67164,10 +67171,8 @@
     "trigger": "trigger"
    },
    {
-    "action": "ko",
-    "trigger": "main",
-    "cost_lte": 8,
-    "target": "opp_character"
+    "action": "reveal_opp_deck_top_choose_cost",
+    "trigger": "main"
    }
   ],
   "synergy_states": {
@@ -67182,8 +67187,8 @@
   "has_counter_value": false,
   "has_counter_event": false,
   "is_blocker": false,
-  "is_removal": true,
-  "kos": true,
+  "is_removal": false,
+  "kos": false,
   "rests_opponent": false,
   "bounces": false,
   "gives_don": false,
@@ -87320,7 +87325,8 @@
   "effects": [
    {
     "action": "rest_opp_character",
-    "trigger": "activate_main"
+    "trigger": "activate_main",
+    "don_requirement": 2
    }
   ],
   "synergy_states": {
@@ -87655,6 +87661,7 @@
    {
     "action": "debuff_power",
     "trigger": "activate_main",
+    "don_requirement": 2,
     "target": "opp_character"
    }
   ],
@@ -93168,7 +93175,8 @@
    },
    {
     "action": "draw",
-    "trigger": "activate_main"
+    "trigger": "activate_main",
+    "don_requirement": 1
    }
   ],
   "synergy_states": {},
