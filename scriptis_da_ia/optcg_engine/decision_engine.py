@@ -839,7 +839,66 @@ def _play_cost_rule_matches(card: Card, rule: dict) -> bool:
     return True
 
 
-def effective_hand_play_cost(p: GameState, card: Card) -> int:
+def _hand_cost_conditions_match(p: GameState, opp: Optional[GameState],
+                                card: Card, conds: dict) -> bool:
+    if 'life_lte' in conds and p.life_count() > conds['life_lte']:
+        return False
+    if 'trash_gte' in conds and len(p.trash) < conds['trash_gte']:
+        return False
+    if 'events_in_trash_gte' in conds:
+        events = sum(1 for c in p.trash if c.card_type == 'EVENT')
+        if events < conds['events_in_trash_gte']:
+            return False
+    if 'leader_power_lte' in conds and p.leader.effective_power(True) > conds['leader_power_lte']:
+        return False
+    if 'leader_type' in conds:
+        if _norm_type_text(conds['leader_type']) not in _norm_type_text(p.leader.sub_types):
+            return False
+    if 'leader_name_includes' in conds:
+        if conds['leader_name_includes'].lower() not in p.leader.name.lower():
+            return False
+    if 'don_gte' in conds and p.don_on_field() < conds['don_gte']:
+        return False
+    if 'don_on_field_gte' in conds and p.don_on_field() < conds['don_on_field_gte']:
+        return False
+    if 'other_char_power_gte' in conds:
+        candidates = [c for c in p.field_chars if c is not card]
+        filter_type = conds.get('other_char_power_gte_type')
+        if filter_type:
+            candidates = [c for c in candidates
+                          if _norm_type_text(filter_type) in _norm_type_text(c.sub_types)]
+        filter_names = [n.lower() for n in conds.get('other_char_power_gte_names', [])]
+        if filter_names:
+            candidates = [c for c in candidates
+                          if any(n in c.name.lower() for n in filter_names)]
+        power_of = ((lambda c: c.power) if conds.get('other_char_power_uses_base')
+                    else (lambda c: c.effective_power(True)))
+        if not any(power_of(c) >= conds['other_char_power_gte']
+                   for c in candidates):
+            return False
+    if 'opp_char_power_gte' in conds:
+        if opp is None or not any(
+                c.power >= conds['opp_char_power_gte'] for c in opp.field_chars):
+            return False
+    if 'opp_rested_cards_gte' in conds:
+        if opp is None:
+            return False
+        rested = opp.don_rested + sum(1 for c in opp.field_chars if c.rested)
+        rested += int(bool(getattr(opp.leader, 'rested', False)))
+        rested += int(bool(opp.field_stage and getattr(opp.field_stage, 'rested', False)))
+        if rested < conds['opp_rested_cards_gte']:
+            return False
+    if conds.get('don_on_field_lte_opp'):
+        if opp is None or p.don_on_field() > opp.don_on_field():
+            return False
+    if 'don_fewer_than_opp_by_gte' in conds:
+        if opp is None or opp.don_on_field() - p.don_on_field() < conds['don_fewer_than_opp_by_gte']:
+            return False
+    return True
+
+
+def effective_hand_play_cost(p: GameState, card: Card,
+                             opp: Optional[GameState] = None) -> int:
     """Custo para jogar uma carta da mao no estado simplificado atual."""
     cost = card.effective_cost()
     stage = p.field_stage
@@ -853,6 +912,15 @@ def effective_hand_play_cost(p: GameState, card: Card) -> int:
     for rule in p.pending_play_cost_reductions:
         if _play_cost_rule_matches(card, rule):
             cost -= rule.get('amount', 0)
+    passive = get_card_effects(card.code).get('passive', {})
+    passive_conds = passive.get('conditions', {})
+    if (passive_conds
+            and _hand_cost_conditions_match(p, opp, card, passive_conds)):
+        for step in passive.get('steps', []):
+            if step.get('action') == 'debuff_cost' and step.get('target') == 'own_play_self':
+                cost -= step.get('amount', 0)
+            elif step.get('action') == 'set_play_cost' and step.get('target') == 'own_play_self':
+                cost = step.get('amount', cost)
     return max(0, cost)
 
 
@@ -1978,7 +2046,7 @@ class EffectExecutor:
             block = get_card_effects(event.code).get('counter', {})
             if not block:
                 continue
-            play_cost = effective_hand_play_cost(self.me, event)
+            play_cost = effective_hand_play_cost(self.me, event, self.opp)
             if self.me.don_available < play_cost:
                 continue
 
@@ -2190,7 +2258,7 @@ class EffectExecutor:
             amount, extras = plan
             if amount < needed:
                 continue
-            play_cost = effective_hand_play_cost(self.me, event)
+            play_cost = effective_hand_play_cost(self.me, event, self.opp)
             if self.me.don_available < play_cost:
                 continue
             costs = get_card_effects(event.code).get('counter', {}).get('costs', [])
@@ -2267,7 +2335,7 @@ class EffectExecutor:
             amount = self._counter_event_debuff_plan(event, attacker, attacker_type)
             if amount is None or amount < needed:
                 continue
-            play_cost = effective_hand_play_cost(self.me, event)
+            play_cost = effective_hand_play_cost(self.me, event, self.opp)
             if self.me.don_available < play_cost:
                 continue
             costs = get_card_effects(event.code).get('counter', {}).get('costs', [])
@@ -2332,7 +2400,7 @@ class EffectExecutor:
                 continue
             if not self._counter_event_ko_plan(event, attacker):
                 continue
-            play_cost = effective_hand_play_cost(self.me, event)
+            play_cost = effective_hand_play_cost(self.me, event, self.opp)
             if self.me.don_available < play_cost:
                 continue
             costs = get_card_effects(event.code).get('counter', {}).get('costs', [])
@@ -2712,6 +2780,10 @@ class EffectExecutor:
             return False
         if conds.get('don_on_field_lte_opp') and me.don_on_field() > opp.don_on_field():
             return False
+        if ('don_fewer_than_opp_by_gte' in conds
+                and opp.don_on_field() - me.don_on_field()
+                < conds['don_fewer_than_opp_by_gte']):
+            return False
         if 'chars_rested_gte' in conds:
             n_rested = sum(1 for c in me.field_chars if c.rested)
             if n_rested < conds['chars_rested_gte']:
@@ -2770,7 +2842,17 @@ class EffectExecutor:
                 return False
         if 'other_char_power_gte' in conds:
             outros = [c for c in me.field_chars if c is not card]
-            if not outros or max(c.effective_power(True) for c in outros) < conds['other_char_power_gte']:
+            filter_type = conds.get('other_char_power_gte_type')
+            if filter_type:
+                outros = [c for c in outros
+                          if _norm_type_text(filter_type) in _norm_type_text(c.sub_types)]
+            filter_names = [n.lower() for n in conds.get('other_char_power_gte_names', [])]
+            if filter_names:
+                outros = [c for c in outros
+                          if any(n in c.name.lower() for n in filter_names)]
+            power_of = ((lambda c: c.power) if conds.get('other_char_power_uses_base')
+                        else (lambda c: c.effective_power(True)))
+            if not outros or max(power_of(c) for c in outros) < conds['other_char_power_gte']:
                 return False
         if 'other_char_cost_gte' in conds:
             outros = [c for c in me.field_chars if c is not card]
@@ -2782,6 +2864,15 @@ class EffectExecutor:
             return False
         if 'leader_power_lte' in conds and me.leader.effective_power(True) > conds['leader_power_lte']:
             return False
+        if ('leader_name_includes' in conds
+                and conds['leader_name_includes'].lower() not in me.leader.name.lower()):
+            return False
+        if 'opp_rested_cards_gte' in conds:
+            rested = opp.don_rested + sum(1 for c in opp.field_chars if c.rested)
+            rested += int(bool(getattr(opp.leader, 'rested', False)))
+            rested += int(bool(opp.field_stage and getattr(opp.field_stage, 'rested', False)))
+            if rested < conds['opp_rested_cards_gte']:
+                return False
         if 'events_in_trash_gte' in conds:
             n_events = sum(1 for c in me.trash if c.card_type.lower() == 'event')
             if n_events < conds['events_in_trash_gte']:
@@ -5488,7 +5579,7 @@ class EffectExecutor:
                 value += 50
 
         # Carta jogável ESTE turno vale ainda mais — perda dupla se trashada.
-        custo = effective_hand_play_cost(self.me, card)
+        custo = effective_hand_play_cost(self.me, card, self.opp)
         if custo <= self.me.don_available:
             value += 60 + custo * 6   # bônus adicional por ser jogável agora
 
@@ -6418,7 +6509,7 @@ class DecisionEngine:
         # span de 23 (+15/+8/-8) -- ainda favorece jogar o que cabe no DON
         # de agora quando os valores são próximos, mas não afoga mais a
         # diferença real de poder/efeito entre as opções.
-        play_cost = effective_hand_play_cost(self.me, card)
+        play_cost = effective_hand_play_cost(self.me, card, self.opp)
         if play_cost <= don_now:       s += 15
         elif play_cost <= don_now + 2: s += 8
         else:                          s -= 8
@@ -6613,6 +6704,8 @@ class DecisionEngine:
             if k == 'opp_don_on_field_lte' and not (self.opp.don_on_field() <= v): return False
             if k == 'don_on_field_lte_opp' and v:
                 if not (me.don_on_field() <= self.opp.don_on_field()): return False
+            if k == 'don_fewer_than_opp_by_gte':
+                if not (self.opp.don_on_field() - me.don_on_field() >= v): return False
             if k == 'opp_hand_gte' and not (len(self.opp.hand) >= v): return False
             if k == 'opp_chars_gte' and not (len(self.opp.field_chars) >= v): return False
             if k == 'trash_gte' and not (my_trash >= v): return False
@@ -6622,6 +6715,30 @@ class DecisionEngine:
                 if not (n_events >= v): return False
             if k == 'leader_power_lte':
                 if not (me.leader.effective_power(True) <= v): return False
+            if k == 'leader_name_includes':
+                if v.lower() not in me.leader.name.lower(): return False
+            if k == 'opp_rested_cards_gte':
+                rested = self.opp.don_rested + sum(
+                    1 for c in self.opp.field_chars if c.rested)
+                rested += int(bool(getattr(self.opp.leader, 'rested', False)))
+                rested += int(bool(self.opp.field_stage and getattr(
+                    self.opp.field_stage, 'rested', False)))
+                if rested < v: return False
+            if k == 'other_char_power_gte':
+                candidates = [c for c in me.field_chars if c is not card]
+                ftype = conds.get('other_char_power_gte_type')
+                if ftype:
+                    candidates = [c for c in candidates
+                                  if _norm_type_text(ftype) in _norm_type_text(c.sub_types)]
+                fnames = [n.lower() for n in conds.get('other_char_power_gte_names', [])]
+                if fnames:
+                    candidates = [c for c in candidates
+                                  if any(n in c.name.lower() for n in fnames)]
+                power_of = ((lambda c: c.power) if conds.get('other_char_power_uses_base')
+                            else (lambda c: c.effective_power(True)))
+                if not any(power_of(c) >= v for c in candidates): return False
+            if k == 'opp_char_power_gte':
+                if not any(c.power >= v for c in self.opp.field_chars): return False
             if k in ('board_has_cost', 'board_has_cost_gte'):
                 todos = list(me.field_chars) + list(self.opp.field_chars)
                 exatos = set(conds.get('board_has_cost', []))
@@ -6659,7 +6776,7 @@ class DecisionEngine:
         if don_usable is None:
             don_reserve = self._don_reserve_for_defense()
             don_usable  = max(0, self.me.don_available - don_reserve)
-        if effective_hand_play_cost(self.me, card) > don_usable:
+        if effective_hand_play_cost(self.me, card, self.opp) > don_usable:
             return False
         effects = get_card_effects(card.code)
         has_main = any(t in effects for t in ('on_play', 'main', 'activate_main'))
@@ -6702,7 +6819,7 @@ class DecisionEngine:
             if c.card_type == 'EVENT' and '[counter]' in c.card_text.lower():
                 # Conta o custo de play da carta (DON!! necessário para jogá-la)
                 # OU texto explícito de DON!! no efeito (efeitos paid-activate)
-                play_cost = effective_hand_play_cost(me, c)
+                play_cost = effective_hand_play_cost(me, c, self.opp)
                 if play_cost > 0:
                     return True
                 if re.search(r'don!!\s*[-x]?\s*\d', c.card_text.lower()):
@@ -6779,7 +6896,7 @@ class DecisionEngine:
         da lista de candidatas. O Turn Planner ainda compara a linha; aqui so
         deixamos o candidato existir.
         """
-        if effective_hand_play_cost(self.me, card) > self.me.don_available:
+        if effective_hand_play_cost(self.me, card, self.opp) > self.me.don_available:
             return False
         return card.card_type == 'CHARACTER' and (card.cost >= 8 or card.power >= 9000)
 
@@ -6787,7 +6904,7 @@ class DecisionEngine:
         if don_reserve is None:
             don_reserve = self._don_reserve_for_defense()
         don_usable = max(0, self.me.don_available - don_reserve)
-        if effective_hand_play_cost(self.me, card) > don_usable \
+        if effective_hand_play_cost(self.me, card, self.opp) > don_usable \
                 and self._can_spend_reserved_don_for_play(card):
             return self.me.don_available
         return don_usable
@@ -7937,7 +8054,8 @@ class OPTCGMatch:
                 continue
             if fcolor and fcolor not in card.color.lower():
                 continue
-            return max(0, effective_hand_play_cost(p, card) - stage_don_cost)
+            opponent = self.state_b if p is self.state_a else self.state_a
+            return max(0, effective_hand_play_cost(p, card, opponent) - stage_don_cost)
         return 0
 
     def _score_play_action(self, card, engine) -> float:
@@ -8067,7 +8185,7 @@ class OPTCGMatch:
             for c in me.hand:
                 if c is card or c.card_type not in ('CHARACTER', 'EVENT', 'STAGE'):
                     continue
-                if effective_hand_play_cost(me, c) > don_usable:
+                if effective_hand_play_cost(me, c, engine.opp) > don_usable:
                     continue   # não jogaria mesmo (sem DON) — não conta como perda
                 # essa carta SERIA bloqueada pela trava?
                 bloqueada = (scope == 'hand'
@@ -8212,7 +8330,7 @@ class OPTCGMatch:
                         continue
                     value = engine.avaliar_carta(candidate) if engine is not None else candidate.board_value()
                     best_play_value = max(best_play_value, value)
-                    best_saved_don = max(best_saved_don, effective_hand_play_cost(p, candidate) - custo_don)
+                    best_saved_don = max(best_saved_don, effective_hand_play_cost(p, candidate, opp) - custo_don)
             base += min(best_play_value * 0.55, 95)
             base += min(max(0, best_saved_don) * 18, 45)
             if src is getattr(p, 'field_stage', None) and best_saved_don >= 3:
@@ -8349,7 +8467,7 @@ class OPTCGMatch:
                 playable = [
                     c for c in p.hand
                     if c.card_type in ('CHARACTER', 'STAGE', 'EVENT')
-                    and effective_hand_play_cost(p, c) <= p.don_available
+                    and effective_hand_play_cost(p, c, opp) <= p.don_available
                 ]
                 if (not alimenta_plano and playable and len(p.field_chars) <= 1
                         and GameAnalyzer(p, opp).game_phase() == 'early'):
@@ -9237,7 +9355,7 @@ class OPTCGMatch:
                 if a[0] < 0:
                     break
                 if a[1] == 'play':
-                    custo = effective_hand_play_cost(p, a[2])
+                    custo = effective_hand_play_cost(p, a[2], opp)
                     if planejado + custo <= p.don_available:
                         planejado += custo
                 elif a[1] == 'activate':
@@ -9270,7 +9388,7 @@ class OPTCGMatch:
         Com verbose=True, narra a jogada (para o replay). Silencioso por padrão
         (simulação em massa não passa verbose).
         """
-        play_cost = effective_hand_play_cost(p, card)
+        play_cost = effective_hand_play_cost(p, card, opp)
         # "The next time you play...": consome apenas regras cujo filtro
         # casa com ESTA carta. Jogar uma carta inelegivel nao gasta o buff.
         consume_play_cost_reductions(p, card)
@@ -9755,7 +9873,8 @@ class OPTCGMatch:
                     {
                         **card_dict(c),
                         'counter': c.counter,
-                        'effective_cost': effective_hand_play_cost(s, c),
+                        'effective_cost': effective_hand_play_cost(
+                            s, c, self.state_b if s is self.state_a else self.state_a),
                     }
                     for c in s.hand
                 ],

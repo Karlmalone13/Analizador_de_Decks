@@ -1,5 +1,42 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-15 (180) - Diferenca de DON + familia de custo na mao: 405 -> 394
+
+O acrescimo do usuario ampliou o censo de comparacoes relativas de DON. Foram
+encontradas 25 cartas-base: 23 usam `proprio <= oponente` (familia ja coberta)
+e 2 usam uma diferenca minima: OP06-072 Cosette e OP07-064 Sanji, ambas com
+"at least 2 less". Nao ha hoje no banco texto relativo de DON com igualdade
+estrita, maior ou maior-ou-igual; essas categorias nao foram inventadas sem
+uma carta real.
+
+O parser agora emite `don_fewer_than_opp_by_gte=2`; engine e verificadores de
+condicao calculam `DON_oponente - DON_proprio >= N`. Cosette so ganha Blocker
+com lider GERMA e diferenca suficiente. Sanji revelou um gap adjacente: a
+reducao era parseada como efeito no campo, embora diga "this card in your
+hand". Reducoes assinadas dessa familia agora usam `target=own_play_self`, e
+`effective_hand_play_cost` recebe tambem o estado oponente para aplicar a
+comparacao antes do planner e do pagamento real.
+
+O censo adjacente auditou toda a familia de custo da propria carta na mao:
+10 reducoes assinadas e 2 variantes sem sinal que DEFINEM o custo como 3
+(OP11-023 e OP15-102). Foram estruturados e executados os filtros de Life,
+Events/total no trash, power do Leader, nome do Leader + DON, Character
+proprio por power+tipo ou power+nomes, Character oponente por base power e
+quantidade total de cartas oponentes restadas. `set_play_cost` ficou distinto
+de `debuff_cost`.
+
+A varredura das novas gramaticas recuperou ainda gates reais em EB04-041,
+OP08-059 e OP11-075 (DON no campo), OP08-028/OP08-033 (cartas oponentes
+restadas) e OP10-003 (Character proprio com power+tipo). Power normal e base
+power permanecem distintos; ST26-001 nao aceita buff sobre base 6000. Card List oficial confirmou
+Sanji e as cartas da familia; o Q&A OP06 confirmou que Cosette perde Blocker
+assim que deixa de estar 2 DON atras. Validacao: diff sem perda; 2614 cartas;
+smokes curto e amplo passaram. Auditor: **394 suspeitos** (405 -> 394).
+Snapshot final 0/0/0.
+
+Proximo: retomar a fila reordenada em OP15-008/OP06-022 (falsos positivos) e
+OP09-118 (falso positivo), seguindo para o primeiro suspeito real seguinte.
+
 ## 2026-07-15 (179) - Reducao de custo parametrizada e caminho unico: 408 -> 405
 
 OP05-097 Mary Geoise revelou que `buff_cost` perdia o limite de custo original.

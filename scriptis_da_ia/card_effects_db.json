@@ -7256,6 +7256,7 @@
           }
         ],
         "conditions": {
+          "don_on_field_gte": 4,
           "leader_is": "sanji"
         }
       }
@@ -7961,7 +7962,7 @@
           {
             "action": "debuff_cost",
             "amount": 1,
-            "target": "self"
+            "target": "own_play_self"
           }
         ],
         "conditions": {
@@ -26924,6 +26925,7 @@
           }
         ],
         "conditions": {
+          "don_fewer_than_opp_by_gte": 2,
           "leader_type": "germa 66"
         },
         "costs": [
@@ -30227,12 +30229,15 @@
           {
             "action": "debuff_cost",
             "amount": 3,
-            "target": "self"
+            "target": "own_play_self"
           },
           {
             "action": "keyword_blocker"
           }
-        ]
+        ],
+        "conditions": {
+          "don_fewer_than_opp_by_gte": 2
+        }
       }
     }
   },
@@ -32707,7 +32712,10 @@
             "action": "gain_rush",
             "duration": "this_turn"
           }
-        ]
+        ],
+        "conditions": {
+          "opp_rested_cards_gte": 7
+        }
       }
     }
   },
@@ -32848,6 +32856,7 @@
           }
         ],
         "conditions": {
+          "opp_rested_cards_gte": 7,
           "leader_type": "minks"
         }
       }
@@ -33590,6 +33599,7 @@
             "cost_lte": 7,
             "filter_name": "king",
             "conditions": {
+              "don_on_field_gte": 10,
               "leader_type": "animal kingdom pirates"
             }
           }
@@ -38927,6 +38937,10 @@
             "up_to": true
           }
         ],
+        "conditions": {
+          "other_char_power_gte": 6000,
+          "other_char_power_gte_type": "donquixote pirates"
+        },
         "once_per_turn": true
       }
     }
@@ -42957,12 +42971,14 @@
       "passive": {
         "steps": [
           {
-            "action": "debuff_cost",
+            "action": "set_play_cost",
             "amount": 3,
-            "target": "self"
+            "target": "own_play_self"
           }
         ],
         "conditions": {
+          "life_lte": 3,
+          "opp_rested_cards_gte": 5,
           "leader_type": "fish-man"
         }
       }
@@ -44469,6 +44485,7 @@
           }
         ],
         "conditions": {
+          "don_on_field_gte": 7,
           "leader_is": "nico robin"
         }
       },
@@ -56701,7 +56718,7 @@
           {
             "action": "debuff_cost",
             "amount": 2,
-            "target": "self"
+            "target": "own_play_self"
           },
           {
             "action": "keyword_blocker"
@@ -56934,7 +56951,7 @@
           {
             "action": "debuff_cost",
             "amount": 3,
-            "target": "self"
+            "target": "own_play_self"
           }
         ],
         "conditions": {
@@ -59507,11 +59524,15 @@
       "passive": {
         "steps": [
           {
-            "action": "buff_cost",
+            "action": "set_play_cost",
             "amount": 3,
-            "target": "self"
+            "target": "own_play_self"
           }
-        ]
+        ],
+        "conditions": {
+          "other_char_power_gte": 7000,
+          "other_char_power_gte_type": "sky island"
+        }
       }
     }
   },
@@ -60161,14 +60182,15 @@
           {
             "action": "debuff_cost",
             "amount": 3,
-            "target": "self"
+            "target": "own_play_self"
           },
           {
             "action": "keyword_blocker"
           }
         ],
         "conditions": {
-          "other_char_power_gte": 8000
+          "other_char_power_gte": 8000,
+          "other_char_power_gte_type": "whitebeard pirates"
         }
       }
     }
@@ -60481,9 +60503,13 @@
           {
             "action": "debuff_cost",
             "amount": 2,
-            "target": "self"
+            "target": "own_play_self"
           }
-        ]
+        ],
+        "conditions": {
+          "leader_name_includes": "ace",
+          "don_on_field_gte": 6
+        }
       }
     }
   },
@@ -66198,7 +66224,7 @@
           {
             "action": "debuff_cost",
             "amount": 3,
-            "target": "self"
+            "target": "own_play_self"
           },
           {
             "action": "keyword_blocker"
@@ -74147,7 +74173,7 @@
           {
             "action": "debuff_cost",
             "amount": 4,
-            "target": "self"
+            "target": "own_play_self"
           },
           {
             "action": "keyword_blocker"
@@ -74188,9 +74214,12 @@
           {
             "action": "debuff_cost",
             "amount": 3,
-            "target": "self"
+            "target": "own_play_self"
           }
-        ]
+        ],
+        "conditions": {
+          "opp_char_power_gte": 8000
+        }
       }
     }
   },
@@ -74643,9 +74672,17 @@
           {
             "action": "debuff_cost",
             "amount": 5,
-            "target": "self"
+            "target": "own_play_self"
           }
-        ]
+        ],
+        "conditions": {
+          "other_char_power_gte": 7000,
+          "other_char_power_gte_names": [
+            "san-gorou",
+            "sanji"
+          ],
+          "other_char_power_uses_base": true
+        }
       }
     }
   },

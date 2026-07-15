@@ -74,7 +74,7 @@ def parse_conditions(text):
     if m:
         conds['total_life_lte'] = int(m.group(1))
     else:
-        m = re.search(r'(?:if|and) you have (\d+) or less life', t)
+        m = re.search(r'(?:if|and|,) you have (\d+) or less life', t)
         if m: conds['life_lte'] = int(m.group(1))
 
     # "If you have 0 Life cards" -- caso exato nao escrito como "0 or
@@ -117,6 +117,12 @@ def parse_conditions(text):
     m = re.search(r'if you have (\d+) or more don!!', t)
     if m: conds['don_gte'] = int(m.group(1))
 
+    m = re.search(r"your leader.?s card name includes [\"\[{]([^\"\]}]+)[\"\]}]", t)
+    if m: conds['leader_name_includes'] = m.group(1).strip()
+
+    m = re.search(r'your opponent has (\d+) or more rested cards?', t)
+    if m: conds['opp_rested_cards_gte'] = int(m.group(1))
+
     # "If you have any DON!! cards given" -- exige ao menos 1 DON anexado
     # a uma carta propria (Leader ou Character). Nao e don_gte/don_on_field:
     # DON ativo ou rested na cost area nao satisfaz a condicao. Familia OP13
@@ -133,7 +139,7 @@ def parse_conditions(text):
     m = re.search(r'(?:if|and) you have (\d+) or more rested don!! cards?', t)
     if m: conds['don_rested_gte'] = int(m.group(1))
 
-    m = re.search(r'if you have (\d+) or more don!! cards? on your field', t)
+    m = re.search(r'(?:if|and) you have (\d+) or more don!! cards? on your field', t)
     if m:
         conds['don_on_field_gte'] = int(m.group(1))
     else:
@@ -142,7 +148,7 @@ def parse_conditions(text):
         # cartas reais, sempre N=10). Semantica equivalente a "or more"
         # porque 10 e o teto do DON deck (nunca da pra ter mais) -- nao e
         # ambiguo na pratica, so uma variante de redacao mais curta.
-        m = re.search(r'if you have (\d+) don!! cards? on your field(?! or)', t)
+        m = re.search(r'(?:if|and) you have (\d+) don!! cards? on your field(?! or)', t)
         if m: conds['don_on_field_gte'] = int(m.group(1))
 
     # "if you have N or less DON!! cards on your field" -- simetrico ao
@@ -169,6 +175,12 @@ def parse_conditions(text):
             r'the number of don!! cards? on your field is equal to or less than '
             r'the number on your opponent.?s field', t):
         conds['don_on_field_lte_opp'] = True
+
+    m = re.search(
+        r'the number of don!! cards? on your field is at least (\d+) less than '
+        r'the number on your opponent.?s field', t)
+    if m:
+        conds['don_fewer_than_opp_by_gte'] = int(m.group(1))
 
     # "if your opponent has N or more cards in their hand" -- gate sobre o
     # tamanho da MAO DO OPONENTE, distinto de hand_gte (mao do PROPRIO
@@ -298,6 +310,28 @@ def parse_conditions(text):
     m = re.search(r'if you have a character with (\d+) power or more', t)
     if m: conds['other_char_power_gte'] = int(m.group(1))
 
+    m = re.search(
+        r'if you have a ["\[{]([^"\]}]+)["\]}] type character with '
+        r'(\d+)(?: base)? power or more', t)
+    if m:
+        conds['other_char_power_gte'] = int(m.group(2))
+        conds['other_char_power_gte_type'] = m.group(1).strip()
+
+    m = re.search(
+        r'if you have a character with (\d+)(?: base)? power or more and '
+        r'a type including ["\[{]([^"\]}]+)["\]}]', t)
+    if m:
+        conds['other_char_power_gte'] = int(m.group(1))
+        conds['other_char_power_gte_type'] = m.group(2).strip()
+
+    m = re.search(
+        r'if you have a ((?:\[[^\]]+\](?: or )?)+) character with '
+        r'(\d+) base power or more', t)
+    if m:
+        conds['other_char_power_gte'] = int(m.group(2))
+        conds['other_char_power_gte_names'] = re.findall(r'\[([^\]]+)\]', m.group(1))
+        conds['other_char_power_uses_base'] = True
+
     # "if you have a Character with a cost of N or more" -- idem, por custo.
     m = re.search(r'if you have a character with a cost of (\d+) or more', t)
     if m: conds['other_char_cost_gte'] = int(m.group(1))
@@ -332,7 +366,7 @@ def parse_conditions(text):
     # de palavras encontradas no texto oficial -- "N power or more" e "N or
     # more power" (ex: OP09-019) -- sem isto a segunda ordem nunca era
     # reconhecida e a condicao ficava vazia.
-    m = re.search(r'if your opponent has a character with (\d+)(?: power or more| or more power)', t)
+    m = re.search(r'if your opponent has a character with (\d+)(?: base)?(?: power or more| or more power)', t)
     if m: conds['opp_char_power_gte'] = int(m.group(1))
 
     # Variante combinada: "...power or more and the "X"/[X]/{X} type" --
@@ -2822,7 +2856,13 @@ def parse_cost_debuff(text):
         # has...', 'less than the number on your opponent's field') sem
         # ter nada a ver com o alvo do give -- 'give this card' decide o
         # alvo antes de checar 'opponent' na clausula inteira.
-        if re.search(r'give this card', clause):
+        if re.search(r'give this card in your hand', clause) and not sign:
+            return [{'action': 'set_play_cost', 'amount': int(m.group(2)),
+                     'target': 'own_play_self'}]
+        if (re.search(r'give this card in your hand', clause)
+                and sign in ('-', 'âˆ’', 'ï¼')):
+            target = 'own_play_self'
+        elif re.search(r'give this card', clause):
             target = 'self'
         else:
             target = 'opp_character' if "opponent" in clause else 'own_character'

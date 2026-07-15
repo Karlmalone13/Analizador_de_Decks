@@ -11004,7 +11004,7 @@
    {
     "action": "debuff_cost",
     "trigger": "passive",
-    "target": "self"
+    "target": "own_play_self"
    }
   ],
   "synergy_states": {},
@@ -45311,7 +45311,7 @@
    {
     "action": "debuff_cost",
     "trigger": "passive",
-    "target": "self"
+    "target": "own_play_self"
    },
    {
     "action": "keyword_blocker",
@@ -64606,9 +64606,9 @@
     "cost_lte": 4
    },
    {
-    "action": "debuff_cost",
+    "action": "set_play_cost",
     "trigger": "passive",
-    "target": "self"
+    "target": "own_play_self"
    }
   ],
   "synergy_states": {
@@ -85041,7 +85041,7 @@
    {
     "action": "debuff_cost",
     "trigger": "passive",
-    "target": "self"
+    "target": "own_play_self"
    },
    {
     "action": "keyword_blocker",
@@ -85402,7 +85402,7 @@
    {
     "action": "debuff_cost",
     "trigger": "passive",
-    "target": "self"
+    "target": "own_play_self"
    }
   ],
   "synergy_states": {},
@@ -88987,9 +88987,9 @@
     "trigger": "on_play"
    },
    {
-    "action": "buff_cost",
+    "action": "set_play_cost",
     "trigger": "passive",
-    "target": "self"
+    "target": "own_play_self"
    }
   ],
   "synergy_states": {
@@ -89990,7 +89990,7 @@
    {
     "action": "debuff_cost",
     "trigger": "passive",
-    "target": "self"
+    "target": "own_play_self"
    },
    {
     "action": "keyword_blocker",
@@ -90424,7 +90424,7 @@
    {
     "action": "debuff_cost",
     "trigger": "passive",
-    "target": "self"
+    "target": "own_play_self"
    }
   ],
   "synergy_states": {},
@@ -99135,7 +99135,7 @@
    {
     "action": "debuff_cost",
     "trigger": "passive",
-    "target": "self"
+    "target": "own_play_self"
    },
    {
     "action": "keyword_blocker",
@@ -111659,7 +111659,7 @@
    {
     "action": "debuff_cost",
     "trigger": "passive",
-    "target": "self"
+    "target": "own_play_self"
    },
    {
     "action": "keyword_blocker",
@@ -111708,7 +111708,7 @@
    {
     "action": "debuff_cost",
     "trigger": "passive",
-    "target": "self"
+    "target": "own_play_self"
    }
   ],
   "synergy_states": {},
@@ -112322,7 +112322,7 @@
    {
     "action": "debuff_cost",
     "trigger": "passive",
-    "target": "self"
+    "target": "own_play_self"
    }
   ],
   "synergy_states": {},

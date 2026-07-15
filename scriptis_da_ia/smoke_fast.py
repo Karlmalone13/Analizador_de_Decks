@@ -1246,6 +1246,132 @@ def test_comparacao_don_proprio_lte_oponente() -> None:
     check("EB02-035 compra quando os totais de DON sao iguais",
           len(me_equal.hand) == 1 and not me_equal.deck)
 
+    for code in ("OP06-072", "OP07-064"):
+        conds = get_card_effects(code).get("passive", {}).get("conditions", {})
+        check(f"{code} preserva diferenca minima de 2 DON",
+              conds.get("don_fewer_than_opp_by_gte") == 2)
+
+    sanji = real_card("OP07-064")
+    sanji_step = next(s for s in get_card_effects("OP07-064")["passive"]["steps"]
+                      if s.get("action") == "debuff_cost")
+    check("OP07-064 marca reducao como custo da propria carta na mao",
+          sanji_step.get("target") == "own_play_self")
+    opp_5 = GameState(leader=mk("XSO5", "Opp", card_type="LEADER"),
+                      don_available=5)
+    for own_don, expected in ((3, 3), (4, 6), (5, 6), (6, 6)):
+        me_sanji = GameState(
+            leader=mk(f"XSD{own_don}", "Lider", card_type="LEADER"),
+            don_available=own_don,
+        )
+        check(f"Sanji com {own_don} DON contra 5 custa {expected}",
+              effective_hand_play_cost(me_sanji, sanji, opp_5) == expected)
+
+    cosette = real_card("OP06-072")
+    germa = mk("XGER", "Lider GERMA", card_type="LEADER",
+               sub_types="GERMA 66")
+    me_cosette = GameState(leader=germa, field_chars=[cosette], don_available=3)
+    apply_conditional_keyword_passives(me_cosette, opp_5)
+    check("Cosette ganha Blocker com lider GERMA e diferenca de 2 DON",
+          cosette.has_blocker)
+    cosette2 = real_card("OP06-072")
+    me_cosette2 = GameState(leader=germa, field_chars=[cosette2], don_available=4)
+    apply_conditional_keyword_passives(me_cosette2, opp_5)
+    check("Cosette nao ganha Blocker com diferenca de apenas 1 DON",
+          not cosette2.has_blocker)
+
+
+def test_custos_condicionais_da_propria_carta_na_mao() -> None:
+    empty_opp = GameState(leader=mk("XHCO", "Opp", card_type="LEADER"))
+
+    def cost(code, me, opp=empty_opp):
+        return effective_hand_play_cost(me, real_card(code), opp)
+
+    eb = real_card("EB04-061")
+    me = GameState(leader=mk("XHCL", "Lider", card_type="LEADER"),
+                   life=[mk("XLF", "Life")])
+    check("EB04-061 reduz 1 com Life <= 1", cost("EB04-061", me) == eb.cost - 1)
+    me.life.append(mk("XLF2", "Life 2"))
+    check("EB04-061 nao reduz com 2 Life", cost("EB04-061", me) == eb.cost)
+
+    pincers = real_card("OP15-013")
+    me = GameState(leader=mk("XLP0", "Lider", power=0, card_type="LEADER"))
+    check("OP15-013 reduz 2 com Leader em 0 power", cost("OP15-013", me) == pincers.cost - 2)
+
+    events = [mk(f"XEV{i}", f"Event {i}", card_type="EVENT") for i in range(4)]
+    me = GameState(leader=mk("XEVL", "Lider", card_type="LEADER"), trash=events)
+    check("OP15-021 reduz 3 com 4 Events no trash",
+          cost("OP15-021", me) == real_card("OP15-021").cost - 3)
+
+    wb = mk("XWB", "Newgate", power=8000, sub_types="Whitebeard Pirates")
+    me = GameState(leader=mk("XWBL", "Lider", card_type="LEADER"), field_chars=[wb])
+    check("OP16-005 exige poder 8000 e tipo Whitebeard Pirates",
+          cost("OP16-005", me) == real_card("OP16-005").cost - 3)
+    me.field_chars = [mk("XNV8", "Forte Navy", power=8000, sub_types="Navy")]
+    check("OP16-005 nao aceita Character 8000 de tipo errado",
+          cost("OP16-005", me) == real_card("OP16-005").cost)
+
+    ace_leader = mk("XACE", "Portgas.D.Ace", card_type="LEADER")
+    me = GameState(leader=ace_leader, don_available=6)
+    check("OP16-015 exige Leader Ace e 6 DON",
+          cost("OP16-015", me) == real_card("OP16-015").cost - 2)
+    me.don_available = 5
+    check("OP16-015 nao reduz com apenas 5 DON",
+          cost("OP16-015", me) == real_card("OP16-015").cost)
+
+    me = GameState(leader=mk("XTRL", "Lider", card_type="LEADER"),
+                   trash=[mk(f"XT{i}", f"Trash {i}") for i in range(15)])
+    check("PRB02-014 reduz 3 com 15 cartas no trash",
+          cost("PRB02-014", me) == real_card("PRB02-014").cost - 3)
+
+    me = GameState(leader=mk("X10L", "Lider", card_type="LEADER"),
+                   field_chars=[mk("X10K", "Forte", power=10000)])
+    check("ST23-001 reduz 4 com Character proprio de 10000+",
+          cost("ST23-001", me) == real_card("ST23-001").cost - 4)
+
+    me = GameState(leader=mk("XOPL", "Lider", card_type="LEADER"))
+    opp = GameState(leader=mk("XOPR", "Opp", card_type="LEADER"),
+                    field_chars=[mk("X800", "Opp forte", power=8000)])
+    check("ST23-002 reduz 3 com Character oponente de base power 8000+",
+          cost("ST23-002", me, opp) == real_card("ST23-002").cost - 3)
+
+    me = GameState(leader=mk("XSNL", "Lider", card_type="LEADER"),
+                   field_chars=[mk("XSNJ", "Sanji", power=7000)])
+    check("ST26-001 exige Sanji ou San-Gorou de base power 7000+",
+          cost("ST26-001", me) == real_card("ST26-001").cost - 5)
+    sanji_buffed = mk("XSNB", "Sanji", power=6000)
+    sanji_buffed.power_buff = 1000
+    me.field_chars = [sanji_buffed]
+    check("ST26-001 usa base power; buff nao transforma 6000 em elegivel",
+          cost("ST26-001", me) == real_card("ST26-001").cost)
+
+    fish = mk("XFSL", "Lider", card_type="LEADER", sub_types="Fish-Man")
+    me = GameState(leader=fish, life=[mk(f"XFL{i}", "Life") for i in range(3)])
+    opp = GameState(leader=mk("XFOP", "Opp", card_type="LEADER"), don_rested=5)
+    check("OP11-023 define custo 3 com os 3 gates satisfeitos",
+          cost("OP11-023", me, opp) == 3)
+    opp.don_rested = 4
+    check("OP11-023 nao define custo sem 5 cartas oponentes restadas",
+          cost("OP11-023", me, opp) == real_card("OP11-023").cost)
+
+    sky = mk("XSKY", "Sky", power=7000, sub_types="Sky Island")
+    me = GameState(leader=mk("XSKL", "Lider", card_type="LEADER"), field_chars=[sky])
+    check("OP15-102 define custo 3 com Sky Island de 7000+",
+          cost("OP15-102", me) == 3)
+
+    check("EB04-041 preserva gate de 4 DON no campo",
+          get_card_effects("EB04-041")["main"]["conditions"].get(
+              "don_on_field_gte") == 4)
+    check("OP11-075 preserva gate de 7 DON no campo",
+          get_card_effects("OP11-075")["on_play"]["conditions"].get(
+              "don_on_field_gte") == 7)
+    check("OP08-028 preserva gate de 7 cartas oponentes restadas",
+          get_card_effects("OP08-028")["on_play"]["conditions"].get(
+              "opp_rested_cards_gte") == 7)
+    op10_conds = get_card_effects("OP10-003")["end_of_turn"]["conditions"]
+    check("OP10-003 preserva poder 6000 e tipo Donquixote Pirates",
+          op10_conds.get("other_char_power_gte") == 6000
+          and op10_conds.get("other_char_power_gte_type") == "donquixote pirates")
+
 
 def test_evento_parametrizado_de_don_devolvido() -> None:
     for code, threshold in (("OP06-042", 1), ("EB02-035", 2),
@@ -1842,6 +1968,7 @@ def main() -> int:
     test_op10_022_condicao_custo_e_play_life_por_tipo()
     test_rush_character_fraseado_condicional_e_auras()
     test_comparacao_don_proprio_lte_oponente()
+    test_custos_condicionais_da_propria_carta_na_mao()
     test_evento_parametrizado_de_don_devolvido()
     test_custo_composto_trash_para_fundo()
     test_reducao_de_custo_com_limite()
