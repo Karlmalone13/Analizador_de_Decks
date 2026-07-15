@@ -1165,6 +1165,56 @@ def test_op10_022_condicao_custo_e_play_life_por_tipo() -> None:
           body6 in me_ok.hand and target in me_ok.field_chars and not me_ok.life)
 
 
+def test_rush_character_fraseado_condicional_e_auras() -> None:
+    zoro_effect = get_card_effects("EB02-019").get("passive", {})
+    check("EB02-019 usa Rush: Character e exige 2 Characters oponentes",
+          zoro_effect.get("steps", [{}])[0].get("action") == "gain_rush_character"
+          and zoro_effect.get("conditions", {}).get("opp_chars_gte") == 2)
+
+    me1 = GameState(leader=mk("XLDR1", "Lider", card_type="LEADER"), turn=3)
+    zoro1 = real_card("EB02-019")
+    zoro1.just_played = True
+    me1.field_chars = [zoro1]
+    opp1 = GameState(leader=mk("XOPR1", "Lider Opp", card_type="LEADER"), turn=3)
+    opp1.field_chars = [mk("XO1", "Opp1")]
+    apply_conditional_keyword_passives(me1, opp1)
+    check("EB02-019 nao ganha permissao com apenas 1 Character oponente",
+          not zoro1.has_rush_character)
+
+    me2 = GameState(leader=mk("XLDR2", "Lider", card_type="LEADER"), turn=3)
+    zoro2 = real_card("EB02-019")
+    zoro2.just_played = True
+    me2.field_chars = [zoro2]
+    opp2 = GameState(leader=mk("XOPR2", "Lider Opp", card_type="LEADER"), turn=3)
+    opp2.field_chars = [mk("XO2", "Opp2"), mk("XO3", "Opp3")]
+    apply_conditional_keyword_passives(me2, opp2)
+    check("EB02-019 ganha somente Rush: Character com 2 oponentes",
+          zoro2.has_rush_character and zoro2.rush_character_only_this_turn
+          and not zoro2.has_rush)
+
+    corrida = real_card("OP04-096")
+    dressrosa = mk("XDRE", "Dressrosa", sub_types="Dressrosa")
+    dressrosa.just_played = True
+    me_stage = GameState(leader=mk("XLDDS", "Lider", card_type="LEADER", sub_types="Dressrosa"), turn=3)
+    me_stage.field_stage = corrida
+    me_stage.field_chars = [dressrosa]
+    opp_stage = GameState(leader=mk("XOPS", "Lider Opp", card_type="LEADER"), turn=3)
+    apply_conditional_keyword_passives(me_stage, opp_stage)
+    check("Corrida Coliseum concede Rush: Character ao tipo, nao Rush completo",
+          dressrosa.has_rush_character and not dressrosa.has_rush)
+
+    shira = real_card("P-091")
+    shira.rested = False
+    nept = mk("XNEP", "Neptunian", sub_types="Neptunian")
+    nept.just_played = True
+    me_sel = GameState(leader=mk("XLDP", "Lider", card_type="LEADER"), turn=3)
+    me_sel.field_chars = [shira, nept]
+    opp_sel = GameState(leader=mk("XOPP", "Lider Opp", card_type="LEADER"), turn=3)
+    EffectExecutor(me_sel, opp_sel).execute(shira, "activate_main")
+    check("P-091 resta a si e concede Rush: Character ao Neptunian",
+          shira.rested and nept.has_rush_character and not nept.has_rush)
+
+
 def test_don_on_field_lte_condicao_ausente() -> None:
     # Achado 15/07 -- "if you have N or less DON!! cards on your field"
     # (proprio lado) nunca existia, so o "N or more" (don_on_field_gte).
@@ -1562,6 +1612,7 @@ def main() -> int:
     test_descarte_mao_oponente_variantes_e_escolha_cega()
     test_reveal_top_life_play_nome_custo_e_if_you_do()
     test_op10_022_condicao_custo_e_play_life_por_tipo()
+    test_rush_character_fraseado_condicional_e_auras()
     test_don_on_field_lte_condicao_ausente()
     test_black_hole_negate_e_ko_encadeado()
     test_rebecca_add_from_trash_range_exclude_e_ordem()

@@ -1,5 +1,31 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-15 (175) - Rush: Character textual e condicional: fila 415 -> 414
+
+EB02-019 revelou que `can attack Characters on the turn in which it is played`
+nao e Rush completo: e Rush: Character e nunca permite atacar o Leader nesse
+turno. Card List oficial confirmou a distincao. Busca global corrigiu 9 cartas:
+- EB02-019: `gain_rush_character` condicionado a `opp_chars_gte=2`.
+- OP07-032, OP11-027 e OP14-090: mesmos fraseados condicionais/individuais,
+  antes tratados como Rush completo.
+- OP04-096 e OP11-001: auras por tipo agora concedem Rush: Character aos
+  Characters correspondentes, nao ao Stage/Leader fonte.
+- P-091: Activate Main inteiro recuperado, com rest_self e selecao Neptunian.
+- OP07-073: nova condicao global `opp_chars_gte=3` recuperada.
+- OP07-029: removido falso custo `rest_self` vindo do reminder de Blocker;
+  a substituicao ja carrega o custo real de restar Character oponente.
+
+O aplicador central de passivas passou a incluir Stage e abrir corretamente a
+janela `rush_character_only_this_turn` para cartas recem-jogadas. Testes cobrem
+gate 1 vs 2 Characters, proibicao de Rush completo, aura Corrida Coliseum e
+Activate Main de P-091.
+
+Validacao: diff GANHOU 0 / PERDEU 0 / MUDOU 9, todas conferidas; 2614 cartas;
+smokes curto e amplo passaram; snapshot final 0/0/0. Auditor: **414 suspeitos**.
+
+Proximo da fila: EB02-035, evento `When 2 or more DON!! cards ... are returned`
+e condicao comparativa entre DON dos dois campos.
+
 ## 2026-07-15 (174) - OP10-022 + custo global de auto-bounce: fila 416 -> 415
 
 OP10-022 foi fechado como subtipo da familia de jogar o topo da Life. Agora

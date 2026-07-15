@@ -2781,6 +2781,8 @@ class EffectExecutor:
             n = sum(1 for c in opp.field_chars if c.effective_power(False) >= spec['power_gte'])
             if n < spec['count']:
                 return False
+        if 'opp_chars_gte' in conds and len(opp.field_chars) < conds['opp_chars_gte']:
+            return False
         if 'self_type' in conds and conds['self_type'] not in card.sub_types.lower():
             return False
         if 'only_field_type' in conds:
@@ -5196,6 +5198,26 @@ class EffectExecutor:
             # EB04-007 via Activate:Main apos o On Play), marca a janela.
             card.rush_character_only_this_turn = not (card.has_rush or card.rush_this_turn)
             return 'ganhou Rush: Character'
+        if action == 'grant_rush_character_type':
+            wanted = _norm_type_text(step.get('filter_type') or '')
+            granted = []
+            for target in me.field_chars:
+                if wanted and wanted in _norm_type_text(target.sub_types):
+                    target.has_rush_character = True
+                    if target.just_played:
+                        target.rush_character_only_this_turn = True
+                    granted.append(target.name[:14])
+            return f'Rush: Character para tipo: {", ".join(granted)}' if granted else ''
+        if action == 'select_grant_rush_character':
+            from optcg_engine.rules_facade import choose_highest_board_value, eligible_cards
+            candidates = eligible_cards(me.field_chars, filter_text=step.get('filter_type', ''))
+            if not candidates:
+                return ''
+            target = choose_highest_board_value(candidates)
+            target.has_rush_character = True
+            if target.just_played:
+                target.rush_character_only_this_turn = True
+            return f'{target.name[:18]} ganhou Rush: Character'
         if action == 'gain_blocker':
             if step.get('duration') == 'this_turn':
                 card.blocker_this_turn = True
@@ -6112,16 +6134,28 @@ def apply_conditional_keyword_passives(gs: 'GameState', opp: 'GameState') -> Non
     pool = list(gs.field_chars) + list(gs.hand)
     if gs.leader is not None:
         pool.append(gs.leader)
+    if gs.field_stage is not None:
+        pool.append(gs.field_stage)
     for c in pool:
         passive = get_card_effects(c.code).get('passive', {})
         steps = passive.get('steps', [])
         grants = [s for s in steps if s.get('action') in _KEYWORD_GRANTS]
-        if not grants:
+        aura_grants = [s for s in steps if s.get('action') == 'grant_rush_character_type']
+        if not grants and not aura_grants:
             continue
         if not ee._check_conditions(passive.get('conditions', {}), c):
             continue
         for s in grants:
             setattr(c, _KEYWORD_GRANTS[s['action']], True)
+            if s.get('action') == 'gain_rush_character' and c.just_played:
+                c.rush_character_only_this_turn = True
+        for s in aura_grants:
+            wanted = _norm_type_text(s.get('filter_type') or '')
+            for target in gs.field_chars:
+                if wanted and wanted in _norm_type_text(target.sub_types):
+                    target.has_rush_character = True
+                    if target.just_played:
+                        target.rush_character_only_this_turn = True
 
 
 class DecisionEngine:
@@ -6473,6 +6507,7 @@ class DecisionEngine:
             if k == 'opp_don_on_field_gte' and not (self.opp.don_on_field() >= v): return False
             if k == 'opp_don_on_field_lte' and not (self.opp.don_on_field() <= v): return False
             if k == 'opp_hand_gte' and not (len(self.opp.hand) >= v): return False
+            if k == 'opp_chars_gte' and not (len(self.opp.field_chars) >= v): return False
             if k == 'trash_gte' and not (my_trash >= v): return False
             if k == 'just_played' and v and not getattr(card, 'just_played', False): return False
             if k == 'events_in_trash_gte':

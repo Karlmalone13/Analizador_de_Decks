@@ -3425,7 +3425,7 @@
     "cost_lte": 4
    },
    {
-    "action": "gain_rush",
+    "action": "gain_rush_character",
     "trigger": "passive"
    }
   ],
@@ -3451,7 +3451,7 @@
   "gains_life": false,
   "attacks_life": false,
   "trashes_own_life": false,
-  "has_rush": true,
+  "has_rush": false,
   "has_double_attack": false,
   "has_unblockable": false,
   "has_banish": false,
@@ -30966,7 +30966,7 @@
   "attribute": "",
   "effects": [
    {
-    "action": "gain_rush",
+    "action": "grant_rush_character_type",
     "trigger": "passive"
    }
   ],
@@ -30987,7 +30987,7 @@
   "gains_life": false,
   "attacks_life": false,
   "trashes_own_life": false,
-  "has_rush": true,
+  "has_rush": false,
   "has_double_attack": false,
   "has_unblockable": false,
   "has_banish": false,
@@ -43881,7 +43881,7 @@
     "cost_lte": 6
    },
    {
-    "action": "gain_rush",
+    "action": "gain_rush_character",
     "trigger": "passive"
    }
   ],
@@ -43907,7 +43907,7 @@
   "gains_life": false,
   "attacks_life": false,
   "trashes_own_life": false,
-  "has_rush": true,
+  "has_rush": false,
   "has_double_attack": false,
   "has_unblockable": false,
   "has_banish": false,
@@ -63642,6 +63642,10 @@
   "attribute": "Strike",
   "effects": [
    {
+    "action": "grant_rush_character_type",
+    "trigger": "passive"
+   },
+   {
     "action": "substitute_removal",
     "trigger": "passive",
     "power_lte": 7000
@@ -64758,7 +64762,7 @@
   "attribute": "Strike",
   "effects": [
    {
-    "action": "gain_rush",
+    "action": "gain_rush_character",
     "trigger": "passive"
    }
   ],
@@ -64779,7 +64783,7 @@
   "gains_life": false,
   "attacks_life": false,
   "trashes_own_life": false,
-  "has_rush": true,
+  "has_rush": false,
   "has_double_attack": false,
   "has_unblockable": false,
   "has_banish": false,
@@ -83003,7 +83007,7 @@
     "trigger": "on_play"
    },
    {
-    "action": "gain_rush",
+    "action": "gain_rush_character",
     "trigger": "passive"
    }
   ],
@@ -83029,7 +83033,7 @@
   "gains_life": false,
   "attacks_life": false,
   "trashes_own_life": false,
-  "has_rush": true,
+  "has_rush": false,
   "has_double_attack": false,
   "has_unblockable": false,
   "has_banish": false,
@@ -98351,6 +98355,10 @@
     "action": "play_card",
     "trigger": "on_play",
     "cost_lte": 5
+   },
+   {
+    "action": "select_grant_rush_character",
+    "trigger": "activate_main"
    }
   ],
   "synergy_states": {},

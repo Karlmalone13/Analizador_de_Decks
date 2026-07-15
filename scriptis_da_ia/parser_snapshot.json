@@ -1389,9 +1389,12 @@
    ]
   },
   "passive": {
+   "conditions": {
+    "opp_chars_gte": 2
+   },
    "steps": [
     {
-     "action": "gain_rush"
+     "action": "gain_rush_character"
     }
    ]
   }
@@ -12780,7 +12783,7 @@
    },
    "steps": [
     {
-     "action": "gain_rush",
+     "action": "grant_rush_character_type",
      "filter_type": "dressrosa"
     }
    ]
@@ -18035,11 +18038,6 @@
    "conditions": {
     "leader_type": "supernovas"
    },
-   "costs": [
-    {
-     "type": "rest_self"
-    }
-   ],
    "once_per_turn": true,
    "steps": [
     {
@@ -18101,7 +18099,7 @@
   "passive": {
    "steps": [
     {
-     "action": "gain_rush"
+     "action": "gain_rush_character"
     }
    ]
   }
@@ -18840,6 +18838,9 @@
  },
  "OP07-073": {
   "activate_main": {
+   "conditions": {
+    "opp_chars_gte": 3
+   },
    "costs": [
     {
      "count": 3,
@@ -26234,6 +26235,10 @@
    "once_per_turn": true,
    "steps": [
     {
+     "action": "grant_rush_character_type",
+     "filter_type": "sword"
+    },
+    {
      "action": "substitute_removal",
      "cost": {
       "action": "trash_to_deck_bottom",
@@ -26677,7 +26682,7 @@
    },
    "steps": [
     {
-     "action": "gain_rush"
+     "action": "gain_rush_character"
     }
    ]
   }
@@ -34188,7 +34193,7 @@
    },
    "steps": [
     {
-     "action": "gain_rush"
+     "action": "gain_rush_character"
     }
    ]
   }
@@ -40664,6 +40669,20 @@
   }
  },
  "P-091": {
+  "activate_main": {
+   "costs": [
+    {
+     "type": "rest_self"
+    }
+   ],
+   "steps": [
+    {
+     "action": "select_grant_rush_character",
+     "count": 1,
+     "filter_type": "neptunian"
+    }
+   ]
+  },
   "on_play": {
    "steps": [
     {

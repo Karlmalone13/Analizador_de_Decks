@@ -2270,9 +2270,12 @@
       "passive": {
         "steps": [
           {
-            "action": "gain_rush"
+            "action": "gain_rush_character"
           }
-        ]
+        ],
+        "conditions": {
+          "opp_chars_gte": 2
+        }
       }
     }
   },
@@ -20602,7 +20605,7 @@
       "passive": {
         "steps": [
           {
-            "action": "gain_rush",
+            "action": "grant_rush_character_type",
             "filter_type": "dressrosa"
           }
         ],
@@ -29036,11 +29039,6 @@
         "conditions": {
           "leader_type": "supernovas"
         },
-        "costs": [
-          {
-            "type": "rest_self"
-          }
-        ],
         "once_per_turn": true
       }
     }
@@ -29123,7 +29121,7 @@
       "passive": {
         "steps": [
           {
-            "action": "gain_rush"
+            "action": "gain_rush_character"
           }
         ]
       }
@@ -30319,6 +30317,9 @@
             "target": "self"
           }
         ],
+        "conditions": {
+          "opp_chars_gte": 3
+        },
         "costs": [
           {
             "type": "don_minus",
@@ -42116,6 +42117,10 @@
       "passive": {
         "steps": [
           {
+            "action": "grant_rush_character_type",
+            "filter_type": "sword"
+          },
+          {
             "action": "substitute_removal",
             "cost": {
               "action": "trash_to_deck_bottom",
@@ -42843,7 +42848,7 @@
       "passive": {
         "steps": [
           {
-            "action": "gain_rush"
+            "action": "gain_rush_character"
           }
         ],
         "conditions": {
@@ -54982,7 +54987,7 @@
       "passive": {
         "steps": [
           {
-            "action": "gain_rush"
+            "action": "gain_rush_character"
           }
         ],
         "conditions": {
@@ -65310,6 +65315,20 @@
             "count": 1,
             "cost_lte": 5,
             "filter_name": "neptunian"
+          }
+        ]
+      },
+      "activate_main": {
+        "steps": [
+          {
+            "action": "select_grant_rush_character",
+            "count": 1,
+            "filter_type": "neptunian"
+          }
+        ],
+        "costs": [
+          {
+            "type": "rest_self"
           }
         ]
       }

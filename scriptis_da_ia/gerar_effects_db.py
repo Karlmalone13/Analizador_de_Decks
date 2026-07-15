@@ -372,6 +372,10 @@ def parse_conditions(text):
     if m:
         conds['opp_chars_power_gte_count'] = {'count': int(m.group(1)), 'power_gte': int(m.group(2))}
 
+    m = re.search(r'if your opponent has (\d+) or more characters?\b(?!\s+with)', t)
+    if m:
+        conds['opp_chars_gte'] = int(m.group(1))
+
     m = re.search(r'if the total cost of your characters is (\d+) or more', t)
     if m:
         conds['total_chars_cost_gte'] = int(m.group(1))
@@ -1323,13 +1327,23 @@ def parse_can_attack_active(text):
     # (Stage passiva concede Rush a todos os Characters do tipo quando jogados).
     m_rush_self = re.search(r'this character can attack characters? on the turn in which it is played', t)
     if m_rush_self:
-        steps.append({'action': 'gain_rush'})
+        steps.append({'action': 'gain_rush_character'})
         return steps
     m_rush_type = re.search(
-        r'your \[?([a-z][a-z0-9 ]+)\]? type characters? can attack characters? '
+        r'your [\["{]?([a-z][a-z0-9 ]+)[\]"}]? type characters? can attack characters? '
         r'on the turn in which they are played', t)
     if m_rush_type:
-        steps.append({'action': 'gain_rush', 'filter_type': m_rush_type.group(1).strip()})
+        steps.append({'action': 'grant_rush_character_type',
+                      'filter_type': m_rush_type.group(1).strip()})
+        return steps
+
+    m_select_rush_char = re.search(
+        r'up to (\d+) of your [\["{]([^\]"}]+)[\]"}] type characters? '
+        r'can attack characters? on the turn in which it is played', t)
+    if m_select_rush_char:
+        steps.append({'action': 'select_grant_rush_character',
+                      'count': int(m_select_rush_char.group(1)),
+                      'filter_type': m_select_rush_char.group(2).strip()})
         return steps
 
     m_select = re.search(
@@ -4669,7 +4683,12 @@ def parse_card_effect(card_text, card_type):
                           and steps[0].get('action') in ('substitute_ko', 'substitute_removal'))
 
         conds = parse_conditions(block)
-        costs = [] if is_substitute else parse_costs(block)
+        # Bloco passivo pode combinar uma aura e uma substituicao. Nesse
+        # caso o custo ja vive dentro do step substitute_removal; nao o
+        # duplique como custo global apenas porque a aura adicionou outro step.
+        has_substitute = (not is_choice and any(
+            s.get('action') in ('substitute_ko', 'substitute_removal') for s in steps))
+        costs = [] if has_substitute else parse_costs(block)
         once = '[once per turn]' in t_low
 
         # "Then, if [cond]" scope leakage: se o bloco tem o padrao "[A
@@ -4825,7 +4844,8 @@ def parse_card_effect(card_text, card_type):
                     ).strip()
 
             if solto_steps:
-                is_sub_solto = len(solto_steps) == 1 and solto_steps[0].get('action') in ('substitute_ko', 'substitute_removal')
+                is_sub_solto = any(s.get('action') in ('substitute_ko', 'substitute_removal')
+                                   for s in solto_steps)
                 solto_entry = {'steps': solto_steps}
                 solto_conds = parse_conditions(segmento_solto)
                 solto_costs = [] if is_sub_solto else parse_costs(segmento_solto)
@@ -4929,7 +4949,9 @@ def parse_card_effect(card_text, card_type):
         if sem_tags_de_trigger:
             fallback_steps = parse_block(t_low, 'passive')
             if fallback_steps:
-                is_substitute_fb = len(fallback_steps) == 1 and fallback_steps[0].get('action') in ('substitute_ko', 'substitute_removal')
+                is_substitute_fb = any(
+                    s.get('action') in ('substitute_ko', 'substitute_removal')
+                    for s in fallback_steps)
                 entry = {'steps': fallback_steps}
 
                 # mesma logica usada no segmento_solto: 'cannot_attack_self_unless'
