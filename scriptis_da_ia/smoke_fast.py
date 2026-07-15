@@ -20,6 +20,7 @@ from optcg_engine.decision_engine import (  # noqa: E402
     GameState,
     OPTCGMatch,
     _make_card,
+    apply_conditional_keyword_passives,
     get_card_effects,
     is_immune,
     load_cards_db,
@@ -964,6 +965,63 @@ def test_debuff_power_multiplo_alvo_e_condicao_por_tipo() -> None:
           forte in debuffados and medio in debuffados and fraco not in debuffados)
 
 
+def test_total_life_lte_condicao_combinada() -> None:
+    # Achado 15/07 (varredura ampla) -- "you and your opponent have a
+    # total of N or less Life cards" (SOMA da vida dos 2 lados) nunca
+    # existia como condicao -- 7 cartas reais (ex: OP09-114, familia
+    # Revolutionary Army) tinham efeitos late-game disparando sempre, sem
+    # checar o total combinado.
+    conds = get_card_effects("OP09-114").get("on_play", {}).get("conditions", {})
+    check("OP09-114 parseia total_life_lte=5", conds.get("total_life_lte") == 5)
+
+    op09114 = real_card("OP09-114")
+    opp_alvo = mk("XOPPC", "Alvo", power=1500, cost=1)
+
+    me_alto = GameState(leader=mk("XLD1", "Lider", card_type="LEADER"), turn=3)
+    me_alto.life = [mk(f"XL{i}", f"Vida{i}", cost=0) for i in range(3)]
+    opp_alto = GameState(leader=mk("XOPPL1", "Lider Opp", card_type="LEADER"), turn=3)
+    opp_alto.life = [mk(f"XOL{i}", f"OVida{i}", cost=0) for i in range(3)]
+    opp_alto.field_chars = [opp_alvo]
+    EffectExecutor(me_alto, opp_alto).execute(op09114, "on_play")
+    check("Efeito NAO dispara com vida total > 5 (3+3=6)",
+          opp_alvo in opp_alto.field_chars)
+
+    me_baixo = GameState(leader=mk("XLD2", "Lider", card_type="LEADER"), turn=3)
+    me_baixo.life = [mk(f"XL{i}", f"Vida{i}", cost=0) for i in range(2)]
+    opp_baixo = GameState(leader=mk("XOPPL2", "Lider Opp", card_type="LEADER"), turn=3)
+    opp_baixo.life = [mk(f"XOL{i}", f"OVida{i}", cost=0) for i in range(2)]
+    opp_alvo2 = mk("XOPPC2", "Alvo2", power=1500, cost=1)
+    opp_baixo.field_chars = [opp_alvo2]
+    EffectExecutor(me_baixo, opp_baixo).execute(op09114, "on_play")
+    check("Efeito dispara de verdade com vida total <= 5 (2+2=4)",
+          opp_alvo2 not in opp_baixo.field_chars)
+
+
+def test_don_on_field_lte_condicao_ausente() -> None:
+    # Achado 15/07 -- "if you have N or less DON!! cards on your field"
+    # (proprio lado) nunca existia, so o "N or more" (don_on_field_gte).
+    # OP15-067 (e familia OP15-060/061/063/066/068) dava Rush/Blocker/
+    # imunidade SEMPRE, sem checar se o DON estava realmente baixo.
+    conds = get_card_effects("OP15-067").get("passive", {}).get("conditions", {})
+    check("OP15-067 parseia don_on_field_lte=6", conds.get("don_on_field_lte") == 6)
+
+    rush_char = real_card("OP15-067")
+
+    me_muito_don = GameState(leader=mk("XLD", "Lider", card_type="LEADER"), turn=3,
+                              don_available=7)
+    me_muito_don.field_chars = [rush_char]
+    opp = GameState(leader=mk("XOPPL", "Lider Opp", card_type="LEADER"), turn=3)
+    apply_conditional_keyword_passives(me_muito_don, opp)
+    check("Com DON > 6 no campo, NAO ganha Rush", not rush_char.has_rush)
+
+    rush_char2 = real_card("OP15-067")
+    me_pouco_don = GameState(leader=mk("XLD2", "Lider", card_type="LEADER"), turn=3,
+                              don_available=5)
+    me_pouco_don.field_chars = [rush_char2]
+    apply_conditional_keyword_passives(me_pouco_don, opp)
+    check("Com DON <= 6 no campo, ganha Rush de verdade", rush_char2.has_rush)
+
+
 def main() -> int:
     test_turn_order_imu_prefers_second()
     test_empty_throne_beats_direct_five_elders_play()
@@ -1002,6 +1060,8 @@ def main() -> int:
     test_zoro_lider_battled_character_e_restricao_de_ataque()
     test_roger_vitoria_alternativa_ao_oponente_bloquear()
     test_debuff_power_multiplo_alvo_e_condicao_por_tipo()
+    test_total_life_lte_condicao_combinada()
+    test_don_on_field_lte_condicao_ausente()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0

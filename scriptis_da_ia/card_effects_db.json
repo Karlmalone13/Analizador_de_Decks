@@ -7646,6 +7646,7 @@
           }
         ],
         "conditions": {
+          "total_life_lte": 5,
           "leader_type": "revolutionary army"
         }
       }
@@ -21112,16 +21113,19 @@
       "counter": {
         "steps": [
           {
-            "action": "ko",
-            "count": 1,
-            "target": "opp_character",
-            "cost_lte": 2
-          },
-          {
             "action": "buff_power",
             "amount": 6000,
             "target": "leader_or_character",
             "duration": "battle_only"
+          },
+          {
+            "action": "ko",
+            "count": 1,
+            "target": "opp_character",
+            "cost_lte": 2,
+            "conditions": {
+              "total_life_lte": 4
+            }
           }
         ]
       }
@@ -37855,6 +37859,7 @@
           }
         ],
         "conditions": {
+          "total_life_lte": 5,
           "leader_type": "revolutionary army"
         }
       },
@@ -38128,6 +38133,7 @@
           }
         ],
         "conditions": {
+          "total_life_lte": 5,
           "leader_type": "revolutionary army"
         }
       }
@@ -38251,6 +38257,7 @@
           }
         ],
         "conditions": {
+          "total_life_lte": 5,
           "leader_type": "revolutionary army"
         }
       }
@@ -38287,7 +38294,10 @@
             "target": "opp_character",
             "power_lte": 2000
           }
-        ]
+        ],
+        "conditions": {
+          "total_life_lte": 5
+        }
       },
       "trigger": {
         "steps": [
@@ -38296,7 +38306,10 @@
             "count": 1,
             "source": "self"
           }
-        ]
+        ],
+        "conditions": {
+          "total_life_lte": 5
+        }
       }
     }
   },
@@ -41290,6 +41303,7 @@
           }
         ],
         "conditions": {
+          "total_life_lte": 5,
           "leader_type": "revolutionary army"
         }
       }
@@ -48681,7 +48695,10 @@
             "target": "leader",
             "duration": "this_turn"
           }
-        ]
+        ],
+        "conditions": {
+          "don_on_field_lte": 9
+        }
       }
     }
   },
@@ -57531,7 +57548,10 @@
             "target": "self",
             "duration": "this_turn"
           }
-        ]
+        ],
+        "conditions": {
+          "don_on_field_lte": 6
+        }
       }
     }
   },
@@ -57569,7 +57589,10 @@
             "target": "opp_character",
             "duration": "this_turn"
           }
-        ]
+        ],
+        "conditions": {
+          "don_on_field_lte": 6
+        }
       }
     }
   },
@@ -57619,7 +57642,10 @@
             "target": "opp_character",
             "power_lte": 2000
           }
-        ]
+        ],
+        "conditions": {
+          "don_on_field_lte": 6
+        }
       }
     }
   },
@@ -57710,7 +57736,10 @@
           {
             "action": "deck_reorder_rest"
           }
-        ]
+        ],
+        "conditions": {
+          "don_on_field_lte": 6
+        }
       }
     }
   },
@@ -57745,7 +57774,10 @@
           {
             "action": "gain_rush"
           }
-        ]
+        ],
+        "conditions": {
+          "don_on_field_lte": 6
+        }
       }
     }
   },
@@ -57766,6 +57798,9 @@
             "action": "gain_blocker"
           }
         ],
+        "conditions": {
+          "don_on_field_lte": 6
+        },
         "costs": [
           {
             "type": "rest_self"
@@ -58092,14 +58127,17 @@
       "counter": {
         "steps": [
           {
-            "action": "draw",
-            "count": 1
-          },
-          {
             "action": "buff_power",
             "amount": 1000,
             "target": "leader_or_character",
             "duration": "battle_only"
+          },
+          {
+            "action": "draw",
+            "count": 1,
+            "conditions": {
+              "don_on_field_lte": 6
+            }
           }
         ]
       },
@@ -59408,7 +59446,10 @@
             "target": "self",
             "duration": "this_turn"
           }
-        ]
+        ],
+        "conditions": {
+          "don_on_field_lte": 6
+        }
       }
     }
   },
@@ -69586,7 +69627,10 @@
             "action": "add_don",
             "count": 2
           }
-        ]
+        ],
+        "conditions": {
+          "don_on_field_lte": 3
+        }
       }
     }
   },

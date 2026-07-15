@@ -31829,15 +31829,15 @@
     "trigger": "trigger"
    },
    {
+    "action": "buff_power",
+    "trigger": "counter",
+    "target": "leader_or_character"
+   },
+   {
     "action": "ko",
     "trigger": "counter",
     "cost_lte": 2,
     "target": "opp_character"
-   },
-   {
-    "action": "buff_power",
-    "trigger": "counter",
-    "target": "leader_or_character"
    }
   ],
   "synergy_states": {
@@ -87816,13 +87816,13 @@
   "attribute": "",
   "effects": [
    {
-    "action": "draw",
-    "trigger": "counter"
-   },
-   {
     "action": "buff_power",
     "trigger": "counter",
     "target": "leader_or_character"
+   },
+   {
+    "action": "draw",
+    "trigger": "counter"
    },
    {
     "action": "rest_opp_character",

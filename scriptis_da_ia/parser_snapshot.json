@@ -4951,7 +4951,8 @@
   },
   "trigger": {
    "conditions": {
-    "leader_type": "revolutionary army"
+    "leader_type": "revolutionary army",
+    "total_life_lte": 5
    },
    "steps": [
     {
@@ -13059,16 +13060,19 @@
   "counter": {
    "steps": [
     {
-     "action": "ko",
-     "cost_lte": 2,
-     "count": 1,
-     "target": "opp_character"
-    },
-    {
      "action": "buff_power",
      "amount": 6000,
      "duration": "battle_only",
      "target": "leader_or_character"
+    },
+    {
+     "action": "ko",
+     "conditions": {
+      "total_life_lte": 4
+     },
+     "cost_lte": 2,
+     "count": 1,
+     "target": "opp_character"
     }
    ]
   },
@@ -23501,7 +23505,8 @@
   },
   "trigger": {
    "conditions": {
-    "leader_type": "revolutionary army"
+    "leader_type": "revolutionary army",
+    "total_life_lte": 5
    },
    "steps": [
     {
@@ -23679,7 +23684,8 @@
  "OP09-108": {
   "trigger": {
    "conditions": {
-    "leader_type": "revolutionary army"
+    "leader_type": "revolutionary army",
+    "total_life_lte": 5
    },
    "steps": [
     {
@@ -23758,7 +23764,8 @@
   },
   "trigger": {
    "conditions": {
-    "leader_type": "revolutionary army"
+    "leader_type": "revolutionary army",
+    "total_life_lte": 5
    },
    "steps": [
     {
@@ -23772,6 +23779,9 @@
  "OP09-113": {},
  "OP09-114": {
   "on_play": {
+   "conditions": {
+    "total_life_lte": 5
+   },
    "steps": [
     {
      "action": "ko",
@@ -23782,6 +23792,9 @@
    ]
   },
   "trigger": {
+   "conditions": {
+    "total_life_lte": 5
+   },
    "steps": [
     {
      "action": "play_card",
@@ -25611,7 +25624,8 @@
  "OP10-100": {
   "trigger": {
    "conditions": {
-    "leader_type": "revolutionary army"
+    "leader_type": "revolutionary army",
+    "total_life_lte": 5
    },
    "steps": [
     {
@@ -30151,6 +30165,9 @@
  },
  "OP13-003": {
   "passive": {
+   "conditions": {
+    "don_on_field_lte": 9
+   },
    "steps": [
     {
      "action": "buff_power",
@@ -35729,6 +35746,9 @@
    ]
   },
   "passive": {
+   "conditions": {
+    "don_on_field_lte": 6
+   },
    "steps": [
     {
      "action": "immunity",
@@ -35761,6 +35781,9 @@
    ]
   },
   "when_attacking": {
+   "conditions": {
+    "don_on_field_lte": 6
+   },
    "steps": [
     {
      "action": "debuff_power",
@@ -35774,6 +35797,9 @@
  "OP15-062": {},
  "OP15-063": {
   "on_ko": {
+   "conditions": {
+    "don_on_field_lte": 6
+   },
    "steps": [
     {
      "action": "ko",
@@ -35841,6 +35867,9 @@
    ]
   },
   "when_attacking": {
+   "conditions": {
+    "don_on_field_lte": 6
+   },
    "steps": [
     {
      "action": "look_top_deck",
@@ -35874,6 +35903,9 @@
    ]
   },
   "passive": {
+   "conditions": {
+    "don_on_field_lte": 6
+   },
    "steps": [
     {
      "action": "gain_rush"
@@ -35883,6 +35915,9 @@
  },
  "OP15-068": {
   "passive": {
+   "conditions": {
+    "don_on_field_lte": 6
+   },
    "costs": [
     {
      "type": "rest_self"
@@ -36104,14 +36139,17 @@
   "counter": {
    "steps": [
     {
-     "action": "draw",
-     "count": 1
-    },
-    {
      "action": "buff_power",
      "amount": 1000,
      "duration": "battle_only",
      "target": "leader_or_character"
+    },
+    {
+     "action": "draw",
+     "conditions": {
+      "don_on_field_lte": 6
+     },
+     "count": 1
     }
    ]
   },
@@ -36968,6 +37006,9 @@
    ]
   },
   "passive": {
+   "conditions": {
+    "don_on_field_lte": 6
+   },
    "steps": [
     {
      "action": "immunity",
@@ -43006,6 +43047,9 @@
  },
  "ST10-008": {
   "on_play": {
+   "conditions": {
+    "don_on_field_lte": 3
+   },
    "steps": [
     {
      "action": "add_don",

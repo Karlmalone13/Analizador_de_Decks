@@ -62,8 +62,20 @@ def parse_conditions(text):
     conds = {}
     t = text.lower()
 
-    m = re.search(r'(?:if|and) you have (\d+) or less life', t)
-    if m: conds['life_lte'] = int(m.group(1))
+    # "you and your opponent have a total of N or less Life cards" --
+    # SOMA da vida dos 2 lados, distinta de life_lte (so o proprio) e
+    # opp_life_lte (so o oponente). Achado 15/07 (varredura ampla, 7
+    # cartas reais, ex: EB04-055/OP09-100/OP09-108/OP09-114): condicao
+    # inteira ausente, efeitos (geralmente late-game finishers) disparavam
+    # sempre. Checado ANTES de life_lte pra nao dar match parcial acidental
+    # (nao deveria colidir de qualquer forma -- "you AND your opponent
+    # have" nao bate com "you have" -- mas checar primeiro por seguranca).
+    m = re.search(r'you and your opponent have a total of (\d+) or less life', t)
+    if m:
+        conds['total_life_lte'] = int(m.group(1))
+    else:
+        m = re.search(r'(?:if|and) you have (\d+) or less life', t)
+        if m: conds['life_lte'] = int(m.group(1))
 
     m = re.search(r'(?:if|and) you have (\d+) or more life', t)
     if m: conds['life_gte'] = int(m.group(1))
@@ -102,6 +114,14 @@ def parse_conditions(text):
 
     m = re.search(r'if you have (\d+) or more don!! cards? on your field', t)
     if m: conds['don_on_field_gte'] = int(m.group(1))
+
+    # "if you have N or less DON!! cards on your field" -- simetrico ao
+    # gte acima, faltava o lado "ou menos" (achado 15/07, varredura ampla,
+    # 4 cartas reais: OP15-060/067/068 e familia -- "If you have 6 or less
+    # DON!! cards on your field, this Character gains [Rush]/[Blocker]/
+    # imunidade" aplicava SEMPRE, condicao inteira descartada).
+    m = re.search(r'if you have (\d+) or less don!! cards? on your field', t)
+    if m: conds['don_on_field_lte'] = int(m.group(1))
 
     # "if your opponent has N or more DON!! cards on their field" --
     # condicao simetrica sobre o campo do OPONENTE, distinta de

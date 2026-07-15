@@ -1,5 +1,49 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-15 (157) - Claude - Mais 2 causas raiz da varredura ampla: total_life_lte (7 cartas) + don_on_field_lte (10 cartas)
+
+**Continuacao direta do bloco 156, mesmo metodo de clustering.**
+
+**`total_life_lte` (condicao nova, 7 cartas):** "you and your opponent
+have a total of N or less Life cards" (SOMA da vida dos 2 lados) nunca
+existia -- so `life_lte` (proprio) e `opp_life_lte` (oponente, bloco 151)
+existiam separados. Familia Revolutionary Army (EB04-055, OP09-100,
+OP09-108, OP09-112, OP09-114, OP10-100) e OP04-116 tinham efeitos
+late-game (trigger-play, K.O. condicional) disparando SEMPRE, sem checar
+o total combinado. Adicionado em `parse_conditions`/`_check_conditions`.
+
+**`don_on_field_lte` (condicao nova, 10 cartas):** simetrico a
+`don_on_field_gte` (que ja existia, proprio campo) -- faltava o lado "ou
+menos". OP15-060/061/063/066/067/068 e OP13-003 (arquetipo "baixo DON =
+recompensa", oposto de ramp) davam Rush/Blocker/imunidade/buff/debuff
+SEMPRE, sem checar se o DON no campo estava realmente baixo. Achado
+IMPORTANTE de arquitetura: existem 2 checadores de `conditions`
+INDEPENDENTES no motor pra esse tipo de condicao --
+`_check_conditions` (usado por `apply_conditional_keyword_passives`,
+onde o bug realmente vivia) e `_effect_conditions_met` (usado em outro
+lugar, checado por precaucao mas nao confirmado se algum caso real usa
+`don_on_field_lte` por ali ainda) -- atualizados os DOIS, mesma licao do
+Ipponmatsu (bloco 149): sempre conferir se ha checador duplicado antes
+de considerar um fix completo.
+
+**Validado:** 2 testes dirigidos novos com EXECUCAO real -- `total_life_lte`
+testa on_play disparando/nao disparando conforme a soma; `don_on_field_lte`
+testa `apply_conditional_keyword_passives` concedendo Rush de verdade
+(`has_rush=True`) so quando o DON no campo esta baixo o suficiente.
+`smoke_fast` (76 checks) + `smoke_test` amplo, ambos verdes. `diff_parser.py`
+PERDEU=0 em cada etapa (17 cartas corrigidas nesta rodada).
+
+**Estado da varredura:** ~458 -> ~441 suspeitos apos esta rodada (17
+fechados, chars_gte_type_filter+debuff_power do bloco 156 ja tinham
+fechado 18). Total desta sessao (blocos 143-157): 122+ cartas corrigidas
+por causa raiz compartilhada, ao longo de ~15 causas raiz distintas.
+Proxima sessao: continuar com o script de clustering
+(`audit_parser_coverage.py` + agrupamento por contexto normalizado),
+proximos clusters candidatos ja identificados no bloco 156 (varias
+combinacoes de "up to N ... power" com clausulas condicionais anexas
+que AINDA nao foram auditadas individualmente -- lembrar da armadilha de
+falso-positivo documentada la antes de investir tempo).
+
 ## 2026-07-15 (156) - Claude - Retomada da varredura ampla (476 suspeitos restantes): 2 causas raiz corrigidas (18 cartas), metodo de clustering programatico introduzido
 
 **Pedido do usuario:** "vamos corrigir e conferir aqueles 493 suspeitos"

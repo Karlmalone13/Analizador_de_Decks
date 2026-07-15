@@ -2640,6 +2640,8 @@ class EffectExecutor:
             return False
         if 'opp_life_gte' in conds and opp.life_count() < conds['opp_life_gte']:
             return False
+        if 'total_life_lte' in conds and (me.life_count() + opp.life_count()) > conds['total_life_lte']:
+            return False
         if conds.get('battled_opp_character_this_turn') and not getattr(
                 card, 'battled_opp_character_this_turn', False):
             return False
@@ -2648,6 +2650,8 @@ class EffectExecutor:
         if 'don_gte' in conds and me.don_available < conds['don_gte']:
             return False
         if 'don_on_field_gte' in conds and me.don_on_field() < conds['don_on_field_gte']:
+            return False
+        if 'don_on_field_lte' in conds and me.don_on_field() > conds['don_on_field_lte']:
             return False
         if 'opp_don_on_field_gte' in conds and opp.don_on_field() < conds['opp_don_on_field_gte']:
             return False
@@ -6308,6 +6312,7 @@ class DecisionEngine:
             if k == 'hand_gte'  and not (my_hand  >= v): return False
             if k == 'don_gte'   and not (my_don   >= v): return False
             if k == 'don_on_field_gte' and not ((my_don + me.don_rested) >= v): return False
+            if k == 'don_on_field_lte' and not ((my_don + me.don_rested) <= v): return False
             if k == 'opp_don_on_field_gte' and not (self.opp.don_on_field() >= v): return False
             if k == 'opp_don_on_field_lte' and not (self.opp.don_on_field() <= v): return False
             if k == 'opp_hand_gte' and not (len(self.opp.hand) >= v): return False
