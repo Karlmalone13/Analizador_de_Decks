@@ -28671,7 +28671,10 @@
           {
             "action": "keyword_blocker"
           }
-        ]
+        ],
+        "conditions": {
+          "don_rested_gte": 6
+        }
       }
     }
   },
@@ -29495,6 +29498,10 @@
         "steps": [
           {
             "action": "draw",
+            "count": 2
+          },
+          {
+            "action": "hand_to_deck",
             "count": 2
           }
         ]
@@ -31549,6 +31556,10 @@
             "count": 1
           },
           {
+            "action": "hand_to_deck",
+            "count": 1
+          },
+          {
             "action": "debuff_power",
             "amount": 2000,
             "target": "opp_character",
@@ -32851,6 +32862,10 @@
           {
             "action": "draw",
             "count": 2
+          },
+          {
+            "action": "hand_to_deck",
+            "count": 2
           }
         ]
       },
@@ -33033,6 +33048,10 @@
         "steps": [
           {
             "action": "draw",
+            "count": 1
+          },
+          {
+            "action": "hand_to_deck",
             "count": 1
           }
         ],
@@ -43235,6 +43254,10 @@
           {
             "action": "draw",
             "count": 3
+          },
+          {
+            "action": "hand_to_deck",
+            "count": 2
           }
         ],
         "conditions": {
@@ -45615,7 +45638,11 @@
           {
             "action": "keyword_blocker"
           }
-        ]
+        ],
+        "conditions": {
+          "don_rested_gte": 6,
+          "leader_attribute": "slash"
+        }
       }
     }
   },
@@ -45955,7 +45982,10 @@
           {
             "action": "deck_bottom_rest"
           }
-        ]
+        ],
+        "conditions": {
+          "leader_attribute": "slash"
+        }
       }
     }
   },
@@ -45995,7 +46025,10 @@
             "target": "self",
             "duration": "this_turn"
           }
-        ]
+        ],
+        "conditions": {
+          "leader_attribute": "slash"
+        }
       }
     }
   },

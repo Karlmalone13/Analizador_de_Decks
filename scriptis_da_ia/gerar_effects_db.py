@@ -80,6 +80,14 @@ def parse_conditions(text):
     m = re.search(r'if you have (\d+) or more don!!', t)
     if m: conds['don_gte'] = int(m.group(1))
 
+    # "you have N or more RESTED DON!! cards" -- distinto de don_gte (que
+    # olha don_available/ativo) e de don_on_field_gte (total no campo,
+    # ativo+rested). Achado 15/07 (revisao do usuario, OP12-021 Ipponmatsu):
+    # condicao inteira ausente do parseado, imunidade a rest aplicava sem
+    # NENHUM dos 2 requisitos do texto (lider Slash + 6+ DON rested).
+    m = re.search(r'(?:if|and) you have (\d+) or more rested don!! cards?', t)
+    if m: conds['don_rested_gte'] = int(m.group(1))
+
     m = re.search(r'if you have (\d+) or more don!! cards? on your field', t)
     if m: conds['don_on_field_gte'] = int(m.group(1))
 
@@ -134,6 +142,14 @@ def parse_conditions(text):
     # "if your leader has the X type" — X entre aspas, colchetes ou chaves
     m = re.search(r'if your leader has (?:the )?["\[{]([^"\]}]+)["\]}] type', t)
     if m: conds['leader_type'] = m.group(1).strip()
+
+    # "if your leader has the (X) attribute" -- X entre parenteses (achado
+    # 15/07, OP12-021 Ipponmatsu: "If your Leader has the (Slash)
+    # attribute..."). Distinto de leader_type (que olha sub_types, nao
+    # attribute) e de opp_leader_attribute (que ja existia pro lado do
+    # OPONENTE, so faltava o lado proprio).
+    m = re.search(r'if your leader has (?:the )?\(([^)]+)\) attribute', t)
+    if m: conds['leader_attribute'] = m.group(1).strip()
 
     if 'if your leader is multicolored' in t:
         conds['leader_multicolor'] = True
@@ -1536,6 +1552,21 @@ def parse_draw(text):
         steps.append(step)
     elif 'draw a card' in t:
         steps.append({'action': 'draw', 'count': 1})
+
+    # "...and place M cards from your hand at the top or bottom of your
+    # deck in any order" -- clausula "loot" (compra N, devolve M da mao)
+    # que segue o draw. Achado 15/07 via audit_parser_coverage.py +
+    # revisao manual do usuario: OP07-053, OP08-050 e OP11-054 (Nami)
+    # tinham essa clausula inteira ausente do parseado (so o draw
+    # sobrevivia). "top or bottom ... in any order" e escolha estetica do
+    # jogador sem efeito mecanico relevante pro engine -- modela como
+    # hand_to_deck (fundo do deck, mesma convencao ja usada em
+    # opp_place_hand_bottom_deck pro lado do oponente).
+    m_loot = re.search(
+        r'place (\d+) cards? from your hand at(?: the)? top or bottom '
+        r'of your deck', t)
+    if m_loot:
+        steps.append({'action': 'hand_to_deck', 'count': int(m_loot.group(1))})
 
     return steps
 

@@ -1,5 +1,78 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-15 (149) - Claude - Usuario revisou 8 suspeitos manualmente -- 14 cartas corrigidas via 2 causas raiz (loot pos-draw, imunidade condicional com checador dedicado)
+
+**Contexto:** usuario leu a saida do `audit_parser_coverage.py` linha a
+linha (nao consegue ler tudo, mas revisou um lote de 8 suspeitos) e trouxe
+achados prontos, ja com a causa do erro identificada em varios casos.
+Processados nesta sessao (2 corrigidos por causa raiz compartilhada, 6
+documentados como pendencia por serem estruturalmente distintos/complexos
+demais pra essa passada):
+
+**1. `hand_to_deck` -- clausula "loot" apos draw, ausente por completo
+(5 cartas: OP11-054 Nami, OP07-053, OP08-050, OP08-002, OP08-056):**
+"Draw N cards and place M cards from your hand at the top or bottom of
+your deck [in any order]" -- so o "draw N" sobrevivia, a clausula de
+devolver M cartas pro deck sumia inteira. `parse_draw` ganhou ramo pra
+essa clausula (nova action `hand_to_deck`, mesma convencao de
+`opp_place_hand_bottom_deck` mas lado proprio). Usuario pediu
+explicitamente pra buscar OUTRAS cartas com "top or bottom"/"any order" --
+busca ampla achou 10 cartas com esse padrao textual, mas so essas 5
+tinham a clausula REALMENTE ausente (as outras 5, com o padrao "look at N
+cards... place at top or bottom", ja eram tratadas corretamente por
+`look_top_deck`+`deck_reorder_rest` de sessao anterior).
+
+**2. Imunidade condicional tinha um checador de condicoes SEPARADO e mais
+pobre que o resto do motor (OP12-021 Ipponmatsu, "If your Leader has the
+(Slash) attribute and you have 6 or more rested DON!! cards, this
+Character cannot be rested..."):** achado estrutural real -- existem DOIS
+verificadores de `conditions` no motor: `_check_conditions` (usado por
+on_play/main/trigger, ja tinha varias condicoes) e `_immunity_conds_met`
+(usado SO por `is_immune()`, MUITO mais pobre -- so tinha
+`all_don_rested`/`life_lte`/`life_gte`/`only_field_type`). Adicionei
+`leader_attribute` (parenteses como delimitador, achado novo -- os outros
+usam aspas/colchetes/chaves) e `don_rested_gte` (distinto de `don_gte`,
+que olha `don_available`) em AMBOS os checadores -- mas so
+`_immunity_conds_met` afetava o Ipponmatsu de fato, ja que `is_immune()`
+nao usa `_check_conditions`. Corrigiu um teste ANTIGO em `smoke_test.py`
+que sem querer testava o BUG (setup sem lider Slash/DON rested, esperando
+imunidade incondicional) -- atualizado pra montar o cenario completo.
+Bonus: mais 4 cartas ganharam `leader_attribute`/`don_rested_gte` na
+mesma regeneracao (OP07-023, OP12-034, OP12-036 entre outras).
+
+**Pendencias documentadas, NAO corrigidas nesta sessao (revisar depois,
+cada uma exige desenho proprio, nao e causa raiz compartilhada):**
+- **PRB02-006 (Zoro)**: efeito de SUBSTITUICAO real ("If this Character
+  would be rested by your opponent's Character's effect, you may rest 1
+  of your other Characters instead") -- redireciona um rest pra OUTRO
+  character proprio, mecanica de substituicao que ainda nao existe pra
+  "rest" (so existe pra KO/removal via `try_substitute`).
+- **OP14-078 (Bullet String)**: usuario suspeita que o TEXTO CRU esta
+  errado na fonte ("DON!! 1" deveria ser "DON!! -1", falta o sinal de
+  menos) -- precisa confirmar contra a carta real antes de decidir se e
+  bug de dado (cards_rows.csv) ou like intencional.
+- **OP12-058 (Whitebeard)**: "reveal 1 card from top of deck; if Character
+  with type Whitebeard Pirates and cost<=9, you may play it" -- mecanica
+  de reveal-condicional-play parcialmente coberta em outras cartas (Empty
+  Throne), precisa investigar se da pra reusar ou se e um padrao novo.
+- **OP12-020 (Zoro lider)**: activate_main perdeu 2 clausulas -- condicao
+  de "so ativa se bateu um Character do oponente neste turno" E o segundo
+  efeito ("nao pode atacar Characters custo<=7 este turno").
+- **OP10-112 (Kid)**: 3 problemas na mesma carta -- custo devia ser
+  OPCIONAL ("you may rest this Character"), a acao e TRASH da vida do
+  oponente (nao ataque -- sem dano, sem trigger, sem compra pro
+  oponente, distincao K.O.-vs-Trash do mesmo tipo ja documentada no
+  CLAUDE.md), e falta a condicao "vida do oponente <= 2" no end_of_turn.
+- **OP09-118 (Gol.D.Roger)**: condicao de vitoria ALTERNATIVA muito rara
+  ("if either player has 0 Life cards when opponent activates Blocker,
+  you win") -- mecanica unica no banco, exigiria um novo tipo de
+  win-condition generico so pra esta carta.
+
+**Validado:** `smoke_fast` (52 checks agora, 2 testes dirigidos novos
+cobrindo execucao real, nao so parse) + `smoke_test` amplo, ambos verdes
+apos corrigir o teste desatualizado. `diff_parser.py` PERDEU=0 em cada
+etapa, `gerar_dbs.py` + re-snapshot feitos.
+
 ## 2026-07-15 (148) - Claude - "up to N" passa a ser um TETO de verdade (0..N), nao mais "sempre N" -- give_don ganha calculo de deficit real
 
 **Pergunta do usuario que motivou isso:** depois do fix de contabilidade

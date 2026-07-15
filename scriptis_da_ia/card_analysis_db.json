@@ -44774,6 +44774,10 @@
     "trigger": "on_play"
    },
    {
+    "action": "hand_to_deck",
+    "trigger": "on_play"
+   },
+   {
     "action": "keyword_blocker",
     "trigger": "passive"
    }
@@ -47844,6 +47848,11 @@
     "don_requirement": 1
    },
    {
+    "action": "hand_to_deck",
+    "trigger": "activate_main",
+    "don_requirement": 1
+   },
+   {
     "action": "debuff_power",
     "trigger": "activate_main",
     "don_requirement": 1,
@@ -49965,6 +49974,10 @@
     "trigger": "on_play"
    },
    {
+    "action": "hand_to_deck",
+    "trigger": "on_play"
+   },
+   {
     "action": "keyword_blocker",
     "trigger": "passive"
    }
@@ -50231,6 +50244,10 @@
   "effects": [
    {
     "action": "draw",
+    "trigger": "your_turn"
+   },
+   {
+    "action": "hand_to_deck",
     "trigger": "your_turn"
    },
    {
@@ -65878,6 +65895,10 @@
   "effects": [
    {
     "action": "draw",
+    "trigger": "on_play"
+   },
+   {
+    "action": "hand_to_deck",
     "trigger": "on_play"
    },
    {

@@ -17738,6 +17738,9 @@
  },
  "OP07-023": {
   "passive": {
+   "conditions": {
+    "don_rested_gte": 6
+   },
    "steps": [
     {
      "action": "buff_power",
@@ -18242,6 +18245,10 @@
    "steps": [
     {
      "action": "draw",
+     "count": 2
+    },
+    {
+     "action": "hand_to_deck",
      "count": 2
     }
    ]
@@ -19550,6 +19557,10 @@
      "count": 1
     },
     {
+     "action": "hand_to_deck",
+     "count": 1
+    },
+    {
      "action": "debuff_power",
      "amount": 2000,
      "duration": "this_turn",
@@ -20322,6 +20333,10 @@
     {
      "action": "draw",
      "count": 2
+    },
+    {
+     "action": "hand_to_deck",
+     "count": 2
     }
    ]
   },
@@ -20449,6 +20464,10 @@
    "steps": [
     {
      "action": "draw",
+     "count": 1
+    },
+    {
+     "action": "hand_to_deck",
      "count": 1
     }
    ]
@@ -26772,6 +26791,10 @@
     {
      "action": "draw",
      "count": 3
+    },
+    {
+     "action": "hand_to_deck",
+     "count": 2
     }
    ]
   },
@@ -28194,6 +28217,10 @@
  },
  "OP12-021": {
   "passive": {
+   "conditions": {
+    "don_rested_gte": 6,
+    "leader_attribute": "slash"
+   },
    "steps": [
     {
      "action": "immunity",
@@ -28387,6 +28414,9 @@
  },
  "OP12-034": {
   "on_play": {
+   "conditions": {
+    "leader_attribute": "slash"
+   },
    "steps": [
     {
      "action": "look_top_deck",
@@ -28406,6 +28436,9 @@
  "OP12-035": {},
  "OP12-036": {
   "passive": {
+   "conditions": {
+    "leader_attribute": "slash"
+   },
    "steps": [
     {
      "action": "immunity",

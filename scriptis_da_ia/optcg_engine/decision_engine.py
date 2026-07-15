@@ -963,6 +963,18 @@ def _immunity_conds_met(conds, card, owner, opp):
         tipo = conds['only_field_type'].lower()
         if not owner.field_chars or any(tipo not in c.sub_types.lower() for c in owner.field_chars):
             return False
+    # Achado 15/07 (OP12-021 Ipponmatsu, "If your Leader has the (Slash)
+    # attribute and you have 6 or more rested DON!! cards..."): a imunidade
+    # aplicava sempre porque _immunity_conds_met (checador DEDICADO desta
+    # funcao, distinto de _check_conditions usado por on_play/main/trigger)
+    # nunca tinha esses 2 campos, mesmo com parse_conditions ja gerando-os.
+    if 'leader_attribute' in conds:
+        my_attr = (getattr(owner.leader, 'attribute', '') or '').lower()
+        if conds['leader_attribute'].lower() not in my_attr:
+            return False
+    if 'don_rested_gte' in conds:
+        if owner.don_rested < conds['don_rested_gte']:
+            return False
     return True
 
 
@@ -1545,8 +1557,8 @@ class EffectExecutor:
         if a in ('play_from_deck', 'trash_from_deck_top', 'deck_reorder_rest',
                  'deck_top_rest', 'deck_bottom_rest', 'look_top_deck', 'draw'):
             return len(me.deck) > 0
-        if a in ('trash_from_hand', 'life_to_hand'):
-            return len(me.hand) > 0 if a == 'trash_from_hand' else len(me.life) > 0
+        if a in ('trash_from_hand', 'life_to_hand', 'hand_to_deck'):
+            return len(me.hand) > 0 if a in ('trash_from_hand', 'hand_to_deck') else len(me.life) > 0
         if a == 'trash_own_life':
             return any(c.life_face_up for c in me.life) if step.get('face') == 'up' else len(me.life) > 0
         if a == 'attack_life':
@@ -2628,6 +2640,12 @@ class EffectExecutor:
             opp_attr = (getattr(opp.leader, 'attribute', '') or '').lower()
             if conds['opp_leader_attribute'].lower() not in opp_attr:
                 return False
+        if 'leader_attribute' in conds:
+            my_attr = (getattr(me.leader, 'attribute', '') or '').lower()
+            if conds['leader_attribute'].lower() not in my_attr:
+                return False
+        if 'don_rested_gte' in conds and me.don_rested < conds['don_rested_gte']:
+            return False
         if 'leader_type_includes' in conds:
             if _norm_type_text(conds['leader_type_includes']) not in _norm_type_text(me.leader.sub_types):
                 return False
@@ -4381,6 +4399,23 @@ class EffectExecutor:
         # oponente) so pra escolher QUAL carta, ja que o destino e
         # diferente. Achado 02/07/2026 (EB03-026, EB04-022, EB04-025,
         # OP06-044, OP07-047, OP08-046, OP15-048, P-048, OP16-047).
+        # ── hand_to_deck: coloca N cartas da PRÓPRIA mão de volta no deck
+        # ("top or bottom... in any order" -- escolha estética do jogador,
+        # sem efeito mecânico relevante; modela como fundo do deck, mesma
+        # convenção de opp_place_hand_bottom_deck). Achado 15/07: clausula
+        # "loot" (draw N, devolve M) que seguia um 'draw' ficava ausente
+        # do parseado inteira (OP07-053, OP08-050, OP11-054 Nami).
+        if action == 'hand_to_deck':
+            count = step.get('count', 1)
+            placed = []
+            for _ in range(min(count, len(me.hand))):
+                worst = self._choose_to_trash(me.hand)
+                if worst:
+                    remove_by_identity(me.hand, worst)
+                    me.deck.insert(0, worst)
+                    placed.append(worst.name[:12])
+            return f'colocou da mão no deck: {", ".join(placed)}' if placed else ''
+
         if action == 'opp_place_hand_bottom_deck':
             count = step.get('count', 1)
             placed = []

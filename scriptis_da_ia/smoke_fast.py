@@ -21,6 +21,7 @@ from optcg_engine.decision_engine import (  # noqa: E402
     OPTCGMatch,
     _make_card,
     get_card_effects,
+    is_immune,
     load_cards_db,
 )
 from optcg_engine import sim_bridge  # noqa: E402
@@ -45,6 +46,7 @@ def mk(
     sub_types: str = "",
     card_type: str = "CHARACTER",
     color: str = "Black",
+    attribute: str = "",
 ) -> Card:
     return Card(
         data=CardData(
@@ -55,6 +57,7 @@ def mk(
             cost=cost,
             power=power,
             sub_types=sub_types,
+            attribute=attribute,
         )
     )
 
@@ -675,6 +678,58 @@ def test_give_don_da_so_o_necessario_nao_sempre_o_teto() -> None:
           me_b.don_rested == 1 and fraco.don_attached == 1)
 
 
+def test_hand_to_deck_clausula_loot_apos_draw() -> None:
+    # Achado 15/07 -- o usuario revisou o script e apontou que Nami
+    # (OP11-054, "draw 3 cards and place 2 cards from your hand at the top
+    # or bottom of your deck in any order") tinha a 2a clausula inteira
+    # ausente do parseado. parse_draw ganhou ramo pra "place M cards from
+    # your hand at top or bottom of your deck" (hand_to_deck). Mesmo fix
+    # pegou 5 cartas reais (Nami + OP07-053, OP08-050, OP08-002, OP08-056).
+    steps = get_card_effects("OP11-054").get("on_play", {}).get("steps", [])
+    check("Nami parseia hand_to_deck count=2 (antes ausente por completo)",
+          any(s.get("action") == "hand_to_deck" and s.get("count") == 2 for s in steps))
+
+    lider_multicolor = mk("XMULTI", "Lider Multicolor", card_type="LEADER", color="Red Blue")
+    me = GameState(leader=lider_multicolor, turn=3)
+    opp = GameState(leader=mk("OP11-051", "Doflamingo", card_type="LEADER", color="Purple"), turn=3)
+    nami = real_card("OP11-054")
+    me.hand = [mk(f"XCARD{i}", f"Carta {i}", cost=1) for i in range(3)]
+    me.deck = [mk(f"XDECK{i}", f"Deck {i}", cost=1) for i in range(5)]
+    EffectExecutor(me, opp).execute(nami, "on_play")
+    check("Nami executa hand_to_deck de verdade: mao encolhe pelas 2 devolvidas",
+          len(me.hand) == 3 - 2 + 3)  # comprou 3, devolveu 2 -> liquido +1
+
+
+def test_ipponmatsu_immunity_exige_leader_slash_e_don_rested() -> None:
+    # Achado 15/07 -- o usuario apontou que OP12-021 (Ipponmatsu) tinha a
+    # imunidade a rest aplicando SEMPRE, sem nenhum dos 2 requisitos do
+    # texto ("If your Leader has the (Slash) attribute and you have 6 or
+    # more rested DON!! cards..."). parse_conditions ganhou leader_attribute
+    # (parenteses -- delimitador diferente do leader_type usual) e
+    # don_rested_gte (distinto de don_gte, que olha don_available).
+    conds = get_card_effects("OP12-021").get("passive", {}).get("conditions", {})
+    check("Ipponmatsu parseia leader_attribute=slash", conds.get("leader_attribute") == "slash")
+    check("Ipponmatsu parseia don_rested_gte=6", conds.get("don_rested_gte") == 6)
+
+    ipponmatsu = real_card("OP12-021")
+    opp = GameState(leader=mk("OP11-051", "Doflamingo", card_type="LEADER", color="Purple"), turn=3)
+
+    # Sem lider Slash nem DON rested suficiente -> NAO deveria estar imune.
+    me_sem = GameState(leader=mk("XL1", "Lider nao-Slash", card_type="LEADER", color="Red"), turn=3)
+    me_sem.field_chars = [ipponmatsu]
+    check("Ipponmatsu NAO imune sem lider Slash e sem 6+ DON rested",
+          not is_immune(ipponmatsu, "rest", me_sem, opp, source_is_opp=True))
+
+    # Com lider Slash e 6+ DON rested -> deveria estar imune.
+    ipponmatsu2 = real_card("OP12-021")
+    lider_slash = mk("XL2", "Lider Slash", card_type="LEADER", color="Red", attribute="Slash")
+    me_com = GameState(leader=lider_slash, turn=3)
+    me_com.don_rested = 6
+    me_com.field_chars = [ipponmatsu2]
+    check("Ipponmatsu IMUNE com lider Slash e 6+ DON rested",
+          is_immune(ipponmatsu2, "rest", me_com, opp, source_is_opp=True))
+
+
 def main() -> int:
     test_turn_order_imu_prefers_second()
     test_empty_throne_beats_direct_five_elders_play()
@@ -704,6 +759,8 @@ def main() -> int:
     test_give_don_opp_com_of_your_opponent_no_meio_da_frase()
     test_give_don_nao_inventa_don_quando_banco_insuficiente()
     test_give_don_da_so_o_necessario_nao_sempre_o_teto()
+    test_hand_to_deck_clausula_loot_apos_draw()
+    test_ipponmatsu_immunity_exige_leader_slash_e_don_rested()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0

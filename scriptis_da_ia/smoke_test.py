@@ -1348,12 +1348,20 @@ check('ST09-010 substitui KO trashando carta da propria vida',
 # lock_opp_cannot_be_rested (trava o character DO OPONENTE, mecanica
 # oposta, ja implementada -- confirmado que nao tem gap ali). ──
 me, opp = me_opp()
+# Achado 15/07: a imunidade do OP12-021 (Ipponmatsu) e CONDICIONAL ("If
+# your Leader has the (Slash) attribute and you have 6 or more rested
+# DON!! cards..."), nao incondicional -- o setup do teste precisa montar
+# as 2 condicoes do lado dono do Ipponmatsu (opp aqui), senao a imunidade
+# corretamente NAO se aplica (comportamento antigo do teste testava um
+# bug: imunidade sem nenhuma condicao).
+opp.leader = mk('LD-SLASH', 'Opp Leader Slash', power=5000, card_type='LEADER', attribute='Slash')
+opp.don_rested = 6
 op12021 = mk('OP12-021', 'Imune a rest', power=5000)
 controle1 = mk('CTRL1', 'Controle', power=4000)
 opp.field_chars = [op12021, controle1]
 ee = EffectExecutor(me, opp)
 log = ee._execute_step({'action': 'rest_opp_character', 'count': 2}, me.leader)
-check('OP12-021 e imune a rest forcado por efeito do oponente',
+check('OP12-021 e imune a rest forcado por efeito do oponente (lider Slash + 6+ DON rested)',
       not op12021.rested and controle1.rested)
 
 me, opp = me_opp()
