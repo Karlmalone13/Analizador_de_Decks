@@ -1,5 +1,62 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-15 (148) - Claude - "up to N" passa a ser um TETO de verdade (0..N), nao mais "sempre N" -- give_don ganha calculo de deficit real
+
+**Pergunta do usuario que motivou isso:** depois do fix de contabilidade
+do bloco 147, o usuario perguntou "e a questao do up to? pode ser up to x
+dons, up to x character, etc" -- ou seja: "up to N" no texto da carta
+significa o jogador escolhe LIVREMENTE entre 0 e N, nao "sempre N".
+
+**Varredura feita primeiro (pedido explicito):** antes de mexer em
+qualquer coisa, auditei os 19 lugares do motor que fazem
+`for _ in range(count)` (mesma classe de risco do bug do DON, aplicada a
+personagens/cartas). Todos os 19 ja sao seguros -- ou pre-checam
+`len(candidatos) < count` antes do loop, ou tem `if not candidatos: break`
+dentro dele. Conclusao: nao existe outro bug de "criar recurso do nada"
+(mover carta de lista Python ja e auto-limitado; o bug do DON era
+especifico de contador inteiro sem checagem). Reportado ao usuario antes
+de prosseguir.
+
+**Fix pedido explicitamente pelo usuario ("prefiro que ja ajuste o caso,
+coisa que a fase 3 devia resolver"):** `give_don` (dar DON ao PROPRIO
+personagem) agora calcula quanto DON e de fato NECESSARIO antes de usar o
+teto do texto da carta -- mesma formula do "deficit BASE" de
+`don_needed_for_attack` (`(opp.leader.power - attack_time_power(alvo,
+opp) + 999) // 1000`, so a parcela obrigatoria, sem a margem de counter
+que exige contexto de ataque declarado ainda inexistente neste ponto do
+efeito). `count = min(count, necessario)` ANTES do calculo de debito do
+banco (que ja tinha sido corrigido no bloco 147). Resultado: se o alvo ja
+bate o poder do lider do oponente sem ajuda, da ZERO DON (nao desperdica);
+se falta so 1, da 1 (nao o teto de 2, 3 etc. que a carta permitiria).
+
+**Por que SO `give_don` e nao `give_don_opp`:** dar DON pro seu PROPRIO
+personagem tem objetivo de vencer combate -- minimizar o gasto quando ja
+basta e estritamente melhor (sobra DON pra defesa). Dar DON pro personagem
+do OPONENTE (`give_don_opp`) tem objetivo OPOSTO (sobrecarregar/atrapalhar
+o oponente, geralmente combinado com lock de refresh) -- ali o maximo
+continua sendo a jogada certa, NAO mexi nesse lado.
+
+**Validado:** `smoke_fast` (48 checks agora). O teste antigo do bloco 147
+(`test_give_don_nao_inventa_don_quando_banco_insuficiente`) tinha usado o
+MESMO lider dos 2 lados por acidente -- com o fix novo isso zerava o
+`count` ANTES de chegar no cenario de banco insuficiente que o teste
+queria isolar (mascarava o proprio teste). Corrigido pra usar um lider
+oponente mais forte (isola as 2 checagens: quantidade inteligente E banco
+insuficiente, separadamente). 2 testes dirigidos novos confirmam os 2
+cenarios do calculo de deficit (zero gasto quando ja basta; gasto parcial
+quando falta menos que o teto). `smoke_test` amplo verde.
+
+**Documentado como pendencia MAIOR pra Fase 3 (nao resolvido agora, so
+esse 1 caso concreto):** o mesmo raciocinio ("up to N" = escolha real 0..N,
+nao sempre-maximo) provavelmente se aplica a outras acoes com efeito
+negativo/custoso pro proprio jogador (`trash_own_life`, `trash_char_or_hand`
+como custo, etc.) -- catalogado no bloco anterior (147) como pendencia de
+qualidade de decisao, NAO consertado carta a carta agora (evitar
+whack-a-mole disperso). A Fase 3 do plano (enumerador combinatorio de
+turno) e o lugar certo pra resolver isso de forma sistemica -- este fix
+foi uma excecao pontual pedida explicitamente pelo usuario, nao um sinal
+pra sair corrigindo cada action nesse padrao uma a uma agora.
+
 ## 2026-07-15 (147) - Claude - Bug de CONTABILIDADE de DON achado pelo USUARIO (give_don/give_don_opp inventava DON quando o banco nao tinha o suficiente)
 
 **Como foi achado:** o usuario estava investigando os suspeitos da

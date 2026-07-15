@@ -4078,6 +4078,22 @@ class EffectExecutor:
             transferido = 0
             if targets:
                 best = max(targets, key=lambda c: c.effective_power(True))
+                # "up to N" e um TETO que o jogador escolhe (0..N), nao uma
+                # ordem fixa de sempre dar N -- achado 15/07 (usuario): o
+                # motor sempre tentava dar o maximo do texto, mesmo quando
+                # o personagem ja teria poder suficiente pra passar pelo
+                # lider do oponente sem DON nenhum, desperdicando DON que
+                # ficaria melhor reservado pra defesa. So se aplica ao
+                # alvo PROPRIO (give_don) -- give_don_opp tem objetivo
+                # oposto (sobrecarregar o oponente), la o maximo continua
+                # sendo a jogada certa. Formula = mesmo deficit BASE de
+                # don_needed_for_attack (secao 1, obrigatoria), sem a
+                # margem de counter (exige contexto de ataque declarado,
+                # que ainda nao existe neste ponto do efeito -- On Play/
+                # Activate Main roda antes da fase de ataque).
+                deficit = opp.leader.power - attack_time_power(best, opp)
+                necessario = (deficit + 999) // 1000 if deficit > 0 else 0
+                count = min(count, necessario)
                 # Debita do banco de DON real (don_rested + don_available),
                 # nunca de uma fonte gratuita externa -- ambos os tipos vêm
                 # do mesmo banco do jogador. Achado 15/07 via

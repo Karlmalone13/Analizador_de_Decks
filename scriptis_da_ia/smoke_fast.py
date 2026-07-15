@@ -624,10 +624,13 @@ def test_give_don_nao_inventa_don_quando_banco_insuficiente() -> None:
     # no character ANTES de saber quanto o banco realmente tinha pra
     # debitar -- com banco insuficiente, o character recebia o valor cheio
     # mesmo assim (DON criado do nada, campo e banco dessincronizam). Fix:
-    # anexa exatamente o que foi debitado de verdade.
+    # anexa exatamente o que foi debitado de verdade. Lider do oponente
+    # forte (9000) garante que o "necessario" (ver teste seguinte) exceda
+    # tanto o banco quanto o teto da carta, isolando so essa checagem.
     me = GameState(leader=real_card("ST01-001"), don_available=0, turn=3)
     me.don_rested = 1  # banco so tem 1 DON rested, carta pede ate 2
-    opp = GameState(leader=real_card("ST01-001"), turn=3)
+    opp_lider_forte = mk("XOPPL", "Lider Forte", power=9000, cost=0, card_type="LEADER")
+    opp = GameState(leader=opp_lider_forte, turn=3)
     brook = real_card("ST01-011")
     me.field_chars = [brook]
     EffectExecutor(me, opp).execute(brook, "on_play")
@@ -635,6 +638,41 @@ def test_give_don_nao_inventa_don_quando_banco_insuficiente() -> None:
           me.don_rested == 0)
     check("give_don anexa so o que o banco tinha (1), nao o count pedido (2)",
           me.leader.don_attached == 1)
+
+
+def test_give_don_da_so_o_necessario_nao_sempre_o_teto() -> None:
+    # Achado 15/07 -- o usuario apontou que "up to N" significa "0 a N,
+    # escolha livre", nao "sempre N". Antes deste fix, give_don sempre
+    # tentava dar o TETO do texto, mesmo quando o personagem ja tinha
+    # poder suficiente pra passar pelo lider do oponente sem DON nenhum
+    # (desperdicando DON que ficaria melhor reservado pra defesa). Fix:
+    # calcula o deficit real (mesma formula base de don_needed_for_attack)
+    # e da so o minimo entre o teto da carta e o que falta.
+    meu_lider_fraco = mk("XMELIDER", "Lider Fraco", power=1000, cost=0, card_type="LEADER")
+
+    # Cenario A: personagem ja bate o lider do oponente (9000 vs 5000) --
+    # nao deveria gastar DON nenhum, mesmo a carta pedindo ate 2.
+    me_a = GameState(leader=meu_lider_fraco, don_available=0, turn=3)
+    me_a.don_rested = 2
+    opp_a = GameState(leader=mk("XOPPL", "Lider", power=5000, cost=0, card_type="LEADER"), turn=3)
+    brook_a = real_card("ST01-011")
+    forte = mk("XFORTE", "Forte", power=9000, cost=4)
+    me_a.field_chars = [brook_a, forte]
+    EffectExecutor(me_a, opp_a).execute(brook_a, "on_play")
+    check("give_don NAO gasta DON se o alvo ja bate o lider do oponente sem ajuda",
+          me_a.don_rested == 2 and forte.don_attached == 0)
+
+    # Cenario B: personagem precisa so de 1 DON (4000 vs 5000, falta 1000)
+    # pra bater o lider -- carta pede ate 2, deveria dar so 1.
+    me_b = GameState(leader=meu_lider_fraco, don_available=0, turn=3)
+    me_b.don_rested = 2
+    opp_b = GameState(leader=mk("XOPPL", "Lider", power=5000, cost=0, card_type="LEADER"), turn=3)
+    brook_b = real_card("ST01-011")
+    fraco = mk("XFRACO", "Fraco", power=4000, cost=2)
+    me_b.field_chars = [brook_b, fraco]
+    EffectExecutor(me_b, opp_b).execute(brook_b, "on_play")
+    check("give_don da so o necessario (1), nao o teto pedido pela carta (2)",
+          me_b.don_rested == 1 and fraco.don_attached == 1)
 
 
 def main() -> int:
@@ -665,6 +703,7 @@ def main() -> int:
     test_rest_opp_alvo_misto_character_ou_don()
     test_give_don_opp_com_of_your_opponent_no_meio_da_frase()
     test_give_don_nao_inventa_don_quando_banco_insuficiente()
+    test_give_don_da_so_o_necessario_nao_sempre_o_teto()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0
