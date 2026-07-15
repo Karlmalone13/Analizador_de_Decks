@@ -1713,6 +1713,52 @@ enel_match = OPTCGMatch((enel, [pacifista] * 50, None),
 enel_match.setup()
 check('Enel inicia com DON deck de 6 cartas', enel_match.state_a.don_deck == 6)
 
+# 35. Comparacao estrita de DON + custo tipado da mao (Carina e familia).
+for code in ['OP05-069', 'OP05-071', 'OP09-066', 'ST05-005', 'ST10-012']:
+    effects = get_card_effects(code)
+    blocks = [b for b in effects.values() if isinstance(b, dict)]
+    check(f'{code} preserva DON proprio estritamente menor', any(
+        b.get('conditions', {}).get('don_fewer_than_opp_by_gte') == 1
+        or any(s.get('conditions', {}).get('don_fewer_than_opp_by_gte') == 1
+               for s in b.get('steps', []))
+        for b in blocks))
+
+carina = de._make_card('ST05-005', {
+    'name': 'Carina', 'type': 'CHARACTER', 'power': 3000,
+    'sub_types': 'FILM/Grantesoro',
+})
+film = mk('FILM-1', 'Carta FILM', sub_types='FILM')
+navy = mk('NAVY-1', 'Carta Navy', sub_types='Navy')
+me, opp = me_opp()
+me.field_chars = [carina]
+me.hand = [navy, film]
+me.don_available = 2
+me.don_deck = 5
+opp.don_available = 3
+logs = EffectExecutor(me, opp).execute(carina, 'activate_main')
+check('Carina paga com FILM, nao com qualquer carta, e adiciona 2 DON rested',
+      carina.rested and film in me.trash and navy in me.hand
+      and me.don_rested == 2 and me.don_deck == 3 and bool(logs))
+
+carina2 = de._make_card('ST05-005', {
+    'name': 'Carina', 'type': 'CHARACTER', 'power': 3000,
+    'sub_types': 'FILM/Grantesoro',
+})
+me, opp = me_opp()
+me.field_chars = [carina2]
+me.hand = [film]
+me.don_available = opp.don_available = 3
+me.don_deck = 5
+EffectExecutor(me, opp).execute(carina2, 'activate_main')
+check('Carina nao paga custo nem ativa em empate de DON',
+      not carina2.rested and film in me.hand and me.don_deck == 5)
+
+sengoku_cost = get_card_effects('ST19-002')['on_play']['costs'][0]
+check('ST19-002 preserva simultaneamente tipo Navy e cor black no custo',
+      sengoku_cost.get('filter_type') == 'navy'
+      and sengoku_cost.get('color') == 'black'
+      and sengoku_cost.get('count') == 2)
+
 print()
 print(f'{"TODOS OS TESTES PASSARAM" if FAIL == 0 else f"{FAIL} TESTE(S) FALHARAM"}')
 sys.exit(1 if FAIL else 0)

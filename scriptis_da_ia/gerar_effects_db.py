@@ -176,6 +176,13 @@ def parse_conditions(text):
             r'the number on your opponent.?s field', t):
         conds['don_on_field_lte_opp'] = True
 
+    # Comparacao ESTRITA: empate nao satisfaz. Equivale a o oponente ter
+    # pelo menos 1 DON a mais (familia global de 5 cartas).
+    if re.search(
+            r'if your opponent has more don!! cards? on (?:their|the) field than you', t):
+        conds['don_fewer_than_opp_by_gte'] = max(
+            1, conds.get('don_fewer_than_opp_by_gte', 0))
+
     m = re.search(
         r'the number of don!! cards? on your field is at least (\d+) less than '
         r'the number on your opponent.?s field', t)
@@ -583,12 +590,41 @@ def parse_costs(text):
                 # valida no jogo real.
                 if re.search(r'trash \d+ cards? with a \[trigger\]', m.group(0)):
                     cost_th['has_trigger'] = True
+                # Tipo/cor fazem parte do custo. OP06-033 fica fora deste
+                # formato simples: permite alternativamente [The Ark Noah]
+                # da mao OU do campo e exige uma gramatica composta propria.
+                if not re.search(r'\bor\s+\d+\s+\[', m.group(0)):
+                    typed = re.search(
+                        r'trash \d+\s+(?:(black|blue|green|purple|red|yellow)\s+)?'
+                        r'[\[\{"\']([^\]\}"\']+)[\]\}"\']\s+type cards? from your hand',
+                        m.group(0))
+                    if typed:
+                        if typed.group(1):
+                            cost_th['color'] = typed.group(1)
+                        cost_th['filter_type'] = typed.group(2).strip()
                 costs.append(cost_th)
             else:
                 # padrão mais simples sem "you may" (custo obrigatório com ':')
                 m = re.search(r'\btrash (\d+) cards? from your hand\s*:', t)
                 if m:
                     costs.append({'type': 'trash_from_hand', 'count': int(m.group(1))})
+
+    # Forma composta "rest this Character and trash N [tipo] type card from
+    # your hand:" (Carina). O "you may" antecede rest, portanto a regex
+    # generica acima nao enxerga "you may trash". Evita duplicar custos ja
+    # capturados e exclui a escolha composta especial de OP06-033.
+    typed_composite = re.search(
+        r'trash (\d+)\s+(?:(black|blue|green|purple|red|yellow)\s+)?'
+        r'[\[\{"\']([^\]\}"\']+)[\]\}"\']\s+type cards? from your hand[^:]*:', t)
+    if (typed_composite
+            and not re.search(r'\bor\s+\d+\s+\[', typed_composite.group(0))
+            and not any(c.get('type') == 'trash_from_hand' for c in costs)):
+        typed_cost = {'type': 'trash_from_hand',
+                      'count': int(typed_composite.group(1)),
+                      'filter_type': typed_composite.group(3).strip()}
+        if typed_composite.group(2):
+            typed_cost['color'] = typed_composite.group(2)
+        costs.append(typed_cost)
 
     # Custo de REVELAR N cartas da mao com filtro de tipo (ex: OP08-044
     # Kingdew, "you may reveal 2 cards with a type including 'Whitebeard

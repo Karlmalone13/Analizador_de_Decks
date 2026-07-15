@@ -3002,8 +3002,14 @@ class EffectExecutor:
                 # Teach OP16-080 e outras 8 cartas): custo so pode ser pago
                 # com carta que TEM [Trigger] -- sem esse filtro o engine
                 # considerava a mao inteira como elegivel.
-                pool = ([c for c in self.me.hand if c.has_trigger]
-                        if cost.get('has_trigger') else self.me.hand)
+                from optcg_engine.rules_facade import eligible_cards
+                pool = eligible_cards(
+                    self.me.hand,
+                    filter_text=cost.get('filter_type', ''),
+                    color=cost.get('color', ''),
+                )
+                if cost.get('has_trigger'):
+                    pool = [c for c in pool if c.has_trigger]
                 if len(pool) < count:
                     return False
                 trashed = []
@@ -7995,8 +8001,14 @@ class OPTCGMatch:
                     return False, f'custo rest_don {cnt}: só {p.don_available} DON disponível'
 
             elif ctype in ('trash_from_hand', 'trash_hand'):
-                if ftype:
-                    elegíveis = [c2 for c2 in p.hand if ftype in c2.sub_types.lower()]
+                color = (c.get('color') or '').lower()
+                if ftype or color or c.get('has_trigger'):
+                    elegíveis = [
+                        c2 for c2 in p.hand
+                        if (not ftype or ftype in c2.sub_types.lower())
+                        and (not color or color in c2.color.lower())
+                        and (not c.get('has_trigger') or c2.has_trigger)
+                    ]
                     if len(elegíveis) < cnt:
                         return False, (f'custo trash_hand ({ftype}): '
                                        f'só {len(elegíveis)} elegíveis na mão')

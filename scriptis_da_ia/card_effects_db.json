@@ -4975,7 +4975,8 @@
         "costs": [
           {
             "type": "trash_from_hand",
-            "count": 1
+            "count": 1,
+            "filter_type": "navy"
           }
         ]
       },
@@ -6890,7 +6891,8 @@
         "costs": [
           {
             "type": "trash_from_hand",
-            "count": 1
+            "count": 1,
+            "filter_type": "animal kingdom pirates"
           }
         ],
         "once_per_turn": true
@@ -8769,6 +8771,13 @@
             "up_to": true
           }
         ],
+        "costs": [
+          {
+            "type": "trash_from_hand",
+            "count": 1,
+            "filter_type": "land of wano"
+          }
+        ],
         "once_per_turn": true
       }
     }
@@ -9496,7 +9505,8 @@
         "costs": [
           {
             "type": "trash_from_hand",
-            "count": 1
+            "count": 1,
+            "filter_type": "land of wano"
           }
         ]
       }
@@ -12325,7 +12335,8 @@
           },
           {
             "type": "trash_from_hand",
-            "count": 1
+            "count": 1,
+            "filter_type": "land of wano"
           }
         ]
       }
@@ -20794,7 +20805,8 @@
         "costs": [
           {
             "type": "trash_from_hand",
-            "count": 2
+            "count": 2,
+            "filter_type": "land of wano"
           }
         ]
       }
@@ -21484,7 +21496,8 @@
         "costs": [
           {
             "type": "trash_from_hand",
-            "count": 1
+            "count": 1,
+            "filter_type": "revolutionary army"
           }
         ],
         "once_per_turn": true
@@ -23388,7 +23401,10 @@
           {
             "action": "deck_bottom_rest"
           }
-        ]
+        ],
+        "conditions": {
+          "don_fewer_than_opp_by_gte": 1
+        }
       }
     }
   },
@@ -23436,7 +23452,10 @@
             "target": "opp_character",
             "duration": "this_turn"
           }
-        ]
+        ],
+        "conditions": {
+          "don_fewer_than_opp_by_gte": 1
+        }
       }
     }
   },
@@ -24896,7 +24915,8 @@
         "costs": [
           {
             "type": "trash_from_hand",
-            "count": 1
+            "count": 1,
+            "filter_type": "film"
           }
         ]
       }
@@ -37268,7 +37288,10 @@
             "target": "opp_character",
             "cost_lte": 3
           }
-        ]
+        ],
+        "conditions": {
+          "don_fewer_than_opp_by_gte": 1
+        }
       }
     }
   },
@@ -43558,7 +43581,8 @@
         "costs": [
           {
             "type": "trash_from_hand",
-            "count": 1
+            "count": 1,
+            "filter_type": "firetank pirates"
           }
         ]
       }
@@ -43804,7 +43828,8 @@
         "costs": [
           {
             "type": "trash_from_hand",
-            "count": 1
+            "count": 1,
+            "filter_type": "firetank pirates"
           }
         ]
       }
@@ -59559,7 +59584,8 @@
         "costs": [
           {
             "type": "trash_from_hand",
-            "count": 1
+            "count": 1,
+            "filter_type": "supernovas"
           }
         ]
       },
@@ -65482,7 +65508,8 @@
         "costs": [
           {
             "type": "trash_from_hand",
-            "count": 1
+            "count": 1,
+            "filter_type": "navy"
           }
         ],
         "once_per_turn": true
@@ -68316,12 +68343,20 @@
           {
             "action": "add_don",
             "count": 2,
-            "rested": true
+            "rested": true,
+            "conditions": {
+              "don_fewer_than_opp_by_gte": 1
+            }
           }
         ],
         "costs": [
           {
             "type": "rest_self"
+          },
+          {
+            "type": "trash_from_hand",
+            "count": 1,
+            "filter_type": "film"
           }
         ],
         "once_per_turn": true
@@ -70584,7 +70619,10 @@
             "count": 1,
             "rested": true
           }
-        ]
+        ],
+        "conditions": {
+          "don_fewer_than_opp_by_gte": 1
+        }
       },
       "when_attacking": {
         "steps": [
@@ -70593,7 +70631,10 @@
             "count": 1,
             "rested": true
           }
-        ]
+        ],
+        "conditions": {
+          "don_fewer_than_opp_by_gte": 1
+        }
       }
     }
   },
@@ -72710,7 +72751,8 @@
         "costs": [
           {
             "type": "trash_from_hand",
-            "count": 1
+            "count": 1,
+            "filter_type": "film"
           }
         ],
         "once_per_turn": true
@@ -73133,7 +73175,9 @@
         "costs": [
           {
             "type": "trash_from_hand",
-            "count": 1
+            "count": 1,
+            "color": "black",
+            "filter_type": "navy"
           }
         ]
       }
@@ -73163,7 +73207,9 @@
         "costs": [
           {
             "type": "trash_from_hand",
-            "count": 2
+            "count": 2,
+            "color": "black",
+            "filter_type": "navy"
           }
         ]
       }

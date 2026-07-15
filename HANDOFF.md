@@ -1,5 +1,25 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-15 (186) - DON estritamente menor + trash tipado: 379 -> 376
+
+ST05-005 Carina revelou duas familias globais. O censo encontrou 5 cartas
+com "opponent has more DON!! ... than you" (OP05-069, OP05-071, OP09-066,
+ST05-005 e ST10-012): agora usam `don_fewer_than_opp_by_gte=1`, portanto
+empate nao satisfaz a condicao. Antes os cinco efeitos eram incondicionais.
+
+O censo de custo "trash N [tipo] type card(s) from your hand" encontrou 17
+cartas. Dezesseis formas simples agora preservam `filter_type`; ST19-001/002
+preservam tambem a cor black. O executor e a verificacao de viabilidade usam
+os mesmos filtros, impedindo pagar com carta de tipo/cor ilegal. OP06-033
+Vander Decken foi deliberadamente separado: sua escolha e composta (Fish-Man
+da mao OU The Ark Noah da mao/campo) e nao pode ser reduzida ao custo simples;
+deve ser o proximo lote proprio.
+
+Card List oficial confirmou Carina, Law, Uta e Sengoku. Validacao: diff
+GANHOU 0 / PERDEU 0 / MUDOU 20; smoke direcionado passou; smoke amplo 40/40;
+snapshot final com 0/0/0; auditor **376 suspeitos** (379 -> 376). Registro:
+`parser_audits/2026-07-15_strict_don_and_typed_trash.json`.
+
 ## 2026-07-15 (185) - Familia global "Under the rules": 381 -> 379
 
 O censo completo de `Under the rules of this game` encontrou 8 codigos-base:

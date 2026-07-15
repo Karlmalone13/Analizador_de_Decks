@@ -1,0 +1,25 @@
+{
+  "trigger_card": "ST05-005",
+  "problem": "Comparacao estrita de DON e filtros de tipo/cor no custo de trash da mao eram descartados.",
+  "grammar_family": "opponent has more DON than you; trash typed card from hand",
+  "queries": [
+    "If your opponent has more DON!! cards on their field than you",
+    "trash N [type] type card(s) from your hand",
+    "trash N COLOR [type] type card(s) from your hand"
+  ],
+  "cards_found": [
+    "EB03-041", "EB04-032", "OP01-031", "OP01-059", "OP02-048",
+    "OP04-098", "OP05-002", "OP05-069", "OP05-071", "OP06-001",
+    "OP06-033", "OP09-066", "OP11-042", "OP11-050", "OP15-099",
+    "P-076", "ST05-005", "ST10-012", "ST16-001", "ST19-001", "ST19-002"
+  ],
+  "resolution_scope": "global",
+  "decision": "Aplicar comparacao estrita nas 5 cartas e preservar tipo/cor nos 16 custos simples. OP06-033 foi identificado como escolha composta e nao foi reduzido ao filtro simples.",
+  "validated_by": [
+    "Card List oficial",
+    "censo completo de cards_rows.csv",
+    "smoke_test.py",
+    "smoke_test_broad.py",
+    "diff_parser.py PERDEU=0"
+  ]
+}
