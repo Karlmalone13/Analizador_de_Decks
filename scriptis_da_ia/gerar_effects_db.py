@@ -77,6 +77,19 @@ def parse_conditions(text):
         m = re.search(r'(?:if|and) you have (\d+) or less life', t)
         if m: conds['life_lte'] = int(m.group(1))
 
+    # "If you have 0 Life cards" -- caso exato nao escrito como "0 or
+    # less". Familia encontrada pela varredura global de 15/07. Mantemos a
+    # mesma representacao life_lte=0 para reutilizar toda a checagem do
+    # engine e o scoping por-step de "Then, if".
+    # Nao aplicar ainda aos blocos compostos "If you have [Nome] and you
+    # have 0 Life". Esse primeiro requisito pertence a uma familia propria
+    # (campo/trash/power/multiplos nomes) e adicionar somente metade do gate
+    # faria o JSON parecer completo sem ser. EB04-056 permanece na fila ate
+    # essa familia ser corrigida por inteiro.
+    if ('if you have [' not in t
+            and re.search(r'(?:if|and) you have (?:0|no) life cards?', t)):
+        conds['life_lte'] = 0
+
     m = re.search(r'(?:if|and) you have (\d+) or more life', t)
     if m: conds['life_gte'] = int(m.group(1))
 

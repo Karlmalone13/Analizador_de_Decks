@@ -7518,7 +7518,10 @@
           {
             "action": "play_card",
             "count": 1,
-            "source": "self"
+            "source": "self",
+            "conditions": {
+              "life_lte": 0
+            }
           }
         ]
       },
@@ -28056,7 +28059,10 @@
             "count": 1,
             "up_to": true
           }
-        ]
+        ],
+        "conditions": {
+          "life_lte": 0
+        }
       },
       "counter": {
         "steps": [
@@ -41890,14 +41896,17 @@
       "counter": {
         "steps": [
           {
-            "action": "draw",
-            "count": 1
-          },
-          {
             "action": "buff_power",
             "amount": 4000,
             "target": "leader_or_character",
             "duration": "battle_only"
+          },
+          {
+            "action": "draw",
+            "count": 1,
+            "conditions": {
+              "life_lte": 0
+            }
           }
         ]
       }
@@ -71341,14 +71350,17 @@
       "counter": {
         "steps": [
           {
-            "action": "draw",
-            "count": 1
-          },
-          {
             "action": "buff_power",
             "amount": 2000,
             "target": "leader_or_character",
             "duration": "battle_only"
+          },
+          {
+            "action": "draw",
+            "count": 1,
+            "conditions": {
+              "life_lte": 0
+            }
           }
         ]
       }

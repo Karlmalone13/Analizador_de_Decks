@@ -63384,13 +63384,13 @@
     "target": "opp_character"
    },
    {
-    "action": "draw",
-    "trigger": "counter"
-   },
-   {
     "action": "buff_power",
     "trigger": "counter",
     "target": "leader_or_character"
+   },
+   {
+    "action": "draw",
+    "trigger": "counter"
    }
   ],
   "synergy_states": {
@@ -108052,13 +108052,13 @@
     "trigger": "trigger"
    },
    {
-    "action": "draw",
-    "trigger": "counter"
-   },
-   {
     "action": "buff_power",
     "trigger": "counter",
     "target": "leader_or_character"
+   },
+   {
+    "action": "draw",
+    "trigger": "counter"
    }
   ],
   "synergy_states": {

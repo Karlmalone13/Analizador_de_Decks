@@ -4883,6 +4883,9 @@
     },
     {
      "action": "play_card",
+     "conditions": {
+      "life_lte": 0
+     },
      "count": 1,
      "source": "self"
     }
@@ -17438,6 +17441,9 @@
    ]
   },
   "trigger": {
+   "conditions": {
+    "life_lte": 0
+   },
    "steps": [
     {
      "action": "gain_life",
@@ -26053,14 +26059,17 @@
   "counter": {
    "steps": [
     {
-     "action": "draw",
-     "count": 1
-    },
-    {
      "action": "buff_power",
      "amount": 4000,
      "duration": "battle_only",
      "target": "leader_or_character"
+    },
+    {
+     "action": "draw",
+     "conditions": {
+      "life_lte": 0
+     },
+     "count": 1
     }
    ]
   },
@@ -44216,14 +44225,17 @@
   "counter": {
    "steps": [
     {
-     "action": "draw",
-     "count": 1
-    },
-    {
      "action": "buff_power",
      "amount": 2000,
      "duration": "battle_only",
      "target": "leader_or_character"
+    },
+    {
+     "action": "draw",
+     "conditions": {
+      "life_lte": 0
+     },
+     "count": 1
     }
    ]
   },

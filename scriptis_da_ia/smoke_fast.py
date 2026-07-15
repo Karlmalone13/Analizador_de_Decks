@@ -997,6 +997,48 @@ def test_total_life_lte_condicao_combinada() -> None:
           opp_alvo2 not in opp_baixo.field_chars)
 
 
+def test_zero_life_condicao_e_scoping_then_if() -> None:
+    # Familia "If you have 0 Life cards": o gate nao pode engolir a acao
+    # anterior a "Then, if". OP10-115/ST13-018 mantem o buff sempre e
+    # condiciona somente o draw; EB04-051 mantem o debuff e condiciona o play.
+    op10 = get_card_effects("OP10-115").get("counter", {})
+    op10_steps = op10.get("steps", [])
+    check("OP10-115 mantem buff incondicional antes de Then, if",
+          len(op10_steps) == 2
+          and op10_steps[0].get("action") == "buff_power"
+          and not op10_steps[0].get("conditions"))
+    check("OP10-115 condiciona somente draw a life_lte=0",
+          op10_steps[1].get("action") == "draw"
+          and op10_steps[1].get("conditions", {}).get("life_lte") == 0)
+
+    emet_steps = get_card_effects("EB04-051").get("trigger", {}).get("steps", [])
+    check("EB04-051 mantem debuff incondicional e condiciona somente play",
+          len(emet_steps) == 2
+          and emet_steps[0].get("action") == "debuff_power"
+          and not emet_steps[0].get("conditions")
+          and emet_steps[1].get("conditions", {}).get("life_lte") == 0)
+
+    op06 = get_card_effects("OP06-115").get("trigger", {})
+    check("OP06-115 condiciona o Trigger inteiro a life_lte=0",
+          op06.get("conditions", {}).get("life_lte") == 0)
+
+    carta = real_card("OP10-115")
+    me = GameState(leader=mk("XLD0", "Lider", card_type="LEADER"), turn=3)
+    opp = GameState(leader=mk("XOP0", "Lider Opp", card_type="LEADER"), turn=3)
+    me.life = [mk("XLIFE", "Vida")]
+    me.deck = [mk("XDRAW", "Compra")]
+    alvo = me.leader
+    EffectExecutor(me, opp).execute(carta, "counter")
+    check("OP10-115 com 1 Life aplica buff mas nao compra",
+          alvo.power_buff == 4000 and len(me.hand) == 0 and len(me.deck) == 1)
+
+    me.life.clear()
+    alvo.power_buff = 0
+    EffectExecutor(me, opp).execute(carta, "counter")
+    check("OP10-115 com 0 Life aplica buff e compra",
+          alvo.power_buff == 4000 and len(me.hand) == 1 and len(me.deck) == 0)
+
+
 def test_don_on_field_lte_condicao_ausente() -> None:
     # Achado 15/07 -- "if you have N or less DON!! cards on your field"
     # (proprio lado) nunca existia, so o "N or more" (don_on_field_gte).
@@ -1390,6 +1432,7 @@ def main() -> int:
     test_roger_vitoria_alternativa_ao_oponente_bloquear()
     test_debuff_power_multiplo_alvo_e_condicao_por_tipo()
     test_total_life_lte_condicao_combinada()
+    test_zero_life_condicao_e_scoping_then_if()
     test_don_on_field_lte_condicao_ausente()
     test_black_hole_negate_e_ko_encadeado()
     test_rebecca_add_from_trash_range_exclude_e_ordem()

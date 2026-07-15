@@ -1,5 +1,58 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-15 (171) - Familia 0 Life: 4 gates corrigidos; fila 428 -> 424
+
+Varredura global de `If you have 0 Life cards` encontrou 7 cartas unicas.
+Este lote corrigiu genericamente as 4 cujo efeito ja era estruturado e faltava
+somente o gate: EB04-051, OP06-115, OP10-115 e ST13-018. `life_lte=0` agora
+respeita o scoping: em `Then, if`, somente o step posterior recebe a condicao;
+o debuff/buff anterior continua incondicional. Em OP06-115 o Trigger inteiro
+recebe o gate. Teste de execucao confirmou OP10-115 com 1 Life (buff sem draw)
+e 0 Life (buff + draw).
+
+Validacao: `diff_parser.py` antes do snapshot = GANHOU 0 / PERDEU 0 / MUDOU 4;
+as 4 mudancas foram conferidas. `gerar_dbs.py` sincronizou 2614 cartas;
+`smoke_fast.py` e `smoke_test.py` passaram. Auditor recalculado: **424
+suspeitos** (queda real de 4).
+
+Subfamilias descobertas e mantidas explicitamente na fila, sem correcao
+parcial mascarada:
+- EB04-056 combina `If you have [Jewelry Bonney]` + 0 Life. A familia global
+  `If you have [nome]` tem pelo menos 14 cartas unicas e variantes de campo,
+  trash, multiplos nomes e requisitos de power; deve ser tratada inteira.
+- P-039 tem buff passivo condicionado a 0 Life ainda nao parseado.
+- ST13-003 tem um Activate: Main inteiro ainda nao parseado.
+- OP06-115 ainda perde o step posterior `Then, trash 1 card from your hand`
+  no Trigger. Buscar globalmente a familia de descarte posterior (nao custo)
+  antes de corrigir.
+
+Proximo candidato de alto uso na fila recalculada: OP03-078 (On Play ausente),
+sem esquecer que as tres subfamilias acima continuam abertas.
+
+## 2026-07-15 (170) - Regra obrigatoria da varredura: toda descoberta nova exige busca global
+
+**Instrucao explicita do usuario para a investigacao dos 428 suspeitos:** ao
+encontrar qualquer nova gramatica, mecanica, filtro ou condicao, NAO corrigir
+somente a carta que revelou o gap. Antes de fechar o item, percorrer o banco
+inteiro procurando todas as cartas com o mesmo padrao e variantes de fraseado,
+comparar cada familia com Card List/Q&A oficial e corrigir a causa raiz comum.
+
+**Criterio de conclusao de cada descoberta:**
+1. Carta reveladora comparada: texto local x JSON estruturado x fonte oficial.
+2. Busca global em `cards_rows.csv` por fraseado exato e variantes semanticas.
+3. Lista completa da familia revisada, incluindo cartas sem numero perdido
+   (o auditor numerico nao encontra condicoes como `any`).
+4. Parser corrigido de forma generica; sem hardcode por card ID.
+5. Engine/handler implementado ou reutilizado e testado por execucao real.
+6. `diff_parser.py` com `PERDEU=0`; toda carta em `MUDOU` conferida.
+7. `gerar_dbs.py`, snapshot novo, diff final 0/0/0, smoke curto e amplo
+   proporcionais ao risco.
+8. Rerodar o auditor e registrar a nova contagem no topo do HANDOFF.
+
+Contagem correta no inicio desta etapa: **428 suspeitos** (433 antes da
+retomada; -4 condicoes de vida encadeadas; -1 Hina). Proximo confirmado:
+OP06-115, mas a correcao deve começar pela busca global da familia `0 Life`.
+
 ## 2026-07-15 (169) - Decisao arquitetural: eliminar fallback de efeitos somente apos fechar a auditoria
 
 **Decisao explicita do usuario — NAO ESQUECER:** o objetivo final e o engine
