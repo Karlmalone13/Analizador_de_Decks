@@ -1,5 +1,23 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-15 (168) - Codex - auditor rerodado e mapa oficial reconstruido (428 suspeitos)
+
+`audit_parser_coverage.py --show 40` rerodado depois dos tres clusters desta
+sessao: fila caiu de 433 para 428. Criado
+`scriptis_da_ia/PARSER_AUDIT_MAP.md` com estados separados: CONFIRMADO ERRO,
+SUSPEITO FORTE, PROVAVEL FALSO POSITIVO e REVISAR ESCOPO.
+
+Mudanca de metodo exigida pelo usuario: texto de `cards_rows.csv` x JSON serve
+apenas para localizar suspeito. Confirmacao exige Card List oficial da Bandai
+e, quando houver ambiguidade, Q&A oficial. Primeira rodada oficial confirmou
+3 erros: OP06-115 (gate 0 Life ausente), OP03-078 (On Play inteiro ausente) e
+EB02-019 (permissao condicional de atacar apenas Characters virou Rush amplo e
+incondicional). ST13-010 e demais continuam suspeitos, nao confirmados, ate
+consulta oficial.
+
+Proxima acao: corrigir OP06-115 primeiro, depois OP03-078; validar semantica de
+EB02-019 pelo Q&A antes de alterar.
+
 ## 2026-07-15 (167) - Codex - OP02-110 Hina: On Block indireto com "during this turn"
 
 **Suspeito seguinte da varredura confirmado como bug real.** Entre as 14
