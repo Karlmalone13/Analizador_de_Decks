@@ -1,0 +1,20 @@
+{
+  "trigger_card": "OP10-058",
+  "problem": "OP10-058 (Rebecca): '[On Play] If there is a Character with a cost of 8 or more, draw 1 card. Then, reveal up to 2 \"Dressrosa\" type Character cards with a cost of 7 or less other than [Rebecca] from your hand. Play 1 of the revealed cards and play the other card rested if it has a cost of 4 or less.' A segunda metade da habilidade [On Play] (reveal + play em par) estava totalmente ausente do parseado -- so o draw condicional sobrevivia.",
+  "grammar_family": "'Reveal up to N [Tipo] Character cards with a cost of X or less other than [Nome] from your hand. Play 1 of the revealed cards and play the other card rested if it has a cost of Y or less.' Busca global achou so esta carta -- isolated_after_global_scan, mas a forma ficou generalizada (N revelados, tipo/exclusao/custo opcionais, limiar Y independente do X do reveal).",
+  "queries": [
+    "regex 'play 1 of the revealed cards? and play the other' sobre card_text -- achou 1 carta so (OP10-058)",
+    "regex mais ampla 'reveal up to \\d+.{0,80}from your hand' + 'play' no texto -- achou mais 2 cartas com mecanicas de reveal totalmente DIFERENTES (OP10-119: reveal 1 pra vida face-down; ST13-005: reveal 1 pra efeito condicional) -- confirmado que nao compartilham a MESMA forma (par reveal-e-joga), fora de escopo",
+    "INVESTIGACAO SECUNDARIA (revertida): tentei separar a condicao 'board_has_cost:[8]' pra cobrir SO o draw, assumindo que 'Then, [B]' sem 'if' proprio seria sempre incondicional. Implementei split_if_then generico (ordem inversa de split_then_if) e o diff_parser.py revelou 35 cartas afetadas -- comparando manualmente varias delas (ex: EB03-003 'If Leader e Uta, draw 2. Then, play up to 1 Character card...') contra o padrao ja estabelecido no banco, ficou claro que 'Then, B' SEM 'if' proprio SEMPRE compartilha a condicao de A nessas cartas (nao e um efeito solto incondicional) -- a hipotese inicial estava ERRADA. REVERTIDO por completo (split_if_then removida) antes de gerar_dbs/commit; nenhuma das 35 cartas foi alterada no banco final. Documentado aqui pra ninguem repetir a mesma tentativa sem saber que ja foi investigada e descartada."
+  ],
+  "cards_found": ["OP10-058"],
+  "resolution_scope": "isolated_after_global_scan",
+  "decision": "Nova funcao parse_reveal_hand_play_pair, chamada ANTES do play generico. Decompoe em 2 steps play_card sequenciais (reaproveita 100% a infra ja existente GRUPO 2: cost_lte/filter_type/exclude/enters_rested, count=1 cada) -- a 1a carta e jogada livremente dentro do filtro de revelacao (custo<=X), a 2a e jogada RESTADA mas so se sobrar candidato dentro do filtro MAIS RESTRITO (custo<=Y) na mao apos a 1a jogada (a mutacao natural de me.hand entre steps garante que nao repete a mesma carta). Interpretacao de 'if it has a cost of Y or less' confirmada com o usuario: condiciona a ACAO INTEIRA (joga E fica restado), nao so o status de rested -- se nao houver candidato custo<=Y, a 2a carta simplesmente nao e jogada. Condicao de bloco (board_has_cost:[8]) permanece cobrindo TODOS os 3 steps (draw + 2 plays), consistente com o padrao ja estabelecido de 34+ cartas 'If cond, A. Then, B' no banco.",
+  "validated_by": [
+    "diff_parser.py: GANHOU 0 / PERDEU 0 / MUDOU 1 (OP10-058, conferida contra card_text)",
+    "gerar_dbs.py + snapshot_parser.py: 0/0/0 apos regenerar",
+    "smoke_fast.py: teste dirigido novo test_rebecca_reveal_play_pair_condicional com EXECUCAO real -- confirma os 2 Dressrosa saindo da mao e entrando em campo, o de custo<=4 entrando RESTADO, e o draw disparando junto (mesma condicao de bloco)",
+    "smoke_test.py: suite ampla, TODOS OS TESTES PASSARAM",
+    "smoke_test_broad.py: 7/7 partidas aleatorias sem excecao -- rodado FORA do ciclo normal de 'a cada 3 familias' por seguranca extra (a investigacao secundaria da split_if_then, revertida, mexeu no dispatcher compartilhado de parse_block antes de ser desfeita por completo)"
+  ]
+}

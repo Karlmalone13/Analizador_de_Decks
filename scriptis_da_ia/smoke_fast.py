@@ -2960,6 +2960,53 @@ def test_choose_and_ko_it_com_upgrade_condicional() -> None:
           alvo_caro2 not in opp2.field_chars)
 
 
+def test_rebecca_reveal_play_pair_condicional() -> None:
+    # Achado 16/07 (OP10-058 Rebecca) -- "reveal up to 2 [Tipo] Character
+    # cards with a cost of X or less other than [Nome] from your hand.
+    # Play 1 of the revealed cards and play the other card rested if it
+    # has a cost of Y or less" nunca era reconhecido; a metade da
+    # habilidade [On Play] sumia inteira. Decompoe em 2 plays sequenciais
+    # (reaproveita play_card GRUPO 2: cost_lte/filter_type/exclude/
+    # enters_rested). A 2a so joga se sobrar candidato custo<=Y na mao
+    # apos a 1a (senao nao faz nada -- "if" lido como condicao sobre a
+    # acao inteira, confirmado com o usuario). Investigacao inicial
+    # tentou tambem separar a condicao 'board_has_cost' do draw (achando
+    # que so o draw era condicional) -- REVERTIDO ao comparar com 34
+    # outras cartas no banco do mesmo formato "If cond, A. Then, B" onde
+    # B SEMPRE compartilha a condicao de A (nao e um efeito solto
+    # incondicional); manter os 3 steps sob a MESMA condicao de bloco e o
+    # comportamento correto e consistente com o resto do parser.
+    on_play = get_card_effects("OP10-058").get("on_play", {})
+    check("OP10-058 parseia os 2 plays (reveal-pair) alem do draw, todos sob board_has_cost:[8]",
+          on_play.get("conditions", {}).get("board_has_cost") == [8]
+          and any(s.get("action") == "play_card" and s.get("cost_lte") == 7
+                  and s.get("filter_type") == "dressrosa" and s.get("exclude") == "rebecca"
+                  for s in on_play.get("steps", []))
+          and any(s.get("action") == "play_card" and s.get("cost_lte") == 4
+                  and s.get("enters_rested") for s in on_play.get("steps", [])))
+
+    # Execucao real: com a condicao satisfeita (Character custo>=8 em
+    # campo) e 2 Dressrosa elegiveis na mao (um custo<=4, outro custo>4)
+    # -- o 1o play pega o mais valioso (potencialmente o caro), o 2o so
+    # entra se ainda sobrar um custo<=4 na mao.
+    rebecca = real_card("OP10-058")
+    barato = mk("XRBB", "Dressrosa Barato", sub_types="Dressrosa", cost=3, power=3000)
+    caro = mk("XRBC", "Dressrosa Caro", sub_types="Dressrosa", cost=7, power=9000)
+    me = GameState(leader=mk("XRBLDR", "Lider", card_type="LEADER"), turn=3)
+    me.hand = [barato, caro]
+    me.field_chars = [mk("XRBFC", "Custo Alto em Campo", cost=8)]  # satisfaz board_has_cost
+    me.deck = [mk("XRBDECK", "Topo do Deck")]
+    opp = GameState(leader=mk("XRBOPP", "Opp", card_type="LEADER"), turn=3)
+    log = EffectExecutor(me, opp).execute(rebecca, "on_play")
+    check("Execucao real: os 2 Dressrosa saem da mao e entram em campo",
+          barato in me.field_chars and caro in me.field_chars
+          and barato not in me.hand and caro not in me.hand)
+    check("Execucao real: o Dressrosa de custo<=4 entra RESTADO (enters_rested)",
+          barato.rested)
+    check("Execucao real: log confirma o draw tambem disparou (condicao satisfeita)",
+          any("comprou" in x for x in log))
+
+
 def main() -> int:
     test_turn_order_imu_prefers_second()
     test_empty_throne_beats_direct_five_elders_play()
@@ -3043,6 +3090,7 @@ def main() -> int:
     test_and_you_have_condicoes_transversais()
     test_opp_chars_rested_gte_condicao_nova()
     test_choose_and_ko_it_com_upgrade_condicional()
+    test_rebecca_reveal_play_pair_condicional()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0

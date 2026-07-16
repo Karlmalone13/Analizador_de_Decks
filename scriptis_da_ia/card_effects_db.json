@@ -40720,6 +40720,23 @@
           {
             "action": "draw",
             "count": 1
+          },
+          {
+            "action": "play_card",
+            "count": 1,
+            "card_type": "CHARACTER",
+            "filter_type": "dressrosa",
+            "cost_lte": 7,
+            "exclude": "rebecca"
+          },
+          {
+            "action": "play_card",
+            "count": 1,
+            "card_type": "CHARACTER",
+            "enters_rested": true,
+            "filter_type": "dressrosa",
+            "cost_lte": 4,
+            "exclude": "rebecca"
           }
         ],
         "conditions": {

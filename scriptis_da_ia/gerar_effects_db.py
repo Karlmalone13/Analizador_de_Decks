@@ -3235,6 +3235,64 @@ def parse_activate_event_from_hand(text):
     return [step]
 
 
+def parse_reveal_hand_play_pair(text):
+    """
+    'Reveal up to 2 [Tipo] type Character cards with a cost of X or less
+    other than [Nome] from your hand. Play 1 of the revealed cards and
+    play the other card rested if it has a cost of Y or less.' Achado
+    16/07 (OP10-058 Rebecca) -- busca global achou so esta carta
+    (isolated_after_global_scan), mas a forma fica generalizada mesmo
+    assim (filtro de tipo/custo/exclusao, nao amarrada ao texto exato).
+
+    Decompoe em 2 plays sequenciais independentes (reaproveita 100% da
+    infra ja existente de play_card GRUPO 2 -- cost_lte/filter_type/
+    exclude/enters_rested): a 1a carta e jogada livremente dentro do
+    filtro de revelacao (custo<=X); a 2a e jogada RESTADA, mas so se
+    ainda existir candidato dentro do filtro MAIS RESTRITO (custo<=Y) na
+    mao restante -- "if it has a cost of Y or less" lido como condicao
+    sobre a acao inteira (joga E fica restado), nao so sobre o status de
+    rested: se nao houver candidato custo<=Y, o 2o step simplesmente nao
+    faz nada (carta revelada continua na mao). Simplificacao assumida
+    (confirmada com o usuario 16/07): em maos com 3+ candidatos
+    elegiveis, isto pode acessar levemente mais opções do que "revele
+    exatamente 2 primeiro", mas o resultado pratico (2 characters
+    entrando, 1 ativo + 1 condicionalmente restado) e equivalente.
+    """
+    steps = []
+    t = text.lower()
+
+    m = re.search(
+        r'reveal up to (\d+) '
+        r'(?:["\[{]([a-z][a-z0-9 .\'-]+)["\]}]\s+type\s+)?'
+        r'character cards?(?: with a (?:base )?cost of (\d+)(?: or less)?)?'
+        r'(?:\s+other than [\[{]([a-z][a-z0-9 .\'-]+)[\]}])?'
+        r'\s+from your hand\.\s*play 1 of the revealed cards? and play '
+        r'the other card rested if it has a (?:base )?cost of (\d+)(?: or less)?',
+        t)
+    if not m:
+        return steps
+
+    filter_type = m.group(2).strip() if m.group(2) else ''
+    reveal_cost_lte = int(m.group(3)) if m.group(3) else None
+    exclude = m.group(4).strip() if m.group(4) else ''
+    rested_cost_lte = int(m.group(5))
+
+    step1 = {'action': 'play_card', 'count': 1, 'card_type': 'CHARACTER'}
+    step2 = {'action': 'play_card', 'count': 1, 'card_type': 'CHARACTER', 'enters_rested': True}
+    if filter_type:
+        step1['filter_type'] = filter_type
+        step2['filter_type'] = filter_type
+    if reveal_cost_lte is not None:
+        step1['cost_lte'] = reveal_cost_lte
+    step2['cost_lte'] = rested_cost_lte
+    if exclude:
+        step1['exclude'] = exclude
+        step2['exclude'] = exclude
+    steps.append(step1)
+    steps.append(step2)
+    return steps
+
+
 def parse_play_generic(text):
     """Play sem origem explícita: 'Play this card', 'Play up to N ... Character card'."""
     steps = []
@@ -4922,8 +4980,15 @@ def parse_block(block_text, trigger_name):
             step_n['cost_gte'] = int(min_cost_n.group(1))
         steps.append(step_n)
 
+    # "Reveal up to N ... Play 1 of the revealed cards and play the other
+    # card rested if..." -- testado ANTES do play generico pra nao deixar
+    # o "play the other card rested if..." casar parcialmente com algum
+    # padrao mais solto la (achado 16/07, OP10-058).
+    reveal_pair_steps = parse_reveal_hand_play_pair(t)
+    if reveal_pair_steps:
+        steps.extend(reveal_pair_steps)
     # Play genérico (sem origem explícita)
-    if 'play ' in t:
+    elif 'play ' in t:
         steps.extend(parse_play_generic(t))
 
     # "Activate up to N [Tipo] Event ... from your hand" -- sinonimo de

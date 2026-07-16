@@ -1,5 +1,49 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-16 (209) - OP10-058 Rebecca: par reveal-e-joga ausente (+ tentativa revertida de split_if_then)
+
+Continuacao da lista de suspeitos (bloco 208). OP10-058: "...Then,
+reveal up to 2 \"Dressrosa\" type Character cards with a cost of 7 or
+less other than [Rebecca] from your hand. Play 1 of the revealed
+cards and play the other card rested if it has a cost of 4 or less."
+Metade da habilidade [On Play] estava ausente. Nova funcao
+`parse_reveal_hand_play_pair` decompoe em 2 `play_card` sequenciais
+(reaproveita 100% a infra GRUPO 2 ja existente -- cost_lte/filter_type/
+exclude/enters_rested). Interpretacao de "if it has a cost of 4 or
+less" CONFIRMADA com o usuario antes de codar: condiciona a ACAO
+INTEIRA (joga E fica restado) -- sem candidato custo<=4 na mao apos a
+1a jogada, a 2a simplesmente nao acontece.
+
+**Quase-regressao evitada (registrada pra ninguem repetir):** tentei
+tambem separar a condicao `board_has_cost:[8]` do bloco pra cobrir SO
+o draw (achando que "Then, [B]" sem "if" proprio seria sempre
+incondicional). Implementei `split_if_then` generico e o
+`diff_parser.py` mostrou **35 cartas afetadas**. Comparando manualmente
+varias (ex: EB03-003 "If Leader e Uta, draw 2. Then, play up to 1
+Character card...") contra o padrao ja estabelecido no banco, ficou
+claro que a hipotese estava ERRADA: "Then, B" sem "if" proprio SEMPRE
+compartilha a condicao de A nessas 35 cartas, nunca e um efeito solto
+incondicional. **REVERTIDO por completo** antes de qualquer
+`gerar_dbs.py`/commit -- nenhuma das 35 foi alterada. `board_has_cost:
+[8]` continua cobrindo os 3 steps de OP10-058 (draw + 2 plays),
+consistente com o resto do banco.
+
+**Validado:** `diff_parser.py` GANHOU=0/PERDEU=0/MUDOU=1 (so
+OP10-058, apos o revert completo). `gerar_dbs.py`+`snapshot_parser.py`
+0/0/0. `smoke_fast.py`: 1 teste dirigido novo com EXECUCAO real (os 2
+Dressrosa saem da mao e entram em campo, o de custo<=4 entra RESTADO,
+draw dispara junto). `smoke_test.py`: TODOS OS TESTES PASSARAM.
+**`smoke_test_broad.py`: 7/7** -- rodado por seguranca extra (a
+investigacao revertida mexeu no dispatcher compartilhado antes de ser
+desfeita).
+
+Suspeitos: 328 -> 328 (OP10-058 continua na lista, mas agora so pelo
+residuo benigno do "2" de "reveal up to 2" nao aparecer literalmente
+no JSON -- os 2 steps count:1 separados representam a MESMA semantica,
+nao e mais um gap real). Registro completo em
+`parser_audits/2026-07-16_op10-058_reveal_play_pair.json`. Proximo:
+ST13-003 Luffy (combo DON!!x2 inteiro ausente).
+
 ## 2026-07-16 (208) - OP04-094: habilidade [Main] inteira ausente (construcao "Choose... and K.O. it" invertida)
 
 Proxima familia da lista de suspeitos maiores (apontada no bloco 207).

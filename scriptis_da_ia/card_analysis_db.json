@@ -60900,6 +60900,16 @@
    {
     "action": "draw",
     "trigger": "on_play"
+   },
+   {
+    "action": "play_card",
+    "trigger": "on_play",
+    "cost_lte": 7
+   },
+   {
+    "action": "play_card",
+    "trigger": "on_play",
+    "cost_lte": 4
    }
   ],
   "synergy_states": {},
