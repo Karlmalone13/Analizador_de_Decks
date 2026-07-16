@@ -3833,6 +3833,7 @@ class EffectExecutor:
                 cost_eq=step.get('cost_eq'),
                 power_lte=step.get('power_lte'),
                 rested_only=step.get('rested_only', False),
+                active_only=step.get('active_only', False),
                 filter_text=step.get('filter_type', ''),
             )
             bounced = []

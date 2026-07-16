@@ -1,5 +1,58 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-16 (192) - Retomada da varredura ampla: OP01-086 bounce com qualificador "active" (367 -> em progresso)
+
+Usuario pediu pra continuar corrigindo cartas suspeitas do
+`audit_parser_coverage.py`. Confirmado 367 suspeitos (mesmo numero do
+bloco 189). Os 4 primeiros da lista por uso real (OP15-008, OP06-022,
+OP09-118, OP13-080) sao FALSOS POSITIVOS ja confirmados corretos em
+sessoes anteriores (cluster "up to 1 de alvo implicito, count=1 nunca
+literalizado no JSON") -- pulados sem re-trabalho. Passei a filtrar por
+`--min-severity 2` (2+ numeros perdidos por carta) pra achar bugs reais
+mais rapido, ja que suspeitos de severidade 1 tem taxa alta de falso
+positivo desse mesmo cluster.
+
+**OP01-086 Overheat, corrigido:** `[Counter]` perdia por completo a
+clausula "Then, return up to 1 active Character with a cost of 3 or
+less to the owner's hand" -- so o `buff_power` sobrevivia. Causa: a
+regra generica de `bounce` ("return up to N Character(s) with a cost of
+X or less") exigia "Character(s)" logo apos a contagem; a palavra
+"active" no meio quebrava o match. Censo global confirmou OP01-086 como
+UNICA carta no banco com esse qualificador nessa frase exata (10 cartas
+tem "Then, [algo]" apos Counter buff, mas cada uma com um "algo"
+diferente -- draw, trash do deck, bounce proprio, bounce condicional;
+so essa usa "active Character" sem posse). Regex estendida pra aceitar
+"active" opcional, virando `active_only: true` no step -- `bounce`
+nunca repassava esse filtro pra `eligible_cards` (so `rest_opp_character`
+tinha, `rested_only` de bounce ja existia mas `active_only` nao),
+corrigido junto no executor.
+
+**Validado:** `diff_parser.py` PERDEU=0, mudanca isolada em OP01-086. 1
+teste dirigido novo com EXECUCAO real
+(`test_overheat_counter_buff_e_bounce_active_only`): confirma que o
+bounce so afeta o alvo ATIVO dentro do custo, ignora o restado (mesmo
+custo baixo) e o caro (mesmo ativo). `smoke_fast.py` verde,
+`smoke_test.py` amplo verde, `smoke_test_broad.py` **7/7** partidas
+aleatorias sem excecao. Registro de auditoria:
+`parser_audits/2026-07-16_OP01-086_bounce_active_qualifier.json`
+(`resolution_scope: isolated_after_global_scan`).
+
+**Continuando a varredura na mesma sessao** -- proximos suspeitos reais
+identificados por severidade (nao falsos positivos, ainda nao
+corrigidos): OP04-094 Trueno Bastardo (bloco `[Main]` inteiro ausente,
+substituicao condicional de custo por trash_gte), OP06-015 Lily
+Carnation (faixa de power 2000-5000 no `play_from_trash`, custo cost>=6000
+no trigger de sacrificio), OP10-058 Rebecca -- codigo diferente de
+OP05-091, mesmo nome -- (bloco `on_play` reveal+play duplo ausente),
+OP15-097 (bloco `[Main]` inteiro ausente, so o `activate_main_effect` do
+trigger sobrevive), OP16-003 Edward.Newgate (custo opcional "reveal 2
+Character cards com 8000 power" ausente, debuff sempre incondicional),
+EB02-022 Usopp (condicao `chars_lte` com filtro de power ausente + falta
+`power_lte` no `play_card`), EB02-039 GERMA 66 (bug de mis-parse: faixa
+de power "5000 to 7000" no personagem JOGADO esta sendo lida como
+`buff_power` no proprio character da fonte), ST13-003 Luffy (bloco
+`activate_main` inteiro ausente).
+
 ## 2026-07-16 (191) - Resolve a pendencia do bloco 190: caminho de memoria do Codex corrigido
 
 O usuario perguntou ao proprio Codex sobre o mecanismo real de memoria dele

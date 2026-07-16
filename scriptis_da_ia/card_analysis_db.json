@@ -14637,6 +14637,12 @@
   "attribute": "",
   "effects": [
    {
+    "action": "bounce",
+    "trigger": "counter",
+    "cost_lte": 3,
+    "target": "opp_character"
+   },
+   {
     "action": "buff_power",
     "trigger": "counter",
     "target": "leader_or_character"
@@ -14654,10 +14660,10 @@
   "has_counter_value": false,
   "has_counter_event": true,
   "is_blocker": false,
-  "is_removal": false,
+  "is_removal": true,
   "kos": false,
   "rests_opponent": false,
-  "bounces": false,
+  "bounces": true,
   "gives_don": false,
   "power_buff": true,
   "heals": false,

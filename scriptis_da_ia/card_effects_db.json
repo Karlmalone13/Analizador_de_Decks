@@ -10187,6 +10187,13 @@
       "counter": {
         "steps": [
           {
+            "action": "bounce",
+            "count": 1,
+            "target": "opp_character",
+            "cost_lte": 3,
+            "active_only": true
+          },
+          {
             "action": "buff_power",
             "amount": 4000,
             "target": "leader_or_character",

@@ -1,0 +1,20 @@
+{
+  "trigger_card": "OP01-086",
+  "problem": "O Counter perdia por completo a clausula 'Then, return up to 1 active Character with a cost of 3 or less to the owner's hand' -- so o buff_power sobrevivia no parse.",
+  "grammar_family": "bounce generico 'return up to N Character(s) with a cost of X or less' com o qualificador 'active' entre a contagem e 'Character(s)', que a regex existente em parse_bounce nao aceitava.",
+  "queries": [
+    "regex return up to \\d+ active characters? sobre card_text de cards_rows.csv",
+    "regex return up to \\d+ of your opponent.{0,20} characters? with a cost of \\d+ or less (variante ja tratada, usada pra confirmar que 'active' nao aparecia nela)",
+    "regex return up to \\d+ characters?(?: other than this character)? with a cost of \\d+ or less (regra generica ja existente, confirmado que 'active' quebrava o match antes do fix)"
+  ],
+  "cards_found": ["OP01-086"],
+  "resolution_scope": "isolated_after_global_scan",
+  "decision": "Apenas OP01-086 usa esse qualificador 'active' na frase de bounce generico no banco inteiro (census confirmado, 0 outras ocorrencias). Regex de parse_bounce estendida para aceitar 'active' opcional e marcar active_only=True no step; eligible_cards/bounce executor ja suportavam active_only para outras actions (rest_opp_character), so faltava repassar o parametro no branch de bounce.",
+  "validated_by": [
+    "diff_parser.py: GANHOU 0 / PERDEU 0 / MUDOU 1 (isolado em OP01-086)",
+    "gerar_dbs.py + snapshot_parser.py: 0/0/0 apos regenerar",
+    "smoke_fast.py: teste dirigido novo test_overheat_counter_buff_e_bounce_active_only com execucao real (bounce so no alvo ATIVO dentro do custo, nao no restado nem no caro)",
+    "smoke_test.py: suite ampla, TODOS OS TESTES PASSARAM",
+    "smoke_test_broad.py: 7/7 partidas aleatorias sem excecao"
+  ]
+}

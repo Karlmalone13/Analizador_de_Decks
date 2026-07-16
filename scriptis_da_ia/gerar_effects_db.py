@@ -1098,9 +1098,12 @@ def parse_bounce(text):
     # o character do oponente (regra do jogo: sem qualificador de posse,
     # bounce mira o oponente). NAO casar quando o trecho diz "of your" logo
     # antes de "Character" (ai e auto-bounce de tribo, tratado em outro
-    # parser por exigir contexto de tipo).
+    # parser por exigir contexto de tipo). "active" opcional entre a
+    # contagem e "Character(s)" (achado 15/07, OP01-086 -- "return up to 1
+    # ACTIVE Character with a cost of 3 or less" nunca batia porque a
+    # palavra quebrava o regex; alvo filtrado a active_only quando presente).
     for m in re.finditer(
-        r"return up to (\d+) characters?(?: other than this character)?"
+        r"return up to (\d+) (active )?characters?(?: other than this character)?"
         r" with a cost of (\d+) or less",
         t
     ):
@@ -1108,12 +1111,15 @@ def parse_bounce(text):
         prefix = t[max(0, m.start() - 12):m.start()]
         if 'of your' in prefix or 'of you' in prefix:
             continue
-        steps.append({
+        step = {
             'action': 'bounce',
             'count': int(m.group(1)),
             'target': 'opp_character',
-            'cost_lte': int(m.group(2)),
-        })
+            'cost_lte': int(m.group(3)),
+        }
+        if m.group(2):
+            step['active_only'] = True
+        steps.append(step)
 
     if steps:
         return steps

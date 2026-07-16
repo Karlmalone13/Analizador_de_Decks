@@ -2075,6 +2075,37 @@ def test_hina_on_block_lock_during_this_turn() -> None:
           caro.cannot_attack_until == "")
 
 
+def test_overheat_counter_buff_e_bounce_active_only() -> None:
+    # Achado 16/07 -- OP01-086 Overheat [Counter]: "up to 1 of your Leader
+    # or Character cards gains +4000 power during this battle. Then,
+    # return up to 1 ACTIVE Character with a cost of 3 or less to the
+    # owner's hand." O bounce inteiro sumia porque o parser generico de
+    # bounce ("return up to N Character(s) with a cost of X or less")
+    # exigia "Character(s)" logo apos a contagem -- a palavra "active" no
+    # meio quebrava o match. Alvo agora respeita active_only (novo filtro
+    # em bounce, ja suportado por eligible_cards mas nunca repassado).
+    steps = get_card_effects("OP01-086").get("counter", {}).get("steps", [])
+    check("OP01-086 parseia bounce active_only cost<=3",
+          any(s.get("action") == "bounce" and s.get("active_only") is True
+              and s.get("cost_lte") == 3 for s in steps))
+    check("OP01-086 mantem o buff +4000 do proprio lider/character",
+          any(s.get("action") == "buff_power" and s.get("amount") == 4000 for s in steps))
+
+    overheat = real_card("OP01-086")
+    me = GameState(leader=mk("XOHL", "Lider", card_type="LEADER"))
+    opp = GameState(leader=mk("XOHOPP", "Lider Opp", card_type="LEADER"))
+    ativo_barato = mk("XOH1", "Ativo Custo 3", cost=3)
+    ativo_caro = mk("XOH2", "Ativo Custo 5", cost=5)
+    restado_barato = mk("XOH3", "Restado Custo 2", cost=2)
+    restado_barato.rested = True
+    opp.field_chars = [ativo_barato, ativo_caro, restado_barato]
+    bounce_step = next(s for s in steps if s.get("action") == "bounce")
+    EffectExecutor(me, opp)._execute_step(bounce_step, overheat)
+    check("Bounced o alvo ATIVO dentro do custo (nao o restado, nao o caro)",
+          ativo_barato in opp.hand and ativo_caro in opp.field_chars
+          and restado_barato in opp.field_chars)
+
+
 def main() -> int:
     test_turn_order_imu_prefers_second()
     test_empty_throne_beats_direct_five_elders_play()
@@ -2138,6 +2169,7 @@ def main() -> int:
     test_condicao_any_don_cards_given()
     test_opp_life_condition_after_and()
     test_hina_on_block_lock_during_this_turn()
+    test_overheat_counter_buff_e_bounce_active_only()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0
