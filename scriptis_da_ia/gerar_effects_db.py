@@ -105,7 +105,18 @@ def parse_conditions(text):
     m = re.search(r"(?:if|and) your opponent has (\d+) or more life", t)
     if m: conds['opp_life_gte'] = int(m.group(1))
 
-    m = re.search(r'(?:if (?:you have|there are)|and you have) (\d+) or more cards? in your trash', t)
+    # Lookahead negativo exclui a clausula de UPGRADE condicional de KO
+    # ("if you have N or more cards in your trash, choose... instead of...",
+    # achado 16/07, OP04-094) -- essa ja e consumida por inteiro dentro de
+    # parse_ko (vira 2 steps com trash_gte/trash_lte PROPRIOS, mutuamente
+    # exclusivos). Sem o guard, este scan generico de bloco duplicava a
+    # mesma condicao no nivel do BLOCO, contradizendo o step 'base'
+    # (trash_lte) que nunca poderia disparar com um trash_gte do bloco
+    # inteiro por cima.
+    m = re.search(
+        r'(?:if (?:you have|there are)|and you have) (\d+) or more cards? in your trash'
+        r'(?!, choose up to \d+ of your opponent.?s characters? '
+        r'with a (?:base )?cost of \d+(?: or less)? instead of)', t)
     if m: conds['trash_gte'] = int(m.group(1))
 
     # "if you have N or more Events in your trash" -- conta SO os Event
@@ -1065,6 +1076,48 @@ def parse_ko(text):
             'cost_lte': int(cost_m.group(1)) if cost_m else 99
         })
         return steps
+
+    # "Choose up to N of your opponent's Characters with a cost of X or
+    # less and K.O./trash it" -- construcao INVERTIDA (escolhe primeiro, o
+    # verbo vem no final), distinta de todo o resto desta funcao (VERBO
+    # sempre primeiro). Busca global (16/07, OP04-094) achou so esta
+    # carta -- isolated_after_global_scan -- mas a forma continua
+    # generica (N alvos, tipo opcional, qualquer verbo K.O./trash), nao
+    # amarrada ao texto exato. Cobre tambem a clausula de UPGRADE
+    # condicional ("if you have M or more cards in your trash, choose...
+    # cost of Y or less INSTEAD OF a Character with a cost of X or
+    # less") -- vira 2 steps mutuamente exclusivos via condicoes
+    # complementares trash_gte/trash_lte (nunca as 2 batem ao mesmo
+    # tempo, entao nao ha ambiguidade de qual step "vence").
+    m_choose = re.search(
+        r"choose up to (\d+) of your opponent.?s "
+        r'(?:["\[{]([a-z][a-z0-9 .\'-]+)["\]}]\s+type\s+)?'
+        r"characters?(?: with a (?:base )?cost of (\d+)( or less)?)?"
+        r" and (k\.o\.|trash) it", t)
+    if m_choose:
+        count = int(m_choose.group(1))
+        action = 'ko' if m_choose.group(5) == 'k.o.' else 'trash_character'
+        base_cost_lte = int(m_choose.group(3)) if m_choose.group(3) else None
+        step = {'action': action, 'count': count, 'target': 'opp_character'}
+        if m_choose.group(2):
+            step['filter_type'] = m_choose.group(2).strip()
+        if base_cost_lte is not None:
+            step['cost_lte'] = base_cost_lte
+
+        m_upgrade = re.search(
+            r"if you have (\d+) or more cards in your trash, choose up to \d+ "
+            r"of your opponent.?s characters? with a (?:base )?cost of (\d+)"
+            r"( or less)? instead of a character with a cost of (\d+)", t)
+        if m_upgrade and base_cost_lte is not None:
+            threshold = int(m_upgrade.group(1))
+            upgraded_cost_lte = int(m_upgrade.group(2))
+            step['conditions'] = {'trash_lte': threshold - 1}
+            step_upgraded = dict(step)
+            step_upgraded['cost_lte'] = upgraded_cost_lte
+            step_upgraded['conditions'] = {'trash_gte': threshold}
+            return [step, step_upgraded]
+
+        return [step]
 
     # KO/trash personagem do oponente. Verbo real do match decide a action:
     # 'k.o.' -> 'ko' (dispara [On K.O.] do alvo); 'trash' -> 'trash_character'

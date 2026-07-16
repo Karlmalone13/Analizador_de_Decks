@@ -1,0 +1,20 @@
+{
+  "trigger_card": "OP04-094",
+  "problem": "OP04-094 (Trueno Bastardo): '[Main] Choose up to 1 of your opponent's Characters with a cost of 4 or less and K.O. it. If you have 15 or more cards in your trash, choose up to 1 of your opponent's Characters with a cost of 6 or less instead of a Character with a cost of 4 or less.' A habilidade [Main] INTEIRA estava ausente do parseado -- so o [Trigger] separado sobrevivia. Causa raiz: parse_ko so reconhece a construcao 'VERBO up to N of your opponent's...' (verbo primeiro); esta carta usa a ordem INVERTIDA 'Choose up to N ... and K.O./trash it' (escolhe primeiro, verbo no final), forma nunca vista antes no banco.",
+  "grammar_family": "'Choose up to N of your opponent's [Tipo] Characters with a cost of X or less and K.O./trash it' -- construcao invertida (verbo no final), distinta de todo o resto de parse_ko (VERBO sempre primeiro). Inclui tambem a clausula de UPGRADE CONDICIONAL 'if you have M or more cards in your trash, choose... cost of Y or less instead of a Character with a cost of X or less' -- limiar do filtro que MUDA conforme o estado do trash.",
+  "queries": [
+    "regex 'choose up to \\d+ of your opponent' sobre card_text -- achou 1 carta so (OP04-094), resolution_scope isolated_after_global_scan. Forma generalizada mesmo assim: N alvos, filtro de tipo opcional, K.O. OU trash como verbo",
+    "regex 'choose up to \\d+ of your\\b' (sem restringir a 'opponent', pra checar se a mesma construcao aparece do lado PROPRIO) -- mesmo resultado, so OP04-094",
+    "confirmado bug ADJACENTE pego na validacao: o scan generico de condicoes de bloco (parse_conditions(block), linha ~5402) tambem casava a MESMA clausula 'if you have 15 or more cards in your trash' e a aplicava como condicao do BLOCO INTEIRO -- isso CONTRADIZIA o step 'base' (trash_lte:14) que meu fix ja tinha criado, tornando-o inalcancavel (bloco exigia trash>=15 E step exigia trash<=14, contradicao logica, nunca dispararia). Corrigido com lookahead negativo na regex de trash_gte generica, excluindo especificamente essa clausula de upgrade (ja consumida por inteiro dentro de parse_ko)."
+  ],
+  "cards_found": ["OP04-094"],
+  "resolution_scope": "isolated_after_global_scan",
+  "decision": "Novo ramo em parse_ko para 'Choose up to N of your opponent's [Tipo] Characters with a cost of X or less and K.O./trash it', produzindo o mesmo formato de step de sempre (action ko/trash_character, count, cost_lte, filter_type opcional). O upgrade condicional vira 2 steps mutuamente exclusivos na MESMA lista: step base com conditions={'trash_lte': M-1}, step upgrade com conditions={'trash_gte': M} e o cost_lte maior -- nunca os 2 batem ao mesmo tempo (trash nao pode ser >=M e <=M-1 simultaneamente), sem ambiguidade de qual 'vence'. Nova condicao 'trash_lte' (simetrica a trash_gte, ja existente) adicionada em _check_conditions e _effect_conditions_met -- generica, reutilizavel por qualquer carta futura com filtro 'N ou menos cartas no trash' mesmo que hoje so esta construcao a use. Bug adjacente corrigido: parse_conditions ganhou um lookahead negativo pra nao duplicar a mesma clausula de upgrade como condicao de BLOCO (que contradiria o step base recem-criado).",
+  "validated_by": [
+    "diff_parser.py: GANHOU 0 / PERDEU 0 / MUDOU 1 (OP04-094, conferida contra card_text, incluindo verificacao manual de que o bloco [Main] NAO tem 'conditions' vazado no nivel do bloco apos o fix do lookahead)",
+    "gerar_dbs.py + snapshot_parser.py: 0/0/0 apos regenerar",
+    "smoke_fast.py: teste dirigido novo test_choose_and_ko_it_com_upgrade_condicional com EXECUCAO real -- confirma que com trash<15 SO o alvo de custo<=4 e K.O.'d (o de custo 6 sobrevive), e que com trash>=15 o alvo de custo 6 (so alcancavel pelo upgrade) tambem e K.O.'d",
+    "smoke_test.py: suite ampla, TODOS OS TESTES PASSARAM",
+    "smoke_test_broad.py: NAO rodado nesta familia (fix isolado de parser + 1 condicao nova simetrica a uma ja existente, sem tocar codigo compartilhado por toda a base)"
+  ]
+}

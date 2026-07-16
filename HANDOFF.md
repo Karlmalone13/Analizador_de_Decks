@@ -1,5 +1,50 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-16 (208) - OP04-094: habilidade [Main] inteira ausente (construcao "Choose... and K.O. it" invertida)
+
+Proxima familia da lista de suspeitos maiores (apontada no bloco 207).
+OP04-094 (Trueno Bastardo): "[Main] Choose up to 1 of your opponent's
+Characters with a cost of 4 or less and K.O. it. If you have 15 or
+more cards in your trash, choose up to 1 of your opponent's Characters
+with a cost of 6 or less instead of a Character with a cost of 4 or
+less." A habilidade [Main] INTEIRA sumia do parseado -- so o [Trigger]
+separado sobrevivia. Causa: `parse_ko` so reconhece "VERBO up to N...";
+esta carta usa a ordem INVERTIDA "Choose up to N ... and K.O./trash
+it" (escolhe primeiro, verbo no final), forma nunca vista antes.
+
+Busca global achou so esta carta (`isolated_after_global_scan`), mas a
+forma ficou generalizada mesmo assim (N alvos, filtro de tipo
+opcional, K.O. OU trash). Tambem cobre o UPGRADE CONDICIONAL ("if you
+have M+ cards in your trash, ... cost Y or less INSTEAD OF ... cost
+X or less") como 2 steps mutuamente exclusivos na mesma lista: base
+com `conditions: {trash_lte: M-1}`, upgrade com `conditions: {trash_gte:
+M}` -- nunca os 2 batem ao mesmo tempo. Nova condicao `trash_lte`
+(simetrica a `trash_gte` ja existente) em `_check_conditions` e
+`_effect_conditions_met`.
+
+**Bug adjacente pego na validacao:** o scan generico de condicoes de
+BLOCO (`parse_conditions(block)`) tambem casava a MESMA clausula "if
+you have 15 or more cards in your trash" e aplicava como condicao do
+bloco INTEIRO -- isso contradizia o step 'base' recem-criado
+(`trash_lte: 14`), tornando-o INALCANCAVEL (bloco exigia trash>=15 E
+step exigia trash<=14, contradicao logica). Corrigido com lookahead
+negativo especifico na regex generica de `trash_gte`, excluindo a
+clausula de upgrade (ja consumida por inteiro dentro de `parse_ko`).
+
+**Validado:** `diff_parser.py` GANHOU=0/PERDEU=0/MUDOU=1 (conferida
+manualmente que o bloco `[Main]` nao tem `conditions` vazado no nivel
+do bloco). `gerar_dbs.py`+`snapshot_parser.py` 0/0/0. `smoke_fast.py`:
+1 teste dirigido novo com EXECUCAO real (trash<15 so alcanca o alvo
+custo<=4, trash>=15 tambem alcanca o alvo custo 6). `smoke_test.py`:
+TODOS OS TESTES PASSARAM. `smoke_test_broad.py` NAO rodado (fix
+isolado, sem tocar codigo compartilhado).
+
+Registro completo em
+`parser_audits/2026-07-16_op04-094_choose_and_ko_it.json`. Suspeitos:
+329 -> 328. Proximos candidatos: OP10-058 Rebecca (clausula de
+reveal-e-jogar ausente), ST13-003 Luffy (combo DON!!x2 inteiro
+ausente).
+
 ## 2026-07-16 (207) - ST24-004 Law & Bepo: opp_chars_rested_gte nova (simetrica a chars_rested_gte)
 
 Continuacao da varredura 1-por-1 (proxima familia real da lista de

@@ -12947,6 +12947,28 @@
   }
  },
  "OP04-094": {
+  "main": {
+   "steps": [
+    {
+     "action": "ko",
+     "conditions": {
+      "trash_lte": 14
+     },
+     "cost_lte": 4,
+     "count": 1,
+     "target": "opp_character"
+    },
+    {
+     "action": "ko",
+     "conditions": {
+      "trash_gte": 15
+     },
+     "cost_lte": 6,
+     "count": 1,
+     "target": "opp_character"
+    }
+   ]
+  },
   "trigger": {
    "steps": [
     {

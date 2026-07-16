@@ -2907,6 +2907,59 @@ def test_opp_chars_rested_gte_condicao_nova() -> None:
           ashura2.power_buff == 0)
 
 
+def test_choose_and_ko_it_com_upgrade_condicional() -> None:
+    # Achado 16/07 (OP04-094 Trueno Bastardo) -- "Choose up to 1 of your
+    # opponent's Characters with a cost of 4 or less and K.O. it." e uma
+    # construcao INVERTIDA (escolhe primeiro, o verbo K.O./trash vem no
+    # final), nunca reconhecida por parse_ko (que so aceita VERBO
+    # primeiro). A habilidade [Main] inteira ficava ausente, so o
+    # [Trigger] sobrevivia. Tambem cobre o upgrade condicional ("if you
+    # have 15+ cards in your trash, ... cost of 6 or less instead of ...
+    # cost of 4 or less") como 2 steps mutuamente exclusivos via
+    # trash_gte/trash_lte complementares. Busca global achou so esta
+    # carta -- forma generalizada mesmo assim (N alvos, tipo opcional,
+    # K.O. OU trash).
+    main_steps = get_card_effects("OP04-094").get("main", {}).get("steps", [])
+    check("OP04-094 [Main] parseia 2 steps de ko mutuamente exclusivos (base cost_lte=4, upgrade cost_lte=6)",
+          any(s.get("cost_lte") == 4 and s.get("conditions", {}).get("trash_lte") == 14 for s in main_steps)
+          and any(s.get("cost_lte") == 6 and s.get("conditions", {}).get("trash_gte") == 15 for s in main_steps))
+    check("Bloco [Main] NAO tem condicao vazada no nivel do bloco (so nos steps)",
+          "conditions" not in get_card_effects("OP04-094").get("main", {}))
+
+    # Execucao real: com trash < 15, so o KO de custo<=4 deve disparar
+    # (o de custo<=6 fica bloqueado pela condicao trash_gte:15).
+    bastardo = real_card("OP04-094")
+    me = GameState(leader=mk("XTBLDR", "Lider", card_type="LEADER"), turn=3)
+    me.field_chars = [bastardo]
+    me.trash = [mk(f"XTBTR{i}", f"Trash {i}") for i in range(5)]  # 5 < 15
+    opp = GameState(leader=mk("XTBOPP", "Opp", card_type="LEADER"), turn=3)
+    alvo_barato = mk("XTBC", "Alvo Barato", cost=4)
+    alvo_caro = mk("XTBE", "Alvo Caro", cost=6)
+    opp.field_chars = [alvo_barato, alvo_caro]
+    ee = EffectExecutor(me, opp)
+    for step in get_card_effects("OP04-094").get("main", {}).get("steps", []):
+        ee._execute_step(step, bastardo)
+    check("Execucao real: com trash<15, o alvo caro (custo 6) sobrevive -- so o filtro cost<=4 era viavel",
+          alvo_caro in opp.field_chars)
+    check("Execucao real: com trash<15, o alvo barato (custo 4) foi K.O.'d",
+          alvo_barato not in opp.field_chars)
+
+    # Com trash >= 15, o filtro upgrade (cost<=6) deve poder alcancar um
+    # alvo que o filtro base (cost<=4) nao alcancaria.
+    bastardo2 = real_card("OP04-094")
+    me2 = GameState(leader=mk("XTBLDR2", "Lider", card_type="LEADER"), turn=3)
+    me2.field_chars = [bastardo2]
+    me2.trash = [mk(f"XTBTR2{i}", f"Trash {i}") for i in range(15)]  # 15 >= 15
+    opp2 = GameState(leader=mk("XTBOPP2", "Opp", card_type="LEADER"), turn=3)
+    alvo_caro2 = mk("XTBE2", "Alvo Caro 2", cost=6)
+    opp2.field_chars = [alvo_caro2]
+    ee2 = EffectExecutor(me2, opp2)
+    for step in get_card_effects("OP04-094").get("main", {}).get("steps", []):
+        ee2._execute_step(step, bastardo2)
+    check("Execucao real: com trash>=15, o alvo de custo 6 (so alcancavel pelo upgrade) foi K.O.'d",
+          alvo_caro2 not in opp2.field_chars)
+
+
 def main() -> int:
     test_turn_order_imu_prefers_second()
     test_empty_throne_beats_direct_five_elders_play()
@@ -2989,6 +3042,7 @@ def main() -> int:
     test_gains_keyword_and_cost_buff()
     test_and_you_have_condicoes_transversais()
     test_opp_chars_rested_gte_condicao_nova()
+    test_choose_and_ko_it_com_upgrade_condicional()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0

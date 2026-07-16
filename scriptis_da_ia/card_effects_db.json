@@ -20759,6 +20759,28 @@
             "cost_lte": 5
           }
         ]
+      },
+      "main": {
+        "steps": [
+          {
+            "action": "ko",
+            "count": 1,
+            "target": "opp_character",
+            "cost_lte": 4,
+            "conditions": {
+              "trash_lte": 14
+            }
+          },
+          {
+            "action": "ko",
+            "count": 1,
+            "target": "opp_character",
+            "cost_lte": 6,
+            "conditions": {
+              "trash_gte": 15
+            }
+          }
+        ]
       }
     }
   },

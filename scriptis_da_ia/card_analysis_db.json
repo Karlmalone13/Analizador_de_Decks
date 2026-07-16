@@ -30889,6 +30889,18 @@
     "trigger": "trigger",
     "cost_lte": 5,
     "target": "opp_character"
+   },
+   {
+    "action": "ko",
+    "trigger": "main",
+    "cost_lte": 4,
+    "target": "opp_character"
+   },
+   {
+    "action": "ko",
+    "trigger": "main",
+    "cost_lte": 6,
+    "target": "opp_character"
    }
   ],
   "synergy_states": {

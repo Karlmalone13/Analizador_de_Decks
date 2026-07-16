@@ -2834,6 +2834,12 @@ class EffectExecutor:
             return False
         if 'trash_gte' in conds and len(me.trash) < conds['trash_gte']:
             return False
+        # Simetrico a trash_gte -- achado 16/07 (OP04-094), usado pra
+        # modelar "if you have M or more cards in your trash, [X] instead
+        # of [Y]" como 2 steps mutuamente exclusivos (trash_gte no
+        # upgrade, trash_lte=M-1 no base).
+        if 'trash_lte' in conds and len(me.trash) > conds['trash_lte']:
+            return False
         if 'don_gte' in conds and me.don_available < conds['don_gte']:
             return False
         if conds.get('has_don_attached'):
@@ -7221,6 +7227,7 @@ class DecisionEngine:
             if k == 'opp_hand_gte' and not (len(self.opp.hand) >= v): return False
             if k == 'opp_chars_gte' and not (len(self.opp.field_chars) >= v): return False
             if k == 'trash_gte' and not (my_trash >= v): return False
+            if k == 'trash_lte' and not (my_trash <= v): return False
             if k == 'just_played' and v and not getattr(card, 'just_played', False): return False
             if k == 'events_in_trash_gte':
                 n_events = sum(1 for c in me.trash if c.card_type.lower() == 'event')
