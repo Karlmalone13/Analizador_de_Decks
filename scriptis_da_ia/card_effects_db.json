@@ -46450,7 +46450,10 @@
             "target": "self",
             "duration": "this_turn"
           }
-        ]
+        ],
+        "conditions": {
+          "don_attached_total_gte": 2
+        }
       }
     }
   },
@@ -46699,7 +46702,10 @@
             "count": 1,
             "cost_lte": 6
           }
-        ]
+        ],
+        "conditions": {
+          "don_attached_total_gte": 3
+        }
       },
       "passive": {
         "steps": [
@@ -52684,6 +52690,9 @@
             "action": "gain_blocker"
           }
         ],
+        "conditions": {
+          "don_attached_total_gte": 2
+        },
         "costs": [
           {
             "type": "rest_self"

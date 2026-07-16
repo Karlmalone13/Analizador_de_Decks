@@ -29097,6 +29097,9 @@
    ]
   },
   "passive": {
+   "conditions": {
+    "don_attached_total_gte": 2
+   },
    "steps": [
     {
      "action": "buff_power",
@@ -29257,6 +29260,9 @@
    ]
   },
   "when_attacking": {
+   "conditions": {
+    "don_attached_total_gte": 3
+   },
    "steps": [
     {
      "action": "rest_opp_character",
@@ -32957,6 +32963,9 @@
  "OP13-111": {},
  "OP13-112": {
   "passive": {
+   "conditions": {
+    "don_attached_total_gte": 2
+   },
    "costs": [
     {
      "type": "rest_self"

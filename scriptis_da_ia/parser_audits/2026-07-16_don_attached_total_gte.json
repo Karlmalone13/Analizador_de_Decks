@@ -1,0 +1,19 @@
+{
+  "trigger_card": "OP12-024",
+  "problem": "'If you have a total of N or more given DON!! cards' (limiar numerico) nunca era reconhecido -- so existia has_don_attached (checa apenas '>= 1', sem suportar um limiar arbitrario). Os 3 efeitos gated por essa condicao disparavam SEMPRE, sem checar DON anexado nenhum.",
+  "grammar_family": "'if you have a total of N or more given DON!! cards' -- condicao sobre a SOMA de DON anexado no proprio lado (lider + todos os characters do campo).",
+  "queries": [
+    "regex if you have a total of \\d+ or more given don sobre card_text (achou OP12-015, OP12-024, OP13-112)",
+    "confirmado que os 3 tinham a condicao inteiramente ausente do parse (efeito incondicional) antes do fix"
+  ],
+  "cards_found": ["OP12-015", "OP12-024", "OP13-112"],
+  "resolution_scope": "global",
+  "decision": "Nova condicao don_attached_total_gte (distinta de has_don_attached), somando don_attached do lider + todos os field_chars. Adicionada nos 2 checadores do projeto que ja tinham has_don_attached (_check_conditions e _effect_conditions_met, mesmo padrao recorrente de checador duplicado ja documentado varias vezes nesta sessao). _check_conditions e usado tanto por execute() (when_attacking de OP12-024) quanto por apply_your_turn_buffs() (passive buff_power self de OP12-015) e apply_conditional_keyword_passives() (passive gain_blocker de OP13-112) -- os 3 mecanismos diferentes das 3 cartas convergem no mesmo checador ja corrigido, sem precisar de logica extra em cada um.",
+  "validated_by": [
+    "diff_parser.py: GANHOU 0 / PERDEU 0 / MUDOU 3 (todas confirmadas contra card_text)",
+    "gerar_dbs.py + snapshot_parser.py: 0/0/0 apos regenerar",
+    "smoke_fast.py: teste dirigido novo test_don_attached_total_gte_condicao_nova com EXECUCAO real via 2 caminhos distintos (apply_your_turn_buffs pro buff de OP12-015, com e sem DON suficiente; apply_conditional_keyword_passives pro Blocker de OP13-112, somando DON do LIDER + campo)",
+    "smoke_test.py: suite ampla, TODOS OS TESTES PASSARAM",
+    "smoke_test_broad.py: 7/7 partidas aleatorias sem excecao"
+  ]
+}

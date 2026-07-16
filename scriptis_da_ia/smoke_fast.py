@@ -2408,6 +2408,45 @@ def test_place_own_character_bottom_deck_e_turno_extra() -> None:
           sequencia[1] != sequencia[2] and sequencia[2] != sequencia[3])
 
 
+def test_don_attached_total_gte_condicao_nova() -> None:
+    # Achado 16/07 -- "If you have a total of N or more given DON!! cards"
+    # (limiar NUMERICO, distinto de has_don_attached que so checa >=1)
+    # nunca existia -- OP12-015 (buff), OP12-024 (rest_opp_character),
+    # OP13-112 (Blocker) disparavam SEMPRE, mesmo sem DON nenhum anexado.
+    check("OP12-015 parseia don_attached_total_gte=2",
+          get_card_effects("OP12-015").get("passive", {}).get("conditions", {}).get("don_attached_total_gte") == 2)
+    check("OP12-024 parseia don_attached_total_gte=3",
+          get_card_effects("OP12-024").get("when_attacking", {}).get("conditions", {}).get("don_attached_total_gte") == 3)
+    check("OP13-112 parseia don_attached_total_gte=2",
+          get_card_effects("OP13-112").get("passive", {}).get("conditions", {}).get("don_attached_total_gte") == 2)
+
+    # Execucao real via os 2 caminhos que consomem a condicao:
+    # apply_your_turn_buffs (buff_power self, OP12-015) e
+    # apply_conditional_keyword_passives (gain_blocker, OP13-112) --
+    # ambos usam _check_conditions, ja corrigido.
+    op12015 = real_card("OP12-015")
+    me_pouco = GameState(leader=mk("XDT1LD", "Lider", card_type="LEADER"))
+    me_pouco.field_chars = [op12015]
+    EffectExecutor(me_pouco, GameState(leader=mk("XDT1OPP", "Opp", card_type="LEADER"))).apply_your_turn_buffs()
+    check("SEM 2+ DON total anexado, o buff de OP12-015 NAO aplica", op12015.power_buff == 0)
+
+    op12015b = real_card("OP12-015")
+    op12015b.don_attached = 2
+    me_muito = GameState(leader=mk("XDT2LD", "Lider", card_type="LEADER"))
+    me_muito.field_chars = [op12015b]
+    EffectExecutor(me_muito, GameState(leader=mk("XDT2OPP", "Opp", card_type="LEADER"))).apply_your_turn_buffs()
+    check("COM 2+ DON total anexado (na propria carta), o buff de OP12-015 aplica",
+          op12015b.power_buff == 2000)
+
+    op13112 = real_card("OP13-112")
+    me_blocker = GameState(leader=mk("XDT3LD", "Lider", card_type="LEADER"))
+    me_blocker.leader.don_attached = 2
+    me_blocker.field_chars = [op13112]
+    apply_conditional_keyword_passives(me_blocker, GameState(leader=mk("XDT3OPP", "Opp", card_type="LEADER")))
+    check("COM 2+ DON total anexado NO LIDER (soma lider+campo), OP13-112 ganha Blocker",
+          op13112.has_blocker)
+
+
 def main() -> int:
     test_turn_order_imu_prefers_second()
     test_empty_throne_beats_direct_five_elders_play()
@@ -2479,6 +2518,7 @@ def main() -> int:
     test_place_bottom_deck_dois_alvos_ordem_agnostica()
     test_place_opp_char_to_opp_life_variantes_de_fraseado()
     test_place_own_character_bottom_deck_e_turno_extra()
+    test_don_attached_total_gte_condicao_nova()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0

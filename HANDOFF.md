@@ -1,5 +1,39 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-16 (200) - OP12-024: nova condicao don_attached_total_gte (3 cartas)
+
+Continuacao da varredura 1-por-1 da lista de "base cost" (pedido do
+usuario). "If you have a total of N or more given DON!! cards" (limiar
+NUMERICO) nunca existia -- so `has_don_attached` (checa so ">=1")
+existia. OP12-015 (buff +2000 power), OP12-024 (rest_opp_character) e
+OP13-112 (Blocker) disparavam SEMPRE, sem checar DON anexado nenhum.
+
+Nova condicao `don_attached_total_gte`, soma `don_attached` do lider +
+todos os `field_chars`. Adicionada nos 2 checadores do projeto que ja
+tinham `has_don_attached` (`_check_conditions` e
+`_effect_conditions_met`). Interessante: as 3 cartas exercitam 3
+CAMINHOS de execucao diferentes que convergem no mesmo checador ja
+corrigido -- `execute()` (when_attacking de OP12-024),
+`apply_your_turn_buffs()` (passive buff_power self de OP12-015) e
+`apply_conditional_keyword_passives()` (passive gain_blocker de
+OP13-112) -- confirma que centralizar a correcao no checador comum
+(em vez de cada mecanismo ter sua propria logica) foi a decisao certa.
+
+**Validado:** `diff_parser.py` PERDEU=0, MUDOU=3 (confirmadas contra
+`card_text`). 1 teste dirigido novo com EXECUCAO real
+(`test_don_attached_total_gte_condicao_nova`): prova os 2 caminhos de
+execucao distintos (buff aplica/nao aplica conforme DON anexado; Blocker
+so liga com DON suficiente somado entre lider+campo). `smoke_fast.py`
+(122 checks) verde, `smoke_test.py` amplo verde, `smoke_test_broad.py`
+**7/7**. Registro:
+`parser_audits/2026-07-16_don_attached_total_gte.json`
+(`resolution_scope: global`, 3 cartas).
+
+**Restantes da lista de "base cost":** OP12-041/OP15-014 (mesma causa
+-- bloco inteiro "Activate Event from hand com base cost" ausente),
+OP12-081, OP12-102, OP14-034, OP15-002, ST25-002/ST25-005 (mesma
+causa).
+
 ## 2026-07-16 (199) - EB03-021 generalizado revela familia grande: place-bottom-deck, Life cards, e mecanica NOVA de turno extra (5 cartas)
 
 Fechamento da familia "EB03-021" (varredura 1-por-1, pedido do usuario).

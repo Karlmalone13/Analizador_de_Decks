@@ -2803,6 +2803,14 @@ class EffectExecutor:
                 getattr(c, 'don_attached', 0) for c in me.field_chars)
             if attached <= 0:
                 return False
+        # "if you have a total of N or more given DON!! cards" -- limiar
+        # numerico (achado 16/07, OP12-015/OP12-024/OP13-112), distinto
+        # de has_don_attached (so checa >=1). Mesma soma lider+campo.
+        if 'don_attached_total_gte' in conds:
+            attached_total = getattr(me.leader, 'don_attached', 0) + sum(
+                getattr(c, 'don_attached', 0) for c in me.field_chars)
+            if attached_total < conds['don_attached_total_gte']:
+                return False
         if 'don_on_field_gte' in conds and me.don_on_field() < conds['don_on_field_gte']:
             return False
         if 'don_on_field_lte' in conds and me.don_on_field() > conds['don_on_field_lte']:
@@ -7063,6 +7071,10 @@ class DecisionEngine:
                 attached = getattr(me.leader, 'don_attached', 0) + sum(
                     getattr(c, 'don_attached', 0) for c in me.field_chars)
                 if attached <= 0: return False
+            if k == 'don_attached_total_gte':
+                attached_total = getattr(me.leader, 'don_attached', 0) + sum(
+                    getattr(c, 'don_attached', 0) for c in me.field_chars)
+                if attached_total < v: return False
             if k == 'don_on_field_gte' and not ((my_don + me.don_rested) >= v): return False
             if k == 'don_on_field_lte' and not ((my_don + me.don_rested) <= v): return False
             if k == 'opp_don_on_field_gte' and not (self.opp.don_on_field() >= v): return False

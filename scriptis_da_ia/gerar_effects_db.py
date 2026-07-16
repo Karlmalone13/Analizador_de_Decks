@@ -131,6 +131,15 @@ def parse_conditions(text):
     if re.search(r'if you have any don!{0,2}\s*cards? given', t):
         conds['has_don_attached'] = True
 
+    # "If you have a total of N or more given DON!! cards" -- limiar
+    # NUMERICO (distinto de has_don_attached, que so checa "qualquer DON
+    # >= 1"), soma DON anexado no PROPRIO lado inteiro (lider + todos os
+    # characters do campo). Achado 16/07 (revisao do usuario, OP12-024 e
+    # familia -- 3 cartas: OP12-015, OP12-024, OP13-112).
+    m_don_tot = re.search(r'if you have a total of (\d+) or more given don!{0,2}\s*cards?', t)
+    if m_don_tot:
+        conds['don_attached_total_gte'] = int(m_don_tot.group(1))
+
     # "you have N or more RESTED DON!! cards" -- distinto de don_gte (que
     # olha don_available/ativo) e de don_on_field_gte (total no campo,
     # ativo+rested). Achado 15/07 (revisao do usuario, OP12-021 Ipponmatsu):
