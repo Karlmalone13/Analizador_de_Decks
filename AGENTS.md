@@ -2,21 +2,21 @@
 
 ## LEITURA OBRIGATÓRIA ANTES DE QUALQUER COMMIT
 
-Antes de commitar qualquer coisa, leia as memórias do projeto:
+Antes de commitar, leia `HANDOFF.md`, `TODO.md` e as instruções arquiteturais
+deste `AGENTS.md`. Memórias locais do Codex são auxiliares e não substituem
+documentação versionada no repositório — este `AGENTS.md` é o mecanismo
+oficial de instruções persistentes do repo (a memória local do Codex, quando
+ativada via `/memories` ou `[features] memories = true` em `config.toml`,
+fica em `C:\Users\arthu\.codex\memories\` nesta máquina; é estado gerado
+automaticamente, não é fonte de regras obrigatórias nem portável entre
+máquinas — nunca depender dela para uma decisão de arquitetura).
 
-```
-C:\Users\arthu\.Codex\projects\C--Projetos-TI-analidador-de-decks-optcg\memory\MEMORY.md
-```
-
-As memórias contêm regras arquiteturais e feedbacks do usuário que DEVEM ser
-seguidos. Ignorar essas memórias pode levar a violações de arquitetura que o
-usuário já corrigiu explicitamente. Regras-chave (resumo — leia os arquivos
-completos):
+Regras-chave do projeto (resumo — o resto deste arquivo tem os detalhes):
 
 - **Bot = olhos/mãos only** (`bot_optcgsim.py`). Engine = cérebro. Sem lógica
-  de carta no bot. Sem dois motores. Ver `memory/feedback_dois_motores.md`.
+  de carta no bot. Sem dois motores.
 - **Objetivo do bot**: captar logs contra humanos → validar engine → front-end.
-  Não otimizar o bot além disso. Ver `memory/project_objetivo_bot.md`.
+  Não otimizar o bot além disso.
 
 ---
 

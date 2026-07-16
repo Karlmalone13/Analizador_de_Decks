@@ -1,5 +1,36 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-16 (191) - Resolve a pendencia do bloco 190: caminho de memoria do Codex corrigido
+
+O usuario perguntou ao proprio Codex sobre o mecanismo real de memoria dele
+e trouxe a resposta oficial, resolvendo a pendencia deixada no bloco 190.
+Confirmado: o erro anterior foi assumir que a memoria do Codex segue a
+mesma estrutura do Claude Code (`.claude\projects\<projeto>\memory\`).
+
+**Fatos corretos, pro registro:** o Codex tem memoria local experimental,
+mas o caminho e GLOBAL (nao por projeto) -- `C:\Users\arthu\.codex\memories\`
+nesta maquina, ativada via `/memories` no CLI ou `[features] memories = true`
+no `config.toml`. Sao arquivos de estado gerado automaticamente, NAO
+documentacao obrigatoria nem portavel entre maquinas. O mecanismo oficial
+pra instrucoes persistentes do repo e o proprio `AGENTS.md`; decisoes
+indispensaveis devem viver em `HANDOFF.md`/`TODO.md`/documentos
+versionados, nunca depender de memoria local pra regra de arquitetura.
+Fontes: https://learn.chatgpt.com/docs/customization/memories e
+https://learn.chatgpt.com/docs/agent-configuration/agents-md.
+
+**`AGENTS.md` corrigido:** a secao "LEITURA OBRIGATORIA ANTES DE QUALQUER
+COMMIT" nao aponta mais pro caminho inexistente
+(`.Codex\projects\...\memory\MEMORY.md`, nunca existiu no disco, achado no
+bloco 190). Agora manda ler `HANDOFF.md`+`TODO.md`+o proprio `AGENTS.md`,
+e menciona a memoria real do Codex só como contexto OPCIONAL (nunca
+pre-requisito de commit). As 2 regras-chave (bot=olhos/maos, objetivo do
+bot) que antes apontavam pra arquivos de memoria do Claude (`memory/
+feedback_dois_motores.md`, `memory/project_objetivo_bot.md` -- inexistentes
+do ponto de vista do Codex) ficaram inline no proprio `AGENTS.md`, já que
+o arquivo agora e a fonte auto-suficiente.
+
+Pendencia do bloco 190 encerrada. Nenhum trabalho de parser nesta entrada.
+
 ## 2026-07-16 (190) - Checkpoint de troca de sessao: Claude -> Codex
 
 Usuario pediu pra conferir o estado local/remoto e deixar tudo registrado
