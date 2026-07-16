@@ -2661,6 +2661,38 @@ def test_all_allies_filter_type_buff_power() -> None:
     check("Execucao real: log confirma o efeito disparou", bool(log))
 
 
+def test_all_allies_filter_color_e_type_intercalados() -> None:
+    # Achado 16/07 (OP14-034 Luffy): variante de Bug 3 com uma COR entre
+    # "all of your" e o tipo -- "all of your green {Straw Hat Crew} type
+    # Characters with a base cost of 4 or more gain +1000 power". A
+    # regex de type_all_m (fix anterior, OP12-102/ST05-001) exigia o
+    # tipo logo apos "all of your", entao a cor no meio quebrava o match
+    # de novo (mesma raiz: literal rigido demais). Corrigido tolerando
+    # uma cor opcional e extraindo filter_color separado de filter_type.
+    steps = get_card_effects("OP14-034").get("your_turn", {}).get("steps", [])
+    check("OP14-034 buffa all_allies com filter_type+filter_color+cost_gte simultaneos",
+          any(s.get("action") == "buff_power" and s.get("target") == "all_allies"
+              and s.get("filter_type") == "straw hat crew"
+              and s.get("filter_color") == "green"
+              and s.get("cost_gte") == 4
+              for s in steps))
+
+    # Execucao real: 3 Straw Hat Crew custo>=4 no campo, so 1 delas verde
+    # -- so a verde deve ganhar +1000 (cor E tipo E custo, os 3 filtros).
+    luffy = real_card("OP14-034")
+    verde_alto = mk("XSHV", "Verde Alto Custo", sub_types="Straw Hat Crew", cost=5, color="Green")
+    preto_alto = mk("XSHP", "Preto Alto Custo", sub_types="Straw Hat Crew", cost=5, color="Black")
+    verde_baixo = mk("XSHVB", "Verde Baixo Custo", sub_types="Straw Hat Crew", cost=2, color="Green")
+    me = GameState(leader=luffy, turn=3)
+    me.field_chars = [verde_alto, preto_alto, verde_baixo]
+    opp = GameState(leader=mk("XLUOPP", "Opp", card_type="LEADER"), turn=3)
+    EffectExecutor(me, opp).execute(luffy, "your_turn")
+    check("Execucao real: so o Straw Hat Crew VERDE de custo>=4 ganha +1000",
+          verde_alto.power_buff == 1000
+          and preto_alto.power_buff == 0
+          and verde_baixo.power_buff == 0)
+
+
 def main() -> int:
     test_turn_order_imu_prefers_second()
     test_empty_throne_beats_direct_five_elders_play()
@@ -2738,6 +2770,7 @@ def main() -> int:
     test_shirahoshi_turn_life_face_up_substitute_e_no_other_named()
     test_no_other_named_condicao_transversal()
     test_all_allies_filter_type_buff_power()
+    test_all_allies_filter_color_e_type_intercalados()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0

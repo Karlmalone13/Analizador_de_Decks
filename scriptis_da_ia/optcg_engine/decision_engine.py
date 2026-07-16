@@ -4481,6 +4481,9 @@ class EffectExecutor:
                 cost_gte = step.get('cost_gte')
                 if cost_gte is not None:
                     alvos = [c for c in alvos if c.cost >= cost_gte]
+                filter_color = step.get('filter_color', '')
+                if filter_color:
+                    alvos = [c for c in alvos if filter_color.lower() in c.color.lower()]
                 if step.get('exclude_self'):
                     alvos = [c for c in alvos if c is not card]
                 for c in alvos:

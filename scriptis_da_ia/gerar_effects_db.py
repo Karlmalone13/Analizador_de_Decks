@@ -2227,12 +2227,23 @@ def parse_power_buff(text):
         # isso o literal 'all of your characters' nunca casava (o nome do
         # tipo fica no meio) e o alvo caia no fallback errado 'self'
         # (achado 16/07, OP12-102 e ST05-001 -- busca global, 2 cartas).
+        # Cor opcional ANTES do tipo (achado 16/07, OP14-034: "all of your
+        # green {Straw Hat Crew} type Characters...") -- sem isso a cor
+        # ficava presa no meio do texto e nem o tipo nem a cor eram
+        # extraidos (TIPO_BRACKETS exige o tipo logo apos "all of your").
+        CORES_RE = r'(?:black|red|blue|green|yellow|purple)'
         type_all_m = re.search(
-            r'all of your ' + TIPO_BRACKETS + r' type characters?', contexto_antes)
+            r'all of your (?:' + CORES_RE + r' )?' + TIPO_BRACKETS + r' type characters?',
+            contexto_antes)
         filter_type_all = (
             next((g for g in type_all_m.groups() if g), '').strip()
             if type_all_m else ''
         )
+        filter_color_all = ''
+        if type_all_m:
+            m_color_all = re.search(r'all of your (' + CORES_RE + r') ', type_all_m.group(0))
+            if m_color_all:
+                filter_color_all = m_color_all.group(1)
         # sub-filtro opcional entre "type character(s)" e "gain(s)" -- custo
         # (EB03-041: "with a cost of 6 or less") ou exclusao da propria
         # carta (OP04-012: "other than this Character"). Mesma clausula-
@@ -2312,6 +2323,8 @@ def parse_power_buff(text):
             step['exclude'] = exclude_own
         if target == 'all_allies' and filter_type_all:
             step['filter_type'] = filter_type_all
+            if filter_color_all:
+                step['filter_color'] = filter_color_all
             if cost_lte_all is not None:
                 step['cost_lte'] = cost_lte_all
             if cost_gte_all is not None:

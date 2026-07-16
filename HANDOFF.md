@@ -1,5 +1,35 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-16 (204) - OP14-034 Luffy: cor intercalada quebrava o fix all_allies+filter_type de novo
+
+2a familia do lote de 3 (smoke_test_broad.py deferido pro fim da 3a,
+ver bloco 203). OP14-034: "All of your green {Straw Hat Crew} type
+Characters with a base cost of 4 or more gain +1000 power." O fix
+anterior (bloco 203, mesma sessao) ja cobria tipo intercalado em "all
+of your [Tipo] type Characters", mas exigia o tipo LOGO APOS "all of
+your" -- aqui existe uma palavra de COR ("green") no meio, quebrando o
+match pela MESMA raiz (literal rigido demais). `parse_power_buff`
+ganhou tolerancia a cor opcional entre "all of your" e o tipo, com
+`filter_color` extraido separado de `filter_type`; executor do target
+`all_allies` ganhou aplicacao de `filter_color`.
+
+Busca global (cor+tipo intercalados) achou mais 2 cartas com a mesma
+FORMA textual, mas em acoes diferentes de `buff_power` (fora do
+escopo deste fix): EB04-057 (`immunity`) e ST14-017 (`buff_cost`) --
+nenhuma das duas aparece como suspeita no audit tool hoje, registradas
+em `parser_audits/2026-07-16_op14-034_all_allies_filter_color.json`
+como pendencia POSSIVEL pra quando alguem tocar em
+`parse_immunity`/`parse_cost_buff`.
+
+**Validado:** `diff_parser.py` GANHOU=0/PERDEU=0/MUDOU=1 (OP14-034).
+`gerar_dbs.py`+`snapshot_parser.py` 0/0/0. `smoke_fast.py`: 1 teste
+dirigido novo com EXECUCAO real (3 filtros simultaneos: tipo, cor,
+custo). `smoke_test.py`: TODOS OS TESTES PASSARAM.
+`smoke_test_broad.py`: **DEFERIDO** (2a de 3 familias do lote).
+
+Suspeitos: 345 -> 344. Proxima: OP15-002 (3a e ultima familia do
+lote -- smoke_test_broad.py roda ao final dela).
+
 ## 2026-07-16 (203) - OP12-102 Shirahoshi: 3 bugs independentes na mesma carta (16 cartas no total)
 
 Primeira familia do novo lote de 3 (pacing: usuario pediu pra rodar

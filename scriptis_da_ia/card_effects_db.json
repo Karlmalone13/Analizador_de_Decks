@@ -53997,8 +53997,11 @@
           {
             "action": "buff_power",
             "amount": 1000,
-            "target": "self",
-            "duration": "this_turn"
+            "target": "all_allies",
+            "duration": "this_turn",
+            "filter_type": "straw hat crew",
+            "filter_color": "green",
+            "cost_gte": 4
           },
           {
             "action": "substitute_ko",

@@ -1,0 +1,19 @@
+{
+  "trigger_card": "OP14-034",
+  "problem": "OP14-034 (Luffy): 'All of your green {Straw Hat Crew} type Characters with a base cost of 4 or more gain +1000 power.' O fix anterior (mesma sessao, familia OP12-102) ja cobria 'all of your [Tipo] type Characters' com tipo intercalado, mas exigia o tipo LOGO APOS 'all of your' -- aqui existe uma palavra de COR ('green') entre 'all of your' e o tipo, quebrando o match de novo pela mesma raiz (literal rigido demais pra variacao de posicao de qualificadores).",
+  "grammar_family": "'all of your <cor opcional> [Tipo] type Character(s) gain(s) +N power' -- mesma familia da familia anterior (OP12-102/ST05-001 e as +5 cartas achadas la), generalizada mais uma vez pra tolerar um qualificador de COR entre 'all of your' e o tipo.",
+  "queries": [
+    "regex 'all of your (?:cores) .{0,30}type characters?' sobre card_text -- achou 3 cartas: EB04-057 (immunity, acao diferente de buff_power -- fora de escopo deste fix, nao suspeito no audit tool), OP14-034 (buff_power, suspeito -- 'base cost of 4' perdido), ST14-017 (buff_cost, acao diferente -- fora de escopo, ja parseia OK sem regressao aparente)",
+    "confirmado que EB04-057/ST14-017 usam acoes DIFERENTES de buff_power (immunity/buff_cost respectivamente) -- fora do escopo deste fix (parse_power_buff), registrado aqui como pendencia POSSIVEL (nao confirmada como bug -- audit_parser_coverage.py nao os flagra) pra revisao futura se aparecerem como suspeitos"
+  ],
+  "cards_found": ["OP14-034"],
+  "resolution_scope": "isolated_after_global_scan",
+  "decision": "parse_power_buff: regex de type_all_m estendida para tolerar uma cor opcional (black/red/blue/green/yellow/purple) entre 'all of your' e o TIPO_BRACKETS, com extracao separada de filter_color (nao mistura com filter_type). Executor do target all_allies/all_allies_and_leader ganhou aplicacao de filter_color (mesmo padrao ja usado em filter_type/cost_lte/cost_gte/exclude_self). Apenas OP14-034 usa esta variante combinada com buff_power hoje -- EB04-057 e ST14-017 usam acoes diferentes (immunity, buff_cost) que NAO passam por parse_power_buff, marcado isolated_after_global_scan porque a busca global ampla (cor+tipo) so achou 1 carta acionavel por este fix especifico; as outras 2 ficam registradas para o dia que alguem tocar em parse_immunity/parse_cost_buff.",
+  "validated_by": [
+    "diff_parser.py: GANHOU 0 / PERDEU 0 / MUDOU 1 (OP14-034, conferida contra card_text)",
+    "gerar_dbs.py + snapshot_parser.py: 0/0/0 apos regenerar",
+    "smoke_fast.py: teste dirigido novo test_all_allies_filter_color_e_type_intercalados com EXECUCAO real -- confirma que so o Straw Hat Crew VERDE de custo>=4 ganha o buff (3 filtros simultaneos: tipo, cor, custo)",
+    "smoke_test.py: suite ampla, TODOS OS TESTES PASSARAM",
+    "smoke_test_broad.py: DEFERIDO -- 2a familia do lote de 3 (pacing 16/07), roda ao final da 3a familia (OP15-002 ainda pendente)"
+  ]
+}

@@ -80600,7 +80600,7 @@
    {
     "action": "buff_power",
     "trigger": "your_turn",
-    "target": "self"
+    "target": "all_allies"
    },
    {
     "action": "substitute_ko",
