@@ -284,6 +284,13 @@ def parse_conditions(text):
     m = re.search(r'(?:if|and) you have (\d+) or more rested cards?(?! in your hand)', t)
     if m: conds['own_rested_cards_gte'] = int(m.group(1))
 
+    # "if/and your opponent has N or more rested Characters" -- simetrico a
+    # chars_rested_gte (proprio lado), mas do lado do OPONENTE. Achado
+    # 16/07 (ST24-004 e familia: OP01-032), condicao inteira ausente,
+    # buff/efeito disparava sempre.
+    m = re.search(r'(?:if|and) your opponent has (\d+) or more rested characters?', t)
+    if m: conds['opp_chars_rested_gte'] = int(m.group(1))
+
     # "If this Character was played this turn/on this turn" -- condicao
     # sobre a PROPRIA carta (checado via card.just_played), distinta de
     # tudo que conta estado do jogador. Achado 15/07 (revisao do usuario,

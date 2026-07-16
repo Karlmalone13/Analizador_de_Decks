@@ -8836,6 +8836,9 @@
             "duration": "this_turn"
           }
         ],
+        "conditions": {
+          "opp_chars_rested_gte": 2
+        },
         "don_requirement": 1
       }
     }
@@ -75141,13 +75144,16 @@
             "count": 1
           },
           {
+            "action": "lock_opp_don"
+          },
+          {
             "action": "buff_power",
             "amount": 2000,
             "target": "leader",
-            "duration": "until_opp_turn_end"
-          },
-          {
-            "action": "lock_opp_don"
+            "duration": "until_opp_turn_end",
+            "conditions": {
+              "opp_chars_rested_gte": 2
+            }
           }
         ]
       }

@@ -1,0 +1,19 @@
+{
+  "trigger_card": "ST24-004",
+  "problem": "ST24-004 (Law & Bepo): '...if your opponent has 2 or more rested Characters, your Leader gains +2000 power until the end of your opponent's next End Phase.' A condicao inteira estava ausente -- o buff de power disparava sempre, incondicional. chars_rested_gte (proprio lado) ja existia no parser, mas nao havia equivalente para o lado do OPONENTE.",
+  "grammar_family": "'if/and your opponent has N or more rested Characters' -- simetrico a chars_rested_gte, distinto de opp_rested_cards_gte (que conta TUDO rested do oponente, nao so Characters).",
+  "queries": [
+    "regex 'your opponent has \\d+ or more rested characters?' sobre card_text -- achou 2 cartas: ST24-004, OP01-032 (Ashura Doji, mesma condicao, [DON!! x1] passive)",
+    "confirmado que os 2 primeiros suspeitos da lista por uso real (OP15-008 Krieg, OP06-022 Yamato) sao FALSOS POSITIVOS -- o '1' que o audit tool marca como perdido e so 'to 1 of your Characters', cardinalidade ja implicita na acao give_don/give_don_opp (sempre single-target, sem campo pra guardar esse numero). Revisado o executor (_execute_step, action=='give_don'), confirmado que so escolhe 1 alvo (max por effective_power). Nao precisa fix -- documentado aqui pra nao reabrir a duvida numa auditoria futura."
+  ],
+  "cards_found": ["ST24-004", "OP01-032"],
+  "resolution_scope": "global",
+  "decision": "Nova condicao 'opp_chars_rested_gte', mesmo padrao de chars_rested_gte (regex + campo em _check_conditions), contando opp.field_chars rested em vez de me.field_chars.",
+  "validated_by": [
+    "diff_parser.py: GANHOU 0 / PERDEU 0 / MUDOU 2 (ambas conferidas contra card_text)",
+    "gerar_dbs.py + snapshot_parser.py: 0/0/0 apos regenerar",
+    "smoke_fast.py: teste dirigido novo test_opp_chars_rested_gte_condicao_nova com EXECUCAO real -- confirma que o buff de Ashura Doji dispara com 2+ Characters do OPONENTE rested e NAO dispara sem",
+    "smoke_test.py: suite ampla, TODOS OS TESTES PASSARAM",
+    "smoke_test_broad.py: NAO rodado nesta familia (fix pequeno e isolado, nova condicao sem tocar codigo compartilhado por toda a base -- diferente do bloco anterior, ST25-002, que mexeu em apply_your_turn_buffs)"
+  ]
+}

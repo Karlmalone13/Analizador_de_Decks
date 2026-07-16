@@ -112107,13 +112107,13 @@
     "trigger": "on_play"
    },
    {
+    "action": "lock_opp_don",
+    "trigger": "on_play"
+   },
+   {
     "action": "buff_power",
     "trigger": "on_play",
     "target": "leader"
-   },
-   {
-    "action": "lock_opp_don",
-    "trigger": "on_play"
    }
   ],
   "synergy_states": {

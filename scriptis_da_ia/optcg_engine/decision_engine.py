@@ -2875,6 +2875,12 @@ class EffectExecutor:
             n_rested = sum(1 for c in me.field_chars if c.rested)
             if n_rested < conds['chars_rested_gte']:
                 return False
+        if 'opp_chars_rested_gte' in conds:
+            # simetrico a chars_rested_gte, mas do lado do OPONENTE (achado
+            # 16/07, ST24-004/OP01-032).
+            n_rested_opp = sum(1 for c in opp.field_chars if c.rested)
+            if n_rested_opp < conds['opp_chars_rested_gte']:
+                return False
         if 'opp_hand_gte' in conds and len(opp.hand) < conds['opp_hand_gte']:
             return False
         if 'chars_gte' in conds:

@@ -5722,6 +5722,9 @@
  },
  "OP01-032": {
   "passive": {
+   "conditions": {
+    "opp_chars_rested_gte": 2
+   },
    "don_requirement": 1,
    "steps": [
     {
@@ -47026,13 +47029,16 @@
      "count": 1
     },
     {
-     "action": "buff_power",
-     "amount": 2000,
-     "duration": "until_opp_turn_end",
-     "target": "leader"
+     "action": "lock_opp_don"
     },
     {
-     "action": "lock_opp_don"
+     "action": "buff_power",
+     "amount": 2000,
+     "conditions": {
+      "opp_chars_rested_gte": 2
+     },
+     "duration": "until_opp_turn_end",
+     "target": "leader"
     }
    ]
   }

@@ -2872,6 +2872,41 @@ def test_and_you_have_condicoes_transversais() -> None:
           carina2.power_buff == 0)
 
 
+def test_opp_chars_rested_gte_condicao_nova() -> None:
+    # Achado 16/07 (ST24-004 Law & Bepo e OP01-032 Ashura Doji) --
+    # simetrico a chars_rested_gte (proprio lado, ja existia), mas do lado
+    # do OPONENTE: "if your opponent has N or more rested Characters".
+    # Condicao inteira ausente, o buff disparava sempre.
+    check("ST24-004 parseia opp_chars_rested_gte=2 (condicao no step buff_power)",
+          any(s.get("conditions", {}).get("opp_chars_rested_gte") == 2
+              for s in get_card_effects("ST24-004").get("on_play", {}).get("steps", [])))
+    check("OP01-032 (mesma condicao, carta diferente) tambem parseia",
+          get_card_effects("OP01-032").get("passive", {}).get("conditions", {})
+          .get("opp_chars_rested_gte") == 2)
+
+    ashura = real_card("OP01-032")
+    ashura.don_attached = 1  # satisfaz don_requirement=1 ([DON!! x1])
+    me = GameState(leader=mk("XASLDR", "Lider", card_type="LEADER"), turn=3)
+    me.field_chars = [ashura]
+    opp_rested = GameState(leader=mk("XASOPP", "Opp", card_type="LEADER"), turn=3)
+    opp_rested.field_chars = [mk("XOR1", "Opp Rested 1"), mk("XOR2", "Opp Rested 2")]
+    for c in opp_rested.field_chars:
+        c.rested = True
+    EffectExecutor(me, opp_rested).execute(ashura, "passive")
+    check("Execucao real: com 2+ Characters do OPONENTE rested, o buff de Ashura aplica",
+          ashura.power_buff == 2000)
+
+    ashura2 = real_card("OP01-032")
+    ashura2.don_attached = 1
+    me2 = GameState(leader=mk("XASLDR2", "Lider", card_type="LEADER"), turn=3)
+    me2.field_chars = [ashura2]
+    opp_ativo = GameState(leader=mk("XASOPP2", "Opp", card_type="LEADER"), turn=3)
+    opp_ativo.field_chars = [mk("XOA1", "Opp Ativo 1")]  # nao rested
+    EffectExecutor(me2, opp_ativo).execute(ashura2, "passive")
+    check("Execucao real: SEM 2+ Characters do OPONENTE rested, o buff NAO aplica",
+          ashura2.power_buff == 0)
+
+
 def main() -> int:
     test_turn_order_imu_prefers_second()
     test_empty_throne_beats_direct_five_elders_play()
@@ -2953,6 +2988,7 @@ def main() -> int:
     test_lucy_event_activated_cost_gte_this_turn()
     test_gains_keyword_and_cost_buff()
     test_and_you_have_condicoes_transversais()
+    test_opp_chars_rested_gte_condicao_nova()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0

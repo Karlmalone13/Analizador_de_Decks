@@ -1,5 +1,39 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-16 (207) - ST24-004 Law & Bepo: opp_chars_rested_gte nova (simetrica a chars_rested_gte)
+
+Continuacao da varredura 1-por-1 (proxima familia real da lista de
+suspeitos por audit_parser_coverage.py --show). Antes de escolher esta,
+revisei os 2 suspeitos de MAIOR uso real (OP15-008 Krieg 4x, OP06-022
+Yamato 2x) e confirmei que sao FALSOS POSITIVOS: o numero "1" que o
+audit tool marca como perdido e so "to 1 of your Characters",
+cardinalidade ja implicita na acao give_don/give_don_opp (sempre
+single-target, sem campo pra guardar esse numero) -- revisado o
+executor, confirmado, nenhum fix necessario.
+
+ST24-004: "...if your opponent has 2 or more rested Characters, your
+Leader gains +2000 power..." -- condicao inteira ausente (buff
+disparava sempre). `chars_rested_gte` (proprio lado) ja existia, mas
+sem equivalente pro lado do OPONENTE. Busca global achou **2 cartas**:
+ST24-004, OP01-032 (Ashura Doji, mesma condicao). Nova condicao
+`opp_chars_rested_gte`, mesmo padrao de `chars_rested_gte` em
+`_check_conditions`, contando `opp.field_chars` rested.
+
+**Validado:** `diff_parser.py` GANHOU=0/PERDEU=0/MUDOU=2. `gerar_dbs.py`
++`snapshot_parser.py` 0/0/0. `smoke_fast.py`: 1 teste dirigido novo com
+EXECUCAO real (Ashura Doji dispara/nao-dispara conforme campo do
+oponente ter 2+ Characters rested). `smoke_test.py`: TODOS OS TESTES
+PASSARAM. `smoke_test_broad.py` NAO rodado (fix pequeno e isolado,
+condicao nova sem tocar codigo compartilhado -- diferente do bloco
+206, que mexeu em `apply_your_turn_buffs`).
+
+Suspeitos: 331 -> 329. Proximos candidatos maiores na fila (ainda nao
+investigados a fundo): OP04-094 (habilidade `[Main]` INTEIRA ausente do
+parseado -- "Choose up to 1 ... and K.O. it" com limiar dinamico por
+trash>=15, so o Trigger sobrevive), OP10-058 Rebecca (clausula de
+reveal-e-jogar ausente), ST13-003 Luffy (combo DON!!x2 inteiro
+ausente).
+
 ## 2026-07-16 (206) - ST25-002 Cabaji: 3 bugs (cost-buff perdido, "and you have" ausente, acumulo em cost_buff_permanent)
 
 Investigando ST25-002/ST25-005 (proximo item da lista de "base cost"),
