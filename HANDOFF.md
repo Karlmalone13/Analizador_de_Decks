@@ -1,5 +1,66 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-16 (203) - OP12-102 Shirahoshi: 3 bugs independentes na mesma carta (16 cartas no total)
+
+Primeira familia do novo lote de 3 (pacing: usuario pediu pra rodar
+`smoke_test_broad.py` so a cada 3 familias, nao mais a cada 1 --
+"sim corta o smoke para cade 3 famlias"). OP12-102 tinha 3 bugs
+INDEPENDENTES, cada um generalizado por busca global antes do fix:
+
+**Bug 1 (custo de substituicao):** "you may turn 1 card from the top of
+your Life cards face-up instead" nunca era reconhecido em
+`_parse_substitute_cost` -- a clausula inteira "If your Character with
+a base cost of 6 or less would be removed... you may [X] instead" caia
+num fallback generico (bare `turn_life_face_up`, sem `cost_lte:6`, fora
+da estrutura `substitute_removal`). Busca global: **3 cartas**
+(OP12-102, OP13-109, ST29-008). Novo branch no executor
+`_pay_substitute_cost` (vira carta(s) do topo da vida face-up sem
+remove-la da zona).
+
+**Bug 2 (condicao "no other" nunca implementada):** "If you have no
+other [Shirahoshi] with a base cost of 2" -- nao era falha de regex, o
+TIPO de condicao (auto-exclusao de copias nomeadas no proprio campo)
+nao existia em NENHUM dos 3 checadores. O efeito guardado disparava
+sempre. Busca global: **7 cartas** (EB01-012, EB02-018, EB04-031,
+OP07-060, OP08-074, OP12-102, OP15-080) -- 2 delas (EB02-018,
+OP08-074) sao gaps INVISIVEIS ao `audit_parser_coverage.py` (a
+condicao ausente nao tem numero associado). Nova condicao
+`no_other_named` (+ `no_other_named_cost_eq` opcional), adicionada aos
+3 checadores (`_check_conditions`, `_effect_conditions_met`,
+`_immunity_conds_met`). De brinde: `other_char_power_gte` ganhou uma
+variante de redacao ("[Nome] with N power or more on your field") que
+resolveu a clausula IRMA de OP15-080 sem nenhum codigo novo de engine.
+
+**Bug 3 (buff de tipo cai em self):** "all of your \"Neptunian\" type
+Characters gain +2000 power" caia no fallback errado `target=self`
+porque o literal antigo `'all of your characters'` nunca casava com um
+nome de tipo intercalado no meio. Census inicial achou 2 cartas
+(OP12-102, ST05-001), mas o FIX revelou **+5 cartas reais** que
+dependiam do mesmo literal quebrado (EB01-024, EB03-041 com sub-filtro
+`cost_lte`, EB03-052, OP04-012 com `exclude_self`, OP08-020,
+OP11-044) -- **7 cartas no total**. `parse_power_buff` ganhou deteccao
+de `all of your [Tipo] type Character(s)` (aceita `{}`/`[]`/`""`)
+ANTES do literal antigo, com sub-filtros de custo e exclusao propria.
+Executor do target `all_allies`/`all_allies_and_leader` ganhou
+aplicacao de `filter_type`/`cost_lte`/`cost_gte`/`exclude_self` (antes
+buffava TODO `field_chars` incondicionalmente).
+
+**Validado:** `diff_parser.py` GANHOU=0/PERDEU=0/MUDOU=17 (todas
+conferidas manualmente contra `card_text`). `gerar_dbs.py` +
+`snapshot_parser.py` 0/0/0 apos regenerar. `smoke_fast.py`: 3 testes
+dirigidos novos com EXECUCAO real (substituicao via
+`try_any_substitute`, condicao `no_other_named` ligando/desligando o
+buff conforme presenca de outra copia, Shanks buffando so os
+Characters FILM). `smoke_test.py`: suite ampla, TODOS OS TESTES
+PASSARAM. `smoke_test_broad.py`: **DEFERIDO** para o fim da 3a familia
+do lote (ver pacing acima) -- proximas: OP14-034, OP15-002.
+
+Registro completo em
+`parser_audits/2026-07-16_shirahoshi_no_other_named_e_all_allies_filter_type.json`.
+Suspeitos: 349 -> 345 (so OP12-102 tinha numero suspeito visivel ao
+audit tool; os outros 15 cartas fechadas nesta familia eram gaps
+invisiveis ao audit numerico, achados so por busca textual direta).
+
 ## 2026-07-16 (202) - OP12-081 Koala: 2 triggers em PROSA (sem tag) nunca reconhecidos (2 cartas)
 
 Continuacao da varredura 1-por-1. OP12-081 e a primeira carta desta

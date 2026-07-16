@@ -2523,6 +2523,144 @@ def test_koala_leader_attack_leader_e_opp_plays_character() -> None:
           any("comprou" in x for x in log))
 
 
+def test_shirahoshi_turn_life_face_up_substitute_e_no_other_named() -> None:
+    # Achado 16/07 -- OP12-102 (Shirahoshi) tinha 3 bugs distintos:
+    # (1) "you may turn 1 card from the top of your Life cards face-up
+    # instead" nunca era reconhecido como custo de substituicao (cost_lte:6
+    # do filtro de alvo tambem sumia); (2) "if you have no other
+    # [Shirahoshi] with a base cost of 2" -- condicao inteira ausente do
+    # parser (nao so regex, o tipo de condicao nao existia); (3) "all of
+    # your "Neptunian" type Characters gain +2000 power" caia no fallback
+    # errado target=self por causa do tipo intercalado entre "all of your"
+    # e "type character(s)".
+    effects = get_card_effects("OP12-102")
+    passive = effects.get("passive", {})
+    check("OP12-102 passive parseia substitute_removal com custo turn_life_face_up e cost_lte:6",
+          any(s.get("action") == "substitute_removal"
+              and s.get("cost", {}).get("action") == "turn_life_face_up"
+              and s.get("cost_lte") == 6
+              for s in passive.get("steps", [])))
+
+    opp_turn = effects.get("opp_turn", {})
+    check("OP12-102 opp_turn tem condicao no_other_named (nome+custo) nova",
+          opp_turn.get("conditions", {}).get("no_other_named") == "shirahoshi"
+          and opp_turn.get("conditions", {}).get("no_other_named_cost_eq") == 2)
+    check("OP12-102 opp_turn buffa all_allies com filter_type neptunian (nao mais self)",
+          any(s.get("action") == "buff_power" and s.get("target") == "all_allies"
+              and s.get("filter_type") == "neptunian"
+              for s in opp_turn.get("steps", [])))
+
+    # Execucao real do custo de substituicao: Shirahoshi em campo, outro
+    # Character proprio de custo 5 (<=6) seria removido pelo oponente --
+    # deve virar 1 carta de vida face-up em vez de ser removido.
+    shirahoshi = real_card("OP12-102")
+    vitima = mk("XVIT", "Vitima", cost=5)
+    me = GameState(leader=mk("XSHLDR", "Lider", card_type="LEADER"), turn=3)
+    me.field_chars = [shirahoshi, vitima]
+    me.life = [mk("XLIFE1", "Vida", cost=0)]
+    opp = GameState(leader=mk("XSHOPP", "Lider Opp", card_type="LEADER"), turn=3)
+    log = EffectExecutor(me, opp).try_any_substitute(vitima, "removal")
+    check("Execucao real: substituicao vira a vida do topo face-up, vitima continua em campo",
+          log is not None and me.life[-1].life_face_up
+          and vitima in me.field_chars)
+
+    # Execucao real da condicao no_other_named: um aliado Neptunian so deve
+    # ganhar +2000 quando NAO ha outra copia de Shirahoshi custo 2 em
+    # campo; com a outra copia presente, a condicao falha e o buff nao
+    # aplica.
+    neptunian = mk("XNEP", "Neptunian Aliado", sub_types="Neptunian", cost=3)
+    me2 = GameState(leader=mk("XSHLDR2", "Lider", card_type="LEADER"), turn=3)
+    me2.field_chars = [shirahoshi, neptunian]
+    EffectExecutor(me2, GameState(leader=mk("XOPP2", "Opp", card_type="LEADER"), turn=3)).execute(shirahoshi, "opp_turn")
+    check("Execucao real: SEM outra Shirahoshi custo 2, o Neptunian aliado ganha +2000",
+          neptunian.power_buff == 2000)
+
+    outra_shirahoshi = real_card("OP12-102")
+    neptunian2 = mk("XNEP2", "Neptunian Aliado 2", sub_types="Neptunian", cost=3)
+    me3 = GameState(leader=mk("XSHLDR3", "Lider", card_type="LEADER"), turn=3)
+    me3.field_chars = [shirahoshi, outra_shirahoshi, neptunian2]
+    EffectExecutor(me3, GameState(leader=mk("XOPP3", "Opp", card_type="LEADER"), turn=3)).execute(shirahoshi, "opp_turn")
+    check("Execucao real: COM outra Shirahoshi custo 2 em campo, o buff NAO dispara (no_other_named falha)",
+          neptunian2.power_buff == 0)
+
+
+def test_no_other_named_condicao_transversal() -> None:
+    # Busca global (mesma rodada de OP12-102) achou 6 outras cartas com a
+    # MESMA condicao "if you have no other [Nome]" nunca implementada:
+    # EB01-012, EB02-018, EB04-031, OP07-060, OP08-074, OP15-080. Todas
+    # tinham o efeito disparando SEMPRE (condicao descartada silenciosamente).
+    check("EB02-018 (Buggy) parseia no_other_named='buggy'",
+          get_card_effects("EB02-018").get("on_play", {}).get("conditions", {})
+          .get("no_other_named") == "buggy")
+    check("OP08-074 (Black Maria) parseia no_other_named='black maria'",
+          get_card_effects("OP08-074").get("activate_main", {}).get("conditions", {})
+          .get("no_other_named") == "black maria")
+    check("EB01-012 (Cavendish) combina leader_type + no_other_named (AND)",
+          get_card_effects("EB01-012").get("on_play", {}).get("conditions", {})
+          == {"leader_type": "supernovas", "no_other_named": "cavendish"})
+
+    # OP15-080 (Oars): reusa other_char_power_gte (variante de fraseado
+    # "[Nome] with N power or more on your field") + no_other_named na
+    # MESMA condicao (AND) -- prova que os 2 achados nao colidem.
+    conds15080 = get_card_effects("OP15-080").get("passive", {}).get("conditions", {})
+    check("OP15-080 combina other_char_power_gte(Gecko Moria) + no_other_named(Oars)",
+          conds15080.get("other_char_power_gte") == 10000
+          and conds15080.get("other_char_power_gte_names") == ["gecko moria"]
+          and conds15080.get("no_other_named") == "oars")
+
+    # Execucao real (Buggy, EB02-018): sozinho em campo -> Double Attack
+    # dispara; com outro Buggy em campo -> nao dispara.
+    buggy = real_card("EB02-018")
+    me = GameState(leader=mk("XBLDR", "Lider", card_type="LEADER"), turn=2)
+    me.field_chars = [buggy]
+    opp = GameState(leader=mk("XBOPP", "Opp", card_type="LEADER"), turn=2)
+    log_sozinho = EffectExecutor(me, opp).execute(buggy, "on_play")
+    check("Buggy sozinho em campo: Double Attack dispara (no_other_named satisfeita)",
+          any("double" in x.lower() or "gain_double_attack" in x.lower() for x in log_sozinho))
+
+    outro_buggy = real_card("EB02-018")
+    me2 = GameState(leader=mk("XBLDR2", "Lider", card_type="LEADER"), turn=2)
+    me2.field_chars = [buggy, outro_buggy]
+    log_com_outro = EffectExecutor(me2, GameState(leader=mk("XBOPP2", "Opp", card_type="LEADER"), turn=2)).execute(buggy, "on_play")
+    check("Buggy com OUTRO Buggy em campo: Double Attack NAO dispara (no_other_named falha)",
+          not any("double" in x.lower() or "gain_double_attack" in x.lower() for x in log_com_outro))
+
+
+def test_all_allies_filter_type_buff_power() -> None:
+    # Busca global (mesma rodada de OP12-102) achou mais 6 cartas com "all
+    # of your [Tipo] type Characters gain +N power" caindo no fallback
+    # errado target=self (o tipo intercalado quebrava o match literal de
+    # 'all of your characters'): EB01-024, EB03-041 (+cost_lte sub-filtro),
+    # EB03-052, OP04-012 (+exclude_self), OP08-020, OP11-044, ST05-001.
+    check("ST05-001 (Shanks) buffa all_allies filter_type=film (nao mais self)",
+          any(s.get("action") == "buff_power" and s.get("target") == "all_allies"
+              and s.get("filter_type") == "film"
+              for s in get_card_effects("ST05-001").get("activate_main", {}).get("steps", [])))
+    check("EB03-041 preserva o sub-filtro cost_lte:6 dentro do mesmo buff all_allies",
+          any(s.get("action") == "buff_power" and s.get("target") == "all_allies"
+              and s.get("filter_type") == "sword" and s.get("cost_lte") == 6
+              for s in get_card_effects("EB03-041").get("opp_turn", {}).get("steps", [])))
+    check("OP04-012 preserva exclude_self dentro do mesmo buff all_allies",
+          any(s.get("action") == "buff_power" and s.get("target") == "all_allies"
+              and s.get("filter_type") == "alabasta" and s.get("exclude_self")
+              for s in get_card_effects("OP04-012").get("your_turn", {}).get("steps", [])))
+
+    # Execucao real: Shanks (ST05-001) com 2 "FILM" e 1 outro tipo em
+    # campo -- so os 2 FILM devem ganhar +2000 power.
+    shanks = real_card("ST05-001")
+    film1 = mk("XFILM1", "Film 1", sub_types="FILM", cost=3)
+    film2 = mk("XFILM2", "Film 2", sub_types="FILM", cost=3)
+    outro = mk("XOUTRO", "Outro Tipo", sub_types="East Blue", cost=3)
+    me = GameState(leader=shanks, turn=3)
+    me.field_chars = [film1, film2, outro]
+    me.don_available = 5
+    opp = GameState(leader=mk("XSTOPP", "Opp", card_type="LEADER"), turn=3)
+    log = EffectExecutor(me, opp).execute(shanks, "activate_main")
+    check("Execucao real: so os 2 Characters FILM ganham power, o outro tipo fica intacto",
+          film1.power_buff == 2000 and film2.power_buff == 2000 and outro.power_buff == 0)
+    check("Execucao real: log confirma o efeito disparou", bool(log))
+
+
 def main() -> int:
     test_turn_order_imu_prefers_second()
     test_empty_throne_beats_direct_five_elders_play()
@@ -2597,6 +2735,9 @@ def main() -> int:
     test_don_attached_total_gte_condicao_nova()
     test_activate_event_from_hand_sinonimo_de_play()
     test_koala_leader_attack_leader_e_opp_plays_character()
+    test_shirahoshi_turn_life_face_up_substitute_e_no_other_named()
+    test_no_other_named_condicao_transversal()
+    test_all_allies_filter_type_buff_power()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0

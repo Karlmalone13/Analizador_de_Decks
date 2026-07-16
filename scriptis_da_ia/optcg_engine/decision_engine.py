@@ -1105,6 +1105,15 @@ def _immunity_conds_met(conds, card, owner, opp):
         candidatos = [opp.leader] + list(opp.field_chars)
         if not any(c.power >= threshold for c in candidatos):
             return False
+    if 'no_other_named' in conds:
+        needle = conds['no_other_named'].lower()
+        cost_eq = conds.get('no_other_named_cost_eq')
+        outros = [c for c in owner.field_chars
+                  if c is not card and needle in c.name.lower()]
+        if cost_eq is not None:
+            outros = [c for c in outros if c.cost == cost_eq]
+        if outros:
+            return False
     return True
 
 
@@ -2705,6 +2714,18 @@ class EffectExecutor:
                 restados.append(alvo.name[:15])
             return f'{card.name[:18]} evitou K.O./remoção restando {", ".join(restados)} do oponente'
 
+        if ctype == 'turn_life_face_up':
+            # OP12-102/OP13-109/ST29-008: "you may turn N card(s) from the
+            # top of your Life cards face-up instead" -- custo de
+            # substituicao nunca reconhecido antes (achado 16/07); carta do
+            # topo da vida vira face-up, sem sair da zona de Life.
+            count = cost.get('count', 1)
+            if len(me.life) < count:
+                return None
+            for c in me.life[-count:]:
+                c.life_face_up = True
+            return f'{card.name[:18]} evitou K.O./remoção virando {count} carta(s) de vida face-up'
+
         return None
 
     def apply_your_turn_buffs(self) -> list:
@@ -2898,6 +2919,21 @@ class EffectExecutor:
         if 'other_char_cost_gte' in conds:
             outros = [c for c in me.field_chars if c is not card]
             if not outros or max(c.cost for c in outros) < conds['other_char_cost_gte']:
+                return False
+        if 'no_other_named' in conds:
+            # "if you have no other [Nome]" -- condicao SEM implementacao
+            # nenhuma ate 16/07 (achado via OP12-102, generalizado por
+            # busca global pra 7 cartas: EB01-012, EB02-018, EB04-031,
+            # OP07-060, OP08-074, OP12-102, OP15-080). Verdadeira quando
+            # NAO existe outra copia (por nome) da carta nomeada no proprio
+            # campo, excluindo a propria `card` que carrega o efeito.
+            needle = conds['no_other_named'].lower()
+            cost_eq = conds.get('no_other_named_cost_eq')
+            outros = [c for c in me.field_chars
+                      if c is not card and needle in c.name.lower()]
+            if cost_eq is not None:
+                outros = [c for c in outros if c.cost == cost_eq]
+            if outros:
                 return False
         if 'self_power_gte' in conds and card.effective_power(True) < conds['self_power_gte']:
             return False
@@ -4431,7 +4467,23 @@ class EffectExecutor:
                            key=lambda c: c.effective_power(True)) if me.field_chars else me.leader
                 best.power_buff += amount
             elif target in ('all_allies', 'all_allies_and_leader'):
-                for c in me.field_chars:
+                # filter_type: "all of your [Tipo] type Characters gain +N
+                # power" (achado 16/07, OP12-102/ST05-001) -- sem isso o
+                # buff aplicava em TODO character do campo, ignorando o
+                # filtro de tipo do texto.
+                from optcg_engine.rules_facade import card_matches_filter
+                filter_type = step.get('filter_type', '')
+                alvos = ([c for c in me.field_chars if card_matches_filter(c, filter_type)]
+                         if filter_type else list(me.field_chars))
+                cost_lte = step.get('cost_lte')
+                if cost_lte is not None:
+                    alvos = [c for c in alvos if c.cost <= cost_lte]
+                cost_gte = step.get('cost_gte')
+                if cost_gte is not None:
+                    alvos = [c for c in alvos if c.cost >= cost_gte]
+                if step.get('exclude_self'):
+                    alvos = [c for c in alvos if c is not card]
+                for c in alvos:
                     c.power_buff += amount
                 if target == 'all_allies_and_leader':
                     me.leader.power_buff += amount
@@ -7116,6 +7168,14 @@ class DecisionEngine:
                 if not any(power_of(c) >= v for c in candidates): return False
             if k == 'opp_char_power_gte':
                 if not any(c.power >= v for c in self.opp.field_chars): return False
+            if k == 'no_other_named':
+                needle = v.lower()
+                cost_eq = conds.get('no_other_named_cost_eq')
+                outros = [c for c in me.field_chars
+                          if c is not card and needle in c.name.lower()]
+                if cost_eq is not None:
+                    outros = [c for c in outros if c.cost == cost_eq]
+                if outros: return False
             if k in ('board_has_cost', 'board_has_cost_gte'):
                 todos = list(me.field_chars) + list(self.opp.field_chars)
                 exatos = set(conds.get('board_has_cost', []))

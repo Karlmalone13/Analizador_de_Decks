@@ -330,7 +330,8 @@
           }
         ],
         "conditions": {
-          "leader_type": "supernovas"
+          "leader_type": "supernovas",
+          "no_other_named": "cavendish"
         }
       },
       "when_attacking": {
@@ -342,7 +343,8 @@
           }
         ],
         "conditions": {
-          "leader_type": "supernovas"
+          "leader_type": "supernovas",
+          "no_other_named": "cavendish"
         }
       }
     }
@@ -639,8 +641,9 @@
           {
             "action": "buff_power",
             "amount": 1000,
-            "target": "self",
-            "duration": "this_turn"
+            "target": "all_allies",
+            "duration": "this_turn",
+            "filter_type": "smile"
           }
         ],
         "conditions": {
@@ -2244,7 +2247,10 @@
             "action": "gain_double_attack",
             "duration": "this_turn"
           }
-        ]
+        ],
+        "conditions": {
+          "no_other_named": "buggy"
+        }
       },
       "trigger": {
         "steps": [
@@ -5000,8 +5006,10 @@
           {
             "action": "buff_power",
             "amount": 2000,
-            "target": "self",
-            "duration": "this_turn"
+            "target": "all_allies",
+            "duration": "this_turn",
+            "filter_type": "sword",
+            "cost_lte": 6
           }
         ]
       }
@@ -5375,8 +5383,9 @@
           {
             "action": "buff_power",
             "amount": 1000,
-            "target": "self",
+            "target": "all_allies",
             "duration": "this_turn",
+            "filter_type": "neptunian",
             "conditions": {
               "leader_is": "shirahoshi"
             }
@@ -6868,7 +6877,8 @@
           }
         ],
         "conditions": {
-          "leader_type": "animal kingdom pirates"
+          "leader_type": "animal kingdom pirates",
+          "no_other_named": "king"
         },
         "once_per_turn": true
       },
@@ -18207,8 +18217,10 @@
           {
             "action": "buff_power",
             "amount": 1000,
-            "target": "self",
-            "duration": "this_turn"
+            "target": "all_allies",
+            "duration": "this_turn",
+            "filter_type": "alabasta",
+            "exclude_self": true
           }
         ]
       }
@@ -30290,7 +30302,8 @@
           }
         ],
         "conditions": {
-          "leader_type": "foxy pirates"
+          "leader_type": "foxy pirates",
+          "no_other_named": "itomimizu"
         },
         "once_per_turn": true
       }
@@ -32724,8 +32737,9 @@
           {
             "action": "buff_power",
             "amount": 1000,
-            "target": "self",
-            "duration": "this_turn"
+            "target": "all_allies",
+            "duration": "this_turn",
+            "filter_type": "drum kingdom"
           }
         ]
       }
@@ -34199,6 +34213,9 @@
             "timing": "end_of_turn"
           }
         ],
+        "conditions": {
+          "no_other_named": "black maria"
+        },
         "once_per_turn": true
       }
     }
@@ -43841,8 +43858,9 @@
           {
             "action": "buff_power",
             "amount": 1000,
-            "target": "self",
-            "duration": "this_turn"
+            "target": "all_allies",
+            "duration": "this_turn",
+            "filter_type": "germa 66"
           }
         ],
         "costs": [
@@ -49011,17 +49029,25 @@
           {
             "action": "buff_power",
             "amount": 2000,
-            "target": "self",
-            "duration": "this_turn"
+            "target": "all_allies",
+            "duration": "this_turn",
+            "filter_type": "neptunian"
           }
-        ]
+        ],
+        "conditions": {
+          "no_other_named": "shirahoshi",
+          "no_other_named_cost_eq": 2
+        }
       },
       "passive": {
         "steps": [
           {
-            "action": "turn_life_face_up",
-            "target": "self",
-            "count": 1
+            "action": "substitute_removal",
+            "cost": {
+              "action": "turn_life_face_up",
+              "count": 1
+            },
+            "cost_lte": 6
           }
         ]
       }
@@ -52653,9 +52679,11 @@
       "passive": {
         "steps": [
           {
-            "action": "turn_life_face_up",
-            "target": "self",
-            "count": 1
+            "action": "substitute_removal",
+            "cost": {
+              "action": "turn_life_face_up",
+              "count": 1
+            }
           }
         ]
       }
@@ -59285,7 +59313,14 @@
             "target": "self",
             "duration": "this_turn"
           }
-        ]
+        ],
+        "conditions": {
+          "other_char_power_gte": 10000,
+          "other_char_power_gte_names": [
+            "gecko moria"
+          ],
+          "no_other_named": "oars"
+        }
       }
     }
   },
@@ -68573,8 +68608,9 @@
           {
             "action": "buff_power",
             "amount": 2000,
-            "target": "self",
-            "duration": "this_turn"
+            "target": "all_allies",
+            "duration": "this_turn",
+            "filter_type": "film"
           }
         ],
         "costs": [
@@ -74144,8 +74180,9 @@
           {
             "action": "buff_power",
             "amount": 1000,
-            "target": "self",
-            "duration": "this_turn"
+            "target": "all_allies",
+            "duration": "this_turn",
+            "filter_type": "straw hat crew"
           }
         ],
         "don_requirement": 2
@@ -76042,9 +76079,12 @@
       "passive": {
         "steps": [
           {
-            "action": "turn_life_face_up",
-            "target": "self",
-            "count": 1
+            "action": "substitute_ko",
+            "cost": {
+              "action": "turn_life_face_up",
+              "count": 1
+            },
+            "filter_type": "egghead"
           }
         ],
         "conditions": {

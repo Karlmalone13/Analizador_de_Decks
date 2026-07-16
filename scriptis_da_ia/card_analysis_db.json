@@ -989,7 +989,7 @@
    {
     "action": "buff_power",
     "trigger": "passive",
-    "target": "self"
+    "target": "all_allies"
    }
   ],
   "synergy_states": {},
@@ -7222,7 +7222,8 @@
    {
     "action": "buff_power",
     "trigger": "opp_turn",
-    "target": "self"
+    "cost_lte": 6,
+    "target": "all_allies"
    }
   ],
   "synergy_states": {},
@@ -7718,7 +7719,7 @@
    {
     "action": "buff_power",
     "trigger": "activate_main",
-    "target": "self"
+    "target": "all_allies"
    },
    {
     "action": "gain_life",
@@ -27185,7 +27186,7 @@
    {
     "action": "buff_power",
     "trigger": "your_turn",
-    "target": "self"
+    "target": "all_allies"
    }
   ],
   "synergy_states": {},
@@ -48764,7 +48765,7 @@
    {
     "action": "buff_power",
     "trigger": "opp_turn",
-    "target": "self"
+    "target": "all_allies"
    }
   ],
   "synergy_states": {},
@@ -65580,7 +65581,7 @@
    {
     "action": "buff_power",
     "trigger": "activate_main",
-    "target": "self"
+    "target": "all_allies"
    }
   ],
   "synergy_states": {},
@@ -73171,12 +73172,12 @@
    {
     "action": "buff_power",
     "trigger": "opp_turn",
-    "target": "self"
+    "target": "all_allies"
    },
    {
-    "action": "turn_life_face_up",
+    "action": "substitute_removal",
     "trigger": "passive",
-    "target": "self"
+    "cost_lte": 6
    }
   ],
   "synergy_states": {},
@@ -78580,9 +78581,8 @@
     "trigger": "trigger"
    },
    {
-    "action": "turn_life_face_up",
-    "trigger": "passive",
-    "target": "self"
+    "action": "substitute_removal",
+    "trigger": "passive"
    }
   ],
   "synergy_states": {
@@ -102265,7 +102265,7 @@
    {
     "action": "buff_power",
     "trigger": "activate_main",
-    "target": "self"
+    "target": "all_allies"
    }
   ],
   "synergy_states": {},
@@ -110716,7 +110716,7 @@
     "action": "buff_power",
     "trigger": "opp_turn",
     "don_requirement": 2,
-    "target": "self"
+    "target": "all_allies"
    }
   ],
   "synergy_states": {},
@@ -113387,9 +113387,8 @@
     "trigger": "trigger"
    },
    {
-    "action": "turn_life_face_up",
-    "trigger": "passive",
-    "target": "self"
+    "action": "substitute_ko",
+    "trigger": "passive"
    }
   ],
   "synergy_states": {

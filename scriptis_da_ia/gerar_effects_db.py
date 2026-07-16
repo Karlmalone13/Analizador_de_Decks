@@ -357,6 +357,38 @@ def parse_conditions(text):
     m = re.search(r'if you have a character with a cost of (\d+) or more', t)
     if m: conds['other_char_cost_gte'] = int(m.group(1))
 
+    # "if you have [Nome] with N power or more on your field" -- variante
+    # sem "a Character"/"a [Tipo] type Character" antes do nome (achado
+    # 16/07, OP15-080 Oars: "if you have [Gecko Moria] with 10000 power or
+    # more on your field..."). Reusa 100% a infraestrutura de
+    # other_char_power_gte/other_char_power_gte_names ja existente, so
+    # faltava esta variante de redacao.
+    m = re.search(
+        r'if you have \[([^\]]+)\] with (\d+)(?: base)? power or more '
+        r'on your field', t)
+    if m:
+        conds['other_char_power_gte'] = int(m.group(2))
+        conds['other_char_power_gte_names'] = [m.group(1).strip()]
+
+    # "if you have no other [Nome]" / "if there are no other [Nome]" --
+    # auto-exclusao de copias adicionais da MESMA carta nomeada no proprio
+    # campo, condicao SEM NENHUMA implementacao ate 16/07 (nao e falha de
+    # regex -- o tipo de condicao inteiro nao existia em nenhum dos 3
+    # checadores). Achado via OP12-102 (Shirahoshi) e generalizado por
+    # busca global: 7 cartas reais (EB01-012, EB02-018, EB04-031, OP07-060,
+    # OP08-074, OP12-102, OP15-080), 2 redacoes de verbo ("you have"/"there
+    # are") e 2 substantivos de objeto ("Characters"/"cards"/nenhum),
+    # ambos tolerados pela mesma regex. Filtro de custo opcional
+    # ("with a base cost of N") so em OP12-102.
+    m = re.search(
+        r'(?:you have|there are) no other \[([^\]]+)\]'
+        r'(?:\s+(?:characters?|cards?))?'
+        r'(?:\s+with an? (?:base )?cost of (\d+))?', t)
+    if m:
+        conds['no_other_named'] = m.group(1).strip()
+        if m.group(2):
+            conds['no_other_named_cost_eq'] = int(m.group(2))
+
     # "if this Character has N power or more" -- auto-referencia (o proprio
     # Character que carrega o efeito).
     m = re.search(r'if this character has (\d+) power or more', t)
@@ -2189,6 +2221,34 @@ def parse_power_buff(text):
             # sem sinal explicito -- infere pelo alvo na janela local (nao no texto inteiro)
             is_debuff = bool(re.search(r"opponent'?s?\s+(?:leader\s+or\s+)?(?:leader|character)", contexto_antes))
 
+        # "all of your [Tipo]/{Tipo}/"Tipo" type Character(s) gain(s) +N
+        # power" -- variante de 'all of your characters' com filtro de tipo
+        # intercalado (ex: 'all of your "neptunian" type characters'). Sem
+        # isso o literal 'all of your characters' nunca casava (o nome do
+        # tipo fica no meio) e o alvo caia no fallback errado 'self'
+        # (achado 16/07, OP12-102 e ST05-001 -- busca global, 2 cartas).
+        type_all_m = re.search(
+            r'all of your ' + TIPO_BRACKETS + r' type characters?', contexto_antes)
+        filter_type_all = (
+            next((g for g in type_all_m.groups() if g), '').strip()
+            if type_all_m else ''
+        )
+        # sub-filtro opcional entre "type character(s)" e "gain(s)" -- custo
+        # (EB03-041: "with a cost of 6 or less") ou exclusao da propria
+        # carta (OP04-012: "other than this Character"). Mesma clausula-
+        # cauda ja tratada em _apply_substitute_target_filters pra outra
+        # familia de acao -- reaproveitado aqui.
+        cost_lte_all = cost_gte_all = None
+        exclude_self_all = False
+        if type_all_m:
+            clausula_all = contexto_antes[type_all_m.end():]
+            m_clte = re.search(r'with an? (?:base )?cost of (\d+) or less', clausula_all)
+            if m_clte: cost_lte_all = int(m_clte.group(1))
+            m_cgte = re.search(r'with an? (?:base )?cost of (\d+) or more', clausula_all)
+            if m_cgte: cost_gte_all = int(m_cgte.group(1))
+            if 'other than this character' in clausula_all:
+                exclude_self_all = True
+
         target = 'self'
         if is_debuff:
             if "opponent's leader or character" in contexto_antes or "opponent's leader" in contexto_antes and "character" in contexto_antes:
@@ -2199,19 +2259,20 @@ def parse_power_buff(text):
                 target = 'all_opp_characters'
             else:
                 target = 'opp_character'
-        else:
-            if 'your leader or 1 of your characters' in contexto_antes or 'your leader or character' in contexto_antes:
-                target = 'leader_or_character'
-            elif 'all of your' in contexto_antes and "leader" in contexto_antes:
-                target = 'all_allies_and_leader'
-            elif 'all of your characters' in contexto_antes:
-                target = 'all_allies'
-            elif 'your leader' in contexto_antes:
-                target = 'leader'
-            elif ('this character' in contexto_antes or 'this card' in contexto_antes):
-                target = 'self'
-            elif 'of your characters' in contexto_antes or 'of your character cards' in contexto_antes:
-                target = 'own_character'
+        elif type_all_m:
+            target = 'all_allies'
+        elif 'your leader or 1 of your characters' in contexto_antes or 'your leader or character' in contexto_antes:
+            target = 'leader_or_character'
+        elif 'all of your' in contexto_antes and "leader" in contexto_antes:
+            target = 'all_allies_and_leader'
+        elif 'all of your characters' in contexto_antes:
+            target = 'all_allies'
+        elif 'your leader' in contexto_antes:
+            target = 'leader'
+        elif ('this character' in contexto_antes or 'this card' in contexto_antes):
+            target = 'self'
+        elif 'of your characters' in contexto_antes or 'of your character cards' in contexto_antes:
+            target = 'own_character'
 
         # Filtros do alvo 'own_character' (selecao entre os PROPRIOS
         # characters, sem tipo -- distinto de 'select_filtered', que e por
@@ -2249,6 +2310,14 @@ def parse_power_buff(text):
             step['power_lte'] = power_lte_own
         if exclude_own:
             step['exclude'] = exclude_own
+        if target == 'all_allies' and filter_type_all:
+            step['filter_type'] = filter_type_all
+            if cost_lte_all is not None:
+                step['cost_lte'] = cost_lte_all
+            if cost_gte_all is not None:
+                step['cost_gte'] = cost_gte_all
+            if exclude_self_all:
+                step['exclude_self'] = True
         # "give up to N of your opponent's Characters -X power" -- N>1
         # (achado 15/07, varredura ampla): o executor de debuff_power so
         # aplicava a 1 alvo sempre, mesmo com N=2 no texto (13 cartas reais
@@ -3787,6 +3856,16 @@ def _parse_substitute_cost(t):
     m = re.search(r"you may rest (\d+) of your opponent.?s characters?[^.]*instead", t)
     if m:
         return {'action': 'rest_opp_character', 'count': int(m.group(1))}, extra_steps
+
+    # "you may turn N card(s) from the top of your Life cards face-up
+    # instead" -- custo de substituicao nunca reconhecido, cuja clausula
+    # inteira caia num fallback generico sem filtro (achado 16/07, OP12-102
+    # Shirahoshi). Busca global achou 3 cartas: OP12-102 ("would be removed"),
+    # OP13-109 e ST29-008 (ambas "would be K.O.'d") -- coberto pelas 2
+    # variantes automaticamente por reuso do helper compartilhado.
+    m = re.search(r"you may turn (\d+) cards? from the top of your life cards face.?up instead", t)
+    if m:
+        return {'action': 'turn_life_face_up', 'count': int(m.group(1))}, extra_steps
 
     return None, extra_steps
 
