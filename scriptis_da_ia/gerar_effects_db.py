@@ -211,7 +211,12 @@ def parse_conditions(text):
     m = re.search(r"(?:if|and) your opponent has (\d+) or more cards? in (?:their|his|her) hand", t)
     if m: conds['opp_hand_gte'] = int(m.group(1))
 
-    m = re.search(r'if you have (\d+) or more characters?(?: with an? (?:base|original) cost of (\d+) or more)?', t)
+    # "with a (base|original) cost of N or more" -- achado 16/07,
+    # OP12-081: essa carta usa "with a cost of N or more" (SEM "base"/
+    # "original", apenas "cost of"), unica no banco com essa variante
+    # curta. "(?:base|original) " agora opcional, nao removido -- so
+    # tolerado tambem sem qualificador.
+    m = re.search(r'if you have (\d+) or more characters?(?: with an? (?:(?:base|original) )?cost of (\d+) or more)?', t)
     if m:
         conds['chars_gte'] = int(m.group(1))
         if m.group(2):
@@ -4592,8 +4597,13 @@ def parse_block(block_text, trigger_name):
     # "your opponent adds N card(s) from their Life area to their hand" --
     # forca o oponente a mover da propria vida para a propria mao (enfraquece
     # a vida dele). Achado 02/07/2026 (P-009 Trafalgar Law).
+    # Aceita tambem "from the top of their Life cards" (achado 16/07,
+    # OP12-081/OP13-108) alem do "from their life area" ja suportado --
+    # mesma semantica ("adiciona da propria vida pra propria mao"), so
+    # variante mais longa de fraseado.
     m_opp_life = re.search(
-        r"your opponent (?:adds?|takes?) (\d+) cards? from (?:their|his|her) life(?: area)? to (?:their|his|her) hand",
+        r"your opponent (?:adds?|takes?) (\d+) cards? from "
+        r"(?:the top of )?(?:their|his|her) life(?: area| cards?)? to (?:their|his|her) hand",
         t)
     if m_opp_life:
         steps.append({'action': 'opp_life_to_hand', 'count': int(m_opp_life.group(1))})
@@ -5077,10 +5087,29 @@ def parse_card_effect(card_text, card_type):
     # hand").
     ABERTURA = r'(?:(?<=^)|(?<=[.\n] )|(?<=[.\n])|(?<=\] )|(?<=\])|(?<=\) )|(?<=\)))'
 
+    # LOOKAHEAD_DELIM generico so para em tags de TODAS_TAGS -- "[Once Per
+    # Turn]" nao esta nessa lista (e so um modificador, nunca um trigger
+    # formal proprio), entao um bloco em prosa (sem tag) que termina bem
+    # antes de um "[Once Per Turn]" seguinte precisa de um delimitador
+    # PROPRIO que tambem reconheca essa tag como parada. Achado 16/07
+    # (OP12-081): sem isso, o bloco de "when this leader attacks..."
+    # engolia o resto do texto inteiro (inclusive a clausula seguinte
+    # apos "[Once Per Turn]"), duplicando steps entre os dois triggers.
+    LOOKAHEAD_DELIM_OU_ONCE = r'(?=(?:^|(?<=[.\n])|(?<=\])|(?<=\)))\s*\[(?:once per turn|' + TODAS_TAGS + r')\]|$)'
+
     trigger_patterns = [
         ('on_play',       ABERTURA + r'\[on play\](.+?)' + LOOKAHEAD_DELIM),
         ('activate_main', ABERTURA + r'\[activate:?\s*main\](.+?)' + LOOKAHEAD_DELIM),
         ('when_attacking',ABERTURA + r'\[when attacking\](.+?)' + LOOKAHEAD_DELIM),
+        # Variante SEM tag formal: "When this Leader attacks your
+        # opponent's Leader, [efeito]" (achado 16/07, OP12-081, unica
+        # carta no banco com essa frase). _execute_attack ja dispara
+        # when_attacking pro Leader normalmente (attacker pode ser
+        # p.leader) -- so faltava reconhecer essa introducao em prosa
+        # como sinonimo da tag "[When Attacking]". A clausula de condicao
+        # que segue a virgula fica dentro do bloco capturado (parse_
+        # conditions roda sobre o bloco inteiro depois).
+        ('when_attacking',ABERTURA + r"when this leader attacks your opponent.?s leader[^.]*?[,]\s*(.+?)" + LOOKAHEAD_DELIM_OU_ONCE),
         ('on_opp_attack', ABERTURA + r"\[on your opponent.{0,3}s? attack\](.+?)" + LOOKAHEAD_DELIM),
         ('on_ko',         ABERTURA + r'\[on k\.o\.\](.+?)' + LOOKAHEAD_DELIM),
         # 'when_rested' precede 'your_turn' pra ser testado primeiro: captura
@@ -5097,6 +5126,15 @@ def parse_card_effect(card_text, card_type):
         # duplicado com os mesmos steps (OP14-021/027/028/032/035/119).
         ('your_turn',     ABERTURA + r'\[your turn\](?!\s*when this (?:character|card) becomes rested)(.+?)' + LOOKAHEAD_DELIM),
         ('opp_turn',      ABERTURA + r"\[opponent.{0,3}s? turn\](.+?)" + LOOKAHEAD_DELIM),
+        # Variante SEM a tag "[Opponent's Turn]": "[Once Per Turn] This
+        # effect can be activated when your opponent plays a Character
+        # [...], [efeito]." (achado 16/07, OP12-081, unica carta no banco
+        # com essa frase exata). Mesma aproximacao ja usada pra "when your
+        # opponent plays a Character" em OP04-024 (mapeado pra opp_turn --
+        # o engine nao rastreia o evento EXATO "personagem jogado", so
+        # dispara em algum ponto do turno do oponente). Consome a frase-
+        # gatilho inteira ate o primeiro ponto final; o resto vira o bloco.
+        ('opp_turn',      ABERTURA + r"\[once per turn\]\s*this effect can be activated when your opponent plays a character[^.]*?\.\s*(.+?)" + LOOKAHEAD_DELIM),
         ('trigger',       ABERTURA + r'\[trigger\](.+?)' + LOOKAHEAD_DELIM),
         ('counter',       ABERTURA + r'\[counter\](.+?)' + LOOKAHEAD_DELIM),
         ('end_of_turn',   ABERTURA + r'\[end of your turn\](.+?)' + LOOKAHEAD_DELIM),

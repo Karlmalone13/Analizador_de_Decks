@@ -1,0 +1,23 @@
+{
+  "trigger_card": "OP12-081",
+  "problem": "OP12-081 (Koala) tem 2 clausulas em prosa SEM NENHUMA tag formal ([When Attacking]/[Opponent's Turn]): 'When this Leader attacks your opponent's Leader, if you have 2 or more Characters with a cost of 8 or more, draw 1 card.' e '[Once Per Turn] This effect can be activated when your opponent plays a Character ..., Your opponent adds 1 card from the top of their Life cards to their hand.' Nenhum trigger_pattern reconhecia essas introducoes em prosa como sinonimo das tags formais -- o bloco inteiro caia num fallback generico ('passive') com condicao incompleta (faltava o filtro de custo>=8) e a 2a clausula ficava totalmente ausente.",
+  "grammar_family": "Introducoes de trigger EM PROSA (sem tag [...]) -- 'when this Leader attacks your opponent's Leader' como sinonimo de '[When Attacking]', e 'this effect can be activated when your opponent plays a Character' como sinonimo aproximado de '[Opponent's Turn]' (mesma convencao ja usada em OP04-024). Tambem revelou 2 bugs adjacentes: chars_gte_cost_filter exigia 'base'/'original' antes de 'cost of' (OP12-081 usa so 'cost of'), e opp_life_to_hand so aceitava 'from their life area', nao 'from the top of their Life cards' (OP12-081 + OP13-108).",
+  "queries": [
+    "regex when this leader attacks your opponent sobre card_text (achou so OP12-081)",
+    "regex this effect can be activated when your opponent plays sobre card_text (achou so OP12-081)",
+    "regex if you have \\d+ or more characters? with a cost of \\d+ or more (sem base/original) sobre card_text (achou so OP12-081)",
+    "regex your opponent adds \\d+ cards? from the top of (?:their|his|her) life sobre card_text (achou OP12-081 E OP13-108)",
+    "confirmado via decision_engine.py que _execute_attack ja dispara when_attacking pro LIDER normalmente (attacker pode ser p.leader) -- nao e mecanica nova, so falta de reconhecimento de sinonimo textual",
+    "confirmado que OP04-024 ja usa a mesma aproximacao 'when your opponent plays a Character' -> opp_turn, precedente seguido aqui"
+  ],
+  "cards_found": ["OP12-081", "OP13-108"],
+  "resolution_scope": "global",
+  "decision": "Novo par de entradas em trigger_patterns pra 'when_attacking' (introducao em prosa 'when this leader attacks your opponent's leader') e 'opp_turn' (introducao em prosa 'this effect can be activated when your opponent plays a character', mesma aproximacao ja usada em OP04-024 -- o engine nao rastreia o evento exato 'personagem jogado', so o turno do oponente; a condicao OR complexa do texto -- custo>=8 OU jogado via efeito -- nao e modelada com precisao, mesma limitacao documentada do precedente). Corrigido tambem: chars_gte_cost_filter agora aceita 'cost of N' sem exigir 'base'/'original' antes; opp_life_to_hand agora aceita 'from the top of their Life cards' alem de 'from their life area'. Bug de over-matching pego durante a validacao: o novo padrao when_attacking (sem tag [Once Per Turn] reconhecida como delimitador) engolia a clausula seguinte inteira -- corrigido com um LOOKAHEAD_DELIM_OU_ONCE dedicado que tambem para em '[Once Per Turn]'.",
+  "validated_by": [
+    "diff_parser.py: GANHOU 0 / PERDEU 0 / MUDOU 2 (ambas confirmadas contra card_text, incluindo verificacao manual de que nao houve duplicacao de steps entre os 2 triggers de OP12-081 apos o fix do lookahead)",
+    "gerar_dbs.py + snapshot_parser.py: 0/0/0 apos regenerar",
+    "smoke_fast.py: teste dirigido novo test_koala_leader_attack_leader_e_opp_plays_character com EXECUCAO real -- confirma o draw disparando quando ha 2+ Characters de custo>=8 no when_attacking (dispatch real via execute())",
+    "smoke_test.py: suite ampla, TODOS OS TESTES PASSARAM",
+    "smoke_test_broad.py: 7/7 partidas aleatorias sem excecao"
+  ]
+}

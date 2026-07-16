@@ -30307,9 +30307,19 @@
   }
  },
  "OP12-081": {
-  "passive": {
+  "opp_turn": {
+   "once_per_turn": true,
+   "steps": [
+    {
+     "action": "opp_life_to_hand",
+     "count": 1
+    }
+   ]
+  },
+  "when_attacking": {
    "conditions": {
-    "chars_gte": 2
+    "chars_gte": 2,
+    "chars_gte_cost_filter": 8
    },
    "once_per_turn": true,
    "steps": [
@@ -32918,6 +32928,10 @@
     "leader_type": "egghead"
    },
    "steps": [
+    {
+     "action": "opp_life_to_hand",
+     "count": 1
+    },
     {
      "action": "gain_rush",
      "duration": "this_turn"

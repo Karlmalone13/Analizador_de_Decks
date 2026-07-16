@@ -1,5 +1,54 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-16 (202) - OP12-081 Koala: 2 triggers em PROSA (sem tag) nunca reconhecidos (2 cartas)
+
+Continuacao da varredura 1-por-1. OP12-081 e a primeira carta desta
+sessao com trigger em PROSA, sem NENHUMA tag formal ("[When Attacking]"/
+"[Opponent's Turn]"): "When this Leader attacks your opponent's Leader,
+if you have 2 or more Characters with a cost of 8 or more, draw 1
+card." e "[Once Per Turn] This effect can be activated when your
+opponent plays a Character ..., Your opponent adds 1 card from the top
+of their Life cards to their hand." O parser so reconhecia triggers via
+tag `[...]` explicita -- as duas clausulas caiam num fallback generico
+`passive`, com a condicao de custo faltando e a 2a clausula ausente.
+
+**Trigger 1 (when_attacking sem tag):** `_execute_attack` ja dispara
+`when_attacking` corretamente pro LIDER (attacker pode ser `p.leader`)
+-- nao era mecanica nova, so faltava o parser aceitar "when this leader
+attacks your opponent's leader" como sinonimo da tag. Novo entry em
+`trigger_patterns`.
+
+**Trigger 2 (opp_turn aproximado):** "this effect can be activated when
+your opponent plays a Character" -- MESMA aproximacao ja usada em
+OP04-024 (o engine nao rastreia o evento exato "personagem jogado", so
+o turno do oponente). A condicao OR complexa do texto (custo base>=8 OU
+jogado via efeito de outra carta) NAO e modelada com precisao -- mesma
+limitacao documentada do precedente, nao um novo gap.
+
+**2 bugs adjacentes corrigidos junto:** `chars_gte_cost_filter` exigia
+"base"/"original" antes de "cost of" (OP12-081 usa so "cost of", sem
+qualificador); `opp_life_to_hand` so aceitava "from their life area",
+nao "from the top of their Life cards" (fechou tambem **OP13-108**,
+achado no censo).
+
+**Bug pego na validacao:** o novo padrao `when_attacking` (sem
+"[Once Per Turn]" reconhecida como delimitador de parada) engolia a
+CLAUSULA SEGUINTE inteira, duplicando `opp_life_to_hand` nos dois
+triggers. Corrigido com `LOOKAHEAD_DELIM_OU_ONCE` dedicado.
+
+**Validado:** `diff_parser.py` PERDEU=0, MUDOU=2 (confirmadas contra
+`card_text`, verificado manualmente que nao ha duplicacao de steps
+entre os 2 triggers apos o fix do lookahead). 1 teste dirigido novo com
+EXECUCAO real (`test_koala_leader_attack_leader_e_opp_plays_character`):
+confirma o draw disparando de verdade via `execute()` com 2+ Characters
+de custo>=8. `smoke_fast.py` (130 checks) verde, `smoke_test.py` amplo
+verde, `smoke_test_broad.py` **7/7**. Registro:
+`parser_audits/2026-07-16_koala_leader_attack_e_opp_plays_char.json`
+(`resolution_scope: global`, 2 cartas).
+
+**Restantes da lista de "base cost":** OP12-102, OP14-034, OP15-002,
+ST25-002/ST25-005 (mesma causa).
+
 ## 2026-07-16 (201) - OP12-041/OP15-014: "Activate Event from hand" e sinonimo de play_card (3 cartas)
 
 Continuacao da varredura 1-por-1. "Activate up to N [Tipo] type Event

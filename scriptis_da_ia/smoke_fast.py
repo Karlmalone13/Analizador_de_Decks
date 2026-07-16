@@ -2480,6 +2480,49 @@ def test_activate_event_from_hand_sinonimo_de_play() -> None:
           evento not in me.hand and evento in me.trash and personagem_isca in me.hand)
 
 
+def test_koala_leader_attack_leader_e_opp_plays_character() -> None:
+    # Achado 16/07 -- OP12-081 tem 2 clausulas em prosa, SEM tag formal
+    # nenhuma: "When this Leader attacks your opponent's Leader, if you
+    # have 2 or more Characters with a cost of 8 or more, draw 1 card."
+    # (trigger when_attacking nunca reconhecido sem a tag "[When
+    # Attacking]" -- _execute_attack ja dispara esse trigger pro LIDER
+    # normalmente, so faltava o parser aceitar a introducao em prosa) e
+    # "[Once Per Turn] This effect can be activated when your opponent
+    # plays a Character ..., Your opponent adds 1 card from the top of
+    # their Life cards to their hand." (aproximado pra opp_turn, MESMA
+    # convencao ja usada em OP04-024 pra "when your opponent plays a
+    # Character" -- o engine nao rastreia o evento exato "personagem
+    # jogado", só o turno do oponente. A condicao OR complexa -- custo
+    # base>=8 OU jogado via efeito -- NAO e modelada com precisao,
+    # mesma aproximacao documentada do precedente).
+    when_att = get_card_effects("OP12-081").get("when_attacking", {})
+    check("OP12-081 parseia when_attacking (sem tag) com chars_gte+cost_filter",
+          when_att.get("conditions", {}) == {"chars_gte": 2, "chars_gte_cost_filter": 8}
+          and any(s.get("action") == "draw" for s in when_att.get("steps", [])))
+    opp_turn = get_card_effects("OP12-081").get("opp_turn", {})
+    check("OP12-081 parseia a 2a clausula (sem tag) como opp_turn, opp_life_to_hand",
+          any(s.get("action") == "opp_life_to_hand" and s.get("count") == 1
+              for s in opp_turn.get("steps", [])))
+
+    # Achado irmao (mesma rodada): OP13-108 tinha a mesma clausula de
+    # opp_life_to_hand ausente, so que com "from the top of their Life
+    # CARDS" (variante de fraseado que o regex antigo nao aceitava).
+    check("OP13-108 tambem parseia opp_life_to_hand (variante 'Life cards')",
+          any(s.get("action") == "opp_life_to_hand"
+              for s in get_card_effects("OP13-108").get("on_play", {}).get("steps", [])))
+
+    koala = real_card("OP12-081")
+    me = GameState(leader=koala, turn=4)
+    forte1 = mk("XKO1", "Forte 1", cost=8)
+    forte2 = mk("XKO2", "Forte 2", cost=9)
+    me.field_chars = [forte1, forte2]
+    opp = GameState(leader=mk("XKOOPP", "Lider Opp", card_type="LEADER"), turn=4)
+    me.deck = [mk("XKODECK", "Topo do Deck")]
+    log = EffectExecutor(me, opp).execute(koala, "when_attacking")
+    check("Execucao real: com 2+ Characters de custo>=8, o draw dispara",
+          any("comprou" in x for x in log))
+
+
 def main() -> int:
     test_turn_order_imu_prefers_second()
     test_empty_throne_beats_direct_five_elders_play()
@@ -2553,6 +2596,7 @@ def main() -> int:
     test_place_own_character_bottom_deck_e_turno_extra()
     test_don_attached_total_gte_condicao_nova()
     test_activate_event_from_hand_sinonimo_de_play()
+    test_koala_leader_attack_leader_e_opp_plays_character()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0

@@ -72275,7 +72275,11 @@
   "effects": [
    {
     "action": "draw",
-    "trigger": "passive"
+    "trigger": "when_attacking"
+   },
+   {
+    "action": "opp_life_to_hand",
+    "trigger": "opp_turn"
    }
   ],
   "synergy_states": {},
@@ -78514,6 +78518,10 @@
   "sub_types": "Bonney Pirates Egghead",
   "attribute": "Special",
   "effects": [
+   {
+    "action": "opp_life_to_hand",
+    "trigger": "on_play"
+   },
    {
     "action": "gain_rush",
     "trigger": "on_play"

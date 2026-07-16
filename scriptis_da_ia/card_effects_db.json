@@ -48379,7 +48379,7 @@
     "sub_types": "Revolutionary Army Dressrosa",
     "attribute": "Strike",
     "effects": {
-      "passive": {
+      "when_attacking": {
         "steps": [
           {
             "action": "draw",
@@ -48387,8 +48387,18 @@
           }
         ],
         "conditions": {
-          "chars_gte": 2
+          "chars_gte": 2,
+          "chars_gte_cost_filter": 8
         },
+        "once_per_turn": true
+      },
+      "opp_turn": {
+        "steps": [
+          {
+            "action": "opp_life_to_hand",
+            "count": 1
+          }
+        ],
         "once_per_turn": true
       }
     }
@@ -52593,6 +52603,10 @@
     "effects": {
       "on_play": {
         "steps": [
+          {
+            "action": "opp_life_to_hand",
+            "count": 1
+          },
           {
             "action": "gain_rush",
             "duration": "this_turn"
