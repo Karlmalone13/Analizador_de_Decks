@@ -3882,6 +3882,8 @@ class EffectExecutor:
                 cost_lte=cost_lte,
                 cost_eq=step.get('cost_eq'),
                 power_lte=step.get('power_lte'),
+                power_gte=step.get('power_gte'),
+                power_eq=step.get('power_eq'),
                 rested_only=step.get('rested_only', False),
                 active_only=step.get('active_only', False),
                 filter_text=step.get('filter_type', ''),

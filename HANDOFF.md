@@ -1,5 +1,38 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-16 (196) - Fecha o achado de "base power" no bounce: power_eq/power_gte nunca eram consumidos (4 cartas)
+
+Continuacao direta do bloco 195 (censo global de "base power" pedido
+pelo usuario). Confirmado e corrigido, com confirmacao explicita do
+usuario antes de codar.
+
+**Bug:** a variante de `bounce` por poder ("return up to N Character(s)
+with N base power [or more/or less] to the owner's hand") ja gravava
+`power_eq`/`power_gte`/`power_lte` corretamente no JSON desde 15/07, mas
+o EXECUTOR de `bounce` so repassava `power_lte` pro `eligible_cards` --
+`power_eq`/`power_gte` eram silenciosamente ignorados. EB03-025,
+EB03-027 e OP14-058 (usam `power_eq`, poder EXATO) bounceavam QUALQUER
+personagem do oponente, sem checar poder nenhum. OP11-051 (usa
+`power_lte`) ja funcionava certo por coincidencia.
+
+**Fix:** adicionado `power_gte`/`power_eq` na chamada de `eligible_cards`
+dentro do executor de `bounce` (mesmo padrao ja usado em `play_from_trash`/
+`ko`). Nao mexi no campo `power_base_only` (continua sendo escrito pelo
+parser, documenta intencao mas nao precisa de logica extra -- confirmado
+com o usuario que `card.power` no nosso modelo JA E base power).
+
+**Validado:** `diff_parser.py` 0/0/0 (fix e engine-only). 1 teste
+dirigido novo com EXECUCAO real (`test_bounce_por_power_eq_base_power`):
+confirma que so o alvo com power EXATO e bounced, um alvo de power
+diferente e poupado. `smoke_fast.py` (109 checks) verde, `smoke_test.py`
+amplo verde, `smoke_test_broad.py` **7/7**. Registro:
+`parser_audits/2026-07-16_bounce_power_eq_gte_never_consumed.json`
+(`resolution_scope: global`, 4 cartas).
+
+**Pendencias do usuario: FECHADAS.** OP16-008 confirmado ja correto
+(falso alarme), OP01-086 "4" corrigido (bloco 195), censo de "base
+power" concluido com este bloco. Nada pendente de rodadas anteriores.
+
 ## 2026-07-16 (195) - Fecha pendencias antes de continuar (pedido explicito do usuario)
 
 Usuario pediu pra fechar pendencias abertas antes de seguir pra novas

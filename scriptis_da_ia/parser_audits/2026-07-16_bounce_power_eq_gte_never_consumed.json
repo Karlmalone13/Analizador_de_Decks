@@ -1,0 +1,20 @@
+{
+  "trigger_card": "EB03-027",
+  "problem": "A variante de bounce por PODER ('return up to N Character(s) with N base power [or more/or less] to the owner's hand') ja gravava power_eq/power_gte/power_lte corretamente no JSON (achado 15/07, ver docstring de parse_bounce), mas o EXECUTOR de bounce so repassava power_lte pra eligible_cards -- power_eq e power_gte eram silenciosamente ignorados. Cartas com power_eq (poder EXATO) bounceavam QUALQUER personagem do oponente, sem checar poder nenhum.",
+  "grammar_family": "step['action']=='bounce' com power_eq ou power_gte definidos (variante de power, distinta da variante por custo que ja funcionava). Achado ao investigar a duvida levantada pelo usuario sobre 'base power' em geral -- censo de 'base power' no texto cru (80 cartas) revelou esse gap especifico ao cruzar com o que o executor de fato consome.",
+  "queries": [
+    "grep power_base_only em gerar_effects_db.py (achou onde e ESCRITO, na variante de power de parse_bounce)",
+    "grep 'if action ==' 'bounce':' em decision_engine.py (confirmou que o executor so tinha cost_lte/cost_eq/power_lte/rested_only/active_only/filter_text -- power_eq e power_gte faltando)",
+    "regex return up to \\d+ characters? with \\d+ base power(?: or (?:more|less))? to the owner.?s hand sobre card_text (achou EB03-025, EB03-027, OP11-051, OP14-058)",
+    "confirmado via card_effects_db atual que EB03-025/EB03-027/OP14-058 usam power_eq (bug real, filtro morto) e OP11-051 usa power_lte (ja funcionava por coincidencia, pois power_lte ja era repassado)"
+  ],
+  "cards_found": ["EB03-025", "EB03-027", "OP11-051", "OP14-058"],
+  "resolution_scope": "global",
+  "decision": "Adicionado power_gte/power_eq na chamada de eligible_cards dentro do executor de bounce (mesmo padrao ja usado em play_from_trash/ko/etc). power_lte ja funcionava, mantido. O campo power_base_only continua sendo escrito pelo parser mas nao precisa de logica extra no executor -- confirmado com o usuario que card.power no nosso modelo JA E o base power (buffs isolados em power_buff, nunca mutam .power), entao power_eq/power_gte/power_lte comparando card.power diretamente ja e semanticamente 'base power' sem precisar de campo dedicado.",
+  "validated_by": [
+    "diff_parser.py: GANHOU 0 / PERDEU 0 / MUDOU 0 (fix e engine-only, parser ja gravava os campos certos desde 15/07)",
+    "smoke_fast.py: teste dirigido novo test_bounce_por_power_eq_base_power com EXECUCAO real -- confirma que so o alvo com power EXATO 7000 e bounced, nao um alvo de 8000",
+    "smoke_test.py: suite ampla, TODOS OS TESTES PASSARAM",
+    "smoke_test_broad.py: 7/7 partidas aleatorias sem excecao"
+  ]
+}

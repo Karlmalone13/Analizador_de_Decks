@@ -2213,6 +2213,29 @@ def test_trash_own_character_custo_novo_e_avaliacao_por_campo() -> None:
           not log2 and nao_whitebeard in me2.field_chars)
 
 
+def test_bounce_por_power_eq_base_power() -> None:
+    # Achado 16/07 -- variante de bounce por PODER ("return up to N
+    # Character(s) with N base power [or more/or less] to the owner's
+    # hand", ex: EB03-025/EB03-027/OP14-058). O parser ja gravava
+    # power_eq/power_lte certo no JSON, mas o executor de bounce so
+    # repassava power_lte pra eligible_cards -- power_eq (poder EXATO)
+    # nunca era aplicado, entao qualquer personagem do oponente era
+    # bounced, ignorando o filtro por completo.
+    steps = get_card_effects("EB03-027").get("on_play", {}).get("steps", [])
+    check("EB03-027 parseia bounce power_eq=7000",
+          steps and steps[0].get("action") == "bounce" and steps[0].get("power_eq") == 7000)
+
+    fonte = real_card("EB03-027")
+    me = GameState(leader=mk("XBPLD", "Lider", card_type="LEADER"))
+    opp = GameState(leader=mk("XBPOPP", "Lider Opp", card_type="LEADER"))
+    alvo_exato = mk("XBP1", "Alvo 7000", power=7000)
+    alvo_diferente = mk("XBP2", "Alvo 8000", power=8000)
+    opp.field_chars = [alvo_exato, alvo_diferente]
+    EffectExecutor(me, opp)._execute_step(steps[0], fonte)
+    check("So o alvo com power EXATO 7000 foi bounced (nao o de 8000)",
+          alvo_exato in opp.hand and alvo_diferente in opp.field_chars)
+
+
 def main() -> int:
     test_turn_order_imu_prefers_second()
     test_empty_throne_beats_direct_five_elders_play()
@@ -2279,6 +2302,7 @@ def main() -> int:
     test_overheat_counter_buff_e_bounce_active_only()
     test_germa66_power_range_e_mesmo_nome_do_trashado()
     test_trash_own_character_custo_novo_e_avaliacao_por_campo()
+    test_bounce_por_power_eq_base_power()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0
