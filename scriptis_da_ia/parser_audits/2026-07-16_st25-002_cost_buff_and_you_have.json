@@ -1,0 +1,29 @@
+{
+  "trigger_card": "ST25-002",
+  "problem": "ST25-002/ST25-005 (Cabaji/Mohji): 'this Character gains [Blocker] and +1 cost' -- so o Blocker era parseado, o '+1 cost' desaparecia inteiro. Investigando a 2a clausula de ST25-005 (hand_lte apos 'and'), achei que VARIAS regexes de condicao so aceitavam a ancora literal 'if you have', nunca 'and you have' (quando a condicao vem encadeada depois de outra com 'and'). Durante a validacao, um 3o bug apareceu: o campo cost_buff_permanent (usado por 'duration: permanent') nunca era resetado no INICIO do turno por apply_your_turn_buffs() -- cada chamada (1x por turno do proprio jogador) SOMAVA de novo o mesmo +N, acumulo sem limite (pre-existente, meu fix so tornou 8 cartas a mais alcancaveis por esse caminho).",
+  "grammar_family": "3 fixes distintos: (a) 'gains [Keyword] and +N cost [for every M cards in your trash]' -- buff de custo nunca reconhecido quando precedido por uma concessao de keyword na mesma frase; (b) 'and you have X' como sinonimo de 'if you have X' em varias condicoes (hand_lte/hand_gte, has_don_attached, chars_rested_gte) + 3 condicoes novas achadas na mesma varredura (no_char_power_gte, has_named_character, own_rested_cards_gte); (c) cost_buff_permanent nao resetado por apply_your_turn_buffs() (bug de engine, nao de parser -- generico, afeta qualquer carta com duration=permanent num bloco passive/your_turn).",
+  "queries": [
+    "regex 'gains? \\[[a-z: ]+\\] and \\+\\d+ cost' sobre card_text -- achou 8 cartas: OP12-087, OP12-089, OP12-100, P-105, PRB02-015, ST25-002, ST25-005, ST27-004 (variante dinamica 'for every N cards in your trash')",
+    "regex 'and you have [^.]{0,60}' sobre card_text -- achou 23 ocorrencias no banco; a maioria ja tolerava 'and' (life_lte/don_on_field_gte/don_rested_gte, sessoes anteriores). Gaps reais confirmados: hand_lte/hand_gte (4 cartas: EB02-026, OP06-069, OP14-059, ST25-005), has_don_attached (2 cartas: OP13-072, OP13-075), chars_rested_gte (2 cartas: OP09-039, OP09-041)",
+    "3 condicoes NOVAS achadas na mesma varredura ampla (cada uma com regex propria testando 'if' E 'and'): no_char_power_gte (1 carta: EB03-004), has_named_character (3 cartas: OP02-031, OP07-030, OP08-109), own_rested_cards_gte (3 cartas confirmadas via diff_parser.py: ST16-003, OP06-038, OP12-118 -- as 2 ultimas usam 'if' direto, achadas de brinde pela regex generica)",
+    "confirmado durante validacao (script isolado, 5 chamadas seguidas de apply_your_turn_buffs() no mesmo Card): cost_buff_permanent ia de 1 -> 2 -> 3 -> 4 -> 5 sem reset, effective_cost() subindo sem limite turno apos turno -- bug real, nao hipotetico"
+  ],
+  "cards_found": [
+    "OP12-087", "OP12-089", "OP12-100", "P-105", "PRB02-015", "ST25-002", "ST25-005", "ST27-004",
+    "EB02-026", "OP06-069", "OP14-059",
+    "OP13-072", "OP13-075",
+    "OP09-039", "OP09-041",
+    "EB03-004",
+    "OP02-031", "OP07-030", "OP08-109",
+    "ST16-003", "OP06-038", "OP12-118"
+  ],
+  "resolution_scope": "global",
+  "decision": "(a) parse_cost_debuff: novo ramo dinamico ANTES do estatico, para 'gains [Keyword] and +N cost for every M cards in your trash' -> buff_cost_per_count (novo action, mesma semantica de buff_power_per_count mas mutando cost_buff, nao permanente); regex estatica de 'gains +N cost' estendida para tolerar um grupo de keywords + 'and' ANTES do sinal+numero. (b) hand_lte/hand_gte/has_don_attached/chars_rested_gte estendidos para aceitar 'and' como sinonimo de 'if'; 3 condicoes novas (no_char_power_gte, has_named_character, own_rested_cards_gte) adicionadas em _check_conditions E _effect_conditions_met (has_named_character/no_char_power_gte/own_rested_cards_gte tambem cobrem os casos com 'if' direto, achados de brinde). (c) apply_your_turn_buffs() agora zera cost_buff_permanent junto com power_buff/cost_buff no INICIO da recalculacao -- a funcao ja re-deriva o valor do zero a cada chamada (1x por turno do proprio jogador), entao 'permanent' so precisa dizer 'sobrevive ao reset_your_turn_buffs() de FIM de turno', nao 'acumula pra sempre'.",
+  "validated_by": [
+    "diff_parser.py: GANHOU 0 / PERDEU 0 / MUDOU 23 (todas conferidas contra card_text, incluindo os 3 achados 'de brinde' via regex generica)",
+    "gerar_dbs.py + snapshot_parser.py: 0/0/0 apos regenerar",
+    "smoke_fast.py: 2 testes dirigidos novos com EXECUCAO real -- test_gains_keyword_and_cost_buff (Cabaji ganha Blocker+cost_buff_permanent=1 com 2+ aliados caros, ST27-004 escala +2 cost com 8 cartas no trash, E confirma que cost_buff_permanent NAO acumula apos 4 chamadas seguidas de apply_your_turn_buffs()) e test_and_you_have_condicoes_transversais (Toki ganha/perde Blocker conforme presenca de Kouzuki Oden, Carina aplica/nao-aplica buff conforme ausencia de Character forte)",
+    "smoke_test.py: suite ampla, TODOS OS TESTES PASSARAM",
+    "smoke_test_broad.py: 7/7 partidas aleatorias sem excecao -- rodado FORA do ciclo normal de 'a cada 3 familias' porque o fix de cost_buff_permanent mexe num loop compartilhado por TODA a base (apply_your_turn_buffs), risco maior que um fix isolado de parser"
+  ]
+}

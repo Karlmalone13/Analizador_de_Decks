@@ -1557,6 +1557,7 @@
  "EB02-026": {
   "on_play": {
    "conditions": {
+    "hand_lte": 5,
     "leader_multicolor": true
    },
    "steps": [
@@ -2355,7 +2356,8 @@
  "EB03-004": {
   "opp_turn": {
    "conditions": {
-    "leader_multicolor": true
+    "leader_multicolor": true,
+    "no_char_power_gte": 6000
    },
    "steps": [
     {
@@ -7489,6 +7491,9 @@
  },
  "OP02-031": {
   "passive": {
+   "conditions": {
+    "has_named_character": "kouzuki oden"
+   },
    "costs": [
     {
      "type": "rest_self"
@@ -16310,6 +16315,9 @@
     {
      "action": "buff_power",
      "amount": 2000,
+     "conditions": {
+      "own_rested_cards_gte": 8
+     },
      "duration": "battle_only",
      "target": "self"
     }
@@ -16909,7 +16917,8 @@
  "OP06-069": {
   "on_play": {
    "conditions": {
-    "don_on_field_lte_opp": true
+    "don_on_field_lte_opp": true,
+    "hand_lte": 5
    },
    "steps": [
     {
@@ -18380,6 +18389,9 @@
  },
  "OP07-030": {
   "passive": {
+   "conditions": {
+    "has_named_character": "camie"
+   },
    "costs": [
     {
      "type": "rest_self"
@@ -22060,6 +22072,7 @@
  "OP08-109": {
   "on_play": {
    "conditions": {
+    "has_named_character": "kalgara",
     "leader_type": "shandian warrior"
    },
    "steps": [
@@ -23028,6 +23041,7 @@
  "OP09-039": {
   "counter": {
    "conditions": {
+    "chars_rested_gte": 2,
     "leader_type": "odyssey"
    },
    "steps": [
@@ -23087,6 +23101,7 @@
     {
      "action": "set_active",
      "conditions": {
+      "chars_rested_gte": 2,
       "leader_type": "odyssey"
      },
      "count": 2,
@@ -30446,6 +30461,12 @@
    },
    "steps": [
     {
+     "action": "buff_cost",
+     "amount": 3,
+     "duration": "permanent",
+     "target": "self"
+    },
+    {
      "action": "gain_blocker"
     }
    ]
@@ -30471,6 +30492,12 @@
     "leader_type": "revolutionary army"
    },
    "steps": [
+    {
+     "action": "buff_cost",
+     "amount": 4,
+     "duration": "permanent",
+     "target": "self"
+    },
     {
      "action": "gain_blocker"
     }
@@ -30697,6 +30724,12 @@
     "life_lte": 3
    },
    "steps": [
+    {
+     "action": "buff_cost",
+     "amount": 3,
+     "duration": "permanent",
+     "target": "self"
+    },
     {
      "action": "gain_blocker"
     }
@@ -30977,6 +31010,9 @@
  },
  "OP12-118": {
   "on_play": {
+   "conditions": {
+    "own_rested_cards_gte": 8
+   },
    "steps": [
     {
      "action": "draw",
@@ -32214,6 +32250,7 @@
  "OP13-072": {
   "on_play": {
    "conditions": {
+    "has_don_attached": true,
     "leader_type_includes": "roger pirates"
    },
    "steps": [
@@ -32260,6 +32297,7 @@
     {
      "action": "add_don",
      "conditions": {
+      "has_don_attached": true,
       "leader_is": "gol.d.roger"
      },
      "count": 1,
@@ -34288,6 +34326,7 @@
  "OP14-059": {
   "main": {
    "conditions": {
+    "hand_lte": 2,
     "leader_is": "jinbe"
    },
    "steps": [
@@ -41654,6 +41693,12 @@
    },
    "steps": [
     {
+     "action": "buff_cost",
+     "amount": 4,
+     "duration": "permanent",
+     "target": "self"
+    },
+    {
      "action": "gain_blocker"
     }
    ]
@@ -42011,6 +42056,12 @@
     "leader_type": "blackbeard pirates"
    },
    "steps": [
+    {
+     "action": "buff_cost",
+     "amount": 4,
+     "duration": "permanent",
+     "target": "self"
+    },
     {
      "action": "gain_blocker"
     }
@@ -45868,7 +45919,8 @@
  "ST16-003": {
   "passive": {
    "conditions": {
-    "leader_type": "film"
+    "leader_type": "film",
+    "own_rested_cards_gte": 6
    },
    "steps": [
     {
@@ -46903,6 +46955,9 @@
  },
  "ST24-001": {
   "on_play": {
+   "conditions": {
+    "own_rested_cards_gte": 6
+   },
    "steps": [
     {
      "action": "draw",
@@ -47053,6 +47108,12 @@
    ],
    "steps": [
     {
+     "action": "buff_cost",
+     "amount": 1,
+     "duration": "permanent",
+     "target": "self"
+    },
+    {
      "action": "gain_blocker"
     }
    ]
@@ -47114,6 +47175,7 @@
  "ST25-005": {
   "on_ko": {
    "conditions": {
+    "hand_lte": 3,
     "leader_is": "buggy"
    },
    "steps": [
@@ -47134,6 +47196,12 @@
     }
    ],
    "steps": [
+    {
+     "action": "buff_cost",
+     "amount": 1,
+     "duration": "permanent",
+     "target": "self"
+    },
     {
      "action": "gain_blocker"
     }
@@ -47358,6 +47426,13 @@
     }
    ],
    "steps": [
+    {
+     "action": "buff_cost_per_count",
+     "amount_per": 1,
+     "count_per": 4,
+     "source": "trash",
+     "target": "self"
+    },
     {
      "action": "gain_blocker"
     }

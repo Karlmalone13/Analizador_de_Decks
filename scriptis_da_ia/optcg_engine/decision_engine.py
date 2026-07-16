@@ -2746,10 +2746,19 @@ class EffectExecutor:
         sources = self.me.field_chars + [self.me.leader]
         if self.me.field_stage:
             sources.append(self.me.field_stage)
-        # Reset buffs temporários antes de aplicar novos
+        # Reset buffs temporários antes de aplicar novos. cost_buff_permanent
+        # ENTRA aqui tambem (achado 16/07, ST25-002 e familia): apply_your_
+        # turn_buffs() roda 1x por turno do proprio jogador e RECALCULA os
+        # steps de 'passive'/'your_turn' do zero -- sem resetar
+        # cost_buff_permanent antes, cada chamada SOMAVA de novo o mesmo
+        # +N (acumulo sem limite, turno apos turno). O campo so precisa
+        # sobreviver ao reset_your_turn_buffs() de FIM de turno (distinto
+        # de cost_buff comum) -- nao precisa (nem deve) sobreviver a esta
+        # recalculacao do INICIO do turno, que ja e a fonte da verdade.
         for c in self.me.field_chars + [self.me.leader]:
             c.power_buff = 0
             c.cost_buff = 0
+            c.cost_buff_permanent = 0
 
         for source in sources:
             effects = get_card_effects(source.code)
@@ -2950,6 +2959,30 @@ class EffectExecutor:
             if cost_eq is not None:
                 outros = [c for c in outros if c.cost == cost_eq]
             if outros:
+                return False
+        if 'no_char_power_gte' in conds:
+            # "if/and you have NO Characters with N (base) power or more"
+            # -- negacao de other_char_power_gte (achado 16/07, EB03-004).
+            threshold = conds['no_char_power_gte']
+            if any(c.power >= threshold for c in me.field_chars):
+                return False
+        if 'has_named_character' in conds:
+            # "if/and you have a [Nome] Character" -- presenca simples por
+            # nome no proprio campo (achado 16/07, OP08-109 e familia:
+            # OP02-031, OP07-030). Distinto de no_other_named (que exclui
+            # a propria carta e checa AUSENCIA).
+            needle = conds['has_named_character'].lower()
+            if not any(needle in c.name.lower() for c in me.field_chars):
+                return False
+        if 'own_rested_cards_gte' in conds:
+            # "if/and you have N or more rested cards" -- QUALQUER carta
+            # rested do proprio lado (DON + Characters + Leader + Stage),
+            # simetrico ao ja existente opp_rested_cards_gte. Achado 16/07
+            # (ST16-003).
+            rested = me.don_rested + sum(1 for c in me.field_chars if c.rested)
+            rested += int(bool(getattr(me.leader, 'rested', False)))
+            rested += int(bool(me.field_stage and getattr(me.field_stage, 'rested', False)))
+            if rested < conds['own_rested_cards_gte']:
                 return False
         if 'self_power_gte' in conds and card.effective_power(True) < conds['self_power_gte']:
             return False
@@ -4713,6 +4746,28 @@ class EffectExecutor:
                 if target == 'all_allies_and_leader':
                     me.leader.power_buff += amount
             return f'+{amount} power em {target} ({n}/{count_per} {source})'
+
+        if action == 'buff_cost_per_count':
+            # "gains [Blocker] and +N cost for every M cards in your
+            # trash" (achado 16/07, ST27-004) -- mesma semantica de
+            # buff_power_per_count, so que muta cost_buff em vez de
+            # power_buff. Unica carta no banco com essa escala hoje.
+            source = step.get('source', 'trash')
+            count_per = max(1, int(step.get('count_per', 1) or 1))
+            amount_per = int(step.get('amount_per', 1) or 0)
+            target = step.get('target', 'self')
+
+            n = len(me.trash) if source == 'trash' else 0
+            amount = (n // count_per) * amount_per
+            if amount <= 0:
+                return ''
+
+            if target == 'self':
+                card.cost_buff += amount
+            else:
+                for c in me.field_chars:
+                    c.cost_buff += amount
+            return f'+{amount} cost em {target} ({n}/{count_per} {source})'
 
         # ── Cost buff/debuff (buff_cost / debuff_cost) ──────────────────────────
         # NOTA DE LIMITACAO: assim como buff_power, o sistema geral de turnos
@@ -7198,6 +7253,16 @@ class DecisionEngine:
                 if cost_eq is not None:
                     outros = [c for c in outros if c.cost == cost_eq]
                 if outros: return False
+            if k == 'no_char_power_gte':
+                if any(c.power >= v for c in me.field_chars): return False
+            if k == 'has_named_character':
+                needle = v.lower()
+                if not any(needle in c.name.lower() for c in me.field_chars): return False
+            if k == 'own_rested_cards_gte':
+                rested = me.don_rested + sum(1 for c in me.field_chars if c.rested)
+                rested += int(bool(getattr(me.leader, 'rested', False)))
+                rested += int(bool(me.field_stage and getattr(me.field_stage, 'rested', False)))
+                if rested < v: return False
             if k in ('board_has_cost', 'board_has_cost_gte'):
                 todos = list(me.field_chars) + list(self.opp.field_chars)
                 exatos = set(conds.get('board_has_cost', []))

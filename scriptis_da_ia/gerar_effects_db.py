@@ -142,7 +142,7 @@ def parse_conditions(text):
     # DON ativo ou rested na cost area nao satisfaz a condicao. Familia OP13
     # (061/062/063/066/076/077); por nao conter numero, esta lacuna era
     # invisivel ao audit_parser_coverage.py.
-    if re.search(r'if you have any don!{0,2}\s*cards? given', t):
+    if re.search(r'(?:if|and) you have any don!{0,2}\s*cards? given', t):
         conds['has_don_attached'] = True
 
     # "If you have a total of N or more given DON!! cards" -- limiar
@@ -272,8 +272,17 @@ def parse_conditions(text):
 
     # "if you have N or more rested Characters" -- conta PROPRIOS Characters
     # que estao rested, distinto de chars_gte (que conta todos). OP09-033.
-    m = re.search(r'if you have (\d+) or more rested characters?', t)
+    m = re.search(r'(?:if|and) you have (\d+) or more rested characters?', t)
     if m: conds['chars_rested_gte'] = int(m.group(1))
+
+    # "if/and you have N or more rested cards" -- conta QUALQUER carta
+    # rested do proprio lado (DON + Characters + Leader + Stage), distinto
+    # de chars_rested_gte (so Characters) e don_rested_gte (so DON). Achado
+    # 16/07 (ST16-003), simetrico ao ja existente opp_rested_cards_gte
+    # (mesma soma, lado do OPONENTE). Testado DEPOIS de 'rested characters'
+    # pra nao roubar o match mais especifico.
+    m = re.search(r'(?:if|and) you have (\d+) or more rested cards?(?! in your hand)', t)
+    if m: conds['own_rested_cards_gte'] = int(m.group(1))
 
     # "If this Character was played this turn/on this turn" -- condicao
     # sobre a PROPRIA carta (checado via card.just_played), distinta de
@@ -292,10 +301,17 @@ def parse_conditions(text):
     if re.search(r"if (?:this (?:leader|character)|.{0,20}) battles your opponent.?s character", t):
         conds['battled_opp_character_this_turn'] = True
 
-    m = re.search(r'if you have (\d+) or less cards? in your hand', t)
+    # Tolera "and you have..." (condicao encadeada apos outra com "and"),
+    # nao so "if you have..." -- achado 16/07 (ST25-005 e familia: EB02-026,
+    # OP06-069, OP14-059), mesmo padrao ja usado noutras condicoes
+    # (life_lte/don_on_field_gte/don_rested_gte). Busca ampla por "and you
+    # have" nesta mesma auditoria confirmou 23 ocorrencias no banco; a
+    # maioria ja tolerava "and", mas hand_lte/hand_gte, has_don_attached e
+    # chars_rested_gte (abaixo) nao.
+    m = re.search(r'(?:if|and) you have (\d+) or less cards? in your hand', t)
     if m: conds['hand_lte'] = int(m.group(1))
 
-    m = re.search(r'if you have (\d+) or more cards? in your hand', t)
+    m = re.search(r'(?:if|and) you have (\d+) or more cards? in your hand', t)
     if m: conds['hand_gte'] = int(m.group(1))
 
     m = re.search(r'if your leader is \[([^\]]+)\]', t)
@@ -370,6 +386,26 @@ def parse_conditions(text):
     # "if you have a Character with a cost of N or more" -- idem, por custo.
     m = re.search(r'if you have a character with a cost of (\d+) or more', t)
     if m: conds['other_char_cost_gte'] = int(m.group(1))
+
+    # "if/and you have NO Characters with N (base) power or more" --
+    # NEGACAO de other_char_power_gte (verdadeira quando NENHUM Character
+    # do proprio campo bate o limiar, o oposto do "existe pelo menos 1").
+    # Achado 16/07 (EB03-004), condicao tipo novo (nao reuso de
+    # other_char_power_gte com inversao de sinal no engine -- semantica
+    # distinta o suficiente pra merecer chave propria e evitar confusao
+    # nos 2 outros lugares que ja leem other_char_power_gte).
+    m = re.search(
+        r'(?:if|and) you have no characters? with (\d+)(?: base)? power or more', t)
+    if m: conds['no_char_power_gte'] = int(m.group(1))
+
+    # "if/and you have a [Nome] Character" -- presenca simples por nome no
+    # proprio campo (distinto de no_other_named, que EXCLUI a propria carta
+    # e checa AUSENCIA; aqui e presenca comum, sem exclusao de self).
+    # Achado 16/07 (OP08-109 e familia -- OP02-031, OP07-030): condicao
+    # inteira ausente, efeito (geralmente Blocker condicional) disparava
+    # sempre.
+    m = re.search(r'(?:if|and) you have an? \[([^\]]+)\] character\b', t)
+    if m: conds['has_named_character'] = m.group(1).strip()
 
     # "if you have [Nome] with N power or more on your field" -- variante
     # sem "a Character"/"a [Tipo] type Character" antes do nome (achado
@@ -3309,14 +3345,41 @@ def parse_cost_debuff(text):
         steps.append(step)
         return steps
 
+    # "gains [Keyword] and +N cost for every M cards in your trash" --
+    # variante DINAMICA (proporcional ao trash), achada junto da familia
+    # abaixo (16/07, ST27-004): unica carta no banco com essa escala, mas
+    # reusa 100% a infra de buff_power_per_count (mesma semantica, campo
+    # cost_buff em vez de power_buff).
+    m_dyn = re.search(
+        r'gains?\s+\[[a-z: ]+\](?:\s*,\s*\[[a-z: ]+\]\s*)*\s+and\s+'
+        r'\+(\d+) cost for every (\d+) cards? in your trash', t)
+    if m_dyn:
+        is_self_dyn = bool(re.search(r'this character gains?\s+\[', t))
+        steps.append({
+            'action': 'buff_cost_per_count',
+            'amount_per': int(m_dyn.group(1)),
+            'count_per': int(m_dyn.group(2)),
+            'source': 'trash',
+            'target': 'self' if is_self_dyn else 'own_character',
+        })
+
     # "gains +N cost" / "gain -N cost" -- sempre sobre o PROPRIO lado
     # (Character que carrega o efeito, ou outros Characters do mesmo
     # jogador). O alvo (self vs own_character generico) e determinado pelo
-    # sujeito da frase, nao pela presenca de "opponent".
-    m = re.search(r'gains? ([+\-−])(\d+) cost', t)
+    # sujeito da frase, nao pela presenca de "opponent". Tolera um grupo de
+    # keywords ("gains [Blocker] and +N cost") ANTES do sinal+numero --
+    # achado 16/07 (ST25-002/005 e familia, 8 cartas): sem isso, a clausula
+    # inteira do buff de custo nunca casava quando vinha junto de uma
+    # concessao de keyword na mesma frase (o "gains" ficava seguido de
+    # "[Blocker] and ", nao direto do sinal).
+    m = None if m_dyn else re.search(
+        r'gains?\s+(?:\[[a-z: ]+\](?:\s*,\s*\[[a-z: ]+\]\s*)*\s+and\s+)?'
+        r'([+\-−])(\d+) cost', t)
     if m:
         is_debuff = m.group(1) in ('-', '−')
-        is_self = bool(re.search(r'this character gains? [+\-−]\d+ cost', t))
+        is_self = bool(re.search(
+            r'this character gains?\s+(?:\[[a-z: ]+\](?:\s*,\s*\[[a-z: ]+\]\s*)*\s+and\s+)?'
+            r'[+\-−]\d+ cost', t))
         step = {
             'action': 'debuff_cost' if is_debuff else 'buff_cost',
             'amount': int(m.group(2)),

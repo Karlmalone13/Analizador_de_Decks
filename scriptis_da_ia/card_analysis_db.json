@@ -72524,6 +72524,11 @@
     "trigger": "on_play"
    },
    {
+    "action": "buff_cost",
+    "trigger": "passive",
+    "target": "self"
+   },
+   {
     "action": "gain_blocker",
     "trigger": "passive"
    }
@@ -72601,6 +72606,11 @@
     "trigger": "on_ko",
     "cost_lte": 4,
     "target": "opp_character"
+   },
+   {
+    "action": "buff_cost",
+    "trigger": "passive",
+    "target": "self"
    },
    {
     "action": "gain_blocker",
@@ -73089,6 +73099,11 @@
    {
     "action": "draw",
     "trigger": "on_play"
+   },
+   {
+    "action": "buff_cost",
+    "trigger": "passive",
+    "target": "self"
    },
    {
     "action": "gain_blocker",
@@ -98537,6 +98552,11 @@
     "trigger": "on_play"
    },
    {
+    "action": "buff_cost",
+    "trigger": "passive",
+    "target": "self"
+   },
+   {
     "action": "gain_blocker",
     "trigger": "passive"
    }
@@ -99249,6 +99269,11 @@
     "trigger": "on_ko",
     "cost_lte": 4,
     "target": "opp_character"
+   },
+   {
+    "action": "buff_cost",
+    "trigger": "passive",
+    "target": "self"
    },
    {
     "action": "gain_blocker",
@@ -112229,6 +112254,11 @@
     "target": "self"
    },
    {
+    "action": "buff_cost",
+    "trigger": "passive",
+    "target": "self"
+   },
+   {
     "action": "gain_blocker",
     "trigger": "passive"
    }
@@ -112358,6 +112388,11 @@
    {
     "action": "draw",
     "trigger": "on_ko"
+   },
+   {
+    "action": "buff_cost",
+    "trigger": "passive",
+    "target": "self"
    },
    {
     "action": "gain_blocker",
@@ -112745,6 +112780,11 @@
    {
     "action": "trash_from_hand",
     "trigger": "on_play"
+   },
+   {
+    "action": "buff_cost_per_count",
+    "trigger": "passive",
+    "target": "self"
    },
    {
     "action": "gain_blocker",

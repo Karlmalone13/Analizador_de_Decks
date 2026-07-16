@@ -2519,6 +2519,7 @@
           }
         ],
         "conditions": {
+          "hand_lte": 5,
           "leader_multicolor": true
         }
       }
@@ -3808,7 +3809,8 @@
           }
         ],
         "conditions": {
-          "leader_multicolor": true
+          "leader_multicolor": true,
+          "no_char_power_gte": 6000
         }
       },
       "passive": {
@@ -11920,6 +11922,9 @@
             "action": "gain_blocker"
           }
         ],
+        "conditions": {
+          "has_named_character": "kouzuki oden"
+        },
         "costs": [
           {
             "type": "rest_self"
@@ -26101,7 +26106,10 @@
             "action": "buff_power",
             "amount": 2000,
             "target": "self",
-            "duration": "battle_only"
+            "duration": "battle_only",
+            "conditions": {
+              "own_rested_cards_gte": 8
+            }
           }
         ]
       }
@@ -27035,7 +27043,8 @@
           }
         ],
         "conditions": {
-          "don_on_field_lte_opp": true
+          "don_on_field_lte_opp": true,
+          "hand_lte": 5
         }
       }
     }
@@ -29385,6 +29394,9 @@
             "action": "gain_blocker"
           }
         ],
+        "conditions": {
+          "has_named_character": "camie"
+        },
         "costs": [
           {
             "type": "rest_self"
@@ -35247,7 +35259,8 @@
           }
         ],
         "conditions": {
-          "leader_type": "shandian warrior"
+          "leader_type": "shandian warrior",
+          "has_named_character": "kalgara"
         }
       }
     }
@@ -36730,6 +36743,7 @@
           }
         ],
         "conditions": {
+          "chars_rested_gte": 2,
           "leader_type": "odyssey"
         }
       }
@@ -36803,6 +36817,7 @@
             "count": 2,
             "target": "own_character",
             "conditions": {
+              "chars_rested_gte": 2,
               "leader_type": "odyssey"
             }
           }
@@ -48581,6 +48596,12 @@
       "passive": {
         "steps": [
           {
+            "action": "buff_cost",
+            "amount": 3,
+            "target": "self",
+            "duration": "permanent"
+          },
+          {
             "action": "gain_blocker"
           }
         ],
@@ -48628,6 +48649,12 @@
       },
       "passive": {
         "steps": [
+          {
+            "action": "buff_cost",
+            "amount": 4,
+            "target": "self",
+            "duration": "permanent"
+          },
           {
             "action": "gain_blocker"
           }
@@ -48975,6 +49002,12 @@
       },
       "passive": {
         "steps": [
+          {
+            "action": "buff_cost",
+            "amount": 3,
+            "target": "self",
+            "duration": "permanent"
+          },
           {
             "action": "gain_blocker"
           }
@@ -49467,7 +49500,10 @@
             "count": 1,
             "up_to": true
           }
-        ]
+        ],
+        "conditions": {
+          "own_rested_cards_gte": 8
+        }
       },
       "passive": {
         "steps": [
@@ -51503,6 +51539,7 @@
           }
         ],
         "conditions": {
+          "has_don_attached": true,
           "leader_type_includes": "roger pirates"
         }
       }
@@ -51571,6 +51608,7 @@
             "count": 1,
             "rested": true,
             "conditions": {
+              "has_don_attached": true,
               "leader_is": "gol.d.roger"
             }
           }
@@ -54763,6 +54801,7 @@
           }
         ],
         "conditions": {
+          "hand_lte": 2,
           "leader_is": "jinbe"
         }
       }
@@ -66290,6 +66329,12 @@
       "passive": {
         "steps": [
           {
+            "action": "buff_cost",
+            "amount": 4,
+            "target": "self",
+            "duration": "permanent"
+          },
+          {
             "action": "gain_blocker"
           }
         ],
@@ -66823,6 +66868,12 @@
       },
       "passive": {
         "steps": [
+          {
+            "action": "buff_cost",
+            "amount": 4,
+            "target": "self",
+            "duration": "permanent"
+          },
           {
             "action": "gain_blocker"
           }
@@ -73276,6 +73327,7 @@
           }
         ],
         "conditions": {
+          "own_rested_cards_gte": 6,
           "leader_type": "film"
         }
       }
@@ -74991,7 +75043,10 @@
             "count": 1,
             "then_trash": 1
           }
-        ]
+        ],
+        "conditions": {
+          "own_rested_cards_gte": 6
+        }
       },
       "passive": {
         "steps": [
@@ -75192,6 +75247,12 @@
       "passive": {
         "steps": [
           {
+            "action": "buff_cost",
+            "amount": 1,
+            "target": "self",
+            "duration": "permanent"
+          },
+          {
             "action": "gain_blocker"
           }
         ],
@@ -75301,11 +75362,18 @@
           }
         ],
         "conditions": {
+          "hand_lte": 3,
           "leader_is": "buggy"
         }
       },
       "passive": {
         "steps": [
+          {
+            "action": "buff_cost",
+            "amount": 1,
+            "target": "self",
+            "duration": "permanent"
+          },
           {
             "action": "gain_blocker"
           }
@@ -75630,6 +75698,13 @@
       },
       "passive": {
         "steps": [
+          {
+            "action": "buff_cost_per_count",
+            "amount_per": 1,
+            "count_per": 4,
+            "source": "trash",
+            "target": "self"
+          },
           {
             "action": "gain_blocker"
           }

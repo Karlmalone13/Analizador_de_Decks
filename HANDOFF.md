@@ -1,5 +1,61 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-16 (206) - ST25-002 Cabaji: 3 bugs (cost-buff perdido, "and you have" ausente, acumulo em cost_buff_permanent)
+
+Investigando ST25-002/ST25-005 (proximo item da lista de "base cost"),
+achei 2 bugs de parser e, validando, um 3o de ENGINE:
+
+**Bug A -- "gains [Keyword] and +N cost" perdia o buff de custo
+inteiro.** "this Character gains [Blocker] and +1 cost" -- so o
+Blocker sobrevivia, o "+1 cost" nunca casava (a regex exigia o
+sinal+numero LOGO apos "gains", e aqui vem "[Blocker] and " no meio).
+8 cartas: OP12-087, OP12-089, OP12-100, P-105, PRB02-015, ST25-002,
+ST25-005, e **ST27-004** (variante dinamica -- "+1 cost for every 4
+cards in your trash", novo action `buff_cost_per_count`, mesma
+semantica de `buff_power_per_count` pro campo `cost_buff`).
+
+**Bug B -- condicoes "and you have X" (nao so "if you have X").**
+Varias regexes de condicao so aceitavam a ancora "if", nunca "and"
+(quando a condicao vem encadeada apos outra com "and"). Busca ampla
+por "and you have" achou 23 ocorrencias; a maioria ja tolerava "and"
+(sessoes anteriores). Gaps reais: `hand_lte`/`hand_gte` (4 cartas:
+EB02-026, OP06-069, OP14-059, ST25-005), `has_don_attached` (2:
+OP13-072, OP13-075), `chars_rested_gte` (2: OP09-039, OP09-041). A
+mesma varredura achou **3 condicoes inteiramente novas**: `no_char_
+power_gte` (negacao de other_char_power_gte, 1 carta: EB03-004),
+`has_named_character` (presenca simples por nome, 3 cartas: OP02-031,
+OP07-030, OP08-109), `own_rested_cards_gte` (conta TUDO rested --
+DON+Characters+Leader+Stage --, 3 cartas: ST16-003, OP06-038,
+OP12-118, as 2 ultimas achadas de brinde com "if" direto).
+
+**Bug C (achado na validacao, NAO era o objetivo original) -- `cost_
+buff_permanent` acumulava sem limite.** Confirmado com script isolado:
+5 chamadas seguidas de `apply_your_turn_buffs()` no mesmo Card levaram
+`cost_buff_permanent` de 1 a 5, `effective_cost()` subindo turno apos
+turno sem teto. Bug PRE-EXISTENTE (o campo/mecanismo ja existia antes
+desta sessao, usado por ex. ST14-017) -- o Bug A so tornou 8 cartas a
+mais alcancaveis por esse caminho (antes nem parseavam, entao nunca
+disparavam `_execute_step`). Apresentado ao usuario antes de corrigir
+(fora do escopo confirmado originalmente) -- autorizado a corrigir
+junto. Fix: `apply_your_turn_buffs()` agora zera `cost_buff_permanent`
+junto com `power_buff`/`cost_buff` no INICIO da recalculacao (a funcao
+ja re-deriva o valor do zero a cada chamada, "permanent" so precisa
+sobreviver ao `reset_your_turn_buffs()` de FIM de turno, nao acumular
+para sempre).
+
+**Validado:** `diff_parser.py` GANHOU=0/PERDEU=0/MUDOU=23 (todas
+conferidas). `gerar_dbs.py`+`snapshot_parser.py` 0/0/0. `smoke_fast.py`:
+2 testes dirigidos novos com EXECUCAO real, incluindo confirmacao de
+que `cost_buff_permanent` NAO acumula apos 4 chamadas seguidas de
+`apply_your_turn_buffs()`. `smoke_test.py`: TODOS OS TESTES PASSARAM.
+**`smoke_test_broad.py`: 7/7** -- rodado FORA do ciclo normal de "a
+cada 3 familias" porque o Bug C mexe num loop compartilhado por TODA a
+base, risco maior que um fix isolado de parser.
+
+Registro completo em
+`parser_audits/2026-07-16_st25-002_cost_buff_and_you_have.json`.
+Suspeitos: 343 -> 331.
+
 ## 2026-07-16 (205) - OP15-002 Lucy: rastreamento "Event ativado neste turno" nunca existiu (fecha o lote de 3)
 
 3a e ultima familia do lote (ver pacing no bloco 203 -- smoke_test_broad.py

@@ -2738,6 +2738,140 @@ def test_lucy_event_activated_cost_gte_this_turn() -> None:
           me4.events_activated_costs_this_turn == [])
 
 
+def test_gains_keyword_and_cost_buff() -> None:
+    # Achado 16/07 (ST25-002/ST25-005 e familia) -- "gains [Blocker] and
+    # +N cost" nunca reconhecia a metade do custo: a regex de buff_cost
+    # exigia o sinal+numero LOGO apos "gains", e aqui vem "[Blocker] and "
+    # no meio. 8 cartas reais tinham o +N cost inteiro ausente (so o
+    # Blocker sobrevivia). ST27-004 e a variante DINAMICA ("+1 cost for
+    # every 4 cards in your trash").
+    passive = get_card_effects("ST25-002").get("passive", {})
+    check("ST25-002 passive parseia gain_blocker E buff_cost (+1, self, permanent)",
+          any(s.get("action") == "gain_blocker" for s in passive.get("steps", []))
+          and any(s.get("action") == "buff_cost" and s.get("amount") == 1
+                  and s.get("target") == "self" and s.get("duration") == "permanent"
+                  for s in passive.get("steps", [])))
+    check("ST25-005 (mesma frase exata) tambem parseia os 2 steps",
+          any(s.get("action") == "buff_cost" and s.get("amount") == 1
+              for s in get_card_effects("ST25-005").get("passive", {}).get("steps", [])))
+    check("OP12-089 (custo +4) preserva o amount certo",
+          any(s.get("action") == "buff_cost" and s.get("amount") == 4
+              for s in get_card_effects("OP12-089").get("passive", {}).get("steps", [])))
+
+    dyn = get_card_effects("ST27-004").get("passive", {}).get("steps", [])
+    check("ST27-004 (variante dinamica) parseia buff_cost_per_count (1 a cada 4 no trash)",
+          any(s.get("action") == "buff_cost_per_count" and s.get("amount_per") == 1
+              and s.get("count_per") == 4 and s.get("source") == "trash"
+              for s in dyn))
+
+    # Execucao real: ST25-002 com 2+ Characters proprios de custo>=5 --
+    # Blocker E +1 cost (permanente) devem aplicar na propria carta.
+    cabaji = real_card("ST25-002")
+    aliado1 = mk("XCB1", "Aliado Caro 1", cost=5)
+    aliado2 = mk("XCB2", "Aliado Caro 2", cost=6)
+    me = GameState(leader=mk("XCBLDR", "Lider", card_type="LEADER"), turn=3)
+    me.field_chars = [cabaji, aliado1, aliado2]
+    opp = GameState(leader=mk("XCBOPP", "Opp", card_type="LEADER"), turn=3)
+    EffectExecutor(me, opp).execute(cabaji, "passive")
+    # duration='permanent' grava em cost_buff_permanent (campo separado de
+    # cost_buff, sobrevive ao reset de fim de turno) -- achado 16/07 em
+    # conjunto: cost_buff_permanent NUNCA era resetado no INICIO do turno
+    # por apply_your_turn_buffs(), entao cada turno somava de novo o mesmo
+    # +N sem limite (bug pre-existente, so agora alcancavel por essas 8
+    # cartas). Corrigido: apply_your_turn_buffs() agora zera
+    # cost_buff_permanent tambem antes de recalcular (mesmo padrao de
+    # power_buff/cost_buff).
+    check("Execucao real: Cabaji ganha Blocker E +1 cost (permanente) com 2+ aliados caros",
+          cabaji.has_blocker and cabaji.cost_buff_permanent == 1)
+
+    for _ in range(4):
+        EffectExecutor(me, opp).apply_your_turn_buffs()
+    check("cost_buff_permanent NAO acumula turno apos turno (fica em +1, nao +5)",
+          cabaji.cost_buff_permanent == 1)
+
+    # Execucao real da variante dinamica: Whitebeard Pirate ST27-004 com 8
+    # cartas no trash (2x o limiar de 4) -- +2 cost (1 * 8//4). Precisa do
+    # Leader [Blackbeard Pirates] pra satisfazer a condicao da carta.
+    st27 = real_card("ST27-004")
+    me2 = GameState(leader=mk("X27LDR", "Lider", card_type="LEADER", sub_types="Blackbeard Pirates"), turn=3)
+    me2.field_chars = [st27]
+    me2.trash = [mk(f"XTR{i}", f"Trash {i}") for i in range(8)]
+    EffectExecutor(me2, GameState(leader=mk("X27OPP", "Opp", card_type="LEADER"), turn=3)).execute(st27, "passive")
+    check("Execucao real: ST27-004 com 8 cartas no trash ganha +2 cost (proporcional, variante dinamica NAO permanente)",
+          st27.cost_buff == 2)
+
+
+def test_and_you_have_condicoes_transversais() -> None:
+    # Achado 16/07 (mesma investigacao ST25-002/005) -- varias condicoes
+    # "if you have X" so reconheciam a ancora literal "if", nunca "and"
+    # (quando a condicao vem encadeada depois de OUTRA com "and"). Busca
+    # ampla por "and you have" achou 23 ocorrencias; a maioria ja tolerava
+    # "and" (life_lte/don_on_field_gte/don_rested_gte, sessoes anteriores),
+    # mas hand_lte/hand_gte, has_don_attached e chars_rested_gte nao. A
+    # mesma varredura tambem achou 3 condicoes NOVAS (sem implementacao
+    # nenhuma antes): no_char_power_gte, has_named_character,
+    # own_rested_cards_gte.
+    check("EB02-026 (hand_lte apos 'and') parseia hand_lte=5",
+          get_card_effects("EB02-026").get("on_play", {}).get("conditions", {})
+          .get("hand_lte") == 5)
+    check("OP14-059 (hand_lte apos 'and', 'Main' trigger) parseia hand_lte=2",
+          get_card_effects("OP14-059").get("main", {}).get("conditions", {})
+          .get("hand_lte") == 2)
+    check("OP13-072 (has_don_attached apos 'and') parseia has_don_attached",
+          get_card_effects("OP13-072").get("on_play", {}).get("conditions", {})
+          .get("has_don_attached") is True)
+    check("OP09-039 (chars_rested_gte apos 'and') parseia chars_rested_gte=2",
+          get_card_effects("OP09-039").get("counter", {}).get("conditions", {})
+          .get("chars_rested_gte") == 2)
+    check("EB03-004 parseia condicao NOVA no_char_power_gte=6000",
+          get_card_effects("EB03-004").get("opp_turn", {}).get("conditions", {})
+          .get("no_char_power_gte") == 6000)
+    check("OP08-109 parseia condicao NOVA has_named_character='kalgara'",
+          get_card_effects("OP08-109").get("on_play", {}).get("conditions", {})
+          .get("has_named_character") == "kalgara")
+    check("OP02-031 (mesma familia, 'if' direto) tambem parseia has_named_character",
+          get_card_effects("OP02-031").get("passive", {}).get("conditions", {})
+          .get("has_named_character") == "kouzuki oden")
+    check("ST16-003 parseia condicao NOVA own_rested_cards_gte=6",
+          get_card_effects("ST16-003").get("passive", {}).get("conditions", {})
+          .get("own_rested_cards_gte") == 6)
+
+    # Execucao real: OP02-031 (Blocker condicionado a ter um [Kouzuki Oden]
+    # em campo) -- com o aliado nomeado presente, ganha Blocker; sem ele, nao.
+    toki = real_card("OP02-031")
+    oden = mk("XODEN", "Kouzuki Oden Aliado")
+    me = GameState(leader=mk("XTKLDR", "Lider", card_type="LEADER"), turn=3)
+    me.field_chars = [toki, oden]
+    EffectExecutor(me, GameState(leader=mk("XTKOPP", "Opp", card_type="LEADER"), turn=3)).execute(toki, "passive")
+    check("Execucao real: com Kouzuki Oden em campo, Toki ganha Blocker",
+          toki.has_blocker)
+
+    toki2 = real_card("OP02-031")
+    me2 = GameState(leader=mk("XTKLDR2", "Lider", card_type="LEADER"), turn=3)
+    me2.field_chars = [toki2]
+    EffectExecutor(me2, GameState(leader=mk("XTKOPP2", "Opp", card_type="LEADER"), turn=3)).execute(toki2, "passive")
+    check("Execucao real: SEM Kouzuki Oden em campo, Toki NAO ganha Blocker",
+          not toki2.has_blocker)
+
+    # Execucao real: EB03-004 (buff condicionado a leader multicor E
+    # ausencia de Character proprio com power>=6000).
+    carina = real_card("EB03-004")
+    fraco = mk("XCARFR", "Fraco", power=3000)
+    me3 = GameState(leader=mk("XCARLDR", "Lider", card_type="LEADER", color="Red/Blue"), turn=3)
+    me3.field_chars = [carina, fraco]
+    EffectExecutor(me3, GameState(leader=mk("XCAROPP", "Opp", card_type="LEADER"), turn=3)).execute(carina, "opp_turn")
+    check("Execucao real: sem Character forte (>=6000) em campo, buff de EB03-004 aplica",
+          carina.power_buff == 4000)
+
+    carina2 = real_card("EB03-004")
+    forte = mk("XCARFT", "Forte", power=7000)
+    me4 = GameState(leader=mk("XCARLDR2", "Lider", card_type="LEADER", color="Red/Blue"), turn=3)
+    me4.field_chars = [carina2, forte]
+    EffectExecutor(me4, GameState(leader=mk("XCAROPP2", "Opp", card_type="LEADER"), turn=3)).execute(carina2, "opp_turn")
+    check("Execucao real: COM Character forte (>=6000) em campo, buff de EB03-004 NAO aplica",
+          carina2.power_buff == 0)
+
+
 def main() -> int:
     test_turn_order_imu_prefers_second()
     test_empty_throne_beats_direct_five_elders_play()
@@ -2817,6 +2951,8 @@ def main() -> int:
     test_all_allies_filter_type_buff_power()
     test_all_allies_filter_color_e_type_intercalados()
     test_lucy_event_activated_cost_gte_this_turn()
+    test_gains_keyword_and_cost_buff()
+    test_and_you_have_condicoes_transversais()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0
