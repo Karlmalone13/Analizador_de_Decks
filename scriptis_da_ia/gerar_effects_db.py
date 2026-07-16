@@ -373,8 +373,19 @@ def parse_conditions(text):
     # de palavras encontradas no texto oficial -- "N power or more" e "N or
     # more power" (ex: OP09-019) -- sem isto a segunda ordem nunca era
     # reconhecida e a condicao ficava vazia.
-    m = re.search(r'if your opponent has a character with (\d+)(?: base)?(?: power or more| or more power)', t)
-    if m: conds['opp_char_power_gte'] = int(m.group(1))
+    m = re.search(
+        r'if your opponent has a character with '
+        r'(?:(\d+)(?: base)?(?: power or more| or more power)|(?:base )?power of (\d+) or more)', t)
+    if m: conds['opp_char_power_gte'] = int(m.group(1) or m.group(2))
+
+    # Variante "Leader OR Character" (achado 16/07, OP06-012, unica no
+    # banco) -- distinta de opp_char_power_gte (so campo): precisa checar
+    # TAMBEM o lider do oponente, entao usa chave propria pra nao mudar o
+    # comportamento das cartas que ja usam so "Character".
+    m = re.search(
+        r'if your opponent has a leader or character with '
+        r'(?:(\d+)(?: base)?(?: power or more| or more power)|a (?:base )?power of (\d+) or more)', t)
+    if m: conds['opp_leader_or_char_power_gte'] = int(m.group(1) or m.group(2))
 
     # Variante combinada: "...power or more and the "X"/[X]/{X} type" --
     # captura o type quando vem encadeado depois da clausula de power (a
@@ -943,8 +954,10 @@ def parse_ko(text):
     for m in re.finditer(
         VERBO + r" (up to (\d+)|all(?: of)?(?: the)?(?: rested)?) of your opponent.{0,20}"
         r'(?:"([a-z][a-z0-9 .\'-]+)"\s+type\s+)?'
-        r"characters?(?: with a (?:base )?cost of (\d+)( or less)?)?"
-        r"(?: with (?:a )?(\d+) (?:base )?power(?: or less)?)?",
+        # "cost of N" (?:of )? torna o "of" opcional (achado 16/07,
+        # OP10-079 -- typo oficial "a cost 5 or less", sem "of").
+        r"characters?(?: with a (?:base )?cost (?:of )?(\d+)( or less)?)?"
+        r"(?: with (?:a )?(?:(\d+) (?:base )?power|(?:base )?power of (?P<pw>\d+))(?: or less)?)?",
         t
     ):
         verbo_usado = re.match(r'k\.o\.|trash', m.group(0)).group(0)
@@ -959,8 +972,12 @@ def parse_ko(text):
                 step['cost_lte'] = int(m.group(4))
             else:
                 step['cost_eq'] = int(m.group(4))
-        if m.group(6):
-            step['power_lte'] = int(m.group(6))
+        # "N (base) power" ou "(base) power of N" (achado 16/07, ordem
+        # invertida com "of" -- OP09-015/OP14-062/OP14-064): mesmas
+        # semanticas, so muda onde o numero aparece na frase.
+        power_val = m.group(6) or m.group('pw')
+        if power_val:
+            step['power_lte'] = int(power_val)
         if 'rested' in m.group(0):
             step['rested_only'] = True
         steps.append(step)
@@ -1139,6 +1156,26 @@ def parse_bounce(text):
             'target': 'opp_character',
             'cost_lte': int(m.group(2))
         })
+        return steps
+
+    # "of your opponent's Characters with a (base) power of N (or more/or
+    # less)" -- achado 16/07, OP13-062 (ordem invertida "power of N", nao
+    # "N power"). Checada ANTES do catch-all sem filtro (linha abaixo),
+    # que ignoraria o filtro por completo.
+    m = re.search(
+        r"return up to (\d+) of your opponent.{0,20} characters?"
+        r" with a (?:base )?power of (\d+)(?: or (more|less))?",
+        t)
+    if m:
+        step = {'action': 'bounce', 'count': int(m.group(1)), 'target': 'opp_character'}
+        comparator = m.group(3)
+        if comparator == 'more':
+            step['power_gte'] = int(m.group(2))
+        elif comparator == 'less':
+            step['power_lte'] = int(m.group(2))
+        else:
+            step['power_eq'] = int(m.group(2))
+        steps.append(step)
         return steps
 
     m = re.search(r"return up to (\d+) of your opponent.{0,20} characters?", t)
@@ -1327,7 +1364,10 @@ def parse_rest_opp(text):
     m = re.search(r"rest (?:up to )?(\d+) of your opponent.{0,20}(?:characters?|cards?)", t)
     if m:
         cost_m = re.search(r'cost of (\d+) or less', t)
-        power_m = re.search(r'(\d+) base power or less', t)
+        # Aceita "N base power or less" (numero antes) OU "base power of N
+        # or less" (achado 16/07, ordem invertida com "of" -- OP14-062).
+        power_m = (re.search(r'(\d+) base power or less', t)
+                   or re.search(r'base power of (\d+) or less', t))
         step = {'action': 'rest_opp_character', 'count': int(m.group(1))}
         if cost_m:
             step['cost_lte'] = int(cost_m.group(1))

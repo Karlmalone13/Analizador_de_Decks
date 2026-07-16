@@ -1,5 +1,61 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-16 (198) - Fecha o padrao transversal "power of N" (ordem invertida) em 4 mecanismos, 6 cartas
+
+Continuacao direta do bloco 197 (correcao de metodologia do usuario).
+Antes de corrigir a lista de 12 "base cost", o usuario pediu pra
+reanalisar as propostas anteriores a luz do padrao transversal, e depois
+corrigiu a si mesmo: nao era "power more/less"/"cost more"/"cost less"
+sem "or" (0 ocorrencias no banco), e sim **"power N or more"/"power N or
+less"/"cost N or more"/"cost N or less"** (substantivo ANTES do numero).
+Censo dessa forma achou so 1 caso real (`cost N or less` -> OP10-079,
+typo oficial sem "of"). Investigando mais a fundo achei a familia
+GRANDE de verdade: **"(base) power OF N"** (numero DEPOIS de "power",
+com "of" no meio) -- 7 cartas no banco, 5 com bug real.
+
+**As 5 cartas quebradas, 4 mecanismos diferentes (prova concreta da
+tese do usuario -- nao e 1 mecanismo so):**
+- OP09-015, OP14-064: `ko` sem `power_lte`/`power_eq`
+- OP13-062: `bounce` sem `power_lte`
+- OP14-062: `rest_opp_character` sem `power_lte`
+- OP06-012: condicao de imunidade sem filtro nenhum, e com uma variante
+  extra ("Leader OR Character", nao so Character) -- nova chave
+  `opp_leader_or_char_power_gte` (distinta de `opp_char_power_gte`
+  existente pra nao mudar comportamento de outras cartas que so
+  mencionam "Character").
+
+**Fix:** cada um dos 4 mecanismos ganhou um branch/alternativa aceitando
+"(?:base )?power of N" alem do "N (base) power" ja suportado. O
+checador de imunidade (`_immunity_conds_met`, 3o checador de condicoes
+do projeto -- mesmo padrao recorrente ja documentado varias vezes)
+ganhou a nova chave, olhando `opp.leader` + `opp.field_chars` juntos.
+
+**Extra da mesma rodada:** OP10-079 (typo oficial "a cost 5 or less",
+sem "of") -- mesma tolerancia de fraseado, mesmo regex de `ko`.
+
+**Censo confirmado completo (per pedido explicito do usuario):**
+"power N or more/or less" e "cost N or more/or less" sem "of" = 0
+ocorrencias adicionais no banco. "N cost" isolado (128 cartas) e todo
+"+N cost" de BUFF (`gains +N cost`), padrao ja tratado, nao relacionado.
+Nenhuma pendencia nova alem do que ja foi corrigido.
+
+**Validado:** `diff_parser.py` PERDEU=0, MUDOU=6 (todas confirmadas
+contra `card_text`). 1 teste dirigido novo com EXECUCAO real
+(`test_power_of_n_ordem_invertida_transversal`): confirma o parse
+correto dos 4 mecanismos + o typo de custo, e prova em execucao real
+que a imunidade de OP06-012 responde ao LIDER do oponente (nao so
+Character -- 2 cenarios, lider forte vs lider fraco). `smoke_fast.py`
+(122 checks) verde, `smoke_test.py` amplo verde, `smoke_test_broad.py`
+**7/7**. Registro:
+`parser_audits/2026-07-16_power_of_n_ordem_invertida_transversal.json`
+(`resolution_scope: global`, 6 cartas).
+
+**Ainda pendente:** os 9-10 bugs individuais da lista de "base cost"
+(cada um com causa raiz PROPRIA e distinta, ja categorizados no bloco
+anterior -- OP12-041/OP15-014 compartilham 1 causa, os outros 7-8 sao
+todos diferentes entre si). Aguardando decisao do usuario sobre
+granularidade de confirmacao pra cada um.
+
 ## 2026-07-16 (197) - Correcao de metodologia do usuario: "base power/cost" e padrao TRANSVERSAL, nao 1 mecanismo so (registro, sem fix de codigo)
 
 Ao apresentar o censo de "base cost" (continuacao do bloco 196), eu

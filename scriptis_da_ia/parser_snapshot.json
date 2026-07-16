@@ -15754,6 +15754,9 @@
  },
  "OP06-012": {
   "passive": {
+   "conditions": {
+    "opp_leader_or_char_power_gte": 6000
+   },
    "steps": [
     {
      "action": "immunity",
@@ -22553,6 +22556,7 @@
     {
      "action": "ko",
      "count": 1,
+     "power_lte": 6000,
      "target": "opp_character"
     }
    ]
@@ -25845,6 +25849,7 @@
    "steps": [
     {
      "action": "ko",
+     "cost_lte": 5,
      "count": 1,
      "target": "opp_character"
     },
@@ -31937,6 +31942,7 @@
     {
      "action": "bounce",
      "count": 1,
+     "power_lte": 3000,
      "target": "opp_character"
     }
    ]
@@ -34260,7 +34266,8 @@
    "steps": [
     {
      "action": "rest_opp_character",
-     "count": 1
+     "count": 1,
+     "power_lte": 6000
     }
    ]
   }
@@ -34294,6 +34301,7 @@
     {
      "action": "ko",
      "count": 1,
+     "power_lte": 0,
      "target": "opp_character"
     },
     {

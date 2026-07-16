@@ -53759,6 +53759,7 @@
    {
     "action": "ko",
     "trigger": "on_ko",
+    "power_lte": 6000,
     "target": "opp_character"
    },
    {
@@ -61801,6 +61802,7 @@
    {
     "action": "ko",
     "trigger": "main",
+    "cost_lte": 5,
     "target": "opp_character"
    },
    {
@@ -76504,6 +76506,7 @@
    {
     "action": "bounce",
     "trigger": "when_attacking",
+    "power_lte": 3000,
     "target": "opp_character"
    }
   ],
@@ -81814,7 +81817,8 @@
   "effects": [
    {
     "action": "rest_opp_character",
-    "trigger": "on_ko"
+    "trigger": "on_ko",
+    "power_lte": 6000
    }
   ],
   "synergy_states": {
@@ -81903,6 +81907,7 @@
    {
     "action": "ko",
     "trigger": "on_ko",
+    "power_lte": 0,
     "target": "opp_character"
    },
    {

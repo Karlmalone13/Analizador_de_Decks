@@ -2236,6 +2236,50 @@ def test_bounce_por_power_eq_base_power() -> None:
           alvo_exato in opp.hand and alvo_diferente in opp.field_chars)
 
 
+def test_power_of_n_ordem_invertida_transversal() -> None:
+    # Achado 16/07 -- correcao de metodologia do usuario: "power of N"
+    # (ordem invertida, numero DEPOIS de "power", com "of") nao e bug de
+    # 1 mecanismo so -- vaza em QUALQUER lugar que filtra por power. Todo
+    # regex existente esperava "N power"/"N base power" (numero ANTES).
+    # 5 cartas reais, 4 mecanismos: ko (OP09-015/OP14-064), bounce
+    # (OP13-062), rest_opp_character (OP14-062), condicao de imunidade
+    # (OP06-012, variante extra "Leader or Character").
+    ko_step = get_card_effects("OP09-015").get("on_ko", {}).get("steps", [{}])[0]
+    check("OP09-015 (ko) parseia power_lte=6000 via 'power of N'", ko_step.get("power_lte") == 6000)
+
+    ko0_steps = get_card_effects("OP14-064").get("on_ko", {}).get("steps", [])
+    check("OP14-064 (ko) parseia power_lte=0 via 'power of 0' sem qualificador",
+          any(s.get("action") == "ko" and s.get("power_lte") == 0 for s in ko0_steps))
+
+    bounce_step = get_card_effects("OP13-062").get("when_attacking", {}).get("steps", [{}])[0]
+    check("OP13-062 (bounce) parseia power_lte=3000 via 'power of N'", bounce_step.get("power_lte") == 3000)
+
+    rest_step = get_card_effects("OP14-062").get("on_ko", {}).get("steps", [{}])[0]
+    check("OP14-062 (rest_opp_character) parseia power_lte=6000 via 'power of N'",
+          rest_step.get("action") == "rest_opp_character" and rest_step.get("power_lte") == 6000)
+
+    imm_conds = get_card_effects("OP06-012").get("passive", {}).get("conditions", {})
+    check("OP06-012 (condicao de imunidade) parseia opp_leader_or_char_power_gte=6000",
+          imm_conds.get("opp_leader_or_char_power_gte") == 6000)
+
+    # Execucao real: a condicao de imunidade so vale se o LIDER (nao so
+    # Character) do oponente tiver power>=6000.
+    op06012 = real_card("OP06-012")
+    me = GameState(leader=mk("XPWLD", "Lider", card_type="LEADER"))
+    me.field_chars = [op06012]
+    opp_forte = GameState(leader=mk("XPWOPPFORTE", "Lider Forte", card_type="LEADER", power=6000))
+    check("Imune quando o LIDER do oponente tem power>=6000 (nao so Character)",
+          is_immune(op06012, "ko", me, opp_forte, source_is_opp=True))
+    opp_fraco = GameState(leader=mk("XPWOPPFRACO", "Lider Fraco", card_type="LEADER", power=5000))
+    check("NAO imune quando nem lider nem nenhum Character do oponente bate 6000",
+          not is_immune(op06012, "ko", me, opp_fraco, source_is_opp=True))
+
+    # Achado irmao (mesma rodada): OP10-079 tem um typo oficial "a cost 5
+    # or less" (sem "of") -- tolerancia adicionada no mesmo regex de ko.
+    ko_typo_step = get_card_effects("OP10-079").get("main", {}).get("steps", [{}])[0]
+    check("OP10-079 tolera typo 'cost 5' sem 'of' -> cost_lte=5", ko_typo_step.get("cost_lte") == 5)
+
+
 def main() -> int:
     test_turn_order_imu_prefers_second()
     test_empty_throne_beats_direct_five_elders_play()
@@ -2303,6 +2347,7 @@ def main() -> int:
     test_germa66_power_range_e_mesmo_nome_do_trashado()
     test_trash_own_character_custo_novo_e_avaliacao_por_campo()
     test_bounce_por_power_eq_base_power()
+    test_power_of_n_ordem_invertida_transversal()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0

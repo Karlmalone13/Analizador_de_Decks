@@ -1091,6 +1091,15 @@ def _immunity_conds_met(conds, card, owner, opp):
     if 'don_rested_gte' in conds:
         if owner.don_rested < conds['don_rested_gte']:
             return False
+    # "if your opponent has a Leader or Character with a (base) power of N
+    # or more" (achado 16/07, OP06-012, ordem invertida "power of N") --
+    # distinta de opp_char_power_gte (so campo, checado em _check_conditions
+    # noutro lugar): aqui inclui TAMBEM o lider do oponente.
+    if 'opp_leader_or_char_power_gte' in conds:
+        threshold = conds['opp_leader_or_char_power_gte']
+        candidatos = [opp.leader] + list(opp.field_chars)
+        if not any(c.power >= threshold for c in candidatos):
+            return False
     return True
 
 

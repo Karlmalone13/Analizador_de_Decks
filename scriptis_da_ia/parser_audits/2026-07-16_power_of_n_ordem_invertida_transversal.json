@@ -1,0 +1,23 @@
+{
+  "trigger_card": "OP13-062",
+  "problem": "'power of N' (ordem invertida -- numero DEPOIS de 'power', com a palavra 'of' no meio, ex: 'with a base power of 6000 or less') nunca era reconhecido por nenhum regex que filtra por power -- todos esperavam 'N power'/'N base power' (numero ANTES). O bug se repetia em 4 mecanismos distintos: ko, bounce, rest_opp_character, condicao de imunidade.",
+  "grammar_family": "'(?:base )?power of N (or more/or less)?' como filtro de alvo/condicao, em qualquer mecanismo que ja suporta filtro de power. Achado apos o usuario corrigir uma generalizacao errada minha (eu tinha tratado o gap anterior de 'base power' como bug de 1 mecanismo so, o bounce -- ele apontou que o mesmo padrao pode vazar em KO/rest/trash/refresh-lock/keyword-condicional/etc).",
+  "queries": [
+    "regex base power of \\d+ sobre card_text (achou 7 cartas: EB04-005, OP06-012, OP09-005, OP09-015, OP13-062, OP14-062, OP14-064)",
+    "cruzamento com audit_parser_coverage.py: 5 das 7 tinham numero perdido (EB04-005 e OP09-005 ja funcionavam por coincidencia -- outra clausula da carta ja capturava o numero)",
+    "inspecao individual das 5 quebradas contra o JSON parseado atual pra confirmar o mecanismo exato de cada uma",
+    "censo adicional 'power N or more/or less' (sem of, ordem 'errada' o usuario tinha sugerido) -- 0 ocorrencias, nao existe essa variante literal no banco",
+    "censo adicional 'cost N or more/or less' (mesma logica pro lado de custo) -- so achou 'N cost' isolado (128 cartas, mas todas sao +N cost de BUFF, padrao diferente, ja tratado em outro lugar -- nao e o mesmo bug)",
+    "censo 'cost N or less' (sem 'of') -- achou OP10-079, typo oficial 'a cost 5 or less', corrigido junto na mesma rodada por ser o mesmo tipo de tolerancia de fraseado no mesmo regex de ko"
+  ],
+  "cards_found": ["OP06-012", "OP09-015", "OP13-062", "OP14-062", "OP14-064", "OP10-079"],
+  "resolution_scope": "global",
+  "decision": "Estendido cada um dos 4 mecanismos afetados pra aceitar '(?:base )?power of N' como alternativa a 'N (base) power': (1) parse_ko -- regex principal do finditer, usando grupo nomeado (?P<pw>...) pra evitar colisao de numeracao de grupos; (2) parse_bounce -- novo branch especifico ANTES do catch-all sem filtro (que ignoraria o filtro por completo); (3) rest_opp_character (dentro de parse_rest_opp) -- adicionado como alternativa 'or' na mesma variavel power_m; (4) condicao de imunidade -- nova chave opp_leader_or_char_power_gte (distinta de opp_char_power_gte existente, porque OP06-012 tambem exige checar o LIDER do oponente, nao so Character -- adicionar o lider ao opp_char_power_gte existente mudaria comportamento de outras cartas que so querem 'Character'). Checador novo em _immunity_conds_met (3o checador de condicoes do projeto, ja documentado como padrao recorrente). Aproveitado pra tambem tolerar o typo oficial 'a cost N or less' (sem 'of') em OP10-079, mesmo regex de ko, mesma rodada de validacao.",
+  "validated_by": [
+    "diff_parser.py: GANHOU 0 / PERDEU 0 / MUDOU 6 (todas as 6 cartas confirmadas contra card_text)",
+    "gerar_dbs.py + snapshot_parser.py: 0/0/0 apos regenerar",
+    "smoke_fast.py: teste dirigido novo test_power_of_n_ordem_invertida_transversal com EXECUCAO real -- confirma parse correto dos 4 mecanismos + o typo de custo, e prova em execucao real que a imunidade de OP06-012 responde ao LIDER do oponente (nao so Character)",
+    "smoke_test.py: suite ampla, TODOS OS TESTES PASSARAM",
+    "smoke_test_broad.py: 7/7 partidas aleatorias sem excecao"
+  ]
+}
