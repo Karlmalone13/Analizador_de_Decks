@@ -4325,14 +4325,9 @@
   "attribute": "",
   "effects": [
    {
-    "action": "buff_power",
-    "trigger": "main",
-    "target": "self"
-   },
-   {
     "action": "play_from_trash",
     "trigger": "main",
-    "cost_lte": 99
+    "power_lte": 7000
    }
   ],
   "synergy_states": {},
@@ -4347,7 +4342,7 @@
   "rests_opponent": false,
   "bounces": false,
   "gives_don": false,
-  "power_buff": true,
+  "power_buff": false,
   "heals": false,
   "gains_life": false,
   "attacks_life": false,
@@ -37860,7 +37855,7 @@
    {
     "action": "play_from_trash",
     "trigger": "activate_main",
-    "cost_lte": 99
+    "power_lte": 5000
    }
   ],
   "synergy_states": {},

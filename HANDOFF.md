@@ -1,5 +1,56 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-16 (193) - Varredura continua: EB02-039/OP06-015 faixa "N to M power" virava buff fantasma
+
+Usuario pediu um novo protocolo: parar apos CADA familia corrigida,
+reportar quantas cartas suspeitas restam, e perguntar antes de seguir
+pra proxima. Este bloco documenta a 2a familia da retomada (a 1a foi
+OP01-086, bloco 192).
+
+**EB02-039 GERMA 66 (bug grave) + OP06-015 Lily Carnation (filtro
+ausente), mesma causa raiz:** "play up to 1 Character card with 5000 to
+7000 power ..." -- o guard de `parse_power_buff` so excluia "N power or
+less/or more" (imediatamente apos o numero); a faixa "N to M power" nao
+tinha guard nenhum, entao o SEGUNDO numero da faixa (7000) virava um
+`buff_power` FANTASMA (target=self, na propria carta fonte) em
+EB02-039. Adicionado guard novo pra faixa "N to M power". Em OP06-015 o
+mesmo padrao ja escapava do bug (guard de "from your trash" evitava por
+coincidencia), mas o `play_from_trash` nunca sabia filtrar por faixa de
+power -- adicionado `power_gte`/`power_lte` la tambem.
+
+**Mecanica nova (unica no banco, so EB02-039):** "and the same card name
+as the trashed card" -- o `play_from_trash` so pode escolher uma copia
+com o MESMO NOME do que foi trashado como custo do proprio bloco. Novo
+atributo `self._last_trashed_names` (setado dentro de `_pay_costs` no
+branch `trash_from_hand`, consumido pelo novo filtro
+`same_name_as_trashed`) -- **deliberadamente separado** de
+`_last_selected` (mecanismo ja existente de memoria entre steps) pra
+nao colidir com ele.
+
+**Validado:** `diff_parser.py` PERDEU=0, MUDOU=2 (EB02-039 e OP06-015,
+ambos confirmados contra `card_text`). 1 teste dirigido novo com
+EXECUCAO real (`test_germa66_power_range_e_mesmo_nome_do_trashado`):
+confirma que o buff fantasma sumiu e que so o homonimo dentro da faixa
+de power e jogado do trash (nao um personagem na faixa mas com nome
+diferente, nem um personagem com o nome certo mas fora da faixa).
+`smoke_fast.py` verde, `smoke_test.py` amplo verde, `smoke_test_broad.py`
+**7/7**. Registro:
+`parser_audits/2026-07-16_EB02-039_power_range_misparsed_as_buff.json`
+(`resolution_scope: global`, 2 cartas).
+
+**Achado ao lado, NAO corrigido nesta familia (fora de escopo, guardar
+pra depois):** o custo de OP06-015 ("you may trash 1 of your Characters
+with 6000 power or more:") esta parseado como `trash_from_hand`, mas o
+texto diz "of your Characters" sem "from your hand" -- pode ser
+`trash_self`/sacrificio de CAMPO, nao da mao. Precisa censo global
+proprio antes de mexer (mesmo protocolo de sempre).
+
+**Suspeitos restantes apos esta familia:** auditor ainda nao re-rodado
+formalmente nesta sessao (2 familias corrigidas ate aqui, OP01-086 e
+EB02-039/OP06-015 -- reduz o numero de suspeitos por numero perdido em 3
+cartas no total: 1+2). Proximo passo antes de continuar: reportar a
+contagem exata ao usuario, per o novo protocolo combinado.
+
 ## 2026-07-16 (192) - Retomada da varredura ampla: OP01-086 bounce com qualificador "active" (367 -> em progresso)
 
 Usuario pediu pra continuar corrigindo cartas suspeitas do

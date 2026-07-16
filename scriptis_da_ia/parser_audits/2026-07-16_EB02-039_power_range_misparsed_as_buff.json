@@ -1,0 +1,21 @@
+{
+  "trigger_card": "EB02-039",
+  "problem": "'play up to 1 Character card with 5000 to 7000 power and the same card name as the trashed card from your trash' virava um buff_power FANTASMA (amount=7000, target=self) na propria carta fonte, porque nenhum guard reconhecia 'N to M power' como faixa de filtro de selecao (so 'N power or less/or more' era excluido). play_from_trash tambem nao suportava faixa de power nem 'mesmo nome do que foi trashado como custo'.",
+  "grammar_family": "'<N> to <M> power' dentro de uma clausula 'play up to N Character card with ...' -- o numero capturado pela regex generica de buff/debuff (\\d+ power) e sempre o SEGUNDO da faixa, e o guard existente so cobria 'or less'/'or more' imediatamente apos o numero.",
+  "queries": [
+    "regex play up to \\d+ character cards? with \\d+ to \\d+ power sobre card_text (achou so EB02-039)",
+    "regex (play|reveal) up to \\d+[^.]*? \\d+ (?:to \\d+ )?power (60 ocorrencias totais, maioria ja coberta pelo guard 'or less'/'or more' existente)",
+    "regex same card name as the trashed card (achou so EB02-039, mecanica de 'mesmo nome do custo' unica no banco)",
+    "confirmado que OP06-015 Lily Carnation tem a MESMA faixa 'N to M power' (2000 a 5000) num play_from_trash, mas SEM o buff fantasma (guard de 'from your trash' ja evitava por coincidencia) -- so faltava o filtro de faixa em si, corrigido junto na mesma regex"
+  ],
+  "cards_found": ["EB02-039", "OP06-015"],
+  "resolution_scope": "global",
+  "decision": "Adicionado guard em parse_power_buff pra excluir clausulas 'N to M power' (mesma familia semantica do guard 'or less/or more' ja existente). Adicionado suporte a power_gte/power_lte (faixa) em play_from_trash, e novo filtro same_name_as_trashed (rastreado via self._last_trashed_names, setado durante o pagamento do custo trash_from_hand, consumido pelo step seguinte no mesmo bloco -- atributo dedicado, distinto de _last_selected, pra nao colidir com o mecanismo de selecao entre steps ja existente).",
+  "validated_by": [
+    "diff_parser.py: GANHOU 0 / PERDEU 0 / MUDOU 2 (EB02-039 e OP06-015, ambos ganhos reais confirmados contra o card_text)",
+    "gerar_dbs.py + snapshot_parser.py: 0/0/0 apos regenerar",
+    "smoke_fast.py: teste dirigido novo test_germa66_power_range_e_mesmo_nome_do_trashado com execucao real (confirma que o buff fantasma sumiu, e que so o homonimo dentro da faixa de power e jogado do trash, ignorando outro personagem na faixa mas com nome diferente e um personagem fora da faixa)",
+    "smoke_test.py: suite ampla, TODOS OS TESTES PASSARAM",
+    "smoke_test_broad.py: 7/7 partidas aleatorias sem excecao"
+  ]
+}

@@ -2106,6 +2106,43 @@ def test_overheat_counter_buff_e_bounce_active_only() -> None:
           and restado_barato in opp.field_chars)
 
 
+def test_germa66_power_range_e_mesmo_nome_do_trashado() -> None:
+    # Achado 16/07 -- EB02-039 GERMA 66: "play up to 1 Character card with
+    # 5000 to 7000 power AND THE SAME CARD NAME AS THE TRASHED CARD from
+    # your trash." Bug grave: o numero "7000" (2o da faixa) virava um
+    # buff_power FANTASMA target=self na propria fonte, porque nenhum
+    # guard reconhecia "N to M power" como filtro de selecao (so "N power
+    # or less/or more" era filtrado). play_from_trash tambem nunca sabia
+    # filtrar por faixa de power nem por "mesmo nome do que foi trashado
+    # como custo" (mecanica nova: self._last_trashed_names, setada em
+    # _pay_costs, consumida por same_name_as_trashed).
+    steps = get_card_effects("EB02-039").get("main", {}).get("steps", [])
+    check("EB02-039 NAO tem mais o buff_power fantasma",
+          not any(s.get("action") == "buff_power" for s in steps))
+    check("EB02-039 parseia play_from_trash com faixa 5000-7000 e same_name_as_trashed",
+          any(s.get("action") == "play_from_trash" and s.get("power_gte") == 5000
+              and s.get("power_lte") == 7000 and s.get("same_name_as_trashed") is True
+              for s in steps))
+
+    germa = real_card("EB02-039")
+    me = GameState(leader=mk("XGMLD", "Lider", card_type="LEADER"), turn=4, don_available=0)
+    me.field_chars = [germa]
+    homonimo_na_faixa = mk("XGM2", "Sanji GERMA", cost=5, power=6000, sub_types="GERMA 66")
+    outro_na_faixa = mk("XGM3", "Ichiji GERMA", cost=5, power=6000, sub_types="GERMA 66")
+    fora_da_faixa = mk("XGM4", "Sanji GERMA", cost=5, power=3000, sub_types="GERMA 66")
+    me.trash = [homonimo_na_faixa, outro_na_faixa, fora_da_faixa]
+    opp = GameState(leader=mk("XGMOPP", "Lider Opp", card_type="LEADER"), turn=4)
+    # Testa o step direto (bypassa _worth_paying_optional_costs, que exige
+    # mao com 2+ cartas -- decisao estrategica separada, ja coberta em
+    # outros testes; aqui o alvo e validar so o mecanismo de faixa+nome).
+    ee = EffectExecutor(me, opp)
+    ee._last_trashed_names = ["Sanji GERMA"]
+    ee._execute_step(steps[0], germa)
+    check("So o homonimo dentro da faixa de power foi jogado do trash",
+          homonimo_na_faixa in me.field_chars
+          and outro_na_faixa in me.trash and fora_da_faixa in me.trash)
+
+
 def main() -> int:
     test_turn_order_imu_prefers_second()
     test_empty_throne_beats_direct_five_elders_play()
@@ -2170,6 +2207,7 @@ def main() -> int:
     test_opp_life_condition_after_and()
     test_hina_on_block_lock_during_this_turn()
     test_overheat_counter_buff_e_bounce_active_only()
+    test_germa66_power_range_e_mesmo_nome_do_trashado()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0

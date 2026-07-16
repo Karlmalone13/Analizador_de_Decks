@@ -1829,7 +1829,12 @@ class EffectExecutor:
                 ef_data.get('costs', []), card):
             return []
 
-        # Paga custos
+        # Paga custos. _last_trashed_names zerado ANTES (nao depois, ao
+        # contrario de _last_selected) porque e preenchido DENTRO de
+        # _pay_costs (custo trash_from_hand) e precisa sobreviver ate os
+        # steps rodarem logo abaixo -- ver "same_name_as_trashed" em
+        # play_from_trash (achado 16/07, EB02-039).
+        self._last_trashed_names = []
         if not self._pay_costs(ef_data.get('costs', []), card):
             return []
 
@@ -3013,6 +3018,7 @@ class EffectExecutor:
                 if len(pool) < count:
                     return False
                 trashed = []
+                trashed_names_actual = []
                 for _ in range(count):
                     worst = self._choose_to_trash(pool)
                     if worst:
@@ -3020,8 +3026,16 @@ class EffectExecutor:
                         remove_by_identity(pool, worst)
                         self.me.trash.append(worst)
                         trashed.append(worst.name[:15])
+                        trashed_names_actual.append(worst.name)
                 if trashed:
                     self._cost_logs.append(f'custo: trashou da mão: {", ".join(trashed)}')
+                # Memoria pra "play ... with the same card name as the
+                # trashed card" (achado 16/07, EB02-039 GERMA 66) -- um step
+                # POSTERIOR no mesmo bloco pode filtrar pelo nome do que foi
+                # trashado aqui. Atributo dedicado (nao _last_selected) pra
+                # nao colidir com o mecanismo de selecao entre steps ja
+                # existente (negate_effect/play_from_deck/buff_power).
+                self._last_trashed_names = trashed_names_actual
             elif ctype == 'trash_typed_hand_or_named_hand_field':
                 from optcg_engine.rules_facade import eligible_cards
 
@@ -4735,6 +4749,7 @@ class EffectExecutor:
             cost_eq = step.get('cost_eq')
             power_eq = step.get('power_eq')
             power_lte = step.get('power_lte')
+            power_gte = step.get('power_gte')
             count = step.get('count', 1)
             enters_rested = step.get('rested', False)
             distinct_names = step.get('distinct_names', False)
@@ -4765,9 +4780,13 @@ class EffectExecutor:
                 cost_eq=cost_eq,
                 power_eq=power_eq,
                 power_lte=power_lte,
+                power_gte=power_gte,
                 filter_text=filter_type,
                 name_or_code=filter_name,
             )
+            if step.get('same_name_as_trashed'):
+                nomes = set(getattr(self, '_last_trashed_names', []) or [])
+                candidates = [c for c in candidates if c.name in nomes]
 
             played = []
             played_names_lower = set()

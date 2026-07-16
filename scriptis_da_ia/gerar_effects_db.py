@@ -2003,9 +2003,23 @@ def parse_power_buff(text):
 
         # ignora filtro de SELECAO DE CARTA (ex: "play up to N Character
         # cards with [type] and X power from your hand/trash/deck") -- aqui
-        # o numero de power especifica qual carta jogar, nao e um buff/debuff
+        # o numero de power especifica qual carta jogar, nao e um buff/debuff.
+        # Janela propria mais larga que JANELA_DEPOIS (achado 16/07,
+        # EB02-039 GERMA 66): "with 5000 to 7000 power AND THE SAME CARD
+        # NAME AS THE TRASHED CARD from your trash" tem texto de mais entre
+        # "power" e "from your trash" do que os 40 chars padrao alcancam --
+        # sem a janela larga, o guard nao disparava e "7000 power" virava um
+        # buff_power fantasma target=self na propria carta da fonte.
+        janela_selecao = t[m.end():m.end() + 90]
         if re.search(r'\bplay up to \d+[^.]*$', contexto_antes) and \
-           re.match(r'\s*from your (hand|trash|deck)', contexto_depois):
+           re.search(r'^[^.]*?\bfrom your (hand|trash|deck)\b', janela_selecao):
+            continue
+        # "N to M power" (faixa) sem "or less/or more" logo depois (ex: OP06-015
+        # "with 2000 to 5000 power from your trash", achado 16/07): o numero
+        # capturado e sempre o SEGUNDO da faixa, entao contexto_antes termina
+        # em "<primeiro numero> to ". Mesma familia semantica do guard "or
+        # less/or more" acima -- e filtro de selecao, nao buff/debuff.
+        if re.search(r'\d+\s+to\s*$', contexto_antes):
             continue
 
         # ignora clausula de CUSTO proprio (ex: "give your leader -5000 power:
@@ -2542,18 +2556,33 @@ def parse_play_from_trash(text):
 
         cost_m = re.search(r'cost of (\d+) or less', clause)
         cost_eq_m = re.search(r'with a cost of (\d+)\b(?! or less)', clause)
+        power_range_m = re.search(r'(\d+) to (\d+) power', clause)
         power_lte_m = re.search(r'(\d+) power or less', clause)
         power_eq_m = re.search(r'with (\d+) power\b(?! or less)', clause)
         if cost_m:
             step['cost_lte'] = int(cost_m.group(1))
         elif cost_eq_m:
             step['cost_eq'] = int(cost_eq_m.group(1))
+        elif power_range_m:
+            # "with N to M power" (achado 16/07, EB02-039/OP06-015) --
+            # faixa, distinta do power_lte/power_eq de valor unico.
+            step['power_gte'] = int(power_range_m.group(1))
+            step['power_lte'] = int(power_range_m.group(2))
         elif power_lte_m:
             step['power_lte'] = int(power_lte_m.group(1))
         elif power_eq_m:
             step['power_eq'] = int(power_eq_m.group(1))
         else:
             step['cost_lte'] = 99
+
+        # "with the same card name as the trashed card" (achado 16/07,
+        # EB02-039 GERMA 66, unica carta no banco) -- alvo dinamico: so o
+        # que foi trashado como CUSTO deste mesmo bloco, rastreado via
+        # self._last_trashed_names (setado em _pay_costs, nao _last_selected
+        # -- evita colisao com o mecanismo de selecao entre steps ja
+        # existente pra outros padroes).
+        if re.search(r'same card name as the trashed card', clause):
+            step['same_name_as_trashed'] = True
 
         if 'different card names' in clause:
             step['distinct_names'] = True

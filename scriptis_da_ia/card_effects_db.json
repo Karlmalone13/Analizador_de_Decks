@@ -2875,18 +2875,11 @@
       "main": {
         "steps": [
           {
-            "action": "buff_power",
-            "amount": 7000,
-            "target": "self",
-            "duration": "this_turn",
-            "conditions": {
-              "don_on_field_lte_opp": true
-            }
-          },
-          {
             "action": "play_from_trash",
             "count": 1,
-            "cost_lte": 99,
+            "power_gte": 5000,
+            "power_lte": 7000,
+            "same_name_as_trashed": true,
             "conditions": {
               "don_on_field_lte_opp": true
             }
@@ -25328,7 +25321,8 @@
           {
             "action": "play_from_trash",
             "count": 1,
-            "cost_lte": 99,
+            "power_gte": 2000,
+            "power_lte": 5000,
             "filter_type": "film",
             "rested": true
           }
