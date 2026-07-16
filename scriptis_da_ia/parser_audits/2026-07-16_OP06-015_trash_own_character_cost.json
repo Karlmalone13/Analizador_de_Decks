@@ -1,0 +1,20 @@
+{
+  "trigger_card": "OP06-015",
+  "problem": "'You may trash 1 of your Characters with 6000 power or more:' (sacrificio de personagem do proprio CAMPO) era capturado pelo regex generico de trash_from_hand (que so exige a palavra 'character' aparecer em algum lugar da clausula) -- fonte errada (mao em vez de campo) e nenhum filtro de power aplicado.",
+  "grammar_family": "'you may trash N of your Characters [with FILTRO]:' sem 'from your hand' em lugar nenhum do texto -- sacrificio de campo, distinto de trash_from_hand (mao) e de ko_own_character (K.O., dispara [On K.O.], regra K.O. != Trash).",
+  "queries": [
+    "regex you may trash \\d+ of your characters?(?! type)(?: with) sobre card_text (achou OP06-015, OP13-053, OP16-008)",
+    "regex mais ampla you may trash \\d+ of your characters?: (sem filtro nenhum, achou tambem EB04-048 e OP07-085, ambos 'trash 1 of your Characters:' puro)",
+    "confirmado via card_effects_db atual que as 5 cartas tinham costs=[{'type': 'trash_from_hand', 'count': 1}] identico, sem filtro nenhum -- mesmo bug em todas"
+  ],
+  "cards_found": ["OP06-015", "OP13-053", "OP16-008", "EB04-048", "OP07-085"],
+  "resolution_scope": "global",
+  "decision": "Criado tipo de custo novo trash_own_character (parser + executor em _pay_costs, sem disparar [On K.O.]). Filtros suportados: filter_type (OP13-053), power_gte (OP06-015 'or more'), power_lte ('or less', nenhuma carta usa ainda mas suportado por simetria), power_eq (OP16-008 'N base power' sem qualificador -- confirmado com o usuario que card.power no nosso modelo JA E o base power, buffs ficam isolados em power_buff, entao power_eq compara certo sem precisar de campo dedicado). Guard adicionado no regex generico de trash_from_hand pra nao duplicar o custo quando trash_own_character ja foi capturado. Adicionado tambem ao _SACRIFICE_COST_TYPES e um branch NOVO e proprio em _worth_paying_optional_costs (achado adicional, mesma causa raiz, confirmado com o usuario): ko_own_character (custo ja existente ha tempos) e trash_own_character SEMPRE caiam no branch generico final que so avalia self.me.hand -- recurso ERRADO pra um custo que nunca toca a mao. Novo branch usa o campo (board_value*10<=60, mesmo criterio de trash_char_or_hand), com return definitivo (nao e escolha entre mao/campo, e so campo).",
+  "validated_by": [
+    "diff_parser.py: GANHOU 0 / PERDEU 0 / MUDOU 6 (as 5 cartas do custo + EB02-039 do fix anterior, todas confirmadas contra card_text)",
+    "gerar_dbs.py + snapshot_parser.py: 0/0/0 apos regenerar",
+    "smoke_fast.py: teste dirigido novo test_trash_own_character_custo_novo_e_avaliacao_por_campo com EXECUCAO real -- confirma parse dos 3 tipos de filtro (power_eq/power_gte/filter_type/sem-filtro), confirma que o custo E PAGO mesmo com mao VAZIA quando ha alvo elegivel barato no campo (prova a correcao do bug de avaliacao por mao), e confirma que SEM alvo elegivel o custo NAO e pago e o efeito nao dispara",
+    "smoke_test.py: suite ampla, TODOS OS TESTES PASSARAM (sem regressao em nenhum custo/heuristica existente)",
+    "smoke_test_broad.py: 7/7 partidas aleatorias sem excecao"
+  ]
+}

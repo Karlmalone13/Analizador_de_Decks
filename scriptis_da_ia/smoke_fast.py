@@ -2143,6 +2143,58 @@ def test_germa66_power_range_e_mesmo_nome_do_trashado() -> None:
           and outro_na_faixa in me.trash and fora_da_faixa in me.trash)
 
 
+def test_trash_own_character_custo_novo_e_avaliacao_por_campo() -> None:
+    # Achado 16/07 -- 5 cartas (OP06-015, OP13-053, OP16-008, EB04-048,
+    # OP07-085) tinham "you may trash N of your Characters [filtro]:" sem
+    # NENHUM "from your hand" no texto, mas caiam no regex generico de
+    # trash_from_hand por engano (so exigia a palavra "character" aparecer
+    # em algum lugar). Sacrificio de CAMPO virava descarte de MAO. Novo
+    # tipo de custo trash_own_character (distinto de ko_own_character --
+    # nao dispara [On K.O.], regra K.O. != Trash -- e de trash_from_hand,
+    # fonte errada).
+    check("OP16-008 parseia trash_own_character com power_eq=10000 (base power)",
+          get_card_effects("OP16-008").get("on_play", {}).get("costs", [{}])[0]
+          == {"type": "trash_own_character", "count": 1, "power_eq": 10000})
+    check("OP13-053 parseia trash_own_character com filter_type",
+          get_card_effects("OP13-053").get("when_attacking", {}).get("costs", [{}])[0].get("filter_type")
+          == "whitebeard pirates")
+    check("OP06-015 parseia trash_own_character com power_gte=6000",
+          get_card_effects("OP06-015").get("activate_main", {}).get("costs", [{}])[0].get("power_gte") == 6000)
+    check("EB04-048 e OP07-085 parseiam trash_own_character sem filtro (custo bruto)",
+          get_card_effects("EB04-048").get("on_play", {}).get("costs", [{}])[0].get("type") == "trash_own_character"
+          and get_card_effects("OP07-085").get("on_play", {}).get("costs", [{}])[0].get("type") == "trash_own_character")
+
+    # Achado adicional (mesma causa raiz): _worth_paying_optional_costs
+    # SEMPRE avaliava esses custos pelo tamanho/valor da MAO (recurso
+    # errado -- o custo nunca toca a mao). Prova com mao VAZIA: o custo so
+    # deve ser pago se houver alvo elegivel BARATO no campo, nunca por
+    # causa da mao.
+    op13053 = real_card("OP13-053")
+    fraco_whitebeard = mk("XWB1", "Fraco WB", power=0, sub_types="Whitebeard Pirates")
+    me = GameState(leader=mk("XWBLD", "Lider", card_type="LEADER"), turn=4, don_available=3)
+    me.field_chars = [op13053, fraco_whitebeard]
+    me.hand = []  # mao vazia -- se o custo fosse julgado pela mao, seria sempre recusado
+    me.deck = [mk("XWBDECK", "Topo do Deck")]
+    opp = GameState(leader=mk("XWBOPP", "Lider Opp", card_type="LEADER"), turn=4)
+    log = EffectExecutor(me, opp).execute(op13053, "when_attacking")
+    check("Custo de campo foi pago mesmo com mao vazia (avaliacao correta, nao mais pela mao)",
+          fraco_whitebeard in me.trash and fraco_whitebeard not in me.field_chars)
+    check("Efeito pago executou de verdade (draw + gain_banish)",
+          any("comprou" in x for x in log) and op13053.has_banish)
+
+    # Sem alvo elegivel no campo (nenhum Whitebeard Pirates alem da propria
+    # fonte, que e excluida): custo nao deve ser pago, efeito nao dispara.
+    op13053_b = real_card("OP13-053")
+    nao_whitebeard = mk("XNWB", "Nao WB", power=0, sub_types="Straw Hat Crew")
+    me2 = GameState(leader=mk("XWBLD2", "Lider", card_type="LEADER"), turn=4, don_available=3)
+    me2.field_chars = [op13053_b, nao_whitebeard]
+    me2.hand = []
+    opp2 = GameState(leader=mk("XWBOPP2", "Lider Opp", card_type="LEADER"), turn=4)
+    log2 = EffectExecutor(me2, opp2).execute(op13053_b, "when_attacking")
+    check("Sem alvo elegivel no campo, custo NAO e pago e efeito nao dispara",
+          not log2 and nao_whitebeard in me2.field_chars)
+
+
 def main() -> int:
     test_turn_order_imu_prefers_second()
     test_empty_throne_beats_direct_five_elders_play()
@@ -2208,6 +2260,7 @@ def main() -> int:
     test_hina_on_block_lock_during_this_turn()
     test_overheat_counter_buff_e_bounce_active_only()
     test_germa66_power_range_e_mesmo_nome_do_trashado()
+    test_trash_own_character_custo_novo_e_avaliacao_por_campo()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0

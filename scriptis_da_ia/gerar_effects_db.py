@@ -491,6 +491,37 @@ def parse_costs(text):
         costs.append({'type': 'ko_own_character', 'count': int(m_b.group(1)),
                        'filter_type': m_b.group(2).strip()})
 
+    # Custo de TRASH (nao K.O.) de um Character PROPRIO do CAMPO -- achado
+    # 16/07 (revisao do usuario, OP06-015/OP13-053/OP16-008): "you may
+    # trash N of your Characters [filtro]:" sem "from your hand" nenhum no
+    # texto vinha caindo por engano no regex generico de trash_from_hand
+    # (que so exige a palavra "character" aparecer em algum lugar da
+    # clausula) -- tratava sacrificio de CAMPO como descarte da MAO.
+    # Distinto de ko_own_character (dispara [On K.O.], regra K.O. != Trash)
+    # e de trash_from_hand (fonte errada). Filtros suportados: tipo (
+    # "with a type including 'X'"), power exato ("N base power", sem
+    # "or more/or less" -- card.power no engine JA E o base power, buffs
+    # ficam em power_buff separado, entao power_eq aqui compara certo sem
+    # precisar de campo dedicado), power_gte/power_lte ("N power or
+    # more/or less").
+    m_trash_own = re.search(
+        r'you may trash (\d+) of your characters?'
+        r'(?: with a type including [\'"\[{]([a-z][a-z0-9 .\'-]+)[\'"\]}])?'
+        r'(?: with (\d+) (?:base )?power(?: or (more|less))?)?', t)
+    if m_trash_own and 'from your hand' not in t[m_trash_own.start():m_trash_own.end() + 20]:
+        cost = {'type': 'trash_own_character', 'count': int(m_trash_own.group(1))}
+        if m_trash_own.group(2):
+            cost['filter_type'] = m_trash_own.group(2).strip()
+        if m_trash_own.group(3):
+            comparator = m_trash_own.group(4)
+            if comparator == 'more':
+                cost['power_gte'] = int(m_trash_own.group(3))
+            elif comparator == 'less':
+                cost['power_lte'] = int(m_trash_own.group(3))
+            else:
+                cost['power_eq'] = int(m_trash_own.group(3))
+        costs.append(cost)
+
     # Custo de colocar N cartas do PRÓPRIO trash no fundo do PRÓPRIO deck
     # ("in any order" -- ordem é escolha do jogador, irrelevante pro engine).
     # Achado em auditoria de buff_cost 27/06: 51 cartas usam esse custo,
@@ -562,6 +593,12 @@ def parse_costs(text):
     m = re.search(r'you may trash (\d+) cards? from the top of (?:your|the) deck\s*:', t)
     if m:
         costs.append({'type': 'trash_from_deck_top', 'count': int(m.group(1))})
+    elif any(c.get('type') == 'trash_own_character' for c in costs):
+        # Ja capturado acima como sacrificio de personagem do CAMPO (achado
+        # 16/07) -- sem este guard, o regex generico abaixo (que casa por
+        # engano com a palavra solta "character") duplicava o mesmo custo
+        # como trash_from_hand tambem, quebrando a pagabilidade real.
+        pass
     else:
         # Custo de trash da mao/campo (antes do efeito principal, padrão "...: efeito")
         # Captura variações: "trash N cards from your hand", "trash 1 [type] Character
@@ -594,14 +631,30 @@ def parse_costs(text):
                 # formato simples: permite alternativamente [The Ark Noah]
                 # da mao OU do campo e exige uma gramatica composta propria.
                 if not re.search(r'\bor\s+\d+\s+\[', m.group(0)):
+                    # Filtro de power OPCIONAL entre o tipo e "from your
+                    # hand" (achado 16/07, EB02-039 GERMA 66): "'GERMA 66'
+                    # type Character card WITH 4000 POWER OR LESS from your
+                    # hand" -- sem essa clausula intermediaria, nem o tipo
+                    # nem o power eram capturados (o "type cards? from your
+                    # hand" original exigia adjacencia direta).
                     typed = re.search(
                         r'trash \d+\s+(?:(black|blue|green|purple|red|yellow)\s+)?'
-                        r'[\[\{"\']([^\]\}"\']+)[\]\}"\']\s+type cards? from your hand',
+                        r'[\[\{"\']([^\]\}"\']+)[\]\}"\']\s+type (?:character )?cards?'
+                        r'(?: with (\d+) power(?: or (more|less))?)?'
+                        r'\s+from your hand',
                         m.group(0))
                     if typed:
                         if typed.group(1):
                             cost_th['color'] = typed.group(1)
                         cost_th['filter_type'] = typed.group(2).strip()
+                        if typed.group(3):
+                            comparator = typed.group(4)
+                            if comparator == 'more':
+                                cost_th['power_gte'] = int(typed.group(3))
+                            elif comparator == 'less':
+                                cost_th['power_lte'] = int(typed.group(3))
+                            else:
+                                cost_th['power_eq'] = int(typed.group(3))
                 costs.append(cost_th)
             else:
                 # padrão mais simples sem "you may" (custo obrigatório com ':')

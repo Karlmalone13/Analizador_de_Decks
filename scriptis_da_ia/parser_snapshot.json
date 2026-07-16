@@ -1777,6 +1777,8 @@
    "costs": [
     {
      "count": 1,
+     "filter_type": "germa 66",
+     "power_lte": 4000,
      "type": "trash_from_hand"
     }
    ],
@@ -4886,7 +4888,7 @@
    "costs": [
     {
      "count": 1,
-     "type": "trash_from_hand"
+     "type": "trash_own_character"
     }
    ],
    "steps": [
@@ -15794,7 +15796,8 @@
    "costs": [
     {
      "count": 1,
-     "type": "trash_from_hand"
+     "power_gte": 6000,
+     "type": "trash_own_character"
     }
    ],
    "once_per_turn": true,
@@ -19370,7 +19373,7 @@
    "costs": [
     {
      "count": 1,
-     "type": "trash_from_hand"
+     "type": "trash_own_character"
     }
    ],
    "steps": [
@@ -31730,7 +31733,8 @@
    "costs": [
     {
      "count": 1,
-     "type": "trash_from_hand"
+     "filter_type": "whitebeard pirates",
+     "type": "trash_own_character"
     }
    ],
    "steps": [
@@ -38114,7 +38118,8 @@
    "costs": [
     {
      "count": 1,
-     "type": "trash_from_hand"
+     "power_eq": 10000,
+     "type": "trash_own_character"
     }
    ],
    "steps": [

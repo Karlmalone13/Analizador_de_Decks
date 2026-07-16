@@ -3012,6 +3012,9 @@ class EffectExecutor:
                     self.me.hand,
                     filter_text=cost.get('filter_type', ''),
                     color=cost.get('color', ''),
+                    power_lte=cost.get('power_lte'),
+                    power_gte=cost.get('power_gte'),
+                    power_eq=cost.get('power_eq'),
                 )
                 if cost.get('has_trigger'):
                     pool = [c for c in pool if c.has_trigger]
@@ -3188,6 +3191,39 @@ class EffectExecutor:
                     self.execute(alvo, 'on_ko', is_opp_turn=False)
                 if koados:
                     self._cost_logs.append(f'custo: K.O. próprio: {", ".join(koados)}')
+            elif ctype == 'trash_own_character':
+                from optcg_engine.rules_facade import eligible_cards
+
+                # Custo de TRASH (nao K.O.) de um Character PROPRIO do CAMPO
+                # -- achado 16/07 (OP06-015/OP13-053/OP16-008/EB04-048/
+                # OP07-085): distinto de ko_own_character (dispara [On
+                # K.O.], regra K.O. != Trash) e de trash_from_hand (fonte
+                # errada, texto nao menciona "from your hand"). power_eq
+                # (ex: OP16-008 "10000 base power" sem "or more/or less")
+                # compara contra card.power, que no nosso modelo JA E o
+                # base power (buffs ficam isolados em power_buff, nunca
+                # mutam .power) -- sem necessidade de campo dedicado.
+                count = cost.get('count', 1)
+                candidatos = eligible_cards(
+                    self.me.field_chars,
+                    filter_text=cost.get('filter_type', ''),
+                    power_lte=cost.get('power_lte'),
+                    power_gte=cost.get('power_gte'),
+                    power_eq=cost.get('power_eq'),
+                    exclude_card=card,
+                )
+                if len(candidatos) < count:
+                    return False
+                trashed_own = []
+                for _ in range(count):
+                    if not candidatos:
+                        break
+                    alvo = min(candidatos, key=lambda c: c.board_value())
+                    remove_by_identity(candidatos, alvo)
+                    remove_character_from_field(self.me, alvo, 'trash')
+                    trashed_own.append(alvo.name[:15])
+                if trashed_own:
+                    self._cost_logs.append(f'custo: trashou do campo: {", ".join(trashed_own)}')
             elif ctype == 'place_from_trash_bottom_deck':
                 from optcg_engine.rules_facade import eligible_cards
 
@@ -5835,7 +5871,8 @@ class EffectExecutor:
 
     _SACRIFICE_COST_TYPES = {'trash_from_hand', 'trash_hand', 'trash_char_or_hand',
                              'trash_typed_hand_or_named_hand_field',
-                             'ko_own_character', 'trash_self', 'trash_own_life'}
+                             'ko_own_character', 'trash_self', 'trash_own_life',
+                             'trash_own_character'}
 
     def _worth_paying_optional_costs(self, costs: list, card: Card) -> bool:
         """
@@ -5872,6 +5909,29 @@ class EffectExecutor:
                                    filter_text=c.get('filter_type', ''))
             if chars and min(ch.board_value() * 10 for ch in chars) <= 60:
                 return True
+
+        # ko_own_character/trash_own_character: custo PURAMENTE de campo
+        # (K.O. ou trash de um Character proprio, nunca da mao). Achado
+        # 16/07: ko_own_character ja existia ha tempos mas SEMPRE caia no
+        # branch generico final, que so olha self.me.hand -- avaliando o
+        # recurso ERRADO (mao) pra um custo que nunca toca a mao. Mesmo
+        # criterio de escala do branch trash_char_or_hand acima
+        # (board_value*10 <= 60), mas aqui o RETURN e definitivo (nao
+        # "either/or" com a mao -- se o campo nao compensa, o custo nao
+        # compensa, ponto final, nao cai no fallback de mao).
+        for c in costs:
+            if c.get('type') not in ('ko_own_character', 'trash_own_character'):
+                continue
+            from optcg_engine.rules_facade import eligible_cards
+            chars = eligible_cards(
+                self.me.field_chars,
+                filter_text=c.get('filter_type', ''),
+                power_lte=c.get('power_lte'),
+                power_gte=c.get('power_gte'),
+                power_eq=c.get('power_eq'),
+                exclude_card=card,
+            )
+            return bool(chars) and min(ch.board_value() * 10 for ch in chars) <= 60
 
         for c in costs:
             if c.get('type') != 'trash_typed_hand_or_named_hand_field':

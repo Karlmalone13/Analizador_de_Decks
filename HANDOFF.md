@@ -1,5 +1,62 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-16 (194) - Varredura continua: custo "trash 1 of your Characters" (campo) virava trash_from_hand (mao) em 5 cartas, + bug de avaliacao pre-existente em ko_own_character
+
+Novo protocolo em vigor (pedido do usuario): antes de codar qualquer
+familia, apresentar o plano (o que muda, por que, escopo) e esperar
+confirmacao explicita. Este bloco documenta a 3a familia da retomada
+(1a: OP01-086, bloco 192; 2a: EB02-039/OP06-015, bloco 193).
+
+**Custo `trash_own_character` (novo tipo, 5 cartas):** "you may trash N
+of your Characters [filtro]:" sem NENHUM "from your hand" no texto
+inteiro (OP06-015, OP13-053, OP16-008, EB04-048, OP07-085) caia no
+regex generico de `trash_from_hand`, que so exige a palavra "character"
+aparecer em algum lugar da clausula. Sacrificio de personagem do proprio
+CAMPO virava descarte da MAO -- fonte errada e filtros perdidos. Criado
+tipo de custo dedicado, distinto de `ko_own_character` (dispara [On
+K.O.], regra K.O. != Trash) e de `trash_from_hand`. Filtros: `filter_type`
+(OP13-053), `power_gte` (OP06-015, "or more"), `power_eq` (OP16-008, "10000
+base power" sem qualificador).
+
+**Sobre "base power" (esclarecido com o usuario antes de codar):** o
+`card.power` no nosso modelo JA E o base power -- buffs ficam isolados
+em `power_buff`, nunca mutam `.power`. Entao `power_eq` comparando
+`card.power` diretamente ja e correto pra "N base power" sem precisar de
+campo dedicado novo. **Achado colateral registrado, NAO resolvido:**
+existe um campo `power_base_only` ja sendo ESCRITO pelo parser em
+`parse_bounce` (variante "return up to N Character(s) with N base
+power") mas NUNCA lido em lugar nenhum do executor -- filtro morto. Fica
+pra uma familia futura.
+
+**Bug pre-existente encontrado e corrigido junto (confirmado com o
+usuario -- "quero que resolva esse fix de so olhar a mao"):**
+`_worth_paying_optional_costs` (decide se vale a pena pagar um custo
+opcional) tinha branches dedicados pra alguns tipos de custo mistos
+(mao+campo), mas `ko_own_character` -- que ja existia ha tempos, custo
+PURAMENTE de campo -- sempre caia no branch generico final, que so
+avalia `self.me.hand` (tamanho, valor da pior carta). Um efeito com
+custo de campo podia ser recusado so por causa da MAO, recurso que o
+custo nem toca. Adicionado branch novo pra `ko_own_character` +
+`trash_own_character` juntos (mesma causa raiz), usando `board_value()*10
+<=60` sobre `me.field_chars` filtrado -- com `return` definitivo (nao e
+escolha entre mao/campo como os outros branches, e so campo).
+
+**Validado:** `diff_parser.py` PERDEU=0, MUDOU=6 (as 5 cartas do custo +
+EB02-039 do bloco anterior, todas confirmadas contra `card_text`). 1
+teste dirigido novo com EXECUCAO real
+(`test_trash_own_character_custo_novo_e_avaliacao_por_campo`): confirma
+o parse dos 3 padroes de filtro, confirma que o custo E PAGO mesmo com
+MAO VAZIA quando ha alvo barato no campo (prova a correcao do bug de
+avaliacao), e confirma que sem alvo elegivel o custo nao e pago.
+`smoke_fast.py` (105 checks) verde, `smoke_test.py` amplo verde (zero
+regressao em custo/heuristica existente), `smoke_test_broad.py` **7/7**.
+Registro: `parser_audits/2026-07-16_OP06-015_trash_own_character_cost.json`
+(`resolution_scope: global`, 5 cartas).
+
+**Suspeitos restantes:** ainda nao re-rodei a contagem formal do
+auditor apos esta familia -- proximo passo antes de continuar, per o
+protocolo combinado com o usuario.
+
 ## 2026-07-16 (193) - Varredura continua: EB02-039/OP06-015 faixa "N to M power" virava buff fantasma
 
 Usuario pediu um novo protocolo: parar apos CADA familia corrigida,
