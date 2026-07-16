@@ -1,5 +1,40 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-16 (201) - OP12-041/OP15-014: "Activate Event from hand" e sinonimo de play_card (3 cartas)
+
+Continuacao da varredura 1-por-1. "Activate up to N [Tipo] type Event
+[with a base cost of X or less] from your hand" nunca era reconhecido
+-- bloco inteiro ausente em OP12-041 e OP15-014. Achado ao generalizar
+a busca (censo "activate...event...from your hand" em vez de so "base
+cost"): **OP15-046** tem exatamente a mesma causa raiz mas nao estava
+na lista original (sem filtro de custo no texto, so tipo).
+
+**Insight que evitou reinventar mecanica:** `play_card` ja suporta
+`card_type='EVENT'` nativamente no executor E em `_step_is_viable`
+(usado por outras cartas ja no banco) -- "Activate" um Event da mao e
+semanticamente IDENTICO a "Play" um Event da mao. So faltava o parser
+reconhecer o sinonimo de verbo. Nova funcao dedicada
+`parse_activate_event_from_hand` (NAO integrada em `parse_play_generic`,
+usada por centenas de cartas onde "activate" tem outros significados --
+`[Activate:Main]`, "set as active" de DON!! -- misturar teria risco
+alto de regressao).
+
+**Validado:** `diff_parser.py` PERDEU=0, MUDOU=3 (confirmadas contra
+`card_text`, incluindo o custo `DON!! 1` de OP12-041 que tambem
+aparece corretamente capturado). 1 teste dirigido novo com EXECUCAO
+real (`test_activate_event_from_hand_sinonimo_de_play`): confirma que
+SO o Event correto e jogado da mao (nao um Character isca no mesmo
+hand), vai pro trash de verdade. `smoke_fast.py` (126 checks) verde,
+`smoke_test.py` amplo verde, `smoke_test_broad.py` **7/7** (essa rodada
+demorou ~20min, bem acima do usual -- consistente com a pendencia de
+performance ja documentada em TODO.md pra decks aleatorios especificos,
+nao relacionado a este fix). Registro:
+`parser_audits/2026-07-16_activate_event_from_hand.json`
+(`resolution_scope: global`, 3 cartas).
+
+**Restantes da lista de "base cost":** OP12-081, OP12-102, OP14-034,
+OP15-002, ST25-002/ST25-005 (mesma causa).
+
 ## 2026-07-16 (200) - OP12-024: nova condicao don_attached_total_gte (3 cartas)
 
 Continuacao da varredura 1-por-1 da lista de "base cost" (pedido do

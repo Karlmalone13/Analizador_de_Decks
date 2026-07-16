@@ -29550,6 +29550,25 @@
   }
  },
  "OP12-041": {
+  "activate_main": {
+   "costs": [
+    {
+     "count": 1,
+     "optional": false,
+     "type": "don_minus"
+    }
+   ],
+   "once_per_turn": true,
+   "steps": [
+    {
+     "action": "play_card",
+     "card_type": "EVENT",
+     "cost_lte": 3,
+     "count": 1,
+     "filter_type": "straw hat crew"
+    }
+   ]
+  },
   "when_attacking": {
    "conditions": {
     "don_on_field_lte_opp": true
@@ -35859,6 +35878,17 @@
   }
  },
  "OP15-014": {
+  "on_play": {
+   "steps": [
+    {
+     "action": "play_card",
+     "card_type": "EVENT",
+     "cost_lte": 3,
+     "count": 1,
+     "filter_type": "dressrosa"
+    }
+   ]
+  },
   "passive": {
    "steps": [
     {
@@ -36461,6 +36491,19 @@
   }
  },
  "OP15-046": {
+  "on_play": {
+   "conditions": {
+    "leader_type": "dressrosa"
+   },
+   "steps": [
+    {
+     "action": "play_card",
+     "card_type": "EVENT",
+     "count": 1,
+     "filter_type": "dressrosa"
+    }
+   ]
+  },
   "passive": {
    "steps": [
     {

@@ -3006,6 +3006,38 @@ def parse_reveal_life_play_exact_name(text):
     return [step]
 
 
+def parse_activate_event_from_hand(text):
+    """'Activate up to N [Tipo] type Event [with a base cost of X or
+    less] from your hand.' -- sinonimo de 'play_card' pra Events
+    especificamente (achado 16/07, OP12-041/OP15-014/OP15-046, mesma
+    causa raiz da familia 'base cost'). O executor de play_card ja
+    suporta card_type='EVENT' nativamente (usado por outras cartas
+    hoje), so faltava o parser reconhecer "activate" como sinonimo de
+    "play" NESSE contexto especifico -- funcao dedicada (nao mexe no
+    parse_play_generic, usado por centenas de cartas com "activate"
+    tendo outros significados: [Activate:Main], DON!! "set as active").
+    """
+    t = text.lower()
+    m = re.search(
+        r'activate up to (\d+) '
+        r'(?:(black|red|blue|green|yellow|purple) )?'
+        r'(?:[\[{"]([a-z][a-z0-9 .\'-]+)[\]}"]\s*type )?'
+        r'events?'
+        r'(?: with a (?:base )?cost of (\d+) or less)?'
+        r' from your hand',
+        t)
+    if not m:
+        return []
+    step = {'action': 'play_card', 'count': int(m.group(1)), 'card_type': 'EVENT'}
+    if m.group(2):
+        step['color'] = m.group(2)
+    if m.group(3):
+        step['filter_type'] = m.group(3).strip()
+    if m.group(4):
+        step['cost_lte'] = int(m.group(4))
+    return [step]
+
+
 def parse_play_generic(text):
     """Play sem origem explícita: 'Play this card', 'Play up to N ... Character card'."""
     steps = []
@@ -4654,6 +4686,11 @@ def parse_block(block_text, trigger_name):
     # Play genérico (sem origem explícita)
     if 'play ' in t:
         steps.extend(parse_play_generic(t))
+
+    # "Activate up to N [Tipo] Event ... from your hand" -- sinonimo de
+    # play_card pra Events (achado 16/07, OP12-041/OP15-014/OP15-046).
+    if 'activate' in t and 'event' in t and 'from your hand' in t:
+        steps.extend(parse_activate_event_from_hand(t))
 
     # DON: give, add (ramp), set active -- ou trava de "will not become
     # active" (que pode mirar Character/Leader sem mencionar a palavra "don")

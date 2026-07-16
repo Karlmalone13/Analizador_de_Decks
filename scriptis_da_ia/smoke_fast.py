@@ -2447,6 +2447,39 @@ def test_don_attached_total_gte_condicao_nova() -> None:
           op13112.has_blocker)
 
 
+def test_activate_event_from_hand_sinonimo_de_play() -> None:
+    # Achado 16/07 -- "Activate up to N [Tipo] type Event [with a base
+    # cost of X or less] from your hand" e semanticamente identico a
+    # play_card (o executor de play_card ja suporta card_type='EVENT'
+    # nativamente), so o parser nunca reconhecia "activate" como
+    # sinonimo de "play" nesse contexto. 3 cartas: OP12-041, OP15-014
+    # (mesma causa da familia "base cost"), e OP15-046 (achada no censo,
+    # variante sem filtro de custo).
+    check("OP12-041 parseia play_card(card_type=EVENT, filter_type, cost_lte=3)",
+          get_card_effects("OP12-041").get("activate_main", {}).get("steps", [{}])[0]
+          == {"action": "play_card", "count": 1, "card_type": "EVENT",
+              "filter_type": "straw hat crew", "cost_lte": 3})
+    check("OP15-014 parseia o mesmo padrao (on_play, filter_type dressrosa)",
+          get_card_effects("OP15-014").get("on_play", {}).get("steps", [{}])[0]
+          == {"action": "play_card", "count": 1, "card_type": "EVENT",
+              "filter_type": "dressrosa", "cost_lte": 3})
+    check("OP15-046 (sem filtro de custo) tambem parseia",
+          get_card_effects("OP15-046").get("on_play", {}).get("steps", [{}])[0]
+          == {"action": "play_card", "count": 1, "card_type": "EVENT", "filter_type": "dressrosa"})
+
+    op15046 = real_card("OP15-046")
+    step = get_card_effects("OP15-046")["on_play"]["steps"][0]
+    me = GameState(leader=mk("XAELD", "Lider Dressrosa", card_type="LEADER", sub_types="Dressrosa"))
+    me.field_chars = [op15046]
+    evento = mk("XAEEV", "Evento Dressrosa", cost=2, card_type="EVENT", sub_types="Dressrosa")
+    personagem_isca = mk("XAECH", "Personagem Isca", cost=2)
+    me.hand = [evento, personagem_isca]
+    opp = GameState(leader=mk("XAEOPP", "Lider Opp", card_type="LEADER"))
+    EffectExecutor(me, opp)._execute_step(step, op15046)
+    check("So o EVENTO foi jogado da mao (nao o Character isca)",
+          evento not in me.hand and evento in me.trash and personagem_isca in me.hand)
+
+
 def main() -> int:
     test_turn_order_imu_prefers_second()
     test_empty_throne_beats_direct_five_elders_play()
@@ -2519,6 +2552,7 @@ def main() -> int:
     test_place_opp_char_to_opp_life_variantes_de_fraseado()
     test_place_own_character_bottom_deck_e_turno_extra()
     test_don_attached_total_gte_condicao_nova()
+    test_activate_event_from_hand_sinonimo_de_play()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0

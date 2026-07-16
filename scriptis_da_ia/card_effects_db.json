@@ -47182,6 +47182,25 @@
     "sub_types": "Straw Hat Crew The Vinsmoke Family",
     "attribute": "Strike",
     "effects": {
+      "activate_main": {
+        "steps": [
+          {
+            "action": "play_card",
+            "count": 1,
+            "card_type": "EVENT",
+            "filter_type": "straw hat crew",
+            "cost_lte": 3
+          }
+        ],
+        "costs": [
+          {
+            "type": "don_minus",
+            "count": 1,
+            "optional": false
+          }
+        ],
+        "once_per_turn": true
+      },
       "when_attacking": {
         "steps": [
           {
@@ -57143,6 +57162,17 @@
     "sub_types": "Dressrosa Barto Club",
     "attribute": "Special",
     "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "play_card",
+            "count": 1,
+            "card_type": "EVENT",
+            "filter_type": "dressrosa",
+            "cost_lte": 3
+          }
+        ]
+      },
       "passive": {
         "steps": [
           {
@@ -58097,6 +58127,19 @@
     "sub_types": "Revolutionary Army Dressrosa",
     "attribute": "Special",
     "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "play_card",
+            "count": 1,
+            "card_type": "EVENT",
+            "filter_type": "dressrosa"
+          }
+        ],
+        "conditions": {
+          "leader_type": "dressrosa"
+        }
+      },
       "passive": {
         "steps": [
           {

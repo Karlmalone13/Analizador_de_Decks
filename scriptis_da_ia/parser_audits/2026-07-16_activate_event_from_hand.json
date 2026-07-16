@@ -1,0 +1,20 @@
+{
+  "trigger_card": "OP12-041",
+  "problem": "'Activate up to N [Tipo] type Event [with a base cost of X or less] from your hand' nunca era reconhecido -- o bloco inteiro (custo DON!! N + efeito de jogar o Event) ficava ausente. Semanticamente identico a play_card (o executor ja suporta card_type='EVENT'), so o parser nunca aceitava 'activate' como sinonimo de 'play' nesse contexto.",
+  "grammar_family": "'activate up to N [color] [tipo] Event(s) [with a base cost of N or less] from your hand' -- variante de verbo de play_card restrita a Events.",
+  "queries": [
+    "regex activate up to \\d+.{0,60}event.{0,60}from your hand sobre card_text (achou OP12-041, OP15-014, OP15-046)",
+    "confirmado que OP15-046 nao estava na lista original de 'base cost' (nao tem filtro de custo no texto), mas compartilha exatamente a mesma causa raiz -- achado ao generalizar a busca pra 'activate Event from hand' em vez de so 'base cost'",
+    "verificado em decision_engine.py que play_card ja suporta step['card_type'] nativamente (_step_is_viable e o executor propriamente), inclusive ja usado por outras cartas -- confirma que nao e mecanica nova, so falta de reconhecimento do sinonimo de verbo"
+  ],
+  "cards_found": ["OP12-041", "OP15-014", "OP15-046"],
+  "resolution_scope": "global",
+  "decision": "Nova funcao dedicada parse_activate_event_from_hand (NAO integrada em parse_play_generic, que e usada por centenas de cartas e onde 'activate' tem varios outros significados -- [Activate:Main], DON!! 'set as active' -- misturar teria risco alto de regressao). Produz um step play_card com card_type='EVENT' + filtro de cor/tipo/custo quando presentes no texto, reaproveitando 100% do executor de play_card ja existente.",
+  "validated_by": [
+    "diff_parser.py: GANHOU 0 / PERDEU 0 / MUDOU 3 (todas confirmadas contra card_text)",
+    "gerar_dbs.py + snapshot_parser.py: 0/0/0 apos regenerar",
+    "smoke_fast.py: teste dirigido novo test_activate_event_from_hand_sinonimo_de_play com EXECUCAO real -- confirma que SO o Event correto e jogado da mao (nao um Character isca no mesmo hand), vai pro trash",
+    "smoke_test.py: suite ampla, TODOS OS TESTES PASSARAM",
+    "smoke_test_broad.py: 7/7 partidas aleatorias sem excecao (essa rodada demorou ~20min, bem acima do usual 3-9min -- consistente com a pendencia de performance ja documentada em TODO.md, '1 partida foi de 5s pra 147s' em decks aleatorios especificos, nao relacionado a este fix)"
+  ]
+}
