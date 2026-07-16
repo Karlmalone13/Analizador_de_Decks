@@ -1,0 +1,19 @@
+{
+  "trigger_card": "OP01-086",
+  "problem": "O bloco [Trigger] separado da mesma carta ('Return up to 1 card with a cost of 4 or less to the owner's hand') ficava totalmente ausente do parse -- pendencia identificada apos o fix anterior do bloco [Counter] (parser_audits/2026-07-16_OP01-086_bounce_active_qualifier.json), que so tinha corrigido a clausula do Counter.",
+  "grammar_family": "'return up to N card(s) with a cost of X or less to the owner's hand' -- o regex generico de bounce so aceitava 'character(s)' como substantivo, nao 'card(s)'.",
+  "queries": [
+    "regex return up to \\d+ cards? with a cost of \\d+ or less to the owner sobre card_text (achou so OP01-086)",
+    "confirmado que a mudanca de regex (adicionar 'cards?' como sinonimo de 'characters?') nao afeta nenhuma outra carta do banco -- diff_parser isolou a mudanca so em OP01-086"
+  ],
+  "cards_found": ["OP01-086"],
+  "resolution_scope": "isolated_after_global_scan",
+  "decision": "Estendido o mesmo regex generico de bounce (ja usado pra 'active Character', achado 15/07) pra aceitar 'card(s)' como sinonimo de 'character(s)' -- mesma semantica de bounce implicito do oponente, so muda o substantivo usado no texto oficial da carta. Confirmado por censo que nenhuma outra carta usa essa variante de palavra.",
+  "validated_by": [
+    "diff_parser.py: GANHOU 0 / PERDEU 0 / MUDOU 1 (isolado em OP01-086, ganha o bloco trigger inteiro)",
+    "gerar_dbs.py + snapshot_parser.py: 0/0/0 apos regenerar",
+    "smoke_fast.py: teste dirigido estendido (test_overheat_counter_buff_e_bounce_active_only) com EXECUCAO real do novo bounce do Trigger -- confirma que so o alvo custo<=4 e bounced, poupando o custo 5",
+    "smoke_test.py: suite ampla, TODOS OS TESTES PASSARAM",
+    "smoke_test_broad.py: 7/7 partidas aleatorias sem excecao"
+  ]
+}

@@ -1,5 +1,46 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-16 (195) - Fecha pendencias antes de continuar (pedido explicito do usuario)
+
+Usuario pediu pra fechar pendencias abertas antes de seguir pra novas
+familias, em vez de deixar rastro. Verificado:
+
+**OP16-008 "8000" -- FALSO ALARME, ja estava correto.** O usuario
+citou esse numero como pendente, mas ao reconferir no auditor ele ja
+aparecia no `power_lte:8000` do step `ko` desde o fix da familia
+anterior (bloco 194). Nenhuma acao necessaria, so confirmado.
+
+**OP01-086 "4" -- pendencia real, corrigida.** O bloco `[Trigger]`
+SEPARADO da mesma carta ("Return up to 1 CARD with a cost of 4 or less
+to the owner's hand") ainda estava ausente -- o fix anterior (bloco
+192) so tinha corrigido o `[Counter]`. Causa: o regex generico de
+bounce so aceitava "character(s)" como substantivo; esse `[Trigger]`
+usa "card" em vez de "Character". Estendido o mesmo regex pra aceitar
+"card(s)" como sinonimo (censo confirmou: unica carta no banco com essa
+variante). Teste dirigido existente
+(`test_overheat_counter_buff_e_bounce_active_only`) estendido pra
+cobrir tambem o bounce do Trigger via execucao real. `diff_parser.py`
+PERDEU=0, isolado em OP01-086. `smoke_fast.py`/`smoke_test.py`/
+`smoke_test_broad.py` (7/7) verdes. Registro:
+`parser_audits/2026-07-16_OP01-086_bounce_card_noun_variant.json`.
+
+**Censo global de "base power" (pedido explicito do usuario, pra nao
+deixar a duvida solta):** 80 cartas mencionam "base power" no texto.
+A maioria ja funciona certo porque `card.power` no nosso modelo JA E o
+base power (buffs isolados em `power_buff`, nunca mutam `.power`) --
+confirmado com o usuario nas familias anteriores. Achado o bug real:
+a variante de `bounce` por power ("return up to N Character(s) with N
+base power [or more/or less] to the owner's hand") afeta 4 cartas
+(EB03-025, EB03-027, OP11-051, OP14-058) -- o parser ja grava
+`power_eq`/`power_lte` certo no JSON, mas o EXECUTOR de `bounce` so
+repassa `power_lte` pro `eligible_cards`, nunca `power_eq`. Resultado:
+EB03-025/EB03-027/OP14-058 (que usam `power_eq`, poder EXATO) hoje
+bounceiam QUALQUER personagem do oponente, ignorando o filtro de poder
+por completo. OP11-051 (usa `power_lte`) ja funcionava certo por
+coincidencia. **Fix apresentado ao usuario, aguardando confirmacao no
+momento deste registro** -- adicionar `power_eq`/`power_gte` na chamada
+de `eligible_cards` do executor de `bounce`.
+
 ## 2026-07-16 (194) - Varredura continua: custo "trash 1 of your Characters" (campo) virava trash_from_hand (mao) em 5 cartas, + bug de avaliacao pre-existente em ko_own_character
 
 Novo protocolo em vigor (pedido do usuario): antes de codar qualquer

@@ -14633,6 +14633,12 @@
   "effects": [
    {
     "action": "bounce",
+    "trigger": "trigger",
+    "cost_lte": 4,
+    "target": "opp_character"
+   },
+   {
+    "action": "bounce",
     "trigger": "counter",
     "cost_lte": 3,
     "target": "opp_character"
@@ -14669,7 +14675,7 @@
   "has_double_attack": false,
   "has_unblockable": false,
   "has_banish": false,
-  "has_trigger": false
+  "has_trigger": true
  },
  "OP01-087": {
   "name": "Officer Agents",

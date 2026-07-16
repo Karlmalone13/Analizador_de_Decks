@@ -1155,8 +1155,12 @@ def parse_bounce(text):
     # contagem e "Character(s)" (achado 15/07, OP01-086 -- "return up to 1
     # ACTIVE Character with a cost of 3 or less" nunca batia porque a
     # palavra quebrava o regex; alvo filtrado a active_only quando presente).
+    # "card(s)" tambem aceito como sinonimo de "character(s)" (achado 16/07,
+    # o proprio [Trigger] de OP01-086: "return up to 1 CARD with a cost of
+    # 4 or less to the owner's hand" -- so essa carta usa essa palavra no
+    # banco inteiro, mesma semantica de bounce implicito do oponente).
     for m in re.finditer(
-        r"return up to (\d+) (active )?characters?(?: other than this character)?"
+        r"return up to (\d+) (active )?(?:characters?|cards?)(?: other than this character)?"
         r" with a cost of (\d+) or less",
         t
     ):

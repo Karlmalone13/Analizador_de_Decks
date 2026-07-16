@@ -10179,6 +10179,16 @@
     "sub_types": "Donquixote Pirates The Seven Warlords of the Sea",
     "attribute": "",
     "effects": {
+      "trigger": {
+        "steps": [
+          {
+            "action": "bounce",
+            "count": 1,
+            "target": "opp_character",
+            "cost_lte": 4
+          }
+        ]
+      },
       "counter": {
         "steps": [
           {

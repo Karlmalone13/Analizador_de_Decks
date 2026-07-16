@@ -2105,6 +2105,24 @@ def test_overheat_counter_buff_e_bounce_active_only() -> None:
           ativo_barato in opp.hand and ativo_caro in opp.field_chars
           and restado_barato in opp.field_chars)
 
+    # Achado 16/07 -- o [Trigger] SEPARADO da mesma carta ("Return up to 1
+    # CARD with a cost of 4 or less to the owner's hand") tambem sumia:
+    # usa "card" em vez de "Character" como substantivo, e o regex generico
+    # de bounce so aceitava "character(s)". Unica carta no banco com essa
+    # variante de palavra.
+    trigger_steps = get_card_effects("OP01-086").get("trigger", {}).get("steps", [])
+    check("OP01-086 parseia bounce do [Trigger] (substantivo 'card', cost<=4)",
+          any(s.get("action") == "bounce" and s.get("cost_lte") == 4
+              and not s.get("active_only") for s in trigger_steps))
+    opp2 = GameState(leader=mk("XOHOPP2", "Lider Opp", card_type="LEADER"))
+    alvo_trigger = mk("XOH4", "Alvo Trigger Custo 4", cost=4)
+    caro_trigger = mk("XOH5", "Alvo Trigger Custo 5", cost=5)
+    opp2.field_chars = [alvo_trigger, caro_trigger]
+    trigger_bounce_step = trigger_steps[0]
+    EffectExecutor(me, opp2)._execute_step(trigger_bounce_step, overheat)
+    check("Trigger fez bounce do alvo custo<=4, poupou o custo 5",
+          alvo_trigger in opp2.hand and caro_trigger in opp2.field_chars)
+
 
 def test_germa66_power_range_e_mesmo_nome_do_trashado() -> None:
     # Achado 16/07 -- EB02-039 GERMA 66: "play up to 1 Character card with

@@ -6495,6 +6495,16 @@
      "target": "leader_or_character"
     }
    ]
+  },
+  "trigger": {
+   "steps": [
+    {
+     "action": "bounce",
+     "cost_lte": 4,
+     "count": 1,
+     "target": "opp_character"
+    }
+   ]
   }
  },
  "OP01-087": {
