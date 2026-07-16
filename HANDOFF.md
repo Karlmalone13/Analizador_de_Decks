@@ -1,5 +1,49 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-16 (190) - Checkpoint de troca de sessao: Claude -> Codex
+
+Usuario pediu pra conferir o estado local/remoto e deixar tudo registrado
+antes de trocar pra uma sessao Codex. Nao houve trabalho de parser nesta
+entrada -- so verificacao + acerto de documentacao de handoff.
+
+**Estado confirmado:** `git status` limpo (so `.claude/` e `AGENTS.md`
+nao versionados), `main` sincronizado com `origin/main` em `c176eaa`
+(bloco 189, "Life para topo do deck"). `smoke_fast.py` verde na HEAD
+atual. Auditor (`audit_parser_coverage.py`) em **367 suspeitos**
+conforme registrado no bloco 189 -- nao foi refeita a contagem, o numero
+ja e a fonte de verdade do ultimo trabalho real.
+
+**`AGENTS.md` corrigido e commitado nesta entrada:** o arquivo (guia
+equivalente ao `CLAUDE.md`, mas voltado pro Codex) tinha sobrado de uma
+geracao por substituicao mecanica de texto -- titulo virou "Codex / Codex"
+e uma frase virou "Codex ou Codex quem estiver na sessao", ambos
+deveriam dizer "Claude" numa das pontas (o arquivo fala de colaboracao
+ENTRE as duas IAs, nao duplica a mesma). Corrigido nos 3 lugares.
+
+**Pendencia que o usuario precisa confirmar, nao resolvida aqui:**
+`AGENTS.md` linha 8 aponta pra
+`C:\Users\arthu\.Codex\projects\C--Projetos-TI-analidador-de-decks-optcg\memory\MEMORY.md`
+como leitura obrigatoria de memoria pro Codex -- **esse caminho NAO
+EXISTE no disco** (`Test-Path` confirmou False). Foi copiado por analogia
+do caminho real do Claude Code (`C:\Users\arthu\.claude\projects\...`),
+mas o Codex CLI pode nao ter um sistema de auto-memoria com essa mesma
+convencao de pasta -- nao fiz nenhuma suposicao adicional sobre qual e o
+caminho/mecanismo certo do Codex, porque eu nao tenho como verificar isso
+daqui. Se o Codex tiver equivalente, ajustar a linha; se nao tiver,
+remover a secao e decidir outro jeito de repassar as licoes acumuladas
+(talvez copiar o conteudo relevante de `memory/` do Claude direto pro
+`AGENTS.md`, ja que sao as mesmas regras de projeto, independente de IA).
+
+**Para a proxima sessao (Codex): ler nesta ordem** `AGENTS.md` -> este
+`HANDOFF.md` (blocos mais recentes primeiro, pelo menos ate ~180 pra
+pegar o contexto do gate de auditoria global) -> `git log --oneline -10`
+-> `git status`. O trabalho real em andamento e a varredura continua de
+`scriptis_da_ia/audit_parser_coverage.py` (367 suspeitos restantes,
+metodo de clustering documentado nos blocos anteriores), sempre com o
+gate de `scripts/verify_parser_global_audit.py` bloqueando commit sem
+JSON de auditoria em `scriptis_da_ia/parser_audits/` (bloco 184 explica
+o gate; README da propria pasta tem o modelo).
+
 ## 2026-07-16 (189) - Life para topo do deck + smoke amplo 7/7
 
 ST13-016 revelou a familia "look at all Life; place 1 at top of deck; return

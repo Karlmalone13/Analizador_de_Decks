@@ -1,0 +1,184 @@
+# AGENTS.md — guia para qualquer sessão nova (Codex)
+
+## LEITURA OBRIGATÓRIA ANTES DE QUALQUER COMMIT
+
+Antes de commitar qualquer coisa, leia as memórias do projeto:
+
+```
+C:\Users\arthu\.Codex\projects\C--Projetos-TI-analidador-de-decks-optcg\memory\MEMORY.md
+```
+
+As memórias contêm regras arquiteturais e feedbacks do usuário que DEVEM ser
+seguidos. Ignorar essas memórias pode levar a violações de arquitetura que o
+usuário já corrigiu explicitamente. Regras-chave (resumo — leia os arquivos
+completos):
+
+- **Bot = olhos/mãos only** (`bot_optcgsim.py`). Engine = cérebro. Sem lógica
+  de carta no bot. Sem dois motores. Ver `memory/feedback_dois_motores.md`.
+- **Objetivo do bot**: captar logs contra humanos → validar engine → front-end.
+  Não otimizar o bot além disso. Ver `memory/project_objetivo_bot.md`.
+
+---
+
+Este arquivo é lido automaticamente no início de cada sessão do Codex.
+Leia também o [HANDOFF.md](HANDOFF.md) (registro do que foi feito na sessão
+anterior, por qual IA) antes de tocar em qualquer coisa, e rode
+`git log --oneline -10` + `git status` para ver o estado real.
+
+## O que é o projeto
+
+Analisador de decks de **One Piece TCG (OPTCG)**: classifica arquétipo,
+detecta sinergias, mede coesão tribal, e simula partidas completas entre dois
+decks com IA jogando os dois lados. Duas partes bem separadas:
+
+### 1. Front-end (`src/`) — Next.js 16 + React 19 + Supabase
+- App Router (`src/app/*/page.tsx`): `/`, `/cards`, `/deck`, `/analysis`,
+  `/meus-decks`, `/simulate`.
+- Supabase: auth + tabela `cards` (banco de cartas) + tabela `decks` (decks
+  salvos do usuário, coluna `cards` é um JSON string `{leader, cards}`).
+- Stack: TypeScript estrito, Tailwind, ESLint com regras de React Hooks
+  (`react-hooks/set-state-in-effect` etc. — **rodar `npx eslint` e
+  `npx tsc --noEmit` antes de considerar algo pronto**, o projeto tem zero
+  erros hoje, não regredir).
+- Páginas que usam `useSearchParams()` precisam estar envolvidas em
+  `<Suspense>` (senão `next build` quebra) — ver `/analysis`, `/deck`,
+  `/simulate` como referência do padrão usado.
+
+### 2. Back-end Python (`scriptis_da_ia/`) — duas sub-partes
+
+**a) Analisador de deck (produção, hospedado no Railway)**
+Pipeline: `cards_rows.csv` → `gerar_effects_db.py` (parser texto→efeitos) →
+`card_effects_db.json` → `gerar_card_analysis_db.py` → `card_analysis_db.json`
+→ `deck_analyzer.py` (classifica arquétipo/sinergias/coesão) → `api.py`
+(FastAPI, `POST /analyze`). Front consome via `NEXT_PUBLIC_ANALYZER_API`.
+Detalhes completos em [scriptis_da_ia/README.md](scriptis_da_ia/README.md).
+
+**b) Motor de simulação de partidas** (`scriptis_da_ia/optcg_engine/`)
+Simula partidas turno a turno entre dois decks. Peças principais:
+- `decision_engine.py` — `OPTCGMatch`: turnos, fases, IA de decisão
+  (`_execute_step`, `_score_to_play`, Turn Planner). **Fonte única de
+  verdade das regras** — qualquer lógica de jogo deve viver aqui, não
+  duplicada em scripts de replay/visualização.
+- `replay_optcg.py` — visualizador/auditor de partidas; delega tudo
+  (`_place_start_stage`, `refresh_phase`, `main_phase`) ao `OPTCGMatch`, não
+  reimplementa regra própria.
+- `rules_facade.py` — funções utilitárias compartilhadas (`eligible_cards`,
+  `card_matches_filter`, `choose_highest_board_value`, etc.) usadas via
+  import local dentro de `_execute_step`. **Cuidado**: imports locais
+  Python tornam o nome local pra função inteira — se usar uma função da
+  facade num branch novo, garanta que o import já rodou antes nesse caminho
+  (ou importe no topo da função, como foi feito pra `eligible_cards`).
+  Ver [PLANO_UNIFICACAO.md](scriptis_da_ia/PLANO_UNIFICACAO.md) (status:
+  CONCLUÍDO) para o diagnóstico e a decisão "replay vira só visualização".
+
+**Material de referência (não é código de produção, não importar em nada
+do `scriptis_da_ia/`):** `_referencias/simulador-oficial/dnspy-export/` tem
+o C# decompilado da DLL oficial do jogo (`GameplayLogicScript.cs`, 34k
+linhas). `_referencias/simulador-oficial/decompiled_python/` tem um porte
+Python fiel desse C# (`models.py`, `action_system.py`, `card_power.py`,
+`validators.py`, `card_queries.py`, `card_loader.py`) — auditoria de
+28/06/2026 confirmou ZERO acoplamento com `decision_engine.py` e que o
+motor de produção já está correto nos pontos testados (poder, combate, DON,
+direção do deck). Use esse material só quando precisar confirmar a regra
+exata do jogo sem ler 34 mil linhas de C#. **Não tente "unificar" os dois**
+sem necessidade real — já foi avaliado e a conclusão foi manter separado
+(ver [comparacao_simulador_vs_IA.md](comparacao_simulador_vs_IA.md), mas
+desconfie da lista de gaps ali — auditoria encontrou que está inflada,
+correção ainda pendente, ver [HANDOFF.md](HANDOFF.md)).
+
+## Regras de jogo (NUNCA quebrar) — ver [TODO.md](TODO.md) para a lista completa
+- K.O. ≠ Trash · Rush ≠ Rush:Character · `give_don_opp` tira do próprio jogador
+- Sinal de custo só conta com texto explícito
+- `play_card` vindo de efeito = sempre GRÁTIS (sem custo de DON)
+- Só paga custo de uma ação ativável se algum step realmente produzir efeito
+  (viabilidade ampla — evita ativar habilidade "no vácuo")
+- Topo do deck = fim da lista em Python (`pop()`, não `pop(0)`)
+- Mill do deck = trash seco, sem disparar trigger
+
+Referências oficiais das regras (manual, playsheet) em
+[_referencias/regras_do_jogo/](_referencias/regras_do_jogo/).
+
+## Estado do projeto / o que falta
+Ver [TODO.md](TODO.md) (lista viva, atualizada por sessão) para: buracos de
+mecânica conhecidos e priorizados, problemas abertos do replay, dívida
+técnica consciente (sistema de imunidade, etc.), e o roadmap (consertar
+lógica → auditar via replay → tunar heurísticas por volume de simulação →
+ML só se 1-3 baterem teto).
+
+## Workflow / convenções
+```
+# parser: snapshot → fix → diff_parser.py (PERDEU=0 é o padrão) → gerar_dbs → re-snapshot → commit
+# engine puro: editar → partida real instrumentada (replay) → commit (sem gerar_dbs)
+# NUNCA `git add -A`; commits em linha única (ambiente CMD/PowerShell)
+```
+- **Validacao rapida do bot ao vivo:** antes de liberar um novo teste no
+  OPTCGSim, rode:
+  ```powershell
+  cd scriptis_da_ia
+  $env:PYTHONDONTWRITEBYTECODE='1'
+  python smoke_fast.py
+  ```
+  Este e o pre-flight padrao para ajustes do bot/engine vistos em combat log
+  recente (turn order Imu, Empty Throne antes do play direto de `OP13-082`,
+  Ground Death sem alvo util, Imu nao trashar Elder ativo antes de atacar).
+  `smoke_test.py` NAO e mais smoke curto: trate como regressao ampla e rode
+  so quando mexer em parser, counters, imunidade, substituicao, gramatica de
+  efeitos ou outra area compartilhada de alto risco.
+- Front: `npm run dev` (porta 3000), `npx eslint`, `npx tsc --noEmit`,
+  `npx next build` antes de considerar uma tarefa de front concluída.
+- API Python local: `cd scriptis_da_ia && pip install -r requirements.txt
+  && uvicorn api:app --reload --port 8000`.
+- Chaves Supabase: `.env.local` tem `service_role` exposta — **rotacionar
+  antes de deploy público** (pendência de segurança conhecida, ver TODO.md).
+- **Bot parou de responder / `LogOutput.log` sumiu?** O jogo apaga a pasta
+  `BepInEx` inteira quando atualiza (já aconteceu, 09/07/2026). Feche o
+  jogo e rode `BOT\setup_bepinex.bat` (reinstala BepInEx + recompila/copia
+  o plugin, sem precisar de internet). Ver `BOT/README.md`.
+
+## Banco de logs de partidas reais — OBRIGATÓRIO salvar
+
+Sempre que o usuário mandar um combat log (cola o conteúdo, referencia um
+caminho `.log`, ou pede pra investigar uma partida), **Claude ou Codex —
+quem estiver na sessão — tem que adicionar esse log ao banco antes de
+considerar a tarefa terminada**, seguindo a regra de nomenclatura já
+existente do projeto. Não é opcional e não é "se sobrar tempo": os logs
+somem quando o simulador atualiza/reinstala (já aconteceu, ver HANDOFF
+bloco 109) e são a matéria-prima do roadmap de "banco de logs" (ver
+TODO.md, seção `📊 BANCO DE LOGS`).
+
+**Como fazer** (ferramenta já existe, não reinventar):
+```bash
+cd scriptis_da_ia
+python parse_combat_log.py <caminho_do.log> --add-to-db
+```
+Isso copia/renomeia automaticamente pra `scriptis_da_ia/logs/{raw,parsed,decks}/`
+e atualiza `logs/index.json` com a convenção de nome certa
+(`{LiderSlug-Cores}_x_{LiderSlugOponente-Cores}_{timestamp}.log/json` pros
+combat logs, `{LiderSlug-Cores}_{timestamp}.json` pros decks reconstruídos).
+**Nunca inventar outra pasta/convenção pra guardar log de teste** (erro
+cometido em 09/07: criei `BOT/test_logs/` sem saber que esse banco já
+existia — teve que ser desfeito).
+
+Se o combat log não estiver disponível como arquivo local (usuário colou
+o conteúdo direto na conversa, ou o caminho já não existe mais), salvar o
+conteúdo bruto num arquivo temporário primeiro e então rodar o comando
+acima nele — nunca pular a etapa de adicionar ao banco só porque não veio
+como path pronto.
+
+## Trabalhando junto com outra IA (Claude ou outra sessão Codex)
+Nenhuma sessão vê o histórico de conversa da outra — só o estado dos
+arquivos. Por isso:
+1. Sempre commitar antes de parar (créditos, fim de sessão).
+2. Sempre escrever um bloco novo no topo do [HANDOFF.md](HANDOFF.md) antes
+   de parar: o que foi feito, estado atual, o que falta.
+3. Ao assumir uma sessão, ler `HANDOFF.md` + `git log --oneline -10` +
+   `git status` antes de qualquer edição.
+
+Isso é reforçado por um **hook de `pre-push`** (`scripts/hooks/pre-push`):
+bloqueia o `git push` se `HANDOFF.md` não tiver sido alterado nos commits
+sendo enviados. `.git/hooks/` não é versionado pelo git, então em cada
+clone/máquina nova é preciso instalar uma vez:
+```bash
+sh scripts/setup-git-hooks.sh
+```
+Para pular a checagem numa emergência (não recomendado): `git push --no-verify`.
