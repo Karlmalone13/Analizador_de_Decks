@@ -1834,6 +1834,31 @@ for code in ['EB01-056', 'OP04-102', 'OP07-112', 'OP11-106',
             for c in b.get('costs', []))
         for b in blocks))
 
+# 38. ST13-004/016: olhar toda a Life e mover 1 carta ao topo do deck.
+for code in ['ST13-004', 'ST13-016']:
+    on_play = get_card_effects(code).get('on_play', {})
+    check(f'{code} preserva life_to_deck_top apos peek_life',
+          any(s.get('action') == 'peek_life' for s in on_play.get('steps', []))
+          and any(s.get('action') == 'life_to_deck_top'
+                  for s in on_play.get('steps', [])))
+check('ST13-004 respeita ordem deck->Life, peek, Life->deck',
+      [s.get('action') for s in get_card_effects('ST13-004')['on_play']['steps']][:3]
+      == ['gain_life', 'peek_life', 'life_to_deck_top'])
+
+yamato_life = de._make_card('ST13-016', {
+    'name': 'Yamato ST13', 'type': 'CHARACTER', 'power': 4000,
+    'sub_types': 'Land of Wano',
+})
+life_weak = mk('LW', 'Life fraca', power=1000, cost=1)
+life_best = mk('LB', 'Life melhor', power=8000, cost=8)
+me, opp = me_opp()
+me.life = [life_weak, life_best]
+deck_before = len(me.deck)
+logs = EffectExecutor(me, opp).execute(yamato_life, 'on_play')
+check('ST13-016 move exatamente 1 Life ao topo do deck e mantem o restante',
+      len(me.life) == 1 and len(me.deck) == deck_before + 1
+      and me.deck[-1] is life_best and life_weak in me.life and bool(logs))
+
 print()
 print(f'{"TODOS OS TESTES PASSARAM" if FAIL == 0 else f"{FAIL} TESTE(S) FALHARAM"}')
 sys.exit(1 if FAIL else 0)

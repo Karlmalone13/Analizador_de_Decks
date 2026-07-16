@@ -1,5 +1,25 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-16 (189) - Life para topo do deck + smoke amplo 7/7
+
+ST13-016 revelou a familia "look at all Life; place 1 at top of deck; return
+rest". O censo global encontrou ST13-004 e ST13-016. O parser ja emitia
+`peek_life`, mas nao a mudanca de zona; agora emite `life_to_deck_top`, e o
+executor escolhe uma carta da Life conhecida, remove-a da Life e a coloca no
+topo real do deck (fim da lista).
+
+A investigacao encontrou uma segunda falha em ST13-004: os subparsers
+ordenavam `peek_life` antes de `gain_life`, contrariando o texto. A sequencia
+agora e deck->Life, olhar/reordenar Life, Life->topo do deck. Card List oficial
+confirmou ambos os textos. Testes cobrem as duas actions, a ordem de ST13-004
+e a mudanca de zona de ST13-016.
+
+Por decisao do usuario, `smoke_test_broad.py` agora usa **7 partidas** por
+padrao; checkpoints maiores continuam disponiveis com `SMOKE_BROAD_N=40`.
+Validacao: py_compile, smoke direcionado, **7/7**, diff inicial MUDOU 2 /
+PERDEU 0, snapshot final 0/0/0. Auditor **367 suspeitos** (368 -> 367).
+Registro: `parser_audits/2026-07-15_life_to_deck_top_after_peek.json`.
+
 ## 2026-07-15 (188) - Life para mao como custo: 376 -> 368
 
 ST09-012 revelou uma familia de **42 cartas-base** com "You may add N card

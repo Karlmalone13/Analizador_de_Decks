@@ -3164,6 +3164,14 @@ def parse_life(text):
     elif re.search(r'look at all of your life cards?|look at all your life cards?', t):
         steps.append({'action': 'peek_life', 'target': 'self', 'count': 'all'})
 
+    # Depois de olhar TODA a Life, mover 1 para o topo do deck e devolver o
+    # restante a Life (ST13-004/016). `peek_life` cobre a informacao/ordem;
+    # esta action preserva a mudanca real de zona que faltava.
+    if re.search(
+            r'look at all (?:of )?your life cards?;?\s*place 1(?: card)? '
+            r'at the top of your deck', t):
+        steps.append({'action': 'life_to_deck_top', 'count': 1})
+
     if re.search(r'turn all of your life cards face-down', t):
         steps.append({'action': 'turn_life_face_down', 'target': 'self', 'count': 'all'})
     m_turn = re.search(r'turn 1 card from the top of your life cards face-(up|down)', t)
@@ -4730,6 +4738,15 @@ def parse_block(block_text, trigger_name):
     if (re.search(r'look at 1 card from the top of your opponent.?s deck', t)
             and 'choose a cost' not in t):
         steps.append({'action': 'peek_opp_deck_top', 'count': 1})
+
+    # ST13-004: a ordem textual e obrigatoria -- primeiro deck -> Life,
+    # depois olha toda a Life e move 1 de volta ao topo do deck. Os
+    # subparsers por categoria produzem a ordem inversa sem este ajuste.
+    if re.search(
+            r'add 1 card from the top of your deck to the top of your life cards?.*'
+            r'look at all (?:of )?your life cards?', t):
+        order = {'gain_life': 0, 'peek_life': 1, 'life_to_deck_top': 2}
+        steps.sort(key=lambda s: order.get(s.get('action'), 3))
 
     # Memoria de alvo entre steps (SaveTargetName, 28/06/2026): a ordem de
     # despacho dos sub-parsers acima NAO segue a ordem do texto original

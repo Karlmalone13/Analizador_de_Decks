@@ -3607,6 +3607,21 @@ class EffectExecutor:
                 return f'olhou vida do {label}: manteve topo'
             return ''
 
+        if action == 'life_to_deck_top':
+            if not me.life:
+                return ''
+            count = min(step.get('count', 1), len(me.life))
+            moved = []
+            for _ in range(count):
+                # O controlador acabou de olhar toda a Life; coloca no topo
+                # do deck a carta de maior valor estimado para a proxima compra.
+                best = max(me.life, key=lambda c: c.board_value() + c.counter / 1000)
+                remove_by_identity(me.life, best)
+                best.life_face_up = False
+                me.deck.append(best)
+                moved.append(best.name[:15])
+            return f'Life para topo do deck: {", ".join(moved)}'
+
         if action in ('turn_life_face_up', 'turn_life_face_down'):
             owner = opp if step.get('target') == 'opponent' else me
             if not owner.life:

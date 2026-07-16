@@ -1,0 +1,19 @@
+{
+  "trigger_card": "ST13-016",
+  "problem": "O parser olhava e reordenava a Life, mas nao movia 1 carta para o topo do deck.",
+  "grammar_family": "look at all Life; place 1 at top of deck; return rest",
+  "queries": [
+    "look at all your Life cards; place 1 at the top of your deck",
+    "place the rest back in your Life area"
+  ],
+  "cards_found": ["ST13-004", "ST13-016"],
+  "resolution_scope": "global",
+  "decision": "Adicionar action life_to_deck_top apos peek_life e executa-la como mudanca real de zona.",
+  "validated_by": [
+    "Card List oficial",
+    "censo completo de cards_rows.csv",
+    "smoke_test.py",
+    "smoke_test_broad.py 7 partidas",
+    "diff_parser.py PERDEU=0"
+  ]
+}

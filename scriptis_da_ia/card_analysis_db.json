@@ -107506,12 +107506,16 @@
   "attribute": "Special",
   "effects": [
    {
+    "action": "gain_life",
+    "trigger": "on_play"
+   },
+   {
     "action": "peek_life",
     "trigger": "on_play",
     "target": "self"
    },
    {
-    "action": "gain_life",
+    "action": "life_to_deck_top",
     "trigger": "on_play"
    }
   ],
@@ -108022,6 +108026,10 @@
     "action": "peek_life",
     "trigger": "on_play",
     "target": "self"
+   },
+   {
+    "action": "life_to_deck_top",
+    "trigger": "on_play"
    },
    {
     "action": "keyword_rush",

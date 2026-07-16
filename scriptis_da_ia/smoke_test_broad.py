@@ -6,7 +6,7 @@ Objetivo: garantir que as mudancas em execute()/apply_your_turn_buffs()
 (que rodam para TODAS as cartas, nao so as 25 afetadas) nao quebraram nada
 no resto do pool.
 """
-import sys, random, traceback
+import os, sys, random, traceback
 sys.path.insert(0, '.')
 from optcg_engine.decision_engine import (
     load_cards_db, _make_card, Card, CardData, OPTCGMatch
@@ -41,7 +41,9 @@ def random_deck():
         cards.append(_make_card(extra, db[extra]))
     return leader, cards, None
 
-N = 40
+# Lotes diarios usam 7 para feedback rapido. Checkpoints maiores podem rodar
+# `SMOKE_BROAD_N=40 python smoke_test_broad.py` sem editar o arquivo.
+N = int(os.environ.get('SMOKE_BROAD_N', '7'))
 falhas = []
 for i in range(N):
     try:

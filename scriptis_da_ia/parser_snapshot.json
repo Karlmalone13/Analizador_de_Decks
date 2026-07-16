@@ -44882,16 +44882,20 @@
   "on_play": {
    "steps": [
     {
-     "action": "peek_life",
-     "count": "all",
-     "target": "self"
-    },
-    {
      "action": "gain_life",
      "count": 1,
      "dest": "life_top",
      "source": "deck_top",
      "up_to": false
+    },
+    {
+     "action": "peek_life",
+     "count": "all",
+     "target": "self"
+    },
+    {
+     "action": "life_to_deck_top",
+     "count": 1
     }
    ]
   }
@@ -45135,6 +45139,10 @@
      "action": "peek_life",
      "count": "all",
      "target": "self"
+    },
+    {
+     "action": "life_to_deck_top",
+     "count": 1
     }
    ]
   },
