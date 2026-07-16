@@ -1,5 +1,43 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-16 (197) - Correcao de metodologia do usuario: "base power/cost" e padrao TRANSVERSAL, nao 1 mecanismo so (registro, sem fix de codigo)
+
+Ao apresentar o censo de "base cost" (continuacao do bloco 196), eu
+generalizei errado: tratei "base power" como se tivesse sido um bug de
+UM mecanismo so (bounce). O usuario corrigiu: esse padrao de fraseado
+("base power", "base cost", e tambem "power more"/"power less"/"cost
+more"/"cost less" sem a palavra "or" no meio) pode vazar em QUALQUER
+mecanismo do parser -- KO, rest, trash, travas de "nao fica ativo no
+Refresh", concessao condicional de keyword ("ganha [Rush]/[Double
+Attack]/[Blocker] se [Character] tiver base power/cost N"), buffs/
+debuffs, condicoes de contagem, etc.
+
+**Sem fix de codigo neste bloco** -- registro de metodologia, pra nao
+esquecer da proxima vez que uma varredura desse tipo aparecer. Escrito
+em 2 lugares: memoria pessoal (`project_base_power_cost_padrao_
+transversal`) e `scriptis_da_ia/parser_audits/README.md` (nova secao
+"Padrao transversal: base power/base cost/power more/power less/cost
+more/cost less"), pra qualquer sessao -- Claude ou Codex -- ver isso ao
+abrir a pasta de auditorias, nao so eu.
+
+**Regra pratica registrada:** o bug NUNCA e semantico (`card.power`/
+`card.cost` no engine JA SAO os valores base, buffs isolados em
+`power_buff`/`cost_buff`) -- e sempre um destes dois: (1) o regex do
+parser nao reconhece a variante de fraseado, ou (2) o executor grava o
+campo certo no JSON mas esquece de repassar pro `eligible_cards` (foi
+exatamente o caso do `bounce`, bloco 196).
+
+**Trabalho pendente, ainda aguardando decisao do usuario sobre
+granularidade:** os 12 suspeitos reais de "base cost" ja levantados
+(EB03-021, EB03-036, OP12-024, OP12-041, OP12-081, OP12-102, OP14-034,
+OP15-002, OP15-014, ST25-002, ST25-005 -- espalhados em ~7 mecanismos
+diferentes: place_bottom_deck, ko, rest_opp_character, ativar Event por
+custo, condicao de contagem por custo, buff com filtro de custo,
+condicao de "ativou Event de custo N neste turno") ainda nao foram
+corrigidos. Por causa desta correcao de metodologia, a proxima rodada
+de censo deve TAMBEM cobrir "power more"/"power less"/"cost more"/"cost
+less" (sem "or"), nao so "base X", antes de comecar a corrigir.
+
 ## 2026-07-16 (196) - Fecha o achado de "base power" no bounce: power_eq/power_gte nunca eram consumidos (4 cartas)
 
 Continuacao direta do bloco 195 (censo global de "base power" pedido
