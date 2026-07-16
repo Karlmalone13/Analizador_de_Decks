@@ -907,9 +907,10 @@
   "on_play": {
    "steps": [
     {
-     "action": "place_opp_character_bottom_deck",
+     "action": "place_opp_char_to_opp_life",
      "cost_lte": 3,
-     "count": 1
+     "count": 1,
+     "dest": "life_top_or_bottom"
     }
    ]
   },
@@ -2723,6 +2724,11 @@
     }
    ],
    "steps": [
+    {
+     "action": "place_opp_character_bottom_deck",
+     "count": 1,
+     "power_lte": 4000
+    },
     {
      "action": "place_opp_character_bottom_deck",
      "cost_lte": 3,
@@ -15215,13 +15221,14 @@
     ],
     [
      {
-      "action": "place_opp_character_bottom_deck",
-      "cost_lte": 1,
+      "action": "draw",
       "count": 1
      },
      {
-      "action": "draw",
-      "count": 1
+      "action": "place_opp_char_to_opp_life",
+      "cost_lte": 1,
+      "count": 1,
+      "dest": "life_top_or_bottom"
      }
     ]
    ]
@@ -15594,6 +15601,26 @@
     {
      "action": "add_don",
      "count": 1
+    }
+   ]
+  },
+  "on_play": {
+   "costs": [
+    {
+     "count": 10,
+     "optional": false,
+     "type": "don_minus"
+    }
+   ],
+   "once_per_turn": true,
+   "steps": [
+    {
+     "action": "place_own_character_bottom_deck",
+     "count": 99,
+     "exclude_self": true
+    },
+    {
+     "action": "take_extra_turn"
     }
    ]
   }
@@ -24110,13 +24137,14 @@
   "on_play": {
    "steps": [
     {
-     "action": "place_opp_character_bottom_deck",
-     "cost_lte": 3,
+     "action": "opp_trash_from_hand",
      "count": 1
     },
     {
-     "action": "opp_trash_from_hand",
-     "count": 1
+     "action": "place_opp_char_to_opp_life",
+     "cost_lte": 3,
+     "count": 1,
+     "dest": "life_top_or_bottom"
     }
    ]
   }

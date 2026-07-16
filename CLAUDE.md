@@ -10,6 +10,18 @@ antes de corrigir. Mudanças em `gerar_effects_db.py` ou
 O hook de pre-commit bloqueia a ausência desse registro. Se a busca encontrar
 apenas a carta inicial, use `isolated_after_global_scan`.
 
+**Corrija de forma GENÉRICA, não amarrada à carta que revelou o bug**
+(pedido explícito do usuário, 16/07). Um regex/condição corrigido deve
+cobrir a FORMA do problema (ordem de cláusulas, sinônimos de verbo,
+variantes de fraseado), não só o texto exato da carta que expôs o gap —
+senão a próxima carta nova com a mesma forma, mas palavras diferentes,
+quebra de novo e exige outro fix. Exemplo real: o fix de
+`place_opp_character_bottom_deck` (bloco HANDOFF 199) não hardcodeou "2
+alvos encadeados" pra EB03-021 — generalizou pra QUALQUER número de
+alvos via `and up to N Character(s)`, e ficou ordem-agnóstico pra
+custo/power em vez de assumir a ordem em que a carta-gatilho os
+mencionava.
+
 Antes de commitar qualquer coisa, leia as memórias do projeto:
 
 ```

@@ -2280,6 +2280,134 @@ def test_power_of_n_ordem_invertida_transversal() -> None:
     check("OP10-079 tolera typo 'cost 5' sem 'of' -> cost_lte=5", ko_typo_step.get("cost_lte") == 5)
 
 
+def test_place_bottom_deck_dois_alvos_ordem_agnostica() -> None:
+    # Achado 16/07 -- EB03-021: "Place up to 1 of your opponent's
+    # Characters with 4000 base power or less AND up to 1 Character with
+    # a base cost of 3 or less at the bottom of the owner's deck."
+    # parse_place_bottom foi reescrita pra ser ORDEM-AGNOSTICA (extrai
+    # cost/power de cada clausula independente, nao 2 grupos sequenciais
+    # na mesma regex) e reconhecer QUALQUER numero de alvos encadeados
+    # via "and up to N Character(s)".
+    steps = get_card_effects("EB03-021").get("on_play", {}).get("steps", [])
+    check("EB03-021 parseia os 2 alvos encadeados (power_lte E cost_lte)",
+          any(s.get("power_lte") == 4000 for s in steps)
+          and any(s.get("cost_lte") == 3 for s in steps))
+
+    fonte = real_card("EB03-021")
+    me = GameState(leader=mk("XPB1LD", "Lider", card_type="LEADER"), turn=4, don_available=3)
+    me.field_chars = [fonte]
+    me.hand = [mk("XPB1H", "Carta pra Trashar", cost=1, power=1000)]
+    opp = GameState(leader=mk("XPB1OPP", "Lider Opp", card_type="LEADER"), turn=4)
+    alvo_power = mk("XPB1A", "Alvo Power 3000", cost=8, power=3000)
+    alvo_cost = mk("XPB1B", "Alvo Cost 2", cost=2, power=9000)
+    fora_dos_2 = mk("XPB1C", "Fora dos 2", cost=8, power=9000)
+    opp.field_chars = [alvo_power, alvo_cost, fora_dos_2]
+    for s in steps:
+        EffectExecutor(me, opp)._execute_step(s, fonte)
+    check("Alvo pelo filtro de POWER foi mandado pro fundo do deck",
+          alvo_power not in opp.field_chars)
+    check("Alvo pelo filtro de CUSTO foi mandado pro fundo do deck",
+          alvo_cost not in opp.field_chars)
+    check("Alvo fora dos 2 filtros permanece no campo",
+          fora_dos_2 in opp.field_chars)
+
+
+def test_place_opp_char_to_opp_life_variantes_de_fraseado() -> None:
+    # Achado 16/07 -- EB01-053/OP05-096/OP09-101 usam "Place" (nao "Add")
+    # e "your opponent's"/"their" Life cards (nao "the owner's"), alem de
+    # OP09-101 omitir "up to". As 3 caiam por engano em
+    # place_opp_character_bottom_deck (acao errada: fundo do DECK em vez
+    # de vida do oponente) porque o regex antigo desse mecanismo aceitava
+    # "bottom of" seguido de QUALQUER coisa, sem exigir "deck".
+    step_eb = get_card_effects("EB01-053").get("on_play", {}).get("steps", [{}])[0]
+    check("EB01-053 parseia place_opp_char_to_opp_life (nao bottom_deck)",
+          step_eb.get("action") == "place_opp_char_to_opp_life" and step_eb.get("cost_lte") == 3)
+
+    step_op09 = get_card_effects("OP09-101").get("on_play", {}).get("steps", [])
+    check("OP09-101 (sem 'up to') tambem parseia place_opp_char_to_opp_life",
+          any(s.get("action") == "place_opp_char_to_opp_life" and s.get("cost_lte") == 3
+              for s in step_op09))
+
+    choice_op05 = get_card_effects("OP05-096").get("main", {}).get("choice", [])
+    terceira_opcao = choice_op05[2] if len(choice_op05) > 2 else []
+    check("OP05-096 ('their Life cards') tambem parseia place_opp_char_to_opp_life, SEM filter_type vazado",
+          any(s.get("action") == "place_opp_char_to_opp_life" and "filter_type" not in s
+              for s in terceira_opcao))
+
+    eb01053 = real_card("EB01-053")
+    me = GameState(leader=mk("XPOL1LD", "Lider", card_type="LEADER"))
+    opp = GameState(leader=mk("XPOL1OPP", "Lider Opp", card_type="LEADER"))
+    alvo = mk("XPOL1A", "Alvo Custo 3", cost=3, power=5000)
+    opp.field_chars = [alvo]
+    EffectExecutor(me, opp)._execute_step(step_eb, eb01053)
+    check("Execucao real: alvo saiu do campo e foi pra vida do PROPRIO oponente (face-up)",
+          alvo not in opp.field_chars and alvo in opp.life and alvo.life_face_up)
+
+
+def test_place_own_character_bottom_deck_e_turno_extra() -> None:
+    # Achado 16/07 -- OP05-119: "DON!! -10: Place all of your Characters
+    # except this Character at the bottom of your deck in any order.
+    # Then, take an extra turn after this one." 2 mecanicas novas: (1)
+    # place_own_character_bottom_deck (acao existia no codigo mas sem
+    # executor nenhum, nunca produzida pelo parser); (2) take_extra_turn,
+    # a PRIMEIRA carta do banco com essa mecanica -- exigiu refatorar o
+    # loop de simulate()/replay run() de alternancia fixa (turn_num % 2)
+    # pra um ponteiro "quem joga agora" que so alterna se
+    # extra_turn_pending nao estiver setada.
+    entry = get_card_effects("OP05-119").get("on_play", {})
+    check("OP05-119 parseia custo DON!! -10 obrigatorio",
+          entry.get("costs", [{}])[0] == {"type": "don_minus", "count": 10, "optional": False})
+    steps = entry.get("steps", [])
+    check("OP05-119 parseia place_own_character_bottom_deck (all, exclude_self) + take_extra_turn",
+          any(s.get("action") == "place_own_character_bottom_deck" and s.get("count") == 99
+              and s.get("exclude_self") is True for s in steps)
+          and any(s.get("action") == "take_extra_turn" for s in steps))
+
+    # Execucao real do place_own: ordem "in any order" deixa de ser
+    # arbitraria -- o mais FORTE (maior board_value) fica mais perto do
+    # topo do deck (comprado primeiro se o deck chegar la), processado
+    # por ULTIMO no loop (cada remove_character_from_field(...,
+    # 'deck_bottom') empurra os anteriores mais fundo).
+    fonte = real_card("OP05-119")
+    me = GameState(leader=mk("XETLD", "Lider", card_type="LEADER"), turn=4)
+    fraco = mk("XETF", "Fraco", power=1000)
+    forte = mk("XETFT", "Forte", power=9000)
+    me.field_chars = [fonte, fraco, forte]
+    me.deck = [mk("XETDECK", "Resto do Deck")]
+    place_step = next(s for s in steps if s.get("action") == "place_own_character_bottom_deck")
+    EffectExecutor(me, GameState(leader=mk("XETOPP", "Opp", card_type="LEADER")))._execute_step(place_step, fonte)
+    check("A propria fonte NAO foi movida (exclude_self)", fonte in me.field_chars)
+    check("Fraco e Forte foram movidos pro fundo do deck", fraco in me.deck and forte in me.deck)
+    check("O mais FORTE fica mais perto do topo (indice maior) que o mais fraco",
+          me.deck.index(forte) > me.deck.index(fraco))
+
+    # Execucao real do LOOP de simulate(): deve deixar o MESMO jogador
+    # jogar de novo quando extra_turn_pending esta setada apos o turno,
+    # em vez de alternar pro oponente -- testado via monkeypatch de
+    # play_turn (evita montar uma partida completa so pra pagar DON!! -10
+    # de verdade), registrando a sequencia real de jogadores que o loop
+    # de simulate() decidiu chamar.
+    leader_a = mk("XETLDA", "Lider A", card_type="LEADER")
+    leader_b = mk("XETLDB", "Lider B", card_type="LEADER")
+    match = OPTCGMatch((leader_a, []), (leader_b, []))
+    sequencia = []
+
+    def fake_play_turn(p, opp, verbose=False):
+        sequencia.append("A" if p is match.state_a else "B")
+        if len(sequencia) == 1:
+            p.extra_turn_pending = True   # simula OP05-119 no 1o turno
+        if len(sequencia) >= 4:
+            return "A"   # encerra a partida pra nao rodar MAX_TURNS*2
+        return None
+
+    match.play_turn = fake_play_turn
+    match.simulate()
+    check("simulate() repete o MESMO jogador logo apos o turno com extra_turn_pending",
+          sequencia[0] == sequencia[1])
+    check("simulate() volta a alternar normalmente depois do turno extra consumido",
+          sequencia[1] != sequencia[2] and sequencia[2] != sequencia[3])
+
+
 def main() -> int:
     test_turn_order_imu_prefers_second()
     test_empty_throne_beats_direct_five_elders_play()
@@ -2348,6 +2476,9 @@ def main() -> int:
     test_trash_own_character_custo_novo_e_avaliacao_por_campo()
     test_bounce_por_power_eq_base_power()
     test_power_of_n_ordem_invertida_transversal()
+    test_place_bottom_deck_dois_alvos_ordem_agnostica()
+    test_place_opp_char_to_opp_life_variantes_de_fraseado()
+    test_place_own_character_bottom_deck_e_turno_extra()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0

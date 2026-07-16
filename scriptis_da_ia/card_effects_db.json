@@ -1489,9 +1489,10 @@
       "on_play": {
         "steps": [
           {
-            "action": "place_opp_character_bottom_deck",
+            "action": "place_opp_char_to_opp_life",
             "count": 1,
-            "cost_lte": 3
+            "cost_lte": 3,
+            "dest": "life_top_or_bottom"
           }
         ]
       },
@@ -4349,6 +4350,11 @@
     "effects": {
       "on_play": {
         "steps": [
+          {
+            "action": "place_opp_character_bottom_deck",
+            "count": 1,
+            "power_lte": 4000
+          },
           {
             "action": "place_opp_character_bottom_deck",
             "count": 1,
@@ -24333,13 +24339,14 @@
           ],
           [
             {
-              "action": "place_opp_character_bottom_deck",
-              "count": 1,
-              "cost_lte": 1
-            },
-            {
               "action": "draw",
               "count": 1
+            },
+            {
+              "action": "place_opp_char_to_opp_life",
+              "count": 1,
+              "cost_lte": 1,
+              "dest": "life_top_or_bottom"
             }
           ]
         ]
@@ -24949,6 +24956,26 @@
     "sub_types": "Straw Hat Crew The Four Emperors",
     "attribute": "Strike",
     "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "place_own_character_bottom_deck",
+            "count": 99,
+            "exclude_self": true
+          },
+          {
+            "action": "take_extra_turn"
+          }
+        ],
+        "costs": [
+          {
+            "type": "don_minus",
+            "count": 10,
+            "optional": false
+          }
+        ],
+        "once_per_turn": true
+      },
       "activate_main": {
         "steps": [
           {
@@ -38475,13 +38502,14 @@
       "on_play": {
         "steps": [
           {
-            "action": "place_opp_character_bottom_deck",
-            "count": 1,
-            "cost_lte": 3
-          },
-          {
             "action": "opp_trash_from_hand",
             "count": 1
+          },
+          {
+            "action": "place_opp_char_to_opp_life",
+            "count": 1,
+            "cost_lte": 3,
+            "dest": "life_top_or_bottom"
           }
         ]
       }

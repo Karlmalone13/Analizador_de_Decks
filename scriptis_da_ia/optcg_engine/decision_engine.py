@@ -712,6 +712,10 @@ class GameState:
     blocker_lock_battle: Optional[dict] = None
     end_of_turn_queue: List[dict] = field(default_factory=list)
     pending_play_cost_reductions: List[dict] = field(default_factory=list)
+    # "Then, take an extra turn after this one" (achado 16/07, OP05-119,
+    # unica carta no banco). Setado pelo executor de take_extra_turn,
+    # consumido e resetado pelo loop de simulate() logo apos play_turn().
+    extra_turn_pending: bool = False
 
     def __deepcopy__(self, memo):
         """
@@ -761,6 +765,7 @@ class GameState:
         novo.blocker_lock_battle = _dc(self.blocker_lock_battle, memo)
         novo.end_of_turn_queue = _dc(self.end_of_turn_queue, memo)
         novo.pending_play_cost_reductions = _dc(self.pending_play_cost_reductions, memo)
+        novo.extra_turn_pending = self.extra_turn_pending
         return novo
 
     def known_hand_cards(self) -> List['Card']:
@@ -1728,6 +1733,11 @@ class EffectExecutor:
         weights = {
             'attack_life': 4,
             'place_opp_character_bottom_deck': 3,
+            # Mesmo peso de place_opp_character_bottom_deck -- remocao
+            # forte equivalente (achado 16/07, OP05-096: essa acao nunca
+            # tinha peso proprio aqui, caia no default=1 igual bounce,
+            # subvalorizada na escolha entre as 3 opcoes do "Choose one").
+            'place_opp_char_to_opp_life': 3,
             'ko': 2,
             'trash_character': 2,
             'bounce': 1,
@@ -5142,6 +5152,15 @@ class EffectExecutor:
             me.don_available += moved
             return f'reativou {moved} DON' if moved else ''
 
+        # "Then, take an extra turn after this one" (achado 16/07,
+        # OP05-119, unica carta no banco). So SETA a flag -- quem decide
+        # de fato repetir o mesmo jogador e o loop de simulate(), lido
+        # logo apos play_turn() retornar (ver docstring de GameState.
+        # extra_turn_pending). Nao mexe na fase atual em andamento.
+        if action == 'take_extra_turn':
+            me.extra_turn_pending = True
+            return 'ganhou um turno extra'
+
         # ── set_active: desrestar Character(s)/Leader fora do Refresh normal
         # (26 cartas, censo padrão 8, nunca implementado antes -- ex:
         # Komurasaki OP01-042, Pica OP05-032, Zoro OP06-118). DISTINTO de
@@ -5253,6 +5272,28 @@ class EffectExecutor:
             if placed: out.append(f'fundo do deck: {", ".join(placed)}')
             if immune: out.append(f'imune: {", ".join(immune)}')
             return ' | '.join(out)
+
+        # Variante do PROPRIO lado (achado 16/07, OP05-119 -- unica carta
+        # no banco): manda os PROPRIOS personagens (opcionalmente
+        # excluindo a fonte) pro fundo do PROPRIO deck. "in any order" NAO
+        # e tratado como irrelevante aqui (pedido explicito do usuario,
+        # ver HANDOFF/memoria "ordem no fundo do deck") -- remove_character_
+        # from_field faz deck.insert(0, ...) a cada chamada, e cada insert
+        # NOVO empurra os anteriores pra indices MAIORES (mais perto do
+        # topo, ja que draw_phase compra via pop() do fim da lista).
+        # Processar do MAIS FORTE pro MAIS FRACO deixa o mais forte com
+        # indice maior (comprado mais cedo se o deck chegar la) e o mais
+        # fraco no fundo de verdade (indice 0, comprado por ultimo).
+        if action == 'place_own_character_bottom_deck':
+            count = step.get('count', 1)
+            candidatos = [c for c in me.field_chars
+                          if not (step.get('exclude_self') and c is card)]
+            candidatos.sort(key=lambda c: c.board_value(), reverse=True)
+            movidos = []
+            for alvo in candidatos[:count]:
+                remove_character_from_field(me, alvo, 'deck_bottom')
+                movidos.append(alvo.name[:14])
+            return f'fundo do proprio deck: {", ".join(movidos)}' if movidos else ''
 
         # ── REMOÇÃO: enviar Character do oponente ao FUNDO do deck dele (fim) ──
         # ── MILL: trashar do topo do PRÓPRIO deck (sem disparar trigger) ──────
@@ -10380,17 +10421,31 @@ class OPTCGMatch:
         winner = None
         total_turns = 0
 
-        for turn_num in range(self.MAX_TURNS * 2):
-            p   = (self.state_a if self.state_a.is_first else self.state_b) \
-                  if turn_num % 2 == 0 \
-                  else (self.state_b if self.state_a.is_first else self.state_a)
-            opp = self.state_b if p is self.state_a else self.state_a
+        # Ponteiro "quem joga agora" (achado 16/07, OP05-119 "take an
+        # extra turn"): antes disso o loop decidia via turn_num % 2, uma
+        # alternancia fixa sem estado -- nunca permitia o MESMO jogador
+        # jogar duas vezes seguidas. Agora alterna normalmente apos cada
+        # play_turn(), MAS repete o mesmo `p` (sem trocar pra `opp`) se
+        # extra_turn_pending foi setado durante o turno que acabou de
+        # rodar (consumido/resetado aqui, uma unica vez por turno extra
+        # concedido). MAX_TURNS * 2 continua como teto de seguranca --
+        # ainda conta CADA execucao de play_turn() como 1 iteracao, entao
+        # turnos extras nao estouram o limite de chamadas, so mudam quem
+        # joga em cada uma.
+        p = self.state_a if self.state_a.is_first else self.state_b
+        opp = self.state_b if p is self.state_a else self.state_a
 
+        for _ in range(self.MAX_TURNS * 2):
             result = self.play_turn(p, opp)
             total_turns += 1
             if result:
                 winner = result
                 break
+            if p.extra_turn_pending:
+                p.extra_turn_pending = False
+                # mesmo jogador de novo -- p/opp permanecem os mesmos
+            else:
+                p, opp = opp, p
 
         return {
             'winner':      winner or 'DRAW',

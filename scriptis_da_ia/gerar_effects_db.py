@@ -899,17 +899,27 @@ def parse_grant_ko_immunity(text):
 
 
 def parse_opp_char_to_opp_life(text):
-    """'Add up to N of your opponent's [X] Characters with a cost of Y or
-    less to the top/bottom of your opponent's Life cards face-up.' --
-    remove Character do campo do oponente e insere na vida dele (face-up).
-    Achado 02/07/2026 (OP04-097 Otama, OP05-111 Hotori, EB02-057 Mad
-    Treasure)."""
+    """'Add/Place up to N of your opponent's [X] Characters with a cost of
+    Y or less to/at the top/bottom of your opponent's/their Life cards
+    face-up.' -- remove Character do campo do oponente e insere na vida
+    dele (face-up). Achado 02/07/2026 (OP04-097 Otama, OP05-111 Hotori,
+    EB02-057 Mad Treasure).
+
+    Achado 16/07 (EB01-053/OP05-096/OP09-101, revisão do usuário): mesma
+    mecânica, 3 variantes de fraseado que o regex original não aceitava --
+    verbo "Place" (não só "Add"), destino "their Life cards" (não só
+    "your opponent's"), e "Place N" sem "up to" (OP09-101). Antes essas 3
+    caíam por engano em place_opp_character_bottom_deck (regex genérico
+    demais, capturava "bottom of" seguido de QUALQUER coisa sem exigir
+    "deck" -- ação errada, "fundo do deck" em vez de "vida do oponente").
+    """
     steps = []
     t = text.lower()
     m = re.search(
-        r"add up to (\d+) of your opponent.{0,45}characters?"
-        r"(?: with a cost of (\d+) or less)?"
-        r" to the (top or bottom|top|bottom) of your opponent.{0,5}(?:life cards?|life)",
+        r"(?:add|place) (?:up to )?(\d+) of your opponent.{0,45}characters?"
+        r"(?: with a (?:base )?cost of (\d+) or less)?"
+        r" (?:to|at) the (top or bottom|top|bottom) of "
+        r"(?:your opponent.{0,5}|their) (?:life cards?|life)",
         t)
     if m:
         step = {'action': 'place_opp_char_to_opp_life', 'count': int(m.group(1))}
@@ -918,8 +928,14 @@ def parse_opp_char_to_opp_life(text):
         dest_txt = m.group(3)
         step['dest'] = 'life_top_or_bottom' if 'or bottom' in dest_txt else (
             'life_bottom' if 'bottom' in dest_txt else 'life_top')
-        # filtro de tipo (Animal ou SMILE)
-        type_m = re.search(r'\[([^\]]+)\](?: or \[([^\]]+)\])? type characters?', t)
+        # filtro de tipo (Animal ou SMILE) -- achado 16/07 (OP05-096,
+        # exposto ao estender a cobertura desta funcao): a busca era no
+        # texto INTEIRO (t), nao so na clausula do alvo (m.group(0)) --
+        # uma condicao NAO RELACIONADA mais adiante no texto ("if you
+        # have a [Celestial Dragons] type Character, draw 1 card") vazava
+        # como se fosse filtro do alvo movido pra vida. Escopado pra
+        # dentro do proprio match.
+        type_m = re.search(r'\[([^\]]+)\](?: or \[([^\]]+)\])? type characters?', m.group(0))
         if type_m:
             step['filter_type'] = type_m.group(1).strip()
         steps.append(step)
@@ -1092,51 +1108,77 @@ def parse_ko(text):
 
 def parse_place_bottom(text):
     """
-    "Place up to N of your opponent's Character(s) [with cost/power filter] at the
-    bottom of the owner's deck." Remoção forte (enterra no fundo do deck, ignora
-    On-KO). Distinta de bounce (vai pra mão) e de KO (vai pro trash).
-    Filtros: cost_lte / power_lte. Respeita imunidade a removal no engine.
+    "Place up to N of your opponent's Character(s) [com filtro de custo/
+    power, em QUALQUER ordem] at the bottom of the owner's deck." Remoção
+    forte (enterra no fundo do deck, ignora On-KO). Distinta de bounce
+    (vai pra mão) e de KO (vai pro trash). Filtros: cost_lte / power_lte.
+    Respeita imunidade a removal no engine.
+
+    Achado 16/07 (EB03-021, revisão do usuário): a versão anterior deste
+    parser exigia que "cost of" viesse ANTES de "power" no texto (dois
+    grupos sequenciais na mesma regex) -- quando a carta descreve DOIS
+    alvos encadeados com "and up to M Character(s) ..." (um filtrado por
+    power, outro por custo, em QUALQUER ordem), o filtro que aparecia
+    primeiro na frase era sempre ignorado. Reescrito para ser
+    ORDEM-AGNÓSTICO (extrai cost/power de cada cláusula independente do
+    texto que aparece em cada uma) e para reconhecer QUALQUER número de
+    alvos encadeados via "and up to N Character(s)" -- não hardcoded para
+    o caso de 2 alvos encontrado hoje, cobre cartas futuras com o mesmo
+    padrão sem precisar de outro fix.
     """
     steps = []
     t = text.lower()
-    # só do OPONENTE (o caso próprio é place_own_character_bottom_deck)
-    m = re.search(
-        r"place (?:up to )?(\d+) of your opponent's characters?"
-        r"(?:[^.]*?(?:base )?cost of (\d+) or less)?"
-        r"(?:[^.]*?(\d+) power or less)?"
-        r"[^.]*?bottom of", t)
-    if m:
-        step = {'action': 'place_opp_character_bottom_deck', 'count': int(m.group(1))}
-        if m.group(2):
-            step['cost_lte'] = int(m.group(2))
-        if m.group(3):
-            step['power_lte'] = int(m.group(3))
-        steps.append(step)
-        return steps
 
-    # Forma genérica sem "of your opponent" -- "Place up to N Character(s)
-    # with a cost of X or less at the bottom of the owner's deck" (ex:
-    # OP01-070 Mihawk, OP05-051 Borsalino, OP06-046 Sakazuki). Mesma
-    # convenção já usada em parse_bounce: sem qualificador de posse, o
-    # alvo é implicitamente o character do OPONENTE (regra do jogo).
-    # Exclui "of your [Tipo] Characters" -- isso seria auto-bounce de
-    # tribo pro fundo do deck, fora de escopo aqui (nenhum caso visto
-    # ainda, mas guard por consistência com parse_bounce).
-    m = re.search(
-        r"place (?:up to )?(\d+) characters?"
-        r"(?:[^.]*?(?:base )?cost of (\d+) or less)?"
-        r"(?:[^.]*?(\d+) power or less)?"
-        r"[^.]*?bottom of (?:the owner.?s|your) deck", t)
-    if m:
-        prefix = t[max(0, m.start() - 12):m.start()]
-        if 'of your' in prefix or 'of you' in prefix:
-            return steps
+    def extract_filters(clause: str) -> dict:
+        f = {}
+        cost_m = re.search(r'(?:base )?cost of (\d+) or less', clause)
+        if cost_m:
+            f['cost_lte'] = int(cost_m.group(1))
+        power_m = re.search(r'(\d+) (?:base )?power or less', clause)
+        if power_m:
+            f['power_lte'] = int(power_m.group(1))
+        return f
+
+    # Variante do PROPRIO lado -- "place all/N of your Characters [except
+    # this Character] at the bottom of YOUR deck" (achado 16/07, OP05-119,
+    # unica carta no banco). Distinta do resto da funcao (que so mira o
+    # OPONENTE, com ou sem qualificador de posse) -- aqui "of your" e
+    # exatamente o sinal de que e auto-alvo, entao checada e retornada
+    # ANTES do loop generico (que trataria "of your" como guard de
+    # exclusao pro caso do oponente).
+    m_own = re.search(
+        r"place (all|up to (\d+)) of your characters?"
+        r"(?P<clause>.*?)bottom of your deck",
+        t)
+    if m_own:
+        is_all = m_own.group(1) == 'all'
+        step = {
+            'action': 'place_own_character_bottom_deck',
+            'count': 99 if is_all else int(m_own.group(2)),
+        }
+        if 'except this character' in m_own.group('clause'):
+            step['exclude_self'] = True
+        return [step]
+
+    # "of your opponent's" e opcional (alvo generico sem qualificador de
+    # posse tambem mira o oponente, regra ja usada em parse_bounce). Cada
+    # cláusula de alvo termina no proximo "and up to N Character(s)" (novo
+    # alvo encadeado) ou em "bottom of ... deck" (fim da frase).
+    for m in re.finditer(
+        r"(?:place|and) (?:up to )?(\d+) (of your opponent'?s )?characters?"
+        r"(?P<clause>.*?)"
+        r"(?=and up to \d+ characters?\b|bottom of (?:the owner.?s|your) deck)",
+        t
+    ):
+        is_opp = bool(m.group(2))
+        if not is_opp:
+            prefix = t[max(0, m.start() - 12):m.start()]
+            if 'of your' in prefix or 'of you' in prefix:
+                continue
         step = {'action': 'place_opp_character_bottom_deck', 'count': int(m.group(1))}
-        if m.group(2):
-            step['cost_lte'] = int(m.group(2))
-        if m.group(3):
-            step['power_lte'] = int(m.group(3))
+        step.update(extract_filters(m.group('clause')))
         steps.append(step)
+
     return steps
 
 
@@ -4409,6 +4451,12 @@ def parse_block(block_text, trigger_name):
     if 'bottom of' in t and 'character' in t:
         steps.extend(parse_place_bottom(t))
 
+    # "Then, take an extra turn after this one" (achado 16/07, OP05-119,
+    # unica carta no banco). Mecanica nova, ver GameState.extra_turn_pending
+    # e o loop de simulate()/replay run() que consomem a flag.
+    if 'take an extra turn' in t:
+        steps.append({'action': 'take_extra_turn'})
+
     # Restar oponente
     # Aceita "rest up to N" e "rest N" (sem "up to") para oponente.
     # Tambem aceita "your opponent rests N" (verbo conjugado, PRB02-005).
@@ -4841,9 +4889,13 @@ def parse_block(block_text, trigger_name):
     if "can be k.o.'d by" in t or "cannot be k.o.'d by" in t:
         steps.extend(parse_grant_ko_immunity(t))
 
-    # Adicionar Character do oponente à vida DELE face-up (OP04-097/OP05-111/EB02-057).
-    if ('to the' in t and 'opponent' in t and 'life' in t
-            and 'character' in t and 'add up to' in t):
+    # Adicionar Character do oponente à vida DELE face-up (OP04-097/OP05-111/
+    # EB02-057). Achado 16/07 (EB01-053/OP05-096/OP09-101): gate exigia "to
+    # the" e "add up to" literais -- alargado pra "at the" (variante de
+    # preposição) e "place" (verbo alternativo, com ou sem "up to").
+    if (('to the' in t or 'at the' in t) and 'opponent' in t and 'life' in t
+            and 'character' in t
+            and ('add up to' in t or re.search(r'place (?:up to )?\d+', t))):
         steps.extend(parse_opp_char_to_opp_life(t))
 
     if ("owner" in t and 'life' in t and 'character' in t

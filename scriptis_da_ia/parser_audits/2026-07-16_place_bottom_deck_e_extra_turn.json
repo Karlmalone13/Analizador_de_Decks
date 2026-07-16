@@ -1,0 +1,23 @@
+{
+  "trigger_card": "EB03-021",
+  "problem": "Multiplos bugs relacionados a 'Place'/'bottom of deck'/'Life cards': (1) EB03-021 tinha 2 alvos encadeados (power + custo) mas o regex antigo capturava so 1, na ordem errada; (2) generalizar esse fix expos que EB01-053/OP05-096/OP09-101 usavam 'Place ... your opponent's/their Life cards' mas caiam por engano na acao ERRADA (place_opp_character_bottom_deck) porque o regex de bottom-of-deck aceitava 'bottom of' seguido de QUALQUER coisa, sem exigir 'deck'; (3) OP05-119 tinha 'Place all of your Characters except this Character at the bottom of your deck' (variante do PROPRIO lado) sem parser nem executor, e 'Then, take an extra turn after this one' -- mecanica de turno extra completamente ausente do motor (parser E engine); (4) pedido explicito do usuario: ordem 'in any order' deve ser escolhida estrategicamente pelo engine, nao arbitraria.",
+  "grammar_family": "Familia 'Place [up to] N [of your opponent's/of your] Character(s) [filtros] at/to the (top or bottom of ...) deck/life cards [in any order]' -- varias variantes de destino (deck vs life), posse (oponente vs proprio) e verbo, todas historicamente tratadas por regex fragil/superposto.",
+  "queries": [
+    "regex \\bPlace\\b sobre card_text (censo completo, 36 cartas)",
+    "extracao de todas as sentencas com 'Place' das 36 cartas, categorizadas por destino (deck vs life vs trash)",
+    "cruzamento contra parse ao vivo (nao o JSON em disco) pra achar quais das 36 ainda tinham gap real apos o fix de EB03-021",
+    "censo 'take an extra turn' -- 1 carta no banco inteiro (OP05-119)",
+    "censo 'place (all )?of your characters?.*?bottom of your deck' -- 1 carta (OP05-119, variante do proprio lado)",
+    "verificacao de que place_own_character_bottom_deck ja existia como string de action em 1 funcao de custo (substitute), mas NUNCA tinha executor implementado em decision_engine.py"
+  ],
+  "cards_found": ["EB03-021", "EB01-053", "OP05-096", "OP09-101", "OP05-119"],
+  "resolution_scope": "global",
+  "decision": "parse_place_bottom reescrita ORDEM-AGNOSTICA (extrai cost/power de cada clausula independente, nao 2 grupos sequenciais) e reconhece N alvos encadeados via finditer 'and up to N Character(s)' -- generalizado por pedido explicito do usuario, nao hardcoded pro caso de 2 alvos achado hoje. parse_opp_char_to_opp_life estendida pra aceitar verbo 'place' (nao so 'add'), destino 'their'/'your opponent's' Life cards, e 'Place N' sem 'up to'; bug lateral corrigido junto (filtro de tipo buscava no texto INTEIRO em vez de escopado ao match, vazando de uma condicao nao relacionada). Nova variante propria em parse_place_bottom pra 'place all/N of your Characters [except this Character] at the bottom of YOUR deck' -> place_own_character_bottom_deck, com executor novo que ordena por board_value DESCENDENTE (mais forte fica mais perto do topo do deck = comprado mais cedo se o deck chegar la -- pedido explicito do usuario sobre 'in any order' nao ser arbitrario). Nova mecanica take_extra_turn: GameState.extra_turn_pending (novo campo, incluido no __deepcopy__), executor seta a flag, loop de OPTCGMatch.simulate() E replay_optcg.py run() refatorados de alternancia fixa (turn_num % 2) pra ponteiro 'quem joga agora' que repete o mesmo jogador quando a flag esta setada. _resolve_choice ganhou peso pra place_opp_char_to_opp_life (faltava, default=1 subvalorizava a acao numa escolha real -- OP05-096).",
+  "validated_by": [
+    "diff_parser.py: GANHOU 0 / PERDEU 0 / MUDOU 5 (todas as 5 cartas confirmadas contra card_text; verificado tambem que NENHUMA das outras 6 cartas ja corretas via place_opp_char_to_opp_life foi duplicada/regredida)",
+    "gerar_dbs.py + snapshot_parser.py: 0/0/0 apos regenerar",
+    "smoke_fast.py: 4 testes dirigidos novos com EXECUCAO real -- dois alvos encadeados de EB03-021 (power e custo aplicados corretamente, terceiro personagem poupado), variantes de fraseado de place_opp_char_to_opp_life (execucao real confirma personagem vai pra vida do PROPRIO oponente, face-up), place_own_character_bottom_deck com ordenacao estrategica (mais forte mais perto do topo, prova via indices na lista), e o LOOP de simulate() repetindo o mesmo jogador via monkeypatch de play_turn",
+    "smoke_test.py: suite ampla -- 2 falhas iniciais eram um teste PRE-EXISTENTE que assumia o comportamento ERRADO antigo de OP05-096 (place_opp_character_bottom_deck em vez da acao correta); corrigido o teste E adicionado peso em _resolve_choice pra place_opp_char_to_opp_life. TODOS OS TESTES PASSARAM apos o ajuste",
+    "smoke_test_broad.py: 7/7 partidas aleatorias sem excecao"
+  ]
+}

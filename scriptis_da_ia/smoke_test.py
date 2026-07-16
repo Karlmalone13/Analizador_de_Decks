@@ -170,11 +170,14 @@ check('choice sem alvo de remocao: cai para opcao com step sempre-viavel (draw)'
       any(s['action'] == 'draw' for s in resolved))
 
 # com personagem do oponente -> 3 opcoes viaveis, prioridade vai pra
-# place_opp_character_bottom_deck (peso 3) sobre ko (peso 2) e bounce (peso 1)
+# place_opp_char_to_opp_life (peso 3, achado 16/07: acao real da 3a
+# opcao, corrigida de place_opp_character_bottom_deck -- texto oficial e
+# "at the top or bottom of THEIR Life cards", nao "bottom of the deck")
+# sobre ko (peso 2) e bounce (peso 1).
 opp.field_chars = [mk('OC', 'Opp Char', power=2000, cost=1)]
 resolved2 = ee._resolve_choice(options, card_op05096)
-check('choice com alvo disponivel: prioriza place_bottom_deck (peso 3) sobre ko/bounce',
-      any(s['action'] == 'place_opp_character_bottom_deck' for s in resolved2))
+check('choice com alvo disponivel: prioriza place_opp_char_to_opp_life (peso 3) sobre ko/bounce',
+      any(s['action'] == 'place_opp_char_to_opp_life' for s in resolved2))
 
 # ── 7. choice sem custo (ST07-010) integrado via execute() completo ─────────
 me, opp = me_opp()

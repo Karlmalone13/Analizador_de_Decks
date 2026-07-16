@@ -1,5 +1,80 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-16 (199) - EB03-021 generalizado revela familia grande: place-bottom-deck, Life cards, e mecanica NOVA de turno extra (5 cartas)
+
+Fechamento da familia "EB03-021" (varredura 1-por-1, pedido do usuario).
+Comecou pequeno (2 alvos encadeados numa carta so) e cresceu por causa
+de 2 decisoes do usuario nesta rodada: (1) "corrigir de maneira
+global... e deixar de previsao pra novas cartas" -- generalizei o
+regex em vez de hardcodear pro caso de 2 alvos; (2) "vasculhar Place no
+banco pra colocar nas familias certas" -- censo de 36 cartas revelou 2
+familias adicionais nao relacionadas ao pedido original.
+
+**1) `parse_place_bottom` generalizada (EB03-021, 1 carta):** reescrita
+pra ser ORDEM-AGNOSTICA (extrai custo/power de cada clausula
+independente, nao 2 grupos sequenciais assumindo que "cost" vem antes
+de "power" no texto) e reconhecer QUALQUER numero de alvos encadeados
+via "and up to N Character(s)" -- nao hardcoded pro caso de 2.
+
+**2) Regressao pega durante a generalizacao, corrigida na funcao certa
+(3 cartas: EB01-053, OP05-096, OP09-101):** a nova regex, mais estrita
+(exige "deck" no destino), corretamente parou de capturar essas 3 --
+que na verdade usam "Place ... your opponent's/their Life cards" (nao
+"deck"!). Confirmado: ja existia `parse_opp_char_to_opp_life`, uma
+funcao DEDICADA e correta pra essa mecanica exata (so aceitava "add",
+nao "place"). Estendida pra aceitar "place" como sinonimo de verbo e
+"their"/"your opponent's" como sinonimos de destino, mais um bug
+lateral achado no processo (filtro de tipo buscava no TEXTO INTEIRO em
+vez de escopado ao match, vazando de uma condicao nao relacionada em
+OP05-096).
+
+**3) Mecanica NOVA (OP05-119, unica carta): turno extra.** Texto real:
+"DON!! -10: Place all of your Characters except this Character at the
+bottom of your deck in any order. Then, **take an extra turn after this
+one**." Nao existia NADA no motor pra "jogar 2 vezes seguidas" -- nem
+parser, nem engine. Implementado:
+- `place_own_character_bottom_deck`: acao ja existia como STRING em 1
+  funcao de custo, mas sem parser real nem executor nenhum. Novo branch
+  em `parse_place_bottom` + executor novo.
+- `take_extra_turn`: novo campo `GameState.extra_turn_pending` (incluido
+  no `__deepcopy__`), executor so seta a flag. `OPTCGMatch.simulate()`
+  e `replay_optcg.py run()` refatorados de alternancia fixa (`turn_num
+  % 2`, sem estado) pra um ponteiro "quem joga agora" que repete o
+  MESMO jogador quando a flag esta setada apos o turno, resetando-a em
+  seguida. Ambos os loops (motor + replay) atualizados pra nao
+  divergir.
+
+**4) "in any order" deixa de ser arbitrario (pedido explicito do
+usuario):** `place_own_character_bottom_deck` ordena os alvos por
+`board_value()` DESCENDENTE antes de mover -- o mais FORTE fica mais
+perto do topo do deck (comprado mais cedo se o deck chegar la algum
+dia), nao a ordem que o codigo encontrou primeiro. **Dividia tecnica
+registrada em TODO.md**: os OUTROS pontos pre-existentes que tratam "in
+any order" como irrelevante (ex: `place_from_trash_bottom_deck`) NAO
+foram tocados nesta rodada (escopo maior, fila propria) -- documentado
+como pendencia formal, nao esquecido.
+
+**5) Metodologia registrada em CLAUDE.md (obrigacao do projeto,
+pedido explicito):** corrigir a FORMA do bug (ordem de clausulas,
+sinonimos de verbo, N alvos), nao o texto exato da carta-gatilho.
+Tambem salvo em memoria.
+
+**Validado:** `diff_parser.py` PERDEU=0, MUDOU=5 (confirmado que as 6
+cartas JA corretas via `place_opp_char_to_opp_life` nao foram
+duplicadas/regredidas -- essa foi minha 1a tentativa de fix, corrigida
+antes de prosseguir). 4 testes dirigidos novos com EXECUCAO real:
+2 alvos encadeados, variantes de fraseado (execucao real confirma
+personagem vai pra vida do PROPRIO oponente), ordenacao estrategica no
+fundo do deck (prova via indices), e o LOOP de `simulate()` repetindo o
+mesmo jogador (monkeypatch de `play_turn`, sem precisar montar uma
+partida completa). `smoke_fast.py` (109 checks) verde. `smoke_test.py`
+amplo: 2 falhas iniciais eram um teste PRE-EXISTENTE que assumia o
+comportamento ERRADO antigo de OP05-096 -- corrigido junto com um peso
+que faltava em `_resolve_choice` pra `place_opp_char_to_opp_life`.
+TODOS OS TESTES PASSARAM apos o ajuste. `smoke_test_broad.py` **7/7**.
+Registro: `parser_audits/2026-07-16_place_bottom_deck_e_extra_turn.json`
+(`resolution_scope: global`, 5 cartas).
+
 ## 2026-07-16 (198) - Fecha o padrao transversal "power of N" (ordem invertida) em 4 mecanismos, 6 cartas
 
 Continuacao direta do bloco 197 (correcao de metodologia do usuario).

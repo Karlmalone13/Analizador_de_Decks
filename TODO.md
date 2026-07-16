@@ -98,6 +98,36 @@ começar por reler os 4 logs de 07/07 (`CombatLogs/2026-07-07T*.log`) e
 
 ---
 
+## 🔴 Dívida técnica — "in any order" tratado como irrelevante em vários pontos (16/07/2026)
+
+Pedido explícito do usuário: o engine deve escolher a MELHOR ordem
+quando o texto oficial diz "in any order" (não é estética/irrelevante
+como o código vinha assumindo em múltiplos comentários). Corrigido
+nesta sessão APENAS pro caso novo `place_own_character_bottom_deck`
+(ordena por `board_value()` descendente — mais forte fica mais perto do
+topo do deck, comprado mais cedo se o deck chegar lá; ver HANDOFF bloco
+199). **Os pontos pré-existentes abaixo ainda tratam a ordem como
+arbitrária e precisam da mesma auditoria/correção**, cada um com seu
+próprio censo global antes de mexer (gate de auditoria já exige isso):
+
+- `place_from_trash_bottom_deck` (custo, `_pay_costs` em
+  `decision_engine.py` ~linha 3236-3258): escolhe via
+  `candidatos.pop()` sem critério, mesmo comentário "irrelevante".
+- Reordenação de topo do deck em efeitos de busca (`deck_reorder_rest`,
+  "look at N cards... place the rest at the bottom of your deck in any
+  order") — vários `parse_reveal_*`/`parse_look_top_deck` no parser.
+  Aqui pode ser MENOS crítico (o resto costuma ser embaralhado ou o
+  próximo draw já é aleatorizado por outro efeito), mas precisa de
+  auditoria individual antes de assumir isso.
+- Qualquer novo mecanismo futuro que mencione "in any order" — checar
+  este item ANTES de assumir que não importa.
+
+Não fazer tudo de uma vez (escopo grande, muitos mecanismos distintos)
+— tratar como fila própria, 1 mecanismo por vez, mesmo protocolo já em
+uso (censo → confirmação do usuário → fix → smoke completo → registro).
+
+---
+
 ## 🟢 FEITO NESTA SESSÃO (25-26/06)
 
 Sessão focada em destravar mecânicas sem branch no engine (auditoria por mecânica,

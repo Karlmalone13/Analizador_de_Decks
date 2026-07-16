@@ -2216,7 +2216,7 @@
   "attribute": "Special",
   "effects": [
    {
-    "action": "place_opp_character_bottom_deck",
+    "action": "place_opp_char_to_opp_life",
     "trigger": "on_play",
     "cost_lte": 3
    },
@@ -6359,6 +6359,11 @@
   "sub_types": "Cross Guild",
   "attribute": "Strike",
   "effects": [
+   {
+    "action": "place_opp_character_bottom_deck",
+    "trigger": "on_play",
+    "power_lte": 4000
+   },
    {
     "action": "place_opp_character_bottom_deck",
     "trigger": "on_play",
@@ -36231,13 +36236,13 @@
     "target": "opp_character"
    },
    {
-    "action": "place_opp_character_bottom_deck",
-    "trigger": "main",
-    "cost_lte": 1
-   },
-   {
     "action": "draw",
     "trigger": "main"
+   },
+   {
+    "action": "place_opp_char_to_opp_life",
+    "trigger": "main",
+    "cost_lte": 1
    }
   ],
   "synergy_states": {
@@ -37235,6 +37240,14 @@
   "sub_types": "Straw Hat Crew The Four Emperors",
   "attribute": "Strike",
   "effects": [
+   {
+    "action": "place_own_character_bottom_deck",
+    "trigger": "on_play"
+   },
+   {
+    "action": "take_extra_turn",
+    "trigger": "on_play"
+   },
    {
     "action": "add_don",
     "trigger": "activate_main"
@@ -57505,13 +57518,13 @@
   "attribute": "Special",
   "effects": [
    {
-    "action": "place_opp_character_bottom_deck",
-    "trigger": "on_play",
-    "cost_lte": 3
-   },
-   {
     "action": "opp_trash_from_hand",
     "trigger": "on_play"
+   },
+   {
+    "action": "place_opp_char_to_opp_life",
+    "trigger": "on_play",
+    "cost_lte": 3
    }
   ],
   "synergy_states": {},

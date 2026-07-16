@@ -308,18 +308,24 @@ class ReplayMatch:
         self.setup()
         winner = None
 
-        for turn_num in range(self.MAX_TURNS * 2):
-            if turn_num % 2 == 0:
-                p   = self.state_a if self.state_a.is_first else self.state_b
-                opp = self.state_b if self.state_a.is_first else self.state_a
-            else:
-                p   = self.state_b if self.state_a.is_first else self.state_a
-                opp = self.state_a if self.state_a.is_first else self.state_b
+        # Mesmo ponteiro "quem joga agora" de OPTCGMatch.simulate() (achado
+        # 16/07, OP05-119 "take an extra turn") -- espelhado aqui porque
+        # este loop de replay ainda mantem copia propria da alternancia de
+        # turnos (nao delegada ao OPTCGMatch), sem repetir o mesmo jogador
+        # o replay mostraria a ordem errada pra qualquer partida com essa
+        # carta.
+        p   = self.state_a if self.state_a.is_first else self.state_b
+        opp = self.state_b if p is self.state_a else self.state_a
 
+        for _ in range(self.MAX_TURNS * 2):
             result = self.play_turn(p, opp)
             if result:
                 winner = result
                 break
+            if p.extra_turn_pending:
+                p.extra_turn_pending = False
+            else:
+                p, opp = opp, p
 
         sep('═')
         if winner == 'A':
