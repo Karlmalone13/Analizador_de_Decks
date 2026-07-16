@@ -117,6 +117,20 @@ def parse_conditions(text):
     m = re.search(r'if you have (\d+) or more don!!', t)
     if m: conds['don_gte'] = int(m.group(1))
 
+    # "if you have activated/played an Event with a base cost of N or
+    # more during this turn" -- rastreamento de EVENTO ativado NESTE
+    # turno especifico (distinto de events_in_trash_gte, que so conta
+    # quantidade acumulada no trash, sem checar QUANDO nem custo). Achado
+    # 16/07 (OP15-002 Lucy): condicao inteira ausente, o draw disparava
+    # sempre. 'activated' e sinonimo de 'played' pra Events (mesma
+    # convencao ja usada em parse_activate_event_from_hand).
+    m = re.search(
+        r'if you have (?:activated|played) an event'
+        r'(?: with an? (?:base )?cost of (\d+) or more)?'
+        r'(?: during this turn)?', t)
+    if m:
+        conds['event_activated_cost_gte_this_turn'] = int(m.group(1)) if m.group(1) else 0
+
     m = re.search(r"your leader.?s card name includes [\"\[{]([^\"\]}]+)[\"\]}]", t)
     if m: conds['leader_name_includes'] = m.group(1).strip()
 

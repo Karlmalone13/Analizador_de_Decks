@@ -716,6 +716,13 @@ class GameState:
     # unica carta no banco). Setado pelo executor de take_extra_turn,
     # consumido e resetado pelo loop de simulate() logo apos play_turn().
     extra_turn_pending: bool = False
+    # Custos dos Events ativados/jogados NESTE turno (achado 16/07,
+    # OP15-002 Lucy: "if you have activated an Event with a base cost of N
+    # or more during this turn"). Populado em _play_card() sempre que um
+    # EVENT sai da mao, resetado no inicio de cada turno do jogador
+    # (refresh_phase, mesmo ponto onde as outras auto-restricoes "this
+    # turn" sao limpas).
+    events_activated_costs_this_turn: List[int] = field(default_factory=list)
 
     def __deepcopy__(self, memo):
         """
@@ -766,6 +773,7 @@ class GameState:
         novo.end_of_turn_queue = _dc(self.end_of_turn_queue, memo)
         novo.pending_play_cost_reductions = _dc(self.pending_play_cost_reductions, memo)
         novo.extra_turn_pending = self.extra_turn_pending
+        novo.events_activated_costs_this_turn = list(self.events_activated_costs_this_turn)
         return novo
 
     def known_hand_cards(self) -> List['Card']:
@@ -2831,6 +2839,14 @@ class EffectExecutor:
             attached_total = getattr(me.leader, 'don_attached', 0) + sum(
                 getattr(c, 'don_attached', 0) for c in me.field_chars)
             if attached_total < conds['don_attached_total_gte']:
+                return False
+        # "if you have activated an Event with a base cost of N or more
+        # during this turn" -- rastreamento de EVENTO ativado NESTE turno
+        # (achado 16/07, OP15-002 Lucy). Populado em _play_card()/
+        # _put_into_play() sempre que um EVENT sai da mao.
+        if 'event_activated_cost_gte_this_turn' in conds:
+            threshold = conds['event_activated_cost_gte_this_turn']
+            if not any(c >= threshold for c in me.events_activated_costs_this_turn):
                 return False
         if 'don_on_field_gte' in conds and me.don_on_field() < conds['don_on_field_gte']:
             return False
@@ -5637,6 +5653,7 @@ class EffectExecutor:
                     me.field_stage = c
                 elif c.card_type == 'EVENT':
                     me.trash.append(c)
+                    me.events_activated_costs_this_turn.append(c.cost)
                 # dispara o efeito on_play da carta jogada (entrou agora)
                 self.execute(c, 'on_play')
                 self.execute(c, 'main')
@@ -7130,6 +7147,8 @@ class DecisionEngine:
                 attached_total = getattr(me.leader, 'don_attached', 0) + sum(
                     getattr(c, 'don_attached', 0) for c in me.field_chars)
                 if attached_total < v: return False
+            if k == 'event_activated_cost_gte_this_turn':
+                if not any(c >= v for c in me.events_activated_costs_this_turn): return False
             if k == 'don_on_field_gte' and not ((my_don + me.don_rested) >= v): return False
             if k == 'don_on_field_lte' and not ((my_don + me.don_rested) <= v): return False
             if k == 'opp_don_on_field_gte' and not (self.opp.don_on_field() >= v): return False
@@ -8150,6 +8169,7 @@ class OPTCGMatch:
         p.cant_play_cost_gte = 0
         p.cannot_attack_leader_this_turn = False
         p.cant_take_life_this_turn = False
+        p.events_activated_costs_this_turn = []
 
     def draw_phase(self, p: GameState, verbose: bool = False):
         """PlayerDrawPhase — 1º jogador não compra no T1."""
@@ -9899,6 +9919,7 @@ class OPTCGMatch:
 
         elif card.card_type == 'EVENT':
             p.trash.append(card)
+            p.events_activated_costs_this_turn.append(card.cost)
 
         elif card.card_type == 'STAGE':
             if p.field_stage:

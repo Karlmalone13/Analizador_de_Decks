@@ -1,5 +1,50 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-16 (205) - OP15-002 Lucy: rastreamento "Event ativado neste turno" nunca existiu (fecha o lote de 3)
+
+3a e ultima familia do lote (ver pacing no bloco 203 -- smoke_test_broad.py
+rodado agora, ao final das 3, nao a cada uma). OP15-002 (Lucy):
+"[Activate: Main] [Once Per Turn] If you have activated an Event with a
+base cost of 3 or more during this turn, draw 1 card." Nao era falha de
+regex -- o CONCEITO "evento ativado NESTE turno, com seu custo" nao
+existia em nenhum lugar do engine (distinto de `events_in_trash_gte`,
+que so conta quantidade acumulada no trash sem checar QUANDO nem
+custo). O draw disparava sempre.
+
+Novo campo `GameState.events_activated_costs_this_turn` (lista de
+custos), resetado em `refresh_phase()` (mesmo ponto das outras
+auto-restricoes "this turn") e populado nos 2 pontos onde um EVENT sai
+da mao pro trash (`_play_card`, Main Phase normal, e `_put_into_play`,
+caminho de efeito `play_card`). Nova condicao
+`event_activated_cost_gte_this_turn` em `_check_conditions` e
+`_effect_conditions_met`. Busca global achou so esta 1 carta
+(`isolated_after_global_scan`).
+
+**Achado en passant, NAO corrigido (fora de escopo):** a 1a clausula
+de OP15-002 ("trash any number of Event or Stage cards..., gains
++1000 power for every card trashed") e uma mecanica de buff
+PROPORCIONAL ao numero trashado nesta ativacao -- hoje simplificada
+pra +1000 fixo, ignorando a escala. Nao tem numero perdido (nao e a
+causa do suspeito), registrado em
+`parser_audits/2026-07-16_lucy_event_activated_cost_gte_this_turn.json`
+pra retomar se aparecer de novo.
+
+**Validado:** `diff_parser.py` GANHOU=0/PERDEU=0/MUDOU=1.
+`gerar_dbs.py`+`snapshot_parser.py` 0/0/0. `smoke_fast.py`: 1 teste
+dirigido novo com EXECUCAO real (4 cenarios: sem Event, Event abaixo
+do limiar, Event no limiar, reset via refresh_phase). `smoke_test.py`:
+TODOS OS TESTES PASSARAM. **`smoke_test_broad.py`: 7/7 partidas
+aleatorias sem excecao** (fecha o lote de 3 familias -- bloco 203,
+204, 205).
+
+Suspeitos: 344 -> 343. Lote de 3 familias concluido (203-205, total 18
+cartas cobertas: 16 da familia OP12-102 + 1 da OP14-034 + 1 da
+OP15-002). Proximo: ST25-002/ST25-005 (mesma causa compartilhada,
+`chars_gte_cost_filter` -- precisa reverificar
+`audit_parser_coverage.py --code ST25-002` antes de assumir que ainda
+esta quebrada, ja que o fix de `chars_gte_cost_filter`
+base/original-opcional do bloco 202 pode ja ter resolvido).
+
 ## 2026-07-16 (204) - OP14-034 Luffy: cor intercalada quebrava o fix all_allies+filter_type de novo
 
 2a familia do lote de 3 (smoke_test_broad.py deferido pro fim da 3a,

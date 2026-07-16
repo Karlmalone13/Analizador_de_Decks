@@ -56845,6 +56845,9 @@
             "count": 1
           }
         ],
+        "conditions": {
+          "event_activated_cost_gte_this_turn": 3
+        },
         "once_per_turn": true
       },
       "when_attacking": {

@@ -1,0 +1,20 @@
+{
+  "trigger_card": "OP15-002",
+  "problem": "OP15-002 (Lucy): '[Activate: Main] [Once Per Turn] If you have activated an Event with a base cost of 3 or more during this turn, draw 1 card.' Nao era falha de regex -- o CONCEITO 'evento ativado neste turno especifico, com seu custo' nao existia em nenhum lugar do engine (distinto de events_in_trash_gte, que so conta quantidade acumulada no trash sem checar QUANDO nem custo). O draw disparava sempre, incondicionalmente.",
+  "grammar_family": "'if you have activated/played an Event with a (base) cost of N or more during this turn' -- condicao de rastreamento de acao NESTE turno (nao estado acumulado), primeira vez que esse tipo de condicao aparece no banco.",
+  "queries": [
+    "regex 'if you have (?:activated|played) an? event' sobre card_text -- achou 1 carta so (OP15-002), resolution_scope isolated_after_global_scan",
+    "confirmado que nao existia NENHUMA infra de rastreamento 'X jogado neste turno' com custo -- precisou de campo novo em GameState (events_activated_costs_this_turn), populado no unico ponto central onde EVENT sai da mao (_play_card) e no caminho de efeito (_put_into_play, usado por qualquer step play_card com card_type=EVENT, ja existente desde a familia 'activate_event_from_hand')",
+    "identificado en passant (fora de escopo, NAO corrigido): a 1a clausula de OP15-002 ('trash any number of Event or Stage cards from your hand, gains +1000 power for every card trashed') e uma mecanica de buff PROPORCIONAL ao numero trashado nesta ativacao -- hoje simplificada para +1000 fixo, ignorando a escala. Distinto da familia 'base cost' desta sessao (nao tem numero perdido, e um gap de fidelidade pre-existente, nao a causa do suspeito). Registrado aqui para retomar se aparecer de novo em outra carta."
+  ],
+  "cards_found": ["OP15-002"],
+  "resolution_scope": "isolated_after_global_scan",
+  "decision": "Novo campo GameState.events_activated_costs_this_turn (lista de custos), resetado em refresh_phase() (mesmo ponto onde as outras auto-restricoes 'this turn' sao limpas) e populado nos 2 pontos onde um EVENT sai da mao para o trash (_play_card, o caminho normal de Main Phase, e _put_into_play, o caminho de efeito play_card). Nova condicao 'event_activated_cost_gte_this_turn' adicionada a _check_conditions e _effect_conditions_met (gate real de execute() e de decisao de ativar, respectivamente) -- 'activated' tratado como sinonimo de 'played' pra Events, mesma convencao ja usada em parse_activate_event_from_hand.",
+  "validated_by": [
+    "diff_parser.py: GANHOU 0 / PERDEU 0 / MUDOU 1 (OP15-002, conferida contra card_text)",
+    "gerar_dbs.py + snapshot_parser.py: 0/0/0 apos regenerar",
+    "smoke_fast.py: teste dirigido novo test_lucy_event_activated_cost_gte_this_turn com EXECUCAO real -- confirma draw NAO dispara sem Event ativado, NAO dispara com Event de custo abaixo do limiar, DISPARA com Event de custo>=3, e que refresh_phase reseta o rastreamento no inicio do turno",
+    "smoke_test.py: suite ampla, TODOS OS TESTES PASSARAM",
+    "smoke_test_broad.py: 3a familia do lote de 3 -- rodada ao final desta familia conforme pacing (16/07)"
+  ]
+}

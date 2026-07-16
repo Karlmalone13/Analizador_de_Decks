@@ -2693,6 +2693,51 @@ def test_all_allies_filter_color_e_type_intercalados() -> None:
           and verde_baixo.power_buff == 0)
 
 
+def test_lucy_event_activated_cost_gte_this_turn() -> None:
+    # Achado 16/07 (OP15-002 Lucy, 3a familia do lote) -- "[Activate: Main]
+    # [Once Per Turn] If you have activated an Event with a base cost of 3
+    # or more during this turn, draw 1 card." Condicao inteira ausente do
+    # parser (nao existia NENHUM rastreamento de "evento ativado neste
+    # turno", distinto de events_in_trash_gte que so conta quantidade
+    # acumulada sem checar QUANDO nem custo) -- o draw disparava sempre.
+    conds = get_card_effects("OP15-002").get("activate_main", {}).get("conditions", {})
+    check("OP15-002 activate_main parseia event_activated_cost_gte_this_turn=3",
+          conds.get("event_activated_cost_gte_this_turn") == 3)
+
+    lucy = real_card("OP15-002")
+    opp = GameState(leader=mk("XLUCYOPP", "Opp", card_type="LEADER"), turn=3)
+
+    # SEM ter ativado nenhum Event neste turno -- draw NAO dispara.
+    me1 = GameState(leader=lucy, turn=3)
+    log1 = EffectExecutor(me1, opp).execute(lucy, "activate_main")
+    check("Execucao real: sem Event ativado neste turno, o draw NAO dispara",
+          not any("comprou" in x for x in log1))
+
+    # Com um Event de custo BAIXO (2, abaixo do limiar 3) ativado -- ainda
+    # nao dispara.
+    me2 = GameState(leader=lucy, turn=3)
+    me2.events_activated_costs_this_turn = [2]
+    log2 = EffectExecutor(me2, opp).execute(lucy, "activate_main")
+    check("Execucao real: Event ativado de custo ABAIXO do limiar, draw NAO dispara",
+          not any("comprou" in x for x in log2))
+
+    # Com um Event de custo>=3 ativado neste turno -- dispara.
+    me3 = GameState(leader=lucy, turn=3)
+    me3.events_activated_costs_this_turn = [4]
+    me3.deck = [mk("XLUCYDECK", "Topo do Deck")]
+    log3 = EffectExecutor(me3, opp).execute(lucy, "activate_main")
+    check("Execucao real: Event ativado de custo>=3 neste turno, draw dispara",
+          any("comprou" in x for x in log3))
+
+    # refresh_phase reseta o rastreamento no inicio do proprio turno.
+    me4 = GameState(leader=lucy, turn=3, don_deck=10)
+    me4.events_activated_costs_this_turn = [5]
+    match = object.__new__(OPTCGMatch)
+    match.refresh_phase(me4)
+    check("refresh_phase reseta events_activated_costs_this_turn no inicio do turno",
+          me4.events_activated_costs_this_turn == [])
+
+
 def main() -> int:
     test_turn_order_imu_prefers_second()
     test_empty_throne_beats_direct_five_elders_play()
@@ -2771,6 +2816,7 @@ def main() -> int:
     test_no_other_named_condicao_transversal()
     test_all_allies_filter_type_buff_power()
     test_all_allies_filter_color_e_type_intercalados()
+    test_lucy_event_activated_cost_gte_this_turn()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0
