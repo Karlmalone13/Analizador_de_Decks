@@ -1,5 +1,150 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-17 (237-247) - Lote de 11 itens aprovado ("levar os 11") -- varios bugs sistemicos descobertos no caminho
+
+Usuario aprovou de uma vez os 11 candidatos levantados apos o lote anterior
+(bloco 236). Um (OP09-118) confirmado FALSO-POSITIVO durante a implementacao
+(condicao "0 Life cards" ja hardcoded no engine em `_execute_attack`, so nao
+aparece no JSON parseado -- nao precisou de fix). Os outros 10 generalizaram
+para familias BEM maiores que a carta-gatilho original, e a investigacao de
+cada um revelou 3 bugs SISTEMICOS pre-existentes nao relacionados ao escopo
+original:
+
+**237 -- EB02-061/OP16-060:** custo NOVO `return_active_don_to_don_deck`
+("you may return N of your active DON!! cards to your DON!! deck: efeito")
+-- distinto de `don_minus` ja existente (que PREFERE devolver DON ja
+restado/gasto; aqui o texto exige DON ATIVO especificamente).
+
+**238 -- ST17-005/EB03-034/ST17-001:** "place N cards from your hand at the
+top of your deck" (SEM "or bottom") -- acao/custo NOVO `hand_to_deck_top`/
+`place_hand_top_deck`, TOPO do deck (fim da lista), distinto do
+`hand_to_deck` existente (sempre fundo).
+
+**239 -- EB01-001 + bug sistemico #1 (10+ cartas):** condicao NOVA
+`other_char_cost_gte_type` (variante por TIPO da `other_char_cost_gte`
+existente). Ao investigar o Counter irmao de OP12-098 (mesma frase "Then,
+if [cond], that card gains an additional +N power"), achado bug MAIOR: o
+2o `buff_power` de uma FAMILIA INTEIRA de Counter events (EB03-020,
+OP01-029, OP04-095, OP05-114, OP06-038, OP07-035, OP07-095, OP11-059,
+OP12-098, OP14-078) mirava `target='self'` (o proprio Event card, que nao
+luta -- buff inutil) em vez do MESMO alvo escolhido pelo 1o buff
+(`leader_or_character`). Corrigido: novo alvo `target='selected'`
+(consistente com o resto do engine), com `_last_selected` agora tambem
+gravado pelo branch `leader_or_character`. `_counter_event_power_plan`
+(mecanismo separado de simulacao "vale usar este Counter?") usava
+`target=='self'` como MARCADOR interno pra essa mesma semantica --
+atualizado pra aceitar `'selected'` tambem (pego pelo `smoke_test.py`,
+2 testes antigos que validavam o comportamento ANTIGO por engano).
+
+**240 -- EB03-009 + bug sistemico #2:** alvo "up to 1 of your Characters
+with no base effect" caia em auto-buff (`target='self'`) porque o custo
+"rest this Character" contaminava a deteccao de alvo (checada ANTES de
+"of your characters" na mesma janela) -- reordenado, mesma classe de bug
+ja documentada pra 'leader' (contaminacao cruzada custo/condicao->alvo).
+Ao consertar, achado bug PRE-EXISTENTE mais serio: `filter_no_effect`
+SEMPRE retornava True (`get_card_effects()` ja retorna o dict desempacotado
+de efeitos; chamar `.get('effects')` NELE de novo sempre dava `None`) --
+o filtro nunca filtrava nada, tratando QUALQUER carta como "sem efeito
+base". Corrigido em 3 lugares (buff_power own_character, buff_cost/
+debuff_cost, play_from_deck) -- afeta tambem OP03-091, EB02-022, EB03-003,
+EB03-007, EB03-039 (nunca filtravam de verdade antes).
+
+**241 -- EB02-056:** condicao NOVA `opp_chars_lte` (simetrica a
+`opp_chars_gte` existente, so cobria "or more"). Clausula usa conector
+"and if [cond], [efeito]" SEM ponto (distinto do `split_then_if` existente,
+que exige ponto antes do "if") -- novo `SPLIT_AND_IF_RE`, mesma semantica
+de anexar a condicao SO ao step seguinte.
+
+**242 -- EB03-006 (dado bruto) + bug sistemico #3 (65+ cartas):** WebSearch
+contra o texto oficial confirmou "-5000 power" (sinal de menos perdido no
+scrape do cards_rows.csv) -- corrigido como dado, nao parser (mesma
+metodologia do bloco 227, OP15-009). Ao validar, achado bug SISTEMICO
+MUITO maior: `'[once per turn]' in t_low` checava o TEXTO INTEIRO da carta
+em vez do bloco do trigger ATUAL -- qualquer carta com 2+ blocos onde SO
+UM tinha a tag contaminava TODOS com `once_per_turn=True`. Corrigido pra
+`in block` (ja recortado por trigger_pattern). 65+ cartas confirmadas
+afetadas (amostra: EB01-002, EB02-035, EB03-001/008/026/061, EB04-001/
+007/021/032/036/043, OP01-040, OP04-024/060, OP05-016/032/041/119,
+OP06-055/062/111, OP07-057/071, OP08-008/056/105/111, OP09-023,
+OP10-001/003/037/071/086, OP11-031, OP12-041/044/053/077/081, OP13-057,
+OP14-016/029/061/080/105/114/119, OP15-001/002/008/023/041/114, OP16-063/
+065/080/094, P-096, PRB02-002, ST01-012/016, ST02-010, ST12-010, ST13-002,
+ST19-003/004, ST20-002, ST21-003, ST22-012, ST27-001, ST28-004, ST29-012).
+
+**243 -- OP14-009 (Trafalgar Law):** corpo inteiro ausente -- custo
+`trash_from_hand` count=2 + mecanica NOVA `swap_base_power` com alvo
+`leader_and_own_character` (troca o power BASE entre o Leader e o melhor
+Character proprio por board_value, generalizando o `swap_base_power`
+ja existente que so cobria 2 Characters ou 2 chars do oponente).
+
+**244 -- OP12-016 + familia (EB04-009/OP12-017/OP12-019) + bug sistemico
+#4 (9+ cartas):** custo NOVO `give_don_to_named` ("you may give N active
+DON!! cards to 1 of your [Nome]: efeito", familia "Silvers Rayleigh") +
+efeito NOVO `select_grant_unblockable_turn(target='don_recipient')` --
+alvo = quem recebeu o DON!!, sem step de selecao proprio no texto (gap ja
+identificado e DEFERIDO em sessao anterior, ver docstring de
+`parse_select_unblockable_turn`). Ao implementar, achado bug SISTEMICO
+descoberto: a guarda que evita "your opponent activates [Blocker]" de virar
+`keyword_blocker` nativo por engano (achado 15/07, OP09-118) tinha um erro
+de REGEX (`(?:cannot|can't )?` sem espaco na 1a alternativa, nunca casava)
+E nao tolerava a NEGACAO "cannot/can't activate" (a forma REAL mais comum
+de "torna alguem unblockable") -- corrigido, 9+ cartas confirmadas ganhando
+Blocker nativo bogus por engano: OP05-016, OP06-055, OP08-111, ST01-012,
+OP12-077, ST01-016, ST21-003, OP13-057 (fora as 4 da familia Rayleigh).
+
+**245 -- OP16-118 (Portgas Ace):** mecanica estatica NUNCA VISTA --
+"The counter of all of your Character cards with N power in your hand
+becomes +M" (modifica o Counter IMPRESSO de cartas na MAO, filtro por
+power exato). Nova acao `set_hand_counter_by_power` + helper
+`effective_counter(card, owner)` no engine, consumido nos pontos
+DECISIVOS de "vale usar como Counter" (`counter_in_hand`/`pick_counters`)
+-- escopo deliberadamente estreito, NAO tocado nas ~10 heuristicas de
+scoring secundarias que leem `card.counter` direto (seria over-engineering
+pra 1 carta nao usada em nenhum deck salvo).
+
+**246 -- ST01-017 (Thousand Sunny, Stage):** `target='self'` sem sentido
+pra um Stage (nao luta) -- corrigido pra `select_filtered` (mesmo
+mecanismo ja usado por OP07-057/EB02-021), com o filtro de tipo "of your"
+tornado OPCIONAL (unica carta sem essa palavra, posse implicita via
+"on your field" no fim da frase) e "on your/the field" tolerado como
+locucao opcional antes de "gains".
+
+**Validado (lote completo):** `diff_parser.py` GANHOU=0/PERDEU=0/MUDOU=101
+(auditado item a item, nenhuma regressao). `gerar_dbs.py` +
+`snapshot_parser.py` 0/0/0. `smoke_fast.py`: 9 testes dirigidos novos com
+EXECUCAO REAL cobrindo cada item + as 4 descobertas sistemicas.
+`smoke_test.py`: TODOS OS TESTES PASSARAM (2 testes preexistentes
+corrigidos pra refletir o comportamento CORRETO pos-fix do
+`_counter_event_power_plan`). `smoke_test_broad.py`: rodado (mudancas em
+codigo central -- buff_power own_character, once_per_turn scoping,
+keyword nativa guard, `_counter_event_power_plan` -- usado por TODAS as
+2614 cartas). Registro consolidado em
+`parser_audits/2026-07-17_lote_11_itens_op09-118_a_op16-118.json`.
+
+Suspeitos: 271 -> 259 (11 itens do lote, alguns cobrindo varias cartas
+cada; a queda real de COBERTURA e muito maior que a diferenca numerica
+sugere, por causa das 3 descobertas sistemicas que corrigiram dezenas de
+cartas sem elas terem aparecido individualmente nesta lista -- o audit
+so conta numeros ausentes no texto, nao bugs de EXECUCAO como
+once_per_turn/filter_no_effect/keyword_blocker).
+
+**Achado colateral NAO corrigido (fora de escopo, flagueado via spawn_task
+pra sessao dedicada):** `smoke_test_broad.py` (decks aleatorios, seed
+fixo=42) crashou UMA VEZ com `TypeError: '>' not supported between
+instances of 'int' and 'str'` dentro de `eligible_cards(cost_lte=...)`,
+nao reproduzido de forma determinista em ~15 tentativas seguintes (nem
+variando PYTHONHASHSEED 0-4). Causa raiz identificada por inspecao de
+codigo (nao por reproducao ao vivo): `play_card.cost_lte` pode ser a
+STRING sentinela `'don_count_opp'`/`'don_count_self'` (custo dinamico =
+numero de DON no campo, 4 cartas: OP13-099, OP08-098, OP11-022, P-090),
+resolvida em runtime por `EffectExecutor._resolve_cost_lte()` -- mas
+DEZENAS de outros pontos do engine leem `step.get('cost_lte')` DIRETO
+(sem resolver) e comparam com `card.cost`, quebrando se o valor for uma
+dessas strings. Bug PRE-EXISTENTE, nao introduzido nesta sessao (nenhum
+item do lote toca `play_card`/`cost_lte`) -- mas relevante pra
+estabilidade ao vivo (pode crashar uma partida real). Task de background
+criada com o levantamento completo dos call sites suspeitos.
+
 ## 2026-07-17 (236) - OP07-091: ultimo item do lote de 10 -- place_trash_matching_bottom_deck + buff por contagem real
 
 **236 -- OP07-091 (unica carta no banco):** "[When Attacking] Trash up

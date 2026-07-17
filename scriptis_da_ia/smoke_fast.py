@@ -22,6 +22,7 @@ from optcg_engine.decision_engine import (  # noqa: E402
     _make_card,
     apply_conditional_keyword_passives,
     consume_play_cost_reductions,
+    effective_counter,
     effective_hand_play_cost,
     get_card_effects,
     is_immune,
@@ -4108,6 +4109,306 @@ def test_op07_091_place_trash_matching_bottom_deck_e_buff_por_contagem_real() ->
           ataca.power_buff == 1000)
 
 
+def test_lote_11_itens_falso_positivo_op09_118_e_custo_don_ativo() -> None:
+    # Achado 17/07: OP09-118 (win_game_on_opp_blocker) e FALSO-POSITIVO --
+    # o engine ja checa p.life_count()==0 or opp.life_count()==0 em
+    # _execute_attack ANTES do loop (hardcoded pro unico caso), entao a
+    # condicao "0 Life cards" nunca precisou aparecer no JSON parseado.
+    check("OP09-118 permanece so com win_game_on_opp_blocker (sem condicao no JSON -- correto, hardcoded no engine)",
+          get_card_effects("OP09-118").get("passive", {}).get("steps", [{}])[0] ==
+          {"action": "win_game_on_opp_blocker"})
+
+    # EB02-061/OP16-060: custo NOVO return_active_don_to_don_deck (exige
+    # DON ATIVO especificamente, distinto de don_minus que PREFERE DON
+    # ja restado).
+    check("EB02-061 parseia custo return_active_don_to_don_deck count=2",
+          get_card_effects("EB02-061").get("when_attacking", {}).get("costs", []) ==
+          [{"type": "return_active_don_to_don_deck", "count": 2}])
+    check("OP16-060 parseia custo return_active_don_to_don_deck count=8",
+          get_card_effects("OP16-060").get("activate_main", {}).get("costs", []) ==
+          [{"type": "return_active_don_to_don_deck", "count": 8}])
+
+    luffy = real_card("EB02-061")
+    me = GameState(leader=mk("LFLDR", "Lider", card_type="LEADER"), turn=3)
+    me.field_chars = [luffy]
+    me.don_available = 1
+    opp = GameState(leader=mk("LFOPP", "Opp", card_type="LEADER"), turn=3)
+    EffectExecutor(me, opp).execute(luffy, "when_attacking")
+    check("Execucao real: SEM 2 DON ativos suficientes, custo NAO e pago (efeito nao dispara)",
+          me.don_available == 1 and not luffy.rested)
+
+    luffy2 = real_card("EB02-061")
+    me2 = GameState(leader=mk("LFLDR2", "Lider", card_type="LEADER"), turn=3)
+    me2.field_chars = [luffy2]
+    me2.don_available = 2
+    me2.don_deck = 5
+    opp2 = GameState(leader=mk("LFOPP2", "Opp", card_type="LEADER"), turn=3)
+    EffectExecutor(me2, opp2).execute(luffy2, "when_attacking")
+    check("Execucao real: COM 2 DON ativos, custo pago (don_available->0, don_deck->7), Set Active dispara",
+          me2.don_available == 0 and me2.don_deck == 7)
+
+
+def test_lote_11_itens_hand_top_deck_familia() -> None:
+    # ST17-005 (custo opcional) + EB03-034/ST17-001 (step obrigatorio):
+    # "place N cards from your hand at the top of your deck" -- TOPO
+    # (fim da lista), distinto do hand_to_deck existente (fundo).
+    check("ST17-005 parseia custo place_hand_top_deck count=1",
+          get_card_effects("ST17-005").get("activate_main", {}).get("costs", []) ==
+          [{"type": "place_hand_top_deck", "count": 1}])
+    check("EB03-034 parseia step hand_to_deck_top count=1 em on_play",
+          any(s.get("action") == "hand_to_deck_top" and s.get("count") == 1
+              for s in get_card_effects("EB03-034").get("on_play", {}).get("steps", [])))
+    check("ST17-001 parseia step hand_to_deck_top DENTRO de on_match_steps (reveal condicional)",
+          any(s.get("action") == "hand_to_deck_top"
+              for step in get_card_effects("ST17-001").get("on_play", {}).get("steps", [])
+              for s in step.get("on_match_steps", [])))
+
+    teach = real_card("ST17-005")
+    carta_a = mk("HTA", "Carta A", cost=2, power=2000)
+    carta_b = mk("HTB", "Carta B", cost=1, power=1000)
+    me = GameState(leader=mk("TCHLDR", "Lider", card_type="LEADER"), turn=3)
+    me.field_chars = [teach]
+    me.hand = [carta_a, carta_b]
+    me.deck = []
+    opp = GameState(leader=mk("TCHOPP", "Opp", card_type="LEADER"), turn=3)
+    EffectExecutor(me, opp).execute(teach, "activate_main")
+    check("Execucao real: 1 carta da mao foi pro TOPO do deck (fim da lista, nao inicio)",
+          len(me.deck) == 1 and len(me.hand) == 1
+          and me.deck[-1] is (carta_b if carta_b not in me.hand else carta_a))
+
+
+def test_lote_11_itens_eb01_001_e_op12_098_cost_gte_type_e_selected() -> None:
+    # EB01-001 (Oden): condicao "Land of Wano type Character custo>=5"
+    # -- variante por TIPO da ja existente other_char_cost_gte (so
+    # existia por power antes).
+    check("EB01-001 parseia other_char_cost_gte=5 + other_char_cost_gte_type=land of wano",
+          get_card_effects("EB01-001").get("when_attacking", {}).get("conditions", {}) ==
+          {"other_char_cost_gte": 5, "other_char_cost_gte_type": "land of wano"})
+
+    oden = real_card("EB01-001")
+    fraco = mk("ODW", "Fraco", cost=3, power=3000, sub_types="Land of Wano")
+    forte = mk("ODS", "Forte", cost=5, power=5000, sub_types="Land of Wano")
+    me = GameState(leader=oden, turn=3, don_available=5)
+    oden.don_attached = 1
+    me.field_chars = [fraco, forte]
+    opp = GameState(leader=mk("ODOPP", "Opp", card_type="LEADER"), turn=3)
+    EffectExecutor(me, opp).execute(oden, "when_attacking")
+    check("Execucao real: COM Land of Wano custo>=5 no campo, Leader ganha +1000 power",
+          oden.power_buff == 1000)
+
+    oden2 = real_card("EB01-001")
+    me2 = GameState(leader=oden2, turn=3, don_available=5)
+    oden2.don_attached = 1
+    me2.field_chars = [mk("ODW2", "Fraco2", cost=3, power=3000, sub_types="Land of Wano")]
+    opp2 = GameState(leader=mk("ODOPP2", "Opp", card_type="LEADER"), turn=3)
+    EffectExecutor(me2, opp2).execute(oden2, "when_attacking")
+    check("Execucao real: SO Land of Wano custo<5 no campo, Leader NAO ganha o buff",
+          oden2.power_buff == 0)
+
+    # OP12-098: mesma familia de EB03-020/OP01-029/etc -- 2o buff_power
+    # de um Counter (apos 'Then, if [cond]') deve mirar 'selected' (a
+    # MESMA carta escolhida pelo 1o buff leader_or_character), nao 'self'
+    # (o proprio Event, que nao luta). 10+ cartas descobertas pela mesma
+    # generalizacao.
+    check("OP12-098 parseia 2o buff_power com target=selected (nao mais self)",
+          get_card_effects("OP12-098").get("counter", {}).get("steps", [{}, {}])[1].get("target") == "selected")
+
+    rayleigh_ally = mk("RLA", "Aliado Forte", cost=8, power=8000, sub_types="Revolutionary Army")
+    me3 = GameState(leader=mk("RLLDR", "Lider", card_type="LEADER"), turn=3)
+    me3.field_chars = [rayleigh_ally]
+    opp3 = GameState(leader=mk("RLOPP", "Opp", card_type="LEADER"), turn=3)
+    evento = real_card("OP12-098")
+    EffectExecutor(me3, opp3).execute(evento, "counter")
+    check("Execucao real: com condicao satisfeita (Revolutionary Army custo>=8), o ALIADO ganha +4000 total (2000+2000), nao o Event",
+          rayleigh_ally.power_buff == 4000)
+
+
+def test_lote_11_itens_eb03_009_filter_no_effect_bug_e_ordem_target() -> None:
+    # EB03-009 (Makino): custo "rest this Character" contaminava a
+    # deteccao de alvo do buff SEGUINTE ('of your Characters' virava
+    # 'self' por causa do 'this Character' do custo aparecer ANTES na
+    # mesma janela) -- reordenado pra 'of your characters' ganhar
+    # prioridade. Tambem achado e corrigido: filter_no_effect SEMPRE
+    # retornava True (bug pre-existente, get_card_effects() ja desempacota
+    # o dict, .get('effects') nele sempre None).
+    check("EB03-009 parseia target=own_character com filter_no_effect=True",
+          get_card_effects("EB03-009").get("activate_main", {}).get("steps", [{}])[0] ==
+          {"action": "buff_power", "amount": 2000, "target": "own_character",
+           "duration": "this_turn", "filter_no_effect": True})
+
+    makino = real_card("EB03-009")
+    com_efeito = real_card("OP07-091")  # tem on_play/when_attacking real
+    sem_efeito = mk("SEMEF", "Sem Efeito", cost=3, power=3000)
+    me = GameState(leader=mk("MKLDR", "Lider", card_type="LEADER"), turn=3)
+    me.field_chars = [makino, com_efeito, sem_efeito]
+    opp = GameState(leader=mk("MKOPP", "Opp", card_type="LEADER"), turn=3)
+    EffectExecutor(me, opp).execute(makino, "activate_main")
+    check("Execucao real: filter_no_effect escolhe a carta SEM efeito parseado (bug antigo aceitava QUALQUER carta)",
+          sem_efeito.power_buff == 2000 and com_efeito.power_buff == 0 and makino.power_buff == 0)
+
+
+def test_lote_11_itens_eb02_056_opp_chars_lte() -> None:
+    # EB02-056 (Vegapunk): "...and if your opponent has 2 or less
+    # Characters, trash 1 card from your hand" -- condicao NOVA
+    # opp_chars_lte (so existia opp_chars_gte), extraida via split
+    # NOVO "and if" (sem ponto antes, distinto do split_then_if
+    # existente que exige ponto).
+    check("EB02-056 anexa conditions opp_chars_lte=2 SO no step trash_from_hand (nao nos anteriores)",
+          get_card_effects("EB02-056").get("on_play", {}).get("steps", [])[-1] ==
+          {"action": "trash_from_hand", "count": 1, "conditions": {"opp_chars_lte": 2}})
+
+    vega = real_card("EB02-056")
+    extra = mk("VGX", "Extra", cost=1, power=1000)
+    me = GameState(leader=mk("VGLDR", "Lider", card_type="LEADER"), turn=3, don_available=10)
+    me.field_chars = [vega]
+    me.hand = [extra]
+    me.deck = [mk(f"VGD{i}", f"Deck{i}") for i in range(5)]
+    opp = GameState(leader=mk("VGOPP", "Opp", card_type="LEADER"), turn=3)
+    opp.field_chars = []
+    EffectExecutor(me, opp).execute(vega, "on_play")
+    check("Execucao real: oponente com 0 Characters (<=2) -- trash_from_hand dispara",
+          extra not in me.hand)
+
+    vega2 = real_card("EB02-056")
+    extra2 = mk("VGX2", "Extra", cost=1, power=1000)
+    me2 = GameState(leader=mk("VGLDR2", "Lider", card_type="LEADER"), turn=3, don_available=10)
+    me2.field_chars = [vega2]
+    me2.hand = [extra2]
+    me2.deck = [mk(f"VGD2{i}", f"Deck2{i}") for i in range(5)]
+    opp2 = GameState(leader=mk("VGOPP2", "Opp", card_type="LEADER"), turn=3)
+    opp2.field_chars = [mk("VGO1", "O1"), mk("VGO2", "O2"), mk("VGO3", "O3")]
+    EffectExecutor(me2, opp2).execute(vega2, "on_play")
+    check("Execucao real: oponente com 3 Characters (>2) -- trash_from_hand NAO dispara",
+          extra2 in me2.hand)
+
+
+def test_lote_11_itens_eb03_006_dado_bruto_e_once_per_turn_scoping() -> None:
+    # EB03-006 (Nami): erro de DADO BRUTO confirmado via WebSearch contra
+    # o texto oficial -- "-5000 power" (sinal de menos perdido no scrape
+    # do cards_rows.csv), nao um bug de parser. Cost sign so conta com
+    # texto explicito (regra do projeto) -- o sinal foi CONFIRMADO
+    # existente no card oficial antes de adicionar.
+    check("EB03-006 parseia custo debuff_power_self (com o sinal restaurado no CSV)",
+          get_card_effects("EB03-006").get("on_play", {}).get("costs", []) ==
+          [{"type": "debuff_power_self", "amount": 5000, "optional": True, "target": "leader"}])
+
+    # Bug SISTEMICO achado via EB03-006: '[once per turn]' era checado
+    # contra o TEXTO INTEIRO da carta (t_low), nao contra o bloco do
+    # trigger atual -- qualquer carta com 2+ blocos onde SO UM tem a tag
+    # contaminava TODOS com once_per_turn=True. 65+ cartas confirmadas
+    # afetadas (amostra abaixo).
+    check("EB03-006 on_play NAO tem once_per_turn (tag pertence so ao activate_main)",
+          "once_per_turn" not in get_card_effects("EB03-006").get("on_play", {}))
+    check("EB03-006 activate_main mantem once_per_turn=True (tag realmente presente ali)",
+          get_card_effects("EB03-006").get("activate_main", {}).get("once_per_turn") is True)
+    check("EB03-026 (amostra adicional): on_play NAO tem once_per_turn, activate_main SIM",
+          "once_per_turn" not in get_card_effects("EB03-026").get("on_play", {})
+          and get_card_effects("EB03-026").get("activate_main", {}).get("once_per_turn") is True)
+
+
+def test_lote_11_itens_op14_009_swap_leader_e_character() -> None:
+    # OP14-009 (Trafalgar Law): custo trash 2 cartas da mao + mecanica
+    # NOVA swap_base_power(target='leader_and_own_character') -- troca o
+    # power BASE entre o Leader e o melhor Character proprio.
+    check("OP14-009 parseia custo trash_from_hand count=2 + swap_base_power leader_and_own_character",
+          get_card_effects("OP14-009").get("on_opp_attack", {}).get("costs", []) ==
+          [{"type": "trash_from_hand", "count": 2}]
+          and get_card_effects("OP14-009").get("on_opp_attack", {}).get("steps", [{}])[0] ==
+          {"action": "swap_base_power", "target": "leader_and_own_character", "duration": "battle_only"})
+
+    law = real_card("OP14-009")  # power 10000 + bonus de [Rush] nativo no board_value
+    # "aliado" precisa superar o board_value do PROPRIO Law (nao excluido
+    # da selecao pelo texto, e Law tem +4 de bonus por [Rush] nativo) pra
+    # tornar o teste deterministico -- power bem acima do de Law.
+    aliado = mk("LWA", "Aliado", cost=10, power=20000)
+    me = GameState(leader=mk("LWLDR", "Lider", card_type="LEADER", power=5000), turn=3)
+    me.field_chars = [law, aliado]
+    me.hand = [mk("LWH1", "H1"), mk("LWH2", "H2")]
+    opp = GameState(leader=mk("LWOPP", "Opp", card_type="LEADER"), turn=3)
+    EffectExecutor(me, opp).execute(law, "on_opp_attack")
+    check("Execucao real: custo pago (2 cartas trashed da mao)",
+          len(me.hand) == 0)
+    check("Execucao real: power BASE trocado entre Lider (5000->20000) e o Character de maior board_value (20000->5000)",
+          me.leader.base_power_override == 20000 and aliado.base_power_override == 5000)
+
+
+def test_lote_11_itens_op12_016_familia_rayleigh_e_keyword_blocker_guard() -> None:
+    # OP12-016 (evento "To Never Doubt"): custo give_don_to_named NOVO
+    # (familia de 4: EB04-009/OP12-016/OP12-017/OP12-019, "you may give
+    # N active DON!! cards to 1 of your [Silvers Rayleigh]: efeito") +
+    # efeito NOVO select_grant_unblockable_turn(target='don_recipient')
+    # -- alvo = quem recebeu o DON!!, sem precisar de step de selecao
+    # proprio no texto.
+    check("OP12-016 parseia custo give_don_to_named count=2 target_name=silvers rayleigh",
+          get_card_effects("OP12-016").get("main", {}).get("costs", []) ==
+          [{"type": "give_don_to_named", "count": 2, "target_name": "silvers rayleigh"}])
+    check("OP12-016 parseia efeito select_grant_unblockable_turn target=don_recipient",
+          get_card_effects("OP12-016").get("main", {}).get("steps", []) ==
+          [{"action": "select_grant_unblockable_turn", "target": "don_recipient", "target_name": "silvers rayleigh"}])
+    check("EB04-009/OP12-017/OP12-019 (mesma familia) tambem parseiam o custo give_don_to_named",
+          all(get_card_effects(c).get("main", {}).get("costs", []) ==
+              [{"type": "give_don_to_named", "count": 1, "target_name": "silvers rayleigh"}]
+              for c in ("EB04-009", "OP12-017", "OP12-019")))
+
+    rayleigh = mk("RAYL", "Silvers Rayleigh", cost=6, power=6000)
+    evento = real_card("OP12-016")
+    me = GameState(leader=mk("RYLDR", "Lider", card_type="LEADER"), turn=3, don_available=3)
+    me.field_chars = [rayleigh]
+    opp = GameState(leader=mk("RYOPP", "Opp", card_type="LEADER"), turn=3)
+    EffectExecutor(me, opp).execute(evento, "main")
+    check("Execucao real: custo pago (2 DON ativos -> Rayleigh, banco 3->1) e Rayleigh ganha Unblockable este turno",
+          me.don_available == 1 and rayleigh.don_attached == 2 and rayleigh.unblockable_this_turn)
+
+    # Bug SISTEMICO achado via OP12-016: guarda de 'your opponent
+    # activates [Blocker]' (achado 15/07) nao tolerava a NEGACAO "cannot
+    # activate"/"can't activate" -- 9+ cartas ganhavam Blocker NATIVO por
+    # engano (self-grant), duplicado com o efeito de unblockable JA
+    # correto (lock_opp_blocker_battle/select_grant_unblockable_turn).
+    check("OP12-016 NAO tem mais keyword_blocker bogus em passive",
+          "passive" not in get_card_effects("OP12-016")
+          or not any(s.get("action") == "keyword_blocker"
+                     for s in get_card_effects("OP12-016").get("passive", {}).get("steps", [])))
+    for c in ("OP05-016", "OP06-055", "OP08-111", "OP12-077", "ST01-016", "ST21-003", "OP13-057"):
+        check(f"{c} (amostra guarda cannot-activate): sem keyword_blocker bogus",
+              not any(s.get("action") == "keyword_blocker"
+                      for s in get_card_effects(c).get("passive", {}).get("steps", [])))
+    check("ST01-012 mantem keyword_rush real (guarda nao filtrou keyword LEGITIMA)",
+          any(s.get("action") == "keyword_rush"
+              for s in get_card_effects("ST01-012").get("passive", {}).get("steps", [])))
+
+
+def test_lote_11_itens_op16_118_counter_na_mao() -> None:
+    # OP16-118 (Portgas Ace): estatica NOVA set_hand_counter_by_power --
+    # "The counter of all of your Character cards with 8000 power in
+    # your hand becomes +2000." Engine consome via effective_counter()
+    # nos pontos DECISIVOS (counter_in_hand/pick_counters), escopo
+    # deliberadamente estreito (nao em toda heuristica de scoring
+    # secundaria que le card.counter direto).
+    check("OP16-118 parseia passive set_hand_counter_by_power power_eq=8000 to_value=2000",
+          get_card_effects("OP16-118").get("passive", {}).get("steps", [{}])[0] ==
+          {"action": "set_hand_counter_by_power", "power_eq": 8000, "to_value": 2000})
+
+    ace = real_card("OP16-118")
+    alvo_8000 = mk("PW8", "Alvo 8000", cost=8, power=8000)
+    alvo_8000.data = alvo_8000.data.__class__(**{**alvo_8000.data.__dict__, "counter": 1000})
+    outro_power = mk("PW7", "Outro Power", cost=7, power=7000)
+    outro_power.data = outro_power.data.__class__(**{**outro_power.data.__dict__, "counter": 2000})
+    me = GameState(leader=mk("ACLDR", "Lider", card_type="LEADER"), turn=3)
+    me.field_chars = [ace]
+    me.hand = [alvo_8000, outro_power]
+    check("effective_counter: carta com power==8000 vira 2000 (estatica ativa, Ace no campo)",
+          effective_counter(alvo_8000, me) == 2000)
+    check("effective_counter: carta com OUTRO power mantem o counter IMPRESSO (2000, sem alteracao)",
+          effective_counter(outro_power, me) == 2000)
+    check("counter_in_hand soma os valores EFETIVOS (2000 + 2000 = 4000)",
+          me.counter_in_hand() == 4000)
+
+    me_sem_ace = GameState(leader=mk("ACLDR2", "Lider2", card_type="LEADER"), turn=3)
+    me_sem_ace.hand = [alvo_8000]
+    check("effective_counter: SEM Ace no campo, carta com power==8000 mantem o counter IMPRESSO (1000)",
+          effective_counter(alvo_8000, me_sem_ace) == 1000)
+
+
 def main() -> int:
     test_turn_order_imu_prefers_second()
     test_empty_throne_beats_direct_five_elders_play()
@@ -4216,6 +4517,15 @@ def main() -> int:
     test_gain_life_own_field_cost_gte_power_gte_st13_001()
     test_pos_keyword_generico_e_ko_reativo_st10_006()
     test_op07_091_place_trash_matching_bottom_deck_e_buff_por_contagem_real()
+    test_lote_11_itens_falso_positivo_op09_118_e_custo_don_ativo()
+    test_lote_11_itens_hand_top_deck_familia()
+    test_lote_11_itens_eb01_001_e_op12_098_cost_gte_type_e_selected()
+    test_lote_11_itens_eb03_009_filter_no_effect_bug_e_ordem_target()
+    test_lote_11_itens_eb02_056_opp_chars_lte()
+    test_lote_11_itens_eb03_006_dado_bruto_e_once_per_turn_scoping()
+    test_lote_11_itens_op14_009_swap_leader_e_character()
+    test_lote_11_itens_op12_016_familia_rayleigh_e_keyword_blocker_guard()
+    test_lote_11_itens_op16_118_counter_na_mao()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0

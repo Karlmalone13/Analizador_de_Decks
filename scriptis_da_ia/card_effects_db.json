@@ -19,6 +19,10 @@
             "duration": "until_my_turn_start"
           }
         ],
+        "conditions": {
+          "other_char_cost_gte": 5,
+          "other_char_cost_gte_type": "land of wano"
+        },
         "don_requirement": 1
       }
     }
@@ -41,8 +45,7 @@
             "count": 1,
             "rested": true
           }
-        ],
-        "once_per_turn": true
+        ]
       },
       "on_opp_attack": {
         "steps": [
@@ -2772,8 +2775,7 @@
         ],
         "conditions": {
           "don_on_field_lte_opp": true
-        },
-        "once_per_turn": true
+        }
       },
       "when_don_returned": {
         "steps": [
@@ -3482,7 +3484,10 @@
           },
           {
             "action": "trash_from_hand",
-            "count": 1
+            "count": 1,
+            "conditions": {
+              "opp_chars_lte": 2
+            }
           }
         ]
       },
@@ -3656,6 +3661,12 @@
             "up_to": false
           }
         ],
+        "costs": [
+          {
+            "type": "return_active_don_to_don_deck",
+            "count": 2
+          }
+        ],
         "once_per_turn": true
       },
       "passive": {
@@ -3756,8 +3767,7 @@
             "filter_no_tag": "when_attacking",
             "duration": "this_turn"
           }
-        ],
-        "once_per_turn": true
+        ]
       },
       "passive": {
         "steps": [
@@ -3897,7 +3907,14 @@
             "count": 1
           }
         ],
-        "once_per_turn": true
+        "costs": [
+          {
+            "type": "debuff_power_self",
+            "amount": 5000,
+            "optional": true,
+            "target": "leader"
+          }
+        ]
       },
       "activate_main": {
         "steps": [
@@ -3965,8 +3982,7 @@
             "filter_type": "sword",
             "include_leader": true
           }
-        ],
-        "once_per_turn": true
+        ]
       },
       "when_attacking": {
         "steps": [
@@ -3976,8 +3992,7 @@
             "filter_type": "sword",
             "include_leader": true
           }
-        ],
-        "once_per_turn": true
+        ]
       },
       "activate_main": {
         "steps": [
@@ -4008,8 +4023,9 @@
           {
             "action": "buff_power",
             "amount": 2000,
-            "target": "self",
-            "duration": "this_turn"
+            "target": "own_character",
+            "duration": "this_turn",
+            "filter_no_effect": true
           }
         ],
         "costs": [
@@ -4366,7 +4382,7 @@
           {
             "action": "buff_power",
             "amount": 2000,
-            "target": "self",
+            "target": "selected",
             "duration": "battle_only",
             "conditions": {
               "chars_gte": 2,
@@ -4552,8 +4568,7 @@
         ],
         "conditions": {
           "opp_hand_gte": 5
-        },
-        "once_per_turn": true
+        }
       },
       "activate_main": {
         "steps": [
@@ -4816,6 +4831,10 @@
         "steps": [
           {
             "action": "draw",
+            "count": 1
+          },
+          {
+            "action": "hand_to_deck_top",
             "count": 1
           },
           {
@@ -5818,8 +5837,7 @@
             "type": "rest_don",
             "count": 1
           }
-        ],
-        "once_per_turn": true
+        ]
       }
     }
   },
@@ -5911,8 +5929,7 @@
         ],
         "conditions": {
           "life_lte": 1
-        },
-        "once_per_turn": true
+        }
       }
     }
   },
@@ -6077,8 +6094,7 @@
             "target": "leader",
             "duration": "until_opp_turn_end"
           }
-        ],
-        "once_per_turn": true
+        ]
       },
       "activate_main": {
         "steps": [
@@ -6158,6 +6174,13 @@
             "amount": 2000,
             "target": "opp_character",
             "duration": "this_turn"
+          }
+        ],
+        "costs": [
+          {
+            "type": "give_don_to_named",
+            "count": 1,
+            "target_name": "silvers rayleigh"
           }
         ]
       }
@@ -6539,8 +6562,7 @@
         ],
         "conditions": {
           "leader_is": "nefeltari vivi"
-        },
-        "once_per_turn": true
+        }
       },
       "activate_main": {
         "steps": [
@@ -6957,8 +6979,7 @@
             "count": 1,
             "filter_type": "animal kingdom pirates"
           }
-        ],
-        "once_per_turn": true
+        ]
       },
       "activate_main": {
         "steps": [
@@ -7126,8 +7147,7 @@
             "count": 1,
             "optional": false
           }
-        ],
-        "once_per_turn": true
+        ]
       },
       "activate_main": {
         "steps": [
@@ -7391,8 +7411,7 @@
             "action": "trash_from_deck_top",
             "count": 2
           }
-        ],
-        "once_per_turn": true
+        ]
       },
       "passive": {
         "steps": [
@@ -8793,7 +8812,7 @@
           {
             "action": "buff_power",
             "amount": 2000,
-            "target": "self",
+            "target": "selected",
             "duration": "this_turn",
             "conditions": {
               "life_lte": 2
@@ -9087,8 +9106,7 @@
         ],
         "conditions": {
           "leader_is": "kouzuki oden"
-        },
-        "once_per_turn": true
+        }
       },
       "when_attacking": {
         "steps": [
@@ -18627,8 +18645,7 @@
             "count": 1,
             "cost_lte": 4
           }
-        ],
-        "once_per_turn": true
+        ]
       },
       "opp_turn": {
         "steps": [
@@ -19735,8 +19752,7 @@
             "count": 2,
             "optional": true
           }
-        ],
-        "once_per_turn": true
+        ]
       },
       "on_opp_attack": {
         "steps": [
@@ -20893,7 +20909,7 @@
           {
             "action": "buff_power",
             "amount": 2000,
-            "target": "self",
+            "target": "selected",
             "duration": "battle_only",
             "conditions": {
               "trash_gte": 15
@@ -22042,13 +22058,6 @@
             "count": 1
           }
         ]
-      },
-      "passive": {
-        "steps": [
-          {
-            "action": "keyword_blocker"
-          }
-        ]
       }
     }
   },
@@ -22547,8 +22556,7 @@
             "type": "rest_don",
             "count": 1
           }
-        ],
-        "once_per_turn": true
+        ]
       },
       "passive": {
         "steps": [
@@ -22561,8 +22569,7 @@
               "exclude": "pica"
             }
           }
-        ],
-        "once_per_turn": true
+        ]
       }
     }
   },
@@ -22866,8 +22873,7 @@
             "target": "opp_character",
             "count": 1
           }
-        ],
-        "once_per_turn": true
+        ]
       }
     }
   },
@@ -24951,7 +24957,7 @@
           {
             "action": "buff_power",
             "amount": 2000,
-            "target": "self",
+            "target": "selected",
             "duration": "battle_only",
             "conditions": {
               "opp_life_lte": 2
@@ -25120,8 +25126,7 @@
             "count": 10,
             "optional": false
           }
-        ],
-        "once_per_turn": true
+        ]
       },
       "activate_main": {
         "steps": [
@@ -26241,7 +26246,7 @@
           {
             "action": "buff_power",
             "amount": 2000,
-            "target": "self",
+            "target": "selected",
             "duration": "battle_only",
             "conditions": {
               "own_rested_cards_gte": 8
@@ -26689,13 +26694,6 @@
           "hand_lte": 4
         },
         "don_requirement": 2
-      },
-      "passive": {
-        "steps": [
-          {
-            "action": "keyword_blocker"
-          }
-        ]
       }
     }
   },
@@ -26932,8 +26930,7 @@
             "count": 1,
             "optional": true
           }
-        ],
-        "once_per_turn": true
+        ]
       },
       "activate_main": {
         "steps": [
@@ -28434,8 +28431,7 @@
         ],
         "conditions": {
           "life_lte": 2
-        },
-        "once_per_turn": true
+        }
       }
     }
   },
@@ -29687,7 +29683,7 @@
           {
             "action": "buff_power",
             "amount": 1000,
-            "target": "self",
+            "target": "selected",
             "duration": "battle_only",
             "conditions": {
               "chars_gte": 3
@@ -30364,13 +30360,6 @@
             "target": "selected"
           }
         ]
-      },
-      "passive": {
-        "steps": [
-          {
-            "action": "keyword_blocker"
-          }
-        ]
       }
     }
   },
@@ -30763,8 +30752,7 @@
         ],
         "conditions": {
           "leader_type": "foxy pirates"
-        },
-        "once_per_turn": true
+        }
       }
     }
   },
@@ -31476,7 +31464,7 @@
           {
             "action": "buff_power",
             "amount": 2000,
-            "target": "self",
+            "target": "selected",
             "duration": "battle_only",
             "conditions": {
               "trash_gte": 10
@@ -32541,8 +32529,7 @@
             "target": "opp_character",
             "duration": "this_turn"
           }
-        ],
-        "once_per_turn": true
+        ]
       },
       "activate_main": {
         "steps": [
@@ -33900,8 +33887,7 @@
             "count": 1,
             "source": "self"
           }
-        ],
-        "once_per_turn": true
+        ]
       }
     }
   },
@@ -35308,8 +35294,7 @@
             "count": 2,
             "then_trash": 1
           }
-        ],
-        "once_per_turn": true
+        ]
       }
     }
   },
@@ -35491,13 +35476,6 @@
           {
             "type": "trash_from_hand",
             "count": 1
-          }
-        ]
-      },
-      "passive": {
-        "steps": [
-          {
-            "action": "keyword_blocker"
           }
         ]
       }
@@ -36472,8 +36450,7 @@
         ],
         "conditions": {
           "leader_type": "odyssey"
-        },
-        "once_per_turn": true
+        }
       },
       "on_opp_attack": {
         "steps": [
@@ -39319,8 +39296,7 @@
             "target": "self",
             "duration": "this_turn"
           }
-        ],
-        "once_per_turn": true
+        ]
       }
     }
   },
@@ -39387,8 +39363,7 @@
         "conditions": {
           "other_char_power_gte": 6000,
           "other_char_power_gte_type": "donquixote pirates"
-        },
-        "once_per_turn": true
+        }
       }
     }
   },
@@ -40299,8 +40274,7 @@
             "target": "own_character",
             "filter_type": "odyssey"
           }
-        ],
-        "once_per_turn": true
+        ]
       },
       "passive": {
         "steps": [
@@ -41282,8 +41256,7 @@
             "count": 1,
             "optional": false
           }
-        ],
-        "once_per_turn": true
+        ]
       },
       "on_opp_attack": {
         "steps": [
@@ -41766,8 +41739,7 @@
             "target": "self",
             "duration": "this_turn"
           }
-        ],
-        "once_per_turn": true
+        ]
       }
     }
   },
@@ -42917,7 +42889,7 @@
           {
             "action": "buff_power",
             "amount": 1000,
-            "target": "self",
+            "target": "own_character",
             "duration": "this_turn"
           }
         ],
@@ -43683,8 +43655,7 @@
             "count": 1,
             "cost_lte": 5
           }
-        ],
-        "once_per_turn": true
+        ]
       }
     }
   },
@@ -44497,7 +44468,7 @@
           {
             "action": "buff_power",
             "amount": 2000,
-            "target": "self",
+            "target": "selected",
             "duration": "battle_only",
             "conditions": {
               "hand_lte": 4
@@ -46757,10 +46728,19 @@
           }
         ]
       },
-      "passive": {
+      "main": {
         "steps": [
           {
-            "action": "keyword_blocker"
+            "action": "select_grant_unblockable_turn",
+            "target": "don_recipient",
+            "target_name": "silvers rayleigh"
+          }
+        ],
+        "costs": [
+          {
+            "type": "give_don_to_named",
+            "count": 2,
+            "target_name": "silvers rayleigh"
           }
         ]
       }
@@ -46791,6 +46771,13 @@
           },
           {
             "action": "deck_bottom_rest"
+          }
+        ],
+        "costs": [
+          {
+            "type": "give_don_to_named",
+            "count": 1,
+            "target_name": "silvers rayleigh"
           }
         ]
       }
@@ -46859,6 +46846,13 @@
             "amount": 1000,
             "target": "leader_or_character",
             "duration": "this_turn"
+          }
+        ],
+        "costs": [
+          {
+            "type": "give_don_to_named",
+            "count": 1,
+            "target_name": "silvers rayleigh"
           }
         ]
       }
@@ -47490,8 +47484,7 @@
         ],
         "conditions": {
           "don_on_field_lte_opp": true
-        },
-        "once_per_turn": true
+        }
       }
     }
   },
@@ -47592,8 +47585,7 @@
         ],
         "conditions": {
           "leader_type": "navy"
-        },
-        "once_per_turn": true
+        }
       },
       "activate_main": {
         "steps": [
@@ -47834,8 +47826,7 @@
         ],
         "conditions": {
           "leader_type": "navy"
-        },
-        "once_per_turn": true
+        }
       },
       "passive": {
         "steps": [
@@ -48536,13 +48527,6 @@
             "target": "selected"
           }
         ]
-      },
-      "passive": {
-        "steps": [
-          {
-            "action": "keyword_blocker"
-          }
-        ]
       }
     }
   },
@@ -48670,8 +48654,7 @@
         "conditions": {
           "chars_gte": 2,
           "chars_gte_cost_filter": 8
-        },
-        "once_per_turn": true
+        }
       },
       "opp_turn": {
         "steps": [
@@ -48679,8 +48662,7 @@
             "action": "opp_life_to_hand",
             "count": 1
           }
-        ],
-        "once_per_turn": true
+        ]
       }
     }
   },
@@ -49193,8 +49175,12 @@
           {
             "action": "buff_power",
             "amount": 2000,
-            "target": "self",
-            "duration": "battle_only"
+            "target": "selected",
+            "duration": "battle_only",
+            "conditions": {
+              "other_char_cost_gte": 8,
+              "other_char_cost_gte_type": "revolutionary army"
+            }
           }
         ]
       }
@@ -51324,13 +51310,6 @@
           {
             "type": "rest_don",
             "count": 1
-          }
-        ]
-      },
-      "passive": {
-        "steps": [
-          {
-            "action": "keyword_blocker"
           }
         ]
       }
@@ -53554,6 +53533,22 @@
     "sub_types": "Heart Pirates Supernovas The Seven Warlords of the Sea",
     "attribute": "Slash",
     "effects": {
+      "on_opp_attack": {
+        "steps": [
+          {
+            "action": "swap_base_power",
+            "target": "leader_and_own_character",
+            "duration": "battle_only"
+          }
+        ],
+        "costs": [
+          {
+            "type": "trash_from_hand",
+            "count": 2
+          }
+        ],
+        "once_per_turn": true
+      },
       "passive": {
         "steps": [
           {
@@ -53767,7 +53762,6 @@
             "duration": "this_turn"
           }
         ],
-        "once_per_turn": true,
         "don_requirement": 1
       },
       "opp_turn": {
@@ -54163,8 +54157,7 @@
               "count": 1
             }
           }
-        ],
-        "once_per_turn": true
+        ]
       }
     }
   },
@@ -55122,8 +55115,7 @@
             "count": 1,
             "optional": false
           }
-        ],
-        "once_per_turn": true
+        ]
       },
       "passive": {
         "steps": [
@@ -55627,7 +55619,7 @@
           {
             "action": "buff_power",
             "amount": 2000,
-            "target": "self",
+            "target": "selected",
             "duration": "this_turn",
             "conditions": {
               "leader_type": "donquixote pirates"
@@ -55732,8 +55724,7 @@
             "type": "trash_from_hand",
             "count": 3
           }
-        ],
-        "once_per_turn": true
+        ]
       }
     }
   },
@@ -56515,8 +56506,7 @@
         ],
         "conditions": {
           "leader_type": "kuja pirates"
-        },
-        "once_per_turn": true
+        }
       }
     }
   },
@@ -56850,8 +56840,7 @@
         ],
         "conditions": {
           "leader_type": "kuja pirates"
-        },
-        "once_per_turn": true
+        }
       }
     }
   },
@@ -57039,8 +57028,7 @@
             "duration": "until_opp_end_phase",
             "cost_lte": 9
           }
-        ],
-        "once_per_turn": true
+        ]
       }
     }
   },
@@ -57125,7 +57113,6 @@
         "conditions": {
           "only_field_type": "east blue"
         },
-        "once_per_turn": true,
         "don_requirement": 1
       }
     }
@@ -57161,8 +57148,7 @@
             "target": "self",
             "duration": "battle_only"
           }
-        ],
-        "once_per_turn": true
+        ]
       },
       "on_opp_attack": {
         "steps": [
@@ -57172,8 +57158,7 @@
             "target": "self",
             "duration": "battle_only"
           }
-        ],
-        "once_per_turn": true
+        ]
       }
     }
   },
@@ -57334,8 +57319,7 @@
             "action": "gain_rush",
             "duration": "this_turn"
           }
-        ],
-        "once_per_turn": true
+        ]
       },
       "activate_main": {
         "steps": [
@@ -57804,8 +57788,7 @@
             "action": "lock_opp_character_refresh",
             "count": 2
           }
-        ],
-        "once_per_turn": true
+        ]
       }
     }
   },
@@ -58339,8 +58322,7 @@
             "action": "draw",
             "count": 1
           }
-        ],
-        "once_per_turn": true
+        ]
       }
     }
   },
@@ -60718,8 +60700,7 @@
           {
             "type": "turn_life_face_up"
           }
-        ],
-        "once_per_turn": true
+        ]
       },
       "activate_main": {
         "steps": [
@@ -62680,6 +62661,12 @@
             "cost_lte": 99,
             "filter_type": "admiral"
           }
+        ],
+        "costs": [
+          {
+            "type": "return_active_don_to_don_deck",
+            "count": 8
+          }
         ]
       }
     }
@@ -62726,8 +62713,7 @@
             "count": 2,
             "rested": true
           }
-        ],
-        "once_per_turn": true
+        ]
       },
       "activate_main": {
         "steps": [
@@ -62813,8 +62799,7 @@
             "count": 1,
             "optional": false
           }
-        ],
-        "once_per_turn": true
+        ]
       },
       "activate_main": {
         "steps": [
@@ -63342,8 +63327,7 @@
             "count": 99,
             "duration": "permanent"
           }
-        ],
-        "once_per_turn": true
+        ]
       }
     }
   },
@@ -63768,8 +63752,7 @@
             "action": "opp_trash_from_hand",
             "count": 2
           }
-        ],
-        "once_per_turn": true
+        ]
       }
     }
   },
@@ -64608,6 +64591,15 @@
             "filter_type": "monkey.d.luffy"
           }
         ]
+      },
+      "passive": {
+        "steps": [
+          {
+            "action": "set_hand_counter_by_power",
+            "power_eq": 8000,
+            "to_value": 2000
+          }
+        ]
       }
     }
   },
@@ -64913,7 +64905,8 @@
             "action": "buff_power",
             "amount": 2000,
             "target": "own_character",
-            "duration": "this_turn"
+            "duration": "this_turn",
+            "filter_no_effect": true
           }
         ],
         "once_per_turn": true
@@ -66794,8 +66787,7 @@
             "target": "opp_character",
             "duration": "this_turn"
           }
-        ],
-        "once_per_turn": true
+        ]
       },
       "passive": {
         "steps": [
@@ -67588,9 +67580,6 @@
       "passive": {
         "steps": [
           {
-            "action": "keyword_blocker"
-          },
-          {
             "action": "keyword_rush"
           }
         ]
@@ -67713,13 +67702,6 @@
             "include_leader": true
           }
         ]
-      },
-      "passive": {
-        "steps": [
-          {
-            "action": "keyword_blocker"
-          }
-        ]
       }
     }
   },
@@ -67739,8 +67721,10 @@
           {
             "action": "buff_power",
             "amount": 1000,
-            "target": "self",
-            "duration": "this_turn"
+            "target": "select_filtered",
+            "duration": "this_turn",
+            "count": 1,
+            "filter_type": "straw hat crew"
           }
         ],
         "costs": [
@@ -67994,7 +67978,6 @@
         "conditions": {
           "battled_opp_character_this_turn": true
         },
-        "once_per_turn": true,
         "don_requirement": 1
       }
     }
@@ -72099,8 +72082,7 @@
             "reveal_count": 1,
             "rested": false
           }
-        ],
-        "once_per_turn": true
+        ]
       },
       "when_attacking": {
         "steps": [
@@ -72402,8 +72384,7 @@
             "face": "up",
             "count": "all"
           }
-        ],
-        "once_per_turn": true
+        ]
       }
     }
   },
@@ -73814,6 +73795,10 @@
               {
                 "action": "draw",
                 "count": 2
+              },
+              {
+                "action": "hand_to_deck_top",
+                "count": 1
               }
             ]
           }
@@ -73937,6 +73922,12 @@
             "action": "give_don",
             "count": 2,
             "rested": true
+          }
+        ],
+        "costs": [
+          {
+            "type": "place_hand_top_deck",
+            "count": 1
           }
         ],
         "once_per_turn": true
@@ -74169,8 +74160,7 @@
         ],
         "conditions": {
           "leader_is": "smoker"
-        },
-        "once_per_turn": true
+        }
       },
       "activate_main": {
         "steps": [
@@ -74224,7 +74214,6 @@
             "duration": "permanent"
           }
         ],
-        "once_per_turn": true,
         "don_requirement": 1
       }
     }
@@ -74325,8 +74314,7 @@
             "type": "trash_from_hand",
             "count": 1
           }
-        ],
-        "once_per_turn": true
+        ]
       },
       "passive": {
         "steps": [
@@ -74506,13 +74494,6 @@
             "action": "select_grant_unblockable_turn",
             "filter_type": "straw hat crew",
             "power_gte": 6000
-          }
-        ]
-      },
-      "passive": {
-        "steps": [
-          {
-            "action": "keyword_blocker"
           }
         ]
       }
@@ -75180,8 +75161,7 @@
               }
             ]
           }
-        ],
-        "once_per_turn": true
+        ]
       },
       "passive": {
         "steps": [
@@ -76072,8 +76052,7 @@
             "action": "draw",
             "count": 1
           }
-        ],
-        "once_per_turn": true
+        ]
       }
     }
   },
@@ -76346,8 +76325,7 @@
         ],
         "conditions": {
           "life_lte": 2
-        },
-        "once_per_turn": true
+        }
       }
     }
   },
@@ -76736,8 +76714,7 @@
             "count": 1,
             "source": "self"
           }
-        ],
-        "once_per_turn": true
+        ]
       }
     }
   },
@@ -77418,8 +77395,7 @@
             "count": 1,
             "then_trash": 1
           }
-        ],
-        "once_per_turn": true
+        ]
       },
       "activate_main": {
         "steps": [

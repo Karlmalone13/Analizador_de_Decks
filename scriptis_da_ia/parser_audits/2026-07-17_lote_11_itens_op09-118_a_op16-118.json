@@ -1,0 +1,31 @@
+{
+  "trigger_card": "EB01-001",
+  "problem": "11 candidatos levantados de audit_parser_coverage.py --min-severity 1 (posicoes seguintes ao lote anterior). Apos investigacao individual, 1 confirmado FALSO-POSITIVO (OP09-118: condicao ja hardcoded no engine, so nao aparece no JSON) e 10 reais, varios generalizando pra familias muito maiores que a carta-gatilho original: (1) EB02-061/OP16-060 -- custo 'give N active DON to DON deck' ausente; (2) ST17-005/EB03-034/ST17-001 -- 'place N cards da mao no topo do deck' (custo e step) ausente; (3) EB01-001/OP12-098+9 cartas -- condicao 'char de TIPO com custo>=N' ausente + bug MUITO maior: 2o buff_power de Counter-event mirava 'self' (o proprio Event) em vez do alvo selecionado no 1o buff, silenciosamente inutil, achado em 10+ cartas (EB03-020/OP01-029/OP04-095/OP05-114/OP06-038/OP07-035/OP07-095/OP11-059/OP12-098/OP14-078); (4) EB03-009 -- selecao filtrada 'sem efeito base' caia em self-buff por ORDEM de deteccao de alvo (custo 'rest this Character' contaminava a janela antes de 'of your characters'), MAIS bug pre-existente descoberto: filter_no_effect sempre retornava True (get_card_effects ja desempacota o dict, .get('effects') nele sempre None) -- afetava tambem OP03-091/EB02-022/EB03-003/EB03-007/EB03-039; (5) EB02-056 -- condicao 'and if [cond], [efeito]' (sem ponto, conector diferente do split_then_if existente) ausente; (6) EB03-006 -- erro de DADO BRUTO confirmado via WebSearch (sinal de menos perdido no scrape) + bug SISTEMICO descoberto: '[once per turn]' era checado contra o TEXTO INTEIRO da carta em vez do bloco do trigger atual, contaminando 65+ cartas com once_per_turn=True em blocos que nunca tiveram essa tag; (7) OP14-009 -- corpo inteiro ausente (custo trash 2 + mecanica NOVA swap_base_power entre Leader e Character); (8) OP12-016+3 cartas (EB04-009/OP12-017/OP12-019) -- custo 'give N active DON to 1 of your [Nome]' ausente + efeito NOVO (Unblockable pro recipiente do DON), MAIS bug SISTEMICO descoberto: guarda de 'your opponent activates [Blocker]' (que exclui referencias ao Blocker do OPONENTE de virarem keyword_blocker nativo por engano) nao tolerava a NEGACAO 'cannot/can't activate', afetando 9+ cartas adicionais (OP05-016/OP06-055/OP08-111/ST01-012/OP12-077/ST01-016/ST21-003/OP13-057); (9) OP16-118 -- mecanica estatica NOVA nunca vista (modificar Counter de cartas na MAO por filtro de power).",
+  "grammar_family": "Multiplas familias nao relacionadas entre si, cada uma documentada no proprio commit/codigo com comentario 'Achado 17/07'. Ver resumo acima por item.",
+  "queries": [
+    "audit_parser_coverage.py --min-severity 1 --show 30 (posicoes 12-22 apos o lote anterior)",
+    "buscas pontuais por familia durante a implementacao de cada item (regex/grep contra cards_rows.csv), documentadas nos comentarios do proprio codigo"
+  ],
+  "cards_found": [
+    "OP09-118",
+    "EB02-061", "OP16-060",
+    "ST17-005", "EB03-034", "ST17-001",
+    "EB01-001", "OP12-098", "EB03-020", "OP01-029", "OP04-095", "OP05-114", "OP06-038", "OP07-035", "OP07-095", "OP11-059", "OP14-078",
+    "EB03-009", "OP11-004", "P-011", "OP03-091", "EB02-022", "EB03-003", "EB03-007", "EB03-039",
+    "EB02-056",
+    "EB03-006", "EB03-026",
+    "OP14-009",
+    "OP12-016", "EB04-009", "OP12-017", "OP12-019", "OP05-016", "OP06-055", "OP08-111", "ST01-012", "OP12-077", "ST01-016", "ST21-003", "OP13-057",
+    "OP16-118",
+    "ST01-017"
+  ],
+  "resolution_scope": "global",
+  "decision": "Cada item resolvido com fix GENERICO cobrindo a FORMA do problema (nao a carta-gatilho isolada), conforme mandato do CLAUDE.md. Detalhes tecnicos completos nos comentarios do proprio codigo (gerar_effects_db.py/decision_engine.py), buscaveis por 'Achado 17/07'. Descobertas colaterais sistemicas (once_per_turn cross-contamination, filter_no_effect sempre-True, keyword_blocker guard incompleta pra negacao) tratadas como parte do mesmo lote por serem generalizacoes diretas do mesmo mecanismo tocado, nao expansao de escopo nao relacionada.",
+  "validated_by": [
+    "diff_parser.py GANHOU=0/PERDEU=0/MUDOU=101 (todas as mudancas auditadas individualmente, nenhuma regressao)",
+    "gerar_dbs.py + snapshot_parser.py 0/0/0",
+    "smoke_fast.py: 9 testes dirigidos novos, todos com EXECUCAO REAL de ponta a ponta cobrindo cada item + as descobertas colaterais",
+    "smoke_test.py: TODOS OS TESTES PASSARAM (2 testes preexistentes tiveram que ser corrigidos pra refletir o comportamento CORRIGIDO do target='selected' em Counter events)",
+    "smoke_test_broad.py: rodado (codigo compartilhado por toda a base, mudancas em multiplos pontos centrais: buff_power own_character, once_per_turn scoping, keyword nativa guard, _counter_event_power_plan)"
+  ]
+}

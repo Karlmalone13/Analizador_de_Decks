@@ -284,6 +284,27 @@ def get_card_effects(code: str) -> dict:
     return effects
 
 
+def effective_counter(card: 'Card', owner: 'GameState') -> int:
+    """
+    Counter efetivo de uma carta NA MAO do dono, aplicando estaticas tipo
+    "The counter of all of your Character cards with N power in your
+    hand becomes +M" (achado 17/07, OP16-118, unica carta no banco --
+    mecanica nova de modificar o Counter impresso enquanto na mao, nao um
+    buff_power/buff_cost de campo). Escopo deliberadamente estreito: so
+    consumido nos pontos DECISIVOS de "vale usar como Counter"
+    (counter_in_hand/escolha de qual carta jogar como counter), nao em
+    toda heuristica secundaria de scoring que le card.counter direto.
+    """
+    base = card.counter
+    for fonte in [owner.leader] + list(owner.field_chars):
+        fpassive = get_card_effects(fonte.code).get('passive', {})
+        for s in fpassive.get('steps', []):
+            if (s.get('action') == 'set_hand_counter_by_power'
+                    and card.power == s.get('power_eq')):
+                return s.get('to_value', base)
+    return base
+
+
 def get_card_flags(code: str) -> dict:
     """
     Retorna as flags estruturadas de classificação da carta (card_analysis_db):
@@ -815,7 +836,7 @@ class GameState:
         return [c for c in self.field_chars if c.rested]
 
     def counter_in_hand(self) -> int:
-        return sum(c.counter for c in self.hand if c.counter > 0)
+        return sum(effective_counter(c, self) for c in self.hand if effective_counter(c, self) > 0)
 
     def blockers_active(self) -> List[Card]:
         elegiveis = [c for c in self.field_chars
@@ -2291,15 +2312,20 @@ class EffectExecutor:
         if principal.get('conditions') and not self._check_conditions(principal.get('conditions', {}), event):
             return None
         amount = principal.get('amount', 0)
-        # buff_power(battle_only) ADICIONAL com target='self' -- texto real
-        # confirmado nos 8 casos do banco: "Up to 1 of your Leader or
+        # buff_power(battle_only) ADICIONAL com target='selected' -- texto
+        # real confirmado em 10+ casos do banco: "Up to 1 of your Leader or
         # Character cards gains +X power... Then, if [cond], THAT CARD gains
-        # an additional +Y power" (ex: EB03-020, OP04-095, OP07-035). O
-        # parser mapeia "that card" como target='self' (mesma carta
-        # escolhida no step anterior, NAO o proprio Event) -- soma como
-        # bonus condicional ao MESMO alvo, nunca um 2º alvo independente.
+        # an additional +Y power" (ex: EB03-020, OP04-095, OP07-035). Ate
+        # 17/07 o parser mapeava "that card" como target='self' (usado aqui
+        # so como MARCADOR interno de "mesma carta escolhida no step
+        # anterior", nao o proprio Event -- nunca refletia o real
+        # comportamento fora deste caminho). Generalizado pra
+        # target='selected' (consistente com o resto do engine, ver
+        # _last_selected/select_filtered) -- 'self' mantido tambem por
+        # retrocompatibilidade, caso alguma variante ainda produza esse
+        # valor.
         for bonus in bonus_steps:
-            if bonus.get('target') != 'self':
+            if bonus.get('target') not in ('self', 'selected'):
                 return None
             if bonus.get('conditions') and not self._check_conditions(bonus.get('conditions', {}), event):
                 continue
@@ -2987,6 +3013,12 @@ class EffectExecutor:
                 return False
         if 'other_char_cost_gte' in conds:
             outros = [c for c in me.field_chars if c is not card]
+            # filtro de tipo (achado 17/07, EB01-001/OP12-098): mesma
+            # FORMA ja coberta pra other_char_power_gte_type acima.
+            filter_type_cost = conds.get('other_char_cost_gte_type')
+            if filter_type_cost:
+                outros = [c for c in outros
+                          if _norm_type_text(filter_type_cost) in _norm_type_text(c.sub_types)]
             if not outros or max(c.cost for c in outros) < conds['other_char_cost_gte']:
                 return False
         if 'no_other_named' in conds:
@@ -3091,6 +3123,8 @@ class EffectExecutor:
             if n < spec['count']:
                 return False
         if 'opp_chars_gte' in conds and len(opp.field_chars) < conds['opp_chars_gte']:
+            return False
+        if 'opp_chars_lte' in conds and len(opp.field_chars) > conds['opp_chars_lte']:
             return False
         if 'self_type' in conds and conds['self_type'] not in card.sub_types.lower():
             return False
@@ -3348,6 +3382,57 @@ class EffectExecutor:
                 if not self._return_don_to_deck(count):
                     return False
                 self._cost_logs.append(f'custo: devolveu {count} DON ao deck')
+            elif ctype == 'return_active_don_to_don_deck':
+                # DISTINTO de don_minus: o texto exige DON ATIVO
+                # especificamente ("return N of your active DON!! cards"),
+                # entao paga so do banco ativo (me.don_available) -- nao
+                # reusa _return_don_to_deck, que PREFERE devolver DON
+                # restado/gasto (semantica oposta do que este custo exige).
+                # Achado 17/07, EB02-061/OP16-060.
+                count = cost.get('count', 1)
+                if self.me.don_available < count:
+                    return False
+                self.me.don_available -= count
+                self.me.don_deck += count
+                self._cost_logs.append(f'custo: devolveu {count} DON ativo ao deck')
+            elif ctype == 'place_hand_top_deck':
+                # "you may place N cards from your hand at the top of
+                # your deck: efeito" -- custo opcional, TOPO (fim da
+                # lista), distinto do custo place_from_trash_bottom_deck
+                # (fonte=trash, destino=fundo). Achado 17/07, ST17-005.
+                count = cost.get('count', 1)
+                if len(self.me.hand) < count:
+                    return False
+                movidos = []
+                for _ in range(count):
+                    worst = self._choose_to_trash(self.me.hand)
+                    if not worst:
+                        break
+                    remove_by_identity(self.me.hand, worst)
+                    self.me.deck.append(worst)
+                    movidos.append(worst.name[:14])
+                self._cost_logs.append(f'custo: topo do deck (da mão): {", ".join(movidos)}')
+            elif ctype == 'give_don_to_named':
+                # "you may give N active DON!! cards to 1 of your [Nome]:
+                # efeito" -- custo de anexar DON ATIVO (do banco) a um
+                # Character PROPRIO NOMEADO especifico (nao "o mais
+                # forte", como give_don faz -- aqui o alvo e FIXO pelo
+                # nome). Achado 17/07, familia Silvers Rayleigh (EB04-009,
+                # OP12-016, OP12-017, OP12-019).
+                count = cost.get('count', 1)
+                target_name = (cost.get('target_name') or '').lower()
+                # o nomeado pode ser Leader OU Character (ex: Silvers
+                # Rayleigh joga como Leader em alguns decks -- mesma
+                # ambiguidade refletida no "...or [Silvers Rayleigh]" do
+                # Counter irmao desta familia).
+                candidatos_nome = list(self.me.field_chars) + [self.me.leader]
+                alvo = next((c for c in candidatos_nome
+                             if target_name in c.name.lower()), None)
+                if alvo is None or self.me.don_available < count:
+                    return False
+                self.me.don_available -= count
+                alvo.don_attached += count
+                self._cost_logs.append(f'custo: deu {count} DON ativo a {alvo.name[:15]}')
             elif ctype == 'ko_own_character':
                 from optcg_engine.rules_facade import eligible_cards
 
@@ -4255,6 +4340,21 @@ class EffectExecutor:
             target = step.get('target', 'own_two_chars')
             filter_type = step.get('filter_type', '')
             power_lte = step.get('power_lte')
+            if target == 'leader_and_own_character':
+                # "Select your Leader and 1 Character. Swap the base
+                # power of the selected cards" -- par FIXO (Leader +
+                # melhor Character proprio por board_value), distinto de
+                # own_two_chars (2 Characters, sem Leader). Achado 17/07,
+                # OP14-009 (unica carta no banco).
+                if not me.field_chars:
+                    return ''
+                alvo_char = max(me.field_chars, key=lambda c: c.board_value())
+                pa = me.leader.effective_power(True)
+                pb = alvo_char.effective_power(True)
+                me.leader.base_power_override = pb
+                alvo_char.base_power_override = pa
+                return (f'trocou power: Lider({pa}->{pb}) / '
+                        f'{alvo_char.name[:12]}({pb}->{pa})')
             pool = me.field_chars if 'own' in target else opp.field_chars
             cands = [c for c in pool
                      if card_matches_filter(c, filter_type)
@@ -4642,6 +4742,22 @@ class EffectExecutor:
                 best = max(me.field_chars + [me.leader],
                            key=lambda c: c.effective_power(True)) if me.field_chars else me.leader
                 best.power_buff += amount
+                # grava a selecao (SaveTargetName) pra um step POSTERIOR no
+                # MESMO bloco poder referenciar "that card gains an
+                # additional +N power" (target='selected'). Achado 17/07,
+                # OP12-098.
+                self._last_selected = best
+            elif target == 'selected':
+                # "that card gains an additional +N power" -- refere-se a
+                # carta escolhida por um step ANTERIOR no MESMO bloco
+                # (leader_or_character/select_filtered). Sem selecao previa
+                # (_last_selected None), no-op silencioso -- mesmo criterio
+                # ja usado por outras acoes com este target. Achado 17/07,
+                # OP12-098.
+                alvo_sel = getattr(self, '_last_selected', None)
+                if alvo_sel is None:
+                    return ''
+                alvo_sel.power_buff += amount
             elif target in ('all_allies', 'all_allies_and_leader'):
                 # filter_type: "all of your [Tipo] type Characters gain +N
                 # power" (achado 16/07, OP12-102/ST05-001) -- sem isso o
@@ -4704,6 +4820,11 @@ class EffectExecutor:
                     power_lte=step.get('power_lte'),
                     exclude_name=step.get('exclude', ''),
                 )
+                # filter_no_effect: "with no base effect" (achado 17/07,
+                # EB03-009 Makino) -- mesma convencao ja usada em
+                # gain_life(source='trash')/play_from_deck/debuff_cost.
+                if step.get('filter_no_effect'):
+                    candidatos = [c for c in candidatos if not get_card_effects(c.code)]
                 # "Up to N of your Characters gain +X power" -- N>1
                 # (achado 16/07, OP08-018): antes escolhia SEMPRE so 1,
                 # mesmo com N=3 no texto.
@@ -4960,10 +5081,16 @@ class EffectExecutor:
                 if cost_gte is not None:
                     candidatos = [c for c in candidatos if c.cost >= cost_gte]
                 # filter_no_effect: Characters sem efeito parseado no banco
-                # ("with no base effect", OP03-091 Helmeppo).
+                # ("with no base effect", OP03-091 Helmeppo). BUG achado
+                # 17/07: get_card_effects() ja retorna o dict de efeitos
+                # DESEMPACOTADO (chaves sao nomes de trigger, ex: 'on_play'),
+                # entao chamar .get('effects') NELE de novo sempre retornava
+                # None -- o filtro nunca filtrava nada (tratava QUALQUER
+                # carta como "sem efeito base"). Mesmo bug replicado em
+                # play_from_deck (ver abaixo).
                 if step.get('filter_no_effect'):
                     candidatos = [c for c in candidatos
-                                  if not get_card_effects(c.code).get('effects')]
+                                  if not get_card_effects(c.code)]
 
             to_value = step.get('to_value')  # "set cost to N" (OP03-091)
             afetados = []
@@ -5333,6 +5460,23 @@ class EffectExecutor:
                     me.deck.insert(0, worst)
                     placed.append(worst.name[:12])
             return f'colocou da mão no deck: {", ".join(placed)}' if placed else ''
+
+        # "...and place N cards from your hand at the TOPO of your deck"
+        # (SEM "or bottom") -- DISTINTO de hand_to_deck acima: aqui o
+        # texto so oferece topo (a carta reaparece na proxima compra,
+        # efeito mecanico real). Topo do deck = FIM da lista (convencao
+        # do projeto, ver deck.pop() em vez de pop(0)). Achado 17/07,
+        # EB03-034/ST17-001.
+        if action == 'hand_to_deck_top':
+            count = step.get('count', 1)
+            placed = []
+            for _ in range(min(count, len(me.hand))):
+                worst = self._choose_to_trash(me.hand)
+                if worst:
+                    remove_by_identity(me.hand, worst)
+                    me.deck.append(worst)
+                    placed.append(worst.name[:12])
+            return f'colocou da mão no TOPO do deck: {", ".join(placed)}' if placed else ''
 
         if action == 'opp_place_hand_bottom_deck':
             count = step.get('count', 1)
@@ -5987,7 +6131,7 @@ class EffectExecutor:
             # convencao ja usada por gain_life (source=='trash').
             if step.get('filter_no_effect'):
                 elegiveis = [c for c in elegiveis
-                             if not get_card_effects(c.code).get('effects')]
+                             if not get_card_effects(c.code)]
 
             if not elegiveis:
                 return ''
@@ -6204,6 +6348,19 @@ class EffectExecutor:
                     return ''
                 alvo.unblockable_this_turn = True
                 return f'{alvo.name[:18]} (selecionado antes) ganhou Unblockable este turno'
+            if step.get('target') == 'don_recipient':
+                # OP12-016 (Rayleigh): alvo = quem recebeu o DON!! do
+                # custo give_don_to_named (mesmo nome, achado 17/07) --
+                # busca direto por nome em vez de memoria entre steps,
+                # ja que o nome e conhecido em tempo de parse (sempre o
+                # mesmo em ambas as clausulas da carta).
+                nome = (step.get('target_name') or '').lower()
+                candidatos_nome = list(me.field_chars) + [me.leader]
+                alvo = next((c for c in candidatos_nome if nome in c.name.lower()), None)
+                if alvo is None:
+                    return ''
+                alvo.unblockable_this_turn = True
+                return f'{alvo.name[:18]} (recebeu o DON!!) ganhou Unblockable este turno'
             filter_type = step.get('filter_type', '')
             candidatos = eligible_cards(
                 me.field_chars,
@@ -8017,7 +8174,8 @@ class DecisionEngine:
         pequenas caras" sem precisar de knapsack completo.
         """
         if pool is None:
-            pool = [(c.counter, c) for c in self.me.hand if c.counter > 0]
+            pool = [(effective_counter(c, self.me), c) for c in self.me.hand
+                     if effective_counter(c, self.me) > 0]
         if needed <= 0 or not pool:
             return [], 0.0, 0
 

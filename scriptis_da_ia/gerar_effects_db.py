@@ -34,28 +34,50 @@ SPLIT_THEN_IF_RE = re.compile(
     re.IGNORECASE
 )
 
+# Variante SEM ponto: "[A] and if [cond], [B]" -- a condicao gate SO a
+# clausula B, encadeada por "and" DENTRO da mesma sentenca (nao entre
+# sentencas como o padrao acima). Achado 17/07, EB02-056 (unica carta no
+# banco): "...place the rest at the bottom of your deck in any order and
+# if your opponent has 2 or less Characters, trash 1 card from your
+# hand." -- sem isso a condicao ficava perdida OU contaminava as
+# clausulas anteriores (look_top_deck/play_from_deck/deck_bottom_rest,
+# que devem rodar SEMPRE).
+SPLIT_AND_IF_RE = re.compile(
+    r'\s+and\s+(?=if\s+(?:you|your|there|opponent)\b(?!\s+do\b))',
+    re.IGNORECASE
+)
+
 
 def split_then_if(block_text):
     """
     Se block_text tem o padrao '[A]. Then, if [cond], [B]' ou '[A]. If
-    [cond], [B]', retorna (parte_a, parte_b) onde parte_a e o texto ANTES do
-    ponto (sem a condicao) e parte_b e o texto DEPOIS (com 'Then,'/'.'
-    removido do inicio, condicao incluida). Se nao houver o padrao, retorna
-    (block_text, None) -- parte_b None sinaliza "sem split, comportamento
-    antigo preservado".
+    [cond], [B]' ou '[A] and if [cond], [B]' (mesma semantica, sem ponto,
+    encadeado por "and" na mesma sentenca), retorna (parte_a, parte_b) onde
+    parte_a e o texto ANTES da condicao (sem ela) e parte_b e o texto
+    DEPOIS ('Then,'/'.'/'and' removido do inicio, condicao incluida). Se
+    nao houver nenhum dos dois padroes, retorna (block_text, None) --
+    parte_b None sinaliza "sem split, comportamento antigo preservado".
     """
     m = SPLIT_THEN_IF_RE.search(block_text)
-    if not m:
+    if m:
+        parte_a = block_text[:m.start() + 1].strip()  # inclui o '.'
+        parte_b = block_text[m.start() + 1:].strip()
+        # remove 'Then,' isolado do inicio de parte_b -- parse_conditions/
+        # parse_block nao precisam dele, e ele nao carrega nenhuma informacao
+        # de condicao por si so.
+        parte_b = re.sub(r'^then,?\s+', '', parte_b, flags=re.IGNORECASE).strip()
+        if parte_a and parte_b:
+            return parte_a, parte_b
         return block_text, None
-    parte_a = block_text[:m.start() + 1].strip()  # inclui o '.'
-    parte_b = block_text[m.start() + 1:].strip()
-    # remove 'Then,' isolado do inicio de parte_b -- parse_conditions/
-    # parse_block nao precisam dele, e ele nao carrega nenhuma informacao
-    # de condicao por si so.
-    parte_b = re.sub(r'^then,?\s+', '', parte_b, flags=re.IGNORECASE).strip()
-    if not parte_a or not parte_b:
-        return block_text, None
-    return parte_a, parte_b
+
+    m2 = SPLIT_AND_IF_RE.search(block_text)
+    if m2:
+        parte_a = block_text[:m2.start()].strip()
+        parte_b = block_text[m2.end():].strip()
+        if parte_a and parte_b:
+            return parte_a, parte_b
+
+    return block_text, None
 
 
 def parse_conditions(text):
@@ -427,6 +449,18 @@ def parse_conditions(text):
     m = re.search(r'if you have a character with a cost of (\d+) or more', t)
     if m: conds['other_char_cost_gte'] = int(m.group(1))
 
+    # Variante com FILTRO DE TIPO: "if you have a [Tipo] type Character
+    # with a cost of N or more" -- mesma FORMA ja coberta pra power (ver
+    # other_char_power_gte/other_char_power_gte_type acima), faltava o
+    # equivalente por custo. Achado 17/07, 2 cartas: EB01-001 (Oden),
+    # OP12-098.
+    m = re.search(
+        r'if you have an? ["\[{]([^"\]}]+)["\]}]\s*type character with '
+        r'a cost of (\d+) or more', t)
+    if m:
+        conds['other_char_cost_gte'] = int(m.group(2))
+        conds['other_char_cost_gte_type'] = m.group(1).strip()
+
     # "if/and you have NO Characters with N (base) power or more" --
     # NEGACAO de other_char_power_gte (verdadeira quando NENHUM Character
     # do proprio campo bate o limiar, o oposto do "existe pelo menos 1").
@@ -591,6 +625,12 @@ def parse_conditions(text):
     if m:
         conds['opp_chars_gte'] = int(m.group(1))
 
+    # Simetrico, "or less" (achado 17/07, EB02-056 Vegapunk: unica carta
+    # no banco) -- opp_chars_gte so cobria "or more".
+    m = re.search(r'if your opponent has (\d+) or less characters?\b(?!\s+with)', t)
+    if m:
+        conds['opp_chars_lte'] = int(m.group(1))
+
     m = re.search(r'if the total cost of your characters is (\d+) or more', t)
     if m:
         conds['total_chars_cost_gte'] = int(m.group(1))
@@ -753,6 +793,51 @@ def parse_costs(text):
     elif m_c:
         costs.append({'type': 'place_from_trash_bottom_deck',
                        'count': int(m_c.group(1))})
+
+    # Custo de devolver N DON!! ATIVOS ao DON deck ("you may return N of
+    # your active DON!! cards to your DON!! deck: efeito"). DISTINTO de
+    # don_minus/return_own_don ja existentes: aqueles modelam o atalho
+    # "DON!! -N" e o engine PREFERE devolver DON ja restado/gasto (regra
+    # do usuario: evita tocar DON ativo/util). Aqui o texto exige
+    # explicitamente DON ATIVO -- reusar don_minus pagaria do jeito
+    # ERRADO (evitaria ativo, quando o custo exige justamente ativo) ou
+    # falharia mesmo com DON restado sobrando. Achado 17/07, 2 cartas no
+    # banco: EB02-061 (Luffy), OP16-060 (Sengoku lider).
+    m_ret_active_don = re.search(
+        r'you may return (\d+) of your active don!{0,2}\s*cards? '
+        r'to your don!{0,2}\s*deck\s*:', t)
+    if m_ret_active_don:
+        costs.append({'type': 'return_active_don_to_don_deck',
+                       'count': int(m_ret_active_don.group(1))})
+
+    # Custo de colocar N cartas da PRÓPRIA mão no TOPO do deck ("you may
+    # place N cards from your hand at the top of your deck: efeito").
+    # DISTINTO da clausula "loot" ja existente em parse_draw
+    # (hand_to_deck, que so cobre "top OR bottom... in any order" e
+    # sempre modela como FUNDO por ser escolha estetica) -- aqui o texto
+    # so oferece TOPO, entao a carta reaparece na proxima compra (efeito
+    # mecanico real, nao equivalente a ir pro fundo). Achado 17/07,
+    # ST17-005 (unica carta com essa clausula como CUSTO opcional; a
+    # mesma frase tambem aparece como STEP obrigatorio em EB03-034/
+    # ST17-001, tratado a parte em parse_draw).
+    m_hand_top_cost = re.search(
+        r'you may place (\d+) cards? from your hand at (?:the )?top of your deck\s*:', t)
+    if m_hand_top_cost:
+        costs.append({'type': 'place_hand_top_deck',
+                       'count': int(m_hand_top_cost.group(1))})
+
+    # Custo de dar N DON!! ATIVOS a UM Character PROPRIO NOMEADO ("you may
+    # give N active DON!! card(s) to 1 of your [Nome]: efeito") -- familia
+    # de 4 cartas Event (EB04-009, OP12-016, OP12-017, OP12-019, todas
+    # "[Silvers Rayleigh]"), ZERO cobertura antes (efeitos disparavam de
+    # graca, sem gastar DON nenhum). Achado 17/07.
+    m_give_don_named = re.search(
+        r'you may give (\d+) active don!{0,2}\s*cards? to 1 of your '
+        r'\[([^\]]+)\]\s*:', t)
+    if m_give_don_named:
+        costs.append({'type': 'give_don_to_named',
+                       'count': int(m_give_don_named.group(1)),
+                       'target_name': m_give_don_named.group(2).strip()})
 
     # rest N DON como custo. Cobre tanto "rest N of your DON" isolado quanto o
     # padrão COMPOSTO "rest this card and N of your DON!! cards" (ex: Empty
@@ -1949,6 +2034,27 @@ def parse_select_unblockable_turn(text):
         steps.append({'action': 'select_grant_unblockable_turn', 'target': 'leader_only'})
         return steps
 
+    # OP12-016 (Rayleigh): "your opponent cannot activate [Blocker] when
+    # the card given these DON!! cards attacks during this turn" -- alvo
+    # e QUEM RECEBEU o DON!! do custo (nao um step de selecao proprio).
+    # Extrai o mesmo nome do custo "give N active DON!! cards to 1 of
+    # your [Nome]" (parse_costs le o MESMO texto de bloco de forma
+    # independente) e grava direto em target_name -- engine so filtra
+    # por nome, sem precisar de memoria cruzada custo->efeito. Achado
+    # 17/07 -- gap ja identificado e DEFERIDO em sessao anterior (ver
+    # docstring desta funcao), implementado agora.
+    m_don_recipient = re.search(
+        r"opponent cannot activate \[?blocker\]?.{0,20}"
+        r"the card given (?:these|this) don!{0,2}\s*cards? attacks", t)
+    if m_don_recipient:
+        m_name = re.search(
+            r'give \d+ active don!{0,2}\s*cards? to 1 of your \[([^\]]+)\]', t)
+        step = {'action': 'select_grant_unblockable_turn', 'target': 'don_recipient'}
+        if m_name:
+            step['target_name'] = m_name.group(1).strip()
+        steps.append(step)
+        return steps
+
     # Sanji / Diable Jambe: "select up to 1 of your [Tipo] Character(s)
     # [with N power or more]. If/Your opponent cannot...if that
     # Leader-or-Character/Character attacks during this turn, opponent
@@ -2311,6 +2417,17 @@ def parse_draw(text):
     if m_loot:
         steps.append({'action': 'hand_to_deck', 'count': int(m_loot.group(1))})
 
+    # "...and place N cards from your hand at the top of your deck"
+    # (SEM "or bottom") -- STEP obrigatorio distinto do custo opcional
+    # 'place_hand_top_deck' acima (guarda de ':' logo apos evita
+    # confundir com a clausula de custo "you may place N ... : efeito",
+    # que e tratada por parse_costs). Achado 17/07, EB03-034 e ST17-001
+    # (2 cartas, mesma frase que segue um 'draw' na mesma sentenca).
+    m_hand_top = re.search(
+        r'place (\d+) cards? from your hand at (?:the )?top of your deck(?!\s*:)', t)
+    if m_hand_top:
+        steps.append({'action': 'hand_to_deck_top', 'count': int(m_hand_top.group(1))})
+
     return steps
 
 
@@ -2440,9 +2557,16 @@ def parse_power_buff(text):
     # comparacao_simulador_vs_IA.md).
     TIPO_BRACKETS = r'(?:\{([^}]+)\}|\[([^\]]+)\]|"([^"]+)")'
     m_select_buff = re.search(
-        r"(?:select )?up to (\d+) of your " + TIPO_BRACKETS +
-        r"(?: type)? (?:leader or character cards|character cards|leader or character|characters|cards)"
-        r"(?:\s+and that card)? gains? \+(\d+)\s*power",
+        # "of your" tornado OPCIONAL (achado 17/07, ST01-017: unica carta
+        # sem "of your", marca posse via "on your field" no FIM da frase
+        # em vez do inicio) -- "select_filtered" ja assume posse propria
+        # de qualquer forma (so escolhe entre me.field_chars+leader).
+        r"(?:select )?up to (\d+) (?:of your )?" + TIPO_BRACKETS +
+        r"(?: type)? (?:leader or character cards?|character cards?|leader or character|characters|cards)"
+        # "on your/the field" (achado 17/07, ST01-017, unica carta com esse
+        # filler) -- tolerado como locucao opcional entre o alvo e o
+        # "gains", mesma FORMA de "and that card" ja tolerada.
+        r"(?:\s+and that card)?(?:\s+on (?:your|the) field)? gains? \+(\d+)\s*power",
         t
     )
     if m_select_buff:
@@ -2572,6 +2696,15 @@ def parse_power_buff(text):
         # mesma frase.
         elif re.search(r'(?<!other than )this (?:character|card) gains?\s*$', contexto_antes):
             target = 'self'
+        # "that card gains an additional +N power" -- refere-se a carta
+        # SELECIONADA por um buff_power ANTERIOR no MESMO bloco (ex:
+        # OP12-098: "Up to 1 of your Leader or Character cards gains
+        # +2000 power ... Then, if [condicao], that card gains an
+        # additional +2000 power"), nao a propria carta do efeito.
+        # Mesma memoria de selecao (_last_selected) ja usada por
+        # select_filtered/gain_rush(target='selected'). Achado 17/07.
+        elif re.search(r'that (?:character|card) gains?(?: an additional)?\s*$', contexto_antes):
+            target = 'selected'
         elif 'your leader or 1 of your characters' in contexto_antes or 'your leader or character' in contexto_antes:
             target = 'leader_or_character'
         elif 'all of your' in contexto_antes and "leader" in contexto_antes:
@@ -2580,10 +2713,19 @@ def parse_power_buff(text):
             target = 'all_allies'
         elif 'your leader' in contexto_antes:
             target = 'leader'
-        elif ('this character' in contexto_antes or 'this card' in contexto_antes):
-            target = 'self'
+        # 'of your characters' (own_character) verificado ANTES do
+        # fallback largo 'this character'/'this card' ANYWHERE (achado
+        # 17/07, EB03-009): custo "you may rest THIS CHARACTER: up to 1
+        # of your Characters ... gains +N power" tinha "this Character"
+        # do CUSTO contaminando a janela e vencendo a evidencia mais
+        # proxima/especifica ("of your characters") so por checar
+        # PRIMEIRO -- mesma classe de bug ja documentada acima pra
+        # 'leader' (contaminacao de condicao/custo anterior na mesma
+        # janela), agora tambem coberta pra 'self' vs 'own_character'.
         elif 'of your characters' in contexto_antes or 'of your character cards' in contexto_antes:
             target = 'own_character'
+        elif ('this character' in contexto_antes or 'this card' in contexto_antes):
+            target = 'self'
 
         # Filtros do alvo 'own_character' (selecao entre os PROPRIOS
         # characters, sem tipo -- distinto de 'select_filtered', que e por
@@ -2593,6 +2735,7 @@ def parse_power_buff(text):
         # character, ignorando a restrição do texto.
         power_lte_own = None
         exclude_own = ''
+        filter_no_effect_own = False
         if target == 'own_character':
             m_plte = re.search(r'with (\d+) (?:base )?power or less', contexto_antes)
             if m_plte:
@@ -2600,6 +2743,13 @@ def parse_power_buff(text):
             m_excl = re.search(r'other than \[([^\]]+)\]', contexto_antes)
             if m_excl:
                 exclude_own = m_excl.group(1).strip()
+            # "with no base effect" -- mesma convencao ja usada em
+            # gain_life(source='trash')/play_from_deck/debuff_cost
+            # (filter_no_effect). Achado 17/07, EB03-009 (Makino): alvo
+            # nunca chegava a checar esse filtro porque target virava
+            # 'self' antes (ver reordenacao acima).
+            if 'with no base effect' in contexto_antes:
+                filter_no_effect_own = True
         elif target == 'leader':
             # 'leader' tambem aceita o mesmo filtro de power (achado 16/07,
             # OP09-007: "Up to 1 of your Leader with 4000 power or less
@@ -2647,6 +2797,8 @@ def parse_power_buff(text):
             step['exclude'] = exclude_own
         if count_own is not None:
             step['count'] = count_own
+        if filter_no_effect_own:
+            step['filter_no_effect'] = True
         if target == 'all_allies' and filter_type_all:
             step['filter_type'] = filter_type_all
             if filter_color_all:
@@ -5094,13 +5246,23 @@ def parse_block(block_text, trigger_name):
         steps.extend(parse_ko(t))
 
     # "Swap the base power of the selected Characters with each other during
-    # this turn." -- OP14-001 (own chars) / OP14-017 (opp chars).
+    # this turn." -- OP14-001 (own chars) / OP14-017 (opp chars). Tambem
+    # aceita "selected cards" (nao so "characters") -- achado 17/07,
+    # OP14-009 (unica carta no banco com esse substantivo): "Select your
+    # Leader and 1 Character. Swap the base power of the selected cards
+    # with each other during this battle." -- substantivo generico "cards"
+    # porque o par selecionado inclui o Leader, nao so Characters.
     if 'swap the base power' in t:
-        m_swap = re.search(r'swap the base power of the selected characters? with each other', t)
+        m_swap = re.search(r'swap the base power of the selected (?:characters?|cards?) with each other', t)
         if m_swap:
             # Infere alvo (proprio vs oponente) pelo contexto antes do swap
             pre = t[:m_swap.start()]
-            if 'opponent' in pre:
+            if 'select your leader and' in pre:
+                # OP14-009: par Leader + 1 Character (proprios), distinto
+                # de own_two_chars (2 Characters, sem Leader envolvido).
+                step_sw = {'action': 'swap_base_power', 'target': 'leader_and_own_character',
+                           'duration': 'battle_only' if 'this battle' in t[m_swap.end():m_swap.end()+20] else 'this_turn'}
+            elif 'opponent' in pre:
                 # OP14-017: 2 chars do oponente
                 power_m = re.search(r'with (\d+) base power or less', pre)
                 step_sw = {'action': 'swap_base_power', 'target': 'opp_two_chars',
@@ -5225,6 +5387,12 @@ def parse_block(block_text, trigger_name):
         steps.extend(parse_select_unblockable_turn(t))
     elif 'blocker' in t and 'cannot activate' in t and 'whenever your leader attacks' in t:
         steps.extend(parse_select_unblockable_turn(t))
+    elif ('blocker' in t and 'cannot activate' in t
+            and 'the card given' in t and 'don!!' in t and 'attacks' in t):
+        # OP12-016 (Rayleigh): alvo = quem recebeu o DON!! do custo, sem
+        # a palavra "select" no texto (a selecao ja aconteceu no custo,
+        # nao num step de efeito). Achado 17/07.
+        steps.extend(parse_select_unblockable_turn(t))
 
     # "Set [alvo] as active" -- desrestar fora do Refresh normal. Exclui
     # don!! explicitamente dentro da função (set_don_active já cobre).
@@ -5242,6 +5410,24 @@ def parse_block(block_text, trigger_name):
     # cards, you win the game". Achado 15/07.
     if 'you win the game' in t:
         steps.extend(parse_win_game_on_opp_blocker(t))
+
+    # "The counter of all of your Character cards with N power in your
+    # hand becomes +M" -- estatica NOVA (mecanica nunca vista): modifica
+    # o valor de Counter impresso de cartas na MAO (filtro por power
+    # exato), nao um buff_power/buff_cost de campo. Achado 17/07,
+    # OP16-118 (unica carta no banco). Engine consome via
+    # effective_counter() nos pontos DECISIVOS de "vale usar como
+    # Counter" (nao em toda heuristica de scoring secundaria -- escopo
+    # deliberadamente estreito, registrado no audit).
+    m_hand_counter = re.search(
+        r'the counter of all of your character cards with (\d+) power '
+        r'in your hand becomes \+?(\d+)', t)
+    if m_hand_counter:
+        steps.append({
+            'action': 'set_hand_counter_by_power',
+            'power_eq': int(m_hand_counter.group(1)),
+            'to_value': int(m_hand_counter.group(2)),
+        })
 
     # "When your opponent activates a [Blocker], K.O. up to N of your
     # opponent's Characters with X power or less" -- reativo NOVO
@@ -6077,7 +6263,13 @@ def parse_card_effect(card_text, card_type):
         has_substitute = (not is_choice and any(
             s.get('action') in ('substitute_ko', 'substitute_removal') for s in steps))
         costs = [] if has_substitute else parse_costs(block)
-        once = '[once per turn]' in t_low
+        # Achado 17/07 (EB03-006 Nami): '[once per turn]' era checado
+        # contra t_low (o TEXTO INTEIRO da carta), nao contra o bloco
+        # deste trigger -- qualquer carta com 2+ blocos, onde SO UM tem a
+        # tag, contaminava TODOS os blocos com once_per_turn=True. 'block'
+        # ja e recortado por trigger_pattern (LOOKAHEAD_DELIM), entao a
+        # tag de OUTRO bloco nunca aparece nele.
+        once = '[once per turn]' in block
 
         # "Then, if [cond]" scope leakage: se o bloco tem o padrao "[A
         # incondicional]. Then, if [cond], [B]", a condicao extraida de
@@ -6529,15 +6721,23 @@ def parse_card_effect(card_text, card_type):
         if tag not in t_low:
             continue
         # Ignora mencao ao keyword do OPONENTE ("your opponent activates
-        # [Blocker]", "opponent's [Blocker]") -- referencia a mecanica do
-        # OUTRO jogador, nao uma concessao nativa pra esta carta. Achado
-        # 15/07 (OP09-118 Gol.D.Roger, "When your opponent activates
-        # [Blocker], if either you or your opponent has 0 Life cards, you
-        # win the game" -- virava keyword_blocker nativo por engano, sem
-        # nenhuma "gains" por perto pra cair no ramo de exclusao seguinte).
+        # [Blocker]", "your opponent cannot activate [Blocker]",
+        # "opponent's [Blocker]") -- referencia a mecanica do OUTRO
+        # jogador (ou a nega-la, mecanismo real de "unblockable" -- ver
+        # lock_opp_blocker_battle/select_grant_unblockable_turn), nunca
+        # uma concessao nativa pra esta carta. Achado 15/07 (OP09-118)
+        # cobria so "activates" SEM negacao -- achado 17/07 (varredura
+        # ampla via OP12-016): "cannot activate"/"can't activate" (a
+        # forma REAL e muito mais comum de "torna alguem unblockable")
+        # nunca foi tolerada, entao TODAS as cartas com essa frase
+        # ganhavam Blocker nativo por engano, DUPLICADO com o efeito
+        # correto ja parseado por outro mecanismo (8+ cartas confirmadas:
+        # OP05-016, OP06-055, OP08-111, ST01-012, OP12-016, OP12-077,
+        # ST01-016, ST21-003, OP13-057).
         _tag_idx = t_low.find(tag)
-        if _tag_idx >= 0 and re.search(r"(?:your opponent activates?|opponent'?s)\s*$",
-                                        t_low[max(0, _tag_idx-30):_tag_idx]):
+        if _tag_idx >= 0 and re.search(
+                r"(?:your opponent (?:can(?:not|'?t)\s+)?activates?|opponent'?s)\s*$",
+                t_low[max(0, _tag_idx-30):_tag_idx]):
             continue
         # evita capturar "gains [X]" como keyword nativa passiva quando na
         # verdade e concedida CONDICIONALMENTE (tratada pelo fallback/segmento

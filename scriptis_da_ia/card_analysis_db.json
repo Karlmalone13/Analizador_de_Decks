@@ -5701,7 +5701,7 @@
    }
   ],
   "synergy_states": {},
-  "text": "[On Play] You may give your active Leader 5000 power during this turn: Draw 1 card.\r\n[Activate: Main] [Once Per Turn] If your Leader has the {Alabasta} type, give up to 1 of your opponent's Characters 1000 power during this turn.",
+  "text": "[On Play] You may give your active Leader -5000 power during this turn: Draw 1 card.\r\n[Activate: Main] [Once Per Turn] If your Leader has the {Alabasta} type, give up to 1 of your opponent's Characters 1000 power during this turn.",
   "is_searcher": false,
   "draws": true,
   "has_counter_value": false,
@@ -5830,7 +5830,7 @@
    {
     "action": "buff_power",
     "trigger": "activate_main",
-    "target": "self"
+    "target": "own_character"
    }
   ],
   "synergy_states": {},
@@ -6335,7 +6335,7 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "self"
+    "target": "selected"
    }
   ],
   "synergy_states": {},
@@ -6932,6 +6932,10 @@
   "effects": [
    {
     "action": "draw",
+    "trigger": "on_play"
+   },
+   {
+    "action": "hand_to_deck_top",
     "trigger": "on_play"
    },
    {
@@ -12232,7 +12236,7 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "self"
+    "target": "selected"
    }
   ],
   "synergy_states": {},
@@ -30990,7 +30994,7 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "self"
+    "target": "selected"
    }
   ],
   "synergy_states": {
@@ -32707,10 +32711,6 @@
    {
     "action": "play_card",
     "trigger": "trigger"
-   },
-   {
-    "action": "keyword_blocker",
-    "trigger": "passive"
    }
   ],
   "synergy_states": {
@@ -32724,7 +32724,7 @@
   "draws": false,
   "has_counter_value": false,
   "has_counter_event": false,
-  "is_blocker": true,
+  "is_blocker": false,
   "is_removal": false,
   "kos": false,
   "rests_opponent": false,
@@ -37061,7 +37061,7 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "self"
+    "target": "selected"
    }
   ],
   "synergy_states": {
@@ -39016,7 +39016,7 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "self"
+    "target": "selected"
    }
   ],
   "synergy_states": {
@@ -39748,10 +39748,6 @@
     "action": "lock_opp_blocker_battle",
     "trigger": "when_attacking",
     "don_requirement": 2
-   },
-   {
-    "action": "keyword_blocker",
-    "trigger": "passive"
    }
   ],
   "synergy_states": {},
@@ -39760,7 +39756,7 @@
   "draws": false,
   "has_counter_value": false,
   "has_counter_event": false,
-  "is_blocker": true,
+  "is_blocker": false,
   "is_removal": false,
   "kos": false,
   "rests_opponent": false,
@@ -44103,7 +44099,7 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "self"
+    "target": "selected"
    }
   ],
   "synergy_states": {
@@ -45107,10 +45103,6 @@
     "action": "select_grant_unblockable_turn",
     "trigger": "main",
     "target": "selected"
-   },
-   {
-    "action": "keyword_blocker",
-    "trigger": "passive"
    }
   ],
   "synergy_states": {
@@ -45124,7 +45116,7 @@
   "draws": true,
   "has_counter_value": false,
   "has_counter_event": false,
-  "is_blocker": true,
+  "is_blocker": false,
   "is_removal": false,
   "kos": false,
   "rests_opponent": false,
@@ -46723,7 +46715,7 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "self"
+    "target": "selected"
    }
   ],
   "synergy_states": {
@@ -52778,10 +52770,6 @@
    {
     "action": "play_card",
     "trigger": "trigger"
-   },
-   {
-    "action": "keyword_blocker",
-    "trigger": "passive"
    }
   ],
   "synergy_states": {
@@ -52795,7 +52783,7 @@
   "draws": false,
   "has_counter_value": true,
   "has_counter_event": false,
-  "is_blocker": true,
+  "is_blocker": false,
   "is_removal": false,
   "kos": false,
   "rests_opponent": false,
@@ -63885,7 +63873,7 @@
    {
     "action": "buff_power",
     "trigger": "activate_main",
-    "target": "self"
+    "target": "own_character"
    }
   ],
   "synergy_states": {},
@@ -66299,7 +66287,7 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "self"
+    "target": "selected"
    }
   ],
   "synergy_states": {
@@ -69535,8 +69523,9 @@
     "target": "own_character"
    },
    {
-    "action": "keyword_blocker",
-    "trigger": "passive"
+    "action": "select_grant_unblockable_turn",
+    "trigger": "main",
+    "target": "don_recipient"
    }
   ],
   "synergy_states": {},
@@ -69545,7 +69534,7 @@
   "draws": false,
   "has_counter_value": false,
   "has_counter_event": true,
-  "is_blocker": true,
+  "is_blocker": false,
   "is_removal": false,
   "kos": false,
   "rests_opponent": false,
@@ -72156,10 +72145,6 @@
     "action": "select_grant_unblockable_turn",
     "trigger": "main",
     "target": "selected"
-   },
-   {
-    "action": "keyword_blocker",
-    "trigger": "passive"
    }
   ],
   "synergy_states": {
@@ -72173,7 +72158,7 @@
   "draws": true,
   "has_counter_value": false,
   "has_counter_event": false,
-  "is_blocker": true,
+  "is_blocker": false,
   "is_removal": false,
   "kos": false,
   "rests_opponent": false,
@@ -73089,7 +73074,7 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "self"
+    "target": "selected"
    }
   ],
   "synergy_states": {
@@ -76401,10 +76386,6 @@
     "action": "select_grant_unblockable_turn",
     "trigger": "main",
     "target": "leader_only"
-   },
-   {
-    "action": "keyword_blocker",
-    "trigger": "passive"
    }
   ],
   "synergy_states": {},
@@ -76413,7 +76394,7 @@
   "draws": false,
   "has_counter_value": false,
   "has_counter_event": true,
-  "is_blocker": true,
+  "is_blocker": false,
   "is_removal": false,
   "kos": false,
   "rests_opponent": false,
@@ -79561,6 +79542,11 @@
   "attribute": "Slash",
   "effects": [
    {
+    "action": "swap_base_power",
+    "trigger": "on_opp_attack",
+    "target": "leader_and_own_character"
+   },
+   {
     "action": "keyword_rush",
     "trigger": "passive"
    }
@@ -82628,7 +82614,7 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "self"
+    "target": "selected"
    }
   ],
   "synergy_states": {},
@@ -95204,6 +95190,10 @@
    {
     "action": "add_to_hand",
     "trigger": "on_ko"
+   },
+   {
+    "action": "set_hand_counter_by_power",
+    "trigger": "passive"
    }
   ],
   "synergy_states": {},
@@ -99972,10 +99962,6 @@
     "don_requirement": 2
    },
    {
-    "action": "keyword_blocker",
-    "trigger": "passive"
-   },
-   {
     "action": "keyword_rush",
     "trigger": "passive"
    }
@@ -99986,7 +99972,7 @@
   "draws": false,
   "has_counter_value": false,
   "has_counter_event": false,
-  "is_blocker": true,
+  "is_blocker": false,
   "is_removal": false,
   "kos": false,
   "rests_opponent": false,
@@ -100164,10 +100150,6 @@
    {
     "action": "select_grant_unblockable_turn",
     "trigger": "main"
-   },
-   {
-    "action": "keyword_blocker",
-    "trigger": "passive"
    }
   ],
   "synergy_states": {
@@ -100181,7 +100163,7 @@
   "draws": false,
   "has_counter_value": false,
   "has_counter_event": false,
-  "is_blocker": true,
+  "is_blocker": false,
   "is_removal": true,
   "kos": true,
   "rests_opponent": false,
@@ -100212,7 +100194,7 @@
    {
     "action": "buff_power",
     "trigger": "activate_main",
-    "target": "self"
+    "target": "select_filtered"
    }
   ],
   "synergy_states": {},
@@ -110534,10 +110516,6 @@
    {
     "action": "select_grant_unblockable_turn",
     "trigger": "on_play"
-   },
-   {
-    "action": "keyword_blocker",
-    "trigger": "passive"
    }
   ],
   "synergy_states": {},
@@ -110546,7 +110524,7 @@
   "draws": false,
   "has_counter_value": true,
   "has_counter_event": false,
-  "is_blocker": true,
+  "is_blocker": false,
   "is_removal": false,
   "kos": false,
   "rests_opponent": false,
