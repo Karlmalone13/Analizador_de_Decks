@@ -1,0 +1,14 @@
+{
+  "trigger_card": "OP16-001",
+  "problem": "Varias cartas usam 'gains [Rush]' com uma clausula de SELECAO de outro Character do campo (por tipo/nome/custo/exclusao), mas o parser sempre tratava como gain_rush (auto-buff, alvo=self/card, sem selecao) -- bug de comportamento real, nao so filtro perdido. Ex: OP16-001 (Leader) 'Up to 1 of your [Monkey.D.Luffy] Characters or up to 1 of your Characters with a type including \"Whitebeard Pirates\", with 8000 power or more, gains [Rush]' -- o Rush ia sempre pro proprio Leader, nunca pro Character selecionado.",
+  "grammar_family": "(a) 'up to N of your [Nome] Characters or up to M of your Characters with a type including \"Tipo\", with X power or more, gains [Rush]' -- OR entre nome exato e (tipo+power). (b) 'up to N of your [Tipo]/{Tipo}/\"type including X\" Characters [com custo/exclusao/without a [Tag] effect] gains [Rush]' -- selecao generica com filtro UNICO (AND).",
+  "queries": [
+    "regex 'up to \\d+ of your \\[[a-z .'-]+\\] characters or up to \\d+ of your characters with a type including' -- 1 carta: OP16-001",
+    "regex mais ampla 'up to \\d+ of your characters?[^.]*?gains? \\[?rush\\]?' contra cards_rows.csv inteiro -- 5 cartas adicionais com o MESMO bug de auto-buff: EB03-001, OP04-001, OP12-007, PRB01-001 (a 5a, OP16-001, ja contada)",
+    "regex 'without an? \\[([a-z .:\\'!]+)\\] effect' pra mapear a variante NOVA filter_no_tag -- 2 cartas: PRB01-001 (on play), EB03-001 (when attacking)"
+  ],
+  "cards_found": ["OP16-001", "EB03-001", "OP04-001", "OP12-007", "PRB01-001"],
+  "resolution_scope": "global",
+  "decision": "Nova acao select_grant_rush (parser + executor), mesma familia arquitetural de select_grant_blocker (16/07). Duas sub-formas no MESMO campo action: (a) com filter_name presente = OR entre pool por nome e pool por tipo+power_gte; (b) sem filter_name = filtro UNICO (AND) com filter_type/cost_lte/exclude/filter_no_tag. filter_no_tag e um campo NOVO, distinto de filter_no_effect ja existente (esse exige NENHUM efeito parseado; filter_no_tag exige apenas a AUSENCIA de uma tag especifica, ex: 'without an [On Play] effect' nao impede o Character de ter Blocker/Counter/etc) -- mapeado genericamente pra qualquer tag conhecida via um dict local tag->trigger_name, verificado no executor contra get_card_effects(c.code)['effects'].",
+  "validated_by": ["diff_parser.py GANHOU=0/PERDEU=0/MUDOU=5 (as 5 cartas, conferidas)", "gerar_dbs.py + snapshot_parser.py 0/0/0", "smoke_fast.py: 1 teste dirigido novo com EXECUCAO real cobrindo as 2 sub-formas (OR: Whitebeard forte acima do limiar ganha Rush, fraco abaixo NAO; filter_no_tag: SO o Character sem [On Play] ganha Rush, usando 2 cartas REAIS do banco pra provar a distincao contra filter_no_effect)", "smoke_test.py: TODOS OS TESTES PASSARAM", "smoke_test_broad.py: 7/7"]
+}

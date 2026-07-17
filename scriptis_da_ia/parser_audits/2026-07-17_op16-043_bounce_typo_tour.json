@@ -1,0 +1,12 @@
+{
+  "trigger_card": "OP16-043",
+  "problem": "\"[On K.O.] Return up to 1 of TOUR opponent's Characters with a cost of 5 or less to the owner's hand.\" -- typo do banco (\"tour\" em vez de \"your\") nunca era tolerado nas 3 regexes de parse_bounce que exigem 'of your opponent'. A acao de bounce inteira ficava ausente.",
+  "grammar_family": "'return up to N of TOUR opponent's Characters...' -- mesmo typo de fraseado ja visto noutras cartas nesta sessao (cost or/of, etc.) aplicado a 'your'/'tour'.",
+  "queries": [
+    "regex '\\btour opponent' contra cards_rows.csv inteiro -- so 1 carta usa esse typo"
+  ],
+  "cards_found": ["OP16-043"],
+  "resolution_scope": "isolated_after_global_scan",
+  "decision": "Tolerancia (?:your|tour) adicionada nas 3 regexes de parse_bounce que exigem 'of your opponent' (todas as 3 ocorrencias no arquivo, mesma funcao). Acao resultante (bounce) ja e totalmente suportada pelo executor, sem mudanca de engine necessaria.",
+  "validated_by": ["diff_parser.py GANHOU=0/PERDEU=0/MUDOU=1", "gerar_dbs.py + snapshot_parser.py 0/0/0", "smoke_fast.py: 1 teste dirigido novo com EXECUCAO real (so o Character de custo<=5 do oponente volta pra mao)", "smoke_test.py: TODOS OS TESTES PASSARAM", "smoke_test_broad.py: 7/7"]
+}

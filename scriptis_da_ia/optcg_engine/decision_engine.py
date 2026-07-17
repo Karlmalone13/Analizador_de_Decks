@@ -6065,6 +6065,51 @@ class EffectExecutor:
                 remove_by_identity(candidates, target)
                 granted.append(target.name[:15])
             return f'ganhou Blocker: {", ".join(granted)}' if granted else ''
+        if action == 'select_grant_rush':
+            # "Up to N of your [Nome] Characters OR up to M of your
+            # Characters with a type including "Tipo", with X power or
+            # more, gains [Rush]" -- OR entre nome exato E (tipo+power),
+            # nao AND (achado 17/07, OP16-001). filter_name casa QUALQUER
+            # power; filter_type exige power_gte tambem. Variante GENERICA
+            # (sem filter_name, achado 17/07: EB03-001/OP04-001/OP12-007/
+            # PRB01-001): filtro UNICO combinando tipo/custo/exclusao/
+            # filter_no_tag (AND, nao OR).
+            from optcg_engine.rules_facade import choose_highest_board_value, eligible_cards
+            count = step.get('count', 1)
+            if step.get('filter_name'):
+                pool_nome = eligible_cards(me.field_chars, name_or_code=step.get('filter_name', ''))
+                pool_tipo = eligible_cards(
+                    me.field_chars,
+                    filter_text=step.get('filter_type', ''),
+                    power_gte=step.get('power_gte'),
+                )
+                candidates = list(pool_nome)
+                for c in pool_tipo:
+                    if not contains_identity(candidates, c):
+                        candidates.append(c)
+            else:
+                candidates = eligible_cards(
+                    me.field_chars,
+                    cost_lte=step.get('cost_lte'),
+                    filter_text=step.get('filter_type', ''),
+                    exclude_name=step.get('exclude', ''),
+                )
+                filter_no_tag = step.get('filter_no_tag')
+                if filter_no_tag:
+                    candidates = [
+                        c for c in candidates
+                        if filter_no_tag not in get_card_effects(c.code).get('effects', {})
+                    ]
+            granted = []
+            for _ in range(min(count, len(candidates))):
+                target = choose_highest_board_value(candidates)
+                if step.get('duration') == 'this_turn':
+                    target.rush_this_turn = True
+                else:
+                    target.has_rush = True
+                remove_by_identity(candidates, target)
+                granted.append(target.name[:15])
+            return f'ganhou Rush: {", ".join(granted)}' if granted else ''
         if action == 'gain_double_attack':
             if step.get('duration') == 'this_turn':
                 card.double_attack_this_turn = True

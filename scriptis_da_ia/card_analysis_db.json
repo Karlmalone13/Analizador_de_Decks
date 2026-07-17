@@ -5484,7 +5484,7 @@
     "target": "opp_character"
    },
    {
-    "action": "gain_rush",
+    "action": "select_grant_rush",
     "trigger": "activate_main"
    },
    {
@@ -5509,7 +5509,7 @@
   "gains_life": false,
   "attacks_life": false,
   "trashes_own_life": false,
-  "has_rush": true,
+  "has_rush": false,
   "has_double_attack": false,
   "has_unblockable": false,
   "has_banish": false,
@@ -26760,7 +26760,7 @@
     "trigger": "activate_main"
    },
    {
-    "action": "gain_rush",
+    "action": "select_grant_rush",
     "trigger": "activate_main"
    }
   ],
@@ -26781,7 +26781,7 @@
   "gains_life": false,
   "attacks_life": false,
   "trashes_own_life": false,
-  "has_rush": true,
+  "has_rush": false,
   "has_double_attack": false,
   "has_unblockable": false,
   "has_banish": false,
@@ -69139,7 +69139,7 @@
   "attribute": "Slash",
   "effects": [
    {
-    "action": "gain_rush",
+    "action": "select_grant_rush",
     "trigger": "on_play"
    }
   ],
@@ -69160,7 +69160,7 @@
   "gains_life": false,
   "attacks_life": false,
   "trashes_own_life": false,
-  "has_rush": true,
+  "has_rush": false,
   "has_double_attack": false,
   "has_unblockable": false,
   "has_banish": false,
@@ -89969,7 +89969,7 @@
   "attribute": "Special",
   "effects": [
    {
-    "action": "gain_rush",
+    "action": "select_grant_rush",
     "trigger": "activate_main"
    }
   ],
@@ -89990,7 +89990,7 @@
   "gains_life": false,
   "attacks_life": false,
   "trashes_own_life": false,
-  "has_rush": true,
+  "has_rush": false,
   "has_double_attack": false,
   "has_unblockable": false,
   "has_banish": false,
@@ -91785,6 +91785,12 @@
   "attribute": "Ranged",
   "effects": [
    {
+    "action": "bounce",
+    "trigger": "on_ko",
+    "cost_lte": 5,
+    "target": "opp_character"
+   },
+   {
     "action": "keyword_blocker",
     "trigger": "passive"
    }
@@ -91796,10 +91802,10 @@
   "has_counter_value": true,
   "has_counter_event": false,
   "is_blocker": true,
-  "is_removal": false,
+  "is_removal": true,
   "kos": false,
   "rests_opponent": false,
-  "bounces": false,
+  "bounces": true,
   "gives_don": false,
   "power_buff": false,
   "heals": false,
@@ -98654,8 +98660,9 @@
   "attribute": "Strike",
   "effects": [
    {
-    "action": "gain_rush",
-    "trigger": "activate_main"
+    "action": "select_grant_rush",
+    "trigger": "activate_main",
+    "cost_lte": 8
    }
   ],
   "synergy_states": {},
@@ -98675,7 +98682,7 @@
   "gains_life": false,
   "attacks_life": false,
   "trashes_own_life": false,
-  "has_rush": true,
+  "has_rush": false,
   "has_double_attack": false,
   "has_unblockable": false,
   "has_banish": false,

@@ -2340,8 +2340,10 @@
      "target": "opp_character"
     },
     {
-     "action": "gain_rush",
-     "duration": "this_turn"
+     "action": "select_grant_rush",
+     "count": 1,
+     "duration": "this_turn",
+     "filter_no_tag": "when_attacking"
     }
    ]
   },
@@ -11208,7 +11210,8 @@
      "count": 1
     },
     {
-     "action": "gain_rush",
+     "action": "select_grant_rush",
+     "count": 1,
      "duration": "this_turn"
     }
    ]
@@ -29209,8 +29212,11 @@
   "on_play": {
    "steps": [
     {
-     "action": "gain_rush",
-     "duration": "this_turn"
+     "action": "select_grant_rush",
+     "count": 1,
+     "duration": "this_turn",
+     "exclude": "shanks",
+     "filter_type": "roger pirates"
     }
    ]
   }
@@ -38468,8 +38474,11 @@
    "once_per_turn": true,
    "steps": [
     {
-     "action": "gain_rush",
-     "duration": "this_turn"
+     "action": "select_grant_rush",
+     "duration": "this_turn",
+     "filter_name": "monkey.d.luffy",
+     "filter_type": "whitebeard pirates",
+     "power_gte": 8000
     }
    ]
   }
@@ -39219,6 +39228,16 @@
   }
  },
  "OP16-043": {
+  "on_ko": {
+   "steps": [
+    {
+     "action": "bounce",
+     "cost_lte": 5,
+     "count": 1,
+     "target": "opp_character"
+    }
+   ]
+  },
   "passive": {
    "steps": [
     {
@@ -42020,8 +42039,11 @@
    "once_per_turn": true,
    "steps": [
     {
-     "action": "gain_rush",
-     "duration": "this_turn"
+     "action": "select_grant_rush",
+     "cost_lte": 8,
+     "count": 1,
+     "duration": "this_turn",
+     "filter_no_tag": "on_play"
     }
    ]
   }

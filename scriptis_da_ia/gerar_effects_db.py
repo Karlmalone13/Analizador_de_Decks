@@ -1457,8 +1457,9 @@ def parse_bounce(text):
         return steps
 
     # Forma explicita "of your opponent['s] Character(s)" -- mantida primeiro
-    # pois e mais especifica.
-    m = re.search(r"return up to (\d+) of your opponent.{0,20} characters? with a cost of (\d+) or less", t)
+    # pois e mais especifica. "tour" tolerado como typo de "your" (achado
+    # 17/07, OP16-043, unica carta no banco com esse typo especifico).
+    m = re.search(r"return up to (\d+) of (?:your|tour) opponent.{0,20} characters? with a cost of (\d+) or less", t)
     if m:
         steps.append({
             'action': 'bounce',
@@ -1473,7 +1474,7 @@ def parse_bounce(text):
     # "N power"). Checada ANTES do catch-all sem filtro (linha abaixo),
     # que ignoraria o filtro por completo.
     m = re.search(
-        r"return up to (\d+) of your opponent.{0,20} characters?"
+        r"return up to (\d+) of (?:your|tour) opponent.{0,20} characters?"
         r" with a (?:base )?power of (\d+)(?: or (more|less))?",
         t)
     if m:
@@ -1488,7 +1489,7 @@ def parse_bounce(text):
         steps.append(step)
         return steps
 
-    m = re.search(r"return up to (\d+) of your opponent.{0,20} characters?", t)
+    m = re.search(r"return up to (\d+) of (?:your|tour) opponent.{0,20} characters?", t)
     if m:
         steps.append({'action': 'bounce', 'count': int(m.group(1)), 'target': 'opp_character'})
         return steps
@@ -5494,14 +5495,93 @@ def parse_block(block_text, trigger_name):
             return 'battle_only'
         return None
 
+    # "Up to N of your [Nome] Characters or up to M of your Characters with
+    # a type including "Tipo", with X power or more, gains [Rush]" -- OR
+    # entre nome exato E (tipo + filtro de power), distinto do gain_rush
+    # generico (sempre self, sem selecao). Achado 17/07, OP16-001 (unica
+    # carta no banco): nem nome nem tipo/power eram extraidos, o Rush
+    # concedia a si mesmo (o Leader) sempre, ignorando a selecao real.
+    m_select_rush_or = re.search(
+        r'up to \d+ of your \[([a-z][a-z0-9 .\'-]+)\] characters? or up to \d+ of your '
+        r'characters? with a type including "([a-z][a-z0-9 .\'-]+)",? with (\d+) power or more,?\s*gains?\s*\[?rush\]?',
+        t)
+    if m_select_rush_or:
+        step = {
+            'action': 'select_grant_rush',
+            'filter_name': m_select_rush_or.group(1).strip(),
+            'filter_type': m_select_rush_or.group(2).strip(),
+            'power_gte': int(m_select_rush_or.group(3)),
+        }
+        tail = t[m_select_rush_or.end():m_select_rush_or.end() + 30]
+        if 'during this turn' in tail:
+            step['duration'] = 'this_turn'
+        steps.append(step)
+
+    # "Up to N of your [Tipo]/{Tipo}/"type including X" Characters [com
+    # filtro de custo/exclusao/sem-efeito-On-Play] gains [Rush]" --
+    # SELECAO generica de OUTRO Character (nao a propria fonte), mesma
+    # familia arquitetural de select_grant_blocker. Achado 17/07: 3 cartas
+    # com o MESMO bug de comportamento (self-buff em vez de selecao) --
+    # OP04-001 (sem filtro nenhum), OP12-007 (tipo + exclusao),
+    # PRB01-001 (sem efeito On Play + custo).
+    m_select_rush_generic = None
+    if not m_select_rush_or:
+        m_select_rush_generic = re.search(
+            r'up to (\d+) of your '
+            r'(?:[\[{]([a-z][a-z0-9 .\'-]+)[\]}]\s+type\s+)?'
+            r'characters?'
+            r'(?P<clause>[^.]*?)'
+            r'gains?\s*\[?rush\]?(?!\s*:\s*character)',
+            t)
+        if m_select_rush_generic:
+            clause = m_select_rush_generic.group('clause')
+            step = {'action': 'select_grant_rush', 'count': int(m_select_rush_generic.group(1))}
+            if m_select_rush_generic.group(2):
+                step['filter_type'] = m_select_rush_generic.group(2).strip()
+            else:
+                type_m = re.search(r'type including "([a-z][a-z0-9 .\'-]+)"', clause)
+                if type_m:
+                    step['filter_type'] = type_m.group(1).strip()
+            cost_m = re.search(r'with a cost of (\d+) or less', clause)
+            if cost_m:
+                step['cost_lte'] = int(cost_m.group(1))
+            excl_m = re.search(r'other than [\[{]([a-z][a-z0-9 .\'-]+)[\]}]', clause)
+            if excl_m:
+                step['exclude'] = excl_m.group(1).strip()
+            # "without an? [Tag] effect" -- filtro NARROW (so exclui quem
+            # tem ESSA habilidade especifica, distinto de filter_no_effect
+            # que exige NENHUM efeito parseado). Achado 17/07: 2 cartas,
+            # tags diferentes (On Play em PRB01-001, When Attacking em
+            # EB03-001) -- mapeado genericamente pra qualquer tag conhecida.
+            no_tag_m = re.search(r'without an? \[([a-z .:\'!]+)\] effect', clause)
+            if no_tag_m:
+                TAG_PARA_TRIGGER = {
+                    'on play': 'on_play', 'activate main': 'activate_main',
+                    'activate: main': 'activate_main', 'activate:main': 'activate_main',
+                    'when attacking': 'when_attacking', 'on k.o.': 'on_ko',
+                    "on your opponent's attack": 'on_opp_attack', 'your turn': 'your_turn',
+                    "opponent's turn": 'opp_turn', 'trigger': 'trigger', 'counter': 'counter',
+                    'end of your turn': 'end_of_turn', 'on block': 'on_block', 'main': 'main',
+                }
+                tag_key = TAG_PARA_TRIGGER.get(no_tag_m.group(1).strip())
+                if tag_key:
+                    step['filter_no_tag'] = tag_key
+            tail = t[m_select_rush_generic.end():m_select_rush_generic.end() + 30]
+            if 'during this turn' in tail:
+                step['duration'] = 'this_turn'
+            steps.append(step)
+
     m_rc = re.search(r'gains?\s+\[rush: character\]', t)
-    if 'gain_rush_character' not in _lista_choice_keywords and (m_rc or '[rush: character]' in _lista_txt):
+    if (not m_select_rush_or and not m_select_rush_generic
+            and 'gain_rush_character' not in _lista_choice_keywords
+            and (m_rc or '[rush: character]' in _lista_txt)):
         step = {'action': 'gain_rush_character'}
         dur = _duration_apos(m_rc.end()) if m_rc else None
         if dur:
             step['duration'] = dur
         steps.append(step)
-    elif 'gain_rush_character' not in _lista_choice_keywords:
+    elif (not m_select_rush_or and not m_select_rush_generic
+            and 'gain_rush_character' not in _lista_choice_keywords):
         m_r = re.search(r'gains?\s+\[rush\]', t)
         if 'gain_rush' not in _lista_choice_keywords and (m_r or '[rush]' in _lista_txt):
             step = {'action': 'gain_rush'}

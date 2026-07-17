@@ -3842,6 +3842,80 @@ def test_don_on_field_zero_or_gte_2_cartas() -> None:
           me8.don_available == 9)
 
 
+def test_select_grant_rush_6_cartas() -> None:
+    # Achado 17/07: gain_rush (self-only, sem selecao) era usado por engano
+    # em 6 cartas que na verdade SELECIONAM outro Character do campo --
+    # bug de comportamento real (o Rush ia pra propria fonte, nao pro alvo
+    # descrito no texto). Mesma familia arquitetural de select_grant_blocker
+    # (16/07). 2 variantes: (a) OR entre nome exato E tipo+power (OP16-001,
+    # unica com essa forma); (b) filtro UNICO tipo/custo/exclusao/
+    # filter_no_tag ("without a [Tag] effect", achado NOVO -- distinto de
+    # filter_no_effect que exige NENHUM efeito parseado): EB03-001,
+    # OP04-001, OP12-007, PRB01-001.
+    check("OP16-001 parseia select_grant_rush com OR (filter_name + filter_type/power_gte)",
+          get_card_effects("OP16-001").get("activate_main", {}).get("steps", [{}])[0] ==
+          {"action": "select_grant_rush", "filter_name": "monkey.d.luffy",
+           "filter_type": "whitebeard pirates", "power_gte": 8000, "duration": "this_turn"})
+    check("PRB01-001 parseia filter_no_tag='on_play' + cost_lte=8",
+          get_card_effects("PRB01-001").get("activate_main", {}).get("steps", [{}])[0] ==
+          {"action": "select_grant_rush", "count": 1, "cost_lte": 8,
+           "filter_no_tag": "on_play", "duration": "this_turn"})
+    check("EB03-001 parseia filter_no_tag='when_attacking' (tag DIFERENTE, mesmo mecanismo)",
+          any(s.get("action") == "select_grant_rush" and s.get("filter_no_tag") == "when_attacking"
+              for s in get_card_effects("EB03-001").get("activate_main", {}).get("steps", [])))
+    check("OP12-007 parseia filter_type='roger pirates' + exclude='shanks'",
+          get_card_effects("OP12-007").get("on_play", {}).get("steps", [{}])[0] ==
+          {"action": "select_grant_rush", "count": 1, "filter_type": "roger pirates",
+           "exclude": "shanks", "duration": "this_turn"})
+
+    # Execucao real (OR): entre um Luffy fraco e um Whitebeard Pirates
+    # forte (acima do limiar de power), o mais valioso (Whitebeard forte)
+    # ganha Rush; um Whitebeard FRACO (abaixo do limiar) fica de fora.
+    ace = real_card("OP16-001")
+    luffy_char = mk("RSA", "Monkey.D.Luffy Fraco", power=3000)
+    wb_fraco = mk("RSB", "WB Fraco", power=5000, sub_types="Whitebeard Pirates")
+    wb_forte = mk("RSC", "WB Forte", power=9000, sub_types="Whitebeard Pirates")
+    me = GameState(leader=ace, turn=3)
+    me.field_chars = [luffy_char, wb_fraco, wb_forte]
+    opp = GameState(leader=mk("RSOPP", "Opp", card_type="LEADER"), turn=3)
+    EffectExecutor(me, opp).execute(ace, "activate_main")
+    check("Execucao real: WB Forte (acima do limiar) ganha Rush, WB Fraco (abaixo) NAO",
+          wb_forte.rush_this_turn and not wb_fraco.rush_this_turn and not luffy_char.rush_this_turn)
+
+    # Execucao real (filter_no_tag): entre um Character REAL com efeito
+    # [On Play] (nao elegivel) e um sem NENHUM efeito parseado (elegivel,
+    # custo dentro do limite), so o segundo ganha Rush.
+    sanji = real_card("PRB01-001")
+    com_on_play = real_card("EB01-015")
+    sem_efeito = real_card("EB01-005")
+    me2 = GameState(leader=sanji, turn=3)
+    me2.field_chars = [com_on_play, sem_efeito]
+    opp2 = GameState(leader=mk("SNOPP", "Opp", card_type="LEADER"), turn=3)
+    EffectExecutor(me2, opp2).execute(sanji, "activate_main")
+    check("Execucao real: SO o Character sem [On Play] ganha Rush",
+          sem_efeito.rush_this_turn and not com_on_play.rush_this_turn)
+
+
+def test_op16_043_typo_tour_opponent() -> None:
+    # Achado 17/07, OP16-043 (Usopp): "[On K.O.] Return up to 1 of TOUR
+    # opponent's Characters with a cost of 5 or less to the owner's hand."
+    # -- typo "tour" em vez de "your" nunca era tolerado, a acao de bounce
+    # inteira ficava ausente (so o keyword Blocker era parseado).
+    check("OP16-043 parseia bounce (tolerando o typo 'tour')",
+          get_card_effects("OP16-043").get("on_ko", {}).get("steps", []) ==
+          [{"action": "bounce", "count": 1, "target": "opp_character", "cost_lte": 5}])
+
+    usopp = real_card("OP16-043")
+    barato_opp = mk("UPA", "Barato", cost=5, power=5000)
+    caro_opp = mk("UPB", "Caro", cost=6, power=6000)
+    me = GameState(leader=mk("UPLDR", "Lider", card_type="LEADER"), turn=3)
+    opp = GameState(leader=mk("UPOPP", "Opp", card_type="LEADER"), turn=3)
+    opp.field_chars = [barato_opp, caro_opp]
+    EffectExecutor(me, opp).execute(usopp, "on_ko")
+    check("Execucao real: SO o Character de custo<=5 do oponente volta pra mao",
+          barato_opp in opp.hand and caro_opp in opp.field_chars)
+
+
 def main() -> int:
     test_turn_order_imu_prefers_second()
     test_empty_throne_beats_direct_five_elders_play()
@@ -3943,6 +4017,8 @@ def main() -> int:
     test_atalho_don_bare_sem_texto_explicativo_2_cartas()
     test_pica_substitute_ko_cost_gte_e_exclude_self()
     test_don_on_field_zero_or_gte_2_cartas()
+    test_select_grant_rush_6_cartas()
+    test_op16_043_typo_tour_opponent()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0

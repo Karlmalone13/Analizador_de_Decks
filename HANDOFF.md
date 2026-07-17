@@ -1,5 +1,45 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-17 (229-230) - Lote de 10 itens aprovado pelo usuario -- select_grant_rush (5 cartas) + bounce typo (1 carta)
+
+Usuario pediu pra fazer lotes de 10 aprovacoes de uma vez (em vez de
+1-por-1) pra agilizar. Levantados 10 itens do topo da lista, aprovados
+todos de uma vez. Primeiros 2 fechados neste bloco:
+
+**229 -- select_grant_rush (5 cartas):** `gains [Rush]` com clausula de
+SELECAO de outro Character (por tipo/nome/custo/exclusao) sempre virava
+`gain_rush` (auto-buff, sem selecao) -- bug de comportamento real.
+OP16-001 (Leader): OR entre nome exato (Monkey.D.Luffy) e tipo+power
+(Whitebeard Pirates, 8000+). Busca ampla achou mais 4: EB03-001,
+OP04-001, OP12-007, PRB01-001 -- todas com o MESMO bug. Nova acao
+`select_grant_rush` (parser+executor), mesma familia de
+`select_grant_blocker` (16/07). Achado NOVO no meio do fix: 2 cartas
+(EB03-001, PRB01-001) usam "without a [Tag] effect" (tags diferentes:
+When Attacking, On Play) -- campo novo `filter_no_tag`, DISTINTO de
+`filter_no_effect` ja existente (esse exige NENHUM efeito parseado;
+`filter_no_tag` so exige a ausencia de UMA tag especifica).
+
+**230 -- OP16-043 (Usopp):** typo "tour" em vez de "your" em
+"[On K.O.] Return up to 1 of tour opponent's Characters..." -- nunca
+tolerado nas 3 regexes de `parse_bounce`. So 1 carta no banco.
+
+**Validado (ambos):** `diff_parser.py` GANHOU=0/PERDEU=0/MUDOU=6 (5+1).
+`gerar_dbs.py` + `snapshot_parser.py` 0/0/0. `smoke_fast.py`: 2 testes
+dirigidos novos com EXECUCAO real. `smoke_test.py`: TODOS OS TESTES
+PASSARAM. `smoke_test_broad.py`: 7/7. Registros em
+`parser_audits/2026-07-17_op16-001_select_grant_rush.json` e
+`parser_audits/2026-07-17_op16-043_bounce_typo_tour.json`.
+
+Suspeitos: 282 -> 279.
+
+**Itens restantes do lote (aguardando implementacao, ja aprovados):**
+OP14-120 (condicao OR custo-oponente 0-ou-8+, em progresso), PRB02-010
+(faixa de power em play_card), ST13-001 (filtro custo+power em
+gain_life own_field), P-039 (buff condicionado a Life==0), ST10-006
+(trigger reativo novo: quando oponente ativa Blocker), OP07-091
+(colocar QUALQUER NUMERO no fundo do deck + buff escalado pelo
+resultado do mesmo efeito).
+
 ## 2026-07-17 (228) - OP05-060/ST10-002: condicao OR "0 ou N+ DON no campo" nunca reconhecida
 
 Continuacao da varredura (bloco 227), aprovado explicitamente pelo

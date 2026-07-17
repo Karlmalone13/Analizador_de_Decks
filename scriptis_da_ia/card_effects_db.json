@@ -3751,7 +3751,9 @@
             "duration": "this_turn"
           },
           {
-            "action": "gain_rush",
+            "action": "select_grant_rush",
+            "count": 1,
+            "filter_no_tag": "when_attacking",
             "duration": "this_turn"
           }
         ],
@@ -17981,7 +17983,8 @@
             "count": 1
           },
           {
-            "action": "gain_rush",
+            "action": "select_grant_rush",
+            "count": 1,
             "duration": "this_turn"
           }
         ],
@@ -46467,7 +46470,10 @@
       "on_play": {
         "steps": [
           {
-            "action": "gain_rush",
+            "action": "select_grant_rush",
+            "count": 1,
+            "filter_type": "roger pirates",
+            "exclude": "shanks",
             "duration": "this_turn"
           }
         ]
@@ -60917,7 +60923,10 @@
       "activate_main": {
         "steps": [
           {
-            "action": "gain_rush",
+            "action": "select_grant_rush",
+            "filter_name": "monkey.d.luffy",
+            "filter_type": "whitebeard pirates",
+            "power_gte": 8000,
             "duration": "this_turn"
           }
         ],
@@ -62131,6 +62140,16 @@
     "sub_types": "Straw Hat Crew Dressrosa",
     "attribute": "Ranged",
     "effects": {
+      "on_ko": {
+        "steps": [
+          {
+            "action": "bounce",
+            "count": 1,
+            "target": "opp_character",
+            "cost_lte": 5
+          }
+        ]
+      },
       "passive": {
         "steps": [
           {
@@ -66669,7 +66688,10 @@
       "activate_main": {
         "steps": [
           {
-            "action": "gain_rush",
+            "action": "select_grant_rush",
+            "count": 1,
+            "cost_lte": 8,
+            "filter_no_tag": "on_play",
             "duration": "this_turn"
           }
         ],
