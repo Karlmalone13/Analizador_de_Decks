@@ -5221,6 +5221,7 @@
      "count": 1,
      "dest": "life_top",
      "face": "up",
+     "filter_type": "egghead",
      "source": "hand",
      "up_to": true
     }
@@ -22294,6 +22295,7 @@
      "count": 1,
      "dest": "life_top",
      "face": "up",
+     "filter_type": "shandian warrior",
      "source": "hand",
      "up_to": true
     },
@@ -24272,6 +24274,7 @@
      "count": 1,
      "dest": "life_top",
      "face": "up",
+     "filter_type": "revolutionary army",
      "source": "hand",
      "up_to": true
     },
@@ -26432,6 +26435,7 @@
      "count": 1,
      "dest": "life_top",
      "face": "up",
+     "filter_type": "supernovas",
      "source": "hand",
      "up_to": true
     }
@@ -26489,9 +26493,11 @@
    "steps": [
     {
      "action": "gain_life",
+     "cost_eq": 5,
      "count": 1,
      "dest": "life_top",
      "face": "up",
+     "filter_type": "supernovas",
      "source": "hand",
      "up_to": true
     }
@@ -45123,6 +45129,30 @@
   }
  },
  "ST13-003": {
+  "activate_main": {
+   "costs": [
+    {
+     "count": 1,
+     "type": "trash_from_hand"
+    }
+   ],
+   "don_requirement": 2,
+   "once_per_turn": true,
+   "steps": [
+    {
+     "action": "gain_life",
+     "conditions": {
+      "life_lte": 0
+     },
+     "cost_eq": 5,
+     "count": 2,
+     "dest": "life_top",
+     "face": "up",
+     "source": "hand_or_trash",
+     "up_to": true
+    }
+   ]
+  },
   "passive": {
    "steps": [
     {

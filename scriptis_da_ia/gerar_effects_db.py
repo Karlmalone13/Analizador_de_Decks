@@ -3684,15 +3684,30 @@ def parse_life(text):
     # (ST13-003): verbo e "add" mas a fonte inclui "trash" -- a guarda geral
     # abaixo bloquearia. Testa ANTES da regex geral para capturar primeiro.
     m_hand_trash_life = re.search(
-        r'add up to (\d+).{0,30}?from your (?:hand or trash|trash or hand)'
+        r'add up to (\d+)'
+        r'(?:\s*["\[{]([a-z][a-z0-9 .\'-]+)["\]}]\s*type)?'
+        r'\s*character cards?'
+        r'(?:\s+with an? (?:base )?cost of (\d+)(\s+or less)?)?'
+        r'\s+from your (?:hand or trash|trash or hand)'
         r' to the (top or bottom|top|bottom) of your life',
         t)
     if m_hand_trash_life:
         count = int(m_hand_trash_life.group(1))
-        dest = ('life_top_or_bottom' if 'or bottom' in m_hand_trash_life.group(2)
+        dest = ('life_top_or_bottom' if 'or bottom' in m_hand_trash_life.group(5)
                 else 'life_top')
-        step_ht = {'action': 'gain_life', 'source': 'hand',
+        # 'hand_or_trash': fonte COMBINADA (achado 16/07, ST13-003 -- antes
+        # o char-budget do regex era pequeno demais pra frases com filtro
+        # de tipo/custo, e mesmo quando casava o source ficava so 'hand',
+        # ignorando o trash inteiramente como fonte valida).
+        step_ht = {'action': 'gain_life', 'source': 'hand_or_trash',
                    'dest': dest, 'count': count, 'up_to': True}
+        if m_hand_trash_life.group(2):
+            step_ht['filter_type'] = m_hand_trash_life.group(2).strip()
+        if m_hand_trash_life.group(3):
+            if m_hand_trash_life.group(4):
+                step_ht['cost_lte'] = int(m_hand_trash_life.group(3))
+            else:
+                step_ht['cost_eq'] = int(m_hand_trash_life.group(3))
         if 'face-up' in t[m_hand_trash_life.start():m_hand_trash_life.end() + 15]:
             step_ht['face'] = 'up'
         steps.append(step_ht)
@@ -3727,15 +3742,25 @@ def parse_life(text):
         # Shiryu, achado 15/07: "{Blackbeard Pirates} type card with a
         # cost of 6 or less from your trash"). Mesmos filtros ja usados
         # por add_from_trash, so que o destino aqui e a vida, nao a mao.
-        if step['source'] == 'trash':
+        # source == 'hand' estendido pra usar os MESMOS filtros (achado
+        # 16/07, EB03-059/EB04-060/OP09-104/OP10-103/OP10-107): a mesma
+        # forma "add up to N [Tipo] type Character card [with a cost of
+        # X] from your hand to the top of your Life cards" nunca
+        # extraia tipo/custo quando a fonte era a MAO em vez do trash --
+        # o filtro so existia como texto solto, nunca virava campo
+        # estruturado. cost_eq novo (custo EXATO, sem "or less" -- OP10-107).
+        if step['source'] in ('trash', 'hand'):
             type_m_gl = (re.search(r'"([^"]+)" type', seg)
                          or re.search(r'\{([^}]+)\}\s*type', seg)
                          or re.search(r'\[([^\]]+)\]\s*type', seg))
             if type_m_gl:
                 step['filter_type'] = type_m_gl.group(1)
-            cost_m_gl = re.search(r'cost of (\d+) or less', seg)
+            cost_m_gl = re.search(r'cost of (\d+)(\s+or less)?', seg)
             if cost_m_gl:
-                step['cost_lte'] = int(cost_m_gl.group(1))
+                if cost_m_gl.group(2):
+                    step['cost_lte'] = int(cost_m_gl.group(1))
+                else:
+                    step['cost_eq'] = int(cost_m_gl.group(1))
         face_window = t[m.start():m.end() + 25]
         if 'face-up' in face_window or 'face up' in face_window:
             step['face'] = 'up'

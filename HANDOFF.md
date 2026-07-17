@@ -1,5 +1,54 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-16 (210) - ST13-003 Luffy: gain_life com source='hand' ignorava filtro em 2 camadas (parser + engine)
+
+Ultimo item da fila de suspeitos maiores desta sessao (blocos 207-210).
+ST13-003: "[DON!! x2][Activate: Main][Once Per Turn]You may trash 1
+card from your hand: If you have 0 Life cards, add up to 2 Character
+cards with a cost of 5 from your hand or trash to the top of your Life
+cards face-up." Bloco inteiro ausente -- causa raiz: um regex especifico
+JA ESCRITO numa sessao anterior (comentario citava "ST13-003") tinha um
+char-budget fixo (`.{0,30}?`) pequeno demais pro filtro real desta
+carta (33 chars), nunca casando.
+
+Investigando achei que o bug e MAIS PROFUNDO, em 2 camadas: (a) o
+parser so extraia filter_type/cost quando `source=='trash'`, nunca
+quando `source=='hand'`; (b) MESMO quando o filtro existisse no step,
+o EXECUTOR de `gain_life` com `source=='hand'` fazia `hand.pop(0)` --
+sempre a 1a carta da mao, ignorando QUALQUER filtro. Busca global
+achou **6 cartas** com esse padrao ("add up to N [Tipo] type Character
+card [with a cost of X] from your hand [or trash] to the top of your
+Life cards face-up"): EB04-060, OP08-116, OP09-104, OP10-103, OP10-107
+(+`cost_eq` exato, sem "or less"), ST13-003 (fonte COMBINADA
+`hand_or_trash` nova + count=2).
+
+Apresentado ao usuario ANTES de codar (escopo ampliado de "so destravar
+ST13-003" pra "consertar as 2 camadas nas 6 cartas") -- confirmado.
+
+**Fix:** regex de ST13-003 reescrito (extrai filter_type/cost_eq/
+cost_lte explicitamente, fonte vira `hand_or_trash`); bloco generico de
+`gain_life` estendido pra processar `source=='hand'` com os MESMOS
+filtros de `source=='trash'`; executor de `gain_life` reescrito
+(`source=='hand'` usa `eligible_cards()`+`choose_highest_board_value()`
+em vez de `pop(0)`; nova branch `source=='hand_or_trash'` concatena
+candidatos das 2 zonas).
+
+**Validado:** `diff_parser.py` GANHOU=0/PERDEU=0/MUDOU=6 (todas
+conferidas). `gerar_dbs.py`+`snapshot_parser.py` 0/0/0. `smoke_fast.py`:
+1 teste dirigido novo com EXECUCAO real (SO o Character de custo EXATO
+5 vai pra vida, nao o mais perto do inicio da mao; ST13-003 alcanca um
+candidato que so existe no TRASH via a fonte combinada). `smoke_test.py`:
+TODOS OS TESTES PASSARAM. **`smoke_test_broad.py`: 7/7** -- rodado por
+seguranca extra (executor compartilhado de `gain_life`, usado por
+dezenas de cartas alem desta familia).
+
+Suspeitos: 328 -> 326. Registro completo em
+`parser_audits/2026-07-16_st13-003_gain_life_hand_filtro.json`. Fila de
+suspeitos maiores (207-210) concluida nesta sessao; proximo passo:
+retomar a varredura padrao 1-por-1 pelos 326 restantes numa proxima
+sessao, ou avaliar se e hora de voltar ao PLANO_AVALIACAO_E_BUSCA.md
+(Fase 1, engine puro) conforme o plano de longo prazo do usuario.
+
 ## 2026-07-16 (209) - OP10-058 Rebecca: par reveal-e-joga ausente (+ tentativa revertida de split_if_then)
 
 Continuacao da lista de suspeitos (bloco 208). OP10-058: "...Then,

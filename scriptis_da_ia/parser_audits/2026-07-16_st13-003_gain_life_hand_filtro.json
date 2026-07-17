@@ -1,0 +1,20 @@
+{
+  "trigger_card": "ST13-003",
+  "problem": "ST13-003 (Luffy Leader): '[DON!! x2][Activate: Main][Once Per Turn]You may trash 1 card from your hand: If you have 0 Life cards, add up to 2 Character cards with a cost of 5 from your hand or trash to the top of your Life cards face-up.' O bloco inteiro estava ausente. Causa raiz: um regex especifico ja escrito numa sessao anterior (comentario dizia 'ST13-003') tinha um char-budget fixo pequeno demais (.{0,30}?) entre 'add up to N' e 'from your hand or trash' -- o texto real desta carta ('character cards with a cost of 5 ') tem 33 chars, excedendo o teto e nunca casando. Investigando, achei que o bug e mais profundo: MESMO quando o regex casa (outras 5 cartas com fonte pura 'hand', nao combinada), o filtro de tipo/custo nunca era extraido -- e mesmo quando extraido (fonte 'trash'), o EXECUTOR de gain_life com source=='hand' ignorava qualquer filtro por completo (hand.pop(0), sempre a 1a carta da mao).",
+  "grammar_family": "'Add up to N [Tipo] type Character card(s) [with a cost of X] from your hand [or trash] to the top of your Life cards face-up' -- 2 bugs em camadas: (a) parser so extrai filter_type/cost quando source=='trash', nunca quando source=='hand'; (b) executor de gain_life com source=='hand' faz hand.pop(0) sem checar NENHUM filtro do step, mesmo quando presente.",
+  "queries": [
+    "regex 'to the top of your life cards face.?up' + 'from your hand' sobre card_text -- achou 9 cartas, das quais 6 tinham o bug de filtro perdido (EB04-060, OP08-116, OP09-104, OP10-103, OP10-107, ST13-003); EB03-059 tem um filtro DIFERENTE ('with a [Trigger]', nao tipo/custo, fora de escopo -- nao suspeita no audit tool, sem numero perdido); OP16-108 ja usa source='trash' (ja funcionava corretamente antes desta sessao)",
+    "confirmado via execucao real isolada (script fora do smoke_fast) que OP10-107 com source='hand', mao=[custo3,custo5], filtro cost_eq=5 -- ANTES do fix, pegava a carta ERRADA (a 1a da mao, sem checar custo)",
+    "confirmado que o char-budget do regex especifico de ST13-003 (jah escrito numa sessao anterior, nunca funcionou) era a causa RAIZ do bloco inteiro sumir -- 33 chars de filtro excediam o teto de 30"
+  ],
+  "cards_found": ["EB04-060", "OP08-116", "OP09-104", "OP10-103", "OP10-107", "ST13-003"],
+  "resolution_scope": "global",
+  "decision": "(a) Regex de m_hand_trash_life (ST13-003) reescrito: extrai filter_type e cost_eq/cost_lte explicitamente em vez de um wildcard de char-budget fixo; fonte vira 'hand_or_trash' (nova, combinada) em vez de 'hand' isolado. (b) Bloco generico de gain_life (source==trash) estendido pra tambem processar source=='hand' com os MESMOS filtros (filter_type/cost_lte/cost_eq -- cost_eq novo, pra custo EXATO sem 'or less'). (c) Executor de gain_life: source=='hand' reescrito de hand.pop(0) pra eligible_cards()+choose_highest_board_value() (mesmo padrao ja usado por source=='trash'); nova branch source=='hand_or_trash' concatena candidatos elegiveis das 2 zonas e escolhe o melhor entre ambas.",
+  "validated_by": [
+    "diff_parser.py: GANHOU 0 / PERDEU 0 / MUDOU 6 (todas conferidas contra card_text)",
+    "gerar_dbs.py + snapshot_parser.py: 0/0/0 apos regenerar",
+    "smoke_fast.py: teste dirigido novo test_gain_life_hand_filtro_ignorado_e_st13003_fonte_combinada com EXECUCAO real -- confirma que SO o Character de custo EXATO 5 vai pra vida (nao o de custo errado que estava mais perto no inicio da mao), e que ST13-003 alcanca um candidato que so existe no TRASH via a nova fonte combinada",
+    "smoke_test.py: suite ampla, TODOS OS TESTES PASSARAM",
+    "smoke_test_broad.py: 7/7 partidas aleatorias sem excecao -- rodado por seguranca extra (fix mexeu no executor compartilhado gain_life, usado por dezenas de cartas alem desta familia)"
+  ]
+}

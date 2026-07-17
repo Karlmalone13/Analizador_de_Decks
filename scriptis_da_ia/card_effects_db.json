@@ -7967,6 +7967,7 @@
             "dest": "life_top",
             "count": 1,
             "up_to": true,
+            "filter_type": "egghead",
             "face": "up"
           }
         ],
@@ -35550,6 +35551,7 @@
             "dest": "life_top",
             "count": 1,
             "up_to": true,
+            "filter_type": "shandian warrior",
             "face": "up"
           },
           {
@@ -38671,6 +38673,7 @@
             "dest": "life_top",
             "count": 1,
             "up_to": true,
+            "filter_type": "revolutionary army",
             "face": "up"
           },
           {
@@ -42122,6 +42125,7 @@
             "dest": "life_top",
             "count": 1,
             "up_to": true,
+            "filter_type": "supernovas",
             "face": "up"
           }
         ],
@@ -42226,6 +42230,8 @@
             "dest": "life_top",
             "count": 1,
             "up_to": true,
+            "filter_type": "supernovas",
+            "cost_eq": 5,
             "face": "up"
           }
         ],
@@ -72072,6 +72078,30 @@
     "sub_types": "Straw Hat Crew Supernovas",
     "attribute": "Strike",
     "effects": {
+      "activate_main": {
+        "steps": [
+          {
+            "action": "gain_life",
+            "source": "hand_or_trash",
+            "dest": "life_top",
+            "count": 2,
+            "up_to": true,
+            "cost_eq": 5,
+            "face": "up",
+            "conditions": {
+              "life_lte": 0
+            }
+          }
+        ],
+        "costs": [
+          {
+            "type": "trash_from_hand",
+            "count": 1
+          }
+        ],
+        "once_per_turn": true,
+        "don_requirement": 2
+      },
       "passive": {
         "steps": [
           {

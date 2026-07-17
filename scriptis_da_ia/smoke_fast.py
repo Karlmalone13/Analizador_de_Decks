@@ -3007,6 +3007,57 @@ def test_rebecca_reveal_play_pair_condicional() -> None:
           any("comprou" in x for x in log))
 
 
+def test_gain_life_hand_filtro_ignorado_e_st13003_fonte_combinada() -> None:
+    # Achado 16/07 (ST13-003 Luffy) -- a familia "add up to N [Tipo] type
+    # Character card [with a cost of X] from your hand to the top of your
+    # Life cards face-up" tinha 2 bugs em CAMADAS: (1) o PARSER nunca
+    # extraia filter_type/cost quando source=='hand' (so quando source==
+    # 'trash'); (2) mesmo quando o filtro existisse no step, o EXECUTOR
+    # pegava sempre hand.pop(0) -- a 1a carta da mao, IGNORANDO o filtro
+    # por completo. 6 cartas: EB04-060, OP08-116, OP09-104, OP10-103,
+    # OP10-107 (+cost_eq exato), ST13-003 (fonte COMBINADA hand_or_trash
+    # + count=2 + o bloco [DON!! x2][Activate: Main] inteiro que antes
+    # nem era reconhecido -- regex antigo tinha orcamento de caracteres
+    # pequeno demais pra frases com filtro).
+    check("OP10-107 parseia cost_eq=5 (custo EXATO, sem 'or less')",
+          any(s.get("action") == "gain_life" and s.get("cost_eq") == 5
+              for s in get_card_effects("OP10-107").get("on_play", {}).get("steps", [])))
+    am = get_card_effects("ST13-003").get("activate_main", {})
+    check("ST13-003 parseia o bloco DON!!x2/Activate:Main inteiro (antes ausente)",
+          am.get("don_requirement") == 2 and am.get("once_per_turn")
+          and any(s.get("action") == "gain_life" and s.get("source") == "hand_or_trash"
+                  and s.get("count") == 2 and s.get("cost_eq") == 5
+                  and s.get("conditions", {}).get("life_lte") == 0
+                  for s in am.get("steps", [])))
+
+    # Execucao real: mao com 1 Character custo 5 e 1 custo 3 -- so o de
+    # custo 5 deve ser elegivel (cost_eq filtra estrito).
+    supernovas = real_card("OP10-107")
+    certo = mk("XGL5", "Custo 5", cost=5, sub_types="Supernovas")
+    errado = mk("XGL3", "Custo 3", cost=3, sub_types="Supernovas")
+    me = GameState(leader=mk("XGLLDR", "Lider", card_type="LEADER"), turn=3)
+    me.hand = [errado, certo]
+    me.life = [mk("XGLLIFE", "Vida", cost=0)]
+    opp = GameState(leader=mk("XGLOPP", "Opp", card_type="LEADER"), turn=3)
+    EffectExecutor(me, opp).execute(supernovas, "on_play")
+    check("Execucao real: SO o Character de custo EXATO 5 vai pra vida (cost_eq filtra)",
+          certo in me.life and errado in me.hand and errado not in me.life)
+
+    # ST13-003: fonte combinada -- com o candidato certo (custo 5) so no
+    # TRASH (nao na mao), o gain_life ainda deve alcanca-lo.
+    luffy = real_card("ST13-003")
+    luffy.don_attached = 2  # satisfaz [DON!! x2]
+    trash_candidato = mk("XSTT5", "Trash Custo 5", cost=5)
+    me2 = GameState(leader=luffy, turn=3)
+    me2.hand = [mk("XSTHAND", "Custo Errado na Mao", cost=2)]
+    me2.trash = [trash_candidato]
+    me2.life = []  # satisfaz life_lte:0
+    opp2 = GameState(leader=mk("XSTOPP", "Opp", card_type="LEADER"), turn=3)
+    EffectExecutor(me2, opp2).execute(luffy, "activate_main")
+    check("Execucao real: ST13-003 alcanca candidato no TRASH via fonte hand_or_trash",
+          trash_candidato in me2.life)
+
+
 def main() -> int:
     test_turn_order_imu_prefers_second()
     test_empty_throne_beats_direct_five_elders_play()
@@ -3091,6 +3142,7 @@ def main() -> int:
     test_opp_chars_rested_gte_condicao_nova()
     test_choose_and_ko_it_com_upgrade_condicional()
     test_rebecca_reveal_play_pair_condicional()
+    test_gain_life_hand_filtro_ignorado_e_st13003_fonte_combinada()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0

@@ -5479,8 +5479,25 @@ class EffectExecutor:
                     if not me.deck: break
                     c = me.deck.pop()       # topo do deck = fim da lista (= draw_phase)
                 elif source == 'hand':
-                    if not me.hand: break
-                    c = me.hand.pop(0)          # escolha refinável depois
+                    # Filtros (cost_lte/cost_eq/filter_type) -- achado
+                    # 16/07 (EB03-059/EB04-060/OP09-104/OP10-103/OP10-107):
+                    # antes pegava SEMPRE a 1a carta da mao (pop(0)),
+                    # ignorando qualquer filtro do step por completo,
+                    # mesmo quando o parser ja o extraia corretamente.
+                    from optcg_engine.rules_facade import (
+                        choose_highest_board_value,
+                        eligible_cards,
+                    )
+                    candidatos_hand = eligible_cards(
+                        me.hand,
+                        cost_lte=step.get('cost_lte'),
+                        cost_eq=step.get('cost_eq'),
+                        filter_text=step.get('filter_type', ''),
+                    )
+                    if not candidatos_hand:
+                        break
+                    c = choose_highest_board_value(candidatos_hand)
+                    remove_by_identity(me.hand, c)
                 elif source == 'trash':
                     from optcg_engine.rules_facade import (
                         choose_highest_board_value,
@@ -5489,12 +5506,32 @@ class EffectExecutor:
                     candidatos_trash = eligible_cards(
                         me.trash,
                         cost_lte=step.get('cost_lte'),
+                        cost_eq=step.get('cost_eq'),
                         filter_text=step.get('filter_type', ''),
                     )
                     if not candidatos_trash:
                         break
                     c = choose_highest_board_value(candidatos_trash)
                     remove_by_identity(me.trash, c)
+                elif source == 'hand_or_trash':
+                    # Fonte COMBINADA (achado 16/07, ST13-003): elegiveis
+                    # de AMBAS as zonas, escolhe o melhor entre as duas.
+                    from optcg_engine.rules_facade import (
+                        choose_highest_board_value,
+                        eligible_cards,
+                    )
+                    candidatos_ht = eligible_cards(
+                        me.hand, cost_lte=step.get('cost_lte'),
+                        cost_eq=step.get('cost_eq'), filter_text=step.get('filter_type', ''),
+                    ) + eligible_cards(
+                        me.trash, cost_lte=step.get('cost_lte'),
+                        cost_eq=step.get('cost_eq'), filter_text=step.get('filter_type', ''),
+                    )
+                    if not candidatos_ht:
+                        break
+                    c = choose_highest_board_value(candidatos_ht)
+                    if not remove_by_identity(me.hand, c):
+                        remove_by_identity(me.trash, c)
                 elif source == 'own_field':
                     # Character do PRÓPRIO campo virando life card (ex:
                     # Kawamatsu OP06-103, "with 0 power" -> power_eq=0).
