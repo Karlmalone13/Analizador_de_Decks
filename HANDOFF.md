@@ -1,5 +1,57 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-16 (219) - EB01-028: qualificador "active" e verbo "return" nao tolerados (opp_bounce_own_character + place_opp_character_bottom_deck)
+
+Continuacao da varredura (bloco 218). EB01-028 (Gum-Gum Champion
+Rifle) tinha DUAS clausulas inteiras nunca parseadas:
+
+1. **[Counter]** "your opponent returns 1 of their ACTIVE Characters
+   to the owner's hand" -- o qualificador "active" entre o possessivo
+   e "characters" quebrava a regex de `opp_bounce_own_character`
+   (`parse_opp_self_move_character`), que so aceitava "their
+   characters" direto. Alem de reconhecer a clausula, "active" tambem
+   RESTRINGE quais characters do oponente sao elegiveis -- adicionado
+   `active_only`/`rested_only` como filtro real (nao so cosmetico) em
+   `rules_facade`/`decision_engine.py`.
+2. **[Trigger]** "Return up to 1 Character with a cost of 3 or less to
+   the bottom of the owner's deck" -- `parse_place_bottom` so aceitava
+   o verbo "place" pra essa remocao, nao "return" (sinonimo confirmado
+   via WebSearch contra o card oficial, limitlesstcg -- o scrape do
+   banco bate exato, a ambiguidade de alvo no Trigger, sem "of your
+   opponent's", e genuina do card, nao erro de scrape; sem
+   qualificador de posse = mira o oponente, regra ja estabelecida).
+
+**Bug pego ANTES do commit** (nao chegou a regredir): ao adicionar
+"return" como sinonimo de "place", o `.*?` sem guarda de ponto em
+`parse_place_bottom` atravessava DUAS sentencas sem relacao em
+EB01-029 ("return...to the owner's hand [bounce]. Then, place...bottom
+of your deck [sujeito DIFERENTE, a carta REVELADA]"), fabricando uma
+acao `place_own_character_bottom_deck` errada. `diff_parser.py`
+acusou o MUDOU inesperado em EB01-029 -- corrigido trocando `.*?` por
+`[^.]*?` nos dois pontos de `parse_place_bottom` (m_own e o loop
+principal), ambos re-verificados sem regressao depois.
+
+**Bug de engine tambem pego pelo smoke_test.py** (nao commitado com o
+bug): `opp_bounce_own_character` nao estava na whitelist
+`safe_extra_actions` de `_counter_event_power_plan` -- a acao nova
+quebrava silenciosamente a deteccao de "Counter event com buff de
+power" pra qualquer carta que tambem tivesse essa acao no mesmo bloco
+Counter (so EB01-028 hoje). Corrigido adicionando a whitelist.
+
+**Validado:** `diff_parser.py` GANHOU=0/PERDEU=0/MUDOU=1 (so EB01-028;
+EB01-029 conferido SEM mudanca apos o guard de ponto).
+`gerar_dbs.py` + `snapshot_parser.py` 0/0/0. `smoke_fast.py`: 1 teste
+dirigido novo com EXECUCAO real (active_only bounce so o character
+ATIVO mesmo sendo o mais forte no board_value; guarda estatica
+confirmando EB01-029 nao fabrica a acao errada; Trigger manda so
+custo<=3 pro fundo do deck do oponente). `smoke_test.py`: 1 falha REAL
+encontrada (safe_extra_actions) e corrigida, depois TODOS OS TESTES
+PASSARAM. `smoke_test_broad.py`: 7/7. Registro completo em
+`parser_audits/2026-07-16_eb01-028_active_qualifier_e_return_sinonimo_place.json`.
+
+Suspeitos: 296 -> 295 (EB01-028 sai da lista por completo, as duas
+clausulas resolvidas).
+
 ## 2026-07-16 (218) - OP16-039: typo "cost or N or less" nao tolerado em rest_opp_character
 
 Continuacao imediata da varredura (bloco 217). OP16-039 (Gum-Gum Twin
@@ -23,7 +75,14 @@ fora). `smoke_test.py`: TODOS OS TESTES PASSARAM. `smoke_test_broad.py`:
 7/7. Registro em
 `parser_audits/2026-07-16_op16-039_rest_opp_character_typo_cost_or.json`.
 
-Suspeitos: 296 -> 295.
+Suspeitos: 296 -> 296 (nao muda o TOTAL -- OP16-039 continua na lista
+por um "1" residual e NAO relacionado, de "up to 1 of your
+[Monkey.D.Luffy] cards gains [Double Attack]"; o fix so removeu o "3"
+de severidade, tirando a carta do corte `--min-severity 2`. Correcao
+registrada aqui apos checagem: a versao original deste bloco alegava
+"296 -> 295" sem re-rodar o audit tool pra confirmar -- nao fazer essa
+suposicao de novo, sempre re-rodar com `--min-severity 1` pra pegar o
+TOTAL real antes de escrever o numero no HANDOFF).
 
 ## 2026-07-16 (217) - OP14-091 e familia: janela de parse_play_generic cortava em pontos DENTRO de colchetes (14 cartas + 2 gaps de engine)
 

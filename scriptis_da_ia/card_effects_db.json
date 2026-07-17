@@ -739,6 +739,15 @@
     "sub_types": "Straw Hat Crew Impel Down",
     "attribute": "",
     "effects": {
+      "trigger": {
+        "steps": [
+          {
+            "action": "place_opp_character_bottom_deck",
+            "count": 1,
+            "cost_lte": 3
+          }
+        ]
+      },
       "counter": {
         "steps": [
           {
@@ -746,6 +755,11 @@
             "amount": 2000,
             "target": "leader_or_character",
             "duration": "battle_only"
+          },
+          {
+            "action": "opp_bounce_own_character",
+            "count": 1,
+            "active_only": true
           }
         ],
         "conditions": {

@@ -1334,9 +1334,16 @@ def parse_place_bottom(text):
     # exatamente o sinal de que e auto-alvo, entao checada e retornada
     # ANTES do loop generico (que trataria "of your" como guard de
     # exclusao pro caso do oponente).
+    # [^.] no meio da clausula (nao .*?) -- "return"/"place" podem aparecer
+    # numa frase ANTERIOR nao relacionada (ex: EB01-029, "return up to 1 of
+    # your Characters to the owner's hand [bounce, sentenca 1]. Then, place
+    # the revealed card at the bottom of your deck [sentenca 2, sujeito
+    # DIFERENTE]") -- sem essa restricao, .*? atravessava o ponto e ligava
+    # duas clausulas sem relacao, fabricando uma acao errada (achado 16/07,
+    # ao adicionar "return" como sinonimo de "place").
     m_own = re.search(
-        r"place (all|up to (\d+)) of your characters?"
-        r"(?P<clause>.*?)bottom of your deck",
+        r"(?:place|return) (all|up to (\d+)) of your characters?"
+        r"(?P<clause>[^.]*?)bottom of your deck",
         t)
     if m_own:
         is_all = m_own.group(1) == 'all'
@@ -1351,10 +1358,14 @@ def parse_place_bottom(text):
     # "of your opponent's" e opcional (alvo generico sem qualificador de
     # posse tambem mira o oponente, regra ja usada em parse_bounce). Cada
     # cláusula de alvo termina no proximo "and up to N Character(s)" (novo
-    # alvo encadeado) ou em "bottom of ... deck" (fim da frase).
+    # alvo encadeado) ou em "bottom of ... deck" (fim da frase). "return"
+    # aceito como sinonimo de "place" (achado 16/07, EB01-028: "[Trigger]
+    # Return up to 1 Character with a cost of 3 or less to the bottom of
+    # the owner's deck" -- mesmo verbo generico do jogo pra essa remocao,
+    # so que usa "return" em vez de "place").
     for m in re.finditer(
-        r"(?:place|and) (?:up to )?(\d+) (of your opponent'?s )?characters?"
-        r"(?P<clause>.*?)"
+        r"(?:place|return|and) (?:up to )?(\d+) (of your opponent'?s )?characters?"
+        r"(?P<clause>[^.]*?)"
         r"(?=and up to \d+ characters?\b|bottom of (?:the owner.?s|your) deck)",
         t
     ):
@@ -4631,9 +4642,21 @@ def parse_opp_self_move_character(text):
         if m_choose_bounce.group(2):
             step['cost_lte'] = int(m_choose_bounce.group(2))
         steps.append(step)
-    m = re.search(r"your opponent returns (\d+) of (?:their|his|her) characters? to the owner.?s hand", t)
+    # "active"/"rested" toleradas como qualificador opcional entre o
+    # possessivo e "characters" -- achado 16/07, EB01-028: "your opponent
+    # returns 1 of their ACTIVE Characters to the owner's hand" nunca
+    # batia (regex exigia "their characters" direto, sem nada no meio),
+    # mesma tolerancia ja usada em parse_bounce pra "active Character".
+    # O qualificador tambem restringe QUAIS characters do oponente sao
+    # elegiveis (so "active" ou so "rested"), nao so cosmetico.
+    m = re.search(r"your opponent returns (\d+) of (?:their|his|her)( active| rested)? characters? to the owner.?s hand", t)
     if m:
-        steps.append({'action': 'opp_bounce_own_character', 'count': int(m.group(1))})
+        step = {'action': 'opp_bounce_own_character', 'count': int(m.group(1))}
+        if m.group(2) == ' active':
+            step['active_only'] = True
+        elif m.group(2) == ' rested':
+            step['rested_only'] = True
+        steps.append(step)
     m2 = re.search(r"your opponent places (\d+) of (?:their|his|her) characters? at the bottom of the owner.?s deck", t)
     if m2:
         steps.append({'action': 'opp_place_own_character_bottom_deck', 'count': int(m2.group(1))})

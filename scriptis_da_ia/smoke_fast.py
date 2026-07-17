@@ -3402,6 +3402,71 @@ def test_rest_opp_character_typo_cost_or_n_or_less() -> None:
           barato.rested and not caro.rested)
 
 
+def test_eb01_028_active_qualifier_e_return_como_sinonimo_de_place() -> None:
+    # Achado 16/07, EB01-028 (Gum-Gum Champion Rifle): duas clausulas
+    # inteiras nunca eram parseadas.
+    # (1) [Counter] "your opponent returns 1 of their ACTIVE Characters to
+    #     the owner's hand" -- o qualificador "active" entre o possessivo e
+    #     "characters" quebrava a regex de opp_bounce_own_character (so
+    #     aceitava "their characters" direto). Alem de reconhecer a
+    #     clausula, "active" tambem RESTRINGE quais characters do
+    #     oponente sao elegiveis -- nao so cosmetico.
+    # (2) [Trigger] "Return up to 1 Character with a cost of 3 or less to
+    #     the bottom of the owner's deck" -- parse_place_bottom so aceitava
+    #     o verbo "place", nao "return" (sinonimo, mesmo mecanismo). Sem
+    #     qualificador de posse = mira o oponente (regra ja estabelecida).
+    effects = get_card_effects("EB01-028")
+    check("EB01-028 [Counter] parseia opp_bounce_own_character com active_only=True",
+          {"action": "opp_bounce_own_character", "count": 1, "active_only": True}
+          in effects.get("counter", {}).get("steps", []))
+    check("EB01-028 [Trigger] parseia place_opp_character_bottom_deck (verbo 'return') cost_lte=3",
+          effects.get("trigger", {}).get("steps", []) ==
+          [{"action": "place_opp_character_bottom_deck", "count": 1, "cost_lte": 3}])
+
+    # Guarda de regressao: EB01-029 tem "return up to 1 of your Characters
+    # to the owner's hand" (bounce, sentenca 1) seguido por "place THE
+    # REVEALED CARD at the bottom of your deck" (sentenca 2, sujeito
+    # diferente) no mesmo bloco [Counter] -- ao adicionar "return" como
+    # sinonimo de "place", um .*? sem guarda de ponto quase fabricou
+    # place_own_character_bottom_deck ligando as duas sentencas sem
+    # relacao (pego ANTES do commit, nunca chegou a rodar smoke_test_broad
+    # com o bug). So deve ter o bounce (ainda nao implementado -- gap
+    # separado, nao regride) e o buff/reveal do inicio, NUNCA
+    # place_own_character_bottom_deck.
+    eb01029 = get_card_effects("EB01-029")
+    check("EB01-029 NAO fabrica place_own_character_bottom_deck cruzando duas sentencas",
+          not any(s.get("action") == "place_own_character_bottom_deck"
+                  for s in eb01029.get("counter", {}).get("steps", [])))
+
+    # Execucao real: opp_bounce_own_character com active_only -- so o
+    # character ATIVO do oponente e devolvido pra mao, mesmo o RESTADO
+    # sendo pior (board_value menor) e normalmente escolhido primeiro pela
+    # heuristica "pior primeiro".
+    rifle = real_card("EB01-028")
+    me = GameState(leader=mk("RFLDR", "Lider", card_type="LEADER", sub_types="Impel Down"), turn=3)
+    me.field_chars = [mk("RFA", "Meu Char", power=3000)]
+    ativo_forte = mk("RFB", "Ativo Forte", power=6000)
+    restado_fraco = mk("RFC", "Restado Fraco", power=1000)
+    restado_fraco.rested = True
+    opp = GameState(leader=mk("RFOPP", "Opp", card_type="LEADER"), turn=3)
+    opp.field_chars = [ativo_forte, restado_fraco]
+    EffectExecutor(me, opp).execute(rifle, "counter")
+    check("Execucao real: active_only bounce SO o ativo (mesmo sendo o mais forte), restado fica no campo",
+          ativo_forte in opp.hand and restado_fraco in opp.field_chars)
+
+    # Execucao real: [Trigger] com "return" -- SO o Character de custo<=3
+    # do oponente vai pro fundo do deck.
+    rifle2 = real_card("EB01-028")
+    me2 = GameState(leader=mk("RFLDR2", "Lider", card_type="LEADER"), turn=3)
+    barato_opp = mk("RFOA", "Barato", cost=3, power=3000)
+    caro_opp = mk("RFOB", "Caro", cost=5, power=8000)
+    opp2 = GameState(leader=mk("RFOPP2", "Opp", card_type="LEADER"), turn=3)
+    opp2.field_chars = [barato_opp, caro_opp]
+    EffectExecutor(me2, opp2).execute(rifle2, "trigger")
+    check("Execucao real: [Trigger] manda SO o custo<=3 pro fundo do deck do oponente",
+          barato_opp not in opp2.field_chars and caro_opp in opp2.field_chars)
+
+
 def main() -> int:
     test_turn_order_imu_prefers_second()
     test_empty_throne_beats_direct_five_elders_play()
@@ -3494,6 +3559,7 @@ def main() -> int:
     test_reveal_from_hand_por_power_6_cartas()
     test_parse_play_generic_janela_com_ponto_em_nome_colchetado()
     test_rest_opp_character_typo_cost_or_n_or_less()
+    test_eb01_028_active_qualifier_e_return_como_sinonimo_de_place()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0

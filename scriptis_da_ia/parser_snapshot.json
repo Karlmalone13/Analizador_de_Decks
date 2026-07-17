@@ -442,6 +442,20 @@
      "amount": 2000,
      "duration": "battle_only",
      "target": "leader_or_character"
+    },
+    {
+     "action": "opp_bounce_own_character",
+     "active_only": true,
+     "count": 1
+    }
+   ]
+  },
+  "trigger": {
+   "steps": [
+    {
+     "action": "place_opp_character_bottom_deck",
+     "cost_lte": 3,
+     "count": 1
     }
    ]
   }

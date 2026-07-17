@@ -1147,9 +1147,18 @@
   "attribute": "",
   "effects": [
    {
+    "action": "place_opp_character_bottom_deck",
+    "trigger": "trigger",
+    "cost_lte": 3
+   },
+   {
     "action": "buff_power",
     "trigger": "counter",
     "target": "leader_or_character"
+   },
+   {
+    "action": "opp_bounce_own_character",
+    "trigger": "counter"
    }
   ],
   "synergy_states": {
@@ -1178,7 +1187,7 @@
   "has_double_attack": false,
   "has_unblockable": false,
   "has_banish": false,
-  "has_trigger": false
+  "has_trigger": true
  },
  "EB01-029": {
   "name": "Sorry. I'm a Goner.",

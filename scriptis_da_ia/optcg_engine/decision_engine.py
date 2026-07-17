@@ -2254,7 +2254,7 @@ class EffectExecutor:
             'draw', 'set_active', 'rest_opp_character', 'add_don', 'set_don_active',
             'ko', 'bounce', 'place_opp_character_bottom_deck', 'debuff_power',
             'trash_from_deck_top', 'peek_life', 'add_from_trash', 'gain_life',
-            'character_to_owner_life',
+            'character_to_owner_life', 'opp_bounce_own_character',
             'play_card', 'play_from_deck', 'look_top_deck', 'add_to_hand',
             'deck_bottom_rest', 'deck_reorder_rest', 'deck_top_rest',
         }
@@ -5238,7 +5238,14 @@ class EffectExecutor:
         if action == 'opp_bounce_own_character':
             count = step.get('count', 1)
             cost_lte = step.get('cost_lte')
-            candidates = [c for c in opp.field_chars if cost_lte is None or c.cost <= cost_lte]
+            active_only = step.get('active_only', False)
+            rested_only = step.get('rested_only', False)
+            candidates = [
+                c for c in opp.field_chars
+                if (cost_lte is None or c.cost <= cost_lte)
+                and (not active_only or not c.rested)
+                and (not rested_only or c.rested)
+            ]
             bounced = []
             for _ in range(min(count, len(candidates))):
                 worst = min(candidates, key=lambda c: c.board_value())
