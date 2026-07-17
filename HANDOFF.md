@@ -1,5 +1,29 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-17 (224) - OP12-001 e familia: custo "reveal N Events from your hand" nunca reconhecido (5 cartas)
+
+Continuacao da varredura (bloco 223), com aprovacao explicita do
+usuario pra continuar mais uma sessao no mesmo ritmo (pedido: perguntar
+antes de cada carta/familia daqui pra frente). OP12-001 (Silvers
+Rayleigh): "You may reveal 2 Events from your hand: Up to 1 of your
+Characters with 4000 base power or less gains +2000 power during this
+turn." -- o custo (revelar 2 Events, prova de posse, nao remove nada
+da mao) nunca era reconhecido. O buff disparava de graca.
+
+3a variante do custo `reveal_from_hand` ja existente (as outras 2 ja
+cobriam filtro de tipo e Character+power exato) -- so faltava a
+variante filtrada por card_type=EVENT direto. Busca global achou 5
+cartas: OP12-001, OP12-003, OP12-004, OP12-009, OP12-015.
+
+**Validado:** `diff_parser.py` GANHOU=0/PERDEU=0/MUDOU=5. `gerar_dbs.py`
++ `snapshot_parser.py` 0/0/0. `smoke_fast.py`: 1 teste dirigido novo
+com EXECUCAO real (so 1 Event na mao -- custo nao pago, buff nao
+dispara; com 2 Events -- custo pago sem remover nada, buff dispara).
+`smoke_test.py`: TODOS OS TESTES PASSARAM. `smoke_test_broad.py`: 7/7.
+Registro em `parser_audits/2026-07-17_op12-001_reveal_events_custo.json`.
+
+Suspeitos: 286 -> 283.
+
 ## 2026-07-17 (223) - OP10-047 e familia: custo "return N of your [Tipo] Characters ... to the owner's hand" perdia filtro inteiro (8 cartas + 2 gaps de engine)
 
 Continuacao da varredura (bloco 222). OP10-047 (Koala): "[When

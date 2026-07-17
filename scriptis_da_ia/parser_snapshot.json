@@ -29088,6 +29088,13 @@
  },
  "OP12-001": {
   "activate_main": {
+   "costs": [
+    {
+     "card_type": "EVENT",
+     "count": 2,
+     "type": "reveal_from_hand"
+    }
+   ],
    "once_per_turn": true,
    "steps": [
     {
@@ -29111,6 +29118,13 @@
  "OP12-002": {},
  "OP12-003": {
   "on_ko": {
+   "costs": [
+    {
+     "card_type": "EVENT",
+     "count": 2,
+     "type": "reveal_from_hand"
+    }
+   ],
    "steps": [
     {
      "action": "play_card",
@@ -29124,6 +29138,13 @@
  },
  "OP12-004": {
   "activate_main": {
+   "costs": [
+    {
+     "card_type": "EVENT",
+     "count": 2,
+     "type": "reveal_from_hand"
+    }
+   ],
    "once_per_turn": true,
    "steps": [
     {
@@ -29193,6 +29214,13 @@
  },
  "OP12-009": {
   "on_play": {
+   "costs": [
+    {
+     "card_type": "EVENT",
+     "count": 2,
+     "type": "reveal_from_hand"
+    }
+   ],
    "steps": [
     {
      "action": "buff_power",
@@ -29273,6 +29301,13 @@
  },
  "OP12-015": {
   "on_play": {
+   "costs": [
+    {
+     "card_type": "EVENT",
+     "count": 2,
+     "type": "reveal_from_hand"
+    }
+   ],
    "steps": [
     {
      "action": "play_card",

@@ -3658,6 +3658,49 @@ def test_return_own_character_to_hand_com_filtro_8_cartas() -> None:
           not logs4 and forte in me4.field_chars)
 
 
+def test_reveal_events_custo_5_cartas() -> None:
+    # Achado 16/07, OP12-001 (Silvers Rayleigh) e familia: "You may
+    # reveal 2 Events from your hand: [efeito]" -- 3a variante do custo
+    # reveal_from_hand ja existente (prova de posse, nao remove nada da
+    # mao), filtrada por card_type=EVENT em vez de tipo/power. Census
+    # achou 5 cartas com essa forma: OP12-001, OP12-003, OP12-004,
+    # OP12-009, OP12-015 -- todas perdiam o custo INTEIRO, efeito
+    # disparava de graca sem checar se tinha 2 Events na mao.
+    check("OP12-001 parseia o custo reveal_from_hand count=2 card_type=EVENT",
+          get_card_effects("OP12-001").get("activate_main", {}).get("costs", []) ==
+          [{"type": "reveal_from_hand", "count": 2, "card_type": "EVENT"}])
+    check("OP12-004 (mesma forma, acao diferente) tambem parseia",
+          get_card_effects("OP12-004").get("activate_main", {}).get("costs", []) ==
+          [{"type": "reveal_from_hand", "count": 2, "card_type": "EVENT"}])
+
+    # Execucao real: SEM 2 Events na mao, o custo nao pode ser pago, o
+    # buff nao dispara.
+    rayleigh = real_card("OP12-001")
+    me = GameState(leader=mk("RLLDR", "Lider", card_type="LEADER"), turn=3)
+    fraco = mk("RLA", "Fraco", power=3000)
+    me.field_chars = [fraco]
+    me.hand = [mk("RLH1", "Nao Event", card_type="CHARACTER"),
+               mk("RLH2", "Event Unico", card_type="EVENT")]
+    opp = GameState(leader=mk("RLOPP", "Opp", card_type="LEADER"), turn=3)
+    EffectExecutor(me, opp).execute(rayleigh, "activate_main")
+    check("Execucao real: SO 1 Event na mao (precisa de 2) -- custo NAO pago, buff NAO dispara",
+          fraco.power_buff == 0)
+
+    # Com 2 Events na mao, o custo e pago (revelar, sem remover nada) e o
+    # buff dispara; as cartas continuam na mao.
+    rayleigh2 = real_card("OP12-001")
+    me2 = GameState(leader=mk("RLLDR2", "Lider", card_type="LEADER"), turn=3)
+    fraco2 = mk("RLB", "Fraco 2", power=3000)
+    me2.field_chars = [fraco2]
+    ev1 = mk("RLH3", "Event 1", card_type="EVENT")
+    ev2 = mk("RLH4", "Event 2", card_type="EVENT")
+    me2.hand = [ev1, ev2]
+    opp2 = GameState(leader=mk("RLOPP2", "Opp", card_type="LEADER"), turn=3)
+    EffectExecutor(me2, opp2).execute(rayleigh2, "activate_main")
+    check("Execucao real: COM 2 Events na mao, custo pago (SEM remover) e buff dispara",
+          fraco2.power_buff == 2000 and ev1 in me2.hand and ev2 in me2.hand)
+
+
 def main() -> int:
     test_turn_order_imu_prefers_second()
     test_empty_throne_beats_direct_five_elders_play()
@@ -3755,6 +3798,7 @@ def main() -> int:
     test_look_top_deck_cost_range_eb03_060()
     test_op09_007_leader_power_lte_e_op03_016_sem_contaminacao()
     test_return_own_character_to_hand_com_filtro_8_cartas()
+    test_reveal_events_custo_5_cartas()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0

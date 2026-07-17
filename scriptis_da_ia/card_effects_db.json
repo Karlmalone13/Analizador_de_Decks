@@ -46289,6 +46289,13 @@
             "power_lte": 4000
           }
         ],
+        "costs": [
+          {
+            "type": "reveal_from_hand",
+            "count": 2,
+            "card_type": "EVENT"
+          }
+        ],
         "once_per_turn": true
       },
       "game_rules": {
@@ -46333,6 +46340,13 @@
             "color": "red",
             "power_lte": 3000
           }
+        ],
+        "costs": [
+          {
+            "type": "reveal_from_hand",
+            "count": 2,
+            "card_type": "EVENT"
+          }
         ]
       }
     }
@@ -46355,6 +46369,13 @@
             "amount": 2000,
             "target": "self",
             "duration": "this_turn"
+          }
+        ],
+        "costs": [
+          {
+            "type": "reveal_from_hand",
+            "count": 2,
+            "card_type": "EVENT"
           }
         ],
         "once_per_turn": true
@@ -46483,6 +46504,13 @@
           {
             "action": "gain_rush",
             "duration": "this_turn"
+          }
+        ],
+        "costs": [
+          {
+            "type": "reveal_from_hand",
+            "count": 2,
+            "card_type": "EVENT"
           }
         ]
       }
@@ -46631,6 +46659,13 @@
             "action": "give_don",
             "count": 1,
             "rested": true
+          }
+        ],
+        "costs": [
+          {
+            "type": "reveal_from_hand",
+            "count": 2,
+            "card_type": "EVENT"
           }
         ]
       },

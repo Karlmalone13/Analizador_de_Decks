@@ -1,0 +1,12 @@
+{
+  "trigger_card": "OP12-001",
+  "problem": "\"[Activate: Main] [Once Per Turn] You may reveal 2 Events from your hand: Up to 1 of your Characters with 4000 base power or less gains +2000 power during this turn.\" -- o custo (reveal 2 Events, prova de posse) nunca era reconhecido. O buff disparava de graca, sem checar se o jogador tinha 2 Events na mao pra revelar.",
+  "grammar_family": "'you may reveal N Events from your hand:' -- 3a variante do custo reveal_from_hand ja existente (achado 15/07 pra filtro de tipo, achado 16/07 anterior pra Character+power exato), aqui filtrado direto por card_type=EVENT.",
+  "queries": [
+    "regex 'you may reveal \\d+ events? (?:cards? )?from your hand\\s*:' contra cards_rows.csv -- 5 cartas: OP12-001, OP12-003, OP12-004, OP12-009, OP12-015, todas perdiam o custo por completo"
+  ],
+  "cards_found": ["OP12-001", "OP12-003", "OP12-004", "OP12-009", "OP12-015"],
+  "resolution_scope": "global",
+  "decision": "Novo regex produzindo o MESMO cost type reveal_from_hand (ja usado por 2 variantes anteriores), so com card_type='EVENT' e sem filter_type/power_eq. Executor ja suporta card_type_req nesse cost type (reutilizado sem alteracao) -- confirmado que reveal_from_hand ja filtra por card_type quando presente.",
+  "validated_by": ["diff_parser.py GANHOU=0/PERDEU=0/MUDOU=5 (as 5 cartas, conferidas)", "gerar_dbs.py + snapshot_parser.py 0/0/0", "smoke_fast.py: 1 teste dirigido novo com EXECUCAO real (SO 1 Event na mao -- custo nao pago, buff nao dispara; COM 2 Events -- custo pago sem remover nada, buff dispara)", "smoke_test.py: TODOS OS TESTES PASSARAM", "smoke_test_broad.py: 7/7"]
+}

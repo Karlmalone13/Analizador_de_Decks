@@ -901,6 +901,16 @@ def parse_costs(text):
         costs.append({'type': 'reveal_from_hand', 'count': int(m_reveal_pw.group(1)),
                        'power_eq': int(m_reveal_pw.group(2)), 'card_type': 'CHARACTER'})
 
+    # Custo de REVELAR N Events da mao (achado 16/07, OP12-001 e familia:
+    # "you may reveal N Events from your hand: [efeito]") -- 3a variante
+    # da mesma familia reveal_from_hand (prova de posse, nao remove nada),
+    # aqui filtrado direto por card_type EVENT em vez de tipo/power.
+    m_reveal_ev = re.search(
+        r'you may reveal (\d+) events? (?:cards? )?from your hand\s*:', t)
+    if m_reveal_ev:
+        costs.append({'type': 'reveal_from_hand', 'count': int(m_reveal_ev.group(1)),
+                       'card_type': 'EVENT'})
+
     # DON!! −X: devolve X DON do campo para o deck de DON.
     # "you may" perto (antes ou depois, ex: dentro do parêntese explicativo)
     # -> opcional; senão -> obrigatório.
