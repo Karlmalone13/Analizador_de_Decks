@@ -4352,7 +4352,7 @@
      "action": "play_card",
      "cost_lte": 99,
      "count": 1,
-     "filter_name": "trigger",
+     "has_trigger": true,
      "power_lte": 5000
     }
    ]
@@ -9403,7 +9403,7 @@
      "action": "play_card",
      "cost_lte": 4,
      "count": 1,
-     "filter_name": "trigger"
+     "has_trigger": true
     }
    ]
   }
@@ -9654,7 +9654,7 @@
      "action": "play_card",
      "cost_lte": 4,
      "count": 1,
-     "filter_name": "trigger"
+     "has_trigger": true
     }
    ]
   }
@@ -11079,7 +11079,7 @@
      "action": "play_card",
      "cost_lte": 4,
      "count": 1,
-     "filter_name": "trigger"
+     "has_trigger": true
     }
    ]
   }
@@ -13580,6 +13580,7 @@
      "action": "play_card",
      "cost_lte": 99,
      "count": 1,
+     "exclude": "emporio.ivankov",
      "filter_type": "revolutionary army",
      "power_lte": 5000
     }
@@ -29964,6 +29965,7 @@
      "color": "blue",
      "cost_lte": 99,
      "count": 1,
+     "exclude": "monkey.d.garp",
      "filter_type": "navy",
      "power_lte": 8000
     }
@@ -33143,7 +33145,7 @@
      "action": "play_card",
      "cost_lte": 5,
      "count": 1,
-     "filter_name": "trigger"
+     "has_trigger": true
     }
    ]
   },
@@ -35098,8 +35100,10 @@
    "steps": [
     {
      "action": "play_card",
-     "cost_lte": 99,
-     "count": 1
+     "cost_lte": 5,
+     "count": 1,
+     "filter_type": "baroque works",
+     "source_alt": "trash"
     }
    ]
   }
@@ -35490,12 +35494,6 @@
   "on_ko": {
    "steps": [
     {
-     "action": "play_card",
-     "cost_lte": 4,
-     "count": 1,
-     "filter_name": "trigger"
-    },
-    {
      "action": "play_from_trash",
      "cost_lte": 4,
      "count": 1,
@@ -35576,7 +35574,7 @@
      "action": "play_card",
      "cost_lte": 99,
      "count": 1,
-     "filter_name": "trigger",
+     "has_trigger": true,
      "power_lte": 6000
     }
    ]
@@ -35739,7 +35737,7 @@
      "action": "play_card",
      "cost_lte": 99,
      "count": 1,
-     "filter_name": "trigger",
+     "has_trigger": true,
      "power_lte": 6000
     }
    ]
@@ -38689,7 +38687,9 @@
     {
      "action": "play_card",
      "cost_lte": 99,
-     "count": 2
+     "count": 2,
+     "filter_type": "whitebeard pirates",
+     "power_eq": 8000
     }
    ]
   },
@@ -40354,12 +40354,6 @@
     "life_lte": 1
    },
    "steps": [
-    {
-     "action": "play_card",
-     "cost_lte": 99,
-     "count": 1,
-     "filter_name": "absalom"
-    },
     {
      "action": "play_from_trash",
      "cost_lte": 4,
@@ -42293,9 +42287,10 @@
    "steps": [
     {
      "action": "play_card",
-     "cost_lte": 99,
+     "cost_eq": 2,
      "count": 1,
-     "filter_name": "sabo"
+     "filter_name": "sabo",
+     "source_alt": "trash"
     }
    ]
   }
@@ -45339,7 +45334,7 @@
    "steps": [
     {
      "action": "play_card",
-     "cost_lte": 99,
+     "cost_eq": 2,
      "count": 1,
      "filter_name": "sabo"
     }

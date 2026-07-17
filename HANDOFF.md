@@ -1,5 +1,80 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-16 (217) - OP14-091 e familia: janela de parse_play_generic cortava em pontos DENTRO de colchetes (14 cartas + 2 gaps de engine)
+
+Retomada da varredura via `audit_parser_coverage.py --min-severity 2 --show`.
+OP14-091 (Mr.2.Bon.Kurei/Bentham): "Play up to 1 Character card with a
+type including "Baroque Works" and a cost of 5 or less other than
+[Mr.2.Bon.Kurei.(Bentham)] from your hand or trash." -- `cost_lte`
+saia sempre 99 (devia ser 5), `filter_type`/`source_alt` ausentes.
+
+Causa raiz: `parse_play_generic()` calculava o fim da janela de busca
+com `t.find('.', m.end())` -- o primeiro PONTO literal, sem ignorar
+pontos DENTRO de colchetes/chaves. Nomes reais com ponto (`[Monkey.D.
+Luffy]`, `[Portgas.D.Ace]`, `[Mr.2.Bon.Kurei.(Bentham)]`, `[Dr.
+Hogback]` -- **300+ nomes no banco** usam esse padrao) cortavam a
+janela ANTES do texto real terminar. Um caso (**OP14-110**) e mais
+grave que "so faltou um filtro": a janela truncada escondia um "from
+your trash" que deveria ter BLOQUEADO o `play_card` generico -- a
+carta gerava uma acao DUPLICADA/bogus (jogar da mao uma carta
+literalmente chamada "Trigger", carta que nunca existe -- na pratica
+inofensivo, mas dado errado).
+
+Fix generico: fim de janela agora escaneia caractere a caractere,
+ignorando pontos com profundidade de colchete/chave > 0 (nao so o
+primeiro '.'). Aproveitado pra trazer `parse_play_generic` (fonte=mao)
+pra PARIDADE com `parse_play_from_trash` (que ja tinha isso e por
+design nao sofria desse bug, ancorado em "from your trash" em vez de
+ponto-fim-de-frase): suporte a `type including "X"` fora do inicio da
+clausula, `and a cost of N or less` (alem de `with a cost of`),
+`power_eq` (`and NNNN power` exato), e `has_trigger` (`a [Trigger]`) --
+com exclusao explicita de tokens de keyword (trigger/blocker/rush/
+banish/double attack) do loop que detecta `filter_name`, que antes
+tratava `[Trigger]` como se fosse nome de carta (OP14-110 de novo).
+
+**Gap de ENGINE encontrado no mesmo escopo** (mesmo padrao ja
+documentado no README de `parser_audits/` pra bounce/power_eq --
+"calculado mas nao usado"): `has_trigger` e `power_eq` nunca eram
+repassados por `decision_engine.py` pra `eligible_cards()` nas acoes
+`play_card`/`play_from_trash` -- o parser ja gravava o campo certo no
+JSON, mas o executor ignorava. E `play_from_trash` tambem ignorava
+`exclude` (self-exclusion), afetando 6 cartas (EB01-043, EB02-047,
+OP10-082, OP11-092, OP14-110, OP16-085) mesmo sem nenhuma relacao com
+o bug de janela. Corrigido: novo param `has_trigger` em
+`rules_facade.eligible_cards`, repassado nos dois call sites, `exclude`
+tambem repassado em `play_from_trash`.
+
+**Validado:** `diff_parser.py` GANHOU=0/PERDEU=0/MUDOU=15 (todas as 15
+mudancas conferidas manualmente contra o texto cru). `gerar_dbs.py` +
+`snapshot_parser.py` 0/0/0. `smoke_fast.py`: 1 teste dirigido novo com
+EXECUCAO real cobrindo os 3 pontos do fix de engine (has_trigger
+filtrando em play_card, power_eq+filter_type filtrando em play_card,
+exclude barrando a copia homonima em play_from_trash) -- os 3 SO
+passam porque o wiring de engine foi feito, nao so o parser.
+`smoke_test.py`: TODOS OS TESTES PASSARAM. `smoke_test_broad.py`: 7/7
+(rodado na hora, nao esperou 3 familias -- mexeu em codigo
+compartilhado por centenas de cartas: `parse_play_generic` e
+`rules_facade.eligible_cards`). Registro completo em
+`parser_audits/2026-07-16_op14-091_play_generic_janela_ponto_em_colchete.json`.
+
+Suspeitos: 299 -> 296. Nenhuma das 14 cartas tocadas aparece em deck
+salvo hoje, mas o bug de janela e transversal (300+ nomes com ponto no
+banco inteiro) -- outras cartas com essa mesma forma que hoje nao
+disparam o audit tool (por nao ter numero "perdido" detectavel) podem
+ter sido corrigidas de graca por tabela.
+
+**Gap identificado mas NAO corrigido (fora de escopo, registrar pra
+depois):** `PRB02-018`/`ST13-006` tem "play up to 1 [Nome1], [Nome2],
+or/and [Nome3], with a cost of N from your hand" -- lista de 3 nomes
+proprios (OR ou AND-each) da qual `parse_play_generic` so captura o
+PRIMEIRO nome, silenciosamente ignorando os outros 2. Bug DIFERENTE do
+de janela (nao e truncamento, e falta de suporte a lista de nomes) --
+seria preciso um novo campo tipo `filter_names` (lista) + wiring no
+executor pra semantica OR, e uma extensao pro caso AND-each (gerar N
+steps independentes). So 2 cartas conhecidas, nenhuma usada em deck
+salvo -- fica pendente, nao implementado por falta de escopo/tempo
+nesta sessao (evitar meio-implementado, ver CLAUDE.md).
+
 ## 2026-07-16 (216) - FIM DE SESSAO: resumo acumulado da varredura (blocos 197-215, suspeitos 349 -> 299)
 
 Sessao longa de varredura 1-por-1 do `audit_parser_coverage.py`,

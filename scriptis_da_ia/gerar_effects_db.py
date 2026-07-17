@@ -3416,7 +3416,28 @@ def parse_play_generic(text):
     # antes). Janela = do inicio da ultima clausula (apos ':' ou '.' mais
     # proximo antes do match) até o fim do match.
     inicio_clausula = max(t.rfind(':', 0, m.start()), t.rfind('. ', 0, m.start())) if m else -1
-    fim_sentenca = t.find('.', m.end()) if m else -1
+    # fim de sentenca IGNORANDO pontos dentro de colchetes/chaves -- nomes de
+    # carta com ponto (ex: "[Monkey.D.Luffy]", "[Mr.2.Bon.Kurei.(Bentham)]",
+    # "[Dr. Hogback]", 300+ cartas no banco usam esse padrao de nome) faziam
+    # o antigo `t.find('.', m.end())` cortar a janela no MEIO do nome, antes
+    # do "other than [...]"/"from your hand or trash" real -- derrubando
+    # exclude/source_alt/filtros silenciosamente (achado real: OP05-004,
+    # OP12-056, OP14-091) e ate causando ação DUPLICADA quando a janela
+    # truncada escondia um "from your trash" que deveria ter bloqueado o
+    # play_card genérico (OP14-110, ja coberto certo por
+    # parse_play_from_trash).
+    fim_sentenca = -1
+    if m:
+        depth = 0
+        for i in range(m.end(), len(t)):
+            c = t[i]
+            if c in '[{':
+                depth += 1
+            elif c in ']}':
+                depth = max(0, depth - 1)
+            elif c == '.' and depth == 0:
+                fim_sentenca = i
+                break
     fim_janela = fim_sentenca if fim_sentenca != -1 else (m.end() if m else 0)
     janela = t[inicio_clausula + 1:fim_janela] if m else ''
     sem_origem_deck = 'from your deck' not in janela and 'from the top of your deck' not in janela
@@ -3430,18 +3451,26 @@ def parse_play_generic(text):
         # pre-existente, 17 cards: EB01-009, EB02-025, OP01-116, etc).
         precedido_de_look = bool(re.search(r'look at \d+ cards? from the top of (?:your|the) deck', t[:m.start()]))
         if not precedido_de_look:
-            cost_m = re.search(r'with a cost of (\d+) or less', janela)
-            cost_eq_m = re.search(r'with a cost of (\d+)(?! or less)', janela)
-            # filter_type/color: mesma regex usada em parse_play_from_deck.
-            # Antes ausente aqui -- confirmado faltando em OP13-099 (Empty
-            # Throne: "play up to 1 BLACK \"Five Elders\" type Character
-            # card..."), que perdia o filtro de arquetipo/cor inteiramente.
+            # "with a cost of N or less" (forma original) OU "and a cost of
+            # N or less" -- surge quando o filtro de tipo vem primeiro
+            # ("with a type including X and a cost of N or less", achado
+            # 16/07 OP14-091 e familia: o "a cost of" nao vem depois de
+            # "with", vem depois de "and").
+            cost_m = re.search(r'(?:with|and) a cost of (\d+) or less', janela)
+            cost_eq_m = re.search(r'(?:with|and) a cost of (\d+)(?! or less)', janela)
+            # filter_type/color: mesma regex usada em parse_play_from_deck e
+            # em parse_play_from_trash (que ja suporta "type including
+            # \"X\"" fora do inicio da clausula -- trazido aqui pra paridade,
+            # achado 16/07 OP14-091/OP16-019: "Character card with a type
+            # including \"X\"" nao ficava logo apos "play up to N").
             type_m = (re.search(
                 r'play up to \d+ (?:black |red |blue |green |yellow |purple )?"([a-z][a-z0-9 .]+)" type',
                 janela)
                 or re.search(
                 r'play up to \d+ (?:black |red |blue |green |yellow |purple )?[\[{]([a-z][a-z0-9 .\'-]+)[\]}]\s+type',
-                janela))
+                janela)
+                or re.search(r'type including "([a-z][a-z0-9 .\'-]+)"', janela)
+                or re.search(r'type including [\[{]([a-z][a-z0-9 .\'-]+)[\]}]', janela))
             color_m = re.search(r'play up to \d+ (black|red|blue|green|yellow|purple)', janela)
             # cost_lte DINAMICO: "with a cost equal to or less than the
             # number of DON!! cards on your/your opponent's field" --
@@ -3478,9 +3507,19 @@ def parse_play_generic(text):
                 # "red Character other than [Dogura]": sem isso, virava
                 # "jogar [Dogura] que não seja [Dogura]" = sempre vazio).
                 excl_m_probe = re.search(r'other than [\[{]([a-z][a-z0-9 .\'-]+)[\]}]', janela)
+                # tokens de keyword (nao nome de carta) que aparecem
+                # colchetados no meio da frase, ex: "a cost of 4 or less and
+                # a [Trigger] other than [Dr. Hogback]" -- sem essa
+                # exclusao, "[Trigger]" virava filter_name="trigger" (nunca
+                # bate com nenhuma carta real), mascarando o requisito real
+                # (has_trigger, ja tratado abaixo). Achado 16/07, OP14-110.
+                KEYWORD_TOKENS = {'trigger', 'blocker', 'rush', 'banish',
+                                   'double attack', 'rush: character'}
                 for name_cand in re.finditer(r'[\[{]([a-z][a-z0-9 .\'-]+)[\]}](?!\s+type)', janela):
                     nome = name_cand.group(1).strip()
                     if excl_m_probe and nome == excl_m_probe.group(1).strip():
+                        continue
+                    if nome in KEYWORD_TOKENS:
                         continue
                     step_filter_name = nome
                     break
@@ -3510,10 +3549,21 @@ def parse_play_generic(text):
             # convencao 'filter_no_effect' ja usada por gain_life
             # (source=='trash') pra "sem efeito parseado no banco".
             power_lte_m = re.search(r'with (\d+) power or less', janela)
+            # "and NNNN power" (sem "or more"/"or less") -- exato, mesma
+            # convencao de power_eq ja usada em parse_play_from_trash.
+            # Achado 16/07, OP16-019: "type including \"X\" and 8000 power".
+            power_eq_m = re.search(r'(?:with|and) (\d+) power\b(?! or less)(?! or more)', janela)
             if power_lte_m:
                 step['power_lte'] = int(power_lte_m.group(1))
+            elif power_eq_m:
+                step['power_eq'] = int(power_eq_m.group(1))
             if 'no base effect' in janela:
                 step['filter_no_effect'] = True
+            # "a [Trigger]" -- exige que a carta jogada TENHA a keyword
+            # Trigger, distinto de filter_name (mesma convencao de
+            # parse_play_from_trash). Achado 16/07, OP14-110.
+            if re.search(r'and a \[trigger\]', janela):
+                step['has_trigger'] = True
             steps.append(step)
     return steps
 

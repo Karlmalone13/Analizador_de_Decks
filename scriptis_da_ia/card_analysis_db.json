@@ -83178,7 +83178,7 @@
    {
     "action": "play_card",
     "trigger": "on_ko",
-    "cost_lte": 99
+    "cost_lte": 5
    }
   ],
   "synergy_states": {},
@@ -84054,11 +84054,6 @@
   "sub_types": "Thriller Bark Pirates",
   "attribute": "Wisdom",
   "effects": [
-   {
-    "action": "play_card",
-    "trigger": "on_ko",
-    "cost_lte": 4
-   },
    {
     "action": "play_from_trash",
     "trigger": "on_ko",
@@ -94505,11 +94500,6 @@
   "attribute": "Special",
   "effects": [
    {
-    "action": "play_card",
-    "trigger": "trigger",
-    "cost_lte": 99
-   },
-   {
     "action": "play_from_trash",
     "trigger": "trigger",
     "cost_lte": 4
@@ -99465,8 +99455,7 @@
   "effects": [
    {
     "action": "play_card",
-    "trigger": "on_play",
-    "cost_lte": 99
+    "trigger": "on_play"
    }
   ],
   "synergy_states": {},
@@ -107737,8 +107726,7 @@
   "effects": [
    {
     "action": "play_card",
-    "trigger": "on_play",
-    "cost_lte": 99
+    "trigger": "on_play"
    },
    {
     "action": "keyword_blocker",

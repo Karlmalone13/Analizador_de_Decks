@@ -5065,8 +5065,10 @@ class EffectExecutor:
                 power_eq=power_eq,
                 power_lte=power_lte,
                 power_gte=power_gte,
+                has_trigger=step.get('has_trigger', False),
                 filter_text=filter_type,
                 name_or_code=filter_name,
+                exclude_name=step.get('exclude', ''),
             )
             if step.get('same_name_as_trashed'):
                 nomes = set(getattr(self, '_last_trashed_names', []) or [])
@@ -5881,6 +5883,8 @@ class EffectExecutor:
                         cost_lte=cost_lte,
                         cost_eq=cost_eq,
                         power_lte=step.get('power_lte'),
+                        power_eq=step.get('power_eq'),
+                        has_trigger=step.get('has_trigger', False),
                         filter_text=step.get('filter_type', ''),
                         name_or_code=step.get('filter_name', ''),
                         color=step.get('color', ''),

@@ -50,6 +50,7 @@ def mk(
     card_type: str = "CHARACTER",
     color: str = "Black",
     attribute: str = "",
+    has_trigger: bool = False,
 ) -> Card:
     return Card(
         data=CardData(
@@ -61,6 +62,7 @@ def mk(
             power=power,
             sub_types=sub_types,
             attribute=attribute,
+            has_trigger=has_trigger,
         )
     )
 
@@ -3308,6 +3310,77 @@ def test_reveal_from_hand_por_power_6_cartas() -> None:
           opp_char2.power_buff == -1000 and forte_na_mao in me2.hand)
 
 
+def test_parse_play_generic_janela_com_ponto_em_nome_colchetado() -> None:
+    # Achado 16/07: `parse_play_generic` cortava a JANELA de busca no
+    # primeiro '.' encontrado apos "play up to N...", sem ignorar pontos
+    # DENTRO de colchetes -- nomes reais tipo [Monkey.D.Luffy]/
+    # [Mr.2.Bon.Kurei.(Bentham)]/[Dr. Hogback] (300+ cartas no banco usam
+    # esse padrao) cortavam a janela ANTES de "other than [...]"/"from your
+    # hand or trash", derrubando exclude/source_alt/filtro em silencio (e
+    # ate gerando um step DUPLICADO/bogus quando a janela escondia um
+    # "from your trash" que deveria ter bloqueado o play_card generico,
+    # OP14-110). Fix generalizado (scan bracket-depth-aware), nao amarrado
+    # a nenhuma carta especifica.
+    check("OP14-091 (type-including + 'and a cost of N or less' + hand-or-trash) parseia certo",
+          get_card_effects("OP14-091").get("on_ko", {}).get("steps", []) ==
+          [{"action": "play_card", "count": 1, "cost_lte": 5,
+            "filter_type": "baroque works", "source_alt": "trash"}])
+    check("OP16-019 ('type including X' fora do inicio da clausula + power exato) parseia certo",
+          any(s.get("filter_type") == "whitebeard pirates" and s.get("power_eq") == 8000
+              for s in get_card_effects("OP16-019").get("main", {}).get("steps", [])))
+    check("OP05-004 recupera o 'exclude' (self-exclusion) que a janela cortada escondia",
+          get_card_effects("OP05-004").get("activate_main", {}).get("steps", [{}])[0].get("exclude")
+          == "emporio.ivankov")
+    check("OP14-110 NAO gera mais o play_card bogus duplicado (filter_name='trigger')"
+          " -- so sobra o play_from_trash correto com has_trigger+exclude",
+          get_card_effects("OP14-110").get("on_ko", {}).get("steps", []) ==
+          [{"action": "play_from_trash", "count": 1, "cost_lte": 4,
+            "has_trigger": True, "exclude": "dr. hogback"}])
+
+    # Execucao real: has_trigger em play_card (GRUPO 2, EB04-027 [Trigger])
+    # -- so a carta com a keyword Trigger pode ser jogada, mesmo as duas
+    # cabendo no filtro de power<=5000. Campo novo has_trigger no parser
+    # so tem efeito se o executor tambem filtrar por ele -- sem o wiring em
+    # rules_facade.eligible_cards + decision_engine, o dado ficaria
+    # "calculado mas nao usado".
+    eb04027 = real_card("EB04-027")
+    sem_trigger = mk("TRGA", "Sem Trigger", power=4000, has_trigger=False)
+    com_trigger = mk("TRGB", "Com Trigger", power=4000, has_trigger=True)
+    me = GameState(leader=mk("TRGLDR", "Lider", card_type="LEADER"), turn=3)
+    me.hand = [sem_trigger, com_trigger]
+    opp = GameState(leader=mk("TRGOPP", "Opp", card_type="LEADER"), turn=3)
+    EffectExecutor(me, opp).execute(eb04027, "trigger")
+    check("Execucao real: has_trigger filtra em play_card -- SO a carta com [Trigger] eh jogada",
+          com_trigger in me.field_chars and sem_trigger in me.hand)
+
+    # Execucao real: power_eq em play_card (OP16-019 [Main]) -- so a carta
+    # de power EXATO 8000 e tipo certo entra, nao 7000/9000 nem tipo errado.
+    op16019 = real_card("OP16-019")
+    fraca = mk("WBA", "WB Fraca", power=7000, sub_types="Whitebeard Pirates")
+    certa = mk("WBB", "WB Certa", power=8000, sub_types="Whitebeard Pirates")
+    tipo_errado = mk("WBC", "Tipo Errado", power=8000, sub_types="Navy")
+    me2 = GameState(leader=mk("WBLDR", "Lider", card_type="LEADER"), turn=3)
+    me2.hand = [fraca, certa, tipo_errado]
+    opp2 = GameState(leader=mk("WBOPP", "Opp", card_type="LEADER"), turn=3)
+    EffectExecutor(me2, opp2).execute(op16019, "main")
+    check("Execucao real: power_eq=8000 + filter_type filtram em play_card -- so a WB de 8000 entra",
+          certa in me2.field_chars and fraca in me2.hand and tipo_errado in me2.hand)
+
+    # Execucao real: exclude em play_from_trash (OP16-085) -- a copia de si
+    # mesmo no trash (mesmo nome) fica de fora mesmo elegivel por tipo/custo;
+    # so o candidato Land of Wano diferente entra.
+    momo = real_card("OP16-085")
+    outra_copia = mk("MOMOX", "Kouzuki Momonosuke (085)", power=6000, cost=9,
+                      sub_types="Land of Wano Kouzuki Clan")
+    candidato_valido = mk("LOWA", "Kanjuro", power=5000, cost=5, sub_types="Land of Wano")
+    me3 = GameState(leader=mk("MOMOLDR", "Lider", card_type="LEADER"), turn=3)
+    me3.trash = [outra_copia, candidato_valido]
+    opp3 = GameState(leader=mk("MOMOOPP", "Opp", card_type="LEADER"), turn=3)
+    EffectExecutor(me3, opp3).execute(momo, "on_play")
+    check("Execucao real: exclude em play_from_trash barra a copia homonima, joga o outro Land of Wano",
+          candidato_valido in me3.field_chars and outra_copia in me3.trash)
+
+
 def main() -> int:
     test_turn_order_imu_prefers_second()
     test_empty_throne_beats_direct_five_elders_play()
@@ -3398,6 +3471,7 @@ def main() -> int:
     test_play_card_power_lte_e_no_base_effect_e_chars_lte_power()
     test_own_character_buff_count_maior_que_1()
     test_reveal_from_hand_por_power_6_cartas()
+    test_parse_play_generic_janela_com_ponto_em_nome_colchetado()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0

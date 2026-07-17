@@ -77,6 +77,7 @@ def eligible_cards(
     don_attached_gte: int | None = None,
     rested_only: bool = False,
     active_only: bool = False,
+    has_trigger: bool = False,
     filter_text: str | list | tuple = "",
     name_or_code: str = "",
     color: str = "",
@@ -111,6 +112,8 @@ def eligible_cards(
         if rested_only and not getattr(card, "rested", False):
             continue
         if active_only and getattr(card, "rested", False):
+            continue
+        if has_trigger and not getattr(card, "has_trigger", False):
             continue
         if filter_text and not card_matches_filter(card, filter_text, include_text=include_text):
             continue
