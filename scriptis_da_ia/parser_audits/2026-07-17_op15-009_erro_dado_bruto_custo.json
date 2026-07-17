@@ -1,0 +1,15 @@
+{
+  "trigger_card": "OP15-009",
+  "problem": "cards_rows.csv tinha card_cost=4 para Koby (OP15-009), mas a carta real (confirmada por foto do usuario e por fonte externa, onepiece.limitlesstcg.com/cards/OP15-009) tem custo 1. NAO e um bug de parser/regex -- e um erro no DADO BRUTO da raspagem (card_cost errado na fonte), silenciosamente propagado pra card_effects_db.json/card_analysis_db.json em todo regen.",
+  "grammar_family": "N/A (nao e um padrao de texto/gramatica -- e um valor numerico de campo estruturado, card_cost, incorreto na linha da carta).",
+  "queries": [
+    "Amostra aleatoria de 16 cartas (seed=42, todas com card_type != DON!!, sem sufixo _p/_r) verificada contra onepiece.limitlesstcg.com via WebFetch: OP02-113, EB02-046, OP08-101, OP07-090, OP03-115, OP02-036, P-019, OP02-075, ST06-011, OP02-007, ST24-002, EB03-014, EB03-006, ST30-009, EB02-052, ST11-002 -- todas as 16 bateram cost E power exatos com a fonte externa.",
+    "3 cartas adicionais da familia de substituicao (sugeridas pelo usuario para enriquecer a auditoria de substitute_ko/removal): EB03-018, OP10-032, OP14-029 (todas Tashigi) -- tambem bateram cost/power exatos.",
+    "Vizinhos de OP15-009 no mesmo set (OP15-EB04): OP15-008 (Krieg, cost=8 confirmado correto), OP15-010 (Nezumi, cost=2 confirmado correto), OP15-035 (Laboon, cost=1 confirmado correto), OP15-105 (Jewelry Bonney, cost=1 confirmado correto) -- nenhum outro erro de custo encontrado no mesmo set.",
+    "Total: 19 de 20 cartas verificadas batem perfeitamente com a fonte oficial -- confirma que NAO e um problema sistemico de raspagem, e um erro isolado nesta 1 carta."
+  ],
+  "cards_found": ["OP15-009"],
+  "resolution_scope": "isolated_after_global_scan",
+  "decision": "Corrigido card_cost de 4 para 1 diretamente em cards_rows.csv (linha OP15-009), seguido de gerar_dbs.py pra propagar a correcao pros bancos derivados. Nao e um fix de gerar_effects_db.py -- e correcao de dado de origem. Antes de corrigir, o usuario pediu explicitamente pra investigar se o erro era sistemico (nao so essa carta) -- feito via amostragem cruzada contra fonte externa confiavel, confirmando que e um caso isolado antes de aplicar a correcao.",
+  "validated_by": ["WebFetch contra onepiece.limitlesstcg.com/cards/OP15-009 confirmando cost=1 (2x, resultado consistente)", "Foto da carta real fornecida pelo usuario confirmando custo 1 no canto superior esquerdo", "gerar_dbs.py rodado apos a correcao -- card_effects_db.json['OP15-009']['cost'] == 1 confirmado", "Amostragem de 19 outras cartas contra a mesma fonte externa, todas corretas -- descarta problema sistemico"]
+}

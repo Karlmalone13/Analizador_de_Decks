@@ -84980,7 +84980,7 @@
  "OP15-009": {
   "name": "Koby (OP15-009)",
   "type": "CHARACTER",
-  "cost": 4,
+  "cost": 1,
   "power": 2000,
   "counter": 2000,
   "life": 0,

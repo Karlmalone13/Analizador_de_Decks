@@ -1,5 +1,50 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-17 (226) - OP15-009: erro de DADO BRUTO no custo (nao e bug de parser)
+
+Achado durante a analise pedida no bloco 225 (mapear a familia de
+"substituicao"/protecao contra remocao, citada pelo usuario com
+cartas especificas: Bonnie/Bonney, Koby, Laboon, Smoker, Koushirou,
+Koby lider). Ao verificar OP15-009 (Koby), o usuario mandou foto real
+da carta mostrando **custo 1**, mas `cards_rows.csv` tinha
+`card_cost=4` -- **erro na raspagem do banco**, nao um bug de regex/
+engine como todo o resto desta sessao.
+
+**Checagem sistemica pedida pelo usuario ANTES de corrigir**: amostra
+de 16 cartas aleatorias (seed=42) + 3 Tashigi (sugeridas pelo usuario
+como exemplos adicionais da familia de substituicao) + 4 vizinhas de
+OP15-009 no mesmo set -- todas as 19 verificadas via WebFetch contra
+onepiece.limitlesstcg.com bateram custo/power exatos. **19/20 corretas,
+so OP15-009 errada** -- confirma que NAO e um problema sistemico de
+raspagem, e um erro isolado nesta carta.
+
+**Achado colateral relevante**: ao verificar TODAS as cartas da familia
+de substituicao citadas pelo usuario (Bonney OP15-105, Koby OP15-009/
+EB04-044/OP11-001-lider, Laboon OP15-035, Koushirou OP12-027, Tashigi
+EB03-018/OP10-032/OP14-029 -- 9 cartas no total), **nenhuma tinha bug
+de parser** -- a infraestrutura `substitute_ko`/`substitute_removal`
+(de uma auditoria grande em 01/07) e robusta e ja cobre essa familia
+inteira corretamente. O UNICO gap real nessa familia continua sendo a
+Pica (OP05-032), ainda pendente de aprovacao/implementacao (ver bloco
+225): "rest UP TO 1 of your Characters with a cost of 3 or more other
+than [Pica] instead" -- combinacao de "up to" + custo + exclusao por
+nome que nenhum dos ~15 padroes existentes cobre.
+
+**Correcao aplicada**: `card_cost` de OP15-009 corrigido de 4 para 1
+direto em `cards_rows.csv`, seguido de `gerar_dbs.py` pra propagar.
+NAO e mudanca em `gerar_effects_db.py` -- e correcao de dado de
+origem, mas ainda precisou de registro em `parser_audits/` (o hook de
+pre-commit bloqueia qualquer mudanca em `card_effects_db.json`,
+independente da causa).
+
+**Validado:** `gerar_dbs.py` rodado, `card_effects_db.json['OP15-009']
+['cost'] == 1` confirmado. `smoke_fast.py` + `smoke_test.py`: TODOS OS
+TESTES PASSARAM (nenhum teste dependia do custo antigo). Registro em
+`parser_audits/2026-07-17_op15-009_erro_dado_bruto_custo.json`.
+
+**Pendente:** o fix da Pica (item 2, mencionado no bloco 225) segue
+aguardando aprovacao explicita do usuario antes de implementar.
+
 ## 2026-07-17 (225) - OP05-032/OP05-119: atalho "(N):" de custo DON sem texto explicativo padrao
 
 Continuacao da varredura (bloco 224), agora com aprovacao explicita
