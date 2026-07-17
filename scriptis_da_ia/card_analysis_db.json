@@ -8128,7 +8128,8 @@
    },
    {
     "action": "add_to_hand",
-    "trigger": "main"
+    "trigger": "main",
+    "cost_lte": 8
    },
    {
     "action": "deck_bottom_rest",

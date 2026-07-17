@@ -1,5 +1,30 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-16 (221) - EB03-060: faixa de custo "N to M" nao reconhecida em parse_look_at (busca no topo do deck)
+
+Continuacao da varredura (bloco 220). EB03-060 (Will You Be My
+Servant?): "look at 4 cards from the top of your deck; reveal up to 1
+card with a cost of 2 to 8 and add it to your hand." -- `parse_look_at`
+so reconhecia "cost of N or less"/"or more" separados, nunca a FAIXA
+"N to M". A carta revelada podia ser de QUALQUER custo, ignorando o
+filtro 2-8 por completo.
+
+Mesma FORMA ja corrigida em 15/07 pra `parse_add_from_trash` (OP05-091,
+fonte=trash) mas nunca propagada pra `parse_look_at` (fonte=topo do
+deck) -- funcoes irmas, mesmo padrao textual, faltava so nesta.
+Census: so EB03-060 usa a faixa com fonte=deck (as outras 2 ocorrencias,
+OP05-088/OP05-091, sao fonte=trash, ja cobertas) --
+`isolated_after_global_scan`.
+
+**Validado:** `diff_parser.py` GANHOU=0/PERDEU=0/MUDOU=1. `gerar_dbs.py`
++ `snapshot_parser.py` 0/0/0. `smoke_fast.py`: 1 teste dirigido novo
+com EXECUCAO real (3 cartas no topo do deck, custo 1/5/9 -- so a de
+custo 5 dentro da faixa 2-8 e adicionada a mao). `smoke_test.py`:
+TODOS OS TESTES PASSARAM. `smoke_test_broad.py`: 7/7. Registro em
+`parser_audits/2026-07-16_eb03-060_look_at_cost_range.json`.
+
+Suspeitos: 291 -> 290.
+
 ## 2026-07-16 (220) - OP07-024 e familia: "up to N of your [Tipo] Characters gains [Blocker]" tratado como self em vez de selecao (4 cartas)
 
 Continuacao da varredura (bloco 219). OP07-024 (Koala): "[On Your

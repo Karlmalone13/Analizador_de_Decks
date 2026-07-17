@@ -1,0 +1,12 @@
+{
+  "trigger_card": "EB03-060",
+  "problem": "\"[Main] If your Leader is [Nami], look at 4 cards from the top of your deck; reveal up to 1 card with a cost of 2 to 8 and add it to your hand.\" -- parse_look_at (busca no topo do deck) so reconhecia 'with a cost of N or less'/'or more' separados, nunca a FAIXA 'N to M'. A carta revelada podia ser de QUALQUER custo, ignorando completamente o filtro 2-8.",
+  "grammar_family": "'reveal/add/play up to N card(s) ... with a cost of A to B' -- faixa de custo (dois numeros, nao um limite unico), mesma FORMA ja corrigida em 15/07 pra add_from_trash (OP05-091, fonte=trash) mas nunca propagada pra parse_look_at (fonte=topo do deck).",
+  "queries": [
+    "regex '(?:reveal|add|play) up to \\d+[^.]*?with a cost of \\d+ to \\d+' contra cards_rows.csv -- 3 cartas: EB03-060 (fonte=deck, NAO coberta), OP05-088/OP05-091 (fonte=trash, JA cobertas por add_from_trash desde 15/07)"
+  ],
+  "cards_found": ["EB03-060"],
+  "resolution_scope": "isolated_after_global_scan",
+  "decision": "So EB03-060 usa essa faixa de custo com fonte=deck no banco inteiro (as outras 2 ocorrencias sao fonte=trash, ja cobertas por outro parser). Aplicada a MESMA logica ja usada em parse_add_from_trash: extrai cost_gte/cost_lte simultaneamente quando o texto tem 'cost of A to B', tentado ANTES dos regex de limite unico (or less/or more) pra nao deixar o 'A' da faixa ser capturado por engano pelo regex de 'or more' sozinho.",
+  "validated_by": ["diff_parser.py GANHOU=0/PERDEU=0/MUDOU=1 (so EB03-060)", "gerar_dbs.py + snapshot_parser.py 0/0/0", "smoke_fast.py: 1 teste dirigido novo com EXECUCAO real (3 cartas no topo do deck com custo 1/5/9, so a de custo 5 dentro da faixa 2-8 e adicionada a mao)", "smoke_test.py: TODOS OS TESTES PASSARAM", "smoke_test_broad.py: 7/7"]
+}

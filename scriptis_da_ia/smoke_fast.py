@@ -3515,6 +3515,32 @@ def test_select_grant_blocker_4_cartas() -> None:
           outro_roger.blocker_this_turn and not buggy.blocker_this_turn)
 
 
+def test_look_top_deck_cost_range_eb03_060() -> None:
+    # Achado 16/07, EB03-060: "look at 4 cards from the top of your deck;
+    # reveal up to 1 card with a cost of 2 to 8 and add it to your hand"
+    # -- parse_look_at so aceitava "cost of N or less"/"or more"
+    # separados, nunca a FAIXA "N to M" (mesma convencao ja usada em
+    # parse_add_from_trash desde 15/07, OP05-091 "cost of 3 to 7", so que
+    # aquela e fonte=trash, esta e fonte=topo do deck).
+    check("EB03-060 parseia cost_gte=2 e cost_lte=8 no add_to_hand",
+          any(s.get("action") == "add_to_hand" and s.get("cost_gte") == 2 and s.get("cost_lte") == 8
+              for s in get_card_effects("EB03-060").get("main", {}).get("steps", [])))
+
+    # Execucao real: das 4 cartas no topo do deck, so a de custo DENTRO da
+    # faixa [2, 8] pode ser adicionada -- custo 1 (abaixo) e custo 9
+    # (acima) ficam de fora, so a de custo 5 (dentro) e elegivel.
+    nami_evento = real_card("EB03-060")
+    me = GameState(leader=mk("NMLDR", "Nami", card_type="LEADER"), turn=3)
+    barato_demais = mk("NMA", "Barato Demais", cost=1, power=1000)
+    dentro_da_faixa = mk("NMB", "Dentro da Faixa", cost=5, power=5000)
+    caro_demais = mk("NMC", "Caro Demais", cost=9, power=9000)
+    me.deck = [barato_demais, dentro_da_faixa, caro_demais]
+    opp = GameState(leader=mk("NMOPP", "Opp", card_type="LEADER"), turn=3)
+    EffectExecutor(me, opp).execute(nami_evento, "main")
+    check("Execucao real: SO a carta de custo 5 (dentro de 2-8) vai pra mao",
+          dentro_da_faixa in me.hand and barato_demais not in me.hand and caro_demais not in me.hand)
+
+
 def main() -> int:
     test_turn_order_imu_prefers_second()
     test_empty_throne_beats_direct_five_elders_play()
@@ -3609,6 +3635,7 @@ def main() -> int:
     test_rest_opp_character_typo_cost_or_n_or_less()
     test_eb01_028_active_qualifier_e_return_como_sinonimo_de_place()
     test_select_grant_blocker_4_cartas()
+    test_look_top_deck_cost_range_eb03_060()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0

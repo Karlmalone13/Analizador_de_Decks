@@ -3689,6 +3689,8 @@
     },
     {
      "action": "add_to_hand",
+     "cost_gte": 2,
+     "cost_lte": 8,
      "count": 1,
      "revealed_to_opponent": true
     },

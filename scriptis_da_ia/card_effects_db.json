@@ -5755,7 +5755,9 @@
           {
             "action": "add_to_hand",
             "count": 1,
-            "revealed_to_opponent": true
+            "revealed_to_opponent": true,
+            "cost_gte": 2,
+            "cost_lte": 8
           },
           {
             "action": "deck_bottom_rest"

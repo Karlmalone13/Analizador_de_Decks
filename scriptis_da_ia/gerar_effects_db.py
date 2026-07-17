@@ -970,6 +970,11 @@ def parse_look_at(text):
     if ex:
         exclude = [ex.group(1)]
 
+    # Faixa "with a cost of A to B" (achado 16/07, EB03-060: "reveal up to
+    # 1 card with a cost of 2 to 8") -- mesma convencao ja usada em
+    # parse_add_from_trash (achado 15/07, OP05-091 "cost of 3 to 7"), so
+    # que aquela funcao e pra fonte=trash, esta e pra fonte=topo do deck.
+    range_m = re.search(r'with a cost of (\d+) to (\d+)', t)
     cost_m = re.search(r'with a cost of (\d+) or less', t)
     cost_gte_m = re.search(r'with a cost of (\d+) or more', t)
     power_m = re.search(r'with (\d+) power or less', t)
@@ -993,10 +998,14 @@ def parse_look_at(text):
         take_step['filter_type'] = filter_type
     if exclude:
         take_step['exclude'] = exclude
-    if cost_m:
-        take_step['cost_lte'] = int(cost_m.group(1))
-    if cost_gte_m:
-        take_step['cost_gte'] = int(cost_gte_m.group(1))
+    if range_m:
+        take_step['cost_gte'] = int(range_m.group(1))
+        take_step['cost_lte'] = int(range_m.group(2))
+    else:
+        if cost_m:
+            take_step['cost_lte'] = int(cost_m.group(1))
+        if cost_gte_m:
+            take_step['cost_gte'] = int(cost_gte_m.group(1))
     if power_m:
         take_step['power_lte'] = int(power_m.group(1))
 
