@@ -1,0 +1,12 @@
+{
+  "trigger_card": "OP14-120",
+  "problem": "\"Then, if your opponent has a Character 1ith a cost of 0 or with a cost of 8 or more, draw 1 card.\" -- \"1ith\" e typo de \"with\". Existencia OR de dois limiares desconectados (custo==0 OU custo>=8) no campo do OPONENTE, mesma familia de don_on_field_zero_or_gte (bloco anterior desta sessao), mas sobre custo de Character do oponente em vez de contagem de DON proprio. Condicao inteira ausente, o draw disparava sempre.",
+  "grammar_family": "'if your opponent has a Character with a cost of N or with a cost of M or more' -- existencia OR de dois limiares desconectados sobre o campo do oponente.",
+  "queries": [
+    "regex 'if your opponent has a character \\w+ a cost of (\\d+) or with a cost of (\\d+) or more' (com \\w+ tolerando o typo '1ith') contra cards_rows.csv -- so 1 carta"
+  ],
+  "cards_found": ["OP14-120"],
+  "resolution_scope": "isolated_after_global_scan",
+  "decision": "Nova condicao opp_char_cost_eq_or_gte ({eq, gte}), adicionada nas 3 funcoes de checagem de condicao do engine que ja tem opp_char_power_gte (mesma familia, mesmo padrao de existencia no campo do oponente).",
+  "validated_by": ["diff_parser.py GANHOU=0/PERDEU=0/MUDOU=1", "gerar_dbs.py + snapshot_parser.py 0/0/0", "smoke_fast.py: 1 teste dirigido novo com EXECUCAO real (oponente so com custo 4 -- draw NAO dispara; oponente com custo 0 -- draw dispara)", "smoke_test.py: TODOS OS TESTES PASSARAM", "smoke_test_broad.py: 7/7"]
+}

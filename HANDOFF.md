@@ -32,13 +32,29 @@ PASSARAM. `smoke_test_broad.py`: 7/7. Registros em
 
 Suspeitos: 282 -> 279.
 
+**231 -- OP14-120 (Crocodile):** condicao OR "custo==0 ou custo>=8" no
+campo do OPONENTE ("1ith" = typo de "with"), nova `opp_char_cost_eq_or_gte`
+(mesma familia de `don_on_field_zero_or_gte`, bloco 228).
+
+**232 -- PRB02-010 (Charlotte Pudding):** faixa de power "6000 to 8000"
+faltando em `play_card` (mesma FORMA ja corrigida em
+`parse_play_from_trash`/`parse_look_at`). Executor tambem nao repassava
+`power_gte` pro play_card GRUPO 2 (so `power_lte`/`power_eq`) --
+corrigido junto.
+
+**Validado (231+232):** `diff_parser.py` GANHOU=0/PERDEU=0/MUDOU=2.
+`smoke_fast.py`: 2 testes novos com EXECUCAO real. `smoke_test.py`/
+`smoke_test_broad.py`: todos passaram. Registros em
+`parser_audits/2026-07-17_op14-120_opp_char_cost_eq_or_gte.json` e
+`parser_audits/2026-07-17_prb02-010_play_card_power_range.json`.
+
+Suspeitos: 279 -> 277.
+
 **Itens restantes do lote (aguardando implementacao, ja aprovados):**
-OP14-120 (condicao OR custo-oponente 0-ou-8+, em progresso), PRB02-010
-(faixa de power em play_card), ST13-001 (filtro custo+power em
-gain_life own_field), P-039 (buff condicionado a Life==0), ST10-006
-(trigger reativo novo: quando oponente ativa Blocker), OP07-091
-(colocar QUALQUER NUMERO no fundo do deck + buff escalado pelo
-resultado do mesmo efeito).
+ST13-001 (filtro custo+power em gain_life own_field), P-039 (buff
+condicionado a Life==0), ST10-006 (trigger reativo novo: quando
+oponente ativa Blocker), OP07-091 (colocar QUALQUER NUMERO no fundo do
+deck + buff escalado pelo resultado do mesmo efeito).
 
 ## 2026-07-17 (228) - OP05-060/ST10-002: condicao OR "0 ou N+ DON no campo" nunca reconhecida
 

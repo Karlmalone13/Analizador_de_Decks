@@ -35933,6 +35933,12 @@
     },
     {
      "action": "draw",
+     "conditions": {
+      "opp_char_cost_eq_or_gte": {
+       "eq": 0,
+       "gte": 8
+      }
+     },
      "count": 1
     }
    ]
@@ -42276,7 +42282,9 @@
      },
      "cost_lte": 99,
      "count": 1,
-     "filter_type": "big mom pirates"
+     "filter_type": "big mom pirates",
+     "power_gte": 6000,
+     "power_lte": 8000
     }
    ]
   }

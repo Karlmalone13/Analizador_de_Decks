@@ -905,6 +905,11 @@ def _hand_cost_conditions_match(p: GameState, opp: Optional[GameState],
         if opp is None or not any(
                 c.power >= conds['opp_char_power_gte'] for c in opp.field_chars):
             return False
+    if 'opp_char_cost_eq_or_gte' in conds:
+        rule = conds['opp_char_cost_eq_or_gte']
+        if opp is None or not any(
+                c.cost == rule['eq'] or c.cost >= rule['gte'] for c in opp.field_chars):
+            return False
     if 'opp_rested_cards_gte' in conds:
         if opp is None:
             return False
@@ -3061,6 +3066,10 @@ class EffectExecutor:
                 return False
         if 'opp_char_power_gte' in conds:
             if not opp.field_chars or max(c.effective_power(False) for c in opp.field_chars) < conds['opp_char_power_gte']:
+                return False
+        if 'opp_char_cost_eq_or_gte' in conds:
+            rule = conds['opp_char_cost_eq_or_gte']
+            if not any(c.cost == rule['eq'] or c.cost >= rule['gte'] for c in opp.field_chars):
                 return False
         if 'board_has_power_gte' in conds:
             # condicao de existencia generica: QUALQUER Character no jogo
@@ -5924,6 +5933,7 @@ class EffectExecutor:
                         cost_lte=cost_lte,
                         cost_eq=cost_eq,
                         power_lte=step.get('power_lte'),
+                        power_gte=step.get('power_gte'),
                         power_eq=step.get('power_eq'),
                         has_trigger=step.get('has_trigger', False),
                         filter_text=step.get('filter_type', ''),
@@ -7524,6 +7534,8 @@ class DecisionEngine:
                 if not any(power_of(c) >= v for c in candidates): return False
             if k == 'opp_char_power_gte':
                 if not any(c.power >= v for c in self.opp.field_chars): return False
+            if k == 'opp_char_cost_eq_or_gte':
+                if not any(c.cost == v['eq'] or c.cost >= v['gte'] for c in self.opp.field_chars): return False
             if k == 'no_other_named':
                 needle = v.lower()
                 cost_eq = conds.get('no_other_named_cost_eq')

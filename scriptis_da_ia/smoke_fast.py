@@ -3916,6 +3916,66 @@ def test_op16_043_typo_tour_opponent() -> None:
           barato_opp in opp.hand and caro_opp in opp.field_chars)
 
 
+def test_opp_char_cost_eq_or_gte_op14_120() -> None:
+    # Achado 17/07, OP14-120 (Crocodile): "Then, if your opponent has a
+    # Character 1ith a cost of 0 or with a cost of 8 or more, draw 1
+    # card." -- "1ith" e typo de "with". Existencia OR de dois limiares
+    # desconectados (custo==0 OU custo>=8) no campo do OPONENTE, mesma
+    # familia de don_on_field_zero_or_gte (bloco anterior). Condicao
+    # inteira ausente, o draw disparava sempre.
+    check("OP14-120 parseia opp_char_cost_eq_or_gte={eq:0, gte:8}",
+          get_card_effects("OP14-120").get("on_play", {}).get("steps", [])[1]
+          .get("conditions") == {"opp_char_cost_eq_or_gte": {"eq": 0, "gte": 8}})
+
+    # Execucao real: oponente so tem Characters de custo 1-7 (nem 0 nem
+    # >=8) -- draw NAO dispara.
+    croc = real_card("OP14-120")
+    me = GameState(leader=mk("CZLDR", "Lider", card_type="LEADER"), turn=3)
+    me.hand = []
+    opp = GameState(leader=mk("CZOPP", "Opp", card_type="LEADER"), turn=3)
+    opp.field_chars = [mk("CZOA", "Meio", cost=4, power=4000)]
+    EffectExecutor(me, opp).execute(croc, "on_play")
+    check("Execucao real: oponente SO com custo 4 (nem 0 nem >=8) -- draw NAO dispara",
+          len(me.hand) == 0)
+
+    # Com um Character de custo 0 no campo do oponente, dispara.
+    croc2 = real_card("OP14-120")
+    me2 = GameState(leader=mk("CZLDR2", "Lider", card_type="LEADER"), turn=3)
+    me2.deck = [mk("CZDECK", "Compra", cost=1, power=1000)]
+    me2.hand = []
+    opp2 = GameState(leader=mk("CZOPP2", "Opp", card_type="LEADER"), turn=3)
+    opp2.field_chars = [mk("CZOB", "Custo Zero", cost=0, power=0)]
+    EffectExecutor(me2, opp2).execute(croc2, "on_play")
+    check("Execucao real: oponente com Character de custo 0 -- draw dispara",
+          len(me2.hand) == 1)
+
+
+def test_play_card_power_range_prb02_010() -> None:
+    # Achado 17/07, PRB02-010 (Charlotte Pudding): "play up to 1 'Big Mom
+    # Pirates' type Character card with 6000 to 8000 power from your
+    # hand." -- faixa de power (nao so power_lte/power_eq isolados) nunca
+    # reconhecida em parse_play_generic, mesma convencao ja usada em
+    # parse_play_from_trash/parse_look_at. Executor tambem nao repassava
+    # power_gte pro play_card (GRUPO 2) -- corrigido junto.
+    check("PRB02-010 parseia power_gte=6000 e power_lte=8000 no play_card",
+          get_card_effects("PRB02-010").get("on_play", {}).get("steps", [])[1]
+          .get("power_gte") == 6000 and get_card_effects("PRB02-010").get("on_play", {}).get("steps", [])[1]
+          .get("power_lte") == 8000)
+
+    pudding = real_card("PRB02-010")
+    fraco = mk("PDA", "Fraco", power=4000, sub_types="Big Mom Pirates")
+    na_faixa = mk("PDB", "Na Faixa", power=7000, sub_types="Big Mom Pirates")
+    forte_demais = mk("PDC", "Forte Demais", power=9000, sub_types="Big Mom Pirates")
+    me = GameState(leader=mk("PDLDR", "Lider Big Mom Pirates", card_type="LEADER",
+                              sub_types="Big Mom Pirates"), turn=3, don_available=2)
+    me.hand = [fraco, na_faixa, forte_demais]
+    opp = GameState(leader=mk("PDOPP", "Opp", card_type="LEADER"), turn=3)
+    opp.don_available = 6
+    EffectExecutor(me, opp).execute(pudding, "on_play")
+    check("Execucao real: SO a carta com power DENTRO da faixa 6000-8000 e jogada",
+          na_faixa in me.field_chars and fraco in me.hand and forte_demais in me.hand)
+
+
 def main() -> int:
     test_turn_order_imu_prefers_second()
     test_empty_throne_beats_direct_five_elders_play()
@@ -4019,6 +4079,8 @@ def main() -> int:
     test_don_on_field_zero_or_gte_2_cartas()
     test_select_grant_rush_6_cartas()
     test_op16_043_typo_tour_opponent()
+    test_opp_char_cost_eq_or_gte_op14_120()
+    test_play_card_power_range_prb02_010()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0

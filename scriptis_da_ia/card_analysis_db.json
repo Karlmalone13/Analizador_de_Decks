@@ -99105,6 +99105,7 @@
    {
     "action": "play_card",
     "trigger": "on_play",
+    "power_lte": 8000,
     "cost_lte": 99
    }
   ],

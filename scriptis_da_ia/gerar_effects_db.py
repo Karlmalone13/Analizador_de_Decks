@@ -514,6 +514,18 @@ def parse_conditions(text):
         r'(?:(\d+)(?: base)?(?: power or more| or more power)|(?:base )?power of (\d+) or more)', t)
     if m: conds['opp_char_power_gte'] = int(m.group(1) or m.group(2))
 
+    # "if your opponent has a Character with a cost of N or with a cost of
+    # M or more" -- existencia de Character no campo do OPONENTE com custo
+    # EXATO N OU custo >= M (OR de dois limiares desconectados, mesma
+    # familia de don_on_field_zero_or_gte). Achado 17/07, OP14-120 (unica
+    # carta no banco): "1ith" e typo de "with". Condicao inteira ausente,
+    # draw disparava sempre.
+    m = re.search(
+        r"if your opponent has a character \w+ a cost of (\d+) "
+        r"or with a cost of (\d+) or more", t)
+    if m:
+        conds['opp_char_cost_eq_or_gte'] = {'eq': int(m.group(1)), 'gte': int(m.group(2))}
+
     # Variante "Leader OR Character" (achado 16/07, OP06-012, unica no
     # banco) -- distinta de opp_char_power_gte (so campo): precisa checar
     # TAMBEM o lider do oponente, entao usa chave propria pra nao mudar o
@@ -3651,7 +3663,15 @@ def parse_play_generic(text):
             # convencao de power_eq ja usada em parse_play_from_trash.
             # Achado 16/07, OP16-019: "type including \"X\" and 8000 power".
             power_eq_m = re.search(r'(?:with|and) (\d+) power\b(?! or less)(?! or more)', janela)
-            if power_lte_m:
+            # "with N to M power" -- faixa, mesma convencao ja usada em
+            # parse_play_from_trash/parse_look_at. Achado 17/07, PRB02-010:
+            # "play up to 1 \"Big Mom Pirates\" type Character card with
+            # 6000 to 8000 power from your hand" nunca reconhecido.
+            power_range_m = re.search(r'with (\d+) to (\d+) power', janela)
+            if power_range_m:
+                step['power_gte'] = int(power_range_m.group(1))
+                step['power_lte'] = int(power_range_m.group(2))
+            elif power_lte_m:
                 step['power_lte'] = int(power_lte_m.group(1))
             elif power_eq_m:
                 step['power_eq'] = int(power_eq_m.group(1))

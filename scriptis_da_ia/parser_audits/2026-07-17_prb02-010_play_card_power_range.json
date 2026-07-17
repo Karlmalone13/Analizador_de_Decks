@@ -1,0 +1,12 @@
+{
+  "trigger_card": "PRB02-010",
+  "problem": "\"play up to 1 'Big Mom Pirates' type Character card with 6000 to 8000 power from your hand.\" -- faixa de power (dois numeros, nao um limite unico) nunca era reconhecida em parse_play_generic, mesma FORMA ja corrigida em parse_play_from_trash/parse_look_at (sessoes anteriores). ALEM disso, mesmo se o parser extraisse power_gte corretamente, o executor (play_card GRUPO 2) nao repassava power_gte pra eligible_cards -- so power_lte/power_eq -- 'calculado mas nao usado' se so o parser fosse corrigido.",
+  "grammar_family": "'play up to N ... Character card with A to B power from your hand' -- faixa de power no alvo jogado.",
+  "queries": [
+    "regex 'with \\d+ to \\d+ power' dentro do escopo de parse_play_generic (janela de play up to N) -- so 1 carta usa faixa de power nesse contexto especifico (fonte=mao); outras ocorrencias de faixa ja cobertas por parse_play_from_trash/parse_look_at"
+  ],
+  "cards_found": ["PRB02-010"],
+  "resolution_scope": "isolated_after_global_scan",
+  "decision": "Novo regex 'with (\\d+) to (\\d+) power' em parse_play_generic, testado ANTES de power_lte/power_eq (mesma ordem de prioridade ja usada nas funcoes irmas). Executor: power_gte adicionado a chamada de eligible_cards no play_card GRUPO 2 (antes so passava power_lte/power_eq, nunca power_gte -- gap silencioso que so seria exposto quando uma carta REAL usasse faixa nesse contexto).",
+  "validated_by": ["diff_parser.py GANHOU=0/PERDEU=0/MUDOU=1", "gerar_dbs.py + snapshot_parser.py 0/0/0", "smoke_fast.py: 1 teste dirigido novo com EXECUCAO real (3 cartas na mao com power 4000/7000/9000, so a de 7000 -- dentro da faixa 6000-8000 -- e jogada)", "smoke_test.py: TODOS OS TESTES PASSARAM", "smoke_test_broad.py: 7/7"]
+}
