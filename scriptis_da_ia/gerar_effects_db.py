@@ -2518,6 +2518,20 @@ def parse_power_buff(text):
             m_excl = re.search(r'other than \[([^\]]+)\]', contexto_antes)
             if m_excl:
                 exclude_own = m_excl.group(1).strip()
+        elif target == 'leader':
+            # 'leader' tambem aceita o mesmo filtro de power (achado 16/07,
+            # OP09-007: "Up to 1 of your Leader with 4000 power or less
+            # gains +1000 power" -- so 1 carta no banco). Regex MAIS
+            # ESTRITA que a de own_character (exige "your leader with N
+            # power" adjacente, nao qualquer "with N power or less" na
+            # janela de 90 chars) -- sem isso, OP03-016 ("K.O. up to 1 of
+            # your opponent's Characters with 8000 power or less, and your
+            # Leader gains... +3000 power") contaminava o buff do Leader
+            # com o filtro de power do KO anterior, que nao tem nenhuma
+            # relacao (pego pelo diff_parser antes do commit).
+            m_plte_leader = re.search(r'your leader with (\d+) (?:base )?power or less', contexto_antes)
+            if m_plte_leader:
+                power_lte_own = int(m_plte_leader.group(1))
 
         # "Up to N of your Characters gain(s) +X power" -- N>1 (achado
         # 16/07, OP08-018: "Up to 3 of your Characters gain +1000 power").

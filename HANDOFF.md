@@ -1,5 +1,44 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-16 (222) - OP09-007: power_lte nunca extraido para target='leader' em parse_power_buff
+
+Continuacao da varredura (bloco 221). OP09-007 (Heat): "Up to 1 of your
+Leader with 4000 power or less gains +1000 power during this turn."
+-- `power_lte` so era extraido pra `target='own_character'` (achado
+16/07 anterior), nunca pra `target='leader'`. O buff aplicava
+incondicionalmente ao Leader, mesmo com power muito acima de 4000.
+
+Census: so 1 carta no banco inteiro usa esse filtro no Leader --
+`isolated_after_global_scan`. **Quase causou regressao**: a primeira
+tentativa reusou a MESMA regex frouxa de `own_character` (busca "with
+N power or less" em qualquer lugar da janela de 90 chars), o que
+contaminou OP03-016 ("K.O. up to 1 of your opponent's Characters with
+8000 power or less, and your Leader gains... +3000 power") -- o "8000
+power or less" pertence ao KO anterior, sem relacao com o Leader, mas
+a janela generica capturou por proximidade. Pego pelo `diff_parser.py`
+ANTES do commit (MUDOU inesperado em OP03-016), corrigido com regex
+mais estrita (exige "your leader with N power" adjacente).
+
+Executor tambem corrigido (mesmo padrao "calculado mas nao usado" ja
+documentado): `buff_power(target='leader')` aplicava o buff
+incondicionalmente, ignorando `power_lte` completamente -- agora checa
+`leader.effective_power()` antes de aplicar.
+
+**Validado:** `diff_parser.py` GANHOU=0/PERDEU=0/MUDOU=1 (so OP09-007;
+OP03-016 conferido SEM mudanca apos a correcao). `gerar_dbs.py` +
+`snapshot_parser.py` 0/0/0. `smoke_fast.py`: 1 teste dirigido novo com
+EXECUCAO real (Leader 4000 power recebe o buff; Leader 5000 power NAO
+recebe) + guarda estatica pra OP03-016. `smoke_test.py`: TODOS OS
+TESTES PASSARAM. `smoke_test_broad.py`: 7/7. Registro em
+`parser_audits/2026-07-16_op09-007_leader_power_lte.json`.
+
+Suspeitos: 290 -> 290 (TOTAL nao muda -- OP09-007 continua na lista
+por um "1" residual de "up to 1 of your Leader", cardinalidade
+implicita de alvo unico, mesmo falso-positivo ja documentado pra
+give_don/give_don_opp; so caiu do corte `--min-severity 2` pro 1,
+mesma situacao ja registrada no bloco 218/219 -- checado com
+`--min-severity 1` desta vez ANTES de escrever o numero, nao depois).
+
 ## 2026-07-16 (221) - EB03-060: faixa de custo "N to M" nao reconhecida em parse_look_at (busca no topo do deck)
 
 Continuacao da varredura (bloco 220). EB03-060 (Will You Be My

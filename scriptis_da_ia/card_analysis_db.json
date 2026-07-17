@@ -53472,6 +53472,7 @@
    {
     "action": "buff_power",
     "trigger": "on_play",
+    "power_lte": 4000,
     "target": "leader"
    },
    {

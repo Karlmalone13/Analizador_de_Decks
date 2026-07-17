@@ -35927,7 +35927,8 @@
             "action": "buff_power",
             "amount": 1000,
             "target": "leader",
-            "duration": "this_turn"
+            "duration": "this_turn",
+            "power_lte": 4000
           }
         ]
       },

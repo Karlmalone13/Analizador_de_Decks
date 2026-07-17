@@ -4591,6 +4591,13 @@ class EffectExecutor:
             if target == 'self':
                 card.power_buff += amount
             elif target == 'leader':
+                # "Up to 1 of your Leader with N power or less gains +X
+                # power" (achado 16/07, OP09-007) -- power_lte filtra se o
+                # buff se aplica, checado contra o power EFETIVO atual do
+                # Leader (base + buffs ja acumulados), nao so o base.
+                power_lte = step.get('power_lte')
+                if power_lte is not None and me.leader.effective_power(True) > power_lte:
+                    return ''
                 me.leader.power_buff += amount
             elif target == 'leader_or_character':
                 # IA escolhe o mais forte

@@ -3541,6 +3541,47 @@ def test_look_top_deck_cost_range_eb03_060() -> None:
           dentro_da_faixa in me.hand and barato_demais not in me.hand and caro_demais not in me.hand)
 
 
+def test_op09_007_leader_power_lte_e_op03_016_sem_contaminacao() -> None:
+    # Achado 16/07, OP09-007 (Heat): "Up to 1 of your Leader with 4000
+    # power or less gains +1000 power" -- power_lte nunca era extraido
+    # pra target='leader' (so 'own_character' ja tinha essa filtragem).
+    # O buff aplicava incondicionalmente, mesmo com o Leader MUITO forte
+    # (ex: 8000+ power), quando o texto so autoriza ate 4000.
+    check("OP09-007 parseia power_lte=4000 no buff do Leader",
+          get_card_effects("OP09-007").get("on_play", {}).get("steps", []) ==
+          [{"action": "buff_power", "amount": 1000, "target": "leader",
+            "duration": "this_turn", "power_lte": 4000}])
+
+    # Guarda de regressao: ao generalizar power_lte pra 'leader', quase
+    # contaminou OP03-016 ("K.O. up to 1 of your opponent's Characters
+    # with 8000 power or less, and your Leader gains [Double Attack] and
+    # +3000 power during this turn.") -- o "8000 power or less" pertence
+    # ao KO anterior, NADA a ver com o Leader, mas a janela de contexto
+    # generica capturava por proximidade. Pego pelo diff_parser ANTES do
+    # commit, corrigido com regex mais estrita ("your leader with N power"
+    # adjacente, nao qualquer "with N power or less" na janela).
+    check("OP03-016 NAO ganha power_lte espurio no buff do Leader",
+          "power_lte" not in next(
+              (s for s in get_card_effects("OP03-016").get("main", {}).get("steps", [])
+               if s.get("action") == "buff_power"), {}))
+
+    # Execucao real: Leader com 4000 power (dentro do limite) recebe o
+    # buff; Leader com 5000 power (acima do limite) NAO recebe.
+    heat = real_card("OP09-007")
+    me = GameState(leader=mk("HTLDR", "Lider Fraco", power=4000, card_type="LEADER"), turn=3)
+    opp = GameState(leader=mk("HTOPP", "Opp", card_type="LEADER"), turn=3)
+    EffectExecutor(me, opp).execute(heat, "on_play")
+    check("Execucao real: Leader com 4000 power (limite exato) RECEBE o buff",
+          me.leader.power_buff == 1000)
+
+    heat2 = real_card("OP09-007")
+    me2 = GameState(leader=mk("HTLDR2", "Lider Forte", power=5000, card_type="LEADER"), turn=3)
+    opp2 = GameState(leader=mk("HTOPP2", "Opp", card_type="LEADER"), turn=3)
+    EffectExecutor(me2, opp2).execute(heat2, "on_play")
+    check("Execucao real: Leader com 5000 power (acima do limite) NAO recebe o buff",
+          me2.leader.power_buff == 0)
+
+
 def main() -> int:
     test_turn_order_imu_prefers_second()
     test_empty_throne_beats_direct_five_elders_play()
@@ -3636,6 +3677,7 @@ def main() -> int:
     test_eb01_028_active_qualifier_e_return_como_sinonimo_de_place()
     test_select_grant_blocker_4_cartas()
     test_look_top_deck_cost_range_eb03_060()
+    test_op09_007_leader_power_lte_e_op03_016_sem_contaminacao()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0

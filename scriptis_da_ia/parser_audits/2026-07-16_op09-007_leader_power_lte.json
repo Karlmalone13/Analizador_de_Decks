@@ -1,0 +1,12 @@
+{
+  "trigger_card": "OP09-007",
+  "problem": "\"[On Play] Up to 1 of your Leader with 4000 power or less gains +1000 power during this turn.\" -- power_lte nunca era extraido pra target='leader' em parse_power_buff (so 'own_character' ja tinha essa filtragem, achado 16/07 anterior). O buff aplicava incondicionalmente ao Leader, mesmo com power MUITO acima de 4000, quando o texto so autoriza ate esse limite.",
+  "grammar_family": "'up to N of your Leader with X power or less gains +Y power' -- mesmo filtro de power ja tratado pra target='own_character', nunca generalizado pra target='leader'.",
+  "queries": [
+    "regex 'your leader with \\d+ (?:base )?power (?:or less|or more)' contra cards_rows.csv -- so 1 carta no banco inteiro (OP09-007)"
+  ],
+  "cards_found": ["OP09-007"],
+  "resolution_scope": "isolated_after_global_scan",
+  "decision": "Extracao adicionada como ramo SEPARADO (elif target=='leader') com regex MAIS ESTRITA que a de own_character -- exige 'your leader with N power' adjacente, nao qualquer 'with N power or less' solto na janela de contexto de 90 chars. Sem essa restricao, o primeiro teste (reusar a mesma regex frouxa de own_character) contaminou OP03-016 (\"K.O. up to 1 of your opponent's Characters with 8000 power or less, and your Leader gains... +3000 power\") -- o \"8000 power or less\" pertence ao KO anterior, sem nenhuma relacao com o Leader, mas caiu na janela por proximidade. Pego pelo diff_parser.py ANTES do commit (MUDOU inesperado em OP03-016), corrigido com a regex estrita. Executor tambem corrigido: buff_power(target='leader') aplicava incondicionalmente, ignorando power_lte (mesmo padrao 'calculado mas nao usado' ja documentado no README de parser_audits/) -- agora checa leader.effective_power() antes de aplicar.",
+  "validated_by": ["diff_parser.py GANHOU=0/PERDEU=0/MUDOU=1 (so OP09-007; OP03-016 conferido SEM mudanca apos a regex estrita)", "gerar_dbs.py + snapshot_parser.py 0/0/0", "smoke_fast.py: 1 teste dirigido novo com EXECUCAO real (Leader com 4000 power recebe o buff; Leader com 5000 power NAO recebe) + guarda estatica confirmando OP03-016 sem contaminacao", "smoke_test.py: TODOS OS TESTES PASSARAM", "smoke_test_broad.py: 7/7 (rodado na hora, mexeu em parse_power_buff e no executor de buff_power, ambos compartilhados por centenas de cartas)"]
+}
