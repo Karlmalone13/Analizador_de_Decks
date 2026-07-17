@@ -1,5 +1,45 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-17 (223) - OP10-047 e familia: custo "return N of your [Tipo] Characters ... to the owner's hand" perdia filtro inteiro (8 cartas + 2 gaps de engine)
+
+Continuacao da varredura (bloco 222). OP10-047 (Koala): "[When
+Attacking] You may return 1 of your "Revolutionary Army" type
+Characters with a cost of 3 or more to the owner's hand: This
+Character gains +3000 power during this turn." -- o custo
+(`return_own_character_to_hand`) ja existia como mecanismo no
+parser/engine, mas a regex so aceitava "characters to the owner's
+hand" ADJACENTE, sem filtro nenhum no meio. Qualquer carta com filtro
+de tipo/custo/exclusao nessa clausula perdia o CUSTO INTEIRO -- a IA
+tratava a habilidade como GRATIS.
+
+Busca global achou **8 cartas**: EB01-021, OP07-056, OP10-002,
+OP10-047 (tipo+custo), OP16-045, OP16-050, ST12-001 (so custo),
+OP08-047 ("other than this Character", exclusao).
+
+**2 gaps de ENGINE no mesmo escopo** (achados ao validar, nao so
+parser): (1) `_pay_costs` ignorava filter_type/cost_gte/exclude
+completamente -- escolhia o pior Character de TODO o campo pra
+devolver, sem checar elegibilidade; corrigido pra filtrar via
+`eligible_cards` antes de escolher. (2) `return_own_character_to_hand`
+NUNCA entrava na conta de `_worth_paying_optional_costs` -- a IA
+sempre tratava como custo "de graca" (igual rest_self/rest_don), nunca
+julgando se o sacrificio de campo compensava o efeito. Adicionado a
+`_SACRIFICE_COST_TYPES` com o MESMO criterio ja usado por
+ko_own_character/trash_own_character (board_value*10 <= 60).
+
+**Validado:** `diff_parser.py` GANHOU=0/PERDEU=0/MUDOU=8 (as 8 cartas,
+conferidas). `gerar_dbs.py` + `snapshot_parser.py` 0/0/0. `smoke_fast.py`:
+1 teste dirigido novo com EXECUCAO real (custo pago SO com candidato
+elegivel por tipo+custo; sem candidato, custo nao pago e efeito nao
+dispara; julgamento de "vale a pena" aceita sacrificio barato e recusa
+sacrificio caro). `smoke_test.py`: TODOS OS TESTES PASSARAM.
+`smoke_test_broad.py`: 7/7 (rodado na hora, mexeu em codigo
+compartilhado por toda a base: `parse_costs`, `_pay_costs`,
+`_worth_paying_optional_costs`). Registro em
+`parser_audits/2026-07-16_op10-047_return_own_character_filtro.json`.
+
+Suspeitos: 290 -> 286.
+
 ## 2026-07-16 (222) - OP09-007: power_lte nunca extraido para target='leader' em parse_power_buff
 
 Continuacao da varredura (bloco 221). OP09-007 (Heat): "Up to 1 of your

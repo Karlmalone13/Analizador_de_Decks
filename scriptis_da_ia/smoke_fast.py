@@ -3582,6 +3582,82 @@ def test_op09_007_leader_power_lte_e_op03_016_sem_contaminacao() -> None:
           me2.leader.power_buff == 0)
 
 
+def test_return_own_character_to_hand_com_filtro_8_cartas() -> None:
+    # Achado 16/07, OP10-047 (Koala) e familia: "You may return 1 of your
+    # [Tipo] type Characters with a cost of N or more to the owner's
+    # hand: [efeito]" -- o custo return_own_character_to_hand JA existia
+    # no parser/engine, mas a regex exigia "characters to the owner's
+    # hand" ADJACENTE -- qualquer filtro de tipo/custo/exclusao no meio
+    # (8 cartas: EB01-021, OP07-056, OP10-002, OP10-047, OP16-045,
+    # OP16-050, ST12-001, OP08-047) derrubava o CUSTO INTEIRO. A IA
+    # tratava a habilidade como GRATIS, sem checar se tinha Character
+    # elegivel pra pagar.
+    check("OP10-047 parseia o custo com filter_type='revolutionary army' e cost_gte=3",
+          get_card_effects("OP10-047").get("when_attacking", {}).get("costs", []) ==
+          [{"type": "return_own_character_to_hand", "count": 1,
+            "filter_type": "revolutionary army", "cost_gte": 3}])
+    check("OP08-047 parseia 'other than this Character' como exclude_self=True",
+          get_card_effects("OP08-047").get("on_play", {}).get("costs", []) ==
+          [{"type": "return_own_character_to_hand", "count": 1, "exclude_self": True}])
+
+    # Execucao real: OP10-047 (Koala, when_attacking) -- SO paga o custo
+    # se existir um Revolutionary Army com custo>=3 pra devolver (custo
+    # 2 nao serve mesmo sendo Revolutionary Army; custo 5 nao serve por
+    # nao ser Revolutionary Army). Com candidato valido, o custo e pago
+    # (o candidato volta pra mao) E o efeito dispara (+3000 na Koala).
+    koala = real_card("OP10-047")
+    ra_barato = mk("KLA", "RA Barato", cost=2, power=2000, sub_types="Revolutionary Army")
+    ra_caro = mk("KLB", "RA Caro", cost=4, power=4000, sub_types="Revolutionary Army")
+    outro_tipo = mk("KLC", "Outro Tipo", cost=5, power=5000, sub_types="Marines")
+    me = GameState(leader=mk("KLLDR", "Lider", card_type="LEADER"), turn=3)
+    me.field_chars = [koala, ra_barato, ra_caro, outro_tipo]
+    opp = GameState(leader=mk("KLOPP", "Opp", card_type="LEADER"), turn=3)
+    EffectExecutor(me, opp).execute(koala, "when_attacking")
+    check("Execucao real: custo pago com o RA de custo 4 (unico elegivel), Koala ganha +3000",
+          ra_caro in me.hand and ra_barato in me.field_chars
+          and outro_tipo in me.field_chars and koala.power_buff == 3000)
+
+    # Sem candidato elegivel (so RA barato demais e tipo errado), o custo
+    # NAO pode ser pago -- o efeito inteiro (buff) nao dispara.
+    koala2 = real_card("OP10-047")
+    ra_barato2 = mk("KLD", "RA Barato 2", cost=2, power=2000, sub_types="Revolutionary Army")
+    outro_tipo2 = mk("KLE", "Outro Tipo 2", cost=5, power=5000, sub_types="Marines")
+    me2 = GameState(leader=mk("KLLDR2", "Lider", card_type="LEADER"), turn=3)
+    me2.field_chars = [koala2, ra_barato2, outro_tipo2]
+    opp2 = GameState(leader=mk("KLOPP2", "Opp", card_type="LEADER"), turn=3)
+    EffectExecutor(me2, opp2).execute(koala2, "when_attacking")
+    check("Execucao real: SEM candidato elegivel, custo NAO e pago, Koala NAO ganha o buff",
+          ra_barato2 in me2.field_chars and outro_tipo2 in me2.field_chars
+          and koala2.power_buff == 0)
+
+    # Julgamento de "vale a pena" (on_play, _worth_paying_optional_costs):
+    # OP16-045 tem custo generico (sem filtro de tipo, so cost_gte=2) --
+    # antes desta correcao, esse tipo de custo nunca entrava na conta de
+    # sacrificio (SEMPRE tratado como "de graca"). Com um candidato FRACO
+    # (board_value baixo) a habilidade vale a pena e dispara; com SO um
+    # candidato FORTE (o unico sacrificio possivel seria caro demais), a
+    # IA recusa e a habilidade nao dispara.
+    croc = real_card("OP16-045")
+    fraco = mk("CRA", "Fraco", cost=2, power=2000)
+    me3 = GameState(leader=mk("CRLDR", "Lider", card_type="LEADER"), turn=3)
+    me3.field_chars = [croc, fraco]
+    me3.hand = [mk("CRH", "Impel Down Barato", cost=1, power=1000, sub_types="Impel Down")]
+    opp3 = GameState(leader=mk("CROPP", "Opp", card_type="LEADER"), turn=3)
+    logs3 = EffectExecutor(me3, opp3).execute(croc, "on_play")
+    check("Execucao real: candidato FRACO -- IA aceita pagar o custo (habilidade dispara)",
+          bool(logs3) and fraco in me3.hand)
+
+    croc2 = real_card("OP16-045")
+    forte = mk("CRB", "Forte", cost=8, power=9000)
+    me4 = GameState(leader=mk("CRLDR2", "Lider", card_type="LEADER"), turn=3)
+    me4.field_chars = [croc2, forte]
+    me4.hand = [mk("CRH2", "Impel Down Barato 2", cost=1, power=1000, sub_types="Impel Down")]
+    opp4 = GameState(leader=mk("CROPP2", "Opp", card_type="LEADER"), turn=3)
+    logs4 = EffectExecutor(me4, opp4).execute(croc2, "on_play")
+    check("Execucao real: SO candidato FORTE -- IA recusa pagar (habilidade nao dispara)",
+          not logs4 and forte in me4.field_chars)
+
+
 def main() -> int:
     test_turn_order_imu_prefers_second()
     test_empty_throne_beats_direct_five_elders_play()
@@ -3678,6 +3754,7 @@ def main() -> int:
     test_select_grant_blocker_4_cartas()
     test_look_top_deck_cost_range_eb03_060()
     test_op09_007_leader_power_lte_e_op03_016_sem_contaminacao()
+    test_return_own_character_to_hand_com_filtro_8_cartas()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0

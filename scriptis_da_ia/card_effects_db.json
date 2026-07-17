@@ -576,6 +576,14 @@
             "action": "add_don",
             "count": 1
           }
+        ],
+        "costs": [
+          {
+            "type": "return_own_character_to_hand",
+            "count": 1,
+            "filter_type": "impel down",
+            "cost_gte": 2
+          }
         ]
       }
     }
@@ -30268,6 +30276,13 @@
             "target": "leader_or_character",
             "duration": "battle_only"
           }
+        ],
+        "costs": [
+          {
+            "type": "return_own_character_to_hand",
+            "count": 1,
+            "cost_gte": 2
+          }
         ]
       }
     }
@@ -33566,6 +33581,13 @@
             "count": 1,
             "target": "opp_character",
             "cost_lte": 6
+          }
+        ],
+        "costs": [
+          {
+            "type": "return_own_character_to_hand",
+            "count": 1,
+            "exclude_self": true
           }
         ]
       }
@@ -39273,6 +39295,14 @@
             "power_lte": 4000
           }
         ],
+        "costs": [
+          {
+            "type": "return_own_character_to_hand",
+            "count": 1,
+            "filter_type": "punk hazard",
+            "cost_gte": 2
+          }
+        ],
         "don_requirement": 2
       }
     }
@@ -40524,6 +40554,14 @@
             "amount": 3000,
             "target": "self",
             "duration": "this_turn"
+          }
+        ],
+        "costs": [
+          {
+            "type": "return_own_character_to_hand",
+            "count": 1,
+            "filter_type": "revolutionary army",
+            "cost_gte": 3
           }
         ]
       }
@@ -62077,6 +62115,13 @@
             "cost_lte": 2,
             "filter_type": "impel down"
           }
+        ],
+        "costs": [
+          {
+            "type": "return_own_character_to_hand",
+            "count": 1,
+            "cost_gte": 2
+          }
         ]
       },
       "passive": {
@@ -62207,6 +62252,13 @@
             "action": "draw",
             "count": 2,
             "then_trash": 1
+          }
+        ],
+        "costs": [
+          {
+            "type": "return_own_character_to_hand",
+            "count": 1,
+            "cost_gte": 2
           }
         ]
       },
@@ -71692,6 +71744,13 @@
             "count": 1,
             "target": "own_character",
             "power_lte": 7000
+          }
+        ],
+        "costs": [
+          {
+            "type": "return_own_character_to_hand",
+            "count": 1,
+            "cost_gte": 2
           }
         ],
         "once_per_turn": true,

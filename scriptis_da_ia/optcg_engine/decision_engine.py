@@ -3296,13 +3296,22 @@ class EffectExecutor:
                     remove_character_from_field(self.me, card, 'trash')
                     self._cost_logs.append(f'custo: trashou {card.name[:18]} (ele mesmo)')
             elif ctype == 'return_own_character_to_hand':
+                from optcg_engine.rules_facade import eligible_cards
                 count = cost.get('count', 1)
-                if len(self.me.field_chars) < count:
+                candidates = eligible_cards(
+                    self.me.field_chars,
+                    cost_gte=cost.get('cost_gte'),
+                    filter_text=cost.get('filter_type', ''),
+                    exclude_name=cost.get('exclude', ''),
+                    exclude_card=card if cost.get('exclude_self') else None,
+                )
+                if len(candidates) < count:
                     return False
                 returned = []
                 for _ in range(count):
-                    target = min(self.me.field_chars, key=lambda c: c.board_value())
+                    target = min(candidates, key=lambda c: c.board_value())
                     remove_character_from_field(self.me, target, 'hand')
+                    remove_by_identity(candidates, target)
                     returned.append(target.name[:15])
                 self._cost_logs.append(f'custo: devolveu para a mao: {", ".join(returned)}')
             elif ctype == 'don_minus':
@@ -6240,7 +6249,7 @@ class EffectExecutor:
     _SACRIFICE_COST_TYPES = {'trash_from_hand', 'trash_hand', 'trash_char_or_hand',
                              'trash_typed_hand_or_named_hand_field',
                              'ko_own_character', 'trash_self', 'trash_own_life',
-                             'trash_own_character'}
+                             'trash_own_character', 'return_own_character_to_hand'}
 
     def _worth_paying_optional_costs(self, costs: list, card: Card) -> bool:
         """
@@ -6298,6 +6307,28 @@ class EffectExecutor:
                 power_gte=c.get('power_gte'),
                 power_eq=c.get('power_eq'),
                 exclude_card=card,
+            )
+            return bool(chars) and min(ch.board_value() * 10 for ch in chars) <= 60
+
+        # return_own_character_to_hand: mesmo criterio de ko_own_character/
+        # trash_own_character (custo de CAMPO, nunca da mao) -- achado
+        # 16/07 (OP10-047 e familia, 8 cartas): esse custo nunca tinha
+        # branch proprio aqui, entao caia no `not any(... SACRIFICE...)`
+        # do topo e SEMPRE era considerado "de graca" (sem julgar se
+        # devolver o Character pra mao compensa o efeito). Devolver a mao
+        # e menos definitivo que K.O./trash (a carta pode ser rejogada
+        # depois), mas ainda e perda real de tempo/board -- mesmo limiar
+        # de "sacrificio barato" (board_value*10 <= 60).
+        for c in costs:
+            if c.get('type') != 'return_own_character_to_hand':
+                continue
+            from optcg_engine.rules_facade import eligible_cards
+            chars = eligible_cards(
+                self.me.field_chars,
+                cost_gte=c.get('cost_gte'),
+                filter_text=c.get('filter_type', ''),
+                exclude_name=c.get('exclude', ''),
+                exclude_card=card if c.get('exclude_self') else None,
             )
             return bool(chars) and min(ch.board_value() * 10 for ch in chars) <= 60
 

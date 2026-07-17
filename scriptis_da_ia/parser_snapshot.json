@@ -341,6 +341,14 @@
  },
  "EB01-021": {
   "end_of_turn": {
+   "costs": [
+    {
+     "cost_gte": 2,
+     "count": 1,
+     "filter_type": "impel down",
+     "type": "return_own_character_to_hand"
+    }
+   ],
    "steps": [
     {
      "action": "add_don",
@@ -18967,6 +18975,13 @@
  },
  "OP07-056": {
   "counter": {
+   "costs": [
+    {
+     "cost_gte": 2,
+     "count": 1,
+     "type": "return_own_character_to_hand"
+    }
+   ],
    "steps": [
     {
      "action": "buff_power",
@@ -21064,6 +21079,13 @@
  },
  "OP08-047": {
   "on_play": {
+   "costs": [
+    {
+     "count": 1,
+     "exclude_self": true,
+     "type": "return_own_character_to_hand"
+    }
+   ],
    "steps": [
     {
      "action": "bounce",
@@ -24680,6 +24702,14 @@
  },
  "OP10-002": {
   "when_attacking": {
+   "costs": [
+    {
+     "cost_gte": 2,
+     "count": 1,
+     "filter_type": "punk hazard",
+     "type": "return_own_character_to_hand"
+    }
+   ],
    "don_requirement": 2,
    "steps": [
     {
@@ -25438,6 +25468,14 @@
  },
  "OP10-047": {
   "when_attacking": {
+   "costs": [
+    {
+     "cost_gte": 3,
+     "count": 1,
+     "filter_type": "revolutionary army",
+     "type": "return_own_character_to_hand"
+    }
+   ],
    "steps": [
     {
      "action": "buff_power",
@@ -39136,6 +39174,13 @@
  },
  "OP16-045": {
   "on_play": {
+   "costs": [
+    {
+     "cost_gte": 2,
+     "count": 1,
+     "type": "return_own_character_to_hand"
+    }
+   ],
    "steps": [
     {
      "action": "play_card",
@@ -39213,6 +39258,13 @@
  },
  "OP16-050": {
   "on_play": {
+   "costs": [
+    {
+     "cost_gte": 2,
+     "count": 1,
+     "type": "return_own_character_to_hand"
+    }
+   ],
    "steps": [
     {
      "action": "draw",
@@ -44946,6 +44998,13 @@
  },
  "ST12-001": {
   "when_attacking": {
+   "costs": [
+    {
+     "cost_gte": 2,
+     "count": 1,
+     "type": "return_own_character_to_hand"
+    }
+   ],
    "don_requirement": 1,
    "once_per_turn": true,
    "steps": [

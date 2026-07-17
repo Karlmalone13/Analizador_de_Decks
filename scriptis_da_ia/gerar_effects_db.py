@@ -600,11 +600,34 @@ def parse_costs(text):
     if re.search(r'trash this (character|card)', t):
         costs.append({'type': 'trash_self'})
 
+    # Filtro opcional de tipo ([Tipo]/{Tipo}/"Tipo" type), custo ("with a
+    # cost of N or more") e exclusao ("other than this Character"/"other
+    # than [Nome]") entre "characters" e "to the owner's hand" -- achado
+    # 16/07 (OP10-047 e familia): a regex antiga exigia "characters to the
+    # owner's hand" ADJACENTE, sem nada no meio. Qualquer carta com filtro
+    # nessa clausula (8 no banco: EB01-021, OP07-056, OP10-002, OP10-047,
+    # OP16-045, OP16-050, ST12-001, OP08-047) perdia o CUSTO INTEIRO -- a
+    # IA tratava a habilidade como grátis, sem checar se tinha Character
+    # elegivel pra pagar.
     m_return_own = re.search(
-        r'you may return (\d+) of your characters to the owner.?s hand\s*:', t)
+        r'you may return (\d+) of your '
+        r'(?:[\[{"]([a-z][a-z0-9 .\'-]+)[\]}"]\s+type\s+)?'
+        r'characters?'
+        r'(?:\s+with a cost of (\d+) or more)?'
+        r'(?:\s+other than (this character|\[([a-z][a-z0-9 .\'-]+)\]))?'
+        r'\s+to the owner.?s hand\s*:', t)
     if m_return_own:
-        costs.append({'type': 'return_own_character_to_hand',
-                      'count': int(m_return_own.group(1))})
+        cost = {'type': 'return_own_character_to_hand',
+                'count': int(m_return_own.group(1))}
+        if m_return_own.group(2):
+            cost['filter_type'] = m_return_own.group(2).strip()
+        if m_return_own.group(3):
+            cost['cost_gte'] = int(m_return_own.group(3))
+        if m_return_own.group(4) == 'this character':
+            cost['exclude_self'] = True
+        elif m_return_own.group(5):
+            cost['exclude'] = m_return_own.group(5).strip()
+        costs.append(cost)
 
     m_face_cost = re.search(
         r'you may turn 1 card from the top of your life cards face-(up|down)\s*:',
