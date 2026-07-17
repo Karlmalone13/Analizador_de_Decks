@@ -1,0 +1,18 @@
+{
+  "trigger_card": "OP08-018",
+  "problem": "OP08-018: '[Main] Up to 3 of your Characters gain +1000 power during this turn...' -- o buff sempre escolhia so 1 Character, mesmo com N=3 no texto. Nem o parser extraia o count pro target 'own_character' (so 'opp_character' ja tinha essa extracao), nem o executor respeitava um count>1 quando presente (sempre escolhia 1 via choose_highest_board_value, sem loop).",
+  "grammar_family": "'Up to N of your Characters gain(s) +X power' com N>1 -- census: 13 cartas usam este target no total, mas so OP08-018 usa N>1 (as outras 12 usam N=1, ja corretas pelo comportamento antigo).",
+  "queries": [
+    "regex 'up to \\d+ of your characters? gain' sobre card_text -- achou 13 cartas, so OP08-018 com N=3 (o resto e N=1, sem impacto do bug)"
+  ],
+  "cards_found": ["OP08-018"],
+  "resolution_scope": "isolated_after_global_scan",
+  "decision": "parse_power_buff: novo count_own extraido do contexto quando target=='own_character' e N>1 (mesmo padrao ja usado pro 'opp_character' equivalente). Executor buff_power/own_character: loop de ate count candidatos (escolhendo o de maior board_value a cada iteracao, removendo da lista), em vez de escolher so 1 sempre.",
+  "validated_by": [
+    "diff_parser.py: GANHOU 0 / PERDEU 0 / MUDOU 1 (OP08-018, conferida contra card_text)",
+    "gerar_dbs.py + snapshot_parser.py: 0/0/0 apos regenerar",
+    "smoke_fast.py: teste dirigido novo test_own_character_buff_count_maior_que_1 com EXECUCAO real -- confirma exatamente 3 dos 5 Characters em campo ganhando o buff (os mais fortes), o mais fraco ficando de fora",
+    "smoke_test.py: suite ampla, TODOS OS TESTES PASSARAM",
+    "smoke_test_broad.py: NAO rodado (fix pequeno e isolado, 1 carta, sem tocar codigo amplamente compartilhado)"
+  ]
+}

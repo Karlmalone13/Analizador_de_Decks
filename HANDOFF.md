@@ -1,5 +1,31 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-16 (214) - OP08-018: "Up to N of your Characters gain +X power" com N>1 so escolhia 1
+
+Fix pequeno e isolado. OP08-018: "Up to 3 of your Characters gain
++1000 power during this turn." -- so 1 Character ganhava o buff, mesmo
+com N=3 no texto. Nem o parser extraia `count` pro target
+`own_character` (so `opp_character` ja tinha essa extracao), nem o
+executor respeitava um count>1 (sempre escolhia 1 via
+`choose_highest_board_value`, sem loop). Census: 13 cartas usam esse
+target, mas so OP08-018 usa N>1 -- `isolated_after_global_scan`.
+
+Fix: `count_own` extraido do contexto (mesmo padrao ja usado pro
+`opp_character`); executor faz loop de ate `count` candidatos
+(escolhendo o de maior board_value a cada iteracao).
+
+**Validado:** `diff_parser.py` GANHOU=0/PERDEU=0/MUDOU=1.
+`gerar_dbs.py`+`snapshot_parser.py` 0/0/0. `smoke_fast.py`: 1 teste
+dirigido novo com EXECUCAO real (exatamente 3 dos 5 Characters em
+campo ganham o buff, os mais fortes; o mais fraco fica de fora).
+`smoke_test.py`: TODOS OS TESTES PASSARAM. `smoke_test_broad.py` NAO
+rodado (fix isolado, 1 carta).
+
+Suspeitos: 304 -> 304 (OP08-018 continua na lista por um "1" residual
+de "give up to 1 of your opponent's Characters 2000 power" --
+cardinalidade implicita ja correta, mesmo padrao de falso-positivo ja
+documentado em give_don/give_don_opp).
+
 ## 2026-07-16 (213) - OP15-097/EB04-045/EB02-022: 4 bugs relacionados + play_card power_lte generalizado (25 cartas)
 
 Continuacao da varredura, batch de 4 achados relacionados:

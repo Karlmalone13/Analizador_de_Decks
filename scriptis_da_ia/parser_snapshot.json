@@ -20546,6 +20546,7 @@
     {
      "action": "buff_power",
      "amount": 1000,
+     "count": 3,
      "duration": "this_turn",
      "target": "own_character"
     },

@@ -3246,6 +3246,28 @@ def test_play_card_power_lte_e_no_base_effect_e_chars_lte_power() -> None:
           ok_candidato in me3.field_chars and forte_demais in me3.hand)
 
 
+def test_own_character_buff_count_maior_que_1() -> None:
+    # Achado 16/07 (OP08-018) -- "Up to N of your Characters gain +X
+    # power" com N>1 SEMPRE escolhia so 1 Character, mesmo com N=3 no
+    # texto (nem o parser extraia count, nem o executor respeitava).
+    check("OP08-018 parseia count=3 no step own_character",
+          any(s.get("action") == "buff_power" and s.get("target") == "own_character"
+              and s.get("count") == 3 for s in get_card_effects("OP08-018").get("main", {}).get("steps", [])))
+
+    op08018 = real_card("OP08-018")
+    c1 = mk("XOC1", "Char 1", power=3000)
+    c2 = mk("XOC2", "Char 2", power=5000)
+    c3 = mk("XOC3", "Char 3", power=4000)
+    c4 = mk("XOC4", "Char 4 (nao deve ganhar)", power=1000)
+    me = GameState(leader=mk("XOCLDR", "Lider", card_type="LEADER"), turn=3)
+    me.field_chars = [op08018, c1, c2, c3, c4]
+    opp = GameState(leader=mk("XOCOPP", "Opp", card_type="LEADER"), turn=3)
+    EffectExecutor(me, opp).execute(op08018, "main")
+    check("Execucao real: exatamente 3 Characters (os mais fortes) ganham +1000 power",
+          sum(1 for c in [c1, c2, c3, c4, op08018] if c.power_buff == 1000) == 3
+          and c4.power_buff == 0)
+
+
 def main() -> int:
     test_turn_order_imu_prefers_second()
     test_empty_throne_beats_direct_five_elders_play()
@@ -3334,6 +3356,7 @@ def main() -> int:
     test_leader_condicao_contamina_alvo_self_do_buff()
     test_reveal_deck_top_conditional_9_cartas()
     test_play_card_power_lte_e_no_base_effect_e_chars_lte_power()
+    test_own_character_buff_count_maior_que_1()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0

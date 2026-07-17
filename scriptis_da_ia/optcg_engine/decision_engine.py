@@ -4650,11 +4650,19 @@ class EffectExecutor:
                     power_lte=step.get('power_lte'),
                     exclude_name=step.get('exclude', ''),
                 )
-                if candidatos:
+                # "Up to N of your Characters gain +X power" -- N>1
+                # (achado 16/07, OP08-018): antes escolhia SEMPRE so 1,
+                # mesmo com N=3 no texto.
+                count_own = step.get('count', 1)
+                alvos = []
+                for _ in range(count_own):
+                    if not candidatos:
+                        break
                     alvo = choose_highest_board_value(candidatos)
+                    remove_by_identity(candidatos, alvo)
                     alvo.power_buff += amount
-                    return f'{alvo.name[:18]} +{amount} power'
-                return ''
+                    alvos.append(alvo.name[:15])
+                return f'+{amount} power em: {", ".join(alvos)}' if alvos else ''
             return f'+{amount} power em {target}'
 
         if action == 'debuff_power':

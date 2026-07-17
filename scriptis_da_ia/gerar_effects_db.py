@@ -2484,6 +2484,16 @@ def parse_power_buff(text):
             if m_excl:
                 exclude_own = m_excl.group(1).strip()
 
+        # "Up to N of your Characters gain(s) +X power" -- N>1 (achado
+        # 16/07, OP08-018: "Up to 3 of your Characters gain +1000 power").
+        # count_own so extraido quando > 1 (N=1 fica sem o campo,
+        # comportamento antigo preservado, default implicito continua 1).
+        count_own = None
+        if target == 'own_character':
+            m_cnt_own = re.search(r'up to (\d+) of your characters?', contexto_antes)
+            if m_cnt_own and int(m_cnt_own.group(1)) > 1:
+                count_own = int(m_cnt_own.group(1))
+
         duration = 'this_turn'
         if 'until the start of your opponent' in contexto_depois:
             duration = 'until_opp_turn_start'
@@ -2504,6 +2514,8 @@ def parse_power_buff(text):
             step['power_lte'] = power_lte_own
         if exclude_own:
             step['exclude'] = exclude_own
+        if count_own is not None:
+            step['count'] = count_own
         if target == 'all_allies' and filter_type_all:
             step['filter_type'] = filter_type_all
             if filter_color_all:

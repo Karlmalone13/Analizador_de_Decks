@@ -32734,7 +32734,8 @@
             "action": "buff_power",
             "amount": 1000,
             "target": "own_character",
-            "duration": "this_turn"
+            "duration": "this_turn",
+            "count": 3
           },
           {
             "action": "debuff_power",
