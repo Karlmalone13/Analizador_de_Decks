@@ -1,0 +1,20 @@
+{
+  "trigger_card": "OP04-011",
+  "problem": "OP04-011 (Nami): '[When Attacking] Reveal 1 card from the top of your deck. If the revealed card is a Character card with 6000 power or more, this Character gains +3000 power during this turn. Then, place the revealed card at the bottom of your deck.' O buff disparava SEMPRE, ignorando completamente o que foi revelado -- condicao inteira ausente. Mecanica ENTEIRAMENTE NOVA (nao existia infra pra 'revelar 1 card do proprio deck, checar propriedade, condicionar um efeito NAO relacionado').",
+  "grammar_family": "'Reveal 1 card from the top of your deck. If [condicao sobre tipo/custo/power da carta revelada], [efeito qualquer]. [Then, place the revealed card at the bottom of your deck.]' -- a carta revelada fica no TOPO por padrao (regra oficial), so vai pro fundo quando o texto pede explicitamente.",
+  "queries": [
+    "regex 'reveal 1 card from the top of your deck\\. if' sobre card_text -- achou 13 cartas. 3 usam uma mecanica DIFERENTE ja existente e correta (play_from_deck: OP01-060, OP07-048, OP12-058 -- 'you may play that card', reveal-e-joga, nao reveal-condiciona-outro-efeito) -- excluidas via guard explicito. 1 (EB01-029) tem o efeito 'return up to 1 of your characters to the owner's hand' nao reconhecido por NENHUM parser existente -- fica de fora por seguranca (fallback: nao aplica fix parcial), registrada como pendencia separada. As outras 9 tinham a condicao inteira ausente: OP04-011, OP14-044, OP15-065, ST17-001, ST22-003, ST22-006, ST22-007, ST22-012, ST22-016",
+    "REGRESSAO pega na validacao (revertida antes do commit): o regex generico inicial capturou errado o texto complexo multi-clausula de OP12-058 (perdendo o play_from_deck + gain_rush target=selected corretos, substituindo por um gain_rush sem alvo). Corrigido com guard explicito excluindo blocos que contem 'you may play that card'",
+    "achado durante o fix: a clausula de tipo aparece em 2 ORDENS diferentes no banco -- '\"X\" type' (tipo depois) E 'type includes \"X\"' (tipo depois de 'includes', achado nas cartas ST22-*) -- a regex de extracao de tipo precisou aceitar as 2"
+  ],
+  "cards_found": ["OP04-011", "OP14-044", "OP15-065", "ST17-001", "ST22-003", "ST22-006", "ST22-007", "ST22-012", "ST22-016"],
+  "resolution_scope": "global",
+  "decision": "Novo bloco em parse_block (mesmo padrao ja usado por 'reveal_opp_deck_top_choose_cost', precedente existente no codigo -- nested on_match_steps): detecta a clausula 'reveal 1 card... if [cond], [efeito]', extrai o filtro da carta revelada (revealed_card_type/cost_lte/cost_gte/power_gte) e reusa parse_block recursivamente pro efeito, produzindo 1 unico step 'reveal_deck_top_conditional' com on_match_steps aninhados. Se a condicao OU o efeito nao forem reconhecidos, a funcao retorna vazio e o comportamento ANTIGO prevalece (nunca aplica fix parcial/quebrado -- mesmo principio de seguranca ja usado em outros splits deste arquivo). Novo executor no engine segue o MESMO padrao do precedente (peek no topo, checa condicao, executa nested steps se bater, move pro fundo so se 'return_to'=='bottom').",
+  "validated_by": [
+    "diff_parser.py: GANHOU 0 / PERDEU 0 / MUDOU 9 (todas conferidas contra card_text, incluindo confirmacao explicita de que OP12-058 NAO mudou apos o guard)",
+    "gerar_dbs.py + snapshot_parser.py: 0/0/0 apos regenerar",
+    "smoke_fast.py: teste dirigido novo test_reveal_deck_top_conditional_9_cartas com EXECUCAO real -- confirma o buff disparando/nao-disparando conforme a carta revelada bater ou nao o filtro de power, a carta indo pro FUNDO quando o step pede (return_to=bottom) e permanecendo no TOPO quando nao pede (return_to=top, efeito que nao mexe no deck)",
+    "smoke_test.py: suite ampla, TODOS OS TESTES PASSARAM",
+    "smoke_test_broad.py: 7/7 partidas aleatorias sem excecao -- rodado por seguranca extra (mecanica NOVA + mudanca em parse_block, funcao central usada por TODO o parser)"
+  ]
+}

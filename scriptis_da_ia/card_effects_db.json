@@ -18210,10 +18210,19 @@
       "when_attacking": {
         "steps": [
           {
-            "action": "buff_power",
-            "amount": 3000,
-            "target": "self",
-            "duration": "this_turn"
+            "action": "reveal_deck_top_conditional",
+            "return_to": "bottom",
+            "condition": {
+              "revealed_card_power_gte": 6000
+            },
+            "on_match_steps": [
+              {
+                "action": "buff_power",
+                "amount": 3000,
+                "target": "self",
+                "duration": "this_turn"
+              }
+            ]
           }
         ]
       }
@@ -54408,9 +54417,18 @@
       "on_play": {
         "steps": [
           {
-            "action": "draw",
-            "count": 2,
-            "then_trash": 1
+            "action": "reveal_deck_top_conditional",
+            "return_to": "top",
+            "condition": {
+              "revealed_card_type": "whitebeard pirates"
+            },
+            "on_match_steps": [
+              {
+                "action": "draw",
+                "count": 2,
+                "then_trash": 1
+              }
+            ]
           }
         ]
       },
@@ -58868,9 +58886,18 @@
       "on_play": {
         "steps": [
           {
-            "action": "add_don",
-            "count": 1,
-            "rested": true
+            "action": "reveal_deck_top_conditional",
+            "return_to": "top",
+            "condition": {
+              "revealed_card_cost_lte": 2
+            },
+            "on_match_steps": [
+              {
+                "action": "add_don",
+                "count": 1,
+                "rested": true
+              }
+            ]
           }
         ]
       }
@@ -73474,8 +73501,17 @@
       "on_play": {
         "steps": [
           {
-            "action": "draw",
-            "count": 2
+            "action": "reveal_deck_top_conditional",
+            "return_to": "top",
+            "condition": {
+              "revealed_card_type": "the seven warlords of the sea"
+            },
+            "on_match_steps": [
+              {
+                "action": "draw",
+                "count": 2
+              }
+            ]
           }
         ]
       }
@@ -74597,8 +74633,17 @@
       "on_play": {
         "steps": [
           {
-            "action": "draw",
-            "count": 2
+            "action": "reveal_deck_top_conditional",
+            "return_to": "top",
+            "condition": {
+              "revealed_card_type": "whitebeard pirates"
+            },
+            "on_match_steps": [
+              {
+                "action": "draw",
+                "count": 2
+              }
+            ]
           }
         ]
       },
@@ -74676,9 +74721,18 @@
       "on_play": {
         "steps": [
           {
-            "action": "draw",
-            "count": 2,
-            "then_trash": 1
+            "action": "reveal_deck_top_conditional",
+            "return_to": "top",
+            "condition": {
+              "revealed_card_type": "whitebeard pirates"
+            },
+            "on_match_steps": [
+              {
+                "action": "draw",
+                "count": 2,
+                "then_trash": 1
+              }
+            ]
           }
         ]
       }
@@ -74698,9 +74752,18 @@
       "activate_main": {
         "steps": [
           {
-            "action": "give_don",
-            "count": 1,
-            "rested": true
+            "action": "reveal_deck_top_conditional",
+            "return_to": "top",
+            "condition": {
+              "revealed_card_type": "whitebeard pirates"
+            },
+            "on_match_steps": [
+              {
+                "action": "give_don",
+                "count": 1,
+                "rested": true
+              }
+            ]
           }
         ],
         "once_per_turn": true
@@ -74798,10 +74861,19 @@
       "when_attacking": {
         "steps": [
           {
-            "action": "buff_power",
-            "amount": 1000,
-            "target": "self",
-            "duration": "until_opp_turn_end"
+            "action": "reveal_deck_top_conditional",
+            "return_to": "top",
+            "condition": {
+              "revealed_card_type": "whitebeard pirates"
+            },
+            "on_match_steps": [
+              {
+                "action": "buff_power",
+                "amount": 1000,
+                "target": "self",
+                "duration": "until_opp_turn_end"
+              }
+            ]
           }
         ],
         "once_per_turn": true
@@ -74904,10 +74976,19 @@
       "counter": {
         "steps": [
           {
-            "action": "buff_power",
-            "amount": 4000,
-            "target": "leader_or_character",
-            "duration": "battle_only"
+            "action": "reveal_deck_top_conditional",
+            "return_to": "top",
+            "condition": {
+              "revealed_card_type": "whitebeard pirates"
+            },
+            "on_match_steps": [
+              {
+                "action": "buff_power",
+                "amount": 4000,
+                "target": "leader_or_character",
+                "duration": "battle_only"
+              }
+            ]
           }
         ]
       }

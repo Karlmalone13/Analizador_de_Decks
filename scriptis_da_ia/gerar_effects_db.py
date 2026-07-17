@@ -4652,6 +4652,57 @@ def parse_block(block_text, trigger_name):
             steps.extend(parse_block(reveal_cost_m.group(2).strip(), trigger_name))
         return steps
 
+    # "Reveal 1 card from the top of your deck. If [condicao sobre a carta
+    # revelada], [efeito]. [Then, place the revealed card at the bottom of
+    # your deck.]" -- achado 16/07, 10 cartas (EB01-029, OP04-011,
+    # OP14-044, OP15-065, ST17-001, ST22-003/006/007/012/016): o efeito
+    # disparava SEMPRE, ignorando o que foi revelado -- condicao inteira
+    # ausente. Mesmo padrao de reveal_opp_deck_top_choose_cost acima
+    # (nested on_match_steps), aqui pro PROPRIO deck. Regra oficial: a
+    # carta revelada fica no TOPO por padrao (nao sai do deck) -- so vai
+    # pro FUNDO quando o texto diz explicitamente "Then, place the
+    # revealed card at the bottom of your deck".
+    # Guard: "you may play that card" e a familia JA EXISTENTE de
+    # play_from_deck (reveal-e-joga, ex: OP12-058 Whitebeard) -- mecanica
+    # DIFERENTE (mais especifica) desta aqui (reveal-condiciona-um-efeito-
+    # NAO-relacionado). Sem este guard, o regex generico abaixo capturava
+    # so um pedaco truncado da frase complexa de play_from_deck e perdia
+    # o play em si -- regressao real pega na validacao (achado 16/07).
+    is_bottom_reveal = bool(re.search(
+        r'then,?\s*place the revealed card at the bottom of your deck', block_text, re.IGNORECASE))
+    block_sem_bottom = re.sub(
+        r'\.\s*then,?\s*place the revealed card at the bottom of your deck\.?', '',
+        block_text, flags=re.IGNORECASE)
+    reveal_top_m = (None if 'you may play that card' in block_sem_bottom.lower() else re.search(
+        r'reveal 1 card from the top of your deck\.\s*if\s+(.+?),\s*(.+?)\.?\s*$',
+        block_sem_bottom, re.IGNORECASE | re.DOTALL))
+    if reveal_top_m:
+        cond_clause = reveal_top_m.group(1).lower()
+        effect_clause = reveal_top_m.group(2).strip()
+        cond = {}
+        type_m_rc = (re.search(r'["\[{]([a-z][a-z0-9 .\'-]+)["\]}]\s*type', cond_clause)
+                     or re.search(r'type includes? ["\[{]([a-z][a-z0-9 .\'-]+)["\]}]', cond_clause))
+        if type_m_rc:
+            cond['revealed_card_type'] = type_m_rc.group(1).strip()
+        cost_lte_rc = re.search(r'cost of (\d+) or less', cond_clause)
+        if cost_lte_rc:
+            cond['revealed_card_cost_lte'] = int(cost_lte_rc.group(1))
+        cost_gte_rc = re.search(r'cost of (\d+) or more', cond_clause)
+        if cost_gte_rc:
+            cond['revealed_card_cost_gte'] = int(cost_gte_rc.group(1))
+        power_gte_rc = re.search(r'(\d+) power or more', cond_clause)
+        if power_gte_rc:
+            cond['revealed_card_power_gte'] = int(power_gte_rc.group(1))
+        if cond:
+            on_match = parse_block(effect_clause, trigger_name)
+            if on_match:
+                return [{
+                    'action': 'reveal_deck_top_conditional',
+                    'return_to': 'bottom' if is_bottom_reveal else 'top',
+                    'condition': cond,
+                    'on_match_steps': on_match,
+                }]
+
     if re.search(r'choose(?:s)? one\s*:', block_text, re.IGNORECASE):
         opcoes_raw = re.split(r'[•\u2022]', block_text)
         # primeiro item e o texto antes do primeiro bullet (geralmente so

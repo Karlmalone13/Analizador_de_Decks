@@ -1,5 +1,52 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-16 (212) - OP04-011 e familia: "Reveal 1 card... If [condicao]..." nunca reconhecido (mecanica nova, 9 cartas)
+
+Continuacao da varredura. OP04-011 (Nami): "Reveal 1 card from the top
+of your deck. If the revealed card is a Character card with 6000 power
+or more, this Character gains +3000 power during this turn. Then,
+place the revealed card at the bottom of your deck." O buff disparava
+SEMPRE, ignorando o que foi revelado -- mecanica ENTEIRAMENTE NOVA
+(nao existia infra pra "revelar do proprio deck, checar propriedade,
+condicionar outro efeito"). Busca global achou 13 cartas: 3 usam uma
+mecanica DIFERENTE ja existente e correta (`play_from_deck`, "you may
+play that card" -- OP01-060/OP07-048/OP12-058, excluidas via guard),
+1 (EB01-029) tem o efeito nao reconhecido por nenhum parser ainda
+(fallback seguro: nao aplica fix parcial, fica pendente), e **9**
+tinham a condicao inteira ausente: OP04-011, OP14-044, OP15-065,
+ST17-001, ST22-003, ST22-006, ST22-007, ST22-012, ST22-016.
+
+Fix: novo bloco em `parse_block` seguindo o MESMO padrao ja usado por
+`reveal_opp_deck_top_choose_cost` (precedente existente, nested
+`on_match_steps`) -- extrai o filtro da carta revelada
+(`revealed_card_type`/`cost_lte`/`cost_gte`/`power_gte`) e reusa
+`parse_block` recursivamente pro efeito. Se condicao OU efeito nao
+forem reconhecidos, retorna vazio (comportamento antigo prevalece,
+nunca aplica fix quebrado). Novo executor `reveal_deck_top_conditional`
+segue o mesmo padrao do precedente. Regra oficial: carta revelada fica
+no TOPO por padrao, so vai pro fundo quando o texto pede
+explicitamente ("Then, place the revealed card at the bottom").
+
+**Regressao pega e revertida ANTES do commit:** o regex generico
+inicial capturou errado o texto complexo de OP12-058 (multi-clausula,
+"you may play that card. If you do, ..."), perdendo o `play_from_deck`
++ `gain_rush` corretos. Corrigido com guard explicito.
+
+**Validado:** `diff_parser.py` GANHOU=0/PERDEU=0/MUDOU=9 (incluindo
+confirmacao de que OP12-058 NAO mudou). `gerar_dbs.py`+
+`snapshot_parser.py` 0/0/0. `smoke_fast.py`: 1 teste dirigido novo com
+EXECUCAO real (buff dispara/nao-dispara conforme a carta revelada,
+carta vai pro fundo ou fica no topo conforme `return_to`).
+`smoke_test.py`: TODOS OS TESTES PASSARAM. **`smoke_test_broad.py`:
+7/7** -- rodado por seguranca extra (mecanica nova + mudanca em
+`parse_block`, funcao central do parser inteiro).
+
+Suspeitos: 326 -> 325. Registro completo em
+`parser_audits/2026-07-16_reveal_deck_top_conditional.json`. Pendencia
+registrada: EB01-029 ("return up to 1 of your characters to the
+owner's hand" nao reconhecido por nenhum parser -- precisa de fix
+separado antes de fechar essa carta especifica).
+
 ## 2026-07-16 (211) - EB04-048 e familia: buff de power ia pro Leader ERRADO (condicao contaminava alvo)
 
 Retomando a varredura padrao 1-por-1 (fila de suspeitos maiores

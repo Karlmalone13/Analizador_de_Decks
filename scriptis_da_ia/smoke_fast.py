@@ -3118,6 +3118,74 @@ def test_leader_condicao_contamina_alvo_self_do_buff() -> None:
           lucci.cost_buff == -4)
 
 
+def test_reveal_deck_top_conditional_9_cartas() -> None:
+    # Achado 16/07 -- "Reveal 1 card from the top of your deck. If
+    # [condicao sobre a carta revelada], [efeito]." nunca era reconhecido:
+    # o efeito disparava SEMPRE, ignorando o que foi revelado. Mecanica
+    # NOVA (reveal_deck_top_conditional, mesmo padrao de nested
+    # on_match_steps ja usado por reveal_opp_deck_top_choose_cost). 9
+    # cartas: OP04-011, OP14-044, OP15-065, ST17-001, ST22-003/006/007/
+    # 012/016. Guard evitou uma regressao real em OP12-058 (mecanica
+    # DIFERENTE, play_from_deck, "you may play that card" -- confirmado
+    # que continua intacto). EB01-029 nao foi fechada ainda (o efeito
+    # "return up to 1 of your characters to the owner's hand" nao e
+    # reconhecido por nenhum parser existente -- fica de fora do fix por
+    # seguranca, registrado como pendencia separada).
+    check("OP04-011 parseia reveal_deck_top_conditional com power_gte=6000 e return_to=bottom",
+          any(s.get("action") == "reveal_deck_top_conditional"
+              and s.get("condition", {}).get("revealed_card_power_gte") == 6000
+              and s.get("return_to") == "bottom"
+              for s in get_card_effects("OP04-011").get("when_attacking", {}).get("steps", [])))
+    check("ST22-003 parseia condition type_includes 'whitebeard pirates' (ordem invertida 'type includes X')",
+          any(s.get("action") == "reveal_deck_top_conditional"
+              and s.get("condition", {}).get("revealed_card_type") == "whitebeard pirates"
+              for s in get_card_effects("ST22-003").get("on_play", {}).get("steps", [])))
+    check("OP12-058 (mecanica DIFERENTE, play_from_deck) continua intacto, sem reveal_deck_top_conditional",
+          not any(s.get("action") == "reveal_deck_top_conditional"
+                  for s in get_card_effects("OP12-058").get("main", {}).get("steps", []))
+          and any(s.get("action") == "play_from_deck"
+                  for s in get_card_effects("OP12-058").get("main", {}).get("steps", [])))
+
+    # Execucao real: OP04-011 com uma carta de power>=6000 no topo do
+    # deck -- o buff deve disparar E a carta vai pro FUNDO do deck.
+    nami = real_card("OP04-011")
+    forte_topo = mk("XNMTOP", "Forte no Topo", power=7000)
+    me = GameState(leader=mk("XNMLDR", "Lider", card_type="LEADER"), turn=3)
+    me.field_chars = [nami]
+    me.deck = [mk("XNMBASE", "Base do Deck", power=3000), forte_topo]
+    opp = GameState(leader=mk("XNMOPP", "Opp", card_type="LEADER"), turn=3)
+    EffectExecutor(me, opp).execute(nami, "when_attacking")
+    check("Execucao real: com carta forte no topo, o buff dispara",
+          nami.power_buff == 3000)
+    check("Execucao real: a carta revelada foi pro FUNDO do deck (return_to=bottom)",
+          me.deck[0] is forte_topo)
+
+    # Sem carta forte no topo -- buff NAO dispara, mas a carta ainda e
+    # revelada (e, no caso do OP04-011, ainda vai pro fundo).
+    nami2 = real_card("OP04-011")
+    fraco_topo = mk("XNMFR", "Fraco no Topo", power=2000)
+    me2 = GameState(leader=mk("XNMLDR2", "Lider", card_type="LEADER"), turn=3)
+    me2.field_chars = [nami2]
+    me2.deck = [mk("XNMBASE2", "Base 2", power=3000), fraco_topo]
+    EffectExecutor(me2, GameState(leader=mk("XNMOPP2", "Opp", card_type="LEADER"), turn=3)).execute(nami2, "when_attacking")
+    check("Execucao real: SEM carta forte no topo, o buff NAO dispara",
+          nami2.power_buff == 0)
+
+    # OP15-065 (return_to=top, default, efeito NAO mexe no deck -- add_don
+    # -- diferente de ST17-001 que teria 'draw' consumindo o topo de novo
+    # de forma legitima): a carta revelada permanece no topo quando o
+    # texto nao pede fundo.
+    bonney = real_card("OP15-065")
+    barato_topo = mk("XBNC", "Barato no Topo", cost=1)
+    me3 = GameState(leader=mk("XBNLDR", "Lider", card_type="LEADER"), turn=3)
+    me3.field_chars = [bonney]
+    me3.deck = [mk("XBNBASE", "Base 3", cost=5), barato_topo]
+    me3.don_deck = 5
+    EffectExecutor(me3, GameState(leader=mk("XBNOPP", "Opp", card_type="LEADER"), turn=3)).execute(bonney, "on_play")
+    check("Execucao real: a carta revelada continua no TOPO do deck quando o efeito nao mexe nele (return_to=top)",
+          me3.deck[-1] is barato_topo)
+
+
 def main() -> int:
     test_turn_order_imu_prefers_second()
     test_empty_throne_beats_direct_five_elders_play()
@@ -3204,6 +3272,7 @@ def main() -> int:
     test_rebecca_reveal_play_pair_condicional()
     test_gain_life_hand_filtro_ignorado_e_st13003_fonte_combinada()
     test_leader_condicao_contamina_alvo_self_do_buff()
+    test_reveal_deck_top_conditional_9_cartas()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0

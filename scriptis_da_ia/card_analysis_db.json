@@ -27149,9 +27149,8 @@
   "attribute": "Wisdom",
   "effects": [
    {
-    "action": "buff_power",
-    "trigger": "when_attacking",
-    "target": "self"
+    "action": "reveal_deck_top_conditional",
+    "trigger": "when_attacking"
    }
   ],
   "synergy_states": {},
@@ -27166,7 +27165,7 @@
   "rests_opponent": false,
   "bounces": false,
   "gives_don": false,
-  "power_buff": true,
+  "power_buff": false,
   "heals": false,
   "gains_life": false,
   "attacks_life": false,
@@ -81106,7 +81105,7 @@
   "attribute": "Special",
   "effects": [
    {
-    "action": "draw",
+    "action": "reveal_deck_top_conditional",
     "trigger": "on_play"
    },
    {
@@ -81117,7 +81116,7 @@
   "synergy_states": {},
   "text": "[Blocker]\r\n[On Play] Reveal 1 card from the top of your deck. If that card's type includes \"Whitebeard Pirates\", draw 2 cards and trash 1 card from your hand.",
   "is_searcher": false,
-  "draws": true,
+  "draws": false,
   "has_counter_value": true,
   "has_counter_event": false,
   "is_blocker": true,
@@ -87469,7 +87468,7 @@
   "attribute": "Wisdom",
   "effects": [
    {
-    "action": "add_don",
+    "action": "reveal_deck_top_conditional",
     "trigger": "on_play"
    }
   ],
@@ -109502,14 +109501,14 @@
   "attribute": "Special",
   "effects": [
    {
-    "action": "draw",
+    "action": "reveal_deck_top_conditional",
     "trigger": "on_play"
    }
   ],
   "synergy_states": {},
   "text": "[On Play] Reveal 1 card from the top of your deck. If that card is a \"The Seven Warlords of the Sea\" type card, draw 2 cards and place 1 card from your hand at the top of your deck.",
   "is_searcher": false,
-  "draws": true,
+  "draws": false,
   "has_counter_value": true,
   "has_counter_event": false,
   "is_blocker": false,
@@ -111177,7 +111176,7 @@
   "attribute": "Special",
   "effects": [
    {
-    "action": "draw",
+    "action": "reveal_deck_top_conditional",
     "trigger": "on_play"
    },
    {
@@ -111188,7 +111187,7 @@
   "synergy_states": {},
   "text": "[Double Attack] (This card deals 2 damage.)\r\n[On Play] Reveal 1 card from the top of your deck. If that card's type includes \"Whitebeard Pirates\", draw 2 cards.",
   "is_searcher": false,
-  "draws": true,
+  "draws": false,
   "has_counter_value": false,
   "has_counter_event": false,
   "is_blocker": false,
@@ -111298,14 +111297,14 @@
   "attribute": "Strike",
   "effects": [
    {
-    "action": "draw",
+    "action": "reveal_deck_top_conditional",
     "trigger": "on_play"
    }
   ],
   "synergy_states": {},
   "text": "[On Play] Reveal 1 card from the top of your deck. If that card's type includes \"Whitebeard Pirates\", draw 2 cards and trash 1 card from your hand.",
   "is_searcher": false,
-  "draws": true,
+  "draws": false,
   "has_counter_value": true,
   "has_counter_event": false,
   "is_blocker": false,
@@ -111337,7 +111336,7 @@
   "attribute": "Slash",
   "effects": [
    {
-    "action": "give_don",
+    "action": "reveal_deck_top_conditional",
     "trigger": "activate_main"
    }
   ],
@@ -111352,7 +111351,7 @@
   "kos": false,
   "rests_opponent": false,
   "bounces": false,
-  "gives_don": true,
+  "gives_don": false,
   "power_buff": false,
   "heals": false,
   "gains_life": false,
@@ -111528,9 +111527,8 @@
   "attribute": "Special",
   "effects": [
    {
-    "action": "buff_power",
-    "trigger": "when_attacking",
-    "target": "self"
+    "action": "reveal_deck_top_conditional",
+    "trigger": "when_attacking"
    },
    {
     "action": "substitute_ko",
@@ -111549,7 +111547,7 @@
   "rests_opponent": false,
   "bounces": false,
   "gives_don": false,
-  "power_buff": true,
+  "power_buff": false,
   "heals": false,
   "gains_life": false,
   "attacks_life": false,
@@ -111693,9 +111691,8 @@
     "trigger": "trigger"
    },
    {
-    "action": "buff_power",
-    "trigger": "counter",
-    "target": "leader_or_character"
+    "action": "reveal_deck_top_conditional",
+    "trigger": "counter"
    }
   ],
   "synergy_states": {
@@ -111715,7 +111712,7 @@
   "rests_opponent": false,
   "bounces": false,
   "gives_don": false,
-  "power_buff": true,
+  "power_buff": false,
   "heals": false,
   "gains_life": false,
   "attacks_life": false,

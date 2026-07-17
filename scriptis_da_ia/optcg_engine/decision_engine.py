@@ -3662,6 +3662,52 @@ class EffectExecutor:
                 result += ': errou'
             return result
 
+        if action == 'reveal_deck_top_conditional':
+            # "Reveal 1 card from the top of your deck. If [condicao],
+            # [efeito]. [Then, place the revealed card at the bottom of
+            # your deck]." -- achado 16/07 (10 cartas: EB01-029, OP04-011,
+            # OP14-044, OP15-065, ST17-001, ST22-003/006/007/012/016).
+            # A carta revelada fica no TOPO por padrao (return_to=='top',
+            # regra oficial de reveal sem mover) -- so vai pro fundo
+            # quando o step diz explicitamente.
+            if not me.deck:
+                return ''
+            revealed = me.deck[-1]
+            cond = step.get('condition', {})
+            matched = True
+            if cond.get('revealed_card_type') and not _norm_type_text(
+                    cond['revealed_card_type']) in _norm_type_text(revealed.sub_types):
+                matched = False
+            if matched and cond.get('revealed_card_cost_lte') is not None and \
+                    revealed.cost > cond['revealed_card_cost_lte']:
+                matched = False
+            if matched and cond.get('revealed_card_cost_gte') is not None and \
+                    revealed.cost < cond['revealed_card_cost_gte']:
+                matched = False
+            if matched and cond.get('revealed_card_power_gte') is not None and \
+                    (revealed.card_type != 'CHARACTER' or revealed.power < cond['revealed_card_power_gte']):
+                matched = False
+
+            if step.get('return_to') == 'bottom':
+                me.deck.pop()
+                me.deck.insert(0, revealed)
+
+            nested_logs = []
+            if matched:
+                for nested in step.get('on_match_steps', []):
+                    nested_log = self._execute_step(nested, card)
+                    if nested_log:
+                        nested_logs.append(nested_log)
+
+            result = f'revelou {revealed.name[:15]} do topo do deck'
+            if matched:
+                result += ': bateu a condicao'
+                if nested_logs:
+                    result += ' | ' + ' | '.join(nested_logs)
+            else:
+                result += ': nao bateu a condicao'
+            return result
+
         if action == 'trash_rest':
             # Cartas que foram vistas mas não pegas vão ao trash
             # Identifica quais cartas do topo foram vistas
