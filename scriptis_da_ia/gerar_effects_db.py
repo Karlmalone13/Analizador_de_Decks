@@ -866,6 +866,18 @@ def parse_costs(text):
         costs.append({'type': 'reveal_from_hand', 'count': int(m_reveal.group(1)),
                        'filter_type': m_reveal.group(2).strip()})
 
+    # Custo de REVELAR N Character cards com power exato X da mao (achado
+    # 16/07, OP16-002/003/007/010/011, ST30-004: "you may reveal N
+    # Character cards with X power from your hand: [efeito]") -- mesma
+    # familia de reveal_from_hand (prova de posse, nao remove nada), so
+    # que o filtro e power (exato, sem qualificador 'or more'/'or less'
+    # no texto original) + card_type CHARACTER em vez de tipo.
+    m_reveal_pw = re.search(
+        r'you may reveal (\d+) character cards? with (\d+) power from your hand\s*:', t)
+    if m_reveal_pw:
+        costs.append({'type': 'reveal_from_hand', 'count': int(m_reveal_pw.group(1)),
+                       'power_eq': int(m_reveal_pw.group(2)), 'card_type': 'CHARACTER'})
+
     # DON!! −X: devolve X DON do campo para o deck de DON.
     # "you may" perto (antes ou depois, ex: dentro do parêntese explicativo)
     # -> opcional; senão -> obrigatório.

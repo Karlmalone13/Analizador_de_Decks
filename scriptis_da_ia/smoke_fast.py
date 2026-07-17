@@ -3268,6 +3268,46 @@ def test_own_character_buff_count_maior_que_1() -> None:
           and c4.power_buff == 0)
 
 
+def test_reveal_from_hand_por_power_6_cartas() -> None:
+    # Achado 16/07 -- "You may reveal N Character cards with X power
+    # from your hand: [efeito]" -- custo OPCIONAL de REVELAR (prova de
+    # posse, nao remove nada da mao) nunca era reconhecido, so a variante
+    # por TIPO ja existia (reveal_from_hand). O efeito (as vezes poderoso,
+    # ex: -6000 power) disparava de GRACA, sem exigir as cartas na mao.
+    # 6 cartas: OP16-002/003/007/010/011, ST30-004.
+    check("OP16-003 parseia custo reveal_from_hand power_eq=8000 card_type=CHARACTER, count=2",
+          get_card_effects("OP16-003").get("on_play", {}).get("costs", []) ==
+          [{"type": "reveal_from_hand", "count": 2, "power_eq": 8000, "card_type": "CHARACTER"}])
+    check("ST30-004 (power diferente, 6000) tambem parseia",
+          any(c.get("type") == "reveal_from_hand" and c.get("power_eq") == 6000
+              for c in get_card_effects("ST30-004").get("on_play", {}).get("costs", [])))
+
+    # Execucao real: OP16-007 -- SEM Character de power=8000 na mao, o
+    # custo nao pode ser pago, o debuff nao dispara.
+    newgate = real_card("OP16-007")
+    me = GameState(leader=mk("XNGLDR", "Lider", card_type="LEADER"), turn=3)
+    me.hand = [mk("XNGH1", "Fraco", power=5000)]
+    opp_char = mk("XNGOC", "Opp Char", power=5000)
+    opp = GameState(leader=mk("XNGOPP", "Opp", card_type="LEADER"), turn=3)
+    opp.field_chars = [opp_char]
+    EffectExecutor(me, opp).execute(newgate, "on_play")
+    check("Execucao real: SEM Character de power=8000 na mao, o debuff NAO dispara",
+          opp_char.power_buff == 0)
+
+    # Com o Character de power=8000 na mao (e continua na mao -- reveal
+    # NAO remove), o debuff dispara.
+    newgate2 = real_card("OP16-007")
+    forte_na_mao = mk("XNGH2", "Forte", power=8000)
+    me2 = GameState(leader=mk("XNGLDR2", "Lider", card_type="LEADER"), turn=3)
+    me2.hand = [forte_na_mao]
+    opp_char2 = mk("XNGOC2", "Opp Char 2", power=5000)
+    opp2 = GameState(leader=mk("XNGOPP2", "Opp", card_type="LEADER"), turn=3)
+    opp2.field_chars = [opp_char2]
+    EffectExecutor(me2, opp2).execute(newgate2, "on_play")
+    check("Execucao real: COM Character de power=8000 na mao, o debuff dispara E a carta continua na mao",
+          opp_char2.power_buff == -1000 and forte_na_mao in me2.hand)
+
+
 def main() -> int:
     test_turn_order_imu_prefers_second()
     test_empty_throne_beats_direct_five_elders_play()
@@ -3357,6 +3397,7 @@ def main() -> int:
     test_reveal_deck_top_conditional_9_cartas()
     test_play_card_power_lte_e_no_base_effect_e_chars_lte_power()
     test_own_character_buff_count_maior_que_1()
+    test_reveal_from_hand_por_power_6_cartas()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0

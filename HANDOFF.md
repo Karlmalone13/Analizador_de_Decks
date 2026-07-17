@@ -1,5 +1,31 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-16 (215) - OP16-003 e familia: custo "reveal N Character cards with X power" nunca reconhecido (6 cartas)
+
+OP16-003 (Edward.Newgate): "You may reveal 2 Character cards with 8000
+power from your hand: Give up to 1 of your opponent's Characters
+-6000 power during this turn." O custo OPCIONAL de revelar (prova de
+posse, nao remove nada da mao) nunca era reconhecido -- so a variante
+por TIPO ja existia (`reveal_from_hand` com `filter_type`). O debuff
+(as vezes bastante forte) disparava de GRACA, sem exigir as cartas na
+mao. Busca global achou **6 cartas**: OP16-002, OP16-003, OP16-007,
+OP16-010, OP16-011, ST30-004.
+
+Fix: novo regex produzindo o MESMO cost type `reveal_from_hand`, com
+campos novos `power_eq` (exato, texto sem qualificador) e
+`card_type='CHARACTER'`. Executor estendido pra filtrar tambem por
+esses 2 campos, combinaveis com o `filter_type` ja existente.
+
+**Validado:** `diff_parser.py` GANHOU=0/PERDEU=0/MUDOU=6.
+`gerar_dbs.py`+`snapshot_parser.py` 0/0/0. `smoke_fast.py`: 1 teste
+dirigido novo com EXECUCAO real (sem Character do power certo na mao,
+efeito NAO dispara; com ele, dispara E a carta continua na mao).
+`smoke_test.py`: TODOS OS TESTES PASSARAM. `smoke_test_broad.py` NAO
+rodado (fix isolado numa familia de custo).
+
+Suspeitos: 304 -> 299. Registro completo em
+`parser_audits/2026-07-16_reveal_from_hand_power.json`.
+
 ## 2026-07-16 (214) - OP08-018: "Up to N of your Characters gain +X power" com N>1 so escolhia 1
 
 Fix pequeno e isolado. OP08-018: "Up to 3 of your Characters gain

@@ -3130,12 +3130,21 @@ class EffectExecutor:
                 self._cost_logs.append(f'custo: restou {count} DON')
             elif ctype == 'reveal_from_hand':
                 # Custo de REVELAR N cartas com filtro de tipo (achado
-                # 15/07, OP08-044 Kingdew) -- so exige TER as cartas na
-                # mao, nao remove nada (revelar != trashar/descartar).
+                # 15/07, OP08-044 Kingdew) OU de power+card_type (achado
+                # 16/07, OP16-002/003/007/010/011, ST30-004: "you may
+                # reveal N Character cards with X power from your hand")
+                # -- so exige TER as cartas na mao, nao remove nada
+                # (revelar != trashar/descartar).
                 count = cost.get('count', 1)
                 filter_type = _norm_type_text(cost.get('filter_type') or '')
-                matches = [c for c in self.me.hand
-                           if filter_type in _norm_type_text(c.sub_types or '')]
+                power_eq = cost.get('power_eq')
+                card_type_req = cost.get('card_type')
+                matches = [
+                    c for c in self.me.hand
+                    if (not filter_type or filter_type in _norm_type_text(c.sub_types or ''))
+                    and (power_eq is None or c.power == power_eq)
+                    and (not card_type_req or c.card_type == card_type_req)
+                ]
                 if len(matches) < count:
                     return False
                 self._cost_logs.append(f'custo: revelou {count} carta(s) '

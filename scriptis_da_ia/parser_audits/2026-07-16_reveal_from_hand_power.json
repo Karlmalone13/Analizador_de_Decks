@@ -1,0 +1,18 @@
+{
+  "trigger_card": "OP16-003",
+  "problem": "OP16-003 (Edward.Newgate): '[On Play] You may reveal 2 Character cards with 8000 power from your hand: Give up to 1 of your opponent's Characters -6000 power during this turn.' O custo OPCIONAL de revelar (prova de posse, nao remove nada da mao) nunca era reconhecido -- so a variante por TIPO ja existia (reveal_from_hand com filter_type). O debuff (as vezes bastante forte, ex: -6000 power) disparava de GRACA, sem exigir as cartas na mao.",
+  "grammar_family": "'You may reveal N Character cards with X power from your hand: [efeito]' -- mesma familia de reveal_from_hand (ja existia pra filtro de TIPO), agora tambem por POWER (exato, sem qualificador 'or more'/'or less' no texto original) + card_type CHARACTER.",
+  "queries": [
+    "regex 'you may reveal \\d+ character cards? with \\d+ power from your hand:' sobre card_text -- achou 6 cartas: OP16-002, OP16-003, OP16-007, OP16-010, OP16-011, ST30-004"
+  ],
+  "cards_found": ["OP16-002", "OP16-003", "OP16-007", "OP16-010", "OP16-011", "ST30-004"],
+  "resolution_scope": "global",
+  "decision": "Novo regex em parse_costs produzindo o MESMO 'reveal_from_hand' cost type ja existente, com campos novos power_eq (custo exato, texto sem qualificador) e card_type='CHARACTER'. Executor de reveal_from_hand (_pay_costs) estendido pra filtrar tambem por power_eq/card_type alem do filter_type ja suportado -- os 3 filtros sao opcionais e combinaveis (AND).",
+  "validated_by": [
+    "diff_parser.py: GANHOU 0 / PERDEU 0 / MUDOU 6 (todas conferidas contra card_text)",
+    "gerar_dbs.py + snapshot_parser.py: 0/0/0 apos regenerar",
+    "smoke_fast.py: teste dirigido novo test_reveal_from_hand_por_power_6_cartas com EXECUCAO real -- confirma que SEM um Character de power exato na mao o efeito NAO dispara, e COM ele o efeito dispara E a carta continua na mao (reveal nao remove)",
+    "smoke_test.py: suite ampla, TODOS OS TESTES PASSARAM",
+    "smoke_test_broad.py: NAO rodado (fix isolado numa unica familia de custo, sem tocar codigo amplamente compartilhado)"
+  ]
+}

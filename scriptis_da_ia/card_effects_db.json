@@ -60813,6 +60813,14 @@
             "action": "draw",
             "count": 1
           }
+        ],
+        "costs": [
+          {
+            "type": "reveal_from_hand",
+            "count": 1,
+            "power_eq": 8000,
+            "card_type": "CHARACTER"
+          }
         ]
       }
     }
@@ -60835,6 +60843,14 @@
             "amount": 6000,
             "target": "opp_character",
             "duration": "this_turn"
+          }
+        ],
+        "costs": [
+          {
+            "type": "reveal_from_hand",
+            "count": 2,
+            "power_eq": 8000,
+            "card_type": "CHARACTER"
           }
         ]
       },
@@ -60942,6 +60958,14 @@
             "target": "opp_character",
             "duration": "this_turn"
           }
+        ],
+        "costs": [
+          {
+            "type": "reveal_from_hand",
+            "count": 1,
+            "power_eq": 8000,
+            "card_type": "CHARACTER"
+          }
         ]
       },
       "passive": {
@@ -61034,6 +61058,14 @@
             "target": "opp_character",
             "power_lte": 2000
           }
+        ],
+        "costs": [
+          {
+            "type": "reveal_from_hand",
+            "count": 1,
+            "power_eq": 8000,
+            "card_type": "CHARACTER"
+          }
         ]
       }
     }
@@ -61054,6 +61086,14 @@
           {
             "action": "draw",
             "count": 1
+          }
+        ],
+        "costs": [
+          {
+            "type": "reveal_from_hand",
+            "count": 1,
+            "power_eq": 8000,
+            "card_type": "CHARACTER"
           }
         ]
       },
@@ -76754,6 +76794,14 @@
             "action": "draw",
             "count": 3,
             "then_trash": 2
+          }
+        ],
+        "costs": [
+          {
+            "type": "reveal_from_hand",
+            "count": 2,
+            "power_eq": 6000,
+            "card_type": "CHARACTER"
           }
         ]
       }

@@ -38347,6 +38347,14 @@
  },
  "OP16-002": {
   "on_play": {
+   "costs": [
+    {
+     "card_type": "CHARACTER",
+     "count": 1,
+     "power_eq": 8000,
+     "type": "reveal_from_hand"
+    }
+   ],
    "steps": [
     {
      "action": "draw",
@@ -38357,6 +38365,14 @@
  },
  "OP16-003": {
   "on_play": {
+   "costs": [
+    {
+     "card_type": "CHARACTER",
+     "count": 2,
+     "power_eq": 8000,
+     "type": "reveal_from_hand"
+    }
+   ],
    "steps": [
     {
      "action": "debuff_power",
@@ -38419,6 +38435,14 @@
  },
  "OP16-007": {
   "on_play": {
+   "costs": [
+    {
+     "card_type": "CHARACTER",
+     "count": 1,
+     "power_eq": 8000,
+     "type": "reveal_from_hand"
+    }
+   ],
    "steps": [
     {
      "action": "debuff_power",
@@ -38478,6 +38502,14 @@
  },
  "OP16-010": {
   "on_play": {
+   "costs": [
+    {
+     "card_type": "CHARACTER",
+     "count": 1,
+     "power_eq": 8000,
+     "type": "reveal_from_hand"
+    }
+   ],
    "steps": [
     {
      "action": "ko",
@@ -38490,6 +38522,14 @@
  },
  "OP16-011": {
   "on_play": {
+   "costs": [
+    {
+     "card_type": "CHARACTER",
+     "count": 1,
+     "power_eq": 8000,
+     "type": "reveal_from_hand"
+    }
+   ],
    "steps": [
     {
      "action": "draw",
@@ -48172,6 +48212,14 @@
  },
  "ST30-004": {
   "on_play": {
+   "costs": [
+    {
+     "card_type": "CHARACTER",
+     "count": 2,
+     "power_eq": 6000,
+     "type": "reveal_from_hand"
+    }
+   ],
    "steps": [
     {
      "action": "draw",
