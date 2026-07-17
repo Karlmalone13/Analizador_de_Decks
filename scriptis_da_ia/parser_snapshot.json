@@ -39037,6 +39037,7 @@
      "conditions": {
       "leader_type": "impel down"
      },
+     "cost_lte": 3,
      "count": 2
     }
    ]

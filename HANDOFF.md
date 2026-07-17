@@ -1,5 +1,30 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-16 (218) - OP16-039: typo "cost or N or less" nao tolerado em rest_opp_character
+
+Continuacao imediata da varredura (bloco 217). OP16-039 (Gum-Gum Twin
+Jet Pistol): "rest up to 2 of your opponent's Characters with a cost
+or 3 or less" -- typo do banco ("or" em vez de "of"). A mesma
+tolerancia `cost (?:of|or)` ja existia (achado 16/07 anterior, OP14-119,
+em `lock_opp_character_attack`) mas nao tinha sido propagada pra
+`rest_opp_character`, que usa uma regex separada. `cost_lte` saia
+ausente -- executor cai no default 99, restando QUALQUER Character do
+oponente, nao so os de custo<=3.
+
+Census: so 2 cartas usam esse typo no banco inteiro (OP14-119, ja
+coberto; OP16-039, nao coberto) -- `isolated_after_global_scan` (mesmo
+padrao textual, mecanismo diferente, so 1 carta afetada por essa
+combinacao especifica).
+
+**Validado:** `diff_parser.py` GANHOU=0/PERDEU=0/MUDOU=1. `gerar_dbs.py`
++ `snapshot_parser.py` 0/0/0. `smoke_fast.py`: 1 teste dirigido novo
+com EXECUCAO real (character de custo 3 restado, o de custo 5 fica de
+fora). `smoke_test.py`: TODOS OS TESTES PASSARAM. `smoke_test_broad.py`:
+7/7. Registro em
+`parser_audits/2026-07-16_op16-039_rest_opp_character_typo_cost_or.json`.
+
+Suspeitos: 296 -> 295.
+
 ## 2026-07-16 (217) - OP14-091 e familia: janela de parse_play_generic cortava em pontos DENTRO de colchetes (14 cartas + 2 gaps de engine)
 
 Retomada da varredura via `audit_parser_coverage.py --min-severity 2 --show`.

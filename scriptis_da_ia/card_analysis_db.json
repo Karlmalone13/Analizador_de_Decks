@@ -91596,7 +91596,8 @@
    },
    {
     "action": "rest_opp_character",
-    "trigger": "main"
+    "trigger": "main",
+    "cost_lte": 3
    }
   ],
   "synergy_states": {

@@ -3381,6 +3381,27 @@ def test_parse_play_generic_janela_com_ponto_em_nome_colchetado() -> None:
           candidato_valido in me3.field_chars and outra_copia in me3.trash)
 
 
+def test_rest_opp_character_typo_cost_or_n_or_less() -> None:
+    # Achado 16/07, OP16-039: "rest up to 2 of your opponent's Characters
+    # with a cost or 3 or less" (typo "or" em vez de "of") -- a mesma
+    # tolerancia ja existia pra lock_opp_character_attack (OP14-119), mas
+    # rest_opp_character usava regex separada sem o (?:of|or). cost_lte
+    # saia None (sem filtro nenhum), restando characters CAROS demais.
+    check("OP16-039 parseia cost_lte=3 apesar do typo 'cost or 3 or less'",
+          any(s.get("action") == "rest_opp_character" and s.get("cost_lte") == 3
+              for s in get_card_effects("OP16-039").get("main", {}).get("steps", [])))
+
+    jet_pistol = real_card("OP16-039")
+    me = GameState(leader=mk("JPLDR", "Lider", card_type="LEADER", sub_types="Impel Down"), turn=3)
+    barato = mk("JPA", "Barato", cost=3, power=3000, color="Green")
+    caro = mk("JPB", "Caro", cost=5, power=5000, color="Green")
+    opp = GameState(leader=mk("JPOPP", "Opp", card_type="LEADER"), turn=3)
+    opp.field_chars = [barato, caro]
+    EffectExecutor(me, opp).execute(jet_pistol, "main")
+    check("Execucao real: SO o Character de custo<=3 e restado, o de custo 5 fica de fora",
+          barato.rested and not caro.rested)
+
+
 def main() -> int:
     test_turn_order_imu_prefers_second()
     test_empty_throne_beats_direct_five_elders_play()
@@ -3472,6 +3493,7 @@ def main() -> int:
     test_own_character_buff_count_maior_que_1()
     test_reveal_from_hand_por_power_6_cartas()
     test_parse_play_generic_janela_com_ponto_em_nome_colchetado()
+    test_rest_opp_character_typo_cost_or_n_or_less()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0

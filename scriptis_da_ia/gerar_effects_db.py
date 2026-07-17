@@ -1593,7 +1593,10 @@ def parse_rest_opp(text):
     # rest_opp_character (so characters tem rested relevante no estado).
     m = re.search(r"rest (?:up to )?(\d+) of your opponent.{0,20}(?:characters?|cards?)", t)
     if m:
-        cost_m = re.search(r'cost of (\d+) or less', t)
+        # aceita typo "cost or N or less" (mesma tolerancia ja usada em
+        # lock_opp_character_attack pra OP14-119 -- achado 16/07 que o
+        # mesmo typo tambem vaza em rest_opp_character, OP16-039).
+        cost_m = re.search(r'cost (?:of|or) (\d+) or less', t)
         # Aceita "N base power or less" (numero antes) OU "base power of N
         # or less" (achado 16/07, ordem invertida com "of" -- OP14-062).
         power_m = (re.search(r'(\d+) base power or less', t)

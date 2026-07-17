@@ -1,0 +1,12 @@
+{
+  "trigger_card": "OP16-039",
+  "problem": "\"[Main] ... rest up to 2 of your opponent's Characters with a cost or 3 or less.\" (typo do banco: 'cost OR N or less' em vez de 'cost OF N or less'). A regex de cost_lte pra rest_opp_character so aceitava 'cost of' -- cost_lte saia ausente (None -> default 99 no executor), restando qualquer Character independente do custo, nao so os <=3.",
+  "grammar_family": "'cost or N or less' -- mesmo typo de fraseado ja tolerado em lock_opp_character_attack (achado 16/07 anterior, OP14-119, regex 'cost (?:of|or) (\\d+) or less') mas nao propagado pras outras acoes que extraem cost_lte do proprio texto.",
+  "queries": [
+    "regex 'cost or \\d+ or less' contra cards_rows.csv inteiro -- 2 cartas: OP14-119 (ja coberto, acao lock_opp_character_attack) e OP16-039 (rest_opp_character, NAO coberto)"
+  ],
+  "cards_found": ["OP16-039"],
+  "resolution_scope": "isolated_after_global_scan",
+  "decision": "So OP16-039 usa o typo dentro de rest_opp_character (OP14-119 ja tinha o proprio fix, em acao diferente). Aplicada a MESMA tolerancia 'cost (?:of|or)' na regex de rest_opp_character (linha ~1596 de gerar_effects_db.py), sem duplicar logica -- mesmo padrao textual, dois mecanismos distintos do parser precisavam da mesma tolerancia separadamente.",
+  "validated_by": ["diff_parser.py GANHOU=0/PERDEU=0/MUDOU=1 (so OP16-039, conferido)", "gerar_dbs.py + snapshot_parser.py 0/0/0", "smoke_fast.py: 1 teste dirigido novo com EXECUCAO real (character de custo 3 restado, o de custo 5 fica de fora)", "smoke_test.py: TODOS OS TESTES PASSARAM", "smoke_test_broad.py: 7/7"]
+}

@@ -61903,6 +61903,7 @@
           {
             "action": "rest_opp_character",
             "count": 2,
+            "cost_lte": 3,
             "conditions": {
               "leader_type": "impel down"
             }
