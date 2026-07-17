@@ -13858,8 +13858,15 @@
   "attribute": "Special",
   "effects": [
    {
+    "action": "debuff_cost",
+    "trigger": "passive",
+    "don_requirement": 1,
+    "target": "own_character"
+   },
+   {
     "action": "keyword_banish",
-    "trigger": "passive"
+    "trigger": "passive",
+    "don_requirement": 1
    }
   ],
   "synergy_states": {},
@@ -23138,8 +23145,14 @@
   "attribute": "Ranged",
   "effects": [
    {
+    "action": "trash_from_deck_top",
+    "trigger": "passive",
+    "don_requirement": 1
+   },
+   {
     "action": "keyword_rush",
-    "trigger": "passive"
+    "trigger": "passive",
+    "don_requirement": 1
    }
   ],
   "synergy_states": {},
@@ -58377,11 +58390,11 @@
   "attribute": "Slash",
   "effects": [
    {
-    "action": "keyword_rush",
+    "action": "win_game_on_opp_blocker",
     "trigger": "passive"
    },
    {
-    "action": "win_game_on_opp_blocker",
+    "action": "keyword_rush",
     "trigger": "passive"
    }
   ],
@@ -96740,8 +96753,15 @@
   "attribute": "Strike",
   "effects": [
    {
+    "action": "buff_power",
+    "trigger": "passive",
+    "don_requirement": 2,
+    "target": "self"
+   },
+   {
     "action": "keyword_banish",
-    "trigger": "passive"
+    "trigger": "passive",
+    "don_requirement": 2
    }
   ],
   "synergy_states": {},
@@ -96756,7 +96776,7 @@
   "rests_opponent": false,
   "bounces": false,
   "gives_don": false,
-  "power_buff": false,
+  "power_buff": true,
   "heals": false,
   "gains_life": false,
   "attacks_life": false,
@@ -105954,6 +105974,11 @@
   "sub_types": "Straw Hat Crew",
   "attribute": "Strike",
   "effects": [
+   {
+    "action": "ko_on_opp_blocker",
+    "trigger": "passive",
+    "power_lte": 8000
+   },
    {
     "action": "keyword_blocker",
     "trigger": "passive"

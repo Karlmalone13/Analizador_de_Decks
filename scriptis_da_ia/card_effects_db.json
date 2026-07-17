@@ -9763,9 +9763,15 @@
       "passive": {
         "steps": [
           {
+            "action": "debuff_cost",
+            "amount": 1,
+            "target": "own_character"
+          },
+          {
             "action": "keyword_banish"
           }
-        ]
+        ],
+        "don_requirement": 1
       }
     }
   },
@@ -15603,9 +15609,14 @@
       "passive": {
         "steps": [
           {
+            "action": "trash_from_deck_top",
+            "count": 7
+          },
+          {
             "action": "keyword_rush"
           }
-        ]
+        ],
+        "don_requirement": 1
       }
     }
   },
@@ -39236,10 +39247,10 @@
       "passive": {
         "steps": [
           {
-            "action": "keyword_rush"
+            "action": "win_game_on_opp_blocker"
           },
           {
-            "action": "win_game_on_opp_blocker"
+            "action": "keyword_rush"
           }
         ]
       }
@@ -65466,9 +65477,19 @@
       "passive": {
         "steps": [
           {
+            "action": "buff_power",
+            "amount": 2000,
+            "target": "self",
+            "duration": "this_turn"
+          },
+          {
             "action": "keyword_banish"
           }
-        ]
+        ],
+        "conditions": {
+          "life_lte": 0
+        },
+        "don_requirement": 2
       }
     }
   },
@@ -71275,12 +71296,18 @@
       "passive": {
         "steps": [
           {
+            "action": "ko_on_opp_blocker",
+            "count": 1,
+            "power_lte": 8000
+          },
+          {
             "action": "keyword_blocker"
           },
           {
             "action": "keyword_rush"
           }
-        ]
+        ],
+        "once_per_turn": true
       }
     }
   },
@@ -72315,6 +72342,8 @@
             "dest": "life_top",
             "count": 1,
             "up_to": false,
+            "cost_gte": 3,
+            "power_gte": 7000,
             "face": "up"
           }
         ],

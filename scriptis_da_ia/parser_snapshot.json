@@ -6270,7 +6270,13 @@
  "OP01-066": {},
  "OP01-067": {
   "passive": {
+   "don_requirement": 1,
    "steps": [
+    {
+     "action": "debuff_cost",
+     "amount": 1,
+     "target": "own_character"
+    },
     {
      "action": "keyword_banish"
     }
@@ -9734,7 +9740,12 @@
  },
  "OP03-041": {
   "passive": {
+   "don_requirement": 1,
    "steps": [
+    {
+     "action": "trash_from_deck_top",
+     "count": 7
+    },
     {
      "action": "keyword_rush"
     }
@@ -24684,10 +24695,10 @@
   "passive": {
    "steps": [
     {
-     "action": "keyword_rush"
+     "action": "win_game_on_opp_blocker"
     },
     {
-     "action": "win_game_on_opp_blocker"
+     "action": "keyword_rush"
     }
    ]
   }
@@ -41298,7 +41309,17 @@
  },
  "P-039": {
   "passive": {
+   "conditions": {
+    "life_lte": 0
+   },
+   "don_requirement": 2,
    "steps": [
+    {
+     "action": "buff_power",
+     "amount": 2000,
+     "duration": "this_turn",
+     "target": "self"
+    },
     {
      "action": "keyword_banish"
     }
@@ -44720,7 +44741,13 @@
  },
  "ST10-006": {
   "passive": {
+   "once_per_turn": true,
    "steps": [
+    {
+     "action": "ko_on_opp_blocker",
+     "count": 1,
+     "power_lte": 8000
+    },
     {
      "action": "keyword_blocker"
     },
@@ -45386,9 +45413,11 @@
     },
     {
      "action": "gain_life",
+     "cost_gte": 3,
      "count": 1,
      "dest": "life_top",
      "face": "up",
+     "power_gte": 7000,
      "source": "own_field",
      "up_to": false
     }

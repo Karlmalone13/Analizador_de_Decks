@@ -50,11 +50,58 @@ corrigido junto.
 
 Suspeitos: 279 -> 277.
 
-**Itens restantes do lote (aguardando implementacao, ja aprovados):**
-ST13-001 (filtro custo+power em gain_life own_field), P-039 (buff
-condicionado a Life==0), ST10-006 (trigger reativo novo: quando
-oponente ativa Blocker), OP07-091 (colocar QUALQUER NUMERO no fundo do
-deck + buff escalado pelo resultado do mesmo efeito).
+**233 -- ST13-001 (Sabo):** filtro custo+power (cost>=3, power>=7000)
+faltando na selecao de "qual Character vai pra vida" em `gain_life`
+(source=own_field) -- so o `power_eq` exato de Kawamatsu ja existia
+la, nunca `cost_gte`/`power_gte`.
+
+**234 -- Generalizacao "segmento pos-keyword" (P-039 e mais 3):**
+descoberta durante o P-039, expandiu o escopo do lote (aprovado pelo
+usuario apos pergunta explicita). O mecanismo "texto DEPOIS do
+reminder parenteses de uma keyword nativa" so existia pra `[Blocker]`
+(achado 01/07) -- generalizado pra `[Rush]`/`[Rush: Character]`/
+`[Double Attack]`/`[Banish]`/`[Unblockable]`. 3 cartas com conteudo
+REALMENTE ausente: P-039 (buff condicionado a Life==0, apos
+`[Banish]`), OP01-067 (debuff_cost, apos `[Banish]`), OP03-041
+(trigger reativo de mill, apos `[Rush]`). Efeito colateral: o
+workaround especifico de `win_game_on_opp_blocker` (existia so por
+essa mesma lacuna, limitado a `[Blocker]`) ficou redundante e foi
+removido -- generalizar sem remove-lo duplicava o step em OP09-118
+(pego pelo diff_parser antes do commit).
+
+**235 -- ST10-006 (item original 9 do lote): trigger reativo NOVO.**
+Alem do gap de posicionamento (item 234), essa clausula ("When your
+opponent activates a [Blocker], K.O. up to 1...") e um TRIGGER REATIVO
+de combate que nao tinha NENHUM mecanismo de execucao -- so existia o
+precedente `win_game_on_opp_blocker` (mesma janela de gatilho, achado
+15/07). Pior ainda: uma vez posicionado em 'passive', o parser
+GENERICO de K.O. capturava a clausula como um `ko` incondicional --
+como NENHUM codigo executa acoes arbitrarias a partir de 'passive' (so
+keyword grants/substitute/immunity/win_game_on_opp_blocker sao lidos
+de la), esse dado ficaria PARSEADO mas MORTO (nunca dispararia em
+partida real). Nova acao dedicada `ko_on_opp_blocker` (nao um `ko`
+generico) + hook de execucao NOVO em `_execute_attack`, na MESMA janela
+de `win_game_on_opp_blocker`. `once_per_turn` rastreado via flag NOVA
+no Card (`ko_on_opp_blocker_used_this_turn`, resetada em
+`refresh_phase`) -- nao `EffectExecutor._once_used` (descartavel entre
+instancias, nao sobreviveria entre ataques do mesmo turno neste hook
+fora do `execute()` normal).
+
+**Validado (233+234+235):** `diff_parser.py` GANHOU=0/PERDEU=0/MUDOU=6.
+`gerar_dbs.py` + `snapshot_parser.py` 0/0/0. `smoke_fast.py`: 2 testes
+novos com EXECUCAO real (gain_life com filtro combinado; K.O. reativo
+de PONTA A PONTA via `_execute_attack`, incluindo guarda de
+nao-duplicacao pro OP09-118). `smoke_test.py`/`smoke_test_broad.py`:
+todos passaram (broad rodado na hora, mudanca em codigo central usado
+por TODAS as 2614 cartas). Registros em
+`parser_audits/2026-07-17_p-039_pos_keyword_generalizado.json` e
+`parser_audits/2026-07-17_st10-006_ko_on_opp_blocker.json`.
+
+Suspeitos: 277 -> 272.
+
+**Item restante do lote (aguardando implementacao, ja aprovado):**
+OP07-091 (colocar QUALQUER NUMERO no fundo do deck + buff escalado
+pelo resultado do mesmo efeito).
 
 ## 2026-07-17 (228) - OP05-060/ST10-002: condicao OR "0 ou N+ DON no campo" nunca reconhecida
 

@@ -4013,6 +4013,17 @@ def parse_life(text):
             power_m = re.search(r'with (\d+) power', seg)
             if power_m:
                 step['power_eq'] = int(power_m.group(1))
+            # "with a cost of N or more and M power or more" -- filtro
+            # COMBINADO de custo+power (achado 17/07, ST13-001, unica
+            # carta no banco): nem cost_gte nem power_gte eram extraidos
+            # pra source==own_field, so o power_eq exato (Kawamatsu).
+            cost_gte_m = re.search(r'with a cost of (\d+) or more', seg)
+            if cost_gte_m:
+                step['cost_gte'] = int(cost_gte_m.group(1))
+            power_gte_m = re.search(r'(\d+) power or more', seg)
+            if power_gte_m:
+                step['power_gte'] = int(power_gte_m.group(1))
+                step.pop('power_eq', None)
         # Filtros de tipo/custo quando source == trash (ex: OP16-108
         # Shiryu, achado 15/07: "{Blackbeard Pirates} type card with a
         # cost of 6 or less from your trash"). Mesmos filtros ja usados
@@ -5223,6 +5234,32 @@ def parse_block(block_text, trigger_name):
     if 'you win the game' in t:
         steps.extend(parse_win_game_on_opp_blocker(t))
 
+    # "When your opponent activates a [Blocker], K.O. up to N of your
+    # opponent's Characters with X power or less" -- reativo NOVO
+    # (achado 17/07, ST10-006, unica carta no banco): mesma JANELA de
+    # gatilho de win_game_on_opp_blocker (verificada no combate, logo
+    # apos o oponente usar Blocker), mas com um K.O. em vez de vitoria
+    # alternativa. Return IMEDIATO (nao so extend) pra impedir que o
+    # parser generico de K.O. mais abaixo capture a MESMA clausula como
+    # um 'ko' incondicional (que nenhum codigo executa a partir de
+    # 'passive' de qualquer forma, mas ficaria como dado morto/confuso).
+    m_ko_blocker = re.search(
+        r"when your opponent activates an? \[blocker\][^.]*?"
+        r"k\.?o\.?\s+up to (\d+) of your opponent'?s characters?"
+        r"(?: with (\d+) power or less)?",
+        t)
+    if m_ko_blocker:
+        # remove qualquer 'ko' generico que o parse_ko(t) ja tenha
+        # extraido MAIS CEDO nesta mesma funcao pra essa MESMA clausula
+        # (achado ao validar: parse_ko roda antes deste check e produz um
+        # 'ko' incondicional duplicado/superado por ko_on_opp_blocker).
+        steps[:] = [s for s in steps if s.get('action') != 'ko']
+        step = {'action': 'ko_on_opp_blocker', 'count': int(m_ko_blocker.group(1))}
+        if m_ko_blocker.group(2):
+            step['power_lte'] = int(m_ko_blocker.group(2))
+        steps.append(step)
+        return steps
+
     # Trava de ataque / trava de ser restado / trava de Blocker persistente
     # (mecanicas distintas, cobertas pela mesma funcao por compartilharem
     # estrutura textual). 'can attack unless' e a variante de
@@ -6316,53 +6353,62 @@ def parse_card_effect(card_text, card_type):
                 else:
                     result['passive'] = solto_entry
 
-    # Segmento solto APOS o reminder de [Blocker]: 'blocker' esta em
-    # TODAS_TAGS (delimita os OUTROS blocos, que param ao encontrar
-    # '[Blocker]'), mas nao tem trigger_pattern proprio. Sem isto, texto que
-    # vem DEPOIS do parenteses de regra do Blocker nunca era capturado: nem
-    # pelo loop principal (sem handler para a tag), nem pelo segmento solto
-    # "antes da primeira tag" (esse so cobre ANTES, e [Blocker] geralmente
-    # e a primeira tag), nem pelo fallback final (que exige ausencia de
-    # QUALQUER tag de TODAS_TAGS, e '[Blocker]' conta como tag mesmo sem
-    # handler). Casos reais confirmados: OP11-005 (imunidade a KO
-    # condicionada a DON x1), OP11-046 (imunidade a KO condicionada a tipo),
-    # OP11-088 (buff de counter-attack), ST10-014 (draw/trash em retorno de
-    # DON ao deck).
-    blocker_m = re.search(r'\[blocker\]\s*\([^)]*\)', t_low, re.IGNORECASE)
-    if blocker_m:
-        pos_apos_blocker = blocker_m.end()
+    # Segmento solto APOS o reminder de uma keyword nativa ([Blocker],
+    # [Rush], [Rush: Character], [Double Attack], [Banish], [Unblockable]):
+    # todas estao em TODAS_TAGS (delimitam os OUTROS blocos, que param ao
+    # encontrar-las), mas nenhuma tem trigger_pattern proprio. Sem isto,
+    # texto que vem DEPOIS do parenteses de regra da keyword nunca era
+    # capturado: nem pelo loop principal (sem handler pra tag), nem pelo
+    # segmento solto "antes da primeira tag" (esse so cobre ANTES, e a
+    # keyword geralmente e a primeira tag), nem pelo fallback final (que
+    # exige ausencia de QUALQUER tag de TODAS_TAGS, e a keyword conta como
+    # tag mesmo sem handler). Achado 01/07 pra [Blocker] (OP11-005/046/088,
+    # ST10-014); GENERALIZADO 17/07 pras outras 5 keywords apos achar o
+    # MESMO gap em [Banish] (P-039: DON!!x2 + condicao de Life==0) e
+    # [Rush] (OP01-067: DON!!x1 + debuff_cost; OP03-041: DON!!x1 + trigger
+    # reativo "you may trash 7 cards..."). Cadeia de keywords (ex:
+    # OP01-121 "[Double Attack] (...) [Banish] (...)") usa o fim do
+    # ULTIMO match, nao do primeiro.
+    KEYWORD_REMINDER_TAGS = ('blocker', 'rush: character', 'rush',
+                              'double attack', 'banish', 'unblockable')
+    kw_reminder_pat = re.compile(
+        r'\[(?:' + '|'.join(re.escape(k) for k in KEYWORD_REMINDER_TAGS) + r')\]\s*\([^)]*\)',
+        re.IGNORECASE)
+    kw_reminder_matches = list(kw_reminder_pat.finditer(t_low))
+    if kw_reminder_matches:
+        pos_apos_kw = max(m.end() for m in kw_reminder_matches)
         # nao reivindica texto ja coberto por um trigger formal mais a
         # frente (ex: '[Blocker] (...) [On K.O.] efeito' ja funciona hoje).
         # Busca com pos= (nao slice) para o lookbehind de ABERTURA continuar
-        # enxergando o ')' que fecha o reminder do Blocker -- um slice
-        # perderia esse caractere e a busca falharia, engolindo o bloco
-        # seguinte inteiro (bug encontrado: duplicava on_play/on_ko/etc.
-        # dentro de 'passive' quando [Blocker] vem ANTES de outro trigger).
-        prox_tag_m = re.compile(ABERTURA + r'\[(?:' + TODAS_TAGS + r')\]').search(t_low, pos_apos_blocker)
+        # enxergando o ')' que fecha o reminder -- um slice perderia esse
+        # caractere e a busca falharia, engolindo o bloco seguinte inteiro
+        # (bug encontrado: duplicava on_play/on_ko/etc. dentro de 'passive'
+        # quando a keyword vem ANTES de outro trigger).
+        prox_tag_m = re.compile(ABERTURA + r'\[(?:' + TODAS_TAGS + r')\]').search(t_low, pos_apos_kw)
         fim_segmento = prox_tag_m.start() if prox_tag_m else len(t_low)
-        segmento_pos_blocker = t_low[pos_apos_blocker:fim_segmento].strip()
-        if segmento_pos_blocker and len(segmento_pos_blocker) > 10:
-            pos_blocker_steps = parse_block(segmento_pos_blocker, 'passive')
-            if pos_blocker_steps:
-                pos_blocker_entry = {'steps': pos_blocker_steps}
-                pos_blocker_conds = parse_conditions(segmento_pos_blocker)
-                pos_blocker_costs = parse_costs(segmento_pos_blocker)
-                if pos_blocker_conds:
-                    pos_blocker_entry['conditions'] = pos_blocker_conds
-                if pos_blocker_costs:
-                    pos_blocker_entry['costs'] = pos_blocker_costs
-                if '[once per turn]' in segmento_pos_blocker:
-                    pos_blocker_entry['once_per_turn'] = True
-                don_pos_m = re.match(r'^\[don!! x(\d+)\]', segmento_pos_blocker, re.IGNORECASE)
+        segmento_pos_kw = t_low[pos_apos_kw:fim_segmento].strip()
+        if segmento_pos_kw and len(segmento_pos_kw) > 10:
+            pos_kw_steps = parse_block(segmento_pos_kw, 'passive')
+            if pos_kw_steps:
+                pos_kw_entry = {'steps': pos_kw_steps}
+                pos_kw_conds = parse_conditions(segmento_pos_kw)
+                pos_kw_costs = parse_costs(segmento_pos_kw)
+                if pos_kw_conds:
+                    pos_kw_entry['conditions'] = pos_kw_conds
+                if pos_kw_costs:
+                    pos_kw_entry['costs'] = pos_kw_costs
+                if '[once per turn]' in segmento_pos_kw:
+                    pos_kw_entry['once_per_turn'] = True
+                don_pos_m = re.match(r'^\[don!! x(\d+)\]', segmento_pos_kw, re.IGNORECASE)
                 if don_pos_m:
-                    pos_blocker_entry['don_requirement'] = int(don_pos_m.group(1))
+                    pos_kw_entry['don_requirement'] = int(don_pos_m.group(1))
                 if 'passive' in result:
-                    result['passive']['steps'].extend(pos_blocker_entry['steps'])
-                    for k, v in pos_blocker_entry.items():
+                    result['passive']['steps'].extend(pos_kw_entry['steps'])
+                    for k, v in pos_kw_entry.items():
                         if k != 'steps' and k not in result['passive']:
                             result['passive'][k] = v
                 else:
-                    result['passive'] = pos_blocker_entry
+                    result['passive'] = pos_kw_entry
 
     # Fallback: texto sem NENHUM trigger formal da lista (ex: apenas
     # "[Once Per Turn] If this Character would be K.O.'d... instead." ou
@@ -6498,13 +6544,12 @@ def parse_card_effect(card_text, card_type):
 
     # Vitoria alternativa (OP09-118 Gol.D.Roger, achado 15/07): "when your
     # opponent activates [Blocker], if either you or your opponent has 0
-    # Life cards, you win the game" -- conectado AQUI (nao no fallback
-    # generico de parse_block) porque cartas com keyword nativa (ex:
-    # [Rush]) ja preenchem `result` e desligam o fallback de prosa solta
-    # (guardas `if not result` + `sem_tags_de_trigger`, ambas bloqueadas
-    # por qualquer tag reconhecida em TODAS_TAGS, incluindo [Rush]).
-    if 'you win the game' in t_low:
-        passive_steps.extend(parse_win_game_on_opp_blocker(t_low))
+    # Life cards, you win the game". ATE 16/07 precisava de workaround
+    # AQUI porque o mecanismo generico "segmento pos-keyword" so cobria
+    # [Blocker], nao [Rush] (a keyword nativa desta carta) -- 17/07,
+    # generalizado o mecanismo pos-keyword pra todas as keywords nativas
+    # (ver acima), que agora ja captura este caso sozinho. Workaround
+    # especifico removido pra nao duplicar o step.
 
     if passive_steps:
         if 'passive' in result:

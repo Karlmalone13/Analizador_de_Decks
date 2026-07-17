@@ -3976,6 +3976,86 @@ def test_play_card_power_range_prb02_010() -> None:
           na_faixa in me.field_chars and fraco in me.hand and forte_demais in me.hand)
 
 
+def test_gain_life_own_field_cost_gte_power_gte_st13_001() -> None:
+    # Achado 17/07, ST13-001 (Sabo): "You may add 1 of your Characters
+    # with a cost of 3 or more and 7000 power or more to the top of your
+    # Life cards face-up: [buff]." -- filtro COMBINADO custo+power no
+    # Character movido pra vida (custo=fonte do 'pagamento'), nunca
+    # extraido (so o power_eq exato de Kawamatsu ja existia). Executor
+    # tambem nao filtrava por cost_gte/power_gte -- so power_eq.
+    check("ST13-001 parseia cost_gte=3 e power_gte=7000 no gain_life",
+          get_card_effects("ST13-001").get("activate_main", {}).get("steps", [])[1]
+          .get("cost_gte") == 3 and get_card_effects("ST13-001").get("activate_main", {}).get("steps", [])[1]
+          .get("power_gte") == 7000)
+
+    sabo = real_card("ST13-001")
+    sabo.don_attached = 1  # "[DON!! x1]" -- exige DON ANEXADO na carta, nao don_available
+    fraco = mk("SBA", "Fraco", cost=2, power=3000)
+    forte_mas_barato = mk("SBB", "Forte mas barato", cost=2, power=8000)
+    elegivel = mk("SBC", "Elegivel", cost=4, power=7500)
+    me = GameState(leader=sabo, turn=3)
+    me.field_chars = [fraco, forte_mas_barato, elegivel]
+    opp = GameState(leader=mk("SBOPP", "Opp", card_type="LEADER"), turn=3)
+    EffectExecutor(me, opp).execute(sabo, "activate_main")
+    check("Execucao real: SO o Character com custo>=3 E power>=7000 vai pra vida",
+          elegivel in me.life and elegivel not in me.field_chars
+          and fraco in me.field_chars and forte_mas_barato in me.field_chars)
+
+
+def test_pos_keyword_generico_e_ko_reativo_st10_006() -> None:
+    # Achado 17/07: mecanismo "segmento solto APOS o reminder de
+    # keyword" (ja existia so pra [Blocker], achado 01/07) GENERALIZADO
+    # pra [Rush]/[Rush: Character]/[Double Attack]/[Banish]/[Unblockable]
+    # -- 3 cartas confirmadas com o MESMO gap: P-039 (buff condicionado a
+    # Life==0, apos [Banish]), OP01-067 (debuff_cost, apos [Banish]),
+    # OP03-041 (trigger reativo de mill, apos [Rush]). ST10-006 (item
+    # original do lote) revelou o gap mais serio: "[Rush] (...) [Once Per
+    # Turn] When your opponent activates a [Blocker], K.O. up to 1 of
+    # your opponent's Characters with 8000 power or less" -- alem de
+    # generalizar a posicao, precisou de mecanismo NOVO (ko_on_opp_blocker)
+    # com hook real em _execute_attack (mesma janela ja usada por
+    # win_game_on_opp_blocker, achado 15/07).
+    check("P-039 parseia buff_power condicionado a life_lte=0 (antes so keyword_banish)",
+          get_card_effects("P-039").get("passive", {}).get("conditions") == {"life_lte": 0}
+          and any(s.get("action") == "buff_power" for s in get_card_effects("P-039").get("passive", {}).get("steps", [])))
+    check("OP01-067 parseia debuff_cost (antes so keyword_banish)",
+          any(s.get("action") == "debuff_cost" for s in get_card_effects("OP01-067").get("passive", {}).get("steps", [])))
+    check("OP03-041 parseia trash_from_deck_top count=7 (antes so keyword_rush)",
+          any(s.get("action") == "trash_from_deck_top" and s.get("count") == 7
+              for s in get_card_effects("OP03-041").get("passive", {}).get("steps", [])))
+    check("ST10-006 parseia acao NOVA ko_on_opp_blocker (nao mais um 'ko' incondicional morto)",
+          get_card_effects("ST10-006").get("passive", {}).get("steps", [])[0] ==
+          {"action": "ko_on_opp_blocker", "count": 1, "power_lte": 8000})
+    check("OP09-118 continua so com 1 win_game_on_opp_blocker (sem duplicar apos a generalizacao)",
+          sum(1 for s in get_card_effects("OP09-118").get("passive", {}).get("steps", [])
+              if s.get("action") == "win_game_on_opp_blocker") == 1)
+
+    # Execucao real de PONTA A PONTA (mesma janela de combate de
+    # win_game_on_opp_blocker): ST10-006 ataca o Leader do oponente, que
+    # bloqueia com um Character -- o K.O. reativo dispara contra OUTRO
+    # Character do oponente (custo/power<=8000), nao contra o proprio
+    # blocker necessariamente.
+    atacante_char = real_card("ST10-006")  # power base 11000
+    me = GameState(leader=mk("STLDR", "Lider", card_type="LEADER"), turn=3, don_available=5)
+    me.field_chars = [atacante_char]
+    opp = GameState(leader=mk("STOPPL", "Lider Opp", card_type="LEADER"), turn=3)
+    # power > 11000 pra SOBREVIVER ao combate normal (isola o efeito do
+    # K.O. reativo, que deve mirar OUTRO Character, nao o blocker).
+    blocker_char = mk("STBLK", "Blocker", power=12000, cost=5)
+    blocker_char.has_blocker = True
+    alvo_ko = mk("STKO", "Alvo do KO", power=7000, cost=4)
+    me.deck = []
+    opp.field_chars = [blocker_char, alvo_ko]
+    match = OPTCGMatch((me.leader, []), (opp.leader, []))
+    eng = DecisionEngine(me, opp)
+    match._execute_attack(atacante_char, "leader", None, me, opp, eng, verbose=False)
+    check("Execucao real: oponente ativou Blocker -- o K.O. reativo trashou o alvo elegivel (power<=8000)",
+          alvo_ko in opp.trash and alvo_ko not in opp.field_chars
+          and blocker_char in opp.field_chars)
+    check("Execucao real: once_per_turn -- a flag do Card fica marcada como usada",
+          atacante_char.ko_on_opp_blocker_used_this_turn)
+
+
 def main() -> int:
     test_turn_order_imu_prefers_second()
     test_empty_throne_beats_direct_five_elders_play()
@@ -4081,6 +4161,8 @@ def main() -> int:
     test_op16_043_typo_tour_opponent()
     test_opp_char_cost_eq_or_gte_op14_120()
     test_play_card_power_range_prb02_010()
+    test_gain_life_own_field_cost_gte_power_gte_st13_001()
+    test_pos_keyword_generico_e_ko_reativo_st10_006()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0

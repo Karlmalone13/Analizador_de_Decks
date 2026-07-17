@@ -511,6 +511,7 @@ class Card:
     attack_paywall: dict = field(default_factory=dict)  # {'cost_type','cost_amount'} ou {} -- lock_opp_attack_unless_pays (OP08-043): PODE atacar, mas o DONO paga o custo a cada ataque enquanto ativo. Distinto de cannot_attack_until (bloqueio total). Resetado no refresh_phase do dono junto com cannot_attack_until (mesma simplificacao de duration ja usada la).
     frozen_next_refresh: bool = False  # Freeze (lock_opp_character_refresh / lock_self_character_refresh com target='this_card') -- pula APENAS o untap (c.rested=False) na PROXIMA refresh_phase do dono, consumido uma vez (refresh_phase zera este campo, fica rested mesmo se nao tiver sido atacado/restado por outro motivo). DISTINTO de cannot_be_rested_until (que trava o character de FICAR rested -- aqui e o oposto, ele PERMANECE rested ignorando o untap).
     life_face_up: bool = False  # estado valido apenas enquanto a carta esta na zona de Life (ST13/face-up life)
+    ko_on_opp_blocker_used_this_turn: bool = False  # [Once Per Turn] "When your opponent activates a [Blocker], K.O. up to N..." (achado 17/07, ST10-006) -- resolvido fora de execute() (hook em _execute_attack, mesma janela de win_game_on_opp_blocker), entao o once_per_turn precisa de flag propria no Card (nao _once_used de EffectExecutor, que e por-instancia descartavel). Resetada no refresh_phase.
     # Buffs temporários (resetados a cada turno)
     power_buff: int = 0
     base_power_override: Optional[int] = None
@@ -5671,8 +5672,17 @@ class EffectExecutor:
                     # Usa remove_character_from_field (nao pop(0) direto)
                     # pra devolver DON anexado -- achado 27/06, faltava
                     # nesse ponto especifico (fora do grep original).
-                    candidatos = [x for x in me.field_chars
-                                  if power_eq is None or x.power == power_eq]
+                    # cost_gte/power_gte (achado 17/07, ST13-001: "with a
+                    # cost of 3 or more and 7000 power or more") -- filtro
+                    # combinado, distinto do power_eq exato de Kawamatsu.
+                    cost_gte = step.get('cost_gte')
+                    power_gte = step.get('power_gte')
+                    candidatos = [
+                        x for x in me.field_chars
+                        if (power_eq is None or x.power == power_eq)
+                        and (cost_gte is None or x.cost >= cost_gte)
+                        and (power_gte is None or x.power >= power_gte)
+                    ]
                     if not candidatos: break
                     c = min(candidatos, key=lambda x: x.board_value())
                     remove_character_from_field(me, c, dest)
@@ -8495,6 +8505,7 @@ class OPTCGMatch:
             c.double_attack_this_turn = False
             c.blocker_this_turn = False
             c.can_attack_active_this_turn = False
+            c.ko_on_opp_blocker_used_this_turn = False
             c.immunity_ko_until = ''  # imunidade temporaria (grant_ko_immunity_type)
             c.battled_opp_character_this_turn = False
             c.cannot_attack_opp_chars_cost_lte = -1
@@ -8505,6 +8516,7 @@ class OPTCGMatch:
         p.leader.cannot_attack_until = ''
         p.leader.effects_negated_until = ''
         p.leader.unblockable_this_turn = False
+        p.leader.ko_on_opp_blocker_used_this_turn = False
         p.leader.battled_opp_character_this_turn = False
         p.leader.cannot_attack_opp_chars_cost_lte = -1
         if p.field_stage:
@@ -10418,6 +10430,43 @@ class OPTCGMatch:
                             print(f'      🏆 {fonte.name[:20]}: vitoria alternativa '
                                   f'(oponente ativou Blocker com alguem em 0 vida)')
                         return True
+
+            # K.O. reativo (ST10-006, achado 17/07): "When your opponent
+            # activates a [Blocker], K.O. up to N of your opponent's
+            # Characters with X power or less" -- mesma janela/perspectiva
+            # de win_game_on_opp_blocker acima (`p` e o dono da carta,
+            # `opp` acabou de ativar Blocker = "your opponent" do ponto de
+            # vista de `p`). Alvo = Characters de `opp` (nao so o blocker).
+            # once_per_turn rastreado via flag no proprio Card (nao
+            # EffectExecutor._once_used, que e por-instancia descartavel
+            # e nao sobreviveria entre ataques deste mesmo turno).
+            for fonte in [p.leader] + list(p.field_chars):
+                fpassive = get_card_effects(fonte.code).get('passive', {})
+                ko_step = next((s for s in fpassive.get('steps', [])
+                                if s.get('action') == 'ko_on_opp_blocker'), None)
+                if not ko_step or fonte.ko_on_opp_blocker_used_this_turn:
+                    continue
+                from optcg_engine.rules_facade import eligible_cards, choose_highest_board_value
+                count = ko_step.get('count', 1)
+                candidatos = eligible_cards(opp.field_chars, power_lte=ko_step.get('power_lte'))
+                ee_ko = EffectExecutor(opp, p)
+                koed = []
+                for _ in range(min(count, len(candidatos))):
+                    alvo_ko = choose_highest_board_value(candidatos)
+                    if is_immune(alvo_ko, 'ko', opp, p, source_is_opp=True, ko_context='effect'):
+                        remove_by_identity(candidatos, alvo_ko)
+                        continue
+                    if ee_ko.try_any_substitute(alvo_ko, 'ko', source_is_opp=True):
+                        remove_by_identity(candidatos, alvo_ko)
+                        continue
+                    remove_character_from_field(opp, alvo_ko, 'trash')
+                    ee_ko.execute(alvo_ko, 'on_ko', is_opp_turn=True)
+                    remove_by_identity(candidatos, alvo_ko)
+                    koed.append(alvo_ko.name[:15])
+                fonte.ko_on_opp_blocker_used_this_turn = True
+                if verbose and koed:
+                    print(f'      💀 {fonte.name[:20]}: K.O. reativo (oponente ativou '
+                          f'Blocker) -- {", ".join(koed)}')
 
         # Define poder de defesa
         if target_type == 'leader':
