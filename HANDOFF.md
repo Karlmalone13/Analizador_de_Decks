@@ -1,5 +1,63 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-16 (211) - EB04-048 e familia: buff de power ia pro Leader ERRADO (condicao contaminava alvo)
+
+Retomando a varredura padrao 1-por-1 (fila de suspeitos maiores
+concluida no bloco 210). Investigando EB04-048 (Rob Lucci) achei um bug
+mais serio que o esperado: "If your Leader's type includes 'CP', this
+Character gains +1000 power and -2 cost for every 5 cards in your
+trash." O buff de POWER (que ja aparecia no parseado) estava indo pro
+`target='leader'` -- ERRADO, deveria ser `'self'` (a propria carta). A
+condicao ("your leader's type includes") contaminava a deteccao de
+alvo, que checava 'your leader' em QUALQUER lugar da janela de 90
+chars ANTES de checar 'this character'/'this card' (adjacente ao
+verbo "gains", o sujeito real).
+
+Busca global (regex "if your leader ... this character gains") achou
+**11 cartas** com esse EXATO bug -- todas confirmadas via execucao
+real aplicando o buff no `me.leader.power_buff` errado em vez do
+Character: EB01-027, EB04-048, OP01-083, OP06-088, OP09-086, OP11-112,
+OP15-051, OP16-068, PRB02-001, ST16-003, ST27-001. Esse e um bug de
+COMPORTAMENTO DE JOGO real (nao so cosmetico no JSON) -- o buff
+beneficiava o lado errado do tabuleiro.
+
+Fix: novo check de ADJACENCIA ("this character/card" IMEDIATAMENTE
+antes de "gains") com prioridade sobre a presenca solta de "your
+leader", em `target_from_context` (variante dinamica) e no bloco
+inline (buff estatico). Guard `(?<!other than )` protege contra
+falso-positivo em "other than this card gains" (ST01-005, clausula de
+EXCLUSAO de alvo, nao o alvo em si -- confirmado que continua
+`leader_or_character`, nao afetado).
+
+**Bug adjacente (mesma carta, mesma investigacao):** "and -2 cost for
+every 5 cards in your trash" nunca era reconhecido -- a clausula "and
+-2 cost" entre "power" e "for every" quebrava o regex dinamico
+existente (que exigia "power" direto seguido de "for every"). Novo
+regex combinado captura "gains +N power and [sinal]M cost for every K
+cards" numa unica passada, produzindo `buff_power_per_count` +
+`buff_cost_per_count` com o MESMO divisor. `buff_cost_per_count`
+tambem ganhou suporte a `amount_per` NEGATIVO (guard trocado de
+`amount<=0` pra `amount==0` -- antes tratava reducao de custo como
+"sem efeito").
+
+**Validado:** `diff_parser.py` GANHOU=0/PERDEU=0/MUDOU=11 (todas
+conferidas, incluindo confirmacao de que ST01-005 NAO mudou).
+`gerar_dbs.py`+`snapshot_parser.py` 0/0/0. `smoke_fast.py`: 1 teste
+dirigido novo com EXECUCAO real (power_buff aplicando no Character
+certo, nao no Leader; EB04-048 ganhando +2000 power E -4 cost
+simultaneamente). `smoke_test.py`: TODOS OS TESTES PASSARAM.
+**`smoke_test_broad.py`: 7/7** -- rodado por seguranca extra
+(`target_from_context` e uma funcao COMPARTILHADA por todo
+`parse_power_buff`, nao so pelas 11 cartas achadas).
+
+Suspeitos: 326 -> 326 (a maioria dessas 11 cartas nao tinha numero
+perdido -- o buff aplicava com o VALOR certo, so no ALVO errado,
+invisivel ao audit numerico; so EB04-048 tinha numero visivelmente
+ausente, e mesmo essa permanece na lista por um detalhe de extracao do
+audit tool que nao reconhece "-2" como contendo o digito "2").
+Registro completo em
+`parser_audits/2026-07-16_leader_condicao_contamina_alvo_self.json`.
+
 ## 2026-07-16 (210) - ST13-003 Luffy: gain_life com source='hand' ignorava filtro em 2 camadas (parser + engine)
 
 Ultimo item da fila de suspeitos maiores desta sessao (blocos 207-210).

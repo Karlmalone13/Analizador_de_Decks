@@ -4763,7 +4763,9 @@ class EffectExecutor:
             # "gains [Blocker] and +N cost for every M cards in your
             # trash" (achado 16/07, ST27-004) -- mesma semantica de
             # buff_power_per_count, so que muta cost_buff em vez de
-            # power_buff. Unica carta no banco com essa escala hoje.
+            # power_buff. amount_per pode ser NEGATIVO (achado 16/07,
+            # EB04-048: "+1000 power and -2 cost for every 5 cards in
+            # your trash" -- reducao de custo, nao aumento).
             source = step.get('source', 'trash')
             count_per = max(1, int(step.get('count_per', 1) or 1))
             amount_per = int(step.get('amount_per', 1) or 0)
@@ -4771,7 +4773,7 @@ class EffectExecutor:
 
             n = len(me.trash) if source == 'trash' else 0
             amount = (n // count_per) * amount_per
-            if amount <= 0:
+            if amount == 0:
                 return ''
 
             if target == 'self':
@@ -4779,7 +4781,8 @@ class EffectExecutor:
             else:
                 for c in me.field_chars:
                     c.cost_buff += amount
-            return f'+{amount} cost em {target} ({n}/{count_per} {source})'
+            sinal = '+' if amount >= 0 else ''
+            return f'{sinal}{amount} cost em {target} ({n}/{count_per} {source})'
 
         # ── Cost buff/debuff (buff_cost / debuff_cost) ──────────────────────────
         # NOTA DE LIMITACAO: assim como buff_power, o sistema geral de turnos

@@ -1,0 +1,21 @@
+{
+  "trigger_card": "EB04-048",
+  "problem": "EB04-048 (Rob Lucci): 'If your Leader's type includes \"CP\", this Character gains +1000 power and -2 cost for every 5 cards in your trash.' Investigando o '-2 cost' ausente, achei que o buff de POWER ja presente estava indo pro alvo ERRADO: target='leader' em vez de 'self'. Causa raiz: a deteccao de alvo (tanto no buff estatico quanto na variante dinamica por-contagem) checava 'your leader' em QUALQUER lugar da janela de 90 chars ANTES de checar 'this character'/'this card' -- e 'your leader' aparecia na CONDICAO ('If your Leader's type includes...'), nao no alvo do efeito, contaminando o resultado. Alem disso, a clausula 'and -2 cost' entre 'power' e 'for every' quebrava o regex dinamico de power-per-trash (que exige 'power' direto seguido de 'for every'), fazendo o power cair no fallback ESTATICO errado (+1000 fixo, nao escalando por trash) -- e o cost sumia por completo.",
+  "grammar_family": "3 bugs relacionados na mesma investigacao: (a) deteccao de alvo prioriza 'your leader' (presenca solta na janela) sobre 'this character'/'this card' (adjacencia direta com 'gains') -- afeta QUALQUER carta cuja CONDICAO mencione 'your leader' antes de 'this Character gains +N power' na mesma frase; (b) 'gains +N power and -M cost for every K cards in your trash' -- 2 escalas dinamicas combinadas, mesmo divisor, nunca reconhecidas juntas; (c) buff_cost_per_count so aceitava amount_per positivo (guard 'if amount<=0: return' tratava reducao de custo como 'sem efeito').",
+  "queries": [
+    "regex \"if your leader'?s?[^.]{0,60}this character gains? \\+?\\d+\\s*power\" sobre card_text -- achou 11 cartas: EB01-027, EB04-048, OP01-083, OP06-088, OP09-086, OP11-112, OP15-051, OP16-068, PRB02-001, ST16-003, ST27-001. TODAS confirmadas com target='leader' no parseado atual, apesar do texto dizer explicitamente 'this Character gains'",
+    "confirmado via execucao real que o buff aplicava em me.leader.power_buff (nao no Character correto) -- efeito de jogo genuinamente ERRADO, nao so cosmetico no JSON",
+    "regex '[+\\-\\u2212]\\d+ cost for every \\d+ cards? in your trash' sobre card_text -- achou 2 cartas (EB04-048 e ST27-004, este ultimo ja corrigido em sessao anterior -- confirma que a infra buff_cost_per_count ja existia, so faltava suportar amount_per negativo)",
+    "GUARD verificado: 'other than this character/card gains' (ST01-005, exclusao de alvo, nao o alvo em si) NAO deve ser afetado pela prioridade de adjacencia -- confirmado com lookbehind negativo, testado explicitamente"
+  ],
+  "cards_found": ["EB01-027", "EB04-048", "OP01-083", "OP06-088", "OP09-086", "OP11-112", "OP15-051", "OP16-068", "PRB02-001", "ST16-003", "ST27-001"],
+  "resolution_scope": "global",
+  "decision": "(a) target_from_context (variante dinamica) e o bloco inline de deteccao de alvo (buff estatico) ganharam um novo check de ADJACENCIA ('this character'/'this card' IMEDIATAMENTE antes de 'gains', via regex $ anchor) com prioridade sobre a presenca solta de 'your leader' na janela -- lookbehind negativo '(?<!other than )' protege contra falso-positivo em clausulas de exclusao. (b) Novo regex m_combo_trash captura 'gains +N power and [sign]M cost for every K cards in your trash' ANTES do loop generico de dynamic_patterns, produzindo 2 steps (buff_power_per_count + buff_cost_per_count) com o MESMO count_per e target compartilhados. (c) buff_cost_per_count: guard trocado de 'amount<=0' pra 'amount==0' (permite amount_per negativo = reducao de custo).",
+  "validated_by": [
+    "diff_parser.py: GANHOU 0 / PERDEU 0 / MUDOU 11 (todas conferidas contra card_text, incluindo confirmacao de que ST01-005 NAO mudou -- guard funcionando)",
+    "gerar_dbs.py + snapshot_parser.py: 0/0/0 apos regenerar",
+    "smoke_fast.py: teste dirigido novo test_leader_condicao_contamina_alvo_self_do_buff com EXECUCAO real -- confirma power_buff aplicando no Character (nao no me.leader.power_buff) pra OP06-088, e EB04-048 ganhando +2000 power E -4 cost simultaneamente (10 cartas no trash, divisor 5) na propria carta",
+    "smoke_test.py: suite ampla, TODOS OS TESTES PASSARAM",
+    "smoke_test_broad.py: 7/7 partidas aleatorias sem excecao -- rodado por seguranca extra (mudanca na deteccao de alvo e uma funcao COMPARTILHADA usada por todo parse_power_buff, nao so pelas 11 cartas achadas)"
+  ]
+}

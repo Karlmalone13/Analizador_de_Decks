@@ -3058,6 +3058,66 @@ def test_gain_life_hand_filtro_ignorado_e_st13003_fonte_combinada() -> None:
           trash_candidato in me2.life)
 
 
+def test_leader_condicao_contamina_alvo_self_do_buff() -> None:
+    # Achado 16/07 (varredura por uso real -- EB04-048 revelou o bug) --
+    # "If your Leader's type includes X, this Character gains +N power"
+    # tinha o buff indo pro LEADER errado: a deteccao de alvo checava
+    # 'your leader' em QUALQUER lugar da janela de 90 chars ANTES de
+    # checar 'this character'/'this card' -- e 'your leader' aparecia na
+    # CONDICAO (nao no alvo do efeito), contaminando o resultado.
+    # Corrigido com prioridade de ADJACENCIA (this character/card
+    # IMEDIATAMENTE antes de 'gains') sobre a presenca solta de 'your
+    # leader'. 11 cartas reais: EB01-027, EB04-048, OP01-083, OP06-088,
+    # OP09-086, OP11-112, OP15-051, OP16-068, PRB02-001, ST16-003,
+    # ST27-001. Guard extra: NAO deve disparar em "other than this
+    # character/card gains" (exclusao de alvo, nao o alvo em si --
+    # ST01-005, confirmado que continua target=leader_or_character).
+    for code in ("OP06-088", "OP11-112", "OP15-051",
+                 "OP16-068", "PRB02-001", "ST16-003", "ST27-001"):
+        effects = get_card_effects(code)
+        found_self = any(
+            s.get("action") == "buff_power" and s.get("target") == "self"
+            for block in effects.values() if isinstance(block, dict)
+            for s in block.get("steps", [])
+        )
+        check(f"{code}: buff_power vai pro proprio Character (target=self), nao pro Leader",
+              found_self)
+    for code in ("EB01-027", "OP01-083", "OP09-086", "EB04-048"):
+        effects = get_card_effects(code)
+        found_self_dyn = any(
+            s.get("action") == "buff_power_per_count" and s.get("target") == "self"
+            for block in effects.values() if isinstance(block, dict)
+            for s in block.get("steps", [])
+        )
+        check(f"{code}: buff_power_per_count (variante dinamica) tambem vai pro self",
+              found_self_dyn)
+    check("ST01-005 ('other than this card') NAO foi afetado -- continua leader_or_character",
+          any(s.get("target") == "leader_or_character"
+              for s in get_card_effects("ST01-005").get("when_attacking", {}).get("steps", [])))
+
+    # Execucao real: OP06-088 com Leader Dressrosa ativo -- o buff deve
+    # aplicar na PROPRIA carta (nao no lider).
+    op06088 = real_card("OP06-088")
+    me = GameState(leader=mk("XLDR", "Lider Dressrosa", card_type="LEADER", sub_types="Dressrosa"), turn=3)
+    me.field_chars = [op06088]
+    opp = GameState(leader=mk("XOPP", "Opp", card_type="LEADER"), turn=3)
+    EffectExecutor(me, opp).execute(op06088, "passive")
+    check("Execucao real: power_buff vai pro Character (nao pro leader.power_buff)",
+          op06088.power_buff == 2000 and me.leader.power_buff == 0)
+
+    # Execucao real: EB04-048 com Leader CP e 10 cartas no trash (2x o
+    # divisor 5) -- +2000 power E -4 cost, ambos na propria carta.
+    lucci = real_card("EB04-048")
+    me2 = GameState(leader=mk("XCPLDR", "Lider CP", card_type="LEADER", sub_types="CP0"), turn=3)
+    me2.field_chars = [lucci]
+    me2.trash = [mk(f"XLT{i}", f"Trash {i}") for i in range(10)]
+    EffectExecutor(me2, GameState(leader=mk("XCPOPP", "Opp", card_type="LEADER"), turn=3)).execute(lucci, "passive")
+    check("Execucao real: EB04-048 ganha +2000 power (2x1000, 10/5) na propria carta",
+          lucci.power_buff == 2000)
+    check("Execucao real: EB04-048 ganha -4 cost (2x-2, 10/5) na propria carta",
+          lucci.cost_buff == -4)
+
+
 def main() -> int:
     test_turn_order_imu_prefers_second()
     test_empty_throne_beats_direct_five_elders_play()
@@ -3143,6 +3203,7 @@ def main() -> int:
     test_choose_and_ko_it_com_upgrade_condicional()
     test_rebecca_reveal_play_pair_condicional()
     test_gain_life_hand_filtro_ignorado_e_st13003_fonte_combinada()
+    test_leader_condicao_contamina_alvo_self_do_buff()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0

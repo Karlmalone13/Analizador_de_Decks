@@ -426,7 +426,7 @@
      "count_per": 2,
      "duration": "this_turn",
      "source": "events_in_trash",
-     "target": "leader"
+     "target": "self"
     }
    ]
   }
@@ -4922,10 +4922,19 @@
    },
    "steps": [
     {
-     "action": "buff_power",
-     "amount": 1000,
+     "action": "buff_power_per_count",
+     "amount_per": 1000,
+     "count_per": 5,
      "duration": "this_turn",
-     "target": "leader"
+     "source": "trash",
+     "target": "self"
+    },
+    {
+     "action": "buff_cost_per_count",
+     "amount_per": -2,
+     "count_per": 5,
+     "source": "trash",
+     "target": "self"
     }
    ]
   }
@@ -6461,7 +6470,7 @@
      "count_per": 2,
      "duration": "this_turn",
      "source": "events_in_trash",
-     "target": "leader"
+     "target": "self"
     }
    ]
   }
@@ -17286,7 +17295,7 @@
      "action": "buff_power",
      "amount": 2000,
      "duration": "this_turn",
-     "target": "leader"
+     "target": "self"
     }
    ]
   }
@@ -23877,7 +23886,7 @@
      "count_per": 4,
      "duration": "this_turn",
      "source": "trash",
-     "target": "leader"
+     "target": "self"
     }
    ]
   }
@@ -28812,7 +28821,7 @@
      "action": "buff_power",
      "amount": 4000,
      "duration": "this_turn",
-     "target": "leader"
+     "target": "self"
     }
    ]
   },
@@ -36714,7 +36723,7 @@
      "action": "buff_power",
      "amount": 3000,
      "duration": "this_turn",
-     "target": "leader"
+     "target": "self"
     }
    ]
   }
@@ -39429,7 +39438,7 @@
      "action": "buff_power",
      "amount": 3000,
      "duration": "this_turn",
-     "target": "leader"
+     "target": "self"
     }
    ]
   }
@@ -41773,7 +41782,7 @@
      "action": "buff_power",
      "amount": 1000,
      "duration": "this_turn",
-     "target": "leader"
+     "target": "self"
     }
    ]
   },
@@ -45999,7 +46008,7 @@
      "action": "buff_power",
      "amount": 2000,
      "duration": "this_turn",
-     "target": "leader"
+     "target": "self"
     }
    ]
   }
@@ -47420,7 +47429,7 @@
      "action": "buff_power",
      "amount": 4000,
      "duration": "this_turn",
-     "target": "leader"
+     "target": "self"
     }
    ]
   },

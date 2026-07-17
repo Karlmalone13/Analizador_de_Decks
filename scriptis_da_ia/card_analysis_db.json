@@ -1109,7 +1109,7 @@
    {
     "action": "buff_power_per_count",
     "trigger": "passive",
-    "target": "leader"
+    "target": "self"
    }
   ],
   "synergy_states": {},
@@ -10382,9 +10382,14 @@
     "trigger": "on_play"
    },
    {
-    "action": "buff_power",
+    "action": "buff_power_per_count",
     "trigger": "passive",
-    "target": "leader"
+    "target": "self"
+   },
+   {
+    "action": "buff_cost_per_count",
+    "trigger": "passive",
+    "target": "self"
    }
   ],
   "synergy_states": {},
@@ -10399,7 +10404,7 @@
   "rests_opponent": false,
   "bounces": false,
   "gives_don": false,
-  "power_buff": true,
+  "power_buff": false,
   "heals": false,
   "gains_life": false,
   "attacks_life": false,
@@ -14510,7 +14515,7 @@
     "action": "buff_power_per_count",
     "trigger": "your_turn",
     "don_requirement": 1,
-    "target": "leader"
+    "target": "self"
    }
   ],
   "synergy_states": {},
@@ -41138,7 +41143,7 @@
    {
     "action": "buff_power",
     "trigger": "passive",
-    "target": "leader"
+    "target": "self"
    }
   ],
   "synergy_states": {},
@@ -56852,7 +56857,7 @@
    {
     "action": "buff_power_per_count",
     "trigger": "passive",
-    "target": "leader"
+    "target": "self"
    }
   ],
   "synergy_states": {},
@@ -68512,7 +68517,7 @@
    {
     "action": "buff_power",
     "trigger": "opp_turn",
-    "target": "leader"
+    "target": "self"
    },
    {
     "action": "keyword_blocker",
@@ -86841,7 +86846,7 @@
    {
     "action": "buff_power",
     "trigger": "opp_turn",
-    "target": "leader"
+    "target": "self"
    }
   ],
   "synergy_states": {},
@@ -92813,7 +92818,7 @@
    {
     "action": "buff_power",
     "trigger": "when_attacking",
-    "target": "leader"
+    "target": "self"
    }
   ],
   "synergy_states": {},
@@ -98669,7 +98674,7 @@
    {
     "action": "buff_power",
     "trigger": "opp_turn",
-    "target": "leader"
+    "target": "self"
    }
   ],
   "synergy_states": {},
@@ -109373,7 +109378,7 @@
    {
     "action": "buff_power",
     "trigger": "passive",
-    "target": "leader"
+    "target": "self"
    }
   ],
   "synergy_states": {},
@@ -112675,7 +112680,7 @@
    {
     "action": "buff_power",
     "trigger": "activate_main",
-    "target": "leader"
+    "target": "self"
    },
    {
     "action": "draw",

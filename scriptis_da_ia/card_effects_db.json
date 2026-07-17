@@ -718,7 +718,7 @@
             "amount_per": 1000,
             "count_per": 2,
             "source": "events_in_trash",
-            "target": "leader",
+            "target": "self",
             "duration": "this_turn"
           }
         ],
@@ -7530,10 +7530,19 @@
       "passive": {
         "steps": [
           {
-            "action": "buff_power",
-            "amount": 1000,
-            "target": "leader",
+            "action": "buff_power_per_count",
+            "amount_per": 1000,
+            "count_per": 5,
+            "source": "trash",
+            "target": "self",
             "duration": "this_turn"
+          },
+          {
+            "action": "buff_cost_per_count",
+            "amount_per": -2,
+            "count_per": 5,
+            "source": "trash",
+            "target": "self"
           }
         ],
         "conditions": {
@@ -10123,7 +10132,7 @@
             "amount_per": 1000,
             "count_per": 2,
             "source": "events_in_trash",
-            "target": "leader",
+            "target": "self",
             "duration": "this_turn"
           }
         ],
@@ -27611,7 +27620,7 @@
           {
             "action": "buff_power",
             "amount": 2000,
-            "target": "leader",
+            "target": "self",
             "duration": "this_turn"
           }
         ],
@@ -38073,7 +38082,7 @@
             "amount_per": 1000,
             "count_per": 4,
             "source": "trash",
-            "target": "leader",
+            "target": "self",
             "duration": "this_turn",
             "conditions": {
               "leader_type": "blackbeard pirates"
@@ -45912,7 +45921,7 @@
           {
             "action": "buff_power",
             "amount": 4000,
-            "target": "leader",
+            "target": "self",
             "duration": "this_turn"
           }
         ],
@@ -58401,7 +58410,7 @@
           {
             "action": "buff_power",
             "amount": 3000,
-            "target": "leader",
+            "target": "self",
             "duration": "this_turn"
           }
         ],
@@ -62612,7 +62621,7 @@
           {
             "action": "buff_power",
             "amount": 3000,
-            "target": "leader",
+            "target": "self",
             "duration": "this_turn"
           }
         ],
@@ -66447,7 +66456,7 @@
           {
             "action": "buff_power",
             "amount": 1000,
-            "target": "leader",
+            "target": "self",
             "duration": "this_turn"
           }
         ],
@@ -73394,7 +73403,7 @@
           {
             "action": "buff_power",
             "amount": 2000,
-            "target": "leader",
+            "target": "self",
             "duration": "this_turn"
           }
         ],
@@ -75662,7 +75671,7 @@
           {
             "action": "buff_power",
             "amount": 4000,
-            "target": "leader",
+            "target": "self",
             "duration": "this_turn"
           }
         ],

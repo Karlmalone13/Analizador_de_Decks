@@ -2209,11 +2209,54 @@ def parse_power_buff(text):
     def target_from_context(ctx: str) -> str:
         if 'your leader or 1 of your characters' in ctx or 'your leader or character' in ctx:
             return 'leader_or_character'
+        # ADJACENCIA tem prioridade sobre presenca em qualquer lugar da
+        # janela: "this character"/"this card" LOGO ANTES de "gains" e o
+        # sujeito real do buff, mesmo que "your leader" apareca ANTES
+        # ainda na mesma frase (dentro da CONDICAO, ex: "If your Leader's
+        # type includes 'CP', this Character gains +1000 power..."
+        # -- achado 16/07, 11 cartas reais tinham o buff indo pro Leader
+        # errado por causa dessa contaminacao de "your leader" vindo da
+        # condicao). So cai no 'your leader' generico se NAO houver essa
+        # adjacencia mais especifica.
+        if re.search(r'(?<!other than )this (?:character|card)\s*$', ctx):
+            return 'self'
         if 'your leader' in ctx:
             return 'leader'
         if 'all of your characters' in ctx:
             return 'all_allies'
         return 'self'
+
+    # "gains +N power and -M cost for every K cards in your trash" -- 2
+    # escalas DINAMICAS COMBINADAS, mesmo divisor (achado 16/07, EB04-048):
+    # a clausula "and -M cost" fica ENTRE "power" e "for every", quebrando
+    # o match do dynamic_patterns['trash'] abaixo (que exige "power"
+    # direto seguido de "for every") -- o power caia no fallback ESTATICO
+    # errado (+1000 fixo, nao por-contagem) e o cost sumia por completo.
+    # Testado ANTES do loop generico pra consumir o span inteiro primeiro.
+    m_combo_trash = re.search(
+        r'gains? \+(\d+)\s*power\s+and\s+([+\-−])(\d+)\s*cost'
+        r'\s+for every (\d+) cards? in your trash', t)
+    if m_combo_trash:
+        contexto_combo = t[max(0, m_combo_trash.start() - JANELA_ANTES):m_combo_trash.start()]
+        target_combo = target_from_context(contexto_combo)
+        count_per_combo = int(m_combo_trash.group(4))
+        steps.append({
+            'action': 'buff_power_per_count',
+            'amount_per': int(m_combo_trash.group(1)),
+            'count_per': count_per_combo,
+            'source': 'trash',
+            'target': target_combo,
+            'duration': 'this_turn',
+        })
+        cost_sign = -1 if m_combo_trash.group(2) in ('-', '−') else 1
+        steps.append({
+            'action': 'buff_cost_per_count',
+            'amount_per': cost_sign * int(m_combo_trash.group(3)),
+            'count_per': count_per_combo,
+            'source': 'trash',
+            'target': target_combo,
+        })
+        dynamic_spans.append((m_combo_trash.start(), m_combo_trash.end()))
 
     # Buffs dinamicos do ActV3: Passive1KPerXTrash,
     # Passive1KPerXEventTrash, Passive1KPerXRestedDon e variantes simples.
@@ -2382,6 +2425,16 @@ def parse_power_buff(text):
                 target = 'opp_character'
         elif type_all_m:
             target = 'all_allies'
+        # ADJACENCIA tem prioridade sobre 'your leader' aparecer em
+        # qualquer lugar da janela -- achado 16/07 (mesma causa raiz do
+        # target_from_context acima, 11 cartas): "if your leader['s]
+        # type includes X, this Character gains +N power" tinha o "your
+        # leader" da CONDICAO contaminando o alvo do buff (virava
+        # 'leader' errado). "this character"/"this card" LOGO ANTES de
+        # "gains" e o sujeito real, mesmo com "your leader" mais cedo na
+        # mesma frase.
+        elif re.search(r'(?<!other than )this (?:character|card) gains?\s*$', contexto_antes):
+            target = 'self'
         elif 'your leader or 1 of your characters' in contexto_antes or 'your leader or character' in contexto_antes:
             target = 'leader_or_character'
         elif 'all of your' in contexto_antes and "leader" in contexto_antes:
