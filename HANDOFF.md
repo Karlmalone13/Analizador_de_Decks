@@ -1,5 +1,48 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-16 (216) - FIM DE SESSAO: resumo acumulado da varredura (blocos 197-215, suspeitos 349 -> 299)
+
+Sessao longa de varredura 1-por-1 do `audit_parser_coverage.py`,
+parando aqui a pedido do usuario ("gostei, agora progredimos... quero
+que salve, registre tudo pra uma nova sessao"). Nenhum trabalho em
+andamento nao commitado -- git status limpo (so `.claude/` nao
+versionado). 16 familias corrigidas nesta sessao (blocos 197-215),
+cobrindo bem mais de 100 cartas reais. Suspeitos: **349 -> 299**.
+
+**Achados de maior impacto (pra quem for auditar depois):**
+- Bug de COMPORTAMENTO REAL (nao so parseado incompleto): buff de
+  power indo pro Leader ERRADO em 11 cartas (bloco 211) -- condicao
+  "if your leader..." contaminava a deteccao de alvo.
+- `cost_buff_permanent` acumulava sem limite turno apos turno (bloco
+  206) -- bug de ENGINE pre-existente, achado durante validacao.
+- 2 regressoes pegas e REVERTIDAS antes de qualquer commit (blocos 209
+  e 212) -- ver [[feedback_verificar_hipotese_contra_casos_existentes]]
+  na memoria pro detalhe de como evitar isso de novo.
+- Mecanica inteiramente nova: `reveal_deck_top_conditional` (bloco
+  212), reutilizando o padrao ja existente de
+  `reveal_opp_deck_top_choose_cost`.
+- Um unico fix generico (`power_lte` em `play_card`, bloco 213) resolveu
+  21 cartas de uma vez -- maior queda de suspeitos num commit so.
+
+**Infra nova reutilizavel criada nesta sessao** (procurar antes de
+reinventar): `buff_power_per_count`/`buff_cost_per_count` (escalas
+dinamicas por trash/hand/DON, aceita amount_per negativo),
+`reveal_deck_top_conditional`, `reveal_from_hand` (custo de revelar,
+por tipo OU por power), `own_character` com `count`>1,
+`chars_lte`/`chars_gte` com filtro de power/custo,
+`board_chars_cost_gte_count` (contagem, distinto de
+`board_has_cost_gte`), `hand_or_trash` como source combinada de
+`gain_life`, `opp_chars_rested_gte` (simetrico a `chars_rested_gte`).
+
+**Falsos-positivos ja confirmados** (nao reinvestigar): `give_don`/
+`give_don_opp` sao sempre single-target -- o "1" que o audit tool
+aponta como perdido e so cardinalidade implicita, nunca um bug real.
+
+**Para retomar:** rodar `python audit_parser_coverage.py --min-severity
+2 --show 15` (prioriza cartas com 2+ numeros perdidos). Memoria salva
+em `project_parser_audit_progress.md` com o mesmo resumo pra
+persistir entre sessoes mesmo se o HANDOFF crescer muito.
+
 ## 2026-07-16 (215) - OP16-003 e familia: custo "reveal N Character cards with X power" nunca reconhecido (6 cartas)
 
 OP16-003 (Edward.Newgate): "You may reveal 2 Character cards with 8000
