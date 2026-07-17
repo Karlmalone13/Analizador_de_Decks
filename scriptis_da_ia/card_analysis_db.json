@@ -2669,7 +2669,7 @@
    {
     "action": "buff_power",
     "trigger": "activate_main",
-    "target": "self"
+    "target": "select_filtered"
    }
   ],
   "synergy_states": {},
@@ -2888,7 +2888,7 @@
    {
     "action": "buff_power",
     "trigger": "main",
-    "target": "leader"
+    "target": "leader_or_character"
    }
   ],
   "synergy_states": {
@@ -3862,6 +3862,10 @@
    },
    {
     "action": "deck_bottom_rest",
+    "trigger": "on_play"
+   },
+   {
+    "action": "play_card",
     "trigger": "on_play"
    }
   ],
@@ -7612,6 +7616,11 @@
     "action": "play_card",
     "trigger": "main",
     "cost_lte": 6
+   },
+   {
+    "action": "play_card",
+    "trigger": "main",
+    "cost_lte": 4
    }
   ],
   "synergy_states": {},
@@ -7649,7 +7658,7 @@
   "attribute": "Wisdom",
   "effects": [
    {
-    "action": "gain_double_attack",
+    "action": "select_grant_double_attack",
     "trigger": "on_play"
    }
   ],
@@ -7671,7 +7680,7 @@
   "attacks_life": false,
   "trashes_own_life": false,
   "has_rush": false,
-  "has_double_attack": true,
+  "has_double_attack": false,
   "has_unblockable": false,
   "has_banish": false,
   "has_trigger": false
@@ -8180,8 +8189,9 @@
   "attribute": "Special",
   "effects": [
    {
-    "action": "rest_opp_don",
-    "trigger": "activate_main"
+    "action": "rest_opp_character",
+    "trigger": "activate_main",
+    "cost_lte": 4
    },
    {
     "action": "set_don_active",
@@ -8205,9 +8215,9 @@
   "has_counter_value": false,
   "has_counter_event": false,
   "is_blocker": false,
-  "is_removal": false,
+  "is_removal": true,
   "kos": false,
-  "rests_opponent": false,
+  "rests_opponent": true,
   "bounces": false,
   "gives_don": false,
   "power_buff": false,
@@ -9317,7 +9327,7 @@
   "attribute": "Wisdom",
   "effects": [
    {
-    "action": "gain_unblockable",
+    "action": "select_grant_unblockable_turn",
     "trigger": "activate_main"
    }
   ],
@@ -9340,7 +9350,7 @@
   "trashes_own_life": false,
   "has_rush": false,
   "has_double_attack": false,
-  "has_unblockable": true,
+  "has_unblockable": false,
   "has_banish": false,
   "has_trigger": false
  },
@@ -31889,7 +31899,7 @@
     "target": "leader_or_character"
    },
    {
-    "action": "gain_double_attack",
+    "action": "select_grant_double_attack",
     "trigger": "main"
    }
   ],
@@ -31916,7 +31926,7 @@
   "attacks_life": false,
   "trashes_own_life": false,
   "has_rush": false,
-  "has_double_attack": true,
+  "has_double_attack": false,
   "has_unblockable": false,
   "has_banish": false,
   "has_trigger": true
@@ -38161,8 +38171,9 @@
   "attribute": "Strike",
   "effects": [
    {
-    "action": "rest_opp_don",
-    "trigger": "activate_main"
+    "action": "rest_opp_character",
+    "trigger": "activate_main",
+    "cost_lte": 3
    },
    {
     "action": "self_cant_take_life",
@@ -38181,9 +38192,9 @@
   "has_counter_value": false,
   "has_counter_event": false,
   "is_blocker": false,
-  "is_removal": false,
+  "is_removal": true,
   "kos": false,
-  "rests_opponent": false,
+  "rests_opponent": true,
   "bounces": false,
   "gives_don": false,
   "power_buff": false,
@@ -54696,8 +54707,9 @@
   "attribute": "Strike",
   "effects": [
    {
-    "action": "rest_opp_don",
-    "trigger": "on_play"
+    "action": "rest_opp_character",
+    "trigger": "on_play",
+    "cost_lte": 6
    }
   ],
   "synergy_states": {
@@ -54712,9 +54724,9 @@
   "has_counter_value": true,
   "has_counter_event": false,
   "is_blocker": false,
-  "is_removal": false,
+  "is_removal": true,
   "kos": false,
-  "rests_opponent": false,
+  "rests_opponent": true,
   "bounces": false,
   "gives_don": false,
   "power_buff": false,
@@ -112550,8 +112562,9 @@
   "attribute": "Wisdom",
   "effects": [
    {
-    "action": "rest_opp_don",
-    "trigger": "on_play"
+    "action": "rest_opp_character",
+    "trigger": "on_play",
+    "cost_lte": 1
    },
    {
     "action": "keyword_blocker",
@@ -112570,9 +112583,9 @@
   "has_counter_value": true,
   "has_counter_event": false,
   "is_blocker": true,
-  "is_removal": false,
+  "is_removal": true,
   "kos": false,
-  "rests_opponent": false,
+  "rests_opponent": true,
   "bounces": false,
   "gives_don": false,
   "power_buff": false,

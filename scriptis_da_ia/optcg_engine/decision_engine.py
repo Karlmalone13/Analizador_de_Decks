@@ -4738,14 +4738,22 @@ class EffectExecutor:
                     return ''
                 me.leader.power_buff += amount
             elif target == 'leader_or_character':
-                # IA escolhe o mais forte
-                best = max(me.field_chars + [me.leader],
-                           key=lambda c: c.effective_power(True)) if me.field_chars else me.leader
-                best.power_buff += amount
-                # grava a selecao (SaveTargetName) pra um step POSTERIOR no
-                # MESMO bloco poder referenciar "that card gains an
-                # additional +N power" (target='selected'). Achado 17/07,
-                # OP12-098.
+                # "Up to a total of N of your Leader and Character cards
+                # gain +X power" -- N>1 (achado 17/07, EB02-007, unica
+                # carta no banco): repete a escolha do mais forte restante
+                # ate N ou os candidatos acabarem, mesmo padrao ja usado
+                # por own_character/opp_character count>1.
+                count_lc = step.get('count', 1)
+                pool = list(me.field_chars) + [me.leader]
+                best = None
+                for _ in range(min(count_lc, len(pool))):
+                    best = max(pool, key=lambda c: c.effective_power(True))
+                    best.power_buff += amount
+                    remove_by_identity(pool, best)
+                # grava a ULTIMA selecao (SaveTargetName) pra um step
+                # POSTERIOR no MESMO bloco poder referenciar "that card
+                # gains an additional +N power" (target='selected').
+                # Achado 17/07, OP12-098.
                 self._last_selected = best
             elif target == 'selected':
                 # "that card gains an additional +N power" -- refere-se a
@@ -4797,6 +4805,12 @@ class EffectExecutor:
                 filter_type = step.get('filter_type', '')
                 candidatos = [c for c in me.field_chars + [me.leader]
                               if card_matches_filter(c, filter_type)]
+                # "other than [Nome]" (achado 17/07, EB02-002 Sabo) --
+                # exclusao de nome, mesma convencao ja usada em
+                # own_character/all_allies.
+                exclude_sel = (step.get('exclude') or '').lower()
+                if exclude_sel:
+                    candidatos = [c for c in candidatos if exclude_sel not in c.name.lower()]
                 if candidatos:
                     alvo = choose_highest_board_value(candidatos)
                     alvo.power_buff += amount
@@ -4889,10 +4903,19 @@ class EffectExecutor:
                 ativos = [c for c in opp.field_chars if not c.rested]
                 if not getattr(opp.leader, 'rested', False):
                     ativos.append(opp.leader)
-                candidatos = ativos or (list(opp.field_chars) + [opp.leader])
-                alvo = choose_highest_board_value(candidatos)
-                alvo.power_buff -= amount
-                return f'{alvo.name[:18]} -{amount} power'
+                candidatos = list(ativos or (list(opp.field_chars) + [opp.leader]))
+                # "up to a total of N" com N>1 (achado 17/07, EB01-053/
+                # OP02-089) -- mesmo padrao ja usado por opp_character
+                # (achado 15/07): repete a escolha do melhor alvo restante
+                # ate N ou os candidatos acabarem.
+                count = step.get('count', 1)
+                alvos = []
+                for _ in range(min(count, len(candidatos))):
+                    alvo = choose_highest_board_value(candidatos)
+                    alvo.power_buff -= amount
+                    remove_by_identity(candidatos, alvo)
+                    alvos.append(alvo.name[:15])
+                return f'-{amount} power em: {", ".join(alvos)}' if alvos else ''
             if target == 'opp_character':
                 if not opp.field_chars:
                     return ''
@@ -6307,6 +6330,25 @@ class EffectExecutor:
                 return 'ganhou Double Attack (so este turno)'
             card.has_double_attack = True
             return 'ganhou Double Attack'
+        if action == 'select_grant_double_attack':
+            # "Up to N of your [Tipo] type Characters gains [Double
+            # Attack]" -- SELECAO de OUTRO Character (por tipo), distinto
+            # de gain_double_attack (sempre a propria carta-fonte, sem
+            # selecao). Mesma familia de select_grant_blocker/rush.
+            # Achado 17/07, EB03-050/OP04-115.
+            from optcg_engine.rules_facade import choose_highest_board_value, eligible_cards
+            count = step.get('count', 1)
+            candidates = eligible_cards(me.field_chars, filter_text=step.get('filter_type', ''))
+            granted = []
+            for _ in range(min(count, len(candidates))):
+                target = choose_highest_board_value(candidates)
+                if step.get('duration') == 'this_turn':
+                    target.double_attack_this_turn = True
+                else:
+                    target.has_double_attack = True
+                remove_by_identity(candidates, target)
+                granted.append(target.name[:15])
+            return f'ganhou Double Attack: {", ".join(granted)}' if granted else ''
         if action == 'gain_banish':
             card.has_banish = True
             return 'ganhou Banish'

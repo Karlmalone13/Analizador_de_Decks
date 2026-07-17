@@ -947,6 +947,7 @@
     {
      "action": "debuff_power",
      "amount": 3000,
+     "count": 2,
      "duration": "this_turn",
      "target": "opp_leader_or_character"
     }
@@ -1111,8 +1112,11 @@
     {
      "action": "buff_power",
      "amount": 2000,
+     "count": 1,
      "duration": "this_turn",
-     "target": "self"
+     "exclude": "sabo",
+     "filter_type": "revolutionary army",
+     "target": "select_filtered"
     }
    ]
   }
@@ -1196,8 +1200,9 @@
     {
      "action": "buff_power",
      "amount": 1000,
+     "count": 3,
      "duration": "this_turn",
-     "target": "leader"
+     "target": "leader_or_character"
     }
    ]
   },
@@ -1624,6 +1629,12 @@
     },
     {
      "action": "deck_bottom_rest"
+    },
+    {
+     "action": "play_card",
+     "cost_eq": 2,
+     "count": 1,
+     "enters_rested": true
     }
    ]
   }
@@ -3423,6 +3434,16 @@
      "count": 1,
      "filter_type": "thriller bark pirates",
      "source_alt": "trash"
+    },
+    {
+     "action": "play_card",
+     "conditions": {
+      "leader_is": "perona"
+     },
+     "cost_lte": 4,
+     "count": 1,
+     "filter_type": "thriller bark pirates",
+     "source_alt": "trash"
     }
    ]
   }
@@ -3431,8 +3452,10 @@
   "on_play": {
    "steps": [
     {
-     "action": "gain_double_attack",
-     "duration": "this_turn"
+     "action": "select_grant_double_attack",
+     "count": 1,
+     "duration": "this_turn",
+     "filter_type": "sky island"
     }
    ]
   }
@@ -3741,7 +3764,8 @@
    "once_per_turn": true,
    "steps": [
     {
-     "action": "rest_opp_don",
+     "action": "rest_opp_character",
+     "cost_lte": 4,
      "count": 1
     },
     {
@@ -4341,8 +4365,9 @@
    ],
    "steps": [
     {
-     "action": "gain_unblockable",
-     "duration": "this_turn"
+     "action": "select_grant_unblockable_turn",
+     "count": 1,
+     "filter_type": "alabasta"
     }
    ]
   }
@@ -5177,6 +5202,10 @@
  },
  "EB04-056": {
   "passive": {
+   "conditions": {
+    "has_named_character": "jewelry bonney",
+    "life_lte": 0
+   },
    "costs": [
     {
      "type": "rest_self"
@@ -8492,6 +8521,7 @@
     {
      "action": "debuff_power",
      "amount": 3000,
+     "count": 2,
      "duration": "this_turn",
      "target": "opp_leader_or_character"
     }
@@ -13465,8 +13495,10 @@
    ],
    "steps": [
     {
-     "action": "gain_double_attack",
-     "duration": "this_turn"
+     "action": "select_grant_double_attack",
+     "count": 1,
+     "duration": "this_turn",
+     "filter_type": "land of wano"
     }
    ]
   },
@@ -16116,7 +16148,8 @@
   "activate_main": {
    "steps": [
     {
-     "action": "rest_opp_don",
+     "action": "rest_opp_character",
+     "cost_lte": 3,
      "count": 1
     },
     {
@@ -23139,7 +23172,8 @@
    },
    "steps": [
     {
-     "action": "rest_opp_don",
+     "action": "rest_opp_character",
+     "cost_lte": 6,
      "count": 1
     }
    ]
@@ -47085,6 +47119,11 @@
     {
      "count": 3,
      "type": "rest_don"
+    },
+    {
+     "count": 1,
+     "exclude_self": true,
+     "type": "return_own_character_to_hand"
     }
    ],
    "once_per_turn": true,
@@ -47687,7 +47726,8 @@
    ],
    "steps": [
     {
-     "action": "rest_opp_don",
+     "action": "rest_opp_character",
+     "cost_lte": 1,
      "count": 1
     }
    ]

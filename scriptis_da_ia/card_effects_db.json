@@ -1530,7 +1530,8 @@
             "action": "debuff_power",
             "amount": 3000,
             "target": "opp_leader_or_character",
-            "duration": "this_turn"
+            "duration": "this_turn",
+            "count": 2
           }
         ]
       }
@@ -1798,8 +1799,11 @@
           {
             "action": "buff_power",
             "amount": 2000,
-            "target": "self",
-            "duration": "this_turn"
+            "target": "select_filtered",
+            "duration": "this_turn",
+            "count": 1,
+            "filter_type": "revolutionary army",
+            "exclude": "sabo"
           }
         ],
         "costs": [
@@ -1953,8 +1957,9 @@
           {
             "action": "buff_power",
             "amount": 1000,
-            "target": "leader",
-            "duration": "this_turn"
+            "target": "leader_or_character",
+            "duration": "this_turn",
+            "count": 3
           }
         ]
       }
@@ -2599,6 +2604,12 @@
           },
           {
             "action": "deck_bottom_rest"
+          },
+          {
+            "action": "play_card",
+            "count": 1,
+            "cost_eq": 2,
+            "enters_rested": true
           }
         ],
         "conditions": {
@@ -5357,6 +5368,16 @@
             "conditions": {
               "leader_is": "perona"
             }
+          },
+          {
+            "action": "play_card",
+            "count": 1,
+            "cost_lte": 4,
+            "filter_type": "thriller bark pirates",
+            "source_alt": "trash",
+            "conditions": {
+              "leader_is": "perona"
+            }
           }
         ],
         "costs": [
@@ -5382,7 +5403,9 @@
       "on_play": {
         "steps": [
           {
-            "action": "gain_double_attack",
+            "action": "select_grant_double_attack",
+            "count": 1,
+            "filter_type": "sky island",
             "duration": "this_turn"
           }
         ]
@@ -5812,8 +5835,9 @@
       "activate_main": {
         "steps": [
           {
-            "action": "rest_opp_don",
-            "count": 1
+            "action": "rest_opp_character",
+            "count": 1,
+            "cost_lte": 4
           },
           {
             "action": "set_don_active",
@@ -6679,8 +6703,9 @@
       "activate_main": {
         "steps": [
           {
-            "action": "gain_unblockable",
-            "duration": "this_turn"
+            "action": "select_grant_unblockable_turn",
+            "count": 1,
+            "filter_type": "alabasta"
           }
         ],
         "costs": [
@@ -7881,6 +7906,10 @@
             "action": "gain_blocker"
           }
         ],
+        "conditions": {
+          "has_named_character": "jewelry bonney",
+          "life_lte": 0
+        },
         "costs": [
           {
             "type": "rest_self"
@@ -13561,7 +13590,8 @@
             "action": "debuff_power",
             "amount": 3000,
             "target": "opp_leader_or_character",
-            "duration": "this_turn"
+            "duration": "this_turn",
+            "count": 2
           }
         ],
         "costs": [
@@ -21502,7 +21532,9 @@
       "main": {
         "steps": [
           {
-            "action": "gain_double_attack",
+            "action": "select_grant_double_attack",
+            "count": 1,
+            "filter_type": "land of wano",
             "duration": "this_turn"
           }
         ],
@@ -25697,8 +25729,9 @@
       "activate_main": {
         "steps": [
           {
-            "action": "rest_opp_don",
-            "count": 1
+            "action": "rest_opp_character",
+            "count": 1,
+            "cost_lte": 3
           },
           {
             "action": "self_cant_take_life"
@@ -36786,8 +36819,9 @@
       "on_play": {
         "steps": [
           {
-            "action": "rest_opp_don",
-            "count": 1
+            "action": "rest_opp_character",
+            "count": 1,
+            "cost_lte": 6
           }
         ],
         "conditions": {
@@ -74976,6 +75010,11 @@
           {
             "type": "rest_don",
             "count": 3
+          },
+          {
+            "type": "return_own_character_to_hand",
+            "count": 1,
+            "exclude_self": true
           }
         ],
         "once_per_turn": true
@@ -75884,8 +75923,9 @@
       "on_play": {
         "steps": [
           {
-            "action": "rest_opp_don",
-            "count": 1
+            "action": "rest_opp_character",
+            "count": 1,
+            "cost_lte": 1
           }
         ],
         "costs": [

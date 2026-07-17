@@ -99,16 +99,26 @@ def parse_conditions(text):
         m = re.search(r'(?:if|and|,) you have (\d+) or less life', t)
         if m: conds['life_lte'] = int(m.group(1))
 
+    # "If you have [Nome] and you have N Life cards" -- clausula COMPOSTA
+    # (presenca por nome + vida exata), tratada ANTES do guard generico
+    # abaixo pra nao deixar so metade da condicao (achado 17/07, EB04-056
+    # Pacifista, unica carta no banco -- ficou deliberadamente na fila
+    # desde 15/07, ver historico). Ambas as chaves setadas juntas.
+    m_named_life = re.search(
+        r'if you have \[([^\]]+)\] and you have (\d+) life cards?', t)
+    if m_named_life:
+        conds['has_named_character'] = m_named_life.group(1).strip()
+        conds['life_lte'] = int(m_named_life.group(2))
+
     # "If you have 0 Life cards" -- caso exato nao escrito como "0 or
     # less". Familia encontrada pela varredura global de 15/07. Mantemos a
     # mesma representacao life_lte=0 para reutilizar toda a checagem do
     # engine e o scoping por-step de "Then, if".
-    # Nao aplicar ainda aos blocos compostos "If you have [Nome] and you
-    # have 0 Life". Esse primeiro requisito pertence a uma familia propria
-    # (campo/trash/power/multiplos nomes) e adicionar somente metade do gate
-    # faria o JSON parecer completo sem ser. EB04-056 permanece na fila ate
-    # essa familia ser corrigida por inteiro.
-    if ('if you have [' not in t
+    # Nao aplicar aos blocos compostos "If you have [Nome] and you have 0
+    # Life" -- ja tratados acima (m_named_life), guard evita setar so
+    # metade do gate quando o composto NAO bate no regex acima (ex: nome
+    # com colchete mas frase diferente).
+    if (not m_named_life and 'if you have [' not in t
             and re.search(r'(?:if|and) you have (?:0|no) life cards?', t)):
         conds['life_lte'] = 0
 
@@ -846,6 +856,23 @@ def parse_costs(text):
     m = re.search(r'rest (?:this (?:card|character|stage) and )?(\d+) of your don!!', t)
     if m:
         costs.append({'type': 'rest_don', 'count': int(m.group(1))})
+        # Continuacao COMPOSTA "... and return N of your Characters other
+        # than this Character to the owner's hand" (achado 17/07,
+        # ST22-005, unica carta no banco) -- 2o custo distinto,
+        # encadeado por "and" apos o rest_don. Mesmo padrao de composicao
+        # ja usado por rest_self_and_leader_or_stage/place_from_trash_
+        # bottom_deck (m_composite).
+        m_ret = re.search(
+            r'and return (\d+) of your characters?'
+            r'(?: other than (this character|\[([^\]]+)\]))?'
+            r' to the owner.?s hand', t)
+        if m_ret:
+            ret_cost = {'type': 'return_own_character_to_hand', 'count': int(m_ret.group(1))}
+            if m_ret.group(2) == 'this character':
+                ret_cost['exclude_self'] = True
+            elif m_ret.group(3):
+                ret_cost['exclude'] = m_ret.group(3).strip()
+            costs.append(ret_cost)
     else:
         # Forma "(N) (You may rest the specified number of DON!! cards in
         # your cost area.):" -- atalho numérico isolado entre parênteses,
@@ -1177,6 +1204,23 @@ def parse_look_at(text):
             steps.append({'action': 'trash_from_hand', 'count': int(m2.group(1))})
     elif 'place the rest at the bottom' in t:
         steps.append({'action': 'deck_bottom_rest'})
+        # "...and play up to N Character card(s) with a cost of M from
+        # your hand rested" -- clausula ADICIONAL apos o destino do resto
+        # (achado 17/07, EB02-028 Portgas Ace, unica carta no banco):
+        # jogar uma Character card DA MAO (nao do deck revelado), custo
+        # exato, entrando RESTADA. GRUPO 2 do executor play_card ja
+        # suporta isso (fontes=[me.hand] por padrao + step 'enters_rested'
+        # ja existente) -- so faltava o parser produzir o step.
+        m_play_hand = re.search(
+            r'and play up to (\d+) character cards? with a cost of (\d+)'
+            r' from your hand rested', t)
+        if m_play_hand:
+            steps.append({
+                'action': 'play_card',
+                'count': int(m_play_hand.group(1)),
+                'cost_eq': int(m_play_hand.group(2)),
+                'enters_rested': True,
+            })
     elif 'place the rest at the top' in t:
         steps.append({'action': 'deck_top_rest'})
     elif 'place them at the top or bottom' in t:
@@ -1707,6 +1751,26 @@ def parse_rest_opp(text):
     steps = []
     t = text.lower()
 
+    # Alvo MISTO "DON!! cards or Characters" (DON mencionado PRIMEIRO) +
+    # filtro de custo opcional na alternativa Character (achado 17/07,
+    # EB03-061 Uta, unica carta no banco com essa ordem). CHECADO ANTES
+    # do m_don generico logo abaixo -- "don!! cards" aparece dentro da
+    # janela de 15 chars que m_don aceita, entao m_don casaria essa MESMA
+    # clausula primeiro e descartaria a alternativa "or Characters" por
+    # engano (return antecipado) se ficasse depois. Mesma aproximacao ja
+    # documentada pra m_mixed abaixo (rest_opp_character como stand-in
+    # pra escolha real entre 2 tipos de alvo -- engine ainda nao modela
+    # essa escolha).
+    m_mixed_don_first = re.search(
+        r"rest up to (\d+) of your opponent.{0,10} don!{0,2}\s*cards? or "
+        r"characters?(?: with a cost of (\d+) or less)?", t)
+    if m_mixed_don_first:
+        step = {'action': 'rest_opp_character', 'count': int(m_mixed_don_first.group(1))}
+        if m_mixed_don_first.group(2):
+            step['cost_lte'] = int(m_mixed_don_first.group(2))
+        steps.append(step)
+        return steps
+
     # Rest DON!! do OPONENTE -- mecânica distinta de rest_opp_character
     # (aqui o alvo é DON!! card no campo do oponente, não um Character).
     # Achado na auditoria do censo 0_nao_classificado (27/06): P-060 Tot
@@ -2072,6 +2136,24 @@ def parse_select_unblockable_turn(text):
         if 'leader or character' in m_select.group(3):
             step['include_leader'] = True
         steps.append(step)
+
+    # "Up to N of your [Tipo] type Characters gains [Unblockable]" --
+    # forma DIRETA da keyword (tag, nao a prose "opponent cannot activate
+    # Blocker") pra conceder Unblockable-so-neste-turno a uma selecao
+    # filtrada. Mesma semantica de select_grant_unblockable_turn (regra
+    # 10-1-7-1: Unblockable == oponente nao pode ativar Blocker), so muda
+    # a REDACAO. Achado 17/07, EB04-024 (unica carta no banco com essa
+    # forma pra Unblockable).
+    if not steps:
+        m_kw_direct = re.search(
+            r"up to (\d+) of your [\"'\[{]([a-z][a-z0-9 .'-]+?)[\"'\]}]\s*type characters?"
+            r" gains? \[unblockable\]", t)
+        if m_kw_direct:
+            steps.append({
+                'action': 'select_grant_unblockable_turn',
+                'count': int(m_kw_direct.group(1)),
+                'filter_type': m_kw_direct.group(2).strip(),
+            })
 
     return steps
 
@@ -2452,7 +2534,8 @@ def parse_power_buff(text):
     dynamic_spans = []
 
     def target_from_context(ctx: str) -> str:
-        if 'your leader or 1 of your characters' in ctx or 'your leader or character' in ctx:
+        if ('your leader or 1 of your characters' in ctx or 'your leader or character' in ctx
+                or 'your leader and character' in ctx):
             return 'leader_or_character'
         # ADJACENCIA tem prioridade sobre presenca em qualquer lugar da
         # janela: "this character"/"this card" LOGO ANTES de "gains" e o
@@ -2566,19 +2649,27 @@ def parse_power_buff(text):
         # "on your/the field" (achado 17/07, ST01-017, unica carta com esse
         # filler) -- tolerado como locucao opcional entre o alvo e o
         # "gains", mesma FORMA de "and that card" ja tolerada.
-        r"(?:\s+and that card)?(?:\s+on (?:your|the) field)? gains? \+(\d+)\s*power",
+        # "other than [Nome]" (achado 17/07, EB02-002 Sabo, unica carta com
+        # esse filler nesta posicao) -- exclusao de nome tolerada entre o
+        # alvo e "gains", mesma FORMA ja tolerada pra "and that card"/"on
+        # your field".
+        r"(?:\s+and that card)?(?:\s+on (?:your|the) field)?"
+        r"(?:\s+other than \[([^\]]+)\])? gains? \+(\d+)\s*power",
         t
     )
     if m_select_buff:
         count = int(m_select_buff.group(1))
         filtro = next((g for g in m_select_buff.groups()[1:4] if g), '').strip()
-        amount = int(m_select_buff.group(5))
+        exclude_sel = m_select_buff.group(5)
+        amount = int(m_select_buff.group(6))
         step = {
             'action': 'buff_power', 'amount': amount,
             'target': 'select_filtered', 'duration': 'this_turn', 'count': count,
         }
         if filtro:
             step['filter_type'] = filtro
+        if exclude_sel:
+            step['exclude'] = exclude_sel.strip()
         steps.append(step)
         dynamic_spans.append((m_select_buff.start(), m_select_buff.end()))
 
@@ -2705,7 +2796,12 @@ def parse_power_buff(text):
         # select_filtered/gain_rush(target='selected'). Achado 17/07.
         elif re.search(r'that (?:character|card) gains?(?: an additional)?\s*$', contexto_antes):
             target = 'selected'
-        elif 'your leader or 1 of your characters' in contexto_antes or 'your leader or character' in contexto_antes:
+        elif ('your leader or 1 of your characters' in contexto_antes or 'your leader or character' in contexto_antes
+                or 'your leader and character' in contexto_antes):
+            # "and" (nao so "or") -- achado 17/07, EB02-007 (unica carta
+            # no banco): "up to a total of N of your Leader AND Character
+            # cards" e a MESMA semantica de pool combinado leader+character,
+            # so com conectivo diferente.
             target = 'leader_or_character'
         elif 'all of your' in contexto_antes and "leader" in contexto_antes:
             target = 'all_allies_and_leader'
@@ -2774,6 +2870,13 @@ def parse_power_buff(text):
             m_cnt_own = re.search(r'up to (\d+) of your characters?', contexto_antes)
             if m_cnt_own and int(m_cnt_own.group(1)) > 1:
                 count_own = int(m_cnt_own.group(1))
+        elif target == 'leader_or_character':
+            # "Up to a total of N of your Leader and Character cards gain
+            # +X power" -- N>1, mesma logica de count_own (achado 17/07,
+            # EB02-007, unica carta no banco).
+            m_cnt_lc = re.search(r'up to (?:a total of )?(\d+) of your leader', contexto_antes)
+            if m_cnt_lc and int(m_cnt_lc.group(1)) > 1:
+                count_own = int(m_cnt_lc.group(1))
 
         duration = 'this_turn'
         if 'until the start of your opponent' in contexto_depois:
@@ -2815,8 +2918,11 @@ def parse_power_buff(text):
         # no banco pedem N=2, ex: OP01-022, OP11-020). So extrai count
         # quando > 1 -- N=1 fica sem o campo (comportamento antigo
         # preservado, default implicito continua 1).
-        if target == 'opp_character':
-            m_cnt = re.search(r'up to (\d+) of your opponent', contexto_antes)
+        if target in ('opp_character', 'opp_leader_or_character'):
+            # "up to a total of N" (achado 17/07, EB01-053/OP02-089) --
+            # mesma FORMA de "up to N", so com "a total of" no meio,
+            # tolerado como locucao opcional.
+            m_cnt = re.search(r'up to (?:a total of )?(\d+) of your opponent', contexto_antes)
             if m_cnt and int(m_cnt.group(1)) > 1:
                 step['count'] = int(m_cnt.group(1))
         # "-N power ... for every DON!! card given to that Character" --
@@ -5393,6 +5499,11 @@ def parse_block(block_text, trigger_name):
         # a palavra "select" no texto (a selecao ja aconteceu no custo,
         # nao num step de efeito). Achado 17/07.
         steps.extend(parse_select_unblockable_turn(t))
+    elif '[unblockable]' in t and 'gain' in t and 'type character' in t:
+        # EB04-024: forma DIRETA da keyword ("gains [Unblockable]"), sem
+        # a prose "opponent cannot activate Blocker" -- mesma semantica
+        # (regra 10-1-7-1), so redacao diferente. Achado 17/07.
+        steps.extend(parse_select_unblockable_turn(t))
 
     # "Set [alvo] as active" -- desrestar fora do Refresh normal. Exclui
     # don!! explicitamente dentro da função (set_don_active já cobre).
@@ -5626,7 +5737,25 @@ def parse_block(block_text, trigger_name):
         steps.extend(reveal_pair_steps)
     # Play genérico (sem origem explícita)
     elif 'play ' in t:
-        steps.extend(parse_play_generic(t))
+        play_generic_steps = parse_play_generic(t)
+        steps.extend(play_generic_steps)
+        # "...play up to N {Tipo} type Character card with a cost of M or
+        # less AND up to N2 {Tipo} type Character card with a cost of M2
+        # or less from your hand or trash" -- SEGUNDA clausula de play,
+        # MESMO filtro/fonte do 1o step, custo DIFERENTE. parse_play_generic
+        # (re.search, casamento unico) so pega a 1a -- achado 17/07,
+        # EB03-049 (unica carta no banco com essa forma). Reusa
+        # filter_type/source_alt do 1o step ja construido, so muda cost_lte.
+        primeiro_play = next((s for s in play_generic_steps if s.get('action') == 'play_card'), None)
+        if primeiro_play:
+            m_segundo = re.search(
+                r'and up to (\d+) [\"\'\[{][a-z][a-z0-9 .\'-]+[\]}\"\']\s*type character cards?'
+                r' with a cost of (\d+) or less', t)
+            if m_segundo:
+                segundo_play = dict(primeiro_play)
+                segundo_play['count'] = int(m_segundo.group(1))
+                segundo_play['cost_lte'] = int(m_segundo.group(2))
+                steps.append(segundo_play)
 
     # "Activate up to N [Tipo] Event ... from your hand" -- sinonimo de
     # play_card pra Events (achado 16/07, OP12-041/OP15-014/OP15-046).
@@ -5931,23 +6060,50 @@ def parse_block(block_text, trigger_name):
             if dur:
                 step['duration'] = dur
             steps.append(step)
-    m_da = re.search(r'gains?\s+\[double attack\]', t)
-    if 'gain_double_attack' not in _lista_choice_keywords and (m_da or '[double attack]' in _lista_txt):
-        step = {'action': 'gain_double_attack'}
-        dur = _duration_apos(m_da.end()) if m_da else None
-        if dur:
-            step['duration'] = dur
+    # "Up to N of your [Tipo]/{Tipo} type Characters gains [Double
+    # Attack]" -- SELECAO de Character DIFERENTE, mesma classe de bug ja
+    # corrigida pra Blocker/Rush (select_grant_blocker/select_grant_rush).
+    # Achado 17/07, familia de 2 (EB03-050, OP04-115): auto-concessao
+    # (gain_double_attack, sem selecao) em vez de escolher OUTRO character
+    # por tipo.
+    m_select_da = re.search(
+        r'up to (\d+) of your '
+        r'(?:[\[{"]([a-z][a-z0-9 .\'-]+)[\]}"]\s+type\s+)?'
+        r'characters?'
+        r'(?P<clause>[^.]*?)'
+        r'gains? \[?double attack\]?',
+        t)
+    if m_select_da:
+        step = {'action': 'select_grant_double_attack', 'count': int(m_select_da.group(1))}
+        if m_select_da.group(2):
+            step['filter_type'] = m_select_da.group(2).strip()
+        tail = t[m_select_da.end():m_select_da.end() + 30]
+        if 'during this turn' in tail:
+            step['duration'] = 'this_turn'
         steps.append(step)
+    else:
+        m_da = re.search(r'gains?\s+\[double attack\]', t)
+        if 'gain_double_attack' not in _lista_choice_keywords and (m_da or '[double attack]' in _lista_txt):
+            step = {'action': 'gain_double_attack'}
+            dur = _duration_apos(m_da.end()) if m_da else None
+            if dur:
+                step['duration'] = dur
+            steps.append(step)
     if 'gain_banish' not in _lista_choice_keywords and (
             'gain [banish]' in t or 'gains [banish]' in t or '[banish]' in _lista_txt):
         steps.append({'action': 'gain_banish'})
-    m_u = re.search(r'gains?\s+\[unblockable\]', t)
-    if 'gain_unblockable' not in _lista_choice_keywords and (m_u or '[unblockable]' in _lista_txt):
-        step = {'action': 'gain_unblockable'}
-        dur = _duration_apos(m_u.end()) if m_u else None
-        if dur:
-            step['duration'] = dur
-        steps.append(step)
+    # Guarda: se a clausula ja foi capturada como SELECAO filtrada
+    # (select_grant_unblockable_turn, achado 17/07 EB04-024 -- "up to N
+    # of your [Tipo] type Characters gains [Unblockable]"), nao duplica
+    # como auto-concessao (gain_unblockable).
+    if not any(s.get('action') == 'select_grant_unblockable_turn' for s in steps):
+        m_u = re.search(r'gains?\s+\[unblockable\]', t)
+        if 'gain_unblockable' not in _lista_choice_keywords and (m_u or '[unblockable]' in _lista_txt):
+            step = {'action': 'gain_unblockable'}
+            dur = _duration_apos(m_u.end()) if m_u else None
+            if dur:
+                step['duration'] = dur
+            steps.append(step)
 
     # Trash from hand (efeito, nao custo)
     if trigger_name in ('on_play', 'when_attacking', 'end_of_turn'):

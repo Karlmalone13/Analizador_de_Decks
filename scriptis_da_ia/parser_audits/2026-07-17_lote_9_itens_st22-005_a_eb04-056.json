@@ -1,0 +1,24 @@
+{
+  "trigger_card": "ST22-005",
+  "problem": "9 candidatos aprovados pelo usuario (\"aprovo sim\") apos o lote de 11 (blocos 237-246). Todos confirmados reais: (1) ST22-005 -- custo COMPOSTO 'rest 3 DON e return 1 Character (exceto esta) pra mao' so tinha a parte do rest_don; (2) EB02-002 (Sabo) -- 'other than [Nome]' quebrava o regex de select_filtered, virando auto-buff; (3) EB02-007 -- 'up to a total of N of your Leader AND Character cards' (conectivo 'and', nao 'or') nunca mapeava pra leader_or_character, virava buff incondicional so no Leader, sem count; (4) EB02-028 (Portgas Ace) -- clausula final 'and play up to 1 Character card with a cost of N from your hand rested' inteira ausente (distinta do play_from_deck ja coberto pela mesma carta); (5) EB01-053 (Gastino) -- 'up to a total of N' (N>1) no debuff opp_leader_or_character nunca extraia count (so existia pra opp_character); (6) EB03-049 -- 2a clausula encadeada de play_card ('...and up to 1 {Tipo} type Character card with a cost de M or less') nunca capturada (parse_play_generic so acha 1 match via re.search); (7) EB03-050 (Conis)/OP04-115/EB04-024 -- gain_double_attack/gain_unblockable (auto-concessao) deveriam ser SELECAO filtrada (mesma classe de bug ja corrigida 16/07 pra Blocker/Rush, nunca generalizada pra Double Attack/Unblockable-forma-direta-da-keyword); (8) EB03-061 (Uta) -- 'rest DON!! cards OR Characters' com DON mencionado PRIMEIRO (ordem invertida do mixed-target ja coberto) nunca reconhecido, e ao corrigir a ordem de checagem no parser (a variante nova precisava rodar ANTES do check generico de rest_opp_don, que a interceptava primeiro por engano) generalizou pra mais 3 cartas (OP06-020, OP09-036, ST26-002); (9) EB04-056 (Pacifista) -- condicao composta 'if you have [Nome] and you have N Life cards' ficou DELIBERADAMENTE na fila desde 15/07 (ver comentario no codigo) ate essa familia ser corrigida por inteiro -- implementado agora.",
+  "grammar_family": "Multiplas familias distintas, cada uma documentada no proprio codigo com comentario 'Achado 17/07'. Padrao comum: quase todas sao variantes de FORMA (conectivo and/or, ordem de clausulas, redacao direta-da-keyword vs prose) de mecanismos ja existentes no parser, nao mecanicas totalmente novas.",
+  "queries": [
+    "audit_parser_coverage.py --min-severity 1 --show 30 (topo da lista apos o lote de 11)",
+    "buscas pontuais por familia durante a implementacao de cada item (regex/grep contra cards_rows.csv), documentadas nos comentarios do proprio codigo"
+  ],
+  "cards_found": [
+    "ST22-005", "EB02-002", "EB02-007", "EB02-028", "EB01-053", "EB03-049",
+    "EB03-050", "OP04-115", "EB04-024",
+    "EB03-061", "OP06-020", "OP09-036", "ST26-002",
+    "EB04-056"
+  ],
+  "resolution_scope": "global",
+  "decision": "Cada item resolvido com fix GENERICO cobrindo a FORMA do problema. Destaque: (7) select_grant_double_attack e uma acao NOVA (nao existia mecanismo pra Double Attack selecionavel); a variante Unblockable reusa select_grant_unblockable_turn JA EXISTENTE, so precisando reconhecer a forma direta da keyword ('gains [Unblockable]') alem da prose ja coberta ('opponent cannot activate Blocker'). (8) generalizacao de ordem (DON-primeiro vs Character-primeiro) no alvo misto de rest_opp, com CUIDADO de reordenar o check no parser pra rodar ANTES do rest_opp_don generico (que interceptaria a clausula composta por engano, mesmo bug-de-ordem ja visto nesta sessao pra outros mecanismos).",
+  "validated_by": [
+    "diff_parser.py GANHOU=0/PERDEU=0/MUDOU=15 (todas as mudancas auditadas individualmente, nenhuma regressao)",
+    "gerar_dbs.py + snapshot_parser.py 0/0/0",
+    "smoke_fast.py: 6 testes dirigidos novos, todos com EXECUCAO REAL de ponta a ponta cobrindo os 9 itens + as 4 cartas descobertas pela generalizacao de ordem",
+    "smoke_test.py: TODOS OS TESTES PASSARAM",
+    "smoke_test_broad.py: 7/7 (rodado por mexer em codigo central -- parse_rest_opp reordenado, buff_power leader_or_character com count>1, play_card com 2a clausula encadeada)"
+  ]
+}

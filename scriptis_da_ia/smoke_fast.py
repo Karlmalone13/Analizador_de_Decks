@@ -4409,6 +4409,199 @@ def test_lote_11_itens_op16_118_counter_na_mao() -> None:
           effective_counter(alvo_8000, me_sem_ace) == 1000)
 
 
+def test_lote_9_itens_st22_005_custo_composto_e_eb02_002_select_exclude() -> None:
+    # ST22-005 (Kouzuki Oden): custo COMPOSTO "rest 3 DON e devolver 1
+    # Character (exceto esta) pra mao" -- so o rest_don existia antes.
+    check("ST22-005 parseia os 2 custos (rest_don=3 + return_own_character_to_hand exclude_self)",
+          get_card_effects("ST22-005").get("activate_main", {}).get("costs", []) ==
+          [{"type": "rest_don", "count": 3},
+           {"type": "return_own_character_to_hand", "count": 1, "exclude_self": True}])
+
+    oden = real_card("ST22-005")
+    oden.rested = True
+    aliado = mk("ODA", "Aliado Fraco", cost=2, power=2000)
+    me = GameState(leader=mk("ODLDR", "Lider", card_type="LEADER"), turn=3, don_available=3)
+    me.field_chars = [oden, aliado]
+    opp = GameState(leader=mk("ODOPP", "Opp", card_type="LEADER"), turn=3)
+    EffectExecutor(me, opp).execute(oden, "activate_main")
+    check("Execucao real: os 2 custos pagos (3 DON restados, aliado devolvido pra mao) -- Oden fica ativo",
+          not oden.rested and aliado in me.hand and aliado not in me.field_chars
+          and me.don_available == 0 and me.don_rested == 3)
+
+    # EB02-002 (Sabo): "other than [Nome]" quebrava select_filtered
+    # (virava auto-buff em vez de selecao filtrada com exclusao).
+    check("EB02-002 parseia select_filtered com filter_type=revolutionary army + exclude=sabo",
+          get_card_effects("EB02-002").get("activate_main", {}).get("steps", [{}])[0] ==
+          {"action": "buff_power", "amount": 2000, "target": "select_filtered",
+           "duration": "this_turn", "count": 1, "filter_type": "revolutionary army", "exclude": "sabo"})
+
+    sabo = real_card("EB02-002")
+    ra_aliado = mk("RAA", "RA Aliado", cost=3, power=3000, sub_types="Revolutionary Army")
+    me2 = GameState(leader=mk("SBLDR", "Lider", card_type="LEADER"), turn=3)
+    me2.field_chars = [sabo, ra_aliado]
+    opp2 = GameState(leader=mk("SBOPP", "Opp", card_type="LEADER"), turn=3)
+    EffectExecutor(me2, opp2).execute(sabo, "activate_main")
+    check("Execucao real: o ALIADO Revolutionary Army ganha +2000 (nao o proprio Sabo, excluido por nome)",
+          ra_aliado.power_buff == 2000 and sabo.power_buff == 0)
+
+
+def test_lote_9_itens_eb03_050_eb04_024_selecao_double_attack_e_unblockable() -> None:
+    # EB03-050 (Conis)/OP04-115: gain_double_attack (auto-concessao) devia
+    # ser selecao filtrada (select_grant_double_attack) -- mesma classe
+    # de bug ja corrigida pra Blocker/Rush.
+    check("EB03-050 parseia select_grant_double_attack filter_type=sky island",
+          get_card_effects("EB03-050").get("on_play", {}).get("steps", [{}])[0] ==
+          {"action": "select_grant_double_attack", "count": 1, "filter_type": "sky island", "duration": "this_turn"})
+
+    conis = real_card("EB03-050")
+    sky_ally = mk("SKA", "Sky Ally", cost=3, power=3000, sub_types="Sky Island")
+    me = GameState(leader=mk("CNLDR", "Lider", card_type="LEADER"), turn=3)
+    me.field_chars = [conis, sky_ally]
+    opp = GameState(leader=mk("CNOPP", "Opp", card_type="LEADER"), turn=3)
+    EffectExecutor(me, opp).execute(conis, "on_play")
+    check("Execucao real: o ALIADO Sky Island ganha Double Attack este turno (nao a propria Conis)",
+          sky_ally.double_attack_this_turn and not conis.double_attack_this_turn)
+
+    # EB04-024: gain_unblockable (auto-concessao) devia ser
+    # select_grant_unblockable_turn (mecanismo JA existente, so faltava a
+    # forma DIRETA da keyword "gains [Unblockable]" ser reconhecida).
+    check("EB04-024 parseia select_grant_unblockable_turn filter_type=alabasta (sem duplicar gain_unblockable)",
+          get_card_effects("EB04-024").get("activate_main", {}).get("steps", []) ==
+          [{"action": "select_grant_unblockable_turn", "count": 1, "filter_type": "alabasta"}])
+
+    doflamingo = real_card("EB04-024")  # ativo -- precisa poder pagar rest_self como custo
+    alabasta_ally = mk("ALA", "Alabasta Ally", cost=3, power=3000, sub_types="Alabasta")
+    me2 = GameState(leader=mk("DFLDR", "Lider", card_type="LEADER"), turn=3)
+    me2.field_chars = [doflamingo, alabasta_ally]
+    me2.hand = [mk("DFH1", "H1")]
+    opp2 = GameState(leader=mk("DFOPP", "Opp", card_type="LEADER"), turn=3)
+    EffectExecutor(me2, opp2).execute(doflamingo, "activate_main")
+    check("Execucao real: o ALIADO Alabasta ganha Unblockable este turno (custos pagos: rest_self + trash 1 da mao)",
+          alabasta_ally.unblockable_this_turn and not doflamingo.unblockable_this_turn
+          and doflamingo.rested and len(me2.hand) == 0)
+
+
+def test_lote_9_itens_eb01_053_count2_e_eb03_061_alvo_misto() -> None:
+    # EB01-053 (Gastino): "up to a total of 2" no debuff
+    # opp_leader_or_character virava count=1 implicito.
+    check("EB01-053 parseia count=2 no debuff_power opp_leader_or_character",
+          get_card_effects("EB01-053").get("trigger", {}).get("steps", [{}])[0] ==
+          {"action": "debuff_power", "amount": 3000, "target": "opp_leader_or_character",
+           "duration": "this_turn", "count": 2})
+
+    gastino = real_card("EB01-053")
+    me = GameState(leader=mk("GSLDR", "Lider", card_type="LEADER"), turn=3)
+    opp = GameState(leader=mk("GSOPP", "Opp", card_type="LEADER"), turn=3, don_available=0)
+    opp.field_chars = [mk("GSO1", "O1", power=5000), mk("GSO2", "O2", power=4000)]
+    EffectExecutor(me, opp).execute(gastino, "trigger")
+    check("Execucao real: os 2 alvos mais fortes (Leader do oponente + O1) recebem -3000, nao so 1",
+          opp.leader.power_buff == -3000 and opp.field_chars[0].power_buff == -3000
+          and opp.field_chars[1].power_buff == 0)
+
+    # EB03-061 (Uta): "rest DON!! cards OR Characters" (DON mencionado
+    # PRIMEIRO) -- so a alternativa DON!! era capturada antes.
+    check("EB03-061 parseia rest_opp_character cost_lte=4 (aproximacao ja estabelecida pra alvo misto)",
+          get_card_effects("EB03-061").get("activate_main", {}).get("steps", [{}])[0] ==
+          {"action": "rest_opp_character", "count": 1, "cost_lte": 4})
+    # Generalizacao colateral: mesma ordem invertida em mais 3 cartas.
+    for c, cost_lte in (("OP06-020", 3), ("OP09-036", 6), ("ST26-002", 1)):
+        check(f"{c} (mesma familia, ordem DON-primeiro): rest_opp_character cost_lte={cost_lte}",
+              get_card_effects(c).get("on_play" if c != "OP06-020" else "activate_main", {})
+              .get("steps", [{}])[0] == {"action": "rest_opp_character", "count": 1, "cost_lte": cost_lte})
+
+
+def test_lote_9_itens_eb03_049_segunda_play_card_e_eb02_028_play_from_hand() -> None:
+    # EB03-049: 2 clausulas de play_card encadeadas ("...cost of 6 or
+    # less AND up to 1 ... cost of 4 or less from your hand or trash") --
+    # so a 1a era capturada.
+    steps_049 = get_card_effects("EB03-049").get("main", {}).get("steps", [])
+    check("EB03-049 parseia 2 play_card (cost_lte=6 e cost_lte=4, mesmo filtro/fonte)",
+          len(steps_049) == 2
+          and steps_049[0]["cost_lte"] == 6 and steps_049[1]["cost_lte"] == 4
+          and steps_049[0]["filter_type"] == steps_049[1]["filter_type"] == "thriller bark pirates")
+
+    perona_card = real_card("EB03-049")
+    barco6 = mk("TB6", "Barco 6", cost=6, power=6000, sub_types="Thriller Bark Pirates")
+    barco4 = mk("TB4", "Barco 4", cost=4, power=4000, sub_types="Thriller Bark Pirates")
+    me = GameState(leader=mk("PRLDR", "Perona", card_type="LEADER"), turn=3, don_available=10)
+    me.hand = [perona_card, barco6, barco4]
+    me.trash = []
+    opp = GameState(leader=mk("PROPP", "Opp", card_type="LEADER"), turn=3)
+    EffectExecutor(me, opp).execute(perona_card, "main")
+    check("Execucao real: AMBAS as Thriller Bark Pirates (custo 6 e custo 4) sao jogadas",
+          barco6 in me.field_chars and barco4 in me.field_chars)
+
+    # EB02-028 (Portgas Ace): clausula "play up to 1 Character card com
+    # custo 2 da MAO, restado" -- step inteiro ausente (distinto do
+    # play_from_deck ja coberto).
+    check("EB02-028 parseia play_card cost_eq=2 enters_rested=True (alem do look_top_deck/add_to_hand ja existentes)",
+          get_card_effects("EB02-028").get("on_play", {}).get("steps", [])[-1] ==
+          {"action": "play_card", "count": 1, "cost_eq": 2, "enters_rested": True})
+
+    ace_card = real_card("EB02-028")
+    ace_card.data = ace_card.data.__class__(**{**ace_card.data.__dict__})
+    custo2 = mk("C2A", "Custo 2 A", cost=2, power=2000)
+    me2 = GameState(leader=mk("ACLDR3", "Whitebeard Leader", card_type="LEADER", sub_types="Whitebeard Pirates"), turn=3)
+    me2.hand = [ace_card, custo2]
+    me2.deck = [mk(f"D{i}", f"Deck{i}", cost=5) for i in range(5)]
+    opp2 = GameState(leader=mk("ACOPP", "Opp", card_type="LEADER"), turn=3)
+    EffectExecutor(me2, opp2).execute(ace_card, "on_play")
+    check("Execucao real: a carta de custo 2 da MAO entra em campo RESTADA",
+          custo2 in me2.field_chars and custo2.rested)
+
+
+def test_lote_9_itens_eb02_007_leader_or_character_count3() -> None:
+    # EB02-007: "up to a total of 3 of your Leader and Character cards
+    # gain +1000 power" -- conectivo "and" (nao "or") + count=3, ambos
+    # ausentes antes (virava buff incondicional so no Leader).
+    check("EB02-007 parseia buff_power target=leader_or_character count=3",
+          get_card_effects("EB02-007").get("main", {}).get("steps", [{}])[1] ==
+          {"action": "buff_power", "amount": 1000, "target": "leader_or_character",
+           "duration": "this_turn", "count": 3})
+
+    blizzard = real_card("EB02-007")
+    forte = mk("BZF", "Forte", cost=8, power=8000)
+    medio = mk("BZM", "Medio", cost=5, power=5000)
+    fraco = mk("BZW", "Fraco", cost=2, power=2000)
+    me = GameState(leader=mk("BZLDR", "Lider", card_type="LEADER", power=1000), turn=3)
+    me.field_chars = [forte, medio, fraco]
+    opp = GameState(leader=mk("BZOPP", "Opp", card_type="LEADER"), turn=3)
+    opp.field_chars = [mk("BZO1", "O1", power=100)]
+    EffectExecutor(me, opp).execute(blizzard, "main")
+    check("Execucao real: os 3 mais fortes (Forte/Medio/Fraco, o Lider fica de fora) ganham +1000 cada",
+          forte.power_buff == 1000 and medio.power_buff == 1000 and fraco.power_buff == 1000
+          and me.leader.power_buff == 0)
+
+
+def test_lote_9_itens_eb04_056_condicao_composta_bonney_e_vida() -> None:
+    # EB04-056 (Pacifista): "If you have [Jewelry Bonney] and you have 0
+    # Life cards, gains [Blocker]" -- condicao INTEIRA ausente (ficou
+    # deliberadamente na fila desde 15/07 ate essa familia composta ser
+    # corrigida por inteiro).
+    check("EB04-056 parseia has_named_character=jewelry bonney + life_lte=0",
+          get_card_effects("EB04-056").get("passive", {}).get("conditions", {}) ==
+          {"has_named_character": "jewelry bonney", "life_lte": 0})
+
+    pacifista = real_card("EB04-056")
+    bonney = mk("BNY", "Jewelry Bonney", cost=5, power=5000)
+    me = GameState(leader=mk("PFLDR", "Lider", card_type="LEADER"), turn=3)
+    me.field_chars = [pacifista, bonney]
+    me.life = []
+    opp = GameState(leader=mk("PFOPP", "Opp", card_type="LEADER"), turn=3)
+    log = EffectExecutor(me, opp).execute(pacifista, "passive")
+    check("Execucao real: COM Bonney no campo E 0 Life cards, Pacifista ganha Blocker",
+          "Blocker" in "".join(log))
+
+    pacifista2 = real_card("EB04-056")
+    me2 = GameState(leader=mk("PFLDR2", "Lider", card_type="LEADER"), turn=3)
+    me2.field_chars = [pacifista2, mk("BNY2", "Jewelry Bonney", cost=5, power=5000)]
+    me2.life = [mk("LF1", "Life 1")]
+    opp2 = GameState(leader=mk("PFOPP2", "Opp", card_type="LEADER"), turn=3)
+    log2 = EffectExecutor(me2, opp2).execute(pacifista2, "passive")
+    check("Execucao real: COM Bonney mas SEM 0 Life cards, Pacifista NAO ganha Blocker",
+          not any("Blocker" in s for s in log2))
+
+
 def main() -> int:
     test_turn_order_imu_prefers_second()
     test_empty_throne_beats_direct_five_elders_play()
@@ -4526,6 +4719,12 @@ def main() -> int:
     test_lote_11_itens_op14_009_swap_leader_e_character()
     test_lote_11_itens_op12_016_familia_rayleigh_e_keyword_blocker_guard()
     test_lote_11_itens_op16_118_counter_na_mao()
+    test_lote_9_itens_st22_005_custo_composto_e_eb02_002_select_exclude()
+    test_lote_9_itens_eb03_050_eb04_024_selecao_double_attack_e_unblockable()
+    test_lote_9_itens_eb01_053_count2_e_eb03_061_alvo_misto()
+    test_lote_9_itens_eb03_049_segunda_play_card_e_eb02_028_play_from_hand()
+    test_lote_9_itens_eb02_007_leader_or_character_count3()
+    test_lote_9_itens_eb04_056_condicao_composta_bonney_e_vida()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0

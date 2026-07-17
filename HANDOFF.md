@@ -1,5 +1,97 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-17 (248-256) - Lote de 9 itens aprovado ("aprovo sim") -- correcoes de FORMA (conectivo/ordem/redacao) em mecanismos ja existentes
+
+Continuacao imediata do lote de 11 (bloco 237-247). Usuario aprovou 9 novos
+candidatos levantados do topo da lista de suspeitos. Ao contrario do lote
+anterior (que revelou bugs SISTEMICOS grandes), este lote foi mais
+"tradicional": cada item e uma variante de FORMA de um mecanismo ja
+existente (conectivo "and" em vez de "or", ordem de clausulas invertida,
+redacao direta-da-keyword em vez de prose) que o parser nao tolerava.
+
+**248 -- ST22-005 (Kouzuki Oden):** custo COMPOSTO "rest 3 DON!! cards and
+return 1 of your Characters other than this Character to the owner's
+hand" -- so a parte do `rest_don` existia; a devolucao de Character
+(`return_own_character_to_hand` com `exclude_self`) estava inteiramente
+ausente. Mesma convencao ja usada por `place_from_trash_bottom_deck`
+composto com `rest_self`.
+
+**249 -- EB02-002 (Sabo):** "Up to 1 of your 'Revolutionary Army' type
+Characters **other than [Sabo]** gains +2000 power" -- o filler "other
+than [Nome]" quebrava o regex `m_select_buff` (buff de selecao filtrada),
+caindo no fallback `target='self'` (Sabo se buffando). Generalizado
+tolerando essa clausula (mesmo padrao ja usado pra "and that card"/"on
+your field"), com `exclude` propagado ao executor de `select_filtered`
+(que ainda nao suportava exclusao por nome).
+
+**250 -- EB02-007:** "Up to a total of 3 of your Leader **and**
+Character cards gain +1000 power" -- o conectivo "and" (em vez do "or" ja
+tolerado em `leader_or_character`) nunca era reconhecido, virando um buff
+incondicional so no Leader, sem selecao nem count. Generalizado: "your
+leader and character" agora tambem mapeia pra `leader_or_character`, e
+esse alvo ganhou extracao de `count` (N>1) + loop no executor (antes so
+escolhia 1, ignorando o campo count).
+
+**251 -- EB02-028 (Portgas Ace):** clausula final "and play up to 1
+Character card with a cost of 2 from your hand rested" inteira ausente
+(distinta do play-do-deck-revelado ja coberto na mesma carta). O executor
+GRUPO 2 de `play_card` ja suportava jogar da mao com filtro E `enters_rested`
+(campo ja existente, nunca consumido por nenhum parser ate agora) --
+so faltava o parser produzir o step.
+
+**252 -- EB01-053 (Gastino):** "Give up to **a total of 2** of your
+opponent's Leader or Character cards -3000 power" -- a extracao de count>1
+so existia pra `target='opp_character'` (achado 15/07), nunca pra
+`opp_leader_or_character`, e nao tolerava "a total of" (so "up to N"
+puro). Generalizado nos dois eixos + loop de selecao multipla no executor
+(que so escolhia 1 alvo antes, ignorando count).
+
+**253 -- EB03-049:** duas clausulas de play_card encadeadas ("play up to 1
+{Tipo} type Character card with a cost of 6 or less **and** up to 1
+{Tipo} type Character card with a cost of 4 or less from your hand or
+trash") -- `parse_play_generic` usa `re.search` (1 match so), a 2a
+clausula nunca era vista. Nova deteccao de continuacao logo apos o 1o
+match, reaproveitando filter_type/source_alt do 1o step.
+
+**254 -- EB03-050 (Conis)/OP04-115/EB04-024:** `gain_double_attack`/
+`gain_unblockable` (auto-concessao) deveriam ser SELECAO filtrada
+("Up to 1 of your {Tipo} type Characters gains [Double Attack/
+Unblockable]") -- mesma classe de bug ja corrigida 16/07 pra Blocker/
+Rush, nunca generalizada pras outras 2 keywords. Nova acao
+`select_grant_double_attack` (Double Attack nunca teve mecanismo de
+selecao); Unblockable reusa `select_grant_unblockable_turn` JA EXISTENTE
+(so faltava reconhecer a forma DIRETA da keyword "gains [Unblockable]",
+alem da prose "opponent cannot activate Blocker" ja coberta) -- guarda
+adicionada pra nao duplicar com o `gain_unblockable` generico.
+
+**255 -- EB03-061 (Uta) + generalizacao (OP06-020/OP09-036/ST26-002):**
+"rest up to 1 of your opponent's **DON!! cards or Characters** with a
+cost of 4 or less" (DON mencionado PRIMEIRO) -- so a ordem inversa
+("Characters or DON!! cards", ja coberta 15/07) era reconhecida. Ao
+adicionar a nova ordem, achado bug de PRIORIDADE: o check generico de
+`rest_opp_don` roda ANTES na funcao e interceptava essa MESMA clausula
+por engano (retorno antecipado, perdendo a alternativa "or Characters")
+-- corrigido reordenando pra checar a forma composta primeiro. Generalizou
+pra mais 3 cartas com a mesma ordem invertida.
+
+**256 -- EB04-056 (Pacifista):** "If you have [Jewelry Bonney] **and**
+you have 0 Life cards, gains [Blocker]" -- condicao composta
+(presenca-por-nome + vida exata) ficou DELIBERADAMENTE na fila desde
+15/07 (comentario no codigo: "EB04-056 permanece na fila ate essa
+familia ser corrigida por inteiro") ate esta sessao resolver a familia
+completa com uma clausula combinada dedicada.
+
+**Validado (lote completo):** `diff_parser.py` GANHOU=0/PERDEU=0/MUDOU=15
+(auditado item a item). `gerar_dbs.py` + `snapshot_parser.py` 0/0/0.
+`smoke_fast.py`: 6 testes dirigidos novos com EXECUCAO REAL cobrindo os 9
+itens + as 4 cartas da generalizacao de ordem. `smoke_test.py`: TODOS OS
+TESTES PASSARAM. `smoke_test_broad.py`: 7/7 (rodado por mexer em codigo
+central -- `parse_rest_opp` reordenado, `buff_power`/`leader_or_character`
+com count>1, `play_card` com 2a clausula encadeada). Registro em
+`parser_audits/2026-07-17_lote_9_itens_st22-005_a_eb04-056.json`.
+
+Suspeitos: 259 -> 247.
+
 ## 2026-07-17 (237-247) - Lote de 11 itens aprovado ("levar os 11") -- varios bugs sistemicos descobertos no caminho
 
 Usuario aprovou de uma vez os 11 candidatos levantados apos o lote anterior
