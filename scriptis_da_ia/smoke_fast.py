@@ -3701,6 +3701,48 @@ def test_reveal_events_custo_5_cartas() -> None:
           fraco2.power_buff == 2000 and ev1 in me2.hand and ev2 in me2.hand)
 
 
+def test_atalho_don_bare_sem_texto_explicativo_2_cartas() -> None:
+    # Achado 17/07, OP05-032 (Pica) e OP05-119: "(N):" logo apos a tag do
+    # trigger e o mesmo atalho numerico de custo em DON!! ja reconhecido
+    # em outras cartas (ex: "When Attacking (1) (You may rest the
+    # specified number of DON!! cards in your cost area.):"), so que SEM
+    # o texto explicativo padrao -- a raspagem do banco parece ter
+    # omitido a explicacao so nessas 2 cartas. Primeira tentativa tratou
+    # "(1)" como don_requirement (exige DON ANEXADO na carta, semantica
+    # de "[DON!! xN]") -- ERRADO: confirmado contra OP03-022 (mesmo
+    # atalho, mas com a explicacao presente) que o "(N)" e um CUSTO de
+    # restar N DON!! do cost area (rest_don), campo totalmente separado
+    # de don_requirement. Corrigido antes do commit.
+    check("OP05-032 parseia o custo rest_don count=1 (nao don_requirement)",
+          get_card_effects("OP05-032").get("end_of_turn", {}).get("costs", []) ==
+          [{"type": "rest_don", "count": 1}])
+    check("OP05-119 (com tag [Once Per Turn] entre o trigger e o atalho) tambem parseia",
+          get_card_effects("OP05-119").get("activate_main", {}).get("costs", []) ==
+          [{"type": "rest_don", "count": 1}])
+
+    # Execucao real: sem DON disponivel, o custo nao pode ser pago, a
+    # habilidade nao dispara (Pica nao fica ativa).
+    pica = real_card("OP05-032")
+    pica.rested = True
+    me = GameState(leader=mk("PCLDR", "Lider", card_type="LEADER"), turn=3)
+    me.don_available = 0
+    opp = GameState(leader=mk("PCOPP", "Opp", card_type="LEADER"), turn=3)
+    EffectExecutor(me, opp).execute(pica, "end_of_turn")
+    check("Execucao real: SEM DON disponivel, custo nao pago, Pica continua restada",
+          pica.rested)
+
+    # Com 1 DON disponivel, o custo e pago (DON vai pra rested) e Pica
+    # fica ativa.
+    pica2 = real_card("OP05-032")
+    pica2.rested = True
+    me2 = GameState(leader=mk("PCLDR2", "Lider", card_type="LEADER"), turn=3)
+    me2.don_available = 1
+    opp2 = GameState(leader=mk("PCOPP2", "Opp", card_type="LEADER"), turn=3)
+    EffectExecutor(me2, opp2).execute(pica2, "end_of_turn")
+    check("Execucao real: COM 1 DON disponivel, custo pago, Pica fica ativa",
+          not pica2.rested and me2.don_available == 0 and me2.don_rested == 1)
+
+
 def main() -> int:
     test_turn_order_imu_prefers_second()
     test_empty_throne_beats_direct_five_elders_play()
@@ -3799,6 +3841,7 @@ def main() -> int:
     test_op09_007_leader_power_lte_e_op03_016_sem_contaminacao()
     test_return_own_character_to_hand_com_filtro_8_cartas()
     test_reveal_events_custo_5_cartas()
+    test_atalho_don_bare_sem_texto_explicativo_2_cartas()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0

@@ -14118,6 +14118,12 @@
  },
  "OP05-032": {
   "end_of_turn": {
+   "costs": [
+    {
+     "count": 1,
+     "type": "rest_don"
+    }
+   ],
    "once_per_turn": true,
    "steps": [
     {
@@ -15706,6 +15712,12 @@
  },
  "OP05-119": {
   "activate_main": {
+   "costs": [
+    {
+     "count": 1,
+     "type": "rest_don"
+    }
+   ],
    "once_per_turn": true,
    "steps": [
     {

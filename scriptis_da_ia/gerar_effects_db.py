@@ -748,6 +748,21 @@ def parse_costs(text):
             t)
         if m_par:
             costs.append({'type': 'rest_don', 'count': int(m_par.group(1))})
+        else:
+            # "(N):" isolado logo no INICIO do bloco -- mesmo atalho
+            # numerico do m_par acima, mas SEM o texto explicativo padrao
+            # (achado 17/07, OP05-032/OP05-119: a raspagem do banco omite
+            # a explicacao nessas 2 cartas, mas a posicao -- logo apos a
+            # tag do trigger -- e a mesma). Tolera outras tags de colchete
+            # (ex: "[Once Per Turn]") entre a tag do trigger e o "(N):"
+            # (OP05-119: "[Activate:Main][Once Per Turn] (1): ..." -- o
+            # bloco capturado inclui a tag "[Once Per Turn]" antes do
+            # atalho). Ancorado na posicao 0 (so tags de colchete + o
+            # atalho, nada mais) pra nao capturar um numero entre
+            # parenteses solto mais adiante no bloco.
+            m_bare = re.match(r'(?:\[[a-z0-9 :.\'!]+\]\s*)*\(\s*(\d+)\s*\)\s*:', t)
+            if m_bare:
+                costs.append({'type': 'rest_don', 'count': int(m_bare.group(1))})
 
     # Custo de trash do TOPO DO PRÓPRIO DECK (mill como custo, distinto de
     # trash_from_hand) -- "you may trash N cards from the top of your deck:

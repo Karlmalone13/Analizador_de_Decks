@@ -1,5 +1,46 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-17 (225) - OP05-032/OP05-119: atalho "(N):" de custo DON sem texto explicativo padrao
+
+Continuacao da varredura (bloco 224), agora com aprovacao explicita
+carta-a-carta a pedido do usuario (ver
+memory/feedback_aprovar_antes_de_cada_fix_do_parser.md). OP05-032
+(Pica): "[End of Your Turn] (1): Set this Character as active." -- o
+atalho "(N):" de custo em DON!! (ja reconhecido em outras cartas
+quando acompanhado do texto explicativo "(You may rest the specified
+number of DON!! cards in your cost area.)") nunca era reconhecido
+quando vinha SEM essa explicacao.
+
+**Correcao de rumo durante a investigacao**: a primeira tentativa
+tratou "(1)" como `don_requirement` (semantica de "[DON!! xN]", exige
+DON ANEXADO na propria carta) -- ERRADO, corrigido ANTES do commit ao
+confirmar contra OP03-022 (mesmo atalho "(1)", mas com a explicacao
+presente) que a semantica real e `rest_don` (custo de restar DON do
+cost area, campo totalmente separado de don_requirement). Census: so
+2 cartas usam o atalho sem a explicacao (OP05-032, OP05-119).
+
+**Validado:** `diff_parser.py` GANHOU=0/PERDEU=0/MUDOU=2. `gerar_dbs.py`
++ `snapshot_parser.py` 0/0/0. `smoke_fast.py`: 1 teste dirigido novo
+com EXECUCAO real (sem DON disponivel, custo nao pago, habilidade nao
+dispara; com 1 DON, custo pago e habilidade dispara). `smoke_test.py`:
+TODOS OS TESTES PASSARAM. `smoke_test_broad.py`: 7/7. Registro em
+`parser_audits/2026-07-17_op05-032_atalho_don_bare.json`.
+
+Suspeitos: 283 -> 283 (total nao muda -- OP05-032 continua na lista
+pelo segundo gap desta mesma carta, a substituicao de K.O. com filtro
+de custo+exclusao, ainda em analise/aguardando aprovacao do usuario;
+ver secao "Mapeamento de mecanismos de substituicao" abaixo).
+
+**Pendente, em analise (pedido do usuario, nao implementado ainda):**
+o usuario pediu pra mapear e separar por familia os varios mecanismos
+de "substituicao" (rest, debuff, dano na vida, etc.) ja existentes no
+parser (`substitute_ko`/`substitute_removal`, ver `_parse_substitute_cost`
+em gerar_effects_db.py), citando cartas especificas pra investigar:
+Bonnie (custo 1 amarela), Koby (custo 1 vermelha), Laboon (custo 1
+verde), Smoker (custo 3 verde), Koushirou (verde, Blocker), Koby
+lider (preto e vermelho). Analise em andamento, aguardando dados
+antes de reportar/pedir aprovacao pra qualquer implementacao.
+
 ## 2026-07-17 (224) - OP12-001 e familia: custo "reveal N Events from your hand" nunca reconhecido (5 cartas)
 
 Continuacao da varredura (bloco 223), com aprovacao explicita do

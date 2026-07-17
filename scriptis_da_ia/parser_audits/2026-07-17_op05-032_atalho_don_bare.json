@@ -1,0 +1,12 @@
+{
+  "trigger_card": "OP05-032",
+  "problem": "\"[End of Your Turn] (1): Set this Character as active.\" -- o atalho numerico '(1):' logo apos a tag do trigger (custo de restar 1 DON!! do cost area) nunca era reconhecido quando vinha SEM o texto explicativo padrao (\"(You may rest the specified number of DON!! cards in your cost area.)\") que normalmente o acompanha em outras cartas (ex: OP04-021/OP04-025/OP04-030, achado 27/06). A raspagem do banco parece ter omitido essa explicacao so em 2 cartas (OP05-032, OP05-119). PRIMEIRA TENTATIVA errada: tratar '(1)' como don_requirement (semantica de '[DON!! xN]', exige DON ANEXADO na carta) -- corrigido ANTES do commit ao confirmar contra OP03-022 (mesmo atalho, com a explicacao presente) que a semantica real e rest_don (custo de restar DON do cost area), campo separado de don_requirement.",
+  "grammar_family": "'(N):' isolado logo apos a tag do trigger (com ou sem outras tags de colchete tipo [Once Per Turn] entre a tag e o atalho) -- mesmo mecanismo do padrao ja coberto com o texto explicativo obrigatorio, aqui sem ele.",
+  "queries": [
+    "regex '\\]\\s*\\(\\d+\\)\\s*:' contra cards_rows.csv -- so 2 cartas usam o atalho SEM o texto explicativo: OP05-032, OP05-119"
+  ],
+  "cards_found": ["OP05-032", "OP05-119"],
+  "resolution_scope": "global",
+  "decision": "Novo regex em parse_costs (mesmo cost type rest_don ja usado pela variante com explicacao), casando '(N):' ancorado na posicao 0 do bloco, tolerando tags de colchete precedentes (ex: '[Once Per Turn]') entre a tag do trigger e o atalho. Ancorado na posicao 0 para nao capturar um numero entre parenteses solto mais adiante no texto (falso positivo).",
+  "validated_by": ["diff_parser.py GANHOU=0/PERDEU=0/MUDOU=2 (as 2 cartas, conferidas)", "gerar_dbs.py + snapshot_parser.py 0/0/0", "smoke_fast.py: 1 teste dirigido novo com EXECUCAO real (sem DON disponivel, custo nao pago, habilidade nao dispara; com 1 DON, custo pago e habilidade dispara)", "smoke_test.py: TODOS OS TESTES PASSARAM", "smoke_test_broad.py: 7/7"]
+}

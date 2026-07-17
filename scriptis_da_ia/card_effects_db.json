@@ -22528,6 +22528,12 @@
             "target": "self"
           }
         ],
+        "costs": [
+          {
+            "type": "rest_don",
+            "count": 1
+          }
+        ],
         "once_per_turn": true
       }
     }
@@ -25090,6 +25096,12 @@
         "steps": [
           {
             "action": "add_don",
+            "count": 1
+          }
+        ],
+        "costs": [
+          {
+            "type": "rest_don",
             "count": 1
           }
         ],
