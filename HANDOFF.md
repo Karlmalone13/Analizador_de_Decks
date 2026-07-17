@@ -1,5 +1,47 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-16 (220) - OP07-024 e familia: "up to N of your [Tipo] Characters gains [Blocker]" tratado como self em vez de selecao (4 cartas)
+
+Continuacao da varredura (bloco 219). OP07-024 (Koala): "[On Your
+Opponent's Attack] You may rest this Character: Up to 1 of your
+[Fish-Man] type Characters with a cost of 5 or less gains [Blocker]
+during this turn." -- BUG DE COMPORTAMENTO REAL, nao so filtro
+perdido: o parser tratava essa clausula como `gain_blocker` (alvo=self,
+a propria Koala), mas o texto claramente seleciona OUTRO Character do
+campo por tipo/custo. Como Koala se resta como CUSTO do proprio
+efeito, a implementacao antiga concederia Blocker a uma carta ja
+restada -- inutil, ja que rested nao pode ativar Blocker de qualquer
+forma. A habilidade inteira nunca funcionava como deveria.
+
+Busca global achou 4 cartas com a mesma FORMA ("up to N of your [Tipo]
+Characters ... gains [Blocker]"): OP07-024 (filtro de custo),
+OP07-103/OP15-055 (so filtro de tipo), OP12-012 (Buggy -- "type
+including X" + "other than [Buggy]" de auto-exclusao + duracao "until
+the end of your opponent's next End Phase"). Em OP12-012 o bug era
+ainda mais serio: a versao antiga concedia Blocker PERMANENTE (sem
+duration nenhuma) a SI MESMO, ignorando completamente o "other than
+[Buggy]".
+
+Fix: nova acao `select_grant_blocker` (parser + executor), mesma
+familia arquitetural de `select_grant_rush_character` ja existente
+pra outra keyword. `until_opp_end_phase`/`until_opp_turn_end` mapeiam
+pro MESMO `blocker_this_turn` no executor -- o engine ja trata essas
+duas durations como equivalentes pra `cannot_attack_until` (documentado
+em `refresh_phase`, ambas resetam so no refresh do dono), evitando
+introduzir um campo novo que precisaria ser replicado em ~10 pontos
+que ja checam `has_blocker`/`blocker_this_turn` direto.
+
+**Validado:** `diff_parser.py` GANHOU=0/PERDEU=0/MUDOU=4 (as 4 cartas,
+conferidas). `gerar_dbs.py` + `snapshot_parser.py` 0/0/0. `smoke_fast.py`:
+2 testes dirigidos novos com EXECUCAO real (OP07-024: so o Fish-Man de
+custo<=5 ganha Blocker; OP12-012: exclusao da propria fonte funciona).
+`smoke_test.py`: TODOS OS TESTES PASSARAM. `smoke_test_broad.py`: 7/7
+(rodado na hora, mexeu em `parse_block`, compartilhada por toda a
+base). Registro em
+`parser_audits/2026-07-16_op07-024_select_grant_blocker.json`.
+
+Suspeitos: 295 -> 291 (as 4 cartas saem da lista por completo).
+
 ## 2026-07-16 (219) - EB01-028: qualificador "active" e verbo "return" nao tolerados (opp_bounce_own_character + place_opp_character_bottom_deck)
 
 Continuacao da varredura (bloco 218). EB01-028 (Gum-Gum Champion

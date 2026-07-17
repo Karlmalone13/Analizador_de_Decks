@@ -5422,13 +5422,58 @@ def parse_block(block_text, trigger_name):
                     r'that (?:character|card)\s*$', t[max(0, m_r.start()-30):m_r.start()]):
                 step['target'] = 'selected'
             steps.append(step)
-    m_b = re.search(r'gains?\s+\[blocker\]', t)
-    if 'gain_blocker' not in _lista_choice_keywords and (m_b or '[blocker]' in _lista_txt):
-        step = {'action': 'gain_blocker'}
-        dur = _duration_apos(m_b.end()) if m_b else None
-        if dur:
-            step['duration'] = dur
+    # "Up to N of your [Tipo]/{Tipo} type Characters [com filtro de custo]
+    # [other than [Nome]] gains [Blocker] [duracao]" -- SELECAO de um
+    # Character DIFERENTE (por tipo/custo, com exclusao opcional), DISTINTA
+    # de gain_blocker (que sempre concede a propria carta-fonte, sem
+    # selecao). Achado 16/07 (OP07-024 Koala): o parser tratava essa
+    # clausula como "esta carta ganha Blocker", mas o texto seleciona
+    # OUTRO Character do campo -- bug de comportamento real, nao so
+    # filtro perdido: Koala resta A SI MESMA como custo e o efeito
+    # concederia Blocker a si mesma, que ja esta restada e nao pode usar
+    # a keyword de qualquer forma (habilidade inteira inutil como estava
+    # implementada). Censo global: 4 cartas -- OP07-024 (filtro de
+    # custo), OP07-103/OP15-055 (so tipo), OP12-012 (tipo via "type
+    # including", com "other than [Nome]" de auto-exclusao E duracao
+    # 'until_opp_end_phase' em vez de 'this_turn').
+    m_select_blocker = re.search(
+        r'up to (\d+) of your '
+        r'(?:[\[{]([a-z][a-z0-9 .\'-]+)[\]}]\s+type\s+)?'
+        r'characters?'
+        r'(?P<clause>[^.]*?)'
+        r'gains? \[?blocker\]?',
+        t)
+    if m_select_blocker:
+        step = {'action': 'select_grant_blocker', 'count': int(m_select_blocker.group(1))}
+        clause = m_select_blocker.group('clause')
+        if m_select_blocker.group(2):
+            step['filter_type'] = m_select_blocker.group(2).strip()
+        else:
+            type_m = re.search(r'type including "([a-z][a-z0-9 .\'-]+)"', clause)
+            if type_m:
+                step['filter_type'] = type_m.group(1).strip()
+        cost_m = re.search(r'with a cost of (\d+) or less', clause)
+        if cost_m:
+            step['cost_lte'] = int(cost_m.group(1))
+        excl_m = re.search(r'other than [\[{]([a-z][a-z0-9 .\'-]+)[\]}]', clause)
+        if excl_m:
+            step['exclude'] = excl_m.group(1).strip()
+        tail = t[m_select_blocker.end():m_select_blocker.end() + 60]
+        if 'during this turn' in tail:
+            step['duration'] = 'this_turn'
+        elif 'end phase' in tail:
+            step['duration'] = 'until_opp_end_phase'
+        elif 'the end of your opponent' in tail:
+            step['duration'] = 'until_opp_turn_end'
         steps.append(step)
+    else:
+        m_b = re.search(r'gains?\s+\[blocker\]', t)
+        if 'gain_blocker' not in _lista_choice_keywords and (m_b or '[blocker]' in _lista_txt):
+            step = {'action': 'gain_blocker'}
+            dur = _duration_apos(m_b.end()) if m_b else None
+            if dur:
+                step['duration'] = dur
+            steps.append(step)
     m_da = re.search(r'gains?\s+\[double attack\]', t)
     if 'gain_double_attack' not in _lista_choice_keywords and (m_da or '[double attack]' in _lista_txt):
         step = {'action': 'gain_double_attack'}

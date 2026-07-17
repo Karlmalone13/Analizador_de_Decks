@@ -18419,8 +18419,11 @@
    ],
    "steps": [
     {
-     "action": "gain_blocker",
-     "duration": "this_turn"
+     "action": "select_grant_blocker",
+     "cost_lte": 5,
+     "count": 1,
+     "duration": "this_turn",
+     "filter_type": "fish-man"
     }
    ]
   }
@@ -19851,8 +19854,10 @@
   "trigger": {
    "steps": [
     {
-     "action": "gain_blocker",
-     "duration": "this_turn"
+     "action": "select_grant_blocker",
+     "count": 1,
+     "duration": "this_turn",
+     "filter_type": "egghead"
     }
    ]
   }
@@ -29167,7 +29172,11 @@
   "on_play": {
    "steps": [
     {
-     "action": "gain_blocker"
+     "action": "select_grant_blocker",
+     "count": 1,
+     "duration": "until_opp_end_phase",
+     "exclude": "buggy",
+     "filter_type": "roger pirates"
     }
    ]
   }
@@ -36864,7 +36873,10 @@
     ],
     [
      {
-      "action": "gain_blocker"
+      "action": "select_grant_blocker",
+      "count": 1,
+      "duration": "until_opp_end_phase",
+      "filter_type": "dressrosa"
      }
     ]
    ]

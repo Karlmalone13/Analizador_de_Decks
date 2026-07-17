@@ -6005,6 +6005,32 @@ class EffectExecutor:
                 return 'ganhou Blocker (so este turno)'
             card.has_blocker = True
             return 'ganhou Blocker'
+        if action == 'select_grant_blocker':
+            # "Up to N of your [Tipo] Characters [com filtro de custo]
+            # [other than [Nome]] gains [Blocker]" -- SELECIONA outro
+            # Character do proprio campo (por tipo/custo/exclusao),
+            # DISTINTO de gain_blocker (sempre a propria carta-fonte, sem
+            # selecao). 'until_opp_end_phase'/'until_opp_turn_end' mapeiam
+            # pro MESMO blocker_this_turn -- o engine ja trata "this turn"
+            # e "ate a proxima End Phase do oponente" como equivalentes
+            # (mesma simplificacao documentada em refresh_phase pra
+            # cannot_attack_until/cannot_be_rested_until: ambos so resetam
+            # no refresh do DONO, entao a granularidade e identica).
+            from optcg_engine.rules_facade import choose_highest_board_value, eligible_cards
+            count = step.get('count', 1)
+            candidates = eligible_cards(
+                me.field_chars,
+                cost_lte=step.get('cost_lte'),
+                filter_text=step.get('filter_type', ''),
+                exclude_name=step.get('exclude', ''),
+            )
+            granted = []
+            for _ in range(min(count, len(candidates))):
+                target = choose_highest_board_value(candidates)
+                target.blocker_this_turn = True
+                remove_by_identity(candidates, target)
+                granted.append(target.name[:15])
+            return f'ganhou Blocker: {", ".join(granted)}' if granted else ''
         if action == 'gain_double_attack':
             if step.get('duration') == 'this_turn':
                 card.double_attack_this_turn = True

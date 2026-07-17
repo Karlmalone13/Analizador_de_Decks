@@ -29348,7 +29348,10 @@
       "on_opp_attack": {
         "steps": [
           {
-            "action": "gain_blocker",
+            "action": "select_grant_blocker",
+            "count": 1,
+            "filter_type": "fish-man",
+            "cost_lte": 5,
             "duration": "this_turn"
           }
         ],
@@ -31654,7 +31657,9 @@
       "trigger": {
         "steps": [
           {
-            "action": "gain_blocker",
+            "action": "select_grant_blocker",
+            "count": 1,
+            "filter_type": "egghead",
             "duration": "this_turn"
           }
         ]
@@ -46480,7 +46485,11 @@
       "on_play": {
         "steps": [
           {
-            "action": "gain_blocker"
+            "action": "select_grant_blocker",
+            "count": 1,
+            "filter_type": "roger pirates",
+            "exclude": "buggy",
+            "duration": "until_opp_end_phase"
           }
         ]
       }
@@ -58599,7 +58608,10 @@
           ],
           [
             {
-              "action": "gain_blocker"
+              "action": "select_grant_blocker",
+              "count": 1,
+              "filter_type": "dressrosa",
+              "duration": "until_opp_end_phase"
             }
           ]
         ]

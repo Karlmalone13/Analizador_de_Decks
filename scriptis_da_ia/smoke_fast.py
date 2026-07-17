@@ -3467,6 +3467,54 @@ def test_eb01_028_active_qualifier_e_return_como_sinonimo_de_place() -> None:
           barato_opp not in opp2.field_chars and caro_opp in opp2.field_chars)
 
 
+def test_select_grant_blocker_4_cartas() -> None:
+    # Achado 16/07, OP07-024 (Koala): "Up to 1 of your [Fish-Man] type
+    # Characters with a cost of 5 or less gains [Blocker]" era tratado
+    # como "esta carta ganha Blocker" (gain_blocker, alvo=self) -- bug de
+    # COMPORTAMENTO REAL, nao so filtro perdido: Koala resta A SI MESMA
+    # como custo, entao a antiga implementacao concederia Blocker a quem
+    # ja esta restada (inutil, ja que rested nao pode ativar Blocker de
+    # qualquer forma). Censo global achou 4 cartas com a mesma FORMA
+    # ("up to N of your [Tipo] Characters ... gains [Blocker]"):
+    # OP07-024 (filtro de custo), OP07-103/OP15-055 (so tipo), OP12-012
+    # ("type including X" + "other than [Nome]" de auto-exclusao +
+    # duracao 'until_opp_end_phase' em vez de permanente).
+    check("OP07-024 parseia select_grant_blocker com filter_type='fish-man' e cost_lte=5",
+          get_card_effects("OP07-024").get("on_opp_attack", {}).get("steps", []) ==
+          [{"action": "select_grant_blocker", "count": 1, "filter_type": "fish-man",
+            "cost_lte": 5, "duration": "this_turn"}])
+    check("OP12-012 parseia filter_type via 'type including', exclude='buggy' e duration='until_opp_end_phase'",
+          get_card_effects("OP12-012").get("on_play", {}).get("steps", []) ==
+          [{"action": "select_grant_blocker", "count": 1, "filter_type": "roger pirates",
+            "exclude": "buggy", "duration": "until_opp_end_phase"}])
+
+    # Execucao real: OP07-024 -- so o Fish-Man com custo<=5 ganha Blocker,
+    # um Fish-Man de custo 6 (fora do filtro) e ignorado, e a propria
+    # Koala (nao e Fish-Man) nao ganha nada.
+    koala = real_card("OP07-024")
+    me = GameState(leader=mk("KOLDR", "Lider", card_type="LEADER"), turn=3)
+    fishman_barato = mk("FMA", "Fishman Barato", cost=5, power=4000, sub_types="Fish-Man")
+    fishman_caro = mk("FMB", "Fishman Caro", cost=6, power=7000, sub_types="Fish-Man")
+    me.field_chars = [koala, fishman_barato, fishman_caro]
+    opp = GameState(leader=mk("KOOPP", "Opp", card_type="LEADER"), turn=3)
+    EffectExecutor(me, opp).execute(koala, "on_opp_attack")
+    check("Execucao real: SO o Fish-Man de custo<=5 ganha Blocker, custo 6 e a propria Koala ficam de fora",
+          fishman_barato.blocker_this_turn and not fishman_caro.blocker_this_turn
+          and not koala.blocker_this_turn)
+
+    # Execucao real: OP12-012 (Buggy) -- exclude='buggy' impede que a
+    # propria carta-fonte (mesmo sendo Roger Pirates) ganhe Blocker;
+    # outro Roger Pirates no campo ganha normalmente.
+    buggy = real_card("OP12-012")
+    me2 = GameState(leader=mk("BGLDR", "Lider", card_type="LEADER"), turn=3)
+    outro_roger = mk("RGA", "Outro Roger Pirates", power=5000, sub_types="Roger Pirates")
+    me2.field_chars = [buggy, outro_roger]
+    opp2 = GameState(leader=mk("BGOPP", "Opp", card_type="LEADER"), turn=3)
+    EffectExecutor(me2, opp2).execute(buggy, "on_play")
+    check("Execucao real: 'other than [Buggy]' exclui a propria fonte, o outro Roger Pirates ganha Blocker",
+          outro_roger.blocker_this_turn and not buggy.blocker_this_turn)
+
+
 def main() -> int:
     test_turn_order_imu_prefers_second()
     test_empty_throne_beats_direct_five_elders_play()
@@ -3560,6 +3608,7 @@ def main() -> int:
     test_parse_play_generic_janela_com_ponto_em_nome_colchetado()
     test_rest_opp_character_typo_cost_or_n_or_less()
     test_eb01_028_active_qualifier_e_return_como_sinonimo_de_place()
+    test_select_grant_blocker_4_cartas()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0

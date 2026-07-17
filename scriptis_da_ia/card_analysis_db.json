@@ -43616,8 +43616,9 @@
   "attribute": "Wisdom",
   "effects": [
    {
-    "action": "gain_blocker",
-    "trigger": "on_opp_attack"
+    "action": "select_grant_blocker",
+    "trigger": "on_opp_attack",
+    "cost_lte": 5
    }
   ],
   "synergy_states": {},
@@ -43626,7 +43627,7 @@
   "draws": false,
   "has_counter_value": true,
   "has_counter_event": false,
-  "is_blocker": true,
+  "is_blocker": false,
   "is_removal": false,
   "kos": false,
   "rests_opponent": false,
@@ -47077,7 +47078,7 @@
   "attribute": "Wisdom",
   "effects": [
    {
-    "action": "gain_blocker",
+    "action": "select_grant_blocker",
     "trigger": "trigger"
    }
   ],
@@ -47092,7 +47093,7 @@
   "draws": false,
   "has_counter_value": true,
   "has_counter_event": false,
-  "is_blocker": true,
+  "is_blocker": false,
   "is_removal": false,
   "kos": false,
   "rests_opponent": false,
@@ -69327,7 +69328,7 @@
   "attribute": "Slash",
   "effects": [
    {
-    "action": "gain_blocker",
+    "action": "select_grant_blocker",
     "trigger": "on_play"
    }
   ],
@@ -69337,7 +69338,7 @@
   "draws": false,
   "has_counter_value": true,
   "has_counter_event": false,
-  "is_blocker": true,
+  "is_blocker": false,
   "is_removal": false,
   "kos": false,
   "rests_opponent": false,
@@ -87049,7 +87050,7 @@
     "trigger": "main"
    },
    {
-    "action": "gain_blocker",
+    "action": "select_grant_blocker",
     "trigger": "main"
    }
   ],
@@ -87059,7 +87060,7 @@
   "draws": true,
   "has_counter_value": false,
   "has_counter_event": false,
-  "is_blocker": true,
+  "is_blocker": false,
   "is_removal": false,
   "kos": false,
   "rests_opponent": false,
