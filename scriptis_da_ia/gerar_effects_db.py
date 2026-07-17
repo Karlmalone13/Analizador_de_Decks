@@ -2402,6 +2402,15 @@ def parse_power_buff(text):
          'unique_character_names'),
         (r'gains? \+(\d+)\s*power\s+for each of your characters(?! with a different card name)',
          'own_characters'),
+        # "gains +N power ... for every M cards placed at the bottom of
+        # your deck" -- escala pelo RESULTADO REAL de um step ANTERIOR no
+        # MESMO efeito (place_trash_matching_bottom_deck), nao por um
+        # estado estatico do tabuleiro (trash/hand/DON). Achado 17/07,
+        # OP07-091 (unica carta no banco): "place any number of Character
+        # cards with a cost of 4 or more from your trash at the bottom of
+        # your deck... gains +1000 power ... for every 3 cards placed".
+        (r'gains? \+(\d+)\s*power\s+.{0,20}for every (\d+) cards? placed at the bottom of your deck',
+         'placed_bottom_deck_this_effect'),
     ]
     for pattern, source in dynamic_patterns:
         for dm in re.finditer(pattern, t):
@@ -5259,6 +5268,22 @@ def parse_block(block_text, trigger_name):
             step['power_lte'] = int(m_ko_blocker.group(2))
         steps.append(step)
         return steps
+
+    # "Place any number of Character cards with a cost of N or more from
+    # your trash at the bottom of your deck" -- CONTAGEM VARIAVEL (o
+    # jogador escolhe quantas, nao um numero fixo), distinta do custo
+    # place_from_trash_bottom_deck (numero fixo). Achado 17/07, OP07-091
+    # (unica carta no banco): sem isto, nem a movimentacao pro fundo do
+    # deck nem o buff_power_per_count(source='placed_bottom_deck_this_effect')
+    # (visto acima em parse_power_buff) tinham de onde vir a contagem real.
+    m_place_any = re.search(
+        r'place any number of character cards? with a cost of (\d+) or more '
+        r'from your trash at the bottom of your deck', t)
+    if m_place_any:
+        steps.append({
+            'action': 'place_trash_matching_bottom_deck',
+            'cost_gte': int(m_place_any.group(1)),
+        })
 
     # Trava de ataque / trava de ser restado / trava de Blocker persistente
     # (mecanicas distintas, cobertas pela mesma funcao por compartilharem

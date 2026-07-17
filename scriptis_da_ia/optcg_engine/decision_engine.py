@@ -1893,6 +1893,7 @@ class EffectExecutor:
         # POSTERIOR no MESMO bloco (target='selected') -- nunca atravessa
         # triggers/blocos diferentes.
         self._last_selected = None
+        self._last_moved_count = 0
         for step in steps_all:
             log = self._execute_step(step, card)
             if log:
@@ -4859,6 +4860,8 @@ class EffectExecutor:
                 n = len({c.name for c in me.field_chars})
             elif source == 'own_characters':
                 n = len(me.field_chars)
+            elif source == 'placed_bottom_deck_this_effect':
+                n = getattr(self, '_last_moved_count', 0)
             else:
                 n = 0
 
@@ -5359,6 +5362,30 @@ class EffectExecutor:
                 opp.deck.insert(0, worst)
                 placed.append(worst.name[:12])
             return f'oponente colocou do trash no fundo do deck: {", ".join(placed)}' if placed else ''
+
+        # "Place any number of Character cards with a cost of N or more
+        # from your PRÓPRIO trash at the bottom of your deck" -- CONTAGEM
+        # VARIAVEL (nao um count fixo como opp_place_trash_bottom_deck
+        # acima): move TODAS as Characters elegiveis (maximiza o buff
+        # seguinte que escala pelo resultado real deste step, ver
+        # buff_power_per_count/source=placed_bottom_deck_this_effect).
+        # self._last_moved_count guarda o total pro step seguinte no MESMO
+        # bloco ler (mesmo padrao de _last_selected/_last_trashed_names).
+        # Achado 17/07, OP07-091 (unica carta no banco).
+        if action == 'place_trash_matching_bottom_deck':
+            from optcg_engine.rules_facade import eligible_cards
+
+            candidatos = eligible_cards(
+                [c for c in me.trash if c.card_type.upper() == 'CHARACTER'],
+                cost_gte=step.get('cost_gte'),
+            )
+            placed = []
+            for alvo in list(candidatos):
+                remove_by_identity(me.trash, alvo)
+                me.deck.insert(0, alvo)
+                placed.append(alvo.name[:12])
+            self._last_moved_count = len(placed)
+            return f'colocou do trash no fundo do deck: {", ".join(placed)}' if placed else ''
 
         # ── AUTO-RESTRIÇÃO: "Then, you cannot play ... this turn" ─────────────
         # Combo de ramp (set DON active) que cobra: você perde o direito de jogar.

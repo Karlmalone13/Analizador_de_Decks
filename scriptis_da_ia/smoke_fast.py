@@ -4056,6 +4056,58 @@ def test_pos_keyword_generico_e_ko_reativo_st10_006() -> None:
           atacante_char.ko_on_opp_blocker_used_this_turn)
 
 
+def test_op07_091_place_trash_matching_bottom_deck_e_buff_por_contagem_real() -> None:
+    # Achado 17/07, OP07-091 (unica carta no banco): "[When Attacking]
+    # Trash up to 1 of your opponent's Characters with a cost of 2 or
+    # less. Then, place any number of Character cards with a cost of 4
+    # or more from your trash at the bottom of your deck in any order.
+    # This Character gains +1000 power during this turn for every 3
+    # cards placed at the bottom of your deck." -- acao NOVA
+    # place_trash_matching_bottom_deck (contagem VARIAVEL, move TODAS as
+    # Characters elegiveis do proprio trash) + buff_power_per_count com
+    # source NOVO placed_bottom_deck_this_effect, que le o RESULTADO REAL
+    # do step anterior (via EffectExecutor._last_moved_count), nao um
+    # estado estatico do tabuleiro como as demais fontes (trash/hand/etc).
+    check("OP07-091 parseia place_trash_matching_bottom_deck cost_gte=4",
+          any(s.get("action") == "place_trash_matching_bottom_deck" and s.get("cost_gte") == 4
+              for s in get_card_effects("OP07-091").get("when_attacking", {}).get("steps", [])))
+    check("OP07-091 parseia buff_power_per_count source=placed_bottom_deck_this_effect",
+          any(s.get("action") == "buff_power_per_count"
+              and s.get("source") == "placed_bottom_deck_this_effect"
+              and s.get("count_per") == 3 and s.get("amount_per") == 1000
+              for s in get_card_effects("OP07-091").get("when_attacking", {}).get("steps", [])))
+
+    ataca = real_card("OP07-091")
+    me = GameState(leader=mk("OPLDR", "Lider", card_type="LEADER"), turn=3)
+    me.field_chars = [ataca]
+    # 4 Characters com custo>=4 no trash (elegiveis) + 2 com custo<4
+    # (devem PERMANECER no trash) + 1 Event (nunca elegivel, so
+    # Character conta). floor(4/3) = 1 -> +1000 power esperado.
+    elegivel_a = mk("TRA", "Elegivel A", cost=4, power=4000)
+    elegivel_b = mk("TRB", "Elegivel B", cost=5, power=5000)
+    elegivel_c = mk("TRC", "Elegivel C", cost=4, power=4000)
+    elegivel_d = mk("TRD", "Elegivel D", cost=6, power=6000)
+    barato_a = mk("TRE", "Barato A", cost=2, power=2000)
+    barato_b = mk("TRF", "Barato B", cost=3, power=3000)
+    evento = mk("TRG", "Evento", cost=1, power=0, card_type="EVENT")
+    me.trash = [elegivel_a, elegivel_b, elegivel_c, elegivel_d, barato_a, barato_b, evento]
+    me.deck = []
+    opp = GameState(leader=mk("OPOPPL", "Opp", card_type="LEADER"), turn=3)
+    alvo_barato = mk("OPX", "Alvo Barato", cost=1, power=1000)
+    opp.field_chars = [alvo_barato]
+    EffectExecutor(me, opp).execute(ataca, "when_attacking")
+    check("Execucao real: custo trashou o Character barato do oponente (cost<=2)",
+          alvo_barato in opp.trash and alvo_barato not in opp.field_chars)
+    check("Execucao real: as 4 Characters com custo>=4 foram pro FUNDO do deck (inicio da lista)",
+          len(me.deck) == 4
+          and all(c in me.deck for c in (elegivel_a, elegivel_b, elegivel_c, elegivel_d))
+          and all(c not in me.trash for c in (elegivel_a, elegivel_b, elegivel_c, elegivel_d)))
+    check("Execucao real: Characters baratas e o Event PERMANECERAM no trash (nao elegiveis)",
+          barato_a in me.trash and barato_b in me.trash and evento in me.trash)
+    check("Execucao real: buff = floor(4/3)*1000 = 1000 (contagem REAL movida, nao estado estatico)",
+          ataca.power_buff == 1000)
+
+
 def main() -> int:
     test_turn_order_imu_prefers_second()
     test_empty_throne_beats_direct_five_elders_play()
@@ -4163,6 +4215,7 @@ def main() -> int:
     test_play_card_power_range_prb02_010()
     test_gain_life_own_field_cost_gte_power_gte_st13_001()
     test_pos_keyword_generico_e_ko_reativo_st10_006()
+    test_op07_091_place_trash_matching_bottom_deck_e_buff_por_contagem_real()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0

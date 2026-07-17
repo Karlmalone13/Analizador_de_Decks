@@ -1,5 +1,49 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-17 (236) - OP07-091: ultimo item do lote de 10 -- place_trash_matching_bottom_deck + buff por contagem real
+
+**236 -- OP07-091 (unica carta no banco):** "[When Attacking] Trash up
+to 1 of your opponent's Characters with a cost of 2 or less. Then,
+place any number of Character cards with a cost of 4 or more from your
+trash at the bottom of your deck in any order. This Character gains
++1000 power during this turn for every 3 cards placed at the bottom of
+your deck." -- duas lacunas: (1) "place any number... from your trash
+at the bottom of your deck" e uma acao de CONTAGEM VARIAVEL (jogador
+escolhe quantas mover), distinta do custo `place_from_trash_bottom_deck`
+(numero FIXO) ja existente -- nova acao `place_trash_matching_bottom_deck`
+(parser+executor), move TODAS as Characters elegiveis (cost_gte) do
+proprio trash pro fundo do deck (maximiza o buff seguinte); (2) o buff
+seguinte escala pelo RESULTADO REAL desse MESMO step ("for every 3
+cards placed"), nao por um estado estatico do tabuleiro como todas as
+fontes ja existentes de `buff_power_per_count` (trash/hand/DON/
+own_characters/unique_names) -- nova fonte `placed_bottom_deck_this_effect`,
+lida via `EffectExecutor._last_moved_count` (novo atributo, resetado em
+`execute()` junto de `_last_selected`, preenchido pelo executor do
+step anterior) -- mesmo padrao ja usado por `_last_selected`/
+`_last_trashed_names` pra comunicacao entre steps do MESMO bloco.
+
+**Validado:** `diff_parser.py` GANHOU=0/PERDEU=0/MUDOU=1 (so OP07-091).
+`gerar_dbs.py` + `snapshot_parser.py` 0/0/0. `smoke_fast.py`: 1 teste
+novo com EXECUCAO real de ponta a ponta (custo trashado; 4 Characters
+cost>=4 movidas pro fundo do deck; 2 Characters baratas + 1 Event
+permanecem no trash; buff = floor(4/3)*1000 = 1000). `smoke_test.py`:
+TODOS OS TESTES PASSARAM. `smoke_test_broad.py`: 7/7 (rodado por mexer
+em `execute()`/`buff_power_per_count`, codigo compartilhado por toda a
+base). Registro em
+`parser_audits/2026-07-17_op07-091_place_trash_matching_bottom_deck.json`.
+
+Suspeitos: 272 -> 271.
+
+**Lote de 10 itens (aprovado pelo usuario, "quero que implemente tudo")
+CONCLUIDO com este bloco.** Itens do lote: OP16-001/EB03-001/OP04-001/
+OP12-007/PRB01-001 (select_grant_rush, bloco 229), OP16-043 (bloco 230),
+OP14-120 (bloco 231), PRB02-010 (bloco 232), ST13-001 (bloco 233),
+P-039/OP01-067/OP03-041/OP09-118 (generalizacao pos-keyword, bloco 234,
+expansao de escopo aprovada no meio do lote), ST10-006 (bloco 235),
+OP07-091 (bloco 236, este). Proximo passo: reportar ao usuario e
+perguntar se continua a varredura (1-por-1 ou outro lote de 10) ou
+pausa aqui.
+
 ## 2026-07-17 (229-230) - Lote de 10 itens aprovado pelo usuario -- select_grant_rush (5 cartas) + bounce typo (1 carta)
 
 Usuario pediu pra fazer lotes de 10 aprovacoes de uma vez (em vez de

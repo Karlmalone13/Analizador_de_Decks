@@ -46538,7 +46538,11 @@
     "target": "opp_character"
    },
    {
-    "action": "buff_power",
+    "action": "place_trash_matching_bottom_deck",
+    "trigger": "when_attacking"
+   },
+   {
+    "action": "buff_power_per_count",
     "trigger": "when_attacking",
     "target": "self"
    }
@@ -46555,7 +46559,7 @@
   "rests_opponent": false,
   "bounces": false,
   "gives_don": false,
-  "power_buff": true,
+  "power_buff": false,
   "heals": false,
   "gains_life": false,
   "attacks_life": false,

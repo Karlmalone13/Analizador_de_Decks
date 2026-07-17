@@ -19671,9 +19671,15 @@
      "target": "opp_character"
     },
     {
-     "action": "buff_power",
-     "amount": 1000,
+     "action": "place_trash_matching_bottom_deck",
+     "cost_gte": 4
+    },
+    {
+     "action": "buff_power_per_count",
+     "amount_per": 1000,
+     "count_per": 3,
      "duration": "this_turn",
+     "source": "placed_bottom_deck_this_effect",
      "target": "self"
     }
    ]
