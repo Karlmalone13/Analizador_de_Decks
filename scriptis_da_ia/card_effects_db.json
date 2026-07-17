@@ -2390,11 +2390,14 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 99
+            "cost_lte": 99,
+            "power_lte": 6000,
+            "filter_no_effect": true
           }
         ],
         "conditions": {
-          "chars_lte": 2
+          "chars_lte": 2,
+          "chars_lte_power_filter": 5000
         }
       }
     }
@@ -3779,7 +3782,9 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 99
+            "cost_lte": 99,
+            "power_lte": 6000,
+            "filter_no_effect": true
           }
         ],
         "conditions": {
@@ -3840,7 +3845,8 @@
             "count": 1,
             "cost_lte": 99,
             "filter_type": "donquixote pirates",
-            "enters_rested": true
+            "enters_rested": true,
+            "power_lte": 6000
           }
         ],
         "conditions": {
@@ -3901,7 +3907,9 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 99
+            "cost_lte": 99,
+            "power_lte": 6000,
+            "filter_no_effect": true
           }
         ]
       },
@@ -5445,7 +5453,8 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 99
+            "cost_lte": 99,
+            "power_lte": 6000
           }
         ],
         "costs": [
@@ -6723,7 +6732,8 @@
             "action": "play_card",
             "count": 1,
             "cost_lte": 99,
-            "filter_name": "trigger"
+            "filter_name": "trigger",
+            "power_lte": 5000
           }
         ]
       }
@@ -7298,7 +7308,8 @@
             "count": 1,
             "cost_lte": 99,
             "filter_name": "sanji",
-            "source_alt": "trash"
+            "source_alt": "trash",
+            "power_lte": 6000
           }
         ],
         "conditions": {
@@ -7429,7 +7440,13 @@
             "target": "select_filtered",
             "duration": "this_turn",
             "count": 1,
-            "filter_type": "revolutionary army"
+            "filter_type": "revolutionary army",
+            "conditions": {
+              "board_chars_cost_gte_count": {
+                "count_gte": 2,
+                "cost_gte": 8
+              }
+            }
           }
         ],
         "costs": [
@@ -7688,7 +7705,8 @@
             "action": "play_card",
             "count": 1,
             "cost_lte": 99,
-            "color": "yellow"
+            "color": "yellow",
+            "power_lte": 6000
           }
         ],
         "conditions": {
@@ -12305,7 +12323,8 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 3
+            "cost_lte": 3,
+            "filter_no_effect": true
           }
         ]
       }
@@ -12327,7 +12346,8 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 4
+            "cost_lte": 4,
+            "filter_no_effect": true
           }
         ]
       },
@@ -18190,7 +18210,8 @@
             "action": "play_card",
             "count": 1,
             "cost_lte": 99,
-            "filter_type": "animal"
+            "filter_type": "animal",
+            "power_lte": 3000
           }
         ]
       }
@@ -21677,7 +21698,8 @@
             "action": "play_card",
             "count": 1,
             "cost_lte": 99,
-            "filter_type": "revolutionary army"
+            "filter_type": "revolutionary army",
+            "power_lte": 5000
           }
         ],
         "conditions": {
@@ -22052,7 +22074,8 @@
             "action": "play_card",
             "count": 1,
             "cost_lte": 99,
-            "filter_type": "revolutionary army"
+            "filter_type": "revolutionary army",
+            "power_lte": 5000
           }
         ]
       },
@@ -22068,7 +22091,8 @@
             "action": "play_card",
             "count": 1,
             "cost_lte": 99,
-            "filter_type": "revolutionary army"
+            "filter_type": "revolutionary army",
+            "power_lte": 5000
           }
         ]
       }
@@ -39458,7 +39482,8 @@
           }
         ],
         "conditions": {
-          "chars_lte": 1
+          "chars_lte": 1,
+          "chars_lte_power_filter": 6000
         }
       }
     }
@@ -46243,7 +46268,8 @@
             "action": "play_card",
             "count": 1,
             "cost_lte": 99,
-            "color": "red"
+            "color": "red",
+            "power_lte": 3000
           }
         ]
       }
@@ -46532,7 +46558,8 @@
             "action": "play_card",
             "count": 1,
             "cost_lte": 99,
-            "color": "red"
+            "color": "red",
+            "power_lte": 3000
           },
           {
             "action": "give_don",
@@ -47727,7 +47754,8 @@
             "count": 1,
             "cost_lte": 99,
             "filter_type": "navy",
-            "color": "blue"
+            "color": "blue",
+            "power_lte": 8000
           }
         ],
         "costs": [
@@ -51640,7 +51668,8 @@
             "action": "play_card",
             "count": 1,
             "cost_lte": 99,
-            "filter_type": "homies"
+            "filter_type": "homies",
+            "power_lte": 3000
           }
         ]
       }
@@ -53517,7 +53546,8 @@
             "action": "play_card",
             "count": 1,
             "cost_lte": 99,
-            "color": "red"
+            "color": "red",
+            "power_lte": 2000
           }
         ],
         "conditions": {
@@ -53644,7 +53674,8 @@
             "action": "play_card",
             "count": 1,
             "cost_lte": 99,
-            "color": "red"
+            "color": "red",
+            "power_lte": 2000
           }
         ]
       },
@@ -56586,7 +56617,8 @@
             "action": "play_card",
             "count": 1,
             "cost_lte": 99,
-            "filter_name": "trigger"
+            "filter_name": "trigger",
+            "power_lte": 6000
           }
         ]
       }
@@ -56802,7 +56834,8 @@
             "action": "play_card",
             "count": 1,
             "cost_lte": 99,
-            "filter_name": "trigger"
+            "filter_name": "trigger",
+            "power_lte": 6000
           }
         ]
       },
@@ -60006,6 +60039,19 @@
             "action": "activate_main_effect"
           }
         ]
+      },
+      "main": {
+        "steps": [
+          {
+            "action": "lock_opp_character_attack",
+            "count": 1,
+            "duration": "until_opp_end_phase",
+            "cost_lte": 5
+          }
+        ],
+        "conditions": {
+          "trash_gte": 10
+        }
       }
     }
   },
@@ -70872,7 +70918,8 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 4
+            "cost_lte": 4,
+            "power_lte": 3000
           }
         ],
         "costs": [
@@ -74445,7 +74492,8 @@
             "count": 1,
             "cost_lte": 99,
             "color": "red",
-            "exclude": "roronoa zoro"
+            "exclude": "roronoa zoro",
+            "power_lte": 6000
           }
         ],
         "don_requirement": 2

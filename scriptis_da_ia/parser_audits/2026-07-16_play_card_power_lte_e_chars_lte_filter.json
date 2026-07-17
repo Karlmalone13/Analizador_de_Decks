@@ -1,0 +1,21 @@
+{
+  "trigger_card": "OP15-097",
+  "problem": "Batch de 4 achados relacionados na mesma rodada de varredura: (1) OP15-097 tinha o bloco [Main] inteiro ausente -- 'with a BASE cost of N or less cannot attack' nao tolerava a palavra 'base' (mesma familia transversal ja documentada nesta sessao); (2) EB04-045 'If there are 2 or more Characters with a cost of 8 or more' -- condicao de CONTAGEM (nao so existencia) nunca implementada; (3) EB02-022/OP10-010 'if you have N or less Characters with M power or more' -- chars_lte tinha um lookahead negativo '(?! with)' que EXCLUIA de proposito esta variante com filtro; (4) 'play up to N [Tipo] Character card with M power or less [and no base effect] from your hand' -- parse_play_generic NUNCA extraia power_lte nem filter_no_effect, mesmo esses campos ja sendo suportados pelo EXECUTOR (usado por gain_life/source=trash) -- so faltava a extracao no parser E o repasse no executor de play_card GRUPO 2.",
+  "grammar_family": "4 fixes independentes descobertos na mesma sessao de investigacao, cada um com sua propria busca global.",
+  "queries": [
+    "regex 'with a base cost of \\d+ or less\\)? cannot (attack|be rested)' -- achou 1 carta (OP15-097), isolated_after_global_scan mas fix generico (tolerancia a 'base', mesma forma ja aplicada em ~10 outros lugares nesta sessao)",
+    "regex 'if there are \\d+ or more characters? with a (?:base )?cost of \\d+ or more' -- achou 1 carta (EB04-045), isolated_after_global_scan",
+    "regex 'if you have \\d+ or less characters? with \\d+ power or more' -- achou 2 cartas (EB02-022, OP10-010)",
+    "regex 'character card with \\d+ power or less and no base effect' -- census inicial achou so 4 cartas (EB02-022, EB03-003, EB03-007, EB03-039), mas o FIX de power_lte em parse_play_generic (aplicado de forma generica, nao amarrada a 'no base effect') revelou 25 cartas reais no total com o mesmo campo perdido -- confirmado cada uma manualmente contra card_text: EB01-027(N/A,ja fechada), EB03-005, EB03-007, EB03-053, EB04-027, EB04-041, EB04-052, OP02-045, OP02-046, OP04-010, OP05-004, OP05-018, e mais (lista completa no diff do commit)"
+  ],
+  "cards_found": ["OP15-097", "EB04-045", "EB02-022", "OP10-010", "EB03-005", "EB03-007", "EB03-039", "EB03-053", "EB04-027", "EB04-041", "EB04-052", "OP02-045", "OP02-046", "OP04-010", "OP05-004", "OP05-018"],
+  "resolution_scope": "global",
+  "decision": "(1) 'base' tolerado como opcional na regex de lock_opp_character_attack. (2) nova condicao 'board_chars_cost_gte_count' = {count_gte, cost_gte}, contagem em ambos os lados do campo, distinta de board_has_cost_gte (so existencia de 1). (3) novo regex especifico para 'N or less Characters with M power or more' produzindo chars_lte + chars_lte_power_filter (o lookahead negativo original continua protegendo o caso sem filtro). (4) parse_play_generic ganhou extracao de power_lte ('with N power or less') e filter_no_effect ('no base effect') na mesma janela ja usada pra cost/type/color; executor de play_card GRUPO 2 (decision_engine.py) ganhou repasse de power_lte pra eligible_cards() e filtro de filter_no_effect (mesma convencao ja usada por gain_life/source=trash).",
+  "validated_by": [
+    "diff_parser.py: GANHOU 0 / PERDEU 0 / MUDOU 25+1 (26 total: OP15-097 isolado + 25 do batch de play_card power_lte, todas conferidas manualmente contra card_text)",
+    "gerar_dbs.py + snapshot_parser.py: 0/0/0 apos regenerar",
+    "smoke_fast.py: teste dirigido novo test_play_card_power_lte_e_no_base_effect_e_chars_lte_power com EXECUCAO real -- confirma OP15-097 parseando o lock, EB04-045 disparando/nao-disparando conforme contagem de custo>=8 em AMBOS os lados, e EB02-022 jogando SO o Character dentro do filtro power<=6000 (nao o mais forte)",
+    "smoke_test.py: suite ampla, TODOS OS TESTES PASSARAM",
+    "smoke_test_broad.py: 7/7 partidas aleatorias sem excecao -- rodado por seguranca extra (mudanca em parse_play_generic, funcao central usada por centenas de cartas)"
+  ]
+}

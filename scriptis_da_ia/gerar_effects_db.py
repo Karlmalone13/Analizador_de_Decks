@@ -253,6 +253,16 @@ def parse_conditions(text):
     m = re.search(r'if you have (\d+) or less characters?(?! with)', t)
     if m: conds['chars_lte'] = int(m.group(1))
 
+    # "if you have N or less Characters with M power or more" -- mesmo
+    # chars_lte, mas so conta Characters que batem o filtro de power
+    # (achado 16/07, EB02-022/OP10-010). O '(?! with)' acima excluia esta
+    # variante de proposito (fallback seguro), agora tratada explicitamente.
+    m_lte_pw = re.search(
+        r'if you have (\d+) or less characters? with (\d+) power or more', t)
+    if m_lte_pw:
+        conds['chars_lte'] = int(m_lte_pw.group(1))
+        conds['chars_lte_power_filter'] = int(m_lte_pw.group(2))
+
     # "If the number of your Characters is at least N less than the
     # number of your opponent's Characters" -- comparacao RELATIVA entre
     # os 2 lados (nao contra um numero fixo, distinta de chars_gte/
@@ -521,6 +531,16 @@ def parse_conditions(text):
         conds['board_has_cost'] = [int(m.group(1))]
         if m.group(2):
             conds['board_has_cost_gte'] = int(m.group(2))
+
+    # "if there are N or more Characters with a (base) cost of M or more"
+    # -- CONTAGEM (nao so existencia de 1, distinto de board_has_cost_gte
+    # acima), ambos os lados do campo. Achado 16/07 (EB04-045), condicao
+    # inteira ausente.
+    m_cnt = re.search(
+        r'if there are (\d+) or more characters? with a (?:base )?cost of (\d+) or more', t)
+    if m_cnt:
+        conds['board_chars_cost_gte_count'] = {
+            'count_gte': int(m_cnt.group(1)), 'cost_gte': int(m_cnt.group(2))}
 
     # "there is a Character with N base power or more" -- existencia
     # generica de POWER no jogo (qualquer lado do campo), mesma semantica
@@ -1969,7 +1989,7 @@ def parse_lock_attack(text):
     m = re.search(
         r"up to (\d+) of your opponent.{0,15}(?:leader or )?characters?"
         r"(?:\s+cards?)?"                              # aceita "cards" apos "character(s)" (OP04-100)
-        r"(?: with a cost (?:of|or) (\d+) or less)?"  # aceita typo "cost or N" (OP14-119)
+        r"(?: with an? (?:base )?cost (?:of|or) (\d+) or less)?"  # "base" opcional (achado 16/07, OP15-097); aceita typo "cost or N" (OP14-119)
         r"(?: with (\d+) power or less)?"              # filtro por power (EB04-028)
         r"(?: other than \[([^\]]+)\])?"
         r" cannot (attack|be rested) (?:until|during this) ([^.]+)",
@@ -3460,6 +3480,16 @@ def parse_play_generic(text):
             # from your hand rested."
             if re.search(r'from your hand(?: or trash)? rested\b', janela):
                 step['enters_rested'] = True
+            # "with N power or less [and no base effect]" -- filtro de
+            # power no ALVO jogado (achado 16/07, EB02-022/EB03-003/
+            # EB03-007/EB03-039), distinto do filtro de custo. Mesma
+            # convencao 'filter_no_effect' ja usada por gain_life
+            # (source=='trash') pra "sem efeito parseado no banco".
+            power_lte_m = re.search(r'with (\d+) power or less', janela)
+            if power_lte_m:
+                step['power_lte'] = int(power_lte_m.group(1))
+            if 'no base effect' in janela:
+                step['filter_no_effect'] = True
             steps.append(step)
     return steps
 

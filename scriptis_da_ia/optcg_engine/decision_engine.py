@@ -2901,8 +2901,15 @@ class EffectExecutor:
                 contagem = len(me.field_chars)
             if contagem < conds['chars_gte']:
                 return False
-        if 'chars_lte' in conds and len(me.field_chars) > conds['chars_lte']:
-            return False
+        if 'chars_lte' in conds:
+            # 'chars_lte_power_filter' -- so conta Characters com power>=N
+            # (achado 16/07, EB02-022/OP10-010), distinto do chars_lte puro
+            # (conta todos).
+            power_filter = conds.get('chars_lte_power_filter')
+            contagem_lte = (sum(1 for c in me.field_chars if c.power >= power_filter)
+                             if power_filter is not None else len(me.field_chars))
+            if contagem_lte > conds['chars_lte']:
+                return False
         if 'chars_fewer_than_opp_by_gte' in conds:
             diff = len(opp.field_chars) - len(me.field_chars)
             if diff < conds['chars_fewer_than_opp_by_gte']:
@@ -3025,6 +3032,14 @@ class EffectExecutor:
                 c.cost in exatos or (gte is not None and c.cost >= gte)
                 for c in todos)
             if not existe:
+                return False
+        if 'board_chars_cost_gte_count' in conds:
+            # CONTAGEM (distinto de board_has_cost_gte, que so checa
+            # existencia de 1) -- achado 16/07, EB04-045.
+            spec = conds['board_chars_cost_gte_count']
+            todos = list(me.field_chars) + list(opp.field_chars)
+            n = sum(1 for c in todos if c.cost >= spec['cost_gte'])
+            if n < spec['count_gte']:
                 return False
         if 'opp_char_power_gte' in conds:
             if not opp.field_chars or max(c.effective_power(False) for c in opp.field_chars) < conds['opp_char_power_gte']:
@@ -5848,6 +5863,7 @@ class EffectExecutor:
                         fonte,
                         cost_lte=cost_lte,
                         cost_eq=cost_eq,
+                        power_lte=step.get('power_lte'),
                         filter_text=step.get('filter_type', ''),
                         name_or_code=step.get('filter_name', ''),
                         color=step.get('color', ''),
@@ -5857,6 +5873,12 @@ class EffectExecutor:
                     # de _step_is_viable e _elegivel_para_play — 12/07)
                     if c.card_type == (step.get('card_type') or 'CHARACTER').upper()
                 )
+            # "no base effect" -- so cartas sem efeito parseado no banco
+            # (achado 16/07, EB02-022/EB03-003/EB03-007/EB03-039), mesma
+            # convencao ja usada por gain_life (source=='trash').
+            if step.get('filter_no_effect'):
+                elegiveis = [c for c in elegiveis
+                             if not get_card_effects(c.code).get('effects')]
 
             if not elegiveis:
                 return ''

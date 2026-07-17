@@ -3586,6 +3586,7 @@
    {
     "action": "play_card",
     "trigger": "on_play",
+    "power_lte": 6000,
     "cost_lte": 99
    }
   ],
@@ -5557,6 +5558,7 @@
    {
     "action": "play_card",
     "trigger": "on_play",
+    "power_lte": 6000,
     "cost_lte": 99
    }
   ],
@@ -5641,6 +5643,7 @@
    {
     "action": "play_card",
     "trigger": "on_play",
+    "power_lte": 6000,
     "cost_lte": 99
    }
   ],
@@ -5725,6 +5728,7 @@
    {
     "action": "play_card",
     "trigger": "on_ko",
+    "power_lte": 6000,
     "cost_lte": 99
    },
    {
@@ -7777,6 +7781,7 @@
    {
     "action": "play_card",
     "trigger": "on_ko",
+    "power_lte": 6000,
     "cost_lte": 99
    }
   ],
@@ -9431,6 +9436,7 @@
    {
     "action": "play_card",
     "trigger": "trigger",
+    "power_lte": 5000,
     "cost_lte": 99
    }
   ],
@@ -10084,6 +10090,7 @@
    {
     "action": "play_card",
     "trigger": "main",
+    "power_lte": 6000,
     "cost_lte": 99
    }
   ],
@@ -10581,6 +10588,7 @@
    {
     "action": "play_card",
     "trigger": "on_ko",
+    "power_lte": 6000,
     "cost_lte": 99
    }
   ],
@@ -27111,6 +27119,7 @@
    {
     "action": "play_card",
     "trigger": "on_play",
+    "power_lte": 3000,
     "cost_lte": 99
    }
   ],
@@ -32214,6 +32223,7 @@
    {
     "action": "play_card",
     "trigger": "activate_main",
+    "power_lte": 5000,
     "cost_lte": 99
    }
   ],
@@ -32772,6 +32782,7 @@
    {
     "action": "play_card",
     "trigger": "trigger",
+    "power_lte": 5000,
     "cost_lte": 99
    },
    {
@@ -32782,6 +32793,7 @@
    {
     "action": "play_card",
     "trigger": "counter",
+    "power_lte": 5000,
     "cost_lte": 99
    }
   ],
@@ -68951,6 +68963,7 @@
    {
     "action": "play_card",
     "trigger": "on_ko",
+    "power_lte": 3000,
     "cost_lte": 99
    }
   ],
@@ -69436,6 +69449,7 @@
    {
     "action": "play_card",
     "trigger": "on_play",
+    "power_lte": 3000,
     "cost_lte": 99
    },
    {
@@ -71214,6 +71228,7 @@
    {
     "action": "play_card",
     "trigger": "on_play",
+    "power_lte": 8000,
     "cost_lte": 99
    }
   ],
@@ -77074,6 +77089,7 @@
    {
     "action": "play_card",
     "trigger": "on_play",
+    "power_lte": 3000,
     "cost_lte": 99
    }
   ],
@@ -79731,6 +79747,7 @@
    {
     "action": "play_card",
     "trigger": "on_play",
+    "power_lte": 2000,
     "cost_lte": 99
    },
    {
@@ -79905,6 +79922,7 @@
    {
     "action": "play_card",
     "trigger": "trigger",
+    "power_lte": 2000,
     "cost_lte": 99
    },
    {
@@ -84158,6 +84176,7 @@
    {
     "action": "play_card",
     "trigger": "trigger",
+    "power_lte": 6000,
     "cost_lte": 99
    }
   ],
@@ -84463,6 +84482,7 @@
    {
     "action": "play_card",
     "trigger": "trigger",
+    "power_lte": 6000,
     "cost_lte": 99
    },
    {
@@ -88873,6 +88893,11 @@
    {
     "action": "activate_main_effect",
     "trigger": "trigger"
+   },
+   {
+    "action": "lock_opp_character_attack",
+    "trigger": "main",
+    "cost_lte": 5
    }
   ],
   "synergy_states": {
@@ -105713,6 +105738,7 @@
    {
     "action": "play_card",
     "trigger": "activate_main",
+    "power_lte": 3000,
     "cost_lte": 4
    }
   ],
@@ -110929,6 +110955,7 @@
     "action": "play_card",
     "trigger": "on_ko",
     "don_requirement": 2,
+    "power_lte": 6000,
     "cost_lte": 99
    },
    {

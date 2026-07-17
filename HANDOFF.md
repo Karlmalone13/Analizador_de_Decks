@@ -1,5 +1,43 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-16 (213) - OP15-097/EB04-045/EB02-022: 4 bugs relacionados + play_card power_lte generalizado (25 cartas)
+
+Continuacao da varredura, batch de 4 achados relacionados:
+
+1. **OP15-097**: bloco `[Main]` inteiro ausente -- "with a BASE cost of
+   N or less cannot attack" nao tolerava a palavra "base" (mesma
+   familia transversal ja documentada nesta sessao). Fix: "base"
+   tolerado como opcional.
+2. **EB04-045**: "If there are 2 or more Characters with a cost of 8 or
+   more" -- condicao de CONTAGEM (nao so existencia de 1) nunca
+   implementada. Nova condicao `board_chars_cost_gte_count` =
+   `{count_gte, cost_gte}`, ambos os lados do campo.
+3. **EB02-022/OP10-010**: "if you have N or less Characters with M
+   power or more" -- `chars_lte` tinha um lookahead negativo `(?!
+   with)` que EXCLUIA de proposito essa variante com filtro. Novo
+   `chars_lte_power_filter`.
+4. **play_card (25 cartas!)**: "play up to N [Tipo] Character card with
+   M power or less [and no base effect] from your hand" -- o parser
+   NUNCA extraia `power_lte`/`filter_no_effect`, mesmo esses campos ja
+   sendo suportados pelo EXECUTOR (usado por `gain_life`/source=trash)
+   -- so faltava a extracao + o repasse no executor de `play_card`
+   GRUPO 2. Census inicial achou so 4 cartas ("no base effect"), mas o
+   fix generico (`power_lte` sozinho, sem exigir "no base effect")
+   revelou **25 cartas reais** no total.
+
+**Validado:** `diff_parser.py` GANHOU=0/PERDEU=0/MUDOU=26 (todas
+conferidas). `gerar_dbs.py`+`snapshot_parser.py` 0/0/0. `smoke_fast.py`:
+1 teste dirigido novo com EXECUCAO real (EB04-045 disparando/nao-
+disparando conforme contagem de custo>=8 em AMBOS os lados; EB02-022
+jogando SO o Character dentro do filtro power<=6000). `smoke_test.py`:
+TODOS OS TESTES PASSARAM. **`smoke_test_broad.py`: 7/7** -- rodado por
+seguranca extra (mudanca em `parse_play_generic`, funcao central usada
+por centenas de cartas).
+
+Suspeitos: 325 -> 304 (queda grande, confirma o alcance real do fix de
+`power_lte`). Registro completo em
+`parser_audits/2026-07-16_play_card_power_lte_e_chars_lte_filter.json`.
+
 ## 2026-07-16 (212) - OP04-011 e familia: "Reveal 1 card... If [condicao]..." nunca reconhecido (mecanica nova, 9 cartas)
 
 Continuacao da varredura. OP04-011 (Nami): "Reveal 1 card from the top

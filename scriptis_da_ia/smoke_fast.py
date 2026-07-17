@@ -3186,6 +3186,66 @@ def test_reveal_deck_top_conditional_9_cartas() -> None:
           me3.deck[-1] is barato_topo)
 
 
+def test_play_card_power_lte_e_no_base_effect_e_chars_lte_power() -> None:
+    # Achado 16/07 -- 3 bugs relacionados achados investigando EB04-045/
+    # EB02-022: (a) OP15-097 tinha o bloco [Main] inteiro ausente por
+    # falta de tolerancia a "base" em "cannot attack" (mesma familia
+    # transversal ja documentada); (b) board_chars_cost_gte_count nova
+    # (contagem, nao so existencia, EB04-045); (c) chars_lte nunca aceitava
+    # filtro de power (EB02-022/OP10-010, o '(?! with)' excluia de
+    # proposito); (d) play_card NUNCA extraia power_lte/filter_no_effect
+    # -- busca ampla (nao so as 6 cartas originais) achou 25 cartas reais
+    # com esse filtro perdido.
+    check("OP15-097 [Main] parseia lock_opp_character_attack com cost_lte=5 (tolera 'base cost')",
+          any(s.get("action") == "lock_opp_character_attack" and s.get("cost_lte") == 5
+              for s in get_card_effects("OP15-097").get("main", {}).get("steps", [])))
+    check("EB04-045 parseia condicao NOVA board_chars_cost_gte_count",
+          get_card_effects("EB04-045").get("activate_main", {}).get("steps", [{}])[0]
+          .get("conditions", {}).get("board_chars_cost_gte_count") == {"count_gte": 2, "cost_gte": 8})
+    check("EB02-022 parseia chars_lte=2 com chars_lte_power_filter=5000",
+          get_card_effects("EB02-022").get("on_play", {}).get("conditions", {}) ==
+          {"chars_lte": 2, "chars_lte_power_filter": 5000})
+    check("EB02-022 play_card parseia power_lte=6000 E filter_no_effect",
+          any(s.get("action") == "play_card" and s.get("power_lte") == 6000
+              and s.get("filter_no_effect") for s in get_card_effects("EB02-022").get("on_play", {}).get("steps", [])))
+    check("OP04-010 (sem 'no base effect', so power_lte) tambem parseia power_lte=3000",
+          any(s.get("action") == "play_card" and s.get("power_lte") == 3000
+              for s in get_card_effects("OP04-010").get("on_play", {}).get("steps", [])))
+
+    # Execucao real: EB04-045 -- com 2+ Characters (qualquer lado) de
+    # custo>=8, o buff dispara; sem, nao dispara.
+    ginny = real_card("EB04-045")
+    me = GameState(leader=mk("XGNLDR", "Lider", card_type="LEADER"), turn=3)
+    aliado_caro = mk("XGNC", "Aliado Caro", cost=8, sub_types="Revolutionary Army")
+    me.field_chars = [ginny, aliado_caro]
+    opp_caro = mk("XGNOC", "Opp Caro", cost=8)
+    opp = GameState(leader=mk("XGNOPP", "Opp", card_type="LEADER"), turn=3)
+    opp.field_chars = [opp_caro]
+    EffectExecutor(me, opp).execute(ginny, "activate_main")
+    check("Execucao real: com 2+ Characters custo>=8 (ambos os lados), buff de EB04-045 dispara",
+          aliado_caro.power_buff == 1000)
+
+    ginny2 = real_card("EB04-045")
+    me2 = GameState(leader=mk("XGNLDR2", "Lider", card_type="LEADER"), turn=3)
+    aliado2 = mk("XGN2", "Aliado", cost=8, sub_types="Revolutionary Army")
+    me2.field_chars = [ginny2, aliado2]
+    EffectExecutor(me2, GameState(leader=mk("XGNOPP2", "Opp", card_type="LEADER"), turn=3)).execute(ginny2, "activate_main")
+    check("Execucao real: SEM 2+ Characters custo>=8, buff de EB04-045 NAO dispara",
+          aliado2.power_buff == 0)
+
+    # Execucao real: EB02-022 -- mao com 2 Characters, 1 dentro do filtro
+    # power<=6000+sem-efeito, outro forte demais.
+    usopp = real_card("EB02-022")
+    ok_candidato = mk("XUSOK", "Candidato Fraco", power=5000)  # sem efeito parseado (mk generico)
+    forte_demais = mk("XUSFT", "Candidato Forte", power=7000)
+    me3 = GameState(leader=mk("XUSLDR", "Lider", card_type="LEADER"), turn=3)
+    me3.hand = [forte_demais, ok_candidato]
+    opp3 = GameState(leader=mk("XUSOPP", "Opp", card_type="LEADER"), turn=3)
+    EffectExecutor(me3, opp3).execute(usopp, "on_play")
+    check("Execucao real: EB02-022 joga SO o Character dentro do filtro power<=6000",
+          ok_candidato in me3.field_chars and forte_demais in me3.hand)
+
+
 def main() -> int:
     test_turn_order_imu_prefers_second()
     test_empty_throne_beats_direct_five_elders_play()
@@ -3273,6 +3333,7 @@ def main() -> int:
     test_gain_life_hand_filtro_ignorado_e_st13003_fonte_combinada()
     test_leader_condicao_contamina_alvo_self_do_buff()
     test_reveal_deck_top_conditional_9_cartas()
+    test_play_card_power_lte_e_no_base_effect_e_chars_lte_power()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0
