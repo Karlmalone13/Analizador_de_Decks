@@ -193,6 +193,18 @@ def parse_conditions(text):
     m = re.search(r'if you have (\d+) or less don!! cards? on your field', t)
     if m: conds['don_on_field_lte'] = int(m.group(1))
 
+    # "if you have 0 [DON!! cards on your field] or N or more DON!! cards
+    # on your field" -- OR de dois limiares desconectados (0 OU N+),
+    # DISTINTO de um intervalo (gte+lte combinados com AND excluiria
+    # justamente 0). Achado 17/07, OP05-060/ST10-002 (2 cartas no banco,
+    # mesma redacao): a condicao inteira ficava ausente, o add_don
+    # disparava sempre, independente da contagem real de DON no campo.
+    m = re.search(
+        r'if you have 0(?: don!!\s*cards? on your field)? '
+        r'or (\d+) or more don!!\s*cards? on your field', t)
+    if m:
+        conds['don_on_field_zero_or_gte'] = int(m.group(1))
+
     # "if your opponent has N or more DON!! cards on their field" --
     # condicao simetrica sobre o campo do OPONENTE, distinta de
     # don_on_field_gte (proprio campo). 8 cartas no banco (ex: EB02-061,

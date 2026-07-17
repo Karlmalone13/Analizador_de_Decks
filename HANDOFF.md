@@ -1,5 +1,33 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-17 (228) - OP05-060/ST10-002: condicao OR "0 ou N+ DON no campo" nunca reconhecida
+
+Continuacao da varredura (bloco 227), aprovado explicitamente pelo
+usuario antes de implementar. Monkey.D.Luffy (OP05-060 e ST10-002,
+mesmo lider em sets diferentes): "If you have 0 or 3 or more DON!!
+cards on your field, add up to 1 DON!! card...". Condicao OR de dois
+limiares DESCONECTADOS (exatamente 0 OU >=N, excluindo 1 ate N-1)
+nunca era reconhecida -- distinta de um INTERVALO (gte+lte com AND
+excluiria justamente o 0, que e o caso que a carta quer incluir). O
+`add_don` disparava sempre, ignorando a contagem real de DON no campo.
+
+Nova condicao `don_on_field_zero_or_gte`, adicionada nas 3 funcoes de
+checagem de condicao do engine (`_hand_cost_conditions_match`,
+`EffectExecutor._check_conditions`, `_effect_conditions_met`) pra
+cobrir todos os pontos onde `don_on_field_gte`/`lte` ja sao checados.
+
+**Validado:** `diff_parser.py` GANHOU=0/PERDEU=0/MUDOU=2. `gerar_dbs.py`
++ `snapshot_parser.py` 0/0/0. `smoke_fast.py`: 1 teste dirigido novo
+com EXECUCAO real (0 DON dispara; 2 DON -- nem 0 nem >=8 -- NAO
+dispara; 8 DON dispara). `smoke_test.py`: TODOS OS TESTES PASSARAM.
+`smoke_test_broad.py`: 7/7. Registro em
+`parser_audits/2026-07-17_op05-060_don_zero_or_gte.json`.
+
+Suspeitos: 282 -> 282 (ST10-002 sai da lista por completo; OP05-060
+continua com um "0" residual, cardinalidade implicita do proprio
+limiar da condicao -- mesmo padrao de falso-positivo ja documentado,
+nao um gap real).
+
 ## 2026-07-17 (227) - OP05-032 (Pica): substitute_ko com filtro de custo+exclusao, preso no timing errado
 
 Fechamento do item pendente dos blocos 225/226 (aprovado explicitamente

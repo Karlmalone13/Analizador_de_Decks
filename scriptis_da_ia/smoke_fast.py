@@ -3800,6 +3800,48 @@ def test_pica_substitute_ko_cost_gte_e_exclude_self() -> None:
           pica2 in dono_pica2.trash and pica2 not in dono_pica2.field_chars)
 
 
+def test_don_on_field_zero_or_gte_2_cartas() -> None:
+    # Achado 17/07, OP05-060/ST10-002 (Monkey.D.Luffy, 2 cartas): "If you
+    # have 0 [DON!! cards on your field] or N or more DON!! cards on your
+    # field, add up to 1 DON!! card..." -- condicao OR de dois limiares
+    # DESCONECTADOS (0 OU N+), distinta de um intervalo (gte+lte com AND
+    # excluiria justamente o 0). A condicao inteira ficava ausente, o
+    # add_don disparava sempre, independente da contagem real de DON.
+    check("OP05-060 parseia don_on_field_zero_or_gte=3 (condicao por-step, apos custo ':')",
+          get_card_effects("OP05-060").get("activate_main", {}).get("steps", [{}])[0]
+          .get("conditions", {}) == {"don_on_field_zero_or_gte": 3})
+    check("ST10-002 parseia don_on_field_zero_or_gte=8 (condicao no nivel do entry)",
+          get_card_effects("ST10-002").get("activate_main", {}).get("conditions", {}) ==
+          {"don_on_field_zero_or_gte": 8})
+
+    # Execucao real (ST10-002, limiar=8): com 0 DON no campo, dispara.
+    luffy0 = real_card("ST10-002")
+    me0 = GameState(leader=mk("LF0LDR", "Lider", card_type="LEADER"), turn=3,
+                     don_available=0, don_rested=0)
+    opp0 = GameState(leader=mk("LF0OPP", "Opp", card_type="LEADER"), turn=3)
+    EffectExecutor(me0, opp0).execute(luffy0, "activate_main")
+    check("Execucao real: 0 DON no campo -- dispara (extremo inferior do OR)",
+          me0.don_available == 1)
+
+    # Com 2 DON no campo (entre 1 e 7, FORA do OR: nao e 0 nem >=8), NAO dispara.
+    luffy_meio = real_card("ST10-002")
+    me_meio = GameState(leader=mk("LFMLDR", "Lider", card_type="LEADER"), turn=3,
+                         don_available=1, don_rested=1)
+    opp_meio = GameState(leader=mk("LFMOPP", "Opp", card_type="LEADER"), turn=3)
+    EffectExecutor(me_meio, opp_meio).execute(luffy_meio, "activate_main")
+    check("Execucao real: 2 DON no campo (nem 0 nem >=8) -- NAO dispara",
+          me_meio.don_available == 1)
+
+    # Com 8 DON no campo (limiar exato), dispara.
+    luffy8 = real_card("ST10-002")
+    me8 = GameState(leader=mk("LF8LDR", "Lider", card_type="LEADER"), turn=3,
+                     don_available=8, don_rested=0)
+    opp8 = GameState(leader=mk("LF8OPP", "Opp", card_type="LEADER"), turn=3)
+    EffectExecutor(me8, opp8).execute(luffy8, "activate_main")
+    check("Execucao real: 8 DON no campo (limiar exato) -- dispara",
+          me8.don_available == 9)
+
+
 def main() -> int:
     test_turn_order_imu_prefers_second()
     test_empty_throne_beats_direct_five_elders_play()
@@ -3900,6 +3942,7 @@ def main() -> int:
     test_reveal_events_custo_5_cartas()
     test_atalho_don_bare_sem_texto_explicativo_2_cartas()
     test_pica_substitute_ko_cost_gte_e_exclude_self()
+    test_don_on_field_zero_or_gte_2_cartas()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0

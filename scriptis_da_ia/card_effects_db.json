@@ -23357,7 +23357,10 @@
         "steps": [
           {
             "action": "add_don",
-            "count": 1
+            "count": 1,
+            "conditions": {
+              "don_on_field_zero_or_gte": 3
+            }
           }
         ],
         "costs": [
@@ -71130,6 +71133,9 @@
             "count": 1
           }
         ],
+        "conditions": {
+          "don_on_field_zero_or_gte": 8
+        },
         "once_per_turn": true
       }
     }

@@ -14653,6 +14653,9 @@
    "steps": [
     {
      "action": "add_don",
+     "conditions": {
+      "don_on_field_zero_or_gte": 3
+     },
      "count": 1
     }
    ]
@@ -44615,6 +44618,9 @@
  },
  "ST10-002": {
   "activate_main": {
+   "conditions": {
+    "don_on_field_zero_or_gte": 8
+   },
    "once_per_turn": true,
    "steps": [
     {

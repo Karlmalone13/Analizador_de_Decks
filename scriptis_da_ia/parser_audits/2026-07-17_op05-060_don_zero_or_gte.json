@@ -1,0 +1,12 @@
+{
+  "trigger_card": "OP05-060",
+  "problem": "\"If you have 0 or 3 or more DON!! cards on your field, add up to 1 DON!! card from your DON!! deck and set it as active.\" -- condicao OR de dois limiares DESCONECTADOS (0 OU 3+, excluindo explicitamente 1-2) nunca era reconhecida. O add_don disparava sempre, independente da contagem real de DON no campo.",
+  "grammar_family": "'if you have 0 [DON!! cards on your field] or N or more DON!! cards on your field' -- OR de exatamente-zero OU maior-ou-igual-a-N, distinto de uma faixa/intervalo (gte+lte combinados com AND excluiria justamente o valor 0, que e exatamente o caso que a carta quer incluir).",
+  "queries": [
+    "regex '0 (?:don!!\\s*cards on your field )?or \\d+ or more don!!\\s*cards on your field' contra cards_rows.csv -- 2 cartas: OP05-060 e ST10-002 (mesma carta-lider em sets diferentes, mesma condicao)"
+  ],
+  "cards_found": ["OP05-060", "ST10-002"],
+  "resolution_scope": "global",
+  "decision": "Nova condicao don_on_field_zero_or_gte (int = o limiar superior), avaliada como (don_on_field()==0) or (don_on_field()>=N). Adicionada nas 3 funcoes de checagem de condicao existentes no engine (_hand_cost_conditions_match, EffectExecutor._check_conditions, _effect_conditions_met) pra cobrir todos os pontos onde don_on_field_gte/lte ja sao checados, mantendo consistencia com o padrao existente.",
+  "validated_by": ["diff_parser.py GANHOU=0/PERDEU=0/MUDOU=2 (as 2 cartas, conferidas)", "gerar_dbs.py + snapshot_parser.py 0/0/0", "smoke_fast.py: 1 teste dirigido novo com EXECUCAO real (0 DON no campo dispara; 2 DON no campo -- nem 0 nem >=8 -- NAO dispara; 8 DON no campo dispara)", "smoke_test.py: TODOS OS TESTES PASSARAM", "smoke_test_broad.py: 7/7 (rodado na hora, mexeu em codigo de checagem de condicao compartilhado)"]
+}

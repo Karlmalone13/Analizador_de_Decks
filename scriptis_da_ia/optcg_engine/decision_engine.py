@@ -882,6 +882,10 @@ def _hand_cost_conditions_match(p: GameState, opp: Optional[GameState],
         return False
     if 'don_on_field_gte' in conds and p.don_on_field() < conds['don_on_field_gte']:
         return False
+    if 'don_on_field_zero_or_gte' in conds:
+        n = p.don_on_field()
+        if not (n == 0 or n >= conds['don_on_field_zero_or_gte']):
+            return False
     if 'other_char_power_gte' in conds:
         candidates = [c for c in p.field_chars if c is not card]
         filter_type = conds.get('other_char_power_gte_type')
@@ -2877,6 +2881,10 @@ class EffectExecutor:
             return False
         if 'don_on_field_lte' in conds and me.don_on_field() > conds['don_on_field_lte']:
             return False
+        if 'don_on_field_zero_or_gte' in conds:
+            n = me.don_on_field()
+            if not (n == 0 or n >= conds['don_on_field_zero_or_gte']):
+                return False
         if 'opp_don_on_field_gte' in conds and opp.don_on_field() < conds['opp_don_on_field_gte']:
             return False
         if 'opp_don_on_field_lte' in conds and opp.don_on_field() > conds['opp_don_on_field_lte']:
@@ -7428,6 +7436,9 @@ class DecisionEngine:
                 if not any(c >= v for c in me.events_activated_costs_this_turn): return False
             if k == 'don_on_field_gte' and not ((my_don + me.don_rested) >= v): return False
             if k == 'don_on_field_lte' and not ((my_don + me.don_rested) <= v): return False
+            if k == 'don_on_field_zero_or_gte':
+                n = my_don + me.don_rested
+                if not (n == 0 or n >= v): return False
             if k == 'opp_don_on_field_gte' and not (self.opp.don_on_field() >= v): return False
             if k == 'opp_don_on_field_lte' and not (self.opp.don_on_field() <= v): return False
             if k == 'don_on_field_lte_opp' and v:
