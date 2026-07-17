@@ -33457,6 +33457,10 @@
     "action": "set_active",
     "trigger": "end_of_turn",
     "target": "self"
+   },
+   {
+    "action": "substitute_ko",
+    "trigger": "passive"
    }
   ],
   "synergy_states": {},

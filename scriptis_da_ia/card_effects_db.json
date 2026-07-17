@@ -22535,6 +22535,20 @@
           }
         ],
         "once_per_turn": true
+      },
+      "passive": {
+        "steps": [
+          {
+            "action": "substitute_ko",
+            "cost": {
+              "action": "rest_own_character",
+              "count": 1,
+              "cost_gte": 3,
+              "exclude": "pica"
+            }
+          }
+        ],
+        "once_per_turn": true
       }
     }
   },

@@ -14131,6 +14131,20 @@
      "target": "self"
     }
    ]
+  },
+  "passive": {
+   "once_per_turn": true,
+   "steps": [
+    {
+     "action": "substitute_ko",
+     "cost": {
+      "action": "rest_own_character",
+      "cost_gte": 3,
+      "count": 1,
+      "exclude": "pica"
+     }
+    }
+   ]
   }
  },
  "OP05-033": {

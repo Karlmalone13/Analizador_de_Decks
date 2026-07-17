@@ -3743,6 +3743,63 @@ def test_atalho_don_bare_sem_texto_explicativo_2_cartas() -> None:
           not pica2.rested and me2.don_available == 0 and me2.don_rested == 1)
 
 
+def test_pica_substitute_ko_cost_gte_e_exclude_self() -> None:
+    # Achado 17/07, OP05-032 (Pica): "[Once Per Turn] If this Character
+    # would be K.O.'d, you may rest up to 1 of your Characters with a cost
+    # of 3 or more other than [Pica] instead." -- nenhum padrao de custo
+    # existente tolerava "up to" + filtro de custo + exclusao por nome
+    # juntos (so 1 carta no banco usa essa combinacao).
+    #
+    # BUG ESTRUTURAL achado durante a implementacao (nao so filtro
+    # perdido): "[End of Your Turn] (1): Set active. [Once Per Turn] If...
+    # instead" faz "[Once Per Turn]" ficar preso DENTRO do bloco
+    # end_of_turn (sem tag formal propria) -- o substitute_ko virava um
+    # step de end_of_turn, timing que try_substitute() NUNCA verifica (so
+    # 'passive'/'opp_turn'/'your_turn'), tornando a substituicao
+    # SILENCIOSAMENTE INERTE. Mesma classe de bug ja corrigida em 16/07
+    # pra when_attacking (OP12-081) -- corrigido aqui com uma NOVA entrada
+    # em trigger_patterns ancorada em "[end of your turn]...clausula"
+    # (nao um padrao generico, pra nao conflitar com as ~30 cartas que ja
+    # tem "[Once Per Turn] If...K.O.'d...instead" capturado certo por
+    # segmento_solto quando vem no INICIO do texto, sem tag antes).
+    check("OP05-032 parseia substitute_ko em 'passive' (nao em 'end_of_turn')",
+          get_card_effects("OP05-032").get("passive", {}).get("steps", []) ==
+          [{"action": "substitute_ko", "cost": {"action": "rest_own_character",
+            "count": 1, "cost_gte": 3, "exclude": "pica"}}])
+    check("end_of_turn continua so com set_active (substitute_ko NAO ficou preso la)",
+          get_card_effects("OP05-032").get("end_of_turn", {}).get("steps", []) ==
+          [{"action": "set_active", "target": "self"}])
+
+    # Execucao real: um atacante tenta K.O. a Pica. Ela tem 2 candidatos
+    # pra pagar o custo: um Donquixote barato (custo 2, fora do filtro
+    # cost_gte=3) e um caro (custo 4, dentro do filtro) -- so o caro pode
+    # pagar. A propria Pica ("other than [Pica]") fica de fora mesmo tendo
+    # custo 4 (seu proprio custo real).
+    pica = real_card("OP05-032")
+    barato = mk("PCA", "Barato", cost=2, power=2000)
+    caro = mk("PCB", "Caro", cost=4, power=4000)
+    dono_pica = GameState(leader=mk("PCDLDR", "Lider", card_type="LEADER"), turn=3)
+    dono_pica.field_chars = [pica, barato, caro]
+    atacante = GameState(leader=mk("PCATKLDR", "Atacante", card_type="LEADER"), turn=3)
+    EffectExecutor(atacante, dono_pica)._execute_step(
+        {"action": "ko", "count": 1, "target": "opp_character"}, atacante.leader)
+    check("Execucao real: Pica NAO foi K.O.'d (substituiu), so o Caro (custo>=3) foi restado",
+          pica in dono_pica.field_chars and pica not in dono_pica.trash
+          and caro.rested and not barato.rested and not pica.rested)
+
+    # Sem NENHUM candidato elegivel (so o barato, fora do filtro de
+    # custo), a substituicao falha e Pica E K.O.'d normalmente.
+    pica2 = real_card("OP05-032")
+    barato2 = mk("PCA2", "Barato 2", cost=2, power=2000)
+    dono_pica2 = GameState(leader=mk("PCDLDR2", "Lider", card_type="LEADER"), turn=3)
+    dono_pica2.field_chars = [pica2, barato2]
+    atacante2 = GameState(leader=mk("PCATKLDR2", "Atacante", card_type="LEADER"), turn=3)
+    EffectExecutor(atacante2, dono_pica2)._execute_step(
+        {"action": "ko", "count": 1, "target": "opp_character"}, atacante2.leader)
+    check("Execucao real: SEM candidato elegivel (custo>=3), Pica E K.O.'d normalmente",
+          pica2 in dono_pica2.trash and pica2 not in dono_pica2.field_chars)
+
+
 def main() -> int:
     test_turn_order_imu_prefers_second()
     test_empty_throne_beats_direct_five_elders_play()
@@ -3842,6 +3899,7 @@ def main() -> int:
     test_return_own_character_to_hand_com_filtro_8_cartas()
     test_reveal_events_custo_5_cartas()
     test_atalho_don_bare_sem_texto_explicativo_2_cartas()
+    test_pica_substitute_ko_cost_gte_e_exclude_self()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0

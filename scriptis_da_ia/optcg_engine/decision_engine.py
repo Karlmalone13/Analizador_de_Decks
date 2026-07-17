@@ -2602,8 +2602,18 @@ class EffectExecutor:
         if ctype == 'rest_own_character':
             # OP14-034 (substituicao EXTERNA): "you may rest 1 of your
             # Characters instead" -- qualquer Character proprio, sem filtro
-            # de tipo (distinto de rest_own_filtered).
-            candidatos = [c for c in me.field_chars if not c.rested]
+            # de tipo (distinto de rest_own_filtered). cost_gte/exclude
+            # opcionais (achado 17/07, OP05-032 Pica: "rest up to 1 of your
+            # Characters with a cost of 3 or more other than [Pica]
+            # instead" -- exclusao por nome, nao necessariamente self, mas
+            # aqui coincide por ser substituicao propria).
+            from optcg_engine.rules_facade import eligible_cards
+            candidatos = eligible_cards(
+                [c for c in me.field_chars if not c.rested],
+                cost_gte=cost.get('cost_gte'),
+                cost_lte=cost.get('cost_lte'),
+                exclude_name=cost.get('exclude', ''),
+            )
             if not candidatos:
                 return None
             alvo = max(candidatos, key=lambda c: c.board_value())

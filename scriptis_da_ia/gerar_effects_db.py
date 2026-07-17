@@ -4254,20 +4254,46 @@ def _parse_substitute_cost(t):
         filtro = next((g for g in m.groups()[1:4] if g), '').strip()
         return {'action': 'rest_own_filtered', 'count': int(m.group(1)), 'filter_type': filtro}, extra_steps
 
+    # "rest up to N of your Characters with a cost of X or more/less [other
+    # than [Nome]] instead" -- filtro de CUSTO no proprio custo (distinto
+    # do filtro de TIPO acima), com exclusao de nome opcional. Achado
+    # 17/07, OP05-032 (Pica): "you may rest up to 1 of your Characters
+    # with a cost of 3 or more other than [Pica] instead" -- "up to" e a
+    # combinacao custo+exclusao nunca eram tolerados por nenhum padrao
+    # existente (so 1 carta no banco usa essa forma exata). Testado ANTES
+    # da variante generica de "other characters"/"characters instead" pra
+    # nao perder o filtro de custo.
+    m = re.search(
+        r"you may rest (?:up to )?(\d+) of your characters? "
+        r"with a (?:base )?cost of (\d+) or (more|less)"
+        r"(?:\s+other than \[([a-z][a-z0-9 .'-]+)\])?"
+        r"\s+instead", t)
+    if m:
+        step = {'action': 'rest_own_character', 'count': int(m.group(1))}
+        if m.group(3) == 'more':
+            step['cost_gte'] = int(m.group(2))
+        else:
+            step['cost_lte'] = int(m.group(2))
+        if m.group(4):
+            step['exclude'] = m.group(4).strip()
+        return step, extra_steps
+
     # "rest N of your OTHER Characters instead" -- distinto de
     # rest_own_character (esse aceita QUALQUER character proprio, inclusive
     # a que esta se substituindo; aqui exclui a propria carta, achado 15/07
     # via revisao do usuario, PRB02-006 Zoro). Testado ANTES da variante
-    # generica pra nao perder o "other".
-    m = re.search(r"you may rest (\d+) of your other characters? instead", t)
+    # generica pra nao perder o "other". "up to" tolerado (achado 17/07,
+    # mesma classe do fix acima -- nenhuma carta usa hoje, mas e a mesma
+    # forma verbal das outras variantes desta familia).
+    m = re.search(r"you may rest (?:up to )?(\d+) of your other characters? instead", t)
     if m:
         return {'action': 'rest_own_other_character', 'count': int(m.group(1))}, extra_steps
 
-    m = re.search(r"you may rest (\d+) of your characters? instead", t)
+    m = re.search(r"you may rest (?:up to )?(\d+) of your characters? instead", t)
     if m:
         return {'action': 'rest_own_character', 'count': int(m.group(1))}, extra_steps
 
-    m = re.search(r"you may rest (\d+) of your cards? instead", t)
+    m = re.search(r"you may rest (?:up to )?(\d+) of your cards? instead", t)
     if m:
         return {'action': 'rest_own_card', 'count': int(m.group(1))}, extra_steps
 
@@ -5806,7 +5832,27 @@ def parse_card_effect(card_text, card_type):
         ('opp_turn',      ABERTURA + r"\[once per turn\]\s*this effect can be activated when your opponent plays a character[^.]*?\.\s*(.+?)" + LOOKAHEAD_DELIM),
         ('trigger',       ABERTURA + r'\[trigger\](.+?)' + LOOKAHEAD_DELIM),
         ('counter',       ABERTURA + r'\[counter\](.+?)' + LOOKAHEAD_DELIM),
-        ('end_of_turn',   ABERTURA + r'\[end of your turn\](.+?)' + LOOKAHEAD_DELIM),
+        # LOOKAHEAD_DELIM_OU_ONCE (nao o generico): mesma classe de bug ja
+        # corrigida em 16/07 pra when_attacking (OP12-081) -- sem parar
+        # tambem em "[Once Per Turn]", um bloco end_of_turn engolia uma
+        # clausula reativa SEGUINTE sem tag formal propria (achado 17/07,
+        # OP05-032 Pica: "[End of Your Turn] (1): Set active. [Once Per
+        # Turn] If this Character would be K.O.'d... instead" -- a
+        # substituicao de K.O. virava step de end_of_turn, timing que
+        # try_substitute() nunca checa -- silenciosamente inerte).
+        ('end_of_turn',   ABERTURA + r'\[end of your turn\](.+?)' + LOOKAHEAD_DELIM_OU_ONCE),
+        # Clausula de substituicao ("[Once Per Turn] If ... would be K.O.'d/
+        # removed ..., instead") que vem DEPOIS de "[End of Your Turn]"
+        # (achado 17/07, OP05-032) precisa da PROPRIA entrada -- vira
+        # 'passive' (timing que try_substitute() de fato verifica), nao
+        # fica presa dentro do end_of_turn acima. Ancorado exigindo
+        # "[end of your turn]...stuff." como prefixo LITERAL (nao generico)
+        # pra nao conflitar com as ~30 cartas no banco que ja tem essa MESMA
+        # frase de substituicao capturada corretamente por outro caminho
+        # (segmento_solto, quando a clausula vem no INICIO do texto sem tag
+        # anterior) -- confirmado por censo que so Pica tem "[end of your
+        # turn]" imediatamente antes da clausula de substituicao.
+        ('passive',       ABERTURA + r'\[end of your turn\][^.]*?\.\s*\[once per turn\](.+?)' + LOOKAHEAD_DELIM),
         ('on_block',      ABERTURA + r'\[on block\](.+?)' + LOOKAHEAD_DELIM),
         ('main',          ABERTURA + r'\[main\](.+?)' + LOOKAHEAD_DELIM),
     ]

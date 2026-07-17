@@ -1,5 +1,62 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-17 (227) - OP05-032 (Pica): substitute_ko com filtro de custo+exclusao, preso no timing errado
+
+Fechamento do item pendente dos blocos 225/226 (aprovado explicitamente
+pelo usuario). Pica: "[Once Per Turn] If this Character would be
+K.O.'d, you may rest up to 1 of your Characters with a cost of 3 or
+more other than [Pica] instead." Dois problemas, um mais serio que o
+outro:
+
+1. **Filtro de custo**: nenhum padrao de `_parse_substitute_cost`
+   tolerava "up to" + `cost_gte` + exclusao por nome juntos.
+2. **BUG ESTRUTURAL mais serio** (achado durante a implementacao, nao
+   so filtro perdido): como a clausula vem logo apos "[End of Your
+   Turn] (1): Set active." sem tag formal propria, ela ficava PRESA
+   dentro do bloco `end_of_turn` -- e `try_substitute()` SO verifica
+   os timings `passive`/`opp_turn`/`your_turn`, NUNCA `end_of_turn`.
+   Mesmo reconhecendo o custo corretamente, a substituicao ficaria
+   SILENCIOSAMENTE INERTE (nunca disparando) se so o item 1 fosse
+   corrigido. Mesma CLASSE de bug ja corrigida em 16/07 pra
+   `when_attacking` (OP12-081) -- aqui em `end_of_turn`.
+
+Fix: (a) novo padrao de custo com `cost_gte`/`cost_lte`/`exclude`
+mapeado pra `rest_own_character`, "up to" tambem tolerado nos 3
+padroes irmaos por consistencia de forma; (b) `end_of_turn` mudou de
+`LOOKAHEAD_DELIM` pra `LOOKAHEAD_DELIM_OU_ONCE` (parando em "[Once Per
+Turn]"), e uma NOVA entrada em `trigger_patterns` (trigger_name=
+'passive') ANCORADA exigindo "[end of your turn]...clausula" como
+prefixo literal -- nao um padrao generico, pra nao conflitar com as
+~30 outras cartas no banco que ja tem essa MESMA clausula de
+substituicao capturada certo por `segmento_solto` (quando vem no
+INICIO do texto, sem tag antes). Executor: `rest_own_character` agora
+aceita `cost_gte`/`cost_lte`/`exclude` (antes escolhia QUALQUER
+character do campo, sem filtro nenhum).
+
+**Validado:** `diff_parser.py` GANHOU=0/PERDEU=0/MUDOU=1 (so OP05-032;
+confirmado que NENHUMA das ~30 cartas com a mesma clausula de
+substituicao mudou). `gerar_dbs.py` + `snapshot_parser.py` 0/0/0.
+`smoke_fast.py`: 1 teste dirigido novo com EXECUCAO real de PONTA A
+PONTA via `try_any_substitute`/`_execute_step('ko')` -- Pica sobrevive
+ao K.O. restando o candidato elegivel; sem candidato elegivel, Pica E
+K.O.'d normalmente. `smoke_test.py`: TODOS OS TESTES PASSARAM.
+`smoke_test_broad.py`: 7/7 (rodado na hora, mexeu em codigo central
+compartilhado). Registro em
+`parser_audits/2026-07-17_op05-032_pica_substitute_ko.json`.
+
+Suspeitos: 283 -> 282 (Pica sai da lista por completo, ambos os gaps
+resolvidos).
+
+Contexto da sessao (blocos 225-227): o usuario pediu pra mapear a
+familia de substituicao/protecao contra remocao citando 9 cartas
+especificas (Bonney, Koby x3, Laboon, Koushirou, Tashigi x3) -- todas
+JA estavam corretas, confirmando que a infraestrutura
+substitute_ko/substitute_removal (auditoria de 01/07) e robusta. Pica
+era o unico gap real da familia, agora fechado. Durante a analise,
+usuario tambem apontou um erro de DADO BRUTO (custo do OP15-009,
+corrigido no bloco 226) que NAO era sistemico (19/20 cartas
+verificadas contra fonte externa bateram certinho).
+
 ## 2026-07-17 (226) - OP15-009: erro de DADO BRUTO no custo (nao e bug de parser)
 
 Achado durante a analise pedida no bloco 225 (mapear a familia de
