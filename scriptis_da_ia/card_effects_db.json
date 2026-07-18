@@ -15200,6 +15200,11 @@
         ],
         "costs": [
           {
+            "type": "rest_own_character",
+            "count": 2,
+            "filter_type": "east blue"
+          },
+          {
             "type": "rest_don",
             "count": 3
           }
@@ -15615,6 +15620,13 @@
             "target": "own_character",
             "filter_name": "kuro"
           }
+        ],
+        "costs": [
+          {
+            "type": "rest_own_character",
+            "count": 1,
+            "filter_type": "east blue"
+          }
         ]
       }
     }
@@ -15648,6 +15660,13 @@
             "target": "opp_character",
             "cost_lte": 3,
             "rested_only": true
+          }
+        ],
+        "costs": [
+          {
+            "type": "rest_own_character",
+            "count": 1,
+            "filter_type": "east blue"
           }
         ]
       }
@@ -15731,6 +15750,13 @@
           }
         ],
         "don_requirement": 1
+      },
+      "game_rules": {
+        "rules": [
+          {
+            "type": "deck_out_win_instead_of_loss"
+          }
+        ]
       }
     }
   },
@@ -15848,7 +15874,10 @@
             "target": "self",
             "duration": "this_turn"
           }
-        ]
+        ],
+        "conditions": {
+          "deck_lte": 20
+        }
       },
       "passive": {
         "steps": [
@@ -15952,7 +15981,10 @@
             "target": "opp_character",
             "cost_lte": 3
           }
-        ]
+        ],
+        "conditions": {
+          "deck_lte": 20
+        }
       }
     }
   },
@@ -16046,6 +16078,9 @@
             "duration": "this_turn"
           }
         ],
+        "conditions": {
+          "deck_lte": 20
+        },
         "don_requirement": 1
       }
     }
@@ -16546,7 +16581,8 @@
         "costs": [
           {
             "type": "trash_from_hand",
-            "count": 1
+            "count": 1,
+            "cost_eq": 5
           },
           {
             "type": "don_minus",
@@ -16942,9 +16978,8 @@
             "count": 5
           },
           {
-            "action": "add_to_hand",
-            "count": 1,
-            "revealed_to_opponent": false
+            "action": "trash_from_looked_deck",
+            "count": 2
           },
           {
             "action": "deck_bottom_rest"
@@ -33468,6 +33503,13 @@
           {
             "action": "rest_opp_character",
             "count": 1
+          }
+        ],
+        "costs": [
+          {
+            "type": "rest_own_character",
+            "count": 1,
+            "filter_type": "minks"
           }
         ]
       }
@@ -63713,7 +63755,8 @@
         "costs": [
           {
             "type": "trash_from_hand",
-            "count": 1
+            "count": 1,
+            "cost_gte": 8
           }
         ]
       },
@@ -63980,7 +64023,8 @@
         "costs": [
           {
             "type": "trash_from_hand",
-            "count": 1
+            "count": 1,
+            "cost_gte": 8
           }
         ]
       }

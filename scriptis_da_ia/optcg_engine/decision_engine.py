@@ -3018,6 +3018,8 @@ class EffectExecutor:
             return False
         if 'hand_eq' in conds and len(me.hand) != conds['hand_eq']:
             return False
+        if 'deck_lte' in conds and len(me.deck) > conds['deck_lte']:
+            return False
         if conds.get('just_played') and not getattr(card, 'just_played', False):
             return False
         if 'leader_is' in conds:
@@ -3300,6 +3302,9 @@ class EffectExecutor:
                     power_lte=cost.get('power_lte'),
                     power_gte=cost.get('power_gte'),
                     power_eq=cost.get('power_eq'),
+                    cost_lte=cost.get('cost_lte'),
+                    cost_gte=cost.get('cost_gte'),
+                    cost_eq=cost.get('cost_eq'),
                 )
                 if cost.get('has_trigger'):
                     pool = [c for c in pool if c.has_trigger]
@@ -3948,6 +3953,37 @@ class EffectExecutor:
             else:
                 return f'olhou {look} do topo -> nada para pegar'
 
+        # "look at N cards ... and trash up to M cards. Then, place the
+        # rest at the bottom" -- MILL dentro do grupo olhado (OP03-083),
+        # distinto de add_to_hand (nao adiciona nada a mao). Mesma
+        # convencao de escopo (me.deck[-look:]) e de deixar "o resto" pro
+        # deck_bottom_rest tratar depois.
+        if action == 'trash_from_looked_deck':
+            if not me.deck:
+                return ''
+            effects = get_card_effects(card.code)
+            look_count = 5
+            for trigger, ef in effects.items():
+                for s in ef.get('steps', []):
+                    if s.get('action') == 'look_top_deck':
+                        look_count = s.get('count', 5)
+                        break
+            look = min(look_count, len(me.deck))
+            candidates = me.deck[-look:]
+            count = step.get('count', 1)
+            trashed = []
+            for _ in range(min(count, len(candidates))):
+                worst = min(candidates, key=lambda c: c.board_value())
+                remove_by_identity(candidates, worst)
+                remove_by_identity(me.deck, worst)
+                me.trash.append(worst)
+                trashed.append(worst.name[:15])
+            names = ', '.join(trashed)
+            if names:
+                return f'olhou {look} do topo -> trashou: {names}'
+            else:
+                return f'olhou {look} do topo -> nada para trashar'
+
         if action == 'search_deck':
             candidates = eligible_cards(
                 me.deck,
@@ -4099,7 +4135,7 @@ class EffectExecutor:
             taken_count = 1
             for trigger, ef in effects.items():
                 for s in ef.get('steps', []):
-                    if s.get('action') == 'add_to_hand':
+                    if s.get('action') in ('add_to_hand', 'trash_from_looked_deck'):
                         taken_count = s.get('count', 1)
                         break
             # O resto = look_count - taken = vão ao trash
@@ -4121,7 +4157,7 @@ class EffectExecutor:
                 for s in ef.get('steps', []):
                     if s.get('action') == 'look_top_deck':
                         look_count = s.get('count', 5)
-                    if s.get('action') == 'add_to_hand':
+                    if s.get('action') in ('add_to_hand', 'trash_from_looked_deck'):
                         taken_count = s.get('count', 1)
             rest_count = max(0, look_count - taken_count)
             moved = []
@@ -4154,7 +4190,7 @@ class EffectExecutor:
                 for s in ef.get('steps', []):
                     if s.get('action') == 'look_top_deck':
                         look_count = s.get('count', 5)
-                    if s.get('action') == 'add_to_hand':
+                    if s.get('action') in ('add_to_hand', 'trash_from_looked_deck'):
                         taken_count = s.get('count', 1)
             rest_count = max(0, look_count - taken_count)
             seen = []
@@ -8066,6 +8102,7 @@ class DecisionEngine:
             if k == 'hand_lte'  and not (my_hand  <= v): return False
             if k == 'hand_gte'  and not (my_hand  >= v): return False
             if k == 'hand_eq'   and not (my_hand  == v): return False
+            if k == 'deck_lte'  and not (len(me.deck) <= v): return False
             if k == 'don_gte'   and not (my_don   >= v): return False
             if k == 'has_don_attached' and v:
                 attached = getattr(me.leader, 'don_attached', 0) + sum(
@@ -11536,10 +11573,19 @@ class OPTCGMatch:
         self.end_phase(p, opp, verbose=verbose)
         self._log_event(p, 'turn_end', phase='end',
                         description=f'Fim do turno {self.global_turn}')
+        # deck_out_win_instead_of_loss (OP03-040 Nami lider): inverte o
+        # resultado padrao de deck-out (quem zera o proprio deck normalmente
+        # perde) especificamente pro dono desta carta.
+        def _wins_on_own_deck_out(player: GameState) -> bool:
+            return any(r.get('type') == 'deck_out_win_instead_of_loss'
+                       for r in get_card_game_rules(player.leader.code))
+
         if not p.deck:
-            return 'B' if p is self.state_a else 'A'
+            p_wins = _wins_on_own_deck_out(p)
+            return ('A' if p_wins else 'B') if p is self.state_a else ('B' if p_wins else 'A')
         if not opp.deck:
-            return 'A' if p is self.state_a else 'B'
+            opp_wins = _wins_on_own_deck_out(opp)
+            return ('B' if opp_wins else 'A') if p is self.state_a else ('A' if opp_wins else 'B')
         return None
 
     def simulate(self) -> dict:

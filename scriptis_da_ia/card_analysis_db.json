@@ -24977,7 +24977,7 @@
     "trigger": "on_play"
    },
    {
-    "action": "add_to_hand",
+    "action": "trash_from_looked_deck",
     "trigger": "on_play"
    },
    {

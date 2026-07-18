@@ -403,6 +403,13 @@ def parse_conditions(text):
         m = re.search(r'(?:if|and) you have (\d+) cards? in your hand(?!\s*,?\s*or)', t)
         if m: conds['hand_eq'] = int(m.group(1))
 
+    # "if you have N or less cards in your DECK" -- tamanho do proprio
+    # deck, distinto de hand_lte (mao) e trash_gte (trash). Achado 19/07,
+    # familia OP03-045/OP03-049/OP03-053: condicao inteira ausente, o
+    # buff/bounce disparava sempre.
+    m = re.search(r'(?:if|and) you have (\d+) or less cards? in your deck', t)
+    if m: conds['deck_lte'] = int(m.group(1))
+
     m = re.search(r'if your leader is \[([^\]]+)\]', t)
     if m: conds['leader_is'] = m.group(1)
 
@@ -697,6 +704,18 @@ def parse_costs(text):
         costs.append({'type': 'rest_own_character',
                       'count': int(m_rest_char_cost.group(1)),
                       'cost_gte': int(m_rest_char_cost.group(2))})
+
+    # Variante com filtro de TIPO em vez de custo -- "you may rest N of
+    # your [Tipo] type Characters:" (achado 19/07, OP03-021 Kuro + familia
+    # OP03-036/OP03-037/OP08-037: custo inteiro ausente, engine ja suporta
+    # filter_type em rest_own_character via eligible_cards, so faltava o
+    # parser gerar o campo).
+    m_rest_char_type = re.search(
+        r'you may rest (\d+) of your [\[{"]([a-z][a-z0-9 .\'-]+)[\]}"]\s*type characters?\s*:', t)
+    if m_rest_char_type:
+        costs.append({'type': 'rest_own_character',
+                      'count': int(m_rest_char_type.group(1)),
+                      'filter_type': m_rest_char_type.group(2).strip()})
 
     m_return_trash = re.search(
         r'you may return (\d+) cards? from your trash to your deck and shuffle', t)
@@ -1061,6 +1080,23 @@ def parse_costs(text):
                                 cost_th['power_lte'] = int(typed.group(3))
                             else:
                                 cost_th['power_eq'] = int(typed.group(3))
+                    # "trash N Character card(s) with a cost of M (or more/or
+                    # less)? from your hand" -- SEM nome/tipo entre colchetes
+                    # (achado 19/07, OP03-070/OP16-083/OP16-092: filtro de
+                    # custo inteiro ausente nas 3, mesmo as com "or more" --
+                    # a IA aceitava qualquer carta da mao como custo).
+                    elif not typed:
+                        cost_m = re.search(
+                            r'trash \d+ character cards?\s+with a cost of (\d+)(?:\s+or (more|less))?'
+                            r'\s+from your hand', m.group(0))
+                        if cost_m:
+                            comparator = cost_m.group(2)
+                            if comparator == 'more':
+                                cost_th['cost_gte'] = int(cost_m.group(1))
+                            elif comparator == 'less':
+                                cost_th['cost_lte'] = int(cost_m.group(1))
+                            else:
+                                cost_th['cost_eq'] = int(cost_m.group(1))
                 costs.append(cost_th)
             else:
                 # padrão mais simples sem "you may" (custo obrigatório com ':')
@@ -1232,6 +1268,19 @@ def parse_look_at(text):
         return steps
     look_count = int(m.group(1))
     steps.append({'action': 'look_top_deck', 'count': look_count})
+
+    # "look at N cards ... and trash up to M cards" -- MILL dentro do
+    # grupo olhado (distinto de add/reveal/play, que adicionam a mao ou
+    # jogam). Sem este check, caia no fallback generico abaixo (nenhum
+    # verbo reveal/add/play bate) e virava um add_to_hand(count=1)
+    # INVENTADO -- a carta nao tem NENHUM "add to hand" no texto (achado
+    # 19/07, OP03-083 Corgy, unica carta no banco com essa forma exata).
+    trash_look_m = re.search(r'and trash up to (\d+) cards?', t)
+    if trash_look_m:
+        steps.append({'action': 'trash_from_looked_deck', 'count': int(trash_look_m.group(1))})
+        if 'place the rest at the bottom' in t:
+            steps.append({'action': 'deck_bottom_rest'})
+        return steps
 
     # Quantas pega
     take_m = re.search(r'(?:reveal|add|play) (?:up to |a total of )?(\d+)', t)
@@ -7413,6 +7462,16 @@ def parse_card_effect(card_text, card_type):
         don_m = re.search(r'your don!! deck consists of (\d+) cards', t_low)
         if don_m:
             game_rules.append({'type': 'don_deck_size', 'count': int(don_m.group(1))})
+
+    # "When your deck is reduced to 0, you win the game instead of
+    # losing" -- fora do gate 'under the rules of this game' (achado
+    # 19/07, OP03-040 Nami lider: usa "according to the rules" em vez
+    # dessa frase-preambulo, entao o bloco inteiro acima nunca rodava pra
+    # esta carta). Inverte o resultado padrao de deck-out (quem zera o
+    # deck perde) especificamente pro dono desta carta.
+    if re.search(r'when your deck is reduced to 0,\s*you win the game instead of losing', t_low):
+        game_rules.append({'type': 'deck_out_win_instead_of_loss'})
+
     if game_rules:
         result['game_rules'] = {'rules': game_rules}
 

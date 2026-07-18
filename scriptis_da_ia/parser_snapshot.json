@@ -9542,6 +9542,11 @@
   "activate_main": {
    "costs": [
     {
+     "count": 2,
+     "filter_type": "east blue",
+     "type": "rest_own_character"
+    },
+    {
      "count": 3,
      "type": "rest_don"
     }
@@ -9785,6 +9790,13 @@
  "OP03-035": {},
  "OP03-036": {
   "main": {
+   "costs": [
+    {
+     "count": 1,
+     "filter_type": "east blue",
+     "type": "rest_own_character"
+    }
+   ],
    "steps": [
     {
      "action": "set_active",
@@ -9808,6 +9820,13 @@
  },
  "OP03-037": {
   "main": {
+   "costs": [
+    {
+     "count": 1,
+     "filter_type": "east blue",
+     "type": "rest_own_character"
+    }
+   ],
    "steps": [
     {
      "action": "ko",
@@ -9867,6 +9886,13 @@
   }
  },
  "OP03-040": {
+  "game_rules": {
+   "rules": [
+    {
+     "type": "deck_out_win_instead_of_loss"
+    }
+   ]
+  },
   "on_damage_to_life": {
    "don_requirement": 1,
    "steps": [
@@ -9930,6 +9956,9 @@
  },
  "OP03-045": {
   "opp_turn": {
+   "conditions": {
+    "deck_lte": 20
+   },
    "steps": [
     {
      "action": "buff_power",
@@ -9990,6 +10019,9 @@
  },
  "OP03-049": {
   "on_play": {
+   "conditions": {
+    "deck_lte": 20
+   },
    "steps": [
     {
      "action": "bounce",
@@ -10039,6 +10071,9 @@
  "OP03-052": {},
  "OP03-053": {
   "passive": {
+   "conditions": {
+    "deck_lte": 20
+   },
    "don_requirement": 1,
    "steps": [
     {
@@ -10353,6 +10388,7 @@
   "on_play": {
    "costs": [
     {
+     "cost_eq": 5,
      "count": 1,
      "type": "trash_from_hand"
     },
@@ -10613,9 +10649,8 @@
      "count": 5
     },
     {
-     "action": "add_to_hand",
-     "count": 1,
-     "revealed_to_opponent": false
+     "action": "trash_from_looked_deck",
+     "count": 2
     },
     {
      "action": "deck_bottom_rest"
@@ -21070,6 +21105,13 @@
  },
  "OP08-037": {
   "main": {
+   "costs": [
+    {
+     "count": 1,
+     "filter_type": "minks",
+     "type": "rest_own_character"
+    }
+   ],
    "steps": [
     {
      "action": "rest_opp_character",
@@ -40354,6 +40396,7 @@
   "on_play": {
    "costs": [
     {
+     "cost_gte": 8,
      "count": 1,
      "type": "trash_from_hand"
     }
@@ -40522,6 +40565,7 @@
   "on_play": {
    "costs": [
     {
+     "cost_gte": 8,
      "count": 1,
      "type": "trash_from_hand"
     }

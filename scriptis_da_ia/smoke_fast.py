@@ -5243,6 +5243,92 @@ def test_lote_8_op02_030_a_op03_012() -> None:
           and fraco_vermelho in me_teach.field_chars and forte_azul in me_teach.field_chars)
 
 
+def test_lote_5_op03_021_a_op03_083() -> None:
+    # Continuacao do lote de 10 severidade-1 (itens 21-32), 5 bugs reais.
+
+    # OP03-021 Kuro + familia (OP03-036/OP03-037/OP08-037): custo "you may
+    # rest N of your [Tipo] type Characters:" inteiro ausente.
+    check("OP03-021 parseia custo rest_own_character com filter_type=east blue",
+          {"type": "rest_own_character", "count": 2, "filter_type": "east blue"}
+          in get_card_effects("OP03-021")["activate_main"]["costs"])
+    kuro = real_card("OP03-021")
+    eb_char = mk("KEB1", "East Blue Guy", sub_types="East Blue")
+    outro_char = mk("KOUT", "Outro", sub_types="Punk Hazard")
+    me_kuro = GameState(leader=kuro, don_available=10)
+    me_kuro.field_chars = [eb_char, outro_char]
+    opp_kuro = GameState(leader=mk("KOPP", "Opp", card_type="LEADER"))
+    opp_kuro.field_chars = [mk("KOT", "Alvo", cost=3)]
+    ok = EffectExecutor(me_kuro, opp_kuro)._pay_costs(
+        get_card_effects("OP03-021")["activate_main"]["costs"], kuro)
+    check("Execucao real: OP03-021 so paga o custo com 2 East Blue disponiveis (so tem 1 -- falha)",
+          not ok)
+
+    # OP03-040 Nami lider: regra "when your deck is reduced to 0, you win
+    # instead of losing" inteira ausente (fora do gate 'under the rules').
+    check("OP03-040 parseia game_rules deck_out_win_instead_of_loss",
+          {"type": "deck_out_win_instead_of_loss"}
+          in get_card_effects("OP03-040").get("game_rules", {}).get("rules", []))
+
+    # OP03-045/049/053: condicao "if you have 20 or less cards in your
+    # deck" inteira ausente -- nova condicao deck_lte.
+    check("OP03-045 parseia condicao deck_lte=20",
+          get_card_effects("OP03-045")["opp_turn"]["conditions"] == {"deck_lte": 20})
+    op03045 = real_card("OP03-045")
+    me_deck45 = GameState(leader=mk("D45LDR", "Lider", card_type="LEADER"))
+    me_deck45.field_chars = [op03045]
+    me_deck45.deck = [mk(f"D45-{i}", f"D{i}") for i in range(25)]  # 25 > 20, condicao NAO bate
+    opp_deck45 = GameState(leader=mk("D45OPP", "Opp", card_type="LEADER"))
+    EffectExecutor(me_deck45, opp_deck45).execute(op03045, "opp_turn")
+    check("Execucao real: OP03-045 com 25 cartas no deck (>20) NAO ganha o buff",
+          op03045.power_buff == 0)
+    op03045b = real_card("OP03-045")
+    me_deck45b = GameState(leader=mk("D45LDR2", "Lider", card_type="LEADER"))
+    me_deck45b.field_chars = [op03045b]
+    me_deck45b.deck = [mk(f"D45B-{i}", f"D{i}") for i in range(15)]  # 15 <= 20, condicao bate
+    opp_deck45b = GameState(leader=mk("D45OPP2", "Opp", card_type="LEADER"))
+    EffectExecutor(me_deck45b, opp_deck45b).execute(op03045b, "opp_turn")
+    check("Execucao real: OP03-045 com 15 cartas no deck (<=20) ganha +3000",
+          op03045b.power_buff == 3000)
+
+    # OP03-070 Ace: custo "trash 1 Character card with a cost of 5 from
+    # your hand" perdia o filtro de custo inteiro (aceitava qualquer carta).
+    check("OP03-070 parseia custo trash_from_hand com cost_eq=5",
+          get_card_effects("OP03-070")["on_play"]["costs"][0]
+          == {"type": "trash_from_hand", "count": 1, "cost_eq": 5})
+    # Testado via _pay_costs direto (nao execute()): o beneficio (Rush)
+    # sem alvo pra atacar nao passa no scoring "vale a pena pagar" do
+    # engine, questao pre-existente e fora de escopo -- o que este fix
+    # corrige e SO o filtro de custo (cost_eq=5), isolado aqui.
+    ace = real_card("OP03-070")
+    carta_custo3 = mk("ACEH1", "Custo 3", cost=3)
+    carta_custo5 = mk("ACEH2", "Custo 5", cost=5)
+    me_ace = GameState(leader=mk("ACELDR", "Lider", card_type="LEADER"), don_available=10)
+    me_ace.field_chars = [ace]
+    me_ace.hand = [carta_custo3, carta_custo5]
+    opp_ace = GameState(leader=mk("ACEOPP", "Opp", card_type="LEADER"))
+    ee_ace = EffectExecutor(me_ace, opp_ace)
+    ee_ace._pay_costs(get_card_effects("OP03-070")["on_play"]["costs"], ace)
+    check("Execucao real: OP03-070 so aceita a carta de custo 5 como custo (nao a de custo 3)",
+          carta_custo5 not in me_ace.hand and carta_custo3 in me_ace.hand)
+
+    # OP03-083 Corgy: "look 5, trash up to 2, place rest at bottom" virava
+    # um add_to_hand INVENTADO (a carta nao adiciona nada a mao no texto real).
+    check("OP03-083 parseia trash_from_looked_deck (nao add_to_hand)",
+          get_card_effects("OP03-083")["on_play"]["steps"]
+          == [{"action": "look_top_deck", "count": 5},
+              {"action": "trash_from_looked_deck", "count": 2},
+              {"action": "deck_bottom_rest"}])
+    corgy = real_card("OP03-083")
+    me_corgy = GameState(leader=mk("CGLDR", "Lider", card_type="LEADER"))
+    me_corgy.field_chars = [corgy]
+    me_corgy.deck = [mk(f"CGD-{i}", f"D{i}", power=1000 * (i + 1)) for i in range(10)]
+    opp_corgy = GameState(leader=mk("CGOPP", "Opp", card_type="LEADER"))
+    deck_antes = len(me_corgy.deck)
+    EffectExecutor(me_corgy, opp_corgy).execute(corgy, "on_play")
+    check("Execucao real: OP03-083 trasha exatamente 2 (nao adiciona nada a mao) e devolve 3 ao fundo do deck",
+          len(me_corgy.hand) == 0 and len(me_corgy.trash) == 2 and len(me_corgy.deck) == deck_antes - 2)
+
+
 def main() -> int:
     test_turn_order_imu_prefers_second()
     test_empty_throne_beats_direct_five_elders_play()
@@ -5374,6 +5460,7 @@ def main() -> int:
     test_kinemon_op10_026_027_e_familia_place_self_bottom_deck()
     test_your_turn_on_play_dispara_uma_vez_e_so_no_seu_turno()
     test_lote_8_op02_030_a_op03_012()
+    test_lote_5_op03_021_a_op03_083()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0

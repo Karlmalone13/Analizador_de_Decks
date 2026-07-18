@@ -1,5 +1,43 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-19 (272) - Claude - lote de 5 bugs reais (OP03-021 a OP03-083)
+
+Continuacao da varredura (itens 21-32, apos o lote do bloco 271). Registro
+completo em `parser_audits/2026-07-19_lote_5_op03-021_a_op03-083.json`.
+
+1. **OP03-021 Kuro + familia (OP03-036/037, OP08-037)**: custo "you may
+   rest N of your [Tipo] type Characters:" inteiro ausente -- engine ja
+   suportava filter_type em `eligible_cards`, so faltava o parser gerar.
+2. **OP03-040 Nami (lider)**: regra "when your deck is reduced to 0, you
+   win the game instead of losing" inteira ausente -- essa carta usa
+   "according to the rules" em vez da frase-preambulo padrao "under the
+   rules of this game" que gateia TODO o bloco de `game_rules`, entao
+   nunca era nem tentada. Nova rule `deck_out_win_instead_of_loss` +
+   `play_turn()` agora inverte o resultado padrao de deck-out pro dono
+   dessa carta.
+3. **OP03-045/OP03-049/OP03-053**: condicao "if you have 20 or less cards
+   in your deck" inteira ausente -- nova condicao `deck_lte` (mesma
+   familia de hand_lte/life_lte, mas pro tamanho do proprio deck).
+4. **OP03-070 Ace + familia (OP16-083/092)**: custo "trash 1 Character
+   card with a cost of N (or more)? from your hand" perdia o filtro de
+   custo inteiro (aceitava qualquer carta da mao) -- o regex existente so
+   reconhecia filtro por NOME/TIPO entre colchetes, nao um filtro de
+   custo puro.
+5. **OP03-083 Corgy**: parsing ERRADO por completo -- "look at 5 cards
+   ... and trash up to 2 cards. Then, place the rest at the bottom"
+   virava um `add_to_hand(count=1)` INVENTADO (a carta nao tem nenhum
+   add-to-hand no texto real). Nova acao `trash_from_looked_deck` (mill
+   dentro do grupo olhado, mesmo escopo de `add_to_hand` mas remove pro
+   trash escolhendo os de menor board_value). `deck_bottom_rest`/
+   `trash_rest`/`deck_reorder_rest` (3 pontos que calculam "quantas
+   sobraram do grupo olhado") passam a reconhecer essa acao tambem.
+
+Validado: `diff_parser.py` GANHOU=0/PERDEU=0/MUDOU=12 (exatamente as 12
+cartas das 5 familias). `smoke_fast.py` com teste novo
+(`test_lote_5_op03_021_a_op03_083`) cobrindo execucao real dos 5
+mecanismos. `smoke_test.py` TODOS OS TESTES PASSARAM. `smoke_test_broad.py`
+7/7 sem excecao. **Auditor: 204 -> 196 suspeitos.**
+
 ## 2026-07-19 (271) - Claude - lote de 8 bugs reais (OP02-030 a OP03-012)
 
 Continuacao da varredura apos o fix do audit (bloco 270). Usuario aprovou

@@ -1,9 +1,20 @@
 # TODO — Analisador de Decks OPTCG
 
 **Última atualização:** 19 de julho de 2026
-**Estado:** varredura contínua do parser; 204 suspeitos (severidade 1 only)
+**Estado:** varredura contínua do parser; 196 suspeitos (severidade 1 only)
 **Baseline do código:** ver `git log --oneline -1`
 **Repo:** github.com/Karlmalone13/Analizador_de_Decks
+
+> 19/07/2026: lote de 10 suspeitos severidade-1 (itens 21-32). 5 fixes/12
+> cartas reais: OP03-021+família (custo "rest N de tipo X" ausente),
+> OP03-040 (regra "vence ao invés de perder no deck-out" ausente por usar
+> frase-preâmbulo diferente da esperada), OP03-045/049/053 (condição "20
+> ou menos cartas no deck" nova), OP03-070+família (custo perdia filtro
+> de custo exato, aceitava qualquer carta da mão), OP03-083 (parsing
+> ERRADO — inventava um add_to_hand que não existe no texto real, quando
+> o certo era "olhe 5, descarte até 2, resto no fundo"). Ver HANDOFF
+> bloco 272 e `parser_audits/2026-07-19_lote_5_op03-021_a_op03-083.json`.
+> Auditor: 204 -> 196 suspeitos.
 
 > 19/07/2026: lote de 10 suspeitos severidade-1 (itens 11-20). 6 fixes/8
 > cartas reais: OP02-030 (`[On K.O.]` inteiro sumia por janela de regex
