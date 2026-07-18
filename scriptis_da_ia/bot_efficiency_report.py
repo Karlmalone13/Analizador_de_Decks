@@ -19,6 +19,7 @@ from typing import Any, Callable
 ROOT = Path(__file__).resolve().parent
 PARSED_ROOT = ROOT / "logs" / "parsed"
 DEFAULT_MANIFEST = ROOT / "metrics" / "bot_efficiency_cohorts.json"
+COLLECTION_PLAN = ROOT / "metrics" / "evidence_collection_plan.json"
 EXPECTED_SNAPSHOT_FIELDS = ("hand", "board", "trash", "life")
 
 
@@ -227,6 +228,10 @@ def analyze_decision_events(lines) -> dict:
     executions: dict[str, list[dict]] = {}
     outcomes: list[dict] = []
     ordered_decisions: list[dict] = []
+    commits: set[str] = set()
+    sessions: set[str] = set()
+    schemas: set[int] = set()
+    duplicate_decision_ids = 0
     invalid_lines = 0
     for raw in lines:
         if not raw.strip():
@@ -237,12 +242,19 @@ def analyze_decision_events(lines) -> dict:
             invalid_lines += 1
             continue
         decision_id = event.get("decision_id")
+        if isinstance(event.get("schema"), int):
+            schemas.add(event["schema"])
+        if event.get("session_id"):
+            sessions.add(event["session_id"])
         if not decision_id:
             invalid_lines += 1
             continue
         if event.get("event") == "decision":
+            duplicate_decision_ids += int(decision_id in decisions)
             decisions[decision_id] = event
             ordered_decisions.append(event)
+            if event.get("commit"):
+                commits.add(event["commit"])
         elif event.get("event") == "execution":
             executions.setdefault(decision_id, []).append(event)
         elif event.get("event") == "outcome":
@@ -254,7 +266,44 @@ def analyze_decision_events(lines) -> dict:
     eligible_recorded = 0
     immediate_gaps = []
     counterfactual_regrets = []
+    latencies = []
+    timed_out = 0
+    fallback_errors = 0
     by_kind: dict[str, dict[str, int]] = {}
+    semantic = {"checked": 0, "passed": 0, "failed": 0, "unavailable": 0}
+
+    def find_uid(player: dict, uid: int):
+        for zone in ("hand", "board"):
+            for card in player.get(zone, []):
+                if card.get("deckUniqueId") == uid:
+                    return zone, card
+        leader = player.get("leader") or {}
+        return ("leader", leader) if leader.get("deckUniqueId") == uid else (None, None)
+
+    def main_transition_ok(decision: dict, after: dict) -> bool | None:
+        if decision.get("decision_kind") != "main" or not isinstance(after, dict):
+            return None
+        before = decision.get("state_before") or {}
+        response = decision.get("response") or {}
+        action = response.get("type")
+        uid = response.get("cardId", 0)
+        if not before.get("bot") or not after.get("bot"):
+            return None
+        before_zone, before_card = find_uid(before["bot"], uid)
+        after_zone, after_card = find_uid(after["bot"], uid)
+        if action == "play":
+            return before_zone == "hand" and after_zone != "hand"
+        if action == "attack":
+            return bool(before_card and after_card and not before_card.get("rested")
+                        and after_card.get("rested"))
+        if action == "attach_don":
+            return bool(before_card and after_card
+                        and after_card.get("donAttached", 0) > before_card.get("donAttached", 0))
+        if action == "activate":
+            return bool(after_card and after_card.get("actionUsed"))
+        if action == "end_turn":
+            return after.get("turnNumber") != before.get("turnNumber")
+        return None
     for decision_id, decision in decisions.items():
         eligible = [a for a in decision.get("scored_actions", []) if a.get("eligible")]
         if eligible:
@@ -264,6 +313,10 @@ def analyze_decision_events(lines) -> dict:
         bucket = by_kind.setdefault(kind, {"decisions": 0, "confirmed": 0,
                                            "failed": 0, "pending": 0})
         bucket["decisions"] += 1
+        if isinstance(decision.get("latency_ms"), (int, float)):
+            latencies.append(float(decision["latency_ms"]))
+        timed_out += int(bool(decision.get("timed_out")))
+        fallback_errors += int(bool(decision.get("error") or decision.get("telemetry_error")))
         if chosen is not None and eligible:
             chosen_with_scores += 1
             best = max(float(a.get("score", -1e9)) for a in eligible)
@@ -282,6 +335,14 @@ def analyze_decision_events(lines) -> dict:
         else:
             failed += 1
             bucket["failed"] += 1
+
+        terminal_state = terminal.get("state_after") if terminal else None
+        semantic_result = main_transition_ok(decision, terminal_state)
+        if semantic_result is None:
+            semantic["unavailable"] += 1
+        else:
+            semantic["checked"] += 1
+            semantic["passed" if semantic_result else "failed"] += 1
 
         search = decision.get("search_values") or []
         if search and chosen:
@@ -332,23 +393,95 @@ def analyze_decision_events(lines) -> dict:
 
     total = len(decisions)
     completed = confirmed + failed
+    observed_matches = {d.get("match_id") for d in ordered_decisions if d.get("match_id")}
+    outcome_matches = {e.get("match_id") for e in outcomes if e.get("match_id")}
+    latency_sorted = sorted(latencies)
+    latency_p95 = _percentile(latency_sorted, 0.95)
+    outcome_coverage = _ratio(len(observed_matches & outcome_matches), len(observed_matches), 100)
+    gates = _load_json(COLLECTION_PLAN).get("gates", {}) if COLLECTION_PLAN.exists() else {}
+    alerts = []
+
+    def alert(code: str, severity: str, message: str, value=None, threshold=None):
+        alerts.append({"code": code, "severity": severity, "message": message,
+                       "value": _round(value) if isinstance(value, float) else value,
+                       "threshold": threshold})
+
+    execution_pct = _ratio(confirmed, completed, 100)
+    state_after_pct = _ratio(with_state_after, total, 100)
+    counterfactual_pct = _ratio(len(counterfactual_regrets), total, 100)
+    if completed and execution_pct < gates.get("execution_success_pct", 95):
+        alert("execution_below_gate", "error", "execucao confirmada abaixo do gate",
+              execution_pct, gates.get("execution_success_pct", 95))
+    if total and state_after_pct < gates.get("state_after_coverage_pct", 95):
+        alert("state_after_below_gate", "error", "cobertura de estado posterior abaixo do gate",
+              state_after_pct, gates.get("state_after_coverage_pct", 95))
+    if observed_matches and outcome_coverage < gates.get("outcome_coverage_pct", 100):
+        alert("outcome_missing", "error", "ha partidas sem outcome correlacionado",
+              outcome_coverage, gates.get("outcome_coverage_pct", 100))
+    if pending:
+        alert("pending_decisions", "warning", "ha decisoes sem confirmed/failed", pending, 0)
+    if timed_out:
+        alert("decision_timeouts", "error", "a busca excedeu o timeout", timed_out, 0)
+    if fallback_errors:
+        alert("decision_fallback_errors", "error", "decisoes usaram fallback por erro",
+              fallback_errors, 0)
+    if len(commits) > 1:
+        alert("mixed_commits", "error", "o mesmo arquivo mistura commits", len(commits), 1)
+    if len(sessions) > 1:
+        alert("mixed_sessions", "error", "o mesmo arquivo mistura sessoes do server",
+              len(sessions), 1)
+    if schemas - {1}:
+        alert("unsupported_schema", "error", "ha eventos com schema nao suportado",
+              sorted(schemas), [1])
+    if invalid_lines:
+        alert("invalid_jsonl_lines", "error", "ha linhas JSONL invalidas", invalid_lines, 0)
+    if duplicate_decision_ids:
+        alert("duplicate_decision_ids", "error", "decision_id duplicado no arquivo",
+              duplicate_decision_ids, 0)
+    if total and counterfactual_pct < gates.get("minimum_counterfactual_coverage_pct", 20):
+        alert("counterfactual_coverage_low", "warning",
+              "poucas decisoes tiveram alternativas realmente simuladas",
+              counterfactual_pct, gates.get("minimum_counterfactual_coverage_pct", 20))
+    if semantic["failed"]:
+        alert("semantic_transition_failed", "error",
+              "DTO mudou, mas a transicao esperada da acao principal nao ocorreu",
+              semantic["failed"], 0)
+    if latency_p95 is not None and latency_p95 > gates.get("decision_latency_p95_ms", 3000):
+        alert("latency_p95_above_gate", "warning", "latencia p95 acima do gate",
+              latency_p95, gates.get("decision_latency_p95_ms", 3000))
     return {
         "source": "<memory>",
         "decisions": total,
         "confirmed": confirmed,
         "failed": failed,
         "pending": pending,
-        "execution_success_pct": _round(_ratio(confirmed, completed, 100)),
+        "execution_success_pct": _round(execution_pct),
         "legal_actions_coverage_pct": _round(_ratio(eligible_recorded, total, 100)),
         "chosen_score_coverage_pct": _round(_ratio(chosen_with_scores, total, 100)),
-        "state_after_coverage_pct": _round(_ratio(with_state_after, total, 100)),
+        "state_after_coverage_pct": _round(state_after_pct),
         "mean_immediate_score_gap": _round(
             sum(immediate_gaps) / len(immediate_gaps) if immediate_gaps else None
         ),
         "mean_counterfactual_regret": _round(
             sum(counterfactual_regrets) / len(counterfactual_regrets)
             if counterfactual_regrets else None),
-        "counterfactual_coverage_pct": _round(_ratio(len(counterfactual_regrets), total, 100)),
+        "counterfactual_coverage_pct": _round(counterfactual_pct),
+        "latency_ms": {
+            "samples": len(latencies),
+            "mean": _round(sum(latencies) / len(latencies) if latencies else None),
+            "p95": _round(latency_p95),
+            "max": _round(max(latencies) if latencies else None),
+            "timeout_count": timed_out,
+            "timeout_pct": _round(_ratio(timed_out, total, 100)),
+        },
+        "commit_consistency": {"commits": sorted(commits), "mixed": len(commits) > 1},
+        "session_consistency": {"sessions": sorted(sessions), "mixed": len(sessions) > 1},
+        "schemas": sorted(schemas),
+        "duplicate_decision_ids": duplicate_decision_ids,
+        "outcome_coverage_pct": _round(outcome_coverage),
+        "alerts": alerts,
+        "gate_status": "fail" if any(a["severity"] == "error" for a in alerts)
+                       else "warning" if alerts else "pass",
         "decision_kinds": by_kind,
         "outcomes": {
             "games": len(outcomes),
@@ -360,6 +493,11 @@ def analyze_decision_events(lines) -> dict:
         },
         "future_state_delta_by_decisions": future_value,
         "state_fidelity": None,
+        "transition_semantics": _round(_ratio(semantic["passed"], semantic["checked"], 100)),
+        "transition_semantics_summary": {
+            **semantic,
+            "success_pct": _round(_ratio(semantic["passed"], semantic["checked"], 100)),
+        },
         "decision_quality": None,
         "invalid_lines": invalid_lines,
         "notes": [
@@ -401,6 +539,10 @@ def print_report(report: dict) -> None:
         print(f"  {'decision_kinds':34s} {live['decision_kinds']}")
         print(f"  {'outcomes':34s} {live['outcomes']}")
         print(f"  {'future_delta_1_3_5':34s} {live['future_state_delta_by_decisions']}")
+        print(f"  {'latency_ms':34s} {live['latency_ms']}")
+        print(f"  {'gate_status':34s} {live['gate_status']}")
+        for alert in live["alerts"]:
+            print(f"  ALERTA {alert['severity'].upper():7s} {alert['code']}: {alert['message']}")
 
 
 def main() -> None:

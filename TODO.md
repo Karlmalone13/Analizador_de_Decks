@@ -5,6 +5,10 @@
 **Baseline do código:** `9b3494a` local (1 commit à frente de `origin/main` em 17/07; push pendente)
 **Repo:** github.com/Karlmalone13/Analizador_de_Decks
 
+> 18/07/2026: proxy ganhou verificacao do nome canonico/banco, match_id estavel,
+> latencia, alertas, confirmacao semantica Main Phase e comparacao entre commits.
+> Sem teste ao vivo ainda: GameOver/AutoSaved, prompts auxiliares e calibracao.
+
 > 17/07/2026: instrumentacao ampliada para Main Phase, defesa, mulligan e
 > alvos, com resultado final, deltas futuros 1/3/5 e contrafactual simulado.
 > Coleta real pendente conforme `metrics/evidence_collection_plan.json`.

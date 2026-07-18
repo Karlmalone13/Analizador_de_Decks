@@ -118,6 +118,30 @@ pre-flight, 20 para indicacao e 50 self-play por matchup com seed fixa.
 
 ## Gates iniciais
 
+O relatorio gera alertas estruturados para: execucao abaixo de 95%, estado
+posterior abaixo de 95%, outcome ausente, decisoes pendentes, timeout, commits
+misturados, baixa cobertura contrafactual, latencia p95 acima de 3000 ms e
+transicao semantica incoerente. Schema desconhecido, JSONL invalido, sessoes ou
+IDs duplicados tambem falham. `gate_status` e `pass`, `warning` ou `fail`.
+
+Confirmacao semantica da Main Phase verifica a mudanca esperada por tipo:
+`play` sai da mao, `attack` resta o atacante, `attach_don` aumenta DON,
+`activate` marca uso e `end_turn` muda turno. Fluxos auxiliares continuam sem
+assertiva semantica especifica ate haver evidencia ao vivo suficiente.
+
+O `match_id` nasce no mulligan e permanece fixo ate `outcome`; horizontes
+1/3/5 nunca atravessam partidas. Cada decisao registra `latency_ms`; timeout e
+latencia sao metricas separadas de qualidade estrategica.
+
+`collect_latest_match.py` so confirma sucesso depois de localizar no
+`logs/index.json` a entrada criada por `parse_combat_log.py`, verificar raw,
+parsed e decks e validar o nome canonico
+`Lider-Cores_x_Lider-Cores_timestamp`. Exit code zero sozinho nao basta.
+
+Comparacao entre versoes usa `compare_bot_reports.py`; manifests/seeds
+incompativeis geram aviso e retorno nao-zero. Mesmo sem aviso, causalidade exige
+os mesmos snapshots ou seeds/decks.
+
 - Snapshot coverage e completeness devem ser 100% nos novos logs.
 - Execução confirmada deve ser pelo menos 95% quando a telemetria existir.
 - Para Imu ao vivo pós-fix: pelo menos 1,28 ataques/turno e 80% de ataques no

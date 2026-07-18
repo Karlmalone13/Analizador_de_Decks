@@ -23,6 +23,7 @@ from pydantic import BaseModel
 import uvicorn
 import os
 import threading
+import time
 from typing import Optional
 from telemetry import new_decision_id, write_event, PATH as DECISION_LOG_PATH
 
@@ -431,6 +432,9 @@ def mulligan(req: MulliganRequest):
     Decide mulligan da mao inicial usando o engine (_mulligan_decision).
     Resposta: {"mulligan": bool, "reason": str}
     """
+    global _live_match_id
+    started = time.perf_counter()
+    _live_match_id = new_decision_id()
     try:
         # Partida nova: limpa recusas da partida anterior. Sem isso, uma
         # ativacao recusada no turno N da partida passada continuava
@@ -446,7 +450,8 @@ def mulligan(req: MulliganRequest):
         return _record_aux_decision(
             "mulligan", {"hand": [_model_dict(c) for c in req.hand]},
             [{"type": "keep", "eligible": True}, {"type": "mulligan", "eligible": True}],
-            {"type": chosen}, {"mulligan": bool(deve_trocar), "reason": resumo})
+            {"type": chosen}, {"mulligan": bool(deve_trocar), "reason": resumo},
+            latency_ms=round((time.perf_counter() - started) * 1000, 3))
     except Exception as e:
         import traceback
         traceback.print_exc()
@@ -460,6 +465,7 @@ def defense(req: DefenseRequest):
     Resposta: {"blockerId": int, "counterIds": [int], "useTrigger": bool}
     (campos nao usados pela fase vem zerados/vazios)
     """
+    started = time.perf_counter()
     try:
         from optcg_engine.decision_engine import DecisionEngine
         bridge = _get_bridge()
@@ -521,7 +527,8 @@ def defense(req: DefenseRequest):
             "defense", _model_dict(req.state), legal, chosen, out,
             phase=req.phase, turn=req.state.turnNumber,
             attacker_power=req.attackerPower, defender_power=req.defenderPower,
-            defender_id=req.defenderId, actor_code=req.triggerCode)
+            defender_id=req.defenderId, actor_code=req.triggerCode,
+            latency_ms=round((time.perf_counter() - started) * 1000, 3))
 
     except Exception as e:
         import traceback
@@ -542,6 +549,7 @@ def choose_target(req: ChooseTargetRequest):
     - opp_board: maior valor primeiro (remocao/bounce)
     - leaders/stages: por ultimo
     """
+    started = time.perf_counter()
     try:
         bridge = _get_bridge()
         gs     = _dto_to_gs(req.state.bot, req.state.turnNumber)
@@ -570,7 +578,8 @@ def choose_target(req: ChooseTargetRequest):
             "target", _model_dict(req.state), legal,
             {"type": "target_order", "ordered_ids": out}, {"orderedIds": out},
             phase="target", turn=req.state.turnNumber, actor_code=req.actorCode,
-            attacker_power=req.attackerPower, defender_id=req.defenderId)
+            attacker_power=req.attackerPower, defender_id=req.defenderId,
+            latency_ms=round((time.perf_counter() - started) * 1000, 3))
 
     except Exception as e:
         import traceback
@@ -604,14 +613,14 @@ def decide(state: GameStateDto):
             search_values=trace.get("search_values", []),
             selection=trace.get("selection", reason),
             timed_out=trace.get("timed_out", False),
+            latency_ms=round((time.perf_counter() - started) * 1000, 3),
             response=out,
             reason=reason,
         )
         return out
 
+    started = time.perf_counter()
     try:
-        global _live_match_id
-        _live_match_id = new_decision_id()
         bridge = _get_bridge()
         match  = _get_match()
         gs     = _dto_to_gs(state.bot, state.turnNumber)

@@ -16,6 +16,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
 REPO = ROOT.parent
+DB_ROOT = ROOT / "logs"
+DB_INDEX = DB_ROOT / "index.json"
 DEFAULT_AUTOSAVED = Path(
     os.environ.get(
         "OPTCGSIM_AUTOSAVED_DIR",
@@ -50,6 +52,21 @@ def _wait_stable(path: Path, attempts: int = 12, interval: float = 1.0) -> None:
     raise TimeoutError(f"combat log ainda esta sendo gravado: {path}")
 
 
+def _validate_bank_entry(combat_log: Path, index: list, db_root: Path = DB_ROOT) -> tuple[dict, str]:
+    entry = next((item for item in reversed(index) if item.get("id") == combat_log.stem), None)
+    if entry is None:
+        raise RuntimeError(f"parser terminou sem registrar id={combat_log.stem} no index")
+    required = [entry.get("log_file"), entry.get("parsed_file")]
+    required.extend((entry.get("deck_files") or {}).values())
+    missing = [rel for rel in required if not rel or not (db_root / rel).is_file()]
+    if missing:
+        raise RuntimeError(f"entrada existe, mas artefatos do banco estao ausentes: {missing}")
+    canonical_stem = Path(entry["log_file"]).stem
+    if "_x_" not in canonical_stem or not canonical_stem.endswith(f"_{combat_log.stem}"):
+        raise RuntimeError(f"nome fora do padrao Lider-Cores_x_Lider-Cores_timestamp: {canonical_stem}")
+    return entry, canonical_stem
+
+
 def collect_latest(decision_log: Path, autosaved_dir: Path = DEFAULT_AUTOSAVED,
                    match_id: str = "") -> dict:
     combat_log = _latest_log(autosaved_dir)
@@ -70,6 +87,11 @@ def collect_latest(decision_log: Path, autosaved_dir: Path = DEFAULT_AUTOSAVED,
     parsed = subprocess.run(parse_cmd, cwd=ROOT, text=True, capture_output=True)
     if parsed.returncode:
         raise RuntimeError(f"parse_combat_log falhou: {parsed.stderr or parsed.stdout}")
+
+    # Nao confia apenas no exit code: confirma a entrada e todos os artefatos
+    # usando o schema/nome oficial produzido por parse_combat_log.add_to_db.
+    index = json.loads(DB_INDEX.read_text(encoding="utf-8")) if DB_INDEX.exists() else []
+    bank_entry, canonical_stem = _validate_bank_entry(combat_log, index)
     reported = subprocess.run(report_cmd, cwd=ROOT, text=True, capture_output=True)
     if reported.returncode:
         raise RuntimeError(f"bot_efficiency_report falhou: {reported.stderr or reported.stdout}")
@@ -80,6 +102,11 @@ def collect_latest(decision_log: Path, autosaved_dir: Path = DEFAULT_AUTOSAVED,
         "combat_log": str(combat_log),
         "decision_log": str(decision_log),
         "report": str(report_path),
+        "bank_entry_id": bank_entry["id"],
+        "bank_log": str(DB_ROOT / bank_entry["log_file"]),
+        "bank_parsed": str(DB_ROOT / bank_entry["parsed_file"]),
+        "bank_decks": [str(DB_ROOT / rel) for rel in (bank_entry.get("deck_files") or {}).values()],
+        "canonical_name": canonical_stem,
         "collected_at": stamp,
     }
     receipt_path = output_dir / f"receipt_{stamp}.json"

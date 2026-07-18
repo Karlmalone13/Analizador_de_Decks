@@ -94,6 +94,15 @@ O plugin mostra no canto superior esquerdo `Salvando log no banco...` e depois
 `LOG SALVO NO BANCO`. Em falha, mostra a mensagem em vermelho. A confirmacao
 tambem fica no `LogOutput.log` com o caminho do recibo.
 
+`LOG SALVO NO BANCO` so aparece depois de conferir `logs/index.json`, os arquivos
+raw/parsed/decks e o nome oficial `Lider-Cores_x_Lider-Cores_timestamp`.
+
+Para comparar dois relatorios sem misturar camadas:
+
+```cmd
+python compare_bot_reports.py metrics\antes.json metrics\depois.json --json metrics\comparacao.json
+```
+
 ```cmd
 python scriptis_da_ia\collect_latest_match.py
 ```

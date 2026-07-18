@@ -1,5 +1,29 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-18 (263) - Gates do proxy, nome canonico e comparacao entre commits
+
+Fortalecido tudo que era possivel antes da partida ao vivo:
+
+- `collect_latest_match.py` agora so confirma banco apos verificar a entrada no
+  `logs/index.json`, raw, parsed, decks e o nome oficial
+  `Lider-Cores_x_Lider-Cores_timestamp`; exit code zero nao basta.
+- Corrigido bug estrutural: `_live_match_id` era recriado dentro de cada
+  `/decide`; agora nasce no mulligan e permanece ate `outcome`, impedindo deltas
+  1/3/5 de cruzarem partidas.
+- Toda decisao registra `latency_ms`; relatorio calcula media/p95/max, timeout,
+  consistencia de commit e cobertura de outcome.
+- Alertas estruturados: execucao/estado/outcome abaixo do gate, pending,
+  timeout, commits misturados, baixa cobertura contrafactual, p95 alto e
+  transicao semantica incoerente.
+- Confirmacao semantica Main Phase: play sai da mao, attack resta, attach aumenta
+  DON, activate marca uso e end_turn muda turno.
+- `compare_bot_reports.py` compara antes/depois, sinaliza regressoes e rejeita
+  manifests/seeds incompativeis; nao afirma causalidade sem snapshots/seeds iguais.
+
+Validado sem jogo: py_compile, 10/10 testes, teste sintetico de match_id estavel,
+schema/nome canonico e alertas. Pendente ao vivo: confirmar AutoSaved real,
+GameOver, semantica dos prompts auxiliares e calibrar gates com 20-50 partidas.
+
 ## 2026-07-17 (262) - Telemetria completa de decisao e resultado
 
 **Complemento de automacao:** `collect_latest_match.py` elimina os dois comandos

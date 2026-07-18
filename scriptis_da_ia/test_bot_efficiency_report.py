@@ -1,8 +1,11 @@
 import json
 import unittest
+from unittest.mock import patch
 from pathlib import Path
 
 import bot_efficiency_report as report
+from compare_bot_reports import compare_reports
+from collect_latest_match import _validate_bank_entry
 from optcg_engine.sim_bridge import action_to_trace
 
 
@@ -53,6 +56,7 @@ class BotEfficiencyReportTests(unittest.TestCase):
     def test_decision_log_joins_decision_and_execution(self):
         events = [
             {"event": "decision", "decision_id": "a",
+             "commit": "abc", "latency_ms": 120.0,
              "chosen_action": {"score": 8},
              "scored_actions": [{"score": 10, "eligible": True}]},
             {"event": "execution", "decision_id": "a", "status": "sent",
@@ -60,6 +64,7 @@ class BotEfficiencyReportTests(unittest.TestCase):
             {"event": "execution", "decision_id": "a", "status": "confirmed",
              "state_after": {"turnNumber": 1}},
             {"event": "decision", "decision_id": "b", "chosen_action": None,
+             "commit": "abc", "latency_ms": 80.0, "timed_out": True,
              "scored_actions": []},
             {"event": "execution", "decision_id": "b", "status": "failed",
              "state_after": None},
@@ -68,6 +73,10 @@ class BotEfficiencyReportTests(unittest.TestCase):
         self.assertEqual(result["decisions"], 2)
         self.assertEqual(result["execution_success_pct"], 50.0)
         self.assertEqual(result["mean_immediate_score_gap"], 2.0)
+        self.assertEqual(result["latency_ms"]["mean"], 100.0)
+        self.assertEqual(result["latency_ms"]["timeout_count"], 1)
+        self.assertFalse(result["commit_consistency"]["mixed"])
+        self.assertIn("decision_timeouts", {a["code"] for a in result["alerts"]})
 
     def test_multiphase_outcome_and_future_state_are_separate(self):
         def state(life, opp_life, hand=5, board=1):
@@ -106,6 +115,51 @@ class BotEfficiencyReportTests(unittest.TestCase):
         result = report.analyze_decision_events(json.dumps(e) for e in events)
         self.assertEqual(result["mean_counterfactual_regret"], 2.5)
         self.assertEqual(result["counterfactual_coverage_pct"], 100.0)
+
+    def test_report_comparison_separates_improvement_and_regression(self):
+        def wrapped(execution, regret, latency):
+            return {"manifest": "same", "bootstrap_seed": 7,
+                    "decision_logs": [{"execution_success_pct": execution,
+                                       "mean_counterfactual_regret": regret,
+                                       "latency_ms": {"p95": latency}}]}
+        result = compare_reports(wrapped(90, 3, 200), wrapped(97, 1, 250))
+        self.assertEqual(result["metrics"]["execution_success_pct"]["verdict"], "improved")
+        self.assertEqual(result["metrics"]["mean_counterfactual_regret"]["verdict"], "improved")
+        self.assertEqual(result["metrics"]["latency_p95"]["verdict"], "regressed")
+        self.assertIn("latency_p95", result["regressions"])
+
+    def test_semantic_confirmation_detects_false_positive_state_change(self):
+        before = {"turnNumber": 2, "bot": {"hand": [], "board": [
+                    {"deckUniqueId": 7, "rested": False, "donAttached": 0}]},
+                  "opp": {"hand": [], "board": []}}
+        after = {"turnNumber": 2, "bot": {"hand": [], "board": [
+                    {"deckUniqueId": 7, "rested": False, "donAttached": 0}]},
+                 "opp": {"hand": [1], "board": []}}
+        events = [
+            {"event": "decision", "decision_id": "atk", "decision_kind": "main",
+             "state_before": before, "response": {"type": "attack", "cardId": 7},
+             "scored_actions": [], "chosen_action": {"type": "attack"}},
+            {"event": "execution", "decision_id": "atk", "status": "confirmed",
+             "state_after": after},
+        ]
+        result = report.analyze_decision_events(json.dumps(e) for e in events)
+        self.assertEqual(result["transition_semantics_summary"]["failed"], 1)
+        self.assertIn("semantic_transition_failed", {a["code"] for a in result["alerts"]})
+
+    def test_bank_confirmation_requires_canonical_name_and_artifacts(self):
+        log = Path("2026-07-18T12.00.00.log")
+        entry = {"id": log.stem,
+                 "log_file": f"raw/Imu-B_x_Teach-BY_{log.stem}.log",
+                 "parsed_file": f"parsed/Imu-B_x_Teach-BY_{log.stem}.json",
+                 "deck_files": {"bot": f"decks/Imu-B_{log.stem}.json"}}
+        with patch.object(Path, "is_file", return_value=True):
+            found, stem = _validate_bank_entry(log, [entry], Path("db"))
+        self.assertIs(found, entry)
+        self.assertEqual(stem, f"Imu-B_x_Teach-BY_{log.stem}")
+        bad = {**entry, "log_file": f"raw/{log.stem}.log"}
+        with patch.object(Path, "is_file", return_value=True):
+            with self.assertRaisesRegex(RuntimeError, "nome fora do padrao"):
+                _validate_bank_entry(log, [bad], Path("db"))
 
 
 if __name__ == "__main__":
