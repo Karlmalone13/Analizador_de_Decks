@@ -2379,6 +2379,11 @@
  },
  "EB03-001": {
   "activate_main": {
+   "costs": [
+    {
+     "type": "rest_self"
+    }
+   ],
    "steps": [
     {
      "action": "debuff_power",
@@ -10203,6 +10208,9 @@
   "activate_main": {
    "costs": [
     {
+     "type": "rest_self"
+    },
+    {
      "count": 1,
      "optional": true,
      "type": "don_minus"
@@ -16383,6 +16391,11 @@
  },
  "OP06-020": {
   "activate_main": {
+   "costs": [
+    {
+     "type": "rest_self"
+    }
+   ],
    "steps": [
     {
      "action": "rest_opp_character",
@@ -18232,6 +18245,10 @@
      "dest": "life_top",
      "source": "deck_top",
      "up_to": true
+    },
+    {
+     "action": "trash_from_hand",
+     "count": 1
     }
    ]
   }
@@ -24072,6 +24089,13 @@
  },
  "OP09-065": {
   "on_play": {
+   "costs": [
+    {
+     "count": 1,
+     "optional": true,
+     "type": "don_minus"
+    }
+   ],
    "steps": [
     {
      "action": "rest_opp_character",
@@ -24103,6 +24127,13 @@
  "OP09-067": {},
  "OP09-068": {
   "end_of_turn": {
+   "costs": [
+    {
+     "count": 1,
+     "optional": true,
+     "type": "don_minus"
+    }
+   ],
    "steps": [
     {
      "action": "set_active",
@@ -24136,6 +24167,13 @@
  },
  "OP09-070": {
   "on_play": {
+   "costs": [
+    {
+     "count": 1,
+     "optional": true,
+     "type": "don_minus"
+    }
+   ],
    "steps": [
     {
      "action": "give_don",
@@ -24179,6 +24217,13 @@
  },
  "OP09-073": {
   "when_attacking": {
+   "costs": [
+    {
+     "count": 1,
+     "optional": true,
+     "type": "don_minus"
+    }
+   ],
    "steps": [
     {
      "action": "debuff_power",
@@ -24227,6 +24272,13 @@
  },
  "OP09-076": {
   "on_play": {
+   "costs": [
+    {
+     "count": 1,
+     "optional": true,
+     "type": "don_minus"
+    }
+   ],
    "steps": [
     {
      "action": "add_don",
@@ -24559,6 +24611,9 @@
    "steps": [
     {
      "action": "draw",
+     "conditions": {
+      "hand_fewer_than_opp_by_gte": 3
+     },
      "count": 2,
      "then_trash": 1
     }
@@ -24882,6 +24937,10 @@
      "dest": "life_top",
      "source": "deck_top",
      "up_to": true
+    },
+    {
+     "action": "trash_from_hand",
+     "count": 2
     }
    ]
   }
@@ -25143,6 +25202,13 @@
  },
  "OP09-119": {
   "on_play": {
+   "costs": [
+    {
+     "count": 1,
+     "optional": true,
+     "type": "don_minus"
+    }
+   ],
    "steps": [
     {
      "action": "draw",
@@ -25721,6 +25787,10 @@
  },
  "OP10-033": {
   "on_play": {
+   "conditions": {
+    "chars_rested_gte": 2,
+    "chars_rested_gte_type_filter": "odyssey"
+   },
    "steps": [
     {
      "action": "lock_opp_don_refresh",
@@ -25917,15 +25987,30 @@
  },
  "OP10-043": {
   "on_play": {
+   "costs": [
+    {
+     "filter_type": "dressrosa",
+     "type": "rest_own_leader_or_stage"
+    }
+   ],
    "steps": [
     {
-     "action": "gain_banish"
+     "action": "select_grant_banish",
+     "count": 1,
+     "duration": "this_turn",
+     "filter_name": "monkey.d.luffy"
     }
    ]
   }
  },
  "OP10-044": {
   "on_play": {
+   "costs": [
+    {
+     "filter_type": "dressrosa",
+     "type": "rest_own_leader_or_stage"
+    }
+   ],
    "steps": [
     {
      "action": "bounce",
@@ -25982,6 +26067,12 @@
  },
  "OP10-048": {
   "on_play": {
+   "costs": [
+    {
+     "filter_type": "dressrosa",
+     "type": "rest_own_leader_or_stage"
+    }
+   ],
    "steps": [
     {
      "action": "bounce",
@@ -26076,6 +26167,18 @@
  },
  "OP10-056": {
   "on_play": {
+   "costs": [
+    {
+     "filter_type": "dressrosa",
+     "type": "rest_own_leader_or_stage"
+    },
+    {
+     "cost_gte": 4,
+     "count": 1,
+     "filter_type": "dressrosa",
+     "type": "return_own_character_to_hand"
+    }
+   ],
    "steps": [
     {
      "action": "bounce",
@@ -26367,9 +26470,9 @@
   "on_play": {
    "steps": [
     {
-     "action": "immunity",
-     "imm_type": "ko",
-     "source": "opp"
+     "action": "grant_ko_immunity_type",
+     "duration": "opp_turn_end",
+     "power_lte": 1000
     }
    ]
   },
@@ -26598,7 +26701,8 @@
      "action": "draw",
      "conditions": {
       "don_gte": 7,
-      "don_on_field_gte": 7
+      "don_on_field_gte": 7,
+      "hand_lte": 5
      },
      "count": 1
     }
@@ -26615,6 +26719,12 @@
  },
  "OP10-081": {
   "on_play": {
+   "costs": [
+    {
+     "filter_type": "dressrosa",
+     "type": "rest_own_leader_or_stage"
+    }
+   ],
    "steps": [
     {
      "action": "ko",
@@ -26859,6 +26969,12 @@
  },
  "OP10-095": {
   "on_play": {
+   "costs": [
+    {
+     "filter_type": "dressrosa",
+     "type": "rest_own_leader_or_stage"
+    }
+   ],
    "steps": [
     {
      "action": "ko",
@@ -37219,6 +37335,16 @@
  },
  "OP15-039": {
   "activate_main": {
+   "costs": [
+    {
+     "type": "rest_self"
+    },
+    {
+     "count": 1,
+     "filter_type": "dressrosa",
+     "type": "return_own_character_to_hand"
+    }
+   ],
    "steps": [
     {
      "action": "play_card",
@@ -42337,6 +42463,10 @@
  },
  "P-078": {
   "passive": {
+   "conditions": {
+    "chars_rested_gte": 2,
+    "chars_rested_gte_type_filter": "odyssey"
+   },
    "steps": [
     {
      "action": "buff_power",
@@ -42349,6 +42479,10 @@
  },
  "P-079": {
   "end_of_turn": {
+   "conditions": {
+    "chars_rested_gte": 2,
+    "chars_rested_gte_type_filter": "odyssey"
+   },
    "steps": [
     {
      "action": "set_active",

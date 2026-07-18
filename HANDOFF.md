@@ -1,5 +1,59 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-19 (276) - Claude - lote de 8 bugs reais (OP09-051 a OP10-080)
+
+Continuacao do novo ritmo (lotes de 50 suspeitos). Registro completo em
+`parser_audits/2026-07-19_lote_8_op09-051_a_op10-080.json`.
+
+1. **OP09-068/070/073 + familia OP09-065/076/119** (achada via
+   `diff_parser.py`): "You may return 1 or more DON!! cards from your
+   field to your DON!! deck:" -- custo VARIAVEL (minimo 1, sem
+   qualificador "active") inteiro ausente em 6 cartas, habilidades
+   pagas viravam GRATIS. `don_minus` reaproveitado, sempre paga o
+   minimo (nenhum efeito da familia escala pela quantidade devolvida).
+2. **OP09-092 Marshall.D.Teach**: condicao "mao pelo menos 3 menor que
+   a do oponente" inteira ausente. Nova condicao
+   `hand_fewer_than_opp_by_gte`, espelhando `don_fewer_than_opp_by_gte`
+   ja existente.
+3. **OP09-105 Sanji + familia OP06-115**: "Then, trash N cards from
+   your hand" em bloco `[Trigger]` sumia -- whitelist de
+   trash-from-hand-como-efeito ampliada com "trigger" (so cobria
+   on_play/when_attacking/end_of_turn/activate_main/counter).
+4. **OP10-033 Nami (070) + familia P-078/P-079**: condicao "2+ rested
+   'ODYSSEY' type Characters" ausente -- `chars_rested_gte` ganhou
+   filtro de TIPO opcional.
+5. **OP10-043 Moocy + familia OP10-044/048/056/081/095**: custo "rest 1
+   of your 'Dressrosa' type Leader or Stage cards" inteiro ausente
+   (nenhuma variante cobria Leader-OU-Stage isolado, so o composto
+   "rest this card AND tipo") E o [Banish] ia pra propria Moocy em vez
+   do Luffy selecionado. Novo cost `rest_own_leader_or_stage` + nova
+   acao `select_grant_banish` (selecao por nome) + novo
+   `Card.banish_this_turn`.
+6. **OP10-070 Trebol**: mesma familia de OP06-096 (`grant_ko_immunity_type`),
+   mas filtro de POWER (nao custo) nunca suportado -- protegia so a
+   propria Trebol via fallback generico. `grant_ko_immunity_type` ganhou
+   `power_lte`.
+7. **OP10-080**: condicao composta "7+ DON e 5 ou menos na mao" -- a
+   metade da mao sumia (eliptica, sem repetir "you have").
+
+**Achado colateral durante a implementacao do item 5** (generalizacao
+"rest this Leader", ao lado de card/character/stage): 4 cartas extras
+(EB03-001, OP03-058, OP06-020, OP15-039) tinham o custo de restar o
+proprio LIDER inteiramente ausente.
+
+**Armadilha pega ANTES do commit**: a tolerancia "and" adicionada ao
+custo `return_own_character_to_hand` (pra capturar OP10-056) duplicava
+o MESMO custo em ST22-005 (ja coberto por um mecanismo composto
+dedicado e mais especifico) -- corrigido com guard checando "of your
+don!!" nos 40 chars anteriores ao match, confirmado sem duplicacao via
+`diff_parser.py` antes de fechar o lote.
+
+Validado: `diff_parser.py` GANHOU=0/PERDEU=0/MUDOU=24 (8 alvo/grupos +
+13 capturas corretas adicionais, verificadas uma a uma). `smoke_fast.py`
+com teste novo (`test_lote_8_op09_051_a_op10_080`) cobrindo execucao
+real de todos os mecanismos. `smoke_test.py` TODOS OS TESTES PASSARAM.
+`smoke_test_broad.py` 7/7 sem excecao. **Auditor: 172 -> 161 suspeitos.**
+
 ## 2026-07-19 (275) - Claude - lote de 6 bugs reais (OP08-029 a OP08-096) + mudanca de ritmo na varredura
 
 Usuario pediu pra acelerar a varredura (3 dias na mesma tarefa). Mudanca

@@ -285,6 +285,17 @@ def parse_conditions(text):
     if m:
         conds['don_fewer_than_opp_by_gte'] = int(m.group(1))
 
+    # "if the number of cards in your hand is at least N less than the
+    # number in your opponent's hand" -- mesma semantica de
+    # don_fewer_than_opp_by_gte acima, comparando o tamanho da MAO em
+    # vez de DON!! (achado 19/07, OP09-092, unica carta no banco com
+    # essa forma exata: a condicao inteira sumia, draw disparava sempre).
+    m_hand_fewer = re.search(
+        r'the number of cards? in your hand is at least (\d+) less than '
+        r'the number in your opponent.?s hand', t)
+    if m_hand_fewer:
+        conds['hand_fewer_than_opp_by_gte'] = int(m_hand_fewer.group(1))
+
     # "if your opponent has N or more cards in their hand" -- gate sobre o
     # tamanho da MAO DO OPONENTE, distinto de hand_gte (mao do PROPRIO
     # jogador). Achado 02/07/2026: prefixava 5 das 13 cartas de
@@ -369,8 +380,17 @@ def parse_conditions(text):
 
     # "if you have N or more rested Characters" -- conta PROPRIOS Characters
     # que estao rested, distinto de chars_gte (que conta todos). OP09-033.
-    m = re.search(r'(?:if|and) you have (\d+) or more rested characters?', t)
-    if m: conds['chars_rested_gte'] = int(m.group(1))
+    # Variante com filtro de TIPO ("N or more rested [Tipo] type
+    # Characters") checada PRIMEIRO -- achado 19/07, OP10-033 Nami,
+    # unica carta no banco com essa forma exata: condicao inteira sumia.
+    m = re.search(
+        r'(?:if|and) you have (\d+) or more rested [\[{"]([^\]}"]+)[\]}"] type characters?', t)
+    if m:
+        conds['chars_rested_gte'] = int(m.group(1))
+        conds['chars_rested_gte_type_filter'] = m.group(2).strip()
+    else:
+        m = re.search(r'(?:if|and) you have (\d+) or more rested characters?', t)
+        if m: conds['chars_rested_gte'] = int(m.group(1))
 
     # "if/and you have N or more rested cards" -- conta QUALQUER carta
     # rested do proprio lado (DON + Characters + Leader + Stage), distinto
@@ -412,6 +432,21 @@ def parse_conditions(text):
     # have" nesta mesma auditoria confirmou 23 ocorrencias no banco; a
     # maioria ja tolerava "and", mas hand_lte/hand_gte, has_don_attached e
     # chars_rested_gte (abaixo) nao.
+    # "if you have N or more DON!! cards on your field AND M or less
+    # cards in your hand" -- clausula COMPOSTA onde o "you have" da 2a
+    # metade e ELIPTICO (nao repete "you have" antes de "M or less cards
+    # in your hand", so "and"), quebrando o regex generico de hand_lte
+    # abaixo (que exige "you have" logo antes). Achado 19/07, OP10-080,
+    # unica carta no banco com essa forma exata: a metade da mao sumia
+    # por completo (so o DON, capturado por outro regex mais adiante,
+    # sobrevivia).
+    m_don_hand = re.search(
+        r'you have (\d+) or more don!{0,2}\s*cards? on your field '
+        r'and (\d+) or less cards? in your hand', t)
+    if m_don_hand:
+        conds['don_on_field_gte'] = int(m_don_hand.group(1))
+        conds['hand_lte'] = int(m_don_hand.group(2))
+
     m = re.search(r'(?:if|and) you have (\d+) or less cards? in your hand', t)
     if m: conds['hand_lte'] = int(m.group(1))
 
@@ -764,8 +799,24 @@ def parse_costs(text):
             'filter_name': m_composto_named.group(2).strip(),
             'exclude_self': True,
         })
-    elif re.search(r'rest this (card|character|stage)', t):
+    elif re.search(r'rest this (card|character|stage|leader)', t):
+        # "leader" adicionado 19/07 (OP15-039 Rebecca, unica carta no
+        # banco com "you may rest this Leader..." -- custo self-rest do
+        # PROPRIO lider, mesma semantica de rest_self ja usada por
+        # Character/Stage).
         costs.append({'type': 'rest_self'})
+
+    # Custo UNICO (nao composto): "you may rest 1 of your [Tipo] type
+    # Leader or Stage cards:" -- so o Leader/Stage com filtro de tipo, a
+    # propria carta ativadora NAO resta (distinto de m_composto acima,
+    # que sempre resta a propria carta TAMBEM). Achado 19/07, OP10-043
+    # Moocy, unica carta no banco com essa forma exata: custo inteiro
+    # ausente.
+    m_rest_leader_or_stage = re.search(
+        r'rest \d+ of your ["\[{]([a-z][a-z0-9 .\'-]+)["\]}]\s+type leader or stage', t)
+    if m_rest_leader_or_stage and not m_composto:
+        costs.append({'type': 'rest_own_leader_or_stage',
+                      'filter_type': m_rest_leader_or_stage.group(1).strip()})
 
     if re.search(r'trash this (character|card)', t):
         costs.append({'type': 'trash_self'})
@@ -846,14 +897,28 @@ def parse_costs(text):
     # OP16-045, OP16-050, ST12-001, OP08-047) perdia o CUSTO INTEIRO -- a
     # IA tratava a habilidade como grátis, sem checar se tinha Character
     # elegivel pra pagar.
+    # "and" tolerado alem de "you may" -- custo COMPOSTO onde este e o 2o
+    # componente, encadeado por "and" SEM repetir "you may" (elipse,
+    # achado 19/07, OP10-056 Mansherry: "You may rest 1 of your
+    # 'Dressrosa' type Leader or Stage cards, and return 1 of your
+    # 'Dressrosa' type Characters with a cost of 4 or more to the
+    # owner's hand:" -- so o 1o componente (rest_own_leader_or_stage)
+    # sobrevivia, este 2o sumia por exigir "you may" logo antes).
     m_return_own = re.search(
-        r'you may return (\d+) of your '
+        r'(?:you may |and )return (\d+) of your '
         r'(?:[\[{"]([a-z][a-z0-9 .\'-]+)[\]}"]\s+type\s+)?'
         r'characters?'
         r'(?:\s+with a cost of (\d+) or more)?'
         r'(?:\s+other than (this character|\[([a-z][a-z0-9 .\'-]+)\]))?'
         r'\s+to the owner.?s hand\s*:', t)
-    if m_return_own:
+    # Guard: "rest N of your DON!! cards and return N of your Characters
+    # ... to the owner's hand" (ST22-005, unica carta no banco) ja e
+    # capturado por inteiro mais abaixo (bloco dedicado do rest_don
+    # composto) -- sem este guard, o "and" tolerado acima TAMBEM casava
+    # aqui, duplicando o mesmo custo return_own_character_to_hand 2x.
+    ja_composto_don = bool(m_return_own) and 'of your don!!' in t[
+        max(0, m_return_own.start() - 40):m_return_own.start()]
+    if m_return_own and not ja_composto_don:
         cost = {'type': 'return_own_character_to_hand',
                 'count': int(m_return_own.group(1))}
         if m_return_own.group(2):
@@ -1328,6 +1393,23 @@ def parse_costs(text):
         janela = t[max(0, idx-40):idx+60]   # olha antes E depois
         opcional = 'you may' in janela
         costs.append({'type': 'don_minus', 'count': x, 'optional': opcional})
+    else:
+        # "you may return N or more DON!! cards from your field to your
+        # DON!! deck:" -- custo VARIAVEL (minimo N, SEM qualificador
+        # "active", distinto de return_active_don_to_don_deck acima).
+        # Nenhum efeito nestas 3 cartas escala pela quantidade devolvida
+        # -- pagar o minimo e o comportamento correto/otimo pra IA (sem
+        # beneficio descrito por devolver mais). Reaproveita don_minus
+        # (mesma preferencia de devolver DON restado/gasto primeiro,
+        # regra ja estabelecida). Achado 19/07, OP09-068/OP09-070/
+        # OP09-073, unicas 3 cartas no banco com essa forma exata: custo
+        # inteiro ausente, habilidade era GRATIS.
+        m_ret_don_var = re.search(
+            r'you may return (\d+) or more don!{0,2}\s*cards? from your field '
+            r'to your don!{0,2}\s*deck\s*:', t)
+        if m_ret_don_var:
+            costs.append({'type': 'don_minus',
+                          'count': int(m_ret_don_var.group(1)), 'optional': True})
 
     # Custo de power no PROPRIO lider/character (ex: "you may give your active
     # leader -5000 power during this turn: [efeito]"). So conta como custo se
@@ -1554,6 +1636,19 @@ def parse_grant_ko_immunity(text):
         steps.append({'action': 'grant_ko_immunity_type',
                       'cost_lte': int(m_cost.group(1)),
                       'duration': 'this_turn'})
+
+    # "All of your Characters with N base power or less cannot be K.O.'d
+    # by your opponent's effects until the end of your opponent's next
+    # turn." -- mesma concessao temporaria, filtro de POWER em vez de
+    # tipo/custo. Achado 19/07, OP10-070 Trebol, unica carta no banco com
+    # essa forma exata.
+    m_power = re.search(
+        r"all of your characters with (\d+) (?:base )?power or less "
+        r"cannot be k\.?o\.?'?d by your opponent", t)
+    if m_power:
+        steps.append({'action': 'grant_ko_immunity_type',
+                      'power_lte': int(m_power.group(1)),
+                      'duration': 'opp_turn_end'})
     return steps
 
 
@@ -5682,6 +5777,16 @@ def parse_immunity(text):
     # incondicional e sem filtro nenhum (achado 19/07, OP06-096).
     is_grant_cost_ko = bool(re.search(
         r"your characters with a cost of \d+ or less cannot be k\.?o\.?'?d in battle", t))
+    # "All of your Characters with N base power or less cannot be K.O.'d
+    # by your opponent's effects until..." -- mesma familia de concessao
+    # TEMPORARIA de is_grant_cost_ko, mas com filtro de POWER (nao
+    # custo), tratada por parse_grant_ko_immunity. Achado 19/07, OP10-070
+    # Trebol, unica carta no banco com essa forma exata -- sem este
+    # guard, virava auto-imunidade da PROPRIA Trebol sem filtro nenhum
+    # (protegeria so ela mesma, quando o texto protege TODA a frota).
+    is_grant_power_ko = bool(re.search(
+        r"all of your characters with \d+ (?:base )?power or less "
+        r"cannot be k\.?o\.?'?d by your opponent", t))
     # "your {Tipo} type Characters with a cost of N or less other than
     # [Nome] cannot be K.O.'d by effects" -- AURA PERMANENTE concedida a
     # OUTRAS cartas do campo (tipo+custo, exclui a propria por nome),
@@ -5703,7 +5808,8 @@ def parse_immunity(text):
             step_aura['self_active_required'] = True
         steps.append(step_aura)
         return steps
-    if not is_grant_cost_ko and re.search(r"cannot be k\.?o\.?'?d|can'?t be k\.?o", t):
+    if (not is_grant_cost_ko and not is_grant_power_ko
+            and re.search(r"cannot be k\.?o\.?'?d|can'?t be k\.?o", t)):
         steps.append({'action': 'immunity', 'imm_type': 'ko', 'source': src})
     if re.search(r'cannot be removed from the field|can'+chr(39)+r't be removed from the field', t):
         steps.append({'action': 'immunity', 'imm_type': 'removal', 'source': src})
@@ -6808,8 +6914,24 @@ def parse_block(block_text, trigger_name):
             if dur:
                 step['duration'] = dur
             steps.append(step)
-    if 'gain_banish' not in _lista_choice_keywords and (
-            'gain [banish]' in t or 'gains [banish]' in t or '[banish]' in _lista_txt):
+    # "Up to N of your [Nome] Characters gains [Banish]" -- SELECAO por
+    # NOME PROPRIO (nao auto-concessao), mesma familia arquitetural de
+    # select_grant_rush/select_grant_double_attack. Achado 19/07,
+    # OP10-043 Moocy, unica carta no banco com essa forma exata: o
+    # [Banish] ia pra propria Moocy (fallback generico abaixo, target
+    # implicito self) em vez do [Monkey.D.Luffy] selecionado.
+    m_select_banish = re.search(
+        r'up to (\d+) of your \[([^\]]+)\] characters? gains?\s*\[?banish\]?', t)
+    if m_select_banish:
+        step_banish = {'action': 'select_grant_banish',
+                       'count': int(m_select_banish.group(1)),
+                       'filter_name': m_select_banish.group(2).strip()}
+        tail = t[m_select_banish.end():m_select_banish.end() + 30]
+        if 'during this turn' in tail:
+            step_banish['duration'] = 'this_turn'
+        steps.append(step_banish)
+    elif ('gain_banish' not in _lista_choice_keywords and (
+            'gain [banish]' in t or 'gains [banish]' in t or '[banish]' in _lista_txt)):
         steps.append({'action': 'gain_banish'})
     # Guarda: se a clausula ja foi capturada como SELECAO filtrada
     # (select_grant_unblockable_turn, achado 17/07 EB04-024 -- "up to N
@@ -6827,8 +6949,12 @@ def parse_block(block_text, trigger_name):
     # Trash from hand (efeito, nao custo). 'activate_main'/'counter'
     # adicionados 19/07 (OP02-070/OP09-059 -- mesma clausula "Then, trash
     # up to N cards from your hand" tambem aparece nesses 2 triggers, nao
-    # so nos 3 originais).
-    if trigger_name in ('on_play', 'when_attacking', 'end_of_turn', 'activate_main', 'counter'):
+    # so nos 3 originais). 'trigger' adicionado 19/07 (OP09-105 Sanji: a
+    # mesma clausula "Then, trash N cards from your hand" tambem aparece
+    # num bloco [Trigger] -- a 2a sentenca inteira sumia por nao estar na
+    # whitelist).
+    if trigger_name in ('on_play', 'when_attacking', 'end_of_turn', 'activate_main',
+                         'counter', 'trigger'):
         # finditer (nao search): um bloco pode ter DUAS ocorrencias
         # separadas -- ex: "draw 1 card and trash 1 card from your hand.
         # Then, trash up to 3 cards from your hand." tem a 1a coberta por

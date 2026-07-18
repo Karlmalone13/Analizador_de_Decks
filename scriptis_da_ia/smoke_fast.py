@@ -5639,6 +5639,126 @@ def test_lote_7_op08_029_a_op08_096() -> None:
           in get_card_effects("OP04-083")["on_play"]["steps"])
 
 
+def test_lote_8_op09_051_a_op10_080() -> None:
+    # OP09-068/070/073: custo "return 1 or more DON!! cards from your
+    # field" (variavel, sem "active") -- pagar o minimo (1) e correto/
+    # otimo (nenhum efeito escala pela quantidade devolvida).
+    for code in ("OP09-068", "OP09-070", "OP09-073"):
+        check(f"{code} parseia custo don_minus (variavel, min=1, optional)",
+              get_card_effects(code)[
+                  {"OP09-068": "end_of_turn", "OP09-070": "on_play", "OP09-073": "when_attacking"}[code]
+              ]["costs"] == [{"type": "don_minus", "count": 1, "optional": True}])
+    hody = real_card("OP09-073")
+    me_hody = GameState(leader=mk("HDLDR", "Lider", card_type="LEADER"))
+    me_hody.field_chars = [hody]
+    me_hody.don_available = 3
+    opp_hody = GameState(leader=mk("HDOPP", "Opp", card_type="LEADER"))
+    alvo1 = mk("HDT1", "Alvo1", cost=1)
+    alvo2 = mk("HDT2", "Alvo2", cost=1)
+    opp_hody.field_chars = [alvo1, alvo2]
+    EffectExecutor(me_hody, opp_hody).execute(hody, "when_attacking")
+    check("Execucao real: OP09-073 paga so 1 DON (minimo) e debuffa 2 opp Characters",
+          me_hody.don_available == 2 and alvo1.power_buff == -2000 and alvo2.power_buff == -2000)
+
+    # OP09-092: condicao "mao pelo menos 3 menor que a do oponente" --
+    # mesma familia de don_fewer_than_opp_by_gte, aplicada a mao.
+    check("OP09-092 parseia condicao hand_fewer_than_opp_by_gte=3",
+          get_card_effects("OP09-092")["activate_main"]["steps"][0]["conditions"]
+          == {"hand_fewer_than_opp_by_gte": 3})
+    teach = real_card("OP09-092")
+    me_teach = GameState(leader=mk("TCHLDR", "Lider", card_type="LEADER"))
+    me_teach.field_chars = [teach]
+    me_teach.hand = [mk("TCH1", "Mao1", cost=1)]
+    me_teach.deck = [mk(f"DK{i}", "Deck", cost=1) for i in range(5)]
+    opp_teach = GameState(leader=mk("TCHOPP", "Opp", card_type="LEADER"))
+    opp_teach.hand = [mk(f"OTC{i}", "OppMao", cost=1) for i in range(4)]
+    EffectExecutor(me_teach, opp_teach).execute(teach, "activate_main")
+    check("Execucao real: OP09-092 com mao 3+ menor que a do oponente, draw dispara",
+          len(me_teach.hand) >= 2)
+    me_teach2 = GameState(leader=mk("TCHLDR2", "Lider", card_type="LEADER"))
+    teach2 = real_card("OP09-092")
+    me_teach2.field_chars = [teach2]
+    me_teach2.hand = [mk("TCH2", "Mao2", cost=1), mk("TCH3", "Mao3", cost=1)]
+    me_teach2.deck = [mk(f"DK2{i}", "Deck", cost=1) for i in range(5)]
+    opp_teach2 = GameState(leader=mk("TCHOPP2", "Opp", card_type="LEADER"))
+    opp_teach2.hand = [mk("OTC5", "OppMao", cost=1)]
+    EffectExecutor(me_teach2, opp_teach2).execute(teach2, "activate_main")
+    check("Execucao real: OP09-092 sem a diferenca de mao, draw NAO dispara",
+          len(me_teach2.hand) == 2)
+
+    # OP09-105: 2a sentenca "Then, trash N cards from your hand" em bloco
+    # [Trigger] -- whitelist ampliada (antes so on_play/when_attacking/
+    # end_of_turn/activate_main/counter).
+    check("OP09-105 parseia a 2a clausula (trash_from_hand=2) no bloco Trigger",
+          get_card_effects("OP09-105")["trigger"]["steps"][1] == {"action": "trash_from_hand", "count": 2})
+
+    # OP10-033: condicao "2+ rested ODYSSEY type Characters" ausente
+    # antes -- lock_opp_don_refresh disparava sempre.
+    nami033 = real_card("OP10-033")
+    me_nami = GameState(leader=mk("NMLDR033", "Lider", card_type="LEADER"))
+    odyssey1 = mk("ODY1", "Odyssey1", cost=2, sub_types="ODYSSEY")
+    odyssey1.rested = True
+    me_nami.field_chars = [nami033, odyssey1]
+    opp_nami = GameState(leader=mk("NMOPP033", "Opp", card_type="LEADER"))
+    EffectExecutor(me_nami, opp_nami).execute(nami033, "on_play")
+    check("Execucao real: OP10-033 com so 1 ODYSSEY restada (precisa 2), lock NAO dispara",
+          opp_nami.frozen_don_count == 0)
+    odyssey2 = mk("ODY2", "Odyssey2", cost=2, sub_types="ODYSSEY")
+    odyssey2.rested = True
+    me_nami.field_chars.append(odyssey2)
+    EffectExecutor(me_nami, opp_nami).execute(nami033, "on_play")
+    check("Execucao real: OP10-033 com 2 ODYSSEY restadas, lock dispara",
+          opp_nami.frozen_don_count == 1)
+
+    # OP10-043: custo rest_own_leader_or_stage (Dressrosa) + selecao
+    # select_grant_banish por NOME (antes: gain_banish self, sem custo).
+    entry_043 = get_card_effects("OP10-043")["on_play"]
+    check("OP10-043 parseia custo rest_own_leader_or_stage(Dressrosa)",
+          entry_043["costs"] == [{"type": "rest_own_leader_or_stage", "filter_type": "dressrosa"}])
+    moocy = real_card("OP10-043")
+    dressrosa_stage = mk("DRST1", "Dressrosa Stage", cost=1, sub_types="Dressrosa", card_type="STAGE")
+    luffy_alvo = mk("LUFFY1", "Monkey.D.Luffy", cost=5)
+    outro_char = mk("OUT1", "Outro", cost=3)
+    me_moocy = GameState(leader=mk("MCLDR", "Lider", card_type="LEADER"))
+    me_moocy.field_chars = [moocy, luffy_alvo, outro_char]
+    me_moocy.field_stage = dressrosa_stage
+    opp_moocy = GameState(leader=mk("MCOPP", "Opp", card_type="LEADER"))
+    EffectExecutor(me_moocy, opp_moocy).execute(moocy, "on_play")
+    check("Execucao real: OP10-043 paga restando o Stage Dressrosa e concede Banish so ao Luffy",
+          dressrosa_stage.rested and luffy_alvo.banish_this_turn and not outro_char.banish_this_turn)
+
+    # OP10-070 Trebol: imunidade a KO com filtro de POWER (nao custo) --
+    # mesma familia arquitetural de OP06-096, mis-roteada antes pra
+    # auto-imunidade incondicional.
+    check("OP10-070 parseia grant_ko_immunity_type com power_lte=1000",
+          get_card_effects("OP10-070")["on_play"]["steps"][0]
+          == {"action": "grant_ko_immunity_type", "power_lte": 1000, "duration": "opp_turn_end"})
+    trebol = real_card("OP10-070")
+    barato_pw = mk("TBP1", "Barato Power", cost=3, power=1000)
+    caro_pw = mk("TBP2", "Caro Power", cost=3, power=5000)
+    me_trebol = GameState(leader=mk("TBLDR", "Lider", card_type="LEADER"))
+    me_trebol.field_chars = [trebol, barato_pw, caro_pw]
+    opp_trebol = GameState(leader=mk("TBOPP", "Opp", card_type="LEADER"))
+    EffectExecutor(me_trebol, opp_trebol).execute(trebol, "on_play")
+    check("Execucao real: OP10-070 protege so power<=1000 (nao o de 5000 power)",
+          barato_pw.immunity_ko_until == "opp_turn_end" and not caro_pw.immunity_ko_until)
+
+    # OP10-080: condicao composta "7+ DON e 5 ou menos na mao" -- a
+    # metade da mao sumia (eliptico, sem repetir "you have").
+    check("OP10-080 parseia condicao composta hand_lte=5 junto com don_on_field_gte=7",
+          get_card_effects("OP10-080")["counter"]["steps"][1]["conditions"]
+          == {"don_gte": 7, "don_on_field_gte": 7, "hand_lte": 5})
+
+    # Achado colateral (mesma generalizacao "rest this Leader"): 3
+    # cartas extras (EB03-001, OP03-058, OP06-020) tinham o custo de
+    # restar o proprio LIDER inteiro ausente (regex so aceitava
+    # card/character/stage, nao "leader").
+    for code in ("EB03-001", "OP03-058", "OP06-020", "OP15-039"):
+        entry = get_card_effects(code)["activate_main"]
+        check(f"{code} (familia 'rest this Leader') ganha o custo rest_self",
+              any(c.get("type") == "rest_self" for c in entry.get("costs", [])))
+
+
 def main() -> int:
     test_turn_order_imu_prefers_second()
     test_empty_throne_beats_direct_five_elders_play()
@@ -5774,6 +5894,7 @@ def main() -> int:
     test_lote_12_op03_096_a_op06_117()
     test_lote_6_op07_009_a_op07_097()
     test_lote_7_op08_029_a_op08_096()
+    test_lote_8_op09_051_a_op10_080()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0

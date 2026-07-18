@@ -524,6 +524,7 @@ class Card:
     rush_this_turn: bool = False  # Rush CONCEDIDO so neste turno (39 cards, ex: EB01-045 Brook, OP01-008 Cavendish) -- mesma logica de unblockable_this_turn. has_rush continua sendo o permanente/nativo (NUNCA tocar -- decisao de 24/06 contra unificar nativo/concedido por risco de regressao em 17 pontos; este campo PARALELO evita o risco). Resetado no refresh_phase.
     double_attack_this_turn: bool = False  # Double Attack CONCEDIDO so neste turno (12 cards) -- mesma logica. has_double_attack permanente intocado.
     blocker_this_turn: bool = False  # Blocker CONCEDIDO so neste turno (6 cards) -- mesma logica. has_blocker permanente intocado.
+    banish_this_turn: bool = False  # Banish CONCEDIDO so neste turno (achado 19/07, OP10-043 Moocy) -- mesma logica. has_banish permanente intocado.
     can_attack_active: bool = False  # "This Character can also attack active Characters" PERMANENTE (Cavendish OP04-081, Luffy OP04-090) -- keyword nunca implementada antes (achado 27/06, 9 cartas).
     can_attack_active_this_turn: bool = False  # mesma habilidade, mas CONCEDIDA so neste turno via select (Hibari, Gyats, Borsalino, Aramaki, Kuzan, Koby) -- resetada no refresh_phase.
     cannot_be_rested_until: str = ''  # mesma semantica de duracao, para lock_opp_cannot_be_rested (mecanica DISTINTA de cannot_attack)
@@ -576,6 +577,7 @@ class Card:
                       'don_attached', 'cannot_attack_until', 'cannot_be_rested_until', 'cannot_block_until',
                       'effects_negated_until',
                       'unblockable_this_turn', 'rush_this_turn', 'double_attack_this_turn', 'blocker_this_turn',
+                      'banish_this_turn',
                       'can_attack_active', 'can_attack_active_this_turn',
                       'power_buff', 'base_power_override',
                       'cost_buff', 'cost_buff_permanent', 'frozen_next_refresh',
@@ -669,7 +671,7 @@ class Card:
         return self._kw_active('rush_character', self.has_rush_character)
 
     def is_banish(self) -> bool:
-        return self._kw_active('banish', self.has_banish)
+        return self._kw_active('banish', self.has_banish) or self.banish_this_turn
 
     def effective_power(self, your_turn: bool = True) -> int:
         from optcg_engine.rules_facade import effective_card_power
@@ -680,7 +682,7 @@ class Card:
         if self.has_rush or self.rush_this_turn:          v += 4
         if self.has_blocker or self.blocker_this_turn:       v += 3
         if self.has_double_attack or self.double_attack_this_turn: v += 3
-        if self.has_banish:        v += 2
+        if self.has_banish or self.banish_this_turn:        v += 2
         if self.has_unblockable:   v += 4
         if self.has_trigger:       v += 2
         return v
@@ -3027,8 +3029,26 @@ class EffectExecutor:
                 and opp.don_on_field() - me.don_on_field()
                 < conds['don_fewer_than_opp_by_gte']):
             return False
+        # "if the number of cards in your hand is at least N less than
+        # the number in your opponent's hand" -- mesma semantica de
+        # don_fewer_than_opp_by_gte, so que comparando o tamanho da MAO
+        # (achado 19/07, OP09-092, unica carta no banco com essa forma).
+        if ('hand_fewer_than_opp_by_gte' in conds
+                and len(opp.hand) - len(me.hand)
+                < conds['hand_fewer_than_opp_by_gte']):
+            return False
         if 'chars_rested_gte' in conds:
-            n_rested = sum(1 for c in me.field_chars if c.rested)
+            tipo_rc = conds.get('chars_rested_gte_type_filter')
+            if tipo_rc:
+                # "N or more rested [Tipo] type Characters" -- so conta
+                # os restados que TAMBEM batem o filtro de tipo (achado
+                # 19/07, OP10-033 Nami, unica carta no banco com essa
+                # forma exata: condicao inteira sumia, lock disparava
+                # sempre).
+                n_rested = sum(1 for c in me.field_chars
+                               if c.rested and _norm_type_text(tipo_rc) in _norm_type_text(c.sub_types))
+            else:
+                n_rested = sum(1 for c in me.field_chars if c.rested)
             if n_rested < conds['chars_rested_gte']:
                 return False
         if 'opp_chars_rested_gte' in conds:
@@ -3322,6 +3342,23 @@ class EffectExecutor:
                 candidato.rested = True
                 self._cost_logs.append(
                     f'custo: restou {card.name[:15]} e {candidato.name[:15]}')
+            elif ctype == 'rest_own_leader_or_stage':
+                # Custo UNICO (nao composto, distinto de
+                # rest_self_and_leader_or_stage acima): so o Leader/Stage
+                # com filtro de tipo -- a propria carta ativadora NAO
+                # resta. Achado 19/07, OP10-043 Moocy, unica carta no
+                # banco com essa forma exata.
+                filter_type = cost.get('filter_type', '').lower()
+                candidato = None
+                if filter_type in self.me.leader.sub_types.lower() and not self.me.leader.rested:
+                    candidato = self.me.leader
+                elif (self.me.field_stage and filter_type in self.me.field_stage.sub_types.lower()
+                      and not self.me.field_stage.rested):
+                    candidato = self.me.field_stage
+                if candidato is None:
+                    return False
+                candidato.rested = True
+                self._cost_logs.append(f'custo: restou {candidato.name[:15]}')
             elif ctype == 'rest_don':
                 count = cost.get('count', 1)
                 if self.me.don_available < count:
@@ -4883,10 +4920,15 @@ class EffectExecutor:
             # chamadas com SO filter_type (ex: OP09-033 Nico Robin) --
             # se o Leader tivesse o mesmo tipo, ganhava imunidade nunca
             # concedida pelo texto real da carta.
+            power_lte = step.get('power_lte')
             pool = me.field_chars
             granted = []
             for c in pool:
                 if cost_lte is not None and c.cost > cost_lte:
+                    continue
+                # filtro de POWER (base power, achado 19/07, OP10-070
+                # Trebol) -- distinto de cost_lte, "N base power or less".
+                if power_lte is not None and c.power > power_lte:
                     continue
                 if filter_type and not card_matches_filter(c, filter_type):
                     continue
@@ -6904,6 +6946,24 @@ class EffectExecutor:
                 remove_by_identity(candidates, target)
                 granted.append(target.name[:15])
             return f'ganhou Rush: {", ".join(granted)}' if granted else ''
+        if action == 'select_grant_banish':
+            # "Up to N of your [Nome] Characters gains [Banish]" --
+            # SELECAO por nome proprio (achado 19/07, OP10-043 Moocy,
+            # unica carta no banco), distinta de gain_banish (sempre
+            # self, permanente).
+            from optcg_engine.rules_facade import choose_highest_board_value, eligible_cards
+            count = step.get('count', 1)
+            candidates = eligible_cards(me.field_chars, name_or_code=step.get('filter_name', ''))
+            granted = []
+            for _ in range(min(count, len(candidates))):
+                target = choose_highest_board_value(candidates)
+                if step.get('duration') == 'this_turn':
+                    target.banish_this_turn = True
+                else:
+                    target.has_banish = True
+                remove_by_identity(candidates, target)
+                granted.append(target.name[:15])
+            return f'ganhou Banish: {", ".join(granted)}' if granted else ''
         if action == 'gain_double_attack':
             if step.get('duration') == 'this_turn':
                 card.double_attack_this_turn = True
@@ -8349,6 +8409,8 @@ class DecisionEngine:
                 if not (me.don_on_field() <= self.opp.don_on_field()): return False
             if k == 'don_fewer_than_opp_by_gte':
                 if not (self.opp.don_on_field() - me.don_on_field() >= v): return False
+            if k == 'hand_fewer_than_opp_by_gte':
+                if not (len(self.opp.hand) - len(me.hand) >= v): return False
             if k == 'opp_hand_gte' and not (len(self.opp.hand) >= v): return False
             if k == 'opp_chars_gte' and not (len(self.opp.field_chars) >= v): return False
             if k == 'trash_gte' and not (my_trash >= v): return False
@@ -9344,6 +9406,7 @@ class OPTCGMatch:
             c.rush_this_turn = False
             c.double_attack_this_turn = False
             c.blocker_this_turn = False
+            c.banish_this_turn = False
             c.can_attack_active_this_turn = False
             c.ko_on_opp_blocker_used_this_turn = False
             c.immunity_ko_until = ''  # imunidade temporaria (grant_ko_immunity_type)

@@ -3804,6 +3804,11 @@
             "filter_no_tag": "when_attacking",
             "duration": "this_turn"
           }
+        ],
+        "costs": [
+          {
+            "type": "rest_self"
+          }
         ]
       },
       "passive": {
@@ -16265,6 +16270,9 @@
         ],
         "costs": [
           {
+            "type": "rest_self"
+          },
+          {
             "type": "don_minus",
             "count": 1,
             "optional": true
@@ -25974,6 +25982,11 @@
           {
             "action": "self_cant_take_life"
           }
+        ],
+        "costs": [
+          {
+            "type": "rest_self"
+          }
         ]
       }
     }
@@ -28839,6 +28852,10 @@
             "dest": "life_top",
             "count": 1,
             "up_to": true
+          },
+          {
+            "action": "trash_from_hand",
+            "count": 1
           }
         ],
         "conditions": {
@@ -38051,6 +38068,13 @@
             "action": "gain_rush",
             "duration": "this_turn"
           }
+        ],
+        "costs": [
+          {
+            "type": "don_minus",
+            "count": 1,
+            "optional": true
+          }
         ]
       }
     }
@@ -38113,6 +38137,13 @@
           {
             "action": "gain_blocker"
           }
+        ],
+        "costs": [
+          {
+            "type": "don_minus",
+            "count": 1,
+            "optional": true
+          }
         ]
       }
     }
@@ -38165,6 +38196,13 @@
             "action": "give_don",
             "count": 2,
             "rested": true
+          }
+        ],
+        "costs": [
+          {
+            "type": "don_minus",
+            "count": 1,
+            "optional": true
           }
         ]
       }
@@ -38244,6 +38282,13 @@
             "duration": "this_turn",
             "count": 2
           }
+        ],
+        "costs": [
+          {
+            "type": "don_minus",
+            "count": 1,
+            "optional": true
+          }
         ]
       }
     }
@@ -38321,6 +38366,13 @@
           {
             "action": "add_don",
             "count": 1
+          }
+        ],
+        "costs": [
+          {
+            "type": "don_minus",
+            "count": 1,
+            "optional": true
           }
         ]
       }
@@ -38821,7 +38873,10 @@
           {
             "action": "draw",
             "count": 2,
-            "then_trash": 1
+            "then_trash": 1,
+            "conditions": {
+              "hand_fewer_than_opp_by_gte": 3
+            }
           }
         ],
         "costs": [
@@ -39288,6 +39343,10 @@
             "dest": "life_top",
             "count": 1,
             "up_to": true
+          },
+          {
+            "action": "trash_from_hand",
+            "count": 2
           }
         ],
         "conditions": {
@@ -39714,6 +39773,13 @@
           {
             "action": "gain_rush",
             "duration": "this_turn"
+          }
+        ],
+        "costs": [
+          {
+            "type": "don_minus",
+            "count": 1,
+            "optional": true
           }
         ]
       }
@@ -40652,7 +40718,11 @@
             "action": "lock_opp_don_refresh",
             "count": 1
           }
-        ]
+        ],
+        "conditions": {
+          "chars_rested_gte": 2,
+          "chars_rested_gte_type_filter": "odyssey"
+        }
       }
     }
   },
@@ -40955,7 +41025,16 @@
       "on_play": {
         "steps": [
           {
-            "action": "gain_banish"
+            "action": "select_grant_banish",
+            "count": 1,
+            "filter_name": "monkey.d.luffy",
+            "duration": "this_turn"
+          }
+        ],
+        "costs": [
+          {
+            "type": "rest_own_leader_or_stage",
+            "filter_type": "dressrosa"
           }
         ]
       }
@@ -40979,6 +41058,12 @@
             "count": 1,
             "target": "opp_character",
             "cost_lte": 1
+          }
+        ],
+        "costs": [
+          {
+            "type": "rest_own_leader_or_stage",
+            "filter_type": "dressrosa"
           }
         ]
       }
@@ -41079,6 +41164,12 @@
             "count": 1,
             "target": "opp_character",
             "cost_lte": 1
+          }
+        ],
+        "costs": [
+          {
+            "type": "rest_own_leader_or_stage",
+            "filter_type": "dressrosa"
           }
         ]
       }
@@ -41261,6 +41352,18 @@
             "count": 1,
             "target": "opp_character",
             "cost_lte": 4
+          }
+        ],
+        "costs": [
+          {
+            "type": "rest_own_leader_or_stage",
+            "filter_type": "dressrosa"
+          },
+          {
+            "type": "return_own_character_to_hand",
+            "count": 1,
+            "filter_type": "dressrosa",
+            "cost_gte": 4
           }
         ]
       }
@@ -41700,9 +41803,9 @@
       "on_play": {
         "steps": [
           {
-            "action": "immunity",
-            "imm_type": "ko",
-            "source": "opp"
+            "action": "grant_ko_immunity_type",
+            "power_lte": 1000,
+            "duration": "opp_turn_end"
           }
         ]
       },
@@ -42050,7 +42153,8 @@
             "count": 1,
             "conditions": {
               "don_gte": 7,
-              "don_on_field_gte": 7
+              "don_on_field_gte": 7,
+              "hand_lte": 5
             }
           }
         ]
@@ -42079,6 +42183,12 @@
           {
             "action": "trash_from_deck_top",
             "count": 2
+          }
+        ],
+        "costs": [
+          {
+            "type": "rest_own_leader_or_stage",
+            "filter_type": "dressrosa"
           }
         ]
       }
@@ -42477,6 +42587,12 @@
           {
             "action": "trash_from_deck_top",
             "count": 2
+          }
+        ],
+        "costs": [
+          {
+            "type": "rest_own_leader_or_stage",
+            "filter_type": "dressrosa"
           }
         ]
       }
@@ -58785,6 +58901,16 @@
             "cost_eq": 3,
             "filter_type": "dressrosa"
           }
+        ],
+        "costs": [
+          {
+            "type": "rest_self"
+          },
+          {
+            "type": "return_own_character_to_hand",
+            "count": 1,
+            "filter_type": "dressrosa"
+          }
         ]
       }
     }
@@ -66884,7 +67010,11 @@
             "target": "self",
             "duration": "this_turn"
           }
-        ]
+        ],
+        "conditions": {
+          "chars_rested_gte": 2,
+          "chars_rested_gte_type_filter": "odyssey"
+        }
       }
     }
   },
@@ -66905,7 +67035,11 @@
             "action": "set_active",
             "target": "self"
           }
-        ]
+        ],
+        "conditions": {
+          "chars_rested_gte": 2,
+          "chars_rested_gte_type_filter": "odyssey"
+        }
       },
       "passive": {
         "steps": [

@@ -42457,6 +42457,10 @@
     "trigger": "trigger"
    },
    {
+    "action": "trash_from_hand",
+    "trigger": "trigger"
+   },
+   {
     "action": "buff_power",
     "trigger": "counter",
     "target": "leader_or_character"
@@ -57832,6 +57836,10 @@
    {
     "action": "gain_life",
     "trigger": "trigger"
+   },
+   {
+    "action": "trash_from_hand",
+    "trigger": "trigger"
    }
   ],
   "synergy_states": {
@@ -60378,7 +60386,7 @@
   "attribute": "Strike",
   "effects": [
    {
-    "action": "gain_banish",
+    "action": "select_grant_banish",
     "trigger": "on_play"
    }
   ],
@@ -60402,7 +60410,7 @@
   "has_rush": false,
   "has_double_attack": false,
   "has_unblockable": false,
-  "has_banish": true,
+  "has_banish": false,
   "has_trigger": false
  },
  "OP10-044": {
@@ -61548,8 +61556,9 @@
   "attribute": "Special",
   "effects": [
    {
-    "action": "immunity",
-    "trigger": "on_play"
+    "action": "grant_ko_immunity_type",
+    "trigger": "on_play",
+    "power_lte": 1000
    },
    {
     "action": "keyword_blocker",

@@ -1,9 +1,26 @@
 # TODO — Analisador de Decks OPTCG
 
 **Última atualização:** 19 de julho de 2026
-**Estado:** varredura contínua do parser; 172 suspeitos (severidade 1 only)
+**Estado:** varredura contínua do parser; 161 suspeitos (severidade 1 only)
 **Baseline do código:** ver `git log --oneline -1`
 **Repo:** github.com/Karlmalone13/Analizador_de_Decks
+
+> 19/07/2026: lote de 8 bugs reais (OP09-051 a OP10-080), 24 cartas no
+> total (via diff_parser + generalização): OP09-068/070/073+família
+> (OP09-065/076/119 — custo "return 1 or more DON!! cards" inteiro
+> ausente, habilidade grátis), OP09-092 (condição de comparação de mão
+> ausente — nova `hand_fewer_than_opp_by_gte`), OP09-105+OP06-115
+> ("trash N from hand" sumia em blocos [Trigger] — whitelist ampliada),
+> OP10-033+P-078/P-079 (condição "2+ rested tipo X" sem filtro de tipo
+> suportado), OP10-043+família (OP10-044/048/056/081/095 — custo "rest
+> Leader/Stage" isolado ausente + Banish mirava self em vez do
+> selecionado — nova ação select_grant_banish), OP10-070 (imunidade a
+> KO com filtro de POWER, mesma família do OP06-096 mas mis-roteada),
+> OP10-080 (condição composta DON+mão, metade da mão sumia). Achado
+> colateral: 4 cartas (EB03-001/OP03-058/OP06-020/OP15-039) tinham o
+> custo "rest this Leader" inteiro ausente. Ver HANDOFF bloco 276 e
+> `parser_audits/2026-07-19_lote_8_op09-051_a_op10-080.json`.
+> Auditor: 172 -> 161 suspeitos.
 
 > 19/07/2026: mudança de ritmo na varredura (usuário pediu pra acelerar
 > após 3 dias na mesma tarefa) — a partir daqui, revisar lotes de 50
