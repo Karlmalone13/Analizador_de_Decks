@@ -22528,7 +22528,7 @@
    {
     "action": "play_card",
     "trigger": "on_play",
-    "cost_lte": 2
+    "cost_lte": 99
    }
   ],
   "synergy_states": {
@@ -45676,7 +45676,7 @@
    {
     "action": "play_card",
     "trigger": "on_play",
-    "cost_lte": "don_count_self"
+    "cost_lte": 4
    }
   ],
   "synergy_states": {},

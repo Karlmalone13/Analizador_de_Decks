@@ -191,6 +191,55 @@ antigo) e 91% no lider. O numero final pos-fix permanece pendente de no minimo
 **Proximo passo recomendado:** criar `specs/metrics-protocol.md` + script de
 relatorio antes/depois; depois extrair `optcg-parser-audit` como primeira skill.
 
+## 2026-07-17 (259) - Vazamento de janela de custo em parse_play_generic (sentinela DON!! dinamico) -- OP07-070/OP08-062 + bonus OP03-027
+
+Sessao dedicada, pedido do usuario: auditoria de `don_count_self`/
+`don_count_opp` no `card_effects_db.json` achou 6 cartas com o sentinela
+dinamico de `cost_lte` (`_resolve_cost_lte`, `decision_engine.py`), mas o
+comentario da funcao so documentava 4 usos legitimos (OP13-099, OP08-098,
+OP11-022, P-090). As outras 2 eram bugs de parsing: **OP07-070** (Big Bun)
+tinha `cost_lte='don_count_self'` quando o texto diz literalmente "with a
+cost of 4 or less" (fixo); **OP08-062** (Charlotte Katakuri, ability
+trash-self) tinha so `cost_lte='don_count_opp'`, faltando um `cost_gte=3`
+composto ("cost of 3 or more that is equal to or less than the number of
+DON!! cards on your opponent's field").
+
+**Causa raiz (generica, nao amarrada as 2 cartas):**
+`gerar_effects_db.py::parse_play_generic` buscava cost_lte/cost_eq/o
+sentinela dinamico dentro de `janela`, uma faixa que comeca no INICIO da
+sentenca/clausula (ultimo `:`/`. ` antes do match de "play up to N"), nao
+no fim do proprio match. Quando uma clausula ANTERIOR na mesma sentenca
+menciona "number of DON!! cards on ... field" (condicao) ou tem seu
+proprio filtro de custo (outra acao, ex: `rest_opp_character`), esse
+texto vazava pra dentro da janela e era lido como se fosse o cost_lte do
+`play_card`. Fix: extracao de cost_lte fixo/cost_eq/cost_gte
+(novo)/sentinela dinamico agora usa `cauda = t[m.end():fim_janela]`
+(so o que vem DEPOIS do "play up to N [tipo/nome]"), reflentindo a
+convencao fixa do template (a clausula de custo da carta jogada sempre
+vem depois do tipo/nome). `type_m`/`color_m` continuam usando `janela`
+inteira (precisam ver o "play up to N [tipo]" completo).
+
+**Bonus achado pelo `diff_parser.py` (nao fazia parte do pedido original):**
+**OP03-027** (Buchi) tinha `cost_lte=2` vazado da clausula "rest up to 1
+of your opponent's Characters with a cost of 2 or less" (acao anterior,
+`rest_opp_character`) pro `play_card` de "[Buchi] from your hand" -- Buchi
+custa 4, entao a habilidade NUNCA conseguia jogar Buchi (bug funcional
+real de jogo, nao so cosmetico no JSON: `eligible_cards` filtra
+`card.cost > cost_lte`). Corrigido pela mesma mudanca generica.
+
+Busca global confirmou so essas 3 cartas afetadas (EB02-039 tem o mesmo
+texto de condicao de DON!! mas o alvo jogado e filtrado por
+nome/power-faixa via `parse_play_from_trash`, funcao irma que ja ancora a
+busca no proprio "play up to" e nunca sofreu esse vazamento).
+
+**Validado:** `diff_parser.py` GANHOU=0/PERDEU=0/MUDOU=3 (as 3 mudancas
+inspecionadas manualmente, todas correcoes). `gerar_dbs.py` +
+`snapshot_parser.py` OK. `smoke_test.py`: TODOS OS TESTES PASSARAM.
+`smoke_fast.py`: OK. Comentario de `_resolve_cost_lte`
+(`decision_engine.py`) atualizado pra 5 cartas legitimas (incluindo
+OP08-062) e documentando os 2 falsos-positivos descartados. Registro em
+`parser_audits/2026-07-17_op07-070_op08-062_cost_clause_window_leak.json`.
+
 ## 2026-07-17 (257-258) - DON!! N (parenteses explicativo) + custo Life area -- 21 cartas
 
 Continuacao da varredura apos o lote de 9 (blocos 248-256). 2 itens

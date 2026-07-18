@@ -15375,7 +15375,7 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": 2,
+            "cost_lte": 99,
             "filter_name": "buchi"
           }
         ],
@@ -30897,7 +30897,7 @@
           {
             "action": "play_card",
             "count": 1,
-            "cost_lte": "don_count_self",
+            "cost_lte": 4,
             "filter_type": "foxy pirates"
           }
         ],
@@ -34255,6 +34255,7 @@
             "action": "play_card",
             "count": 1,
             "cost_lte": "don_count_opp",
+            "cost_gte": 3,
             "filter_name": "charlotte katakuri",
             "conditions": {
               "leader_type": "big mom pirates"

@@ -3721,20 +3721,36 @@ class EffectExecutor:
         Resolve o valor de cost_lte de um step, tratando os dois casos:
         (1) valor FIXO (int), como ja era -- maioria dos casos.
         (2) valor DINAMICO ("equal to or less than the number of DON!! cards
-            on your/your opponent's field"), confirmado em 4 cartas:
+            on your/your opponent's field"), confirmado em 5 cartas:
             OP13-099 (Empty Throne), OP08-098 (Kalgara), OP11-022
             (Shirahoshi) -- as 3 usam DON!! do PROPRIO campo
-            ('don_count_self') -- e P-090 (Charlotte Smoothie), que usa
-            DON!! do campo do OPONENTE ('don_count_opp') -- texto da carta
-            diz explicitamente "on your opponent's field", lado invertido
-            das outras 3. Sem esta distincao, um simbolo generico unico
-            erraria a Smoothie.
+            ('don_count_self') -- e P-090 (Charlotte Smoothie) e OP08-062
+            (Charlotte Katakuri, ability trash-self), que usam DON!! do
+            campo do OPONENTE ('don_count_opp') -- texto da carta diz
+            explicitamente "on your opponent's field", lado invertido das
+            outras 3. Sem esta distincao, um simbolo generico unico erraria
+            a Smoothie/Katakuri. OP08-062 tambem combina o sentinela com um
+            cost_gte=3 fixo no MESMO step (dois filtros de custo
+            simultaneos: "cost of 3 or more that is equal to or less than
+            the number of DON!! cards...") -- resolvido perto do end() do
+            match de step, nao aqui (gerar_effects_db.py, parse_play_generic).
         Antes desta funcao, o parser ja emitia cost_lte=99 (fixo, "sem
-        limite") para as 4 cartas -- nao quebrava o engine, mas tornava o
+        limite") para as 5 cartas -- nao quebrava o engine, mas tornava o
         limite real do efeito (baseado em DON!! em campo) inexistente na
         pratica: qualquer carta de custo ate 99 passava, quando a regra real
         e mais restritiva na maioria das posicoes de jogo (DON!! em campo
         raramente chega a 99).
+        Duas outras cartas com o MESMO texto-gatilho de DON!! no banco NAO
+        usam o sentinela dinamico de verdade: OP07-070 (Big Bun) tem a
+        frase "number of DON!! cards on your field" numa condicao SEPARADA
+        (gate "don_on_field_lte_opp") que precede, na mesma sentenca, uma
+        clausula de custo FIXA e literal ("with a cost of 4 or less") para a
+        carta jogada -- ate 17/07 um bug de janela greedy no parser deixava
+        essa frase da condicao vazar pro cost_lte do play_card e sequestrar
+        o sentinela por engano, quando devia ser cost_lte=4 fixo. EB02-039
+        (GERMA 66) tem o mesmo texto de condicao mas o alvo jogado e
+        filtrado por NOME/faixa de power (play_from_trash), sem clausula de
+        custo nenhuma -- nunca gerava cost_lte dinamico nem fixo.
         """
         cost_lte = step.get('cost_lte', default)
         if cost_lte == 'don_count_self':

@@ -3944,13 +3944,35 @@ def parse_play_generic(text):
         # pre-existente, 17 cards: EB01-009, EB02-025, OP01-116, etc).
         precedido_de_look = bool(re.search(r'look at \d+ cards? from the top of (?:your|the) deck', t[:m.start()]))
         if not precedido_de_look:
+            # Clausula de custo da carta JOGADA (cost_lte/cost_eq/cost_gte/
+            # sentinela dinamico de DON!!) so pode vir DEPOIS do trecho
+            # "play up to N [tipo/nome]" que o proprio `m` ja capturou --
+            # nunca antes (convencao fixa do template: tipo/nome sempre
+            # precede "with/and a cost of..."). `cauda` restringe a busca a
+            # esse pedaco final, diferente de `janela` (usado abaixo pra
+            # tipo/cor, que legitimamente precisa olhar o "play up to N"
+            # inteiro). Sem essa restricao, uma condicao ANTERIOR na mesma
+            # sentenca que tambem mencione "number of DON!! cards on ...
+            # field" (ex: "If the number of DON!! cards on your field is
+            # equal to or less than the number on your opponent's field,
+            # play up to 1 [...] with a cost of 4 or less...") vazava pra
+            # dentro da janela e o sentinela dinamico sequestrava um cost_lte
+            # que na verdade era um numero fixo literal (achado 17/07,
+            # OP07-070 Big Bun -- cost_lte virava 'don_count_self' em vez de
+            # 4). Mesma causa raiz deixava passar despercebido um cost_gte
+            # explicito coexistindo com o sentinela dinamico (achado 17/07,
+            # OP08-062 Charlotte Katakuri: "cost of 3 or more that is equal
+            # to or less than the number of DON!! cards on your opponent's
+            # field" precisa de cost_gte=3 E cost_lte=don_count_opp juntos).
+            cauda = t[m.end():fim_janela]
             # "with a cost of N or less" (forma original) OU "and a cost of
             # N or less" -- surge quando o filtro de tipo vem primeiro
             # ("with a type including X and a cost of N or less", achado
             # 16/07 OP14-091 e familia: o "a cost of" nao vem depois de
             # "with", vem depois de "and").
-            cost_m = re.search(r'(?:with|and) a cost of (\d+) or less', janela)
-            cost_eq_m = re.search(r'(?:with|and) a cost of (\d+)(?! or less)', janela)
+            cost_m = re.search(r'(?:with|and) a cost of (\d+) or less', cauda)
+            cost_eq_m = re.search(r'(?:with|and) a cost of (\d+)(?! or less)(?! or more)', cauda)
+            cost_gte_m = re.search(r'(?:with|and) a cost of (\d+) or more', cauda)
             # filter_type/color: mesma regex usada em parse_play_from_deck e
             # em parse_play_from_trash (que ja suporta "type including
             # \"X\"" fora do inicio da clausula -- trazido aqui pra paridade,
@@ -3973,7 +3995,7 @@ def parse_play_generic(text):
             # entre "number of don!! cards on" e "field"). Resolvido em
             # runtime por EffectExecutor._resolve_cost_lte.
             dyn_m = re.search(
-                r'number of don!{0,2} cards on (your opponent.{0,3}s|your) field', janela)
+                r'number of don!{0,2} cards on (your opponent.{0,3}s|your) field', cauda)
             if dyn_m:
                 cost_lte_val = 'don_count_opp' if 'opponent' in dyn_m.group(1) else 'don_count_self'
             elif cost_m:
@@ -3985,6 +4007,8 @@ def parse_play_generic(text):
                 'action': 'play_card', 'count': int(m.group(1)),
                 'cost_lte': cost_lte_val,
             }
+            if cost_gte_m:
+                step['cost_gte'] = int(cost_gte_m.group(1))
             if cost_eq_val is not None:
                 step['cost_eq'] = cost_eq_val
                 del step['cost_lte']   # exato substitui o limite generico, nao soma
