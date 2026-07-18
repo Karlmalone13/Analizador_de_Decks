@@ -1,9 +1,84 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 01 de julho de 2026 (sessão 22)
-**Estado:** 2148 cards com efeito (subiu de 2138), parser auditado OP-02 a OP-15
-**Baseline:** commit bbb4d31 (set_don_active + mill) + viabilidade transacional (a commitar)
+**Última atualização:** 17 de julho de 2026
+**Estado:** varredura contínua do parser; 241 suspeitos restantes após os blocos 257-258
+**Baseline do código:** `9b3494a` local (1 commit à frente de `origin/main` em 17/07; push pendente)
 **Repo:** github.com/Karlmalone13/Analizador_de_Decks
+
+---
+
+## 🟣 ORGANIZAÇÃO PROFISSIONAL DO CONTEXTO — regras, especificações e skills (17/07/2026)
+
+Objetivo: reduzir contexto repetido sem esconder decisões arquiteturais em memória
+local ou em prompts enormes. Não mover tudo para skills; cada informação deve ter
+uma fonte canônica conforme sua função:
+
+- [ ] **`AGENTS.md` = constituição curta do projeto:** invariantes obrigatórias,
+  limites de arquitetura, gates de commit e comandos mínimos.
+- [ ] **`specs/` = comportamento verificável:** criar especificações pequenas por
+  domínio (`engine-rules.md`, `parser-contract.md`, `bot-bridge.md`,
+  `metrics-protocol.md`). Cada regra deve apontar para teste/evidência e definir
+  entrada, saída, invariantes e critério de aceite. Evitar repetir o `AGENTS.md`.
+- [ ] **Skills = workflows repetitivos, não regras do produto:** começar por
+  `optcg-parser-audit` (censo global → snapshot → fix genérico → diff → gerar DBs →
+  smoke → audit JSON), `optcg-live-log-triage` (preservar log → parsear → comparar
+  bot/humano → localizar bridge/engine) e `optcg-release-handoff` (status → testes →
+  HANDOFF → commit/push).
+- [ ] **Scripts determinísticos em vez de instrução textual:** automatizar comandos
+  repetidos e fazer a skill apenas escolher/rodar o script. Primeiro candidato:
+  relatório único de métricas antes/depois a partir de `logs/index.json`.
+- [ ] **`HANDOFF.md` = deltas recentes:** manter registro cronológico do que mudou,
+  evidências e próximo passo; consolidar fatos estáveis nas specs.
+- [ ] **Gate de consistência documental:** antes do push, verificar se `TODO.md`,
+  `HANDOFF.md`, specs afetadas e auditorias refletem o mesmo commit.
+
+### Ordem recomendada de implantação
+
+1. Criar `specs/metrics-protocol.md` e o script de relatório antes/depois.
+2. Extrair o workflow estável do parser para `optcg-parser-audit`.
+3. Extrair triagem de combat log para `optcg-live-log-triage`.
+4. Só depois reduzir textos duplicados de `AGENTS.md`/`CLAUDE.md`/`HANDOFF.md`.
+
+---
+
+## 🔴 EFICIÊNCIA DO BOT — baseline percentual e medição pós-fix (17/07/2026)
+
+Não existe hoje uma porcentagem única cientificamente válida de “eficiência”.
+Win rate mede resultado; ataques/DON/dano medem comportamento. Não misturar tudo
+num percentual arbitrário. Se houver score composto, fixar os pesos em
+`specs/metrics-protocol.md` antes de olhar o resultado.
+
+**Antes (bot Imu ao vivo, amostra histórica) comparado ao humano Imu:**
+
+| métrica | humano | bot antes | eficiência relativa |
+|---|---:|---:|---:|
+| ataques por turno | 2,03 | 0,88 | **43,3%** |
+| ataques no líder | 82% | 42% | **51,2%** |
+| dano de vida por partida | 4,2 | 1,3 | **31,0%** |
+| counters arrancados por partida | 5,2 | 2,4 | **46,2%** |
+
+**Proxy pós-correções, ainda não equivalente a teste ao vivo:** motor com informação
+completa fez 1,28 ataques/turno (**63,1%** do humano; ganho relativo de **45,5%**
+sobre 0,88) e 91% dos ataques no líder (**111,0%** da taxa humana; +49 pontos
+percentuais sobre o bot antigo). Isso demonstra que o estado completo resolve boa
+parte da seleção de alvo, mas não prova a eficiência atual do bot/bridge.
+
+- [ ] **Medir o agora ao vivo:** reinstalar o plugin com `BOT\setup_bepinex.bat`,
+  jogar no mínimo 5 partidas Imu (ideal: mesmos matchups ou espelho) e adicionar
+  todos os combat logs ao banco com `parse_combat_log.py --add-to-db`.
+- [ ] **Gerar relatório reproduzível:** usar a mesma janela de turnos e definições
+  para ataques/turno, % líder, dano, DON/ataque, counters arrancados, duração e
+  win rate; incluir tamanho da amostra e intervalo de confiança.
+- [ ] **Critério mínimo de melhora ao vivo:** ≥1,28 ataques/turno, ≥80% no líder,
+  dano/partida maior que 1,3 e nenhuma regressão nas invariantes/smokes. Meta
+  posterior: aproximar 2,03 ataques/turno sem sacrificar win rate.
+- [ ] **Gauntlet fixo motor-vs-motor:** manter Imu vs Teach/Krieg/Kid + espelho,
+  seeds e decks congelados; comparar cada mudança contra os JSONs de 13/07.
+- [ ] **Não chamar proxy de “depois”:** publicar porcentagem final somente após a
+  rodada ao vivo pós-fix; até lá usar `antes`, `proxy engine` e `agora pendente`.
+
+Fonte: `scriptis_da_ia/analise_imu_humano_vs_bot_2026-07-12.md` e
+`scriptis_da_ia/PLANO_AVALIACAO_E_BUSCA.md`.
 
 ---
 

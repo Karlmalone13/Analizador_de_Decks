@@ -1,5 +1,23 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-17 (259) - TODO atualizado: governanca de contexto + baseline de eficiencia do bot
+
+Atualizado `TODO.md`, que ainda apontava para a baseline de 01/07, para o
+estado real apos os blocos 257-258: 241 suspeitos e `9b3494a` local ainda
+nao enviado. Adicionado plano de organizacao profissional do contexto:
+`AGENTS.md` para invariantes obrigatorias, `specs/` para contratos
+verificaveis e skills para workflows repetitivos apoiados por scripts.
+
+Formalizada a medicao antes/depois do bot sem fabricar um score unico. Baseline
+historica do Imu ao vivo contra referencia humana: ataques/turno 43,3%, foco no
+lider 51,2%, dano/partida 31,0% e counters arrancados 46,2%. O motor com estado
+completo e apenas proxy: 1,28 ataques/turno (63,1% do humano; +45,5% sobre o bot
+antigo) e 91% no lider. O numero final pos-fix permanece pendente de no minimo
+5 partidas ao vivo, logs preservados e relatorio reproduzivel.
+
+**Proximo passo recomendado:** criar `specs/metrics-protocol.md` + script de
+relatorio antes/depois; depois extrair `optcg-parser-audit` como primeira skill.
+
 ## 2026-07-17 (257-258) - DON!! N (parenteses explicativo) + custo Life area -- 21 cartas
 
 Continuacao da varredura apos o lote de 9 (blocos 248-256). 2 itens
