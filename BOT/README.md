@@ -70,6 +70,21 @@ mostra os `[ENG]`/`[DEF]`/`[PLAY]` de cada chamada de `/decide`/`/defense`).
 Esses logs não vão pro git (`.gitignore`) — são diagnóstico efêmero, não o
 banco de combat logs.
 
+Telemetria estruturada de decisões: cada `/decide` gera um `decisionId` e grava
+estado anterior, ações pontuadas, ação escolhida e resposta em
+`BOT/engine_server/logs/decisions/decisions_<timestamp>.jsonl`. O plugin envia
+eventos `sent` e, no próximo estado principal estável, `confirmed` ou `failed`
+com o estado posterior. Para medir:
+
+```cmd
+cd scriptis_da_ia
+python bot_efficiency_report.py --decision-log ..\BOT\engine_server\logs\decisions\decisions_<timestamp>.jsonl
+```
+
+`confirmed` significa que o DTO mudou; não prova sozinho que toda a semântica do
+efeito foi correta. Os JSONL são efêmeros/ignorados pelo git: preserve o arquivo
+junto do combat log quando investigar uma partida.
+
 **Shift+B**: liga/desliga o bot em tempo real, sem reiniciar o jogo nem
 recarregar a dll (`BotDriver.cs`, campo `_botEnabled`). Útil pra jogar
 manualmente e printar telas de decisão sem o plugin clicar antes de dar

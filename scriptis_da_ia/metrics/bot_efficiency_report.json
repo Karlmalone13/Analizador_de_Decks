@@ -476,5 +476,6 @@
       },
       "warning": "proxy motor-vs-motor; nao mede DTO, bridge, visao ou clique"
     }
-  ]
+  ],
+  "decision_logs": []
 }

@@ -1,4 +1,5 @@
 using UnityEngine;
+using Newtonsoft.Json;
 
 namespace OPTCGBotPlugin
 {
@@ -46,6 +47,8 @@ namespace OPTCGBotPlugin
         private int    _sameActionCount;
         private float _heartbeat;
         private string _lastHeartbeatMsg = "";
+        private BotAction? _pendingTelemetryAction;
+        private string _pendingTelemetryState = "";
 
         // Evita perguntar pro engine de novo a cada tick pela mesma acao
         // pendente (custo opcional sem tela dedicada — ver Update())
@@ -309,6 +312,23 @@ namespace OPTCGBotPlugin
             var botPs = gls.Lps_Players[BotPlayerIndex];
             var oppPs = gls.Lps_Players[1 - BotPlayerIndex];
             var dto   = GameStateBuilder.Build(botPs, oppPs, gls);
+
+            // O proximo estado MAIN estavel confirma se a acao anterior mudou
+            // o jogo. Nao assume que ExecuteOne=true significa sucesso: reflection
+            // pode retornar sem o simulador aceitar a acao.
+            if (_pendingTelemetryAction != null)
+            {
+                string currentState = JsonConvert.SerializeObject(dto);
+                bool changed = currentState != _pendingTelemetryState;
+                EngineClient.ReportExecution(
+                    _pendingTelemetryAction,
+                    changed ? "confirmed" : "failed",
+                    dto,
+                    changed ? null : "estado inalterado no proximo main state estavel");
+                _pendingTelemetryAction = null;
+                _pendingTelemetryState = "";
+            }
+
             var action = EngineClient.Decide(dto);
             _actionsThisTurn++;
 
@@ -316,6 +336,12 @@ namespace OPTCGBotPlugin
             {
                 Plugin.Log.LogInfo("[Bot] end_turn");
                 BotExecutor.EndTurn(gls);
+                if (action != null)
+                {
+                    EngineClient.ReportExecution(action, "sent", dto);
+                    _pendingTelemetryAction = action;
+                    _pendingTelemetryState = JsonConvert.SerializeObject(dto);
+                }
                 _cooldown = ActionCooldown;
                 return;
             }
@@ -328,6 +354,8 @@ namespace OPTCGBotPlugin
             if (_sameActionCount >= 3)
             {
                 Plugin.Log.LogWarning($"[Bot] acao {key} repetida {_sameActionCount}x sem efeito — end turn");
+                EngineClient.ReportExecution(action, "failed", dto,
+                                             "acao repetida 3x sem mudanca de estado");
                 BotExecutor.EndTurn(gls);
                 _cooldown = ActionCooldown;
                 return;
@@ -336,6 +364,8 @@ namespace OPTCGBotPlugin
             bool ok = BotExecutor.ExecuteOne(gls, botPs, oppPs, action, dto);
             if (!ok)
             {
+                EngineClient.ReportExecution(action, "failed", dto,
+                                             "BotExecutor.ExecuteOne retornou false");
                 _consecutiveFails++;
                 if (_consecutiveFails >= 2)
                 {
@@ -345,6 +375,10 @@ namespace OPTCGBotPlugin
             }
             else
             {
+                var immediateAfter = GameStateBuilder.Build(botPs, oppPs, gls);
+                EngineClient.ReportExecution(action, "sent", immediateAfter);
+                _pendingTelemetryAction = action;
+                _pendingTelemetryState = JsonConvert.SerializeObject(dto);
                 _consecutiveFails = 0;
             }
 

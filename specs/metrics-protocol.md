@@ -76,7 +76,15 @@ Para cada decisão, gravar JSONL com:
 ```
 
 O `state_before` deve ser capturado antes de cada ação, não no fim do turno. A
-confirmação deve reutilizar o mesmo `decision_id` em todas as camadas.
+confirmação deve reutilizar o mesmo `decision_id` em todas as camadas. A
+implementação usa eventos JSONL append-only: um evento `decision` e eventos
+`execution` com status `sent`, `confirmed` ou `failed`. O relatório agrupa os
+eventos pelo ID; assim uma queda do plugin não corrompe registros anteriores.
+
+`confirmed` significa que o próximo `PlayerTurn_Action` estável apresentou DTO
+diferente do estado anterior. É evidência de execução, mas não prova que todo o
+efeito semântico esperado ocorreu; essa auditoria exige comparação específica de
+transição por tipo de ação.
 
 ## Protocolo estatístico
 
@@ -95,4 +103,3 @@ confirmação deve reutilizar o mesmo `decision_id` em todas as camadas.
 - Execução confirmada deve ser pelo menos 95% quando a telemetria existir.
 - Para Imu ao vivo pós-fix: pelo menos 1,28 ataques/turno e 80% de ataques no
   líder, sem regressão de win rate no gauntlet.
-

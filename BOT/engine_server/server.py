@@ -22,6 +22,7 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 import uvicorn
 from typing import Optional
+from telemetry import new_decision_id, write_event, PATH as DECISION_LOG_PATH
 
 # ── Log de sessao em arquivo (alem do console) ───────────────────────────────
 # Duplica tudo que passa por print() (aqui e em sim_bridge.py, que roda no
@@ -102,6 +103,12 @@ class GameStateDto(BaseModel):
     turnNumber: int
     bot: PlayerDto      # P2 = bot
     opp: PlayerDto      # P1 = humano
+
+
+def _model_dict(model: BaseModel) -> dict:
+    """Pydantic v1/v2 sem amarrar o servidor a uma versao."""
+    dump = getattr(model, "model_dump", None)
+    return dump() if dump else model.dict()
 
 
 # ── Engine (lazy init) ────────────────────────────────────────────────────────
@@ -337,7 +344,28 @@ class ChooseTargetRequest(BaseModel):
 
 @app.get("/health")
 def health():
-    return {"status": "ok"}
+    return {"status": "ok", "decisionLog": str(DECISION_LOG_PATH)}
+
+
+class ExecutionReport(BaseModel):
+    decisionId: str
+    status: str                 # sent | confirmed | failed
+    stateAfter: Optional[GameStateDto] = None
+    error: Optional[str] = None
+
+
+@app.post("/execution")
+def execution(report: ExecutionReport):
+    if report.status not in {"sent", "confirmed", "failed"}:
+        raise HTTPException(status_code=400, detail="status de execucao invalido")
+    write_event(
+        "execution",
+        report.decisionId,
+        status=report.status,
+        state_after=_model_dict(report.stateAfter) if report.stateAfter else None,
+        error=report.error,
+    )
+    return {"ok": True}
 
 
 @app.post("/mulligan")
@@ -472,6 +500,26 @@ def decide(state: GameStateDto):
     Resposta: {"type": "play"|"attack"|"attach_don"|"end_turn",
                "cardId": int, "targetId": int, "donToAttach": int}
     """
+    decision_id = new_decision_id()
+    trace = {}
+
+    def finish(payload: dict, reason: str) -> dict:
+        out = {**payload, "decisionId": decision_id}
+        write_event(
+            "decision",
+            decision_id,
+            turn=state.turnNumber,
+            state_before=_model_dict(state),
+            scored_actions=trace.get("scored_actions", []),
+            chosen_action=trace.get("chosen_action"),
+            search_values=trace.get("search_values", []),
+            selection=trace.get("selection", reason),
+            timed_out=trace.get("timed_out", False),
+            response=out,
+            reason=reason,
+        )
+        return out
+
     try:
         bridge = _get_bridge()
         match  = _get_match()
@@ -487,10 +535,12 @@ def decide(state: GameStateDto):
         action = bridge.choose_action(gs, opp_gs, match, timeout=3.0,
                                       allowed_types={"play", "attack",
                                                      "attach_don", "activate"},
-                                      exclude_activate_codes=excluir)
+                                      exclude_activate_codes=excluir,
+                                      trace_out=trace)
 
         if action is None:
-            return {"type": "end_turn", "cardId": 0, "targetId": 0, "donToAttach": 0}
+            return finish({"type": "end_turn", "cardId": 0, "targetId": 0,
+                           "donToAttach": 0}, "sem acao elegivel")
 
         # Formato da action: (score, tipo, card, ...)
         #   play:       (score, 'play',       card, None, None)
@@ -506,7 +556,8 @@ def decide(state: GameStateDto):
             # A carta veio do proprio gs.hand — tem _deck_uid direto
             card_id = getattr(card, '_deck_uid', 0)
             if card_id == 0:
-                return {"type": "end_turn", "cardId": 0, "targetId": 0, "donToAttach": 0}
+                return finish({"type": "end_turn", "cardId": 0, "targetId": 0,
+                               "donToAttach": 0}, "play sem uid executavel")
 
         elif action_type == "attack" and len(action) > 2:
             attacker = action[2]
@@ -516,13 +567,15 @@ def decide(state: GameStateDto):
                 if attacker is gs.leader:
                     card_id = getattr(gs.leader, '_deck_uid', 0)
                 if card_id == 0:
-                    return {"type": "end_turn", "cardId": 0, "targetId": 0, "donToAttach": 0}
+                    return finish({"type": "end_turn", "cardId": 0, "targetId": 0,
+                                   "donToAttach": 0}, "atacante sem uid executavel")
 
             ttype = action[3] if len(action) > 3 else 'leader'
             if ttype == 'character' and len(action) > 4 and action[4] is not None:
                 target_id = getattr(action[4], '_deck_uid', 0)
                 if target_id == 0:
-                    return {"type": "end_turn", "cardId": 0, "targetId": 0, "donToAttach": 0}
+                    return finish({"type": "end_turn", "cardId": 0, "targetId": 0,
+                                   "donToAttach": 0}, "alvo sem uid executavel")
             # ttype == 'leader' -> targetId = 0 (lider oponente)
 
             # DON a anexar ANTES de declarar. Deficit base sempre; margem de
@@ -535,7 +588,8 @@ def decide(state: GameStateDto):
             card_id    = getattr(card, '_deck_uid', 0)
             don_attach = int(action[3] or 0)
             if card_id == 0 or don_attach <= 0:
-                return {"type": "end_turn", "cardId": 0, "targetId": 0, "donToAttach": 0}
+                return finish({"type": "end_turn", "cardId": 0, "targetId": 0,
+                               "donToAttach": 0}, "attach_don invalido")
 
         elif action_type == "activate" and len(action) > 2:
             # [Activate: Main] de lider/personagem/stage em campo (ex:
@@ -546,17 +600,25 @@ def decide(state: GameStateDto):
                 if card is gs.leader:
                     card_id = getattr(gs.leader, '_deck_uid', 0)
                 if card_id == 0:
-                    return {"type": "end_turn", "cardId": 0, "targetId": 0, "donToAttach": 0}
+                    return finish({"type": "end_turn", "cardId": 0, "targetId": 0,
+                                   "donToAttach": 0}, "activate sem uid executavel")
 
         else:
-            return {"type": "end_turn", "cardId": 0, "targetId": 0, "donToAttach": 0}
+            return finish({"type": "end_turn", "cardId": 0, "targetId": 0,
+                           "donToAttach": 0}, "tipo nao executavel")
 
-        return {"type": action_type, "cardId": card_id,
-                "targetId": target_id, "donToAttach": don_attach}
+        return finish({"type": action_type, "cardId": card_id,
+                       "targetId": target_id, "donToAttach": don_attach},
+                      "acao escolhida")
 
     except Exception as e:
         import traceback
         traceback.print_exc()
+        write_event(
+            "decision_error", decision_id, turn=state.turnNumber,
+            state_before=_model_dict(state), error=str(e),
+            scored_actions=trace.get("scored_actions", []),
+        )
         raise HTTPException(status_code=500, detail=str(e))
 
 

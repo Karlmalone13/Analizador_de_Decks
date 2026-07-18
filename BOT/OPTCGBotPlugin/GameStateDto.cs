@@ -62,6 +62,8 @@ namespace OPTCGBotPlugin
     // Acao retornada pelo servidor Python
     public class BotAction
     {
+        // Correlaciona decisao do engine com tentativa/confirmacao no plugin.
+        public string decisionId = "";
         // "play" | "attack" | "attach_don" | "end_turn"
         public string type = "end_turn";
         // Para play/attack/attach_don: deckUniqueId da carta do bot

@@ -1,5 +1,41 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-17 (261) - Telemetria pre/pos-acao com decision_id ponta a ponta
+
+Instrumentada a Main Phase ao vivo sem mover logica estrategica para plugin ou
+server. Fluxo novo:
+
+1. `/decide` gera `decisionId` unico.
+2. `sim_bridge.choose_action(..., trace_out=...)` registra todas as actions
+   pontuadas, flags de elegibilidade, valores da busca e escolha final.
+3. `server.py` grava evento JSONL `decision` com DTO pre-acao, alternatives,
+   escolha, resposta executavel, timeout e commit.
+4. Plugin recebe o mesmo ID, chama `BotExecutor`, reporta `sent` ou `failed`.
+5. No proximo `PlayerTurn_Action` estavel, `BotDriver` compara o DTO novo com o
+   anterior e reporta `confirmed` ou `failed`, sempre com estado posterior.
+
+Arquivos principais: `BOT/engine_server/telemetry.py`, `server.py`,
+`sim_bridge.py`, `GameStateDto.cs`, `EngineClient.cs`, `BotDriver.cs`. JSONL em
+`BOT/engine_server/logs/decisions/` (efemero, gitignored). `/health` informa o
+caminho do arquivo atual. `bot_efficiency_report.py --decision-log <jsonl>`
+agrega coverage, confirmadas/falhas/pendentes, execution_success e gap do score
+imediato. `state_fidelity` e `decision_quality` continuam `null`: mudanca de DTO
+confirma execucao operacional, nao prova semantica perfeita nem otimalidade.
+
+Escopo deliberado desta primeira entrega: decisoes executaveis da Main Phase
+(`play`, `attack`, `attach_don`, `activate`, `end_turn`). Defesa, mulligan e
+sub-escolhas de alvo ainda usam endpoints separados e devem receber o mesmo
+envelope numa rodada posterior; registrado no TODO, nao escondido como pronto.
+
+**Validado:** `py_compile`; 5/5 testes de `test_bot_efficiency_report.py`;
+`dotnet build ... -t:Compile --no-restore -c Release` com 0 erros (6 warnings
+preexistentes); integracao sintetica server -> JSONL -> report (1 decisao,
+1 confirmada); `smoke_fast.py` completo `SMOKE FAST OK`.
+
+**Para validar ao vivo:** recompilar/copiar plugin via `BOT/setup_bepinex.bat`,
+reiniciar server, jogar partida, preservar combat log + decisions JSONL e rodar
+`bot_efficiency_report.py --decision-log <arquivo>`.
+
 ## 2026-07-17 (260) - Protocolo + relatorio reproduzivel de eficiencia do bot
 
 Implementada a primeira camada profissional de medicao solicitada pelo usuario:

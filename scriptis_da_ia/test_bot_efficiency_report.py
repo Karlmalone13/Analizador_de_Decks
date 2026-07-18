@@ -3,6 +3,7 @@ import unittest
 from pathlib import Path
 
 import bot_efficiency_report as report
+from optcg_engine.sim_bridge import action_to_trace
 
 
 ROOT = Path(__file__).resolve().parent
@@ -39,6 +40,34 @@ class BotEfficiencyReportTests(unittest.TestCase):
         self.assertIsNone(availability["state_fidelity"])
         self.assertIsNone(availability["decision_quality"])
         self.assertIsNone(availability["execution_success"])
+
+    def test_action_trace_marks_executor_eligibility(self):
+        class FakeCard:
+            code = "TEST-001"
+            _deck_uid = 17
+
+        traced = action_to_trace((12.5, "play", FakeCard(), None, None), {"play"}, set())
+        self.assertEqual(traced["card_uid"], 17)
+        self.assertTrue(traced["eligible"])
+
+    def test_decision_log_joins_decision_and_execution(self):
+        events = [
+            {"event": "decision", "decision_id": "a",
+             "chosen_action": {"score": 8},
+             "scored_actions": [{"score": 10, "eligible": True}]},
+            {"event": "execution", "decision_id": "a", "status": "sent",
+             "state_after": {"turnNumber": 1}},
+            {"event": "execution", "decision_id": "a", "status": "confirmed",
+             "state_after": {"turnNumber": 1}},
+            {"event": "decision", "decision_id": "b", "chosen_action": None,
+             "scored_actions": []},
+            {"event": "execution", "decision_id": "b", "status": "failed",
+             "state_after": None},
+        ]
+        result = report.analyze_decision_events(json.dumps(e) for e in events)
+        self.assertEqual(result["decisions"], 2)
+        self.assertEqual(result["execution_success_pct"], 50.0)
+        self.assertEqual(result["mean_immediate_score_gap"], 2.0)
 
 
 if __name__ == "__main__":

@@ -74,7 +74,10 @@ parte da seleção de alvo, mas não prova a eficiência atual do bot/bridge.
   para ataques/turno, % líder, dano, DON/ataque, counters arrancados, duração e
   win rate quando disponível; inclui tamanho da amostra e IC95% bootstrap. A
   qualidade da decisão e o sucesso de execução permanecem `null` até existir
-  telemetria pré-ação com `decision_id`.
+  telemetria pré-ação com `decision_id` nos logs antigos. **Instrumentação nova
+  implementada em 17/07:** decisões de Main Phase agora registram estado pré/pós,
+  ações pontuadas, escolha e `sent/confirmed/failed`; falta coletar partidas reais
+  e estender o mesmo envelope a defesa, mulligan e escolhas de alvo.
 - [ ] **Critério mínimo de melhora ao vivo:** ≥1,28 ataques/turno, ≥80% no líder,
   dano/partida maior que 1,3 e nenhuma regressão nas invariantes/smokes. Meta
   posterior: aproximar 2,03 ataques/turno sem sacrificar win rate.

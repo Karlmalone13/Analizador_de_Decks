@@ -35,6 +35,32 @@ namespace OPTCGBotPlugin
             }
         }
 
+        // Reporta o ciclo de execucao sem tomar nenhuma decisao no plugin.
+        // status: sent | confirmed | failed. O decisionId veio de /decide.
+        public static void ReportExecution(BotAction action, string status,
+                                           GameStateDto? stateAfter, string? error = null)
+        {
+            if (action == null || string.IsNullOrEmpty(action.decisionId)) return;
+            try
+            {
+                string json = JsonConvert.SerializeObject(new
+                {
+                    decisionId = action.decisionId,
+                    status,
+                    stateAfter,
+                    error,
+                });
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+                var resp = _http.PostAsync($"{BASE}/execution", content).GetAwaiter().GetResult();
+                if (!resp.IsSuccessStatusCode)
+                    Plugin.Log.LogWarning($"[EngineClient] execution HTTP {resp.StatusCode}");
+            }
+            catch (Exception ex)
+            {
+                Plugin.Log.LogWarning($"[EngineClient] execution: {ex.Message}");
+            }
+        }
+
         public static bool IsAlive()
         {
             try

@@ -214,6 +214,87 @@ def _proxy(path: Path, side: str) -> dict:
     }
 
 
+def analyze_decision_log(path: Path) -> dict:
+    """Agrupa eventos append-only por decision_id e mede cobertura/execucao."""
+    result = analyze_decision_events(path.read_text(encoding="utf-8").splitlines())
+    result["source"] = str(path)
+    return result
+
+
+def analyze_decision_events(lines) -> dict:
+    """Versao testavel em memoria do agregador JSONL."""
+    decisions: dict[str, dict] = {}
+    executions: dict[str, list[dict]] = {}
+    invalid_lines = 0
+    for raw in lines:
+        if not raw.strip():
+            continue
+        try:
+            event = json.loads(raw)
+        except json.JSONDecodeError:
+            invalid_lines += 1
+            continue
+        decision_id = event.get("decision_id")
+        if not decision_id:
+            invalid_lines += 1
+            continue
+        if event.get("event") == "decision":
+            decisions[decision_id] = event
+        elif event.get("event") == "execution":
+            executions.setdefault(decision_id, []).append(event)
+
+    confirmed = failed = pending = 0
+    with_state_after = 0
+    chosen_with_scores = 0
+    eligible_recorded = 0
+    immediate_gaps = []
+    for decision_id, decision in decisions.items():
+        eligible = [a for a in decision.get("scored_actions", []) if a.get("eligible")]
+        if eligible:
+            eligible_recorded += 1
+        chosen = decision.get("chosen_action")
+        if chosen is not None and eligible:
+            chosen_with_scores += 1
+            best = max(float(a.get("score", -1e9)) for a in eligible)
+            immediate_gaps.append(max(0.0, best - float(chosen.get("score", best))))
+
+        events = executions.get(decision_id, [])
+        with_state_after += int(any(e.get("state_after") is not None for e in events))
+        terminal = next((e for e in reversed(events)
+                         if e.get("status") in {"confirmed", "failed"}), None)
+        if terminal is None:
+            pending += 1
+        elif terminal.get("status") == "confirmed":
+            confirmed += 1
+        else:
+            failed += 1
+
+    total = len(decisions)
+    completed = confirmed + failed
+    return {
+        "source": "<memory>",
+        "decisions": total,
+        "confirmed": confirmed,
+        "failed": failed,
+        "pending": pending,
+        "execution_success_pct": _round(_ratio(confirmed, completed, 100)),
+        "legal_actions_coverage_pct": _round(_ratio(eligible_recorded, total, 100)),
+        "chosen_score_coverage_pct": _round(_ratio(chosen_with_scores, total, 100)),
+        "state_after_coverage_pct": _round(_ratio(with_state_after, total, 100)),
+        "mean_immediate_score_gap": _round(
+            sum(immediate_gaps) / len(immediate_gaps) if immediate_gaps else None
+        ),
+        "state_fidelity": None,
+        "decision_quality": None,
+        "invalid_lines": invalid_lines,
+        "notes": [
+            "execution_success usa confirmacao por mudanca do DTO no proximo main state estavel",
+            "mean_immediate_score_gap nao e arrependimento: busca pode escolher score imediato menor",
+            "state_fidelity exige verdade independente do estado do jogo",
+        ],
+    }
+
+
 def _fmt_metric(metric: dict) -> str:
     value = metric["value"]
     lo, hi = metric["ci95"]
@@ -233,6 +314,12 @@ def print_report(report: dict) -> None:
         print(f"\n[proxy] {proxy['source']} lado={proxy['side']} n={proxy['n_games']}")
         for name, value in proxy["metrics"].items():
             print(f"  {name:34s} {value}")
+    for live in report.get("decision_logs", []):
+        print(f"\n[telemetria] {live['source']} decisions={live['decisions']}")
+        for name in ("execution_success_pct", "legal_actions_coverage_pct",
+                     "chosen_score_coverage_pct", "state_after_coverage_pct",
+                     "mean_immediate_score_gap"):
+            print(f"  {name:34s} {live[name]}")
 
 
 def main() -> None:
@@ -243,6 +330,7 @@ def main() -> None:
     ap.add_argument("--seed", type=int, default=20260717)
     ap.add_argument("--proxy", action="append", type=Path, default=[])
     ap.add_argument("--proxy-side", choices=("A", "B"), default="A")
+    ap.add_argument("--decision-log", action="append", type=Path, default=[])
     ap.add_argument("--json", dest="json_out", type=Path)
     args = ap.parse_args()
 
@@ -259,6 +347,7 @@ def main() -> None:
             for i, c in enumerate(manifest.get("cohorts", []))
         ],
         "proxies": [_proxy(path, args.proxy_side) for path in args.proxy],
+        "decision_logs": [analyze_decision_log(path) for path in args.decision_log],
     }
     print_report(report)
     if args.json_out:

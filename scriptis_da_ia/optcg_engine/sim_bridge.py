@@ -292,7 +292,8 @@ def opponent_model_for_leader(leader_code: str) -> Optional[OpponentModel]:
 def choose_action(gs: GameState, opp_gs: GameState,
                   match, timeout: float = 4.0,
                   allowed_types: Optional[set] = None,
-                  exclude_activate_codes: Optional[set] = None) -> Optional[tuple]:
+                  exclude_activate_codes: Optional[set] = None,
+                  trace_out: Optional[dict] = None) -> Optional[tuple]:
     """
     Pede ao engine a melhor ação para o estado atual.
 
@@ -326,6 +327,11 @@ def choose_action(gs: GameState, opp_gs: GameState,
         try:
             engine = DecisionEngine(gs, opp_gs)
             actions = match._generate_and_score_actions(gs, opp_gs, engine)
+            if trace_out is not None:
+                trace_out["scored_actions"] = [
+                    action_to_trace(a, allowed_types, exclude_activate_codes)
+                    for a in actions
+                ]
             print(f"[ENG] {len(actions)} acoes | hand={len(gs.hand)} don={gs.don_available} turn={gs.turn}", flush=True)
             if actions:
                 print(f"[ENG] top3: {[(a[0],a[1]) for a in actions[:3]]}", flush=True)
@@ -345,6 +351,8 @@ def choose_action(gs: GameState, opp_gs: GameState,
                     if len(candidatos) >= SEARCH_TOP_K:
                         break
             if not candidatos:
+                if trace_out is not None:
+                    trace_out["selection"] = "no_eligible_action"
                 return
 
             # Fallback seguro IMEDIATO: mesmo que a busca abaixo nunca termine
@@ -353,6 +361,8 @@ def choose_action(gs: GameState, opp_gs: GameState,
             # end_turn por causa do custo da busca (server.py trata None como
             # "encerra o turno", pior que o score imediato de sempre).
             result[0] = candidatos[0]
+            if trace_out is not None:
+                trace_out["selection"] = "immediate_score"
             a = candidatos[0]
             # Diagnostico de gerenciamento de mao (08/07: usuario reportou o
             # bot jogando cartas de counter alto custo 1-2 ate ficar sem mao)
@@ -378,14 +388,20 @@ def choose_action(gs: GameState, opp_gs: GameState,
                     amostras = [model.sample(opp_gs, rng=random.Random())
                                for _ in range(SEARCH_SAMPLES)]
                     melhor, melhor_valor = candidatos[0], None
+                    search_records = []
                     for cand in candidatos:
                         valores = match._simulate_sequence_values(
                             gs, opp_gs, cand, max_steps=SEARCH_MAX_STEPS, amostras=amostras)
                         valor = sum(valores) / len(valores) if valores else -1e9
+                        search_records.append({"action": action_to_trace(cand),
+                                               "value": round(valor, 4)})
                         if melhor_valor is None or valor > melhor_valor:
                             melhor_valor = valor
                             melhor = cand
                     result[0] = melhor
+                    if trace_out is not None:
+                        trace_out["selection"] = "opponent_response_search"
+                        trace_out["search_values"] = search_records
                     print(f"[ENG] busca refinou: {melhor[1]} (score imediato {melhor[0]:.1f}, "
                           f"valor simulado {melhor_valor:.1f})", flush=True)
         except Exception as e:
@@ -395,7 +411,38 @@ def choose_action(gs: GameState, opp_gs: GameState,
     t = threading.Thread(target=_run, daemon=True)
     t.start()
     t.join(timeout=timeout)
+    if trace_out is not None:
+        trace_out["timed_out"] = t.is_alive()
+        trace_out["chosen_action"] = action_to_trace(result[0]) if result[0] else None
     return result[0]
+
+
+def action_to_trace(action: Optional[tuple], allowed_types: Optional[set] = None,
+                    excluded_activate_codes: Optional[set] = None) -> Optional[dict]:
+    """Serializa uma action sem carregar objetos Card inteiros no JSONL."""
+    if not action:
+        return None
+    score = float(action[0])
+    kind = str(action[1])
+    card = action[2] if len(action) > 2 else None
+    target_type = action[3] if len(action) > 3 else None
+    target = action[4] if len(action) > 4 else None
+    code = getattr(card, "code", None)
+    excluded = (kind == "activate" and code in (excluded_activate_codes or set()))
+    executor_allowed = allowed_types is None or kind in allowed_types
+    return {
+        "score": round(score, 4),
+        "type": kind,
+        "card_code": code,
+        "card_uid": getattr(card, "_deck_uid", 0) if card is not None else 0,
+        "target_type": target_type if isinstance(target_type, str) else None,
+        "target_code": getattr(target, "code", None) if target is not None else None,
+        "target_uid": getattr(target, "_deck_uid", 0) if target is not None else 0,
+        "executor_allowed": executor_allowed,
+        "score_nonnegative": score >= 0,
+        "excluded": excluded,
+        "eligible": score >= 0 and executor_allowed and not excluded,
+    }
 
 
 def don_for_attack(gs: GameState, opp_gs: GameState, action: tuple,
