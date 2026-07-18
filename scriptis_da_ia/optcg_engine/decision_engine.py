@@ -3018,8 +3018,12 @@ class EffectExecutor:
             if cost_filter is not None:
                 contagem = sum(1 for c in me.field_chars if c.cost >= cost_filter)
             elif type_filter is not None:
+                # Lista de tipos (OR) -- "N or more [TipoA] or [TipoB] type
+                # Characters" (achado 19/07, OP07-050: 2 tipos alternativos,
+                # nao so 1). String unica preserva o comportamento antigo.
+                tipos = type_filter if isinstance(type_filter, list) else [type_filter]
                 contagem = sum(1 for c in me.field_chars
-                                if type_filter.lower() in (c.sub_types or '').lower())
+                                if any(tp.lower() in (c.sub_types or '').lower() for tp in tipos))
             else:
                 contagem = len(me.field_chars)
             if contagem < conds['chars_gte']:
@@ -4981,6 +4985,24 @@ class EffectExecutor:
             opp.frozen_don_count += count
             return f'congelou até {count} DON do oponente (não desvira no próx. refresh)'
 
+        # Alvo MISTO: trava o Leader do oponente (sempre, se rested) E ate
+        # N Characters rested dele (achado 19/07, OP07-059 -- unica carta
+        # com essa selecao combinada; antes caia no fallback errado
+        # lock_opp_don).
+        if action == 'lock_opp_leader_and_character_refresh':
+            count = step.get('count', 1)
+            locked = []
+            if opp.leader.rested:
+                opp.leader.frozen_next_refresh = True
+                locked.append(opp.leader.name[:15])
+            candidates = [c for c in opp.field_chars if c.rested]
+            for _ in range(min(count, len(candidates))):
+                target = max(candidates, key=lambda x: x.board_value())
+                target.frozen_next_refresh = True
+                remove_by_identity(candidates, target)
+                locked.append(target.name[:15])
+            return f'congelou (não desvira no próx. refresh): {", ".join(locked)}' if locked else ''
+
         if action == 'lock_self_character_refresh':
             if step.get('target') == 'this_card':
                 card.frozen_next_refresh = True
@@ -6811,7 +6833,14 @@ class EffectExecutor:
             # Achado 17/07, EB03-050/OP04-115.
             from optcg_engine.rules_facade import choose_highest_board_value, eligible_cards
             count = step.get('count', 1)
-            candidates = eligible_cards(me.field_chars, filter_text=step.get('filter_type', ''))
+            candidates = eligible_cards(
+                me.field_chars,
+                filter_text=step.get('filter_type', ''),
+                color=step.get('color', ''),
+                cost_eq=step.get('cost_eq'),
+                cost_lte=step.get('cost_lte'),
+                cost_gte=step.get('cost_gte'),
+            )
             granted = []
             for _ in range(min(count, len(candidates))):
                 target = choose_highest_board_value(candidates)
@@ -9237,7 +9266,15 @@ class OPTCGMatch:
             c.cannot_attack_opp_chars_cost_lte = -1
             c.own_effect_negated_this_turn = False
         p.leader.don_attached = 0
-        p.leader.rested = False
+        # Freeze do PROPRIO Leader (achado 19/07, OP07-059 -- lock_opp_
+        # leader_and_character_refresh trava o Leader do oponente junto
+        # com ate N Characters): mesma logica de frozen_next_refresh de
+        # field_chars acima, nunca checada aqui antes (o Leader sempre
+        # desrestava incondicionalmente).
+        if p.leader.frozen_next_refresh:
+            p.leader.frozen_next_refresh = False
+        else:
+            p.leader.rested = False
         p.leader.power_buff = 0
         p.leader.cost_buff = 0
         p.leader.cannot_attack_until = ''

@@ -1,9 +1,23 @@
 # TODO — Analisador de Decks OPTCG
 
 **Última atualização:** 19 de julho de 2026
-**Estado:** varredura contínua do parser; 183 suspeitos (severidade 1 only)
+**Estado:** varredura contínua do parser; 178 suspeitos (severidade 1 only)
 **Baseline do código:** ver `git log --oneline -1`
 **Repo:** github.com/Karlmalone13/Analizador_de_Decks
+
+> 19/07/2026: lote de 6 bugs reais (OP07-009 a OP07-097), 8 cartas no
+> total: OP07-009 (filtro de cor ausente em select_grant_double_attack),
+> OP07-036 (número trocado — regex desescopado pegava o número de uma
+> cláusula de custo anterior), OP07-050+OP07-052 (condição "OR
+> multi-tipo" nunca suportada), OP07-059 (trava mista Leader+Character
+> ausente — achado colateral: refresh_phase nunca checava o freeze do
+> Leader, mecânica de congelar líder era sempre no-op no engine),
+> OP07-094+OP07-055 (auto-bounce condicional e bloco [Trigger] inteiro
+> sumiam — 2 variantes novas de fraseado em parse_bounce), OP07-097
+> (mecânica de escolha jogar-ou-vida inteira ausente, virava gain_life
+> fixo do deck errado). Ver HANDOFF bloco 274 e
+> `parser_audits/2026-07-19_lote_6_op07-009_a_op07-097.json`.
+> Auditor: 183 -> 178 suspeitos.
 
 > 19/07/2026: lote de 10 suspeitos severidade-1 (itens 33-53), 12 fixes/19
 > cartas reais: OP03-096 (KO com alvo alternativo Stage ausente),

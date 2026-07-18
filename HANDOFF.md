@@ -1,5 +1,70 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-19 (274) - Claude - lote de 6 bugs reais (OP07-009 a OP07-097)
+
+Continuacao da varredura. Usuario aprovou implementar os 6 de uma vez.
+Registro completo em
+`parser_audits/2026-07-19_lote_6_op07-009_a_op07-097.json`.
+
+1. **OP07-009**: `select_grant_double_attack` nao suportava filtro de
+   COR ("up to 1 of your RED Characters... gain [Double Attack]") --
+   novo grupo de captura opcional pra cor no regex existente.
+2. **OP07-036**: bug de NUMERO TROCADO -- `cost_lte = re.search('cost of
+   (\d+) or', t)` buscava no TEXTO INTEIRO e pegava o "3" de uma clausula
+   de custo opcional bem anterior em vez do "5" da propria clausula do
+   step. Corrigido reaproveitando o capture group ja existente do match
+   principal (sem re-busca desescopada).
+3. **OP07-050 + OP07-052**: condicao "N or more [Tipo A] OR [Tipo B]
+   type Characters" -- OR multi-tipo nunca era suportado em
+   `chars_gte_type_filter` (so 1 tipo). Agora aceita lista, engine ja
+   suportava via `any()`.
+4. **OP07-059**: "Select your opponent's rested Leader and up to 1
+   Character card. The selected cards will not become active" -- trava
+   MISTA Leader+Character inteira ausente. Nova acao
+   `lock_opp_leader_and_character_refresh`. **Achado colateral real:**
+   `refresh_phase` nunca checava `p.leader.frozen_next_refresh` (so
+   `field_chars`) -- travas de refresh mirando o LIDER eram
+   silenciosamente no-op no engine, mesmo que o parser algum dia gerasse
+   o step certo. Corrigido pra espelhar a logica ja usada em
+   `field_chars`.
+5. **OP07-094 + irma OP07-055**: clausula de auto-bounce CONDICIONAL
+   ("Then, if trash>=10, return up to 1 of your Characters with a type
+   including 'CP' to the owner's hand") e o bloco `[Trigger]` inteiro
+   ("Return up to 1 of your Characters to the owner's hand") sumiam por
+   completo -- `parse_bounce` so reconhecia filtro de tipo ANTES de
+   "Characters" (`[Tipo] type Characters`), nunca DEPOIS ("with a type
+   including 'X'"), e nunca um auto-bounce totalmente sem filtro. OP07-055
+   tem o mesmo gap (2a sentenca do Counter, sem condicional) mas nunca
+   foi flagrado pelo audit porque o "1" que faltava ja aparecia em outro
+   lugar do JSON (custo do trigger) -- mascarado pela heuristica de
+   "numero presente em algum lugar". `split_then_if` (existente) ja fazia
+   o scoping por-step da condicao corretamente; so faltava `parse_bounce`
+   reconhecer as 2 clausulas novas.
+6. **OP07-097**: "Select up to 1 [Egghead] type card with a cost of 5 or
+   less from your hand and play it OR add it to the top of your Life
+   cards face-up" -- mecanica de ESCOLHA (jogar OU vida) inteira
+   ausente; o parser generico de `gain_life` capturava so a clausula
+   isolada "add it to the top of your life cards" (sem "from your hand"
+   adjacente -- essa parte pertence a clausula anterior), source virava
+   o fallback `deck_top` (errado, a carta nunca sai do deck), e a
+   alternativa de jogar + filtro de tipo/custo sumiam inteiras. Novo
+   bloco especial em `parse_block` (mesma familia estrutural do
+   `queen_m`/OP04-040) produzindo `_choice` com 2 ramos.
+
+**Known follow-up fora de escopo:** OP07-036 tem um custo opcional
+inteiro ("you may rest 1 of your Characters with a cost of 3 or more. If
+you do, ...") que continua ausente do parse -- o bug reportado era so o
+numero trocado, nao esse custo em si. Nao corrigido agora; registrar
+como suspeito separado se reaparecer em varredura futura.
+
+Validado: `diff_parser.py` GANHOU=0/PERDEU=0/MUDOU=8 (6 alvo + 2 capturas
+corretas adicionais: OP07-052, OP07-055). `smoke_fast.py` com teste novo
+(`test_lote_6_op07_009_a_op07_097`) cobrindo execucao real do OR
+multi-tipo, do scoping por-step do "Then, if" (buff incondicional +
+bounce condicional) e da trava mista Leader+Character via
+`refresh_phase` real. `smoke_test.py` TODOS OS TESTES PASSARAM.
+`smoke_test_broad.py` 7/7 sem excecao. **Auditor: 183 -> 178 suspeitos.**
+
 ## 2026-07-19 (273) - Claude - lote de 12 bugs reais (OP03-096 a OP06-117)
 
 Continuacao da varredura (itens 33-53, apos o lote do bloco 272). Usuario

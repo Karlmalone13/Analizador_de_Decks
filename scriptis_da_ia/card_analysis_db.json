@@ -43016,7 +43016,7 @@
   "attribute": "Slash",
   "effects": [
    {
-    "action": "gain_double_attack",
+    "action": "select_grant_double_attack",
     "trigger": "on_play"
    }
   ],
@@ -43038,7 +43038,7 @@
   "attacks_life": false,
   "trashes_own_life": false,
   "has_rush": false,
-  "has_double_attack": true,
+  "has_double_attack": false,
   "has_unblockable": false,
   "has_banish": false,
   "has_trigger": false
@@ -44209,7 +44209,7 @@
    {
     "action": "rest_opp_character",
     "trigger": "main",
-    "cost_lte": 3
+    "cost_lte": 5
    },
    {
     "action": "buff_power",
@@ -45048,6 +45048,11 @@
     "target": "opp_character"
    },
    {
+    "action": "bounce",
+    "trigger": "counter",
+    "target": "own_character"
+   },
+   {
     "action": "buff_power",
     "trigger": "counter",
     "target": "leader_or_character"
@@ -45236,7 +45241,7 @@
   "attribute": "Special",
   "effects": [
    {
-    "action": "lock_opp_don",
+    "action": "lock_opp_leader_and_character_refresh",
     "trigger": "when_attacking"
    }
   ],
@@ -46704,9 +46709,19 @@
   "attribute": "",
   "effects": [
    {
+    "action": "bounce",
+    "trigger": "trigger",
+    "target": "own_character"
+   },
+   {
     "action": "buff_power",
     "trigger": "counter",
     "target": "leader_or_character"
+   },
+   {
+    "action": "bounce",
+    "trigger": "counter",
+    "target": "own_character"
    }
   ],
   "synergy_states": {
@@ -46721,10 +46736,10 @@
   "has_counter_value": false,
   "has_counter_event": true,
   "is_blocker": false,
-  "is_removal": false,
+  "is_removal": true,
   "kos": false,
   "rests_opponent": false,
-  "bounces": false,
+  "bounces": true,
   "gives_don": false,
   "power_buff": true,
   "heals": false,
@@ -46735,7 +46750,7 @@
   "has_double_attack": false,
   "has_unblockable": false,
   "has_banish": false,
-  "has_trigger": false
+  "has_trigger": true
  },
  "OP07-095": {
   "name": "Iron Body",
@@ -46859,8 +46874,14 @@
   "attribute": "Wisdom",
   "effects": [
    {
+    "action": "play_card",
+    "trigger": "activate_main",
+    "cost_lte": 5
+   },
+   {
     "action": "gain_life",
-    "trigger": "activate_main"
+    "trigger": "activate_main",
+    "cost_lte": 5
    }
   ],
   "synergy_states": {

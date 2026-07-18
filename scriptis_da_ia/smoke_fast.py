@@ -5424,6 +5424,109 @@ def test_lote_12_op03_096_a_op06_117() -> None:
           nao_film in me_ratchet.hand and len(me_ratchet.trash) == 2 and total_buff == 2000)
 
 
+def test_lote_6_op07_009_a_op07_097() -> None:
+    # OP07-009: filtro de cor no select_grant_double_attack.
+    check("OP07-009 parseia select_grant_double_attack com color=red e cost_eq=1",
+          get_card_effects("OP07-009")["on_play"]["steps"][0]
+          == {"action": "select_grant_double_attack", "count": 1, "color": "red",
+              "cost_eq": 1, "duration": "this_turn"})
+
+    # OP07-036: regex desescopado pegava o numero da clausula de CUSTO
+    # ("cost of 3 or more") em vez do da propria clausula do step (5).
+    check("OP07-036 parseia cost_lte=5 no Main (nao 3, do custo opcional adjacente)",
+          get_card_effects("OP07-036")["main"]["steps"][0]
+          == {"action": "rest_opp_character", "count": 1, "cost_lte": 5})
+    check("OP07-036 Trigger continua cost_lte=4 (nao contaminado pelo fix)",
+          get_card_effects("OP07-036")["trigger"]["steps"][0]
+          == {"action": "rest_opp_character", "count": 1, "cost_lte": 4})
+
+    # OP07-050/OP07-052: condicao OR multi-tipo (Amazon Lily OU Kuja Pirates).
+    for code in ("OP07-050", "OP07-052"):
+        conds = get_card_effects(code)["on_play"]["conditions"]
+        check(f"{code} parseia chars_gte=2 com filtro OR de 2 tipos",
+              conds.get("chars_gte") == 2
+              and conds.get("chars_gte_type_filter") == ["amazon lily", "kuja pirates"])
+
+    boa = real_card("OP07-050")
+    kuja1 = mk("KJ1", "Kuja", cost=2, sub_types="Kuja Pirates")
+    amazon1 = mk("AM1", "Amazon", cost=2, sub_types="Amazon Lily")
+    me_boa = GameState(leader=mk("BOALDR", "Lider", card_type="LEADER"))
+    me_boa.field_chars = [boa, kuja1, amazon1]
+    opp_boa = GameState(leader=mk("BOAOPP", "Opp", card_type="LEADER"))
+    alvo_opp = mk("BOAOP1", "Alvo", cost=1)
+    opp_boa.field_chars = [alvo_opp]
+    EffectExecutor(me_boa, opp_boa).execute(boa, "on_play")
+    check("Execucao real: OP07-050 dispara com 1 Kuja + 1 Amazon (OR, tipos diferentes somam pro total)",
+          alvo_opp not in opp_boa.field_chars)
+
+    # OP07-055/OP07-094: clausula de auto-bounce ausente no Counter --
+    # mascarada em OP07-055 pela coincidencia numerica (o audit nao via o
+    # gap), ausente por completo em OP07-094 (bloco inteiro sumia).
+    check("OP07-055 parseia a 2a sentenca do Counter (auto-bounce incondicional)",
+          any(s.get("action") == "bounce" and s.get("target") == "own_character"
+              for s in get_card_effects("OP07-055")["counter"]["steps"]))
+    check("OP07-094 parseia [Trigger] auto-bounce incondicional",
+          get_card_effects("OP07-094")["trigger"]["steps"]
+          == [{"action": "bounce", "count": 1, "target": "own_character"}])
+    counter_094 = get_card_effects("OP07-094")["counter"]["steps"]
+    check("OP07-094 Counter: buff_power incondicional + bounce condicional (trash_gte=10, filter_type=cp)",
+          counter_094[0] == {"action": "buff_power", "amount": 2000,
+                              "target": "leader_or_character", "duration": "battle_only"}
+          and counter_094[1]["action"] == "bounce" and counter_094[1]["filter_type"] == "cp"
+          and counter_094[1]["conditions"] == {"trash_gte": 10})
+
+    # execucao real: o buff (incondicional) deve disparar MESMO com trash<10;
+    # o bounce (condicional) so dispara com trash>=10 -- confirma o
+    # scoping por-step do "Then, if" (nao contamina o step anterior).
+    shave = real_card("OP07-094")
+    cp_char = mk("CP1", "CP", cost=2, sub_types="CP")
+    me_shave = GameState(leader=mk("SHVLDR", "Lider", card_type="LEADER"))
+    me_shave.field_chars = [cp_char]
+    opp_shave = GameState(leader=mk("SHVOPP", "Opp", card_type="LEADER"))
+    EffectExecutor(me_shave, opp_shave).execute(shave, "counter")
+    check("Execucao real: OP07-094 buffa mesmo com trash<10, mas NAO bounce (condicao falha)",
+          cp_char.power_buff == 2000 and cp_char in me_shave.field_chars)
+    me_shave.trash = [mk(f"TR{i}", "Lixo", cost=1) for i in range(10)]
+    cp_char2 = mk("CP2", "CP2", cost=2, sub_types="CP")
+    me_shave.field_chars = [cp_char2]
+    EffectExecutor(me_shave, opp_shave).execute(shave, "counter")
+    check("Execucao real: OP07-094 com trash>=10, o bounce dispara (devolve o CP pra mao)",
+          cp_char2 not in me_shave.field_chars and cp_char2 in me_shave.hand)
+
+    # OP07-059: trava mista Leader + Character -- achado colateral: o
+    # engine nunca checava p.leader.frozen_next_refresh em refresh_phase
+    # (so field_chars), entao trava de Leader era sempre no-op antes deste fix.
+    check("OP07-059 parseia lock_opp_leader_and_character_refresh",
+          get_card_effects("OP07-059")["when_attacking"]["steps"][0]["action"]
+          == "lock_opp_leader_and_character_refresh")
+    me_lock = GameState(leader=mk("LOCKLDR", "Lider", card_type="LEADER"))
+    opp_leader_lock = mk("LOCKOPPLDR", "Lider Opp", card_type="LEADER")
+    opp_char_lock = mk("LOCKC1", "Char", cost=3)
+    opp_leader_lock.rested = True
+    opp_char_lock.rested = True
+    opp_lock = GameState(leader=opp_leader_lock)
+    opp_lock.field_chars = [opp_char_lock]
+    EffectExecutor(me_lock, opp_lock)._execute_step(
+        {"action": "lock_opp_leader_and_character_refresh", "count": 1}, me_lock.leader)
+    match_lock = OPTCGMatch((me_lock.leader, []), (opp_lock.leader, []))
+    match_lock.refresh_phase(opp_lock, me_lock)
+    check("Execucao real: OP07-059 congela o LIDER do oponente tambem (nao so Characters)",
+          opp_leader_lock.rested and opp_char_lock.rested)
+
+    # OP07-097: vira uma escolha real (jogar a carta OU manda-la pra vida
+    # com filtro de tipo/custo), nao mais gain_life fixo do topo do DECK
+    # (a carta nunca sai do deck aqui -- sai da MAO, "select ... from your
+    # hand" -- e a alternativa de jogar sumia inteira).
+    entry_097 = get_card_effects("OP07-097")["activate_main"]
+    check("OP07-097 vira choice play_card/gain_life com filter_type=egghead e cost_lte=5",
+          "choice" in entry_097
+          and entry_097["choice"][0][0] == {"action": "play_card", "count": 1,
+                                             "filter_type": "egghead", "cost_lte": 5}
+          and entry_097["choice"][1][0]["source"] == "hand"
+          and entry_097["choice"][1][0]["filter_type"] == "egghead"
+          and entry_097["choice"][1][0]["cost_lte"] == 5)
+
+
 def main() -> int:
     test_turn_order_imu_prefers_second()
     test_empty_throne_beats_direct_five_elders_play()
@@ -5557,6 +5660,7 @@ def main() -> int:
     test_lote_8_op02_030_a_op03_012()
     test_lote_5_op03_021_a_op03_083()
     test_lote_12_op03_096_a_op06_117()
+    test_lote_6_op07_009_a_op07_097()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0

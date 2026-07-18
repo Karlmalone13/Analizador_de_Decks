@@ -29229,7 +29229,10 @@
       "on_play": {
         "steps": [
           {
-            "action": "gain_double_attack",
+            "action": "select_grant_double_attack",
+            "count": 1,
+            "color": "red",
+            "cost_eq": 1,
             "duration": "this_turn"
           }
         ]
@@ -29996,7 +29999,7 @@
           {
             "action": "rest_opp_character",
             "count": 1,
-            "cost_lte": 3
+            "cost_lte": 5
           },
           {
             "action": "buff_power",
@@ -30404,7 +30407,14 @@
             "target": "opp_character",
             "cost_lte": 3
           }
-        ]
+        ],
+        "conditions": {
+          "chars_gte": 2,
+          "chars_gte_type_filter": [
+            "amazon lily",
+            "kuja pirates"
+          ]
+        }
       }
     }
   },
@@ -30454,7 +30464,14 @@
             "count": 1,
             "cost_lte": 2
           }
-        ]
+        ],
+        "conditions": {
+          "chars_gte": 2,
+          "chars_gte_type_filter": [
+            "amazon lily",
+            "kuja pirates"
+          ]
+        }
       }
     }
   },
@@ -30547,6 +30564,11 @@
       },
       "counter": {
         "steps": [
+          {
+            "action": "bounce",
+            "count": 1,
+            "target": "own_character"
+          },
           {
             "action": "buff_power",
             "amount": 4000,
@@ -30681,7 +30703,8 @@
       "when_attacking": {
         "steps": [
           {
-            "action": "lock_opp_don",
+            "action": "lock_opp_leader_and_character_refresh",
+            "count": 1,
             "conditions": {
               "chars_gte": 3,
               "chars_gte_type_filter": "foxy pirates"
@@ -31680,6 +31703,15 @@
     "sub_types": "CP9",
     "attribute": "",
     "effects": {
+      "trigger": {
+        "steps": [
+          {
+            "action": "bounce",
+            "count": 1,
+            "target": "own_character"
+          }
+        ]
+      },
       "counter": {
         "steps": [
           {
@@ -31687,11 +31719,17 @@
             "amount": 2000,
             "target": "leader_or_character",
             "duration": "battle_only"
+          },
+          {
+            "action": "bounce",
+            "count": 1,
+            "target": "own_character",
+            "filter_type": "cp",
+            "conditions": {
+              "trash_gte": 10
+            }
           }
-        ],
-        "conditions": {
-          "trash_gte": 10
-        }
+        ]
       }
     }
   },
@@ -31789,15 +31827,27 @@
     "attribute": "Wisdom",
     "effects": {
       "activate_main": {
-        "steps": [
-          {
-            "action": "gain_life",
-            "source": "deck_top",
-            "dest": "life_top",
-            "count": 1,
-            "up_to": false,
-            "face": "up"
-          }
+        "choice": [
+          [
+            {
+              "action": "play_card",
+              "count": 1,
+              "filter_type": "egghead",
+              "cost_lte": 5
+            }
+          ],
+          [
+            {
+              "action": "gain_life",
+              "source": "hand",
+              "dest": "life_top",
+              "count": 1,
+              "up_to": true,
+              "filter_type": "egghead",
+              "cost_lte": 5,
+              "face": "up"
+            }
+          ]
         ],
         "costs": [
           {

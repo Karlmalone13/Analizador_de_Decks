@@ -18460,7 +18460,10 @@
   "on_play": {
    "steps": [
     {
-     "action": "gain_double_attack",
+     "action": "select_grant_double_attack",
+     "color": "red",
+     "cost_eq": 1,
+     "count": 1,
      "duration": "this_turn"
     }
    ]
@@ -18920,7 +18923,7 @@
    "steps": [
     {
      "action": "rest_opp_character",
-     "cost_lte": 3,
+     "cost_lte": 5,
      "count": 1
     },
     {
@@ -19177,6 +19180,13 @@
  },
  "OP07-050": {
   "on_play": {
+   "conditions": {
+    "chars_gte": 2,
+    "chars_gte_type_filter": [
+     "amazon lily",
+     "kuja pirates"
+    ]
+   },
    "steps": [
     {
      "action": "bounce",
@@ -19206,6 +19216,13 @@
  },
  "OP07-052": {
   "on_play": {
+   "conditions": {
+    "chars_gte": 2,
+    "chars_gte_type_filter": [
+     "amazon lily",
+     "kuja pirates"
+    ]
+   },
    "steps": [
     {
      "action": "place_opp_character_bottom_deck",
@@ -19256,6 +19273,11 @@
  "OP07-055": {
   "counter": {
    "steps": [
+    {
+     "action": "bounce",
+     "count": 1,
+     "target": "own_character"
+    },
     {
      "action": "buff_power",
      "amount": 4000,
@@ -19369,11 +19391,12 @@
    ],
    "steps": [
     {
-     "action": "lock_opp_don",
+     "action": "lock_opp_leader_and_character_refresh",
      "conditions": {
       "chars_gte": 3,
       "chars_gte_type_filter": "foxy pirates"
-     }
+     },
+     "count": 1
     }
    ]
   }
@@ -19977,15 +20000,30 @@
  },
  "OP07-094": {
   "counter": {
-   "conditions": {
-    "trash_gte": 10
-   },
    "steps": [
     {
      "action": "buff_power",
      "amount": 2000,
      "duration": "battle_only",
      "target": "leader_or_character"
+    },
+    {
+     "action": "bounce",
+     "conditions": {
+      "trash_gte": 10
+     },
+     "count": 1,
+     "filter_type": "cp",
+     "target": "own_character"
+    }
+   ]
+  },
+  "trigger": {
+   "steps": [
+    {
+     "action": "bounce",
+     "count": 1,
+     "target": "own_character"
     }
    ]
   }
@@ -20052,23 +20090,35 @@
  },
  "OP07-097": {
   "activate_main": {
+   "choice": [
+    [
+     {
+      "action": "play_card",
+      "cost_lte": 5,
+      "count": 1,
+      "filter_type": "egghead"
+     }
+    ],
+    [
+     {
+      "action": "gain_life",
+      "cost_lte": 5,
+      "count": 1,
+      "dest": "life_top",
+      "face": "up",
+      "filter_type": "egghead",
+      "source": "hand",
+      "up_to": true
+     }
+    ]
+   ],
    "costs": [
     {
      "count": 1,
      "type": "rest_don"
     }
    ],
-   "once_per_turn": true,
-   "steps": [
-    {
-     "action": "gain_life",
-     "count": 1,
-     "dest": "life_top",
-     "face": "up",
-     "source": "deck_top",
-     "up_to": false
-    }
-   ]
+   "once_per_turn": true
   }
  },
  "OP07-098": {

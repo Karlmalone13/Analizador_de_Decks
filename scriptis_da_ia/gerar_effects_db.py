@@ -348,10 +348,24 @@ def parse_conditions(text):
     # or more {FILM} type Characters, that card gains an additional +2000
     # power..." aplicava o buff SEMPRE, sem checar o tipo.
     if 'chars_gte' not in conds:
-        m = re.search(r'if you have (\d+) or more [\[{"]([^\]}"]+)[\]}"] type characters?', t)
-        if m:
-            conds['chars_gte'] = int(m.group(1))
-            conds['chars_gte_type_filter'] = m.group(2).strip()
+        # Lista de tipos (OR): "N or more [TipoA] or [TipoB] type
+        # Characters" -- achado 19/07, OP07-050 Boa Sandersonia (unica
+        # carta no banco com 2 tipos aqui, nao 1). Checado ANTES do caso
+        # de tipo unico (mesma regex generalizada com "(?: or [...])?").
+        m_multi = re.search(
+            r'if you have (\d+) or more [\[{"]([^\]}"]+)[\]}"]'
+            r'(?:\s+or\s+[\[{"]([^\]}"]+)[\]}"])+\s+type characters?', t)
+        if m_multi:
+            conds['chars_gte'] = int(m_multi.group(1))
+            tipos = re.findall(
+                r'[\[{"]([^\]}"]+)[\]}"](?=\s+(?:or\s+[\[{"]|type\s+characters?))',
+                m_multi.group(0))
+            conds['chars_gte_type_filter'] = tipos
+        else:
+            m = re.search(r'if you have (\d+) or more [\[{"]([^\]}"]+)[\]}"] type characters?', t)
+            if m:
+                conds['chars_gte'] = int(m.group(1))
+                conds['chars_gte_type_filter'] = m.group(2).strip()
 
     # "if you have N or more rested Characters" -- conta PROPRIOS Characters
     # que estao rested, distinto de chars_gte (que conta todos). OP09-033.
@@ -2036,6 +2050,34 @@ def parse_bounce(text):
                       'target': 'own_character', 'filter_type': m_cond.group(2).strip(),
                       'cost_lte': int(m_cond.group(3))})
 
+    # "return up to N of your Characters with a type including "X" to the
+    # owner's hand" -- auto-bounce PROPRIO com filtro de tipo expresso
+    # DEPOIS de "Characters" (fraseado distinto do "[Tipo] type
+    # Characters" acima, onde o tipo vem ANTES em colchetes). Achado
+    # 19/07, OP07-094 Shave: o bloco inteiro sumia porque nenhuma variante
+    # existente reconhecia essa ordem.
+    m_type_incl = re.search(
+        r'return up to (\d+) of your characters? with a type including '
+        r'["\']([^"\']+)["\'] to the owner.?s hand',
+        t
+    )
+    if m_type_incl and not steps:
+        steps.append({'action': 'bounce', 'count': int(m_type_incl.group(1)),
+                      'target': 'own_character', 'filter_type': m_type_incl.group(2).strip()})
+
+    # Variante SEM filtro nenhum: "return up to N of your Characters to
+    # the owner's hand" (achado 19/07, OP07-094 [Trigger] e OP07-055
+    # [Counter] 2a sentenca -- efeito inteiro sumia porque so as variantes
+    # COM filtro de tipo/custo eram reconhecidas). Fallback checado por
+    # ULTIMO pra nao roubar cobertura de nenhuma variante mais especifica
+    # acima.
+    if not steps:
+        m_plain_own = re.search(
+            r'return up to (\d+) of your characters? to the owner.?s hand', t)
+        if m_plain_own:
+            steps.append({'action': 'bounce', 'count': int(m_plain_own.group(1)),
+                          'target': 'own_character'})
+
     return steps
 
 
@@ -2103,7 +2145,6 @@ def parse_rest_opp(text):
 
     m = re.search(r"rest up to (\d+) of your opponent.{0,10} characters? (?:with a cost of (\d+) or|that has)", t)
     if m:
-        cost_m = re.search(r'cost of (\d+) or', t)
         # "that has N or more DON!! cards given" -- filtro de ALVO (nao
         # confundir com "[DON!! xN]" ou "if you have N or more DON!! cards
         # given", que sao condicoes do PROPRIO jogador tratadas em outro
@@ -2120,7 +2161,15 @@ def parse_rest_opp(text):
         if don_m:
             step['don_attached_gte'] = int(don_m.group(1))
         else:
-            step['cost_lte'] = int(cost_m.group(1)) if cost_m else 99
+            # m.group(2) (nao um re-search separado sem escopo): achado
+            # 19/07, OP07-036 -- um cost_m = re.search('cost of (\d+) or',
+            # t) buscava no TEXTO INTEIRO do bloco (nao so na clausula
+            # deste match), pegando por engano o "3" de uma clausula de
+            # CUSTO anterior nao relacionada ("rest 1 of your Characters
+            # with a cost of 3 OR MORE") em vez do "5" real do beneficio
+            # ("with a cost of 5 or less" -- a MESMA regex generica
+            # 'cost of N or' bate com as duas, re.search pega a 1a).
+            step['cost_lte'] = int(m.group(2)) if m.group(2) else 99
         steps.append(step)
         return steps
 
@@ -3480,6 +3529,22 @@ def parse_give_don(text):
     # become active" / "the selected Character will not become active").
     # NUNCA tratar self-lock como lock_opp_*: alvo errado muda completamente
     # quem perde a jogada no proximo turno.
+    # "select your opponent's rested Leader and up to N Character card(s).
+    # The selected cards will not become active in your opponent's next
+    # Refresh Phase" -- alvo MISTO (Leader SEMPRE + ate N Characters),
+    # fraseado "select ... The selected cards" distinto do padrao
+    # principal abaixo ("up to N of your opponent's rested X will not
+    # become active", frase unica sem "select"). Achado 19/07, OP07-059,
+    # unica carta no banco com essa forma -- caia no fallback generico
+    # (lock_opp_don, acao ERRADA, o texto nunca menciona DON no beneficio).
+    m_leader_and_char = re.search(
+        r"select your opponent.?s rested leader and up to (\d+) character cards?\.\s*"
+        r"the selected cards will not become active", t)
+    if m_leader_and_char:
+        steps.append({'action': 'lock_opp_leader_and_character_refresh',
+                      'count': int(m_leader_and_char.group(1))})
+        return steps
+
     m_self = re.search(
         r"(this character|the selected characters?) will not become active",
         t
@@ -5656,6 +5721,42 @@ def parse_block(block_text, trigger_name):
               'conditions': {'other_char_cost_gte': int(queen_m.group(2))}}],
         ]}]
 
+    # "Select up to N [Tipo] type card(s) with a cost of M or less from
+    # your hand and play it or add it to the top of your Life cards
+    # face-up." -- escolha mutuamente exclusiva entre JOGAR a carta
+    # selecionada ou mandá-la pra vida (achado 19/07, OP07-097 Vegapunk,
+    # unica carta no banco com essa forma). Sem este bloco, o parser
+    # generico de gain_life em parse_life() capturava so a clausula "add
+    # it to the top of your life cards" isolada -- sem "from your hand"
+    # adjacente a ela (esta parte da frase pertence a clausula "select...
+    # from your hand" bem antes), source virava o fallback 'deck_top'
+    # (errado: a carta NUNCA sai do deck aqui), e a alternativa inteira de
+    # jogar a carta selecionada, alem do filtro de tipo/custo, sumia.
+    select_play_or_life_m = re.search(
+        r'select up to (\d+) \[([^\]]+)\] type cards? with a cost of (\d+) or less '
+        r'from your hand and play it or add it to the (top or bottom|top|bottom) '
+        r'of your life cards(?: (face-up|face-down))?',
+        block_text.lower())
+    if select_play_or_life_m:
+        count = int(select_play_or_life_m.group(1))
+        tipo = select_play_or_life_m.group(2).strip()
+        cost_lte = int(select_play_or_life_m.group(3))
+        dest_txt = select_play_or_life_m.group(4)
+        dest = ('life_top_or_bottom' if dest_txt == 'top or bottom'
+                else 'life_bottom' if dest_txt == 'bottom' else 'life_top')
+        gain_step = {'action': 'gain_life', 'source': 'hand', 'dest': dest,
+                     'count': count, 'up_to': True, 'filter_type': tipo,
+                     'cost_lte': cost_lte}
+        if select_play_or_life_m.group(5) == 'face-up':
+            gain_step['face'] = 'up'
+        elif select_play_or_life_m.group(5) == 'face-down':
+            gain_step['face'] = 'down'
+        return [{'_choice': [
+            [{'action': 'play_card', 'count': count, 'filter_type': tipo,
+              'cost_lte': cost_lte}],
+            [gain_step],
+        ]}]
+
     reveal_cost_m = re.search(
         r'choose a cost and reveal 1 card from the top of your opponent.?s deck\.\s*'
         r'if the revealed card has the chosen cost,\s*(.*?)'
@@ -6572,15 +6673,25 @@ def parse_block(block_text, trigger_name):
     # por tipo.
     m_select_da = re.search(
         r'up to (\d+) of your '
+        r'(?:(black|red|blue|green|yellow|purple)\s+)?'
         r'(?:[\[{"]([a-z][a-z0-9 .\'-]+)[\]}"]\s+type\s+)?'
         r'characters?'
+        # Filtro de CUSTO opcional ("with a cost of N" -- achado 19/07,
+        # OP07-009 Dogura & Magura: "up to 1 of your red Characters with a
+        # cost of 1 gains [Double Attack]" -- cor+custo sem tipo, unica
+        # carta no banco com essa combinacao exata).
+        r'(?: with a cost of (\d+))?'
         r'(?P<clause>[^.]*?)'
         r'gains? \[?double attack\]?',
         t)
     if m_select_da:
         step = {'action': 'select_grant_double_attack', 'count': int(m_select_da.group(1))}
         if m_select_da.group(2):
-            step['filter_type'] = m_select_da.group(2).strip()
+            step['color'] = m_select_da.group(2)
+        if m_select_da.group(3):
+            step['filter_type'] = m_select_da.group(3).strip()
+        if m_select_da.group(4):
+            step['cost_eq'] = int(m_select_da.group(4))
         tail = t[m_select_da.end():m_select_da.end() + 30]
         if 'during this turn' in tail:
             step['duration'] = 'this_turn'
