@@ -3933,6 +3933,15 @@ def parse_play_generic(text):
                 break
     fim_janela = fim_sentenca if fim_sentenca != -1 else (m.end() if m else 0)
     janela = t[inicio_clausula + 1:fim_janela] if m else ''
+    # janela_apos_play: mesmo fim, mas comeca em "play up to N" (nao na
+    # clausula anterior inteira) -- usada so pra ancorar a deteccao de
+    # LISTA de nomes proprios (2+, ver 'lista_m' no bloco 'Filtro por NOME
+    # PROPRIO' abaixo), que precisa saber que os colchetes vem logo apos o
+    # "play up to N" e nao de uma condicao anterior na mesma clausula (ex:
+    # EB03-029 "If your Leader is [Boa Hancock], play up to 1 {Amazon Lily}
+    # or {Kuja Pirates} type..." -- sem essa ancoragem, "[Boa Hancock]"
+    # vazava pra dentro da lista).
+    janela_apos_play = t[m.start():fim_janela] if m else ''
     sem_origem_deck = 'from your deck' not in janela and 'from the top of your deck' not in janela
     if m and sem_origem_deck and 'from your trash' not in janela:
         # exclui tambem o padrao "look at N cards from the top of your
@@ -4032,18 +4041,51 @@ def parse_play_generic(text):
                 # (has_trigger, ja tratado abaixo). Achado 16/07, OP14-110.
                 KEYWORD_TOKENS = {'trigger', 'blocker', 'rush', 'banish',
                                    'double attack', 'rush: character'}
-                for name_cand in re.finditer(r'[\[{]([a-z][a-z0-9 .\'-]+)[\]}](?!\s+type)', janela):
-                    nome = name_cand.group(1).strip()
-                    if excl_m_probe and nome == excl_m_probe.group(1).strip():
-                        continue
-                    if nome in KEYWORD_TOKENS:
-                        continue
-                    step_filter_name = nome
-                    break
+                # Lista de 2+ nomes proprios logo apos "play up to N" -- ex:
+                # "play up to 1 [Sabo], [Portgas.D.Ace], or [Monkey.D.Luffy]"
+                # (OR, escolhe ate N no total entre eles) ou "play up to 1
+                # each of [Sabo], [Portgas.D.Ace], and [Monkey.D.Luffy]"
+                # (AND, ate N de CADA um). Achado 17/07, PRB02-018 (or) e
+                # ST13-006 (and + "each of") -- o loop de nome unico abaixo
+                # so capturava o primeiro ([Sabo]), perdendo os outros 2
+                # inteiros. Separador aceita virgula "oxford" (", or "/",
+                # and ") alem de virgula pura ou " or "/" and " sem virgula.
+                # Ancorado bem em "play up to N (each of)?" (nao em qualquer
+                # bracket da janela) pra NAO confundir com bracket de
+                # CONDICAO que apareca antes ou dentro da mesma clausula
+                # (ex: OP16-025 "If you have [Antlerkov], play up to 1
+                # Character card..." -- sem lista logo apos "play up to 1",
+                # cai no caminho de nome unico de sempre). Lookahead
+                # `(?!\s+type)` exclui a lista quando na verdade sao 2 TIPOS
+                # alternativos, nao nomes proprios (ex: OP02-037 "[FILM] or
+                # [Straw Hat Crew] type Character card" -- 10 cartas reais
+                # tem essa forma "{TipoA} or {TipoB} type", achado ao
+                # rodar diff_parser.py nesta mudanca; tambem cai no caminho
+                # de nome unico de sempre, igual antes).
+                lista_m = re.match(
+                    r'play up to \d+ (each of )?'
+                    r'((?:[\[{][a-z][a-z0-9 .\'-]+[\]}]'
+                    r'(?:,\s*(?:or\s+|and\s+)?|\s+or\s+|\s+and\s+))+'
+                    r'[\[{][a-z][a-z0-9 .\'-]+[\]}])(?!\s+type)',
+                    janela_apos_play)
+                lista_nomes = (re.findall(r'[\[{]([a-z][a-z0-9 .\'-]+)[\]}]', lista_m.group(2))
+                               if lista_m else [])
+                if len(lista_nomes) >= 2:
+                    step['filter_names'] = lista_nomes
+                    if lista_m.group(1):
+                        step['each'] = True
                 else:
                     step_filter_name = None
-                if step_filter_name:
-                    step['filter_name'] = step_filter_name
+                    for name_cand in re.finditer(r'[\[{]([a-z][a-z0-9 .\'-]+)[\]}](?!\s+type)', janela):
+                        nome = name_cand.group(1).strip()
+                        if excl_m_probe and nome == excl_m_probe.group(1).strip():
+                            continue
+                        if nome in KEYWORD_TOKENS:
+                            continue
+                        step_filter_name = nome
+                        break
+                    if step_filter_name:
+                        step['filter_name'] = step_filter_name
             if color_m:
                 step['color'] = color_m.group(1)
             # "other than [Nome]" -- exclui a propria carta-fonte (ou outra

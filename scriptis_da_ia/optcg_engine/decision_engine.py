@@ -1315,7 +1315,8 @@ def _on_ko_play_card_value(step: dict, owner: 'Optional[GameState]') -> float:
     elegiveis = []
     for fonte in fontes:
         elegiveis.extend(eligible_cards(
-            fonte, cost_lte=cost_lte, name_or_code=step.get('filter_name', ''),
+            fonte, cost_lte=cost_lte,
+            name_or_code=step.get('filter_names') or step.get('filter_name', ''),
             filter_text=step.get('filter_type', ''), color=step.get('color', ''),
             exclude_name=step.get('exclude', ''),
         ))
@@ -1748,7 +1749,10 @@ class EffectExecutor:
                 cost_lte=cost_lte,
                 cost_eq=step.get('cost_eq'),
                 filter_text=step.get('filter_type', ''),
-                name_or_code=step.get('filter_name', ''),
+                # filter_names (lista, ex: PRB02-018/ST13-006) tem
+                # prioridade sobre filter_name singular -- os dois nunca
+                # coexistem no mesmo step (parser so emite um ou outro).
+                name_or_code=step.get('filter_names') or step.get('filter_name', ''),
                 color=step.get('color', ''),
                 exclude_name=step.get('exclude', ''),
             ))
@@ -6335,7 +6339,11 @@ class EffectExecutor:
                         power_eq=step.get('power_eq'),
                         has_trigger=step.get('has_trigger', False),
                         filter_text=step.get('filter_type', ''),
-                        name_or_code=step.get('filter_name', ''),
+                        # filter_names (lista, ex: PRB02-018/ST13-006) tem
+                        # prioridade sobre filter_name singular -- os dois
+                        # nunca coexistem no mesmo step (parser so emite um
+                        # ou outro).
+                        name_or_code=step.get('filter_names') or step.get('filter_name', ''),
                         color=step.get('color', ''),
                         exclude_name=step.get('exclude', ''),
                     )
@@ -6355,23 +6363,52 @@ class EffectExecutor:
 
             count = step.get('count', 1)
             jogadas = []
-            for _ in range(count):
-                if not elegiveis:
-                    break
-                melhor = max(elegiveis, key=_score_to_play)
-                # guarda de campo cheio para characters
-                if melhor.card_type == 'CHARACTER' and len(me.field_chars) >= 5:
-                    pior = _pior_para_trocar(me.field_chars)
-                    if pior is None or melhor.board_value() <= pior.board_value():
+            # "N each of [A], [B], and [C]" (ex: ST13-006) -- ate N de CADA
+            # nome da lista, independente uns dos outros (nao um total
+            # compartilhado como o "OR" abaixo). Achado 17/07: sem esse
+            # ramo, "play up to 1 each of [Sabo], [Portgas.D.Ace], and
+            # [Monkey.D.Luffy]" jogaria so 1 carta no total (a de maior
+            # score entre as 3), quando o texto permite ate 3 (1 por nome).
+            if step.get('each') and step.get('filter_names'):
+                for nome in step['filter_names']:
+                    pool = [c for c in elegiveis if nome in c.name.lower()]
+                    for _ in range(count):
+                        if not pool:
+                            break
+                        melhor = max(pool, key=_score_to_play)
+                        # guarda de campo cheio para characters
+                        if melhor.card_type == 'CHARACTER' and len(me.field_chars) >= 5:
+                            pior = _pior_para_trocar(me.field_chars)
+                            if pior is None or melhor.board_value() <= pior.board_value():
+                                remove_by_identity(pool, melhor)
+                                remove_by_identity(elegiveis, melhor)
+                                continue
+                        if not remove_by_identity(me.hand, melhor):
+                            remove_by_identity(me.trash, melhor)
+                        remove_by_identity(pool, melhor)
                         remove_by_identity(elegiveis, melhor)
-                        continue
-                if not remove_by_identity(me.hand, melhor):
-                    remove_by_identity(me.trash, melhor)
-                remove_by_identity(elegiveis, melhor)
-                _put_into_play(melhor)
-                if step.get('enters_rested'):
-                    melhor.rested = True
-                jogadas.append(melhor.name[:15])
+                        _put_into_play(melhor)
+                        if step.get('enters_rested'):
+                            melhor.rested = True
+                        jogadas.append(melhor.name[:15])
+            else:
+                for _ in range(count):
+                    if not elegiveis:
+                        break
+                    melhor = max(elegiveis, key=_score_to_play)
+                    # guarda de campo cheio para characters
+                    if melhor.card_type == 'CHARACTER' and len(me.field_chars) >= 5:
+                        pior = _pior_para_trocar(me.field_chars)
+                        if pior is None or melhor.board_value() <= pior.board_value():
+                            remove_by_identity(elegiveis, melhor)
+                            continue
+                    if not remove_by_identity(me.hand, melhor):
+                        remove_by_identity(me.trash, melhor)
+                    remove_by_identity(elegiveis, melhor)
+                    _put_into_play(melhor)
+                    if step.get('enters_rested'):
+                        melhor.rested = True
+                    jogadas.append(melhor.name[:15])
             return f'jogou (grátis): {", ".join(jogadas)}' if jogadas else ''
 
         if action == 'add_from_trash':

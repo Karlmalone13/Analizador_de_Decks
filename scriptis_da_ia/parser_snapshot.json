@@ -42802,7 +42802,11 @@
      "action": "play_card",
      "cost_eq": 2,
      "count": 1,
-     "filter_name": "sabo",
+     "filter_names": [
+      "sabo",
+      "portgas.d.ace",
+      "monkey.d.luffy"
+     ],
      "source_alt": "trash"
     }
    ]
@@ -45856,7 +45860,12 @@
      "action": "play_card",
      "cost_eq": 2,
      "count": 1,
-     "filter_name": "sabo"
+     "each": true,
+     "filter_names": [
+      "sabo",
+      "portgas.d.ace",
+      "monkey.d.luffy"
+     ]
     }
    ]
   },

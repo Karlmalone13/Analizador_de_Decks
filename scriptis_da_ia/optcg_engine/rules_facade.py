@@ -79,7 +79,7 @@ def eligible_cards(
     active_only: bool = False,
     has_trigger: bool = False,
     filter_text: str | list | tuple = "",
-    name_or_code: str = "",
+    name_or_code: str | list | tuple = "",
     color: str = "",
     attribute: str = "",
     include_text: bool = False,
@@ -118,9 +118,17 @@ def eligible_cards(
         if filter_text and not card_matches_filter(card, filter_text, include_text=include_text):
             continue
         if name_or_code:
-            name_or_code_filter = name_or_code.lower()
-            if (name_or_code_filter not in str(getattr(card, "name", "")).lower()
-                    and name_or_code_filter not in str(getattr(card, "code", "")).lower()):
+            # Lista de nomes = OR ("bate com QUALQUER um dos nomes"), mesma
+            # convencao ja usada por filter_text/card_matches_filter -- usada
+            # pelo filter_names do parser (2+ nomes proprios no play_card,
+            # ex: PRB02-018/ST13-006, achado 17/07).
+            if isinstance(name_or_code, (list, tuple)):
+                needles = [str(n).lower() for n in name_or_code if str(n)]
+            else:
+                needles = [str(name_or_code).lower()]
+            card_name = str(getattr(card, "name", "")).lower()
+            card_code = str(getattr(card, "code", "")).lower()
+            if not any(n in card_name or n in card_code for n in needles):
                 continue
         if color_filter and color_filter not in str(getattr(card, "color", "")).lower():
             continue

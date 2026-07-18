@@ -276,6 +276,58 @@ TODOS OS TESTES PASSARAM. `smoke_test_broad.py`: 7/7. Registro em
 
 Suspeitos: 247 -> 241.
 
+## 2026-07-17 (257) - filter_names (lista) em play_card: PRB02-018 (OR) e ST13-006 (AND/"each of")
+
+Pedido pontual do usuario: `parse_play_generic`/`filter_name` so suportava 1
+nome proprio de filtro. PRB02-018 ("play up to 1 [Sabo], [Portgas.D.Ace],
+or [Monkey.D.Luffy] with a cost of 2 from your hand or trash") e ST13-006
+("Play up to 1 each of [Sabo], [Portgas.D.Ace], and [Monkey.D.Luffy] with a
+cost of 2 from your hand") so capturavam `filter_name='sabo'`, perdendo os
+outros 2 nomes inteiramente. Semantica DIFERENTE apesar da forma parecida:
+PRB02-018 e OR (escolhe 1 entre os 3, no total); ST13-006 e AND/"1 each of"
+(ate 1 de CADA um, ate 3 cartas).
+
+**Busca ampla no cards_rows.csv confirmou so essas 2 cartas** tem a forma
+"lista de 2+ nomes proprios logo apos 'play up to N'". Durante a
+implementacao, 2 falsos-positivos apareceram via `diff_parser.py` e foram
+excluidos com regras mais precisas (nao hardcode pra essas 2 cartas):
+1. Bracket de CONDICAO antes de "play up to" vazando pro filtro (ex:
+   EB03-029 "If your Leader is [Boa Hancock], play up to 1 {Amazon Lily}
+   or {Kuja Pirates} type...") -- resolvido ancorando a deteccao de lista
+   em `janela_apos_play` (comeca em "play up to N", nao na clausula
+   inteira).
+2. "[TipoA] or [TipoB] type" (10 cartas reais: EB03-024/EB03-029/
+   OP02-037/OP02-040/OP06-031/OP07-020/OP14-043/OP14-047/OP14-116/P-091)
+   sendo lido como 2 NOMES quando sao 2 TIPOS alternativos -- resolvido
+   com lookahead negativo `(?!\s+type)` apos a lista inteira.
+
+`filter_name` (singular) continua 100% intacto pras dezenas de outras
+cartas -- o loop antigo de nome unico e o fallback exato de sempre, ativado
+so quando a lista ancorada nao bate (confirmado via diff_parser.py: 0
+regressao em qualquer outra carta do banco).
+
+Novo campo `filter_names` (lista) + `each` (bool, marca semantica AND).
+Engine: `eligible_cards.name_or_code` aceita agora `str|list|tuple` (OR
+entre os nomes, mesma convencao de `filter_text`). 3 pontos de consumo de
+`play_card` atualizados: `_on_ko_play_card_value` (estimador de valor),
+`_step_is_viable` (checagem antes de pagar custo de ativacao), e o
+executor real GRUPO 2. O executor real ganhou ramo novo pra `each`: joga
+ate `count` de CADA nome da lista (loop por nome, independente), distinto
+do ramo OR existente (pool compartilhado, ate `count` no total).
+
+**Validado:** `diff_parser.py` GANHOU=0/PERDEU=0/MUDOU=2 (so as 2 cartas
+certas) -> `gerar_dbs.py` + `snapshot_parser.py` (re-baseline limpo, 2614
+cartas) -> `smoke_fast.py` com 8 asserts novos de EXECUCAO real cobrindo os
+2 conectivos (OR joga so 1 dos 3 e respeita a condicao de Life face-up;
+each joga os 3, e joga so os presentes quando falta 1 na mao) -> ambos
+verdes -> `smoke_test.py` TODOS OS TESTES PASSARAM -> `smoke_test_broad.py`
+7/7 partidas sem excecao. Registro completo em
+`parser_audits/2026-07-17_prb02-018_st13-006_filter_names_lista.json`.
+
+Nao verificado ao vivo ainda (nenhuma das duas cartas apareceu em log real
+nesta sessao) -- linguagem condicional se o usuario reportar qualquer coisa
+envolvendo PRB02-018/ST13-006 antes da proxima partida confirmar.
+
 ## 2026-07-17 (248-256) - Lote de 9 itens aprovado ("aprovo sim") -- correcoes de FORMA (conectivo/ordem/redacao) em mecanismos ja existentes
 
 Continuacao imediata do lote de 11 (bloco 237-247). Usuario aprovou 9 novos

@@ -4854,6 +4854,82 @@ def test_segundo_lote_10_pendencias_op01_063_a_op05_100() -> None:
           substituted is not None and len(me_enel.trash) == 1 and blocked is None)
 
 
+def test_filter_names_prb02_018_or_e_st13_006_each() -> None:
+    # PRB02-018/ST13-006: "play up to N [A], [B], or [C]" (OR, escolhe ate N
+    # no total) vs "play up to N each of [A], [B], and [C]" (AND, ate N de
+    # CADA um). Achado 17/07: o parser so capturava o 1o nome ([Sabo]),
+    # perdendo Portgas.D.Ace/Monkey.D.Luffy inteiramente em ambas.
+    check("PRB02-018 parseia filter_names com os 3 nomes (sem 'each')",
+          get_card_effects("PRB02-018").get("on_play", {}).get("steps", [{}])[0].get("filter_names") ==
+          ["sabo", "portgas.d.ace", "monkey.d.luffy"]
+          and "each" not in get_card_effects("PRB02-018")["on_play"]["steps"][0])
+    check("ST13-006 parseia filter_names com os 3 nomes e each=True",
+          get_card_effects("ST13-006").get("on_play", {}).get("steps", [{}])[0].get("filter_names") ==
+          ["sabo", "portgas.d.ace", "monkey.d.luffy"]
+          and get_card_effects("ST13-006")["on_play"]["steps"][0].get("each") is True)
+
+    # OR (PRB02-018): condicao de vida face-up satisfeita, os 3 nomes
+    # disponiveis (2 na mao, 1 no trash, cost 2) -- so 1 deve ser jogado no
+    # total, os outros 2 continuam disponiveis (mao ou trash).
+    prb02018 = real_card("PRB02-018")
+    sabo = real_card("ST13-007")       # Sabo, custo 2
+    ace = real_card("ST13-010")        # Portgas.D.Ace, custo 2
+    luffy = real_card("ST13-014")      # Monkey.D.Luffy, custo 2
+    me = GameState(leader=mk("PRBLDR", "Lider", card_type="LEADER"), turn=1)
+    me.hand = [prb02018, sabo, ace]
+    me.trash = [luffy]
+    me.life = [mk("PRBLIFE1", "Life 1")]
+    me.life[0].life_face_up = True
+    opp = GameState(leader=mk("PRBOPP", "Opp", card_type="LEADER"), turn=1)
+    log = EffectExecutor(me, opp).execute(prb02018, "on_play")
+    jogados_or = [c for c in me.field_chars if c.code in ("ST13-007", "ST13-010", "ST13-014")]
+    check("PRB02-018 (OR) joga exatamente 1 entre Sabo/Ace/Luffy, nao os 3",
+          len(jogados_or) == 1 and any("jogou" in s for s in log))
+    restantes_or = [c for c in me.hand + me.trash if c.code in ("ST13-007", "ST13-010", "ST13-014")]
+    check("PRB02-018 (OR): os outros 2 nomes continuam na mao ou no trash",
+          len(restantes_or) == 2)
+
+    # OR sem a condicao (sem Life face-up): efeito nao deve jogar nada.
+    prb02018_b = real_card("PRB02-018")
+    sabo_b = real_card("ST13-007")
+    me2 = GameState(leader=mk("PRBLDR2", "Lider", card_type="LEADER"), turn=1)
+    me2.hand = [prb02018_b, sabo_b]
+    me2.life = []
+    opp2 = GameState(leader=mk("PRBOPP2", "Opp", card_type="LEADER"), turn=1)
+    log2 = EffectExecutor(me2, opp2).execute(prb02018_b, "on_play")
+    check("PRB02-018 sem Life face-up: nao joga nada (condicao bloqueia)",
+          not any("jogou" in s for s in log2) and sabo_b in me2.hand)
+
+    # AND/each (ST13-006): os 3 nomes na mao (cost 2) -- os 3 devem ser
+    # jogados (1 de CADA), nao so 1 no total.
+    st13006 = real_card("ST13-006")
+    sabo2 = real_card("ST13-007")
+    ace2 = real_card("ST13-010")
+    luffy2 = real_card("ST13-014")
+    me3 = GameState(leader=mk("STLDR", "Lider", card_type="LEADER"), turn=1)
+    me3.hand = [st13006, sabo2, ace2, luffy2]
+    opp3 = GameState(leader=mk("STOPP", "Opp", card_type="LEADER"), turn=1)
+    EffectExecutor(me3, opp3).execute(st13006, "on_play")
+    jogados_each = {c.code for c in me3.field_chars} & {"ST13-007", "ST13-010", "ST13-014"}
+    check("ST13-006 (each) joga os 3 nomes (1 de CADA), nao so 1 no total",
+          jogados_each == {"ST13-007", "ST13-010", "ST13-014"})
+    check("ST13-006 (each): mao fica vazia dos 3 alvos (todos jogados)",
+          not any(c.code in ("ST13-007", "ST13-010", "ST13-014") for c in me3.hand))
+
+    # AND/each parcial: so 2 dos 3 nomes disponiveis -- deve jogar so os 2
+    # presentes, sem quebrar por falta do 3o.
+    st13006_b = real_card("ST13-006")
+    sabo3 = real_card("ST13-007")
+    ace3 = real_card("ST13-010")
+    me4 = GameState(leader=mk("STLDR2", "Lider", card_type="LEADER"), turn=1)
+    me4.hand = [st13006_b, sabo3, ace3]
+    opp4 = GameState(leader=mk("STOPP2", "Opp", card_type="LEADER"), turn=1)
+    EffectExecutor(me4, opp4).execute(st13006_b, "on_play")
+    jogados_parcial = {c.code for c in me4.field_chars} & {"ST13-007", "ST13-010"}
+    check("ST13-006 (each) parcial: joga os 2 nomes presentes quando o 3o falta na mao",
+          jogados_parcial == {"ST13-007", "ST13-010"})
+
+
 def main() -> int:
     test_turn_order_imu_prefers_second()
     test_empty_throne_beats_direct_five_elders_play()
@@ -4980,6 +5056,7 @@ def main() -> int:
     test_don_n_parenteses_explicativo_e_life_area_cost()
     test_lote_10_pendencias_eb01_011_a_op05_007()
     test_segundo_lote_10_pendencias_op01_063_a_op05_100()
+    test_filter_names_prb02_018_or_e_st13_006_each()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0
