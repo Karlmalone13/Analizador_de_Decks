@@ -1,5 +1,25 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-19 (270) - Claude - fix no audit_parser_coverage.py: sinal negativo
+
+Ao revisar o lote seguinte de suspeitos (itens 11-20), quase todos eram a
+MESMA classe de falso-positivo ja confirmada (`buff_power`/`debuff_power`
+com `target` numa categoria singular -- `own_character`, `leader_or_
+character`, `opp_character`, `opp_leader_or_character`, `leader` -- onde
+"up to 1" ja e alvo unico implicito). Achado a parte: EB04-048 Rob Lucci
+apontava "2" ausente, mas o "2" ESTAVA no JSON como `-2` (custo negativo,
+"-2 cost for every 5 cards"). Bug no proprio `audit_parser_coverage.py`
+(nao no parser/engine): `_numbers_in_text()` extrai magnitude sem sinal
+(regex de numero nao inclui '-'), mas `_numbers_in_json()` fazia
+`str(int(obj))` preservando o sinal -- "-2" no JSON nunca batia com "2"
+do texto, pra QUALQUER valor negativo do banco inteiro. Corrigido
+normalizando `_numbers_in_json()` pra `str(abs(int(obj)))` (a auditoria
+verifica presenca de MAGNITUDE, nao sinal). Usuario pediu especificamente
+esse fix (nao a supressao mais ampla da classe "alvo unico", que fica em
+aberto). Suspeitos: 213 -> 212 (so Rob Lucci saiu). `smoke_fast.py` OK
+(mudanca so no script de diagnostico, sem tocar parser/engine -- sem
+necessidade de smoke_test/broad nem registro em parser_audits).
+
 ## 2026-07-19 (269) - Claude - fix generico: "[Your Turn][On Play]" disparava 2x (15 cartas)
 
 Retomada a varredura do parser (213 suspeitos, severidade 1). Lote de 10

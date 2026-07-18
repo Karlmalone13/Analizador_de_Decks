@@ -97,7 +97,16 @@ def _numbers_in_json(obj) -> set[str]:
         for v in obj:
             nums |= _numbers_in_json(v)
     elif isinstance(obj, (int, float)) and not isinstance(obj, bool):
-        nums.add(str(int(obj)))
+        # abs(): custo/power negativo (-2 cost, -3000 power) vira "-2"/"-3000"
+        # aqui, mas o texto cru quase sempre tem o sinal como palavra/prefixo
+        # SEPARADO do numero ("-2 cost", "gains -3000 power") -- _NUM_RE não
+        # inclui '-' na classe de caracteres, entao _numbers_in_text() extrai
+        # só "2"/"3000" sem sinal. Comparar com sinal aqui gerava falso
+        # "numero perdido" pra QUALQUER valor negativo (achado 19/07, EB04-048
+        # Rob Lucci: "-2" no JSON nunca batia com "2" do texto). A auditoria
+        # verifica presença de MAGNITUDE, não sinal -- normaliza os dois
+        # lados pra sem sinal.
+        nums.add(str(abs(int(obj))))
     elif isinstance(obj, str):
         # valores tipo "east blue" não tem número, mas alguns campos guardam
         # limiar como string dentro de 'condition' textual (ex: inversion
