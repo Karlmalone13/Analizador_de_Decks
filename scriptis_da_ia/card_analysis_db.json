@@ -81644,6 +81644,10 @@
    {
     "action": "draw",
     "trigger": "on_play"
+   },
+   {
+    "action": "trash_to_hand_count",
+    "trigger": "end_of_turn"
    }
   ],
   "synergy_states": {},
@@ -89854,6 +89858,10 @@
    {
     "action": "trash_own_life",
     "trigger": "main"
+   },
+   {
+    "action": "trash_from_hand",
+    "trigger": "main"
    }
   ],
   "synergy_states": {
@@ -91694,6 +91702,10 @@
   "attribute": "",
   "effects": [
    {
+    "action": "rest_opp_leader",
+    "trigger": "trigger"
+   },
+   {
     "action": "gain_double_attack",
     "trigger": "main"
    },
@@ -91733,7 +91745,7 @@
   "has_double_attack": true,
   "has_unblockable": false,
   "has_banish": false,
-  "has_trigger": false
+  "has_trigger": true
  },
  "OP16-040": {
   "name": "Gum-Gum Hammer Rifle",
@@ -93353,6 +93365,10 @@
    },
    {
     "action": "deck_bottom_rest",
+    "trigger": "main"
+   },
+   {
+    "action": "trash_from_hand",
     "trigger": "main"
    }
   ],
@@ -96388,6 +96404,7 @@
    {
     "action": "buff_power",
     "trigger": "opp_turn",
+    "power_lte": 3000,
     "target": "all_allies"
    }
   ],
@@ -97603,7 +97620,7 @@
   "attribute": "",
   "effects": [
    {
-    "action": "buff_power",
+    "action": "buff_power_per_count",
     "trigger": "counter",
     "target": "leader_or_character"
    }
@@ -97620,7 +97637,7 @@
   "rests_opponent": false,
   "bounces": false,
   "gives_don": false,
-  "power_buff": true,
+  "power_buff": false,
   "heals": false,
   "gains_life": false,
   "attacks_life": false,
@@ -99524,6 +99541,12 @@
   "attribute": "Special",
   "effects": [
    {
+    "action": "ko",
+    "trigger": "trigger",
+    "cost_lte": 4,
+    "target": "opp_character"
+   },
+   {
     "action": "lock_opp_character_attack",
     "trigger": "passive"
    }
@@ -99540,8 +99563,8 @@
   "has_counter_value": false,
   "has_counter_event": false,
   "is_blocker": false,
-  "is_removal": false,
-  "kos": false,
+  "is_removal": true,
+  "kos": true,
   "rests_opponent": false,
   "bounces": false,
   "gives_don": false,
@@ -99554,7 +99577,7 @@
   "has_double_attack": false,
   "has_unblockable": false,
   "has_banish": false,
-  "has_trigger": false
+  "has_trigger": true
  },
  "PRB02-018": {
   "name": "Portgas.D.Ace - PRB02-018",

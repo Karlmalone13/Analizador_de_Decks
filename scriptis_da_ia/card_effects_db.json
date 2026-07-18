@@ -5342,7 +5342,8 @@
           {
             "action": "add_to_hand",
             "count": 1,
-            "revealed_to_opponent": true
+            "revealed_to_opponent": true,
+            "filter_type": "dressrosa"
           },
           {
             "action": "deck_bottom_rest"
@@ -5991,6 +5992,7 @@
             "action": "add_to_hand",
             "count": 1,
             "revealed_to_opponent": true,
+            "filter_type": "egghead",
             "exclude": [
               "jewelry bonney"
             ]
@@ -7219,7 +7221,8 @@
           {
             "action": "add_to_hand",
             "count": 1,
-            "revealed_to_opponent": true
+            "revealed_to_opponent": true,
+            "filter_type": "foxy pirates"
           },
           {
             "action": "deck_bottom_rest"
@@ -24746,7 +24749,11 @@
               "dest": "life_top_or_bottom"
             }
           ]
-        ]
+        ],
+        "conditions": {
+          "chars_gte": 1,
+          "chars_gte_type_filter": "celestial dragons"
+        }
       }
     }
   },
@@ -28798,6 +28805,10 @@
             "action": "gain_blocker"
           }
         ],
+        "conditions": {
+          "chars_gte": 1,
+          "chars_gte_type_filter": "shandian warrior"
+        },
         "costs": [
           {
             "type": "rest_self"
@@ -33254,6 +33265,10 @@
             "cost_lte": 5
           }
         ],
+        "conditions": {
+          "chars_gte": 1,
+          "chars_gte_type_filter": "minks"
+        },
         "once_per_turn": true
       }
     }
@@ -34967,6 +34982,7 @@
             "action": "add_to_hand",
             "count": 1,
             "revealed_to_opponent": true,
+            "filter_type": "animal kingdom pirates",
             "exclude": [
               "queen"
             ]
@@ -39918,6 +39934,7 @@
             "action": "add_to_hand",
             "count": 1,
             "revealed_to_opponent": true,
+            "filter_type": "punk hazard",
             "exclude": [
               "vergo"
             ]
@@ -41297,7 +41314,11 @@
           {
             "action": "gain_blocker"
           }
-        ]
+        ],
+        "conditions": {
+          "chars_gte": 1,
+          "chars_gte_type_filter": "the tontattas"
+        }
       }
     }
   },
@@ -50662,7 +50683,11 @@
           {
             "action": "gain_double_attack"
           }
-        ]
+        ],
+        "conditions": {
+          "chars_gte": 1,
+          "chars_gte_type_filter": "mountain bandits"
+        }
       }
     }
   },
@@ -54280,6 +54305,7 @@
             "action": "add_to_hand",
             "count": 1,
             "revealed_to_opponent": true,
+            "filter_type": "supernovas",
             "exclude": [
               "monkey.d.luffy"
             ]
@@ -54490,7 +54516,8 @@
           {
             "action": "add_to_hand",
             "count": 1,
-            "revealed_to_opponent": true
+            "revealed_to_opponent": true,
+            "filter_type": "supernovas"
           },
           {
             "action": "deck_bottom_rest"
@@ -55532,6 +55559,14 @@
         "conditions": {
           "leader_type": "fish-man"
         }
+      },
+      "end_of_turn": {
+        "steps": [
+          {
+            "action": "trash_to_hand_count",
+            "target_count": 5
+          }
+        ]
       }
     }
   },
@@ -55906,7 +55941,8 @@
           {
             "action": "add_to_hand",
             "count": 1,
-            "revealed_to_opponent": false
+            "revealed_to_opponent": false,
+            "filter_type": "donquixote pirates"
           },
           {
             "action": "deck_bottom_rest"
@@ -56690,6 +56726,7 @@
             "count": 1,
             "cost_lte": 5,
             "filter_type": "baroque works",
+            "exclude": "mr.2.bon.kurei.(bentham)",
             "source_alt": "trash"
           }
         ]
@@ -56868,6 +56905,7 @@
             "action": "add_to_hand",
             "count": 1,
             "revealed_to_opponent": true,
+            "filter_type": "thriller bark pirates",
             "exclude": [
               "hurry up and make me the pirate king!"
             ]
@@ -56979,7 +57017,8 @@
           {
             "action": "add_to_hand",
             "count": 1,
-            "revealed_to_opponent": true
+            "revealed_to_opponent": true,
+            "filter_type": "thriller bark pirates"
           },
           {
             "action": "deck_bottom_rest"
@@ -57126,6 +57165,16 @@
             "action": "give_don",
             "count": 1,
             "rested": true
+          }
+        ],
+        "costs": [
+          {
+            "type": "reveal_from_hand",
+            "count": 3,
+            "filter_type": [
+              "amazon lily",
+              "kuja pirates"
+            ]
           }
         ],
         "once_per_turn": true
@@ -57418,7 +57467,8 @@
           {
             "action": "add_to_hand",
             "count": 1,
-            "revealed_to_opponent": true
+            "revealed_to_opponent": true,
+            "filter_type": "amazon lily"
           },
           {
             "action": "deck_bottom_rest"
@@ -58538,7 +58588,8 @@
           {
             "action": "add_to_hand",
             "count": 1,
-            "revealed_to_opponent": true
+            "revealed_to_opponent": true,
+            "filter_type": "east blue"
           },
           {
             "action": "deck_bottom_rest"
@@ -58848,6 +58899,7 @@
             "action": "add_to_hand",
             "count": 1,
             "revealed_to_opponent": true,
+            "filter_type": "east blue",
             "exclude": [
               "the outcome will tell us who's strong and who's weak"
             ]
@@ -58947,7 +58999,8 @@
           {
             "action": "add_to_hand",
             "count": 1,
-            "revealed_to_opponent": true
+            "revealed_to_opponent": true,
+            "filter_type": "dressrosa"
           },
           {
             "action": "deck_bottom_rest"
@@ -59059,7 +59112,8 @@
           {
             "action": "add_to_hand",
             "count": 1,
-            "revealed_to_opponent": true
+            "revealed_to_opponent": true,
+            "filter_type": "dressrosa"
           },
           {
             "action": "deck_bottom_rest"
@@ -59314,7 +59368,8 @@
           {
             "action": "add_to_hand",
             "count": 1,
-            "revealed_to_opponent": true
+            "revealed_to_opponent": true,
+            "filter_type": "dressrosa"
           },
           {
             "action": "deck_bottom_rest"
@@ -60995,6 +61050,11 @@
         "costs": [
           {
             "type": "trash_self"
+          },
+          {
+            "type": "life_to_hand",
+            "count": 1,
+            "source": "life_top"
           }
         ]
       }
@@ -61217,7 +61277,8 @@
           {
             "action": "add_to_hand",
             "count": 1,
-            "revealed_to_opponent": true
+            "revealed_to_opponent": true,
+            "filter_type": "sky island"
           },
           {
             "action": "deck_bottom_rest"
@@ -61485,6 +61546,10 @@
             "action": "trash_own_life",
             "count": 1,
             "up_to": false
+          },
+          {
+            "action": "trash_from_hand",
+            "count": 1
           }
         ],
         "conditions": {
@@ -62411,6 +62476,7 @@
             "action": "add_to_hand",
             "count": 1,
             "revealed_to_opponent": true,
+            "filter_type": "impel down",
             "cost_lte": 2
           },
           {
@@ -62611,7 +62677,8 @@
           {
             "action": "add_to_hand",
             "count": 1,
-            "revealed_to_opponent": true
+            "revealed_to_opponent": true,
+            "filter_type": "impel down"
           },
           {
             "action": "deck_bottom_rest"
@@ -62770,6 +62837,13 @@
     "sub_types": "Straw Hat Crew Impel Down",
     "attribute": "",
     "effects": {
+      "trigger": {
+        "steps": [
+          {
+            "action": "rest_opp_leader"
+          }
+        ]
+      },
       "main": {
         "steps": [
           {
@@ -63500,6 +63574,7 @@
             "action": "add_to_hand",
             "count": 1,
             "revealed_to_opponent": true,
+            "filter_type": "navy",
             "exclude": [
               "koby"
             ]
@@ -63609,7 +63684,8 @@
           {
             "action": "add_to_hand",
             "count": 1,
-            "revealed_to_opponent": true
+            "revealed_to_opponent": true,
+            "filter_type": "navy"
           },
           {
             "action": "deck_bottom_rest"
@@ -63780,7 +63856,8 @@
           {
             "action": "add_to_hand",
             "count": 1,
-            "revealed_to_opponent": true
+            "revealed_to_opponent": true,
+            "filter_type": "impel down"
           },
           {
             "action": "deck_bottom_rest"
@@ -63913,7 +63990,11 @@
             "target": "leader_or_character",
             "duration": "battle_only"
           }
-        ]
+        ],
+        "conditions": {
+          "chars_gte": 1,
+          "chars_gte_type_filter": "admiral"
+        }
       },
       "main": {
         "steps": [
@@ -63955,10 +64036,15 @@
           {
             "action": "add_to_hand",
             "count": 2,
-            "revealed_to_opponent": true
+            "revealed_to_opponent": true,
+            "filter_type": "navy"
           },
           {
             "action": "deck_bottom_rest"
+          },
+          {
+            "action": "trash_from_hand",
+            "count": 1
           }
         ]
       }
@@ -63984,7 +64070,8 @@
           {
             "action": "add_to_hand",
             "count": 1,
-            "revealed_to_opponent": true
+            "revealed_to_opponent": true,
+            "filter_type": "navy"
           },
           {
             "action": "deck_bottom_rest"
@@ -64120,7 +64207,8 @@
           {
             "action": "add_to_hand",
             "count": 1,
-            "revealed_to_opponent": true
+            "revealed_to_opponent": true,
+            "filter_type": "land of wano"
           },
           {
             "action": "trash_rest"
@@ -64396,6 +64484,7 @@
             "action": "add_to_hand",
             "count": 1,
             "revealed_to_opponent": true,
+            "filter_type": "land of wano",
             "exclude": [
               "nami"
             ]
@@ -65649,6 +65738,12 @@
             "filter_no_effect": true
           }
         ],
+        "costs": [
+          {
+            "type": "rest_don",
+            "count": 1
+          }
+        ],
         "once_per_turn": true
       }
     }
@@ -65951,7 +66046,8 @@
             "action": "buff_power",
             "amount": 1000,
             "target": "all_allies",
-            "duration": "this_turn"
+            "duration": "this_turn",
+            "power_lte": 3000
           }
         ]
       }
@@ -66690,15 +66786,22 @@
       "counter": {
         "steps": [
           {
-            "action": "buff_power",
-            "amount": 2000,
+            "action": "buff_power_per_count",
+            "amount_per": 2000,
+            "count_per": 1,
+            "source": "bounced_own_this_effect",
             "target": "leader_or_character",
             "duration": "battle_only"
           }
         ],
         "conditions": {
           "leader_is": "uta"
-        }
+        },
+        "costs": [
+          {
+            "type": "bounce_any_own_character"
+          }
+        ]
       }
     }
   },
@@ -68021,6 +68124,11 @@
         "costs": [
           {
             "type": "rest_self"
+          },
+          {
+            "type": "life_to_hand",
+            "count": 1,
+            "source": "life_top_or_bottom"
           }
         ]
       },
@@ -68046,6 +68154,16 @@
     "sub_types": "FILM Kuja Pirates The Seven Warlords of the Sea",
     "attribute": "Special",
     "effects": {
+      "trigger": {
+        "steps": [
+          {
+            "action": "ko",
+            "count": 1,
+            "target": "opp_character",
+            "cost_lte": 4
+          }
+        ]
+      },
       "passive": {
         "steps": [
           {
@@ -70866,6 +70984,11 @@
         "costs": [
           {
             "type": "rest_self"
+          },
+          {
+            "type": "life_to_hand",
+            "count": 1,
+            "source": "life_top_or_bottom"
           }
         ]
       },
@@ -71109,12 +71232,18 @@
             "count": 1,
             "target": "own",
             "dest": "life_top",
-            "face": "up"
+            "face": "up",
+            "cost_eq": 3
           }
         ],
         "costs": [
           {
             "type": "rest_self"
+          },
+          {
+            "type": "life_to_hand",
+            "count": 1,
+            "source": "life_top_or_bottom"
           }
         ]
       }
@@ -77263,7 +77392,8 @@
           {
             "action": "add_to_hand",
             "count": 1,
-            "revealed_to_opponent": true
+            "revealed_to_opponent": true,
+            "filter_type": "straw hat crew"
           },
           {
             "action": "deck_bottom_rest"

@@ -2000,6 +2000,10 @@ class EffectExecutor:
         # nunca sobreviveria ate o step buff_power_per_count/source=
         # trashed_hand_this_effect ler.
         self._last_cost_trash_any_count = 0
+        # Mesma armadilha, agora pro custo bounce_any_own_character
+        # (achado 19/07, P-059): atributo PROPRIO, nao self._last_moved_
+        # count, pelo mesmo motivo (reset acontece antes do loop de steps).
+        self._last_cost_bounce_any_count = 0
         if not self._pay_costs(ef_data.get('costs', []), card):
             return []
 
@@ -3420,12 +3424,20 @@ class EffectExecutor:
                 # -- so exige TER as cartas na mao, nao remove nada
                 # (revelar != trashar/descartar).
                 count = cost.get('count', 1)
-                filter_type = _norm_type_text(cost.get('filter_type') or '')
+                # filter_type pode ser uma LISTA (OR de N tipos, achado
+                # 19/07, OP14-105: "reveal 3 {Amazon Lily} or {Kuja
+                # Pirates} type cards from your hand") -- string unica
+                # preserva o comportamento antigo.
+                filter_type_raw = cost.get('filter_type') or ''
+                tipos_reveal = ([_norm_type_text(x) for x in filter_type_raw]
+                                if isinstance(filter_type_raw, list)
+                                else [_norm_type_text(filter_type_raw)])
                 power_eq = cost.get('power_eq')
                 card_type_req = cost.get('card_type')
                 matches = [
                     c for c in self.me.hand
-                    if (not filter_type or filter_type in _norm_type_text(c.sub_types or ''))
+                    if (not any(tipos_reveal) or any(
+                        tp and tp in _norm_type_text(c.sub_types or '') for tp in tipos_reveal))
                     and (power_eq is None or c.power == power_eq)
                     and (not card_type_req or c.card_type == card_type_req)
                 ]
@@ -3501,6 +3513,22 @@ class EffectExecutor:
                 self._last_cost_trash_any_count = len(trashed)
                 if trashed:
                     self._cost_logs.append(f'custo: trashou da mão: {", ".join(trashed)}')
+            elif ctype == 'bounce_any_own_character':
+                # "you may return ANY NUMBER of Characters on your field
+                # to the owner's hand" -- quantidade VARIAVEL (0 ate o
+                # total em campo), companheiro de buff_power_per_count/
+                # source=bounced_own_this_effect. Achado 19/07, P-059,
+                # unica carta no banco. Greedy (devolve TODOS): mesma
+                # aproximacao ja aceita pra trash_any_from_hand -- efeito
+                # reativo em combate ([Counter]), as cartas voltam pra
+                # mao (nao sao perdidas), podem ser rejogadas depois.
+                bounced = []
+                for c in list(self.me.field_chars):
+                    remove_character_from_field(self.me, c, 'hand')
+                    bounced.append(c.name[:15])
+                self._last_cost_bounce_any_count = len(bounced)
+                if bounced:
+                    self._cost_logs.append(f'custo: devolveu do campo: {", ".join(bounced)}')
             elif ctype == 'trash_typed_hand_or_named_hand_field':
                 from optcg_engine.rules_facade import eligible_cards
 
@@ -4560,6 +4588,22 @@ class EffectExecutor:
                 drawn.append(c.name[:12])
             return f'comprou ate {target} na mao: {", ".join(drawn)}' if drawn else ''
 
+        if action == 'trash_to_hand_count':
+            # "Trash cards from your hand until you have N cards in your
+            # hand" -- espelho de draw_to_hand_count, direcao oposta
+            # (achado 19/07, OP14-054 Fisher Tiger).
+            target = step.get('target_count', 0)
+            need = max(0, len(me.hand) - target)
+            trashed = []
+            for _ in range(need):
+                worst = self._choose_to_trash(me.hand)
+                if not worst:
+                    break
+                remove_by_identity(me.hand, worst)
+                me.trash.append(worst)
+                trashed.append(worst.name[:12])
+            return f'descartou ate {target} na mao: {", ".join(trashed)}' if trashed else ''
+
         # ── KO ───────────────────────────────────────────────────────────────
         if action in ('ko', 'trash_character'):
             from optcg_engine.rules_facade import (
@@ -4839,6 +4883,12 @@ class EffectExecutor:
         # ST02-008 Scratchmen Apoo. NUNCA confundir com don_minus (que
         # devolve DON ao deck do PRÓPRIO jogador como custo) -- aqui o DON
         # do oponente continua no campo dele, só fica rested.
+        # "Rest your opponent's Leader." -- forcado, incondicional, alvo
+        # sempre o Leader do oponente (achado 19/07, OP16-039).
+        if action == 'rest_opp_leader':
+            opp.leader.rested = True
+            return 'restou o Lider do oponente'
+
         if action == 'rest_opp_don':
             count = step.get('count', 1)
             rested_n = min(count, opp.don_available)
@@ -5026,12 +5076,14 @@ class EffectExecutor:
             from optcg_engine.rules_facade import card_matches_filter
             target_scope = step.get('target', 'any')
             cost_lte = step.get('cost_lte')
+            cost_eq = step.get('cost_eq')
             power_eq = step.get('power_eq')
             filter_type = step.get('filter_type', '')
             exclude = step.get('exclude', '').lower()
 
             def eligible(owner, c):
                 return ((cost_lte is None or c.cost <= cost_lte)
+                        and (cost_eq is None or c.cost == cost_eq)
                         and (power_eq is None or c.power == power_eq)
                         and card_matches_filter(c, filter_type)
                         and (not exclude or exclude not in c.name.lower()))
@@ -5385,6 +5437,14 @@ class EffectExecutor:
                 filter_color = step.get('filter_color', '')
                 if filter_color:
                     alvos = [c for c in alvos if filter_color.lower() in c.color.lower()]
+                # "All of your Characters with N base power or less gain
+                # +M power" -- filtro de POWER na aura em massa (achado
+                # 19/07, P-027 General Franky, unica carta no banco com
+                # essa forma exata: buff aplicava em TODOS os aliados,
+                # ignorando o teto de power).
+                power_lte_all = step.get('power_lte')
+                if power_lte_all is not None:
+                    alvos = [c for c in alvos if c.power <= power_lte_all]
                 if step.get('exclude_self'):
                     alvos = [c for c in alvos if c is not card]
                 for c in alvos:
@@ -5619,6 +5679,8 @@ class EffectExecutor:
                 n = getattr(self, '_last_moved_count', 0)
             elif source == 'trashed_hand_this_effect':
                 n = getattr(self, '_last_cost_trash_any_count', 0)
+            elif source == 'bounced_own_this_effect':
+                n = getattr(self, '_last_cost_bounce_any_count', 0)
             else:
                 n = 0
 

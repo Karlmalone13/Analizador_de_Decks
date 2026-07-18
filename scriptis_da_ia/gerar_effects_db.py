@@ -393,6 +393,19 @@ def parse_conditions(text):
                     conds['chars_gte'] = int(m_dn.group(1))
                     conds['chars_gte_type_filter'] = m_dn.group(2).strip()
                     conds['chars_gte_distinct_names'] = True
+                else:
+                    # "if you have a/an [Tipo] type Character" -- EXISTENCIA
+                    # simples (singular, sem numero, sem "with N power/cost
+                    # or more" depois) -- equivalente a chars_gte=1 com
+                    # filtro de tipo. Achado 19/07, OP16-076, unica carta no
+                    # banco com essa forma exata: condicao inteira sumia,
+                    # buff disparava sempre.
+                    m_exist = re.search(
+                        r'if you have an? [\[{"]([^\]}"]+)[\]}"] type character\b'
+                        r'(?! with)', t)
+                    if m_exist:
+                        conds['chars_gte'] = 1
+                        conds['chars_gte_type_filter'] = m_exist.group(1).strip()
 
     # "if you have N or more rested Characters" -- conta PROPRIOS Characters
     # que estao rested, distinto de chars_gte (que conta todos). OP09-033.
@@ -811,6 +824,11 @@ def parse_conditions(text):
 def parse_costs(text):
     costs = []
     t = text.lower()
+    # Digitos CIRCULADOS unicode (①②③...) tolerados como equivalente a
+    # "(N)" -- achado 19/07, P-011 Uta, unica carta no banco com essa
+    # forma exata: o atalho numerico de DON usa "①" em vez de "(1)",
+    # nenhum regex de custo reconhecia o simbolo, custo inteiro sumia.
+    t = re.sub(r'[①-⑳]', lambda m: f'({ord(m.group(0)) - 0x2460 + 1})', t)
 
     # "you may trash any number of [filtro]? cards from your hand" --
     # custo de contagem VARIAVEL (0..N elegiveis), companheiro do step
@@ -831,6 +849,14 @@ def parse_costs(text):
         elif desc == 'event or stage':
             cost_any['card_types'] = ['EVENT', 'STAGE']
         costs.append(cost_any)
+
+    # "you may return any number of Characters on your field to the
+    # owner's hand" -- custo de contagem VARIAVEL (0..N proprios
+    # Characters em campo), companheiro do step buff_power_per_count/
+    # source=bounced_own_this_effect. Achado 19/07, P-059, unica carta no
+    # banco com essa forma exata.
+    if re.search(r'you may return any number of characters? on your field to the owner.?s hand', t):
+        costs.append({'type': 'bounce_any_own_character'})
 
     # Custo composto: "rest this Character and 1 of your [TIPO] type Leader
     # or Stage cards" -- DOIS recursos pagos juntos (a propria carta + um
@@ -1392,8 +1418,14 @@ def parse_costs(text):
     # Custo de retirar carta da propria Life para a mao antes de ":".
     # Distinto da action life_to_hand: aqui a perda de Life e o preco para
     # obter o beneficio posterior (familia global de 42 cartas-base).
+    # "and add" tolerado alem de "you may add" -- 2o componente de um
+    # custo COMPOSTO, encadeado apos outro custo (achado 19/07, ST07-017,
+    # unica carta no banco com essa forma exata: "you may rest this
+    # Stage AND add 1 card from the top or bottom of your Life cards to
+    # your hand:" -- so o rest_self sobrevivia, este 2o componente sumia
+    # por exigir "you may add" no inicio).
     life_hand_cost = re.search(
-        r'you may add (\d+) cards? from the (top|bottom|top or bottom) '
+        r'(?:you may |and )add (\d+) cards? from the (top|bottom|top or bottom) '
         r'of your life cards? to your hand\s*:', t)
     if life_hand_cost:
         where = life_hand_cost.group(2)
@@ -1425,6 +1457,18 @@ def parse_costs(text):
     if m_reveal:
         costs.append({'type': 'reveal_from_hand', 'count': int(m_reveal.group(1)),
                        'filter_type': m_reveal.group(2).strip()})
+
+    # "you may reveal N {TipoA} or {TipoB} type cards from your hand:"
+    # -- OR de 2 tipos (chaves, "type cards" direto, sem "with a type
+    # including"). Achado 19/07, OP14-105, unica carta no banco com essa
+    # forma exata.
+    m_reveal_or = re.search(
+        r"you may reveal (\d+) [\{\[]([^\}\]]+)[\}\]] or [\{\[]([^\}\]]+)[\}\]] "
+        r"type cards? from your hand\s*:", t)
+    if m_reveal_or:
+        costs.append({'type': 'reveal_from_hand', 'count': int(m_reveal_or.group(1)),
+                       'filter_type': [m_reveal_or.group(2).strip(),
+                                       m_reveal_or.group(3).strip()]})
 
     # Custo de REVELAR N Character cards com power exato X da mao (achado
     # 16/07, OP16-002/003/007/010/011, ST30-004: "you may reveal N
@@ -1593,6 +1637,14 @@ def parse_look_at(text):
 
     if not filter_type:
         fm = re.search(r'reveal up to \d+ \[([^\]]+)\]', t)
+        if fm:
+            filter_type = fm.group(1)
+
+    # "reveal up to N {Tipo} type cards" -- chaves (achado 19/07,
+    # OP16-077, unica carta no banco com essa forma exata: nem o check de
+    # aspas nem o de colchetes acima reconhecia chaves, filtro sumia).
+    if not filter_type:
+        fm = re.search(r'reveal up to \d+ \{([^\}]+)\}', t)
         if fm:
             filter_type = fm.group(1)
 
@@ -1818,7 +1870,10 @@ def parse_ko(text):
         }]
 
     # Verbo: "k.o." ou "trash" (sinonimos de remocao neste contexto).
-    VERBO = r'(?:k\.o\.|trash)'
+    # "k.o" SEM o ponto tolerado quando seguido de "up" -- typo (achado
+    # 19/07, PRB02-017, unica carta no banco com "K.O up to..." faltando
+    # o ponto final antes de "up").
+    VERBO = r'(?:k\.o\.|k\.o(?=\s+up\b)|trash)'
 
     # KO/trash stage (stage nao tem gatilho On K.O., entao mantem 'ko' para
     # ambos os verbos sem distincao -- a diferenca semantica so importa para
@@ -1889,8 +1944,8 @@ def parse_ko(text):
         r"(?: with (?:a )?(?:(\d+) (?:base )?power|(?:base )?power of (?P<pw>\d+))(?: or less)?)?",
         t
     ):
-        verbo_usado = re.match(r'k\.o\.|trash', m.group(0)).group(0)
-        action = 'ko' if verbo_usado == 'k.o.' else 'trash_character'
+        verbo_usado = re.match(r'k\.o\.|k\.o(?=\s+up\b)|trash', m.group(0)).group(0)
+        action = 'ko' if verbo_usado.startswith('k.o') else 'trash_character'
         is_all = m.group(1).startswith('all')
         count = 99 if is_all else int(m.group(2))
         step = {'action': action, 'count': count, 'target': 'opp_character'}
@@ -2012,8 +2067,8 @@ def parse_ko(text):
         t
     )
     if m:
-        verbo_usado = re.match(r'k\.o\.|trash', m.group(0)).group(0)
-        action = 'ko' if verbo_usado == 'k.o.' else 'trash_character'
+        verbo_usado = re.match(r'k\.o\.|k\.o(?=\s+up\b)|trash', m.group(0)).group(0)
+        action = 'ko' if verbo_usado.startswith('k.o') else 'trash_character'
         is_all = m.group(1).startswith('all')
         count = 99 if is_all else int(m.group(2))
         step = {'action': action, 'count': count, 'target': 'all_character'}
@@ -2321,6 +2376,14 @@ def parse_bounce(text):
 def parse_rest_opp(text):
     steps = []
     t = text.lower()
+
+    # "Rest your opponent's Leader." -- forcado, incondicional, sem
+    # filtro (mecanica NOVA, distinta de rest_opp_character/rest_opp_don
+    # -- alvo e SEMPRE o Leader do oponente). Achado 19/07, OP16-039,
+    # unica carta no banco com essa forma exata.
+    if re.search(r"rest your opponent.?s leader\b", t):
+        steps.append({'action': 'rest_opp_leader'})
+        return steps
 
     # Alvo MISTO "DON!! cards or Characters" (DON mencionado PRIMEIRO) +
     # filtro de custo opcional na alternativa Character (achado 17/07,
@@ -3485,6 +3548,15 @@ def parse_power_buff(text):
             m_plte_leader = re.search(r'your leader with (\d+) (?:base )?power or less', contexto_antes)
             if m_plte_leader:
                 power_lte_own = int(m_plte_leader.group(1))
+        elif target == 'all_allies':
+            # "All of your Characters with N (base) power or less gain
+            # +M power" -- filtro de power na aura em massa (achado
+            # 19/07, P-027 General Franky, unica carta no banco com essa
+            # forma exata: buff aplicava em TODOS os aliados).
+            m_plte_all = re.search(
+                r'all of your characters with (\d+) (?:base )?power or less', contexto_antes)
+            if m_plte_all:
+                power_lte_own = int(m_plte_all.group(1))
 
         # "Up to N of your Characters gain(s) +X power" -- N>1 (achado
         # 16/07, OP08-018: "Up to 3 of your Characters gain +1000 power").
@@ -4305,6 +4377,13 @@ def parse_character_to_owner_life(text):
     cost_m = re.search(r'cost of (\d+) or less', selector)
     if cost_m:
         step['cost_lte'] = int(cost_m.group(1))
+    else:
+        # "with a cost of N" SEM "or less"/"or more" -- custo EXATO
+        # (achado 19/07, ST07-017, unica carta no banco com essa forma
+        # exata: aceitava qualquer custo, ignorando o requisito de 3).
+        cost_eq_m = re.search(r'cost of (\d+)\b', selector)
+        if cost_eq_m:
+            step['cost_eq'] = int(cost_eq_m.group(1))
     power_m = re.search(r'with (\d+) power', selector)
     if power_m:
         step['power_eq'] = int(power_m.group(1))
@@ -4601,7 +4680,7 @@ def parse_play_generic(text):
                 # esse colchete é so exclusão, não filtro (ex: Dogura
                 # "red Character other than [Dogura]": sem isso, virava
                 # "jogar [Dogura] que não seja [Dogura]" = sempre vazio).
-                excl_m_probe = re.search(r'other than [\[{]([a-z][a-z0-9 .\'-]+)[\]}]', janela)
+                excl_m_probe = re.search(r'other than [\[{]([a-z][a-z0-9 .\'()\-]+)[\]}]', janela)
                 # tokens de keyword (nao nome de carta) que aparecem
                 # colchetados no meio da frase, ex: "a cost of 4 or less and
                 # a [Trigger] other than [Dr. Hogback]" -- sem essa
@@ -4659,8 +4738,11 @@ def parse_play_generic(text):
                 step['color'] = color_m.group(1)
             # "other than [Nome]" -- exclui a propria carta-fonte (ou outra
             # especifica) da lista de elegiveis, ex: Bepo "other than
-            # [Bepo]", Dogura "other than [Dogura]".
-            excl_m = re.search(r'other than [\[{]([a-z][a-z0-9 .\'-]+)[\]}]', janela)
+            # [Bepo]", Dogura "other than [Dogura]". Parenteses tolerados
+            # no nome (achado 19/07, OP14-091: "[Mr.2.Bon.Kurei.(Bentham)]"
+            # -- a classe de caracteres antiga parava no "(" e o nome
+            # inteiro nunca batia, exclusao sumia por completo).
+            excl_m = re.search(r'other than [\[{]([a-z][a-z0-9 .\'()\-]+)[\]}]', janela)
             if excl_m:
                 step['exclude'] = excl_m.group(1).strip()
             # "from your hand or trash" -- fonte flexivel, nao so a mao.
@@ -6014,6 +6096,24 @@ def parse_block(block_text, trigger_name):
                 'source': 'trashed_hand_this_effect', 'target': target,
                 'duration': 'battle_only'}]
 
+    # "you may return any number of Characters on your field to the
+    # owner's hand. Up to 1 of your Leader or Character cards gains +N
+    # power during this battle for every returned Character" -- mesma
+    # familia do buff dinamico acima, mas o custo VARIAVEL e um bounce
+    # PROPRIO (nao trash da mao). Achado 19/07, P-059, unica carta no
+    # banco com essa forma exata: custo inteiro ausente, buff virava
+    # +2000 fixo sem escalar.
+    any_bounce_buff_m = re.search(
+        r"you may return any number of characters? on your field to the owner.?s hand\.\s*"
+        r"up to (\d+) of your leader or character cards? gains? \+(\d+) power during this battle "
+        r"for every returned character",
+        block_text.lower())
+    if any_bounce_buff_m:
+        return [{'action': 'buff_power_per_count',
+                'amount_per': int(any_bounce_buff_m.group(2)), 'count_per': 1,
+                'source': 'bounced_own_this_effect', 'target': 'leader_or_character',
+                'duration': 'battle_only'}]
+
     # "Choose a cost and reveal" e uma aposta: o efeito depois de "If the
     # revealed card has the chosen cost" so resolve quando a aposta acerta.
     # Mantemos a revelacao e seus efeitos condicionais em um unico step para
@@ -6297,7 +6397,10 @@ def parse_block(block_text, trigger_name):
     # 'trash all of your characters' (Five Elders) e 'all characters other
     # than this character' (Kaido) tambem precisam do gate -- nao tem
     # 'opponent' nem 'trash up to', ficavam fora antes (auditoria 27/06).
-    if ('k.o.' in t or ('trash up to' in t and 'opponent' in t)
+    # "k.o up to" (SEM o ponto, typo -- achado 19/07, PRB02-017, unica
+    # carta no banco: "K.O up to 1 of your opponent's Characters..."
+    # nunca disparava o parser de KO por faltar o "." apos "K.O").
+    if ('k.o.' in t or 'k.o up to' in t or ('trash up to' in t and 'opponent' in t)
             or 'trash all of your characters' in t
             or 'all characters other than this character' in t):
         steps.extend(parse_ko(t))
@@ -6421,7 +6524,11 @@ def parse_block(block_text, trigger_name):
     # Restar oponente
     # Aceita "rest up to N" e "rest N" (sem "up to") para oponente.
     # Tambem aceita "your opponent rests N" (verbo conjugado, PRB02-005).
-    if ('rest up to' in t or re.search(r'rests? \d+', t)) and 'opponent' in t:
+    # "rest your opponent's leader" (sem numero, alvo fixo -- achado
+    # 19/07, OP16-039) tambem tolerado.
+    if (('rest up to' in t or re.search(r'rests? \d+', t)
+         or "rest your opponent's leader" in t or 'rest your opponents leader' in t)
+            and 'opponent' in t):
         steps.extend(parse_rest_opp(t))
 
     # Trava de Blocker do oponente, so NESTA batalha (when_attacking) --
@@ -7147,15 +7254,34 @@ def parse_block(block_text, trigger_name):
                 step['duration'] = dur
             steps.append(step)
 
+    # "Trash cards from your hand until you have N cards in your hand"
+    # -- mecanica DINAMICA (quantidade depende do tamanho ATUAL da mao,
+    # nao um numero fixo), espelha draw_to_hand_count mas na direcao
+    # oposta (descartar ATE chegar em N, nao comprar ATE chegar em N).
+    # Achado 19/07, OP14-054 Fisher Tiger, unica carta no banco com essa
+    # forma exata: clausula inteira ausente (o regex de trash_from_hand
+    # abaixo exige um numero logo apos "trash", nunca casava com "trash
+    # cards" sem digito).
+    m_trash_to_hand = re.search(
+        r'trash cards?(?:\(s\))? from your hand until you have (\d+) cards? in your hand', t)
+    if m_trash_to_hand:
+        steps.append({'action': 'trash_to_hand_count',
+                      'target_count': int(m_trash_to_hand.group(1))})
+
     # Trash from hand (efeito, nao custo). 'activate_main'/'counter'
     # adicionados 19/07 (OP02-070/OP09-059 -- mesma clausula "Then, trash
     # up to N cards from your hand" tambem aparece nesses 2 triggers, nao
     # so nos 3 originais). 'trigger' adicionado 19/07 (OP09-105 Sanji: a
     # mesma clausula "Then, trash N cards from your hand" tambem aparece
     # num bloco [Trigger] -- a 2a sentenca inteira sumia por nao estar na
-    # whitelist).
+    # whitelist). 'main' adicionado 19/07 (OP16-077 Sengoku: mesma clausula
+    # "Then, trash N cards from your hand" apos um look_top_deck com
+    # trigger_name='main' -- tentei resolver com um check dedicado dentro
+    # de parse_look_at, mas causava DUPLICACAO pra cartas com trigger_name
+    # ja coberto por esta whitelist, ex. OP16-067 Tsuru (on_play, mesma
+    # forma de texto); revertido em favor de so estender a whitelist aqui).
     if trigger_name in ('on_play', 'when_attacking', 'end_of_turn', 'activate_main',
-                         'counter', 'trigger'):
+                         'counter', 'trigger', 'main'):
         # finditer (nao search): um bloco pode ter DUAS ocorrencias
         # separadas -- ex: "draw 1 card and trash 1 card from your hand.
         # Then, trash up to 3 cards from your hand." tem a 1a coberta por

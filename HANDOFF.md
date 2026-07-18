@@ -1,5 +1,90 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-19 (278) - Claude - lote de 11 bugs reais (OP14-054 a ST07-017), 46 cartas via generalizacao
+
+Lote de 11 suspeitos severidade-1 aprovados de uma vez (janela 151-200+
+do audit). Registro completo em
+`parser_audits/2026-07-19_lote_10_op14-054_a_st07-017.json`.
+
+**Fixes principais:**
+1. **OP14-054 Fisher Tiger**: mecanica nova `trash_to_hand_count` (irma
+   de `draw_to_hand_count`) — "Trash cards from your hand until you have
+   N cards in your hand" tinha a clausula INTEIRA ausente.
+2. **OP14-091 Mr.2.Bon.Kurei (Bentham)**: `excl_m`/`excl_m_probe` não
+   toleravam PARENTESES no nome ("Mr.2.Bon.Kurei.(Bentham)") — a
+   auto-exclusão da carta ("other than [Nome]") sumia silenciosamente.
+3. **OP14-105 Gorgon Sisters**: custo "reveal N {Tipo1} or {Tipo2} type
+   cards" — OR de 2 tipos BRACEADOS nunca reconhecido. Novo regex
+   produz `filter_type` como LISTA, reaproveitando o suporte a lista já
+   existente do lado consumidor (`reveal_from_hand`).
+4. **OP16-039 Gum-Gum Twin Jet Pistol**: ação nova `rest_opp_leader` —
+   "[Trigger] Rest your opponent's Leader" (alvo é o Leader, não
+   Characters) nunca reconhecida.
+5. **OP16-076 The Three Admirals!!**: condição de EXISTÊNCIA PURA "if
+   you have an {Admiral} type Character" (sem "or more") ausente. Nova
+   condição `chars_gte=1` com negative lookahead `(?! with)` pra não
+   conflitar com `other_char_power_gte`/`cost_gte` já existentes.
+   Generalização de alto impacto: capturou 5 cartas extras (OP05-096,
+   OP06-113, OP08-021, OP10-053, OP13-009).
+6. **OP16-077 "Buddha" Sengoku**: 2a cláusula independente "Then, trash
+   1 card from your hand" sumia quando `trigger_name='main'`. O
+   mecanismo GENÉRICO já existente (whitelist de trigger_name pra
+   trash_from_hand-como-efeito) só cobria 'on_play'/'when_attacking'/
+   'end_of_turn'/'activate_main'/'counter'/'trigger', faltava 'main'.
+   **Tentativa inicial de resolver com um check LOCAL dentro de
+   `parse_look_at` causou DUPLICAÇÃO de `trash_from_hand` em OP16-067
+   Tsuru** (mesmo texto, mas trigger_name='on_play', já coberto pelo
+   mecanismo genérico) — revertido o patch local em favor de só
+   estender a whitelist genérica (adicionar 'main'). Achado extra pela
+   mesma whitelist: OP15-116.
+7. **P-011 Uta**: dígito circulado Unicode (①) como atalho de custo DON
+   — normalização nova no topo de `parse_costs`.
+8. **P-027 General Franky**: buff `all_allies` ainda não suportava
+   filtro `power_lte` ("with 3000 base power or less").
+9. **P-059 The World's Continuation**: custo NOVO
+   `bounce_any_own_character` (quantidade VARIÁVEL) + step
+   `buff_power_per_count(source='bounced_own_this_effect')`. Novo
+   atributo dedicado `_last_cost_bounce_any_count` (mesmo padrão de
+   `_last_cost_trash_any_count` — não pode reusar `_last_moved_count`,
+   resetado entre custo e steps).
+10. **PRB02-017 Boa Hancock**: TYPO "K.O up to" (faltando o ponto final
+    do VERBO, classe diferente do "K.O'd" do lote anterior que faltava
+    o ponto do PARTICÍPIO) bloqueava `parse_ko` inteiro. Corrigido em 3
+    pontos (regex principal + 2 ocorrências hardcoded do verbo
+    derivado).
+11. **ST07-017 Queen Mama Chanter**: `cost_eq` ausente em
+    `character_to_owner_life` (só existia `cost_lte`) + custo composto
+    "... and add 1 card ... to your hand" só capturava metade (regex de
+    `life_to_hand` só reconhecia "you may add", não "... and add"
+    encadeado) — mesma família capturou 3 extras (OP15-100, PRB02-016,
+    ST07-009).
+
+**Extras via diff_parser.py** (35 no total): ~25 cartas ganharam
+`filter_type` correto em `look_top_deck` via o fix retido do lote
+anterior ({Tipo} bracket) — auditoria deste lote confirmou o alcance
+real (EB03-048, EB04-002, EB04-037, OP08-080, OP10-004, OP14-013,
+OP14-019, OP14-067, OP14-097, OP14-100, OP14-113, OP15-026, OP15-037,
+OP15-040, OP15-044, OP15-053, OP15-108, OP16-026, OP16-034, OP16-064,
+OP16-072, OP16-078, OP16-082, OP16-091, ST29-004); + 5 da família
+chars_gte existência pura; + 3 da família life_to_hand composto; +
+OP15-116 da whitelist ampliada.
+
+**Lição arquitetural registrada**: mecanismo genérico já existente deve
+ser ESTENDIDO em vez de duplicado com um check local dentro de uma
+função de parser mais específica — duplicar produz colisão silenciosa
+quando ambos os caminhos cobrem o mesmo texto (achado ao investigar a
+duplicação de OP16-067 durante a validação deste próprio lote, antes de
+aceitar o resultado).
+
+Validado: `diff_parser.py` GANHOU=0/PERDEU=0/MUDOU=46 (11 alvo + 35
+extras, cada um verificado manualmente, incluindo a detecção e correção
+da duplicação de OP16-067 ANTES de aceitar). `smoke_fast.py` com teste
+novo (`test_lote_10_op14_054_a_st07_017`) cobrindo execução real dos
+mecanismos mais complexos; 1 teste pré-existente (OP14-091) atualizado
+porque validava o comportamento ANTIGO (bugado). `smoke_test.py` TODOS
+OS TESTES PASSARAM. `smoke_test_broad.py` 7/7 sem exceção. **Auditor:
+139 -> 129 suspeitos.**
+
 ## 2026-07-19 (277) - Claude - lote de 15 bugs reais (OP15-020 a OP16-038), 2 mecanicas novas
 
 Lote grande (janela 101-150, ~10-12% de taxa de acerto — a mais

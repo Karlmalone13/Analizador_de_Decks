@@ -1,9 +1,29 @@
 # TODO — Analisador de Decks OPTCG
 
 **Última atualização:** 19 de julho de 2026
-**Estado:** varredura contínua do parser; 139 suspeitos (severidade 1 only)
+**Estado:** varredura contínua do parser; 129 suspeitos (severidade 1 only)
 **Baseline do código:** ver `git log --oneline -1`
 **Repo:** github.com/Karlmalone13/Analizador_de_Decks
+
+> 19/07/2026: lote de 11 bugs reais (OP14-054 a ST07-017), 46 cartas no
+> total via generalização (janela 151-200+). Destaques: 2 mecânicas
+> novas (`trash_to_hand_count` irmã de `draw_to_hand_count`;
+> `bounce_any_own_character` custo de quantidade variável +
+> `buff_power_per_count(source='bounced_own_this_effect')`); nova
+> condição `chars_gte` de existência pura (sem qualificador de
+> power/cost) — generalização de alto impacto, 5 cartas extras de
+> graça; normalização de dígito circulado Unicode (①-⑳) no custo DON;
+> `filter_type` como LISTA em custos `reveal_from_hand` (OR de 2 tipos
+> bracketed); typo "K.O up to" (verbo sem ponto final, classe diferente
+> do "K.O'd" do lote anterior). **Bug de duplicação encontrado e
+> corrigido DURANTE a própria validação do lote**: um fix inicial via
+> check local dentro de `parse_look_at` duplicava `trash_from_hand` em
+> OP16-067 (mesmo texto de OP16-077, mas já coberto por um mecanismo
+> genérico separado) — corrigido estendendo a whitelist genérica
+> existente em vez de duplicar a lógica; lição registrada em HANDOFF.
+> Ver HANDOFF bloco 278 e
+> `parser_audits/2026-07-19_lote_10_op14-054_a_st07-017.json`.
+> Auditor: 139 -> 129 suspeitos.
 
 > 19/07/2026: lote de 15 bugs reais (OP15-020 a OP16-038), 26 cartas no
 > total — o lote mais produtivo até agora (janela 101-150, ~10-12% de

@@ -3323,10 +3323,16 @@ def test_parse_play_generic_janela_com_ponto_em_nome_colchetado() -> None:
     # "from your trash" que deveria ter bloqueado o play_card generico,
     # OP14-110). Fix generalizado (scan bracket-depth-aware), nao amarrado
     # a nenhuma carta especifica.
+    # Achado 19/07: excl_m/excl_m_probe nao toleravam parenteses no nome
+    # ("Mr.2.Bon.Kurei.(Bentham)"), entao o "other than [Nome]" da propria
+    # carta (auto-exclusao) sumia silenciosamente. Fix generalizado (classe
+    # de caracteres aceita parenteses), assercao atualizada pra exigir o
+    # exclude que antes faltava.
     check("OP14-091 (type-including + 'and a cost of N or less' + hand-or-trash) parseia certo",
           get_card_effects("OP14-091").get("on_ko", {}).get("steps", []) ==
           [{"action": "play_card", "count": 1, "cost_lte": 5,
-            "filter_type": "baroque works", "source_alt": "trash"}])
+            "filter_type": "baroque works", "exclude": "mr.2.bon.kurei.(bentham)",
+            "source_alt": "trash"}])
     check("OP16-019 ('type including X' fora do inicio da clausula + power exato) parseia certo",
           any(s.get("filter_type") == "whitebeard pirates" and s.get("power_eq") == 8000
               for s in get_card_effects("OP16-019").get("main", {}).get("steps", [])))
@@ -5922,6 +5928,176 @@ def test_lote_9_op15_020_a_op16_038() -> None:
           get_card_effects("P-092")["opp_turn"]["steps"][0]["target"] == "self")
 
 
+def test_lote_10_op14_054_a_st07_017() -> None:
+    # OP14-054 Fisher Tiger: mecanica nova trash_to_hand_count (irma de
+    # draw_to_hand_count) -- "Trash cards from your hand until you have N
+    # cards in your hand" tinha a clausula inteira ausente (regex de
+    # trash_from_hand exige numero logo apos "trash").
+    check("OP14-054 parseia trash_to_hand_count(target_count=5) no End of Your Turn",
+          get_card_effects("OP14-054")["end_of_turn"]["steps"]
+          == [{"action": "trash_to_hand_count", "target_count": 5}])
+    tiger = real_card("OP14-054")
+    me_tiger = GameState(leader=mk("TGLDR", "Lider", card_type="LEADER"))
+    me_tiger.field_chars = [tiger]
+    me_tiger.hand = [mk(f"TGH{i}", f"Carta{i}", cost=1) for i in range(8)]
+    opp_tiger = GameState(leader=mk("TGOPP", "Opp", card_type="LEADER"))
+    EffectExecutor(me_tiger, opp_tiger).execute(tiger, "end_of_turn")
+    check("Execucao real: OP14-054 trasha ate sobrar exatamente 5 na mao (de 8)",
+          len(me_tiger.hand) == 5 and len(me_tiger.trash) == 3)
+
+    # OP14-091: ver teste dedicado mais acima (excl_m/excl_m_probe agora
+    # toleram parenteses no nome, "other than [Mr.2.Bon.Kurei.(Bentham)]"
+    # nao sumia mais o exclude).
+
+    # OP14-105 Gorgon Sisters: custo "reveal N {Tipo1} or {Tipo2} type
+    # cards" -- filter_type vira LISTA (OR de 2 tipos), companheiro do
+    # ja existente filter_names em lista (PRB02-018/ST13-006).
+    check("OP14-105 parseia custo reveal_from_hand com filter_type em lista (OR de 2 tipos)",
+          get_card_effects("OP14-105")["activate_main"]["costs"][0]
+          == {"type": "reveal_from_hand", "count": 3,
+              "filter_type": ["amazon lily", "kuja pirates"]})
+    gorgon = real_card("OP14-105")
+    me_gorgon = GameState(leader=mk("GGLDR", "Lider", card_type="LEADER"), don_available=10)
+    me_gorgon.hand = [mk("GGH1", "Kuja Char", sub_types="Kuja Pirates", cost=2)]
+    opp_gorgon = GameState(leader=mk("GGOPP", "Opp", card_type="LEADER"))
+    ok_gorgon = EffectExecutor(me_gorgon, opp_gorgon)._pay_costs(
+        get_card_effects("OP14-105")["activate_main"]["costs"], gorgon)
+    check("Execucao real: OP14-105 NAO paga com so 1 carta na mao (custo exige 3)",
+          not ok_gorgon)
+    me_gorgon.hand = [mk("GGH1", "Kuja Char", sub_types="Kuja Pirates", cost=2),
+                      mk("GGH2", "Amazon Char", sub_types="Amazon Lily", cost=2),
+                      mk("GGH3", "Outra Kuja", sub_types="Kuja Pirates", cost=1)]
+    ok_gorgon2 = EffectExecutor(me_gorgon, opp_gorgon)._pay_costs(
+        get_card_effects("OP14-105")["activate_main"]["costs"], gorgon)
+    check("Execucao real: OP14-105 paga com 3 cartas somando os 2 tipos do OR (Amazon Lily OU Kuja Pirates)",
+          ok_gorgon2)
+
+    # OP16-039: acao nova rest_opp_leader ("[Trigger] Rest your opponent's
+    # Leader"), gate de parse_rest_opp precisava reconhecer essa forma
+    # exata (sem "up to"/contagem, alvo e o Leader, nao Characters).
+    check("OP16-039 parseia rest_opp_leader no bloco Trigger",
+          get_card_effects("OP16-039")["trigger"]["steps"] == [{"action": "rest_opp_leader"}])
+    jet = real_card("OP16-039")
+    me_jet = GameState(leader=mk("JTLDR", "Lider", card_type="LEADER"))
+    opp_jet = GameState(leader=mk("JTOPP", "Opp", card_type="LEADER"))
+    EffectExecutor(me_jet, opp_jet).execute(jet, "trigger")
+    check("Execucao real: OP16-039 [Trigger] resta o Leader do oponente",
+          opp_jet.leader.rested)
+
+    # OP16-076: condicao de EXISTENCIA pura (sem "or more"/"with N power"),
+    # "if you have an {Admiral} type Character" -- nova regra m_exist com
+    # negative lookahead (?! with) pra nao brigar com
+    # other_char_power_gte/other_char_cost_gte ja existentes.
+    check("OP16-076 parseia chars_gte=1 (existencia pura) no Counter",
+          get_card_effects("OP16-076")["counter"]["conditions"]
+          == {"chars_gte": 1, "chars_gte_type_filter": "admiral"})
+
+    # OP16-077 Sengoku: 2a clausula independente "Then, trash N cards from
+    # your hand" apos o destino do resto (look_top_deck) sumia quando
+    # trigger_name='main' -- resolvido estendendo a whitelist ja existente
+    # do mecanismo generico de trash_from_hand-como-efeito (NAO duplicando
+    # logica dentro de parse_look_at, que causava trash_from_hand
+    # DUPLICADO em cartas com trigger_name ja coberto, ex. OP16-067 Tsuru).
+    check("OP16-077 ganha filter_type='navy' E trash_from_hand=1 (sem duplicar)",
+          get_card_effects("OP16-077")["main"]["steps"] ==
+          [{"action": "look_top_deck", "count": 5},
+           {"action": "add_to_hand", "count": 2, "revealed_to_opponent": True, "filter_type": "navy"},
+           {"action": "deck_bottom_rest"},
+           {"action": "trash_from_hand", "count": 1}])
+    check("OP16-067 (trigger_name='on_play', ja coberto pela whitelist antiga) NAO duplica trash_from_hand",
+          get_card_effects("OP16-067")["on_play"]["steps"].count({"action": "trash_from_hand", "count": 1}) == 1)
+
+    # P-011 Uta: digito circulado Unicode (①) como atalho de custo DON,
+    # equivalente a "(1)" -- normalizacao no topo de parse_costs.
+    check("P-011 parseia custo rest_don=1 a partir do digito circulado ①",
+          get_card_effects("P-011")["activate_main"]["costs"] == [{"type": "rest_don", "count": 1}])
+
+    # P-027 General Franky: buff em massa filtrado por power_lte -- "All of
+    # your Characters with 3000 base power or less gain +1000 power"
+    # (target=all_allies ainda nao tinha suporte a filtro de power).
+    check("P-027 parseia power_lte=3000 no buff all_allies",
+          get_card_effects("P-027")["opp_turn"]["steps"][0]
+          == {"action": "buff_power", "amount": 1000, "target": "all_allies",
+              "duration": "this_turn", "power_lte": 3000})
+    franky = real_card("P-027")
+    fraco = mk("FRW1", "Fraco", power=3000)
+    forte = mk("FRW2", "Forte", power=4000)
+    me_franky = GameState(leader=mk("FRLDR", "Lider", card_type="LEADER"))
+    me_franky.field_chars = [franky, fraco, forte]
+    opp_franky = GameState(leader=mk("FROPP", "Opp", card_type="LEADER"))
+    EffectExecutor(me_franky, opp_franky).execute(franky, "opp_turn")
+    check("Execucao real: P-027 buffa SO quem tem power<=3000 base (nao o de 4000)",
+          fraco.power_buff == 1000 and forte.power_buff == 0)
+
+    # P-059 The World's Continuation: custo novo bounce_any_own_character
+    # (quantidade VARIAVEL, "return any number of Characters on your
+    # field") + buff_power_per_count com source=bounced_own_this_effect
+    # (mesmo padrao de _last_cost_trash_any_count, agora
+    # _last_cost_bounce_any_count -- atributo dedicado pq um custo nao
+    # pode escrever em _last_moved_count pra um step ler depois, reset
+    # entre custo e steps).
+    check("P-059 parseia custo bounce_any_own_character + buff_power_per_count(source=bounced_own_this_effect)",
+          get_card_effects("P-059")["counter"]["costs"] == [{"type": "bounce_any_own_character"}]
+          and get_card_effects("P-059")["counter"]["steps"][0]["source"] == "bounced_own_this_effect")
+    uta_world = real_card("P-059")
+    char1 = mk("PWC1", "Char 1")
+    char2 = mk("PWC2", "Char 2")
+    me_world = GameState(leader=mk("UTALDR", "Uta", card_type="LEADER"))
+    me_world.field_chars = [char1, char2]
+    opp_world = GameState(leader=mk("WOPP", "Opp", card_type="LEADER"))
+    EffectExecutor(me_world, opp_world).execute(uta_world, "counter")
+    check("Execucao real: P-059 devolve os 2 Characters pra mao e da +4000 (2x2000) ao Leader/Character",
+          char1 in me_world.hand and char2 in me_world.hand
+          and not me_world.field_chars
+          and me_world.leader.power_buff == 4000)
+
+    # PRB02-017 Boa Hancock: typo "K.O up to" (sem o ponto final de
+    # "k.o.") bloqueava o parse_ko inteiro -- mesma familia do typo
+    # "K.O'd" (sem 2o ponto) ja tolerado em OP16-033.
+    check("PRB02-017 parseia ko com cost_lte=4 no bloco Trigger (typo 'K.O up to' tolerado)",
+          get_card_effects("PRB02-017")["trigger"]["steps"]
+          == [{"action": "ko", "count": 1, "target": "opp_character", "cost_lte": 4}])
+
+    # ST07-017 Queen Mama Chanter: cost_eq (custo EXATO, sem "or less")
+    # ausente em character_to_owner_life -- mesma familia de cost_eq ja
+    # suportado em outras acoes (gain_life, trash_from_hand).
+    check("ST07-017 parseia cost_eq=3 em character_to_owner_life",
+          get_card_effects("ST07-017")["activate_main"]["steps"][0]["cost_eq"] == 3)
+    check("ST07-017 parseia custo composto rest_self + life_to_hand(source=life_top_or_bottom)",
+          {c["type"] for c in get_card_effects("ST07-017")["activate_main"]["costs"]}
+          == {"rest_self", "life_to_hand"})
+    queen = real_card("ST07-017")
+    custo3 = mk("QMC1", "Custo 3", cost=3)
+    custo5 = mk("QMC2", "Custo 5", cost=5)
+    me_queen = GameState(leader=mk("QMCLDR", "Lider", card_type="LEADER"))
+    me_queen.field_stage = queen
+    me_queen.field_chars = [custo3, custo5]
+    me_queen.life = [mk(f"QMCL{i}", f"Life{i}", cost=1) for i in range(3)]
+    opp_queen = GameState(leader=mk("QMCOPP", "Opp", card_type="LEADER"))
+    EffectExecutor(me_queen, opp_queen).execute(queen, "activate_main")
+    check("Execucao real: ST07-017 so move o Character de custo EXATO 3 pra Life (nao o de custo 5)",
+          custo3 not in me_queen.field_chars and custo5 in me_queen.field_chars
+          and any(c is custo3 for c in me_queen.life))
+
+    # Achados extra via diff_parser (familia {Tipo} em parse_look_at,
+    # aplica a ~25 cartas): amostra representativa.
+    check("EB03-048 (familia {Tipo} em look_top_deck) parseia filter_type='dressrosa'",
+          get_card_effects("EB03-048")["on_play"]["steps"][1].get("filter_type") == "dressrosa")
+    check("OP16-034 (familia {Tipo} em look_top_deck) parseia filter_type='impel down'",
+          get_card_effects("OP16-034")["on_play"]["steps"][1].get("filter_type") == "impel down")
+
+    # Achados extra via diff_parser (familia condicao de existencia pura,
+    # mesmo fix de OP16-076): amostra representativa.
+    check("OP05-096 (familia chars_gte existencia pura) ganha condicao no bloco main",
+          get_card_effects("OP05-096")["main"]["conditions"]
+          == {"chars_gte": 1, "chars_gte_type_filter": "celestial dragons"})
+
+    # Achado extra via diff_parser (familia "and add" composto em
+    # life_to_hand, mesmo fix de ST07-017): PRB02-016.
+    check("PRB02-016 (familia 'and add' composto) ganha custo life_to_hand",
+          any(c["type"] == "life_to_hand" for c in get_card_effects("PRB02-016")["activate_main"]["costs"]))
+
+
 def main() -> int:
     test_turn_order_imu_prefers_second()
     test_empty_throne_beats_direct_five_elders_play()
@@ -6059,6 +6235,7 @@ def main() -> int:
     test_lote_7_op08_029_a_op08_096()
     test_lote_8_op09_051_a_op10_080()
     test_lote_9_op15_020_a_op16_038()
+    test_lote_10_op14_054_a_st07_017()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0
