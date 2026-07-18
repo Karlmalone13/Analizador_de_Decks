@@ -1,5 +1,21 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-17 (262) - Telemetria completa de decisao e resultado
+
+Ampliado o protocolo `decision_id` da Main Phase para mulligan, defesa
+(`blocker/counter/trigger/reaction/optional`) e selecao de alvos. O server grava
+estado anterior, alternativas legais, escolha e contexto; o plugin reporta
+`sent` e confirma quando observa mudanca real do DTO. `GameOver` gera evento
+`outcome` com `win/loss` e estado final.
+
+O relatorio separa execucao por tipo, calcula deltas futuros de vida/mao/campo/DON
+apos 1/3/5 decisoes e mede arrependimento somente quando a busca realmente
+simulou alternativas. Plano: `metrics/evidence_collection_plan.json` (5 partidas
+live pre-flight, 20 indicativas, 50 self-play por matchup).
+
+**Validado:** py_compile, 7/7 testes, smoke_fast e build C# sem erros. Ainda exige
+partida real para confirmar os estados/popup de GameOver do OPTCGSim.
+
 ## 2026-07-17 (261) - Telemetria pre/pos-acao com decision_id ponta a ponta
 
 Instrumentada a Main Phase ao vivo sem mover logica estrategica para plugin ou

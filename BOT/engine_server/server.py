@@ -127,6 +127,7 @@ _match  = None   # OPTCGMatch: maquinaria de regras usada por choose_action
 # passa a excluir do proximo /decide desse mesmo turno, deixando o Turn
 # Planner cair pra proxima acao da lista.
 _declined_optional: set[tuple[str, int]] = set()
+_live_match_id = new_decision_id()
 
 
 def _get_bridge():
@@ -354,6 +355,12 @@ class ExecutionReport(BaseModel):
     error: Optional[str] = None
 
 
+class OutcomeReport(BaseModel):
+    result: str
+    stateFinal: Optional[GameStateDto] = None
+    reason: Optional[str] = None
+
+
 @app.post("/execution")
 def execution(report: ExecutionReport):
     if report.status not in {"sent", "confirmed", "failed"}:
@@ -366,6 +373,28 @@ def execution(report: ExecutionReport):
         error=report.error,
     )
     return {"ok": True}
+
+
+@app.post("/outcome")
+def outcome(report: OutcomeReport):
+    if report.result not in {"win", "loss", "draw", "aborted"}:
+        raise HTTPException(status_code=400, detail="resultado invalido")
+    write_event("outcome", "match", match_id=_live_match_id, result=report.result,
+                state_final=_model_dict(report.stateFinal) if report.stateFinal else None,
+                reason=report.reason)
+    return {"ok": True}
+
+
+def _record_aux_decision(kind: str, state_before: dict, legal_actions: list,
+                         chosen_action: dict, response: dict, **context) -> dict:
+    """Envelope comum para decisoes fora da Main Phase; nao decide nada."""
+    decision_id = new_decision_id()
+    out = {**response, "decisionId": decision_id}
+    write_event("decision", decision_id, match_id=_live_match_id, decision_kind=kind,
+                phase=context.pop("phase", kind), state_before=state_before,
+                scored_actions=legal_actions, chosen_action=chosen_action,
+                response=out, **context)
+    return out
 
 
 @app.post("/mulligan")
@@ -385,7 +414,11 @@ def mulligan(req: MulliganRequest):
         if not hand_cards:
             return {"mulligan": False, "reason": "mao vazia/desconhecida — keep"}
         deve_trocar, resumo = match._mulligan_decision(hand_cards, deck=None)
-        return {"mulligan": bool(deve_trocar), "reason": resumo}
+        chosen = "mulligan" if deve_trocar else "keep"
+        return _record_aux_decision(
+            "mulligan", {"hand": [_model_dict(c) for c in req.hand]},
+            [{"type": "keep", "eligible": True}, {"type": "mulligan", "eligible": True}],
+            {"type": chosen}, {"mulligan": bool(deve_trocar), "reason": resumo})
     except Exception as e:
         import traceback
         traceback.print_exc()
@@ -406,6 +439,7 @@ def defense(req: DefenseRequest):
         opp_gs = _dto_to_gs(req.state.opp, req.state.turnNumber)
 
         out = {"blockerId": 0, "counterIds": [], "useTrigger": False, "useReaction": False}
+        decision_trace = {}
 
         if req.phase == "blocker":
             engine = DecisionEngine(gs, opp_gs)
@@ -418,7 +452,7 @@ def defense(req: DefenseRequest):
         elif req.phase == "counter":
             out["counterIds"] = bridge.select_counter_cards(
                 gs, req.attackerPower, req.defenderPower, opp_gs=opp_gs,
-                defender_uid=req.defenderId)
+                defender_uid=req.defenderId, trace_out=decision_trace)
             print(f"[DEF] counter atk={req.attackerPower} def={req.defenderPower} "
                   f"-> {len(out['counterIds'])} cartas", flush=True)
 
@@ -441,7 +475,25 @@ def defense(req: DefenseRequest):
                 _declined_optional.add((req.triggerCode, req.state.turnNumber))
             print(f"[DEF] optional -> {out['useReaction']}", flush=True)
 
-        return out
+        if req.phase == "blocker":
+            legal = [{"type": "no_blocker", "eligible": True}] + [
+                {"type": "blocker", "card_uid": getattr(c, '_deck_uid', 0),
+                 "card_code": c.code, "eligible": True}
+                for c in gs.blockers_active()]
+        elif req.phase == "counter":
+            legal = ([{"type": "no_counter", "eligible": True}]
+                     + decision_trace.get("legal_actions", []))
+        else:
+            legal = [{"type": "decline", "eligible": True},
+                     {"type": "accept", "eligible": True}]
+        chosen = {"type": req.phase, "blocker_id": out["blockerId"],
+                  "counter_ids": out["counterIds"],
+                  "accepted": out["useTrigger"] or out["useReaction"]}
+        return _record_aux_decision(
+            "defense", _model_dict(req.state), legal, chosen, out,
+            phase=req.phase, turn=req.state.turnNumber,
+            attacker_power=req.attackerPower, defender_power=req.defenderPower,
+            defender_id=req.defenderId, actor_code=req.triggerCode)
 
     except Exception as e:
         import traceback
@@ -484,7 +536,13 @@ def choose_target(req: ChooseTargetRequest):
         if req.attackerPower > 0 and req.defenderId and out and out[0] == req.defenderId:
             print(f"[TGT][AVISO] top escolhido == alvo original (defId={req.defenderId}) "
                   f"-- possivel redirect sem efeito (no-op)", flush=True)
-        return {"orderedIds": out}
+        legal = [{"type": "target", "target_id": c.id, "zone": c.zone,
+                  "card_code": c.code, "eligible": True} for c in req.candidates]
+        return _record_aux_decision(
+            "target", _model_dict(req.state), legal,
+            {"type": "target_order", "ordered_ids": out}, {"orderedIds": out},
+            phase="target", turn=req.state.turnNumber, actor_code=req.actorCode,
+            attacker_power=req.attackerPower, defender_id=req.defenderId)
 
     except Exception as e:
         import traceback
@@ -508,6 +566,9 @@ def decide(state: GameStateDto):
         write_event(
             "decision",
             decision_id,
+            match_id=_live_match_id,
+            decision_kind="main",
+            phase="main",
             turn=state.turnNumber,
             state_before=_model_dict(state),
             scored_actions=trace.get("scored_actions", []),
@@ -521,6 +582,8 @@ def decide(state: GameStateDto):
         return out
 
     try:
+        global _live_match_id
+        _live_match_id = new_decision_id()
         bridge = _get_bridge()
         match  = _get_match()
         gs     = _dto_to_gs(state.bot, state.turnNumber)

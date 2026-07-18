@@ -97,6 +97,25 @@ transição por tipo de ação.
 6. Não declarar melhora quando os intervalos forem inconclusivos.
 7. Preservar todos os combat logs via `parse_combat_log.py --add-to-db`.
 
+## Decisoes auxiliares, futuro e contrafactual
+
+O mesmo envelope cobre `main`, `mulligan`, `blocker`, `counter`, `trigger`,
+`reaction`, `optional` e `target`. Decisoes auxiliares ficam `pending` ate o
+plugin observar uma mudanca real no DTO; `sent` sozinho nao conta como sucesso.
+O evento `outcome` registra `win/loss/draw/aborted` e o estado final.
+
+- Resultado futuro: deltas de vida, mao, campo e DON apos 1, 3 e 5 decisoes.
+  E correlacao temporal, nao causalidade.
+- Arrependimento contrafactual: somente alternativas presentes em
+  `search_values` e realmente simuladas pelo motor no mesmo snapshot.
+- Falha operacional vem de `failed`. Erro estrategico exige execucao confirmada
+  e valor futuro ou contrafactual ruim.
+- Acoes apenas enumeradas ou pontuadas nao sao chamadas de contrafactuais.
+
+O plano canonico de coleta esta em
+`scriptis_da_ia/metrics/evidence_collection_plan.json`: 5 partidas ao vivo para
+pre-flight, 20 para indicacao e 50 self-play por matchup com seed fixa.
+
 ## Gates iniciais
 
 - Snapshot coverage e completeness devem ser 100% nos novos logs.

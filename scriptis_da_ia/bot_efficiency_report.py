@@ -225,6 +225,8 @@ def analyze_decision_events(lines) -> dict:
     """Versao testavel em memoria do agregador JSONL."""
     decisions: dict[str, dict] = {}
     executions: dict[str, list[dict]] = {}
+    outcomes: list[dict] = []
+    ordered_decisions: list[dict] = []
     invalid_lines = 0
     for raw in lines:
         if not raw.strip():
@@ -240,19 +242,28 @@ def analyze_decision_events(lines) -> dict:
             continue
         if event.get("event") == "decision":
             decisions[decision_id] = event
+            ordered_decisions.append(event)
         elif event.get("event") == "execution":
             executions.setdefault(decision_id, []).append(event)
+        elif event.get("event") == "outcome":
+            outcomes.append(event)
 
     confirmed = failed = pending = 0
     with_state_after = 0
     chosen_with_scores = 0
     eligible_recorded = 0
     immediate_gaps = []
+    counterfactual_regrets = []
+    by_kind: dict[str, dict[str, int]] = {}
     for decision_id, decision in decisions.items():
         eligible = [a for a in decision.get("scored_actions", []) if a.get("eligible")]
         if eligible:
             eligible_recorded += 1
         chosen = decision.get("chosen_action")
+        kind = decision.get("decision_kind") or decision.get("phase") or "legacy"
+        bucket = by_kind.setdefault(kind, {"decisions": 0, "confirmed": 0,
+                                           "failed": 0, "pending": 0})
+        bucket["decisions"] += 1
         if chosen is not None and eligible:
             chosen_with_scores += 1
             best = max(float(a.get("score", -1e9)) for a in eligible)
@@ -264,10 +275,60 @@ def analyze_decision_events(lines) -> dict:
                          if e.get("status") in {"confirmed", "failed"}), None)
         if terminal is None:
             pending += 1
+            bucket["pending"] += 1
         elif terminal.get("status") == "confirmed":
             confirmed += 1
+            bucket["confirmed"] += 1
         else:
             failed += 1
+            bucket["failed"] += 1
+
+        search = decision.get("search_values") or []
+        if search and chosen:
+            def same_action(item):
+                action = item.get("action") or {}
+                return all(action.get(k) == chosen.get(k)
+                           for k in ("type", "card_uid", "target_uid"))
+            selected = next((float(x["value"]) for x in search if same_action(x)), None)
+            if selected is not None:
+                counterfactual_regrets.append(max(float(x["value"]) for x in search) - selected)
+
+    def state_vector(state: dict) -> dict[str, float] | None:
+        if not isinstance(state, dict) or "bot" not in state or "opp" not in state:
+            return None
+        bot, opp = state.get("bot", {}), state.get("opp", {})
+        return {
+            "life_diff": len(bot.get("life", [])) - len(opp.get("life", [])),
+            "hand_diff": len(bot.get("hand", [])) - len(opp.get("hand", [])),
+            "board_diff": len(bot.get("board", [])) - len(opp.get("board", [])),
+            "don_diff": (bot.get("activeDon", 0) + bot.get("restedDon", 0)
+                         - opp.get("activeDon", 0) - opp.get("restedDon", 0)),
+        }
+
+    future_samples: dict[str, list[dict[str, float]]] = {"1": [], "3": [], "5": []}
+    by_match: dict[str, list[tuple[dict, dict[str, float]]]] = {}
+    for decision in ordered_decisions:
+        vector = state_vector(decision.get("state_before"))
+        if vector is not None:
+            by_match.setdefault(decision.get("match_id") or "legacy", []).append(
+                (decision, vector))
+    for vectors in by_match.values():
+        for index, (_, before) in enumerate(vectors):
+            for horizon in (1, 3, 5):
+                if index + horizon >= len(vectors):
+                    continue
+                after = vectors[index + horizon][1]
+                future_samples[str(horizon)].append(
+                    {key: after[key] - before[key] for key in before})
+    future_value = {}
+    for horizon, samples_at_horizon in future_samples.items():
+        future_value[horizon] = {
+            "samples": len(samples_at_horizon),
+            "mean_delta": {
+                key: _round(sum(s[key] for s in samples_at_horizon) / len(samples_at_horizon))
+                for key in ("life_diff", "hand_diff", "board_diff", "don_diff")
+            } if samples_at_horizon else None,
+        }
 
     total = len(decisions)
     completed = confirmed + failed
@@ -284,6 +345,20 @@ def analyze_decision_events(lines) -> dict:
         "mean_immediate_score_gap": _round(
             sum(immediate_gaps) / len(immediate_gaps) if immediate_gaps else None
         ),
+        "mean_counterfactual_regret": _round(
+            sum(counterfactual_regrets) / len(counterfactual_regrets)
+            if counterfactual_regrets else None),
+        "counterfactual_coverage_pct": _round(_ratio(len(counterfactual_regrets), total, 100)),
+        "decision_kinds": by_kind,
+        "outcomes": {
+            "games": len(outcomes),
+            "wins": sum(e.get("result") == "win" for e in outcomes),
+            "losses": sum(e.get("result") == "loss" for e in outcomes),
+            "win_rate_pct": _round(_ratio(
+                sum(e.get("result") == "win" for e in outcomes),
+                sum(e.get("result") in {"win", "loss"} for e in outcomes), 100)),
+        },
+        "future_state_delta_by_decisions": future_value,
         "state_fidelity": None,
         "decision_quality": None,
         "invalid_lines": invalid_lines,
@@ -291,6 +366,8 @@ def analyze_decision_events(lines) -> dict:
             "execution_success usa confirmacao por mudanca do DTO no proximo main state estavel",
             "mean_immediate_score_gap nao e arrependimento: busca pode escolher score imediato menor",
             "state_fidelity exige verdade independente do estado do jogo",
+            "contrafactual usa somente alternativas realmente simuladas pela busca do motor",
+            "sent sem confirmed/failed permanece pending e nao conta como sucesso",
         ],
     }
 
@@ -318,8 +395,12 @@ def print_report(report: dict) -> None:
         print(f"\n[telemetria] {live['source']} decisions={live['decisions']}")
         for name in ("execution_success_pct", "legal_actions_coverage_pct",
                      "chosen_score_coverage_pct", "state_after_coverage_pct",
-                     "mean_immediate_score_gap"):
+                     "mean_immediate_score_gap", "mean_counterfactual_regret",
+                     "counterfactual_coverage_pct"):
             print(f"  {name:34s} {live[name]}")
+        print(f"  {'decision_kinds':34s} {live['decision_kinds']}")
+        print(f"  {'outcomes':34s} {live['outcomes']}")
+        print(f"  {'future_delta_1_3_5':34s} {live['future_state_delta_by_decisions']}")
 
 
 def main() -> None:

@@ -49,6 +49,14 @@ namespace OPTCGBotPlugin
         private string _lastHeartbeatMsg = "";
         private BotAction? _pendingTelemetryAction;
         private string _pendingTelemetryState = "";
+        private string _pendingTargetDecisionId = "";
+        private bool _outcomeReported;
+        private sealed class PendingAuxTelemetry
+        {
+            public string id = "";
+            public string state = "";
+        }
+        private readonly System.Collections.Generic.List<PendingAuxTelemetry> _pendingAux = new();
 
         // Evita perguntar pro engine de novo a cada tick pela mesma acao
         // pendente (custo opcional sem tela dedicada — ver Update())
@@ -75,6 +83,33 @@ namespace OPTCGBotPlugin
             {
                 _cooldown = 1f;
                 return;
+            }
+
+            if (gls.e_CurrentState == GameplayState.GameOver && !_outcomeReported)
+            {
+                _outcomeReported = true;
+                bool youWon = gls.go_YouWin != null && gls.go_YouWin.activeSelf;
+                bool botWon = BotPlayerIndex == 0 ? youWon : !youWon;
+                var finalDto = GameStateBuilder.Build(
+                    gls.Lps_Players[BotPlayerIndex], gls.Lps_Players[1 - BotPlayerIndex], gls);
+                EngineClient.ReportOutcome(botWon ? "win" : "loss", finalDto,
+                                           $"GameOver; bot=P{BotPlayerIndex + 1}");
+                return;
+            }
+            if (gls.e_CurrentState == GameplayState.Start_WaitOnMulliganChoice)
+                _outcomeReported = false;
+
+            if (_pendingAux.Count > 0)
+            {
+                var auxDto = GameStateBuilder.Build(
+                    gls.Lps_Players[BotPlayerIndex], gls.Lps_Players[1 - BotPlayerIndex], gls);
+                string auxState = JsonConvert.SerializeObject(auxDto);
+                for (int i = _pendingAux.Count - 1; i >= 0; i--)
+                {
+                    if (auxState == _pendingAux[i].state) continue;
+                    EngineClient.ReportExecutionId(_pendingAux[i].id, "confirmed", auxDto);
+                    _pendingAux.RemoveAt(i);
+                }
             }
 
             // Heartbeat de diagnostico: SEMPRE roda, mesmo com o bot pausado
@@ -153,10 +188,13 @@ namespace OPTCGBotPlugin
                 {
                     var mulBotPs = gls.Lps_Players[BotPlayerIndex];
                     var mulDto = GameStateBuilder.Build(mulBotPs, gls.Lps_Players[1 - BotPlayerIndex], gls);
-                    bool mull = EngineClient.IsAlive() && EngineClient.ShouldMulligan(mulDto.bot.hand);
+                    string mulliganDecisionId = "";
+                    bool mull = EngineClient.IsAlive() && EngineClient.ShouldMulligan(
+                        mulDto.bot.hand, id => mulliganDecisionId = id);
                     Plugin.Log.LogInfo($"[Bot] mao inicial: {(mull ? "MULLIGAN" : "KEEP")}");
                     gls.ChoiceButtonClicked(
                         mull ? ButtonChoiceType.StartingHand_Mulligan : ButtonChoiceType.StartingHand_Keep, -1);
+                    TrackAuxDecision(mulliganDecisionId, mulDto);
                     _cooldown = 1f;
                 }
                 return;
@@ -408,6 +446,8 @@ namespace OPTCGBotPlugin
             var resp = EngineClient.IsAlive()
                 ? EngineClient.Defense(dto, duringAttack ? "reaction" : "optional", atkP, defP, actorCode, defId)
                 : null;
+            if (resp != null)
+                TrackAuxDecision(resp.decisionId, dto);
             return resp?.useReaction ?? false;
         }
 
@@ -465,7 +505,8 @@ namespace OPTCGBotPlugin
                     }
 
                     _pendingOrder = EngineClient.ChooseTarget(
-                        dto, candidates, BotExecutor.ActorCode(gls), atkPower, defenderId);
+                        dto, candidates, BotExecutor.ActorCode(gls), atkPower, defenderId,
+                        id => _pendingTargetDecisionId = id);
                 }
             }
 
@@ -484,6 +525,12 @@ namespace OPTCGBotPlugin
                 int targetId = _pendingOrder[_pendingAttempt];
                 _pendingAttempt++;
                 BotExecutor.ClickTargetCandidate(gls, botPs, oppPs, targetId);
+                if (!string.IsNullOrEmpty(_pendingTargetDecisionId))
+                {
+                    TrackAuxDecision(_pendingTargetDecisionId,
+                        GameStateBuilder.Build(botPs, oppPs, gls));
+                    _pendingTargetDecisionId = "";
+                }
                 _cooldown = 0.8f;
                 return;
             }
@@ -549,6 +596,9 @@ namespace OPTCGBotPlugin
                 {
                     BotExecutor.NoBlocker(gls);
                 }
+                if (resp != null)
+                    TrackAuxDecision(resp.decisionId,
+                        GameStateBuilder.Build(botPs, oppPs, gls));
                 _cooldown = 1f;
                 return;
             }
@@ -571,6 +621,9 @@ namespace OPTCGBotPlugin
 
                 BotExecutor.PlayCounters(gls, botPs,
                     resp?.counterIds ?? new System.Collections.Generic.List<int>());
+                if (resp != null)
+                    TrackAuxDecision(resp.decisionId,
+                        GameStateBuilder.Build(botPs, oppPs, gls));
                 _cooldown = 1f;
                 return;
             }
@@ -589,6 +642,9 @@ namespace OPTCGBotPlugin
                     : null;
 
                 BotExecutor.ResolveTrigger(gls, resp?.useTrigger ?? false);
+                if (resp != null)
+                    TrackAuxDecision(resp.decisionId,
+                        GameStateBuilder.Build(botPs, oppPs, gls));
                 _cooldown = 1f;
                 return;
             }
@@ -601,6 +657,17 @@ namespace OPTCGBotPlugin
             var go = GameObject.Find("GameplayLogic");
             _gls = go != null ? go.GetComponent<GameplayLogicScript>() : null;
             return _gls;
+        }
+
+        private void TrackAuxDecision(string decisionId, GameStateDto state)
+        {
+            if (string.IsNullOrEmpty(decisionId)) return;
+            EngineClient.ReportExecutionId(decisionId, "sent", state);
+            _pendingAux.Add(new PendingAuxTelemetry
+            {
+                id = decisionId,
+                state = JsonConvert.SerializeObject(state),
+            });
         }
 
         // Popup permanente (canto superior esquerdo) mostrando lado/estado do

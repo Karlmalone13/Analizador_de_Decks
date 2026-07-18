@@ -69,6 +69,44 @@ class BotEfficiencyReportTests(unittest.TestCase):
         self.assertEqual(result["execution_success_pct"], 50.0)
         self.assertEqual(result["mean_immediate_score_gap"], 2.0)
 
+    def test_multiphase_outcome_and_future_state_are_separate(self):
+        def state(life, opp_life, hand=5, board=1):
+            return {"bot": {"life": [0] * life, "hand": [0] * hand,
+                            "board": [0] * board, "activeDon": 1, "restedDon": 1},
+                    "opp": {"life": [0] * opp_life, "hand": [0] * 5,
+                            "board": [], "activeDon": 1, "restedDon": 1}}
+
+        events = [
+            {"event": "decision", "decision_id": "m", "decision_kind": "mulligan",
+             "state_before": {"hand": []}, "scored_actions": [], "chosen_action": {"type": "keep"}},
+            {"event": "execution", "decision_id": "m", "status": "sent"},
+            {"event": "decision", "decision_id": "a", "decision_kind": "main",
+             "state_before": state(4, 4), "scored_actions": [], "chosen_action": {"type": "attack"}},
+            {"event": "execution", "decision_id": "a", "status": "confirmed"},
+            {"event": "decision", "decision_id": "t", "decision_kind": "target",
+             "state_before": state(4, 3), "scored_actions": [], "chosen_action": {"type": "target_order"}},
+            {"event": "outcome", "decision_id": "match", "result": "win"},
+        ]
+        result = report.analyze_decision_events(json.dumps(e) for e in events)
+        self.assertEqual(result["decision_kinds"]["mulligan"]["pending"], 1)
+        self.assertEqual(result["decision_kinds"]["main"]["confirmed"], 1)
+        self.assertEqual(result["outcomes"]["win_rate_pct"], 100.0)
+        self.assertEqual(
+            result["future_state_delta_by_decisions"]["1"]["mean_delta"]["life_diff"], 1.0)
+
+    def test_counterfactual_regret_uses_only_simulated_alternatives(self):
+        chosen = {"type": "play", "card_uid": 7, "target_uid": 0}
+        events = [{"event": "decision", "decision_id": "x", "decision_kind": "main",
+                   "chosen_action": chosen, "scored_actions": [],
+                   "search_values": [
+                       {"action": chosen, "value": 3.0},
+                       {"action": {"type": "attack", "card_uid": 9, "target_uid": 0},
+                        "value": 5.5},
+                   ]}]
+        result = report.analyze_decision_events(json.dumps(e) for e in events)
+        self.assertEqual(result["mean_counterfactual_regret"], 2.5)
+        self.assertEqual(result["counterfactual_coverage_pct"], 100.0)
+
 
 if __name__ == "__main__":
     unittest.main()

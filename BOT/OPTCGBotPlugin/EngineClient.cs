@@ -61,6 +61,28 @@ namespace OPTCGBotPlugin
             }
         }
 
+        public static void ReportExecutionId(string decisionId, string status,
+                                             GameStateDto? stateAfter, string? error = null)
+        {
+            if (string.IsNullOrEmpty(decisionId)) return;
+            ReportExecution(new BotAction { decisionId = decisionId }, status, stateAfter, error);
+        }
+
+        public static void ReportOutcome(string result, GameStateDto? stateFinal,
+                                         string? reason = null)
+        {
+            try
+            {
+                string json = JsonConvert.SerializeObject(new { result, stateFinal, reason });
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+                _http.PostAsync($"{BASE}/outcome", content).GetAwaiter().GetResult();
+            }
+            catch (Exception ex)
+            {
+                Plugin.Log.LogWarning($"[EngineClient] outcome: {ex.Message}");
+            }
+        }
+
         public static bool IsAlive()
         {
             try
@@ -73,6 +95,7 @@ namespace OPTCGBotPlugin
 
         private class MulliganResponse
         {
+            public string decisionId = "";
             public bool mulligan;
             public string reason = "";
         }
@@ -109,6 +132,7 @@ namespace OPTCGBotPlugin
 
         public class DefenseResponse
         {
+            public string decisionId = "";
             public int blockerId;
             public System.Collections.Generic.List<int> counterIds = new();
             public bool useTrigger;
@@ -124,6 +148,7 @@ namespace OPTCGBotPlugin
 
         private class ChooseTargetResponse
         {
+            public string decisionId = "";
             public System.Collections.Generic.List<int> orderedIds = new();
         }
 
@@ -135,7 +160,8 @@ namespace OPTCGBotPlugin
             System.Collections.Generic.List<TargetCandidate> candidates,
             string? actorCode = null,
             int attackerPower = 0,
-            int defenderId = 0)
+            int defenderId = 0,
+            Action<string>? onDecision = null)
         {
             try
             {
@@ -145,7 +171,9 @@ namespace OPTCGBotPlugin
                 if (!resp.IsSuccessStatusCode)
                     return null;
                 string body = resp.Content.ReadAsStringAsync().GetAwaiter().GetResult();
-                return JsonConvert.DeserializeObject<ChooseTargetResponse>(body)?.orderedIds;
+                var result = JsonConvert.DeserializeObject<ChooseTargetResponse>(body);
+                if (result != null) onDecision?.Invoke(result.decisionId);
+                return result?.orderedIds;
             }
             catch (Exception ex)
             {
@@ -183,7 +211,8 @@ namespace OPTCGBotPlugin
         }
 
         // true = trocar a mao; false = manter (default seguro em erro)
-        public static bool ShouldMulligan(System.Collections.Generic.List<CardDto> hand)
+        public static bool ShouldMulligan(System.Collections.Generic.List<CardDto> hand,
+                                          Action<string>? onDecision = null)
         {
             try
             {
@@ -194,6 +223,7 @@ namespace OPTCGBotPlugin
                     return false;
                 string body = resp.Content.ReadAsStringAsync().GetAwaiter().GetResult();
                 var r = JsonConvert.DeserializeObject<MulliganResponse>(body);
+                if (r != null) onDecision?.Invoke(r.decisionId);
                 if (r != null)
                     Plugin.Log.LogInfo($"[Bot] mulligan={r.mulligan} ({r.reason})");
                 return r?.mulligan ?? false;

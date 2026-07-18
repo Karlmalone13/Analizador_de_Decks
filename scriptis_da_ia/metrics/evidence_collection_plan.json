@@ -1,0 +1,21 @@
+{
+  "schema": 1,
+  "live": {
+    "preflight_games": 5,
+    "decision_games": 20,
+    "preferred": "mesmo lider, matchups comparaveis e lados alternados",
+    "required_artifacts": ["combat_log", "decision_jsonl", "commit", "resultado"]
+  },
+  "self_play": {
+    "games_per_matchup": 50,
+    "seed": 20260717,
+    "side_a": "Imu",
+    "matchups": ["Barba Negra BY", "Krieg RG", "Kid", "Imu"]
+  },
+  "gates": {
+    "execution_success_pct": 95,
+    "state_after_coverage_pct": 95,
+    "outcome_coverage_pct": 100,
+    "minimum_counterfactual_coverage_pct": 20
+  }
+}

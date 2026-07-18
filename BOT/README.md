@@ -81,6 +81,17 @@ cd scriptis_da_ia
 python bot_efficiency_report.py --decision-log ..\BOT\engine_server\logs\decisions\decisions_<timestamp>.jsonl
 ```
 
+A telemetria cobre Main Phase, mulligan, defesa, triggers, reacoes, custos
+opcionais e selecao de alvos. O fim da partida grava `win/loss`. Preserve o
+combat log e o JSONL da mesma sessao e use:
+
+```cmd
+python parse_combat_log.py <CombatLog.log> --add-to-db
+python bot_efficiency_report.py --decision-log ..\BOT\engine_server\logs\decisions\decisions_<timestamp>.jsonl --json metrics\live_<data>.json
+python baseline_metrics.py --deck-a Imu --deck-b "Barba Negra BY" --n 50 --seed 20260717 --json metrics\selfplay_imu_teach.json
+python audit_decision_quality.py --n 50 --seed 20260717 --json-out metrics\selfplay_decisions.json
+```
+
 `confirmed` significa que o DTO mudou; não prova sozinho que toda a semântica do
 efeito foi correta. Os JSONL são efêmeros/ignorados pelo git: preserve o arquivo
 junto do combat log quando investigar uma partida.

@@ -640,7 +640,8 @@ def resolve_trigger_choice(gs: GameState, card_code: str | None,
 
 def select_counter_cards(gs: GameState, atk_power: int, def_power: int,
                          opp_gs: GameState | None = None,
-                         defender_uid: int = 0) -> list[int]:
+                         defender_uid: int = 0,
+                         trace_out: Optional[dict] = None) -> list[int]:
     """
     Seleciona as cartas de counter (por _deck_uid) para defender um ataque.
     Mesma politica do DecisionEngine.use_counter: menores primeiro, minimo
@@ -715,6 +716,12 @@ def select_counter_cards(gs: GameState, atk_power: int, def_power: int,
         if effective_hand_play_cost(gs, event) > gs.don_available:
             continue
         pool.append((buff_step.get('amount', 0), event))
+
+    if trace_out is not None:
+        trace_out["legal_actions"] = [{
+            "type": "counter", "card_uid": getattr(card, '_deck_uid', 0),
+            "card_code": card.code, "counter": value, "eligible": True,
+        } for value, card in pool]
 
     defender_char = None
     if defender_uid:
