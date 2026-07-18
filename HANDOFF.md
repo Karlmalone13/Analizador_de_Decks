@@ -397,6 +397,63 @@ TODOS OS TESTES PASSARAM. `smoke_test_broad.py`: 7/7 (rodado por mexer em
 `_execute_attack`, codigo central de toda batalha). Registro completo em
 `scriptis_da_ia/parser_audits/2026-07-17_op03_familia_on_damage_to_life_mill.json`.
 
+## 2026-07-17 (257) - OP10-026/027 Kin'emon: custo composto "place this Character and 1 [Kin'emon] ... from your trash at the bottom of your deck" (deferido desde 27/06) + generalizacao pra 5 cartas self-only descobertas na varredura
+
+Pedido explicito do usuario (ver comentario deliberado no codigo perto de
+`place_from_trash_bottom_deck`): implementar o custo composto do Kin'emon
+(OP10-026/027) que ficava fora de escopo desde a auditoria de 27/06.
+Confirmado via busca ampla no `cards_rows.csv` (regex `place this
+character and`) que so essas 2 cartas usam a forma COMPOSTA exata.
+
+Busca mais ampla (`place this (character|leader)`) revelou 3 cartas a
+mais com a MESMA raiz gramatical, so que sem o parceiro do trash
+(OP06-016, OP09-008, P-013) -- mesmo bug (custo inteiro ausente, tratado
+como gratis). Usuario aprovou incluir no mesmo fix generico (pergunta via
+AskUserQuestion). Essa segunda busca manual CRASHOU no meio (encoding
+cp1252 do console ao tentar imprimir um char `−` de OP09-008/P-013) e
+devolveu uma lista PARCIAL sem eu perceber -- so `diff_parser.py`
+(comparando contra o snapshot pre-fix, apos escrever o regex novo)
+revelou a lista COMPLETA e correta: **7 cartas**, 2 a mais do que a busca
+manual tinha achado (OP12-080 e P-033). Licao: pra esse tipo de auditoria,
+`diff_parser.py` (que re-parseia o banco inteiro programaticamente) e mais
+confiavel do que grep manual no console -- nao confiar em busca manual
+como fonte final de "achei tudo".
+
+**Custo novo no parser (`gerar_effects_db.py`, `parse_costs`):**
+`place_self_bottom_deck` -- move a PROPRIA carta (campo) pro fundo do
+proprio deck, com campos opcionais `trash_partner_name`/
+`trash_partner_count`/`trash_partner_power_eq|gte|lte` quando o texto
+tambem exige um parceiro NOMEADO do trash junto (Kin'emon). Regex
+forma-agnostica: aceita `at the bottom of your deck` e `at the bottom of
+the owner's deck` como sinonimos (nao amarrado ao fraseado exato de
+nenhuma carta-gatilho).
+
+**Engine (`decision_engine.py`, `_pay_costs`):** pagamento ATOMICO --
+preflight valida que o parceiro do trash existe ANTES de qualquer
+mutacao (mesmo padrao ja usado por `place_from_trash_bottom_deck`); so
+entao move o parceiro pro fundo do deck e por ultimo a propria carta via
+`remove_character_from_field(..., 'deck_bottom')` (destino ja existente,
+reusado). Custo tudo-ou-nada: se faltar o parceiro nomeado no trash, a
+carta-fonte NAO vai pro fundo do deck sozinha (retorna False, efeito nao
+dispara). Tambem adicionado desconto em `_score_activate_main`
+(`place_self_bottom_deck` desconta `min(src.board_value()*8, 80)`, mesmo
+criterio de `ko_own_character`) -- sem isso a IA trataria perder o
+proprio personagem ativo do campo como "jogar carta gratis".
+
+**Validado:** `diff_parser.py` GANHOU=0/PERDEU=0/MUDOU=7 (as 7 cartas,
+sem regressao); `gerar_dbs.py` sincronizado (2614 cartas); `smoke_fast.py`
+1 teste novo com execucao real cobrindo custo pago com sucesso (Kin'emon
+original + parceiro do trash pro fundo do deck, alvo jogado da mao),
+custo falhando (sem Kin'emon do power certo no trash, nada mutado) e a
+familia self-only (OP06-016); `smoke_test.py` TODOS OS TESTES PASSARAM;
+`smoke_test_broad.py` 7/7 (rodado por mexer em `_pay_costs`/
+`_score_activate_main`, codigo compartilhado). Registro completo em
+`scriptis_da_ia/parser_audits/2026-07-17_op10-026_027_kinemon_place_self_bottom_deck.json`.
+
+**Estado:** pronto pra commit. Nao testado ao vivo contra humano ainda
+(so smoke/simulacao interna) -- ver
+`memory/feedback_nao_declarar_resolvido_sem_partida_real.md`.
+
 ## 2026-07-17 (248-256) - Lote de 9 itens aprovado ("aprovo sim") -- correcoes de FORMA (conectivo/ordem/redacao) em mecanismos ja existentes
 
 Continuacao imediata do lote de 11 (bloco 237-247). Usuario aprovou 9 novos

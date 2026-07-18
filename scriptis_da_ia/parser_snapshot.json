@@ -16199,6 +16199,11 @@
  },
  "OP06-016": {
   "activate_main": {
+   "costs": [
+    {
+     "type": "place_self_bottom_deck"
+    }
+   ],
    "steps": [
     {
      "action": "debuff_power",
@@ -22891,6 +22896,11 @@
  },
  "OP09-008": {
   "activate_main": {
+   "costs": [
+    {
+     "type": "place_self_bottom_deck"
+    }
+   ],
    "steps": [
     {
      "action": "debuff_power",
@@ -25437,6 +25447,14 @@
  },
  "OP10-026": {
   "activate_main": {
+   "costs": [
+    {
+     "trash_partner_count": 1,
+     "trash_partner_name": "kin'emon",
+     "trash_partner_power_eq": 0,
+     "type": "place_self_bottom_deck"
+    }
+   ],
    "steps": [
     {
      "action": "play_card",
@@ -25449,6 +25467,14 @@
  },
  "OP10-027": {
   "activate_main": {
+   "costs": [
+    {
+     "trash_partner_count": 1,
+     "trash_partner_name": "kin'emon",
+     "trash_partner_power_eq": 1000,
+     "type": "place_self_bottom_deck"
+    }
+   ],
    "steps": [
     {
      "action": "play_card",
@@ -30853,21 +30879,32 @@
  },
  "OP12-080": {
   "activate_main": {
-   "conditions": {
-    "leader_is": "sanji"
-   },
+   "costs": [
+    {
+     "type": "place_self_bottom_deck"
+    }
+   ],
    "steps": [
     {
      "action": "look_top_deck",
+     "conditions": {
+      "leader_is": "sanji"
+     },
      "count": 3
     },
     {
      "action": "add_to_hand",
+     "conditions": {
+      "leader_is": "sanji"
+     },
      "count": 1,
      "revealed_to_opponent": true
     },
     {
-     "action": "deck_bottom_rest"
+     "action": "deck_bottom_rest",
+     "conditions": {
+      "leader_is": "sanji"
+     }
     }
    ]
   },
@@ -41363,6 +41400,11 @@
  "P-012": {},
  "P-013": {
   "activate_main": {
+   "costs": [
+    {
+     "type": "place_self_bottom_deck"
+    }
+   ],
    "steps": [
     {
      "action": "debuff_power",
@@ -41546,6 +41588,11 @@
  },
  "P-033": {
   "activate_main": {
+   "costs": [
+    {
+     "type": "place_self_bottom_deck"
+    }
+   ],
    "steps": [
     {
      "action": "draw",

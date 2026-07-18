@@ -3185,6 +3185,25 @@ class EffectExecutor:
             )
             if len(candidates) < pending.get('count', 1):
                 return False
+        # Mesmo preflight para place_self_bottom_deck: se o custo exige um
+        # parceiro nomeado do trash (Kin'emon OP10-026/027) que nao existe,
+        # aborta ANTES de mover a propria carta (card) pro fundo do deck --
+        # senao a carta-fonte iria pro fundo do deck sem o efeito nunca ser
+        # pago (custo parcial, estado inconsistente).
+        for pending in costs:
+            if pending.get('type') != 'place_self_bottom_deck':
+                continue
+            if not pending.get('trash_partner_name'):
+                continue
+            candidates = eligible_cards(
+                self.me.trash,
+                name_or_code=pending.get('trash_partner_name', ''),
+                power_eq=pending.get('trash_partner_power_eq'),
+                power_gte=pending.get('trash_partner_power_gte'),
+                power_lte=pending.get('trash_partner_power_lte'),
+            )
+            if len(candidates) < pending.get('trash_partner_count', 1):
+                return False
         for cost in costs:
             ctype = cost['type']
             if ctype == 'rest_self':
@@ -3387,6 +3406,45 @@ class EffectExecutor:
                 if contains_identity(self.me.field_chars, card):
                     remove_character_from_field(self.me, card, 'trash')
                     self._cost_logs.append(f'custo: trashou {card.name[:18]} (ele mesmo)')
+            elif ctype == 'place_self_bottom_deck':
+                # Custo composto: move a PROPRIA carta (card, do campo) pro
+                # fundo do PROPRIO deck, opcionalmente junto com N carta(s)
+                # NOMEADA(s) do trash (mesmo criterio de power do custo
+                # trash_own_character: eq/gte/lte contra card.power, ja base
+                # power no nosso modelo). O preflight (topo de _pay_costs)
+                # ja garantiu que o parceiro do trash existe ANTES de
+                # qualquer mutacao aqui; ainda assim revalidamos ao vivo
+                # (fresh eligible_cards) porque um custo ANTERIOR na mesma
+                # lista pode ter alterado o trash entre o preflight e aqui
+                # -- mesmo padrao do bloco place_from_trash_bottom_deck
+                # abaixo. Achado 17/07: OP06-016/OP09-008/P-013 (self-only)
+                # e Kin'emon OP10-026/027 (self + parceiro), custo inteiro
+                # ausente antes -- tratado como gratis.
+                partner_name = cost.get('trash_partner_name')
+                partner_moved = []
+                if partner_name:
+                    candidatos = eligible_cards(
+                        self.me.trash,
+                        name_or_code=partner_name,
+                        power_eq=cost.get('trash_partner_power_eq'),
+                        power_gte=cost.get('trash_partner_power_gte'),
+                        power_lte=cost.get('trash_partner_power_lte'),
+                    )
+                    partner_count = cost.get('trash_partner_count', 1)
+                    if len(candidatos) < partner_count:
+                        return False
+                    for _ in range(partner_count):
+                        alvo = candidatos.pop()
+                        remove_by_identity(self.me.trash, alvo)
+                        self.me.deck.insert(0, alvo)   # fundo do deck = inicio da lista
+                        partner_moved.append(alvo.name[:14])
+                if not contains_identity(self.me.field_chars, card):
+                    return False
+                remove_character_from_field(self.me, card, 'deck_bottom')
+                log = f'custo: {card.name[:18]} foi para o fundo do deck'
+                if partner_moved:
+                    log += f' junto com (trash): {", ".join(partner_moved)}'
+                self._cost_logs.append(log)
             elif ctype == 'return_own_character_to_hand':
                 from optcg_engine.rules_facade import eligible_cards
                 count = cost.get('count', 1)
@@ -9742,6 +9800,18 @@ class OPTCGMatch:
                 base -= min(sacrifice_value * 8, 80)
             else:
                 base -= 100
+
+        # place_self_bottom_deck: a PROPRIA carta (src) sai do campo pro
+        # fundo do deck -- perda de board real, mesmo criterio de escala do
+        # tem_ko_own acima (board_value*8, cap 80). O parceiro nomeado do
+        # trash (Kin'emon OP10-026/027) NAO desconta -- ja estava fora do
+        # campo, sem valor de board corrente (mesmo criterio de
+        # place_from_trash_bottom_deck, que tambem nunca e descontado aqui).
+        # Achado 17/07: sem isto, mandar o proprio atacante ativo pro fundo
+        # do deck pontuaria como se fosse de graca, igual jogar carta grátis
+        # normal (base=110 do bloco play_card acima).
+        if any(c.get('type') == 'place_self_bottom_deck' for c in costs):
+            base -= min(src.board_value() * 8, 80)
 
         if tem_trash_hand:
             # Comprar descartando da mao nao e vantagem liquida de carta.

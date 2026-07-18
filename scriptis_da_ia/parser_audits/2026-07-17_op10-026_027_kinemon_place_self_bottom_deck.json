@@ -1,0 +1,22 @@
+{
+  "trigger_card": "OP10-026",
+  "problem": "OP10-026/OP10-027 (Kin'emon): 'You may place this Character and 1 [Kin'emon] with N power from your trash at the bottom of your deck in any order: Play up to 1 [Kin'emon] with a cost of 6 from your hand.' O custo INTEIRO estava ausente (apenas o step play_card era parseado, sem nenhum bloco 'costs') -- ja documentado como deliberadamente fora de escopo em comentario no proprio gerar_effects_db.py (perto de place_from_trash_bottom_deck). A IA tratava a habilidade como gratis, sem mover nem a propria carta nem o parceiro do trash pro fundo do deck.",
+  "grammar_family": "'You may place this Character [and N [Tipo] with X power from your trash] at the bottom of (your|the owner's) deck [in any order]: efeito' -- custo composto de mover a PROPRIA carta (campo) pro fundo do proprio deck, opcionalmente junto com carta(s) NOMEADA(s) do trash.",
+  "queries": [
+    "grep -n \"place this character and\" cards_rows.csv (via python regex) -- so achou OP10-026/OP10-027 pra forma COMPOSTA (self + parceiro nomeado do trash)",
+    "regex mais ampla 'place this (character|leader)' contra cards_rows.csv -- essa primeira passada crashou no meio (UnicodeEncodeError no console cp1252 ao tentar imprimir um char '−' de OP09-008/P-013) e devolveu uma lista PARCIAL (13 hits, mas cortada antes do fim do CSV)",
+    "diff_parser.py (comparando snapshot pre-fix vs parser com o novo regex aplicado) foi quem revelou a lista COMPLETA e correta: 7 cartas mudaram (MUDOU=7, GANHOU=0, PERDEU=0) -- 2 a mais do que a busca manual (crashada) tinha encontrado: OP12-080 e P-033"
+  ],
+  "cards_found": [
+    "OP10-026", "OP10-027", "OP06-016", "OP09-008", "P-013", "OP12-080", "P-033"
+  ],
+  "resolution_scope": "global",
+  "decision": "Um unico tipo de custo novo no parser, 'place_self_bottom_deck', cobrindo os dois casos: (a) self-only (sem parceiro do trash -- OP06-016/OP09-008/P-013/OP12-080/P-033), e (b) self + N carta(s) NOMEADA(s) do trash com power exato/gte/lte (Kin'emon OP10-026/027, via campos opcionais trash_partner_name/trash_partner_count/trash_partner_power_eq|gte|lte). Regex forma-agnostica: aceita 'at the bottom of your deck' e 'at the bottom of the owner's deck' como sinonimos, e usa o mesmo charclass de tipo colchetado (['\"\\[{]...['\"\\]}]) ja usado em outros custos do arquivo (nao amarrado ao fraseado literal de nenhuma carta especifica). No engine (_pay_costs), o custo e pago em duas partes ATOMICAS: preflight valida que o parceiro do trash existe ANTES de qualquer mutacao (mesmo padrao ja usado pelo preflight de place_from_trash_bottom_deck), so entao move o parceiro (candidatos.pop + insert(0, deck)) e por ultimo move a PROPRIA carta via remove_character_from_field(..., 'deck_bottom') -- reusando o destino 'deck_bottom' ja existente nessa funcao (usada por outros custos de campo). Se o parceiro nomeado faltar, retorna False sem mexer no campo (a carta-fonte NAO vai pro fundo do deck sozinha, custo tudo-ou-nada). Tambem adicionado desconto de score em _score_activate_main (place_self_bottom_deck -= min(src.board_value()*8, 80), mesmo criterio de escala do desconto ja existente pra ko_own_character) -- sem isso a IA trataria perder o proprio personagem ativo do campo como se fosse 'jogar carta gratis' (base=110 do bloco play_card), inflando o valor da ativacao.",
+  "validated_by": [
+    "diff_parser.py: GANHOU=0, PERDEU=0, MUDOU=7 (as 7 cartas do custo novo, nenhuma regressao)",
+    "gerar_dbs.py: 2614 cartas sincronizadas, sanidade OK",
+    "smoke_fast.py: 1 teste dirigido novo com EXECUCAO REAL cobrindo (1) parse dos 2 formatos (composto e self-only), (2) custo PAGO com sucesso (Kin'emon original + parceiro do trash vao pro fundo do deck, alvo da mao e jogado), (3) custo FALHANDO por falta de Kin'emon com o power exato no trash (nada e mutado, efeito nao dispara), (4) familia self-only (OP06-016) paga so a propria carta -- suite completa OK",
+    "smoke_test.py: TODOS OS TESTES PASSARAM (regressao ampla, sem quebras)",
+    "smoke_test_broad.py: 7/7 partidas completaram sem excecao (rodado por mexer em codigo central de _pay_costs e _score_activate_main, compartilhado por toda a base)"
+  ]
+}

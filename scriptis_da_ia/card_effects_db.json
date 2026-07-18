@@ -25743,6 +25743,11 @@
             "target": "opp_character",
             "duration": "this_turn"
           }
+        ],
+        "costs": [
+          {
+            "type": "place_self_bottom_deck"
+          }
         ]
       }
     }
@@ -36274,6 +36279,11 @@
             "target": "opp_character",
             "duration": "this_turn"
           }
+        ],
+        "costs": [
+          {
+            "type": "place_self_bottom_deck"
+          }
         ]
       }
     }
@@ -40293,6 +40303,14 @@
             "cost_eq": 6,
             "filter_name": "kin'emon"
           }
+        ],
+        "costs": [
+          {
+            "type": "place_self_bottom_deck",
+            "trash_partner_count": 1,
+            "trash_partner_name": "kin'emon",
+            "trash_partner_power_eq": 0
+          }
         ]
       }
     }
@@ -40315,6 +40333,14 @@
             "count": 1,
             "cost_eq": 6,
             "filter_name": "kin'emon"
+          }
+        ],
+        "costs": [
+          {
+            "type": "place_self_bottom_deck",
+            "trash_partner_count": 1,
+            "trash_partner_name": "kin'emon",
+            "trash_partner_power_eq": 1000
           }
         ]
       }
@@ -48917,20 +48943,31 @@
         "steps": [
           {
             "action": "look_top_deck",
-            "count": 3
+            "count": 3,
+            "conditions": {
+              "leader_is": "sanji"
+            }
           },
           {
             "action": "add_to_hand",
             "count": 1,
-            "revealed_to_opponent": true
+            "revealed_to_opponent": true,
+            "conditions": {
+              "leader_is": "sanji"
+            }
           },
           {
-            "action": "deck_bottom_rest"
+            "action": "deck_bottom_rest",
+            "conditions": {
+              "leader_is": "sanji"
+            }
           }
         ],
-        "conditions": {
-          "leader_is": "sanji"
-        }
+        "costs": [
+          {
+            "type": "place_self_bottom_deck"
+          }
+        ]
       },
       "trigger": {
         "steps": [
@@ -65261,6 +65298,11 @@
             "target": "opp_character",
             "duration": "this_turn"
           }
+        ],
+        "costs": [
+          {
+            "type": "place_self_bottom_deck"
+          }
         ]
       }
     }
@@ -65661,6 +65703,11 @@
           {
             "action": "draw",
             "count": 1
+          }
+        ],
+        "costs": [
+          {
+            "type": "place_self_bottom_deck"
           }
         ]
       }

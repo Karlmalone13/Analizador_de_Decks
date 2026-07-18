@@ -809,9 +809,44 @@ def parse_costs(text):
     #   (a) 'N "Tipo" type cards from your trash'        -- ex: Dragon, Garp
     #   (b) 'N cards with a type including "Tipo"'       -- ex: Kaku OP07-080
     #   (c) sem filtro: 'N cards from your trash'         -- ex: Trafalgar Law
-    # NAO cobre (deliberado, fora de escopo por ora): combo "this Character
-    # and N [Tipo]" (Kin'emon OP10-026/027, 2 cartas) nem "any number"
-    # (Luffy OP07-091, 1 carta) -- ambos precisam de tratamento especial.
+    # NAO cobre (deliberado, fora de escopo por ora): "any number"
+    # (Luffy OP07-091, 1 carta) -- precisa de tratamento especial.
+    #
+    # Custo de colocar a PROPRIA carta (do campo) no fundo do PROPRIO deck,
+    # opcionalmente JUNTO com N carta(s) NOMEADA(s) do trash (com power
+    # exato/gte/lte) tambem pro fundo, "in any order". Duas formas de
+    # fraseado pro destino tratadas como sinonimas ("at the bottom of your
+    # deck" / "at the bottom of the owner's deck") -- forma-agnostico, nao
+    # amarrado ao fraseado exato de nenhuma carta especifica. Achado 17/07:
+    # custo INTEIRO ausente (tratado como gratis) em 5 cartas -- 3 self-only
+    # (OP06-016, OP09-008, P-013) e 2 self+parceiro nomeado (Kin'emon
+    # OP10-026/027, que ate entao era o unico caso mapeado e ficava
+    # deliberadamente fora de escopo). Verificado ANTES do bloco
+    # place_from_trash_bottom_deck abaixo pra nao perder o alvo "this
+    # Character" (aquele bloco so cobre fontes puramente do trash).
+    m_self_bottom = re.search(
+        r'you may place this (?:character|leader|card|stage)'
+        r'(?: and (\d+) [\'"\[{]([a-z][a-z0-9 .\'-]+?)[\'"\]}]'
+        r'(?: with (\d+) (?:base )?power(?: or (more|less))?)?'
+        r' from your trash)?'
+        r' at the bottom of (?:your|the owner.?s) deck'
+        r'(?: in any order)?\s*:', t)
+    if m_self_bottom:
+        cost = {'type': 'place_self_bottom_deck'}
+        if m_self_bottom.group(2):
+            cost['trash_partner_count'] = int(m_self_bottom.group(1))
+            cost['trash_partner_name'] = m_self_bottom.group(2).strip()
+            if m_self_bottom.group(3):
+                power_val = int(m_self_bottom.group(3))
+                comparator = m_self_bottom.group(4)
+                if comparator == 'more':
+                    cost['trash_partner_power_gte'] = power_val
+                elif comparator == 'less':
+                    cost['trash_partner_power_lte'] = power_val
+                else:
+                    cost['trash_partner_power_eq'] = power_val
+        costs.append(cost)
+
     m_a = re.search(
         r'you may (?:place|return) (\d+) [\'"\[{]([a-z][a-z0-9 .\'-]+?)[\'"\]}]\s*type\s+cards?'
         r' from your trash (?:at|to) the bottom of your deck', t)

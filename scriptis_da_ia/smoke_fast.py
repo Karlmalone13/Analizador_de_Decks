@@ -5013,6 +5013,69 @@ def test_filter_names_prb02_018_or_e_st13_006_each() -> None:
           jogados_parcial == {"ST13-007", "ST13-010"})
 
 
+def test_kinemon_op10_026_027_e_familia_place_self_bottom_deck() -> None:
+    # OP10-026/OP10-027 (Kin'emon): "You may place this Character and 1
+    # [Kin'emon] with N power from your trash at the bottom of your deck
+    # in any order: Play up to 1 [Kin'emon] with a cost of 6 from your
+    # hand." -- custo INTEIRO ausente antes (achado 17/07), tratado como
+    # gratis. Generalizado (mesma raiz gramatical "place this Character
+    # ... at the bottom of ... deck", sem parceiro do trash) tambem pra
+    # OP06-016/OP09-008/P-013/OP12-080/P-033 -- mesmo bug, custo ausente.
+    check("OP10-026 parseia custo composto (self + kin'emon 0 power do trash)",
+          get_card_effects("OP10-026").get("activate_main", {}).get("costs", []) ==
+          [{"type": "place_self_bottom_deck", "trash_partner_count": 1,
+            "trash_partner_name": "kin'emon", "trash_partner_power_eq": 0}])
+    check("OP10-027 parseia custo composto (self + kin'emon 1000 power do trash)",
+          get_card_effects("OP10-027").get("activate_main", {}).get("costs", []) ==
+          [{"type": "place_self_bottom_deck", "trash_partner_count": 1,
+            "trash_partner_name": "kin'emon", "trash_partner_power_eq": 1000}])
+    check("OP06-016 parseia custo self-only (sem parceiro do trash)",
+          get_card_effects("OP06-016").get("activate_main", {}).get("costs", []) ==
+          [{"type": "place_self_bottom_deck"}])
+
+    # Caso 1: custo PAGAVEL -- ha um Kin'emon com 0 power no trash.
+    kinemon = real_card("OP10-026")
+    parceiro = mk("OP10-P1", "Kin'emon", power=0, cost=1, sub_types="Wano Country")
+    alvo_mao = mk("OP10-P2", "Kin'emon Alvo", power=5000, cost=6, sub_types="Wano Country")
+    me = GameState(leader=mk("KEMLDR", "Lider", card_type="LEADER"), turn=3, don_available=6)
+    me.field_chars = [kinemon]
+    me.trash = [parceiro]
+    me.hand = [alvo_mao]
+    opp = GameState(leader=mk("KEMOPP", "Opp", card_type="LEADER"), turn=3)
+    EffectExecutor(me, opp).execute(kinemon, "activate_main")
+    check("Execucao real (custo pagavel): Kin'emon original + parceiro do trash foram pro fundo do deck",
+          kinemon not in me.field_chars and kinemon in me.deck
+          and parceiro not in me.trash and parceiro in me.deck)
+    check("Execucao real (custo pagavel): o alvo da mao foi jogado (efeito disparou)",
+          alvo_mao in me.field_chars and alvo_mao not in me.hand)
+
+    # Caso 2: custo IMPAGAVEL -- sem Kin'emon 0 power no trash, nada e pago
+    # e o efeito nao dispara (Kin'emon original continua no campo).
+    kinemon_b = real_card("OP10-026")
+    me2 = GameState(leader=mk("KEMLDR2", "Lider", card_type="LEADER"), turn=3, don_available=6)
+    me2.field_chars = [kinemon_b]
+    me2.trash = []
+    me2.hand = [mk("OP10-P3", "Kin'emon Alvo 2", power=5000, cost=6, sub_types="Wano Country")]
+    opp2 = GameState(leader=mk("KEMOPP2", "Opp", card_type="LEADER"), turn=3)
+    logs = EffectExecutor(me2, opp2).execute(kinemon_b, "activate_main")
+    check("Execucao real (custo impagavel, sem parceiro no trash): efeito nao dispara",
+          not logs)
+    check("Execucao real (custo impagavel): Kin'emon original continua no campo e mao intacta",
+          kinemon_b in me2.field_chars and len(me2.hand) == 1)
+
+    # Familia self-only (OP06-016): so exige a propria carta, sempre pagavel
+    # enquanto ela estiver no campo.
+    debuffer = real_card("OP06-016")
+    alvo_opp = mk("OPPT", "Alvo Oponente", power=5000, cost=5)
+    me3 = GameState(leader=mk("DBLDR", "Lider", card_type="LEADER"), turn=3)
+    me3.field_chars = [debuffer]
+    opp3 = GameState(leader=mk("DBOPP", "Opp", card_type="LEADER"), turn=3)
+    opp3.field_chars = [alvo_opp]
+    EffectExecutor(me3, opp3).execute(debuffer, "activate_main")
+    check("Execucao real OP06-016 (self-only): a propria carta foi pro fundo do deck e o debuff aplicou",
+          debuffer not in me3.field_chars and debuffer in me3.deck and alvo_opp.power_buff == -3000)
+
+
 def main() -> int:
     test_turn_order_imu_prefers_second()
     test_empty_throne_beats_direct_five_elders_play()
@@ -5141,6 +5204,7 @@ def main() -> int:
     test_lote_10_pendencias_eb01_011_a_op05_007()
     test_segundo_lote_10_pendencias_op01_063_a_op05_100()
     test_filter_names_prb02_018_or_e_st13_006_each()
+    test_kinemon_op10_026_027_e_familia_place_self_bottom_deck()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0
