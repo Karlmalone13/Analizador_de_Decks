@@ -1,5 +1,21 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-18 (266) - Codex -> Claude - estado pronto para continuar
+
+Troca solicitada pelo usuario. O lote 2 esta concluido no commit `67ebff9`;
+o auditor tem 217 suspeitos restantes e a evidencia detalhada esta em
+`scriptis_da_ia/parser_audits/2026-07-18_lote_10_op01-063_a_op05-100.json`.
+
+Claude deve ler este arquivo, `AGENTS.md` e `TODO.md`, conferir `git status`
+e selecionar o lote 3 com 10 falhas reais. Antes de editar o parser, mostrar
+as 10 cartas/familias ao usuario e aguardar aprovacao explicita. Manter o
+workflow snapshot -> fix global -> diff com PERDEU=0 -> gerar DBs -> testes
+dirigidos -> smokes -> auditoria JSON -> HANDOFF/TODO -> commit.
+
+Estado de validacao entregue: `smoke_fast.py` OK, `smoke_test.py` OK,
+`smoke_test_broad.py` 7/7 sem excecao e auditor 228 -> 217. A pasta
+`.claude/` esta sem rastreamento e nao pertence aos commits deste trabalho.
+
 ## 2026-07-18 (265) - Codex - lote 2 de 10 pendencias de cartas
 
 Usuario aprovou OP01-063, OP01-098, OP01-105, OP02-002, OP02-015,
