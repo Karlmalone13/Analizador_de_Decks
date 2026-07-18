@@ -6169,6 +6169,12 @@
  },
  "OP01-055": {
   "main": {
+   "costs": [
+    {
+     "count": 2,
+     "type": "rest_own_character"
+    }
+   ],
    "steps": [
     {
      "action": "draw",
@@ -13033,6 +13039,10 @@
      "action": "draw",
      "count": 2,
      "then_trash": 2
+    },
+    {
+     "action": "grant_ko_immunity_type",
+     "duration": "opp_turn_end"
     }
    ]
   },
@@ -21097,9 +21107,11 @@
   "passive": {
    "steps": [
     {
-     "action": "immunity",
-     "imm_type": "ko",
-     "source": "any"
+     "action": "grant_ko_immunity_aura",
+     "cost_lte": 3,
+     "exclude": "pekoms",
+     "filter_type": "minks",
+     "self_active_required": true
     }
    ]
   }
@@ -21249,6 +21261,20 @@
   }
  },
  "OP08-038": {
+  "main": {
+   "costs": [
+    {
+     "count": 2,
+     "type": "rest_own_character"
+    }
+   ],
+   "steps": [
+    {
+     "action": "grant_ko_immunity_type",
+     "duration": "opp_turn_end"
+    }
+   ]
+  },
   "trigger": {
    "steps": [
     {
@@ -21444,8 +21470,17 @@
   "on_play": {
    "steps": [
     {
-     "action": "gain_rush",
-     "duration": "this_turn"
+     "action": "reveal_deck_top_conditional",
+     "condition": {
+      "revealed_card_type": "whitebeard piratess"
+     },
+     "on_match_steps": [
+      {
+       "action": "gain_rush",
+       "duration": "this_turn"
+      }
+     ],
+     "return_to": "top_or_bottom"
     }
    ]
   }
@@ -21493,7 +21528,7 @@
    "steps": [
     {
      "action": "play_from_deck",
-     "cost_lte": 99,
+     "cost_lte": 4,
      "count": 1,
      "filter_type": "whitebeard pirates",
      "rested": false,
@@ -21542,7 +21577,7 @@
     },
     {
      "action": "play_from_deck",
-     "cost_lte": 99,
+     "cost_lte": 3,
      "count": 1,
      "filter_type": "whitebeard piratess",
      "rested": false,
@@ -21626,6 +21661,12 @@
  },
  "OP08-058": {
   "when_attacking": {
+   "costs": [
+    {
+     "count": 2,
+     "type": "turn_life_face_up"
+    }
+   ],
    "steps": [
     {
      "action": "add_don",
@@ -22335,14 +22376,19 @@
   "counter": {
    "steps": [
     {
-     "action": "buff_power",
-     "amount": 5000,
-     "duration": "battle_only",
-     "target": "leader_or_character"
-    },
-    {
-     "action": "trash_from_deck_top",
-     "count": 1
+     "action": "trash_deck_top_conditional",
+     "condition": {
+      "trashed_card_cost_gte": 6
+     },
+     "count": 1,
+     "on_match_steps": [
+      {
+       "action": "buff_power",
+       "amount": 5000,
+       "duration": "battle_only",
+       "target": "leader_or_character"
+      }
+     ]
     }
    ]
   },

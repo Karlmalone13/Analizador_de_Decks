@@ -9533,6 +9533,12 @@
             "action": "draw",
             "count": 2
           }
+        ],
+        "costs": [
+          {
+            "type": "rest_own_character",
+            "count": 2
+          }
         ]
       }
     }
@@ -20715,6 +20721,10 @@
             "action": "draw",
             "count": 2,
             "then_trash": 2
+          },
+          {
+            "action": "grant_ko_immunity_type",
+            "duration": "opp_turn_end"
           }
         ]
       },
@@ -33395,9 +33405,11 @@
       "passive": {
         "steps": [
           {
-            "action": "immunity",
-            "imm_type": "ko",
-            "source": "any"
+            "action": "grant_ko_immunity_aura",
+            "filter_type": "minks",
+            "cost_lte": 3,
+            "exclude": "pekoms",
+            "self_active_required": true
           }
         ]
       }
@@ -33652,6 +33664,20 @@
             "action": "rest_opp_character",
             "count": 1,
             "cost_lte": 3
+          }
+        ]
+      },
+      "main": {
+        "steps": [
+          {
+            "action": "grant_ko_immunity_type",
+            "duration": "opp_turn_end"
+          }
+        ],
+        "costs": [
+          {
+            "type": "rest_own_character",
+            "count": 2
           }
         ]
       }
@@ -33962,8 +33988,17 @@
       "on_play": {
         "steps": [
           {
-            "action": "gain_rush",
-            "duration": "this_turn"
+            "action": "reveal_deck_top_conditional",
+            "return_to": "top_or_bottom",
+            "condition": {
+              "revealed_card_type": "whitebeard piratess"
+            },
+            "on_match_steps": [
+              {
+                "action": "gain_rush",
+                "duration": "this_turn"
+              }
+            ]
           }
         ]
       }
@@ -34046,7 +34081,7 @@
             "action": "play_from_deck",
             "count": 1,
             "filter_type": "whitebeard pirates",
-            "cost_lte": 99,
+            "cost_lte": 4,
             "reveal_count": 1,
             "rested": false
           }
@@ -34117,7 +34152,7 @@
             "action": "play_from_deck",
             "count": 1,
             "filter_type": "whitebeard piratess",
-            "cost_lte": 99,
+            "cost_lte": 3,
             "reveal_count": 1,
             "rested": false
           }
@@ -34248,6 +34283,12 @@
             "action": "add_don",
             "count": 1,
             "rested": true
+          }
+        ],
+        "costs": [
+          {
+            "type": "turn_life_face_up",
+            "count": 2
           }
         ]
       }
@@ -35379,14 +35420,19 @@
       "counter": {
         "steps": [
           {
-            "action": "buff_power",
-            "amount": 5000,
-            "target": "leader_or_character",
-            "duration": "battle_only"
-          },
-          {
-            "action": "trash_from_deck_top",
-            "count": 1
+            "action": "trash_deck_top_conditional",
+            "count": 1,
+            "condition": {
+              "trashed_card_cost_gte": 6
+            },
+            "on_match_steps": [
+              {
+                "action": "buff_power",
+                "amount": 5000,
+                "target": "leader_or_character",
+                "duration": "battle_only"
+              }
+            ]
           }
         ]
       }

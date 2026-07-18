@@ -30479,6 +30479,10 @@
     "trigger": "on_play"
    },
    {
+    "action": "grant_ko_immunity_type",
+    "trigger": "on_play"
+   },
+   {
     "action": "keyword_blocker",
     "trigger": "passive"
    }
@@ -49258,8 +49262,9 @@
   "attribute": "Strike",
   "effects": [
    {
-    "action": "immunity",
-    "trigger": "passive"
+    "action": "grant_ko_immunity_aura",
+    "trigger": "passive",
+    "cost_lte": 3
    }
   ],
   "synergy_states": {},
@@ -49668,6 +49673,10 @@
     "action": "rest_opp_character",
     "trigger": "trigger",
     "cost_lte": 3
+   },
+   {
+    "action": "grant_ko_immunity_type",
+    "trigger": "main"
    }
   ],
   "synergy_states": {
@@ -50122,7 +50131,7 @@
   "attribute": "Slash",
   "effects": [
    {
-    "action": "gain_rush",
+    "action": "reveal_deck_top_conditional",
     "trigger": "on_play"
    }
   ],
@@ -50143,7 +50152,7 @@
   "gains_life": false,
   "attacks_life": false,
   "trashes_own_life": false,
-  "has_rush": true,
+  "has_rush": false,
   "has_double_attack": false,
   "has_unblockable": false,
   "has_banish": false,
@@ -50250,7 +50259,7 @@
    {
     "action": "play_from_deck",
     "trigger": "on_play",
-    "cost_lte": 99
+    "cost_lte": 4
    }
   ],
   "synergy_states": {},
@@ -50351,7 +50360,7 @@
    {
     "action": "play_from_deck",
     "trigger": "counter",
-    "cost_lte": 99
+    "cost_lte": 3
    }
   ],
   "synergy_states": {},
@@ -52136,12 +52145,7 @@
     "cost_lte": 3
    },
    {
-    "action": "buff_power",
-    "trigger": "counter",
-    "target": "leader_or_character"
-   },
-   {
-    "action": "trash_from_deck_top",
+    "action": "trash_deck_top_conditional",
     "trigger": "counter"
    }
   ],
@@ -52162,7 +52166,7 @@
   "rests_opponent": false,
   "bounces": false,
   "gives_don": false,
-  "power_buff": true,
+  "power_buff": false,
   "heals": false,
   "gains_life": false,
   "attacks_life": false,

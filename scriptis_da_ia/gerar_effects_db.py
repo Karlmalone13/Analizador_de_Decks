@@ -802,6 +802,20 @@ def parse_costs(text):
                           'count': int(m_rest_char_name.group(1)),
                           'filter_name': m_rest_char_name.group(2).strip()})
 
+    # Variante SEM filtro nenhum (nem tipo, nem custo, nem nome) -- "you
+    # may rest N of your Characters:" (achado 19/07, OP08-038, unica
+    # carta no banco com essa forma exata). engine ja suporta
+    # rest_own_character sem nenhum filtro (eligible_cards com todos os
+    # parametros vazios = qualquer Character ativo), so faltava o parser
+    # gerar o custo.
+    if ('rest this' not in t and not m_rest_char_type and not m_rest_char_name
+            and not m_rest_char_cost):
+        m_rest_char_plain = re.search(
+            r'you may rest (\d+) of your characters?\s*:', t)
+        if m_rest_char_plain:
+            costs.append({'type': 'rest_own_character',
+                          'count': int(m_rest_char_plain.group(1))})
+
     m_return_trash = re.search(
         r'you may return (\d+) cards? from your trash to your deck and shuffle', t)
     if m_return_trash:
@@ -852,12 +866,21 @@ def parse_costs(text):
             cost['exclude'] = m_return_own.group(5).strip()
         costs.append(cost)
 
+    # Contagem generalizada pra N>1 -- "you may turn 2 cards from the top
+    # of your Life cards face-up:" (achado 19/07, OP08-058, unica carta
+    # no banco com N>1: custo inteiro sumia porque o regex antigo so
+    # tolerava o literal "1 card" singular). count so entra no dict
+    # quando >1, preservando o formato exato ja usado pelas cartas com
+    # N=1 (comportamento antigo intacto).
     m_face_cost = re.search(
-        r'you may turn 1 card from the top of your life cards face-(up|down)\s*:',
+        r'you may turn (\d+) cards? from the top of your life cards face-(up|down)\s*:',
         t
     )
     if m_face_cost:
-        costs.append({'type': f'turn_life_face_{m_face_cost.group(1)}'})
+        cost_face = {'type': f'turn_life_face_{m_face_cost.group(2)}'}
+        if int(m_face_cost.group(1)) > 1:
+            cost_face['count'] = int(m_face_cost.group(1))
+        costs.append(cost_face)
 
     # Custo de K.O. de um Character PROPRIO (distinto de trash_self: o alvo
     # nao e a carta que ativa o efeito, e outro Character do jogador, e o
@@ -1491,20 +1514,32 @@ def parse_grant_ko_immunity(text):
     Crew) produz dois steps independentes (um por tipo); engine itera ambos."""
     steps = []
     t = text.lower()
-    # "none of your "X" (or "Y") type Characters can be k.o.'d by effects until..."
+    # "none of your "X" (or "Y") type Characters can be k.o.'d by effects
+    # until..." -- filtro de tipo agora OPCIONAL: "None of your
+    # Characters can be K.O.'d..." (achado 19/07, OP08-038, unica carta
+    # no banco sem filtro nenhum) concede a MESMA imunidade temporaria a
+    # QUALQUER Character propria (grant_ko_immunity_type ja suporta
+    # filter_type ausente = sem filtro, so faltava esta variante de
+    # fraseado gerar o step).
     m = re.search(
-        r"none of your (?:\"([^\"]+)\"(?: or \"([^\"]+)\")? type characters?)"
-        r" can(?:not)? be k\.?o\.?'?d by (?:effects?|your opponent)",
+        r"none of your (?:[\"']([^\"']+)[\"'](?: or [\"']([^\"']+)[\"'])? type )?"
+        r"characters? can(?:not)? be k\.?o\.?'?d by (?:effects?|your opponent)",
         t)
     if m:
         dur_m = re.search(r'until the end of your opponent.?s next (?:end phase|turn)', t)
         dur = 'opp_turn_end' if dur_m else 'opp_turn_end'
-        # tipo primario + tipo secundario (OR) → dois steps separados
-        for tipo in (m.group(1), m.group(2)):
-            if tipo:
-                steps.append({'action': 'grant_ko_immunity_type',
-                              'filter_type': tipo.strip(),
-                              'duration': dur})
+        # tipo primario + tipo secundario (OR) → dois steps separados;
+        # sem NENHUM tipo capturado, 1 step sem filter_type (todas as
+        # Characters proprias).
+        tipos = [m.group(1), m.group(2)]
+        if any(tipos):
+            for tipo in tipos:
+                if tipo:
+                    steps.append({'action': 'grant_ko_immunity_type',
+                                  'filter_type': tipo.strip(),
+                                  'duration': dur})
+        else:
+            steps.append({'action': 'grant_ko_immunity_type', 'duration': dur})
 
     # "Your Characters with a cost of N or less cannot be K.O.'d in
     # battle during this turn" -- mesma concessao temporaria, mas com
@@ -3977,7 +4012,12 @@ def parse_reveal_top_play(text):
     count = int(m.group(1))
 
     type_m = re.search(r'type including "([^"]+)"', t)
-    cost_m = re.search(r'with a cost of (\d+) or less', t)
+    # "with a type including "X" AND a cost of N or less" -- "and" no
+    # lugar de "with" antes de "a cost of" (achado 19/07, OP08-052/
+    # OP08-054: cost_lte caia no fallback 99/"qualquer custo" porque so
+    # "with a cost of" era tolerado, nao "and a cost of"). Mesma
+    # tolerancia ja usada em m_cond acima, faltava propagar aqui.
+    cost_m = re.search(r'(?:with|and) a cost of (\d+) or less', t)
     rested = bool(re.search(r'character card[^.]*\brested\b', t))
 
     steps.append({
@@ -5642,6 +5682,27 @@ def parse_immunity(text):
     # incondicional e sem filtro nenhum (achado 19/07, OP06-096).
     is_grant_cost_ko = bool(re.search(
         r"your characters with a cost of \d+ or less cannot be k\.?o\.?'?d in battle", t))
+    # "your {Tipo} type Characters with a cost of N or less other than
+    # [Nome] cannot be K.O.'d by effects" -- AURA PERMANENTE concedida a
+    # OUTRAS cartas do campo (tipo+custo, exclui a propria por nome),
+    # distinta da auto-imunidade desta carta (sujeito da frase e "your...
+    # Characters", nao "this Character"). Achado 19/07, OP08-029 Pekoms,
+    # unica carta no banco com essa forma exata -- sem este guard, o
+    # regex generico abaixo tratava como auto-imunidade SEM NENHUM filtro
+    # de tipo/custo/exclusao, protegendo qualquer character (nao so os
+    # Minks baratos, nem excluindo a propria Pekoms).
+    m_aura_type_ko = re.search(
+        r'your [\[{"]([^\]}"]+)[\]}"] type characters? with a cost of (\d+) or less '
+        r'other than \[([^\]]+)\] cannot be k\.?o\.?\'?d by effects', t)
+    if m_aura_type_ko:
+        step_aura = {'action': 'grant_ko_immunity_aura',
+                     'filter_type': m_aura_type_ko.group(1).strip(),
+                     'cost_lte': int(m_aura_type_ko.group(2)),
+                     'exclude': m_aura_type_ko.group(3).strip()}
+        if 'if this character is active' in t:
+            step_aura['self_active_required'] = True
+        steps.append(step_aura)
+        return steps
     if not is_grant_cost_ko and re.search(r"cannot be k\.?o\.?'?d|can'?t be k\.?o", t):
         steps.append({'action': 'immunity', 'imm_type': 'ko', 'source': src})
     if re.search(r'cannot be removed from the field|can'+chr(39)+r't be removed from the field', t):
@@ -5757,6 +5818,33 @@ def parse_block(block_text, trigger_name):
             [gain_step],
         ]}]
 
+    # "Trash N card(s) from the top of your deck. If the trashed card has
+    # a cost of M or more/less, [efeito]." -- mill do PROPRIO deck onde o
+    # efeito seguinte e CONDICIONADO ao custo da carta que acabou de ser
+    # trashada (nao revelada -- ela ja saiu do deck e foi pro trash).
+    # Mesma familia conceitual de reveal_deck_top_conditional (nested
+    # on_match_steps), mas pro mill em vez do reveal (achado 19/07,
+    # OP08-096, unica carta no banco com essa forma exata: a condicao
+    # inteira sumia e o buff seguinte disparava incondicional).
+    trash_top_cond_m = re.search(
+        r'trash (\d+) cards? from the top of your deck\.\s*'
+        r'if the trashed card has a cost of (\d+) or (more|less),\s*(.+?)\.?\s*$',
+        block_text, re.IGNORECASE | re.DOTALL)
+    if trash_top_cond_m:
+        count = int(trash_top_cond_m.group(1))
+        threshold = int(trash_top_cond_m.group(2))
+        cond = ({'trashed_card_cost_gte': threshold} if trash_top_cond_m.group(3) == 'more'
+                else {'trashed_card_cost_lte': threshold})
+        effect_clause = trash_top_cond_m.group(4).strip()
+        on_match = parse_block(effect_clause, trigger_name)
+        if on_match:
+            return [{
+                'action': 'trash_deck_top_conditional',
+                'count': count,
+                'condition': cond,
+                'on_match_steps': on_match,
+            }]
+
     reveal_cost_m = re.search(
         r'choose a cost and reveal 1 card from the top of your opponent.?s deck\.\s*'
         r'if the revealed card has the chosen cost,\s*(.*?)'
@@ -5794,12 +5882,23 @@ def parse_block(block_text, trigger_name):
     block_sem_bottom = re.sub(
         r'\.\s*then,?\s*place the revealed card at the bottom of your deck\.?', '',
         block_text, flags=re.IGNORECASE)
+    # Variante com o destino do reveal declarado INLINE, ANTES do "If"
+    # (nao "Then, place... at the bottom" DEPOIS, ja tratado acima por
+    # is_bottom_reveal) -- "reveal 1 card from the top of your deck and
+    # place it at the top or bottom of your deck. If [condicao], [efeito]"
+    # (achado 19/07, OP08-049, unica carta no banco com essa forma exata:
+    # o "and place it..." no meio quebrava a ancora original, que exigia
+    # "deck." logo apos "top of your deck", derrubando a condicao INTEIRA
+    # e virando um gain_rush incondicional).
     reveal_top_m = (None if 'you may play that card' in block_sem_bottom.lower() else re.search(
-        r'reveal 1 card from the top of your deck\.\s*if\s+(.+?),\s*(.+?)\.?\s*$',
+        r'reveal 1 card from the top of your deck'
+        r'(?:\s+and place it at the (top or bottom|top|bottom) of your deck)?'
+        r'\.\s*if\s+(.+?),\s*(.+?)\.?\s*$',
         block_sem_bottom, re.IGNORECASE | re.DOTALL))
     if reveal_top_m:
-        cond_clause = reveal_top_m.group(1).lower()
-        effect_clause = reveal_top_m.group(2).strip()
+        inline_dest = reveal_top_m.group(1)
+        cond_clause = reveal_top_m.group(2).lower()
+        effect_clause = reveal_top_m.group(3).strip()
         cond = {}
         type_m_rc = (re.search(r'["\[{]([a-z][a-z0-9 .\'-]+)["\]}]\s*type', cond_clause)
                      or re.search(r'type includes? ["\[{]([a-z][a-z0-9 .\'-]+)["\]}]', cond_clause))
@@ -5822,9 +5921,14 @@ def parse_block(block_text, trigger_name):
                           'target': 'own_character'}]
                         if own_bounce else parse_block(effect_clause, trigger_name))
             if on_match:
+                if inline_dest:
+                    return_to = ('top_or_bottom' if inline_dest == 'top or bottom'
+                                 else 'bottom' if inline_dest == 'bottom' else 'top')
+                else:
+                    return_to = 'bottom' if is_bottom_reveal else 'top'
                 return [{
                     'action': 'reveal_deck_top_conditional',
-                    'return_to': 'bottom' if is_bottom_reveal else 'top',
+                    'return_to': return_to,
                     'condition': cond,
                     'on_match_steps': on_match,
                 }]

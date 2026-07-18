@@ -1,5 +1,62 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-19 (275) - Claude - lote de 6 bugs reais (OP08-029 a OP08-096) + mudanca de ritmo na varredura
+
+Usuario pediu pra acelerar a varredura (3 dias na mesma tarefa). Mudanca
+de processo a partir deste bloco: revisar 50 suspeitos de uma vez (em
+vez de 10-25), pre-filtrar os falsos-positivos ja conhecidos e so trazer
+pro usuario os candidatos a bug real, num lote maior por rodada de
+aprovacao. Registro completo em
+`parser_audits/2026-07-19_lote_7_op08-029_a_op08-096.json`.
+
+1. **OP08-029 Pekoms**: "your {Minks} type Characters cost<=3 other than
+   [Pekoms] cannot be K.O.'d by effects" -- parseado como auto-imunidade
+   GENERICA sem NENHUM filtro (protegia qualquer carta), quando e uma
+   AURA concedida a OUTRAS cartas do campo (tipo+custo+exclusao por
+   nome, condicionada a Pekoms estar ativa). `is_immune()` so olhava os
+   proprios efeitos da carta candidata, nunca escaneava o campo por uma
+   aura de outra carta -- mecanismo inteiro ausente. Nova acao
+   `grant_ko_immunity_aura`, novo loop em `is_immune()`.
+2. **OP08-038**: bloco Main inteiro sumia -- custo "rest N of your
+   Characters:" sem filtro nenhum nunca era reconhecido, e "None of your
+   Characters can be K.O.'d..." sem tipo entre aspas tambem nunca batia.
+   **Achado colateral real de engine**: o pool de `grant_ko_immunity_type`
+   incluia o Leader sempre que `cost_lte` fosse `None` -- nunca
+   exercitado antes (Nico Robin/OP06-096 sempre tinham filter_type OU
+   cost_lte), mas errado pra qualquer chamada sem filtro nenhum. Pool
+   corrigido pra sempre `field_chars` (Leader nunca entra nesta acao).
+3. **OP08-049**: clausula de posicionamento INLINE ("and place it at the
+   top or bottom of your deck") vinha ANTES do "If" (nao depois, como o
+   padrao ja tratado), quebrando a ancora do regex e derrubando a
+   condicao inteira -- Rush disparava sempre. Novo valor
+   `return_to='top_or_bottom'` (heuristica: mantem no topo se bateu,
+   manda pro fundo se nao bateu).
+4. **OP08-052 + OP08-054**: "type including 'X' AND a cost of N or
+   less" -- cost_lte caia no fallback 99 porque so "WITH a cost of" era
+   tolerado (mesma classe de bug ja corrigida alhures na mesma funcao,
+   so nao propagada aqui).
+5. **OP08-058**: custo "turn 2 cards from the top of your Life cards
+   face-up" inteiro ausente -- regex so tolerava o literal "1 card"
+   singular. Generalizado pra N>1, parser + engine (handler virava so
+   `me.life[-1]` fixo, agora vira as ultimas N cartas).
+6. **OP08-096**: mecanica nova -- mill onde o efeito seguinte e
+   condicionado ao CUSTO da carta MILHADA (nao revelada). Nova acao
+   `trash_deck_top_conditional`, espelhando `reveal_deck_top_conditional`
+   mas pro mill (a carta ja sai do deck e vai pro trash, nao fica
+   revelada -- mill seco, sem trigger, regra do projeto).
+
+**2 capturas extras da mesma generalizacao** (achadas so no
+`diff_parser.py`, nao na lista original apresentada ao usuario):
+OP01-055 ("You may rest 2 of your Characters: Draw 2 cards" -- custo
+inteiro sumia, draw 2 era GRATIS) e OP04-083 Sabo (mesmo gap do item 2,
+"None of your Characters can be K.O.'d" sem tipo).
+
+Validado: `diff_parser.py` GANHOU=0/PERDEU=0/MUDOU=9 (7 alvo + 2 extras).
+`smoke_fast.py` com teste novo (`test_lote_7_op08_029_a_op08_096`)
+cobrindo execucao real de todos os 6 mecanismos. `smoke_test.py` TODOS
+OS TESTES PASSARAM. `smoke_test_broad.py` 7/7 sem excecao. **Auditor:
+178 -> 172 suspeitos.**
+
 ## 2026-07-19 (274) - Claude - lote de 6 bugs reais (OP07-009 a OP07-097)
 
 Continuacao da varredura. Usuario aprovou implementar os 6 de uma vez.

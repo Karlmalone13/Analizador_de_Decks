@@ -1108,6 +1108,33 @@ def is_immune(card: 'Card', imm_type: str, owner: 'GameState', opp: 'GameState',
     if imm_type == 'ko' and getattr(card, 'immunity_ko_until', ''):
         if source_is_opp:  # imunidade valida contra efeitos do oponente
             return True
+    # Aura PERMANENTE concedida por OUTRA carta no campo (distinta do
+    # grant_ko_immunity_type acima, que e uma concessao TEMPORARIA
+    # disparada por um step com duracao). Achado 19/07, OP08-029 Pekoms:
+    # "If this Character is active, your {Minks} type Characters with a
+    # cost of 3 or less other than [Pekoms] cannot be K.O.'d by effects"
+    # -- vale enquanto a carta-fonte estiver em campo (e ativa, se
+    # self_active_required), sem duracao/expiracao.
+    if imm_type == 'ko':
+        for other in owner.field_chars:
+            if other is card:
+                continue
+            passive = get_card_effects(other.code).get('passive', {})
+            for s in passive.get('steps', []):
+                if s.get('action') != 'grant_ko_immunity_aura':
+                    continue
+                if s.get('self_active_required') and other.rested:
+                    continue
+                wanted_type = (s.get('filter_type') or '').lower()
+                if wanted_type and wanted_type not in (card.sub_types or '').lower():
+                    continue
+                cost_lte = s.get('cost_lte')
+                if cost_lte is not None and card.cost > cost_lte:
+                    continue
+                exclude = (s.get('exclude') or '').lower()
+                if exclude and exclude in card.name.lower():
+                    continue
+                return True
     return False
 
 
@@ -3749,12 +3776,18 @@ class EffectExecutor:
                     movidos.append(alvo.name[:14])
                 self._cost_logs.append(f'custo: fundo do deck (do trash): {", ".join(movidos)}')
             elif ctype in ('turn_life_face_up', 'turn_life_face_down'):
-                if not self.me.life:
+                # count>1 (achado 19/07, OP08-058: "turn 2 cards from the
+                # top of your Life cards face-up") -- vira as N cartas do
+                # TOPO (fim da lista), nao so 1 fixo.
+                count = cost.get('count', 1)
+                if len(self.me.life) < count:
                     return False
-                alvo = self.me.life[-1]
-                alvo.life_face_up = (ctype == 'turn_life_face_up')
-                face = 'face-up' if alvo.life_face_up else 'face-down'
-                self._cost_logs.append(f'custo: virou vida do topo {face}')
+                desired_face_up = (ctype == 'turn_life_face_up')
+                alvos = self.me.life[-count:]
+                for alvo in alvos:
+                    alvo.life_face_up = desired_face_up
+                face = 'face-up' if desired_face_up else 'face-down'
+                self._cost_logs.append(f'custo: virou {count} carta(s) da vida do topo {face}')
         return True
 
     def _return_don_to_deck(self, count: int, estado: 'GameState' = None) -> bool:
@@ -4163,7 +4196,13 @@ class EffectExecutor:
                     (revealed.card_type != 'CHARACTER' or revealed.power < cond['revealed_card_power_gte']):
                 matched = False
 
-            if step.get('return_to') == 'bottom':
+            # "top_or_bottom" (jogador escolhe, achado 19/07, OP08-049):
+            # sem escolha real modelada no engine, usa heuristica -- se
+            # bateu a condicao, mantem no topo (a proxima compra ja e a
+            # carta boa); se nao bateu, manda pro fundo (cicla a carta
+            # inutil pra fora da proxima compra).
+            if step.get('return_to') == 'bottom' or (
+                    step.get('return_to') == 'top_or_bottom' and not matched):
                 me.deck.pop()
                 me.deck.insert(0, revealed)
 
@@ -4175,6 +4214,46 @@ class EffectExecutor:
                         nested_logs.append(nested_log)
 
             result = f'revelou {revealed.name[:15]} do topo do deck'
+            if matched:
+                result += ': bateu a condicao'
+                if nested_logs:
+                    result += ' | ' + ' | '.join(nested_logs)
+            else:
+                result += ': nao bateu a condicao'
+            return result
+
+        if action == 'trash_deck_top_conditional':
+            # "Trash N card(s) from the top of your deck. If the trashed
+            # card has a cost of M or more/less, [efeito]." -- mesma
+            # familia de reveal_deck_top_conditional, mas a carta MILHADA
+            # (nao revelada) e quem determina a condicao. Achado 19/07,
+            # OP08-096: mill = trash seco, sem disparar trigger da carta
+            # milhada (regra do projeto), so a condicao de custo dela gate
+            # o efeito seguinte.
+            count = step.get('count', 1)
+            trashed_cards = []
+            for _ in range(min(count, len(me.deck))):
+                c = me.deck.pop()
+                me.trash.append(c)
+                trashed_cards.append(c)
+            if not trashed_cards:
+                return ''
+            last = trashed_cards[-1]
+            cond = step.get('condition', {})
+            matched = True
+            if cond.get('trashed_card_cost_gte') is not None and last.cost < cond['trashed_card_cost_gte']:
+                matched = False
+            if matched and cond.get('trashed_card_cost_lte') is not None and last.cost > cond['trashed_card_cost_lte']:
+                matched = False
+
+            nested_logs = []
+            if matched:
+                for nested in step.get('on_match_steps', []):
+                    nested_log = self._execute_step(nested, card)
+                    if nested_log:
+                        nested_logs.append(nested_log)
+
+            result = f'trashou {", ".join(c.name[:12] for c in trashed_cards)} do topo do deck'
             if matched:
                 result += ': bateu a condicao'
                 if nested_logs:
@@ -4794,11 +4873,17 @@ class EffectExecutor:
             filter_type = step.get('filter_type', '')
             cost_lte = step.get('cost_lte')
             dur = step.get('duration', 'opp_turn_end')
-            # cost_lte ("Your Characters with a cost of N or less"): so
-            # Characters de campo, o Leader nao entra (texto nunca diz
-            # "Leader or Characters" nesta forma, e Leader nao tem custo
-            # de deck comparavel).
-            pool = me.field_chars if cost_lte is not None else me.field_chars + [me.leader]
+            # Sempre so os PROPRIOS Characters de campo -- o Leader nunca
+            # entra nesta acao (o texto de toda carta conhecida usando
+            # este mecanismo diz "Characters"/"[Tipo] type Characters",
+            # nunca "Leader or Characters", e Leader nao tem custo de
+            # deck comparavel). Corrigido 19/07 (achado ao implementar
+            # OP08-038, sem filter_type/cost_lte nenhum): o antigo
+            # `+ [me.leader]` quando cost_lte is None tambem alcancava
+            # chamadas com SO filter_type (ex: OP09-033 Nico Robin) --
+            # se o Leader tivesse o mesmo tipo, ganhava imunidade nunca
+            # concedida pelo texto real da carta.
+            pool = me.field_chars
             granted = []
             for c in pool:
                 if cost_lte is not None and c.cost > cost_lte:

@@ -1,9 +1,33 @@
 # TODO — Analisador de Decks OPTCG
 
 **Última atualização:** 19 de julho de 2026
-**Estado:** varredura contínua do parser; 178 suspeitos (severidade 1 only)
+**Estado:** varredura contínua do parser; 172 suspeitos (severidade 1 only)
 **Baseline do código:** ver `git log --oneline -1`
 **Repo:** github.com/Karlmalone13/Analizador_de_Decks
+
+> 19/07/2026: mudança de ritmo na varredura (usuário pediu pra acelerar
+> após 3 dias na mesma tarefa) — a partir daqui, revisar lotes de 50
+> suspeitos por vez (em vez de 10-25), pré-filtrando falsos-positivos já
+> conhecidos e trazendo só os candidatos reais pro usuário aprovar de uma
+> vez. Lote de 6 bugs reais (OP08-029 a OP08-096), 9 cartas no total:
+> OP08-029 Pekoms (aura de imunidade a KO virava auto-imunidade genérica
+> sem filtro — nova ação `grant_ko_immunity_aura`, novo loop em
+> `is_immune()`), OP08-038 (bloco Main inteiro sumia — custo "rest N of
+> your Characters" sem filtro e concessão "None of your Characters..."
+> sem tipo nunca eram reconhecidos; achado colateral real: pool de
+> `grant_ko_immunity_type` incluía o Leader por engano quando não havia
+> filtro nenhum, nunca exercitado até agora), OP08-049 (condição do
+> reveal sumia por causa de uma cláusula de destino inline antes do
+> "If" — Rush disparava sempre), OP08-052+OP08-054 (cost_lte caía no
+> fallback 99 por não tolerar "and a cost of" além de "with a cost
+> of"), OP08-058 (custo "turn N cards da vida face-up" só tolerava N=1
+> literal, sumia com N>1), OP08-096 (mecânica nova: mill condicionado ao
+> custo da carta milhada — nova ação `trash_deck_top_conditional`).
+> 2 capturas extras da mesma generalização: OP01-055 (custo inteiro
+> sumia, draw 2 virava grátis) e OP04-083 Sabo (mesmo gap do item 2). Ver
+> HANDOFF bloco 275 e
+> `parser_audits/2026-07-19_lote_7_op08-029_a_op08-096.json`.
+> Auditor: 178 -> 172 suspeitos.
 
 > 19/07/2026: lote de 6 bugs reais (OP07-009 a OP07-097), 8 cartas no
 > total: OP07-009 (filtro de cor ausente em select_grant_double_attack),

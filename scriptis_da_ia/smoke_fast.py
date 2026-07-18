@@ -5527,6 +5527,118 @@ def test_lote_6_op07_009_a_op07_097() -> None:
           and entry_097["choice"][1][0]["cost_lte"] == 5)
 
 
+def test_lote_7_op08_029_a_op08_096() -> None:
+    # OP08-029 Pekoms: aura PERMANENTE de imunidade a KO (tipo+custo,
+    # exclui a propria carta por nome), condicionada a Pekoms estar ATIVA
+    # -- distinta do grant_ko_immunity_type (concessao TEMPORARIA via
+    # step/duration).
+    pekoms_step = get_card_effects("OP08-029")["passive"]["steps"][0]
+    check("OP08-029 parseia grant_ko_immunity_aura com filter_type/cost_lte/exclude",
+          pekoms_step == {"action": "grant_ko_immunity_aura", "filter_type": "minks",
+                           "cost_lte": 3, "exclude": "pekoms", "self_active_required": True})
+    pekoms = real_card("OP08-029")
+    minks_barato = mk("MK1", "Minks Barato", cost=2, sub_types="Minks")
+    minks_caro = mk("MK2", "Minks Caro", cost=5, sub_types="Minks")
+    nao_minks = mk("NM1", "Nao Minks", cost=2, sub_types="Zou")
+    me_pk = GameState(leader=mk("PKLDR", "Lider", card_type="LEADER"))
+    me_pk.field_chars = [pekoms, minks_barato, minks_caro, nao_minks]
+    opp_pk = GameState(leader=mk("PKOPP", "Opp", card_type="LEADER"))
+    check("Execucao real: OP08-029 protege Minks barato (imune a KO)",
+          is_immune(minks_barato, "ko", me_pk, opp_pk))
+    check("Execucao real: OP08-029 NAO protege Minks caro (custo>3)",
+          not is_immune(minks_caro, "ko", me_pk, opp_pk))
+    check("Execucao real: OP08-029 NAO protege nao-Minks",
+          not is_immune(nao_minks, "ko", me_pk, opp_pk))
+    check("Execucao real: OP08-029 nao se auto-protege via a propria aura (exclude=pekoms)",
+          not is_immune(pekoms, "ko", me_pk, opp_pk))
+    pekoms.rested = True
+    check("Execucao real: Pekoms RESTADA nao concede a aura (self_active_required)",
+          not is_immune(minks_barato, "ko", me_pk, opp_pk))
+
+    # OP08-038: custo "rest 2 of your Characters" (sem filtro nenhum) +
+    # grant_ko_immunity_type SEM filtro (protege TODOS os proprios
+    # Characters, nao o Leader -- achado colateral: pool antigo incluia
+    # o Leader quando cost_lte era None, nunca exercitado ate agora).
+    entry_038 = get_card_effects("OP08-038")["main"]
+    check("OP08-038 parseia custo rest_own_character sem filtro (count=2)",
+          entry_038["costs"] == [{"type": "rest_own_character", "count": 2}])
+    check("OP08-038 parseia grant_ko_immunity_type sem filter_type/cost_lte",
+          entry_038["steps"][0] == {"action": "grant_ko_immunity_type", "duration": "opp_turn_end"})
+    sabo_leader = mk("SBLDR", "Lider", card_type="LEADER")
+    char_a = mk("CHA1", "Char A", cost=3)
+    char_b = mk("CHB1", "Char B", cost=6)
+    me_038 = GameState(leader=sabo_leader)
+    me_038.field_chars = [char_a, char_b]
+    opp_038 = GameState(leader=mk("OPPLDR038", "Opp", card_type="LEADER"))
+    EffectExecutor(me_038, opp_038)._execute_step(
+        {"action": "grant_ko_immunity_type", "duration": "opp_turn_end"}, me_038.leader)
+    check("Execucao real: grant_ko_immunity_type sem filtro protege AMBOS os Characters",
+          char_a.immunity_ko_until == "opp_turn_end" and char_b.immunity_ko_until == "opp_turn_end")
+    check("Execucao real: grant_ko_immunity_type sem filtro NAO alcanca o Leader",
+          not sabo_leader.immunity_ko_until)
+
+    # OP08-049: condicao ausente no reveal (virava gain_rush incondicional)
+    # + destino "top or bottom" (escolha do jogador, heuristica: mantem no
+    # topo se bateu a condicao, manda pro fundo se nao bateu).
+    entry_049 = get_card_effects("OP08-049")["on_play"]["steps"][0]
+    check("OP08-049 parseia reveal_deck_top_conditional com return_to=top_or_bottom",
+          entry_049["action"] == "reveal_deck_top_conditional"
+          and entry_049["return_to"] == "top_or_bottom"
+          and entry_049["condition"] == {"revealed_card_type": "whitebeard piratess"})
+
+    # OP08-052/OP08-054: cost_lte caia no fallback 99 ("qualquer custo")
+    # porque so "with a cost of" era tolerado, nao "and a cost of".
+    check("OP08-052 parseia cost_lte=4 (nao 99)",
+          get_card_effects("OP08-052")["on_play"]["steps"][0]["cost_lte"] == 4)
+    check("OP08-054 parseia cost_lte=3 (nao 99)",
+          get_card_effects("OP08-054")["counter"]["steps"][1]["cost_lte"] == 3)
+
+    # OP08-058: custo "turn 2 cards from top of Life face-up" (count>1,
+    # regex antigo so tolerava o literal "1 card").
+    check("OP08-058 parseia custo turn_life_face_up com count=2",
+          get_card_effects("OP08-058")["when_attacking"]["costs"]
+          == [{"type": "turn_life_face_up", "count": 2}])
+    me_058 = GameState(leader=mk("L058", "Lider", card_type="LEADER"))
+    me_058.life = [mk(f"LF{i}", "Vida", cost=1) for i in range(4)]
+    opp_058 = GameState(leader=mk("OPP058", "Opp", card_type="LEADER"))
+    ok_pay = EffectExecutor(me_058, opp_058)._pay_costs(
+        [{"type": "turn_life_face_up", "count": 2}], me_058.leader)
+    check("Execucao real: OP08-058 vira as 2 cartas do TOPO da vida face-up",
+          ok_pay and sum(1 for c in me_058.life if c.life_face_up) == 2
+          and me_058.life[0].life_face_up is False)
+
+    # OP08-096: mill do proprio deck onde o efeito seguinte e condicionado
+    # ao CUSTO da carta milhada (nao revelada) -- condicao inteira sumia,
+    # buff disparava incondicional.
+    entry_096 = get_card_effects("OP08-096")["counter"]["steps"][0]
+    check("OP08-096 parseia trash_deck_top_conditional com condition trashed_card_cost_gte=6",
+          entry_096["action"] == "trash_deck_top_conditional"
+          and entry_096["condition"] == {"trashed_card_cost_gte": 6})
+    zoro_ev = real_card("OP08-096")
+    lider_buff = mk("LBUFF", "Lider", card_type="LEADER")
+    me_096 = GameState(leader=lider_buff)
+    me_096.deck = [mk("BARATO1", "Barato", cost=2)]
+    opp_096 = GameState(leader=mk("OPP096", "Opp", card_type="LEADER"))
+    EffectExecutor(me_096, opp_096).execute(zoro_ev, "counter")
+    check("Execucao real: OP08-096 milha o topo, custo<6 NAO buffa",
+          lider_buff.power_buff == 0 and len(me_096.trash) == 1 and not me_096.deck)
+    lider_buff2 = mk("LBUFF2", "Lider", card_type="LEADER")
+    me_096b = GameState(leader=lider_buff2)
+    me_096b.deck = [mk("CARO1", "Caro", cost=8)]
+    EffectExecutor(me_096b, opp_096).execute(zoro_ev, "counter")
+    check("Execucao real: OP08-096 milha o topo, custo>=6 BUFFA +5000",
+          lider_buff2.power_buff == 5000 and len(me_096b.trash) == 1)
+
+    # Capturas extras da mesma generalizacao (achadas pelo diff_parser,
+    # nao pela auditoria original): custo/efeito inteiros que sumiam.
+    check("OP01-055 (familia rest_own_character sem filtro) ganha o custo rest 2 Characters",
+          get_card_effects("OP01-055")["main"]["costs"]
+          == [{"type": "rest_own_character", "count": 2}])
+    check("OP04-083 Sabo (familia grant_ko_immunity_type sem filtro) ganha a imunidade em massa",
+          {"action": "grant_ko_immunity_type", "duration": "opp_turn_end"}
+          in get_card_effects("OP04-083")["on_play"]["steps"])
+
+
 def main() -> int:
     test_turn_order_imu_prefers_second()
     test_empty_throne_beats_direct_five_elders_play()
@@ -5661,6 +5773,7 @@ def main() -> int:
     test_lote_5_op03_021_a_op03_083()
     test_lote_12_op03_096_a_op06_117()
     test_lote_6_op07_009_a_op07_097()
+    test_lote_7_op08_029_a_op08_096()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0
