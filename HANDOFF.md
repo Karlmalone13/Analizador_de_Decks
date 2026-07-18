@@ -1,5 +1,24 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-18 (264) - Codex - lote 1 de 10 pendencias de cartas
+
+Usuario aprovou explicitamente o lote: EB01-011, OP05-056, EB01-029,
+EB01-045, EB03-012, OP04-044, OP04-046, OP04-084, OP05-002 e OP05-007.
+
+Corrigidos parser e motor: custo de Character proprio ao fundo do deck,
+reveal condicional com bounce proprio, gate por custo exato, escolha DON ou
+Character filtrado, bounce duplo, busca de dois nomes, play filtrado do topo,
+buff tipo-ou-Trigger e KO por soma de power. As familias tambem corrigiram
+OP03-094, OP07-087, OP08-086, OP09-018 e P-065.
+
+Auditor: 241 -> 228 suspeitos. Diff antes da regeneracao: GANHOU=0,
+PERDEU=0, MUDOU=15, todas conferidas. Depois: `gerar_dbs.py` (2614),
+snapshot e diff 0/0/0. `smoke_fast.py` e `smoke_test.py` passaram; broad
+completou 7/7 sem excecao antes de o wrapper encerrar por timeout. Evidencia:
+`scriptis_da_ia/parser_audits/2026-07-18_lote_10_eb01-011_a_op05-007.json`.
+
+Proximo passo: montar lote 2 com 10 falhas reais e aguardar aprovacao da lista.
+
 ## 2026-07-18 (263) - Gates do proxy, nome canonico e comparacao entre commits
 
 **Entrada para Claude:** `CLAUDE.md` agora aponta obrigatoriamente para este

@@ -84,6 +84,12 @@ def parse_conditions(text):
     conds = {}
     t = text.lower()
 
+    # Existencia de Character no campo do oponente com custo exato.
+    # Ex.: EB01-045 Brook: o Rush so existe se houver Character custo 0.
+    m = re.search(r'if your opponent has a character with a cost of (\d+)(?! or)', t)
+    if m:
+        conds['opp_char_cost_eq'] = int(m.group(1))
+
     # "you and your opponent have a total of N or less Life cards" --
     # SOMA da vida dos 2 lados, distinta de life_lte (so o proprio) e
     # opp_life_lte (so o oponente). Achado 15/07 (varredura ampla, 7
@@ -674,6 +680,21 @@ def parse_costs(text):
     if re.search(r'trash this (character|card)', t):
         costs.append({'type': 'trash_self'})
 
+    # Colocar Character proprio no fundo do deck como custo. A clausula
+    # termina em ':' para nao confundir com efeitos de remocao normais.
+    m_bottom_char = re.search(
+        r'you may (?:rest this (?:card|character|stage) and )?place (\d+) of your '
+        r'characters?(?: other than this character)?'
+        r'(?: with (\d+) base power)? at the bottom of your deck\s*:', t)
+    if m_bottom_char:
+        cost = {'type': 'place_own_character_bottom_deck',
+                'count': int(m_bottom_char.group(1))}
+        if m_bottom_char.group(2):
+            cost['power_eq'] = int(m_bottom_char.group(2))
+        if 'other than this character' in m_bottom_char.group(0):
+            cost['exclude_self'] = True
+        costs.append(cost)
+
     # Filtro opcional de tipo ([Tipo]/{Tipo}/"Tipo" type), custo ("with a
     # cost of N or more") e exclusao ("other than this Character"/"other
     # than [Nome]") entre "characters" e "to the owner's hand" -- achado
@@ -1147,7 +1168,7 @@ def parse_look_at(text):
     steps.append({'action': 'look_top_deck', 'count': look_count})
 
     # Quantas pega
-    take_m = re.search(r'(?:reveal|add|play) up to (\d+)', t)
+    take_m = re.search(r'(?:reveal|add|play) (?:up to |a total of )?(\d+)', t)
     take_count = int(take_m.group(1)) if take_m else 1
     verbo_pega = take_m.group(0).split()[0] if take_m else 'add'  # 'reveal' | 'add' | 'play'
 
@@ -1164,6 +1185,20 @@ def parse_look_at(text):
         if fm:
             filter_type = fm.group(1)
 
+    # Busca por uma lista de nomes alternativos (Queen OP04-046).
+    names_clause = re.search(
+        r'(?:reveal|add) (?:up to |a total of )?\d+ '\
+        r'((?:\[[^\]]+\](?:\s+or\s+)?){2,})\s*cards?', t)
+    filter_names = (re.findall(r'\[([^\]]+)\]', names_clause.group(1))
+                    if names_clause else [])
+
+    # "type including X" na carta buscada/jogada (Stussy OP04-084).
+    if not filter_type:
+        fm = re.search(r'play up to \d+ character card with a type including '
+                       r'["\[{]([^"\]}]+)', t)
+        if fm:
+            filter_type = fm.group(1)
+
     # "other than [X]"
     ex = re.search(r'other than \[([^\]]+)\]', t)
     if ex:
@@ -1175,6 +1210,8 @@ def parse_look_at(text):
     # que aquela funcao e pra fonte=trash, esta e pra fonte=topo do deck.
     range_m = re.search(r'with a cost of (\d+) to (\d+)', t)
     cost_m = re.search(r'with a cost of (\d+) or less', t)
+    play_cost_m = re.search(
+        r'play up to \d+ character card[^.]*?and a cost of (\d+) or less', t)
     cost_gte_m = re.search(r'with a cost of (\d+) or more', t)
     power_m = re.search(r'with (\d+) power or less', t)
 
@@ -1195,14 +1232,16 @@ def parse_look_at(text):
         take_step['revealed_to_opponent'] = True
     if filter_type:
         take_step['filter_type'] = filter_type
+    if filter_names:
+        take_step['filter_names'] = filter_names
     if exclude:
         take_step['exclude'] = exclude
     if range_m:
         take_step['cost_gte'] = int(range_m.group(1))
         take_step['cost_lte'] = int(range_m.group(2))
     else:
-        if cost_m:
-            take_step['cost_lte'] = int(cost_m.group(1))
+        if cost_m or play_cost_m:
+            take_step['cost_lte'] = int((cost_m or play_cost_m).group(1))
         if cost_gte_m:
             take_step['cost_gte'] = int(cost_gte_m.group(1))
     if power_m:
@@ -1316,6 +1355,16 @@ def parse_opp_char_to_opp_life(text):
 def parse_ko(text):
     steps = []
     t = text.lower()
+
+    total_power_m = re.search(
+        r'k\.o\. up to (\d+) of your opponent.?s characters? '
+        r'with a total power of (\d+) or less', t)
+    if total_power_m:
+        return [{
+            'action': 'ko', 'count': int(total_power_m.group(1)),
+            'target': 'opp_character',
+            'total_power_lte': int(total_power_m.group(2)),
+        }]
 
     # Verbo: "k.o." ou "trash" (sinonimos de remocao neste contexto).
     VERBO = r'(?:k\.o\.|trash)'
@@ -1664,7 +1713,7 @@ def parse_bounce(text):
     # 4 or less to the owner's hand" -- so essa carta usa essa palavra no
     # banco inteiro, mesma semantica de bounce implicito do oponente).
     for m in re.finditer(
-        r"return up to (\d+) (active )?(?:characters?|cards?)(?: other than this character)?"
+        r"(?:return|and) up to (\d+) (active )?(?:characters?|cards?)(?: other than this character)?"
         r" with a cost of (\d+) or less",
         t
     ):
@@ -1684,6 +1733,22 @@ def parse_bounce(text):
 
     if steps:
         return steps
+
+    # Dois ou mais alvos encadeados sem repetir o verbo/posse.
+    first_chain = re.search(
+        r'return up to (\d+) characters? with a cost of (\d+) or less', t)
+    if first_chain:
+        chained = [{
+            'action': 'bounce', 'count': int(first_chain.group(1)),
+            'target': 'opp_character', 'cost_lte': int(first_chain.group(2)),
+        }]
+        for cm in re.finditer(
+                r'and up to (\d+) characters? with a cost of (\d+) or less', t):
+            chained.append({
+                'action': 'bounce', 'count': int(cm.group(1)),
+                'target': 'opp_character', 'cost_lte': int(cm.group(2)),
+            })
+        return chained
 
     # Variante por power (em vez de custo): "return up to N Character(s)
     # with [base power] X to the owner's hand"
@@ -1778,11 +1843,16 @@ def parse_rest_opp(text):
     # essa escolha).
     m_mixed_don_first = re.search(
         r"rest up to (\d+) of your opponent.{0,10} don!{0,2}\s*cards? or "
-        r"characters?(?: with a cost of (\d+) or less)?", t)
+        r".{0,55}?characters? with a cost of (\d+) or less", t)
     if m_mixed_don_first:
-        step = {'action': 'rest_opp_character', 'count': int(m_mixed_don_first.group(1))}
+        step = {'action': 'rest_opp_character',
+                'count': int(m_mixed_don_first.group(1)),
+                'or_rest_opp_don': True}
         if m_mixed_don_first.group(2):
             step['cost_lte'] = int(m_mixed_don_first.group(2))
+        types = re.findall(r'[\[{]([^\]}]+)[\]}]', m_mixed_don_first.group(0))
+        if types:
+            step['filter_types'] = types
         steps.append(step)
         return steps
 
@@ -2687,6 +2757,21 @@ def parse_power_buff(text):
             step['exclude'] = exclude_sel.strip()
         steps.append(step)
         dynamic_spans.append((m_select_buff.start(), m_select_buff.end()))
+
+    # Selecao por uniao: "up to N of your [Tipo] Characters or Characters
+    # with a [Trigger]" (OP05-002). O executor recebe os dois filtros como
+    # alternativas, sem degradar o alvo para a propria carta.
+    m_type_or_trigger = re.search(
+        r'up to (\d+) of your [\[{]([^\]}]+)[\]}] type characters? or '
+        r'characters? with a \[trigger\] gain \+(\d+)\s*power', t)
+    if m_type_or_trigger:
+        steps.append({
+            'action': 'buff_power', 'amount': int(m_type_or_trigger.group(3)),
+            'target': 'own_character', 'duration': 'this_turn',
+            'count': int(m_type_or_trigger.group(1)),
+            'filter_type_or_has_trigger': m_type_or_trigger.group(2).strip(),
+        })
+        dynamic_spans.append((m_type_or_trigger.start(), m_type_or_trigger.end()))
 
     for m in re.finditer(r'([+\-−]?)\s*(\d+)\s*power', t):
         if any(start <= m.start() < end for start, end in dynamic_spans):
@@ -5247,7 +5332,12 @@ def parse_block(block_text, trigger_name):
         if power_gte_rc:
             cond['revealed_card_power_gte'] = int(power_gte_rc.group(1))
         if cond:
-            on_match = parse_block(effect_clause, trigger_name)
+            own_bounce = re.fullmatch(
+                r'return up to (\d+) of your characters? to the owner.?s hand',
+                effect_clause.lower().rstrip('.'))
+            on_match = ([{'action': 'bounce', 'count': int(own_bounce.group(1)),
+                          'target': 'own_character'}]
+                        if own_bounce else parse_block(effect_clause, trigger_name))
             if on_match:
                 return [{
                     'action': 'reveal_deck_top_conditional',

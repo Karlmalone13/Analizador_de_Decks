@@ -182,6 +182,11 @@
    "costs": [
     {
      "type": "rest_self"
+    },
+    {
+     "count": 1,
+     "power_eq": 1000,
+     "type": "place_own_character_bottom_deck"
     }
    ],
    "steps": [
@@ -472,6 +477,24 @@
   }
  },
  "EB01-029": {
+  "counter": {
+   "steps": [
+    {
+     "action": "reveal_deck_top_conditional",
+     "condition": {
+      "revealed_card_cost_gte": 4
+     },
+     "on_match_steps": [
+      {
+       "action": "bounce",
+       "count": 1,
+       "target": "own_character"
+      }
+     ],
+     "return_to": "bottom"
+    }
+   ]
+  },
   "trigger": {
    "steps": [
     {
@@ -787,6 +810,9 @@
  },
  "EB01-045": {
   "on_play": {
+   "conditions": {
+    "opp_char_cost_eq": 0
+   },
    "steps": [
     {
      "action": "gain_rush",
@@ -2606,8 +2632,14 @@
    ],
    "steps": [
     {
-     "action": "rest_opp_don",
-     "count": 1
+     "action": "rest_opp_character",
+     "cost_lte": 3,
+     "count": 1,
+     "filter_types": [
+      "animal",
+      "smile"
+     ],
+     "or_rest_opp_don": true
     }
    ]
   }
@@ -3773,7 +3805,8 @@
     {
      "action": "rest_opp_character",
      "cost_lte": 4,
-     "count": 1
+     "count": 1,
+     "or_rest_opp_don": true
     },
     {
      "action": "set_don_active",
@@ -10699,7 +10732,9 @@
     },
     {
      "action": "play_from_deck",
-     "count": 1
+     "cost_lte": 5,
+     "count": 1,
+     "filter_type": "cp"
     },
     {
      "action": "trash_rest"
@@ -12094,6 +12129,12 @@
      "cost_lte": 8,
      "count": 1,
      "target": "opp_character"
+    },
+    {
+     "action": "bounce",
+     "cost_lte": 3,
+     "count": 1,
+     "target": "opp_character"
     }
    ]
   }
@@ -12120,8 +12161,12 @@
     },
     {
      "action": "add_to_hand",
-     "count": 1,
-     "revealed_to_opponent": false
+     "count": 2,
+     "filter_names": [
+      "plague rounds",
+      "ice oni"
+     ],
+     "revealed_to_opponent": true
     },
     {
      "action": "deck_bottom_rest"
@@ -12908,10 +12953,12 @@
     },
     {
      "action": "play_from_deck",
+     "cost_lte": 2,
      "count": 1,
      "exclude": [
       "stussy"
-     ]
+     ],
+     "filter_type": "cp"
     },
     {
      "action": "trash_rest"
@@ -13656,8 +13703,10 @@
     {
      "action": "buff_power",
      "amount": 3000,
+     "count": 3,
      "duration": "this_turn",
-     "target": "self"
+     "filter_type_or_has_trigger": "revolutionary army",
+     "target": "own_character"
     }
    ]
   }
@@ -13741,7 +13790,8 @@
     {
      "action": "ko",
      "count": 2,
-     "target": "opp_character"
+     "target": "opp_character",
+     "total_power_lte": 4000
     }
    ]
   }
@@ -14626,6 +14676,13 @@
  },
  "OP05-056": {
   "on_play": {
+   "costs": [
+    {
+     "count": 1,
+     "exclude_self": true,
+     "type": "place_own_character_bottom_deck"
+    }
+   ],
    "steps": [
     {
      "action": "draw",
@@ -16169,7 +16226,8 @@
     {
      "action": "rest_opp_character",
      "cost_lte": 3,
-     "count": 1
+     "count": 1,
+     "or_rest_opp_don": true
     },
     {
      "action": "self_cant_take_life"
@@ -19654,6 +19712,9 @@
  },
  "OP07-087": {
   "your_turn": {
+   "conditions": {
+    "opp_char_cost_eq": 0
+   },
    "steps": [
     {
      "action": "buff_power",
@@ -21907,6 +21968,9 @@
  },
  "OP08-086": {
   "on_play": {
+   "conditions": {
+    "opp_char_cost_eq": 0
+   },
    "steps": [
     {
      "action": "draw",
@@ -22911,7 +22975,8 @@
     {
      "action": "ko",
      "count": 2,
-     "target": "opp_character"
+     "target": "opp_character",
+     "total_power_lte": 4000
     }
    ]
   }
@@ -23263,7 +23328,8 @@
     {
      "action": "rest_opp_character",
      "cost_lte": 6,
-     "count": 1
+     "count": 1,
+     "or_rest_opp_don": true
     }
    ]
   }
@@ -41789,6 +41855,9 @@
  },
  "P-065": {
   "when_attacking": {
+   "conditions": {
+    "opp_char_cost_eq": 0
+   },
    "steps": [
     {
      "action": "buff_power",
@@ -47873,7 +47942,8 @@
     {
      "action": "rest_opp_character",
      "cost_lte": 1,
-     "count": 1
+     "count": 1,
+     "or_rest_opp_don": true
     }
    ]
   },

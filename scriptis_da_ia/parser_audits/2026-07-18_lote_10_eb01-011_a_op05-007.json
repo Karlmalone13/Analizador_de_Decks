@@ -1,0 +1,26 @@
+{
+  "trigger_card": "EB01-011",
+  "problem": "Lote de 10 aprovado pelo usuario continha efeitos parcialmente ou incorretamente parseados: custos gratuitos, gates ausentes, alternativas de alvo perdidas, busca sem quantidade/filtro e KO sem teto combinado. Duas falhas, como OP05-056, nem apareciam no auditor numerico porque seus numeros ja existiam em outro step.",
+  "grammar_family": "Nove formas genericas: Character proprio ao fundo como custo; reveal condicional com efeito aninhado; existencia de Character oponente por custo exato; rest DON-ou-Character; alvos de bounce encadeados; busca de multiplos nomes; play do topo com tipo/custo/exclusao; selecao por tipo-ou-Trigger; KO por soma de power.",
+  "queries": [
+    "python audit_parser_coverage.py --show 80",
+    "rg global em cards_rows.csv por place Character bottom, DON or Characters, total power, total of N e type including",
+    "python diff_parser.py apos cada grupo e auditoria das 15 cartas alteradas contra cards_rows.csv"
+  ],
+  "cards_found": [
+    "EB01-011", "OP05-056", "EB01-029", "EB01-045", "EB03-012",
+    "OP04-044", "OP04-046", "OP04-084", "OP05-002", "OP05-007",
+    "OP03-094", "OP07-087", "OP08-086", "OP09-018", "P-065"
+  ],
+  "resolution_scope": "global",
+  "decision": "Implementar representacoes genericas no parser e os consumidores correspondentes no motor. Custos fazem preflight atomico; bounce proprio escolhe a menor perda; KO por soma usa combinacoes legais; busca respeita nomes; filtros de uniao e alvo misto permanecem explicitos. Nenhum hardcode por codigo de carta foi usado.",
+  "validated_by": [
+    "diff_parser.py antes da regeneracao: GANHOU=0 PERDEU=0 MUDOU=15, todas conferidas contra o texto cru",
+    "gerar_dbs.py: 2614 cartas sincronizadas",
+    "snapshot_parser.py seguido de diff_parser.py: 0/0/0",
+    "smoke_fast.py: OK com checks dirigidos de parse e execucao",
+    "smoke_test.py: todos os testes passaram",
+    "smoke_test_broad.py: 7/7 partidas sem excecao; wrapper encerrou por timeout depois da conclusao",
+    "audit_parser_coverage.py: 241 para 228 suspeitos"
+  ]
+}

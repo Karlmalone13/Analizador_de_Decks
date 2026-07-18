@@ -308,6 +308,11 @@
         "costs": [
           {
             "type": "rest_self"
+          },
+          {
+            "type": "place_own_character_bottom_deck",
+            "count": 1,
+            "power_eq": 1000
           }
         ]
       }
@@ -799,6 +804,24 @@
             "cost_lte": 8
           }
         ]
+      },
+      "counter": {
+        "steps": [
+          {
+            "action": "reveal_deck_top_conditional",
+            "return_to": "bottom",
+            "condition": {
+              "revealed_card_cost_gte": 4
+            },
+            "on_match_steps": [
+              {
+                "action": "bounce",
+                "count": 1,
+                "target": "own_character"
+              }
+            ]
+          }
+        ]
       }
     }
   },
@@ -1286,7 +1309,10 @@
             "action": "gain_rush",
             "duration": "this_turn"
           }
-        ]
+        ],
+        "conditions": {
+          "opp_char_cost_eq": 0
+        }
       }
     }
   },
@@ -4134,8 +4160,14 @@
       "activate_main": {
         "steps": [
           {
-            "action": "rest_opp_don",
-            "count": 1
+            "action": "rest_opp_character",
+            "count": 1,
+            "or_rest_opp_don": true,
+            "cost_lte": 3,
+            "filter_types": [
+              "animal",
+              "smile"
+            ]
           }
         ],
         "costs": [
@@ -5844,6 +5876,7 @@
           {
             "action": "rest_opp_character",
             "count": 1,
+            "or_rest_opp_don": true,
             "cost_lte": 4
           },
           {
@@ -17155,7 +17188,9 @@
           },
           {
             "action": "play_from_deck",
-            "count": 1
+            "count": 1,
+            "filter_type": "cp",
+            "cost_lte": 5
           },
           {
             "action": "trash_rest"
@@ -19347,6 +19382,12 @@
             "count": 1,
             "target": "opp_character",
             "cost_lte": 8
+          },
+          {
+            "action": "bounce",
+            "count": 1,
+            "target": "opp_character",
+            "cost_lte": 3
           }
         ]
       }
@@ -19392,8 +19433,12 @@
           },
           {
             "action": "add_to_hand",
-            "count": 1,
-            "revealed_to_opponent": false
+            "count": 2,
+            "revealed_to_opponent": true,
+            "filter_names": [
+              "plague rounds",
+              "ice oni"
+            ]
           },
           {
             "action": "deck_bottom_rest"
@@ -20602,9 +20647,11 @@
           {
             "action": "play_from_deck",
             "count": 1,
+            "filter_type": "cp",
             "exclude": [
               "stussy"
-            ]
+            ],
+            "cost_lte": 2
           },
           {
             "action": "trash_rest"
@@ -21748,8 +21795,10 @@
           {
             "action": "buff_power",
             "amount": 3000,
-            "target": "self",
-            "duration": "this_turn"
+            "target": "own_character",
+            "duration": "this_turn",
+            "count": 3,
+            "filter_type_or_has_trigger": "revolutionary army"
           }
         ],
         "costs": [
@@ -21870,7 +21919,8 @@
           {
             "action": "ko",
             "count": 2,
-            "target": "opp_character"
+            "target": "opp_character",
+            "total_power_lte": 4000
           }
         ]
       }
@@ -23298,6 +23348,13 @@
           {
             "action": "draw",
             "count": 1
+          }
+        ],
+        "costs": [
+          {
+            "type": "place_own_character_bottom_deck",
+            "count": 1,
+            "exclude_self": true
           }
         ]
       }
@@ -25750,6 +25807,7 @@
           {
             "action": "rest_opp_character",
             "count": 1,
+            "or_rest_opp_don": true,
             "cost_lte": 3
           },
           {
@@ -31288,7 +31346,10 @@
             "target": "self",
             "duration": "this_turn"
           }
-        ]
+        ],
+        "conditions": {
+          "opp_char_cost_eq": 0
+        }
       }
     }
   },
@@ -34838,7 +34899,10 @@
             "count": 2,
             "then_trash": 2
           }
-        ]
+        ],
+        "conditions": {
+          "opp_char_cost_eq": 0
+        }
       }
     }
   },
@@ -36397,7 +36461,8 @@
           {
             "action": "ko",
             "count": 2,
-            "target": "opp_character"
+            "target": "opp_character",
+            "total_power_lte": 4000
           }
         ]
       }
@@ -36910,6 +36975,7 @@
           {
             "action": "rest_opp_character",
             "count": 1,
+            "or_rest_opp_don": true,
             "cost_lte": 6
           }
         ],
@@ -66226,7 +66292,10 @@
             "target": "self",
             "duration": "until_my_turn_start"
           }
-        ]
+        ],
+        "conditions": {
+          "opp_char_cost_eq": 0
+        }
       }
     }
   },
@@ -76070,6 +76139,7 @@
           {
             "action": "rest_opp_character",
             "count": 1,
+            "or_rest_opp_don": true,
             "cost_lte": 1
           }
         ],

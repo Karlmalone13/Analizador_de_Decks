@@ -1205,6 +1205,10 @@
     "trigger": "trigger",
     "cost_lte": 8,
     "target": "opp_character"
+   },
+   {
+    "action": "reveal_deck_top_conditional",
+    "trigger": "counter"
    }
   ],
   "synergy_states": {
@@ -1217,7 +1221,7 @@
   "is_searcher": false,
   "draws": false,
   "has_counter_value": false,
-  "has_counter_event": false,
+  "has_counter_event": true,
   "is_blocker": false,
   "is_removal": true,
   "kos": false,
@@ -5974,8 +5978,9 @@
   "attribute": "Special",
   "effects": [
    {
-    "action": "rest_opp_don",
-    "trigger": "activate_main"
+    "action": "rest_opp_character",
+    "trigger": "activate_main",
+    "cost_lte": 3
    }
   ],
   "synergy_states": {
@@ -5990,9 +5995,9 @@
   "has_counter_value": true,
   "has_counter_event": false,
   "is_blocker": false,
-  "is_removal": false,
+  "is_removal": true,
   "kos": false,
-  "rests_opponent": false,
+  "rests_opponent": true,
   "bounces": false,
   "gives_don": false,
   "power_buff": false,
@@ -25410,7 +25415,8 @@
    },
    {
     "action": "play_from_deck",
-    "trigger": "main"
+    "trigger": "main",
+    "cost_lte": 5
    },
    {
     "action": "trash_rest",
@@ -28715,6 +28721,12 @@
     "trigger": "on_play",
     "cost_lte": 8,
     "target": "opp_character"
+   },
+   {
+    "action": "bounce",
+    "trigger": "on_play",
+    "cost_lte": 3,
+    "target": "opp_character"
    }
   ],
   "synergy_states": {},
@@ -30493,7 +30505,8 @@
    },
    {
     "action": "play_from_deck",
-    "trigger": "on_play"
+    "trigger": "on_play",
+    "cost_lte": 2
    },
    {
     "action": "trash_rest",
@@ -32176,7 +32189,7 @@
    {
     "action": "buff_power",
     "trigger": "activate_main",
-    "target": "self"
+    "target": "own_character"
    }
   ],
   "synergy_states": {

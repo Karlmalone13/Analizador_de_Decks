@@ -1,13 +1,17 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 17 de julho de 2026
-**Estado:** varredura contínua do parser; 241 suspeitos restantes após os blocos 257-258
-**Baseline do código:** `9b3494a` local (1 commit à frente de `origin/main` em 17/07; push pendente)
+**Última atualização:** 18 de julho de 2026
+**Estado:** varredura contínua do parser; 228 suspeitos restantes após o lote 1 de 10 cartas
+**Baseline do código:** ver `git log --oneline -1` (branch local; push pendente)
 **Repo:** github.com/Karlmalone13/Analizador_de_Decks
 
 > 18/07/2026: proxy ganhou verificacao do nome canonico/banco, match_id estavel,
 > latencia, alertas, confirmacao semantica Main Phase e comparacao entre commits.
 > Sem teste ao vivo ainda: GameOver/AutoSaved, prompts auxiliares e calibracao.
+
+> 18/07/2026: lote 1 de 10 pendencias concluido; cinco parentes adicionais
+> receberam os fixes de familia. Auditor caiu de 241 para 228. Evidencia em
+> `scriptis_da_ia/parser_audits/2026-07-18_lote_10_eb01-011_a_op05-007.json`.
 
 > 17/07/2026: instrumentacao ampliada para Main Phase, defesa, mulligan e
 > alvos, com resultado final, deltas futuros 1/3/5 e contrafactual simulado.

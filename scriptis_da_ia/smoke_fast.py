@@ -4500,14 +4500,21 @@ def test_lote_9_itens_eb01_053_count2_e_eb03_061_alvo_misto() -> None:
 
     # EB03-061 (Uta): "rest DON!! cards OR Characters" (DON mencionado
     # PRIMEIRO) -- so a alternativa DON!! era capturada antes.
-    check("EB03-061 parseia rest_opp_character cost_lte=4 (aproximacao ja estabelecida pra alvo misto)",
-          get_card_effects("EB03-061").get("activate_main", {}).get("steps", [{}])[0] ==
-          {"action": "rest_opp_character", "count": 1, "cost_lte": 4})
+    step_061 = get_card_effects("EB03-061").get("activate_main", {}).get("steps", [{}])[0]
+    check("EB03-061 parseia rest_opp_character cost_lte=4 e preserva alternativa DON",
+          step_061.get("action") == "rest_opp_character"
+          and step_061.get("count") == 1 and step_061.get("cost_lte") == 4
+          and step_061.get("or_rest_opp_don") is True)
     # Generalizacao colateral: mesma ordem invertida em mais 3 cartas.
     for c, cost_lte in (("OP06-020", 3), ("OP09-036", 6), ("ST26-002", 1)):
-        check(f"{c} (mesma familia, ordem DON-primeiro): rest_opp_character cost_lte={cost_lte}",
-              get_card_effects(c).get("on_play" if c != "OP06-020" else "activate_main", {})
-              .get("steps", [{}])[0] == {"action": "rest_opp_character", "count": 1, "cost_lte": cost_lte})
+        family_step = (get_card_effects(c)
+                       .get("on_play" if c != "OP06-020" else "activate_main", {})
+                       .get("steps", [{}])[0])
+        check(f"{c} (mesma familia): Character cost_lte={cost_lte} OU DON",
+              family_step.get("action") == "rest_opp_character"
+              and family_step.get("count") == 1
+              and family_step.get("cost_lte") == cost_lte
+              and family_step.get("or_rest_opp_don") is True)
 
 
 def test_lote_9_itens_eb03_049_segunda_play_card_e_eb02_028_play_from_hand() -> None:
@@ -4645,6 +4652,86 @@ def test_don_n_parenteses_explicativo_e_life_area_cost() -> None:
           len(me2.life) == 1 and len(me2.hand) == 1 and cavendish.rush_this_turn)
 
 
+def test_lote_10_pendencias_eb01_011_a_op05_007() -> None:
+    effects = {code: get_card_effects(code) for code in (
+        "EB01-011", "OP05-056", "EB01-029", "EB01-045", "EB03-012",
+        "OP04-044", "OP04-046", "OP04-084", "OP05-002", "OP05-007")}
+    check("Lote 10: Mini-Merry exige rest_self + Character base 1000 no fundo",
+          effects["EB01-011"]["activate_main"]["costs"][-1] ==
+          {"type": "place_own_character_bottom_deck", "count": 1, "power_eq": 1000})
+    check("Lote 10: X.Barrels exclui a propria carta do custo",
+          effects["OP05-056"]["on_play"]["costs"] ==
+          [{"type": "place_own_character_bottom_deck", "count": 1, "exclude_self": True}])
+    check("Lote 10: Sorry I'm a Goner preserva Counter revelado custo>=4 e fundo",
+          effects["EB01-029"]["counter"]["steps"][0]["condition"] ==
+          {"revealed_card_cost_gte": 4}
+          and effects["EB01-029"]["counter"]["steps"][0]["return_to"] == "bottom")
+    check("Lote 10: Brook exige Character custo 0 do oponente",
+          effects["EB01-045"]["on_play"]["conditions"] == {"opp_char_cost_eq": 0})
+    check("Lote 10: Otama mantem escolha DON ou Animal/SMILE custo<=3",
+          effects["EB03-012"]["activate_main"]["steps"][0].get("or_rest_opp_don") is True
+          and effects["EB03-012"]["activate_main"]["steps"][0].get("filter_types") == ["animal", "smile"])
+    check("Lote 10: Kaido tem os dois bounces 8 e 3",
+          [s.get("cost_lte") for s in effects["OP04-044"]["on_play"]["steps"]] == [8, 3])
+    queen = effects["OP04-046"]["on_play"]["steps"][1]
+    check("Lote 10: Queen busca ate 2 Plague Rounds/Ice Oni",
+          queen.get("count") == 2 and queen.get("filter_names") == ["plague rounds", "ice oni"])
+    stussy = effects["OP04-084"]["on_play"]["steps"][1]
+    check("Lote 10: Stussy joga CP custo<=2 e exclui Stussy",
+          stussy.get("filter_type") == "cp" and stussy.get("cost_lte") == 2
+          and stussy.get("exclude") == ["stussy"])
+    betty = effects["OP05-002"]["activate_main"]["steps"][0]
+    check("Lote 10: Belo Betty escolhe 3 Revolutionary Army ou Trigger",
+          betty.get("count") == 3 and betty.get("filter_type_or_has_trigger") == "revolutionary army")
+    check("Lote 10: Sabo limita o KO a soma de 4000 power",
+          effects["OP05-007"]["on_play"]["steps"][0].get("total_power_lte") == 4000)
+
+    # Execucao dos mecanismos novos/alterados.
+    mini = real_card("EB01-011")
+    fodder = mk("MM1", "Milzinho", power=1000)
+    me = GameState(leader=mk("MML", "Lider", card_type="LEADER"), turn=3)
+    me.field_stage = mini
+    me.field_chars = [fodder]
+    me.deck = [mk("MMD", "Compra")]
+    opp = GameState(leader=mk("MMO", "Opp", card_type="LEADER"), turn=3)
+    EffectExecutor(me, opp).execute(mini, "activate_main")
+    check("Execucao lote 10: Mini-Merry paga ambos os custos e compra",
+          mini.rested and fodder not in me.field_chars and fodder in me.deck and len(me.hand) == 1)
+
+    brook = real_card("EB01-045")
+    me2 = GameState(leader=mk("BRL", "Lider", card_type="LEADER"), turn=3)
+    opp2 = GameState(leader=mk("BRO", "Opp", card_type="LEADER"), turn=3)
+    EffectExecutor(me2, opp2).execute(brook, "on_play")
+    no_gate = not brook.rush_this_turn
+    opp2.field_chars = [mk("C0", "Custo zero", cost=0)]
+    EffectExecutor(me2, opp2).execute(brook, "on_play")
+    check("Execucao lote 10: Brook ganha Rush somente com o gate custo 0", no_gate and brook.rush_this_turn)
+
+    sabo = real_card("OP05-007")
+    a = mk("SA", "Dois mil A", power=2000)
+    b = mk("SB", "Dois mil B", power=2000)
+    big = mk("SC", "Cinco mil", power=5000)
+    me3 = GameState(leader=mk("SL", "Lider", card_type="LEADER"), turn=3)
+    opp3 = GameState(leader=mk("SO", "Opp", card_type="LEADER"), turn=3)
+    opp3.field_chars = [a, b, big]
+    EffectExecutor(me3, opp3).execute(sabo, "on_play")
+    check("Execucao lote 10: Sabo remove combinacao 2000+2000 e preserva 5000",
+          a not in opp3.field_chars and b not in opp3.field_chars and big in opp3.field_chars)
+
+    betty_card = real_card("OP05-002")
+    rev = mk("REV", "Revolucionario", sub_types="Revolutionary Army")
+    trig = mk("TRG", "Com Trigger", has_trigger=True)
+    outsider = mk("OUT", "Sem filtro")
+    me4 = GameState(leader=mk("BTL", "Lider", card_type="LEADER"), turn=3)
+    me4.field_chars = [betty_card, rev, trig, outsider]
+    me4.hand = [mk("PAY", "Pagamento", sub_types="Revolutionary Army")]
+    opp4 = GameState(leader=mk("BTO", "Opp", card_type="LEADER"), turn=3)
+    EffectExecutor(me4, opp4).execute(betty_card, "activate_main")
+    check("Execucao lote 10: Belo Betty buffa apenas tribo/Trigger",
+          outsider.power_buff == 0
+          and sum(c.power_buff == 3000 for c in (betty_card, rev, trig)) == 3)
+
+
 def main() -> int:
     test_turn_order_imu_prefers_second()
     test_empty_throne_beats_direct_five_elders_play()
@@ -4769,6 +4856,7 @@ def main() -> int:
     test_lote_9_itens_eb02_007_leader_or_character_count3()
     test_lote_9_itens_eb04_056_condicao_composta_bonney_e_vida()
     test_don_n_parenteses_explicativo_e_life_area_cost()
+    test_lote_10_pendencias_eb01_011_a_op05_007()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0

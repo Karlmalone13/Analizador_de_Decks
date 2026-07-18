@@ -932,6 +932,10 @@ def _hand_cost_conditions_match(p: GameState, opp: Optional[GameState],
         if opp is None or not any(
                 c.cost == rule['eq'] or c.cost >= rule['gte'] for c in opp.field_chars):
             return False
+    if 'opp_char_cost_eq' in conds:
+        if opp is None or not any(c.cost == conds['opp_char_cost_eq']
+                                  for c in opp.field_chars):
+            return False
     if 'opp_rested_cards_gte' in conds:
         if opp is None:
             return False
@@ -3075,6 +3079,9 @@ class EffectExecutor:
             rested += int(bool(opp.field_stage and getattr(opp.field_stage, 'rested', False)))
             if rested < conds['opp_rested_cards_gte']:
                 return False
+        if 'opp_char_cost_eq' in conds:
+            if not any(c.cost == conds['opp_char_cost_eq'] for c in opp.field_chars):
+                return False
         if 'events_in_trash_gte' in conds:
             n_events = sum(1 for c in me.trash if c.card_type.lower() == 'event')
             if n_events < conds['events_in_trash_gte']:
@@ -3148,11 +3155,17 @@ class EffectExecutor:
         # restada mesmo quando o restante do custo fosse impagavel.
         from optcg_engine.rules_facade import eligible_cards
         for pending in costs:
-            if pending.get('type') != 'place_from_trash_bottom_deck':
+            if pending.get('type') == 'place_from_trash_bottom_deck':
+                source = self.me.trash
+            elif pending.get('type') == 'place_own_character_bottom_deck':
+                source = self.me.field_chars
+            else:
                 continue
             candidates = eligible_cards(
-                self.me.trash,
+                source,
                 filter_text=pending.get('filter_type', ''),
+                power_eq=pending.get('power_eq'),
+                exclude_card=card if pending.get('exclude_self') else None,
             )
             if len(candidates) < pending.get('count', 1):
                 return False
@@ -3377,6 +3390,23 @@ class EffectExecutor:
                     remove_by_identity(candidates, target)
                     returned.append(target.name[:15])
                 self._cost_logs.append(f'custo: devolveu para a mao: {", ".join(returned)}')
+            elif ctype == 'place_own_character_bottom_deck':
+                candidates = eligible_cards(
+                    self.me.field_chars,
+                    filter_text=cost.get('filter_type', ''),
+                    power_eq=cost.get('power_eq'),
+                    exclude_card=card if cost.get('exclude_self') else None,
+                )
+                count = cost.get('count', 1)
+                if len(candidates) < count:
+                    return False
+                moved = []
+                for _ in range(count):
+                    target = min(candidates, key=lambda c: c.board_value())
+                    remove_character_from_field(self.me, target, 'deck_bottom')
+                    remove_by_identity(candidates, target)
+                    moved.append(target.name[:15])
+                self._cost_logs.append(f'custo: fundo do deck: {", ".join(moved)}')
             elif ctype == 'don_minus':
                 count = cost.get('count', 1)
                 if not self._return_don_to_deck(count):
@@ -3728,6 +3758,10 @@ class EffectExecutor:
                 filter_text=step.get('filter_type', ''),
                 include_text=True,
             )
+            filter_names = [n.lower() for n in step.get('filter_names', [])]
+            if filter_names:
+                filtered = [c for c in filtered
+                            if any(n in c.name.lower() for n in filter_names)]
             if exclude:
                 filtered = [
                     c for c in filtered
@@ -4063,6 +4097,7 @@ class EffectExecutor:
             cost_eq = step.get('cost_eq')
             power_lte = step.get('power_lte')
             rested_only = step.get('rested_only', False)
+            total_power_lte = step.get('total_power_lte')
 
             if target_type == 'opp_stage':
                 if opp.field_stage and (cost_lte is None or opp.field_stage.cost <= cost_lte):
@@ -4104,6 +4139,18 @@ class EffectExecutor:
             immune_skipped = []
             imm_kind = 'ko' if action == 'ko' else 'removal'
             for owner, candidates in pools:
+                if total_power_lte is not None and owner is opp:
+                    from itertools import combinations
+                    feasible = []
+                    for size in range(1, min(count, len(candidates)) + 1):
+                        feasible.extend(combo for combo in combinations(candidates, size)
+                                        if sum(c.power for c in combo) <= total_power_lte)
+                    best_combo = max(
+                        feasible,
+                        key=lambda combo: (len(combo), sum(c.board_value() for c in combo)),
+                        default=(),
+                    )
+                    candidates = list(best_combo)
                 # Alvo no OPONENTE = remocao, mira o mais valioso. Alvo no
                 # PROPRIO campo = sacrificio/drawback ("trash 1 dos seus"),
                 # mira o MENOS valioso — mesma regua que
@@ -4114,8 +4161,13 @@ class EffectExecutor:
                 # ordem nao muda nada.
                 escolhe = (choose_lowest_board_value if owner is me
                            else choose_highest_board_value)
+                total_power_used = 0
                 for _ in range(min(count, len(candidates))):
                     target = escolhe(candidates)
+                    if (total_power_lte is not None
+                            and total_power_used + target.power > total_power_lte):
+                        remove_by_identity(candidates, target)
+                        continue
                     # Imunidade: o alvo pode ser imune a KO/remoção por efeito do
                     # oponente. Pula o alvo (não conta como removido).
                     other = me if owner is opp else opp
@@ -4146,6 +4198,7 @@ class EffectExecutor:
                         remove_by_identity(candidates, target)
                         continue
                     remove_character_from_field(owner, target, 'trash')
+                    total_power_used += target.power
                     if action == 'ko':
                         ee_target.execute(target, 'on_ko', is_opp_turn=owner is opp)
                         ee_target._dispatch_damage_or_own_char_ko(owner, target)
@@ -4194,8 +4247,9 @@ class EffectExecutor:
             count = step.get('count', 1)
             cost_lte = self._resolve_cost_lte(step, default=99)
 
+            target_owner = me if step.get('target') == 'own_character' else opp
             candidates = eligible_cards(
-                opp.field_chars,
+                target_owner.field_chars,
                 cost_lte=cost_lte,
                 cost_eq=step.get('cost_eq'),
                 power_lte=step.get('power_lte'),
@@ -4208,13 +4262,15 @@ class EffectExecutor:
             bounced = []
             immune_skipped = []
             for _ in range(min(count, len(candidates))):
-                target = choose_highest_board_value(candidates)
+                target = (min(candidates, key=lambda c: c.board_value())
+                          if target_owner is me else choose_highest_board_value(candidates))
                 # Bounce é remoção do campo -> respeita imunidade a removal
-                if is_immune(target, 'removal', opp, me, source_is_opp=True):
+                if (target_owner is opp
+                        and is_immune(target, 'removal', opp, me, source_is_opp=True)):
                     immune_skipped.append(target.name[:12])
                     remove_by_identity(candidates, target)
                     continue
-                remove_character_from_field(opp, target, 'hand')
+                remove_character_from_field(target_owner, target, 'hand')
                 remove_by_identity(candidates, target)
                 bounced.append(target.name[:15])
             out = []
@@ -4244,7 +4300,7 @@ class EffectExecutor:
                 power_lte=step.get('power_lte'),
                 don_attached_gte=step.get('don_attached_gte'),
                 active_only=True,
-                filter_text=step.get('filter_type', ''),
+                filter_text=step.get('filter_types') or step.get('filter_type', ''),
             )
             rested = []
             sub_logs = []
@@ -4269,6 +4325,11 @@ class EffectExecutor:
             out = []
             if rested: out.append(f'restou: {", ".join(rested)}')
             if sub_logs: out.append(' | '.join(sub_logs))
+            if (not rested and not sub_logs and step.get('or_rest_opp_don')
+                    and opp.don_available > 0):
+                opp.don_available -= 1
+                opp.don_rested += 1
+                out.append('restou 1 DON do oponente')
             return ' | '.join(out)
 
         # ── rest_opp_don: restar DON!! do OPONENTE -- desvantagem de tempo
@@ -4834,6 +4895,12 @@ class EffectExecutor:
                     power_lte=step.get('power_lte'),
                     exclude_name=step.get('exclude', ''),
                 )
+                type_or_trigger = step.get('filter_type_or_has_trigger')
+                if type_or_trigger:
+                    wanted = _norm_type_text(type_or_trigger)
+                    candidatos = [c for c in candidatos
+                                  if wanted in _norm_type_text(c.sub_types)
+                                  or c.has_trigger]
                 # filter_no_effect: "with no base effect" (achado 17/07,
                 # EB03-009 Makino) -- mesma convencao ja usada em
                 # gain_life(source='trash')/play_from_deck/debuff_cost.
