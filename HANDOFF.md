@@ -1,5 +1,34 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-17 (260) - Protocolo + relatorio reproduzivel de eficiencia do bot
+
+Implementada a primeira camada profissional de medicao solicitada pelo usuario:
+
+- `specs/metrics-protocol.md`: separa estado, decisao, execucao e resultado;
+  define cohorts, comparacao pareada, IC95% bootstrap, gates e schema futuro de
+  shadow replay com snapshot pre-acao + `decision_id` ponta a ponta.
+- `scriptis_da_ia/bot_efficiency_report.py`: le cohorts explicitos de combat logs,
+  calcula metricas observaveis + IC95%, incorpora JSONs motor-vs-motor como proxy
+  opcional e grava relatorio JSON. Campos impossiveis com a telemetria atual
+  (`state_fidelity`, `decision_quality`, `execution_success`) saem `null`, nunca 0.
+- `scriptis_da_ia/metrics/bot_efficiency_cohorts.json`: lista canonica das 5
+  partidas humanas e 12 partidas do bot usadas no estudo de 12/07.
+- `scriptis_da_ia/test_bot_efficiency_report.py`: 3 testes de regressao.
+
+O script reproduziu a baseline anterior: humano 2,031 ataques/turno, 81,538% no
+lider, 4,2 dano/jogo e 5,2 counters; bot 0,880, 42,424%, 1,333 e 2,417. Tambem
+revelou a qualidade dos dados: snapshots cobrem 52,3% dos turnos do cohort humano
+e 0% do cohort antigo do bot. Proxy Teach (50 jogos) permanece separado: 1,41
+ataques/turno, 86,7% no lider, 3,94 dano/jogo, winrate 0,88.
+
+**Validado:** `py_compile`; `python -m unittest -v test_bot_efficiency_report.py`
+(3/3); execucao real com 5000 amostras bootstrap + proxy, gerando
+`metrics/bot_efficiency_report.json`.
+
+**Proximo passo real:** adicionar telemetria JSONL pre-acao no caminho
+engine -> bridge -> plugin, com confirmacao do mesmo `decision_id`; sem isso o
+relatorio mede comportamento e dados, mas nao arrependimento ou sucesso do clique.
+
 ## 2026-07-17 (259) - TODO atualizado: governanca de contexto + baseline de eficiencia do bot
 
 Atualizado `TODO.md`, que ainda apontava para a baseline de 01/07, para o

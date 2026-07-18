@@ -15,7 +15,8 @@ uma fonte canônica conforme sua função:
 
 - [ ] **`AGENTS.md` = constituição curta do projeto:** invariantes obrigatórias,
   limites de arquitetura, gates de commit e comandos mínimos.
-- [ ] **`specs/` = comportamento verificável:** criar especificações pequenas por
+- [x] **`specs/` = comportamento verificável:** criada a primeira especificação
+  em `specs/metrics-protocol.md`; continuar com especificações pequenas por
   domínio (`engine-rules.md`, `parser-contract.md`, `bot-bridge.md`,
   `metrics-protocol.md`). Cada regra deve apontar para teste/evidência e definir
   entrada, saída, invariantes e critério de aceite. Evitar repetir o `AGENTS.md`.
@@ -24,9 +25,10 @@ uma fonte canônica conforme sua função:
   smoke → audit JSON), `optcg-live-log-triage` (preservar log → parsear → comparar
   bot/humano → localizar bridge/engine) e `optcg-release-handoff` (status → testes →
   HANDOFF → commit/push).
-- [ ] **Scripts determinísticos em vez de instrução textual:** automatizar comandos
-  repetidos e fazer a skill apenas escolher/rodar o script. Primeiro candidato:
-  relatório único de métricas antes/depois a partir de `logs/index.json`.
+- [x] **Scripts determinísticos em vez de instrução textual:** criado
+  `scriptis_da_ia/bot_efficiency_report.py`, com cohorts explícitos, bootstrap
+  IC95%, proxy opcional e JSON reproduzível. Próximos scripts devem seguir o
+  mesmo padrão e ser chamados pelas skills.
 - [ ] **`HANDOFF.md` = deltas recentes:** manter registro cronológico do que mudou,
   evidências e próximo passo; consolidar fatos estáveis nas specs.
 - [ ] **Gate de consistência documental:** antes do push, verificar se `TODO.md`,
@@ -34,7 +36,8 @@ uma fonte canônica conforme sua função:
 
 ### Ordem recomendada de implantação
 
-1. Criar `specs/metrics-protocol.md` e o script de relatório antes/depois.
+1. ~~Criar `specs/metrics-protocol.md` e o script de relatório antes/depois.~~
+   **Concluído em 17/07/2026.**
 2. Extrair o workflow estável do parser para `optcg-parser-audit`.
 3. Extrair triagem de combat log para `optcg-live-log-triage`.
 4. Só depois reduzir textos duplicados de `AGENTS.md`/`CLAUDE.md`/`HANDOFF.md`.
@@ -66,9 +69,12 @@ parte da seleção de alvo, mas não prova a eficiência atual do bot/bridge.
 - [ ] **Medir o agora ao vivo:** reinstalar o plugin com `BOT\setup_bepinex.bat`,
   jogar no mínimo 5 partidas Imu (ideal: mesmos matchups ou espelho) e adicionar
   todos os combat logs ao banco com `parse_combat_log.py --add-to-db`.
-- [ ] **Gerar relatório reproduzível:** usar a mesma janela de turnos e definições
+- [x] **Gerar relatório reproduzível:** `bot_efficiency_report.py` usa cohorts
+  explícitos, a mesma janela de turnos e definições
   para ataques/turno, % líder, dano, DON/ataque, counters arrancados, duração e
-  win rate; incluir tamanho da amostra e intervalo de confiança.
+  win rate quando disponível; inclui tamanho da amostra e IC95% bootstrap. A
+  qualidade da decisão e o sucesso de execução permanecem `null` até existir
+  telemetria pré-ação com `decision_id`.
 - [ ] **Critério mínimo de melhora ao vivo:** ≥1,28 ataques/turno, ≥80% no líder,
   dano/partida maior que 1,3 e nenhuma regressão nas invariantes/smokes. Meta
   posterior: aproximar 2,03 ataques/turno sem sacrificar win rate.

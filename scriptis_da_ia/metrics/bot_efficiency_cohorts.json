@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "description": "Cohorts historicos usados na analise Imu humano vs bot de 12/07/2026.",
+  "cohorts": [
+    {
+      "label": "human_before",
+      "leader_code": "OP13-079",
+      "matches": [
+        {"file": "Nami-BY_x_Imu-B_2026-07-01T14.22.50.json", "player": "Karlmalone#2854"},
+        {"file": "Imu-B_x_Monkey.D.Luffy-BP_2026-07-01T15.15.57.json", "player": "Karlmalone#2854"},
+        {"file": "Marshall.D.Teach-BY_x_Imu-B_2026-07-10T13.35.57.json", "player": "Opponent"},
+        {"file": "Marshall.D.Teach-BY_x_Imu-B_2026-07-10T17.00.33.json", "player": "Opponent"},
+        {"file": "Marshall.D.Teach-BY_x_Imu-B_2026-07-10T21.41.10.json", "player": "Opponent"}
+      ]
+    },
+    {
+      "label": "bot_before",
+      "leader_code": "OP13-079",
+      "matches": [
+        {"file": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T16.07.36.json", "player": "You"},
+        {"file": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T16.12.30.json", "player": "You"},
+        {"file": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T17.22.22.json", "player": "You"},
+        {"file": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T17.42.21.json", "player": "You"},
+        {"file": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T17.52.14.json", "player": "You"},
+        {"file": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T18.39.46.json", "player": "You"},
+        {"file": "Imu-B_x_Marshall.D.Teach-BY_2026-07-09T19.25.50.json", "player": "You"},
+        {"file": "Imu-B_x_Marshall.D.Teach-BY_2026-07-10T22.32.09.json", "player": "You"},
+        {"file": "Imu-B_x_Marshall.D.Teach-BY_2026-07-10T23.19.23.json", "player": "You"},
+        {"file": "Imu-B_x_Marshall.D.Teach-BY_2026-07-10T23.38.05.json", "player": "You"},
+        {"file": "Imu-B_x_Marshall.D.Teach-BY_2026-07-11T00.49.30.json", "player": "You"},
+        {"file": "Imu-B_x_Marshall.D.Teach-BY_2026-07-11T01.36.16.json", "player": "You"}
+      ]
+    }
+  ]
+}
