@@ -1,5 +1,46 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-19 (279) - Claude - OP05-099 + OP07-036: 2 mecanicas novas de gating condicional
+
+Janela de 50 suspeitos pós-lote-10 (139→129), taxa de acerto baixa
+(2/50 — maioria falso-positivo já conhecido "up to 1" = alvo único
+implícito). Registro completo em
+`parser_audits/2026-07-19_op05-099_op07-036_custos_condicionais_gating.json`.
+
+**Fixes:**
+1. **OP05-099 Amazon**: "Your opponent may trash 1 card from the top of
+   their Life cards. If they do not, [debuff]" — a escolha de PREVENIR
+   o efeito é do OPONENTE (paga 1 Life pra evitar), oposto do padrão já
+   aceito "you may X. If you do, Y" (onde a escolha é do próprio
+   jogador ativando, simplificação = aplicar tudo incondicionalmente).
+   O parser antigo aplicava o debuff sempre, ignorando por completo a
+   prevenção. Novo campo genérico **`unless_opp_pays`** (hoje só
+   `type='life_trash'`), resolvido no TOPO de `_execute_step` antes de
+   qualquer dispatch por `action` — mesma simplificação já documentada
+   em `lock_opp_attack_unless_pays` ("paga sempre que pode").
+2. **OP07-036**: "Then, you may rest 1 of your Characters with a cost
+   of 3 or more. If you do, rest up to 1 of your opponent's Characters
+   with a cost of 5 or less." Um fix anterior (lote 6) já tinha
+   corrigido o NÚMERO errado (`cost_lte` pegava 3 em vez de 5) mas
+   nunca modelou o CUSTO condicional em si — o `rest_opp_character`
+   rodava de graça. Novo campo genérico **`requires_own_cost`** (hoje
+   só `type='rest_own_character'` com `cost_gte`/`cost_lte`), anexado
+   via POST-PROCESSING em `parse_block` (não early-return, porque a
+   cláusula gated é só uma FRAÇÃO do bloco — a 1ª cláusula, +3000
+   power, é incondicional e independente).
+
+Ambos os campos são genéricos o bastante pra qualquer mecânica futura
+com a mesma forma (oponente decide prevenir / próprio jogador paga
+custo condicional pra um step específico), sem acoplamento a
+`debuff_power`/`rest_opp_character` especificamente.
+
+Validado: `diff_parser.py` GANHOU=0/PERDEU=0/MUDOU=2 (exatamente as 2
+cartas-alvo). `smoke_fast.py` com teste novo cobrindo execução real dos
+2 lados de cada gating; 1 teste pré-existente (OP07-036, do lote 6)
+atualizado pra incluir o `requires_own_cost`. `smoke_test.py` TODOS OS
+TESTES PASSARAM. `smoke_test_broad.py` 7/7 sem exceção. **Auditor: 129
+-> 127 suspeitos.**
+
 ## 2026-07-19 (278) - Claude - lote de 11 bugs reais (OP14-054 a ST07-017), 46 cartas via generalizacao
 
 Lote de 11 suspeitos severidade-1 aprovados de uma vez (janela 151-200+

@@ -4077,6 +4077,42 @@ class EffectExecutor:
         step_conds = step.get('conditions')
         if step_conds and not self._check_conditions(step_conds, card):
             return ''
+
+        # "Your opponent may trash N cards from the top of their Life
+        # cards. If they do not, [efeito]" -- gate GENERICO (funciona pra
+        # qualquer action que venha depois dessa clausula, achado 19/07,
+        # OP05-099): mesma simplificacao ja documentada em
+        # lock_opp_attack_unless_pays ("paga sempre que pode, sem
+        # modelar 'vale a pena'") -- se o oponente TEM Life suficiente,
+        # ele sempre trasha pra PREVENIR o efeito seguinte; sem Life
+        # suficiente, o efeito procede normalmente.
+        unless_pays = step.get('unless_opp_pays')
+        if unless_pays and unless_pays.get('type') == 'life_trash':
+            count_life = unless_pays.get('count', 1)
+            if len(opp.life) >= count_life:
+                for _ in range(count_life):
+                    life_card = opp.life.pop()
+                    life_card.life_face_up = False
+                    opp.trash.append(life_card)
+                return f'oponente trashou {count_life} carta(s) da Life pra evitar o efeito'
+
+        # "you may rest N of your Characters with a cost of M or
+        # (more|less). If you do, [efeito]" -- custo OPCIONAL do proprio
+        # jogador gating SO este step (achado 19/07, OP07-036). Mesma
+        # simplificacao de lock_opp_attack_unless_pays: paga sempre que
+        # pode (restando o candidato de MENOR board_value que atende o
+        # filtro); sem candidato elegivel, o step inteiro e cancelado.
+        own_cost = step.get('requires_own_cost')
+        if own_cost and own_cost.get('type') == 'rest_own_character':
+            cost_gte = own_cost.get('cost_gte')
+            cost_lte = own_cost.get('cost_lte')
+            candidates = [c for c in me.field_chars if not c.rested
+                          and (cost_gte is None or c.cost >= cost_gte)
+                          and (cost_lte is None or c.cost <= cost_lte)]
+            if not candidates:
+                return ''
+            min(candidates, key=lambda c: c.board_value()).rested = True
+
         if step.get('timing') == 'end_of_turn' and not step.get('_from_queue'):
             queued = dict(step)
             queued['_from_queue'] = True

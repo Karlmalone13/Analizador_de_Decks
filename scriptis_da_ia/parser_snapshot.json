@@ -15691,7 +15691,11 @@
      "action": "debuff_power",
      "amount": 2000,
      "duration": "this_turn",
-     "target": "opp_leader_or_character"
+     "target": "opp_leader_or_character",
+     "unless_opp_pays": {
+      "count": 1,
+      "type": "life_trash"
+     }
     }
    ]
   }
@@ -18962,7 +18966,12 @@
     {
      "action": "rest_opp_character",
      "cost_lte": 5,
-     "count": 1
+     "count": 1,
+     "requires_own_cost": {
+      "cost_gte": 3,
+      "count": 1,
+      "type": "rest_own_character"
+     }
     },
     {
      "action": "buff_power",

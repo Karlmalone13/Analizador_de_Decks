@@ -1,9 +1,23 @@
 # TODO — Analisador de Decks OPTCG
 
 **Última atualização:** 19 de julho de 2026
-**Estado:** varredura contínua do parser; 129 suspeitos (severidade 1 only)
+**Estado:** varredura contínua do parser; 127 suspeitos (severidade 1 only)
 **Baseline do código:** ver `git log --oneline -1`
 **Repo:** github.com/Karlmalone13/Analizador_de_Decks
+
+> 19/07/2026: OP05-099 + OP07-036, 2 mecânicas novas de gating
+> condicional (janela de 50, taxa de acerto baixa — maioria já
+> falso-positivo conhecido). `unless_opp_pays` (OP05-099: oponente pode
+> pagar Life pra PREVENIR um efeito — oposto do padrão "you may X. If
+> you do, Y" onde a escolha é do próprio jogador) e
+> `requires_own_cost` (OP07-036: custo condicional do próprio jogador
+> gating só um step específico do bloco, não o bloco inteiro). Ambos
+> genéricos, resolvidos no engine antes do dispatch por `action`,
+> seguindo a mesma simplificação já usada em
+> `lock_opp_attack_unless_pays` ("paga sempre que pode"). Ver HANDOFF
+> bloco 279 e
+> `parser_audits/2026-07-19_op05-099_op07-036_custos_condicionais_gating.json`.
+> Auditor: 129 -> 127 suspeitos.
 
 > 19/07/2026: lote de 11 bugs reais (OP14-054 a ST07-017), 46 cartas no
 > total via generalização (janela 151-200+). Destaques: 2 mecânicas

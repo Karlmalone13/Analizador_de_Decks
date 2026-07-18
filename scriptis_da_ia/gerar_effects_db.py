@@ -6114,6 +6114,32 @@ def parse_block(block_text, trigger_name):
                 'source': 'bounced_own_this_effect', 'target': 'leader_or_character',
                 'duration': 'battle_only'}]
 
+    # "Your opponent may trash N card(s) from the top of their Life
+    # cards. If they do not, [efeito]" -- a ESCOLHA e do OPONENTE (paga um
+    # custo em Life pra PREVENIR o efeito seguinte), o oposto de "you may
+    # X. If you do, Y" (onde a escolha e do proprio jogador e a
+    # simplificacao aceita e aplicar incondicionalmente, ver OP05-038).
+    # Achado 19/07, OP05-099, unica carta no banco com essa forma exata:
+    # o parser generico so via o efeito ("give up to 1...") e o aplicava
+    # SEMPRE, ignorando por completo que o oponente pode evita-lo. Reusa
+    # parse_block recursivamente pro efeito apos "if they do not," (seja
+    # ele qual for) e marca TODOS os steps resultantes com
+    # 'unless_opp_pays' -- o engine (_execute_step) resolve a prevencao
+    # ANTES de despachar qualquer action, generico o bastante pra
+    # qualquer efeito que venha depois dessa clausula.
+    opp_may_prevent_m = re.search(
+        r"your opponent may trash (\d+) cards? from the top of (?:their|his|her) life cards\.\s*"
+        r"if they do not,\s*(.+)$",
+        block_text.lower())
+    if opp_may_prevent_m:
+        count_life = int(opp_may_prevent_m.group(1))
+        continuation = opp_may_prevent_m.group(2).strip()
+        sub_steps = parse_block(continuation, trigger_name)
+        for s in sub_steps:
+            if isinstance(s, dict) and 'action' in s:
+                s['unless_opp_pays'] = {'type': 'life_trash', 'count': count_life}
+        return sub_steps
+
     # "Choose a cost and reveal" e uma aposta: o efeito depois de "If the
     # revealed card has the chosen cost" so resolve quando a aposta acerta.
     # Mantemos a revelacao e seus efeitos condicionais em um unico step para
@@ -7482,6 +7508,34 @@ def parse_block(block_text, trigger_name):
                 step['event'] = 'don_given'
                 if cost_m:
                     step['cost_lte'] = int(cost_m.group(1))
+
+    # "you may rest N of your Characters with a cost of M or (more|less).
+    # If you do, [efeito]" -- custo OPCIONAL do proprio jogador que gate
+    # SO a clausula seguinte, nao o bloco inteiro (distinto do padrao
+    # "aplica incondicionalmente" de OP05-038/OP15-020 porque aqui ha uma
+    # 1a clausula ANTERIOR e independente no mesmo bloco -- interceptar o
+    # bloco inteiro perderia essa 1a clausula). Achado 19/07, OP07-036,
+    # unica carta no banco: post-processing (nao early-return) pra achar
+    # o step exato gerado pela clausula gated e so nele anexar
+    # 'requires_own_cost', resolvido genericamente em _execute_step
+    # (mesma simplificacao de lock_opp_attack_unless_pays: paga sempre
+    # que pode).
+    own_rest_gate_m = re.search(
+        r"you may rest (\d+) of your characters? with a cost of (\d+) or (more|less)\.\s*"
+        r"if you do,\s*(.+?)(?:\.|$)", t)
+    if own_rest_gate_m:
+        gated_steps = parse_block(own_rest_gate_m.group(4).strip(), trigger_name)
+        cost_field = {'type': 'rest_own_character', 'count': int(own_rest_gate_m.group(1))}
+        if own_rest_gate_m.group(3) == 'more':
+            cost_field['cost_gte'] = int(own_rest_gate_m.group(2))
+        else:
+            cost_field['cost_lte'] = int(own_rest_gate_m.group(2))
+        for gs in gated_steps:
+            match = next((s for s in steps if s.get('action') == gs.get('action')
+                          and s.get('cost_lte') == gs.get('cost_lte')
+                          and s.get('cost_gte') == gs.get('cost_gte')), None)
+            if match is not None:
+                match['requires_own_cost'] = cost_field
 
     # Memoria de alvo entre steps (SaveTargetName, 28/06/2026): a ordem de
     # despacho dos sub-parsers acima NAO segue a ordem do texto original

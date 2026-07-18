@@ -5439,9 +5439,13 @@ def test_lote_6_op07_009_a_op07_097() -> None:
 
     # OP07-036: regex desescopado pegava o numero da clausula de CUSTO
     # ("cost of 3 or more") em vez do da propria clausula do step (5).
+    # Achado 19/07: a clausula "cost of 3 or more" nao era so ruido de
+    # regex -- e um custo condicional REAL (requires_own_cost), ver teste
+    # dedicado mais abaixo.
     check("OP07-036 parseia cost_lte=5 no Main (nao 3, do custo opcional adjacente)",
           get_card_effects("OP07-036")["main"]["steps"][0]
-          == {"action": "rest_opp_character", "count": 1, "cost_lte": 5})
+          == {"action": "rest_opp_character", "count": 1, "cost_lte": 5,
+              "requires_own_cost": {"type": "rest_own_character", "count": 1, "cost_gte": 3}})
     check("OP07-036 Trigger continua cost_lte=4 (nao contaminado pelo fix)",
           get_card_effects("OP07-036")["trigger"]["steps"][0]
           == {"action": "rest_opp_character", "count": 1, "cost_lte": 4})
@@ -6098,6 +6102,69 @@ def test_lote_10_op14_054_a_st07_017() -> None:
           any(c["type"] == "life_to_hand" for c in get_card_effects("PRB02-016")["activate_main"]["costs"]))
 
 
+def test_op05_099_opp_pode_evitar_e_op07_036_custo_condicional_proprio() -> None:
+    # OP05-099 Amazon: "Your opponent may trash 1 card from the top of
+    # their Life cards. If they do not, [debuff]" -- ESCOLHA do OPONENTE
+    # (paga Life pra PREVENIR o efeito), oposto do padrao "you may X. If
+    # you do, Y" (onde a escolha e do proprio jogador e a simplificacao
+    # aceita e aplicar incondicionalmente). Novo campo 'unless_opp_pays',
+    # resolvido genericamente no topo de _execute_step (mesma
+    # simplificacao de lock_opp_attack_unless_pays: paga sempre que
+    # pode).
+    check("OP05-099 parseia unless_opp_pays(type=life_trash, count=1) no debuff",
+          get_card_effects("OP05-099")["on_opp_attack"]["steps"][0]
+          == {"action": "debuff_power", "amount": 2000, "target": "opp_leader_or_character",
+              "duration": "this_turn", "unless_opp_pays": {"type": "life_trash", "count": 1}})
+    amazon = real_card("OP05-099")
+    me_amz = GameState(leader=mk("AMZLDR", "Lider", card_type="LEADER"))
+    me_amz.field_chars = [amazon]
+    opp_amz_com_life = GameState(leader=mk("AMZOPP1", "Opp", card_type="LEADER"))
+    opp_amz_com_life.life = [mk(f"AMZL{i}", f"Life{i}", cost=1) for i in range(3)]
+    EffectExecutor(me_amz, opp_amz_com_life).execute(amazon, "on_opp_attack")
+    check("Execucao real: OP05-099 COM Life disponivel, oponente trasha 1 e EVITA o debuff",
+          len(opp_amz_com_life.life) == 2 and len(opp_amz_com_life.trash) == 1
+          and opp_amz_com_life.leader.power_buff == 0)
+    amazon2 = real_card("OP05-099")
+    me_amz2 = GameState(leader=mk("AMZLDR2", "Lider", card_type="LEADER"))
+    me_amz2.field_chars = [amazon2]
+    opp_amz_sem_life = GameState(leader=mk("AMZOPP2", "Opp", card_type="LEADER"))
+    opp_amz_sem_life.life = []
+    EffectExecutor(me_amz2, opp_amz_sem_life).execute(amazon2, "on_opp_attack")
+    check("Execucao real: OP05-099 SEM Life disponivel, oponente NAO pode evitar, debuff aplica",
+          opp_amz_sem_life.leader.power_buff == -2000)
+
+    # OP07-036: "Then, you may rest 1 of your Characters with a cost of 3
+    # or more. If you do, rest up to 1 of your opponent's Characters with
+    # a cost of 5 or less." -- custo OPCIONAL do PROPRIO jogador gating SO
+    # este step (nao o bloco inteiro -- a 1a clausula, buff_power +3000,
+    # e incondicional e independente). Novo campo 'requires_own_cost',
+    # resolvido genericamente em _execute_step.
+    check("OP07-036 parseia requires_own_cost(rest_own_character, cost_gte=3) no rest_opp_character",
+          get_card_effects("OP07-036")["main"]["steps"][0]
+          == {"action": "rest_opp_character", "count": 1, "cost_lte": 5,
+              "requires_own_cost": {"type": "rest_own_character", "count": 1, "cost_gte": 3}})
+    asura = real_card("OP07-036")
+    me_asura_sem = GameState(leader=mk("ASRLDR1", "Lider", card_type="LEADER"))
+    fraco_asura = mk("ASRF1", "Fraco", cost=2)
+    me_asura_sem.field_chars = [fraco_asura]
+    opp_asura_sem = GameState(leader=mk("ASROPP1", "Opp", card_type="LEADER"))
+    alvo_asura_sem = mk("ASRT1", "Alvo", cost=3)
+    opp_asura_sem.field_chars = [alvo_asura_sem]
+    EffectExecutor(me_asura_sem, opp_asura_sem).execute(asura, "main")
+    check("Execucao real: OP07-036 SEM Character custo>=3 disponivel, rest_opp_character NAO dispara",
+          not alvo_asura_sem.rested and not fraco_asura.rested)
+    asura2 = real_card("OP07-036")
+    me_asura_com = GameState(leader=mk("ASRLDR2", "Lider", card_type="LEADER"))
+    forte_asura = mk("ASRF2", "Forte", cost=4)
+    me_asura_com.field_chars = [forte_asura]
+    opp_asura_com = GameState(leader=mk("ASROPP2", "Opp", card_type="LEADER"))
+    alvo_asura_com = mk("ASRT2", "Alvo", cost=3)
+    opp_asura_com.field_chars = [alvo_asura_com]
+    EffectExecutor(me_asura_com, opp_asura_com).execute(asura2, "main")
+    check("Execucao real: OP07-036 COM Character custo>=3 disponivel, paga o custo E resta o alvo",
+          forte_asura.rested and alvo_asura_com.rested)
+
+
 def main() -> int:
     test_turn_order_imu_prefers_second()
     test_empty_throne_beats_direct_five_elders_play()
@@ -6236,6 +6303,7 @@ def main() -> int:
     test_lote_8_op09_051_a_op10_080()
     test_lote_9_op15_020_a_op16_038()
     test_lote_10_op14_054_a_st07_017()
+    test_op05_099_opp_pode_evitar_e_op07_036_custo_condicional_proprio()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0
