@@ -9873,7 +9873,8 @@
   }
  },
  "OP03-040": {
-  "passive": {
+  "on_damage_to_life": {
+   "don_requirement": 1,
    "steps": [
     {
      "action": "trash_from_deck_top",
@@ -9883,13 +9884,17 @@
   }
  },
  "OP03-041": {
-  "passive": {
+  "on_damage_to_life": {
    "don_requirement": 1,
    "steps": [
     {
      "action": "trash_from_deck_top",
      "count": 7
-    },
+    }
+   ]
+  },
+  "passive": {
+   "steps": [
     {
      "action": "keyword_rush"
     }
@@ -9908,16 +9913,12 @@
   }
  },
  "OP03-043": {
-  "passive": {
-   "costs": [
-    {
-     "type": "trash_self"
-    }
-   ],
+  "on_damage_to_life": {
    "steps": [
     {
      "action": "trash_from_deck_top",
-     "count": 3
+     "count": 3,
+     "self_ko": true
     }
    ]
   }
@@ -9954,6 +9955,15 @@
  },
  "OP03-046": {},
  "OP03-047": {
+  "on_damage_to_life": {
+   "don_requirement": 1,
+   "steps": [
+    {
+     "action": "trash_from_deck_top",
+     "count": 7
+    }
+   ]
+  },
   "on_play": {
    "steps": [
     {
@@ -9965,15 +9975,6 @@
     {
      "action": "trash_from_deck_top",
      "count": 2
-    }
-   ]
-  },
-  "passive": {
-   "don_requirement": 1,
-   "steps": [
-    {
-     "action": "trash_from_deck_top",
-     "count": 7
     }
    ]
   }
@@ -10023,20 +10024,20 @@
   }
  },
  "OP03-051": {
-  "on_ko": {
-   "steps": [
-    {
-     "action": "trash_from_deck_top",
-     "count": 3
-    }
-   ]
-  },
-  "passive": {
+  "on_damage_to_life": {
    "don_requirement": 1,
    "steps": [
     {
      "action": "trash_from_deck_top",
      "count": 7
+    }
+   ]
+  },
+  "on_ko": {
+   "steps": [
+    {
+     "action": "trash_from_deck_top",
+     "count": 3
     }
    ]
   }

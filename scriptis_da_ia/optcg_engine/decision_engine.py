@@ -11003,10 +11003,12 @@ class OPTCGMatch:
                 # Tira até 'damage' vidas, UMA por vez, resolvendo trigger de cada.
                 # Se a vida acabar durante o double attack, PARA — o dano extra
                 # não causa derrota (regra: só compra as vidas que tem).
+                vidas_tiradas = 0
                 for _ in range(damage):
                     if not opp.life:
                         break   # acabou a vida durante este ataque — não é derrota
                     life_card = opp.life.pop()
+                    vidas_tiradas += 1
                     p.dmg_dealt += 1
                     # Banish: a vida vai DIRETO para o trash, sem ir para a mão
                     # e sem direito a trigger (regra oficial).
@@ -11042,6 +11044,34 @@ class OPTCGMatch:
                             for log in tg_logs:
                                 if log:
                                     print(f'      ⚡ [trigger] {log}')
+
+                # Gatilho reativo "When this Character's/Leader's attack
+                # deals damage to your opponent's Life, you may trash N
+                # cards..." (achado 17/07, familia OP03-040/041/043/047/
+                # 051) -- so dispara se o dano REALMENTE conectou nesta
+                # batalha (>=1 vida removida), amarrado ao ATACANTE
+                # especifico (nao a qualquer Character do dono) e
+                # condicionado a don_requirement (DON!! xN ja anexado ao
+                # atacante neste ataque). Ver parse_card_effect() em
+                # gerar_effects_db.py -- chave 'on_damage_to_life',
+                # distinta de 'passive' pra nao ser recalculada (mill
+                # incondicional) a cada apply_your_turn_buffs.
+                if vidas_tiradas > 0:
+                    dmg_life = get_card_effects(attacker.code).get('on_damage_to_life')
+                    if dmg_life:
+                        don_req = dmg_life.get('don_requirement', 0)
+                        if not don_req or getattr(attacker, 'don_attached', 0) >= don_req:
+                            ee_dmg = EffectExecutor(p, opp)
+                            for dl_step in dmg_life.get('steps', []):
+                                dl_log = ee_dmg._execute_step(dl_step, attacker)
+                                if verbose and dl_log:
+                                    print(f'      ↳ [dano na vida] {dl_log}')
+                                if dl_step.get('self_ko') and attacker in p.field_chars:
+                                    remove_character_from_field(p, attacker, 'trash')
+                                    ee_dmg.execute(attacker, 'on_ko')
+                                    if verbose:
+                                        print(f'      💀 {attacker.name[:20]}: K.O. (mill do proprio efeito)')
+
                 return False   # tirou vida(s), mas oponente não estava em 0 — sem derrota
             elif target_type == 'character' and target and target in opp.field_chars:
                 # Imunidade a KO em combate. `is_immune` separa esta janela de

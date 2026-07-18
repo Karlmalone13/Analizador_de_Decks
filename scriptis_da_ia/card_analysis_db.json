@@ -23143,7 +23143,8 @@
   "effects": [
    {
     "action": "trash_from_deck_top",
-    "trigger": "passive"
+    "trigger": "on_damage_to_life",
+    "don_requirement": 1
    }
   ],
   "synergy_states": {},
@@ -23182,13 +23183,12 @@
   "effects": [
    {
     "action": "trash_from_deck_top",
-    "trigger": "passive",
+    "trigger": "on_damage_to_life",
     "don_requirement": 1
    },
    {
     "action": "keyword_rush",
-    "trigger": "passive",
-    "don_requirement": 1
+    "trigger": "passive"
    }
   ],
   "synergy_states": {},
@@ -23266,7 +23266,7 @@
   "effects": [
    {
     "action": "trash_from_deck_top",
-    "trigger": "passive"
+    "trigger": "on_damage_to_life"
    }
   ],
   "synergy_states": {},
@@ -23421,6 +23421,11 @@
   "attribute": "Strike",
   "effects": [
    {
+    "action": "trash_from_deck_top",
+    "trigger": "on_damage_to_life",
+    "don_requirement": 1
+   },
+   {
     "action": "bounce",
     "trigger": "on_play",
     "cost_lte": 3,
@@ -23429,11 +23434,6 @@
    {
     "action": "trash_from_deck_top",
     "trigger": "on_play"
-   },
-   {
-    "action": "trash_from_deck_top",
-    "trigger": "passive",
-    "don_requirement": 1
    }
   ],
   "synergy_states": {},
@@ -23597,12 +23597,12 @@
   "effects": [
    {
     "action": "trash_from_deck_top",
-    "trigger": "on_ko"
+    "trigger": "on_damage_to_life",
+    "don_requirement": 1
    },
    {
     "action": "trash_from_deck_top",
-    "trigger": "passive",
-    "don_requirement": 1
+    "trigger": "on_ko"
    }
   ],
   "synergy_states": {},

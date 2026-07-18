@@ -328,6 +328,75 @@ Nao verificado ao vivo ainda (nenhuma das duas cartas apareceu em log real
 nesta sessao) -- linguagem condicional se o usuario reportar qualquer coisa
 envolvendo PRB02-018/ST13-006 antes da proxima partida confirmar.
 
+## 2026-07-17 (257) - Reexame da lacuna P-039/OP01-067/OP03-041 -- premissa incorreta descartada, bug REAL era outro (familia OP-03 de mill reativo)
+
+Tarefa recebida como continuacao do handoff de sessao anterior: "generalizar
+apply_conditional_keyword_passives() pra tambem executar buff_power/
+debuff_cost/trash_from_deck_top condicionais, ja que hoje so keyword grants
+(gain_blocker etc.) sao lidos de blocos 'passive' com 'conditions'". Essa
+premissa **nao se sustentou** sob teste real -- investigado a fundo antes de
+escrever qualquer linha:
+
+- Existe um mecanismo BEM mais amplo que ja fazia isso, `EffectExecutor.
+  apply_your_turn_buffs()` (chamado 1x por turno proprio em `main_phase`,
+  ja existia ANTES desta sessao) -- executa QUALQUER step de um bloco
+  'passive'/'your_turn' respeitando 'conditions' E 'don_requirement',
+  despachando pra `_execute_step()` (o mesmo executor generico usado em
+  todo o engine). Um censo amplo (217 candidatos brutos, cruzados manualmente
+  contra hooks dedicados ja existentes: immunity, substitute_ko/removal,
+  ko_on_opp_blocker, win_game_on_opp_blocker, lock_both_character_refresh,
+  effective_hand_play_cost, is_attack_locked_self, etc.) reduziu pra so 2
+  GAPs reais -- nenhum deles era P-039.
+- **P-039 (Bellamy) NAO e bug.** Testado empiricamente (don_attached=2,
+  vida=0): recebe +2000 power corretamente via apply_your_turn_buffs() ja
+  existente. Nenhum fix necessario.
+- **OP01-067 (Crocodile) e bug real, ISOLADO** (unico caso no banco pra essa
+  forma: Character dando desconto de custo a OUTRAS cartas na mao, nao a
+  si mesmo) -- "Give blue Events in your hand -1 cost" nunca aplica (parser
+  cai no fallback `target='own_character'`, alem de `effective_hand_play_
+  cost()` so ler auras `own_play_hand` de Stage, nunca de Character, e
+  `_play_cost_rule_matches()` hardcodar `card_type != 'CHARACTER'`).
+  **Usuario optou por NAO corrigir agora** (aprovou so o item abaixo) --
+  fica registrado aqui pra nao se perder, caso surja de novo numa proxima
+  varredura.
+- **Familia de 5 cartas do set OP-03 e bug real, CORRIGIDO nesta sessao:**
+  "When this Character's/Leader's attack deals damage to your opponent's
+  Life, you may trash N cards from the top of your deck" (OP03-040 Nami
+  Leader mill 1, OP03-041 Usopp mill 7, OP03-043 Gaimon mill 3 + self K.O.,
+  OP03-047 Zeff mill 7, OP03-051 Bell-mere mill 7) caia em 'passive' comum
+  -- apply_your_turn_buffs() disparava o mill INCONDICIONALMENTE a cada
+  inicio do PROPRIO turno, mesmo sem nenhum ataque ter ocorrido (confirmado:
+  Usopp milhava 7 cartas so por existir em campo). E um gatilho REATIVO
+  amarrado a uma batalha que realmente conecta na vida do oponente, nao uma
+  condicao continua.
+
+**Fix:** extracao nova e antecipada em `parse_card_effect()`
+(gerar_effects_db.py) que reconhece a frase-gatilho ANTES de qualquer
+consumidor generico de 'passive', produz uma chave nova e distinta
+`result['on_damage_to_life']` (com `don_requirement` e `self_ko` quando
+aplicavel) e remove o trecho casado do texto usado pelo resto da funcao
+(evita duplicacao/contaminacao no fallback/segmento-solto/pos-keyword).
+Hook novo em `_execute_attack()` (decision_engine.py), na janela logo apos
+o loop de dano de vida do Leader-alvo, gated por "pelo menos 1 vida
+realmente removida nesta batalha" + `don_requirement` do ATACANTE
+especifico -- reusa `_execute_step()` pra `trash_from_deck_top` e, pra
+Gaimon, auto-K.O. o proprio atacante apos o mill. Achado colateral: Gaimon
+tinha "If you do, trash this Character" modelado como `costs=[trash_self]`
+(custo pago ANTES, semanticamente invertido, e nunca executado -- apply_
+your_turn_buffs nao paga costs de 'passive') -- corrigido pra `self_ko:
+True` no step, consequencia APOS o mill.
+
+**Validado:** `diff_parser.py` GANHOU=0/PERDEU=0/MUDOU=5 (so as 5 cartas da
+familia, nenhuma das 2614 cartas afetada). `gerar_dbs.py` + `snapshot_
+parser.py` sincronizados. `smoke_fast.py`: teste dirigido novo com
+EXECUCAO REAL de ponta a ponta via `_execute_attack` (Usopp so milha APOS
+conectar, nao antes; sem DON!! x1 anexado NAO milha mesmo com dano
+conectado; Gaimon milha e se auto-K.O.). Assercao antiga de OP03-041
+(do commit af71492) atualizada pra apontar pra chave nova. `smoke_test.py`:
+TODOS OS TESTES PASSARAM. `smoke_test_broad.py`: 7/7 (rodado por mexer em
+`_execute_attack`, codigo central de toda batalha). Registro completo em
+`scriptis_da_ia/parser_audits/2026-07-17_op03_familia_on_damage_to_life_mill.json`.
+
 ## 2026-07-17 (248-256) - Lote de 9 itens aprovado ("aprovo sim") -- correcoes de FORMA (conectivo/ordem/redacao) em mecanismos ja existentes
 
 Continuacao imediata do lote de 11 (bloco 237-247). Usuario aprovou 9 novos

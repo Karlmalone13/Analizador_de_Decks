@@ -6487,6 +6487,37 @@ def parse_card_effect(card_text, card_type):
     t_low = t.lower()
     result = {}
 
+    # "When this Character's/Leader's attack deals damage to your opponent's
+    # Life, you may trash N cards from the top of your deck" (variante sem
+    # DON!!/reminder: "When you deal damage to your opponent's Life, ...").
+    # Gatilho REATIVO amarrado a UM ataque que realmente conecta na vida do
+    # oponente -- distinto de um passive continuo recalculado no inicio do
+    # turno. Achado 17/07 (censo global apos reexaminar P-039/OP01-067/
+    # OP03-041): sem isto, o texto caia no fallback ou no segmento pos-
+    # keyword genericos e virava result['passive'], reexecutado (mill
+    # incondicional) toda vez que apply_your_turn_buffs roda no inicio do
+    # PROPRIO turno -- mesmo sem nenhum ataque ter ocorrido (confirmado nos
+    # 5 casos do banco: OP03-040 Nami lider, OP03-041 Usopp, OP03-043
+    # Gaimon, OP03-047 Zeff, OP03-051 Bell-mere). Extraido cedo e REMOVIDO
+    # do t_low pra nao ser tambem capturado pelos consumidores de 'passive'
+    # mais abaixo (fallback/segmento-solto/pos-keyword-reminder).
+    dmg_life_m = re.search(
+        r'(?:\[don!! x(\d+)\]\s*)?'
+        r"when (?:(?:this character|this leader)'?s attack deals|you deal) "
+        r"damage to (?:your opponent'?s|the opponent'?s) life,?\s*"
+        r'(?:you may )?trash (\d+) cards? from the top of your deck\.?'
+        r'(\s*if you do,\s*trash this character\.?)?',
+        t_low)
+    if dmg_life_m:
+        dmg_step = {'action': 'trash_from_deck_top', 'count': int(dmg_life_m.group(2))}
+        if dmg_life_m.group(3):
+            dmg_step['self_ko'] = True
+        dmg_entry = {'steps': [dmg_step]}
+        if dmg_life_m.group(1):
+            dmg_entry['don_requirement'] = int(dmg_life_m.group(1))
+        result['on_damage_to_life'] = dmg_entry
+        t_low = (t_low[:dmg_life_m.start()] + ' ' + t_low[dmg_life_m.end():]).strip()
+
     # CASO ESPECIAL: "Apply each of the following effects based on [recurso]:
     # • If [condicao 1], [efeito 1]. • If [condicao 2], [efeito 2]. ..." --
     # efeitos COEXISTENTES (nao mutuamente exclusivos como 'choice': todos

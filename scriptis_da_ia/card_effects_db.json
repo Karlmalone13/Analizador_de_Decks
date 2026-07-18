@@ -15729,13 +15729,14 @@
     "sub_types": "East Blue",
     "attribute": "Wisdom",
     "effects": {
-      "passive": {
+      "on_damage_to_life": {
         "steps": [
           {
             "action": "trash_from_deck_top",
             "count": 1
           }
-        ]
+        ],
+        "don_requirement": 1
       }
     }
   },
@@ -15750,17 +15751,21 @@
     "sub_types": "East Blue",
     "attribute": "Ranged",
     "effects": {
-      "passive": {
+      "on_damage_to_life": {
         "steps": [
           {
             "action": "trash_from_deck_top",
             "count": 7
-          },
-          {
-            "action": "keyword_rush"
           }
         ],
         "don_requirement": 1
+      },
+      "passive": {
+        "steps": [
+          {
+            "action": "keyword_rush"
+          }
+        ]
       }
     }
   },
@@ -15797,16 +15802,12 @@
     "sub_types": "East Blue",
     "attribute": "Wisdom",
     "effects": {
-      "passive": {
+      "on_damage_to_life": {
         "steps": [
           {
             "action": "trash_from_deck_top",
-            "count": 3
-          }
-        ],
-        "costs": [
-          {
-            "type": "trash_self"
+            "count": 3,
+            "self_ko": true
           }
         ]
       }
@@ -15887,6 +15888,15 @@
     "sub_types": "East Blue",
     "attribute": "Strike",
     "effects": {
+      "on_damage_to_life": {
+        "steps": [
+          {
+            "action": "trash_from_deck_top",
+            "count": 7
+          }
+        ],
+        "don_requirement": 1
+      },
       "on_play": {
         "steps": [
           {
@@ -15900,15 +15910,6 @@
             "count": 2
           }
         ]
-      },
-      "passive": {
-        "steps": [
-          {
-            "action": "trash_from_deck_top",
-            "count": 7
-          }
-        ],
-        "don_requirement": 1
       }
     }
   },
@@ -16000,15 +16001,7 @@
     "sub_types": "Former Navy East Blue",
     "attribute": "Ranged",
     "effects": {
-      "on_ko": {
-        "steps": [
-          {
-            "action": "trash_from_deck_top",
-            "count": 3
-          }
-        ]
-      },
-      "passive": {
+      "on_damage_to_life": {
         "steps": [
           {
             "action": "trash_from_deck_top",
@@ -16016,6 +16009,14 @@
           }
         ],
         "don_requirement": 1
+      },
+      "on_ko": {
+        "steps": [
+          {
+            "action": "trash_from_deck_top",
+            "count": 3
+          }
+        ]
       }
     }
   },

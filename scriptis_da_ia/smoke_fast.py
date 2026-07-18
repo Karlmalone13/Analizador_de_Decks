@@ -4021,9 +4021,11 @@ def test_pos_keyword_generico_e_ko_reativo_st10_006() -> None:
           and any(s.get("action") == "buff_power" for s in get_card_effects("P-039").get("passive", {}).get("steps", [])))
     check("OP01-067 parseia debuff_cost (antes so keyword_banish)",
           any(s.get("action") == "debuff_cost" for s in get_card_effects("OP01-067").get("passive", {}).get("steps", [])))
-    check("OP03-041 parseia trash_from_deck_top count=7 (antes so keyword_rush)",
+    check("OP03-041 parseia trash_from_deck_top count=7 na chave on_damage_to_life "
+          "(reclassificado 17/07 -- ver test_reativo_mill_on_damage_to_life_familia_op03, "
+          "antes ficava em 'passive' e disparava incondicionalmente a cada turno)",
           any(s.get("action") == "trash_from_deck_top" and s.get("count") == 7
-              for s in get_card_effects("OP03-041").get("passive", {}).get("steps", [])))
+              for s in get_card_effects("OP03-041").get("on_damage_to_life", {}).get("steps", [])))
     check("ST10-006 parseia acao NOVA ko_on_opp_blocker (nao mais um 'ko' incondicional morto)",
           get_card_effects("ST10-006").get("passive", {}).get("steps", [])[0] ==
           {"action": "ko_on_opp_blocker", "count": 1, "power_lte": 8000})
@@ -4055,6 +4057,87 @@ def test_pos_keyword_generico_e_ko_reativo_st10_006() -> None:
           and blocker_char in opp.field_chars)
     check("Execucao real: once_per_turn -- a flag do Card fica marcada como usada",
           atacante_char.ko_on_opp_blocker_used_this_turn)
+
+
+def test_reativo_mill_on_damage_to_life_familia_op03() -> None:
+    # Achado 17/07 (reexame do que a tarefa original chamava de "gap em
+    # apply_conditional_keyword_passives" -- essa premissa nao se sustentou:
+    # apply_your_turn_buffs() ja executa buff_power/debuff_cost genericos de
+    # 'passive' faz tempo; P-039 Bellamy ja funcionava). O bug REAL achado no
+    # caminho: "When this Character's/Leader's attack deals damage to your
+    # opponent's Life, you may trash N cards from the top of your deck"
+    # (familia OP-03: Nami 040 lider, Usopp 041, Gaimon 043, Zeff 047,
+    # Bell-mere 051) caia em result['passive'] e apply_your_turn_buffs()
+    # disparava o mill INCONDICIONALMENTE a cada inicio do PROPRIO turno,
+    # mesmo sem nenhum ataque ter ocorrido. Fix: chave nova 'on_damage_to_life'
+    # (nao mais 'passive'), com hook dedicado em _execute_attack que so
+    # dispara se o ataque REALMENTE conectar na vida do oponente, gated por
+    # don_requirement do atacante. Gaimon tambem ganhou 'self_ko' correto
+    # (antes vinha como costs=[trash_self], nunca pago -- apply_your_turn_
+    # buffs nao paga costs de 'passive').
+    check("OP03-041 (Usopp) parseia on_damage_to_life com don_requirement=1",
+          get_card_effects("OP03-041").get("on_damage_to_life") ==
+          {"steps": [{"action": "trash_from_deck_top", "count": 7}], "don_requirement": 1})
+    check("OP03-043 (Gaimon) parseia self_ko=True no proprio step (nao mais costs=trash_self)",
+          get_card_effects("OP03-043").get("on_damage_to_life", {}).get("steps", []) ==
+          [{"action": "trash_from_deck_top", "count": 3, "self_ko": True}])
+    check("OP03-047 (Zeff) mantem on_play intacto (bounce+mill) ao lado do novo on_damage_to_life",
+          get_card_effects("OP03-047").get("on_play", {}).get("steps", []) ==
+          [{"action": "bounce", "count": 1, "target": "opp_character", "cost_lte": 3},
+           {"action": "trash_from_deck_top", "count": 2}])
+    check("OP03-051 (Bell-mere) mantem on_ko intacto (mill 3) ao lado do novo on_damage_to_life",
+          get_card_effects("OP03-051").get("on_ko", {}).get("steps", []) ==
+          [{"action": "trash_from_deck_top", "count": 3}])
+
+    # Execucao real de PONTA A PONTA: Usopp ataca o Leader do oponente
+    # (sem bloqueio, sem counter -- poder de sobra), com 1 DON anexado
+    # (satisfaz don_requirement=1). So deve milhar DEPOIS do dano conectar.
+    usopp = real_card("OP03-041")
+    usopp.don_attached = 1
+    me = GameState(leader=mk("USLD", "Lider", card_type="LEADER"), turn=3, don_available=5)
+    me.field_chars = [usopp]
+    me.deck = [mk(f"UD{i}", f"Deck{i}") for i in range(10)]
+    opp = GameState(leader=mk("USOPPL", "Lider Opp", card_type="LEADER", power=1000), turn=3)
+    opp.life = [mk(f"UL{i}", f"Life{i}") for i in range(3)]
+    match = OPTCGMatch((me.leader, []), (opp.leader, []))
+    eng = DecisionEngine(me, opp)
+    check("PRE-ataque: nenhum mill ocorreu so por existir em campo (apply_your_turn_buffs nao mais dispara)",
+          len(me.trash) == 0 and len(me.deck) == 10)
+    match._execute_attack(usopp, "leader", None, me, opp, eng, verbose=False)
+    check("Execucao real: Usopp conectou na vida -- mill de 7 disparou (deck 10 -> 3, trash 0 -> 7)",
+          len(me.trash) == 7 and len(me.deck) == 3)
+
+    # Sem DON!! x1 anexado, o ataque conecta mas o mill NAO deve disparar
+    # (don_requirement nao satisfeito).
+    usopp2 = real_card("OP03-041")
+    usopp2.don_attached = 0
+    me2 = GameState(leader=mk("USLD2", "Lider2", card_type="LEADER"), turn=3, don_available=5)
+    me2.field_chars = [usopp2]
+    me2.deck = [mk(f"UD2{i}", f"Deck2{i}") for i in range(10)]
+    opp2 = GameState(leader=mk("USOPPL2", "Lider Opp2", card_type="LEADER", power=1000), turn=3)
+    opp2.life = [mk(f"UL2{i}", f"Life2{i}") for i in range(3)]
+    match2 = OPTCGMatch((me2.leader, []), (opp2.leader, []))
+    eng2 = DecisionEngine(me2, opp2)
+    match2._execute_attack(usopp2, "leader", None, me2, opp2, eng2, verbose=False)
+    check("Execucao real: SEM DON!! x1 anexado, o mill NAO dispara mesmo com dano conectado",
+          len(me2.trash) == 0 and len(me2.deck) == 10)
+
+    # Gaimon: mill 3 + self_ko (attacker sai do campo pro trash). Poder BASE
+    # de Gaimon e 0 -- anexa DON suficiente pra garantir que o ataque conecte
+    # contra um Leader de poder 0 (isola o efeito do mill, sem depender de
+    # empate/counter).
+    gaimon = real_card("OP03-043")
+    gaimon.don_attached = 3
+    me3 = GameState(leader=mk("GALD", "Lider3", card_type="LEADER"), turn=3, don_available=5)
+    me3.field_chars = [gaimon]
+    me3.deck = [mk(f"GD{i}", f"Deck3{i}") for i in range(10)]
+    opp3 = GameState(leader=mk("GAOPPL", "Lider Opp3", card_type="LEADER", power=0), turn=3)
+    opp3.life = [mk(f"GL{i}", f"Life3{i}") for i in range(3)]
+    match3 = OPTCGMatch((me3.leader, []), (opp3.leader, []))
+    eng3 = DecisionEngine(me3, opp3)
+    match3._execute_attack(gaimon, "leader", None, me3, opp3, eng3, verbose=False)
+    check("Execucao real: Gaimon conectou -- mill de 3 + self K.O. (sai do campo, vai pro trash)",
+          len(me3.deck) == 7 and gaimon not in me3.field_chars and gaimon in me3.trash)
 
 
 def test_op07_091_place_trash_matching_bottom_deck_e_buff_por_contagem_real() -> None:
@@ -5037,6 +5120,7 @@ def main() -> int:
     test_play_card_power_range_prb02_010()
     test_gain_life_own_field_cost_gte_power_gte_st13_001()
     test_pos_keyword_generico_e_ko_reativo_st10_006()
+    test_reativo_mill_on_damage_to_life_familia_op03()
     test_op07_091_place_trash_matching_bottom_deck_e_buff_por_contagem_real()
     test_lote_11_itens_falso_positivo_op09_118_e_custo_don_ativo()
     test_lote_11_itens_hand_top_deck_familia()
