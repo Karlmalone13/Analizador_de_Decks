@@ -2,6 +2,10 @@
 
 ## 2026-07-18 (263) - Gates do proxy, nome canonico e comparacao entre commits
 
+**Entrada para Claude:** `CLAUDE.md` agora aponta obrigatoriamente para este
+bloco e para `specs/metrics-protocol.md`, incluindo as invariantes do nome
+canonico, `match_id`, camadas separadas e validacao ao vivo pendente.
+
 Fortalecido tudo que era possivel antes da partida ao vivo:
 
 - `collect_latest_match.py` agora so confirma banco apos verificar a entrada no

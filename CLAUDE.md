@@ -2,6 +2,19 @@
 
 ## LEITURA OBRIGATÓRIA ANTES DE QUALQUER COMMIT
 
+> **ESTADO ATUAL OBRIGATORIO - proxy/telemetria (18/07/2026):** antes de
+> alterar bot, engine server, logs ou metricas, leia o bloco **263** no topo de
+> `HANDOFF.md` e `specs/metrics-protocol.md`. Baseline:
+> `0c96391 feat(metrics): endurece proxy e coleta de logs`.
+>
+> Invariantes: confirmar banco somente apos validar index/raw/parsed/decks e o
+> nome `Lider-Cores_x_Lider-Cores_timestamp`; `match_id` nasce no mulligan e
+> permanece ate `outcome` (nunca recriar em `/decide`); manter estado, decisao,
+> execucao e resultado separados; preservar alertas, latencia, confirmacao
+> semantica e comparacao entre commits. Pendente ao vivo: GameOver/AutoSaved,
+> prompts auxiliares e calibracao com 20-50 partidas. Em partida real, conferir
+> `[AUTO-COLLECT] LOG SALVO NO BANCO` e o recibo em `metrics/live_runs/`.
+
 ### Gate obrigatório: auditoria global do parser
 
 Ao encontrar erro em uma carta, busque a mesma gramática em todo o banco
