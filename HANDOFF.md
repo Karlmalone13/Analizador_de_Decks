@@ -8,6 +8,10 @@ espera a escrita estabilizar, chama o parser oficial com `--add-to-db`, gera o
 relatorio da sessao e salva recibo em `metrics/live_runs/`. `BOT_AUTO_COLLECT=0`
 desliga; o mesmo script funciona como fallback de um comando.
 
+**Confirmacao visual:** `/collection_status` expoe `idle/running/success/failed`;
+o plugin consulta durante `GameOver` e exibe `LOG SALVO NO BANCO` em verde ou o
+erro em vermelho, alem de registrar o caminho do recibo no `LogOutput.log`.
+
 Ampliado o protocolo `decision_id` da Main Phase para mulligan, defesa
 (`blocker/counter/trigger/reaction/optional`) e selecao de alvos. O server grava
 estado anterior, alternativas legais, escolha e contexto; o plugin reporta

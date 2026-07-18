@@ -74,6 +74,8 @@ sys.stderr = _TeeStream(sys.stderr, _log_file)
 print(f"[SERVER] log desta sessao (manda pra mim se algo der errado): {_LOG_PATH}", flush=True)
 
 app = FastAPI(title="OPTCG Bot Engine Server")
+_collection_status = {"status": "idle", "message": "nenhuma coleta iniciada",
+                      "report": None, "receipt": None}
 
 
 # ── DTOs (espelham GameStateDto.cs) ──────────────────────────────────────────
@@ -350,6 +352,11 @@ def health():
     return {"status": "ok", "decisionLog": str(DECISION_LOG_PATH)}
 
 
+@app.get("/collection_status")
+def collection_status():
+    return dict(_collection_status)
+
+
 class ExecutionReport(BaseModel):
     decisionId: str
     status: str                 # sent | confirmed | failed
@@ -385,14 +392,24 @@ def outcome(report: OutcomeReport):
                 state_final=_model_dict(report.stateFinal) if report.stateFinal else None,
                 reason=report.reason)
     if os.environ.get("BOT_AUTO_COLLECT", "1") != "0":
+        _collection_status.update(status="running", message="salvando log no banco",
+                                  report=None, receipt=None)
         def _collect() -> None:
             try:
                 from collect_latest_match import collect_latest
                 receipt = collect_latest(DECISION_LOG_PATH, match_id=_live_match_id)
+                _collection_status.update(
+                    status="success", message="log capturado e salvo no banco",
+                    report=receipt.get("report"), receipt=receipt.get("receipt"))
                 print(f"[AUTO-COLLECT] OK -> {receipt['report']}", flush=True)
             except Exception as exc:
+                _collection_status.update(status="failed", message=str(exc),
+                                          report=None, receipt=None)
                 print(f"[AUTO-COLLECT] falhou: {exc}", flush=True)
         threading.Thread(target=_collect, daemon=True).start()
+    else:
+        _collection_status.update(status="disabled", message="coleta automatica desativada",
+                                  report=None, receipt=None)
     return {"ok": True}
 
 

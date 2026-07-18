@@ -83,6 +83,26 @@ namespace OPTCGBotPlugin
             }
         }
 
+        public class CollectionStatus
+        {
+            public string status = "unknown";
+            public string message = "";
+            public string? report;
+            public string? receipt;
+        }
+
+        public static CollectionStatus? GetCollectionStatus()
+        {
+            try
+            {
+                var resp = _http.GetAsync($"{BASE}/collection_status").GetAwaiter().GetResult();
+                if (!resp.IsSuccessStatusCode) return null;
+                string body = resp.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+                return JsonConvert.DeserializeObject<CollectionStatus>(body);
+            }
+            catch { return null; }
+        }
+
         public static bool IsAlive()
         {
             try

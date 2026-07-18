@@ -51,6 +51,10 @@ namespace OPTCGBotPlugin
         private string _pendingTelemetryState = "";
         private string _pendingTargetDecisionId = "";
         private bool _outcomeReported;
+        private float _collectionPoll;
+        private string _collectionMessage = "";
+        private string _collectionState = "";
+        private bool _collectionConfirmationLogged;
         private sealed class PendingAuxTelemetry
         {
             public string id = "";
@@ -94,10 +98,41 @@ namespace OPTCGBotPlugin
                     gls.Lps_Players[BotPlayerIndex], gls.Lps_Players[1 - BotPlayerIndex], gls);
                 EngineClient.ReportOutcome(botWon ? "win" : "loss", finalDto,
                                            $"GameOver; bot=P{BotPlayerIndex + 1}");
+                _collectionMessage = "Salvando log no banco...";
+                _collectionState = "running";
+                return;
+            }
+            if (gls.e_CurrentState == GameplayState.GameOver && _outcomeReported)
+            {
+                _collectionPoll -= Time.deltaTime;
+                if (_collectionPoll <= 0f)
+                {
+                    _collectionPoll = 1f;
+                    var collection = EngineClient.GetCollectionStatus();
+                    if (collection != null)
+                    {
+                        _collectionState = collection.status;
+                        _collectionMessage = collection.status == "success"
+                            ? "LOG SALVO NO BANCO"
+                            : collection.status == "failed"
+                                ? $"FALHA AO SALVAR LOG: {collection.message}"
+                                : collection.message;
+                        if (collection.status == "success" && !_collectionConfirmationLogged)
+                        {
+                            _collectionConfirmationLogged = true;
+                            Plugin.Log.LogWarning($"[AUTO-COLLECT] LOG SALVO NO BANCO: {collection.receipt}");
+                        }
+                    }
+                }
                 return;
             }
             if (gls.e_CurrentState == GameplayState.Start_WaitOnMulliganChoice)
+            {
                 _outcomeReported = false;
+                _collectionConfirmationLogged = false;
+                _collectionMessage = "";
+                _collectionState = "";
+            }
 
             if (_pendingAux.Count > 0)
             {
@@ -682,10 +717,17 @@ namespace OPTCGBotPlugin
             string estado = _botEnabled ? "ATIVADO" : "DESATIVADO";
             Color corAntes = GUI.color;
             GUI.color = _botEnabled ? Color.green : Color.red;
-            GUI.Box(new Rect(8, 8, 190, 46), "");
+            float boxHeight = string.IsNullOrEmpty(_collectionMessage) ? 46 : 70;
+            GUI.Box(new Rect(8, 8, 520, boxHeight), "");
             GUI.Label(new Rect(14, 10, 200, 20), $"[Bot] {lado} — {estado}");
             GUI.color = Color.white;
             GUI.Label(new Rect(14, 28, 220, 20), "Shift+B liga/desliga · Shift+P troca lado");
+            if (!string.IsNullOrEmpty(_collectionMessage))
+            {
+                GUI.color = _collectionState == "success" ? Color.green
+                          : _collectionState == "failed" ? Color.red : Color.yellow;
+                GUI.Label(new Rect(14, 48, 500, 20), _collectionMessage);
+            }
             GUI.color = corAntes;
         }
     }

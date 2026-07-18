@@ -10,6 +10,7 @@
 > Coleta real pendente conforme `metrics/evidence_collection_plan.json`.
 > Coleta pos-partida automatizada por `collect_latest_match.py` no evento
 > `GameOver`; validar ao vivo na proxima partida.
+> Confirmacao visual e via LogOutput implementada; validar cores/texto ao vivo.
 
 ---
 

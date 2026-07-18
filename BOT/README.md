@@ -90,6 +90,10 @@ arquivo AutoSaved estabilizar, adiciona ao banco e grava relatorio + recibo em
 `scriptis_da_ia/metrics/live_runs/`. Para desligar, inicie o server com
 `BOT_AUTO_COLLECT=0`. Se a deteccao automatica falhar, o fallback e um comando:
 
+O plugin mostra no canto superior esquerdo `Salvando log no banco...` e depois
+`LOG SALVO NO BANCO`. Em falha, mostra a mensagem em vermelho. A confirmacao
+tambem fica no `LogOutput.log` com o caminho do recibo.
+
 ```cmd
 python scriptis_da_ia\collect_latest_match.py
 ```
