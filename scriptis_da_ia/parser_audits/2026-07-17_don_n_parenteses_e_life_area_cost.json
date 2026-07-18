@@ -1,0 +1,22 @@
+{
+  "trigger_card": "EB03-036",
+  "problem": "2 candidatos aprovados pelo usuario: (1) custo 'DON!! N (explicacao entre parenteses): efeito' -- a tolerancia existente pro atalho sem sinal de menos (achado 15/07) exigia o numero IMEDIATAMENTE seguido de ':' (so espaco em branco no meio), mas 19 cartas reais no banco tem um PARENTESE EXPLICATIVO padrao entre o numero e o ':' ('DON!! 1 (You may return the specified number of DON!! cards from your field to your DON!! deck.): efeito') -- custo inteiro ausente, habilidade tratada como gratis. (2) OP01-008 (Cavendish)/OP01-013 (Sanji): custo 'you may add N cards from your Life area to your hand: efeito' -- variante de redacao sem especificar topo/fundo (distinta de 'from the top/bottom of your Life cards' ja coberta), custo inteiro ausente.",
+  "grammar_family": "(1) 'DON!! N (qualquer parenteses explicativo opcional): efeito' -- generalizado com (?:\\([^)]*\\)\\s*)? opcional entre o numero e o ':'. (2) 'you may add N cards from your Life area to your hand: efeito' -- mesma familia semantica de life_hand_cost ja existente, so falta a palavra 'area' em vez de 'top/bottom of your Life cards'.",
+  "queries": [
+    "regex 'don!{0,2}\\s*\\d+\\s*\\(you may return' contra cards_rows.csv -- 111 cartas usam esse atalho no total (a maioria ja tinha o custo capturado corretamente por ja ter sinal de menos explicito 'DON!! -N' ou nao ter parenteses no meio; 19 delas usavam 'DON!! N' sem sinal E com o parenteses no meio, essas ficavam sem NENHUM custo)",
+    "regex 'you may add \\d+ cards? from your life area to your hand' contra cards_rows.csv -- 2 cartas (OP01-008, OP01-013)"
+  ],
+  "cards_found": [
+    "EB03-036", "OP08-057", "OP08-060", "OP08-061", "OP08-064", "OP08-068", "OP08-070", "OP08-071", "OP08-073", "OP08-075", "OP08-077", "OP09-064", "OP09-077", "OP09-079", "OP10-067", "OP10-069", "OP11-063", "OP14-062", "ST18-005",
+    "OP01-008", "OP01-013"
+  ],
+  "resolution_scope": "global",
+  "decision": "(1) Regex do atalho DON!! N (fallback sem sinal, achado 15/07) generalizado com um grupo opcional pra qualquer parenteses explicativo entre o numero e o ':'. Observacao colateral (nao corrigida, sem impacto): o campo 'optional' desse custo (calculado por presenca de 'you may' numa janela de +/-40/60 chars) fica sempre True quando o parenteses padrao esta perto, mas esse campo NUNCA e lido em nenhum lugar do engine (grep confirmado) -- metadado inerte, sem efeito de jogo, fora de escopo corrigir agora. (2) Nova variante de life_hand_cost pra 'from your Life area' sem posicao explicita -- usa o default ja existente do executor (source='life_top'), zero mudanca de engine necessaria.",
+  "validated_by": [
+    "diff_parser.py GANHOU=0/PERDEU=0/MUDOU=21 (19 + 2, auditado individualmente)",
+    "gerar_dbs.py + snapshot_parser.py 0/0/0",
+    "smoke_fast.py: 1 teste dirigido novo com EXECUCAO REAL cobrindo os 2 itens (custo don_minus pago + K.O. duplo; custo life_to_hand pago + Rush concedido)",
+    "smoke_test.py: TODOS OS TESTES PASSARAM",
+    "smoke_test_broad.py: rodado em background (aguardando conclusao antes do commit)"
+  ]
+}

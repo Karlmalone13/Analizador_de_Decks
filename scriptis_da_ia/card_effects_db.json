@@ -4925,6 +4925,13 @@
             "target": "opp_character",
             "cost_lte": 3
           }
+        ],
+        "costs": [
+          {
+            "type": "don_minus",
+            "count": 1,
+            "optional": true
+          }
         ]
       }
     }
@@ -8326,6 +8333,12 @@
             "action": "gain_rush",
             "duration": "this_turn"
           }
+        ],
+        "costs": [
+          {
+            "type": "life_to_hand",
+            "count": 1
+          }
         ]
       }
     }
@@ -8420,6 +8433,12 @@
             "action": "give_don",
             "count": 2,
             "rested": true
+          }
+        ],
+        "costs": [
+          {
+            "type": "life_to_hand",
+            "count": 1
           }
         ],
         "once_per_turn": true
@@ -33955,6 +33974,13 @@
         "conditions": {
           "hand_lte": 5
         },
+        "costs": [
+          {
+            "type": "don_minus",
+            "count": 2,
+            "optional": true
+          }
+        ],
         "once_per_turn": true
       }
     }
@@ -34028,12 +34054,19 @@
         "steps": [
           {
             "action": "gain_rush",
-            "duration": "this_turn"
+            "duration": "this_turn",
+            "conditions": {
+              "opp_don_on_field_gte": 5
+            }
           }
         ],
-        "conditions": {
-          "opp_don_on_field_gte": 5
-        }
+        "costs": [
+          {
+            "type": "don_minus",
+            "count": 1,
+            "optional": true
+          }
+        ]
       }
     }
   },
@@ -34055,6 +34088,13 @@
             "count": 1,
             "target": "opp_character",
             "cost_lte": 3
+          }
+        ],
+        "costs": [
+          {
+            "type": "don_minus",
+            "count": 1,
+            "optional": true
           }
         ]
       }
@@ -34135,6 +34175,13 @@
             "count": 1,
             "cost_lte": 99,
             "filter_name": "biscuit warrior"
+          }
+        ],
+        "costs": [
+          {
+            "type": "don_minus",
+            "count": 1,
+            "optional": true
           }
         ],
         "once_per_turn": true
@@ -34234,6 +34281,13 @@
             "count": 1,
             "source": "self"
           }
+        ],
+        "costs": [
+          {
+            "type": "don_minus",
+            "count": 1,
+            "optional": true
+          }
         ]
       }
     }
@@ -34293,6 +34347,13 @@
             "cost_lte": 5,
             "filter_name": "viscount hiyoko"
           }
+        ],
+        "costs": [
+          {
+            "type": "don_minus",
+            "count": 1,
+            "optional": true
+          }
         ]
       },
       "passive": {
@@ -34322,6 +34383,13 @@
             "count": 1,
             "filter_name": "baron tamago",
             "cost_lte": 4
+          }
+        ],
+        "costs": [
+          {
+            "type": "don_minus",
+            "count": 1,
+            "optional": true
           }
         ],
         "conditions": {
@@ -34375,6 +34443,13 @@
             "count": 1,
             "filter_name": "count niwatori",
             "cost_lte": 6
+          }
+        ],
+        "costs": [
+          {
+            "type": "don_minus",
+            "count": 1,
+            "optional": true
           }
         ],
         "conditions": {
@@ -34436,6 +34511,13 @@
             "target": "self",
             "count": "all"
           }
+        ],
+        "costs": [
+          {
+            "type": "don_minus",
+            "count": 1,
+            "optional": true
+          }
         ]
       }
     }
@@ -34486,6 +34568,13 @@
             "count": 2,
             "target": "opp_character",
             "cost_lte": 6
+          }
+        ],
+        "costs": [
+          {
+            "type": "don_minus",
+            "count": 2,
+            "optional": true
           }
         ]
       }
@@ -37618,6 +37707,13 @@
             "target": "leader",
             "filter_type": "kid pirates"
           }
+        ],
+        "costs": [
+          {
+            "type": "don_minus",
+            "count": 1,
+            "optional": true
+          }
         ]
       }
     }
@@ -37946,6 +38042,13 @@
             "target": "opp_character",
             "power_lte": 6000
           }
+        ],
+        "costs": [
+          {
+            "type": "don_minus",
+            "count": 2,
+            "optional": true
+          }
         ]
       }
     }
@@ -38018,6 +38121,13 @@
           {
             "action": "draw",
             "count": 1
+          }
+        ],
+        "costs": [
+          {
+            "type": "don_minus",
+            "count": 2,
+            "optional": true
           }
         ]
       }
@@ -41195,6 +41305,13 @@
             "cost_lte": 5,
             "color": "purple"
           }
+        ],
+        "costs": [
+          {
+            "type": "don_minus",
+            "count": 1,
+            "optional": true
+          }
         ]
       }
     }
@@ -41229,6 +41346,13 @@
             "count": 1,
             "target": "opp_character",
             "cost_lte": 1
+          }
+        ],
+        "costs": [
+          {
+            "type": "don_minus",
+            "count": 1,
+            "optional": true
           }
         ],
         "don_requirement": 1
@@ -44659,12 +44783,19 @@
           {
             "action": "rest_opp_character",
             "count": 1,
-            "cost_lte": 3
+            "cost_lte": 3,
+            "conditions": {
+              "leader_type": "impel down"
+            }
           }
         ],
-        "conditions": {
-          "leader_type": "impel down"
-        }
+        "costs": [
+          {
+            "type": "don_minus",
+            "count": 1,
+            "optional": true
+          }
+        ]
       }
     }
   },
@@ -55186,6 +55317,13 @@
             "action": "rest_opp_character",
             "count": 1,
             "power_lte": 6000
+          }
+        ],
+        "costs": [
+          {
+            "type": "don_minus",
+            "count": 1,
+            "optional": true
           }
         ]
       }
@@ -74104,6 +74242,13 @@
             "cost_lte": 5,
             "filter_type": "straw hat crew",
             "color": "purple"
+          }
+        ],
+        "costs": [
+          {
+            "type": "don_minus",
+            "count": 1,
+            "optional": true
           }
         ]
       }

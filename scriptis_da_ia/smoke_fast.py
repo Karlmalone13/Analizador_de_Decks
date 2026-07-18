@@ -4602,6 +4602,49 @@ def test_lote_9_itens_eb04_056_condicao_composta_bonney_e_vida() -> None:
           not any("Blocker" in s for s in log2))
 
 
+def test_don_n_parenteses_explicativo_e_life_area_cost() -> None:
+    # Custo "DON!! N (explicacao entre parenteses): efeito" -- a tolerancia
+    # existente exigia ':' colado no numero, sem parenteses no meio.
+    # Achado 17/07, 19 cartas reais no banco (amostra abaixo).
+    check("EB03-036 parseia custo don_minus count=1 (parenteses explicativo tolerado)",
+          get_card_effects("EB03-036").get("on_play", {}).get("costs", []) ==
+          [{"type": "don_minus", "count": 1, "optional": True}])
+    check("OP08-064 (amostra) tambem parseia don_minus count=1",
+          get_card_effects("OP08-064").get("activate_main", {}).get("costs", []) ==
+          [{"type": "don_minus", "count": 1, "optional": True}])
+    check("OP08-057 (amostra, bloco 'choice') tambem parseia don_minus count=2",
+          get_card_effects("OP08-057").get("activate_main", {}).get("costs", []) ==
+          [{"type": "don_minus", "count": 2, "optional": True}])
+
+    baby5 = real_card("EB03-036")
+    alvo1 = mk("BB1", "Alvo 1", cost=3, power=3000)
+    alvo2 = mk("BB2", "Alvo 2", cost=2, power=2000)
+    me = GameState(leader=mk("BBLDR", "Lider", card_type="LEADER"), turn=3, don_available=1)
+    me.field_chars = [baby5]
+    opp = GameState(leader=mk("BBOPP", "Opp", card_type="LEADER"), turn=3)
+    opp.field_chars = [alvo1, alvo2]
+    EffectExecutor(me, opp).execute(baby5, "on_play")
+    check("Execucao real: custo don_minus pago (1 DON devolvido ao deck) e K.O. dispara nos 2 alvos elegiveis",
+          me.don_deck == 11 and alvo1 not in opp.field_chars and alvo2 not in opp.field_chars)
+
+    # OP01-008 (Cavendish)/OP01-013 (Sanji): custo "add N cards from your
+    # Life area to your hand" (redacao sem topo/fundo explicito) --
+    # totalmente ausente antes.
+    check("OP01-008 parseia custo life_to_hand count=1 (sem source explicito -- default life_top)",
+          get_card_effects("OP01-008").get("on_play", {}).get("costs", []) == [{"type": "life_to_hand", "count": 1}])
+    check("OP01-013 (mesma familia) tambem parseia",
+          get_card_effects("OP01-013").get("activate_main", {}).get("costs", []) == [{"type": "life_to_hand", "count": 1}])
+
+    cavendish = real_card("OP01-008")
+    me2 = GameState(leader=mk("CVLDR", "Lider", card_type="LEADER"), turn=3)
+    me2.field_chars = [cavendish]
+    me2.life = [mk("LFA", "Life A"), mk("LFB", "Life B")]
+    opp2 = GameState(leader=mk("CVOPP", "Opp", card_type="LEADER"), turn=3)
+    EffectExecutor(me2, opp2).execute(cavendish, "on_play")
+    check("Execucao real: 1 carta da Life foi pra mao (custo pago) e Cavendish ganhou Rush",
+          len(me2.life) == 1 and len(me2.hand) == 1 and cavendish.rush_this_turn)
+
+
 def main() -> int:
     test_turn_order_imu_prefers_second()
     test_empty_throne_beats_direct_five_elders_play()
@@ -4725,6 +4768,7 @@ def main() -> int:
     test_lote_9_itens_eb03_049_segunda_play_card_e_eb02_028_play_from_hand()
     test_lote_9_itens_eb02_007_leader_or_character_count3()
     test_lote_9_itens_eb04_056_condicao_composta_bonney_e_vida()
+    test_don_n_parenteses_explicativo_e_life_area_cost()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0

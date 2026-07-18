@@ -1026,6 +1026,16 @@ def parse_costs(text):
         costs.append({'type': 'life_to_hand',
                       'count': int(life_hand_cost.group(1)),
                       'source': source})
+    else:
+        # Variante de redacao "from your Life AREA" (sem especificar
+        # topo/fundo) -- achado 17/07, OP01-008/OP01-013 (2 cartas no
+        # banco). Sem posicao explicita, usa o default ja existente do
+        # executor (source='life_top'), zero mudanca de engine.
+        life_area_cost = re.search(
+            r'you may add (\d+) cards? from your life area to your hand\s*:', t)
+        if life_area_cost:
+            costs.append({'type': 'life_to_hand',
+                          'count': int(life_area_cost.group(1))})
 
     # Custo de REVELAR N cartas da mao com filtro de tipo (ex: OP08-044
     # Kingdew, "you may reveal 2 cards with a type including 'Whitebeard
@@ -1074,8 +1084,13 @@ def parse_costs(text):
         # certo). So casa quando o numero e IMEDIATAMENTE seguido de ':'
         # (a notacao de custo oficial sempre tem o ':' colado -- prosa que
         # so MENCIONA DON!! cards, tipo "add up to 1 DON!! card", nao tem
-        # esse padrao, entao o fallback nao dispara por engano).
-        m = re.search(r'don!{0,2}\s*(\d+)\s*:', t)
+        # esse padrao, entao o fallback nao dispara por engano). Tolera um
+        # PARENTESE EXPLICATIVO opcional entre o numero e o ':' (achado
+        # 17/07: "DON!! 1 (You may return the specified number of DON!!
+        # cards from your field to your DON!! deck.): efeito" -- 15 cartas
+        # reais no banco, custo inteiro ausente antes por exigir ':' colado
+        # direto no numero, sem tolerar o parenteses no meio).
+        m = re.search(r'don!{0,2}\s*(\d+)\s*(?:\([^)]*\)\s*)?:', t)
     if m:
         x = int(m.group(1))
         idx = m.start()

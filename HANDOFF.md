@@ -1,5 +1,41 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-17 (257-258) - DON!! N (parenteses explicativo) + custo Life area -- 21 cartas
+
+Continuacao da varredura apos o lote de 9 (blocos 248-256). 2 itens
+aprovados pelo usuario.
+
+**257 -- DON!! N (parenteses explicativo):** o atalho de custo "DON!! N:"
+sem sinal de menos (fallback ja existente, achado 15/07) exigia o numero
+IMEDIATAMENTE seguido de ':' -- mas 19 cartas reais no banco tem um
+PARENTESE EXPLICATIVO padrao entre o numero e o ':' ("DON!! 1 (You may
+return the specified number of DON!! cards from your field to your
+DON!! deck.): efeito"), fazendo o custo inteiro ficar ausente (habilidade
+tratada como gratis). Generalizado tolerando qualquer parenteses opcional
+no meio. Cartas: EB03-036, OP08-057, OP08-060, OP08-061, OP08-064,
+OP08-068, OP08-070, OP08-071, OP08-073, OP08-075, OP08-077, OP09-064,
+OP09-077, OP09-079, OP10-067, OP10-069, OP11-063, OP14-062, ST18-005.
+**Observacao colateral, NAO corrigida (sem impacto de jogo):** o campo
+`optional` desse custo (calculado via presenca de "you may" numa janela
+de +/-40/60 chars ao redor do match) fica quase sempre True quando esse
+parenteses padrao esta perto -- mas confirmado via grep que esse campo
+NUNCA e lido em NENHUM lugar do engine (metadado inerte). Nao vale a pena
+investigar mais a fundo por ora.
+
+**258 -- OP01-008 (Cavendish)/OP01-013 (Sanji):** custo "you may add 1
+card from your Life area to your hand: efeito" -- variante de redacao
+sem posicao explicita (distinta de "from the top/bottom of your Life
+cards" ja coberta), custo inteiro ausente. Usa o default ja existente do
+executor (source='life_top'), zero mudanca de engine.
+
+**Validado:** `diff_parser.py` GANHOU=0/PERDEU=0/MUDOU=21.
+`gerar_dbs.py` + `snapshot_parser.py` 0/0/0. `smoke_fast.py`: 1 teste
+dirigido novo com EXECUCAO REAL cobrindo os 2 itens. `smoke_test.py`:
+TODOS OS TESTES PASSARAM. `smoke_test_broad.py`: 7/7. Registro em
+`parser_audits/2026-07-17_don_n_parenteses_e_life_area_cost.json`.
+
+Suspeitos: 247 -> 241.
+
 ## 2026-07-17 (248-256) - Lote de 9 itens aprovado ("aprovo sim") -- correcoes de FORMA (conectivo/ordem/redacao) em mecanismos ja existentes
 
 Continuacao imediata do lote de 11 (bloco 237-247). Usuario aprovou 9 novos

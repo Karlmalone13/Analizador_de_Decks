@@ -3121,6 +3121,13 @@
  },
  "EB03-036": {
   "on_play": {
+   "costs": [
+    {
+     "count": 1,
+     "optional": true,
+     "type": "don_minus"
+    }
+   ],
    "steps": [
     {
      "action": "ko",
@@ -5479,6 +5486,12 @@
  },
  "OP01-008": {
   "on_play": {
+   "costs": [
+    {
+     "count": 1,
+     "type": "life_to_hand"
+    }
+   ],
    "steps": [
     {
      "action": "gain_rush",
@@ -5512,6 +5525,12 @@
  "OP01-012": {},
  "OP01-013": {
   "activate_main": {
+   "costs": [
+    {
+     "count": 1,
+     "type": "life_to_hand"
+    }
+   ],
    "once_per_turn": true,
    "steps": [
     {
@@ -21349,6 +21368,13 @@
    "conditions": {
     "hand_lte": 5
    },
+   "costs": [
+    {
+     "count": 2,
+     "optional": true,
+     "type": "don_minus"
+    }
+   ],
    "once_per_turn": true
   }
  },
@@ -21386,12 +21412,19 @@
  },
  "OP08-060": {
   "on_play": {
-   "conditions": {
-    "opp_don_on_field_gte": 5
-   },
+   "costs": [
+    {
+     "count": 1,
+     "optional": true,
+     "type": "don_minus"
+    }
+   ],
    "steps": [
     {
      "action": "gain_rush",
+     "conditions": {
+      "opp_don_on_field_gte": 5
+     },
      "duration": "this_turn"
     }
    ]
@@ -21399,6 +21432,13 @@
  },
  "OP08-061": {
   "when_attacking": {
+   "costs": [
+    {
+     "count": 1,
+     "optional": true,
+     "type": "don_minus"
+    }
+   ],
    "steps": [
     {
      "action": "ko",
@@ -21446,6 +21486,13 @@
  },
  "OP08-064": {
   "activate_main": {
+   "costs": [
+    {
+     "count": 1,
+     "optional": true,
+     "type": "don_minus"
+    }
+   ],
    "once_per_turn": true,
    "steps": [
     {
@@ -21501,6 +21548,13 @@
    ]
   },
   "trigger": {
+   "costs": [
+    {
+     "count": 1,
+     "optional": true,
+     "type": "don_minus"
+    }
+   ],
    "steps": [
     {
      "action": "play_card",
@@ -21537,6 +21591,13 @@
  },
  "OP08-070": {
   "on_ko": {
+   "costs": [
+    {
+     "count": 1,
+     "optional": true,
+     "type": "don_minus"
+    }
+   ],
    "steps": [
     {
      "action": "play_card",
@@ -21559,6 +21620,13 @@
    "conditions": {
     "opp_turn_only": true
    },
+   "costs": [
+    {
+     "count": 1,
+     "optional": true,
+     "type": "don_minus"
+    }
+   ],
    "steps": [
     {
      "action": "play_from_deck",
@@ -21590,6 +21658,13 @@
    "conditions": {
     "opp_turn_only": true
    },
+   "costs": [
+    {
+     "count": 1,
+     "optional": true,
+     "type": "don_minus"
+    }
+   ],
    "steps": [
     {
      "action": "play_from_deck",
@@ -21621,6 +21696,13 @@
  },
  "OP08-075": {
   "main": {
+   "costs": [
+    {
+     "count": 1,
+     "optional": true,
+     "type": "don_minus"
+    }
+   ],
    "steps": [
     {
      "action": "rest_opp_character",
@@ -21654,6 +21736,13 @@
  },
  "OP08-077": {
   "main": {
+   "costs": [
+    {
+     "count": 2,
+     "optional": true,
+     "type": "don_minus"
+    }
+   ],
    "steps": [
     {
      "action": "ko",
@@ -23653,6 +23742,13 @@
  "OP09-063": {},
  "OP09-064": {
   "on_play": {
+   "costs": [
+    {
+     "count": 1,
+     "optional": true,
+     "type": "don_minus"
+    }
+   ],
    "steps": [
     {
      "action": "set_active",
@@ -23830,6 +23926,13 @@
  },
  "OP09-077": {
   "main": {
+   "costs": [
+    {
+     "count": 2,
+     "optional": true,
+     "type": "don_minus"
+    }
+   ],
    "steps": [
     {
      "action": "ko",
@@ -23878,6 +23981,13 @@
  },
  "OP09-079": {
   "main": {
+   "costs": [
+    {
+     "count": 2,
+     "optional": true,
+     "type": "don_minus"
+    }
+   ],
    "steps": [
     {
      "action": "rest_opp_character",
@@ -25883,6 +25993,13 @@
  },
  "OP10-067": {
   "on_play": {
+   "costs": [
+    {
+     "count": 1,
+     "optional": true,
+     "type": "don_minus"
+    }
+   ],
    "steps": [
     {
      "action": "set_don_active",
@@ -25901,6 +26018,13 @@
  "OP10-068": {},
  "OP10-069": {
   "when_attacking": {
+   "costs": [
+    {
+     "count": 1,
+     "optional": true,
+     "type": "don_minus"
+    }
+   ],
    "don_requirement": 1,
    "steps": [
     {
@@ -28090,12 +28214,19 @@
  },
  "OP11-063": {
   "on_play": {
-   "conditions": {
-    "leader_type": "impel down"
-   },
+   "costs": [
+    {
+     "count": 1,
+     "optional": true,
+     "type": "don_minus"
+    }
+   ],
    "steps": [
     {
      "action": "rest_opp_character",
+     "conditions": {
+      "leader_type": "impel down"
+     },
      "cost_lte": 3,
      "count": 1
     }
@@ -34689,6 +34820,13 @@
  },
  "OP14-062": {
   "on_ko": {
+   "costs": [
+    {
+     "count": 1,
+     "optional": true,
+     "type": "don_minus"
+    }
+   ],
    "steps": [
     {
      "action": "rest_opp_character",
@@ -46564,6 +46702,13 @@
  },
  "ST18-005": {
   "on_play": {
+   "costs": [
+    {
+     "count": 1,
+     "optional": true,
+     "type": "don_minus"
+    }
+   ],
    "steps": [
     {
      "action": "play_card",
