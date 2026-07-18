@@ -85,6 +85,15 @@ A telemetria cobre Main Phase, mulligan, defesa, triggers, reacoes, custos
 opcionais e selecao de alvos. O fim da partida grava `win/loss`. Preserve o
 combat log e o JSONL da mesma sessao e use:
 
+Por padrao isso agora e automatico: ao receber `GameOver`, o server espera o
+arquivo AutoSaved estabilizar, adiciona ao banco e grava relatorio + recibo em
+`scriptis_da_ia/metrics/live_runs/`. Para desligar, inicie o server com
+`BOT_AUTO_COLLECT=0`. Se a deteccao automatica falhar, o fallback e um comando:
+
+```cmd
+python scriptis_da_ia\collect_latest_match.py
+```
+
 ```cmd
 python parse_combat_log.py <CombatLog.log> --add-to-db
 python bot_efficiency_report.py --decision-log ..\BOT\engine_server\logs\decisions\decisions_<timestamp>.jsonl --json metrics\live_<data>.json

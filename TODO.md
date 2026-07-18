@@ -8,6 +8,8 @@
 > 17/07/2026: instrumentacao ampliada para Main Phase, defesa, mulligan e
 > alvos, com resultado final, deltas futuros 1/3/5 e contrafactual simulado.
 > Coleta real pendente conforme `metrics/evidence_collection_plan.json`.
+> Coleta pos-partida automatizada por `collect_latest_match.py` no evento
+> `GameOver`; validar ao vivo na proxima partida.
 
 ---
 

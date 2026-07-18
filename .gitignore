@@ -48,6 +48,7 @@ yarn-error.log*
 # NAO e o banco de combat logs, que fica em scriptis_da_ia/logs/ e E
 # versionado de proposito, ver CLAUDE.md)
 BOT/engine_server/logs/
+scriptis_da_ia/metrics/live_runs/
 
 # env files (can opt-in for committing if needed)
 .env*

@@ -21,6 +21,8 @@ sys.path.insert(0, str(_ROOT))
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 import uvicorn
+import os
+import threading
 from typing import Optional
 from telemetry import new_decision_id, write_event, PATH as DECISION_LOG_PATH
 
@@ -382,6 +384,15 @@ def outcome(report: OutcomeReport):
     write_event("outcome", "match", match_id=_live_match_id, result=report.result,
                 state_final=_model_dict(report.stateFinal) if report.stateFinal else None,
                 reason=report.reason)
+    if os.environ.get("BOT_AUTO_COLLECT", "1") != "0":
+        def _collect() -> None:
+            try:
+                from collect_latest_match import collect_latest
+                receipt = collect_latest(DECISION_LOG_PATH, match_id=_live_match_id)
+                print(f"[AUTO-COLLECT] OK -> {receipt['report']}", flush=True)
+            except Exception as exc:
+                print(f"[AUTO-COLLECT] falhou: {exc}", flush=True)
+        threading.Thread(target=_collect, daemon=True).start()
     return {"ok": True}
 
 

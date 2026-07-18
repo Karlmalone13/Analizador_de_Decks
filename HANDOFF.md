@@ -2,6 +2,12 @@
 
 ## 2026-07-17 (262) - Telemetria completa de decisao e resultado
 
+**Complemento de automacao:** `collect_latest_match.py` elimina os dois comandos
+manuais. No evento `GameOver`, o server seleciona o `.log` AutoSaved mais novo,
+espera a escrita estabilizar, chama o parser oficial com `--add-to-db`, gera o
+relatorio da sessao e salva recibo em `metrics/live_runs/`. `BOT_AUTO_COLLECT=0`
+desliga; o mesmo script funciona como fallback de um comando.
+
 Ampliado o protocolo `decision_id` da Main Phase para mulligan, defesa
 (`blocker/counter/trigger/reaction/optional`) e selecao de alvos. O server grava
 estado anterior, alternativas legais, escolha e contexto; o plugin reporta
