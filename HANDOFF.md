@@ -1,5 +1,52 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-18 - Merge das 4 tarefas de background (worktrees) na main
+
+Usuario tinha iniciado 4 tarefas de background numa sessao anterior
+(worktrees separados) enquanto trabalhava com o Codex em paralelo na
+main. Ao retomar, revisado o estado de todos os worktrees antes de
+mexer em qualquer coisa:
+
+- `affectionate-aryabhata-a6ef2f` (`b3deb09`): `filter_names` (lista) em
+  play_card -- PRB02-018 (OR)/ST13-006 (AND/"each of"). Commit completo.
+- `keen-bassi-bafadf` (`f5d58aa`): investigou o pedido original sobre
+  `cost_lte` dinamico e achou a causa raiz REAL (vazamento de janela em
+  `parse_play_generic`, nao a string sentinela que eu suspeitava) --
+  OP07-070/OP08-062 + bonus OP03-027. Commit completo.
+- `kind-gates-19e072` (`97a5427`): investigou meu pedido sobre
+  `apply_conditional_keyword_passives()`/P-039 e **descartou a premissa**
+  (P-039 nunca foi bug -- ja existe `apply_your_turn_buffs()`, mecanismo
+  bem mais amplo). Achou e corrigiu o bug REAL: familia OP-03 de mill
+  reativo disparando incondicionalmente. Commit completo.
+- `quirky-mccarthy-4e4629` (`f4211a2`): Kin'emon (OP10-026/027) + custo
+  composto `place_self_bottom_deck`, generalizado pra mais 5 cartas
+  self-only descobertas na varredura. Commit completo.
+- `practical-payne-07153f`: tentativa INCOMPLETA e nunca commitada do
+  mesmo bug de `cost_lte` (helper `resolve_cost_lte_value` pela metade).
+  Descartada (worktree removido, branch deletada) por decisao do usuario
+  -- o keen-bassi ja resolveu o mesmo problema de forma mais precisa.
+
+Os 4 commits completos foram cherry-picked pra `main` um de cada vez,
+com `diff_parser.py`/`smoke_fast.py`/`smoke_test.py`/`smoke_test_broad.py`
+completos entre cada merge (nenhuma regressao). Conflitos só em
+`HANDOFF.md`/`smoke_fast.py` (insercoes no mesmo ponto do arquivo por
+tarefas paralelas, sem sobreposicao real de conteudo) -- resolvidos
+concatenando os dois lados. `gerar_effects_db.py`/`decision_engine.py`/
+`card_effects_db.json`/`parser_snapshot.json` fizeram merge automatico
+limpo em todos os 4 cherry-picks.
+
+Memoria atualizada com a correcao da premissa P-039 (ver
+`project_apply_your_turn_buffs_mecanismo_amplo.md` e
+`project_parser_audit_progress.md`, ambas em
+`C:\Users\arthu\.claude\projects\...\memory\`).
+
+**Estado apos o merge:** suspeitos 213 (audit_parser_coverage.py
+--min-severity 1). 4 worktrees + branches removidos. `git status` limpo
+(so `.claude/` sem rastreamento, esperado). Commits novos em `main`:
+`19e1730`, `5d8b924`, `440eab4`, `112d3a4` (nesta ordem), todos depois
+de `0d4bc2c` (topo do trabalho do Codex). Nao empurrado ainda -- aguardando
+decisao do usuario sobre o push.
+
 ## 2026-07-18 (266) - Codex -> Claude - estado pronto para continuar
 
 Troca solicitada pelo usuario. O lote 2 esta concluido no commit `67ebff9`;
