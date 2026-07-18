@@ -9176,12 +9176,23 @@
  },
  "OP03-001": {
   "passive": {
+   "costs": [
+    {
+     "card_types": [
+      "EVENT",
+      "STAGE"
+     ],
+     "type": "trash_any_from_hand"
+    }
+   ],
    "steps": [
     {
-     "action": "buff_power",
-     "amount": 1000,
+     "action": "buff_power_per_count",
+     "amount_per": 1000,
+     "count_per": 1,
      "duration": "battle_only",
-     "target": "self"
+     "source": "trashed_hand_this_effect",
+     "target": "leader"
     }
    ]
   }
@@ -10850,6 +10861,8 @@
    "steps": [
     {
      "action": "ko",
+     "alt_cost_lte": 3,
+     "alt_target": "opp_stage",
      "cost_eq": 0,
      "count": 1,
      "target": "opp_character"
@@ -11849,6 +11862,9 @@
  },
  "OP04-028": {
   "end_of_turn": {
+   "conditions": {
+    "don_gte": 2
+   },
    "don_requirement": 1,
    "steps": [
     {
@@ -11952,6 +11968,9 @@
  },
  "OP04-034": {
   "end_of_turn": {
+   "conditions": {
+    "don_gte": 3
+   },
    "steps": [
     {
      "action": "ko",
@@ -12122,23 +12141,30 @@
  },
  "OP04-040": {
   "when_attacking": {
-   "don_requirement": 1,
-   "steps": [
-    {
-     "action": "draw",
-     "count": 1
-    },
-    {
-     "action": "gain_life",
-     "conditions": {
-      "other_char_cost_gte": 8
-     },
-     "count": 1,
-     "dest": "life_top",
-     "source": "deck_top",
-     "up_to": true
-    }
-   ]
+   "choice": [
+    [
+     {
+      "action": "draw",
+      "count": 1
+     }
+    ],
+    [
+     {
+      "action": "gain_life",
+      "conditions": {
+       "other_char_cost_gte": 8
+      },
+      "count": 1,
+      "dest": "life_top",
+      "source": "deck_top",
+      "up_to": true
+     }
+    ]
+   ],
+   "conditions": {
+    "life_and_hand_total_lte": 4
+   },
+   "don_requirement": 1
   }
  },
  "OP04-041": {
@@ -13711,7 +13737,10 @@
   "passive": {
    "steps": [
     {
-     "action": "gain_rush"
+     "action": "grant_rush_aura",
+     "color": "red",
+     "cost_gte": 3,
+     "exclude_self": true
     }
    ]
   }
@@ -16136,6 +16165,13 @@
  },
  "OP06-011": {
   "activate_main": {
+   "costs": [
+    {
+     "count": 1,
+     "filter_name": "uta",
+     "type": "rest_own_character"
+    }
+   ],
    "once_per_turn": true,
    "steps": [
     {
@@ -16189,11 +16225,19 @@
  },
  "OP06-014": {
   "on_opp_attack": {
+   "costs": [
+    {
+     "filter_type": "film",
+     "type": "trash_any_from_hand"
+    }
+   ],
    "steps": [
     {
-     "action": "buff_power",
-     "amount": 1000,
+     "action": "buff_power_per_count",
+     "amount_per": 1000,
+     "count_per": 1,
      "duration": "battle_only",
+     "source": "trashed_hand_this_effect",
      "target": "leader_or_character"
     }
    ]
@@ -17138,7 +17182,8 @@
       "don_on_field_lte_opp": true
      },
      "count": 1,
-     "filter_name": "the vinsmoke family"
+     "filter_name": "the vinsmoke family",
+     "power_lte": 4000
     }
    ]
   }
@@ -17356,6 +17401,10 @@
      "count": 1,
      "duration": "this_turn",
      "target": "opp_character"
+    },
+    {
+     "action": "ko_selected",
+     "power_lte": 5000
     }
    ]
   }
@@ -17539,6 +17588,21 @@
   }
  },
  "OP06-083": {
+  "activate_main": {
+   "costs": [
+    {
+     "count": 1,
+     "filter_type": "thriller bark pirates",
+     "type": "ko_own_character"
+    }
+   ],
+   "steps": [
+    {
+     "action": "negate_own_effect",
+     "duration": "this_turn"
+    }
+   ]
+  },
   "passive": {
    "steps": [
     {
@@ -17755,15 +17819,15 @@
   "counter": {
    "steps": [
     {
-     "action": "immunity",
-     "imm_type": "ko",
-     "source": "any"
-    },
-    {
      "action": "life_to_hand",
      "count": 1,
      "source": "life_top",
      "up_to": false
+    },
+    {
+     "action": "grant_ko_immunity_type",
+     "cost_lte": 7,
+     "duration": "this_turn"
     }
    ]
   },
@@ -18202,6 +18266,12 @@
    "costs": [
     {
      "type": "rest_self"
+    },
+    {
+     "count": 1,
+     "exclude_self": true,
+     "filter_name": "enel",
+     "type": "rest_own_character"
     }
    ],
    "once_per_turn": true,
@@ -34845,6 +34915,10 @@
    "steps": [
     {
      "action": "cannot_attack_self"
+    },
+    {
+     "action": "negate_own_effect",
+     "duration": "this_turn"
     }
    ]
   }
@@ -36328,22 +36402,44 @@
    ]
   },
   "on_opp_attack": {
+   "costs": [
+    {
+     "card_types": [
+      "EVENT",
+      "STAGE"
+     ],
+     "type": "trash_any_from_hand"
+    }
+   ],
    "steps": [
     {
-     "action": "buff_power",
-     "amount": 1000,
+     "action": "buff_power_per_count",
+     "amount_per": 1000,
+     "count_per": 1,
      "duration": "battle_only",
-     "target": "self"
+     "source": "trashed_hand_this_effect",
+     "target": "leader"
     }
    ]
   },
   "when_attacking": {
+   "costs": [
+    {
+     "card_types": [
+      "EVENT",
+      "STAGE"
+     ],
+     "type": "trash_any_from_hand"
+    }
+   ],
    "steps": [
     {
-     "action": "buff_power",
-     "amount": 1000,
+     "action": "buff_power_per_count",
+     "amount_per": 1000,
+     "count_per": 1,
      "duration": "battle_only",
-     "target": "self"
+     "source": "trashed_hand_this_effect",
+     "target": "leader"
     }
    ]
   }
@@ -41789,11 +41885,18 @@
  },
  "P-051": {
   "when_attacking": {
+   "costs": [
+    {
+     "type": "trash_any_from_hand"
+    }
+   ],
    "steps": [
     {
-     "action": "buff_power",
-     "amount": 1000,
+     "action": "buff_power_per_count",
+     "amount_per": 1000,
+     "count_per": 1,
      "duration": "battle_only",
+     "source": "trashed_hand_this_effect",
      "target": "self"
     }
    ]
@@ -41913,6 +42016,13 @@
  },
  "P-060": {
   "main": {
+   "costs": [
+    {
+     "count": 1,
+     "filter_name": "uta",
+     "type": "rest_own_character"
+    }
+   ],
    "steps": [
     {
      "action": "rest_opp_don",
@@ -46623,11 +46733,19 @@
  },
  "ST16-002": {
   "on_opp_attack": {
+   "costs": [
+    {
+     "filter_type": "music",
+     "type": "trash_any_from_hand"
+    }
+   ],
    "steps": [
     {
-     "action": "buff_power",
-     "amount": 1000,
+     "action": "buff_power_per_count",
+     "amount_per": 1000,
+     "count_per": 1,
      "duration": "battle_only",
+     "source": "trashed_hand_this_effect",
      "target": "leader_or_character"
     }
    ]
@@ -48124,14 +48242,21 @@
  },
  "ST27-001": {
   "activate_main": {
-   "conditions": {
-    "leader_type": "blackbeard pirates"
-   },
+   "costs": [
+    {
+     "count": 1,
+     "filter_name": "fullalead",
+     "type": "rest_own_character"
+    }
+   ],
    "once_per_turn": true,
    "steps": [
     {
      "action": "buff_power",
      "amount": 4000,
+     "conditions": {
+      "leader_type": "blackbeard pirates"
+     },
      "duration": "this_turn",
      "target": "self"
     }

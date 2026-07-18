@@ -14605,10 +14605,21 @@
       "passive": {
         "steps": [
           {
-            "action": "buff_power",
-            "amount": 1000,
-            "target": "self",
+            "action": "buff_power_per_count",
+            "amount_per": 1000,
+            "count_per": 1,
+            "source": "trashed_hand_this_effect",
+            "target": "leader",
             "duration": "battle_only"
+          }
+        ],
+        "costs": [
+          {
+            "type": "trash_any_from_hand",
+            "card_types": [
+              "EVENT",
+              "STAGE"
+            ]
           }
         ]
       }
@@ -17332,7 +17343,9 @@
             "action": "ko",
             "count": 1,
             "target": "opp_character",
-            "cost_eq": 0
+            "cost_eq": 0,
+            "alt_target": "opp_stage",
+            "alt_cost_lte": 3
           }
         ]
       }
@@ -18932,6 +18945,9 @@
             "target": "self"
           }
         ],
+        "conditions": {
+          "don_gte": 2
+        },
         "don_requirement": 1
       },
       "passive": {
@@ -19103,7 +19119,10 @@
             "cost_lte": 3,
             "rested_only": true
           }
-        ]
+        ],
+        "conditions": {
+          "don_gte": 3
+        }
       }
     }
   },
@@ -19331,22 +19350,29 @@
     "attribute": "Ranged",
     "effects": {
       "when_attacking": {
-        "steps": [
-          {
-            "action": "draw",
-            "count": 1
-          },
-          {
-            "action": "gain_life",
-            "source": "deck_top",
-            "dest": "life_top",
-            "count": 1,
-            "up_to": true,
-            "conditions": {
-              "other_char_cost_gte": 8
+        "choice": [
+          [
+            {
+              "action": "draw",
+              "count": 1
             }
-          }
+          ],
+          [
+            {
+              "action": "gain_life",
+              "source": "deck_top",
+              "dest": "life_top",
+              "count": 1,
+              "up_to": true,
+              "conditions": {
+                "other_char_cost_gte": 8
+              }
+            }
+          ]
         ],
+        "conditions": {
+          "life_and_hand_total_lte": 4
+        },
         "don_requirement": 1
       }
     }
@@ -21778,7 +21804,10 @@
       "passive": {
         "steps": [
           {
-            "action": "gain_rush"
+            "action": "grant_rush_aura",
+            "color": "red",
+            "cost_gte": 3,
+            "exclude_self": true
           }
         ]
       }
@@ -25626,6 +25655,13 @@
             "duration": "this_turn"
           }
         ],
+        "costs": [
+          {
+            "type": "rest_own_character",
+            "count": 1,
+            "filter_name": "uta"
+          }
+        ],
         "once_per_turn": true
       }
     }
@@ -25706,10 +25742,18 @@
       "on_opp_attack": {
         "steps": [
           {
-            "action": "buff_power",
-            "amount": 1000,
+            "action": "buff_power_per_count",
+            "amount_per": 1000,
+            "count_per": 1,
+            "source": "trashed_hand_this_effect",
             "target": "leader_or_character",
             "duration": "battle_only"
+          }
+        ],
+        "costs": [
+          {
+            "type": "trash_any_from_hand",
+            "filter_type": "film"
           }
         ]
       }
@@ -27184,6 +27228,7 @@
             "action": "add_from_trash",
             "count": 1,
             "filter_name": "the vinsmoke family",
+            "power_lte": 4000,
             "conditions": {
               "don_on_field_lte_opp": true
             }
@@ -27524,6 +27569,10 @@
             "count": 1,
             "target": "opp_character",
             "duration": "this_turn"
+          },
+          {
+            "action": "ko_selected",
+            "power_lte": 5000
           }
         ],
         "costs": [
@@ -27813,6 +27862,21 @@
     "sub_types": "Giant Thriller Bark Pirates",
     "attribute": "Strike",
     "effects": {
+      "activate_main": {
+        "steps": [
+          {
+            "action": "negate_own_effect",
+            "duration": "this_turn"
+          }
+        ],
+        "costs": [
+          {
+            "type": "ko_own_character",
+            "count": 1,
+            "filter_type": "thriller bark pirates"
+          }
+        ]
+      },
       "passive": {
         "steps": [
           {
@@ -28179,15 +28243,15 @@
       "counter": {
         "steps": [
           {
-            "action": "immunity",
-            "imm_type": "ko",
-            "source": "any"
-          },
-          {
             "action": "life_to_hand",
             "source": "life_top",
             "count": 1,
             "up_to": false
+          },
+          {
+            "action": "grant_ko_immunity_type",
+            "cost_lte": 7,
+            "duration": "this_turn"
           }
         ]
       }
@@ -28858,6 +28922,12 @@
         "costs": [
           {
             "type": "rest_self"
+          },
+          {
+            "type": "rest_own_character",
+            "count": 1,
+            "filter_name": "enel",
+            "exclude_self": true
           }
         ],
         "once_per_turn": true
@@ -55271,6 +55341,10 @@
         "steps": [
           {
             "action": "cannot_attack_self"
+          },
+          {
+            "action": "negate_own_effect",
+            "duration": "this_turn"
           }
         ]
       }
@@ -57482,20 +57556,42 @@
       "when_attacking": {
         "steps": [
           {
-            "action": "buff_power",
-            "amount": 1000,
-            "target": "self",
+            "action": "buff_power_per_count",
+            "amount_per": 1000,
+            "count_per": 1,
+            "source": "trashed_hand_this_effect",
+            "target": "leader",
             "duration": "battle_only"
+          }
+        ],
+        "costs": [
+          {
+            "type": "trash_any_from_hand",
+            "card_types": [
+              "EVENT",
+              "STAGE"
+            ]
           }
         ]
       },
       "on_opp_attack": {
         "steps": [
           {
-            "action": "buff_power",
-            "amount": 1000,
-            "target": "self",
+            "action": "buff_power_per_count",
+            "amount_per": 1000,
+            "count_per": 1,
+            "source": "trashed_hand_this_effect",
+            "target": "leader",
             "duration": "battle_only"
+          }
+        ],
+        "costs": [
+          {
+            "type": "trash_any_from_hand",
+            "card_types": [
+              "EVENT",
+              "STAGE"
+            ]
           }
         ]
       }
@@ -66078,10 +66174,17 @@
       "when_attacking": {
         "steps": [
           {
-            "action": "buff_power",
-            "amount": 1000,
+            "action": "buff_power_per_count",
+            "amount_per": 1000,
+            "count_per": 1,
+            "source": "trashed_hand_this_effect",
             "target": "self",
             "duration": "battle_only"
+          }
+        ],
+        "costs": [
+          {
+            "type": "trash_any_from_hand"
           }
         ]
       }
@@ -66303,6 +66406,13 @@
           {
             "action": "rest_opp_don",
             "count": 2
+          }
+        ],
+        "costs": [
+          {
+            "type": "rest_own_character",
+            "count": 1,
+            "filter_name": "uta"
           }
         ]
       }
@@ -74015,10 +74125,18 @@
       "on_opp_attack": {
         "steps": [
           {
-            "action": "buff_power",
-            "amount": 1000,
+            "action": "buff_power_per_count",
+            "amount_per": 1000,
+            "count_per": 1,
+            "source": "trashed_hand_this_effect",
             "target": "leader_or_character",
             "duration": "battle_only"
+          }
+        ],
+        "costs": [
+          {
+            "type": "trash_any_from_hand",
+            "filter_type": "music"
           }
         ]
       },
@@ -76377,12 +76495,19 @@
             "action": "buff_power",
             "amount": 4000,
             "target": "self",
-            "duration": "this_turn"
+            "duration": "this_turn",
+            "conditions": {
+              "leader_type": "blackbeard pirates"
+            }
           }
         ],
-        "conditions": {
-          "leader_type": "blackbeard pirates"
-        },
+        "costs": [
+          {
+            "type": "rest_own_character",
+            "count": 1,
+            "filter_name": "fullalead"
+          }
+        ],
         "once_per_turn": true
       },
       "on_ko": {

@@ -25,6 +25,7 @@ from optcg_engine.decision_engine import (  # noqa: E402
     effective_counter,
     effective_hand_play_cost,
     get_card_effects,
+    is_attack_locked_self,
     is_immune,
     load_cards_db,
 )
@@ -5329,6 +5330,100 @@ def test_lote_5_op03_021_a_op03_083() -> None:
           len(me_corgy.hand) == 0 and len(me_corgy.trash) == 2 and len(me_corgy.deck) == deck_antes - 2)
 
 
+def test_lote_12_op03_096_a_op06_117() -> None:
+    # Continuacao do lote de 10 severidade-1 (itens 33-53), 12 bugs reais.
+
+    # OP03-096: K.O. com alvo ALTERNATIVO (Stage) quando nao ha Character elegivel.
+    stage_ko = real_card("OP03-096")
+    me_sko = GameState(leader=mk("SKOLDR", "Lider", card_type="LEADER"))
+    opp_sko = GameState(leader=mk("SKOOPP", "Opp", card_type="LEADER"))
+    opp_sko.field_chars = [mk("SKOC1", "Char custo 3", cost=3)]  # nao bate cost_eq=0
+    opp_sko.field_stage = mk("SKOS1", "Stage", cost=2, card_type="STAGE")
+    char_antes = opp_sko.field_chars[0]
+    EffectExecutor(me_sko, opp_sko).execute(stage_ko, "main")
+    check("Execucao real: OP03-096 sem Character custo 0 elegivel, KO a Stage (alvo alternativo)",
+          opp_sko.field_stage is None and char_antes in opp_sko.field_chars)
+
+    # OP04-028: condicao "2+ DON ativos" ausente -- so ativa com o board certo.
+    check("OP04-028 parseia condicao don_gte=2 (tolera 'active DON')",
+          get_card_effects("OP04-028")["end_of_turn"]["conditions"] == {"don_gte": 2})
+
+    # OP04-040: ja coberto em execucao real acima (test builder proprio) --
+    # aqui so a estrutura de choice.
+    check("OP04-040 parseia choice draw/gain_life com condicao por-opcao",
+          "choice" in get_card_effects("OP04-040")["when_attacking"]
+          and get_card_effects("OP04-040")["when_attacking"]["conditions"] == {"life_and_hand_total_lte": 4})
+
+    # OP04-118: concessao em massa de Rush (cor+custo, exclui a propria carta).
+    vivi = real_card("OP04-118")
+    red_ok = mk("VVR1", "Red OK", cost=4, color="Red")
+    red_barato = mk("VVR2", "Red Barato", cost=2, color="Red")
+    blue_ok = mk("VVB1", "Blue OK", cost=4, color="Blue")
+    me_vivi = GameState(leader=mk("VVLDR", "Lider", card_type="LEADER"))
+    me_vivi.field_chars = [vivi, red_ok, red_barato, blue_ok]
+    opp_vivi = GameState(leader=mk("VVOPP", "Opp", card_type="LEADER"))
+    apply_conditional_keyword_passives(me_vivi, opp_vivi)
+    check("Execucao real: OP04-118 concede Rush so a vermelhos custo>=3 (nao a si mesma nem aos outros)",
+          not vivi.has_rush and red_ok.has_rush and not red_barato.has_rush and not blue_ok.has_rush)
+
+    # OP06-011: custo "rest 1 of your [Uta] cards" (nome proprio, sem "rest this").
+    check("OP06-011 parseia custo rest_own_character com filter_name=uta",
+          get_card_effects("OP06-011")["activate_main"]["costs"]
+          == [{"type": "rest_own_character", "count": 1, "filter_name": "uta"}])
+
+    # OP06-063: filtro de power ausente em add_from_trash.
+    check("OP06-063 parseia power_lte=4000 em add_from_trash",
+          get_card_effects("OP06-063")["on_play"]["steps"][0].get("power_lte") == 4000)
+
+    # OP06-074: KO condicional por POWER (nao so custo) apos negate_effect.
+    check("OP06-074 parseia ko_selected com power_lte (nao cost_lte)",
+          get_card_effects("OP06-074")["on_play"]["steps"][1] == {"action": "ko_selected", "power_lte": 5000})
+
+    # OP06-083/OP14-056: negacao do proprio efeito libera cannot_attack_self.
+    oars = real_card("OP06-083")
+    me_oars = GameState(leader=mk("OARSLDR", "Lider", card_type="LEADER"))
+    opp_oars = GameState(leader=mk("OARSOPP", "Opp", card_type="LEADER"))
+    check("Execucao real: OP06-083 comeca travado (cannot_attack_self)",
+          is_attack_locked_self(oars, me_oars, opp_oars))
+    oars.own_effect_negated_this_turn = True
+    check("Execucao real: apos negate_own_effect, OP06-083 pode atacar",
+          not is_attack_locked_self(oars, me_oars, opp_oars))
+
+    # OP06-096: imunidade a KO em massa com filtro de CUSTO (nao afeta caros).
+    counter_ev = real_card("OP06-096")
+    barato = mk("BR1", "Barato", cost=5)
+    caro = mk("CR1", "Caro", cost=10)
+    me_ev = GameState(leader=mk("EVLDR", "Lider", card_type="LEADER"))
+    me_ev.field_chars = [barato, caro]
+    opp_ev = GameState(leader=mk("EVOPP", "Opp", card_type="LEADER"))
+    EffectExecutor(me_ev, opp_ev).execute(counter_ev, "counter")
+    check("Execucao real: OP06-096 concede imunidade so ao custo<=7 (barato), nao ao caro",
+          barato.immunity_ko_until == "this_turn" and not caro.immunity_ko_until)
+
+    # OP06-117: 2o componente do custo composto (rest self + rest [Enel]).
+    check("OP06-117 parseia os DOIS componentes do custo composto",
+          get_card_effects("OP06-117")["activate_main"]["costs"]
+          == [{"type": "rest_self"},
+              {"type": "rest_own_character", "count": 1, "filter_name": "enel", "exclude_self": True}])
+
+    # OP06-014: buff dinamico por contagem de trash variavel (nao +1000 fixo).
+    check("OP06-014 parseia custo trash_any_from_hand + buff_power_per_count",
+          get_card_effects("OP06-014")["on_opp_attack"]["costs"] == [{"type": "trash_any_from_hand", "filter_type": "film"}]
+          and get_card_effects("OP06-014")["on_opp_attack"]["steps"][0]["action"] == "buff_power_per_count")
+    ratchet = real_card("OP06-014")
+    film1 = mk("FL1", "Carta Um", cost=2, sub_types="FILM")
+    film2 = mk("FL2", "Carta Dois", cost=2, sub_types="FILM")
+    nao_film = mk("NF1", "Carta Tres", cost=2)
+    me_ratchet = GameState(leader=mk("RTLDR", "Lider", card_type="LEADER"))
+    me_ratchet.field_chars = [ratchet]
+    me_ratchet.hand = [film1, film2, nao_film]
+    opp_ratchet = GameState(leader=mk("RTOPP", "Opp", card_type="LEADER"))
+    EffectExecutor(me_ratchet, opp_ratchet).execute(ratchet, "on_opp_attack")
+    total_buff = me_ratchet.leader.power_buff + sum(c.power_buff for c in me_ratchet.field_chars)
+    check("Execucao real: OP06-014 trasha as 2 FILM (nao a nao-FILM) e buffa +2000 (1000 por carta)",
+          nao_film in me_ratchet.hand and len(me_ratchet.trash) == 2 and total_buff == 2000)
+
+
 def main() -> int:
     test_turn_order_imu_prefers_second()
     test_empty_throne_beats_direct_five_elders_play()
@@ -5461,6 +5556,7 @@ def main() -> int:
     test_your_turn_on_play_dispara_uma_vez_e_so_no_seu_turno()
     test_lote_8_op02_030_a_op03_012()
     test_lote_5_op03_021_a_op03_083()
+    test_lote_12_op03_096_a_op06_117()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0

@@ -1,9 +1,26 @@
 # TODO — Analisador de Decks OPTCG
 
 **Última atualização:** 19 de julho de 2026
-**Estado:** varredura contínua do parser; 196 suspeitos (severidade 1 only)
+**Estado:** varredura contínua do parser; 183 suspeitos (severidade 1 only)
 **Baseline do código:** ver `git log --oneline -1`
 **Repo:** github.com/Karlmalone13/Analizador_de_Decks
+
+> 19/07/2026: lote de 10 suspeitos severidade-1 (itens 33-53), 12 fixes/19
+> cartas reais: OP03-096 (KO com alvo alternativo Stage ausente),
+> OP04-028+034 (condição "N+ DON ativo" quebrada pelo qualificador
+> "active"), OP04-040 (escolha mutuamente exclusiva draw/gain_life nunca
+> modelada, disparavam juntos), OP04-118 (concessão de Rush em massa
+> virava self-buff sem sentido), OP05-099 (investigado, confirmado
+> falso-positivo — já segue simplificação aceita em outro lugar),
+> OP06-011+família (custo "rest N of your [Nome]" ausente), OP06-014+4
+> cartas (buff dinâmico "por carta descartada" virava fixo sem custo),
+> OP06-063 (filtro de power ausente em busca no trash), OP06-074
+> (variante por power de um mecanismo já existente), OP06-083+OP14-056
+> (negar o próprio efeito libera "cannot attack" — mecânica nova),
+> OP06-096 (imunidade de KO em massa sem filtro de custo, alcance maior
+> que o pretendido), OP06-117 (2º componente de custo composto ausente).
+> Ver HANDOFF bloco 273 e `parser_audits/2026-07-19_lote_12_op03-096_a_op06-117.json`.
+> Auditor: 196 -> 183 suspeitos.
 
 > 19/07/2026: lote de 10 suspeitos severidade-1 (itens 21-32). 5 fixes/12
 > cartas reais: OP03-021+família (custo "rest N de tipo X" ausente),

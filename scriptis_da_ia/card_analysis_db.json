@@ -21358,9 +21358,9 @@
   "attribute": "Special",
   "effects": [
    {
-    "action": "buff_power",
+    "action": "buff_power_per_count",
     "trigger": "passive",
-    "target": "self"
+    "target": "leader"
    }
   ],
   "synergy_states": {},
@@ -21375,7 +21375,7 @@
   "rests_opponent": false,
   "bounces": false,
   "gives_don": false,
-  "power_buff": true,
+  "power_buff": false,
   "heals": false,
   "gains_life": false,
   "attacks_life": false,
@@ -32074,7 +32074,7 @@
   "attribute": "Wisdom",
   "effects": [
    {
-    "action": "gain_rush",
+    "action": "grant_rush_aura",
     "trigger": "passive"
    }
   ],
@@ -32095,7 +32095,7 @@
   "gains_life": false,
   "attacks_life": false,
   "trashes_own_life": false,
-  "has_rush": true,
+  "has_rush": false,
   "has_double_attack": false,
   "has_unblockable": false,
   "has_banish": false,
@@ -37937,7 +37937,7 @@
   "attribute": "Wisdom",
   "effects": [
    {
-    "action": "buff_power",
+    "action": "buff_power_per_count",
     "trigger": "on_opp_attack",
     "target": "leader_or_character"
    }
@@ -37954,7 +37954,7 @@
   "rests_opponent": false,
   "bounces": false,
   "gives_don": false,
-  "power_buff": true,
+  "power_buff": false,
   "heals": false,
   "gains_life": false,
   "attacks_life": false,
@@ -40173,7 +40173,8 @@
   "effects": [
    {
     "action": "add_from_trash",
-    "trigger": "on_play"
+    "trigger": "on_play",
+    "power_lte": 4000
    }
   ],
   "synergy_states": {},
@@ -40617,6 +40618,11 @@
     "action": "negate_effect",
     "trigger": "on_play",
     "target": "opp_character"
+   },
+   {
+    "action": "ko_selected",
+    "trigger": "on_play",
+    "power_lte": 5000
    }
   ],
   "synergy_states": {},
@@ -41020,6 +41026,10 @@
   "sub_types": "Giant Thriller Bark Pirates",
   "attribute": "Strike",
   "effects": [
+   {
+    "action": "negate_own_effect",
+    "trigger": "activate_main"
+   },
    {
     "action": "cannot_attack_self",
     "trigger": "passive"
@@ -41577,12 +41587,13 @@
     "trigger": "trigger"
    },
    {
-    "action": "immunity",
+    "action": "life_to_hand",
     "trigger": "counter"
    },
    {
-    "action": "life_to_hand",
-    "trigger": "counter"
+    "action": "grant_ko_immunity_type",
+    "trigger": "counter",
+    "cost_lte": 7
    }
   ],
   "synergy_states": {
@@ -81672,6 +81683,10 @@
    {
     "action": "cannot_attack_self",
     "trigger": "passive"
+   },
+   {
+    "action": "negate_own_effect",
+    "trigger": "passive"
    }
   ],
   "synergy_states": {},
@@ -84720,14 +84735,14 @@
     "trigger": "activate_main"
    },
    {
-    "action": "buff_power",
+    "action": "buff_power_per_count",
     "trigger": "when_attacking",
-    "target": "self"
+    "target": "leader"
    },
    {
-    "action": "buff_power",
+    "action": "buff_power_per_count",
     "trigger": "on_opp_attack",
-    "target": "self"
+    "target": "leader"
    }
   ],
   "synergy_states": {},
@@ -84742,7 +84757,7 @@
   "rests_opponent": false,
   "bounces": false,
   "gives_don": false,
-  "power_buff": true,
+  "power_buff": false,
   "heals": false,
   "gains_life": false,
   "attacks_life": false,
@@ -97213,7 +97228,7 @@
   "attribute": "Slash",
   "effects": [
    {
-    "action": "buff_power",
+    "action": "buff_power_per_count",
     "trigger": "when_attacking",
     "target": "self"
    }
@@ -97230,7 +97245,7 @@
   "rests_opponent": false,
   "bounces": false,
   "gives_don": false,
-  "power_buff": true,
+  "power_buff": false,
   "heals": false,
   "gains_life": false,
   "attacks_life": false,
@@ -109392,7 +109407,7 @@
   "attribute": "Wisdom",
   "effects": [
    {
-    "action": "buff_power",
+    "action": "buff_power_per_count",
     "trigger": "on_opp_attack",
     "target": "leader_or_character"
    },
@@ -109413,7 +109428,7 @@
   "rests_opponent": false,
   "bounces": false,
   "gives_don": false,
-  "power_buff": true,
+  "power_buff": false,
   "heals": false,
   "gains_life": false,
   "attacks_life": false,

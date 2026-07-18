@@ -1,5 +1,62 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-19 (273) - Claude - lote de 12 bugs reais (OP03-096 a OP06-117)
+
+Continuacao da varredura (itens 33-53, apos o lote do bloco 272). Usuario
+aprovou implementar os 12 de uma vez. Registro completo em
+`parser_audits/2026-07-19_lote_12_op03-096_a_op06-117.json`.
+
+1. **OP03-096**: K.O. com alvo ALTERNATIVO (Stage) ausente -- novo campo
+   `alt_target`/`alt_cost_lte` no step `ko`.
+2. **OP04-028 + OP04-034**: condicao "N or more ACTIVE DON!! cards" nunca
+   batia (qualificador "active" quebrava o regex de `don_gte`).
+3. **OP04-040 Queen**: condicao "total <=4 vida+mao" ausente + "instead of
+   drawing" (escolha mutuamente exclusiva) nunca modelada -- as duas
+   acoes disparavam JUNTAS. Nova condicao `life_and_hand_total_lte` +
+   nova checagem de condicoes POR-OPCAO em `choice_step_viable` (antes so
+   checava material disponivel, nunca `conditions`).
+4. **OP04-118 Nefeltari Vivi**: "All of your red Characters cost>=3,
+   other than this Character, gain [Rush]" -- concessao em MASSA
+   (cor+custo, exclui a propria carta) virava um self-buff sem sentido
+   via o fallback generico. Nova acao `grant_rush_aura`.
+5. **OP05-099 Amazon**: investigado, **NAO e bug** -- "your opponent may
+   X. If they do not, Y" ja segue a MESMA simplificacao ja aceita
+   (OP05-038: aplica Y incondicional, ignora a escolha do oponente).
+   Falso-positivo confirmado, nenhuma mudanca.
+6. **OP06-011 + P-060/ST27-001**: custo "rest N of your [Nome] cards:"
+   (nome proprio, sem "rest this") inteiro ausente.
+7. **OP06-014 + OP03-001/OP15-002/P-051/ST16-002**: "trash any number of
+   [filtro]? cards... +N power for every card trashed" -- buff DINAMICO
+   virava +1000 fixo SEM NENHUM custo. Novo cost `trash_any_from_hand`
+   (quantidade variavel) + novo source `trashed_hand_this_effect` em
+   `buff_power_per_count`. **Armadilha real:** `self._last_moved_count`
+   (onde eu tentei gravar a contagem primeiro) e resetado pra 0 logo
+   apos `_pay_costs()`, ANTES do loop de steps rodar -- corrigido com
+   atributo proprio (`_last_cost_trash_any_count`) imune a esse reset.
+8. **OP06-063**: filtro de power (<=4000) ausente em `add_from_trash`.
+9. **OP06-074**: variante por POWER (nao so custo) do `ko_selected` ja
+   existente -- "if that Character has N power or less, K.O. it".
+10. **OP06-083 + irma OP14-056**: "This Character's effect is negated
+    during this turn" -- a UNICA passiva propria dessas 2 cartas e
+    `cannot_attack_self`, entao negar "o efeito desta carta" libera o
+    ataque por 1 turno. Novo campo `Card.own_effect_negated_this_turn` +
+    nova acao `negate_own_effect`, checado em `is_attack_locked_self`.
+    OP14-056 tem gatilho reativo em prosa sem tag formal -- fora de
+    escopo (so o step de beneficio foi coberto, fica inerte pra essa
+    carta especifica).
+11. **OP06-096**: filtro de custo (<=7) ausente numa imunidade de KO em
+    massa temporaria -- protegeria QUALQUER character, nao so os
+    baratos. `cost_lte` adicionado a `grant_ko_immunity_type` (mesma
+    acao do Nico Robin, generalizada).
+12. **OP06-117**: 2o componente de um custo composto ("rest this card
+    AND 1 of your [Enel] cards") ausente -- so `rest_self` era cobrado.
+
+Validado: `diff_parser.py` GANHOU=0/PERDEU=0/MUDOU=19 (12 alvo + 7
+capturas corretas adicionais). `smoke_fast.py` com teste novo
+(`test_lote_12_op03_096_a_op06_117`) cobrindo execucao real dos 11
+mecanismos implementados. `smoke_test.py` TODOS OS TESTES PASSARAM.
+`smoke_test_broad.py` 7/7 sem excecao. **Auditor: 196 -> 183 suspeitos.**
+
 ## 2026-07-19 (272) - Claude - lote de 5 bugs reais (OP03-021 a OP03-083)
 
 Continuacao da varredura (itens 21-32, apos o lote do bloco 271). Registro

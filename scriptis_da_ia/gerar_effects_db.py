@@ -169,6 +169,15 @@ def parse_conditions(text):
     m = re.search(r'if you have (\d+) or more don!!', t)
     if m: conds['don_gte'] = int(m.group(1))
 
+    # "if you have N or more ACTIVE DON!! cards" -- mesmo significado de
+    # don_gte (DON ativo/disponivel = me.don_available), so com o
+    # qualificador "active" explicito entre "or more" e "don!!" quebrando
+    # o regex acima (achado 19/07, OP04-028/OP04-034: condicao inteira
+    # ausente).
+    if 'don_gte' not in conds:
+        m = re.search(r'if you have (\d+) or more active don!! cards?', t)
+        if m: conds['don_gte'] = int(m.group(1))
+
     # "if you have activated/played an Event with a base cost of N or
     # more during this turn" -- rastreamento de EVENTO ativado NESTE
     # turno especifico (distinto de events_in_trash_gte, que so conta
@@ -403,6 +412,14 @@ def parse_conditions(text):
         m = re.search(r'(?:if|and) you have (\d+) cards? in your hand(?!\s*,?\s*or)', t)
         if m: conds['hand_eq'] = int(m.group(1))
 
+    # "if you have a total of N or less cards in your Life area and hand"
+    # -- soma vida+mao do PROPRIO jogador, distinta de total_life_lte
+    # (soma vida dos 2 lados). Achado 19/07, OP04-040 Queen: condicao
+    # inteira ausente, unica carta no banco com essa forma.
+    m = re.search(
+        r'if you have a total of (\d+) or less cards in your life area and hand', t)
+    if m: conds['life_and_hand_total_lte'] = int(m.group(1))
+
     # "if you have N or less cards in your DECK" -- tamanho do proprio
     # deck, distinto de hand_lte (mao) e trash_gte (trash). Achado 19/07,
     # familia OP03-045/OP03-049/OP03-053: condicao inteira ausente, o
@@ -480,8 +497,15 @@ def parse_conditions(text):
         conds['other_char_power_uses_base'] = True
 
     # "if you have a Character with a cost of N or more" -- idem, por custo.
-    m = re.search(r'if you have a character with a cost of (\d+) or more', t)
-    if m: conds['other_char_cost_gte'] = int(m.group(1))
+    # Guard "instead of drawing": esse fraseado e o gate de uma OPCAO
+    # dentro de uma escolha mutuamente exclusiva (achado 19/07, OP04-040
+    # Queen), nao uma condicao do bloco INTEIRO -- parse_block ja injeta
+    # essa condicao dentro do proprio step da opcao (_choice); duplicar
+    # aqui no nivel do entry bloquearia TAMBEM a opcao de draw, que nao
+    # deveria exigir o Character caro.
+    if 'instead of drawing' not in t:
+        m = re.search(r'if you have a character with a cost of (\d+) or more', t)
+        if m: conds['other_char_cost_gte'] = int(m.group(1))
 
     # Variante com FILTRO DE TIPO: "if you have a [Tipo] type Character
     # with a cost of N or more" -- mesma FORMA ja coberta pra power (ver
@@ -676,6 +700,26 @@ def parse_costs(text):
     costs = []
     t = text.lower()
 
+    # "you may trash any number of [filtro]? cards from your hand" --
+    # custo de contagem VARIAVEL (0..N elegiveis), companheiro do step
+    # buff_power_per_count/source=trashed_hand_this_effect (achado 19/07,
+    # ver comentario em parse_block). 3 formas de filtro + variante sem
+    # filtro (P-051, "any number of cards" puro):
+    #   (a) "[Tipo] type cards" -- ex: OP06-014 [FILM]
+    #   (b) '"Tipo" type cards' -- ex: ST16-002 "Music"
+    #   (c) "Event or Stage cards" -- filtro de CARD_TYPE, nao sub_type
+    m_any_trash = re.search(r'you may trash any number of (?:(.*?) )?cards? from your hand', t)
+    if m_any_trash:
+        desc = (m_any_trash.group(1) or '').strip()
+        cost_any = {'type': 'trash_any_from_hand'}
+        type_m = (re.search(r'\[([^\]]+)\]\s*type$', desc)
+                  or re.search(r'"([^"]+)"\s*type$', desc))
+        if type_m:
+            cost_any['filter_type'] = type_m.group(1).strip()
+        elif desc == 'event or stage':
+            cost_any['card_types'] = ['EVENT', 'STAGE']
+        costs.append(cost_any)
+
     # Custo composto: "rest this Character and 1 of your [TIPO] type Leader
     # or Stage cards" -- DOIS recursos pagos juntos (a propria carta + um
     # Leader/Stage com filtro de tipo). Distinto de rest_self puro: aqui o
@@ -687,10 +731,24 @@ def parse_costs(text):
         r'rest this character and \d+ of your ["\[{]([a-z][a-z0-9 .\'-]+)["\]}]\s+type leader or stage',
         t
     )
+    # Custo composto por NOME: "rest this card and N of your [Nome]
+    # cards:" -- mesma ideia do composto de tipo acima, mas o 2o recurso
+    # e uma carta com NOME proprio (nao um filtro de tipo Leader/Stage).
+    # Achado 19/07, OP06-117, unica carta no banco com essa forma.
+    m_composto_named = re.search(
+        r'rest this (?:card|character|stage) and (\d+) of your \[([^\]]+)\] cards?\s*:', t)
     if m_composto:
         costs.append({
             'type': 'rest_self_and_leader_or_stage',
             'filter_type': m_composto.group(1).strip(),
+        })
+    elif m_composto_named:
+        costs.append({'type': 'rest_self'})
+        costs.append({
+            'type': 'rest_own_character',
+            'count': int(m_composto_named.group(1)),
+            'filter_name': m_composto_named.group(2).strip(),
+            'exclude_self': True,
         })
     elif re.search(r'rest this (card|character|stage)', t):
         costs.append({'type': 'rest_self'})
@@ -716,6 +774,19 @@ def parse_costs(text):
         costs.append({'type': 'rest_own_character',
                       'count': int(m_rest_char_type.group(1)),
                       'filter_type': m_rest_char_type.group(2).strip()})
+
+    # Variante com filtro de NOME PROPRIO em vez de tipo/custo -- "you may
+    # rest N of your [Nome] cards:" (achado 19/07, OP06-011/P-060/
+    # ST27-001: custo inteiro ausente). Distinta da variante composta
+    # "rest this card AND N of your [Nome] cards" acima (m_composto_named)
+    # -- aqui NAO ha "rest this card" antes, e um custo unico.
+    if 'rest this' not in t:
+        m_rest_char_name = re.search(
+            r'you may rest (\d+) of your \[([^\]]+)\] cards?\s*:', t)
+        if m_rest_char_name:
+            costs.append({'type': 'rest_own_character',
+                          'count': int(m_rest_char_name.group(1)),
+                          'filter_name': m_rest_char_name.group(2).strip()})
 
     m_return_trash = re.search(
         r'you may return (\d+) cards? from your trash to your deck and shuffle', t)
@@ -1420,6 +1491,20 @@ def parse_grant_ko_immunity(text):
                 steps.append({'action': 'grant_ko_immunity_type',
                               'filter_type': tipo.strip(),
                               'duration': dur})
+
+    # "Your Characters with a cost of N or less cannot be K.O.'d in
+    # battle during this turn" -- mesma concessao temporaria, mas com
+    # filtro de CUSTO em vez de tipo, escopo "in battle" (nao "by
+    # effects") e duracao "this turn" (nao ate o fim do proximo turno do
+    # oponente). Achado 19/07, OP06-096, unica carta no banco com essa
+    # forma exata.
+    m_cost = re.search(
+        r"your characters with a cost of (\d+) or less "
+        r"cannot be k\.?o\.?'?d in battle during this turn", t)
+    if m_cost:
+        steps.append({'action': 'grant_ko_immunity_type',
+                      'cost_lte': int(m_cost.group(1)),
+                      'duration': 'this_turn'})
     return steps
 
 
@@ -1602,6 +1687,18 @@ def parse_ko(text):
             if cont_m.group(5):
                 step2['power_lte'] = int(cont_m.group(5))
             steps.append(step2)
+
+        # "... or your opponent's Stages with a cost of N or less" --
+        # alvo ALTERNATIVO (Character OU Stage, escolha unica), distinto
+        # do "and up to M ... Characters" acima (2 alvos ADICIONAIS).
+        # Achado 19/07, OP03-096, unica carta no banco com essa forma.
+        alt_stage_m = re.match(
+            r"\s*or your opponent.?s stages?(?: with a cost of (\d+) or less)?",
+            t[m.end():])
+        if alt_stage_m:
+            steps[-1]['alt_target'] = 'opp_stage'
+            if alt_stage_m.group(1):
+                steps[-1]['alt_cost_lte'] = int(alt_stage_m.group(1))
 
     if steps:
         return steps
@@ -5214,6 +5311,13 @@ def parse_negate_effect(text):
         if ko_m:
             steps.append({'action': 'ko_selected', 'cost_lte': int(ko_m.group(1))})
 
+        # Mesma clausula encadeada, com limiar de POWER em vez de custo
+        # (achado 19/07, OP06-074 Zephyr: "if that Character has 5000
+        # power or less, K.O. it").
+        ko_power_m = re.search(r'then, if that character has (\d+) power or less, k\.?o\.? it', t)
+        if ko_power_m:
+            steps.append({'action': 'ko_selected', 'power_lte': int(ko_power_m.group(1))})
+
     return steps
 
 
@@ -5310,6 +5414,13 @@ def parse_add_from_trash(text):
     color_m = re.match(r'(black|red|green|blue|yellow|purple)\b', desc.strip())
     if color_m:
         step['color'] = color_m.group(1)
+
+    # filtro de power ("with N power or less", achado 19/07, OP06-063
+    # Vinsmoke Sora: filtro inteiro ausente -- engine ja suportava
+    # power_lte em eligible_cards, so faltava o parser extrair.
+    power_m = re.search(r'with (\d+) power or less', desc)
+    if power_m:
+        step['power_lte'] = int(power_m.group(1))
 
     steps.append(step)
     return steps
@@ -5457,7 +5568,16 @@ def parse_immunity(text):
     t = text.lower()
     steps = []
     src = 'opp' if "opponent's effect" in t or "opponents effect" in t else 'any'
-    if re.search(r"cannot be k\.?o\.?'?d|can'?t be k\.?o", t):
+    # "Your Characters with a cost of N or less cannot be K.O.'d in
+    # battle during this turn" e uma CONCESSAO temporaria (via
+    # grant_ko_immunity_type, filtro de custo) pra OUTROS characters do
+    # campo, nao uma auto-imunidade permanente desta carta -- tratada
+    # separadamente por parse_grant_ko_immunity; sem este guard, o regex
+    # generico abaixo TAMBEM casava e duplicava um step 'immunity'
+    # incondicional e sem filtro nenhum (achado 19/07, OP06-096).
+    is_grant_cost_ko = bool(re.search(
+        r"your characters with a cost of \d+ or less cannot be k\.?o\.?'?d in battle", t))
+    if not is_grant_cost_ko and re.search(r"cannot be k\.?o\.?'?d|can'?t be k\.?o", t):
         steps.append({'action': 'immunity', 'imm_type': 'ko', 'source': src})
     if re.search(r'cannot be removed from the field|can'+chr(39)+r't be removed from the field', t):
         steps.append({'action': 'immunity', 'imm_type': 'removal', 'source': src})
@@ -5484,11 +5604,58 @@ def parse_block(block_text, trigger_name):
     lugar de entry['steps'], preservando o contrato de 'steps' para todo
     o resto do parser (cada item de 'steps' sempre tem 'action').
     """
+    # "you may trash any number of [filtro]? cards from your hand. Your
+    # Leader (or 1 of your Characters)?/This Leader/This Character gains
+    # +N power during this battle for every card trashed" -- buff
+    # DINAMICO por CONTAGEM VARIAVEL (achado 19/07: OP03-001, OP06-014,
+    # OP15-002, P-051, ST16-002 -- o buff virava fixo/+1000 sem NENHUM
+    # custo, o generico de power buff nao reconhece "for every card
+    # trashed" como escala dinamica). O CUSTO (trash_any_from_hand,
+    # quantidade variavel 0..N) e extraido separadamente em parse_costs;
+    # aqui so o STEP do buff, lido do resultado real via self._last_
+    # moved_count (mesmo padrao ja usado por placed_bottom_deck_this_
+    # effect/OP09-059).
+    any_trash_buff_m = re.search(
+        r'you may trash any number of.*?cards? from your hand\.\s*'
+        r'(your leader or (?:up to )?1 of your characters|this leader|this character) '
+        r'gains \+(\d+) power during this battle for every card trashed',
+        block_text.lower())
+    if any_trash_buff_m:
+        alvo_txt = any_trash_buff_m.group(1)
+        target = ('leader_or_character' if 'your leader or' in alvo_txt
+                  else 'leader' if alvo_txt == 'this leader' else 'self')
+        return [{'action': 'buff_power_per_count',
+                'amount_per': int(any_trash_buff_m.group(2)), 'count_per': 1,
+                'source': 'trashed_hand_this_effect', 'target': target,
+                'duration': 'battle_only'}]
+
     # "Choose a cost and reveal" e uma aposta: o efeito depois de "If the
     # revealed card has the chosen cost" so resolve quando a aposta acerta.
     # Mantemos a revelacao e seus efeitos condicionais em um unico step para
     # o engine nunca executar K.O./rest/buff incondicionalmente. O "Then"
     # posterior (OP11-066: adicionar DON) fica fora da condicao.
+    # "draw N cards. If you have a Character with a cost of M or more, you
+    # may add up to K cards from the top of your deck to the top of your
+    # Life cards INSTEAD OF drawing N cards" -- escolha mutuamente
+    # exclusiva (achado 19/07, OP04-040 Queen, unica carta no banco com
+    # essa forma): a 2a opcao so fica disponivel com o char de custo alto
+    # em campo (condicao POR OPCAO, checada em EffectExecutor._resolve_
+    # choice via choice_step_viable). A condicao "total <=N vida+mao" do
+    # texto (fora deste trecho) vira entry['conditions'] normalmente via
+    # parse_conditions, gate da escolha inteira.
+    queen_m = re.search(
+        r'draw (\d+) cards?\.\s*if you have a character with a cost of (\d+) or more,\s*'
+        r'you may add up to (\d+) cards? from the top of your deck to the top of your '
+        r'life cards instead of drawing \d+ cards?',
+        block_text.lower())
+    if queen_m:
+        return [{'_choice': [
+            [{'action': 'draw', 'count': int(queen_m.group(1))}],
+            [{'action': 'gain_life', 'source': 'deck_top', 'dest': 'life_top',
+              'count': int(queen_m.group(3)), 'up_to': True,
+              'conditions': {'other_char_cost_gte': int(queen_m.group(2))}}],
+        ]}]
+
     reveal_cost_m = re.search(
         r'choose a cost and reveal 1 card from the top of your opponent.?s deck\.\s*'
         r'if the revealed card has the chosen cost,\s*(.*?)'
@@ -6288,8 +6455,25 @@ def parse_block(block_text, trigger_name):
                 step['duration'] = 'this_turn'
             steps.append(step)
 
+    # "All of your [Cor] Characters with a cost of N or more, other than
+    # this Character, gain [Rush]" -- CONCESSAO EM MASSA passiva/continua
+    # (filtro cor+custo+exclui a propria carta), distinta do fallback
+    # generico logo abaixo (que assume auto-concessao, target=self).
+    # Achado 19/07, OP04-118 Nefeltari Vivi, unica carta no banco com essa
+    # forma exata -- sem este check, o [Rush] caia no fallback e virava
+    # (na melhor hipotese) um self-buff sem sentido, ja que o texto
+    # explicitamente EXCLUI "this Character".
+    m_mass_grant_rush = re.search(
+        r'all of your (black|red|blue|green|yellow|purple) characters? '
+        r'with a cost of (\d+) or more(?:,)? other than this character,? gains? \[rush\]', t)
+    if m_mass_grant_rush:
+        steps.append({'action': 'grant_rush_aura',
+                      'color': m_mass_grant_rush.group(1),
+                      'cost_gte': int(m_mass_grant_rush.group(2)),
+                      'exclude_self': True})
+
     m_rc = re.search(r'gains?\s+\[rush: character\]', t)
-    if (not m_select_rush_or and not m_select_rush_generic
+    if (not m_select_rush_or and not m_select_rush_generic and not m_mass_grant_rush
             and 'gain_rush_character' not in _lista_choice_keywords
             and (m_rc or '[rush: character]' in _lista_txt)):
         step = {'action': 'gain_rush_character'}
@@ -6297,7 +6481,7 @@ def parse_block(block_text, trigger_name):
         if dur:
             step['duration'] = dur
         steps.append(step)
-    elif (not m_select_rush_or and not m_select_rush_generic
+    elif (not m_select_rush_or and not m_select_rush_generic and not m_mass_grant_rush
             and 'gain_rush_character' not in _lista_choice_keywords):
         m_r = re.search(r'gains?\s+\[rush\]', t)
         if 'gain_rush' not in _lista_choice_keywords and (m_r or '[rush]' in _lista_txt):
@@ -6489,6 +6673,19 @@ def parse_block(block_text, trigger_name):
             r'as you did from your hand', t):
         steps.append({'action': 'trash_from_deck_top', 'count_from_last_hand_trash': True})
 
+    # "This Character's effect is negated during this turn" -- achado
+    # 19/07, OP06-083 Oars (custo K.O. proprio tipado). A UNICA passiva
+    # propria dessas cartas e cannot_attack_self, entao negar "o efeito
+    # desta carta" na pratica libera o ataque por 1 turno (checado em
+    # is_attack_locked_self via Card.own_effect_negated_this_turn).
+    # OP14-056 tem a MESMA frase de beneficio mas um gatilho reativo em
+    # prosa ("when a card is trashed from your hand by an effect") sem
+    # tag formal -- fora de escopo aqui (precisaria de um trigger_pattern
+    # novo pra reconhecer esse gatilho; so o STEP de beneficio, ja
+    # generico, esta coberto).
+    if re.search(r"this character.?s effect is negated during this turn", t):
+        steps.append({'action': 'negate_own_effect', 'duration': 'this_turn'})
+
     # Disrupcao de mao FORCADA no oponente -- "your opponent trashes N cards
     # from their hand". Alvo oposto de trash_from_hand (sempre 'their hand',
     # nunca 'your hand'), por isso guard textual distinto e nao precisa de
@@ -6511,7 +6708,8 @@ def parse_block(block_text, trigger_name):
     # Imunidade a KO temporária para tipo próprio (OP09-033 Nico Robin).
     # Texto usa "none of your X type Characters CAN BE k.o.'d by effects"
     # (negacao via "none of", nao via "cannot") -- tambem aceita "cannot".
-    if "can be k.o.'d by" in t or "cannot be k.o.'d by" in t:
+    if ("can be k.o.'d by" in t or "cannot be k.o.'d by" in t
+            or "cannot be k.o.'d in battle" in t):
         steps.extend(parse_grant_ko_immunity(t))
 
     # Adicionar Character do oponente à vida DELE face-up (OP04-097/OP05-111/

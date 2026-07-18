@@ -549,6 +549,13 @@ class Card:
     # during this turn" (OP12-020) -- auto-restricao de ALVO, DISTINTA de
     # cannot_attack_until (bloqueio TOTAL de ataque). -1 = sem restricao.
     cannot_attack_opp_chars_cost_lte: int = -1
+    # "This Character's effect is negated during this turn" (OP06-083,
+    # OP14-056 -- ambas so tem 'cannot_attack_self' como passivo proprio,
+    # entao negar "o efeito desta carta" na pratica libera o ataque por 1
+    # turno). Checado em is_attack_locked_self() ANTES de cannot_attack_self.
+    # Resetado no refresh_phase do dono, mesma convencao de duration
+    # "this_turn" ja usada por rush_this_turn/unblockable_this_turn.
+    own_effect_negated_this_turn: bool = False
 
     def __deepcopy__(self, memo):
         """
@@ -573,7 +580,8 @@ class Card:
                       'power_buff', 'base_power_override',
                       'cost_buff', 'cost_buff_permanent', 'frozen_next_refresh',
                       'life_face_up', 'immunity_ko_until',
-                      'battled_opp_character_this_turn', 'cannot_attack_opp_chars_cost_lte'):
+                      'battled_opp_character_this_turn', 'cannot_attack_opp_chars_cost_lte',
+                      'own_effect_negated_this_turn'):
             setattr(novo, campo, getattr(self, campo))
         for campo in ('_db_base_power', '_attack_power_override'):
             if hasattr(self, campo):
@@ -1179,6 +1187,13 @@ def is_attack_locked_self(card: 'Card', owner: 'GameState', opp: 'GameState') ->
     trata como travado SEMPRE -- mais seguro assumir o lock ativo do que
     liberar o ataque sem confirmar a condicao real.
     """
+    # "This Character's effect is negated during this turn" (OP06-083,
+    # OP14-056): a UNICA passiva propria dessas cartas e cannot_attack_self,
+    # entao negar "o efeito desta carta" libera o ataque ate o fim do
+    # turno. Checado ANTES do loop de passive abaixo.
+    if getattr(card, 'own_effect_negated_this_turn', False):
+        return False
+
     effects = get_card_effects(card.code)
     passive = effects.get('passive', {})
     for step in passive.get('steps', []):
@@ -1804,6 +1819,12 @@ class EffectExecutor:
         }
 
         def choice_step_viable(step: dict) -> bool:
+            # Condicao por-OPCAO (ex: OP04-040 Queen -- so pode escolher
+            # "add do deck pra Life" SE tambem tiver um Character de custo
+            # 8+; sem essa condicao, a opcao nao e nem elegivel). Achado
+            # 19/07: nunca checado aqui antes, so viabilidade de material.
+            if step.get('conditions') and not self._check_conditions(step['conditions'], card):
+                return False
             action = step.get('action', '')
             if action == 'draw':
                 return True
@@ -1941,6 +1962,13 @@ class EffectExecutor:
         # steps rodarem logo abaixo -- ver "same_name_as_trashed" em
         # play_from_trash (achado 16/07, EB02-039).
         self._last_trashed_names = []
+        # Contagem do custo trash_any_from_hand (achado 19/07, OP06-014 e
+        # familia): usa atributo PROPRIO (nao self._last_moved_count),
+        # porque este e resetado logo abaixo ANTES do loop de steps (linha
+        # seguinte a _pay_costs) -- um valor setado DENTRO de _pay_costs
+        # nunca sobreviveria ate o step buff_power_per_count/source=
+        # trashed_hand_this_effect ler.
+        self._last_cost_trash_any_count = 0
         if not self._pay_costs(ef_data.get('costs', []), card):
             return []
 
@@ -3018,6 +3046,9 @@ class EffectExecutor:
             return False
         if 'hand_eq' in conds and len(me.hand) != conds['hand_eq']:
             return False
+        if 'life_and_hand_total_lte' in conds and \
+                (me.life_count() + len(me.hand)) > conds['life_and_hand_total_lte']:
+            return False
         if 'deck_lte' in conds and len(me.deck) > conds['deck_lte']:
             return False
         if conds.get('just_played') and not getattr(card, 'just_played', False):
@@ -3329,6 +3360,33 @@ class EffectExecutor:
                 # nao colidir com o mecanismo de selecao entre steps ja
                 # existente (negate_effect/play_from_deck/buff_power).
                 self._last_trashed_names = trashed_names_actual
+            elif ctype == 'trash_any_from_hand':
+                # "you may trash ANY NUMBER of [filtro] cards from your
+                # hand" -- quantidade VARIAVEL (0 ate o total elegivel),
+                # distinto de trash_from_hand (contagem fixa). Sempre
+                # pagavel (0 e uma escolha valida). Achado 19/07, OP03-001/
+                # OP06-014/OP15-002/P-051/ST16-002: custo inteiro ausente
+                # (o buff associado, buff_power_per_count/source=
+                # trashed_hand_this_effect, virava um +1000 fixo sem
+                # nenhum custo). Greedy: trasha TODAS as elegiveis --
+                # efeito reativo imediato (defesa em combate), sem valor
+                # de manter essas cartas na mao supera o buff de power.
+                from optcg_engine.rules_facade import card_matches_filter
+                pool = list(self.me.hand)
+                filter_type = cost.get('filter_type', '')
+                if filter_type:
+                    pool = [c for c in pool if card_matches_filter(c, filter_type)]
+                card_types = cost.get('card_types')
+                if card_types:
+                    pool = [c for c in pool if c.card_type in card_types]
+                trashed = []
+                for c in pool:
+                    remove_by_identity(self.me.hand, c)
+                    self.me.trash.append(c)
+                    trashed.append(c.name[:15])
+                self._last_cost_trash_any_count = len(trashed)
+                if trashed:
+                    self._cost_logs.append(f'custo: trashou da mão: {", ".join(trashed)}')
             elif ctype == 'trash_typed_hand_or_named_hand_field':
                 from optcg_engine.rules_facade import eligible_cards
 
@@ -3518,6 +3576,7 @@ class EffectExecutor:
                     cost_gte=cost.get('cost_gte'),
                     cost_lte=cost.get('cost_lte'),
                     filter_text=cost.get('filter_type', ''),
+                    name_or_code=cost.get('filter_name', ''),
                     active_only=True,
                     exclude_card=card if cost.get('exclude_self') else None,
                 )
@@ -4458,6 +4517,19 @@ class EffectExecutor:
             if immune_skipped:
                 partes.append(f'imune: {", ".join(immune_skipped)}')
             partes.extend(sub_logs)
+
+            # Alvo ALTERNATIVO ("... or your opponent's Stages with a cost
+            # of N or less", achado 19/07, OP03-096): so tenta o Stage se
+            # nao havia Character elegivel pro alvo principal (escolha
+            # unica entre os dois, nao os dois juntos).
+            if not koed and step.get('alt_target') == 'opp_stage' and opp.field_stage:
+                alt_cost_lte = step.get('alt_cost_lte')
+                if alt_cost_lte is None or opp.field_stage.cost <= alt_cost_lte:
+                    stage_name = opp.field_stage.name[:20]
+                    opp.trash.append(opp.field_stage)
+                    opp.field_stage = None
+                    partes.append(f'KO stage: {stage_name}')
+
             return ' | '.join(partes)
 
         # ── KO condicional sobre a carta selecionada anteriormente no bloco ──
@@ -4469,9 +4541,12 @@ class EffectExecutor:
             # campo do OPONENTE (e o unico caso ate agora).
             alvo = self._last_selected
             cost_lte = step.get('cost_lte')
+            power_lte = step.get('power_lte')
             if alvo is None or alvo not in opp.field_chars:
                 return ''
             if cost_lte is not None and alvo.cost > cost_lte:
+                return ''
+            if power_lte is not None and alvo.effective_power() > power_lte:
                 return ''
             if is_immune(alvo, 'ko', opp, me, source_is_opp=True, ko_context='effect'):
                 return f'imune: {alvo.name[:15]}'
@@ -4713,12 +4788,21 @@ class EffectExecutor:
         if action == 'grant_ko_immunity_type':
             from optcg_engine.rules_facade import card_matches_filter
             filter_type = step.get('filter_type', '')
+            cost_lte = step.get('cost_lte')
             dur = step.get('duration', 'opp_turn_end')
+            # cost_lte ("Your Characters with a cost of N or less"): so
+            # Characters de campo, o Leader nao entra (texto nunca diz
+            # "Leader or Characters" nesta forma, e Leader nao tem custo
+            # de deck comparavel).
+            pool = me.field_chars if cost_lte is not None else me.field_chars + [me.leader]
             granted = []
-            for c in me.field_chars + [me.leader]:
-                if card_matches_filter(c, filter_type):
-                    c.immunity_ko_until = dur
-                    granted.append(c.name[:12])
+            for c in pool:
+                if cost_lte is not None and c.cost > cost_lte:
+                    continue
+                if filter_type and not card_matches_filter(c, filter_type):
+                    continue
+                c.immunity_ko_until = dur
+                granted.append(c.name[:12])
             return f'imunidade a KO concedida: {", ".join(granted)}' if granted else ''
 
         # ── Coloca Character do oponente na VIDA DELE face-up ──────────────────
@@ -5324,6 +5408,8 @@ class EffectExecutor:
                 n = len(me.field_chars)
             elif source == 'placed_bottom_deck_this_effect':
                 n = getattr(self, '_last_moved_count', 0)
+            elif source == 'trashed_hand_this_effect':
+                n = getattr(self, '_last_cost_trash_any_count', 0)
             else:
                 n = 0
 
@@ -6814,6 +6900,13 @@ class EffectExecutor:
             card.can_attack_active = True
             return f'{card.name[:18]} pode atacar characters ativos (permanente)'
 
+        # "This Character's effect is negated during this turn" (OP06-083,
+        # OP14-056): libera o ataque nas cartas cuja UNICA passiva propria
+        # e cannot_attack_self (ver is_attack_locked_self).
+        if action == 'negate_own_effect':
+            card.own_effect_negated_this_turn = True
+            return f'{card.name[:18]}: efeito proprio negado este turno'
+
         if action == 'select_grant_can_attack_active_turn':
             from optcg_engine.rules_facade import (
                 card_matches_filter,
@@ -7745,7 +7838,12 @@ def apply_conditional_keyword_passives(gs: 'GameState', opp: 'GameState') -> Non
         steps = passive.get('steps', [])
         grants = [s for s in steps if s.get('action') in _KEYWORD_GRANTS]
         aura_grants = [s for s in steps if s.get('action') == 'grant_rush_character_type']
-        if not grants and not aura_grants:
+        # "All of your [Cor] Characters with a cost of N or more, other
+        # than this Character, gain [Rush]" (achado 19/07, OP04-118) --
+        # mesma ideia de aura_grants, mas filtro de COR+CUSTO (nao tipo) e
+        # concede [Rush] nativo (has_rush), nao "Rush: Character".
+        rush_aura_grants = [s for s in steps if s.get('action') == 'grant_rush_aura']
+        if not grants and not aura_grants and not rush_aura_grants:
             continue
         if not ee._check_conditions(passive.get('conditions', {}), c):
             continue
@@ -7760,6 +7858,17 @@ def apply_conditional_keyword_passives(gs: 'GameState', opp: 'GameState') -> Non
                     target.has_rush_character = True
                     if target.just_played:
                         target.rush_character_only_this_turn = True
+        for s in rush_aura_grants:
+            wanted_color = (s.get('color') or '').lower()
+            cost_gte = s.get('cost_gte')
+            for target in gs.field_chars:
+                if s.get('exclude_self') and target is c:
+                    continue
+                if wanted_color and target.color.lower() != wanted_color:
+                    continue
+                if cost_gte is not None and target.cost < cost_gte:
+                    continue
+                target.has_rush = True
 
 
 class DecisionEngine:
@@ -8103,6 +8212,7 @@ class DecisionEngine:
             if k == 'hand_gte'  and not (my_hand  >= v): return False
             if k == 'hand_eq'   and not (my_hand  == v): return False
             if k == 'deck_lte'  and not (len(me.deck) <= v): return False
+            if k == 'life_and_hand_total_lte' and not ((my_life + my_hand) <= v): return False
             if k == 'don_gte'   and not (my_don   >= v): return False
             if k == 'has_don_attached' and v:
                 attached = getattr(me.leader, 'don_attached', 0) + sum(
@@ -9125,6 +9235,7 @@ class OPTCGMatch:
             c.immunity_ko_until = ''  # imunidade temporaria (grant_ko_immunity_type)
             c.battled_opp_character_this_turn = False
             c.cannot_attack_opp_chars_cost_lte = -1
+            c.own_effect_negated_this_turn = False
         p.leader.don_attached = 0
         p.leader.rested = False
         p.leader.power_buff = 0
