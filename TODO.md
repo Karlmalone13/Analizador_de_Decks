@@ -5,13 +5,20 @@
 **Baseline do código:** ver `git log --oneline -1` (branch local; push pendente)
 **Repo:** github.com/Karlmalone13/Analizador_de_Decks
 
+> 19/07/2026: usuario decidiu ADIAR as 3 pendencias do proxy/telemetria abaixo
+> (state_after_coverage_pct, semantic_transition_failed, winner:null) ate
+> terminar a varredura do parser (213 suspeitos restantes nesta data). NAO
+> retomar bot/proxy antes disso sem pedido explicito -- prioridade e fechar
+> os lotes de cartas pendentes primeiro.
+
 > 18/07/2026: 2 partidas ao vivo testando o proxy. Achada e corrigida a causa
 > raiz do gap de confirmacao/outcome: DLL do plugin desatualizada (3 dias
 > atras dos commits de telemetria). Rebuild via `setup_bepinex.ps1` resolveu
 > `/outcome` (0% -> 100% coverage) e `/execution` (null -> 98.9% confirmado).
-> Pendente: `state_after_coverage_pct` ainda em 88.5% (< gate 95%, 12 decisoes
-> de `target` sem confirmar), 3 `semantic_transition_failed`, e `winner: null`
-> cosmetico em `logs/index.json`. Ver HANDOFF bloco 267.
+> Pendente (adiado, ver nota acima): `state_after_coverage_pct` ainda em
+> 88.5% (< gate 95%, 12 decisoes de `target` sem confirmar), 3
+> `semantic_transition_failed`, e `winner: null` cosmetico em
+> `logs/index.json`. Ver HANDOFF bloco 267.
 
 > 18/07/2026: proxy ganhou verificacao do nome canonico/banco, match_id estavel,
 > latencia, alertas, confirmacao semantica Main Phase e comparacao entre commits.

@@ -1,5 +1,16 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-19 (268) - Claude - decisao do usuario: adiar pendencias do proxy
+
+Usuario pediu para registrar e ADIAR as 3 pendencias do bloco 267 (proxy/
+telemetria: `state_after_coverage_pct` 88.5% < gate 95%, 3
+`semantic_transition_failed`, `winner: null` cosmetico em `logs/index.json`)
+ate terminar a varredura do parser em andamento (213 suspeitos restantes
+nesta data, `audit_parser_coverage.py --min-severity 1`). Nao retomar
+bot/proxy antes disso sem pedido explicito do usuario -- prioridade agora e
+fechar os lotes de cartas pendentes. Nenhum codigo alterado nesta sessao,
+so documentacao (TODO.md/HANDOFF.md).
+
 ## 2026-07-18 (267) - Claude - teste ao vivo do proxy: causa raiz do gap de confirmacao/outcome
 
 Usuario pediu teste ao vivo do proxy/motor apos o merge das 4 tarefas de
