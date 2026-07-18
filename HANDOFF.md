@@ -1,5 +1,82 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-19 (277) - Claude - lote de 15 bugs reais (OP15-020 a OP16-038), 2 mecanicas novas
+
+Lote grande (janela 101-150, ~10-12% de taxa de acerto — a mais
+produtiva ate agora). Registro completo em
+`parser_audits/2026-07-19_lote_9_op15-020_a_op16-038.json`.
+
+**Falso-positivo confirmado:** OP15-020 — "you may trash 2 cards. If you
+do, K.O." ja segue a mesma simplificacao aceita em OP05-038 (aplica
+incondicional).
+
+**Fixes principais:**
+1. **OP15-022**: condicao "if your deck has 0 cards" (fraseado
+   alternativo de `deck_lte`) ausente antes de um `set_active`.
+2. **OP15-064 Kotori + OP15-072 Hotori**: condicao composta "[Nome1] and
+   [Nome2]" (presenca de 2 characters nomeados) ausente. Nova condicao
+   `has_named_characters` (lista, todos exigidos). Kotori tambem ganhou
+   `power_lte=5000` (assimetria: `power_lte` ja tolerava "base power or
+   less", `power_gte`/`power_lte` de outra familia nao toleravam "power
+   or less" sem "base" — corrigido em 3 pontos: rest_opp_character,
+   grant_ko_immunity power_gte, substitute power_gte).
+3. **OP15-070 Fuza + OP15-071 Holly** (mecanica NOVA): concessao em
+   massa de keyword (Unblockable/Double Attack) a um grupo NOMEADO + a
+   propria carta (nova acao `grant_unblockable_aura_named`/
+   `grant_double_attack_aura_named`) + "[Opponent's Turn] ... base power
+   become N" (sujeito composto, verbo PLURAL quebrava o gate). Novo
+   `Card.base_power_override_opp_turn`, lido em
+   `effective_card_power(your_turn=False)` — reaproveita o parametro
+   `your_turn` que os call-sites de combate ja passam, sem precisar
+   rastrear turno do zero.
+4. **OP15-077 Lightning Dragon**: ação ERRADA (`lock_opp_don` em vez de
+   `lock_opp_character_refresh`) porque o filtro de POWER não era
+   tolerado pelo regex principal, texto sobrando quebrava o match
+   inteiro e caia no fallback generico.
+5. **OP15-078 Mamaragan**: mesma assimetria do item 2 (power_lte sem
+   "base").
+6. **OP15-093**: SELECAO por NOME pra `[Rush: Character]` (mecanismo ja
+   existia so pra filtro de TIPO) + concessao de ATRIBUTO adicional
+   temporario (novo `Card.extra_attribute_this_turn`, somado no
+   matching de `filter_attribute` de substituicao).
+7. **OP15-098**: `power_gte=6000` ausente numa substituicao (mesma
+   assimetria "base").
+8. **OP15-101 Kalgara + OP09-034**: contagem errada (regex "up to a
+   total of N" não tolerava as 2 frases juntas) + filtro OR nome/tipo
+   misto ("[Nome] or {Tipo} type cards") nunca suportado — novo OR real
+   entre `filter_type`/`filter_names` em `add_to_hand` (antes so AND).
+9. **OP16-009/014/015 + PRB02-003/ST30-006/ST30-008**: custo
+   `trash_from_hand` com filtro de power sem tipo ("with N power from
+   your hand") nunca extraido.
+10. **OP16-012**: condicao "and have N DON!! cards" (elipse de "you")
+    ausente.
+11. **OP16-017 + P-092**: ALVO ERRADO — **bug estrutural real**: o ramo
+    `is_debuff` de `parse_power_buff` nunca checava self-adjacency antes
+    de assumir "debuff = sempre oponente" (so existia pra escolher QUAL
+    alvo do oponente). Corrigido na ORIGEM — ja capturou P-092 de graca
+    via generalizacao. OP16-017 tambem ganhou condicao negada
+    `no_char_type_cost_gte` (tipo+custo, familia de `no_char_power_gte`).
+12. **OP16-020**: custo COMPOSTO so metade capturado ("and reveal..."
+    encadeado, nao "you may reveal" isolado).
+13. **OP16-033 Morley**: `substitute_ko` inteiro ausente por TYPO no
+    texto da carta ("K.O'd" faltando o 2o ponto) — tolerancia adicionada
+    em 4 pontos que exigiam os 2 pontos literalmente.
+14. **OP16-038**: condicao "N [Tipo] type Characters with different card
+    names" (NOMES UNICOS, não cartas totais) ausente.
+
+**Extras via diff_parser.py:** OP08-006 (mesma familia do item 2,
+variante "in your trash" — nova condicao `has_named_characters_in_trash`),
+ST30-016 (mesma familia, mas exige power EXATO nos nomeados — nova
+`has_named_characters_power_eq`), EB03-001/OP03-058/OP06-020 (custo
+"rest this Leader" — "leader" adicionado ao alternation card/character/
+stage).
+
+Validado: `diff_parser.py` GANHOU=0/PERDEU=0/MUDOU=26 (15 alvo + 11
+extras, cada um verificado manualmente). `smoke_fast.py` com teste novo
+(`test_lote_9_op15_020_a_op16_038`) cobrindo execucao real dos
+mecanismos mais complexos. `smoke_test.py` TODOS OS TESTES PASSARAM.
+`smoke_test_broad.py` 7/7 sem excecao. **Auditor: 161 -> 139 suspeitos.**
+
 ## 2026-07-19 (276) - Claude - lote de 8 bugs reais (OP09-051 a OP10-080)
 
 Continuacao do novo ritmo (lotes de 50 suspeitos). Registro completo em

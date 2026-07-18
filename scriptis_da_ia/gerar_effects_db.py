@@ -232,7 +232,10 @@ def parse_conditions(text):
         # cartas reais, sempre N=10). Semantica equivalente a "or more"
         # porque 10 e o teto do DON deck (nunca da pra ter mais) -- nao e
         # ambiguo na pratica, so uma variante de redacao mais curta.
-        m = re.search(r'(?:if|and) you have (\d+) don!! cards? on your field(?! or)', t)
+        # "you" opcional depois de "and" -- elipse (achado 19/07,
+        # OP16-012: "...type AND HAVE 10 DON!! cards on your field",
+        # sem repetir "you" apos "and").
+        m = re.search(r'(?:if|and)(?: you)? have (\d+) don!! cards? on your field(?! or)', t)
         if m: conds['don_on_field_gte'] = int(m.group(1))
 
     # "if you have N or less DON!! cards on your field" -- simetrico ao
@@ -377,6 +380,19 @@ def parse_conditions(text):
             if m:
                 conds['chars_gte'] = int(m.group(1))
                 conds['chars_gte_type_filter'] = m.group(2).strip()
+            else:
+                # "if you have N [Tipo] type Characters with different
+                # card names" -- SEM "or more" (a exigencia de nomes
+                # distintos ja implica um piso minimo, "or more" e
+                # redundante nesta redacao). Achado 19/07, OP16-038,
+                # unica carta no banco com essa forma exata.
+                m_dn = re.search(
+                    r'if you have (\d+) [\[{"]([^\]}"]+)[\]}"] type characters? '
+                    r'with different card names', t)
+                if m_dn:
+                    conds['chars_gte'] = int(m_dn.group(1))
+                    conds['chars_gte_type_filter'] = m_dn.group(2).strip()
+                    conds['chars_gte_distinct_names'] = True
 
     # "if you have N or more rested Characters" -- conta PROPRIOS Characters
     # que estao rested, distinto de chars_gte (que conta todos). OP09-033.
@@ -475,6 +491,13 @@ def parse_conditions(text):
     # buff/bounce disparava sempre.
     m = re.search(r'(?:if|and) you have (\d+) or less cards? in your deck', t)
     if m: conds['deck_lte'] = int(m.group(1))
+    else:
+        # "if your deck has N cards" -- fraseado alternativo (sujeito e
+        # "your deck", nao "you"), sempre N=0 no banco ate agora (achado
+        # 19/07, OP15-022, unica carta com essa forma exata). Semantica
+        # equivalente a deck_lte (deck nao pode ter cartas negativas).
+        m = re.search(r'if your deck has (\d+) cards?(?! or)', t)
+        if m: conds['deck_lte'] = int(m.group(1))
 
     m = re.search(r'if your leader is \[([^\]]+)\]', t)
     if m: conds['leader_is'] = m.group(1)
@@ -579,6 +602,19 @@ def parse_conditions(text):
         r'(?:if|and) you have no characters? with (\d+)(?: base)? power or more', t)
     if m: conds['no_char_power_gte'] = int(m.group(1))
 
+    # "if you have no Characters with a type including 'X' and a cost of
+    # N or more" -- mesma familia negada, filtro de TIPO+CUSTO em vez de
+    # power (achado 19/07, OP16-017, unica carta no banco com essa forma
+    # exata). Condicao inteira ausente antes, debuff disparava sempre.
+    m_no_char_tc = re.search(
+        r'(?:if|and) you have no characters? with a type including '
+        r'["\']([^"\']+)["\'] and a cost of (\d+) or more', t)
+    if m_no_char_tc:
+        conds['no_char_type_cost_gte'] = {
+            'type': m_no_char_tc.group(1).strip(),
+            'cost_gte': int(m_no_char_tc.group(2)),
+        }
+
     # "if/and you have a [Nome] Character" -- presenca simples por nome no
     # proprio campo (distinto de no_other_named, que EXCLUI a propria carta
     # e checa AUSENCIA; aqui e presenca comum, sem exclusao de self).
@@ -587,6 +623,33 @@ def parse_conditions(text):
     # sempre.
     m = re.search(r'(?:if|and) you have an? \[([^\]]+)\] character\b', t)
     if m: conds['has_named_character'] = m.group(1).strip()
+
+    # "if you have [Nome1] and [Nome2]" -- presenca de DOIS characters
+    # nomeados (ambos exigidos), sem "a ... Character" entre eles (achado
+    # 19/07, OP15-064 Kotori/OP15-072 Hotori, familia com nomes cruzados
+    # -- Kotori exige Satori+Hotori, Hotori exige Kotori+Satori). Condicao
+    # inteira ausente antes, efeito disparava sempre.
+    m_multi_named = re.search(r'if you have \[([^\]]+)\] and \[([^\]]+)\](?!\s+type)', t)
+    if m_multi_named:
+        nomes_mn = [m_multi_named.group(1).strip(), m_multi_named.group(2).strip()]
+        tail_mn = t[m_multi_named.end():m_multi_named.end() + 40]
+        # "...in your trash" -- presenca no TRASH, nao no campo (achado
+        # 19/07, OP08-006 Chessmarimo, unica carta no banco com essa
+        # variante -- reusar has_named_characters aqui verificaria o
+        # campo por engano, sempre falso pra cartas que so passam pelo
+        # trash).
+        if 'in your trash' in tail_mn:
+            conds['has_named_characters_in_trash'] = nomes_mn
+        else:
+            conds['has_named_characters'] = nomes_mn
+            # "[Nome1] and [Nome2] Characters with N base power" -- os
+            # 2 nomeados TAMBEM precisam ter o power exato (achado
+            # 19/07, ST30-016, unica carta no banco com essa forma):
+            # sem isso, a condicao vira so presenca, ignorando o
+            # requisito de power (menos estrito que o texto real).
+            m_power_mn = re.search(r'characters? with (\d+) base power', tail_mn)
+            if m_power_mn:
+                conds['has_named_characters_power_eq'] = int(m_power_mn.group(1))
 
     # "if you have [Nome] with N power or more on your field" -- variante
     # sem "a Character"/"a [Tipo] type Character" antes do nome (achado
@@ -1259,6 +1322,23 @@ def parse_costs(text):
                     # custo inteiro ausente nas 3, mesmo as com "or more" --
                     # a IA aceitava qualquer carta da mao como custo).
                     elif not typed:
+                        # "trash N Character card(s) with M power (or more/or
+                        # less)? from your hand" -- SEM tipo entre colchetes E
+                        # SEM "a cost of" (achado 19/07, OP16-009/OP16-014/
+                        # OP16-015: filtro de power inteiro ausente -- a IA
+                        # aceitava qualquer carta da mao, nao so um Character
+                        # com o power exato exigido).
+                        power_m_th = re.search(
+                            r'trash \d+ character cards?\s+with (\d+) power'
+                            r'(?:\s+or (more|less))?\s+from your hand', m.group(0))
+                        if power_m_th:
+                            comparator_pw = power_m_th.group(2)
+                            if comparator_pw == 'more':
+                                cost_th['power_gte'] = int(power_m_th.group(1))
+                            elif comparator_pw == 'less':
+                                cost_th['power_lte'] = int(power_m_th.group(1))
+                            else:
+                                cost_th['power_eq'] = int(power_m_th.group(1))
                         cost_m = re.search(
                             r'trash \d+ character cards?\s+with a cost of (\d+)(?:\s+or (more|less))?'
                             r'\s+from your hand', m.group(0))
@@ -1352,8 +1432,15 @@ def parse_costs(text):
     # familia de reveal_from_hand (prova de posse, nao remove nada), so
     # que o filtro e power (exato, sem qualificador 'or more'/'or less'
     # no texto original) + card_type CHARACTER em vez de tipo.
+    # "and reveal" tolerado alem de "you may reveal" -- 2o componente de
+    # um custo COMPOSTO, encadeado apos outro custo (achado 19/07,
+    # OP16-020, unica carta no banco com essa forma exata: "you may rest
+    # 1 of your DON!! cards AND reveal 1 Character card with 8000 power
+    # from your hand:" -- o rest_don sobrevivia isolado, mas o 2o
+    # componente (reveal_from_hand) sumia por exigir "you may reveal"
+    # logo no inicio).
     m_reveal_pw = re.search(
-        r'you may reveal (\d+) character cards? with (\d+) power from your hand\s*:', t)
+        r'(?:you may reveal|and reveal) (\d+) character cards? with (\d+) power from your hand\s*:', t)
     if m_reveal_pw:
         costs.append({'type': 'reveal_from_hand', 'count': int(m_reveal_pw.group(1)),
                        'power_eq': int(m_reveal_pw.group(2)), 'card_type': 'CHARACTER'})
@@ -1472,16 +1559,35 @@ def parse_look_at(text):
             steps.append({'action': 'deck_bottom_rest'})
         return steps
 
-    # Quantas pega
-    take_m = re.search(r'(?:reveal|add|play) (?:up to |a total of )?(\d+)', t)
+    # Quantas pega. "up to a total of N" (achado 19/07, OP15-101 Kalgara,
+    # unica carta no banco com essa forma exata: as duas frases
+    # aparecem JUNTAS, "up to " seguido de "a total of ", nao uma OU
+    # outra como o regex antigo assumia -- take_m nunca batia, count
+    # caia no fallback 1 fixo).
+    take_m = re.search(r'(?:reveal|add|play) (?:up to )?(?:a total of )?(\d+)', t)
     take_count = int(take_m.group(1)) if take_m else 1
     verbo_pega = take_m.group(0).split()[0] if take_m else 'add'  # 'reveal' | 'add' | 'play'
 
     # Filtro
     filter_type = None
     exclude = []
+    filter_names_mixed = []
 
-    fm = re.search(r'reveal up to \d+ "([^"]+)" (?:type |or [^\n]+)?(?:character )?card', t)
+    # "N [Nome] or {Tipo}/"Tipo" type cards" -- NOME (colchetes) OU TIPO
+    # (chaves/aspas), alternativas (OR), nao dois filtros combinados.
+    # Achado 19/07, OP15-101 Kalgara, unica carta no banco com essa forma
+    # exata -- nenhum dos checks abaixo (nem names_clause, que exige
+    # SO colchetes, nem os fm de filter_type unico) reconhecia essa
+    # mistura, entao o filtro inteiro sumia (qualquer carta contava).
+    mixed_or_m = re.search(
+        r'(?:reveal|add) (?:up to )?(?:a total of )?\d+ '
+        r'\[([^\]]+)\]\s+or\s+[\{"]([^\}"]+)[\}"]\s+type cards?', t)
+    if mixed_or_m:
+        filter_names_mixed = [mixed_or_m.group(1).strip()]
+        filter_type = mixed_or_m.group(2).strip()
+
+    fm = (None if mixed_or_m else
+          re.search(r'reveal up to \d+ "([^"]+)" (?:type |or [^\n]+)?(?:character )?card', t))
     if fm:
         filter_type = fm.group(1)
 
@@ -1491,11 +1597,12 @@ def parse_look_at(text):
             filter_type = fm.group(1)
 
     # Busca por uma lista de nomes alternativos (Queen OP04-046).
-    names_clause = re.search(
+    names_clause = None if mixed_or_m else re.search(
         r'(?:reveal|add) (?:up to |a total of )?\d+ '\
         r'((?:\[[^\]]+\](?:\s+or\s+)?){2,})\s*cards?', t)
-    filter_names = (re.findall(r'\[([^\]]+)\]', names_clause.group(1))
-                    if names_clause else [])
+    filter_names = (filter_names_mixed if mixed_or_m else
+                    (re.findall(r'\[([^\]]+)\]', names_clause.group(1))
+                     if names_clause else []))
 
     # "type including X" na carta buscada/jogada (Stussy OP04-084).
     if not filter_type:
@@ -2317,8 +2424,10 @@ def parse_rest_opp(text):
         cost_m = re.search(r'cost (?:of|or) (\d+) or less', t)
         # Aceita "N base power or less" (numero antes) OU "base power of N
         # or less" (achado 16/07, ordem invertida com "of" -- OP14-062).
-        power_m = (re.search(r'(\d+) base power or less', t)
-                   or re.search(r'base power of (\d+) or less', t))
+        # "base" agora OPCIONAL (achado 19/07, OP15-064 Kotori: "with 5000
+        # power or less", sem "base" -- so a variante com "base" era aceita).
+        power_m = (re.search(r'(\d+) (?:base )?power or less', t)
+                   or re.search(r'(?:base )?power of (\d+) or less', t))
         step = {'action': 'rest_opp_character', 'count': int(m.group(1))}
         if cost_m:
             step['cost_lte'] = int(cost_m.group(1))
@@ -3271,7 +3380,19 @@ def parse_power_buff(text):
 
         target = 'self'
         if is_debuff:
-            if "opponent's leader or character" in contexto_antes or "opponent's leader" in contexto_antes and "character" in contexto_antes:
+            # AUTO-debuff (drawback proprio): "give this Character -N
+            # power" -- adjacencia de "this character"/"this card" logo
+            # antes do numero tem prioridade sobre o catch-all "debuff =
+            # sempre oponente" abaixo (achado 19/07, OP16-017, unica
+            # carta no banco com essa forma exata: sinal explicito '-'
+            # jogava o alvo pro oponente mesmo com "this Character"
+            # literal no texto -- o ramo is_debuff nunca checava
+            # self-target, so existia pra distinguir QUAL alvo do
+            # oponente, nunca cogitava que um debuff pudesse ser
+            # auto-infligido).
+            if re.search(r'(?<!other than )this (?:character|card)\s*$', contexto_antes):
+                target = 'self'
+            elif "opponent's leader or character" in contexto_antes or "opponent's leader" in contexto_antes and "character" in contexto_antes:
                 target = 'opp_leader_or_character'
             elif "opponent's leader" in contexto_antes:
                 target = 'opp_leader'
@@ -3458,6 +3579,23 @@ def parse_set_base_power(text):
     nao vistas."""
     steps = []
     t = text.lower()
+
+    # "All of your [Nome] cards' base power and this Character's base
+    # power become N" -- SUJEITO COMPOSTO (2 alvos, verbo no plural
+    # "become" em vez de "becomes"), gatilho tipicamente [Opponent's
+    # Turn] (estatico, avaliado via effective_card_power(your_turn=False)
+    # no proprio dono, nao precisa de duracao). Achado 19/07, OP15-070
+    # Fuza/OP15-071 Holly, unicas 2 cartas no banco com essa forma exata
+    # -- o docstring desta funcao ja avisava que so 4 padroes CONFIRMADOS
+    # eram cobertos, este e um 5o padrao novo, tratado a parte (verbo
+    # plural quebra o regex singular do loop generico abaixo).
+    m_group_opp_turn = re.search(
+        r"all of your \[([^\]]+)\] cards.? base power and this character.?s "
+        r"base power become (\d+)", t)
+    if m_group_opp_turn:
+        return [{'action': 'set_base_power_group_opp_turn',
+                 'filter_name': m_group_opp_turn.group(1).strip(),
+                 'amount': int(m_group_opp_turn.group(2))}]
 
     for m in re.finditer(r"([a-z][a-z0-9 {}\[\]\"'.\-]*?)'s? base power becomes (\d+)", t):
         sujeito = m.group(1).strip()
@@ -3719,6 +3857,7 @@ def parse_give_don(text):
         r"(don!! cards?|leader and character cards?|characters? or don!{0,2}\s*cards?"
         r"|characters?|character cards?|leader cards?|cards?)"
         r"(?: with a cost of (\d+) or less)?"
+        r"(?: with (\d+) (?:base )?power or less)?"
         r"(?: (?:with|that has) (\d+) or more don!{0,2}\s*cards? given)?"
         r" will not become active",
         t
@@ -3727,7 +3866,8 @@ def parse_give_don(text):
         cnt = 99 if m.group(1) == 'all' else int(m.group(2))
         tipo = m.group(3)
         cost_lte = m.group(4)
-        don_gte = m.group(5)
+        power_lte = m.group(5)
+        don_gte = m.group(6)
         if tipo.startswith('don'):
             step = {'action': 'lock_opp_don_refresh', 'count': cnt}
         else:
@@ -3738,6 +3878,12 @@ def parse_give_don(text):
             step = {'action': 'lock_opp_character_refresh', 'count': cnt}
         if cost_lte:
             step['cost_lte'] = int(cost_lte)
+        # Filtro de POWER (achado 19/07, OP15-077 Lightning Dragon, unica
+        # carta no banco com essa forma exata: "with 6000 power or less"
+        # nao era tolerado, o clausula nao consumida derrubava o match
+        # inteiro e caia no fallback errado lock_opp_don).
+        if power_lte:
+            step['power_lte'] = int(power_lte)
         if don_gte:
             step['don_attached_gte'] = int(don_gte)
         steps.append(step)
@@ -5007,7 +5153,11 @@ def parse_life(text):
 def _apply_substitute_target_filters(step, text, removal_kind):
     t = text.lower()
     if removal_kind == 'ko':
-        m = re.search(r"if (.+?) would be k\.o\.'?d", t)
+        # "k\.o\.?'?d" -- 2o ponto opcional (achado 19/07, OP16-033
+        # Morley, unica carta no banco com o typo "K.O'd" em vez de
+        # "K.O.'d" -- faltava o ponto entre "O" e o apostrofo, quebrando
+        # as 4 checagens de substituicao que exigiam os 2 pontos).
+        m = re.search(r"if (.+?) would be k\.o\.?'?d", t)
     else:
         m = re.search(r"if (.+?) would be removed from the field", t)
     if not m:
@@ -5064,7 +5214,10 @@ def _apply_substitute_target_filters(step, text, removal_kind):
     power_eq = re.search(r'with (\d+) base power', subject)
     if power_eq and 'or less' not in subject and 'or more' not in subject:
         step['power_eq'] = int(power_eq.group(1))
-    power_gte = re.search(r'(\d+) power or more', subject)
+    # "(?:base )?" tolerado -- achado 19/07, OP15-098: "6000 BASE power or
+    # more" nao batia (so "power or more" sem "base" era aceito, assimetria
+    # com power_lte acima que ja tolerava "base power or less").
+    power_gte = re.search(r'(\d+) (?:base )?power or more', subject)
     if power_gte:
         step['power_gte'] = int(power_gte.group(1))
 
@@ -5297,7 +5450,7 @@ def parse_substitute_ko(text):
     steps = []
     t = text.lower()
 
-    if not re.search(r"would be k\.o\.'?d", t):
+    if not re.search(r"would be k\.o\.?'?d", t):
         return steps
 
     cost, extra_steps = _parse_substitute_cost(t)
@@ -6076,10 +6229,10 @@ def parse_block(block_text, trigger_name):
     # sem extrair e reparsear esse PREFIXO separadamente, ele era
     # silenciosamente descartado assim que a substituicao reivindicava o
     # bloco inteiro. Reusa o mesmo prefixo/sufixo split do removal abaixo.
-    if re.search(r"would be k\.o\.'?d", t):
+    if re.search(r"would be k\.o\.?'?d", t):
         sub_steps = parse_substitute_ko(t)
         if sub_steps:
-            prefix = re.split(r"if .*?would be k\.o\.'?d", t, maxsplit=1)[0].strip()
+            prefix = re.split(r"if .*?would be k\.o\.?'?d", t, maxsplit=1)[0].strip()
             prefix_steps = parse_block(prefix, trigger_name) if prefix else []
             if prefix_steps and not (len(prefix_steps) == 1 and '_choice' in prefix_steps[0]):
                 return prefix_steps + sub_steps
@@ -6481,8 +6634,12 @@ def parse_block(block_text, trigger_name):
     # buff_power (aditivo). Regex de parse_power_buff exige 'N power' (numero
     # antes da palavra), e aqui e 'power becomes N' (numero depois) -- nao ha
     # conflito/duplicacao entre as duas chamadas.
-    # Aceita tambem "set the power of X to N" (OP07-002 Ain).
-    if 'base power becomes' in t or 'set the power of' in t:
+    # Aceita tambem "set the power of X to N" (OP07-002 Ain). "become"
+    # (plural, sem 's') tolerado -- achado 19/07, OP15-070/OP15-071:
+    # sujeito COMPOSTO ("[Nome] cards' base power AND this Character's
+    # base power become N") usa o verbo no plural, o gate so aceitava o
+    # singular "becomes" e nunca chamava parse_set_base_power.
+    if 'base power become' in t or 'set the power of' in t:
         steps.extend(parse_set_base_power(t))
 
     # Custo: give +/-N cost / "give N cost" sem sinal (opponent) / gains +N cost
@@ -6783,8 +6940,32 @@ def parse_block(block_text, trigger_name):
                       'cost_gte': int(m_mass_grant_rush.group(2)),
                       'exclude_self': True})
 
-    m_rc = re.search(r'gains?\s+\[rush: character\]', t)
-    if (not m_select_rush_or and not m_select_rush_generic and not m_mass_grant_rush
+    # "Up to N of your [Nome] Characters gains [Rush: Character] and the
+    # 'Atributo' attribute during this turn" -- SELECAO por NOME (nao
+    # auto-concessao), mesma familia arquitetural de select_grant_rush,
+    # mas pra keyword [Rush: Character] + concessao TEMPORARIA de
+    # atributo adicional. Achado 19/07, OP15-093, unica carta no banco
+    # com essa forma exata -- o Rush: Character ia pra propria carta
+    # (fallback abaixo, sempre self) em vez do [Monkey.D.Luffy]
+    # selecionado, e o atributo "Slash" sumia por completo.
+    m_select_rc_name = re.search(
+        r'up to (\d+) of your \[([^\]]+)\] characters? gains?\s*\[?rush:\s*character\]?'
+        r'(?:\s+and the ["\']([^"\']+)["\'] attribute)?', t)
+    if m_select_rc_name:
+        step_rc = {'action': 'select_grant_rush_character',
+                   'count': int(m_select_rc_name.group(1)),
+                   'filter_name': m_select_rc_name.group(2).strip()}
+        if m_select_rc_name.group(3):
+            step_rc['grant_attribute'] = m_select_rc_name.group(3).strip()
+        tail_rc = t[m_select_rc_name.end():m_select_rc_name.end() + 30]
+        if 'during this turn' in tail_rc:
+            step_rc['duration'] = 'this_turn'
+        steps.append(step_rc)
+
+    m_rc = (None if m_select_rc_name else
+            re.search(r'gains?\s+\[rush: character\]', t))
+    if (not m_select_rc_name and not m_select_rush_or and not m_select_rush_generic
+            and not m_mass_grant_rush
             and 'gain_rush_character' not in _lista_choice_keywords
             and (m_rc or '[rush: character]' in _lista_txt)):
         step = {'action': 'gain_rush_character'}
@@ -6875,13 +7056,32 @@ def parse_block(block_text, trigger_name):
             if dur:
                 step['duration'] = dur
             steps.append(step)
+    # "All of your [Nome] cards and this Character gain [Unblockable]/
+    # [Double Attack]" -- CONCESSAO EM MASSA (grupo nomeado + a propria
+    # carta), estatica/permanente -- distinta da auto-concessao self-only
+    # (fallback mais abaixo) e das selecoes por tipo/cor ja existentes
+    # (aqui o grupo e por NOME, sempre inclui explicitamente "this
+    # Character"). Achado 19/07, OP15-070 Fuza ([Unblockable])/OP15-071
+    # Holly ([Double Attack]), unicas 2 cartas no banco com essa forma
+    # exata -- o [Shura]/[Ohm] nunca recebia a keyword, so a propria
+    # carta (via fallback self, coincidentemente "certo" so pra ela).
+    m_mass_grant_named = re.search(
+        r'all of your \[([^\]]+)\] cards and this character gains? '
+        r'\[(unblockable|double attack)\]', t)
+    if m_mass_grant_named:
+        kw_nome = m_mass_grant_named.group(1).strip()
+        kw_tipo = m_mass_grant_named.group(2)
+        acao_aura = ('grant_double_attack_aura_named' if kw_tipo == 'double attack'
+                     else 'grant_unblockable_aura_named')
+        steps.append({'action': acao_aura, 'filter_name': kw_nome})
+
     # "Up to N of your [Tipo]/{Tipo} type Characters gains [Double
     # Attack]" -- SELECAO de Character DIFERENTE, mesma classe de bug ja
     # corrigida pra Blocker/Rush (select_grant_blocker/select_grant_rush).
     # Achado 17/07, familia de 2 (EB03-050, OP04-115): auto-concessao
     # (gain_double_attack, sem selecao) em vez de escolher OUTRO character
     # por tipo.
-    m_select_da = re.search(
+    m_select_da = (None if m_mass_grant_named else re.search(
         r'up to (\d+) of your '
         r'(?:(black|red|blue|green|yellow|purple)\s+)?'
         r'(?:[\[{"]([a-z][a-z0-9 .\'-]+)[\]}"]\s+type\s+)?'
@@ -6893,7 +7093,7 @@ def parse_block(block_text, trigger_name):
         r'(?: with a cost of (\d+))?'
         r'(?P<clause>[^.]*?)'
         r'gains? \[?double attack\]?',
-        t)
+        t))
     if m_select_da:
         step = {'action': 'select_grant_double_attack', 'count': int(m_select_da.group(1))}
         if m_select_da.group(2):
@@ -6906,7 +7106,7 @@ def parse_block(block_text, trigger_name):
         if 'during this turn' in tail:
             step['duration'] = 'this_turn'
         steps.append(step)
-    else:
+    elif not m_mass_grant_named:
         m_da = re.search(r'gains?\s+\[double attack\]', t)
         if 'gain_double_attack' not in _lista_choice_keywords and (m_da or '[double attack]' in _lista_txt):
             step = {'action': 'gain_double_attack'}
@@ -6937,7 +7137,8 @@ def parse_block(block_text, trigger_name):
     # (select_grant_unblockable_turn, achado 17/07 EB04-024 -- "up to N
     # of your [Tipo] type Characters gains [Unblockable]"), nao duplica
     # como auto-concessao (gain_unblockable).
-    if not any(s.get('action') == 'select_grant_unblockable_turn' for s in steps):
+    if not m_mass_grant_named and not any(
+            s.get('action') == 'select_grant_unblockable_turn' for s in steps):
         m_u = re.search(r'gains?\s+\[unblockable\]', t)
         if 'gain_unblockable' not in _lista_choice_keywords and (m_u or '[unblockable]' in _lista_txt):
             step = {'action': 'gain_unblockable'}

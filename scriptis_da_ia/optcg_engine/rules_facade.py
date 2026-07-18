@@ -25,6 +25,11 @@ def effective_card_cost(card: "Card") -> int:
 def effective_card_power(card: "Card", your_turn: bool = True) -> int:
     """Poder efetivo no estado simplificado atual do decision_engine."""
     base_power = getattr(card, "base_power_override", None)
+    if base_power is None and not your_turn:
+        # Override valido SO no turno do OPONENTE do dono (achado 19/07,
+        # OP15-070/OP15-071: "[Opponent's Turn] ... base power become N")
+        # -- distinto de base_power_override (sempre ativo).
+        base_power = getattr(card, "base_power_override_opp_turn", None)
     if base_power is None:
         base_power = card.power
     don_power = card.don_attached * 1000 if your_turn else 0

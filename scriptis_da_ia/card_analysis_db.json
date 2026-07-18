@@ -85648,13 +85648,13 @@
   "attribute": "Slash",
   "effects": [
    {
+    "action": "trash_from_deck_top",
+    "trigger": "activate_main"
+   },
+   {
     "action": "set_active",
     "trigger": "activate_main",
     "target": "own_character"
-   },
-   {
-    "action": "trash_from_deck_top",
-    "trigger": "activate_main"
    }
   ],
   "synergy_states": {},
@@ -87532,7 +87532,8 @@
    {
     "action": "rest_opp_character",
     "trigger": "activate_main",
-    "don_requirement": 2
+    "don_requirement": 2,
+    "power_lte": 5000
    }
   ],
   "synergy_states": {
@@ -87787,7 +87788,11 @@
   "attribute": "Special",
   "effects": [
    {
-    "action": "gain_unblockable",
+    "action": "set_base_power_group_opp_turn",
+    "trigger": "opp_turn"
+   },
+   {
+    "action": "grant_unblockable_aura_named",
     "trigger": "passive"
    }
   ],
@@ -87810,7 +87815,7 @@
   "trashes_own_life": false,
   "has_rush": false,
   "has_double_attack": false,
-  "has_unblockable": true,
+  "has_unblockable": false,
   "has_banish": false,
   "has_trigger": false
  },
@@ -87826,7 +87831,11 @@
   "attribute": "Strike",
   "effects": [
    {
-    "action": "gain_double_attack",
+    "action": "set_base_power_group_opp_turn",
+    "trigger": "opp_turn"
+   },
+   {
+    "action": "grant_double_attack_aura_named",
     "trigger": "passive"
    }
   ],
@@ -87848,7 +87857,7 @@
   "attacks_life": false,
   "trashes_own_life": false,
   "has_rush": false,
-  "has_double_attack": true,
+  "has_double_attack": false,
   "has_unblockable": false,
   "has_banish": false,
   "has_trigger": false
@@ -88102,8 +88111,9 @@
     "trigger": "main"
    },
    {
-    "action": "lock_opp_don",
-    "trigger": "main"
+    "action": "lock_opp_character_refresh",
+    "trigger": "main",
+    "power_lte": 6000
    }
   ],
   "synergy_states": {
@@ -88156,7 +88166,8 @@
    },
    {
     "action": "rest_opp_character",
-    "trigger": "main"
+    "trigger": "main",
+    "power_lte": 5000
    },
    {
     "action": "draw",
@@ -88807,7 +88818,7 @@
   "attribute": "Slash",
   "effects": [
    {
-    "action": "gain_rush_character",
+    "action": "select_grant_rush_character",
     "trigger": "activate_main"
    }
   ],
@@ -90716,7 +90727,7 @@
    {
     "action": "debuff_power",
     "trigger": "passive",
-    "target": "opp_character"
+    "target": "self"
    },
    {
     "action": "keyword_blocker",
@@ -91398,6 +91409,10 @@
   "sub_types": "Giant Revolutionary Army",
   "attribute": "Special",
   "effects": [
+   {
+    "action": "substitute_ko",
+    "trigger": "passive"
+   },
    {
     "action": "keyword_unblockable",
     "trigger": "passive"
@@ -98652,7 +98667,7 @@
    {
     "action": "debuff_power",
     "trigger": "opp_turn",
-    "target": "opp_character"
+    "target": "self"
    }
   ],
   "synergy_states": {},
@@ -114651,13 +114666,13 @@
   "attribute": "",
   "effects": [
    {
-    "action": "draw",
-    "trigger": "counter"
-   },
-   {
     "action": "buff_power",
     "trigger": "counter",
     "target": "leader_or_character"
+   },
+   {
+    "action": "draw",
+    "trigger": "counter"
    }
   ],
   "synergy_states": {},

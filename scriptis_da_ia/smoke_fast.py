@@ -5759,6 +5759,169 @@ def test_lote_8_op09_051_a_op10_080() -> None:
               any(c.get("type") == "rest_self" for c in entry.get("costs", [])))
 
 
+def test_lote_9_op15_020_a_op16_038() -> None:
+    # OP15-020: investigado, NAO e bug -- custo opcional "you may trash 2
+    # cards. If you do, K.O." ja segue a mesma simplificacao aceita em
+    # OP05-038 (aplica o efeito incondicional, ignora a escolha).
+    check("OP15-020 confirmado falso-positivo (mesma simplificacao de OP05-038)",
+          get_card_effects("OP15-020")["main"]["steps"][0]["action"] == "ko")
+
+    # OP15-022: condicao "se o deck tem 0 cartas" ausente antes do
+    # set_active.
+    check("OP15-022 parseia deck_lte=0 no set_active (nao dispara sempre)",
+          get_card_effects("OP15-022")["activate_main"]["steps"][1]["conditions"]
+          == {"deck_lte": 0})
+
+    # OP15-064/OP15-072: condicao composta [Nome1]+[Nome2] + Kotori
+    # tambem ganha power_lte=5000 no alvo.
+    check("OP15-064 parseia has_named_characters=[satori,hotori] + power_lte=5000",
+          get_card_effects("OP15-064")["activate_main"]["steps"][0]["power_lte"] == 5000
+          and get_card_effects("OP15-064")["activate_main"]["steps"][0]["conditions"]
+          == {"has_named_characters": ["satori", "hotori"]})
+    kotori = real_card("OP15-064")
+    kotori.don_attached = 2
+    satori1 = mk("SAT1", "Satori", cost=3)
+    me_kt = GameState(leader=mk("KTLDR", "Lider", card_type="LEADER"))
+    me_kt.field_chars = [kotori, satori1]
+    opp_kt = GameState(leader=mk("KTOPP", "Opp", card_type="LEADER"))
+    alvo_kt = mk("KTOP1", "Alvo", cost=1)
+    opp_kt.field_chars = [alvo_kt]
+    EffectExecutor(me_kt, opp_kt).execute(kotori, "activate_main")
+    check("Execucao real: OP15-064 SEM Hotori em campo, rest NAO dispara",
+          not alvo_kt.rested)
+    hotori1 = mk("HOT1", "Hotori", cost=3)
+    me_kt.field_chars.append(hotori1)
+    EffectExecutor(me_kt, opp_kt).execute(kotori, "activate_main")
+    check("Execucao real: OP15-064 COM Satori+Hotori, rest dispara",
+          alvo_kt.rested)
+
+    # OP15-070/OP15-071: aura por nome (Unblockable/Double Attack) +
+    # override de base power SO no turno do oponente.
+    fuza = real_card("OP15-070")
+    shura_ally = mk("SHU1", "Shura Warrior", power=3000, sub_types="Shura")
+    outro_shura = mk("OUT1", "Outro", power=3000)
+    me_fz = GameState(leader=mk("FZLDR", "Lider", card_type="LEADER"))
+    me_fz.field_chars = [fuza, shura_ally, outro_shura]
+    opp_fz = GameState(leader=mk("FZOPP", "Opp", card_type="LEADER"))
+    apply_conditional_keyword_passives(me_fz, opp_fz)
+    check("Execucao real: OP15-070 concede Unblockable a Fuza e ao Shura, nao ao Outro",
+          fuza.has_unblockable and shura_ally.has_unblockable and not outro_shura.has_unblockable)
+    check("Execucao real: OP15-070 base power vira 6000 SO no turno do oponente (nao no proprio)",
+          fuza.effective_power(your_turn=False) == 6000
+          and fuza.effective_power(your_turn=True) == fuza.power
+          and shura_ally.effective_power(your_turn=False) == 6000
+          and outro_shura.effective_power(your_turn=False) == outro_shura.power)
+
+    # OP15-077: acao errada (lock_opp_don) corrigida pra
+    # lock_opp_character_refresh + power_lte.
+    check("OP15-077 parseia lock_opp_character_refresh com power_lte=6000 (nao lock_opp_don)",
+          get_card_effects("OP15-077")["main"]["steps"][1]
+          == {"action": "lock_opp_character_refresh", "count": 1, "power_lte": 6000})
+
+    # OP15-093: selecao por NOME (nao self) + atributo adicional
+    # concedido.
+    risky = real_card("OP15-093")
+    luffy_alvo = mk("LFY1", "Monkey.D.Luffy", cost=5, attribute="Strike")
+    me_rb = GameState(leader=mk("RBLDR", "Lider", card_type="LEADER"))
+    me_rb.field_chars = [risky, luffy_alvo]
+    me_rb.trash = [mk(f"TR{i}", "Lixo", cost=1) for i in range(15)]
+    opp_rb = GameState(leader=mk("RBOPP", "Opp", card_type="LEADER"))
+    EffectExecutor(me_rb, opp_rb).execute(risky, "activate_main")
+    check("Execucao real: OP15-093 concede Rush:Character + atributo Slash ao Luffy (nao a si mesma)",
+          luffy_alvo.has_rush_character and luffy_alvo.extra_attribute_this_turn == "slash"
+          and not risky.has_rush_character)
+
+    # OP15-098: filtro de power (>=6000) ausente na condicao de
+    # substituicao.
+    check("OP15-098 parseia power_gte=6000 na substituicao",
+          get_card_effects("OP15-098")["passive"]["steps"][0]["power_gte"] == 6000)
+
+    # OP15-101: contagem errada (1->2) + filtro OR nome/tipo.
+    check("OP15-101 parseia count=2 com filter_type/filter_names (OR)",
+          get_card_effects("OP15-101")["on_play"]["steps"][1]["count"] == 2
+          and get_card_effects("OP15-101")["on_play"]["steps"][1]["filter_type"] == "shandian warrior"
+          and get_card_effects("OP15-101")["on_play"]["steps"][1]["filter_names"] == ["mont blanc noland"])
+
+    # OP16-009/014/015: filtro de power ausente no custo trash_from_hand.
+    for code, timing in (("OP16-009", "on_play"), ("OP16-014", "on_ko")):
+        check(f"{code} parseia power_eq=8000 no custo trash_from_hand",
+              get_card_effects(code)[timing]["costs"][0]["power_eq"] == 8000)
+
+    # OP16-012: condicao "10 DON!! no campo" (eliptica, "and have" sem "you").
+    check("OP16-012 parseia don_on_field_gte=10 (elipse 'and have')",
+          get_card_effects("OP16-012")["on_play"]["steps"][0]["conditions"]["don_on_field_gte"] == 10)
+
+    # OP16-017: alvo errado (opp_character) corrigido pra self + condicao
+    # negada tipo+custo.
+    check("OP16-017 parseia debuff target=self + condicao no_char_type_cost_gte",
+          get_card_effects("OP16-017")["passive"]["steps"][0]["target"] == "self"
+          and get_card_effects("OP16-017")["passive"]["conditions"]["no_char_type_cost_gte"]
+          == {"type": "whitebeard pirates", "cost_gte": 8})
+    oars = real_card("OP16-017")
+    me_oars = GameState(leader=mk("OARSLDR2", "Lider", card_type="LEADER"))
+    me_oars.field_chars = [oars]
+    opp_oars = GameState(leader=mk("OARSOPP2", "Opp", card_type="LEADER"))
+    ee_oars = EffectExecutor(me_oars, opp_oars)
+    check("Execucao real: OP16-017 SEM Whitebeard Pirates cost>=8, condicao passa (debuff self ativo)",
+          ee_oars._check_conditions(
+              get_card_effects("OP16-017")["passive"].get("conditions", {}), oars))
+    wb_char = mk("WB1", "Whitebeard Char", cost=8, sub_types="Whitebeard Pirates")
+    me_oars.field_chars.append(wb_char)
+    check("Execucao real: OP16-017 COM Whitebeard Pirates cost>=8, condicao falha (sem debuff)",
+          not ee_oars._check_conditions(
+              get_card_effects("OP16-017")["passive"].get("conditions", {}), oars))
+
+    # OP16-020: custo composto (rest_don + reveal_from_hand por power).
+    check("OP16-020 parseia os DOIS componentes do custo composto (rest_don + reveal_from_hand)",
+          {c["type"] for c in get_card_effects("OP16-020")["main"]["costs"]}
+          == {"rest_don", "reveal_from_hand"})
+
+    # OP16-033: typo "K.O'd" (sem 2o ponto) bloqueava o substitute_ko
+    # inteiro.
+    check("OP16-033 parseia substitute_ko com custo rest_own_card=2 (typo K.O'd tolerado)",
+          get_card_effects("OP16-033")["passive"]["steps"][0]
+          == {"action": "substitute_ko", "cost": {"action": "rest_own_card", "count": 2}})
+
+    # OP16-038: condicao "5 Impel Down type Characters com nomes
+    # diferentes" ausente.
+    entry_038b = get_card_effects("OP16-038")["main"]
+    check("OP16-038 parseia chars_gte=5 com chars_gte_distinct_names=True",
+          entry_038b["steps"][0]["conditions"]
+          == {"chars_gte": 5, "chars_gte_type_filter": "impel down", "chars_gte_distinct_names": True})
+    me_038b = GameState(leader=mk("L038B", "Lider", card_type="LEADER"))
+    impel_a = mk("IM1", "Impel A", cost=2, sub_types="Impel Down")
+    impel_b = mk("IM2", "Impel B", cost=2, sub_types="Impel Down")
+    impel_a_dup = mk("IM1B", "Impel A", cost=2, sub_types="Impel Down")  # mesmo nome de impel_a
+    impel_c = mk("IM3", "Impel C", cost=2, sub_types="Impel Down")
+    impel_d = mk("IM4", "Impel D", cost=2, sub_types="Impel Down")
+    me_038b.field_chars = [impel_a, impel_b, impel_a_dup, impel_c, impel_d]
+    ee_038b = EffectExecutor(me_038b, GameState(leader=mk("O038B", "Opp", card_type="LEADER")))
+    check("Execucao real: OP16-038 com so 4 NOMES unicos (5 cartas, 1 duplicada), condicao falha",
+          not ee_038b._check_conditions(entry_038b["steps"][0]["conditions"], me_038b.leader))
+    impel_e = mk("IM5", "Impel E", cost=2, sub_types="Impel Down")
+    me_038b.field_chars.append(impel_e)
+    check("Execucao real: OP16-038 com 5 NOMES unicos de verdade, condicao passa",
+          ee_038b._check_conditions(entry_038b["steps"][0]["conditions"], me_038b.leader))
+
+    # OP08-006 (achado extra via diff_parser): presenca NO TRASH, nao no
+    # campo -- mesma familia de has_named_characters, mas trash.
+    check("OP08-006 (familia has_named_characters, variante TRASH) parseia has_named_characters_in_trash",
+          get_card_effects("OP08-006")["your_turn"]["conditions"]["has_named_characters_in_trash"]
+          == ["kuromarimo", "chess"])
+
+    # ST30-016 (achado extra): [Nome1]+[Nome2] TAMBEM precisam ter power
+    # exato -- nao so presenca.
+    check("ST30-016 (familia has_named_characters) exige power_eq=6000 nos 2 nomeados",
+          get_card_effects("ST30-016")["counter"]["steps"][1]["conditions"]
+          == {"has_named_characters": ["portgas.d.ace", "monkey.d.luffy"],
+              "has_named_characters_power_eq": 6000})
+
+    # P-092 (achado extra via diff_parser): self-debuff com sinal
+    # explicito -- mesma familia do fix de target em OP16-017.
+    check("P-092 (familia is_debuff self-target) parseia debuff target=self",
+          get_card_effects("P-092")["opp_turn"]["steps"][0]["target"] == "self")
+
+
 def main() -> int:
     test_turn_order_imu_prefers_second()
     test_empty_throne_beats_direct_five_elders_play()
@@ -5895,6 +6058,7 @@ def main() -> int:
     test_lote_6_op07_009_a_op07_097()
     test_lote_7_op08_029_a_op08_096()
     test_lote_8_op09_051_a_op10_080()
+    test_lote_9_op15_020_a_op16_038()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0

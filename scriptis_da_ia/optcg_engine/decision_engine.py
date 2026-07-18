@@ -525,6 +525,7 @@ class Card:
     double_attack_this_turn: bool = False  # Double Attack CONCEDIDO so neste turno (12 cards) -- mesma logica. has_double_attack permanente intocado.
     blocker_this_turn: bool = False  # Blocker CONCEDIDO so neste turno (6 cards) -- mesma logica. has_blocker permanente intocado.
     banish_this_turn: bool = False  # Banish CONCEDIDO so neste turno (achado 19/07, OP10-043 Moocy) -- mesma logica. has_banish permanente intocado.
+    extra_attribute_this_turn: str = ''  # atributo ADICIONAL concedido temporariamente (achado 19/07, OP15-093: "gains [Rush: Character] and the 'Slash' attribute") -- o atributo NATIVO (self.attribute, vem de CardData imutavel) nunca muda; este campo soma um 2o atributo pra fins de matching (filter_attribute), resetado no refresh_phase.
     can_attack_active: bool = False  # "This Character can also attack active Characters" PERMANENTE (Cavendish OP04-081, Luffy OP04-090) -- keyword nunca implementada antes (achado 27/06, 9 cartas).
     can_attack_active_this_turn: bool = False  # mesma habilidade, mas CONCEDIDA so neste turno via select (Hibari, Gyats, Borsalino, Aramaki, Kuzan, Koby) -- resetada no refresh_phase.
     cannot_be_rested_until: str = ''  # mesma semantica de duracao, para lock_opp_cannot_be_rested (mecanica DISTINTA de cannot_attack)
@@ -537,6 +538,7 @@ class Card:
     # Buffs temporários (resetados a cada turno)
     power_buff: int = 0
     base_power_override: Optional[int] = None
+    base_power_override_opp_turn: Optional[int] = None  # override PERMANENTE de base power valido SO quando NAO e o turno do dono (achado 19/07, OP15-070/OP15-071: "[Opponent's Turn] ... base power become N") -- concedido via aura em apply_conditional_keyword_passives (GRANT-ONLY idempotente, nunca resetado), lido em effective_card_power(your_turn=False). Distinto de base_power_override (SEMPRE ativo, independente de turno).
     cost_buff: int = 0       # resetado no fim do turno do oponente (duration until_opp_turn_end)
     cost_buff_permanent: int = 0  # nunca resetado (duration permanent, ex: leader_type condicional)
     # Rastreio de combate (achado 15/07, OP12-020 Zoro lider e familia --
@@ -577,9 +579,9 @@ class Card:
                       'don_attached', 'cannot_attack_until', 'cannot_be_rested_until', 'cannot_block_until',
                       'effects_negated_until',
                       'unblockable_this_turn', 'rush_this_turn', 'double_attack_this_turn', 'blocker_this_turn',
-                      'banish_this_turn',
+                      'banish_this_turn', 'extra_attribute_this_turn',
                       'can_attack_active', 'can_attack_active_this_turn',
-                      'power_buff', 'base_power_override',
+                      'power_buff', 'base_power_override', 'base_power_override_opp_turn',
                       'cost_buff', 'cost_buff_permanent', 'frozen_next_refresh',
                       'life_face_up', 'immunity_ko_until',
                       'battled_opp_character_this_turn', 'cannot_attack_opp_chars_cost_lte',
@@ -2124,8 +2126,12 @@ class EffectExecutor:
                 return False
         if step.get('filter_color') and step.get('filter_color', '').lower() not in target.color.lower():
             return False
-        if step.get('filter_attribute') and step.get('filter_attribute', '').lower() not in (target.attribute or '').lower():
-            return False
+        if step.get('filter_attribute'):
+            wanted_attr = step.get('filter_attribute', '').lower()
+            atributos_alvo = [(target.attribute or '').lower(),
+                              (getattr(target, 'extra_attribute_this_turn', '') or '').lower()]
+            if not any(wanted_attr in a for a in atributos_alvo if a):
+                return False
         if step.get('cost_lte') is not None and target.cost > step['cost_lte']:
             return False
         if step.get('cost_gte') is not None and target.cost < step['cost_gte']:
@@ -3069,8 +3075,17 @@ class EffectExecutor:
                 # Characters" (achado 19/07, OP07-050: 2 tipos alternativos,
                 # nao so 1). String unica preserva o comportamento antigo.
                 tipos = type_filter if isinstance(type_filter, list) else [type_filter]
-                contagem = sum(1 for c in me.field_chars
-                                if any(tp.lower() in (c.sub_types or '').lower() for tp in tipos))
+                matching = [c for c in me.field_chars
+                            if any(tp.lower() in (c.sub_types or '').lower() for tp in tipos)]
+                if conds.get('chars_gte_distinct_names'):
+                    # "N [Tipo] type Characters with DIFFERENT card names"
+                    # -- conta NOMES UNICOS entre os que batem o tipo, nao
+                    # o total de cartas (achado 19/07, OP16-038, unica
+                    # carta no banco com essa forma exata: 2 copias do
+                    # mesmo nome nao deveriam contar como 2).
+                    contagem = len({c.name for c in matching})
+                else:
+                    contagem = len(matching)
             else:
                 contagem = len(me.field_chars)
             if contagem < conds['chars_gte']:
@@ -3172,6 +3187,15 @@ class EffectExecutor:
             threshold = conds['no_char_power_gte']
             if any(c.power >= threshold for c in me.field_chars):
                 return False
+        if 'no_char_type_cost_gte' in conds:
+            # "if you have no Characters with a type including 'X' and a
+            # cost of N or more" -- mesma familia negada, filtro de
+            # TIPO+CUSTO (achado 19/07, OP16-017).
+            rule = conds['no_char_type_cost_gte']
+            tipo_ncc = _norm_type_text(rule['type'])
+            if any(tipo_ncc in _norm_type_text(c.sub_types) and c.cost >= rule['cost_gte']
+                   for c in me.field_chars):
+                return False
         if 'has_named_character' in conds:
             # "if/and you have a [Nome] Character" -- presenca simples por
             # nome no proprio campo (achado 16/07, OP08-109 e familia:
@@ -3180,6 +3204,28 @@ class EffectExecutor:
             needle = conds['has_named_character'].lower()
             if not any(needle in c.name.lower() for c in me.field_chars):
                 return False
+        if 'has_named_characters' in conds:
+            # "if you have [Nome1] and [Nome2]" -- AMBOS precisam estar em
+            # campo (achado 19/07, OP15-064/OP15-072).
+            power_eq_mn = conds.get('has_named_characters_power_eq')
+            for nome in conds['has_named_characters']:
+                needle2 = nome.lower()
+                matching = [c for c in me.field_chars if needle2 in c.name.lower()]
+                if not matching:
+                    return False
+                # "[Nome1] and [Nome2] Characters with N base power" --
+                # o nomeado TAMBEM precisa ter esse power exato (achado
+                # 19/07, ST30-016, unica carta no banco com essa forma).
+                if power_eq_mn is not None and not any(c.power == power_eq_mn for c in matching):
+                    return False
+        if 'has_named_characters_in_trash' in conds:
+            # "if you have [Nome1] and [Nome2] in your trash" -- presenca
+            # no TRASH, nao no campo (achado 19/07, OP08-006 Chessmarimo,
+            # unica carta no banco com essa forma).
+            for nome in conds['has_named_characters_in_trash']:
+                needle3 = nome.lower()
+                if not any(needle3 in c.name.lower() for c in me.trash):
+                    return False
         if 'own_rested_cards_gte' in conds:
             # "if/and you have N or more rested cards" -- QUALQUER carta
             # rested do proprio lado (DON + Characters + Leader + Stage),
@@ -4034,18 +4080,30 @@ class EffectExecutor:
 
             exclude = step.get('exclude', [])
             cost_lte = self._resolve_cost_lte(step, default=99)
-            filtered = eligible_cards(
-                candidates,
-                cost_lte=cost_lte,
-                cost_gte=step.get('cost_gte'),
-                power_lte=step.get('power_lte', 999999),
-                filter_text=step.get('filter_type', ''),
-                include_text=True,
-            )
+            filter_type_val = step.get('filter_type', '')
             filter_names = [n.lower() for n in step.get('filter_names', [])]
-            if filter_names:
-                filtered = [c for c in filtered
-                            if any(n in c.name.lower() for n in filter_names)]
+            base_kwargs = dict(cost_lte=cost_lte, cost_gte=step.get('cost_gte'),
+                                power_lte=step.get('power_lte', 999999))
+            if filter_type_val and filter_names:
+                # "[Nome] or {Tipo} type cards" -- alternativas (OR), nao
+                # filtro combinado (achado 19/07, OP15-101 Kalgara, unica
+                # carta no banco com essa forma exata). Sem isso, um card
+                # so batendo o TIPO mas nao o NOME (ou vice-versa) era
+                # descartado por engano.
+                pool_type = eligible_cards(candidates, filter_text=filter_type_val,
+                                           include_text=True, **base_kwargs)
+                pool_name = [c for c in eligible_cards(candidates, **base_kwargs)
+                             if any(n in c.name.lower() for n in filter_names)]
+                filtered = list(pool_type)
+                for c in pool_name:
+                    if not contains_identity(filtered, c):
+                        filtered.append(c)
+            else:
+                filtered = eligible_cards(
+                    candidates, filter_text=filter_type_val, include_text=True, **base_kwargs)
+                if filter_names:
+                    filtered = [c for c in filtered
+                                if any(n in c.name.lower() for n in filter_names)]
             if exclude:
                 filtered = [
                     c for c in filtered
@@ -5093,11 +5151,13 @@ class EffectExecutor:
             count = step.get('count', 1)
             cost_lte = step.get('cost_lte')
             cost_eq = step.get('cost_eq')
+            power_lte = step.get('power_lte')
             don_attached_gte = step.get('don_attached_gte')
             candidates = [c for c in opp.field_chars
                           if c.rested
                           and (cost_lte is None or c.cost <= cost_lte)
                           and (cost_eq is None or c.cost == cost_eq)
+                          and (power_lte is None or c.power <= power_lte)
                           and (don_attached_gte is None or c.don_attached >= don_attached_gte)]
             locked = []
             for _ in range(min(count, len(candidates))):
@@ -6861,14 +6921,26 @@ class EffectExecutor:
             return f'Rush: Character para tipo: {", ".join(granted)}' if granted else ''
         if action == 'select_grant_rush_character':
             from optcg_engine.rules_facade import choose_highest_board_value, eligible_cards
-            candidates = eligible_cards(me.field_chars, filter_text=step.get('filter_type', ''))
-            if not candidates:
-                return ''
-            target = choose_highest_board_value(candidates)
-            target.has_rush_character = True
-            if target.just_played:
-                target.rush_character_only_this_turn = True
-            return f'{target.name[:18]} ganhou Rush: Character'
+            count = step.get('count', 1)
+            candidates = eligible_cards(
+                me.field_chars,
+                filter_text=step.get('filter_type', ''),
+                name_or_code=step.get('filter_name', ''),
+            )
+            granted = []
+            for _ in range(min(count, len(candidates))):
+                target = choose_highest_board_value(candidates)
+                target.has_rush_character = True
+                if target.just_played:
+                    target.rush_character_only_this_turn = True
+                # atributo ADICIONAL temporario (achado 19/07, OP15-093:
+                # "gains [Rush: Character] and the 'Slash' attribute
+                # during this turn").
+                if step.get('grant_attribute'):
+                    target.extra_attribute_this_turn = step['grant_attribute']
+                remove_by_identity(candidates, target)
+                granted.append(target.name[:15])
+            return f'ganhou Rush: Character: {", ".join(granted)}' if granted else ''
         if action == 'gain_blocker':
             if step.get('duration') == 'this_turn':
                 card.blocker_this_turn = True
@@ -8008,8 +8080,15 @@ def apply_conditional_keyword_passives(gs: 'GameState', opp: 'GameState') -> Non
     if gs.field_stage is not None:
         pool.append(gs.field_stage)
     for c in pool:
-        passive = get_card_effects(c.code).get('passive', {})
+        effects_c = get_card_effects(c.code)
+        passive = effects_c.get('passive', {})
         steps = passive.get('steps', [])
+        # "[Opponent's Turn] ... base power become N" vive sob a chave
+        # 'opp_turn' (nao 'passive'), mas e uma aura ESTATICA igual as
+        # outras desta funcao -- so o timing/tag no texto e diferente
+        # (achado 19/07, OP15-070/OP15-071).
+        opp_turn_block = effects_c.get('opp_turn', {})
+        steps_opp_turn = opp_turn_block.get('steps', [])
         grants = [s for s in steps if s.get('action') in _KEYWORD_GRANTS]
         aura_grants = [s for s in steps if s.get('action') == 'grant_rush_character_type']
         # "All of your [Cor] Characters with a cost of N or more, other
@@ -8017,7 +8096,23 @@ def apply_conditional_keyword_passives(gs: 'GameState', opp: 'GameState') -> Non
         # mesma ideia de aura_grants, mas filtro de COR+CUSTO (nao tipo) e
         # concede [Rush] nativo (has_rush), nao "Rush: Character".
         rush_aura_grants = [s for s in steps if s.get('action') == 'grant_rush_aura']
-        if not grants and not aura_grants and not rush_aura_grants:
+        # "All of your [Nome] cards and this Character gain [Unblockable]/
+        # [Double Attack]" -- aura por NOME (achado 19/07, OP15-070 Fuza/
+        # OP15-071 Holly), SEMPRE inclui a propria carta-fonte (mesmo que
+        # o nome dela nao bata o filtro -- "this Character" e explicito
+        # no texto, distinto do filtro do grupo).
+        named_kw_grants = [s for s in steps
+                            if s.get('action') in ('grant_unblockable_aura_named',
+                                                    'grant_double_attack_aura_named')]
+        # "[Opponent's Turn] All of your [Nome] cards' base power and
+        # this Character's base power become N" -- override PERMANENTE
+        # de base power, so aplicado quando NAO e o turno do dono
+        # (checado em effective_card_power via your_turn). Mesma carta
+        # (OP15-070/071).
+        base_power_group_grants = [s for s in steps_opp_turn
+                                    if s.get('action') == 'set_base_power_group_opp_turn']
+        if not (grants or aura_grants or rush_aura_grants or named_kw_grants
+                or base_power_group_grants):
             continue
         if not ee._check_conditions(passive.get('conditions', {}), c):
             continue
@@ -8043,6 +8138,25 @@ def apply_conditional_keyword_passives(gs: 'GameState', opp: 'GameState') -> Non
                 if cost_gte is not None and target.cost < cost_gte:
                     continue
                 target.has_rush = True
+        for s in named_kw_grants:
+            campo = ('has_unblockable' if s['action'] == 'grant_unblockable_aura_named'
+                     else 'has_double_attack')
+            wanted_name = (s.get('filter_name') or '').lower()
+            setattr(c, campo, True)
+            for target in gs.field_chars:
+                if target is c:
+                    continue
+                if wanted_name and wanted_name in target.name.lower():
+                    setattr(target, campo, True)
+        for s in base_power_group_grants:
+            amount_bp = s.get('amount')
+            wanted_name_bp = (s.get('filter_name') or '').lower()
+            c.base_power_override_opp_turn = amount_bp
+            for target in gs.field_chars:
+                if target is c:
+                    continue
+                if wanted_name_bp and wanted_name_bp in target.name.lower():
+                    target.base_power_override_opp_turn = amount_bp
 
 
 class DecisionEngine:
@@ -8457,9 +8571,26 @@ class DecisionEngine:
                 if outros: return False
             if k == 'no_char_power_gte':
                 if any(c.power >= v for c in me.field_chars): return False
+            if k == 'no_char_type_cost_gte':
+                tipo_ncc2 = _norm_type_text(v['type'])
+                if any(tipo_ncc2 in _norm_type_text(c.sub_types) and c.cost >= v['cost_gte']
+                       for c in me.field_chars):
+                    return False
             if k == 'has_named_character':
                 needle = v.lower()
                 if not any(needle in c.name.lower() for c in me.field_chars): return False
+            if k == 'has_named_characters':
+                power_eq_mn2 = conds.get('has_named_characters_power_eq')
+                for nome in v:
+                    needle2 = nome.lower()
+                    matching2 = [cc for cc in me.field_chars if needle2 in cc.name.lower()]
+                    if not matching2: return False
+                    if power_eq_mn2 is not None and not any(cc.power == power_eq_mn2 for cc in matching2):
+                        return False
+            if k == 'has_named_characters_in_trash':
+                for nome in v:
+                    needle3 = nome.lower()
+                    if not any(needle3 in cc.name.lower() for cc in me.trash): return False
             if k == 'own_rested_cards_gte':
                 rested = me.don_rested + sum(1 for c in me.field_chars if c.rested)
                 rested += int(bool(getattr(me.leader, 'rested', False)))
@@ -9407,6 +9538,7 @@ class OPTCGMatch:
             c.double_attack_this_turn = False
             c.blocker_this_turn = False
             c.banish_this_turn = False
+            c.extra_attribute_this_turn = ''
             c.can_attack_active_this_turn = False
             c.ko_on_opp_blocker_used_this_turn = False
             c.immunity_ko_until = ''  # imunidade temporaria (grant_ko_immunity_type)

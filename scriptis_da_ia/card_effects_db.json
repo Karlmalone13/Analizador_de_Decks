@@ -3766,7 +3766,10 @@
             "action": "add_to_hand",
             "count": 1,
             "revealed_to_opponent": true,
-            "filter_type": "dracule mihawk"
+            "filter_type": "thriller bark pirates",
+            "filter_names": [
+              "dracule mihawk"
+            ]
           },
           {
             "action": "deck_bottom_rest"
@@ -32785,7 +32788,13 @@
             "target": "self",
             "duration": "this_turn"
           }
-        ]
+        ],
+        "conditions": {
+          "has_named_characters_in_trash": [
+            "kuromarimo",
+            "chess"
+          ]
+        }
       }
     }
   },
@@ -58388,13 +58397,16 @@
       "activate_main": {
         "steps": [
           {
-            "action": "set_active",
-            "count": 1,
-            "target": "own_character"
-          },
-          {
             "action": "trash_from_deck_top",
             "count": 4
+          },
+          {
+            "action": "set_active",
+            "count": 1,
+            "target": "own_character",
+            "conditions": {
+              "deck_lte": 0
+            }
           }
         ],
         "once_per_turn": true
@@ -59686,7 +59698,14 @@
         "steps": [
           {
             "action": "rest_opp_character",
-            "count": 1
+            "count": 1,
+            "power_lte": 5000,
+            "conditions": {
+              "has_named_characters": [
+                "satori",
+                "hotori"
+              ]
+            }
           }
         ],
         "costs": [
@@ -59878,10 +59897,20 @@
     "sub_types": "Animal Sky Island",
     "attribute": "Special",
     "effects": {
+      "opp_turn": {
+        "steps": [
+          {
+            "action": "set_base_power_group_opp_turn",
+            "filter_name": "shura",
+            "amount": 6000
+          }
+        ]
+      },
       "passive": {
         "steps": [
           {
-            "action": "gain_unblockable"
+            "action": "grant_unblockable_aura_named",
+            "filter_name": "shura"
           }
         ]
       }
@@ -59898,10 +59927,20 @@
     "sub_types": "Animal Sky Island",
     "attribute": "Strike",
     "effects": {
+      "opp_turn": {
+        "steps": [
+          {
+            "action": "set_base_power_group_opp_turn",
+            "filter_name": "ohm",
+            "amount": 6000
+          }
+        ]
+      },
       "passive": {
         "steps": [
           {
-            "action": "gain_double_attack"
+            "action": "grant_double_attack_aura_named",
+            "filter_name": "ohm"
           }
         ]
       }
@@ -59924,7 +59963,13 @@
             "action": "debuff_power",
             "amount": 3000,
             "target": "opp_character",
-            "duration": "this_turn"
+            "duration": "this_turn",
+            "conditions": {
+              "has_named_characters": [
+                "kotori",
+                "satori"
+              ]
+            }
           }
         ],
         "costs": [
@@ -60143,7 +60188,9 @@
             "count": 1
           },
           {
-            "action": "lock_opp_don"
+            "action": "lock_opp_character_refresh",
+            "count": 1,
+            "power_lte": 6000
           }
         ],
         "costs": [
@@ -60188,7 +60235,8 @@
         "steps": [
           {
             "action": "rest_opp_character",
-            "count": 1
+            "count": 1,
+            "power_lte": 5000
           },
           {
             "action": "draw",
@@ -60680,7 +60728,10 @@
       "activate_main": {
         "steps": [
           {
-            "action": "gain_rush_character",
+            "action": "select_grant_rush_character",
+            "count": 1,
+            "filter_name": "monkey.d.luffy",
+            "grant_attribute": "slash",
             "duration": "this_turn"
           }
         ],
@@ -60867,7 +60918,8 @@
               "action": "life_to_hand",
               "count": 1
             },
-            "filter_type": "sky island"
+            "filter_type": "sky island",
+            "power_gte": 6000
           }
         ]
       }
@@ -60967,8 +61019,12 @@
           },
           {
             "action": "add_to_hand",
-            "count": 1,
-            "revealed_to_opponent": false
+            "count": 2,
+            "revealed_to_opponent": true,
+            "filter_type": "shandian warrior",
+            "filter_names": [
+              "mont blanc noland"
+            ]
           },
           {
             "action": "deck_bottom_rest"
@@ -61827,7 +61883,8 @@
         "costs": [
           {
             "type": "trash_from_hand",
-            "count": 1
+            "count": 1,
+            "power_eq": 8000
           }
         ]
       }
@@ -61923,6 +61980,7 @@
             "cost_lte": 99,
             "filter_name": "shanks",
             "conditions": {
+              "don_on_field_gte": 10,
               "leader_type": "red-haired pirates"
             }
           }
@@ -61988,7 +62046,8 @@
         "costs": [
           {
             "type": "trash_from_hand",
-            "count": 1
+            "count": 1,
+            "power_eq": 8000
           }
         ]
       },
@@ -62028,7 +62087,8 @@
         "costs": [
           {
             "type": "trash_from_hand",
-            "count": 1
+            "count": 1,
+            "power_eq": 8000
           }
         ]
       },
@@ -62075,13 +62135,19 @@
           {
             "action": "debuff_power",
             "amount": 4000,
-            "target": "opp_character",
+            "target": "self",
             "duration": "this_turn"
           },
           {
             "action": "keyword_blocker"
           }
-        ]
+        ],
+        "conditions": {
+          "no_char_type_cost_gte": {
+            "type": "whitebeard pirates",
+            "cost_gte": 8
+          }
+        }
       }
     }
   },
@@ -62187,6 +62253,12 @@
           {
             "type": "rest_don",
             "count": 1
+          },
+          {
+            "type": "reveal_from_hand",
+            "count": 1,
+            "power_eq": 8000,
+            "card_type": "CHARACTER"
           }
         ]
       }
@@ -62506,6 +62578,13 @@
       "passive": {
         "steps": [
           {
+            "action": "substitute_ko",
+            "cost": {
+              "action": "rest_own_card",
+              "count": 2
+            }
+          },
+          {
             "action": "keyword_unblockable"
           }
         ]
@@ -62663,7 +62742,12 @@
           {
             "action": "set_active",
             "count": 99,
-            "target": "own_character_and_leader"
+            "target": "own_character_and_leader",
+            "conditions": {
+              "chars_gte": 5,
+              "chars_gte_type_filter": "impel down",
+              "chars_gte_distinct_names": true
+            }
           }
         ],
         "costs": [
@@ -62732,7 +62816,13 @@
             "count": 1,
             "cost_lte": 6
           }
-        ]
+        ],
+        "conditions": {
+          "has_named_characters": [
+            "monkey.d.luffy",
+            "mr.3(galdino)"
+          ]
+        }
       }
     }
   },
@@ -67322,7 +67412,7 @@
           {
             "action": "debuff_power",
             "amount": 3000,
-            "target": "opp_character",
+            "target": "self",
             "duration": "this_turn"
           }
         ]
@@ -67498,7 +67588,8 @@
         "costs": [
           {
             "type": "trash_from_hand",
-            "count": 1
+            "count": 1,
+            "power_gte": 6000
           }
         ]
       },
@@ -77727,7 +77818,8 @@
         "costs": [
           {
             "type": "trash_from_hand",
-            "count": 1
+            "count": 1,
+            "power_eq": 6000
           }
         ]
       }
@@ -77792,7 +77884,8 @@
         "costs": [
           {
             "type": "trash_from_hand",
-            "count": 1
+            "count": 1,
+            "power_eq": 6000
           }
         ]
       },
@@ -78022,14 +78115,21 @@
       "counter": {
         "steps": [
           {
-            "action": "draw",
-            "count": 1
-          },
-          {
             "action": "buff_power",
             "amount": 3000,
             "target": "leader_or_character",
             "duration": "battle_only"
+          },
+          {
+            "action": "draw",
+            "count": 1,
+            "conditions": {
+              "has_named_characters": [
+                "portgas.d.ace",
+                "monkey.d.luffy"
+              ],
+              "has_named_characters_power_eq": 6000
+            }
           }
         ]
       }

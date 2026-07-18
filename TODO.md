@@ -1,9 +1,25 @@
 # TODO — Analisador de Decks OPTCG
 
 **Última atualização:** 19 de julho de 2026
-**Estado:** varredura contínua do parser; 161 suspeitos (severidade 1 only)
+**Estado:** varredura contínua do parser; 139 suspeitos (severidade 1 only)
 **Baseline do código:** ver `git log --oneline -1`
 **Repo:** github.com/Karlmalone13/Analizador_de_Decks
+
+> 19/07/2026: lote de 15 bugs reais (OP15-020 a OP16-038), 26 cartas no
+> total — o lote mais produtivo até agora (janela 101-150, ~10-12% de
+> acerto). 1 falso-positivo confirmado (OP15-020, mesma simplificação de
+> OP05-038). Destaques: bug ESTRUTURAL real em `parse_power_buff` (o
+> ramo de debuff nunca checava se o alvo era a própria carta antes de
+> assumir "sempre oponente" — corrigido na origem, já capturou uma
+> carta extra de graça); 2 mecânicas novas (aura de keyword por NOME +
+> override condicional de base power "só no turno do oponente", e
+> seleção por nome de [Rush: Character] + concessão de atributo
+> temporário); nova condição `has_named_characters` (presença composta
+> de 2 nomeados, com variantes para trash e para exigir power exato);
+> typo "K.O'd" (faltando 1 ponto) bloqueava uma substituição inteira.
+> Ver HANDOFF bloco 277 e
+> `parser_audits/2026-07-19_lote_9_op15-020_a_op16-038.json`.
+> Auditor: 161 -> 139 suspeitos.
 
 > 19/07/2026: lote de 8 bugs reais (OP09-051 a OP10-080), 24 cartas no
 > total (via diff_parser + generalização): OP09-068/070/073+família
