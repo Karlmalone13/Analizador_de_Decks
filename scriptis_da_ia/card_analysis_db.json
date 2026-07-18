@@ -6814,11 +6814,6 @@
     "action": "activate_trash_event_main",
     "trigger": "on_play",
     "cost_lte": 7
-   },
-   {
-    "action": "activate_trash_event_main",
-    "trigger": "your_turn",
-    "cost_lte": 7
    }
   ],
   "synergy_states": {},
@@ -6858,11 +6853,6 @@
    {
     "action": "buff_power",
     "trigger": "on_play",
-    "target": "select_filtered"
-   },
-   {
-    "action": "buff_power",
-    "trigger": "your_turn",
     "target": "select_filtered"
    }
   ],
@@ -8038,10 +8028,6 @@
    {
     "action": "draw",
     "trigger": "on_play"
-   },
-   {
-    "action": "draw",
-    "trigger": "your_turn"
    },
    {
     "action": "play_card",
@@ -21848,12 +21834,6 @@
     "trigger": "on_play",
     "power_lte": 3000,
     "target": "opp_character"
-   },
-   {
-    "action": "ko",
-    "trigger": "your_turn",
-    "power_lte": 3000,
-    "target": "opp_character"
    }
   ],
   "synergy_states": {},
@@ -31290,10 +31270,6 @@
    {
     "action": "draw",
     "trigger": "on_play"
-   },
-   {
-    "action": "draw",
-    "trigger": "your_turn"
    },
    {
     "action": "ko",
@@ -43223,11 +43199,6 @@
     "action": "buff_power",
     "trigger": "on_play",
     "target": "select_filtered"
-   },
-   {
-    "action": "buff_power",
-    "trigger": "your_turn",
-    "target": "select_filtered"
    }
   ],
   "synergy_states": {},
@@ -44532,11 +44503,6 @@
    {
     "action": "buff_power",
     "trigger": "on_play",
-    "target": "select_filtered"
-   },
-   {
-    "action": "buff_power",
-    "trigger": "your_turn",
     "target": "select_filtered"
    }
   ],
@@ -46462,11 +46428,6 @@
     "action": "buff_power",
     "trigger": "on_play",
     "target": "select_filtered"
-   },
-   {
-    "action": "buff_power",
-    "trigger": "your_turn",
-    "target": "select_filtered"
    }
   ],
   "synergy_states": {},
@@ -48273,19 +48234,6 @@
    {
     "action": "deck_bottom_rest",
     "trigger": "when_attacking"
-   },
-   {
-    "action": "look_top_deck",
-    "trigger": "your_turn"
-   },
-   {
-    "action": "play_from_deck",
-    "trigger": "your_turn",
-    "power_lte": 4000
-   },
-   {
-    "action": "deck_bottom_rest",
-    "trigger": "your_turn"
    }
   ],
   "synergy_states": {},
@@ -50209,11 +50157,6 @@
    {
     "action": "buff_power",
     "trigger": "on_play",
-    "target": "select_filtered"
-   },
-   {
-    "action": "buff_power",
-    "trigger": "your_turn",
     "target": "select_filtered"
    }
   ],
@@ -73426,11 +73369,6 @@
     "action": "buff_power",
     "trigger": "on_play",
     "target": "select_filtered"
-   },
-   {
-    "action": "buff_power",
-    "trigger": "your_turn",
-    "target": "select_filtered"
    }
   ],
   "synergy_states": {},
@@ -86180,11 +86118,6 @@
     "action": "buff_power",
     "trigger": "on_play",
     "target": "select_filtered"
-   },
-   {
-    "action": "buff_power",
-    "trigger": "your_turn",
-    "target": "select_filtered"
    }
   ],
   "synergy_states": {},
@@ -98340,11 +98273,6 @@
     "action": "place_opp_character_bottom_deck",
     "trigger": "on_play",
     "power_lte": 2000
-   },
-   {
-    "action": "place_opp_character_bottom_deck",
-    "trigger": "your_turn",
-    "power_lte": 2000
    }
   ],
   "synergy_states": {},
@@ -98950,10 +98878,6 @@
    {
     "action": "rest_opp_don",
     "trigger": "on_play"
-   },
-   {
-    "action": "rest_opp_don",
-    "trigger": "your_turn"
    }
   ],
   "synergy_states": {},
@@ -111585,11 +111509,6 @@
    {
     "action": "buff_power",
     "trigger": "on_play",
-    "target": "leader"
-   },
-   {
-    "action": "buff_power",
-    "trigger": "your_turn",
     "target": "leader"
    }
   ],

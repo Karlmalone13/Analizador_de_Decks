@@ -3012,25 +3012,9 @@
  "EB03-030": {},
  "EB03-031": {
   "on_play": {
-   "costs": [
-    {
-     "count": 1,
-     "optional": false,
-     "type": "don_minus"
-    }
-   ],
-   "steps": [
-    {
-     "action": "activate_trash_event_main",
-     "conditions": {
-      "leader_is": "sanji"
-     },
-     "cost_lte": 7,
-     "count": 1
-    }
-   ]
-  },
-  "your_turn": {
+   "conditions": {
+    "your_turn_only": true
+   },
    "costs": [
     {
      "count": 1,
@@ -3052,18 +3036,9 @@
  },
  "EB03-032": {
   "on_play": {
-   "steps": [
-    {
-     "action": "buff_power",
-     "amount": 2000,
-     "count": 1,
-     "duration": "this_turn",
-     "filter_type": "charlotte katakuri",
-     "target": "select_filtered"
-    }
-   ]
-  },
-  "your_turn": {
+   "conditions": {
+    "your_turn_only": true
+   },
    "steps": [
     {
      "action": "buff_power",
@@ -3706,7 +3681,8 @@
  "EB03-058": {
   "on_play": {
    "conditions": {
-    "life_lte": 2
+    "life_lte": 2,
+    "your_turn_only": true
    },
    "steps": [
     {
@@ -3724,17 +3700,6 @@
      "action": "play_card",
      "count": 1,
      "source": "self"
-    }
-   ]
-  },
-  "your_turn": {
-   "conditions": {
-    "life_lte": 2
-   },
-   "steps": [
-    {
-     "action": "draw",
-     "count": 1
     }
    ]
   }
@@ -9341,16 +9306,9 @@
  },
  "OP03-013": {
   "on_play": {
-   "steps": [
-    {
-     "action": "ko",
-     "count": 1,
-     "power_lte": 3000,
-     "target": "opp_character"
-    }
-   ]
-  },
-  "your_turn": {
+   "conditions": {
+    "your_turn_only": true
+   },
    "steps": [
     {
      "action": "ko",
@@ -13321,6 +13279,9 @@
  },
  "OP04-101": {
   "on_play": {
+   "conditions": {
+    "your_turn_only": true
+   },
    "steps": [
     {
      "action": "draw",
@@ -13340,14 +13301,6 @@
      "action": "play_card",
      "count": 1,
      "source": "self"
-    }
-   ]
-  },
-  "your_turn": {
-   "steps": [
-    {
-     "action": "draw",
-     "count": 1
     }
    ]
   }
@@ -18447,18 +18400,9 @@
  },
  "OP07-014": {
   "on_play": {
-   "steps": [
-    {
-     "action": "buff_power",
-     "amount": 2000,
-     "count": 1,
-     "duration": "this_turn",
-     "filter_type": "portgas.d.ace",
-     "target": "select_filtered"
-    }
-   ]
-  },
-  "your_turn": {
+   "conditions": {
+    "your_turn_only": true
+   },
    "steps": [
     {
      "action": "buff_power",
@@ -18978,18 +18922,9 @@
  },
  "OP07-043": {
   "on_play": {
-   "steps": [
-    {
-     "action": "buff_power",
-     "amount": 2000,
-     "count": 1,
-     "duration": "this_turn",
-     "filter_type": "boa hancock",
-     "target": "select_filtered"
-    }
-   ]
-  },
-  "your_turn": {
+   "conditions": {
+    "your_turn_only": true
+   },
    "steps": [
     {
      "action": "buff_power",
@@ -19810,18 +19745,9 @@
  },
  "OP07-088": {
   "on_play": {
-   "steps": [
-    {
-     "action": "buff_power",
-     "amount": 2000,
-     "count": 1,
-     "duration": "this_turn",
-     "filter_type": "rob lucci",
-     "target": "select_filtered"
-    }
-   ]
-  },
-  "your_turn": {
+   "conditions": {
+    "your_turn_only": true
+   },
    "steps": [
     {
      "action": "buff_power",
@@ -20601,6 +20527,9 @@
  },
  "OP08-007": {
   "on_play": {
+   "conditions": {
+    "your_turn_only": true
+   },
    "steps": [
     {
      "action": "look_top_deck",
@@ -20617,22 +20546,6 @@
    ]
   },
   "when_attacking": {
-   "steps": [
-    {
-     "action": "look_top_deck",
-     "count": 5
-    },
-    {
-     "action": "play_from_deck",
-     "count": 1,
-     "power_lte": 4000
-    },
-    {
-     "action": "deck_bottom_rest"
-    }
-   ]
-  },
-  "your_turn": {
    "steps": [
     {
      "action": "look_top_deck",
@@ -21362,18 +21275,9 @@
  },
  "OP08-051": {
   "on_play": {
-   "steps": [
-    {
-     "action": "buff_power",
-     "amount": 2000,
-     "count": 1,
-     "duration": "this_turn",
-     "filter_type": "edward weevil",
-     "target": "select_filtered"
-    }
-   ]
-  },
-  "your_turn": {
+   "conditions": {
+    "your_turn_only": true
+   },
    "steps": [
     {
      "action": "buff_power",
@@ -31378,18 +31282,9 @@
  },
  "OP12-105": {
   "on_play": {
-   "steps": [
-    {
-     "action": "buff_power",
-     "amount": 2000,
-     "count": 1,
-     "duration": "this_turn",
-     "filter_type": "trafalgar law",
-     "target": "select_filtered"
-    }
-   ]
-  },
-  "your_turn": {
+   "conditions": {
+    "your_turn_only": true
+   },
    "steps": [
     {
      "action": "buff_power",
@@ -36934,18 +36829,9 @@
  },
  "OP15-034": {
   "on_play": {
-   "steps": [
-    {
-     "action": "buff_power",
-     "amount": 2000,
-     "count": 1,
-     "duration": "this_turn",
-     "filter_type": "brook",
-     "target": "select_filtered"
-    }
-   ]
-  },
-  "your_turn": {
+   "conditions": {
+    "your_turn_only": true
+   },
    "steps": [
     {
      "action": "buff_power",
@@ -42200,19 +42086,8 @@
  "P-082": {
   "on_play": {
    "conditions": {
-    "leader_type": "cross guild"
-   },
-   "steps": [
-    {
-     "action": "place_opp_character_bottom_deck",
-     "count": 1,
-     "power_lte": 2000
-    }
-   ]
-  },
-  "your_turn": {
-   "conditions": {
-    "leader_type": "cross guild"
+    "leader_type": "cross guild",
+    "your_turn_only": true
    },
    "steps": [
     {
@@ -42542,19 +42417,8 @@
   "on_play": {
    "conditions": {
     "leader_multicolor": true,
-    "opp_don_on_field_lte": 7
-   },
-   "steps": [
-    {
-     "action": "rest_opp_don",
-     "count": 1
-    }
-   ]
-  },
-  "your_turn": {
-   "conditions": {
-    "leader_multicolor": true,
-    "opp_don_on_field_lte": 7
+    "opp_don_on_field_lte": 7,
+    "your_turn_only": true
    },
    "steps": [
     {
@@ -47549,16 +47413,9 @@
  "ST22-010": {},
  "ST22-011": {
   "on_play": {
-   "steps": [
-    {
-     "action": "buff_power",
-     "amount": 2000,
-     "duration": "this_turn",
-     "target": "leader"
-    }
-   ]
-  },
-  "your_turn": {
+   "conditions": {
+    "your_turn_only": true
+   },
    "steps": [
     {
      "action": "buff_power",

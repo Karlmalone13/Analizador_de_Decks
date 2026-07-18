@@ -1634,6 +1634,7 @@ class EffectExecutor:
         self.opp = opp
         self._once_used: set = set()  # (card_code, trigger)
         self._last_selected: Optional[Card] = None  # ver execute()
+        self._is_my_turn = True  # ver execute() (contexto do [Your Turn][On Play])
 
     def reset_once_per_turn(self):
         self._once_used.clear()
@@ -1839,7 +1840,8 @@ class EffectExecutor:
                 logs.extend(self.execute(source, 'on_don_given'))
         return logs
 
-    def execute(self, card: Card, trigger: str, verbose: bool = False, is_opp_turn: bool = False) -> list:
+    def execute(self, card: Card, trigger: str, verbose: bool = False, is_opp_turn: bool = False,
+                is_my_turn: bool = True) -> list:
         """
         Executa todos os efeitos de um trigger para uma carta.
         Retorna lista de logs para o replay.
@@ -1855,7 +1857,24 @@ class EffectExecutor:
         proprio turno = opp_turn_only NAO vale). Default False (conservador
         -- nao dispara de graca em contexto indeterminado, mesmo principio
         do don_requirement abaixo).
+
+        is_my_turn: relevante SO para trigger='on_play' com a condicao
+        'your_turn_only' (gerada para blocos "[Your Turn][On Play]", ex:
+        ST22-011 Whitey Bay, EB03-058 Vegapunk -- achado 19/07/2026). O
+        parser fundia esse padrao em DOIS blocos identicos ('on_play' e
+        'your_turn'), fazendo o efeito disparar ao entrar em campo E
+        reaplicar de novo TODO turno seguinte via apply_your_turn_buffs
+        (deveria disparar no maximo 1x, e so quando de fato for o turno do
+        dono). Default True: a esmagadora maioria dos on_play acontece no
+        turno de quem joga a carta (Main Phase normal, ou play_card de
+        OUTRO efeito, que so busca a propria mao e sempre resolve no turno
+        de quem controla). So os 2 call-sites de resolucao de Trigger de
+        vida (dano de combate/fora de combate) passam False explicitamente
+        -- ali quem joga a carta e o DEFENSOR, durante o turno do ATACANTE.
+        Propagado via self._is_my_turn pra _put_into_play (play_card
+        aninhado dentro da resolucao do proprio 'trigger' de vida).
         """
+        self._is_my_turn = is_my_turn
         effects = get_card_effects(card.code)
         if trigger not in effects:
             return []
@@ -1878,6 +1897,11 @@ class EffectExecutor:
         # [Opponent's Turn][On K.O.]: so dispara se o K.O. aconteceu de fato
         # no turno do oponente do dono da carta.
         if trigger == 'on_ko' and ef_data.get('conditions', {}).get('opp_turn_only') and not is_opp_turn:
+            return []
+
+        # [Your Turn][On Play]: so dispara se for de fato o turno do dono
+        # da carta (ver docstring de execute() acima).
+        if trigger == 'on_play' and ef_data.get('conditions', {}).get('your_turn_only') and not is_my_turn:
             return []
 
         # Verifica condições
@@ -6240,7 +6264,9 @@ class EffectExecutor:
                 if life_card.has_trigger:
                     opp.triggers_activated += 1
                     ee_opp = EffectExecutor(opp, me)
-                    ee_opp.execute(life_card, 'trigger')
+                    # is_my_turn=False: quem joga a carta (opp, dona da vida)
+                    # nao e quem tem o turno agora (me, quem causou o dano).
+                    ee_opp.execute(life_card, 'trigger', is_my_turn=False)
             return f'-{dealt} vida do oponente (dano, com trigger)' if dealt else ''
 
         # ── LIFE: descartar da própria vida (custo/troca) ─────────────────────
@@ -6351,8 +6377,14 @@ class EffectExecutor:
                 elif c.card_type == 'EVENT':
                     me.trash.append(c)
                     me.events_activated_costs_this_turn.append(c.cost)
-                # dispara o efeito on_play da carta jogada (entrou agora)
-                self.execute(c, 'on_play')
+                # dispara o efeito on_play da carta jogada (entrou agora).
+                # Propaga self._is_my_turn: se este play_card esta rodando
+                # dentro da resolucao do proprio 'trigger' de vida (GRUPO 1,
+                # source='self'), o contexto e o mesmo passado pelo call-site
+                # que resolveu a vida (is_my_turn=False, e o turno de quem
+                # ataca); se veio do play_card de OUTRO efeito (GRUPO 2), o
+                # contexto e o turno de quem controla (default True).
+                self.execute(c, 'on_play', is_my_turn=self._is_my_turn)
                 self.execute(c, 'main')
 
             source = step.get('source')
@@ -11109,7 +11141,9 @@ class OPTCGMatch:
                     if life_card.has_trigger and not attacker.has_banish:
                         opp.triggers_activated += 1
                         ee_opp = EffectExecutor(opp, p)
-                        tg_logs = ee_opp.execute(life_card, 'trigger')
+                        # is_my_turn=False: opp (dono da vida) nao tem o
+                        # turno agora -- p (atacante) tem.
+                        tg_logs = ee_opp.execute(life_card, 'trigger', is_my_turn=False)
                         if verbose:
                             for log in tg_logs:
                                 if log:

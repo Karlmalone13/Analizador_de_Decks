@@ -1,5 +1,59 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-19 (269) - Claude - fix generico: "[Your Turn][On Play]" disparava 2x (15 cartas)
+
+Retomada a varredura do parser (213 suspeitos, severidade 1). Lote de 10
+mostrado ao usuario: a maioria false-positivos ja conhecidos (`give_don`/
+`buff_power`/`debuff_power` com "up to 1" = alvo unico implicito, sem
+necessidade de campo extra) + 1 ja reportado antes (OP09-118) + 1
+mecanismo ja correto por design (`reveal_deck_top_conditional` sempre
+revela exatamente 1 carta, 10 cartas usam sem variante "revele N").
+
+**Achado real, fora do que a carta-gatilho (ST22-011 Whitey Bay) sugeria:**
+15 cartas com a tag colada `[Your Turn][On Play]` geravam DOIS blocos
+identicos ('on_play' + 'your_turn') no JSON -- o efeito disparava ao
+entrar em campo (sem checar de quem e o turno) E reaplicava de novo TODO
+turno seguinte via `apply_your_turn_buffs()`. Usuario mostrou uma carta
+ainda nao lancada (Killer, ST36-002, chega semana que vem) com o mesmo
+padrao + um `[Trigger]` proprio -- isso corrigiu minha primeira tentativa
+de fix (colapsar num unico `on_play` gated por turno, sem mais nada):
+quebraria o caso real de jogar a carta via Trigger de vida no turno do
+OPONENTE (2 cartas ja no banco fazem isso: EB03-058 Vegapunk, OP04-101).
+
+Fix final (ver `parser_audits/2026-07-19_your_turn_on_play_disparo_unico.json`
+para o registro completo): parser funde os dois blocos duplicados num
+unico `on_play` com `conditions.your_turn_only=True`; engine ganhou
+`EffectExecutor.execute(is_my_turn=True)` (mesmo padrao ja usado por
+`is_opp_turn`/`opp_turn_only` em on_ko) -- gate so bloqueia se
+`your_turn_only` E `not is_my_turn`. Default True cobre a maioria (Main
+Phase normal / play_card de outro efeito, sempre no turno de quem
+controla); os 2 call-sites que resolvem Trigger de vida (dano de combate
+e fora de combate) passam `is_my_turn=False` explicitamente. Propagado
+via `self._is_my_turn` ate `_put_into_play` (o play_card aninhado dentro
+da resolucao do proprio 'trigger').
+
+**Armadilha durante a implementacao:** a primeira versao do fix (mesclar
+logo apos o loop de `trigger_patterns`) quebrou 7 das 15 cartas -- um
+fallback DIFERENTE, mais abaixo no arquivo (`your_turn_power`, regex
+solto por "+N power" apos "[your turn]"), so escreve `result['your_turn']`
+quando a chave esta AUSENTE; como meu merge deletava 'your_turn' cedo
+demais, esse fallback via a chave ausente e a recriava com um conteudo
+GENERICO e ERRADO (`target=self, duration=your_turn` em vez do buff real
+da carta). Corrigido movendo o merge pro FIM da funcao (depois de todos
+os fallbacks que tocam 'your_turn'). `diff_parser.py` pegou isso na hora
+(MUDOU mostrava conteudo diferente do esperado nessas 7).
+
+Validado: `diff_parser.py` GANHOU=0/PERDEU=0/MUDOU=15 (exatamente as 15).
+`smoke_fast.py` com teste novo de EXECUCAO real (ST22-011 dispara 1x so;
+Vegapunk via Trigger no turno do oponente NAO compra; Vegapunk jogada
+normal compra). `smoke_test.py` TODOS OS TESTES PASSARAM. `smoke_test_broad.py`
+7/7 sem excecao (mexeu em `EffectExecutor.execute`, codigo compartilhado
+por toda a base -- broad rodado na hora, nao esperou 3 fixes).
+
+**213 suspeitos ainda restantes** (este fix nao reduz o contador do
+audit -- os "numeros perdidos" continuavam batendo certo antes e depois,
+o bug era de EXECUCAO/estrutura, nao de extracao de numero).
+
 ## 2026-07-19 (268) - Claude - decisao do usuario: adiar pendencias do proxy
 
 Usuario pediu para registrar e ADIAR as 3 pendencias do bloco 267 (proxy/

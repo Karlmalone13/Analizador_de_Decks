@@ -7354,6 +7354,25 @@ def parse_card_effect(card_text, card_type):
             if '[once per turn]' in full_text_low:
                 passive['once_per_turn'] = True
 
+    # "[Your Turn][On Play]" -- as duas tags coladas geram DOIS blocos
+    # identicos (o regex generico de 'your_turn' tambem casa o mesmo corpo
+    # apos "[on play]"). Sem fundir, o efeito disparava ao entrar em campo
+    # E reaplicava de novo TODO turno seguinte via apply_your_turn_buffs
+    # (achado 19/07/2026, ST22-011 Whitey Bay + 14 outras: EB03-031/032/058,
+    # OP03-013, OP04-101, OP07-014/043/088, OP08-007/051, OP12-105,
+    # OP15-034, P-082, PRB02-005). O correto e um UNICO disparo (On Play),
+    # gated por 'your_turn_only' -- so vale se for de fato o turno do dono
+    # no momento em que a carta entra em campo (decision_engine.py checa
+    # via EffectExecutor.execute(is_my_turn=...)). Fica no FIM da funcao
+    # (nao logo apos o loop de trigger_patterns) porque fallbacks mais
+    # abaixo (ex: your_turn_power em "[your turn]...+N power") reescrevem
+    # 'your_turn' quando ausente -- fundir cedo demais fazia esses
+    # fallbacks reviverem um 'your_turn' generico e ERRADO por engano.
+    if ('on_play' in result and 'your_turn' in result
+            and result['on_play'].get('steps') == result['your_turn'].get('steps')):
+        result['on_play'].setdefault('conditions', {})['your_turn_only'] = True
+        del result['your_turn']
+
     return result
 
 

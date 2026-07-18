@@ -1,9 +1,21 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 18 de julho de 2026
-**Estado:** varredura contínua do parser; 217 suspeitos restantes após o lote 2 de 10 cartas
-**Baseline do código:** ver `git log --oneline -1` (branch local; push pendente)
+**Última atualização:** 19 de julho de 2026
+**Estado:** varredura contínua do parser; 213 suspeitos (severidade 1 only)
+**Baseline do código:** ver `git log --oneline -1`
 **Repo:** github.com/Karlmalone13/Analizador_de_Decks
+
+> 19/07/2026: lote de 10 suspeitos severidade-1 revisado. A maioria era
+> falso-positivo conhecido (`give_don`/`buff_power`/`debuff_power` "up to 1"
+> = alvo unico implicito). Achado real: 15 cartas com `[Your Turn][On Play]`
+> disparavam 2x (ao entrar em campo E todo turno seguinte via
+> apply_your_turn_buffs) -- corrigido com gate `your_turn_only` +
+> `EffectExecutor.execute(is_my_turn=...)`, preservando o caso real de
+> jogar via Trigger de vida no turno do oponente (usuario mostrou carta
+> nao lancada ainda, Killer ST36-002, com o mesmo padrao). Ver HANDOFF
+> bloco 269 e `parser_audits/2026-07-19_your_turn_on_play_disparo_unico.json`.
+> Nao reduz o contador do audit (bug era de execucao, nao de extracao de
+> numero) -- 213 suspeitos continuam.
 
 > 19/07/2026: usuario decidiu ADIAR as 3 pendencias do proxy/telemetria abaixo
 > (state_after_coverage_pct, semantic_transition_failed, winner:null) ate

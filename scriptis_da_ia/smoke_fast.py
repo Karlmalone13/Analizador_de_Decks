@@ -5076,6 +5076,62 @@ def test_kinemon_op10_026_027_e_familia_place_self_bottom_deck() -> None:
           debuffer not in me3.field_chars and debuffer in me3.deck and alvo_opp.power_buff == -3000)
 
 
+def test_your_turn_on_play_dispara_uma_vez_e_so_no_seu_turno() -> None:
+    # "[Your Turn][On Play]" (ST22-011 Whitey Bay + 14 outras) gerava DOIS
+    # blocos identicos (on_play e your_turn) -- o efeito disparava ao
+    # entrar em campo E reaplicava de novo TODO turno seguinte via
+    # apply_your_turn_buffs (achado 19/07/2026). Fundido num unico on_play
+    # com o gate 'your_turn_only', checado via EffectExecutor.execute
+    # (is_my_turn=...).
+    whitey = real_card("ST22-011")
+    check("ST22-011 nao tem mais bloco your_turn duplicado (fundido no on_play)",
+          "your_turn" not in get_card_effects("ST22-011")
+          and get_card_effects("ST22-011").get("on_play", {}).get("conditions", {}).get("your_turn_only") is True)
+
+    lider = mk("WBLDR", "Lider", card_type="LEADER")
+    me = GameState(leader=lider, turn=3)
+    me.field_chars = [whitey]
+    opp = GameState(leader=mk("WBOPP", "Opp", card_type="LEADER"), turn=3)
+    ee = EffectExecutor(me, opp)
+    ee.execute(whitey, "on_play")  # jogada normal = sempre o seu proprio turno (default is_my_turn=True)
+    check("Execucao real: Whitey Bay jogada normalmente buffa o lider (+2000)",
+          lider.power_buff == 2000)
+
+    # Turno seguinte: apply_your_turn_buffs() zera e recalcula 'your_turn'/
+    # 'passive' -- como o bloco duplicado foi removido, o buff do on_play
+    # (ja aplicado uma vez, duration=this_turn) NAO deve ser reaplicado por
+    # este mecanismo.
+    ee.apply_your_turn_buffs()
+    check("Execucao real: no turno seguinte, apply_your_turn_buffs NAO reaplica o buff (nao ha mais your_turn duplicado)",
+          lider.power_buff == 0)
+
+    # EB03-058 (Vegapunk): tem [Trigger] "If your Leader is Vegapunk, play
+    # this card" -- pode entrar em campo via Trigger de vida, no turno do
+    # OPONENTE (quem esta atacando). O "draw 1 card if life<=2" so deve
+    # disparar se REALMENTE for o turno do dono.
+    vegapunk_a = real_card("EB03-058")
+    me2 = GameState(leader=mk("VPLDR", "Lider", card_type="LEADER"), turn=3)
+    me2.field_chars = [vegapunk_a]
+    me2.life = []  # 0 Life cards -> bate a condicao life_lte=2
+    me2.deck = [mk("VPDECK2", "Carta do Deck")]  # garante que o bloqueio e o gate, nao deck vazio
+    opp2 = GameState(leader=mk("VPOPP", "Opp", card_type="LEADER"), turn=3)
+    hand_antes = len(me2.hand)
+    EffectExecutor(me2, opp2).execute(vegapunk_a, "on_play", is_my_turn=False)
+    check("Execucao real: Vegapunk via Trigger no turno do oponente (is_my_turn=False) NAO compra carta",
+          len(me2.hand) == hand_antes)
+
+    vegapunk_b = real_card("EB03-058")
+    me3 = GameState(leader=mk("VPLDR2", "Lider", card_type="LEADER"), turn=3)
+    me3.field_chars = [vegapunk_b]
+    me3.life = []
+    me3.deck = [mk("VPDECK", "Carta do Deck")]
+    opp3 = GameState(leader=mk("VPOPP2", "Opp", card_type="LEADER"), turn=3)
+    hand_antes3 = len(me3.hand)
+    EffectExecutor(me3, opp3).execute(vegapunk_b, "on_play")  # jogada normal, is_my_turn=True default
+    check("Execucao real: Vegapunk jogada normalmente no seu turno compra 1 carta",
+          len(me3.hand) == hand_antes3 + 1)
+
+
 def main() -> int:
     test_turn_order_imu_prefers_second()
     test_empty_throne_beats_direct_five_elders_play()
@@ -5205,6 +5261,7 @@ def main() -> int:
     test_segundo_lote_10_pendencias_op01_063_a_op05_100()
     test_filter_names_prb02_018_or_e_st13_006_each()
     test_kinemon_op10_026_027_e_familia_place_self_bottom_deck()
+    test_your_turn_on_play_dispara_uma_vez_e_so_no_seu_turno()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0
