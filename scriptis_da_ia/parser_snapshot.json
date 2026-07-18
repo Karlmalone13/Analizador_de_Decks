@@ -6345,7 +6345,23 @@
    ]
   }
  },
- "OP01-063": {},
+ "OP01-063": {
+  "activate_main": {
+   "costs": [
+    {
+     "type": "rest_self"
+    }
+   ],
+   "don_requirement": 1,
+   "steps": [
+    {
+     "action": "reveal_opp_hand",
+     "count": 1,
+     "if_event_opp_life_to_deck_bottom": 1
+    }
+   ]
+  }
+ },
  "OP01-064": {
   "when_attacking": {
    "costs": [
@@ -6877,7 +6893,18 @@
    ]
   }
  },
- "OP01-098": {},
+ "OP01-098": {
+  "on_play": {
+   "steps": [
+    {
+     "action": "search_deck",
+     "count": 1,
+     "filter_name": "artificial devil fruit smile",
+     "revealed_to_opponent": true
+    }
+   ]
+  }
+ },
  "OP01-099": {
   "passive": {
    "steps": [
@@ -6945,7 +6972,16 @@
    ]
   }
  },
- "OP01-105": {},
+ "OP01-105": {
+  "on_play": {
+   "steps": [
+    {
+     "action": "reveal_opp_hand",
+     "count": 2
+    }
+   ]
+  }
+ },
  "OP01-106": {
   "on_play": {
    "steps": [
@@ -7238,12 +7274,14 @@
   }
  },
  "OP02-002": {
-  "your_turn": {
+  "on_don_given": {
    "steps": [
     {
      "action": "debuff_cost",
      "amount": 1,
+     "cost_lte": 7,
      "count": 1,
+     "event": "don_given",
      "target": "opp_character"
     }
    ]
@@ -7410,8 +7448,11 @@
     {
      "action": "buff_power",
      "amount": 3000,
+     "cost_eq": 1,
+     "count": 1,
      "duration": "this_turn",
-     "target": "self"
+     "filter_color": "red",
+     "target": "own_character"
     }
    ]
   }
@@ -7422,8 +7463,11 @@
     {
      "action": "buff_power",
      "amount": 3000,
+     "cost_eq": 1,
+     "count": 1,
      "duration": "this_turn",
-     "target": "self"
+     "filter_color": "red",
+     "target": "own_character"
     }
    ]
   }
@@ -14141,6 +14185,13 @@
  },
  "OP05-026": {
   "when_attacking": {
+   "costs": [
+    {
+     "cost_gte": 3,
+     "count": 1,
+     "type": "rest_own_character"
+    }
+   ],
    "don_requirement": 1,
    "once_per_turn": true,
    "steps": [
@@ -14722,9 +14773,13 @@
   "main": {
    "steps": [
     {
-     "action": "place_opp_character_bottom_deck",
+     "action": "place_all_character_bottom_deck",
      "cost_lte": 3,
      "count": 99
+    },
+    {
+     "action": "both_trash_hand_until",
+     "hand_size": 5
     }
    ]
   },
@@ -15149,6 +15204,12 @@
  },
  "OP05-080": {
   "when_attacking": {
+   "costs": [
+    {
+     "count": 20,
+     "type": "return_trash_to_deck"
+    }
+   ],
    "once_per_turn": true,
    "steps": [
     {
@@ -15520,6 +15581,9 @@
  },
  "OP05-098": {
   "opp_turn": {
+   "conditions": {
+    "life_lte": 0
+   },
    "once_per_turn": true,
    "steps": [
     {
@@ -15528,6 +15592,10 @@
      "dest": "life_top",
      "source": "deck_top",
      "up_to": false
+    },
+    {
+     "action": "trash_from_hand",
+     "count": 1
     }
    ]
   }
@@ -15551,9 +15619,18 @@
  },
  "OP05-100": {
   "passive": {
+   "once_per_turn": true,
    "steps": [
     {
      "action": "keyword_rush"
+    },
+    {
+     "action": "substitute_removal",
+     "cost": {
+      "action": "life_to_trash",
+      "count": 1
+     },
+     "negated_if_any_character_named": "monkey.d.luffy"
     }
    ]
   }

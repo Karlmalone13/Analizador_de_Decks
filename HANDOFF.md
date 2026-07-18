@@ -1,5 +1,24 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-18 (265) - Codex - lote 2 de 10 pendencias de cartas
+
+Usuario aprovou OP01-063, OP01-098, OP01-105, OP02-002, OP02-015,
+OP05-026, OP05-058, OP05-080, OP05-098 e OP05-100.
+
+Parser e motor agora cobrem revelacao persistente da mao adversaria, busca no
+deck inteiro, evento ao anexar DON, filtro cor+custo exato, custo de restar
+Character por custo minimo, reciclar trash, limpar ambos os campos/maos,
+gate de vida zero e substituicao geral de remocao. OP02-016 foi corrigida
+pela familia de Makino. Nenhum codigo de carta foi hardcoded no motor.
+
+Auditor: 228 -> 217 suspeitos. Diff antes da regeneracao: GANHOU=3,
+PERDEU=0, MUDOU=8 (11 cartas conferidas). Depois: `gerar_dbs.py` (2614),
+snapshot e diff 0/0/0. `smoke_fast.py` e `smoke_test.py` passaram; broad
+completou 7/7 sem excecao antes do timeout do wrapper. Evidencia:
+`scriptis_da_ia/parser_audits/2026-07-18_lote_10_op01-063_a_op05-100.json`.
+
+Proximo passo: selecionar o lote 3 de 10 falhas reais e aguardar aprovacao.
+
 ## 2026-07-18 (264) - Codex - lote 1 de 10 pendencias de cartas
 
 Usuario aprovou explicitamente o lote: EB01-011, OP05-056, EB01-029,

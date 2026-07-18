@@ -1828,6 +1828,13 @@ class EffectExecutor:
 
         return best_steps
 
+    def _dispatch_don_given(self, target: Card) -> list[str]:
+        logs = []
+        for source in [self.me.leader] + list(self.me.field_chars):
+            if get_card_effects(source.code).get('on_don_given'):
+                logs.extend(self.execute(source, 'on_don_given'))
+        return logs
+
     def execute(self, card: Card, trigger: str, verbose: bool = False, is_opp_turn: bool = False) -> list:
         """
         Executa todos os efeitos de um trigger para uma carta.
@@ -1954,6 +1961,11 @@ class EffectExecutor:
                 action = step.get('action')
                 aplica = ((action == 'substitute_ko' and removal_kind == 'ko') or (action == 'substitute_removal' and removal_kind != 'rest') or (action == 'substitute_rest' and removal_kind == 'rest'))
                 if not aplica:
+                    continue
+                negated_name = (step.get('negated_if_any_character_named') or '').lower()
+                if negated_name and any(
+                        negated_name in c.name.lower()
+                        for c in self.me.field_chars + self.opp.field_chars):
                     continue
 
                 # Once per turn (mesma chave de controle que efeitos normais)
@@ -3407,6 +3419,35 @@ class EffectExecutor:
                     remove_by_identity(candidates, target)
                     moved.append(target.name[:15])
                 self._cost_logs.append(f'custo: fundo do deck: {", ".join(moved)}')
+            elif ctype == 'rest_own_character':
+                candidates = eligible_cards(
+                    self.me.field_chars,
+                    cost_gte=cost.get('cost_gte'),
+                    cost_lte=cost.get('cost_lte'),
+                    filter_text=cost.get('filter_type', ''),
+                    active_only=True,
+                    exclude_card=card if cost.get('exclude_self') else None,
+                )
+                count = cost.get('count', 1)
+                if len(candidates) < count:
+                    return False
+                rested = []
+                for _ in range(count):
+                    target = min(candidates, key=lambda c: c.board_value())
+                    target.rested = True
+                    remove_by_identity(candidates, target)
+                    rested.append(target.name[:15])
+                self._cost_logs.append(f'custo: restou aliado: {", ".join(rested)}')
+            elif ctype == 'return_trash_to_deck':
+                count = cost.get('count', 1)
+                if len(self.me.trash) < count:
+                    return False
+                chosen = sorted(self.me.trash, key=self._trash_value)[:count]
+                for target in chosen:
+                    remove_by_identity(self.me.trash, target)
+                    self.me.deck.append(target)
+                random.shuffle(self.me.deck)
+                self._cost_logs.append(f'custo: devolveu {count} do trash ao deck')
             elif ctype == 'don_minus':
                 count = cost.get('count', 1)
                 if not self._return_don_to_deck(count):
@@ -3801,6 +3842,55 @@ class EffectExecutor:
                 return f'olhou {look} do topo -> pegou: {names}'
             else:
                 return f'olhou {look} do topo -> nada para pegar'
+
+        if action == 'search_deck':
+            candidates = eligible_cards(
+                me.deck,
+                filter_text=step.get('filter_type', ''),
+                name_or_code=step.get('filter_name', ''),
+                cost_lte=step.get('cost_lte'),
+                cost_gte=step.get('cost_gte'),
+            )
+            count = step.get('count', 1)
+            taken = []
+            for _ in range(min(count, len(candidates))):
+                best = max(candidates, key=self._trash_value)
+                remove_by_identity(candidates, best)
+                remove_by_identity(me.deck, best)
+                me.hand.append(best)
+                if step.get('revealed_to_opponent'):
+                    me.revealed_to_opponent.add(id(best))
+                taken.append(best.name[:15])
+            random.shuffle(me.deck)
+            return f'buscou no deck: {", ".join(taken)}' if taken else 'busca sem alvo'
+
+        if action == 'reveal_opp_hand':
+            count = min(step.get('count', 1), len(opp.hand))
+            revealed = sorted(opp.hand, key=self._trash_value, reverse=True)[:count]
+            for target in revealed:
+                opp.revealed_to_opponent.add(id(target))
+            if (step.get('if_event_opp_life_to_deck_bottom')
+                    and any(c.card_type == 'EVENT' for c in revealed)
+                    and opp.life):
+                moved = opp.life.pop(0)
+                opp.deck.insert(0, moved)
+            return f'oponente revelou: {", ".join(c.name[:15] for c in revealed)}' if revealed else ''
+
+        if action == 'both_trash_hand_until':
+            limit = step.get('hand_size', 5)
+            logs = []
+            for owner, executor, label in (
+                    (me, self, 'voce'),
+                    (opp, EffectExecutor(opp, me), 'oponente')):
+                trashed = []
+                while len(owner.hand) > limit:
+                    target = executor._choose_to_trash(owner.hand)
+                    remove_by_identity(owner.hand, target)
+                    owner.trash.append(target)
+                    trashed.append(target.name[:12])
+                if trashed:
+                    logs.append(f'{label} trashou {", ".join(trashed)}')
+            return ' | '.join(logs)
 
         if action == 'peek_opp_deck_top':
             # Efeito apenas informacional: nao move nem reordena a carta.
@@ -4893,6 +4983,10 @@ class EffectExecutor:
                 candidatos = eligible_cards(
                     me.field_chars,
                     power_lte=step.get('power_lte'),
+                    cost_lte=step.get('cost_lte'),
+                    cost_gte=step.get('cost_gte'),
+                    cost_eq=step.get('cost_eq'),
+                    color=step.get('filter_color', ''),
                     exclude_name=step.get('exclude', ''),
                 )
                 type_or_trigger = step.get('filter_type_or_has_trigger')
@@ -5251,6 +5345,8 @@ class EffectExecutor:
                     me.don_available -= do_available
                     transferido = do_rested + do_available
                 best.don_attached += transferido
+                if transferido:
+                    self._dispatch_don_given(best)
             return f'+{transferido} DON'
 
         # ── Give DON ao oponente (controle/setup) ───────────────────────────────
@@ -5813,6 +5909,21 @@ class EffectExecutor:
             if placed: out.append(f'fundo do deck: {", ".join(placed)}')
             if immune: out.append(f'imune: {", ".join(immune)}')
             return ' | '.join(out)
+
+        if action == 'place_all_character_bottom_deck':
+            from optcg_engine.rules_facade import eligible_cards
+            moved = []
+            for owner in (opp, me):
+                candidates = eligible_cards(owner.field_chars,
+                                            cost_lte=step.get('cost_lte'))
+                for target in list(candidates):
+                    # Remocao simetrica; cada dono recebe a propria carta no fundo.
+                    if owner is opp and is_immune(
+                            target, 'removal', opp, me, source_is_opp=True):
+                        continue
+                    remove_character_from_field(owner, target, 'deck_bottom')
+                    moved.append(target.name[:12])
+            return f'todos ao fundo: {", ".join(moved)}' if moved else ''
 
         # Variante do PROPRIO lado (achado 16/07, OP05-119 -- unica carta
         # no banco): manda os PROPRIOS personagens (opcionalmente
@@ -10152,6 +10263,7 @@ class OPTCGMatch:
             if anexar > 0:
                 card.don_attached += anexar
                 p.don_available -= anexar
+                ee._dispatch_don_given(card)
                 if verbose:
                     print(f'    ⚡ anexou {anexar} DON em {card.name[:20]} para ligar [{what}]')
 
@@ -10532,6 +10644,7 @@ class OPTCGMatch:
         if need > 0:
             attacker.don_attached += need
             p.don_available -= need
+            EffectExecutor(p, opp)._dispatch_don_given(attacker)
             if verbose:
                 print(f'    anexou {need} DON em {attacker.name[:20]}')
         return need

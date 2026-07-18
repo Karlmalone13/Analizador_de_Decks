@@ -1,13 +1,17 @@
 # TODO — Analisador de Decks OPTCG
 
 **Última atualização:** 18 de julho de 2026
-**Estado:** varredura contínua do parser; 228 suspeitos restantes após o lote 1 de 10 cartas
+**Estado:** varredura contínua do parser; 217 suspeitos restantes após o lote 2 de 10 cartas
 **Baseline do código:** ver `git log --oneline -1` (branch local; push pendente)
 **Repo:** github.com/Karlmalone13/Analizador_de_Decks
 
 > 18/07/2026: proxy ganhou verificacao do nome canonico/banco, match_id estavel,
 > latencia, alertas, confirmacao semantica Main Phase e comparacao entre commits.
 > Sem teste ao vivo ainda: GameOver/AutoSaved, prompts auxiliares e calibracao.
+
+> 18/07/2026: lote 2 de 10 pendencias concluido; OP02-016 tambem foi
+> corrigida pela familia de filtro cor+custo. Auditor caiu de 228 para 217.
+> Evidencia em `scriptis_da_ia/parser_audits/2026-07-18_lote_10_op01-063_a_op05-100.json`.
 
 > 18/07/2026: lote 1 de 10 pendencias concluido; cinco parentes adicionais
 > receberam os fixes de familia. Auditor caiu de 241 para 228. Evidencia em

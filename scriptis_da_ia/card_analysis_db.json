@@ -13731,7 +13731,13 @@
   "color": "Blue",
   "sub_types": "Fish-Man Arlong Pirates",
   "attribute": "Slash",
-  "effects": [],
+  "effects": [
+   {
+    "action": "reveal_opp_hand",
+    "trigger": "activate_main",
+    "don_requirement": 1
+   }
+  ],
   "synergy_states": {},
   "text": "[DON!! x1] [Activate:Main] You may rest this Character: Choose 1 card from your opponent's hand; your opponent reveals that card. If the revealed card is an Event, place up to 1 card from your opponent's Life area at the bottom of the owner's deck.  This card has been officially errata'd.",
   "is_searcher": false,
@@ -15205,7 +15211,12 @@
   "color": "Purple",
   "sub_types": "Land of Wano Kurozumi Clan",
   "attribute": "Wisdom",
-  "effects": [],
+  "effects": [
+   {
+    "action": "search_deck",
+    "trigger": "on_play"
+   }
+  ],
   "synergy_states": {},
   "text": "[On Play] Reveal up to 1 [Artificial Devil Fruit SMILE] from your deck and add it to your hand. Then, shuffle your deck.  This card has been officially errata'd.",
   "is_searcher": false,
@@ -15474,7 +15485,12 @@
   "color": "Purple",
   "sub_types": "Animal Kingdom Pirates SMILE",
   "attribute": "Wisdom",
-  "effects": [],
+  "effects": [
+   {
+    "action": "reveal_opp_hand",
+    "trigger": "on_play"
+   }
+  ],
   "synergy_states": {},
   "text": "[On Play] Choose 2 cards from your opponent's hand; your opponent reveals those cards.",
   "is_searcher": false,
@@ -16253,7 +16269,8 @@
   "effects": [
    {
     "action": "debuff_cost",
-    "trigger": "your_turn",
+    "trigger": "on_don_given",
+    "cost_lte": 7,
     "target": "opp_character"
    }
   ],
@@ -16781,7 +16798,7 @@
    {
     "action": "buff_power",
     "trigger": "activate_main",
-    "target": "self"
+    "target": "own_character"
    }
   ],
   "synergy_states": {},
@@ -16821,7 +16838,7 @@
    {
     "action": "buff_power",
     "trigger": "on_play",
-    "target": "self"
+    "target": "own_character"
    }
   ],
   "synergy_states": {},
@@ -34658,9 +34675,13 @@
     "cost_lte": 2
    },
    {
-    "action": "place_opp_character_bottom_deck",
+    "action": "place_all_character_bottom_deck",
     "trigger": "main",
     "cost_lte": 3
+   },
+   {
+    "action": "both_trash_hand_until",
+    "trigger": "main"
    }
   ],
   "synergy_states": {
@@ -36406,6 +36427,10 @@
    {
     "action": "gain_life",
     "trigger": "opp_turn"
+   },
+   {
+    "action": "trash_from_hand",
+    "trigger": "opp_turn"
    }
   ],
   "synergy_states": {
@@ -36489,6 +36514,10 @@
   "effects": [
    {
     "action": "keyword_rush",
+    "trigger": "passive"
+   },
+   {
+    "action": "substitute_removal",
     "trigger": "passive"
    }
   ],

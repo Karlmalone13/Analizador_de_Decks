@@ -84,6 +84,9 @@ def parse_conditions(text):
     conds = {}
     t = text.lower()
 
+    if re.search(r'when your number of life cards becomes 0', t):
+        conds['life_lte'] = 0
+
     # Existencia de Character no campo do oponente com custo exato.
     # Ex.: EB01-045 Brook: o Rush so existe se houver Character custo 0.
     m = re.search(r'if your opponent has a character with a cost of (\d+)(?! or)', t)
@@ -679,6 +682,19 @@ def parse_costs(text):
 
     if re.search(r'trash this (character|card)', t):
         costs.append({'type': 'trash_self'})
+
+    m_rest_char_cost = re.search(
+        r'you may rest (\d+) of your characters? with a cost of (\d+) or more\s*:', t)
+    if m_rest_char_cost:
+        costs.append({'type': 'rest_own_character',
+                      'count': int(m_rest_char_cost.group(1)),
+                      'cost_gte': int(m_rest_char_cost.group(2))})
+
+    m_return_trash = re.search(
+        r'you may return (\d+) cards? from your trash to your deck and shuffle', t)
+    if m_return_trash:
+        costs.append({'type': 'return_trash_to_deck',
+                      'count': int(m_return_trash.group(1))})
 
     # Colocar Character proprio no fundo do deck como custo. A clausula
     # termina em ':' para nao confundir com efeitos de remocao normais.
@@ -4825,13 +4841,20 @@ def parse_substitute_removal(text):
     steps = []
     t = text.lower()
 
-    if not re.search(r"would be removed from the field", t):
+    if not re.search(r"would (?:be removed from|leave) the field", t):
         return steps
 
     cost, extra_steps = _parse_substitute_cost(t)
+    if cost is None:
+        m_life = re.search(r'you may trash (\d+) cards? from the top of your life cards instead', t)
+        if m_life:
+            cost = {'action': 'life_to_trash', 'count': int(m_life.group(1))}
 
     if cost:
         step = {'action': 'substitute_removal', 'cost': cost}
+        negated = re.search(r'if there is a \[([^\]]+)\] character, this effect is negated', t)
+        if negated:
+            step['negated_if_any_character_named'] = negated.group(1).strip()
         if extra_steps:
             step['extra_steps'] = extra_steps
         steps.append(_apply_substitute_target_filters(step, t, 'removal'))
@@ -5396,7 +5419,7 @@ def parse_block(block_text, trigger_name):
     # from the field... you may [custo] instead" -- mesma logica de
     # reivindicar so a partir da clausula e retornar antecipado, preservando
     # qualquer efeito incondicional que viesse ANTES dela no mesmo bloco.
-    if re.search(r"would be removed from the field", t):
+    if re.search(r"would (?:be removed from|leave) the field", t):
         sub_steps = parse_substitute_removal(t)
         if sub_steps:
             # Localiza o inicio da clausula de substituicao no texto:
@@ -5405,7 +5428,7 @@ def parse_block(block_text, trigger_name):
             # recursao quando ha outro "if" mais cedo no texto, ex: OP07-029
             # que tem "if [leader] type" antes do "if this character would be
             # removed").
-            _m_rem = re.search(r"would be removed from the field", t)
+            _m_rem = re.search(r"would (?:be removed from|leave) the field", t)
             _if_pos = t.rfind('if ', 0, _m_rem.start()) if _m_rem else -1
             prefix = t[:_if_pos].strip() if _if_pos >= 0 else ''
             prefix_steps = parse_block(prefix, trigger_name) if prefix else []
@@ -6304,6 +6327,66 @@ def parse_block(block_text, trigger_name):
         order = {'gain_life': 0, 'peek_life': 1, 'life_to_deck_top': 2}
         steps.sort(key=lambda s: order.get(s.get('action'), 3))
 
+    # Busca no deck inteiro, fora da janela "look at top N".
+    m_search_deck = re.search(
+        r'reveal up to (\d+) \[([^\]]+)\] from your deck and add it to your hand', t)
+    if m_search_deck:
+        steps.append({'action': 'search_deck', 'count': int(m_search_deck.group(1)),
+                      'filter_name': m_search_deck.group(2).strip(),
+                      'revealed_to_opponent': True})
+
+    # Informacao publica da mao adversaria. O modo conditional_event e a
+    # forma de Arlong: revela 1 e, se Event, move Life do oponente ao fundo.
+    m_reveal_opp_hand = re.search(
+        r'choose (\d+) cards? from your opponent.?s hand; your opponent reveals? (?:that card|those cards)', t)
+    if m_reveal_opp_hand:
+        reveal_step = {'action': 'reveal_opp_hand',
+                       'count': int(m_reveal_opp_hand.group(1))}
+        if 'if the revealed card is an event' in t:
+            reveal_step['if_event_opp_life_to_deck_bottom'] = 1
+        steps.append(reveal_step)
+
+    m_hands_five = re.search(
+        r'you and your opponent trash cards from your hands until you each have (\d+) cards', t)
+    if m_hands_five:
+        steps = [s for s in steps if s.get('action') != 'place_opp_character_bottom_deck']
+        cost_mass = re.search(r'place all characters? with a cost of (\d+) or less', t)
+        if cost_mass:
+            steps.insert(0, {'action': 'place_all_character_bottom_deck',
+                             'count': 99, 'cost_lte': int(cost_mass.group(1))})
+        steps.append({'action': 'both_trash_hand_until',
+                      'hand_size': int(m_hands_five.group(1))})
+
+    # Enel OP05-098: a segunda sentenca e obrigatoria apos ganhar Life.
+    if ('when your number of life cards becomes 0' in t
+            and re.search(r'then,? trash (\d+) card from your hand', t)):
+        n = int(re.search(r'then,? trash (\d+) card from your hand', t).group(1))
+        steps.append({'action': 'trash_from_hand', 'count': n})
+
+    # Buff selecionado por cor+custo exato (Makino e familia).
+    m_color_cost_buff = re.search(
+        r'up to (\d+) of your (red|blue|green|purple|black|yellow) characters? '
+        r'with a cost of (\d+) gains? \+(\d+) power', t)
+    if m_color_cost_buff:
+        amount = int(m_color_cost_buff.group(4))
+        steps = [s for s in steps if not (
+            s.get('action') == 'buff_power' and s.get('amount') == amount)]
+        steps.append({'action': 'buff_power', 'amount': amount,
+                      'target': 'own_character', 'duration': 'this_turn',
+                      'count': int(m_color_cost_buff.group(1)),
+                      'filter_color': m_color_cost_buff.group(2),
+                      'cost_eq': int(m_color_cost_buff.group(3))})
+
+    # Garp: o debuff so dispara no evento de um DON ser anexado e respeita
+    # o teto de custo do alvo.
+    if 'when this leader or 1 of your characters is given a don!! card' in t:
+        cost_m = re.search(r'characters? with a cost of (\d+) or less', t)
+        for step in steps:
+            if step.get('action') == 'debuff_cost':
+                step['event'] = 'don_given'
+                if cost_m:
+                    step['cost_lte'] = int(cost_m.group(1))
+
     # Memoria de alvo entre steps (SaveTargetName, 28/06/2026): a ordem de
     # despacho dos sub-parsers acima NAO segue a ordem do texto original
     # (ex: select_unblockable_turn e chamado antes de power_buff), o que
@@ -7120,6 +7203,24 @@ def parse_card_effect(card_text, card_type):
             game_rules.append({'type': 'don_deck_size', 'count': int(don_m.group(1))})
     if game_rules:
         result['game_rules'] = {'rules': game_rules}
+
+    # Timings reativos que a fonte apresenta como [Your Turn] + "When...".
+    # Separar evita que apply_your_turn_buffs execute o efeito continuamente.
+    if ('when this leader or 1 of your characters is given a don!! card'
+            in str(card_text).lower() and 'your_turn' in result):
+        result['on_don_given'] = result.pop('your_turn')
+
+    full_text_low = str(card_text).lower()
+    if ('would leave the field' in full_text_low
+            and not any(s.get('action') == 'substitute_removal'
+                        for entry in result.values()
+                        for s in entry.get('steps', []))):
+        sub = parse_substitute_removal(full_text_low)
+        if sub:
+            passive = result.setdefault('passive', {'steps': []})
+            passive.setdefault('steps', []).extend(sub)
+            if '[once per turn]' in full_text_low:
+                passive['once_per_turn'] = True
 
     return result
 

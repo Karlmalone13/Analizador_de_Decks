@@ -1,0 +1,26 @@
+{
+  "trigger_card": "OP01-063",
+  "problem": "Segundo lote aprovado pelo usuario continha informacao revelada sem representacao, busca no deck inteiro ausente, triggers e limites de custo perdidos, custos incompletos, remocao simetrica nao modelada e substituicao geral de remocao ausente.",
+  "grammar_family": "Revelar cartas da mao adversaria; busca por nome no deck inteiro; evento ao anexar DON; alvo por cor e custo exato; restar Character proprio por custo minimo; devolver trash ao deck; ambos os campos/maos; vida zero; substituicao de leave field.",
+  "queries": [
+    "python audit_parser_coverage.py --show 80",
+    "rg global em cards_rows.csv por reveal opponent hand, search your deck, given DON, return cards from trash, both players e would leave the field",
+    "python diff_parser.py e conferencia de todas as 11 cartas alteradas contra cards_rows.csv"
+  ],
+  "cards_found": [
+    "OP01-063", "OP01-098", "OP01-105", "OP02-002", "OP02-015",
+    "OP05-026", "OP05-058", "OP05-080", "OP05-098", "OP05-100",
+    "OP02-016"
+  ],
+  "resolution_scope": "global",
+  "decision": "Adicionar estruturas genericas ao parser e consumidores no motor, preservar revelacao conhecida no estado, disparar on_don_given na anexacao real, aplicar custos antes dos beneficios e bloquear a substituicao de Enel quando qualquer Luffy estiver em campo. OP02-016 foi corrigida pela mesma familia de Makino; nenhum codigo de carta foi hardcoded no motor.",
+  "validated_by": [
+    "diff_parser.py antes da regeneracao: GANHOU=3 PERDEU=0 MUDOU=8; 11 cartas conferidas",
+    "gerar_dbs.py: 2614 cartas sincronizadas",
+    "snapshot_parser.py seguido de diff_parser.py: 0/0/0",
+    "smoke_fast.py: OK com parse das 10 e execucao dirigida de todos os mecanismos",
+    "smoke_test.py: todos os testes passaram",
+    "smoke_test_broad.py: 7/7 partidas sem excecao; wrapper encerrou por timeout depois da conclusao",
+    "audit_parser_coverage.py: 228 para 217 suspeitos"
+  ]
+}

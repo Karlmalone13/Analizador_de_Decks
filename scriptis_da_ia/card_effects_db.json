@@ -9792,7 +9792,23 @@
     "color": "Blue",
     "sub_types": "Fish-Man Arlong Pirates",
     "attribute": "Slash",
-    "effects": {}
+    "effects": {
+      "activate_main": {
+        "steps": [
+          {
+            "action": "reveal_opp_hand",
+            "count": 1,
+            "if_event_opp_life_to_deck_bottom": 1
+          }
+        ],
+        "costs": [
+          {
+            "type": "rest_self"
+          }
+        ],
+        "don_requirement": 1
+      }
+    }
   },
   "OP01-064": {
     "name": "Alvida",
@@ -10709,7 +10725,18 @@
     "color": "Purple",
     "sub_types": "Land of Wano Kurozumi Clan",
     "attribute": "Wisdom",
-    "effects": {}
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "search_deck",
+            "count": 1,
+            "filter_name": "artificial devil fruit smile",
+            "revealed_to_opponent": true
+          }
+        ]
+      }
+    }
   },
   "OP01-099": {
     "name": "Kurozumi Semimaru",
@@ -10854,7 +10881,16 @@
     "color": "Purple",
     "sub_types": "Animal Kingdom Pirates SMILE",
     "attribute": "Wisdom",
-    "effects": {}
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "reveal_opp_hand",
+            "count": 2
+          }
+        ]
+      }
+    }
   },
   "OP01-106": {
     "name": "Basil Hawkins",
@@ -11345,13 +11381,15 @@
     "sub_types": "Navy",
     "attribute": "Strike",
     "effects": {
-      "your_turn": {
+      "on_don_given": {
         "steps": [
           {
             "action": "debuff_cost",
             "amount": 1,
             "target": "opp_character",
-            "count": 1
+            "count": 1,
+            "event": "don_given",
+            "cost_lte": 7
           }
         ]
       }
@@ -11655,8 +11693,11 @@
           {
             "action": "buff_power",
             "amount": 3000,
-            "target": "self",
-            "duration": "this_turn"
+            "target": "own_character",
+            "duration": "this_turn",
+            "count": 1,
+            "filter_color": "red",
+            "cost_eq": 1
           }
         ],
         "costs": [
@@ -11683,8 +11724,11 @@
           {
             "action": "buff_power",
             "amount": 3000,
-            "target": "self",
-            "duration": "this_turn"
+            "target": "own_character",
+            "duration": "this_turn",
+            "count": 1,
+            "filter_color": "red",
+            "cost_eq": 1
           }
         ]
       }
@@ -22485,6 +22529,13 @@
             "target": "self"
           }
         ],
+        "costs": [
+          {
+            "type": "rest_own_character",
+            "count": 1,
+            "cost_gte": 3
+          }
+        ],
         "once_per_turn": true,
         "don_requirement": 1
       }
@@ -23421,9 +23472,13 @@
       "main": {
         "steps": [
           {
-            "action": "place_opp_character_bottom_deck",
+            "action": "place_all_character_bottom_deck",
             "count": 99,
             "cost_lte": 3
+          },
+          {
+            "action": "both_trash_hand_until",
+            "hand_size": 5
           }
         ]
       }
@@ -24089,6 +24144,12 @@
             "duration": "battle_only"
           }
         ],
+        "costs": [
+          {
+            "type": "return_trash_to_deck",
+            "count": 20
+          }
+        ],
         "once_per_turn": true
       }
     }
@@ -24657,8 +24718,15 @@
             "dest": "life_top",
             "count": 1,
             "up_to": false
+          },
+          {
+            "action": "trash_from_hand",
+            "count": 1
           }
         ],
+        "conditions": {
+          "life_lte": 0
+        },
         "once_per_turn": true
       }
     }
@@ -24706,8 +24774,17 @@
         "steps": [
           {
             "action": "keyword_rush"
+          },
+          {
+            "action": "substitute_removal",
+            "cost": {
+              "action": "life_to_trash",
+              "count": 1
+            },
+            "negated_if_any_character_named": "monkey.d.luffy"
           }
-        ]
+        ],
+        "once_per_turn": true
       }
     }
   },

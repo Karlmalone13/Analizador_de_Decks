@@ -4732,6 +4732,128 @@ def test_lote_10_pendencias_eb01_011_a_op05_007() -> None:
           and sum(c.power_buff == 3000 for c in (betty_card, rev, trig)) == 3)
 
 
+def test_segundo_lote_10_pendencias_op01_063_a_op05_100() -> None:
+    effects = {code: get_card_effects(code) for code in (
+        "OP01-063", "OP01-098", "OP01-105", "OP02-002", "OP02-015",
+        "OP05-026", "OP05-058", "OP05-080", "OP05-098", "OP05-100",
+    )}
+    check("Parser lote 2: dez cartas ganharam as estruturas esperadas",
+          effects["OP01-063"]["activate_main"]["steps"][0].get("action") == "reveal_opp_hand"
+          and effects["OP01-098"]["on_play"]["steps"][0].get("action") == "search_deck"
+          and effects["OP01-105"]["on_play"]["steps"][0].get("count") == 2
+          and effects["OP02-002"]["on_don_given"]["steps"][0].get("cost_lte") == 7
+          and effects["OP02-015"]["activate_main"]["steps"][0].get("filter_color") == "red"
+          and effects["OP05-026"]["when_attacking"]["costs"][0].get("cost_gte") == 3
+          and effects["OP05-058"]["main"]["steps"][0].get("action") == "place_all_character_bottom_deck"
+          and effects["OP05-080"]["when_attacking"]["costs"][0].get("count") == 20
+          and effects["OP05-098"]["opp_turn"]["conditions"].get("life_lte") == 0
+          and effects["OP05-100"]["passive"]["steps"][1].get("action") == "substitute_removal")
+
+    # Arlong e Bao Huang: informacao revelada persistente; Arlong tambem
+    # resolve a clausula condicional do Event revelado.
+    arlong = real_card("OP01-063")
+    arlong.don_attached = 1
+    me = GameState(leader=mk("A-L", "Lider", card_type="LEADER"))
+    me.field_chars = [arlong]
+    event = mk("EV", "Evento", card_type="EVENT")
+    life = mk("LIFE", "Vida")
+    opp = GameState(leader=mk("A-O", "Opp", card_type="LEADER"))
+    opp.hand = [event]
+    opp.life = [life]
+    EffectExecutor(me, opp).execute(arlong, "activate_main")
+    check("Execucao lote 2: Arlong revela Event e move vida ao fundo",
+          arlong.rested and id(event) in opp.revealed_to_opponent
+          and not opp.life and opp.deck and opp.deck[0] is life)
+
+    bao = real_card("OP01-105")
+    me_bao = GameState(leader=mk("B-L", "Lider", card_type="LEADER"))
+    opp_bao = GameState(leader=mk("B-O", "Opp", card_type="LEADER"))
+    opp_bao.hand = [mk(f"BH{i}", f"Carta {i}") for i in range(3)]
+    EffectExecutor(me_bao, opp_bao).execute(bao, "on_play")
+    check("Execucao lote 2: Bao Huang registra exatamente duas reveladas",
+          len(opp_bao.revealed_to_opponent) == 2)
+
+    orochi = real_card("OP01-098")
+    smile = mk("SMILE", "Artificial Devil Fruit SMILE", card_type="EVENT")
+    me_orochi = GameState(leader=mk("O-L", "Lider", card_type="LEADER"))
+    me_orochi.deck = [mk("NO", "Outra"), smile]
+    EffectExecutor(me_orochi, opp_bao).execute(orochi, "on_play")
+    check("Execucao lote 2: Orochi busca e revela SMILE no deck inteiro",
+          smile in me_orochi.hand and id(smile) in me_orochi.revealed_to_opponent)
+
+    makino = real_card("OP02-015")
+    red1 = mk("R1", "Vermelho custo 1", cost=1, color="Red")
+    black1 = mk("B1", "Preto custo 1", cost=1, color="Black")
+    me_makino = GameState(leader=mk("M-L", "Lider", card_type="LEADER"))
+    me_makino.field_chars = [makino, red1, black1]
+    EffectExecutor(me_makino, opp_bao).execute(makino, "activate_main")
+    check("Execucao lote 2: Makino restringe o buff a vermelho custo 1",
+          makino.rested and red1.power_buff == 3000 and black1.power_buff == 0)
+
+    garp = real_card("OP02-002")
+    me_garp = GameState(leader=garp)
+    opp_garp = GameState(leader=mk("G-O", "Opp", card_type="LEADER"))
+    cost7 = mk("G7", "Custo sete", cost=7)
+    cost8 = mk("G8", "Custo oito", cost=8, power=9000)
+    opp_garp.field_chars = [cost7, cost8]
+    EffectExecutor(me_garp, opp_garp)._dispatch_don_given(garp)
+    check("Execucao lote 2: Garp reage ao DON e limita o debuff a custo 7",
+          cost7.cost_buff == -1 and cost8.cost_buff == 0)
+
+    sarquiss = real_card("OP05-026")
+    sarquiss.don_attached = 1
+    sarquiss.rested = True
+    ally3 = mk("SQ3", "Aliado custo 3", cost=3)
+    ally2 = mk("SQ2", "Aliado custo 2", cost=2)
+    me_sarquiss = GameState(leader=mk("SQ-L", "Lider", card_type="LEADER"))
+    me_sarquiss.field_chars = [sarquiss, ally3, ally2]
+    EffectExecutor(me_sarquiss, opp_garp).execute(sarquiss, "when_attacking")
+    check("Execucao lote 2: Sarquiss resta custo 3+ e fica ativo",
+          not sarquiss.rested and ally3.rested and not ally2.rested)
+
+    waste = real_card("OP05-058")
+    me_waste = GameState(leader=mk("W-L", "Lider", card_type="LEADER"))
+    opp_waste = GameState(leader=mk("W-O", "Opp", card_type="LEADER"))
+    me_waste.field_chars = [mk("WC1", "Meu baixo", cost=3), mk("WC2", "Meu alto", cost=4)]
+    opp_waste.field_chars = [mk("OC1", "Opp baixo", cost=2), mk("OC2", "Opp alto", cost=4)]
+    me_waste.hand = [mk(f"MH{i}", f"Minha {i}") for i in range(7)]
+    opp_waste.hand = [mk(f"OH{i}", f"Opp {i}") for i in range(6)]
+    EffectExecutor(me_waste, opp_waste).execute(waste, "main")
+    check("Execucao lote 2: Waste limpa ambos os campos e limita ambas as maos",
+          [c.name for c in me_waste.field_chars] == ["Meu alto"]
+          and [c.name for c in opp_waste.field_chars] == ["Opp alto"]
+          and len(me_waste.hand) == len(opp_waste.hand) == 5)
+
+    elizabello = real_card("OP05-080")
+    me_eliz = GameState(leader=mk("EZ-L", "Lider", card_type="LEADER"))
+    me_eliz.trash = [mk(f"EZ{i}", f"Trash {i}") for i in range(20)]
+    EffectExecutor(me_eliz, opp_waste).execute(elizabello, "when_attacking")
+    check("Execucao lote 2: Elizabello recicla 20 e recebe +10000",
+          not me_eliz.trash and len(me_eliz.deck) == 20 and elizabello.power_buff == 10000)
+
+    enel_leader = real_card("OP05-098")
+    me_enel_leader = GameState(leader=enel_leader)
+    me_enel_leader.deck = [mk("ET", "Topo")]
+    me_enel_leader.hand = [mk("EH", "Descarte")]
+    EffectExecutor(me_enel_leader, opp_waste).execute(enel_leader, "opp_turn")
+    check("Execucao lote 2: Enel lider recupera Life e descarta uma carta",
+          len(me_enel_leader.life) == 1 and not me_enel_leader.hand
+          and len(me_enel_leader.trash) == 1)
+
+    enel = real_card("OP05-100")
+    me_enel = GameState(leader=mk("E-L", "Lider", card_type="LEADER"))
+    me_enel.field_chars = [enel]
+    me_enel.life = [mk("EL", "Vida Enel")]
+    executor = EffectExecutor(me_enel, opp_waste)
+    substituted = executor.try_substitute(enel, "deck_bottom")
+    luffy = mk("LU", "Monkey.D.Luffy")
+    me_enel.life = [mk("EL2", "Vida Enel 2")]
+    opp_waste.field_chars.append(luffy)
+    blocked = EffectExecutor(me_enel, opp_waste).try_substitute(enel, "ko")
+    check("Execucao lote 2: Enel substitui remocao, exceto com Luffy em campo",
+          substituted is not None and len(me_enel.trash) == 1 and blocked is None)
+
+
 def main() -> int:
     test_turn_order_imu_prefers_second()
     test_empty_throne_beats_direct_five_elders_play()
@@ -4857,6 +4979,7 @@ def main() -> int:
     test_lote_9_itens_eb04_056_condicao_composta_bonney_e_vida()
     test_don_n_parenteses_explicativo_e_life_area_cost()
     test_lote_10_pendencias_eb01_011_a_op05_007()
+    test_segundo_lote_10_pendencias_op01_063_a_op05_100()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0
