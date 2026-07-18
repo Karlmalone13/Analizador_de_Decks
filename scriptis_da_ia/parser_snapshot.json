@@ -7658,6 +7658,18 @@
      "target": "self"
     }
    ]
+  },
+  "on_ko": {
+   "steps": [
+    {
+     "action": "play_from_deck",
+     "color": "green",
+     "cost_eq": 3,
+     "cost_lte": 99,
+     "count": 1,
+     "filter_type": "land of wano"
+    }
+   ]
   }
  },
  "OP02-031": {
@@ -7957,6 +7969,9 @@
  },
  "OP02-049": {
   "end_of_turn": {
+   "conditions": {
+    "hand_eq": 0
+   },
    "steps": [
     {
      "action": "draw",
@@ -7986,6 +8001,10 @@
  "OP02-051": {
   "on_play": {
    "steps": [
+    {
+     "action": "draw_to_hand_count",
+     "target_count": 3
+    },
     {
      "action": "play_card",
      "color": "blue",
@@ -8091,6 +8110,10 @@
      "action": "draw",
      "count": 1,
      "then_trash": 1
+    },
+    {
+     "action": "trash_from_hand",
+     "count": 3
     }
    ]
   }
@@ -8271,6 +8294,10 @@
   "counter": {
    "steps": [
     {
+     "action": "draw_to_hand_count",
+     "target_count": 2
+    },
+    {
      "action": "buff_power",
      "amount": 6000,
      "duration": "battle_only",
@@ -8304,6 +8331,13 @@
      },
      "count": 1,
      "then_trash": 1
+    },
+    {
+     "action": "trash_from_hand",
+     "conditions": {
+      "leader_is": "emporio.ivankov"
+     },
+     "count": 3
     }
    ]
   }
@@ -9286,8 +9320,10 @@
   "when_attacking": {
    "costs": [
     {
+     "color": "red",
      "count": 1,
-     "type": "trash_from_hand"
+     "power_gte": 4000,
+     "type": "trash_own_character"
     }
    ],
    "steps": [
@@ -23713,6 +23749,14 @@
      "amount": 3000,
      "duration": "battle_only",
      "target": "leader_or_character"
+    },
+    {
+     "action": "trash_from_hand",
+     "count": 2
+    },
+    {
+     "action": "trash_from_deck_top",
+     "count_from_last_hand_trash": true
     }
    ]
   },
@@ -30362,6 +30406,10 @@
      "amount": 4000,
      "duration": "battle_only",
      "target": "leader_or_character"
+    },
+    {
+     "action": "trash_from_hand",
+     "count": 1
     }
    ]
   },
@@ -37352,6 +37400,10 @@
    "steps": [
     {
      "action": "gain_blocker"
+    },
+    {
+     "action": "trash_from_hand",
+     "count": 1
     }
    ]
   },
@@ -39339,10 +39391,6 @@
      "action": "give_don",
      "count": 3,
      "rested": true
-    },
-    {
-     "action": "trash_from_hand",
-     "count": 1
     }
    ]
   }

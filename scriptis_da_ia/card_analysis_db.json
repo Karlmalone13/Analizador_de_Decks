@@ -17421,6 +17421,11 @@
     "action": "set_active",
     "trigger": "activate_main",
     "target": "self"
+   },
+   {
+    "action": "play_from_deck",
+    "trigger": "on_ko",
+    "cost_lte": 99
    }
   ],
   "synergy_states": {},
@@ -18330,6 +18335,10 @@
   "attribute": "Special",
   "effects": [
    {
+    "action": "draw_to_hand_count",
+    "trigger": "on_play"
+   },
+   {
     "action": "play_card",
     "trigger": "on_play",
     "cost_lte": 6
@@ -18659,6 +18668,10 @@
   "effects": [
    {
     "action": "draw",
+    "trigger": "when_attacking"
+   },
+   {
+    "action": "trash_from_hand",
     "trigger": "when_attacking"
    }
   ],
@@ -19105,6 +19118,10 @@
     "target": "opp_character"
    },
    {
+    "action": "draw_to_hand_count",
+    "trigger": "counter"
+   },
+   {
     "action": "buff_power",
     "trigger": "counter",
     "target": "leader_or_character"
@@ -19151,6 +19168,10 @@
   "effects": [
    {
     "action": "draw",
+    "trigger": "activate_main"
+   },
+   {
+    "action": "trash_from_hand",
     "trigger": "activate_main"
    }
   ],
@@ -55734,6 +55755,14 @@
     "action": "buff_power",
     "trigger": "counter",
     "target": "leader_or_character"
+   },
+   {
+    "action": "trash_from_hand",
+    "trigger": "counter"
+   },
+   {
+    "action": "trash_from_deck_top",
+    "trigger": "counter"
    }
   ],
   "synergy_states": {
@@ -71293,6 +71322,10 @@
     "action": "buff_power",
     "trigger": "counter",
     "target": "leader_or_character"
+   },
+   {
+    "action": "trash_from_hand",
+    "trigger": "counter"
    }
   ],
   "synergy_states": {
@@ -87277,6 +87310,10 @@
     "trigger": "activate_main"
    },
    {
+    "action": "trash_from_hand",
+    "trigger": "activate_main"
+   },
+   {
     "action": "immunity",
     "trigger": "passive"
    },
@@ -91410,10 +91447,6 @@
    },
    {
     "action": "give_don",
-    "trigger": "on_play"
-   },
-   {
-    "action": "trash_from_hand",
     "trigger": "on_play"
    }
   ],

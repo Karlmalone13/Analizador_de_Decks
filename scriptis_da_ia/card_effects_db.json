@@ -12073,6 +12073,18 @@
           }
         ],
         "once_per_turn": true
+      },
+      "on_ko": {
+        "steps": [
+          {
+            "action": "play_from_deck",
+            "count": 1,
+            "filter_type": "land of wano",
+            "cost_lte": 99,
+            "color": "green",
+            "cost_eq": 3
+          }
+        ]
       }
     }
   },
@@ -12586,7 +12598,10 @@
             "action": "draw",
             "count": 2
           }
-        ]
+        ],
+        "conditions": {
+          "hand_eq": 0
+        }
       }
     }
   },
@@ -12632,6 +12647,10 @@
     "effects": {
       "on_play": {
         "steps": [
+          {
+            "action": "draw_to_hand_count",
+            "target_count": 3
+          },
           {
             "action": "play_card",
             "count": 1,
@@ -12825,6 +12844,10 @@
             "action": "draw",
             "count": 1,
             "then_trash": 1
+          },
+          {
+            "action": "trash_from_hand",
+            "count": 3
           }
         ]
       }
@@ -13125,6 +13148,10 @@
       "counter": {
         "steps": [
           {
+            "action": "draw_to_hand_count",
+            "target_count": 2
+          },
+          {
             "action": "buff_power",
             "amount": 6000,
             "target": "leader_or_character",
@@ -13151,6 +13178,13 @@
             "action": "draw",
             "count": 1,
             "then_trash": 1,
+            "conditions": {
+              "leader_is": "emporio.ivankov"
+            }
+          },
+          {
+            "action": "trash_from_hand",
+            "count": 3,
             "conditions": {
               "leader_is": "emporio.ivankov"
             }
@@ -14846,8 +14880,10 @@
         ],
         "costs": [
           {
-            "type": "trash_from_hand",
-            "count": 1
+            "type": "trash_own_character",
+            "count": 1,
+            "color": "red",
+            "power_gte": 4000
           }
         ]
       }
@@ -37624,6 +37660,14 @@
             "amount": 3000,
             "target": "leader_or_character",
             "duration": "battle_only"
+          },
+          {
+            "action": "trash_from_hand",
+            "count": 2
+          },
+          {
+            "action": "trash_from_deck_top",
+            "count_from_last_hand_trash": true
           }
         ]
       }
@@ -48184,6 +48228,10 @@
             "amount": 4000,
             "target": "leader_or_character",
             "duration": "battle_only"
+          },
+          {
+            "action": "trash_from_hand",
+            "count": 1
           }
         ]
       }
@@ -59135,6 +59183,10 @@
         "steps": [
           {
             "action": "gain_blocker"
+          },
+          {
+            "action": "trash_from_hand",
+            "count": 1
           }
         ],
         "costs": [
@@ -62163,10 +62215,6 @@
             "action": "give_don",
             "count": 3,
             "rested": true
-          },
-          {
-            "action": "trash_from_hand",
-            "count": 1
           }
         ]
       }

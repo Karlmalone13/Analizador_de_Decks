@@ -395,6 +395,14 @@ def parse_conditions(text):
     m = re.search(r'(?:if|and) you have (\d+) or more cards? in your hand', t)
     if m: conds['hand_gte'] = int(m.group(1))
 
+    # "if you have N cards in your hand" SEM "or less"/"or more" -- contagem
+    # EXATA (achado 19/07, OP02-049 Emporio.Ivankov: "if you have 0 cards in
+    # your hand, draw 2 cards" nao batia com hand_lte/hand_gte acima, que
+    # exigem o qualificador; unica carta do banco com essa forma exata).
+    if 'hand_lte' not in conds and 'hand_gte' not in conds:
+        m = re.search(r'(?:if|and) you have (\d+) cards? in your hand(?!\s*,?\s*or)', t)
+        if m: conds['hand_eq'] = int(m.group(1))
+
     m = re.search(r'if your leader is \[([^\]]+)\]', t)
     if m: conds['leader_is'] = m.group(1)
 
@@ -784,21 +792,28 @@ def parse_costs(text):
     # precisar de campo dedicado), power_gte/power_lte ("N power or
     # more/or less").
     m_trash_own = re.search(
-        r'you may trash (\d+) of your characters?'
+        r'you may trash (\d+) of your (?:(black|red|blue|green|yellow|purple)\s+)?characters?'
         r'(?: with a type including [\'"\[{]([a-z][a-z0-9 .\'-]+)[\'"\]}])?'
         r'(?: with (\d+) (?:base )?power(?: or (more|less))?)?', t)
     if m_trash_own and 'from your hand' not in t[m_trash_own.start():m_trash_own.end() + 20]:
         cost = {'type': 'trash_own_character', 'count': int(m_trash_own.group(1))}
+        # Filtro de COR ("of your red Characters") -- achado 19/07,
+        # OP03-012 Marshall.D.Teach: sem tolerar a cor entre "your" e
+        # "characters", o regex inteiro falhava e a carta caia no
+        # fallback generico de trash_from_hand (fonte errada -- custo de
+        # CAMPO virava descarte da MAO).
         if m_trash_own.group(2):
-            cost['filter_type'] = m_trash_own.group(2).strip()
+            cost['color'] = m_trash_own.group(2).strip()
         if m_trash_own.group(3):
-            comparator = m_trash_own.group(4)
+            cost['filter_type'] = m_trash_own.group(3).strip()
+        if m_trash_own.group(4):
+            comparator = m_trash_own.group(5)
             if comparator == 'more':
-                cost['power_gte'] = int(m_trash_own.group(3))
+                cost['power_gte'] = int(m_trash_own.group(4))
             elif comparator == 'less':
-                cost['power_lte'] = int(m_trash_own.group(3))
+                cost['power_lte'] = int(m_trash_own.group(4))
             else:
-                cost['power_eq'] = int(m_trash_own.group(3))
+                cost['power_eq'] = int(m_trash_own.group(4))
         costs.append(cost)
 
     # Custo de colocar N cartas do PRÓPRIO trash no fundo do PRÓPRIO deck
@@ -2610,7 +2625,20 @@ def parse_draw(text):
     steps = []
     t = text.lower()
 
-    m = re.search(r'draw (\d+) cards?', t)
+    # "Draw card(s) so that you have N cards in your hand" -- mecanica
+    # DINAMICA distinta de "draw N cards" (quantidade depende do tamanho
+    # atual da mao no momento da execucao, nao um numero fixo). Achado
+    # 19/07: OP02-051 Emporio.Ivankov e OP02-069 DEATH WINK, ambas com essa
+    # clausula inteira ausente do parseado antes (o regex de "draw N
+    # cards" exige um digito logo apos "draw", nunca casava com "draw
+    # card(s)"/"draw cards" sem numero). Checado ANTES do draw fixo pra nao
+    # cair no fallback "draw a card" por engano.
+    m_to_hand = re.search(
+        r'draw cards?(?:\(s\))? so that you have (\d+) cards? in your hand', t)
+    if m_to_hand:
+        steps.append({'action': 'draw_to_hand_count', 'target_count': int(m_to_hand.group(1))})
+
+    m = None if m_to_hand else re.search(r'draw (\d+) cards?', t)
     if m:
         step = {'action': 'draw', 'count': int(m.group(1))}
         trash_m = re.search(r'draw \d+ cards? and trash (\d+)', t)
@@ -3623,18 +3651,32 @@ def parse_play_from_deck(text):
         steps.append(step_nd)
         return steps
 
-    m = re.search(r'play up to (\d+) .{0,20}type character card.{0,40}from your deck', t)
+    # Janela ampliada de 20->40: cor + nome de tipo entre aspas (ex: "green
+    # \"land of wano\" type character card") passa de 20 chars com folga
+    # (achado 19/07, OP02-030 Kouzuki Oden: janela de 20 cortava por 1
+    # caractere, derrubando o [On K.O.] inteiro em silencio -- nenhuma
+    # outra carta do banco tinha esse fraseado curto o bastante pra so
+    # bater com 20, confirmado por busca ampla).
+    m = re.search(r'play up to (\d+) .{0,40}type character card.{0,40}from your deck', t)
     if m:
         type_m = re.search(r'play up to \d+ (?:black |red |blue |green |yellow |purple )?"?([a-z][a-z0-9 .]+)"? type', t)
-        cost_m = re.search(r'with a cost of (\d+) or less', t)
+        cost_lte_m = re.search(r'with a cost of (\d+) or less', t)
+        # "with a cost of N" SEM "or less" -- custo EXATO, nao teto (achado
+        # 19/07, OP02-030: unica carta do banco com essa forma exata nesta
+        # familia; cost_lte caia pro fallback 99/"qualquer custo" por
+        # engano, quando o texto restringe a exatamente N).
+        cost_eq_m = None if cost_lte_m else re.search(r'with a cost of (\d+)\b', t)
         color_m = re.search(r'play up to \d+ (black|red|blue|green|yellow|purple)', t)
-        steps.append({
+        step = {
             'action': 'play_from_deck',
             'count': int(m.group(1)),
             'filter_type': type_m.group(1).strip() if type_m else '',
-            'cost_lte': int(cost_m.group(1)) if cost_m else 99,
+            'cost_lte': int(cost_lte_m.group(1)) if cost_lte_m else 99,
             'color': color_m.group(1) if color_m else None
-        })
+        }
+        if cost_eq_m:
+            step['cost_eq'] = int(cost_eq_m.group(1))
+        steps.append(step)
 
     return steps
 
@@ -6334,31 +6376,69 @@ def parse_block(block_text, trigger_name):
                 step['duration'] = dur
             steps.append(step)
 
-    # Trash from hand (efeito, nao custo)
-    if trigger_name in ('on_play', 'when_attacking', 'end_of_turn'):
-        m = re.search(r'trash (\d+) cards? from your hand', t)
-        # NÃO duplicar: se já foi tratado pelo bloco "trash the rest ... trash
-        # N card from your hand" (look_top_deck), não detectar de novo aqui.
-        already = bool(re.search(r'trash the rest.*?trash \d+ card from your hand', t, re.DOTALL))
-        # NÃO duplicar (2): "draw N cards and trash M cards from your hand"
-        # já é capturado inteiro por parse_draw via 'then_trash' -- achado
-        # em auditoria de buff_cost/debuff_cost (27/06), 59 cartas, mesma
-        # familia do bug do Luffy mas gatilho diferente (aqui não tem ':'
-        # de custo, é "and" ligando draw+trash no mesmo efeito).
-        already_draw = bool(re.search(r'draw \d+ cards? and trash \d+ cards? from your hand', t))
-        if m and not already and not already_draw:
+    # Trash from hand (efeito, nao custo). 'activate_main'/'counter'
+    # adicionados 19/07 (OP02-070/OP09-059 -- mesma clausula "Then, trash
+    # up to N cards from your hand" tambem aparece nesses 2 triggers, nao
+    # so nos 3 originais).
+    if trigger_name in ('on_play', 'when_attacking', 'end_of_turn', 'activate_main', 'counter'):
+        # finditer (nao search): um bloco pode ter DUAS ocorrencias
+        # separadas -- ex: "draw 1 card and trash 1 card from your hand.
+        # Then, trash up to 3 cards from your hand." tem a 1a coberta por
+        # then_trash (abaixo) e a 2a INDEPENDENTE, nunca antes capturada
+        # (achado 19/07, OP02-059/OP02-070/OP09-059). "up to" tolerado
+        # agora (regex antigo so casava contagem fixa, sem "up to").
+        for m in re.finditer(r'trash (?:up to )?(\d+) cards? from your hand', t):
+            antes = t[max(0, m.start() - 40):m.start()]
+            # NÃO duplicar: se ESTA ocorrencia especifica ja foi tratada
+            # pelo bloco "trash the rest ... trash N card from your hand"
+            # (look_top_deck) ou por "draw N cards and trash M cards from
+            # your hand" (then_trash de parse_draw) -- checado por
+            # ocorrencia, nao pelo texto inteiro, pra nao bloquear uma 2a
+            # clausula realmente distinta mais adiante no mesmo bloco.
+            ja_coberto = bool(re.search(r'trash the rest[^.]*$', antes)) or \
+                bool(re.search(r'draw \d+ cards? and $', antes))
+            if ja_coberto:
+                continue
+            # "you may trash N cards from your hand" (nos ultimos 40 chars
+            # antes do match) e SEMPRE custo/condicional nesta gramatica,
+            # nunca o efeito incondicional "trash up to N" que este bloco
+            # cobre -- 2 formas, nenhuma delas um step solto:
+            #   (a) custo COMPOSTO "you may trash N ... and rest/trash/
+            #       place ESTA carta: efeito" -- o ':' vem so DEPOIS do 2o
+            #       custo, nao logo apos "from your hand" (a checagem de 3
+            #       chars abaixo nao alcancava, achado 19/07: EB02-047,
+            #       EB03-062, OP02-092, OP04-050, OP05-021/045, OP06-043)
+            #   (b) "you may trash N cards from your hand. If you do,
+            #       [beneficio]" -- beneficio CONDICIONAL ao trash, nao um
+            #       efeito incondicional separado (achado 19/07, OP05-038)
+            # Ambas ja cobertas por parse_costs/pelo proprio step do
+            # beneficio; duplicar aqui como trash_from_hand solto e bug.
+            if 'you may' in antes:
+                continue
             # Se a frase casada e seguida de ':' (so espaco entre), ela
-            # PROPRIA e a declaracao de custo ("you may trash N cards from
-            # your hand: efeito") -- nao duplicar como step de efeito.
-            # Bug confirmado por foto real (Luffy EB04-061, 27/06): o guard
-            # antigo testava 'you may trash' contra t[:t.find('trash')],
-            # um slice que SEMPRE corta antes da palavra 'trash' -- nunca
-            # podia conter a frase 'you may trash' completa, entao nunca
-            # bloqueava a duplicacao de verdade.
+            # PROPRIA e a declaracao de custo ("trash N cards from your
+            # hand: efeito", sem "you may" -- ex: custo obrigatorio) -- nao
+            # duplicar como step de efeito. Bug confirmado por foto real
+            # (Luffy EB04-061, 27/06): o guard antigo testava 'you may
+            # trash' contra t[:t.find('trash')], um slice que SEMPRE corta
+            # antes da palavra 'trash' -- nunca podia conter a frase 'you
+            # may trash' completa, entao nunca bloqueava a duplicacao de
+            # verdade.
             depois = t[m.end():m.end() + 3].lstrip()
             eh_custo = depois.startswith(':')
             if not eh_custo:
                 steps.append({'action': 'trash_from_hand', 'count': int(m.group(1))})
+
+    # "Trash the same number of cards from the top of your deck as you did
+    # from your hand" -- mill LIGADO ao resultado real do trash_from_hand
+    # do step anterior (achado 19/07, OP09-059, unica carta no banco com
+    # essa frase exata). Mesmo padrao ja usado por buff_power_per_count/
+    # source=placed_bottom_deck_this_effect (le o RESULTADO real do step
+    # anterior via EffectExecutor._last_moved_count), nao um numero fixo.
+    if re.search(
+            r'trash the same number of cards? from the top of your deck '
+            r'as you did from your hand', t):
+        steps.append({'action': 'trash_from_deck_top', 'count_from_last_hand_trash': True})
 
     # Disrupcao de mao FORCADA no oponente -- "your opponent trashes N cards
     # from their hand". Alvo oposto de trash_from_hand (sempre 'their hand',

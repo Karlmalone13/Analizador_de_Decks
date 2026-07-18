@@ -3016,6 +3016,8 @@ class EffectExecutor:
             return False
         if 'hand_gte' in conds and len(me.hand) < conds['hand_gte']:
             return False
+        if 'hand_eq' in conds and len(me.hand) != conds['hand_eq']:
+            return False
         if conds.get('just_played') and not getattr(card, 'just_played', False):
             return False
         if 'leader_is' in conds:
@@ -3638,6 +3640,7 @@ class EffectExecutor:
                     power_lte=cost.get('power_lte'),
                     power_gte=cost.get('power_gte'),
                     power_eq=cost.get('power_eq'),
+                    color=cost.get('color', ''),
                     exclude_card=card,
                 )
                 if len(candidatos) < count:
@@ -4267,6 +4270,22 @@ class EffectExecutor:
             if trashed_after:
                 msg += f' (e trashou: {", ".join(trashed_after)})'
             return msg
+
+        # "Draw cards so that you have N cards in your hand" -- distinto de
+        # 'draw' (quantidade fixa): aqui a quantidade e DINAMICA, calculada
+        # no momento da execucao a partir do tamanho atual da mao. Se a mao
+        # ja tem >= N cartas, nao compra nada (nunca DESCARTA pra baixo --
+        # o texto so descreve "puxar ate", nunca "descer ate").
+        if action == 'draw_to_hand_count':
+            target = step.get('target_count', 0)
+            need = max(0, target - len(me.hand))
+            drawn = []
+            for _ in range(need):
+                if not me.deck: break
+                c = me.deck.pop()
+                me.hand.append(c)
+                drawn.append(c.name[:12])
+            return f'comprou ate {target} na mao: {", ".join(drawn)}' if drawn else ''
 
         # ── KO ───────────────────────────────────────────────────────────────
         if action in ('ko', 'trash_character'):
@@ -5651,6 +5670,12 @@ class EffectExecutor:
                     remove_by_identity(me.hand, worst)
                     me.trash.append(worst)
                     trashed.append(worst.name[:12])
+            # Guarda o total REAL trashado pro step seguinte no MESMO bloco
+            # ler (ex: trash_from_deck_top com count_from_last_hand_trash,
+            # OP09-059 -- "trash the same number ... as you did from your
+            # hand"), mesmo padrao ja usado por _last_moved_count em
+            # place_*_bottom_deck.
+            self._last_moved_count = len(trashed)
             return f'descartou da mão: {", ".join(trashed)}' if trashed else ''
 
         # ── Trash from hand FORCADO no oponente (disrupcao de mao) ──────────────
@@ -6054,7 +6079,12 @@ class EffectExecutor:
         # Regra (Arthur): trash do deck = carta vai ao trash SEM ativar Trigger.
         # Topo do deck = fim da lista (= draw_phase usa pop()).
         if action == 'trash_from_deck_top':
-            count = step.get('count', 1)
+            # count_from_last_hand_trash: mill LIGADO ao total REAL do
+            # trash_from_hand anterior no mesmo bloco (OP09-059 -- "trash
+            # the same number ... as you did from your hand"), nao um
+            # numero fixo do texto.
+            count = (getattr(self, '_last_moved_count', 0) if step.get('count_from_last_hand_trash')
+                     else step.get('count', 1))
             milled = 0
             for _ in range(count):
                 if not me.deck: break
@@ -8035,6 +8065,7 @@ class DecisionEngine:
             if k == 'life_gte'  and not (my_life  >= v): return False
             if k == 'hand_lte'  and not (my_hand  <= v): return False
             if k == 'hand_gte'  and not (my_hand  >= v): return False
+            if k == 'hand_eq'   and not (my_hand  == v): return False
             if k == 'don_gte'   and not (my_don   >= v): return False
             if k == 'has_don_attached' and v:
                 attached = getattr(me.leader, 'don_attached', 0) + sum(

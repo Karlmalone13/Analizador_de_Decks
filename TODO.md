@@ -1,9 +1,26 @@
 # TODO — Analisador de Decks OPTCG
 
 **Última atualização:** 19 de julho de 2026
-**Estado:** varredura contínua do parser; 213 suspeitos (severidade 1 only)
+**Estado:** varredura contínua do parser; 204 suspeitos (severidade 1 only)
 **Baseline do código:** ver `git log --oneline -1`
 **Repo:** github.com/Karlmalone13/Analizador_de_Decks
+
+> 19/07/2026: lote de 10 suspeitos severidade-1 (itens 11-20). 6 fixes/8
+> cartas reais: OP02-030 (`[On K.O.]` inteiro sumia por janela de regex
+> curta + custo exato virava "qualquer custo"), OP02-049 (condicao "0
+> cartas na mao" ausente, draw disparava sempre), OP02-051/OP02-069
+> (mecanica nova "draw ate ter N na mao"), OP02-059/OP02-070/OP09-059
+> ("trash up to N da mao" como 2a clausula, nunca capturada em
+> activate_main/counter), OP09-059 (mill ligado ao trash real da mao),
+> OP03-012 (custo virava trash da MAO em vez do CAMPO, faltava filtro de
+> cor). Achado colateral fora de escopo: EB04-011 tem mecanica "draw 1
+> por cada Character de um tipo" ainda nao suportada. Ver HANDOFF bloco
+> 271 e `parser_audits/2026-07-19_lote_8_op02-030_a_op03-012.json`.
+> Auditor: 212 -> 204 suspeitos.
+
+> 19/07/2026: bug no audit_parser_coverage.py corrigido (valores negativos
+> no JSON nunca batiam com o texto sem sinal) -- 213 -> 212 suspeitos. Ver
+> HANDOFF bloco 270.
 
 > 19/07/2026: lote de 10 suspeitos severidade-1 revisado. A maioria era
 > falso-positivo conhecido (`give_don`/`buff_power`/`debuff_power` "up to 1"

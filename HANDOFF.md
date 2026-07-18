@@ -1,5 +1,63 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-19 (271) - Claude - lote de 8 bugs reais (OP02-030 a OP03-012)
+
+Continuacao da varredura apos o fix do audit (bloco 270). Usuario aprovou
+implementar os 5 bugs reais achados no lote de 10 itens 11-20 (mostrado
+apos os falso-positivos ja confirmados) -- na implementacao, a mesma
+gramatica de "trash up to N cards from your hand" apareceu numa 3a carta
+(OP09-059) com uma clausula extra (mill ligado ao resultado real do
+trash), totalizando 6 fixes/8 cartas-alvo. Registro completo em
+`parser_audits/2026-07-19_lote_8_op02-030_a_op03-012.json`:
+
+1. **OP02-030 Kouzuki Oden**: `[On K.O.]` inteiro sumia (janela de 20
+   chars em `parse_play_from_deck` cortava "green \"land of wano\" type
+   character card" por 1 caractere) + custo exato "with a cost of 3"
+   (sem "or less") virava `cost_lte=99`. Janela ampliada pra 40, novo
+   `cost_eq` suportado quando nao ha "or less".
+2. **OP02-049 Emporio.Ivankov (049)**: condicao "if you have 0 cards in
+   your hand" inteira ausente (hand_lte/hand_gte exigem qualificador) --
+   o draw disparava sempre. Nova condicao `hand_eq`.
+3. **OP02-051/OP02-069**: mecanica "draw cards so that you have N cards
+   in your hand" (dinamica) nunca parseada. Nova acao
+   `draw_to_hand_count`.
+4. **OP02-059/OP02-070/OP09-059**: clausula "Then, trash up to N cards
+   from your hand" (2a ocorrencia independente) nunca capturada -- o
+   regex so aceitava contagem fixa e so rodava em 3 dos 5 triggers
+   relevantes. Expandido pra `activate_main`/`counter` tambem, `re.
+   finditer` no lugar de `re.search` (capturar TODAS as ocorrencias, nao
+   so a 1a). **Armadilha:** a expansao causou uma regressao real em 7
+   cartas (custo composto "trash N from hand AND rest/trash ESTA carta:"
+   duplicava como step) -- corrigida com guard "you may" (se aparece nos
+   40 chars antes do match, e sempre custo/condicional, nunca este
+   efeito). Esse mesmo guard tambem corrigiu OP16-035 (removeu um trash
+   forcado incorretamente de um "you may X. If you do, Y" que deveria
+   ser condicional).
+5. **OP09-059 (clausula extra)**: "Trash the same number... from the top
+   of your deck as you did from your hand" -- mill dinamico ligado ao
+   resultado real do `trash_from_hand` anterior (mesmo padrao de
+   `self._last_moved_count` ja usado por `place_*_bottom_deck`).
+6. **OP03-012 Marshall.D.Teach**: custo "trash 1 of your red Characters
+   with 4000 power or more" virava `trash_from_hand` (zona ERRADA -- CAMPO,
+   nao mao) porque o regex de `trash_own_character` nao tolerava filtro
+   de COR. Bug de regex proprio descoberto na implementacao: o espaco da
+   alternancia de cores ficava preso so na ULTIMA alternativa por
+   precedencia de `|` (`(black|red|...|purple )` so aplicava o espaco a
+   "purple"), corrigido agrupando cor+espaco como unidade.
+
+**Achado colateral, fora de escopo (registrado pra batch futuro):**
+EB04-011 tem "draw a card for each of your [Tipo] type Characters" (draw
+dinamico por CONTAGEM de characters de um tipo -- mecanica nova, maior
+que o escopo desta sessao) + uma variante de "trash the same number"
+ligada ao DRAW (nao ao trash-from-hand como OP09-059) -- ambas ainda
+ausentes do parseado.
+
+Validado: `diff_parser.py` GANHOU=0/PERDEU=0/MUDOU=11 (8 alvo + 3 capturas
+corretas adicionais da mesma generalizacao). `smoke_fast.py` com teste
+novo (`test_lote_8_op02_030_a_op03_012`) cobrindo execucao real dos 6
+mecanismos. `smoke_test.py` TODOS OS TESTES PASSARAM. `smoke_test_broad.py`
+7/7 sem excecao. **Auditor: 212 -> 204 suspeitos.**
+
 ## 2026-07-19 (270) - Claude - fix no audit_parser_coverage.py: sinal negativo
 
 Ao revisar o lote seguinte de suspeitos (itens 11-20), quase todos eram a

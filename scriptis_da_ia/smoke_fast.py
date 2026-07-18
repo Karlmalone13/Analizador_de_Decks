@@ -5132,6 +5132,117 @@ def test_your_turn_on_play_dispara_uma_vez_e_so_no_seu_turno() -> None:
           len(me3.hand) == hand_antes3 + 1)
 
 
+def test_lote_8_op02_030_a_op03_012() -> None:
+    # Lote de 10 suspeitos severidade-1 (19/07): maioria falso-positivo
+    # (alvo unico implicito), mas 8 bugs reais descobertos alem da carta-
+    # gatilho original.
+
+    # OP02-030 Kouzuki Oden: [On K.O.] inteiro sumia (janela de 20 chars
+    # cortava "green \"land of wano\" type character card" por 1 char) +
+    # custo exato (nao "or less") virava cost_lte=99 (qualquer custo).
+    on_ko = get_card_effects("OP02-030").get("on_ko", {})
+    check("OP02-030 recupera o [On K.O.] inteiro (play_from_deck)",
+          on_ko.get("steps", [{}])[0].get("action") == "play_from_deck")
+    check("OP02-030 usa custo EXATO (cost_eq=3), nao cost_lte=99",
+          on_ko["steps"][0].get("cost_eq") == 3
+          and on_ko["steps"][0].get("color") == "green"
+          and on_ko["steps"][0].get("filter_type") == "land of wano")
+
+    # OP02-049 Emporio.Ivankov: condicao "if you have 0 cards in your
+    # hand" inteira ausente -- o draw disparava sempre, incondicional.
+    check("OP02-049 parseia condicao hand_eq=0",
+          get_card_effects("OP02-049").get("end_of_turn", {}).get("conditions", {}) == {"hand_eq": 0})
+    ivankov = real_card("OP02-049")
+    me_iv_vazia = GameState(leader=mk("IVLDR", "Lider", card_type="LEADER"), turn=3)
+    me_iv_vazia.field_chars = [ivankov]
+    me_iv_vazia.hand = []
+    me_iv_vazia.deck = [mk("IVD1", "D1"), mk("IVD2", "D2")]
+    opp_iv = GameState(leader=mk("IVOPP", "Opp", card_type="LEADER"), turn=3)
+    EffectExecutor(me_iv_vazia, opp_iv).execute(ivankov, "end_of_turn")
+    check("Execucao real: OP02-049 COM mao vazia compra 2 cartas",
+          len(me_iv_vazia.hand) == 2)
+    ivankov2 = real_card("OP02-049")
+    me_iv_cheia = GameState(leader=mk("IVLDR2", "Lider", card_type="LEADER"), turn=3)
+    me_iv_cheia.field_chars = [ivankov2]
+    me_iv_cheia.hand = [mk("IVH1", "H1")]
+    me_iv_cheia.deck = [mk("IVD3", "D3")]
+    opp_iv2 = GameState(leader=mk("IVOPP2", "Opp", card_type="LEADER"), turn=3)
+    EffectExecutor(me_iv_cheia, opp_iv2).execute(ivankov2, "end_of_turn")
+    check("Execucao real: OP02-049 COM mao nao-vazia NAO compra (condicao bloqueia)",
+          len(me_iv_cheia.hand) == 1)
+
+    # OP02-051/OP02-069: "draw cards so that you have N cards in your
+    # hand" -- mecanica dinamica nova, inteira ausente antes.
+    check("OP02-051 parseia draw_to_hand_count target_count=3",
+          any(s.get("action") == "draw_to_hand_count" and s.get("target_count") == 3
+              for s in get_card_effects("OP02-051").get("on_play", {}).get("steps", [])))
+    check("OP02-069 parseia draw_to_hand_count target_count=2",
+          any(s.get("action") == "draw_to_hand_count" and s.get("target_count") == 2
+              for s in get_card_effects("OP02-069").get("counter", {}).get("steps", [])))
+    dth_me = GameState(leader=mk("DTHLDR", "Lider", card_type="LEADER"), turn=3)
+    dth_me.hand = [mk("DTHH1", "H1")]
+    dth_me.deck = [mk("DTHD1", "D1"), mk("DTHD2", "D2"), mk("DTHD3", "D3")]
+    opp_dth = GameState(leader=mk("DTHOPP", "Opp", card_type="LEADER"), turn=3)
+    EffectExecutor(dth_me, opp_dth)._execute_step({"action": "draw_to_hand_count", "target_count": 3}, dth_me.leader)
+    check("Execucao real: draw_to_hand_count com 1 na mao e alvo 3 compra exatamente 2",
+          len(dth_me.hand) == 3)
+    dth_me2 = GameState(leader=mk("DTHLDR2", "Lider", card_type="LEADER"), turn=3)
+    dth_me2.hand = [mk("DTHH2", "H2"), mk("DTHH3", "H3"), mk("DTHH4", "H4"), mk("DTHH5", "H5")]
+    dth_me2.deck = [mk("DTHD4", "D4")]
+    opp_dth2 = GameState(leader=mk("DTHOPP2", "Opp", card_type="LEADER"), turn=3)
+    EffectExecutor(dth_me2, opp_dth2)._execute_step({"action": "draw_to_hand_count", "target_count": 3}, dth_me2.leader)
+    check("Execucao real: draw_to_hand_count com mao JA acima do alvo nao compra nada",
+          len(dth_me2.hand) == 4)
+
+    # OP02-059/OP02-070/OP09-059: "Then, trash up to N cards from your
+    # hand" -- 2a clausula independente, sempre ausente antes (so a 1a,
+    # "draw N and trash M", sobrevivia via then_trash).
+    check("OP02-059 parseia as DUAS clausulas (then_trash=1 E trash_from_hand=3)",
+          get_card_effects("OP02-059")["when_attacking"]["steps"][0].get("then_trash") == 1
+          and get_card_effects("OP02-059")["when_attacking"]["steps"][1]
+          == {"action": "trash_from_hand", "count": 3})
+    check("OP02-070 (activate_main, nao estava na whitelist antes) tambem parseia as 2 clausulas",
+          any(s.get("action") == "trash_from_hand" and s.get("count") == 3
+              for s in get_card_effects("OP02-070")["activate_main"]["steps"]))
+    check("OP09-059 (counter, tambem fora da whitelist antes) parseia trash_from_hand=2",
+          any(s.get("action") == "trash_from_hand" and s.get("count") == 2
+              for s in get_card_effects("OP09-059")["counter"]["steps"]))
+    check("OP09-059 parseia o mill LIGADO (trash_from_deck_top count_from_last_hand_trash)",
+          get_card_effects("OP09-059")["counter"]["steps"][-1]
+          == {"action": "trash_from_deck_top", "count_from_last_hand_trash": True})
+
+    # Execucao real do mill ligado: trash_from_hand trasha o que existir na
+    # mao (ate 2), trash_from_deck_top deve milhar EXATAMENTE esse total,
+    # nao um numero fixo do texto.
+    murder = real_card("OP09-059")
+    me_murder = GameState(leader=mk("MDLDR", "Lider", card_type="LEADER"), turn=3)
+    me_murder.hand = [mk("MDH1", "H1")]  # so 1 carta na mao (custo pede "up to 2")
+    me_murder.deck = [mk("MDD1", "D1"), mk("MDD2", "D2"), mk("MDD3", "D3")]
+    opp_murder = GameState(leader=mk("MDOPP", "Opp", card_type="LEADER"), turn=3)
+    EffectExecutor(me_murder, opp_murder).execute(murder, "counter")
+    check("Execucao real: OP09-059 trasha 1 da mao (so tinha 1) e milha EXATAMENTE 1 do deck (nao 2 fixo)",
+          len(me_murder.hand) == 0 and len(me_murder.trash) == 2 and len(me_murder.deck) == 2)
+
+    # OP03-012 Marshall.D.Teach: custo "trash 1 of your red Characters with
+    # 4000 power or more" virava trash_from_hand (zona errada) + perdia
+    # filtro de cor e power inteiros.
+    check("OP03-012 parseia custo trash_own_character com color=red e power_gte=4000",
+          get_card_effects("OP03-012")["when_attacking"]["costs"][0]
+          == {"type": "trash_own_character", "count": 1, "color": "red", "power_gte": 4000})
+    teach = real_card("OP03-012")
+    fraco_vermelho = mk("TEACHR1", "Fraco Vermelho", power=3000, color="Red")
+    forte_azul = mk("TEACHR2", "Forte Azul", power=5000, color="Blue")
+    forte_vermelho = mk("TEACHR3", "Forte Vermelho", power=5000, color="Red")
+    me_teach = GameState(leader=mk("TCHLDR", "Lider", card_type="LEADER"), turn=3)
+    me_teach.field_chars = [teach, fraco_vermelho, forte_azul, forte_vermelho]
+    me_teach.deck = [mk("TCHD1", "D1")]
+    opp_teach = GameState(leader=mk("TCHOPP", "Opp", card_type="LEADER"), turn=3)
+    EffectExecutor(me_teach, opp_teach).execute(teach, "when_attacking")
+    check("Execucao real: OP03-012 so aceita Character VERMELHO com 4000+ power como custo (nao a mao)",
+          forte_vermelho not in me_teach.field_chars
+          and fraco_vermelho in me_teach.field_chars and forte_azul in me_teach.field_chars)
+
+
 def main() -> int:
     test_turn_order_imu_prefers_second()
     test_empty_throne_beats_direct_five_elders_play()
@@ -5262,6 +5373,7 @@ def main() -> int:
     test_filter_names_prb02_018_or_e_st13_006_each()
     test_kinemon_op10_026_027_e_familia_place_self_bottom_deck()
     test_your_turn_on_play_dispara_uma_vez_e_so_no_seu_turno()
+    test_lote_8_op02_030_a_op03_012()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0
