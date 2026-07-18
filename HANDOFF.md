@@ -1,5 +1,55 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-18 (267) - Claude - teste ao vivo do proxy: causa raiz do gap de confirmacao/outcome
+
+Usuario pediu teste ao vivo do proxy/motor apos o merge das 4 tarefas de
+background (bloco anterior). Rodada 1 (`Eustass.Captain.Kid-Y_x_Jinbe-G_
+2026-07-18T02.08.40`, derrota): `/outcome` nunca foi chamado pelo plugin
+apesar do jogo chegar em `GameOver` (confirmado no `LogOutput.log` e no
+combat log baixado manualmente em `E:\Games\...\CombatLogs\2026-07-18T02.16.13.log`,
+que tem as 3 linhas finais que o AutoSaved corta: `Downloaded the Combat
+Log!` + `GameOver`). Auto-coleta nao disparou (usado o fallback manual
+`collect_latest_match.py`, log entrou no banco igual). `state_after_
+coverage_pct` deu 0% nas 58 decisoes -- nao so o outcome, o loop inteiro
+de confirmacao (`/execution`) estava mudo.
+
+**Causa raiz (nao e bug de logica): DLL do plugin desatualizada.**
+`BOT/OPTCGBotPlugin.dll` instalado no jogo estava compilado em 14/07
+11:39 -- ANTES dos 3 commits de 17/07 a noite que adicionaram toda essa
+telemetria (`5229ffb` instrumenta decisoes, `11e6ad4` amplia telemetria,
+`ffd6fb1` adiciona deteccao de GameOver/outcome, todos ~23h de 17/07). O
+binario rodando na partida simplesmente nao tinha esse codigo ainda --
+por isso o heartbeat conseguia mostrar `state=GameOver` (codigo antigo
+sem os early-returns novos) mas nunca chamava `/outcome`.
+
+**Fix:** `BOT\setup_bepinex.ps1` (dotnet build + copia pra
+`BepInEx\plugins\OPTCGBotPlugin.dll`, jogo fechado). DLL foi de 40960 ->
+47616 bytes, timestamp novo (18/07 02:21).
+
+**Validacao (rodada 2, `Krieg-RG_x_Smoker-B_2026-07-18T02.41.46`, derrota
+de novo):** `/outcome` chamado, `outcome_coverage_pct` 0% -> 100%,
+`execution_success_pct` null -> 98.9% (88/104 confirmadas), auto-coleta
+funcionou sozinha (sem fallback manual). Antes de rodar essa 2a partida,
+o servidor antigo (processo da rodada 1, ainda de pe segurando a porta
+8765) foi encerrado e um novo subido, pra nao misturar sessao/decision
+log antigo com o novo teste.
+
+**Pendencias anotadas (nao resolvidas ainda, para retomar amanha):**
+- `state_after_coverage_pct` 88.5% -- ainda abaixo do gate de 95% (12 de
+  38 decisoes de `target` ficaram `pending`, sem confirmacao).
+- `semantic_transition_failed`: 3 casos onde o DTO mudou mas a transicao
+  principal esperada da acao nao foi reconhecida (severidade `error` no
+  relatorio de eficiencia).
+- `logs/index.json`: campo `winner` ficou `null` na entrada nova
+  (`Krieg-RG_x_Smoker-B_2026-07-18T02.41.46`) mesmo com `/outcome` tendo
+  capturado a derrota certinho na telemetria (`outcomes.losses: 1`) --
+  gap cosmetico em `collect_latest_match.py`/`parse_combat_log.py`, nao
+  afeta regra de jogo nem os gates.
+
+Ambos os combat logs desta sessao ja estao no banco (raw/parsed/2 decks
+cada, `index.json` atualizado): `Eustass.Captain.Kid-Y_x_Jinbe-G_
+2026-07-18T02.08.40` e `Krieg-RG_x_Smoker-B_2026-07-18T02.41.46`.
+
 ## 2026-07-18 - Merge das 4 tarefas de background (worktrees) na main
 
 Usuario tinha iniciado 4 tarefas de background numa sessao anterior

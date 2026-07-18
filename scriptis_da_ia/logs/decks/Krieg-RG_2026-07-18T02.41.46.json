@@ -1,0 +1,56 @@
+{
+  "cards": [
+    {
+      "code": "OP15-025",
+      "name": "Kuro",
+      "count": 3
+    },
+    {
+      "code": "OP15-023",
+      "name": "OP15-023",
+      "count": 2
+    },
+    {
+      "code": "OP15-026",
+      "name": "Jango",
+      "count": 2
+    },
+    {
+      "code": "OP13-040",
+      "name": "OP13-040",
+      "count": 2
+    },
+    {
+      "code": "OP15-009",
+      "name": "OP15-009",
+      "count": 2
+    },
+    {
+      "code": "OP15-007",
+      "name": "OP15-007",
+      "count": 2
+    },
+    {
+      "code": "OP15-017",
+      "name": "Morgan",
+      "count": 1
+    },
+    {
+      "code": "OP15-003",
+      "name": "OP15-003",
+      "count": 1
+    },
+    {
+      "code": "OP15-037",
+      "name": "OP15-037",
+      "count": 1
+    },
+    {
+      "code": "OP15-008",
+      "name": "OP15-008",
+      "count": 1
+    }
+  ],
+  "total_seen": 17,
+  "leader": "OP15-001"
+}

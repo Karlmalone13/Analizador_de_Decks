@@ -1,0 +1,106 @@
+{
+  "cards": [
+    {
+      "code": "OP03-089",
+      "name": "Brannew",
+      "count": 3
+    },
+    {
+      "code": "ST19-002",
+      "name": "Sengoku",
+      "count": 2
+    },
+    {
+      "code": "OP02-096",
+      "name": "Kuzan",
+      "count": 2
+    },
+    {
+      "code": "ST06-016",
+      "name": "ST06-016",
+      "count": 1
+    },
+    {
+      "code": "OP03-078",
+      "name": "Issho",
+      "count": 1
+    },
+    {
+      "code": "ST06-008",
+      "name": "Hina",
+      "count": 1
+    },
+    {
+      "code": "ST19-003",
+      "name": "Tashigi",
+      "count": 1
+    },
+    {
+      "code": "EB02-050",
+      "name": "EB02-050",
+      "count": 1
+    },
+    {
+      "code": "ST06-006",
+      "name": "ST06-006",
+      "count": 1
+    },
+    {
+      "code": "EB02-044",
+      "name": "EB02-044",
+      "count": 1
+    },
+    {
+      "code": "OP07-085",
+      "name": "OP07-085",
+      "count": 1
+    },
+    {
+      "code": "EB01-049",
+      "name": "EB01-049",
+      "count": 1
+    },
+    {
+      "code": "OP10-098",
+      "name": "OP10-098",
+      "count": 1
+    },
+    {
+      "code": "OP02-114",
+      "name": "OP02-114",
+      "count": 1
+    },
+    {
+      "code": "ST19-004",
+      "name": "ST19-004",
+      "count": 1
+    },
+    {
+      "code": "OP02-119",
+      "name": "OP02-119",
+      "count": 1
+    },
+    {
+      "code": "OP02-098",
+      "name": "OP02-098",
+      "count": 1
+    },
+    {
+      "code": "OP03-097",
+      "name": "OP03-097",
+      "count": 1
+    },
+    {
+      "code": "OP05-091",
+      "name": "Rebecca",
+      "count": 1
+    },
+    {
+      "code": "OP02-121",
+      "name": "OP02-121",
+      "count": 1
+    }
+  ],
+  "total_seen": 24,
+  "leader": "OP02-093"
+}

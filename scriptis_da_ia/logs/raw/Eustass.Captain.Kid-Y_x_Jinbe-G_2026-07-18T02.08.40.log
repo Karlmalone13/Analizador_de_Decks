@@ -1,0 +1,842 @@
+Version is 1.41b.27
+[You] Leader is Eustass "Captain" Kid [<mark><link="OP10-099">OP10-099</link></mark>]
+RZ1|HDR|1.41b|2|RZ1
+RZ1|PLY|1||OP10-099
+RZ1|PLY|2||
+[Opponent] Leader is Jinbe [<mark><link="OP11-021">OP11-021</link></mark>]
+RZ1|1|2|OP15-023|0|23|0|0|0|0|0|0|0
+RZ1|CHK|1|2|50|0|0|0|10|0|0|0|1|0
+RZ1|2|2|OP06-035|0|36|0|1|0|0|0|0|0
+RZ1|CHK|2|2|50|0|0|0|10|0|0|0|1|0
+RZ1|3|2|OP06-041|0|49|0|2|0|0|0|0|0
+RZ1|CHK|3|2|50|0|0|0|10|0|0|0|1|0
+RZ1|4|2|EB04-020|0|41|0|3|0|0|0|0|0
+RZ1|CHK|4|2|50|0|0|0|10|0|0|0|1|0
+RZ1|5|2|OP06-032|0|12|0|4|0|0|0|0|0
+RZ1|CHK|5|2|50|0|0|0|10|0|0|0|1|0
+RZ1|6|2|OP08-036|0|48|0|5|0|0|0|0|0
+RZ1|CHK|6|2|50|0|0|0|10|0|0|0|1|0
+RZ1|7|2|EB04-020|0|43|0|6|0|0|0|0|0
+RZ1|CHK|7|2|50|0|0|0|10|0|0|0|1|0
+RZ1|8|2|OP15-035|0|12|0|7|0|0|0|0|0
+RZ1|CHK|8|2|50|0|0|0|10|0|0|0|1|0
+RZ1|9|2|OP11-031|0|33|0|8|0|0|0|0|0
+RZ1|CHK|9|2|50|0|0|0|10|0|0|0|1|0
+RZ1|10|2|OP11-028|0|26|0|9|0|0|0|0|0
+RZ1|CHK|10|2|50|0|0|0|10|0|0|0|1|0
+RZ1|11|2|EB04-015|0|40|0|10|0|0|0|0|0
+RZ1|CHK|11|2|50|0|0|0|10|0|0|0|1|0
+RZ1|12|2|OP11-031|0|35|0|11|0|0|0|0|0
+RZ1|CHK|12|2|50|0|0|0|10|0|0|0|1|0
+RZ1|13|2|OP06-025|0|13|0|12|0|0|0|0|0
+RZ1|CHK|13|2|50|0|0|0|10|0|0|0|1|0
+RZ1|14|2|EB04-020|0|44|0|13|0|0|0|0|0
+RZ1|CHK|14|2|50|0|0|0|10|0|0|0|1|0
+RZ1|15|2|OP13-040|0|46|0|14|0|0|0|0|0
+RZ1|CHK|15|2|50|0|0|0|10|0|0|0|1|0
+RZ1|16|2|OP08-036|0|48|0|15|0|0|0|0|0
+RZ1|CHK|16|2|50|0|0|0|10|0|0|0|1|0
+RZ1|17|2|ST24-004|0|46|0|16|0|0|0|0|0
+RZ1|CHK|17|2|50|0|0|0|10|0|0|0|1|0
+RZ1|18|2|OP15-035|0|21|0|17|0|0|0|0|0
+RZ1|CHK|18|2|50|0|0|0|10|0|0|0|1|0
+RZ1|19|2|OP11-028|0|33|0|18|0|0|0|0|0
+RZ1|CHK|19|2|50|0|0|0|10|0|0|0|1|0
+RZ1|20|2|OP06-025|0|20|0|19|0|0|0|0|0
+RZ1|CHK|20|2|50|0|0|0|10|0|0|0|1|0
+RZ1|21|2|OP11-030|0|21|0|20|0|0|0|0|0
+RZ1|CHK|21|2|50|0|0|0|10|0|0|0|1|0
+RZ1|22|2|P-063|0|38|0|21|0|0|0|0|0
+RZ1|CHK|22|2|50|0|0|0|10|0|0|0|1|0
+RZ1|23|2|OP15-023|0|36|0|22|0|0|0|0|0
+RZ1|CHK|23|2|50|0|0|0|10|0|0|0|1|0
+RZ1|24|2|OP15-032|0|43|0|23|0|0|0|0|0
+RZ1|CHK|24|2|50|0|0|0|10|0|0|0|1|0
+RZ1|25|2|OP15-032|0|43|0|25|0|0|0|0|0
+RZ1|CHK|25|2|50|0|0|0|10|0|0|0|1|0
+RZ1|26|2|OP11-031|0|42|0|26|0|0|0|0|0
+RZ1|CHK|26|2|50|0|0|0|10|0|0|0|1|0
+RZ1|27|2|OP06-041|0|49|0|27|0|0|0|0|0
+RZ1|CHK|27|2|50|0|0|0|10|0|0|0|1|0
+RZ1|28|2|OP15-035|0|29|0|28|0|0|0|0|0
+RZ1|CHK|28|2|50|0|0|0|10|0|0|0|1|0
+RZ1|29|2|OP06-033|0|32|0|29|0|0|0|0|0
+RZ1|CHK|29|2|50|0|0|0|10|0|0|0|1|0
+RZ1|30|2|EB04-018|0|39|0|30|0|0|0|0|0
+RZ1|CHK|30|2|50|0|0|0|10|0|0|0|1|0
+RZ1|31|2|EB04-018|0|37|0|31|0|0|0|0|0
+RZ1|CHK|31|2|50|0|0|0|10|0|0|0|1|0
+RZ1|32|2|OP11-028|0|40|0|32|0|0|0|0|0
+RZ1|CHK|32|2|50|0|0|0|10|0|0|0|1|0
+RZ1|33|2|OP15-023|0|41|0|33|0|0|0|0|0
+RZ1|CHK|33|2|50|0|0|0|10|0|0|0|1|0
+RZ1|34|2|OP06-033|0|36|0|34|0|0|0|0|0
+RZ1|CHK|34|2|50|0|0|0|10|0|0|0|1|0
+RZ1|35|2|EB04-018|0|40|0|35|0|0|0|0|0
+RZ1|CHK|35|2|50|0|0|0|10|0|0|0|1|0
+RZ1|36|2|P-063|0|42|0|36|0|0|0|0|0
+RZ1|CHK|36|2|50|0|0|0|10|0|0|0|1|0
+RZ1|37|2|EB04-015|0|45|0|37|0|0|0|0|0
+RZ1|CHK|37|2|50|0|0|0|10|0|0|0|1|0
+RZ1|38|2|EB04-020|0|48|0|38|0|0|0|0|0
+RZ1|CHK|38|2|50|0|0|0|10|0|0|0|1|0
+RZ1|39|2|OP06-032|0|40|0|39|0|0|0|0|0
+RZ1|CHK|39|2|50|0|0|0|10|0|0|0|1|0
+RZ1|40|2|OP13-040|0|49|0|40|0|0|0|0|0
+RZ1|CHK|40|2|50|0|0|0|10|0|0|0|1|0
+RZ1|41|2|OP11-031|0|47|0|41|0|0|0|0|0
+RZ1|CHK|41|2|50|0|0|0|10|0|0|0|1|0
+RZ1|42|2|OP06-033|0|43|0|42|0|0|0|0|0
+RZ1|CHK|42|2|50|0|0|0|10|0|0|0|1|0
+RZ1|43|2|ST24-004|0|49|0|43|0|0|0|0|0
+RZ1|CHK|43|2|50|0|0|0|10|0|0|0|1|0
+RZ1|44|2|OP11-029|0|46|0|44|0|0|0|0|0
+RZ1|CHK|44|2|50|0|0|0|10|0|0|0|1|0
+RZ1|45|2|EB04-018|0|47|0|45|0|0|0|0|0
+RZ1|CHK|45|2|50|0|0|0|10|0|0|0|1|0
+RZ1|46|2|OP11-029|0|47|0|46|0|0|0|0|0
+RZ1|CHK|46|2|50|0|0|0|10|0|0|0|1|0
+[] Drew card from deck: The Pirate King Is Just The Freest Man on the Sea!!! [<mark><link="OP13-116">OP13-116</link></mark>]
+RZ1|47|1|OP13-116|0|49|1|0|1|1|0|0|0
+RZ1|CHK|47|1|49|1|0|0|10|0|0|0|1|0
+[] Drew card from deck: Slam Gibson [<mark><link="OP12-117">OP12-117</link></mark>]
+RZ1|48|1|OP12-117|0|48|1|1|1|1|0|0|0
+RZ1|CHK|48|1|48|2|0|0|10|0|0|0|1|0
+[] Drew card from deck: Trafalgar Law [<mark><link="P-088">P-088</link></mark>]
+RZ1|49|1|P-088|0|47|1|2|1|1|0|0|0
+RZ1|CHK|49|1|47|3|0|0|10|0|0|0|1|0
+[] Drew card from deck: Eustass "Captain" Kid [<mark><link="ST36-005">ST36-005</link></mark>]
+RZ1|50|1|ST36-005|0|46|1|3|1|1|0|0|0
+RZ1|CHK|50|1|46|4|0|0|10|0|0|0|1|0
+[] Drew card from deck: Bartolomeo [<mark><link="ST36-004">ST36-004</link></mark>]
+RZ1|51|1|ST36-004|0|45|1|4|1|1|0|0|0
+RZ1|CHK|51|1|45|5|0|0|10|0|0|0|1|0
+[] Drew card from deck: Hody Jones [<mark><link="OP06-035">OP06-035</link></mark>]
+RZ1|52|2|OP06-035|0|49|1|0|1|1|0|0|0
+RZ1|CHK|52|2|49|1|0|0|10|0|0|0|1|0
+[] Drew card from deck: Jinbe [<mark><link="P-063">P-063</link></mark>]
+RZ1|53|2|P-063|0|48|1|1|1|1|0|0|0
+RZ1|CHK|53|2|48|2|0|0|10|0|0|0|1|0
+[] Drew card from deck: Shirahoshi [<mark><link="OP11-030">OP11-030</link></mark>]
+RZ1|54|2|OP11-030|0|47|1|2|1|1|0|0|0
+RZ1|CHK|54|2|47|3|0|0|10|0|0|0|1|0
+[] Drew card from deck: Charlotte Praline [<mark><link="OP11-029">OP11-029</link></mark>]
+RZ1|55|2|OP11-029|0|46|1|3|1|1|0|0|0
+RZ1|CHK|55|2|46|4|0|0|10|0|0|0|1|0
+[] Drew card from deck: Megalo [<mark><link="EB04-018">EB04-018</link></mark>]
+RZ1|56|2|EB04-018|0|45|1|4|1|1|0|0|0
+RZ1|CHK|56|2|45|5|0|0|10|0|0|0|1|0
+RZ1|57|1|ST36-004|0|44|3|0|1|0|0|0|0
+RZ1|CHK|57|1|44|5|0|1|10|0|0|0|1|0
+RZ1|58|1|OP10-119|0|43|3|1|1|0|0|0|0
+RZ1|CHK|58|1|43|5|0|2|10|0|0|0|1|0
+RZ1|59|1|OP10-109|0|42|3|2|1|0|0|0|0
+RZ1|CHK|59|1|42|5|0|3|10|0|0|0|1|0
+RZ1|60|1|OP11-101|0|41|3|3|1|0|0|0|0
+RZ1|CHK|60|1|41|5|0|4|10|0|0|0|1|0
+RZ1|61|1|OP15-105|0|40|3|4|1|0|0|0|0
+RZ1|CHK|61|1|40|5|0|5|10|0|0|0|1|0
+RZ1|62|2|OP11-029|0|44|3|0|0|1|0|0|0
+RZ1|CHK|62|2|44|5|0|1|10|0|0|0|1|0
+RZ1|63|2|ST24-004|0|43|3|1|0|1|0|0|0
+RZ1|CHK|63|2|43|5|0|2|10|0|0|0|1|0
+RZ1|64|2|OP06-033|0|42|3|2|0|1|0|0|0
+RZ1|CHK|64|2|42|5|0|3|10|0|0|0|1|0
+RZ1|65|2|OP11-031|0|41|3|3|0|1|0|0|0
+RZ1|CHK|65|2|41|5|0|4|10|0|0|0|1|0
+RZ1|66|2|OP13-040|0|40|3|4|0|1|0|0|0
+RZ1|CHK|66|2|40|5|0|5|10|0|0|0|1|0
+[] Hand: [OP13-116,OP12-117,P-088,ST36-005,ST36-004]
+[] Board: []
+[] Trash: []
+[] Life: 5
+[] Hand: [OP06-035,P-063,OP11-030,OP11-029,EB04-018]
+[] Trash: []
+[] Board: []
+[] Life: 5
+RZ1|67|1|Don|4|9|5|0|1|1|0|0|0
+RZ1|CHK|67|1|40|5|0|5|9|1|0|0|1|0
+[You] Draw 1 Don
+[You] The Pirate King Is Just The Freest Man on the Sea!!! [<mark><link="OP13-116">OP13-116</link></mark>]: Rest 1 Don
+RZ1|68|1|Don|5|0|5|0|1|1|1|0|0
+RZ1|CHK|68|1|40|5|0|5|9|1|0|0|1|0
+RZ1|69|1|OP13-116|1|0|6|0|1|1|0|0|0
+RZ1|CHK|69|1|40|4|0|5|9|1|1|0|1|0
+RZ1|70|1|OP10-119|0|37|1|4|1|1|0|0|0
+RZ1|CHK|70|1|39|5|0|5|9|1|1|0|1|0
+[You] The Pirate King Is Just The Freest Man on the Sea!!! [<mark><link="OP13-116">OP13-116</link></mark>]: <b>Reveal and Draw Trafalgar Law [<mark><link="OP10-119">OP10-119</link></mark>]</b>
+[You] Placing Cards on Bottom of Deck
+RZ1|71|1|ST36-001|0|38|0|0|0|0|0|0|0
+RZ1|CHK|71|1|39|5|0|5|9|1|1|0|1|0
+RZ1|72|1|OP10-109|0|38|0|0|0|0|0|0|0
+RZ1|CHK|72|1|39|5|0|5|9|1|1|0|1|0
+RZ1|73|1|OP11-101|0|38|0|0|0|0|0|0|0
+RZ1|CHK|73|1|39|5|0|5|9|1|1|0|1|0
+RZ1|74|1|OP10-111|0|38|0|0|0|0|0|0|0
+RZ1|CHK|74|1|39|5|0|5|9|1|1|0|1|0
+[] Hand: [OP12-117,P-088,ST36-005,ST36-004,OP10-119]
+[] Board: []
+[] Trash: [OP13-116]
+[] Life: 5
+[] Hand: [OP06-035,P-063,OP11-030,OP11-029,EB04-018]
+[] Trash: []
+[] Board: []
+[] Life: 5
+[You] End Turn
+[] Hand: [OP06-035,P-063,OP11-030,OP11-029,EB04-018]
+[] Board: []
+[] Trash: []
+[] Life: 5
+[] Hand: [OP12-117,P-088,ST36-005,ST36-004,OP10-119]
+[] Trash: [OP13-116]
+[] Board: []
+[] Life: 5
+[Opponent] Draw 1 Card
+[] Drew card from deck: Hammond [<mark><link="OP06-032">OP06-032</link></mark>]
+RZ1|75|2|OP06-032|0|39|1|5|1|1|0|0|0
+RZ1|CHK|75|2|39|6|0|5|10|0|0|0|1|0
+RZ1|76|2|Don|4|9|5|0|1|1|0|0|0
+RZ1|CHK|76|2|39|6|0|5|9|1|0|0|1|0
+RZ1|77|2|Don|4|8|5|1|1|1|0|0|0
+RZ1|CHK|77|2|39|6|0|5|8|2|0|0|1|0
+[Opponent] Draw 2 Don
+RZ1|78|2|Don|5|0|5|0|1|1|1|0|0
+RZ1|CHK|78|2|39|6|0|5|8|2|0|0|1|0
+[Opponent] Deploy Shirahoshi [<mark><link="OP11-030">OP11-030</link></mark>]
+RZ1|79|2|OP11-030|1|2|2|0|1|1|0|0|0
+RZ1|CHK|79|2|39|5|1|5|8|2|0|0|1|0
+[Opponent] Shirahoshi [<mark><link="OP11-030">OP11-030</link></mark>]: Rest 1 Don
+RZ1|80|2|Don|5|1|5|1|1|1|1|0|0
+RZ1|CHK|80|2|39|5|1|5|8|2|0|0|1|0
+[Opponent] Shirahoshi [<mark><link="OP11-030">OP11-030</link></mark>]: Rest Shirahoshi [<mark><link="OP11-030">OP11-030</link></mark>]
+RZ1|81|2|EB04-015|0|37|1|5|1|1|0|0|0
+RZ1|CHK|81|2|38|6|1|5|8|2|0|0|1|0
+[Opponent] Shirahoshi [<mark><link="OP11-030">OP11-030</link></mark>]: <b>Reveal and Draw Jinbe [<mark><link="EB04-015">EB04-015</link></mark>]</b>
+[Opponent] Placing Cards on Bottom of Deck
+RZ1|82|2|EB04-020|0|37|0|0|0|0|0|0|0
+RZ1|CHK|82|2|38|6|1|5|8|2|0|0|1|0
+RZ1|83|2|P-063|0|37|0|0|0|0|0|0|0
+RZ1|CHK|83|2|38|6|1|5|8|2|0|0|1|0
+RZ1|84|2|EB04-018|0|37|0|0|0|0|0|0|0
+RZ1|CHK|84|2|38|6|1|5|8|2|0|0|1|0
+RZ1|85|2|OP06-033|0|37|0|0|0|0|0|0|0
+RZ1|CHK|85|2|38|6|1|5|8|2|0|0|1|0
+[Opponent] Jinbe [<mark><link="OP11-021">OP11-021</link></mark>]: Set Shirahoshi [<mark><link="OP11-030">OP11-030</link></mark>] to Active
+[Opponent] Jinbe [<mark><link="OP11-021">OP11-021</link></mark>]: Activate 1 Don
+RZ1|86|2|Don|5|1|5|1|1|1|0|0|0
+RZ1|CHK|86|2|38|6|1|5|8|2|0|0|1|0
+[] Hand: [OP06-035,P-063,OP11-029,EB04-018,OP06-032,EB04-015]
+[] Board: [OP11-030]
+[] Trash: []
+[] Life: 5
+[] Hand: [OP12-117,P-088,ST36-005,ST36-004,OP10-119]
+[] Trash: [OP13-116]
+[] Board: []
+[] Life: 5
+[Opponent] End Turn
+[] Hand: [OP12-117,P-088,ST36-005,ST36-004,OP10-119]
+[] Board: []
+[] Trash: [OP13-116]
+[] Life: 5
+[] Hand: [OP06-035,P-063,OP11-029,EB04-018,OP06-032,EB04-015]
+[] Trash: []
+[] Board: [OP11-030]
+[] Life: 5
+[You] Draw 1 Card
+[] Drew card from deck: Killer [<mark><link="ST36-002">ST36-002</link></mark>]
+RZ1|87|1|ST36-002|0|38|1|5|1|1|0|0|0
+RZ1|CHK|87|1|38|6|0|5|9|1|1|0|1|0
+RZ1|88|1|Don|4|8|5|1|1|1|0|0|0
+RZ1|CHK|88|1|38|6|0|5|8|2|1|0|1|0
+RZ1|89|1|Don|4|7|5|2|1|1|0|0|0
+RZ1|CHK|89|1|38|6|0|5|7|3|1|0|1|0
+[You] Draw 2 Don
+RZ1|90|1|Don|5|0|9|9900|1|1|0|0|0
+RZ1|CHK|90|1|38|6|0|5|7|2|1|0|1|1
+RZ1|91|1|Don|5|0|9|9901|1|1|0|0|0
+RZ1|CHK|91|1|38|6|0|5|7|1|1|0|1|2
+[You] Attach 2 Don to Eustass "Captain" Kid [<mark><link="OP10-099">OP10-099</link></mark>] (2 Total)
+[You] Eustass "Captain" Kid [<mark><link="OP10-099">OP10-099</link></mark>] attacking Jinbe [<mark><link="OP11-021">OP11-021</link></mark>]
+Eustass "Captain" Kid [<mark><link="OP10-099">OP10-099</link></mark>][7000] vs Jinbe [<mark><link="OP11-021">OP11-021</link></mark>][5000]
+Jinbe [<mark><link="OP11-021">OP11-021</link></mark>] hit for 1 damage
+RZ1|92|2|OP13-040|3|4|1|6|1|1|0|0|0
+RZ1|CHK|92|2|38|7|1|4|8|2|0|0|1|0
+[You] Slam Gibson [<mark><link="OP12-117">OP12-117</link></mark>]: Rest 1 Don
+RZ1|93|1|Don|5|0|5|0|1|1|1|0|0
+RZ1|CHK|93|1|38|6|0|5|7|1|1|0|1|2
+RZ1|94|1|OP12-117|1|0|6|1|1|1|0|0|0
+RZ1|CHK|94|1|38|5|0|5|7|1|2|0|1|2
+[] Hand: [P-088,ST36-005,ST36-004,OP10-119,ST36-002]
+[] Board: []
+[] Trash: [OP13-116,OP12-117]
+[] Life: 5
+[] Hand: [OP06-035,P-063,OP11-029,EB04-018,OP06-032,EB04-015,OP13-040]
+[] Trash: []
+[] Board: [OP11-030]
+[] Life: 4
+[You] End Turn
+[] Hand: [OP06-035,P-063,OP11-029,EB04-018,OP06-032,EB04-015,OP13-040]
+[] Board: [OP11-030]
+[] Trash: []
+[] Life: 4
+[] Hand: [P-088,ST36-005,ST36-004,OP10-119,ST36-002]
+[] Trash: [OP13-116,OP12-117]
+[] Board: []
+[] Life: 5
+[Opponent] Draw 1 Card
+[] Drew card from deck: Arlong [<mark><link="OP15-023">OP15-023</link></mark>]
+RZ1|95|2|OP15-023|0|37|1|7|1|1|0|0|0
+RZ1|CHK|95|2|37|8|1|4|8|2|0|0|1|0
+RZ1|96|2|Don|4|7|5|2|1|1|0|0|0
+RZ1|CHK|96|2|37|8|1|4|7|3|0|0|1|0
+RZ1|97|2|Don|4|6|5|3|1|1|0|0|0
+RZ1|CHK|97|2|37|8|1|4|6|4|0|0|1|0
+[Opponent] Draw 2 Don
+RZ1|98|2|Don|5|0|5|0|1|1|1|0|0
+RZ1|CHK|98|2|37|8|1|4|6|4|0|0|1|0
+RZ1|99|2|Don|5|1|5|1|1|1|1|0|0
+RZ1|CHK|99|2|37|8|1|4|6|4|0|0|1|0
+RZ1|100|2|Don|5|2|5|2|1|1|1|0|0
+RZ1|CHK|100|2|37|8|1|4|6|4|0|0|1|0
+RZ1|101|2|Don|5|3|5|3|1|1|1|0|0
+RZ1|CHK|101|2|37|8|1|4|6|4|0|0|1|0
+[Opponent] Deploy Arlong [<mark><link="OP15-023">OP15-023</link></mark>]
+RZ1|102|2|OP15-023|1|7|2|1|1|1|0|0|0
+RZ1|CHK|102|2|37|7|2|4|6|4|0|0|1|0
+[Opponent] Jinbe [<mark><link="OP11-021">OP11-021</link></mark>] attacking Eustass "Captain" Kid [<mark><link="OP10-099">OP10-099</link></mark>]
+Jinbe [<mark><link="OP11-021">OP11-021</link></mark>][5000] vs Eustass "Captain" Kid [<mark><link="OP10-099">OP10-099</link></mark>][5000]
+Eustass "Captain" Kid [<mark><link="OP10-099">OP10-099</link></mark>] hit for 1 damage
+RZ1|103|1|OP15-105|3|4|1|5|1|1|0|0|0
+RZ1|CHK|103|1|38|6|0|4|7|1|2|0|1|2
+[] Hand: [OP06-035,P-063,OP11-029,EB04-018,OP06-032,EB04-015,OP13-040]
+[] Board: [OP11-030,OP15-023]
+[] Trash: []
+[] Life: 4
+[] Hand: [P-088,ST36-005,ST36-004,OP10-119,ST36-002,OP15-105]
+[] Trash: [OP13-116,OP12-117]
+[] Board: []
+[] Life: 4
+[Opponent] End Turn
+[] Hand: [P-088,ST36-005,ST36-004,OP10-119,ST36-002,OP15-105]
+[] Board: []
+[] Trash: [OP13-116,OP12-117]
+[] Life: 4
+[] Hand: [OP06-035,P-063,OP11-029,EB04-018,OP06-032,EB04-015,OP13-040]
+[] Trash: []
+[] Board: [OP11-030,OP15-023]
+[] Life: 4
+RZ1|104|1|Don|9|9900|5|0|1|1|1|0|0
+RZ1|CHK|104|1|38|6|0|4|7|2|2|0|1|1
+RZ1|105|1|Don|9|9900|5|0|1|1|1|0|0
+RZ1|CHK|105|1|38|6|0|4|7|3|2|0|1|0
+[You] Draw 1 Card
+[] Drew card from deck: Scratchmen Apoo [<mark><link="ST36-003">ST36-003</link></mark>]
+RZ1|106|1|ST36-003|0|37|1|6|1|1|0|0|0
+RZ1|CHK|106|1|37|7|0|4|7|3|2|0|1|0
+RZ1|107|1|Don|4|6|5|3|1|1|0|0|0
+RZ1|CHK|107|1|37|7|0|4|6|4|2|0|1|0
+RZ1|108|1|Don|4|5|5|4|1|1|0|0|0
+RZ1|CHK|108|1|37|7|0|4|5|5|2|0|1|0
+[You] Draw 2 Don
+RZ1|109|1|Don|5|0|5|0|1|1|1|0|0
+RZ1|CHK|109|1|37|7|0|4|5|5|2|0|1|0
+RZ1|110|1|Don|5|1|5|1|1|1|1|0|0
+RZ1|CHK|110|1|37|7|0|4|5|5|2|0|1|0
+RZ1|111|1|Don|5|2|5|2|1|1|1|0|0
+RZ1|CHK|111|1|37|7|0|4|5|5|2|0|1|0
+RZ1|112|1|Don|5|3|5|3|1|1|1|0|0
+RZ1|CHK|112|1|37|7|0|4|5|5|2|0|1|0
+[You] Deploy Trafalgar Law [<mark><link="P-088">P-088</link></mark>]
+RZ1|113|1|P-088|1|0|2|0|1|1|0|0|0
+RZ1|CHK|113|1|37|6|1|4|5|5|2|0|1|0
+RZ1|114|1|Don|5|4|9|9900|1|1|0|0|0
+RZ1|CHK|114|1|37|6|1|4|5|4|2|0|1|1
+[You] Attach 1 Don to Eustass "Captain" Kid [<mark><link="OP10-099">OP10-099</link></mark>] (1 Total)
+[You] Eustass "Captain" Kid [<mark><link="OP10-099">OP10-099</link></mark>] attacking Jinbe [<mark><link="OP11-021">OP11-021</link></mark>]
+[Opponent] Discard Jinbe [<mark><link="P-063">P-063</link></mark>] for Counter 2000
+RZ1|115|2|P-063|1|1|6|0|1|1|0|0|0
+RZ1|CHK|115|2|37|6|2|4|6|4|1|0|1|0
+Eustass "Captain" Kid [<mark><link="OP10-099">OP10-099</link></mark>][6000] vs Jinbe [<mark><link="OP11-021">OP11-021</link></mark>][7000]
+Attack Fails
+[] Hand: [ST36-005,ST36-004,OP10-119,ST36-002,OP15-105,ST36-003]
+[] Board: [P-088]
+[] Trash: [OP13-116,OP12-117]
+[] Life: 4
+[] Hand: [OP06-035,OP11-029,EB04-018,OP06-032,EB04-015,OP13-040]
+[] Trash: [P-063]
+[] Board: [OP11-030,OP15-023]
+[] Life: 4
+[You] End Turn
+[] Hand: [OP06-035,OP11-029,EB04-018,OP06-032,EB04-015,OP13-040]
+[] Board: [OP11-030,OP15-023]
+[] Trash: [P-063]
+[] Life: 4
+[] Hand: [ST36-005,ST36-004,OP10-119,ST36-002,OP15-105,ST36-003]
+[] Trash: [OP13-116,OP12-117]
+[] Board: [P-088]
+[] Life: 4
+[Opponent] Draw 1 Card
+[] Drew card from deck: Lord of the Coast [<mark><link="OP11-028">OP11-028</link></mark>]
+RZ1|116|2|OP11-028|0|36|1|6|1|1|0|0|0
+RZ1|CHK|116|2|36|7|2|4|6|4|1|0|1|0
+RZ1|117|2|Don|4|5|5|4|1|1|0|0|0
+RZ1|CHK|117|2|36|7|2|4|5|5|1|0|1|0
+RZ1|118|2|Don|4|4|5|5|1|1|0|0|0
+RZ1|CHK|118|2|36|7|2|4|4|6|1|0|1|0
+[Opponent] Draw 2 Don
+RZ1|119|2|Don|5|0|5|0|1|1|1|0|0
+RZ1|CHK|119|2|36|7|2|4|4|6|1|0|1|0
+RZ1|120|2|Don|5|1|5|1|1|1|1|0|0
+RZ1|CHK|120|2|36|7|2|4|4|6|1|0|1|0
+RZ1|121|2|Don|5|2|5|2|1|1|1|0|0
+RZ1|CHK|121|2|36|7|2|4|4|6|1|0|1|0
+[Opponent] Deploy Charlotte Praline [<mark><link="OP11-029">OP11-029</link></mark>]
+RZ1|122|2|OP11-029|1|1|2|2|1|1|0|0|0
+RZ1|CHK|122|2|36|6|3|4|4|6|1|0|1|0
+[Opponent] Shirahoshi [<mark><link="OP11-030">OP11-030</link></mark>]: Rest 1 Don
+RZ1|123|2|Don|5|3|5|3|1|1|1|0|0
+RZ1|CHK|123|2|36|6|3|4|4|6|1|0|1|0
+[Opponent] Shirahoshi [<mark><link="OP11-030">OP11-030</link></mark>]: Rest Shirahoshi [<mark><link="OP11-030">OP11-030</link></mark>]
+RZ1|124|2|OP06-041|0|31|1|6|1|1|0|0|0
+RZ1|CHK|124|2|35|7|3|4|4|6|1|0|1|0
+[Opponent] Shirahoshi [<mark><link="OP11-030">OP11-030</link></mark>]: <b>Reveal and Draw Noah's Ark [<mark><link="OP06-041">OP06-041</link></mark>]</b>
+[Opponent] Placing Cards on Bottom of Deck
+RZ1|125|2|EB04-018|0|34|0|0|0|0|0|0|0
+RZ1|CHK|125|2|35|7|3|4|4|6|1|0|1|0
+RZ1|126|2|EB04-018|0|34|0|0|0|0|0|0|0
+RZ1|CHK|126|2|35|7|3|4|4|6|1|0|1|0
+RZ1|127|2|OP06-033|0|34|0|0|0|0|0|0|0
+RZ1|CHK|127|2|35|7|3|4|4|6|1|0|1|0
+RZ1|128|2|OP15-035|0|34|0|0|0|0|0|0|0
+RZ1|CHK|128|2|35|7|3|4|4|6|1|0|1|0
+[Opponent] Arlong [<mark><link="OP15-023">OP15-023</link></mark>]: Attach 1 Rested Don to Trafalgar Law [<mark><link="P-088">P-088</link></mark>]
+RZ1|129|1|Don|5|0|9|0|1|1|1|0|0
+RZ1|CHK|129|1|37|6|1|4|5|3|2|0|1|2
+[Opponent] Arlong [<mark><link="OP15-023">OP15-023</link></mark>]: Attach 1 Rested Don to Jinbe [<mark><link="OP11-021">OP11-021</link></mark>]
+RZ1|130|2|Don|5|0|9|9900|1|1|1|0|0
+RZ1|CHK|130|2|35|7|3|4|4|5|1|0|1|1
+[Opponent] Attach 1 Don to Arlong [<mark><link="OP15-023">OP15-023</link></mark>] (1 Total)
+RZ1|131|2|Don|5|4|9|100|1|1|0|0|0
+RZ1|CHK|131|2|35|7|3|4|4|4|1|0|1|2
+[Opponent] Arlong [<mark><link="OP15-023">OP15-023</link></mark>] attacking Eustass "Captain" Kid [<mark><link="OP10-099">OP10-099</link></mark>]
+[You] Discard Jewelry Bonney [<mark><link="OP15-105">OP15-105</link></mark>] for Counter 2000
+RZ1|132|1|OP15-105|1|4|6|2|1|1|0|0|0
+RZ1|CHK|132|1|37|5|1|4|5|3|3|0|1|2
+Arlong [<mark><link="OP15-023">OP15-023</link></mark>][6000] vs Eustass "Captain" Kid [<mark><link="OP10-099">OP10-099</link></mark>][7000]
+Attack Fails
+[Opponent] Jinbe [<mark><link="OP11-021">OP11-021</link></mark>] attacking Eustass "Captain" Kid [<mark><link="OP10-099">OP10-099</link></mark>]
+Jinbe [<mark><link="OP11-021">OP11-021</link></mark>][6000] vs Eustass "Captain" Kid [<mark><link="OP10-099">OP10-099</link></mark>][5000]
+Eustass "Captain" Kid [<mark><link="OP10-099">OP10-099</link></mark>] hit for 1 damage
+RZ1|133|1|OP11-101|3|3|1|5|1|1|0|0|0
+RZ1|CHK|133|1|37|6|1|3|5|3|3|0|1|2
+[] Hand: [OP06-035,EB04-018,OP06-032,EB04-015,OP13-040,OP11-028,OP06-041]
+[] Board: [OP11-030,OP15-023,OP11-029]
+[] Trash: [P-063]
+[] Life: 4
+[] Hand: [ST36-005,ST36-004,OP10-119,ST36-002,ST36-003,OP11-101]
+[] Trash: [OP13-116,OP12-117,OP15-105]
+[] Board: [P-088]
+[] Life: 3
+[Opponent] End Turn
+[] Hand: [ST36-005,ST36-004,OP10-119,ST36-002,ST36-003,OP11-101]
+[] Board: [P-088]
+[] Trash: [OP13-116,OP12-117,OP15-105]
+[] Life: 3
+[] Hand: [OP06-035,EB04-018,OP06-032,EB04-015,OP13-040,OP11-028,OP06-041]
+[] Trash: [P-063]
+[] Board: [OP11-030,OP15-023,OP11-029]
+[] Life: 4
+RZ1|134|1|Don|9|9900|5|0|1|1|1|0|0
+RZ1|CHK|134|1|37|6|1|3|5|4|3|0|1|1
+RZ1|135|1|Don|9|0|5|0|1|1|1|0|0
+RZ1|CHK|135|1|37|6|1|3|5|5|3|0|1|0
+[You] Draw 1 Card
+[] Drew card from deck: Monkey D. Luffy [<mark><link="OP10-111">OP10-111</link></mark>]
+RZ1|136|1|OP10-111|0|36|1|6|1|1|0|0|0
+RZ1|CHK|136|1|36|7|1|3|5|5|3|0|1|0
+RZ1|137|1|Don|4|4|5|5|1|1|0|0|0
+RZ1|CHK|137|1|36|7|1|3|4|6|3|0|1|0
+RZ1|138|1|Don|4|3|5|6|1|1|0|0|0
+RZ1|CHK|138|1|36|7|1|3|3|7|3|0|1|0
+[You] Draw 2 Don
+RZ1|139|1|Don|5|0|9|9900|1|1|0|0|0
+RZ1|CHK|139|1|36|7|1|3|3|6|3|0|1|1
+RZ1|140|1|Don|5|0|9|9901|1|1|0|0|0
+RZ1|CHK|140|1|36|7|1|3|3|5|3|0|1|2
+RZ1|141|1|Don|5|0|9|9902|1|1|0|0|0
+RZ1|CHK|141|1|36|7|1|3|3|4|3|0|1|3
+RZ1|142|1|Don|5|0|9|9903|1|1|0|0|0
+RZ1|CHK|142|1|36|7|1|3|3|3|3|0|1|4
+[You] Attach 4 Don to Eustass "Captain" Kid [<mark><link="OP10-099">OP10-099</link></mark>] (4 Total)
+[You] Eustass "Captain" Kid [<mark><link="OP10-099">OP10-099</link></mark>] attacking Arlong [<mark><link="OP15-023">OP15-023</link></mark>]
+Eustass "Captain" Kid [<mark><link="OP10-099">OP10-099</link></mark>][9000] vs Arlong [<mark><link="OP15-023">OP15-023</link></mark>][5000]
+[Opponent] Arlong [<mark><link="OP15-023">OP15-023</link></mark>] Destroyed
+RZ1|143|2|Don|9|100|5|0|1|1|1|0|0
+RZ1|CHK|143|2|35|7|3|4|4|5|1|0|1|1
+RZ1|144|2|OP15-023|2|1|6|1|1|1|0|0|0
+RZ1|CHK|144|2|35|7|2|4|4|5|2|0|1|1
+[Opponent] Arlong [<mark><link="OP15-023">OP15-023</link></mark>]: Eustass "Captain" Kid [<mark><link="OP10-099">OP10-099</link></mark>] will not Activate during next Refresh
+RZ1|145|1|Don|5|0|5|0|1|1|1|0|0
+RZ1|CHK|145|1|36|7|1|3|3|3|3|0|1|4
+[You] Deploy Monkey D. Luffy [<mark><link="OP10-111">OP10-111</link></mark>]
+RZ1|146|1|OP10-111|1|6|2|1|1|1|0|0|0
+RZ1|CHK|146|1|36|6|2|3|3|3|3|0|1|4
+RZ1|147|1|P-088|0|35|1|6|1|1|0|0|0
+RZ1|CHK|147|1|35|7|2|3|3|3|3|0|1|4
+[You] Monkey D. Luffy [<mark><link="OP10-111">OP10-111</link></mark>]: <b>Reveal and Draw Trafalgar Law [<mark><link="P-088">P-088</link></mark>]</b>
+[You] Placing Cards on Bottom of Deck
+RZ1|148|1|OP13-116|0|34|0|0|0|0|0|0|0
+RZ1|CHK|148|1|35|7|2|3|3|3|3|0|1|4
+RZ1|149|1|P-088|0|34|0|0|0|0|0|0|0
+RZ1|CHK|149|1|35|7|2|3|3|3|3|0|1|4
+RZ1|150|1|ST36-005|0|34|0|0|0|0|0|0|0
+RZ1|CHK|150|1|35|7|2|3|3|3|3|0|1|4
+RZ1|151|1|ST36-002|0|34|0|0|0|0|0|0|0
+RZ1|CHK|151|1|35|7|2|3|3|3|3|0|1|4
+RZ1|152|1|Don|5|1|5|1|1|1|1|0|0
+RZ1|CHK|152|1|35|7|2|3|3|3|3|0|1|4
+RZ1|153|1|Don|5|2|5|2|1|1|1|0|0
+RZ1|CHK|153|1|35|7|2|3|3|3|3|0|1|4
+[You] Deploy Capone "Gang" Bege [<mark><link="OP11-101">OP11-101</link></mark>]
+RZ1|154|1|OP11-101|1|5|2|2|1|1|0|0|0
+RZ1|CHK|154|1|35|6|3|3|3|3|3|0|1|4
+[You] Trafalgar Law [<mark><link="P-088">P-088</link></mark>] attacking Jinbe [<mark><link="OP11-021">OP11-021</link></mark>]
+[Opponent] Discard Hammond [<mark><link="OP06-032">OP06-032</link></mark>] for Counter 1000
+RZ1|155|2|OP06-032|1|2|6|2|1|1|0|0|0
+RZ1|CHK|155|2|35|6|2|4|4|5|3|0|1|1
+Trafalgar Law [<mark><link="P-088">P-088</link></mark>][5000] vs Jinbe [<mark><link="OP11-021">OP11-021</link></mark>][6000]
+Attack Fails
+[] Hand: [ST36-005,ST36-004,OP10-119,ST36-002,ST36-003,P-088]
+[] Board: [P-088,OP10-111,OP11-101]
+[] Trash: [OP13-116,OP12-117,OP15-105]
+[] Life: 3
+[] Hand: [OP06-035,EB04-018,EB04-015,OP13-040,OP11-028,OP06-041]
+[] Trash: [P-063,OP15-023,OP06-032]
+[] Board: [OP11-030,OP11-029]
+[] Life: 4
+[You] End Turn
+[] Hand: [OP06-035,EB04-018,EB04-015,OP13-040,OP11-028,OP06-041]
+[] Board: [OP11-030,OP11-029]
+[] Trash: [P-063,OP15-023,OP06-032]
+[] Life: 4
+[] Hand: [ST36-005,ST36-004,OP10-119,ST36-002,ST36-003,P-088]
+[] Trash: [OP13-116,OP12-117,OP15-105]
+[] Board: [P-088,OP10-111,OP11-101]
+[] Life: 3
+RZ1|156|2|Don|9|9900|5|0|1|1|1|0|0
+RZ1|CHK|156|2|35|6|2|4|4|6|3|0|1|0
+[Opponent] Draw 1 Card
+[] Drew card from deck: Jinbe [<mark><link="OP11-031">OP11-031</link></mark>]
+RZ1|157|2|OP11-031|0|34|1|6|1|1|0|0|0
+RZ1|CHK|157|2|34|7|2|4|4|6|3|0|1|0
+RZ1|158|2|Don|4|3|5|6|1|1|0|0|0
+RZ1|CHK|158|2|34|7|2|4|3|7|3|0|1|0
+RZ1|159|2|Don|4|2|5|7|1|1|0|0|0
+RZ1|CHK|159|2|34|7|2|4|2|8|3|0|1|0
+[Opponent] Draw 2 Don
+RZ1|160|2|Don|5|0|5|0|1|1|1|0|0
+RZ1|CHK|160|2|34|7|2|4|2|8|3|0|1|0
+RZ1|161|2|Don|5|1|5|1|1|1|1|0|0
+RZ1|CHK|161|2|34|7|2|4|2|8|3|0|1|0
+RZ1|162|2|Don|5|2|5|2|1|1|1|0|0
+RZ1|CHK|162|2|34|7|2|4|2|8|3|0|1|0
+RZ1|163|2|Don|5|3|5|3|1|1|1|0|0
+RZ1|CHK|163|2|34|7|2|4|2|8|3|0|1|0
+RZ1|164|2|Don|5|4|5|4|1|1|1|0|0
+RZ1|CHK|164|2|34|7|2|4|2|8|3|0|1|0
+RZ1|165|2|Don|5|5|5|5|1|1|1|0|0
+RZ1|CHK|165|2|34|7|2|4|2|8|3|0|1|0
+[Opponent] Deploy Jinbe [<mark><link="OP11-031">OP11-031</link></mark>]
+RZ1|166|2|OP11-031|1|6|2|2|1|1|0|0|0
+RZ1|CHK|166|2|34|6|3|4|2|8|3|0|1|0
+[Opponent] Jinbe [<mark><link="OP11-031">OP11-031</link></mark>]: Rest Capone "Gang" Bege [<mark><link="OP11-101">OP11-101</link></mark>]
+[Opponent] Shirahoshi [<mark><link="OP11-030">OP11-030</link></mark>]: Rest 1 Don
+RZ1|167|2|Don|5|6|5|6|1|1|1|0|0
+RZ1|CHK|167|2|34|6|3|4|2|8|3|0|1|0
+[Opponent] Shirahoshi [<mark><link="OP11-030">OP11-030</link></mark>]: Rest Shirahoshi [<mark><link="OP11-030">OP11-030</link></mark>]
+[Opponent] <b>Picked no cards to Draw</b>
+[Opponent] Placing Cards on Bottom of Deck
+RZ1|168|2|OP15-032|0|33|0|0|0|0|0|0|0
+RZ1|CHK|168|2|34|6|3|4|2|8|3|0|1|0
+RZ1|169|2|OP06-025|0|33|0|0|0|0|0|0|0
+RZ1|CHK|169|2|34|6|3|4|2|8|3|0|1|0
+RZ1|170|2|OP15-032|0|33|0|0|0|0|0|0|0
+RZ1|CHK|170|2|34|6|3|4|2|8|3|0|1|0
+RZ1|171|2|OP15-023|0|33|0|0|0|0|0|0|0
+RZ1|CHK|171|2|34|6|3|4|2|8|3|0|1|0
+RZ1|172|2|P-063|0|33|0|0|0|0|0|0|0
+RZ1|CHK|172|2|34|6|3|4|2|8|3|0|1|0
+[Opponent] Attach 1 Don to Jinbe [<mark><link="OP11-021">OP11-021</link></mark>] (1 Total)
+RZ1|173|2|Don|5|7|9|9900|1|1|0|0|0
+RZ1|CHK|173|2|34|6|3|4|2|7|3|0|1|1
+[Opponent] Jinbe [<mark><link="OP11-021">OP11-021</link></mark>] attacking Trafalgar Law [<mark><link="P-088">P-088</link></mark>]
+[You] Discard Trafalgar Law [<mark><link="P-088">P-088</link></mark>] for Counter 2000
+RZ1|174|1|P-088|1|5|6|3|1|1|0|0|0
+RZ1|CHK|174|1|35|5|3|3|3|3|4|0|1|4
+Jinbe [<mark><link="OP11-021">OP11-021</link></mark>][6000] vs Trafalgar Law [<mark><link="P-088">P-088</link></mark>][7000]
+Attack Fails
+[Opponent] Jinbe [<mark><link="OP11-021">OP11-021</link></mark>]: Set Shirahoshi [<mark><link="OP11-030">OP11-030</link></mark>] to Active
+[Opponent] Jinbe [<mark><link="OP11-021">OP11-021</link></mark>]: Activate 1 Don
+RZ1|175|2|Don|5|6|5|6|1|1|0|0|0
+RZ1|CHK|175|2|34|6|3|4|2|7|3|0|1|1
+[] Hand: [OP06-035,EB04-018,EB04-015,OP13-040,OP11-028,OP06-041]
+[] Board: [OP11-030,OP11-029,OP11-031]
+[] Trash: [P-063,OP15-023,OP06-032]
+[] Life: 4
+[] Hand: [ST36-005,ST36-004,OP10-119,ST36-002,ST36-003]
+[] Trash: [OP13-116,OP12-117,OP15-105,P-088]
+[] Board: [P-088,OP10-111,OP11-101]
+[] Life: 3
+[Opponent] End Turn
+[] Hand: [ST36-005,ST36-004,OP10-119,ST36-002,ST36-003]
+[] Board: [P-088,OP10-111,OP11-101]
+[] Trash: [OP13-116,OP12-117,OP15-105,P-088]
+[] Life: 3
+[] Hand: [OP06-035,EB04-018,EB04-015,OP13-040,OP11-028,OP06-041]
+[] Trash: [P-063,OP15-023,OP06-032]
+[] Board: [OP11-030,OP11-029,OP11-031]
+[] Life: 4
+RZ1|176|1|Don|9|9900|5|0|1|1|1|0|0
+RZ1|CHK|176|1|35|5|3|3|3|4|4|0|1|3
+RZ1|177|1|Don|9|9900|5|0|1|1|1|0|0
+RZ1|CHK|177|1|35|5|3|3|3|5|4|0|1|2
+RZ1|178|1|Don|9|9900|5|0|1|1|1|0|0
+RZ1|CHK|178|1|35|5|3|3|3|6|4|0|1|1
+RZ1|179|1|Don|9|9900|5|0|1|1|1|0|0
+RZ1|CHK|179|1|35|5|3|3|3|7|4|0|1|0
+[You] Draw 1 Card
+[] Drew card from deck: Black Rope Dragon Twister [<mark><link="EB04-059">EB04-059</link></mark>]
+RZ1|180|1|EB04-059|0|34|1|5|1|1|0|0|0
+RZ1|CHK|180|1|34|6|3|3|3|7|4|0|1|0
+RZ1|181|1|Don|4|2|5|7|1|1|0|0|0
+RZ1|CHK|181|1|34|6|3|3|2|8|4|0|1|0
+RZ1|182|1|Don|4|1|5|8|1|1|0|0|0
+RZ1|CHK|182|1|34|6|3|3|1|9|4|0|1|0
+[You] Draw 2 Don
+RZ1|183|1|Don|5|0|5|0|1|1|1|0|0
+RZ1|CHK|183|1|34|6|3|3|1|9|4|0|1|0
+RZ1|184|1|Don|5|1|5|1|1|1|1|0|0
+RZ1|CHK|184|1|34|6|3|3|1|9|4|0|1|0
+RZ1|185|1|Don|5|2|5|2|1|1|1|0|0
+RZ1|CHK|185|1|34|6|3|3|1|9|4|0|1|0
+RZ1|186|1|Don|5|3|5|3|1|1|1|0|0
+RZ1|CHK|186|1|34|6|3|3|1|9|4|0|1|0
+RZ1|187|1|Don|5|4|5|4|1|1|1|0|0
+RZ1|CHK|187|1|34|6|3|3|1|9|4|0|1|0
+RZ1|188|1|Don|5|5|5|5|1|1|1|0|0
+RZ1|CHK|188|1|34|6|3|3|1|9|4|0|1|0
+RZ1|189|1|Don|5|6|5|6|1|1|1|0|0
+RZ1|CHK|189|1|34|6|3|3|1|9|4|0|1|0
+[You] Deploy Trafalgar Law [<mark><link="OP10-119">OP10-119</link></mark>]
+RZ1|190|1|OP10-119|1|2|2|3|1|1|0|0|0
+RZ1|CHK|190|1|34|5|4|3|1|9|4|0|1|0
+[You] Trafalgar Law [<mark><link="OP10-119">OP10-119</link></mark>] revealed: Eustass "Captain" Kid [<mark><link="ST36-005">ST36-005</link></mark>]
+[You] Trafalgar Law [<mark><link="OP10-119">OP10-119</link></mark>]: Added card to top of Life from Hand
+RZ1|191|1|ST36-005|1|0|3|3|1|0|0|0|0
+RZ1|CHK|191|1|34|4|4|4|1|9|4|0|1|0
+[You] Trafalgar Law [<mark><link="OP10-119">OP10-119</link></mark>]: Attach 1 Rested Don to Eustass "Captain" Kid [<mark><link="OP10-099">OP10-099</link></mark>]
+RZ1|192|1|Don|5|0|9|9900|1|1|1|0|0
+RZ1|CHK|192|1|34|4|4|4|1|8|4|0|1|1
+[] Hand: [ST36-004,ST36-002,ST36-003,EB04-059]
+[] Board: [P-088,OP10-111,OP11-101,OP10-119]
+[] Trash: [OP13-116,OP12-117,OP15-105,P-088]
+[] Life: 4
+[] Hand: [OP06-035,EB04-018,EB04-015,OP13-040,OP11-028,OP06-041]
+[] Trash: [P-063,OP15-023,OP06-032]
+[] Board: [OP11-030,OP11-029,OP11-031]
+[] Life: 4
+[You] End Turn
+[] Hand: [OP06-035,EB04-018,EB04-015,OP13-040,OP11-028,OP06-041]
+[] Board: [OP11-030,OP11-029,OP11-031]
+[] Trash: [P-063,OP15-023,OP06-032]
+[] Life: 4
+[] Hand: [ST36-004,ST36-002,ST36-003,EB04-059]
+[] Trash: [OP13-116,OP12-117,OP15-105,P-088]
+[] Board: [P-088,OP10-111,OP11-101,OP10-119]
+[] Life: 4
+RZ1|193|2|Don|9|9900|5|0|1|1|1|0|0
+RZ1|CHK|193|2|34|6|3|4|2|8|3|0|1|0
+[Opponent] Draw 1 Card
+[] Drew card from deck: Shirahoshi [<mark><link="OP11-030">OP11-030</link></mark>]
+RZ1|194|2|OP11-030|0|33|1|6|1|1|0|0|0
+RZ1|CHK|194|2|33|7|3|4|2|8|3|0|1|0
+RZ1|195|2|Don|4|1|5|8|1|1|0|0|0
+RZ1|CHK|195|2|33|7|3|4|1|9|3|0|1|0
+RZ1|196|2|Don|4|0|5|9|1|1|0|0|0
+RZ1|CHK|196|2|33|7|3|4|0|10|3|0|1|0
+[Opponent] Draw 2 Don
+RZ1|197|2|Don|5|0|5|0|1|1|1|0|0
+RZ1|CHK|197|2|33|7|3|4|0|10|3|0|1|0
+RZ1|198|2|Don|5|1|5|1|1|1|1|0|0
+RZ1|CHK|198|2|33|7|3|4|0|10|3|0|1|0
+RZ1|199|2|Don|5|2|5|2|1|1|1|0|0
+RZ1|CHK|199|2|33|7|3|4|0|10|3|0|1|0
+RZ1|200|2|Don|5|3|5|3|1|1|1|0|0
+RZ1|CHK|200|2|33|7|3|4|0|10|3|0|1|0
+RZ1|201|2|Don|5|4|5|4|1|1|1|0|0
+RZ1|CHK|201|2|33|7|3|4|0|10|3|0|1|0
+RZ1|202|2|Don|5|5|5|5|1|1|1|0|0
+RZ1|CHK|202|2|33|7|3|4|0|10|3|0|1|0
+RZ1|203|2|Don|5|6|5|6|1|1|1|0|0
+RZ1|CHK|203|2|33|7|3|4|0|10|3|0|1|0
+[Opponent] Deploy Hody Jones [<mark><link="OP06-035">OP06-035</link></mark>]
+RZ1|204|2|OP06-035|1|0|2|3|1|1|0|0|0
+RZ1|CHK|204|2|33|6|4|4|0|10|3|0|1|0
+[Opponent] Hody Jones [<mark><link="OP06-035">OP06-035</link></mark>]: Rest Trafalgar Law [<mark><link="OP10-119">OP10-119</link></mark>]
+[Opponent] Hody Jones [<mark><link="OP06-035">OP06-035</link></mark>]: Rest Capone "Gang" Bege [<mark><link="OP11-101">OP11-101</link></mark>]
+[Opponent] Hody Jones [<mark><link="OP06-035">OP06-035</link></mark>]: Takes Top Life
+RZ1|205|2|OP11-031|3|3|1|6|1|1|0|0|0
+RZ1|CHK|205|2|33|7|4|3|0|10|3|0|1|0
+[Opponent] Shirahoshi [<mark><link="OP11-030">OP11-030</link></mark>]: Rest 1 Don
+RZ1|206|2|Don|5|7|5|7|1|1|1|0|0
+RZ1|CHK|206|2|33|7|4|3|0|10|3|0|1|0
+[Opponent] Shirahoshi [<mark><link="OP11-030">OP11-030</link></mark>]: Rest Shirahoshi [<mark><link="OP11-030">OP11-030</link></mark>]
+RZ1|207|2|OP11-028|0|31|1|7|1|1|0|0|0
+RZ1|CHK|207|2|32|8|4|3|0|10|3|0|1|0
+[Opponent] Shirahoshi [<mark><link="OP11-030">OP11-030</link></mark>]: <b>Reveal and Draw Lord of the Coast [<mark><link="OP11-028">OP11-028</link></mark>]</b>
+[Opponent] Placing Cards on Bottom of Deck
+RZ1|208|2|OP06-025|0|31|0|0|0|0|0|0|0
+RZ1|CHK|208|2|32|8|4|3|0|10|3|0|1|0
+RZ1|209|2|OP15-035|0|31|0|0|0|0|0|0|0
+RZ1|CHK|209|2|32|8|4|3|0|10|3|0|1|0
+RZ1|210|2|ST24-004|0|31|0|0|0|0|0|0|0
+RZ1|CHK|210|2|32|8|4|3|0|10|3|0|1|0
+RZ1|211|2|OP08-036|0|31|0|0|0|0|0|0|0
+RZ1|CHK|211|2|32|8|4|3|0|10|3|0|1|0
+[Opponent] Attach 1 Don to Jinbe [<mark><link="OP11-021">OP11-021</link></mark>] (1 Total)
+RZ1|212|2|Don|5|9|9|9900|1|1|0|0|0
+RZ1|CHK|212|2|32|8|4|3|0|9|3|0|1|1
+[Opponent] Attach 1 Don to Jinbe [<mark><link="OP11-021">OP11-021</link></mark>] (2 Total)
+RZ1|213|2|Don|5|8|9|9901|1|1|0|0|0
+RZ1|CHK|213|2|32|8|4|3|0|8|3|0|1|2
+[Opponent] Jinbe [<mark><link="OP11-021">OP11-021</link></mark>] attacking Eustass "Captain" Kid [<mark><link="OP10-099">OP10-099</link></mark>]
+Jinbe [<mark><link="OP11-021">OP11-021</link></mark>][7000] vs Eustass "Captain" Kid [<mark><link="OP10-099">OP10-099</link></mark>][5000]
+Eustass "Captain" Kid [<mark><link="OP10-099">OP10-099</link></mark>] hit for 1 damage
+RZ1|214|1|ST36-005|3|3|1|4|1|1|0|0|0
+RZ1|CHK|214|1|34|5|4|3|1|8|4|0|1|1
+[Opponent] Hody Jones [<mark><link="OP06-035">OP06-035</link></mark>] attacking Eustass "Captain" Kid [<mark><link="OP10-099">OP10-099</link></mark>]
+Hody Jones [<mark><link="OP06-035">OP06-035</link></mark>][8000] vs Eustass "Captain" Kid [<mark><link="OP10-099">OP10-099</link></mark>][5000]
+Eustass "Captain" Kid [<mark><link="OP10-099">OP10-099</link></mark>] hit for 1 damage
+RZ1|215|1|OP10-109|3|2|1|5|1|1|0|0|0
+RZ1|CHK|215|1|34|6|4|2|1|8|4|0|1|1
+[Opponent] Jinbe [<mark><link="OP11-031">OP11-031</link></mark>] attacking Eustass "Captain" Kid [<mark><link="OP10-099">OP10-099</link></mark>]
+Jinbe [<mark><link="OP11-031">OP11-031</link></mark>][8000] vs Eustass "Captain" Kid [<mark><link="OP10-099">OP10-099</link></mark>][5000]
+Eustass "Captain" Kid [<mark><link="OP10-099">OP10-099</link></mark>] hit for 1 damage
+RZ1|216|1|OP10-119|3|1|1|6|1|1|0|0|0
+RZ1|CHK|216|1|34|7|4|1|1|8|4|0|1|1
+[] Hand: [EB04-018,EB04-015,OP13-040,OP11-028,OP06-041,OP11-030,OP11-031,OP11-028]
+[] Board: [OP11-030,OP11-029,OP11-031,OP06-035]
+[] Trash: [P-063,OP15-023,OP06-032]
+[] Life: 3
+[] Hand: [ST36-004,ST36-002,ST36-003,EB04-059,ST36-005,OP10-109,OP10-119]
+[] Trash: [OP13-116,OP12-117,OP15-105,P-088]
+[] Board: [P-088,OP10-111,OP11-101,OP10-119]
+[] Life: 1
+[Opponent] End Turn
+[] Hand: [ST36-004,ST36-002,ST36-003,EB04-059,ST36-005,OP10-109,OP10-119]
+[] Board: [P-088,OP10-111,OP11-101,OP10-119]
+[] Trash: [OP13-116,OP12-117,OP15-105,P-088]
+[] Life: 1
+[] Hand: [EB04-018,EB04-015,OP13-040,OP11-028,OP06-041,OP11-030,OP11-031,OP11-028]
+[] Trash: [P-063,OP15-023,OP06-032]
+[] Board: [OP11-030,OP11-029,OP11-031,OP06-035]
+[] Life: 3
+RZ1|217|1|Don|9|9900|5|0|1|1|1|0|0
+RZ1|CHK|217|1|34|7|4|1|1|9|4|0|1|0
+[You] Draw 1 Card
+[] Drew card from deck: Trafalgar Law [<mark><link="OP10-119">OP10-119</link></mark>]
+RZ1|218|1|OP10-119|0|33|1|7|1|1|0|0|0
+RZ1|CHK|218|1|33|8|4|1|1|9|4|0|1|0
+RZ1|219|1|Don|4|0|5|9|1|1|0|0|0
+RZ1|CHK|219|1|33|8|4|1|0|10|4|0|1|0
+[You] Draw 2 Don
+RZ1|220|1|Don|5|0|9|0|1|1|0|0|0
+RZ1|CHK|220|1|33|8|4|1|0|9|4|0|1|1
+RZ1|221|1|Don|5|0|9|1|1|1|0|0|0
+RZ1|CHK|221|1|33|8|4|1|0|8|4|0|1|2
+RZ1|222|1|Don|5|0|9|2|1|1|0|0|0
+RZ1|CHK|222|1|33|8|4|1|0|7|4|0|1|3
+[You] Attach 3 Don to Trafalgar Law [<mark><link="P-088">P-088</link></mark>] (3 Total)
+[You] Trafalgar Law [<mark><link="P-088">P-088</link></mark>] attacking Jinbe [<mark><link="OP11-021">OP11-021</link></mark>]
+Trafalgar Law [<mark><link="P-088">P-088</link></mark>][8000] vs Jinbe [<mark><link="OP11-021">OP11-021</link></mark>][5000]
+Jinbe [<mark><link="OP11-021">OP11-021</link></mark>] hit for 1 damage
+RZ1|223|2|OP06-033|3|2|1|8|1|1|0|0|0
+RZ1|CHK|223|2|32|9|4|2|0|8|3|0|1|2
+[You] Trafalgar Law [<mark><link="OP10-119">OP10-119</link></mark>] attacking Jinbe [<mark><link="OP11-021">OP11-021</link></mark>]
+[Opponent] Charlotte Praline [<mark><link="OP11-029">OP11-029</link></mark>] Blocks
+Trafalgar Law [<mark><link="OP10-119">OP10-119</link></mark>][9000] vs Charlotte Praline [<mark><link="OP11-029">OP11-029</link></mark>][4000]
+[Opponent] Charlotte Praline [<mark><link="OP11-029">OP11-029</link></mark>] Destroyed
+RZ1|224|2|OP11-029|2|1|6|3|1|1|0|0|0
+RZ1|CHK|224|2|32|9|3|2|0|8|4|0|1|2
+[You] Eustass "Captain" Kid [<mark><link="OP10-099">OP10-099</link></mark>] attacking Jinbe [<mark><link="OP11-021">OP11-021</link></mark>]
+[Opponent] Discard Vander Decken IX [<mark><link="OP06-033">OP06-033</link></mark>] for Counter 1000
+RZ1|225|2|OP06-033|1|8|6|4|1|1|0|0|0
+RZ1|CHK|225|2|32|8|3|2|0|8|5|0|1|2
+Eustass "Captain" Kid [<mark><link="OP10-099">OP10-099</link></mark>][5000] vs Jinbe [<mark><link="OP11-021">OP11-021</link></mark>][6000]
+Attack Fails
+RZ1|226|1|Don|5|0|9|100|1|1|0|0|0
+RZ1|CHK|226|1|33|8|4|1|0|6|4|0|1|4
+RZ1|227|1|Don|5|0|9|101|1|1|0|0|0
+RZ1|CHK|227|1|33|8|4|1|0|5|4|0|1|5
+RZ1|228|1|Don|5|0|9|102|1|1|0|0|0
+RZ1|CHK|228|1|33|8|4|1|0|4|4|0|1|6
+RZ1|229|1|Don|5|0|9|103|1|1|0|0|0
+RZ1|CHK|229|1|33|8|4|1|0|3|4|0|1|7
+RZ1|230|1|Don|5|0|9|104|1|1|0|0|0
+RZ1|CHK|230|1|33|8|4|1|0|2|4|0|1|8
+RZ1|231|1|Don|5|0|9|105|1|1|0|0|0
+RZ1|CHK|231|1|33|8|4|1|0|1|4|0|1|9
+[You] Attach 6 Don to Monkey D. Luffy [<mark><link="OP10-111">OP10-111</link></mark>] (6 Total)
+[You] Monkey D. Luffy [<mark><link="OP10-111">OP10-111</link></mark>] attacking Hody Jones [<mark><link="OP06-035">OP06-035</link></mark>]
+[Opponent] Discard Shirahoshi [<mark><link="OP11-030">OP11-030</link></mark>] for Counter 1000
+RZ1|232|2|OP11-030|1|5|6|5|1|1|0|0|0
+RZ1|CHK|232|2|32|7|3|2|0|8|6|0|1|2
+Monkey D. Luffy [<mark><link="OP10-111">OP10-111</link></mark>][8000] vs Hody Jones [<mark><link="OP06-035">OP06-035</link></mark>][9000]
+Attack Fails
+RZ1|233|1|Don|5|0|9|200|1|1|0|0|0
+RZ1|CHK|233|1|33|8|4|1|0|0|4|0|1|10
+[You] Attach 1 Don to Capone "Gang" Bege [<mark><link="OP11-101">OP11-101</link></mark>] (1 Total)
+[You] Capone "Gang" Bege [<mark><link="OP11-101">OP11-101</link></mark>] attacking Shirahoshi [<mark><link="OP11-030">OP11-030</link></mark>]
+Capone "Gang" Bege [<mark><link="OP11-101">OP11-101</link></mark>][2000] vs Shirahoshi [<mark><link="OP11-030">OP11-030</link></mark>][0]
+[Opponent] Shirahoshi [<mark><link="OP11-030">OP11-030</link></mark>] Destroyed
+RZ1|234|2|OP11-030|2|0|6|6|1|1|0|0|0
+RZ1|CHK|234|2|32|7|2|2|0|8|7|0|1|2
+[] Hand: [ST36-004,ST36-002,ST36-003,EB04-059,ST36-005,OP10-109,OP10-119,OP10-119]
+[] Board: [P-088,OP10-111,OP11-101,OP10-119]
+[] Trash: [OP13-116,OP12-117,OP15-105,P-088]
+[] Life: 1
+[] Hand: [EB04-018,EB04-015,OP13-040,OP11-028,OP06-041,OP11-031,OP11-028]
+[] Trash: [P-063,OP15-023,OP06-032,OP11-029,OP06-033,OP11-030,OP11-030]
+[] Board: [OP11-031,OP06-035]
+[] Life: 2
+[You] End Turn
+[] Hand: [EB04-018,EB04-015,OP13-040,OP11-028,OP06-041,OP11-031,OP11-028]
+[] Board: [OP11-031,OP06-035]
+[] Trash: [P-063,OP15-023,OP06-032,OP11-029,OP06-033,OP11-030,OP11-030]
+[] Life: 2
+[] Hand: [ST36-004,ST36-002,ST36-003,EB04-059,ST36-005,OP10-109,OP10-119,OP10-119]
+[] Trash: [OP13-116,OP12-117,OP15-105,P-088]
+[] Board: [P-088,OP10-111,OP11-101,OP10-119]
+[] Life: 1
+RZ1|235|2|Don|9|9900|5|0|1|1|1|0|0
+RZ1|CHK|235|2|32|7|2|2|0|9|7|0|1|1
+RZ1|236|2|Don|9|9900|5|0|1|1|1|0|0
+RZ1|CHK|236|2|32|7|2|2|0|10|7|0|1|0
+[Opponent] Draw 1 Card
+[] Drew card from deck: I Know You're Strong... So I'll Go All Out [<mark><link="OP13-040">OP13-040</link></mark>]
+RZ1|237|2|OP13-040|0|31|1|7|1|1|0|0|0
+RZ1|CHK|237|2|31|8|2|2|0|10|7|0|1|0
+[Opponent] Attach 1 Don to Hody Jones [<mark><link="OP06-035">OP06-035</link></mark>] (1 Total)
+RZ1|238|2|Don|5|9|9|100|1|1|0|0|0
+RZ1|CHK|238|2|31|8|2|2|0|9|7|0|1|1
+[Opponent] Hody Jones [<mark><link="OP06-035">OP06-035</link></mark>] attacking Eustass "Captain" Kid [<mark><link="OP10-099">OP10-099</link></mark>]
+Hody Jones [<mark><link="OP06-035">OP06-035</link></mark>][9000] vs Eustass "Captain" Kid [<mark><link="OP10-099">OP10-099</link></mark>][5000]
+Eustass "Captain" Kid [<mark><link="OP10-099">OP10-099</link></mark>] hit for 1 damage
+RZ1|239|1|ST36-004|3|0|1|8|1|1|0|0|0
+RZ1|CHK|239|1|33|9|4|0|0|0|4|0|1|10
+[Opponent] Attach 1 Don to Jinbe [<mark><link="OP11-031">OP11-031</link></mark>] (1 Total)
+RZ1|240|2|Don|5|8|9|0|1|1|0|0|0
+RZ1|CHK|240|2|31|8|2|2|0|8|7|0|1|2
+[Opponent] Jinbe [<mark><link="OP11-031">OP11-031</link></mark>] attacking Eustass "Captain" Kid [<mark><link="OP10-099">OP10-099</link></mark>]
+Jinbe [<mark><link="OP11-031">OP11-031</link></mark>][9000] vs Eustass "Captain" Kid [<mark><link="OP10-099">OP10-099</link></mark>][5000]
+Eustass "Captain" Kid [<mark><link="OP10-099">OP10-099</link></mark>] hit for 1 damage

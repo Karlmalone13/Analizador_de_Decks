@@ -1743,5 +1743,55 @@
       "You": "decks/Eustass.Captain.Kid-Y_2026-07-14T17.11.29.json",
       "Opponent": "decks/Krieg-RG_2026-07-14T17.11.29.json"
     }
+  },
+  {
+    "id": "2026-07-18T02.08.40",
+    "friendly_name": "Eustass.Captain.Kid-Y_x_Jinbe-G",
+    "date": "2026-07-18",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP10-099",
+      "leader_name": "Eustass \"Captain\" Kid",
+      "slug": "Eustass.Captain.Kid-Y"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP11-021",
+      "leader_name": "Jinbe",
+      "slug": "Jinbe-G"
+    },
+    "turns": 11,
+    "winner": null,
+    "log_file": "raw/Eustass.Captain.Kid-Y_x_Jinbe-G_2026-07-18T02.08.40.log",
+    "parsed_file": "parsed/Eustass.Captain.Kid-Y_x_Jinbe-G_2026-07-18T02.08.40.json",
+    "deck_files": {
+      "You": "decks/Eustass.Captain.Kid-Y_2026-07-18T02.08.40.json",
+      "Opponent": "decks/Jinbe-G_2026-07-18T02.08.40.json"
+    }
+  },
+  {
+    "id": "2026-07-18T02.41.46",
+    "friendly_name": "Krieg-RG_x_Smoker-B",
+    "date": "2026-07-18",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP15-001",
+      "leader_name": "Krieg",
+      "slug": "Krieg-RG"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP02-093",
+      "leader_name": "Smoker",
+      "slug": "Smoker-B"
+    },
+    "turns": 13,
+    "winner": null,
+    "log_file": "raw/Krieg-RG_x_Smoker-B_2026-07-18T02.41.46.log",
+    "parsed_file": "parsed/Krieg-RG_x_Smoker-B_2026-07-18T02.41.46.json",
+    "deck_files": {
+      "You": "decks/Krieg-RG_2026-07-18T02.41.46.json",
+      "Opponent": "decks/Smoker-B_2026-07-18T02.41.46.json"
+    }
   }
 ]

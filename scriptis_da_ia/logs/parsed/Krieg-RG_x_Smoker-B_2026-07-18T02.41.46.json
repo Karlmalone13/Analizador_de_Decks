@@ -1,0 +1,1263 @@
+{
+  "meta": {
+    "players": {
+      "p1": {
+        "name": "You",
+        "leader": {
+          "name": "Krieg",
+          "code": "OP15-001"
+        }
+      },
+      "p2": {
+        "name": "Opponent",
+        "leader": {
+          "name": "Smoker",
+          "code": "OP02-093"
+        }
+      }
+    },
+    "goes_first": null
+  },
+  "total_turns": 13,
+  "turns": [
+    {
+      "turn": 1,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 1,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP15-026",
+          "card_name": "Jango",
+          "effects": [
+            "<b>Reveal and Draw Jango [\"OP15-026\">OP15-026]</b>"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP15-017",
+            "OP15-023",
+            "OP15-003",
+            "OP15-023",
+            "OP15-026"
+          ],
+          "board": [
+            "OP15-026"
+          ],
+          "trash": [],
+          "life": 4
+        },
+        "Opponent": {
+          "hand": [
+            "ST19-002",
+            "ST06-016",
+            "OP03-089",
+            "OP03-078",
+            "OP03-089"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 2,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "ST19-002",
+          "card_name": "Sengoku",
+          "effects": [
+            "Trash Brannew [\"OP03-089\">OP03-089]",
+            "Trash White Out [\"ST06-016\">ST06-016]",
+            "Draw 3 Card"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP02-093",
+          "to_name": "Smoker",
+          "total": 1
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP03-078",
+            "OP03-089",
+            "ST06-008",
+            "ST19-003",
+            "EB02-050",
+            "ST06-006"
+          ],
+          "board": [
+            "ST19-002"
+          ],
+          "trash": [
+            "OP03-089",
+            "ST06-016"
+          ],
+          "life": 5
+        },
+        "You": {
+          "hand": [
+            "OP15-017",
+            "OP15-023",
+            "OP15-003",
+            "OP15-023",
+            "OP15-026"
+          ],
+          "trash": [],
+          "board": [
+            "OP15-026"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 3,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP15-026",
+          "card_name": "Jango",
+          "effects": [
+            "<b>Reveal and Draw Kuro [\"OP15-025\">OP15-025]</b>",
+            "Trash Jango [\"OP15-026\">OP15-026]",
+            "Attach 1 Rested Don to Sengoku [\"ST19-002\">ST19-002]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP13-040",
+          "card_name": "I Know You're Strong... So I'll Go All Out",
+          "effects": [
+            "Rest 1 Don"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP15-001",
+          "to_name": "Krieg",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Krieg",
+          "attacker_code": "OP15-001",
+          "target": "Smoker [\"OP02-093\">OP02-093]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "ST06-006"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP15-017",
+            "OP15-023",
+            "OP15-003",
+            "OP15-023",
+            "OP15-025"
+          ],
+          "board": [
+            "OP15-026"
+          ],
+          "trash": [
+            "OP13-040",
+            "OP15-026"
+          ],
+          "life": 4
+        },
+        "Opponent": {
+          "hand": [
+            "OP03-078",
+            "OP03-089",
+            "ST06-008",
+            "ST19-003",
+            "EB02-050"
+          ],
+          "trash": [
+            "OP03-089",
+            "ST06-016",
+            "ST06-006"
+          ],
+          "board": [
+            "ST19-002"
+          ],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 4,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "ST06-017",
+          "card_name": "Marineford",
+          "effects": [
+            "Jango [\"OP15-026\">OP15-026] Cost -1"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP02-093",
+          "to_name": "Smoker",
+          "total": 1
+        },
+        {
+          "type": "activate",
+          "card": "OP02-093",
+          "card_name": "Smoker",
+          "effects": [
+            "Jango [\"OP15-026\">OP15-026] Cost -1",
+            "Buff Self 1000"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP03-089",
+          "card_name": "Brannew",
+          "effects": [
+            "<b>Reveal and Draw Sengoku [\"EB02-044\">EB02-044]</b>",
+            "Trash 2 Remaining Cards"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Smoker",
+          "attacker_code": "OP02-093",
+          "target": "Krieg [\"OP15-001\">OP15-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP03-078",
+            "ST06-008",
+            "ST19-003",
+            "EB02-050",
+            "EB02-044"
+          ],
+          "board": [
+            "ST19-002",
+            "OP03-089"
+          ],
+          "trash": [
+            "OP03-089",
+            "ST06-016",
+            "ST06-006",
+            "ST19-002",
+            "OP07-085"
+          ],
+          "life": 5
+        },
+        "You": {
+          "hand": [
+            "OP15-017",
+            "OP15-023",
+            "OP15-003",
+            "OP15-023",
+            "OP15-025",
+            "OP15-037"
+          ],
+          "trash": [
+            "OP13-040",
+            "OP15-026"
+          ],
+          "board": [
+            "OP15-026"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 5,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP15-017",
+          "card_name": "Morgan",
+          "effects": [
+            "Attach 1 Rested Don to Brannew [\"OP03-089\">OP03-089]",
+            "Attach 1 Rested Don to Morgan [\"OP15-017\">OP15-017]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Krieg",
+          "attacker_code": "OP15-001",
+          "target": "Smoker [\"OP02-093\">OP02-093]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP15-026",
+          "card_name": "Jango",
+          "effects": [
+            "Trash Jango [\"OP15-026\">OP15-026]",
+            "Attach 1 Rested Don to Brannew [\"OP03-089\">OP03-089]"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP15-023",
+            "OP15-003",
+            "OP15-023",
+            "OP15-025",
+            "OP15-037",
+            "OP15-025"
+          ],
+          "board": [
+            "OP15-017"
+          ],
+          "trash": [
+            "OP13-040",
+            "OP15-026",
+            "OP15-026"
+          ],
+          "life": 3
+        },
+        "Opponent": {
+          "hand": [
+            "OP03-078",
+            "ST06-008",
+            "ST19-003",
+            "EB02-050",
+            "EB02-044",
+            "OP02-096"
+          ],
+          "trash": [
+            "OP03-089",
+            "ST06-016",
+            "ST06-006",
+            "ST19-002",
+            "OP07-085"
+          ],
+          "board": [
+            "ST19-002",
+            "OP03-089"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 6,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "activate",
+          "card": "ST06-017",
+          "card_name": "Marineford",
+          "effects": [
+            "Rest Marineford [\"ST06-017\">ST06-017]",
+            "Morgan [\"OP15-017\">OP15-017] Cost -1"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "ST19-003",
+          "card_name": "Tashigi",
+          "effects": [
+            "Morgan [\"OP15-017\">OP15-017] Cost -4",
+            "Trash Morgan [\"OP15-017\">OP15-017]"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP02-093",
+          "to_name": "Smoker",
+          "total": 1
+        },
+        {
+          "type": "activate",
+          "card": "OP02-093",
+          "card_name": "Smoker",
+          "effects": [
+            "Morgan [\"OP15-017\">OP15-017] Cost -1",
+            "Buff Self 1000"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Smoker",
+          "attacker_code": "OP02-093",
+          "target": "Krieg [\"OP15-001\">OP15-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP15-023",
+            "OP15-023",
+            "OP15-003"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP03-078",
+            "ST06-008",
+            "EB02-050",
+            "EB02-044",
+            "OP02-096",
+            "EB01-049"
+          ],
+          "board": [
+            "ST19-002",
+            "OP03-089",
+            "ST19-003"
+          ],
+          "trash": [
+            "OP03-089",
+            "ST06-016",
+            "ST06-006",
+            "ST19-002",
+            "OP07-085"
+          ],
+          "life": 4
+        },
+        "You": {
+          "hand": [
+            "OP15-025",
+            "OP15-037",
+            "OP15-025"
+          ],
+          "trash": [
+            "OP13-040",
+            "OP15-026",
+            "OP15-026",
+            "OP15-017",
+            "OP15-023",
+            "OP15-023",
+            "OP15-003"
+          ],
+          "board": [],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 7,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP15-025",
+          "card_name": "Kuro",
+          "effects": [
+            "Attach 1 Rested Don to Tashigi [\"ST19-003\">ST19-003]",
+            "Attach 1 Rested Don to Tashigi [\"ST19-003\">ST19-003]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP15-001",
+          "card_name": "Krieg",
+          "effects": [
+            "Rest Tashigi [\"ST19-003\">ST19-003]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Krieg",
+          "attacker_code": "OP15-001",
+          "target": "Smoker [\"OP02-093\">OP02-093]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "EB01-049"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP15-037",
+            "OP15-025",
+            "OP15-025"
+          ],
+          "board": [
+            "OP15-025"
+          ],
+          "trash": [
+            "OP13-040",
+            "OP15-026",
+            "OP15-026",
+            "OP15-017",
+            "OP15-023",
+            "OP15-023",
+            "OP15-003"
+          ],
+          "life": 3
+        },
+        "Opponent": {
+          "hand": [
+            "OP03-078",
+            "ST06-008",
+            "EB02-050",
+            "EB02-044",
+            "OP02-096"
+          ],
+          "trash": [
+            "OP03-089",
+            "ST06-016",
+            "ST06-006",
+            "ST19-002",
+            "OP07-085",
+            "EB01-049"
+          ],
+          "board": [
+            "ST19-002",
+            "OP03-089",
+            "ST19-003"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 8,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP03-078",
+          "card_name": "Issho",
+          "effects": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Tashigi",
+          "attacker_code": "ST19-003",
+          "target": "Krieg [\"OP15-001\">OP15-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": "OP15-025",
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Smoker",
+          "attacker_code": "OP02-093",
+          "target": "Krieg [\"OP15-001\">OP15-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "ST06-008",
+            "EB02-050",
+            "EB02-044",
+            "OP02-096",
+            "OP10-098"
+          ],
+          "board": [
+            "ST19-002",
+            "OP03-089",
+            "ST19-003",
+            "OP03-078"
+          ],
+          "trash": [
+            "OP03-089",
+            "ST06-016",
+            "ST06-006",
+            "ST19-002",
+            "OP07-085",
+            "EB01-049"
+          ],
+          "life": 4
+        },
+        "You": {
+          "hand": [
+            "OP15-037",
+            "OP15-025",
+            "OP15-025",
+            "OP13-040"
+          ],
+          "trash": [
+            "OP13-040",
+            "OP15-026",
+            "OP15-026",
+            "OP15-017",
+            "OP15-023",
+            "OP15-023",
+            "OP15-003"
+          ],
+          "board": [
+            "OP15-025"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 9,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Kuro",
+          "attacker_code": "OP15-025",
+          "target": "Tashigi [\"ST19-003\">ST19-003]",
+          "result": null,
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP15-025",
+          "card_name": "Kuro",
+          "effects": [
+            "Attach 1 Rested Don to Issho [\"OP03-078\">OP03-078]",
+            "Attach 1 Rested Don to Issho [\"OP03-078\">OP03-078]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP15-001",
+          "card_name": "Krieg",
+          "effects": [
+            "Rest Issho [\"OP03-078\">OP03-078]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Krieg",
+          "attacker_code": "OP15-001",
+          "target": "Smoker [\"OP02-093\">OP02-093]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP15-037",
+            "OP15-025",
+            "OP13-040",
+            "OP15-009"
+          ],
+          "board": [
+            "OP15-025",
+            "OP15-025"
+          ],
+          "trash": [
+            "OP13-040",
+            "OP15-026",
+            "OP15-026",
+            "OP15-017",
+            "OP15-023",
+            "OP15-023",
+            "OP15-003"
+          ],
+          "life": 2
+        },
+        "Opponent": {
+          "hand": [
+            "ST06-008",
+            "EB02-050",
+            "EB02-044",
+            "OP02-096",
+            "OP10-098",
+            "OP03-089"
+          ],
+          "trash": [
+            "OP03-089",
+            "ST06-016",
+            "ST06-006",
+            "ST19-002",
+            "OP07-085",
+            "EB01-049",
+            "ST19-003"
+          ],
+          "board": [
+            "ST19-002",
+            "OP03-089",
+            "OP03-078"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 10,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "activate",
+          "card": "EB02-050",
+          "card_name": "Map of the heart",
+          "effects": [
+            "Rest 2 Don",
+            "<b>Reveal and Draw Borsalino [\"OP02-114\">OP02-114]</b>"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP03-089",
+          "card_name": "Brannew",
+          "effects": [
+            "<b>Reveal and Draw Hina [\"ST19-004\">ST19-004]</b>",
+            "Trash 2 Remaining Cards"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP02-096",
+          "card_name": "Kuzan",
+          "effects": [
+            "Draw 1 Card"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP03-078",
+          "to_name": "Issho",
+          "total": 1
+        },
+        {
+          "type": "activate",
+          "card": "ST06-017",
+          "card_name": "Marineford",
+          "effects": [
+            "Rest Marineford [\"ST06-017\">ST06-017]",
+            "Kuro [\"OP15-025\">OP15-025] Cost -1"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP02-093",
+          "to_name": "Smoker",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Smoker",
+          "attacker_code": "OP02-093",
+          "target": "Krieg [\"OP15-001\">OP15-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": "OP15-025",
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Issho",
+          "attacker_code": "OP03-078",
+          "target": "Krieg [\"OP15-001\">OP15-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "ST06-008",
+            "EB02-044",
+            "OP02-096",
+            "OP10-098",
+            "OP02-114",
+            "ST19-004",
+            "OP02-119"
+          ],
+          "board": [
+            "ST19-002",
+            "OP03-089",
+            "OP03-078",
+            "OP03-089",
+            "OP02-096"
+          ],
+          "trash": [
+            "OP03-089",
+            "ST06-016",
+            "ST06-006",
+            "ST19-002",
+            "OP07-085",
+            "EB01-049",
+            "ST19-003",
+            "EB02-050",
+            "OP02-098",
+            "OP03-097"
+          ],
+          "life": 3
+        },
+        "You": {
+          "hand": [
+            "OP15-037",
+            "OP15-025",
+            "OP13-040",
+            "OP15-009",
+            "OP15-007"
+          ],
+          "trash": [
+            "OP13-040",
+            "OP15-026",
+            "OP15-026",
+            "OP15-017",
+            "OP15-023",
+            "OP15-023",
+            "OP15-003"
+          ],
+          "board": [
+            "OP15-025",
+            "OP15-025"
+          ],
+          "life": 1
+        }
+      }
+    },
+    {
+      "turn": 11,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP15-025",
+          "to_name": "Kuro",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Kuro",
+          "attacker_code": "OP15-025",
+          "target": "Issho [\"OP03-078\">OP03-078]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP02-114"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP15-025",
+          "to_name": "Kuro",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Kuro",
+          "attacker_code": "OP15-025",
+          "target": "Issho [\"OP03-078\">OP03-078]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "EB02-044"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 4,
+          "to": "OP15-001",
+          "to_name": "Krieg",
+          "total": 4
+        },
+        {
+          "type": "attack",
+          "attacker": "Krieg",
+          "attacker_code": "OP15-001",
+          "target": "Issho [\"OP03-078\">OP03-078]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP15-037",
+            "OP15-025",
+            "OP13-040",
+            "OP15-009",
+            "OP15-007",
+            "OP15-008"
+          ],
+          "board": [
+            "OP15-025",
+            "OP15-025"
+          ],
+          "trash": [
+            "OP13-040",
+            "OP15-026",
+            "OP15-026",
+            "OP15-017",
+            "OP15-023",
+            "OP15-023",
+            "OP15-003"
+          ],
+          "life": 1
+        },
+        "Opponent": {
+          "hand": [
+            "ST06-008",
+            "OP02-096",
+            "OP10-098",
+            "ST19-004",
+            "OP02-119"
+          ],
+          "trash": [
+            "OP03-089",
+            "ST06-016",
+            "ST06-006",
+            "ST19-002",
+            "OP07-085",
+            "EB01-049",
+            "ST19-003",
+            "EB02-050",
+            "OP02-098",
+            "OP03-097",
+            "OP02-114",
+            "EB02-044",
+            "OP03-078"
+          ],
+          "board": [
+            "ST19-002",
+            "OP03-089",
+            "OP03-089",
+            "OP02-096"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 12,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP02-096",
+          "to_name": "Kuzan",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP02-096",
+          "to_name": "Kuzan",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Kuzan",
+          "attacker_code": "OP02-096",
+          "target": "Krieg [\"OP15-001\">OP15-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP15-009"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP02-096",
+          "card_name": "Kuzan",
+          "effects": [
+            "Kuro [\"OP15-025\">OP15-025] Cost -4"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "ST06-017",
+          "card_name": "Marineford",
+          "effects": [
+            "Rest Marineford [\"ST06-017\">ST06-017]",
+            "Kuro [\"OP15-025\">OP15-025] Cost -1"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "ST06-008",
+          "card_name": "Hina",
+          "effects": [
+            "Kuro [\"OP15-025\">OP15-025] Cost -4"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP05-091",
+          "card_name": "Rebecca",
+          "effects": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP02-093",
+          "to_name": "Smoker",
+          "total": 1
+        },
+        {
+          "type": "activate",
+          "card": "OP02-093",
+          "card_name": "Smoker",
+          "effects": [
+            "Kuro [\"OP15-025\">OP15-025] Cost -1",
+            "Buff Self 1000"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Smoker",
+          "attacker_code": "OP02-093",
+          "target": "Krieg [\"OP15-001\">OP15-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP02-096",
+            "OP10-098",
+            "ST19-004",
+            "OP02-119",
+            "ST19-003"
+          ],
+          "board": [
+            "ST19-002",
+            "OP03-089",
+            "OP02-096",
+            "ST06-008",
+            "OP05-091"
+          ],
+          "trash": [
+            "OP03-089",
+            "ST06-016",
+            "ST06-006",
+            "ST19-002",
+            "OP07-085",
+            "EB01-049",
+            "EB02-050",
+            "OP02-098",
+            "OP03-097",
+            "OP02-114",
+            "EB02-044",
+            "OP03-078",
+            "OP03-089"
+          ],
+          "life": 3
+        },
+        "You": {
+          "hand": [
+            "OP15-037",
+            "OP15-025",
+            "OP15-007",
+            "OP15-008"
+          ],
+          "trash": [
+            "OP13-040",
+            "OP15-026",
+            "OP15-026",
+            "OP15-017",
+            "OP15-023",
+            "OP15-023",
+            "OP15-003",
+            "OP15-009",
+            "OP13-040"
+          ],
+          "board": [
+            "OP15-025",
+            "OP15-025"
+          ],
+          "life": 1
+        }
+      }
+    },
+    {
+      "turn": 13,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Krieg",
+          "attacker_code": "OP15-001",
+          "target": "Kuzan [\"OP02-096\">OP02-096]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": "OP05-091",
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Kuro",
+          "attacker_code": "OP15-025",
+          "target": "Kuzan [\"OP02-096\">OP02-096]",
+          "result": null,
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP15-025",
+          "card_name": "Kuro",
+          "effects": [
+            "Attach 1 Rested Don to Hina [\"ST06-008\">ST06-008]",
+            "Attach 1 Rested Don to Hina [\"ST06-008\">ST06-008]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP15-001",
+          "card_name": "Krieg",
+          "effects": [
+            "Rest Hina [\"ST06-008\">ST06-008]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP15-037",
+          "card_name": "The Outcome Will Tell Us Who's Strong and Who's Weak",
+          "effects": [
+            "Rest 1 Don",
+            "<b>Reveal and Draw Gin [\"OP15-007\">OP15-007]</b>"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Kuro",
+          "attacker_code": "OP15-025",
+          "target": "Smoker [\"OP02-093\">OP02-093]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP15-007",
+            "OP15-008",
+            "OP15-009",
+            "OP15-007"
+          ],
+          "board": [
+            "OP15-025",
+            "OP15-025",
+            "OP15-025"
+          ],
+          "trash": [
+            "OP13-040",
+            "OP15-026",
+            "OP15-026",
+            "OP15-017",
+            "OP15-023",
+            "OP15-023",
+            "OP15-003",
+            "OP15-009",
+            "OP13-040",
+            "OP15-037"
+          ],
+          "life": 1
+        },
+        "Opponent": {
+          "hand": [
+            "OP02-096",
+            "OP10-098",
+            "ST19-004",
+            "OP02-119",
+            "ST19-003",
+            "OP02-121"
+          ],
+          "trash": [
+            "OP03-089",
+            "ST06-016",
+            "ST06-006",
+            "ST19-002",
+            "OP07-085",
+            "EB01-049",
+            "EB02-050",
+            "OP02-098",
+            "OP03-097",
+            "OP02-114",
+            "EB02-044",
+            "OP03-078",
+            "OP03-089",
+            "OP05-091",
+            "OP02-096"
+          ],
+          "board": [
+            "ST19-002",
+            "OP03-089",
+            "ST06-008"
+          ],
+          "life": 2
+        }
+      }
+    }
+  ]
+}

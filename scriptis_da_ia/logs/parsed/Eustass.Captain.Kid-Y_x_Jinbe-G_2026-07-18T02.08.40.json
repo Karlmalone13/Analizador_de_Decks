@@ -1,0 +1,935 @@
+{
+  "meta": {
+    "players": {
+      "p1": {
+        "name": "You",
+        "leader": {
+          "name": "Eustass \"Captain\" Kid",
+          "code": "OP10-099"
+        }
+      },
+      "p2": {
+        "name": "Opponent",
+        "leader": {
+          "name": "Jinbe",
+          "code": "OP11-021"
+        }
+      }
+    },
+    "goes_first": null
+  },
+  "total_turns": 11,
+  "turns": [
+    {
+      "turn": 1,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 1,
+      "actions": [
+        {
+          "type": "activate",
+          "card": "OP13-116",
+          "card_name": "The Pirate King Is Just The Freest Man on the Sea!!!",
+          "effects": [
+            "Rest 1 Don",
+            "<b>Reveal and Draw Trafalgar Law [\"OP10-119\">OP10-119]</b>"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP12-117",
+            "P-088",
+            "ST36-005",
+            "ST36-004",
+            "OP10-119"
+          ],
+          "board": [],
+          "trash": [
+            "OP13-116"
+          ],
+          "life": 5
+        },
+        "Opponent": {
+          "hand": [
+            "OP06-035",
+            "P-063",
+            "OP11-030",
+            "OP11-029",
+            "EB04-018"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 2,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP11-030",
+          "card_name": "Shirahoshi",
+          "effects": [
+            "Rest 1 Don",
+            "Rest Shirahoshi [\"OP11-030\">OP11-030]",
+            "<b>Reveal and Draw Jinbe [\"EB04-015\">EB04-015]</b>"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP11-021",
+          "card_name": "Jinbe",
+          "effects": [
+            "Set Shirahoshi [\"OP11-030\">OP11-030] to Active",
+            "Activate 1 Don"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP06-035",
+            "P-063",
+            "OP11-029",
+            "EB04-018",
+            "OP06-032",
+            "EB04-015"
+          ],
+          "board": [
+            "OP11-030"
+          ],
+          "trash": [],
+          "life": 5
+        },
+        "You": {
+          "hand": [
+            "OP12-117",
+            "P-088",
+            "ST36-005",
+            "ST36-004",
+            "OP10-119"
+          ],
+          "trash": [
+            "OP13-116"
+          ],
+          "board": [],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 3,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP10-099",
+          "to_name": "Eustass \"Captain\" Kid",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Eustass \"Captain\" Kid",
+          "attacker_code": "OP10-099",
+          "target": "Jinbe [\"OP11-021\">OP11-021]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP12-117",
+          "card_name": "Slam Gibson",
+          "effects": [
+            "Rest 1 Don"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "P-088",
+            "ST36-005",
+            "ST36-004",
+            "OP10-119",
+            "ST36-002"
+          ],
+          "board": [],
+          "trash": [
+            "OP13-116",
+            "OP12-117"
+          ],
+          "life": 5
+        },
+        "Opponent": {
+          "hand": [
+            "OP06-035",
+            "P-063",
+            "OP11-029",
+            "EB04-018",
+            "OP06-032",
+            "EB04-015",
+            "OP13-040"
+          ],
+          "trash": [],
+          "board": [
+            "OP11-030"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 4,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP15-023",
+          "card_name": "Arlong",
+          "effects": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Jinbe",
+          "attacker_code": "OP11-021",
+          "target": "Eustass \"Captain\" Kid [\"OP10-099\">OP10-099]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP06-035",
+            "P-063",
+            "OP11-029",
+            "EB04-018",
+            "OP06-032",
+            "EB04-015",
+            "OP13-040"
+          ],
+          "board": [
+            "OP11-030",
+            "OP15-023"
+          ],
+          "trash": [],
+          "life": 4
+        },
+        "You": {
+          "hand": [
+            "P-088",
+            "ST36-005",
+            "ST36-004",
+            "OP10-119",
+            "ST36-002",
+            "OP15-105"
+          ],
+          "trash": [
+            "OP13-116",
+            "OP12-117"
+          ],
+          "board": [],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 5,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "P-088",
+          "card_name": "Trafalgar Law",
+          "effects": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP10-099",
+          "to_name": "Eustass \"Captain\" Kid",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Eustass \"Captain\" Kid",
+          "attacker_code": "OP10-099",
+          "target": "Jinbe [\"OP11-021\">OP11-021]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "P-063"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "ST36-005",
+            "ST36-004",
+            "OP10-119",
+            "ST36-002",
+            "OP15-105",
+            "ST36-003"
+          ],
+          "board": [
+            "P-088"
+          ],
+          "trash": [
+            "OP13-116",
+            "OP12-117"
+          ],
+          "life": 4
+        },
+        "Opponent": {
+          "hand": [
+            "OP06-035",
+            "OP11-029",
+            "EB04-018",
+            "OP06-032",
+            "EB04-015",
+            "OP13-040"
+          ],
+          "trash": [
+            "P-063"
+          ],
+          "board": [
+            "OP11-030",
+            "OP15-023"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 6,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP11-029",
+          "card_name": "Charlotte Praline",
+          "effects": []
+        },
+        {
+          "type": "activate",
+          "card": "OP11-030",
+          "card_name": "Shirahoshi",
+          "effects": [
+            "Rest 1 Don",
+            "Rest Shirahoshi [\"OP11-030\">OP11-030]",
+            "<b>Reveal and Draw Noah's Ark [\"OP06-041\">OP06-041]</b>"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP15-023",
+          "card_name": "Arlong",
+          "effects": [
+            "Attach 1 Rested Don to Trafalgar Law [\"P-088\">P-088]",
+            "Attach 1 Rested Don to Jinbe [\"OP11-021\">OP11-021]"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP15-023",
+          "to_name": "Arlong",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Arlong",
+          "attacker_code": "OP15-023",
+          "target": "Eustass \"Captain\" Kid [\"OP10-099\">OP10-099]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP15-105"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Jinbe",
+          "attacker_code": "OP11-021",
+          "target": "Eustass \"Captain\" Kid [\"OP10-099\">OP10-099]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP06-035",
+            "EB04-018",
+            "OP06-032",
+            "EB04-015",
+            "OP13-040",
+            "OP11-028",
+            "OP06-041"
+          ],
+          "board": [
+            "OP11-030",
+            "OP15-023",
+            "OP11-029"
+          ],
+          "trash": [
+            "P-063"
+          ],
+          "life": 4
+        },
+        "You": {
+          "hand": [
+            "ST36-005",
+            "ST36-004",
+            "OP10-119",
+            "ST36-002",
+            "ST36-003",
+            "OP11-101"
+          ],
+          "trash": [
+            "OP13-116",
+            "OP12-117",
+            "OP15-105"
+          ],
+          "board": [
+            "P-088"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 7,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 4,
+          "to": "OP10-099",
+          "to_name": "Eustass \"Captain\" Kid",
+          "total": 4
+        },
+        {
+          "type": "attack",
+          "attacker": "Eustass \"Captain\" Kid",
+          "attacker_code": "OP10-099",
+          "target": "Arlong [\"OP15-023\">OP15-023]",
+          "result": null,
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP10-111",
+          "card_name": "Monkey D. Luffy",
+          "effects": [
+            "<b>Reveal and Draw Trafalgar Law [\"P-088\">P-088]</b>"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP11-101",
+          "card_name": "Capone \"Gang\" Bege",
+          "effects": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Trafalgar Law",
+          "attacker_code": "P-088",
+          "target": "Jinbe [\"OP11-021\">OP11-021]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP06-032"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "ST36-005",
+            "ST36-004",
+            "OP10-119",
+            "ST36-002",
+            "ST36-003",
+            "P-088"
+          ],
+          "board": [
+            "P-088",
+            "OP10-111",
+            "OP11-101"
+          ],
+          "trash": [
+            "OP13-116",
+            "OP12-117",
+            "OP15-105"
+          ],
+          "life": 3
+        },
+        "Opponent": {
+          "hand": [
+            "OP06-035",
+            "EB04-018",
+            "EB04-015",
+            "OP13-040",
+            "OP11-028",
+            "OP06-041"
+          ],
+          "trash": [
+            "P-063",
+            "OP15-023",
+            "OP06-032"
+          ],
+          "board": [
+            "OP11-030",
+            "OP11-029"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 8,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP11-031",
+          "card_name": "Jinbe",
+          "effects": [
+            "Rest Capone \"Gang\" Bege [\"OP11-101\">OP11-101]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP11-030",
+          "card_name": "Shirahoshi",
+          "effects": [
+            "Rest 1 Don",
+            "Rest Shirahoshi [\"OP11-030\">OP11-030]"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP11-021",
+          "to_name": "Jinbe",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Jinbe",
+          "attacker_code": "OP11-021",
+          "target": "Trafalgar Law [\"P-088\">P-088]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "P-088"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP11-021",
+          "card_name": "Jinbe",
+          "effects": [
+            "Set Shirahoshi [\"OP11-030\">OP11-030] to Active",
+            "Activate 1 Don"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP06-035",
+            "EB04-018",
+            "EB04-015",
+            "OP13-040",
+            "OP11-028",
+            "OP06-041"
+          ],
+          "board": [
+            "OP11-030",
+            "OP11-029",
+            "OP11-031"
+          ],
+          "trash": [
+            "P-063",
+            "OP15-023",
+            "OP06-032"
+          ],
+          "life": 4
+        },
+        "You": {
+          "hand": [
+            "ST36-005",
+            "ST36-004",
+            "OP10-119",
+            "ST36-002",
+            "ST36-003"
+          ],
+          "trash": [
+            "OP13-116",
+            "OP12-117",
+            "OP15-105",
+            "P-088"
+          ],
+          "board": [
+            "P-088",
+            "OP10-111",
+            "OP11-101"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 9,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP10-119",
+          "card_name": "Trafalgar Law",
+          "effects": [
+            "Added card to top of Life from Hand",
+            "Attach 1 Rested Don to Eustass \"Captain\" Kid [\"OP10-099\">OP10-099]"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "ST36-004",
+            "ST36-002",
+            "ST36-003",
+            "EB04-059"
+          ],
+          "board": [
+            "P-088",
+            "OP10-111",
+            "OP11-101",
+            "OP10-119"
+          ],
+          "trash": [
+            "OP13-116",
+            "OP12-117",
+            "OP15-105",
+            "P-088"
+          ],
+          "life": 4
+        },
+        "Opponent": {
+          "hand": [
+            "OP06-035",
+            "EB04-018",
+            "EB04-015",
+            "OP13-040",
+            "OP11-028",
+            "OP06-041"
+          ],
+          "trash": [
+            "P-063",
+            "OP15-023",
+            "OP06-032"
+          ],
+          "board": [
+            "OP11-030",
+            "OP11-029",
+            "OP11-031"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 10,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP06-035",
+          "card_name": "Hody Jones",
+          "effects": [
+            "Rest Trafalgar Law [\"OP10-119\">OP10-119]",
+            "Rest Capone \"Gang\" Bege [\"OP11-101\">OP11-101]",
+            "Takes Top Life"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP11-030",
+          "card_name": "Shirahoshi",
+          "effects": [
+            "Rest 1 Don",
+            "Rest Shirahoshi [\"OP11-030\">OP11-030]",
+            "<b>Reveal and Draw Lord of the Coast [\"OP11-028\">OP11-028]</b>"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP11-021",
+          "to_name": "Jinbe",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP11-021",
+          "to_name": "Jinbe",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Jinbe",
+          "attacker_code": "OP11-021",
+          "target": "Eustass \"Captain\" Kid [\"OP10-099\">OP10-099]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Hody Jones",
+          "attacker_code": "OP06-035",
+          "target": "Eustass \"Captain\" Kid [\"OP10-099\">OP10-099]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Jinbe",
+          "attacker_code": "OP11-031",
+          "target": "Eustass \"Captain\" Kid [\"OP10-099\">OP10-099]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "EB04-018",
+            "EB04-015",
+            "OP13-040",
+            "OP11-028",
+            "OP06-041",
+            "OP11-030",
+            "OP11-031",
+            "OP11-028"
+          ],
+          "board": [
+            "OP11-030",
+            "OP11-029",
+            "OP11-031",
+            "OP06-035"
+          ],
+          "trash": [
+            "P-063",
+            "OP15-023",
+            "OP06-032"
+          ],
+          "life": 3
+        },
+        "You": {
+          "hand": [
+            "ST36-004",
+            "ST36-002",
+            "ST36-003",
+            "EB04-059",
+            "ST36-005",
+            "OP10-109",
+            "OP10-119"
+          ],
+          "trash": [
+            "OP13-116",
+            "OP12-117",
+            "OP15-105",
+            "P-088"
+          ],
+          "board": [
+            "P-088",
+            "OP10-111",
+            "OP11-101",
+            "OP10-119"
+          ],
+          "life": 1
+        }
+      }
+    },
+    {
+      "turn": 11,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 3,
+          "to": "P-088",
+          "to_name": "Trafalgar Law",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Trafalgar Law",
+          "attacker_code": "P-088",
+          "target": "Jinbe [\"OP11-021\">OP11-021]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Trafalgar Law",
+          "attacker_code": "OP10-119",
+          "target": "Jinbe [\"OP11-021\">OP11-021]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": "OP11-029",
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Eustass \"Captain\" Kid",
+          "attacker_code": "OP10-099",
+          "target": "Jinbe [\"OP11-021\">OP11-021]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP06-033"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 6,
+          "to": "OP10-111",
+          "to_name": "Monkey D. Luffy",
+          "total": 6
+        },
+        {
+          "type": "attack",
+          "attacker": "Monkey D. Luffy",
+          "attacker_code": "OP10-111",
+          "target": "Hody Jones [\"OP06-035\">OP06-035]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP11-030"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP11-101",
+          "to_name": "Capone \"Gang\" Bege",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Capone \"Gang\" Bege",
+          "attacker_code": "OP11-101",
+          "target": "Shirahoshi [\"OP11-030\">OP11-030]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "ST36-004",
+            "ST36-002",
+            "ST36-003",
+            "EB04-059",
+            "ST36-005",
+            "OP10-109",
+            "OP10-119",
+            "OP10-119"
+          ],
+          "board": [
+            "P-088",
+            "OP10-111",
+            "OP11-101",
+            "OP10-119"
+          ],
+          "trash": [
+            "OP13-116",
+            "OP12-117",
+            "OP15-105",
+            "P-088"
+          ],
+          "life": 1
+        },
+        "Opponent": {
+          "hand": [
+            "EB04-018",
+            "EB04-015",
+            "OP13-040",
+            "OP11-028",
+            "OP06-041",
+            "OP11-031",
+            "OP11-028"
+          ],
+          "trash": [
+            "P-063",
+            "OP15-023",
+            "OP06-032",
+            "OP11-029",
+            "OP06-033",
+            "OP11-030",
+            "OP11-030"
+          ],
+          "board": [
+            "OP11-031",
+            "OP06-035"
+          ],
+          "life": 2
+        }
+      }
+    }
+  ]
+}

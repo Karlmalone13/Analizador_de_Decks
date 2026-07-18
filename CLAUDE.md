@@ -3,7 +3,7 @@
 ## LEITURA OBRIGATÓRIA ANTES DE QUALQUER COMMIT
 
 > **ESTADO ATUAL OBRIGATORIO - proxy/telemetria (18/07/2026):** antes de
-> alterar bot, engine server, logs ou metricas, leia o bloco **263** no topo de
+> alterar bot, engine server, logs ou metricas, leia o bloco **267** no topo de
 > `HANDOFF.md` e `specs/metrics-protocol.md`. Baseline:
 > `0c96391 feat(metrics): endurece proxy e coleta de logs`.
 >
@@ -11,8 +11,12 @@
 > nome `Lider-Cores_x_Lider-Cores_timestamp`; `match_id` nasce no mulligan e
 > permanece ate `outcome` (nunca recriar em `/decide`); manter estado, decisao,
 > execucao e resultado separados; preservar alertas, latencia, confirmacao
-> semantica e comparacao entre commits. Pendente ao vivo: GameOver/AutoSaved,
-> prompts auxiliares e calibracao com 20-50 partidas. Em partida real, conferir
+> semantica e comparacao entre commits. GameOver/AutoSaved **resolvido** (era
+> DLL do plugin desatualizada, nao logica -- rebuild via `setup_bepinex.ps1`
+> antes de qualquer teste ao vivo daqui pra frente). Pendente ao vivo:
+> `state_after_coverage_pct` < gate 95%, 3 `semantic_transition_failed`,
+> `winner: null` cosmetico no index, prompts auxiliares e calibracao com
+> 20-50 partidas. Em partida real, conferir
 > `[AUTO-COLLECT] LOG SALVO NO BANCO` e o recibo em `metrics/live_runs/`.
 
 ### Gate obrigatório: auditoria global do parser
