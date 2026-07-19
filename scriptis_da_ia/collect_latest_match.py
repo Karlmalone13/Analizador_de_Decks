@@ -67,8 +67,25 @@ def _validate_bank_entry(combat_log: Path, index: list, db_root: Path = DB_ROOT)
     return entry, canonical_stem
 
 
+def _apply_winner(index: list, entry_id: str, result: str) -> None:
+    """Preenche o 'winner' do index a partir do resultado da telemetria.
+
+    O combat log baixado pelo jogo e cortado antes das linhas finais
+    (Downloaded the Combat Log!/GameOver) -- parse_combat_log.py nao tem
+    como saber quem venceu so pelo texto. `p1` e sempre "You" (o bot) e
+    `p2` sempre "Opponent" (RE_LEADER), entao o resultado do /outcome
+    (da perspectiva do bot) mapeia direto pra qual lado do index venceu.
+    """
+    if result not in {"win", "loss"}:
+        return
+    for item in index:
+        if item.get("id") == entry_id:
+            item["winner"] = "p1" if result == "win" else "p2"
+            return
+
+
 def collect_latest(decision_log: Path, autosaved_dir: Path = DEFAULT_AUTOSAVED,
-                   match_id: str = "") -> dict:
+                   match_id: str = "", result: str = "") -> dict:
     combat_log = _latest_log(autosaved_dir)
     _wait_stable(combat_log)
     if not decision_log.exists():
@@ -92,6 +109,10 @@ def collect_latest(decision_log: Path, autosaved_dir: Path = DEFAULT_AUTOSAVED,
     # usando o schema/nome oficial produzido por parse_combat_log.add_to_db.
     index = json.loads(DB_INDEX.read_text(encoding="utf-8")) if DB_INDEX.exists() else []
     bank_entry, canonical_stem = _validate_bank_entry(combat_log, index)
+    if result:
+        _apply_winner(index, bank_entry["id"], result)
+        DB_INDEX.write_text(json.dumps(index, ensure_ascii=False, indent=2), encoding="utf-8")
+        bank_entry = next(item for item in index if item.get("id") == bank_entry["id"])
     reported = subprocess.run(report_cmd, cwd=ROOT, text=True, capture_output=True)
     if reported.returncode:
         raise RuntimeError(f"bot_efficiency_report falhou: {reported.stderr or reported.stdout}")
@@ -121,6 +142,8 @@ def main() -> int:
     ap.add_argument("--decision-log", type=Path,
                     help="default: JSONL mais recente do engine_server")
     ap.add_argument("--autosaved-dir", type=Path, default=DEFAULT_AUTOSAVED)
+    ap.add_argument("--result", choices=("win", "loss"),
+                    help="resultado do bot, se conhecido (fallback manual sem /outcome)")
     args = ap.parse_args()
     decision_log = args.decision_log
     if decision_log is None:
@@ -128,8 +151,8 @@ def main() -> int:
         if not logs:
             raise FileNotFoundError("nenhum decision JSONL encontrado")
         decision_log = max(logs, key=lambda p: p.stat().st_mtime)
-    result = collect_latest(decision_log, args.autosaved_dir)
-    print(json.dumps(result, indent=2, ensure_ascii=False))
+    receipt = collect_latest(decision_log, args.autosaved_dir, result=args.result or "")
+    print(json.dumps(receipt, indent=2, ensure_ascii=False))
     return 0
 
 

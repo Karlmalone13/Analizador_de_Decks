@@ -1,5 +1,75 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-19 (284) - Claude - retomada do proxy/telemetria: as 3 pendências do bloco 267/268 endereçadas
+
+Varredura do parser fechou em 100 suspeitos (bloco 283) — usuário autorizou
+retomar as 3 pendências do proxy que estavam adiadas desde 18/07 (bloco
+268). Diagnóstico e fix feitos **sem partida nova**: o decision log bruto da
+partida ao vivo de 18/07 (`BOT/engine_server/logs/decisions/decisions_
+2026-07-18T02.23.28.jsonl`, 2MB) ainda existia em disco, o que permitiu
+investigar as 3 falhas reais linha a linha em vez de só hipotetizar.
+
+**1. `semantic_transition_failed` (3 casos) — 2 falsos-positivos + 1 alerta
+duplicado, corrigido em `bot_efficiency_report.py`:**
+- 2 dos 3 eram `activate` de OP15-026 (Jango): `[Activate: Main] You may
+  trash this Character: ...` — o custo é trashar a PRÓPRIA carta, então ela
+  correta e esperadamente some do board depois. O checker `main_transition_ok`
+  só sabia reconhecer `activate` como "card com actionUsed=True", nunca
+  contemplando custo de auto-trash — tratava ausência da carta como falha.
+  Fix: se a carta não é mais encontrada após um `activate` que antes existia,
+  considerar sucesso (`before_card is not None and after_card is None`).
+- O 3º caso era um `activate` cujo `terminal.status` já era `"failed"` (DTO
+  idêntico antes/depois) — a checagem semântica rodava em cima de uma
+  execução JÁ conhecida como falha, gerando um 2º alerta redundante sem
+  informação nova. Fix: só avaliar `main_transition_ok` quando
+  `terminal.status == "confirmed"`.
+- Validado: `test_bot_efficiency_report.py` 10/10 OK; reprocessei o JSONL real
+  de 18/07 com `--decision-log` e `semantic_transition_failed` sumiu do
+  relatório (só sobraram os 2 alertas reais abaixo).
+
+**2. `state_after_coverage_pct` 88,5% / 12 de 38 `target` pendentes para
+sempre — causa raiz real encontrada por leitura estática do
+`BotDriver.cs` (`HandlePendingAction`), não é race condition:** o branch
+"V3 sem alvos faltando" (`remaining == 0` → `ConfirmPendingSelection()` +
+`return`) fica ANTES do bloco de clique que é o ÚNICO lugar que chamava
+`TrackAuxDecision(_pendingTargetDecisionId, ...)` (reporta `sent` pro
+engine). Sempre que um novo `ChooseTarget` é pedido no reset do prompt E o
+efeito já não tem mais alvo faltando nesse mesmo tick, o código confirma e
+retorna sem NUNCA reportar o decisionId recém-recebido — a decisão python
+fica com 0 eventos de execução, presa em `pending` para sempre (exatamente
+o padrão visto no log: uma decisão `target` órfã com o MESMO `n_ord` de uma
+confirmada poucos décimos de segundo antes). Fix: reportar `sent` com o
+estado atual antes do `ConfirmPendingSelection()`/`return`, igual já era
+feito no bloco de clique. `dotnet build` limpo (só warnings pré-existentes
+não relacionados). **Precisa validação em partida real** (não declarar
+resolvido sem log ao vivo, ver `feedback_nao_declarar_resolvido_sem_
+partida_real.md`) — próxima sessão que testar ao vivo deve conferir se
+`state_after_coverage_pct` sobe pra ≥95%.
+
+**3. `winner: null` cosmético em `logs/index.json`:** causa raiz real —
+o combat log baixado pelo AutoSaved é sempre cortado ANTES das linhas
+`Downloaded the Combat Log!`/`GameOver` (achado já documentado no bloco
+267), então `parse_combat_log.py` genuinely não tem como saber quem venceu
+só pelo texto do log. Mas o `/outcome` do `server.py` JÁ recebe
+`report.result` (win/loss) na hora de chamar `collect_latest_match.
+collect_latest()` — só não estava sendo repassado. Fix: `collect_latest()`
+ganhou parâmetro `result`; nova `_apply_winner()` mapeia
+`win→"p1"/loss→"p2"` no index (p1 é sempre "You"/bot e p2 sempre
+"Opponent", confirmado via `RE_LEADER` — convenção do próprio formato do
+combat log do jogo, não inventada agora). `server.py` passa `report.result`
+adiante; `collect_latest_match.py` também ganhou `--result win|loss`
+opcional pro fallback manual (`/outcome` nunca disparar de novo). Testado
+isolado com `copy.deepcopy` do `logs/index.json` real (sem mutar o arquivo)
+confirmando o mapeamento win→p1/loss→p2; `index.json` real intacto.
+
+Arquivos tocados: `scriptis_da_ia/bot_efficiency_report.py`,
+`scriptis_da_ia/collect_latest_match.py`, `BOT/engine_server/server.py`,
+`BOT/OPTCGBotPlugin/BotDriver.cs`. Nenhum código de carta/parser tocado
+(fora do escopo desta sessão). Próximo passo real: rodar
+`BOT\setup_bepinex.bat` (recompila com a mudança do BotDriver.cs) e jogar
+≥1 partida ao vivo pra confirmar os 3 gates + calibração 20-50 partidas
+ainda pendente do bloco 267 original.
+
 ## 2026-07-19 (283) - Claude - fotos de cartas (OP15-047/OP16-095/OP15-074) + dívida técnica "in any order" + mecanismos deliberadamente deferidos
 
 Usuário mandou fotos de 3 cartas pra fechar dúvidas antigas do parser, e

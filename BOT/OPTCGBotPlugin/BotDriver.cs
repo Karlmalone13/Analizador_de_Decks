@@ -550,6 +550,20 @@ namespace OPTCGBotPlugin
             int remaining = BotExecutor.RemainingV3Targets(gls);
             if (remaining == 0)
             {
+                // Achado 19/07 via analise do decision log ao vivo: quando o
+                // reset acima (linha ~512) acabou de pedir um ChooseTarget novo
+                // e o efeito ja nao tem mais alvo faltando, este branch confirma
+                // e RETORNA antes do bloco de clique (~558) — que e o UNICO lugar
+                // que reportava "sent" pro decisionId recem-recebido. Sem isto, a
+                // decisao ficava orfa (0 eventos de execucao), presa em pending
+                // pra sempre (12 dos 38 casos de decision_kind=target na partida
+                // de 18/07, ver bloco 267/268 do HANDOFF).
+                if (!string.IsNullOrEmpty(_pendingTargetDecisionId))
+                {
+                    TrackAuxDecision(_pendingTargetDecisionId,
+                        GameStateBuilder.Build(botPs, oppPs, gls));
+                    _pendingTargetDecisionId = "";
+                }
                 BotExecutor.ConfirmPendingSelection(gls);
                 _cooldown = 1f;
                 return;

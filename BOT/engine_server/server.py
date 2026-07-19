@@ -398,7 +398,8 @@ def outcome(report: OutcomeReport):
         def _collect() -> None:
             try:
                 from collect_latest_match import collect_latest
-                receipt = collect_latest(DECISION_LOG_PATH, match_id=_live_match_id)
+                receipt = collect_latest(DECISION_LOG_PATH, match_id=_live_match_id,
+                                          result=report.result)
                 _collection_status.update(
                     status="success", message="log capturado e salvo no banco",
                     report=receipt.get("report"), receipt=receipt.get("receipt"))

@@ -5,6 +5,23 @@
 **Baseline do código:** ver `git log --oneline -1`
 **Repo:** github.com/Karlmalone13/Analizador_de_Decks
 
+> 19/07/2026: retomadas as 3 pendências do proxy/telemetria adiadas desde
+> 18/07 (bloco 268) agora que a varredura fechou. `semantic_transition_failed`
+> era 2 falsos-positivos (OP15-026 `activate` com custo de auto-trash) + 1
+> alerta duplicado (checagem semântica rodando sobre execução já `failed`) —
+> corrigido em `bot_efficiency_report.py`, confirmado reprocessando o JSONL
+> real de 18/07 (alerta sumiu). `winner: null` no `logs/index.json` —
+> causa raiz real era `/outcome` já saber `win/loss` mas nunca repassar pro
+> `collect_latest_match.py`; `_apply_winner()` nova mapeia win→p1/loss→p2
+> (p1 sempre "You", confirmado via `RE_LEADER`). `state_after_coverage_pct`
+> 88,5%/12 `target` pendentes pra sempre — causa raiz real achada por leitura
+> estática do `BotDriver.cs`: branch "remaining==0" confirma e `return`s antes
+> do único lugar que reportava `sent` pro decisionId recém-pedido, orfanando
+> a decisão. Fix aplicado e compilado (`dotnet build` limpo), **mas precisa
+> validação em partida real** (não declarar resolvido sem log ao vivo) —
+> próxima sessão ao vivo deve rodar `BOT\setup_bepinex.bat` e conferir se o
+> gate de 95% é atingido. Ver HANDOFF bloco 284.
+
 > 19/07/2026: ST30-001/002/017 + ST10-003 — pedido explícito do usuário
 > pra revisar TODOS os 103 suspeitos restantes até o fim do dia. 2
 > candidatos reais achados (ST30-001 líder: auto-debuff "this Leader"

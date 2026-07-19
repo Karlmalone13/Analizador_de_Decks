@@ -300,6 +300,10 @@ def analyze_decision_events(lines) -> dict:
             return bool(before_card and after_card
                         and after_card.get("donAttached", 0) > before_card.get("donAttached", 0))
         if action == "activate":
+            if before_card is not None and after_card is None:
+                # custo "voce pode trashar este Character" (ex: OP15-026) --
+                # a carta some do board como parte do proprio custo, nao e falha.
+                return True
             return bool(after_card and after_card.get("actionUsed"))
         if action == "end_turn":
             return after.get("turnNumber") != before.get("turnNumber")
@@ -336,8 +340,14 @@ def analyze_decision_events(lines) -> dict:
             failed += 1
             bucket["failed"] += 1
 
+        # So avaliar semantica quando a execucao foi de fato confirmada --
+        # "failed" ja fica registrado por execution_success_pct; reavaliar a
+        # semantica sobre um terminal "failed" so duplica o mesmo alerta sem
+        # informacao nova.
         terminal_state = terminal.get("state_after") if terminal else None
-        semantic_result = main_transition_ok(decision, terminal_state)
+        semantic_result = (main_transition_ok(decision, terminal_state)
+                           if terminal and terminal.get("status") == "confirmed"
+                           else None)
         if semantic_result is None:
             semantic["unavailable"] += 1
         else:
