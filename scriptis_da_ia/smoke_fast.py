@@ -4571,6 +4571,48 @@ def test_lote_9_itens_eb03_050_eb04_024_selecao_double_attack_e_unblockable() ->
           and doflamingo.rested and len(me2.hand) == 0)
 
 
+def test_op15_047_op16_095_select_unblockable_sem_filtro_e_com_cor() -> None:
+    # OP15-047 (Sanji): "Up to 1 of your Characters gains [Unblockable]"
+    # SEM nenhum filtro de tipo -- confirmado por foto do usuario (19/07)
+    # que e selecao real entre QUALQUER Character seu, nao auto-concessao.
+    # Bug tinha 2 camadas: (1) o regex interno de select_grant_unblockable_
+    # turn exigia o delimitador de tipo (\[...\]/{...}) como obrigatorio;
+    # (2) o GATE EXTERNO em parse_block so chamava a funcao se o texto
+    # tivesse o substring literal "type character", que OP15-047 nao tem
+    # (sem filtro = sem a palavra "type"). Corrigir so o regex interno nao
+    # bastava -- o gate externo ainda bloqueava a chamada inteira.
+    check("OP15-047 parseia select_grant_unblockable_turn SEM filter_type/color",
+          get_card_effects("OP15-047").get("on_play", {}).get("steps", []) ==
+          [{"action": "select_grant_unblockable_turn", "count": 1}])
+
+    sanji = real_card("OP15-047")
+    mais_forte = mk("SJF", "Outro Mais Forte", cost=5, power=9000)
+    me = GameState(leader=mk("SJLDR", "Lider", card_type="LEADER"), turn=3)
+    me.field_chars = [sanji, mais_forte]
+    opp = GameState(leader=mk("SJOPP", "Opp", card_type="LEADER"), turn=3)
+    EffectExecutor(me, opp).execute(sanji, "on_play")
+    check("Execucao real: OP15-047 escolhe o character de MAIOR board_value (nao sempre a si mesmo)",
+          mais_forte.unblockable_this_turn and not sanji.unblockable_this_turn)
+
+    # OP16-095 (Luffy): "Up to 1 of your black Land of Wano type Characters
+    # gains [Unblockable]" -- cor + tipo combinados, confirmado por foto do
+    # usuario ("Ate 1 de seus black land of wano caraceters").
+    check("OP16-095 parseia select_grant_unblockable_turn color=black filter_type=land of wano",
+          get_card_effects("OP16-095").get("on_play", {}).get("steps", []) ==
+          [{"action": "select_grant_unblockable_turn", "count": 1, "color": "black", "filter_type": "land of wano"}])
+
+    luffy = real_card("OP16-095")
+    wano_fraco = mk("LWF", "Land of Wano Fraco", cost=2, power=3000, color="Black", sub_types="Land of Wano")
+    nao_wano_forte = mk("NWF", "Outro Nao Wano", cost=5, power=9000, color="Red", sub_types="Punk Hazard")
+    me2 = GameState(leader=mk("LFLDR", "Lider", card_type="LEADER"), turn=3)
+    me2.field_chars = [luffy, wano_fraco, nao_wano_forte]
+    opp2 = GameState(leader=mk("LFOPP", "Opp", card_type="LEADER"), turn=3)
+    EffectExecutor(me2, opp2).execute(luffy, "on_play")
+    check("Execucao real: OP16-095 respeita o filtro cor+tipo (escolhe o FRACO que bate, ignora o forte que nao bate)",
+          wano_fraco.unblockable_this_turn and not nao_wano_forte.unblockable_this_turn
+          and not luffy.unblockable_this_turn)
+
+
 def test_lote_9_itens_eb01_053_count2_e_eb03_061_alvo_misto() -> None:
     # EB01-053 (Gastino): "up to a total of 2" no debuff
     # opp_leader_or_character virava count=1 implicito.
@@ -6536,6 +6578,116 @@ def test_encerramento_varredura_st30_001_e_st30_002() -> None:
           exato_inz in me_inz.hand and fraco_inz in me_inz.deck)
 
 
+def test_eb04_011_draw_por_contagem_de_tipo_e_trash_igual() -> None:
+    # EB04-011 (Scaled Neptunian): "Draw a card for each of your
+    # {Neptunian} type Characters. Then, trash the same number of cards
+    # from your hand." -- quantidade dinamica (conta os PROPRIOS
+    # Neptunian no campo, incluindo a propria carta que acabou de entrar),
+    # nao um draw fixo. Unica carta no banco com essa forma exata (censo
+    # global confirmado 19/07).
+    check("EB04-011 parseia draw count_source=own_field_type_count + then_trash_same_as_drawn",
+          get_card_effects("EB04-011").get("on_play", {}).get("steps", []) ==
+          [{"action": "draw", "count_source": "own_field_type_count",
+            "filter_type": "neptunian", "then_trash_same_as_drawn": True}])
+
+    neptunian_card = real_card("EB04-011")
+    aliado_neptunian = mk("NEP1", "Aliado Neptunian", cost=2, power=2000, sub_types="Neptunian")
+    outro_tipo = mk("OUT1", "Outro Tipo", cost=2, power=2000, sub_types="Fish-Man")
+    me = GameState(leader=mk("NEPLDR", "Lider", card_type="LEADER"), turn=3)
+    me.field_chars = [aliado_neptunian, outro_tipo]  # neptunian_card entra via _put_into_play (nao aqui)
+    me.deck = [mk(f"DK{i}", f"Deck{i}") for i in range(5)]
+    me.hand = [mk(f"H{i}", f"Hand{i}") for i in range(5)]
+    opp = GameState(leader=mk("NEPOPP", "Opp", card_type="LEADER"), turn=3)
+    tamanho_mao_antes = len(me.hand)
+    me.field_chars.append(neptunian_card)  # simula a propria carta ja em campo (regra do jogo: On Play resolve apos entrar)
+    EffectExecutor(me, opp).execute(neptunian_card, "on_play")
+    check("Execucao real: EB04-011 compra 2 (ela + o aliado Neptunian, NAO o Fish-Man) e trasha 2 da mao",
+          len(me.deck) == 3 and len(me.hand) == tamanho_mao_antes + 2 - 2)
+
+
+def test_op04_069_base_power_igual_ao_atacante_do_oponente() -> None:
+    # OP04-069 (Mr.2.Bon.Kurei): "[On Your Opponent's Attack] DON!! -1: This
+    # Character's base power becomes the same as the power of your
+    # opponent's attacking Leader or Character during this turn." --
+    # DISTINTO de set_base_power/source=opp_leader (sempre o Leader,
+    # independente de quem ataca): aqui o alvo e literalmente quem esta
+    # ATACANDO agora. Exigiu contexto de batalha novo (EffectExecutor.
+    # execute(battle_attacker=...), so preenchido no call site real de
+    # resolucao de ataque) -- sem isso, nao ha como saber quem e o
+    # atacante durante o [On Your Opponent's Attack] do defensor.
+    check("OP04-069 parseia set_base_power source=opp_attacking_character no on_opp_attack",
+          get_card_effects("OP04-069").get("on_opp_attack", {}).get("steps", []) ==
+          [{"action": "set_base_power", "target": "self", "source": "opp_attacking_character",
+            "duration": "this_turn"}])
+
+    bentham = real_card("OP04-069")
+    me = GameState(leader=mk("BTLDR", "Lider", card_type="LEADER"), turn=3)
+    me.field_chars = [bentham]
+    me.don_available = 1  # paga o custo don_minus=1 (DON!! -1)
+    opp = GameState(leader=mk("OPLDR", "Lider Opp", card_type="LEADER"), turn=3)
+    atacante = mk("ATK1", "Atacante Forte", cost=6, power=9000)
+    opp.field_chars = [atacante]
+    EffectExecutor(me, opp).execute(bentham, "on_opp_attack", battle_attacker=atacante)
+    check("Execucao real: OP04-069 vira base_power_override=9000 (power do atacante real)",
+          bentham.base_power_override == 9000)
+
+    # Sem battle_attacker (nenhuma batalha em curso) -- nao adivinha alvo,
+    # nao executa (mais seguro que assumir qualquer Character do campo).
+    bentham2 = real_card("OP04-069")
+    me2 = GameState(leader=mk("BTLDR2", "Lider", card_type="LEADER"), turn=3)
+    me2.field_chars = [bentham2]
+    me2.don_available = 1  # custo pagavel -- isola o teste no branch de battle_attacker ausente
+    opp2 = GameState(leader=mk("OPLDR2", "Lider Opp", card_type="LEADER"), turn=3)
+    EffectExecutor(me2, opp2).execute(bentham2, "on_opp_attack")
+    check("Execucao real: OP04-069 SEM battle_attacker nao seta base_power_override (contexto ausente)",
+          bentham2.base_power_override is None)
+
+
+def test_in_any_order_custos_bottom_deck_escolhem_melhor_ordem() -> None:
+    # Divida tecnica registrada em TODO.md (16/07): "in any order" NAO e
+    # estetica/irrelevante -- o engine deve escolher a MELHOR ordem
+    # (mais forte fica mais perto do topo do deck, comprado mais cedo).
+    # Corrigido 19/07 pra 2 custos que ainda tratavam a ordem como
+    # arbitraria (ctype.pop()/min() repetido, processando do mais fraco
+    # pro mais forte -- o OPOSTO do que a convencao ja estabelecida em
+    # place_own_character_bottom_deck (STEP, OP05-119, 16/07) exige).
+
+    # (a) place_from_trash_bottom_deck: OP07-080 (Kaku), 51 cartas reais
+    # usam esse custo -- 25 delas com count>1 (a ordem realmente importa).
+    kaku = real_card("OP07-080")
+    cp_fraco = mk("CPF", "CP Fraco", cost=2, power=1000, sub_types="CP0")
+    cp_forte = mk("CPS", "CP Forte", cost=5, power=8000, sub_types="CP0")
+    me = GameState(leader=mk("KKLDR", "Lider", card_type="LEADER"), turn=3)
+    me.trash = [cp_fraco, cp_forte]
+    me.deck = [mk("KKDECK", "Resto do Deck")]
+    opp = GameState(leader=mk("KKOPP", "Opp", card_type="LEADER"), turn=3)
+    ee = EffectExecutor(me, opp)
+    ok = ee._pay_costs([{"type": "place_from_trash_bottom_deck", "count": 2, "filter_type": "cp"}], kaku)
+    check("place_from_trash_bottom_deck paga o custo movendo as 2 cartas CP do trash", ok)
+    check("O CP mais FORTE fica mais perto do topo (indice maior) que o CP fraco",
+          me.deck.index(cp_forte) > me.deck.index(cp_fraco))
+
+    # (b) place_own_character_bottom_deck como CUSTO (nao STEP -- STEP ja
+    # corrigido em 16/07): 0 cartas reais com count>1 hoje, mas o mesmo
+    # bug de ordem existia no handler de custo (usado por EB01-011/
+    # OP05-056, ambos count=1 -- corrigido preventivamente pra qualquer
+    # carta futura com count>=2).
+    fonte2 = mk("SRC2", "Fonte", power=5000, cost=4)
+    fraco2 = mk("FRC2", "Fraco", power=1000, cost=2)
+    forte2 = mk("FRT2", "Forte", power=9000, cost=6)
+    me2 = GameState(leader=mk("PCLDR", "Lider", card_type="LEADER"), turn=3)
+    me2.field_chars = [fonte2, fraco2, forte2]
+    me2.deck = [mk("PCDECK", "Resto do Deck")]
+    opp2 = GameState(leader=mk("PCOPP", "Opp", card_type="LEADER"), turn=3)
+    ee2 = EffectExecutor(me2, opp2)
+    ok2 = ee2._pay_costs(
+        [{"type": "place_own_character_bottom_deck", "count": 2, "exclude_self": True}], fonte2)
+    check("place_own_character_bottom_deck (custo) sacrifica Fraco e Forte (exclude_self poupa a Fonte)",
+          ok2 and fonte2 in me2.field_chars and fraco2 in me2.deck and forte2 in me2.deck)
+    check("Entre os sacrificados, o mais FORTE (Forte) fica mais perto do topo que o Fraco",
+          me2.deck.index(forte2) > me2.deck.index(fraco2))
+
+
 def main() -> int:
     test_turn_order_imu_prefers_second()
     test_empty_throne_beats_direct_five_elders_play()
@@ -6656,6 +6808,7 @@ def main() -> int:
     test_lote_11_itens_op16_118_counter_na_mao()
     test_lote_9_itens_st22_005_custo_composto_e_eb02_002_select_exclude()
     test_lote_9_itens_eb03_050_eb04_024_selecao_double_attack_e_unblockable()
+    test_op15_047_op16_095_select_unblockable_sem_filtro_e_com_cor()
     test_lote_9_itens_eb01_053_count2_e_eb03_061_alvo_misto()
     test_lote_9_itens_eb03_049_segunda_play_card_e_eb02_028_play_from_hand()
     test_lote_9_itens_eb02_007_leader_or_character_count3()
@@ -6678,6 +6831,9 @@ def main() -> int:
     test_lote_16_itens_op09_051_a_op15_059()
     test_ultimos_5_itens_op06_057_a_op15_119()
     test_encerramento_varredura_st30_001_e_st30_002()
+    test_eb04_011_draw_por_contagem_de_tipo_e_trash_igual()
+    test_op04_069_base_power_igual_ao_atacante_do_oponente()
+    test_in_any_order_custos_bottom_deck_escolhem_melhor_ordem()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0

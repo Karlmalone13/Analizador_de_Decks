@@ -1903,7 +1903,7 @@ class EffectExecutor:
         return logs
 
     def execute(self, card: Card, trigger: str, verbose: bool = False, is_opp_turn: bool = False,
-                is_my_turn: bool = True) -> list:
+                is_my_turn: bool = True, battle_attacker: "Card | None" = None) -> list:
         """
         Executa todos os efeitos de um trigger para uma carta.
         Retorna lista de logs para o replay.
@@ -1937,6 +1937,11 @@ class EffectExecutor:
         aninhado dentro da resolucao do proprio 'trigger' de vida).
         """
         self._is_my_turn = is_my_turn
+        # battle_attacker: quem esta atacando AGORA -- so preenchido pelo
+        # call site real de resolucao de batalha (on_opp_attack), consumido
+        # por set_base_power/source='opp_attacking_character' (OP04-069).
+        # None em qualquer outro contexto (sem batalha em curso).
+        self._battle_attacker = battle_attacker
         effects = get_card_effects(card.code)
         if trigger not in effects:
             return []
@@ -2509,28 +2514,44 @@ class EffectExecutor:
         during this turn" (OP01-028, OP03-017, OP07-075, OP15-021,
         ST09-014) -- um unico debuff_power, sem extras, alvo escolhido pela
         IA = sempre o atacante (o que importa pra sobreviver A ESTE ataque).
-        Escopo deliberadamente minimo: exige EXATAMENTE 1 debuff_power e
-        nenhum outro step -- cartas com 2 debuffs em sequencia (OP04-017,
-        OP02-089) ou combinadas com outra action (OP09-097 negate_effect)
-        tem semantica ambigua sobre se afetam o MESMO alvo, fora de escopo
-        por ora (ver TODO.md)."""
+
+        Generalizado 19/07/2026 (aprovacao explicita do usuario) pra
+        aceitar ATE 2 debuff_power SEQUENCIAIS no mesmo bloco (OP04-017:
+        -2000 incondicional + -1000 "if your Leader is active") e
+        debuff_power combinado com negate_effect (OP09-097: "Negate...
+        and give THAT CARD -4000 power"). Leitura assumida (unica sem
+        ambiguidade real dado que um Counter so se joga DURANTE a
+        batalha em curso): TODO debuff_power do bloco mira o MESMO alvo,
+        o proprio ATACANTE -- nao ha razao de jogo pra split entre dois
+        Characters do oponente quando so 1 esta atacando agora. Soma os
+        amounts de todo debuff_power APLICAVEL (condicao bate e
+        target_rule compativel com attacker_type); pula (nao rejeita o
+        bloco inteiro) debuff_power cuja condicao/target nao se aplica
+        agora -- so rejeita o bloco inteiro se target_rule for
+        desconhecido OU se nenhum debuff aplicavel sobrar. negate_effect
+        e QUALQUER outro step junto no bloco e ignorado pra fins deste
+        calculo (simplificacao ja assumida: este mecanismo so responde
+        "[Counter] jogado sozinho evita o hit?", nao simula o efeito
+        negado)."""
         block = get_card_effects(event.code).get('counter', {})
         if not block or not self._check_conditions(block.get('conditions', {}), event):
             return None
         steps = block.get('steps', [])
-        if len(steps) != 1:
+        if not steps or any(s.get('action') not in ('debuff_power', 'negate_effect') for s in steps):
             return None
-        step = steps[0]
-        if step.get('action') != 'debuff_power':
-            return None
-        target_rule = step.get('target')
-        if target_rule == 'opp_character' and attacker_type != 'character':
-            return None
-        if target_rule not in ('opp_character', 'opp_leader_or_character'):
-            return None
-        if step.get('conditions') and not self._check_conditions(step.get('conditions', {}), event):
-            return None
-        return step.get('amount', 0)
+        total = 0
+        for step in steps:
+            if step.get('action') != 'debuff_power':
+                continue
+            target_rule = step.get('target')
+            if target_rule not in ('opp_character', 'opp_leader_or_character'):
+                return None
+            if target_rule == 'opp_character' and attacker_type != 'character':
+                continue
+            if step.get('conditions') and not self._check_conditions(step.get('conditions', {}), event):
+                continue
+            total += step.get('amount', 0)
+        return total or None
 
     def try_counter_event_debuff(self, attacker: Card, attacker_type: str,
                                  needed: int) -> tuple[int, str] | None:
@@ -3010,6 +3031,15 @@ class EffectExecutor:
             return False
         if 'don_gte' in conds and me.don_available < conds['don_gte']:
             return False
+        # "if your Leader is active/rested" -- condicao POR-STEP (nao de
+        # bloco inteiro), achada 19/07 em OP04-017 (2o de 2 debuffs
+        # sequenciais no mesmo Counter, so aplica se o Leader estiver
+        # ativo). me sempre se refere ao dono da carta que carrega o
+        # efeito (o proprio Leader, nao o do oponente).
+        if 'leader_state' in conds:
+            quer_ativo = conds['leader_state'] == 'active'
+            if me.leader.rested == quer_ativo:
+                return False
         if conds.get('has_don_attached'):
             attached = getattr(me.leader, 'don_attached', 0) + sum(
                 getattr(c, 'don_attached', 0) for c in me.field_chars)
@@ -3733,11 +3763,24 @@ class EffectExecutor:
                 count = cost.get('count', 1)
                 if len(candidates) < count:
                     return False
+                # Sacrifica os `count` de MENOR board_value (mantem os
+                # melhores em campo -- essa parte ja estava certa), mas
+                # insere no fundo do deck da mais forte pra mais fraca
+                # ENTRE OS ESCOLHIDOS: cada insert(0, ...) empurra os
+                # anteriores pra mais perto do topo, entao processar do
+                # mais forte primeiro deixa exatamente ele mais perto do
+                # topo (comprado antes). Achado 19/07: a versao antiga
+                # (min() repetido, processando do mais fraco pro mais
+                # forte) fazia o OPOSTO do que place_own_character_
+                # bottom_deck (STEP, ja corrigido em 16/07 pra OP05-119) e
+                # da dívida tecnica "in any order" exigem -- o mais FORTE
+                # dos sacrificados acabava mais fundo no deck, pior
+                # resultado possivel.
+                escolhidos = sorted(candidates, key=lambda c: c.board_value())[:count]
+                escolhidos.sort(key=lambda c: c.board_value(), reverse=True)
                 moved = []
-                for _ in range(count):
-                    target = min(candidates, key=lambda c: c.board_value())
+                for target in escolhidos:
                     remove_character_from_field(self.me, target, 'deck_bottom')
-                    remove_by_identity(candidates, target)
                     moved.append(target.name[:15])
                 self._cost_logs.append(f'custo: fundo do deck: {", ".join(moved)}')
             elif ctype == 'rest_own_character':
@@ -3907,10 +3950,25 @@ class EffectExecutor:
                 from optcg_engine.rules_facade import eligible_cards
 
                 # Custo de colocar N cartas do PRÓPRIO trash no fundo do
-                # PRÓPRIO deck ("in any order" -- ordem e escolha do
-                # jogador, irrelevante pro engine). Achado em auditoria de
-                # buff_cost 27/06: 51 cartas usam esse custo, zero
-                # cobertura antes (Kaku OP07-080, Trafalgar Law, Dragon...).
+                # PRÓPRIO deck. Achado em auditoria de buff_cost 27/06: 51
+                # cartas usam esse custo, zero cobertura antes (Kaku
+                # OP07-080, Trafalgar Law, Dragon...). "In any order" NÃO é
+                # estética/irrelevante pra ORDEM de insercao (dívida técnica
+                # registrada em TODO.md, 16/07 -- corrigida 19/07): entre as
+                # `count` cartas ESCOLHIDAS, insere da mais forte pra mais
+                # fraca -- a mais forte fica mais perto do topo do deck
+                # (comprada primeiro se o deck chegar lá), mesma convenção
+                # já usada em place_own_character_bottom_deck (STEP, achado
+                # 16/07, OP05-119). A SELECAO em si (quais `count` cartas
+                # saem do trash) fica INALTERADA -- ainda os ultimos `count`
+                # elegiveis na ordem do trash (mesmo criterio de sempre,
+                # candidatos[-count:] em vez de pop() repetido, resultado
+                # identico) -- mudar a selecao quebraria blocos que tambem
+                # recuperam uma carta ESPECIFICA do trash no mesmo efeito
+                # (ex: OP05-088 Mansherry: custo move 2 do trash pro fundo E
+                # o efeito seguinte recupera outra carta do MESMO trash --
+                # priorizar por board_value na selecao levaria embora
+                # justamente a carta que o proximo step precisa).
                 count = cost.get('count', 1)
                 candidatos = eligible_cards(
                     self.me.trash,
@@ -3918,12 +3976,10 @@ class EffectExecutor:
                 )
                 if len(candidatos) < count:
                     return False
+                escolhidos = candidatos[-count:] if count else []
+                escolhidos.sort(key=lambda c: c.board_value(), reverse=True)
                 movidos = []
-                for _ in range(count):
-                    # qualquer N -- "in any order" e escolha estetica do
-                    # jogador, sem efeito mecanico (fundo do deck nao
-                    # discrimina ordem entre as N cartas movidas agora).
-                    alvo = candidatos.pop()
+                for alvo in escolhidos:
                     remove_by_identity(self.me.trash, alvo)
                     self.me.deck.insert(0, alvo)   # fundo do deck = inicio da lista
                     movidos.append(alvo.name[:14])
@@ -4639,6 +4695,14 @@ class EffectExecutor:
         # ── Draw ──────────────────────────────────────────────────────────────
         if action == 'draw':
             count = step.get('count', 1)
+            # count_source='own_field_type_count': quantidade dinamica =
+            # quantos Characters do proprio campo batem filter_type (ex:
+            # EB04-011, "draw a card for each of your {Neptunian} type
+            # Characters"), nao um numero fixo do banco.
+            if step.get('count_source') == 'own_field_type_count':
+                from optcg_engine.rules_facade import card_matches_filter
+                filter_type = step.get('filter_type', '')
+                count = sum(1 for c in me.field_chars if card_matches_filter(c, filter_type))
             drawn = []
             for _ in range(count):
                 if me.deck:
@@ -4647,6 +4711,11 @@ class EffectExecutor:
                     drawn.append(c.name[:12])
             # then_trash após draw
             then_trash = step.get('then_trash', 0)
+            if step.get('then_trash_same_as_drawn'):
+                # "Then, trash the same number of cards from your hand" --
+                # sempre o total REALMENTE comprado (nao o count pretendido),
+                # caso o deck tenha acabado antes de comprar tudo.
+                then_trash = len(drawn)
             trashed_after = []
             for _ in range(then_trash):
                 worst = self._choose_to_trash(me.hand)
@@ -5407,6 +5476,19 @@ class EffectExecutor:
                     alvo = choose_highest_effective_power(candidatos,
                                                           your_turn=False)
                     amount = alvo.effective_power(False)
+                elif source == 'opp_attacking_character':
+                    # OP04-069: alvo = quem esta ATACANDO agora (nao
+                    # qualquer Character do oponente) -- so disponivel
+                    # via battle_attacker, setado pelo call site real de
+                    # batalha (execute(..., battle_attacker=attacker) em
+                    # on_opp_attack). Sem batalha em curso, nao executa
+                    # (mais seguro que adivinhar um alvo).
+                    atacante = getattr(self, '_battle_attacker', None)
+                    if atacante is None:
+                        return ''
+                    # e o turno de ATAQUE do oponente -- do ponto de vista
+                    # do proprio atacante, e o turno dele (your_turn=True).
+                    amount = atacante.effective_power(True)
                 else:
                     return None
                 card.base_power_override = int(amount)
@@ -7338,6 +7420,10 @@ class EffectExecutor:
                 me.field_chars,
                 filter_text=filter_type,
                 power_gte=step.get('power_gte'),
+                # color: "up to N of your black {Tipo} type Characters
+                # gains [Unblockable]" (achado 19/07, OP16-095, confirmado
+                # por foto do usuario).
+                color=step.get('color', ''),
             )
             if step.get('include_leader') and card_matches_filter(me.leader, filter_type):
                 candidatos.append(me.leader)
@@ -11651,7 +11737,7 @@ class OPTCGMatch:
         # batalha, não depois que o dano já foi calculado.
         ee_react = EffectExecutor(opp, p)
         for reagente in [opp.leader] + list(opp.field_chars):
-            oa_logs = ee_react.execute(reagente, 'on_opp_attack')
+            oa_logs = ee_react.execute(reagente, 'on_opp_attack', battle_attacker=attacker)
             if verbose:
                 for log in oa_logs:
                     if log:

@@ -1,5 +1,81 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-19 (283) - Claude - fotos de cartas (OP15-047/OP16-095/OP15-074) + dívida técnica "in any order" + mecanismos deliberadamente deferidos
+
+Usuário mandou fotos de 3 cartas pra fechar dúvidas antigas do parser, e
+pediu explicitamente: além de corrigir essas 3, corrigir a dívida
+técnica "in any order" registrada em 16/07 e implementar TODOS os
+mecanismos conhecidos deliberadamente não implementados (EB04-011,
+OP12-016 Rayleigh, OP04-069, OP16-032, OP09-097/OP02-089/OP04-017).
+Trabalho seguiu o protocolo completo (censo global → fix genérico →
+`diff_parser.py` PERDEU=0 → `gerar_dbs.py` → `snapshot_parser.py` →
+`smoke_fast.py`/`smoke_test.py` novos testes → `smoke_test_broad.py` a
+cada fix que toca código compartilhado → registro em `parser_audits/`)
+pra cada item, um de cada vez.
+
+**Fixes reais (bug confirmado + corrigido):**
+1. **OP15-047 (Sanji)/OP16-095 (Luffy) — `select_grant_unblockable_turn`
+   sem filtro/com cor:** foto confirmou que ambas fazem SELEÇÃO real
+   (não auto-concessão). Bug de 2 camadas: regex interno exigia
+   delimitador de tipo obrigatório (sem suportar "sem filtro" nem prefixo
+   de cor) E um GATE EXTERNO em `parse_block` só chamava a função se o
+   texto tivesse o substring literal "type character" (OP15-047 não tem
+   — sem filtro). Corrigidas as 2 camadas + `eligible_cards` no engine
+   ganhou `color=`. Censo confirmou Rush/Blocker/Double Attack já
+   suportavam "sem filtro" corretamente (só Unblockable tinha o bug de 2
+   camadas, por ter uma sub-função dedicada com gate próprio). `diff_parser.py`
+   MUDOU=2 (só as 2 cartas). Ver
+   `parser_audits/2026-07-19_select_grant_unblockable_sem_filtro_e_gate_externo.json`.
+2. **EB04-011 (Scaled Neptunian) — draw dinâmico por contagem de tipo:**
+   "Draw a card for each of your {Neptunian} type Characters. Then,
+   trash the same number of cards from your hand" — 1 carta no banco
+   (isolado). Novo `count_source='own_field_type_count'` +
+   `then_trash_same_as_drawn` no action `draw` (parser e engine).
+   `diff_parser.py` MUDOU=1.
+3. **OP04-069 (Mr.2.Bon.Kurei) — base power = power do atacante do
+   oponente:** "[On Your Opponent's Attack]... becomes the same as the
+   power of your opponent's attacking Leader or Character" — distinto de
+   `source='opp_leader'` (sempre o Leader, não quem ataca). Exigiu
+   contexto de batalha novo: `EffectExecutor.execute(battle_attacker=...)`,
+   preenchido no único call site real de resolução de ataque, consumido
+   por `set_base_power/source='opp_attacking_character'`. `diff_parser.py`
+   MUDOU=1.
+4. **Dívida técnica "in any order" (bottom-deck) fechada:**
+   `place_from_trash_bottom_deck` (custo) escolhia via `candidatos.pop()`
+   sem critério de ORDEM — 25 cartas reais com `count>1` afetadas (Kaku
+   OP07-080, etc). Fix: preserva a SELEÇÃO original (mesmos `count`
+   cards escolhidos — mudar isso quebrou OP05-088 Mansherry, que
+   recupera outra carta específica do MESMO trash no mesmo bloco), só
+   corrige a ORDEM de inserção (mais forte fica mais perto do topo).
+   Achado colateral: mesmo bug de ordem no CUSTO
+   `place_own_character_bottom_deck` (0 cartas reais com count>1 hoje,
+   fix preventivo). `deck_reorder_rest` já estava correto desde 01/07.
+5. **Counter events com 2 debuffs/negate_effect (OP04-017/OP09-097):**
+   `_counter_event_debuff_plan` exigia EXATAMENTE 1 step — generalizado
+   pra somar todo `debuff_power` aplicável no bloco (mesmo alvo = o
+   atacante, única leitura sem ambiguidade real), ignorando
+   `negate_effect` combinado. Achado colateral: condição "if your Leader
+   is active" (OP04-017) nunca era parseada — novo
+   `conditions['leader_state']` genérico (active/rested).
+   `diff_parser.py` MUDOU=1 (só OP04-017).
+
+**Confirmados como JÁ RESOLVIDOS (nota do TODO.md estava desatualizada,
+sem código novo necessário):**
+- OP15-074 (Varie): foto confirma `DON!! −1` explícito, parser já
+  produzia certo.
+- OP12-016 (Rayleigh): `target='don_recipient'` já implementado numa
+  sessão anterior, nota antiga nunca foi removida.
+- OP16-032 (Boa Hancock): `exclude` (`other than [Nome]`) já extraído e
+  já respeitado pelo engine.
+- OP02-089: `_counter_event_debuff_plan` já retornava plano válido (o
+  `count=2` nunca era checado pela função — não havia ambiguidade real
+  pro que esse mecanismo precisa saber).
+
+Validação de cada fix: `diff_parser.py` PERDEU=0 em todos, `smoke_fast.py`/
+`smoke_test.py` com testes novos de execução real, `smoke_test_broad.py`
+(7/7 sem exceção) em cada fix que tocou código compartilhado. Todos os
+`parser_audits/*.json` e as notas de TODO.md atualizadas por item.
+
 ## 2026-07-19 (282) - Claude - ST30-001/002/017 + ST10-003 — VARREDURA COMPLETA ENCERRADA (100 suspeitos)
 
 Usuário pediu explicitamente para revisar **todos** os 103 suspeitos

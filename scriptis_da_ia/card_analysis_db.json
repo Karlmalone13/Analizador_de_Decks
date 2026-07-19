@@ -29838,6 +29838,11 @@
   "attribute": "Strike",
   "effects": [
    {
+    "action": "set_base_power",
+    "trigger": "on_opp_attack",
+    "target": "self"
+   },
+   {
     "action": "play_card",
     "trigger": "trigger"
    }
@@ -86814,7 +86819,7 @@
   "attribute": "Strike",
   "effects": [
    {
-    "action": "gain_unblockable",
+    "action": "select_grant_unblockable_turn",
     "trigger": "on_play"
    },
    {
@@ -86841,7 +86846,7 @@
   "trashes_own_life": false,
   "has_rush": false,
   "has_double_attack": false,
-  "has_unblockable": true,
+  "has_unblockable": false,
   "has_banish": false,
   "has_trigger": false
  },
@@ -94167,7 +94172,7 @@
   "attribute": "Strike",
   "effects": [
    {
-    "action": "gain_unblockable",
+    "action": "select_grant_unblockable_turn",
     "trigger": "on_play"
    }
   ],
@@ -94190,7 +94195,7 @@
   "trashes_own_life": false,
   "has_rush": false,
   "has_double_attack": false,
-  "has_unblockable": true,
+  "has_unblockable": false,
   "has_banish": false,
   "has_trigger": false
  },

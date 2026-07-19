@@ -1,0 +1,19 @@
+{
+  "trigger_card": "OP04-017",
+  "problem": "Deferido deliberadamente em 30/06/2026 (docstring de _counter_event_debuff_plan e TODO.md): o mecanismo 'Counter event que enfraquece o ATACANTE' exigia EXATAMENTE 1 debuff_power e nenhum outro step no bloco 'counter', deixando de fora 3 cartas: OP02-089 ('up to a total of 2' -- na verdade um UNICO step com count=2, nao 2 steps -- ja funcionava sem mudanca, docstring so estava desatualizada), OP04-017 (2 debuff_power SEQUENCIAIS, o 2o condicionado a 'if your Leader is active') e OP09-097 (debuff_power combinado com negate_effect no mesmo bloco, 'Negate the effect... and give that card -4000 power'). Usuario deu aprovacao explicita (19/07) pra resolver essa ambiguidade de alvo.",
+  "grammar_family": "Bloco [Counter] com MAIS DE 1 step, misturando debuff_power sequenciais e/ou negate_effect -- leitura assumida (unica sem ambiguidade real dado que um Counter so se joga DURANTE a batalha em curso): todo debuff_power do bloco mira o MESMO alvo, o proprio ATACANTE.",
+  "queries": [
+    "Verificacao direta (nao precisou de novo censo -- os 3 casos ja estavam nomeados no TODO.md/docstring de 30/06): OP02-089 ja retornava plano valido via _counter_event_debuff_plan (count=2 nunca era checado pela funcao, so target/conditions/action -- a docstring estava desatualizada, nao havia bug real). OP04-017 e OP09-097 confirmados quebrados (len(steps)!=1 rejeitava os 2 blocos inteiros).",
+    "Achado colateral ao investigar OP04-017: a clausula 'if your Leader is active' (condicao POR-STEP no 2o debuff) nunca era parseada -- nenhum campo 'conditions' era gravado nesse step, entao o 2o debuff sempre disparava incondicionalmente. Censo (regex 'if your leader is active' sobre cards_rows.csv): 1 carta no banco inteiro (OP04-017) -- isolated_after_global_scan, mas implementado de forma generica (aceita 'active' OU 'rested', nao hardcoded pra 'active')."
+  ],
+  "cards_found": ["OP04-017", "OP09-097", "OP02-089"],
+  "resolution_scope": "global",
+  "decision": "Engine (decision_engine.py, _counter_event_debuff_plan): generalizado pra iterar por TODOS os steps do bloco 'counter' em vez de exigir len(steps)==1. Rejeita o bloco inteiro (retorna None) so se: (a) houver algum step que nao seja debuff_power/negate_effect, ou (b) algum debuff_power tiver target_rule fora de ('opp_character','opp_leader_or_character'). Steps de negate_effect sao ignorados (simplificacao ja assumida: o mecanismo so responde 'joga isso sozinho evita o hit?', nao simula o efeito negado). Cada debuff_power aplicavel (attacker_type compativel + conditions batendo) soma seu amount num total -- se nenhum debuff aplicavel sobrar, retorna None (mesmo comportamento conservador de antes). Parser (gerar_effects_db.py, loop de buff/debuff power ~linha 3866): novo check 'if your leader is (active|rested)' na janela contexto_antes, grava step['conditions']['leader_state']. Engine (_check_conditions): novo branch 'leader_state' em conds -- compara me.leader.rested contra o valor esperado (active=nao-restado, rested=restado).",
+  "validated_by": [
+    "diff_parser.py: GANHOU=0/PERDEU=0/MUDOU=1 (so OP04-017, unica carta com o novo 'leader_state' -- OP09-097/OP02-089 sao mudancas 100% de engine)",
+    "gerar_dbs.py + snapshot_parser.py: re-baseline limpo, 2614 cartas sincronizadas",
+    "smoke_test.py: 3 testes novos com EXECUCAO real -- OP04-017 com Leader ATIVO soma os 2 debuffs (2000+1000=3000, suficiente pra sobreviver a needed=3000); OP04-017 com Leader RESTADO so aplica o 1o debuff incondicional (fica em 2000, insuficiente pra needed=3000, retorna None); OP09-097 usa so o debuff_power (-4000), ignora o negate_effect combinado. TODOS OS TESTES PASSARAM",
+    "smoke_fast.py: SMOKE FAST OK (nenhuma regressao nos outros mecanismos)",
+    "smoke_test_broad.py: rodado apos o fix (mecanismo compartilhado de resolucao de batalha)"
+  ]
+}

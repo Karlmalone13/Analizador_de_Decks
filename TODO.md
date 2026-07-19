@@ -186,10 +186,13 @@
 > ("trash up to N da mao" como 2a clausula, nunca capturada em
 > activate_main/counter), OP09-059 (mill ligado ao trash real da mao),
 > OP03-012 (custo virava trash da MAO em vez do CAMPO, faltava filtro de
-> cor). Achado colateral fora de escopo: EB04-011 tem mecanica "draw 1
-> por cada Character de um tipo" ainda nao suportada. Ver HANDOFF bloco
-> 271 e `parser_audits/2026-07-19_lote_8_op02-030_a_op03-012.json`.
-> Auditor: 212 -> 204 suspeitos.
+> cor). Achado colateral fora de escopo: EB04-011 tinha mecanica "draw 1
+> por cada Character de um tipo" ainda nao suportada. **Implementado
+> depois, no mesmo dia** — novo `count_source='own_field_type_count'` +
+> `then_trash_same_as_drawn` no action `draw` (parser e engine), ver
+> `parser_audits/2026-07-19_eb04-011_draw_por_contagem_de_tipo.json`. Ver
+> HANDOFF bloco 271 e `parser_audits/2026-07-19_lote_8_op02-030_a_op03-012.json`
+> pro achado original. Auditor: 212 -> 204 suspeitos.
 
 > 19/07/2026: bug no audit_parser_coverage.py corrigido (valores negativos
 > no JSON nunca batiam com o texto sem sinal) -- 213 -> 212 suspeitos. Ver
@@ -418,27 +421,44 @@ começar por reler os 4 logs de 07/07 (`CombatLogs/2026-07-07T*.log`) e
 
 ---
 
-## 🔴 Dívida técnica — "in any order" tratado como irrelevante em vários pontos (16/07/2026)
+## ✅ Dívida técnica — "in any order" tratado como irrelevante em vários pontos (16/07/2026, fechada 19/07/2026)
 
 Pedido explícito do usuário: o engine deve escolher a MELHOR ordem
 quando o texto oficial diz "in any order" (não é estética/irrelevante
 como o código vinha assumindo em múltiplos comentários). Corrigido
-nesta sessão APENAS pro caso novo `place_own_character_bottom_deck`
-(ordena por `board_value()` descendente — mais forte fica mais perto do
-topo do deck, comprado mais cedo se o deck chegar lá; ver HANDOFF bloco
-199). **Os pontos pré-existentes abaixo ainda tratam a ordem como
-arbitrária e precisam da mesma auditoria/correção**, cada um com seu
-próprio censo global antes de mexer (gate de auditoria já exige isso):
+originalmente pro caso `place_own_character_bottom_deck` (STEP, ordena
+por `board_value()` descendente — mais forte fica mais perto do topo do
+deck, comprado mais cedo se o deck chegar lá; ver HANDOFF bloco 199).
+
+**Atualização (19/07/2026) — os 2 pontos pendentes foram auditados:**
 
 - `place_from_trash_bottom_deck` (custo, `_pay_costs` em
-  `decision_engine.py` ~linha 3236-3258): escolhe via
-  `candidatos.pop()` sem critério, mesmo comentário "irrelevante".
-- Reordenação de topo do deck em efeitos de busca (`deck_reorder_rest`,
-  "look at N cards... place the rest at the bottom of your deck in any
-  order") — vários `parse_reveal_*`/`parse_look_top_deck` no parser.
-  Aqui pode ser MENOS crítico (o resto costuma ser embaralhado ou o
-  próximo draw já é aleatorizado por outro efeito), mas precisa de
-  auditoria individual antes de assumir isso.
+  `decision_engine.py`): **corrigido.** Escolhia via `candidatos.pop()`
+  sem critério de ORDEM (mesmo comentário "irrelevante"). Fix: entre as
+  `count` cartas ESCOLHIDAS (a seleção em si — quais cartas saem do
+  trash — ficou INALTERADA, ainda os últimos `count` elegíveis na ordem
+  do trash, mesmo critério de sempre), insere no fundo do deck da mais
+  forte pra mais fraca (mesma convenção de `place_own_character_
+  bottom_deck`). Deliberadamente NÃO mudei a seleção (qual card sai do
+  trash): 25 cartas reais usam esse custo com `count>1`, e pelo menos
+  uma (OP05-088 Mansherry) tem um EFEITO seguinte no MESMO bloco que
+  recupera outra carta específica do MESMO trash — priorizar a seleção
+  por `board_value` levaria embora justamente a carta que o próximo
+  step precisa (achado direto ao rodar `smoke_fast.py`, teste
+  `test_custo_composto_trash_para_fundo` quebrou e expôs o problema).
+  Ver `parser_audits/2026-07-19_in_any_order_bottom_deck_custos.json`.
+  De graça, achado colateral: o mesmo bug de ORDEM (sem o problema de
+  seleção, já que não há filtro concorrente) existia também no CUSTO
+  `place_own_character_bottom_deck` (distinto do STEP homônimo já
+  corrigido) — 0 cartas reais com `count>1` hoje, corrigido
+  preventivamente pra qualquer carta futura.
+- Reordenação de topo do deck em efeitos de busca (`deck_reorder_rest`/
+  `deck_top_rest`, "look at N cards... place the rest at the top or
+  bottom of the deck in any order"): **já estava corrigido antes desta
+  sessão** (ver comentário datado 01/07/2026 em `decision_engine.py`,
+  função do action `deck_reorder_rest`/`deck_top_rest` — heurística
+  "melhor carta vai pro topo do deck" já implementada, 21 cartas
+  cobertas). Nota antiga em TODO.md estava desatualizada.
 - Qualquer novo mecanismo futuro que mencione "in any order" — checar
   este item ANTES de assumir que não importa.
 
@@ -588,11 +608,15 @@ implementa → valida (snapshot/diff PERDEU=0 + partidas reais instrumentadas).
   your [Tipo] cards gains +X power" caía em `target='self'` por engano —
   corrigido para `select_filtered` com seleção real por filtro, afetando
   48 cartas que tinham esse padrão, todas verificadas como correção real,
-  não regressão). OP12-016 (Rayleigh, alvo = quem recebeu DON!! de um
-  CUSTO, não de um step) fica de fora — memória custo→efeito é mecanismo
-  diferente, não implementado (raro, 1 carta). `PERDEU=0`, smoke tests
-  100%, testes diretos do mecanismo (select_filtered + selected, com e sem
-  memória prévia) passando.
+  não regressão). `PERDEU=0`, smoke tests 100%, testes diretos do
+  mecanismo (select_filtered + selected, com e sem memória prévia)
+  passando. **Atualização (19/07/2026): OP12-016 (Rayleigh, alvo = quem
+  recebeu DON!! de um CUSTO, não de um step) foi implementado numa sessão
+  posterior** — `target='don_recipient'` em `select_grant_unblockable_turn`
+  (`decision_engine.py`) busca por nome (`target_name`) em
+  `me.field_chars + [me.leader]`, memória custo→efeito via nome (conhecido
+  em tempo de parse) em vez de um slot genérico entre steps. Não era mais
+  um gap — a nota acima ficou desatualizada.
 - [x] ~~CantPlayAnyCardsFromHand / CantPlayAnyCharactersToField direcionado ao
   oponente~~ — **investigado em 28/06/2026, 0 cartas reais no banco**.
   Buscado "opponent cannot play"/"can't play" em todas as formas — as 18
@@ -638,12 +662,13 @@ Validacao: `python smoke_test.py`; `python audit_replay.py --n 5 --seed 42`; tes
   confirmadas: `opp_leader` (5 cartas: EB04-052, OP06-009, OP16-036,
   OP16-055 + dup), `own_leader` (1 carta, OP14-053), `selected_opp_character`
   (2 cartas: EB01-061, OP16-104 — seleção e cópia no MESMO step, sem
-  precisar de memória entre steps). Fica de fora: OP04-069 ("the same as
-  the power of your opponent's ATTACKING Leader or Character" — exige
-  saber quem está atacando no momento da resolução, contexto de batalha
-  que `set_base_power` não tem hoje; 1 carta, raro). `PERDEU=0`, smoke
-  tests 100%, 4 cenários manuais (opp_leader/own_leader/selected com
-  escolha do melhor candidato/sem candidato não quebra).
+  precisar de memória entre steps). `PERDEU=0`, smoke tests 100%, 4
+  cenários manuais (opp_leader/own_leader/selected com escolha do melhor
+  candidato/sem candidato não quebra). **Atualização (19/07/2026): OP04-069
+  implementado numa sessão posterior** — novo `source='opp_attacking_character'`
+  + `EffectExecutor.execute(battle_attacker=...)` (contexto de batalha
+  threaded desde o call site real de resolução de ataque). Ver
+  `parser_audits/2026-07-19_op04-069_base_power_atacante_do_oponente.json`.
 
 Os 5 medios restantes foram fechados em 29/06/2026. Ainda ficam a familia grande
 de imunidade e stubs antigos listados abaixo.
@@ -691,9 +716,16 @@ de imunidade e stubs antigos listados abaixo.
   **Gaps menores não corrigidos** (achados de raspão, baixo
   impacto): OP14-119 (`lock_opp_cannot_be_rested` com gatilho "when this
   Character becomes rested", trigger condicional não reconhecido, perde o
-  efeito) e OP16-032 (mesma action, mas com exclusão `other than [Nome]`
-  não extraída pelo parser — fica sem nenhum efeito parseado). 2 cartas,
-  registrado aqui pra não se perder.
+  efeito — **resolvido depois, ver `when_rested` mais abaixo neste
+  arquivo**) e OP16-032 (mesma action, exclusão `other than [Nome]`).
+  **Verificado em 19/07/2026: OP16-032 NÃO tem mais esse gap** — o regex
+  principal de `lock_opp_cannot_be_rested`/`lock_opp_character_attack`
+  (`gerar_effects_db.py`) já tem o grupo opcional `(?: other than
+  \[([^\]]+)\])?` produzindo `step['exclude']`, e o handler no engine já
+  filtra `exclude not in c.name.lower()` antes de escolher o alvo —
+  `card_effects_db.json` confirma `exclude: "monkey.d.luffy"` presente.
+  Nota antiga ficou desatualizada (o fix genérico de outra carta
+  provavelmente cobriu este caso de graça); não havia mais bug real aqui.
 - Fatia seguinte feita: KO por efeito e KO em batalha agora passam contexto para
   `is_immune()`, e o helper usa o texto bruto para impedir que imunidade
   `cannot be K.O.'d in battle` proteja contra efeito, ou `by effects` proteja
@@ -786,12 +818,24 @@ de imunidade e stubs antigos listados abaixo.
   `attacker.power_buff` de verdade, nao so o calculo de defesa). Escopo
   minimo e deliberado: exige EXATAMENTE 1 `debuff_power` no bloco `counter`
   e nenhum outro step. Desbloqueia OP01-028, OP03-017, OP07-075, OP15-021,
-  ST09-014 (5 cartas). Ficam de fora por ambiguidade de alvo (2 debuffs em
-  sequencia sem "that card" explicito, ao contrario do padrao de buff
-  bonus): OP02-089 ("total of 2... -3000", distribuicao ambigua), OP04-017
-  (2 debuffs sequenciais sem marcador de mesmo alvo), OP09-097 (combina com
-  `negate_effect`, ainda sem handler). Validado com `audit_replay.py --n 20
-  --seed 7` e `--n 15 --seed 99`: 0 excecoes, 0 anomalias.
+  ST09-014 (5 cartas). Validado com `audit_replay.py --n 20 --seed 7` e
+  `--n 15 --seed 99`: 0 excecoes, 0 anomalias.
+  **Atualização (19/07/2026), ambiguidade de alvo resolvida:** OP02-089
+  ("total of 2... -3000") na verdade já funcionava sem mudança nenhuma —
+  é um ÚNICO step com `count=2` (não 2 steps sequenciais), e a função
+  nunca checava `count`; a nota de "distribuição ambígua" estava
+  desatualizada. OP04-017 (2 debuffs sequenciais, o 2º condicionado a
+  "if your Leader is active") e OP09-097 (`debuff_power` combinado com
+  `negate_effect`) foram generalizados: `_counter_event_debuff_plan`
+  agora itera por TODOS os steps do bloco `counter`, soma o `amount` de
+  cada `debuff_power` aplicável (mesma leitura assumida — todo debuff do
+  bloco mira o MESMO alvo, o atacante, única leitura sem ambiguidade real
+  já que um Counter só se joga durante a batalha em curso) e ignora
+  `negate_effect` (fora do escopo desta simplificação). Achado colateral:
+  a condição "if your Leader is active" nunca era parseada — novo
+  `conditions['leader_state']` (parser) + branch em `_check_conditions`
+  (engine), genérico pra "active" ou "rested". Ver
+  `parser_audits/2026-07-19_counter_event_debuff_2_steps_op04-017_op09-097.json`.
 - [x] **KO via Counter event (30/06/2026):** implementado — terceiro
   mecanismo de Counter event, distinto de buffar a propria defesa e de
   debuffar o atacante. "[Counter] K.O. up to 1 of your opponent's
@@ -1114,7 +1158,11 @@ de imunidade e stubs antigos listados abaixo.
   novo nem perdido), 4 smoke tests novos (2 unidade + 2 end-to-end via
   carta real OP08-046 abaixo/no limiar), `audit_replay.py --n 20 --seed 7`
   e `--n 15 --seed 99`: 0 exceções, 0 anomalias.
-- [ ] OP15-074 Varie — DON sem sinal, aguarda foto
+- [x] ~~OP15-074 Varie — DON sem sinal, aguarda foto~~: **resolvido
+  (19/07/2026).** Foto confirmada pelo usuário mostra `DON!! −1:` explícito
+  no texto real da carta — o parser já produz `don_minus` count=1/
+  optional=False corretamente. Não era bug, só uma dúvida de dado bruto
+  pendente de confirmação visual.
 - ~~OP14-119 (Mihawk) — trigger "becomes rested" sem parser~~: **resolvido
   (02/07/2026).** Novo timing `when_rested` no parser (`gerar_effects_db.py`,
   trigger_patterns antes de `your_turn`, com lookahead negativo pra evitar

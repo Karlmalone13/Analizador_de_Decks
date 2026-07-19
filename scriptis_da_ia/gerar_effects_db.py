@@ -2907,15 +2907,26 @@ def parse_select_unblockable_turn(text):
     # a REDACAO. Achado 17/07, EB04-024 (unica carta no banco com essa
     # forma pra Unblockable).
     if not steps:
+        # Filtro de tipo agora OPCIONAL (achado 19/07, OP15-047 Sanji,
+        # confirmado por foto do usuario: "Up to 1 of your Characters
+        # gains [Unblockable]" -- SEM filtro nenhum, e ainda assim e uma
+        # SELECAO real entre os proprios Characters, nao auto-concessao
+        # -- caia no fallback errado gain_unblockable/target=self antes
+        # desta correcao). Cor opcional ANTES do tipo tambem tolerada
+        # (achado 19/07, OP16-095 Luffy, confirmado por foto: "black
+        # {Land of Wano} type Characters").
         m_kw_direct = re.search(
-            r"up to (\d+) of your [\"'\[{]([a-z][a-z0-9 .'-]+?)[\"'\]}]\s*type characters?"
+            r"up to (\d+) of your (?:(black|red|blue|green|yellow|purple)\s+)?"
+            r"(?:[\"'\[{]([a-z][a-z0-9 .'-]+?)[\"'\]}]\s*type\s+)?characters?"
             r" gains? \[unblockable\]", t)
         if m_kw_direct:
-            steps.append({
-                'action': 'select_grant_unblockable_turn',
-                'count': int(m_kw_direct.group(1)),
-                'filter_type': m_kw_direct.group(2).strip(),
-            })
+            step = {'action': 'select_grant_unblockable_turn',
+                    'count': int(m_kw_direct.group(1))}
+            if m_kw_direct.group(2):
+                step['color'] = m_kw_direct.group(2)
+            if m_kw_direct.group(3):
+                step['filter_type'] = m_kw_direct.group(3).strip()
+            steps.append(step)
 
     return steps
 
@@ -3249,14 +3260,38 @@ def parse_draw(text):
     if m_to_hand:
         steps.append({'action': 'draw_to_hand_count', 'target_count': int(m_to_hand.group(1))})
 
-    m = None if m_to_hand else re.search(r'draw (\d+) cards?', t)
+    # "Draw a/N card(s) for each of your [Tipo] type Characters[. Then,
+    # trash the same number of cards from your hand]" -- quantidade
+    # DINAMICA (depende de quantos Characters do tipo estao no campo no
+    # momento da execucao, nao um numero fixo), companheiro de
+    # buff_power_per_count/source=own_characters mas pra draw. Achado
+    # 19/07, EB04-011 Scaled Neptunian: censo global (regex 'draw (?:a|\d+)
+    # cards? for each' em cards_rows.csv) achou SO esta carta no banco
+    # inteiro -- isolado apos varredura global (isolated_after_global_scan).
+    # Verificado ANTES do draw fixo/fallback pra nao cair em "draw a card"
+    # (substring presente dentro da propria clausula "draw a card for
+    # each...", casaria por engano com o fallback simples abaixo).
+    m_per_type = None if m_to_hand else re.search(
+        r'draw (?:a|(\d+)) cards? for each(?: of)? your '
+        r'[\[{"]([a-z][a-z0-9 .\'-]+?)[\]}"]\s*type characters?', t)
+    if m_per_type:
+        step = {
+            'action': 'draw',
+            'count_source': 'own_field_type_count',
+            'filter_type': m_per_type.group(2).strip(),
+        }
+        if re.search(r'then,?\s*trash the same number of cards? from your hand', t):
+            step['then_trash_same_as_drawn'] = True
+        steps.append(step)
+
+    m = None if (m_to_hand or m_per_type) else re.search(r'draw (\d+) cards?', t)
     if m:
         step = {'action': 'draw', 'count': int(m.group(1))}
         trash_m = re.search(r'draw \d+ cards? and trash (\d+)', t)
         if trash_m:
             step['then_trash'] = int(trash_m.group(1))
         steps.append(step)
-    elif 'draw a card' in t:
+    elif not m_per_type and 'draw a card' in t:
         steps.append({'action': 'draw', 'count': 1})
 
     # "...and place M cards from your hand at the top or bottom of your
@@ -3831,6 +3866,15 @@ def parse_power_buff(text):
         janela_don_scaling = t[m.end():m.end() + 80]
         if re.search(r'for every don!{0,2}\s*cards? given to that character', janela_don_scaling):
             step['per_don_attached'] = True
+        # "Then, if your Leader is (active|rested), give up to N ... -X
+        # power" -- CONDICAO por-STEP (nao de bloco: o 1o debuff da mesma
+        # carta pode ser incondicional). Achado 19/07, OP04-017 (unica
+        # carta no banco com essa forma exata): a clausula inteira sumia
+        # (nenhum 'conditions' era gravado), entao o 2o debuff sempre
+        # disparava, mesmo com o Leader restado.
+        m_leader_state = re.search(r"if your leader is (active|rested)", contexto_antes)
+        if m_leader_state:
+            step.setdefault('conditions', {})['leader_state'] = m_leader_state.group(1)
         steps.append(step)
 
     return steps
@@ -3936,13 +3980,18 @@ def parse_set_base_power(text):
     #                                 selecionada (selecao e copia no MESMO
     #                                 step, sem precisar de memoria entre
     #                                 steps -- distinto do SaveTargetName)
-    # Fica de fora: "the same as the power of your opponent's ATTACKING
-    # Leader or Character" (OP04-069, 1 carta) -- exige saber QUEM esta
-    # atacando no momento da resolucao, contexto de batalha que o
-    # set_base_power nao tem acesso hoje. Nao implementado (raro).
+    # 'opp_attacking_character' -- "...the same as the power of your
+    # opponent's attacking Leader or Character" (OP04-069, 1 carta,
+    # implementado 19/07/2026). Distinto de 'opp_leader' (sempre o Leader
+    # do oponente, independente de quem ataca): aqui o alvo e literalmente
+    # quem esta ATACANDO agora, so disponivel em contexto de batalha
+    # ([On Your Opponent's Attack]) -- engine precisa de EffectExecutor.
+    # execute(battle_attacker=...) pra saber quem e (thread ate o handler
+    # via self._battle_attacker, so setado no call site real de batalha).
     m_dyn = re.search(
         r"this character'?s base power becomes the same as "
-        r"(your opponent'?s leader|your leader'?s base power|the selected character'?s power)",
+        r"(your opponent'?s leader|your leader'?s base power|the selected character'?s power"
+        r"|the power of your opponent'?s attacking leader or character)",
         t
     )
     if m_dyn:
@@ -3951,6 +4000,8 @@ def parse_set_base_power(text):
             source = 'selected_opp_character'
         elif 'your leader' in fonte and "opponent" not in fonte:
             source = 'own_leader'
+        elif 'attacking' in fonte:
+            source = 'opp_attacking_character'
         else:
             source = 'opp_leader'
         step = {'action': 'set_base_power', 'target': 'self', 'source': source}
@@ -6869,10 +6920,16 @@ def parse_block(block_text, trigger_name):
         # a palavra "select" no texto (a selecao ja aconteceu no custo,
         # nao num step de efeito). Achado 17/07.
         steps.extend(parse_select_unblockable_turn(t))
-    elif '[unblockable]' in t and 'gain' in t and 'type character' in t:
+    elif ('[unblockable]' in t and 'gain' in t
+            and ('type character' in t or re.search(r'up to \d+ of your characters? gains?', t))):
         # EB04-024: forma DIRETA da keyword ("gains [Unblockable]"), sem
         # a prose "opponent cannot activate Blocker" -- mesma semantica
-        # (regra 10-1-7-1), so redacao diferente. Achado 17/07.
+        # (regra 10-1-7-1), so redacao diferente. Achado 17/07. Alargado
+        # 19/07 (OP15-047, confirmado por foto do usuario): "up to N of
+        # your Characters gains [Unblockable]" SEM filtro de tipo nenhum
+        # tambem e SELECAO real (nao so-a-propria-carta) -- a gate exigia
+        # "type character" literal, entao a forma sem filtro nunca
+        # chegava nem a chamar esta funcao.
         steps.extend(parse_select_unblockable_turn(t))
 
     # "Set [alvo] as active" -- desrestar fora do Refresh normal. Exclui

@@ -954,6 +954,47 @@ counter = ee.try_counter_event_debuff(atacante3, 'character', needed=3000)
 check('Counter event de debuff com condicao de vida ativa quando passa (life_lte 2)',
       counter and counter[0] == 3000 and atacante3.power_buff == -3000)
 
+# Generalizacao 19/07/2026: 2 debuff_power SEQUENCIAIS no mesmo bloco
+# (OP04-017: -2000 incondicional + -1000 "if your Leader is active") --
+# ambos miram o MESMO alvo, o atacante (unica leitura sem ambiguidade
+# real, ja que o Counter so se joga durante ESTA batalha).
+me, opp = me_opp()
+me.don_available = 2
+me.leader = mk('LD-ATIVO', 'Leader Ativo', power=5000, card_type='LEADER')
+me.leader.rested = False
+atacante_op04017 = mk('ATK-4', 'Atacante 4', power=6000)
+evento_op04017 = mk('OP04-017', 'Happiness Punch', card_type='EVENT', cost=1)
+me.hand = [evento_op04017]
+ee = EffectExecutor(me, opp)
+counter = ee.try_counter_event_debuff(atacante_op04017, 'character', needed=3000)
+check('OP04-017 soma os 2 debuffs sequenciais no MESMO alvo (2000+1000=3000) quando Leader ativo',
+      counter and counter[0] == 3000 and atacante_op04017.power_buff == -3000)
+
+me, opp = me_opp()
+me.don_available = 2
+me.leader = mk('LD-RESTADO', 'Leader Restado', power=5000, card_type='LEADER')
+me.leader.rested = True
+atacante_op04017b = mk('ATK-4B', 'Atacante 4b', power=6000)
+evento_op04017b = mk('OP04-017', 'Happiness Punch', card_type='EVENT', cost=1)
+me.hand = [evento_op04017b]
+ee = EffectExecutor(me, opp)
+counter = ee.try_counter_event_debuff(atacante_op04017b, 'character', needed=3000)
+check('OP04-017 com Leader RESTADO so aplica o 1o debuff incondicional (-2000, nao chega a 3000)',
+      counter is None and evento_op04017b in me.hand)
+
+# OP09-097: debuff_power (-4000) combinado com negate_effect no mesmo
+# bloco -- negate_effect e ignorado por este mecanismo (simplificacao ja
+# assumida), so o debuff_power conta pro calculo de sobrevivencia.
+me, opp = me_opp()
+me.don_available = 2
+atacante_op09097 = mk('ATK-5', 'Atacante 5', power=6000)
+evento_op09097 = mk('OP09-097', 'Black Vortex', card_type='EVENT', cost=2)
+me.hand = [evento_op09097]
+ee = EffectExecutor(me, opp)
+counter = ee.try_counter_event_debuff(atacante_op09097, 'character', needed=4000)
+check('OP09-097 usa so o debuff_power (-4000) ignorando o negate_effect combinado',
+      counter and counter[0] == 4000 and atacante_op09097.power_buff == -4000)
+
 # ── 15h. Counter events que dao K.O. no ATACANTE inteiro -- cancela o
 # ataque por completo (sem comparacao de power). EB01-010: power_lte 6000 ──
 me, opp = me_opp()

@@ -4067,7 +4067,9 @@
    "steps": [
     {
      "action": "draw",
-     "count": 1
+     "count_source": "own_field_type_count",
+     "filter_type": "neptunian",
+     "then_trash_same_as_drawn": true
     }
    ]
   },
@@ -11702,6 +11704,9 @@
     {
      "action": "debuff_power",
      "amount": 1000,
+     "conditions": {
+      "leader_state": "active"
+     },
      "duration": "this_turn",
      "target": "opp_leader_or_character"
     }
@@ -12761,6 +12766,23 @@
   }
  },
  "OP04-069": {
+  "on_opp_attack": {
+   "costs": [
+    {
+     "count": 1,
+     "optional": true,
+     "type": "don_minus"
+    }
+   ],
+   "steps": [
+    {
+     "action": "set_base_power",
+     "duration": "this_turn",
+     "source": "opp_attacking_character",
+     "target": "self"
+    }
+   ]
+  },
   "trigger": {
    "costs": [
     {
@@ -37722,8 +37744,8 @@
   "on_play": {
    "steps": [
     {
-     "action": "gain_unblockable",
-     "duration": "this_turn"
+     "action": "select_grant_unblockable_turn",
+     "count": 1
     }
    ]
   },
@@ -41277,8 +41299,10 @@
   "on_play": {
    "steps": [
     {
-     "action": "gain_unblockable",
-     "duration": "this_turn"
+     "action": "select_grant_unblockable_turn",
+     "color": "black",
+     "count": 1,
+     "filter_type": "land of wano"
     }
    ]
   }

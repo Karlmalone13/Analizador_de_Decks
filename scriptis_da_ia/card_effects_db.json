@@ -6274,7 +6274,9 @@
         "steps": [
           {
             "action": "draw",
-            "count": 1
+            "count_source": "own_field_type_count",
+            "filter_type": "neptunian",
+            "then_trash_same_as_drawn": true
           }
         ]
       },
@@ -18662,7 +18664,10 @@
             "action": "debuff_power",
             "amount": 1000,
             "target": "opp_leader_or_character",
-            "duration": "this_turn"
+            "duration": "this_turn",
+            "conditions": {
+              "leader_state": "active"
+            }
           }
         ]
       }
@@ -20292,6 +20297,23 @@
     "sub_types": "Baroque Works",
     "attribute": "Strike",
     "effects": {
+      "on_opp_attack": {
+        "steps": [
+          {
+            "action": "set_base_power",
+            "target": "self",
+            "source": "opp_attacking_character",
+            "duration": "this_turn"
+          }
+        ],
+        "costs": [
+          {
+            "type": "don_minus",
+            "count": 1,
+            "optional": true
+          }
+        ]
+      },
       "trigger": {
         "steps": [
           {
@@ -59369,8 +59391,8 @@
       "on_play": {
         "steps": [
           {
-            "action": "gain_unblockable",
-            "duration": "this_turn"
+            "action": "select_grant_unblockable_turn",
+            "count": 1
           }
         ]
       },
@@ -64761,8 +64783,10 @@
       "on_play": {
         "steps": [
           {
-            "action": "gain_unblockable",
-            "duration": "this_turn"
+            "action": "select_grant_unblockable_turn",
+            "count": 1,
+            "color": "black",
+            "filter_type": "land of wano"
           }
         ]
       }
