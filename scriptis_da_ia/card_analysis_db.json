@@ -39889,8 +39889,7 @@
    },
    {
     "action": "play_from_deck",
-    "trigger": "main",
-    "cost_lte": 99
+    "trigger": "main"
    }
   ],
   "synergy_states": {
@@ -90041,16 +90040,12 @@
   "attribute": "Strike",
   "effects": [
    {
-    "action": "buff_power",
+    "action": "buff_power_per_count",
     "trigger": "passive",
     "target": "self"
    },
    {
     "action": "gain_rush",
-    "trigger": "passive"
-   },
-   {
-    "action": "keyword_blocker",
     "trigger": "passive"
    }
   ],
@@ -90060,13 +90055,13 @@
   "draws": false,
   "has_counter_value": false,
   "has_counter_event": false,
-  "is_blocker": true,
+  "is_blocker": false,
   "is_removal": false,
   "kos": false,
   "rests_opponent": false,
   "bounces": false,
   "gives_don": false,
-  "power_buff": true,
+  "power_buff": false,
   "heals": false,
   "gains_life": false,
   "attacks_life": false,
@@ -107255,8 +107250,7 @@
   "effects": [
    {
     "action": "play_from_deck",
-    "trigger": "on_play",
-    "cost_lte": 99
+    "trigger": "on_play"
    },
    {
     "action": "draw",
@@ -107392,8 +107386,7 @@
    },
    {
     "action": "play_from_deck",
-    "trigger": "when_attacking",
-    "cost_lte": 99
+    "trigger": "when_attacking"
    }
   ],
   "synergy_states": {},
@@ -107580,8 +107573,7 @@
    },
    {
     "action": "play_from_deck",
-    "trigger": "counter",
-    "cost_lte": 99
+    "trigger": "counter"
    }
   ],
   "synergy_states": {},
@@ -109331,7 +109323,7 @@
   "effects": [
    {
     "action": "buff_power",
-    "trigger": "opp_turn",
+    "trigger": "on_ko",
     "target": "leader"
    },
    {

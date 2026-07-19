@@ -1,5 +1,51 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-19 (281) - Claude - cauda final da varredura (OP06-057 a OP15-119), 8 cartas — sessão fecha em 103 suspeitos
+
+Última janela pendente do audit (itens 101-109, após zerar 1-100 nos 2
+lotes anteriores da sessão). 5 itens aprovados, 8 cartas cobertas.
+Registro completo em
+`parser_audits/2026-07-19_ultimos_5_op06-057_a_op15-119.json`.
+
+**Fixes:**
+1. **OP06-057 + ST12-010 + ST12-013 + ST12-017** (4 cartas):
+   `play_from_deck` nunca extraía `cost_eq` quando o texto diz "a cost
+   of N" SEM "or less"/"or more" — sempre virava `cost_lte=99` (aceitava
+   qualquer custo). O engine já suportava `cost_eq` nesse action, só
+   faltava o parser produzi-lo (mesmo suporte que `play_card` já tinha).
+2. **ST13-005**: `gain_life` com fonte ERRADA (`deck_top` em vez de
+   `hand`) e sem nenhum filtro — o verbo real é "reveal", não
+   "add"/"put" (a regra geral só busca a partir de "add"/"put", perdendo
+   o "from your hand" que vem ANTES). Novo bloco dedicado, com guard
+   pra não duplicar com a regra genérica.
+3. **ST14-006**: condição composta "6 ou menos na mão E Character
+   custo≥8" — só a 1ª metade sobrevivia.
+4. **ST15-003**: "[Opponent's Turn] When this Character is K.O.'d by an
+   effect, ..." em PROSA (sem a tag formal "[On K.O.]") — disparava em
+   QUALQUER turno do oponente, nunca checando se a carta de fato foi
+   K.O.'d. Generalização da mesma lógica já usada pra colisão de tags
+   formais "[Opponent's Turn][On K.O.]", agora cobrindo a variante sem
+   tag.
+5. **OP15-119**: mecânica NOVA `life_top_revealed_cost` (fonte de
+   `buff_power_per_count`, escala pelo custo da carta revelada da Life
+   via PEEK) — virava um +1000 estático sem escala nenhuma. Achado
+   colateral: "opponent activates an Event or [Blocker]" (filler entre
+   verbo e tag) não era tolerado pelo guard de keyword nativa — a carta
+   ganhava `keyword_blocker` por engano (ela REAGE ao Blocker do
+   oponente, não TEM Blocker).
+
+Validado: `diff_parser.py` GANHOU=0/PERDEU=0/MUDOU=8 (exatas as 8
+cartas-alvo). `smoke_fast.py` com teste novo cobrindo execução real.
+`smoke_test.py` TODOS OS TESTES PASSARAM. `smoke_test_broad.py` 7/7 sem
+exceção. **Auditor: 109 -> 103 suspeitos.**
+
+**Fecha a sessão de varredura de 19/07**: as janelas 1-109 do
+`audit_parser_coverage.py --min-severity 1` foram totalmente revisadas
+ao longo de 4 lotes grandes nesta sessão — **139 -> 103 suspeitos**
+(36 suspeitos resolvidos, várias dezenas de cartas extras corrigidas
+por generalização em cada lote). Ver blocos 278-281 pro detalhe
+completo de cada lote.
+
 ## 2026-07-19 (280) - Claude - lote de 16 itens (OP09-051 a OP15-059), ~38 cartas via generalizacao
 
 Janela 51-100 pós-127, taxa de acerto bem mais alta que a janela anterior.

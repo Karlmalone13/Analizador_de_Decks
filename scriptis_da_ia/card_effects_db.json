@@ -27061,9 +27061,9 @@
             "action": "play_from_deck",
             "count": 1,
             "filter_type": "",
-            "cost_lte": 99,
             "reveal_count": 1,
-            "rested": false
+            "rested": false,
+            "cost_eq": 2
           }
         ]
       }
@@ -29051,9 +29051,9 @@
             "action": "play_from_deck",
             "count": 1,
             "filter_type": "",
-            "cost_lte": 9,
             "reveal_count": 1,
-            "rested": false
+            "rested": false,
+            "cost_lte": 9
           }
         ]
       }
@@ -34143,9 +34143,9 @@
             "action": "play_from_deck",
             "count": 1,
             "filter_type": "whitebeard pirates",
-            "cost_lte": 4,
             "reveal_count": 1,
-            "rested": false
+            "rested": false,
+            "cost_lte": 4
           }
         ]
       }
@@ -34214,9 +34214,9 @@
             "action": "play_from_deck",
             "count": 1,
             "filter_type": "whitebeard piratess",
-            "cost_lte": 3,
             "reveal_count": 1,
-            "rested": false
+            "rested": false,
+            "cost_lte": 3
           }
         ]
       }
@@ -61830,16 +61830,15 @@
       "passive": {
         "steps": [
           {
-            "action": "buff_power",
-            "amount": 1000,
+            "action": "buff_power_per_count",
+            "amount_per": 1000,
+            "count_per": 1,
+            "source": "life_top_revealed_cost",
             "target": "self",
             "duration": "this_turn"
           },
           {
             "action": "gain_rush"
-          },
-          {
-            "action": "keyword_blocker"
           }
         ],
         "conditions": {
@@ -73128,9 +73127,9 @@
             "action": "play_from_deck",
             "count": 1,
             "filter_type": "",
-            "cost_lte": 99,
             "reveal_count": 1,
-            "rested": false
+            "rested": false,
+            "cost_eq": 2
           }
         ]
       },
@@ -73230,9 +73229,9 @@
             "action": "play_from_deck",
             "count": 1,
             "filter_type": "",
-            "cost_lte": 99,
             "reveal_count": 1,
-            "rested": true
+            "rested": true,
+            "cost_eq": 2
           }
         ]
       }
@@ -73347,9 +73346,9 @@
             "action": "play_from_deck",
             "count": 1,
             "filter_type": "",
-            "cost_lte": 99,
             "reveal_count": 1,
-            "rested": false
+            "rested": false,
+            "cost_eq": 2
           }
         ]
       }
@@ -73530,10 +73529,11 @@
         "steps": [
           {
             "action": "gain_life",
-            "source": "deck_top",
+            "source": "hand",
             "dest": "life_top",
             "count": 1,
-            "up_to": false,
+            "up_to": true,
+            "cost_eq": 5,
             "face": "down"
           }
         ],
@@ -74182,7 +74182,8 @@
           }
         ],
         "conditions": {
-          "hand_lte": 6
+          "hand_lte": 6,
+          "other_char_cost_gte": 8
         }
       },
       "passive": {
@@ -74605,7 +74606,7 @@
     "sub_types": "Whitebeard Pirates",
     "attribute": "Strike",
     "effects": {
-      "opp_turn": {
+      "on_ko": {
         "steps": [
           {
             "action": "buff_power",
@@ -74613,7 +74614,10 @@
             "target": "leader",
             "duration": "this_turn"
           }
-        ]
+        ],
+        "conditions": {
+          "opp_turn_only": true
+        }
       },
       "passive": {
         "steps": [

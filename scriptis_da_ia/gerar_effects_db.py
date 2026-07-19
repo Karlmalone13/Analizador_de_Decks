@@ -476,6 +476,19 @@ def parse_conditions(text):
         conds['don_on_field_gte'] = int(m_don_hand.group(1))
         conds['hand_lte'] = int(m_don_hand.group(2))
 
+    # "if you have N or less cards in your hand AND a Character with a
+    # cost of M or more" -- clausula COMPOSTA (hand_lte + other_char_
+    # cost_gte), achado 19/07, ST14-006, unica carta no banco com essa
+    # forma exata: a 2a metade (Character caro) sumia por completo, so
+    # hand_lte sobrevivia (o regex generico de hand_lte abaixo tambem
+    # bate nesta frase, mas nao captura o resto).
+    m_hand_and_char = re.search(
+        r'(?:if|and) you have (\d+) or less cards? in your hand and '
+        r'an? character with a cost of (\d+) or more', t)
+    if m_hand_and_char:
+        conds['hand_lte'] = int(m_hand_and_char.group(1))
+        conds['other_char_cost_gte'] = int(m_hand_and_char.group(2))
+
     m = re.search(r'(?:if|and) you have (\d+) or less cards? in your hand', t)
     if m: conds['hand_lte'] = int(m.group(1))
 
@@ -3384,6 +3397,13 @@ def parse_power_buff(text):
         # your deck... gains +1000 power ... for every 3 cards placed".
         (r'gains? \+(\d+)\s*power\s+.{0,20}for every (\d+) cards? placed at the bottom of your deck',
          'placed_bottom_deck_this_effect'),
+        # "reveal up to 1 card from the top of your Life cards. This
+        # Character gains +N power during this turn per M cost on the
+        # revealed card" -- escala pelo CUSTO da carta revelada (PEEK, a
+        # carta nao sai da Life), nao uma contagem de populacao (achado
+        # 19/07, OP15-119, unica carta no banco com essa forma exata).
+        (r'gains? \+(\d+)\s*power\s+during this turn per (\d+) cost on the revealed card',
+         'life_top_revealed_cost'),
     ]
     for pattern, source in dynamic_patterns:
         for dm in re.finditer(pattern, t):
@@ -4495,16 +4515,27 @@ def parse_reveal_top_play(text):
     # "with a cost of" era tolerado, nao "and a cost of"). Mesma
     # tolerancia ja usada em m_cond acima, faltava propagar aqui.
     cost_m = re.search(r'(?:with|and) a cost of (\d+) or less', t)
+    # "a cost of N" SEM "or less"/"or more" -- custo EXATO, nao "qualquer
+    # custo" (achado 19/07, OP06-057/ST12-010/ST12-013/ST12-017: cost_eq
+    # inteiro sumia, cost_lte caia no fallback 99 -- o mecanismo irmao
+    # play_card ja tolera essa mesma forma, so faltava propagar aqui).
+    cost_eq_m = None if cost_m else re.search(r'(?:with|and) a cost of (\d+)\b(?! or)', t)
     rested = bool(re.search(r'character card[^.]*\brested\b', t))
 
-    steps.append({
+    step_pfd = {
         'action': 'play_from_deck',
         'count': count,
         'filter_type': type_m.group(1).strip() if type_m else '',
-        'cost_lte': int(cost_m.group(1)) if cost_m else 99,
         'reveal_count': 1,
         'rested': rested,
-    })
+    }
+    if cost_m:
+        step_pfd['cost_lte'] = int(cost_m.group(1))
+    elif cost_eq_m:
+        step_pfd['cost_eq'] = int(cost_eq_m.group(1))
+    else:
+        step_pfd['cost_lte'] = 99
+    steps.append(step_pfd)
     return steps
 
 
@@ -5251,6 +5282,28 @@ def parse_life(text):
             step_ht['face'] = 'up'
         steps.append(step_ht)
 
+    # "reveal up to N Character card(s) with a cost of M from your hand
+    # and add it to the top/bottom of your Life cards [face-up/down]" --
+    # verbo real e "reveal", nao "add"/"put" (a regra geral abaixo so
+    # busca a partir de "add"/"put", perdendo "from your hand" que vem
+    # ANTES do "add" nesta frase -- source caia no fallback errado
+    # 'deck_top'). Achado 19/07, ST13-005, unica carta no banco com essa
+    # forma exata.
+    m_reveal_hand_life = re.search(
+        r'reveal up to (\d+) character cards? with a cost of (\d+) from your hand '
+        r'and add it to the (top|bottom|top or bottom) of your life cards'
+        r'( face-up| face-down)?', t)
+    if m_reveal_hand_life:
+        dest_rhl = ('life_top_or_bottom' if m_reveal_hand_life.group(3) == 'top or bottom'
+                    else 'life_bottom' if m_reveal_hand_life.group(3) == 'bottom' else 'life_top')
+        step_rhl = {'action': 'gain_life', 'source': 'hand', 'dest': dest_rhl,
+                    'count': int(m_reveal_hand_life.group(1)), 'up_to': True,
+                    'cost_eq': int(m_reveal_hand_life.group(2))}
+        face_rhl = m_reveal_hand_life.group(4)
+        if face_rhl:
+            step_rhl['face'] = 'up' if 'up' in face_rhl else 'down'
+        steps.append(step_rhl)
+
     m = re.search(r'(add|put)[^.:]*?to (?:the (?:top|bottom|top or bottom) of )?(?:your|the owner.?s) life(?: cards?)?', t)
     # "from your trash to ... life" (fonte PURA trash, ex: OP16-108
     # Shiryu, achado 15/07) e um caso valido de `source_from` ('from your
@@ -5260,7 +5313,7 @@ def parse_life(text):
     # ACIMA, iria duplicar o step se caisse aqui tambem).
     trash_ja_tratado = m and re.search(r'(?:hand or trash|trash or hand)', m.group(0))
     owner_life_character = m and "owner" in m.group(0) and "character" in m.group(0)
-    if m and not trash_ja_tratado and not owner_life_character:
+    if m and not trash_ja_tratado and not owner_life_character and not m_reveal_hand_life:
         seg = m.group(0)
         step = {
             'action': 'gain_life',
@@ -8225,6 +8278,17 @@ def parse_card_effect(card_text, card_type):
             result['on_ko'].setdefault('conditions', {})['opp_turn_only'] = True
             del result['opp_turn']
 
+    # Mesma familia acima, mas SEM a tag formal "[On K.O.]" -- o evento
+    # "when this character is K.O.'d by an effect" vem em PROSA dentro do
+    # bloco [Opponent's Turn] (achado 19/07, ST15-003, unica carta no
+    # banco com essa forma exata). Sem esta conversao, o efeito disparava
+    # incondicionalmente em QUALQUER turno do oponente, nunca checando se
+    # a carta de fato foi K.O.'d -- muito mais forte/errado que o real.
+    if ('opp_turn' in result
+            and re.search(r"\[opponent.{0,3}s? turn\]\s*when this character is k\.o\.'?d by an effect,", t_low)):
+        result['on_ko'] = result.pop('opp_turn')
+        result['on_ko'].setdefault('conditions', {})['opp_turn_only'] = True
+
     # Segmento solto ANTES da primeira tag formal (independente de result já
     # ter sido preenchido por outros blocos). Ex: "If your Leader has the
     # [X] type, this Character gains +3 cost. [When Attacking] ...efeito
@@ -8500,10 +8564,15 @@ def parse_card_effect(card_text, card_type):
         # correto ja parseado por outro mecanismo (8+ cartas confirmadas:
         # OP05-016, OP06-055, OP08-111, ST01-012, OP12-016, OP12-077,
         # ST01-016, ST21-003, OP13-057).
+        # "opponent activates an Event or [Blocker]" -- filler "an Event
+        # or " entre o verbo e a tag (achado 19/07, OP15-119, unica carta
+        # no banco com essa forma exata) nao era tolerado pelo guard
+        # abaixo (so aceitava a tag COLADA no verbo), entao a mencao
+        # reativa virava keyword_blocker NATIVO por engano.
         _tag_idx = t_low.find(tag)
         if _tag_idx >= 0 and re.search(
-                r"(?:your opponent (?:can(?:not|'?t)\s+)?activates?|opponent'?s)\s*$",
-                t_low[max(0, _tag_idx-30):_tag_idx]):
+                r"(?:your opponent (?:can(?:not|'?t)\s+)?activates?(?:\s+an?\s+\w+)?\s*(?:or\s*)?|opponent'?s)\s*$",
+                t_low[max(0, _tag_idx-45):_tag_idx]):
             continue
         # evita capturar "gains [X]" como keyword nativa passiva quando na
         # verdade e concedida CONDICIONALMENTE (tratada pelo fallback/segmento

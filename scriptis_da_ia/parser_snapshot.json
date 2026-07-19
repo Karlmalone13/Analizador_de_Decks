@@ -17059,7 +17059,7 @@
     },
     {
      "action": "play_from_deck",
-     "cost_lte": 99,
+     "cost_eq": 2,
      "count": 1,
      "filter_type": "",
      "rested": false,
@@ -39395,16 +39395,15 @@
    },
    "steps": [
     {
-     "action": "buff_power",
-     "amount": 1000,
+     "action": "buff_power_per_count",
+     "amount_per": 1000,
+     "count_per": 1,
      "duration": "this_turn",
+     "source": "life_top_revealed_cost",
      "target": "self"
     },
     {
      "action": "gain_rush"
-    },
-    {
-     "action": "keyword_blocker"
     }
    ]
   }
@@ -46287,7 +46286,7 @@
    "steps": [
     {
      "action": "play_from_deck",
-     "cost_lte": 99,
+     "cost_eq": 2,
      "count": 1,
      "filter_type": "",
      "rested": false,
@@ -46356,7 +46355,7 @@
    "steps": [
     {
      "action": "play_from_deck",
-     "cost_lte": 99,
+     "cost_eq": 2,
      "count": 1,
      "filter_type": "",
      "rested": true,
@@ -46429,7 +46428,7 @@
     },
     {
      "action": "play_from_deck",
-     "cost_lte": 99,
+     "cost_eq": 2,
      "count": 1,
      "filter_type": "",
      "rested": false,
@@ -46565,11 +46564,12 @@
    "steps": [
     {
      "action": "gain_life",
+     "cost_eq": 5,
      "count": 1,
      "dest": "life_top",
      "face": "down",
-     "source": "deck_top",
-     "up_to": false
+     "source": "hand",
+     "up_to": true
     }
    ]
   },
@@ -46985,7 +46985,8 @@
  "ST14-006": {
   "on_play": {
    "conditions": {
-    "hand_lte": 6
+    "hand_lte": 6,
+    "other_char_cost_gte": 8
    },
    "steps": [
     {
@@ -47260,7 +47261,10 @@
   }
  },
  "ST15-003": {
-  "opp_turn": {
+  "on_ko": {
+   "conditions": {
+    "opp_turn_only": true
+   },
    "steps": [
     {
      "action": "buff_power",

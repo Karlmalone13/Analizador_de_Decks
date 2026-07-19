@@ -6416,6 +6416,74 @@ def test_lote_16_itens_op09_051_a_op15_059() -> None:
           opp_amz059_sem_don.leader.power_buff == -2000)
 
 
+def test_ultimos_5_itens_op06_057_a_op15_119() -> None:
+    # OP06-057 + ST12-010/013/017: play_from_deck nunca extraia cost_eq
+    # quando o texto diz "a cost of N" SEM "or less"/"or more" -- sempre
+    # virava cost_lte=99 (aceitava qualquer custo). Mecanismo irmao
+    # play_card ja tinha esse suporte, so faltou propagar aqui.
+    for code, timing in (("OP06-057", "main"), ("ST12-010", "on_play"),
+                         ("ST12-013", "when_attacking"), ("ST12-017", "counter")):
+        steps_pfd = get_card_effects(code)[timing]["steps"]
+        pfd_step = next(s for s in steps_pfd if s["action"] == "play_from_deck")
+        check(f"{code} parseia cost_eq=2 no play_from_deck (nao cost_lte=99)",
+              pfd_step.get("cost_eq") == 2 and "cost_lte" not in pfd_step)
+    ivankov = real_card("ST12-010")
+    me_ivk = GameState(leader=mk("IVKLDR", "Lider", card_type="LEADER"))
+    custo2_ivk = mk("IVK1", "Custo 2", cost=2, card_type="CHARACTER")
+    custo5_ivk = mk("IVK2", "Custo 5", cost=5, card_type="CHARACTER")
+    me_ivk.deck = [custo5_ivk, custo2_ivk]
+    opp_ivk = GameState(leader=mk("IVKOPP", "Opp", card_type="LEADER"))
+    EffectExecutor(me_ivk, opp_ivk).execute(ivankov, "on_play")
+    check("Execucao real: ST12-010 joga SO o Character de custo EXATO 2 (nao o de custo 5)",
+          custo2_ivk in me_ivk.field_chars and custo5_ivk in me_ivk.deck)
+
+    # ST13-005: gain_life com FONTE errada (deck_top em vez de hand) +
+    # sem nenhum filtro -- o verbo real e "reveal", nao "add"/"put" (a
+    # regra geral so busca a partir de "add"/"put", perdendo o "from your
+    # hand" que vem ANTES do "add" nesta frase).
+    check("ST13-005 parseia gain_life com source=hand, cost_eq=5, face=down (nao deck_top)",
+          get_card_effects("ST13-005")["on_play"]["steps"][0]
+          == {"action": "gain_life", "source": "hand", "dest": "life_top",
+              "count": 1, "up_to": True, "cost_eq": 5, "face": "down"})
+
+    # ST14-006: condicao composta "6 ou menos na mao E Character
+    # custo>=8" -- so a 1a metade (hand_lte) sobrevivia antes, a condicao
+    # do Character caro sumia por completo.
+    check("ST14-006 parseia condicao composta hand_lte=6 E other_char_cost_gte=8",
+          get_card_effects("ST14-006")["on_play"]["conditions"]
+          == {"hand_lte": 6, "other_char_cost_gte": 8})
+
+    # ST15-003: "[Opponent's Turn] When this Character is K.O.'d by an
+    # effect, ..." -- prosa SEM a tag formal "[On K.O.]", o efeito
+    # disparava incondicionalmente em qualquer turno do oponente (nunca
+    # checava se a carta de fato foi K.O.'d). Convertido pra on_ko real
+    # com opp_turn_only, mesma familia da colisao [Opponent's Turn][On
+    # K.O.] ja tratada, mas aqui sem tag formal.
+    check("ST15-003 converte pra on_ko com opp_turn_only=True (nao dispara sempre no turno do oponente)",
+          get_card_effects("ST15-003")["on_ko"]["conditions"] == {"opp_turn_only": True})
+
+    # OP15-119: mecanica nova de escala DINAMICA por CUSTO da carta
+    # revelada da Life (PEEK, nao remove) -- novo source
+    # 'life_top_revealed_cost' em buff_power_per_count. Achado colateral:
+    # "opponent activates an Event or [Blocker]" (filler entre o verbo e
+    # a tag) nao era tolerado pelo guard de keyword nativa, "keyword_
+    # blocker" vazava por engano pra esta carta (que na verdade so REAGE
+    # ao oponente usar Blocker, nao TEM Blocker).
+    check("OP15-119 parseia buff_power_per_count(source=life_top_revealed_cost), sem keyword_blocker espurio",
+          get_card_effects("OP15-119")["passive"]["steps"]
+          == [{"action": "buff_power_per_count", "amount_per": 1000, "count_per": 1,
+               "source": "life_top_revealed_cost", "target": "self", "duration": "this_turn"},
+              {"action": "gain_rush"}])
+    luffy119 = real_card("OP15-119")
+    me_luffy119 = GameState(leader=mk("L119LDR", "Lider", card_type="LEADER"), don_available=6, don_rested=0)
+    me_luffy119.field_chars = [luffy119]
+    me_luffy119.life = [mk("L119LF", "Life Card", cost=3)]
+    opp_luffy119 = GameState(leader=mk("L119OPP", "Opp", card_type="LEADER"))
+    EffectExecutor(me_luffy119, opp_luffy119).execute(luffy119, "passive")
+    check("Execucao real: OP15-119 ganha +3000 power (custo 3 da carta revelada da Life x 1000), Life intacta",
+          luffy119.power_buff == 3000 and len(me_luffy119.life) == 1)
+
+
 def main() -> int:
     test_turn_order_imu_prefers_second()
     test_empty_throne_beats_direct_five_elders_play()
@@ -6556,6 +6624,7 @@ def main() -> int:
     test_lote_10_op14_054_a_st07_017()
     test_op05_099_opp_pode_evitar_e_op07_036_custo_condicional_proprio()
     test_lote_16_itens_op09_051_a_op15_059()
+    test_ultimos_5_itens_op06_057_a_op15_119()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0

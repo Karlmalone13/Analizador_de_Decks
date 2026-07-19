@@ -1,9 +1,21 @@
 # TODO — Analisador de Decks OPTCG
 
 **Última atualização:** 19 de julho de 2026
-**Estado:** varredura contínua do parser; 109 suspeitos (severidade 1 only)
+**Estado:** varredura contínua do parser; 103 suspeitos (severidade 1 only)
 **Baseline do código:** ver `git log --oneline -1`
 **Repo:** github.com/Karlmalone13/Analizador_de_Decks
+
+> 19/07/2026: cauda final da varredura desta sessão (OP06-057 a
+> OP15-119), 8 cartas via 5 fixes. Destaques: `play_from_deck` ganhou
+> `cost_eq` (mesmo suporte que `play_card` já tinha); mecânica nova
+> `life_top_revealed_cost` (escala power pelo custo da carta revelada
+> da Life via peek); conversão "[Opponent's Turn] When this Character
+> is K.O.'d..." em PROSA pra `on_ko` real (generalização da lógica já
+> usada pra colisão de tags formais). **Fecha a sessão**: janelas 1-109
+> do audit revisadas em 4 lotes — 139 -> 103 suspeitos ao longo do dia.
+> Ver HANDOFF blocos 278-281 e
+> `parser_audits/2026-07-19_ultimos_5_op06-057_a_op15-119.json`.
+> Auditor: 109 -> 103 suspeitos.
 
 > 19/07/2026: lote de 16 itens (OP09-051 a OP15-059), ~38 cartas via
 > generalização (janela 51-100, taxa de acerto alta). Destaques: bug

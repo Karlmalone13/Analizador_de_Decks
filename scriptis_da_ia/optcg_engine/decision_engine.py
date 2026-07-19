@@ -5776,6 +5776,13 @@ class EffectExecutor:
                 n = getattr(self, '_last_cost_trash_any_count', 0)
             elif source == 'bounced_own_this_effect':
                 n = getattr(self, '_last_cost_bounce_any_count', 0)
+            elif source == 'life_top_revealed_cost':
+                # "reveal up to 1 card from the top of your Life cards.
+                # This Character gains +N power per M cost on the
+                # revealed card" -- PEEK (nao remove/nao move), so olha o
+                # custo da carta (achado 19/07, OP15-119). Zero se a Life
+                # estiver vazia.
+                n = me.life[-1].cost if me.life else 0
             else:
                 n = 0
 
