@@ -1,5 +1,92 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-19 (285) - Claude - eficiência do bot: mapeamento do Turn Planner + fix real de LETHAL/DON validado
+
+Depois de fechar a varredura do parser e o proxy/telemetria (bloco 284),
+usuário pediu pra investigar como o motor toma decisão e melhorar
+eficiência — mas com o recorte certo primeiro: "melhorar como o bot decide"
+é mexer no `decision_engine.py` (o cérebro), não no `bot_optcgsim.py`
+(olhos/mãos), regra já registrada em `feedback_dois_motores.md`.
+
+**1. Documento de auditoria criado**: `scriptis_da_ia/GUIA_AUDITORIA_
+DECISOES.md` — mapeia score imediato vs. valor simulado, as duas noções de
+"modo do turno" (`analysis_priority()` vs `posture()`, fácil confundir),
+`can_lethal_this_turn()` (determinístico) vs `opp_lethal_threat()`
+(heurística probabilística), o loop completo do Turn Planner
+(`main_phase`), `_simulate_sequence_once` (Monte Carlo + busca de resposta
+do oponente), a tabela real de pesos de `_evaluate_state_v2` (achado:
+`wincon_ready` nunca foi tunado, único peso sem entrada em
+`eval_weights.json`), e o glossário exato dos campos do log de auditoria
+(`score`/`sim`/`win=W/S`). Serve de referência pra qualquer sessão futura
+auditar decisão sem rederivar tudo.
+
+**2. Achado real, confirmado por instrumentação (não só leitura de
+código)**: rodando `audit_decision_quality.py --n 8 --seed 7`, 4 de 5
+"overrides grandes" com `priority=LETHAL` mostravam TODAS as linhas
+simuladas com `win=0/3` — ou seja, o motor certificava lethal garantido mas
+nenhuma simulação fechava o jogo. Um caso de controle na mesma amostra (T13
+PB) provou que a detecção de vitória funciona quando deveria (ataque óbvio
+perde a simulação, alternativa fecha 3/3) — o problema não é a maquinaria,
+é específico de certos estados.
+
+**Causa raiz identificada e CONFIRMADA por instrumentação dedicada**:
+`can_lethal_this_turn()` certifica lethal alocando livremente TODO o DON
+disponível entre os ataques (busca sem restrição). Mas a execução real
+(`_don_livre_for_plan`) reservava DON pro "resto do plano do turno" mesmo
+quando o lethal certificado já tornava esse resto irrelevante. Novo script
+`scriptis_da_ia/diag_lethal_don_alloc.py` (monkeypatcha
+`GameAnalyzer.analysis_priority` com trava de reentrância — sem ela, a
+instrumentação reentra nela mesma via `_don_livre_for_plan` chamando
+`_generate_and_score_actions` de novo, travou o processo por quase 1h antes
+de eu perceber e matar) mediu em 3 partidas reais: **82,4% (1165/1413) dos
+momentos com lethal certificado tinham a alocação real de DON MENOR que a
+certificada.**
+
+**Fix aplicado**, atrás de `FIX_LETHAL_DON_ALLOCATION` (default `True`,
+mesmo padrão de `USE_EVAL_V2`): `_don_livre_for_plan` agora devolve
+`p.don_available` inteiro quando `can_lethal_this_turn()` é `True` — sem
+reservar nada pro plano. Mudança aditiva em `can_lethal_this_turn()`
+(refatorada pra `_lethal_search()` + novo `can_lethal_this_turn_alloc()`
+que expõe a alocação, antes descartada) sem alterar o `bool` retornado.
+
+**Validação**: `smoke_fast.py`/`smoke_test.py` 100% verde (precisou
+corrigir 1 teste existente, `test_don_reservado_para_ativar_wincon_em_
+campo`, cujo `opp` tinha `life=[]` por omissão — certificava lethal
+trivial e mascarava o que o teste realmente validava; corrigido com vida
+realista). Reexecutando o diagnóstico: gap caiu de 82,4% pra 39,4%
+(resíduo provavelmente é ruído do script — a alocação "certificada" não é
+a mínima, só uma que funciona).
+
+**Medição pareada** (`scriptis_da_ia/measure_lethal_don_fix.py`, mesmo
+padrão de `tune_weights.py`: self-play determinístico, `PYTHONHASHSEED=0`,
+mesma seed nos 2 lados, MC=4, N=20/matchup): Krieg 0,55→0,60 (+0,05), Kid
+0,50→0,75 (**+0,25**), Teach 0,95→0,90 (−0,05). Maximin=−0,05 — reprova
+pela regra estrita do `tune_weights.py`, MAS: Teach já estava perto do teto
+(pouco espaço pra subir, −0,05 é 1 partida em 20), Kid +0,25 é sinal forte
+(5 partidas), e **turnos médios até fechar caíram nos 3 matchups sem
+exceção** (efeito mecânico esperado do fix). **Decisão do usuário: aceitar
+o fix como está** (seguro, reversível via flag, passa todos os smokes) e
+deixar a confirmação mais fina vir organicamente dos logs ao vivo conforme
+acumularem — não rodar N=50 isolado no Teach agora.
+
+**Cruzamento com os 79 logs reais — BLOQUEADO estruturalmente, não por
+falta de busca**: dos 42 logs gravados pelo bot (identificáveis por
+p1.name=="You"/p2.name=="Opponent", diferente de logs humano-vs-humano com
+handles reais), só 5 chegam a registrar o oponente em vida ≤2 — e os 5
+terminam EXATAMENTE naquele turno, sem nenhum turno extra gravado depois.
+Confirma o que o bloco 267 já documentou (AutoSaved corta as linhas finais
+antes de GameOver) — não dá pra validar o padrão de "motor preso tentando
+fechar" nesses 79 logs porque a captura corta antes do desfecho, em TODOS
+os 5 casos próximos do fim, sem exceção. Só uma partida ao vivo nova
+(usando `CombatLogs` manual, não AutoSaved, ou confiando no fix de
+`winner`/telemetria do bloco 284) vai dar visibilidade real do final.
+
+Arquivos novos: `scriptis_da_ia/GUIA_AUDITORIA_DECISOES.md`,
+`scriptis_da_ia/diag_lethal_don_alloc.py`,
+`scriptis_da_ia/measure_lethal_don_fix.py`. Arquivos tocados:
+`scriptis_da_ia/optcg_engine/decision_engine.py` (refactor aditivo +
+fix), `scriptis_da_ia/smoke_fast.py` (1 teste corrigido).
+
 ## 2026-07-19 (284) - Claude - retomada do proxy/telemetria: as 3 pendências do bloco 267/268 endereçadas
 
 Varredura do parser fechou em 100 suspeitos (bloco 283) — usuário autorizou

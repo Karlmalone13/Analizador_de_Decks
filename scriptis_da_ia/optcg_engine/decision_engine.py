@@ -65,6 +65,18 @@ PLANNER_MC_SAMPLES = 6
 # server-side (registro por partida ou lookup leader->arquivo .deck) antes de
 # vale a pena religar ao vivo.
 USE_OPPONENT_RESPONSE_SEARCH = True
+
+# ── fix DON de lethal (achado 19/07, diag_lethal_don_alloc.py) ────────────────
+# can_lethal_this_turn() certifica lethal alocando LIVREMENTE todo o DON entre
+# os ataques (busca sem restricao, ve _lethal_search). Mas a execucao real
+# (_don_livre_for_plan) reservava DON pro "resto do plano do turno" mesmo
+# quando o lethal certificado ja tornava esse resto irrelevante -- medido em
+# 3 partidas reais: 82% (1165/1413) dos momentos com lethal certificado
+# tinham a alocacao REAL de DON menor que a certificada em pelo menos 1
+# atacante. Knob global, mesmo padrao de USE_EVAL_V2/USE_OPPONENT_RESPONSE_
+# SEARCH -- liga por padrao, permite desligar pra comparar A/B rapido sem
+# reverter codigo enquanto a validacao de gauntlet nao fecha.
+FIX_LETHAL_DON_ALLOCATION = True
 try:
     from deck_profile import build_profile_from_codes as _build_profile_from_codes
 except Exception:
@@ -8106,6 +8118,24 @@ class GameAnalyzer:
     # ── Análise de lethality ─────────────────────────────────────────────────
 
     def can_lethal_this_turn(self) -> bool:
+        ok, _alloc, _refs = self._lethal_search()
+        return ok
+
+    def can_lethal_this_turn_alloc(self):
+        """
+        Como can_lethal_this_turn(), mas expoe a alocacao de DON que a busca
+        encontrou pra certificar o lethal (diagnostico, 19/07 -- comparar
+        contra o DON que a execucao real/simulada de fato anexa via
+        don_needed_for_attack). Retorna (ok, [(attacker_ref, don_extra), ...])
+        -- lista vazia/None se ok=False. attacker_ref e' 'leader' ou o Card do
+        field_chars, na MESMA ordem que _lethal_search monta `ataques`.
+        """
+        ok, alloc, refs = self._lethal_search()
+        if not ok:
+            return False, None
+        return True, list(zip(refs, alloc))
+
+    def _lethal_search(self):
         """
         Posso GARANTIR a vitória neste turno, mesmo no pior caso de defesa do
         oponente (ele escolhe livremente blocker/counter por ataque, na ordem
@@ -8142,19 +8172,22 @@ class GameAnalyzer:
         # Ataques disponiveis: (poder_base, eh_unblockable, hits). DON
         # disponivel ainda pode ser distribuido entre eles para garantir lethal.
         ataques = []
+        attacker_refs = []
         if not self.me.cannot_attack_leader_this_turn and not self.me.leader.rested and not is_attack_locked_self(self.me.leader, self.me, self.opp):
             ataques.append((attack_time_power(self.me.leader, self.opp),
                             self.me.leader.has_unblockable or self.me.leader.unblockable_this_turn,
                             1))
+            attacker_refs.append(self.me.leader)
         for c in self.me.field_chars:
             if character_can_attack_now(c, self.me, self.opp):
                 hits = 2 if c.is_double_attack() else 1
                 ataques.append((attack_time_power(c, self.opp),
                                 c.has_unblockable or c.unblockable_this_turn,
                                 hits))
+                attacker_refs.append(c)
 
         if not ataques:
-            return False  # sem atacantes disponiveis, nunca fecha o jogo
+            return False, None, None  # sem atacantes disponiveis, nunca fecha o jogo
         counters_base = sorted(self.opp_counter_chunks_for_lethal())
         n_blockers = len(self.opp.blockers_active())
         don_total = max(0, self.me.don_available)
@@ -8188,9 +8221,17 @@ class GameAnalyzer:
                     conecta.append((power, hits))
             return sum(h for _, h in conecta)
 
-        def search_alloc(idx: int, don_left: int, current: list):
+        # dons_found e' preenchido com a alocacao vencedora assim que
+        # search_alloc acha uma (mesma recursao/logica de sempre -- so anexa
+        # a captura da alocacao de DON por cima, sem mudar o resultado bool).
+        dons_found = []
+
+        def search_alloc(idx: int, don_left: int, current: list, dons: list):
             if idx == len(ataques):
-                return hits_after_best_defense(current) >= target_hits
+                if hits_after_best_defense(current) >= target_hits:
+                    dons_found[:] = dons
+                    return True
+                return False
 
             base_power, unblockable, hits = ataques[idx]
             # Tenta mais DON primeiro; se houver lethal garantido, acha cedo.
@@ -8199,11 +8240,13 @@ class GameAnalyzer:
                     idx + 1,
                     don_left - don,
                     current + [(base_power + don * 1000, unblockable, hits)],
+                    dons + [don],
                 ):
                     return True
             return False
 
-        return search_alloc(0, don_total, [])
+        ok = search_alloc(0, don_total, [], [])
+        return ok, (list(dons_found) if ok else None), attacker_refs
 
     # ── Análise de defesa ────────────────────────────────────────────────────
 
@@ -11563,7 +11606,20 @@ class OPTCGMatch:
         "desce carta barata, carta de peso fica parada" que o usuario
         reportou, so que a causa raiz era DON sendo desperdicado no
         ataque, nao um viés de avaliar_carta.
+
+        FIX 19/07 (FIX_LETHAL_DON_ALLOCATION, ver diag_lethal_don_alloc.py):
+        se o lethal esta GARANTIDO neste turno (can_lethal_this_turn no
+        pior caso), nao reserva NADA pro "resto do plano"/defesa -- fechar
+        o jogo agora domina qualquer jogada futura ou ataque do proximo
+        turno do oponente, que so existiria se eu NAO tivesse fechado.
+        Sem isto, 82% dos momentos de lethal certificado (medido em 3
+        partidas reais) tinham a alocacao real de DON MENOR que a
+        certificada, arriscando o ataque ser bloqueado/counterado por
+        falta da margem que a certificacao assumia disponivel.
         """
+        if FIX_LETHAL_DON_ALLOCATION and engine.analyzer.can_lethal_this_turn():
+            return p.don_available
+
         planejado = 0
         try:
             acts = self._generate_and_score_actions(p, opp, engine)

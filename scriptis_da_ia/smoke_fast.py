@@ -354,7 +354,14 @@ def test_don_reservado_para_ativar_wincon_em_campo() -> None:
     me.trash = ([real_card("OP13-083"), real_card("OP13-080"), real_card("OP13-091")]
                 + [real_card("OP13-080") for _ in range(8)])
     me.hand = [real_card("OP13-084")]
-    opp = GameState(leader=mk("OP10-099", "Kid", card_type="LEADER", color="Red"))
+    # life explicita (nao-zero): sem isto, opp.life_count()==0 por omissao
+    # faz can_lethal_this_turn() certificar "lethal" pra QUALQUER ataque
+    # trivial (regra: 0 vida + 1 hit conectando = derrota), disparando o
+    # fix de 19/07 (FIX_LETHAL_DON_ALLOCATION) e mascarando o proprio
+    # cenario que este teste quer validar (reserva de DON pro activate, nao
+    # lethal). Vida normal (4) mantem can_lethal_this_turn() False aqui.
+    opp = GameState(leader=mk("OP10-099", "Kid", card_type="LEADER", color="Red"),
+                    life=[mk(f"XLF{i}", "Life") for i in range(4)])
     match = OPTCGMatch((me.leader, []), (opp.leader, []))
     eng = DecisionEngine(me, opp)
     don_livre = match._don_livre_for_plan(me, opp, eng)

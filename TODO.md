@@ -5,6 +5,23 @@
 **Baseline do código:** ver `git log --oneline -1`
 **Repo:** github.com/Karlmalone13/Analizador_de_Decks
 
+> 19/07/2026: primeiro fix real de eficiência do motor (não do bot-executor):
+> `can_lethal_this_turn()` certificava lethal alocando DON livremente, mas
+> `_don_livre_for_plan` reservava DON pro "resto do plano" mesmo quando o
+> lethal certificado tornava isso irrelevante — confirmado por
+> instrumentação (`diag_lethal_don_alloc.py`) em 82,4% dos momentos LETHAL
+> reais. Fix atrás de `FIX_LETHAL_DON_ALLOCATION` (default True). Medição
+> pareada (`measure_lethal_don_fix.py`, N=20/matchup): Kid +0,25 winrate,
+> Krieg +0,05, Teach −0,05 (perto do teto, prováv. ruído) — turnos até
+> fechar caem nos 3 sem exceção. Maximin reprova pela regra estrita, mas
+> usuário decidiu aceitar o fix como está (seguro/reversível, smokes 100%)
+> e deixar a confirmação vir dos logs ao vivo. Cruzamento com os 79 logs
+> reais BLOQUEADO estruturalmente: AutoSaved corta as linhas finais antes
+> de GameOver em TODOS os 5 casos que chegaram perto do fim — só partida
+> nova com captura completa resolve. Ver HANDOFF bloco 285 e
+> `scriptis_da_ia/GUIA_AUDITORIA_DECISOES.md` (novo, referência viva do
+> Turn Planner pra auditorias futuras).
+
 > 19/07/2026: retomadas as 3 pendências do proxy/telemetria adiadas desde
 > 18/07 (bloco 268) agora que a varredura fechou. `semantic_transition_failed`
 > era 2 falsos-positivos (OP15-026 `activate` com custo de auto-trash) + 1
