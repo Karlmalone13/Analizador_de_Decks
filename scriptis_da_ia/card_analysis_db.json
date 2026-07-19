@@ -55438,6 +55438,11 @@
    {
     "action": "place_opp_character_bottom_deck",
     "trigger": "on_play"
+   },
+   {
+    "action": "place_own_character_bottom_deck",
+    "trigger": "on_play",
+    "target": "self"
    }
   ],
   "synergy_states": {},
@@ -57884,7 +57889,7 @@
    {
     "action": "buff_power",
     "trigger": "on_play",
-    "target": "self"
+    "target": "leader"
    },
    {
     "action": "draw",
@@ -65483,7 +65488,7 @@
    {
     "action": "buff_power",
     "trigger": "counter",
-    "target": "self"
+    "target": "select_filtered"
    }
   ],
   "synergy_states": {
@@ -68847,7 +68852,7 @@
    {
     "action": "buff_power",
     "trigger": "activate_main",
-    "target": "self"
+    "target": "select_filtered"
    }
   ],
   "synergy_states": {},
@@ -71648,6 +71653,11 @@
     "target": "self"
    },
    {
+    "action": "buff_cost",
+    "trigger": "passive",
+    "target": "self"
+   },
+   {
     "action": "keyword_blocker",
     "trigger": "passive"
    }
@@ -73035,6 +73045,12 @@
     "action": "ko",
     "trigger": "main",
     "cost_lte": 4,
+    "target": "opp_character"
+   },
+   {
+    "action": "ko",
+    "trigger": "main",
+    "cost_lte": 6,
     "target": "opp_character"
    }
   ],
@@ -76015,6 +76031,10 @@
   "effects": [
    {
     "action": "keyword_double_attack",
+    "trigger": "passive"
+   },
+   {
+    "action": "substitute_removal",
     "trigger": "passive"
    }
   ],
@@ -79215,6 +79235,11 @@
     "trigger": "on_play"
    },
    {
+    "action": "opp_play_card",
+    "trigger": "on_play",
+    "cost_lte": 4
+   },
+   {
     "action": "gain_rush",
     "trigger": "passive"
    }
@@ -81300,7 +81325,7 @@
    {
     "action": "buff_power",
     "trigger": "activate_main",
-    "target": "self"
+    "target": "select_filtered"
    }
   ],
   "synergy_states": {},

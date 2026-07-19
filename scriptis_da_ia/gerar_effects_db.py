@@ -587,8 +587,12 @@ def parse_conditions(text):
     # Queen), nao uma condicao do bloco INTEIRO -- parse_block ja injeta
     # essa condicao dentro do proprio step da opcao (_choice); duplicar
     # aqui no nivel do entry bloquearia TAMBEM a opcao de draw, que nao
-    # deveria exigir o Character caro.
-    if 'instead of drawing' not in t:
+    # deveria exigir o Character caro. Guard "you may select ... instead"
+    # (achado 19/07, OP12-096): mesma familia -- e um UPGRADE condicional
+    # do teto de custo de um K.O. baseline (ja tratado dentro do proprio
+    # step por parse_ko), nao uma condicao que trava o bloco inteiro; sem
+    # este guard, o K.O. baseline (SEM a condicao) nunca disparava.
+    if 'instead of drawing' not in t and 'you may select your opponent' not in t:
         m = re.search(r'if you have a character with a cost of (\d+) or more', t)
         if m: conds['other_char_cost_gte'] = int(m.group(1))
 
@@ -790,7 +794,10 @@ def parse_conditions(text):
     # oponente, existencia de 1). Usada por cannot_attack_self_unless (ex:
     # EB04-051 'cannot attack unless there is a Character with 12000 base
     # power or more').
-    m = re.search(r'there is a character with (\d+) base power or more', t)
+    # "base" opcional -- achado 19/07, OP14-018, unica carta no banco sem
+    # "base" nessa frase (mesma assimetria transversal ja documentada em
+    # varios outros pontos do parser).
+    m = re.search(r'there is a character with (\d+) (?:base )?power or more', t)
     if m: conds['board_has_power_gte'] = int(m.group(1))
 
     # "your opponent has N or more Characters with a base power of M or
@@ -1217,6 +1224,18 @@ def parse_costs(text):
                        'count': int(m_give_don_named.group(1)),
                        'target_name': m_give_don_named.group(2).strip()})
 
+    # Custo de dar N DON!! ATIVOS a QUALQUER Leader/Character PROPRIO (sem
+    # nome, distinto de give_don_to_named acima) -- "you may give N of
+    # your active DON!! cards to 1 of your Leader or Character cards and
+    # [outro custo]:". Achado 19/07, OP13-007, unica carta no banco com
+    # essa forma exata: o componente inteiro do custo sumia, so
+    # 'trash_self' (a segunda metade) sobrevivia.
+    m_give_don_own = re.search(
+        r'you may give (\d+) of your active don!{0,2}\s*cards? to \d+ of your '
+        r'leader or character cards? and', t)
+    if m_give_don_own:
+        costs.append({'type': 'give_don_own', 'count': int(m_give_don_own.group(1))})
+
     # rest N DON como custo. Cobre tanto "rest N of your DON" isolado quanto o
     # padrão COMPOSTO "rest this card and N of your DON!! cards" (ex: Empty
     # Throne OP13-099 -- rest_self + rest 3 DON), onde "rest" não vem colado ao
@@ -1267,6 +1286,19 @@ def parse_costs(text):
             m_bare = re.match(r'(?:\[[a-z0-9 :.\'!]+\]\s*)*\(\s*(\d+)\s*\)\s*:', t)
             if m_bare:
                 costs.append({'type': 'rest_don', 'count': int(m_bare.group(1))})
+
+    # "you may rest N of your cards:" -- atalho oficial de custo que
+    # refere-se a DON!! cards sem dizer "DON!!" explicitamente (mesma
+    # terminologia usada em cartas impressas reais). Achado 19/07,
+    # familia de 8 cartas (EB04-015, EB04-019, OP14-020, OP14-029,
+    # OP14-033, OP14-036, OP14-037, OP14-038): o custo inteiro sumia,
+    # habilidades disparavam de graca. Guard evita duplicar se algum dos
+    # ramos acima ja capturou um rest_don (nunca deveria coexistir, mas
+    # protege contra sobreposicao futura).
+    if not any(c.get('type') == 'rest_don' for c in costs):
+        m_rest_cards_generic = re.search(r'you may rest (\d+) of your cards?\s*:', t)
+        if m_rest_cards_generic:
+            costs.append({'type': 'rest_don', 'count': int(m_rest_cards_generic.group(1))})
 
     # Custo de trash do TOPO DO PRÓPRIO DECK (mill como custo, distinto de
     # trash_from_hand) -- "you may trash N cards from the top of your deck:
@@ -1462,8 +1494,11 @@ def parse_costs(text):
     # -- OR de 2 tipos (chaves, "type cards" direto, sem "with a type
     # including"). Achado 19/07, OP14-105, unica carta no banco com essa
     # forma exata.
+    # Delimitadores tolerados: chaves/colchetes (OP14-105) OU aspas
+    # (achado 19/07, OP13-024 "'Music' or 'FILM' type card" -- mesma
+    # gramatica, delimitador diferente).
     m_reveal_or = re.search(
-        r"you may reveal (\d+) [\{\[]([^\}\]]+)[\}\]] or [\{\[]([^\}\]]+)[\}\]] "
+        r"you may reveal (\d+) [\{\[\"]([^\}\]\"]+)[\}\]\"] or [\{\[\"]([^\}\]\"]+)[\}\]\"] "
         r"type cards? from your hand\s*:", t)
     if m_reveal_or:
         costs.append({'type': 'reveal_from_hand', 'count': int(m_reveal_or.group(1)),
@@ -1542,6 +1577,20 @@ def parse_costs(text):
             costs.append({'type': 'don_minus',
                           'count': int(m_ret_don_var.group(1)), 'optional': True})
 
+    # "you may return N DON!! card(s) from your field to your DON!! deck.
+    # If you do, [efeito]" -- MESMA simplificacao ja aceita pra "you may
+    # X. If you do, Y" (OP05-038/OP15-020: aplica incondicionalmente), mas
+    # aqui o gatilho e "If you do," em vez de ":" -- forma nao coberta
+    # pelos ramos acima (todos exigem ':'). Achado 19/07, OP14-070, unica
+    # carta no banco com essa forma exata.
+    if not any(c.get('type') == 'don_minus' for c in costs):
+        m_ret_don_if = re.search(
+            r'you may return (\d+) don!{0,2}\s*cards? from your field to your '
+            r'don!{0,2}\s*deck\.\s*if you do,', t)
+        if m_ret_don_if:
+            costs.append({'type': 'don_minus',
+                          'count': int(m_ret_don_if.group(1)), 'optional': True})
+
     # Custo de power no PROPRIO lider/character (ex: "you may give your active
     # leader -5000 power during this turn: [efeito]"). So conta como custo se
     # vier ANTES de um ':' (separador custo->efeito) e o alvo for proprio
@@ -1608,7 +1657,12 @@ def parse_look_at(text):
     # aparecem JUNTAS, "up to " seguido de "a total of ", nao uma OU
     # outra como o regex antigo assumia -- take_m nunca batia, count
     # caia no fallback 1 fixo).
-    take_m = re.search(r'(?:reveal|add|play) (?:up to )?(?:a total of )?(\d+)', t)
+    # Ordem-agnostico: "up to a total of N" (OP15-101) OU "a total of up
+    # to N" (achado 19/07, OP12-116, unica carta no banco com essa ordem
+    # invertida -- as mesmas 2 palavras, "up to"/"a total of", mas na
+    # ordem OPOSTA, quebrava o match antigo e caia no fallback 1 fixo).
+    take_m = re.search(
+        r'(?:reveal|add|play) (?:up to a total of|a total of up to|up to|a total of)?\s*(\d+)', t)
     take_count = int(take_m.group(1)) if take_m else 1
     verbo_pega = take_m.group(0).split()[0] if take_m else 'add'  # 'reveal' | 'add' | 'play'
 
@@ -1624,11 +1678,22 @@ def parse_look_at(text):
     # SO colchetes, nem os fm de filter_type unico) reconhecia essa
     # mistura, entao o filtro inteiro sumia (qualquer carta contava).
     mixed_or_m = re.search(
-        r'(?:reveal|add) (?:up to )?(?:a total of )?\d+ '
+        r'(?:reveal|add) (?:up to a total of|a total of up to|up to|a total of)?\s*\d+ '
         r'\[([^\]]+)\]\s+or\s+[\{"]([^\}"]+)[\}"]\s+type cards?', t)
     if mixed_or_m:
         filter_names_mixed = [mixed_or_m.group(1).strip()]
         filter_type = mixed_or_m.group(2).strip()
+
+    # Mesma mistura NOME/TIPO, mas ORDEM INVERTIDA (TIPO primeiro, depois
+    # NOME) -- achado 19/07, OP12-116, unica carta no banco: '"Shandian
+    # Warrior" type Character cards or [Mont Blanc Noland]'.
+    if not mixed_or_m:
+        mixed_or_m2 = re.search(
+            r'(?:reveal|add) (?:up to a total of|a total of up to|up to|a total of)?\s*\d+ '
+            r'[\{"]([^\}"]+)[\}"]\s+type character cards?\s+or\s+\[([^\]]+)\]', t)
+        if mixed_or_m2:
+            filter_type = mixed_or_m2.group(1).strip()
+            filter_names_mixed = [mixed_or_m2.group(2).strip()]
 
     fm = (None if mixed_or_m else
           re.search(r'reveal up to \d+ "([^"]+)" (?:type |or [^\n]+)?(?:character )?card', t))
@@ -1649,10 +1714,10 @@ def parse_look_at(text):
             filter_type = fm.group(1)
 
     # Busca por uma lista de nomes alternativos (Queen OP04-046).
-    names_clause = None if mixed_or_m else re.search(
+    names_clause = None if filter_names_mixed else re.search(
         r'(?:reveal|add) (?:up to |a total of )?\d+ '\
         r'((?:\[[^\]]+\](?:\s+or\s+)?){2,})\s*cards?', t)
-    filter_names = (filter_names_mixed if mixed_or_m else
+    filter_names = (filter_names_mixed if filter_names_mixed else
                     (re.findall(r'\[([^\]]+)\]', names_clause.group(1))
                      if names_clause else []))
 
@@ -2005,6 +2070,32 @@ def parse_ko(text):
             steps[-1]['alt_target'] = 'opp_stage'
             if alt_stage_m.group(1):
                 steps[-1]['alt_cost_lte'] = int(alt_stage_m.group(1))
+
+    # "If you have a Character with a cost of N or more, you may select
+    # your opponent's Character with a cost of M or less INSTEAD" --
+    # UPGRADE condicional do teto de custo do K.O. baseline (nao uma
+    # condicao que trava o K.O. inteiro -- bug estrutural: sem isto, o
+    # K.O. baseline nunca disparava sem a condicao). Mesma FAMILIA do
+    # upgrade ja tratado dentro do ramo m_choose acima (construcao
+    # INVERTIDA + condicao de TRASH), mas aqui a construcao e a NORMAL
+    # (verbo primeiro) e a condicao e OWN_CHAR_COST_GTE, nao trash.
+    # Vira 2 steps mutuamente exclusivos via condicoes complementares
+    # (negada/positiva), igual ao padrao ja estabelecido. Achado 19/07,
+    # OP12-096, unica carta no banco com essa forma exata.
+    m_instead_upgrade = re.search(
+        r"if you have a character with a cost of (\d+) or more,\s*"
+        r"you may select your opponent.?s character with a cost of (\d+)"
+        r"(?: or less)? instead", t)
+    if m_instead_upgrade:
+        base_step = next((s for s in steps if s.get('action') == 'ko' and 'cost_lte' in s), None)
+        if base_step is not None:
+            threshold = int(m_instead_upgrade.group(1))
+            upgraded_cost_lte = int(m_instead_upgrade.group(2))
+            base_step['conditions'] = {'no_char_cost_gte': threshold}
+            upgraded_step = dict(base_step)
+            upgraded_step['cost_lte'] = upgraded_cost_lte
+            upgraded_step['conditions'] = {'other_char_cost_gte': threshold}
+            steps.append(upgraded_step)
 
     if steps:
         return steps
@@ -3215,6 +3306,27 @@ def parse_power_buff(text):
             return 'all_allies'
         return 'self'
 
+    # "gains +N power and +M cost" -- combo ESTATICO (nao por-contagem),
+    # 2 buffs simultaneos com o MESMO alvo/condicao. Achado 19/07,
+    # OP12-063, unica carta no banco com essa forma exata: so o power
+    # era capturado, o "+M cost" sumia por completo (nenhum padrao
+    # existente cobria cost estatico encadeado a um power estatico via
+    # "and").
+    m_combo_static = re.search(
+        r'gains? \+(\d+)\s*power\s+and\s+\+(\d+)\s*cost\b', t)
+    if m_combo_static:
+        contexto_static = t[max(0, m_combo_static.start() - JANELA_ANTES):m_combo_static.start()]
+        target_static = target_from_context(contexto_static)
+        steps.append({
+            'action': 'buff_power', 'amount': int(m_combo_static.group(1)),
+            'target': target_static, 'duration': 'this_turn',
+        })
+        steps.append({
+            'action': 'buff_cost', 'amount': int(m_combo_static.group(2)),
+            'target': target_static,
+        })
+        dynamic_spans.append((m_combo_static.start(), m_combo_static.end()))
+
     # "gains +N power and -M cost for every K cards in your trash" -- 2
     # escalas DINAMICAS COMBINADAS, mesmo divisor (achado 16/07, EB04-048):
     # a clausula "and -M cost" fica ENTRE "power" e "for every", quebrando
@@ -3299,13 +3411,41 @@ def parse_power_buff(text):
     # filter_type para a action escolher o alvo certo em tempo de execucao,
     # e habilita memoria de alvo entre steps (SaveTargetName, ver
     # comparacao_simulador_vs_IA.md).
+    # "Up to 1 of your [Nome] Leader gains +N power" -- forma TAUTOLOGICA
+    # (so existe 1 Leader por jogador, entao "select up to 1" e so um
+    # jeito indireto de dizer "se seu Leader se chama [Nome]") -- alvo e
+    # SEMPRE o Leader, condicionado ao NOME, nunca 'self' (a propria
+    # carta que carrega o efeito NAO e o Leader). Achado 19/07, OP09-106,
+    # unica carta no banco com essa forma exata: virava self-buff sem
+    # sentido (Nico Olvia buffando a si mesma) em vez de buffar o Leader
+    # condicionalmente. Testado ANTES de m_select_buff (que exige
+    # "character(s)"/"cards" apos o tipo, nunca "leader" sozinho).
+    m_named_leader_buff = re.search(
+        r'up to \d+ of your \[([^\]]+)\] leader gains? \+(\d+)\s*power', t)
+    if m_named_leader_buff:
+        steps.append({
+            'action': 'buff_power', 'amount': int(m_named_leader_buff.group(2)),
+            'target': 'leader', 'duration': 'this_turn',
+            'conditions': {'leader_is': m_named_leader_buff.group(1).strip()},
+        })
+        dynamic_spans.append((m_named_leader_buff.start(), m_named_leader_buff.end()))
+
     TIPO_BRACKETS = r'(?:\{([^}]+)\}|\[([^\]]+)\]|"([^"]+)")'
+    TIPO_ITEM = r'(?:\{[^}]+\}|\[[^\]]+\]|"[^"]+")'
     m_select_buff = re.search(
         # "of your" tornado OPCIONAL (achado 17/07, ST01-017: unica carta
         # sem "of your", marca posse via "on your field" no FIM da frase
         # em vez do inicio) -- "select_filtered" ja assume posse propria
         # de qualquer forma (so escolhe entre me.field_chars+leader).
-        r"(?:select )?up to (\d+) (?:of your )?" + TIPO_BRACKETS +
+        # Grupo 2 aceita 1 OU MAIS tipos ligados por "or" (achado 19/07,
+        # OP11-117/OP14-046: "{Fish-Man} or {Merfolk} type..."/'"A", "B",
+        # or "C" type...' -- o 2o+ tipo do OR nunca era capturado, o
+        # filtro inteiro sumia e o alvo caia no fallback 'self').
+        # Separador entre itens tolera virgula OU "or" OU os dois juntos
+        # (achado 19/07, OP11-117: '"Neptunian", "Fish-Man", or "Merfolk"'
+        # -- so o ULTIMO par usa "or", os anteriores so tem virgula).
+        r"(?:select )?up to (\d+) (?:of your )?(" + TIPO_ITEM +
+        r"(?:\s*,?\s*(?:or\s+)?" + TIPO_ITEM + r")*)" +
         r"(?: type)? (?:leader or character cards?|character cards?|leader or character|characters|cards)"
         # "on your/the field" (achado 17/07, ST01-017, unica carta com esse
         # filler) -- tolerado como locucao opcional entre o alvo e o
@@ -3320,12 +3460,22 @@ def parse_power_buff(text):
     )
     if m_select_buff:
         count = int(m_select_buff.group(1))
-        filtro = next((g for g in m_select_buff.groups()[1:4] if g), '').strip()
-        exclude_sel = m_select_buff.group(5)
-        amount = int(m_select_buff.group(6))
+        tipos_raw = m_select_buff.group(2)
+        tipos_achados = re.findall(r'\{([^}]+)\}|\[([^\]]+)\]|"([^"]+)"', tipos_raw)
+        tipos_flat = [next(g for g in tup if g).strip() for tup in tipos_achados]
+        filtro = tipos_flat[0] if len(tipos_flat) == 1 else tipos_flat
+        exclude_sel = m_select_buff.group(3)
+        amount = int(m_select_buff.group(4))
+        # "during this battle" (Counter) vs "during this turn" (default) --
+        # achado 19/07, OP11-039: mesma clausula de select_filtered dentro
+        # de um bloco [Counter], duration hardcoded em 'this_turn' virava
+        # ERRADA (deveria ser 'battle_only', o buff so vale na batalha
+        # atual, nao pro resto do turno inteiro).
+        contexto_depois_sel = t[m_select_buff.end():m_select_buff.end() + 20]
+        duration_sel = 'battle_only' if 'battle' in contexto_depois_sel else 'this_turn'
         step = {
             'action': 'buff_power', 'amount': amount,
-            'target': 'select_filtered', 'duration': 'this_turn', 'count': count,
+            'target': 'select_filtered', 'duration': duration_sel, 'count': count,
         }
         if filtro:
             step['filter_type'] = filtro
@@ -3795,8 +3945,15 @@ def parse_give_don(text):
     # "(rested )?don!!" logo apos o numero, sem essa clausula intermediaria
     # -- a acao inteira ficava de fora (so o keyword_rush da mesma carta
     # sobrevivia).
+    # Janela pos-"don!! cards" tolera pontos DENTRO de colchetes (nomes tipo
+    # "[Monkey.D.Luffy]") sem parar o match antes da hora -- achado 19/07,
+    # mesma classe de bug ja corrigida em parse_play_generic (janela
+    # bracket-depth-aware): "[^.]{0,60}" simples cortava a clausula bem no
+    # meio do nome, escondendo "to 1 of your [Nome] cards" que vinha logo
+    # depois.
     m = re.search(
-        r'give up to (\d+)(?: of your(?: opponent.?s)?)? (rested )?don!! cards?[^.]{0,60}', t)
+        r'give up to (\d+)(?: of your(?: opponent.?s)?)? (rested )?don!! cards?'
+        r'(?:[^.\[]|\[[^\]]*\]){0,60}', t)
     if m:
         cnt = int(m.group(1))
         is_rested = bool(m.group(2))
@@ -3818,6 +3975,13 @@ def parse_give_don(text):
         }
         if is_rested:
             step['rested'] = True
+        # Filtro de NOME no destinatario -- "to 1 of your [Nome] cards"
+        # (achado 19/07, OP13-006/OP13-021/ST29-012/P-096, 4 cartas no
+        # banco): sem isso, o DON podia ir pra QUALQUER character proprio,
+        # nao so o nomeado.
+        m_name_recv = re.search(r'to \d+ of your \[([^\]]+)\] cards?', clause)
+        if m_name_recv and not to_opp:
+            step['target_name'] = m_name_recv.group(1).strip()
         steps.append(step)
 
     # Aceleração REAL: adicionar DON do seu deck de DON ao seu campo (ramp)
@@ -5460,6 +5624,20 @@ def _parse_substitute_cost(t):
     if m:
         return {'action': 'trash_to_deck_bottom', 'count': int(m.group(1))}, extra_steps
 
+    # "trash N card(s) with a type including 'X' from your hand instead"
+    # -- filtro de tipo via "with a type including", distinto da variante
+    # mais abaixo que exige o nome do tipo direto como palavra solta antes
+    # de "cards". Achado 19/07, OP13-046 Vista, unica carta no banco com
+    # essa forma exata. Testado ANTES da variante generica de "trash N
+    # cards from your hand instead" (sem filtro), que casaria primeiro e
+    # perderia o filtro de tipo.
+    m = re.search(
+        r"you may trash (\d+) cards? with a type including "
+        r"[\"']([a-z][a-z0-9 .'-]+?)[\"'] from your hand instead", t)
+    if m:
+        return {'action': 'trash_from_hand', 'count': int(m.group(1)),
+                'filter_type': m.group(2).strip()}, extra_steps
+
     # "trash N card(s) from your hand instead" -- SEM filtro de tipo (qualquer
     # carta da mao). Testado ANTES das variantes com filtro pra nao deixar a
     # palavra solta "card" ser capturada como se fosse nome de tipo.
@@ -6045,7 +6223,18 @@ def parse_immunity(text):
         return steps
     if (not is_grant_cost_ko and not is_grant_power_ko
             and re.search(r"cannot be k\.?o\.?'?d|can'?t be k\.?o", t)):
-        steps.append({'action': 'immunity', 'imm_type': 'ko', 'source': src})
+        step_imm = {'action': 'immunity', 'imm_type': 'ko', 'source': src}
+        # "cannot be K.O.'d by effects of your opponent's Characters with
+        # N base power or less" -- imunidade FILTRADA pela FORCA da fonte
+        # (so protege contra Characters fracos, nao contra qualquer
+        # efeito). Achado 19/07, OP14-003, unica carta no banco com essa
+        # forma exata -- a auto-imunidade generica acima nao tinha nenhum
+        # jeito de restringir pela fonte, virava blindagem total.
+        m_src_pw = re.search(
+            r"by effects of your opponent.?s characters? with (\d+) (?:base )?power or less", t)
+        if m_src_pw:
+            step_imm['source_power_lte'] = int(m_src_pw.group(1))
+        steps.append(step_imm)
     if re.search(r'cannot be removed from the field|can'+chr(39)+r't be removed from the field', t):
         steps.append({'action': 'immunity', 'imm_type': 'removal', 'source': src})
     # Aceita tambem a forma composta "cannot be K.O.'d OR rested by your
@@ -6127,17 +6316,26 @@ def parse_block(block_text, trigger_name):
     # 'unless_opp_pays' -- o engine (_execute_step) resolve a prevencao
     # ANTES de despachar qualquer action, generico o bastante pra
     # qualquer efeito que venha depois dessa clausula.
+    # Variante do custo de prevencao: devolver DON ATIVO em vez de trashar
+    # Life (achado 19/07, OP15-059, unica carta no banco com essa forma
+    # exata) -- MESMA gramatica de gating ("if they do not, [efeito]"),
+    # custo diferente.
     opp_may_prevent_m = re.search(
-        r"your opponent may trash (\d+) cards? from the top of (?:their|his|her) life cards\.\s*"
+        r"your opponent may (?:trash (\d+) cards? from the top of (?:their|his|her) life cards"
+        r"|return (\d+) of (?:their|his|her) active don!{0,2}\s*cards? to (?:their|his|her) "
+        r"don!{0,2}\s*deck)\.\s*"
         r"if they do not,\s*(.+)$",
         block_text.lower())
     if opp_may_prevent_m:
-        count_life = int(opp_may_prevent_m.group(1))
-        continuation = opp_may_prevent_m.group(2).strip()
+        if opp_may_prevent_m.group(1):
+            pay_type, count_pay = 'life_trash', int(opp_may_prevent_m.group(1))
+        else:
+            pay_type, count_pay = 'don_return', int(opp_may_prevent_m.group(2))
+        continuation = opp_may_prevent_m.group(3).strip()
         sub_steps = parse_block(continuation, trigger_name)
         for s in sub_steps:
             if isinstance(s, dict) and 'action' in s:
-                s['unless_opp_pays'] = {'type': 'life_trash', 'count': count_life}
+                s['unless_opp_pays'] = {'type': pay_type, 'count': count_pay}
         return sub_steps
 
     # "Choose a cost and reveal" e uma aposta: o efeito depois de "If the
@@ -6456,12 +6654,19 @@ def parse_block(block_text, trigger_name):
                 if power_m:
                     step_sw['power_lte'] = int(power_m.group(1))
             else:
-                # OP14-001: 2 chars do proprio lado
+                # OP14-001: 2 chars do proprio lado. group(2) (2o tipo do
+                # OR, "{Supernovas} or {Heart Pirates}") ja era capturado
+                # mas NUNCA lido -- so group(1) virava filter_type, o OR
+                # inteiro sumia (achado 19/07, unica carta no banco com
+                # 2 tipos aqui).
                 type_m_sw = re.search(r'\{([^}]+)\}(?: or \{([^}]+)\})? type characters?', pre)
                 step_sw = {'action': 'swap_base_power', 'target': 'own_two_chars',
                            'duration': 'this_turn'}
                 if type_m_sw:
-                    step_sw['filter_type'] = type_m_sw.group(1).strip()
+                    if type_m_sw.group(2):
+                        step_sw['filter_type'] = [type_m_sw.group(1).strip(), type_m_sw.group(2).strip()]
+                    else:
+                        step_sw['filter_type'] = type_m_sw.group(1).strip()
             steps.append(step_sw)
 
     # "if the chosen Character has a cost equal to the number of DON!! cards
@@ -7537,6 +7742,42 @@ def parse_block(block_text, trigger_name):
             if match is not None:
                 match['requires_own_cost'] = cost_field
 
+    # "Then, if you do not have N Characters with a cost of M or more,
+    # place this Character at the bottom of the owner's deck" -- auto
+    # bounce CONDICIONAL a um estado de tabuleiro negado (achado 19/07,
+    # OP09-051, unica carta no banco com essa forma exata: a clausula
+    # inteira sumia, so a 1a parte do bloco -- place_opp_character_
+    # bottom_deck -- sobrevivia). Nova condicao 'no_own_chars_cost_gte_
+    # count' (conta SO os proprios field_chars, distinta de board_chars_
+    # cost_gte_count que soma os 2 lados). Post-processing (nao early
+    # return) pra nao perder a 1a clausula ja parseada acima.
+    m_self_bounce_neg = re.search(
+        r"if you do not have (\d+) characters? with a cost of (\d+) or more,\s*"
+        r"place this character at the bottom of the owner.?s deck", t)
+    if m_self_bounce_neg:
+        steps.append({
+            'action': 'place_own_character_bottom_deck', 'target': 'self',
+            'conditions': {'no_own_chars_cost_gte_count': {
+                'count_gte': int(m_self_bounce_neg.group(1)),
+                'cost_gte': int(m_self_bounce_neg.group(2))}},
+        })
+
+    # "If you do, your opponent plays up to N Character card(s) with a
+    # cost of M or less from their hand" -- FORCA o oponente a jogar da
+    # PROPRIA mao dele (mecanica nova, acao 'opp_play_card' -- distinta de
+    # play_card, que sempre joga da mao/trash de QUEM executa o efeito).
+    # Mesma simplificacao ja aceita pra "you may X. If you do, Y" (OP05-
+    # 038/OP15-020: aplica incondicionalmente, ignora a escolha do "you
+    # may" anterior -- aqui o "you may" e do bounce que ja e tratado
+    # incondicional). Achado 19/07, OP13-119, unica carta no banco com
+    # essa forma exata.
+    m_opp_play = re.search(
+        r"your opponent plays up to (\d+) character cards? with a cost of (\d+) "
+        r"or less from (?:their|his|her) hand", t)
+    if m_opp_play:
+        steps.append({'action': 'opp_play_card', 'count': int(m_opp_play.group(1)),
+                      'cost_lte': int(m_opp_play.group(2))})
+
     # Memoria de alvo entre steps (SaveTargetName, 28/06/2026): a ordem de
     # despacho dos sub-parsers acima NAO segue a ordem do texto original
     # (ex: select_unblockable_turn e chamado antes de power_buff), o que
@@ -8402,7 +8643,19 @@ def parse_card_effect(card_text, card_type):
         result['on_don_given'] = result.pop('your_turn')
 
     full_text_low = str(card_text).lower()
-    if ('would leave the field' in full_text_low
+    # "would be removed from the field" tolerado ao lado de "would leave
+    # the field" -- achado 19/07, OP13-046 Vista: keyword-reminder sem o
+    # parenteses explicativo padrao ("[Double Attack]\n[Once Per Turn] If
+    # this Character would be K.O.'d or would be removed from the field
+    # by your opponent's effect...") fazia a clausula de substituicao
+    # inteira ficar orfa (nenhum trigger formal antes dela, e o
+    # keyword_reminder tambem exige parenteses que essa carta nao tem) --
+    # esta rede de seguranca ja existia mas so testava "leave", nunca
+    # "removed from", a MESMA frase que parse_substitute_removal ja aceita
+    # internamente. Guard existente (nao ja capturado em nenhum steps)
+    # protege contra duplicar as ~30 outras cartas que ja tem essa frase
+    # mas ja sao corretamente parseadas por um trigger formal.
+    if (('would leave the field' in full_text_low or 'would be removed from the field' in full_text_low)
             and not any(s.get('action') == 'substitute_removal'
                         for entry in result.values()
                         for s in entry.get('steps', []))):

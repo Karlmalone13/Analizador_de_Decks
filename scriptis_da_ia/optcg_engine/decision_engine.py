@@ -1094,6 +1094,16 @@ def is_immune(card: 'Card', imm_type: str, owner: 'GameState', opp: 'GameState',
             # source
             if step.get('source') == 'opp' and not source_is_opp:
                 continue
+            # "cannot be K.O.'d by effects of your opponent's Characters
+            # with N (base) power or less" -- imunidade filtrada pela
+            # FORCA da fonte (achado 19/07, OP14-003): so protege quando a
+            # fonte e um Character conhecido com power <= limiar; fonte
+            # desconhecida (None) ou mais forte que o limiar NAO conta
+            # como imune.
+            src_power_lte = step.get('source_power_lte')
+            if src_power_lte is not None:
+                if source_card is None or source_card.power > src_power_lte:
+                    continue
             # condição de turno: [Opponent's Turn] só no turno do oponente
             if timing == 'opp_turn' and owner is _current_turn_owner(owner, opp):
                 continue
@@ -3191,6 +3201,24 @@ class EffectExecutor:
             threshold = conds['no_char_power_gte']
             if any(c.power >= threshold for c in me.field_chars):
                 return False
+        if 'no_char_cost_gte' in conds:
+            # "if you have NO Characters with a cost of N or more" --
+            # mesma familia negada de no_char_power_gte, mas por CUSTO sem
+            # filtro de tipo (achado 19/07, OP12-096: gate NEGADO do teto
+            # baseline de um K.O., complementar ao other_char_cost_gte que
+            # gate o teto UPGRADED).
+            threshold_cc = conds['no_char_cost_gte']
+            if any(c.cost >= threshold_cc for c in me.field_chars):
+                return False
+        if 'no_own_chars_cost_gte_count' in conds:
+            # "if you do NOT have N Characters with a cost of M or more"
+            # -- CONTAGEM (nao existencia) negada, SO dos proprios
+            # field_chars (distinto de board_chars_cost_gte_count, que
+            # soma os 2 lados). Achado 19/07, OP09-051.
+            rule_cc = conds['no_own_chars_cost_gte_count']
+            n_cc = sum(1 for c in me.field_chars if c.cost >= rule_cc['cost_gte'])
+            if n_cc >= rule_cc['count_gte']:
+                return False
         if 'no_char_type_cost_gte' in conds:
             # "if you have no Characters with a type including 'X' and a
             # cost of N or more" -- mesma familia negada, filtro de
@@ -3798,6 +3826,20 @@ class EffectExecutor:
                 self.me.don_available -= count
                 alvo.don_attached += count
                 self._cost_logs.append(f'custo: deu {count} DON ativo a {alvo.name[:15]}')
+            elif ctype == 'give_don_own':
+                # "you may give N of your active DON!! cards to 1 of your
+                # Leader or Character cards and [outro custo]:" -- mesmo
+                # custo de give_don_to_named, mas SEM filtro de nome (o
+                # alvo e qualquer Leader/Character proprio, escolhe o de
+                # maior board_value). Achado 19/07, OP13-007.
+                count = cost.get('count', 1)
+                candidatos_own = list(self.me.field_chars) + [self.me.leader]
+                if not candidatos_own or self.me.don_available < count:
+                    return False
+                alvo_own = max(candidatos_own, key=lambda c: c.board_value())
+                self.me.don_available -= count
+                alvo_own.don_attached += count
+                self._cost_logs.append(f'custo: deu {count} DON ativo a {alvo_own.name[:15]}')
             elif ctype == 'ko_own_character':
                 from optcg_engine.rules_facade import eligible_cards
 
@@ -4095,6 +4137,16 @@ class EffectExecutor:
                     life_card.life_face_up = False
                     opp.trash.append(life_card)
                 return f'oponente trashou {count_life} carta(s) da Life pra evitar o efeito'
+        # Variante do custo de prevencao: devolver DON ATIVO (achado
+        # 19/07, OP15-059) em vez de trashar Life -- mesmo gate generico,
+        # custo diferente. Usa don_available especificamente (a carta
+        # exige DON ATIVO, nao qualquer DON do banco).
+        if unless_pays and unless_pays.get('type') == 'don_return':
+            count_don = unless_pays.get('count', 1)
+            if opp.don_available >= count_don:
+                opp.don_available -= count_don
+                opp.don_deck += count_don
+                return f'oponente devolveu {count_don} DON ativo pra evitar o efeito'
 
         # "you may rest N of your Characters with a cost of M or
         # (more|less). If you do, [efeito]" -- custo OPCIONAL do proprio
@@ -4743,6 +4795,13 @@ class EffectExecutor:
                         other,
                         source_is_opp=source_is_opp,
                         ko_context='effect' if imm_kind == 'ko' else None,
+                        # `card` = a carta cuja habilidade esta causando
+                        # este KO/remocao -- necessario pra imunidade
+                        # filtrada por power da FONTE (source_power_lte,
+                        # achado 19/07, OP14-003). So passa quando `card`
+                        # e de fato um Character (a clausula real so fala
+                        # em "Characters" como fonte, nunca Event/Leader).
+                        source_card=card if card.card_type == 'CHARACTER' else None,
                     ):
                         immune_skipped.append(target.name[:12])
                         remove_by_identity(candidates, target)
@@ -5847,6 +5906,13 @@ class EffectExecutor:
             rested = step.get('rested', False)
             # Dá DON ao personagem mais forte ativo
             targets = [c for c in me.field_chars if not c.rested] + [me.leader]
+            # Filtro de NOME -- "give up to N DON!! cards to 1 of your
+            # [Nome] cards" (achado 19/07, OP13-006/OP13-021/ST29-012/
+            # P-096, 4 cartas): sem isso, o DON podia ir pra QUALQUER
+            # character proprio, nao so o nomeado.
+            target_name = step.get('target_name', '').lower()
+            if target_name:
+                targets = [c for c in targets if target_name in c.name.lower()]
             transferido = 0
             if targets:
                 best = max(targets, key=lambda c: c.effective_power(True))
@@ -6492,7 +6558,38 @@ class EffectExecutor:
         # Processar do MAIS FORTE pro MAIS FRACO deixa o mais forte com
         # indice maior (comprado mais cedo se o deck chegar la) e o mais
         # fraco no fundo de verdade (indice 0, comprado por ultimo).
+        # "your opponent plays up to N Character card(s) with a cost of M
+        # or less from their hand" -- FORCA o oponente a jogar da PROPRIA
+        # mao dele (achado 19/07, OP13-119). Sempre GRATIS (regra do
+        # projeto: play_card vindo de efeito nunca cobra DON); escolhe o
+        # de maior board_value (jogar um corpo em campo e geralmente bom
+        # pro dono, mesmo forcado). Troca o mais fraco se o campo ja tiver
+        # 5, mesma regra generica de _put_into_play.
+        if action == 'opp_play_card':
+            count_op = step.get('count', 1)
+            cost_lte_op = step.get('cost_lte', 99)
+            candidatos_op = [c for c in opp.hand
+                             if c.card_type == 'CHARACTER' and c.cost <= cost_lte_op]
+            jogados_op = []
+            for _ in range(min(count_op, len(candidatos_op))):
+                escolhido_op = max(candidatos_op, key=lambda c: c.board_value())
+                remove_by_identity(opp.hand, escolhido_op)
+                remove_by_identity(candidatos_op, escolhido_op)
+                if len(opp.field_chars) >= 5:
+                    pior_op = min(opp.field_chars, key=lambda c: c.board_value())
+                    remove_character_from_field(opp, pior_op, 'trash')
+                escolhido_op.rested = False
+                opp.field_chars.append(escolhido_op)
+                jogados_op.append(escolhido_op.name[:15])
+            return f'oponente jogou (forcado): {", ".join(jogados_op)}' if jogados_op else ''
+
         if action == 'place_own_character_bottom_deck':
+            # target='self': SEMPRE a propria carta do efeito (nao uma
+            # selecao entre candidatos) -- "place THIS Character at the
+            # bottom of the owner's deck" (achado 19/07, OP09-051).
+            if step.get('target') == 'self':
+                remove_character_from_field(me, card, 'deck_bottom')
+                return f'fundo do proprio deck: {card.name[:14]}'
             count = step.get('count', 1)
             candidatos = [c for c in me.field_chars
                           if not (step.get('exclude_self') and c is card)]

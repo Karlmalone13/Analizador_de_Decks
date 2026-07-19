@@ -1,9 +1,25 @@
 # TODO — Analisador de Decks OPTCG
 
 **Última atualização:** 19 de julho de 2026
-**Estado:** varredura contínua do parser; 127 suspeitos (severidade 1 only)
+**Estado:** varredura contínua do parser; 109 suspeitos (severidade 1 only)
 **Baseline do código:** ver `git log --oneline -1`
 **Repo:** github.com/Karlmalone13/Analizador_de_Decks
+
+> 19/07/2026: lote de 16 itens (OP09-051 a OP15-059), ~38 cartas via
+> generalização (janela 51-100, taxa de acerto alta). Destaques: bug
+> ESTRUTURAL real (OP12-096 — condição travava o K.O. inteiro em vez de
+> só fazer upgrade do teto de custo); mecânica nova `opp_play_card`
+> (força o OPONENTE a jogar da própria mão, nunca visto antes);
+> generalização de `m_select_buff` pra N tipos em OR expôs e corrigiu
+> uma 2ª bug no mesmo mecanismo (duration errada dentro de Counter, 9
+> cartas extras); `unless_opp_pays` estendido pra aceitar custo de
+> devolver DON (não só trashar Life). **Tentativa de fix ampla pra
+> OP13-046 causou duplicação em ~25 cartas não relacionadas, detectada
+> via diff_parser.py e REVERTIDA antes de aceitar o lote** — lição
+> registrada: preferir ampliar rede de segurança específica a alargar
+> regex sem contexto posicional. Ver HANDOFF bloco 280 e
+> `parser_audits/2026-07-19_lote_16_op09-051_a_op15-059.json`.
+> Auditor: 127 -> 109 suspeitos.
 
 > 19/07/2026: OP05-099 + OP07-036, 2 mecânicas novas de gating
 > condicional (janela de 50, taxa de acerto baixa — maioria já

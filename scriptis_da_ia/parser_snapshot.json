@@ -2988,7 +2988,7 @@
      "action": "buff_power",
      "amount": 3000,
      "count": 1,
-     "duration": "this_turn",
+     "duration": "battle_only",
      "filter_type": "boa hancock",
      "target": "select_filtered"
     }
@@ -4128,6 +4128,12 @@
  },
  "EB04-015": {
   "on_ko": {
+   "costs": [
+    {
+     "count": 1,
+     "type": "rest_don"
+    }
+   ],
    "steps": [
     {
      "action": "play_card",
@@ -4224,20 +4230,26 @@
      "action": "buff_power",
      "amount": 3000,
      "count": 1,
-     "duration": "this_turn",
+     "duration": "battle_only",
      "filter_type": "minks",
      "target": "select_filtered"
     }
    ]
   },
   "main": {
-   "conditions": {
-    "leader_type": "minks"
-   },
+   "costs": [
+    {
+     "count": 1,
+     "type": "rest_don"
+    }
+   ],
    "steps": [
     {
      "action": "debuff_cost",
      "amount": 3,
+     "conditions": {
+      "leader_type": "minks"
+     },
      "count": 1,
      "target": "opp_character"
     }
@@ -4257,7 +4269,7 @@
      "action": "buff_power",
      "amount": 3000,
      "count": 1,
-     "duration": "this_turn",
+     "duration": "battle_only",
      "filter_type": "fish-man",
      "target": "select_filtered"
     }
@@ -4477,7 +4489,7 @@
      "action": "buff_power",
      "amount": 4000,
      "count": 1,
-     "duration": "this_turn",
+     "duration": "battle_only",
      "filter_type": "sanji",
      "target": "select_filtered"
     }
@@ -23881,6 +23893,16 @@
     {
      "action": "place_opp_character_bottom_deck",
      "count": 1
+    },
+    {
+     "action": "place_own_character_bottom_deck",
+     "conditions": {
+      "no_own_chars_cost_gte_count": {
+       "cost_gte": 5,
+       "count_gte": 5
+      }
+     },
+     "target": "self"
     }
    ]
   }
@@ -24985,8 +25007,11 @@
     {
      "action": "buff_power",
      "amount": 3000,
+     "conditions": {
+      "leader_is": "nico robin"
+     },
      "duration": "this_turn",
-     "target": "self"
+     "target": "leader"
     }
    ]
   },
@@ -28213,8 +28238,13 @@
     {
      "action": "buff_power",
      "amount": 3000,
+     "count": 1,
      "duration": "battle_only",
-     "target": "self"
+     "filter_type": [
+      "fish-man",
+      "merfolk"
+     ],
+     "target": "select_filtered"
     }
    ]
   },
@@ -29691,8 +29721,14 @@
     {
      "action": "buff_power",
      "amount": 1000,
+     "count": 1,
      "duration": "this_turn",
-     "target": "self"
+     "filter_type": [
+      "neptunian",
+      "fish-man",
+      "merfolk"
+     ],
+     "target": "select_filtered"
     }
    ]
   }
@@ -30937,6 +30973,11 @@
      "target": "self"
     },
     {
+     "action": "buff_cost",
+     "amount": 5,
+     "target": "self"
+    },
+    {
      "action": "keyword_blocker"
     }
    ]
@@ -31498,13 +31539,22 @@
  },
  "OP12-096": {
   "main": {
-   "conditions": {
-    "other_char_cost_gte": 8
-   },
    "steps": [
     {
      "action": "ko",
+     "conditions": {
+      "no_char_cost_gte": 8
+     },
      "cost_lte": 4,
+     "count": 1,
+     "target": "opp_character"
+    },
+    {
+     "action": "ko",
+     "conditions": {
+      "other_char_cost_gte": 8
+     },
+     "cost_lte": 6,
      "count": 1,
      "target": "opp_character"
     }
@@ -31845,8 +31895,12 @@
     },
     {
      "action": "add_to_hand",
-     "count": 1,
-     "revealed_to_opponent": false
+     "count": 2,
+     "filter_names": [
+      "mont blanc noland"
+     ],
+     "filter_type": "shandian warrior",
+     "revealed_to_opponent": true
     },
     {
      "action": "deck_bottom_rest"
@@ -31968,7 +32022,7 @@
      "action": "buff_power",
      "amount": 2000,
      "count": 1,
-     "duration": "this_turn",
+     "duration": "battle_only",
      "filter_type": "straw hat crew",
      "target": "select_filtered"
     }
@@ -32059,7 +32113,8 @@
     {
      "action": "give_don",
      "count": 2,
-     "rested": true
+     "rested": true,
+     "target_name": "monkey.d.luffy"
     }
    ]
   }
@@ -32069,6 +32124,10 @@
    "costs": [
     {
      "type": "trash_self"
+    },
+    {
+     "count": 1,
+     "type": "give_don_own"
     }
    ],
    "steps": [
@@ -32283,7 +32342,8 @@
     {
      "action": "give_don",
      "count": 1,
-     "rested": true
+     "rested": true,
+     "target_name": "monkey.d.luffy"
     }
    ]
   },
@@ -32344,6 +32404,16 @@
  },
  "OP13-024": {
   "on_play": {
+   "costs": [
+    {
+     "count": 1,
+     "filter_type": [
+      "music",
+      "film"
+     ],
+     "type": "reveal_from_hand"
+    }
+   ],
    "steps": [
     {
      "action": "set_don_active",
@@ -32685,9 +32755,18 @@
  },
  "OP13-046": {
   "passive": {
+   "once_per_turn": true,
    "steps": [
     {
      "action": "keyword_double_attack"
+    },
+    {
+     "action": "substitute_removal",
+     "cost": {
+      "action": "trash_from_hand",
+      "count": 1,
+      "filter_type": "whitebeard pirates"
+     }
     }
    ]
   }
@@ -34156,6 +34235,11 @@
      "action": "give_don",
      "count": 1,
      "rested": true
+    },
+    {
+     "action": "opp_play_card",
+     "cost_lte": 4,
+     "count": 1
     }
    ]
   },
@@ -34203,7 +34287,10 @@
     {
      "action": "swap_base_power",
      "duration": "this_turn",
-     "filter_type": "supernovas",
+     "filter_type": [
+      "supernovas",
+      "heart pirates"
+     ],
      "target": "own_two_chars"
     }
    ]
@@ -34234,7 +34321,8 @@
     {
      "action": "immunity",
      "imm_type": "ko",
-     "source": "any"
+     "source": "any",
+     "source_power_lte": 5000
     }
    ]
   }
@@ -34467,6 +34555,9 @@
  },
  "OP14-018": {
   "counter": {
+   "conditions": {
+    "board_has_power_gte": 8000
+   },
    "steps": [
     {
      "action": "buff_power",
@@ -34517,19 +34608,30 @@
  },
  "OP14-020": {
   "activate_main": {
-   "conditions": {
-    "board_has_cost": [
-     5
-    ]
-   },
+   "costs": [
+    {
+     "count": 1,
+     "type": "rest_don"
+    }
+   ],
    "once_per_turn": true,
    "steps": [
     {
      "action": "self_cant_play",
+     "conditions": {
+      "board_has_cost": [
+       5
+      ]
+     },
      "scope": "chars"
     },
     {
      "action": "set_don_active",
+     "conditions": {
+      "board_has_cost": [
+       5
+      ]
+     },
      "count": 3,
      "up_to": true
     }
@@ -34668,6 +34770,12 @@
  },
  "OP14-029": {
   "activate_main": {
+   "costs": [
+    {
+     "count": 2,
+     "type": "rest_don"
+    }
+   ],
    "once_per_turn": true,
    "steps": [
     {
@@ -34728,6 +34836,12 @@
  },
  "OP14-033": {
   "on_ko": {
+   "costs": [
+    {
+     "count": 1,
+     "type": "rest_don"
+    }
+   ],
    "steps": [
     {
      "action": "play_card",
@@ -34788,6 +34902,12 @@
  },
  "OP14-036": {
   "counter": {
+   "costs": [
+    {
+     "count": 1,
+     "type": "rest_don"
+    }
+   ],
    "steps": [
     {
      "action": "buff_power",
@@ -34798,6 +34918,12 @@
    ]
   },
   "trigger": {
+   "costs": [
+    {
+     "count": 1,
+     "type": "rest_don"
+    }
+   ],
    "steps": [
     {
      "action": "rest_opp_character",
@@ -34819,6 +34945,12 @@
    ]
   },
   "main": {
+   "costs": [
+    {
+     "count": 3,
+     "type": "rest_don"
+    }
+   ],
    "steps": [
     {
      "action": "ko",
@@ -34842,6 +34974,12 @@
    ]
   },
   "main": {
+   "costs": [
+    {
+     "count": 2,
+     "type": "rest_don"
+    }
+   ],
    "steps": [
     {
      "action": "rest_opp_character",
@@ -35012,8 +35150,13 @@
     {
      "action": "buff_power",
      "amount": 2000,
+     "count": 1,
      "duration": "this_turn",
-     "target": "self"
+     "filter_type": [
+      "fish-man",
+      "merfolk"
+     ],
+     "target": "select_filtered"
     }
    ]
   }
@@ -35468,6 +35611,13 @@
  },
  "OP14-070": {
   "passive": {
+   "costs": [
+    {
+     "count": 1,
+     "optional": true,
+     "type": "don_minus"
+    }
+   ],
    "steps": [
     {
      "action": "set_active",
@@ -36533,7 +36683,7 @@
      "action": "buff_power",
      "amount": 3000,
      "count": 1,
-     "duration": "this_turn",
+     "duration": "battle_only",
      "filter_type": "thriller bark pirates",
      "target": "select_filtered"
     }
@@ -37389,7 +37539,7 @@
      "action": "buff_power",
      "amount": 4000,
      "count": 1,
-     "duration": "this_turn",
+     "duration": "battle_only",
      "filter_type": "krieg",
      "target": "select_filtered"
     }
@@ -37819,7 +37969,11 @@
      "action": "debuff_power",
      "amount": 2000,
      "duration": "this_turn",
-     "target": "opp_leader_or_character"
+     "target": "opp_leader_or_character",
+     "unless_opp_pays": {
+      "count": 1,
+      "type": "don_return"
+     }
     }
    ]
   }
@@ -38148,7 +38302,7 @@
      "action": "buff_power",
      "amount": 2000,
      "count": 1,
-     "duration": "this_turn",
+     "duration": "battle_only",
      "filter_type": "enel",
      "target": "select_filtered"
     }
@@ -38190,7 +38344,7 @@
      "action": "buff_power",
      "amount": 2000,
      "count": 1,
-     "duration": "this_turn",
+     "duration": "battle_only",
      "filter_type": "enel",
      "target": "select_filtered"
     }
@@ -38233,7 +38387,7 @@
      "action": "buff_power",
      "amount": 2000,
      "count": 1,
-     "duration": "this_turn",
+     "duration": "battle_only",
      "filter_type": "enel",
      "target": "select_filtered"
     }
@@ -42887,7 +43041,8 @@
     {
      "action": "give_don",
      "count": 1,
-     "rested": true
+     "rested": true,
+     "target_name": "nami"
     }
    ]
   },
@@ -44540,7 +44695,7 @@
      "action": "buff_power",
      "amount": 4000,
      "count": 1,
-     "duration": "this_turn",
+     "duration": "battle_only",
      "filter_type": "film",
      "target": "select_filtered"
     }
@@ -49148,7 +49303,8 @@
     {
      "action": "give_don",
      "count": 1,
-     "rested": true
+     "rested": true,
+     "target_name": "monkey.d.luffy"
     }
    ]
   },

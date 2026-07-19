@@ -1,5 +1,83 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-19 (280) - Claude - lote de 16 itens (OP09-051 a OP15-059), ~38 cartas via generalizacao
+
+Janela 51-100 pós-127, taxa de acerto bem mais alta que a janela anterior.
+Registro completo em `parser_audits/2026-07-19_lote_16_op09-051_a_op15-059.json`.
+
+**Fixes principais:**
+1. **OP09-051 Buggy**: auto-bounce condicional NEGADA ("se você NÃO tem 5
+   Characters custo≥5, manda esta carta pro fundo do próprio deck")
+   inteira ausente. Nova condição `no_own_chars_cost_gte_count` (só
+   field_chars próprios) + `target='self'` novo em
+   `place_own_character_bottom_deck`.
+2. **OP09-106 Nico Olvia**: "Up to 1 of your [Nico Robin] Leader gains
+   +3000 power" — forma TAUTOLÓGICA (só há 1 Leader), virava self-buff
+   em vez de `target='leader'` + condição `leader_is`.
+3. **OP11-117 (Stage) + OP14-046 + OP11-039 (extra)**: `m_select_buff`
+   só capturava o 1º tipo de um OR de 2+ tipos — generalizado pra N
+   tipos. Efeito colateral bom: expôs e corrigiu uma 2ª bug no MESMO
+   mecanismo (`duration` hardcoded em `'this_turn'` mesmo dentro de
+   `[Counter]`, onde deveria ser `'battle_only'` — 9 cartas extras
+   corrigidas: EB03-029, EB04-020, EB04-029, OP13-001, OP14-117,
+   OP15-038/074/075/076, ST05-017).
+4. **OP12-063**: buff duplo estático "+2000 power and +5 cost" — só o
+   power era capturado.
+5. **OP12-096**: bug ESTRUTURAL — condição travava o K.O. inteiro em
+   vez de só fazer upgrade do teto de custo baseline (4→6). Vira 2
+   steps mutuamente exclusivos (nova condição `no_char_cost_gte`
+   negada / `other_char_cost_gte` já existente).
+6. **OP12-116**: 2 bugs de ordem invertida da MESMA família do lote
+   anterior (OP15-101) — "a total of up to N" e "{Tipo} type... or
+   [Nome]".
+7. **OP13-006 + OP13-021 + ST29-012 + P-096**: filtro de NOME no
+   destinatário do `give_don` ausente + janela de captura cortava no
+   meio de nomes com ponto ("[Monkey.D.Luffy]") — mesma classe de bug
+   já documentada em `parse_play_generic`.
+8. **OP13-007**: custo composto só metade capturado — novo cost
+   `give_don_own` (sem filtro de nome, distinto de `give_don_to_named`).
+9. **OP13-024**: aspas duplas no OR de `reveal_from_hand` não
+   toleradas (só chaves/colchetes).
+10. **OP13-046 Vista**: `substitute_removal` (mecanismo maduro) nunca
+    disparava — keyword reminder `[Double Attack]` sem parênteses
+    explicativo deixava a cláusula órfã. **Tentativa inicial de
+    alargar o regex geral de keyword-reminder foi REVERTIDA** — causava
+    duplicação em ~25 cartas não relacionadas (keyword em prosa, não
+    tag solta). Fix final: só ampliou a rede de segurança já existente
+    ("would leave the field" → também "would be removed from the
+    field").
+11. **OP13-119**: mecânica NOVA `opp_play_card` — força o OPONENTE a
+    jogar da PRÓPRIA mão dele (nunca visto antes; distinto de
+    `play_card`, que sempre joga da mão/trash de quem executa).
+12. **OP14-001**: `swap_base_power` mesmo bug do item 3 (mesmo
+    mecanismo `m_select_buff`), corrigido junto.
+13. **OP14-003**: imunidade a K.O. sem filtro de força da FONTE —
+    virava blindagem total. Novo `source_power_lte` + `source_card`
+    repassado no dispatch principal de ko/trash_character.
+14. **OP14-018**: condição inteira ausente no Counter (assimetria
+    "base" opcional).
+15. **EB04-015/019 + OP14-020/029/033/036/037/038** (8 cartas): "you
+    may rest N of your cards:" — atalho oficial de custo referindo-se
+    a DON!! sem dizer "DON!!", mapeado pro `rest_don` já existente.
+16. **OP14-070**: custo opcional "If you do," (sem ":") — forma não
+    coberta pelos ramos existentes de `don_minus`.
+17. **OP15-059** (extensão do `unless_opp_pays` criado no bloco
+    anterior): mesma gramática de gating, mas custo de prevenção é
+    devolver DON ativo em vez de trashar Life.
+
+**Lição arquitetural**: ao encontrar um caminho de parsing "órfão",
+preferir ampliar uma rede de segurança ESPECÍFICA e já testada (guardada
+contra duplicação) em vez de alargar um regex AMPLO sem contexto
+posicional — a 1ª tentativa para OP13-046 causou duplicação em ~25
+cartas antes de ser revertida.
+
+Validado: `diff_parser.py` GANHOU=0/PERDEU=0/MUDOU=38 (a tentativa de
+fix ampla foi detectada como regressão e revertida ANTES de aceitar).
+`smoke_fast.py` com teste novo cobrindo execução real de todos os
+mecanismos complexos. `smoke_test.py` TODOS OS TESTES PASSARAM.
+`smoke_test_broad.py` 7/7 sem exceção. **Auditor: 127 -> 109
+suspeitos.**
+
 ## 2026-07-19 (279) - Claude - OP05-099 + OP07-036: 2 mecanicas novas de gating condicional
 
 Janela de 50 suspeitos pós-lote-10 (139→129), taxa de acerto baixa

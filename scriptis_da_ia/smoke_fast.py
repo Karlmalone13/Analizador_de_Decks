@@ -6165,6 +6165,257 @@ def test_op05_099_opp_pode_evitar_e_op07_036_custo_condicional_proprio() -> None
           forte_asura.rested and alvo_asura_com.rested)
 
 
+def test_lote_16_itens_op09_051_a_op15_059() -> None:
+    # OP09-051 Buggy: condicao NEGADA "se voce NAO tem 5 Characters
+    # custo>=5, manda esta carta pro fundo do proprio deck" -- nova
+    # condicao no_own_chars_cost_gte_count (conta SO os proprios
+    # field_chars) + target='self' novo em place_own_character_bottom_deck.
+    check("OP09-051 parseia auto-bounce condicional (no_own_chars_cost_gte_count)",
+          get_card_effects("OP09-051")["on_play"]["steps"][1]
+          == {"action": "place_own_character_bottom_deck", "target": "self",
+              "conditions": {"no_own_chars_cost_gte_count": {"count_gte": 5, "cost_gte": 5}}})
+    buggy051 = real_card("OP09-051")
+    me_buggy_sem = GameState(leader=mk("BGLDR1", "Lider", card_type="LEADER"))
+    me_buggy_sem.field_chars = [buggy051]
+    opp_buggy_sem = GameState(leader=mk("BGOPP1", "Opp", card_type="LEADER"))
+    EffectExecutor(me_buggy_sem, opp_buggy_sem).execute(buggy051, "on_play")
+    check("Execucao real: OP09-051 SEM 5 Characters custo>=5, vai pro fundo do proprio deck",
+          buggy051 not in me_buggy_sem.field_chars and me_buggy_sem.deck)
+    buggy051b = real_card("OP09-051")
+    me_buggy_com = GameState(leader=mk("BGLDR2", "Lider", card_type="LEADER"))
+    caros = [mk(f"BGC{i}", f"Caro{i}", cost=5) for i in range(4)]
+    me_buggy_com.field_chars = [buggy051b] + caros
+    opp_buggy_com = GameState(leader=mk("BGOPP2", "Opp", card_type="LEADER"))
+    EffectExecutor(me_buggy_com, opp_buggy_com).execute(buggy051b, "on_play")
+    check("Execucao real: OP09-051 COM 5 Characters custo>=5 (incl. ela mesma), NAO vai pro fundo",
+          buggy051b in me_buggy_com.field_chars)
+
+    # OP09-106 Nico Olvia: "Up to 1 of your [Nico Robin] Leader gains
+    # +3000 power" -- forma tautologica (so ha 1 Leader), target='leader'
+    # + condicao leader_is, nunca 'self' (Nico Olvia nao e o Leader).
+    check("OP09-106 parseia target=leader + condicao leader_is (nao self)",
+          get_card_effects("OP09-106")["on_play"]["steps"][0]
+          == {"action": "buff_power", "amount": 3000, "target": "leader",
+              "duration": "this_turn", "conditions": {"leader_is": "nico robin"}})
+
+    # OP11-117 (Stage): "up to 1 of your 'A', 'B', or 'C' type Characters"
+    # -- 3 tipos em OR (virgula entre os 2 primeiros, "or" so no ultimo),
+    # generalizacao de m_select_buff pra aceitar N tipos (nao so 1).
+    check("OP11-117 parseia filter_type como lista de 3 tipos (nao target=self)",
+          get_card_effects("OP11-117")["activate_main"]["steps"][0]["filter_type"]
+          == ["neptunian", "fish-man", "merfolk"])
+
+    # OP14-046: mesma familia, 2 tipos com "or" direto + "Leader or
+    # Character" no sufixo.
+    check("OP14-046 parseia filter_type como lista de 2 tipos",
+          get_card_effects("OP14-046")["activate_main"]["steps"][0]["filter_type"]
+          == ["fish-man", "merfolk"])
+    koala046 = real_card("OP14-046")
+    me_koala = GameState(leader=mk("KLLDR", "Lider", card_type="LEADER"))
+    fishman_alvo = mk("FM1", "Fishman Alvo", sub_types="Fish-Man")
+    outro_alvo = mk("OUT046", "Outro", sub_types="Punk Hazard")
+    me_koala.field_chars = [koala046, fishman_alvo, outro_alvo]
+    opp_koala = GameState(leader=mk("KLOPP", "Opp", card_type="LEADER"))
+    EffectExecutor(me_koala, opp_koala).execute(koala046, "activate_main")
+    check("Execucao real: OP14-046 buffa o Fish-Man (do filtro OR), nao o Outro nem a si mesma",
+          fishman_alvo.power_buff == 2000 and outro_alvo.power_buff == 0
+          and koala046.power_buff == 0)
+
+    # OP11-039 (achado via generalizacao do fix acima): mesma forma de
+    # select_filtered, mas dentro de um [Counter] -- duration hardcoded em
+    # 'this_turn' virava ERRADO (deveria ser 'battle_only', mesmo bug pre-
+    # existente exposto pela generalizacao, corrigido junto).
+    check("OP11-039 (extra) select_filtered dentro de Counter usa duration=battle_only",
+          get_card_effects("OP11-039")["counter"]["steps"][1]["duration"] == "battle_only")
+
+    # OP12-063: buff duplo ESTATICO "+2000 power and +5 cost" -- so o power
+    # era capturado antes, o "+5 cost" sumia por completo.
+    check("OP12-063 parseia buff_power(2000) E buff_cost(5) juntos",
+          get_card_effects("OP12-063")["passive"]["steps"][:2]
+          == [{"action": "buff_power", "amount": 2000, "target": "self", "duration": "this_turn"},
+              {"action": "buff_cost", "amount": 5, "target": "self"}])
+
+    # OP12-096: upgrade condicional do TETO de custo do K.O. baseline (nao
+    # uma condicao que trava o K.O. inteiro) -- 2 steps mutuamente
+    # exclusivos via no_char_cost_gte (negada)/other_char_cost_gte
+    # (positiva).
+    check("OP12-096 parseia 2 ko mutuamente exclusivos (baseline cost_lte=4 / upgrade cost_lte=6)",
+          get_card_effects("OP12-096")["main"]["steps"]
+          == [{"action": "ko", "count": 1, "target": "opp_character", "cost_lte": 4,
+               "conditions": {"no_char_cost_gte": 8}},
+              {"action": "ko", "count": 1, "target": "opp_character", "cost_lte": 6,
+               "conditions": {"other_char_cost_gte": 8}}])
+    ursa096 = real_card("OP12-096")
+    me_ursa_base = GameState(leader=mk("URLDR1", "Lider", card_type="LEADER"))
+    me_ursa_base.field_chars = [mk("URF1", "Fraco", cost=3)]
+    opp_ursa_base = GameState(leader=mk("UROPP1", "Opp", card_type="LEADER"))
+    alvo5_base = mk("URT1", "Alvo5", cost=5)
+    opp_ursa_base.field_chars = [alvo5_base]
+    EffectExecutor(me_ursa_base, opp_ursa_base).execute(ursa096, "main")
+    check("Execucao real: OP12-096 SEM Character custo>=8, so o baseline (cost<=4) roda, alvo custo5 sobrevive",
+          alvo5_base in opp_ursa_base.field_chars)
+    ursa096b = real_card("OP12-096")
+    me_ursa_up = GameState(leader=mk("URLDR2", "Lider", card_type="LEADER"))
+    me_ursa_up.field_chars = [mk("URF2", "Forte", cost=8)]
+    opp_ursa_up = GameState(leader=mk("UROPP2", "Opp", card_type="LEADER"))
+    alvo5_up = mk("URT2", "Alvo5", cost=5)
+    opp_ursa_up.field_chars = [alvo5_up]
+    EffectExecutor(me_ursa_up, opp_ursa_up).execute(ursa096b, "main")
+    check("Execucao real: OP12-096 COM Character custo>=8, upgrade (cost<=6) roda, alvo custo5 e KO'd",
+          alvo5_up not in opp_ursa_up.field_chars)
+
+    # OP12-116: "reveal a total of up to 2 'Tipo' type Character cards or
+    # [Nome]" -- 2 bugs de ordem invertida (count e OR nome/tipo), mesma
+    # FORMA do lote 9 (OP15-101), mas com as palavras na ordem oposta.
+    check("OP12-116 parseia count=2 + filter_type/filter_names (OR, ordem invertida)",
+          get_card_effects("OP12-116")["main"]["steps"][1]
+          == {"action": "add_to_hand", "count": 2, "revealed_to_opponent": True,
+              "filter_type": "shandian warrior", "filter_names": ["mont blanc noland"]})
+
+    # OP13-006 + familia (OP13-021/ST29-012/P-096): filtro de NOME no
+    # destinatario do give_don ("to 1 of your [Nome] cards") -- sem isso,
+    # o DON podia ir pra QUALQUER character proprio.
+    for code, timing in (("OP13-006", "on_play"), ("ST29-012", "activate_main")):
+        check(f"{code} parseia target_name no give_don",
+              any(s.get("action") == "give_don" and s.get("target_name") == "monkey.d.luffy"
+                  for s in get_card_effects(code)[timing]["steps"]))
+    luffy_recv = real_card("OP13-006")
+    me_luffy_recv = GameState(leader=mk("LFRLDR", "Lider", card_type="LEADER"), don_rested=5)
+    outro_char = mk("OUT13006", "Outro", cost=3)
+    luffy_char = mk("LFY13006", "Monkey.D.Luffy", cost=5)
+    me_luffy_recv.field_chars = [outro_char, luffy_char]
+    opp_luffy_recv = GameState(leader=mk("LFROPP", "Opp", card_type="LEADER", power=9000))
+    EffectExecutor(me_luffy_recv, opp_luffy_recv).execute(luffy_recv, "on_play")
+    check("Execucao real: OP13-006 da DON SO ao Luffy nomeado (nao ao Outro, mesmo mais forte)",
+          luffy_char.don_attached == 2 and outro_char.don_attached == 0)
+
+    # OP13-007: custo novo give_don_own (dar 1 DON ativo a QUALQUER
+    # Leader/Character proprio, sem filtro de nome -- distinto de
+    # give_don_to_named) + trash_self, custo composto.
+    check("OP13-007 parseia custo composto trash_self + give_don_own",
+          {c["type"] for c in get_card_effects("OP13-007")["activate_main"]["costs"]}
+          == {"trash_self", "give_don_own"})
+    ace007 = real_card("OP13-007")
+    me_ace007 = GameState(leader=mk("AC7LDR", "Lider", card_type="LEADER"), don_available=5)
+    forte007 = mk("AC7F1", "Forte", cost=6)
+    me_ace007.field_chars = [ace007, forte007]
+    opp_ace007 = GameState(leader=mk("AC7OPP", "Opp", card_type="LEADER"))
+    ee_ace007 = EffectExecutor(me_ace007, opp_ace007)
+    ok_ace007 = ee_ace007._pay_costs(get_card_effects("OP13-007")["activate_main"]["costs"], ace007)
+    check("Execucao real: OP13-007 paga trash_self + da 1 DON ativo ao Character de maior valor",
+          ok_ace007 and ace007 in me_ace007.trash and forte007.don_attached == 1
+          and me_ace007.don_available == 4)
+
+    # OP13-024: custo reveal_from_hand com aspas duplas no OR ("Music" or
+    # "FILM"), mesma familia de OP14-105 (chaves) mas delimitador
+    # diferente.
+    check("OP13-024 parseia custo reveal_from_hand com filter_type em lista (aspas)",
+          get_card_effects("OP13-024")["on_play"]["costs"][0]["filter_type"] == ["music", "film"])
+
+    # OP13-046 Vista: mecanismo substitute_removal (ja maduro) nunca
+    # disparava porque "[Double Attack]" (sem parenteses explicativo) nao
+    # e reconhecido como reminder de keyword -- rede de seguranca
+    # existente (fallback "would leave the field") so testava "leave",
+    # nunca "removed from" (a MESMA frase que parse_substitute_removal ja
+    # aceita). Fix cirurgico (so amplia o guard da rede de seguranca), nao
+    # o regex amplo de keyword-reminder (causaria duplicacao em outras
+    # ~400 cartas, testado e revertido).
+    check("OP13-046 ganha substitute_removal (custo trash_from_hand filtro Whitebeard Pirates)",
+          any(s.get("action") == "substitute_removal"
+              and s.get("cost") == {"action": "trash_from_hand", "count": 1, "filter_type": "whitebeard pirates"}
+              for s in get_card_effects("OP13-046")["passive"]["steps"]))
+
+    # OP13-119: mecanica nova opp_play_card -- forca o OPONENTE a jogar da
+    # PROPRIA mao dele (distinto de play_card, que joga da mao/trash de
+    # quem executa o efeito). Sempre gratis (regra do projeto).
+    check("OP13-119 parseia opp_play_card(count=1, cost_lte=4) apos o bounce",
+          get_card_effects("OP13-119")["on_play"]["steps"][-1]
+          == {"action": "opp_play_card", "count": 1, "cost_lte": 4})
+    ace119 = real_card("OP13-119")
+    me_ace119 = GameState(leader=mk("AC9LDR", "Lider", card_type="LEADER"))
+    opp_ace119 = GameState(leader=mk("AC9OPP", "Opp", card_type="LEADER"))
+    caro_demais = mk("AC9H1", "Caro Demais", cost=5, card_type="CHARACTER")
+    barato_op = mk("AC9H2", "Barato", cost=3, card_type="CHARACTER")
+    opp_ace119.hand = [caro_demais, barato_op]
+    alvo_bounce_119 = mk("AC9T1", "Alvo Bounce", cost=4)
+    opp_ace119.field_chars = [alvo_bounce_119]
+    EffectExecutor(me_ace119, opp_ace119).execute(ace119, "on_play")
+    check("Execucao real: OP13-119 forca o oponente a jogar o Character custo<=4 (nao o de custo 5)",
+          barato_op in opp_ace119.field_chars and caro_demais in opp_ace119.hand)
+
+    # OP14-001: swap_base_power so pegava 1 dos 2 tipos do OR
+    # ({Supernovas} or {Heart Pirates}) -- group(2) ja era capturado pelo
+    # regex mas nunca lido.
+    check("OP14-001 parseia filter_type como lista de 2 tipos no swap_base_power",
+          get_card_effects("OP14-001")["activate_main"]["steps"][0]["filter_type"]
+          == ["supernovas", "heart pirates"])
+
+    # OP14-003: imunidade a KO filtrada pela FORCA da fonte -- so protege
+    # contra Characters do oponente com power<=5000, nao contra qualquer
+    # efeito (novo campo source_power_lte, novo source_card repassado no
+    # dispatch principal de ko/trash_character).
+    check("OP14-003 parseia source_power_lte=5000 na immunity",
+          get_card_effects("OP14-003")["passive"]["steps"][0]["source_power_lte"] == 5000)
+    bege003 = real_card("OP14-003")
+    me_bege = GameState(leader=mk("BGLDR3", "Lider", card_type="LEADER"))
+    me_bege.field_chars = [bege003]
+    opp_bege_fraco = GameState(leader=mk("BGOPP3", "Opp", card_type="LEADER"))
+    fraco_ko = mk("BGF1", "Fraco", power=4000, cost=3)
+    opp_bege_fraco.field_chars = [fraco_ko]
+    EffectExecutor(opp_bege_fraco, me_bege)._pay_costs([], fraco_ko)
+    check("Execucao real: OP14-003 imune a KO vindo de Character FRACO (power<=5000)",
+          is_immune(bege003, 'ko', me_bege, opp_bege_fraco, source_is_opp=True,
+                    ko_context='effect', source_card=fraco_ko))
+    forte_ko = mk("BGF2", "Forte", power=6000, cost=6)
+    check("Execucao real: OP14-003 NAO imune a KO vindo de Character FORTE (power>5000)",
+          not is_immune(bege003, 'ko', me_bege, opp_bege_fraco, source_is_opp=True,
+                        ko_context='effect', source_card=forte_ko))
+
+    # OP14-018: condicao inteira ausente no Counter ("if there is a
+    # Character with 8000 power or more") -- "base" opcional, mesma
+    # assimetria transversal ja documentada em varios outros pontos.
+    check("OP14-018 parseia condicao board_has_power_gte=8000 no Counter",
+          get_card_effects("OP14-018")["counter"]["conditions"] == {"board_has_power_gte": 8000})
+
+    # Familia "you may rest N of your cards:" (8 cartas) -- atalho
+    # oficial de custo que refere-se a DON!! sem dizer "DON!!"
+    # explicitamente, mapeado pra rest_don ja existente.
+    for code, timing, n in (("EB04-015", "on_ko", 1), ("EB04-019", "main", 1),
+                             ("OP14-020", "activate_main", 1), ("OP14-029", "activate_main", 2),
+                             ("OP14-036", "trigger", 1), ("OP14-037", "main", 3),
+                             ("OP14-038", "main", 2)):
+        check(f"{code} ganha custo rest_don={n} (familia 'rest N of your cards')",
+              {"type": "rest_don", "count": n} in get_card_effects(code)[timing]["costs"])
+
+    # OP14-070: custo opcional "you may return N DON!! cards ... If you
+    # do, [efeito]" (sem ':') -- mesma simplificacao de OP05-038/OP15-020
+    # (aplica incondicionalmente), forma de gatilho nao coberta antes.
+    check("OP14-070 parseia custo don_minus=1 opcional (gatilho 'If you do', sem ':')",
+          get_card_effects("OP14-070")["passive"]["costs"]
+          == [{"type": "don_minus", "count": 1, "optional": True}])
+
+    # OP15-059: mesma familia do unless_opp_pays criado nesta sessao pra
+    # OP05-099, mas o custo de prevencao e devolver 1 DON ATIVO (nao
+    # trashar Life) -- campo generico estendido pra aceitar os 2 tipos.
+    check("OP15-059 parseia unless_opp_pays(type=don_return, count=1)",
+          get_card_effects("OP15-059")["on_opp_attack"]["steps"][0]["unless_opp_pays"]
+          == {"type": "don_return", "count": 1})
+    amazon059 = real_card("OP15-059")
+    me_amz059 = GameState(leader=mk("AMZLDR3", "Lider", card_type="LEADER"))
+    me_amz059.field_chars = [amazon059]
+    opp_amz059_com_don = GameState(leader=mk("AMZOPP3", "Opp", card_type="LEADER"), don_available=3)
+    EffectExecutor(me_amz059, opp_amz059_com_don).execute(amazon059, "on_opp_attack")
+    check("Execucao real: OP15-059 COM DON ativo disponivel, oponente devolve 1 e EVITA o debuff",
+          opp_amz059_com_don.don_available == 2 and opp_amz059_com_don.leader.power_buff == 0)
+    amazon059b = real_card("OP15-059")
+    me_amz059b = GameState(leader=mk("AMZLDR4", "Lider", card_type="LEADER"))
+    me_amz059b.field_chars = [amazon059b]
+    opp_amz059_sem_don = GameState(leader=mk("AMZOPP4", "Opp", card_type="LEADER"), don_available=0)
+    EffectExecutor(me_amz059b, opp_amz059_sem_don).execute(amazon059b, "on_opp_attack")
+    check("Execucao real: OP15-059 SEM DON ativo disponivel, oponente NAO pode evitar, debuff aplica",
+          opp_amz059_sem_don.leader.power_buff == -2000)
+
+
 def main() -> int:
     test_turn_order_imu_prefers_second()
     test_empty_throne_beats_direct_five_elders_play()
@@ -6304,6 +6555,7 @@ def main() -> int:
     test_lote_9_op15_020_a_op16_038()
     test_lote_10_op14_054_a_st07_017()
     test_op05_099_opp_pode_evitar_e_op07_036_custo_condicional_proprio()
+    test_lote_16_itens_op09_051_a_op15_059()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0
