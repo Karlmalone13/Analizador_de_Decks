@@ -72262,7 +72262,7 @@
           {
             "action": "debuff_power",
             "amount": 1000,
-            "target": "opp_character",
+            "target": "leader",
             "duration": "this_turn"
           }
         ],
@@ -77984,8 +77984,12 @@
           {
             "action": "buff_power",
             "amount": 3000,
-            "target": "self",
-            "duration": "this_turn"
+            "target": "all_allies",
+            "duration": "this_turn",
+            "filter_names": [
+              "portgas.d.ace",
+              "monkey.d.luffy"
+            ]
           }
         ]
       },
@@ -77994,10 +77998,13 @@
           {
             "action": "debuff_power",
             "amount": 2000,
-            "target": "opp_character",
+            "target": "leader",
             "duration": "this_turn"
           }
-        ]
+        ],
+        "conditions": {
+          "other_char_power_gte": 7000
+        }
       }
     }
   },
@@ -78021,7 +78028,8 @@
           {
             "action": "add_to_hand",
             "count": 1,
-            "revealed_to_opponent": true
+            "revealed_to_opponent": true,
+            "power_eq": 6000
           },
           {
             "action": "deck_bottom_rest"
@@ -78460,7 +78468,8 @@
           {
             "action": "add_to_hand",
             "count": 1,
-            "revealed_to_opponent": true
+            "revealed_to_opponent": true,
+            "power_eq": 6000
           },
           {
             "action": "deck_bottom_rest"

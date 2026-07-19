@@ -4199,7 +4199,8 @@ class EffectExecutor:
             filter_type_val = step.get('filter_type', '')
             filter_names = [n.lower() for n in step.get('filter_names', [])]
             base_kwargs = dict(cost_lte=cost_lte, cost_gte=step.get('cost_gte'),
-                                power_lte=step.get('power_lte', 999999))
+                                power_lte=step.get('power_lte', 999999),
+                                power_eq=step.get('power_eq'))
             if filter_type_val and filter_names:
                 # "[Nome] or {Tipo} type cards" -- alternativas (OR), nao
                 # filtro combinado (achado 19/07, OP15-101 Kalgara, unica
@@ -5523,6 +5524,14 @@ class EffectExecutor:
                 filter_type = step.get('filter_type', '')
                 alvos = ([c for c in me.field_chars if card_matches_filter(c, filter_type)]
                          if filter_type else list(me.field_chars))
+                # filter_names: "All of your [Nome1] and [Nome2] cards
+                # gain +N power" -- lista de NOMES (nao tipo), achado
+                # 19/07, ST30-001, unica carta no banco com essa forma
+                # exata (o buff caia no fallback errado target=self).
+                filter_names_all = step.get('filter_names') or []
+                if filter_names_all:
+                    alvos = [c for c in alvos
+                             if any(n in c.name.lower() for n in filter_names_all)]
                 cost_lte = step.get('cost_lte')
                 if cost_lte is not None:
                     alvos = [c for c in alvos if c.cost <= cost_lte]

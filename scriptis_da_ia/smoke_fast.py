@@ -6484,6 +6484,58 @@ def test_ultimos_5_itens_op06_057_a_op15_119() -> None:
           luffy119.power_buff == 3000 and len(me_luffy119.life) == 1)
 
 
+def test_encerramento_varredura_st30_001_e_st30_002() -> None:
+    # ST30-001 Luffy & Ace (lider): 2 bugs no mesmo texto.
+    # (a) "give this Leader -N power" -- MESMA familia de auto-debuff ja
+    # corrigida pra "this Character" (OP16-017), mas o sujeito e "this
+    # Leader" -- a adjacencia so checava "character"/"card", nunca
+    # "leader", entao o debuff ia pro OPONENTE por engano (mesmo bug
+    # achado de novo em ST10-003 via generalizacao). Tambem faltava a
+    # condicao inteira (other_char_power_gte=7000, "base" nao tolerado).
+    check("ST30-001 parseia debuff target=leader (self) + condicao other_char_power_gte=7000",
+          get_card_effects("ST30-001")["passive"]
+          == {"steps": [{"action": "debuff_power", "amount": 2000, "target": "leader", "duration": "this_turn"}],
+              "conditions": {"other_char_power_gte": 7000}})
+    check("ST10-003 (extra via generalizacao) tambem corrige debuff target=leader",
+          get_card_effects("ST10-003")["your_turn"]["steps"][0]["target"] == "leader")
+    # (b) "All of your [Nome1] and [Nome2] cards gain +N power" -- lista
+    # de NOMES (nao tipo), caia no fallback errado target=self. Novo
+    # filter_names em target=all_allies.
+    check("ST30-001 parseia target=all_allies com filter_names=[ace,luffy] (nao self)",
+          get_card_effects("ST30-001")["opp_turn"]["steps"][0]
+          == {"action": "buff_power", "amount": 3000, "target": "all_allies", "duration": "this_turn",
+              "filter_names": ["portgas.d.ace", "monkey.d.luffy"]})
+    luffyace = real_card("ST30-001")
+    ace_alvo = mk("STA1", "Portgas.D.Ace", cost=5)
+    luffy_alvo = mk("STA2", "Monkey.D.Luffy", cost=5)
+    outro_alvo_st30 = mk("STA3", "Outro", cost=5)
+    me_st30 = GameState(leader=luffyace)
+    me_st30.field_chars = [ace_alvo, luffy_alvo, outro_alvo_st30]
+    opp_st30 = GameState(leader=mk("STOPP30", "Opp", card_type="LEADER"))
+    EffectExecutor(me_st30, opp_st30).execute(luffyace, "opp_turn")
+    check("Execucao real: ST30-001 buffa SO Ace e Luffy (nao o Outro, nem o Leader)",
+          ace_alvo.power_buff == 3000 and luffy_alvo.power_buff == 3000
+          and outro_alvo_st30.power_buff == 0 and luffyace.power_buff == 0)
+
+    # ST30-002 + ST30-017: "reveal up to 1 Character card with N power"
+    # SEM "or less"/"or more" -- custo EXATO nunca filtrado (mesma
+    # assimetria transversal ja corrigida varias vezes pra custo, agora
+    # pra power em add_to_hand).
+    for code in ("ST30-002", "ST30-017"):
+        timing = "on_play" if code == "ST30-002" else "main"
+        check(f"{code} parseia power_eq=6000 no add_to_hand (nao aceita qualquer power)",
+              get_card_effects(code)[timing]["steps"][1].get("power_eq") == 6000)
+    inazuma = real_card("ST30-002")
+    me_inz = GameState(leader=mk("INZLDR", "Lider", card_type="LEADER"))
+    fraco_inz = mk("INZ1", "Fraco", power=3000)
+    exato_inz = mk("INZ2", "Exato 6000", power=6000)
+    me_inz.deck = [fraco_inz, exato_inz]
+    opp_inz = GameState(leader=mk("INZOPP", "Opp", card_type="LEADER"))
+    EffectExecutor(me_inz, opp_inz).execute(inazuma, "on_play")
+    check("Execucao real: ST30-002 traz SO o Character de power EXATO 6000 pra mao (nao o fraco)",
+          exato_inz in me_inz.hand and fraco_inz in me_inz.deck)
+
+
 def main() -> int:
     test_turn_order_imu_prefers_second()
     test_empty_throne_beats_direct_five_elders_play()
@@ -6625,6 +6677,7 @@ def main() -> int:
     test_op05_099_opp_pode_evitar_e_op07_036_custo_condicional_proprio()
     test_lote_16_itens_op09_051_a_op15_059()
     test_ultimos_5_itens_op06_057_a_op15_119()
+    test_encerramento_varredura_st30_001_e_st30_002()
     print()
     print("SMOKE FAST OK" if FAIL == 0 else f"{FAIL} FALHA(S) NO SMOKE FAST")
     return 1 if FAIL else 0

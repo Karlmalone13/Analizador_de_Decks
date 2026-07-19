@@ -569,7 +569,9 @@ def parse_conditions(text):
 
     # "if you have a Character with N power or more [other than this
     # Character]" -- existe outro Character no SEU campo com power >= N.
-    m = re.search(r'if you have a character with (\d+) power or more', t)
+    # "base" opcional (achado 19/07, ST30-001: "with N BASE power or
+    # more" -- mesma assimetria transversal ja documentada varias vezes).
+    m = re.search(r'if you have a character with (\d+) (?:base )?power or more', t)
     if m: conds['other_char_power_gte'] = int(m.group(1))
 
     m = re.search(
@@ -1756,6 +1758,12 @@ def parse_look_at(text):
         r'play up to \d+ character card[^.]*?and a cost of (\d+) or less', t)
     cost_gte_m = re.search(r'with a cost of (\d+) or more', t)
     power_m = re.search(r'with (\d+) power or less', t)
+    # "with N power" SEM "or less"/"or more" -- custo EXATO (mesma
+    # assimetria transversal ja documentada varias vezes nesta sessao
+    # pra custo, agora pra power). Achado 19/07, ST30-002/ST30-017,
+    # unicas 2 cartas no banco com essa forma exata: nenhum filtro de
+    # power era aplicado, qualquer Character revelado contava.
+    power_eq_m = None if power_m else re.search(r'with (\d+) power\b(?! or)', t)
 
     take_step = {
         'action': 'play_from_deck' if verbo_pega == 'play' else 'add_to_hand',
@@ -1788,6 +1796,8 @@ def parse_look_at(text):
             take_step['cost_gte'] = int(cost_gte_m.group(1))
     if power_m:
         take_step['power_lte'] = int(power_m.group(1))
+    elif power_eq_m:
+        take_step['power_eq'] = int(power_eq_m.group(1))
 
     steps.append(take_step)
 
@@ -3611,6 +3621,16 @@ def parse_power_buff(text):
             if 'other than this character' in clausula_all:
                 exclude_self_all = True
 
+        # "all of your [Nome1] and [Nome2] cards gain +N power" -- lista
+        # de NOMES (nao tipo), achado 19/07, ST30-001, unica carta no
+        # banco com essa forma exata: caia no fallback errado
+        # target='self' (nem type_all_m, que exige "type Characters",
+        # nem 'all of your characters' literal batiam).
+        names_all_m = re.search(
+            r'all of your \[([^\]]+)\]\s*,?\s*and\s*\[([^\]]+)\] cards?', contexto_antes)
+        filter_names_all = (
+            [g.strip().lower() for g in names_all_m.groups() if g] if names_all_m else [])
+
         target = 'self'
         if is_debuff:
             # AUTO-debuff (drawback proprio): "give this Character -N
@@ -3625,6 +3645,12 @@ def parse_power_buff(text):
             # auto-infligido).
             if re.search(r'(?<!other than )this (?:character|card)\s*$', contexto_antes):
                 target = 'self'
+            # "give this Leader -N power" -- MESMA familia de auto-debuff,
+            # mas o sujeito e o proprio Leader (nao "this Character"),
+            # achado 19/07, ST30-001, unica carta no banco com essa forma
+            # exata. Testado ANTES do catch-all "debuff=sempre oponente".
+            elif re.search(r'this leader\s*$', contexto_antes):
+                target = 'leader'
             elif "opponent's leader or character" in contexto_antes or "opponent's leader" in contexto_antes and "character" in contexto_antes:
                 target = 'opp_leader_or_character'
             elif "opponent's leader" in contexto_antes:
@@ -3633,7 +3659,7 @@ def parse_power_buff(text):
                 target = 'all_opp_characters'
             else:
                 target = 'opp_character'
-        elif type_all_m:
+        elif type_all_m or names_all_m:
             target = 'all_allies'
         # ADJACENCIA tem prioridade sobre 'your leader' aparecer em
         # qualquer lugar da janela -- achado 16/07 (mesma causa raiz do
@@ -3779,6 +3805,8 @@ def parse_power_buff(text):
                 step['cost_gte'] = cost_gte_all
             if exclude_self_all:
                 step['exclude_self'] = True
+        if target == 'all_allies' and filter_names_all:
+            step['filter_names'] = filter_names_all
         # "give up to N of your opponent's Characters -X power" -- N>1
         # (achado 15/07, varredura ampla): o executor de debuff_power so
         # aplicava a 1 alvo sempre, mesmo com N=2 no texto (13 cartas reais

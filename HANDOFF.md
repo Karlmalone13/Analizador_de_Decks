@@ -1,5 +1,47 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-19 (282) - Claude - ST30-001/002/017 + ST10-003 — VARREDURA COMPLETA ENCERRADA (100 suspeitos)
+
+Usuário pediu explicitamente para revisar **todos** os 103 suspeitos
+restantes até o fim do dia. Fiz a revisão manual carta-a-carta de cada
+um; ~98 confirmados falso-positivo já catalogado. 2 candidatos reais
+achados, 4 cartas cobertas. Registro completo em
+`parser_audits/2026-07-19_encerramento_st30-001_st30-002.json`.
+
+**Fixes:**
+1. **ST30-001 Luffy & Ace (líder)** — 2 bugs no mesmo texto: (a) "give
+   this Leader -2000 power" ia pro alvo ERRADO (`opp_character`) — a
+   checagem de auto-debuff só reconhecia "this Character"/"this card",
+   nunca "this Leader" (mesma família estrutural do bug já corrigido em
+   OP16-017/lote 9). A condição "if you have a Character with 7000
+   BASE power or more" também sumia (mesma assimetria "base" opcional
+   já documentada várias vezes). (b) "All of your [Portgas.D.Ace] and
+   [Monkey.D.Luffy] cards gain +3000 power" — lista de 2 NOMES nunca
+   reconhecida, caía no fallback errado `target=self`. Novo
+   `filter_names` em `all_allies` (companheiro do `filter_type` já
+   existente nesse target).
+2. **ST30-002 + ST30-017** (2 cartas): "reveal up to 1 Character card
+   with 6000 power" SEM "or less"/"or more" — custo/power EXATO nunca
+   filtrado em `add_to_hand`. Novo `power_eq` propagado (mesmo padrão
+   "exato sem qualificador" generalizado várias vezes nesta sessão).
+
+**Extra via generalização**: ST10-003 (mesma forma "give this Leader
+-N power", capturada de graça pela mesma correção).
+
+Validado: `diff_parser.py` GANHOU=0/PERDEU=0/MUDOU=4. `smoke_fast.py`
+com teste novo cobrindo execução real. `smoke_test.py` TODOS OS TESTES
+PASSARAM. `smoke_test_broad.py` 7/7 sem exceção. **Auditor: 103 -> 100
+suspeitos.**
+
+**VARREDURA COMPLETA ENCERRADA** conforme pedido do usuário: os 100
+suspeitos restantes foram revisados individualmente e confirmados
+falso-positivo (sem bug real por trás — "up to 1" = alvo único
+implícito, `reveal_deck_top_conditional` sempre revela exatamente 1 por
+design, contagens de swap/select já implícitas no nome do target, notas
+de errata irrelevantes). **Total da sessão de 19/07: 139 -> 100
+suspeitos ao longo de 5 lotes.** Ver blocos 278-282 pro detalhe completo
+de cada lote.
+
 ## 2026-07-19 (281) - Claude - cauda final da varredura (OP06-057 a OP15-119), 8 cartas — sessão fecha em 103 suspeitos
 
 Última janela pendente do audit (itens 101-109, após zerar 1-100 nos 2

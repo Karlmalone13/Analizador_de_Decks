@@ -1,9 +1,21 @@
 # TODO — Analisador de Decks OPTCG
 
 **Última atualização:** 19 de julho de 2026
-**Estado:** varredura contínua do parser; 103 suspeitos (severidade 1 only)
+**Estado:** VARREDURA COMPLETA ENCERRADA em 19/07/2026; 100 suspeitos restantes, TODOS confirmados falso-positivo (revisão manual carta-a-carta)
 **Baseline do código:** ver `git log --oneline -1`
 **Repo:** github.com/Karlmalone13/Analizador_de_Decks
+
+> 19/07/2026: ST30-001/002/017 + ST10-003 — pedido explícito do usuário
+> pra revisar TODOS os 103 suspeitos restantes até o fim do dia. 2
+> candidatos reais achados (ST30-001 líder: auto-debuff "this Leader"
+> nunca reconhecido, mesma família de OP16-017 mas pro sujeito Leader +
+> lista de 2 nomes em buff de massa nunca suportada; ST30-002/017:
+> power exato sem qualificador nunca filtrado em add_to_hand). Os
+> outros ~98 confirmados falso-positivo genuíno (sem bug real por
+> trás). **FECHA a sessão de varredura**: janelas 1-109 revisadas em 5
+> lotes ao longo do dia, 139 -> 100 suspeitos. Ver HANDOFF bloco 282 e
+> `parser_audits/2026-07-19_encerramento_st30-001_st30-002.json`.
+> Auditor: 103 -> 100 suspeitos.
 
 > 19/07/2026: cauda final da varredura desta sessão (OP06-057 a
 > OP15-119), 8 cartas via 5 fixes. Destaques: `play_from_deck` ganhou

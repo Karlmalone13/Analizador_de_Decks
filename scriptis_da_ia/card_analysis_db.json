@@ -105961,7 +105961,7 @@
    {
     "action": "debuff_power",
     "trigger": "your_turn",
-    "target": "opp_character"
+    "target": "leader"
    }
   ],
   "synergy_states": {},
@@ -114070,12 +114070,12 @@
    {
     "action": "buff_power",
     "trigger": "opp_turn",
-    "target": "self"
+    "target": "all_allies"
    },
    {
     "action": "debuff_power",
     "trigger": "passive",
-    "target": "opp_character"
+    "target": "leader"
    }
   ],
   "synergy_states": {},
