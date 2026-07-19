@@ -5,6 +5,19 @@
 **Baseline do código:** ver `git log --oneline -1`
 **Repo:** github.com/Karlmalone13/Analizador_de_Decks
 
+> 19/07/2026: proxy ganhou sinais de "bot confuso"/timeout ao vivo
+> (`[ALERTA]` no console + novo alerta agregado `bot_confusion` em
+> `bot_efficiency_report.py`), telemetria de `priority`/`can_lethal` direto
+> no `/decide` (correlaciona com o `outcome` real da partida — novo
+> `lethal_certified_summary`), timeout de HTTP real do C# agora chega em
+> telemetria (`/client_timeout`, antes não deixava rastro nenhum). Achado
+> extra: o combat log só sai completo se `DownloadLogLines()` for chamado
+> (normalmente só no clique do botão "Download Log") — bot nunca clicava,
+> por isso o AutoSaved sempre cortava o fim. `BotDriver.cs` agora chama o
+> método direto no GameOver; `collect_latest_match.py` aponta pra
+> `CombatLogs` (pasta cheia) em vez de `CombatLogs/AutoSaved`. **Precisa
+> validação em partida real.** Ver HANDOFF bloco 286.
+
 > 19/07/2026: primeiro fix real de eficiência do motor (não do bot-executor):
 > `can_lethal_this_turn()` certificava lethal alocando DON livremente, mas
 > `_don_livre_for_plan` reservava DON pro "resto do plano" mesmo quando o

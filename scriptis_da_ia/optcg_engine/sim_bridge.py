@@ -326,6 +326,14 @@ def choose_action(gs: GameState, opp_gs: GameState,
     def _run() -> None:
         try:
             engine = DecisionEngine(gs, opp_gs)
+            if trace_out is not None:
+                # priority/can_lethal ao vivo (19/07): fecha o cruzamento
+                # "esse turno certificou lethal e o jogo terminou logo em
+                # seguida?" direto no JSONL de producao -- sem precisar
+                # reconstruir estado de combat log (que sofre o corte do
+                # AutoSaved). Calculado uma vez, antes do resto da busca.
+                trace_out["priority"] = engine.analyzer.analysis_priority()
+                trace_out["can_lethal"] = engine.analyzer.can_lethal_this_turn()
             actions = match._generate_and_score_actions(gs, opp_gs, engine)
             if trace_out is not None:
                 trace_out["scored_actions"] = [
@@ -406,7 +414,13 @@ def choose_action(gs: GameState, opp_gs: GameState,
                           f"valor simulado {melhor_valor:.1f})", flush=True)
         except Exception as e:
             import traceback
+            # Achado 19/07: essa excecao rodava numa thread separada e
+            # morria aqui -- so no console, nunca chegava no trace_out nem
+            # em telemetria. server.py via "sem acao elegivel" (result[0]
+            # continuava None), indistinguivel de um turno sem jogada real.
             print(f"[ENG-ERR] {e}\n{traceback.format_exc()}", flush=True)
+            if trace_out is not None:
+                trace_out["engine_error"] = str(e)
 
     t = threading.Thread(target=_run, daemon=True)
     t.start()

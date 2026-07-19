@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using Newtonsoft.Json;
 
@@ -92,6 +93,19 @@ namespace OPTCGBotPlugin
             if (gls.e_CurrentState == GameplayState.GameOver && !_outcomeReported)
             {
                 _outcomeReported = true;
+                // Achado 19/07 (leitura do decompilado GameplayLogicScript.cs):
+                // o combat log com o desfecho completo ("Downloaded the Combat
+                // Log!"/"GameOver") SO existe se DownloadLogLines() for chamado
+                // -- isso normalmente acontece so quando o jogador clica o
+                // botao "Download Log" (go_DownloadLog) na tela de fim de jogo.
+                // O bot nunca clicava nele, entao o coletor so via a copia de
+                // CombatLogs/AutoSaved (SaveMyLogLines, autosave continuo que
+                // corta bem antes do fim -- confirmado em 5/5 logs do bot que
+                // chegaram perto do desfecho, ver HANDOFF bloco 285). Chamando
+                // o metodo PUBLICO direto (sem precisar clicar UI) escreve o
+                // log cheio em CombatLogs/<timestamp>.log ANTES do outcome.
+                try { gls.DownloadLogLines(); }
+                catch (Exception ex) { Plugin.Log.LogWarning($"[Bot] DownloadLogLines falhou: {ex.Message}"); }
                 bool youWon = gls.go_YouWin != null && gls.go_YouWin.activeSelf;
                 bool botWon = BotPlayerIndex == 0 ? youWon : !youWon;
                 var finalDto = GameStateBuilder.Build(

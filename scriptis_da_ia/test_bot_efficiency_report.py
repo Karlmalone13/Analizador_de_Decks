@@ -146,6 +146,61 @@ class BotEfficiencyReportTests(unittest.TestCase):
         self.assertEqual(result["transition_semantics_summary"]["failed"], 1)
         self.assertIn("semantic_transition_failed", {a["code"] for a in result["alerts"]})
 
+    def test_bot_confusion_aggregates_all_four_signals(self):
+        events = [
+            {"event": "decision", "decision_id": "a", "decision_kind": "main",
+             "selection": "no_eligible_action", "scored_actions": [], "chosen_action": None},
+            {"event": "decision_error", "decision_id": "err1", "match_id": "m1",
+             "turn": 3, "error": "boom"},
+            {"event": "client_timeout", "decision_id": "ct1", "match_id": "m1",
+             "endpoint": "/decide", "turn": 4},
+            {"event": "decision", "decision_id": "b", "decision_kind": "main",
+             "scored_actions": [], "chosen_action": {"type": "attack"}},
+            {"event": "execution", "decision_id": "b", "status": "failed",
+             "error": "acao repetida 3x sem mudanca de estado"},
+        ]
+        result = report.analyze_decision_events(json.dumps(e) for e in events)
+        self.assertEqual(result["bot_confusion"], {
+            "total": 4,
+            "no_eligible_action": 1,
+            "engine_exceptions": 1,
+            "client_timeouts": 1,
+            "stuck_executions": 1,
+        })
+        self.assertIn("bot_confusion", {a["code"] for a in result["alerts"]})
+
+    def test_bot_confusion_silent_when_no_signal_present(self):
+        events = [
+            {"event": "decision", "decision_id": "a", "decision_kind": "main",
+             "selection": "immediate_score", "scored_actions": [], "chosen_action": {"type": "play"}},
+            {"event": "execution", "decision_id": "a", "status": "confirmed"},
+        ]
+        result = report.analyze_decision_events(json.dumps(e) for e in events)
+        self.assertEqual(result["bot_confusion"]["total"], 0)
+        self.assertNotIn("bot_confusion", {a["code"] for a in result["alerts"]})
+
+    def test_lethal_certified_correlates_with_match_outcome(self):
+        events = [
+            # match m1: lethal certificado no turno 5, fecha (win) no turno 6 -- 1 turno depois
+            {"event": "decision", "decision_id": "d1", "decision_kind": "main",
+             "match_id": "m1", "turn": 5, "can_lethal": True,
+             "scored_actions": [], "chosen_action": {"type": "attack"}},
+            {"event": "outcome", "decision_id": "o1", "match_id": "m1", "result": "win",
+             "state_final": {"turnNumber": 6}},
+            # match m2: lethal certificado no turno 2, mas a partida termina em derrota
+            {"event": "decision", "decision_id": "d2", "decision_kind": "main",
+             "match_id": "m2", "turn": 2, "can_lethal": True,
+             "scored_actions": [], "chosen_action": {"type": "attack"}},
+            {"event": "outcome", "decision_id": "o2", "match_id": "m2", "result": "loss",
+             "state_final": {"turnNumber": 9}},
+        ]
+        result = report.analyze_decision_events(json.dumps(e) for e in events)
+        summary = result["lethal_certified_summary"]
+        self.assertEqual(summary["matches_with_lethal_certified"], 2)
+        self.assertEqual(summary["matches_closed_after_lethal"], 1)
+        self.assertEqual(summary["matches_not_closed_after_lethal"], 1)
+        self.assertEqual(summary["mean_turns_to_close"], 1.0)
+
     def test_bank_confirmation_requires_canonical_name_and_artifacts(self):
         log = Path("2026-07-18T12.00.00.log")
         entry = {"id": log.stem,

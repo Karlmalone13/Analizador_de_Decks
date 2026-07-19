@@ -1,5 +1,81 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-19 (286) - Claude - proxy: sinais de "bot confuso"/timeout ao vivo + LETHAL correlacionado com outcome + log completo (sem corte do AutoSaved)
+
+Depois do fix de eficiência (bloco 285), usuário pediu levantamento do que
+falta no proxy + uma função pra mostrar erros ("bot ficou sem saber o que
+fazer", "pensou demais"). Levantamento (via Explore agent) achou: timeout
+já existe mas fica indistinguível de qualquer outro erro de rede; `/decide`
+sem ação elegível já é logado mas nunca vira alerta; `decision_error`
+(exceção Python real) é um tipo de evento que `bot_efficiency_report.py`
+**nunca lia**; ação repetida 3x/2 falhas seguidas do `BotDriver.cs` já
+reportava `execution failed`, mas só aparecia como aviso solto na Unity,
+nunca com marcador claro no mesmo terminal do proxy. Implementados os 4
+itens acordados + os 2 itens de telemetria/captura de log já propostos
+antes:
+
+**1. `sim_bridge.choose_action` ganhou `priority`/`can_lethal` no
+`trace_out`** (calculado uma vez via `engine.analyzer`, sem custo extra) —
+fecha o cruzamento "esse turno certificou lethal e a partida realmente
+terminou logo em seguida?" **direto no JSONL de produção**, sem precisar
+reconstruir estado de combat log (que sofre o corte do AutoSaved, ver
+bloco 285). Achado extra na mesma leitura: a exceção dentro da thread de
+busca (`_run()`) era engolida silenciosamente (só `print`, nunca chegava em
+`trace_out` nem telemetria) — `server.py` via "sem ação elegível",
+indistinguível de um turno legitimamente sem jogada. Corrigido: agora vira
+`trace_out["engine_error"]`.
+
+**2. `server.py`**: `/decide` agora grava `priority`/`can_lethal`/
+`engine_error` no evento `decision`; `decision_error` ganhou `match_id`
+(faltava, impedia correlacionar com o outcome). Novo endpoint
+`/client_timeout` (evento novo, `client_timeout`) pro plugin C# reportar
+quando o `HttpClient` estoura o timeout de 10s esperando QUALQUER endpoint
+— antes disso um timeout de rede real não deixava rastro NENHUM em
+telemetria (nem `decision` nem `execution` saíam, o request nunca
+completava). Marcadores `[ALERTA]` ao vivo no console (mesmo
+`session_*.log` do `_TeeStream`) pra: engine_error, sem ação elegível,
+timeout interno da busca, exceção real no `/decide`, e execução `failed`
+(cobre os casos que o C# já detectava mas só avisava na Unity).
+
+**3. `EngineClient.cs`**: `catch (TaskCanceledException)` específico (antes
+do `catch (Exception)` genérico) em `Decide`/`Defense`/`ChooseTarget`/
+`ShouldMulligan`/`GoFirst`, cada um chamando `ReportClientTimeout(endpoint,
+turn)` — fire-and-forget pro `/client_timeout` novo.
+
+**4. `bot_efficiency_report.py`**: novo alerta agregado `bot_confusion`
+(soma `no_eligible_action` + `decision_error` + `client_timeout` +
+"execução travada" — ação repetida 3x/`ExecuteOne` falhou, via texto do
+campo `error` da execução). Novo `lethal_certified_summary`: agrupa por
+`match_id` o primeiro turno com `can_lethal=True` e correlaciona com o
+evento `outcome` da mesma partida (via `state_final.turnNumber`) —
+`matches_closed_after_lethal`/`matches_not_closed_after_lethal`/
+`mean_turns_to_close`. 3 testes novos em `test_bot_efficiency_report.py`
+(13/13 passam).
+
+**5. Achado extra, por leitura do decompilado
+`_referencias/simulador-oficial/dnspy-export/.../GameplayLogicScript.cs`**:
+o combat log com o desfecho COMPLETO ("Downloaded the Combat Log!"/
+"GameOver") só existe se `DownloadLogLines()` for chamado — normalmente só
+acontece quando o jogador clica o botão "Download Log" na tela de fim de
+jogo. O bot nunca clicava nele; o coletor só via `CombatLogs/AutoSaved/`
+(escrito por `SaveMyLogLines`, autosave contínuo que corta bem antes do
+fim — confirmado 5/5 nos logs do bloco 285). Fix: `BotDriver.cs` chama
+`gls.DownloadLogLines()` diretamente (método público, sem precisar simular
+clique de UI) no `GameOver`, antes de reportar o outcome — escreve o log
+cheio em `CombatLogs/<timestamp>.log`. `collect_latest_match.py` mudou o
+diretório padrão de busca de `CombatLogs/AutoSaved` pra `CombatLogs`
+(pasta pai). **Precisa validação em partida real** (não declarar
+resolvido sem log ao vivo) — a próxima partida deve confirmar que o
+`.log` capturado agora tem as linhas de `GameOver`.
+
+Validado: `smoke_fast.py` 100% verde, `test_bot_efficiency_report.py`
+13/13, `dotnet build` limpo (0 erros/avisos novos). Arquivos tocados:
+`scriptis_da_ia/optcg_engine/sim_bridge.py`, `BOT/engine_server/server.py`,
+`BOT/OPTCGBotPlugin/EngineClient.cs`, `BOT/OPTCGBotPlugin/BotDriver.cs`,
+`scriptis_da_ia/collect_latest_match.py`,
+`scriptis_da_ia/bot_efficiency_report.py`,
+`scriptis_da_ia/test_bot_efficiency_report.py`.
+
 ## 2026-07-19 (285) - Claude - eficiência do bot: mapeamento do Turn Planner + fix real de LETHAL/DON validado
 
 Depois de fechar a varredura do parser e o proxy/telemetria (bloco 284),

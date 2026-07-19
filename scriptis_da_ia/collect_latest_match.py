@@ -18,10 +18,20 @@ ROOT = Path(__file__).resolve().parent
 REPO = ROOT.parent
 DB_ROOT = ROOT / "logs"
 DB_INDEX = DB_ROOT / "index.json"
+# Achado 19/07 (leitura do decompilado GameplayLogicScript.cs): o jogo tem
+# DUAS gravacoes diferentes. `CombatLogs/AutoSaved/` (SaveMyLogLines) e um
+# autosave continuo que corta ANTES do desfecho -- confirmado em 5/5 logs do
+# bot que chegaram perto do fim (ver HANDOFF bloco 285). `CombatLogs/` (pasta
+# pai, sem AutoSaved) e onde DownloadLogLines() escreve o log CHEIO, incluindo
+# as linhas "Downloaded the Combat Log!"/"GameOver". BotDriver.cs agora chama
+# gls.DownloadLogLines() direto no GameOver (nao precisa clicar o botao na
+# UI) -- por isso a pasta default mudou daqui pra frente. Mantem o nome da
+# env var por compatibilidade (quem ja tinha ela setada testando AutoSaved
+# pode apontar pra qualquer uma das duas).
 DEFAULT_AUTOSAVED = Path(
     os.environ.get(
         "OPTCGSIM_AUTOSAVED_DIR",
-        r"E:\Games\OnePieceSimulador\Builds_Windows\CombatLogs\AutoSaved",
+        r"E:\Games\OnePieceSimulador\Builds_Windows\CombatLogs",
     )
 )
 

@@ -227,6 +227,8 @@ def analyze_decision_events(lines) -> dict:
     decisions: dict[str, dict] = {}
     executions: dict[str, list[dict]] = {}
     outcomes: list[dict] = []
+    decision_errors: list[dict] = []
+    client_timeouts: list[dict] = []
     ordered_decisions: list[dict] = []
     commits: set[str] = set()
     sessions: set[str] = set()
@@ -259,6 +261,17 @@ def analyze_decision_events(lines) -> dict:
             executions.setdefault(decision_id, []).append(event)
         elif event.get("event") == "outcome":
             outcomes.append(event)
+        elif event.get("event") == "decision_error":
+            # Achado 19/07: excecao real do Python em /decide -- antes disto
+            # o evento existia no JSONL mas nunca era lido por este agregador
+            # (nem contava em fallback_errors, nem gerava alerta nenhum).
+            decision_errors.append(event)
+        elif event.get("event") == "client_timeout":
+            # Achado 19/07: HttpClient do plugin C# estourou o timeout (10s)
+            # esperando resposta de QUALQUER endpoint -- um timeout de rede
+            # real, distinto do timeout INTERNO de busca (`timed_out` abaixo,
+            # que so mede o join() de 3s da thread de refinamento).
+            client_timeouts.append(event)
 
     confirmed = failed = pending = 0
     with_state_after = 0
@@ -269,8 +282,18 @@ def analyze_decision_events(lines) -> dict:
     latencies = []
     timed_out = 0
     fallback_errors = 0
+    no_eligible_action = 0
+    stuck_executions = 0
+    lethal_certified: list[dict] = []
     by_kind: dict[str, dict[str, int]] = {}
     semantic = {"checked": 0, "passed": 0, "failed": 0, "unavailable": 0}
+
+    # Reasons do BotDriver.cs que indicam "o bot decidiu, mas o jogo recusou
+    # silenciosamente" (acao repetida sem efeito / ExecuteOne falhou) -- ver
+    # BOT/OPTCGBotPlugin/BotDriver.cs, mesma familia de "bot confuso" que
+    # no_eligible_action e decision_error, so que descoberta DEPOIS da
+    # decisao (na execucao), nao antes.
+    _STUCK_EXECUTION_REASONS = ("acao repetida", "ExecuteOne retornou false")
 
     def find_uid(player: dict, uid: int):
         for zone in ("hand", "board"):
@@ -320,7 +343,11 @@ def analyze_decision_events(lines) -> dict:
         if isinstance(decision.get("latency_ms"), (int, float)):
             latencies.append(float(decision["latency_ms"]))
         timed_out += int(bool(decision.get("timed_out")))
-        fallback_errors += int(bool(decision.get("error") or decision.get("telemetry_error")))
+        fallback_errors += int(bool(decision.get("error") or decision.get("telemetry_error")
+                                    or decision.get("engine_error")))
+        no_eligible_action += int(decision.get("selection") == "no_eligible_action")
+        if decision.get("can_lethal"):
+            lethal_certified.append(decision)
         if chosen is not None and eligible:
             chosen_with_scores += 1
             best = max(float(a.get("score", -1e9)) for a in eligible)
@@ -330,6 +357,10 @@ def analyze_decision_events(lines) -> dict:
         with_state_after += int(any(e.get("state_after") is not None for e in events))
         terminal = next((e for e in reversed(events)
                          if e.get("status") in {"confirmed", "failed"}), None)
+        if any(e.get("status") == "failed"
+               and any(reason in (e.get("error") or "") for reason in _STUCK_EXECUTION_REASONS)
+               for e in events):
+            stuck_executions += 1
         if terminal is None:
             pending += 1
             bucket["pending"] += 1
@@ -408,6 +439,40 @@ def analyze_decision_events(lines) -> dict:
     latency_sorted = sorted(latencies)
     latency_p95 = _percentile(latency_sorted, 0.95)
     outcome_coverage = _ratio(len(observed_matches & outcome_matches), len(observed_matches), 100)
+
+    # LETHAL certificado -> o jogo realmente terminou logo em seguida? (19/07,
+    # fecha o cruzamento que ficou bloqueado com os 79 combat logs -- o JSONL
+    # de decisao NAO sofre o corte do AutoSaved, so o .log bruto do jogo).
+    # Agrupa por match: primeiro turno com can_lethal=True, e quantos turnos
+    # depois o outcome (se veio "win") aconteceu.
+    outcome_by_match = {e.get("match_id"): e for e in outcomes if e.get("match_id")}
+    lethal_first_turn: dict[str, int] = {}
+    for d in lethal_certified:
+        mid = d.get("match_id")
+        turn = d.get("turn")
+        if mid is None or not isinstance(turn, (int, float)):
+            continue
+        if mid not in lethal_first_turn or turn < lethal_first_turn[mid]:
+            lethal_first_turn[mid] = turn
+    lethal_turns_to_close = []
+    lethal_never_closed = 0
+    for mid, first_turn in lethal_first_turn.items():
+        outcome = outcome_by_match.get(mid)
+        if outcome is None:
+            continue
+        final_turn = ((outcome.get("state_final") or {}).get("turnNumber"))
+        if outcome.get("result") == "win" and isinstance(final_turn, (int, float)):
+            lethal_turns_to_close.append(final_turn - first_turn)
+        elif outcome.get("result") in {"loss", "draw", "aborted"}:
+            lethal_never_closed += 1
+    lethal_summary = {
+        "matches_with_lethal_certified": len(lethal_first_turn),
+        "matches_closed_after_lethal": len(lethal_turns_to_close),
+        "matches_not_closed_after_lethal": lethal_never_closed,
+        "mean_turns_to_close": _round(
+            sum(lethal_turns_to_close) / len(lethal_turns_to_close)
+            if lethal_turns_to_close else None),
+    }
     gates = _load_json(COLLECTION_PLAN).get("gates", {}) if COLLECTION_PLAN.exists() else {}
     alerts = []
 
@@ -435,6 +500,14 @@ def analyze_decision_events(lines) -> dict:
     if fallback_errors:
         alert("decision_fallback_errors", "error", "decisoes usaram fallback por erro",
               fallback_errors, 0)
+    bot_confusion_total = (no_eligible_action + len(decision_errors)
+                          + len(client_timeouts) + stuck_executions)
+    if bot_confusion_total:
+        alert("bot_confusion", "error",
+              f"bot travado/confuso {bot_confusion_total}x (sem_acao={no_eligible_action}, "
+              f"excecao_engine={len(decision_errors)}, timeout_cliente={len(client_timeouts)}, "
+              f"execucao_travada={stuck_executions})",
+              bot_confusion_total, 0)
     if len(commits) > 1:
         alert("mixed_commits", "error", "o mesmo arquivo mistura commits", len(commits), 1)
     if len(sessions) > 1:
@@ -510,12 +583,22 @@ def analyze_decision_events(lines) -> dict:
         },
         "decision_quality": None,
         "invalid_lines": invalid_lines,
+        "bot_confusion": {
+            "total": bot_confusion_total,
+            "no_eligible_action": no_eligible_action,
+            "engine_exceptions": len(decision_errors),
+            "client_timeouts": len(client_timeouts),
+            "stuck_executions": stuck_executions,
+        },
+        "lethal_certified_summary": lethal_summary,
         "notes": [
             "execution_success usa confirmacao por mudanca do DTO no proximo main state estavel",
             "mean_immediate_score_gap nao e arrependimento: busca pode escolher score imediato menor",
             "state_fidelity exige verdade independente do estado do jogo",
             "contrafactual usa somente alternativas realmente simuladas pela busca do motor",
             "sent sem confirmed/failed permanece pending e nao conta como sucesso",
+            "bot_confusion agrega sinais de 'nao sabia o que fazer' (sem_acao/excecao/timeout/execucao "
+            "travada); lethal_certified_summary correlaciona can_lethal=True com o outcome real da partida",
         ],
     }
 
@@ -550,6 +633,8 @@ def print_report(report: dict) -> None:
         print(f"  {'outcomes':34s} {live['outcomes']}")
         print(f"  {'future_delta_1_3_5':34s} {live['future_state_delta_by_decisions']}")
         print(f"  {'latency_ms':34s} {live['latency_ms']}")
+        print(f"  {'bot_confusion':34s} {live['bot_confusion']}")
+        print(f"  {'lethal_certified_summary':34s} {live['lethal_certified_summary']}")
         print(f"  {'gate_status':34s} {live['gate_status']}")
         for alert in live["alerts"]:
             print(f"  ALERTA {alert['severity'].upper():7s} {alert['code']}: {alert['message']}")

@@ -382,6 +382,37 @@ def execution(report: ExecutionReport):
         state_after=_model_dict(report.stateAfter) if report.stateAfter else None,
         error=report.error,
     )
+    if report.status == "failed":
+        # Ao vivo (19/07): cobre os casos que o plugin C# ja detecta e
+        # reporta (acao repetida 3x sem efeito, 2 falhas seguidas -- ver
+        # BotDriver.cs), que antes so apareciam como LogWarning no console
+        # da Unity, nunca no mesmo terminal do proxy.
+        print(f"[ALERTA] execucao falhou (decisionId={report.decisionId[:8]}): "
+              f"{report.error or 'sem motivo informado'}", flush=True)
+    return {"ok": True}
+
+
+class ClientTimeoutReport(BaseModel):
+    endpoint: str
+    turn: Optional[int] = None
+
+
+@app.post("/client_timeout")
+def client_timeout(report: ClientTimeoutReport):
+    """
+    Reportado pelo plugin C# quando o HttpClient estoura o timeout (10s)
+    esperando resposta de QUALQUER endpoint (/decide, /defense, /choose_target,
+    /mulligan, /turn_order). Achado 19/07: antes disso, um timeout de HTTP
+    de verdade nao deixava rastro NENHUM em telemetria -- nem "decision" nem
+    "execution" saiam pro JSONL (o request nunca completou), entao os gates
+    de pending_decisions/timeout_pct do bot_efficiency_report.py nao tinham
+    como enxergar isso. So mede o timeout INTERNO da busca Python (join com
+    timeout=3s), nao o timeout de rede real do cliente.
+    """
+    write_event("client_timeout", new_decision_id(), match_id=_live_match_id,
+                endpoint=report.endpoint, turn=report.turn)
+    print(f"[ALERTA] cliente C# nao recebeu resposta a tempo de {report.endpoint} "
+          f"(turno {report.turn})", flush=True)
     return {"ok": True}
 
 
@@ -614,10 +645,27 @@ def decide(state: GameStateDto):
             search_values=trace.get("search_values", []),
             selection=trace.get("selection", reason),
             timed_out=trace.get("timed_out", False),
+            priority=trace.get("priority"),
+            can_lethal=trace.get("can_lethal"),
+            engine_error=trace.get("engine_error"),
             latency_ms=round((time.perf_counter() - started) * 1000, 3),
             response=out,
             reason=reason,
         )
+        # Marcadores AO VIVO (19/07): antes so apareciam rodando
+        # bot_efficiency_report.py depois da partida. "sem acao elegivel"
+        # e "engine_error" sao os 2 sinais reais de "bot nao sabe o que
+        # fazer" -- imprimir na hora, no mesmo console/session log que
+        # ja registra tudo (ver _TeeStream acima).
+        if trace.get("engine_error"):
+            print(f"[ALERTA] motor quebrou durante a busca (turno {state.turnNumber}): "
+                  f"{trace['engine_error']}", flush=True)
+        elif reason == "sem acao elegivel":
+            print(f"[ALERTA] bot sem acao elegivel (turno {state.turnNumber}) "
+                  f"-- hand={len(state.bot.hand)} don={state.bot.activeDon}", flush=True)
+        if trace.get("timed_out"):
+            print(f"[ALERTA] busca do Turn Planner nao terminou a tempo "
+                  f"(turno {state.turnNumber}, timeout)", flush=True)
         return out
 
     started = time.perf_counter()
@@ -715,8 +763,9 @@ def decide(state: GameStateDto):
     except Exception as e:
         import traceback
         traceback.print_exc()
+        print(f"[ALERTA] excecao no /decide (turno {state.turnNumber}): {e}", flush=True)
         write_event(
-            "decision_error", decision_id, turn=state.turnNumber,
+            "decision_error", decision_id, match_id=_live_match_id, turn=state.turnNumber,
             state_before=_model_dict(state), error=str(e),
             scored_actions=trace.get("scored_actions", []),
         )

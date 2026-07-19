@@ -28,10 +28,36 @@ namespace OPTCGBotPlugin
                 string body = resp.Content.ReadAsStringAsync().GetAwaiter().GetResult();
                 return JsonConvert.DeserializeObject<BotAction>(body);
             }
+            catch (TaskCanceledException)
+            {
+                Plugin.Log.LogError("[EngineClient] /decide nao respondeu a tempo (timeout de 10s)");
+                ReportClientTimeout("/decide", state.turnNumber);
+                return null;
+            }
             catch (Exception ex)
             {
                 Plugin.Log.LogError($"[EngineClient] {ex.Message}");
                 return null;
+            }
+        }
+
+        // Achado 19/07: um timeout de HTTP real (HttpClient estourando os 10s
+        // configurados) nao deixava NENHUM rastro em telemetria -- nem
+        // "decision" nem "execution" saiam pro JSONL, porque o request nunca
+        // completou do lado do servidor. Isso reporta o timeout em si (fire-
+        // and-forget, best-effort -- se o proprio /client_timeout tambem
+        // falhar, so loga local, nao trava o bot).
+        public static void ReportClientTimeout(string endpoint, int? turn = null)
+        {
+            try
+            {
+                string json = JsonConvert.SerializeObject(new { endpoint, turn });
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+                _http.PostAsync($"{BASE}/client_timeout", content).GetAwaiter().GetResult();
+            }
+            catch (Exception ex)
+            {
+                Plugin.Log.LogWarning($"[EngineClient] client_timeout: {ex.Message}");
             }
         }
 
@@ -143,6 +169,12 @@ namespace OPTCGBotPlugin
                     Plugin.Log.LogInfo($"[Bot] turn_order: goFirst={r.goFirst} ({r.reason})");
                 return r?.goFirst ?? false;
             }
+            catch (TaskCanceledException)
+            {
+                Plugin.Log.LogError("[EngineClient] /turn_order nao respondeu a tempo (timeout de 10s)");
+                ReportClientTimeout("/turn_order");
+                return false;
+            }
             catch (Exception ex)
             {
                 Plugin.Log.LogError($"[EngineClient] turn_order: {ex.Message}");
@@ -195,6 +227,12 @@ namespace OPTCGBotPlugin
                 if (result != null) onDecision?.Invoke(result.decisionId);
                 return result?.orderedIds;
             }
+            catch (TaskCanceledException)
+            {
+                Plugin.Log.LogError("[EngineClient] /choose_target nao respondeu a tempo (timeout de 10s)");
+                ReportClientTimeout("/choose_target", state.turnNumber);
+                return null;
+            }
             catch (Exception ex)
             {
                 Plugin.Log.LogError($"[EngineClient] choose_target: {ex.Message}");
@@ -223,6 +261,12 @@ namespace OPTCGBotPlugin
                 string body = resp.Content.ReadAsStringAsync().GetAwaiter().GetResult();
                 return JsonConvert.DeserializeObject<DefenseResponse>(body);
             }
+            catch (TaskCanceledException)
+            {
+                Plugin.Log.LogError("[EngineClient] /defense nao respondeu a tempo (timeout de 10s)");
+                ReportClientTimeout("/defense", state.turnNumber);
+                return null;
+            }
             catch (Exception ex)
             {
                 Plugin.Log.LogError($"[EngineClient] defense: {ex.Message}");
@@ -247,6 +291,12 @@ namespace OPTCGBotPlugin
                 if (r != null)
                     Plugin.Log.LogInfo($"[Bot] mulligan={r.mulligan} ({r.reason})");
                 return r?.mulligan ?? false;
+            }
+            catch (TaskCanceledException)
+            {
+                Plugin.Log.LogError("[EngineClient] /mulligan nao respondeu a tempo (timeout de 10s)");
+                ReportClientTimeout("/mulligan");
+                return false;
             }
             catch (Exception ex)
             {
