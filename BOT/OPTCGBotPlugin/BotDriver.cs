@@ -332,6 +332,23 @@ namespace OPTCGBotPlugin
                 return;
             }
 
+            // Achado 20/07 (partida real, Charlotte Pudding OP11-070 "peek
+            // opp deck top"): qualquer efeito de olhar/revelar carta SEM
+            // escolha nenhuma joga o jogo pra este estado dedicado, esperando
+            // um clique de confirmacao -- sem handler aqui, o activate
+            // "clicava" mas nunca comitava (rest_self nunca aplicava), e o
+            // engine reofereceria a mesma ativacao pra sempre (visto no log:
+            // 20 decisoes de Main falhando com "estado inalterado"/"acao
+            // repetida", todas a mesma carta). Mesmo padrao do DrawCard/DrawDon
+            // acima -- so confirma, nao precisa do engine.
+            if (gls.e_CurrentState == GameplayState.ConfirmRevealedCard
+                || gls.e_CurrentState == GameplayState.ConfirmRevealedCardOnOpponentsTurn)
+            {
+                gls.ChoiceButtonClicked(ButtonChoiceType.ConfirmRevealedCard, -1);
+                _cooldown = 0.5f;
+                return;
+            }
+
             // Deploy com campo cheio: escolhe (via engine) quem substituir
             if (gls.e_CurrentState == GameplayState.Action_SelectingDeploySwap)
             {
