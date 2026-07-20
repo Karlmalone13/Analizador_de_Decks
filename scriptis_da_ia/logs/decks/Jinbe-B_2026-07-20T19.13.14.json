@@ -1,0 +1,46 @@
+{
+  "cards": [
+    {
+      "code": "OP14-049",
+      "name": "Jinbe",
+      "count": 3
+    },
+    {
+      "code": "OP07-046",
+      "name": "Sengoku",
+      "count": 3
+    },
+    {
+      "code": "OP14-050",
+      "name": "Chew",
+      "count": 2
+    },
+    {
+      "code": "OP07-045",
+      "name": "Jinbe",
+      "count": 2
+    },
+    {
+      "code": "EB03-026",
+      "name": "EB03-026",
+      "count": 1
+    },
+    {
+      "code": "OP07-047",
+      "name": "OP07-047",
+      "count": 1
+    },
+    {
+      "code": "OP08-047",
+      "name": "Jozu",
+      "count": 1
+    },
+    {
+      "code": "ST17-003",
+      "name": "ST17-003",
+      "count": 1
+    }
+  ],
+  "total_seen": 14,
+  "leader": "OP14-040"
+}

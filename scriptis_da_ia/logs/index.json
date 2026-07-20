@@ -1918,5 +1918,30 @@
       "You": "decks/Dracule.Mihawk-G_2026-07-20T17.01.09.json",
       "Opponent": "decks/Charlotte.Katakuri-P_2026-07-20T17.01.09.json"
     }
+  },
+  {
+    "id": "2026-07-20T19.13.14",
+    "friendly_name": "Charlotte.Katakuri-P_x_Jinbe-B",
+    "date": "2026-07-20",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP11-062",
+      "leader_name": "Charlotte Katakuri",
+      "slug": "Charlotte.Katakuri-P"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP14-040",
+      "leader_name": "Jinbe",
+      "slug": "Jinbe-B"
+    },
+    "turns": 9,
+    "winner": "p2",
+    "log_file": "raw/Charlotte.Katakuri-P_x_Jinbe-B_2026-07-20T19.13.14.log",
+    "parsed_file": "parsed/Charlotte.Katakuri-P_x_Jinbe-B_2026-07-20T19.13.14.json",
+    "deck_files": {
+      "You": "decks/Charlotte.Katakuri-P_2026-07-20T19.13.14.json",
+      "Opponent": "decks/Jinbe-B_2026-07-20T19.13.14.json"
+    }
   }
 ]
