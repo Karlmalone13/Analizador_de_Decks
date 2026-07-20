@@ -1,5 +1,93 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-20 (288) - Claude - banco de cartas: sets ST31-36 adicionados (transcritos manualmente) + fix real achado em partida ao vivo (ConfirmRevealedCard)
+
+Primeira sessão de teste ao vivo de verdade desde os fixes dos blocos
+285-287 (usuário rodou `engine_server` + jogou partidas reais). Resultado
+imediato: **os fixes de captura de log (bloco 286) funcionaram 100%** —
+`DownloadLogLines()` gerou logs completos com `GameOver`, a coleta
+automática funcionou, `winner` foi preenchido corretamente. 3 partidas
+jogadas no total (a 1ª sem o servidor rodando — bot 100% passivo, log
+removido do banco a pedido do usuário por não ter decisão real nenhuma;
+as 2 seguintes com o servidor ativo).
+
+**Achado real #1 — bug de execução, causa raiz confirmada por leitura do
+jogo decompilado**: 69% das decisões de Main Phase (20/29) falhavam na
+2ª partida, todas a mesma carta (Charlotte Pudding OP11-070,
+`activate_main` = "peek_opp_deck_top" com custo `rest_self`). O clique de
+ativar "funcionava" no C#, mas o jogo entra num estado dedicado
+(`GameplayState.ConfirmRevealedCard`, achado em
+`_referencias/simulador-oficial/dnspy-export/.../GameplayLogicScript.cs`)
+esperando confirmação — sem handler nenhum no `BotDriver.cs`, o popup
+nunca fechava, o custo nunca comitava, e o engine reoferecia a mesma
+ativação pra sempre. **Fix genérico** (não específico da Pudding —
+qualquer carta com efeito "olhar/revelar sem escolha" bateria no mesmo
+buraco): novo handler em `BotDriver.cs` que confirma automaticamente
+(`ButtonChoiceType.ConfirmRevealedCard`), mesmo padrão simples do
+DrawCard/DrawDon. **Validado em partida real nova**: 16 decisões de Main
+na 3ª partida, **zero falhas** (vs. 20/29 antes do fix).
+
+**Achado real #2 — dado ausente, não lógica**: a mesma partida mostrou o
+bot com cartas fortes na mão (ST34-001/002/004 etc.) que NUNCA apareciam
+em `scored_actions` — a mão tinha as cartas, mas o motor as via como se
+não existissem. Causa raiz: `server.py::_dto_to_gs` filtra
+silenciosamente qualquer carta cujo código não esteja em `cards_db`
+(`gs.hand = [c for c in (_make(d) for d in player.hand) if c]`,
+`_make()` retorna `None` pra código desconhecido). Confirmado: os sets
+ST31-36 (lançados este mês) estavam 100% ausentes do `cards_rows.csv`.
+Isso, mais que qualquer bug de scoring, explica o padrão relatado pelo
+usuário (não desceu carta forte, anexou DON e atacou em vez de
+desenvolver, todos os ataques counterados) — com as cartas boas
+invisíveis, "atacar com tudo" virava genuinamente a melhor opção que o
+motor conseguia ver.
+
+**Fontes automáticas (`optcgapi.com`/`apitcg.com`, endpoint
+`/api/sync-cards`) ainda não têm ST31-36** (confirmado ao vivo:
+`optcgapi.com` só vai até ST30; `apitcg.com` retornou erro 500).
+Descoberta lateral: o projeto Supabase estava **pausado** (plano free
+pausa por inatividade) — reativado pelo usuário durante a sessão; o
+front-end de produção também estava fora do ar até esse momento, não só a
+sincronização de cartas. Rodada a sincronização depois de reativar: 4152
+cartas atualizadas via `optcgapi.com`, 0 erros (mas sem ST31-36, confirmando
+o gap).
+
+**As 30 cartas exclusivas dos 6 starter decks (5 por deck + 1 stage no
+ST31) foram transcritas manualmente** direto das imagens locais do jogo
+(`E:\Games\OnePieceSimulador\Builds_Windows\OPTCGSim_Data\StreamingAssets
+\Cards\ST3{1..6}\` — só imagens, sem arquivo de dados; `Cards.rar` do
+mesmo diretório também só tem imagens e só vai até ST30, mesmo gap).
+Líderes desses decks são reaproveitados de sets antigos (já no banco,
+confirmado — ex. OP11-062 Charlotte Katakuri no ST34). Custo/poder/cor/
+atributo/subtipos/counter/texto lidos carta a carta na imagem oficial.
+`card_image` ficou vazio (sem URL hospedada — só afeta exibição no
+front-end, não o engine) e `set_name` é descrição provisória (título
+oficial em inglês não confirmado). Ressalva: atributo de ST34-002
+(Charlotte Cracker) foi lido como "Wisdom" por inferência (ícone ambíguo
+na arte, possivelmente pré-lançamento) — vale reconferir quando a carta
+sair oficial. Registro completo em
+`parser_audits/2026-07-20_st31_a_st36_cartas_novas_adicionadas.json`.
+
+Validado: `diff_parser.py` PERDEU=0 (GANHOU=0 é esperado — a ferramenta só
+compara códigos que já existiam no snapshot anterior, não detecta carta
+nova; confirmei manualmente que as 30 estão em `card_effects_db.json` com
+efeitos extraídos). `smoke_fast.py`/`smoke_test.py` 100% verde. `dotnet
+build` limpo pro fix do `BotDriver.cs`.
+
+Arquivos tocados: `BOT/OPTCGBotPlugin/BotDriver.cs`,
+`scriptis_da_ia/cards_rows.csv`, `card_effects_db.json`,
+`card_analysis_db.json`, `parser_snapshot.json`, novo
+`parser_audits/2026-07-20_st31_a_st36_cartas_novas_adicionadas.json`.
+3 combat logs reais de hoje adicionados ao banco (`logs/raw|parsed|decks`
++ `index.json`, 79 → 82 entradas — 1 removida a pedido do usuário por bot
+100% passivo, servidor offline).
+
+**Pendências**: `setup_bepinex.bat` precisa rodar de novo (fix do
+`BotDriver.cs` já compilado, falta reinstalar a DLL) antes da próxima
+partida contar como validação plena. Confirmar via partida nova que o
+bug da Pudding realmente não volta em outras cartas do mesmo padrão
+(qualquer "look"/"peek" sem escolha). LETHAL/PREVENT_COMBO ainda não
+exercitados em partida real (nenhuma das 3 chegou nesses cenários).
+
 ## 2026-07-19 (287) - Claude - consciência de combo estratégico do oponente (tópico aberto 07/07, blocos 99/100) — implementado
 
 Retomando o tópico "PRÓXIMO TÓPICO" do TODO.md (aberto 07/07, nunca

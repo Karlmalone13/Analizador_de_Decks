@@ -78534,5 +78534,942 @@
         "once_per_turn": true
       }
     }
+  },
+  "ST31-001": {
+    "name": "Sanji",
+    "type": "CHARACTER",
+    "cost": 5,
+    "power": 3000,
+    "counter": 1000,
+    "life": 0,
+    "color": "Red",
+    "sub_types": "Straw Hat Crew",
+    "attribute": "Strike",
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "draw",
+            "count": 1
+          },
+          {
+            "action": "play_card",
+            "count": 1,
+            "cost_lte": 5,
+            "exclude": "sanji"
+          }
+        ],
+        "don_requirement": 2
+      },
+      "don_conditional_keywords": {
+        "steps": [
+          {
+            "action": "keyword_rush",
+            "don_requirement": 2
+          }
+        ]
+      }
+    }
+  },
+  "ST31-002": {
+    "name": "Jinbe",
+    "type": "CHARACTER",
+    "cost": 5,
+    "power": 6000,
+    "counter": 1000,
+    "life": 0,
+    "color": "Red",
+    "sub_types": "Fish-Man Straw Hat Crew",
+    "attribute": "Strike",
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "draw",
+            "count": 1
+          },
+          {
+            "action": "play_card",
+            "count": 1,
+            "cost_eq": 1,
+            "filter_type": "straw hat crew"
+          }
+        ]
+      },
+      "passive": {
+        "steps": [
+          {
+            "action": "keyword_blocker"
+          }
+        ]
+      }
+    }
+  },
+  "ST31-003": {
+    "name": "Brook",
+    "type": "CHARACTER",
+    "cost": 2,
+    "power": 3000,
+    "counter": 1000,
+    "life": 0,
+    "color": "Red",
+    "sub_types": "Straw Hat Crew",
+    "attribute": "Slash",
+    "effects": {
+      "opp_turn": {
+        "steps": [
+          {
+            "action": "buff_power",
+            "amount": 3000,
+            "target": "self",
+            "duration": "this_turn"
+          },
+          {
+            "action": "gain_blocker"
+          }
+        ],
+        "conditions": {
+          "don_attached_total_gte": 3
+        },
+        "costs": [
+          {
+            "type": "rest_self"
+          }
+        ]
+      }
+    }
+  },
+  "ST31-004": {
+    "name": "Monkey.D.Luffy",
+    "type": "CHARACTER",
+    "cost": 7,
+    "power": 9000,
+    "counter": 0,
+    "life": 0,
+    "color": "Red",
+    "sub_types": "The Four Emperors Straw Hat Crew",
+    "attribute": "Strike",
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "debuff_power",
+            "amount": 1000,
+            "target": "opp_character",
+            "duration": "this_turn"
+          }
+        ]
+      },
+      "passive": {
+        "steps": [
+          {
+            "action": "gain_rush"
+          }
+        ],
+        "conditions": {
+          "don_attached_total_gte": 3
+        }
+      }
+    }
+  },
+  "ST31-006": {
+    "name": "Thousand Sunny",
+    "type": "STAGE",
+    "cost": 1,
+    "power": 0,
+    "counter": 0,
+    "life": 0,
+    "color": "Red",
+    "sub_types": "Straw Hat Crew",
+    "attribute": "",
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "look_top_deck",
+            "count": 5
+          },
+          {
+            "action": "add_to_hand",
+            "count": 1,
+            "revealed_to_opponent": true
+          },
+          {
+            "action": "deck_bottom_rest"
+          }
+        ]
+      }
+    }
+  },
+  "ST32-001": {
+    "name": "Kin'emon",
+    "type": "CHARACTER",
+    "cost": 1,
+    "power": 2000,
+    "counter": 1000,
+    "life": 0,
+    "color": "Green",
+    "sub_types": "Land of Wano The Akazaya Nine",
+    "attribute": "Slash",
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "draw",
+            "count": 2,
+            "then_trash": 1
+          }
+        ]
+      }
+    }
+  },
+  "ST32-002": {
+    "name": "Kouzuki Oden",
+    "type": "CHARACTER",
+    "cost": 5,
+    "power": 6000,
+    "counter": 1000,
+    "life": 0,
+    "color": "Green",
+    "sub_types": "Land of Wano Kouzuki Clan",
+    "attribute": "Slash",
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "draw",
+            "count": 1
+          }
+        ]
+      }
+    }
+  },
+  "ST32-003": {
+    "name": "Dracule Mihawk",
+    "type": "CHARACTER",
+    "cost": 6,
+    "power": 7000,
+    "counter": 0,
+    "life": 0,
+    "color": "Green",
+    "sub_types": "Muggy Kingdom The Seven Warlords of the Sea",
+    "attribute": "Slash",
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "play_card",
+            "count": 1,
+            "cost_lte": 5,
+            "filter_name": "perona"
+          }
+        ]
+      },
+      "when_rested": {
+        "steps": [
+          {
+            "action": "draw",
+            "count": 1,
+            "then_trash": 1
+          }
+        ]
+      }
+    }
+  },
+  "ST32-004": {
+    "name": "Silvers Rayleigh",
+    "type": "CHARACTER",
+    "cost": 4,
+    "power": 5000,
+    "counter": 1000,
+    "life": 0,
+    "color": "Green",
+    "sub_types": "Former Roger Pirates",
+    "attribute": "Slash",
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "rest_opp_character",
+            "count": 2,
+            "cost_lte": 2
+          }
+        ]
+      }
+    }
+  },
+  "ST32-005": {
+    "name": "Roronoa Zoro",
+    "type": "CHARACTER",
+    "cost": 1,
+    "power": 2000,
+    "counter": 2000,
+    "life": 0,
+    "color": "Green",
+    "sub_types": "Supernovas Straw Hat Crew",
+    "attribute": "Slash",
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "rest_opp_character",
+            "count": 1,
+            "cost_lte": 2
+          }
+        ],
+        "conditions": {
+          "leader_attribute": "slash"
+        }
+      }
+    }
+  },
+  "ST33-001": {
+    "name": "Koby",
+    "type": "CHARACTER",
+    "cost": 2,
+    "power": 1000,
+    "counter": 1000,
+    "life": 0,
+    "color": "Blue",
+    "sub_types": "Navy",
+    "attribute": "Strike",
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "draw",
+            "count": 1
+          }
+        ],
+        "costs": [
+          {
+            "type": "trash_from_hand",
+            "count": 1
+          }
+        ]
+      },
+      "passive": {
+        "steps": [
+          {
+            "action": "keyword_blocker"
+          }
+        ]
+      }
+    }
+  },
+  "ST33-002": {
+    "name": "Sakazuki",
+    "type": "CHARACTER",
+    "cost": 4,
+    "power": 5000,
+    "counter": 1000,
+    "life": 0,
+    "color": "Blue",
+    "sub_types": "Navy",
+    "attribute": "Special",
+    "effects": {
+      "when_attacking": {
+        "steps": [
+          {
+            "action": "opp_trash_from_hand",
+            "count": 1,
+            "conditions": {
+              "opp_hand_gte": 6
+            }
+          }
+        ],
+        "costs": [
+          {
+            "type": "trash_from_hand",
+            "count": 1
+          }
+        ]
+      },
+      "on_ko": {
+        "steps": [
+          {
+            "action": "play_card",
+            "count": 1,
+            "cost_lte": 4,
+            "filter_type": "navy"
+          }
+        ]
+      }
+    }
+  },
+  "ST33-003": {
+    "name": "Smoker",
+    "type": "CHARACTER",
+    "cost": 2,
+    "power": 3000,
+    "counter": 2000,
+    "life": 0,
+    "color": "Blue",
+    "sub_types": "Navy",
+    "attribute": "Special",
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "place_opp_character_bottom_deck",
+            "count": 2,
+            "cost_lte": 2
+          }
+        ],
+        "costs": [
+          {
+            "type": "trash_from_hand",
+            "count": 1
+          }
+        ]
+      }
+    }
+  },
+  "ST33-004": {
+    "name": "Borsalino",
+    "type": "CHARACTER",
+    "cost": 6,
+    "power": 6000,
+    "counter": 2000,
+    "life": 0,
+    "color": "Blue",
+    "sub_types": "Navy",
+    "attribute": "Special",
+    "effects": {
+      "passive": {
+        "steps": [
+          {
+            "action": "debuff_cost",
+            "amount": 3,
+            "target": "own_play_self"
+          },
+          {
+            "action": "keyword_blocker"
+          }
+        ]
+      }
+    }
+  },
+  "ST33-005": {
+    "name": "Monkey.D.Garp",
+    "type": "CHARACTER",
+    "cost": 6,
+    "power": 6000,
+    "counter": 1000,
+    "life": 0,
+    "color": "Blue",
+    "sub_types": "Navy",
+    "attribute": "Strike",
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "play_card",
+            "count": 1,
+            "cost_lte": 99,
+            "filter_type": "navy",
+            "color": "blue",
+            "exclude": "monkey.d.garp",
+            "power_lte": 8000
+          }
+        ],
+        "conditions": {
+          "leader_type": "navy"
+        }
+      }
+    }
+  },
+  "ST34-001": {
+    "name": "Charlotte Katakuri",
+    "type": "CHARACTER",
+    "cost": 5,
+    "power": 7000,
+    "counter": 0,
+    "life": 0,
+    "color": "Purple",
+    "sub_types": "Big Mom Pirates",
+    "attribute": "Strike",
+    "effects": {
+      "on_ko": {
+        "steps": [
+          {
+            "action": "play_card",
+            "count": 1,
+            "cost_lte": 99,
+            "power_lte": 8000
+          }
+        ]
+      },
+      "when_don_returned": {
+        "steps": [
+          {
+            "action": "add_don",
+            "count": 2,
+            "rested": true
+          }
+        ],
+        "return_count_gte": 1,
+        "owner_turn": "your",
+        "once_per_turn": true,
+        "conditions": {
+          "leader_type": "big mom pirates"
+        }
+      }
+    }
+  },
+  "ST34-002": {
+    "name": "Charlotte Cracker",
+    "type": "CHARACTER",
+    "cost": 4,
+    "power": 5000,
+    "counter": 1000,
+    "life": 0,
+    "color": "Purple",
+    "sub_types": "Big Mom Pirates",
+    "attribute": "Wisdom",
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "ko",
+            "count": 1,
+            "target": "opp_character",
+            "cost_lte": 2
+          },
+          {
+            "action": "add_don",
+            "count": 1,
+            "rested": true
+          }
+        ],
+        "conditions": {
+          "leader_type": "big mom pirates"
+        }
+      }
+    }
+  },
+  "ST34-003": {
+    "name": "Charlotte Brulee",
+    "type": "CHARACTER",
+    "cost": 1,
+    "power": 2000,
+    "counter": 2000,
+    "life": 0,
+    "color": "Purple",
+    "sub_types": "Big Mom Pirates",
+    "attribute": "Special",
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "look_top_deck",
+            "count": 3
+          },
+          {
+            "action": "add_to_hand",
+            "count": 1,
+            "revealed_to_opponent": true,
+            "filter_type": "big mom pirates"
+          },
+          {
+            "action": "deck_bottom_rest"
+          }
+        ]
+      }
+    }
+  },
+  "ST34-004": {
+    "name": "Charlotte Linlin",
+    "type": "CHARACTER",
+    "cost": 10,
+    "power": 12000,
+    "counter": 0,
+    "life": 0,
+    "color": "Purple",
+    "sub_types": "The Four Emperors Big Mom Pirates",
+    "attribute": "Special",
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "set_base_power",
+            "amount": 0,
+            "target": "own_character",
+            "count": 1,
+            "duration": "this_turn"
+          },
+          {
+            "action": "gain_life",
+            "source": "deck_top",
+            "dest": "life_top",
+            "count": 1,
+            "up_to": true
+          }
+        ],
+        "costs": [
+          {
+            "type": "trash_from_hand",
+            "count": 1
+          },
+          {
+            "type": "don_minus",
+            "count": 4,
+            "optional": true
+          }
+        ]
+      }
+    }
+  },
+  "ST34-005": {
+    "name": "Baron Tamago & Pekoms",
+    "type": "CHARACTER",
+    "cost": 3,
+    "power": 4000,
+    "counter": 2000,
+    "life": 0,
+    "color": "Purple",
+    "sub_types": "Minks Big Mom Pirates",
+    "attribute": "Strike",
+    "effects": {
+      "when_attacking": {
+        "steps": [
+          {
+            "action": "ko",
+            "count": 1,
+            "target": "opp_character",
+            "power_lte": 2000
+          }
+        ],
+        "costs": [
+          {
+            "type": "don_minus",
+            "count": 1,
+            "optional": false
+          }
+        ]
+      }
+    }
+  },
+  "ST35-001": {
+    "name": "Hack",
+    "type": "CHARACTER",
+    "cost": 4,
+    "power": 4000,
+    "counter": 1000,
+    "life": 0,
+    "color": "Red",
+    "sub_types": "Fish-Man Dressrosa Revolutionary Army",
+    "attribute": "Strike",
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "ko",
+            "count": 1,
+            "target": "opp_character",
+            "power_lte": 2000
+          }
+        ]
+      },
+      "passive": {
+        "steps": [
+          {
+            "action": "keyword_blocker"
+          }
+        ]
+      }
+    }
+  },
+  "ST35-002": {
+    "name": "Lindbergh",
+    "type": "CHARACTER",
+    "cost": 4,
+    "power": 4000,
+    "counter": 2000,
+    "life": 0,
+    "color": "Red",
+    "sub_types": "Minks Revolutionary Army",
+    "attribute": "Special",
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "debuff_power",
+            "amount": 3000,
+            "target": "opp_character",
+            "duration": "this_turn"
+          }
+        ]
+      }
+    }
+  },
+  "ST35-003": {
+    "name": "Karasu",
+    "type": "CHARACTER",
+    "cost": 3,
+    "power": 4000,
+    "counter": 2000,
+    "life": 0,
+    "color": "Black",
+    "sub_types": "Revolutionary Army",
+    "attribute": "Special",
+    "effects": {
+      "when_attacking": {
+        "steps": [
+          {
+            "action": "opp_trash_from_hand",
+            "count": 1,
+            "conditions": {
+              "opp_hand_gte": 7
+            }
+          }
+        ],
+        "costs": [
+          {
+            "type": "trash_from_deck_top",
+            "count": 2
+          }
+        ]
+      }
+    }
+  },
+  "ST35-004": {
+    "name": "Koala",
+    "type": "CHARACTER",
+    "cost": 7,
+    "power": 6000,
+    "counter": 1000,
+    "life": 0,
+    "color": "Black",
+    "sub_types": "Dressrosa Revolutionary Army",
+    "attribute": "Strike",
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "play_card",
+            "count": 1,
+            "cost_lte": 99,
+            "source_alt": "trash",
+            "power_lte": 4000
+          },
+          {
+            "action": "give_don",
+            "count": 1,
+            "rested": true
+          }
+        ]
+      },
+      "passive": {
+        "steps": [
+          {
+            "action": "buff_cost",
+            "amount": 1,
+            "target": "self",
+            "duration": "permanent"
+          },
+          {
+            "action": "gain_blocker"
+          }
+        ]
+      }
+    }
+  },
+  "ST35-005": {
+    "name": "Bartholomew Kuma",
+    "type": "CHARACTER",
+    "cost": 5,
+    "power": 5000,
+    "counter": 1000,
+    "life": 0,
+    "color": "Black",
+    "sub_types": "Revolutionary Army",
+    "attribute": "Strike",
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "play_card",
+            "count": 1,
+            "cost_lte": 99,
+            "filter_type": "revolutionary army",
+            "source_alt": "trash",
+            "power_lte": 4000
+          },
+          {
+            "action": "give_don",
+            "count": 1,
+            "rested": true
+          }
+        ]
+      },
+      "passive": {
+        "steps": [
+          {
+            "action": "buff_cost",
+            "amount": 3,
+            "target": "self",
+            "duration": "permanent"
+          }
+        ]
+      }
+    }
+  },
+  "ST36-001": {
+    "name": "Cavendish",
+    "type": "CHARACTER",
+    "cost": 3,
+    "power": 3000,
+    "counter": 2000,
+    "life": 0,
+    "color": "Yellow",
+    "sub_types": "Dressrosa Supernova Beautiful Pirates",
+    "attribute": "Slash",
+    "effects": {
+      "on_ko": {
+        "steps": [
+          {
+            "action": "gain_life",
+            "source": "deck_top",
+            "dest": "life_top",
+            "count": 1,
+            "up_to": true
+          }
+        ],
+        "costs": [
+          {
+            "type": "trash_from_hand",
+            "count": 1
+          }
+        ]
+      }
+    }
+  },
+  "ST36-002": {
+    "name": "Killer",
+    "type": "CHARACTER",
+    "cost": 4,
+    "power": 6000,
+    "counter": 0,
+    "life": 0,
+    "color": "Yellow",
+    "sub_types": "Supernova Kid Pirates",
+    "attribute": "Slash",
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "gain_life",
+            "source": "deck_top",
+            "dest": "life_top",
+            "count": 1,
+            "up_to": true
+          }
+        ],
+        "conditions": {
+          "leader_type": "kid pirates",
+          "your_turn_only": true
+        }
+      },
+      "trigger": {
+        "steps": [
+          {
+            "action": "play_card",
+            "count": 1,
+            "source": "self"
+          }
+        ],
+        "conditions": {
+          "opp_life_lte": 3
+        }
+      }
+    }
+  },
+  "ST36-003": {
+    "name": "Scratchmen Apoo",
+    "type": "CHARACTER",
+    "cost": 4,
+    "power": 4000,
+    "counter": 2000,
+    "life": 0,
+    "color": "Yellow",
+    "sub_types": "Supernovas On-Air Pirates",
+    "attribute": "Ranged",
+    "effects": {
+      "trigger": {
+        "steps": [
+          {
+            "action": "draw",
+            "count": 1
+          },
+          {
+            "action": "set_base_power",
+            "amount": 7000,
+            "target": "leader",
+            "filter_type": "supernova",
+            "duration": "this_turn"
+          }
+        ]
+      }
+    }
+  },
+  "ST36-004": {
+    "name": "Bartolomeo",
+    "type": "CHARACTER",
+    "cost": 1,
+    "power": 2000,
+    "counter": 1000,
+    "life": 0,
+    "color": "Yellow",
+    "sub_types": "Dressrosa Supernovas Barto Club",
+    "attribute": "Special",
+    "effects": {
+      "on_play": {
+        "steps": [
+          {
+            "action": "draw",
+            "count": 2
+          }
+        ],
+        "costs": [
+          {
+            "type": "trash_from_hand",
+            "count": 1,
+            "filter_type": "supernovas"
+          }
+        ]
+      }
+    }
+  },
+  "ST36-005": {
+    "name": "Eustass\"Captain\"Kid",
+    "type": "CHARACTER",
+    "cost": 6,
+    "power": 7000,
+    "counter": 0,
+    "life": 0,
+    "color": "Yellow",
+    "sub_types": "Kid Pirates Supernovas",
+    "attribute": "Special",
+    "effects": {
+      "activate_main": {
+        "steps": [
+          {
+            "action": "give_don",
+            "count": 1,
+            "rested": true
+          }
+        ],
+        "once_per_turn": true
+      },
+      "passive": {
+        "steps": [
+          {
+            "action": "redirect_attack_target"
+          }
+        ],
+        "once_per_turn": true
+      }
+    }
   }
 }

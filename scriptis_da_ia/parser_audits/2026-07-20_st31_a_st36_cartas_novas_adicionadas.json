@@ -1,0 +1,27 @@
+{
+  "trigger_card": "ST34-001",
+  "problem": "Bot perdeu 2 partidas reais (20/07) sem jogar cartas fortes da mao apesar de ter DON sobrando. Achado ao investigar OP11-070 (Charlotte Pudding, ja no banco -- trava separada, ver bloco 288 do HANDOFF): o decision_log ao vivo mostrou scored_actions nunca incluindo ST34-001/002/004 etc. -- o set inteiro ST31-36 (lancado este mes) estava ausente do cards_rows.csv, entao server.py::_make() retornava None pra essas cartas e gs.hand = [c for c in (...) if c] as filtrava silenciosamente da mao que o engine ve (nao e bug de scoring, e ausencia total das opcoes).",
+  "grammar_family": "N/A -- nao e correcao de gramatica de texto, e adicao de dado bruto ausente (set novo nao coberto pelas fontes optcgapi.com/apitcg.com ainda, confirmado 20/07/2026: optcgapi so vai ate ST30).",
+  "queries": [
+    "grep -c ^ST3[1-6] cards_rows.csv (0 antes)",
+    "conferido optcgapi.com/api/allSTCards/ ao vivo -- so ST01..ST30",
+    "apitcg.com retornou erro 500 na tentativa",
+    "dados transcritos manualmente das imagens locais do jogo: E:\\Games\\OnePieceSimulador\\Builds_Windows\\OPTCGSim_Data\\StreamingAssets\\Cards\\ST3{1..6}\\ (so imagens, sem custo/poder/texto em arquivo -- lidos card a carta via visao)"
+  ],
+  "cards_found": [
+    "ST31-001", "ST31-002", "ST31-003", "ST31-004", "ST31-006",
+    "ST32-001", "ST32-002", "ST32-003", "ST32-004", "ST32-005",
+    "ST33-001", "ST33-002", "ST33-003", "ST33-004", "ST33-005",
+    "ST34-001", "ST34-002", "ST34-003", "ST34-004", "ST34-005",
+    "ST35-001", "ST35-002", "ST35-003", "ST35-004", "ST35-005",
+    "ST36-001", "ST36-002", "ST36-003", "ST36-004", "ST36-005"
+  ],
+  "resolution_scope": "global",
+  "decision": "Adicionadas as 30 cartas exclusivas dos 6 starter decks novos (5 por deck + 1 stage no ST31) direto no cards_rows.csv, com custo/poder/cor/atributo/subtipos/counter/texto conferidos carta a carta na imagem oficial. Os LIDERES desses decks sao reaproveitados de sets antigos (ja no banco, confirmado -- ex.: OP11-062 Charlotte Katakuri no ST34). gerar_dbs.py rodado; todas as 30 tem efeito extraido (get_card_effects != {} pras 4 testadas manualmente). card_image ficou vazio (sem URL hospedada -- nao afeta o engine, so exibicao no front-end, pendente de resolver quando optcgapi/apitcg atualizarem). set_name e uma descricao PROVISORIA (titulo oficial em ingles nao confirmado) -- so os campos MECANICOS (custo/poder/cor/atributo/texto/subtipos/counter) sao confiaveis pra decisao do motor. ST34-002 (Charlotte Cracker): atributo lido como 'Wisdom' por inferencia (icone da carta ambiguo/possivelmente arte pre-release nao finalizada) -- vale reconferir quando a carta sair oficialmente.",
+  "validated_by": [
+    "diff_parser.py PERDEU=0 (sem regressao nas 2614+ cartas existentes)",
+    "todas as 30 novas presentes em card_effects_db.json com efeitos extraidos",
+    "smoke_fast.py 100% verde",
+    "load_cards_db confirma as 30 no banco em memoria (2644 -> reflete tambem colapso de variantes _p1/_p2 existente antes, nao regressao)"
+  ]
+}

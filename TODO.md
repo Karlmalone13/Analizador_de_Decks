@@ -1,9 +1,33 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 19 de julho de 2026
+**Última atualização:** 20 de julho de 2026
 **Estado:** VARREDURA COMPLETA ENCERRADA em 19/07/2026; 100 suspeitos restantes, TODOS confirmados falso-positivo (revisão manual carta-a-carta)
 **Baseline do código:** ver `git log --oneline -1`
 **Repo:** github.com/Karlmalone13/Analizador_de_Decks
+
+> 20/07/2026: primeira sessão de teste ao vivo real dos fixes 285-287.
+> Captura de log 100% validada (DownloadLogLines + coleta automática +
+> winner). 2 achados reais em partida: (1) `ConfirmRevealedCard` sem
+> handler no `BotDriver.cs` travava QUALQUER carta com efeito "olhar/
+> revelar sem escolha" (achado com Charlotte Pudding OP11-070, 69% das
+> decisões de Main falhando) — fix genérico aplicado e validado (16/16
+> decisões confirmadas na partida seguinte). (2) Sets ST31-36 (lançados
+> este mês) estavam 100% ausentes do `cards_rows.csv` — `server.py`
+> filtra silenciosamente cartas de código desconhecido da mão, então o
+> motor "não via" as cartas fortes do próprio deck. `optcgapi.com`/
+> `apitcg.com` ainda não têm esses sets (confirmado ao vivo); as 30
+> cartas exclusivas foram transcritas manualmente das imagens locais do
+> jogo. Achado lateral: projeto Supabase estava PAUSADO (plano free,
+> reativado durante a sessão — front-end de produção também estava fora
+> do ar). Ver HANDOFF bloco 288.
+>
+> Pendências abertas: rodar `setup_bepinex.bat` antes da próxima partida
+> (fix do `BotDriver.cs` ainda não reinstalado no jogo); confirmar que o
+> padrão "peek sem handler" não se repete em outras cartas; LETHAL/
+> PREVENT_COMBO ainda não exercitados ao vivo; `set_name`/atributo de
+> ST34-002 são provisórios, revisar quando possível; sincronizar
+> ST31-36 via `/api/sync-cards` quando `optcgapi.com`/`apitcg.com`
+> atualizarem (evita depender da transcrição manual pra sempre).
 
 > 19/07/2026: proxy ganhou sinais de "bot confuso"/timeout ao vivo
 > (`[ALERTA]` no console + novo alerta agregado `bot_confusion` em
