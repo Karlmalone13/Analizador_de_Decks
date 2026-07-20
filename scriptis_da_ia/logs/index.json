@@ -1868,5 +1868,55 @@
       "You": "decks/Dracule.Mihawk-G_2026-07-20T12.31.57.json",
       "Opponent": "decks/Charlotte.Katakuri-P_2026-07-20T12.31.57.json"
     }
+  },
+  {
+    "id": "2026-07-20T13.57.47",
+    "friendly_name": "Dracule.Mihawk-G_x_Charlotte.Katakuri-P",
+    "date": "2026-07-20",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP14-020",
+      "leader_name": "Dracule Mihawk",
+      "slug": "Dracule.Mihawk-G"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP11-062",
+      "leader_name": "Charlotte Katakuri",
+      "slug": "Charlotte.Katakuri-P"
+    },
+    "turns": 10,
+    "winner": "p2",
+    "log_file": "raw/Dracule.Mihawk-G_x_Charlotte.Katakuri-P_2026-07-20T13.57.47.log",
+    "parsed_file": "parsed/Dracule.Mihawk-G_x_Charlotte.Katakuri-P_2026-07-20T13.57.47.json",
+    "deck_files": {
+      "You": "decks/Dracule.Mihawk-G_2026-07-20T13.57.47.json",
+      "Opponent": "decks/Charlotte.Katakuri-P_2026-07-20T13.57.47.json"
+    }
+  },
+  {
+    "id": "2026-07-20T17.01.09",
+    "friendly_name": "Dracule.Mihawk-G_x_Charlotte.Katakuri-P",
+    "date": "2026-07-20",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP14-020",
+      "leader_name": "Dracule Mihawk",
+      "slug": "Dracule.Mihawk-G"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP11-062",
+      "leader_name": "Charlotte Katakuri",
+      "slug": "Charlotte.Katakuri-P"
+    },
+    "turns": 10,
+    "winner": "p2",
+    "log_file": "raw/Dracule.Mihawk-G_x_Charlotte.Katakuri-P_2026-07-20T17.01.09.log",
+    "parsed_file": "parsed/Dracule.Mihawk-G_x_Charlotte.Katakuri-P_2026-07-20T17.01.09.json",
+    "deck_files": {
+      "You": "decks/Dracule.Mihawk-G_2026-07-20T17.01.09.json",
+      "Opponent": "decks/Charlotte.Katakuri-P_2026-07-20T17.01.09.json"
+    }
   }
 ]
