@@ -1,0 +1,682 @@
+{
+  "meta": {
+    "players": {
+      "p1": {
+        "name": "You",
+        "leader": {
+          "name": "Dracule Mihawk",
+          "code": "OP14-020"
+        }
+      },
+      "p2": {
+        "name": "Opponent",
+        "leader": {
+          "name": "Charlotte Katakuri",
+          "code": "OP11-062"
+        }
+      }
+    },
+    "goes_first": null
+  },
+  "total_turns": 8,
+  "turns": [
+    {
+      "turn": 1,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 1,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP14-039",
+          "card_name": "Coffin Boat",
+          "effects": [
+            "Draw 1 Card",
+            "Activate 1 Don"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP14-023",
+            "ST32-005",
+            "OP14-033",
+            "ST32-001",
+            "ST24-004"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 5
+        },
+        "Opponent": {
+          "hand": [
+            "ST34-001",
+            "OP15-078",
+            "ST34-004",
+            "PRB02-010",
+            "OP11-067"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 2,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "activate",
+          "card": "OP07-077",
+          "card_name": "We're Going to Claim the One Piece!!!",
+          "effects": [
+            "Rest 1 Don",
+            "<b>Reveal and Draw Charlotte Pudding [\"PRB02-010\">PRB02-010]</b>"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "ST34-001",
+            "ST34-004",
+            "PRB02-010",
+            "OP11-067",
+            "PRB02-010"
+          ],
+          "board": [],
+          "trash": [
+            "OP15-078",
+            "OP07-077"
+          ],
+          "life": 5
+        },
+        "You": {
+          "hand": [
+            "OP14-023",
+            "ST32-005",
+            "OP14-033",
+            "ST32-001",
+            "ST24-004"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 3,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP14-023",
+          "card_name": "Kikunojo",
+          "effects": [
+            "Set Kikunojo [\"OP14-023\">OP14-023] to Active"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP14-020",
+          "to_name": "Dracule Mihawk",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP14-020",
+          "to_name": "Dracule Mihawk",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Dracule Mihawk",
+          "attacker_code": "OP14-020",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP14-039",
+          "card_name": "Coffin Boat",
+          "effects": [
+            "Activate 1 Don"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "ST32-005",
+            "OP14-033",
+            "ST32-001",
+            "ST24-004",
+            "ST24-004"
+          ],
+          "board": [
+            "OP14-023"
+          ],
+          "trash": [],
+          "life": 5
+        },
+        "Opponent": {
+          "hand": [
+            "ST34-001",
+            "ST34-004",
+            "PRB02-010",
+            "OP11-067",
+            "PRB02-010",
+            "OP15-069"
+          ],
+          "trash": [
+            "OP15-078",
+            "OP07-077"
+          ],
+          "board": [],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 4,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP11-062",
+          "to_name": "Charlotte Katakuri",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Katakuri",
+          "attacker_code": "OP11-062",
+          "target": "Dracule Mihawk [\"OP14-020\">OP14-020]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "ST32-005"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP15-069",
+          "card_name": "Nola",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "ST34-001",
+            "ST34-004",
+            "PRB02-010",
+            "OP11-067",
+            "PRB02-010",
+            "ST18-001"
+          ],
+          "board": [
+            "OP15-069"
+          ],
+          "trash": [
+            "OP15-078",
+            "OP07-077"
+          ],
+          "life": 4
+        },
+        "You": {
+          "hand": [
+            "OP14-033",
+            "ST32-001",
+            "ST24-004",
+            "ST24-004"
+          ],
+          "trash": [
+            "ST32-005"
+          ],
+          "board": [
+            "OP14-023"
+          ],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 5,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP14-033",
+          "card_name": "Perona",
+          "effects": [
+            "Nola [\"OP15-069\">OP15-069] can't be rested until next turn ends"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP14-020",
+          "card_name": "Dracule Mihawk",
+          "effects": [
+            "Rest Perona [\"OP14-033\">OP14-033]",
+            "Activate 1 Don",
+            "Activate 1 Don",
+            "Activate 1 Don",
+            "Can't play Cost 1 Or More Characters for the Turn!"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Dracule Mihawk",
+          "attacker_code": "OP14-020",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "PRB02-010"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 3,
+          "to": "OP14-023",
+          "to_name": "Kikunojo",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Kikunojo",
+          "attacker_code": "OP14-023",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "PRB02-010"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP14-039",
+          "card_name": "Coffin Boat",
+          "effects": [
+            "Activate 1 Don"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP14-023",
+          "card_name": "Kikunojo",
+          "effects": [
+            "Set Kikunojo [\"OP14-023\">OP14-023] to Active"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "ST32-001",
+            "ST24-004",
+            "ST24-004",
+            "OP07-022"
+          ],
+          "board": [
+            "OP14-023",
+            "OP14-033"
+          ],
+          "trash": [
+            "ST32-005"
+          ],
+          "life": 5
+        },
+        "Opponent": {
+          "hand": [
+            "ST34-001",
+            "ST34-004",
+            "OP11-067",
+            "ST18-001"
+          ],
+          "trash": [
+            "OP15-078",
+            "OP07-077",
+            "PRB02-010",
+            "PRB02-010"
+          ],
+          "board": [
+            "OP15-069"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 6,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP11-062",
+          "to_name": "Charlotte Katakuri",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Katakuri",
+          "attacker_code": "OP11-062",
+          "target": "Perona [\"OP14-033\">OP14-033]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP07-022"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP11-070",
+          "card_name": "Charlotte Pudding",
+          "effects": [
+            "<b>Reveal and Draw Charlotte Cracker [\"ST34-002\">ST34-002]</b>"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP11-070",
+          "to_name": "Charlotte Pudding",
+          "total": 1
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "ST34-001",
+            "ST34-004",
+            "OP11-067",
+            "ST18-001",
+            "ST34-002"
+          ],
+          "board": [
+            "OP15-069",
+            "OP11-070"
+          ],
+          "trash": [
+            "OP15-078",
+            "OP07-077",
+            "PRB02-010",
+            "PRB02-010"
+          ],
+          "life": 4
+        },
+        "You": {
+          "hand": [
+            "ST32-001",
+            "ST24-004",
+            "ST24-004"
+          ],
+          "trash": [
+            "ST32-005",
+            "OP07-022"
+          ],
+          "board": [
+            "OP14-023",
+            "OP14-033"
+          ],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 7,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP12-034",
+          "card_name": "Perona",
+          "effects": [
+            "<b>Reveal and Draw Dracule Mihawk [\"ST32-003\">ST32-003]</b>"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "ST32-001",
+          "card_name": "Kin'emon",
+          "effects": [
+            "Rest Don [\"Don\">Don]",
+            "Draw 2 Card",
+            "Trash Kin'emon [\"ST32-001\">ST32-001]"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 3,
+          "to": "OP14-023",
+          "to_name": "Kikunojo",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Kikunojo",
+          "attacker_code": "OP14-023",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP14-020",
+          "to_name": "Dracule Mihawk",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Perona",
+          "attacker_code": "OP14-033",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "ST18-001"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Dracule Mihawk",
+          "attacker_code": "OP14-020",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP14-039",
+          "card_name": "Coffin Boat",
+          "effects": [
+            "Activate 1 Don"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP14-023",
+          "card_name": "Kikunojo",
+          "effects": [
+            "Set Kikunojo [\"OP14-023\">OP14-023] to Active"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "ST24-004",
+            "ST24-004",
+            "ST32-003",
+            "OP07-022"
+          ],
+          "board": [
+            "OP14-023",
+            "OP14-033",
+            "OP12-034",
+            "ST32-001"
+          ],
+          "trash": [
+            "ST32-005",
+            "OP07-022",
+            "ST32-001"
+          ],
+          "life": 5
+        },
+        "Opponent": {
+          "hand": [
+            "ST34-001",
+            "ST34-004",
+            "OP11-067",
+            "ST34-002",
+            "OP11-067",
+            "OP15-078"
+          ],
+          "trash": [
+            "OP15-078",
+            "OP07-077",
+            "PRB02-010",
+            "PRB02-010",
+            "ST18-001"
+          ],
+          "board": [
+            "OP15-069",
+            "OP11-070"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 8,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 6,
+          "to": "OP11-070",
+          "to_name": "Charlotte Pudding",
+          "total": 6
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Pudding",
+          "attacker_code": "OP11-070",
+          "target": "Perona [\"OP14-033\">OP14-033]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP07-022"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Katakuri",
+          "attacker_code": "OP11-062",
+          "target": "Perona [\"OP14-033\">OP14-033]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP11-070",
+          "card_name": "Charlotte Pudding",
+          "effects": [
+            "<b>Reveal and Draw Charlotte Katakuri [\"OP11-067\">OP11-067]</b>"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP11-070",
+          "to_name": "Charlotte Pudding",
+          "total": 1
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "ST34-001",
+            "ST34-004",
+            "OP11-067",
+            "ST34-002",
+            "OP11-067",
+            "OP11-067"
+          ],
+          "board": [
+            "OP15-069",
+            "OP11-070",
+            "OP11-070"
+          ],
+          "trash": [
+            "OP15-078",
+            "OP07-077",
+            "PRB02-010",
+            "PRB02-010",
+            "ST18-001",
+            "OP15-078"
+          ],
+          "life": 2
+        },
+        "You": {
+          "hand": [
+            "ST24-004",
+            "ST24-004",
+            "ST32-003"
+          ],
+          "trash": [
+            "ST32-005",
+            "OP07-022",
+            "ST32-001",
+            "OP07-022"
+          ],
+          "board": [
+            "OP14-023",
+            "OP14-033",
+            "OP12-034",
+            "ST32-001"
+          ],
+          "life": 5
+        }
+      }
+    }
+  ]
+}

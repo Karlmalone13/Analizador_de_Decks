@@ -1,0 +1,36 @@
+{
+  "cards": [
+    {
+      "code": "OP12-037",
+      "name": "OP12-037",
+      "count": 2
+    },
+    {
+      "code": "OP07-022",
+      "name": "OP07-022",
+      "count": 1
+    },
+    {
+      "code": "ST24-004",
+      "name": "ST24-004",
+      "count": 1
+    },
+    {
+      "code": "OP14-023",
+      "name": "Kikunojo",
+      "count": 1
+    },
+    {
+      "code": "OP14-033",
+      "name": "OP14-033",
+      "count": 1
+    },
+    {
+      "code": "OP10-030",
+      "name": "Smoker",
+      "count": 1
+    }
+  ],
+  "total_seen": 7,
+  "leader": "OP14-020"
+}

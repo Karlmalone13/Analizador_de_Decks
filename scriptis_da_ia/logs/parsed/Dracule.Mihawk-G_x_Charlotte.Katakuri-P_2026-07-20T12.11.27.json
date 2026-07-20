@@ -1,0 +1,354 @@
+{
+  "meta": {
+    "players": {
+      "p1": {
+        "name": "You",
+        "leader": {
+          "name": "Dracule Mihawk",
+          "code": "OP14-020"
+        }
+      },
+      "p2": {
+        "name": "Opponent",
+        "leader": {
+          "name": "Charlotte Katakuri",
+          "code": "OP11-062"
+        }
+      }
+    },
+    "goes_first": null
+  },
+  "total_turns": 6,
+  "turns": [
+    {
+      "turn": 1,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 1,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP14-023",
+          "card_name": "Kikunojo",
+          "effects": [
+            "Set Kikunojo [\"OP14-023\">OP14-023] to Active"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP07-022",
+            "ST24-004",
+            "OP12-037",
+            "OP12-037"
+          ],
+          "board": [
+            "OP14-023"
+          ],
+          "trash": [],
+          "life": 5
+        },
+        "Opponent": {
+          "hand": [
+            "OP08-069",
+            "OP07-077",
+            "OP11-070",
+            "OP11-067",
+            "ST34-005"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 2,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP07-022",
+            "ST24-004",
+            "OP12-037",
+            "OP12-037"
+          ],
+          "board": [
+            "OP14-023"
+          ],
+          "trash": [],
+          "life": 5
+        },
+        "Opponent": {
+          "hand": [
+            "OP08-069",
+            "OP07-077",
+            "OP11-070",
+            "OP11-067",
+            "ST34-005",
+            "ST34-002"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 3,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Dracule Mihawk",
+          "attacker_code": "OP14-020",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 3,
+          "to": "OP14-023",
+          "to_name": "Kikunojo",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Kikunojo",
+          "attacker_code": "OP14-023",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP14-023",
+          "card_name": "Kikunojo",
+          "effects": [
+            "Set Kikunojo [\"OP14-023\">OP14-023] to Active"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP07-022",
+            "ST24-004",
+            "OP12-037",
+            "OP12-037",
+            "OP14-033"
+          ],
+          "board": [
+            "OP14-023"
+          ],
+          "trash": [],
+          "life": 5
+        },
+        "Opponent": {
+          "hand": [
+            "OP08-069",
+            "OP07-077",
+            "OP11-070",
+            "OP11-067",
+            "ST34-005",
+            "ST34-002",
+            "ST34-005",
+            "ST34-004"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 4,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP07-022",
+            "ST24-004",
+            "OP12-037",
+            "OP12-037",
+            "OP14-033"
+          ],
+          "board": [
+            "OP14-023"
+          ],
+          "trash": [],
+          "life": 5
+        },
+        "Opponent": {
+          "hand": [
+            "OP08-069",
+            "OP07-077",
+            "OP11-070",
+            "OP11-067",
+            "ST34-005",
+            "ST34-002",
+            "ST34-005",
+            "ST34-004",
+            "OP15-069"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 5,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP10-030",
+          "card_name": "Smoker",
+          "effects": []
+        },
+        {
+          "type": "activate",
+          "card": "OP14-020",
+          "card_name": "Dracule Mihawk",
+          "effects": [
+            "Rest Smoker [\"OP10-030\">OP10-030]",
+            "Activate 1 Don",
+            "Activate 1 Don",
+            "Activate 1 Don",
+            "Can't play Cost 1 Or More Characters for the Turn!"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Dracule Mihawk",
+          "attacker_code": "OP14-020",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 3,
+          "to": "OP14-023",
+          "to_name": "Kikunojo",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Kikunojo",
+          "attacker_code": "OP14-023",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP14-023",
+          "card_name": "Kikunojo",
+          "effects": [
+            "Set Kikunojo [\"OP14-023\">OP14-023] to Active"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP07-022",
+            "ST24-004",
+            "OP12-037",
+            "OP12-037",
+            "OP14-033"
+          ],
+          "board": [
+            "OP14-023",
+            "OP10-030"
+          ],
+          "trash": [],
+          "life": 5
+        },
+        "Opponent": {
+          "hand": [
+            "OP08-069",
+            "OP07-077",
+            "OP11-070",
+            "OP11-067",
+            "ST34-005",
+            "ST34-002",
+            "ST34-005",
+            "ST34-004",
+            "OP15-069",
+            "OP07-077",
+            "OP11-067"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 1
+        }
+      }
+    },
+    {
+      "turn": 6,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP07-022",
+            "ST24-004",
+            "OP12-037",
+            "OP12-037",
+            "OP14-033"
+          ],
+          "board": [
+            "OP14-023",
+            "OP10-030"
+          ],
+          "trash": [],
+          "life": 5
+        },
+        "Opponent": {
+          "hand": [
+            "OP08-069",
+            "OP07-077",
+            "OP11-070",
+            "OP11-067",
+            "ST34-005",
+            "ST34-002",
+            "ST34-005",
+            "ST34-004",
+            "OP15-069",
+            "OP07-077",
+            "OP11-067",
+            "ST34-004"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 1
+        }
+      }
+    }
+  ]
+}

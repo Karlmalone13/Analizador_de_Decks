@@ -1,0 +1,71 @@
+{
+  "cards": [
+    {
+      "code": "ST32-001",
+      "name": "Kin'emon",
+      "count": 3
+    },
+    {
+      "code": "OP14-023",
+      "name": "Kikunojo",
+      "count": 3
+    },
+    {
+      "code": "OP12-037",
+      "name": "OP12-037",
+      "count": 2
+    },
+    {
+      "code": "OP01-055",
+      "name": "OP01-055",
+      "count": 2
+    },
+    {
+      "code": "ST32-005",
+      "name": "ST32-005",
+      "count": 2
+    },
+    {
+      "code": "OP13-031",
+      "name": "Trafalgar Law",
+      "count": 1
+    },
+    {
+      "code": "OP14-119",
+      "name": "Dracule Mihawk",
+      "count": 1
+    },
+    {
+      "code": "ST24-004",
+      "name": "ST24-004",
+      "count": 1
+    },
+    {
+      "code": "OP07-022",
+      "name": "OP07-022",
+      "count": 1
+    },
+    {
+      "code": "ST32-003",
+      "name": "ST32-003",
+      "count": 1
+    },
+    {
+      "code": "ST32-002",
+      "name": "ST32-002",
+      "count": 1
+    },
+    {
+      "code": "OP12-034",
+      "name": "Perona",
+      "count": 1
+    },
+    {
+      "code": "ST16-004",
+      "name": "Shanks",
+      "count": 1
+    }
+  ],
+  "total_seen": 20,
+  "leader": "OP14-020"
+}
