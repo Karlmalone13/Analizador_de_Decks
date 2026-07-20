@@ -1,5 +1,72 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-20 (290) - Claude - fix real ao vivo #2: eventos dual-mode ([Counter]+[Main] com alvos DIFERENTES) misturavam os blocos na ordenacao de alvo, causando ciclo de clique invalido (Mamaragan) + achado aberto (Katakuri [When Attacking] nunca dispara na execucao)
+
+Continuação imediata do bloco 289 (mesma sessão): usuário testou de novo
+logo após o restart do `engine_server` com o fix anterior e reportou os
+MESMOS 3 sintomas ainda presentes: "líder não usa efeito", "continua
+distribuindo DON em vez de descer carta forte", e um novo detalhe
+específico — "tá usando o amaragam custo zero com 2 dons ativos e sem
+completar o efeito, só trashando a carta". Pedido: "Confira o log".
+
+**Achado real (causa raiz confirmada, FIX aplicado e genérico)**: Mamaragan
+(OP15-078, EVENT custo 0) tem `[Counter]` `target=leader_or_character`
+(PRÓPRIO) e `[Main]` `rest_opp_character` (SÓ OPONENTE, sem chave
+`'target'` explícita — a própria ação já diz o lado). Resolvendo o
+`[Main]` em main phase (fora de ataque), `order_target_candidates()` em
+[sim_bridge.py](scriptis_da_ia/optcg_engine/sim_bridge.py) misturava os
+alvos dos DOIS blocos ao decidir "essa habilidade só mira o oponente?" —
+via LogOutput.log, confirmado: o bot clicava `alvo de efeito: OP11-062`
+(o PRÓPRIO líder) e `ST34-005` (o PRÓPRIO board) antes de `OP14-050`
+(único alvo legal, personagem do oponente), 1 clique por tick, até a
+ação expirar e a carta ir pro trash sem o efeito nunca resolver — exatamente
+"custo zero, DON ativo, carta só trashada" que o usuário descreveu. Achei
+o MESMO padrão reproduzido nessa partida pra **Divine Departure**
+(OP13-076) — o fix da sessão anterior (battlefield-only vs trash) não
+tinha corrigido essa mistura de blocos, só um sintoma adjacente.
+
+**Fix (genérico, mecanismo compartilhado por TODAS as cartas dual-mode
+`[Counter]`+`[Main]`/`[When Attacking]`+outro-bloco com alvos diferentes)**:
+`order_target_candidates()` ganhou `_relevant_blocks(actor_code,
+attacker_power > 0)` — filtra os blocos do efeito pelo CONTEXTO atual
+(`attacker_power > 0` já é o sinal existente de "estamos numa janela de
+ataque/counter do oponente"; fora disso, só os blocos não-combate
+[`main`, `on_play`, `activate_main` etc.] contam). Aplicado nos 3
+detectores que escaneavam "todos os blocos" sem essa distinção:
+`actor_opp_only`, `actor_battlefield_only`, `actor_debuff_swing`,
+`actor_self_power_target`. Também ganhou `_implied_target(step)` — deriva
+o lado (`opp_character`/`own_character`/etc.) do NOME da ação quando não
+há `'target'` explícito (convenção `..._opp_...`/`..._own_...` já usada
+em várias ações do parser), senão `rest_opp_character` não contribuía
+nada pra detecção. Testes novos em
+[smoke_fast.py](scriptis_da_ia/smoke_fast.py):
+`test_mamaragan_main_so_mira_oponente_apesar_do_counter_mirar_proprio`
+(opp_board vem primeiro, own_leader/own_board depois) — verificado também
+manualmente que Divine Departure se comporta certo com o mesmo fix.
+`smoke_fast.py` e `smoke_test.py` 100% verdes.
+
+**Achado real, AINDA ABERTO (não corrigido)**: Katakuri (líder OP11-062)
+tem `[When Attacking]` (+1000 power self, `peek_opp_deck_top`, custo
+`don_minus:1`) — o `vale_restar` que justifica o bot atacar mesmo sem
+chance de vencer (bloco 289) ASSUME que esse gatilho dispara. Grep no
+combat log dessa partida: **nenhuma das 4 vezes que Katakuri atacou** tem
+a linha esperada de custo/efeito ("Rest 1 Don", peek) — o gatilho nunca
+resolve de verdade na execução, só na intenção do score. Mesma FAMÍLIA de
+bug que a Mamaragan (habilidade com custo opcional que não completa na
+execução), mas no caminho de ATAQUE (não existe um `GameplayState`
+dedicado pra isso — teria que ser uma confirmação inline durante
+`Attack_WaitOnBlocker`/`Attack_BeforeBlocker` não tratada em
+`BotDriver.cs`). Precisa de investigação C#/estado do jogo antes de
+mexer — não teve tempo nesta sessão.
+
+**Ainda não investigado**: "continua distribuindo DON em vez de descer
+carta forte" — DON anexado durante um ATAQUE vai embutido no parâmetro
+`donToAttach` da própria ação `attack` (não aparece como decisão
+`attach_don` separada na telemetria), então a wave anterior de
+investigação (procurando decisões `attach_don` pra explicar o excesso de
+DON na Pudding, bloco 289) pode ter olhado o lugar errado — o real
+mecanismo de alocação de DON pra ataque ainda não foi auditado.
+
 ## 2026-07-20 (289) - Claude - fix real ao vivo: ataque sem chance de conectar pontuava alto por causa do gatilho [When Attacking] do próprio atacante + Divine Departure (order_target_candidates) commitado + achados abertos (Pudding, DON parado em char de poder 0, client_timeout, latência 169s)
 
 Continuação da sessão 288: usuário jogou mais uma partida (após restart de

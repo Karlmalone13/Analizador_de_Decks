@@ -5,6 +5,27 @@
 **Baseline do código:** ver `git log --oneline -1`
 **Repo:** github.com/Karlmalone13/Analizador_de_Decks
 
+> 20/07/2026 (bloco HANDOFF 290): mesma sessão, partida seguinte —
+> Mamaragan (OP15-078) e Divine Departure (OP13-076) confirmadas presas
+> no MESMO bug: cartas EVENT dual-mode (`[Counter]` mira o PRÓPRIO lado,
+> `[Main]` mira só o OPONENTE) tinham `order_target_candidates()`
+> misturando os alvos dos dois blocos, então o próprio líder/board
+> entravam como candidato "válido" pro `[Main]` — bot clicava neles
+> primeiro, nunca chegava no alvo legal, carta ia pro trash sem efeito.
+> Fix genérico: filtra os blocos pelo contexto (`attacker_power>0` =
+> janela de combate/counter; senão só blocos não-combate) + infere o lado
+> pelo NOME da ação quando não há `target` explícito (`rest_opp_character`
+> etc.). **Achado aberto, não corrigido**: o `[When Attacking]` de
+> Katakuri (custo do `vale_restar` do fix anterior) nunca dispara de
+> verdade na execução — 0/4 ataques mostraram o custo/efeito no combat
+> log. Mesma família de bug (habilidade com custo opcional que não
+> completa), mas no caminho de ATAQUE, não de PLAY — precisa investigação
+> em `BotDriver.cs`/estado do jogo. Também ainda não investigado: DON
+> alocado em ataque vai embutido em `donToAttach` da própria ação
+> `attack`, não como `attach_don` separado — a investigação anterior
+> (bloco 289) sobre "DON acumulado na Pudding" pode ter procurado no
+> lugar errado.
+
 > 20/07/2026 (continuação, bloco HANDOFF 289): mais uma partida ao vivo
 > revelou bug de scoring genérico em `score_attack_target` — ataque sem
 > NENHUMA chance de conectar (poder + todo o DON disponível ainda menor

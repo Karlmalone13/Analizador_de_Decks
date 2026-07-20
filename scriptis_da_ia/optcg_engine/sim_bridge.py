@@ -1073,6 +1073,47 @@ def order_target_candidates(gs: GameState, opp_gs: GameState,
         attacker_power > 0 and actor_is_redirect and defender_uid
         and any(getattr(c, '_deck_uid', 0) == defender_uid for c in gs.field_chars))
 
+    # Blocos de efeito RELEVANTES pro contexto atual (combate/janela de
+    # counter vs main phase normal). Achado real 20/07 (partida ao vivo):
+    # cartas dual-mode ([Counter] X + [Main] Y, alvos DIFERENTES -- ex:
+    # Mamaragan OP15-078 [Counter]=leader_or_character (proprio) x
+    # [Main]=rest_opp_character (so inimigo); Divine Departure OP13-076 e
+    # o mesmo padrao) tinham os alvos dos DOIS blocos misturados nas
+    # deteccoes abaixo, mesmo quando so UM dos dois esta de fato
+    # resolvendo -- resolvendo o [Main] (fora de ataque, attacker_power=0),
+    # own_leader/own_board entravam como "alvo valido"/"prioridade extra"
+    # so porque o [Counter] tambem existe na carta. attacker_power>0 ja e
+    # o sinal que o resto da funcao usa pra saber "estamos numa janela de
+    # ataque/counter" (ver actor_is_redirect acima) -- reusa aqui pra
+    # filtrar quais blocos contam. Usado por TODAS as deteccoes de alvo
+    # abaixo que escaneiam "todos os blocos" da carta.
+    _COMBAT_ONLY_TRIGGERS = {'counter', 'when_attacking', 'on_opp_attack'}
+
+    def _relevant_blocks(code: str, in_combat: bool):
+        items = get_card_effects(code).items()
+        if in_combat:
+            return [v for k, v in items if k in _COMBAT_ONLY_TRIGGERS]
+        return [v for k, v in items if k not in _COMBAT_ONLY_TRIGGERS]
+
+    # Lado IMPLICITO de um step sem 'target' explicito, pelo NOME da acao
+    # (convencao usada em varias acoes do parser: rest_opp_character,
+    # ko_opp_character, give_don_opp etc. nao carregam 'target', o proprio
+    # nome ja diz o lado). Sem isso, um step como rest_opp_character (o
+    # [Main] da Mamaragan) nao contribuia NADA pras deteccoes abaixo (sem
+    # 'target'), entao actor_opp_only nunca via "so mira o oponente" apesar
+    # da acao ser inequivocamente so-oponente.
+    def _implied_target(step: dict) -> str:
+        t = step.get('target')
+        if t:
+            return t
+        action = step.get('action', '') or ''
+        parts = action.split('_')
+        if 'opp' in parts:
+            return 'opp_leader' if 'leader' in parts else 'opp_character'
+        if 'own' in parts or 'self' in parts:
+            return 'own_leader' if 'leader' in parts else 'own_character'
+        return ''
+
     # O efeito resolvendo e um COPY-POWER (ex: Devon OP16-104: "base power
     # becomes the same as the selected Character's")? Entao o alvo certo no
     # campo do oponente e o de MAIOR PODER, nao o de maior valor.
@@ -1095,7 +1136,7 @@ def order_target_candidates(gs: GameState, opp_gs: GameState,
     actor_debuff_swing = False
     actor_debuff_amount = 0
     if actor_code and not actor_copia_poder:
-        for block in get_card_effects(actor_code).values():
+        for block in _relevant_blocks(actor_code, attacker_power > 0):
             for s in block.get('steps', []):
                 if s.get('action') == 'debuff_power':
                     actor_debuff_swing = True
@@ -1121,7 +1162,7 @@ def order_target_candidates(gs: GameState, opp_gs: GameState,
     # so muda a conta de quanto poder resulta.
     actor_self_power_target = None
     if actor_code and not actor_copia_poder and not actor_debuff_swing:
-        for block in get_card_effects(actor_code).values():
+        for block in _relevant_blocks(actor_code, attacker_power > 0):
             for s in block.get('steps', []):
                 if (s.get('action') == 'set_base_power'
                         and s.get('target') in ('leader_or_own_character', 'leader_or_character')):
@@ -1152,13 +1193,15 @@ def order_target_candidates(gs: GameState, opp_gs: GameState,
     # (~0,8s), ate finalmente chegar num alvo opp_* valido. Achado real
     # 08/07: usuario reportou ter precisado escolher o alvo manualmente —
     # o bot NAO tinha travado, so estava visivelmente lento clicando lixo
-    # primeiro. Generico: olha os targets declarados de TODOS os blocos do
-    # ator: se todos comecam com 'opp', nenhuma zona own_* compete.
+    # primeiro. Generico: olha os targets (explicitos ou implicitos pelo
+    # nome da acao) dos blocos RELEVANTES pro contexto atual: se todos
+    # comecam com 'opp', nenhuma zona own_* compete.
     actor_opp_only = False
     if actor_code and not (actor_copia_poder or actor_debuff_swing
                             or actor_self_power_target is not None):
-        alvos = [s.get('target', '') for block in get_card_effects(actor_code).values()
-                 for s in block.get('steps', []) if s.get('target')]
+        blocks = _relevant_blocks(actor_code, attacker_power > 0)
+        alvos = [t for block in blocks for s in block.get('steps', [])
+                 if (t := _implied_target(s))]
         if alvos and all(t.startswith('opp') for t in alvos):
             actor_opp_only = True
 
@@ -1181,7 +1224,7 @@ def order_target_candidates(gs: GameState, opp_gs: GameState,
         'all_opp_characters', 'all_allies_and_leader', 'all_character',
         'friendly_character', 'own_character_and_leader', 'self_character',
         'opp_leader', 'leader_only', 'own_two_chars', 'leader_and_own_character',
-        'opp_two_chars', 'leader_or_own_character',
+        'opp_two_chars', 'leader_or_own_character', 'own_leader',
     }
     # Independente de actor_copia_poder/actor_debuff_swing/actor_self_power_
     # target/actor_opp_only: essas deteccoes decidem COMO pontuar as zonas
@@ -1191,8 +1234,9 @@ def order_target_candidates(gs: GameState, opp_gs: GameState,
     # personagem em campo. As duas perguntas sao ortogonais.
     actor_battlefield_only = False
     if actor_code:
-        alvos_bf = [s.get('target', '') for block in get_card_effects(actor_code).values()
-                    for s in block.get('steps', []) if s.get('target')]
+        blocks_bf = _relevant_blocks(actor_code, attacker_power > 0)
+        alvos_bf = [t for block in blocks_bf for s in block.get('steps', [])
+                    if (t := _implied_target(s))]
         if alvos_bf and all(t in _BATTLEFIELD_TARGETS for t in alvos_bf):
             actor_battlefield_only = True
 

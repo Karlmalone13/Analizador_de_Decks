@@ -398,6 +398,35 @@ def test_order_target_candidates_exclui_trash_para_alvo_battlefield_only() -> No
           order.index(-1) < order.index(-420) and order.index(-10) < order.index(-420))
 
 
+def test_mamaragan_main_so_mira_oponente_apesar_do_counter_mirar_proprio() -> None:
+    # Achado real 20/07 (partida ao vivo, apos o fix acima): Mamaragan
+    # (OP15-078) tem [Counter] target=leader_or_character (PROPRIO) e
+    # [Main] rest_opp_character (SO OPONENTE, sem 'target' explicito -- o
+    # nome da acao que diz o lado). Resolvendo o [Main] (attacker_power=0,
+    # fora de ataque), a deteccao de "so mira o oponente" misturava os 2
+    # blocos e via 'leader_or_character' (do Counter) na lista de alvos,
+    # entao own_leader/own_board eram tratados como candidatos validos —
+    # o bot clicava o proprio lider e o proprio board antes de chegar no
+    # personagem do oponente (unico alvo legal), 1 clique por tick.
+    # Divine Departure (OP13-076) e o mesmo padrao dual-mode.
+    me = GameState(leader=real_card("OP11-062"), turn=3)
+    me.field_chars = [real_card("ST34-005")]
+    opp = GameState(leader=real_card("OP14-020"), turn=3)
+    opp.field_chars = [real_card("OP14-050")]
+    candidates = [
+        {"id": -1, "zone": "own_leader", "code": "OP11-062"},
+        {"id": -10, "zone": "own_board", "code": "ST34-005"},
+        {"id": 50, "zone": "opp_board", "code": "OP14-050"},
+        {"id": -20, "zone": "own_hand", "code": "ST18-001"},
+        {"id": -30, "zone": "own_trash", "code": "OP15-078"},
+    ]
+    order = sim_bridge.order_target_candidates(me, opp, candidates, actor_code="OP15-078")
+    check("Mamaragan [Main]: opp_board (unico alvo legal) vem PRIMEIRO",
+          order[0] == 50)
+    check("Mamaragan [Main]: own_leader/own_board (invalidos pro Main) vem depois do opp_board",
+          order.index(-1) > order.index(50) and order.index(-10) > order.index(50))
+
+
 def test_ataque_sem_chance_de_conectar_nao_ganha_bonus_de_matar_alvo() -> None:
     # Achado real 20/07 (partida ao vivo): Katakuri (lider OP11-062, 5000,
     # [When Attacking] +1000/peek) atacou Mihawk (7000) com 0 DON disponivel
@@ -6811,6 +6840,7 @@ def main() -> int:
     test_don_reservado_para_ativar_wincon_em_campo()
     test_opp_combo_threat_detects_five_elders_style_reanimation()
     test_order_target_candidates_exclui_trash_para_alvo_battlefield_only()
+    test_mamaragan_main_so_mira_oponente_apesar_do_counter_mirar_proprio()
     test_ataque_sem_chance_de_conectar_nao_ganha_bonus_de_matar_alvo()
     test_opponent_model_ao_vivo_por_lider_e_fallback_seguro()
     test_play_turn_greedy_opponent_response()
