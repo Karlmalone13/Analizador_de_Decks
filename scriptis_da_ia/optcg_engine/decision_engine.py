@@ -98,6 +98,13 @@ EVAL_WEIGHTS = {
     # disparavel E vida baixa (risco real de morrer antes), premio por ponto
     # de panico (vida<=3). Prior — tunagem (item 5) ajusta.
     'survival_premium': 25.0,
+    # ameaça de virada por reanimação em massa do TRASH do oponente (achado
+    # 07/07, ver opp_combo_threat/PREVENT_COMBO). Penalidade sobre o
+    # threat_power estimado do estado avaliado -- linhas que reduzem o
+    # combustível qualificado dele (ou o custo de ativar) recomputam menor
+    # aqui, então a busca já prefere isso sem precisar de regra hardcoded.
+    # Escala parecida com board_opp (mesma unidade: soma de board_value()).
+    'opp_combo_threat': 0.8,
 }
 try:
     _wpath = os.path.join(os.path.dirname(__file__), '..', 'eval_weights.json')
@@ -8349,6 +8356,71 @@ class GameAnalyzer:
         ameacas.sort(key=lambda x: x[0], reverse=True)
         return [c for _, c in ameacas]
 
+    def opp_combo_threat(self) -> dict:
+        """
+        Ameaça de VIRADA por reanimação em massa do trash do oponente (achado
+        07/07, HANDOFF blocos 99-100: Five Elders reanima 4-5 corpos fortes
+        de uma vez e fecha o jogo — nenhum fix tático daquela sessão atacava
+        isso porque `critical_threats()` só olha o board ATUAL, nunca o que
+        o TRASH dele pode virar).
+
+        Não depende de decklist do oponente (fog of war real): só olha
+        cartas já PÚBLICAS (líder sempre visível desde o T1, board dele
+        visível assim que jogado) e os efeitos delas — `get_card_effects` é
+        estático por código, não exige saber o deck inteiro. Mesma conta do
+        eixo `reanimation_bottleneck` de `deck_profile.py` (min(capacidade,
+        combustível qualificado)), só que aplicada ao OPONENTE em vez do
+        próprio deck do bot.
+
+        Retorna {'magnitude': int, 'threat_power': float, 'sources': [...]}.
+        `magnitude` = maior quantidade de corpos que uma única fonte
+        conseguiria trazer de volta HOJE (combustível já qualificado no
+        trash, não a capacidade teórica da carta). `threat_power` = soma de
+        `board_value()` desses corpos (estimativa de quanto o board dele
+        pode virar).
+        """
+        sources = []
+        pool = [self.opp.leader] + list(self.opp.field_chars)
+        for c in pool:
+            if c is None:
+                continue
+            effects = get_card_effects(c.code)
+            for block in effects.values():
+                if not isinstance(block, dict):
+                    continue
+                for s in block.get('steps', []):
+                    if s.get('action') not in ('play_from_trash', 'add_from_trash'):
+                        continue
+                    count = s.get('count', 1)
+                    if count < 2:
+                        continue   # só "em massa" -- 1 corpo de volta não é a virada que procuramos
+                    ft = (s.get('filter_type') or '').lower()
+                    peq = s.get('power_eq')
+                    fuel = [tc for tc in self.opp.trash
+                            if tc.card_type == 'CHARACTER'
+                            and (not ft or ft in (tc.sub_types or '').lower())
+                            and (peq is None or tc.power == peq)]
+                    if s.get('distinct_names'):
+                        vistos = set()
+                        fuel = [tc for tc in fuel
+                                if tc.name not in vistos and not vistos.add(tc.name)]
+                    if not fuel:
+                        continue
+                    fuel_ordenado = sorted(fuel, key=lambda tc: tc.board_value(), reverse=True)
+                    qualificado = fuel_ordenado[:count]
+                    sources.append({
+                        'source': c.code,
+                        'count_disponivel': len(qualificado),
+                        'power_estimado': sum(tc.board_value() for tc in qualificado),
+                    })
+        if not sources:
+            return {'magnitude': 0, 'threat_power': 0.0, 'sources': []}
+        return {
+            'magnitude': max(s['count_disponivel'] for s in sources),
+            'threat_power': max(s['power_estimado'] for s in sources),
+            'sources': sources,
+        }
+
     def analysis_priority(self) -> str:
         """
         PRIORIDADE DE ANÁLISE (documento) — cascata de INCLINAÇÃO.
@@ -8356,16 +8428,22 @@ class GameAnalyzer:
         mais alto satisfeito comanda), mas é inclinação, não bloqueio: o loop
         de pontuação ainda considera o contexto, com pesos ajustados por este modo.
 
-        1. LETHAL      — posso vencer neste turno (sempre vence, topo)
-        2. DEFENSIVE   — posso morrer no próximo turno (e não tenho lethal)
-        3. REMOVE_THREAT — existe ameaça crítica no board
-        4. DEVELOP     — posso/devo desenvolver board
-        5. ATTACK      — atacar líder (padrão)
+        1. LETHAL       — posso vencer neste turno (sempre vence, topo)
+        2. DEFENSIVE    — posso morrer no próximo turno (e não tenho lethal)
+        3. PREVENT_COMBO — oponente pode reanimar 2+ corpos do trash de uma
+           vez (achado 07/07 HANDOFF 99/100 — Five Elders etc.), virando o
+           jogo no próximo turno dele. Distinto de REMOVE_THREAT: a ameaça
+           ainda não está no board, está no TRASH dele — ver opp_combo_threat.
+        4. REMOVE_THREAT — existe ameaça crítica no board
+        5. DEVELOP      — posso/devo desenvolver board
+        6. ATTACK       — atacar líder (padrão)
         """
         if self.can_lethal_this_turn():
             return 'LETHAL'
         if self.opp_lethal_threat() > 0.6:
             return 'DEFENSIVE'
+        if self.opp_combo_threat()['magnitude'] >= 2:
+            return 'PREVENT_COMBO'
         if self.critical_threats():
             return 'REMOVE_THREAT'
         # desenvolver cedo / sem pressão; senão, atacar
@@ -10823,9 +10901,14 @@ class OPTCGMatch:
                 score += 40
             elif priority == 'LETHAL':
                 score -= 60   # não desenvolve quando pode ganhar — ataca
-            # Carta defensiva (blocker/counter) ganha peso no modo DEFENSIVE
-            if priority == 'DEFENSIVE' and (card.has_blocker or card.blocker_this_turn or card.counter > 0):
-                score += 120
+            # Carta defensiva (blocker/counter) ganha peso no modo DEFENSIVE ou
+            # PREVENT_COMBO (guardar recurso pro turno da virada do oponente,
+            # bônus menor que DEFENSIVE porque a ameaça ainda não é iminente)
+            if (card.has_blocker or card.blocker_this_turn or card.counter > 0):
+                if priority == 'DEFENSIVE':
+                    score += 120
+                elif priority == 'PREVENT_COMBO':
+                    score += 80
             # Preservacao de mao (partida real 04/07: bot esvaziou a mao em
             # deploys e ficou sem counter/custo de reacao para defender).
             # Mao encolhendo = cada play adicional fica mais caro.
@@ -10856,6 +10939,11 @@ class OPTCGMatch:
                         if priority == 'LETHAL':       s_leader += 500   # foco em fechar
                         elif priority == 'DEFENSIVE':  s_leader -= 80    # não exponha à toa
                         elif priority == 'REMOVE_THREAT': s_leader -= 100 # remova antes
+                        # PREVENT_COMBO (achado 07/07): oponente pode virar o
+                        # jogo reanimando o trash no turno dele -- correr o
+                        # clock agora (antes da virada) vale mais que o normal,
+                        # mas menos que LETHAL (não é vitória garantida).
+                        elif priority == 'PREVENT_COMBO': s_leader += 150
                         # Ataque de LÍDER validado é quase grátis (ele resta de
                         # qualquer jeito no fim do turno, não expõe personagem):
                         # postura defensiva + risco de trigger não podem
@@ -11201,6 +11289,13 @@ class OPTCGMatch:
 
         # blockers do oponente vivos travam meu ataque
         score -= len(opp.blockers_active()) * W['opp_blocker']
+
+        # ameaça de virada por reanimação em massa do trash dele (achado
+        # 07/07, PREVENT_COMBO) -- penaliza pelo threat_power ESTIMADO no
+        # estado avaliado; se a linha reduziu o combustível qualificado
+        # (ex: jogou algo que suja o trash dele) ou gastou o custo da
+        # habilidade, recomputa menor aqui e a busca já prefere essa linha.
+        score -= an.opp_combo_threat()['threat_power'] * W['opp_combo_threat']
 
         # mão: retorno decrescente (as primeiras cartas valem mais)
         nh = len(p.hand)
@@ -12164,6 +12259,7 @@ class OPTCGMatch:
                 'don_rested': p.don_rested,
                 'can_lethal': engine.analyzer.can_lethal_this_turn(),
                 'opp_lethal_threat': round(float(engine.analyzer.opp_lethal_threat()), 3),
+                'opp_combo_threat': engine.analyzer.opp_combo_threat(),
             },
             'chosen': self._audit_action_brief(chosen, chosen_value) if chosen else None,
             'top_immediate': self._audit_action_brief(top_immediate) if top_immediate else None,

@@ -6695,6 +6695,48 @@ def test_in_any_order_custos_bottom_deck_escolhem_melhor_ordem() -> None:
           me2.deck.index(forte2) > me2.deck.index(fraco2))
 
 
+def test_opp_combo_threat_detects_five_elders_style_reanimation() -> None:
+    # Achado 07/07 (HANDOFF 99/100): Five Elders (OP13-082, activate_main
+    # play_from_trash count=5 power_eq=5000 filter_type="five elders")
+    # reanima varios corpos de uma vez e vira o jogo -- opp_combo_threat()
+    # generaliza a mesma conta do eixo reanimation_bottleneck (deck_profile.py)
+    # pro lado do OPONENTE, sem depender do decklist dele (leader/board sao
+    # sempre publicos, get_card_effects e estatico por codigo).
+    # vida explicita (nao-zero) nos 3 opp: por omissao life=[] faz
+    # can_lethal_this_turn() certificar lethal trivial (0 vida + 1 hit
+    # conecta) e mascarar o proprio sinal que este teste quer isolar --
+    # mesma causa do achado no fix de FIX_LETHAL_DON_ALLOCATION (19/07).
+    def vida4():
+        return [mk(f"LF{i}", "Life") for i in range(4)]
+
+    me = GameState(leader=real_card("OP10-099"), turn=5, life=vida4())
+    opp = GameState(leader=real_card("OP13-079"), turn=5, life=vida4())   # Imu
+    opp.field_chars = [real_card("OP13-082")]               # Five Elders em campo
+    opp.trash = [mk(f"FE{i}", f"Fuel{i}", power=5000, sub_types="Five Elders")
+                for i in range(5)]
+    engine = DecisionEngine(me, opp)
+    threat = engine.analyzer.opp_combo_threat()
+    check("opp_combo_threat detecta 5 corpos qualificados no trash do Five Elders",
+          threat["magnitude"] == 5 and threat["threat_power"] > 0)
+    check("analysis_priority vira PREVENT_COMBO com a ameaca de reanimacao presente",
+          engine.analyzer.analysis_priority() == "PREVENT_COMBO")
+
+    # sem a carta Five Elders no board -- sem ameaca, sem mudar a prioridade
+    opp2 = GameState(leader=real_card("OP13-079"), turn=5, life=vida4())
+    opp2.trash = list(opp.trash)
+    engine2 = DecisionEngine(me, opp2)
+    check("opp_combo_threat fica zerado sem a carta Five Elders em campo",
+          engine2.analyzer.opp_combo_threat()["magnitude"] == 0)
+
+    # so 1 corpo qualificado -- nao deve disparar PREVENT_COMBO (nao e "em massa" ainda)
+    opp3 = GameState(leader=real_card("OP13-079"), turn=5, life=vida4())
+    opp3.field_chars = [real_card("OP13-082")]
+    opp3.trash = [mk("FE0", "Fuel0", power=5000, sub_types="Five Elders")]
+    engine3 = DecisionEngine(me, opp3)
+    check("1 corpo qualificado nao dispara PREVENT_COMBO",
+          engine3.analyzer.analysis_priority() != "PREVENT_COMBO")
+
+
 def main() -> int:
     test_turn_order_imu_prefers_second()
     test_empty_throne_beats_direct_five_elders_play()
@@ -6710,6 +6752,7 @@ def main() -> int:
     test_full_deck_census_populado_offline_e_ao_vivo()
     test_ciclo_do_lider_nao_trava_com_corpo_morto_ativo()
     test_don_reservado_para_ativar_wincon_em_campo()
+    test_opp_combo_threat_detects_five_elders_style_reanimation()
     test_opponent_model_ao_vivo_por_lider_e_fallback_seguro()
     test_play_turn_greedy_opponent_response()
     test_play_turn_greedy_detecta_letal_do_oponente()

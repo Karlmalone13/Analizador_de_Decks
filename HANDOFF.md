@@ -1,5 +1,70 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-19 (287) - Claude - consciência de combo estratégico do oponente (tópico aberto 07/07, blocos 99/100) — implementado
+
+Retomando o tópico "PRÓXIMO TÓPICO" do TODO.md (aberto 07/07, nunca
+escopado): 4 partidas reais daquela sessão foram perdidas pro mesmo padrão
+— oponente (Five Elders/Imu) empilha corpos fortes no trash e reanima
+tudo de uma vez, virando o jogo. Nenhum fix tático daquela sessão atacava
+isso porque `critical_threats()` só olha o board ATUAL, nunca o trash.
+
+**Nota**: os 4 logs de 07/07 que o TODO pedia pra reler não existem mais
+(eram arquivos locais nunca adicionados ao banco — violação da regra
+"OBRIGATÓRIO salvar" do `CLAUDE.md`, gap de processo daquela sessão).
+Trabalhado em cima da descrição detalhada já registrada em HANDOFF 99/100.
+
+**Implementado, tudo dentro de `decision_engine.py` — sem motor novo**:
+
+1. **`GameAnalyzer.opp_combo_threat()`** (nova): escaneia líder + board do
+   oponente por steps `play_from_trash`/`add_from_trash` com `count>=2`,
+   casa o filtro de combustível (`filter_type`/`power_eq`/`distinct_names`)
+   contra o trash real dele. Retorna `{magnitude, threat_power, sources}`.
+   Mesma matemática do eixo `reanimation_bottleneck` de `deck_profile.py`
+   (min(capacidade, combustível qualificado)), aplicada ao OPONENTE. **Não
+   depende de decklist dele** — líder é sempre público desde o T1, board
+   idem assim que jogado, e `get_card_effects` é estático por código.
+   Validado isolado com o cenário exato do Five Elders (OP13-082,
+   `play_from_trash count=5 power_eq=5000 filter_type="five elders"`) e
+   casos negativos (sem a carta, só 1 corpo qualificado).
+2. **Nova prioridade `PREVENT_COMBO`** em `analysis_priority()` (entre
+   `DEFENSIVE` e `REMOVE_THREAT`), dispara com `magnitude>=2`. Bias de
+   score: ataque ao líder +150 (corre o clock antes da virada, menos que
+   os +500 do LETHAL) e cartas defensivas (blocker/counter) +80 (guarda
+   recurso pro turno dele, menos que os +120 do DEFENSIVE).
+3. **Termo simétrico em `_evaluate_state_v2`**: novo peso
+   `opp_combo_threat` (0.8, mesma escala de `board_opp`) penaliza pelo
+   `threat_power` do estado avaliado — linhas que reduzem o combustível
+   qualificado do oponente (ex: sujam o trash dele) recomputam ameaça
+   menor, então a busca do Turn Planner já prefere isso sem regra
+   hardcoded nenhuma (mesmo princípio de `wincon_ready`/`opp_blocker`).
+4. Logado em 2 lugares pra auditoria futura: `_log_turn_planner_decision`
+   (offline, `context.opp_combo_threat`) e ao vivo no `/decide`
+   (`trace_out`/`decision` JSONL, mesmo padrão de `priority`/`can_lethal`
+   do bloco 286) + `[ALERTA]` no console do proxy quando `magnitude>=2`.
+
+**Validado**: teste novo em `smoke_fast.py`
+(`test_opp_combo_threat_detects_five_elders_style_reanimation`, 5 checks)
++ `smoke_fast.py`/`smoke_test.py` 100% verde (mudança em código
+compartilhado, rodou a regressão ampla na hora). Confirmado em self-play
+real (não só teste isolado): `audit_decision_quality.py --n 8 --seed 7`
+mostra `PREVENT_COMBO: 8` em 276 decisões — o sinal dispara em jogo de
+verdade, com deck de Imu no pool.
+
+**Não implementado (fora de escopo desta rodada, deliberado)**: bônus de
+score específico pra ações que removem o combustível exato do oponente
+(`opp_place_trash_bottom_deck` já existe no motor, mas hoje pontua
+genérico "pior carta", não sabe mirar o combustível da combo detectada) —
+a pressão emergente do termo em `_evaluate_state_v2` já cobre isso
+indiretamente (qualquer linha que reduza o trash qualificado do oponente
+pontua melhor), decidido não hardcodar em cima disso sem medir se falta
+de verdade. **Precisa de calibração** (limiar `magnitude>=2`, pesos
+150/80/0.8) via self-play com seeds fixos, mesmo protocolo maximin do
+bloco 285 — ainda não medido formalmente.
+
+Arquivos tocados: `scriptis_da_ia/optcg_engine/decision_engine.py`,
+`scriptis_da_ia/optcg_engine/sim_bridge.py`, `BOT/engine_server/server.py`,
+`scriptis_da_ia/smoke_fast.py`.
+
 ## 2026-07-19 (286) - Claude - proxy: sinais de "bot confuso"/timeout ao vivo + LETHAL correlacionado com outcome + log completo (sem corte do AutoSaved)
 
 Depois do fix de eficiência (bloco 285), usuário pediu levantamento do que

@@ -334,6 +334,7 @@ def choose_action(gs: GameState, opp_gs: GameState,
                 # AutoSaved). Calculado uma vez, antes do resto da busca.
                 trace_out["priority"] = engine.analyzer.analysis_priority()
                 trace_out["can_lethal"] = engine.analyzer.can_lethal_this_turn()
+                trace_out["opp_combo_threat"] = engine.analyzer.opp_combo_threat()
             actions = match._generate_and_score_actions(gs, opp_gs, engine)
             if trace_out is not None:
                 trace_out["scored_actions"] = [

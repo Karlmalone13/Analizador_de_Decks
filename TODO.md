@@ -408,7 +408,21 @@ plugin — subconta agressividade nas análises).
 
 ---
 
-## 🔴 PRÓXIMO TÓPICO (aberto 07/07/2026): consciência de combos estratégicos do oponente
+## 🟡 IMPLEMENTADO 19/07/2026, falta calibrar: consciência de combos estratégicos do oponente
+
+**Estado atual**: `GameAnalyzer.opp_combo_threat()` (novo) generaliza a
+detecção sem hardcode (líder/board público + `get_card_effects` estático,
+sem depender de decklist do oponente); nova prioridade `PREVENT_COMBO`
+(entre `DEFENSIVE`/`REMOVE_THREAT`); termo simétrico em
+`_evaluate_state_v2` (peso `opp_combo_threat`). Confirmado em self-play
+real (`PREVENT_COMBO` disparou 8x em 276 decisões, `--n 8 --seed 7`).
+**Falta**: calibração formal (limiar `magnitude>=2`, pesos 150/80/0.8) via
+self-play pareado com seeds fixos, mesmo protocolo maximin do fix de
+LETHAL (ver HANDOFF bloco 285); e — quando surgir partida ao vivo nova —
+confirmar que o padrão observado em 07/07 (Five Elders reanimando 4-5
+corpos) realmente é neutralizado/reduzido. Ver HANDOFF bloco 287 pro
+detalhe completo. Descrição original do problema abaixo, preservada pra
+contexto:
 
 4 partidas reais instrumentadas na sessão de 07/07 (ver HANDOFF 99/100) — o
 bot perdeu as 4, e as 4 pelo **mesmo padrão exato**: o oponente (Imu/Five
@@ -449,9 +463,10 @@ oponente disparar o combo dele"). Precisa decidir:
   (raça), guardar counter/blocker pro turno da virada, ou remover peças-chave
   do trash antes (`exile`/negação de recursão, se o deck do bot tiver isso).
 
-Não escopado nem começado ainda — próxima sessão que pegar isso deve
-começar por reler os 4 logs de 07/07 (`CombatLogs/2026-07-07T*.log`) e
-`HANDOFF.md` blocos 99-100 antes de desenhar a solução.
+~~Não escopado nem começado ainda~~ — implementado 19/07/2026 (ver nota no
+topo desta seção e HANDOFF bloco 287). Os 4 logs de 07/07 citados abaixo
+não foram encontrados (nunca arquivados no banco) — trabalhado em cima da
+descrição já registrada em HANDOFF 99/100.
 
 ---
 

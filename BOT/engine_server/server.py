@@ -647,6 +647,7 @@ def decide(state: GameStateDto):
             timed_out=trace.get("timed_out", False),
             priority=trace.get("priority"),
             can_lethal=trace.get("can_lethal"),
+            opp_combo_threat=trace.get("opp_combo_threat"),
             engine_error=trace.get("engine_error"),
             latency_ms=round((time.perf_counter() - started) * 1000, 3),
             response=out,
@@ -666,6 +667,15 @@ def decide(state: GameStateDto):
         if trace.get("timed_out"):
             print(f"[ALERTA] busca do Turn Planner nao terminou a tempo "
                   f"(turno {state.turnNumber}, timeout)", flush=True)
+        # O limiar de "ameaca grande o suficiente" e decidido em
+        # analysis_priority() (decision_engine.py), nao aqui -- so formata
+        # pra print quando o engine ja decidiu que e PREVENT_COMBO, evita
+        # duplicar o limiar (regra "sem dois motores").
+        if trace.get("priority") == "PREVENT_COMBO":
+            combo = trace.get("opp_combo_threat") or {}
+            print(f"[ALERTA] oponente pode virar o jogo (turno {state.turnNumber}): "
+                  f"reanima ate {combo.get('magnitude')} corpos do trash "
+                  f"(threat_power={combo.get('threat_power')})", flush=True)
         return out
 
     started = time.perf_counter()
