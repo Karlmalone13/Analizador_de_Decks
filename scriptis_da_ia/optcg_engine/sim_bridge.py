@@ -1162,6 +1162,40 @@ def order_target_candidates(gs: GameState, opp_gs: GameState,
         if alvos and all(t.startswith('opp') for t in alvos):
             actor_opp_only = True
 
+    # O ator so tem steps cujo target e Lider/Character EM CAMPO (ex:
+    # Divine Departure OP13-076: [Counter] target=leader_or_character,
+    # [Main] target=opp_character)? Entao trash/mao/topo do deck NUNCA sao
+    # alvo valido, pra QUALQUER carta com esse padrao -- achado real 20/07
+    # (partida ao vivo): CollectTargetCandidates manda TODAS as zonas
+    # (inclusive own_trash) e a heuristica generica de own_trash ("melhor
+    # carta primeiro, recuperacao") ranqueava a PROPRIA carta recem-
+    # descartada (o efeito [Counter] que estava resolvendo) na frente dos
+    # alvos de verdade (lider/personagem proprio) -- o jogo recusa o clique
+    # em silencio (trash nao e alvo legal pra "dar +3000 de poder"), o
+    # efeito nunca resolvia, so o custo (descarte) tinha sido pago. Mesmo
+    # padrao defensivo do actor_opp_only acima (deprioriza, nao remove —
+    # fallback de seguranca se a deteccao for imperfeita nalgum caso).
+    _BATTLEFIELD_TARGETS = {
+        'opp_character', 'own_character', 'leader_or_character',
+        'opp_leader_or_character', 'leader', 'all_allies', 'opponent',
+        'all_opp_characters', 'all_allies_and_leader', 'all_character',
+        'friendly_character', 'own_character_and_leader', 'self_character',
+        'opp_leader', 'leader_only', 'own_two_chars', 'leader_and_own_character',
+        'opp_two_chars', 'leader_or_own_character',
+    }
+    # Independente de actor_copia_poder/actor_debuff_swing/actor_self_power_
+    # target/actor_opp_only: essas deteccoes decidem COMO pontuar as zonas
+    # elegiveis, nao QUAIS zonas sao elegiveis -- uma carta pode casar com
+    # actor_debuff_swing (tem um step debuff_power) E ainda assim ter outro
+    # step (ex: o [Counter] da Divine Departure) cujo alvo e so lider/
+    # personagem em campo. As duas perguntas sao ortogonais.
+    actor_battlefield_only = False
+    if actor_code:
+        alvos_bf = [s.get('target', '') for block in get_card_effects(actor_code).values()
+                    for s in block.get('steps', []) if s.get('target')]
+        if alvos_bf and all(t in _BATTLEFIELD_TARGETS for t in alvos_bf):
+            actor_battlefield_only = True
+
     # O ator tem CUSTO "trash 1 Character seu OU 1 carta da mao"
     # (trash_char_or_hand — ex: draw do lider Imu)? Entao own_board e
     # own_hand competem pelo MESMO papel (o que doi menos perder) e a
@@ -1220,6 +1254,8 @@ def order_target_candidates(gs: GameState, opp_gs: GameState,
         zone = cand.get('zone', '')
         if actor_opp_only and zone.startswith('own'):
             return (9, 0)   # nunca e alvo valido pra essa habilidade
+        if actor_battlefield_only and zone in ('own_trash', 'opp_trash', 'own_hand', 'top_deck'):
+            return (9, 0)   # alvo e lider/personagem EM CAMPO, trash/mao/deck nunca competem
         if actor_copia_poder:
             if zone == 'opp_board':
                 # copy-power: maior poder = maior ataque copiado. Precisa vir

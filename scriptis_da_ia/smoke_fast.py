@@ -369,6 +369,63 @@ def test_don_reservado_para_ativar_wincon_em_campo() -> None:
           don_livre == 3)
 
 
+def test_order_target_candidates_exclui_trash_para_alvo_battlefield_only() -> None:
+    # Achado real 20/07 (partida ao vivo): Divine Departure (OP13-076,
+    # [Counter] target=leader_or_character) foi jogada como counter, mas o
+    # efeito nunca resolveu -- o log mostrou "alvo de efeito: OP13-076"
+    # repetido, e o poder do defensor nunca subiu os +3000 esperados.
+    # Causa raiz: CollectTargetCandidates manda TODAS as zonas (inclusive
+    # own_trash), e a heuristica generica de own_trash ("melhor carta
+    # primeiro, recuperacao") ranqueava a PROPRIA carta recem-descartada
+    # antes dos alvos de verdade (lider/personagem proprio) -- o jogo
+    # recusa em silencio (trash nao e alvo legal pra "dar +3000 de
+    # poder"). Fix generico: qualquer carta cujos steps SO tenham targets
+    # de campo (leader_or_character, opp_character, etc.) deprioriza
+    # own_trash/opp_trash/own_hand/top_deck pro fim da ordem.
+    me = GameState(leader=real_card("OP11-062"), turn=5)  # Charlotte Katakuri
+    me.field_chars = [real_card("OP11-070")]
+    me.trash = [real_card("OP13-076")]  # a propria Divine Departure, ja descartada
+    opp = GameState(leader=real_card("OP14-020"), turn=5)
+    candidates = [
+        {"id": -420, "zone": "own_trash", "code": "OP13-076"},
+        {"id": -1, "zone": "own_leader", "code": "OP11-062"},
+        {"id": -10, "zone": "own_board", "code": "OP11-070"},
+    ]
+    order = sim_bridge.order_target_candidates(me, opp, candidates, actor_code="OP13-076")
+    check("own_trash (a propria carta recem-descartada) fica por ULTIMO, nao primeiro",
+          order[-1] == -420)
+    check("own_leader/own_board (alvos de verdade) vem antes do own_trash",
+          order.index(-1) < order.index(-420) and order.index(-10) < order.index(-420))
+
+
+def test_ataque_sem_chance_de_conectar_nao_ganha_bonus_de_matar_alvo() -> None:
+    # Achado real 20/07 (partida ao vivo): Katakuri (lider OP11-062, 5000,
+    # [When Attacking] +1000/peek) atacou Mihawk (7000) com 0 DON disponivel
+    # -- impossivel de vencer -- e pontuou 405, porque score_attack_target
+    # somava os bonus de "vale matar o alvo" (board_value, nega ameaca,
+    # blocker etc.) mesmo sem NENHUMA chance real de conectar, so porque o
+    # gatilho de restar (vale_restar) jah bastava pra passar da barreira.
+    # Fix e generico (score_attack_target, nao amarrado ao Katakuri): quando
+    # o ataque nao tem chance de conectar, o score vem SO do valor do
+    # gatilho do proprio atacante (_rest_only_attack_value), nunca dos
+    # bonus de remocao de alvo.
+    katakuri = real_card("OP11-062")
+    mihawk = real_card("ST32-003")
+    me = GameState(leader=katakuri, don_available=0)
+    opp = GameState(leader=real_card("OP14-020"))
+    opp.field_chars = [mihawk]
+    eng = DecisionEngine(me, opp)
+    s_sem_chance = eng.score_attack_target(katakuri, "character", mihawk)
+    check("ataque impossivel de conectar (0 DON, 5000 vs 7000) fica bem abaixo do antigo 405",
+          s_sem_chance < 200)
+
+    fraco = real_card("OP12-034")  # 2000 power, morre pro leader sem DON
+    opp.field_chars = [fraco]
+    s_mata = eng.score_attack_target(katakuri, "character", fraco)
+    check("ataque que REALMENTE mata ainda pontua mais que o que so ativa o gatilho",
+          s_mata > s_sem_chance)
+
+
 def test_opponent_model_ao_vivo_por_lider_e_fallback_seguro() -> None:
     # Item 3 ligado AO VIVO (14/07): lookup do .deck real por codigo do lider
     # (os decks de teste sao nomeados por arquetipo -- Kid.deck, Krieg.deck)
@@ -6753,6 +6810,8 @@ def main() -> int:
     test_ciclo_do_lider_nao_trava_com_corpo_morto_ativo()
     test_don_reservado_para_ativar_wincon_em_campo()
     test_opp_combo_threat_detects_five_elders_style_reanimation()
+    test_order_target_candidates_exclui_trash_para_alvo_battlefield_only()
+    test_ataque_sem_chance_de_conectar_nao_ganha_bonus_de_matar_alvo()
     test_opponent_model_ao_vivo_por_lider_e_fallback_seguro()
     test_play_turn_greedy_opponent_response()
     test_play_turn_greedy_detecta_letal_do_oponente()

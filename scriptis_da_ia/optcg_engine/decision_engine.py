@@ -9227,6 +9227,34 @@ class DecisionEngine:
             return True
         return False
 
+    def _rest_only_attack_value(self, attacker) -> float:
+        """
+        Valor de um ataque que só se justifica pelo gatilho de restar
+        (nenhuma chance de causar dano/matar). Genérico — deriva o valor do
+        que o [When Attacking] do PRÓPRIO atacante realmente faz (remoção,
+        vantagem de carta, buff de poder, etc.), não de qual carta é.
+        Sem [When Attacking] estruturado mas com efeito textual condicionado
+        a estar restado (_rest_activates_effect via texto cru), usa um piso
+        conservador — mesma categoria "efeito desconhecido" que o valorador
+        de gatilhos condicionados a DON usa (OPTCGMatch._trigger_don_value),
+        replicada aqui pois é uma classe diferente (DecisionEngine).
+        """
+        effects = get_card_effects(attacker.code)
+        wa = effects.get('when_attacking')
+        if not wa or not wa.get('steps'):
+            return 40.0
+        actions = [s.get('action') for s in wa['steps']]
+        if any(x in ('ko', 'rest_opp', 'debuff_power', 'bounce') for x in actions):
+            valor = 120
+            if self.opp.field_chars: valor += 30
+        elif any(x in ('draw', 'add_to_hand', 'look_top_deck') for x in actions):
+            valor = 90
+        elif any('power' in str(x) for x in actions):
+            valor = 60
+        else:
+            valor = 40
+        return valor
+
     def score_attack_target(self, attacker: 'Card',
                              target_type: str,
                              target: 'Optional[Card]') -> float:
@@ -9257,9 +9285,20 @@ class DecisionEngine:
             passa_sem_don = atk_power >= leader_power
             passa_com_don = (atk_power + don_disp * 1000) >= leader_power
             vale_restar   = self._rest_activates_effect(attacker)
+            pode_passar   = passa_sem_don or passa_com_don
 
-            if not (passa_sem_don or passa_com_don or vale_restar):
+            if not (pode_passar or vale_restar):
                 return -999  # ataque inútil: não passa e não ativa nada — barra
+
+            if not pode_passar:
+                # Mesmo caso do alvo-personagem: ataque sem NENHUMA chance de
+                # causar dano só vale pelo gatilho de restar, nunca pelos
+                # bônus de pressão de vida abaixo (esses pressupõem que o
+                # ataque tem chance real de conectar).
+                s = self._rest_only_attack_value(attacker)
+                if activate_cost > 0 and opp_life > 1:
+                    s -= activate_cost
+                return s
 
             # Pontua os ataques validos. Vida 0/1 so vira prioridade maxima
             # quando o conjunto de ataques realmente garante lethal; com
@@ -9271,10 +9310,6 @@ class DecisionEngine:
                 s = 500 if lethal_now else 220
             if opp_life == 0:
                 s = 10000 if lethal_now else 130
-
-            # Bônus se restar ativa efeito (vale mesmo sem dano)
-            if vale_restar and not passa_sem_don:
-                s = max(s, 80)
 
             # Penaliza levemente se precisa de muito DON (mas ainda é válido)
             opp_defense = leader_power + a.opp_counter_potential()
@@ -9301,11 +9336,30 @@ class DecisionEngine:
             passa_sem_don = atk_power >= target.power
             passa_com_don = (atk_power + don_disp * 1000) >= target.power
             vale_restar   = self._rest_activates_effect(attacker)
+            pode_matar    = passa_sem_don or passa_com_don
 
-            if not (passa_sem_don or passa_com_don or vale_restar):
+            if not (pode_matar or vale_restar):
                 return -999   # não mata e não ativa nada — barra
 
-            # Valor do alvo (quão importante é removê-lo)
+            if not pode_matar:
+                # Ataque SEM CHANCE de conectar (nem com todo o DON
+                # disponível): só vale pelo que o próprio atacante ganha ao
+                # ficar restado (gatilho [When Attacking] ou efeito
+                # condicionado a estar restado, genérico — vale pra
+                # QUALQUER carta com essa forma, não só a que revelou o bug).
+                # Achado real 20/07: Katakuri (líder) atacava um alvo que
+                # nunca poderia vencer (0 DON, 5000 vs 7000) só porque seu
+                # [When Attacking] fazia vale_restar=True; o código somava
+                # os bônus de "vale matar o alvo" (board_value, nega ameaça,
+                # blocker etc.) MESMO sem chance real de matar, inflando o
+                # score pra muito acima de um ataque que realmente conecta.
+                s = self._rest_only_attack_value(attacker)
+                if activate_cost > 0 and opp_life > 1:
+                    s -= activate_cost
+                return s
+
+            # Valor do alvo (quão importante é removê-lo) — só chega aqui
+            # quando o ataque TEM chance real de matar (com ou sem DON).
             s = target.board_value() * 15
 
             # Alvo COM EFEITO vale matar mesmo com poder baixo/0 (regra do usuário)
@@ -9330,10 +9384,6 @@ class DecisionEngine:
             if 'when_attacking' in tgt_effects: s += 35
             if 'activate_main' in tgt_effects:  s += 25
             if 'on_ko' in tgt_effects:          s -= 20  # cuidado: ativa ao morrer
-
-            # Bônus se restar ativa efeito (vale mesmo sem matar)
-            if vale_restar and not passa_sem_don:
-                s = max(s, 60)
 
             # Custo de perder o Activate Main do ATACANTE: só compensa se o alvo
             # é ameaça grande (poder alto, blocker, rush, gera vantagem).

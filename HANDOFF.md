@@ -1,5 +1,74 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-20 (289) - Claude - fix real ao vivo: ataque sem chance de conectar pontuava alto por causa do gatilho [When Attacking] do próprio atacante + Divine Departure (order_target_candidates) commitado + achados abertos (Pudding, DON parado em char de poder 0, client_timeout, latência 169s)
+
+Continuação da sessão 288: usuário jogou mais uma partida (após restart de
+`engine_server`+plugin feito por mim) e reportou 3 problemas observados:
+"líder não usa efeito", "líder ataca 5000 num personagem 7000", "DON
+empilhado num personagem de poder 0 em vez de jogar carta boa". Pedido
+explícito: analisar log+telemetria e reportar antes de corrigir; depois
+"pode corrigir, mas lembre-se que tem que ser uma forma do bot pensar e
+não uma alteração exclusiva do deck do Katakuri".
+
+**Achado real #1 (causa raiz confirmada, FIX aplicado e genérico)**: no
+turno 4, com `activeDon: 0`, o bot atacou com o líder Charlotte Katakuri
+(OP11-062, 5000) contra Dracule Mihawk (ST32-003, 7000) — ataque
+matematicamente impossível de conectar. `score_attack_target()`
+([decision_engine.py](scriptis_da_ia/optcg_engine/decision_engine.py))
+tem a regra dura "só ataca se mata (com/sem DON) OU se restar ativa um
+efeito útil" (`vale_restar`, via `_rest_activates_effect`). Katakuri tem
+`[When Attacking]` (+1000 power self, `peek_opp_deck_top`, custo 1 DON) —
+isso faz `vale_restar=True` e o ataque passa da barreira, correto até aí.
+O BUG: depois de passar, o código somava os bônus de "vale matar o alvo"
+(`board_value()*15`, +50 alvo com efeito, +70 nega ameaça, +60 blocker
+etc.) **mesmo sem nenhuma chance real de matar**, inflando o score pra
+405 — acima até de ataques que realmente conectam. Isso também explica o
+relato #1 ("líder não usa efeito"): o efeito É o `[When Attacking]`, o bot
+estava tentando usá-lo (atacando), só que o ataque nunca conectava, então
+não sobrava nada visível pro usuário perceber.
+
+**Fix (genérico, não amarrado ao Katakuri/deck nenhum)**: em
+`score_attack_target` (ramos `'leader'` e `'character'`), quando o ataque
+não tem chance de conectar (`not pode_matar`) mas passa só por
+`vale_restar`, o score agora vem exclusivamente de
+`_rest_only_attack_value(attacker)` — nova função que deriva o valor
+**do que o `[When Attacking]` do PRÓPRIO atacante realmente faz**
+(remoção/controle, vantagem de carta, buff de poder, ou piso genérico),
+olhando os `steps` do efeito estruturado, igual ao padrão que
+`_trigger_don_value` já usa em `OPTCGMatch` — funciona pra qualquer carta
+com essa forma (quando_attacking + poder insuficiente), não só Katakuri.
+Os bônus de remoção de alvo (`board_value`, nega ameaça, blocker/rush/
+double_attack) só se aplicam quando o ataque **tem** chance real de
+matar. Teste novo em
+[smoke_fast.py](scriptis_da_ia/smoke_fast.py):
+`test_ataque_sem_chance_de_conectar_nao_ganha_bonus_de_matar_alvo` —
+confirma score cai de 405→60 no caso sem chance, e que um ataque que
+realmente mata ainda pontua mais (80) que o que só ativa o gatilho.
+`smoke_fast.py` E `smoke_test.py` (regressão ampla, rodado por tocar
+código compartilhado) 100% verdes.
+
+**Achado real #2 (aberto, NÃO corrigido)**: Pudding (OP11-070, 0 power)
+ficou com **7 DON anexados** a partir do turno 5, parada, enquanto o bot
+tinha `ST34-004 x2`/`OP11-073`/`OP11-067` (8k-12k power) sem jogar na
+mão. A via legítima que anexa DON nela (`_generate_attach_don_actions`,
+`don_requirement: 1` no `activate_main` dela) só deveria colocar 1 DON e
+parar (guard `card.don_attached >= req: continue`) — não achei nenhuma
+decisão `attach_don` nos 106 decisions logados que explique os outros 6.
+Suspeita: ligado ao mesmo travamento do `activate_main` dela
+(`peek_opp_deck_top` nunca resolve o alvo — ciclo de 12+ candidatos sem
+sucesso, achado na sessão 288, o fix de `ConfirmRevealedCard` daquela
+sessão NÃO resolveu isso, confirmado ao vivo que o estado nunca dispara
+pra essa carta). Precisa de mais investigação antes de mexer.
+
+**Pendente, não investigado ainda**: `client_timeouts: 1` (primeira vez
+que aparece) e `latency max: 169609ms` (169s) nessa mesma sessão de
+telemetria (`decisions_2026-07-20T16.45.37.jsonl`).
+
+**Divine Departure / order_target_candidates**: fix da sessão anterior
+(alvo battlefield-only nunca perde pro próprio trash/mão/topo do deck do
+ATACANTE na ordenação de candidatos) estava pronto mas não commitado —
+commitado nesta sessão junto com o fix acima.
+
 ## 2026-07-20 (288) - Claude - banco de cartas: sets ST31-36 adicionados (transcritos manualmente) + fix real achado em partida ao vivo (ConfirmRevealedCard)
 
 Primeira sessão de teste ao vivo de verdade desde os fixes dos blocos

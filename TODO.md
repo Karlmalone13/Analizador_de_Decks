@@ -5,6 +5,23 @@
 **Baseline do código:** ver `git log --oneline -1`
 **Repo:** github.com/Karlmalone13/Analizador_de_Decks
 
+> 20/07/2026 (continuação, bloco HANDOFF 289): mais uma partida ao vivo
+> revelou bug de scoring genérico em `score_attack_target` — ataque sem
+> NENHUMA chance de conectar (poder + todo o DON disponível ainda menor
+> que o alvo) pontuava alto (405) só porque o `[When Attacking]` do
+> próprio atacante fazia `vale_restar=True`; os bônus de "vale matar o
+> alvo" eram somados mesmo sem chance de matar. Fix aplicado e genérico
+> (qualquer atacante com essa forma, não só o líder que revelou o bug) +
+> teste novo em `smoke_fast.py`. **Pendente**: (1) Pudding (OP11-070)
+> acumulou 7 DON parada num personagem de 0 power num turno — só 1 DON é
+> explicado pela via legítima (`don_requirement:1`), os outros 6 têm
+> origem desconhecida, possivelmente ligado ao travamento do
+> `activate_main` dela (ainda sem handler funcional apesar do fix de
+> `ConfirmRevealedCard` da sessão anterior — confirmado que esse estado
+> nunca dispara pra essa carta). (2) `client_timeouts: 1` e
+> `latency max: 169609ms` na sessão `decisions_2026-07-20T16.45.37.jsonl`
+> — não investigados ainda.
+
 > 20/07/2026: primeira sessão de teste ao vivo real dos fixes 285-287.
 > Captura de log 100% validada (DownloadLogLines + coleta automática +
 > winner). 2 achados reais em partida: (1) `ConfirmRevealedCard` sem
