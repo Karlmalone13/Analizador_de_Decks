@@ -1,5 +1,40 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-21 (300) - Claude (sessao remota web) - memoria de cartas reveladas (vida/deck/search)
+
+Continuacao do bloco 299 (mesma sessao). Pedido do usuario: quando o bot
+revela carta (vida, deck, mao do oponente, e cartas vistas em SEARCH),
+registrar na memoria pra o turno e os proximos, e usar isso em decisoes.
+
+**Ja existia (nao reinventado):** `GameState.revealed_to_opponent` +
+`known_hand_cards()` + `OpponentModel` (Monte Carlo). `reveal_opp_hand`
+(Arlong) ja alimentava a mao conhecida do oponente.
+
+**Estendido (mesmo padrao id(card) + limpeza lazy) pra vida e deck:**
+- `GameState.revealed_life` / `known_life_cards()` -- peek/reveal de Life
+  (OP15-119 `life_top_revealed_cost`).
+- `GameState.revealed_deck` / `known_deck_cards()` -- topo do deck visto por
+  SEARCH (`add_to_hand`/`trash_from_looked_deck`, "look at top N": as N cartas
+  ficam conhecidas; a que sai some na limpeza lazy) e por peek
+  (`peek_opp_deck_top` Pudding, `reveal_opp_deck_top_choose_cost`).
+- `__deepcopy__` copia os 2 sets novos (isolados por clone).
+- Consumo: `OpponentModel` exclui a vida conhecida do pool e a inclui como
+  CERTEZA na amostra (antes toda a vida era desconhecida).
+
+**Doc completo:** `scriptis_da_ia/optcg_engine/MEMORIA_REVEALS.md` (design,
+pontos de captura, invalidacao lazy, e o PENDENTE).
+
+**PENDENTE (precisa desktop/ao vivo):** (1) persistencia entre decisoes AO
+VIVO -- em self-play a arvore de estados clonados ja persiste, mas ao vivo
+cada /decide reconstroi o GameState do DTO; falta camada no engine_server por
+match_id (chave `deckUniqueId`, nao `id()`). (2) consumo mais amplo (topo do
+proprio deck no sequenciamento, topo da vida em triggers) -- afeta winrate,
+validar com self-play/tune_weights antes de ligar.
+
+**Validado aqui:** testes unitarios (accessors+limpeza lazy, deepcopy isola,
+OpponentModel usa vida conhecida, captura peek end-to-end) + `smoke_fast.py`
+verde. Nada disso mexe no bot C#; e tudo engine (cerebro).
+
 ## 2026-07-21 (299) - Claude (sessao remota web) - zonas de alvo faltantes do bot: DON restado/oponente + mao do oponente
 
 Sessao remota (usuario pelo iPhone). Revisao dirigida das zonas que o bot

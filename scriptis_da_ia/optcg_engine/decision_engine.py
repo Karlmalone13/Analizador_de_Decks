@@ -757,6 +757,19 @@ class GameState:
     # trashada, etc) -- usado pelo OpponentModel para saber quais cartas
     # specificas o oponente certamente tem, em vez de sortear via Monte Carlo.
     revealed_to_opponent: set = field(default_factory=set)
+    # Memoria de INFORMACAO REVELADA (mesma ideia de revealed_to_opponent,
+    # estendida pra vida e deck). ids (id(card)) de cartas cuja IDENTIDADE ja
+    # foi vista por um efeito de "olhar/revelar" e que continuam na zona --
+    # persistem entre turnos ate a carta sair (limpeza lazy em known_*_cards,
+    # mesmo padrao seguro de known_hand_cards). Alimentam o OpponentModel
+    # (reduz incerteza da vida do oponente) e decisoes de sequenciamento
+    # (saber o topo do proprio deck/vida). Reveals que populam:
+    #   revealed_life  -> peek/reveal de carta da Life (Katakuri, OP15-119
+    #                     life_top_revealed_cost, etc.)
+    #   revealed_deck  -> topo do deck visto por SEARCH (look at top N) ou peek
+    #                     (peek_opp_deck_top da Pudding, reveal_opp_deck_top...)
+    revealed_life: set = field(default_factory=set)
+    revealed_deck: set = field(default_factory=set)
     # Trava TRANSITORIA de Blocker, escopo de UMA UNICA batalha (a que esta
     # sendo resolvida agora). Setada por lock_opp_blocker_battle (efeito
     # [When Attacking] do atacante) e LIMPA pelo proprio _resolve_battle
@@ -822,6 +835,8 @@ class GameState:
         # sem risco de corrupcao, confirmado por leitura de todos os call sites).
         novo.full_deck_census = self.full_deck_census
         novo.revealed_to_opponent = set(self.revealed_to_opponent)
+        novo.revealed_life = set(self.revealed_life)
+        novo.revealed_deck = set(self.revealed_deck)
         novo.blocker_lock_battle = _dc(self.blocker_lock_battle, memo)
         novo.end_of_turn_queue = _dc(self.end_of_turn_queue, memo)
         novo.pending_play_cost_reductions = _dc(self.pending_play_cost_reductions, memo)
@@ -845,6 +860,22 @@ class GameState:
         # em vez de em cada ponto de remoção da mão.
         self.revealed_to_opponent &= ids_na_mao
         return [c for c in self.hand if id(c) in self.revealed_to_opponent]
+
+    def known_life_cards(self) -> List['Card']:
+        """Cartas da Life cuja identidade ja foi revelada por efeito e que
+        AINDA estao na Life. Mesma limpeza lazy de known_hand_cards -- quando
+        a carta sai da Life (dano, movida pro deck/mao), o id orfao some."""
+        ids_na_vida = {id(c) for c in self.life}
+        self.revealed_life &= ids_na_vida
+        return [c for c in self.life if id(c) in self.revealed_life]
+
+    def known_deck_cards(self) -> List['Card']:
+        """Cartas do deck cuja identidade ja foi vista (search/peek do topo) e
+        que AINDA estao no deck. Limpeza lazy identica -- a carta buscada pra
+        mao ou movida pra outra zona deixa de contar automaticamente."""
+        ids_no_deck = {id(c) for c in self.deck}
+        self.revealed_deck &= ids_no_deck
+        return [c for c in self.deck if id(c) in self.revealed_deck]
 
     def life_count(self) -> int:
         return len(self.life)
@@ -4282,6 +4313,11 @@ class EffectExecutor:
 
             look = min(look_count, len(me.deck))
             candidates = me.deck[-look:]
+            # Memoria: o buscador VE todas as `look` cartas do topo. As que
+            # sairem do deck (pra mao/trash) somem via limpeza lazy em
+            # known_deck_cards; as que ficarem seguem conhecidas.
+            for _seen in candidates:
+                me.revealed_deck.add(id(_seen))
 
             exclude = step.get('exclude', [])
             cost_lte = self._resolve_cost_lte(step, default=99)
@@ -4367,6 +4403,11 @@ class EffectExecutor:
                         break
             look = min(look_count, len(me.deck))
             candidates = me.deck[-look:]
+            # Memoria: o buscador VE todas as `look` cartas do topo. As que
+            # sairem do deck (pra mao/trash) somem via limpeza lazy em
+            # known_deck_cards; as que ficarem seguem conhecidas.
+            for _seen in candidates:
+                me.revealed_deck.add(id(_seen))
             count = step.get('count', 1)
             trashed = []
             for _ in range(min(count, len(candidates))):
@@ -4432,6 +4473,9 @@ class EffectExecutor:
 
         if action == 'peek_opp_deck_top':
             # Efeito apenas informacional: nao move nem reordena a carta.
+            # Memoria: passa a conhecer a identidade do topo do deck inimigo.
+            if opp.deck:
+                opp.revealed_deck.add(id(opp.deck[-1]))
             return 'olhou o topo do deck do oponente' if opp.deck else ''
 
         if action == 'reveal_opp_deck_top_choose_cost':
@@ -4454,6 +4498,7 @@ class EffectExecutor:
                 # o topo oculto para fabricar um acerto.
                 chosen_cost = 3
             revealed = opp.deck[-1]
+            opp.revealed_deck.add(id(revealed))  # memoria: topo do deck inimigo conhecido
             matched = revealed.cost == chosen_cost
             nested_logs = []
             if matched:
@@ -5907,6 +5952,8 @@ class EffectExecutor:
                 # custo da carta (achado 19/07, OP15-119). Zero se a Life
                 # estiver vazia.
                 n = me.life[-1].cost if me.life else 0
+                if me.life:  # memoria: topo da propria Life conhecido
+                    me.revealed_life.add(id(me.life[-1]))
             else:
                 n = 0
 
