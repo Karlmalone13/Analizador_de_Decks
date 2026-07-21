@@ -1,0 +1,21 @@
+{
+  "trigger_card": "OP15-078",
+  "problem": "Bot jogou Mamaragan (OP15-078, custo 0, [Main] DON!! 2: Draw 1 card. Then, rest up to 1 of your opponent's Characters with 5000 power or less) numa partida real e a carta so foi trashada, sem efeito nenhum resolver -- nem o draw, que e incondicional e sempre executavel. Investigando o parser: card_effects_db.json tinha os steps na ORDEM INVERTIDA do texto real -- [rest_opp_character, draw] em vez de [draw, rest_opp_character]. gerar_effects_db.py::parse_block despacha os parsers de ko/bounce/rest_opp_character (linhas ~6762/6873/6895) ANTES do parser de draw (linha ~7102) -- ordem FIXA dos ifs no codigo, nao a ordem do texto da carta. Suspeita (nao 100% confirmada sem debug ao vivo do estado do jogo): o caminho V3 ao vivo tenta resolver o PRIMEIRO step da lista primeiro; se for rest_opp_character sem alvo elegivel disponivel no momento, o efeito pode nao avancar nem pro draw (que so aconteceria DEPOIS na ordem antiga).",
+  "grammar_family": "'Draw N card(s). Then, [K.O./rest/bounce] up to M of your opponent's Character(s)...' -- o efeito de comprar (sem alvo, sempre executavel) precisa ficar ANTES do efeito condicionado a ter alvo no campo do oponente, igual ao texto oficial. Varredura via regex no cards_rows.csv inteiro (nao so a carta-gatilho).",
+  "queries": [
+    "regex 'draw \\\\d+ cards?\\\\.\\\\s*then,\\\\s*(rest|k\\\\.?o\\\\.?|return|bounce|give)' contra cards_rows.csv inteiro -- 11 cartas encontradas",
+    "conferido card_effects_db.json ANTES do fix pra cada uma das 11: 5 tinham a ordem trocada (draw depois do efeito), 6 ja saiam na ordem certa (give_don despacha DEPOIS de draw no parser, nao precisava de fix)"
+  ],
+  "cards_found": [
+    "OP03-097", "OP05-059", "OP09-089", "OP10-061", "OP12-078",
+    "OP13-054", "OP13-102", "OP15-076", "OP15-078", "OP15-117", "ST06-015"
+  ],
+  "resolution_scope": "global",
+  "decision": "gerar_effects_db.py::parse_block ganhou um bloco NOVO (antes de qualquer dispatch de ko/bounce/rest_opp_character) que detecta a forma 'draw N card(s). then, [ko|rest up to N|return up to N|bounce]' via re.search (nao ancorado -- muitas cartas tem prefixo de custo/condicao como 'DON!! 2:' ou 'If your Leader is X,' antes do 'Draw', que ja e tratado em outro lugar do pipeline) e adiciona o step 'draw' cedo, com uma flag 'draw_added_early' que impede o dispatch generico de draw (linha ~7125) de duplicar o step. As 5 cartas com a ordem trocada (OP03-097 ko, OP05-059/OP10-061 bounce, OP13-102 rest [2 blocos], OP15-078 Mamaragan rest) passaram a ter 'draw' como PRIMEIRO step, batendo com o texto oficial. As outras 6 cartas ('give_don', ja corretas) nao foram tocadas (o regex so cobre ko/rest/bounce/return, nao 'give').",
+  "validated_by": [
+    "diff_parser.py: GANHOU=0, PERDEU=0 (sem regressao nas 2644 cartas), MUDOU=5 (exatamente as 5 cartas com a ordem trocada)",
+    "gerar_dbs.py rodado com sucesso, sanidade de cartas-chave OK",
+    "smoke_fast.py e smoke_test.py 100% verdes"
+  ],
+  "notes": "Fix corrige a ORDEM dos steps no banco (agora bate com o texto oficial da carta), mas NAO resolve por si so o travamento ao vivo da Mamaragan -- o step rest_opp_character (agora em 2o lugar) ainda pode travar no mesmo ciclo de cliques invalidos ja visto na Charlotte Pudding (peek_opp_deck_top) e no Katakuri (peek_opp_deck_top do When Attacking), que e um problema mais profundo de resolucao de alvo no caminho ao vivo (C#/BotDriver.cs), fora do escopo desta auditoria de parser. Pelo menos o draw (sempre executavel) deve passar a acontecer agora, o que ja e uma melhoria parcial."
+}

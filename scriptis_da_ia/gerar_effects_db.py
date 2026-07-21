@@ -6738,6 +6738,37 @@ def parse_block(block_text, trigger_name):
     if imm:
         steps.extend(imm)
 
+    # "Draw N card(s). Then, [K.O./rest/bounce] up to M of your
+    # opponent's Character(s)..." -- o draw INCONDICIONAL (sempre
+    # executa, sem alvo) deve ficar ANTES do efeito condicionado a ter
+    # alvo no campo do oponente, igual ao texto real da carta. Os
+    # dispatches de ko/bounce/rest_opp_character (abaixo) rodam ANTES do
+    # dispatch de draw (ordem fixa dos ifs deste parser, nao a ordem do
+    # texto) -- pra qualquer carta com esse padrao especifico ("Draw...
+    # Then, <efeito no oponente>"), os steps saiam invertidos. Achado
+    # real 21/07 (partida ao vivo, Mamaragan OP15-078 "Draw 1 card. Then,
+    # rest up to 1 of your opponent's Characters..."): virava
+    # [rest_opp_character, draw] em vez de [draw, rest_opp_character].
+    # Varredura global (cards_rows.csv) confirmou mais 4 cartas com a
+    # MESMA forma e ordem trocada: OP03-097 (ko), OP05-059/OP10-061
+    # (bounce/return), OP13-102 (rest, 2 blocos). As 6 cartas com "Draw...
+    # Then, give..." (give_don) ja saiam na ordem certa (o dispatch de
+    # give_don roda DEPOIS do de draw) -- nao precisam deste fix.
+    # re.search (nao re.match/ancorado): "draw" costuma vir depois de um
+    # prefixo de custo/condicao ("DON!! 2:", "If your Leader is X,", "You
+    # may trash this Character:") que ja e tratado em outro lugar do
+    # pipeline (parse_costs/parse_conditions) -- so importa que "draw" seja
+    # a acao que abre a clausula do EFEITO em si, nao literalmente o
+    # primeiro caractere do bloco. Achado 21/07: Mamaragan tem "DON!! 2:"
+    # antes de "Draw 1 card." -- ancorar em re.match perdia esse caso.
+    draw_before_opp_m = re.search(
+        r'draw (\d+) cards?\.\s*then,\s*(?:k\.?o\.?|rest up to \d+|return up to \d+|bounce)',
+        t)
+    draw_added_early = False
+    if draw_before_opp_m and not any(s.get('action') == 'draw' for s in steps):
+        steps.append({'action': 'draw', 'count': int(draw_before_opp_m.group(1))})
+        draw_added_early = True
+
     # Busca
     if 'look at' in t:
         steps.extend(parse_look_at(t))
@@ -7098,7 +7129,7 @@ def parse_block(block_text, trigger_name):
         shuffled_hand = True
 
     # Draw (sem look at). Pula se já tratado como shuffle_hand (draw-back embutido).
-    if 'draw' in t and 'look at' not in t and not shuffled_hand:
+    if 'draw' in t and 'look at' not in t and not shuffled_hand and not draw_added_early:
         steps.extend(parse_draw(t))
 
     # Power buff/debuff (com ou sem sinal explicito -- parse_power_buff agora

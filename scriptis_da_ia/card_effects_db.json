@@ -17399,14 +17399,14 @@
       "trigger": {
         "steps": [
           {
+            "action": "draw",
+            "count": 1
+          },
+          {
             "action": "ko",
             "count": 1,
             "target": "opp_character",
             "cost_lte": 1
-          },
-          {
-            "action": "draw",
-            "count": 1
           }
         ]
       },
@@ -23621,14 +23621,14 @@
       "main": {
         "steps": [
           {
+            "action": "draw",
+            "count": 1
+          },
+          {
             "action": "bounce",
             "count": 1,
             "target": "opp_character",
             "cost_lte": 5
-          },
-          {
-            "action": "draw",
-            "count": 1
           }
         ],
         "conditions": {
@@ -41628,14 +41628,14 @@
       "main": {
         "steps": [
           {
+            "action": "draw",
+            "count": 1
+          },
+          {
             "action": "bounce",
             "count": 1,
             "target": "opp_character",
             "cost_lte": 2
-          },
-          {
-            "action": "draw",
-            "count": 1
           }
         ]
       }
@@ -53494,13 +53494,13 @@
       "activate_main": {
         "steps": [
           {
+            "action": "draw",
+            "count": 1
+          },
+          {
             "action": "rest_opp_character",
             "count": 1,
             "cost_lte": 3
-          },
-          {
-            "action": "draw",
-            "count": 1
           }
         ],
         "costs": [
@@ -60474,13 +60474,13 @@
       "main": {
         "steps": [
           {
+            "action": "draw",
+            "count": 1
+          },
+          {
             "action": "rest_opp_character",
             "count": 1,
             "power_lte": 5000
-          },
-          {
-            "action": "draw",
-            "count": 1
           }
         ],
         "costs": [

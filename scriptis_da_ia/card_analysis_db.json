@@ -25579,14 +25579,14 @@
   "attribute": "",
   "effects": [
    {
+    "action": "draw",
+    "trigger": "trigger"
+   },
+   {
     "action": "ko",
     "trigger": "trigger",
     "cost_lte": 1,
     "target": "opp_character"
-   },
-   {
-    "action": "draw",
-    "trigger": "trigger"
    },
    {
     "action": "buff_power",
@@ -34734,14 +34734,14 @@
     "trigger": "trigger"
    },
    {
+    "action": "draw",
+    "trigger": "main"
+   },
+   {
     "action": "bounce",
     "trigger": "main",
     "cost_lte": 5,
     "target": "opp_character"
-   },
-   {
-    "action": "draw",
-    "trigger": "main"
    }
   ],
   "synergy_states": {
@@ -61174,14 +61174,14 @@
     "target": "opp_character"
    },
    {
+    "action": "draw",
+    "trigger": "main"
+   },
+   {
     "action": "bounce",
     "trigger": "main",
     "cost_lte": 2,
     "target": "opp_character"
-   },
-   {
-    "action": "draw",
-    "trigger": "main"
    }
   ],
   "synergy_states": {
@@ -78419,13 +78419,13 @@
   "attribute": "Wisdom",
   "effects": [
    {
+    "action": "draw",
+    "trigger": "activate_main"
+   },
+   {
     "action": "rest_opp_character",
     "trigger": "activate_main",
     "cost_lte": 3
-   },
-   {
-    "action": "draw",
-    "trigger": "activate_main"
    },
    {
     "action": "rest_opp_character",
@@ -88198,13 +88198,13 @@
     "trigger": "counter"
    },
    {
+    "action": "draw",
+    "trigger": "main"
+   },
+   {
     "action": "rest_opp_character",
     "trigger": "main",
     "power_lte": 5000
-   },
-   {
-    "action": "draw",
-    "trigger": "main"
    }
   ],
   "synergy_states": {

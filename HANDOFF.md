@@ -1,5 +1,39 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-21 (295) - Claude - parser: ordem draw/efeito-no-oponente invertida (5 cartas, Mamaragan inclusa) + registro de auditoria global
+
+Continuação direta do bloco 294 (mesma sessão): usuário aprovou implementar
+o fix da Mamaragan (ordem de step) + pediu pra investigar a fundo o
+líder ainda sem efeito e o gasto de DON em personagem fraco.
+
+**Fix do parser implementado e validado**: texto oficial da Mamaragan é
+"Draw 1 card. Then, rest up to 1 of your opponent's Characters..." — draw
+PRIMEIRO. `card_effects_db.json` tinha a ordem invertida
+(`rest_opp_character` antes de `draw`) porque `gerar_effects_db.py::
+parse_block` despacha os parsers de ko/bounce/rest_opp_character ANTES do
+parser de draw (ordem fixa dos `if`s no código, não a ordem do texto).
+Varredura global (regex em `cards_rows.csv` inteiro, gramática "Draw N
+card(s). Then, [K.O./rest/bounce] up to M of your opponent's...") achou
+**11 cartas** com essa forma; **5** tinham a ordem trocada (OP03-097,
+OP05-059, OP10-061, OP13-102 [2 blocos], OP15-078 Mamaragan), as outras 6
+("Then, give...") já saíam certas. Fix genérico em `parse_block`: detecta
+o padrão via `re.search` (não ancorado — prefixos de custo/condição como
+"DON!! 2:" ou "If your Leader is X," costumam vir antes de "Draw") e
+adiciona o step `draw` cedo, com flag pra não duplicar no dispatch
+genérico mais abaixo. `diff_parser.py`: GANHOU=0, PERDEU=0, MUDOU=5
+(exatamente as 5 esperadas). Registro completo em
+`parser_audits/2026-07-21_draw_then_efeito_oponente_ordem_invertida.json`.
+`gerar_dbs.py` rodado, `smoke_fast.py`/`smoke_test.py` 100% verdes.
+
+**Ressalva importante (não superestimar o fix)**: isso corrige a ORDEM
+no banco, batendo com o texto oficial — mas NÃO resolve sozinho o
+travamento ao vivo da Mamaragan. O step `rest_opp_character` (agora em
+2º lugar) ainda pode travar no MESMO ciclo de cliques inválidos já visto
+na Pudding e no Katakuri (ver blocos 293/294) — esse é um problema mais
+profundo do caminho ao vivo (C#/BotDriver.cs), fora do escopo de uma
+correção de parser. Pelo menos o `draw` (sempre executável, sem alvo)
+deve passar a acontecer agora — melhoria parcial, não solução completa.
+
 ## 2026-07-21 (294) - Claude - 4a partida ao vivo pos-fixes: bonus de "ameaca critica" tinha o MESMO bug de score_attack_target (fix aplicado); Katakuri paga o custo agora mas peek_opp_deck_top ainda trava; Mamaragan tem ordem de step invertida vs texto real (achado, nao corrigido, precisa aprovacao)
 
 Usuário jogou mais uma partida (Katakuri via bot x Doflamingo via humano)
