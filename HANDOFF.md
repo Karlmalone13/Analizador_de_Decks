@@ -1,5 +1,84 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-21 (291) - Claude - fix real ao vivo #3: when_attacking/on_opp_attack sempre caiam em resolve_reaction (regua de REDIRECT), Katakuri recusava a propria habilidade quase toda vez; DON de ataque JA aparece na telemetria (correcao de achado anterior, nao precisou de fix)
+
+Continuação direta do bloco 290 (mesma sessão): usuário pediu pra
+implementar os dois pontos em aberto — a investigação do `[When
+Attacking]`/`[On Opponent's Attack]` do Katakuri, e a observabilidade de
+DON alocado em ataque. Usuário também apontou corretamente que o achado
+anterior citava só `[When Attacking]`, mas Katakuri tem os DOIS blocos
+(`when_attacking` e `on_opp_attack`, idênticos) — os dois precisavam ser
+cobertos pelo mesmo fix.
+
+**DON de ataque — achado corrigido do bloco 290, não era bug**: reli
+`server.py::/decide` e achei que `donToAttach` já vai no campo `response`
+de cada `decision` (`bridge.don_for_attack()`, que já usa
+`_don_livre_for_plan` pra não roubar DON do plano do turno — mecanismo já
+maduro, várias camadas de fix documentadas no próprio código). O gap era
+só que minha investigação anterior olhou `chosen_action` (que não tem
+esse campo) em vez de `response` (que tem). Não implementei nada aqui —
+seria redundante. Auditoria da lógica de alocação (`don_needed_for_attack`)
+não achou bug óbvio; fica como possível pendência SE o sintoma
+"distribui DON em vez de descer carta boa" persistir depois dos fixes
+abaixo (a hipótese mais provável agora é que era sintoma dos MESMOS bugs
+de scoring/execução já corrigidos nesta sessão, não um bug próprio).
+
+**Achado real (causa raiz confirmada, FIX aplicado e genérico)**: o log
+mostrou a oferta de custo opcional do Katakuri disparando corretamente
+via `IsOfferingDownside`/`ShouldUseOptionalCost` (`BotDriver.cs`) —
+`[HB] ... aca=True downside=True mine=True actor=OP11-062` — e o engine
+respondendo `Cancel` **7 de 8 vezes**. Causa: `BotDriver.cs` roteia
+QUALQUER oferta durante uma janela de ataque (`duringAttack`) pro phase
+`"reaction"`, que chama `resolve_reaction()` em
+[sim_bridge.py](scriptis_da_ia/optcg_engine/sim_bridge.py) — função
+desenhada especificamente pra habilidades de REDIRECT (Teach: "devo
+desviar o golpe que vem em mim?"), com a guarda `if atk_power < def_power:
+return False` ("não vale se defender de um ataque que já perde
+sozinho"). Aplicada ao PRÓPRIO ataque do bot (quando Katakuri usa seu
+`[When Attacking]`), essa pergunta fica invertida: um ataque que "já
+perde sozinho" é EXATAMENTE o caso onde mais vale pagar 1 DON pra tentar
+virar o combate. Mesmo problema pro `[On Opponent's Attack]` (quando o
+OPONENTE ataca Katakuri) — outro motor duplicado pra mesma pergunta que
+`execute()` (simulador interno) já responde de um jeito diferente (sempre
+paga se viável, sem julgar valor, já que `when_attacking`/`on_opp_attack`
+nunca passavam pelo crivo de `_worth_paying_optional_costs`).
+
+**Fix (genérico, sem mudança nenhuma em C# — `actorCode` já estava sendo
+mandado pelo wire, só não chegava no lugar certo)**:
+1. [decision_engine.py](scriptis_da_ia/optcg_engine/decision_engine.py)
+   `EffectExecutor.execute()`: o crivo `_worth_paying_optional_costs`
+   (já a ÚNICA fonte de verdade pra "vale pagar esse custo opcional",
+   usada por on_play/main) agora TAMBÉM roda pra `when_attacking`/
+   `on_opp_attack` — simulador interno passa a julgar esses gatilhos em
+   vez de sempre pagar.
+2. [sim_bridge.py](scriptis_da_ia/optcg_engine/sim_bridge.py)
+   `resolve_optional_effect()`: mesma extensão (tupla de triggers
+   checados).
+3. `resolve_reaction()` ganhou `actor_code`: se a carta NÃO tem
+   `redirect_attack_target` de verdade em nenhum bloco, delega pra
+   `resolve_optional_effect()` em vez de rodar a lógica de redirect. Teach
+   (que TEM `redirect_attack_target`) continua intacto.
+4. [server.py](BOT/engine_server/server.py) `/defense` fase `"reaction"`:
+   passa `actor_code=req.triggerCode` (campo que já existia no payload,
+   só não estava sendo repassado).
+
+Custos de RECURSO (don_minus/rest_don/rest_self, caso do Katakuri) já são
+tratados por `_worth_paying_optional_costs` como "sempre vale se pagável"
+(só custos de SACRIFÍCIO — mão/campo/vida — exigem julgamento de valor) —
+então o fix não precisou de nenhuma régua nova, só parar de pular a
+checagem pra esses 2 triggers. Testes novos em
+[smoke_fast.py](scriptis_da_ia/smoke_fast.py):
+`test_katakuri_when_attacking_custo_don_e_sempre_avaliado_como_valer_a_pena`
+(Katakuri usa mesmo perdendo sozinho; Teach continua sendo tratado como
+redirect de verdade, não vira sempre-True). `smoke_fast.py` e
+`smoke_test.py` 100% verdes.
+
+**Ainda pendente**: validar em partida real que Katakuri passa a usar a
+própria habilidade de fato (log deve mostrar "Rest 1 Don"/peek em vez de
+"Attack Fails" seco); reconfirmar se "distribui DON em vez de descer
+carta boa" ainda aparece depois desses fixes ou se já estava explicado
+por eles.
+
 ## 2026-07-20 (290) - Claude - fix real ao vivo #2: eventos dual-mode ([Counter]+[Main] com alvos DIFERENTES) misturavam os blocos na ordenacao de alvo, causando ciclo de clique invalido (Mamaragan) + achado aberto (Katakuri [When Attacking] nunca dispara na execucao)
 
 Continuação imediata do bloco 289 (mesma sessão): usuário testou de novo

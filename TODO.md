@@ -1,6 +1,24 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 20 de julho de 2026
+**Última atualização:** 21 de julho de 2026
+
+> 21/07/2026 (bloco HANDOFF 291): quando_attacking/on_opp_attack com
+> custo opcional (ex: Katakuri OP11-062, `don_minus:1`) eram roteados por
+> `BotDriver.cs` pra `resolve_reaction()` (regra pensada só pra REDIRECT
+> de ataque, Teach-style) sempre que a oferta acontecia numa janela de
+> combate — mesmo quando o bot era o ATACANTE usando o próprio gatilho, não
+> alguém se defendendo. `if atk_power < def_power: recusa` (certo pra
+> "devo me defender de um ataque que já perde sozinho") ficava invertido
+> nesse caso, e o Katakuri recusava a própria habilidade 7 de 8 vezes numa
+> partida real. Fix: `_worth_paying_optional_costs` (já usado por on_play/
+> main/activate_main) passou a cobrir when_attacking/on_opp_attack também
+> (simulador E caminho ao vivo); `resolve_reaction` só roda a lógica de
+> redirect se a carta tiver `redirect_attack_target` de verdade, senão
+> delega pro crivo genérico. Sem mudança em C#. **Pendente**: confirmar em
+> partida real que a habilidade passa a disparar de fato; reconfirmar se o
+> sintoma "distribui DON em vez de descer carta boa" ainda aparece (achado
+> anterior sobre telemetria de DON foi CORRIGIDO — o campo `donToAttach` já
+> existe em `response`, só não tinha sido olhado no lugar certo).
 **Estado:** VARREDURA COMPLETA ENCERRADA em 19/07/2026; 100 suspeitos restantes, TODOS confirmados falso-positivo (revisão manual carta-a-carta)
 **Baseline do código:** ver `git log --oneline -1`
 **Repo:** github.com/Karlmalone13/Analizador_de_Decks

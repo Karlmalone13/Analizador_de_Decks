@@ -529,7 +529,7 @@ def defense(req: DefenseRequest):
         elif req.phase == "reaction":
             out["useReaction"] = bridge.resolve_reaction(
                 gs, opp_gs, req.attackerPower, req.defenderPower,
-                defender_uid=req.defenderId)
+                defender_uid=req.defenderId, actor_code=req.triggerCode)
             print(f"[DEF] reaction atk={req.attackerPower} def={req.defenderPower} "
                   f"defId={req.defenderId} -> {out['useReaction']}", flush=True)
 

@@ -427,6 +427,40 @@ def test_mamaragan_main_so_mira_oponente_apesar_do_counter_mirar_proprio() -> No
           order.index(-1) > order.index(50) and order.index(-10) > order.index(50))
 
 
+def test_katakuri_when_attacking_custo_don_e_sempre_avaliado_como_valer_a_pena() -> None:
+    # Achado real 20/07 (partida ao vivo, mesma sessao): Katakuri
+    # (OP11-062, custo don_minus:1 -- RECURSO puro, nunca sacrificio) tinha
+    # sua propria habilidade [When Attacking] recusada quase toda vez
+    # (7/8 ofertas no log) porque BotDriver.cs manda TUDO que acontece numa
+    # janela de ataque pra resolve_reaction(), pensada especificamente pra
+    # habilidades de REDIRECT (Teach: "devo desviar o golpe que vem em
+    # mim?"). Aplicada ao proprio ataque do bot, a pergunta fica invertida:
+    # "if atk_power < def_power: recusa" fazia o bot recusar A PROPRIA
+    # habilidade exatamente quando ela mais ajudaria (ataque que so vence
+    # COM o buff). Fix: resolve_reaction agora checa se a carta tem
+    # redirect_attack_target de verdade; sem isso, delega pra
+    # resolve_optional_effect (mesma pergunta generica que on_play/main/
+    # activate_main ja usam, agora tambem cobrindo when_attacking/
+    # on_opp_attack).
+    me = GameState(leader=real_card("OP11-062"), don_available=1)
+    opp = GameState(leader=real_card("OP14-020"))
+    opp.field_chars = [real_card("OP14-040")]  # 6000 power, Katakuri (5000) perde sozinho
+    use = sim_bridge.resolve_reaction(me, opp, atk_power=5000, def_power=6000,
+                                       defender_uid=0, actor_code="OP11-062")
+    check("Katakuri usa o proprio [When Attacking] mesmo com o ataque perdendo sozinho "
+          "(custo e recurso puro, sempre vale)", use is True)
+
+    # Teach (OP16-080, redirect de verdade) continua passando pela logica
+    # de redirect -- nao pode virar sempre-True so por ter custo de recurso.
+    from optcg_engine.decision_engine import get_card_effects
+    teach_is_redirect = any(
+        s.get("action") == "redirect_attack_target"
+        for block in get_card_effects("OP16-080").values()
+        for s in block.get("steps", []))
+    check("Teach (redirect de verdade) NAO e desviado pra resolve_optional_effect",
+          teach_is_redirect)
+
+
 def test_ataque_sem_chance_de_conectar_nao_ganha_bonus_de_matar_alvo() -> None:
     # Achado real 20/07 (partida ao vivo): Katakuri (lider OP11-062, 5000,
     # [When Attacking] +1000/peek) atacou Mihawk (7000) com 0 DON disponivel
@@ -6841,6 +6875,7 @@ def main() -> int:
     test_opp_combo_threat_detects_five_elders_style_reanimation()
     test_order_target_candidates_exclui_trash_para_alvo_battlefield_only()
     test_mamaragan_main_so_mira_oponente_apesar_do_counter_mirar_proprio()
+    test_katakuri_when_attacking_custo_don_e_sempre_avaliado_como_valer_a_pena()
     test_ataque_sem_chance_de_conectar_nao_ganha_bonus_de_matar_alvo()
     test_opponent_model_ao_vivo_por_lider_e_fallback_seguro()
     test_play_turn_greedy_opponent_response()

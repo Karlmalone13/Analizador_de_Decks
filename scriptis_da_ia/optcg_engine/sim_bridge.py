@@ -789,9 +789,10 @@ def select_counter_cards(gs: GameState, atk_power: int, def_power: int,
 
 def resolve_reaction(gs: GameState, opp_gs: GameState,
                      atk_power: int, def_power: int,
-                     defender_uid: int = 0) -> bool:
+                     defender_uid: int = 0,
+                     actor_code: str | None = None) -> bool:
     """
-    Efeito opcional com custo oferecido durante o ataque do oponente
+    Efeito opcional com custo oferecido durante uma janela de ataque
     (ex: lider Teach — trash 1 carta da mao para REDIRECIONAR o ataque).
 
     Effect-aware, CASO A CASO (regra do usuario, 04/07/2026): nada de
@@ -811,9 +812,38 @@ def resolve_reaction(gs: GameState, opp_gs: GameState,
     Guardas: ataque precisa estar ganhando; mao >= 2 (a ultima carta vale
     mais que 1 vida, salvo vida critica) — bot ficou de mao vazia pagando
     reacao toda rodada em partida real.
+
+    actor_code: carta cujo custo opcional esta sendo oferecido. O plugin
+    (BotDriver.cs) manda TUDO que acontece numa janela de ataque/counter
+    pra esta funcao, sem saber se a carta e um REDIRECT de verdade (Teach)
+    ou outro tipo de gatilho opcional que so calha de resolver durante o
+    combate (ex: [When Attacking]/[On Opponent's Attack] com custo
+    do_minus, ex: Katakuri OP11-062 -- ganha +1000 de poder e espia o topo
+    do deck do oponente). Achado real 20/07 (partida ao vivo): sem esta
+    checagem, a logica de redirect ABAIXO (pensada so pra "devo desviar o
+    golpe que ta vindo em mim") era aplicada tambem ao ataque do PROPRIO
+    bot -- `if atk_power < def_power: return False` fazia sentido pra "nao
+    vale se defender de um ataque que ja perde sozinho", mas quando o bot
+    e o ATACANTE usando o proprio gatilho, "o ataque ja perde sozinho" e
+    justamente o caso onde MAIS vale pagar o custo pra tentar virar o
+    combate -- Katakuri recusava a propria habilidade quase toda vez
+    (7/8 ofertas na partida), porque a pergunta errada estava sendo feita.
+    Sem redirect_attack_target de verdade na carta, delega pra
+    resolve_optional_effect (mesma pergunta que on_play/main/activate_main
+    ja usam, incluindo when_attacking/on_opp_attack -- ver comentario
+    espelhado em decision_engine.py:execute()).
     """
     from optcg_engine.decision_engine import (redirect_option_value,
-                                              life_redirect_cost, EffectExecutor)
+                                              life_redirect_cost, EffectExecutor,
+                                              get_card_effects)
+    if actor_code:
+        is_redirect = any(
+            s.get('action') == 'redirect_attack_target'
+            for block in get_card_effects(actor_code).values()
+            for s in block.get('steps', []))
+        if not is_redirect:
+            return resolve_optional_effect(gs, opp_gs, actor_code=actor_code)
+
     engine = DecisionEngine(gs, opp_gs)
     my_life = gs.life_count()
 
@@ -969,7 +999,11 @@ def resolve_optional_effect(gs: GameState, opp_gs: GameState,
     effects = get_card_effects(actor_code)
     # 'activate_main' incluido -- e o gatilho do lider Imu e de stages; o loop
     # anterior (on_play/main) nao achava nada e retornava False sempre.
-    for trig in ('on_play', 'main', 'activate_main'):
+    # 'when_attacking'/'on_opp_attack' incluidos 20/07 (achado ao vivo,
+    # Katakuri OP11-062): mesmo tipo de gatilho de custo opcional que
+    # resolve sozinho durante o combate, sem scoring previo -- ver
+    # comentario espelhado em execute() (decision_engine.py).
+    for trig in ('on_play', 'main', 'activate_main', 'when_attacking', 'on_opp_attack'):
         ef = effects.get(trig)
         if not ef:
             continue

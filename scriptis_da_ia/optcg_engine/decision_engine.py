@@ -2011,14 +2011,28 @@ class EffectExecutor:
         if steps_all and not any(self._step_is_viable(s, card) for s in steps_all):
             return []
 
-        # Custo opcional ("you may pagar X: Y") vale a pena? So aplica em
+        # Custo opcional ("you may pagar X: Y") vale a pena? Aplica em
         # on_play/main -- gatilhos que resolvem automaticamente ao jogar a
         # carta, sem uma etapa de scoring PRÉVIA que já tenha decidido se
         # vale ativar (diferente de activate_main, já filtrado por
-        # _score_activate_main antes de chegar aqui). Mesma pergunta feita
-        # ao vivo via resolve_optional_effect em sim_bridge.py.
-        if trigger in ('on_play', 'main') and not self._worth_paying_optional_costs(
-                ef_data.get('costs', []), card):
+        # _score_activate_main antes de chegar aqui) -- e também em
+        # when_attacking/on_opp_attack, pelo MESMO motivo: também resolvem
+        # automaticamente durante o combate, sem scoring prévio próprio.
+        # Achado real 20/07 (partida ao vivo): sem isso, when_attacking/
+        # on_opp_attack SEMPRE pagavam o custo quando viável (nunca
+        # julgavam se compensava) enquanto o caminho ao vivo (resolve_reaction
+        # em sim_bridge.py) usava uma régua TOTALMENTE diferente, pensada só
+        # pra habilidades de REDIRECT de ataque (ex: Teach) -- dois motores
+        # divergentes pra mesma pergunta, violando a regra "sem dois
+        # motores". Katakuri (OP11-062, custo don_minus puro -- recurso, não
+        # sacrifício) ficava com a ability sempre recusada ao vivo porque
+        # resolve_reaction julgava "o ataque já perde sozinho" como motivo
+        # pra recusar, uma pergunta que só faz sentido pra quem está
+        # DEFENDENDO, não pra quem está usando o próprio gatilho de ataque.
+        # Mesma pergunta feita ao vivo via resolve_optional_effect em
+        # sim_bridge.py.
+        if trigger in ('on_play', 'main', 'when_attacking', 'on_opp_attack') \
+                and not self._worth_paying_optional_costs(ef_data.get('costs', []), card):
             return []
 
         # Paga custos. _last_trashed_names zerado ANTES (nao depois, ao
