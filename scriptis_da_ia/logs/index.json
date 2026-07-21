@@ -1968,5 +1968,30 @@
       "You": "decks/Donquixote.Doflamingo-GP_2026-07-21T01.08.09.json",
       "Opponent": "decks/Charlotte.Katakuri-P_2026-07-21T01.08.09.json"
     }
+  },
+  {
+    "id": "2026-07-21T02.21.05",
+    "friendly_name": "Monkey.D.Luffy-BP_x_Charlotte.Katakuri-P",
+    "date": "2026-07-21",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP11-040",
+      "leader_name": "Monkey D. Luffy",
+      "slug": "Monkey.D.Luffy-BP"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP11-062",
+      "leader_name": "Charlotte Katakuri",
+      "slug": "Charlotte.Katakuri-P"
+    },
+    "turns": 12,
+    "winner": "p2",
+    "log_file": "raw/Monkey.D.Luffy-BP_x_Charlotte.Katakuri-P_2026-07-21T02.21.05.log",
+    "parsed_file": "parsed/Monkey.D.Luffy-BP_x_Charlotte.Katakuri-P_2026-07-21T02.21.05.json",
+    "deck_files": {
+      "You": "decks/Monkey.D.Luffy-BP_2026-07-21T02.21.05.json",
+      "Opponent": "decks/Charlotte.Katakuri-P_2026-07-21T02.21.05.json"
+    }
   }
 ]

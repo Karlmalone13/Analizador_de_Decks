@@ -1,0 +1,61 @@
+{
+  "cards": [
+    {
+      "code": "OP11-070",
+      "name": "Charlotte Pudding",
+      "count": 3
+    },
+    {
+      "code": "PRB02-010",
+      "name": "Charlotte Pudding",
+      "count": 3
+    },
+    {
+      "code": "ST34-004",
+      "name": "Charlotte Linlin",
+      "count": 2
+    },
+    {
+      "code": "ST34-001",
+      "name": "ST34-001",
+      "count": 2
+    },
+    {
+      "code": "OP07-077",
+      "name": "OP07-077",
+      "count": 2
+    },
+    {
+      "code": "OP11-073",
+      "name": "OP11-073",
+      "count": 1
+    },
+    {
+      "code": "OP15-078",
+      "name": "OP15-078",
+      "count": 1
+    },
+    {
+      "code": "ST34-002",
+      "name": "Charlotte Cracker",
+      "count": 1
+    },
+    {
+      "code": "ST18-001",
+      "name": "ST18-001",
+      "count": 1
+    },
+    {
+      "code": "ST34-005",
+      "name": "ST34-005",
+      "count": 1
+    },
+    {
+      "code": "ST34-003",
+      "name": "ST34-003",
+      "count": 1
+    }
+  ],
+  "total_seen": 18,
+  "leader": "OP11-062"
+}

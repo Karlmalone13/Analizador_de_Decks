@@ -1,0 +1,41 @@
+{
+  "cards": [
+    {
+      "code": "ST17-005",
+      "name": "Marshall D. Teach",
+      "count": 2
+    },
+    {
+      "code": "OP08-069",
+      "name": "Charlotte Linlin",
+      "count": 2
+    },
+    {
+      "code": "OP11-067",
+      "name": "Charlotte Katakuri",
+      "count": 1
+    },
+    {
+      "code": "OP11-080",
+      "name": "OP11-080",
+      "count": 1
+    },
+    {
+      "code": "ST17-003",
+      "name": "Buggy",
+      "count": 1
+    },
+    {
+      "code": "OP07-064",
+      "name": "OP07-064",
+      "count": 1
+    },
+    {
+      "code": "OP04-056",
+      "name": "OP04-056",
+      "count": 1
+    }
+  ],
+  "total_seen": 9,
+  "leader": "OP11-040"
+}

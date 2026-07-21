@@ -1,0 +1,874 @@
+{
+  "meta": {
+    "players": {
+      "p1": {
+        "name": "You",
+        "leader": {
+          "name": "Monkey D. Luffy",
+          "code": "OP11-040"
+        }
+      },
+      "p2": {
+        "name": "Opponent",
+        "leader": {
+          "name": "Charlotte Katakuri",
+          "code": "OP11-062"
+        }
+      }
+    },
+    "goes_first": null
+  },
+  "total_turns": 12,
+  "turns": [
+    {
+      "turn": 1,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 1,
+      "actions": [
+        {
+          "type": "play",
+          "card": "ST17-003",
+          "card_name": "Buggy",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "ST17-005",
+            "OP11-067",
+            "OP08-069",
+            "OP11-080"
+          ],
+          "board": [
+            "ST17-003"
+          ],
+          "trash": [],
+          "life": 3
+        },
+        "Opponent": {
+          "hand": [
+            "OP11-070",
+            "PRB02-010",
+            "OP11-070",
+            "OP11-073",
+            "OP15-078"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 2,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP11-070",
+          "card_name": "Charlotte Pudding",
+          "effects": [
+            "<b>Reveal and Draw Charlotte Linlin [\"ST34-004\">ST34-004]</b>"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP11-070",
+          "card_name": "Charlotte Pudding",
+          "effects": [
+            "<b>Reveal and Draw Charlotte Linlin [\"ST34-004\">ST34-004]</b>"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "PRB02-010",
+            "OP11-073",
+            "ST34-002",
+            "ST34-004",
+            "ST34-004"
+          ],
+          "board": [
+            "OP11-070",
+            "OP11-070"
+          ],
+          "trash": [
+            "OP15-078"
+          ],
+          "life": 5
+        },
+        "You": {
+          "hand": [
+            "ST17-005",
+            "OP11-067",
+            "OP08-069",
+            "OP11-080"
+          ],
+          "trash": [],
+          "board": [
+            "ST17-003"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 3,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "ST17-005",
+          "card_name": "Marshall D. Teach",
+          "effects": [
+            "Attach 1 Rested Don to Monkey D. Luffy [\"OP11-040\">OP11-040]",
+            "Attach 1 Rested Don to Monkey D. Luffy [\"OP11-040\">OP11-040]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Monkey D. Luffy",
+          "attacker_code": "OP11-040",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "ST17-005",
+            "OP11-067",
+            "OP08-069"
+          ],
+          "board": [
+            "ST17-003",
+            "ST17-005"
+          ],
+          "trash": [],
+          "life": 3
+        },
+        "Opponent": {
+          "hand": [
+            "PRB02-010",
+            "OP11-073",
+            "ST34-002",
+            "ST34-004",
+            "ST34-004",
+            "OP11-070"
+          ],
+          "trash": [
+            "OP15-078"
+          ],
+          "board": [
+            "OP11-070",
+            "OP11-070"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 4,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "ST34-002",
+          "card_name": "Charlotte Cracker",
+          "effects": [
+            "Destroy Marshall D. Teach [\"ST17-005\">ST17-005]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Katakuri",
+          "attacker_code": "OP11-062",
+          "target": "Monkey D. Luffy [\"OP11-040\">OP11-040]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "PRB02-010",
+            "OP11-073",
+            "ST34-004",
+            "ST34-004",
+            "OP11-070",
+            "PRB02-010"
+          ],
+          "board": [
+            "OP11-070",
+            "OP11-070",
+            "ST34-002"
+          ],
+          "trash": [
+            "OP15-078"
+          ],
+          "life": 4
+        },
+        "You": {
+          "hand": [
+            "ST17-005",
+            "OP11-067",
+            "OP08-069"
+          ],
+          "trash": [
+            "ST17-005"
+          ],
+          "board": [
+            "ST17-003"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 5,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "ST17-005",
+          "card_name": "Marshall D. Teach",
+          "effects": [
+            "Attach 1 Rested Don to Monkey D. Luffy [\"OP11-040\">OP11-040]",
+            "Attach 1 Rested Don to Monkey D. Luffy [\"OP11-040\">OP11-040]"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 3,
+          "to": "ST17-003",
+          "to_name": "Buggy",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Buggy",
+          "attacker_code": "ST17-003",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Monkey D. Luffy",
+          "attacker_code": "OP11-040",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP11-067",
+            "OP11-080"
+          ],
+          "board": [
+            "ST17-003",
+            "ST17-005"
+          ],
+          "trash": [
+            "ST17-005"
+          ],
+          "life": 3
+        },
+        "Opponent": {
+          "hand": [
+            "PRB02-010",
+            "OP11-073",
+            "ST34-004",
+            "ST34-004",
+            "OP11-070",
+            "PRB02-010",
+            "ST34-001",
+            "ST34-001"
+          ],
+          "trash": [
+            "OP15-078"
+          ],
+          "board": [
+            "OP11-070",
+            "OP11-070",
+            "ST34-002"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 6,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "PRB02-010",
+          "card_name": "Charlotte Pudding",
+          "effects": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Cracker",
+          "attacker_code": "ST34-002",
+          "target": "Buggy [\"ST17-003\">ST17-003]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Katakuri",
+          "attacker_code": "OP11-062",
+          "target": "Monkey D. Luffy [\"OP11-040\">OP11-040]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP11-073",
+            "ST34-004",
+            "ST34-004",
+            "OP11-070",
+            "PRB02-010",
+            "ST34-001",
+            "ST34-001",
+            "OP07-077"
+          ],
+          "board": [
+            "OP11-070",
+            "OP11-070",
+            "ST34-002",
+            "PRB02-010"
+          ],
+          "trash": [
+            "OP15-078"
+          ],
+          "life": 2
+        },
+        "You": {
+          "hand": [
+            "OP11-067",
+            "OP11-080"
+          ],
+          "trash": [
+            "ST17-005",
+            "ST17-003"
+          ],
+          "board": [
+            "ST17-005"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 7,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "activate",
+          "card": "OP11-080",
+          "card_name": "Gear 2",
+          "effects": [
+            "Rest 1 Don",
+            "Rest 2 Don"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 3,
+          "to": "ST17-005",
+          "to_name": "Marshall D. Teach",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Marshall D. Teach",
+          "attacker_code": "ST17-005",
+          "target": "Charlotte Cracker [\"ST34-002\">ST34-002]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "ST17-005",
+          "card_name": "Marshall D. Teach",
+          "effects": [
+            "Attach 1 Rested Don to Monkey D. Luffy [\"OP11-040\">OP11-040]",
+            "Attach 1 Rested Don to Monkey D. Luffy [\"OP11-040\">OP11-040]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Monkey D. Luffy",
+          "attacker_code": "OP11-040",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP11-067"
+          ],
+          "board": [
+            "ST17-005"
+          ],
+          "trash": [
+            "ST17-005",
+            "ST17-003",
+            "OP11-080"
+          ],
+          "life": 3
+        },
+        "Opponent": {
+          "hand": [
+            "OP11-073",
+            "ST34-004",
+            "ST34-004",
+            "OP11-070",
+            "PRB02-010",
+            "ST34-001",
+            "ST34-001",
+            "OP07-077",
+            "ST18-001"
+          ],
+          "trash": [
+            "OP15-078",
+            "ST34-002"
+          ],
+          "board": [
+            "OP11-070",
+            "OP11-070",
+            "PRB02-010"
+          ],
+          "life": 1
+        }
+      }
+    },
+    {
+      "turn": 8,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Charlotte Pudding",
+          "attacker_code": "PRB02-010",
+          "target": "Marshall D. Teach [\"ST17-005\">ST17-005]",
+          "result": null,
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "PRB02-010",
+          "card_name": "Charlotte Pudding",
+          "effects": []
+        },
+        {
+          "type": "play",
+          "card": "OP11-070",
+          "card_name": "Charlotte Pudding",
+          "effects": [
+            "<b>Reveal and Draw Baron Tamago & Pekoms [\"ST34-005\">ST34-005]</b>"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Katakuri",
+          "attacker_code": "OP11-062",
+          "target": "Monkey D. Luffy [\"OP11-040\">OP11-040]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP11-073",
+            "ST34-004",
+            "ST34-004",
+            "ST34-001",
+            "ST34-001",
+            "OP07-077",
+            "ST18-001",
+            "OP07-077",
+            "ST34-005"
+          ],
+          "board": [
+            "OP11-070",
+            "OP11-070",
+            "PRB02-010",
+            "PRB02-010",
+            "OP11-070"
+          ],
+          "trash": [
+            "OP15-078",
+            "ST34-002"
+          ],
+          "life": 1
+        },
+        "You": {
+          "hand": [
+            "OP11-067"
+          ],
+          "trash": [
+            "ST17-005",
+            "ST17-003",
+            "OP11-080",
+            "ST17-005"
+          ],
+          "board": [],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 9,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "activate",
+          "card": "OP11-040",
+          "card_name": "Monkey D. Luffy",
+          "effects": [
+            "<b>Reveal and Draw Sanji [\"OP07-064\">OP07-064]</b>"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP08-069",
+          "card_name": "Charlotte Linlin",
+          "effects": [
+            "Minus 1 Don",
+            "Trash Sanji [\"OP07-064\">OP07-064]",
+            "Add card to top of Life from Deck",
+            "Add Charlotte Pudding [\"OP11-070\">OP11-070] to top of Life"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Monkey D. Luffy",
+          "attacker_code": "OP11-040",
+          "target": "Charlotte Pudding [\"PRB02-010\">PRB02-010]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP11-067"
+          ],
+          "board": [
+            "OP08-069"
+          ],
+          "trash": [
+            "ST17-005",
+            "ST17-003",
+            "OP11-080",
+            "ST17-005",
+            "OP07-064"
+          ],
+          "life": 4
+        },
+        "Opponent": {
+          "hand": [
+            "OP11-073",
+            "ST34-004",
+            "ST34-004",
+            "ST34-001",
+            "ST34-001",
+            "OP07-077",
+            "ST18-001",
+            "OP07-077",
+            "ST34-005"
+          ],
+          "trash": [
+            "OP15-078",
+            "ST34-002",
+            "PRB02-010"
+          ],
+          "board": [
+            "OP11-070",
+            "PRB02-010",
+            "OP11-070"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 10,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "ST34-004",
+          "card_name": "Charlotte Linlin",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP11-073",
+            "ST34-004",
+            "ST34-001",
+            "ST34-001",
+            "OP07-077",
+            "ST18-001",
+            "OP07-077",
+            "ST34-005",
+            "PRB02-010"
+          ],
+          "board": [
+            "OP11-070",
+            "PRB02-010",
+            "OP11-070",
+            "ST34-004"
+          ],
+          "trash": [
+            "OP15-078",
+            "ST34-002",
+            "PRB02-010"
+          ],
+          "life": 2
+        },
+        "You": {
+          "hand": [
+            "OP11-067"
+          ],
+          "trash": [
+            "ST17-005",
+            "ST17-003",
+            "OP11-080",
+            "ST17-005",
+            "OP07-064"
+          ],
+          "board": [
+            "OP08-069"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 11,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "activate",
+          "card": "OP11-040",
+          "card_name": "Monkey D. Luffy",
+          "effects": [
+            "<b>Reveal and Draw Gum-Gum Red Roc [\"OP04-056\">OP04-056]</b>"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP11-067",
+          "card_name": "Charlotte Katakuri",
+          "effects": [
+            "Set Charlotte Linlin [\"OP08-069\">OP08-069] to Active"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP11-040",
+          "to_name": "Monkey D. Luffy",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP11-040",
+          "to_name": "Monkey D. Luffy",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Linlin",
+          "attacker_code": "OP08-069",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Monkey D. Luffy",
+          "attacker_code": "OP11-040",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP11-070",
+            "PRB02-010",
+            "ST34-005"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP04-056",
+            "OP08-069"
+          ],
+          "board": [
+            "OP08-069",
+            "OP11-067"
+          ],
+          "trash": [
+            "ST17-005",
+            "ST17-003",
+            "OP11-080",
+            "ST17-005",
+            "OP07-064"
+          ],
+          "life": 4
+        },
+        "Opponent": {
+          "hand": [
+            "OP11-073",
+            "ST34-004",
+            "ST34-001",
+            "ST34-001",
+            "OP07-077",
+            "ST18-001",
+            "OP07-077"
+          ],
+          "trash": [
+            "OP15-078",
+            "ST34-002",
+            "PRB02-010",
+            "OP11-070",
+            "PRB02-010",
+            "ST34-005"
+          ],
+          "board": [
+            "OP11-070",
+            "PRB02-010",
+            "OP11-070",
+            "ST34-004"
+          ],
+          "life": 1
+        }
+      }
+    },
+    {
+      "turn": 12,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "play",
+          "card": "ST34-004",
+          "card_name": "Charlotte Linlin",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP11-073",
+            "ST34-001",
+            "ST34-001",
+            "OP07-077",
+            "ST18-001",
+            "OP07-077",
+            "ST34-003"
+          ],
+          "board": [
+            "OP11-070",
+            "PRB02-010",
+            "OP11-070",
+            "ST34-004",
+            "ST34-004"
+          ],
+          "trash": [
+            "OP15-078",
+            "ST34-002",
+            "PRB02-010",
+            "OP11-070",
+            "PRB02-010",
+            "ST34-005"
+          ],
+          "life": 1
+        },
+        "You": {
+          "hand": [
+            "OP04-056",
+            "OP08-069"
+          ],
+          "trash": [
+            "ST17-005",
+            "ST17-003",
+            "OP11-080",
+            "ST17-005",
+            "OP07-064"
+          ],
+          "board": [
+            "OP08-069",
+            "OP11-067"
+          ],
+          "life": 4
+        }
+      }
+    }
+  ]
+}
