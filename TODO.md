@@ -2,6 +2,16 @@
 
 **Última atualização:** 21 de julho de 2026
 
+> 21/07/2026 (bloco HANDOFF 298): usuário propôs a hipótese correta —
+> "o bot tem dificuldade com qualquer efeito de DON!! -N" — CONFIRMADA
+> no código decompilado do jogo: pagar custo `don_minus` exige clicar
+> DON na `DonCostArea`, zona que `CollectTargetCandidates` nunca
+> coletava. Isso explica TODOS os "líder sem efeito" (Katakuri, Pudding
+> PRB02-010, Mamaragan) — não era lista desatualizada (fix do bloco 296),
+> era zona de candidato inexistente. Fix em C# (`own_don` como zona nova)
+> + Python (prioridade máxima incondicional pra essa zona). Precisa
+> `setup_bepinex.bat` + partida real pra confirmar.
+
 > 21/07/2026 (bloco HANDOFF 297): usuário questionou se o fix da Linlin
 > foi isolado demais — achado um gap SISTÊMICO real por trás:
 > `is_removal`/`power_buff` nunca reconheciam `debuff_power`/

@@ -281,6 +281,30 @@ namespace OPTCGBotPlugin
             Add(oppPs.Lgo_MyLeader, "opp_leader");
             Add(botPs.Lgo_MyStage,  "own_stage");
             Add(oppPs.Lgo_MyStage,  "opp_stage");
+
+            // DON!! ativo (nao restado) na propria area de custo -- alvo
+            // clicavel pra qualquer custo "DON!! -N" (don_minus no parser).
+            // Achado real 21/07 (partida ao vivo, hipotese correta do
+            // usuario): o jogo real (GameplayLogicScript.ValidV3TargetLocation,
+            // decompilado) exige clicar N cartas de DON na DonCostArea pra
+            // pagar esse custo -- ValidV3TargetLocation tem um branch dedicado
+            // "vTarget.DonAreaCard && CardObjectInDonArea(go_Clicked)",
+            // DISTINTO de personagem/mao/trash/deck. CollectTargetCandidates
+            // NUNCA incluia essa zona -- qualquer habilidade com custo
+            // DON!! -N (Katakuri when_attacking/on_opp_attack, Mamaragan
+            // [Main], Pudding PRB02-010 on_play, e qualquer outra carta com
+            // esse padrao) ficava ciclando por candidatos de personagem/mao
+            // que o jogo SEMPRE recusa, nunca pagando o custo de verdade.
+            // So DON ATIVO (nao restado) -- um DON ja restado nunca e clique
+            // valido pra pagar um custo que exige restar.
+            var donAtivo = new List<GameObject>();
+            foreach (var go in botPs.Lgo_MyDonCostArea ?? new List<GameObject>())
+            {
+                var cls = go != null ? go.GetComponent<CardLogicScript>() : null;
+                if (cls != null && !cls.myCard.bTapped)
+                    donAtivo.Add(go);
+            }
+            Add(donAtivo, "own_don");
             return list;
         }
 
@@ -298,7 +322,8 @@ namespace OPTCGBotPlugin
                   ?? FindCard(botPs.Lgo_MyLeader, targetId)
                   ?? FindCard(oppPs.Lgo_MyLeader, targetId)
                   ?? FindCard(botPs.Lgo_MyStage, targetId)
-                  ?? FindCard(oppPs.Lgo_MyStage, targetId);
+                  ?? FindCard(oppPs.Lgo_MyStage, targetId)
+                  ?? FindCard(botPs.Lgo_MyDonCostArea, targetId);
             if (go == null)
                 return false;
             _mClickDuringCardAction.Invoke(gls, new object[] { go });

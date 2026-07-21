@@ -1,5 +1,64 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-21 (298) - Claude - causa raiz REAL do "líder sem efeito" achada: custo DON!! -N nunca tinha zona de candidato (hipótese do usuário confirmada no código decompilado)
+
+Continuação direta do bloco 297: usuário jogou mais uma partida (já com
+os fixes 293-297 + plugin recompilado) e reportou os MESMOS sintomas —
+líder sem efeito, Pudding (custo 7, PRB02-010) sem efeito, Mamaragan sem
+efeito — e propôs uma hipótese própria: **"o bot tá com dificuldade de
+utilizar qualquer efeito que necessita de retornar DON, os famosos
+DON!! -N"**. Essa hipótese estava CERTA e é a causa raiz real por trás
+de TODOS os travamentos de "líder sem efeito" investigados desde a
+sessão anterior (Pudding, Katakuri, Mamaragan) — o fix do bloco 296
+(buscar candidatos de novo) era um retrofit sobre um sintoma errado.
+
+**Causa raiz confirmada no código decompilado** do jogo
+(`GameplayLogicScript.cs`, método `ValidV3TargetLocation`): pagar um
+custo `DON!! -N` (`don_minus` no nosso parser) exige clicar N cartas de
+DON na própria `DonCostArea` — um branch de validação de alvo DISTINTO
+de personagem/mão/trash/deck/vida/líder/stage
+(`vTarget.DonAreaCard && CardObjectInDonArea(go_Clicked)`).
+`CollectTargetCandidates` (`BotExecutor.cs`) **nunca incluía essa
+zona** — só coletava as 10 zonas de sempre (mão/board/trash/líder/stage
+de cada lado + topo do deck). Qualquer carta com custo `DON!! -N`
+(Katakuri `when_attacking`/`on_opp_attack`, Mamaragan `[Main]`, Pudding
+PRB02-010 `on_play`, e qualquer outra carta com esse padrão) ficava
+ciclando pra sempre por candidatos que o jogo SEMPRE recusa (nenhum é
+DON), o custo nunca era pago, o efeito nunca resolvia — exatamente o
+padrão observado em TODAS essas cartas. O log da última partida mostrou
+até 38 chamadas repetidas de `/choose_target` pro mesmo `actor=OP11-070`
+retornando a MESMA lista inútil — o refresh do bloco 296 não ajudava
+porque o problema nunca foi "lista desatualizada", foi "a zona certa
+nunca existiu".
+
+**Fix (genérico, cobre QUALQUER carta com custo DON!! -N, não só as 3
+que revelaram o bug)**:
+1. `BotExecutor.cs::CollectTargetCandidates` — nova zona `"own_don"`:
+   coleta as cartas de DON ATIVAS (não restadas) da
+   `botPs.Lgo_MyDonCostArea`. Só DON ativo é clique válido pra pagar um
+   custo que exige restar.
+2. `BotExecutor.cs::ClickTargetCandidate` — passa a procurar também em
+   `botPs.Lgo_MyDonCostArea` ao localizar o alvo pelo id.
+3. `sim_bridge.py::order_target_candidates` — zona `'own_don'` ganha
+   prioridade MÁXIMA e INCONDICIONAL (antes até de
+   `actor_opp_only`/`actor_battlefield_only`, que só fazem sentido pro
+   ALVO do efeito, não pro pagamento do custo — perguntas ortogonais).
+   Se o step atual não pedir DON, o jogo recusa o clique (mesmo padrão
+   de segurança já usado em toda zona) e o próximo candidato é tentado.
+
+Compilado com sucesso (`dotnet build`, 0 erros, 1 warning novo de
+nulidade — inofensivo, mesmo padrão já presente em outros arquivos).
+Teste novo em [smoke_fast.py](scriptis_da_ia/smoke_fast.py):
+`test_own_don_e_candidato_prioritario_pra_custo_don_minus`.
+`smoke_fast.py`/`smoke_test.py` 100% verdes.
+
+**IMPORTANTE — precisa rebuild/redeploy pra valer**: mudança em C#, roda
+`BOT/setup_bepinex.bat` antes do próximo teste. **Ainda não validado em
+partida real** — é a hipótese mais bem fundamentada até agora (código
+decompilado do próprio jogo confirma o mecanismo exato), mas só a
+próxima partida com Katakuri/Mamaragan/Pudding PRB02-010 confirma que
+resolve de verdade.
+
 ## 2026-07-21 (297) - Claude - gap sistêmico achado: debuff_power no oponente nunca contava como removal (97 cartas), não era só a Linlin
 
 Usuário questionou o fix da Linlin (bloco 296): "você resolveu só pra

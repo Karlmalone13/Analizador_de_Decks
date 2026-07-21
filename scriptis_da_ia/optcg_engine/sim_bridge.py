@@ -1373,6 +1373,21 @@ def order_target_candidates(gs: GameState, opp_gs: GameState,
     def sort_key(cand: dict):
         card = card_of(cand)
         zone = cand.get('zone', '')
+        # DON!! ativo na propria area de custo -- candidato exclusivo pra
+        # pagar custo "DON!! -N" (don_minus). Achado real 21/07 (partida ao
+        # vivo): qualquer carta com esse custo (Katakuri when_attacking/
+        # on_opp_attack, Mamaragan [Main], Pudding PRB02-010 on_play, etc.)
+        # nunca completava o efeito -- o jogo real exige clicar N DON na
+        # DonCostArea pra pagar, mas essa zona nunca era candidata. Prioridade
+        # MAXIMA e INCONDICIONAL (antes de actor_opp_only/battlefield_only,
+        # que so fazem sentido pro ALVO do efeito, nao pro pagamento do
+        # custo -- sao perguntas ortogonais, igual o comentario ja existente
+        # sobre actor_debuff_swing/actor_self_power_target acima). Se o step
+        # atual nao pedir DON, o jogo recusa o clique (mesmo padrao de
+        # seguranca usado em toda zona aqui) e o proximo candidato da lista
+        # e tentado normalmente.
+        if zone == 'own_don':
+            return (-1, 0)
         if actor_opp_only and zone.startswith('own'):
             return (9, 0)   # nunca e alvo valido pra essa habilidade
         if actor_battlefield_only and zone in ('own_trash', 'opp_trash', 'own_hand', 'top_deck'):

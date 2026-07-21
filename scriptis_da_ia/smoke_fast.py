@@ -523,6 +523,37 @@ def test_peek_opp_deck_top_nao_vira_alvo_battlefield_only() -> None:
           order[0] == 999)
 
 
+def test_own_don_e_candidato_prioritario_pra_custo_don_minus() -> None:
+    # Achado real 21/07 (partida ao vivo, hipotese correta do USUARIO):
+    # qualquer carta com custo "DON!! -N" (don_minus no parser -- Katakuri
+    # when_attacking/on_opp_attack, Mamaragan [Main], Pudding PRB02-010
+    # on_play, etc.) nunca completava o efeito. Causa raiz confirmada no
+    # codigo decompilado do jogo (GameplayLogicScript.ValidV3TargetLocation):
+    # pagar esse custo exige clicar N cartas de DON na propria DonCostArea
+    # -- uma zona que CollectTargetCandidates (BotDriver.cs/BotExecutor.cs)
+    # NUNCA incluia. O bot ciclava por personagem/mao/trash pra sempre,
+    # todos recusados pelo jogo, e o custo nunca era pago. Fix (C#):
+    # CollectTargetCandidates agora inclui DON ativo (nao restado) como
+    # zona 'own_don'; ClickTargetCandidate sabe achar e clicar nela.
+    # Fix (Python, este teste): order_target_candidates prioriza 'own_don'
+    # incondicionalmente (antes de actor_opp_only/battlefield_only, que so
+    # fazem sentido pro ALVO do efeito, nao pro pagamento do custo).
+    me = GameState(leader=real_card("OP11-062"))
+    me.field_chars = [real_card("OP12-034")]
+    opp = GameState(leader=real_card("OP04-019"))
+    opp.field_chars = [real_card("OP10-065")]
+    candidates = [
+        {"zone": "opp_board", "id": 50, "code": "OP10-065"},
+        {"zone": "own_board", "id": -10, "code": "OP12-034"},
+        {"zone": "own_hand", "id": -20, "code": "ST18-001"},
+        {"zone": "own_don", "id": -900, "code": ""},
+        {"zone": "own_don", "id": -901, "code": ""},
+    ]
+    order = sim_bridge.order_target_candidates(me, opp, candidates, actor_code="OP11-062")
+    check("own_don vem ANTES de qualquer outra zona (candidato exclusivo do custo DON!! -N)",
+          order[0] in (-900, -901) and order[1] in (-900, -901))
+
+
 def test_ataque_sem_chance_de_conectar_nao_ganha_bonus_de_matar_alvo() -> None:
     # Achado real 20/07 (partida ao vivo): Katakuri (lider OP11-062, 5000,
     # [When Attacking] +1000/peek) atacou Mihawk (7000) com 0 DON disponivel
@@ -7012,6 +7043,7 @@ def main() -> int:
     test_katakuri_when_attacking_custo_don_e_sempre_avaliado_como_valer_a_pena()
     test_resolve_reaction_custo_de_redirect_e_generico_nao_so_carta_da_mao()
     test_peek_opp_deck_top_nao_vira_alvo_battlefield_only()
+    test_own_don_e_candidato_prioritario_pra_custo_don_minus()
     test_ataque_sem_chance_de_conectar_nao_ganha_bonus_de_matar_alvo()
     test_bonus_de_ameaca_critica_exige_chance_real_de_conectar()
     test_debuff_power_no_oponente_conta_como_removal()
