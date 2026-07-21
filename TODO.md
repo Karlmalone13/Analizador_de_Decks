@@ -2,6 +2,17 @@
 
 **Última atualização:** 21 de julho de 2026
 
+> 21/07/2026 (bloco HANDOFF 292): `resolve_reaction()` tinha o
+> roteamento genérico, mas a conta de CUSTO do redirect era hardcoded em
+> torno do padrão do Teach (sempre "líder + bloco on_opp_attack + custo =
+> perder carta da mão"). Doflamingo (mesmo redirect, paga com 1 DON), Kid
+> (redirect via 'passive', sem custo nenhum) e EB01-038 (via 'counter',
+> DON opcional) não seriam avaliados certo. Fix: busca o bloco certo por
+> `redirect_attack_target` real (qualquer trigger, não só on_opp_attack)
+> e computa custo pelos custos DESSE bloco (trash_from_hand vs don_minus/
+> rest_don vs sem custo). Teste isolado só, **sem validação em partida
+> real ainda** (nenhum desses líderes apareceu nos logs até agora).
+
 > 21/07/2026 (bloco HANDOFF 291): quando_attacking/on_opp_attack com
 > custo opcional (ex: Katakuri OP11-062, `don_minus:1`) eram roteados por
 > `BotDriver.cs` pra `resolve_reaction()` (regra pensada só pra REDIRECT

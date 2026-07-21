@@ -1,5 +1,39 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-21 (292) - Claude - resolve_reaction() generalizada além do Teach (custo de redirect era hardcoded pra "carta da mão")
+
+Continuação direta do bloco 291 (mesma sessão): usuário perguntou se
+`resolve_reaction()` era pensada só pro Teach, e citou Doflamingo
+(OP14-060) como outro líder com efeito parecido. A ROTEAMENTO da função
+já era genérico (não hardcoded a nenhum card code) — mas a CONTA DE CUSTO
+do redirect era: `leader_costs = get_card_effects(gs.leader.code).get('on_opp_attack', {})`
+(assumia sempre líder + bloco `on_opp_attack`) e `custo_carta = min(_trash_value(c) for c in pool)`
+(assumia sempre "custo = perder a carta mais barata da mão"). Confirmado:
+Doflamingo tem o MESMO padrão (`on_opp_attack` + `redirect_attack_target`,
+`once_per_turn`), mas paga com **1 DON**, não carta da mão. Kid
+(ST36-005) tem o redirect via bloco `passive`, **sem custo nenhum**
+(sempre de graça). EB01-038 tem via bloco `counter`, custo `don_minus`
+OPCIONAL. Nenhum desses 3 seria avaliado corretamente pela conta antiga.
+
+**Fix**: `resolve_reaction()` agora busca em TODOS os blocos do
+`actor_code` (não só líder + `on_opp_attack`) qual bloco tem o step
+`redirect_attack_target` de verdade (reusa a mesma busca que já faz o
+`is_redirect` gate do bloco 291), e computa o custo A PARTIR DOS CUSTOS
+DESSE BLOCO especificamente: `trash_from_hand` mantém a régua antiga
+(`_trash_value` da carta mais barata, com a guarda de "mão pequena");
+`don_minus`/`rest_don` vira `25 * count` (mesmo valor de DON_COST usado
+em `_generate_attach_don_actions`); qualquer outro tipo (ou nenhum custo)
+não adiciona preço nenhum. Teste novo em
+[smoke_fast.py](scriptis_da_ia/smoke_fast.py):
+`test_resolve_reaction_custo_de_redirect_e_generico_nao_so_carta_da_mao`
+(Doflamingo não é bloqueado pela guarda de "mão pequena"; Kid loga
+`custo_carta=0.0`, não o fallback de 25). `smoke_fast.py` e
+`smoke_test.py` 100% verdes.
+
+**Ainda não validado ao vivo**: nenhuma das partidas reais até agora
+usou Doflamingo/Kid/EB01-038 — o fix é baseado em leitura do
+`card_effects_db.json` + teste isolado, não em log de partida real.
+
 ## 2026-07-21 (291) - Claude - fix real ao vivo #3: when_attacking/on_opp_attack sempre caiam em resolve_reaction (regua de REDIRECT), Katakuri recusava a propria habilidade quase toda vez; DON de ataque JA aparece na telemetria (correcao de achado anterior, nao precisou de fix)
 
 Continuação direta do bloco 290 (mesma sessão): usuário pediu pra

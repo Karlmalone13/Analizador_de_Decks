@@ -461,6 +461,41 @@ def test_katakuri_when_attacking_custo_don_e_sempre_avaliado_como_valer_a_pena()
           teach_is_redirect)
 
 
+def test_resolve_reaction_custo_de_redirect_e_generico_nao_so_carta_da_mao() -> None:
+    # Pedido do usuario 21/07: resolve_reaction() era Teach-cêntrico na
+    # conta de CUSTO do redirect (sempre assumia "custo = perder a carta
+    # mais barata da mao", hardcoded em torno do padrao especifico do
+    # Teach). Doflamingo (OP14-060) tem o MESMO redirect_attack_target,
+    # mas paga com 1 DON -- a conta antiga ignorava isso e usava o custo
+    # de carta mesmo assim (ou bloqueava por "mao pequena" quando a mao
+    # tinha so 1 carta, mesmo sem NENHUMA carta envolvida no custo real).
+    # Kid (ST36-005) tem o redirect via bloco 'passive', SEM custo nenhum
+    # -- deveria custar 0, nunca o fallback de 25.
+    me_doffy = GameState(leader=real_card("OP14-060"), don_available=2)
+    me_doffy.hand = [real_card("ST18-001")]  # mao "pequena" nao deve bloquear (custo e DON)
+    opp = GameState(leader=real_card("OP14-020"))
+    # Sem asserção de resultado (depende de alvo de redirect no board, fora
+    # do escopo do teste) -- o que importa aqui é não cair na guarda "mao
+    # pequena, vida nao critica" (custo de DON não deveria checar mão).
+    import io, contextlib
+    buf = io.StringIO()
+    with contextlib.redirect_stdout(buf):
+        sim_bridge.resolve_reaction(me_doffy, opp, atk_power=7000, def_power=2000,
+                                     defender_uid=0, actor_code="OP14-060")
+    check("Doflamingo (custo DON) nao e bloqueado pela guarda de 'mao pequena' (custo de carta)",
+          "mao pequena" not in buf.getvalue())
+
+    me_kid = GameState(leader=real_card("ST36-005"), don_available=0)
+    me_kid.hand = []
+    me_kid.life = [real_card("OP15-069")]
+    buf2 = io.StringIO()
+    with contextlib.redirect_stdout(buf2):
+        sim_bridge.resolve_reaction(me_kid, opp, atk_power=7000, def_power=2000,
+                                     defender_uid=0, actor_code="ST36-005")
+    check("Kid (redirect sem custo nenhum) loga custo_carta=0.0, nao o fallback de 25",
+          "custo_carta=0.0" in buf2.getvalue())
+
+
 def test_ataque_sem_chance_de_conectar_nao_ganha_bonus_de_matar_alvo() -> None:
     # Achado real 20/07 (partida ao vivo): Katakuri (lider OP11-062, 5000,
     # [When Attacking] +1000/peek) atacou Mihawk (7000) com 0 DON disponivel
@@ -6876,6 +6911,7 @@ def main() -> int:
     test_order_target_candidates_exclui_trash_para_alvo_battlefield_only()
     test_mamaragan_main_so_mira_oponente_apesar_do_counter_mirar_proprio()
     test_katakuri_when_attacking_custo_don_e_sempre_avaliado_como_valer_a_pena()
+    test_resolve_reaction_custo_de_redirect_e_generico_nao_so_carta_da_mao()
     test_ataque_sem_chance_de_conectar_nao_ganha_bonus_de_matar_alvo()
     test_opponent_model_ao_vivo_por_lider_e_fallback_seguro()
     test_play_turn_greedy_opponent_response()

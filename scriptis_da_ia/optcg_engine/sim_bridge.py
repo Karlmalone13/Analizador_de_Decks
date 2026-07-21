@@ -861,27 +861,58 @@ def resolve_reaction(gs: GameState, opp_gs: GameState,
     if atk_power < def_power:
         return _log('ataque ja perde sozinho', False)
 
-    # Se o custo do lider exige carta COM [Trigger] (ex: Teach OP16-080:
-    # "trash 1 card with a [Trigger] from your hand"), so cartas com
-    # has_trigger sao pagaveis de verdade -- sem isso o guard de "mao
-    # pequena" e a estimativa de custo usavam a mao INTEIRA, subestimando
-    # o custo real quando a carta mais barata da mao nao tinha Trigger
-    # (nao seria nem opcao valida no jogo real). Achado real 10/07.
-    from optcg_engine.decision_engine import get_card_effects
-    leader_costs = get_card_effects(gs.leader.code).get('on_opp_attack', {}).get('costs', [])
-    so_trigger = any(c.get('has_trigger') for c in leader_costs)
-    pool = [c for c in gs.hand if c.has_trigger] if so_trigger else gs.hand
+    # Bloco de efeito de ONDE o redirect vem -- generico, nao hardcoded ao
+    # Teach nem ao lider. Busca em TODOS os blocos do actor_code qual tem
+    # o step redirect_attack_target de verdade, e usa os CUSTOS DESSE
+    # BLOCO especifico pra calcular o preco real de pagar. Achado real
+    # 21/07 (pedido do usuario): Doflamingo (OP14-060) tem o MESMO padrao
+    # de redirect que o Teach ([On Opponent's Attack], filter_type de
+    # tipo proprio), mas paga com 1 DON, nao com carta da mao -- a conta
+    # antiga assumia SEMPRE "custo = perder a carta mais barata da mao"
+    # (hardcoded em torno do padrao especifico do Teach), superestimando
+    # o preco real de Doflamingo. Kid (ST36-005) tem o mesmo redirect via
+    # bloco 'passive', SEM custo nenhum (sempre de graca) -- outro caso
+    # que a conta antiga nao cobria. EB01-038 tem o redirect no bloco
+    # 'counter', custo don_minus OPCIONAL.
+    redirect_costs: list = []
+    if actor_code:
+        for block in get_card_effects(actor_code).values():
+            if any(s.get('action') == 'redirect_attack_target' for s in block.get('steps', [])):
+                redirect_costs = block.get('costs', [])
+                break
+    else:
+        # Sem actor_code (contexto desconhecido, plugin nao mandou):
+        # fallback historico, assume lider + bloco on_opp_attack.
+        redirect_costs = get_card_effects(gs.leader.code).get('on_opp_attack', {}).get('costs', [])
 
-    if len(pool) < 2 and my_life > 1:
-        return _log('mao pequena, vida nao critica', False)
-    if not pool:
-        return _log('sem carta elegivel pro custo', False)
-
-    # Custo real: a carta mais barata de perder na mao (mesma régua usada
-    # em _score_activate_main) — nao um numero fixo que ignora o que tem
-    # na mao.
     ee = EffectExecutor(gs, opp_gs)
-    custo_carta = min((ee._trash_value(c) for c in pool), default=25.0)
+    DON_COST = 25.0   # mesmo valor usado em _generate_attach_don_actions
+    custo_carta = 0.0
+    for c in redirect_costs:
+        ctype = c.get('type')
+        if ctype == 'trash_from_hand':
+            # Se exige carta COM [Trigger] (ex: Teach: "trash 1 card with
+            # a [Trigger] from your hand"), so cartas com has_trigger sao
+            # pagaveis de verdade -- sem isso o guard de "mao pequena" e a
+            # estimativa de custo usavam a mao INTEIRA, subestimando o
+            # custo real quando a carta mais barata da mao nao tinha
+            # Trigger (nao seria nem opcao valida no jogo real). Achado
+            # real 10/07.
+            pool = [h for h in gs.hand if h.has_trigger] if c.get('has_trigger') else gs.hand
+            if len(pool) < 2 and my_life > 1:
+                return _log('mao pequena, vida nao critica', False)
+            if not pool:
+                return _log('sem carta elegivel pro custo', False)
+            # Custo real: a carta mais barata de perder na mao (mesma
+            # régua usada em _score_activate_main) — nao um numero fixo
+            # que ignora o que tem na mao.
+            custo_carta += min((ee._trash_value(h) for h in pool), default=25.0)
+        elif ctype in ('don_minus', 'rest_don'):
+            custo_carta += DON_COST * c.get('count', 1)
+        # outros tipos de custo (ex: rest_self, ou nenhum custo — Kid):
+        # sem preco de oportunidade relevante pra essa conta, mesmo
+        # criterio de _worth_paying_optional_costs pra custos de RECURSO
+        # puros (sempre pagavel se o resto do fluxo ja validou que da).
 
     # O que o redirect SALVA: o alvo original deixa de tomar o golpe
     defender_char = next((c for c in gs.field_chars
