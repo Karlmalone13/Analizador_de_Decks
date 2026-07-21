@@ -1173,6 +1173,18 @@ def order_target_candidates(gs: GameState, opp_gs: GameState,
             return t
         action = step.get('action', '') or ''
         parts = action.split('_')
+        # So arrisca palpite quando a acao e claramente sobre lider/
+        # personagem EM CAMPO (tem 'character'/'leader' no proprio nome).
+        # Achado real 21/07: peek_opp_deck_top (Pudding OP11-070) tem 'opp'
+        # no nome mas mira o TOPO DO DECK, nao um personagem -- sem esta
+        # guarda, virava 'opp_character' por engano, o que classificava a
+        # habilidade como actor_battlefield_only e jogava a zona 'top_deck'
+        # (onde a carta revelada de verdade fica) pro FIM da ordem -- o
+        # oposto do que a ordenacao deveria fazer pra essa carta. Mesmo
+        # raciocinio vale pra qualquer outra acao "opp_deck"/"opp_hand"/
+        # "opp_trash" sem ser sobre personagem.
+        if 'character' not in parts and 'leader' not in parts:
+            return ''
         if 'opp' in parts:
             return 'opp_leader' if 'leader' in parts else 'opp_character'
         if 'own' in parts or 'self' in parts:

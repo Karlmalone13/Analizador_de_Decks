@@ -496,6 +496,33 @@ def test_resolve_reaction_custo_de_redirect_e_generico_nao_so_carta_da_mao() -> 
           "custo_carta=0.0" in buf2.getvalue())
 
 
+def test_peek_opp_deck_top_nao_vira_alvo_battlefield_only() -> None:
+    # Achado real 21/07 (regressao introduzida pelo proprio fix de
+    # _implied_target desta sessao, achada ao investigar o travamento
+    # antigo da Charlotte Pudding OP11-070): peek_opp_deck_top (Activate:
+    # Main dela, "Look at 1 card from the top of your opponent's deck")
+    # tem 'opp' no nome da acao mas NAO mira um personagem -- mira o TOPO
+    # DO DECK. _implied_target original inferia 'opp_character' so por ver
+    # 'opp' nas partes do nome, o que classificava a habilidade como
+    # actor_battlefield_only=True e jogava a zona 'top_deck' (onde a carta
+    # REVELADA de verdade fica) pro FIM da ordem de candidatos -- o oposto
+    # do que deveria acontecer. Fix: so infere lado quando 'character'/
+    # 'leader' tambem aparece no nome da acao.
+    pudding = real_card("OP11-070")
+    me = GameState(leader=real_card("OP11-062"))
+    me.field_chars = [pudding]
+    opp = GameState(leader=real_card("OP14-020"))
+    candidates = [
+        {"zone": "own_leader", "id": -1, "code": "OP11-062"},
+        {"zone": "own_board", "id": -10, "code": pudding.code},
+        {"zone": "top_deck", "id": 999, "code": "OP14-050"},
+        {"zone": "own_hand", "id": -20, "code": "ST18-001"},
+    ]
+    order = sim_bridge.order_target_candidates(me, opp, candidates, actor_code="OP11-070")
+    check("Pudding: top_deck (a carta revelada de verdade) NAO fica no fim da ordem",
+          order[0] == 999)
+
+
 def test_ataque_sem_chance_de_conectar_nao_ganha_bonus_de_matar_alvo() -> None:
     # Achado real 20/07 (partida ao vivo): Katakuri (lider OP11-062, 5000,
     # [When Attacking] +1000/peek) atacou Mihawk (7000) com 0 DON disponivel
@@ -6912,6 +6939,7 @@ def main() -> int:
     test_mamaragan_main_so_mira_oponente_apesar_do_counter_mirar_proprio()
     test_katakuri_when_attacking_custo_don_e_sempre_avaliado_como_valer_a_pena()
     test_resolve_reaction_custo_de_redirect_e_generico_nao_so_carta_da_mao()
+    test_peek_opp_deck_top_nao_vira_alvo_battlefield_only()
     test_ataque_sem_chance_de_conectar_nao_ganha_bonus_de_matar_alvo()
     test_opponent_model_ao_vivo_por_lider_e_fallback_seguro()
     test_play_turn_greedy_opponent_response()

@@ -1,5 +1,41 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-21 (293) - Claude - regressao propria corrigida (_implied_target classificava peek_opp_deck_top como alvo de personagem) + investigacao da Pudding via codigo decompilado
+
+Continuação direta do bloco 292 (mesma sessão): ao investigar de novo o
+travamento antigo da Charlotte Pudding (OP11-070, `activate_main` =
+`peek_opp_deck_top`, ciclo de cliques em candidatos inválidos, achado nas
+sessões anteriores), achei que o `_implied_target()` que EU MESMO
+introduzi no bloco 290 (fix da Mamaragan) tinha um efeito colateral: pra
+qualquer ação com `'opp'` no nome mas sem `'target'` explícito, inferia
+`'opp_character'` — errado pra `peek_opp_deck_top` (mira o TOPO DO DECK,
+não um personagem). Isso classificava a habilidade da Pudding como
+`actor_battlefield_only=True` e jogava a zona `top_deck` (onde a carta
+revelada de verdade fica) pro FIM da ordem de candidatos — o oposto do
+que deveria acontecer. **Fix**: `_implied_target()` só infere lado
+(opp/own) quando `'character'`/`'leader'` também aparece no nome da ação
+— sem isso, retorna vazio (não arrisca palpite). Teste novo em
+[smoke_fast.py](scriptis_da_ia/smoke_fast.py):
+`test_peek_opp_deck_top_nao_vira_alvo_battlefield_only`.
+
+**Investigação via código decompilado** (sem partida ao vivo pra
+confirmar): achei o mecanismo real de `peek_opp_deck_top` em
+`_referencias/simulador-oficial/dnspy-export/Assembly-CSharp/
+GameplayLogicScript.cs:27056` (`StartV3OpponentTopDeck`) — o jogo
+REALMENTE usa `lgo_TopDeck` (o mesmo campo privado que
+`BotExecutor.TopDeck()` já lê via reflection) pra colocar a carta
+revelada do deck do oponente, então em teoria a zona `"top_deck"` nos
+candidatos DEVERIA conter o alvo certo. `RemainingV3Targets()`
+(`BotExecutor.cs:229`) retorna **-1** (não 0) quando a ação não usa V3 —
+esse -1 pula o atalho de "confirma direto sem clicar em nada"
+(`HandlePendingAction`, linha ~582) e cai na busca de candidato por
+candidato. Não consegui confirmar ao vivo se `peek_opp_deck_top` usa V3
+de verdade (o nome do método `StartV3OpponentTopDeck` sugere que sim) nem
+se o fix de ordenação acima sozinho resolve o problema original — só
+achei e corrigi uma regressão real que EU introduzi nesta sessão. **Ainda
+precisa de partida ao vivo com Pudding pra confirmar se ela ativa
+corretamente agora.**
+
 ## 2026-07-21 (292) - Claude - resolve_reaction() generalizada além do Teach (custo de redirect era hardcoded pra "carta da mão")
 
 Continuação direta do bloco 291 (mesma sessão): usuário perguntou se
