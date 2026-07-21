@@ -106,7 +106,28 @@ def derive_analysis(card_text: str, card_type: str, counter: int) -> dict:
     is_blocker = 'keyword_blocker' in actions or 'gain_blocker' in actions
 
     # ── Interação / removal ─────────────────────────────────────────────
-    is_removal = bool(actions & {'ko', 'bounce', 'rest_opp_character'})
+    # debuff_power/set_base_power MIRANDO O OPONENTE tambem e removal --
+    # zerar/reduzir drasticamente o poder de um Character do oponente e
+    # funcionalmente equivalente a KO/bounce pra fins de combate (o alvo
+    # nao consegue mais atacar/defender com forca). Achado real 21/07
+    # (partida ao vivo, pergunta do usuario "o bot quase nunca joga carta
+    # boa e cara"): 97 cartas no banco tem debuff_power e NENHUMA delas
+    # ganhava is_removal/power_buff -- is_removal so olhava {ko, bounce,
+    # rest_opp_character} (nomes de action), nunca considerou steps de
+    # power com alvo no oponente. Isso deixava toda uma categoria de
+    # cartas de controle/removal (geralmente as mais caras/fortes do
+    # banco) invisiveis pros bonus de avaliar_carta/_score_play_action
+    # (habilita_ataque so olha kos/is_removal/bounces/power_buff) --
+    # explica sistemicamente por que bombas com debuff no oponente
+    # (nao so a Linlin, um caso isolado de alvo invertido) perdiam pra
+    # corpos baratos sem efeito nenhum.
+    _OPP_POWER_TARGETS = {'opp_character', 'opp_leader', 'opp_leader_or_character',
+                          'all_opp_characters'}
+    has_opp_power_hit = any(
+        step.get('action') in ('debuff_power', 'set_base_power')
+        and step.get('target') in _OPP_POWER_TARGETS
+        for data in effects.values() for step in _steps_de(data))
+    is_removal = bool(actions & {'ko', 'bounce', 'rest_opp_character'}) or has_opp_power_hit
     # comportamentos granulares (para detecção de arquétipo por cartas)
     kos = 'ko' in actions                          # KO de personagem (controle)
     rests_opponent = 'rest_opp_character' in actions  # trava personagem (controle/tempo)

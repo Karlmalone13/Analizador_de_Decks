@@ -590,6 +590,39 @@ def test_bonus_de_ameaca_critica_exige_chance_real_de_conectar() -> None:
           scores.get("OP10-065", 0) > scores.get("OP14-061", 0))
 
 
+def test_debuff_power_no_oponente_conta_como_removal() -> None:
+    # Pedido do usuario 21/07 ("voce resolveu so pra Charlotte Linlin?
+    # porque o bot quase nunca joga carta boa e cara"): o fix do alvo da
+    # Linlin (target invertido) era isolado, mas a auditoria achou um gap
+    # SISTEMICO por tras dele -- is_removal/power_buff (gerar_card_
+    # analysis_db.py) so reconheciam acoes 'ko'/'bounce'/'rest_opp_
+    # character' como remocao. Qualquer carta com debuff_power ou
+    # set_base_power mirando o OPONENTE (zerar/reduzir poder -- 97 cartas
+    # no banco so pra debuff_power, muitas delas bombas caras de
+    # controle) ficava com is_removal=False, invisivel pros bonus de
+    # avaliar_carta/_score_play_action (habilita_ataque so olha kos/
+    # is_removal/bounces/power_buff). Score de jogar Linlin (mesmo estado
+    # da partida real): 90 (sem nenhum fix) -> 150 (so o alvo corrigido)
+    # -> 245 (alvo + is_removal reconhecido).
+    from optcg_engine.decision_engine import get_card_flags
+    check("Linlin (set_base_power no oponente) tem is_removal=True",
+          get_card_flags("ST34-004").get("is_removal") is True)
+    check("Divine Departure (debuff_power no oponente) tem is_removal=True",
+          get_card_flags("OP13-076").get("is_removal") is True)
+
+    linlin = real_card("ST34-004")
+    me = GameState(leader=real_card("OP11-062"), don_available=10, turn=5)
+    me.hand = [linlin]
+    me.field_chars = [real_card("ST34-005")]
+    opp = GameState(leader=real_card("OP04-019"), turn=5)
+    opp.field_chars = [real_card("OP10-065")]
+    match = OPTCGMatch((me.leader, []), (opp.leader, []))
+    eng = DecisionEngine(me, opp)
+    score = match._score_play_action(linlin, eng)
+    check("Score de jogar Linlin reflete a bomba real (bem acima do antigo 90)",
+          score > 200)
+
+
 def test_opponent_model_ao_vivo_por_lider_e_fallback_seguro() -> None:
     # Item 3 ligado AO VIVO (14/07): lookup do .deck real por codigo do lider
     # (os decks de teste sao nomeados por arquetipo -- Kid.deck, Krieg.deck)
@@ -6981,6 +7014,7 @@ def main() -> int:
     test_peek_opp_deck_top_nao_vira_alvo_battlefield_only()
     test_ataque_sem_chance_de_conectar_nao_ganha_bonus_de_matar_alvo()
     test_bonus_de_ameaca_critica_exige_chance_real_de_conectar()
+    test_debuff_power_no_oponente_conta_como_removal()
     test_opponent_model_ao_vivo_por_lider_e_fallback_seguro()
     test_play_turn_greedy_opponent_response()
     test_play_turn_greedy_detecta_letal_do_oponente()

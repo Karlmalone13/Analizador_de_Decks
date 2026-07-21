@@ -2,6 +2,16 @@
 
 **Última atualização:** 21 de julho de 2026
 
+> 21/07/2026 (bloco HANDOFF 297): usuário questionou se o fix da Linlin
+> foi isolado demais — achado um gap SISTÊMICO real por trás:
+> `is_removal`/`power_buff` nunca reconheciam `debuff_power`/
+> `set_base_power` mirando o oponente (97 cartas com debuff_power no
+> banco, nenhuma marcada como removal). Corrigido — 118 cartas ganharam
+> `is_removal=True`. Score de jogar Linlin foi de 90→245 no total (alvo +
+> flag). Essa é provavelmente a explicação real e ampla do "bot quase
+> nunca joga carta boa e cara" — precisa de partida real pra confirmar o
+> efeito prático (é fix de flag/dado, não de execução).
+
 > 21/07/2026 (blocos HANDOFF 296/297): as 3 investigações pedidas pelo
 > usuário fecharam com achados reais:
 > 1. **Líder sem efeito (Pudding/Katakuri/Mamaragan)**: hipótese forte —

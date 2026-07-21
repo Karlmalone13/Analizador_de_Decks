@@ -1,5 +1,43 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-21 (297) - Claude - gap sistêmico achado: debuff_power no oponente nunca contava como removal (97 cartas), não era só a Linlin
+
+Usuário questionou o fix da Linlin (bloco 296): "você resolveu só pra
+Charlotte Linlin? porque o bot quase nunca joga carta boa e cara" — sinal
+de que podia haver um problema mais amplo por trás. Investigando
+`avaliar_carta`/`_score_play_action`, achei que o fix anterior (alvo
+invertido) era realmente isolado à Linlin, mas revelou um gap MUITO
+maior por trás: `is_removal`/`power_buff`
+(`gerar_card_analysis_db.py::derive_analysis`) só reconheciam as ações
+`{'ko', 'bounce', 'rest_opp_character'}` como "isso é remoção" —
+`debuff_power`/`set_base_power` MIRANDO O OPONENTE (reduzir/zerar o
+poder de um Character do oponente, funcionalmente equivalente a
+remoção pra fins de combate) nunca contavam. **97 cartas** no banco têm
+`debuff_power`, **nenhuma delas** ganhava `is_removal`/`power_buff` —
+toda essa categoria de cartas de controle (geralmente as mais caras/
+fortes do banco, ex: Divine Departure -8000, Linlin) ficava invisível
+pros bônus de `avaliar_carta` (+35 de `has_ko`) e pro `habilita_ataque`
+de `_score_play_action` (+60, prioriza sair antes dos ataques) — essa é
+provavelmente a explicação REAL e ampla do "bot quase nunca joga carta
+boa e cara", não um caso isolado.
+
+**Fix**: `is_removal` em `derive_analysis` agora também considera
+`debuff_power`/`set_base_power` com `target` em
+`{opp_character, opp_leader, opp_leader_or_character, all_opp_characters}`.
+Validado: 118 cartas ganharam `is_removal=True` (nenhuma outra flag foi
+tocada — diff limpo contra o `card_analysis_db.json` anterior). Score de
+jogar Linlin no mesmo estado da partida real: 90 (sem nenhum fix) → 150
+(só o alvo corrigido, bloco 296) → **245** (alvo + is_removal
+reconhecido). Teste novo em
+[smoke_fast.py](scriptis_da_ia/smoke_fast.py):
+`test_debuff_power_no_oponente_conta_como_removal`. `smoke_fast.py`/
+`smoke_test.py` 100% verdes.
+
+**Ainda não validado em partida real** — é um fix de dado/flag amplo,
+não código de execução; o efeito esperado é o bot passar a priorizar
+bombas de controle/debuff sobre corpos baratos COM MAIS frequência, mas
+só a próxima partida confirma o efeito prático.
+
 ## 2026-07-21 (296) - Claude - fix em C#: candidatos de alvo pendente sao buscados de novo se esgotarem sem sucesso (Pudding/Katakuri/Mamaragan)
 
 Continuação direta do bloco 295: usuário pediu pra investigar a fundo o
