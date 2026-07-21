@@ -1,0 +1,979 @@
+{
+  "meta": {
+    "players": {
+      "p1": {
+        "name": "You",
+        "leader": {
+          "name": "Donquixote Doflamingo",
+          "code": "OP04-019"
+        }
+      },
+      "p2": {
+        "name": "Opponent",
+        "leader": {
+          "name": "Charlotte Katakuri",
+          "code": "OP11-062"
+        }
+      }
+    },
+    "goes_first": null
+  },
+  "total_turns": 12,
+  "turns": [
+    {
+      "turn": 1,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 1,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP05-034",
+          "card_name": "Baby 5",
+          "effects": []
+        },
+        {
+          "type": "activate",
+          "card": "OP04-019",
+          "card_name": "Donquixote Doflamingo",
+          "effects": [
+            "Activate 1 Don"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP14-061",
+            "OP10-071",
+            "OP12-037",
+            "OP10-065"
+          ],
+          "board": [
+            "OP05-034"
+          ],
+          "trash": [],
+          "life": 4
+        },
+        "Opponent": {
+          "hand": [
+            "ST34-002",
+            "ST18-001",
+            "ST34-001",
+            "OP11-067",
+            "OP15-078"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 2,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP15-069",
+          "card_name": "Nola",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "ST34-002",
+            "ST18-001",
+            "ST34-001",
+            "OP11-067"
+          ],
+          "board": [
+            "OP15-069"
+          ],
+          "trash": [
+            "OP15-078"
+          ],
+          "life": 5
+        },
+        "You": {
+          "hand": [
+            "OP14-061",
+            "OP10-071",
+            "OP12-037",
+            "OP10-065"
+          ],
+          "trash": [],
+          "board": [
+            "OP05-034"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 3,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "activate",
+          "card": "OP05-034",
+          "card_name": "Baby 5",
+          "effects": [
+            "<b>Reveal and Draw Sugar [\"OP04-024\">OP04-024]</b>"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP04-024",
+          "card_name": "Sugar",
+          "effects": [
+            "Rest Nola [\"OP15-069\">OP15-069]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Donquixote Doflamingo",
+          "attacker_code": "OP04-019",
+          "target": "Nola [\"OP15-069\">OP15-069]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP04-019",
+          "card_name": "Donquixote Doflamingo",
+          "effects": [
+            "Activate 2 Don"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP14-061",
+            "OP10-071",
+            "OP12-037",
+            "OP10-065",
+            "OP12-037"
+          ],
+          "board": [
+            "OP05-034",
+            "OP04-024"
+          ],
+          "trash": [],
+          "life": 4
+        },
+        "Opponent": {
+          "hand": [
+            "ST34-002",
+            "ST18-001",
+            "ST34-001",
+            "OP11-067"
+          ],
+          "trash": [
+            "OP15-078",
+            "OP15-069"
+          ],
+          "board": [],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 4,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "ST34-002",
+          "card_name": "Charlotte Cracker",
+          "effects": [
+            "Destroy Baby 5 [\"OP05-034\">OP05-034]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Katakuri",
+          "attacker_code": "OP11-062",
+          "target": "Sugar [\"OP04-024\">OP04-024]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "ST18-001",
+            "ST34-001",
+            "OP11-067",
+            "OP07-077"
+          ],
+          "board": [
+            "ST34-002"
+          ],
+          "trash": [
+            "OP15-078",
+            "OP15-069"
+          ],
+          "life": 5
+        },
+        "You": {
+          "hand": [
+            "OP14-061",
+            "OP10-071",
+            "OP12-037",
+            "OP10-065",
+            "OP12-037"
+          ],
+          "trash": [
+            "OP05-034",
+            "OP04-024"
+          ],
+          "board": [],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 5,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Donquixote Doflamingo",
+          "attacker_code": "OP04-019",
+          "target": "Charlotte Cracker [\"ST34-002\">ST34-002]",
+          "result": null,
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP14-061",
+          "card_name": "Vergo",
+          "effects": []
+        },
+        {
+          "type": "activate",
+          "card": "OP04-019",
+          "card_name": "Donquixote Doflamingo",
+          "effects": [
+            "Activate 2 Don"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP10-071",
+            "OP12-037",
+            "OP10-065",
+            "OP12-037",
+            "EB01-019"
+          ],
+          "board": [
+            "OP14-061"
+          ],
+          "trash": [
+            "OP05-034",
+            "OP04-024"
+          ],
+          "life": 4
+        },
+        "Opponent": {
+          "hand": [
+            "ST18-001",
+            "ST34-001",
+            "OP11-067",
+            "OP07-077"
+          ],
+          "trash": [
+            "OP15-078",
+            "OP15-069",
+            "ST34-002"
+          ],
+          "board": [],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 6,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "ST34-005",
+          "card_name": "Baron Tamago & Pekoms",
+          "effects": []
+        },
+        {
+          "type": "activate",
+          "card": "OP07-077",
+          "card_name": "We're Going to Claim the One Piece!!!",
+          "effects": [
+            "Rest 1 Don",
+            "<b>Reveal and Draw Charlotte Linlin [\"ST34-004\">ST34-004]</b>"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 3,
+          "to": "OP11-062",
+          "to_name": "Charlotte Katakuri",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Katakuri",
+          "attacker_code": "OP11-062",
+          "target": "Donquixote Doflamingo [\"OP04-019\">OP04-019]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "ST18-001",
+            "ST34-001",
+            "OP11-067",
+            "ST34-004"
+          ],
+          "board": [
+            "ST34-005"
+          ],
+          "trash": [
+            "OP15-078",
+            "OP15-069",
+            "ST34-002",
+            "OP07-077"
+          ],
+          "life": 5
+        },
+        "You": {
+          "hand": [
+            "OP10-071",
+            "OP12-037",
+            "OP10-065",
+            "OP12-037",
+            "OP04-031"
+          ],
+          "trash": [
+            "OP05-034",
+            "OP04-024",
+            "EB01-019"
+          ],
+          "board": [
+            "OP14-061"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 7,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP10-065",
+          "card_name": "Sugar",
+          "effects": [
+            "Rest 1 Don",
+            "Rest Sugar [\"OP10-065\">OP10-065]",
+            "<b>Reveal and Draw Donquixote Doflamingo [\"OP04-031\">OP04-031]</b>"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP14-061",
+          "to_name": "Vergo",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP14-061",
+          "to_name": "Vergo",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Vergo",
+          "attacker_code": "OP14-061",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP04-019",
+          "to_name": "Donquixote Doflamingo",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Donquixote Doflamingo",
+          "attacker_code": "OP04-019",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP04-019",
+          "card_name": "Donquixote Doflamingo",
+          "effects": [
+            "Activate 2 Don"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP10-071",
+            "OP12-037",
+            "OP12-037",
+            "OP04-031",
+            "EB01-019",
+            "OP04-031"
+          ],
+          "board": [
+            "OP14-061",
+            "OP10-065"
+          ],
+          "trash": [
+            "OP05-034",
+            "OP04-024",
+            "EB01-019"
+          ],
+          "life": 4
+        },
+        "Opponent": {
+          "hand": [
+            "ST18-001",
+            "ST34-001",
+            "OP11-067",
+            "ST34-004",
+            "ST34-003",
+            "ST34-005"
+          ],
+          "trash": [
+            "OP15-078",
+            "OP15-069",
+            "ST34-002",
+            "OP07-077"
+          ],
+          "board": [
+            "ST34-005"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 8,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "OP11-062",
+          "to_name": "Charlotte Katakuri",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Katakuri",
+          "attacker_code": "OP11-062",
+          "target": "Vergo [\"OP14-061\">OP14-061]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 3,
+          "to": "ST34-005",
+          "to_name": "Baron Tamago & Pekoms",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Baron Tamago & Pekoms",
+          "attacker_code": "ST34-005",
+          "target": "Vergo [\"OP14-061\">OP14-061]",
+          "result": null,
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "ST34-003",
+          "card_name": "Charlotte Brulee",
+          "effects": []
+        },
+        {
+          "type": "play",
+          "card": "ST34-005",
+          "card_name": "Baron Tamago & Pekoms",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "ST18-001",
+            "ST34-001",
+            "OP11-067",
+            "ST34-004",
+            "OP08-069"
+          ],
+          "board": [
+            "ST34-005",
+            "ST34-003",
+            "ST34-005"
+          ],
+          "trash": [
+            "OP15-078",
+            "OP15-069",
+            "ST34-002",
+            "OP07-077"
+          ],
+          "life": 3
+        },
+        "You": {
+          "hand": [
+            "OP10-071",
+            "OP12-037",
+            "OP12-037",
+            "OP04-031",
+            "OP04-031",
+            "OP14-069"
+          ],
+          "trash": [
+            "OP05-034",
+            "OP04-024",
+            "EB01-019",
+            "EB01-019",
+            "OP14-061"
+          ],
+          "board": [
+            "OP10-065"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 9,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP10-071",
+          "card_name": "Donquixote Doflamingo",
+          "effects": [
+            "Minus 1 Don",
+            "Deploy Vergo [\"OP14-061\">OP14-061]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP10-065",
+          "card_name": "Sugar",
+          "effects": [
+            "Rest 1 Don",
+            "Rest Sugar [\"OP10-065\">OP10-065]",
+            "<b>Reveal and Draw Flap Thread [\"OP04-037\">OP04-037]</b>"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Donquixote Doflamingo",
+          "attacker_code": "OP04-019",
+          "target": "Baron Tamago & Pekoms [\"ST34-005\">ST34-005]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP04-019",
+          "card_name": "Donquixote Doflamingo",
+          "effects": [
+            "Activate 2 Don"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP12-037",
+            "OP12-037",
+            "OP04-031",
+            "OP04-031",
+            "OP14-069",
+            "OP04-037"
+          ],
+          "board": [
+            "OP10-065",
+            "OP10-071",
+            "OP14-061"
+          ],
+          "trash": [
+            "OP05-034",
+            "OP04-024",
+            "EB01-019",
+            "EB01-019",
+            "OP14-061"
+          ],
+          "life": 4
+        },
+        "Opponent": {
+          "hand": [
+            "ST18-001",
+            "ST34-001",
+            "OP11-067",
+            "ST34-004",
+            "OP08-069"
+          ],
+          "trash": [
+            "OP15-078",
+            "OP15-069",
+            "ST34-002",
+            "OP07-077",
+            "ST34-005"
+          ],
+          "board": [
+            "ST34-003",
+            "ST34-005"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 10,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "ST18-001",
+          "card_name": "Usohachi",
+          "effects": [
+            "Rest Vergo [\"OP14-061\">OP14-061]"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 5,
+          "to": "ST34-003",
+          "to_name": "Charlotte Brulee",
+          "total": 5
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Brulee",
+          "attacker_code": "ST34-003",
+          "target": "Vergo [\"OP14-061\">OP14-061]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "ST34-005",
+          "to_name": "Baron Tamago & Pekoms",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Baron Tamago & Pekoms",
+          "attacker_code": "ST34-005",
+          "target": "Vergo [\"OP14-061\">OP14-061]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Katakuri",
+          "attacker_code": "OP11-062",
+          "target": "Sugar [\"OP10-065\">OP10-065]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "ST34-001",
+            "OP11-067",
+            "ST34-004",
+            "OP08-069",
+            "OP08-069"
+          ],
+          "board": [
+            "ST34-003",
+            "ST34-005",
+            "ST18-001"
+          ],
+          "trash": [
+            "OP15-078",
+            "OP15-069",
+            "ST34-002",
+            "OP07-077",
+            "ST34-005"
+          ],
+          "life": 3
+        },
+        "You": {
+          "hand": [
+            "OP12-037",
+            "OP12-037",
+            "OP04-031",
+            "OP04-031",
+            "OP14-069"
+          ],
+          "trash": [
+            "OP05-034",
+            "OP04-024",
+            "EB01-019",
+            "EB01-019",
+            "OP14-061",
+            "OP04-037",
+            "OP10-065"
+          ],
+          "board": [
+            "OP10-071",
+            "OP14-061"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 11,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP04-031",
+          "card_name": "Donquixote Doflamingo",
+          "effects": [
+            "Baron Tamago & Pekoms [\"ST34-005\">ST34-005] will not Activate during next Refresh",
+            "Charlotte Brulee [\"ST34-003\">ST34-003] will not Activate during next Refresh",
+            "Charlotte Katakuri [\"OP11-062\">OP11-062] will not Activate during next Refresh"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Donquixote Doflamingo",
+          "attacker_code": "OP04-019",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Vergo",
+          "attacker_code": "OP14-061",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Donquixote Doflamingo",
+          "attacker_code": "OP10-071",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP04-019",
+          "card_name": "Donquixote Doflamingo",
+          "effects": [
+            "Activate 2 Don"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP12-037",
+            "OP12-037",
+            "OP04-031",
+            "OP14-069",
+            "OP10-062"
+          ],
+          "board": [
+            "OP10-071",
+            "OP14-061",
+            "OP04-031"
+          ],
+          "trash": [
+            "OP05-034",
+            "OP04-024",
+            "EB01-019",
+            "EB01-019",
+            "OP14-061",
+            "OP04-037",
+            "OP10-065"
+          ],
+          "life": 4
+        },
+        "Opponent": {
+          "hand": [
+            "ST34-001",
+            "OP11-067",
+            "ST34-004",
+            "OP08-069",
+            "OP08-069",
+            "OP15-069",
+            "ST34-005",
+            "ST34-001"
+          ],
+          "trash": [
+            "OP15-078",
+            "OP15-069",
+            "ST34-002",
+            "OP07-077",
+            "ST34-005"
+          ],
+          "board": [
+            "ST34-003",
+            "ST34-005",
+            "ST18-001"
+          ],
+          "life": 0
+        }
+      }
+    },
+    {
+      "turn": 12,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP11-067",
+          "card_name": "Charlotte Katakuri",
+          "effects": [
+            "Set Baron Tamago & Pekoms [\"ST34-005\">ST34-005] to Active"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP15-069",
+          "card_name": "Nola",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "ST34-001",
+            "ST34-004",
+            "OP08-069",
+            "OP08-069",
+            "ST34-005",
+            "ST34-001",
+            "OP11-073"
+          ],
+          "board": [
+            "ST34-003",
+            "ST34-005",
+            "ST18-001",
+            "OP11-067",
+            "OP15-069"
+          ],
+          "trash": [
+            "OP15-078",
+            "OP15-069",
+            "ST34-002",
+            "OP07-077",
+            "ST34-005"
+          ],
+          "life": 0
+        },
+        "You": {
+          "hand": [
+            "OP12-037",
+            "OP12-037",
+            "OP04-031",
+            "OP14-069",
+            "OP10-062"
+          ],
+          "trash": [
+            "OP05-034",
+            "OP04-024",
+            "EB01-019",
+            "EB01-019",
+            "OP14-061",
+            "OP04-037",
+            "OP10-065"
+          ],
+          "board": [
+            "OP10-071",
+            "OP14-061",
+            "OP04-031"
+          ],
+          "life": 4
+        }
+      }
+    }
+  ]
+}

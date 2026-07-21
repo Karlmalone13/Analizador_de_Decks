@@ -1,0 +1,61 @@
+{
+  "cards": [
+    {
+      "code": "OP14-061",
+      "name": "Vergo",
+      "count": 2
+    },
+    {
+      "code": "OP12-037",
+      "name": "OP12-037",
+      "count": 2
+    },
+    {
+      "code": "EB01-019",
+      "name": "EB01-019",
+      "count": 2
+    },
+    {
+      "code": "OP04-031",
+      "name": "Donquixote Doflamingo",
+      "count": 2
+    },
+    {
+      "code": "OP10-071",
+      "name": "Donquixote Doflamingo",
+      "count": 1
+    },
+    {
+      "code": "OP10-065",
+      "name": "Sugar",
+      "count": 1
+    },
+    {
+      "code": "OP05-034",
+      "name": "Baby 5",
+      "count": 1
+    },
+    {
+      "code": "OP04-024",
+      "name": "Sugar",
+      "count": 1
+    },
+    {
+      "code": "OP14-069",
+      "name": "OP14-069",
+      "count": 1
+    },
+    {
+      "code": "OP04-037",
+      "name": "OP04-037",
+      "count": 1
+    },
+    {
+      "code": "OP10-062",
+      "name": "OP10-062",
+      "count": 1
+    }
+  ],
+  "total_seen": 15,
+  "leader": "OP04-019"
+}
