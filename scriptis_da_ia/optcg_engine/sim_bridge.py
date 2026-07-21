@@ -1373,20 +1373,29 @@ def order_target_candidates(gs: GameState, opp_gs: GameState,
     def sort_key(cand: dict):
         card = card_of(cand)
         zone = cand.get('zone', '')
-        # DON!! ativo na propria area de custo -- candidato exclusivo pra
-        # pagar custo "DON!! -N" (don_minus). Achado real 21/07 (partida ao
-        # vivo): qualquer carta com esse custo (Katakuri when_attacking/
-        # on_opp_attack, Mamaragan [Main], Pudding PRB02-010 on_play, etc.)
-        # nunca completava o efeito -- o jogo real exige clicar N DON na
-        # DonCostArea pra pagar, mas essa zona nunca era candidata. Prioridade
-        # MAXIMA e INCONDICIONAL (antes de actor_opp_only/battlefield_only,
-        # que so fazem sentido pro ALVO do efeito, nao pro pagamento do
-        # custo -- sao perguntas ortogonais, igual o comentario ja existente
-        # sobre actor_debuff_swing/actor_self_power_target acima). Se o step
-        # atual nao pedir DON, o jogo recusa o clique (mesmo padrao de
-        # seguranca usado em toda zona aqui) e o proximo candidato da lista
-        # e tentado normalmente.
+        # Zonas de DON -- candidatas pra custo "DON!! -N" (don_minus) e pra
+        # efeitos que miram DON adversario (Krieg). Achado real 21/07 (partida
+        # ao vivo): qualquer carta com custo DON!! -N (Katakuri, Mamaragan
+        # [Main], Pudding PRB02-010 on_play, etc.) nunca completava o efeito --
+        # o jogo exige clicar N DON na DonCostArea, mas essa zona nunca era
+        # candidata. Prioridade MAXIMA e INCONDICIONAL (antes de actor_opp_only/
+        # battlefield_only, que so fazem sentido pro ALVO do efeito, nao pro
+        # pagamento do custo -- perguntas ortogonais, igual actor_debuff_swing/
+        # actor_self_power_target acima). Se o step atual nao pedir DON, o jogo
+        # recusa o clique (mesmo padrao de seguranca de toda zona aqui) e o
+        # proximo candidato e tentado.
+        #
+        # Ordem entre elas: don_minus RETORNA DON ao deck (nao resta), entao
+        # devolver primeiro o DON ja gasto (restado) preserva o ativo, que
+        # ainda paga/ataca neste turno -- restado ANTES de ativo (pedido do
+        # usuario). opp_don logo apos (efeito que resta/remove DON inimigo);
+        # se o efeito for de custo proprio, o jogo recusa o DON do oponente e
+        # cai no proximo.
+        if zone == 'own_don_rested':
+            return (-3, 0)
         if zone == 'own_don':
+            return (-2, 0)
+        if zone == 'opp_don':
             return (-1, 0)
         if actor_opp_only and zone.startswith('own'):
             return (9, 0)   # nunca e alvo valido pra essa habilidade

@@ -256,7 +256,13 @@ namespace OPTCGBotPlugin
             PlayerState botPs, PlayerState oppPs, GameplayLogicScript gls)
         {
             var list = new List<EngineClient.TargetCandidate>();
-            void Add(List<GameObject>? zone, string name)
+            // hideCode: nao expoe o cardID do candidato. Usado pra zonas de
+            // INFORMACAO OCULTA do oponente (mao) -- o bot escolhe as cegas
+            // (efeitos "choose 1 card from your opponent's hand": Arlong
+            // OP01-063 reveal, Kanjuro OP01-038, etc.); nao pode "trapacear"
+            // avaliando cartas que nao deveria ver. Sem code, o sim_bridge cai
+            // no catch-all e pega qualquer uma (o jogo valida o clique).
+            void Add(List<GameObject>? zone, string name, bool hideCode = false)
             {
                 if (zone == null) return;
                 foreach (var go in zone)
@@ -267,7 +273,8 @@ namespace OPTCGBotPlugin
                         {
                             id = cls.myCard.deckUniqueID,
                             zone = name,
-                            code = cls.myCard.cardDef != null ? cls.myCard.cardDef.cardID : "",
+                            code = (hideCode || cls.myCard.cardDef == null)
+                                   ? "" : cls.myCard.cardDef.cardID,
                         });
                 }
             }
@@ -281,30 +288,51 @@ namespace OPTCGBotPlugin
             Add(oppPs.Lgo_MyLeader, "opp_leader");
             Add(botPs.Lgo_MyStage,  "own_stage");
             Add(oppPs.Lgo_MyStage,  "opp_stage");
+            // Mao do oponente -- alvo de "choose 1 card from your opponent's
+            // hand" (Arlong reveal_opp_hand, Kanjuro opp_choose_trash_our_hand).
+            // _valid_target_location aceita hand_card em QUALQUER jogador, so
+            // faltava a zona. hideCode: escolha as cegas (o bot nao ve a mao).
+            Add(oppPs.Lgo_MyHand,   "opp_hand", hideCode: true);
 
-            // DON!! ativo (nao restado) na propria area de custo -- alvo
-            // clicavel pra qualquer custo "DON!! -N" (don_minus no parser).
-            // Achado real 21/07 (partida ao vivo, hipotese correta do
-            // usuario): o jogo real (GameplayLogicScript.ValidV3TargetLocation,
-            // decompilado) exige clicar N cartas de DON na DonCostArea pra
-            // pagar esse custo -- ValidV3TargetLocation tem um branch dedicado
-            // "vTarget.DonAreaCard && CardObjectInDonArea(go_Clicked)",
+            // DON na propria area de custo -- alvo clicavel pra qualquer custo
+            // "DON!! -N" (don_minus no parser). Achado real 21/07 (partida ao
+            // vivo, hipotese correta do usuario): o jogo real
+            // (GameplayLogicScript.ValidV3TargetLocation, decompilado) exige
+            // clicar N cartas de DON na DonCostArea pra pagar esse custo --
+            // branch dedicado "vTarget.DonAreaCard && CardObjectInDonArea(...)",
             // DISTINTO de personagem/mao/trash/deck. CollectTargetCandidates
-            // NUNCA incluia essa zona -- qualquer habilidade com custo
-            // DON!! -N (Katakuri when_attacking/on_opp_attack, Mamaragan
-            // [Main], Pudding PRB02-010 on_play, e qualquer outra carta com
-            // esse padrao) ficava ciclando por candidatos de personagem/mao
-            // que o jogo SEMPRE recusa, nunca pagando o custo de verdade.
-            // So DON ATIVO (nao restado) -- um DON ja restado nunca e clique
-            // valido pra pagar um custo que exige restar.
+            // nunca incluia essa zona -- qualquer habilidade com custo DON!! -N
+            // (Katakuri, Mamaragan [Main], Pudding PRB02-010 on_play, etc.)
+            // ficava ciclando por candidatos que o jogo SEMPRE recusa.
+            //
+            // don_minus RETORNA DON ao deck (action_system.py: "retornar X don
+            // ao deck") -- NAO resta. Por isso ValidV3TargetLocation/
+            // _valid_target_location aceita a area de custo SEM checar b_tapped:
+            // DON restado E ativo sao ambos alvos validos. Preferencia
+            // estrategica (pedido do usuario): devolver primeiro o DON ja gasto
+            // (restado) e preservar o ativo, que ainda pode pagar/atacar neste
+            // turno. Duas zonas separadas pra o sim_bridge ordenar restado
+            // ANTES de ativo. (DON anexado a carta: o validador tem branch
+            // proprio attached_don, mas nao da pra confirmar aqui quais flags o
+            // don_minus seta -- deixado de fora ate checar no dnspy p/ nao
+            // coletar candidato que o jogo recuse.)
+            var donRestado = new List<GameObject>();
             var donAtivo = new List<GameObject>();
             foreach (var go in botPs.Lgo_MyDonCostArea ?? new List<GameObject>())
             {
                 var cls = go != null ? go.GetComponent<CardLogicScript>() : null;
-                if (cls != null && !cls.myCard.bTapped)
-                    donAtivo.Add(go);
+                if (cls == null) continue;
+                if (cls.myCard.bTapped) donRestado.Add(go);
+                else                    donAtivo.Add(go);
             }
-            Add(donAtivo, "own_don");
+            Add(donRestado, "own_don_rested");
+            Add(donAtivo,   "own_don");
+
+            // DON do oponente -- alvo de efeitos que restam/retornam DON
+            // adversario (comum no Krieg). _valid_target_location varre TODOS
+            // os jogadores no branch don_area_card, entao o DON do oponente e
+            // alvo valido; so faltava a zona ser candidata aqui.
+            Add(oppPs.Lgo_MyDonCostArea, "opp_don");
             return list;
         }
 
@@ -323,7 +351,9 @@ namespace OPTCGBotPlugin
                   ?? FindCard(oppPs.Lgo_MyLeader, targetId)
                   ?? FindCard(botPs.Lgo_MyStage, targetId)
                   ?? FindCard(oppPs.Lgo_MyStage, targetId)
-                  ?? FindCard(botPs.Lgo_MyDonCostArea, targetId);
+                  ?? FindCard(botPs.Lgo_MyDonCostArea, targetId)
+                  ?? FindCard(oppPs.Lgo_MyDonCostArea, targetId)
+                  ?? FindCard(oppPs.Lgo_MyHand, targetId);
             if (go == null)
                 return false;
             _mClickDuringCardAction.Invoke(gls, new object[] { go });

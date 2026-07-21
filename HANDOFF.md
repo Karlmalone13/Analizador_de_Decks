@@ -1,5 +1,45 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-21 (299) - Claude (sessao remota web) - zonas de alvo faltantes do bot: DON restado/oponente + mao do oponente
+
+Sessao remota (usuario pelo iPhone). Revisao dirigida das zonas que o bot
+consegue SELECIONAR como alvo, a pedido do usuario. Achados confirmados no
+validador oficial (`decompiled_python/validators.py::_valid_target_location`)
+e corrigidos em `BotExecutor.cs` (C#) + `sim_bridge.py`. NAO da pra
+compilar/testar ao vivo aqui (sem dotnet/jogo) -- **precisa recompilar via
+`setup_bepinex` no desktop e testar ao vivo.**
+
+**Gaps corrigidos:**
+1. **DON!! -N (don_minus) so coletava DON ATIVO.** O bloco 298 (`c18b068`)
+   matou o ciclo infinito, mas assumiu "DON restado nunca e clique valido" --
+   FALSO: `don_minus` RETORNA ao deck (nao resta), e `_valid_target_location`
+   aceita `don_area_card` SEM checar `b_tapped`. Agora coleta restado + ativo
+   em zonas separadas (`own_don_rested`/`own_don`) e o sim_bridge ordena
+   RESTADO antes de ATIVO (preserva o DON usavel neste turno -- pedido do
+   usuario). Tambem conserta o risco de nao achar candidato quando so sobra
+   DON restado/anexado (When Attacking tardio). DON anexado ainda de fora
+   (nao da pra confirmar aqui quais flags o don_minus seta -- ver dnspy).
+2. **DON do oponente nunca era candidato.** Adicionada zona `opp_don`
+   (`oppPs.Lgo_MyDonCostArea`) -- efeitos do Krieg que restam/retornam DON
+   adversario agora tem alvo.
+3. **Mao do oponente nunca era candidata.** Adicionada zona `opp_hand`
+   (`oppPs.Lgo_MyHand`) para "choose 1 card from your opponent's hand"
+   (Arlong OP01-063 `reveal_opp_hand`, Kanjuro OP01-038
+   `opp_choose_trash_our_hand`). Emitida SEM code (`hideCode`) -- o bot
+   escolhe as cegas, sem trapacear avaliando cartas ocultas.
+
+**NAO era gap (verificado):** mao propria (`own_hand` ja coletado, descarte
+pega a pior carta); "olhar topo da vida/deck" (Katakuri/Pudding) resolve pelo
+caminho de reveal/botao `ConfirmRevealedCard`/`FinalizeTopDeck`, ja remendado
+nos blocos 20-21/07, NAO por clique de alvo -- por isso vida NAO virou zona
+de CollectTargetCandidates.
+
+**Validado aqui:** ordenacao DON (restado>ativo>opp_don) + opp_hand incluido
+sem code, via teste unitario; `smoke_fast.py` verde.
+
+**EM ANDAMENTO (mesma sessao):** memoria de cartas reveladas (vida/deck/mao
+do oponente + reveladas por SEARCH) -- ver bloco/commit seguinte.
+
 ## 2026-07-21 (298) - Claude - causa raiz REAL do "líder sem efeito" achada: custo DON!! -N nunca tinha zona de candidato (hipótese do usuário confirmada no código decompilado)
 
 Continuação direta do bloco 297: usuário jogou mais uma partida (já com
