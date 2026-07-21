@@ -587,16 +587,32 @@ def choose_target(req: ChooseTargetRequest):
         gs     = _dto_to_gs(req.state.bot, req.state.turnNumber)
         opp_gs = _dto_to_gs(req.state.opp, req.state.turnNumber)
 
+        # Cronometro proprio (nao so o `started` do endpoint inteiro):
+        # achado real 20/07 (partida ao vivo) -- 2 chamadas de /choose_target
+        # ficaram presas 162.7s e 169.6s (client_timeout disparou em uma
+        # delas) enquanto outras dezenas de decisoes no MESMO intervalo
+        # processaram normal, em milissegundos -- nao foi o processo/
+        # maquina travando (nesse caso tudo ficaria preso junto), foi ALGO
+        # ESPECIFICO nessas 2 chamadas. Sem instrumentacao dedicada na hora,
+        # so da pra reconstruir isso post-mortem pelo timestamp (o que fiz
+        # pra achar o episodio acima) -- essa medicao permite pegar o
+        # PROXIMO caso ja com aviso na hora, no console/session log.
+        tgt_started = time.perf_counter()
         out = bridge.order_target_candidates(
             gs, opp_gs,
             [{"id": c.id, "zone": c.zone, "code": c.code} for c in req.candidates],
             attacker_power=req.attackerPower,
             defender_uid=req.defenderId,
             actor_code=req.actorCode)
+        tgt_ms = round((time.perf_counter() - tgt_started) * 1000, 3)
         zonas = sorted({c.zone for c in req.candidates})
         print(f"[TGT] {len(req.candidates)} candidatos (actor={req.actorCode} "
               f"atk={req.attackerPower} def={req.defenderId} zonas={zonas}) -> ordem {out[:5]}",
               flush=True)
+        if tgt_ms > 2000:
+            print(f"[ALERTA] order_target_candidates demorou {tgt_ms:.0f}ms "
+                  f"(turno {req.state.turnNumber}, actor={req.actorCode}, "
+                  f"{len(req.candidates)} candidatos, zonas={zonas})", flush=True)
         # Diagnostico 07/07: confirmar se um redirect (attackerPower>0) esta
         # escolhendo o proprio alvo original (no-op) por falta de opcao —
         # ajuda a achar se a ability do Teach passa por /defense phase=reaction

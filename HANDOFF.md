@@ -1,5 +1,70 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-21 (294) - Claude - 4a partida ao vivo pos-fixes: bonus de "ameaca critica" tinha o MESMO bug de score_attack_target (fix aplicado); Katakuri paga o custo agora mas peek_opp_deck_top ainda trava; Mamaragan tem ordem de step invertida vs texto real (achado, nao corrigido, precisa aprovacao)
+
+Usuário jogou mais uma partida (Katakuri via bot x Doflamingo via humano)
+depois de todos os fixes 289-293 e reportou os MESMOS 4 sintomas: Mamaragan
+jogada errado, Baron Tamago & Pekoms atacando 6000 contra 9000 (era 7000
+base), DON em personagem fraco em vez de carta boa, líder ainda sem
+efeito. Pedido: analisar de novo.
+
+**Achado real #1 (causa raiz confirmada, FIX aplicado)**: mesmo com o fix
+do bloco 289 (`score_attack_target` não empilha mais bônus de "vale
+matar" sem chance de conectar), Baron Tamago & Pekoms (ST34-005) atacou
+Vergo (9000 de poder, só 6000 alcançável com 2 DON — impossível) e
+pontuou **450** (150 do gatilho `when_attacking` [KO opp_character
+power<=2000] + **300** de "alvo é ameaça crítica"). Causa: esse bônus de
++300 vive em `_generate_and_score_actions` (não em `score_attack_target`)
+e era somado incondicionalmente quando `priority == 'REMOVE_THREAT'` e o
+alvo do ATAQUE está em `critical_threats()` — sem checar se o ataque em
+si tem chance de conectar. O gatilho de KO da carta mirava um personagem
+DIFERENTE (OP10-065, 1000 de poder, o alvo real e válido), mas o bônus
+não distinguia "alvo do ataque" de "alvo do gatilho". Fix: `+300` só
+aplica se `atk_power >= tgt.power` ou `atk_power + don_disp*1000 >=
+tgt.power` (mesmo cálculo de `pode_matar`). Teste novo em
+[smoke_fast.py](scriptis_da_ia/smoke_fast.py):
+`test_bonus_de_ameaca_critica_exige_chance_real_de_conectar` — score de
+Vergo cai de 450→150, ficando abaixo de atacar OP10-065 (160, o alvo que
+o gatilho realmente mata). `smoke_fast.py`/`smoke_test.py` verdes.
+
+**Achado real #2 (progresso confirmado, AINDA quebrado)**: o fix do
+bloco 291 (roteamento `resolve_reaction`→`resolve_optional_effect` pra
+`when_attacking`/`on_opp_attack`) **funcionou** — log mostra
+`[Bot] downside offer (reacao): USAR efeito` pro Katakuri pela primeira
+vez (antes era sempre "Cancel"). MAS depois de aceitar o custo, o
+`peek_opp_deck_top` (parte do efeito, "look at 1 card from top of
+opponent's deck") entra no MESMO ciclo de cliques inválidos já visto na
+Charlotte Pudding — tenta ST34-001, OP07-077, ST18-001, OP11-067,
+OP15-078 etc (cartas da PRÓPRIA mão do bot), nunca resolve. O fix do
+bloco 293 (`_implied_target` não classifica mais `peek_opp_deck_top`
+como `opp_character`) evitou uma REGRESSÃO mas não resolveu a causa raiz
+— a zona `top_deck` continua sem conter (ou sem ser tentada a tempo) o
+alvo real. Precisa investigação C# mais profunda (timing de
+`StartV3OpponentTopDeck`/`lgo_TopDeck` vs `CollectTargetCandidates`, ou
+se `RemainingV3Targets` retorna certo pra esse step) — não consigo
+avançar mais sem debug ao vivo passo a passo.
+
+**Achado real #3 (NÃO corrigido, precisa aprovação)**: texto oficial da
+Mamaragan (cards_rows.csv) é **"Draw 1 card. Then, rest up to 1 of your
+opponent's Characters..."** — draw PRIMEIRO, rest DEPOIS (e "up to 1" =
+opcional). `card_effects_db.json` tem a ordem **invertida**
+(`rest_opp_character` antes de `draw`) — isso pode ser a causa raiz de
+por que NEM o draw (sempre executável, sem alvo) acontece: se o
+executor tenta resolver o `rest_opp_character` primeiro e trava
+esperando alvo (mesmo sendo "up to", o simulador interno lida bem com 0
+candidatos — `for _ in range(min(count, len(candidates)))` já é
+gracioso — mas o caminho AO VIVO via V3/BotDriver pode não estar). Não
+implementado — é mudança de `gerar_effects_db.py`/parser, exige registro
+em `parser_audits/` e checagem global da mesma gramática ("Draw X. Then,
+rest/KO/bounce up to N...") em outras cartas, conforme regra do CLAUDE.md.
+**Aguardando aprovação do usuário antes de implementar.**
+
+**Não investigado a fundo**: "DON em personagem fraco em vez de carta
+boa" — hand nas turnos 4-5 mostra Charlotte Linlin (ST34-004, custo 10)
+e OP08-069 (custo 9) paradas na mão enquanto DON chegava a 9-10, mas os
+snapshots disponíveis não isolam se isso é falta de DON real (custo alto
+demais pro turno) ou desperdício genuíno — inconclusivo nesta rodada.
+
 ## 2026-07-21 (293) - Claude - regressao propria corrigida (_implied_target classificava peek_opp_deck_top como alvo de personagem) + investigacao da Pudding via codigo decompilado
 
 Continuação direta do bloco 292 (mesma sessão): ao investigar de novo o

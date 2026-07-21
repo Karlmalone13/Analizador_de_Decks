@@ -2,6 +2,20 @@
 
 **Última atualização:** 21 de julho de 2026
 
+> 21/07/2026 (bloco HANDOFF 294): 4a partida ao vivo pos-fixes 289-293.
+> Achado novo: bônus de "+300 alvo é ameaça crítica" em
+> `_generate_and_score_actions` tinha o MESMO bug do fix 289 (aplicado
+> sem checar se o ataque conecta) — corrigido. Progresso real no gatilho
+> do Katakuri (custo agora é ACEITO, "USAR efeito" em vez de sempre
+> "Cancel"), mas `peek_opp_deck_top` ainda trava no mesmo ciclo de
+> cliques inválidos da Pudding — causa raiz ainda não resolvida, precisa
+> debug C# ao vivo. **Pendente de aprovação**: Mamaragan tem ordem de
+> step invertida no `card_effects_db.json` vs o texto oficial (draw
+> deveria vir ANTES do rest_opp_character, não depois) — não implementado,
+> precisa registro em `parser_audits/` e checagem global da mesma
+> gramática antes de commitar (regra do CLAUDE.md). DON "desperdiçado"
+> continua inconclusivo.
+
 > 21/07/2026 (bloco HANDOFF 292): `resolve_reaction()` tinha o
 > roteamento genérico, mas a conta de CUSTO do redirect era hardcoded em
 > torno do padrão do Teach (sempre "líder + bloco on_opp_attack + custo =

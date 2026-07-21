@@ -551,6 +551,45 @@ def test_ataque_sem_chance_de_conectar_nao_ganha_bonus_de_matar_alvo() -> None:
           s_mata > s_sem_chance)
 
 
+def test_bonus_de_ameaca_critica_exige_chance_real_de_conectar() -> None:
+    # Achado real 21/07 (partida ao vivo, DEPOIS do fix acima): mesmo com
+    # score_attack_target corrigido, um bonus SEPARADO em
+    # _generate_and_score_actions ("+300 se o alvo e ameaca critica",
+    # prioridade REMOVE_THREAT) era somado incondicionalmente, sem checar
+    # se o ataque tinha chance de conectar. Baron Tamago & Pekoms (ST34-005,
+    # when_attacking KO opp_character power<=2000, custo 1 DON) atacou
+    # Vergo (9000 de poder, so 6000 alcancavel com 2 DON -- impossivel de
+    # vencer) e pontuou 450 (150 do gatilho + 300 de "ameaca critica"),
+    # so porque Vergo virou "ameaca critica" enquanto o gatilho de KO
+    # mirava OUTRO personagem (OP10-065, 1000 de poder) -- o bonus nao
+    # distinguia "alvo do ATAQUE" de "alvo do GATILHO". Fix: +300 so aplica
+    # se o ataque em si (nao o gatilho) tem chance real de conectar.
+    import dataclasses
+    baron = real_card("ST34-005")
+    vergo = real_card("OP14-061")
+    vergo.data = dataclasses.replace(vergo.data, power=9000)
+    vergo.rested = True
+    weak = real_card("OP10-065")  # 1000 power, alvo valido do gatilho de KO
+    weak.rested = True
+
+    me = GameState(leader=real_card("OP11-062"), don_available=2, turn=5)
+    me.field_chars = [baron]
+    me.life = [real_card("OP07-077") for _ in range(4)]
+    opp = GameState(leader=real_card("OP04-019"), turn=5)
+    opp.field_chars = [vergo, weak]
+    opp.life = [real_card("OP07-077") for _ in range(4)]
+
+    match = OPTCGMatch((me.leader, []), (opp.leader, []))
+    eng = DecisionEngine(me, opp)
+    actions = match._generate_and_score_actions(me, opp, eng)
+    scores = {a[4].code: a[0] for a in actions
+              if a[1] == "attack" and a[2].code == "ST34-005" and a[4] is not None}
+    check("Baron Tamago atacando Vergo (impossivel de vencer) NAO ganha o bonus de ameaca critica",
+          scores.get("OP14-061", 0) < 200)
+    check("Atacar o alvo que o gatilho REALMENTE mata (OP10-065) pontua mais que atacar Vergo",
+          scores.get("OP10-065", 0) > scores.get("OP14-061", 0))
+
+
 def test_opponent_model_ao_vivo_por_lider_e_fallback_seguro() -> None:
     # Item 3 ligado AO VIVO (14/07): lookup do .deck real por codigo do lider
     # (os decks de teste sao nomeados por arquetipo -- Kid.deck, Krieg.deck)
@@ -6941,6 +6980,7 @@ def main() -> int:
     test_resolve_reaction_custo_de_redirect_e_generico_nao_so_carta_da_mao()
     test_peek_opp_deck_top_nao_vira_alvo_battlefield_only()
     test_ataque_sem_chance_de_conectar_nao_ganha_bonus_de_matar_alvo()
+    test_bonus_de_ameaca_critica_exige_chance_real_de_conectar()
     test_opponent_model_ao_vivo_por_lider_e_fallback_seguro()
     test_play_turn_greedy_opponent_response()
     test_play_turn_greedy_detecta_letal_do_oponente()

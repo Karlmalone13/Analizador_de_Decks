@@ -11027,8 +11027,24 @@ class OPTCGMatch:
                     if s_char > -500:
                         s_char += self._human_pattern_bonus(p, 'attack', att)
                         # Inclinação: remover a AMEAÇA CRÍTICA ganha prioridade alta
+                        # -- MAS so se o ataque tem chance real de conectar/matar.
+                        # Achado real 21/07 (partida ao vivo): Baron Tamago &
+                        # Pekoms (ST34-005, when_attacking KO opp_character
+                        # power<=2000, custo 1 DON) atacou Vergo (9000 de poder)
+                        # com so 6000 (4000 + 2 DON, o maximo disponivel) --
+                        # mesmo com score_attack_target ja corrigido pra nao
+                        # empilhar bonus de remocao num ataque sem chance
+                        # (achado 20/07), esse +300 de "alvo e ameaca critica"
+                        # e aplicado AQUI, fora da funcao, sem checar a mesma
+                        # coisa -- mesmo bug, lugar diferente. Vergo virou
+                        # "ameaca critica" (score 450 = ~150 do gatilho +300),
+                        # empatando/batendo outras opcoes reais na busca.
                         if tgt in threats:
-                            s_char += 300   # acima de atacar o líder
+                            atk_power = attack_time_power(att, opp)
+                            pode_matar = (atk_power >= tgt.power
+                                         or atk_power + p.don_available * 1000 >= tgt.power)
+                            if pode_matar:
+                                s_char += 300   # acima de atacar o líder
                         actions.append((s_char, 'attack', att, 'character', tgt))
 
         # ── Ações de ATIVAR efeitos [Activate:Main] ──
