@@ -1,5 +1,65 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-21 (296) - Claude - fix em C#: candidatos de alvo pendente sao buscados de novo se esgotarem sem sucesso (Pudding/Katakuri/Mamaragan)
+
+Continuação direta do bloco 295: usuário pediu pra investigar a fundo o
+"líder ainda sem efeito" (mesmo mecanismo do travamento da Pudding e
+agora, com o fix do parser, também da Mamaragan).
+
+**Hipótese e fix**: `HandlePendingAction` (`BotDriver.cs`) só chama
+`CollectTargetCandidates`/`EngineClient.ChooseTarget` UMA VEZ, no exato
+momento em que `iActionStep` muda. Se o jogo ainda não tiver populado
+`lgo_TopDeck` (a carta revelada do topo do deck do oponente, via
+`StartV3OpponentTopDeck` no `GameplayLogicScript.cs` decompilado) nesse
+instante exato — por exemplo se a animação/revelação roda 1+ frames
+depois de `iActionStep` já ter avançado — o snapshot de candidatos fica
+sem o alvo real PRA SEMPRE: `iActionStep` não muda de novo só porque a
+carta apareceu depois, então o código nunca refaz a lista. O bot cicla
+por todos os candidatos ERRADOS (mão/campo próprio) até esgotar, sem
+nunca tentar buscar de novo. Isso bate exatamente com o padrão visto em
+`peek_opp_deck_top` (Pudding e agora Katakuri, cujo custo já é aceito
+mas o efeito nunca resolve) e provavelmente também no `rest_opp_character`
+da Mamaragan pós-fix de ordem (bloco 295).
+
+**Fix**: extraída a lógica de busca de candidatos pra um método novo
+`FetchPendingCandidates`; quando `_pendingOrder` esgota sem sucesso, o
+código agora busca a lista DE NOVO uma vez (`_pendingRefreshTried`) antes
+de cair no fallback de "confirma seleção parcial"/"cancela". Se a carta
+revelada só apareceu depois do snapshot inicial, essa 2ª busca já
+deveria pegá-la. Compilado com sucesso (`dotnet build`, 0 erros, só
+warnings pré-existentes não relacionados).
+
+**IMPORTANTE — precisa rebuild/redeploy pra valer**: diferente dos fixes
+Python (só reiniciar `engine_server`), esta é mudança em C# — o usuário
+precisa rodar `BOT/setup_bepinex.bat` (ou equivalente) pra recompilar e
+reinstalar o plugin no jogo antes do próximo teste ao vivo. **Ainda não
+testado em partida real** — é uma hipótese bem fundamentada (código
+decompilado + padrão de log consistente em 3 cartas diferentes), mas não
+confirmada.
+
+**DON em personagem fraco em vez de carta boa — causa raiz achada e
+corrigida (não era sobre DON)**: `_score_play_action` pontuava "jogar
+Charlotte Linlin" (ST34-004, custo 10, 12000 de poder) em só **90.0**,
+MENOR que uma carta de custo 3/3000 de poder (ST18-001, 160.0) no MESMO
+estado da partida real. Causa: texto real da Linlin é "...up to 1 of
+your **opponent's** Characters' base power becomes 0..." — um
+removal/debuff forte no OPONENTE — mas `parse_set_base_power`
+(`gerar_effects_db.py`) classificava o alvo como `own_character` (o
+PRÓPRIO personagem do bot!), porque o regex `up to \d+ of your` casava
+como substring de "up to 1 of your opponent's characters" sem checar de
+quem é o personagem. O motor achava que a carta ZERAVA o próprio lado —
+nunca pontuava bem o suficiente pra competir com jogadas mais baratas.
+Fix: novo branch em `parse_set_base_power`, ANTES do branch genérico,
+detecta "of your opponent's character" no sujeito e mapeia pra
+`target='opp_character'` — já suportado pelo EXECUTOR (mesmo target
+usado por Ain OP07-002), só faltava o parser reconhecer. Varredura
+global confirmou Linlin como ÚNICA carta com essa forma exata hoje
+(`isolated_after_global_scan`). Score de jogar Linlin subiu de 90→150
+no mesmo estado testado. Registro em
+`parser_audits/2026-07-21_set_base_power_opp_character_mal_classificado_como_own.json`.
+`diff_parser.py`: GANHOU=0, PERDEU=0, MUDOU=1. `smoke_fast.py`/
+`smoke_test.py` verdes.
+
 ## 2026-07-21 (295) - Claude - parser: ordem draw/efeito-no-oponente invertida (5 cartas, Mamaragan inclusa) + registro de auditoria global
 
 Continuação direta do bloco 294 (mesma sessão): usuário aprovou implementar

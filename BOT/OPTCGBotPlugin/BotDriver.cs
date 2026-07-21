@@ -527,6 +527,21 @@ namespace OPTCGBotPlugin
         private System.Collections.Generic.List<int>? _pendingOrder;
         private int _pendingAttempt;
         private bool _pendingConfirmTried;
+        // Achado real 21/07 (partida ao vivo, Charlotte Pudding/Katakuri
+        // "peek_opp_deck_top" -- olhar 1 carta do topo do deck do oponente):
+        // CollectTargetCandidates e chamado UMA SO VEZ quando iActionStep
+        // muda (bloco abaixo). Se o jogo ainda nao populou lgo_TopDeck com a
+        // carta revelada do oponente NESSE EXATO instante (efeito/animacao
+        // de revelar rodando 1 frame depois de iActionStep ja avancar), o
+        // snapshot fica sem o alvo real pra sempre -- iActionStep nao muda
+        // de novo so pq a carta apareceu depois, entao nunca refazemos a
+        // lista. Sem isso, o bot cicla por TODOS os candidatos errados
+        // (mao/campo proprio) e nunca acha o alvo certo. Fix: quando os
+        // candidatos da 1a tentativa esgotam, busca a lista de novo UMA
+        // vez antes de confirmar selecao parcial/cancelar -- se a carta
+        // revelada so apareceu depois do snapshot inicial, essa 2a busca
+        // ja teria ela.
+        private bool _pendingRefreshTried;
 
         // Efeito pendente (acaActive) pedindo selecao de alvo. O engine ordena
         // os candidatos; clicamos um por tick — o jogo ignora cliques invalidos,
@@ -549,31 +564,8 @@ namespace OPTCGBotPlugin
                 _pendingAttempt = 0;
                 _pendingOrder = null;
                 _pendingConfirmTried = false;
-
-                if (EngineClient.IsAlive())
-                {
-                    var dto = GameStateBuilder.Build(botPs, oppPs, gls);
-                    var candidates = BotExecutor.CollectTargetCandidates(botPs, oppPs, gls);
-
-                    // Efeito resolvendo DURANTE um ataque (ex: redirect do
-                    // Teach)? Passa o contexto — o engine nunca escolhe o alvo
-                    // original e prefere quem sobrevive ao golpe.
-                    int atkPower = 0, defenderId = 0;
-                    var attacker = BotExecutor.Attacker(gls);
-                    var defender = BotExecutor.Defender(gls);
-                    if (attacker != null && defender != null &&
-                        (gls.e_CurrentState == GameplayState.Attack_WaitOnBlocker ||
-                         gls.e_CurrentState == GameplayState.Attack_BeforeBlocker ||
-                         gls.e_CurrentState == GameplayState.Attack_WaitOnCounters))
-                    {
-                        atkPower   = BotExecutor.PowerOf(gls, attacker, true);
-                        defenderId = BotExecutor.UidOf(defender);
-                    }
-
-                    _pendingOrder = EngineClient.ChooseTarget(
-                        dto, candidates, BotExecutor.ActorCode(gls), atkPower, defenderId,
-                        id => _pendingTargetDecisionId = id);
-                }
+                _pendingRefreshTried = false;
+                FetchPendingCandidates(gls, botPs, oppPs);
             }
 
             // V3 sem alvos faltando (ex: "Choose 0 Targets") → confirma direto
@@ -615,7 +607,23 @@ namespace OPTCGBotPlugin
                 return;
             }
 
-            // Candidatos esgotados: confirma selecao parcial (V3) uma vez...
+            // Candidatos esgotados: busca a lista de novo UMA vez antes de
+            // desistir (ver comentario em _pendingRefreshTried acima -- pega
+            // o caso de a carta revelada so aparecer DEPOIS do snapshot
+            // inicial, ex: peek_opp_deck_top da Pudding/Katakuri).
+            if (!_pendingRefreshTried)
+            {
+                _pendingRefreshTried = true;
+                _pendingAttempt = 0;
+                FetchPendingCandidates(gls, botPs, oppPs);
+                if (_pendingOrder != null && _pendingOrder.Count > 0)
+                {
+                    _cooldown = 0.5f;
+                    return;
+                }
+            }
+
+            // ...confirma selecao parcial (V3) uma vez...
             if (!_pendingConfirmTried && gls.acaActive.UsesV3())
             {
                 _pendingConfirmTried = true;
@@ -629,6 +637,39 @@ namespace OPTCGBotPlugin
             BotExecutor.CancelPendingAction(gls);
             _pendingRef = null;
             _cooldown = 1f;
+        }
+
+        // Busca a lista de candidatos ordenada pelo engine e popula
+        // _pendingOrder/_pendingTargetDecisionId. Extraido de HandlePendingAction
+        // pra ser reusado tanto no snapshot inicial quanto no refresh de
+        // retentativa (ver _pendingRefreshTried).
+        private void FetchPendingCandidates(GameplayLogicScript gls, PlayerState botPs, PlayerState oppPs)
+        {
+            _pendingOrder = null;
+            if (!EngineClient.IsAlive())
+                return;
+
+            var dto = GameStateBuilder.Build(botPs, oppPs, gls);
+            var candidates = BotExecutor.CollectTargetCandidates(botPs, oppPs, gls);
+
+            // Efeito resolvendo DURANTE um ataque (ex: redirect do
+            // Teach)? Passa o contexto — o engine nunca escolhe o alvo
+            // original e prefere quem sobrevive ao golpe.
+            int atkPower = 0, defenderId = 0;
+            var attacker = BotExecutor.Attacker(gls);
+            var defender = BotExecutor.Defender(gls);
+            if (attacker != null && defender != null &&
+                (gls.e_CurrentState == GameplayState.Attack_WaitOnBlocker ||
+                 gls.e_CurrentState == GameplayState.Attack_BeforeBlocker ||
+                 gls.e_CurrentState == GameplayState.Attack_WaitOnCounters))
+            {
+                atkPower   = BotExecutor.PowerOf(gls, attacker, true);
+                defenderId = BotExecutor.UidOf(defender);
+            }
+
+            _pendingOrder = EngineClient.ChooseTarget(
+                dto, candidates, BotExecutor.ActorCode(gls), atkPower, defenderId,
+                id => _pendingTargetDecisionId = id);
         }
 
         // Defesa quando o HUMANO ataca o bot. Durante o blocker/counter step o

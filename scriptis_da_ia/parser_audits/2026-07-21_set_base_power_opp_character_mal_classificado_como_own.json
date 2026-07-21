@@ -1,0 +1,19 @@
+{
+  "trigger_card": "ST34-004",
+  "problem": "Bot deixou Charlotte Linlin (ST34-004, custo 10, 12000 de poder) parada na mao com 9-10 DON disponivel varios turnos seguidos, jogando cartas muito mais fracas em vez dela. Investigando: score de 'jogar Linlin' era so 90.0, MENOR que uma carta de custo 3/3000 de poder (ST18-001, score 160.0) no mesmo estado. Causa raiz: o texto real da carta e '[On Play] DON!! -4, you may trash 1 card from your hand: Add up to 1 card from the top of your deck to the top of your Life cards. Then, up to 1 of your OPPONENT's Characters' base power becomes 0 during this turn' -- um removal/debuff forte no oponente. O parser (parse_set_base_power, gerar_effects_db.py) classificava o alvo como 'own_character' (o PROPRIO personagem do bot), fazendo o motor achar que a carta ZERAVA um personagem do proprio lado -- nunca reconhecida como jogada boa.",
+  "grammar_family": "'up to N of your opponent's Character(s)['|s] base power becomes N' -- o regex existente (`re.search(r'up to \\\\d+ of your', sujeito)`) casava 'up to 1 of your' como SUBSTRING de 'up to 1 of your opponent's characters' sem checar se o dono real e o oponente, caindo sempre no branch own_character.",
+  "queries": [
+    "regex \"opponent'?s?\\\\s+character.{0,20}base power becomes (\\\\d|0)\" contra cards_rows.csv inteiro -- so ST34-004 confirmado (regex mais ampla sem o numero literal tambem capturou EB01-061/OP16-104, mas essas sao o padrao DIFERENTE 'This Character's base power becomes the same as the selected Character's' -- copy-power self-target, ja correto/confirmado como actor_copia_poder, nao afetado por este bug)",
+    "isolated_after_global_scan: ST34-004 e a UNICA carta hoje com essa forma exata (numero literal 'becomes 0/N', nao 'becomes the same as')"
+  ],
+  "cards_found": ["ST34-004"],
+  "resolution_scope": "isolated_after_global_scan",
+  "decision": "parse_set_base_power ganhou um branch NOVO, ANTES do branch generico 'own_character', que detecta \"of your opponent's character\" no sujeito capturado e mapeia pra target='opp_character' -- ja suportado pelo EXECUTOR (decision_engine.py linha ~5545, mesmo target usado por Ain OP07-002), so faltava o parser reconhecer. Fix escrito pela FORMA (qualquer carta futura com 'up to N of your opponent's Character(s)' base power becomes N'), nao hardcoded pro nome da Linlin.",
+  "validated_by": [
+    "diff_parser.py: GANHOU=0, PERDEU=0, MUDOU=1 (so ST34-004, exatamente o esperado)",
+    "gerar_dbs.py rodado com sucesso, sanidade de cartas-chave OK",
+    "smoke_fast.py e smoke_test.py 100% verdes",
+    "score de 'jogar Linlin' (mesmo estado da partida real) subiu de 90.0 para 150.0"
+  ],
+  "notes": "Achado ao investigar a pergunta do usuario 'por que o bot gasta DON em personagem fraco em vez de jogar carta boa que ta na mao' -- a causa raiz NAO era alocacao de DON, era essa carta especifica nunca pontuar bem o suficiente pra competir. Nao descarta que outras cartas da mao tambem estivessem sendo mal avaliadas por motivos diferentes; auditoria cobre so esta forma especifica."
+}

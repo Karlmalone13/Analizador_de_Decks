@@ -3925,6 +3925,23 @@ def parse_set_base_power(text):
             # marca os dois alvos possiveis explicitamente em vez de
             # adivinhar um dos dois; quem consumir decide a prioridade.
             target = 'leader_or_own_character'
+        elif re.search(r"of your opponent'?s? character", sujeito):
+            # "up to N of your OPPONENT's Character(s)' base power becomes
+            # N" -- alvo do ADVERSARIO, nao proprio. Achado real 21/07
+            # (partida ao vivo): Charlotte Linlin ST34-004 ("...up to 1 of
+            # your opponent's Characters' base power becomes 0...", um
+            # DEBUFF/removal forte no oponente) caia no branch 'up to \d+
+            # of your' abaixo -- esse regex casa "up to 1 of your" como
+            # SUBSTRING de "up to 1 of your opponent's characters" sem
+            # checar que o dono real e o oponente, virando target=
+            # 'own_character' (o motor achava que a carta ZERAVA o PROPRIO
+            # personagem, nunca pontuava a jogada e nunca oferecia como
+            # ataque habilitado). Varredura global (cards_rows.csv, mesma
+            # gramatica "opponent's Character(s)['|s] base power becomes
+            # N") confirmou Linlin como UNICA carta afetada hoje --
+            # ramo escrito pela FORMA (qualquer carta futura com esse
+            # padrao), nao hardcoded pro nome dela.
+            target = 'opp_character'
         elif re.search(r'\ball of your\b', sujeito) or re.search(r'up to \d+ of your', sujeito):
             target = 'own_character'
         else:

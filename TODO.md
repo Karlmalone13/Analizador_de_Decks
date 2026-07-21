@@ -2,6 +2,23 @@
 
 **Última atualização:** 21 de julho de 2026
 
+> 21/07/2026 (blocos HANDOFF 296/297): as 3 investigações pedidas pelo
+> usuário fecharam com achados reais:
+> 1. **Líder sem efeito (Pudding/Katakuri/Mamaragan)**: hipótese forte —
+>    `CollectTargetCandidates` só roda 1x quando `iActionStep` muda; se a
+>    carta revelada do topo do deck do oponente aparece 1+ frames DEPOIS,
+>    o snapshot fica sem o alvo real pra sempre. Fix em `BotDriver.cs`:
+>    busca a lista de novo 1x antes de desistir. Compilado OK, **precisa
+>    rebuild/redeploy do plugin (`setup_bepinex.bat`) + partida real pra
+>    confirmar** — não é fix Python, restart do server não basta.
+> 2. **DON em personagem fraco**: não era sobre DON — Charlotte Linlin
+>    (ST34-004) tinha o ALVO do próprio efeito parseado errado
+>    (`own_character` em vez de `opp_character`), fazendo o motor achar
+>    que ela sabotava o PRÓPRIO lado. Fix de parser isolado (1 carta),
+>    score subiu 90→150. Registrado em `parser_audits/`.
+> 3. **Mamaragan ordem de step**: fix aplicado (bloco 295), 5 cartas
+>    corrigidas globalmente.
+
 > 21/07/2026 (bloco HANDOFF 294): 4a partida ao vivo pos-fixes 289-293.
 > Achado novo: bônus de "+300 alvo é ameaça crítica" em
 > `_generate_and_score_actions` tinha o MESMO bug do fix 289 (aplicado

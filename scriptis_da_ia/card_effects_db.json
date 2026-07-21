@@ -79094,7 +79094,7 @@
           {
             "action": "set_base_power",
             "amount": 0,
-            "target": "own_character",
+            "target": "opp_character",
             "count": 1,
             "duration": "this_turn"
           },

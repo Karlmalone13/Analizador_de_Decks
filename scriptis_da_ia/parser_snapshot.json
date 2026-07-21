@@ -50145,7 +50145,7 @@
      "amount": 0,
      "count": 1,
      "duration": "this_turn",
-     "target": "own_character"
+     "target": "opp_character"
     },
     {
      "action": "gain_life",

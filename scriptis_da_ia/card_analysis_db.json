@@ -115649,7 +115649,7 @@
    {
     "action": "set_base_power",
     "trigger": "on_play",
-    "target": "own_character"
+    "target": "opp_character"
    },
    {
     "action": "gain_life",
