@@ -1133,10 +1133,39 @@ def resolve_optional_effect(gs: GameState, opp_gs: GameState,
                     (getattr(c, 'counter', 0) for c in conhecidas),
                     reverse=True)
                 n_ocultas = max(0, len(opp_gs.hand) - len(conhecidas))
+                # Densidade REAL de counter da decklist do oponente quando
+                # conhecida (mesma premissa/lookup do OpponentModel e do
+                # full_deck_census: deck_cards_for_leader). Liquida das
+                # copias VISIVEIS fora de mao/deck (trash/board/stage) e das
+                # ja conhecidas na mao -- essas nao estao mais no pool
+                # sorteavel. Sem decklist (lider desconhecido): None e o
+                # estimate cai na densidade tipica de formato.
+                deck1000 = deck2000 = None
+                _deck_opp = deck_cards_for_leader(opp_gs.leader.code) \
+                    if opp_gs.leader is not None else None
+                if _deck_opp:
+                    deck1000 = sum(1 for c in _deck_opp
+                                   if getattr(c, 'counter', 0) == 1000)
+                    deck2000 = sum(1 for c in _deck_opp
+                                   if getattr(c, 'counter', 0) >= 2000)
+                    visiveis = (list(opp_gs.trash) + list(opp_gs.field_chars)
+                                + ([opp_gs.field_stage]
+                                   if opp_gs.field_stage else [])
+                                + conhecidas)
+                    for c in visiveis:
+                        cv = getattr(c, 'counter', 0)
+                        if cv == 1000 and deck1000 > 0:
+                            deck1000 -= 1
+                        elif cv >= 2000 and deck2000 > 0:
+                            deck2000 -= 1
                 est = estimate_opp_counter(
                     n_ocultas,
-                    counters_seen_used=getattr(opp_gs, 'counters_used', 0),
-                    cards_seen_total=len(opp_gs.trash))
+                    counters_seen_used=(0 if _deck_opp else
+                                        getattr(opp_gs, 'counters_used', 0)),
+                    cards_seen_total=(len(opp_gs.trash)
+                                      + len(opp_gs.field_chars)),
+                    deck_counter_1000=deck1000,
+                    deck_counter_2000=deck2000)
                 counter_provavel = max(
                     est['expected_counter_value'],
                     counters_conhecidos[0] if counters_conhecidos else 0)

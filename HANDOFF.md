@@ -1,5 +1,25 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-22 (307) - Claude (sessao remota web) - estimativa de counter usa a DECKLIST REAL do oponente
+
+Fecha o limite declarado no bloco 306 (usuario concordou): em vez da
+densidade tipica de formato (12x1000+4x2000), `estimate_opp_counter`
+aceita `deck_counter_1000/2000` reais. O guard do buff deriva do MESMO
+lookup ja usado pelo OpponentModel/full_deck_census
+(`deck_cards_for_leader(opp_gs.leader.code)`), liquidando as copias
+VISIVEIS fora de mao/deck (trash/board/stage/reveladas). Sem decklist
+(lider desconhecido) cai na densidade tipica como antes.
+
+Efeito pratico validado em teste: 5000vs5000 contra deck SEM counter ->
+recusa (a densidade tipica pagava); contra deck 2000-pesado -> paga
+(defesa provavel 7000, +1000 cruza). counters_seen_used zerado quando a
+decklist real e usada (as copias ja saem pelo desconto de zona visivel --
+evita descontar 2x). smoke_fast verde.
+
+Nota: `max_plausible_defense` (teto fisico mao+DON) segue generico
+(2000/carta) -- superestima o teto contra deck sem counter, mas o teto so
+e usado pra RECUSAR (alvo insalvavel), entao o erro e conservador.
+
 ## 2026-07-22 (306) - Claude (sessao remota web) - guard de buff no ATAQUE vira estatistico (counter_estimation + reveladas)
 
 2o adendo do usuario sobre o guard (bloco 305): no ataque, em vez de
