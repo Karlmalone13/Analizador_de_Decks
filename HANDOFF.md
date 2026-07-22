@@ -1,5 +1,52 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-22 (301) - Claude (sessao remota web) - mao/vida do oponente OCULTAS ao vivo + persistencia de reveals (MatchMemory)
+
+Continuacao dos blocos 299/300. Decisao do usuario (22/07): **o bot joga
+como humano vs humano** -- nao pode saber as cartas da mao do oponente,
+so as reveladas durante o jogo.
+
+**Achado que motivou:** ao vivo o bot jogava com "raio-X". O plugin manda a
+mao E a vida REAIS do oponente no DTO (GameStateBuilder monta BuildPlayer
+pros 2 lados com code real; o cliente tem o estado inteiro em memoria) e o
+engine USAVA (opp_counter_available soma counters reais de opp.hand; eval_v2
+via counter_in_hand). O proprio codigo ja admitia num comentario ("se no
+futuro a mao for oculta de verdade... voltar a estimativa").
+
+**Fix (engine_server, nada de C# ainda):**
+- `BOT/engine_server/match_memory.py` (NOVO): MatchMemory -- uids
+  (`deckUniqueId`, estavel a partida toda) revelados por zona (opp_hand/
+  opp_life/own_life/opp_deck). Reset no /mulligan (partida nova).
+- `server.py::_dto_to_gs(hide_hidden=True)` -- usado pro OPONENTE nos 3
+  endpoints (/defense, /choose_target, /decide): mao e vida viram
+  placeholders UNKNOWN-000 (contagem + deckUniqueId preservados -- o uid e
+  a "costas da carta", necessario pra clicar como alvo), EXCETO uids na
+  MatchMemory, que entram com identidade real E marcados em
+  revealed_to_opponent/revealed_life (alimenta OpponentModel/known_*_cards
+  = a persistencia ao vivo da MEMORIA_REVEALS.md, pendencia 1).
+- Endpoint novo `POST /reveal` {zone, uids}: plugin reporta o que o jogo
+  mostrou ao bot; grava na MatchMemory + telemetria (write_event "reveal").
+
+**Efeito colateral esperado (intencional):** counters/blockers da mao do
+oponente deixam de ser visiveis -- caminhos que liam a mao real agora veem
+UNKNOWN (counter 0). O jogo fica honesto; a estimativa probabilistica
+(OpponentModel/counter_estimation por hand_size) e o caminho certo daqui
+pra frente. Pode mudar winrate ao vivo -- MEDIR nas proximas partidas.
+
+**PENDENTE (desktop):**
+1. Plugin C#: chamar POST /reveal quando o jogo mostra carta ao bot
+   (ConfirmRevealedCard, reveal de mao do Arlong, peek de vida/deck). Sem
+   isso a MatchMemory fica vazia (mascara funciona, memoria nao acumula).
+2. Vida PROPRIA do bot ainda vai com code real no DTO (tambem e info
+   oculta no jogo real) -- mascarar exige revisar decisoes de trigger que
+   leem gs.life; deixado explicitamente pra depois.
+3. Recompilar plugin (`setup_bepinex`) p/ commits 3957440 (zonas DON/mao) e
+   testar ao vivo tudo junto.
+
+**Validado aqui:** testes unitarios do _dto_to_gs (mascara com contagem/uid
+preservados, re-injecao so do revelado, reset por partida, lado do bot
+inalterado) + smoke_fast verde.
+
 ## 2026-07-21 (300) - Claude (sessao remota web) - memoria de cartas reveladas (vida/deck/search)
 
 Continuacao do bloco 299 (mesma sessao). Pedido do usuario: quando o bot

@@ -134,6 +134,12 @@ _match  = None   # OPTCGMatch: maquinaria de regras usada por choose_action
 _declined_optional: set[tuple[str, int]] = set()
 _live_match_id = new_decision_id()
 
+# Memoria de reveals DA PARTIDA (persistencia entre /decide -- ver
+# match_memory.py e MEMORIA_REVEALS.md). Populada pelo /reveal, resetada no
+# /mulligan, consumida por _dto_to_gs(hide_hidden=True).
+from match_memory import MatchMemory
+_match_memory = MatchMemory()
+
 
 def _get_bridge():
     global _bridge
@@ -212,8 +218,34 @@ def _make(dto: CardDto):
         return None
 
 
-def _dto_to_gs(player: PlayerDto, turn: int):
-    """Converte PlayerDto em GameState do engine."""
+def _hidden_placeholder(dto: CardDto):
+    """Carta UNKNOWN no lugar de informacao oculta (mao/vida do oponente).
+
+    Mantem a CONTAGEM e o deckUniqueId (o uid e publico -- e a "costas da
+    carta" que o bot ve e pode precisar clicar como alvo), mas nenhuma
+    identidade: codigo/custo/poder/counter neutros. Igual ao padrao ja usado
+    pro deck oculto (UNKNOWN-000 placeholders)."""
+    from optcg_engine.decision_engine import _make_card
+    data = {"name": "?", "type": "CHARACTER", "cost": 1, "power": 0,
+            "text": "", "color": "", "sub_types": "", "life": 0,
+            "has_trigger": False}
+    card = _make_card("UNKNOWN-000", data)
+    card._deck_uid = dto.deckUniqueId
+    return card
+
+
+def _dto_to_gs(player: PlayerDto, turn: int, hide_hidden: bool = False):
+    """Converte PlayerDto em GameState do engine.
+
+    hide_hidden=True (usado pro OPONENTE): mao e vida viram placeholders
+    UNKNOWN -- o DTO traz as cartas reais (o cliente tem o estado inteiro em
+    memoria), mas o bot deve jogar como humano vs humano (regra do usuario,
+    21/07) e NAO pode ler informacao oculta. Excecao: uids registrados na
+    MatchMemory (revelados durante a partida via /reveal) entram com a
+    identidade real E marcados como conhecidos (revealed_to_opponent/
+    revealed_life), alimentando o OpponentModel e o lethal conservador
+    (opp_counter_chunks_for_lethal). E a persistencia ao vivo da memoria de
+    reveals (MEMORIA_REVEALS.md, pendencia 1)."""
     from optcg_engine.decision_engine import GameState, _make_card
     bridge = _get_bridge()
     cards_db = getattr(bridge, '_cards_db', {})
@@ -228,10 +260,32 @@ def _dto_to_gs(player: PlayerDto, turn: int):
         leader = _make_card("STUB-000", data)
 
     gs = GameState(leader=leader)
-    gs.hand          = [c for c in (_make(d) for d in player.hand) if c]
+    if hide_hidden:
+        # Mao oculta: identidade so das reveladas (MatchMemory), resto UNKNOWN
+        gs.hand = []
+        for d in player.hand:
+            if _match_memory.is_known("opp_hand", d.deckUniqueId):
+                card = _make(d) or _hidden_placeholder(d)
+                if card.code != "UNKNOWN-000":
+                    gs.revealed_to_opponent.add(id(card))
+            else:
+                card = _hidden_placeholder(d)
+            gs.hand.append(card)
+        # Vida oculta: mesma regra
+        gs.life = []
+        for d in player.life:
+            if _match_memory.is_known("opp_life", d.deckUniqueId):
+                card = _make(d) or _hidden_placeholder(d)
+                if card.code != "UNKNOWN-000":
+                    gs.revealed_life.add(id(card))
+            else:
+                card = _hidden_placeholder(d)
+            gs.life.append(card)
+    else:
+        gs.hand = [c for c in (_make(d) for d in player.hand) if c]
+        gs.life = [c for c in (_make(d) for d in player.life) if c]
     gs.field_chars   = [c for c in (_make(d) for d in player.board) if c]
     gs.field_stage   = _make(player.stage) if player.stage else None
-    gs.life          = [c for c in (_make(d) for d in player.life) if c]
     gs.don_available = player.activeDon
     gs.don_rested    = player.restedDon
     # Lixeira REAL (plugin novo, 12/07): informacao publica do jogo. Sem ela
@@ -301,6 +355,25 @@ def _dto_to_gs(player: PlayerDto, turn: int):
 
 
 # ── Endpoints ─────────────────────────────────────────────────────────────────
+
+class RevealRequest(BaseModel):
+    zone: str            # opp_hand | opp_life | own_life | opp_deck
+    uids: list[int] = [] # deckUniqueId das cartas que o jogo MOSTROU ao bot
+
+
+@app.post("/reveal")
+def reveal(req: RevealRequest):
+    """Plugin reporta cartas cuja identidade o jogo revelou ao bot (Arlong
+    revela mao, peek de vida/deck, ConfirmRevealedCard etc.). Fica na
+    MatchMemory ate o fim da partida; _dto_to_gs re-injeta a identidade
+    real dessas cartas nos /decide seguintes (persistencia da memoria de
+    reveals -- ver match_memory.py). Chamada C# no plugin: pendente."""
+    novos = _match_memory.note(req.zone, req.uids)
+    write_event("reveal", new_decision_id(), match_id=_live_match_id,
+                zone=req.zone, uids=req.uids, novos=novos,
+                memory=_match_memory.snapshot())
+    return {"ok": True, "novos": novos, "memory": _match_memory.snapshot()}
+
 
 class MulliganRequest(BaseModel):
     hand: list[CardDto] = []
@@ -473,6 +546,7 @@ def mulligan(req: MulliganRequest):
         # excluida no turno N de TODAS as partidas seguintes do mesmo
         # processo (o set e chaveado por (codigo, turno), sem nocao de jogo).
         _declined_optional.clear()
+        _match_memory.reset()  # reveals sao por partida
         match = _get_match()
         hand_cards = [c for c in (_make(d) for d in req.hand) if c]
         if not hand_cards:
@@ -502,7 +576,7 @@ def defense(req: DefenseRequest):
         from optcg_engine.decision_engine import DecisionEngine
         bridge = _get_bridge()
         gs     = _dto_to_gs(req.state.bot, req.state.turnNumber)
-        opp_gs = _dto_to_gs(req.state.opp, req.state.turnNumber)
+        opp_gs = _dto_to_gs(req.state.opp, req.state.turnNumber, hide_hidden=True)
 
         out = {"blockerId": 0, "counterIds": [], "useTrigger": False, "useReaction": False}
         decision_trace = {}
@@ -585,7 +659,7 @@ def choose_target(req: ChooseTargetRequest):
     try:
         bridge = _get_bridge()
         gs     = _dto_to_gs(req.state.bot, req.state.turnNumber)
-        opp_gs = _dto_to_gs(req.state.opp, req.state.turnNumber)
+        opp_gs = _dto_to_gs(req.state.opp, req.state.turnNumber, hide_hidden=True)
 
         # Cronometro proprio (nao so o `started` do endpoint inteiro):
         # achado real 20/07 (partida ao vivo) -- 2 chamadas de /choose_target
@@ -699,7 +773,7 @@ def decide(state: GameStateDto):
         bridge = _get_bridge()
         match  = _get_match()
         gs     = _dto_to_gs(state.bot, state.turnNumber)
-        opp_gs = _dto_to_gs(state.opp, state.turnNumber)
+        opp_gs = _dto_to_gs(state.opp, state.turnNumber, hide_hidden=True)
 
         # So tipos que o plugin sabe executar — os demais sao pulados pelo
         # bridge em vez de encerrar o turno. exclude_activate_codes: ativacoes
