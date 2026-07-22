@@ -1,5 +1,15 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-22 (303) - Claude (sessao remota web) - JOGAR.bat: preparo de 1 clique pro teste ao vivo
+
+`JOGAR.bat` (raiz do repo): duplo-clique com o jogo FECHADO -> git pull da
+branch de teste (claude/execute-remote-control-3qzqgm) -> recompila plugin
+(setup_bepinex.ps1) -> mata server antigo (so a janela "OPTCG Engine
+Server" aberta por ele mesmo) -> sobe server novo -> imprime a watch-list
+dos blocos 299-302. Depois e so abrir o OPTCGSim e jogar. Pre-flight na
+nuvem verde (smoke_fast OK, server.py importa limpo); a compilacao C# so
+acontece no desktop via o proprio script.
+
 ## 2026-07-22 (302) - Claude (sessao remota web) - plugin C# chama POST /reveal (fecha pendencia 1 do bloco 301)
 
 Fecha o ciclo da MatchMemory: sem isso a mascara do bloco 301 funcionava
