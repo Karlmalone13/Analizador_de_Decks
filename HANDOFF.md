@@ -1,5 +1,31 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-22 (302) - Claude (sessao remota web) - plugin C# chama POST /reveal (fecha pendencia 1 do bloco 301)
+
+Fecha o ciclo da MatchMemory: sem isso a mascara do bloco 301 funcionava
+mas a memoria nunca acumulava (bot ficava so no "nao sei nada").
+
+- `EngineClient.ReportReveal(zone, uids)` -- POST /reveal best-effort
+  (mesmo padrao do ReportClientTimeout; falha de rede nao trava o clique).
+- `BotExecutor.ReportRevealedCards(gls, botPs, oppPs)` -- le o lgo_TopDeck
+  (onde o jogo poe a carta mostrada) e classifica a zona pelo LUGAR onde o
+  uid vive agora: mao do oponente (Arlong) / vida do oponente / propria
+  vida (Katakuri, OP15-119); quem nao e nada do bot = peek de deck inimigo
+  (Pudding). Propria mao e proprio deck NAO sao reportados (bot ja ve a
+  mao; own_deck nao e rastreado -- gs.deck ao vivo e placeholder).
+- `BotDriver`: no estado ConfirmRevealedCard/ConfirmRevealedCardOnOpponentsTurn,
+  chama ReportRevealedCards ANTES do clique de confirmacao (o clique
+  esvazia a zona de reveal).
+
+**NAO COMPILADO** (sem dotnet na nuvem) -- `setup_bepinex` no desktop
+compila junto com os commits 3957440/d0850b3. Validar ao vivo: linha
+`[EngineClient] reveal` no LogOutput + evento "reveal" no decision log +
+memoria acumulando no /collection_status... (snapshot no retorno do /reveal).
+INCERTEZA declarada: a classificacao por membership assume que a carta
+revelada ainda consta na lista da zona de origem enquanto exibida no
+lgo_TopDeck -- se o jogo a MOVER (em vez de copiar referencia), tudo cai no
+fallback opp_deck; conferir na 1a partida real e ajustar se preciso.
+
 ## 2026-07-22 (301) - Claude (sessao remota web) - mao/vida do oponente OCULTAS ao vivo + persistencia de reveals (MatchMemory)
 
 Continuacao dos blocos 299/300. Decisao do usuario (22/07): **o bot joga

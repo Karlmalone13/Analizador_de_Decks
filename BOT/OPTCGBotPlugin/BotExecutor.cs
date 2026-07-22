@@ -249,6 +249,48 @@ namespace OPTCGBotPlugin
         private static List<GameObject>? TopDeck(GameplayLogicScript gls)
             => _fTopDeck.GetValue(gls) as List<GameObject>;
 
+        // Reporta ao engine_server (POST /reveal) as cartas cuja identidade o
+        // jogo acabou de mostrar ao bot -- chamado pelo BotDriver no estado
+        // ConfirmRevealedCard, ANTES do clique de confirmacao (depois do
+        // clique a zona de reveal esvazia). A zona e classificada pelo LUGAR
+        // onde o uid vive AGORA: mao do oponente (Arlong), vida do oponente,
+        // propria vida (Katakuri/OP15-119); quem esta so no lgo_TopDeck e
+        // peek de deck do OPONENTE (peek_opp_deck_top da Pudding) -- reveals
+        // do PROPRIO deck (search) nao sao reportados: a MatchMemory nao
+        // rastreia own_deck (o gs.deck ao vivo e placeholder de contagem, nao
+        // ha onde re-injetar identidade; ver match_memory.py). Cartas da
+        // PROPRIA mao tambem nao (o bot ja ve a propria mao). Best-effort e
+        // idempotente (o server deduplica por set de uids).
+        public static void ReportRevealedCards(GameplayLogicScript gls,
+                                               PlayerState botPs, PlayerState oppPs)
+        {
+            var porZona = new Dictionary<string, List<int>>();
+            void Nota(string zona, int uid)
+            {
+                if (!porZona.TryGetValue(zona, out var l))
+                    porZona[zona] = l = new List<int>();
+                l.Add(uid);
+            }
+            foreach (var go in TopDeck(gls) ?? new List<GameObject>())
+            {
+                var cls = go != null ? go.GetComponent<CardLogicScript>() : null;
+                if (cls == null) continue;
+                int uid = cls.myCard.deckUniqueID;
+                if (FindCard(botPs.Lgo_MyHand, uid) != null)
+                    continue;  // propria mao: bot ja ve
+                if (FindCard(oppPs.Lgo_MyHand, uid) != null)
+                    Nota("opp_hand", uid);
+                else if (FindCard(oppPs.Lgo_MyLifeDeck, uid) != null)
+                    Nota("opp_life", uid);
+                else if (FindCard(botPs.Lgo_MyLifeDeck, uid) != null)
+                    Nota("own_life", uid);
+                else if (FindCard(botPs.Lgo_MyDeck, uid) == null)
+                    Nota("opp_deck", uid);  // nao e nada do bot: peek de deck inimigo
+            }
+            foreach (var kv in porZona)
+                EngineClient.ReportReveal(kv.Key, kv.Value);
+        }
+
         // Todos os alvos clicaveis possiveis, com zona e codigo (o jogo valida
         // cada clique; o codigo permite ao engine valorar cartas fora do DTO,
         // como trash e top deck)

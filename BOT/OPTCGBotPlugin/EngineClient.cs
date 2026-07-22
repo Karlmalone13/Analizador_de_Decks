@@ -61,6 +61,27 @@ namespace OPTCGBotPlugin
             }
         }
 
+        // Reporta cartas cuja identidade o jogo acabou de MOSTRAR ao bot
+        // (ConfirmRevealedCard: Arlong revela mao, peek de vida/deck, etc.).
+        // O server guarda na MatchMemory da partida e re-injeta a identidade
+        // nos /decide seguintes (persistencia da memoria de reveals -- ver
+        // engine_server/match_memory.py e HANDOFF bloco 301). Best-effort:
+        // falha de rede nao pode travar o clique de confirmacao.
+        public static void ReportReveal(string zone, System.Collections.Generic.List<int> uids)
+        {
+            if (uids == null || uids.Count == 0) return;
+            try
+            {
+                string json = JsonConvert.SerializeObject(new { zone, uids });
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+                _http.PostAsync($"{BASE}/reveal", content).GetAwaiter().GetResult();
+            }
+            catch (Exception ex)
+            {
+                Plugin.Log.LogWarning($"[EngineClient] reveal: {ex.Message}");
+            }
+        }
+
         // Reporta o ciclo de execucao sem tomar nenhuma decisao no plugin.
         // status: sent | confirmed | failed. O decisionId veio de /decide.
         public static void ReportExecution(BotAction action, string status,
