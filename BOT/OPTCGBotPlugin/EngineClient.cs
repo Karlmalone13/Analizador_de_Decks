@@ -115,12 +115,16 @@ namespace OPTCGBotPlugin
             ReportExecution(new BotAction { decisionId = decisionId }, status, stateAfter, error);
         }
 
+        // botSeat: "p1"/"p2" -- em qual ASSENTO do jogo o bot estava
+        // (p1 = label [You] do combat log, p2 = [Opponent]). Sem isso o
+        // server assumia bot=p1 sempre e invertia o winner do index quando
+        // o bot controlava o outro lado (achado real 22/07, Kid x Katakuri).
         public static void ReportOutcome(string result, GameStateDto? stateFinal,
-                                         string? reason = null)
+                                         string? reason = null, string botSeat = "p1")
         {
             try
             {
-                string json = JsonConvert.SerializeObject(new { result, stateFinal, reason });
+                string json = JsonConvert.SerializeObject(new { result, stateFinal, reason, botSeat });
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
                 _http.PostAsync($"{BASE}/outcome", content).GetAwaiter().GetResult();
             }

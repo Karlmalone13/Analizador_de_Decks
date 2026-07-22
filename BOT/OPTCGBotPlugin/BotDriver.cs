@@ -111,7 +111,8 @@ namespace OPTCGBotPlugin
                 var finalDto = GameStateBuilder.Build(
                     gls.Lps_Players[BotPlayerIndex], gls.Lps_Players[1 - BotPlayerIndex], gls);
                 EngineClient.ReportOutcome(botWon ? "win" : "loss", finalDto,
-                                           $"GameOver; bot=P{BotPlayerIndex + 1}");
+                                           $"GameOver; bot=P{BotPlayerIndex + 1}",
+                                           BotPlayerIndex == 0 ? "p1" : "p2");
                 _collectionMessage = "Salvando log no banco...";
                 _collectionState = "running";
                 return;

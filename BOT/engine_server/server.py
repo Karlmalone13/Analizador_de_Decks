@@ -442,6 +442,10 @@ class OutcomeReport(BaseModel):
     result: str
     stateFinal: Optional[GameStateDto] = None
     reason: Optional[str] = None
+    # Assento do bot no jogo: "p1" (label [You] do combat log) ou "p2"
+    # ([Opponent]). Default p1 = plugin antigo. Sem isso o winner do index
+    # saia invertido quando o bot controlava o outro lado (achado 22/07).
+    botSeat: str = "p1"
 
 
 @app.post("/execution")
@@ -495,7 +499,7 @@ def outcome(report: OutcomeReport):
         raise HTTPException(status_code=400, detail="resultado invalido")
     write_event("outcome", "match", match_id=_live_match_id, result=report.result,
                 state_final=_model_dict(report.stateFinal) if report.stateFinal else None,
-                reason=report.reason)
+                reason=report.reason, bot_seat=report.botSeat)
     if os.environ.get("BOT_AUTO_COLLECT", "1") != "0":
         _collection_status.update(status="running", message="salvando log no banco",
                                   report=None, receipt=None)
@@ -503,7 +507,8 @@ def outcome(report: OutcomeReport):
             try:
                 from collect_latest_match import collect_latest
                 receipt = collect_latest(DECISION_LOG_PATH, match_id=_live_match_id,
-                                          result=report.result)
+                                          result=report.result,
+                                          bot_seat=report.botSeat)
                 _collection_status.update(
                     status="success", message="log capturado e salvo no banco",
                     report=receipt.get("report"), receipt=receipt.get("receipt"))

@@ -77,25 +77,33 @@ def _validate_bank_entry(combat_log: Path, index: list, db_root: Path = DB_ROOT)
     return entry, canonical_stem
 
 
-def _apply_winner(index: list, entry_id: str, result: str) -> None:
+def _apply_winner(index: list, entry_id: str, result: str,
+                  bot_seat: str = "p1") -> None:
     """Preenche o 'winner' do index a partir do resultado da telemetria.
 
     O combat log baixado pelo jogo e cortado antes das linhas finais
     (Downloaded the Combat Log!/GameOver) -- parse_combat_log.py nao tem
-    como saber quem venceu so pelo texto. `p1` e sempre "You" (o bot) e
-    `p2` sempre "Opponent" (RE_LEADER), entao o resultado do /outcome
-    (da perspectiva do bot) mapeia direto pra qual lado do index venceu.
+    como saber quem venceu so pelo texto. O resultado do /outcome e da
+    perspectiva do BOT; `bot_seat` diz em qual assento do log o bot estava
+    ("p1" = label [You], "p2" = [Opponent]). A versao anterior assumia
+    bot=p1 SEMPRE e invertia o vencedor quando o bot controlava o outro
+    lado (achado real 22/07: Kid x Katakuri, bot=Katakuri=[Opponent]
+    perdeu 6-0 e o index registrou winner=p2).
     """
     if result not in {"win", "loss"}:
         return
+    if bot_seat not in {"p1", "p2"}:
+        bot_seat = "p1"
+    opp_seat = "p2" if bot_seat == "p1" else "p1"
     for item in index:
         if item.get("id") == entry_id:
-            item["winner"] = "p1" if result == "win" else "p2"
+            item["winner"] = bot_seat if result == "win" else opp_seat
             return
 
 
 def collect_latest(decision_log: Path, autosaved_dir: Path = DEFAULT_AUTOSAVED,
-                   match_id: str = "", result: str = "") -> dict:
+                   match_id: str = "", result: str = "",
+                   bot_seat: str = "p1") -> dict:
     combat_log = _latest_log(autosaved_dir)
     _wait_stable(combat_log)
     if not decision_log.exists():
@@ -120,7 +128,7 @@ def collect_latest(decision_log: Path, autosaved_dir: Path = DEFAULT_AUTOSAVED,
     index = json.loads(DB_INDEX.read_text(encoding="utf-8")) if DB_INDEX.exists() else []
     bank_entry, canonical_stem = _validate_bank_entry(combat_log, index)
     if result:
-        _apply_winner(index, bank_entry["id"], result)
+        _apply_winner(index, bank_entry["id"], result, bot_seat=bot_seat)
         DB_INDEX.write_text(json.dumps(index, ensure_ascii=False, indent=2), encoding="utf-8")
         bank_entry = next(item for item in index if item.get("id") == bank_entry["id"])
     reported = subprocess.run(report_cmd, cwd=ROOT, text=True, capture_output=True)

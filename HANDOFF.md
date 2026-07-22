@@ -1,5 +1,47 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-22 (304) - Claude (sessao remota web) - analise da partida Kid x Katakuri + 2 fixes (buff inutil / winner por assento)
+
+Partida de teste da leva 299-303 analisada (`Eustass.Captain.Kid-Y_x_
+Charlotte.Katakuri-P_2026-07-22T15.25.14`, bot=Katakuri=[Opponent],
+usuario=Kid=[You], derrota do bot 6-0, Kid tomou ZERO dano). Confirmacoes
+boas: Mamaragan (DON!! -N) COMPLETOU, lider ativou, auto-coleta OK.
+Problemas confirmados no log e 2 corrigidos:
+
+**FIX 1 (engine) — bot pagava DON por buff de batalha que nao vira o
+combate.** 2 das 6 ativacoes do lider foram na defesa contra Law 9000:
+5000->6000, matematicamente inutil, 1 DON fora + morreu. Causa:
+`resolve_reaction` delega nao-redirects pra `resolve_optional_effect`,
+que nao recebia contexto de combate — a viabilidade ampla passa (peek
+"produz efeito") e pagava sempre. Fix generico em `sim_bridge.py`:
+`resolve_optional_effect` ganha attacker_power/defender_power/
+actor_defending (derivado do defender_uid em resolve_reaction; a carta
+pode ter when_attacking E on_opp_attack identicos — o TRIG nao serve de
+discriminador) e um guard: efeito que so tem buff-de-batalha+peek so paga
+se o buff VIRA o combate (regua do motor unico buff_wins_combat; janela
+indeterminada = conservador, recusa so se nao vira em nenhuma leitura).
+Testes unitarios 4 quadrantes + smoke_fast verdes.
+
+**FIX 2 (plugin+server+collect) — winner invertido quando o bot nao e o
+assento [You].** O index registrou winner=p2 (Katakuri) numa partida que o
+bot (Katakuri) PERDEU 6-0. `_apply_winner` assumia bot=p1=[You] sempre;
+nesta partida o bot controlava o assento 2 ([Opponent] — prova: linha
+`[Opponent] Downloaded the Combat Log!` e o proprio bot baixando o log).
+Fix: `ReportOutcome` (C#) envia botSeat=p1/p2 (BotPlayerIndex), /outcome
+repassa, `_apply_winner(bot_seat=...)` mapeia certo. Entrada do index
+corrigida manualmente pra p1. ATENCAO pendente: outras metricas por lado
+(don_por_atk etc. em parse/report) tambem assumem bot=[You] — nao
+corrigidas nesta sessao, conferir antes de confiar nelas em partidas de
+assento trocado.
+
+**NAO corrigido (tuning, validar com self-play antes):** custo de
+oportunidade de DON no early (3 deploys na partida inteira; Mamaragan -2 +
+lider -1 nos turnos 3-5 comeram os deploys); sequenciamento de counters
+dentro do turno (gastou Tamago no ataque do Killer e deixou o Kid 6000 vs
+5000 passar limpo em seguida).
+
+**C# NAO compilado aqui** — `JOGAR.bat` no desktop recompila tudo.
+
 ## 2026-07-22 (303) - Claude (sessao remota web) - JOGAR.bat: preparo de 1 clique pro teste ao vivo
 
 `JOGAR.bat` (raiz do repo): duplo-clique com o jogo FECHADO -> git pull da

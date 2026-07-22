@@ -842,7 +842,18 @@ def resolve_reaction(gs: GameState, opp_gs: GameState,
             for block in get_card_effects(actor_code).values()
             for s in block.get('steps', []))
         if not is_redirect:
-            return resolve_optional_effect(gs, opp_gs, actor_code=actor_code)
+            # O bot esta DEFENDENDO este combate? (defensor e uma carta do
+            # proprio gs). None = janela indeterminada (sem defender_uid) --
+            # o guard de buff em resolve_optional_effect fica conservador.
+            defendendo = None
+            if defender_uid:
+                uids_bot = {getattr(c, '_deck_uid', None)
+                            for c in [gs.leader] + list(gs.field_chars)}
+                defendendo = defender_uid in uids_bot
+            return resolve_optional_effect(gs, opp_gs, actor_code=actor_code,
+                                           attacker_power=atk_power,
+                                           defender_power=def_power,
+                                           actor_defending=defendendo)
 
     engine = DecisionEngine(gs, opp_gs)
     my_life = gs.life_count()
@@ -974,7 +985,10 @@ def resolve_reaction(gs: GameState, opp_gs: GameState,
 
 
 def resolve_optional_effect(gs: GameState, opp_gs: GameState,
-                            actor_code: str | None = None) -> bool:
+                            actor_code: str | None = None,
+                            attacker_power: int = 0,
+                            defender_power: int = 0,
+                            actor_defending: bool | None = None) -> bool:
     """
     Efeito opcional com custo no PROPRIO turno (downside pos-play, ex:
     "you may trash 1 card: ..."). SEM heuristica propria -- delega pra
@@ -1042,6 +1056,58 @@ def resolve_optional_effect(gs: GameState, opp_gs: GameState,
         steps = ef.get('steps', [])
         if steps and not any(ee._step_is_viable(s, card_obj) for s in steps):
             return False
+        # Guard de VALOR pra buff de batalha com custo (generico, qualquer
+        # carta com o padrao "custo: +N power neste combate", ex: lider
+        # Katakuri OP11-062 don_minus->+1000). Achado real 22/07 (partida
+        # Kid x Katakuri, derrota 6-0 do bot): a viabilidade ampla acima
+        # passa sempre (o peek/steps "produzem efeito"), e o bot pagou 1
+        # DON pra subir 5000->6000 contra ataque de 9000 -- buff que nao
+        # muda o resultado do combate e DON jogado fora (2 das 6 ativacoes
+        # do lider na partida). Regra do motor unico (buff_wins_combat,
+        # empate vai pro atacante): so paga se o buff VIRA o combate.
+        # when_attacking -> o ator e o ATACANTE (vira se atk passava a
+        # ganhar); on_opp_attack -> o ator e o DEFENSOR. So se aplica com
+        # contexto de combate real (attacker_power>0, vindo da janela de
+        # reacao) E quando o bloco nao tem outro step material alem do
+        # buff/peek -- efeito com K.O./draw/etc continua na regua ampla.
+        if attacker_power > 0 and trig in ('when_attacking', 'on_opp_attack'):
+            buffs = [s for s in steps
+                     if s.get('action') == 'buff_power'
+                     and s.get('target') in ('self', 'leader')
+                     and s.get('duration') in ('battle_only', 'this_battle')]
+            so_buff_e_info = buffs and all(
+                s.get('action') in ('buff_power', 'peek_opp_deck_top',
+                                    'look_top_deck')
+                for s in steps)
+            if so_buff_e_info:
+                amount = max(s.get('amount', 0) for s in buffs)
+                # A JANELA real (bot atacando ou defendendo) vem de
+                # actor_defending -- o TRIG nao serve de discriminador
+                # quando a carta tem os dois blocos (Katakuri tem
+                # when_attacking E on_opp_attack identicos, e o loop acha
+                # o primeiro sempre).
+                # ator ataca: empate favorece o atacante -> vira se perdia
+                # (atk < def) e passa a ganhar (atk+N >= def)
+                vira_atacando = (attacker_power < defender_power
+                                 <= attacker_power + amount)
+                # ator defende: so sobrevive ESTRITAMENTE acima (regra do
+                # motor unico, buff_wins_combat)
+                vira_defendendo = DecisionEngine(gs, opp_gs).buff_wins_combat(
+                    defender_power, attacker_power, defender_power + amount)
+                if actor_defending is True:
+                    vira = vira_defendendo
+                elif actor_defending is False:
+                    vira = vira_atacando
+                else:
+                    # Janela indeterminada: conservador -- so recusa se o
+                    # buff nao vira em NENHUMA das duas leituras.
+                    vira = vira_atacando or vira_defendendo
+                if not vira:
+                    print(f'[OPT] buff de batalha nao vira o combate '
+                          f'(atk={attacker_power} def={defender_power} '
+                          f'+{amount}, defending={actor_defending}) '
+                          f'-> False', flush=True)
+                    return False
         return ee._worth_paying_optional_costs(custos, card_obj)
 
     return False
