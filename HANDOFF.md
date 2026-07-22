@@ -1,5 +1,27 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-22 (305) - Claude (sessao remota web) - adendo do usuario no guard de buff: conta considera as CARTAS NA MAO
+
+Refina o FIX 1 do bloco 304 (pedido explicito do usuario). O guard cru
+("so paga se o +N vira o poder do combate") errava nos dois lados:
+
+- **DEFESA**: o buff pode HABILITAR ou BARATEAR o counter da propria mao.
+  Caso real que o guard anterior recusava: 7000 vs lider 5000 com counter
+  2000 na mao -- counter sozinho = 7000 EMPATA (atacante leva); com o
+  buff, 6000+2000=8000 sobrevive. Regra nova: paga se o menor numero de
+  counters da MAO REAL pra sobreviver diminui com o buff (0 = buff sozinho
+  salva; None = morto ate com a mao toda -> recusa).
+- **ATAQUE**: buff "taxa" a mao do oponente. Perdendo -> paga so se vira
+  (igual antes). Ganhando -> paga se o +N aumenta os CHUNKS de counter
+  (granularidade 2000) que o dono do defensor precisa gastar E ele tem
+  cartas na mao (mao mascarada, mas a CONTAGEM e real). Ex: 6000 vs lider
+  5000 -> +1000 dobra o counter necessario (1->2 chunks) = paga; 6000 vs
+  corpo 2000 -> 3->3 chunks = recusa.
+
+9 casos de teste unitario + smoke_fast verdes. So engine (sim_bridge),
+nada de C# -- mas a partida de validacao precisa do JOGAR.bat de novo
+(pega os fixes 304 tambem, que TEM C#).
+
 ## 2026-07-22 (304) - Claude (sessao remota web) - analise da partida Kid x Katakuri + 2 fixes (buff inutil / winner por assento)
 
 Partida de teste da leva 299-303 analisada (`Eustass.Captain.Kid-Y_x_

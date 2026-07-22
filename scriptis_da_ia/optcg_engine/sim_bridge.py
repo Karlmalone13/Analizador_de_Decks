@@ -1085,27 +1085,65 @@ def resolve_optional_effect(gs: GameState, opp_gs: GameState,
                 # actor_defending -- o TRIG nao serve de discriminador
                 # quando a carta tem os dois blocos (Katakuri tem
                 # when_attacking E on_opp_attack identicos, e o loop acha
-                # o primeiro sempre).
-                # ator ataca: empate favorece o atacante -> vira se perdia
-                # (atk < def) e passa a ganhar (atk+N >= def)
-                vira_atacando = (attacker_power < defender_power
-                                 <= attacker_power + amount)
-                # ator defende: so sobrevive ESTRITAMENTE acima (regra do
-                # motor unico, buff_wins_combat)
-                vira_defendendo = DecisionEngine(gs, opp_gs).buff_wins_combat(
-                    defender_power, attacker_power, defender_power + amount)
+                # o primeiro sempre). Adendo do usuario (22/07): a conta
+                # tem que considerar as CARTAS NA MAO, nao so o poder cru.
+                #
+                # DEFESA: o buff vale se HABILITA sobreviver ou REDUZ o
+                # numero de counters da propria mao necessarios (empate vai
+                # pro atacante -- ex real: 7000 vs 5000, counter 2000
+                # sozinho = 7000 EMPATA e perde; buff+counter = 8000 vive.
+                # O guard anterior recusava esse caso).
+                def _counters_pra_sobreviver(poder_def: int) -> int | None:
+                    """Menor n de cartas de counter da MAO REAL pra
+                    poder_def + soma > attacker_power; 0 = ja sobrevive;
+                    None = impossivel mesmo com a mao toda."""
+                    if poder_def > attacker_power:
+                        return 0
+                    vals = sorted((getattr(c, 'counter', 0) for c in gs.hand
+                                   if getattr(c, 'counter', 0) > 0),
+                                  reverse=True)
+                    total, n = poder_def, 0
+                    for v in vals:
+                        total += v
+                        n += 1
+                        if total > attacker_power:
+                            return n
+                    return None
+                n_sem = _counters_pra_sobreviver(defender_power)
+                n_com = _counters_pra_sobreviver(defender_power + amount)
+                vira_defendendo = (n_com is not None
+                                   and (n_sem is None or n_com < n_sem))
+
+                # ATAQUE: perdendo -> paga so se vira (empate favorece o
+                # atacante). Ganhando -> paga se o +N aumenta os CHUNKS de
+                # counter (granularidade 2000, o padrao do formato) que o
+                # DONO do defensor precisa gastar pra salvar -- "taxar" a
+                # mao dele -- e ele tem cartas na mao pra reagir (a mao
+                # oculta chega mascarada, mas a CONTAGEM e real).
+                def _chunks_2000(atk: int) -> int:
+                    return max(0, (atk - defender_power) // 2000 + 1) \
+                        if atk >= defender_power else 0
+                if attacker_power < defender_power:
+                    vira_atacando = (defender_power
+                                     <= attacker_power + amount)
+                else:
+                    vira_atacando = (len(opp_gs.hand) > 0
+                                     and _chunks_2000(attacker_power + amount)
+                                     > _chunks_2000(attacker_power))
+
                 if actor_defending is True:
                     vira = vira_defendendo
                 elif actor_defending is False:
                     vira = vira_atacando
                 else:
                     # Janela indeterminada: conservador -- so recusa se o
-                    # buff nao vira em NENHUMA das duas leituras.
+                    # buff nao vale em NENHUMA das duas leituras.
                     vira = vira_atacando or vira_defendendo
                 if not vira:
-                    print(f'[OPT] buff de batalha nao vira o combate '
+                    print(f'[OPT] buff de batalha nao compensa '
                           f'(atk={attacker_power} def={defender_power} '
-                          f'+{amount}, defending={actor_defending}) '
+                          f'+{amount}, defending={actor_defending}, '
+                          f'counters sem/com buff={n_sem}/{n_com}) '
                           f'-> False', flush=True)
                     return False
         return ee._worth_paying_optional_costs(custos, card_obj)
