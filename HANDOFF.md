@@ -1,5 +1,47 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-22 (308) - Claude -> Codex - RETOMADA: estado da branch e pendencias
+
+**ATENCAO CODEX: todo o trabalho de 21-22/07 esta na branch
+`claude/execute-remote-control-3qzqgm` (10 commits alem da main, de
+3957440 a este). A main esta PARADA em 4ddda19 (21/07). NAO comece da
+main sem puxar/mergear a branch -- decisao de merge e do usuario.**
+
+Resumo da leva (blocos 299-307, detalhes em cada bloco):
+- Zonas de alvo do bot: DON restado+ativo (restado 1o), DON do oponente,
+  mao do oponente as cegas (`BotExecutor.cs`/`sim_bridge.py`).
+- Memoria de reveals (engine: revealed_life/revealed_deck + OpponentModel)
+  e persistencia ao vivo (MatchMemory + POST /reveal, server+plugin).
+- Jogo honesto: mao/vida do OPONENTE mascaradas ao vivo (UNKNOWN-000,
+  contagem+uid preservados), exceto reveladas via MatchMemory.
+- `JOGAR.bat` (raiz): 1 clique = pull branch + recompila plugin + reinicia
+  server + watch-list.
+- Partida real analisada (Kid x Katakuri, bot perdeu 6-0) -> fixes:
+  winner por assento do bot (botSeat no /outcome; index corrigido) e guard
+  de valor pro buff de batalha com custo (Katakuri -1 DON +1000): defesa
+  usa counters REAIS da propria mao (habilita/barateia), ataque usa
+  decklist REAL do oponente + reveladas + hipergeometrica + teto fisico
+  (counter_estimation, motor unico).
+
+**PENDENTE (em ordem):**
+1. Partida ao vivo validando a leva TODA (rodar JOGAR.bat -- recompila os
+   commits C# 3957440/bae86b6/1d97706; conferir linhas [OPT] e [EngineClient]
+   reveal; conferir winner correto no index e MatchMemory acumulando).
+2. Metricas por lado alem do winner (don_por_atk etc. em parse_combat_log/
+   bot_efficiency_report) ainda assumem bot=[You] -- corrigir usando o
+   botSeat (bloco 304).
+3. Vida PROPRIA do bot ainda vai com code real no DTO (info oculta no jogo
+   real) -- mascarar exige revisar decisoes de trigger (bloco 301).
+4. Tuning (validar com self-play/tune_weights antes de ligar): custo de
+   oportunidade de DON no early (3 deploys/partida), sequenciamento de
+   counters dentro do turno (bloco 304).
+5. Parser: 213 suspeitos do audit_parser_coverage, NENHUM em deck salvo;
+   lote 1 triado ("filtro de custo perdido": OP04-118, OP03-096, OP12-096,
+   OP09-051, OP03-070, OP16-092) aguardando aprovacao do usuario (bloco 268).
+
+Validacao desta sessao: testes unitarios em cada fix + smoke_fast SEMPRE
+verde. C# NAO compilado na nuvem (sem dotnet) -- JOGAR.bat compila.
+
 ## 2026-07-22 (307) - Claude (sessao remota web) - estimativa de counter usa a DECKLIST REAL do oponente
 
 Fecha o limite declarado no bloco 306 (usuario concordou): em vez da
