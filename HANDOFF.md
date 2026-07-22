@@ -1,5 +1,27 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-22 (306) - Claude (sessao remota web) - guard de buff no ATAQUE vira estatistico (counter_estimation + reveladas)
+
+2o adendo do usuario sobre o guard (bloco 305): no ataque, em vez de
+"contagem da mao + chunk 2000" cru, usar o que da pra saber/estimar da mao
+oculta. Implementado com o MOTOR UNICO ja existente (counter_estimation.py
++ MatchMemory), nada de regua nova:
+
+1. Cartas REVELADAS da mao dele (known_hand_cards, re-injetadas ao vivo
+   pela MatchMemory) entram com valor EXATO;
+2. Slots ocultos: estimate_opp_counter (hipergeometrica: tamanho da mao +
+   counters ja gastos + trash visto) -> defesa PROVAVEL;
+3. max_plausible_defense (mao + DON ativo pra eventos de counter -- ex do
+   usuario: 3 cartas e 1 DON = 1 evento + 2 impressos) -> teto real: se
+   nem com tudo ele salva o alvo, +N e redundante, recusa.
+
+Ordem de decisao no ataque: perdendo -> paga so se +N vira o cru; mao
+vazia OU alvo insalvavel mesmo com a mao toda -> recusa; +N cruza a
+defesa PROVAVEL -> paga; senao paga se aumenta os chunks de counter
+necessarios (taxa). Defesa continua a do bloco 305 (counters reais da
+propria mao). 6 casos novos de teste (incl. exemplo do usuario 3cartas+
+1DON e carta revelada) + smoke_fast verdes.
+
 ## 2026-07-22 (305) - Claude (sessao remota web) - adendo do usuario no guard de buff: conta considera as CARTAS NA MAO
 
 Refina o FIX 1 do bloco 304 (pedido explicito do usuario). O guard cru

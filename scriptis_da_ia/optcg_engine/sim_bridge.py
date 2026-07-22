@@ -1114,21 +1114,59 @@ def resolve_optional_effect(gs: GameState, opp_gs: GameState,
                 vira_defendendo = (n_com is not None
                                    and (n_sem is None or n_com < n_sem))
 
-                # ATAQUE: perdendo -> paga so se vira (empate favorece o
-                # atacante). Ganhando -> paga se o +N aumenta os CHUNKS de
-                # counter (granularidade 2000, o padrao do formato) que o
-                # DONO do defensor precisa gastar pra salvar -- "taxar" a
-                # mao dele -- e ele tem cartas na mao pra reagir (a mao
-                # oculta chega mascarada, mas a CONTAGEM e real).
+                # ATAQUE (adendo do usuario, 22/07): a mao do oponente e
+                # oculta, mas o guard usa TRES fontes em ordem de certeza,
+                # todas do motor unico (counter_estimation + MatchMemory):
+                #  1. cartas REVELADAS da mao dele (known_hand_cards, re-
+                #     injetadas pela MatchMemory ao vivo) -> valor exato;
+                #  2. estatistica hipergeometrica (estimate_opp_counter:
+                #     tamanho da mao + counters ja gastos + trash visto)
+                #     -> defesa PROVAVEL;
+                #  3. teto real (max_plausible_defense: mao + DON ativo pra
+                #     eventos de counter, ex: 3 cartas e 1 DON = 1 evento +
+                #     2 impressos) -> se nem com tudo ele salva o alvo, o
+                #     buff nao taxa nada.
+                from optcg_engine.counter_estimation import (
+                    estimate_opp_counter, max_plausible_defense)
+                conhecidas = opp_gs.known_hand_cards()
+                counters_conhecidos = sorted(
+                    (getattr(c, 'counter', 0) for c in conhecidas),
+                    reverse=True)
+                n_ocultas = max(0, len(opp_gs.hand) - len(conhecidas))
+                est = estimate_opp_counter(
+                    n_ocultas,
+                    counters_seen_used=getattr(opp_gs, 'counters_used', 0),
+                    cards_seen_total=len(opp_gs.trash))
+                counter_provavel = max(
+                    est['expected_counter_value'],
+                    counters_conhecidos[0] if counters_conhecidos else 0)
+                defesa_provavel = defender_power + counter_provavel
+                defesa_maxima = (max_plausible_defense(
+                    defender_power, n_ocultas, opp_gs.don_available)
+                    ['max_defense'] + sum(counters_conhecidos))
+
                 def _chunks_2000(atk: int) -> int:
                     return max(0, (atk - defender_power) // 2000 + 1) \
                         if atk >= defender_power else 0
                 if attacker_power < defender_power:
+                    # perdendo: paga so se o +N vira o poder cru (empate
+                    # favorece o atacante)
                     vira_atacando = (defender_power
                                      <= attacker_power + amount)
+                elif not opp_gs.hand:
+                    vira_atacando = False   # nada pra counterar
+                elif defesa_maxima <= attacker_power:
+                    # nem com a mao toda + eventos ele salva: +N redundante
+                    vira_atacando = False
+                elif (attacker_power < defesa_provavel
+                        <= attacker_power + amount):
+                    # o buff cruza a defesa PROVAVEL (estatistica): passa a
+                    # ganhar tambem no cenario esperado, nao so no cru
+                    vira_atacando = True
                 else:
-                    vira_atacando = (len(opp_gs.hand) > 0
-                                     and _chunks_2000(attacker_power + amount)
+                    # taxa de counter: +N aumenta os chunks (2000) que ele
+                    # precisa gastar pra salvar um alvo salvavel
+                    vira_atacando = (_chunks_2000(attacker_power + amount)
                                      > _chunks_2000(attacker_power))
 
                 if actor_defending is True:
