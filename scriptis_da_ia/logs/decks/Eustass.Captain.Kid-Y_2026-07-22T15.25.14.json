@@ -1,0 +1,41 @@
+{
+  "cards": [
+    {
+      "code": "OP10-119",
+      "name": "Trafalgar Law",
+      "count": 2
+    },
+    {
+      "code": "ST36-002",
+      "name": "Killer",
+      "count": 2
+    },
+    {
+      "code": "ST36-003",
+      "name": "ST36-003",
+      "count": 1
+    },
+    {
+      "code": "P-088",
+      "name": "P-088",
+      "count": 1
+    },
+    {
+      "code": "OP12-117",
+      "name": "OP12-117",
+      "count": 1
+    },
+    {
+      "code": "OP10-111",
+      "name": "Monkey D. Luffy",
+      "count": 1
+    },
+    {
+      "code": "OP10-112",
+      "name": "OP10-112",
+      "count": 1
+    }
+  ],
+  "total_seen": 9,
+  "leader": "OP10-099"
+}
