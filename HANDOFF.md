@@ -1,5 +1,31 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-22 (317) - Codex - partida Katakuri x Ace: melhora real e gap C# do DON anexado
+
+Partida `Charlotte.Katakuri-P_x_Portgas.D.Ace-RB_2026-07-22T23.55.21`,
+bot=P1/You/Katakuri, salva automaticamente em raw/parsed/decks/index. Relatorio
+`metrics/live_runs/live_2026-07-22T23.55.24.json`, decision log `23.41.13`,
+commit executado `26c50fb`.
+
+Comparacao com Katakuri x Smoker (bloco 314): ataques do bot na vida subiram
+2/8 -> 6/9 e dano 1 -> 2; portanto nao confirma "quase so Character" no total.
+Mas confirma vies local: Yamato 6000, sem valor recorrente depois do On Play,
+entrou em `critical_threats()` apenas pelo poder e recebeu bonus fixo +300;
+ataques ao Character marcaram 390 contra 15-20 na vida. Rever ameaca pelo valor
+futuro/remocao liquida, nao por limiar bruto de 6000.
+
+Sinais de melhora: turno de curva jogou Cracker antes da Pudding, nao gastou
+Divine Departure/Mamaragan, regret contrafactual caiu 8,812 -> 0 e execucao
+permaneceu 100%. Houve 1 ataque planejado abaixo do alvo: Leader 5000 contra
+Ace 7000, sem DON; ainda e erro estrategico. P95 subiu 53,843 -> 120,218 ms,
+maximo caiu 1374,797 -> 1045,444 ms; adversarios diferentes, nao causal.
+
+DON anexado: causa isolada. Em cinco `/choose_target` do turno final, o motor
+ordenou os 8 `own_don_attached_used` antes do DON ativo. Mesmo assim eles nao
+sumiram; o DON ativo caiu 2 -> 1 -> 0. A decisao Python esta correta, mas o
+clique C# em DON anexado e no-op/nao seleciona a carta. Proximo fix deve auditar
+o caminho de clique/objeto de DON anexado no `BotExecutor`, sem mudar o motor.
+
 ## 2026-07-22 (316) - Codex - telemetria causal da decisao e dos recursos
 
 Instrumentacao adicionada sem alterar ranking, busca ou execucao das acoes:

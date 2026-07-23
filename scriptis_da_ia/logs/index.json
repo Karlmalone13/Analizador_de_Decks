@@ -2118,5 +2118,30 @@
       "You": "decks/Charlotte.Katakuri-P_2026-07-22T23.07.07_p2.json",
       "Opponent": "decks/Smoker-B_2026-07-22T23.07.07_p2.json"
     }
+  },
+  {
+    "id": "2026-07-22T23.55.21",
+    "friendly_name": "Charlotte.Katakuri-P_x_Portgas.D.Ace-RB",
+    "date": "2026-07-22",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP11-062",
+      "leader_name": "Charlotte Katakuri",
+      "slug": "Charlotte.Katakuri-P"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP13-002",
+      "leader_name": "Portgas D. Ace",
+      "slug": "Portgas.D.Ace-RB"
+    },
+    "turns": 11,
+    "winner": "p2",
+    "log_file": "raw/Charlotte.Katakuri-P_x_Portgas.D.Ace-RB_2026-07-22T23.55.21.log",
+    "parsed_file": "parsed/Charlotte.Katakuri-P_x_Portgas.D.Ace-RB_2026-07-22T23.55.21.json",
+    "deck_files": {
+      "You": "decks/Charlotte.Katakuri-P_2026-07-22T23.55.21.json",
+      "Opponent": "decks/Portgas.D.Ace-RB_2026-07-22T23.55.21.json"
+    }
   }
 ]

@@ -1,0 +1,938 @@
+{
+  "meta": {
+    "players": {
+      "p1": {
+        "name": "You",
+        "leader": {
+          "name": "Charlotte Katakuri",
+          "code": "OP11-062"
+        }
+      },
+      "p2": {
+        "name": "Opponent",
+        "leader": {
+          "name": "Portgas D. Ace",
+          "code": "OP13-002"
+        }
+      }
+    },
+    "goes_first": null
+  },
+  "total_turns": 11,
+  "turns": [
+    {
+      "turn": 1,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 1,
+      "actions": [
+        {
+          "type": "play",
+          "card": "ST34-003",
+          "card_name": "Charlotte Brulee",
+          "effects": [
+            "<b>Reveal and Draw Charlotte Pudding [\"OP11-070\">OP11-070]</b>"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP15-078",
+            "ST34-005",
+            "ST34-002",
+            "ST18-001",
+            "OP11-070"
+          ],
+          "board": [
+            "ST34-003"
+          ],
+          "trash": [],
+          "life": 5
+        },
+        "Opponent": {
+          "hand": [
+            "PRB02-008",
+            "OP13-054",
+            "ST15-004",
+            "OP13-016",
+            "OP09-118"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 2,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "ST22-002",
+          "card_name": "Izou",
+          "effects": [
+            "<b>Reveal and Draw Edward Newgate [\"OP13-042\">OP13-042]</b>"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP13-016",
+          "card_name": "Monkey D. Garp",
+          "effects": [
+            "<b>Reveal and Draw Marco [\"PRB02-008\">PRB02-008]</b>"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "PRB02-008",
+            "OP13-054",
+            "ST15-004",
+            "OP09-118",
+            "OP13-042",
+            "PRB02-008"
+          ],
+          "board": [
+            "ST22-002",
+            "OP13-016"
+          ],
+          "trash": [],
+          "life": 3
+        },
+        "You": {
+          "hand": [
+            "OP15-078",
+            "ST34-005",
+            "ST34-002",
+            "ST18-001",
+            "OP11-070"
+          ],
+          "trash": [],
+          "board": [
+            "ST34-003"
+          ],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 3,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP15-078",
+            "ST34-005",
+            "ST34-002",
+            "ST18-001",
+            "OP11-070",
+            "OP11-067"
+          ],
+          "board": [
+            "ST34-003"
+          ],
+          "trash": [],
+          "life": 5
+        },
+        "Opponent": {
+          "hand": [
+            "PRB02-008",
+            "OP13-054",
+            "ST15-004",
+            "OP09-118",
+            "OP13-042",
+            "PRB02-008"
+          ],
+          "trash": [],
+          "board": [
+            "ST22-002",
+            "OP13-016"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 4,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "PRB02-008",
+          "card_name": "Marco",
+          "effects": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Portgas D. Ace",
+          "attacker_code": "OP13-002",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "PRB02-008",
+            "OP13-054",
+            "ST15-004",
+            "OP09-118",
+            "OP13-042",
+            "OP13-042"
+          ],
+          "board": [
+            "ST22-002",
+            "OP13-016",
+            "PRB02-008"
+          ],
+          "trash": [],
+          "life": 3
+        },
+        "You": {
+          "hand": [
+            "OP15-078",
+            "ST34-005",
+            "ST34-002",
+            "ST18-001",
+            "OP11-070",
+            "OP11-067",
+            "OP11-070"
+          ],
+          "trash": [],
+          "board": [
+            "ST34-003"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 5,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "ST34-002",
+          "card_name": "Charlotte Cracker",
+          "effects": [
+            "Destroy Monkey D. Garp [\"OP13-016\">OP13-016]"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP11-070",
+          "card_name": "Charlotte Pudding",
+          "effects": [
+            "<b>Reveal and Draw Charlotte Linlin [\"ST34-004\">ST34-004]</b>"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Katakuri",
+          "attacker_code": "OP11-062",
+          "target": "Portgas D. Ace [\"OP13-002\">OP13-002]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP11-062",
+          "card_name": "Charlotte Katakuri",
+          "effects": [
+            "Minus 1 Don",
+            "<b>Looked at opponent's top deck</b>",
+            "<b>Finished looking at opponent's top deck</b>",
+            "Buff Charlotte Katakuri [\"OP11-062\">OP11-062] 1000 for the Combat"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP15-078",
+            "ST34-005",
+            "ST18-001",
+            "OP11-067",
+            "OP11-070",
+            "OP08-069",
+            "ST34-004"
+          ],
+          "board": [
+            "ST34-003",
+            "ST34-002",
+            "OP11-070"
+          ],
+          "trash": [],
+          "life": 4
+        },
+        "Opponent": {
+          "hand": [
+            "PRB02-008",
+            "OP13-054",
+            "ST15-004",
+            "OP09-118",
+            "OP13-042",
+            "OP13-042",
+            "ST23-001"
+          ],
+          "trash": [
+            "OP13-016"
+          ],
+          "board": [
+            "ST22-002",
+            "PRB02-008"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 6,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP13-054",
+          "card_name": "Yamato",
+          "effects": [
+            "Draw 2 Card",
+            "Attach 1 Rested Don to Portgas D. Ace [\"OP13-002\">OP13-002]"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "PRB02-008",
+            "ST15-004",
+            "OP09-118",
+            "OP13-042",
+            "OP13-042",
+            "ST23-001",
+            "ST22-015",
+            "OP13-016",
+            "ST23-001"
+          ],
+          "board": [
+            "ST22-002",
+            "PRB02-008",
+            "OP13-054"
+          ],
+          "trash": [
+            "OP13-016"
+          ],
+          "life": 2
+        },
+        "You": {
+          "hand": [
+            "OP15-078",
+            "ST34-005",
+            "ST18-001",
+            "OP11-067",
+            "OP11-070",
+            "OP08-069",
+            "ST34-004"
+          ],
+          "trash": [],
+          "board": [
+            "ST34-003",
+            "ST34-002",
+            "OP11-070"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 7,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "PRB02-010",
+          "card_name": "Charlotte Pudding",
+          "effects": [
+            "Minus 2 Don",
+            "Draw 2 Card",
+            "Deploy Charlotte Katakuri [\"OP11-067\">OP11-067]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Katakuri",
+          "attacker_code": "OP11-062",
+          "target": "Portgas D. Ace [\"OP13-002\">OP13-002]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP11-062",
+          "card_name": "Charlotte Katakuri",
+          "effects": [
+            "Minus 1 Don",
+            "<b>Looked at opponent's top deck</b>",
+            "<b>Finished looking at opponent's top deck</b>",
+            "Buff Charlotte Katakuri [\"OP11-062\">OP11-062] 1000 for the Combat"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP15-078",
+            "ST34-005",
+            "ST18-001",
+            "OP11-070",
+            "OP08-069",
+            "ST34-004",
+            "OP08-069",
+            "OP07-077"
+          ],
+          "board": [
+            "ST34-003",
+            "ST34-002",
+            "OP11-070",
+            "PRB02-010",
+            "OP11-067"
+          ],
+          "trash": [],
+          "life": 4
+        },
+        "Opponent": {
+          "hand": [
+            "ST15-004",
+            "OP09-118",
+            "OP13-042",
+            "OP13-042",
+            "ST23-001",
+            "ST22-015",
+            "ST23-001",
+            "ST22-015",
+            "OP13-043",
+            "ST22-015"
+          ],
+          "trash": [
+            "OP13-016",
+            "OP13-016",
+            "ST22-002"
+          ],
+          "board": [
+            "PRB02-008",
+            "OP13-054"
+          ],
+          "life": 1
+        }
+      }
+    },
+    {
+      "turn": 8,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "activate",
+          "card": "ST22-015",
+          "card_name": "I Am Whitebeard!",
+          "effects": [
+            "Rest 8 Don",
+            "Deploy Edward Newgate [\"OP13-042\">OP13-042]",
+            "Takes Top Life",
+            "Grant Portgas D. Ace [\"OP13-002\">OP13-002] 2000 until opponent's next turn end"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP13-042",
+          "card_name": "Edward Newgate",
+          "effects": [
+            "Draw 2 Card",
+            "Trash Izou [\"ST22-002\">ST22-002]",
+            "Attach 1 Rested Don to Portgas D. Ace [\"OP13-002\">OP13-002]",
+            "Attach 1 Rested Don to Portgas D. Ace [\"OP13-002\">OP13-002]",
+            "Attach 1 Rested Don to Yamato [\"OP13-054\">OP13-054]",
+            "Attach 1 Rested Don to Yamato [\"OP13-054\">OP13-054]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Yamato",
+          "attacker_code": "OP13-054",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": "OP11-067",
+          "countered_by": [
+            "OP11-070"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Portgas D. Ace",
+          "attacker_code": "OP13-002",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "ST15-004",
+            "OP09-118",
+            "OP13-042",
+            "ST23-001",
+            "ST22-015",
+            "ST23-001",
+            "ST22-015",
+            "OP13-043",
+            "OP08-044",
+            "ST23-001",
+            "OP13-054"
+          ],
+          "board": [
+            "PRB02-008",
+            "OP13-054",
+            "OP13-042"
+          ],
+          "trash": [
+            "OP13-016",
+            "OP13-016",
+            "ST22-002",
+            "ST22-015",
+            "ST22-002"
+          ],
+          "life": 0
+        },
+        "You": {
+          "hand": [
+            "OP15-078",
+            "ST34-005",
+            "ST18-001",
+            "OP08-069",
+            "ST34-004",
+            "OP08-069",
+            "OP07-077",
+            "PRB02-010"
+          ],
+          "trash": [
+            "OP11-070"
+          ],
+          "board": [
+            "ST34-003",
+            "ST34-002",
+            "OP11-070",
+            "PRB02-010",
+            "OP11-067"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 9,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Charlotte Katakuri",
+          "attacker_code": "OP11-067",
+          "target": "Portgas D. Ace [\"OP13-002\">OP13-002]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 4,
+          "to": "ST34-003",
+          "to_name": "Charlotte Brulee",
+          "total": 4
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Brulee",
+          "attacker_code": "ST34-003",
+          "target": "Yamato [\"OP13-054\">OP13-054]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "ST23-001"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "ST34-005",
+          "card_name": "Baron Tamago & Pekoms",
+          "effects": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Katakuri",
+          "attacker_code": "OP11-062",
+          "target": "Portgas D. Ace [\"OP13-002\">OP13-002]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP15-078",
+            "ST18-001",
+            "OP08-069",
+            "ST34-004",
+            "OP08-069",
+            "OP07-077",
+            "PRB02-010",
+            "PRB02-010"
+          ],
+          "board": [
+            "ST34-002",
+            "OP11-070",
+            "PRB02-010",
+            "OP11-067",
+            "ST34-005"
+          ],
+          "trash": [
+            "OP11-070",
+            "ST34-003"
+          ],
+          "life": 3
+        },
+        "Opponent": {
+          "hand": [
+            "ST15-004",
+            "OP09-118",
+            "OP13-042",
+            "ST23-001",
+            "ST22-015",
+            "ST23-001",
+            "ST22-015",
+            "OP13-043",
+            "OP08-044"
+          ],
+          "trash": [
+            "OP13-016",
+            "OP13-016",
+            "ST22-002",
+            "ST22-015",
+            "ST22-002",
+            "OP13-054",
+            "ST23-001"
+          ],
+          "board": [
+            "PRB02-008",
+            "OP13-054",
+            "OP13-042"
+          ],
+          "life": 0
+        }
+      }
+    },
+    {
+      "turn": 10,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "EB04-007",
+          "card_name": "Roronoa Zoro",
+          "effects": [
+            "Grant Portgas D. Ace [\"OP13-002\">OP13-002] 2000 until opponent's next turn end",
+            "Give Roronoa Zoro [\"EB04-007\">EB04-007] Character Rush"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Roronoa Zoro",
+          "attacker_code": "EB04-007",
+          "target": "Charlotte Katakuri [\"OP11-067\">OP11-067]",
+          "result": null,
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP13-054",
+          "to_name": "Yamato",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Yamato",
+          "attacker_code": "OP13-054",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP13-002",
+          "to_name": "Portgas D. Ace",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Portgas D. Ace",
+          "attacker_code": "OP13-002",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "ST15-004",
+            "OP09-118",
+            "OP13-042",
+            "ST23-001",
+            "ST22-015",
+            "ST23-001",
+            "ST22-015",
+            "OP13-043",
+            "OP08-044"
+          ],
+          "board": [
+            "PRB02-008",
+            "OP13-054",
+            "OP13-042",
+            "EB04-007"
+          ],
+          "trash": [
+            "OP13-016",
+            "OP13-016",
+            "ST22-002",
+            "ST22-015",
+            "ST22-002",
+            "OP13-054",
+            "ST23-001"
+          ],
+          "life": 0
+        },
+        "You": {
+          "hand": [
+            "OP15-078",
+            "ST18-001",
+            "OP08-069",
+            "ST34-004",
+            "OP08-069",
+            "OP07-077",
+            "PRB02-010",
+            "PRB02-010",
+            "ST34-001",
+            "ST18-001"
+          ],
+          "trash": [
+            "OP11-070",
+            "ST34-003",
+            "OP11-067"
+          ],
+          "board": [
+            "ST34-002",
+            "OP11-070",
+            "PRB02-010",
+            "ST34-005"
+          ],
+          "life": 1
+        }
+      }
+    },
+    {
+      "turn": 11,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 3,
+          "to": "ST34-002",
+          "to_name": "Charlotte Cracker",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Cracker",
+          "attacker_code": "ST34-002",
+          "target": "Portgas D. Ace [\"OP13-002\">OP13-002]",
+          "result": null,
+          "damage": null,
+          "blocked_by": "PRB02-008",
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 3,
+          "to": "PRB02-010",
+          "to_name": "Charlotte Pudding",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Pudding",
+          "attacker_code": "PRB02-010",
+          "target": "Portgas D. Ace [\"OP13-002\">OP13-002]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 2,
+          "to": "ST34-005",
+          "to_name": "Baron Tamago & Pekoms",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Baron Tamago & Pekoms",
+          "attacker_code": "ST34-005",
+          "target": "Yamato [\"OP13-054\">OP13-054]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP13-043"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "ST34-005",
+          "card_name": "Baron Tamago & Pekoms",
+          "effects": [
+            "Minus 1 Don",
+            "Destroy Charlotte Pudding [\"OP11-070\">OP11-070]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Katakuri",
+          "attacker_code": "OP11-062",
+          "target": "Yamato [\"OP13-054\">OP13-054]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "ST15-004"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP11-062",
+          "card_name": "Charlotte Katakuri",
+          "effects": [
+            "Minus 1 Don",
+            "<b>Looked at opponent's top deck</b>",
+            "<b>Finished looking at opponent's top deck</b>",
+            "Buff Charlotte Katakuri [\"OP11-062\">OP11-062] 1000 for the Combat"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP15-078",
+            "ST18-001",
+            "OP08-069",
+            "ST34-004",
+            "OP08-069",
+            "OP07-077",
+            "PRB02-010",
+            "PRB02-010",
+            "ST34-001",
+            "ST18-001",
+            "ST34-002"
+          ],
+          "board": [
+            "ST34-002",
+            "PRB02-010",
+            "ST34-005"
+          ],
+          "trash": [
+            "OP11-070",
+            "ST34-003",
+            "OP11-067",
+            "OP11-070"
+          ],
+          "life": 1
+        },
+        "Opponent": {
+          "hand": [
+            "ST15-004",
+            "OP09-118",
+            "OP13-042",
+            "ST23-001",
+            "ST22-015",
+            "ST23-001",
+            "ST22-015",
+            "OP13-043",
+            "OP08-044"
+          ],
+          "trash": [
+            "OP13-016",
+            "OP13-016",
+            "ST22-002",
+            "ST22-015",
+            "ST22-002",
+            "OP13-054",
+            "ST23-001",
+            "PRB02-008",
+            "OP09-118",
+            "OP13-043",
+            "ST15-004"
+          ],
+          "board": [
+            "OP13-054",
+            "OP13-042",
+            "EB04-007"
+          ],
+          "life": 0
+        }
+      }
+    }
+  ]
+}
