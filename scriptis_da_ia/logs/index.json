@@ -2018,5 +2018,30 @@
       "You": "decks/Eustass.Captain.Kid-Y_2026-07-22T15.25.14.json",
       "Opponent": "decks/Charlotte.Katakuri-P_2026-07-22T15.25.14.json"
     }
+  },
+  {
+    "id": "2026-07-22T21.44.06",
+    "friendly_name": "Eustass.Captain.Kid-Y_x_Charlotte.Katakuri-P",
+    "date": "2026-07-22",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP10-099",
+      "leader_name": "Eustass \"Captain\" Kid",
+      "slug": "Eustass.Captain.Kid-Y"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP11-062",
+      "leader_name": "Charlotte Katakuri",
+      "slug": "Charlotte.Katakuri-P"
+    },
+    "turns": 10,
+    "winner": "p1",
+    "log_file": "raw/Eustass.Captain.Kid-Y_x_Charlotte.Katakuri-P_2026-07-22T21.44.06.log",
+    "parsed_file": "parsed/Eustass.Captain.Kid-Y_x_Charlotte.Katakuri-P_2026-07-22T21.44.06.json",
+    "deck_files": {
+      "You": "decks/Eustass.Captain.Kid-Y_2026-07-22T21.44.06.json",
+      "Opponent": "decks/Charlotte.Katakuri-P_2026-07-22T21.44.06.json"
+    }
   }
 ]

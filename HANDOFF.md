@@ -1,5 +1,38 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-22 (310) - Codex - partida 21.44: telemetria obrigatoria e diagnostico de eficiencia
+
+Partida nova Kid (P1/humano) x Katakuri OP11-062 (P2/bot), bot perdeu;
+auto-coleta correta em `logs/` (`2026-07-22T21.44.06`) e telemetria em
+`metrics/live_runs/live_2026-07-22T21.44.08.json`, decision log da sessao
+`21.14.23`. Regra nova do usuario versionada em AGENTS.md: todo log novo
+exige cruzar combat log + JSONL/relatorio de telemetria.
+
+**Diagnostico (nenhum tuning aplicado ainda):**
+- Execucao mecanica 95%, mas gate geral FAIL: 89 decisoes, 4 main failed,
+  9 pending, state_after 93,258% (<95), bot_confusion 10 (4 sem acao, 5
+  client timeouts, 1 stuck), counterfactual coverage 0%.
+- Search escolhe `top_deck` por `avaliar_carta` puro. Confirmado no jogo:
+  Brulee/Pudding acumularam bombas 8/9/10; no T3 eram 7/7 cartas custo>=5,
+  no T5 8/9. Faltam valor de curva, counter da mao, aceleracao e plano futuro.
+- Ciclo de DON se auto-sabota: o bot comeca T3/T4/T5 com apenas 4 ativos,
+  paga repetidamente Katakuri/Pudding/Tamago e nunca chega a jogar as bombas.
+  Nem todo DON -1 foi ruim (um buff defensivo virou combate e outro ataque
+  arrancou counter 2000), mas Pudding peek e buffs sem ganho marginal nao
+  comparam contra o proximo deploy/curva.
+- Ataque Tamago 6000 -> Law 9000 tinha objetivo valido (When Attacking tentou
+  KO Bonney e forcou 1 Life para prevenir), mas os 2 DON anexados foram
+  desperdicados: o gatilho funcionava atacando seco e o ataque seguia sem
+  chance de conectar.
+- Pudding/targets: `choose_target` repetiu timeouts e latencias de ~782-912s;
+  no T5 a mesma activate foi reoferecida 4x com estado inalterado. O problema
+  observado e do caminho target/execution, nao apenas do score da Pudding.
+
+**Proxima ordem recomendada:** (1) corrigir loop/latencia da Pudding e
+target; (2) custo de oportunidade de DON por plano de deploy; (3) search
+multiobjetivo (bomba unica + curva/counter/aceleracao/plano); (4) separar
+valor do gatilho de valor de DON anexado no ataque; (5) self-play pareado.
+
 ## 2026-07-22 (309) - Codex - informacao oculta honesta + reveals de Life + teto defensivo real
 
 Revisao dos commits 299-308 achou e corrigiu 3 gaps sistemicos antes da
