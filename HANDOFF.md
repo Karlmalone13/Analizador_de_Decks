@@ -1,5 +1,17 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-23 (321) - Claude - commit da partida Katakuri x Krieg pendente
+
+Retomando a sessao apos o Codex ficar sem limite: o codigo do bloco 320
+(Choose 0 real, `cost N or more`, ordem `Add DON -> K.O.`, triggers
+`when_don_returned`) ja estava commitado em `3ae477d`, nada pendente ali.
+So a partida `Charlotte.Katakuri-P_x_Krieg-RG_2026-07-23T14.12.36` (derrota,
+11 turnos, bot=P1/Katakuri) estava jogada e salva em raw/parsed/decks/index
+mas sem commit. Commitada em `d87a9a0`. Push feito em seguida. Nenhuma
+mudanca de codigo nesta sessao; validacao ao vivo dos itens do bloco 320
+(Choose 0, ramp Cracker/Katakuri, DON anexado, sinergia ST34-001) continua
+pendente para a proxima sessao com esse log de Krieg como novo dado.
+
 ## 2026-07-23 (320) - Codex - Choose 0, parser composto e sinergia DON
 
 Implementadas as correcoes aprovadas apos a partida Katakuri x Jinbe:
