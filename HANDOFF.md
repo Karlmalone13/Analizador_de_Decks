@@ -1,5 +1,42 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-23 (322) - Claude - reserva de DON deixava de furar por custo/poder fixo
+
+Partida `Dracule.Mihawk-G_x_Charlotte.Katakuri-P_2026-07-23T16.07.35` (bot=P2/
+Katakuri, derrota, 10 turnos) ja rodava no bloco 320 (`884de9c`, engine
+reiniciado na sessao anterior). Achado ao vivo, confirmado pelo usuario com
+conhecimento de jogo: o bot quase nao desce cartas de custo 6-9, mesmo com
+DON de sobra -- Charlotte Pudding (`PRB02-010`, custo 7/poder 5000) apareceu
+4x na mao ao longo da partida (efeito dela mesma buscando copias) e nunca foi
+jogada; 3 copias acabaram descartadas como counter de 1000 no turno 6 em vez
+de virarem corpo em campo.
+
+Causa raiz: `_can_spend_reserved_don_for_play` (decision_engine.py) so deixava
+uma jogada furar a `_don_reserve_for_defense()` se `cost>=8 or power>=9000` --
+corte fixo por categoria, ignorando o EFEITO da carta e o MOMENTO do jogo
+(regra do usuario: nunca threshold fixo, sempre ganho liquido caso a caso, ja
+usada em `should_use_counter`/[[feedback_ganho_liquido_caso_a_caso]]). Isso
+deixava toda a faixa de custo 6-7 travada atras da reserva sempre que ela
+ficava ativa (por ter um evento [Counter] tipo Mamaragan na mao pedindo
+DON!!2), mesmo com o jogador seguro (counters/blockers/vida de sobra).
+
+Fix aprovado pelo usuario: substitui o corte fixo por `_reserve_break_cost()`
+(novo) -- reaproveita os MESMOS sinais de risco de `_don_reserve_for_defense`
+(threat, vida, counters/blockers ja em mao-campo) mas devolve um VALOR na
+regua de `avaliar_carta` em vez de uma quantidade de DON. Mesmo gate de
+"seguro" (colchao real = fura de graca, valor=0); sem "seguro" mas com
+colchao parcial, desconta proporcionalmente em vez de bloquear tudo-ou-nada.
+`_can_spend_reserved_don_for_play` agora compara `avaliar_carta(card) >
+_reserve_break_cost()` -- carta forte de custo 6 fura, carta fraca de custo 8
+nao fura automaticamente so pelo numero.
+
+Validacao: `py_compile` limpo, `smoke_fast.py` = SMOKE FAST OK (872 checks,
+zero regressao -- a unica falha na 1a rodada foi UnicodeEncodeError do
+terminal cp1252 imprimindo `①`, sem relacao com a mudanca, sumiu com
+`PYTHONIOENCODING=utf-8`). Pendente: proxima partida ao vivo (usuario disse
+que testa mais pra frente) pra confirmar que bombas de custo 6-7 realmente
+comecam a entrar em campo em vez de virar counter fodder, e auditar junto.
+
 ## 2026-07-23 (321) - Claude - commit da partida Katakuri x Krieg pendente
 
 Retomando a sessao apos o Codex ficar sem limite: o codigo do bloco 320

@@ -9284,15 +9284,58 @@ class DecisionEngine:
 
         return min(reserva, don_disp)
 
+    def _reserve_break_cost(self) -> float:
+        """
+        Quanto vale MANTER a reserva de DON pra defesa, na mesma regua de
+        avaliar_carta -- usado por _can_spend_reserved_don_for_play pra decidir
+        caso a caso (ganho liquido, regra do usuario) se uma jogada boa fura a
+        reserva. Reaproveita os MESMOS sinais de risco de
+        _don_reserve_for_defense (threat, vida, counters/blockers ja em
+        mao/campo), so que devolvendo um VALOR comparavel a avaliar_carta em
+        vez de uma quantidade de DON -- substitui o corte fixo por
+        custo/poder que ignorava o efeito da carta e o momento do jogo.
+        """
+        if not self._has_don_reactive_use():
+            return 0.0  # nada real pra defender com o DON -- reserva nao vale nada
+
+        a = self.analyzer
+        my_life = self.me.life_count()
+        threat = a.opp_lethal_threat()
+        counters_mao = sum(1 for c in self.me.hand if getattr(c, 'counter', 0) >= 1000)
+        blockers = len(self.me.blockers_active())
+
+        # Mesmo gate de "seguro" de _don_reserve_for_defense: colchao real
+        # (counter/blocker/vida) = fura facil, sem nem entrar na conta de valor.
+        seguro = (counters_mao >= 3 and my_life >= 3 and threat < 0.4) or \
+                 (blockers >= 2 and my_life >= 4 and threat < 0.4)
+        if seguro:
+            return 0.0
+
+        valor_vida = {1: 250.0, 2: 150.0, 3: 65.0}.get(my_life, 12.0)
+        valor = valor_vida * max(threat, 0.4)
+        # Colchao PARCIAL (nao o bastante pra "seguro", mas ja ajuda) desconta
+        # proporcionalmente -- nao e tudo ou nada como o gate acima.
+        colchao = min(1.0, counters_mao / 3.0) * 0.5 + min(1.0, blockers / 2.0) * 0.3
+        return valor * (1.0 - colchao)
+
     def _can_spend_reserved_don_for_play(self, card) -> bool:
         """
-        Reserva defensiva nao deve remover automaticamente uma jogada premium
-        da lista de candidatas. O Turn Planner ainda compara a linha; aqui so
-        deixamos o candidato existir.
+        Reserva defensiva nao deve travar automaticamente uma jogada boa da
+        lista de candidatas. GANHO LIQUIDO caso a caso (regra do usuario):
+        fura a reserva se o valor de jogar a carta agora (avaliar_carta,
+        effect-aware) supera o valor de manter a reserva (_reserve_break_cost,
+        escalado por ameaca/vida/colchao ja em mao-campo) -- substitui o corte
+        fixo `cost>=8 or power>=9000` que travava bombas de custo 6-7 atras da
+        reserva mesmo com efeito forte e mesmo com o jogador seguro (achado ao
+        vivo 23/07: Charlotte Pudding PRB02-010, custo 7/poder 5000, nunca
+        jogada apesar de DON suficiente e 4 copias vistas na mao ao longo da
+        partida contra o Mihawk, porque cost>=8 nunca a incluia).
         """
         if effective_hand_play_cost(self.me, card, self.opp) > self.me.don_available:
             return False
-        return card.card_type == 'CHARACTER' and (card.cost >= 8 or card.power >= 9000)
+        if card.card_type != 'CHARACTER':
+            return False
+        return self.avaliar_carta(card) > self._reserve_break_cost()
 
     def _don_usable_for_play(self, card, don_reserve: int | None = None) -> int:
         if don_reserve is None:
