@@ -1,5 +1,37 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-23 (319) - Codex - partida Katakuri x Jinbe: alvos opcionais e sinergia DON
+
+Partida `Charlotte.Katakuri-P_x_Jinbe-G_2026-07-23T13.26.50`, bot=P1/You,
+salva automaticamente em raw/parsed/decks/index. Relatorio
+`metrics/live_runs/live_2026-07-23T13.26.53.json`, decision log `12.21.24`,
+commit executado `924baf1`.
+
+Comparacao com Katakuri x Ace: execucao permaneceu 100%, state_after subiu
+98,75% -> 100%, regret contrafactual permaneceu 0 e ataques abaixo do alvo
+caíram 1 -> 0. Ataques do bot: 8 (6 Leader/2 Character), contra 9
+(6 Leader/3 Character); dano permaneceu 2. Desenvolveu 8 cartas contra 5.
+Nao e comparacao causal porque o oponente mudou.
+
+Demoras do Cracker ST34-002 e Katakuri OP11-067 nao vieram do endpoint:
+Cracker 3-5ms, Katakuri 3-6ms. O plugin percorreu dezenas de candidatos
+invalidos, chamou `/choose_target` 3x e usou fallback SelectTargets. Falta
+tratar explicitamente escolha opcional vazia via botao `Choose 0`.
+
+Dois erros semanticos confirmados no banco: ST34-002 diz add DON e DEPOIS KO
+opcional, mas esta parseado KO -> add_don; OP11-067 diz custo 3 OU MAIS, mas
+esta parseado `cost_eq=3`. Isso impede ordenar corretamente os ate 2 alvos e
+pode bloquear o step posterior de add_don. Requer correcao de familia/parser
+aprovada antes de editar.
+
+Sinergia: ST34-001 estava em campo no late game e o motor recusou todas as
+ofertas do efeito do Leader OP11-062 no turno 7. Ele nao valora o evento
+`when_don_returned`: devolver 1 DON dispararia ST34-001 para adicionar 2
+restados (ganho liquido +1). Proximo ajuste estrategico deve somar triggers
+de DON-return ao beneficio/custo de `don_minus`, especialmente no late game.
+O teste nao teve DON anexado, portanto o fix fisico do bloco 318 continua sem
+validacao ao vivo.
+
 ## 2026-07-23 (318) - Codex - pressao liquida e clique real no DON anexado
 
 Implementadas as quatro correcoes aprovadas apos a partida Katakuri x Ace:

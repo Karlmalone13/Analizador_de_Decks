@@ -1,0 +1,66 @@
+{
+  "cards": [
+    {
+      "code": "OP11-029",
+      "name": "Charlotte Praline",
+      "count": 2
+    },
+    {
+      "code": "OP11-031",
+      "name": "Jinbe",
+      "count": 2
+    },
+    {
+      "code": "P-063",
+      "name": "P-063",
+      "count": 1
+    },
+    {
+      "code": "OP11-028",
+      "name": "Lord of the Coast",
+      "count": 1
+    },
+    {
+      "code": "OP06-032",
+      "name": "Hammond",
+      "count": 1
+    },
+    {
+      "code": "OP08-036",
+      "name": "OP08-036",
+      "count": 1
+    },
+    {
+      "code": "EB04-018",
+      "name": "EB04-018",
+      "count": 1
+    },
+    {
+      "code": "OP11-030",
+      "name": "Shirahoshi",
+      "count": 1
+    },
+    {
+      "code": "OP15-035",
+      "name": "OP15-035",
+      "count": 1
+    },
+    {
+      "code": "OP15-032",
+      "name": "Brook",
+      "count": 1
+    },
+    {
+      "code": "OP06-025",
+      "name": "OP06-025",
+      "count": 1
+    },
+    {
+      "code": "OP06-033",
+      "name": "Vander Decken IX",
+      "count": 1
+    }
+  ],
+  "total_seen": 14,
+  "leader": "OP11-021"
+}

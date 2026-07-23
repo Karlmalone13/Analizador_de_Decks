@@ -1,0 +1,1151 @@
+{
+  "meta": {
+    "players": {
+      "p1": {
+        "name": "You",
+        "leader": {
+          "name": "Charlotte Katakuri",
+          "code": "OP11-062"
+        }
+      },
+      "p2": {
+        "name": "Opponent",
+        "leader": {
+          "name": "Jinbe",
+          "code": "OP11-021"
+        }
+      }
+    },
+    "goes_first": null
+  },
+  "total_turns": 13,
+  "turns": [
+    {
+      "turn": 1,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 1,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP11-070",
+          "card_name": "Charlotte Pudding",
+          "effects": [
+            "<b>Reveal and Draw Charlotte Katakuri [\"OP11-067\">OP11-067]</b>"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "ST34-003",
+            "ST34-001",
+            "OP11-067",
+            "OP15-078",
+            "OP11-067"
+          ],
+          "board": [
+            "OP11-070"
+          ],
+          "trash": [],
+          "life": 5
+        },
+        "Opponent": {
+          "hand": [
+            "OP11-029",
+            "P-063",
+            "OP11-029",
+            "OP11-028",
+            "OP06-032"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 2,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP06-032",
+          "card_name": "Hammond",
+          "effects": []
+        },
+        {
+          "type": "activate",
+          "card": "OP11-021",
+          "card_name": "Jinbe",
+          "effects": [
+            "Activate 1 Don"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP11-029",
+            "P-063",
+            "OP11-029",
+            "OP11-028",
+            "OP08-036"
+          ],
+          "board": [
+            "OP06-032"
+          ],
+          "trash": [],
+          "life": 5
+        },
+        "You": {
+          "hand": [
+            "ST34-003",
+            "ST34-001",
+            "OP11-067",
+            "OP15-078",
+            "OP11-067"
+          ],
+          "trash": [],
+          "board": [
+            "OP11-070"
+          ],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 3,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "activate",
+          "card": "OP15-078",
+          "card_name": "Mamaragan",
+          "effects": [
+            "Minus 2 Don",
+            "Draw 1 Card",
+            "Rest Hammond [\"OP06-032\">OP06-032]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Katakuri",
+          "attacker_code": "OP11-062",
+          "target": "Hammond [\"OP06-032\">OP06-032]",
+          "result": null,
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "ST34-003",
+          "card_name": "Charlotte Brulee",
+          "effects": [
+            "<b>Reveal and Draw Charlotte Pudding [\"OP11-070\">OP11-070]</b>"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "ST34-001",
+            "OP11-067",
+            "OP11-067",
+            "OP15-069",
+            "ST34-003",
+            "OP11-070"
+          ],
+          "board": [
+            "OP11-070",
+            "ST34-003"
+          ],
+          "trash": [
+            "OP15-078"
+          ],
+          "life": 5
+        },
+        "Opponent": {
+          "hand": [
+            "OP11-029",
+            "P-063",
+            "OP11-029",
+            "OP11-028",
+            "OP08-036"
+          ],
+          "trash": [
+            "OP06-032"
+          ],
+          "board": [],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 4,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP11-029",
+          "card_name": "Charlotte Praline",
+          "effects": [
+            "Rest Charlotte Pudding [\"OP11-070\">OP11-070]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Jinbe",
+          "attacker_code": "OP11-021",
+          "target": "Charlotte Pudding [\"OP11-070\">OP11-070]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP11-021",
+          "card_name": "Jinbe",
+          "effects": [
+            "Activate 1 Don"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP11-029",
+            "P-063",
+            "OP11-028",
+            "OP08-036",
+            "EB04-018"
+          ],
+          "board": [
+            "OP11-029"
+          ],
+          "trash": [
+            "OP06-032"
+          ],
+          "life": 5
+        },
+        "You": {
+          "hand": [
+            "ST34-001",
+            "OP11-067",
+            "OP11-067",
+            "OP15-069",
+            "ST34-003",
+            "OP11-070"
+          ],
+          "trash": [
+            "OP15-078",
+            "OP11-070"
+          ],
+          "board": [
+            "ST34-003"
+          ],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 5,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "ST34-005",
+          "card_name": "Baron Tamago & Pekoms",
+          "effects": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Katakuri",
+          "attacker_code": "OP11-062",
+          "target": "Jinbe [\"OP11-021\">OP11-021]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP11-029"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "ST34-001",
+            "OP11-067",
+            "OP11-067",
+            "OP15-069",
+            "ST34-003",
+            "OP11-070"
+          ],
+          "board": [
+            "ST34-003",
+            "ST34-005"
+          ],
+          "trash": [
+            "OP15-078",
+            "OP11-070"
+          ],
+          "life": 5
+        },
+        "Opponent": {
+          "hand": [
+            "P-063",
+            "OP11-028",
+            "OP08-036",
+            "EB04-018"
+          ],
+          "trash": [
+            "OP06-032",
+            "OP11-029"
+          ],
+          "board": [
+            "OP11-029"
+          ],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 6,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP11-030",
+          "card_name": "Shirahoshi",
+          "effects": [
+            "Rest 1 Don",
+            "Rest Shirahoshi [\"OP11-030\">OP11-030]",
+            "<b>Reveal and Draw Jinbe [\"OP11-031\">OP11-031]</b>"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 4,
+          "to": "OP11-021",
+          "to_name": "Jinbe",
+          "total": 4
+        },
+        {
+          "type": "attack",
+          "attacker": "Jinbe",
+          "attacker_code": "OP11-021",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP11-021",
+          "card_name": "Jinbe",
+          "effects": [
+            "Set Shirahoshi [\"OP11-030\">OP11-030] to Active",
+            "Activate 1 Don"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "P-063",
+            "OP11-028",
+            "OP08-036",
+            "EB04-018",
+            "OP11-031"
+          ],
+          "board": [
+            "OP11-029",
+            "OP11-030"
+          ],
+          "trash": [
+            "OP06-032",
+            "OP11-029"
+          ],
+          "life": 5
+        },
+        "You": {
+          "hand": [
+            "ST34-001",
+            "OP11-067",
+            "OP11-067",
+            "OP15-069",
+            "ST34-003",
+            "OP11-070",
+            "OP15-078"
+          ],
+          "trash": [
+            "OP15-078",
+            "OP11-070"
+          ],
+          "board": [
+            "ST34-003",
+            "ST34-005"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 7,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP11-070",
+          "card_name": "Charlotte Pudding",
+          "effects": [
+            "<b>Reveal and Draw Charlotte Pudding [\"PRB02-010\">PRB02-010]</b>"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP15-078",
+          "card_name": "Mamaragan",
+          "effects": [
+            "Minus 2 Don",
+            "Draw 1 Card",
+            "Rest Charlotte Praline [\"OP11-029\">OP11-029]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Baron Tamago & Pekoms",
+          "attacker_code": "ST34-005",
+          "target": "Charlotte Praline [\"OP11-029\">OP11-029]",
+          "result": null,
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "ST34-005",
+          "card_name": "Baron Tamago & Pekoms",
+          "effects": [
+            "Minus 1 Don",
+            "Destroy Shirahoshi [\"OP11-030\">OP11-030]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP07-077",
+          "card_name": "We're Going to Claim the One Piece!!!",
+          "effects": [
+            "Rest 1 Don",
+            "<b>Reveal and Draw Charlotte Brulee [\"ST34-003\">ST34-003]</b>"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "ST34-003",
+          "card_name": "Charlotte Brulee",
+          "effects": [
+            "<b>Reveal and Draw Charlotte Cracker [\"ST34-002\">ST34-002]</b>"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Katakuri",
+          "attacker_code": "OP11-062",
+          "target": "Jinbe [\"OP11-021\">OP11-021]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "ST34-001",
+            "OP11-067",
+            "OP11-067",
+            "OP15-069",
+            "ST34-001",
+            "PRB02-010",
+            "ST34-003",
+            "ST34-002"
+          ],
+          "board": [
+            "ST34-003",
+            "ST34-005",
+            "OP11-070",
+            "ST34-003"
+          ],
+          "trash": [
+            "OP15-078",
+            "OP11-070",
+            "OP15-078",
+            "OP07-077"
+          ],
+          "life": 4
+        },
+        "Opponent": {
+          "hand": [
+            "P-063",
+            "OP11-028",
+            "OP08-036",
+            "EB04-018",
+            "OP11-031",
+            "OP11-031"
+          ],
+          "trash": [
+            "OP06-032",
+            "OP11-029",
+            "OP11-030",
+            "OP11-029"
+          ],
+          "board": [],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 8,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP11-031",
+          "card_name": "Jinbe",
+          "effects": [
+            "Rest Charlotte Pudding [\"OP11-070\">OP11-070]"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP11-021",
+          "to_name": "Jinbe",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Jinbe",
+          "attacker_code": "OP11-021",
+          "target": "Baron Tamago & Pekoms [\"ST34-005\">ST34-005]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP11-021",
+          "card_name": "Jinbe",
+          "effects": [
+            "Activate 1 Don"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "P-063",
+            "OP11-028",
+            "OP08-036",
+            "EB04-018",
+            "OP11-031",
+            "OP15-035"
+          ],
+          "board": [
+            "OP11-031"
+          ],
+          "trash": [
+            "OP06-032",
+            "OP11-029",
+            "OP11-030",
+            "OP11-029"
+          ],
+          "life": 4
+        },
+        "You": {
+          "hand": [
+            "ST34-001",
+            "OP11-067",
+            "OP11-067",
+            "OP15-069",
+            "ST34-001",
+            "PRB02-010",
+            "ST34-003",
+            "ST34-002"
+          ],
+          "trash": [
+            "OP15-078",
+            "OP11-070",
+            "OP15-078",
+            "OP07-077",
+            "ST34-005"
+          ],
+          "board": [
+            "ST34-003",
+            "OP11-070",
+            "ST34-003"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 9,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "ST34-002",
+          "card_name": "Charlotte Cracker",
+          "effects": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Katakuri",
+          "attacker_code": "OP11-062",
+          "target": "Jinbe [\"OP11-021\">OP11-021]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "ST34-001",
+            "OP11-067",
+            "OP11-067",
+            "OP15-069",
+            "ST34-001",
+            "PRB02-010",
+            "ST34-003",
+            "ST34-002"
+          ],
+          "board": [
+            "ST34-003",
+            "OP11-070",
+            "ST34-003",
+            "ST34-002"
+          ],
+          "trash": [
+            "OP15-078",
+            "OP11-070",
+            "OP15-078",
+            "OP07-077",
+            "ST34-005"
+          ],
+          "life": 4
+        },
+        "Opponent": {
+          "hand": [
+            "P-063",
+            "OP11-028",
+            "OP08-036",
+            "EB04-018",
+            "OP11-031",
+            "OP15-035",
+            "OP15-032"
+          ],
+          "trash": [
+            "OP06-032",
+            "OP11-029",
+            "OP11-030",
+            "OP11-029"
+          ],
+          "board": [
+            "OP11-031"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 10,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Jinbe",
+          "attacker_code": "OP11-031",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Jinbe",
+          "attacker_code": "OP11-021",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP15-032",
+          "card_name": "Brook",
+          "effects": [
+            "Rest Charlotte Cracker [\"ST34-002\">ST34-002]",
+            "Trash Brook [\"OP15-032\">OP15-032]",
+            "Set Jinbe [\"OP11-031\">OP11-031] to Active"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP11-028",
+          "card_name": "Lord of the Coast",
+          "effects": [
+            "Charlotte Cracker [\"ST34-002\">ST34-002] will not Activate during next Refresh"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Jinbe",
+          "attacker_code": "OP11-031",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP11-021",
+          "card_name": "Jinbe",
+          "effects": [
+            "Set Jinbe [\"OP11-031\">OP11-031] to Active",
+            "Activate 1 Don"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "P-063",
+            "OP08-036",
+            "EB04-018",
+            "OP11-031",
+            "OP15-035",
+            "OP06-025"
+          ],
+          "board": [
+            "OP11-031",
+            "OP11-028"
+          ],
+          "trash": [
+            "OP06-032",
+            "OP11-029",
+            "OP11-030",
+            "OP11-029",
+            "OP15-032"
+          ],
+          "life": 3
+        },
+        "You": {
+          "hand": [
+            "ST34-001",
+            "OP11-067",
+            "OP11-067",
+            "OP15-069",
+            "ST34-001",
+            "PRB02-010",
+            "ST34-003",
+            "ST34-002",
+            "ST34-003",
+            "OP08-069"
+          ],
+          "trash": [
+            "OP15-078",
+            "OP11-070",
+            "OP15-078",
+            "OP07-077",
+            "ST34-005"
+          ],
+          "board": [
+            "ST34-003",
+            "OP11-070",
+            "ST34-003",
+            "ST34-002"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 11,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "ST34-001",
+          "card_name": "Charlotte Katakuri",
+          "effects": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Katakuri",
+          "attacker_code": "OP11-062",
+          "target": "Jinbe [\"OP11-021\">OP11-021]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP06-025"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP11-067",
+            "OP11-067",
+            "OP15-069",
+            "ST34-001",
+            "PRB02-010",
+            "ST34-003",
+            "ST34-002",
+            "ST34-003",
+            "OP08-069",
+            "PRB02-010"
+          ],
+          "board": [
+            "ST34-003",
+            "OP11-070",
+            "ST34-003",
+            "ST34-002",
+            "ST34-001"
+          ],
+          "trash": [
+            "OP15-078",
+            "OP11-070",
+            "OP15-078",
+            "OP07-077",
+            "ST34-005"
+          ],
+          "life": 2
+        },
+        "Opponent": {
+          "hand": [
+            "P-063",
+            "OP08-036",
+            "EB04-018",
+            "OP11-031",
+            "OP15-035"
+          ],
+          "trash": [
+            "OP06-032",
+            "OP11-029",
+            "OP11-030",
+            "OP11-029",
+            "OP15-032",
+            "OP06-025"
+          ],
+          "board": [
+            "OP11-031",
+            "OP11-028"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 12,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 0,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP06-033",
+          "card_name": "Vander Decken IX",
+          "effects": [
+            "Trash Jinbe [\"OP11-031\">OP11-031]",
+            "Destroy Charlotte Cracker [\"ST34-002\">ST34-002]"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP11-028",
+          "to_name": "Lord of the Coast",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP11-028",
+          "to_name": "Lord of the Coast",
+          "total": 2
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP11-028",
+          "to_name": "Lord of the Coast",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Lord of the Coast",
+          "attacker_code": "OP11-028",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP15-069",
+            "PRB02-010",
+            "PRB02-010"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP11-031",
+          "to_name": "Jinbe",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Jinbe",
+          "attacker_code": "OP11-031",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP11-021",
+          "to_name": "Jinbe",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP11-021",
+          "to_name": "Jinbe",
+          "total": 2
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP11-021",
+          "to_name": "Jinbe",
+          "total": 3
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP11-021",
+          "to_name": "Jinbe",
+          "total": 4
+        },
+        {
+          "type": "attack",
+          "attacker": "Jinbe",
+          "attacker_code": "OP11-021",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "ST34-003",
+            "ST34-003",
+            "ST34-002"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP11-021",
+          "card_name": "Jinbe",
+          "effects": [
+            "Set Jinbe [\"OP11-031\">OP11-031] to Active",
+            "Activate 1 Don"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "P-063",
+            "OP08-036",
+            "EB04-018",
+            "OP15-035"
+          ],
+          "board": [
+            "OP11-031",
+            "OP11-028",
+            "OP06-033"
+          ],
+          "trash": [
+            "OP06-032",
+            "OP11-029",
+            "OP11-030",
+            "OP11-029",
+            "OP15-032",
+            "OP06-025",
+            "OP11-031"
+          ],
+          "life": 3
+        },
+        "You": {
+          "hand": [
+            "OP11-067",
+            "OP11-067",
+            "ST34-001",
+            "OP08-069",
+            "ST18-001"
+          ],
+          "trash": [
+            "OP15-078",
+            "OP11-070",
+            "OP15-078",
+            "OP07-077",
+            "ST34-005",
+            "ST34-002",
+            "OP15-069",
+            "PRB02-010",
+            "PRB02-010",
+            "ST34-003",
+            "ST34-003",
+            "ST34-002"
+          ],
+          "board": [
+            "ST34-003",
+            "OP11-070",
+            "ST34-003",
+            "ST34-001"
+          ],
+          "life": 1
+        }
+      }
+    },
+    {
+      "turn": 13,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Charlotte Katakuri",
+          "attacker_code": "ST34-001",
+          "target": "Jinbe [\"OP11-021\">OP11-021]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP15-035",
+            "EB04-018"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP11-067",
+          "card_name": "Charlotte Katakuri",
+          "effects": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Katakuri",
+          "attacker_code": "OP11-062",
+          "target": "Jinbe [\"OP11-021\">OP11-021]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "P-063"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP11-067",
+            "ST34-001",
+            "OP08-069",
+            "ST18-001",
+            "ST34-001"
+          ],
+          "board": [
+            "ST34-003",
+            "OP11-070",
+            "ST34-003",
+            "ST34-001",
+            "OP11-067"
+          ],
+          "trash": [
+            "OP15-078",
+            "OP11-070",
+            "OP15-078",
+            "OP07-077",
+            "ST34-005",
+            "ST34-002",
+            "OP15-069",
+            "PRB02-010",
+            "PRB02-010",
+            "ST34-003",
+            "ST34-003",
+            "ST34-002"
+          ],
+          "life": 1
+        },
+        "Opponent": {
+          "hand": [
+            "OP08-036"
+          ],
+          "trash": [
+            "OP06-032",
+            "OP11-029",
+            "OP11-030",
+            "OP11-029",
+            "OP15-032",
+            "OP06-025",
+            "OP11-031",
+            "OP15-035",
+            "EB04-018",
+            "P-063"
+          ],
+          "board": [
+            "OP11-031",
+            "OP11-028",
+            "OP06-033"
+          ],
+          "life": 3
+        }
+      }
+    }
+  ]
+}
