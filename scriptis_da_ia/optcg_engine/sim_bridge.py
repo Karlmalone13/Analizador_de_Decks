@@ -391,12 +391,19 @@ def choose_action(gs: GameState, opp_gs: GameState,
             # menores que o offline (2/2 vs 3/3) -- orcamento de /decide e por
             # ACAO, nao por turno inteiro, mas o board late-game ja mostrou
             # custo O(board²) no profiling de 14/07.
-            if (len(candidatos) > 1
-                    and not getattr(opp_gs, 'hidden_information_masked', False)):
-                model = opponent_model_for_leader(getattr(opp_gs.leader, 'code', ''))
-                if model is not None:
-                    amostras = [model.sample(opp_gs, rng=random.Random())
-                               for _ in range(SEARCH_SAMPLES)]
+            if len(candidatos) > 1:
+                hidden = getattr(opp_gs, 'hidden_information_masked', False)
+                model = (None if hidden else
+                         opponent_model_for_leader(getattr(opp_gs.leader, 'code', '')))
+                # Ao vivo, a decklist/mao adversaria e oculta. Ainda assim
+                # precisamos de contrafactuais auditaveis: simulamos as
+                # alternativas contra o MESMO estado publico mascarado, sem
+                # inventar cartas. Fora do live, preservamos Monte Carlo com
+                # o modelo exato ja existente.
+                amostras = ([model.sample(opp_gs, rng=random.Random())
+                             for _ in range(SEARCH_SAMPLES)] if model is not None
+                            else None)
+                if model is not None or hidden:
                     melhor, melhor_valor = candidatos[0], None
                     search_records = []
                     for cand in candidatos:
@@ -408,11 +415,23 @@ def choose_action(gs: GameState, opp_gs: GameState,
                         if melhor_valor is None or valor > melhor_valor:
                             melhor_valor = valor
                             melhor = cand
-                    result[0] = melhor
+                    # Com estado adversario mascarado, a simulacao serve para
+                    # AUDITORIA contrafactual, nao para trocar a jogada por
+                    # uma leitura otimista de cartas UNKNOWN. A escolha segue
+                    # o score honesto do motor; com modelo conhecido/offline,
+                    # a busca continua autorizada a refinar a escolha.
+                    if model is not None:
+                        result[0] = melhor
                     if trace_out is not None:
-                        trace_out["selection"] = "opponent_response_search"
+                        trace_out["selection"] = (
+                            "counterfactual_search" if model is not None
+                            else "counterfactual_audit_masked")
                         trace_out["search_values"] = search_records
-                    print(f"[ENG] busca refinou: {melhor[1]} (score imediato {melhor[0]:.1f}, "
+                        trace_out["counterfactual_basis"] = (
+                            "sampled_opponent_model" if model is not None
+                            else "masked_public_state")
+                    verbo = "refinou" if model is not None else "auditou"
+                    print(f"[ENG] busca {verbo}: {melhor[1]} (score imediato {melhor[0]:.1f}, "
                           f"valor simulado {melhor_valor:.1f})", flush=True)
         except Exception as e:
             import traceback
@@ -1679,7 +1698,7 @@ def order_target_candidates(gs: GameState, opp_gs: GameState,
         if attacker_power > 0 and actor_is_redirect and defender_uid and cand.get('id') == defender_uid:
             return (9, 0)
         if zone == 'top_deck':
-            return (0, -(engine_busca.avaliar_carta(card) if card else 0))
+            return (0, -(engine.search_card_value(card) if card else -1e9))
         if zone == 'own_hand':
             # Prompt de JOGAR da mao (ver actor_play_step acima): melhor
             # carta ELEGIVEL primeiro; inelegivel nunca. DON-NEUTRO

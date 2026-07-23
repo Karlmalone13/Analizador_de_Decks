@@ -1,5 +1,33 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-22 (311) - Codex - alvo de ataque, search contextual e contrafactual live
+
+Correcao implementada a partir da partida Kid x Katakuri do bloco 310:
+
+- Ataque contra Character agora exige `poder final >= poder do alvo`. Um
+  `[When Attacking]` util nao autoriza mais escolher Character inalcançavel;
+  ele pode justificar atacar o Leader ou outro corpo alcançavel. Caso Tamago:
+  4000 ataca corpo <=4000; +1 DON ataca <=5000; nunca 6000 -> 9000.
+- Search `top_deck` deixou de usar `avaliar_carta` puro. A regua contextual
+  combina valor intrinseco, jogabilidade agora/proximo turno, counter na mao,
+  aceleracao, win-con do GamePlan e retorno decrescente para bombas caras sem
+  counter ja acumuladas.
+- Contrafactual ao vivo: quando ha 2+ acoes elegiveis, o bridge simula ambas
+  contra o mesmo estado publico mascarado e grava `search_values` com
+  `counterfactual_basis=masked_public_state`. Isso e auditoria apenas: nao
+  troca a escolha por uma simulacao otimista de UNKNOWN. Offline/modelo
+  conhecido continua podendo refinar a jogada.
+- `bot_efficiency_report` agora calcula cobertura contrafactual sobre decisoes
+  main com 2+ alternativas (nao sobre target/defesa/decisao unica); gate subiu
+  de 20% para 95%. O server persiste a base usada no JSONL.
+
+Validacao: `py_compile` limpo; `python smoke_fast.py` = SMOKE FAST OK, com
+testes novos para Tamago/limiar, search sem congestionamento e contrafactual
+mascarado; `python -m unittest test_bot_efficiency_report.py` = 13/13 OK.
+Nao houve mudanca C#: basta reiniciar `JOGAR.bat`/server para testar. Ainda
+pendente do bloco 310: diagnosticar o timeout do fluxo de alvo da Pudding e
+tunar o custo de oportunidade de DON-minus via partida nova/telemetria.
+
 ## 2026-07-22 (310) - Codex - partida 21.44: telemetria obrigatoria e diagnostico de eficiencia
 
 Partida nova Kid (P1/humano) x Katakuri OP11-062 (P2/bot), bot perdeu;

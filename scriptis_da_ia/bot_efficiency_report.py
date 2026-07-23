@@ -279,6 +279,7 @@ def analyze_decision_events(lines) -> dict:
     eligible_recorded = 0
     immediate_gaps = []
     counterfactual_regrets = []
+    counterfactual_eligible = 0
     latencies = []
     timed_out = 0
     fallback_errors = 0
@@ -337,6 +338,9 @@ def analyze_decision_events(lines) -> dict:
             eligible_recorded += 1
         chosen = decision.get("chosen_action")
         kind = decision.get("decision_kind") or decision.get("phase") or "legacy"
+        if (kind == "main"
+                and (len(eligible) >= 2 or len(decision.get("search_values") or []) >= 2)):
+            counterfactual_eligible += 1
         bucket = by_kind.setdefault(kind, {"decisions": 0, "confirmed": 0,
                                            "failed": 0, "pending": 0})
         bucket["decisions"] += 1
@@ -483,7 +487,11 @@ def analyze_decision_events(lines) -> dict:
 
     execution_pct = _ratio(confirmed, completed, 100)
     state_after_pct = _ratio(with_state_after, total, 100)
-    counterfactual_pct = _ratio(len(counterfactual_regrets), total, 100)
+    # So decisoes principais com 2+ alternativas elegiveis podem ter um
+    # contrafactual. Usar TODAS as decisoes (targets, defesa e estados com
+    # uma unica acao) no denominador tornava 95% matematicamente impossivel.
+    counterfactual_pct = _ratio(
+        len(counterfactual_regrets), counterfactual_eligible, 100)
     if completed and execution_pct < gates.get("execution_success_pct", 95):
         alert("execution_below_gate", "error", "execucao confirmada abaixo do gate",
               execution_pct, gates.get("execution_success_pct", 95))
@@ -521,7 +529,8 @@ def analyze_decision_events(lines) -> dict:
     if duplicate_decision_ids:
         alert("duplicate_decision_ids", "error", "decision_id duplicado no arquivo",
               duplicate_decision_ids, 0)
-    if total and counterfactual_pct < gates.get("minimum_counterfactual_coverage_pct", 20):
+    if (counterfactual_eligible
+            and counterfactual_pct < gates.get("minimum_counterfactual_coverage_pct", 20)):
         alert("counterfactual_coverage_low", "warning",
               "poucas decisoes tiveram alternativas realmente simuladas",
               counterfactual_pct, gates.get("minimum_counterfactual_coverage_pct", 20))
@@ -549,6 +558,7 @@ def analyze_decision_events(lines) -> dict:
             sum(counterfactual_regrets) / len(counterfactual_regrets)
             if counterfactual_regrets else None),
         "counterfactual_coverage_pct": _round(counterfactual_pct),
+        "counterfactual_eligible_decisions": counterfactual_eligible,
         "latency_ms": {
             "samples": len(latencies),
             "mean": _round(sum(latencies) / len(latencies) if latencies else None),

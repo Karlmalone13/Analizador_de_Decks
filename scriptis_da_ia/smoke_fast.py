@@ -573,17 +573,16 @@ def test_own_don_e_candidato_prioritario_pra_custo_don_minus() -> None:
           order[0] in (-900, -901) and order[1] in (-900, -901))
 
 
-def test_ataque_sem_chance_de_conectar_nao_ganha_bonus_de_matar_alvo() -> None:
+def test_ataque_em_character_exige_poder_final_suficiente() -> None:
     # Achado real 20/07 (partida ao vivo): Katakuri (lider OP11-062, 5000,
     # [When Attacking] +1000/peek) atacou Mihawk (7000) com 0 DON disponivel
     # -- impossivel de vencer -- e pontuou 405, porque score_attack_target
     # somava os bonus de "vale matar o alvo" (board_value, nega ameaca,
     # blocker etc.) mesmo sem NENHUMA chance real de conectar, so porque o
     # gatilho de restar (vale_restar) jah bastava pra passar da barreira.
-    # Fix e generico (score_attack_target, nao amarrado ao Katakuri): quando
-    # o ataque nao tem chance de conectar, o score vem SO do valor do
-    # gatilho do proprio atacante (_rest_only_attack_value), nunca dos
-    # bonus de remocao de alvo.
+    # Regra refinada com o usuario em 22/07: contra CHARACTER, nem um gatilho
+    # util autoriza escolher alvo mais forte que atacante + DON disponivel.
+    # O gatilho pode justificar atacar o Leader ou outro Character alcancavel.
     katakuri = real_card("OP11-062")
     mihawk = real_card("ST32-003")
     me = GameState(leader=katakuri, don_available=0)
@@ -591,14 +590,27 @@ def test_ataque_sem_chance_de_conectar_nao_ganha_bonus_de_matar_alvo() -> None:
     opp.field_chars = [mihawk]
     eng = DecisionEngine(me, opp)
     s_sem_chance = eng.score_attack_target(katakuri, "character", mihawk)
-    check("ataque impossivel de conectar (0 DON, 5000 vs 7000) fica bem abaixo do antigo 405",
-          s_sem_chance < 200)
+    check("character maior que atacante + DON disponivel e barrado mesmo com When Attacking",
+          s_sem_chance <= -500)
 
     fraco = real_card("OP12-034")  # 2000 power, morre pro leader sem DON
     opp.field_chars = [fraco]
     s_mata = eng.score_attack_target(katakuri, "character", fraco)
-    check("ataque que REALMENTE mata ainda pontua mais que o que so ativa o gatilho",
+    check("character menor ou igual ao atacante continua sendo alvo valido",
           s_mata > s_sem_chance)
+
+    tamago = real_card("ST34-005")  # 4000
+    alvo_5000 = real_card("OP12-034")
+    import dataclasses
+    alvo_5000.data = dataclasses.replace(alvo_5000.data, power=5000)
+    me.don_available = 1
+    eng = DecisionEngine(me, opp)
+    check("Tamago 4000 + 1 DON pode escolher Character 5000",
+          eng.score_attack_target(tamago, "character", alvo_5000) > -500)
+    alvo_6000 = real_card("OP12-034")
+    alvo_6000.data = dataclasses.replace(alvo_6000.data, power=6000)
+    check("Tamago 4000 + 1 DON nao pode escolher Character 6000",
+          eng.score_attack_target(tamago, "character", alvo_6000) <= -500)
 
 
 def test_bonus_de_ameaca_critica_exige_chance_real_de_conectar() -> None:
@@ -698,6 +710,43 @@ def test_opponent_model_ao_vivo_por_lider_e_fallback_seguro() -> None:
                                       allowed_types={"play", "attack", "attach_don", "activate"})
     check("choose_action com busca ao vivo retorna uma acao valida (nao None)",
           action is not None)
+
+
+def test_contrafactual_ao_vivo_usa_apenas_estado_publico_mascarado() -> None:
+    me = GameState(leader=real_card("OP11-062"), don_available=5, turn=3)
+    me.hand = [real_card("ST34-004"), real_card("ST34-005")]
+    me.life = [real_card("OP07-077") for _ in range(4)]
+    opp = GameState(leader=real_card("OP04-019"), turn=3)
+    opp.life = [mk("UNKNOWN-000", "Carta oculta") for _ in range(4)]
+    opp.hand = [mk("UNKNOWN-000", "Carta oculta") for _ in range(3)]
+    opp.hidden_information_masked = True
+    match = OPTCGMatch((me.leader, []), (opp.leader, []))
+    trace = {}
+    action = sim_bridge.choose_action(
+        me, opp, match, timeout=3.0,
+        allowed_types={"play", "attack", "attach_don", "activate"},
+        trace_out=trace)
+    check("contrafactual live escolhe uma acao sem conhecer cartas ocultas",
+          action is not None)
+    check("contrafactual live registra pelo menos duas alternativas simuladas",
+          len(trace.get("search_values", [])) >= 2)
+    check("telemetria identifica que a simulacao usou estado publico mascarado",
+          trace.get("counterfactual_basis") == "masked_public_state")
+
+
+def test_search_contextual_evita_congestionar_mao_com_bombas() -> None:
+    me = GameState(leader=real_card("OP11-062"), don_available=4,
+                   don_rested=0, turn=3)
+    me.hand = [real_card("ST34-004"), real_card("OP08-069")]
+    opp = GameState(leader=real_card("OP04-019"), turn=3)
+    candidates = [
+        {"id": 901, "zone": "top_deck", "code": "ST34-004"},
+        {"id": 902, "zone": "top_deck", "code": "ST34-005"},
+    ]
+    order = sim_bridge.order_target_candidates(
+        me, opp, candidates, actor_code="OP11-070")
+    check("search com bombas caras sem counter na mao prefere carta que entra na curva",
+          order[0] == 902)
 
 
 def test_play_turn_greedy_opponent_response() -> None:
@@ -7064,10 +7113,12 @@ def main() -> int:
     test_resolve_reaction_custo_de_redirect_e_generico_nao_so_carta_da_mao()
     test_peek_opp_deck_top_nao_vira_alvo_battlefield_only()
     test_own_don_e_candidato_prioritario_pra_custo_don_minus()
-    test_ataque_sem_chance_de_conectar_nao_ganha_bonus_de_matar_alvo()
+    test_ataque_em_character_exige_poder_final_suficiente()
     test_bonus_de_ameaca_critica_exige_chance_real_de_conectar()
     test_debuff_power_no_oponente_conta_como_removal()
     test_opponent_model_ao_vivo_por_lider_e_fallback_seguro()
+    test_contrafactual_ao_vivo_usa_apenas_estado_publico_mascarado()
+    test_search_contextual_evita_congestionar_mao_com_bombas()
     test_play_turn_greedy_opponent_response()
     test_play_turn_greedy_detecta_letal_do_oponente()
     test_imu_waits_for_active_elder_attack()

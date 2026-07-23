@@ -8924,6 +8924,49 @@ class DecisionEngine:
 
         return s
 
+    def search_card_value(self, card: 'Card') -> float:
+        """Valor contextual de uma carta oferecida por search/look.
+
+        Mantem no motor unico a combinacao de qualidade intrinseca, curva,
+        counter, aceleracao e GamePlan. O bridge apenas ordena os candidatos
+        usando este valor.
+        """
+        value = float(self.avaliar_carta(card))
+        next_don = min(10, self.me.don_on_field() + 2)
+        playable_now = card.cost <= self.me.don_available
+        playable_next = card.cost <= next_don
+        expensive_dead = card.cost > next_don and card.counter <= 0
+        bombs_in_hand = sum(1 for c in self.me.hand
+                            if c.cost >= 7 and c.counter <= 0)
+
+        if playable_now:
+            value += 70
+        elif playable_next:
+            value += 45
+        elif expensive_dead:
+            value -= 35 + bombs_in_hand * 30
+
+        counter_cards = sum(1 for c in self.me.hand if c.counter > 0)
+        if card.counter > 0:
+            value += min(60, card.counter / 1000 * 25)
+            if counter_cards <= 1:
+                value += 45
+
+        effect_actions = {
+            step.get('action')
+            for block in get_card_effects(card.code).values()
+            if isinstance(block, dict)
+            for step in block.get('steps', [])
+        }
+        if effect_actions & {'add_don', 'set_don_active', 'give_don'}:
+            value += 55
+
+        plan = compute_game_plan(self.me)
+        if card.code == plan.get('win_con_code'):
+            copies = sum(1 for c in self.me.hand if c.code == card.code)
+            value += 90 if copies == 0 else max(0, 35 - copies * 20)
+        return value
+
     def stage_worth(self, stage: 'Card') -> float:
         """
         Valor de uma STAGE pra comparacao de substituicao: avaliar_carta +
@@ -9393,31 +9436,17 @@ class DecisionEngine:
             # só ataca personagem se:
             #  (a) poder >= poder do alvo (mata sem DON), OU
             #  (b) poder + DON disponível >= poder do alvo (mata com DON), OU
-            #  (c) restar o atacante ativa efeito útil.
+            # Contra Character nao existe excecao por gatilho: o alvo so e
+            # estrategicamente valido quando o poder final do ataque pode
+            # alcanca-lo. Um [When Attacking] util pode justificar declarar
+            # um ataque, mas deve usar outro alvo alcancavel (inclusive o
+            # Leader), nunca um Character maior que atacante + DON disponivel.
             passa_sem_don = atk_power >= target.power
             passa_com_don = (atk_power + don_disp * 1000) >= target.power
-            vale_restar   = self._rest_activates_effect(attacker)
             pode_matar    = passa_sem_don or passa_com_don
 
-            if not (pode_matar or vale_restar):
-                return -999   # não mata e não ativa nada — barra
-
             if not pode_matar:
-                # Ataque SEM CHANCE de conectar (nem com todo o DON
-                # disponível): só vale pelo que o próprio atacante ganha ao
-                # ficar restado (gatilho [When Attacking] ou efeito
-                # condicionado a estar restado, genérico — vale pra
-                # QUALQUER carta com essa forma, não só a que revelou o bug).
-                # Achado real 20/07: Katakuri (líder) atacava um alvo que
-                # nunca poderia vencer (0 DON, 5000 vs 7000) só porque seu
-                # [When Attacking] fazia vale_restar=True; o código somava
-                # os bônus de "vale matar o alvo" (board_value, nega ameaça,
-                # blocker etc.) MESMO sem chance real de matar, inflando o
-                # score pra muito acima de um ataque que realmente conecta.
-                s = self._rest_only_attack_value(attacker)
-                if activate_cost > 0 and opp_life > 1:
-                    s -= activate_cost
-                return s
+                return -999
 
             # Valor do alvo (quão importante é removê-lo) — só chega aqui
             # quando o ataque TEM chance real de matar (com ou sem DON).

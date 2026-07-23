@@ -742,6 +742,7 @@ def decide(state: GameStateDto):
             scored_actions=trace.get("scored_actions", []),
             chosen_action=trace.get("chosen_action"),
             search_values=trace.get("search_values", []),
+            counterfactual_basis=trace.get("counterfactual_basis"),
             selection=trace.get("selection", reason),
             timed_out=trace.get("timed_out", False),
             priority=trace.get("priority"),
