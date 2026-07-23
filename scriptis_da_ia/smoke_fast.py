@@ -500,6 +500,48 @@ def test_katakuri_buff_so_paga_com_impacto_no_combate_e_na_curva() -> None:
           teach_is_redirect)
 
 
+def test_combat_buff_worth_paying_no_simulador_interno() -> None:
+    # Achado 23/07: o guard de valor do padrao "custo de recurso -> buff de
+    # batalha" (buff_wins_combat) so existia em resolve_optional_effect
+    # (sim_bridge.py, caminho AO VIVO) -- o EffectExecutor.execute() usado
+    # pelo simulador interno (self-play/line-search, _execute_attack)
+    # tratava don_minus como "sempre vale a pena" sem julgar o combate.
+    # Consolidado via _combat_buff_worth_paying, chamado direto de
+    # execute() com informacao REAL (nao estimada).
+    from optcg_engine.decision_engine import EffectExecutor
+
+    # (a) ATACANDO: Katakuri 5000 vs alvo 6000 -- perde sem o buff, o +1000
+    # vira o combate (5000<6000<=5000+1000). Deve pagar (DON cai, buff sobe).
+    me = GameState(leader=real_card("OP11-062"), don_available=1)
+    opp = GameState(leader=real_card("OP14-020"))
+    ee = EffectExecutor(me, opp)
+    logs = ee.execute(me.leader, "when_attacking", battle_defender_power=6000)
+    check("Katakuri (simulador interno) paga DON!!1 quando o buff vira o ataque",
+          bool(logs) and me.don_available == 0 and me.leader.power_buff == 1000)
+
+    # (b) ATACANDO sem impacto: 5000 vs 5000 -- empate ja favorece quem
+    # ataca (buff_wins_combat), pagar seria taxa pura. Nao deve pagar.
+    me2 = GameState(leader=real_card("OP11-062"), don_available=1)
+    opp2 = GameState(leader=real_card("OP14-020"))
+    ee2 = EffectExecutor(me2, opp2)
+    logs2 = ee2.execute(me2.leader, "when_attacking", battle_defender_power=5000)
+    check("Katakuri (simulador interno) NAO paga DON!!1 quando ja vence sem o buff",
+          not logs2 and me2.don_available == 1 and me2.leader.power_buff == 0)
+
+    # (c) DEFENDENDO: atacante 5500 vs Katakuri 5000 -- perde sem o buff, o
+    # +1000 vira o combate de verdade (5000<=5500<5000+1000). Empate
+    # continua favorecendo o ATACANTE (buff_wins_combat exige estritamente
+    # maior), por isso o gap fica em 500 (nao 1000) pra nao cair no empate.
+    me3 = GameState(leader=real_card("OP11-062"), don_available=1)
+    atacante = real_card("OP14-020")   # base 5000
+    atacante.power_buff = 500          # efetivo 5500 (live_attack_power)
+    ee3 = EffectExecutor(me3, GameState(leader=atacante))
+    logs3 = ee3.execute(me3.leader, "on_opp_attack", battle_attacker=atacante,
+                        battle_defender_power=5000)
+    check("Katakuri (simulador interno) paga DON!!1 defendendo quando o buff evita o dano",
+          bool(logs3) and me3.don_available == 0 and me3.leader.power_buff == 1000)
+
+
 def test_pudding_anexa_don_antes_de_oferecer_activate_main() -> None:
     pudding = real_card("OP11-070")
     pudding._deck_uid = 10
@@ -7290,6 +7332,7 @@ def main() -> int:
     test_order_target_candidates_exclui_trash_para_alvo_battlefield_only()
     test_mamaragan_main_so_mira_oponente_apesar_do_counter_mirar_proprio()
     test_katakuri_buff_so_paga_com_impacto_no_combate_e_na_curva()
+    test_combat_buff_worth_paying_no_simulador_interno()
     test_pudding_anexa_don_antes_de_oferecer_activate_main()
     test_resolve_reaction_custo_de_redirect_e_generico_nao_so_carta_da_mao()
     test_peek_opp_deck_top_nao_vira_alvo_battlefield_only()

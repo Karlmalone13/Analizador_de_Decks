@@ -1953,7 +1953,8 @@ class EffectExecutor:
         return logs
 
     def execute(self, card: Card, trigger: str, verbose: bool = False, is_opp_turn: bool = False,
-                is_my_turn: bool = True, battle_attacker: "Card | None" = None) -> list:
+                is_my_turn: bool = True, battle_attacker: "Card | None" = None,
+                battle_defender_power: "int | None" = None) -> list:
         """
         Executa todos os efeitos de um trigger para uma carta.
         Retorna lista de logs para o replay.
@@ -2062,8 +2063,24 @@ class EffectExecutor:
         # DEFENDENDO, não pra quem está usando o próprio gatilho de ataque.
         # Mesma pergunta feita ao vivo via resolve_optional_effect em
         # sim_bridge.py.
-        if trigger in ('on_play', 'main', 'when_attacking', 'on_opp_attack') \
+        if trigger in ('when_attacking', 'on_opp_attack'):
+            combat_verdict = self._combat_buff_worth_paying(
+                card, ef_data, trigger, battle_defender_power)
+            if combat_verdict is not None:
+                if not combat_verdict:
+                    return []
+            elif not self._worth_paying_optional_costs(ef_data.get('costs', []), card):
+                return []
+        elif trigger in ('on_play', 'main', 'trigger') \
                 and not self._worth_paying_optional_costs(ef_data.get('costs', []), card):
+            # 'trigger' (achado 23/07): [Trigger] de vida com custo de
+            # recurso antes do ':' tambem e opcional pela regra oficial
+            # (ver CLAUDE.md#regras-de-jogo) -- passava direto sem
+            # julgamento nenhum. 'activate_main' fica de fora: ja e filtrado
+            # por scoring proprio (_score_activate_main) ANTES de chegar
+            # aqui; '[Counter]' de personagem/lider nao roda via execute()
+            # hoje (so eventos [Counter] da mao, em try_counter_event_*),
+            # entao nao ha gate pra estender aqui ainda.
             return []
 
         # Paga custos. _last_trashed_names zerado ANTES (nao depois, ao
@@ -7667,6 +7684,63 @@ class EffectExecutor:
                              'ko_own_character', 'trash_self', 'trash_own_life',
                              'trash_own_character', 'return_own_character_to_hand'}
 
+    def _combat_buff_worth_paying(self, card: Card, ef_data: dict, trigger: str,
+                                  battle_defender_power: 'int | None') -> 'bool | None':
+        """
+        Guard de VALOR pro padrao "custo de recurso (DON!!/rest) -> buff_power
+        de batalha em self/leader": so paga se o buff VIRA o combate (empate
+        vai pro atacante, buff_wins_combat). Achado real 22-23/07 (Katakuri
+        OP11-062): esse guard so existia em resolve_optional_effect
+        (sim_bridge.py, caminho AO VIVO) -- o simulador interno (self-play/
+        line-search, que passa por execute() diretamente) tratava QUALQUER
+        custo de recurso como "sempre vale a pena" via
+        _worth_paying_optional_costs, uma divergencia real de "dois motores"
+        (regra do usuario) que superestimava linhas simuladas com esse
+        padrao. Consolidado aqui com informacao REAL (self-play conhece as
+        duas maos, sem precisar da estimativa por incerteza que o bridge
+        usa pro caminho mascarado ao vivo) -- generico, qualquer carta com
+        esse padrao, nao so quem revelou o gap.
+        Retorna None se o efeito nao casa com o padrao (deixa o caller cair
+        no _worth_paying_optional_costs generico).
+        """
+        costs = ef_data.get('costs', [])
+        steps = ef_data.get('steps', [])
+        if not costs or not any(c.get('type') in ('don_minus', 'rest_don', 'rest_self')
+                                 for c in costs):
+            return None
+        buffs = [s for s in steps
+                 if s.get('action') == 'buff_power'
+                 and s.get('target') in ('self', 'leader')
+                 and s.get('duration') in ('battle_only', 'this_battle')]
+        if not buffs or not all(
+                s.get('action') in ('buff_power', 'peek_opp_deck_top', 'look_top_deck')
+                for s in steps):
+            return None
+        if battle_defender_power is None:
+            return None
+
+        don_minus_count = sum(int(c.get('count', 1) or 1) for c in costs
+                              if c.get('type') == 'don_minus')
+        de = DecisionEngine(self.me, self.opp)
+        if don_minus_count and de.has_valuable_don_return_trigger(don_minus_count):
+            return None  # retorno de DON pode valer mais que o guard simples
+
+        amount = max(s.get('amount', 0) for s in buffs)
+        if trigger == 'when_attacking':
+            attacker_power = live_attack_power(card)
+            defender_power = battle_defender_power
+            # Atacante: empate ja favorece quem ataca -- so vale a pena se
+            # HOJE perde (attacker < defender) e o buff faz alcancar/superar.
+            return attacker_power < defender_power <= attacker_power + amount
+        elif trigger == 'on_opp_attack':
+            attacker = self._battle_attacker
+            if attacker is None:
+                return None
+            attacker_power = live_attack_power(attacker)
+            defender_power = battle_defender_power
+            return de.buff_wins_combat(defender_power, attacker_power, defender_power + amount)
+        return None
+
     def _worth_paying_optional_costs(self, costs: list, card: Card) -> bool:
         """
         Em OPTCG, um bloco de efeito com custo é sempre "you may pagar X: Y"
@@ -12387,8 +12461,16 @@ class OPTCGMatch:
                 if log:
                     print(f'      [quando restou] {log}')
 
-        # Executa efeito When Attacking
-        wa_logs = ee.execute(attacker, 'when_attacking')
+        # Executa efeito When Attacking. battle_defender_power (poder cru do
+        # alvo ANTES desta reacao) alimenta o guard de valor de
+        # _combat_buff_worth_paying -- so paga custo por buff de batalha se
+        # ele realmente vira o combate (achado 23/07, fecha divergencia
+        # "dois motores" com resolve_optional_effem em sim_bridge.py).
+        defender_power_now = ((opp.leader.power + opp.leader.power_buff)
+                               if target_type == 'leader'
+                               else (target.power + target.power_buff) if target else None)
+        wa_logs = ee.execute(attacker, 'when_attacking',
+                             battle_defender_power=defender_power_now)
         if verbose:
             for log in wa_logs:
                 if log:
@@ -12404,7 +12486,9 @@ class OPTCGMatch:
         # batalha, não depois que o dano já foi calculado.
         ee_react = EffectExecutor(opp, p)
         for reagente in [opp.leader] + list(opp.field_chars):
-            oa_logs = ee_react.execute(reagente, 'on_opp_attack', battle_attacker=attacker)
+            oa_logs = ee_react.execute(
+                reagente, 'on_opp_attack', battle_attacker=attacker,
+                battle_defender_power=reagente.power + reagente.power_buff)
             if verbose:
                 for log in oa_logs:
                     if log:

@@ -1,5 +1,64 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-23 (324) - Claude - fecha o gap dois-motores do achado 3 (bloco 323)
+
+Implementa os itens (a) e (b) discutidos no fim do bloco 323, aprovados pelo
+usuario.
+
+**(a) Unificacao do guard de combate:** novo metodo
+`EffectExecutor._combat_buff_worth_paying(card, ef_data, trigger,
+battle_defender_power)` em `decision_engine.py` -- reconhece o padrao
+"custo de recurso (don_minus/rest_don/rest_self) -> buff_power de batalha
+em self/leader, so-battle" e so autoriza pagar se `buff_wins_combat`
+(empate vai pro atacante) confirmar que o buff VIRA o combate. Usa
+informacao REAL (self-play conhece as duas maos, sem precisar da
+estimativa por incerteza que `resolve_optional_effect` usa no caminho ao
+vivo mascarado). `execute()` agora chama esse guard pra `when_attacking`/
+`on_opp_attack` ANTES de cair no `_worth_paying_optional_costs` generico
+(que so julga custos de SACRIFICIO, sempre "vale a pena" pra custos de
+recurso puros). Retorna `None` quando o padrao nao casa, deixando o
+fallback generico decidir -- nao muda nada pra cartas fora desse padrao.
+
+Novo parametro `battle_defender_power` em `execute()`, preenchido pelos 2
+call-sites reais de combate em `_execute_attack` (`when_attacking`: poder
+cru do alvo antes da reacao; `on_opp_attack`: poder cru do proprio
+reagente/defensor).
+
+Isso fecha a divergencia "dois motores" (regra do usuario): antes, o
+simulador interno (self-play/line-search, que passa por `execute()`
+direto) SEMPRE assumia que valia pagar qualquer custo de recurso pra um
+buff de batalha, superestimando o valor de linhas simuladas com esse
+padrao (ex: Katakuri OP11-062). O caminho ao vivo (`sim_bridge.py`,
+`resolve_optional_effect`) ja tinha esse guard sofisticado havia dias, so
+que isolado -- agora as duas pontas concordam na mesma pergunta central
+(so o caminho ao vivo mantem a camada extra de estimativa de mao oculta
+do oponente, que faz sentido so ali).
+
+**(b) Gate estendido pra `[Trigger]`:** blocos `trigger` (life-reveal) com
+custo de recurso opcional antes do ':' agora tambem passam por
+`_worth_paying_optional_costs` (antes so `on_play`/`main`/
+`when_attacking`/`on_opp_attack` tinham esse julgamento). `activate_main`
+ficou de fora de proposito -- ja e filtrado por scoring proprio
+(`_score_activate_main`) antes de chegar em `execute()`. `[Counter]` de
+personagem/lider NAO foi estendido: confirmei que essa timing key nao
+passa por `execute()` hoje (so eventos `[Counter]` da mao tem execucao
+propria via `try_counter_event_*`) -- nao ha gate praexistente pra
+estender, ficaria como trabalho futuro separado se aparecer um caso real.
+
+Validacao: `py_compile` limpo. 2 novos testes em `smoke_fast.py`
+(`test_combat_buff_worth_paying_no_simulador_interno`, 3 asserts: paga
+atacando quando vira, nao paga atacando quando ja vence sozinho, paga
+defendendo quando vira) -- `smoke_fast.py` = SMOKE FAST OK (875 checks).
+`smoke_test.py` (regressao ampla, obrigatorio por mexer em codigo de
+combate compartilhado): rodei ANTES e DEPOIS da mudanca -- as mesmas 3
+falhas (`substitute_removal com extra_steps`, `substituicao externa usa
+fonte aliada`, `OP15-094 protege outro Character`) ja existiam no
+baseline, sem relacao com esta mudanca; nenhuma falha nova.
+
+Pendente: validacao ao vivo (proxima partida real) pra confirmar que o
+guard nao introduziu recusa excessiva em cenarios reais nao cobertos
+pelos 2 testes sinteticos.
+
 ## 2026-07-23 (323) - Claude - custo antes do ":" sempre opcional (parser) + gap dois-motores achado
 
 Partida `Dracule.Mihawk-G_x_Charlotte.Katakuri-P_2026-07-23T16.54.39` (bot=P2,
