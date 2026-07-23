@@ -8396,6 +8396,25 @@ class GameAnalyzer:
         opp_score = sum(c.board_value() for c in self.opp.field_chars)
         return my_score - opp_score
 
+    def future_threat_value(self, card: Card) -> float:
+        """Valor que o corpo ainda pode produzir; On Play ja resolvido nao conta."""
+        effects = get_card_effects(card.code)
+        value = max(0.0, (card.power - self.me.leader.power) / 1000.0 * 12.0)
+        future_blocks = {
+            'activate_main': 50, 'when_attacking': 45, 'opp_turn': 45,
+            'your_turn': 30, 'end_of_turn': 30, 'start_of_turn': 30,
+            'on_opponent_attack': 40, 'passive': 25, 'continuous': 25,
+            'on_ko': 15,
+        }
+        for trigger, weight in future_blocks.items():
+            if effects.get(trigger):
+                value += weight
+        if card.has_blocker or card.blocker_this_turn:
+            value += 45
+        if card.has_double_attack or card.double_attack_this_turn:
+            value += 65
+        return value
+
     def critical_threats(self) -> list:
         """
         Identifica AMEAÇAS CRÍTICAS no board do oponente (documento nível 3).
@@ -8407,16 +8426,8 @@ class GameAnalyzer:
         """
         ameacas = []
         for c in self.opp.field_chars:
-            peso = 0
-            if c.power >= 6000:           peso += 3
-            elif c.power >= 5000:         peso += 1
-            if c.has_blocker or c.blocker_this_turn:             peso += 2   # trava meu ataque
-            effects = get_card_effects(c.code)
-            if 'activate_main' in effects: peso += 2   # vantagem recorrente
-            if 'when_attacking' in effects: peso += 2
-            if c.has_double_attack or c.double_attack_this_turn:       peso += 2
-            if c.has_rush or c.rush_this_turn:                peso += 1
-            if peso >= 3:
+            peso = self.future_threat_value(c)
+            if peso >= 45:
                 ameacas.append((peso, c))
         ameacas.sort(key=lambda x: x[0], reverse=True)
         return [c for _, c in ameacas]
@@ -9464,6 +9475,29 @@ class DecisionEngine:
             valor = 40
         return valor
 
+    def _rest_attack_has_material_benefit(self, card) -> bool:
+        """Ataque sem alcance exige mudanca real de recurso ou de board.
+
+        O buff do proprio combate ja esta em attack_time_power. Peek/reveal
+        puro traz informacao, mas nao justifica um ataque que continua abaixo.
+        """
+        wa = get_card_effects(card.code).get('when_attacking')
+        if not wa:
+            txt = (card.card_text or '').lower()
+            return ('when this character becomes rested' in txt
+                    or 'if this character is rested' in txt
+                    or 'while this character is rested' in txt)
+        steps = wa.get('steps', [])
+        if not steps:
+            return False
+        informational_or_combat_only = {
+            'buff_power', 'set_base_power', 'look_top_deck',
+            'peek_opp_deck_top', 'reveal_deck_top',
+        }
+        ee = EffectExecutor(self.me, self.opp)
+        return any(s.get('action') not in informational_or_combat_only
+                   and ee._step_is_viable(s, card) for s in steps)
+
     def score_attack_target(self, attacker: 'Card',
                              target_type: str,
                              target: 'Optional[Card]') -> float:
@@ -9493,7 +9527,7 @@ class DecisionEngine:
             #      efeito Your Turn/Opp Turn que depende de estar restado).
             passa_sem_don = atk_power >= leader_power
             passa_com_don = (atk_power + don_disp * 1000) >= leader_power
-            vale_restar   = self._rest_activates_effect(attacker)
+            vale_restar   = self._rest_attack_has_material_benefit(attacker)
             pode_passar   = passa_sem_don or passa_com_don
 
             if not (pode_passar or vale_restar):
@@ -9556,6 +9590,8 @@ class DecisionEngine:
             # Valor do alvo (quão importante é removê-lo) — só chega aqui
             # quando o ataque TEM chance real de matar (com ou sem DON).
             s = target.board_value() * 15
+            don_needed = max(0, (target.power - atk_power + 999) // 1000)
+            s -= self.don_opportunity_cost(don_needed)
 
             # Alvo COM EFEITO vale matar mesmo com poder baixo/0 (regra do usuário)
             tgt_effects = get_card_effects(target.code)
@@ -11273,7 +11309,7 @@ class OPTCGMatch:
                     atk_now = atk_now_for_budget
                     if (atk_now < opp.leader.power
                             and atk_now + attack_don_budget * 1000 < opp.leader.power
-                            and not engine._rest_activates_effect(att)):
+                            and not engine._rest_attack_has_material_benefit(att)):
                         s_leader = -999
                     if s_leader > -500:
                         s_leader += self._human_pattern_bonus(p, 'attack', att)
@@ -11328,9 +11364,9 @@ class OPTCGMatch:
                         if tgt in threats:
                             atk_power = attack_time_power(att, opp)
                             pode_matar = (atk_power >= tgt.power
-                                         or atk_power + p.don_available * 1000 >= tgt.power)
+                                         or atk_power + attack_don_budget * 1000 >= tgt.power)
                             if pode_matar:
-                                s_char += 300   # acima de atacar o líder
+                                s_char += min(120.0, a.future_threat_value(tgt))
                         actions.append((s_char, 'attack', att, 'character', tgt))
 
         # ── Ações de ATIVAR efeitos [Activate:Main] ──

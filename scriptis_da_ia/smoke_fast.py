@@ -868,6 +868,35 @@ def test_ataque_respeita_orcamento_da_jogada_principal_e_don_anexado() -> None:
     check("Nola nao devolve DON e atrasa a curva para salvar corpo barato",
           low_save is None)
 
+    # Corpo 6000 cujo On Play ja resolveu nao e ameaca critica por definicao.
+    me4 = GameState(leader=real_card("OP11-062"), don_available=4, turn=5)
+    brulee2 = real_card("ST34-003")
+    brulee2.just_played = False
+    me4.field_chars = [brulee2]
+    opp4 = GameState(leader=real_card("OP13-002"), turn=5)
+    yamato = real_card("OP13-054")
+    yamato.rested = True
+    opp4.field_chars = [yamato]
+    eng4 = DecisionEngine(me4, opp4)
+    check("Yamato 6000 com On Play resolvido nao vira ameaca critica so pelo poder",
+          yamato not in eng4.analyzer.critical_threats())
+    leader_pressure = eng4.score_attack_target(brulee2, "leader", None)
+    removal_net = eng4.score_attack_target(brulee2, "character", yamato)
+    check("quatro DON para alcancar corpo comum valem menos que pressionar a vida",
+          leader_pressure > removal_net)
+
+    # Katakuri chega apenas a 6000 com seu buff e nao deve atacar Leader 7000
+    # so para obter peek do topo.
+    me5 = GameState(leader=real_card("OP11-062"), don_available=0, turn=5)
+    opp5 = GameState(
+        leader=mk("OP13-002", "Portgas D. Ace", power=7000,
+                  card_type="LEADER", color="Red/Blue"),
+        turn=5)
+    match5 = OPTCGMatch((me5.leader, []), (opp5.leader, []))
+    acts5 = match5._generate_and_score_actions(me5, opp5, DecisionEngine(me5, opp5))
+    check("ataque abaixo do Leader sem ganho material fica bloqueado",
+          not any(a[1] == "attack" and a[3] == "leader" for a in acts5))
+
 
 def test_play_turn_greedy_opponent_response() -> None:
     # Item 3 do plano (busca prof.2): _play_turn_greedy simula o turno de

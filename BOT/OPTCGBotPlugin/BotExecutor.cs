@@ -417,7 +417,10 @@ namespace OPTCGBotPlugin
         public static bool ClickTargetCandidate(GameplayLogicScript gls, PlayerState botPs,
                                                 PlayerState oppPs, int targetId)
         {
-            var go = FindCard(TopDeck(gls), targetId)
+            // DON anexado vive em lgo_AttachedDon do Leader/Character, nao
+            // em Lgo_MyDonCostArea. A coleta o achava, mas o clique nao.
+            var go = FindAttachedDon(botPs, targetId)
+                  ?? FindCard(TopDeck(gls), targetId)
                   ?? FindCard(botPs.Lgo_MyHand, targetId)
                   ?? FindCard(botPs.Lgo_MyDeploy, targetId)
                   ?? FindCard(botPs.Lgo_MyTrash, targetId)
@@ -435,6 +438,23 @@ namespace OPTCGBotPlugin
             _mClickDuringCardAction.Invoke(gls, new object[] { go });
             Plugin.Log.LogInfo($"[Bot] alvo de efeito: {CodeOf(go)}");
             return true;
+        }
+
+        private static GameObject? FindAttachedDon(PlayerState player, int deckUniqueId)
+        {
+            GameObject? InOwners(List<GameObject>? owners)
+            {
+                if (owners == null) return null;
+                foreach (var ownerGo in owners)
+                {
+                    var owner = ownerGo != null
+                        ? ownerGo.GetComponent<CardLogicScript>() : null;
+                    var found = FindCard(owner?.lgo_AttachedDon, deckUniqueId);
+                    if (found != null) return found;
+                }
+                return null;
+            }
+            return InOwners(player.Lgo_MyDeploy) ?? InOwners(player.Lgo_MyLeader);
         }
 
         // ── Botoes de escolha atualmente ofertados (go_ChoiceButton1..4) ─────

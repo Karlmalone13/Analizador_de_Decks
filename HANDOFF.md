@@ -1,5 +1,32 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-23 (318) - Codex - pressao liquida e clique real no DON anexado
+
+Implementadas as quatro correcoes aprovadas apos a partida Katakuri x Ace:
+
+- `critical_threats()` nao classifica mais qualquer corpo 6000 como critico.
+  Usa valor futuro: efeitos recorrentes, blocker, Double Attack e poder acima
+  do Leader. `On Play` ja resolvido nao conta; Yamato OP13-054 deixa de ganhar
+  prioridade artificial.
+- Ataque em Character desconta `don_opportunity_cost()` do DON necessario para
+  alcancar o alvo. Pressao na vida e remocao agora competem em valor liquido,
+  em vez de o Character receber vantagem sem pagar pelo DON anexado.
+- Bonus fixo `+300` de ameaca foi substituido pelo valor futuro real, limitado
+  a 120. O mesmo orcamento de DON da linha valida se o ataque pode conectar.
+- Ataque abaixo do alvo so e gerado se o [When Attacking] muda materialmente
+  recursos/campo. Buff do proprio combate ja incapaz de alcancar o alvo e
+  peek/reveal puro nao justificam mais 5000 -> 7000.
+- Causa C# do DON anexado fechada: `CollectTargetCandidates` encontrava os DON
+  em `lgo_AttachedDon`, mas `ClickTargetCandidate` so procurava zonas normais
+  e DonCostArea. Agora procura primeiro nos DON anexados de Leader/Characters,
+  permitindo que o jogo execute `ReturnDonFromCard`.
+
+Validacao: `py_compile` limpo; `smoke_fast.py` = SMOKE FAST OK, com tres casos
+novos (Yamato nao critica, custo de 4 DON perde para pressao, ataque abaixo sem
+ganho bloqueado); `test_bot_efficiency_report.py` = 14/14; `dotnet build` =
+0 erros/0 avisos e DLL copiada ao BepInEx. Ainda requer partida real para
+confirmar o clique anexado e o novo equilibrio de alvos.
+
 ## 2026-07-22 (317) - Codex - partida Katakuri x Ace: melhora real e gap C# do DON anexado
 
 Partida `Charlotte.Katakuri-P_x_Portgas.D.Ace-RB_2026-07-22T23.55.21`,
