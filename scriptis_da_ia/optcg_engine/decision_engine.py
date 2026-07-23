@@ -9288,6 +9288,35 @@ class DecisionEngine:
             return self.me.don_available
         return don_usable
 
+    def don_minus_delays_hand_curve(self, count: int = 1) -> bool:
+        """Retornar DON atrasa uma carta relevante que ainda esta na mao?"""
+        total = self.me.don_on_field()
+        if count <= 0 or total <= 0:
+            return False
+        future = [c for c in self.me.hand
+                  if c.card_type in ('CHARACTER', 'STAGE', 'EVENT')
+                  and c.cost > total
+                  and self.avaliar_carta(c) >= 80]
+        if not future:
+            return False
+        target = min(c.cost for c in future)
+        turns_without = max(0, (target - total + 1) // 2)
+        turns_with = max(0, (target - (total - count) + 1) // 2)
+        # Mesmo quando o ceil nao muda com uma unica devolucao, retornar
+        # repetidamente consome a folga que permitiria atingir a bomba.
+        return turns_with > turns_without or total < target
+
+    def combat_self_buff_has_relevant_actor(
+            self, actor: 'Card', actor_defending: bool | None,
+            defender_uid: int, attacker_power: int,
+            defender_power: int) -> bool:
+        """Valida se um buff de combate no proprio ator pode afetar a luta."""
+        if attacker_power <= 0 or defender_power < 0:
+            return False
+        if actor_defending is True:
+            return defender_uid == getattr(actor, '_deck_uid', 0)
+        return True
+
     # ── Distribuição de DON ───────────────────────────────────────────────────
 
     # ── Ordem e escolha de ataques ────────────────────────────────────────────
@@ -11157,6 +11186,12 @@ class OPTCGMatch:
             # bot. Vale para qualquer activate, com ou sem once_per_turn —
             # o estado do jogo e a verdade (loops do Laffitte/Devon 06/07).
             if getattr(src, '_am_used_turn', -1) == p.turn:
+                continue
+            # [DON!! xN] e requisito de estado, nao custo pago durante a
+            # ativacao. Sem o DON ja anexado, o bot deve primeiro gerar a
+            # acao attach_don e so oferecer activate na decisao seguinte.
+            don_req = am.get('don_requirement', 0)
+            if don_req and getattr(src, 'don_attached', 0) < don_req:
                 continue
             pode, _ = self._should_activate_main(src, am, p, opp)
             if not pode:

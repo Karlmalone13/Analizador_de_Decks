@@ -873,7 +873,8 @@ def resolve_reaction(gs: GameState, opp_gs: GameState,
             return resolve_optional_effect(gs, opp_gs, actor_code=actor_code,
                                            attacker_power=atk_power,
                                            defender_power=def_power,
-                                           actor_defending=defendendo)
+                                           actor_defending=defendendo,
+                                           defender_uid=defender_uid)
 
     engine = DecisionEngine(gs, opp_gs)
     my_life = gs.life_count()
@@ -1008,7 +1009,8 @@ def resolve_optional_effect(gs: GameState, opp_gs: GameState,
                             actor_code: str | None = None,
                             attacker_power: int = 0,
                             defender_power: int = 0,
-                            actor_defending: bool | None = None) -> bool:
+                            actor_defending: bool | None = None,
+                            defender_uid: int = 0) -> bool:
     """
     Efeito opcional com custo no PROPRIO turno (downside pos-play, ex:
     "you may trash 1 card: ..."). SEM heuristica propria -- delega pra
@@ -1090,7 +1092,7 @@ def resolve_optional_effect(gs: GameState, opp_gs: GameState,
         # contexto de combate real (attacker_power>0, vindo da janela de
         # reacao) E quando o bloco nao tem outro step material alem do
         # buff/peek -- efeito com K.O./draw/etc continua na regua ampla.
-        if attacker_power > 0 and trig in ('when_attacking', 'on_opp_attack'):
+        if trig in ('when_attacking', 'on_opp_attack'):
             buffs = [s for s in steps
                      if s.get('action') == 'buff_power'
                      and s.get('target') in ('self', 'leader')
@@ -1101,6 +1103,17 @@ def resolve_optional_effect(gs: GameState, opp_gs: GameState,
                 for s in steps)
             if so_buff_e_info:
                 amount = max(s.get('amount', 0) for s in buffs)
+                # Buff `self`/Leader so altera o combate se a propria carta
+                # e o defensor. Caso real 22/07: Pudding 0 atacou Pudding 0,
+                # mas o Katakuri devolveu DON e se buffou fora da batalha.
+                # Contexto 0/0 nao permite provar ganho de combate. Falhar
+                # fechado evita pagar custo irreversivel por informacao
+                # incompleta do cliente.
+                engine = DecisionEngine(gs, opp_gs)
+                if not engine.combat_self_buff_has_relevant_actor(
+                        card_obj, actor_defending, defender_uid,
+                        attacker_power, defender_power):
+                    return False
                 # A JANELA real (bot atacando ou defendendo) vem de
                 # actor_defending -- o TRIG nao serve de discriminador
                 # quando a carta tem os dois blocos (Katakuri tem
@@ -1224,6 +1237,19 @@ def resolve_optional_effect(gs: GameState, opp_gs: GameState,
                     # precisa gastar pra salvar um alvo salvavel
                     vira_atacando = (_chunks_2000(attacker_power + amount)
                                      > _chunks_2000(attacker_power))
+
+                # Taxar counter sem virar o poder cru nao justifica atrasar
+                # uma bomba da mao. O julgamento de curva vive no engine;
+                # este bridge apenas combina o contexto da janela ao vivo.
+                tem_don_minus = any(c.get('type') == 'don_minus' for c in custos)
+                vira_cru_atacando = (attacker_power < defender_power
+                                      and defender_power <= attacker_power + amount)
+                vira_cru_defendendo = (defender_power + amount > attacker_power)
+                if (tem_don_minus and engine.don_minus_delays_hand_curve(1)
+                        and not (vira_cru_atacando if actor_defending is False
+                                 else vira_cru_defendendo if actor_defending is True
+                                 else vira_cru_atacando or vira_cru_defendendo)):
+                    return False
 
                 if actor_defending is True:
                     vira = vira_defendendo

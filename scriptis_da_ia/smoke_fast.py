@@ -446,7 +446,7 @@ def test_mamaragan_main_so_mira_oponente_apesar_do_counter_mirar_proprio() -> No
           order.index(-1) > order.index(50) and order.index(-10) > order.index(50))
 
 
-def test_katakuri_when_attacking_custo_don_e_sempre_avaliado_como_valer_a_pena() -> None:
+def test_katakuri_buff_so_paga_com_impacto_no_combate_e_na_curva() -> None:
     # Achado real 20/07 (partida ao vivo, mesma sessao): Katakuri
     # (OP11-062, custo don_minus:1 -- RECURSO puro, nunca sacrificio) tinha
     # sua propria habilidade [When Attacking] recusada quase toda vez
@@ -466,8 +466,28 @@ def test_katakuri_when_attacking_custo_don_e_sempre_avaliado_como_valer_a_pena()
     opp.field_chars = [real_card("OP14-040")]  # 6000 power, Katakuri (5000) perde sozinho
     use = sim_bridge.resolve_reaction(me, opp, atk_power=5000, def_power=6000,
                                        defender_uid=0, actor_code="OP11-062")
-    check("Katakuri usa o proprio [When Attacking] mesmo com o ataque perdendo sozinho "
-          "(custo e recurso puro, sempre vale)", use is True)
+    check("Katakuri usa o proprio [When Attacking] quando +1000 vira o combate",
+          use is True)
+
+    # Partida 22/07: Pudding 0 atacou Pudding 0 e o Katakuri, fora daquele
+    # combate, devolveu DON para se buffar. O ator nao era o defensor uid=10.
+    me.leader._deck_uid = 1
+    pudding = real_card("OP11-070")
+    pudding._deck_uid = 10
+    me.field_chars = [pudding]
+    waste = sim_bridge.resolve_reaction(
+        me, opp, atk_power=0, def_power=0,
+        defender_uid=10, actor_code="OP11-062")
+    check("Katakuri nao paga buff quando outro Character e o defensor", waste is False)
+
+    # Taxar counter e util isoladamente, mas nao se DON -1 mantem uma bomba
+    # relevante presa na mao. Virar o poder cru continua autorizado.
+    me.hand = [real_card("ST34-004")]
+    tax_only = sim_bridge.resolve_reaction(
+        me, opp, atk_power=5000, def_power=5000,
+        defender_uid=-1, actor_code="OP11-062")
+    check("Katakuri nao devolve DON so para taxar counter enquanto atrasa a curva",
+          tax_only is False)
 
     # Teach (OP16-080, redirect de verdade) continua passando pela logica
     # de redirect -- nao pode virar sempre-True so por ter custo de recurso.
@@ -478,6 +498,25 @@ def test_katakuri_when_attacking_custo_don_e_sempre_avaliado_como_valer_a_pena()
         for s in block.get("steps", []))
     check("Teach (redirect de verdade) NAO e desviado pra resolve_optional_effect",
           teach_is_redirect)
+
+
+def test_pudding_anexa_don_antes_de_oferecer_activate_main() -> None:
+    pudding = real_card("OP11-070")
+    pudding._deck_uid = 10
+    me = GameState(leader=real_card("OP11-062"), don_available=1, turn=2)
+    me.field_chars = [pudding]
+    opp = GameState(leader=real_card("OP14-020"), turn=2)
+    match = OPTCGMatch((me.leader, []), (opp.leader, []))
+    actions = match._generate_and_score_actions(me, opp, DecisionEngine(me, opp))
+    check("Pudding sem DON anexado nao oferece activate_main",
+          not any(a[1] == "activate" and a[2] is pudding for a in actions))
+    check("Pudding sem DON anexado oferece primeiro attach_don",
+          any(a[1] == "attach_don" and a[2] is pudding for a in actions))
+    pudding.don_attached = 1
+    me.don_available = 0
+    actions2 = match._generate_and_score_actions(me, opp, DecisionEngine(me, opp))
+    check("Pudding com requisito anexado passa a oferecer activate_main",
+          any(a[1] == "activate" and a[2] is pudding for a in actions2))
 
 
 def test_resolve_reaction_custo_de_redirect_e_generico_nao_so_carta_da_mao() -> None:
@@ -7109,7 +7148,8 @@ def main() -> int:
     test_opp_combo_threat_detects_five_elders_style_reanimation()
     test_order_target_candidates_exclui_trash_para_alvo_battlefield_only()
     test_mamaragan_main_so_mira_oponente_apesar_do_counter_mirar_proprio()
-    test_katakuri_when_attacking_custo_don_e_sempre_avaliado_como_valer_a_pena()
+    test_katakuri_buff_so_paga_com_impacto_no_combate_e_na_curva()
+    test_pudding_anexa_don_antes_de_oferecer_activate_main()
     test_resolve_reaction_custo_de_redirect_e_generico_nao_so_carta_da_mao()
     test_peek_opp_deck_top_nao_vira_alvo_battlefield_only()
     test_own_don_e_candidato_prioritario_pra_custo_don_minus()

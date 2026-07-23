@@ -1,5 +1,28 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-22 (313) - Codex - efeito de combate relevante, curva DON-minus e ordem da Pudding
+
+Implementadas as correcoes aprovadas apos a partida do bloco 312:
+
+- Buff `self`/Leader com custo durante combate agora e recusado quando a
+  propria carta nao e o defensor. Fecha exatamente Pudding 0 -> Pudding 0:
+  Katakuri fora da batalha nao devolve mais DON para se buffar.
+- Contexto de combate sem poder valido (0/0) falha fechado para custo
+  irreversivel.
+- `DecisionEngine.don_minus_delays_hand_curve()` identifica bomba relevante
+  acima do DON atual. Um buff que apenas taxa counter, sem virar o poder cru,
+  nao paga DON-minus quando isso mantem a bomba presa na mao. Buff que vira o
+  combate continua permitido. A decisao de curva permanece no motor unico.
+- Activate:Main com `don_requirement` so entra na lista quando o DON ja esta
+  anexado. Pudding OP11-070 agora produz `attach_don` primeiro e `activate`
+  apenas na decisao seguinte, em vez de ativar/pagar/restar antes do requisito.
+
+Validacao: `py_compile` limpo; `python smoke_fast.py` = SMOKE FAST OK, com
+testes novos para defensor alheio, contexto 0/0, custo de curva e sequencia da
+Pudding; `python -m unittest test_bot_efficiency_report.py` = 13/13 OK.
+Somente Python; reiniciar o engine/JOGAR.bat antes da proxima partida. A
+partida real ainda e obrigatoria para declarar o sintoma resolvido.
+
 ## 2026-07-22 (312) - Codex - partida 22.30: Katakuri ainda paga efeito sem valor
 
 Nova partida real `Charlotte.Katakuri-P_x_Kaido-P_2026-07-22T22.30.34`,
