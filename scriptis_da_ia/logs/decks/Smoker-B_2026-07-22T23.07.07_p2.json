@@ -1,0 +1,66 @@
+{
+  "cards": [
+    {
+      "code": "ST19-002",
+      "name": "Sengoku",
+      "count": 3
+    },
+    {
+      "code": "ST19-003",
+      "name": "Tashigi",
+      "count": 2
+    },
+    {
+      "code": "EB01-049",
+      "name": "EB01-049",
+      "count": 2
+    },
+    {
+      "code": "OP02-121",
+      "name": "Kuzan",
+      "count": 2
+    },
+    {
+      "code": "ST06-006",
+      "name": "ST06-006",
+      "count": 2
+    },
+    {
+      "code": "OP03-089",
+      "name": "Brannew",
+      "count": 1
+    },
+    {
+      "code": "OP03-097",
+      "name": "OP03-097",
+      "count": 1
+    },
+    {
+      "code": "OP02-119",
+      "name": "OP02-119",
+      "count": 1
+    },
+    {
+      "code": "OP07-085",
+      "name": "OP07-085",
+      "count": 1
+    },
+    {
+      "code": "OP02-096",
+      "name": "Kuzan",
+      "count": 1
+    },
+    {
+      "code": "ST06-016",
+      "name": "ST06-016",
+      "count": 1
+    },
+    {
+      "code": "EB02-044",
+      "name": "Sengoku",
+      "count": 1
+    }
+  ],
+  "total_seen": 18,
+  "leader": "OP02-093"
+}

@@ -2068,5 +2068,55 @@
       "You": "decks/Charlotte.Katakuri-P_2026-07-22T22.30.34.json",
       "Opponent": "decks/Kaido-P_2026-07-22T22.30.34.json"
     }
+  },
+  {
+    "id": "2026-07-22T23.07.07",
+    "friendly_name": "Charlotte.Katakuri-P_x_Smoker-B",
+    "date": "2026-07-22",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP11-062",
+      "leader_name": "Charlotte Katakuri",
+      "slug": "Charlotte.Katakuri-P"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP02-093",
+      "leader_name": "Smoker",
+      "slug": "Smoker-B"
+    },
+    "turns": 1,
+    "winner": "p2",
+    "log_file": "raw/Charlotte.Katakuri-P_x_Smoker-B_2026-07-22T23.07.07.log",
+    "parsed_file": "parsed/Charlotte.Katakuri-P_x_Smoker-B_2026-07-22T23.07.07.json",
+    "deck_files": {
+      "You": "decks/Charlotte.Katakuri-P_2026-07-22T23.07.07.json",
+      "Opponent": "decks/Smoker-B_2026-07-22T23.07.07.json"
+    }
+  },
+  {
+    "id": "2026-07-22T23.07.07_p2",
+    "friendly_name": "Charlotte.Katakuri-P_x_Smoker-B",
+    "date": "2026-07-22",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP11-062",
+      "leader_name": "Charlotte Katakuri",
+      "slug": "Charlotte.Katakuri-P"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP02-093",
+      "leader_name": "Smoker",
+      "slug": "Smoker-B"
+    },
+    "turns": 11,
+    "winner": null,
+    "log_file": "raw/Charlotte.Katakuri-P_x_Smoker-B_2026-07-22T23.07.07_p2.log",
+    "parsed_file": "parsed/Charlotte.Katakuri-P_x_Smoker-B_2026-07-22T23.07.07_p2.json",
+    "deck_files": {
+      "You": "decks/Charlotte.Katakuri-P_2026-07-22T23.07.07_p2.json",
+      "Opponent": "decks/Smoker-B_2026-07-22T23.07.07_p2.json"
+    }
   }
 ]

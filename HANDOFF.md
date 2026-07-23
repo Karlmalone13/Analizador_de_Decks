@@ -1,5 +1,39 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-22 (314) - Codex - partida 23.07: execucao melhor, plano de turno pior
+
+Partida real `Charlotte.Katakuri-P_x_Smoker-B_2026-07-22T23.07.07_p2`,
+bot=P1/You/Katakuri. Auto-coleta salvou raw/parsed/decks e atualizou o indice.
+Relatorio `metrics/live_runs/live_2026-07-22T23.07.10.json`, decision log da
+sessao `22.42.43`, commit executado `65cdb86`.
+
+Comparacao com Katakuri x Kaido do bloco 312: execucao permaneceu 100%,
+cobertura de acoes subiu 93,056% -> 94,783%, p95 caiu 91,666 -> 53,843ms;
+porem regret contrafactual piorou 4,778 -> 8,812, maximo subiu para 1374,797ms
+e `no_eligible_action` foi 5 -> 6. A sessao nova contem um mulligan/partida
+adicional sem outcome, portanto outcome coverage 50% nao e comparacao causal.
+Os oponentes tambem diferem; usar o diff como diagnostico, nao prova causal.
+
+Falhas estrategicas confirmadas no turno 3: com 4 DON, Cracker ST34-002 (rampa
+1 DON rested + KO custo <=2) marcou 160, mas Pudding marcou 175 e foi escolhida;
+depois Nola marcou 25, Divine Departure passou de -999 para 90 apos anexar DON
+na Pudding, Pudding ativou por 60 e o ultimo DON foi anexado na segunda Pudding.
+O motor executou a ordem corrigida, mas nao avaliou valor liquido nem preservou
+o plano Cracker. Ha forte vies repetitivo para searchers/baixo custo.
+
+Outros sinais: ataques 5000 em 6000/7000 apenas consumiram counter e ataques
+posteriores ficaram realmente abaixo do alvo; 4 DON foram anexados a Nola para
+atacar 6000 em alvo que terminou 8000. Nola protegeu alvos de custo/valor baixo:
+efeito foi mecanicamente valido, mas estrategicamente caro. Mamaragan ainda e
+pontuada pelo draw sem exigir valor suficiente do rest/curva. No turno 5 havia
+DON anexado em personagem, mas selecao do efeito do lider/targets causou longa
+espera; auditar se o retorno prioriza DON anexado antes de DON ativo/rested.
+
+Conclusao: o fix 313 fechou ordem/relevancia local, mas a partida nao melhorou
+a qualidade global. Proxima correcao deve ser estrutural: plano de turno com
+orcamento DON, valor marginal de efeitos repetidos, penalidade de congestionamento
+de corpos 0/baixo custo, e avaliacao conjunta ataque+reacao+acao principal.
+
 ## 2026-07-22 (313) - Codex - efeito de combate relevante, curva DON-minus e ordem da Pudding
 
 Implementadas as correcoes aprovadas apos a partida do bloco 312:

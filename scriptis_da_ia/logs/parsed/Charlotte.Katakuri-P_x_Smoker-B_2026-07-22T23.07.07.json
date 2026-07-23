@@ -1,0 +1,57 @@
+{
+  "meta": {
+    "players": {
+      "p1": {
+        "name": "You",
+        "leader": {
+          "name": "Charlotte Katakuri",
+          "code": "OP11-062"
+        }
+      },
+      "p2": {
+        "name": "Opponent",
+        "leader": {
+          "name": "Smoker",
+          "code": "OP02-093"
+        }
+      }
+    },
+    "goes_first": null
+  },
+  "total_turns": 1,
+  "turns": [
+    {
+      "turn": 1,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 1,
+      "actions": [],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP10-098",
+            "ST06-017",
+            "OP03-097",
+            "OP03-089",
+            "ST19-004"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 5
+        },
+        "Opponent": {
+          "hand": [
+            "OP15-069",
+            "ST34-001",
+            "ST34-002",
+            "OP11-070",
+            "OP11-067"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 5
+        }
+      }
+    }
+  ]
+}
