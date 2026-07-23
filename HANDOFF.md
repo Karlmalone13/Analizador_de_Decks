@@ -1,5 +1,40 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-23 (325) - Claude - 3a partida Mihawk x Katakuri + pivot de metodologia
+
+Partida `Dracule.Mihawk-G_x_Charlotte.Katakuri-P_2026-07-23T17.54.33` (bot=P2,
+derrota, ja no bloco 324/`492406e`). Usuario reportou que o bot morreu tendo
+"como defender" (Mamaragan, efeito do lider, counter da Pudding). Investigado
+a sequencia final na decision log `decisions_2026-07-23T17.47.11.jsonl`
+(indices 164-168 e 176-180):
+
+- `activeDon: 0` nos dois ultimos ataques -- o efeito do lider Katakuri
+  (custo DON!!1) literalmente nao tinha como ser pago, nao e recusa por
+  julgamento. Correto.
+- Pudding (PRB02-010) NAO estava na mao nesse ponto (ja usada em turnos
+  anteriores) -- suposicao do usuario nao bateu com o estado real.
+- Mamaragan (OP15-078, 1000 counter) era a UNICA carta de counter na mao.
+  Sozinho, 1000 contra um ataque de 6000 vs lider 5000 fecha em EMPATE
+  (5000+1000=6000), que "empate vai pro atacante" (regra ja documentada,
+  buff_wins_combat) -- perde de qualquer jeito. Recusa correta, nao bug.
+- Achado real (nao investigado a fundo, so registrado): a mao nesse ponto
+  tinha 6 cartas, sendo 5 delas custo 7-9 (2x OP11-067 custo8, 3x OP08-069
+  custo9) -- e o `activeDon` nunca passou de 4 em nenhum momento das 4
+  primeiras rodadas do jogo (`decisions_...`, decision_kind=main, turnos
+  1-4). Mao entupida de bombas duplicadas + DON que nunca sobe o bastante
+  pra pagar nenhuma -- pode ser sorte de draw (varias copias caras cedo)
+  combinada com desenvolvimento lento, mas nao foi isolado se e
+  causa estrutural ou so essa partida especifica. Fica pendente.
+
+**Pivot de metodologia (pedido do usuario):** em vez de eu inferir
+"eficiencia baixa" so pela leitura do log do bot, o usuario vai jogar de
+Katakuri ele mesmo (bot fica de Mihawk) usando os MESMOS decks das
+partidas ja salvas onde ele venceu de Mihawk contra o bot. Depois compara
+lado a lado: turno a turno, DON investido, cartas jogadas, dano — humano
+vs bot nos MESMOS decks/matchup, prova mais direta de gap de eficiencia
+que ler decision log isolado. Proximo passo (proxima sessao ou retomada):
+aguardar essa partida nova e montar a comparacao.
+
 ## 2026-07-23 (324) - Claude - fecha o gap dois-motores do achado 3 (bloco 323)
 
 Implementa os itens (a) e (b) discutidos no fim do bloco 323, aprovados pelo
