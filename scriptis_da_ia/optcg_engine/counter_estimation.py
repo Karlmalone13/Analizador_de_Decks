@@ -110,10 +110,11 @@ def estimate_opp_counter(
     }
 
 
-# Counter impresso máximo por carta na mão (a maioria é 1000, algumas 2000)
-MAX_PRINTED_COUNTER_PER_CARD = 2000
-# Boost típico de um evento de counter (varia 1000-4000; usamos um teto plausível)
-TYPICAL_COUNTER_EVENT_BOOST = 2000
+# Limites conservadores do banco/motor. Estes valores alimentam uma decisao
+# de IMPOSSIBILIDADE ("nem com tudo salva"), portanto precisam ser teto, nao
+# media tipica: existem counter impresso e EVENT de 3000/4000.
+MAX_PRINTED_COUNTER_PER_CARD = 4000
+MAX_COUNTER_EVENT_BOOST = 4000
 
 
 def max_plausible_defense(
@@ -146,7 +147,7 @@ def max_plausible_defense(
     # As demais cartas podem somar counter IMPRESSO (não custa DON)
     n_printed = opp_hand_size - n_events
 
-    max_event = n_events * TYPICAL_COUNTER_EVENT_BOOST
+    max_event = n_events * MAX_COUNTER_EVENT_BOOST
     max_printed = n_printed * MAX_PRINTED_COUNTER_PER_CARD
 
     max_defense = target_base_power + max_printed + max_event

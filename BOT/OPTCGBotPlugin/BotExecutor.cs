@@ -287,6 +287,21 @@ namespace OPTCGBotPlugin
                 else if (FindCard(botPs.Lgo_MyDeck, uid) == null)
                     Nota("opp_deck", uid);  // nao e nada do bot: peek de deck inimigo
             }
+            // PeekSelfLife/PeekOppLife do jogo oficial nao move a carta para
+            // lgo_TopDeck: apenas chama SetFaceUp(true) diretamente na zona
+            // de Life. Capture essas cartas visiveis durante a confirmacao.
+            void NotaLifeFaceUp(List<GameObject>? life, string zona)
+            {
+                if (life == null) return;
+                foreach (var go in life)
+                {
+                    var cls = go != null ? go.GetComponent<CardLogicScript>() : null;
+                    if (cls != null && cls.myCard.bFaceUp)
+                        Nota(zona, cls.myCard.deckUniqueID);
+                }
+            }
+            NotaLifeFaceUp(oppPs.Lgo_MyLifeDeck, "opp_life");
+            NotaLifeFaceUp(botPs.Lgo_MyLifeDeck, "own_life");
             foreach (var kv in porZona)
                 EngineClient.ReportReveal(kv.Key, kv.Value);
         }

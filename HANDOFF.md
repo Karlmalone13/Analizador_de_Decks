@@ -1,5 +1,33 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-22 (309) - Codex - informacao oculta honesta + reveals de Life + teto defensivo real
+
+Revisao dos commits 299-308 achou e corrigiu 3 gaps sistemicos antes da
+proxima partida ao vivo:
+
+1. **Decklist adversaria presumida pelo lider:** o caminho ao vivo mascarava
+   mao/Life, mas `sim_bridge` ainda escolhia um `.deck` local pelo codigo do
+   lider e o tratava como lista exata. `_dto_to_gs(hide_hidden=True)` agora
+   marca `hidden_information_masked`; estados adversarios assim nao recebem
+   `full_deck_census`, nao usam `opponent_model_for_leader` na busca e nao
+   usam decklist local na estimativa de counter. Self-play/offline preserva a
+   lista exata, porque ali ela faz parte do estado conhecido.
+2. **Reveal de Life nao passava pelo TopDeck:** o oficial implementa
+   `PeekSelfLife`/`PeekOppLife` com `SetFaceUp(true)` diretamente em
+   `Lgo_MyLifeDeck`. `ReportRevealedCards` agora registra Life face-up dos
+   dois lados, alem do fluxo existente de `lgo_TopDeck`.
+3. **`max_plausible_defense` nao era maximo:** usava 2000 por counter/event,
+   apesar de o banco/motor terem counters de 3000/4000 (OP06-051 tem counter
+   impresso 4000). O teto conservador agora usa 4000; isso evita concluir
+   falsamente que um alvo e insalvavel e recusar buff util.
+
+Validacao: `PYTHONUTF8=1 python smoke_fast.py` = **OK**, incluindo 3 testes
+novos; `py_compile` limpo. `dotnet build` gerou a DLL com sucesso, mas o
+post-build nao conseguiu copiar para `E:\Games\...\BepInEx\plugins` por
+acesso negado/arquivo em uso. Rodar `JOGAR.bat` com o jogo fechado antes da
+partida ao vivo. Proxima etapa depois da validacao real: metricas por lado
+com `botSeat`, mascara da propria Life e tuning instrumentado de decisoes.
+
 ## 2026-07-22 (308) - Claude -> Codex - RETOMADA: estado da branch e pendencias
 
 **ATENCAO CODEX: todo o trabalho de 21-22/07 esta na branch

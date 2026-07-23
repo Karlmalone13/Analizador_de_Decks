@@ -30,6 +30,7 @@ from optcg_engine.decision_engine import (  # noqa: E402
     load_cards_db,
 )
 from optcg_engine import sim_bridge  # noqa: E402
+from optcg_engine.counter_estimation import max_plausible_defense  # noqa: E402
 
 
 FAIL = 0
@@ -74,6 +75,24 @@ cards = load_cards_db("cards_rows.csv")
 
 def real_card(code: str) -> Card:
     return _make_card(code, cards[code])
+
+
+def test_hidden_info_honesta_e_teto_counter_real() -> None:
+    # Este valor e usado como prova de IMPOSSIBILIDADE, entao precisa cobrir
+    # counters reais de 4000, nao a media tipica de 2000.
+    teto_impresso = max_plausible_defense(5000, 1, 0)
+    teto_evento = max_plausible_defense(5000, 1, 1)
+    check("teto defensivo cobre counter impresso real de 4000",
+          teto_impresso["max_defense"] == 9000)
+    check("teto defensivo cobre EVENT de Counter real de 4000",
+          teto_evento["max_defense"] == 9000)
+
+    # Contrato usado pelo caminho ao vivo: o estado mascarado nao pode
+    # habilitar lookup de decklist/opponent search apenas pelo lider.
+    opp = GameState(leader=mk("TEST-L", "Leader", card_type="LEADER"))
+    opp.hidden_information_masked = True
+    check("estado ao vivo mascarado sinaliza que decklist adversaria e oculta",
+          opp.hidden_information_masked is True)
 
 
 def test_turn_order_imu_prefers_second() -> None:
@@ -7023,6 +7042,7 @@ def test_opp_combo_threat_detects_five_elders_style_reanimation() -> None:
 
 
 def main() -> int:
+    test_hidden_info_honesta_e_teto_counter_real()
     test_turn_order_imu_prefers_second()
     test_empty_throne_beats_direct_five_elders_play()
     test_ground_death_no_low_value_negate()

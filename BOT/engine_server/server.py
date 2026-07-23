@@ -260,6 +260,10 @@ def _dto_to_gs(player: PlayerDto, turn: int, hide_hidden: bool = False):
         leader = _make_card("STUB-000", data)
 
     gs = GameState(leader=leader)
+    # Sinal explicito para o bridge: este estado veio do caminho ao vivo e
+    # contem informacao oculta mascarada. Impede inferir a decklist exata do
+    # oponente apenas pelo lider (um humano nao conhece essa lista).
+    gs.hidden_information_masked = hide_hidden
     if hide_hidden:
         # Mao oculta: identidade so das reveladas (MatchMemory), resto UNKNOWN
         gs.hand = []
@@ -330,7 +334,7 @@ def _dto_to_gs(player: PlayerDto, turn: int, hide_hidden: bool = False):
     # o usuario customizar a lista), mas e a MESMA decklist que ja usamos pra
     # tudo mais. Sem match (lider desconhecido) fica None -- posture() ja
     # degrada pra 'midrange' nesse caso, comportamento antigo preservado.
-    if gs.leader is not None:
+    if gs.leader is not None and not hide_hidden:
         cards = bridge.deck_cards_for_leader(gs.leader.code)
         if cards:
             from optcg_engine.decision_engine import (

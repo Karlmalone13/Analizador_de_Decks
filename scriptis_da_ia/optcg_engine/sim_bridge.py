@@ -391,7 +391,8 @@ def choose_action(gs: GameState, opp_gs: GameState,
             # menores que o offline (2/2 vs 3/3) -- orcamento de /decide e por
             # ACAO, nao por turno inteiro, mas o board late-game ja mostrou
             # custo O(board²) no profiling de 14/07.
-            if len(candidatos) > 1:
+            if (len(candidatos) > 1
+                    and not getattr(opp_gs, 'hidden_information_masked', False)):
                 model = opponent_model_for_leader(getattr(opp_gs.leader, 'code', ''))
                 if model is not None:
                     amostras = [model.sample(opp_gs, rng=random.Random())
@@ -1141,8 +1142,15 @@ def resolve_optional_effect(gs: GameState, opp_gs: GameState,
                 # sorteavel. Sem decklist (lider desconhecido): None e o
                 # estimate cai na densidade tipica de formato.
                 deck1000 = deck2000 = None
-                _deck_opp = deck_cards_for_leader(opp_gs.leader.code) \
-                    if opp_gs.leader is not None else None
+                # Em self-play a lista completa faz parte do estado conhecido.
+                # Ao vivo, o servidor mascara a informacao oculta: nao inferir
+                # uma lista local apenas pelo lider, pois ela pode nem ser a
+                # lista usada pelo humano.
+                _deck_opp = (deck_cards_for_leader(opp_gs.leader.code)
+                             if (opp_gs.leader is not None
+                                 and not getattr(
+                                     opp_gs, 'hidden_information_masked', False))
+                             else None)
                 if _deck_opp:
                     deck1000 = sum(1 for c in _deck_opp
                                    if getattr(c, 'counter', 0) == 1000)
