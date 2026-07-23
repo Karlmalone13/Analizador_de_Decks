@@ -7239,7 +7239,35 @@ def test_opp_combo_threat_detects_five_elders_style_reanimation() -> None:
           engine3.analyzer.analysis_priority() != "PREVENT_COMBO")
 
 
+def test_big_mom_optional_zero_parser_order_and_don_synergy() -> None:
+    cracker = get_card_effects("ST34-002")["on_play"]["steps"]
+    check("Cracker rampa antes do K.O. opcional",
+          [s["action"] for s in cracker[:2]] == ["add_don", "ko"])
+
+    katakuri = get_card_effects("OP11-067")["end_of_turn"]["steps"]
+    set_active = next(s for s in katakuri if s["action"] == "set_active")
+    check("Katakuri 8 aceita Big Mom de custo 3 ou mais",
+          set_active.get("cost_gte") == 3 and "cost_eq" not in set_active)
+    check("Katakuri 8 rampa depois de levantar os Characters",
+          [s["action"] for s in katakuri[:2]] == ["set_active", "add_don"])
+
+    me = GameState(leader=real_card("OP11-062"), don_rested=10, turn=6)
+    me.is_active_turn = True
+    me.field_chars = [real_card("ST34-001")]
+    me.hand = [real_card("ST34-004")]
+    opp = GameState(leader=real_card("OP04-019"), turn=6)
+    engine = DecisionEngine(me, opp)
+    check("trigger de retorno de DON tem valor marginal positivo",
+          engine.don_return_trigger_value(1) > engine.don_opportunity_cost(1))
+    check("Katakuri usa DON-minus quando ST34-001 converte 1 DON em 2",
+          sim_bridge.resolve_optional_effect(
+              me, opp, actor_code="OP11-062",
+              attacker_power=5000, defender_power=9000,
+              actor_defending=False))
+
+
 def main() -> int:
+    test_big_mom_optional_zero_parser_order_and_don_synergy()
     test_hidden_info_honesta_e_teto_counter_real()
     test_turn_order_imu_prefers_second()
     test_empty_throne_beats_direct_five_elders_play()

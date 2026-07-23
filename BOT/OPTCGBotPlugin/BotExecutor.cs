@@ -166,7 +166,8 @@ namespace OPTCGBotPlugin
         public static bool IsOfferingDownside(GameplayLogicScript gls)
         {
             foreach (var btn in OfferedButtons(gls))
-                if (btn == ButtonChoiceType.UseOnPlay || btn == ButtonChoiceType.UseV3OnPlay)
+                if (btn.myType == ButtonChoiceType.UseOnPlay
+                    || btn.myType == ButtonChoiceType.UseV3OnPlay)
                     return true;
             return false;
         }
@@ -191,7 +192,7 @@ namespace OPTCGBotPlugin
             catch { return false; }
 
             foreach (var btn in OfferedButtons(gls))
-                if (btn == ButtonChoiceType.Cancel)
+                if (btn.myType == ButtonChoiceType.Cancel)
                     return true;
             return false;
         }
@@ -458,14 +459,14 @@ namespace OPTCGBotPlugin
         }
 
         // ── Botoes de escolha atualmente ofertados (go_ChoiceButton1..4) ─────
-        private static IEnumerable<ButtonChoiceType> OfferedButtons(GameplayLogicScript gls)
+        private static IEnumerable<ChoiceButtonScript> OfferedButtons(GameplayLogicScript gls)
         {
             foreach (var go in new[] { gls.go_ChoiceButton1, gls.go_ChoiceButton2,
                                        gls.go_ChoiceButton3, gls.go_ChoiceButton4 })
             {
                 if (go == null || !go.activeSelf) continue;
                 var btn = go.GetComponent<ChoiceButtonScript>();
-                if (btn != null) yield return btn.myType;
+                if (btn != null) yield return btn;
             }
         }
 
@@ -476,13 +477,23 @@ namespace OPTCGBotPlugin
         {
             var preferidos = new[] { ButtonChoiceType.FinalizeTopDeck,
                                      ButtonChoiceType.ConfirmRevealedCard,
-                                     ButtonChoiceType.SelectTargets };
+                                     ButtonChoiceType.SelectTargets,
+                                     ButtonChoiceType.SelectFriendlyTargets,
+                                     ButtonChoiceType.SelectEnemyTargets,
+                                     ButtonChoiceType.SelectEnemyCharacters,
+                                     ButtonChoiceType.SelectEnemyLeaders,
+                                     ButtonChoiceType.SelectEnemyStage,
+                                     ButtonChoiceType.SelectTrashTargets,
+                                     ButtonChoiceType.ConfirmInfiniteTargets };
             foreach (var alvo in preferidos)
                 foreach (var oferecido in OfferedButtons(gls))
-                    if (oferecido == alvo)
+                    if (oferecido.myType == alvo)
                     {
-                        gls.ChoiceButtonClicked(alvo, -1);
-                        Plugin.Log.LogInfo($"[Bot] confirmar selecao: {alvo}");
+                        // Mesmo contrato de ChoiceButtonScript.ImClicked():
+                        // usa o tipo e o inteiro do botao que esta na tela.
+                        gls.ChoiceButtonClicked(oferecido.myType, oferecido.iChoiceInt);
+                        Plugin.Log.LogInfo(
+                            $"[Bot] confirmar selecao: {oferecido.myType} ({oferecido.iChoiceInt})");
                         return;
                     }
             // Nenhum botao de finalize visivel — mantem o comportamento antigo

@@ -1,5 +1,32 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-23 (320) - Codex - Choose 0, parser composto e sinergia DON
+
+Implementadas as correcoes aprovadas apos a partida Katakuri x Jinbe:
+
+- Plugin agora confirma a selecao pelo botao REAL exibido pelo jogo, preservando
+  `myType` e `iChoiceInt`. A lista cobre SelectTargets, Friendly, Enemy,
+  EnemyCharacters/Leaders/Stage, Trash e Infinite. Isso corrige o caso
+  "Choose 0 enemy Characters", que antes caia no fallback SelectTargets e
+  percorria dezenas de candidatos invalidos.
+- Parser `set_active` reconhece `cost N or more` como `cost_gte`; OP11-067
+  passou de `cost_eq=3` para `cost_gte=3`.
+- Familia textual `Add DON. Then, K.O.` preserva a ordem real: OP13-061,
+  OP14-064 e ST34-002 agora resolvem add_don antes do K.O. opcional. Assim
+  Cracker rampa mesmo sem alvo para K.O.
+- Motor valora triggers `when_don_returned` realmente ativos (timing,
+  condicoes, limiar e once-per-turn). DON-minus usa custo liquido depois do
+  trigger; com ST34-001 em campo, devolver 1 pelo lider OP11-062 reconhece
+  que adiciona 2 restados e deixa de recusar a habilidade apenas por curva.
+
+Auditoria do parser antes de atualizar snapshot: GANHOU=0, PERDEU=0, MUDOU=4
+(somente as quatro cartas esperadas). Depois da regeneracao: diff=0.
+`smoke_fast.py` = SMOKE FAST OK, incluindo 5 asserts novos; relatorio de
+eficiencia = 14/14. Plugin compilou com 0 erros/0 avisos e a DLL foi copiada
+para o BepInEx. Proxima etapa obrigatoria: partida ao vivo para validar
+Choose 0, ramp de Cracker/Katakuri e uso contextual do lider com ST34-001.
+O clique em DON anexado do bloco 318 tambem continua aguardando validacao real.
+
 ## 2026-07-23 (319) - Codex - partida Katakuri x Jinbe: alvos opcionais e sinergia DON
 
 Partida `Charlotte.Katakuri-P_x_Jinbe-G_2026-07-23T13.26.50`, bot=P1/You,

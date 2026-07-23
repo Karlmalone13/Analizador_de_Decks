@@ -28815,7 +28815,7 @@
    "steps": [
     {
      "action": "set_active",
-     "cost_eq": 3,
+     "cost_gte": 3,
      "count": 2,
      "filter_type": "big mom pirates",
      "target": "own_character"
@@ -33022,15 +33022,15 @@
    },
    "steps": [
     {
+     "action": "add_don",
+     "count": 1,
+     "rested": true
+    },
+    {
      "action": "ko",
      "cost_lte": 1,
      "count": 1,
      "target": "opp_character"
-    },
-    {
-     "action": "add_don",
-     "count": 1,
-     "rested": true
     }
    ]
   }
@@ -35534,15 +35534,15 @@
   "on_ko": {
    "steps": [
     {
+     "action": "add_don",
+     "count": 1,
+     "rested": true
+    },
+    {
      "action": "ko",
      "count": 1,
      "power_lte": 0,
      "target": "opp_character"
-    },
-    {
-     "action": "add_don",
-     "count": 1,
-     "rested": true
     }
    ]
   }
@@ -50094,15 +50094,15 @@
    },
    "steps": [
     {
+     "action": "add_don",
+     "count": 1,
+     "rested": true
+    },
+    {
      "action": "ko",
      "cost_lte": 2,
      "count": 1,
      "target": "opp_character"
-    },
-    {
-     "action": "add_don",
-     "count": 1,
-     "rested": true
     }
    ]
   }

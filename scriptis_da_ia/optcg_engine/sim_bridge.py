@@ -1174,10 +1174,16 @@ def resolve_optional_effect(gs: GameState, opp_gs: GameState,
                      if s.get('action') == 'buff_power'
                      and s.get('target') in ('self', 'leader')
                      and s.get('duration') in ('battle_only', 'this_battle')]
+            engine = DecisionEngine(gs, opp_gs)
+            don_minus_count = sum(
+                int(c.get('count', 1) or 1) for c in custos
+                if c.get('type') == 'don_minus')
+            valuable_return_trigger = engine.has_valuable_don_return_trigger(
+                don_minus_count)
             so_buff_e_info = buffs and all(
                 s.get('action') in ('buff_power', 'peek_opp_deck_top',
                                     'look_top_deck')
-                for s in steps)
+                for s in steps) and not valuable_return_trigger
             if so_buff_e_info:
                 amount = max(s.get('amount', 0) for s in buffs)
                 # Buff `self`/Leader so altera o combate se a propria carta
@@ -1186,7 +1192,6 @@ def resolve_optional_effect(gs: GameState, opp_gs: GameState,
                 # Contexto 0/0 nao permite provar ganho de combate. Falhar
                 # fechado evita pagar custo irreversivel por informacao
                 # incompleta do cliente.
-                engine = DecisionEngine(gs, opp_gs)
                 if not engine.combat_self_buff_has_relevant_actor(
                         card_obj, actor_defending, defender_uid,
                         attacker_power, defender_power):
@@ -1323,6 +1328,7 @@ def resolve_optional_effect(gs: GameState, opp_gs: GameState,
                                       and defender_power <= attacker_power + amount)
                 vira_cru_defendendo = (defender_power + amount > attacker_power)
                 if (tem_don_minus and engine.don_minus_delays_hand_curve(1)
+                        and not engine.has_valuable_don_return_trigger(1)
                         and not (vira_cru_atacando if actor_defending is False
                                  else vira_cru_defendendo if actor_defending is True
                                  else vira_cru_atacando or vira_cru_defendendo)):

@@ -9376,14 +9376,66 @@ class DecisionEngine:
             base += min(90.0, max(self.avaliar_carta(c) for c in playable) * 0.45)
         return base
 
+    def don_return_trigger_value(self, count: int = 1) -> float:
+        """Valor dos efeitos proprios que uma devolucao de DON dispara agora."""
+        if count <= 0:
+            return 0.0
+        cards = [self.me.leader, *self.me.field_chars]
+        if self.me.field_stage:
+            cards.append(self.me.field_stage)
+        ee = EffectExecutor(self.me, self.opp)
+        total = 0.0
+        marker = (self.me.global_turn, 'when_don_returned')
+        for source in cards:
+            entry = get_card_effects(source.code).get('when_don_returned')
+            if not entry or count < entry.get('return_count_gte', 1):
+                continue
+            timing = entry.get('owner_turn')
+            if timing == 'your' and not self.me.is_active_turn:
+                continue
+            if timing == 'opponent' and self.me.is_active_turn:
+                continue
+            if (entry.get('once_per_turn')
+                    and getattr(source, '_event_once_marker', None) == marker):
+                continue
+            if not ee._check_conditions(entry.get('conditions', {}), source):
+                continue
+            for step in entry.get('steps', []):
+                if not ee._step_is_viable(step, source):
+                    continue
+                action = step.get('action')
+                amount = int(step.get('count', 1) or 1)
+                if action == 'add_don':
+                    total += self.ramp_curve_value(amount) + 20.0 * amount
+                elif action == 'draw':
+                    total += 55.0 * amount
+                elif action in ('set_don_active', 'set_active'):
+                    total += 30.0 * amount
+                elif action in ('ko', 'ko_opp', 'bounce',
+                                'place_opp_character_bottom_deck'):
+                    total += 70.0 * amount
+                else:
+                    total += 20.0
+        return total
+
+    def don_minus_opportunity_cost(self, count: int = 1) -> float:
+        """Custo liquido de DON-minus depois dos triggers realmente ativos."""
+        return max(0.0, self.don_opportunity_cost(count)
+                   - self.don_return_trigger_value(count))
+
+    def has_valuable_don_return_trigger(self, count: int = 1) -> bool:
+        """A devolucao ativa algum beneficio material no estado atual?"""
+        return self.don_return_trigger_value(count) > 0
+
     def should_pay_removal_substitute(self, target: 'Card', cost: dict) -> bool:
         """Compara o corpo preservado com o recurso irreversivel da protecao."""
         saved = self.analyzer.char_value_score(target)
         action = cost.get('action')
         count = int(cost.get('count', 1) or 1)
         if action in ('return_own_don', 'don_minus'):
-            price = self.don_opportunity_cost(count)
-            if self.don_minus_delays_hand_curve(count):
+            price = self.don_minus_opportunity_cost(count)
+            if (self.don_minus_delays_hand_curve(count)
+                    and self.don_return_trigger_value(count) <= 0):
                 price += 45.0
         elif action == 'rest_don':
             price = self.don_opportunity_cost(count)
@@ -10878,8 +10930,10 @@ class OPTCGMatch:
                                 for c in main.get('costs', [])
                                 if c.get('type') == 'don_minus')
                 if don_minus:
-                    base -= engine.don_opportunity_cost(don_minus)
-                    if engine.don_minus_delays_hand_curve(don_minus) and not useful_control:
+                    base -= engine.don_minus_opportunity_cost(don_minus)
+                    if (engine.don_minus_delays_hand_curve(don_minus)
+                            and engine.don_return_trigger_value(don_minus) <= 0
+                            and not useful_control):
                         return -999.0
                 rest_don = sum(int(c.get('count', 1) or 1)
                                for c in main.get('costs', [])
@@ -11298,7 +11352,9 @@ class OPTCGMatch:
                 wa_don_minus = sum(int(c.get('count', 1) or 1)
                                    for c in wa.get('costs', [])
                                    if c.get('type') == 'don_minus')
-                if wa_don_minus and engine.don_minus_delays_hand_curve(wa_don_minus):
+                if (wa_don_minus
+                        and engine.don_minus_delays_hand_curve(wa_don_minus)
+                        and engine.don_return_trigger_value(wa_don_minus) <= 0):
                     atk_now_for_budget = live_attack_power(att)
                 # [Rush: Character] restringe o alvo a Characters do
                 # oponente neste turno -- nao gera a opcao de atacar o Leader.

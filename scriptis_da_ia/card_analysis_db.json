@@ -76642,14 +76642,14 @@
   "attribute": "Slash",
   "effects": [
    {
+    "action": "add_don",
+    "trigger": "on_play"
+   },
+   {
     "action": "ko",
     "trigger": "on_play",
     "cost_lte": 1,
     "target": "opp_character"
-   },
-   {
-    "action": "add_don",
-    "trigger": "on_play"
    }
   ],
   "synergy_states": {},
@@ -82116,14 +82116,14 @@
   "attribute": "Special",
   "effects": [
    {
+    "action": "add_don",
+    "trigger": "on_ko"
+   },
+   {
     "action": "ko",
     "trigger": "on_ko",
     "power_lte": 0,
     "target": "opp_character"
-   },
-   {
-    "action": "add_don",
-    "trigger": "on_ko"
    }
   ],
   "synergy_states": {},
@@ -115555,14 +115555,14 @@
   "attribute": "Wisdom",
   "effects": [
    {
+    "action": "add_don",
+    "trigger": "on_play"
+   },
+   {
     "action": "ko",
     "trigger": "on_play",
     "cost_lte": 2,
     "target": "opp_character"
-   },
-   {
-    "action": "add_don",
-    "trigger": "on_play"
    }
   ],
   "synergy_states": {},
