@@ -2168,5 +2168,30 @@
       "You": "decks/Charlotte.Katakuri-P_2026-07-23T13.26.50.json",
       "Opponent": "decks/Jinbe-G_2026-07-23T13.26.50.json"
     }
+  },
+  {
+    "id": "2026-07-23T14.12.36",
+    "friendly_name": "Charlotte.Katakuri-P_x_Krieg-RG",
+    "date": "2026-07-23",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP11-062",
+      "leader_name": "Charlotte Katakuri",
+      "slug": "Charlotte.Katakuri-P"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP15-001",
+      "leader_name": "Krieg",
+      "slug": "Krieg-RG"
+    },
+    "turns": 11,
+    "winner": "p2",
+    "log_file": "raw/Charlotte.Katakuri-P_x_Krieg-RG_2026-07-23T14.12.36.log",
+    "parsed_file": "parsed/Charlotte.Katakuri-P_x_Krieg-RG_2026-07-23T14.12.36.json",
+    "deck_files": {
+      "You": "decks/Charlotte.Katakuri-P_2026-07-23T14.12.36.json",
+      "Opponent": "decks/Krieg-RG_2026-07-23T14.12.36.json"
+    }
   }
 ]

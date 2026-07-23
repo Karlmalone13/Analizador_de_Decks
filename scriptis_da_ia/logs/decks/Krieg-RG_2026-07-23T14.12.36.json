@@ -1,0 +1,91 @@
+{
+  "cards": [
+    {
+      "code": "OP15-026",
+      "name": "Jango",
+      "count": 3
+    },
+    {
+      "code": "OP13-040",
+      "name": "OP13-040",
+      "count": 2
+    },
+    {
+      "code": "EB04-004",
+      "name": "Zeff",
+      "count": 2
+    },
+    {
+      "code": "OP11-067",
+      "name": "Charlotte Katakuri",
+      "count": 1
+    },
+    {
+      "code": "ST34-001",
+      "name": "Charlotte Katakuri",
+      "count": 1
+    },
+    {
+      "code": "OP08-069",
+      "name": "OP08-069",
+      "count": 1
+    },
+    {
+      "code": "ST34-002",
+      "name": "Charlotte Cracker",
+      "count": 1
+    },
+    {
+      "code": "ST34-005",
+      "name": "Baron Tamago & Pekoms",
+      "count": 1
+    },
+    {
+      "code": "OP11-070",
+      "name": "Charlotte Pudding",
+      "count": 1
+    },
+    {
+      "code": "OP15-017",
+      "name": "Morgan",
+      "count": 1
+    },
+    {
+      "code": "OP15-023",
+      "name": "Arlong",
+      "count": 1
+    },
+    {
+      "code": "OP15-037",
+      "name": "OP15-037",
+      "count": 1
+    },
+    {
+      "code": "OP11-073",
+      "name": "OP11-073",
+      "count": 1
+    },
+    {
+      "code": "OP15-027",
+      "name": "OP15-027",
+      "count": 1
+    },
+    {
+      "code": "OP15-012",
+      "name": "OP15-012",
+      "count": 1
+    },
+    {
+      "code": "OP15-008",
+      "name": "Krieg",
+      "count": 1
+    },
+    {
+      "code": "OP15-009",
+      "name": "OP15-009",
+      "count": 1
+    }
+  ],
+  "total_seen": 21,
+  "leader": "OP15-001"
+}
