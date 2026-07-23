@@ -375,6 +375,23 @@ namespace OPTCGBotPlugin
             // coletar candidato que o jogo recuse.)
             var donRestado = new List<GameObject>();
             var donAtivo = new List<GameObject>();
+            var donAnexadoUsado = new List<GameObject>();
+            var donAnexadoNaoUsado = new List<GameObject>();
+            void CollectAttachedDon(List<GameObject>? cards)
+            {
+                if (cards == null) return;
+                foreach (var cardGo in cards)
+                {
+                    var owner = cardGo != null ? cardGo.GetComponent<CardLogicScript>() : null;
+                    if (owner?.lgo_AttachedDon == null) continue;
+                    var destination = owner.myCard.bTapped
+                        ? donAnexadoUsado : donAnexadoNaoUsado;
+                    foreach (var donGo in owner.lgo_AttachedDon)
+                        if (donGo != null) destination.Add(donGo);
+                }
+            }
+            CollectAttachedDon(botPs.Lgo_MyDeploy);
+            CollectAttachedDon(botPs.Lgo_MyLeader);
             foreach (var go in botPs.Lgo_MyDonCostArea ?? new List<GameObject>())
             {
                 var cls = go != null ? go.GetComponent<CardLogicScript>() : null;
@@ -382,8 +399,10 @@ namespace OPTCGBotPlugin
                 if (cls.myCard.bTapped) donRestado.Add(go);
                 else                    donAtivo.Add(go);
             }
-            Add(donRestado, "own_don_rested");
-            Add(donAtivo,   "own_don");
+            Add(donAnexadoUsado,    "own_don_attached_used");
+            Add(donRestado,         "own_don_rested");
+            Add(donAnexadoNaoUsado, "own_don_attached");
+            Add(donAtivo,           "own_don");
 
             // DON do oponente -- alvo de efeitos que restam/retornam DON
             // adversario (comum no Krieg). _valid_target_location varre TODOS

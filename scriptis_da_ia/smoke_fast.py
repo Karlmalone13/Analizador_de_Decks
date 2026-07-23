@@ -771,6 +771,12 @@ def test_contrafactual_ao_vivo_usa_apenas_estado_publico_mascarado() -> None:
           len(trace.get("search_values", [])) >= 2)
     check("telemetria identifica que a simulacao usou estado publico mascarado",
           trace.get("counterfactual_basis") == "masked_public_state")
+    check("estado publico mascarado escolhe pela linha, nao so audita score imediato",
+          trace.get("selection") == "masked_public_line_search")
+    check("telemetria registra profundidade, orcamento DON e acao da linha",
+          trace.get("line_search", {}).get("depth") == 4
+          and trace.get("line_search", {}).get("don_budget_before") == 5
+          and trace.get("line_search", {}).get("selected") is not None)
 
 
 def test_search_contextual_evita_congestionar_mao_com_bombas() -> None:
@@ -786,6 +792,81 @@ def test_search_contextual_evita_congestionar_mao_com_bombas() -> None:
         me, opp, candidates, actor_code="OP11-070")
     check("search com bombas caras sem counter na mao prefere carta que entra na curva",
           order[0] == 902)
+
+
+def test_plano_katakuri_prefere_rampa_e_bloqueia_desperdicios() -> None:
+    """Reproduz a linha ruim da partida real 23.07 sem hardcode de carta."""
+    me = GameState(leader=real_card("OP11-062"), don_available=4, turn=3)
+    p1, p2 = real_card("OP11-070"), real_card("OP11-070")
+    p1._deck_uid, p2._deck_uid = 20, 30
+    me.field_chars = [p1, p2]
+    me.hand = [real_card("ST34-002"), real_card("OP11-070"),
+               real_card("OP15-069"), real_card("OP13-076"),
+               real_card("OP11-073")]
+    opp = GameState(leader=real_card("OP02-093"), turn=3)
+    low = real_card("ST19-002")
+    low.rested = True
+    opp.field_chars = [low]
+    opp.life = [real_card("OP07-077") for _ in range(4)]
+    match = OPTCGMatch((me.leader, []), (opp.leader, []))
+    actions = match._generate_and_score_actions(me, opp, DecisionEngine(me, opp))
+    plays = {a[2].code: a[0] for a in actions if a[1] == "play"}
+    check("linha com 4 DON prefere o ramp que libera a curva ao terceiro corpo barato",
+          plays["ST34-002"] > plays["OP11-070"])
+    check("Divine Departure com custo de 5 DON nao e oferecida com apenas 4",
+          plays.get("OP13-076", -999) <= -999)
+    pudding_attaches = [a for a in actions
+                        if a[1] == "attach_don" and a[2].code == "OP11-070"]
+    check("duas Puddings de informacao nao recebem DON automaticamente",
+          not pudding_attaches)
+
+    # Evento que se repoe por draw nao justifica DON-minus sem controle real.
+    me2 = GameState(leader=real_card("OP11-062"), don_available=0,
+                    don_rested=4, turn=3)
+    me2.hand = [real_card("OP15-078"), real_card("OP11-073")]
+    opp2 = GameState(leader=real_card("OP02-093"), turn=3)
+    match2 = OPTCGMatch((me2.leader, []), (opp2.leader, []))
+    acts2 = match2._generate_and_score_actions(me2, opp2, DecisionEngine(me2, opp2))
+    mama = next((a for a in acts2 if a[1] == "play" and a[2].code == "OP15-078"), None)
+    check("Mamaragan sem alvo material e atrasando bomba fica bloqueada",
+          mama is not None and mama[0] <= -999)
+
+
+def test_ataque_respeita_orcamento_da_jogada_principal_e_don_anexado() -> None:
+    me = GameState(leader=real_card("OP11-062"), don_available=4, turn=3)
+    me.hand = [real_card("ST34-002"), real_card("OP11-073")]
+    opp = GameState(leader=real_card("OP02-093"), turn=3)
+    target = real_card("ST19-003")
+    target.rested = True
+    opp.field_chars = [target]
+    opp.life = [real_card("OP07-077") for _ in range(4)]
+    match = OPTCGMatch((me.leader, []), (opp.leader, []))
+    acts = match._generate_and_score_actions(me, opp, DecisionEngine(me, opp))
+    check("ataque 5000->6000 nao usa o DON reservado para Cracker e depois sai seco",
+          not any(a[1] == "attack" and a[3] == "character" and a[4] is target
+                  for a in acts))
+
+    candidates = [
+        {"id": 1, "zone": "own_don", "code": "Don"},
+        {"id": 2, "zone": "own_don_rested", "code": "Don"},
+        {"id": 3, "zone": "own_don_attached", "code": "Don"},
+        {"id": 4, "zone": "own_don_attached_used", "code": "Don"},
+    ]
+    order = sim_bridge.order_target_candidates(me, opp, candidates,
+                                                actor_code="OP11-062")
+    check("DON anexado a atacante que ja agiu e devolvido antes do DON do banco",
+          order[0] == 4 and order.index(2) < order.index(1))
+
+    # Protecao por substituicao compara o corpo salvo com o DON devolvido.
+    nola = real_card("OP15-069")
+    brulee = real_card("ST34-003")
+    me3 = GameState(leader=real_card("OP11-062"), don_rested=4, turn=3)
+    me3.field_chars = [nola, brulee]
+    me3.hand = [real_card("OP11-073")]
+    opp3 = GameState(leader=real_card("OP02-093"), turn=3)
+    low_save = EffectExecutor(me3, opp3).try_any_substitute(brulee, "ko")
+    check("Nola nao devolve DON e atrasa a curva para salvar corpo barato",
+          low_save is None)
 
 
 def test_play_turn_greedy_opponent_response() -> None:
@@ -7159,6 +7240,8 @@ def main() -> int:
     test_opponent_model_ao_vivo_por_lider_e_fallback_seguro()
     test_contrafactual_ao_vivo_usa_apenas_estado_publico_mascarado()
     test_search_contextual_evita_congestionar_mao_com_bombas()
+    test_plano_katakuri_prefere_rampa_e_bloqueia_desperdicios()
+    test_ataque_respeita_orcamento_da_jogada_principal_e_don_anexado()
     test_play_turn_greedy_opponent_response()
     test_play_turn_greedy_detecta_letal_do_oponente()
     test_imu_waits_for_active_elder_attack()

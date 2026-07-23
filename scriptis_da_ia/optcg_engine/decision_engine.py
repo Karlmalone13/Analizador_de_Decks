@@ -2157,6 +2157,8 @@ class EffectExecutor:
                     continue
 
                 cost = step.get('cost', {})
+                if not DecisionEngine(self.me, self.opp).should_pay_removal_substitute(card, cost):
+                    continue
                 log = self._pay_substitute_cost(cost, card)
                 if log is None:
                     continue  # não conseguiu pagar -- tenta o próximo step (raro) ou desiste
@@ -2277,6 +2279,8 @@ class EffectExecutor:
                     continue
                 cost = step.get('cost', {})
                 cost_card = target if cost.get('action') == 'debuff_power_self' else source
+                if not DecisionEngine(self.me, self.opp).should_pay_removal_substitute(target, cost):
+                    continue
                 log = self._pay_substitute_cost(cost, cost_card)
                 if log is None:
                     continue
@@ -9296,7 +9300,8 @@ class DecisionEngine:
         future = [c for c in self.me.hand
                   if c.card_type in ('CHARACTER', 'STAGE', 'EVENT')
                   and c.cost > total
-                  and self.avaliar_carta(c) >= 80]
+                  and (self.avaliar_carta(c) >= 60
+                       or (c.cost >= 7 and c.counter <= 0))]
         if not future:
             return False
         target = min(c.cost for c in future)
@@ -9305,6 +9310,77 @@ class DecisionEngine:
         # Mesmo quando o ceil nao muda com uma unica devolucao, retornar
         # repetidamente consome a folga que permitiria atingir a bomba.
         return turns_with > turns_without or total < target
+
+    def ramp_curve_value(self, amount: int = 1) -> float:
+        """Valor marginal de ramp para as cartas que o plano quer jogar.
+
+        Nao e bonus fixo de categoria: so vale quando o DON extra antecipa
+        uma carta relevante da mao ou a win-con derivada do deck.
+        """
+        if amount <= 0:
+            return 0.0
+        total = self.me.don_on_field()
+        relevant = [c for c in self.me.hand
+                    if c.card_type in ('CHARACTER', 'STAGE', 'EVENT')
+                    and c.cost > total
+                    and self.avaliar_carta(c) >= 70]
+        plan = compute_game_plan(self.me)
+        target = plan.get('don_target')
+        targets = [c.cost for c in relevant]
+        if target:
+            targets.append(int(target))
+        if not targets:
+            return 15.0 * amount
+        nearest = min(t for t in targets if t > total) if any(t > total for t in targets) else total
+        before = max(0, (nearest - total + 1) // 2)
+        after = max(0, (nearest - (total + amount) + 1) // 2)
+        value = 35.0 * amount
+        if after < before:
+            value += 55.0
+        if nearest - total <= 3:
+            value += 25.0
+        return value
+
+    def cheap_board_redundancy_penalty(self, card: 'Card') -> float:
+        """Custo marginal de mais um corpo barato/repetido no campo."""
+        if card.card_type != 'CHARACTER' or card.cost > 2:
+            return 0.0
+        cheap = sum(1 for c in self.me.field_chars if c.cost <= 2)
+        copies = sum(1 for c in self.me.field_chars if c.code == card.code)
+        penalty = max(0, cheap - 1) * 18.0 + copies * 55.0
+        if card.power <= 2000:
+            penalty += max(0, cheap - 2) * 15.0
+        return penalty
+
+    def don_opportunity_cost(self, count: int = 1) -> float:
+        """Custo do DON agora, incluindo a melhor jogada que ele bloquearia."""
+        if count <= 0:
+            return 0.0
+        playable = [c for c in self.me.hand
+                    if effective_hand_play_cost(self.me, c, self.opp) <= self.me.don_available
+                    and self.avaliar_carta(c) >= 70]
+        base = 25.0 * count
+        if playable and any(effective_hand_play_cost(self.me, c, self.opp)
+                            > self.me.don_available - count for c in playable):
+            base += min(90.0, max(self.avaliar_carta(c) for c in playable) * 0.45)
+        return base
+
+    def should_pay_removal_substitute(self, target: 'Card', cost: dict) -> bool:
+        """Compara o corpo preservado com o recurso irreversivel da protecao."""
+        saved = self.analyzer.char_value_score(target)
+        action = cost.get('action')
+        count = int(cost.get('count', 1) or 1)
+        if action in ('return_own_don', 'don_minus'):
+            price = self.don_opportunity_cost(count)
+            if self.don_minus_delays_hand_curve(count):
+                price += 45.0
+        elif action == 'rest_don':
+            price = self.don_opportunity_cost(count)
+        elif action == 'trash_self':
+            price = saved
+        else:
+            return True
+        return saved > price
 
     def combat_self_buff_has_relevant_actor(
             self, actor: 'Card', actor_defending: bool | None,
@@ -10549,6 +10625,21 @@ class OPTCGMatch:
             return max(0, effective_hand_play_cost(p, card, opponent) - stage_don_cost)
         return 0
 
+    def _effect_costs_affordable_now(self, costs, p, source=None) -> bool:
+        """Preflight conservador para nao oferecer efeito que o cliente nao paga."""
+        for cost in costs or []:
+            ctype = cost.get('type')
+            count = int(cost.get('count', 1) or 1)
+            if ctype == 'rest_don' and p.don_available < count:
+                return False
+            if ctype in ('don_minus', 'return_own_don') and p.don_on_field() < count:
+                return False
+            if ctype == 'rest_self' and source is not None and source.rested:
+                return False
+            if ctype in ('trash_from_hand', 'trash_hand') and len(p.hand) < count:
+                return False
+        return True
+
     def _score_play_action(self, card, engine) -> float:
         """
         Pontua JOGAR uma carta. Cartas cujo efeito HABILITA o ataque
@@ -10563,6 +10654,19 @@ class OPTCGMatch:
         base = engine.avaliar_carta(card)
         flags = get_card_flags(card.code)
         effects = get_card_effects(card.code)
+
+        # Valor MARGINAL, nao valor da categoria: a segunda/terceira copia de
+        # um corpo barato compete pelo espaco de campo e repete o mesmo papel.
+        base -= engine.cheap_board_redundancy_penalty(card)
+
+        # Ramp vale pelo turno da curva que antecipa. Cobre qualquer carta com
+        # add_don/set_don_active, sem hardcode de Cracker.
+        ramp_amount = sum(int(s.get('count', 1) or 1)
+                          for block in effects.values() if isinstance(block, dict)
+                          for s in block.get('steps', [])
+                          if s.get('action') in ('add_don', 'set_don_active'))
+        if ramp_amount:
+            base += engine.ramp_curve_value(ramp_amount)
 
         # Contra-parte do bônus de counter em avaliar_carta: aquele bônus
         # existe pra contexto "vale manter essa carta na mão" (ex: _trash_value).
@@ -10698,6 +10802,9 @@ class OPTCGMatch:
             main = effects.get('main', {})
             main_steps = main.get('steps', [])
             if main_steps:
+                if not self._effect_costs_affordable_now(main.get('costs', []),
+                                                         engine.me, card):
+                    return -999.0
                 ee_viab = EffectExecutor(engine.me, engine.opp)
                 cond_ok = ee_viab._check_conditions(main.get('conditions', {}), card)
                 if not cond_ok or not any(ee_viab._step_is_viable(s, card)
@@ -10711,6 +10818,38 @@ class OPTCGMatch:
                     # (achado ao vivo 14/07, log 01.23.31 -- "Never Existed do
                     # nada"). A carta fica na mao pra defender.
                     return -999.0
+
+                # Evento que apenas se repoe por draw nao gera vantagem de
+                # carta: ele precisa entregar valor material adicional. E
+                # DON-minus que atrasa a curva so passa com controle real.
+                non_draw = [s for s in main_steps
+                            if s.get('action') not in ('draw', 'look_top_deck',
+                                                       'add_to_hand', 'deck_bottom_rest')]
+                def _material_control(step):
+                    action = step.get('action')
+                    if action in ('rest_opp', 'rest_opp_character'):
+                        limit = step.get('power_lte', 10**9)
+                        return any(not c.rested and c.power <= limit
+                                   for c in engine.opp.field_chars)
+                    if action in ('ko', 'ko_opp', 'debuff_power', 'bounce',
+                                  'place_opp_character_bottom_deck'):
+                        return bool(engine.opp.field_chars) and ee_viab._step_is_viable(step, card)
+                    return False
+                useful_control = any(_material_control(s) for s in non_draw)
+                if any(s.get('action') == 'draw' for s in main_steps):
+                    base -= 35.0
+                don_minus = sum(int(c.get('count', 1) or 1)
+                                for c in main.get('costs', [])
+                                if c.get('type') == 'don_minus')
+                if don_minus:
+                    base -= engine.don_opportunity_cost(don_minus)
+                    if engine.don_minus_delays_hand_curve(don_minus) and not useful_control:
+                        return -999.0
+                rest_don = sum(int(c.get('count', 1) or 1)
+                               for c in main.get('costs', [])
+                               if c.get('type') == 'rest_don')
+                if rest_don:
+                    base -= engine.don_opportunity_cost(rest_don)
 
         # STAGE com stage própria já em campo: jogar SUBSTITUI a atual (regra
         # do jogo, 1 stage por lado). A 1ª versão deste fix descontava só
@@ -10895,7 +11034,19 @@ class OPTCGMatch:
                              for c in costs)
         tem_ko_own = any(c.get('type') == 'ko_own_character' for c in costs)
 
-        base -= custo_don * 15   # cada DON gasto tem custo de oportunidade
+        if engine is not None:
+            base -= engine.don_opportunity_cost(custo_don)
+        else:
+            base -= custo_don * 25
+
+        # Informacao pura tem retorno decrescente. Olhar o topo adversario
+        # nao deve vencer desenvolvimento de campo, especialmente em copias
+        # repetidas da mesma fonte barata.
+        info_only = actions_list and all(
+            a in ('peek_opp_deck_top', 'look_top_deck') for a in actions_list)
+        if info_only:
+            copies = sum(1 for c in p.field_chars if c.code == src.code)
+            base = min(base, 35.0) - max(0, copies - 1) * 30.0
 
         if tem_ko_own:
             sacrifice_pool = []
@@ -11086,18 +11237,44 @@ class OPTCGMatch:
             actions.append((score, 'play', card, None, None))
 
         # ── Ações de ATACAR (com risco de trigger descontado) ──
+        # Orcamento da linha: um ataque nao pode se declarar alcancavel usando
+        # DON que a propria geracao ja comprometeu com a melhor jogada. Antes
+        # o score via todo o pool, mas a execucao reservava esse DON e atacava
+        # abaixo do alvo. LETHAL continua livre para gastar tudo.
+        planned_play_cost = 0
+        positive_plays = [a for a in actions if a[1] == 'play' and a[0] >= 80]
+        if positive_plays and priority != 'LETHAL':
+            best_play = max(positive_plays, key=lambda a: a[0])
+            planned_play_cost = effective_hand_play_cost(p, best_play[2], opp)
+        attack_don_budget = max(0, p.don_available - planned_play_cost)
+
         if p.can_attack_this_turn():
             attackers = [c for c in p.field_chars
                          if character_can_attack_now(c, p, opp)]
             if not p.leader.rested:
                 attackers.append(p.leader)
             for att in attackers:
+                # Buff opcional com DON-minus so entra no poder planejado se
+                # nao sacrifica a curva. Caso contrario a declaracao precisa
+                # ser valida com o poder que ja existe no estado publico.
+                atk_now_for_budget = attack_time_power(att, opp)
+                wa = get_card_effects(att.code).get('when_attacking', {})
+                wa_don_minus = sum(int(c.get('count', 1) or 1)
+                                   for c in wa.get('costs', [])
+                                   if c.get('type') == 'don_minus')
+                if wa_don_minus and engine.don_minus_delays_hand_curve(wa_don_minus):
+                    atk_now_for_budget = live_attack_power(att)
                 # [Rush: Character] restringe o alvo a Characters do
                 # oponente neste turno -- nao gera a opcao de atacar o Leader.
                 pode_atacar_leader = not getattr(att, 'rush_character_only_this_turn', False)
                 # alvo líder
                 if pode_atacar_leader and not p.cannot_attack_leader_this_turn:
                     s_leader = engine.score_attack_target(att, 'leader', None)
+                    atk_now = atk_now_for_budget
+                    if (atk_now < opp.leader.power
+                            and atk_now + attack_don_budget * 1000 < opp.leader.power
+                            and not engine._rest_activates_effect(att)):
+                        s_leader = -999
                     if s_leader > -500:
                         s_leader += self._human_pattern_bonus(p, 'attack', att)
                         s_leader -= self._trigger_risk_penalty(opp)   # desconto de trigger
@@ -11129,6 +11306,10 @@ class OPTCGMatch:
                     if cost_lock >= 0 and tgt.cost <= cost_lock:
                         continue
                     s_char = engine.score_attack_target(att, 'character', tgt)
+                    atk_now = atk_now_for_budget
+                    if (atk_now < tgt.power
+                            and atk_now + attack_don_budget * 1000 < tgt.power):
+                        s_char = -999
                     if s_char > -500:
                         s_char += self._human_pattern_bonus(p, 'attack', att)
                         # Inclinação: remover a AMEAÇA CRÍTICA ganha prioridade alta
@@ -11246,7 +11427,14 @@ class OPTCGMatch:
                     continue
                 # só vale ligar gatilho de ataque se o personagem vai atacar
                 valor = self._trigger_don_value(trig, ef, card, p, opp, priority)
-                score = valor - falta * DON_COST
+                score = valor - engine.don_opportunity_cost(falta)
+                # Fontes repetidas de informacao nao justificam prender um
+                # DON em cada copia. A primeira ainda pode usar DON ocioso.
+                step_actions = [s.get('action') for s in ef.get('steps', [])]
+                if step_actions and all(a in ('peek_opp_deck_top', 'look_top_deck')
+                                        for a in step_actions):
+                    copies = sum(1 for c in p.field_chars if c.code == card.code)
+                    score -= max(0, copies - 1) * 30.0
                 if score > 0:
                     acts.append((score, 'attach_don', card, falta, trig))
         return acts
@@ -11281,6 +11469,8 @@ class OPTCGMatch:
             if opp.field_chars: valor += 30
         elif any(x in ('draw', 'add_to_hand', 'look_top_deck') for x in actions):
             valor = 90    # vantagem de carta
+        elif actions and all(x == 'peek_opp_deck_top' for x in actions):
+            valor = 40    # informacao, nao vantagem de carta
         elif any('power' in str(x) for x in actions):
             valor = 60    # buff de poder
         else:

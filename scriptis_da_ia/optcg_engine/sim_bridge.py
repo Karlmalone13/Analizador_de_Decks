@@ -415,21 +415,28 @@ def choose_action(gs: GameState, opp_gs: GameState,
                         if melhor_valor is None or valor > melhor_valor:
                             melhor_valor = valor
                             melhor = cand
-                    # Com estado adversario mascarado, a simulacao serve para
-                    # AUDITORIA contrafactual, nao para trocar a jogada por
-                    # uma leitura otimista de cartas UNKNOWN. A escolha segue
-                    # o score honesto do motor; com modelo conhecido/offline,
-                    # a busca continua autorizada a refinar a escolha.
-                    if model is not None:
-                        result[0] = melhor
+                    # A linha mascarada agora PODE escolher: todas as
+                    # candidatas usam exatamente o mesmo estado PUBLICO e
+                    # nenhuma carta UNKNOWN ganha texto/counter inventado.
+                    # Isso permite preservar orcamento/curva e comparar a
+                    # sequencia inteira, em vez de ficar preso ao score da
+                    # primeira acao. A base deixa explicito o limite da prova.
+                    result[0] = melhor
                     if trace_out is not None:
                         trace_out["selection"] = (
                             "counterfactual_search" if model is not None
-                            else "counterfactual_audit_masked")
+                            else "masked_public_line_search")
                         trace_out["search_values"] = search_records
                         trace_out["counterfactual_basis"] = (
                             "sampled_opponent_model" if model is not None
                             else "masked_public_state")
+                        trace_out["line_search"] = {
+                            "depth": SEARCH_MAX_STEPS,
+                            "don_budget_before": gs.don_available,
+                            "candidate_count": len(candidatos),
+                            "selected": action_to_trace(melhor),
+                            "public_state_only": bool(hidden),
+                        }
                     verbo = "refinou" if model is not None else "auditou"
                     print(f"[ENG] busca {verbo}: {melhor[1]} (score imediato {melhor[0]:.1f}, "
                           f"valor simulado {melhor_valor:.1f})", flush=True)
@@ -1615,8 +1622,12 @@ def order_target_candidates(gs: GameState, opp_gs: GameState,
         # usuario). opp_don logo apos (efeito que resta/remove DON inimigo);
         # se o efeito for de custo proprio, o jogo recusa o DON do oponente e
         # cai no proximo.
+        if zone == 'own_don_attached_used':
+            return (-4, 0)
         if zone == 'own_don_rested':
             return (-3, 0)
+        if zone == 'own_don_attached':
+            return (-2.5, 0)
         if zone == 'own_don':
             return (-2, 0)
         if zone == 'opp_don':

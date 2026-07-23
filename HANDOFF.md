@@ -1,5 +1,36 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-22 (315) - Codex - linha publica, valor marginal e orcamento DON
+
+Implementacao estrutural aprovada apos o diagnostico do bloco 314:
+
+- Busca ao vivo com informacao adversaria mascarada agora pode ESCOLHER a
+  melhor linha; todas as candidatas usam o mesmo estado publico, sem inventar
+  texto/counter das cartas UNKNOWN. Telemetria `line_search` registra depth=4,
+  orcamento DON, numero de candidatas e acao escolhida.
+- Ramp (`add_don`/`set_don_active`) recebe valor marginal pelo turno de curva
+  que antecipa. Corpos custo <=2 recebem desconto crescente por repeticao de
+  papel/copia no campo. Reproduzido turno 3: Cracker supera terceira Pudding.
+- Eventos fazem preflight dos custos do proprio efeito. Divine Departure nao
+  entra com menos de 5 DON ativos; evento que so se repoe por draw precisa de
+  controle material; Mamaragan sem alvo e atrasando bomba fica bloqueada.
+- Custo de DON de Activate/attach usa oportunidade real da melhor jogada que
+  bloquearia. Peek de topo e informacao, nao vantagem de carta, e perde valor
+  em fontes repetidas; duas Puddings nao recebem DON automaticamente.
+- Ataques agora usam o mesmo orcamento DON da jogada principal. Buff opcional
+  com DON-minus recusado pela curva nao infla o poder de declaracao: fecha o
+  5000->6000 que depois saia seco por o DON estar reservado.
+- Substituicao de remocao compara valor do corpo salvo com custo irreversivel;
+  Nola nao devolve DON/atrasa curva para salvar corpo barato.
+- Plugin passou a coletar DON anexado como zonas proprias. Ordem do motor:
+  anexado em carta que ja agiu -> DON restado -> anexado ainda nao usado ->
+  DON ativo. Fecha o gap explicitamente observado no efeito do Katakuri.
+
+Validacao: `smoke_fast.py` = SMOKE FAST OK, incluindo cenarios dirigidos da
+partida 23.07; `test_bot_efficiency_report.py` = 13/13; `py_compile` limpo;
+`dotnet build BOT/OPTCGBotPlugin/OPTCGBotPlugin.csproj` = 0 erros/0 avisos e
+DLL copiada para o BepInEx. Ainda exige partida real antes de declarar melhora.
+
 ## 2026-07-22 (314) - Codex - partida 23.07: execucao melhor, plano de turno pior
 
 Partida real `Charlotte.Katakuri-P_x_Smoker-B_2026-07-22T23.07.07_p2`,
