@@ -25,6 +25,9 @@ from optcg_engine.decision_engine import (
     Card,
     CardData,
     DecisionEngine,
+    attack_time_power,
+    effective_hand_play_cost,
+    get_card_effects,
     _load_effects_db,
     _load_analysis_db,
 )
@@ -317,6 +320,7 @@ def choose_action(gs: GameState, opp_gs: GameState,
     """
     import random
     import threading
+    import time
     result: list = [None]
     exclude_activate_codes = exclude_activate_codes or set()
     SEARCH_TOP_K = 2
@@ -325,6 +329,7 @@ def choose_action(gs: GameState, opp_gs: GameState,
 
     def _run() -> None:
         try:
+            phase_started = time.perf_counter()
             engine = DecisionEngine(gs, opp_gs)
             if trace_out is not None:
                 # priority/can_lethal ao vivo (19/07): fecha o cruzamento
@@ -336,11 +341,14 @@ def choose_action(gs: GameState, opp_gs: GameState,
                 trace_out["can_lethal"] = engine.analyzer.can_lethal_this_turn()
                 trace_out["opp_combo_threat"] = engine.analyzer.opp_combo_threat()
             actions = match._generate_and_score_actions(gs, opp_gs, engine)
+            generated_at = time.perf_counter()
             if trace_out is not None:
                 trace_out["scored_actions"] = [
-                    action_to_trace(a, allowed_types, exclude_activate_codes)
+                    action_to_trace(a, allowed_types, exclude_activate_codes,
+                                    engine=engine, gs=gs, opp_gs=opp_gs)
                     for a in actions
                 ]
+                trace_out["resource_ledger_before"] = resource_ledger(gs)
             print(f"[ENG] {len(actions)} acoes | hand={len(gs.hand)} don={gs.don_available} turn={gs.turn}", flush=True)
             if actions:
                 print(f"[ENG] top3: {[(a[0],a[1]) for a in actions[:3]]}", flush=True)
@@ -440,6 +448,13 @@ def choose_action(gs: GameState, opp_gs: GameState,
                     verbo = "refinou" if model is not None else "auditou"
                     print(f"[ENG] busca {verbo}: {melhor[1]} (score imediato {melhor[0]:.1f}, "
                           f"valor simulado {melhor_valor:.1f})", flush=True)
+            if trace_out is not None:
+                finished_at = time.perf_counter()
+                trace_out["latency_segments_ms"] = {
+                    "generate_and_score": round((generated_at - phase_started) * 1000, 3),
+                    "line_search": round((finished_at - generated_at) * 1000, 3),
+                    "engine_total": round((finished_at - phase_started) * 1000, 3),
+                }
         except Exception as e:
             import traceback
             # Achado 19/07: essa excecao rodava numa thread separada e
@@ -460,7 +475,8 @@ def choose_action(gs: GameState, opp_gs: GameState,
 
 
 def action_to_trace(action: Optional[tuple], allowed_types: Optional[set] = None,
-                    excluded_activate_codes: Optional[set] = None) -> Optional[dict]:
+                    excluded_activate_codes: Optional[set] = None,
+                    engine=None, gs=None, opp_gs=None) -> Optional[dict]:
     """Serializa uma action sem carregar objetos Card inteiros no JSONL."""
     if not action:
         return None
@@ -472,7 +488,7 @@ def action_to_trace(action: Optional[tuple], allowed_types: Optional[set] = None
     code = getattr(card, "code", None)
     excluded = (kind == "activate" and code in (excluded_activate_codes or set()))
     executor_allowed = allowed_types is None or kind in allowed_types
-    return {
+    result = {
         "score": round(score, 4),
         "type": kind,
         "card_code": code,
@@ -485,6 +501,60 @@ def action_to_trace(action: Optional[tuple], allowed_types: Optional[set] = None
         "excluded": excluded,
         "eligible": score >= 0 and executor_allowed and not excluded,
     }
+    if engine is not None:
+        result["score_components"] = action_score_components(
+            action, engine, gs or engine.me, opp_gs or engine.opp)
+    return result
+
+
+def resource_ledger(gs: GameState) -> dict:
+    """Snapshot publico de recursos, reutilizavel na decisao e transicao."""
+    attached = sum(getattr(c, "don_attached", 0) for c in gs.field_chars)
+    attached += getattr(gs.leader, "don_attached", 0) if gs.leader else 0
+    return {
+        "active_don": gs.don_available,
+        "rested_don": gs.don_rested,
+        "attached_don": attached,
+        "don_on_field": gs.don_on_field(),
+        "don_deck": gs.don_deck,
+        "hand": len(gs.hand),
+        "board": len(gs.field_chars),
+        "life": gs.life_count(),
+    }
+
+
+def action_score_components(action: tuple, engine, gs: GameState,
+                            opp_gs: GameState) -> dict:
+    """Explicacao observavel; nao participa da escolha da acao."""
+    score, kind, card, _ttype, target = action
+    components = {"final_score": round(float(score), 4), "kind": kind}
+    if card is not None:
+        components["intrinsic_card_value"] = round(float(engine.avaliar_carta(card)), 4)
+        components["cheap_redundancy_penalty"] = round(
+            float(engine.cheap_board_redundancy_penalty(card)), 4)
+    effects = get_card_effects(getattr(card, "code", "")) if card is not None else {}
+    ramp = sum(int(step.get("count", 1) or 1)
+               for block in effects.values() if isinstance(block, dict)
+               for step in block.get("steps", [])
+               if step.get("action") in ("add_don", "set_don_active"))
+    if ramp:
+        components["ramp_amount"] = ramp
+        components["ramp_curve_value"] = round(float(engine.ramp_curve_value(ramp)), 4)
+    if kind == "play":
+        components["don_cost"] = effective_hand_play_cost(gs, card, opp_gs)
+    elif kind == "attach_don":
+        amount = int(action[3] or 0)
+        components["don_cost"] = amount
+        components["don_opportunity_cost"] = round(
+            float(engine.don_opportunity_cost(amount)), 4)
+    elif kind == "attack":
+        atk = attack_time_power(card, opp_gs)
+        target_power = (opp_gs.leader.power if action[3] == "leader"
+                        else getattr(target, "power", 0))
+        components.update({"attack_power_planned": atk,
+                           "target_power_before": target_power,
+                           "raw_power_gap": atk - target_power})
+    return components
 
 
 def don_for_attack(gs: GameState, opp_gs: GameState, action: tuple,

@@ -133,6 +133,52 @@ _match  = None   # OPTCGMatch: maquinaria de regras usada por choose_action
 # Planner cair pra proxima acao da lista.
 _declined_optional: set[tuple[str, int]] = set()
 _live_match_id = new_decision_id()
+_match_has_decisions = False
+_match_has_outcome = False
+_decision_context: dict[str, dict] = {}
+
+
+def _resource_snapshot(state: dict | None) -> dict | None:
+    """Ledger observavel de uma ponta da transicao; nao decide nada."""
+    if not state:
+        return None
+    side = state.get("bot", state)
+    board = side.get("board") or []
+    leader = side.get("leader") or {}
+    attached = sum(int(c.get("donAttached", 0) or 0) for c in board)
+    attached += int(leader.get("donAttached", 0) or 0)
+    active = int(side.get("activeDon", 0) or 0)
+    rested = int(side.get("restedDon", 0) or 0)
+    return {
+        "active_don": active,
+        "rested_don": rested,
+        "attached_don": attached,
+        "don_on_field": active + rested + attached,
+        "hand": len(side.get("hand") or []),
+        "board": len(board),
+        "life": len(side.get("life") or []),
+        "deck": side.get("deckCount"),
+    }
+
+
+def _transition_observation(before: dict | None, after: dict | None,
+                            chosen: dict | None) -> dict | None:
+    b, a = _resource_snapshot(before), _resource_snapshot(after)
+    if b is None or a is None:
+        return None
+    delta = {key: a[key] - b[key] for key in
+             ("active_don", "rested_don", "attached_don", "don_on_field",
+              "hand", "board", "life")}
+    action_type = (chosen or {}).get("type")
+    useful_signals = {
+        "drew_net_cards": max(0, delta["hand"]),
+        "developed_board": max(0, delta["board"]),
+        "spent_field_don": max(0, -delta["don_on_field"]),
+        "attached_don": max(0, delta["attached_don"]),
+        "life_lost": max(0, -delta["life"]),
+    }
+    return {"action_type": action_type, "before": b, "after": a,
+            "delta": delta, "utility_signals": useful_signals}
 
 # Memoria de reveals DA PARTIDA (persistencia entre /decide -- ver
 # match_memory.py e MEMORIA_REVEALS.md). Populada pelo /reveal, resetada no
@@ -456,13 +502,21 @@ class OutcomeReport(BaseModel):
 def execution(report: ExecutionReport):
     if report.status not in {"sent", "confirmed", "failed"}:
         raise HTTPException(status_code=400, detail="status de execucao invalido")
+    context = _decision_context.get(report.decisionId, {})
+    state_after = _model_dict(report.stateAfter) if report.stateAfter else None
     write_event(
         "execution",
         report.decisionId,
+        match_id=context.get("match_id", _live_match_id),
         status=report.status,
-        state_after=_model_dict(report.stateAfter) if report.stateAfter else None,
+        state_after=state_after,
+        transition_observation=_transition_observation(
+            context.get("state_before"), state_after, context.get("chosen_action")),
+        attack_quality=context.get("attack_quality"),
         error=report.error,
     )
+    if report.status in {"confirmed", "failed"}:
+        _decision_context.pop(report.decisionId, None)
     if report.status == "failed":
         # Ao vivo (19/07): cobre os casos que o plugin C# ja detecta e
         # reporta (acao repetida 3x sem efeito, 2 falhas seguidas -- ver
@@ -499,11 +553,13 @@ def client_timeout(report: ClientTimeoutReport):
 
 @app.post("/outcome")
 def outcome(report: OutcomeReport):
+    global _match_has_outcome
     if report.result not in {"win", "loss", "draw", "aborted"}:
         raise HTTPException(status_code=400, detail="resultado invalido")
     write_event("outcome", "match", match_id=_live_match_id, result=report.result,
                 state_final=_model_dict(report.stateFinal) if report.stateFinal else None,
                 reason=report.reason, bot_seat=report.botSeat)
+    _match_has_outcome = True
     if os.environ.get("BOT_AUTO_COLLECT", "1") != "0":
         _collection_status.update(status="running", message="salvando log no banco",
                                   report=None, receipt=None)
@@ -531,12 +587,19 @@ def outcome(report: OutcomeReport):
 def _record_aux_decision(kind: str, state_before: dict, legal_actions: list,
                          chosen_action: dict, response: dict, **context) -> dict:
     """Envelope comum para decisoes fora da Main Phase; nao decide nada."""
+    global _match_has_decisions
     decision_id = new_decision_id()
     out = {**response, "decisionId": decision_id}
     write_event("decision", decision_id, match_id=_live_match_id, decision_kind=kind,
                 phase=context.pop("phase", kind), state_before=state_before,
                 scored_actions=legal_actions, chosen_action=chosen_action,
                 response=out, **context)
+    _match_has_decisions = True
+    _decision_context[decision_id] = {
+        "match_id": _live_match_id,
+        "state_before": state_before,
+        "chosen_action": chosen_action,
+    }
     return out
 
 
@@ -546,10 +609,20 @@ def mulligan(req: MulliganRequest):
     Decide mulligan da mao inicial usando o engine (_mulligan_decision).
     Resposta: {"mulligan": bool, "reason": str}
     """
-    global _live_match_id
+    global _live_match_id, _match_has_decisions, _match_has_outcome
     started = time.perf_counter()
-    _live_match_id = new_decision_id()
     try:
+        # Fecha explicitamente uma tentativa anterior que recebeu decisoes
+        # mas nunca chegou a GameOver. Sem isso, a proxima partida criava um
+        # novo match_id e deixava outcome coverage artificialmente em 50%.
+        if _match_has_decisions and not _match_has_outcome:
+            write_event("outcome", "match", match_id=_live_match_id,
+                        result="aborted", state_final=None,
+                        reason="nova partida iniciou antes de outcome")
+        _live_match_id = new_decision_id()
+        _match_has_decisions = False
+        _match_has_outcome = False
+        _decision_context.clear()
         # Partida nova: limpa recusas da partida anterior. Sem isso, uma
         # ativacao recusada no turno N da partida passada continuava
         # excluida no turno N de TODAS as partidas seguintes do mesmo
@@ -726,11 +799,14 @@ def decide(state: GameStateDto):
     Resposta: {"type": "play"|"attack"|"attach_don"|"end_turn",
                "cardId": int, "targetId": int, "donToAttach": int}
     """
+    global _match_has_decisions
     decision_id = new_decision_id()
     trace = {}
 
     def finish(payload: dict, reason: str) -> dict:
+        global _match_has_decisions
         out = {**payload, "decisionId": decision_id}
+        state_before = _model_dict(state)
         write_event(
             "decision",
             decision_id,
@@ -738,10 +814,14 @@ def decide(state: GameStateDto):
             decision_kind="main",
             phase="main",
             turn=state.turnNumber,
-            state_before=_model_dict(state),
+            state_before=state_before,
             scored_actions=trace.get("scored_actions", []),
             chosen_action=trace.get("chosen_action"),
             search_values=trace.get("search_values", []),
+            line_search=trace.get("line_search"),
+            resource_ledger_before=trace.get("resource_ledger_before"),
+            latency_segments_ms=trace.get("latency_segments_ms"),
+            attack_quality=trace.get("attack_quality"),
             counterfactual_basis=trace.get("counterfactual_basis"),
             selection=trace.get("selection", reason),
             timed_out=trace.get("timed_out", False),
@@ -753,6 +833,13 @@ def decide(state: GameStateDto):
             response=out,
             reason=reason,
         )
+        _match_has_decisions = True
+        _decision_context[decision_id] = {
+            "match_id": _live_match_id,
+            "state_before": state_before,
+            "chosen_action": trace.get("chosen_action"),
+            "attack_quality": trace.get("attack_quality"),
+        }
         # Marcadores AO VIVO (19/07): antes so apareciam rodando
         # bot_efficiency_report.py depois da partida. "sem acao elegivel"
         # e "engine_error" sao os 2 sinais reais de "bot nao sabe o que
@@ -841,6 +928,21 @@ def decide(state: GameStateDto):
             # counter so com DON ocioso no plano do turno (match da acesso as
             # jogadas planejadas + reserva de defesa)
             don_attach = bridge.don_for_attack(gs, opp_gs, action, match=match)
+            target_power = (opp_gs.leader.power if ttype == 'leader'
+                            else getattr(action[4], 'power', 0))
+            from optcg_engine.decision_engine import attack_time_power
+            planned_power = attack_time_power(attacker, opp_gs) + don_attach * 1000
+            trace["attack_quality"] = {
+                "attacker_code": attacker.code,
+                "target_type": ttype,
+                "target_code": getattr(action[4], 'code', None)
+                    if ttype == 'character' else getattr(opp_gs.leader, 'code', None),
+                "power_before_attach": attack_time_power(attacker, opp_gs),
+                "don_planned": don_attach,
+                "power_planned": planned_power,
+                "target_power_before": target_power,
+                "planned_gap": planned_power - target_power,
+            }
 
         elif action_type == "attach_don" and len(action) > 3:
             card = action[2]

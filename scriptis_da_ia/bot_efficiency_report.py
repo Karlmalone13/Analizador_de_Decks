@@ -281,6 +281,17 @@ def analyze_decision_events(lines) -> dict:
     counterfactual_regrets = []
     counterfactual_eligible = 0
     latencies = []
+    latency_segments: dict[str, list[float]] = {}
+    main_decisions = 0
+    score_component_decisions = 0
+    line_search_decisions = 0
+    resource_ledger_decisions = 0
+    transition_observations = 0
+    attack_quality_samples: list[dict] = []
+    resource_signal_totals = {
+        "drew_net_cards": 0, "developed_board": 0, "spent_field_don": 0,
+        "attached_don": 0, "life_lost": 0,
+    }
     timed_out = 0
     fallback_errors = 0
     no_eligible_action = 0
@@ -338,6 +349,17 @@ def analyze_decision_events(lines) -> dict:
             eligible_recorded += 1
         chosen = decision.get("chosen_action")
         kind = decision.get("decision_kind") or decision.get("phase") or "legacy"
+        if kind == "main":
+            main_decisions += 1
+            score_component_decisions += int(any(
+                isinstance(a.get("score_components"), dict)
+                for a in decision.get("scored_actions", [])))
+            line_search_decisions += int(isinstance(decision.get("line_search"), dict))
+            resource_ledger_decisions += int(
+                isinstance(decision.get("resource_ledger_before"), dict))
+            attack_quality = decision.get("attack_quality")
+            if isinstance(attack_quality, dict):
+                attack_quality_samples.append(attack_quality)
         if (kind == "main"
                 and (len(eligible) >= 2 or len(decision.get("search_values") or []) >= 2)):
             counterfactual_eligible += 1
@@ -346,6 +368,9 @@ def analyze_decision_events(lines) -> dict:
         bucket["decisions"] += 1
         if isinstance(decision.get("latency_ms"), (int, float)):
             latencies.append(float(decision["latency_ms"]))
+        for segment, value in (decision.get("latency_segments_ms") or {}).items():
+            if isinstance(value, (int, float)):
+                latency_segments.setdefault(segment, []).append(float(value))
         timed_out += int(bool(decision.get("timed_out")))
         fallback_errors += int(bool(decision.get("error") or decision.get("telemetry_error")
                                     or decision.get("engine_error")))
@@ -380,6 +405,13 @@ def analyze_decision_events(lines) -> dict:
         # semantica sobre um terminal "failed" so duplica o mesmo alerta sem
         # informacao nova.
         terminal_state = terminal.get("state_after") if terminal else None
+        observation = terminal.get("transition_observation") if terminal else None
+        if kind == "main" and isinstance(observation, dict):
+            transition_observations += 1
+            for key in resource_signal_totals:
+                value = (observation.get("utility_signals") or {}).get(key)
+                if isinstance(value, (int, float)):
+                    resource_signal_totals[key] += value
         semantic_result = (main_transition_ok(decision, terminal_state)
                            if terminal and terminal.get("status") == "confirmed"
                            else None)
@@ -442,6 +474,15 @@ def analyze_decision_events(lines) -> dict:
     outcome_matches = {e.get("match_id") for e in outcomes if e.get("match_id")}
     latency_sorted = sorted(latencies)
     latency_p95 = _percentile(latency_sorted, 0.95)
+    segment_summary = {}
+    for name, samples in sorted(latency_segments.items()):
+        ordered = sorted(samples)
+        segment_summary[name] = {
+            "samples": len(samples),
+            "mean": _round(sum(samples) / len(samples)),
+            "p95": _round(_percentile(ordered, 0.95)),
+            "max": _round(max(samples)),
+        }
     outcome_coverage = _ratio(len(observed_matches & outcome_matches), len(observed_matches), 100)
 
     # LETHAL certificado -> o jogo realmente terminou logo em seguida? (19/07,
@@ -566,6 +607,37 @@ def analyze_decision_events(lines) -> dict:
             "max": _round(max(latencies) if latencies else None),
             "timeout_count": timed_out,
             "timeout_pct": _round(_ratio(timed_out, total, 100)),
+        },
+        "instrumentation": {
+            "score_components_coverage_pct": _round(
+                _ratio(score_component_decisions, main_decisions, 100)),
+            "line_search_coverage_pct": _round(
+                _ratio(line_search_decisions, main_decisions, 100)),
+            "resource_ledger_coverage_pct": _round(
+                _ratio(resource_ledger_decisions, main_decisions, 100)),
+            "transition_observation_coverage_pct": _round(
+                _ratio(transition_observations,
+                       by_kind.get("main", {}).get("confirmed", 0), 100)),
+            "latency_segments_ms": segment_summary,
+            "resource_signals": {
+                "samples": transition_observations,
+                "totals": resource_signal_totals,
+            },
+            "attack_quality": {
+                "samples": len(attack_quality_samples),
+                "under_target_count": sum(
+                    isinstance(x.get("planned_gap"), (int, float))
+                    and x["planned_gap"] < 0 for x in attack_quality_samples),
+                "mean_planned_gap": _round(sum(
+                    float(x["planned_gap"]) for x in attack_quality_samples
+                    if isinstance(x.get("planned_gap"), (int, float)))
+                    / sum(isinstance(x.get("planned_gap"), (int, float))
+                          for x in attack_quality_samples))
+                    if any(isinstance(x.get("planned_gap"), (int, float))
+                           for x in attack_quality_samples) else None,
+                "don_planned_total": sum(
+                    int(x.get("don_planned", 0) or 0) for x in attack_quality_samples),
+            },
         },
         "commit_consistency": {"commits": sorted(commits), "mixed": len(commits) > 1},
         "session_consistency": {"sessions": sorted(sessions), "mixed": len(sessions) > 1},

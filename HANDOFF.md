@@ -1,5 +1,28 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-22 (316) - Codex - telemetria causal da decisao e dos recursos
+
+Instrumentacao adicionada sem alterar ranking, busca ou execucao das acoes:
+
+- Cada acao pontuada registra componentes observaveis: valor intrinseco,
+  redundancia barata, valor de ramp, valor/custo de DON e gap de poder.
+- Cada decisao principal registra ledger antes da acao (DON ativo, restado,
+  anexado e total, mao, campo e vida), plano da busca e latencia separada em
+  geracao/score, line search e total do motor.
+- Ataques registram poder antes/depois do DON planejado, poder do alvo e gap.
+  Isso conta ataques abaixo do alvo sem confundir intencao com counter/efeito.
+- `/execution` correlaciona estado anterior/posterior e registra deltas de
+  recurso. Nova partida fecha como `aborted` a anterior que teve decisoes mas
+  nao recebeu outcome, evitando cobertura artificialmente baixa.
+- `bot_efficiency_report.py` agrega cobertura dos instrumentos, latencia,
+  sinais de recurso e qualidade dos ataques. Log antigo fica com cobertura 0,
+  sem fabricar eficiencia.
+
+Validacao: `py_compile` limpo; `test_bot_efficiency_report.py` = 14/14;
+`smoke_fast.py` = SMOKE FAST OK (terminal precisou `PYTHONIOENCODING=utf-8`
+por causa do caractere ① num teste preexistente). Proxima partida real deve
+ser analisada pelo novo bloco `instrumentation`; ainda nao prova melhora.
+
 ## 2026-07-22 (315) - Codex - linha publica, valor marginal e orcamento DON
 
 Implementacao estrutural aprovada apos o diagnostico do bloco 314:
