@@ -131,6 +131,17 @@ correção ainda pendente, ver [HANDOFF.md](HANDOFF.md)).
   (viabilidade ampla — evita ativar habilidade "no vácuo")
 - Topo do deck = fim da lista em Python (`pop()`, não `pop(0)`)
 - Mill do deck = trash seco, sem disparar trigger
+- **Regra dos dois-pontos (`:`) é universal pra QUALQUER gatilho** (`[On
+  Play]`, `[When Attacking]`, `[On Your Opponent's Attack]`, `[Activate:
+  Main]`, `[Trigger]`, `[Counter]`, etc — confirmado pelo usuário, 23/07):
+  tudo ANTES do `:` é custo, tudo DEPOIS é efeito. Se existe custo antes do
+  `:` (`DON!! N`, `Trash N card(s)`, `Rest N DON!!`, etc.), pagar esse
+  custo é **sempre opcional** — independe de a carta ter a palavra "may"
+  por perto. Só é obrigatório: (a) efeito SEM custo antes do `:` (aí é
+  obrigatório, mas "up to N" cobre N=0 como recusa disfarçada), ou (b) já
+  decidiu pagar o custo — a partir daí o efeito em si é obrigatório (falha
+  sem alvo, não vira recusa). "You may" no texto é só reforço redundante
+  em algumas cartas, não é o que TORNA um custo opcional.
 
 Referências oficiais das regras (manual, playsheet) em
 [_referencias/regras_do_jogo/](_referencias/regras_do_jogo/).

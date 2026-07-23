@@ -1,5 +1,67 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-23 (323) - Claude - custo antes do ":" sempre opcional (parser) + gap dois-motores achado
+
+Partida `Dracule.Mihawk-G_x_Charlotte.Katakuri-P_2026-07-23T16.54.39` (bot=P2,
+derrota, 10 turnos, ja no fix 322 - `71a9a42`). Usuario reportou (com print)
+que o board do bot so tinha carta de custo 1 enquanto ele proprio desceu
+custo 10 no turno 6, e que o Katakuri estava "voltando DON sem analisar
+nada". Investigado turno a turno.
+
+**Achado 1 (nao era bug neste log):** as 4 ativacoes do lider Katakuri
+(`OP11-062`, `DON!! 1: peek + buff +1000`) no log foram checadas uma a uma
+contra o combate real -- 3 das 4 realmente VIRARAM "Attack Fails" (5000 vs
+5000 base, empate favorece o atacante; com o buff virou 6000, sobreviveu
+sem gastar counter da mao). A 4a foi aposta ofensiva antes de saber se o
+oponente ia contra-atacar (timing real do jogo: o efeito ativa antes da
+reacao do oponente). Corrigi a hipotese inicial errada.
+
+**Achado 2 (regra de jogo, registrada em [[CLAUDE.md]] e memoria
+`project_regra_custo_opcional_dois_pontos`):** usuario confirmou com
+fontes que a regra dos dois-pontos e universal em QUALQUER gatilho do
+OPTCG -- tudo antes do `:` e custo, SEMPRE opcional de pagar, independe da
+palavra "you may" aparecer no texto. O parser (`gerar_effects_db.py`) so
+marcava `don_minus`/`debuff_power_self` como `optional=True` quando
+achava "you may" numa janela de +-40/60 chars -- 26 casos so de
+`don_minus` em blocos de gatilho ficavam `optional=False` por essa falta,
+incluindo cartas que JA tem "(You may return...)" no proprio texto (sinal
+de bug na deteccao, nao so na regra-padrao).
+
+Fix aplicado (aprovado pelo usuario): `don_minus` (linha ~1555) e
+`debuff_power_self` (linha ~1609) em `gerar_effects_db.py` agora sempre
+gravam `optional: True` quando o custo aparece antes do `:` -- removida a
+dependencia de "you may" na janela. Auditoria completa registrada em
+`parser_audits/2026-07-23_custo_antes_dos_dois_pontos_sempre_opcional.json`
+(resolution_scope=global, 47 cartas afetadas). `diff_parser.py`: GANHOU=0,
+PERDEU=0, MUDOU=47 (so o campo optional das cartas certas). 1 assert do
+`smoke_fast.py` (OP05-119) tinha o valor ERRADO gravado como esperado
+(`optional=False`) desde 16/07 -- corrigido pro valor certo (`True`),
+achado quando o smoke quebrou apos o fix. `smoke_fast.py` = SMOKE FAST OK
+(872 checks) depois da correcao do assert.
+
+**Achado 3 (estrutural, pendente, NAO implementado ainda):** investigando
+o mecanismo, achei que o guard de VALOR (`buff_wins_combat` etc., o que
+salvou o Katakuri 3x nesta partida) so existe em `sim_bridge.py`
+(`resolve_optional_effect`, caminho AO VIVO) -- dentro do simulador
+interno (`decision_engine.py`, usado por busca/line-search/self-play),
+`_worth_paying_optional_costs` trata QUALQUER custo de recurso
+(`rest_self`/`rest_don`/`don_minus`) como "sempre vale a pena"
+incondicionalmente (`return True` direto pra tipos fora de
+`_SACRIFICE_COST_TYPES`). Isso e uma divergencia real de "dois motores"
+(regra do usuario) -- a simulacao interna superestima o valor de linhas
+que passam por habilidades desse padrao. Alem disso, o gate de
+`_worth_paying_optional_costs`/`resolve_optional_effect` so e chamado pra
+4 gatilhos (`on_play`, `main`, `when_attacking`, `on_opp_attack`,
+[decision_engine.py:2065](scriptis_da_ia/optcg_engine/decision_engine.py:2065));
+blocos `[Trigger]`/`[Counter]` com custo de recurso opcional nunca passam
+por julgamento nenhum. Opções discutidas com o usuario, ainda sem
+decisao de qual priorizar: (a) unificar o guard de combate dentro de
+`_worth_paying_optional_costs` (fecha a divergencia de vez, mas e
+refactor de risco maior -- a logica do bridge usa contexto de
+incerteza/estimativa de mao do oponente que o simulador interno nao tem
+do mesmo jeito); (b) estender o gate pra `trigger`/`counter`; (c) essa
+sessao ja fez a parte do parser (achado 2).
+
 ## 2026-07-23 (322) - Claude - reserva de DON deixava de furar por custo/poder fixo
 
 Partida `Dracule.Mihawk-G_x_Charlotte.Katakuri-P_2026-07-23T16.07.35` (bot=P2/

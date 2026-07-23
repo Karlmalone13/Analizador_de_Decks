@@ -1570,10 +1570,15 @@ def parse_costs(text):
         m = re.search(r'don!{0,2}\s*(\d+)\s*(?:\([^)]*\)\s*)?:', t)
     if m:
         x = int(m.group(1))
-        idx = m.start()
-        janela = t[max(0, idx-40):idx+60]   # olha antes E depois
-        opcional = 'you may' in janela
-        costs.append({'type': 'don_minus', 'count': x, 'optional': opcional})
+        # Regra oficial (confirmada pelo usuario, 23/07, ver
+        # CLAUDE.md#regras-de-jogo): QUALQUER custo antes do ':' e sempre
+        # opcional de pagar, em QUALQUER gatilho -- "you may" no texto e so
+        # reforco redundante em algumas cartas, nao e o que TORNA o custo
+        # opcional. Antes exigia 'you may' por perto pra marcar opcional;
+        # 26 cartas no banco tinham DON!! N: (e variantes com o proprio
+        # "(You may return...)" no texto) marcadas optional=False por essa
+        # falta, incluindo o lider Charlotte Katakuri OP11-062.
+        costs.append({'type': 'don_minus', 'count': x, 'optional': True})
     else:
         # "you may return N or more DON!! cards from your field to your
         # DON!! deck:" -- custo VARIAVEL (minimo N, SEM qualificador
@@ -1613,11 +1618,10 @@ def parse_costs(text):
     m = re.search(r"give your[^:]*?(?:leader|character)[^:]*?[−\-]\s*(\d+)\s*power[^:]*:", t)
     if m:
         amount = int(m.group(1))
-        idx = m.start()
-        janela = t[max(0, idx-30):idx]
-        opcional = 'you may' in janela
+        # Mesma regra do don_minus acima: custo antes do ':' e sempre
+        # opcional, independe de 'you may' por perto.
         target = 'leader' if 'leader' in m.group(0) and 'character' not in m.group(0).split('leader')[0] else 'leader_or_character'
-        costs.append({'type': 'debuff_power_self', 'amount': amount, 'optional': opcional, 'target': target})
+        costs.append({'type': 'debuff_power_self', 'amount': amount, 'optional': True, 'target': target})
 
     return costs
 

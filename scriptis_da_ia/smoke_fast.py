@@ -2868,8 +2868,11 @@ def test_place_own_character_bottom_deck_e_turno_extra() -> None:
     # pra um ponteiro "quem joga agora" que so alterna se
     # extra_turn_pending nao estiver setada.
     entry = get_card_effects("OP05-119").get("on_play", {})
-    check("OP05-119 parseia custo DON!! -10 obrigatorio",
-          entry.get("costs", [{}])[0] == {"type": "don_minus", "count": 10, "optional": False})
+    # Achado 23/07 (regra confirmada pelo usuario): custo antes do ':' e
+    # SEMPRE opcional no OPTCG, independe de 'you may' no texto -- este
+    # assert estava com o valor errado (era optional=False), nao o parser.
+    check("OP05-119 parseia custo DON!! -10 opcional",
+          entry.get("costs", [{}])[0] == {"type": "don_minus", "count": 10, "optional": True})
     steps = entry.get("steps", [])
     check("OP05-119 parseia place_own_character_bottom_deck (all, exclude_self) + take_extra_turn",
           any(s.get("action") == "place_own_character_bottom_deck" and s.get("count") == 99
