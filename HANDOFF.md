@@ -22,10 +22,30 @@ o teste ao vivo continua invalido.
 
 Alerta adicional dessa sessao (Jinbe+Krieg): `gate_status: fail`, 2
 `decision_timeouts`, 13 `bot_confusion` tipo `no_eligible_action`, 0
-vitorias em 2 jogos. Nao investigado ainda nesta sessao — requer olhar o
-`decisions_2026-07-23T12.21.24.jsonl` pra achar os 13 casos de sem-acao
-antes de decidir se e regressao ou comportamento esperado (ex. fim de
-turno sem jogada).
+vitorias em 2 jogos.
+
+Investigados os 13 casos em `decisions_2026-07-23T12.21.24.jsonl`: NAO sao
+bug. 12/13 tinham `activeDon: 0` (nada pra pagar); um deles a mao tinha
+Mamaragan (OP15-078, custo 0) mas o efeito principal exige `don_minus 2`
+que o bot nao tinha — corretamente recusado (regra "so paga custo se
+produz efeito"). O 13o (turno 6, Jinbe, `activeDon: 1`) tinha 2 candidatos
+de 1 custo mas ambos com `cheap_redundancy_penalty` maior que o valor
+intrinseco (board com 5 personagens, copias redundantes) — tambem correto
+recusar. Conclusao: os 13 sao "nada de valor pra fazer" legitimo, nao
+confusao real. Achado colateral (nao corrigido, so registrado): o
+`score_components` do Mamaragan nao fecha a conta (intrinseco 90, score
+final -959, ~1049 de penalidade nao logada) — gap de instrumentacao no
+`score_components_coverage_pct` (78%), faz o gate `bot_confusion` tratar
+passe correto como erro. Nao mexi nisso, e area de scoring compartilhada e
+exige aprovacao antes de alterar.
+
+Servidor `engine_server` reiniciado nesta sessao: matei o processo antigo
+(PID 16092, de pe desde 12:21, commit `924baf1`) e subi um novo em
+`884de9c` (inclui bloco 320 completo). Log:
+`BOT/engine_server/logs/session_2026-07-23T15.47.08.log`, porta 8765.
+Pronto pra usuario testar ao vivo no OPTCGSim — proxima partida agora sim
+valida Choose 0, `cost N or more`, ordem Add DON->K.O. e sinergia
+`when_don_returned`.
 
 ## 2026-07-23 (320) - Codex - Choose 0, parser composto e sinergia DON
 
