@@ -8,9 +8,24 @@ Retomando a sessao apos o Codex ficar sem limite: o codigo do bloco 320
 So a partida `Charlotte.Katakuri-P_x_Krieg-RG_2026-07-23T14.12.36` (derrota,
 11 turnos, bot=P1/Katakuri) estava jogada e salva em raw/parsed/decks/index
 mas sem commit. Commitada em `d87a9a0`. Push feito em seguida. Nenhuma
-mudanca de codigo nesta sessao; validacao ao vivo dos itens do bloco 320
-(Choose 0, ramp Cracker/Katakuri, DON anexado, sinergia ST34-001) continua
-pendente para a proxima sessao com esse log de Krieg como novo dado.
+mudanca de codigo nesta sessao.
+
+Analisando `metrics/live_runs/live_2026-07-23T14.12.39.json`: essa partida
+(e a do Jinbe, bloco 319, mesma sessao) **nao valida o bloco 320**. O
+`commit_consistency` mostra que o servidor do engine ficou rodando o
+commit `924baf1` (12:20) a sessao inteira (`decisions_2026-07-23T12.21.24`),
+sem reiniciar depois do commit `3ae477d` (13:57, bloco 320). Ou seja Choose
+0 real, `cost N or more`, ordem Add DON->K.O. e sinergia `when_don_returned`
+seguem sem nenhuma partida ao vivo testando-os. Proxima sessao PRECISA
+reiniciar o `engine_server` depois de puxar `3ae477d` antes de jogar, senao
+o teste ao vivo continua invalido.
+
+Alerta adicional dessa sessao (Jinbe+Krieg): `gate_status: fail`, 2
+`decision_timeouts`, 13 `bot_confusion` tipo `no_eligible_action`, 0
+vitorias em 2 jogos. Nao investigado ainda nesta sessao — requer olhar o
+`decisions_2026-07-23T12.21.24.jsonl` pra achar os 13 casos de sem-acao
+antes de decidir se e regressao ou comportamento esperado (ex. fim de
+turno sem jogada).
 
 ## 2026-07-23 (320) - Codex - Choose 0, parser composto e sinergia DON
 
