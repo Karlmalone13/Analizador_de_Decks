@@ -1,5 +1,41 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-22 (312) - Codex - partida 22.30: Katakuri ainda paga efeito sem valor
+
+Nova partida real `Charlotte.Katakuri-P_x_Kaido-P_2026-07-22T22.30.34`,
+bot=P1/You/Katakuri, derrota. Log auto-salvo corretamente no banco; recibo e
+relatorio `metrics/live_runs/*22.30.37`, decision log da sessao `22.12.59`,
+commit executado no jogo `f007836`.
+
+Telemetria melhorou mecanicamente: 72 decisoes, 69 confirmed, 0 failed, 3
+pending; execucao e state_after 100%; latencia media 22,8ms/p95 91,7ms/max
+882,7ms; contrafactual 100% sobre 9 decisoes elegiveis, regret medio 4,778.
+Gate ainda FAIL por 5 `no_eligible_action` e 3 pending. Bot perdeu 0-1.
+
+Diagnostico estrategico confirmado:
+- Katakuri pagou `DON!! -1` 6 vezes. Duas foram desperdicio inequívoco:
+  Pudding 0 atacando Pudding 0 (lider nem participava; defensor uid=10,
+  telemetria recebeu attacker/defender power=0/0 e aceitou reaction) e Sanji
+  & Pudding 7000 no lider 5000 (buff 5000->6000 nao virou combate; tomou dano).
+- As quatro ofensivas geraram dano ou exigiram counter 2000, mas manter esse
+  uso quase automatico impediu crescer o pool: o bot acumulou duas Linlin
+  ST34-004 e outras cartas caras sem chegar na curva para joga-las.
+- Pudding OP11-070 ainda tem erro de sequenciamento/semantica: no turno 2 o
+  bot ativou primeiro (pagou DON -1/restou), o log nao mostrou o peek, e so
+  DEPOIS anexou 1 DON; no turno 3 repetiu a ativacao sem efeito visivel.
+  A telemetria chamou de confirmed apenas porque `actionUsed` mudou, portanto
+  transition_semantics=100% nao detecta que o beneficio real faltou.
+- Tamago terminou atacando Leader 4000 vs 5000 sem efeito registrado; foi
+  ataque incapaz de pressionar e aparentemente sem beneficio de gatilho.
+
+Proxima correcao recomendada, ainda NAO implementada: (1) reaction de buff
+de combate so pode aceitar se o ator for atacante/defensor relevante; contexto
+0/0 ou defensor diferente do ator deve recusar; (2) custo DON-minus precisa
+comparar ganho marginal com marco de curva/deploy futuro, inclusive nos usos
+ofensivos que taxam counter; (3) Pudding deve anexar requisito antes de ativar
+e confirmed sem mudanca do efeito esperado deve falhar semanticamente; (4)
+ataque trigger-only so passa se o gatilho estiver viavel e for aceito.
+
 ## 2026-07-22 (311) - Codex - alvo de ataque, search contextual e contrafactual live
 
 Correcao implementada a partir da partida Kid x Katakuri do bloco 310:

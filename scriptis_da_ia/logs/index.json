@@ -2043,5 +2043,30 @@
       "You": "decks/Eustass.Captain.Kid-Y_2026-07-22T21.44.06.json",
       "Opponent": "decks/Charlotte.Katakuri-P_2026-07-22T21.44.06.json"
     }
+  },
+  {
+    "id": "2026-07-22T22.30.34",
+    "friendly_name": "Charlotte.Katakuri-P_x_Kaido-P",
+    "date": "2026-07-22",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP11-062",
+      "leader_name": "Charlotte Katakuri",
+      "slug": "Charlotte.Katakuri-P"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "ST04-001",
+      "leader_name": "Kaido",
+      "slug": "Kaido-P"
+    },
+    "turns": 9,
+    "winner": "p2",
+    "log_file": "raw/Charlotte.Katakuri-P_x_Kaido-P_2026-07-22T22.30.34.log",
+    "parsed_file": "parsed/Charlotte.Katakuri-P_x_Kaido-P_2026-07-22T22.30.34.json",
+    "deck_files": {
+      "You": "decks/Charlotte.Katakuri-P_2026-07-22T22.30.34.json",
+      "Opponent": "decks/Kaido-P_2026-07-22T22.30.34.json"
+    }
   }
 ]
