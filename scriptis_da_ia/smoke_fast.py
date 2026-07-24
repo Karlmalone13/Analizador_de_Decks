@@ -1168,6 +1168,47 @@ def test_debuff_power_no_oponente_conta_como_removal() -> None:
           score > 200)
 
 
+def test_mapeamento_de_combos_bottom_deck_e_locks_contam_como_removal() -> None:
+    # Pedido do usuario 24/07 ("mapear os combos"): mesmo padrao do achado
+    # 21/07 (debuff_power) -- auditoria global achou 3 acoes de
+    # controle/remocao disfarcada nunca reconhecidas por is_removal:
+    # place_opp_character_bottom_deck (49 cartas), lock_opp_character_
+    # refresh (23), lock_opp_character_attack (20) -- 92 cartas no total
+    # (algumas com sobreposicao com outras categorias ja cobertas).
+    # place_opp_character_bottom_deck manda o personagem do oponente pro
+    # fundo do deck (nega pro resto do jogo -- pior que bounce); os locks
+    # travam untap/ataque (controle real de tempo). Nenhuma contava pra
+    # is_removal/habilita_ataque antes deste fix.
+    from optcg_engine.decision_engine import get_card_flags
+    check("Alvida (place_opp_character_bottom_deck) tem is_removal=True",
+          get_card_flags("EB03-021").get("is_removal") is True)
+
+    alvida = real_card("EB03-021")  # 2000 poder, custo 4, place_opp_character_bottom_deck power_lte=4000
+    weak_target = real_card("OP07-077")  # 0 poder -- alvo valido (power_lte=4000)
+    me = GameState(leader=real_card("OP11-062"), don_available=6, turn=5)
+    me.hand = [alvida]
+    me.field_chars = [real_card("ST34-005")]
+    me.life = [real_card("OP07-077") for _ in range(4)]
+    opp = GameState(leader=real_card("OP04-019"), turn=5)
+    opp.field_chars = [weak_target]
+    opp.life = [real_card("OP07-077") for _ in range(4)]
+    match = OPTCGMatch((me.leader, []), (opp.leader, []))
+    eng = DecisionEngine(me, opp)
+    score_com_alvo = match._score_play_action(alvida, eng)
+
+    # controle: sem alvo nenhum no campo do oponente, o bonus de remocao
+    # nao deve entrar (regra "remocao sem alvo vale pouco", ja existente
+    # em avaliar_carta) -- confirma que o gate de viabilidade (nao so a
+    # flag) reconhece o novo action corretamente.
+    opp_vazio = GameState(leader=real_card("OP04-019"), turn=5)
+    opp_vazio.life = [real_card("OP07-077") for _ in range(4)]
+    match2 = OPTCGMatch((me.leader, []), (opp_vazio.leader, []))
+    eng2 = DecisionEngine(me, opp_vazio)
+    score_sem_alvo = match2._score_play_action(real_card("EB03-021"), eng2)
+    check("Alvida com alvo valido no campo pontua mais que sem alvo nenhum",
+          score_com_alvo > score_sem_alvo)
+
+
 def test_opponent_model_ao_vivo_por_lider_e_fallback_seguro() -> None:
     # Item 3 ligado AO VIVO (14/07): lookup do .deck real por codigo do lider
     # (os decks de teste sao nomeados por arquetipo -- Kid.deck, Krieg.deck)
@@ -7754,6 +7795,7 @@ def main() -> int:
     test_ataque_em_character_exige_poder_final_suficiente()
     test_bonus_de_ameaca_critica_exige_chance_real_de_conectar()
     test_debuff_power_no_oponente_conta_como_removal()
+    test_mapeamento_de_combos_bottom_deck_e_locks_contam_como_removal()
     test_opponent_model_ao_vivo_por_lider_e_fallback_seguro()
     test_contrafactual_ao_vivo_usa_apenas_estado_publico_mascarado()
     test_search_contextual_evita_congestionar_mao_com_bombas()

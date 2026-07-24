@@ -1,5 +1,48 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-24 (348) - Claude (sessao local) - mapeamento de combos (etapa 1/4): 3 acoes de controle viravam is_removal
+
+Usuario pediu 4 melhorias antes de testar/dar push de novo: (1) mapear
+combos, (2) melhorar Turn Planner, (3) melhorar `_don_livre_for_plan`,
+(4) melhorar `_don_reserve_for_defense` (guarda DON demais sem
+necessidade). Esta sessao entregou a etapa 1; 2-4 ficam pra proxima.
+
+**Mapeamento de combos**: auditei TODAS as 136 acoes distintas usadas no
+`card_effects_db.json` contra o que `avaliar_carta`/flags do banco
+reconhecem -- **114 delas (das 136) nao tem nenhum reconhecimento na
+pontuacao**. Maioria e nicho/baixo volume, mas 3 se destacaram por serem
+o MESMO padrao do bug ja corrigido em 21/07 (`debuff_power` nao contava
+como `is_removal`): `place_opp_character_bottom_deck` (49 cartas, manda
+personagem do oponente pro fundo do deck -- pior que bounce), `lock_opp_
+character_refresh` (23, trava untap), `lock_opp_character_attack` (20,
+impede ataque) -- 92 cartas juntas, nenhuma contava como remocao/controle
+pra `is_removal`/`habilita_ataque`. Usuario escolheu focar so nessas 3
+primeiro (rejeitou expandir pra `buff_power_per_count`/`substitute_*`
+nesta leva, menos volume e sem exemplo real pra calibrar).
+
+**Fix**: `gerar_card_analysis_db.py` (`is_removal`) e `decision_engine.py`
+(`_is_ko_removal_step`, o gate de viabilidade que confirma se HA alvo
+agora) ganham as 3 acoes novas -- mesmo padrao exato do fix de 21/07, sem
+precisar do filtro de `target` que `debuff_power`/`set_base_power`
+exigiam (esses 3 ja tem o prefixo `opp_`/`lock_opp_` no proprio nome da
+action, sempre miram o oponente por design do parser).
+
+`python gerar_dbs.py` rodado: **76 cartas** viraram `is_removal=true` (das
+92 no banco com essas 3 acoes -- resto ja era `True` por outra categoria
+sobreposta). `card_effects_db.json` ficou byte-identico (nao mexi no
+parser, so no analysis). Todos os flips foram `false->true`, nenhum
+revertido (conferido no diff). Teste novo em `smoke_fast.py`
+(`test_mapeamento_de_combos_bottom_deck_e_locks_contam_como_removal`,
+usa Alvida EB03-021 real, 2 asserts incluindo controle "sem alvo pontua
+menos"). `smoke_fast.py` = SMOKE FAST OK. `smoke_test.py` = TODOS OS
+TESTES PASSARAM.
+
+**Pendente**: etapas 2 (Turn Planner), 3 (`_don_livre_for_plan`), 4
+(`_don_reserve_for_defense`) do pedido do usuario ainda NAO feitas --
+usuario pediu pra fazer as 4 antes de testar ao vivo/dar push de novo.
+Resto do mapeamento de combos (114-3=111 acoes nao cobertas, maioria
+baixo volume) tambem fica registrado caso o usuario queira voltar nisso.
+
 ## 2026-07-24 (347) - Claude (sessao local) - causa raiz do "so joga carta barata": _can_play_card excluia corpo on-curve por gate estreito
 
 Continuacao dos blocos 345/346 -- usuario deu a pista decisiva: "quando tem

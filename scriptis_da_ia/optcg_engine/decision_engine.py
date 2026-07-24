@@ -9143,7 +9143,14 @@ class DecisionEngine:
 
         def _is_ko_removal_step(step):
             act = step.get('action')
-            if act in ('ko', 'bounce', 'rest_opp_character'):
+            # place_opp_character_bottom_deck/lock_opp_character_refresh/
+            # lock_opp_character_attack: mesmo achado 24/07 do mapeamento de
+            # combos (has_ko/is_removal em gerar_card_analysis_db.py) --
+            # espelha aqui pra o gate de viabilidade (_step_condition_
+            # currently_holds) reconhecer o step certo quando a flag bater.
+            if act in ('ko', 'bounce', 'rest_opp_character',
+                      'place_opp_character_bottom_deck',
+                      'lock_opp_character_refresh', 'lock_opp_character_attack'):
                 return True
             return (act in ('debuff_power', 'set_base_power')
                     and step.get('target') in self._OPP_POWER_TARGETS)

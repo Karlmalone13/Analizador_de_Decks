@@ -2,6 +2,18 @@
 
 **Última atualização:** 24 de julho de 2026
 
+> 24/07/2026 (bloco HANDOFF 348): usuário pediu 4 melhorias antes de
+> testar/dar push de novo — **1/4 feita** (mapeamento de combos: 114 das
+> 136 ações do banco sem reconhecimento na pontuação; corrigidas as 3 de
+> maior volume que eram controle/remoção disfarçada —
+> `place_opp_character_bottom_deck`/`lock_opp_character_refresh`/
+> `lock_opp_character_attack`, 76 cartas viraram `is_removal=true`).
+> **Faltam**: 2) melhorar o Turn Planner, 3) melhorar
+> `_don_livre_for_plan`, 4) melhorar `_don_reserve_for_defense` (guarda
+> DON demais sem necessidade, segundo o usuário). `smoke_test.py` 100%
+> depois da etapa 1. **NÃO fazer push ainda** — usuário quer as 4 etapas
+> prontas antes de testar ao vivo de novo.
+
 > 24/07/2026 (bloco HANDOFF 347): causa raiz real do "só joga carta de
 > custo <=4" + "distribui DON em carta fraca pra empatar poder" —
 > `_can_play_card` excluía TOTALMENTE (não só pontuava baixo) qualquer

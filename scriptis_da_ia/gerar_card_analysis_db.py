@@ -127,7 +127,23 @@ def derive_analysis(card_text: str, card_type: str, counter: int) -> dict:
         step.get('action') in ('debuff_power', 'set_base_power')
         and step.get('target') in _OPP_POWER_TARGETS
         for data in effects.values() for step in _steps_de(data))
-    is_removal = bool(actions & {'ko', 'bounce', 'rest_opp_character'}) or has_opp_power_hit
+    # Mesmo padrao do achado 21/07 (debuff_power/set_base_power), agora pro
+    # "mapeamento de combos" pedido pelo usuario 24/07: mandar um character
+    # do oponente pro fundo do deck (place_opp_character_bottom_deck) ou
+    # trava-lo (lock_opp_character_refresh/lock_opp_character_attack) e
+    # FUNCIONALMENTE remocao/controle -- nega o personagem do oponente pro
+    # resto do combate deste turno (ou do proprio jogo, no caso do bottom
+    # deck), igual a bounce/rest_opp_character. Nomes de action ja tem o
+    # prefixo opp_/lock_opp_ (design proprio do parser), entao nao precisa
+    # do filtro de `target` que debuff_power/set_base_power exigiam (esses
+    # sim sao genericos, podem mirar o proprio lado). 92 cartas no banco
+    # (49+23+20) tinham esse padrao e nao contavam pra is_removal.
+    _CONTROL_DENIAL_ACTIONS = {'place_opp_character_bottom_deck',
+                               'lock_opp_character_refresh',
+                               'lock_opp_character_attack'}
+    is_removal = (bool(actions & {'ko', 'bounce', 'rest_opp_character'})
+                 or has_opp_power_hit
+                 or bool(actions & _CONTROL_DENIAL_ACTIONS))
     # comportamentos granulares (para detecção de arquétipo por cartas)
     kos = 'ko' in actions                          # KO de personagem (controle)
     rests_opponent = 'rest_opp_character' in actions  # trava personagem (controle/tempo)
