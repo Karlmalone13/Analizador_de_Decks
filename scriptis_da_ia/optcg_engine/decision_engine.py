@@ -9308,11 +9308,30 @@ class DecisionEngine:
         'character_to_owner_life': 10.0,
         'transfer_don': 10.0,
         'rest_opp_don': 10.0,
+        # ── Segunda passada (24/07): familia select_grant_* -- mesma
+        # concessao de keyword/estado que gain_X/keyword_X, so que via um
+        # step de SELECAO (target='selected'/'don_recipient' em vez de
+        # 'self') em vez de aplicar direto na propria carta. Mesmos
+        # valores dos equivalentes diretos (gain_rush=30, double_attack=25,
+        # unblockable/blocker=20, banish=15) e do check estatico no topo
+        # de avaliar_carta -- MESMO risco ja aceito pelos outros flats
+        # desta tabela (nao verifica se ha alvo elegivel, mesmo padrao de
+        # add_don/deal_damage/etc).
+        'select_grant_rush': 30.0,
+        'select_grant_rush_character': 18.0,
+        'select_grant_double_attack': 25.0,
+        'select_grant_unblockable_turn': 20.0,
+        'select_grant_blocker': 20.0,
+        'select_grant_banish': 15.0,
+        'select_grant_can_attack_active_turn': 15.0,  # desresta + libera ataque (~set_active)
+        # opp_don_minus: reduz recurso de DON do oponente -- disrupcao de
+        # ramp, mesma familia de rest_opp_don/transfer_don.
+        'opp_don_minus': 15.0,
     }
 
     def _uncovered_action_value(self, card: 'Card') -> float:
         """
-        Bonus GENERICO (fase 2) pros ~24 tipos de acao de alto
+        Bonus GENERICO (fase 2, 2 passadas) pros ~32 tipos de acao de alto
         volume/confianca do banco que nenhum outro mecanismo de
         avaliar_carta ainda reconhece (ver _UNCOVERED_ACTION_VALUE acima
         pra lista e criterio de inclusao). Mesma convencao de
@@ -9446,7 +9465,16 @@ class DecisionEngine:
             # character usa a MESMA mecanica de remocao de campo que ko") --
             # achado 24/07 na fase 2 do mapeamento de combos, so 4 cartas no
             # banco mas o gate de viabilidade tratava como acao desconhecida.
+            # ko_selected: KO de um alvo escolhido por step ANTERIOR no
+            # mesmo bloco (Zephyr OP06-074, Black Hole OP09-098) -- mesma
+            # mecanica de KO, so a fonte do alvo difere. opp_bounce_own_
+            # character: forca o OPONENTE a devolver 1 dos PROPRIOS
+            # personagens pra mao dele (Tsuru OP06-051, Muggy Ball
+            # OP09-058) -- remocao do campo do oponente do MEU ponto de
+            # vista, mesmo efeito liquido de bounce. Achados 24/07, segunda
+            # passada da fase 2 do mapeamento de combos.
             if act in ('ko', 'bounce', 'rest_opp_character', 'trash_character',
+                      'ko_selected', 'opp_bounce_own_character',
                       'place_opp_character_bottom_deck',
                       'lock_opp_character_refresh', 'lock_opp_character_attack'):
                 return True

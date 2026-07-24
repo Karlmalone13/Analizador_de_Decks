@@ -1,5 +1,97 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-24 (356) - Claude (sessao local) - fase 2 (segunda passada): select_grant_* + opp_don_minus + ko_selected/opp_bounce_own_character -- FASE 2 encerrada por diminishing returns
+
+Continuacao do bloco 355 -- segunda passada pedida pelo usuario
+("faz uma segunda passada na fase dois"). Reauditoria restrita a
+on_play/main (escopo real de `avaliar_carta`/`_uncovered_action_value`
+-- a contagem "101 acoes" do bloco 355 incluia `activate_main`, fora
+desse escopo por design): 91 acoes distintas, 50 ainda descobertas
+depois da 1a passada.
+
+**Adicionado nesta passada**:
+- Familia `select_grant_*` (mesma concessao de keyword/estado que
+  `gain_X`, so que via step de SELECAO -- `target='selected'`/
+  `'don_recipient'` em vez de `'self'`): `select_grant_rush` (30),
+  `select_grant_rush_character` (18), `select_grant_double_attack`
+  (25), `select_grant_unblockable_turn` (20), `select_grant_blocker`
+  (20), `select_grant_banish` (15), `select_grant_can_attack_active_turn`
+  (15) -- mesmos valores dos equivalentes diretos ja usados em
+  `avaliar_carta`/`_BOARD_COMBO_ACTION_VALUE`. ~18 ocorrencias no banco
+  (Perfume Femur OP07-057 e o exemplo real testado).
+- `opp_don_minus` (15.0) -- reduz o recurso de DON do oponente
+  (Magellan OP02-085/OP16-074), mesma familia de `rest_opp_don`/
+  `transfer_don` ja cobertos na 1a passada.
+- `ko_selected` e `opp_bounce_own_character` adicionados a
+  `_is_ko_removal_step` (avaliar_carta) E ao conjunto de `is_removal`
+  em `gerar_card_analysis_db.py` -- mesma mecanica de remocao de campo
+  que `ko`/`bounce` (Zephyr OP06-074, Black Hole OP09-098, Tsuru
+  OP06-051, Muggy Ball OP09-058). `is_removal` no banco: 681 -> 684.
+
+**Deliberadamente FORA (avaliado e descartado, nao esquecido)**:
+- `deck_bottom_rest` (141!), `trash_rest` (18), `deck_reorder_rest`
+  (10), `deck_top_rest` (4): steps de LIMPEZA que sempre acompanham
+  `look_top_deck`/`reveal_*` no MESMO bloco -- pontuariam a busca 2x.
+- `trash_from_deck_top` (26), `peek_life` (10): mill/scouting sem
+  direcao clara de valor (poderia ser custo OU beneficio dependendo da
+  carta, nao da pra generalizar com confianca sem ler cada texto).
+- `trash_from_hand` (15), `trash_own_life` (8), `self_cant_play` (6),
+  `self_cant_take_life` (2), `give_don_opp` (4), `lock_self_*` (1),
+  `shuffle_hand_into_deck`/`hand_to_deck` (3+3): CUSTO/DRAWBACK pro
+  proprio jogador -- precisariam de sinal INVERTIDO (penalizar, nao
+  bonificar), mecanismo que nao existe hoje em `avaliar_carta`.
+- `buff_cost` fora do `_BOARD_COMBO_ACTION_VALUE` (6 ocorrencias com
+  `target='self'`, fora do filtro `_OWN_BOARD_BUFF_TARGETS`): direcao
+  de valor ambigua (custo mais alto pro PROPRIO character pode ser bom
+  ou ruim dependendo de interacoes de filtro `cost_gte` em outras
+  cartas) -- baixa confianca pra generalizar.
+- Cauda de 30+ acoes com count=1 (ex: `take_extra_turn`,
+  `substitute_removal`, `opp_play_card`): volume irrelevante
+  individualmente, nao compensa o risco de calibrar errado.
+
+**Validacao**: `smoke_fast.py` -- 4 checks novos (Perfume Femur recebe
++20, Magellan recebe +15, Tsuru e Black Hole agora contam como
+`is_removal`). `smoke_test.py`: TODOS OS TESTES PASSARAM. Sem
+`diff_parser.py` (mesmo motivo do bloco 355 -- so
+`decision_engine.py`/`gerar_card_analysis_db.py`/`card_analysis_db.json`).
+
+**Fase 2 encerrada por diminishing returns** -- o que restou fora do
+escopo (cleanup/drawback/ambiguo/cauda de count=1) exigiria mecanismo
+NOVO (sinal invertido pra drawback) ou leitura carta-a-carta pra
+resolver ambiguidade, nao mais generalizacao direta como as 2 passadas
+feitas. Terceira passada so vale a pena se um combo real ficar
+ignorado ao vivo numa dessas categorias especificas.
+
+**PENDENCIAS conhecidas ao fim desta sessao** (usuario vai pro Turn
+Planner a seguir):
+1. **Turn Planner** -- proximo item do usuario, ainda nao comecado
+   nesta sessao (era o item 2 do pedido original de 4 melhorias,
+   24/07: "1- mapear os combos [FEITO, fases 1+2]. 2- Melhorar o turn
+   planner. 3 - melhorar o don livre para jogadas [FEITO, ja tinha
+   sido feito antes da fase 1]. 4 - melhorar a reserva de dons para
+   defesa [FEITO, bloco anterior a fase 1]"). Sem escopo definido
+   ainda -- proxima sessao precisa perguntar ao usuario o que
+   especificamente esta errado/faltando no Turn Planner antes de
+   mexer (mesmo padrao usado nesta sessao pra combos: "o que e combo
+   pra voce" antes de comecar a busca).
+2. Drawback/custo-proprio (trash_from_hand, trash_own_life,
+   self_cant_play, give_don_opp, etc. -- listados acima) precisam de
+   sinal invertido em avaliar_carta se algum combo real depender
+   disso -- mecanismo NAO existe hoje.
+3. `trash_from_deck_top`/`peek_life`/`buff_cost`(self) precisam de
+   leitura carta-a-carta (nao generalizavel com confianca) se
+   aparecerem em investigacao futura.
+4. Testes ao vivo e push: ainda NENHUM feito nesta sessao inteira
+   (pedido explicito do usuario de segurar). Proxima sessao decide
+   quando liberar.
+5. Gaps ja documentados em `parser_audits/` como pendentes (nao
+   regressao, decisao consciente): Camie/Luffy/Zeff "or [Trigger]/
+   [Blocker]" como gatilho alternativo (so Evento coberto), Koala "OU
+   jogado via efeito de outra carta" (so custo>=8 coberto), Boa
+   Hancock OP14-041 2a habilidade (Amazon Lily/Kuja Pirates on_ko, gap
+   pre-existente antes desta sessao), `on_hand_card_trashed` nao cobre
+   custo de PAGAMENTO trash_from_hand (so as acoes de EFEITO).
+
 ## 2026-07-24 (355) - Claude (sessao local) - fase 2 (primeira passada): scoring generico de ~24 acoes antes invisiveis em avaliar_carta
 
 Continuacao do bloco 354 -- Fase 2 da ordem de correcao combinada

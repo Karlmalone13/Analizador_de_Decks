@@ -1476,6 +1476,35 @@ def test_uncovered_action_value_pontua_acoes_antes_invisiveis() -> None:
           flags.get('is_removal', False) is True)
 
 
+def test_uncovered_action_value_segunda_passada() -> None:
+    # FASE 2, SEGUNDA PASSADA (usuario, 24/07: "faz uma segunda passada").
+    # Cobre a familia select_grant_* (mesma concessao de keyword/estado
+    # que gain_X, so via step de SELECAO) e opp_don_minus (disrupcao de
+    # DON do oponente) -- Perfume Femur OP07-057 e Magellan OP02-085 sao
+    # casos reais que pontuavam 0 nesses efeitos ate este fix.
+    a = GameState(leader=real_card("OP11-062"), turn=3)
+    opp = GameState(leader=real_card("OP11-062"), turn=3)
+    eng = DecisionEngine(a, opp)
+
+    femur = real_card("OP07-057")  # main: select_grant_unblockable_turn
+    check("Perfume Femur (select_grant_unblockable_turn) recebe bonus generico",
+          eng._uncovered_action_value(femur) == 20.0)
+
+    magellan = real_card("OP02-085")  # on_play: opp_don_minus
+    check("Magellan (opp_don_minus) recebe bonus generico",
+          eng._uncovered_action_value(magellan) == 15.0)
+
+    # ko_selected/opp_bounce_own_character (segunda passada): mesma
+    # mecanica de remocao de campo que ko/bounce -- Zephyr OP06-074/Black
+    # Hole OP09-098 (ko_selected) e Tsuru OP06-051/Muggy Ball OP09-058
+    # (opp_bounce_own_character) agora contam como is_removal.
+    from optcg_engine.decision_engine import get_card_flags
+    check("Tsuru OP06-051 (opp_bounce_own_character) agora conta como is_removal",
+          get_card_flags("OP06-051").get('is_removal', False) is True)
+    check("Black Hole OP09-098 (ko_selected) agora conta como is_removal",
+          get_card_flags("OP09-098").get('is_removal', False) is True)
+
+
 def test_opponent_model_ao_vivo_por_lider_e_fallback_seguro() -> None:
     # Item 3 ligado AO VIVO (14/07): lookup do .deck real por codigo do lider
     # (os decks de teste sao nomeados por arquetipo -- Kid.deck, Krieg.deck)
@@ -8089,6 +8118,7 @@ def main() -> int:
     test_on_own_effect_removes_char_dispara_gatilho_generico()
     test_on_hand_card_trashed_dispara_gatilho_generico()
     test_uncovered_action_value_pontua_acoes_antes_invisiveis()
+    test_uncovered_action_value_segunda_passada()
     test_opponent_model_ao_vivo_por_lider_e_fallback_seguro()
     test_contrafactual_ao_vivo_usa_apenas_estado_publico_mascarado()
     test_search_contextual_evita_congestionar_mao_com_bombas()

@@ -2,6 +2,18 @@
 
 **Última atualização:** 24 de julho de 2026
 
+> 24/07/2026 (bloco HANDOFF 356): Fase 2 segunda passada feita —
+> `select_grant_*` (7 variantes), `opp_don_minus`, `ko_selected` e
+> `opp_bounce_own_character` (removal). **Fase 2 encerrada por
+> diminishing returns** — o que sobrou (deck_bottom_rest e outros
+> steps de limpeza, custo/drawback próprio, ambíguos, cauda de
+> count=1) precisa de mecanismo novo (sinal invertido) ou leitura
+> carta-a-carta, não mais generalização direta. `smoke_test.py` 100%.
+> **PRÓXIMO ITEM: Turn Planner** (usuário vai pra esse agora) — sem
+> escopo definido ainda, próxima sessão precisa perguntar o que
+> especificamente está errado/faltando antes de mexer. Ver bloco 356
+> do HANDOFF pra lista completa de pendências.
+
 > 24/07/2026 (bloco HANDOFF 355): Fase 2 (primeira passada) feita —
 > `_uncovered_action_value()` pontua ~24 tipos de ação de alto
 > volume/alta confiança que `avaliar_carta` ignorava por completo (ex:
