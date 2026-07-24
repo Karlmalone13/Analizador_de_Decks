@@ -2,6 +2,18 @@
 
 **Última atualização:** 24 de julho de 2026
 
+> 24/07/2026 (bloco HANDOFF 346): `avaliar_carta` nunca dava bônus pro
+> passivo `when_don_returned` (add_don quando um DON!! volta pro deck) —
+> carta com esse passivo pontuava igual a um vanilla puro. Achado real com
+> Charlotte Katakuri ST34-001 (usuário: "bot ignora combo"). Auditoria
+> global achou **19 cartas** do banco com esse passivo, não só a que
+> revelou o gap. Fix genérico (+35 se a condição do bloco valer agora),
+> testado nas 19 sem erro. Teste novo em `smoke_fast.py`, `smoke_test.py`
+> 100%. **Pendente**: validar ao vivo se muda a frequência de jogo dessas
+> cartas; a queixa mais ampla "só joga carta de custo <=4" ainda não tem
+> causa raiz isolada além desta — próxima sessão deve reavaliar depois de
+> mais partidas com este fix.
+
 > 24/07/2026 (bloco HANDOFF 345): achado real e fix aplicado — o bot
 > praticamente nunca counterizava com carta enquanto tinha vida 4-5
 > (`should_use_counter` tinha `valor_vida=12` nessa faixa, MENOR que o

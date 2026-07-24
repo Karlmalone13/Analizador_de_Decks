@@ -851,6 +851,34 @@ def test_should_use_counter_nao_trava_com_vida_alta_em_ataque_real() -> None:
           engine2.should_use_counter(7000, 5000, counter_avail=3000, gasto=100.5) is False)
 
 
+def test_avaliar_carta_reconhece_passivo_when_don_returned() -> None:
+    # Achado real 24/07 (usuario: "bot ignora combo"): Charlotte Katakuri
+    # ST34-001 (7000 poder, [Your Turn][Once Per Turn] when_don_returned
+    # add_don:2 se o lider for Big Mom Pirates) avaliava EXATAMENTE igual a
+    # um vanilla puro do mesmo poder (50) -- as flags do banco usadas por
+    # avaliar_carta (has_draw/has_ko/etc) so cobrem acao de on_play/main,
+    # when_don_returned nunca gerava bonus nenhum. Isso importa porque este
+    # MESMO deck tem varios custos don_minus OPCIONAIS (o proprio lider
+    # Katakuri, ST34-005, ST34-004, PRB02-010) que triggam esse passivo toda
+    # vez que sao pagos -- um motor recorrente real, nao um vanilla.
+    katakuri1 = real_card("ST34-001")
+    me = GameState(leader=real_card("OP11-062"), don_available=6, turn=5)  # Katakuri, Big Mom Pirates
+    me.hand = [katakuri1]
+    me.life = [real_card("OP07-077") for _ in range(5)]
+    opp = GameState(leader=real_card("ST04-001"))
+    engine = DecisionEngine(me, opp)
+    check("ST34-001 com lider Big Mom Pirates ganha bonus de when_don_returned (antes pontuava igual a vanilla)",
+          engine.avaliar_carta(katakuri1) == 85.0)
+
+    me2 = GameState(leader=real_card("OP16-080"), don_available=6, turn=5)  # Teach, NAO Big Mom Pirates
+    me2.hand = [real_card("ST34-001")]
+    me2.life = [real_card("OP07-077") for _ in range(5)]
+    opp2 = GameState(leader=real_card("ST04-001"))
+    engine2 = DecisionEngine(me2, opp2)
+    check("ST34-001 sem a condicao do lider (Big Mom Pirates) NAO ganha o bonus",
+          engine2.avaliar_carta(me2.hand[0]) == 50.0)
+
+
 def test_attach_don_oferece_opcao_de_poder_de_combate() -> None:
     # Achado real ao vivo 23/07: com 1 DON disponivel e Baron Tamago &
     # Pekoms (ST34-005, 4000 poder, corpo vanilla) + Charlotte Pudding
@@ -7684,6 +7712,7 @@ def main() -> int:
     test_pudding_anexa_don_antes_de_oferecer_activate_main()
     test_trigger_risk_penalty_nao_veta_sozinho_ataque_legitimo()
     test_should_use_counter_nao_trava_com_vida_alta_em_ataque_real()
+    test_avaliar_carta_reconhece_passivo_when_don_returned()
     test_attach_don_oferece_opcao_de_poder_de_combate()
     test_don_minus_when_attacking_nao_devolve_o_proprio_don_do_ataque()
     test_resolve_reaction_custo_de_redirect_e_generico_nao_so_carta_da_mao()

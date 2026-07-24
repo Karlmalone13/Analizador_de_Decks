@@ -9183,6 +9183,25 @@ class DecisionEngine:
             elif my_life <= 2: v += 35
             s += v
 
+        # Passivo when_don_returned: motor recorrente que gera valor toda vez
+        # que DON!! volta pro deck (comum em decks com varios custos don_minus
+        # OPCIONAIS -- este proprio lider ja tem on_opp_attack/when_attacking
+        # com don_minus:1 opcional). As flags do banco (has_draw/has_ko/etc)
+        # so cobrem acao de on_play/main -- when_don_returned nunca gerava
+        # NENHUM bonus aqui, entao um corpo com esse passivo pontuava igual a
+        # um vanilla puro do mesmo poder. Achado real 24/07 (usuario: "bot
+        # ignora combo" -- Charlotte Katakuri ST34-001, when_don_returned
+        # add_don:2, avaliava 50 -- identico a um vanilla 7000 sem efeito
+        # nenhum). Flat, nao tenta contar quantos gatilhos de don_minus o
+        # deck tem (informacao que so o `full_deck_plan` teria, e nem sempre
+        # disponivel) -- so reconhece que o passivo existe e a condicao dele
+        # (se houver, ex: leader_type) vale agora.
+        dr = get_card_effects(card.code).get('when_don_returned')
+        if dr and card.card_type == 'CHARACTER':
+            dr_conds = dr.get('conditions', {})
+            if not dr_conds or EffectExecutor(self.me, self.opp)._check_conditions(dr_conds, card):
+                s += 35
+
         # Ajuste por postura
         if posture == 'LETHAL':
             if card.has_rush or card.rush_this_turn:          s += 50

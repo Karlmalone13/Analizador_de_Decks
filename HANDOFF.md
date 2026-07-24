@@ -1,5 +1,45 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-24 (346) - Claude (sessao local) - avaliar_carta ignorava passivo when_don_returned (19 cartas do banco)
+
+Continuacao do bloco 345 -- usuario pediu pra investigar melhor a queixa
+ainda aberta "bot so joga carta fraca e ignora combos". Achado concreto:
+`avaliar_carta` (decision_engine.py, scoring usado tanto pra decidir jogar
+quanto pra decidir guardar/contar como counter) tem bonus pra varias flags
+de banco (has_draw/has_ko/has_search/etc), mas NENHUMA cobria o passivo
+`when_don_returned` ([Your Turn][Once Per Turn] quando um DON!! volta pro
+deck, geralmente `add_don`). Charlotte Katakuri ST34-001 (7000 poder,
+when_don_returned add_don:2 se o lider for Big Mom Pirates) avaliava
+EXATAMENTE 50 -- identico a um vanilla puro do mesmo poder sem nenhum
+efeito. Isso importa porque o mesmo deck (Big Mom Pirates) tem VARIOS
+custos don_minus OPCIONAIS que triggam esse passivo (o proprio lider
+Katakuri via on_opp_attack/when_attacking, ST34-005, ST34-004, PRB02-010)
+-- um motor de valor recorrente de verdade, tratado como corpo comum.
+
+**Auditoria global** (regra do projeto, `gerar_effects_db.py` nao foi
+tocado mas a checagem serve igual pra engine): busquei `when_don_returned`
+no `card_effects_db.json` inteiro -- **19 cartas** no banco tem esse
+passivo (Sanji&Pudding, Brulee, Kamazo, Magellan, Crocodile, Kid, Reiju,
+Luffy(061), Bepo, Randolph, Zeff, Trebol, Ulti, Killer, Heat, Wire,
+Katakuri(001), etc) -- nao era so a carta que revelou o gap.
+
+**Fix**: `avaliar_carta` ganha bonus generico (+35) pra QUALQUER carta
+CHARACTER com bloco `when_don_returned` cuja condicao (se houver, ex:
+`leader_type`) vale AGORA -- mesmo padrao de checagem ja usado pras outras
+flags (`EffectExecutor._check_conditions`). Testado nas 19 cartas do
+banco, sem erro em nenhuma. Validado com/sem a condicao do lider (Katakuri
+vs Teach): 85 com a condicao, 50 sem (nao ganha bonus indevido).
+
+Teste novo em `smoke_fast.py`
+(`test_avaliar_carta_reconhece_passivo_when_don_returned`, 2 asserts).
+`smoke_fast.py` = SMOKE FAST OK. `smoke_test.py` = TODOS OS TESTES
+PASSARAM (mexeu em `avaliar_carta`, area compartilhada de alto risco).
+**Pendente**: validar ao vivo se isso muda a frequencia de jogar
+ST34-001/cartas com esse passivo antes de cartas mais fracas; a queixa
+"bot so joga carta de custo <=4" segue sem causa raiz isolada alem desta
+-- pode precisar de mais uma sessao de investigacao se persistir apos
+este fix.
+
 ## 2026-07-24 (345) - Claude (sessao local) - achado real: bot quase nunca counteriza com vida 4-5 (causa de "usa habilidade do lider" + "Pekoms ataca a toa")
 
 Usuario reportou 3 queixas especificas que vinha repetindo ha dias: (1) bot
