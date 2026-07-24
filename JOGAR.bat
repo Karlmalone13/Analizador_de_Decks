@@ -1,18 +1,19 @@
 @echo off
 REM ============================================================
 REM  JOGAR.bat - prepara TUDO para uma partida de teste ao vivo
-REM  (branch claude/execute-remote-control-3qzqgm, HANDOFF 299-302)
+REM  (branch main -- a branch de trabalho foi mergeada e removida em
+REM  24/07, ver HANDOFF; PR #1 fechado como merged)
 REM  Duplo-clique -> quando terminar, abra o OPTCGSim e jogue.
 REM  IMPORTANTE: feche o JOGO antes de rodar (a DLL e recompilada).
 REM ============================================================
 cd /d "%~dp0"
 
-echo === [1/4] Atualizando o codigo (branch de teste) ===
+echo === [1/4] Atualizando o codigo (main) ===
 git fetch origin
 if errorlevel 1 goto :erro
-git checkout claude/execute-remote-control-3qzqgm
+git checkout main
 if errorlevel 1 goto :erro
-git pull origin claude/execute-remote-control-3qzqgm
+git pull origin main
 if errorlevel 1 goto :erro
 
 echo.

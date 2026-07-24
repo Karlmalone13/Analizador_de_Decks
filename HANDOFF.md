@@ -1,5 +1,31 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-24 (341) - Claude (sessao remota web) - merge do PR #1 na main + remocao da branch de trabalho
+
+Usuario pediu explicacao do PR #1 (aberto desde 22/07, 53 commits da
+branch `claude/execute-remote-control-3qzqgm` -- toda a leva 299-340 --
+propondo merge pra `main`). Esclarecido: PR e so uma tela do GitHub
+comparando 2 branches, ZERO efeito em runtime do bot (nao e carregado por
+nada, o desktop roda o que esta commitado na branch que ele faz checkout,
+independente do PR existir ou nao). A duplicidade branch/PR NAO tem
+relacao com os bugs/ineficiencia do bot -- esses sao todos de logica do
+engine, achados em partida real.
+
+Usuario decidiu simplificar pra 1 linha so: **PR #1 mergeado na main**
+(`de9c62a`, `mergeable_state: clean`, sem conflito) e a branch de trabalho
+**removida** (local + remoto) apos o merge. `main` agora e a UNICA branch
+e contem tudo (blocos 299-340, zonas de alvo, memoria de reveals, guards
+de buff, benchmarks humano-vs-bot, os 3 fixes cronicos do smoke_test).
+
+**`JOGAR.bat` atualizado** (era o unico lugar que hardcodava o nome da
+branch antiga): agora faz checkout/pull de `main` em vez de
+`claude/execute-remote-control-3qzqgm`. Sem essa troca o script quebraria
+no desktop apos a remocao da branch.
+
+Proximo passo combinado com o usuario: investigar o GAP DE AGRESSIVIDADE
+(achado dos benchmarks do Codex, bloco 337/338 -- bot ataca o lider muito
+menos que humano, ex. Mihawk 40% vs 85,7%).
+
 ## 2026-07-24 (340) - Claude - as 3 falhas cronicas do smoke_test.py corrigidas
 
 Usuário pediu pra investigar as 3 falhas pré-existentes do `smoke_test.py`
