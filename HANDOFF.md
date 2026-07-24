@@ -1,5 +1,52 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-24 (344) - Claude (sessao local) - leitura COMPLETA da telemetria: 0/27 e por que
+
+Cumprindo a regra nova do bloco 343 (leitura de telemetria incondicional em
+sessao local), li TODOS os 22 `live_runs` + os 22 arquivos brutos de decisao
+(1932 decisoes) + gerei os 22 `decision_summary.txt`, nao so o mais
+recente. Achados agregados:
+
+**Achado principal, quantificado: o bot perde por deficit de dano, nao por
+azar pontual.** Nas 21 derrotas com `state_final` completo (de 22 sessoes,
+1 "aborted"), o padrao e sempre o mesmo: bot chega a vida 0, oponente
+sobra com vida **media 3,48 (mediana 4) de 5**. Ou seja, o bot causa em
+media so **~1,5 de dano na vida do oponente na partida inteira**, contra
+perder as 5 proprias. Partidas duram em media 6 turnos (5-7) -- nao e
+"quase ganhou", e derrota desproporcional na maioria das partidas. Padrao
+consistente 17/07-23/07, nao e fase ruim isolada. Isso quantifica (nao so
+qualifica) o que os blocos 337-339/342 ja vinham apontando via
+`pct_atk_lider`/`don_observado_por_ataque` -- aponta pra deficit
+SISTEMICO de output de dano, provavelmente espalhado entre scoring de
+ataque, alocacao de DON e velocidade de montar board, nao 1 funcao so.
+**Nao investigada a causa raiz ainda** -- fica pra proxima sessao abrir
+`decide_don_for_attack`/`_score_to_play`/objective='destroy' com esse
+numero como alvo (reduzir o gap vida-causada vs vida-perdida).
+
+**Achados secundarios da varredura completa (nenhum e a causa raiz do
+0/27 sozinho):**
+- So 3 timeouts reais em 1932 decisoes; so 1 severo (LETHAL certificado
+  com `scored_actions` vazio, ja registrado no bloco 343 -- caso raro, nao
+  sistemico).
+- 78 execucoes com falha de confirmacao (`"estado inalterado no proximo
+  main state estavel"` 58x, `"acao repetida 3x sem mudanca de estado"`
+  20x) -- mas concentradas em sessoes de 20-22/07, **zero** nas sessoes de
+  23/07 (as mais recentes). Parece ja resolvido por fixes anteriores, nao
+  e pendencia ativa.
+- `client_timeouts` em `/choose_target`: 8 no total, 2 ainda em sessoes de
+  23/07 -- item ja conhecido no TODO.md ("nunca investigado"), continua
+  pendente mas e raro.
+- 17 casos de "bot escolhe acao com score bem menor que a melhor
+  alternativa" -- confirmado que todos usam `masked_public_line_search`/
+  `opponent_response_search` (Turn Planner avaliando a linha, nao a
+  decisao imediata) -- bate com a nota ja existente no
+  `bot_efficiency_report.py` ("mean_immediate_score_gap nao e
+  arrependimento"), nao sao bug.
+- Alerta `bot_confusion` dispara em 100% das sessoes, mas a maior parte e
+  o marcador normal de fim do Main Phase (`no_eligible_action` = "acabei
+  minhas jogadas"), nao confusao de verdade -- o alerta pode estar
+  superestimando severidade sistematicamente. Nao corrigido ainda.
+
 ## 2026-07-24 (343) - Claude (sessao local) - investigacao real da telemetria + decisao sobre o achado do bloco 342
 
 Sessao local pegou o pedido do bloco 342 (telemetria de decisao nunca

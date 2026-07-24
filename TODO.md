@@ -1,6 +1,24 @@
 # TODO — Analisador de Decks OPTCG
 
-**Última atualização:** 21 de julho de 2026
+**Última atualização:** 24 de julho de 2026
+
+> 24/07/2026 (bloco HANDOFF 344): leitura COMPLETA de toda a telemetria
+> local (22 `live_runs`, 22 arquivos de decisão, 1932 decisões) confirma e
+> QUANTIFICA o gap de eficiência: nas 21 derrotas com dado completo, o bot
+> sempre chega a vida 0 enquanto o oponente sobra com **vida média 3,48/5**
+> — ou seja, o bot causa em média só **~1,5 de dano por partida inteira**.
+> Padrão consistente 17/07-23/07, não é fase ruim isolada. **Alvo
+> numérico claro pra próxima sessão de fix**: fechar esse gap
+> vida-causada-vs-vida-perdida, provavelmente abrindo
+> `decide_don_for_attack`/`_score_to_play`/objective='destroy' —
+> causa raiz ainda NÃO investigada, só quantificada. Achados secundários
+> (nenhum é a causa raiz sozinho): só 1 timeout severo (LETHAL com
+> `scored_actions` vazio, já corrigido pra virar item registrado);
+> 78 falhas de confirmação de execução mas concentradas em sessões
+> 20-22/07, zero em 23/07 (parece já resolvido); `client_timeouts` em
+> `/choose_target` seguem raros mas não investigados; alerta
+> `bot_confusion` provavelmente superestima severidade (conta fim normal
+> de Main Phase como confusão).
 
 > 21/07/2026 (bloco HANDOFF 298): usuário propôs a hipótese correta —
 > "o bot tem dificuldade com qualquer efeito de DON!! -N" — CONFIRMADA
