@@ -1,5 +1,56 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-23 (326) - Claude - avaliar_carta ganha noção de combo play_card condicional
+
+Comparação pedida pelo usuário (bloco 325): analisada a partida
+`Charlotte.Katakuri-P_x_Dracule.Mihawk-G_2026-07-23T18.13.41_p2` (humano de
+Katakuri, bot de Mihawk). Achado principal (compartilhado com o usuário,
+não é bug — é dado): o bot de MIHAWK nessa sessão desenvolveu muito melhor
+que o bot de Katakuri (chegou a `activeDon:10` no turno 5 e jogou a bomba
+de custo 10 assim que deu, via `scored_actions` — score 225 contra 135 da
+próxima opção). Isso sugere que a trava do Katakuri é mais específica
+daquele deck/kit do que um bug genérico do fix 322 (que já resolveu o caso
+Mihawk). Também limpei do banco a entrada `2026-07-23T18.13.41`
+(não-sufixo): era duplicata byte-a-byte da partida anterior (17.54.33) —
+o CombatLogs do jogo não tinha rotacionado antes do auto-collect capturar.
+
+Usuário pediu pra investigar por que o Katakuri especificamente trava, com
+exemplo concreto: "pudding 7 descendo outro bixo". Achado real: Charlotte
+Pudding (`PRB02-010`) tem `[On Play] DON!! -2: se lider é Big Mom Pirates
+e oponente tem 6+ DON, compra 2, depois joga até 1 personagem Big Mom
+Pirates de 6000-8000 poder da mão DE GRAÇA`. `avaliar_carta` pontuava essa
+carta só pelas FLAGS fixas de `get_card_flags` (has_draw/is_searcher/etc,
+por carta, sem ler condição nem estado atual) — não existe flag nenhuma
+pro passo `play_card` (jogar outra carta de graça). Resultado: o combo
+real (corpo + compra 2 + segunda bomba grátis) era invisível pro score, a
+Pudding pontuava só como corpo de 5000 e virava counter fodder em vez de
+ser jogada no momento certo (tarde de jogo, oponente com DON acumulado).
+
+Fix aprovado pelo usuário: novo método
+`DecisionEngine._conditional_play_card_combo_value(card)` -- lê os steps
+reais de `on_play`/`main` da carta via `card_effects_db`, checa as
+condições (bloco E step) contra o estado ATUAL via
+`EffectExecutor._check_conditions` (read-only), e se achar um passo
+`play_card` com alvo elegível na mão (via `eligible_cards`
+filter_type/power_gte/power_lte/cost_lte), soma o valor real dessa segunda
+carta (`board_value()*8`, teto 90) ao score. Chamado dentro de
+`avaliar_carta`. Genérico -- qualquer carta futura com esse padrão entra
+automaticamente, não hardcoded pra Pudding.
+
+Validação: `py_compile` limpo. 2 novos testes em `smoke_fast.py`
+(`test_avaliar_carta_reconhece_combo_play_card_condicional`): score da
+Pudding maior com combo ligado (líder certo + oponente 6+ DON + alvo na
+mão) vs desligado (oponente com pouco DON), e confirma que sem alvo
+elegível o score não infla à toa. `smoke_fast.py` = SMOKE FAST OK.
+`smoke_test.py` rodado antes/depois: mesmas 3 falhas pré-existentes, sem
+regressão nova.
+
+Pendente: só esse UM padrão (`play_card` condicional) ganhou consciência
+de condição/estado -- as outras flags (`has_draw`, `has_ko`, `has_bounce`
+etc.) continuam FIXAS por carta, sem checar se a condição do bloco
+realmente vale agora (mesmo gap, menor impacto, não endereçado ainda).
+Validação ao vivo (próxima partida de Katakuri) ainda pendente.
+
 ## 2026-07-23 (325) - Claude - 3a partida Mihawk x Katakuri + pivot de metodologia
 
 Partida `Dracule.Mihawk-G_x_Charlotte.Katakuri-P_2026-07-23T17.54.33` (bot=P2,

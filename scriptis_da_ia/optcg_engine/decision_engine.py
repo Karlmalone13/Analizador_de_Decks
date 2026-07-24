@@ -8856,6 +8856,49 @@ class DecisionEngine:
                    - self._counter_stat_bonus(card)
                    + self._counter_stat_bonus(card, life_mult=False) * opcao_futura)
 
+    def _conditional_play_card_combo_value(self, card: 'Card') -> float:
+        """
+        Bonus de avaliar_carta pro passo 'play_card' condicional (jogar
+        OUTRA carta da mao DE GRACA) dentro do proprio on_play/main da
+        carta -- ex: Charlotte Pudding PRB02-010, "[On Play] DON!! -2: se
+        seu lider e Big Mom Pirates e o oponente tem 6+ DON, compra 2,
+        depois joga ate 1 personagem Big Mom Pirates de 6000-8000 poder da
+        mao". As flags de get_card_flags (has_draw/is_searcher/etc, usadas
+        acima) sao FIXAS por carta e nunca cobriram esse passo -- Pudding
+        pontuava so pelo corpo (5000 poder), cego pro combo real (achado
+        ao vivo 23/07: virou counter fodder em vez de ser jogada). Generico
+        via card_effects_db + _check_conditions com o estado ATUAL --
+        qualquer carta futura com esse padrao entra automaticamente, nao
+        so a Pudding.
+        """
+        from optcg_engine.rules_facade import eligible_cards
+        effects = get_card_effects(card.code)
+        ee = EffectExecutor(self.me, self.opp)
+        bonus = 0.0
+        for trig in ('on_play', 'main'):
+            ef = effects.get(trig)
+            if not isinstance(ef, dict):
+                continue
+            block_conds = ef.get('conditions', {})
+            if block_conds and not ee._check_conditions(block_conds, card):
+                continue
+            for step in ef.get('steps', []):
+                if step.get('action') != 'play_card':
+                    continue
+                step_conds = step.get('conditions', {})
+                if step_conds and not ee._check_conditions(step_conds, card):
+                    continue
+                candidatos = [
+                    c for c in eligible_cards(
+                        self.me.hand, filter_text=step.get('filter_type', ''),
+                        power_gte=step.get('power_gte'), power_lte=step.get('power_lte'),
+                        cost_lte=step.get('cost_lte'), exclude_card=card)
+                    if c.card_type in ('CHARACTER', 'STAGE', 'EVENT')]
+                if candidatos:
+                    melhor = max(candidatos, key=lambda c: c.board_value())
+                    bonus += min(90.0, melhor.board_value() * 8)
+        return bonus
+
     def avaliar_carta(self, card: 'Card', stage_redundancy: bool = True) -> float:
         """
         Avalia o valor situacional de uma carta para jogar/guardar/descartar.
@@ -8999,6 +9042,8 @@ class DecisionEngine:
         plano_bomba = compute_game_plan(self.me)
         if plano_bomba['win_con_code'] and card.code == plano_bomba['win_con_code']:
             s += 90
+
+        s += self._conditional_play_card_combo_value(card)
 
         # STAGE redundante: com stage propria ja em campo, a 2a copia na
         # mao so vale o UPGRADE liquido sobre a atual — e vira o pitch mais

@@ -542,6 +542,46 @@ def test_combat_buff_worth_paying_no_simulador_interno() -> None:
           bool(logs3) and me3.don_available == 0 and me3.leader.power_buff == 1000)
 
 
+def test_avaliar_carta_reconhece_combo_play_card_condicional() -> None:
+    # Achado 23/07 (usuario, "pudding 7 descendo outro bixo"): Charlotte
+    # Pudding (PRB02-010) "[On Play] DON!! -2: se seu lider e Big Mom
+    # Pirates e o oponente tem 6+ DON, compra 2, joga ate 1 Big Mom Pirates
+    # 6000-8000 poder da mao de graca" -- avaliar_carta so pontuava o corpo
+    # dela (5000 poder), cego pro combo, porque get_card_flags e fixo por
+    # carta e nao tem flag nenhuma pra "play_card" condicional. Bot tratava
+    # a Pudding como corpo generico e a descartava como counter fodder.
+    from optcg_engine.decision_engine import DecisionEngine
+    pudding = real_card("PRB02-010")
+    bomba = real_card("OP11-067")  # Big Mom Pirates, custo 8, 8000 poder
+
+    # (a) Combo LIGADO: lider Big Mom Pirates + oponente com 6+ DON +
+    # bomba elegivel na mao -- score deve ser MAIOR que so o corpo.
+    me = GameState(leader=real_card("OP11-062"), don_available=9)
+    me.hand = [pudding, bomba]
+    opp = GameState(leader=real_card("OP14-020"), don_available=6)
+    eng_on = DecisionEngine(me, opp)
+    score_on = eng_on.avaliar_carta(pudding)
+
+    # (b) Combo DESLIGADO: oponente com pouco DON -- condicao nao bate,
+    # mesma mao, mesmo lider.
+    opp_pouco = GameState(leader=real_card("OP14-020"), don_available=2)
+    eng_off = DecisionEngine(me, opp_pouco)
+    score_off = eng_off.avaliar_carta(pudding)
+
+    check("avaliar_carta pontua Pudding mais alto quando o combo play_card esta disponivel",
+          score_on > score_off + 30)
+
+    # (c) Sem alvo elegivel na mao (so a propria Pudding): mesmo com
+    # oponente em 6+ DON, nao deve inflar o score por um combo que nao tem
+    # com quem acontecer.
+    me_sozinha = GameState(leader=real_card("OP11-062"), don_available=9)
+    me_sozinha.hand = [pudding]
+    eng_sem_alvo = DecisionEngine(me_sozinha, opp)
+    score_sem_alvo = eng_sem_alvo.avaliar_carta(pudding)
+    check("avaliar_carta NAO infla o score do combo sem alvo elegivel na mao",
+          score_sem_alvo < score_on)
+
+
 def test_pudding_anexa_don_antes_de_oferecer_activate_main() -> None:
     pudding = real_card("OP11-070")
     pudding._deck_uid = 10
@@ -7333,6 +7373,7 @@ def main() -> int:
     test_mamaragan_main_so_mira_oponente_apesar_do_counter_mirar_proprio()
     test_katakuri_buff_so_paga_com_impacto_no_combate_e_na_curva()
     test_combat_buff_worth_paying_no_simulador_interno()
+    test_avaliar_carta_reconhece_combo_play_card_condicional()
     test_pudding_anexa_don_antes_de_oferecer_activate_main()
     test_resolve_reaction_custo_de_redirect_e_generico_nao_so_carta_da_mao()
     test_peek_opp_deck_top_nao_vira_alvo_battlefield_only()
