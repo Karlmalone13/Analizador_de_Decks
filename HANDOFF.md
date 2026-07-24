@@ -1,5 +1,20 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-23 (332) - Claude - CLAUDE.md: telemetria agregada vem PRIMEIRO, nao decision_summary
+
+Usuário corrigiu a ordem do bloco 331: queria a leitura da telemetria
+AGREGADA (`live_<timestamp>.json`) obrigatória primeiro, não pular direto
+pro `decision_summary.py`. Reordenado no CLAUDE.md -- passo 1 agora é
+sempre o relatório agregado (diz SE tem algo suspeito e ONDE olhar antes
+de gastar tempo lendo decisão por decisão), passo 2 é `decision_summary.py`
+só pra investigar o que o passo 1 apontou.
+
+Usuário também perguntou se os outros achados do bloco 331 (client_timeout
+sem causa raiz, gaps de cobertura score_components/line_search) já tinham
+sido corrigidos -- não, só o bug do Pekoms/attach_don (bloco 330,
+`3fb58be`) foi corrigido, e esse ainda sem validação ao vivo. Os outros
+dois seguem só registrados, pendentes.
+
 ## 2026-07-23 (331) - Claude - CLAUDE.md: telemetria obrigatória cobre os DOIS relatórios
 
 Usuário cobrou (justo): bloco 330 só documentou `decision_summary.py`
