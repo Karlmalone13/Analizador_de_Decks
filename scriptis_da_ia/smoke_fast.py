@@ -720,6 +720,31 @@ def test_attach_don_oferece_opcao_de_poder_de_combate() -> None:
           attach_candidatos.get("ST34-005", (None,) * 5)[4] == "attack_power")
 
 
+def test_don_minus_when_attacking_nao_devolve_o_proprio_don_do_ataque() -> None:
+    # Achado real ao vivo 23/07 (mesma sessao, log seguinte): Pekoms recebeu
+    # 1 DON (anexado pro fix acima ajudar o ataque), atacou, e o proprio
+    # custo do [When Attacking] dele (DON!!-1) devolveu ESSE MESMO DON --
+    # ataque voltou a 4000 (poder base) como se o attach nunca tivesse
+    # acontecido. Causa: declarar o ataque ja resta o atacante ANTES do
+    # custo resolver, entao _return_don_to_deck via o proprio Pekoms como
+    # "DON anexado a quem ja atacou" (fonte barata) e devolvia o DON que
+    # tinha acabado de ser anexado pra ESTE ataque. Fix: exclude_card no
+    # _pay_costs pra 'don_minus', so toca o proprio atacante como ULTIMO
+    # recurso (fonte 4), nao antes de outras fontes disponiveis.
+    pekoms = real_card("ST34-005")
+    pekoms.rested = True          # ja restou ao declarar o ataque
+    pekoms.don_attached = 1       # o DON que acabou de ser anexado pra este ataque
+    me = GameState(leader=real_card("OP11-062"), don_available=0, don_rested=1)
+    me.field_chars = [pekoms]
+    opp = GameState(leader=real_card("OP16-080"))
+    ee = EffectExecutor(me, opp)
+    ee.execute(pekoms, "when_attacking")
+    check("Pekoms mantem o DON anexado quando existe outra fonte pra pagar o proprio custo",
+          pekoms.don_attached == 1)
+    check("o custo saiu do banco restado (fonte 3), nao do proprio atacante",
+          me.don_rested == 0)
+
+
 def test_resolve_reaction_custo_de_redirect_e_generico_nao_so_carta_da_mao() -> None:
     # Pedido do usuario 21/07: resolve_reaction() era Teach-cêntrico na
     # conta de CUSTO do redirect (sempre assumia "custo = perder a carta
@@ -7498,6 +7523,7 @@ def main() -> int:
     test_step_condition_currently_holds_generaliza_pra_qualquer_flag()
     test_pudding_anexa_don_antes_de_oferecer_activate_main()
     test_attach_don_oferece_opcao_de_poder_de_combate()
+    test_don_minus_when_attacking_nao_devolve_o_proprio_don_do_ataque()
     test_resolve_reaction_custo_de_redirect_e_generico_nao_so_carta_da_mao()
     test_peek_opp_deck_top_nao_vira_alvo_battlefield_only()
     test_own_don_e_candidato_prioritario_pra_custo_don_minus()

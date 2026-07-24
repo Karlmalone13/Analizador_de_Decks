@@ -1,5 +1,74 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-23 (333) - Claude - Pekoms devolve o proprio DON + 2 bugs graves achados, nao corrigidos
+
+Partida `Charlotte.Katakuri-P_x_Kaido-P_2026-07-23T23.12.17` (bot=Katakuri
+P1, derrota, ja no bloco 332/`b7ca0a0`). Usuario reportou 4 problemas com
+print de tela real. Investigado com telemetria (ordem nova do bloco 332:
+`live_2026-07-23T23.12.20.json` primeiro, `decision_summary.py` depois).
+
+**1) CORRIGIDO nesta sessao:** Pekoms (ST34-005) recebia DON pra reforcar
+o ataque (fix do bloco 330) mas o PROPRIO custo `[When Attacking]
+DON!!-1` dele devolvia esse MESMO DON, anulando o buff -- log real:
+"Attach 1 Don to Pekoms" -> "attacking Kaido" -> "Pekoms: Minus 1 Don" ->
+"[4000] vs [5000]" (poder base, o attach nao contou pra nada). Causa:
+declarar o ataque ja resta o atacante ANTES do custo resolver, entao
+`_return_don_to_deck` (chamada por `_pay_costs` pro tipo `don_minus`) via
+o PROPRIO Pekoms como "DON anexado a quem ja atacou" (fonte 1, a mais
+barata) e devolvia o DON que tinha acabado de ser anexado pra ESTE
+ataque. Fix: novo parametro `exclude_card` em `_return_don_to_deck`,
+passado como o proprio `card` em `_pay_costs` -- exclui o atacante das
+fontes 1/2 (baratas), mas permanece disponivel na fonte 4 (ultimo
+recurso) se nao houver outra origem. 2 testes novos em `smoke_fast.py`.
+`smoke_fast.py` = SMOKE FAST OK, `smoke_test.py`: mesmas 3 falhas
+pre-existentes, sem regressao nova.
+
+**2) ACHADO, NAO CORRIGIDO -- provavel bug do plugin C#, nao do engine
+Python:** Pekoms K.O.'d a PROPRIA Nola do bot (`[You] Baron Tamago &
+Pekoms: Destroy Nola`, sendo que so "[You]" jogou Nola a partida
+inteira -- confirmado via grep, nenhum "[Opponent] Deploy Nola"). O
+efeito real e "K.O. up to 1 of your OPPONENT's Characters with 2000 base
+power or less" (`target: 'opp_character'`). Auditei `_execute_step`
+('ko'/'trash_character', linha ~4882-5016 de `decision_engine.py`): a
+logica Python so monta o pool de alvos com `opp.field_chars` quando
+`target_type` nao e `all_character`/`self_character` -- verificado
+correto, nunca tocaria `me.field_chars` pra esse padrao. Isso aponta pro
+caminho de EXECUCAO ao vivo (BOT/, C# -- fora de `scriptis_da_ia`), nao
+pro motor de decisao -- possivel regressao/gap do mesmo tipo ja corrigido
+uma vez no bloco 320 ("Choose 0" / fallback SelectTargets percorrendo
+candidatos invalidos). Nao investigado no C# ainda; requer decisao do
+usuario se quer que eu abra esse codebase agora (mudanca de escopo/
+linguagem).
+
+**3) ACHADO, NAO CORRIGIDO -- possivel excecao silenciosa:** turno 6
+(main, bot's own turn), `scored_actions: []` -- **completamente vazio**,
+apesar de `activeDon: 8` e mao cheia de jogaveis (2x custo4, 2x custo8,
+custo7, custo1, custo10, custo1, custo5) e board com personagens NAO
+restados (Pekoms, ST34-003, Nola, ST34-002, ST34-001). Isso NAO parece um
+"nada pra fazer" legitimo (que sempre teve pelo menos 1 candidato
+pontuado negativo nos casos ja validados em sessoes anteriores) -- lista
+totalmente vazia com tantos recursos disponiveis sugere uma excecao
+engolida silenciosamente em algum lugar de `_generate_and_score_actions`,
+casando com o comentario ja existente em `sim_bridge.py` sobre excecao de
+engine "rodava numa thread separada e morria aqui -- so no console, nunca
+chegava no trace_out nem em telemetria" (achado 19/07). Contabilizado
+como mais um dos 5 `no_eligible_action` do relatorio agregado, mas
+provavelmente NAO e legitimo. Nao reproduzido/depurado ainda -- precisa
+recriar esse estado exato (mao+campo+DON) pra achar o ponto de excecao.
+
+**4) NAO INVESTIGADO:** usuario tambem reportou o bot "travando" (tela
+"Choose card effect to activate next" parada) no turno 4 quando o efeito
+de Nola ativou em resposta ao Kaido mirando o Cracker. Correlaciona com
+o alerta `decision_timeouts: 1` do relatorio agregado (a busca excedeu o
+timeout uma vez nesta partida) -- nao foi isolado qual decisao exata
+foi essa nem por que demorou. Fica pendente.
+
+Log salvo no banco. Usuario visivelmente frustrado com o volume de
+problemas se repetindo apos varios blocos de fix nesta mesma sessao --
+importante nao subestimar isso na proxima interacao: ser direto sobre o
+que foi corrigido de verdade (so o item 1) vs so encontrado (2, 3) vs
+nem investigado (4).
+
 ## 2026-07-23 (332) - Claude - CLAUDE.md: telemetria agregada vem PRIMEIRO, nao decision_summary
 
 Usuário corrigiu a ordem do bloco 331: queria a leitura da telemetria

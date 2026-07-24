@@ -3900,7 +3900,7 @@ class EffectExecutor:
                 self._cost_logs.append(f'custo: devolveu {count} do trash ao deck')
             elif ctype == 'don_minus':
                 count = cost.get('count', 1)
-                if not self._return_don_to_deck(count):
+                if not self._return_don_to_deck(count, exclude_card=card):
                     return False
                 self._cost_logs.append(f'custo: devolveu {count} DON ao deck')
             elif ctype == 'return_active_don_to_don_deck':
@@ -4084,7 +4084,8 @@ class EffectExecutor:
                 self._cost_logs.append(f'custo: virou {count} carta(s) da vida do topo {face}')
         return True
 
-    def _return_don_to_deck(self, count: int, estado: 'GameState' = None) -> bool:
+    def _return_don_to_deck(self, count: int, estado: 'GameState' = None,
+                            exclude_card: 'Card | None' = None) -> bool:
         """
         Paga um custo DON!! −X: devolve X DON do campo para o deck de DON.
         Preferência (regra do usuário): devolve primeiro o DON "sem trabalho" —
@@ -4096,22 +4097,39 @@ class EffectExecutor:
         Aceita self.opp também -- usado por opp_don_minus (achado 27/06,
         "Your opponent returns N DON!! cards from their field to their
         DON!! deck", FORÇADO no oponente, não custo próprio).
+
+        `exclude_card`: o PRÓPRIO atacante, quando este custo é o
+        `don_minus` do `[When Attacking]` dele mesmo (achado ao vivo 23/07,
+        Baron Tamago & Pekoms ST34-005): declarar o ataque já resta o
+        atacante ANTES do custo resolver, então "Fonte 1" (DON anexado a
+        quem já atacou/restou) enxergava o PRÓPRIO atacante como fonte
+        "sem trabalho" e devolvia o DON que tinha acabado de ser anexado
+        para reforçar ESTE MESMO ataque -- o ataque voltava ao poder base,
+        anulando o fix de attach_don-pra-poder-de-combate (bloco 330).
+        Excluído só das fontes 1/2 (as "baratas"); permanece disponível na
+        Fonte 4 (último recurso) se não houver outra origem -- melhor pagar
+        o custo do que travar a habilidade por falta de DON.
         """
         me = estado if estado is not None else self.me
         devolvidos = 0
 
-        # Fonte 1: DON anexado a personagens que JÁ atacaram (restados)
+        # Fonte 1: DON anexado a personagens que JÁ atacaram (restados),
+        # exceto o próprio atacante pagando o custo AGORA (ver docstring).
         for c in me.field_chars:
+            if c is exclude_card:
+                continue
             while c.don_attached > 0 and c.rested and devolvidos < count:
                 c.don_attached -= 1
                 me.don_deck += 1
                 devolvidos += 1
 
-        # Fonte 2: DON anexado ao líder se já atacou (restado)
-        while me.leader.don_attached > 0 and me.leader.rested and devolvidos < count:
-            me.leader.don_attached -= 1
-            me.don_deck += 1
-            devolvidos += 1
+        # Fonte 2: DON anexado ao líder se já atacou (restado), mesma
+        # exceção quando o próprio líder é quem está pagando o custo.
+        if me.leader is not exclude_card:
+            while me.leader.don_attached > 0 and me.leader.rested and devolvidos < count:
+                me.leader.don_attached -= 1
+                me.don_deck += 1
+                devolvidos += 1
 
         # Fonte 3: DON restado no banco (gasto, parado)
         while me.don_rested > 0 and devolvidos < count:
