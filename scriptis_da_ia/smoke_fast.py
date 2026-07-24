@@ -1211,19 +1211,33 @@ def test_mapeamento_de_combos_bottom_deck_e_locks_contam_como_removal() -> None:
 
 def test_don_reserve_for_defense_nao_guarda_mais_que_o_recurso_precisa() -> None:
     # Achado real 24/07 (usuario: "as vezes ele tem 1 evento custo 1 na mao
-    # e guarda 4 dons"): os tiers de _don_reserve_for_defense (ameaca/vida)
-    # escalavam a reserva ate 3 DON SEM NENHUM teto ligado ao que o recurso
-    # reativo disponivel realmente custa -- reservar mais do que o evento
-    # [Counter] precisa e puro desperdicio de poder de ataque, o DON extra
-    # nunca tem uso real na defesa.
+    # e guarda 4 dons" + "nao e necessario reservar don todo turno"): 2
+    # problemas na mesma funcao. (1) os tiers de ameaca/vida escalavam a
+    # reserva ate 3 DON SEM NENHUM teto ligado ao que o recurso reativo
+    # disponivel realmente custa. (2) os tiers de VIDA baixa (my_life<=2/3)
+    # disparavam mesmo com `threat` (o proprio calculo de risco do motor)
+    # em 0.0 -- vida baixa sozinha, sem risco real calculado, reservava DON
+    # do mesmo jeito.
     evento_barato = real_card("EB01-038")  # custo 1, [Counter] DON!!-1
     me = GameState(leader=real_card("OP11-062"), don_available=5, turn=5)
     me.hand = [evento_barato]
-    me.life = [real_card("OP07-077")]  # vida 1 -- ameaca alta, tier antigo reservaria 3
+    me.life = [real_card("OP07-077")]  # vida 1
     opp = GameState(leader=real_card("ST04-001"))
+    opp.field_chars = [real_card("ST34-002")]  # board real -- ameaca > 0
     engine = DecisionEngine(me, opp)
-    check("evento de custo 1 na mao -- reserva agora fica em 1 (antes reservava ate 3)",
+    check("com ameaca real, evento de custo 1 na mao -- reserva fica em 1 (tier antigo daria 2+)",
           engine._don_reserve_for_defense() == 1)
+
+    # (2): mesmo cenario, mas oponente SEM board nenhum (ameaca calculada
+    # fica em 0.0) -- vida baixa sozinha nao deve reservar nada agora.
+    me3 = GameState(leader=real_card("OP11-062"), don_available=5, turn=5)
+    me3.hand = [real_card("EB01-038")]
+    me3.life = [real_card("OP07-077")]  # vida 1, mas oponente sem board
+    opp3 = GameState(leader=real_card("ST04-001"))
+    engine3 = DecisionEngine(me3, opp3)
+    check("vida 1 mas oponente SEM board (ameaca=0.0) -- reserva NAO dispara so pela vida",
+          engine3.analyzer.opp_lethal_threat() == 0.0
+          and engine3._don_reserve_for_defense() == 0)
 
     # controle: SO counter impresso na mao (nao custa DON nenhum pra usar)
     # -- reserva deve zerar, nao travar DON de ataque a toa.
@@ -1233,8 +1247,9 @@ def test_don_reserve_for_defense_nao_guarda_mais_que_o_recurso_precisa() -> None
     me2.deck = [real_card("ST18-001") for _ in range(10)] + [real_card("OP07-077") for _ in range(20)]
     me2.life = [real_card("OP07-077")]
     opp2 = GameState(leader=real_card("ST04-001"))
+    opp2.field_chars = [real_card("ST34-002")]
     engine2 = DecisionEngine(me2, opp2)
-    check("so counter impresso na mao (0 DON necessario) -- reserva zera",
+    check("so counter impresso na mao (0 DON necessario) -- reserva zera mesmo com ameaca",
           engine2._don_reserve_for_defense() == 0)
 
 

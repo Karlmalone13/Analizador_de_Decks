@@ -9648,18 +9648,26 @@ class DecisionEngine:
             return 0   # força ataque, não precisa guardar DON
 
         # ── Estou em PERIGO? reserva conforme a gravidade ──
+        # FIX 24/07 (achado do usuario: "nao e necessario reservar don todo
+        # turno" -- os tiers de vida baixa (my_life<=2/3) disparavam
+        # INDEPENDENTE do que `threat` (opp_lethal_threat, o proprio calculo
+        # de risco do motor) concluiu. Achado real: vida 3, ameaca 0.0 (o
+        # oponente genuinamente nao consegue nada este turno) ainda
+        # reservava 1 DON, turno apos turno, so por causa da vida. Os tiers
+        # de vida agora exigem `threat > 0` tambem -- vida baixa sozinha,
+        # sem NENHUM risco real calculado, nao e motivo pra guardar DON.
         reserva = 0
-        if threat > 0.7:        reserva = 3
-        elif threat > 0.4:      reserva = 2
-        elif my_life <= 2:      reserva = 2
-        elif my_life <= 3:      reserva = 1
+        if threat > 0.7:                    reserva = 3
+        elif threat > 0.4:                  reserva = 2
+        elif threat > 0 and my_life <= 2:   reserva = 2
+        elif threat > 0 and my_life <= 3:   reserva = 1
 
         # Tenho evento counter mas POUCO counter de mão? vale deixar DON p/ o evento
-        if eventos_counter >= 1 and counters_mao <= 1 and my_life <= 3:
+        if threat > 0 and eventos_counter >= 1 and counters_mao <= 1 and my_life <= 3:
             reserva = max(reserva, 1)
 
         # Pouco counter na mão aumenta o risco de não conseguir defender
-        if counters_mao == 0 and my_life <= 3:
+        if threat > 0 and counters_mao == 0 and my_life <= 3:
             reserva = max(reserva, 1)
 
         # FIX 24/07 (achado do usuario: "as vezes ele tem 1 evento custo 1

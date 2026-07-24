@@ -1,5 +1,40 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-24 (350) - Claude (sessao local) - reserva de DON: vida baixa sozinha nao reserva mais sem ameaca real
+
+Continuacao imediata do bloco 349 -- usuario apontou mais uma coisa depois
+do fix do teto por custo: "nao e porque tem evento na mao que tem que
+reservar don, e tb nao e necessario reservar don todo turno nao".
+
+**Investigacao**: rodei `_don_reserve_for_defense` contra 82 decisoes
+reais (3 sessoes de 23/07) -- so 15% tinham reserva>0 (nao e "todo turno"
+literalmente), mas em **5 dos 12 casos positivos (42%), `threat`
+(`opp_lethal_threat()`, o proprio calculo de risco do motor) estava em
+**0.0** -- o oponente genuinamente sem chance de nada este turno -- e a
+reserva disparava mesmo assim, so por causa da regra `my_life<=2/3`, que
+ignorava completamente o que o calculo de ameaca concluiu. Exemplo real:
+vida 3, ameaca 0.0, reservava 1 DON.
+
+**Fix**: os tiers de vida baixa (`my_life<=2` -> reserva 2, `my_life<=3`
+-> reserva 1) e os 2 bonus extras (`eventos_counter`/`counters_mao==0`)
+agora exigem `threat > 0` tambem -- vida baixa sozinha, sem NENHUM risco
+real calculado pelo motor, nao reserva mais DON. Os tiers de ameaca alta
+(`threat>0.4`/`>0.7`) ja exigiam threat positivo implicitamente, sem
+mudanca ali.
+
+Validado com o caso real (vida 3, ameaca 0.0, decisions_2026-07-23T17.47.11.jsonl
+idx292): reserva vai de 1 -> 0. Teste de `smoke_fast.py` do bloco 349
+atualizado (a mao sintetica original nao dava board nenhum ao oponente,
+entao SEMPRE tinha ameaca 0.0 -- passou a falhar com o fix novo, ajustado
+pra dar um personagem real ao oponente e testar os dois lados: com
+ameaca real, teto por custo continua valendo; com vida baixa mas ameaca
+zero, reserva fica em 0). `smoke_fast.py` = SMOKE FAST OK. `smoke_test.py`
+= TODOS OS TESTES PASSARAM.
+
+**As 4 etapas pedidas pelo usuario antes de testar/dar push**: 1
+(combos) e 4 (reserva de DON, agora com os 2 achados do usuario cobertos)
+feitas. **Faltam 2 (Turn Planner) e 3 (`_don_livre_for_plan`)**.
+
 ## 2026-07-24 (349) - Claude (sessao local) - reserva de DON pra defesa (etapa 4/4): teto pelo custo REAL do recurso reativo
 
 Continuacao do bloco 348 -- item 4 do pedido do usuario. 1a rodada de

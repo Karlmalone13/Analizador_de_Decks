@@ -2,6 +2,14 @@
 
 **Última atualização:** 24 de julho de 2026
 
+> 24/07/2026 (bloco HANDOFF 350): mais um ajuste na reserva de DON —
+> vida baixa (≤2/3) reservava DON mesmo com `threat` (ameaça calculada)
+> em 0.0 (oponente sem chance real nenhuma). Achado em 42% dos casos com
+> reserva>0 nas sessões de 23/07. Fix: tiers de vida baixa agora exigem
+> `threat > 0` também. `smoke_test.py` 100%. **Status das 4 etapas**: 1
+> (combos) e 4 (reserva DON) feitas; **faltam 2 (Turn Planner) e 3
+> (`_don_livre_for_plan`)** antes de testar ao vivo/push de novo.
+
 > 24/07/2026 (bloco HANDOFF 349): etapa 4/4 do pedido do usuário —
 > `_don_reserve_for_defense` reservava DON por tiers de ameaça/vida (até
 > 3-4) sem teto ligado ao custo REAL do recurso reativo disponível.
