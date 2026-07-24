@@ -767,6 +767,37 @@ def test_pudding_anexa_don_antes_de_oferecer_activate_main() -> None:
           any(a[1] == "activate" and a[2] is pudding for a in actions2))
 
 
+def test_trigger_risk_penalty_nao_veta_sozinho_ataque_legitimo() -> None:
+    # Achado ao vivo 23-24/07 (usuario pediu pra investigar por que o bot
+    # ataca menos que um humano): Baron Tamago & Pekoms (4000 poder,
+    # empatando com o lider do oponente em 5000 -- espera, EQUIVALE apos
+    # a resta do ataque; usa poder igual ao do lider aqui direto pra achar
+    # o mesmo caso real) atacando um lider de 5000 com o oponente em 4
+    # vidas pontuou -32 SO por causa do _trigger_risk_penalty (4*8=32),
+    # nao protegido pelo piso que so o LIDER do bot tem (max(s,15)). Fix:
+    # o desconto de trigger agora e limitado a metade do valor do proprio
+    # ataque -- nunca consegue sozinho virar um ataque bom em ataque ruim.
+    pekoms = real_card("ST34-005")
+    pekoms._deck_uid = 170
+    pekoms.rested = False
+    pekoms.power_buff = 1000  # 4000 base + 1000 = 5000, empata com o lider
+    me = GameState(leader=real_card("OP11-062"), don_available=0, turn=5)
+    me.field_chars = [pekoms]
+    me.life = [real_card("OP07-077") for _ in range(4)]  # vida propria OK, evita postura DEFENSIVE artificial
+    opp = GameState(leader=real_card("ST04-001"))  # Kaido, lider 5000
+    # 15 vidas (irreal, so pra forcar o desconto de trigger MUITO alem da
+    # metade do valor do ataque -- vida*8=120 > score_attack_target cru
+    # de 100). Sem teto, isso viraria -20 (vetado). Com teto (metade do
+    # valor cru), fica em 50 -- prova que o desconto nunca consegue
+    # sozinho inverter um ataque legitimo, so reduzi-lo.
+    opp.life = [real_card("OP07-077") for _ in range(15)]
+    match = OPTCGMatch((me.leader, []), (opp.leader, []))
+    actions = match._generate_and_score_actions(me, opp, DecisionEngine(me, opp))
+    ataque = next((a for a in actions if a[1] == "attack" and a[2] is pekoms), None)
+    check("Pekoms empatando com o lider (ataque legitimo) nao fica com score negativo mesmo com desconto de trigger enorme",
+          ataque is not None and ataque[0] == 50.0)
+
+
 def test_attach_don_oferece_opcao_de_poder_de_combate() -> None:
     # Achado real ao vivo 23/07: com 1 DON disponivel e Baron Tamago &
     # Pekoms (ST34-005, 4000 poder, corpo vanilla) + Charlotte Pudding
@@ -7598,6 +7629,7 @@ def main() -> int:
     test_avaliar_carta_reconhece_combo_de_qualquer_acao_com_carta_em_campo()
     test_step_condition_currently_holds_generaliza_pra_qualquer_flag()
     test_pudding_anexa_don_antes_de_oferecer_activate_main()
+    test_trigger_risk_penalty_nao_veta_sozinho_ataque_legitimo()
     test_attach_don_oferece_opcao_de_poder_de_combate()
     test_don_minus_when_attacking_nao_devolve_o_proprio_don_do_ataque()
     test_resolve_reaction_custo_de_redirect_e_generico_nao_so_carta_da_mao()

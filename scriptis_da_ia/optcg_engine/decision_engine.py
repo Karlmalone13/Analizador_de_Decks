@@ -11708,7 +11708,26 @@ class OPTCGMatch:
                         s_leader = -999
                     if s_leader > -500:
                         s_leader += self._human_pattern_bonus(p, 'attack', att)
-                        s_leader -= self._trigger_risk_penalty(opp)   # desconto de trigger
+                        # Desconto de trigger, LIMITADO a no maximo metade do
+                        # valor do proprio ataque (achado ao vivo 23-24/07,
+                        # pedido do usuario pra investigar por que o bot
+                        # ataca menos que um humano): antes era subtracao
+                        # fixa (vida_opp*8, sem teto) igual pra qualquer
+                        # ataque -- so o LIDER tem piso protetor (max(s,15)
+                        # abaixo); um personagem atacando nao tem proteção
+                        # nenhuma, entao esse desconto sozinho podia zerar/
+                        # inverter um ataque que era bom por qualquer outro
+                        # motivo (caso real: 2 ataques de 5000 empatando
+                        # contra lider 5000 -- empate favorece quem ataca,
+                        # ataque legitimo -- pontuaram -32 SO por causa do
+                        # desconto de trigger, viraram vermelho e ficaram
+                        # parados). O risco de trigger e real (so se
+                        # materializa quando o dano de fato conecta), mas
+                        # nao deve conseguir SOZINHO transformar um ataque
+                        # bom em ataque ruim -- desconta ate metade do valor
+                        # que o ataque tinha antes deste termo especifico.
+                        penalidade_trigger = self._trigger_risk_penalty(opp)
+                        s_leader -= min(penalidade_trigger, max(0.0, s_leader) * 0.5)
                         # Banish: prioriza atacar a vida (nega trigger e remove a carta
                         # de vez). Inclinação forte, mas a ameaça crítica ainda vem antes.
                         if att.has_banish:

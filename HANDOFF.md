@@ -1,5 +1,43 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-24 (339) - Claude - desconto de trigger nunca veta sozinho um ataque legitimo
+
+Continuação da investigação do gap "bot ataca menos que humano" (blocos
+337-338). Achado no comparativo de decisão: personagens do bot com score
+NEGATIVO atacando o líder empatado (5000 vs 5000 -- empate favorece quem
+ataca, ataque legítimo garantido de tentar) em turnos com board de 5
+personagens mas só 1 ataque declarado.
+
+Causa: `_trigger_risk_penalty(opp)` = `vida_do_oponente * 8`, sem teto,
+aplicado como subtração FIXA em `_generate_and_score_actions` pro ramo de
+ataque ao líder -- só o LÍDER do bot tem piso protetor (`max(s,15)`)
+contra esse desconto; um PERSONAGEM atacando não tem proteção nenhuma,
+então esse termo sozinho podia derrubar um ataque bom pro vermelho.
+Correção de raciocínio no meio da investigação: o risco de trigger só se
+materializa quando o dano REALMENTE conecta (vida vira só com dano
+recebido) -- mas todo ataque que chega nesse desconto já passou pelo
+filtro `pode_passar` (tem poder suficiente), então não dá pra distinguir
+"garantido" de "arriscado" nesse ponto -- todos que sobram já são
+legítimos. O problema real não é QUANDO aplicar o desconto, é que ele não
+tem teto.
+
+Fix (aprovado pelo usuário): desconto de trigger agora limitado a no
+máximo METADE do valor que o ataque tinha antes desse termo específico
+(`min(penalidade, max(0, s_leader) * 0.5)`) -- desconta sempre algo (o
+risco é real), mas nunca consegue sozinho inverter um ataque legítimo em
+ataque ruim.
+
+Validação: `py_compile` limpo. 1 teste novo em `smoke_fast.py`
+(`test_trigger_risk_penalty_nao_veta_sozinho_ataque_legitimo`) com vida
+do oponente artificialmente alta (15, pra forçar o desconto muito acima
+da metade do valor cru) -- confirma que sem teto o ataque viraria -20
+(vetado) e com teto fica em 50 (positivo). `smoke_fast.py` = SMOKE FAST
+OK. `smoke_test.py`: mesmas 3 falhas pré-existentes, sem regressão nova.
+
+Pendente: validação ao vivo (o `_trigger_risk_penalty` só afeta ataque ao
+LÍDER -- ataque em personagem não usa essa função, então esse fix
+específico não deve mudar comportamento de remoção de personagem).
+
 ## 2026-07-24 (338) - Claude - benchmark humano vs bot de Mihawk (mais dado)
 
 Usuário pediu a mesma comparação do bloco 337, mas pro deck Mihawk (mais
