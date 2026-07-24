@@ -254,7 +254,19 @@ o usuário pediu explicitamente pra telemetria agregada vir primeiro):
 Leia os dois inteiros, NESSA ORDEM, antes de reportar a partida como
 investigada.
 
-## Trabalhando junto com outra IA (Codex ou outra sessão Claude)
+### Eficiência agregada — OBRIGATÓRIO mostrar números, não só prosa
+
+Pedido do usuário (23-24/07): parar de narrar "eficiência baixa" sem
+número — sempre que uma sessão processa log(s) novo(s) do bot, rodar e
+**mostrar a tabela** de `python bot_efficiency_report.py --manifest
+<cohort>` (em `scriptis_da_ia/`). Não existe um cohort "atual" fixo — o
+manifesto (`metrics/*.json`, schema em
+`metrics/bot_efficiency_cohorts.json`) precisa ser atualizado/criado com
+as partidas relevantes da sessão (mesmo líder, mesmo período) antes de
+rodar, senão o relatório sai baseado em partidas antigas e engana. Métricas
+que mais importam pra ineficiência: `dano_por_jogo` (dano total por
+partida) e `don_observado_por_ataque` (quanto DON em média está anexado
+quando o bot ataca — baixo = sintoma de curva/ramp ruim, não só de sorte).
 Nenhuma sessão vê o histórico de conversa da outra — só o estado dos
 arquivos. Por isso:
 1. Sempre commitar antes de parar (créditos, fim de sessão).

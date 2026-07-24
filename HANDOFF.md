@@ -1,5 +1,31 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-24 (335) - Claude - eficiencia agregada vira numero obrigatorio
+
+Usuário cobrou: eu vinha narrando "eficiência baixa" em prosa sem número
+desde cedo na sessão, apesar de `bot_efficiency_report.py` já existir.
+Descoberto que o manifesto padrão (`metrics/bot_efficiency_cohorts.json`)
+é de uma comparação Imu de 09-12/07, sem nenhuma partida de hoje — rodar
+sem `--manifest` mostra dado velho e engana.
+
+Criado `metrics/katakuri_bot_23jul.json` com as 4 partidas do bot como
+Katakuri desta sessão (16.54.39, 17.54.33, 22.14.26, 23.12.17 -- cobrindo
+os fixes 322-334). Números reais: `atk_por_turno=1.15`,
+`pct_atk_lider=82.6%`, **`dano_por_jogo=2.25`**,
+`counters_arrancados_por_jogo=2.25`, `primeiro_ataque_turno_medio=3.5`,
+**`don_observado_por_ataque=0.435`** (menos de meio DON por ataque, em
+média -- confirma numericamente o padrão já visto qualitativamente: bot
+ataca sem DON na maioria das vezes). 0/4 vitórias no período.
+
+CLAUDE.md ganha seção nova ("Eficiência agregada — OBRIGATÓRIO mostrar
+números"): toda sessão que processa log(s) do bot tem que atualizar o
+cohort relevante e rodar `bot_efficiency_report.py --manifest <cohort>`,
+mostrando a tabela, não só narrando em prosa.
+
+Sessão segue em andamento -- próximo passo é abrir o código C# (`BOT/`)
+pra investigar os 2 bugs de execução ao vivo do bloco 333/334 (KO na
+própria Nola, tela travada no turno 4).
+
 ## 2026-07-23 (334) - Claude - ramp de DON priorizada + causa real do turno 6 achada
 
 Usuario pediu pra corrigir os 3 achados do bloco 333 mais uma mudanca de
