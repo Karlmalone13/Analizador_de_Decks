@@ -2,6 +2,18 @@
 
 **Última atualização:** 24 de julho de 2026
 
+> 24/07/2026 (bloco HANDOFF 358): Turn Planner Fase B feita —
+> `_next_turn_readiness_bonus` generaliza o `wincon_ready` existente
+> (que só cobria o eixo bottleneck/reanimação do perfil do deck) pra
+> QUALQUER carta forte na mão perto de virar jogável (DON projetado
+> pro próximo turno, sem simular o turno de verdade). Novo peso
+> `next_turn_readiness` em `EVAL_WEIGHTS`. Custo medido ~0.8ms/call,
+> irrelevante no orçamento atual (K/S pequenos, timeout de 4s ao vivo).
+> `smoke_test.py` 100%. **Fase A + B completas.** Fase C (qualidade)
+> vazia por ora — nada concreto achado que já não esteja coberto. Fase
+> D (performance) só entra se necessário depois de calibrar ao vivo.
+> Nenhum teste ao vivo nem push ainda.
+
 > 24/07/2026 (bloco HANDOFF 357): Turn Planner — plano em 4 fases
 > aprovado (A cobertura → B lookahead → C qualidade → D performance,
 > ver `C:\Users\arthu\.claude\plans\lively-honking-sedgewick.md`).

@@ -1540,6 +1540,39 @@ def test_turn_planner_fase_a_trigger_don_value_e_score_activate_main() -> None:
           score_generico > 60.0)
 
 
+def test_turn_planner_fase_b_next_turn_readiness_bonus() -> None:
+    # FASE B do Turn Planner (usuario, 24/07: "pensar a frente... se
+    # preparar para combos, finalizacao"). _next_turn_readiness_bonus
+    # generaliza o 'wincon_ready' existente (que so cobre o eixo bottleneck
+    # do PERFIL do deck) pra QUALQUER carta forte na mao que ainda nao cabe
+    # no DON de agora, mas cabe no DON PROJETADO do proximo turno -- sem
+    # simular o turno seguinte de verdade, so a projecao aritmetica de ramp.
+    opp = GameState(leader=real_card("OP11-062"), turn=3)
+    match = OPTCGMatch((real_card("OP11-062"), []), (opp.leader, []))
+
+    # Nusjuro (custo 6, score forte): com 3 DON ativo + 2 restado, don
+    # projetado pro proximo turno = 3+2+2(ramp) = 7 >= 6 -- "quase la".
+    a = GameState(leader=real_card("OP11-062"), turn=3, don_available=3, don_rested=2)
+    a.hand = [real_card("OP13-080")]
+    check("Carta forte fora de alcance AGORA mas dentro do DON projetado do proximo turno recebe bonus",
+          match._next_turn_readiness_bonus(a, opp) > 0.0)
+
+    # controle 1: mesma carta, mas SEM DON restado -- don projetado cai pra
+    # 5, ainda menor que o custo 6 -- nem no proximo turno cabe, sem bonus.
+    a2 = GameState(leader=real_card("OP11-062"), turn=3, don_available=3, don_rested=0)
+    a2.hand = [real_card("OP13-080")]
+    check("Carta fora de alcance MESMO no proximo turno NAO recebe bonus",
+          match._next_turn_readiness_bonus(a2, opp) == 0.0)
+
+    # controle 2: carta ja jogavel AGORA (custo <= don_now) nao e "espera
+    # por combo futuro" -- nao deve receber este bonus (ja conta em outro
+    # lugar, avaliar_carta/_score_play_action).
+    a3 = GameState(leader=real_card("OP11-062"), turn=3, don_available=3, don_rested=2)
+    a3.hand = [real_card("OP02-034")]  # custo 2, ja pagavel com don_now=3
+    check("Carta ja jogavel AGORA nao recebe bonus de 'quase la'",
+          match._next_turn_readiness_bonus(a3, opp) == 0.0)
+
+
 def test_opponent_model_ao_vivo_por_lider_e_fallback_seguro() -> None:
     # Item 3 ligado AO VIVO (14/07): lookup do .deck real por codigo do lider
     # (os decks de teste sao nomeados por arquetipo -- Kid.deck, Krieg.deck)
@@ -8155,6 +8188,7 @@ def main() -> int:
     test_uncovered_action_value_pontua_acoes_antes_invisiveis()
     test_uncovered_action_value_segunda_passada()
     test_turn_planner_fase_a_trigger_don_value_e_score_activate_main()
+    test_turn_planner_fase_b_next_turn_readiness_bonus()
     test_opponent_model_ao_vivo_por_lider_e_fallback_seguro()
     test_contrafactual_ao_vivo_usa_apenas_estado_publico_mascarado()
     test_search_contextual_evita_congestionar_mao_com_bombas()

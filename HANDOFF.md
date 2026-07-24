@@ -1,5 +1,52 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-24 (358) - Claude (sessao local) - Turn Planner fase B: bonus generico de "quase la" pra proxima jogada forte (lookahead barato)
+
+Continuação do bloco 357 (Fase A) — usuário aprovou o roteiro de 4
+fases e pediu pra seguir. Fase B implementada: o pedido de "pensar à
+frente / se preparar para combos e finalização" sem cair na armadilha
+de simular 2+ turnos completos (custo caro, plano explicitamente
+evitava isso).
+
+**Achado ao ler o código antes de implementar**: já existia um termo
+parecido (`wincon_ready`, peso em `EVAL_WEIGHTS`, usado dentro de
+`_derived_axes_value`) — mas ele só reconhece UM padrão específico do
+perfil do deck (eixo `bottleneck`: peça-motor de reanimação em massa
+tipo Five Elders, com fuel no trash). Não generaliza pra "qualquer
+carta forte na mão que ainda não cabe no DON de agora".
+
+**Novo método `_next_turn_readiness_bonus(p, opp)`** (`OPTCGMatch`,
+chamado de dentro de `_evaluate_state_v2`): pega até as 3 cartas mais
+fortes da mão por `avaliar_carta`, calcula o DON PROJETADO pro próximo
+turno via aritmética simples (`don_available + don_rested + min(2,
+don_deck)`, mesma conta de `don_phase()` — sem simular o turno de
+verdade), e dá um bônus pequeno e saturado quando o custo da carta cai
+entre "não dá agora" e "dá (ou quase dá) no próximo turno". Cartas já
+jogáveis agora ou fora de alcance mesmo no próximo turno não recebem
+nada. Novo peso `next_turn_readiness` (0.6) em `EVAL_WEIGHTS`, mesma
+convenção dos outros pesos tuneráveis por deck (`eval_weights.json`).
+
+**Custo medido**: ~0.8ms por chamada (200 chamadas = 0.16s, mão com 4
+cartas). Como `_evaluate_state_v2` roda 1x por linha simulada (fim de
+`_simulate_sequence_once`, não por step), o impacto real é pequeno
+mesmo no pior caso offline (K=6×S=6 ≈ 36 chamadas extras/turno ≈
++29ms) e irrelevante no caminho ao vivo (K=2×S=2, timeout de 4s). Não
+justificou parar pra otimizar agora — Fase D mede de novo depois que
+B/C estiverem prontas.
+
+**Validação**: `smoke_fast.py` — 3 checks novos (carta forte fora de
+alcance agora mas dentro do DON projetado recebe bônus; carta fora de
+alcance mesmo no próximo turno não recebe; carta já jogável agora não
+recebe). `smoke_test.py`: TODOS OS TESTES PASSARAM.
+
+**Status**: Fase A + Fase B completas. Fase C (qualidade) fica vazia
+por enquanto — nenhum achado concreto de decisão ruim surgiu durante A/B
+que não já tenha sido coberto. Fase D (performance) só entra se algo
+acima realmente pesar depois de calibrado ao vivo. Nenhum teste ao vivo
+nem push ainda — o `next_turn_readiness=0.6` é um PRIOR (mesma
+convenção dos outros pesos), calibração real só acontece com self-play/
+partidas reais quando o usuário liberar teste ao vivo.
+
 ## 2026-07-24 (357) - Claude (sessao local) - Turn Planner fase A: 2 bugs reais de scoring achados por auditoria (typo + fallback fixo)
 
 Usuário pediu pra melhorar o Turn Planner em 4 frentes ao mesmo tempo

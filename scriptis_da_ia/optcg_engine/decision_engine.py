@@ -105,6 +105,14 @@ EVAL_WEIGHTS = {
     # aqui, então a busca já prefere isso sem precisar de regra hardcoded.
     # Escala parecida com board_opp (mesma unidade: soma de board_value()).
     'opp_combo_threat': 0.8,
+    # FASE B do plano do Turn Planner (usuario, 24/07: "pensar a frente").
+    # 'wincon_ready' acima ja cobre "arma carregada" pro eixo bottleneck
+    # (reanimacao) do PERFIL do deck -- generico so dentro desse padrao
+    # especifico. Este termo e mais amplo: QUALQUER carta forte na mao que
+    # ainda nao cabe no DON de agora, mas cabe no DON projetado do PROXIMO
+    # turno (sem simular o turno de verdade -- so a projecao de ramp).
+    # Prior — tunagem por self-play ajusta, mesma convencao dos outros.
+    'next_turn_readiness': 0.6,
 }
 try:
     _wpath = os.path.join(os.path.dirname(__file__), '..', 'eval_weights.json')
@@ -12616,6 +12624,49 @@ class OPTCGMatch:
                     total += ax.get('prior_weight', 0) * W['ax_inversion']
         return total
 
+    def _next_turn_readiness_bonus(self, p, opp) -> float:
+        """
+        FASE B do plano do Turn Planner (usuario, 24/07: "pensar a frente,
+        se preparar para combos/finalizacao"). `wincon_ready` (em
+        _derived_axes_value) ja cobre "arma carregada" pro eixo bottleneck
+        do PERFIL do deck (reanimacao em massa tipo Five Elders) -- estreito
+        de proposito, so bate quando o deck tem esse padrao especifico
+        catalogado. Este termo e GENERICO: qualquer carta forte na mao que
+        ainda nao cabe no DON de agora, mas cabe (ou quase) no DON
+        PROJETADO do proximo turno, ganha um bonus pequeno e saturado --
+        sem simular o turno seguinte de verdade (SEM deepcopy/Monte Carlo
+        novo, so a projecao aritmetica de ramp: DON!! total em jogo hoje +
+        ate 2 novos do don_deck, mesma conta de don_phase()). Faz a busca
+        do Turn Planner preferir a linha que PRESERVA/desenvolve rumo a
+        proxima jogada forte em vez de gastar tudo em algo marginal agora.
+
+        Deliberadamente conservador: só considera as poucas cartas mais
+        fortes da mão (top 3 por avaliar_carta) e exige valor mínimo, pra
+        não virar um segundo avaliar_carta escondido nem premiar carta
+        fraca só por estar cara.
+        """
+        if not p.hand:
+            return 0.0
+        W = getattr(p, 'eval_weights', None) or EVAL_WEIGHTS
+        don_now = p.don_available
+        don_next = p.don_available + p.don_rested + min(2, max(0, p.don_deck))
+        if don_next <= don_now:
+            return 0.0
+        eng = DecisionEngine(p, opp)
+        candidatos = sorted(p.hand, key=lambda c: eng.avaliar_carta(c), reverse=True)[:3]
+        bonus = 0.0
+        for card in candidatos:
+            custo = effective_hand_play_cost(p, card, opp)
+            if custo <= don_now or custo > don_next:
+                continue  # ja jogavel agora (sem espera) OU nem no proximo turno cabe
+            valor = eng.avaliar_carta(card)
+            if valor <= 40.0:
+                continue  # carta fraca nao merece premio de "quase la"
+            gap = custo - don_now
+            proximidade = max(0.0, 1.0 - (gap - 1) / max(1, don_next - don_now))
+            bonus += min(40.0, valor * 0.15) * proximidade
+        return min(bonus, 60.0) * W['next_turn_readiness']
+
     def _evaluate_state_v2(self, p, opp) -> float:
         """
         Régua ÚNICA de estado (item 1): termos GENÉRICOS simétricos + eixos
@@ -12702,6 +12753,10 @@ class OPTCGMatch:
 
         # eixos derivados do perfil (auto-motor: trash/reanimação/inversão)
         score += self._derived_axes_value(p, self._turn_profile_for(p))
+
+        # FASE B do Turn Planner (24/07): "quase la" pra proxima jogada
+        # forte, generico (nao so o eixo bottleneck do perfil do deck).
+        score += self._next_turn_readiness_bonus(p, opp)
 
         return score
 
