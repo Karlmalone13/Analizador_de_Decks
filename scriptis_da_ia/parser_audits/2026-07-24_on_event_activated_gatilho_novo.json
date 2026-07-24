@@ -1,0 +1,29 @@
+{
+  "trigger_card": "OP11-012",
+  "problem": "Fase 1.1 do mapeamento de combos (usuario, 24/07): gatilho 'when your opponent activates an Event' / 'when you activate an Event' nao existia no parser. 8 cartas confirmadas na auditoria (Usopp OP01-004, Gion OP06-044, Franky OP11-012, Camie OP11-102, Luffy OP15-119, Crocodile OP01-062, Page One OP04-053, Zeff OP06-048) caiam em your_turn/opp_turn/passive incondicional, perdendo a condicao real -- bug de regra, nao so de pontuacao.",
+  "grammar_family": "'[tags] When your opponent activates (an Event|[Blocker]|[Trigger])(+ or outro), [efeito]' (+ variante invertida 'efeito when your opponent activates X.', unica em Usopp; + variante 'This effect can be activated when...' com ponto final, Camie) e 'when you activate X, [efeito]' (lado proprio). Eventos parametrizados dedicados (mesmo padrao de when_don_returned/on_opp_char_ko), fora do trigger_patterns generico.",
+  "queries": [
+    "regex ampla 'when (your )?opponent activates' + 'when you activate' contra cards_rows.csv inteiro: 8 cartas (ver lista acima)",
+    "achado extra durante a implementacao (nao estava na lista original): OP10-003 Sugar tem uma 2a habilidade separada com o mesmo padrao ('[Opponent's Turn][Once Per Turn] When you activate an Event, add up to 1 DON!!...') -- 9a carta"
+  ],
+  "cards_found": [
+    "OP01-004",
+    "OP01-062",
+    "OP04-053",
+    "OP06-044",
+    "OP06-048",
+    "OP10-003",
+    "OP11-012",
+    "OP11-102",
+    "OP15-119"
+  ],
+  "resolution_scope": "global",
+  "decision": "Aprovado pelo usuario em 2026-07-24 (fase 1.1 da ordem de correcao combinada). gerar_effects_db.py ganha 3 regex parametrizados (forma padrao, forma invertida so-Usopp, forma propria) + EVENT_ACTIVATED_TARGET compartilhado (aceita Event/Blocker/Trigger em qualquer ordem quando combinados com 'or' -- Zeff tem ordem invertida 'Blocker or Event'). decision_engine.py ganha EffectExecutor._dispatch_event_activated() (dispara on_own_event_activated no campo de quem jogou e on_opp_event_activated no campo do outro lado) chamado nos 2 pontos reais onde uma carta EVENT e jogada (_play_card do OPTCGMatch e _put_into_play do 'play_card' de efeito, dentro de _execute_step).",
+  "validated_by": [
+    "diff_parser.py antes/depois: GANHOU=0, PERDEU=0, MUDOU=9 (as 8 esperadas + Sugar OP10-003, achado extra), nenhuma outra carta das 2644 afetada",
+    "REGRESSAO PEGA E CORRIGIDA DURANTE A PROPRIA VALIDACAO: Luffy OP15-119 tinha 2 sentencas SEM tag formal ('if 6+DON gains Rush' + 'when opponent activates Event/Blocker, reveal+buff') que o parser antigo mesclava num unico passive incondicional via fallback generico (`if not result:`). Meu novo trigger populava result cedo, suprimindo esse fallback e perdendo o gain_rush por completo. Fix: helper _recover_leading_prose_as_passive() reprocessa o texto ANTES do match como passive separado quando nao ha tag formal -- Luffy fica com on_opp_event_activated (so a reveal+buff) e passive (so gain_rush, com sua propria condicao don_gte=6) corretamente separados.",
+    "smoke_fast.py: SMOKE FAST OK, incluindo teste de execucao real com 3 casos (Franky ganha buff so quando OPONENTE ativa evento, nao quando e o proprio lado; Page One compra quando o PROPRIO lado ativa) e teste OP15-119 atualizado (estrutura corrigida, execucao via on_opp_event_activated em vez do passive antigo incorreto)",
+    "smoke_test.py: TODOS OS TESTES PASSARAM (regressao ampla, 2644 cartas)"
+  ],
+  "notes": "Escopo assumido: so a ativacao de EVENTO e reconhecida como gatilho disparado de verdade pelo motor. Camie/Luffy/Zeff tambem tem 'ou [Trigger]'/'ou [Blocker]' como gatilho alternativo no texto oficial -- NAO disparado ainda quando um Blocker/Trigger ativa (so quando um Evento e jogado), ainda estritamente melhor que o bug antigo (nunca disparava certo antes). Registrado como pendencia se o usuario quiser fechar esse ultimo detalhe numa sessao futura."
+}

@@ -1,5 +1,54 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-24 (352) - Claude (sessao local) - fase 1.1: gatilho on_event_activated novo (9 cartas) + regressao pega e corrigida na propria validacao
+
+Continuacao do bloco 351 -- Fase 1.1 da ordem de correcao combinada
+(ativacao de Evento/Blocker). Cobre 9 cartas (as 8 mapeadas + Sugar
+OP10-003, achado extra durante a implementacao): Usopp, Gion, Franky,
+Camie, Luffy OP15-119, Crocodile OP01-062, Page One, Zeff, Sugar.
+
+**Fix**: `gerar_effects_db.py` ganha 3 regex parametrizados (forma
+padrao "when your opponent/you activates X, [efeito]"; forma INVERTIDA,
+unica em Usopp, "[efeito] when your opponent activates X."; forma com
+ponto final, Camie) + `EVENT_ACTIVATED_TARGET` compartilhado (aceita
+Event/Blocker/Trigger em qualquer ordem). `decision_engine.py` ganha
+`EffectExecutor._dispatch_event_activated()`, chamado nos 2 pontos reais
+onde uma carta EVENT e jogada (`_play_card` do `OPTCGMatch` e
+`_put_into_play` do `play_card` de efeito).
+
+**Regressao real pega e corrigida NA PROPRIA VALIDACAO** (antes de
+commitar): Luffy OP15-119 tem 2 sentencas SEM tag formal ("if 6+ DON
+gains Rush" + "when opponent activates Event/Blocker, reveal+buff") que
+o parser ANTIGO mesclava num unico `passive` incondicional via um
+fallback generico (`if not result: ...trata tudo como passive`). O novo
+trigger populava `result` cedo, suprimindo esse fallback -- o
+`gain_rush` teria sumido silenciosamente. Achado rodando `diff_parser.py`
+ANTES de fechar a etapa (disciplina do workflow: nunca pular esse passo).
+Fix: helper `_recover_leading_prose_as_passive()` reprocessa o texto que
+vem ANTES do match como `passive` separado quando nao ha tag formal --
+Luffy fica com `on_opp_event_activated` (so a reveal+buff) e `passive`
+(so `gain_rush`, com sua propria condicao `don_gte=6`) corretamente
+separados -- resultado final MELHOR que o original (a condicao de DON
+nao contaminava mais a reveal, que e incondicional na carta real).
+
+Validado: `diff_parser.py` GANHOU=0 PERDEU=0 MUDOU=9 (exatamente as 9
+esperadas). Teste atualizado em `smoke_fast.py` pro OP15-119 (a estrutura
+antiga do teste verificava o comportamento ERRADO/mesclado -- corrigido
+pra refletir a separacao certa) + teste novo com 3 casos de execucao real
+(Franky so reage ao OPONENTE ativando evento, nao ao proprio lado; Page
+One compra ao ativar evento do proprio lado). `smoke_test.py` = TODOS OS
+TESTES PASSARAM. Registro em
+`parser_audits/2026-07-24_on_event_activated_gatilho_novo.json`.
+
+**Escopo assumido**: so ativacao de EVENTO dispara de verdade; Camie/
+Luffy/Zeff tambem tem "ou [Trigger]"/"ou [Blocker]" no texto oficial,
+ainda NAO coberto (mesmo assim, estritamente melhor que o bug antigo).
+
+**Status das 4 etapas combinadas com o usuario**: ✅ 1.1, ✅ 1.2. Faltam
+1.3 (personagem jogado, ~4 cartas), 1.4 (removido/descartado por efeito,
+~3 cartas), e a Fase 2 inteira (combos de pontuacao). Usuario pediu pra
+nao testar ao vivo/dar push ate essas avancarem mais.
+
 ## 2026-07-24 (351) - Claude (sessao local) - mapeamento de combos AMPLO (20+ cartas) + fase 1.2: gatilho on_opp_char_ko novo (Kaido lider)
 
 Sessao continuou o mapeamento de combos pedido pelo usuario, agora

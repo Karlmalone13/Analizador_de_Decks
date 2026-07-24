@@ -4253,6 +4253,46 @@ class EffectExecutor:
             if logs and entry.get('once_per_turn'):
                 source._opp_char_ko_once_marker = marker
 
+    def _dispatch_event_activated(self) -> None:
+        """
+        Dispara ``on_own_event_activated`` (campo de self.me) e
+        ``on_opp_event_activated`` (campo de self.opp) -- FASE 1.1 do
+        mapeamento de combos (usuario, 24/07). Chamar sempre que self.me
+        acaba de jogar/ativar um Evento (mesma convencao dos outros
+        dispatchers parametrizados: quem chama ja garante o `self.me`/
+        `self.opp` certos pro momento do jogo).
+
+        Achado real: 8 cartas com esse gatilho no texto oficial (Usopp,
+        Franky, Gion, Camie, Luffy OP15-119, Crocodile OP01-062, Page One,
+        Zeff), todas caindo em `your_turn`/`opp_turn` incondicional antes
+        deste fix. Escopo: cobre so ativacao de EVENTO (a forma mais
+        comum) -- Camie/Luffy/Zeff tem "ou [Trigger]"/"ou [Blocker]" como
+        gatilho alternativo tambem, NAO coberto ainda (registrado em
+        parser_audits/ como pendente); mesmo parcial, ja e estritamente
+        melhor que o bug antigo (nunca disparava certo, disparava sempre).
+        """
+        self._dispatch_event_activated_side(
+            'on_own_event_activated', self.me, self.opp, '_own_event_once_marker')
+        self._dispatch_event_activated_side(
+            'on_opp_event_activated', self.opp, self.me, '_opp_event_once_marker')
+
+    def _dispatch_event_activated_side(self, trig_name: str, watcher: 'GameState',
+                                       other: 'GameState', marker_attr: str) -> None:
+        cards = [watcher.leader, *watcher.field_chars]
+        if watcher.field_stage:
+            cards.append(watcher.field_stage)
+        for source in list(cards):
+            entry = get_card_effects(source.code).get(trig_name)
+            if not entry:
+                continue
+            marker = (watcher.global_turn, trig_name)
+            if (entry.get('once_per_turn')
+                    and getattr(source, marker_attr, None) == marker):
+                continue
+            logs = EffectExecutor(watcher, other).execute(source, trig_name)
+            if logs and entry.get('once_per_turn'):
+                setattr(source, marker_attr, marker)
+
     # ── Execução de steps individuais ────────────────────────────────────────
 
     def _resolve_cost_lte(self, step: dict, default=99):
@@ -7191,6 +7231,7 @@ class EffectExecutor:
                 elif c.card_type == 'EVENT':
                     me.trash.append(c)
                     me.events_activated_costs_this_turn.append(c.cost)
+                    self._dispatch_event_activated()
                 # dispara o efeito on_play da carta jogada (entrou agora).
                 # Propaga self._is_my_turn: se este play_card esta rodando
                 # dentro da resolucao do proprio 'trigger' de vida (GRUPO 1,
@@ -12863,6 +12904,7 @@ class OPTCGMatch:
         elif card.card_type == 'EVENT':
             p.trash.append(card)
             p.events_activated_costs_this_turn.append(card.cost)
+            ee._dispatch_event_activated()
 
         elif card.card_type == 'STAGE':
             if p.field_stage:

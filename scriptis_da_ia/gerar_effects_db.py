@@ -8454,6 +8454,116 @@ def parse_card_effect(card_text, card_type):
                         and result[generic].get('steps') == event_steps):
                     del result[generic]
 
+    # Eventos parametrizados "quando um Evento e ativado" (FASE 1.1 do
+    # mapeamento de combos, usuario 24/07). 8 cartas confirmadas na
+    # auditoria (Usopp, Gion, Franky, Camie, Luffy OP15-119, Crocodile
+    # OP01-062, Page One, Zeff), todas caindo em your_turn/opp_turn
+    # incondicional antes deste fix. Alvo aceita "an Event", "[Blocker]"
+    # ou "[Trigger]", em qualquer ordem quando combinados com "or" (Zeff
+    # tem "[Blocker] or an Event", Luffy/Camie tem "an Event or
+    # [Blocker]/[Trigger]") -- so a ativacao em si e reconhecida; a carta
+    # ainda funciona (fica melhor que o bug antigo, que nunca disparava
+    # certo) mesmo que o gatilho real tambem cubra Blocker/Trigger e este
+    # parser so escute Evento (registrado como pendente no parser_audits).
+    EVENT_ACTIVATED_TARGET = (
+        r'(?:an event|\[blocker\]|\[trigger\])'
+        r'(?:\s+or\s+(?:an event|\[blocker\]|\[trigger\]))?'
+    )
+
+    def _recover_leading_prose_as_passive(match_obj):
+        # Quando um evento parametrizado casa NO MEIO do texto (sem tag
+        # formal antes), o texto que vem ANTES do match pode ser uma
+        # habilidade PASSIVA separada, solta sem tag propria (achado real,
+        # Luffy OP15-119: "If you have 6+ DON, gains [Rush].\nWhen your
+        # opponent activates..." -- 2 frases distintas, so a 2a e o
+        # evento). O fallback generico `if not result:` la embaixo NUNCA
+        # roda mais pra esse texto (result ja deixou de estar vazio assim
+        # que o evento foi adicionado) -- recupera aqui a MESMA logica, so
+        # pro prefixo, sem reprocessar o corpo do evento em si.
+        if 'passive' in result:
+            return
+        prefixo = t_low[:match_obj.start()].strip()
+        if not prefixo:
+            return
+        if re.search(ABERTURA + r'\[(?:' + TODAS_TAGS + r')\]', prefixo):
+            return  # tem tag formal propria -- ja capturado pelo loop principal
+        prefix_steps = parse_block(prefixo, 'passive')
+        if not prefix_steps:
+            return
+        entry = {'steps': prefix_steps}
+        conds = parse_conditions(prefixo)
+        if conds:
+            entry['conditions'] = conds
+        result['passive'] = entry
+    # Forma padrao: "[tags] When your opponent activates X, [efeito]" ou
+    # "[tags] This effect can be activated when your opponent activates
+    # X. [efeito]" (Camie -- delimitador '.', nao ',').
+    opp_event_m = re.search(
+        r'(?:\[don!! x(\d+)\]\s*)?(?:\[your turn\]\s*)?(?:\[once per turn\]\s*)?'
+        r'(?:this effect can be activated )?'
+        r'when your opponent activates ' + EVENT_ACTIVATED_TARGET + r'[,.]\s*(.+?)'
+        + LOOKAHEAD_DELIM,
+        t_low, re.DOTALL | re.IGNORECASE)
+    # Forma INVERTIDA (Usopp, unica carta no banco com essa ordem):
+    # "[tags] [efeito] when your opponent activates X." Pre-filtro por
+    # substring ANTES do regex (custoso por causa do '.+?' livre) -- so
+    # tenta nas raras cartas que de fato tem a frase, nao nas ~2637 sem
+    # nenhuma chance de casar.
+    opp_event_inv_m = None
+    if not opp_event_m and 'when your opponent activates' in t_low:
+        opp_event_inv_m = re.search(
+            r'(?:\[don!! x(\d+)\]\s*)?(?:\[your turn\]\s*)?(?:\[once per turn\]\s*)?'
+            r'(.+?)\s+when your opponent activates ' + EVENT_ACTIVATED_TARGET + r'\.',
+            t_low, re.DOTALL | re.IGNORECASE)
+    for m, body_group in ((opp_event_m, 2), (opp_event_inv_m, 2)):
+        if not m:
+            continue
+        event_body = m.group(body_group).strip()
+        event_steps = parse_block(event_body, 'on_opp_event_activated')
+        if not event_steps:
+            continue
+        event_entry = {'steps': event_steps}
+        if '[once per turn]' in m.group(0):
+            event_entry['once_per_turn'] = True
+        if m.group(1):
+            event_entry['don_requirement'] = int(m.group(1))
+        body_conds = parse_conditions(event_body)
+        if body_conds:
+            event_entry['conditions'] = body_conds
+        result['on_opp_event_activated'] = event_entry
+        for generic in ('your_turn', 'opp_turn'):
+            if (generic in result
+                    and result[generic].get('steps') == event_steps):
+                del result[generic]
+        _recover_leading_prose_as_passive(m)
+        break
+
+    # Forma "When you activate X, [efeito]" (lado proprio -- Crocodile,
+    # Page One).
+    own_event_m = re.search(
+        r'(?:\[don!! x(\d+)\]\s*)?(?:\[your turn\]\s*)?(?:\[once per turn\]\s*)?'
+        r'when you activate ' + EVENT_ACTIVATED_TARGET + r'[,.]\s*(.+?)'
+        + LOOKAHEAD_DELIM,
+        t_low, re.DOTALL | re.IGNORECASE)
+    if own_event_m:
+        event_body = own_event_m.group(2).strip()
+        event_steps = parse_block(event_body, 'on_own_event_activated')
+        if event_steps:
+            event_entry = {'steps': event_steps}
+            if '[once per turn]' in own_event_m.group(0):
+                event_entry['once_per_turn'] = True
+            if own_event_m.group(1):
+                event_entry['don_requirement'] = int(own_event_m.group(1))
+            body_conds = parse_conditions(event_body)
+            if body_conds:
+                event_entry['conditions'] = body_conds
+            result['on_own_event_activated'] = event_entry
+            for generic in ('your_turn', 'opp_turn'):
+                if (generic in result
+                        and result[generic].get('steps') == event_steps):
+                    del result[generic]
+            _recover_leading_prose_as_passive(own_event_m)
+
     # Tags ADJACENTES COLADAS sem barra, ex: "[Opponent's Turn] [On K.O.]
     # efeito" -- diferente do caso "[A]/[B]" (que SAO dois triggers
     # distintos de propósito, mesmo efeito). Aqui e UMA UNICA condicao

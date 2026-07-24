@@ -5456,7 +5456,7 @@
   }
  },
  "OP01-004": {
-  "your_turn": {
+  "on_opp_event_activated": {
    "don_requirement": 1,
    "once_per_turn": true,
    "steps": [
@@ -6325,7 +6325,7 @@
   }
  },
  "OP01-062": {
-  "passive": {
+  "on_own_event_activated": {
    "conditions": {
     "hand_lte": 4
    },
@@ -12412,7 +12412,7 @@
   }
  },
  "OP04-053": {
-  "passive": {
+  "on_own_event_activated": {
    "don_requirement": 1,
    "once_per_turn": true,
    "steps": [
@@ -16910,7 +16910,7 @@
   }
  },
  "OP06-044": {
-  "your_turn": {
+  "on_opp_event_activated": {
    "once_per_turn": true,
    "steps": [
     {
@@ -16952,7 +16952,7 @@
   }
  },
  "OP06-048": {
-  "your_turn": {
+  "on_opp_event_activated": {
    "conditions": {
     "leader_type": "east blue"
    },
@@ -25362,7 +25362,7 @@
     }
    ]
   },
-  "opp_turn": {
+  "on_own_event_activated": {
    "once_per_turn": true,
    "steps": [
     {
@@ -27786,7 +27786,7 @@
  },
  "OP11-011": {},
  "OP11-012": {
-  "your_turn": {
+  "on_opp_event_activated": {
    "once_per_turn": true,
    "steps": [
     {
@@ -29452,7 +29452,7 @@
   }
  },
  "OP11-102": {
-  "your_turn": {
+  "on_opp_event_activated": {
    "conditions": {
     "opp_life_gte": 2
    },
@@ -39410,11 +39410,7 @@
   }
  },
  "OP15-119": {
-  "passive": {
-   "conditions": {
-    "don_gte": 6,
-    "don_on_field_gte": 6
-   },
+  "on_opp_event_activated": {
    "steps": [
     {
      "action": "buff_power_per_count",
@@ -39423,7 +39419,15 @@
      "duration": "this_turn",
      "source": "life_top_revealed_cost",
      "target": "self"
-    },
+    }
+   ]
+  },
+  "passive": {
+   "conditions": {
+    "don_gte": 6,
+    "don_on_field_gte": 6
+   },
+   "steps": [
     {
      "action": "gain_rush"
     }

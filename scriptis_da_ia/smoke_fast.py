@@ -1286,6 +1286,62 @@ def test_on_opp_char_ko_dispara_gatilho_generico() -> None:
           kaido_side2.don_available == 3)
 
 
+def test_on_event_activated_dispara_gatilho_generico() -> None:
+    # FASE 1.1 do mapeamento de combos (usuario, 24/07): "quando um Evento
+    # e ativado" (proprio ou do oponente) nao existia como gatilho no
+    # parser -- 8 cartas confirmadas (Usopp, Gion, Franky, Camie, Luffy
+    # OP15-119, Crocodile OP01-062, Page One, Zeff), todas caindo em
+    # your_turn/opp_turn incondicional. Fix: eventos dedicados
+    # on_own_event_activated/on_opp_event_activated + _dispatch_event_
+    # activated() chamado nos 2 pontos reais de jogar um Evento no motor.
+    franky = real_card("OP11-012")  # [Your Turn][Once Per Turn] +2000 a todos aliados quando o OPONENTE ativa Evento
+    a = GameState(leader=real_card("OP11-062"), turn=3)
+    a.field_chars = [franky]
+    b = GameState(leader=real_card("ST04-001"), turn=3)
+    evento = real_card("EB01-038")  # qualquer EVENT, custo 1
+    b.hand = [evento]
+    match = OPTCGMatch((a.leader, []), (b.leader, []))
+    ee = EffectExecutor(b, a)
+    match._play_card(evento, b, a, ee, verbose=False)
+    check("Franky ganha +2000 quando o OPONENTE (nao ele mesmo) ativa um Evento",
+          franky.power_buff == 2000)
+
+    # controle: quando e o PROPRIO lado de Franky que ativa o Evento, a
+    # habilidade (que so escuta o OPONENTE) nao deve disparar. Precisa de
+    # GameStates DISTINTOS pros dois lados (mesmo quando quem joga e quem
+    # tem Franky sao o mesmo jogador) -- usar o MESMO objeto pros dois
+    # faria self.opp is self.me, confundindo "propria" com "oponente".
+    franky2 = real_card("OP11-012")
+    a2 = GameState(leader=real_card("OP11-062"), turn=3)
+    a2.field_chars = [franky2]
+    evento2 = real_card("EB01-038")
+    a2.hand = [evento2]
+    outro_lado = GameState(leader=real_card("ST04-001"), turn=3)
+    match2 = OPTCGMatch((a2.leader, []), (outro_lado.leader, []))
+    ee2 = EffectExecutor(a2, outro_lado)
+    match2._play_card(evento2, a2, outro_lado, ee2, verbose=False)
+    check("Franky NAO ganha o buff quando e o PROPRIO lado que ativa o Evento",
+          franky2.power_buff == 0)
+
+    # lado proprio: Page One compra quando VOCE MESMO ativa um Evento.
+    # [DON!! x1] e requisito da PROPRIA carta com a habilidade (Page One),
+    # nao do lider -- don_attached vive em source, quem executa o efeito.
+    page_one = real_card("OP04-053")
+    page_one.don_attached = 1
+    c = GameState(leader=real_card("OP11-062"), turn=3)
+    c.field_chars = [page_one]
+    c.deck = [real_card("OP07-077")]  # precisa de deck nao-vazio pro draw ser viavel
+    evento3 = real_card("EB01-038")
+    c.hand = [evento3]
+    d = GameState(leader=real_card("ST04-001"), turn=3)
+    match3 = OPTCGMatch((c.leader, []), (d.leader, []))
+    ee3 = EffectExecutor(c, d)
+    mao_antes = len(c.hand)
+    match3._play_card(evento3, c, d, ee3, verbose=False)
+    check("Page One compra 1 carta quando o PROPRIO lado ativa um Evento",
+          len(c.hand) == mao_antes)  # -1 (evento saiu da mao) +1 (comprou) = mesma contagem
+
+
 def test_opponent_model_ao_vivo_por_lider_e_fallback_seguro() -> None:
     # Item 3 ligado AO VIVO (14/07): lookup do .deck real por codigo do lider
     # (os decks de teste sao nomeados por arquetipo -- Kid.deck, Krieg.deck)
@@ -7585,17 +7641,30 @@ def test_ultimos_5_itens_op06_057_a_op15_119() -> None:
     # a tag) nao era tolerado pelo guard de keyword nativa, "keyword_
     # blocker" vazava por engano pra esta carta (que na verdade so REAGE
     # ao oponente usar Blocker, nao TEM Blocker).
-    check("OP15-119 parseia buff_power_per_count(source=life_top_revealed_cost), sem keyword_blocker espurio",
-          get_card_effects("OP15-119")["passive"]["steps"]
+    #
+    # ATUALIZADO 24/07 (FASE 1.1 do mapeamento de combos): antes deste
+    # fix, "when your opponent activates an Event or [Blocker]" nao
+    # existia como gatilho -- o parser mesclava essa frase com a sentenca
+    # ANTERIOR ("if you have 6+ DON, gains [Rush]") num unico 'passive'
+    # incondicional (a reveal+buff disparava toda vez que 'passive' fosse
+    # avaliado, nao so quando o oponente de fato ativasse Evento/Blocker).
+    # Agora as duas frases ficam separadas: on_opp_event_activated (reveal
+    # + buff, reativo de verdade) e passive (so o gain_rush, com a
+    # condicao don_gte=6 que e dele mesmo, nao da reveal).
+    check("OP15-119 parseia buff_power_per_count(source=life_top_revealed_cost) em on_opp_event_activated, sem keyword_blocker espurio",
+          get_card_effects("OP15-119")["on_opp_event_activated"]["steps"]
           == [{"action": "buff_power_per_count", "amount_per": 1000, "count_per": 1,
-               "source": "life_top_revealed_cost", "target": "self", "duration": "this_turn"},
-              {"action": "gain_rush"}])
+               "source": "life_top_revealed_cost", "target": "self", "duration": "this_turn"}])
+    check("OP15-119 mantem gain_rush em passive, com a condicao don_gte=6 propria dele",
+          get_card_effects("OP15-119")["passive"]
+          == {"steps": [{"action": "gain_rush"}],
+              "conditions": {"don_gte": 6, "don_on_field_gte": 6}})
     luffy119 = real_card("OP15-119")
     me_luffy119 = GameState(leader=mk("L119LDR", "Lider", card_type="LEADER"), don_available=6, don_rested=0)
     me_luffy119.field_chars = [luffy119]
     me_luffy119.life = [mk("L119LF", "Life Card", cost=3)]
     opp_luffy119 = GameState(leader=mk("L119OPP", "Opp", card_type="LEADER"))
-    EffectExecutor(me_luffy119, opp_luffy119).execute(luffy119, "passive")
+    EffectExecutor(me_luffy119, opp_luffy119).execute(luffy119, "on_opp_event_activated")
     check("Execucao real: OP15-119 ganha +3000 power (custo 3 da carta revelada da Life x 1000), Life intacta",
           luffy119.power_buff == 3000 and len(me_luffy119.life) == 1)
 
@@ -7875,6 +7944,7 @@ def main() -> int:
     test_mapeamento_de_combos_bottom_deck_e_locks_contam_como_removal()
     test_don_reserve_for_defense_nao_guarda_mais_que_o_recurso_precisa()
     test_on_opp_char_ko_dispara_gatilho_generico()
+    test_on_event_activated_dispara_gatilho_generico()
     test_opponent_model_ao_vivo_por_lider_e_fallback_seguro()
     test_contrafactual_ao_vivo_usa_apenas_estado_publico_mascarado()
     test_search_contextual_evita_congestionar_mao_com_bombas()

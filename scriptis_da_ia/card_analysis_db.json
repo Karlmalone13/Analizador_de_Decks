@@ -11199,7 +11199,7 @@
   "effects": [
    {
     "action": "draw",
-    "trigger": "your_turn",
+    "trigger": "on_opp_event_activated",
     "don_requirement": 1
    }
   ],
@@ -13680,7 +13680,7 @@
   "effects": [
    {
     "action": "draw",
-    "trigger": "passive",
+    "trigger": "on_own_event_activated",
     "don_requirement": 1
    }
   ],
@@ -29122,7 +29122,7 @@
   "effects": [
    {
     "action": "draw",
-    "trigger": "passive",
+    "trigger": "on_own_event_activated",
     "don_requirement": 1
    }
   ],
@@ -39370,7 +39370,7 @@
   "effects": [
    {
     "action": "opp_place_hand_bottom_deck",
-    "trigger": "your_turn"
+    "trigger": "on_opp_event_activated"
    }
   ],
   "synergy_states": {},
@@ -39527,7 +39527,7 @@
   "effects": [
    {
     "action": "trash_from_deck_top",
-    "trigger": "your_turn"
+    "trigger": "on_opp_event_activated"
    }
   ],
   "synergy_states": {},
@@ -58633,12 +58633,12 @@
   "attribute": "Special",
   "effects": [
    {
-    "action": "add_don",
-    "trigger": "opp_turn"
-   },
-   {
     "action": "set_don_active",
     "trigger": "end_of_turn"
+   },
+   {
+    "action": "add_don",
+    "trigger": "on_own_event_activated"
    }
   ],
   "synergy_states": {},
@@ -64282,7 +64282,7 @@
   "effects": [
    {
     "action": "buff_power",
-    "trigger": "your_turn",
+    "trigger": "on_opp_event_activated",
     "target": "all_allies"
    }
   ],
@@ -68216,7 +68216,7 @@
   "effects": [
    {
     "action": "attack_life",
-    "trigger": "your_turn"
+    "trigger": "on_opp_event_activated"
    }
   ],
   "synergy_states": {
@@ -90046,7 +90046,7 @@
   "effects": [
    {
     "action": "buff_power_per_count",
-    "trigger": "passive",
+    "trigger": "on_opp_event_activated",
     "target": "self"
    },
    {

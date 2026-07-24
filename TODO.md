@@ -2,6 +2,19 @@
 
 **Última atualização:** 24 de julho de 2026
 
+> 24/07/2026 (bloco HANDOFF 352): Fase 1.1 feita — gatilho
+> `on_own_event_activated`/`on_opp_event_activated` (9 cartas: Usopp,
+> Gion, Franky, Camie, Luffy `OP15-119`, Crocodile `OP01-062`, Page One,
+> Zeff, Sugar). **Regressão real pega e corrigida durante a própria
+> validação** (`diff_parser.py` antes de fechar): Luffy `OP15-119`
+> perderia o `[Rush]` condicional a 6+ DON por um efeito colateral do
+> fix — corrigido com helper que preserva texto solto sem tag como
+> `passive` separado. `smoke_test.py` 100%. **Status das 4 etapas**: ✅
+> 1.1, ✅ 1.2. Faltam ⬜ 1.3 (personagem jogado, ~4 cartas), ⬜ 1.4
+> (removido/descartado por efeito, ~3 cartas), ⬜ Fase 2 (combos de
+> pontuação). **Não testar ao vivo/dar push** até essas avançarem mais
+> (pedido do usuário).
+
 > 24/07/2026 (bloco HANDOFF 351): mapeamento de combos amplo achou
 > padrão sistêmico de bug de regra — gatilhos que observam uma ação do
 > oponente/própria (não só pontuação) somem no parser, viram efeito
