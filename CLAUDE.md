@@ -222,18 +222,31 @@ log/resultado da partida (pedido do usuário, 23/07: "a leitura da
 telemetria tem que ser obrigatória depois que o log chega no banco",
 depois de repetidas vezes o mesmo tipo de erro passar despercebido).
 
-**Como fazer** (ferramenta já existe, não reinventar):
-```bash
-cd scriptis_da_ia
-python decision_summary.py --latest
-```
-Gera um `.txt` legível ao lado do `receipt_<timestamp>.json` mais recente
-em `metrics/live_runs/` (ou passe `--receipt <path>` pro receipt exato da
-partida) — pra cada decisão do bot, mostra a ação ESCOLHIDA e as melhores
-alternativas descartadas com seus scores. Leia esse arquivo inteiro antes
-de reportar a partida como investigada; é onde bugs de calibração (ex:
-DON anexado numa carta errada porque a alternativa certa nem foi gerada
-como candidata) ficam visíveis sem precisar vasculhar o `.jsonl` na mão.
+**Dois relatórios, os DOIS obrigatórios** (achado 23/07: ler só um dá
+quadro incompleto):
+
+1. **`python decision_summary.py --latest`** (em `scriptis_da_ia/`, ferramenta
+   já existe, não reinventar) — gera um `.txt` legível ao lado do
+   `receipt_<timestamp>.json` mais recente em `metrics/live_runs/` (ou
+   `--receipt <path>` pro receipt exato). Mostra o **O QUÊ**: pra cada
+   decisão do bot, a ação ESCOLHIDA e as melhores alternativas descartadas
+   com seus scores — onde bugs de calibração (ex: DON anexado numa carta
+   errada porque a alternativa certa nem foi gerada como candidata) ficam
+   visíveis sem vasculhar o `.jsonl` na mão.
+2. **`metrics/live_runs/live_<timestamp>.json`** (já gerado automaticamente
+   pelo auto-collect, desde o bloco 316) — mostra o **QUANTO**: `gate_status`,
+   `bot_confusion` (inclui `client_timeouts`, distinto de `no_eligible_action`),
+   `attack_quality` (`under_target_count`/`don_planned_total` — corrobora
+   bug de DON-pra-ataque de um ângulo agregado, sem precisar achar a
+   decisão exata), `resource_signals`, e principalmente
+   `instrumentation.score_components_coverage_pct`/`line_search_coverage_pct`
+   — quando esses ficam abaixo de 100%, uma fração real das decisões da
+   partida **não tem dado gravado pra auditar**, mesmo pelo
+   `decision_summary.py`. `mean_counterfactual_regret` baixo NÃO prova
+   decisão boa — só mede contra o que a busca realmente simulou; uma opção
+   que nunca virou candidata (o bug do Pekoms) nunca entra nessa conta.
+
+Leia os dois inteiros antes de reportar a partida como investigada.
 
 ## Trabalhando junto com outra IA (Codex ou outra sessão Claude)
 Nenhuma sessão vê o histórico de conversa da outra — só o estado dos

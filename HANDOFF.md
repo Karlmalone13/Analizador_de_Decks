@@ -1,5 +1,41 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-23 (331) - Claude - CLAUDE.md: telemetria obrigatória cobre os DOIS relatórios
+
+Usuário cobrou (justo): bloco 330 só documentou `decision_summary.py`
+(novo) como leitura obrigatória, mas o relatório agregado
+`metrics/live_runs/live_<timestamp>.json` (que já existe desde o bloco
+316, "instrumenta decisoes e uso de recursos") ficou de fora -- foi
+literalmente construído pra auditar o bot e não estava sendo citado.
+
+Conferido na própria partida do Teach (bloco 330) que esse relatório JÁ
+corrobora o bug do Pekoms por um ângulo agregado, sem precisar achar a
+decisão exata: `attack_quality.under_target_count: 1` (o próprio ataque
+que saiu abaixo do alvo) e `attack_quality.don_planned_total: 0` (nenhum
+dos 6 ataques da partida teve DON planejado junto -- confirma que o
+motor nunca tratava isso). Achado novo, não investigado a fundo ainda:
+`bot_confusion` registrou 1 `client_timeout` (distinto dos 5
+`no_eligible_action` já validados como legítimos em sessões anteriores) --
+procurei o evento exato no `.jsonl` e não achei um campo explícito de
+timeout nos registros de `execution` (todos `status: sent`, 3 nunca
+viraram `confirmed` -- bate com o alerta `pending_decisions: 3`, mas não
+identifiquei de onde o agregador tirou o timeout especificamente). Fica
+pendente pra próxima sessão se o usuário quiser aprofundar.
+
+Também vale registrar: `score_components_coverage_pct` (72.2%) e
+`line_search_coverage_pct` (55.6%) nessa partida -- quase 1/3 das decisões
+não tem os componentes de score gravados, quase metade não tem o rastro
+da busca. Isso é um teto real de auditabilidade que nem o
+`decision_summary.py` consegue contornar (o dado simplesmente não foi
+gravado). `mean_counterfactual_regret` baixo/zero também NÃO prova
+decisão boa -- só mede contra alternativas que a busca de fato simulou;
+uma opção que nunca virou candidata (como o attach_don do Pekoms antes do
+fix) nunca entra nessa conta.
+
+CLAUDE.md atualizado: a seção "Telemetria de decisão" agora exige ler os
+DOIS relatórios (decision_summary.py --latest E o live_<timestamp>.json),
+não só o novo script.
+
 ## 2026-07-23 (330) - Claude - attach_don ganha categoria de poder de combate + decision_summary.py
 
 Partida `Charlotte.Katakuri-P_x_Marshall.D.Teach-BY_2026-07-23T22.14.26`
