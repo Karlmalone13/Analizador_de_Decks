@@ -1,5 +1,39 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-23 (328) - Claude - combo com carta JA EM CAMPO (espelho do play_card)
+
+Pedido do usuário: "efeitos que combam com carta na mão (play_card), mas
+temos efeitos também que combam com carta já em campo, tem que analisar
+isso tb". Achado: 26 cartas reais no banco com `buff_power` (não
+`battle_only`/`this_battle`, ou seja fora do guard de combate já existente)
+mirando `own_character`/`select_filtered`/`all_allies` com
+`filter_type`/`filter_names` -- ex: EB03-032 Charlotte Flampe, "[On Play]
+um personagem seu 'Charlotte Katakuri' ganha +2000 de poder neste turno";
+EB04-040 mesma forma com "Kaido". `has_buff` (flag de `get_card_flags`) só
+somava um flat `+15`, cego a se existe ALGUM personagem correspondente em
+campo agora -- o combo simplesmente não era avaliado.
+
+Fix: novo `DecisionEngine._conditional_board_synergy_value(card)`, espelho
+exato de `_conditional_play_card_combo_value` (bloco 326) só que olhando
+`self.me.field_chars` em vez de `self.me.hand`. Mesmo mecanismo de leitura
+real (`card_effects_db` + `_check_conditions` contra o estado atual) +
+`eligible_cards` pra achar o alvo em campo que bate o filtro (tipo OU
+nome, `card_matches_filter` já cobre os dois). Chamado dentro de
+`avaliar_carta` junto do combo de `play_card`.
+
+Validação: `py_compile` limpo. 3 novos asserts em `smoke_fast.py`
+(`test_avaliar_carta_reconhece_combo_buff_com_carta_em_campo`, usando
+Charlotte Flampe real): score maior com o Katakuri-alvo já em campo,
+score igual ao "sem alvo" quando o personagem em campo é de tipo/nome
+errado (Mihawk não conta como Katakuri). `smoke_fast.py` = SMOKE FAST OK
+(882 checks). `smoke_test.py`: mesmas 3 falhas pré-existentes de sempre,
+sem regressão nova.
+
+Servidor NÃO reiniciado ainda -- aguardando confirmação de jogo fechado
+(conexão ativa na porta 8765 desde a sessão anterior). Validação ao vivo
+de todo o bloco 326-328 (combo Pudding + generalização de flags + combo
+de campo) ainda pendente -- próxima partida de Katakuri.
+
 ## 2026-07-23 (327) - Claude - generaliza o guard de condição pra TODAS as flags de avaliar_carta
 
 Pedido do usuário: "precisamos expandir esse fix pra outros efeitos tb não

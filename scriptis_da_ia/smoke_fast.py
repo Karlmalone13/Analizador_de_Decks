@@ -582,6 +582,39 @@ def test_avaliar_carta_reconhece_combo_play_card_condicional() -> None:
           score_sem_alvo < score_on)
 
 
+def test_avaliar_carta_reconhece_combo_buff_com_carta_em_campo() -> None:
+    # Achado 23/07 (pedido do usuario: "tem efeitos que combam com carta ja
+    # em campo, tem que analisar isso tb"). Charlotte Flampe (EB03-032):
+    # "[On Play] Um personagem 'Charlotte Katakuri' seu ganha +2000 de
+    # poder neste turno" -- so vale a pena se JA existir um Katakuri em
+    # campo. avaliar_carta so tinha um flat has_buff=+15, cego a isso.
+    flampe = real_card("EB03-032")
+    katakuri_char = real_card("OP11-067")  # nome "Charlotte Katakuri", em campo
+
+    # (a) Combo LIGADO: Katakuri ja em campo -- score deve refletir o buff.
+    me_com_alvo = GameState(leader=real_card("OP11-062"), don_available=1, turn=3)
+    me_com_alvo.field_chars = [katakuri_char]
+    eng_com_alvo = DecisionEngine(me_com_alvo, GameState(leader=real_card("OP14-020")))
+    score_com_alvo = eng_com_alvo.avaliar_carta(flampe)
+
+    # (b) Combo SEM alvo: campo vazio -- nao ha quem receba o buff.
+    me_sem_alvo = GameState(leader=real_card("OP11-062"), don_available=1, turn=3)
+    eng_sem_alvo = DecisionEngine(me_sem_alvo, GameState(leader=real_card("OP14-020")))
+    score_sem_alvo = eng_sem_alvo.avaliar_carta(flampe)
+
+    check("avaliar_carta pontua Flampe mais alto com o Katakuri-alvo ja em campo",
+          score_com_alvo > score_sem_alvo)
+
+    # (c) Personagem em campo de tipo/nome ERRADO (nao bate o filtro) --
+    # nao deve contar como combo disponivel.
+    me_alvo_errado = GameState(leader=real_card("OP11-062"), don_available=1, turn=3)
+    me_alvo_errado.field_chars = [real_card("OP14-020")]  # Mihawk, nao Katakuri
+    eng_alvo_errado = DecisionEngine(me_alvo_errado, GameState(leader=real_card("OP14-020")))
+    score_alvo_errado = eng_alvo_errado.avaliar_carta(flampe)
+    check("avaliar_carta NAO conta personagem em campo que nao bate o filtro do buff",
+          score_alvo_errado < score_com_alvo and score_alvo_errado == score_sem_alvo)
+
+
 def test_step_condition_currently_holds_generaliza_pra_qualquer_flag() -> None:
     # Achado 23/07 (pedido do usuario): generaliza o guard de condicao do
     # combo play_card pra QUALQUER flag estatica (draws/kos/bounces/etc).
@@ -7404,6 +7437,7 @@ def main() -> int:
     test_katakuri_buff_so_paga_com_impacto_no_combate_e_na_curva()
     test_combat_buff_worth_paying_no_simulador_interno()
     test_avaliar_carta_reconhece_combo_play_card_condicional()
+    test_avaliar_carta_reconhece_combo_buff_com_carta_em_campo()
     test_step_condition_currently_holds_generaliza_pra_qualquer_flag()
     test_pudding_anexa_don_antes_de_oferecer_activate_main()
     test_resolve_reaction_custo_de_redirect_e_generico_nao_so_carta_da_mao()

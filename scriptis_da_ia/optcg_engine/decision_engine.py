@@ -8939,6 +8939,58 @@ class DecisionEngine:
                     bonus += min(90.0, melhor.board_value() * 8)
         return bonus
 
+    _OWN_BOARD_BUFF_TARGETS = {'own_character', 'select_filtered', 'all_allies'}
+
+    def _conditional_board_synergy_value(self, card: 'Card') -> float:
+        """
+        Espelho de _conditional_play_card_combo_value pro combo com carta
+        JA EM CAMPO (nao na mao), pedido explicito do usuario (23/07): um
+        step 'buff_power' do proprio on_play/main mirando personagem
+        PROPRIO filtrado (target='own_character'/'select_filtered'/
+        'all_allies' + filter_type/filter_names, NAO buff de batalha
+        self/leader -- esse ja tem guard proprio em
+        _combat_buff_worth_paying) so vale a pena se existir ALGUM
+        personagem correspondente em campo AGORA -- exatamente como
+        play_card so vale com alvo na mao. 26 cartas reais no banco com
+        esse padrao (ex: EB03-032 "+2000 pra um 'Charlotte Katakuri' em
+        campo", EB04-040 "+3000 pra um 'Kaido' em campo") -- avaliar_carta
+        so tinha um flat +15 (has_buff), cego a se o combo tem com quem
+        acontecer.
+        """
+        from optcg_engine.rules_facade import eligible_cards
+        effects = get_card_effects(card.code)
+        ee = EffectExecutor(self.me, self.opp)
+        bonus = 0.0
+        for trig in ('on_play', 'main'):
+            ef = effects.get(trig)
+            if not isinstance(ef, dict):
+                continue
+            block_conds = ef.get('conditions', {})
+            if block_conds and not ee._check_conditions(block_conds, card):
+                continue
+            for step in ef.get('steps', []):
+                if step.get('action') != 'buff_power':
+                    continue
+                if step.get('target') not in self._OWN_BOARD_BUFF_TARGETS:
+                    continue
+                if step.get('duration') in ('battle_only', 'this_battle'):
+                    continue  # buff so-de-combate, guard proprio ja cobre
+                filtro = step.get('filter_type') or step.get('filter_names') or ''
+                if not filtro:
+                    continue  # sem filtro = "todos os aliados", ja no flat has_buff
+                step_conds = step.get('conditions', {})
+                if step_conds and not ee._check_conditions(step_conds, card):
+                    continue
+                candidatos = eligible_cards(
+                    self.me.field_chars, filter_text=filtro,
+                    cost_eq=step.get('cost_eq'), cost_lte=step.get('cost_lte'),
+                    power_eq=step.get('power_eq'), power_gte=step.get('power_gte'),
+                    power_lte=step.get('power_lte'), exclude_card=card)
+                if candidatos:
+                    amount = step.get('amount', 0)
+                    bonus += min(60.0, len(candidatos) * (amount / 1000.0) * 8)
+        return bonus
+
     def avaliar_carta(self, card: 'Card', stage_redundancy: bool = True) -> float:
         """
         Avalia o valor situacional de uma carta para jogar/guardar/descartar.
@@ -9109,6 +9161,7 @@ class DecisionEngine:
             s += 90
 
         s += self._conditional_play_card_combo_value(card)
+        s += self._conditional_board_synergy_value(card)
 
         # STAGE redundante: com stage propria ja em campo, a 2a copia na
         # mao so vale o UPGRADE liquido sobre a atual — e vira o pitch mais
