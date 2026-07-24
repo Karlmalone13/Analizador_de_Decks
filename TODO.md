@@ -2,6 +2,25 @@
 
 **Última atualização:** 24 de julho de 2026
 
+> 24/07/2026 (bloco HANDOFF 357): Turn Planner — plano em 4 fases
+> aprovado (A cobertura → B lookahead → C qualidade → D performance,
+> ver `C:\Users\arthu\.claude\plans\lively-honking-sedgewick.md`).
+> **Fase A feita**: 2 bugs reais de scoring achados fora de
+> `avaliar_carta` — typo `'rest_opp'` (nunca bate, nome real é
+> `'rest_opp_character'`) em `_trigger_don_value` subvalorizava
+> `attach_don` pra remoção/controle; `_score_activate_main` tinha
+> fallback fixo `base=60` pra qualquer action fora de 5 categorias,
+> agora usa o mesmo piso genérico da fase 2
+> (`_UNCOVERED_ACTION_VALUE`). `smoke_test.py` 100%. **Achado de
+> tooling** (não-bug desta sessão, confirmado via `git stash` que já
+> quebrava antes): `audit_replay.py` quebra com
+> `AttributeError: 'OPTCGMatch' object has no attribute
+> '_suppress_replay_log'` — `replay_optcg.py._get_engine_match()` cria
+> o match sem esses atributos. Bloqueia validação por replay real até
+> alguém investigar (fora do escopo do Turn Planner). **Próximo: Fase
+> B** (lookahead barato pra combos/finalização, sem simular 2+ turnos
+> completos — ver plano salvo).
+
 > 24/07/2026 (bloco HANDOFF 356): Fase 2 segunda passada feita —
 > `select_grant_*` (7 variantes), `opp_don_minus`, `ko_selected` e
 > `opp_bounce_own_character` (removal). **Fase 2 encerrada por

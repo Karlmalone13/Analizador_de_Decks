@@ -1,5 +1,69 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-24 (357) - Claude (sessao local) - Turn Planner fase A: 2 bugs reais de scoring achados por auditoria (typo + fallback fixo)
+
+Usuário pediu pra melhorar o Turn Planner em 4 frentes ao mesmo tempo
+(cobertura, qualidade, performance, lookahead futuro pra combos/
+finalização). Escopo grande demais pra atacar tudo de uma vez com
+segurança — usei `EnterPlanMode` pra desenhar um roteiro em fases
+ANTES de mexer em código (plano salvo em
+`C:\Users\arthu\.claude\plans\lively-honking-sedgewick.md`, aprovado
+pelo usuário). Resumo do roteiro: **Fase A** (auditoria de cobertura
+dos caminhos de score) → **Fase B** (lookahead barato, sem simular 2+
+turnos completos) → **Fase C** (qualidade, só com achados concretos da
+Fase A) → **Fase D** (performance, medir antes/depois).
+
+**Fase A feita nesta sessão.** Achado central: `avaliar_carta` (fases 1
+e 2 desta sessão) não é o ÚNICO lugar que pontua o que uma carta faz —
+existem 2 caminhos de score PARALELOS, com suas próprias tabelas
+estáticas, que nunca receberam a mesma auditoria:
+
+1. **`_trigger_don_value`** (`OPTCGMatch`, decide se vale anexar DON
+   pra ligar um gatilho condicionado a `[DON!! xN]`) tinha um **TYPO
+   real**: checava a string `'rest_opp'`, que nunca bate contra
+   nenhuma action de verdade do banco (o nome real é
+   `'rest_opp_character'`). Qualquer carta com gatilho condicionado a
+   DON usando essa action (ex: Tony Tony Chopper OP02-034,
+   `when_attacking`, `don_requirement=1`) caía no fallback genérico
+   (40) em vez do bônus de remoção/controle (120) — o `attach_don`
+   ficava sistematicamente subvalorizado pra essa categoria inteira.
+   Fix: corrigido o nome + generalizado com um piso que reusa
+   `DecisionEngine._UNCOVERED_ACTION_VALUE` (a mesma tabela da fase 2)
+   pra qualquer action fora das 4 categorias explícitas.
+2. **`_score_activate_main`** tinha um fallback FIXO `base=60` pra
+   QUALQUER action de `Activate:Main` fora de 5 categorias reconhecidas
+   (search/ramp/play_card/removal/reanimação) — mesmo gap que
+   `avaliar_carta` tinha antes da fase 2, só que no caminho de
+   ativação. Fix: mesmo piso genérico (`_UNCOVERED_ACTION_VALUE × 3`,
+   escala ajustada pra competir com as categorias explícitas de
+   90-170).
+
+**Achado colateral (não é bug, é limite de ferramenta)**: tentei
+validar contra partidas reais via `audit_replay.py --n 8 --seed 7`
+(passo 2 do plano de verificação) e todo turno que chega no Monte
+Carlo do Turn Planner quebra com
+`AttributeError: 'OPTCGMatch' object has no attribute '_suppress_replay_log'`
+(e `decision_log` antes disso). **Confirmado via `git stash` que isso
+já quebrava ANTES desta sessão** (mesmo erro no commit `a8a227b`,
+baseline sem nenhuma mudança minha) — `audit_replay.py`/
+`replay_optcg.py._get_engine_match()` cria um `OPTCGMatch` sem
+inicializar esses atributos, que só existem quando o match é criado
+por outro caminho. Não é regressão desta sessão, mas bloqueia a
+verificação por replay real do plano — registrado aqui como pendência
+de tooling, não investigado a fundo (fora do escopo do Turn Planner em
+si).
+
+**Validação**: `smoke_fast.py` — 2 checks novos (Chopper reconhece
+`rest_opp_character`, `Activate:Main` genérico recebe piso >60 pra
+`select_grant_rush`). `smoke_test.py`: TODOS OS TESTES PASSARAM.
+
+**Status**: Fase A completa nesta sessão. Fase B (lookahead barato) é
+o próximo passo natural — ver o plano salvo pra detalhes de abordagem
+(termo estático de "quase lá pra jogada forte" em `_evaluate_state_v2`,
+generalizando o bypass hardcoded de `compute_game_plan` que só
+reconhece o padrão Five Elders hoje). Nenhum teste ao vivo nem push
+ainda.
+
 ## 2026-07-24 (356) - Claude (sessao local) - fase 2 (segunda passada): select_grant_* + opp_don_minus + ko_selected/opp_bounce_own_character -- FASE 2 encerrada por diminishing returns
 
 Continuacao do bloco 355 -- segunda passada pedida pelo usuario

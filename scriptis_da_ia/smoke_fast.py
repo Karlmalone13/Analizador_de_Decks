@@ -1505,6 +1505,41 @@ def test_uncovered_action_value_segunda_passada() -> None:
           get_card_flags("OP09-098").get('is_removal', False) is True)
 
 
+def test_turn_planner_fase_a_trigger_don_value_e_score_activate_main() -> None:
+    # FASE A do Turn Planner (usuario, 24/07: "vamos resolver e melhorar
+    # essa aqui" -- cobertura/qualidade/performance/lookahead). Auditoria
+    # dos caminhos de score PARALELOS a avaliar_carta (attach_don e
+    # Activate:Main nao passam por avaliar_carta -- tem suas proprias
+    # tabelas estaticas) achou 2 problemas reais:
+    #
+    # 1. _trigger_don_value tinha um TYPO: checava 'rest_opp' (nunca bate
+    #    contra nenhuma action real do banco) em vez de
+    #    'rest_opp_character' -- qualquer carta com gatilho condicionado a
+    #    DON usando essa action (Tony Tony Chopper OP02-034, when_attacking,
+    #    don_requirement=1) caia no fallback generico (40) em vez do bonus
+    #    de remocao/controle (120), tornando o attach_don sistematicamente
+    #    SUBVALORIZADO pra essa categoria inteira de cartas.
+    a = GameState(leader=real_card("OP11-062"), turn=3)
+    opp = GameState(leader=real_card("OP11-062"), turn=3)
+    match = OPTCGMatch((a.leader, []), (opp.leader, []))
+    chopper = real_card("OP02-034")
+    ef = {'steps': [{'action': 'rest_opp_character', 'count': 1, 'cost_lte': 2}],
+          'don_requirement': 1}
+    check("_trigger_don_value reconhece rest_opp_character (typo corrigido) como remocao/controle",
+          match._trigger_don_value('when_attacking', ef, chopper, a, opp, 'DEVELOP') == 120.0)
+
+    # 2. _score_activate_main tinha um fallback FIXO (base=60) pra QUALQUER
+    #    action fora das poucas categorias reconhecidas (search/ramp/
+    #    play_card/removal/reanimacao) -- mesmo gap que avaliar_carta tinha
+    #    antes da fase 2, so que no caminho de Activate:Main. Agora reusa a
+    #    tabela _UNCOVERED_ACTION_VALUE (x3, mesma ordem de grandeza das
+    #    categorias explicitas) como piso.
+    am_generico = {'steps': [{'action': 'select_grant_rush', 'target': 'selected'}], 'costs': []}
+    score_generico = match._score_activate_main(chopper, am_generico, a, opp, 'DEVELOP', engine=None)
+    check("_score_activate_main da piso > 60 pra action reconhecida em _UNCOVERED_ACTION_VALUE (select_grant_rush)",
+          score_generico > 60.0)
+
+
 def test_opponent_model_ao_vivo_por_lider_e_fallback_seguro() -> None:
     # Item 3 ligado AO VIVO (14/07): lookup do .deck real por codigo do lider
     # (os decks de teste sao nomeados por arquetipo -- Kid.deck, Krieg.deck)
@@ -8119,6 +8154,7 @@ def main() -> int:
     test_on_hand_card_trashed_dispara_gatilho_generico()
     test_uncovered_action_value_pontua_acoes_antes_invisiveis()
     test_uncovered_action_value_segunda_passada()
+    test_turn_planner_fase_a_trigger_don_value_e_score_activate_main()
     test_opponent_model_ao_vivo_por_lider_e_fallback_seguro()
     test_contrafactual_ao_vivo_usa_apenas_estado_publico_mascarado()
     test_search_contextual_evita_congestionar_mao_com_bombas()

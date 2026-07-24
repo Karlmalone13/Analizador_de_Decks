@@ -11938,7 +11938,22 @@ class OPTCGMatch:
                 )
                 base -= min(sacrificio * 0.5, 220)
         else:
+            # Piso generico (achado 24/07, auditoria fase A do Turn Planner):
+            # antes de cair no 60 fixo pra QUALQUER action nao categorizada
+            # acima, reusa a MESMA tabela de _UNCOVERED_ACTION_VALUE ja
+            # calibrada em avaliar_carta (fase 2) -- ex: gain_rush,
+            # select_grant_*, opp_don_minus, life_to_hand num Activate:Main
+            # caiam sempre no generico 60, mesmo sendo o efeito PRINCIPAL da
+            # ativacao. Escala x3: os valores da tabela (10-30) foram
+            # calibrados pra somar em avaliar_carta (varios termos aditivos
+            # menores); aqui `base` compete sozinho contra as categorias
+            # explicitas acima (90-170) -- x3 poe o piso na mesma ordem de
+            # grandeza (30-90) sem ultrapassar a categoria mais forte.
             base = 60
+            for a in actions_list:
+                piso = DecisionEngine._UNCOVERED_ACTION_VALUE.get(a)
+                if piso is not None:
+                    base = max(base, piso * 3)
 
         # Custo real: quanto a ativação nos custa (trash de mão, DON, etc.)
         tem_trash_hand = any(c.get('type') in ('trash_from_hand', 'trash_hand', 'trash_char_or_hand',
@@ -12439,7 +12454,13 @@ class OPTCGMatch:
         steps = ef.get('steps', [])
         actions = [s.get('action') for s in steps]
         valor = 0
-        if any(x in ('ko', 'rest_opp', 'debuff_power', 'bounce') for x in actions):
+        # 'rest_opp_character' (nome real da action -- achado 24/07, auditoria
+        # do Turn Planner fase A) tinha um typo aqui ('rest_opp', que nunca
+        # bate contra nenhuma action real do banco): qualquer carta cujo
+        # gatilho condicionado a DON usasse rest_opp_character caia direto no
+        # fallback generico de 40, perdendo o bonus de remocao/controle (120)
+        # que ko/debuff_power/bounce ja recebem.
+        if any(x in ('ko', 'rest_opp_character', 'debuff_power', 'bounce') for x in actions):
             valor = 120   # remoção/controle — vale
             if opp.field_chars: valor += 30
         elif any(x in ('draw', 'add_to_hand', 'look_top_deck') for x in actions):
@@ -12450,6 +12471,16 @@ class OPTCGMatch:
             valor = 60    # buff de poder
         else:
             valor = 40
+        # Piso generico (achado 24/07, mesma auditoria): reusa a MESMA tabela
+        # de valor por acao ja calibrada em avaliar_carta (_UNCOVERED_ACTION_VALUE,
+        # fase 2 do mapeamento de combos) em vez de deixar qualquer acao fora
+        # das 4 categorias acima cair sempre no generico 40 -- ex: add_don,
+        # play_from_trash, gain_double_attack, select_grant_* condicionados a
+        # DON valiam so 40 antes, mesmo sendo o efeito PRINCIPAL da carta.
+        for x in actions:
+            piso = DecisionEngine._UNCOVERED_ACTION_VALUE.get(x)
+            if piso is not None:
+                valor = max(valor, piso)
         # gatilhos de ataque só valem se o personagem pode atacar
         if trig == 'when_attacking' and not character_can_attack_now(card, p, opp):
             valor = 0
