@@ -1,5 +1,63 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-24 (347) - Claude (sessao local) - causa raiz do "so joga carta barata": _can_play_card excluia corpo on-curve por gate estreito
+
+Continuacao dos blocos 345/346 -- usuario deu a pista decisiva: "quando tem
+bastante DONs, ele sai distribuindo nas cartas fracas pra bater com poder
+empatado" + queixa antiga "so joga carta de custo <=4".
+
+**Investigacao**: rastreei o mecanismo exato com o log real de hoje. No
+turno 5 (idx153), don=4, mao tinha `ST18-001` (3000 poder, custo 3, counter
+2000, on_play exige `DON!!8`). `_generate_and_score_actions` retornou
+**ZERO** acoes do tipo 'play' -- nao so pontuadas baixo, **ausentes por
+completo**. Causa: `_can_play_card` tinha um gate hardcoded --
+
+```python
+if not self._effect_conditions_met(card):
+    vale_pelo_corpo = (card.card_type == 'CHARACTER' and card.power >= 5000)
+    if not vale_pelo_corpo: return False
+```
+
+-- quando o efeito condicional de uma carta nao pode disparar AGORA
+(aqui, DON!!8 com so 4 disponivel), a carta so continua jogavel se tiver
+5000+ de poder FIXO. ST18-001 (3000, on-curve pro custo 3, counter real)
+cai abaixo disso e SOME da lista inteira. Sem nenhuma opcao de 'play',
+sobra so ataque/attach_don -- e e ai que o DON vai pra empatar poder num
+atacante fraco em vez de jogar essa carta (explica a queixa 1 do usuario
+literalmente). Auditoria global: **86 cartas** do banco tem esse padrao
+(poder<5000 + efeito condicional em on_play/main) -- cartas mais
+complexas/fortes tendem a ter mais condicoes, cartas simples raramente,
+criando vies sistemico a favor de carta barata sem condicao nenhuma
+(explica a queixa "so joga carta de custo <=4" tambem).
+
+**1a proposta rejeitada pelo usuario**: poder proporcional ao custo
+(`power >= cost*800`). Usuario apontou (corretamente) que uma carta 0 de
+poder pode valer muito num momento especifico do jogo (ex: counter alto) --
+poder/custo sozinho nao captura isso.
+
+**Fix aplicado** (`_can_play_card`, decision_engine.py): troca o gate
+estreito pelo MESMO calculo completo ja usado pra decidir toda
+jogada/guarda no motor -- `avaliar_carta(card) >= 40.0` (poder + counter +
+keywords + tudo; os bonus condicionais das flags ja saem zerados quando a
+condicao nao vale, entao nao precisa logica extra). Piso 40 calibrado
+contra cartas reais: corpo GENUINAMENTE vazio (EB03-016, 0 poder/0
+counter/sem keyword) fica em ~35 (so o desempate de jogabilidade),
+continua de fora -- evita "jogar no vacuo", que era a intencao original do
+gate. ST18-001 passa a aparecer (score 75 na lista real de hoje, antes
+ausente).
+
+Validado: as 86 cartas do banco rodam sem erro; ST18-001 volta a aparecer
+na reconstrucao exata do turno real (idx153); carta genuinamente vazia
+continua excluida. Teste novo em `smoke_fast.py`
+(`test_can_play_card_nao_exclui_corpo_on_curve_so_por_condicao_nao_bater`,
+2 asserts). `smoke_fast.py` = SMOKE FAST OK. `smoke_test.py` = TODOS OS
+TESTES PASSARAM.
+
+**Pendente**: validar ao vivo se isso muda o padrao "carta de custo <=4"
+de fato; usuario pediu pra tambem melhorar `avaliar_carta` de forma mais
+ampla e a funcao de planejamento de turno/turnos seguintes -- escopo
+ainda nao definido, fica pra proxima etapa da sessao ou sessao futura.
+
 ## 2026-07-24 (346) - Claude (sessao local) - avaliar_carta ignorava passivo when_don_returned (19 cartas do banco)
 
 Continuacao do bloco 345 -- usuario pediu pra investigar melhor a queixa

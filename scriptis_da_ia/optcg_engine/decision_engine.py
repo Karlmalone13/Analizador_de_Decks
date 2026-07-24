@@ -9499,8 +9499,30 @@ class DecisionEngine:
         if card.card_type == 'EVENT' and not has_main:
             return False
         if not self._effect_conditions_met(card):
-            vale_pelo_corpo = (card.card_type == 'CHARACTER' and card.power >= 5000)
-            if not vale_pelo_corpo:
+            # Efeito condicional nao dispara agora -- so vale jogar mesmo assim
+            # se o CORPO em si (poder, counter, keywords, tudo que avaliar_carta
+            # ja pondera, SEM o bonus das flags condicionais que exige a
+            # condicao -- essas ja saem zeradas de avaliar_carta quando a
+            # condicao nao vale) justificar ocupar campo/mao.
+            #
+            # FIX 24/07 (achado real, usuario: "distribui DON em carta fraca
+            # pra empatar poder" + "so joga carta barata"): o gate antigo era
+            # `card.power >= 5000` fixo -- excluia TOTALMENTE (nem aparecia
+            # como opcao) qualquer carta on-curve mas < 5000 de poder, mesmo
+            # com valor real por outro motivo (counter alto, etc). Confirmado
+            # com ST18-001 (3000 poder, custo 3, counter 2000, condicao exige
+            # DON!!8): sumia da lista inteira com so 4 DON, sobrando so
+            # ataque/attach_don pra escolher -- e ai o DON ia pra empatar
+            # poder num atacante fraco em vez de jogar essa carta. Auditoria
+            # global: 86 cartas do banco tem esse padrao (poder<5000 + efeito
+            # condicional). Usuario apontou que poder/custo sozinho tambem nao
+            # basta (uma carta 0 poder pode valer muito por counter/timing) --
+            # troca pro mesmo calculo completo (avaliar_carta) que decide toda
+            # jogada/guarda no motor, em vez de reinventar uma regra estreita.
+            # 40 e o piso: um corpo GENUINAMENTE vazio (0 poder, 0 counter,
+            # nenhuma keyword) fica perto de 35 (so o desempate de
+            # jogabilidade) -- continua fora, evitando "jogar no vacuo".
+            if self.avaliar_carta(card) < 40.0:
                 return False
         return True
 

@@ -2,6 +2,20 @@
 
 **Última atualização:** 24 de julho de 2026
 
+> 24/07/2026 (bloco HANDOFF 347): causa raiz real do "só joga carta de
+> custo <=4" + "distribui DON em carta fraca pra empatar poder" —
+> `_can_play_card` excluía TOTALMENTE (não só pontuava baixo) qualquer
+> carta com efeito condicional que não pode disparar agora e poder <5000
+> fixo, mesmo carta on-curve (ST18-001, 3000/custo3/counter2000, sumia
+> com DON!!8 não batendo). Sem `play` na lista, DON ia pra empatar poder
+> em ataque em vez de jogar a carta. 86 cartas do banco com esse padrão.
+> Fix: troca o gate por `avaliar_carta(card) >= 40` (mesmo cálculo
+> completo do motor, não só poder/custo — usuário pediu isso
+> especificamente, carta 0 poder pode valer muito por counter). Testado,
+> `smoke_test.py` 100%. **Pendente**: validar ao vivo; usuário pediu pra
+> melhorar `avaliar_carta` mais amplamente e a função de planejamento de
+> turno/turnos seguintes — escopo ainda não definido.
+
 > 24/07/2026 (bloco HANDOFF 346): `avaliar_carta` nunca dava bônus pro
 > passivo `when_don_returned` (add_don quando um DON!! volta pro deck) —
 > carta com esse passivo pontuava igual a um vanilla puro. Achado real com

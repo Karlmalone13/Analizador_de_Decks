@@ -879,6 +879,38 @@ def test_avaliar_carta_reconhece_passivo_when_don_returned() -> None:
           engine2.avaliar_carta(me2.hand[0]) == 50.0)
 
 
+def test_can_play_card_nao_exclui_corpo_on_curve_so_por_condicao_nao_bater() -> None:
+    # Achado real 24/07 (usuario: "distribui DON em carta fraca pra empatar
+    # poder" + "so joga carta barata"): _can_play_card tinha um gate
+    # `vale_pelo_corpo = card.power >= 5000` fixo pra decidir se uma carta
+    # ainda vale jogar quando o efeito condicional dela NAO pode disparar
+    # agora -- ST18-001 (3000 poder, custo 3, counter 2000, on_play exige
+    # DON!!8) sumia TOTALMENTE da lista de opcoes com so 4 DON, mesmo sendo
+    # um corpo on-curve com counter real. Sem 'play' nenhum na lista, so
+    # sobrava ataque/attach_don -- e o DON ia pra empatar poder num
+    # atacante fraco em vez de jogar essa carta. Fix: troca o gate estreito
+    # pelo mesmo calculo completo de avaliar_carta (poder+counter+keywords,
+    # ja zera os bonus condicionais que nao valem), piso 40 (corpo
+    # GENUINAMENTE vazio fica ~35, continua fora).
+    st18001 = real_card("ST18-001")  # 3000 poder, custo 3, counter 2000, on_play exige DON!!8
+    me = GameState(leader=real_card("OP11-062"), don_available=4, turn=5)
+    me.hand = [st18001]
+    me.life = [real_card("OP07-077") for _ in range(4)]
+    opp = GameState(leader=real_card("ST04-001"))
+    engine = DecisionEngine(me, opp)
+    check("ST18-001 (on-curve, condicao de DON!!8 nao bate com 4 DON) agora continua jogavel (antes sumia)",
+          engine._can_play_card(st18001, don_usable=4) is True)
+
+    vazia = real_card("EB03-016")  # 0 poder, 0 counter, sem keyword -- corpo genuinamente vazio
+    me2 = GameState(leader=real_card("OP11-062"), don_available=4, turn=5)
+    me2.hand = [vazia]
+    me2.life = [real_card("OP07-077") for _ in range(4)]
+    opp2 = GameState(leader=real_card("ST04-001"))
+    engine2 = DecisionEngine(me2, opp2)
+    check("corpo genuinamente vazio (0 poder, 0 counter, sem keyword) continua excluido",
+          engine2._can_play_card(vazia, don_usable=4) is False)
+
+
 def test_attach_don_oferece_opcao_de_poder_de_combate() -> None:
     # Achado real ao vivo 23/07: com 1 DON disponivel e Baron Tamago &
     # Pekoms (ST34-005, 4000 poder, corpo vanilla) + Charlotte Pudding
@@ -7713,6 +7745,7 @@ def main() -> int:
     test_trigger_risk_penalty_nao_veta_sozinho_ataque_legitimo()
     test_should_use_counter_nao_trava_com_vida_alta_em_ataque_real()
     test_avaliar_carta_reconhece_passivo_when_don_returned()
+    test_can_play_card_nao_exclui_corpo_on_curve_so_por_condicao_nao_bater()
     test_attach_don_oferece_opcao_de_poder_de_combate()
     test_don_minus_when_attacking_nao_devolve_o_proprio_don_do_ataque()
     test_resolve_reaction_custo_de_redirect_e_generico_nao_so_carta_da_mao()
