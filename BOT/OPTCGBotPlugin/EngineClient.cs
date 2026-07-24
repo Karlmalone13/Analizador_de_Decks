@@ -61,6 +61,27 @@ namespace OPTCGBotPlugin
             }
         }
 
+        // Reporta cartas cuja identidade o jogo acabou de MOSTRAR ao bot
+        // (ConfirmRevealedCard: Arlong revela mao, peek de vida/deck, etc.).
+        // O server guarda na MatchMemory da partida e re-injeta a identidade
+        // nos /decide seguintes (persistencia da memoria de reveals -- ver
+        // engine_server/match_memory.py e HANDOFF bloco 301). Best-effort:
+        // falha de rede nao pode travar o clique de confirmacao.
+        public static void ReportReveal(string zone, System.Collections.Generic.List<int> uids)
+        {
+            if (uids == null || uids.Count == 0) return;
+            try
+            {
+                string json = JsonConvert.SerializeObject(new { zone, uids });
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+                _http.PostAsync($"{BASE}/reveal", content).GetAwaiter().GetResult();
+            }
+            catch (Exception ex)
+            {
+                Plugin.Log.LogWarning($"[EngineClient] reveal: {ex.Message}");
+            }
+        }
+
         // Reporta o ciclo de execucao sem tomar nenhuma decisao no plugin.
         // status: sent | confirmed | failed. O decisionId veio de /decide.
         public static void ReportExecution(BotAction action, string status,
@@ -94,12 +115,16 @@ namespace OPTCGBotPlugin
             ReportExecution(new BotAction { decisionId = decisionId }, status, stateAfter, error);
         }
 
+        // botSeat: "p1"/"p2" -- em qual ASSENTO do jogo o bot estava
+        // (p1 = label [You] do combat log, p2 = [Opponent]). Sem isso o
+        // server assumia bot=p1 sempre e invertia o winner do index quando
+        // o bot controlava o outro lado (achado real 22/07, Kid x Katakuri).
         public static void ReportOutcome(string result, GameStateDto? stateFinal,
-                                         string? reason = null)
+                                         string? reason = null, string botSeat = "p1")
         {
             try
             {
-                string json = JsonConvert.SerializeObject(new { result, stateFinal, reason });
+                string json = JsonConvert.SerializeObject(new { result, stateFinal, reason, botSeat });
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
                 _http.PostAsync($"{BASE}/outcome", content).GetAwaiter().GetResult();
             }

@@ -159,6 +159,16 @@ combat logs, `{LiderSlug-Cores}_{timestamp}.json` pros decks reconstruídos).
 cometido em 09/07: criei `BOT/test_logs/` sem saber que esse banco já
 existia — teve que ser desfeito).
 
+**Telemetria também é obrigatória a partir de 22/07/2026:** depois de cada
+novo combat log, localizar o `decision_log` correspondente no receipt de
+`metrics/live_runs/` (ou o JSONL da mesma sessão em
+`BOT/engine_server/logs/decisions/`) e gerar/ler o relatório de
+`bot_efficiency_report.py --decision-log <arquivo.jsonl>`. A análise da
+partida deve cruzar combat log + decisões + execução/latência; não declarar
+eficiência apenas pelo resultado ou pelo log visual. Se a coleta automática
+já produziu `metrics/live_runs/live_*.json`, conferir esse relatório em vez
+de gerar outro arquivo idêntico.
+
 Se o combat log não estiver disponível como arquivo local (usuário colou
 o conteúdo direto na conversa, ou o caminho já não existe mais), salvar o
 conteúdo bruto num arquivo temporário primeiro e então rodar o comando

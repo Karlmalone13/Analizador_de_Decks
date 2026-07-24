@@ -1570,10 +1570,15 @@ def parse_costs(text):
         m = re.search(r'don!{0,2}\s*(\d+)\s*(?:\([^)]*\)\s*)?:', t)
     if m:
         x = int(m.group(1))
-        idx = m.start()
-        janela = t[max(0, idx-40):idx+60]   # olha antes E depois
-        opcional = 'you may' in janela
-        costs.append({'type': 'don_minus', 'count': x, 'optional': opcional})
+        # Regra oficial (confirmada pelo usuario, 23/07, ver
+        # CLAUDE.md#regras-de-jogo): QUALQUER custo antes do ':' e sempre
+        # opcional de pagar, em QUALQUER gatilho -- "you may" no texto e so
+        # reforco redundante em algumas cartas, nao e o que TORNA o custo
+        # opcional. Antes exigia 'you may' por perto pra marcar opcional;
+        # 26 cartas no banco tinham DON!! N: (e variantes com o proprio
+        # "(You may return...)" no texto) marcadas optional=False por essa
+        # falta, incluindo o lider Charlotte Katakuri OP11-062.
+        costs.append({'type': 'don_minus', 'count': x, 'optional': True})
     else:
         # "you may return N or more DON!! cards from your field to your
         # DON!! deck:" -- custo VARIAVEL (minimo N, SEM qualificador
@@ -1613,11 +1618,10 @@ def parse_costs(text):
     m = re.search(r"give your[^:]*?(?:leader|character)[^:]*?[−\-]\s*(\d+)\s*power[^:]*:", t)
     if m:
         amount = int(m.group(1))
-        idx = m.start()
-        janela = t[max(0, idx-30):idx]
-        opcional = 'you may' in janela
+        # Mesma regra do don_minus acima: custo antes do ':' e sempre
+        # opcional, independe de 'you may' por perto.
         target = 'leader' if 'leader' in m.group(0) and 'character' not in m.group(0).split('leader')[0] else 'leader_or_character'
-        costs.append({'type': 'debuff_power_self', 'amount': amount, 'optional': opcional, 'target': target})
+        costs.append({'type': 'debuff_power_self', 'amount': amount, 'optional': True, 'target': target})
 
     return costs
 
@@ -2738,10 +2742,12 @@ def parse_set_active(text):
                 step['cost_gte'] = int(range_m.group(1))
                 step['cost_lte'] = int(range_m.group(2))
             else:
-                cost_m = re.search(r'cost of (\d+)( or less)?', desc)
+                cost_m = re.search(r'cost of (\d+)( or (?:less|more))?', desc)
                 if cost_m:
-                    if cost_m.group(2):
+                    if cost_m.group(2) == ' or less':
                         step['cost_lte'] = int(cost_m.group(1))
+                    elif cost_m.group(2) == ' or more':
+                        step['cost_gte'] = int(cost_m.group(1))
                     else:
                         step['cost_eq'] = int(cost_m.group(1))
             power_m = re.search(r'(\d+) power( or less)?', desc)
@@ -6786,6 +6792,12 @@ def parse_block(block_text, trigger_name):
         steps.append({'action': 'draw', 'count': int(draw_before_opp_m.group(1))})
         draw_added_early = True
 
+    # Os dispatches por familia nao preservam automaticamente a ordem do
+    # texto. Em "Add DON. Then, K.O.", o ramp incondicional deve acontecer
+    # antes do K.O. opcional (familia: OP13-061, OP14-064, ST34-002).
+    add_don_before_ko = bool(re.search(
+        r'add up to \d+ don!! cards?.*?\.\s*then,\s*k\.?o\.?', t))
+
     # Busca
     if 'look at' in t:
         steps.extend(parse_look_at(t))
@@ -6807,7 +6819,9 @@ def parse_block(block_text, trigger_name):
     if ('k.o.' in t or 'k.o up to' in t or ('trash up to' in t and 'opponent' in t)
             or 'trash all of your characters' in t
             or 'all characters other than this character' in t):
-        steps.extend(parse_ko(t))
+        ko_steps = parse_ko(t)
+        if not add_don_before_ko:
+            steps.extend(ko_steps)
 
     # "Swap the base power of the selected Characters with each other during
     # this turn." -- OP14-001 (own chars) / OP14-017 (opp chars). Tambem
@@ -7246,6 +7260,8 @@ def parse_block(block_text, trigger_name):
     if (('don' in t and ('give' in t or 'add' in t or 'set' in t))
             or 'will not become active' in t or 'do not become active' in t):
         steps.extend(parse_give_don(t))
+        if add_don_before_ko:
+            steps.extend(ko_steps)
 
     # Negar efeito (On Play especifico, ou generico com filtro de custo)
     if 'negat' in t:

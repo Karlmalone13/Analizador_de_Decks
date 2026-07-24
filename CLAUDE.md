@@ -131,6 +131,17 @@ correção ainda pendente, ver [HANDOFF.md](HANDOFF.md)).
   (viabilidade ampla — evita ativar habilidade "no vácuo")
 - Topo do deck = fim da lista em Python (`pop()`, não `pop(0)`)
 - Mill do deck = trash seco, sem disparar trigger
+- **Regra dos dois-pontos (`:`) é universal pra QUALQUER gatilho** (`[On
+  Play]`, `[When Attacking]`, `[On Your Opponent's Attack]`, `[Activate:
+  Main]`, `[Trigger]`, `[Counter]`, etc — confirmado pelo usuário, 23/07):
+  tudo ANTES do `:` é custo, tudo DEPOIS é efeito. Se existe custo antes do
+  `:` (`DON!! N`, `Trash N card(s)`, `Rest N DON!!`, etc.), pagar esse
+  custo é **sempre opcional** — independe de a carta ter a palavra "may"
+  por perto. Só é obrigatório: (a) efeito SEM custo antes do `:` (aí é
+  obrigatório, mas "up to N" cobre N=0 como recusa disfarçada), ou (b) já
+  decidiu pagar o custo — a partir daí o efeito em si é obrigatório (falha
+  sem alvo, não vira recusa). "You may" no texto é só reforço redundante
+  em algumas cartas, não é o que TORNA um custo opcional.
 
 Referências oficiais das regras (manual, playsheet) em
 [_referencias/regras_do_jogo/](_referencias/regras_do_jogo/).
@@ -202,7 +213,60 @@ conteúdo bruto num arquivo temporário primeiro e então rodar o comando
 acima nele — nunca pular a etapa de adicionar ao banco só porque não veio
 como path pronto.
 
-## Trabalhando junto com outra IA (Codex ou outra sessão Claude)
+### Telemetria de decisão — OBRIGATÓRIO ler quando o log é de partida do bot
+
+Se o log adicionado ao banco veio de uma partida em que o **bot jogou de
+verdade** (não humano vs humano), a tarefa só termina depois de ler o
+resumo de decisões — não é opcional, e não é suficiente só olhar o combat
+log/resultado da partida (pedido do usuário, 23/07: "a leitura da
+telemetria tem que ser obrigatória depois que o log chega no banco",
+depois de repetidas vezes o mesmo tipo de erro passar despercebido).
+
+**Ordem obrigatória, NUNCA pular direto pro segundo passo** (achado 23/07:
+ler só o resumo decisão-a-decisão dá quadro incompleto e sem prioridade —
+o usuário pediu explicitamente pra telemetria agregada vir primeiro):
+
+1. **`metrics/live_runs/live_<timestamp>.json`** (já gerado automaticamente
+   pelo auto-collect, desde o bloco 316) — LER PRIMEIRO, sempre. Mostra o
+   **QUANTO/ONDE OLHAR**: `gate_status`, `bot_confusion` (inclui
+   `client_timeouts`, distinto de `no_eligible_action`), `attack_quality`
+   (`under_target_count`/`don_planned_total` — corrobora bug de
+   DON-pra-ataque de um ângulo agregado, sem precisar achar a decisão
+   exata), `resource_signals`, e principalmente
+   `instrumentation.score_components_coverage_pct`/`line_search_coverage_pct`
+   — quando esses ficam abaixo de 100%, uma fração real das decisões da
+   partida **não tem dado gravado pra auditar**, mesmo com o passo 2.
+   `mean_counterfactual_regret` baixo NÃO prova decisão boa — só mede
+   contra o que a busca realmente simulou; uma opção que nunca virou
+   candidata (o bug do Pekoms) nunca entra nessa conta. Esse relatório
+   diz SE tem algo suspeito e ONDE (que categoria de decisão, quantas
+   vezes) antes de gastar tempo lendo decisão por decisão.
+2. **`python decision_summary.py --latest`** (em `scriptis_da_ia/`,
+   ferramenta já existe, não reinventar) — só DEPOIS do passo 1, pra
+   investigar o que ele apontou como suspeito. Gera um `.txt` legível ao
+   lado do `receipt_<timestamp>.json` mais recente (ou `--receipt <path>`
+   pro receipt exato). Mostra o **O QUÊ exato**: pra cada decisão do bot,
+   a ação ESCOLHIDA e as melhores alternativas descartadas com seus
+   scores — onde bugs de calibração (ex: DON anexado numa carta errada
+   porque a alternativa certa nem foi gerada como candidata) ficam
+   visíveis sem vasculhar o `.jsonl` na mão.
+
+Leia os dois inteiros, NESSA ORDEM, antes de reportar a partida como
+investigada.
+
+### Eficiência agregada — OBRIGATÓRIO mostrar números, não só prosa
+
+Pedido do usuário (23-24/07): parar de narrar "eficiência baixa" sem
+número — sempre que uma sessão processa log(s) novo(s) do bot, rodar e
+**mostrar a tabela** de `python bot_efficiency_report.py --manifest
+<cohort>` (em `scriptis_da_ia/`). Não existe um cohort "atual" fixo — o
+manifesto (`metrics/*.json`, schema em
+`metrics/bot_efficiency_cohorts.json`) precisa ser atualizado/criado com
+as partidas relevantes da sessão (mesmo líder, mesmo período) antes de
+rodar, senão o relatório sai baseado em partidas antigas e engana. Métricas
+que mais importam pra ineficiência: `dano_por_jogo` (dano total por
+partida) e `don_observado_por_ataque` (quanto DON em média está anexado
+quando o bot ataca — baixo = sintoma de curva/ramp ruim, não só de sorte).
 Nenhuma sessão vê o histórico de conversa da outra — só o estado dos
 arquivos. Por isso:
 1. Sempre commitar antes de parar (créditos, fim de sessão).

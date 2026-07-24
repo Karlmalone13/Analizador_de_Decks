@@ -166,7 +166,8 @@ namespace OPTCGBotPlugin
         public static bool IsOfferingDownside(GameplayLogicScript gls)
         {
             foreach (var btn in OfferedButtons(gls))
-                if (btn == ButtonChoiceType.UseOnPlay || btn == ButtonChoiceType.UseV3OnPlay)
+                if (btn.myType == ButtonChoiceType.UseOnPlay
+                    || btn.myType == ButtonChoiceType.UseV3OnPlay)
                     return true;
             return false;
         }
@@ -191,7 +192,7 @@ namespace OPTCGBotPlugin
             catch { return false; }
 
             foreach (var btn in OfferedButtons(gls))
-                if (btn == ButtonChoiceType.Cancel)
+                if (btn.myType == ButtonChoiceType.Cancel)
                     return true;
             return false;
         }
@@ -249,6 +250,63 @@ namespace OPTCGBotPlugin
         private static List<GameObject>? TopDeck(GameplayLogicScript gls)
             => _fTopDeck.GetValue(gls) as List<GameObject>;
 
+        // Reporta ao engine_server (POST /reveal) as cartas cuja identidade o
+        // jogo acabou de mostrar ao bot -- chamado pelo BotDriver no estado
+        // ConfirmRevealedCard, ANTES do clique de confirmacao (depois do
+        // clique a zona de reveal esvazia). A zona e classificada pelo LUGAR
+        // onde o uid vive AGORA: mao do oponente (Arlong), vida do oponente,
+        // propria vida (Katakuri/OP15-119); quem esta so no lgo_TopDeck e
+        // peek de deck do OPONENTE (peek_opp_deck_top da Pudding) -- reveals
+        // do PROPRIO deck (search) nao sao reportados: a MatchMemory nao
+        // rastreia own_deck (o gs.deck ao vivo e placeholder de contagem, nao
+        // ha onde re-injetar identidade; ver match_memory.py). Cartas da
+        // PROPRIA mao tambem nao (o bot ja ve a propria mao). Best-effort e
+        // idempotente (o server deduplica por set de uids).
+        public static void ReportRevealedCards(GameplayLogicScript gls,
+                                               PlayerState botPs, PlayerState oppPs)
+        {
+            var porZona = new Dictionary<string, List<int>>();
+            void Nota(string zona, int uid)
+            {
+                if (!porZona.TryGetValue(zona, out var l))
+                    porZona[zona] = l = new List<int>();
+                l.Add(uid);
+            }
+            foreach (var go in TopDeck(gls) ?? new List<GameObject>())
+            {
+                var cls = go != null ? go.GetComponent<CardLogicScript>() : null;
+                if (cls == null) continue;
+                int uid = cls.myCard.deckUniqueID;
+                if (FindCard(botPs.Lgo_MyHand, uid) != null)
+                    continue;  // propria mao: bot ja ve
+                if (FindCard(oppPs.Lgo_MyHand, uid) != null)
+                    Nota("opp_hand", uid);
+                else if (FindCard(oppPs.Lgo_MyLifeDeck, uid) != null)
+                    Nota("opp_life", uid);
+                else if (FindCard(botPs.Lgo_MyLifeDeck, uid) != null)
+                    Nota("own_life", uid);
+                else if (FindCard(botPs.Lgo_MyDeck, uid) == null)
+                    Nota("opp_deck", uid);  // nao e nada do bot: peek de deck inimigo
+            }
+            // PeekSelfLife/PeekOppLife do jogo oficial nao move a carta para
+            // lgo_TopDeck: apenas chama SetFaceUp(true) diretamente na zona
+            // de Life. Capture essas cartas visiveis durante a confirmacao.
+            void NotaLifeFaceUp(List<GameObject>? life, string zona)
+            {
+                if (life == null) return;
+                foreach (var go in life)
+                {
+                    var cls = go != null ? go.GetComponent<CardLogicScript>() : null;
+                    if (cls != null && cls.myCard.bFaceUp)
+                        Nota(zona, cls.myCard.deckUniqueID);
+                }
+            }
+            NotaLifeFaceUp(oppPs.Lgo_MyLifeDeck, "opp_life");
+            NotaLifeFaceUp(botPs.Lgo_MyLifeDeck, "own_life");
+            foreach (var kv in porZona)
+                EngineClient.ReportReveal(kv.Key, kv.Value);
+        }
+
         // Todos os alvos clicaveis possiveis, com zona e codigo (o jogo valida
         // cada clique; o codigo permite ao engine valorar cartas fora do DTO,
         // como trash e top deck)
@@ -256,7 +314,13 @@ namespace OPTCGBotPlugin
             PlayerState botPs, PlayerState oppPs, GameplayLogicScript gls)
         {
             var list = new List<EngineClient.TargetCandidate>();
-            void Add(List<GameObject>? zone, string name)
+            // hideCode: nao expoe o cardID do candidato. Usado pra zonas de
+            // INFORMACAO OCULTA do oponente (mao) -- o bot escolhe as cegas
+            // (efeitos "choose 1 card from your opponent's hand": Arlong
+            // OP01-063 reveal, Kanjuro OP01-038, etc.); nao pode "trapacear"
+            // avaliando cartas que nao deveria ver. Sem code, o sim_bridge cai
+            // no catch-all e pega qualquer uma (o jogo valida o clique).
+            void Add(List<GameObject>? zone, string name, bool hideCode = false)
             {
                 if (zone == null) return;
                 foreach (var go in zone)
@@ -267,7 +331,8 @@ namespace OPTCGBotPlugin
                         {
                             id = cls.myCard.deckUniqueID,
                             zone = name,
-                            code = cls.myCard.cardDef != null ? cls.myCard.cardDef.cardID : "",
+                            code = (hideCode || cls.myCard.cardDef == null)
+                                   ? "" : cls.myCard.cardDef.cardID,
                         });
                 }
             }
@@ -281,30 +346,70 @@ namespace OPTCGBotPlugin
             Add(oppPs.Lgo_MyLeader, "opp_leader");
             Add(botPs.Lgo_MyStage,  "own_stage");
             Add(oppPs.Lgo_MyStage,  "opp_stage");
+            // Mao do oponente -- alvo de "choose 1 card from your opponent's
+            // hand" (Arlong reveal_opp_hand, Kanjuro opp_choose_trash_our_hand).
+            // _valid_target_location aceita hand_card em QUALQUER jogador, so
+            // faltava a zona. hideCode: escolha as cegas (o bot nao ve a mao).
+            Add(oppPs.Lgo_MyHand,   "opp_hand", hideCode: true);
 
-            // DON!! ativo (nao restado) na propria area de custo -- alvo
-            // clicavel pra qualquer custo "DON!! -N" (don_minus no parser).
-            // Achado real 21/07 (partida ao vivo, hipotese correta do
-            // usuario): o jogo real (GameplayLogicScript.ValidV3TargetLocation,
-            // decompilado) exige clicar N cartas de DON na DonCostArea pra
-            // pagar esse custo -- ValidV3TargetLocation tem um branch dedicado
-            // "vTarget.DonAreaCard && CardObjectInDonArea(go_Clicked)",
+            // DON na propria area de custo -- alvo clicavel pra qualquer custo
+            // "DON!! -N" (don_minus no parser). Achado real 21/07 (partida ao
+            // vivo, hipotese correta do usuario): o jogo real
+            // (GameplayLogicScript.ValidV3TargetLocation, decompilado) exige
+            // clicar N cartas de DON na DonCostArea pra pagar esse custo --
+            // branch dedicado "vTarget.DonAreaCard && CardObjectInDonArea(...)",
             // DISTINTO de personagem/mao/trash/deck. CollectTargetCandidates
-            // NUNCA incluia essa zona -- qualquer habilidade com custo
-            // DON!! -N (Katakuri when_attacking/on_opp_attack, Mamaragan
-            // [Main], Pudding PRB02-010 on_play, e qualquer outra carta com
-            // esse padrao) ficava ciclando por candidatos de personagem/mao
-            // que o jogo SEMPRE recusa, nunca pagando o custo de verdade.
-            // So DON ATIVO (nao restado) -- um DON ja restado nunca e clique
-            // valido pra pagar um custo que exige restar.
+            // nunca incluia essa zona -- qualquer habilidade com custo DON!! -N
+            // (Katakuri, Mamaragan [Main], Pudding PRB02-010 on_play, etc.)
+            // ficava ciclando por candidatos que o jogo SEMPRE recusa.
+            //
+            // don_minus RETORNA DON ao deck (action_system.py: "retornar X don
+            // ao deck") -- NAO resta. Por isso ValidV3TargetLocation/
+            // _valid_target_location aceita a area de custo SEM checar b_tapped:
+            // DON restado E ativo sao ambos alvos validos. Preferencia
+            // estrategica (pedido do usuario): devolver primeiro o DON ja gasto
+            // (restado) e preservar o ativo, que ainda pode pagar/atacar neste
+            // turno. Duas zonas separadas pra o sim_bridge ordenar restado
+            // ANTES de ativo. (DON anexado a carta: o validador tem branch
+            // proprio attached_don, mas nao da pra confirmar aqui quais flags o
+            // don_minus seta -- deixado de fora ate checar no dnspy p/ nao
+            // coletar candidato que o jogo recuse.)
+            var donRestado = new List<GameObject>();
             var donAtivo = new List<GameObject>();
+            var donAnexadoUsado = new List<GameObject>();
+            var donAnexadoNaoUsado = new List<GameObject>();
+            void CollectAttachedDon(List<GameObject>? cards)
+            {
+                if (cards == null) return;
+                foreach (var cardGo in cards)
+                {
+                    var owner = cardGo != null ? cardGo.GetComponent<CardLogicScript>() : null;
+                    if (owner?.lgo_AttachedDon == null) continue;
+                    var destination = owner.myCard.bTapped
+                        ? donAnexadoUsado : donAnexadoNaoUsado;
+                    foreach (var donGo in owner.lgo_AttachedDon)
+                        if (donGo != null) destination.Add(donGo);
+                }
+            }
+            CollectAttachedDon(botPs.Lgo_MyDeploy);
+            CollectAttachedDon(botPs.Lgo_MyLeader);
             foreach (var go in botPs.Lgo_MyDonCostArea ?? new List<GameObject>())
             {
                 var cls = go != null ? go.GetComponent<CardLogicScript>() : null;
-                if (cls != null && !cls.myCard.bTapped)
-                    donAtivo.Add(go);
+                if (cls == null) continue;
+                if (cls.myCard.bTapped) donRestado.Add(go);
+                else                    donAtivo.Add(go);
             }
-            Add(donAtivo, "own_don");
+            Add(donAnexadoUsado,    "own_don_attached_used");
+            Add(donRestado,         "own_don_rested");
+            Add(donAnexadoNaoUsado, "own_don_attached");
+            Add(donAtivo,           "own_don");
+
+            // DON do oponente -- alvo de efeitos que restam/retornam DON
+            // adversario (comum no Krieg). _valid_target_location varre TODOS
+            // os jogadores no branch don_area_card, entao o DON do oponente e
+            // alvo valido; so faltava a zona ser candidata aqui.
+            Add(oppPs.Lgo_MyDonCostArea, "opp_don");
             return list;
         }
 
@@ -313,7 +418,10 @@ namespace OPTCGBotPlugin
         public static bool ClickTargetCandidate(GameplayLogicScript gls, PlayerState botPs,
                                                 PlayerState oppPs, int targetId)
         {
-            var go = FindCard(TopDeck(gls), targetId)
+            // DON anexado vive em lgo_AttachedDon do Leader/Character, nao
+            // em Lgo_MyDonCostArea. A coleta o achava, mas o clique nao.
+            var go = FindAttachedDon(botPs, targetId)
+                  ?? FindCard(TopDeck(gls), targetId)
                   ?? FindCard(botPs.Lgo_MyHand, targetId)
                   ?? FindCard(botPs.Lgo_MyDeploy, targetId)
                   ?? FindCard(botPs.Lgo_MyTrash, targetId)
@@ -323,7 +431,9 @@ namespace OPTCGBotPlugin
                   ?? FindCard(oppPs.Lgo_MyLeader, targetId)
                   ?? FindCard(botPs.Lgo_MyStage, targetId)
                   ?? FindCard(oppPs.Lgo_MyStage, targetId)
-                  ?? FindCard(botPs.Lgo_MyDonCostArea, targetId);
+                  ?? FindCard(botPs.Lgo_MyDonCostArea, targetId)
+                  ?? FindCard(oppPs.Lgo_MyDonCostArea, targetId)
+                  ?? FindCard(oppPs.Lgo_MyHand, targetId);
             if (go == null)
                 return false;
             _mClickDuringCardAction.Invoke(gls, new object[] { go });
@@ -331,15 +441,32 @@ namespace OPTCGBotPlugin
             return true;
         }
 
+        private static GameObject? FindAttachedDon(PlayerState player, int deckUniqueId)
+        {
+            GameObject? InOwners(List<GameObject>? owners)
+            {
+                if (owners == null) return null;
+                foreach (var ownerGo in owners)
+                {
+                    var owner = ownerGo != null
+                        ? ownerGo.GetComponent<CardLogicScript>() : null;
+                    var found = FindCard(owner?.lgo_AttachedDon, deckUniqueId);
+                    if (found != null) return found;
+                }
+                return null;
+            }
+            return InOwners(player.Lgo_MyDeploy) ?? InOwners(player.Lgo_MyLeader);
+        }
+
         // ── Botoes de escolha atualmente ofertados (go_ChoiceButton1..4) ─────
-        private static IEnumerable<ButtonChoiceType> OfferedButtons(GameplayLogicScript gls)
+        private static IEnumerable<ChoiceButtonScript> OfferedButtons(GameplayLogicScript gls)
         {
             foreach (var go in new[] { gls.go_ChoiceButton1, gls.go_ChoiceButton2,
                                        gls.go_ChoiceButton3, gls.go_ChoiceButton4 })
             {
                 if (go == null || !go.activeSelf) continue;
                 var btn = go.GetComponent<ChoiceButtonScript>();
-                if (btn != null) yield return btn.myType;
+                if (btn != null) yield return btn;
             }
         }
 
@@ -350,13 +477,23 @@ namespace OPTCGBotPlugin
         {
             var preferidos = new[] { ButtonChoiceType.FinalizeTopDeck,
                                      ButtonChoiceType.ConfirmRevealedCard,
-                                     ButtonChoiceType.SelectTargets };
+                                     ButtonChoiceType.SelectTargets,
+                                     ButtonChoiceType.SelectFriendlyTargets,
+                                     ButtonChoiceType.SelectEnemyTargets,
+                                     ButtonChoiceType.SelectEnemyCharacters,
+                                     ButtonChoiceType.SelectEnemyLeaders,
+                                     ButtonChoiceType.SelectEnemyStage,
+                                     ButtonChoiceType.SelectTrashTargets,
+                                     ButtonChoiceType.ConfirmInfiniteTargets };
             foreach (var alvo in preferidos)
                 foreach (var oferecido in OfferedButtons(gls))
-                    if (oferecido == alvo)
+                    if (oferecido.myType == alvo)
                     {
-                        gls.ChoiceButtonClicked(alvo, -1);
-                        Plugin.Log.LogInfo($"[Bot] confirmar selecao: {alvo}");
+                        // Mesmo contrato de ChoiceButtonScript.ImClicked():
+                        // usa o tipo e o inteiro do botao que esta na tela.
+                        gls.ChoiceButtonClicked(oferecido.myType, oferecido.iChoiceInt);
+                        Plugin.Log.LogInfo(
+                            $"[Bot] confirmar selecao: {oferecido.myType} ({oferecido.iChoiceInt})");
                         return;
                     }
             // Nenhum botao de finalize visivel — mantem o comportamento antigo

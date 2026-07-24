@@ -16,7 +16,7 @@
     "execution_success_pct": 95,
     "state_after_coverage_pct": 95,
     "outcome_coverage_pct": 100,
-    "minimum_counterfactual_coverage_pct": 20,
+    "minimum_counterfactual_coverage_pct": 95,
     "decision_latency_p95_ms": 3000,
     "timeout_pct": 0,
     "semantic_transition_success_pct": 95,

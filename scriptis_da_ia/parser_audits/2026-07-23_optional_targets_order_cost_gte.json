@@ -1,0 +1,24 @@
+{
+  "trigger_card": "ST34-002",
+  "problem": "Na partida Katakuri x Jinbe, Cracker demorou no K.O. opcional sem alvo e Katakuri 8 nao concluiu corretamente seu efeito. O banco invertia ST34-002 para K.O. antes de add_don, embora o texto diga adicionar DON e depois K.O.; OP11-067 era cost_eq=3 embora o texto diga custo 3 ou mais.",
+  "grammar_family": "Duas familias globais aprovadas: 'Add up to N DON. Then, K.O.' deve preservar add_don antes do K.O. opcional; em 'Set ... cost of N or more as active', o comparador deve ser cost_gte, nao cost_eq.",
+  "queries": [
+    "regex 'add up to [^.]*don!![^.]*. then, k.o.' contra cards_rows.csv inteiro: OP13-061, OP14-064 e ST34-002",
+    "regex 'set up to [^.]*cost of N or more as active' contra cards_rows.csv inteiro: OP11-067 e variantes de arte do mesmo codigo"
+  ],
+  "cards_found": [
+    "OP11-067",
+    "OP13-061",
+    "OP14-064",
+    "ST34-002"
+  ],
+  "resolution_scope": "global",
+  "decision": "Aprovado pelo usuario em 2026-07-23. parse_set_active passou a distinguir or less/or more; parse_block antecipa add_don apenas na familia textual Add DON then KO e reinsere o K.O. depois, sem hardcode por codigo.",
+  "validated_by": [
+    "diff_parser.py antes do snapshot: GANHOU=0, PERDEU=0, MUDOU=4, exatamente as cartas esperadas",
+    "gerar_dbs.py e snapshot_parser.py executados; diff_parser.py posterior MUDOU=0",
+    "smoke_fast.py: SMOKE FAST OK, incluindo ordem, cost_gte e execucao da sinergia",
+    "texto bruto de cards_rows.csv comparado ao card_effects_db.json"
+  ],
+  "notes": "A escolha fisica Choose 0 pertence ao plugin e foi corrigida separadamente no mesmo commit; esta auditoria registra apenas as duas familias de parser."
+}

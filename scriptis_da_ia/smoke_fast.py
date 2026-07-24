@@ -30,6 +30,7 @@ from optcg_engine.decision_engine import (  # noqa: E402
     load_cards_db,
 )
 from optcg_engine import sim_bridge  # noqa: E402
+from optcg_engine.counter_estimation import max_plausible_defense  # noqa: E402
 
 
 FAIL = 0
@@ -74,6 +75,24 @@ cards = load_cards_db("cards_rows.csv")
 
 def real_card(code: str) -> Card:
     return _make_card(code, cards[code])
+
+
+def test_hidden_info_honesta_e_teto_counter_real() -> None:
+    # Este valor e usado como prova de IMPOSSIBILIDADE, entao precisa cobrir
+    # counters reais de 4000, nao a media tipica de 2000.
+    teto_impresso = max_plausible_defense(5000, 1, 0)
+    teto_evento = max_plausible_defense(5000, 1, 1)
+    check("teto defensivo cobre counter impresso real de 4000",
+          teto_impresso["max_defense"] == 9000)
+    check("teto defensivo cobre EVENT de Counter real de 4000",
+          teto_evento["max_defense"] == 9000)
+
+    # Contrato usado pelo caminho ao vivo: o estado mascarado nao pode
+    # habilitar lookup de decklist/opponent search apenas pelo lider.
+    opp = GameState(leader=mk("TEST-L", "Leader", card_type="LEADER"))
+    opp.hidden_information_masked = True
+    check("estado ao vivo mascarado sinaliza que decklist adversaria e oculta",
+          opp.hidden_information_masked is True)
 
 
 def test_turn_order_imu_prefers_second() -> None:
@@ -159,6 +178,39 @@ def test_counter_buff_vai_pro_lider_defensor_no_empate() -> None:
         me, opp, cands, attacker_power=5000, defender_uid=1, actor_code="OP14-096")
     check("counter buff vai pro lider defensor no empate (nao pro corpo forte)",
           bool(order) and order[0] == 500)
+
+
+def test_actor_opp_only_exclui_own_board_de_verdade_nao_so_deprioriza() -> None:
+    # Achado ao vivo 23-24/07: Baron Tamago & Pekoms (ST34-005, "[When
+    # Attacking] DON!! -1: K.O. up to 1 of your OPPONENT'S Characters with
+    # 2000 base power or less") destruiu a PROPRIA Nola do bot -- o
+    # oponente nao tinha nenhum personagem elegivel, a deprioridade antiga
+    # so empurrava own_board pro fim da ordem (ainda presente na lista), e
+    # o clique nela foi ACEITO pelo jogo (nao foi um no-op inofensivo como
+    # a premissa antiga assumia). Fix: exclusao DURA de own_board/own_hand/
+    # own_trash/own_leader/own_stage quando o ator so mira o oponente --
+    # nunca aparecem na ordem devolvida, nem como ultimo recurso.
+    nola = real_card("OP15-069")
+    nola._deck_uid = 50
+    me = GameState(leader=real_card("OP11-062"), don_available=1)
+    me.field_chars = [nola]
+    opp = GameState(leader=real_card("ST04-001"))  # Kaido, sem personagens em campo
+    cands = [{"id": 50, "zone": "own_board", "code": "OP15-069"},
+              {"id": 1, "zone": "own_leader", "code": "OP11-062"}]
+    order = sim_bridge.order_target_candidates(
+        me, opp, cands, attacker_power=4000, actor_code="ST34-005")
+    check("Pekoms sem alvo elegivel no oponente NAO devolve a propria Nola/lider como candidato",
+          order == [])
+
+    # Com um personagem elegivel do OPONENTE na lista, ele continua vindo
+    # antes de qualquer own_* (comportamento ja esperado, sem regressao).
+    kaido_char = real_card("OP07-066")  # custo baixo, poder <=2000 tipico
+    kaido_char._deck_uid = -10
+    cands2 = cands + [{"id": -10, "zone": "opp_board", "code": "OP07-066"}]
+    order2 = sim_bridge.order_target_candidates(
+        me, opp, cands2, attacker_power=4000, actor_code="ST34-005")
+    check("Pekoms com alvo elegivel no oponente prioriza opp_board e ainda exclui own_*",
+          order2 == [-10])
 
 
 def test_draw_cost_trasha_corpo_morto_antes_da_mao() -> None:
@@ -423,11 +475,16 @@ def test_mamaragan_main_so_mira_oponente_apesar_do_counter_mirar_proprio() -> No
     order = sim_bridge.order_target_candidates(me, opp, candidates, actor_code="OP15-078")
     check("Mamaragan [Main]: opp_board (unico alvo legal) vem PRIMEIRO",
           order[0] == 50)
-    check("Mamaragan [Main]: own_leader/own_board (invalidos pro Main) vem depois do opp_board",
-          order.index(-1) > order.index(50) and order.index(-10) > order.index(50))
+    # Achado ao vivo 23-24/07 (Pekoms/Nola): deprioridade sozinha nao e
+    # segura -- o jogo aceitou um clique invalido em own_board no lugar de
+    # recusar. own_leader/own_board/own_hand/own_trash (invalidos pro
+    # [Main], que so mira opp_character) agora sao EXCLUIDOS de verdade,
+    # nao so empurrados pro fim.
+    check("Mamaragan [Main]: own_leader/own_board/own_hand/own_trash (invalidos) NAO aparecem mais na ordem",
+          order == [50])
 
 
-def test_katakuri_when_attacking_custo_don_e_sempre_avaliado_como_valer_a_pena() -> None:
+def test_katakuri_buff_so_paga_com_impacto_no_combate_e_na_curva() -> None:
     # Achado real 20/07 (partida ao vivo, mesma sessao): Katakuri
     # (OP11-062, custo don_minus:1 -- RECURSO puro, nunca sacrificio) tinha
     # sua propria habilidade [When Attacking] recusada quase toda vez
@@ -447,8 +504,28 @@ def test_katakuri_when_attacking_custo_don_e_sempre_avaliado_como_valer_a_pena()
     opp.field_chars = [real_card("OP14-040")]  # 6000 power, Katakuri (5000) perde sozinho
     use = sim_bridge.resolve_reaction(me, opp, atk_power=5000, def_power=6000,
                                        defender_uid=0, actor_code="OP11-062")
-    check("Katakuri usa o proprio [When Attacking] mesmo com o ataque perdendo sozinho "
-          "(custo e recurso puro, sempre vale)", use is True)
+    check("Katakuri usa o proprio [When Attacking] quando +1000 vira o combate",
+          use is True)
+
+    # Partida 22/07: Pudding 0 atacou Pudding 0 e o Katakuri, fora daquele
+    # combate, devolveu DON para se buffar. O ator nao era o defensor uid=10.
+    me.leader._deck_uid = 1
+    pudding = real_card("OP11-070")
+    pudding._deck_uid = 10
+    me.field_chars = [pudding]
+    waste = sim_bridge.resolve_reaction(
+        me, opp, atk_power=0, def_power=0,
+        defender_uid=10, actor_code="OP11-062")
+    check("Katakuri nao paga buff quando outro Character e o defensor", waste is False)
+
+    # Taxar counter e util isoladamente, mas nao se DON -1 mantem uma bomba
+    # relevante presa na mao. Virar o poder cru continua autorizado.
+    me.hand = [real_card("ST34-004")]
+    tax_only = sim_bridge.resolve_reaction(
+        me, opp, atk_power=5000, def_power=5000,
+        defender_uid=-1, actor_code="OP11-062")
+    check("Katakuri nao devolve DON so para taxar counter enquanto atrasa a curva",
+          tax_only is False)
 
     # Teach (OP16-080, redirect de verdade) continua passando pela logica
     # de redirect -- nao pode virar sempre-True so por ter custo de recurso.
@@ -459,6 +536,318 @@ def test_katakuri_when_attacking_custo_don_e_sempre_avaliado_como_valer_a_pena()
         for s in block.get("steps", []))
     check("Teach (redirect de verdade) NAO e desviado pra resolve_optional_effect",
           teach_is_redirect)
+
+
+def test_combat_buff_worth_paying_no_simulador_interno() -> None:
+    # Achado 23/07: o guard de valor do padrao "custo de recurso -> buff de
+    # batalha" (buff_wins_combat) so existia em resolve_optional_effect
+    # (sim_bridge.py, caminho AO VIVO) -- o EffectExecutor.execute() usado
+    # pelo simulador interno (self-play/line-search, _execute_attack)
+    # tratava don_minus como "sempre vale a pena" sem julgar o combate.
+    # Consolidado via _combat_buff_worth_paying, chamado direto de
+    # execute() com informacao REAL (nao estimada).
+    from optcg_engine.decision_engine import EffectExecutor
+
+    # (a) ATACANDO: Katakuri 5000 vs alvo 6000 -- perde sem o buff, o +1000
+    # vira o combate (5000<6000<=5000+1000). Deve pagar (DON cai, buff sobe).
+    me = GameState(leader=real_card("OP11-062"), don_available=1)
+    opp = GameState(leader=real_card("OP14-020"))
+    ee = EffectExecutor(me, opp)
+    logs = ee.execute(me.leader, "when_attacking", battle_defender_power=6000)
+    check("Katakuri (simulador interno) paga DON!!1 quando o buff vira o ataque",
+          bool(logs) and me.don_available == 0 and me.leader.power_buff == 1000)
+
+    # (b) ATACANDO sem impacto: 5000 vs 5000 -- empate ja favorece quem
+    # ataca (buff_wins_combat), pagar seria taxa pura. Nao deve pagar.
+    me2 = GameState(leader=real_card("OP11-062"), don_available=1)
+    opp2 = GameState(leader=real_card("OP14-020"))
+    ee2 = EffectExecutor(me2, opp2)
+    logs2 = ee2.execute(me2.leader, "when_attacking", battle_defender_power=5000)
+    check("Katakuri (simulador interno) NAO paga DON!!1 quando ja vence sem o buff",
+          not logs2 and me2.don_available == 1 and me2.leader.power_buff == 0)
+
+    # (c) DEFENDENDO: atacante 5500 vs Katakuri 5000 -- perde sem o buff, o
+    # +1000 vira o combate de verdade (5000<=5500<5000+1000). Empate
+    # continua favorecendo o ATACANTE (buff_wins_combat exige estritamente
+    # maior), por isso o gap fica em 500 (nao 1000) pra nao cair no empate.
+    me3 = GameState(leader=real_card("OP11-062"), don_available=1)
+    atacante = real_card("OP14-020")   # base 5000
+    atacante.power_buff = 500          # efetivo 5500 (live_attack_power)
+    ee3 = EffectExecutor(me3, GameState(leader=atacante))
+    logs3 = ee3.execute(me3.leader, "on_opp_attack", battle_attacker=atacante,
+                        battle_defender_power=5000)
+    check("Katakuri (simulador interno) paga DON!!1 defendendo quando o buff evita o dano",
+          bool(logs3) and me3.don_available == 0 and me3.leader.power_buff == 1000)
+
+
+def test_katakuri_prioriza_rampar_don_sem_carta_amplificadora() -> None:
+    # Pedido explicito do usuario (23/07): "diminuir o uso de retornar
+    # dons no comeco do jogo, se nao o bot nunca chega a 10 dons... quando
+    # tiver carta em campo que retorna don quando um don e retornado, ai
+    # pode usar a vontade, mas enquanto nao tiver isso, a meta tem que ser
+    # rampar don". Sem ST34-001 (ou equivalente when_don_returned) em
+    # campo, gastar 1 DON no peek+buff do lider Katakuri atrasa o teto de
+    # 10 -- so vale a pena com vida critica (<=2), nao so por "vira este
+    # combate especifico".
+    me = GameState(leader=real_card("OP11-062"), don_available=1)
+    me.life = [real_card("OP07-077") for _ in range(4)]  # vida 4, nao critica
+    opp = GameState(leader=real_card("OP14-020"))
+    ee = EffectExecutor(me, opp)
+    logs = ee.execute(me.leader, "when_attacking", battle_defender_power=6000)
+    check("Katakuri NAO gasta DON no buff sem carta amplificadora, ramp longe de 10, vida alta",
+          not logs and me.don_available == 1 and me.leader.power_buff == 0)
+
+    # Vida critica (<=2): defender pesa mais que a curva de ramp, volta a
+    # pagar quando o buff realmente vira o combate.
+    me2 = GameState(leader=real_card("OP11-062"), don_available=1)
+    me2.life = [real_card("OP07-077"), real_card("OP07-077")]  # vida 2
+    ee2 = EffectExecutor(me2, GameState(leader=real_card("OP14-020")))
+    logs2 = ee2.execute(me2.leader, "when_attacking", battle_defender_power=6000)
+    check("Katakuri volta a pagar o buff com vida critica mesmo sem ramp completo",
+          bool(logs2) and me2.don_available == 0 and me2.leader.power_buff == 1000)
+
+    # Ramp ja cumprida (10+ DON no campo): gasto marginal nao atrapalha
+    # mais a curva, guard normal (vira o combate) volta a valer.
+    me3 = GameState(leader=real_card("OP11-062"), don_available=1, don_rested=9)
+    me3.life = [real_card("OP07-077") for _ in range(4)]
+    ee3 = EffectExecutor(me3, GameState(leader=real_card("OP14-020")))
+    logs3 = ee3.execute(me3.leader, "when_attacking", battle_defender_power=6000)
+    check("Katakuri paga o buff normalmente quando o teto de 10 DON ja foi atingido",
+          bool(logs3) and me3.don_rested == 8 and me3.leader.power_buff == 1000)
+
+
+def test_avaliar_carta_reconhece_combo_play_card_condicional() -> None:
+    # Achado 23/07 (usuario, "pudding 7 descendo outro bixo"): Charlotte
+    # Pudding (PRB02-010) "[On Play] DON!! -2: se seu lider e Big Mom
+    # Pirates e o oponente tem 6+ DON, compra 2, joga ate 1 Big Mom Pirates
+    # 6000-8000 poder da mao de graca" -- avaliar_carta so pontuava o corpo
+    # dela (5000 poder), cego pro combo, porque get_card_flags e fixo por
+    # carta e nao tem flag nenhuma pra "play_card" condicional. Bot tratava
+    # a Pudding como corpo generico e a descartava como counter fodder.
+    from optcg_engine.decision_engine import DecisionEngine
+    pudding = real_card("PRB02-010")
+    bomba = real_card("OP11-067")  # Big Mom Pirates, custo 8, 8000 poder
+
+    # (a) Combo LIGADO: lider Big Mom Pirates + oponente com 6+ DON +
+    # bomba elegivel na mao -- score deve ser MAIOR que so o corpo.
+    me = GameState(leader=real_card("OP11-062"), don_available=9)
+    me.hand = [pudding, bomba]
+    opp = GameState(leader=real_card("OP14-020"), don_available=6)
+    eng_on = DecisionEngine(me, opp)
+    score_on = eng_on.avaliar_carta(pudding)
+
+    # (b) Combo DESLIGADO: oponente com pouco DON -- condicao nao bate,
+    # mesma mao, mesmo lider.
+    opp_pouco = GameState(leader=real_card("OP14-020"), don_available=2)
+    eng_off = DecisionEngine(me, opp_pouco)
+    score_off = eng_off.avaliar_carta(pudding)
+
+    check("avaliar_carta pontua Pudding mais alto quando o combo play_card esta disponivel",
+          score_on > score_off + 30)
+
+    # (c) Sem alvo elegivel na mao (so a propria Pudding): mesmo com
+    # oponente em 6+ DON, nao deve inflar o score por um combo que nao tem
+    # com quem acontecer.
+    me_sozinha = GameState(leader=real_card("OP11-062"), don_available=9)
+    me_sozinha.hand = [pudding]
+    eng_sem_alvo = DecisionEngine(me_sozinha, opp)
+    score_sem_alvo = eng_sem_alvo.avaliar_carta(pudding)
+    check("avaliar_carta NAO infla o score do combo sem alvo elegivel na mao",
+          score_sem_alvo < score_on)
+
+
+def test_avaliar_carta_reconhece_combo_buff_com_carta_em_campo() -> None:
+    # Achado 23/07 (pedido do usuario: "tem efeitos que combam com carta ja
+    # em campo, tem que analisar isso tb"). Charlotte Flampe (EB03-032):
+    # "[On Play] Um personagem 'Charlotte Katakuri' seu ganha +2000 de
+    # poder neste turno" -- so vale a pena se JA existir um Katakuri em
+    # campo. avaliar_carta so tinha um flat has_buff=+15, cego a isso.
+    flampe = real_card("EB03-032")
+    katakuri_char = real_card("OP11-067")  # nome "Charlotte Katakuri", em campo
+
+    # (a) Combo LIGADO: Katakuri ja em campo -- score deve refletir o buff.
+    me_com_alvo = GameState(leader=real_card("OP11-062"), don_available=1, turn=3)
+    me_com_alvo.field_chars = [katakuri_char]
+    eng_com_alvo = DecisionEngine(me_com_alvo, GameState(leader=real_card("OP14-020")))
+    score_com_alvo = eng_com_alvo.avaliar_carta(flampe)
+
+    # (b) Combo SEM alvo: campo vazio -- nao ha quem receba o buff.
+    me_sem_alvo = GameState(leader=real_card("OP11-062"), don_available=1, turn=3)
+    eng_sem_alvo = DecisionEngine(me_sem_alvo, GameState(leader=real_card("OP14-020")))
+    score_sem_alvo = eng_sem_alvo.avaliar_carta(flampe)
+
+    check("avaliar_carta pontua Flampe mais alto com o Katakuri-alvo ja em campo",
+          score_com_alvo > score_sem_alvo)
+
+    # (c) Personagem em campo de tipo/nome ERRADO (nao bate o filtro) --
+    # nao deve contar como combo disponivel.
+    me_alvo_errado = GameState(leader=real_card("OP11-062"), don_available=1, turn=3)
+    me_alvo_errado.field_chars = [real_card("OP14-020")]  # Mihawk, nao Katakuri
+    eng_alvo_errado = DecisionEngine(me_alvo_errado, GameState(leader=real_card("OP14-020")))
+    score_alvo_errado = eng_alvo_errado.avaliar_carta(flampe)
+    check("avaliar_carta NAO conta personagem em campo que nao bate o filtro do buff",
+          score_alvo_errado < score_com_alvo and score_alvo_errado == score_sem_alvo)
+
+
+def test_avaliar_carta_reconhece_combo_de_qualquer_acao_com_carta_em_campo() -> None:
+    # Achado 23/07 (usuario reforcou: "nao e so buff, tem rush/blocker/DON/
+    # custo extra/double strike tb"). Generalizado _conditional_board_
+    # synergy_value pra QUALQUER acao (nao so buff_power) que mire
+    # personagem PROPRIO filtrado ja em campo. Caso real: Komurasaki
+    # (OP01-042) "[On Play] rest_don 3: se o lider e Kouzuki Oden, um
+    # personagem 'Land of Wano' custo<=3 seu fica ATIVO" (set_active) --
+    # so vale a pena com um personagem RESTADO e elegivel em campo.
+    komurasaki = real_card("OP01-042")
+    lider_oden = mk("XLDR", "Kouzuki Oden", card_type="LEADER")
+    yamato = real_card("P-008")  # Land of Wano, custo 3
+    yamato.rested = True
+
+    # (a) Combo LIGADO: lider certo + Yamato restada em campo.
+    me_on = GameState(leader=lider_oden, don_available=3, turn=3)
+    me_on.field_chars = [yamato]
+    eng_on = DecisionEngine(me_on, GameState(leader=real_card("OP14-020")))
+    score_on = eng_on.avaliar_carta(komurasaki)
+
+    # (b) Combo DESLIGADO: lider errado -- condicao 'leader_is' nao bate.
+    me_off = GameState(leader=real_card("OP11-062"), don_available=3, turn=3)
+    me_off.field_chars = [real_card("P-008")]
+    eng_off = DecisionEngine(me_off, GameState(leader=real_card("OP14-020")))
+    score_off = eng_off.avaliar_carta(komurasaki)
+
+    check("avaliar_carta pontua Komurasaki mais alto com lider certo + alvo elegivel em campo",
+          score_on > score_off)
+
+
+def test_step_condition_currently_holds_generaliza_pra_qualquer_flag() -> None:
+    # Achado 23/07 (pedido do usuario): generaliza o guard de condicao do
+    # combo play_card pra QUALQUER flag estatica (draws/kos/bounces/etc).
+    # (a) Carta com draw INCONDICIONAL (EB01-056, sem 'conditions' no
+    # bloco nem no step) -- tem que continuar valendo o bonus sempre,
+    # nao pode regredir pras centenas de cartas sem condicao nenhuma.
+    me = GameState(leader=real_card("OP11-062"), don_available=9)
+    incondicional = real_card("EB01-056")
+    eng = DecisionEngine(me, GameState(leader=real_card("OP14-020")))
+    check("_step_condition_currently_holds mantem True pra draw sem condicao (sem regressao)",
+          eng._step_condition_currently_holds(
+              incondicional, lambda st: st.get("action") == "draw"))
+
+    # (b) Charlotte Pudding: o mesmo bloco condicional (lider Big Mom
+    # Pirates + oponente 6+ DON) tambem tem um step 'draw' -- confirma que
+    # a flag 'draws' dela agora tambem respeita a condicao, nao so o
+    # play_card ja coberto no teste anterior.
+    pudding = real_card("PRB02-010")
+    opp_pouco = GameState(leader=real_card("OP14-020"), don_available=2)
+    eng_off = DecisionEngine(me, opp_pouco)
+    check("_step_condition_currently_holds bloqueia draw condicional da Pudding sem a condicao",
+          not eng_off._step_condition_currently_holds(
+              pudding, lambda st: st.get("action") == "draw"))
+    opp_muito = GameState(leader=real_card("OP14-020"), don_available=6)
+    eng_on = DecisionEngine(me, opp_muito)
+    check("_step_condition_currently_holds libera o draw condicional da Pudding com a condicao ok",
+          eng_on._step_condition_currently_holds(
+              pudding, lambda st: st.get("action") == "draw"))
+
+
+def test_pudding_anexa_don_antes_de_oferecer_activate_main() -> None:
+    pudding = real_card("OP11-070")
+    pudding._deck_uid = 10
+    me = GameState(leader=real_card("OP11-062"), don_available=1, turn=2)
+    me.field_chars = [pudding]
+    opp = GameState(leader=real_card("OP14-020"), turn=2)
+    match = OPTCGMatch((me.leader, []), (opp.leader, []))
+    actions = match._generate_and_score_actions(me, opp, DecisionEngine(me, opp))
+    check("Pudding sem DON anexado nao oferece activate_main",
+          not any(a[1] == "activate" and a[2] is pudding for a in actions))
+    check("Pudding sem DON anexado oferece primeiro attach_don",
+          any(a[1] == "attach_don" and a[2] is pudding for a in actions))
+    pudding.don_attached = 1
+    me.don_available = 0
+    actions2 = match._generate_and_score_actions(me, opp, DecisionEngine(me, opp))
+    check("Pudding com requisito anexado passa a oferecer activate_main",
+          any(a[1] == "activate" and a[2] is pudding for a in actions2))
+
+
+def test_trigger_risk_penalty_nao_veta_sozinho_ataque_legitimo() -> None:
+    # Achado ao vivo 23-24/07 (usuario pediu pra investigar por que o bot
+    # ataca menos que um humano): Baron Tamago & Pekoms (4000 poder,
+    # empatando com o lider do oponente em 5000 -- espera, EQUIVALE apos
+    # a resta do ataque; usa poder igual ao do lider aqui direto pra achar
+    # o mesmo caso real) atacando um lider de 5000 com o oponente em 4
+    # vidas pontuou -32 SO por causa do _trigger_risk_penalty (4*8=32),
+    # nao protegido pelo piso que so o LIDER do bot tem (max(s,15)). Fix:
+    # o desconto de trigger agora e limitado a metade do valor do proprio
+    # ataque -- nunca consegue sozinho virar um ataque bom em ataque ruim.
+    pekoms = real_card("ST34-005")
+    pekoms._deck_uid = 170
+    pekoms.rested = False
+    pekoms.power_buff = 1000  # 4000 base + 1000 = 5000, empata com o lider
+    me = GameState(leader=real_card("OP11-062"), don_available=0, turn=5)
+    me.field_chars = [pekoms]
+    me.life = [real_card("OP07-077") for _ in range(4)]  # vida propria OK, evita postura DEFENSIVE artificial
+    opp = GameState(leader=real_card("ST04-001"))  # Kaido, lider 5000
+    # 15 vidas (irreal, so pra forcar o desconto de trigger MUITO alem da
+    # metade do valor do ataque -- vida*8=120 > score_attack_target cru
+    # de 100). Sem teto, isso viraria -20 (vetado). Com teto (metade do
+    # valor cru), fica em 50 -- prova que o desconto nunca consegue
+    # sozinho inverter um ataque legitimo, so reduzi-lo.
+    opp.life = [real_card("OP07-077") for _ in range(15)]
+    match = OPTCGMatch((me.leader, []), (opp.leader, []))
+    actions = match._generate_and_score_actions(me, opp, DecisionEngine(me, opp))
+    ataque = next((a for a in actions if a[1] == "attack" and a[2] is pekoms), None)
+    check("Pekoms empatando com o lider (ataque legitimo) nao fica com score negativo mesmo com desconto de trigger enorme",
+          ataque is not None and ataque[0] == 50.0)
+
+
+def test_attach_don_oferece_opcao_de_poder_de_combate() -> None:
+    # Achado real ao vivo 23/07: com 1 DON disponivel e Baron Tamago &
+    # Pekoms (ST34-005, 4000 poder, corpo vanilla) + Charlotte Pudding
+    # (OP11-070, precisa de DON pra desbloquear activate_main) em campo,
+    # o unico candidato de attach_don gerado era a Pudding -- Pekoms nunca
+    # aparecia, mesmo +1000 decidindo o ataque contra o lider do oponente
+    # (4000 vs 5000, empate favorece quem ataca). _generate_attach_don_
+    # actions so cobria "desbloquear habilidade condicionada a DON", nunca
+    # "cruzar o poder de combate". Fix: 3a categoria dentro da mesma
+    # funcao, reaproveitando score_attack_target.
+    pekoms = real_card("ST34-005")
+    pekoms._deck_uid = 20
+    pekoms.rested = False
+    pudding = real_card("OP11-070")
+    pudding._deck_uid = 10
+    me = GameState(leader=real_card("OP11-062"), don_available=1, turn=3)
+    me.field_chars = [pekoms, pudding]
+    opp = GameState(leader=real_card("OP16-080"), turn=3)  # Teach, lider 5000
+    match = OPTCGMatch((me.leader, []), (opp.leader, []))
+    actions = match._generate_and_score_actions(me, opp, DecisionEngine(me, opp))
+    attach_candidatos = {a[2].code: a for a in actions if a[1] == "attach_don"}
+    check("attach_don agora tambem oferece Pekoms (poder de combate), nao so a Pudding",
+          "ST34-005" in attach_candidatos)
+    check("attach_don em Pekoms marca o motivo como poder de ataque",
+          attach_candidatos.get("ST34-005", (None,) * 5)[4] == "attack_power")
+
+
+def test_don_minus_when_attacking_nao_devolve_o_proprio_don_do_ataque() -> None:
+    # Achado real ao vivo 23/07 (mesma sessao, log seguinte): Pekoms recebeu
+    # 1 DON (anexado pro fix acima ajudar o ataque), atacou, e o proprio
+    # custo do [When Attacking] dele (DON!!-1) devolveu ESSE MESMO DON --
+    # ataque voltou a 4000 (poder base) como se o attach nunca tivesse
+    # acontecido. Causa: declarar o ataque ja resta o atacante ANTES do
+    # custo resolver, entao _return_don_to_deck via o proprio Pekoms como
+    # "DON anexado a quem ja atacou" (fonte barata) e devolvia o DON que
+    # tinha acabado de ser anexado pra ESTE ataque. Fix: exclude_card no
+    # _pay_costs pra 'don_minus', so toca o proprio atacante como ULTIMO
+    # recurso (fonte 4), nao antes de outras fontes disponiveis.
+    pekoms = real_card("ST34-005")
+    pekoms.rested = True          # ja restou ao declarar o ataque
+    pekoms.don_attached = 1       # o DON que acabou de ser anexado pra este ataque
+    me = GameState(leader=real_card("OP11-062"), don_available=0, don_rested=1)
+    me.field_chars = [pekoms]
+    opp = GameState(leader=real_card("OP16-080"))
+    ee = EffectExecutor(me, opp)
+    ee.execute(pekoms, "when_attacking")
+    check("Pekoms mantem o DON anexado quando existe outra fonte pra pagar o proprio custo",
+          pekoms.don_attached == 1)
+    check("o custo saiu do banco restado (fonte 3), nao do proprio atacante",
+          me.don_rested == 0)
 
 
 def test_resolve_reaction_custo_de_redirect_e_generico_nao_so_carta_da_mao() -> None:
@@ -554,17 +943,16 @@ def test_own_don_e_candidato_prioritario_pra_custo_don_minus() -> None:
           order[0] in (-900, -901) and order[1] in (-900, -901))
 
 
-def test_ataque_sem_chance_de_conectar_nao_ganha_bonus_de_matar_alvo() -> None:
+def test_ataque_em_character_exige_poder_final_suficiente() -> None:
     # Achado real 20/07 (partida ao vivo): Katakuri (lider OP11-062, 5000,
     # [When Attacking] +1000/peek) atacou Mihawk (7000) com 0 DON disponivel
     # -- impossivel de vencer -- e pontuou 405, porque score_attack_target
     # somava os bonus de "vale matar o alvo" (board_value, nega ameaca,
     # blocker etc.) mesmo sem NENHUMA chance real de conectar, so porque o
     # gatilho de restar (vale_restar) jah bastava pra passar da barreira.
-    # Fix e generico (score_attack_target, nao amarrado ao Katakuri): quando
-    # o ataque nao tem chance de conectar, o score vem SO do valor do
-    # gatilho do proprio atacante (_rest_only_attack_value), nunca dos
-    # bonus de remocao de alvo.
+    # Regra refinada com o usuario em 22/07: contra CHARACTER, nem um gatilho
+    # util autoriza escolher alvo mais forte que atacante + DON disponivel.
+    # O gatilho pode justificar atacar o Leader ou outro Character alcancavel.
     katakuri = real_card("OP11-062")
     mihawk = real_card("ST32-003")
     me = GameState(leader=katakuri, don_available=0)
@@ -572,14 +960,27 @@ def test_ataque_sem_chance_de_conectar_nao_ganha_bonus_de_matar_alvo() -> None:
     opp.field_chars = [mihawk]
     eng = DecisionEngine(me, opp)
     s_sem_chance = eng.score_attack_target(katakuri, "character", mihawk)
-    check("ataque impossivel de conectar (0 DON, 5000 vs 7000) fica bem abaixo do antigo 405",
-          s_sem_chance < 200)
+    check("character maior que atacante + DON disponivel e barrado mesmo com When Attacking",
+          s_sem_chance <= -500)
 
     fraco = real_card("OP12-034")  # 2000 power, morre pro leader sem DON
     opp.field_chars = [fraco]
     s_mata = eng.score_attack_target(katakuri, "character", fraco)
-    check("ataque que REALMENTE mata ainda pontua mais que o que so ativa o gatilho",
+    check("character menor ou igual ao atacante continua sendo alvo valido",
           s_mata > s_sem_chance)
+
+    tamago = real_card("ST34-005")  # 4000
+    alvo_5000 = real_card("OP12-034")
+    import dataclasses
+    alvo_5000.data = dataclasses.replace(alvo_5000.data, power=5000)
+    me.don_available = 1
+    eng = DecisionEngine(me, opp)
+    check("Tamago 4000 + 1 DON pode escolher Character 5000",
+          eng.score_attack_target(tamago, "character", alvo_5000) > -500)
+    alvo_6000 = real_card("OP12-034")
+    alvo_6000.data = dataclasses.replace(alvo_6000.data, power=6000)
+    check("Tamago 4000 + 1 DON nao pode escolher Character 6000",
+          eng.score_attack_target(tamago, "character", alvo_6000) <= -500)
 
 
 def test_bonus_de_ameaca_critica_exige_chance_real_de_conectar() -> None:
@@ -679,6 +1080,153 @@ def test_opponent_model_ao_vivo_por_lider_e_fallback_seguro() -> None:
                                       allowed_types={"play", "attack", "attach_don", "activate"})
     check("choose_action com busca ao vivo retorna uma acao valida (nao None)",
           action is not None)
+
+
+def test_contrafactual_ao_vivo_usa_apenas_estado_publico_mascarado() -> None:
+    me = GameState(leader=real_card("OP11-062"), don_available=5, turn=3)
+    me.hand = [real_card("ST34-004"), real_card("ST34-005")]
+    me.life = [real_card("OP07-077") for _ in range(4)]
+    opp = GameState(leader=real_card("OP04-019"), turn=3)
+    opp.life = [mk("UNKNOWN-000", "Carta oculta") for _ in range(4)]
+    opp.hand = [mk("UNKNOWN-000", "Carta oculta") for _ in range(3)]
+    opp.hidden_information_masked = True
+    match = OPTCGMatch((me.leader, []), (opp.leader, []))
+    trace = {}
+    action = sim_bridge.choose_action(
+        me, opp, match, timeout=3.0,
+        allowed_types={"play", "attack", "attach_don", "activate"},
+        trace_out=trace)
+    check("contrafactual live escolhe uma acao sem conhecer cartas ocultas",
+          action is not None)
+    check("contrafactual live registra pelo menos duas alternativas simuladas",
+          len(trace.get("search_values", [])) >= 2)
+    check("telemetria identifica que a simulacao usou estado publico mascarado",
+          trace.get("counterfactual_basis") == "masked_public_state")
+    check("estado publico mascarado escolhe pela linha, nao so audita score imediato",
+          trace.get("selection") == "masked_public_line_search")
+    check("telemetria registra profundidade, orcamento DON e acao da linha",
+          trace.get("line_search", {}).get("depth") == 4
+          and trace.get("line_search", {}).get("don_budget_before") == 5
+          and trace.get("line_search", {}).get("selected") is not None)
+
+
+def test_search_contextual_evita_congestionar_mao_com_bombas() -> None:
+    me = GameState(leader=real_card("OP11-062"), don_available=4,
+                   don_rested=0, turn=3)
+    me.hand = [real_card("ST34-004"), real_card("OP08-069")]
+    opp = GameState(leader=real_card("OP04-019"), turn=3)
+    candidates = [
+        {"id": 901, "zone": "top_deck", "code": "ST34-004"},
+        {"id": 902, "zone": "top_deck", "code": "ST34-005"},
+    ]
+    order = sim_bridge.order_target_candidates(
+        me, opp, candidates, actor_code="OP11-070")
+    check("search com bombas caras sem counter na mao prefere carta que entra na curva",
+          order[0] == 902)
+
+
+def test_plano_katakuri_prefere_rampa_e_bloqueia_desperdicios() -> None:
+    """Reproduz a linha ruim da partida real 23.07 sem hardcode de carta."""
+    me = GameState(leader=real_card("OP11-062"), don_available=4, turn=3)
+    p1, p2 = real_card("OP11-070"), real_card("OP11-070")
+    p1._deck_uid, p2._deck_uid = 20, 30
+    me.field_chars = [p1, p2]
+    me.hand = [real_card("ST34-002"), real_card("OP11-070"),
+               real_card("OP15-069"), real_card("OP13-076"),
+               real_card("OP11-073")]
+    opp = GameState(leader=real_card("OP02-093"), turn=3)
+    low = real_card("ST19-002")
+    low.rested = True
+    opp.field_chars = [low]
+    opp.life = [real_card("OP07-077") for _ in range(4)]
+    match = OPTCGMatch((me.leader, []), (opp.leader, []))
+    actions = match._generate_and_score_actions(me, opp, DecisionEngine(me, opp))
+    plays = {a[2].code: a[0] for a in actions if a[1] == "play"}
+    check("linha com 4 DON prefere o ramp que libera a curva ao terceiro corpo barato",
+          plays["ST34-002"] > plays["OP11-070"])
+    check("Divine Departure com custo de 5 DON nao e oferecida com apenas 4",
+          plays.get("OP13-076", -999) <= -999)
+    pudding_attaches = [a for a in actions
+                        if a[1] == "attach_don" and a[2].code == "OP11-070"]
+    check("duas Puddings de informacao nao recebem DON automaticamente",
+          not pudding_attaches)
+
+    # Evento que se repoe por draw nao justifica DON-minus sem controle real.
+    me2 = GameState(leader=real_card("OP11-062"), don_available=0,
+                    don_rested=4, turn=3)
+    me2.hand = [real_card("OP15-078"), real_card("OP11-073")]
+    opp2 = GameState(leader=real_card("OP02-093"), turn=3)
+    match2 = OPTCGMatch((me2.leader, []), (opp2.leader, []))
+    acts2 = match2._generate_and_score_actions(me2, opp2, DecisionEngine(me2, opp2))
+    mama = next((a for a in acts2 if a[1] == "play" and a[2].code == "OP15-078"), None)
+    check("Mamaragan sem alvo material e atrasando bomba fica bloqueada",
+          mama is not None and mama[0] <= -999)
+
+
+def test_ataque_respeita_orcamento_da_jogada_principal_e_don_anexado() -> None:
+    me = GameState(leader=real_card("OP11-062"), don_available=4, turn=3)
+    me.hand = [real_card("ST34-002"), real_card("OP11-073")]
+    opp = GameState(leader=real_card("OP02-093"), turn=3)
+    target = real_card("ST19-003")
+    target.rested = True
+    opp.field_chars = [target]
+    opp.life = [real_card("OP07-077") for _ in range(4)]
+    match = OPTCGMatch((me.leader, []), (opp.leader, []))
+    acts = match._generate_and_score_actions(me, opp, DecisionEngine(me, opp))
+    check("ataque 5000->6000 nao usa o DON reservado para Cracker e depois sai seco",
+          not any(a[1] == "attack" and a[3] == "character" and a[4] is target
+                  for a in acts))
+
+    candidates = [
+        {"id": 1, "zone": "own_don", "code": "Don"},
+        {"id": 2, "zone": "own_don_rested", "code": "Don"},
+        {"id": 3, "zone": "own_don_attached", "code": "Don"},
+        {"id": 4, "zone": "own_don_attached_used", "code": "Don"},
+    ]
+    order = sim_bridge.order_target_candidates(me, opp, candidates,
+                                                actor_code="OP11-062")
+    check("DON anexado a atacante que ja agiu e devolvido antes do DON do banco",
+          order[0] == 4 and order.index(2) < order.index(1))
+
+    # Protecao por substituicao compara o corpo salvo com o DON devolvido.
+    nola = real_card("OP15-069")
+    brulee = real_card("ST34-003")
+    me3 = GameState(leader=real_card("OP11-062"), don_rested=4, turn=3)
+    me3.field_chars = [nola, brulee]
+    me3.hand = [real_card("OP11-073")]
+    opp3 = GameState(leader=real_card("OP02-093"), turn=3)
+    low_save = EffectExecutor(me3, opp3).try_any_substitute(brulee, "ko")
+    check("Nola nao devolve DON e atrasa a curva para salvar corpo barato",
+          low_save is None)
+
+    # Corpo 6000 cujo On Play ja resolveu nao e ameaca critica por definicao.
+    me4 = GameState(leader=real_card("OP11-062"), don_available=4, turn=5)
+    brulee2 = real_card("ST34-003")
+    brulee2.just_played = False
+    me4.field_chars = [brulee2]
+    opp4 = GameState(leader=real_card("OP13-002"), turn=5)
+    yamato = real_card("OP13-054")
+    yamato.rested = True
+    opp4.field_chars = [yamato]
+    eng4 = DecisionEngine(me4, opp4)
+    check("Yamato 6000 com On Play resolvido nao vira ameaca critica so pelo poder",
+          yamato not in eng4.analyzer.critical_threats())
+    leader_pressure = eng4.score_attack_target(brulee2, "leader", None)
+    removal_net = eng4.score_attack_target(brulee2, "character", yamato)
+    check("quatro DON para alcancar corpo comum valem menos que pressionar a vida",
+          leader_pressure > removal_net)
+
+    # Katakuri chega apenas a 6000 com seu buff e nao deve atacar Leader 7000
+    # so para obter peek do topo.
+    me5 = GameState(leader=real_card("OP11-062"), don_available=0, turn=5)
+    opp5 = GameState(
+        leader=mk("OP13-002", "Portgas D. Ace", power=7000,
+                  card_type="LEADER", color="Red/Blue"),
+        turn=5)
+    match5 = OPTCGMatch((me5.leader, []), (opp5.leader, []))
+    acts5 = match5._generate_and_score_actions(me5, opp5, DecisionEngine(me5, opp5))
+    check("ataque abaixo do Leader sem ganho material fica bloqueado",
+          not any(a[1] == "attack" and a[3] == "leader" for a in acts5))
 
 
 def test_play_turn_greedy_opponent_response() -> None:
@@ -2651,8 +3199,11 @@ def test_place_own_character_bottom_deck_e_turno_extra() -> None:
     # pra um ponteiro "quem joga agora" que so alterna se
     # extra_turn_pending nao estiver setada.
     entry = get_card_effects("OP05-119").get("on_play", {})
-    check("OP05-119 parseia custo DON!! -10 obrigatorio",
-          entry.get("costs", [{}])[0] == {"type": "don_minus", "count": 10, "optional": False})
+    # Achado 23/07 (regra confirmada pelo usuario): custo antes do ':' e
+    # SEMPRE opcional no OPTCG, independe de 'you may' no texto -- este
+    # assert estava com o valor errado (era optional=False), nao o parser.
+    check("OP05-119 parseia custo DON!! -10 opcional",
+          entry.get("costs", [{}])[0] == {"type": "don_minus", "count": 10, "optional": True})
     steps = entry.get("steps", [])
     check("OP05-119 parseia place_own_character_bottom_deck (all, exclude_self) + take_extra_turn",
           any(s.get("action") == "place_own_character_bottom_deck" and s.get("count") == 99
@@ -7022,12 +7573,42 @@ def test_opp_combo_threat_detects_five_elders_style_reanimation() -> None:
           engine3.analyzer.analysis_priority() != "PREVENT_COMBO")
 
 
+def test_big_mom_optional_zero_parser_order_and_don_synergy() -> None:
+    cracker = get_card_effects("ST34-002")["on_play"]["steps"]
+    check("Cracker rampa antes do K.O. opcional",
+          [s["action"] for s in cracker[:2]] == ["add_don", "ko"])
+
+    katakuri = get_card_effects("OP11-067")["end_of_turn"]["steps"]
+    set_active = next(s for s in katakuri if s["action"] == "set_active")
+    check("Katakuri 8 aceita Big Mom de custo 3 ou mais",
+          set_active.get("cost_gte") == 3 and "cost_eq" not in set_active)
+    check("Katakuri 8 rampa depois de levantar os Characters",
+          [s["action"] for s in katakuri[:2]] == ["set_active", "add_don"])
+
+    me = GameState(leader=real_card("OP11-062"), don_rested=10, turn=6)
+    me.is_active_turn = True
+    me.field_chars = [real_card("ST34-001")]
+    me.hand = [real_card("ST34-004")]
+    opp = GameState(leader=real_card("OP04-019"), turn=6)
+    engine = DecisionEngine(me, opp)
+    check("trigger de retorno de DON tem valor marginal positivo",
+          engine.don_return_trigger_value(1) > engine.don_opportunity_cost(1))
+    check("Katakuri usa DON-minus quando ST34-001 converte 1 DON em 2",
+          sim_bridge.resolve_optional_effect(
+              me, opp, actor_code="OP11-062",
+              attacker_power=5000, defender_power=9000,
+              actor_defending=False))
+
+
 def main() -> int:
+    test_big_mom_optional_zero_parser_order_and_don_synergy()
+    test_hidden_info_honesta_e_teto_counter_real()
     test_turn_order_imu_prefers_second()
     test_empty_throne_beats_direct_five_elders_play()
     test_ground_death_no_low_value_negate()
     test_never_existed_no_stage_is_hard_blocked()
     test_counter_buff_vai_pro_lider_defensor_no_empate()
+    test_actor_opp_only_exclui_own_board_de_verdade_nao_so_deprioriza()
     test_draw_cost_trasha_corpo_morto_antes_da_mao()
     test_shalria_na_mao_protegida_enquanto_precisa_de_trash()
     test_debuff_when_attacking_mira_o_defensor_que_vira_o_combate()
@@ -7040,14 +7621,28 @@ def main() -> int:
     test_opp_combo_threat_detects_five_elders_style_reanimation()
     test_order_target_candidates_exclui_trash_para_alvo_battlefield_only()
     test_mamaragan_main_so_mira_oponente_apesar_do_counter_mirar_proprio()
-    test_katakuri_when_attacking_custo_don_e_sempre_avaliado_como_valer_a_pena()
+    test_katakuri_buff_so_paga_com_impacto_no_combate_e_na_curva()
+    test_combat_buff_worth_paying_no_simulador_interno()
+    test_katakuri_prioriza_rampar_don_sem_carta_amplificadora()
+    test_avaliar_carta_reconhece_combo_play_card_condicional()
+    test_avaliar_carta_reconhece_combo_buff_com_carta_em_campo()
+    test_avaliar_carta_reconhece_combo_de_qualquer_acao_com_carta_em_campo()
+    test_step_condition_currently_holds_generaliza_pra_qualquer_flag()
+    test_pudding_anexa_don_antes_de_oferecer_activate_main()
+    test_trigger_risk_penalty_nao_veta_sozinho_ataque_legitimo()
+    test_attach_don_oferece_opcao_de_poder_de_combate()
+    test_don_minus_when_attacking_nao_devolve_o_proprio_don_do_ataque()
     test_resolve_reaction_custo_de_redirect_e_generico_nao_so_carta_da_mao()
     test_peek_opp_deck_top_nao_vira_alvo_battlefield_only()
     test_own_don_e_candidato_prioritario_pra_custo_don_minus()
-    test_ataque_sem_chance_de_conectar_nao_ganha_bonus_de_matar_alvo()
+    test_ataque_em_character_exige_poder_final_suficiente()
     test_bonus_de_ameaca_critica_exige_chance_real_de_conectar()
     test_debuff_power_no_oponente_conta_como_removal()
     test_opponent_model_ao_vivo_por_lider_e_fallback_seguro()
+    test_contrafactual_ao_vivo_usa_apenas_estado_publico_mascarado()
+    test_search_contextual_evita_congestionar_mao_com_bombas()
+    test_plano_katakuri_prefere_rampa_e_bloqueia_desperdicios()
+    test_ataque_respeita_orcamento_da_jogada_principal_e_don_anexado()
     test_play_turn_greedy_opponent_response()
     test_play_turn_greedy_detecta_letal_do_oponente()
     test_imu_waits_for_active_elder_attack()

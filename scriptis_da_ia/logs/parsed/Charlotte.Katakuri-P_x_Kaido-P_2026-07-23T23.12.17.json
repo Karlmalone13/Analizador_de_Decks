@@ -1,0 +1,842 @@
+{
+  "meta": {
+    "players": {
+      "p1": {
+        "name": "You",
+        "leader": {
+          "name": "Charlotte Katakuri",
+          "code": "OP11-062"
+        }
+      },
+      "p2": {
+        "name": "Opponent",
+        "leader": {
+          "name": "Kaido",
+          "code": "ST04-001"
+        }
+      }
+    },
+    "goes_first": null
+  },
+  "total_turns": 11,
+  "turns": [
+    {
+      "turn": 1,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 1,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP15-069",
+          "card_name": "Nola",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "ST34-002",
+            "ST34-002",
+            "OP07-077",
+            "OP15-069"
+          ],
+          "board": [
+            "OP15-069"
+          ],
+          "trash": [],
+          "life": 5
+        },
+        "Opponent": {
+          "hand": [
+            "OP07-066",
+            "ST04-014",
+            "ST04-005",
+            "ST04-003",
+            "OP08-074"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 2,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP07-066",
+            "ST04-014",
+            "ST04-005",
+            "ST04-003",
+            "OP08-074",
+            "ST04-005"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 5
+        },
+        "You": {
+          "hand": [
+            "ST34-002",
+            "ST34-002",
+            "OP07-077",
+            "OP15-069"
+          ],
+          "trash": [],
+          "board": [
+            "OP15-069"
+          ],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 3,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "ST34-005",
+          "card_name": "Baron Tamago & Pekoms",
+          "effects": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Katakuri",
+          "attacker_code": "OP11-062",
+          "target": "Kaido [\"ST04-001\">ST04-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP11-062",
+          "card_name": "Charlotte Katakuri",
+          "effects": [
+            "Minus 1 Don",
+            "<b>Looked at opponent's top deck</b>",
+            "<b>Finished looking at opponent's top deck</b>",
+            "Buff Charlotte Katakuri [\"OP11-062\">OP11-062] 1000 for the Combat"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "ST34-002",
+            "ST34-002",
+            "OP07-077",
+            "OP15-069"
+          ],
+          "board": [
+            "OP15-069",
+            "ST34-005"
+          ],
+          "trash": [],
+          "life": 5
+        },
+        "Opponent": {
+          "hand": [
+            "OP07-066",
+            "ST04-014",
+            "ST04-005",
+            "ST04-003",
+            "OP08-074",
+            "ST04-005",
+            "OP07-066"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 4,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "ST04-017",
+          "card_name": "Onigashima Island",
+          "effects": [
+            "Rest Onigashima Island [\"ST04-017\">ST04-017]"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "ST04-001",
+          "to_name": "Kaido",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Kaido",
+          "attacker_code": "ST04-001",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP07-066",
+            "ST04-014",
+            "ST04-005",
+            "ST04-003",
+            "OP08-074",
+            "ST04-005",
+            "OP07-066"
+          ],
+          "board": [],
+          "trash": [],
+          "life": 4
+        },
+        "You": {
+          "hand": [
+            "ST34-002",
+            "ST34-002",
+            "OP07-077",
+            "OP15-069",
+            "ST34-001"
+          ],
+          "trash": [],
+          "board": [
+            "OP15-069",
+            "ST34-005"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 5,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "activate",
+          "card": "OP07-077",
+          "card_name": "We're Going to Claim the One Piece!!!",
+          "effects": [
+            "Rest 1 Don",
+            "<b>Reveal and Draw Charlotte Brulee [\"ST34-003\">ST34-003]</b>"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "ST34-003",
+          "card_name": "Charlotte Brulee",
+          "effects": [
+            "<b>Reveal and Draw Charlotte Katakuri [\"OP11-067\">OP11-067]</b>"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Katakuri",
+          "attacker_code": "OP11-062",
+          "target": "Kaido [\"ST04-001\">ST04-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP07-066"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "ST34-005",
+          "to_name": "Baron Tamago & Pekoms",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Baron Tamago & Pekoms",
+          "attacker_code": "ST34-005",
+          "target": "Kaido [\"ST04-001\">ST04-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "ST34-005",
+          "card_name": "Baron Tamago & Pekoms",
+          "effects": [
+            "Minus 1 Don",
+            "Destroy Nola [\"OP15-069\">OP15-069]"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP15-069",
+          "card_name": "Nola",
+          "effects": []
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "ST34-002",
+            "ST34-002",
+            "ST34-001",
+            "ST34-002",
+            "OP11-067"
+          ],
+          "board": [
+            "ST34-005",
+            "ST34-003",
+            "OP15-069"
+          ],
+          "trash": [
+            "OP07-077",
+            "OP15-069"
+          ],
+          "life": 4
+        },
+        "Opponent": {
+          "hand": [
+            "OP07-066",
+            "ST04-014",
+            "ST04-005",
+            "ST04-003",
+            "OP08-074",
+            "ST04-005"
+          ],
+          "trash": [
+            "OP07-066"
+          ],
+          "board": [],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 6,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "ST04-005",
+          "card_name": "Queen",
+          "effects": [
+            "Minus 1 Don",
+            "Draw 2 Card",
+            "Trash Onigashima Island [\"ST04-017\">ST04-017]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "ST04-017",
+          "card_name": "Onigashima Island",
+          "effects": [
+            "Rest Onigashima Island [\"ST04-017\">ST04-017]"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "ST04-001",
+          "to_name": "Kaido",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Kaido",
+          "attacker_code": "ST04-001",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP07-066",
+            "ST04-014",
+            "ST04-005",
+            "ST04-003",
+            "OP08-074",
+            "ST04-016",
+            "OP08-066"
+          ],
+          "board": [
+            "ST04-005"
+          ],
+          "trash": [
+            "OP07-066",
+            "ST04-017"
+          ],
+          "life": 4
+        },
+        "You": {
+          "hand": [
+            "ST34-002",
+            "ST34-002",
+            "ST34-001",
+            "ST34-002",
+            "OP11-067",
+            "OP11-067"
+          ],
+          "trash": [
+            "OP07-077",
+            "OP15-069"
+          ],
+          "board": [
+            "ST34-005",
+            "ST34-003",
+            "OP15-069"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 7,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "ST34-002",
+          "card_name": "Charlotte Cracker",
+          "effects": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "ST34-005",
+          "to_name": "Baron Tamago & Pekoms",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Katakuri",
+          "attacker_code": "OP11-062",
+          "target": "Kaido [\"ST04-001\">ST04-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP08-066"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "ST34-002",
+            "ST34-001",
+            "ST34-002",
+            "OP11-067",
+            "OP11-067",
+            "PRB02-010"
+          ],
+          "board": [
+            "ST34-005",
+            "ST34-003",
+            "OP15-069",
+            "ST34-002"
+          ],
+          "trash": [
+            "OP07-077",
+            "OP15-069"
+          ],
+          "life": 3
+        },
+        "Opponent": {
+          "hand": [
+            "OP07-066",
+            "ST04-014",
+            "ST04-005",
+            "ST04-003",
+            "OP08-074",
+            "ST04-016"
+          ],
+          "trash": [
+            "OP07-066",
+            "ST04-017",
+            "OP08-066"
+          ],
+          "board": [
+            "ST04-005"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 8,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "ST04-003",
+          "card_name": "Kaido",
+          "effects": [
+            "Minus 5 Don",
+            "Destroy Charlotte Cracker [\"ST34-002\">ST34-002]",
+            "Give Kaido [\"ST04-003\">ST04-003] Rush"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Kaido",
+          "attacker_code": "ST04-001",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Kaido",
+          "attacker_code": "ST04-003",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "ST04-017",
+          "card_name": "Onigashima Island",
+          "effects": [
+            "Rest Onigashima Island [\"ST04-017\">ST04-017]"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP07-066",
+            "ST04-014",
+            "ST04-005",
+            "OP08-074",
+            "ST04-016",
+            "OP01-119"
+          ],
+          "board": [
+            "ST04-005",
+            "ST04-003"
+          ],
+          "trash": [
+            "OP07-066",
+            "ST04-017",
+            "OP08-066"
+          ],
+          "life": 4
+        },
+        "You": {
+          "hand": [
+            "ST34-002",
+            "ST34-001",
+            "ST34-002",
+            "OP11-067",
+            "OP11-067",
+            "PRB02-010",
+            "OP11-070"
+          ],
+          "trash": [
+            "OP07-077",
+            "OP15-069"
+          ],
+          "board": [
+            "ST34-005",
+            "ST34-003",
+            "OP15-069",
+            "ST34-002"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 9,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "ST34-001",
+          "card_name": "Charlotte Katakuri",
+          "effects": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "ST34-005",
+          "to_name": "Baron Tamago & Pekoms",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Katakuri",
+          "attacker_code": "OP11-062",
+          "target": "Kaido [\"ST04-001\">ST04-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP11-062",
+          "card_name": "Charlotte Katakuri",
+          "effects": [
+            "Minus 1 Don",
+            "<b>Looked at opponent's top deck</b>",
+            "<b>Finished looking at opponent's top deck</b>",
+            "Buff Charlotte Katakuri [\"OP11-062\">OP11-062] 1000 for the Combat"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "ST34-002",
+            "ST34-002",
+            "OP11-067",
+            "OP11-067",
+            "PRB02-010",
+            "OP11-070",
+            "OP11-073"
+          ],
+          "board": [
+            "ST34-005",
+            "ST34-003",
+            "OP15-069",
+            "ST34-002",
+            "ST34-001"
+          ],
+          "trash": [
+            "OP07-077",
+            "OP15-069"
+          ],
+          "life": 2
+        },
+        "Opponent": {
+          "hand": [
+            "OP07-066",
+            "ST04-014",
+            "ST04-005",
+            "OP08-074",
+            "ST04-016",
+            "OP01-119"
+          ],
+          "trash": [
+            "OP07-066",
+            "ST04-017",
+            "OP08-066",
+            "OP08-076"
+          ],
+          "board": [
+            "ST04-005",
+            "ST04-003"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 10,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP08-074",
+          "card_name": "Black Maria",
+          "effects": []
+        },
+        {
+          "type": "play",
+          "card": "ST04-005",
+          "card_name": "Queen",
+          "effects": [
+            "Minus 1 Don",
+            "Draw 2 Card",
+            "Trash Lead Performer \"Disaster\" [\"ST04-014\">ST04-014]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "ST04-001",
+          "card_name": "Kaido",
+          "effects": [
+            "Minus 7 Don",
+            "Trash 1 Life"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Kaido",
+          "attacker_code": "ST04-001",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Kaido",
+          "attacker_code": "ST04-003",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "ST04-017",
+          "card_name": "Onigashima Island",
+          "effects": [
+            "Rest Onigashima Island [\"ST04-017\">ST04-017]"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP07-066",
+            "ST04-016",
+            "OP01-119",
+            "OP07-077",
+            "OP08-074",
+            "EB02-035"
+          ],
+          "board": [
+            "ST04-005",
+            "ST04-003",
+            "OP08-074",
+            "ST04-005"
+          ],
+          "trash": [
+            "OP07-066",
+            "ST04-017",
+            "OP08-066",
+            "OP08-076",
+            "ST04-014"
+          ],
+          "life": 3
+        },
+        "You": {
+          "hand": [
+            "ST34-002",
+            "ST34-002",
+            "OP11-067",
+            "OP11-067",
+            "PRB02-010",
+            "OP11-070",
+            "OP11-073",
+            "ST34-003"
+          ],
+          "trash": [
+            "OP07-077",
+            "OP15-069",
+            "ST34-005"
+          ],
+          "board": [
+            "ST34-005",
+            "ST34-003",
+            "OP15-069",
+            "ST34-002",
+            "ST34-001"
+          ],
+          "life": 0
+        }
+      }
+    },
+    {
+      "turn": 11,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "ST34-002",
+            "ST34-002",
+            "OP11-067",
+            "OP11-067",
+            "PRB02-010",
+            "OP11-070",
+            "OP11-073",
+            "ST34-003",
+            "ST34-001"
+          ],
+          "board": [
+            "ST34-005",
+            "ST34-003",
+            "OP15-069",
+            "ST34-002",
+            "ST34-001"
+          ],
+          "trash": [
+            "OP07-077",
+            "OP15-069",
+            "ST34-005"
+          ],
+          "life": 0
+        },
+        "Opponent": {
+          "hand": [
+            "OP07-066",
+            "ST04-016",
+            "OP01-119",
+            "OP07-077",
+            "OP08-074",
+            "EB02-035"
+          ],
+          "trash": [
+            "OP07-066",
+            "ST04-017",
+            "OP08-066",
+            "OP08-076",
+            "ST04-014"
+          ],
+          "board": [
+            "ST04-005",
+            "ST04-003",
+            "OP08-074",
+            "ST04-005"
+          ],
+          "life": 3
+        }
+      }
+    }
+  ]
+}

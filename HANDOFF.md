@@ -1,5 +1,1497 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-24 (340) - Claude - as 3 falhas cronicas do smoke_test.py corrigidas
+
+Usuário pediu pra investigar as 3 falhas pré-existentes do `smoke_test.py`
+que vinham aparecendo (e sendo ignoradas como "nao-regressao") desde antes
+desta sessão:
+- `substitute_removal com extra_steps compra carta apos trash_self`
+- `substituicao externa usa fonte aliada e preserva alvo filtrado`
+- `OP15-094 protege outro Character Straw Hat Crew trashando a si mesma`
+
+**Causa raiz única para as 3:** `should_pay_removal_substitute(target,
+cost)` -- pra `action == 'trash_self'`, o código fazia `price = saved`
+(o MESMO valor de `target`, a carta sendo protegida) e depois retornava
+`saved > price`. Como `price` e `saved` eram literalmente o mesmo número,
+essa comparação nunca podia ser verdadeira -- `saved > saved` é sempre
+`False`. Qualquer substituição de remoção com custo `trash_self`
+(autoproteção como Thatch OP08-045, ou proteção externa como Zoro
+OP15-094 salvando um aliado) nunca disparava, silenciosamente, desde que
+esse código foi escrito.
+
+Bug tinha 2 formas, dependendo de quem PAGA o custo:
+- **Autoproteção** (a carta se troca por si mesma, ex: Thatch): a carta
+  já seria perdida pela remoção ORIGINAL de qualquer jeito -- substituir
+  só troca COMO ela é perdida (nada → descarte próprio com bônus de
+  `extra_steps`, ex: comprar 1 carta). O preço marginal real é ~0, não o
+  valor da carta inteira.
+- **Proteção externa** (uma carta DIFERENTE se sacrifica pra salvar outra,
+  ex: Zoro salvando um aliado Straw Hat Crew): o preço real é o valor de
+  quem PAGA (o protetor), não de quem é SALVO (o alvo) -- podem ser
+  cartas bem diferentes, mas a função nunca recebia essa distinção.
+
+**Fix:** `should_pay_removal_substitute` ganha parâmetro novo `payer`
+(quem paga o custo, default `None` = autoproteção). Pra `trash_self`:
+se `payer is target` (autoproteção), sempre `True` (preço marginal ~0);
+senão (proteção externa), compara `saved >= valor(payer)` (`>=`, não `>`
+estrito -- cartas de proteção dedicadas são pra usar, empate não deve
+travar). Os 2 call-sites (`try_substitute` autoproteção,
+`_try_external_substitute_from_source` externa) foram atualizados --
+o segundo agora passa `payer=cost_card` (a variável que já existia,
+computada mas nunca usada pra isso).
+
+Validação: `py_compile` limpo. `smoke_test.py` = **0 falhas** (as 3
+crônicas resolvidas, nenhuma nova). `smoke_fast.py` = SMOKE FAST OK, sem
+regressão. Não mexe em parser/card_effects_db, então não precisa de
+registro em `parser_audits/`.
+
+## 2026-07-24 (339) - Claude - desconto de trigger nunca veta sozinho um ataque legitimo
+
+Continuação da investigação do gap "bot ataca menos que humano" (blocos
+337-338). Achado no comparativo de decisão: personagens do bot com score
+NEGATIVO atacando o líder empatado (5000 vs 5000 -- empate favorece quem
+ataca, ataque legítimo garantido de tentar) em turnos com board de 5
+personagens mas só 1 ataque declarado.
+
+Causa: `_trigger_risk_penalty(opp)` = `vida_do_oponente * 8`, sem teto,
+aplicado como subtração FIXA em `_generate_and_score_actions` pro ramo de
+ataque ao líder -- só o LÍDER do bot tem piso protetor (`max(s,15)`)
+contra esse desconto; um PERSONAGEM atacando não tem proteção nenhuma,
+então esse termo sozinho podia derrubar um ataque bom pro vermelho.
+Correção de raciocínio no meio da investigação: o risco de trigger só se
+materializa quando o dano REALMENTE conecta (vida vira só com dano
+recebido) -- mas todo ataque que chega nesse desconto já passou pelo
+filtro `pode_passar` (tem poder suficiente), então não dá pra distinguir
+"garantido" de "arriscado" nesse ponto -- todos que sobram já são
+legítimos. O problema real não é QUANDO aplicar o desconto, é que ele não
+tem teto.
+
+Fix (aprovado pelo usuário): desconto de trigger agora limitado a no
+máximo METADE do valor que o ataque tinha antes desse termo específico
+(`min(penalidade, max(0, s_leader) * 0.5)`) -- desconta sempre algo (o
+risco é real), mas nunca consegue sozinho inverter um ataque legítimo em
+ataque ruim.
+
+Validação: `py_compile` limpo. 1 teste novo em `smoke_fast.py`
+(`test_trigger_risk_penalty_nao_veta_sozinho_ataque_legitimo`) com vida
+do oponente artificialmente alta (15, pra forçar o desconto muito acima
+da metade do valor cru) -- confirma que sem teto o ataque viraria -20
+(vetado) e com teto fica em 50 (positivo). `smoke_fast.py` = SMOKE FAST
+OK. `smoke_test.py`: mesmas 3 falhas pré-existentes, sem regressão nova.
+
+Pendente: validação ao vivo (o `_trigger_risk_penalty` só afeta ataque ao
+LÍDER -- ataque em personagem não usa essa função, então esse fix
+específico não deve mudar comportamento de remoção de personagem).
+
+## 2026-07-24 (338) - Claude - benchmark humano vs bot de Mihawk (mais dado)
+
+Usuário pediu a mesma comparação do bloco 337, mas pro deck Mihawk (mais
+partidas disponíveis). Criados `metrics/mihawk_human_23jul.json` (3
+partidas do usuário pilotando Mihawk: 16.07.35, 16.54.39, 17.54.33 --
+todas vitórias) e `metrics/mihawk_bot_23jul.json` (1 partida do bot
+pilotando Mihawk: 18.13.41_p2, derrota).
+
+Números: `atk_por_turno` 1.5 (humano) vs 1.667 (bot) -- parecido;
+`pct_atk_lider` 85.7% vs **40.0%** -- diferença grande, bot ataca
+personagem muito mais que o humano, que vai na cara quase sempre;
+`dano_por_jogo` 3.667 vs 2.0; `counters_arrancados_por_jogo` 0.667 vs
+2.0 (bot arrancou MAIS counter aqui, direção oposta do cohort de
+Katakuri); `don_observado_por_ataque` **1.190 vs 0.000** -- o bot nunca
+observado com DON anexado num ataque nessa amostra (n=1, mas gap grande).
+Amostra do bot é n=1, do humano n=3 -- ambos ainda pequenos pra intervalo
+de confiança confiável, mas já dá pra ver que a diferença mais consistente
+entre os dois decks (Katakuri E Mihawk) é `pct_atk_lider`/frequência real
+de dano no líder, não tanto o DON por ataque isoladamente.
+
+## 2026-07-24 (337) - Claude - benchmark humano vs bot de Katakuri
+
+Usuário pediu a métrica do PRÓPRIO deck que ele jogou (Katakuri), pra
+usar como meta do bot alcançar/superar. Criado
+`metrics/katakuri_human_23jul.json` isolando a partida
+`Charlotte.Katakuri-P_x_Dracule.Mihawk-G_2026-07-23T18.13.41_p2` (usuário
+pilotando Katakuri, vitória).
+
+Comparação (bot n=4 de `katakuri_bot_23jul.json` vs humano n=1):
+`atk_por_turno` 1.15 vs 1.667, `pct_atk_lider` 82.6% vs 70.0%,
+`dano_por_jogo` 2.25 vs 4.0, `counters_arrancados_por_jogo` 2.25 vs 5.0,
+`turnos_passivos_por_jogo` 0.25 vs 0.0, `don_observado_por_ataque` 0.435
+vs 0.4 (surpreendentemente PARECIDO -- o gap real não é quanto DON tem
+anexado quando ataca, é a frequência/qualidade dos ataques em si).
+Amostra do humano é n=1 (intervalo de confiança não é informativo ainda),
+mas serve como primeiro alvo numérico: bot precisa chegar perto de
+dano_por_jogo≈4 e counters_arrancados≈5 pra considerar a lacuna fechada.
+
+## 2026-07-24 (336) - Claude - order_target_candidates EXCLUI own_* de verdade (achado C#)
+
+Usuário pediu pra abrir o código C# (`BOT/OPTCGBotPlugin/`) pra investigar
+o bug do bloco 333 (Pekoms destruiu a própria Nola). Achado:
+`BotExecutor.CollectTargetCandidates` (C#) manda uma lista ÚNICA
+misturando candidatos de `own_board` e `opp_board`, confiando que "o jogo
+valida cada clique" (comentário do próprio código). Do lado Python
+(`order_target_candidates`), a detecção `actor_opp_only` (achado
+20/07, já existente) só DEPRIORIZAVA zonas `own_*` pro fim da ordem, nunca
+excluía -- a premissa era que um clique inválido é sempre no-op. Achado
+ao vivo 23-24/07 prova que essa premissa é falsa pra pelo menos esse
+padrão: o oponente não tinha nenhum personagem elegível pro KO do Pekoms
+(`power_lte=2000`), a deprioridade empurrou `own_board` pro fim mas ainda
+presente, e o clique na própria Nola foi ACEITO pelo jogo.
+
+Também achado (não corrigido, fora do escopo Python): comentário já
+existente em `server.py` (20/07) documentando 2 chamadas de
+`/choose_target` que ficaram presas 162-169 SEGUNDOS, sem causa raiz
+identificada -- muito provavelmente a mesma causa do "travamento" no
+turno 4 que o usuário reportou. Instrumentação de tempo já existe
+(`tgt_ms`, alerta se >2000ms); a causa do hang em si segue sem
+diagnóstico.
+
+**Fix aplicado:** `order_target_candidates` agora EXCLUI (não só
+deprioriza) as zonas de alvo próprias (`own_hand`, `own_board`,
+`own_trash`, `own_leader`, `own_stage`) quando `actor_opp_only` é
+verdadeiro -- nunca mais aparecem na ordem devolvida, nem como último
+recurso. Zonas de DON (`own_don*`) continuam de fora dessa exclusão
+(custo `DON!!-N` da mesma habilidade continua pagável). Sem fallback pra
+"deprioridade" quando a exclusão zera a lista -- é EXATAMENTE esse caso
+(oponente sem nenhum alvo elegível) que mais importa devolver vazio, não
+cair de volta pro bug antigo.
+
+2 testes novos em `smoke_fast.py` reproduzindo o cenário exato (Pekoms
+sem alvo elegível → lista vazia; com alvo elegível → só ele, own_* fora).
+1 teste existente (Mamaragan `[Main]`) tinha a asserção escrita pro
+comportamento antigo (deprioridade) -- atualizado pra refletir a exclusão
+de verdade, não é regressão, é o comportamento pretendido mudando.
+`smoke_fast.py` = SMOKE FAST OK. `smoke_test.py`: mesmas 3 falhas
+pré-existentes, sem regressão nova.
+
+Pendente: recompilar/reimplantar o plugin C# não foi necessário (fix
+inteiro ficou do lado Python). Validação ao vivo ainda pendente. O hang
+de 162-169s do `/choose_target` continua sem causa raiz -- precisa de
+log/console do servidor no momento exato de uma futura ocorrência pra
+diagnosticar.
+
+## 2026-07-24 (335) - Claude - eficiencia agregada vira numero obrigatorio
+
+Usuário cobrou: eu vinha narrando "eficiência baixa" em prosa sem número
+desde cedo na sessão, apesar de `bot_efficiency_report.py` já existir.
+Descoberto que o manifesto padrão (`metrics/bot_efficiency_cohorts.json`)
+é de uma comparação Imu de 09-12/07, sem nenhuma partida de hoje — rodar
+sem `--manifest` mostra dado velho e engana.
+
+Criado `metrics/katakuri_bot_23jul.json` com as 4 partidas do bot como
+Katakuri desta sessão (16.54.39, 17.54.33, 22.14.26, 23.12.17 -- cobrindo
+os fixes 322-334). Números reais: `atk_por_turno=1.15`,
+`pct_atk_lider=82.6%`, **`dano_por_jogo=2.25`**,
+`counters_arrancados_por_jogo=2.25`, `primeiro_ataque_turno_medio=3.5`,
+**`don_observado_por_ataque=0.435`** (menos de meio DON por ataque, em
+média -- confirma numericamente o padrão já visto qualitativamente: bot
+ataca sem DON na maioria das vezes). 0/4 vitórias no período.
+
+CLAUDE.md ganha seção nova ("Eficiência agregada — OBRIGATÓRIO mostrar
+números"): toda sessão que processa log(s) do bot tem que atualizar o
+cohort relevante e rodar `bot_efficiency_report.py --manifest <cohort>`,
+mostrando a tabela, não só narrando em prosa.
+
+Sessão segue em andamento -- próximo passo é abrir o código C# (`BOT/`)
+pra investigar os 2 bugs de execução ao vivo do bloco 333/334 (KO na
+própria Nola, tela travada no turno 4).
+
+## 2026-07-23 (334) - Claude - ramp de DON priorizada + causa real do turno 6 achada
+
+Usuario pediu pra corrigir os 3 achados do bloco 333 mais uma mudanca de
+estrategia: priorizar RAMPAR DON pro teto de 10 no inicio do jogo, so
+gastando DON em ganho marginal (peek+buff do Katakuri) livremente quando
+ja existe carta em campo que aproveita `when_don_returned` (ex: ST34-001).
+
+**1) IMPLEMENTADO -- prioridade de ramp:** `_combat_buff_worth_paying`
+ganha um gate novo: sem carta amplificadora em campo E `don_on_field() <
+10`, recusa o gasto marginal a menos que a vida esteja critica (<=2).
+Acima do teto ou com amplificadora em campo, o guard normal
+(`buff_wins_combat`) continua valendo. Escopo: so o padrao "recurso ->
+buff de batalha" (`_combat_buff_worth_paying`) -- NAO se aplica a outros
+custos `don_minus` fora desse padrao (ex: KO do Pekoms, que e remocao
+real, nao ganho marginal). 3 testes novos em `smoke_fast.py` (sem
+amplificador+ramp incompleto = recusa; vida critica = paga; teto
+atingido = paga). `smoke_fast.py` = SMOKE FAST OK, `smoke_test.py`:
+mesmas 3 falhas pre-existentes, sem regressao.
+
+**2) INVESTIGADO A FUNDO -- turno 6 "scored_actions vazio" NAO e excecao
+silenciosa, e TIMEOUT real de busca:** reconstrui o estado exato (mao,
+campo, DON, vida=0) em Python e chamei `_generate_and_score_actions`
+diretamente -- gerou 21 acoes normalmente, sem erro. Isso descartou a
+hipotese de "excecao engolida" (bloco 333, item 3). Voltando pro registro
+bruto do `.jsonl`: o campo `timed_out: True` estava la o tempo todo (nao
+tinha olhado esse campo especifico antes) -- `latency_ms: 3050.562`,
+`selection: "sem acao elegivel"`, `engine_error: None`. A thread da busca
+ainda estava rodando quando o `.join(timeout=...)` desistiu de esperar
+(`sim_bridge.py:choose_action`, default `timeout=4.0`) -- e a UNICA
+ocorrencia de timeout na partida inteira, bate exatamente com o alerta
+`decision_timeouts: 1` do relatorio agregado. Ou seja: o turno 6 nao fez
+nada porque a busca real demorou demais numa posicao complexa (5
+personagens em campo, mao com 9 cartas, 8 DON -- muitas combinacoes),
+nao por bug de logica nem excecao. NAO corrigido ainda -- e um problema
+de PERFORMANCE da busca (line-search/Monte Carlo), nao de decisao errada;
+precisa de decisao do usuario entre so aumentar o timeout (rapido, baixo
+risco, mas atraso maior ao vivo) ou otimizar a busca em posicoes densas
+(mais trabalho, sem atraso).
+
+**3) NAO CORRIGIDO -- turno 4 "travou" tambem NAO e lentidao do engine:**
+checado latency_ms de toda decisao do turno 4 -- nenhuma passa de 500ms.
+A tela travada ("Choose card effect to activate next") que o usuario viu
+nao correlaciona com nenhuma chamada lenta do motor Python. Aponta pro
+mesmo lugar do item 4 abaixo (execucao ao vivo/plugin C#, fora de
+`scriptis_da_ia`), nao pro motor de decisao.
+
+**4) NAO CORRIGIDO -- KO mirando personagem propria (Pekoms destruiu a
+propria Nola):** ja registrado no bloco 333, confirmado que a logica
+Python (`_execute_step`, 'ko') esta correta. Junto com o item 3 acima,
+sao DOIS sinais agora apontando pro codigo C# (`BOT/`) como o lugar
+provavel do bug real -- ainda nao explorado nesta sessao.
+
+Log NAO gerou partida nova nesta sessao (trabalho foi 100% sobre a
+partida ja salva no bloco 333). Pendente: decisao do usuario sobre
+timeout (aumentar vs otimizar) e se abre o codigo C# agora pros itens
+3/4.
+
+## 2026-07-23 (333) - Claude - Pekoms devolve o proprio DON + 2 bugs graves achados, nao corrigidos
+
+Partida `Charlotte.Katakuri-P_x_Kaido-P_2026-07-23T23.12.17` (bot=Katakuri
+P1, derrota, ja no bloco 332/`b7ca0a0`). Usuario reportou 4 problemas com
+print de tela real. Investigado com telemetria (ordem nova do bloco 332:
+`live_2026-07-23T23.12.20.json` primeiro, `decision_summary.py` depois).
+
+**1) CORRIGIDO nesta sessao:** Pekoms (ST34-005) recebia DON pra reforcar
+o ataque (fix do bloco 330) mas o PROPRIO custo `[When Attacking]
+DON!!-1` dele devolvia esse MESMO DON, anulando o buff -- log real:
+"Attach 1 Don to Pekoms" -> "attacking Kaido" -> "Pekoms: Minus 1 Don" ->
+"[4000] vs [5000]" (poder base, o attach nao contou pra nada). Causa:
+declarar o ataque ja resta o atacante ANTES do custo resolver, entao
+`_return_don_to_deck` (chamada por `_pay_costs` pro tipo `don_minus`) via
+o PROPRIO Pekoms como "DON anexado a quem ja atacou" (fonte 1, a mais
+barata) e devolvia o DON que tinha acabado de ser anexado pra ESTE
+ataque. Fix: novo parametro `exclude_card` em `_return_don_to_deck`,
+passado como o proprio `card` em `_pay_costs` -- exclui o atacante das
+fontes 1/2 (baratas), mas permanece disponivel na fonte 4 (ultimo
+recurso) se nao houver outra origem. 2 testes novos em `smoke_fast.py`.
+`smoke_fast.py` = SMOKE FAST OK, `smoke_test.py`: mesmas 3 falhas
+pre-existentes, sem regressao nova.
+
+**2) ACHADO, NAO CORRIGIDO -- provavel bug do plugin C#, nao do engine
+Python:** Pekoms K.O.'d a PROPRIA Nola do bot (`[You] Baron Tamago &
+Pekoms: Destroy Nola`, sendo que so "[You]" jogou Nola a partida
+inteira -- confirmado via grep, nenhum "[Opponent] Deploy Nola"). O
+efeito real e "K.O. up to 1 of your OPPONENT's Characters with 2000 base
+power or less" (`target: 'opp_character'`). Auditei `_execute_step`
+('ko'/'trash_character', linha ~4882-5016 de `decision_engine.py`): a
+logica Python so monta o pool de alvos com `opp.field_chars` quando
+`target_type` nao e `all_character`/`self_character` -- verificado
+correto, nunca tocaria `me.field_chars` pra esse padrao. Isso aponta pro
+caminho de EXECUCAO ao vivo (BOT/, C# -- fora de `scriptis_da_ia`), nao
+pro motor de decisao -- possivel regressao/gap do mesmo tipo ja corrigido
+uma vez no bloco 320 ("Choose 0" / fallback SelectTargets percorrendo
+candidatos invalidos). Nao investigado no C# ainda; requer decisao do
+usuario se quer que eu abra esse codebase agora (mudanca de escopo/
+linguagem).
+
+**3) ACHADO, NAO CORRIGIDO -- possivel excecao silenciosa:** turno 6
+(main, bot's own turn), `scored_actions: []` -- **completamente vazio**,
+apesar de `activeDon: 8` e mao cheia de jogaveis (2x custo4, 2x custo8,
+custo7, custo1, custo10, custo1, custo5) e board com personagens NAO
+restados (Pekoms, ST34-003, Nola, ST34-002, ST34-001). Isso NAO parece um
+"nada pra fazer" legitimo (que sempre teve pelo menos 1 candidato
+pontuado negativo nos casos ja validados em sessoes anteriores) -- lista
+totalmente vazia com tantos recursos disponiveis sugere uma excecao
+engolida silenciosamente em algum lugar de `_generate_and_score_actions`,
+casando com o comentario ja existente em `sim_bridge.py` sobre excecao de
+engine "rodava numa thread separada e morria aqui -- so no console, nunca
+chegava no trace_out nem em telemetria" (achado 19/07). Contabilizado
+como mais um dos 5 `no_eligible_action` do relatorio agregado, mas
+provavelmente NAO e legitimo. Nao reproduzido/depurado ainda -- precisa
+recriar esse estado exato (mao+campo+DON) pra achar o ponto de excecao.
+
+**4) NAO INVESTIGADO:** usuario tambem reportou o bot "travando" (tela
+"Choose card effect to activate next" parada) no turno 4 quando o efeito
+de Nola ativou em resposta ao Kaido mirando o Cracker. Correlaciona com
+o alerta `decision_timeouts: 1` do relatorio agregado (a busca excedeu o
+timeout uma vez nesta partida) -- nao foi isolado qual decisao exata
+foi essa nem por que demorou. Fica pendente.
+
+Log salvo no banco. Usuario visivelmente frustrado com o volume de
+problemas se repetindo apos varios blocos de fix nesta mesma sessao --
+importante nao subestimar isso na proxima interacao: ser direto sobre o
+que foi corrigido de verdade (so o item 1) vs so encontrado (2, 3) vs
+nem investigado (4).
+
+## 2026-07-23 (332) - Claude - CLAUDE.md: telemetria agregada vem PRIMEIRO, nao decision_summary
+
+Usuário corrigiu a ordem do bloco 331: queria a leitura da telemetria
+AGREGADA (`live_<timestamp>.json`) obrigatória primeiro, não pular direto
+pro `decision_summary.py`. Reordenado no CLAUDE.md -- passo 1 agora é
+sempre o relatório agregado (diz SE tem algo suspeito e ONDE olhar antes
+de gastar tempo lendo decisão por decisão), passo 2 é `decision_summary.py`
+só pra investigar o que o passo 1 apontou.
+
+Usuário também perguntou se os outros achados do bloco 331 (client_timeout
+sem causa raiz, gaps de cobertura score_components/line_search) já tinham
+sido corrigidos -- não, só o bug do Pekoms/attach_don (bloco 330,
+`3fb58be`) foi corrigido, e esse ainda sem validação ao vivo. Os outros
+dois seguem só registrados, pendentes.
+
+## 2026-07-23 (331) - Claude - CLAUDE.md: telemetria obrigatória cobre os DOIS relatórios
+
+Usuário cobrou (justo): bloco 330 só documentou `decision_summary.py`
+(novo) como leitura obrigatória, mas o relatório agregado
+`metrics/live_runs/live_<timestamp>.json` (que já existe desde o bloco
+316, "instrumenta decisoes e uso de recursos") ficou de fora -- foi
+literalmente construído pra auditar o bot e não estava sendo citado.
+
+Conferido na própria partida do Teach (bloco 330) que esse relatório JÁ
+corrobora o bug do Pekoms por um ângulo agregado, sem precisar achar a
+decisão exata: `attack_quality.under_target_count: 1` (o próprio ataque
+que saiu abaixo do alvo) e `attack_quality.don_planned_total: 0` (nenhum
+dos 6 ataques da partida teve DON planejado junto -- confirma que o
+motor nunca tratava isso). Achado novo, não investigado a fundo ainda:
+`bot_confusion` registrou 1 `client_timeout` (distinto dos 5
+`no_eligible_action` já validados como legítimos em sessões anteriores) --
+procurei o evento exato no `.jsonl` e não achei um campo explícito de
+timeout nos registros de `execution` (todos `status: sent`, 3 nunca
+viraram `confirmed` -- bate com o alerta `pending_decisions: 3`, mas não
+identifiquei de onde o agregador tirou o timeout especificamente). Fica
+pendente pra próxima sessão se o usuário quiser aprofundar.
+
+Também vale registrar: `score_components_coverage_pct` (72.2%) e
+`line_search_coverage_pct` (55.6%) nessa partida -- quase 1/3 das decisões
+não tem os componentes de score gravados, quase metade não tem o rastro
+da busca. Isso é um teto real de auditabilidade que nem o
+`decision_summary.py` consegue contornar (o dado simplesmente não foi
+gravado). `mean_counterfactual_regret` baixo/zero também NÃO prova
+decisão boa -- só mede contra alternativas que a busca de fato simulou;
+uma opção que nunca virou candidata (como o attach_don do Pekoms antes do
+fix) nunca entra nessa conta.
+
+CLAUDE.md atualizado: a seção "Telemetria de decisão" agora exige ler os
+DOIS relatórios (decision_summary.py --latest E o live_<timestamp>.json),
+não só o novo script.
+
+## 2026-07-23 (330) - Claude - attach_don ganha categoria de poder de combate + decision_summary.py
+
+Partida `Charlotte.Katakuri-P_x_Marshall.D.Teach-BY_2026-07-23T22.14.26`
+(bot=Katakuri, derrota, ja no bloco 329/`8e77cac`). Usuário reportou 3
+erros: DON anexado na Pudding em vez do Pekoms (atacou 4000 contra 5000),
+líder Katakuri "não ativou" o `when_don_returned` no turno do oponente, e
+Pudding jogada sem usar o efeito.
+
+**Investigado com a telemetria (nova ferramenta usada pela 1a vez, ver
+abaixo):**
+- **Katakuri/ST34-001 (turno do oponente): NÃO é bug.** `when_don_returned`
+  de ST34-001 tem `"owner_turn": "your"` no próprio card_effects_db —
+  só dispara no turno do DONO por design da carta. Funcionou corretamente
+  2x nos turnos do bot (linhas 606-613 e 746-753 do combat log, "Draw 1
+  Rested Don" x2 cada vez).
+- **DON na Pudding em vez do Pekoms: BUG REAL, confirmado com a
+  telemetria exata.** No mesmo `/decide`, `attach_don OP11-070` pontuou
+  15.0 e `attack ST34-005 -> leader` pontuou **-38.8** — o ataque nunca
+  teve chance de competir. Causa raiz: `_generate_attach_don_actions`
+  só gerava candidatos pra "desbloquear habilidade condicionada a DON"
+  (keyword ou `don_requirement` de trigger) -- nunca "anexar DON num
+  atacante pra cruzar o poder de combate contra um alvo", o uso mais
+  básico de DON do jogo. Pekoms (corpo vanilla, sem habilidade
+  condicionada) nunca virava candidato, então o único DON do turno foi
+  pro desbloqueio da Pudding por falta de concorrência -- e pior, a
+  habilidade desbloqueada nem chegou a ser ativada depois (activeDon
+  caiu pra 0 antes da próxima decisão principal), duplo desperdício.
+
+**Fix implementado (aprovado pelo usuário):** nova 3a categoria dentro de
+`_generate_attach_don_actions` -- pra cada atacante elegível, calcula o
+gap de poder contra líder/personagens do oponente (empate favorece quem
+ataca, só precisa igualar), e se o DON disponível fecha esse gap, oferece
+`attach_don` com o motivo `'attack_power'`, pontuado via
+`score_attack_target` (mesma régua já usada na geração real de `attack`)
+menos o custo de oportunidade do DON. Não duplica logica nova de valor,
+só preenche a lacuna de candidato que faltava.
+
+Validação: `py_compile` limpo. 1 novo teste em `smoke_fast.py`
+(`test_attach_don_oferece_opcao_de_poder_de_combate`) reproduzindo o
+cenário exato (Pekoms 4000 + Pudding precisando de DON, líder oponente
+5000, 1 DON disponível) -- confirma que Pekoms agora aparece como
+candidato de `attach_don`. `smoke_fast.py` = SMOKE FAST OK. `smoke_test.py`
+(obrigatório, mexe em geração de ações compartilhada): mesmas 3 falhas
+pré-existentes de sempre, sem regressão nova.
+
+**Segunda parte do pedido: telemetria obrigatória.** Criado
+`scriptis_da_ia/decision_summary.py` -- lê o `receipt_<timestamp>.json`
+mais recente de `metrics/live_runs/` (liga bank_entry_id + decision_log +
+match_id) e escreve um `.txt` legível ao lado dele: pra cada decisão do
+bot, ação escolhida + score + até 3 melhores alternativas descartadas +
+scores. Testado contra a própria partida do Teach -- mostrou exatamente a
+tensão `attach_don Pudding (15.0)` vs `attack Pekoms (-38.8)` que motivou
+o fix acima, sem precisar vasculhar o `.jsonl` na mão. `CLAUDE.md` atualizado
+com uma seção nova ("Telemetria de decisão — OBRIGATÓRIO ler quando o log
+é de partida do bot"): `python decision_summary.py --latest` agora é
+passo obrigatório antes de reportar qualquer partida do bot como
+investigada, não só adicionar o log ao banco.
+
+Pendente: validação ao vivo do fix de `attach_don` (próxima partida) --
+o `decisions_summary` gerado nesta sessão ainda reflete o servidor ANTES
+do fix (`8e77cac`), útil só como prova do bug, não da correção.
+
+## 2026-07-23 (329) - Claude - combo com campo generaliza de buff pra QUALQUER acao
+
+Usuário reforçou o bloco 328: "não é só buff, tem outros efeitos, como dar
+rush, dar blocker, dar don, buff, dar custo extra, double strike, etc."
+Busquei no banco (mesma auditoria global, não só a carta que revelou o
+padrão) e achei, além do `buff_power` já coberto: `set_active` (9 cartas
+reais, ex: OP01-042 Komurasaki "personagem Land of Wano custo≤3 fica
+ativo, se o líder é Kouzuki Oden"), `buff_cost` (OP14-098), `set_base_power`
+(OP16-058), `bounce` mirando personagem próprio (OP07-062, proteção). Os
+grants de keyword puro (`gain_rush`/`gain_blocker`/`gain_double_attack`/
+`gain_unblockable`/`gain_banish`) quase sempre miram a PRÓPRIA carta jogada
+(sem filtro, sem alvo em campo) -- só 1 caso real (`OP12-058`) mira
+`target=selected` (alvo já escolhido antes no mesmo efeito, não um filtro
+de campo) -- não achei nenhum caso real de "conceder Rush a um personagem
+já em campo via filtro" pra generalizar com dado real. Registrado
+honestamente em vez de inventar cobertura sem caso real por trás.
+
+Fix: `_conditional_board_synergy_value` (bloco 328) generalizada --
+`buff_power`/`set_base_power` continuam escalando pelo `amount`; qualquer
+outra ação em `_BOARD_COMBO_ACTION_VALUE` (novo dict: `set_active`,
+`bounce`, `buff_cost`/`debuff_cost`, `grant_ko_immunity_type`, e as
+keywords `gain_rush`/`gain_blocker`/`gain_double_attack`/
+`gain_unblockable`/`gain_banish` — deixadas no dict pra quando/se
+aparecer uma carta real com esse padrão, mesmo sem caso hoje) ganha valor
+fixo por tipo, na mesma régua dos bônus já existentes em `avaliar_carta`
+pra "esta carta TEM o keyword".
+
+Validação: `py_compile` limpo. 1 novo teste em `smoke_fast.py`
+(`test_avaliar_carta_reconhece_combo_de_qualquer_acao_com_carta_em_campo`,
+usando Komurasaki real + Yamato restada em campo + líder sintético
+"Kouzuki Oden" via `mk()` pra bater a condição `leader_is`): score maior
+com líder certo + alvo elegível vs líder errado. `smoke_fast.py` = SMOKE
+FAST OK. `smoke_test.py`: mesmas 3 falhas pré-existentes, sem regressão
+nova.
+
+Servidor ainda NÃO reiniciado -- aguardando confirmação de jogo fechado.
+Blocos 326-329 (Pudding play_card, flags generalizadas, buff de campo,
+generalização pra qualquer ação) todos pendentes de validação ao vivo.
+
+## 2026-07-23 (328) - Claude - combo com carta JA EM CAMPO (espelho do play_card)
+
+Pedido do usuário: "efeitos que combam com carta na mão (play_card), mas
+temos efeitos também que combam com carta já em campo, tem que analisar
+isso tb". Achado: 26 cartas reais no banco com `buff_power` (não
+`battle_only`/`this_battle`, ou seja fora do guard de combate já existente)
+mirando `own_character`/`select_filtered`/`all_allies` com
+`filter_type`/`filter_names` -- ex: EB03-032 Charlotte Flampe, "[On Play]
+um personagem seu 'Charlotte Katakuri' ganha +2000 de poder neste turno";
+EB04-040 mesma forma com "Kaido". `has_buff` (flag de `get_card_flags`) só
+somava um flat `+15`, cego a se existe ALGUM personagem correspondente em
+campo agora -- o combo simplesmente não era avaliado.
+
+Fix: novo `DecisionEngine._conditional_board_synergy_value(card)`, espelho
+exato de `_conditional_play_card_combo_value` (bloco 326) só que olhando
+`self.me.field_chars` em vez de `self.me.hand`. Mesmo mecanismo de leitura
+real (`card_effects_db` + `_check_conditions` contra o estado atual) +
+`eligible_cards` pra achar o alvo em campo que bate o filtro (tipo OU
+nome, `card_matches_filter` já cobre os dois). Chamado dentro de
+`avaliar_carta` junto do combo de `play_card`.
+
+Validação: `py_compile` limpo. 3 novos asserts em `smoke_fast.py`
+(`test_avaliar_carta_reconhece_combo_buff_com_carta_em_campo`, usando
+Charlotte Flampe real): score maior com o Katakuri-alvo já em campo,
+score igual ao "sem alvo" quando o personagem em campo é de tipo/nome
+errado (Mihawk não conta como Katakuri). `smoke_fast.py` = SMOKE FAST OK
+(882 checks). `smoke_test.py`: mesmas 3 falhas pré-existentes de sempre,
+sem regressão nova.
+
+Servidor NÃO reiniciado ainda -- aguardando confirmação de jogo fechado
+(conexão ativa na porta 8765 desde a sessão anterior). Validação ao vivo
+de todo o bloco 326-328 (combo Pudding + generalização de flags + combo
+de campo) ainda pendente -- próxima partida de Katakuri.
+
+## 2026-07-23 (327) - Claude - generaliza o guard de condição pra TODAS as flags de avaliar_carta
+
+Pedido do usuário: "precisamos expandir esse fix pra outros efeitos tb não
+só pra play_card" -- o bloco 326 só tinha corrigido o combo `play_card`
+condicional; as outras flags (`has_draw`, `has_ko`/`is_removal`,
+`has_bounce`, `has_rest`, `has_buff`, `has_givdon`, `has_gainlf`)
+continuavam ESTÁTICAS, aplicando o bônus sempre, mesmo quando o step real
+só dispara sob uma condição que não vale agora.
+
+Fix: novo `DecisionEngine._step_condition_currently_holds(card,
+step_matches)` -- generaliza o mecanismo do 326 pra qualquer step (não só
+`play_card`): recebe um predicado (`lambda step: ...`) em vez de fixar a
+action, acha o(s) step(s) de `on_play`/`main` da própria carta que batem, e
+confere a condição (bloco + step) contra o estado ATUAL via
+`_check_conditions` (read-only). Sem NENHUM step com essa ação em
+`on_play`/`main` (a flag pode vir de outro gatilho, tipo `on_ko`/`passive`)
+-> retorna `True`, conservador, mantém o comportamento antigo pras
+centenas de cartas sem condição nenhuma -- zero risco de regressão nesses
+casos. Cada bloco de bônus em `avaliar_carta` agora só soma se esse guard
+confirmar. `has_ko` combina `ko`/`bounce`/`rest_opp_character` E
+`debuff_power`/`set_base_power` com alvo no oponente (mesmo critério que
+`is_removal` já usa em `gerar_card_analysis_db.py`).
+
+Validação: `py_compile` limpo. 3 novos asserts em `smoke_fast.py`
+(`test_step_condition_currently_holds_generaliza_pra_qualquer_flag`):
+confirma que uma carta com draw INCONDICIONAL (EB01-056) continua sempre
+`True` (sem regressão), e que o MESMO bloco condicional da Pudding
+(líder Big Mom Pirates + oponente 6+ DON) que já testava o `play_card`
+também bloqueia/libera corretamente o `draw` dela. `smoke_fast.py` =
+SMOKE FAST OK. `smoke_test.py` (obrigatório, mudança em código
+compartilhado por toda avaliação de cartas): mesmas 3 falhas
+pré-existentes de sempre, sem regressão nova.
+
+Pendente: `is_searcher`/`gains_life` cobrem múltiplas actions
+(`look_top_deck`/`add_to_hand`/`add_from_trash`, `gain_life`/`heal`) --
+o guard aceita qualquer uma bater a condição, não valida se são do MESMO
+combo (ex: um searcher com 2 steps independentes, um condicional e outro
+não, onde só o incondicional dispara -- ainda conta como "achou", correto
+por acidente já que já queríamos True nesse caso). Validação ao vivo
+(próxima partida de Katakuri) ainda pendente pra confirmar impacto real.
+
+## 2026-07-23 (326) - Claude - avaliar_carta ganha noção de combo play_card condicional
+
+Comparação pedida pelo usuário (bloco 325): analisada a partida
+`Charlotte.Katakuri-P_x_Dracule.Mihawk-G_2026-07-23T18.13.41_p2` (humano de
+Katakuri, bot de Mihawk). Achado principal (compartilhado com o usuário,
+não é bug — é dado): o bot de MIHAWK nessa sessão desenvolveu muito melhor
+que o bot de Katakuri (chegou a `activeDon:10` no turno 5 e jogou a bomba
+de custo 10 assim que deu, via `scored_actions` — score 225 contra 135 da
+próxima opção). Isso sugere que a trava do Katakuri é mais específica
+daquele deck/kit do que um bug genérico do fix 322 (que já resolveu o caso
+Mihawk). Também limpei do banco a entrada `2026-07-23T18.13.41`
+(não-sufixo): era duplicata byte-a-byte da partida anterior (17.54.33) —
+o CombatLogs do jogo não tinha rotacionado antes do auto-collect capturar.
+
+Usuário pediu pra investigar por que o Katakuri especificamente trava, com
+exemplo concreto: "pudding 7 descendo outro bixo". Achado real: Charlotte
+Pudding (`PRB02-010`) tem `[On Play] DON!! -2: se lider é Big Mom Pirates
+e oponente tem 6+ DON, compra 2, depois joga até 1 personagem Big Mom
+Pirates de 6000-8000 poder da mão DE GRAÇA`. `avaliar_carta` pontuava essa
+carta só pelas FLAGS fixas de `get_card_flags` (has_draw/is_searcher/etc,
+por carta, sem ler condição nem estado atual) — não existe flag nenhuma
+pro passo `play_card` (jogar outra carta de graça). Resultado: o combo
+real (corpo + compra 2 + segunda bomba grátis) era invisível pro score, a
+Pudding pontuava só como corpo de 5000 e virava counter fodder em vez de
+ser jogada no momento certo (tarde de jogo, oponente com DON acumulado).
+
+Fix aprovado pelo usuário: novo método
+`DecisionEngine._conditional_play_card_combo_value(card)` -- lê os steps
+reais de `on_play`/`main` da carta via `card_effects_db`, checa as
+condições (bloco E step) contra o estado ATUAL via
+`EffectExecutor._check_conditions` (read-only), e se achar um passo
+`play_card` com alvo elegível na mão (via `eligible_cards`
+filter_type/power_gte/power_lte/cost_lte), soma o valor real dessa segunda
+carta (`board_value()*8`, teto 90) ao score. Chamado dentro de
+`avaliar_carta`. Genérico -- qualquer carta futura com esse padrão entra
+automaticamente, não hardcoded pra Pudding.
+
+Validação: `py_compile` limpo. 2 novos testes em `smoke_fast.py`
+(`test_avaliar_carta_reconhece_combo_play_card_condicional`): score da
+Pudding maior com combo ligado (líder certo + oponente 6+ DON + alvo na
+mão) vs desligado (oponente com pouco DON), e confirma que sem alvo
+elegível o score não infla à toa. `smoke_fast.py` = SMOKE FAST OK.
+`smoke_test.py` rodado antes/depois: mesmas 3 falhas pré-existentes, sem
+regressão nova.
+
+Pendente: só esse UM padrão (`play_card` condicional) ganhou consciência
+de condição/estado -- as outras flags (`has_draw`, `has_ko`, `has_bounce`
+etc.) continuam FIXAS por carta, sem checar se a condição do bloco
+realmente vale agora (mesmo gap, menor impacto, não endereçado ainda).
+Validação ao vivo (próxima partida de Katakuri) ainda pendente.
+
+## 2026-07-23 (325) - Claude - 3a partida Mihawk x Katakuri + pivot de metodologia
+
+Partida `Dracule.Mihawk-G_x_Charlotte.Katakuri-P_2026-07-23T17.54.33` (bot=P2,
+derrota, ja no bloco 324/`492406e`). Usuario reportou que o bot morreu tendo
+"como defender" (Mamaragan, efeito do lider, counter da Pudding). Investigado
+a sequencia final na decision log `decisions_2026-07-23T17.47.11.jsonl`
+(indices 164-168 e 176-180):
+
+- `activeDon: 0` nos dois ultimos ataques -- o efeito do lider Katakuri
+  (custo DON!!1) literalmente nao tinha como ser pago, nao e recusa por
+  julgamento. Correto.
+- Pudding (PRB02-010) NAO estava na mao nesse ponto (ja usada em turnos
+  anteriores) -- suposicao do usuario nao bateu com o estado real.
+- Mamaragan (OP15-078, 1000 counter) era a UNICA carta de counter na mao.
+  Sozinho, 1000 contra um ataque de 6000 vs lider 5000 fecha em EMPATE
+  (5000+1000=6000), que "empate vai pro atacante" (regra ja documentada,
+  buff_wins_combat) -- perde de qualquer jeito. Recusa correta, nao bug.
+- Achado real (nao investigado a fundo, so registrado): a mao nesse ponto
+  tinha 6 cartas, sendo 5 delas custo 7-9 (2x OP11-067 custo8, 3x OP08-069
+  custo9) -- e o `activeDon` nunca passou de 4 em nenhum momento das 4
+  primeiras rodadas do jogo (`decisions_...`, decision_kind=main, turnos
+  1-4). Mao entupida de bombas duplicadas + DON que nunca sobe o bastante
+  pra pagar nenhuma -- pode ser sorte de draw (varias copias caras cedo)
+  combinada com desenvolvimento lento, mas nao foi isolado se e
+  causa estrutural ou so essa partida especifica. Fica pendente.
+
+**Pivot de metodologia (pedido do usuario):** em vez de eu inferir
+"eficiencia baixa" so pela leitura do log do bot, o usuario vai jogar de
+Katakuri ele mesmo (bot fica de Mihawk) usando os MESMOS decks das
+partidas ja salvas onde ele venceu de Mihawk contra o bot. Depois compara
+lado a lado: turno a turno, DON investido, cartas jogadas, dano — humano
+vs bot nos MESMOS decks/matchup, prova mais direta de gap de eficiencia
+que ler decision log isolado. Proximo passo (proxima sessao ou retomada):
+aguardar essa partida nova e montar a comparacao.
+
+## 2026-07-23 (324) - Claude - fecha o gap dois-motores do achado 3 (bloco 323)
+
+Implementa os itens (a) e (b) discutidos no fim do bloco 323, aprovados pelo
+usuario.
+
+**(a) Unificacao do guard de combate:** novo metodo
+`EffectExecutor._combat_buff_worth_paying(card, ef_data, trigger,
+battle_defender_power)` em `decision_engine.py` -- reconhece o padrao
+"custo de recurso (don_minus/rest_don/rest_self) -> buff_power de batalha
+em self/leader, so-battle" e so autoriza pagar se `buff_wins_combat`
+(empate vai pro atacante) confirmar que o buff VIRA o combate. Usa
+informacao REAL (self-play conhece as duas maos, sem precisar da
+estimativa por incerteza que `resolve_optional_effect` usa no caminho ao
+vivo mascarado). `execute()` agora chama esse guard pra `when_attacking`/
+`on_opp_attack` ANTES de cair no `_worth_paying_optional_costs` generico
+(que so julga custos de SACRIFICIO, sempre "vale a pena" pra custos de
+recurso puros). Retorna `None` quando o padrao nao casa, deixando o
+fallback generico decidir -- nao muda nada pra cartas fora desse padrao.
+
+Novo parametro `battle_defender_power` em `execute()`, preenchido pelos 2
+call-sites reais de combate em `_execute_attack` (`when_attacking`: poder
+cru do alvo antes da reacao; `on_opp_attack`: poder cru do proprio
+reagente/defensor).
+
+Isso fecha a divergencia "dois motores" (regra do usuario): antes, o
+simulador interno (self-play/line-search, que passa por `execute()`
+direto) SEMPRE assumia que valia pagar qualquer custo de recurso pra um
+buff de batalha, superestimando o valor de linhas simuladas com esse
+padrao (ex: Katakuri OP11-062). O caminho ao vivo (`sim_bridge.py`,
+`resolve_optional_effect`) ja tinha esse guard sofisticado havia dias, so
+que isolado -- agora as duas pontas concordam na mesma pergunta central
+(so o caminho ao vivo mantem a camada extra de estimativa de mao oculta
+do oponente, que faz sentido so ali).
+
+**(b) Gate estendido pra `[Trigger]`:** blocos `trigger` (life-reveal) com
+custo de recurso opcional antes do ':' agora tambem passam por
+`_worth_paying_optional_costs` (antes so `on_play`/`main`/
+`when_attacking`/`on_opp_attack` tinham esse julgamento). `activate_main`
+ficou de fora de proposito -- ja e filtrado por scoring proprio
+(`_score_activate_main`) antes de chegar em `execute()`. `[Counter]` de
+personagem/lider NAO foi estendido: confirmei que essa timing key nao
+passa por `execute()` hoje (so eventos `[Counter]` da mao tem execucao
+propria via `try_counter_event_*`) -- nao ha gate praexistente pra
+estender, ficaria como trabalho futuro separado se aparecer um caso real.
+
+Validacao: `py_compile` limpo. 2 novos testes em `smoke_fast.py`
+(`test_combat_buff_worth_paying_no_simulador_interno`, 3 asserts: paga
+atacando quando vira, nao paga atacando quando ja vence sozinho, paga
+defendendo quando vira) -- `smoke_fast.py` = SMOKE FAST OK (875 checks).
+`smoke_test.py` (regressao ampla, obrigatorio por mexer em codigo de
+combate compartilhado): rodei ANTES e DEPOIS da mudanca -- as mesmas 3
+falhas (`substitute_removal com extra_steps`, `substituicao externa usa
+fonte aliada`, `OP15-094 protege outro Character`) ja existiam no
+baseline, sem relacao com esta mudanca; nenhuma falha nova.
+
+Pendente: validacao ao vivo (proxima partida real) pra confirmar que o
+guard nao introduziu recusa excessiva em cenarios reais nao cobertos
+pelos 2 testes sinteticos.
+
+## 2026-07-23 (323) - Claude - custo antes do ":" sempre opcional (parser) + gap dois-motores achado
+
+Partida `Dracule.Mihawk-G_x_Charlotte.Katakuri-P_2026-07-23T16.54.39` (bot=P2,
+derrota, 10 turnos, ja no fix 322 - `71a9a42`). Usuario reportou (com print)
+que o board do bot so tinha carta de custo 1 enquanto ele proprio desceu
+custo 10 no turno 6, e que o Katakuri estava "voltando DON sem analisar
+nada". Investigado turno a turno.
+
+**Achado 1 (nao era bug neste log):** as 4 ativacoes do lider Katakuri
+(`OP11-062`, `DON!! 1: peek + buff +1000`) no log foram checadas uma a uma
+contra o combate real -- 3 das 4 realmente VIRARAM "Attack Fails" (5000 vs
+5000 base, empate favorece o atacante; com o buff virou 6000, sobreviveu
+sem gastar counter da mao). A 4a foi aposta ofensiva antes de saber se o
+oponente ia contra-atacar (timing real do jogo: o efeito ativa antes da
+reacao do oponente). Corrigi a hipotese inicial errada.
+
+**Achado 2 (regra de jogo, registrada em [[CLAUDE.md]] e memoria
+`project_regra_custo_opcional_dois_pontos`):** usuario confirmou com
+fontes que a regra dos dois-pontos e universal em QUALQUER gatilho do
+OPTCG -- tudo antes do `:` e custo, SEMPRE opcional de pagar, independe da
+palavra "you may" aparecer no texto. O parser (`gerar_effects_db.py`) so
+marcava `don_minus`/`debuff_power_self` como `optional=True` quando
+achava "you may" numa janela de +-40/60 chars -- 26 casos so de
+`don_minus` em blocos de gatilho ficavam `optional=False` por essa falta,
+incluindo cartas que JA tem "(You may return...)" no proprio texto (sinal
+de bug na deteccao, nao so na regra-padrao).
+
+Fix aplicado (aprovado pelo usuario): `don_minus` (linha ~1555) e
+`debuff_power_self` (linha ~1609) em `gerar_effects_db.py` agora sempre
+gravam `optional: True` quando o custo aparece antes do `:` -- removida a
+dependencia de "you may" na janela. Auditoria completa registrada em
+`parser_audits/2026-07-23_custo_antes_dos_dois_pontos_sempre_opcional.json`
+(resolution_scope=global, 47 cartas afetadas). `diff_parser.py`: GANHOU=0,
+PERDEU=0, MUDOU=47 (so o campo optional das cartas certas). 1 assert do
+`smoke_fast.py` (OP05-119) tinha o valor ERRADO gravado como esperado
+(`optional=False`) desde 16/07 -- corrigido pro valor certo (`True`),
+achado quando o smoke quebrou apos o fix. `smoke_fast.py` = SMOKE FAST OK
+(872 checks) depois da correcao do assert.
+
+**Achado 3 (estrutural, pendente, NAO implementado ainda):** investigando
+o mecanismo, achei que o guard de VALOR (`buff_wins_combat` etc., o que
+salvou o Katakuri 3x nesta partida) so existe em `sim_bridge.py`
+(`resolve_optional_effect`, caminho AO VIVO) -- dentro do simulador
+interno (`decision_engine.py`, usado por busca/line-search/self-play),
+`_worth_paying_optional_costs` trata QUALQUER custo de recurso
+(`rest_self`/`rest_don`/`don_minus`) como "sempre vale a pena"
+incondicionalmente (`return True` direto pra tipos fora de
+`_SACRIFICE_COST_TYPES`). Isso e uma divergencia real de "dois motores"
+(regra do usuario) -- a simulacao interna superestima o valor de linhas
+que passam por habilidades desse padrao. Alem disso, o gate de
+`_worth_paying_optional_costs`/`resolve_optional_effect` so e chamado pra
+4 gatilhos (`on_play`, `main`, `when_attacking`, `on_opp_attack`,
+[decision_engine.py:2065](scriptis_da_ia/optcg_engine/decision_engine.py:2065));
+blocos `[Trigger]`/`[Counter]` com custo de recurso opcional nunca passam
+por julgamento nenhum. Opções discutidas com o usuario, ainda sem
+decisao de qual priorizar: (a) unificar o guard de combate dentro de
+`_worth_paying_optional_costs` (fecha a divergencia de vez, mas e
+refactor de risco maior -- a logica do bridge usa contexto de
+incerteza/estimativa de mao do oponente que o simulador interno nao tem
+do mesmo jeito); (b) estender o gate pra `trigger`/`counter`; (c) essa
+sessao ja fez a parte do parser (achado 2).
+
+## 2026-07-23 (322) - Claude - reserva de DON deixava de furar por custo/poder fixo
+
+Partida `Dracule.Mihawk-G_x_Charlotte.Katakuri-P_2026-07-23T16.07.35` (bot=P2/
+Katakuri, derrota, 10 turnos) ja rodava no bloco 320 (`884de9c`, engine
+reiniciado na sessao anterior). Achado ao vivo, confirmado pelo usuario com
+conhecimento de jogo: o bot quase nao desce cartas de custo 6-9, mesmo com
+DON de sobra -- Charlotte Pudding (`PRB02-010`, custo 7/poder 5000) apareceu
+4x na mao ao longo da partida (efeito dela mesma buscando copias) e nunca foi
+jogada; 3 copias acabaram descartadas como counter de 1000 no turno 6 em vez
+de virarem corpo em campo.
+
+Causa raiz: `_can_spend_reserved_don_for_play` (decision_engine.py) so deixava
+uma jogada furar a `_don_reserve_for_defense()` se `cost>=8 or power>=9000` --
+corte fixo por categoria, ignorando o EFEITO da carta e o MOMENTO do jogo
+(regra do usuario: nunca threshold fixo, sempre ganho liquido caso a caso, ja
+usada em `should_use_counter`/[[feedback_ganho_liquido_caso_a_caso]]). Isso
+deixava toda a faixa de custo 6-7 travada atras da reserva sempre que ela
+ficava ativa (por ter um evento [Counter] tipo Mamaragan na mao pedindo
+DON!!2), mesmo com o jogador seguro (counters/blockers/vida de sobra).
+
+Fix aprovado pelo usuario: substitui o corte fixo por `_reserve_break_cost()`
+(novo) -- reaproveita os MESMOS sinais de risco de `_don_reserve_for_defense`
+(threat, vida, counters/blockers ja em mao-campo) mas devolve um VALOR na
+regua de `avaliar_carta` em vez de uma quantidade de DON. Mesmo gate de
+"seguro" (colchao real = fura de graca, valor=0); sem "seguro" mas com
+colchao parcial, desconta proporcionalmente em vez de bloquear tudo-ou-nada.
+`_can_spend_reserved_don_for_play` agora compara `avaliar_carta(card) >
+_reserve_break_cost()` -- carta forte de custo 6 fura, carta fraca de custo 8
+nao fura automaticamente so pelo numero.
+
+Validacao: `py_compile` limpo, `smoke_fast.py` = SMOKE FAST OK (872 checks,
+zero regressao -- a unica falha na 1a rodada foi UnicodeEncodeError do
+terminal cp1252 imprimindo `①`, sem relacao com a mudanca, sumiu com
+`PYTHONIOENCODING=utf-8`). Pendente: proxima partida ao vivo (usuario disse
+que testa mais pra frente) pra confirmar que bombas de custo 6-7 realmente
+comecam a entrar em campo em vez de virar counter fodder, e auditar junto.
+
+## 2026-07-23 (321) - Claude - commit da partida Katakuri x Krieg pendente
+
+Retomando a sessao apos o Codex ficar sem limite: o codigo do bloco 320
+(Choose 0 real, `cost N or more`, ordem `Add DON -> K.O.`, triggers
+`when_don_returned`) ja estava commitado em `3ae477d`, nada pendente ali.
+So a partida `Charlotte.Katakuri-P_x_Krieg-RG_2026-07-23T14.12.36` (derrota,
+11 turnos, bot=P1/Katakuri) estava jogada e salva em raw/parsed/decks/index
+mas sem commit. Commitada em `d87a9a0`. Push feito em seguida. Nenhuma
+mudanca de codigo nesta sessao.
+
+Analisando `metrics/live_runs/live_2026-07-23T14.12.39.json`: essa partida
+(e a do Jinbe, bloco 319, mesma sessao) **nao valida o bloco 320**. O
+`commit_consistency` mostra que o servidor do engine ficou rodando o
+commit `924baf1` (12:20) a sessao inteira (`decisions_2026-07-23T12.21.24`),
+sem reiniciar depois do commit `3ae477d` (13:57, bloco 320). Ou seja Choose
+0 real, `cost N or more`, ordem Add DON->K.O. e sinergia `when_don_returned`
+seguem sem nenhuma partida ao vivo testando-os. Proxima sessao PRECISA
+reiniciar o `engine_server` depois de puxar `3ae477d` antes de jogar, senao
+o teste ao vivo continua invalido.
+
+Alerta adicional dessa sessao (Jinbe+Krieg): `gate_status: fail`, 2
+`decision_timeouts`, 13 `bot_confusion` tipo `no_eligible_action`, 0
+vitorias em 2 jogos.
+
+Investigados os 13 casos em `decisions_2026-07-23T12.21.24.jsonl`: NAO sao
+bug. 12/13 tinham `activeDon: 0` (nada pra pagar); um deles a mao tinha
+Mamaragan (OP15-078, custo 0) mas o efeito principal exige `don_minus 2`
+que o bot nao tinha — corretamente recusado (regra "so paga custo se
+produz efeito"). O 13o (turno 6, Jinbe, `activeDon: 1`) tinha 2 candidatos
+de 1 custo mas ambos com `cheap_redundancy_penalty` maior que o valor
+intrinseco (board com 5 personagens, copias redundantes) — tambem correto
+recusar. Conclusao: os 13 sao "nada de valor pra fazer" legitimo, nao
+confusao real. Achado colateral (nao corrigido, so registrado): o
+`score_components` do Mamaragan nao fecha a conta (intrinseco 90, score
+final -959, ~1049 de penalidade nao logada) — gap de instrumentacao no
+`score_components_coverage_pct` (78%), faz o gate `bot_confusion` tratar
+passe correto como erro. Nao mexi nisso, e area de scoring compartilhada e
+exige aprovacao antes de alterar.
+
+Servidor `engine_server` reiniciado nesta sessao: matei o processo antigo
+(PID 16092, de pe desde 12:21, commit `924baf1`) e subi um novo em
+`884de9c` (inclui bloco 320 completo). Log:
+`BOT/engine_server/logs/session_2026-07-23T15.47.08.log`, porta 8765.
+Pronto pra usuario testar ao vivo no OPTCGSim — proxima partida agora sim
+valida Choose 0, `cost N or more`, ordem Add DON->K.O. e sinergia
+`when_don_returned`.
+
+## 2026-07-23 (320) - Codex - Choose 0, parser composto e sinergia DON
+
+Implementadas as correcoes aprovadas apos a partida Katakuri x Jinbe:
+
+- Plugin agora confirma a selecao pelo botao REAL exibido pelo jogo, preservando
+  `myType` e `iChoiceInt`. A lista cobre SelectTargets, Friendly, Enemy,
+  EnemyCharacters/Leaders/Stage, Trash e Infinite. Isso corrige o caso
+  "Choose 0 enemy Characters", que antes caia no fallback SelectTargets e
+  percorria dezenas de candidatos invalidos.
+- Parser `set_active` reconhece `cost N or more` como `cost_gte`; OP11-067
+  passou de `cost_eq=3` para `cost_gte=3`.
+- Familia textual `Add DON. Then, K.O.` preserva a ordem real: OP13-061,
+  OP14-064 e ST34-002 agora resolvem add_don antes do K.O. opcional. Assim
+  Cracker rampa mesmo sem alvo para K.O.
+- Motor valora triggers `when_don_returned` realmente ativos (timing,
+  condicoes, limiar e once-per-turn). DON-minus usa custo liquido depois do
+  trigger; com ST34-001 em campo, devolver 1 pelo lider OP11-062 reconhece
+  que adiciona 2 restados e deixa de recusar a habilidade apenas por curva.
+
+Auditoria do parser antes de atualizar snapshot: GANHOU=0, PERDEU=0, MUDOU=4
+(somente as quatro cartas esperadas). Depois da regeneracao: diff=0.
+`smoke_fast.py` = SMOKE FAST OK, incluindo 5 asserts novos; relatorio de
+eficiencia = 14/14. Plugin compilou com 0 erros/0 avisos e a DLL foi copiada
+para o BepInEx. Proxima etapa obrigatoria: partida ao vivo para validar
+Choose 0, ramp de Cracker/Katakuri e uso contextual do lider com ST34-001.
+O clique em DON anexado do bloco 318 tambem continua aguardando validacao real.
+
+## 2026-07-23 (319) - Codex - partida Katakuri x Jinbe: alvos opcionais e sinergia DON
+
+Partida `Charlotte.Katakuri-P_x_Jinbe-G_2026-07-23T13.26.50`, bot=P1/You,
+salva automaticamente em raw/parsed/decks/index. Relatorio
+`metrics/live_runs/live_2026-07-23T13.26.53.json`, decision log `12.21.24`,
+commit executado `924baf1`.
+
+Comparacao com Katakuri x Ace: execucao permaneceu 100%, state_after subiu
+98,75% -> 100%, regret contrafactual permaneceu 0 e ataques abaixo do alvo
+caíram 1 -> 0. Ataques do bot: 8 (6 Leader/2 Character), contra 9
+(6 Leader/3 Character); dano permaneceu 2. Desenvolveu 8 cartas contra 5.
+Nao e comparacao causal porque o oponente mudou.
+
+Demoras do Cracker ST34-002 e Katakuri OP11-067 nao vieram do endpoint:
+Cracker 3-5ms, Katakuri 3-6ms. O plugin percorreu dezenas de candidatos
+invalidos, chamou `/choose_target` 3x e usou fallback SelectTargets. Falta
+tratar explicitamente escolha opcional vazia via botao `Choose 0`.
+
+Dois erros semanticos confirmados no banco: ST34-002 diz add DON e DEPOIS KO
+opcional, mas esta parseado KO -> add_don; OP11-067 diz custo 3 OU MAIS, mas
+esta parseado `cost_eq=3`. Isso impede ordenar corretamente os ate 2 alvos e
+pode bloquear o step posterior de add_don. Requer correcao de familia/parser
+aprovada antes de editar.
+
+Sinergia: ST34-001 estava em campo no late game e o motor recusou todas as
+ofertas do efeito do Leader OP11-062 no turno 7. Ele nao valora o evento
+`when_don_returned`: devolver 1 DON dispararia ST34-001 para adicionar 2
+restados (ganho liquido +1). Proximo ajuste estrategico deve somar triggers
+de DON-return ao beneficio/custo de `don_minus`, especialmente no late game.
+O teste nao teve DON anexado, portanto o fix fisico do bloco 318 continua sem
+validacao ao vivo.
+
+## 2026-07-23 (318) - Codex - pressao liquida e clique real no DON anexado
+
+Implementadas as quatro correcoes aprovadas apos a partida Katakuri x Ace:
+
+- `critical_threats()` nao classifica mais qualquer corpo 6000 como critico.
+  Usa valor futuro: efeitos recorrentes, blocker, Double Attack e poder acima
+  do Leader. `On Play` ja resolvido nao conta; Yamato OP13-054 deixa de ganhar
+  prioridade artificial.
+- Ataque em Character desconta `don_opportunity_cost()` do DON necessario para
+  alcancar o alvo. Pressao na vida e remocao agora competem em valor liquido,
+  em vez de o Character receber vantagem sem pagar pelo DON anexado.
+- Bonus fixo `+300` de ameaca foi substituido pelo valor futuro real, limitado
+  a 120. O mesmo orcamento de DON da linha valida se o ataque pode conectar.
+- Ataque abaixo do alvo so e gerado se o [When Attacking] muda materialmente
+  recursos/campo. Buff do proprio combate ja incapaz de alcancar o alvo e
+  peek/reveal puro nao justificam mais 5000 -> 7000.
+- Causa C# do DON anexado fechada: `CollectTargetCandidates` encontrava os DON
+  em `lgo_AttachedDon`, mas `ClickTargetCandidate` so procurava zonas normais
+  e DonCostArea. Agora procura primeiro nos DON anexados de Leader/Characters,
+  permitindo que o jogo execute `ReturnDonFromCard`.
+
+Validacao: `py_compile` limpo; `smoke_fast.py` = SMOKE FAST OK, com tres casos
+novos (Yamato nao critica, custo de 4 DON perde para pressao, ataque abaixo sem
+ganho bloqueado); `test_bot_efficiency_report.py` = 14/14; `dotnet build` =
+0 erros/0 avisos e DLL copiada ao BepInEx. Ainda requer partida real para
+confirmar o clique anexado e o novo equilibrio de alvos.
+
+## 2026-07-22 (317) - Codex - partida Katakuri x Ace: melhora real e gap C# do DON anexado
+
+Partida `Charlotte.Katakuri-P_x_Portgas.D.Ace-RB_2026-07-22T23.55.21`,
+bot=P1/You/Katakuri, salva automaticamente em raw/parsed/decks/index. Relatorio
+`metrics/live_runs/live_2026-07-22T23.55.24.json`, decision log `23.41.13`,
+commit executado `26c50fb`.
+
+Comparacao com Katakuri x Smoker (bloco 314): ataques do bot na vida subiram
+2/8 -> 6/9 e dano 1 -> 2; portanto nao confirma "quase so Character" no total.
+Mas confirma vies local: Yamato 6000, sem valor recorrente depois do On Play,
+entrou em `critical_threats()` apenas pelo poder e recebeu bonus fixo +300;
+ataques ao Character marcaram 390 contra 15-20 na vida. Rever ameaca pelo valor
+futuro/remocao liquida, nao por limiar bruto de 6000.
+
+Sinais de melhora: turno de curva jogou Cracker antes da Pudding, nao gastou
+Divine Departure/Mamaragan, regret contrafactual caiu 8,812 -> 0 e execucao
+permaneceu 100%. Houve 1 ataque planejado abaixo do alvo: Leader 5000 contra
+Ace 7000, sem DON; ainda e erro estrategico. P95 subiu 53,843 -> 120,218 ms,
+maximo caiu 1374,797 -> 1045,444 ms; adversarios diferentes, nao causal.
+
+DON anexado: causa isolada. Em cinco `/choose_target` do turno final, o motor
+ordenou os 8 `own_don_attached_used` antes do DON ativo. Mesmo assim eles nao
+sumiram; o DON ativo caiu 2 -> 1 -> 0. A decisao Python esta correta, mas o
+clique C# em DON anexado e no-op/nao seleciona a carta. Proximo fix deve auditar
+o caminho de clique/objeto de DON anexado no `BotExecutor`, sem mudar o motor.
+
+## 2026-07-22 (316) - Codex - telemetria causal da decisao e dos recursos
+
+Instrumentacao adicionada sem alterar ranking, busca ou execucao das acoes:
+
+- Cada acao pontuada registra componentes observaveis: valor intrinseco,
+  redundancia barata, valor de ramp, valor/custo de DON e gap de poder.
+- Cada decisao principal registra ledger antes da acao (DON ativo, restado,
+  anexado e total, mao, campo e vida), plano da busca e latencia separada em
+  geracao/score, line search e total do motor.
+- Ataques registram poder antes/depois do DON planejado, poder do alvo e gap.
+  Isso conta ataques abaixo do alvo sem confundir intencao com counter/efeito.
+- `/execution` correlaciona estado anterior/posterior e registra deltas de
+  recurso. Nova partida fecha como `aborted` a anterior que teve decisoes mas
+  nao recebeu outcome, evitando cobertura artificialmente baixa.
+- `bot_efficiency_report.py` agrega cobertura dos instrumentos, latencia,
+  sinais de recurso e qualidade dos ataques. Log antigo fica com cobertura 0,
+  sem fabricar eficiencia.
+
+Validacao: `py_compile` limpo; `test_bot_efficiency_report.py` = 14/14;
+`smoke_fast.py` = SMOKE FAST OK (terminal precisou `PYTHONIOENCODING=utf-8`
+por causa do caractere ① num teste preexistente). Proxima partida real deve
+ser analisada pelo novo bloco `instrumentation`; ainda nao prova melhora.
+
+## 2026-07-22 (315) - Codex - linha publica, valor marginal e orcamento DON
+
+Implementacao estrutural aprovada apos o diagnostico do bloco 314:
+
+- Busca ao vivo com informacao adversaria mascarada agora pode ESCOLHER a
+  melhor linha; todas as candidatas usam o mesmo estado publico, sem inventar
+  texto/counter das cartas UNKNOWN. Telemetria `line_search` registra depth=4,
+  orcamento DON, numero de candidatas e acao escolhida.
+- Ramp (`add_don`/`set_don_active`) recebe valor marginal pelo turno de curva
+  que antecipa. Corpos custo <=2 recebem desconto crescente por repeticao de
+  papel/copia no campo. Reproduzido turno 3: Cracker supera terceira Pudding.
+- Eventos fazem preflight dos custos do proprio efeito. Divine Departure nao
+  entra com menos de 5 DON ativos; evento que so se repoe por draw precisa de
+  controle material; Mamaragan sem alvo e atrasando bomba fica bloqueada.
+- Custo de DON de Activate/attach usa oportunidade real da melhor jogada que
+  bloquearia. Peek de topo e informacao, nao vantagem de carta, e perde valor
+  em fontes repetidas; duas Puddings nao recebem DON automaticamente.
+- Ataques agora usam o mesmo orcamento DON da jogada principal. Buff opcional
+  com DON-minus recusado pela curva nao infla o poder de declaracao: fecha o
+  5000->6000 que depois saia seco por o DON estar reservado.
+- Substituicao de remocao compara valor do corpo salvo com custo irreversivel;
+  Nola nao devolve DON/atrasa curva para salvar corpo barato.
+- Plugin passou a coletar DON anexado como zonas proprias. Ordem do motor:
+  anexado em carta que ja agiu -> DON restado -> anexado ainda nao usado ->
+  DON ativo. Fecha o gap explicitamente observado no efeito do Katakuri.
+
+Validacao: `smoke_fast.py` = SMOKE FAST OK, incluindo cenarios dirigidos da
+partida 23.07; `test_bot_efficiency_report.py` = 13/13; `py_compile` limpo;
+`dotnet build BOT/OPTCGBotPlugin/OPTCGBotPlugin.csproj` = 0 erros/0 avisos e
+DLL copiada para o BepInEx. Ainda exige partida real antes de declarar melhora.
+
+## 2026-07-22 (314) - Codex - partida 23.07: execucao melhor, plano de turno pior
+
+Partida real `Charlotte.Katakuri-P_x_Smoker-B_2026-07-22T23.07.07_p2`,
+bot=P1/You/Katakuri. Auto-coleta salvou raw/parsed/decks e atualizou o indice.
+Relatorio `metrics/live_runs/live_2026-07-22T23.07.10.json`, decision log da
+sessao `22.42.43`, commit executado `65cdb86`.
+
+Comparacao com Katakuri x Kaido do bloco 312: execucao permaneceu 100%,
+cobertura de acoes subiu 93,056% -> 94,783%, p95 caiu 91,666 -> 53,843ms;
+porem regret contrafactual piorou 4,778 -> 8,812, maximo subiu para 1374,797ms
+e `no_eligible_action` foi 5 -> 6. A sessao nova contem um mulligan/partida
+adicional sem outcome, portanto outcome coverage 50% nao e comparacao causal.
+Os oponentes tambem diferem; usar o diff como diagnostico, nao prova causal.
+
+Falhas estrategicas confirmadas no turno 3: com 4 DON, Cracker ST34-002 (rampa
+1 DON rested + KO custo <=2) marcou 160, mas Pudding marcou 175 e foi escolhida;
+depois Nola marcou 25, Divine Departure passou de -999 para 90 apos anexar DON
+na Pudding, Pudding ativou por 60 e o ultimo DON foi anexado na segunda Pudding.
+O motor executou a ordem corrigida, mas nao avaliou valor liquido nem preservou
+o plano Cracker. Ha forte vies repetitivo para searchers/baixo custo.
+
+Outros sinais: ataques 5000 em 6000/7000 apenas consumiram counter e ataques
+posteriores ficaram realmente abaixo do alvo; 4 DON foram anexados a Nola para
+atacar 6000 em alvo que terminou 8000. Nola protegeu alvos de custo/valor baixo:
+efeito foi mecanicamente valido, mas estrategicamente caro. Mamaragan ainda e
+pontuada pelo draw sem exigir valor suficiente do rest/curva. No turno 5 havia
+DON anexado em personagem, mas selecao do efeito do lider/targets causou longa
+espera; auditar se o retorno prioriza DON anexado antes de DON ativo/rested.
+
+Conclusao: o fix 313 fechou ordem/relevancia local, mas a partida nao melhorou
+a qualidade global. Proxima correcao deve ser estrutural: plano de turno com
+orcamento DON, valor marginal de efeitos repetidos, penalidade de congestionamento
+de corpos 0/baixo custo, e avaliacao conjunta ataque+reacao+acao principal.
+
+## 2026-07-22 (313) - Codex - efeito de combate relevante, curva DON-minus e ordem da Pudding
+
+Implementadas as correcoes aprovadas apos a partida do bloco 312:
+
+- Buff `self`/Leader com custo durante combate agora e recusado quando a
+  propria carta nao e o defensor. Fecha exatamente Pudding 0 -> Pudding 0:
+  Katakuri fora da batalha nao devolve mais DON para se buffar.
+- Contexto de combate sem poder valido (0/0) falha fechado para custo
+  irreversivel.
+- `DecisionEngine.don_minus_delays_hand_curve()` identifica bomba relevante
+  acima do DON atual. Um buff que apenas taxa counter, sem virar o poder cru,
+  nao paga DON-minus quando isso mantem a bomba presa na mao. Buff que vira o
+  combate continua permitido. A decisao de curva permanece no motor unico.
+- Activate:Main com `don_requirement` so entra na lista quando o DON ja esta
+  anexado. Pudding OP11-070 agora produz `attach_don` primeiro e `activate`
+  apenas na decisao seguinte, em vez de ativar/pagar/restar antes do requisito.
+
+Validacao: `py_compile` limpo; `python smoke_fast.py` = SMOKE FAST OK, com
+testes novos para defensor alheio, contexto 0/0, custo de curva e sequencia da
+Pudding; `python -m unittest test_bot_efficiency_report.py` = 13/13 OK.
+Somente Python; reiniciar o engine/JOGAR.bat antes da proxima partida. A
+partida real ainda e obrigatoria para declarar o sintoma resolvido.
+
+## 2026-07-22 (312) - Codex - partida 22.30: Katakuri ainda paga efeito sem valor
+
+Nova partida real `Charlotte.Katakuri-P_x_Kaido-P_2026-07-22T22.30.34`,
+bot=P1/You/Katakuri, derrota. Log auto-salvo corretamente no banco; recibo e
+relatorio `metrics/live_runs/*22.30.37`, decision log da sessao `22.12.59`,
+commit executado no jogo `f007836`.
+
+Telemetria melhorou mecanicamente: 72 decisoes, 69 confirmed, 0 failed, 3
+pending; execucao e state_after 100%; latencia media 22,8ms/p95 91,7ms/max
+882,7ms; contrafactual 100% sobre 9 decisoes elegiveis, regret medio 4,778.
+Gate ainda FAIL por 5 `no_eligible_action` e 3 pending. Bot perdeu 0-1.
+
+Diagnostico estrategico confirmado:
+- Katakuri pagou `DON!! -1` 6 vezes. Duas foram desperdicio inequívoco:
+  Pudding 0 atacando Pudding 0 (lider nem participava; defensor uid=10,
+  telemetria recebeu attacker/defender power=0/0 e aceitou reaction) e Sanji
+  & Pudding 7000 no lider 5000 (buff 5000->6000 nao virou combate; tomou dano).
+- As quatro ofensivas geraram dano ou exigiram counter 2000, mas manter esse
+  uso quase automatico impediu crescer o pool: o bot acumulou duas Linlin
+  ST34-004 e outras cartas caras sem chegar na curva para joga-las.
+- Pudding OP11-070 ainda tem erro de sequenciamento/semantica: no turno 2 o
+  bot ativou primeiro (pagou DON -1/restou), o log nao mostrou o peek, e so
+  DEPOIS anexou 1 DON; no turno 3 repetiu a ativacao sem efeito visivel.
+  A telemetria chamou de confirmed apenas porque `actionUsed` mudou, portanto
+  transition_semantics=100% nao detecta que o beneficio real faltou.
+- Tamago terminou atacando Leader 4000 vs 5000 sem efeito registrado; foi
+  ataque incapaz de pressionar e aparentemente sem beneficio de gatilho.
+
+Proxima correcao recomendada, ainda NAO implementada: (1) reaction de buff
+de combate so pode aceitar se o ator for atacante/defensor relevante; contexto
+0/0 ou defensor diferente do ator deve recusar; (2) custo DON-minus precisa
+comparar ganho marginal com marco de curva/deploy futuro, inclusive nos usos
+ofensivos que taxam counter; (3) Pudding deve anexar requisito antes de ativar
+e confirmed sem mudanca do efeito esperado deve falhar semanticamente; (4)
+ataque trigger-only so passa se o gatilho estiver viavel e for aceito.
+
+## 2026-07-22 (311) - Codex - alvo de ataque, search contextual e contrafactual live
+
+Correcao implementada a partir da partida Kid x Katakuri do bloco 310:
+
+- Ataque contra Character agora exige `poder final >= poder do alvo`. Um
+  `[When Attacking]` util nao autoriza mais escolher Character inalcançavel;
+  ele pode justificar atacar o Leader ou outro corpo alcançavel. Caso Tamago:
+  4000 ataca corpo <=4000; +1 DON ataca <=5000; nunca 6000 -> 9000.
+- Search `top_deck` deixou de usar `avaliar_carta` puro. A regua contextual
+  combina valor intrinseco, jogabilidade agora/proximo turno, counter na mao,
+  aceleracao, win-con do GamePlan e retorno decrescente para bombas caras sem
+  counter ja acumuladas.
+- Contrafactual ao vivo: quando ha 2+ acoes elegiveis, o bridge simula ambas
+  contra o mesmo estado publico mascarado e grava `search_values` com
+  `counterfactual_basis=masked_public_state`. Isso e auditoria apenas: nao
+  troca a escolha por uma simulacao otimista de UNKNOWN. Offline/modelo
+  conhecido continua podendo refinar a jogada.
+- `bot_efficiency_report` agora calcula cobertura contrafactual sobre decisoes
+  main com 2+ alternativas (nao sobre target/defesa/decisao unica); gate subiu
+  de 20% para 95%. O server persiste a base usada no JSONL.
+
+Validacao: `py_compile` limpo; `python smoke_fast.py` = SMOKE FAST OK, com
+testes novos para Tamago/limiar, search sem congestionamento e contrafactual
+mascarado; `python -m unittest test_bot_efficiency_report.py` = 13/13 OK.
+Nao houve mudanca C#: basta reiniciar `JOGAR.bat`/server para testar. Ainda
+pendente do bloco 310: diagnosticar o timeout do fluxo de alvo da Pudding e
+tunar o custo de oportunidade de DON-minus via partida nova/telemetria.
+
+## 2026-07-22 (310) - Codex - partida 21.44: telemetria obrigatoria e diagnostico de eficiencia
+
+Partida nova Kid (P1/humano) x Katakuri OP11-062 (P2/bot), bot perdeu;
+auto-coleta correta em `logs/` (`2026-07-22T21.44.06`) e telemetria em
+`metrics/live_runs/live_2026-07-22T21.44.08.json`, decision log da sessao
+`21.14.23`. Regra nova do usuario versionada em AGENTS.md: todo log novo
+exige cruzar combat log + JSONL/relatorio de telemetria.
+
+**Diagnostico (nenhum tuning aplicado ainda):**
+- Execucao mecanica 95%, mas gate geral FAIL: 89 decisoes, 4 main failed,
+  9 pending, state_after 93,258% (<95), bot_confusion 10 (4 sem acao, 5
+  client timeouts, 1 stuck), counterfactual coverage 0%.
+- Search escolhe `top_deck` por `avaliar_carta` puro. Confirmado no jogo:
+  Brulee/Pudding acumularam bombas 8/9/10; no T3 eram 7/7 cartas custo>=5,
+  no T5 8/9. Faltam valor de curva, counter da mao, aceleracao e plano futuro.
+- Ciclo de DON se auto-sabota: o bot comeca T3/T4/T5 com apenas 4 ativos,
+  paga repetidamente Katakuri/Pudding/Tamago e nunca chega a jogar as bombas.
+  Nem todo DON -1 foi ruim (um buff defensivo virou combate e outro ataque
+  arrancou counter 2000), mas Pudding peek e buffs sem ganho marginal nao
+  comparam contra o proximo deploy/curva.
+- Ataque Tamago 6000 -> Law 9000 tinha objetivo valido (When Attacking tentou
+  KO Bonney e forcou 1 Life para prevenir), mas os 2 DON anexados foram
+  desperdicados: o gatilho funcionava atacando seco e o ataque seguia sem
+  chance de conectar.
+- Pudding/targets: `choose_target` repetiu timeouts e latencias de ~782-912s;
+  no T5 a mesma activate foi reoferecida 4x com estado inalterado. O problema
+  observado e do caminho target/execution, nao apenas do score da Pudding.
+
+**Proxima ordem recomendada:** (1) corrigir loop/latencia da Pudding e
+target; (2) custo de oportunidade de DON por plano de deploy; (3) search
+multiobjetivo (bomba unica + curva/counter/aceleracao/plano); (4) separar
+valor do gatilho de valor de DON anexado no ataque; (5) self-play pareado.
+
+## 2026-07-22 (309) - Codex - informacao oculta honesta + reveals de Life + teto defensivo real
+
+Revisao dos commits 299-308 achou e corrigiu 3 gaps sistemicos antes da
+proxima partida ao vivo:
+
+1. **Decklist adversaria presumida pelo lider:** o caminho ao vivo mascarava
+   mao/Life, mas `sim_bridge` ainda escolhia um `.deck` local pelo codigo do
+   lider e o tratava como lista exata. `_dto_to_gs(hide_hidden=True)` agora
+   marca `hidden_information_masked`; estados adversarios assim nao recebem
+   `full_deck_census`, nao usam `opponent_model_for_leader` na busca e nao
+   usam decklist local na estimativa de counter. Self-play/offline preserva a
+   lista exata, porque ali ela faz parte do estado conhecido.
+2. **Reveal de Life nao passava pelo TopDeck:** o oficial implementa
+   `PeekSelfLife`/`PeekOppLife` com `SetFaceUp(true)` diretamente em
+   `Lgo_MyLifeDeck`. `ReportRevealedCards` agora registra Life face-up dos
+   dois lados, alem do fluxo existente de `lgo_TopDeck`.
+3. **`max_plausible_defense` nao era maximo:** usava 2000 por counter/event,
+   apesar de o banco/motor terem counters de 3000/4000 (OP06-051 tem counter
+   impresso 4000). O teto conservador agora usa 4000; isso evita concluir
+   falsamente que um alvo e insalvavel e recusar buff util.
+
+Validacao: `PYTHONUTF8=1 python smoke_fast.py` = **OK**, incluindo 3 testes
+novos; `py_compile` limpo. `dotnet build` gerou a DLL com sucesso, mas o
+post-build nao conseguiu copiar para `E:\Games\...\BepInEx\plugins` por
+acesso negado/arquivo em uso. Rodar `JOGAR.bat` com o jogo fechado antes da
+partida ao vivo. Proxima etapa depois da validacao real: metricas por lado
+com `botSeat`, mascara da propria Life e tuning instrumentado de decisoes.
+
+## 2026-07-22 (308) - Claude -> Codex - RETOMADA: estado da branch e pendencias
+
+**ATENCAO CODEX: todo o trabalho de 21-22/07 esta na branch
+`claude/execute-remote-control-3qzqgm` (10 commits alem da main, de
+3957440 a este). A main esta PARADA em 4ddda19 (21/07). NAO comece da
+main sem puxar/mergear a branch -- decisao de merge e do usuario.**
+
+Resumo da leva (blocos 299-307, detalhes em cada bloco):
+- Zonas de alvo do bot: DON restado+ativo (restado 1o), DON do oponente,
+  mao do oponente as cegas (`BotExecutor.cs`/`sim_bridge.py`).
+- Memoria de reveals (engine: revealed_life/revealed_deck + OpponentModel)
+  e persistencia ao vivo (MatchMemory + POST /reveal, server+plugin).
+- Jogo honesto: mao/vida do OPONENTE mascaradas ao vivo (UNKNOWN-000,
+  contagem+uid preservados), exceto reveladas via MatchMemory.
+- `JOGAR.bat` (raiz): 1 clique = pull branch + recompila plugin + reinicia
+  server + watch-list.
+- Partida real analisada (Kid x Katakuri, bot perdeu 6-0) -> fixes:
+  winner por assento do bot (botSeat no /outcome; index corrigido) e guard
+  de valor pro buff de batalha com custo (Katakuri -1 DON +1000): defesa
+  usa counters REAIS da propria mao (habilita/barateia), ataque usa
+  decklist REAL do oponente + reveladas + hipergeometrica + teto fisico
+  (counter_estimation, motor unico).
+
+**PENDENTE (em ordem):**
+1. Partida ao vivo validando a leva TODA (rodar JOGAR.bat -- recompila os
+   commits C# 3957440/bae86b6/1d97706; conferir linhas [OPT] e [EngineClient]
+   reveal; conferir winner correto no index e MatchMemory acumulando).
+2. Metricas por lado alem do winner (don_por_atk etc. em parse_combat_log/
+   bot_efficiency_report) ainda assumem bot=[You] -- corrigir usando o
+   botSeat (bloco 304).
+3. Vida PROPRIA do bot ainda vai com code real no DTO (info oculta no jogo
+   real) -- mascarar exige revisar decisoes de trigger (bloco 301).
+4. Tuning (validar com self-play/tune_weights antes de ligar): custo de
+   oportunidade de DON no early (3 deploys/partida), sequenciamento de
+   counters dentro do turno (bloco 304).
+5. Parser: 213 suspeitos do audit_parser_coverage, NENHUM em deck salvo;
+   lote 1 triado ("filtro de custo perdido": OP04-118, OP03-096, OP12-096,
+   OP09-051, OP03-070, OP16-092) aguardando aprovacao do usuario (bloco 268).
+
+Validacao desta sessao: testes unitarios em cada fix + smoke_fast SEMPRE
+verde. C# NAO compilado na nuvem (sem dotnet) -- JOGAR.bat compila.
+
+## 2026-07-22 (307) - Claude (sessao remota web) - estimativa de counter usa a DECKLIST REAL do oponente
+
+Fecha o limite declarado no bloco 306 (usuario concordou): em vez da
+densidade tipica de formato (12x1000+4x2000), `estimate_opp_counter`
+aceita `deck_counter_1000/2000` reais. O guard do buff deriva do MESMO
+lookup ja usado pelo OpponentModel/full_deck_census
+(`deck_cards_for_leader(opp_gs.leader.code)`), liquidando as copias
+VISIVEIS fora de mao/deck (trash/board/stage/reveladas). Sem decklist
+(lider desconhecido) cai na densidade tipica como antes.
+
+Efeito pratico validado em teste: 5000vs5000 contra deck SEM counter ->
+recusa (a densidade tipica pagava); contra deck 2000-pesado -> paga
+(defesa provavel 7000, +1000 cruza). counters_seen_used zerado quando a
+decklist real e usada (as copias ja saem pelo desconto de zona visivel --
+evita descontar 2x). smoke_fast verde.
+
+Nota: `max_plausible_defense` (teto fisico mao+DON) segue generico
+(2000/carta) -- superestima o teto contra deck sem counter, mas o teto so
+e usado pra RECUSAR (alvo insalvavel), entao o erro e conservador.
+
+## 2026-07-22 (306) - Claude (sessao remota web) - guard de buff no ATAQUE vira estatistico (counter_estimation + reveladas)
+
+2o adendo do usuario sobre o guard (bloco 305): no ataque, em vez de
+"contagem da mao + chunk 2000" cru, usar o que da pra saber/estimar da mao
+oculta. Implementado com o MOTOR UNICO ja existente (counter_estimation.py
++ MatchMemory), nada de regua nova:
+
+1. Cartas REVELADAS da mao dele (known_hand_cards, re-injetadas ao vivo
+   pela MatchMemory) entram com valor EXATO;
+2. Slots ocultos: estimate_opp_counter (hipergeometrica: tamanho da mao +
+   counters ja gastos + trash visto) -> defesa PROVAVEL;
+3. max_plausible_defense (mao + DON ativo pra eventos de counter -- ex do
+   usuario: 3 cartas e 1 DON = 1 evento + 2 impressos) -> teto real: se
+   nem com tudo ele salva o alvo, +N e redundante, recusa.
+
+Ordem de decisao no ataque: perdendo -> paga so se +N vira o cru; mao
+vazia OU alvo insalvavel mesmo com a mao toda -> recusa; +N cruza a
+defesa PROVAVEL -> paga; senao paga se aumenta os chunks de counter
+necessarios (taxa). Defesa continua a do bloco 305 (counters reais da
+propria mao). 6 casos novos de teste (incl. exemplo do usuario 3cartas+
+1DON e carta revelada) + smoke_fast verdes.
+
+## 2026-07-22 (305) - Claude (sessao remota web) - adendo do usuario no guard de buff: conta considera as CARTAS NA MAO
+
+Refina o FIX 1 do bloco 304 (pedido explicito do usuario). O guard cru
+("so paga se o +N vira o poder do combate") errava nos dois lados:
+
+- **DEFESA**: o buff pode HABILITAR ou BARATEAR o counter da propria mao.
+  Caso real que o guard anterior recusava: 7000 vs lider 5000 com counter
+  2000 na mao -- counter sozinho = 7000 EMPATA (atacante leva); com o
+  buff, 6000+2000=8000 sobrevive. Regra nova: paga se o menor numero de
+  counters da MAO REAL pra sobreviver diminui com o buff (0 = buff sozinho
+  salva; None = morto ate com a mao toda -> recusa).
+- **ATAQUE**: buff "taxa" a mao do oponente. Perdendo -> paga so se vira
+  (igual antes). Ganhando -> paga se o +N aumenta os CHUNKS de counter
+  (granularidade 2000) que o dono do defensor precisa gastar E ele tem
+  cartas na mao (mao mascarada, mas a CONTAGEM e real). Ex: 6000 vs lider
+  5000 -> +1000 dobra o counter necessario (1->2 chunks) = paga; 6000 vs
+  corpo 2000 -> 3->3 chunks = recusa.
+
+9 casos de teste unitario + smoke_fast verdes. So engine (sim_bridge),
+nada de C# -- mas a partida de validacao precisa do JOGAR.bat de novo
+(pega os fixes 304 tambem, que TEM C#).
+
+## 2026-07-22 (304) - Claude (sessao remota web) - analise da partida Kid x Katakuri + 2 fixes (buff inutil / winner por assento)
+
+Partida de teste da leva 299-303 analisada (`Eustass.Captain.Kid-Y_x_
+Charlotte.Katakuri-P_2026-07-22T15.25.14`, bot=Katakuri=[Opponent],
+usuario=Kid=[You], derrota do bot 6-0, Kid tomou ZERO dano). Confirmacoes
+boas: Mamaragan (DON!! -N) COMPLETOU, lider ativou, auto-coleta OK.
+Problemas confirmados no log e 2 corrigidos:
+
+**FIX 1 (engine) — bot pagava DON por buff de batalha que nao vira o
+combate.** 2 das 6 ativacoes do lider foram na defesa contra Law 9000:
+5000->6000, matematicamente inutil, 1 DON fora + morreu. Causa:
+`resolve_reaction` delega nao-redirects pra `resolve_optional_effect`,
+que nao recebia contexto de combate — a viabilidade ampla passa (peek
+"produz efeito") e pagava sempre. Fix generico em `sim_bridge.py`:
+`resolve_optional_effect` ganha attacker_power/defender_power/
+actor_defending (derivado do defender_uid em resolve_reaction; a carta
+pode ter when_attacking E on_opp_attack identicos — o TRIG nao serve de
+discriminador) e um guard: efeito que so tem buff-de-batalha+peek so paga
+se o buff VIRA o combate (regua do motor unico buff_wins_combat; janela
+indeterminada = conservador, recusa so se nao vira em nenhuma leitura).
+Testes unitarios 4 quadrantes + smoke_fast verdes.
+
+**FIX 2 (plugin+server+collect) — winner invertido quando o bot nao e o
+assento [You].** O index registrou winner=p2 (Katakuri) numa partida que o
+bot (Katakuri) PERDEU 6-0. `_apply_winner` assumia bot=p1=[You] sempre;
+nesta partida o bot controlava o assento 2 ([Opponent] — prova: linha
+`[Opponent] Downloaded the Combat Log!` e o proprio bot baixando o log).
+Fix: `ReportOutcome` (C#) envia botSeat=p1/p2 (BotPlayerIndex), /outcome
+repassa, `_apply_winner(bot_seat=...)` mapeia certo. Entrada do index
+corrigida manualmente pra p1. ATENCAO pendente: outras metricas por lado
+(don_por_atk etc. em parse/report) tambem assumem bot=[You] — nao
+corrigidas nesta sessao, conferir antes de confiar nelas em partidas de
+assento trocado.
+
+**NAO corrigido (tuning, validar com self-play antes):** custo de
+oportunidade de DON no early (3 deploys na partida inteira; Mamaragan -2 +
+lider -1 nos turnos 3-5 comeram os deploys); sequenciamento de counters
+dentro do turno (gastou Tamago no ataque do Killer e deixou o Kid 6000 vs
+5000 passar limpo em seguida).
+
+**C# NAO compilado aqui** — `JOGAR.bat` no desktop recompila tudo.
+
+## 2026-07-22 (303) - Claude (sessao remota web) - JOGAR.bat: preparo de 1 clique pro teste ao vivo
+
+`JOGAR.bat` (raiz do repo): duplo-clique com o jogo FECHADO -> git pull da
+branch de teste (claude/execute-remote-control-3qzqgm) -> recompila plugin
+(setup_bepinex.ps1) -> mata server antigo (so a janela "OPTCG Engine
+Server" aberta por ele mesmo) -> sobe server novo -> imprime a watch-list
+dos blocos 299-302. Depois e so abrir o OPTCGSim e jogar. Pre-flight na
+nuvem verde (smoke_fast OK, server.py importa limpo); a compilacao C# so
+acontece no desktop via o proprio script.
+
+## 2026-07-22 (302) - Claude (sessao remota web) - plugin C# chama POST /reveal (fecha pendencia 1 do bloco 301)
+
+Fecha o ciclo da MatchMemory: sem isso a mascara do bloco 301 funcionava
+mas a memoria nunca acumulava (bot ficava so no "nao sei nada").
+
+- `EngineClient.ReportReveal(zone, uids)` -- POST /reveal best-effort
+  (mesmo padrao do ReportClientTimeout; falha de rede nao trava o clique).
+- `BotExecutor.ReportRevealedCards(gls, botPs, oppPs)` -- le o lgo_TopDeck
+  (onde o jogo poe a carta mostrada) e classifica a zona pelo LUGAR onde o
+  uid vive agora: mao do oponente (Arlong) / vida do oponente / propria
+  vida (Katakuri, OP15-119); quem nao e nada do bot = peek de deck inimigo
+  (Pudding). Propria mao e proprio deck NAO sao reportados (bot ja ve a
+  mao; own_deck nao e rastreado -- gs.deck ao vivo e placeholder).
+- `BotDriver`: no estado ConfirmRevealedCard/ConfirmRevealedCardOnOpponentsTurn,
+  chama ReportRevealedCards ANTES do clique de confirmacao (o clique
+  esvazia a zona de reveal).
+
+**NAO COMPILADO** (sem dotnet na nuvem) -- `setup_bepinex` no desktop
+compila junto com os commits 3957440/d0850b3. Validar ao vivo: linha
+`[EngineClient] reveal` no LogOutput + evento "reveal" no decision log +
+memoria acumulando no /collection_status... (snapshot no retorno do /reveal).
+INCERTEZA declarada: a classificacao por membership assume que a carta
+revelada ainda consta na lista da zona de origem enquanto exibida no
+lgo_TopDeck -- se o jogo a MOVER (em vez de copiar referencia), tudo cai no
+fallback opp_deck; conferir na 1a partida real e ajustar se preciso.
+
+## 2026-07-22 (301) - Claude (sessao remota web) - mao/vida do oponente OCULTAS ao vivo + persistencia de reveals (MatchMemory)
+
+Continuacao dos blocos 299/300. Decisao do usuario (22/07): **o bot joga
+como humano vs humano** -- nao pode saber as cartas da mao do oponente,
+so as reveladas durante o jogo.
+
+**Achado que motivou:** ao vivo o bot jogava com "raio-X". O plugin manda a
+mao E a vida REAIS do oponente no DTO (GameStateBuilder monta BuildPlayer
+pros 2 lados com code real; o cliente tem o estado inteiro em memoria) e o
+engine USAVA (opp_counter_available soma counters reais de opp.hand; eval_v2
+via counter_in_hand). O proprio codigo ja admitia num comentario ("se no
+futuro a mao for oculta de verdade... voltar a estimativa").
+
+**Fix (engine_server, nada de C# ainda):**
+- `BOT/engine_server/match_memory.py` (NOVO): MatchMemory -- uids
+  (`deckUniqueId`, estavel a partida toda) revelados por zona (opp_hand/
+  opp_life/own_life/opp_deck). Reset no /mulligan (partida nova).
+- `server.py::_dto_to_gs(hide_hidden=True)` -- usado pro OPONENTE nos 3
+  endpoints (/defense, /choose_target, /decide): mao e vida viram
+  placeholders UNKNOWN-000 (contagem + deckUniqueId preservados -- o uid e
+  a "costas da carta", necessario pra clicar como alvo), EXCETO uids na
+  MatchMemory, que entram com identidade real E marcados em
+  revealed_to_opponent/revealed_life (alimenta OpponentModel/known_*_cards
+  = a persistencia ao vivo da MEMORIA_REVEALS.md, pendencia 1).
+- Endpoint novo `POST /reveal` {zone, uids}: plugin reporta o que o jogo
+  mostrou ao bot; grava na MatchMemory + telemetria (write_event "reveal").
+
+**Efeito colateral esperado (intencional):** counters/blockers da mao do
+oponente deixam de ser visiveis -- caminhos que liam a mao real agora veem
+UNKNOWN (counter 0). O jogo fica honesto; a estimativa probabilistica
+(OpponentModel/counter_estimation por hand_size) e o caminho certo daqui
+pra frente. Pode mudar winrate ao vivo -- MEDIR nas proximas partidas.
+
+**PENDENTE (desktop):**
+1. Plugin C#: chamar POST /reveal quando o jogo mostra carta ao bot
+   (ConfirmRevealedCard, reveal de mao do Arlong, peek de vida/deck). Sem
+   isso a MatchMemory fica vazia (mascara funciona, memoria nao acumula).
+2. Vida PROPRIA do bot ainda vai com code real no DTO (tambem e info
+   oculta no jogo real) -- mascarar exige revisar decisoes de trigger que
+   leem gs.life; deixado explicitamente pra depois.
+3. Recompilar plugin (`setup_bepinex`) p/ commits 3957440 (zonas DON/mao) e
+   testar ao vivo tudo junto.
+
+**Validado aqui:** testes unitarios do _dto_to_gs (mascara com contagem/uid
+preservados, re-injecao so do revelado, reset por partida, lado do bot
+inalterado) + smoke_fast verde.
+
+## 2026-07-21 (300) - Claude (sessao remota web) - memoria de cartas reveladas (vida/deck/search)
+
+Continuacao do bloco 299 (mesma sessao). Pedido do usuario: quando o bot
+revela carta (vida, deck, mao do oponente, e cartas vistas em SEARCH),
+registrar na memoria pra o turno e os proximos, e usar isso em decisoes.
+
+**Ja existia (nao reinventado):** `GameState.revealed_to_opponent` +
+`known_hand_cards()` + `OpponentModel` (Monte Carlo). `reveal_opp_hand`
+(Arlong) ja alimentava a mao conhecida do oponente.
+
+**Estendido (mesmo padrao id(card) + limpeza lazy) pra vida e deck:**
+- `GameState.revealed_life` / `known_life_cards()` -- peek/reveal de Life
+  (OP15-119 `life_top_revealed_cost`).
+- `GameState.revealed_deck` / `known_deck_cards()` -- topo do deck visto por
+  SEARCH (`add_to_hand`/`trash_from_looked_deck`, "look at top N": as N cartas
+  ficam conhecidas; a que sai some na limpeza lazy) e por peek
+  (`peek_opp_deck_top` Pudding, `reveal_opp_deck_top_choose_cost`).
+- `__deepcopy__` copia os 2 sets novos (isolados por clone).
+- Consumo: `OpponentModel` exclui a vida conhecida do pool e a inclui como
+  CERTEZA na amostra (antes toda a vida era desconhecida).
+
+**Doc completo:** `scriptis_da_ia/optcg_engine/MEMORIA_REVEALS.md` (design,
+pontos de captura, invalidacao lazy, e o PENDENTE).
+
+**PENDENTE (precisa desktop/ao vivo):** (1) persistencia entre decisoes AO
+VIVO -- em self-play a arvore de estados clonados ja persiste, mas ao vivo
+cada /decide reconstroi o GameState do DTO; falta camada no engine_server por
+match_id (chave `deckUniqueId`, nao `id()`). (2) consumo mais amplo (topo do
+proprio deck no sequenciamento, topo da vida em triggers) -- afeta winrate,
+validar com self-play/tune_weights antes de ligar.
+
+**Validado aqui:** testes unitarios (accessors+limpeza lazy, deepcopy isola,
+OpponentModel usa vida conhecida, captura peek end-to-end) + `smoke_fast.py`
+verde. Nada disso mexe no bot C#; e tudo engine (cerebro).
+
+## 2026-07-21 (299) - Claude (sessao remota web) - zonas de alvo faltantes do bot: DON restado/oponente + mao do oponente
+
+Sessao remota (usuario pelo iPhone). Revisao dirigida das zonas que o bot
+consegue SELECIONAR como alvo, a pedido do usuario. Achados confirmados no
+validador oficial (`decompiled_python/validators.py::_valid_target_location`)
+e corrigidos em `BotExecutor.cs` (C#) + `sim_bridge.py`. NAO da pra
+compilar/testar ao vivo aqui (sem dotnet/jogo) -- **precisa recompilar via
+`setup_bepinex` no desktop e testar ao vivo.**
+
+**Gaps corrigidos:**
+1. **DON!! -N (don_minus) so coletava DON ATIVO.** O bloco 298 (`c18b068`)
+   matou o ciclo infinito, mas assumiu "DON restado nunca e clique valido" --
+   FALSO: `don_minus` RETORNA ao deck (nao resta), e `_valid_target_location`
+   aceita `don_area_card` SEM checar `b_tapped`. Agora coleta restado + ativo
+   em zonas separadas (`own_don_rested`/`own_don`) e o sim_bridge ordena
+   RESTADO antes de ATIVO (preserva o DON usavel neste turno -- pedido do
+   usuario). Tambem conserta o risco de nao achar candidato quando so sobra
+   DON restado/anexado (When Attacking tardio). DON anexado ainda de fora
+   (nao da pra confirmar aqui quais flags o don_minus seta -- ver dnspy).
+2. **DON do oponente nunca era candidato.** Adicionada zona `opp_don`
+   (`oppPs.Lgo_MyDonCostArea`) -- efeitos do Krieg que restam/retornam DON
+   adversario agora tem alvo.
+3. **Mao do oponente nunca era candidata.** Adicionada zona `opp_hand`
+   (`oppPs.Lgo_MyHand`) para "choose 1 card from your opponent's hand"
+   (Arlong OP01-063 `reveal_opp_hand`, Kanjuro OP01-038
+   `opp_choose_trash_our_hand`). Emitida SEM code (`hideCode`) -- o bot
+   escolhe as cegas, sem trapacear avaliando cartas ocultas.
+
+**NAO era gap (verificado):** mao propria (`own_hand` ja coletado, descarte
+pega a pior carta); "olhar topo da vida/deck" (Katakuri/Pudding) resolve pelo
+caminho de reveal/botao `ConfirmRevealedCard`/`FinalizeTopDeck`, ja remendado
+nos blocos 20-21/07, NAO por clique de alvo -- por isso vida NAO virou zona
+de CollectTargetCandidates.
+
+**Validado aqui:** ordenacao DON (restado>ativo>opp_don) + opp_hand incluido
+sem code, via teste unitario; `smoke_fast.py` verde.
+
+**EM ANDAMENTO (mesma sessao):** memoria de cartas reveladas (vida/deck/mao
+do oponente + reveladas por SEARCH) -- ver bloco/commit seguinte.
+
 ## 2026-07-21 (298) - Claude - causa raiz REAL do "líder sem efeito" achada: custo DON!! -N nunca tinha zona de candidato (hipótese do usuário confirmada no código decompilado)
 
 Continuação direta do bloco 297: usuário jogou mais uma partida (já com

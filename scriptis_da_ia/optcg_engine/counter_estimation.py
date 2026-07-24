@@ -45,6 +45,8 @@ def estimate_opp_counter(
     opp_hand_size: int,
     counters_seen_used: int = 0,
     cards_seen_total: int = 0,
+    deck_counter_1000: int | None = None,
+    deck_counter_2000: int | None = None,
 ) -> dict:
     """
     Estima a probabilidade de o oponente ter counter na mão.
@@ -55,6 +57,13 @@ def estimate_opp_counter(
                             (descontadas do total estimado)
         cards_seen_total: nº de cartas do oponente já vistas (jogadas+trash),
                           para refinar a estimativa de quantas restam
+        deck_counter_1000/2000: contagem REAL de counters na decklist do
+                          oponente, quando conhecida (produto sempre informa
+                          a lista — mesma premissa do OpponentModel). None =
+                          cai na densidade típica de formato (TYPICAL_*).
+                          Passe valores JÁ LÍQUIDOS das cópias visíveis
+                          (trash/board) e use counters_seen_used=0 nesse
+                          caso, pra não descontar duas vezes.
 
     Returns:
         {
@@ -68,9 +77,14 @@ def estimate_opp_counter(
         return {'p_any_counter': 0.0, 'p_counter_2000': 0.0,
                 'expected_counter_value': 0}
 
-    # Counters restantes no deck+mão, descontando os já usados
-    rem_1000 = max(0, TYPICAL_COUNTER_1000 - max(0, counters_seen_used))
-    rem_2000 = TYPICAL_COUNTER_2000
+    # Counters restantes no deck+mão: decklist REAL quando conhecida,
+    # senão densidade típica de formato descontando os já usados
+    base_1000 = deck_counter_1000 if deck_counter_1000 is not None \
+        else TYPICAL_COUNTER_1000
+    base_2000 = deck_counter_2000 if deck_counter_2000 is not None \
+        else TYPICAL_COUNTER_2000
+    rem_1000 = max(0, base_1000 - max(0, counters_seen_used))
+    rem_2000 = max(0, base_2000)
     rem_counter_total = rem_1000 + rem_2000
 
     # População da qual a mão do oponente foi tirada: deck menos o que já saiu
@@ -96,10 +110,11 @@ def estimate_opp_counter(
     }
 
 
-# Counter impresso máximo por carta na mão (a maioria é 1000, algumas 2000)
-MAX_PRINTED_COUNTER_PER_CARD = 2000
-# Boost típico de um evento de counter (varia 1000-4000; usamos um teto plausível)
-TYPICAL_COUNTER_EVENT_BOOST = 2000
+# Limites conservadores do banco/motor. Estes valores alimentam uma decisao
+# de IMPOSSIBILIDADE ("nem com tudo salva"), portanto precisam ser teto, nao
+# media tipica: existem counter impresso e EVENT de 3000/4000.
+MAX_PRINTED_COUNTER_PER_CARD = 4000
+MAX_COUNTER_EVENT_BOOST = 4000
 
 
 def max_plausible_defense(
@@ -132,7 +147,7 @@ def max_plausible_defense(
     # As demais cartas podem somar counter IMPRESSO (não custa DON)
     n_printed = opp_hand_size - n_events
 
-    max_event = n_events * TYPICAL_COUNTER_EVENT_BOOST
+    max_event = n_events * MAX_COUNTER_EVENT_BOOST
     max_printed = n_printed * MAX_PRINTED_COUNTER_PER_CARD
 
     max_defense = target_base_power + max_printed + max_event

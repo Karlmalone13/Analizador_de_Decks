@@ -133,6 +133,58 @@ _match  = None   # OPTCGMatch: maquinaria de regras usada por choose_action
 # Planner cair pra proxima acao da lista.
 _declined_optional: set[tuple[str, int]] = set()
 _live_match_id = new_decision_id()
+_match_has_decisions = False
+_match_has_outcome = False
+_decision_context: dict[str, dict] = {}
+
+
+def _resource_snapshot(state: dict | None) -> dict | None:
+    """Ledger observavel de uma ponta da transicao; nao decide nada."""
+    if not state:
+        return None
+    side = state.get("bot", state)
+    board = side.get("board") or []
+    leader = side.get("leader") or {}
+    attached = sum(int(c.get("donAttached", 0) or 0) for c in board)
+    attached += int(leader.get("donAttached", 0) or 0)
+    active = int(side.get("activeDon", 0) or 0)
+    rested = int(side.get("restedDon", 0) or 0)
+    return {
+        "active_don": active,
+        "rested_don": rested,
+        "attached_don": attached,
+        "don_on_field": active + rested + attached,
+        "hand": len(side.get("hand") or []),
+        "board": len(board),
+        "life": len(side.get("life") or []),
+        "deck": side.get("deckCount"),
+    }
+
+
+def _transition_observation(before: dict | None, after: dict | None,
+                            chosen: dict | None) -> dict | None:
+    b, a = _resource_snapshot(before), _resource_snapshot(after)
+    if b is None or a is None:
+        return None
+    delta = {key: a[key] - b[key] for key in
+             ("active_don", "rested_don", "attached_don", "don_on_field",
+              "hand", "board", "life")}
+    action_type = (chosen or {}).get("type")
+    useful_signals = {
+        "drew_net_cards": max(0, delta["hand"]),
+        "developed_board": max(0, delta["board"]),
+        "spent_field_don": max(0, -delta["don_on_field"]),
+        "attached_don": max(0, delta["attached_don"]),
+        "life_lost": max(0, -delta["life"]),
+    }
+    return {"action_type": action_type, "before": b, "after": a,
+            "delta": delta, "utility_signals": useful_signals}
+
+# Memoria de reveals DA PARTIDA (persistencia entre /decide -- ver
+# match_memory.py e MEMORIA_REVEALS.md). Populada pelo /reveal, resetada no
+# /mulligan, consumida por _dto_to_gs(hide_hidden=True).
+from match_memory import MatchMemory
+_match_memory = MatchMemory()
 
 
 def _get_bridge():
@@ -212,8 +264,34 @@ def _make(dto: CardDto):
         return None
 
 
-def _dto_to_gs(player: PlayerDto, turn: int):
-    """Converte PlayerDto em GameState do engine."""
+def _hidden_placeholder(dto: CardDto):
+    """Carta UNKNOWN no lugar de informacao oculta (mao/vida do oponente).
+
+    Mantem a CONTAGEM e o deckUniqueId (o uid e publico -- e a "costas da
+    carta" que o bot ve e pode precisar clicar como alvo), mas nenhuma
+    identidade: codigo/custo/poder/counter neutros. Igual ao padrao ja usado
+    pro deck oculto (UNKNOWN-000 placeholders)."""
+    from optcg_engine.decision_engine import _make_card
+    data = {"name": "?", "type": "CHARACTER", "cost": 1, "power": 0,
+            "text": "", "color": "", "sub_types": "", "life": 0,
+            "has_trigger": False}
+    card = _make_card("UNKNOWN-000", data)
+    card._deck_uid = dto.deckUniqueId
+    return card
+
+
+def _dto_to_gs(player: PlayerDto, turn: int, hide_hidden: bool = False):
+    """Converte PlayerDto em GameState do engine.
+
+    hide_hidden=True (usado pro OPONENTE): mao e vida viram placeholders
+    UNKNOWN -- o DTO traz as cartas reais (o cliente tem o estado inteiro em
+    memoria), mas o bot deve jogar como humano vs humano (regra do usuario,
+    21/07) e NAO pode ler informacao oculta. Excecao: uids registrados na
+    MatchMemory (revelados durante a partida via /reveal) entram com a
+    identidade real E marcados como conhecidos (revealed_to_opponent/
+    revealed_life), alimentando o OpponentModel e o lethal conservador
+    (opp_counter_chunks_for_lethal). E a persistencia ao vivo da memoria de
+    reveals (MEMORIA_REVEALS.md, pendencia 1)."""
     from optcg_engine.decision_engine import GameState, _make_card
     bridge = _get_bridge()
     cards_db = getattr(bridge, '_cards_db', {})
@@ -228,10 +306,36 @@ def _dto_to_gs(player: PlayerDto, turn: int):
         leader = _make_card("STUB-000", data)
 
     gs = GameState(leader=leader)
-    gs.hand          = [c for c in (_make(d) for d in player.hand) if c]
+    # Sinal explicito para o bridge: este estado veio do caminho ao vivo e
+    # contem informacao oculta mascarada. Impede inferir a decklist exata do
+    # oponente apenas pelo lider (um humano nao conhece essa lista).
+    gs.hidden_information_masked = hide_hidden
+    if hide_hidden:
+        # Mao oculta: identidade so das reveladas (MatchMemory), resto UNKNOWN
+        gs.hand = []
+        for d in player.hand:
+            if _match_memory.is_known("opp_hand", d.deckUniqueId):
+                card = _make(d) or _hidden_placeholder(d)
+                if card.code != "UNKNOWN-000":
+                    gs.revealed_to_opponent.add(id(card))
+            else:
+                card = _hidden_placeholder(d)
+            gs.hand.append(card)
+        # Vida oculta: mesma regra
+        gs.life = []
+        for d in player.life:
+            if _match_memory.is_known("opp_life", d.deckUniqueId):
+                card = _make(d) or _hidden_placeholder(d)
+                if card.code != "UNKNOWN-000":
+                    gs.revealed_life.add(id(card))
+            else:
+                card = _hidden_placeholder(d)
+            gs.life.append(card)
+    else:
+        gs.hand = [c for c in (_make(d) for d in player.hand) if c]
+        gs.life = [c for c in (_make(d) for d in player.life) if c]
     gs.field_chars   = [c for c in (_make(d) for d in player.board) if c]
     gs.field_stage   = _make(player.stage) if player.stage else None
-    gs.life          = [c for c in (_make(d) for d in player.life) if c]
     gs.don_available = player.activeDon
     gs.don_rested    = player.restedDon
     # Lixeira REAL (plugin novo, 12/07): informacao publica do jogo. Sem ela
@@ -276,7 +380,7 @@ def _dto_to_gs(player: PlayerDto, turn: int):
     # o usuario customizar a lista), mas e a MESMA decklist que ja usamos pra
     # tudo mais. Sem match (lider desconhecido) fica None -- posture() ja
     # degrada pra 'midrange' nesse caso, comportamento antigo preservado.
-    if gs.leader is not None:
+    if gs.leader is not None and not hide_hidden:
         cards = bridge.deck_cards_for_leader(gs.leader.code)
         if cards:
             from optcg_engine.decision_engine import (
@@ -301,6 +405,25 @@ def _dto_to_gs(player: PlayerDto, turn: int):
 
 
 # ── Endpoints ─────────────────────────────────────────────────────────────────
+
+class RevealRequest(BaseModel):
+    zone: str            # opp_hand | opp_life | own_life | opp_deck
+    uids: list[int] = [] # deckUniqueId das cartas que o jogo MOSTROU ao bot
+
+
+@app.post("/reveal")
+def reveal(req: RevealRequest):
+    """Plugin reporta cartas cuja identidade o jogo revelou ao bot (Arlong
+    revela mao, peek de vida/deck, ConfirmRevealedCard etc.). Fica na
+    MatchMemory ate o fim da partida; _dto_to_gs re-injeta a identidade
+    real dessas cartas nos /decide seguintes (persistencia da memoria de
+    reveals -- ver match_memory.py). Chamada C# no plugin: pendente."""
+    novos = _match_memory.note(req.zone, req.uids)
+    write_event("reveal", new_decision_id(), match_id=_live_match_id,
+                zone=req.zone, uids=req.uids, novos=novos,
+                memory=_match_memory.snapshot())
+    return {"ok": True, "novos": novos, "memory": _match_memory.snapshot()}
+
 
 class MulliganRequest(BaseModel):
     hand: list[CardDto] = []
@@ -369,19 +492,31 @@ class OutcomeReport(BaseModel):
     result: str
     stateFinal: Optional[GameStateDto] = None
     reason: Optional[str] = None
+    # Assento do bot no jogo: "p1" (label [You] do combat log) ou "p2"
+    # ([Opponent]). Default p1 = plugin antigo. Sem isso o winner do index
+    # saia invertido quando o bot controlava o outro lado (achado 22/07).
+    botSeat: str = "p1"
 
 
 @app.post("/execution")
 def execution(report: ExecutionReport):
     if report.status not in {"sent", "confirmed", "failed"}:
         raise HTTPException(status_code=400, detail="status de execucao invalido")
+    context = _decision_context.get(report.decisionId, {})
+    state_after = _model_dict(report.stateAfter) if report.stateAfter else None
     write_event(
         "execution",
         report.decisionId,
+        match_id=context.get("match_id", _live_match_id),
         status=report.status,
-        state_after=_model_dict(report.stateAfter) if report.stateAfter else None,
+        state_after=state_after,
+        transition_observation=_transition_observation(
+            context.get("state_before"), state_after, context.get("chosen_action")),
+        attack_quality=context.get("attack_quality"),
         error=report.error,
     )
+    if report.status in {"confirmed", "failed"}:
+        _decision_context.pop(report.decisionId, None)
     if report.status == "failed":
         # Ao vivo (19/07): cobre os casos que o plugin C# ja detecta e
         # reporta (acao repetida 3x sem efeito, 2 falhas seguidas -- ver
@@ -418,11 +553,13 @@ def client_timeout(report: ClientTimeoutReport):
 
 @app.post("/outcome")
 def outcome(report: OutcomeReport):
+    global _match_has_outcome
     if report.result not in {"win", "loss", "draw", "aborted"}:
         raise HTTPException(status_code=400, detail="resultado invalido")
     write_event("outcome", "match", match_id=_live_match_id, result=report.result,
                 state_final=_model_dict(report.stateFinal) if report.stateFinal else None,
-                reason=report.reason)
+                reason=report.reason, bot_seat=report.botSeat)
+    _match_has_outcome = True
     if os.environ.get("BOT_AUTO_COLLECT", "1") != "0":
         _collection_status.update(status="running", message="salvando log no banco",
                                   report=None, receipt=None)
@@ -430,7 +567,8 @@ def outcome(report: OutcomeReport):
             try:
                 from collect_latest_match import collect_latest
                 receipt = collect_latest(DECISION_LOG_PATH, match_id=_live_match_id,
-                                          result=report.result)
+                                          result=report.result,
+                                          bot_seat=report.botSeat)
                 _collection_status.update(
                     status="success", message="log capturado e salvo no banco",
                     report=receipt.get("report"), receipt=receipt.get("receipt"))
@@ -449,12 +587,19 @@ def outcome(report: OutcomeReport):
 def _record_aux_decision(kind: str, state_before: dict, legal_actions: list,
                          chosen_action: dict, response: dict, **context) -> dict:
     """Envelope comum para decisoes fora da Main Phase; nao decide nada."""
+    global _match_has_decisions
     decision_id = new_decision_id()
     out = {**response, "decisionId": decision_id}
     write_event("decision", decision_id, match_id=_live_match_id, decision_kind=kind,
                 phase=context.pop("phase", kind), state_before=state_before,
                 scored_actions=legal_actions, chosen_action=chosen_action,
                 response=out, **context)
+    _match_has_decisions = True
+    _decision_context[decision_id] = {
+        "match_id": _live_match_id,
+        "state_before": state_before,
+        "chosen_action": chosen_action,
+    }
     return out
 
 
@@ -464,15 +609,26 @@ def mulligan(req: MulliganRequest):
     Decide mulligan da mao inicial usando o engine (_mulligan_decision).
     Resposta: {"mulligan": bool, "reason": str}
     """
-    global _live_match_id
+    global _live_match_id, _match_has_decisions, _match_has_outcome
     started = time.perf_counter()
-    _live_match_id = new_decision_id()
     try:
+        # Fecha explicitamente uma tentativa anterior que recebeu decisoes
+        # mas nunca chegou a GameOver. Sem isso, a proxima partida criava um
+        # novo match_id e deixava outcome coverage artificialmente em 50%.
+        if _match_has_decisions and not _match_has_outcome:
+            write_event("outcome", "match", match_id=_live_match_id,
+                        result="aborted", state_final=None,
+                        reason="nova partida iniciou antes de outcome")
+        _live_match_id = new_decision_id()
+        _match_has_decisions = False
+        _match_has_outcome = False
+        _decision_context.clear()
         # Partida nova: limpa recusas da partida anterior. Sem isso, uma
         # ativacao recusada no turno N da partida passada continuava
         # excluida no turno N de TODAS as partidas seguintes do mesmo
         # processo (o set e chaveado por (codigo, turno), sem nocao de jogo).
         _declined_optional.clear()
+        _match_memory.reset()  # reveals sao por partida
         match = _get_match()
         hand_cards = [c for c in (_make(d) for d in req.hand) if c]
         if not hand_cards:
@@ -502,7 +658,7 @@ def defense(req: DefenseRequest):
         from optcg_engine.decision_engine import DecisionEngine
         bridge = _get_bridge()
         gs     = _dto_to_gs(req.state.bot, req.state.turnNumber)
-        opp_gs = _dto_to_gs(req.state.opp, req.state.turnNumber)
+        opp_gs = _dto_to_gs(req.state.opp, req.state.turnNumber, hide_hidden=True)
 
         out = {"blockerId": 0, "counterIds": [], "useTrigger": False, "useReaction": False}
         decision_trace = {}
@@ -585,7 +741,7 @@ def choose_target(req: ChooseTargetRequest):
     try:
         bridge = _get_bridge()
         gs     = _dto_to_gs(req.state.bot, req.state.turnNumber)
-        opp_gs = _dto_to_gs(req.state.opp, req.state.turnNumber)
+        opp_gs = _dto_to_gs(req.state.opp, req.state.turnNumber, hide_hidden=True)
 
         # Cronometro proprio (nao so o `started` do endpoint inteiro):
         # achado real 20/07 (partida ao vivo) -- 2 chamadas de /choose_target
@@ -643,11 +799,14 @@ def decide(state: GameStateDto):
     Resposta: {"type": "play"|"attack"|"attach_don"|"end_turn",
                "cardId": int, "targetId": int, "donToAttach": int}
     """
+    global _match_has_decisions
     decision_id = new_decision_id()
     trace = {}
 
     def finish(payload: dict, reason: str) -> dict:
+        global _match_has_decisions
         out = {**payload, "decisionId": decision_id}
+        state_before = _model_dict(state)
         write_event(
             "decision",
             decision_id,
@@ -655,10 +814,15 @@ def decide(state: GameStateDto):
             decision_kind="main",
             phase="main",
             turn=state.turnNumber,
-            state_before=_model_dict(state),
+            state_before=state_before,
             scored_actions=trace.get("scored_actions", []),
             chosen_action=trace.get("chosen_action"),
             search_values=trace.get("search_values", []),
+            line_search=trace.get("line_search"),
+            resource_ledger_before=trace.get("resource_ledger_before"),
+            latency_segments_ms=trace.get("latency_segments_ms"),
+            attack_quality=trace.get("attack_quality"),
+            counterfactual_basis=trace.get("counterfactual_basis"),
             selection=trace.get("selection", reason),
             timed_out=trace.get("timed_out", False),
             priority=trace.get("priority"),
@@ -669,6 +833,13 @@ def decide(state: GameStateDto):
             response=out,
             reason=reason,
         )
+        _match_has_decisions = True
+        _decision_context[decision_id] = {
+            "match_id": _live_match_id,
+            "state_before": state_before,
+            "chosen_action": trace.get("chosen_action"),
+            "attack_quality": trace.get("attack_quality"),
+        }
         # Marcadores AO VIVO (19/07): antes so apareciam rodando
         # bot_efficiency_report.py depois da partida. "sem acao elegivel"
         # e "engine_error" sao os 2 sinais reais de "bot nao sabe o que
@@ -699,7 +870,7 @@ def decide(state: GameStateDto):
         bridge = _get_bridge()
         match  = _get_match()
         gs     = _dto_to_gs(state.bot, state.turnNumber)
-        opp_gs = _dto_to_gs(state.opp, state.turnNumber)
+        opp_gs = _dto_to_gs(state.opp, state.turnNumber, hide_hidden=True)
 
         # So tipos que o plugin sabe executar — os demais sao pulados pelo
         # bridge em vez de encerrar o turno. exclude_activate_codes: ativacoes
@@ -757,6 +928,21 @@ def decide(state: GameStateDto):
             # counter so com DON ocioso no plano do turno (match da acesso as
             # jogadas planejadas + reserva de defesa)
             don_attach = bridge.don_for_attack(gs, opp_gs, action, match=match)
+            target_power = (opp_gs.leader.power if ttype == 'leader'
+                            else getattr(action[4], 'power', 0))
+            from optcg_engine.decision_engine import attack_time_power
+            planned_power = attack_time_power(attacker, opp_gs) + don_attach * 1000
+            trace["attack_quality"] = {
+                "attacker_code": attacker.code,
+                "target_type": ttype,
+                "target_code": getattr(action[4], 'code', None)
+                    if ttype == 'character' else getattr(opp_gs.leader, 'code', None),
+                "power_before_attach": attack_time_power(attacker, opp_gs),
+                "don_planned": don_attach,
+                "power_planned": planned_power,
+                "target_power_before": target_power,
+                "planned_gap": planned_power - target_power,
+            }
 
         elif action_type == "attach_don" and len(action) > 3:
             card = action[2]

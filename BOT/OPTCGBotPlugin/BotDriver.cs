@@ -111,7 +111,8 @@ namespace OPTCGBotPlugin
                 var finalDto = GameStateBuilder.Build(
                     gls.Lps_Players[BotPlayerIndex], gls.Lps_Players[1 - BotPlayerIndex], gls);
                 EngineClient.ReportOutcome(botWon ? "win" : "loss", finalDto,
-                                           $"GameOver; bot=P{BotPlayerIndex + 1}");
+                                           $"GameOver; bot=P{BotPlayerIndex + 1}",
+                                           BotPlayerIndex == 0 ? "p1" : "p2");
                 _collectionMessage = "Salvando log no banco...";
                 _collectionState = "running";
                 return;
@@ -344,6 +345,16 @@ namespace OPTCGBotPlugin
             if (gls.e_CurrentState == GameplayState.ConfirmRevealedCard
                 || gls.e_CurrentState == GameplayState.ConfirmRevealedCardOnOpponentsTurn)
             {
+                // ANTES de confirmar (o clique esvazia a zona de reveal):
+                // reporta as cartas mostradas pro engine_server guardar na
+                // MatchMemory da partida (POST /reveal) -- e o que permite ao
+                // engine "lembrar" da carta revelada nos /decide seguintes,
+                // agora que a mao/vida do oponente chegam mascaradas
+                // (HANDOFF blocos 300/301).
+                BotExecutor.ReportRevealedCards(
+                    gls,
+                    gls.Lps_Players[BotPlayerIndex],
+                    gls.Lps_Players[1 - BotPlayerIndex]);
                 gls.ChoiceButtonClicked(ButtonChoiceType.ConfirmRevealedCard, -1);
                 _cooldown = 0.5f;
                 return;

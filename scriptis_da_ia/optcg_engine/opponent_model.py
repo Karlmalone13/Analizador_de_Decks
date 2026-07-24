@@ -67,6 +67,10 @@ class OpponentModel:
             excluded[opp.field_stage.code] += 1
         for c in opp.known_hand_cards():
             excluded[c.code] += 1
+        # Vida conhecida (revelada por peek/efeito): sabemos onde essas copias
+        # estao, entao saem da populacao de sorteio -- mesma logica da mao.
+        for c in opp.known_life_cards():
+            excluded[c.code] += 1
         return excluded
 
     def _available_pool(self, opp: 'GameState') -> list:
@@ -106,8 +110,13 @@ class OpponentModel:
         rng = rng or random.Random()
 
         known_hand = opp.known_hand_cards()
+        known_life = opp.known_life_cards()
         n_hand_unknown = max(0, len(opp.hand) - len(known_hand))
-        n_life_unknown = len(opp.life)  # vida nunca é conhecida no fluxo normal de dano
+        # Vida conhecida (revelada por peek/efeito -- Katakuri, etc.) entra como
+        # CERTEZA, so o resto da vida e sorteado. Antes toda a vida era
+        # desconhecida (dano normal nunca revela); agora reveals persistidos
+        # reduzem a incerteza.
+        n_life_unknown = max(0, len(opp.life) - len(known_life))
 
         pool = self._available_pool(opp)
         rng.shuffle(pool)
@@ -116,7 +125,7 @@ class OpponentModel:
         sorteadas = pool[:n_slots]
 
         hand_sample = list(known_hand) + sorteadas[:n_hand_unknown]
-        life_sample = sorteadas[n_hand_unknown:n_hand_unknown + n_life_unknown]
+        life_sample = list(known_life) + sorteadas[n_hand_unknown:n_hand_unknown + n_life_unknown]
 
         return hand_sample, life_sample
 

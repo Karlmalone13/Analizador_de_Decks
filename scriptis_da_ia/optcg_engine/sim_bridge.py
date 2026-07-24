@@ -25,6 +25,9 @@ from optcg_engine.decision_engine import (
     Card,
     CardData,
     DecisionEngine,
+    attack_time_power,
+    effective_hand_play_cost,
+    get_card_effects,
     _load_effects_db,
     _load_analysis_db,
 )
@@ -317,6 +320,7 @@ def choose_action(gs: GameState, opp_gs: GameState,
     """
     import random
     import threading
+    import time
     result: list = [None]
     exclude_activate_codes = exclude_activate_codes or set()
     SEARCH_TOP_K = 2
@@ -325,6 +329,7 @@ def choose_action(gs: GameState, opp_gs: GameState,
 
     def _run() -> None:
         try:
+            phase_started = time.perf_counter()
             engine = DecisionEngine(gs, opp_gs)
             if trace_out is not None:
                 # priority/can_lethal ao vivo (19/07): fecha o cruzamento
@@ -336,11 +341,14 @@ def choose_action(gs: GameState, opp_gs: GameState,
                 trace_out["can_lethal"] = engine.analyzer.can_lethal_this_turn()
                 trace_out["opp_combo_threat"] = engine.analyzer.opp_combo_threat()
             actions = match._generate_and_score_actions(gs, opp_gs, engine)
+            generated_at = time.perf_counter()
             if trace_out is not None:
                 trace_out["scored_actions"] = [
-                    action_to_trace(a, allowed_types, exclude_activate_codes)
+                    action_to_trace(a, allowed_types, exclude_activate_codes,
+                                    engine=engine, gs=gs, opp_gs=opp_gs)
                     for a in actions
                 ]
+                trace_out["resource_ledger_before"] = resource_ledger(gs)
             print(f"[ENG] {len(actions)} acoes | hand={len(gs.hand)} don={gs.don_available} turn={gs.turn}", flush=True)
             if actions:
                 print(f"[ENG] top3: {[(a[0],a[1]) for a in actions[:3]]}", flush=True)
@@ -392,10 +400,18 @@ def choose_action(gs: GameState, opp_gs: GameState,
             # ACAO, nao por turno inteiro, mas o board late-game ja mostrou
             # custo O(board²) no profiling de 14/07.
             if len(candidatos) > 1:
-                model = opponent_model_for_leader(getattr(opp_gs.leader, 'code', ''))
-                if model is not None:
-                    amostras = [model.sample(opp_gs, rng=random.Random())
-                               for _ in range(SEARCH_SAMPLES)]
+                hidden = getattr(opp_gs, 'hidden_information_masked', False)
+                model = (None if hidden else
+                         opponent_model_for_leader(getattr(opp_gs.leader, 'code', '')))
+                # Ao vivo, a decklist/mao adversaria e oculta. Ainda assim
+                # precisamos de contrafactuais auditaveis: simulamos as
+                # alternativas contra o MESMO estado publico mascarado, sem
+                # inventar cartas. Fora do live, preservamos Monte Carlo com
+                # o modelo exato ja existente.
+                amostras = ([model.sample(opp_gs, rng=random.Random())
+                             for _ in range(SEARCH_SAMPLES)] if model is not None
+                            else None)
+                if model is not None or hidden:
                     melhor, melhor_valor = candidatos[0], None
                     search_records = []
                     for cand in candidatos:
@@ -407,12 +423,38 @@ def choose_action(gs: GameState, opp_gs: GameState,
                         if melhor_valor is None or valor > melhor_valor:
                             melhor_valor = valor
                             melhor = cand
+                    # A linha mascarada agora PODE escolher: todas as
+                    # candidatas usam exatamente o mesmo estado PUBLICO e
+                    # nenhuma carta UNKNOWN ganha texto/counter inventado.
+                    # Isso permite preservar orcamento/curva e comparar a
+                    # sequencia inteira, em vez de ficar preso ao score da
+                    # primeira acao. A base deixa explicito o limite da prova.
                     result[0] = melhor
                     if trace_out is not None:
-                        trace_out["selection"] = "opponent_response_search"
+                        trace_out["selection"] = (
+                            "counterfactual_search" if model is not None
+                            else "masked_public_line_search")
                         trace_out["search_values"] = search_records
-                    print(f"[ENG] busca refinou: {melhor[1]} (score imediato {melhor[0]:.1f}, "
+                        trace_out["counterfactual_basis"] = (
+                            "sampled_opponent_model" if model is not None
+                            else "masked_public_state")
+                        trace_out["line_search"] = {
+                            "depth": SEARCH_MAX_STEPS,
+                            "don_budget_before": gs.don_available,
+                            "candidate_count": len(candidatos),
+                            "selected": action_to_trace(melhor),
+                            "public_state_only": bool(hidden),
+                        }
+                    verbo = "refinou" if model is not None else "auditou"
+                    print(f"[ENG] busca {verbo}: {melhor[1]} (score imediato {melhor[0]:.1f}, "
                           f"valor simulado {melhor_valor:.1f})", flush=True)
+            if trace_out is not None:
+                finished_at = time.perf_counter()
+                trace_out["latency_segments_ms"] = {
+                    "generate_and_score": round((generated_at - phase_started) * 1000, 3),
+                    "line_search": round((finished_at - generated_at) * 1000, 3),
+                    "engine_total": round((finished_at - phase_started) * 1000, 3),
+                }
         except Exception as e:
             import traceback
             # Achado 19/07: essa excecao rodava numa thread separada e
@@ -433,7 +475,8 @@ def choose_action(gs: GameState, opp_gs: GameState,
 
 
 def action_to_trace(action: Optional[tuple], allowed_types: Optional[set] = None,
-                    excluded_activate_codes: Optional[set] = None) -> Optional[dict]:
+                    excluded_activate_codes: Optional[set] = None,
+                    engine=None, gs=None, opp_gs=None) -> Optional[dict]:
     """Serializa uma action sem carregar objetos Card inteiros no JSONL."""
     if not action:
         return None
@@ -445,7 +488,7 @@ def action_to_trace(action: Optional[tuple], allowed_types: Optional[set] = None
     code = getattr(card, "code", None)
     excluded = (kind == "activate" and code in (excluded_activate_codes or set()))
     executor_allowed = allowed_types is None or kind in allowed_types
-    return {
+    result = {
         "score": round(score, 4),
         "type": kind,
         "card_code": code,
@@ -458,6 +501,60 @@ def action_to_trace(action: Optional[tuple], allowed_types: Optional[set] = None
         "excluded": excluded,
         "eligible": score >= 0 and executor_allowed and not excluded,
     }
+    if engine is not None:
+        result["score_components"] = action_score_components(
+            action, engine, gs or engine.me, opp_gs or engine.opp)
+    return result
+
+
+def resource_ledger(gs: GameState) -> dict:
+    """Snapshot publico de recursos, reutilizavel na decisao e transicao."""
+    attached = sum(getattr(c, "don_attached", 0) for c in gs.field_chars)
+    attached += getattr(gs.leader, "don_attached", 0) if gs.leader else 0
+    return {
+        "active_don": gs.don_available,
+        "rested_don": gs.don_rested,
+        "attached_don": attached,
+        "don_on_field": gs.don_on_field(),
+        "don_deck": gs.don_deck,
+        "hand": len(gs.hand),
+        "board": len(gs.field_chars),
+        "life": gs.life_count(),
+    }
+
+
+def action_score_components(action: tuple, engine, gs: GameState,
+                            opp_gs: GameState) -> dict:
+    """Explicacao observavel; nao participa da escolha da acao."""
+    score, kind, card, _ttype, target = action
+    components = {"final_score": round(float(score), 4), "kind": kind}
+    if card is not None:
+        components["intrinsic_card_value"] = round(float(engine.avaliar_carta(card)), 4)
+        components["cheap_redundancy_penalty"] = round(
+            float(engine.cheap_board_redundancy_penalty(card)), 4)
+    effects = get_card_effects(getattr(card, "code", "")) if card is not None else {}
+    ramp = sum(int(step.get("count", 1) or 1)
+               for block in effects.values() if isinstance(block, dict)
+               for step in block.get("steps", [])
+               if step.get("action") in ("add_don", "set_don_active"))
+    if ramp:
+        components["ramp_amount"] = ramp
+        components["ramp_curve_value"] = round(float(engine.ramp_curve_value(ramp)), 4)
+    if kind == "play":
+        components["don_cost"] = effective_hand_play_cost(gs, card, opp_gs)
+    elif kind == "attach_don":
+        amount = int(action[3] or 0)
+        components["don_cost"] = amount
+        components["don_opportunity_cost"] = round(
+            float(engine.don_opportunity_cost(amount)), 4)
+    elif kind == "attack":
+        atk = attack_time_power(card, opp_gs)
+        target_power = (opp_gs.leader.power if action[3] == "leader"
+                        else getattr(target, "power", 0))
+        components.update({"attack_power_planned": atk,
+                           "target_power_before": target_power,
+                           "raw_power_gap": atk - target_power})
+    return components
 
 
 def don_for_attack(gs: GameState, opp_gs: GameState, action: tuple,
@@ -842,7 +939,19 @@ def resolve_reaction(gs: GameState, opp_gs: GameState,
             for block in get_card_effects(actor_code).values()
             for s in block.get('steps', []))
         if not is_redirect:
-            return resolve_optional_effect(gs, opp_gs, actor_code=actor_code)
+            # O bot esta DEFENDENDO este combate? (defensor e uma carta do
+            # proprio gs). None = janela indeterminada (sem defender_uid) --
+            # o guard de buff em resolve_optional_effect fica conservador.
+            defendendo = None
+            if defender_uid:
+                uids_bot = {getattr(c, '_deck_uid', None)
+                            for c in [gs.leader] + list(gs.field_chars)}
+                defendendo = defender_uid in uids_bot
+            return resolve_optional_effect(gs, opp_gs, actor_code=actor_code,
+                                           attacker_power=atk_power,
+                                           defender_power=def_power,
+                                           actor_defending=defendendo,
+                                           defender_uid=defender_uid)
 
     engine = DecisionEngine(gs, opp_gs)
     my_life = gs.life_count()
@@ -974,7 +1083,11 @@ def resolve_reaction(gs: GameState, opp_gs: GameState,
 
 
 def resolve_optional_effect(gs: GameState, opp_gs: GameState,
-                            actor_code: str | None = None) -> bool:
+                            actor_code: str | None = None,
+                            attacker_power: int = 0,
+                            defender_power: int = 0,
+                            actor_defending: bool | None = None,
+                            defender_uid: int = 0) -> bool:
     """
     Efeito opcional com custo no PROPRIO turno (downside pos-play, ex:
     "you may trash 1 card: ..."). SEM heuristica propria -- delega pra
@@ -1042,6 +1155,200 @@ def resolve_optional_effect(gs: GameState, opp_gs: GameState,
         steps = ef.get('steps', [])
         if steps and not any(ee._step_is_viable(s, card_obj) for s in steps):
             return False
+        # Guard de VALOR pra buff de batalha com custo (generico, qualquer
+        # carta com o padrao "custo: +N power neste combate", ex: lider
+        # Katakuri OP11-062 don_minus->+1000). Achado real 22/07 (partida
+        # Kid x Katakuri, derrota 6-0 do bot): a viabilidade ampla acima
+        # passa sempre (o peek/steps "produzem efeito"), e o bot pagou 1
+        # DON pra subir 5000->6000 contra ataque de 9000 -- buff que nao
+        # muda o resultado do combate e DON jogado fora (2 das 6 ativacoes
+        # do lider na partida). Regra do motor unico (buff_wins_combat,
+        # empate vai pro atacante): so paga se o buff VIRA o combate.
+        # when_attacking -> o ator e o ATACANTE (vira se atk passava a
+        # ganhar); on_opp_attack -> o ator e o DEFENSOR. So se aplica com
+        # contexto de combate real (attacker_power>0, vindo da janela de
+        # reacao) E quando o bloco nao tem outro step material alem do
+        # buff/peek -- efeito com K.O./draw/etc continua na regua ampla.
+        if trig in ('when_attacking', 'on_opp_attack'):
+            buffs = [s for s in steps
+                     if s.get('action') == 'buff_power'
+                     and s.get('target') in ('self', 'leader')
+                     and s.get('duration') in ('battle_only', 'this_battle')]
+            engine = DecisionEngine(gs, opp_gs)
+            don_minus_count = sum(
+                int(c.get('count', 1) or 1) for c in custos
+                if c.get('type') == 'don_minus')
+            valuable_return_trigger = engine.has_valuable_don_return_trigger(
+                don_minus_count)
+            so_buff_e_info = buffs and all(
+                s.get('action') in ('buff_power', 'peek_opp_deck_top',
+                                    'look_top_deck')
+                for s in steps) and not valuable_return_trigger
+            if so_buff_e_info:
+                amount = max(s.get('amount', 0) for s in buffs)
+                # Buff `self`/Leader so altera o combate se a propria carta
+                # e o defensor. Caso real 22/07: Pudding 0 atacou Pudding 0,
+                # mas o Katakuri devolveu DON e se buffou fora da batalha.
+                # Contexto 0/0 nao permite provar ganho de combate. Falhar
+                # fechado evita pagar custo irreversivel por informacao
+                # incompleta do cliente.
+                if not engine.combat_self_buff_has_relevant_actor(
+                        card_obj, actor_defending, defender_uid,
+                        attacker_power, defender_power):
+                    return False
+                # A JANELA real (bot atacando ou defendendo) vem de
+                # actor_defending -- o TRIG nao serve de discriminador
+                # quando a carta tem os dois blocos (Katakuri tem
+                # when_attacking E on_opp_attack identicos, e o loop acha
+                # o primeiro sempre). Adendo do usuario (22/07): a conta
+                # tem que considerar as CARTAS NA MAO, nao so o poder cru.
+                #
+                # DEFESA: o buff vale se HABILITA sobreviver ou REDUZ o
+                # numero de counters da propria mao necessarios (empate vai
+                # pro atacante -- ex real: 7000 vs 5000, counter 2000
+                # sozinho = 7000 EMPATA e perde; buff+counter = 8000 vive.
+                # O guard anterior recusava esse caso).
+                def _counters_pra_sobreviver(poder_def: int) -> int | None:
+                    """Menor n de cartas de counter da MAO REAL pra
+                    poder_def + soma > attacker_power; 0 = ja sobrevive;
+                    None = impossivel mesmo com a mao toda."""
+                    if poder_def > attacker_power:
+                        return 0
+                    vals = sorted((getattr(c, 'counter', 0) for c in gs.hand
+                                   if getattr(c, 'counter', 0) > 0),
+                                  reverse=True)
+                    total, n = poder_def, 0
+                    for v in vals:
+                        total += v
+                        n += 1
+                        if total > attacker_power:
+                            return n
+                    return None
+                n_sem = _counters_pra_sobreviver(defender_power)
+                n_com = _counters_pra_sobreviver(defender_power + amount)
+                vira_defendendo = (n_com is not None
+                                   and (n_sem is None or n_com < n_sem))
+
+                # ATAQUE (adendo do usuario, 22/07): a mao do oponente e
+                # oculta, mas o guard usa TRES fontes em ordem de certeza,
+                # todas do motor unico (counter_estimation + MatchMemory):
+                #  1. cartas REVELADAS da mao dele (known_hand_cards, re-
+                #     injetadas pela MatchMemory ao vivo) -> valor exato;
+                #  2. estatistica hipergeometrica (estimate_opp_counter:
+                #     tamanho da mao + counters ja gastos + trash visto)
+                #     -> defesa PROVAVEL;
+                #  3. teto real (max_plausible_defense: mao + DON ativo pra
+                #     eventos de counter, ex: 3 cartas e 1 DON = 1 evento +
+                #     2 impressos) -> se nem com tudo ele salva o alvo, o
+                #     buff nao taxa nada.
+                from optcg_engine.counter_estimation import (
+                    estimate_opp_counter, max_plausible_defense)
+                conhecidas = opp_gs.known_hand_cards()
+                counters_conhecidos = sorted(
+                    (getattr(c, 'counter', 0) for c in conhecidas),
+                    reverse=True)
+                n_ocultas = max(0, len(opp_gs.hand) - len(conhecidas))
+                # Densidade REAL de counter da decklist do oponente quando
+                # conhecida (mesma premissa/lookup do OpponentModel e do
+                # full_deck_census: deck_cards_for_leader). Liquida das
+                # copias VISIVEIS fora de mao/deck (trash/board/stage) e das
+                # ja conhecidas na mao -- essas nao estao mais no pool
+                # sorteavel. Sem decklist (lider desconhecido): None e o
+                # estimate cai na densidade tipica de formato.
+                deck1000 = deck2000 = None
+                # Em self-play a lista completa faz parte do estado conhecido.
+                # Ao vivo, o servidor mascara a informacao oculta: nao inferir
+                # uma lista local apenas pelo lider, pois ela pode nem ser a
+                # lista usada pelo humano.
+                _deck_opp = (deck_cards_for_leader(opp_gs.leader.code)
+                             if (opp_gs.leader is not None
+                                 and not getattr(
+                                     opp_gs, 'hidden_information_masked', False))
+                             else None)
+                if _deck_opp:
+                    deck1000 = sum(1 for c in _deck_opp
+                                   if getattr(c, 'counter', 0) == 1000)
+                    deck2000 = sum(1 for c in _deck_opp
+                                   if getattr(c, 'counter', 0) >= 2000)
+                    visiveis = (list(opp_gs.trash) + list(opp_gs.field_chars)
+                                + ([opp_gs.field_stage]
+                                   if opp_gs.field_stage else [])
+                                + conhecidas)
+                    for c in visiveis:
+                        cv = getattr(c, 'counter', 0)
+                        if cv == 1000 and deck1000 > 0:
+                            deck1000 -= 1
+                        elif cv >= 2000 and deck2000 > 0:
+                            deck2000 -= 1
+                est = estimate_opp_counter(
+                    n_ocultas,
+                    counters_seen_used=(0 if _deck_opp else
+                                        getattr(opp_gs, 'counters_used', 0)),
+                    cards_seen_total=(len(opp_gs.trash)
+                                      + len(opp_gs.field_chars)),
+                    deck_counter_1000=deck1000,
+                    deck_counter_2000=deck2000)
+                counter_provavel = max(
+                    est['expected_counter_value'],
+                    counters_conhecidos[0] if counters_conhecidos else 0)
+                defesa_provavel = defender_power + counter_provavel
+                defesa_maxima = (max_plausible_defense(
+                    defender_power, n_ocultas, opp_gs.don_available)
+                    ['max_defense'] + sum(counters_conhecidos))
+
+                def _chunks_2000(atk: int) -> int:
+                    return max(0, (atk - defender_power) // 2000 + 1) \
+                        if atk >= defender_power else 0
+                if attacker_power < defender_power:
+                    # perdendo: paga so se o +N vira o poder cru (empate
+                    # favorece o atacante)
+                    vira_atacando = (defender_power
+                                     <= attacker_power + amount)
+                elif not opp_gs.hand:
+                    vira_atacando = False   # nada pra counterar
+                elif defesa_maxima <= attacker_power:
+                    # nem com a mao toda + eventos ele salva: +N redundante
+                    vira_atacando = False
+                elif (attacker_power < defesa_provavel
+                        <= attacker_power + amount):
+                    # o buff cruza a defesa PROVAVEL (estatistica): passa a
+                    # ganhar tambem no cenario esperado, nao so no cru
+                    vira_atacando = True
+                else:
+                    # taxa de counter: +N aumenta os chunks (2000) que ele
+                    # precisa gastar pra salvar um alvo salvavel
+                    vira_atacando = (_chunks_2000(attacker_power + amount)
+                                     > _chunks_2000(attacker_power))
+
+                # Taxar counter sem virar o poder cru nao justifica atrasar
+                # uma bomba da mao. O julgamento de curva vive no engine;
+                # este bridge apenas combina o contexto da janela ao vivo.
+                tem_don_minus = any(c.get('type') == 'don_minus' for c in custos)
+                vira_cru_atacando = (attacker_power < defender_power
+                                      and defender_power <= attacker_power + amount)
+                vira_cru_defendendo = (defender_power + amount > attacker_power)
+                if (tem_don_minus and engine.don_minus_delays_hand_curve(1)
+                        and not engine.has_valuable_don_return_trigger(1)
+                        and not (vira_cru_atacando if actor_defending is False
+                                 else vira_cru_defendendo if actor_defending is True
+                                 else vira_cru_atacando or vira_cru_defendendo)):
+                    return False
+
+                if actor_defending is True:
+                    vira = vira_defendendo
+                elif actor_defending is False:
+                    vira = vira_atacando
+                else:
+                    # Janela indeterminada: conservador -- so recusa se o
+                    # buff nao vale em NENHUMA das duas leituras.
+                    vira = vira_atacando or vira_defendendo
+                if not vira:
+                    print(f'[OPT] buff de batalha nao compensa '
+                          f'(atk={attacker_power} def={defender_power} '
+                          f'+{amount}, defending={actor_defending}, '
+                          f'counters sem/com buff={n_sem}/{n_com}) '
+                          f'-> False', flush=True)
+                    return False
         return ee._worth_paying_optional_costs(custos, card_obj)
 
     return False
@@ -1373,20 +1680,33 @@ def order_target_candidates(gs: GameState, opp_gs: GameState,
     def sort_key(cand: dict):
         card = card_of(cand)
         zone = cand.get('zone', '')
-        # DON!! ativo na propria area de custo -- candidato exclusivo pra
-        # pagar custo "DON!! -N" (don_minus). Achado real 21/07 (partida ao
-        # vivo): qualquer carta com esse custo (Katakuri when_attacking/
-        # on_opp_attack, Mamaragan [Main], Pudding PRB02-010 on_play, etc.)
-        # nunca completava o efeito -- o jogo real exige clicar N DON na
-        # DonCostArea pra pagar, mas essa zona nunca era candidata. Prioridade
-        # MAXIMA e INCONDICIONAL (antes de actor_opp_only/battlefield_only,
-        # que so fazem sentido pro ALVO do efeito, nao pro pagamento do
-        # custo -- sao perguntas ortogonais, igual o comentario ja existente
-        # sobre actor_debuff_swing/actor_self_power_target acima). Se o step
-        # atual nao pedir DON, o jogo recusa o clique (mesmo padrao de
-        # seguranca usado em toda zona aqui) e o proximo candidato da lista
-        # e tentado normalmente.
+        # Zonas de DON -- candidatas pra custo "DON!! -N" (don_minus) e pra
+        # efeitos que miram DON adversario (Krieg). Achado real 21/07 (partida
+        # ao vivo): qualquer carta com custo DON!! -N (Katakuri, Mamaragan
+        # [Main], Pudding PRB02-010 on_play, etc.) nunca completava o efeito --
+        # o jogo exige clicar N DON na DonCostArea, mas essa zona nunca era
+        # candidata. Prioridade MAXIMA e INCONDICIONAL (antes de actor_opp_only/
+        # battlefield_only, que so fazem sentido pro ALVO do efeito, nao pro
+        # pagamento do custo -- perguntas ortogonais, igual actor_debuff_swing/
+        # actor_self_power_target acima). Se o step atual nao pedir DON, o jogo
+        # recusa o clique (mesmo padrao de seguranca de toda zona aqui) e o
+        # proximo candidato e tentado.
+        #
+        # Ordem entre elas: don_minus RETORNA DON ao deck (nao resta), entao
+        # devolver primeiro o DON ja gasto (restado) preserva o ativo, que
+        # ainda paga/ataca neste turno -- restado ANTES de ativo (pedido do
+        # usuario). opp_don logo apos (efeito que resta/remove DON inimigo);
+        # se o efeito for de custo proprio, o jogo recusa o DON do oponente e
+        # cai no proximo.
+        if zone == 'own_don_attached_used':
+            return (-4, 0)
+        if zone == 'own_don_rested':
+            return (-3, 0)
+        if zone == 'own_don_attached':
+            return (-2.5, 0)
         if zone == 'own_don':
+            return (-2, 0)
+        if zone == 'opp_don':
             return (-1, 0)
         if actor_opp_only and zone.startswith('own'):
             return (9, 0)   # nunca e alvo valido pra essa habilidade
@@ -1491,7 +1811,7 @@ def order_target_candidates(gs: GameState, opp_gs: GameState,
         if attacker_power > 0 and actor_is_redirect and defender_uid and cand.get('id') == defender_uid:
             return (9, 0)
         if zone == 'top_deck':
-            return (0, -(engine_busca.avaliar_carta(card) if card else 0))
+            return (0, -(engine.search_card_value(card) if card else -1e9))
         if zone == 'own_hand':
             # Prompt de JOGAR da mao (ver actor_play_step acima): melhor
             # carta ELEGIVEL primeiro; inelegivel nunca. DON-NEUTRO
@@ -1553,6 +1873,27 @@ def order_target_candidates(gs: GameState, opp_gs: GameState,
         if zone == 'opp_trash':
             return (5, -(engine.avaliar_carta(card) if card else 0))
         return (6, 0)
+
+    # actor_opp_only ate aqui so DEPRIORIZAVA own_* (linha ~1711),
+    # confiando que "o jogo recusa o clique invalido". Achado ao vivo
+    # 23-24/07: Baron Tamago & Pekoms (ST34-005, "[When Attacking] DON!!
+    # -1: K.O. up to 1 of your OPPONENT'S Characters with 2000 base power
+    # or less") destruiu a PROPRIA Nola do bot -- o oponente nao tinha
+    # nenhum personagem elegivel (a lista opp_board ficou vazia pra esse
+    # filtro), a deprioridade so empurrou own_board pro fim da ordem, e o
+    # clique nela foi ACEITO pelo jogo, contrariando a premissa de "clique
+    # invalido e sempre no-op". Exclusao DURA (nao so deprioridade) das
+    # zonas de ALVO proprias -- nunca inclui as zonas de DON (own_don*),
+    # que continuam validas pra pagar o custo DON!!-N da mesma habilidade.
+    # SEM fallback pro comportamento antigo: e exatamente quando a exclusao
+    # zera a lista (oponente sem NENHUM alvo elegivel, o caso real do
+    # Pekoms/Nola) que devolver vazio importa mais -- um fallback pra
+    # "deprioridade" aqui reintroduziria o proprio bug que este fix
+    # corrige. Lista vazia = nenhum alvo valido = decisao "Choose 0"
+    # (ja tratada pelo bloco 320), nao clicar em qualquer coisa.
+    _OWN_TARGET_ZONES = {'own_hand', 'own_board', 'own_trash', 'own_leader', 'own_stage'}
+    if actor_opp_only:
+        candidates = [c for c in candidates if c.get('zone') not in _OWN_TARGET_ZONES]
 
     return [c.get('id') for c in sorted(candidates, key=sort_key)]
 

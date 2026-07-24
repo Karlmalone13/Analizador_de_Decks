@@ -1993,5 +1993,355 @@
       "You": "decks/Monkey.D.Luffy-BP_2026-07-21T02.21.05.json",
       "Opponent": "decks/Charlotte.Katakuri-P_2026-07-21T02.21.05.json"
     }
+  },
+  {
+    "id": "2026-07-22T15.25.14",
+    "friendly_name": "Eustass.Captain.Kid-Y_x_Charlotte.Katakuri-P",
+    "date": "2026-07-22",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP10-099",
+      "leader_name": "Eustass \"Captain\" Kid",
+      "slug": "Eustass.Captain.Kid-Y"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP11-062",
+      "leader_name": "Charlotte Katakuri",
+      "slug": "Charlotte.Katakuri-P"
+    },
+    "turns": 10,
+    "winner": "p1",
+    "log_file": "raw/Eustass.Captain.Kid-Y_x_Charlotte.Katakuri-P_2026-07-22T15.25.14.log",
+    "parsed_file": "parsed/Eustass.Captain.Kid-Y_x_Charlotte.Katakuri-P_2026-07-22T15.25.14.json",
+    "deck_files": {
+      "You": "decks/Eustass.Captain.Kid-Y_2026-07-22T15.25.14.json",
+      "Opponent": "decks/Charlotte.Katakuri-P_2026-07-22T15.25.14.json"
+    }
+  },
+  {
+    "id": "2026-07-22T21.44.06",
+    "friendly_name": "Eustass.Captain.Kid-Y_x_Charlotte.Katakuri-P",
+    "date": "2026-07-22",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP10-099",
+      "leader_name": "Eustass \"Captain\" Kid",
+      "slug": "Eustass.Captain.Kid-Y"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP11-062",
+      "leader_name": "Charlotte Katakuri",
+      "slug": "Charlotte.Katakuri-P"
+    },
+    "turns": 10,
+    "winner": "p1",
+    "log_file": "raw/Eustass.Captain.Kid-Y_x_Charlotte.Katakuri-P_2026-07-22T21.44.06.log",
+    "parsed_file": "parsed/Eustass.Captain.Kid-Y_x_Charlotte.Katakuri-P_2026-07-22T21.44.06.json",
+    "deck_files": {
+      "You": "decks/Eustass.Captain.Kid-Y_2026-07-22T21.44.06.json",
+      "Opponent": "decks/Charlotte.Katakuri-P_2026-07-22T21.44.06.json"
+    }
+  },
+  {
+    "id": "2026-07-22T22.30.34",
+    "friendly_name": "Charlotte.Katakuri-P_x_Kaido-P",
+    "date": "2026-07-22",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP11-062",
+      "leader_name": "Charlotte Katakuri",
+      "slug": "Charlotte.Katakuri-P"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "ST04-001",
+      "leader_name": "Kaido",
+      "slug": "Kaido-P"
+    },
+    "turns": 9,
+    "winner": "p2",
+    "log_file": "raw/Charlotte.Katakuri-P_x_Kaido-P_2026-07-22T22.30.34.log",
+    "parsed_file": "parsed/Charlotte.Katakuri-P_x_Kaido-P_2026-07-22T22.30.34.json",
+    "deck_files": {
+      "You": "decks/Charlotte.Katakuri-P_2026-07-22T22.30.34.json",
+      "Opponent": "decks/Kaido-P_2026-07-22T22.30.34.json"
+    }
+  },
+  {
+    "id": "2026-07-22T23.07.07",
+    "friendly_name": "Charlotte.Katakuri-P_x_Smoker-B",
+    "date": "2026-07-22",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP11-062",
+      "leader_name": "Charlotte Katakuri",
+      "slug": "Charlotte.Katakuri-P"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP02-093",
+      "leader_name": "Smoker",
+      "slug": "Smoker-B"
+    },
+    "turns": 1,
+    "winner": "p2",
+    "log_file": "raw/Charlotte.Katakuri-P_x_Smoker-B_2026-07-22T23.07.07.log",
+    "parsed_file": "parsed/Charlotte.Katakuri-P_x_Smoker-B_2026-07-22T23.07.07.json",
+    "deck_files": {
+      "You": "decks/Charlotte.Katakuri-P_2026-07-22T23.07.07.json",
+      "Opponent": "decks/Smoker-B_2026-07-22T23.07.07.json"
+    }
+  },
+  {
+    "id": "2026-07-22T23.07.07_p2",
+    "friendly_name": "Charlotte.Katakuri-P_x_Smoker-B",
+    "date": "2026-07-22",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP11-062",
+      "leader_name": "Charlotte Katakuri",
+      "slug": "Charlotte.Katakuri-P"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP02-093",
+      "leader_name": "Smoker",
+      "slug": "Smoker-B"
+    },
+    "turns": 11,
+    "winner": null,
+    "log_file": "raw/Charlotte.Katakuri-P_x_Smoker-B_2026-07-22T23.07.07_p2.log",
+    "parsed_file": "parsed/Charlotte.Katakuri-P_x_Smoker-B_2026-07-22T23.07.07_p2.json",
+    "deck_files": {
+      "You": "decks/Charlotte.Katakuri-P_2026-07-22T23.07.07_p2.json",
+      "Opponent": "decks/Smoker-B_2026-07-22T23.07.07_p2.json"
+    }
+  },
+  {
+    "id": "2026-07-22T23.55.21",
+    "friendly_name": "Charlotte.Katakuri-P_x_Portgas.D.Ace-RB",
+    "date": "2026-07-22",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP11-062",
+      "leader_name": "Charlotte Katakuri",
+      "slug": "Charlotte.Katakuri-P"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP13-002",
+      "leader_name": "Portgas D. Ace",
+      "slug": "Portgas.D.Ace-RB"
+    },
+    "turns": 11,
+    "winner": "p2",
+    "log_file": "raw/Charlotte.Katakuri-P_x_Portgas.D.Ace-RB_2026-07-22T23.55.21.log",
+    "parsed_file": "parsed/Charlotte.Katakuri-P_x_Portgas.D.Ace-RB_2026-07-22T23.55.21.json",
+    "deck_files": {
+      "You": "decks/Charlotte.Katakuri-P_2026-07-22T23.55.21.json",
+      "Opponent": "decks/Portgas.D.Ace-RB_2026-07-22T23.55.21.json"
+    }
+  },
+  {
+    "id": "2026-07-23T13.26.50",
+    "friendly_name": "Charlotte.Katakuri-P_x_Jinbe-G",
+    "date": "2026-07-23",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP11-062",
+      "leader_name": "Charlotte Katakuri",
+      "slug": "Charlotte.Katakuri-P"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP11-021",
+      "leader_name": "Jinbe",
+      "slug": "Jinbe-G"
+    },
+    "turns": 13,
+    "winner": "p2",
+    "log_file": "raw/Charlotte.Katakuri-P_x_Jinbe-G_2026-07-23T13.26.50.log",
+    "parsed_file": "parsed/Charlotte.Katakuri-P_x_Jinbe-G_2026-07-23T13.26.50.json",
+    "deck_files": {
+      "You": "decks/Charlotte.Katakuri-P_2026-07-23T13.26.50.json",
+      "Opponent": "decks/Jinbe-G_2026-07-23T13.26.50.json"
+    }
+  },
+  {
+    "id": "2026-07-23T14.12.36",
+    "friendly_name": "Charlotte.Katakuri-P_x_Krieg-RG",
+    "date": "2026-07-23",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP11-062",
+      "leader_name": "Charlotte Katakuri",
+      "slug": "Charlotte.Katakuri-P"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP15-001",
+      "leader_name": "Krieg",
+      "slug": "Krieg-RG"
+    },
+    "turns": 11,
+    "winner": "p2",
+    "log_file": "raw/Charlotte.Katakuri-P_x_Krieg-RG_2026-07-23T14.12.36.log",
+    "parsed_file": "parsed/Charlotte.Katakuri-P_x_Krieg-RG_2026-07-23T14.12.36.json",
+    "deck_files": {
+      "You": "decks/Charlotte.Katakuri-P_2026-07-23T14.12.36.json",
+      "Opponent": "decks/Krieg-RG_2026-07-23T14.12.36.json"
+    }
+  },
+  {
+    "id": "2026-07-23T16.07.35",
+    "friendly_name": "Dracule.Mihawk-G_x_Charlotte.Katakuri-P",
+    "date": "2026-07-23",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP14-020",
+      "leader_name": "Dracule Mihawk",
+      "slug": "Dracule.Mihawk-G"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP11-062",
+      "leader_name": "Charlotte Katakuri",
+      "slug": "Charlotte.Katakuri-P"
+    },
+    "turns": 10,
+    "winner": "p1",
+    "log_file": "raw/Dracule.Mihawk-G_x_Charlotte.Katakuri-P_2026-07-23T16.07.35.log",
+    "parsed_file": "parsed/Dracule.Mihawk-G_x_Charlotte.Katakuri-P_2026-07-23T16.07.35.json",
+    "deck_files": {
+      "You": "decks/Dracule.Mihawk-G_2026-07-23T16.07.35.json",
+      "Opponent": "decks/Charlotte.Katakuri-P_2026-07-23T16.07.35.json"
+    }
+  },
+  {
+    "id": "2026-07-23T16.54.39",
+    "friendly_name": "Dracule.Mihawk-G_x_Charlotte.Katakuri-P",
+    "date": "2026-07-23",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP14-020",
+      "leader_name": "Dracule Mihawk",
+      "slug": "Dracule.Mihawk-G"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP11-062",
+      "leader_name": "Charlotte Katakuri",
+      "slug": "Charlotte.Katakuri-P"
+    },
+    "turns": 10,
+    "winner": "p1",
+    "log_file": "raw/Dracule.Mihawk-G_x_Charlotte.Katakuri-P_2026-07-23T16.54.39.log",
+    "parsed_file": "parsed/Dracule.Mihawk-G_x_Charlotte.Katakuri-P_2026-07-23T16.54.39.json",
+    "deck_files": {
+      "You": "decks/Dracule.Mihawk-G_2026-07-23T16.54.39.json",
+      "Opponent": "decks/Charlotte.Katakuri-P_2026-07-23T16.54.39.json"
+    }
+  },
+  {
+    "id": "2026-07-23T17.54.33",
+    "friendly_name": "Dracule.Mihawk-G_x_Charlotte.Katakuri-P",
+    "date": "2026-07-23",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP14-020",
+      "leader_name": "Dracule Mihawk",
+      "slug": "Dracule.Mihawk-G"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP11-062",
+      "leader_name": "Charlotte Katakuri",
+      "slug": "Charlotte.Katakuri-P"
+    },
+    "turns": 8,
+    "winner": "p1",
+    "log_file": "raw/Dracule.Mihawk-G_x_Charlotte.Katakuri-P_2026-07-23T17.54.33.log",
+    "parsed_file": "parsed/Dracule.Mihawk-G_x_Charlotte.Katakuri-P_2026-07-23T17.54.33.json",
+    "deck_files": {
+      "You": "decks/Dracule.Mihawk-G_2026-07-23T17.54.33.json",
+      "Opponent": "decks/Charlotte.Katakuri-P_2026-07-23T17.54.33.json"
+    }
+  },
+  {
+    "id": "2026-07-23T18.13.41_p2",
+    "friendly_name": "Charlotte.Katakuri-P_x_Dracule.Mihawk-G",
+    "date": "2026-07-23",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP11-062",
+      "leader_name": "Charlotte Katakuri",
+      "slug": "Charlotte.Katakuri-P"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP14-020",
+      "leader_name": "Dracule Mihawk",
+      "slug": "Dracule.Mihawk-G"
+    },
+    "turns": 12,
+    "winner": null,
+    "log_file": "raw/Charlotte.Katakuri-P_x_Dracule.Mihawk-G_2026-07-23T18.13.41_p2.log",
+    "parsed_file": "parsed/Charlotte.Katakuri-P_x_Dracule.Mihawk-G_2026-07-23T18.13.41_p2.json",
+    "deck_files": {
+      "You": "decks/Charlotte.Katakuri-P_2026-07-23T18.13.41_p2.json",
+      "Opponent": "decks/Dracule.Mihawk-G_2026-07-23T18.13.41_p2.json"
+    }
+  },
+  {
+    "id": "2026-07-23T22.14.26",
+    "friendly_name": "Charlotte.Katakuri-P_x_Marshall.D.Teach-BY",
+    "date": "2026-07-23",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP11-062",
+      "leader_name": "Charlotte Katakuri",
+      "slug": "Charlotte.Katakuri-P"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP16-080",
+      "leader_name": "Marshall D. Teach",
+      "slug": "Marshall.D.Teach-BY"
+    },
+    "turns": 9,
+    "winner": "p2",
+    "log_file": "raw/Charlotte.Katakuri-P_x_Marshall.D.Teach-BY_2026-07-23T22.14.26.log",
+    "parsed_file": "parsed/Charlotte.Katakuri-P_x_Marshall.D.Teach-BY_2026-07-23T22.14.26.json",
+    "deck_files": {
+      "You": "decks/Charlotte.Katakuri-P_2026-07-23T22.14.26.json",
+      "Opponent": "decks/Marshall.D.Teach-BY_2026-07-23T22.14.26.json"
+    }
+  },
+  {
+    "id": "2026-07-23T23.12.17",
+    "friendly_name": "Charlotte.Katakuri-P_x_Kaido-P",
+    "date": "2026-07-23",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP11-062",
+      "leader_name": "Charlotte Katakuri",
+      "slug": "Charlotte.Katakuri-P"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "ST04-001",
+      "leader_name": "Kaido",
+      "slug": "Kaido-P"
+    },
+    "turns": 11,
+    "winner": "p2",
+    "log_file": "raw/Charlotte.Katakuri-P_x_Kaido-P_2026-07-23T23.12.17.log",
+    "parsed_file": "parsed/Charlotte.Katakuri-P_x_Kaido-P_2026-07-23T23.12.17.json",
+    "deck_files": {
+      "You": "decks/Charlotte.Katakuri-P_2026-07-23T23.12.17.json",
+      "Opponent": "decks/Kaido-P_2026-07-23T23.12.17.json"
+    }
   }
 ]

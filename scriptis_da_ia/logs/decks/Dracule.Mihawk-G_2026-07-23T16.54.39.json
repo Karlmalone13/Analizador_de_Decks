@@ -1,0 +1,66 @@
+{
+  "cards": [
+    {
+      "code": "ST32-003",
+      "name": "Dracule Mihawk",
+      "count": 4
+    },
+    {
+      "code": "OP12-034",
+      "name": "Perona",
+      "count": 3
+    },
+    {
+      "code": "OP01-055",
+      "name": "OP01-055",
+      "count": 3
+    },
+    {
+      "code": "ST24-004",
+      "name": "Law & Bepo",
+      "count": 2
+    },
+    {
+      "code": "OP12-037",
+      "name": "OP12-037",
+      "count": 2
+    },
+    {
+      "code": "OP14-023",
+      "name": "OP14-023",
+      "count": 2
+    },
+    {
+      "code": "OP07-022",
+      "name": "Otama",
+      "count": 1
+    },
+    {
+      "code": "ST32-002",
+      "name": "Kouzuki Oden",
+      "count": 1
+    },
+    {
+      "code": "ST32-001",
+      "name": "Kin'emon",
+      "count": 1
+    },
+    {
+      "code": "ST32-005",
+      "name": "ST32-005",
+      "count": 1
+    },
+    {
+      "code": "OP06-038",
+      "name": "OP06-038",
+      "count": 1
+    },
+    {
+      "code": "ST16-004",
+      "name": "ST16-004",
+      "count": 1
+    }
+  ],
+  "total_seen": 22,
+  "leader": "OP14-020"
+}

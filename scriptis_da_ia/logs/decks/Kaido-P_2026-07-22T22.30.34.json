@@ -1,0 +1,51 @@
+{
+  "cards": [
+    {
+      "code": "OP11-070",
+      "name": "Charlotte Pudding",
+      "count": 3
+    },
+    {
+      "code": "OP08-074",
+      "name": "Black Maria",
+      "count": 2
+    },
+    {
+      "code": "EB02-035",
+      "name": "Sanji & Pudding",
+      "count": 2
+    },
+    {
+      "code": "ST04-017",
+      "name": "Onigashima Island",
+      "count": 1
+    },
+    {
+      "code": "ST04-003",
+      "name": "ST04-003",
+      "count": 1
+    },
+    {
+      "code": "ST04-016",
+      "name": "ST04-016",
+      "count": 1
+    },
+    {
+      "code": "OP11-072",
+      "name": "OP11-072",
+      "count": 1
+    },
+    {
+      "code": "OP01-114",
+      "name": "OP01-114",
+      "count": 1
+    },
+    {
+      "code": "OP08-076",
+      "name": "OP08-076",
+      "count": 1
+    }
+  ],
+  "total_seen": 13,
+  "leader": "ST04-001"
+}

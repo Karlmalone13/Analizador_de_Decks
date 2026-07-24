@@ -1,0 +1,1034 @@
+{
+  "meta": {
+    "players": {
+      "p1": {
+        "name": "You",
+        "leader": {
+          "name": "Charlotte Katakuri",
+          "code": "OP11-062"
+        }
+      },
+      "p2": {
+        "name": "Opponent",
+        "leader": {
+          "name": "Krieg",
+          "code": "OP15-001"
+        }
+      }
+    },
+    "goes_first": null
+  },
+  "total_turns": 11,
+  "turns": [
+    {
+      "turn": 1,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 1,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP11-070",
+          "card_name": "Charlotte Pudding",
+          "effects": [
+            "<b>Reveal and Draw Baron Tamago & Pekoms [\"ST34-005\">ST34-005]</b>"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP11-067",
+            "ST34-001",
+            "OP08-069",
+            "ST34-002",
+            "ST34-005"
+          ],
+          "board": [
+            "OP11-070"
+          ],
+          "trash": [],
+          "life": 5
+        },
+        "Opponent": {
+          "hand": [
+            "OP11-067",
+            "ST34-001",
+            "OP08-069",
+            "ST34-002",
+            "ST34-005"
+          ],
+          "trash": [],
+          "board": [
+            "OP11-070"
+          ],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 2,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "activate",
+          "card": "OP15-037",
+          "card_name": "The Outcome Will Tell Us Who's Strong and Who's Weak",
+          "effects": [
+            "Rest 1 Don",
+            "<b>Reveal and Draw Arlong [\"OP15-023\">OP15-023]</b>"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP15-026",
+          "card_name": "Jango",
+          "effects": [
+            "<b>Reveal and Draw Zeff [\"EB04-004\">EB04-004]</b>"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP13-040",
+            "OP13-040",
+            "OP15-026",
+            "OP15-017",
+            "OP15-023",
+            "EB04-004"
+          ],
+          "board": [
+            "OP15-026"
+          ],
+          "trash": [
+            "OP15-037"
+          ],
+          "life": 4
+        },
+        "You": {
+          "hand": [
+            "OP11-067",
+            "ST34-001",
+            "OP08-069",
+            "ST34-002",
+            "ST34-005"
+          ],
+          "trash": [],
+          "board": [
+            "OP11-070"
+          ],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 3,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "ST34-005",
+          "card_name": "Baron Tamago & Pekoms",
+          "effects": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Katakuri",
+          "attacker_code": "OP11-062",
+          "target": "Krieg [\"OP15-001\">OP15-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP11-067",
+            "ST34-001",
+            "OP08-069",
+            "ST34-002",
+            "OP11-073"
+          ],
+          "board": [
+            "OP11-070",
+            "ST34-005"
+          ],
+          "trash": [],
+          "life": 5
+        },
+        "Opponent": {
+          "hand": [
+            "OP11-067",
+            "ST34-001",
+            "OP08-069",
+            "ST34-002",
+            "OP11-073"
+          ],
+          "trash": [],
+          "board": [
+            "OP11-070",
+            "ST34-005"
+          ],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 4,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP15-023",
+          "card_name": "Arlong",
+          "effects": [
+            "Attach 1 Rested Don to Baron Tamago & Pekoms [\"ST34-005\">ST34-005]",
+            "Attach 1 Rested Don to Baron Tamago & Pekoms [\"ST34-005\">ST34-005]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP15-001",
+          "card_name": "Krieg",
+          "effects": [
+            "Rest Baron Tamago & Pekoms [\"ST34-005\">ST34-005]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Krieg",
+          "attacker_code": "OP15-001",
+          "target": "Baron Tamago & Pekoms [\"ST34-005\">ST34-005]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP13-040",
+            "OP13-040",
+            "OP15-026",
+            "OP15-017",
+            "EB04-004",
+            "OP15-026",
+            "OP15-027"
+          ],
+          "board": [
+            "OP15-026",
+            "OP15-023"
+          ],
+          "trash": [
+            "OP15-037"
+          ],
+          "life": 3
+        },
+        "You": {
+          "hand": [
+            "OP11-067",
+            "ST34-001",
+            "OP08-069",
+            "ST34-002",
+            "OP11-073"
+          ],
+          "trash": [
+            "ST34-005"
+          ],
+          "board": [
+            "OP11-070"
+          ],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 5,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "ST34-001",
+          "card_name": "Charlotte Katakuri",
+          "effects": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Katakuri",
+          "attacker_code": "OP11-062",
+          "target": "Krieg [\"OP15-001\">OP15-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP15-026"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP11-067",
+            "OP08-069",
+            "ST34-002",
+            "OP11-073",
+            "OP07-077"
+          ],
+          "board": [
+            "OP11-070",
+            "ST34-001"
+          ],
+          "trash": [
+            "ST34-005"
+          ],
+          "life": 5
+        },
+        "Opponent": {
+          "hand": [
+            "OP13-040",
+            "OP13-040",
+            "OP15-026",
+            "OP15-017",
+            "EB04-004",
+            "OP15-027"
+          ],
+          "trash": [
+            "OP15-037",
+            "OP15-026"
+          ],
+          "board": [
+            "OP15-026",
+            "OP15-023"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 6,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP15-017",
+          "card_name": "Morgan",
+          "effects": [
+            "Attach 1 Rested Don to Charlotte Katakuri [\"ST34-001\">ST34-001]",
+            "Attach 1 Rested Don to Charlotte Katakuri [\"ST34-001\">ST34-001]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP15-023",
+          "card_name": "Arlong",
+          "effects": [
+            "Attach 1 Rested Don to Charlotte Katakuri [\"ST34-001\">ST34-001]",
+            "Attach 1 Rested Don to Krieg [\"OP15-001\">OP15-001]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP15-001",
+          "card_name": "Krieg",
+          "effects": [
+            "Rest Charlotte Katakuri [\"ST34-001\">ST34-001]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Arlong",
+          "attacker_code": "OP15-023",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Krieg",
+          "attacker_code": "OP15-001",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP13-040",
+            "OP13-040",
+            "OP15-026",
+            "EB04-004",
+            "OP15-027",
+            "OP15-012"
+          ],
+          "board": [
+            "OP15-026",
+            "OP15-023",
+            "OP15-017"
+          ],
+          "trash": [
+            "OP15-037",
+            "OP15-026"
+          ],
+          "life": 3
+        },
+        "You": {
+          "hand": [
+            "OP11-067",
+            "OP08-069",
+            "ST34-002",
+            "OP11-073",
+            "OP07-077",
+            "ST34-003"
+          ],
+          "trash": [
+            "ST34-005"
+          ],
+          "board": [
+            "OP11-070",
+            "ST34-001"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 7,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "ST34-002",
+          "card_name": "Charlotte Cracker",
+          "effects": [
+            "Destroy Jango [\"OP15-026\">OP15-026]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Katakuri",
+          "attacker_code": "ST34-001",
+          "target": "Arlong [\"OP15-023\">OP15-023]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": "OP15-017",
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Katakuri",
+          "attacker_code": "OP11-062",
+          "target": "Morgan [\"OP15-017\">OP15-017]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP15-012"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP11-062",
+          "card_name": "Charlotte Katakuri",
+          "effects": [
+            "Minus 1 Don",
+            "<b>Looked at opponent's top deck</b>",
+            "<b>Finished looking at opponent's top deck</b>",
+            "Buff Charlotte Katakuri [\"OP11-062\">OP11-062] 1000 for the Combat"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "ST34-003",
+          "card_name": "Charlotte Brulee",
+          "effects": [
+            "<b>Reveal and Draw Charlotte Cracker [\"ST34-002\">ST34-002]</b>"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP07-077",
+          "card_name": "We're Going to Claim the One Piece!!!",
+          "effects": [
+            "Rest 1 Don",
+            "<b>Reveal and Draw Baron Tamago & Pekoms [\"ST34-005\">ST34-005]</b>"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP11-067",
+            "OP08-069",
+            "OP11-073",
+            "ST34-004",
+            "ST34-002",
+            "ST34-005"
+          ],
+          "board": [
+            "OP11-070",
+            "ST34-001",
+            "ST34-002",
+            "ST34-003"
+          ],
+          "trash": [
+            "ST34-005",
+            "OP07-077"
+          ],
+          "life": 4
+        },
+        "Opponent": {
+          "hand": [
+            "OP13-040",
+            "OP13-040",
+            "OP15-026",
+            "EB04-004",
+            "OP15-027"
+          ],
+          "trash": [
+            "OP15-037",
+            "OP15-026",
+            "OP15-026",
+            "OP15-012"
+          ],
+          "board": [
+            "OP15-023",
+            "OP15-017"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 8,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP15-008",
+          "card_name": "Krieg",
+          "effects": [
+            "Attach 1 Rested Don to Charlotte Katakuri [\"ST34-001\">ST34-001]",
+            "Attach 1 Rested Don to Charlotte Katakuri [\"ST34-001\">ST34-001]",
+            "Attach 1 Rested Don to Charlotte Katakuri [\"ST34-001\">ST34-001]",
+            "Give Krieg [\"OP15-008\">OP15-008] Rush",
+            "Buff Charlotte Pudding [\"OP11-070\">OP11-070] 0",
+            "Buff Charlotte Katakuri [\"ST34-001\">ST34-001] -4000",
+            "Buff Charlotte Cracker [\"ST34-002\">ST34-002] -2000",
+            "Buff Charlotte Brulee [\"ST34-003\">ST34-003] 0"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP15-017",
+          "card_name": "Morgan",
+          "effects": [
+            "Attach 1 Rested Don to Charlotte Cracker [\"ST34-002\">ST34-002]",
+            "Attach 1 Rested Don to Charlotte Cracker [\"ST34-002\">ST34-002]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP15-023",
+          "card_name": "Arlong",
+          "effects": [
+            "Attach 1 Rested Don to Charlotte Katakuri [\"ST34-001\">ST34-001]",
+            "Attach 1 Rested Don to Krieg [\"OP15-001\">OP15-001]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP15-001",
+          "card_name": "Krieg",
+          "effects": [
+            "Rest Charlotte Cracker [\"ST34-002\">ST34-002]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Arlong",
+          "attacker_code": "OP15-023",
+          "target": "Charlotte Katakuri [\"ST34-001\">ST34-001]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Krieg",
+          "attacker_code": "OP15-001",
+          "target": "Charlotte Cracker [\"ST34-002\">ST34-002]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Krieg",
+          "attacker_code": "OP15-008",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP13-040",
+            "OP13-040",
+            "OP15-026",
+            "EB04-004",
+            "OP15-027"
+          ],
+          "board": [
+            "OP15-023",
+            "OP15-017",
+            "OP15-008"
+          ],
+          "trash": [
+            "OP15-037",
+            "OP15-026",
+            "OP15-026",
+            "OP15-012"
+          ],
+          "life": 3
+        },
+        "You": {
+          "hand": [
+            "OP11-067",
+            "OP08-069",
+            "OP11-073",
+            "ST34-004",
+            "ST34-002",
+            "OP11-067"
+          ],
+          "trash": [
+            "ST34-005",
+            "OP07-077",
+            "ST34-001",
+            "ST34-002"
+          ],
+          "board": [
+            "OP11-070",
+            "ST34-003",
+            "ST34-005"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 9,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Charlotte Katakuri",
+          "attacker_code": "OP11-062",
+          "target": "Arlong [\"OP15-023\">OP15-023]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP15-026"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP11-062",
+          "card_name": "Charlotte Katakuri",
+          "effects": [
+            "Minus 1 Don",
+            "<b>Looked at opponent's top deck</b>"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "ST34-002",
+          "card_name": "Charlotte Cracker",
+          "effects": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 5,
+          "to": "ST34-003",
+          "to_name": "Charlotte Brulee",
+          "total": 5
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Brulee",
+          "attacker_code": "ST34-003",
+          "target": "Arlong [\"OP15-023\">OP15-023]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP15-027"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Baron Tamago & Pekoms",
+          "attacker_code": "ST34-005",
+          "target": "Krieg [\"OP15-001\">OP15-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": "OP15-017",
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "ST34-005",
+          "card_name": "Baron Tamago & Pekoms",
+          "effects": [
+            "Minus 1 Don",
+            "Destroy Charlotte Pudding [\"OP11-070\">OP11-070]"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP11-067",
+            "OP08-069",
+            "OP11-073",
+            "ST34-004",
+            "OP11-067",
+            "ST34-003"
+          ],
+          "board": [
+            "ST34-003",
+            "ST34-005",
+            "ST34-002"
+          ],
+          "trash": [
+            "ST34-005",
+            "OP07-077",
+            "ST34-001",
+            "ST34-002",
+            "OP11-070"
+          ],
+          "life": 3
+        },
+        "Opponent": {
+          "hand": [
+            "OP13-040",
+            "OP13-040",
+            "EB04-004"
+          ],
+          "trash": [
+            "OP15-037",
+            "OP15-026",
+            "OP15-026",
+            "OP15-012",
+            "OP15-026",
+            "OP15-027"
+          ],
+          "board": [
+            "OP15-023",
+            "OP15-017",
+            "OP15-008"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 10,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "EB04-004",
+          "card_name": "Zeff",
+          "effects": []
+        },
+        {
+          "type": "activate",
+          "card": "OP15-017",
+          "card_name": "Morgan",
+          "effects": [
+            "Attach 1 Rested Don to Charlotte Cracker [\"ST34-002\">ST34-002]",
+            "Attach 1 Rested Don to Charlotte Cracker [\"ST34-002\">ST34-002]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP15-001",
+          "card_name": "Krieg",
+          "effects": [
+            "Rest Charlotte Cracker [\"ST34-002\">ST34-002]"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP15-023",
+          "card_name": "Arlong",
+          "effects": [
+            "Attach 1 Rested Don to Baron Tamago & Pekoms [\"ST34-005\">ST34-005]",
+            "Attach 1 Rested Don to Krieg [\"OP15-001\">OP15-001]"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP15-023",
+          "to_name": "Arlong",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP15-023",
+          "to_name": "Arlong",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Arlong",
+          "attacker_code": "OP15-023",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP15-017",
+          "to_name": "Morgan",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Morgan",
+          "attacker_code": "OP15-017",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Krieg",
+          "attacker_code": "OP15-001",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "ST34-003"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Krieg",
+          "attacker_code": "OP15-008",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP13-040",
+            "OP13-040",
+            "EB04-004"
+          ],
+          "board": [
+            "OP15-023",
+            "OP15-017",
+            "OP15-008",
+            "EB04-004"
+          ],
+          "trash": [
+            "OP15-037",
+            "OP15-026",
+            "OP15-026",
+            "OP15-012",
+            "OP15-026",
+            "OP15-027"
+          ],
+          "life": 3
+        },
+        "You": {
+          "hand": [
+            "OP11-067",
+            "OP08-069",
+            "OP11-073",
+            "ST34-004",
+            "OP11-067",
+            "OP11-067",
+            "PRB02-010",
+            "OP11-070"
+          ],
+          "trash": [
+            "ST34-005",
+            "OP07-077",
+            "ST34-001",
+            "ST34-002",
+            "OP11-070",
+            "ST34-003",
+            "OP07-077"
+          ],
+          "board": [
+            "ST34-003",
+            "ST34-005",
+            "ST34-002"
+          ],
+          "life": 0
+        }
+      }
+    },
+    {
+      "turn": 11,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Charlotte Katakuri",
+          "attacker_code": "OP11-062",
+          "target": "Krieg [\"OP15-001\">OP15-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP11-062",
+          "card_name": "Charlotte Katakuri",
+          "effects": [
+            "Minus 1 Don",
+            "<b>Looked at opponent's top deck</b>"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP11-067",
+          "card_name": "Charlotte Katakuri",
+          "effects": []
+        },
+        {
+          "type": "play",
+          "card": "OP11-070",
+          "card_name": "Charlotte Pudding",
+          "effects": [
+            "<b>Reveal and Draw Charlotte Cracker [\"ST34-002\">ST34-002]</b>"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Baron Tamago & Pekoms",
+          "attacker_code": "ST34-005",
+          "target": "Krieg [\"OP15-001\">OP15-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "ST34-005",
+          "card_name": "Baron Tamago & Pekoms",
+          "effects": [
+            "Minus 1 Don",
+            "Destroy Charlotte Brulee [\"ST34-003\">ST34-003]"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP08-069",
+            "OP11-073",
+            "ST34-004",
+            "OP11-067",
+            "OP11-067",
+            "PRB02-010",
+            "ST34-004",
+            "ST34-002"
+          ],
+          "board": [
+            "ST34-005",
+            "ST34-002",
+            "OP11-067",
+            "OP11-070"
+          ],
+          "trash": [
+            "ST34-005",
+            "OP07-077",
+            "ST34-001",
+            "ST34-002",
+            "OP11-070",
+            "ST34-003",
+            "OP07-077",
+            "ST34-003"
+          ],
+          "life": 0
+        },
+        "Opponent": {
+          "hand": [
+            "OP13-040",
+            "OP13-040",
+            "EB04-004",
+            "OP15-009"
+          ],
+          "trash": [
+            "OP15-037",
+            "OP15-026",
+            "OP15-026",
+            "OP15-012",
+            "OP15-026",
+            "OP15-027"
+          ],
+          "board": [
+            "OP15-023",
+            "OP15-017",
+            "OP15-008",
+            "EB04-004"
+          ],
+          "life": 2
+        }
+      }
+    }
+  ]
+}

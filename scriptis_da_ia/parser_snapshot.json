@@ -693,7 +693,7 @@
    "costs": [
     {
      "count": 1,
-     "optional": false,
+     "optional": true,
      "type": "don_minus"
     }
    ],
@@ -1291,7 +1291,7 @@
    "costs": [
     {
      "count": 2,
-     "optional": false,
+     "optional": true,
      "type": "don_minus"
     }
    ],
@@ -1776,7 +1776,7 @@
    "costs": [
     {
      "count": 1,
-     "optional": false,
+     "optional": true,
      "type": "don_minus"
     }
    ],
@@ -3023,7 +3023,7 @@
    "costs": [
     {
      "count": 1,
-     "optional": false,
+     "optional": true,
      "type": "don_minus"
     }
    ],
@@ -3079,7 +3079,7 @@
    "costs": [
     {
      "count": 1,
-     "optional": false,
+     "optional": true,
      "type": "don_minus"
     }
    ],
@@ -4523,7 +4523,7 @@
    "costs": [
     {
      "count": 2,
-     "optional": false,
+     "optional": true,
      "type": "don_minus"
     }
    ],
@@ -4622,7 +4622,7 @@
    "costs": [
     {
      "count": 1,
-     "optional": false,
+     "optional": true,
      "type": "don_minus"
     }
    ],
@@ -4708,7 +4708,7 @@
    "costs": [
     {
      "count": 1,
-     "optional": false,
+     "optional": true,
      "type": "don_minus"
     }
    ],
@@ -4819,7 +4819,7 @@
    "costs": [
     {
      "count": 1,
-     "optional": false,
+     "optional": true,
      "type": "don_minus"
     }
    ],
@@ -11456,7 +11456,7 @@
     },
     {
      "amount": 5000,
-     "optional": false,
+     "optional": true,
      "target": "leader",
      "type": "debuff_power_self"
     }
@@ -12536,7 +12536,7 @@
    "costs": [
     {
      "count": 1,
-     "optional": false,
+     "optional": true,
      "type": "don_minus"
     }
    ],
@@ -12787,7 +12787,7 @@
    "costs": [
     {
      "count": 1,
-     "optional": false,
+     "optional": true,
      "type": "don_minus"
     }
    ],
@@ -16069,7 +16069,7 @@
    "costs": [
     {
      "count": 10,
-     "optional": false,
+     "optional": true,
      "type": "don_minus"
     }
    ],
@@ -17200,7 +17200,7 @@
    "costs": [
     {
      "count": 1,
-     "optional": false,
+     "optional": true,
      "type": "don_minus"
     }
    ],
@@ -22994,7 +22994,7 @@
    "costs": [
     {
      "count": 10,
-     "optional": false,
+     "optional": true,
      "type": "don_minus"
     }
    ],
@@ -26411,7 +26411,7 @@
    "costs": [
     {
      "count": 1,
-     "optional": false,
+     "optional": true,
      "type": "don_minus"
     }
    ],
@@ -26590,7 +26590,7 @@
    "costs": [
     {
      "count": 1,
-     "optional": false,
+     "optional": true,
      "type": "don_minus"
     }
    ],
@@ -28705,7 +28705,7 @@
    "costs": [
     {
      "count": 1,
-     "optional": false,
+     "optional": true,
      "type": "don_minus"
     }
    ],
@@ -28727,7 +28727,7 @@
    "costs": [
     {
      "count": 1,
-     "optional": false,
+     "optional": true,
      "type": "don_minus"
     }
    ],
@@ -28815,7 +28815,7 @@
    "steps": [
     {
      "action": "set_active",
-     "cost_eq": 3,
+     "cost_gte": 3,
      "count": 2,
      "filter_type": "big mom pirates",
      "target": "own_character"
@@ -28945,7 +28945,7 @@
    "costs": [
     {
      "count": 5,
-     "optional": false,
+     "optional": true,
      "type": "don_minus"
     }
    ],
@@ -30532,7 +30532,7 @@
    "costs": [
     {
      "count": 1,
-     "optional": false,
+     "optional": true,
      "type": "don_minus"
     }
    ],
@@ -30934,7 +30934,7 @@
    "costs": [
     {
      "count": 1,
-     "optional": false,
+     "optional": true,
      "type": "don_minus"
     }
    ],
@@ -31050,7 +31050,7 @@
    "costs": [
     {
      "count": 1,
-     "optional": false,
+     "optional": true,
      "type": "don_minus"
     }
    ],
@@ -31175,7 +31175,7 @@
    "costs": [
     {
      "count": 1,
-     "optional": false,
+     "optional": true,
      "type": "don_minus"
     }
    ],
@@ -33022,15 +33022,15 @@
    },
    "steps": [
     {
+     "action": "add_don",
+     "count": 1,
+     "rested": true
+    },
+    {
      "action": "ko",
      "cost_lte": 1,
      "count": 1,
      "target": "opp_character"
-    },
-    {
-     "action": "add_don",
-     "count": 1,
-     "rested": true
     }
    ]
   }
@@ -33084,7 +33084,7 @@
    "costs": [
     {
      "count": 3,
-     "optional": false,
+     "optional": true,
      "type": "don_minus"
     }
    ],
@@ -33202,7 +33202,7 @@
    "costs": [
     {
      "count": 1,
-     "optional": false,
+     "optional": true,
      "type": "don_minus"
     }
    ],
@@ -35441,7 +35441,7 @@
    "costs": [
     {
      "count": 1,
-     "optional": false,
+     "optional": true,
      "type": "don_minus"
     }
    ],
@@ -35475,7 +35475,7 @@
    "costs": [
     {
      "count": 1,
-     "optional": false,
+     "optional": true,
      "type": "don_minus"
     }
    ],
@@ -35534,15 +35534,15 @@
   "on_ko": {
    "steps": [
     {
+     "action": "add_don",
+     "count": 1,
+     "rested": true
+    },
+    {
      "action": "ko",
      "count": 1,
      "power_lte": 0,
      "target": "opp_character"
-    },
-    {
-     "action": "add_don",
-     "count": 1,
-     "rested": true
     }
    ]
   }
@@ -35625,7 +35625,7 @@
    "costs": [
     {
      "count": 3,
-     "optional": false,
+     "optional": true,
      "type": "don_minus"
     }
    ]
@@ -35669,7 +35669,7 @@
    "costs": [
     {
      "count": 1,
-     "optional": false,
+     "optional": true,
      "type": "don_minus"
     }
    ],
@@ -35792,7 +35792,7 @@
    "costs": [
     {
      "count": 1,
-     "optional": false,
+     "optional": true,
      "type": "don_minus"
     }
    ],
@@ -38005,7 +38005,7 @@
    "costs": [
     {
      "count": 1,
-     "optional": false,
+     "optional": true,
      "type": "don_minus"
     }
    ],
@@ -38043,7 +38043,7 @@
    "costs": [
     {
      "count": 1,
-     "optional": false,
+     "optional": true,
      "type": "don_minus"
     }
    ],
@@ -38087,7 +38087,7 @@
    "costs": [
     {
      "count": 1,
-     "optional": false,
+     "optional": true,
      "type": "don_minus"
     }
    ],
@@ -38147,7 +38147,7 @@
    "costs": [
     {
      "count": 1,
-     "optional": false,
+     "optional": true,
      "type": "don_minus"
     }
    ],
@@ -38183,7 +38183,7 @@
    "costs": [
     {
      "count": 1,
-     "optional": false,
+     "optional": true,
      "type": "don_minus"
     }
    ],
@@ -38334,7 +38334,7 @@
    "costs": [
     {
      "count": 1,
-     "optional": false,
+     "optional": true,
      "type": "don_minus"
     }
    ],
@@ -38376,7 +38376,7 @@
    "costs": [
     {
      "count": 1,
-     "optional": false,
+     "optional": true,
      "type": "don_minus"
     }
    ],
@@ -38419,7 +38419,7 @@
    "costs": [
     {
      "count": 1,
-     "optional": false,
+     "optional": true,
      "type": "don_minus"
     }
    ],
@@ -38448,7 +38448,7 @@
    "costs": [
     {
      "count": 1,
-     "optional": false,
+     "optional": true,
      "type": "don_minus"
     }
    ],
@@ -38487,7 +38487,7 @@
    "costs": [
     {
      "count": 2,
-     "optional": false,
+     "optional": true,
      "type": "don_minus"
     }
    ],
@@ -39367,7 +39367,7 @@
    "costs": [
     {
      "count": 1,
-     "optional": false,
+     "optional": true,
      "type": "don_minus"
     }
    ],
@@ -40574,7 +40574,7 @@
    "costs": [
     {
      "count": 1,
-     "optional": false,
+     "optional": true,
      "type": "don_minus"
     }
    ],
@@ -40649,7 +40649,7 @@
    "costs": [
     {
      "count": 1,
-     "optional": false,
+     "optional": true,
      "type": "don_minus"
     }
    ],
@@ -40823,7 +40823,7 @@
    "costs": [
     {
      "count": 2,
-     "optional": false,
+     "optional": true,
      "type": "don_minus"
     }
    ],
@@ -42991,7 +42991,7 @@
    "costs": [
     {
      "count": 1,
-     "optional": false,
+     "optional": true,
      "type": "don_minus"
     }
    ],
@@ -43323,7 +43323,7 @@
    "costs": [
     {
      "count": 2,
-     "optional": false,
+     "optional": true,
      "type": "don_minus"
     }
    ],
@@ -50094,15 +50094,15 @@
    },
    "steps": [
     {
+     "action": "add_don",
+     "count": 1,
+     "rested": true
+    },
+    {
      "action": "ko",
      "cost_lte": 2,
      "count": 1,
      "target": "opp_character"
-    },
-    {
-     "action": "add_don",
-     "count": 1,
-     "rested": true
     }
    ]
   }
@@ -50162,7 +50162,7 @@
    "costs": [
     {
      "count": 1,
-     "optional": false,
+     "optional": true,
      "type": "don_minus"
     }
    ],

@@ -1,0 +1,1001 @@
+{
+  "meta": {
+    "players": {
+      "p1": {
+        "name": "You",
+        "leader": {
+          "name": "Charlotte Katakuri",
+          "code": "OP11-062"
+        }
+      },
+      "p2": {
+        "name": "Opponent",
+        "leader": {
+          "name": "Smoker",
+          "code": "OP02-093"
+        }
+      }
+    },
+    "goes_first": null
+  },
+  "total_turns": 11,
+  "turns": [
+    {
+      "turn": 1,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 1,
+      "actions": [
+        {
+          "type": "play",
+          "card": "ST34-003",
+          "card_name": "Charlotte Brulee",
+          "effects": [
+            "<b>Reveal and Draw Charlotte Pudding [\"OP11-070\">OP11-070]</b>"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP07-077",
+            "OP11-073",
+            "OP11-067",
+            "OP11-070"
+          ],
+          "board": [
+            "ST34-003"
+          ],
+          "trash": [
+            "OP15-078"
+          ],
+          "life": 5
+        },
+        "Opponent": {
+          "hand": [
+            "ST19-003",
+            "ST19-003",
+            "EB01-049",
+            "ST19-002",
+            "OP03-089"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 2,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP03-089",
+          "card_name": "Brannew",
+          "effects": [
+            "<b>Reveal and Draw T Bone [\"EB01-049\">EB01-049]</b>",
+            "Trash 2 Remaining Cards"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "ST19-003",
+            "ST19-003",
+            "EB01-049",
+            "ST19-002",
+            "OP03-097",
+            "EB01-049"
+          ],
+          "board": [
+            "OP03-089"
+          ],
+          "trash": [
+            "OP02-119",
+            "OP07-085"
+          ],
+          "life": 5
+        },
+        "You": {
+          "hand": [
+            "OP07-077",
+            "OP11-073",
+            "OP11-067",
+            "OP11-070"
+          ],
+          "trash": [
+            "OP15-078"
+          ],
+          "board": [
+            "ST34-003"
+          ],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 3,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP11-070",
+          "card_name": "Charlotte Pudding",
+          "effects": [
+            "<b>Reveal and Draw Charlotte Cracker [\"ST34-002\">ST34-002]</b>"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP07-077",
+          "card_name": "We're Going to Claim the One Piece!!!",
+          "effects": [
+            "Rest 1 Don",
+            "<b>Reveal and Draw Charlotte Brulee [\"ST34-003\">ST34-003]</b>"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "ST34-003",
+          "card_name": "Charlotte Brulee",
+          "effects": [
+            "<b>Reveal and Draw Charlotte Pudding [\"OP11-070\">OP11-070]</b>"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Katakuri",
+          "attacker_code": "OP11-062",
+          "target": "Smoker [\"OP02-093\">OP02-093]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP11-073",
+            "OP11-067",
+            "OP15-069",
+            "ST34-002",
+            "OP11-070"
+          ],
+          "board": [
+            "ST34-003",
+            "OP11-070",
+            "ST34-003"
+          ],
+          "trash": [
+            "OP15-078",
+            "OP07-077"
+          ],
+          "life": 5
+        },
+        "Opponent": {
+          "hand": [
+            "ST19-003",
+            "ST19-003",
+            "EB01-049",
+            "ST19-002",
+            "OP03-097",
+            "EB01-049",
+            "OP02-096"
+          ],
+          "trash": [
+            "OP02-119",
+            "OP07-085"
+          ],
+          "board": [
+            "OP03-089"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 4,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP02-096",
+          "card_name": "Kuzan",
+          "effects": [
+            "Draw 1 Card"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Smoker",
+          "attacker_code": "OP02-093",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "ST19-003",
+            "ST19-003",
+            "EB01-049",
+            "ST19-002",
+            "OP03-097",
+            "EB01-049",
+            "ST06-016",
+            "ST19-002"
+          ],
+          "board": [
+            "OP03-089",
+            "OP02-096"
+          ],
+          "trash": [
+            "OP02-119",
+            "OP07-085"
+          ],
+          "life": 4
+        },
+        "You": {
+          "hand": [
+            "OP11-073",
+            "OP11-067",
+            "OP15-069",
+            "ST34-002",
+            "OP11-070"
+          ],
+          "trash": [
+            "OP15-078",
+            "OP07-077"
+          ],
+          "board": [
+            "ST34-003",
+            "OP11-070",
+            "ST34-003"
+          ],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 5,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP11-070",
+          "card_name": "Charlotte Pudding",
+          "effects": [
+            "<b>Reveal and Draw Charlotte Cracker [\"ST34-002\">ST34-002]</b>",
+            "Minus 1 Don",
+            "Rest Charlotte Pudding [\"OP11-070\">OP11-070]"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP15-069",
+          "card_name": "Nola",
+          "effects": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Katakuri",
+          "attacker_code": "OP11-062",
+          "target": "Smoker [\"OP02-093\">OP02-093]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "ST19-002"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP11-070",
+          "to_name": "Charlotte Pudding",
+          "total": 1
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP11-070",
+          "to_name": "Charlotte Pudding",
+          "total": 1
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP11-073",
+            "OP11-067",
+            "ST34-002",
+            "ST34-002"
+          ],
+          "board": [
+            "ST34-003",
+            "OP11-070",
+            "ST34-003",
+            "OP11-070",
+            "OP15-069"
+          ],
+          "trash": [
+            "OP15-078",
+            "OP07-077",
+            "OP13-076"
+          ],
+          "life": 5
+        },
+        "Opponent": {
+          "hand": [
+            "ST19-003",
+            "ST19-003",
+            "EB01-049",
+            "ST19-002",
+            "OP03-097",
+            "EB01-049",
+            "ST06-016"
+          ],
+          "trash": [
+            "OP02-119",
+            "OP07-085",
+            "ST19-002"
+          ],
+          "board": [
+            "OP03-089",
+            "OP02-096"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 6,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "ST19-002",
+          "card_name": "Sengoku",
+          "effects": [
+            "Trash White Out [\"ST06-016\">ST06-016]",
+            "Trash T Bone [\"EB01-049\">EB01-049]",
+            "Draw 3 Card"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "ST19-003",
+          "card_name": "Tashigi",
+          "effects": [
+            "Charlotte Brulee [\"ST34-003\">ST34-003] Cost -4",
+            "Trash Charlotte Brulee [\"ST34-003\">ST34-003]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Brannew",
+          "attacker_code": "OP03-089",
+          "target": "Charlotte Pudding [\"OP11-070\">OP11-070]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Kuzan",
+          "attacker_code": "OP02-096",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP02-096",
+          "card_name": "Kuzan",
+          "effects": [
+            "Charlotte Brulee [\"ST34-003\">ST34-003] Cost -4"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Smoker",
+          "attacker_code": "OP02-093",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "ST19-003",
+            "EB01-049",
+            "OP03-097",
+            "OP02-121",
+            "EB02-044",
+            "ST19-002",
+            "ST06-006"
+          ],
+          "board": [
+            "OP03-089",
+            "OP02-096",
+            "ST19-002",
+            "ST19-003"
+          ],
+          "trash": [
+            "OP02-119",
+            "OP07-085",
+            "ST19-002",
+            "ST06-016",
+            "EB01-049"
+          ],
+          "life": 4
+        },
+        "You": {
+          "hand": [
+            "OP11-073",
+            "OP11-067",
+            "ST34-002",
+            "ST34-002",
+            "OP15-069"
+          ],
+          "trash": [
+            "OP15-078",
+            "OP07-077",
+            "OP13-076",
+            "OP11-070"
+          ],
+          "board": [
+            "ST34-003",
+            "ST34-003",
+            "OP11-070",
+            "OP15-069"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 7,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 3,
+          "to": "ST34-003",
+          "to_name": "Charlotte Brulee",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Brulee",
+          "attacker_code": "ST34-003",
+          "target": "Kuzan [\"OP02-096\">OP02-096]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "ST19-002"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Katakuri",
+          "attacker_code": "OP11-062",
+          "target": "Kuzan [\"OP02-096\">OP02-096]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "ST06-006"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP11-073",
+            "OP11-067",
+            "ST34-002",
+            "ST34-002",
+            "OP15-069",
+            "ST34-002"
+          ],
+          "board": [
+            "ST34-003",
+            "ST34-003",
+            "OP11-070",
+            "OP15-069"
+          ],
+          "trash": [
+            "OP15-078",
+            "OP07-077",
+            "OP13-076",
+            "OP11-070"
+          ],
+          "life": 4
+        },
+        "Opponent": {
+          "hand": [
+            "ST19-003",
+            "EB01-049",
+            "OP03-097",
+            "OP02-121",
+            "EB02-044"
+          ],
+          "trash": [
+            "OP02-119",
+            "OP07-085",
+            "ST19-002",
+            "ST06-016",
+            "EB01-049",
+            "ST19-002",
+            "ST06-006"
+          ],
+          "board": [
+            "OP03-089",
+            "OP02-096",
+            "ST19-002",
+            "ST19-003"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 8,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Brannew",
+          "attacker_code": "OP03-089",
+          "target": "Charlotte Brulee [\"ST34-003\">ST34-003]",
+          "result": null,
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "EB02-044",
+          "card_name": "Sengoku",
+          "effects": [
+            "Deployed Tashigi [\"ST06-006\">ST06-006] from Trash"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Kuzan",
+          "attacker_code": "OP02-096",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP02-096",
+          "card_name": "Kuzan",
+          "effects": [
+            "Charlotte Pudding [\"OP11-070\">OP11-070] Cost -4"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Smoker",
+          "attacker_code": "OP02-093",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Tashigi",
+          "attacker_code": "ST19-003",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP15-069"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "ST19-003",
+            "EB01-049",
+            "OP03-097",
+            "OP02-121",
+            "ST06-006"
+          ],
+          "board": [
+            "OP02-096",
+            "ST19-002",
+            "ST19-003",
+            "EB02-044",
+            "ST06-006"
+          ],
+          "trash": [
+            "OP02-119",
+            "OP07-085",
+            "ST19-002",
+            "ST06-016",
+            "EB01-049",
+            "ST19-002",
+            "OP03-089"
+          ],
+          "life": 4
+        },
+        "You": {
+          "hand": [
+            "OP11-073",
+            "OP11-067",
+            "ST34-002",
+            "ST34-002",
+            "ST34-002",
+            "OP15-069"
+          ],
+          "trash": [
+            "OP15-078",
+            "OP07-077",
+            "OP13-076",
+            "OP11-070",
+            "ST34-003",
+            "OP15-069"
+          ],
+          "board": [
+            "ST34-003",
+            "OP11-070",
+            "OP15-069"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 9,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 4,
+          "to": "ST34-003",
+          "to_name": "Charlotte Brulee",
+          "total": 4
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Brulee",
+          "attacker_code": "ST34-003",
+          "target": "Tashigi [\"ST19-003\">ST19-003]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "EB01-049"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Katakuri",
+          "attacker_code": "OP11-062",
+          "target": "Tashigi [\"ST19-003\">ST19-003]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP11-073",
+            "OP11-067",
+            "ST34-002",
+            "ST34-002",
+            "ST34-002",
+            "OP15-069",
+            "OP07-077"
+          ],
+          "board": [
+            "ST34-003",
+            "OP11-070",
+            "OP15-069"
+          ],
+          "trash": [
+            "OP15-078",
+            "OP07-077",
+            "OP13-076",
+            "OP11-070",
+            "ST34-003",
+            "OP15-069"
+          ],
+          "life": 3
+        },
+        "Opponent": {
+          "hand": [
+            "ST19-003",
+            "OP03-097",
+            "OP02-121",
+            "ST06-006"
+          ],
+          "trash": [
+            "OP02-119",
+            "OP07-085",
+            "ST19-002",
+            "ST06-016",
+            "EB01-049",
+            "ST19-002",
+            "OP03-089",
+            "EB01-049"
+          ],
+          "board": [
+            "OP02-096",
+            "ST19-002",
+            "ST19-003",
+            "EB02-044",
+            "ST06-006"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 10,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Sengoku",
+          "attacker_code": "ST19-002",
+          "target": "Charlotte Brulee [\"ST34-003\">ST34-003]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Tashigi",
+          "attacker_code": "ST06-006",
+          "target": "Charlotte Brulee [\"ST34-003\">ST34-003]",
+          "result": "hit",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Kuzan",
+          "attacker_code": "OP02-096",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP02-096",
+          "card_name": "Kuzan",
+          "effects": [
+            "Nola [\"OP15-069\">OP15-069] Cost -4"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Smoker",
+          "attacker_code": "OP02-093",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP15-069"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Tashigi",
+          "attacker_code": "ST19-003",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP02-121",
+          "card_name": "Kuzan",
+          "effects": [
+            "Destroy Nola [\"OP15-069\">OP15-069]"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "ST19-003",
+            "OP03-097",
+            "OP02-121",
+            "ST06-006"
+          ],
+          "board": [
+            "ST19-002",
+            "ST19-003",
+            "EB02-044",
+            "ST06-006",
+            "OP02-121"
+          ],
+          "trash": [
+            "OP02-119",
+            "OP07-085",
+            "ST19-002",
+            "ST06-016",
+            "EB01-049",
+            "ST19-002",
+            "OP03-089",
+            "EB01-049",
+            "OP02-096"
+          ],
+          "life": 4
+        },
+        "You": {
+          "hand": [
+            "OP11-073",
+            "OP11-067",
+            "ST34-002",
+            "ST34-002",
+            "ST34-002",
+            "OP07-077",
+            "OP15-078"
+          ],
+          "trash": [
+            "OP15-078",
+            "OP07-077",
+            "OP13-076",
+            "OP11-070",
+            "ST34-003",
+            "OP15-069",
+            "ST34-003",
+            "OP15-069"
+          ],
+          "board": [
+            "OP11-070",
+            "OP15-069"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 11,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 4,
+          "to": "OP15-069",
+          "to_name": "Nola",
+          "total": 4
+        },
+        {
+          "type": "attack",
+          "attacker": "Nola",
+          "attacker_code": "OP15-069",
+          "target": "Tashigi [\"ST19-003\">ST19-003]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "ST06-006"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Katakuri",
+          "attacker_code": "OP11-062",
+          "target": "Tashigi [\"ST19-003\">ST19-003]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP11-073",
+            "OP11-067",
+            "ST34-002",
+            "ST34-002",
+            "ST34-002",
+            "OP07-077",
+            "ST34-003"
+          ],
+          "board": [
+            "OP11-070",
+            "OP15-069"
+          ],
+          "trash": [
+            "OP15-078",
+            "OP07-077",
+            "OP13-076",
+            "OP11-070",
+            "ST34-003",
+            "OP15-069",
+            "ST34-003",
+            "OP15-069",
+            "OP15-078"
+          ],
+          "life": 2
+        },
+        "Opponent": {
+          "hand": [
+            "ST19-003",
+            "OP03-097",
+            "OP02-121"
+          ],
+          "trash": [
+            "OP02-119",
+            "OP07-085",
+            "ST19-002",
+            "ST06-016",
+            "EB01-049",
+            "ST19-002",
+            "OP03-089",
+            "EB01-049",
+            "OP02-096",
+            "ST06-006"
+          ],
+          "board": [
+            "ST19-002",
+            "ST19-003",
+            "EB02-044",
+            "ST06-006",
+            "OP02-121"
+          ],
+          "life": 4
+        }
+      }
+    }
+  ]
+}

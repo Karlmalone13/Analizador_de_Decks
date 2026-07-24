@@ -1,0 +1,66 @@
+{
+  "cards": [
+    {
+      "code": "ST23-001",
+      "name": "ST23-001",
+      "count": 3
+    },
+    {
+      "code": "ST22-015",
+      "name": "ST22-015",
+      "count": 3
+    },
+    {
+      "code": "PRB02-008",
+      "name": "Marco",
+      "count": 2
+    },
+    {
+      "code": "OP13-054",
+      "name": "Yamato",
+      "count": 2
+    },
+    {
+      "code": "ST15-004",
+      "name": "ST15-004",
+      "count": 2
+    },
+    {
+      "code": "OP13-016",
+      "name": "Monkey D. Garp",
+      "count": 2
+    },
+    {
+      "code": "OP09-118",
+      "name": "OP09-118",
+      "count": 2
+    },
+    {
+      "code": "OP13-042",
+      "name": "OP13-042",
+      "count": 2
+    },
+    {
+      "code": "ST22-002",
+      "name": "Izou",
+      "count": 2
+    },
+    {
+      "code": "OP13-043",
+      "name": "OP13-043",
+      "count": 2
+    },
+    {
+      "code": "OP08-044",
+      "name": "OP08-044",
+      "count": 1
+    },
+    {
+      "code": "EB04-007",
+      "name": "Roronoa Zoro",
+      "count": 1
+    }
+  ],
+  "total_seen": 24,
+  "leader": "OP13-002"
+}

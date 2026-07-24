@@ -1,0 +1,13 @@
+{
+  "schema": 1,
+  "description": "Partida(s) do USUARIO pilotando Charlotte Katakuri (OP11-062) em 23/07/2026, benchmark pra comparar com o cohort do bot (katakuri_bot_23jul.json).",
+  "cohorts": [
+    {
+      "label": "katakuri_human_23jul",
+      "leader_code": "OP11-062",
+      "matches": [
+        {"file": "Charlotte.Katakuri-P_x_Dracule.Mihawk-G_2026-07-23T18.13.41_p2.json", "player": "You"}
+      ]
+    }
+  ]
+}

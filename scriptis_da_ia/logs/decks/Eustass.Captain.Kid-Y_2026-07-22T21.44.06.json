@@ -1,0 +1,56 @@
+{
+  "cards": [
+    {
+      "code": "OP10-112",
+      "name": "Eustass \"Captain\" Kid",
+      "count": 2
+    },
+    {
+      "code": "ST36-005",
+      "name": "ST36-005",
+      "count": 2
+    },
+    {
+      "code": "OP10-111",
+      "name": "Monkey D. Luffy",
+      "count": 2
+    },
+    {
+      "code": "OP10-109",
+      "name": "OP10-109",
+      "count": 2
+    },
+    {
+      "code": "P-088",
+      "name": "P-088",
+      "count": 1
+    },
+    {
+      "code": "ST36-003",
+      "name": "ST36-003",
+      "count": 1
+    },
+    {
+      "code": "OP10-116",
+      "name": "OP10-116",
+      "count": 1
+    },
+    {
+      "code": "OP15-105",
+      "name": "Jewelry Bonney",
+      "count": 1
+    },
+    {
+      "code": "OP10-119",
+      "name": "Trafalgar Law",
+      "count": 1
+    },
+    {
+      "code": "OP11-101",
+      "name": "OP11-101",
+      "count": 1
+    }
+  ],
+  "total_seen": 14,
+  "leader": "OP10-099"
+}

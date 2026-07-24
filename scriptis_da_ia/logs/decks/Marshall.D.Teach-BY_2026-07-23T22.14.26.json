@@ -1,0 +1,56 @@
+{
+  "cards": [
+    {
+      "code": "OP16-108",
+      "name": "Shiryu",
+      "count": 3
+    },
+    {
+      "code": "OP09-086",
+      "name": "Jesus Burgess",
+      "count": 2
+    },
+    {
+      "code": "OP16-119",
+      "name": "Marshall D. Teach",
+      "count": 2
+    },
+    {
+      "code": "OP09-093",
+      "name": "Marshall D. Teach",
+      "count": 2
+    },
+    {
+      "code": "EB04-058",
+      "name": "EB04-058",
+      "count": 2
+    },
+    {
+      "code": "OP16-104",
+      "name": "OP16-104",
+      "count": 1
+    },
+    {
+      "code": "OP09-096",
+      "name": "OP09-096",
+      "count": 1
+    },
+    {
+      "code": "OP09-095",
+      "name": "Laffitte",
+      "count": 1
+    },
+    {
+      "code": "OP16-110",
+      "name": "OP16-110",
+      "count": 1
+    },
+    {
+      "code": "OP16-115",
+      "name": "OP16-115",
+      "count": 1
+    }
+  ],
+  "total_seen": 16,
+  "leader": "OP16-080"
+}

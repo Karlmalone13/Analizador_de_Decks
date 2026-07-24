@@ -1,0 +1,782 @@
+{
+  "meta": {
+    "players": {
+      "p1": {
+        "name": "You",
+        "leader": {
+          "name": "Eustass \"Captain\" Kid",
+          "code": "OP10-099"
+        }
+      },
+      "p2": {
+        "name": "Opponent",
+        "leader": {
+          "name": "Charlotte Katakuri",
+          "code": "OP11-062"
+        }
+      }
+    },
+    "goes_first": null
+  },
+  "total_turns": 10,
+  "turns": [
+    {
+      "turn": 1,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 1,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP10-111",
+          "card_name": "Monkey D. Luffy",
+          "effects": [
+            "<b>Reveal and Draw Killer [\"ST36-002\">ST36-002]</b>"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "ST36-003",
+            "OP10-119",
+            "P-088",
+            "OP12-117",
+            "ST36-002"
+          ],
+          "board": [
+            "OP10-111"
+          ],
+          "trash": [],
+          "life": 5
+        },
+        "Opponent": {
+          "hand": [
+            "OP08-069",
+            "ST34-004",
+            "ST18-001",
+            "ST34-005",
+            "ST34-002"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 2,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "activate",
+          "card": "OP15-078",
+          "card_name": "Mamaragan",
+          "effects": [
+            "Minus 2 Don",
+            "Draw 1 Card",
+            "Rest Monkey D. Luffy [\"OP10-111\">OP10-111]"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP08-069",
+            "ST34-004",
+            "ST18-001",
+            "ST34-005",
+            "ST34-002",
+            "OP15-069"
+          ],
+          "board": [],
+          "trash": [
+            "OP15-078"
+          ],
+          "life": 5
+        },
+        "You": {
+          "hand": [
+            "ST36-003",
+            "OP10-119",
+            "P-088",
+            "OP12-117",
+            "ST36-002"
+          ],
+          "trash": [],
+          "board": [
+            "OP10-111"
+          ],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 3,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 3,
+          "to": "OP10-111",
+          "to_name": "Monkey D. Luffy",
+          "total": 3
+        },
+        {
+          "type": "attack",
+          "attacker": "Monkey D. Luffy",
+          "attacker_code": "OP10-111",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Eustass \"Captain\" Kid",
+          "attacker_code": "OP10-099",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "ST36-003",
+            "OP10-119",
+            "P-088",
+            "OP12-117",
+            "ST36-002",
+            "OP10-112"
+          ],
+          "board": [
+            "OP10-111"
+          ],
+          "trash": [],
+          "life": 5
+        },
+        "Opponent": {
+          "hand": [
+            "OP08-069",
+            "ST34-004",
+            "ST18-001",
+            "ST34-005",
+            "ST34-002",
+            "OP15-069",
+            "ST34-001",
+            "OP13-076"
+          ],
+          "trash": [
+            "OP15-078"
+          ],
+          "board": [],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 4,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Charlotte Katakuri",
+          "attacker_code": "OP11-062",
+          "target": "Monkey D. Luffy [\"OP10-111\">OP10-111]",
+          "result": null,
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP11-062",
+          "card_name": "Charlotte Katakuri",
+          "effects": [
+            "Minus 1 Don",
+            "<b>Looked at opponent's top deck</b>",
+            "<b>Finished looking at opponent's top deck</b>",
+            "Buff Charlotte Katakuri [\"OP11-062\">OP11-062] 1000 for the Combat"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP11-070",
+          "card_name": "Charlotte Pudding",
+          "effects": [
+            "<b>Reveal and Draw Charlotte Katakuri [\"OP11-067\">OP11-067]</b>"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP08-069",
+            "ST34-004",
+            "ST18-001",
+            "ST34-005",
+            "ST34-002",
+            "OP15-069",
+            "ST34-001",
+            "OP13-076",
+            "OP11-067"
+          ],
+          "board": [
+            "OP11-070"
+          ],
+          "trash": [
+            "OP15-078"
+          ],
+          "life": 3
+        },
+        "You": {
+          "hand": [
+            "ST36-003",
+            "OP10-119",
+            "P-088",
+            "OP12-117",
+            "ST36-002",
+            "OP10-112"
+          ],
+          "trash": [
+            "OP10-111"
+          ],
+          "board": [],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 5,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "ST36-002",
+          "card_name": "Killer",
+          "effects": [
+            "Add card to top of Life from Deck"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP10-099",
+          "to_name": "Eustass \"Captain\" Kid",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Eustass \"Captain\" Kid",
+          "attacker_code": "OP10-099",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP15-069"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP10-099",
+          "card_name": "Eustass \"Captain\" Kid",
+          "effects": [
+            "Flip 1 Life Face Up",
+            "Set Killer [\"ST36-002\">ST36-002] to Active",
+            "Killer [\"ST36-002\">ST36-002] Gains Blocker"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "ST36-003",
+            "OP10-119",
+            "P-088",
+            "OP12-117",
+            "ST36-002",
+            "OP10-112"
+          ],
+          "board": [
+            "ST36-002"
+          ],
+          "trash": [
+            "OP10-111"
+          ],
+          "life": 6
+        },
+        "Opponent": {
+          "hand": [
+            "OP08-069",
+            "ST34-004",
+            "ST18-001",
+            "ST34-005",
+            "ST34-002",
+            "ST34-001",
+            "OP13-076",
+            "OP11-067"
+          ],
+          "trash": [
+            "OP15-078",
+            "OP15-069"
+          ],
+          "board": [
+            "OP11-070"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 6,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP11-070",
+          "card_name": "Charlotte Pudding",
+          "effects": [
+            "<b>Reveal and Draw Charlotte Linlin [\"ST34-004\">ST34-004]</b>"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Katakuri",
+          "attacker_code": "OP11-062",
+          "target": "Eustass \"Captain\" Kid [\"OP10-099\">OP10-099]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "P-088"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP11-062",
+          "card_name": "Charlotte Katakuri",
+          "effects": [
+            "Minus 1 Don",
+            "<b>Looked at opponent's top deck</b>",
+            "<b>Finished looking at opponent's top deck</b>",
+            "Buff Charlotte Katakuri [\"OP11-062\">OP11-062] 1000 for the Combat"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP11-070",
+          "to_name": "Charlotte Pudding",
+          "total": 1
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP08-069",
+            "ST34-004",
+            "ST18-001",
+            "ST34-005",
+            "ST34-002",
+            "ST34-001",
+            "OP11-067",
+            "ST34-004"
+          ],
+          "board": [
+            "OP11-070",
+            "OP11-070"
+          ],
+          "trash": [
+            "OP15-078",
+            "OP15-069",
+            "OP13-076"
+          ],
+          "life": 3
+        },
+        "You": {
+          "hand": [
+            "ST36-003",
+            "OP10-119",
+            "OP12-117",
+            "ST36-002",
+            "OP10-112"
+          ],
+          "trash": [
+            "OP10-111",
+            "P-088"
+          ],
+          "board": [
+            "ST36-002"
+          ],
+          "life": 6
+        }
+      }
+    },
+    {
+      "turn": 7,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP10-119",
+          "card_name": "Trafalgar Law",
+          "effects": [
+            "Added card to top of Life from Hand",
+            "Attach 1 Rested Don to Eustass \"Captain\" Kid [\"OP10-099\">OP10-099]"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Killer",
+          "attacker_code": "ST36-002",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "ST34-005"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Eustass \"Captain\" Kid",
+          "attacker_code": "OP10-099",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP10-099",
+          "card_name": "Eustass \"Captain\" Kid",
+          "effects": [
+            "Flip 1 Life Face Up",
+            "Set Killer [\"ST36-002\">ST36-002] to Active",
+            "Killer [\"ST36-002\">ST36-002] Gains Blocker"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP10-119",
+            "OP12-117",
+            "ST36-002",
+            "OP10-112"
+          ],
+          "board": [
+            "ST36-002",
+            "OP10-119"
+          ],
+          "trash": [
+            "OP10-111",
+            "P-088"
+          ],
+          "life": 7
+        },
+        "Opponent": {
+          "hand": [
+            "OP08-069",
+            "ST34-004",
+            "ST18-001",
+            "ST34-002",
+            "ST34-001",
+            "OP11-067",
+            "ST34-004",
+            "OP15-069"
+          ],
+          "trash": [
+            "OP15-078",
+            "OP15-069",
+            "OP13-076",
+            "ST34-005"
+          ],
+          "board": [
+            "OP11-070",
+            "OP11-070"
+          ],
+          "life": 2
+        }
+      }
+    },
+    {
+      "turn": 8,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP08-069",
+            "ST34-004",
+            "ST18-001",
+            "ST34-002",
+            "ST34-001",
+            "OP11-067",
+            "ST34-004",
+            "OP15-069",
+            "PRB02-010"
+          ],
+          "board": [
+            "OP11-070",
+            "OP11-070"
+          ],
+          "trash": [
+            "OP15-078",
+            "OP15-069",
+            "OP13-076",
+            "ST34-005"
+          ],
+          "life": 2
+        },
+        "You": {
+          "hand": [
+            "OP10-119",
+            "OP12-117",
+            "ST36-002",
+            "OP10-112"
+          ],
+          "trash": [
+            "OP10-111",
+            "P-088"
+          ],
+          "board": [
+            "ST36-002",
+            "OP10-119"
+          ],
+          "life": 7
+        }
+      }
+    },
+    {
+      "turn": 9,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP10-119",
+          "card_name": "Trafalgar Law",
+          "effects": [
+            "Added card to top of Life from Hand",
+            "Attach 1 Rested Don to Eustass \"Captain\" Kid [\"OP10-099\">OP10-099]"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "ST36-002",
+          "to_name": "Killer",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Killer",
+          "attacker_code": "ST36-002",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP15-069"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP10-099",
+          "to_name": "Eustass \"Captain\" Kid",
+          "total": 2
+        },
+        {
+          "type": "attack",
+          "attacker": "Eustass \"Captain\" Kid",
+          "attacker_code": "OP10-099",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Trafalgar Law",
+          "attacker_code": "OP10-119",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP10-099",
+          "card_name": "Eustass \"Captain\" Kid",
+          "effects": [
+            "Flip 1 Life Face Up",
+            "Set Trafalgar Law [\"OP10-119\">OP10-119] to Active",
+            "Trafalgar Law [\"OP10-119\">OP10-119] Gains Blocker"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP12-117",
+            "ST36-002",
+            "OP10-112"
+          ],
+          "board": [
+            "ST36-002",
+            "OP10-119",
+            "OP10-119"
+          ],
+          "trash": [
+            "OP10-111",
+            "P-088"
+          ],
+          "life": 8
+        },
+        "Opponent": {
+          "hand": [
+            "OP08-069",
+            "ST34-004",
+            "ST18-001",
+            "ST34-002",
+            "ST34-001",
+            "OP11-067",
+            "ST34-004",
+            "PRB02-010",
+            "ST34-004",
+            "OP08-069"
+          ],
+          "trash": [
+            "OP15-078",
+            "OP15-069",
+            "OP13-076",
+            "ST34-005",
+            "OP15-069"
+          ],
+          "board": [
+            "OP11-070",
+            "OP11-070"
+          ],
+          "life": 0
+        }
+      }
+    },
+    {
+      "turn": 10,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "ST34-002",
+          "card_name": "Charlotte Cracker",
+          "effects": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Katakuri",
+          "attacker_code": "OP11-062",
+          "target": "Killer [\"ST36-002\">ST36-002]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": "OP10-119",
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP11-062",
+          "card_name": "Charlotte Katakuri",
+          "effects": [
+            "Minus 1 Don",
+            "<b>Looked at opponent's top deck</b>",
+            "<b>Finished looking at opponent's top deck</b>",
+            "Buff Charlotte Katakuri [\"OP11-062\">OP11-062] 1000 for the Combat"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP11-070",
+          "card_name": "Charlotte Pudding",
+          "effects": [
+            "Minus 1 Don",
+            "Rest Charlotte Pudding [\"OP11-070\">OP11-070]",
+            "Minus 1 Don",
+            "Rest Charlotte Pudding [\"OP11-070\">OP11-070]"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "OP08-069",
+            "ST34-004",
+            "ST18-001",
+            "ST34-001",
+            "OP11-067",
+            "ST34-004",
+            "PRB02-010",
+            "ST34-004",
+            "OP08-069",
+            "OP07-077"
+          ],
+          "board": [
+            "OP11-070",
+            "OP11-070",
+            "ST34-002"
+          ],
+          "trash": [
+            "OP15-078",
+            "OP15-069",
+            "OP13-076",
+            "ST34-005",
+            "OP15-069"
+          ],
+          "life": 0
+        },
+        "You": {
+          "hand": [
+            "OP12-117",
+            "ST36-002",
+            "OP10-112"
+          ],
+          "trash": [
+            "OP10-111",
+            "P-088"
+          ],
+          "board": [
+            "ST36-002",
+            "OP10-119",
+            "OP10-119"
+          ],
+          "life": 8
+        }
+      }
+    }
+  ]
+}

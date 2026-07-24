@@ -1,0 +1,731 @@
+{
+  "meta": {
+    "players": {
+      "p1": {
+        "name": "You",
+        "leader": {
+          "name": "Charlotte Katakuri",
+          "code": "OP11-062"
+        }
+      },
+      "p2": {
+        "name": "Opponent",
+        "leader": {
+          "name": "Kaido",
+          "code": "ST04-001"
+        }
+      }
+    },
+    "goes_first": null
+  },
+  "total_turns": 9,
+  "turns": [
+    {
+      "turn": 1,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 1,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP11-070",
+          "card_name": "Charlotte Pudding",
+          "effects": [
+            "<b>Reveal and Draw Baron Tamago & Pekoms [\"ST34-005\">ST34-005]</b>"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP11-067",
+            "ST34-003",
+            "OP08-069",
+            "ST34-001",
+            "ST34-005"
+          ],
+          "board": [
+            "OP11-070"
+          ],
+          "trash": [],
+          "life": 5
+        },
+        "Opponent": {
+          "hand": [
+            "ST04-017",
+            "OP08-074",
+            "ST04-003",
+            "ST04-016",
+            "OP11-070"
+          ],
+          "trash": [],
+          "board": [],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 2,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP11-070",
+          "card_name": "Charlotte Pudding",
+          "effects": [
+            "<b>Reveal and Draw Sanji & Pudding [\"EB02-035\">EB02-035]</b>"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "ST04-017",
+            "OP08-074",
+            "ST04-003",
+            "ST04-016",
+            "OP11-072",
+            "EB02-035"
+          ],
+          "board": [
+            "OP11-070"
+          ],
+          "trash": [],
+          "life": 5
+        },
+        "You": {
+          "hand": [
+            "OP11-067",
+            "ST34-003",
+            "OP08-069",
+            "ST34-001",
+            "ST34-005"
+          ],
+          "trash": [],
+          "board": [
+            "OP11-070"
+          ],
+          "life": 5
+        }
+      }
+    },
+    {
+      "turn": 3,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "ST34-003",
+          "card_name": "Charlotte Brulee",
+          "effects": [
+            "<b>Reveal and Draw Charlotte Katakuri [\"ST34-001\">ST34-001]</b>"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Katakuri",
+          "attacker_code": "OP11-062",
+          "target": "Kaido [\"ST04-001\">ST04-001]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "activate",
+          "card": "OP11-062",
+          "card_name": "Charlotte Katakuri",
+          "effects": [
+            "Minus 1 Don",
+            "<b>Looked at opponent's top deck</b>",
+            "<b>Finished looking at opponent's top deck</b>",
+            "Buff Charlotte Katakuri [\"OP11-062\">OP11-062] 1000 for the Combat"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP11-070",
+          "card_name": "Charlotte Pudding",
+          "effects": [
+            "Minus 1 Don",
+            "Rest Charlotte Pudding [\"OP11-070\">OP11-070]"
+          ]
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP11-070",
+          "to_name": "Charlotte Pudding",
+          "total": 1
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP11-067",
+            "OP08-069",
+            "ST34-001",
+            "ST34-005",
+            "PRB02-010",
+            "ST34-001"
+          ],
+          "board": [
+            "OP11-070",
+            "ST34-003"
+          ],
+          "trash": [],
+          "life": 5
+        },
+        "Opponent": {
+          "hand": [
+            "ST04-017",
+            "OP08-074",
+            "ST04-003",
+            "ST04-016",
+            "OP11-072",
+            "EB02-035",
+            "OP11-070"
+          ],
+          "trash": [],
+          "board": [
+            "OP11-070"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 4,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "OP08-074",
+          "card_name": "Black Maria",
+          "effects": []
+        },
+        {
+          "type": "play",
+          "card": "OP11-070",
+          "card_name": "Charlotte Pudding",
+          "effects": [
+            "<b>Reveal and Draw Sanji & Pudding [\"EB02-035\">EB02-035]</b>"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Kaido",
+          "attacker_code": "ST04-001",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "ST04-017",
+            "ST04-003",
+            "ST04-016",
+            "OP11-072",
+            "EB02-035",
+            "OP01-114",
+            "EB02-035"
+          ],
+          "board": [
+            "OP11-070",
+            "OP08-074",
+            "OP11-070"
+          ],
+          "trash": [],
+          "life": 4
+        },
+        "You": {
+          "hand": [
+            "OP11-067",
+            "OP08-069",
+            "ST34-001",
+            "ST34-005",
+            "PRB02-010",
+            "ST34-001",
+            "ST18-001"
+          ],
+          "trash": [],
+          "board": [
+            "OP11-070",
+            "ST34-003"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 5,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "ST34-005",
+          "card_name": "Baron Tamago & Pekoms",
+          "effects": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Katakuri",
+          "attacker_code": "OP11-062",
+          "target": "Kaido [\"ST04-001\">ST04-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP01-114"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP11-062",
+          "card_name": "Charlotte Katakuri",
+          "effects": [
+            "Minus 1 Don",
+            "<b>Looked at opponent's top deck</b>",
+            "<b>Finished looking at opponent's top deck</b>",
+            "Buff Charlotte Katakuri [\"OP11-062\">OP11-062] 1000 for the Combat"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP11-070",
+          "card_name": "Charlotte Pudding",
+          "effects": [
+            "Minus 1 Don",
+            "Rest Charlotte Pudding [\"OP11-070\">OP11-070]"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP11-067",
+            "OP08-069",
+            "ST34-001",
+            "PRB02-010",
+            "ST34-001",
+            "ST18-001",
+            "ST34-004"
+          ],
+          "board": [
+            "OP11-070",
+            "ST34-003",
+            "ST34-005"
+          ],
+          "trash": [],
+          "life": 4
+        },
+        "Opponent": {
+          "hand": [
+            "ST04-017",
+            "ST04-003",
+            "ST04-016",
+            "OP11-072",
+            "EB02-035",
+            "EB02-035"
+          ],
+          "trash": [
+            "OP01-114"
+          ],
+          "board": [
+            "OP11-070",
+            "OP08-074",
+            "OP11-070"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 6,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "EB02-035",
+          "card_name": "Sanji & Pudding",
+          "effects": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Pudding",
+          "attacker_code": "OP11-070",
+          "target": "Charlotte Pudding [\"OP11-070\">OP11-070]",
+          "result": null,
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "ST04-001",
+          "to_name": "Kaido",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Kaido",
+          "attacker_code": "ST04-001",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "ST04-017",
+            "ST04-003",
+            "ST04-016",
+            "OP11-072",
+            "EB02-035",
+            "OP08-074"
+          ],
+          "board": [
+            "OP11-070",
+            "OP08-074",
+            "OP11-070",
+            "EB02-035"
+          ],
+          "trash": [
+            "OP01-114"
+          ],
+          "life": 4
+        },
+        "You": {
+          "hand": [
+            "OP11-067",
+            "OP08-069",
+            "ST34-001",
+            "PRB02-010",
+            "ST34-001",
+            "ST18-001",
+            "ST34-004",
+            "ST34-004"
+          ],
+          "trash": [
+            "OP11-070"
+          ],
+          "board": [
+            "ST34-003",
+            "ST34-005"
+          ],
+          "life": 3
+        }
+      }
+    },
+    {
+      "turn": 7,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attack",
+          "attacker": "Charlotte Brulee",
+          "attacker_code": "ST34-003",
+          "target": "Charlotte Pudding [\"OP11-070\">OP11-070]",
+          "result": null,
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "play",
+          "card": "OP15-069",
+          "card_name": "Nola",
+          "effects": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Katakuri",
+          "attacker_code": "OP11-062",
+          "target": "Kaido [\"ST04-001\">ST04-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP11-072"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP11-062",
+          "card_name": "Charlotte Katakuri",
+          "effects": [
+            "Minus 1 Don",
+            "<b>Looked at opponent's top deck</b>",
+            "<b>Finished looking at opponent's top deck</b>",
+            "Buff Charlotte Katakuri [\"OP11-062\">OP11-062] 1000 for the Combat"
+          ]
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP11-067",
+            "OP08-069",
+            "ST34-001",
+            "PRB02-010",
+            "ST34-001",
+            "ST18-001",
+            "ST34-004",
+            "ST34-004"
+          ],
+          "board": [
+            "ST34-003",
+            "ST34-005",
+            "OP15-069"
+          ],
+          "trash": [
+            "OP11-070"
+          ],
+          "life": 3
+        },
+        "Opponent": {
+          "hand": [
+            "ST04-017",
+            "ST04-003",
+            "ST04-016",
+            "EB02-035",
+            "OP08-074"
+          ],
+          "trash": [
+            "OP01-114",
+            "OP11-070",
+            "OP11-072"
+          ],
+          "board": [
+            "OP11-070",
+            "OP08-074",
+            "EB02-035"
+          ],
+          "life": 4
+        }
+      }
+    },
+    {
+      "turn": 8,
+      "player": "Opponent",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "play",
+          "card": "ST04-017",
+          "card_name": "Onigashima Island",
+          "effects": [
+            "Rest Onigashima Island [\"ST04-017\">ST04-017]"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "EB02-035",
+          "card_name": "Sanji & Pudding",
+          "effects": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Sanji & Pudding",
+          "attacker_code": "EB02-035",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "hit",
+          "damage": 1,
+          "blocked_by": null,
+          "countered_by": []
+        },
+        {
+          "type": "attack",
+          "attacker": "Kaido",
+          "attacker_code": "ST04-001",
+          "target": "Charlotte Katakuri [\"OP11-062\">OP11-062]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "PRB02-010"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "ST04-001",
+          "card_name": "Kaido",
+          "effects": [
+            "Minus 7 Don",
+            "Trash 1 Life"
+          ]
+        },
+        {
+          "type": "play",
+          "card": "OP11-070",
+          "card_name": "Charlotte Pudding",
+          "effects": [
+            "<b>Reveal and Draw It's To Die For...! [\"OP08-076\">OP08-076]</b>"
+          ]
+        }
+      ],
+      "snapshot": {
+        "Opponent": {
+          "hand": [
+            "ST04-003",
+            "ST04-016",
+            "OP08-074",
+            "OP08-076"
+          ],
+          "board": [
+            "OP11-070",
+            "OP08-074",
+            "EB02-035",
+            "EB02-035",
+            "OP11-070"
+          ],
+          "trash": [
+            "OP01-114",
+            "OP11-070",
+            "OP11-072"
+          ],
+          "life": 4
+        },
+        "You": {
+          "hand": [
+            "OP11-067",
+            "OP08-069",
+            "ST34-001",
+            "ST34-001",
+            "ST18-001",
+            "ST34-004",
+            "ST34-004",
+            "ST34-003"
+          ],
+          "trash": [
+            "OP11-070",
+            "PRB02-010",
+            "ST34-002"
+          ],
+          "board": [
+            "ST34-003",
+            "ST34-005",
+            "OP15-069"
+          ],
+          "life": 1
+        }
+      }
+    },
+    {
+      "turn": 9,
+      "player": "You",
+      "card_drawn": null,
+      "don_drawn": 2,
+      "actions": [
+        {
+          "type": "attach_don",
+          "amount": 1,
+          "to": "OP11-062",
+          "to_name": "Charlotte Katakuri",
+          "total": 1
+        },
+        {
+          "type": "attack",
+          "attacker": "Charlotte Katakuri",
+          "attacker_code": "OP11-062",
+          "target": "Sanji & Pudding [\"EB02-035\">EB02-035]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": [
+            "OP08-074"
+          ]
+        },
+        {
+          "type": "activate",
+          "card": "OP11-062",
+          "card_name": "Charlotte Katakuri",
+          "effects": [
+            "Minus 1 Don",
+            "<b>Looked at opponent's top deck</b>",
+            "<b>Finished looking at opponent's top deck</b>",
+            "Buff Charlotte Katakuri [\"OP11-062\">OP11-062] 1000 for the Combat"
+          ]
+        },
+        {
+          "type": "attack",
+          "attacker": "Baron Tamago & Pekoms",
+          "attacker_code": "ST34-005",
+          "target": "Kaido [\"ST04-001\">ST04-001]",
+          "result": "blocked",
+          "damage": null,
+          "blocked_by": null,
+          "countered_by": []
+        }
+      ],
+      "snapshot": {
+        "You": {
+          "hand": [
+            "OP11-067",
+            "OP08-069",
+            "ST34-001",
+            "ST34-001",
+            "ST18-001",
+            "ST34-004",
+            "ST34-004",
+            "ST34-003",
+            "ST34-005"
+          ],
+          "board": [
+            "ST34-003",
+            "ST34-005",
+            "OP15-069"
+          ],
+          "trash": [
+            "OP11-070",
+            "PRB02-010",
+            "ST34-002"
+          ],
+          "life": 1
+        },
+        "Opponent": {
+          "hand": [
+            "ST04-003",
+            "ST04-016",
+            "OP08-076"
+          ],
+          "trash": [
+            "OP01-114",
+            "OP11-070",
+            "OP11-072",
+            "OP08-074"
+          ],
+          "board": [
+            "OP11-070",
+            "OP08-074",
+            "EB02-035",
+            "EB02-035",
+            "OP11-070"
+          ],
+          "life": 4
+        }
+      }
+    }
+  ]
+}

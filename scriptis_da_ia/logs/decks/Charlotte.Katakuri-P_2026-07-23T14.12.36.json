@@ -1,0 +1,61 @@
+{
+  "cards": [
+    {
+      "code": "OP11-067",
+      "name": "Charlotte Katakuri",
+      "count": 3
+    },
+    {
+      "code": "ST34-002",
+      "name": "Charlotte Cracker",
+      "count": 3
+    },
+    {
+      "code": "ST34-005",
+      "name": "Baron Tamago & Pekoms",
+      "count": 2
+    },
+    {
+      "code": "OP11-070",
+      "name": "Charlotte Pudding",
+      "count": 2
+    },
+    {
+      "code": "OP07-077",
+      "name": "OP07-077",
+      "count": 2
+    },
+    {
+      "code": "ST34-003",
+      "name": "Charlotte Brulee",
+      "count": 2
+    },
+    {
+      "code": "ST34-004",
+      "name": "ST34-004",
+      "count": 2
+    },
+    {
+      "code": "ST34-001",
+      "name": "Charlotte Katakuri",
+      "count": 1
+    },
+    {
+      "code": "OP08-069",
+      "name": "OP08-069",
+      "count": 1
+    },
+    {
+      "code": "OP11-073",
+      "name": "OP11-073",
+      "count": 1
+    },
+    {
+      "code": "PRB02-010",
+      "name": "PRB02-010",
+      "count": 1
+    }
+  ],
+  "total_seen": 20,
+  "leader": "OP11-062"
+}

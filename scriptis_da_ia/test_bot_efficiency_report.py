@@ -116,6 +116,32 @@ class BotEfficiencyReportTests(unittest.TestCase):
         self.assertEqual(result["mean_counterfactual_regret"], 2.5)
         self.assertEqual(result["counterfactual_coverage_pct"], 100.0)
 
+    def test_instrumentation_coverage_and_resource_signals(self):
+        events = [
+            {"event": "decision", "decision_id": "x", "decision_kind": "main",
+             "chosen_action": {"type": "attack"},
+             "scored_actions": [{"eligible": True, "score": 3,
+                                  "score_components": {"final_score": 3}}],
+             "line_search": {"depth": 2},
+             "resource_ledger_before": {"active_don": 3},
+             "latency_segments_ms": {"generate_and_score": 10, "line_search": 20,
+                                     "engine_total": 30},
+             "attack_quality": {"planned_gap": -1000, "don_planned": 1}},
+            {"event": "execution", "decision_id": "x", "status": "confirmed",
+             "state_after": {"turnNumber": 2},
+             "transition_observation": {
+                 "utility_signals": {"drew_net_cards": 1, "developed_board": 0,
+                                     "spent_field_don": 1, "attached_don": 1,
+                                     "life_lost": 0}}},
+        ]
+        instrumentation = report.analyze_decision_events(
+            json.dumps(e) for e in events)["instrumentation"]
+        self.assertEqual(instrumentation["score_components_coverage_pct"], 100.0)
+        self.assertEqual(instrumentation["transition_observation_coverage_pct"], 100.0)
+        self.assertEqual(instrumentation["latency_segments_ms"]["engine_total"]["p95"], 30.0)
+        self.assertEqual(instrumentation["resource_signals"]["totals"]["drew_net_cards"], 1)
+        self.assertEqual(instrumentation["attack_quality"]["under_target_count"], 1)
+
     def test_report_comparison_separates_improvement_and_regression(self):
         def wrapped(execution, regret, latency):
             return {"manifest": "same", "bootstrap_seed": 7,

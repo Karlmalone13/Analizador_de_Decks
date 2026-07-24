@@ -1,0 +1,25 @@
+{
+  "trigger_card": "OP11-062",
+  "problem": "Custo DON!! N: (e a variante 'give your leader/character -N power:') so era marcado optional=True quando o texto bruto tinha 'you may' por perto. Regra oficial do OPTCG (confirmada pelo usuario com fontes, 23/07): QUALQUER custo antes do ':' de QUALQUER gatilho ([On Play], [When Attacking], [On Your Opponent's Attack], [Activate: Main], [Trigger], [Counter]) e SEMPRE opcional de pagar -- 'you may' e so reforco redundante em algumas cartas, nao e o que torna o custo opcional. No lider Charlotte Katakuri (OP11-062, DON!! 1: ...), isso marcava optional=False, o que o motor trata como custo mandatorio.",
+  "grammar_family": "Custo antes de ':' em qualquer bloco de efeito (don_minus via regex 'don!!\\s*\\d+\\s*:' e debuff_power_self via 'give your leader/character -N power...:') -- ambos com o mesmo bug de depender de 'you may' na janela de texto proxima.",
+  "queries": [
+    "grep 'DON!!\\s*\\d|don_minus.*optional' em gerar_effects_db.py",
+    "varredura no card_effects_db.json: costs don_minus com optional=False em blocos de gatilho (on_play/when_attacking/on_opp_attack/activate_main/trigger/counter/main/end_of_turn)"
+  ],
+  "cards_found": [
+    "EB01-038", "EB02-010", "EB02-036", "EB03-031", "EB03-034", "EB04-030",
+    "EB04-033", "EB04-036", "EB04-040", "OP04-002", "OP04-060", "OP04-069",
+    "OP05-119", "OP06-062", "OP08-119", "OP10-062", "OP10-071", "OP11-062",
+    "OP11-073", "OP12-041", "OP12-061", "OP12-069", "OP12-075", "OP13-064",
+    "OP13-069", "OP14-060", "OP14-061", "OP14-069", "OP14-072", "OP14-078",
+    "OP15-060", "OP15-061", "OP15-063", "OP15-066", "OP15-067", "OP15-074",
+    "OP15-075", "OP15-076", "OP15-077", "OP15-078", "OP15-118", "OP16-063",
+    "OP16-065", "OP16-073", "P-090", "PRB02-010", "ST34-005"
+  ],
+  "resolution_scope": "global",
+  "decision": "Removida a dependencia de 'you may' na janela de texto para don_minus (linha ~1555-1576 de gerar_effects_db.py) e debuff_power_self (linha ~1609-1620): ambos agora sempre gravam optional=True quando o custo aparece antes do ':', ponto -- e a propria notacao ':' que define opcionalidade no OPTCG, nao a presenca da palavra 'may'. Fix generico (forma do problema), nao amarrado ao Katakuri que revelou o gap ao vivo.",
+  "validated_by": [
+    "diff_parser.py: GANHOU=0, PERDEU=0, MUDOU=47 (todas as 47 sao optional False->True nesses mesmos costs, sem qualquer outra mudanca de estrutura)",
+    "smoke_fast.py apos regenerar os bancos"
+  ]
+}
