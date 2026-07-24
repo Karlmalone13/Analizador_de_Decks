@@ -2,6 +2,20 @@
 
 **Última atualização:** 24 de julho de 2026
 
+> 24/07/2026 (bloco HANDOFF 354): Fase 1.4 feita — gatilhos
+> `on_own_effect_removes_char` (Crocodile EB02-023, Boa Hancock OP07-038,
+> Shakuyaku OP08-046) e `on_hand_card_trashed` (Kuroobi OP14-045, Jinbe
+> OP14-049, Wadatsumi OP14-056), 6 cartas. **1 bug pego e corrigido na
+> própria validação** (`diff_parser.py`): duplicata de "gains [Rush]"
+> em Kuroobi/Jinbe — corrigido de forma GENÉRICA com
+> `_sem_steps_ja_dedicados()`, que filtra qualquer segmento solto que já
+> pertence a um trigger parametrizado das fases 1.1–1.4, não só o par de
+> cartas que revelou o bug. `smoke_test.py` 100%. **FASE 1 (bugs de
+> regra) COMPLETA: ✅ 1.1, ✅ 1.2, ✅ 1.3, ✅ 1.4.** Falta só a ⬜ Fase 2
+> (sistema unificado de pontuação de combos em `avaliar_carta`, hoje só
+> 8 flags hardcoded pra ~114 tipos de ação já catalogados). Usuário
+> pediu pra seguir sem parar — próxima sessão pode ir direto pra Fase 2.
+
 > 24/07/2026 (bloco HANDOFF 353): Fase 1.3 feita — gatilho
 > `on_own_char_played`/`on_opp_char_played` (5 cartas: Sugar, Sanji,
 > Bonney, Boa Hancock, Koala), com filtro estruturado sobre qual

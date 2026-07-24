@@ -1379,6 +1379,74 @@ def test_on_char_played_dispara_gatilho_generico_com_filtro() -> None:
           a2.don_rested == 3)  # so o custo da carta (2+1), nada ativado
 
 
+def test_on_own_effect_removes_char_dispara_gatilho_generico() -> None:
+    # FASE 1.4 do mapeamento de combos (usuario, 24/07): "quando um
+    # Character e removido do campo / devolvido a mao pelo SEU efeito"
+    # nao existia como gatilho -- Crocodile EB02-023 (so bounce do
+    # OPONENTE -- filtros removal_type='bounce' e target_side='opp' no
+    # banco) caia em your_turn incondicional antes deste fix.
+    croco = real_card("EB02-023")
+    a = GameState(leader=real_card("OP11-062"), turn=3)
+    a.field_chars = [croco]
+    a.deck = [real_card("EB01-005") for _ in range(5)]
+    b = GameState(leader=real_card("OP11-062"), turn=3)
+    target = real_card("EB01-005")
+    b.field_chars = [target]
+    match = OPTCGMatch((a.leader, []), (b.leader, []))
+    ee = EffectExecutor(a, b)
+    hand_antes = len(a.hand)
+    ee._execute_step({'action': 'bounce', 'target': 'opp_character', 'count': 1}, croco)
+    check("Crocodile dispara on_own_effect_removes_char quando MEU bounce remove personagem do oponente",
+          len(a.hand) == hand_antes + 1)
+    check("Personagem alvo de fato voltou pra mao do oponente (bounce aconteceu)",
+          target in b.hand)
+
+    # controle: bounce do PROPRIO personagem (target_side='own') nao deve
+    # disparar Crocodile -- ela so reage a personagem do OPONENTE
+    # (removal_type='bounce', target_side='opp' no banco).
+    croco2 = real_card("EB02-023")
+    a2 = GameState(leader=real_card("OP11-062"), turn=3)
+    own_target = real_card("EB01-005")
+    a2.field_chars = [croco2, own_target]
+    a2.deck = [real_card("EB01-005") for _ in range(5)]
+    b2 = GameState(leader=real_card("OP11-062"), turn=3)
+    match2 = OPTCGMatch((a2.leader, []), (b2.leader, []))
+    ee2 = EffectExecutor(a2, b2)
+    hand_antes2 = len(a2.hand)
+    ee2._execute_step({'action': 'bounce', 'target': 'own_character', 'count': 1}, croco2)
+    check("Crocodile NAO dispara quando o bounce e do PROPRIO personagem (filtro target_side='opp' recusa)",
+          len(a2.hand) == hand_antes2 + 1)  # so o proprio bounce (own_target -> mao), sem o draw extra
+
+
+def test_on_hand_card_trashed_dispara_gatilho_generico() -> None:
+    # FASE 1.4 do mapeamento de combos (usuario, 24/07): "quando uma carta
+    # e trashada da SUA mao por um efeito" nao existia como gatilho --
+    # Kuroobi OP14-045 (ganha [Rush] neste turno) e Wadatsumi OP14-056 (o
+    # proprio efeito e negado neste turno) caiam em passive incondicional
+    # antes deste fix.
+    kuroobi = real_card("OP14-045")
+    a = GameState(leader=real_card("OP11-062"), turn=3)
+    a.field_chars = [kuroobi]
+    a.hand = [real_card("EB01-005")]
+    b = GameState(leader=real_card("OP11-062"), turn=3)
+    match = OPTCGMatch((a.leader, []), (b.leader, []))
+    ee = EffectExecutor(a, b)
+    ee._execute_step({'action': 'trash_from_hand', 'count': 1}, real_card("EB01-005"))
+    check("Kuroobi ganha Rush neste turno quando uma carta e trashada da propria mao por efeito",
+          getattr(kuroobi, 'rush_this_turn', False) is True)
+
+    wadatsumi = real_card("OP14-056")
+    a2 = GameState(leader=real_card("OP11-062"), turn=3)
+    a2.field_chars = [wadatsumi]
+    a2.hand = [real_card("EB01-005")]
+    b2 = GameState(leader=real_card("OP11-062"), turn=3)
+    match2 = OPTCGMatch((a2.leader, []), (b2.leader, []))
+    ee2 = EffectExecutor(a2, b2)
+    ee2._execute_step({'action': 'trash_from_hand', 'count': 1}, real_card("EB01-005"))
+    check("Wadatsumi tem o proprio efeito negado neste turno quando sua mao e trashada por efeito",
+          getattr(wadatsumi, 'own_effect_negated_this_turn', False) is True)
+
+
 def test_opponent_model_ao_vivo_por_lider_e_fallback_seguro() -> None:
     # Item 3 ligado AO VIVO (14/07): lookup do .deck real por codigo do lider
     # (os decks de teste sao nomeados por arquetipo -- Kid.deck, Krieg.deck)
@@ -7989,6 +8057,8 @@ def main() -> int:
     test_on_opp_char_ko_dispara_gatilho_generico()
     test_on_event_activated_dispara_gatilho_generico()
     test_on_char_played_dispara_gatilho_generico_com_filtro()
+    test_on_own_effect_removes_char_dispara_gatilho_generico()
+    test_on_hand_card_trashed_dispara_gatilho_generico()
     test_opponent_model_ao_vivo_por_lider_e_fallback_seguro()
     test_contrafactual_ao_vivo_usa_apenas_estado_publico_mascarado()
     test_search_contextual_evita_congestionar_mao_com_bombas()

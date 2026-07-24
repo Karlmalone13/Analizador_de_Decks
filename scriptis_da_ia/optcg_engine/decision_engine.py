@@ -4343,6 +4343,74 @@ class EffectExecutor:
             if logs and entry.get('once_per_turn'):
                 setattr(source, marker_attr, marker)
 
+    def _dispatch_own_effect_removes_char(self, removal_type: str, target_side: str) -> None:
+        """
+        Dispara ``on_own_effect_removes_char`` no campo de self.me quando o
+        PROPRIO efeito de self.me acabou de remover um Character do campo
+        (K.O., bounce ou fundo do deck) -- FASE 1.4 do mapeamento de combos
+        (usuario, 24/07). 3 cartas confirmadas: Crocodile EB02-023 (so
+        bounce de personagem do OPONENTE -- filtros removal_type='bounce'
+        e target_side='opp' no banco), Boa Hancock OP07-038 e Shakuyaku
+        OP08-046 (qualquer remocao, qualquer lado -- sem filtro no banco).
+
+        Convencao: chamar SEMPRE logo apos `remove_character_from_field`
+        nos 4 pontos de `_execute_step` onde uma HABILIDADE de carta
+        remove um Character (ko/trash_character, ko_selected, bounce,
+        place_opp_character_bottom_deck) -- nao em remocao por BATALHA
+        (mesmo escopo do texto oficial, "removed... by your effect").
+        `self.me` e sempre quem CONTROLA o efeito que esta removendo
+        (dono da habilidade em execucao), nao o dono do alvo removido.
+        """
+        watcher = self.me
+        cards = [watcher.leader, *watcher.field_chars]
+        if watcher.field_stage:
+            cards.append(watcher.field_stage)
+        for source in list(cards):
+            entry = get_card_effects(source.code).get('on_own_effect_removes_char')
+            if not entry:
+                continue
+            if entry.get('removal_type') and entry['removal_type'] != removal_type:
+                continue
+            if entry.get('target_side') and entry['target_side'] != target_side:
+                continue
+            marker = (watcher.global_turn, 'on_own_effect_removes_char')
+            if (entry.get('once_per_turn')
+                    and getattr(source, '_own_effect_removes_char_once_marker', None) == marker):
+                continue
+            logs = EffectExecutor(watcher, self.opp).execute(source, 'on_own_effect_removes_char')
+            if logs and entry.get('once_per_turn'):
+                source._own_effect_removes_char_once_marker = marker
+
+    def _dispatch_hand_card_trashed(self, owner: 'GameState', other: 'GameState') -> None:
+        """
+        Dispara ``on_hand_card_trashed`` no campo de `owner` quando uma
+        carta acabou de ser trashada da MAO de `owner` por um efeito
+        (proprio ou do oponente) -- FASE 1.4 do mapeamento de combos
+        (usuario, 24/07). 3 cartas confirmadas, todas reagindo na PROPRIA
+        mao: Kuroobi OP14-045/Jinbe OP14-049 (ganham [Rush] neste turno),
+        Wadatsumi OP14-056 (o proprio efeito e negado neste turno).
+
+        Convencao: chamar logo apos qualquer remocao de carta(s) da MAO de
+        `owner` por efeito (custo `trash_from_hand`, acoes
+        `trash_from_hand`/`opp_trash_from_hand`/`opp_choose_trash_our_hand`)
+        -- nunca por jogar a carta (isso e `_dispatch_char_played`, mao ->
+        campo, nao mao -> trash).
+        """
+        cards = [owner.leader, *owner.field_chars]
+        if owner.field_stage:
+            cards.append(owner.field_stage)
+        for source in list(cards):
+            entry = get_card_effects(source.code).get('on_hand_card_trashed')
+            if not entry:
+                continue
+            marker = (owner.global_turn, 'on_hand_card_trashed')
+            if (entry.get('once_per_turn')
+                    and getattr(source, '_hand_card_trashed_once_marker', None) == marker):
+                continue
+            logs = EffectExecutor(owner, other).execute(source, 'on_hand_card_trashed')
+            if logs and entry.get('once_per_turn'):
+                source._hand_card_trashed_once_marker = marker
+
     # ── Execução de steps individuais ────────────────────────────────────────
 
     def _resolve_cost_lte(self, step: dict, default=99):
@@ -5140,6 +5208,9 @@ class EffectExecutor:
                         ee_target.execute(target, 'on_ko', is_opp_turn=owner is opp)
                         ee_target._dispatch_damage_or_own_char_ko(owner, target)
                         ee_target._dispatch_opp_char_ko()
+                    self._dispatch_own_effect_removes_char(
+                        'ko' if action == 'ko' else 'trash',
+                        'opp' if owner is opp else 'own')
                     remove_by_identity(candidates, target)
                     koed.append(target.name[:15])
             label = 'KO' if action == 'ko' else 'Trash'
@@ -5191,6 +5262,7 @@ class EffectExecutor:
             ee_target.execute(alvo, 'on_ko', is_opp_turn=True)
             ee_target._dispatch_damage_or_own_char_ko(opp, alvo)
             ee_target._dispatch_opp_char_ko()
+            self._dispatch_own_effect_removes_char('ko', 'opp')
             return f'KO: {ko_name}'
 
         # ── Bounce ───────────────────────────────────────────────────────────
@@ -5226,6 +5298,8 @@ class EffectExecutor:
                     remove_by_identity(candidates, target)
                     continue
                 remove_character_from_field(target_owner, target, 'hand')
+                self._dispatch_own_effect_removes_char(
+                    'bounce', 'opp' if target_owner is opp else 'own')
                 remove_by_identity(candidates, target)
                 bounced.append(target.name[:15])
             out = []
@@ -5354,6 +5428,7 @@ class EffectExecutor:
                 ee_ko = EffectExecutor(opp, me)
                 ee_ko.execute(alvo, 'on_ko', is_opp_turn=False)
                 ee_ko._dispatch_opp_char_ko()
+                self._dispatch_own_effect_removes_char('ko', 'opp')
                 return f'K.O. {alvo.name[:15]} (cost=={alvo.cost}==DON!!)'
             return ''
 
@@ -6519,6 +6594,8 @@ class EffectExecutor:
             # hand"), mesmo padrao ja usado por _last_moved_count em
             # place_*_bottom_deck.
             self._last_moved_count = len(trashed)
+            if trashed:
+                self._dispatch_hand_card_trashed(me, opp)
             return f'descartou da mão: {", ".join(trashed)}' if trashed else ''
 
         # ── Trash from hand FORCADO no oponente (disrupcao de mao) ──────────────
@@ -6546,6 +6623,8 @@ class EffectExecutor:
                     remove_by_identity(opp.hand, chosen)
                     opp.trash.append(chosen)
                     trashed.append(chosen.name[:12])
+            if trashed:
+                self._dispatch_hand_card_trashed(opp, me)
             return f'oponente descartou: {", ".join(trashed)}' if trashed else ''
 
         # ── Mesma familia: forca o OPONENTE a mover 1 dos PROPRIOS
@@ -6563,6 +6642,8 @@ class EffectExecutor:
                 remove_by_identity(me.hand, chosen)
                 me.trash.append(chosen)
                 trashed.append(chosen.name[:12])
+            if trashed:
+                self._dispatch_hand_card_trashed(me, opp)
             return f'oponente escolheu descartar: {", ".join(trashed)}' if trashed else ''
 
         if action == 'opp_bounce_own_character':
@@ -6873,6 +6954,7 @@ class EffectExecutor:
                     remove_by_identity(cands, target)
                     continue
                 remove_character_from_field(opp, target, 'deck_bottom')
+                self._dispatch_own_effect_removes_char('deck_bottom', 'opp')
                 remove_by_identity(cands, target)
                 placed.append(target.name[:14])
             out = []

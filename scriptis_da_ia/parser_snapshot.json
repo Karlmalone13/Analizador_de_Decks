@@ -1546,8 +1546,9 @@
   }
  },
  "EB02-023": {
-  "your_turn": {
+  "on_own_effect_removes_char": {
    "once_per_turn": true,
+   "removal_type": "bounce",
    "steps": [
     {
      "action": "look_top_deck",
@@ -1561,7 +1562,8 @@
     {
      "action": "deck_reorder_rest"
     }
-   ]
+   ],
+   "target_side": "opp"
   }
  },
  "EB02-024": {
@@ -19052,7 +19054,7 @@
   }
  },
  "OP07-038": {
-  "your_turn": {
+  "on_own_effect_removes_char": {
    "conditions": {
     "hand_lte": 5
    },
@@ -21505,15 +21507,10 @@
   }
  },
  "OP08-046": {
-  "your_turn": {
+  "on_own_effect_removes_char": {
    "conditions": {
     "opp_hand_gte": 5
    },
-   "costs": [
-    {
-     "type": "rest_self"
-    }
-   ],
    "once_per_turn": true,
    "steps": [
     {
@@ -35136,19 +35133,19 @@
   }
  },
  "OP14-045": {
+  "on_hand_card_trashed": {
+   "steps": [
+    {
+     "action": "gain_rush",
+     "duration": "this_turn"
+    }
+   ]
+  },
   "on_ko": {
    "steps": [
     {
      "action": "draw",
      "count": 1
-    }
-   ]
-  },
-  "passive": {
-   "steps": [
-    {
-     "action": "gain_rush",
-     "duration": "this_turn"
     }
    ]
   }
@@ -35210,6 +35207,14 @@
   }
  },
  "OP14-049": {
+  "on_hand_card_trashed": {
+   "steps": [
+    {
+     "action": "gain_rush",
+     "duration": "this_turn"
+    }
+   ]
+  },
   "on_play": {
    "costs": [
     {
@@ -35227,14 +35232,6 @@
     {
      "action": "draw",
      "count": 2
-    }
-   ]
-  },
-  "passive": {
-   "steps": [
-    {
-     "action": "gain_rush",
-     "duration": "this_turn"
     }
    ]
   }
@@ -35333,14 +35330,18 @@
  },
  "OP14-055": {},
  "OP14-056": {
+  "on_hand_card_trashed": {
+   "steps": [
+    {
+     "action": "negate_own_effect",
+     "duration": "this_turn"
+    }
+   ]
+  },
   "passive": {
    "steps": [
     {
      "action": "cannot_attack_self"
-    },
-    {
-     "action": "negate_own_effect",
-     "duration": "this_turn"
     }
    ]
   }

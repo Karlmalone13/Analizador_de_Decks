@@ -1,5 +1,74 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-24 (354) - Claude (sessao local) - fase 1.4: gatilhos on_own_effect_removes_char + on_hand_card_trashed (6 cartas) -- FASE 1 (bugs de regra) COMPLETA
+
+Continuacao do bloco 353 -- Fase 1.4, ULTIMA etapa da Fase 1 (bugs de
+regra genericos), da ordem de correcao combinada pedida pelo usuario
+24/07 ("removido/descartado por efeito"). 2 familias, 6 cartas:
+
+1. `on_own_effect_removes_char` -- "when a Character is removed from the
+   field / your opponent's Character is returned to the owner's hand by
+   your effect": Crocodile EB02-023 (SO bounce do oponente -- unica com
+   filtro estruturado `removal_type='bounce'`/`target_side='opp'` no
+   banco), Boa Hancock OP07-038 (leader) e Shakuyaku OP08-046 (qualquer
+   remocao, qualquer lado, sem filtro). Todas caiam em `your_turn`
+   incondicional antes deste fix.
+2. `on_hand_card_trashed` -- "when a card is trashed from your hand by an
+   effect": Kuroobi OP14-045 e Jinbe OP14-049 (ganham `[Rush]` neste
+   turno), Wadatsumi OP14-056 (o proprio efeito e negado neste turno).
+   Todas caiam em `passive` incondicional antes deste fix.
+
+**Engine**: `EffectExecutor._dispatch_own_effect_removes_char(removal_type,
+target_side)` chamado nos 4 pontos de `_execute_step` onde uma HABILIDADE
+remove um Character do campo (`ko`/`trash_character`, `ko_selected`,
+`bounce`, `place_opp_character_bottom_deck`) -- nunca em remocao por
+BATALHA, fora do escopo do texto oficial ("by your effect").
+`EffectExecutor._dispatch_hand_card_trashed(owner, other)` chamado nos 3
+pontos de acao que trasham cartas de uma mao (`trash_from_hand`,
+`opp_trash_from_hand`, `opp_choose_trash_our_hand`) -- NAO cobre custo de
+pagamento `trash_from_hand` (varios pontos espalhados, nao um
+choke-point unico como `remove_character_from_field`), registrado como
+gap pendente no parser_audits.
+
+**1 bug pego e corrigido na propria validacao** (diff_parser.py antes de
+fechar, disciplina do workflow): Kuroobi/Jinbe duplicavam "gains [Rush]
+during this turn" -- o novo `on_hand_card_trashed` capturava certo, mas
+o mecanismo PRE-EXISTENTE "segmento solto antes da primeira tag formal"
+(roda incondicionalmente) reprocessava o MESMO texto cru e recriava o
+step identico dentro de `passive`. Fix GENERICO (nao especifico dessas 2
+cartas, pedido explicito do usuario desde o inicio da sessao): novo
+helper `_sem_steps_ja_dedicados()` filtra, de qualquer segmento
+solto/pos-keyword, steps que ja pertencem a QUALQUER gatilho
+parametrizado ja capturado em `result` (lista `_DEDICATED_TRIGGER_KEYS`
+cobre as fases 1.1/1.2/1.3/1.4 inteiras, nao so os 2 exemplos que
+revelaram o bug) -- aplicado nos 2 pontos de merge (segmento_solto e
+segmento_pos_kw).
+
+**Validacao**: `diff_parser.py` GANHOU=0 PERDEU=0 MUDOU=6 (as 6
+esperadas, confirmado tambem por diff direto das 2644 chaves do JSON --
+nenhuma outra carta afetada). `smoke_fast.py`: 2 testes novos end-to-end
+(Crocodile dispara so com bounce do OPONENTE, nao do proprio; Kuroobi
+ganha Rush e Wadatsumi tem efeito negado via `trash_from_hand`
+generico). `smoke_test.py`: 1 teste pre-existente (OP08-046, `your_turn`
+-> `on_own_effect_removes_char`) atualizado -- TODOS OS TESTES PASSARAM
+(regressao ampla, 2644 cartas). Registro:
+`parser_audits/2026-07-24_removido_trashado_por_efeito_gatilho_novo.json`.
+
+**Status da ordem de correcao combinada (usuario, 24/07)**: Fase 1
+(bugs de regra) **COMPLETA** -- 1.1 (event activated), 1.2 (opp char
+KO), 1.3 (char played), 1.4 (removido/trashado por efeito), todas
+genericas, todas validadas sem regressao. Falta so a Fase 2 inteira:
+sistema unificado de pontuacao de combos (`avaliar_carta` hoje so
+reconhece 8 flags hardcoded -- draws, is_searcher, kos/is_removal,
+bounces, rests_opponent, power_buff, gives_don, gains_life -- pra
+~114 tipos de acao mapeados nas categorias de combo ja catalogadas
+nesta sessao: DON ~130, vida ~131, mao ~85, trash ~50, custo ~36,
+power ~26, tribal ~28, cor ~22, `play_card` ~117 ocorrencias). Nenhum
+teste ao vivo nem push ainda (usuario pediu pra segurar ate as fases
+avancarem mais) -- proxima sessao pode comecar a Fase 2 direto, sem
+precisar reconfirmar escopo com o usuario ("sim, pode ir fazendo
+todas, se tiver alguma duvida me pergunte" continua valendo).
+
 ## 2026-07-24 (353) - Claude (sessao local) - fase 1.3: gatilho on_char_played novo (5 cartas) + 2 bugs pegos na propria validacao
 
 Continuacao do bloco 352 -- Fase 1.3 da ordem de correcao combinada

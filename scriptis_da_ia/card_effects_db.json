@@ -2469,7 +2469,7 @@
     "sub_types": "Baroque Works The Seven Warlords of the Sea",
     "attribute": "Special",
     "effects": {
-      "your_turn": {
+      "on_own_effect_removes_char": {
         "steps": [
           {
             "action": "look_top_deck",
@@ -2484,7 +2484,9 @@
             "action": "deck_reorder_rest"
           }
         ],
-        "once_per_turn": true
+        "once_per_turn": true,
+        "removal_type": "bounce",
+        "target_side": "opp"
       }
     }
   },
@@ -30143,17 +30145,17 @@
     "sub_types": "Kuja Pirates The Seven Warlords of the Sea",
     "attribute": "Special",
     "effects": {
-      "your_turn": {
+      "on_own_effect_removes_char": {
         "steps": [
           {
             "action": "draw",
             "count": 1
           }
         ],
+        "once_per_turn": true,
         "conditions": {
           "hand_lte": 5
-        },
-        "once_per_turn": true
+        }
       }
     }
   },
@@ -33993,22 +33995,17 @@
     "sub_types": "Amazon Lily",
     "attribute": "Wisdom",
     "effects": {
-      "your_turn": {
+      "on_own_effect_removes_char": {
         "steps": [
           {
             "action": "opp_place_hand_bottom_deck",
             "count": 1
           }
         ],
+        "once_per_turn": true,
         "conditions": {
           "opp_hand_gte": 5
-        },
-        "costs": [
-          {
-            "type": "rest_self"
-          }
-        ],
-        "once_per_turn": true
+        }
       }
     }
   },
@@ -55449,7 +55446,7 @@
           }
         ]
       },
-      "passive": {
+      "on_hand_card_trashed": {
         "steps": [
           {
             "action": "gain_rush",
@@ -55579,7 +55576,7 @@
           }
         ]
       },
-      "passive": {
+      "on_hand_card_trashed": {
         "steps": [
           {
             "action": "gain_rush",
@@ -55759,14 +55756,18 @@
     "sub_types": "Fish-Man The Sun Pirates",
     "attribute": "Strike",
     "effects": {
+      "on_hand_card_trashed": {
+        "steps": [
+          {
+            "action": "negate_own_effect",
+            "duration": "this_turn"
+          }
+        ]
+      },
       "passive": {
         "steps": [
           {
             "action": "cannot_attack_self"
-          },
-          {
-            "action": "negate_own_effect",
-            "duration": "this_turn"
           }
         ]
       }

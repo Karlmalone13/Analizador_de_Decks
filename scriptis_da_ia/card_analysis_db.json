@@ -3639,15 +3639,15 @@
   "effects": [
    {
     "action": "look_top_deck",
-    "trigger": "your_turn"
+    "trigger": "on_own_effect_removes_char"
    },
    {
     "action": "add_to_hand",
-    "trigger": "your_turn"
+    "trigger": "on_own_effect_removes_char"
    },
    {
     "action": "deck_reorder_rest",
-    "trigger": "your_turn"
+    "trigger": "on_own_effect_removes_char"
    }
   ],
   "synergy_states": {},
@@ -44330,7 +44330,7 @@
   "effects": [
    {
     "action": "draw",
-    "trigger": "your_turn"
+    "trigger": "on_own_effect_removes_char"
    }
   ],
   "synergy_states": {},
@@ -50026,7 +50026,7 @@
   "effects": [
    {
     "action": "opp_place_hand_bottom_deck",
-    "trigger": "your_turn"
+    "trigger": "on_own_effect_removes_char"
    }
   ],
   "synergy_states": {},
@@ -81284,7 +81284,7 @@
    },
    {
     "action": "gain_rush",
-    "trigger": "passive"
+    "trigger": "on_hand_card_trashed"
    }
   ],
   "synergy_states": {},
@@ -81461,7 +81461,7 @@
    },
    {
     "action": "gain_rush",
-    "trigger": "passive"
+    "trigger": "on_hand_card_trashed"
    }
   ],
   "synergy_states": {},
@@ -81743,11 +81743,11 @@
   "attribute": "Strike",
   "effects": [
    {
-    "action": "cannot_attack_self",
-    "trigger": "passive"
+    "action": "negate_own_effect",
+    "trigger": "on_hand_card_trashed"
    },
    {
-    "action": "negate_own_effect",
+    "action": "cannot_attack_self",
     "trigger": "passive"
    }
   ],

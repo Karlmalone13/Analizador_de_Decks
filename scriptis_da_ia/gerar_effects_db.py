@@ -8672,6 +8672,62 @@ def parse_card_effect(card_text, card_type):
                     del result[generic]
             _recover_leading_prose_as_passive(own_char_played_m)
 
+    # Gatilhos "removido/descartado por efeito" (FASE 1.4 do mapeamento de
+    # combos, usuario 24/07). 6 cartas confirmadas na auditoria: 3 com
+    # "when a Character is removed from the field / returned to the
+    # owner's hand by your effect" (Crocodile EB02-023, Boa Hancock
+    # OP07-038, Shakuyaku OP08-046 -- todas caindo em your_turn
+    # incondicional antes deste fix) e 3 com "when a card is trashed from
+    # your hand by an effect" (Kuroobi OP14-045, Jinbe OP14-049, Wadatsumi
+    # OP14-056 -- todas caindo em passive incondicional).
+    own_effect_removes_char_m = re.search(
+        r'(?:\[your turn\]\s*)?(?:\[once per turn\]\s*)?'
+        r'(?:this effect can be activated )?'
+        r'when (your opponent.s character is returned to the owner.s hand'
+        r'|a character is removed from the field) by your effect[.,]?\s*(.+?)'
+        + LOOKAHEAD_DELIM,
+        t_low, re.DOTALL | re.IGNORECASE)
+    if own_effect_removes_char_m:
+        event_body = own_effect_removes_char_m.group(2).strip()
+        event_steps = parse_block(event_body, 'on_own_effect_removes_char')
+        if event_steps:
+            event_entry = {'steps': event_steps}
+            if '[once per turn]' in own_effect_removes_char_m.group(0):
+                event_entry['once_per_turn'] = True
+            if 'returned to the owner' in own_effect_removes_char_m.group(1):
+                event_entry['removal_type'] = 'bounce'
+                event_entry['target_side'] = 'opp'
+            body_conds = parse_conditions(event_body)
+            if body_conds:
+                event_entry['conditions'] = body_conds
+            result['on_own_effect_removes_char'] = event_entry
+            for generic in ('your_turn', 'opp_turn'):
+                if (generic in result and result[generic].get('steps')
+                        and event_steps
+                        and result[generic]['steps'][0] == event_steps[0]):
+                    del result[generic]
+            _recover_leading_prose_as_passive(own_effect_removes_char_m)
+
+    hand_card_trashed_m = re.search(
+        r'when a card is trashed from your hand by an effect,\s*(.+?)'
+        + LOOKAHEAD_DELIM,
+        t_low, re.DOTALL | re.IGNORECASE)
+    if hand_card_trashed_m:
+        event_body = hand_card_trashed_m.group(1).strip()
+        event_steps = parse_block(event_body, 'on_hand_card_trashed')
+        if event_steps:
+            event_entry = {'steps': event_steps}
+            body_conds = parse_conditions(event_body)
+            if body_conds:
+                event_entry['conditions'] = body_conds
+            result['on_hand_card_trashed'] = event_entry
+            for generic in ('your_turn', 'opp_turn', 'passive'):
+                if (generic in result and result[generic].get('steps')
+                        and event_steps
+                        and result[generic]['steps'][0] == event_steps[0]):
+                    del result[generic]
+            _recover_leading_prose_as_passive(hand_card_trashed_m)
+
     # Tags ADJACENTES COLADAS sem barra, ex: "[Opponent's Turn] [On K.O.]
     # efeito" -- diferente do caso "[A]/[B]" (que SAO dois triggers
     # distintos de propósito, mesmo efeito). Aqui e UMA UNICA condicao
@@ -8702,6 +8758,28 @@ def parse_card_effect(card_text, card_type):
         result['on_ko'] = result.pop('opp_turn')
         result['on_ko'].setdefault('conditions', {})['opp_turn_only'] = True
 
+    # Evita duplicar em 'passive' um step que ja pertence a um gatilho
+    # PARAMETRIZADO especifico (achado 24/07, Fase 1.4 do mapeamento de
+    # combos: Kuroobi OP14-045/Jinbe OP14-049 -- "When a card is trashed
+    # from your hand by an effect, this Character gains [Rush] during this
+    # turn" ja virava on_hand_card_trashed corretamente, mas o segmento
+    # solto/pos-keyword abaixo reconsome o MESMO texto cru (nao sabem que
+    # ja foi atribuido a um trigger dedicado) e duplicava o mesmo
+    # gain_rush como passive incondicional). Generico: cobre qualquer
+    # gatilho parametrizado atual/futuro, nao so os dois exemplos acima.
+    _DEDICATED_TRIGGER_KEYS = (
+        'on_own_char_played', 'on_opp_char_played',
+        'on_own_effect_removes_char', 'on_hand_card_trashed',
+        'on_own_event_activated', 'on_opp_event_activated', 'on_opp_char_ko',
+    )
+
+    def _sem_steps_ja_dedicados(steps):
+        ja_capturados = []
+        for k in _DEDICATED_TRIGGER_KEYS:
+            if k in result:
+                ja_capturados.extend(result[k].get('steps', []))
+        return [s for s in steps if s not in ja_capturados]
+
     # Segmento solto ANTES da primeira tag formal (independente de result já
     # ter sido preenchido por outros blocos). Ex: "If your Leader has the
     # [X] type, this Character gains +3 cost. [When Attacking] ...efeito
@@ -8723,7 +8801,7 @@ def parse_card_effect(card_text, card_type):
                 and re.search(r'when\s+(?:a|\d+\s+or more)\s+don!!', segmento_solto)):
             segmento_solto = ''
         if segmento_solto and len(segmento_solto) > 10 and not eh_ruido:
-            solto_steps = parse_block(segmento_solto, 'passive')
+            solto_steps = _sem_steps_ja_dedicados(parse_block(segmento_solto, 'passive'))
             if solto_steps:
                 # Separa qualquer step 'cannot_attack_own_characters_by_cost'
                 # (carrega sua PROPRIA condicao, ex: P-084 'if your Leader is
@@ -8848,7 +8926,7 @@ def parse_card_effect(card_text, card_type):
         fim_segmento = prox_tag_m.start() if prox_tag_m else len(t_low)
         segmento_pos_kw = t_low[pos_apos_kw:fim_segmento].strip()
         if segmento_pos_kw and len(segmento_pos_kw) > 10:
-            pos_kw_steps = parse_block(segmento_pos_kw, 'passive')
+            pos_kw_steps = _sem_steps_ja_dedicados(parse_block(segmento_pos_kw, 'passive'))
             if pos_kw_steps:
                 pos_kw_entry = {'steps': pos_kw_steps}
                 pos_kw_conds = parse_conditions(segmento_pos_kw)

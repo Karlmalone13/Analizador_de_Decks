@@ -1517,7 +1517,10 @@ ok = ee._check_conditions({'opp_hand_gte': 5}, me.leader)
 check('opp_hand_gte satisfeita (oponente com 5 cartas, exige 5+)', ok)
 
 # end-to-end via execute() + carta real do banco (OP08-046 Shakuyaku,
-# trigger 'your_turn', limiar real = 5): confirma que o gate plugado em
+# trigger 'on_own_effect_removes_char' desde a FASE 1.4 do mapeamento de
+# combos, 24/07 -- antes caia em 'your_turn' incondicional, perdendo a
+# condicao real "when a Character is removed from the field by your
+# effect"), limiar real = 5: confirma que o gate plugado em
 # parse_conditions + _check_conditions realmente bloqueia o efeito quando
 # a mao do oponente esta abaixo do limiar (nao so a unidade isolada acima).
 me, opp = me_opp()
@@ -1525,7 +1528,7 @@ shakuyaku = mk('OP08-046', 'Shakuyaku', power=5000)
 me.field_chars = [shakuyaku]
 opp.hand = [mk('H1', 'Mao 1'), mk('H2', 'Mao 2')]
 ee = EffectExecutor(me, opp)
-ee.execute(shakuyaku, 'your_turn')
+ee.execute(shakuyaku, 'on_own_effect_removes_char')
 check('OP08-046 nao dispara opp_place_hand_bottom_deck com mao do oponente abaixo do limiar (2 < 5)',
       len(opp.hand) == 2)
 
@@ -1534,7 +1537,7 @@ shakuyaku2 = mk('OP08-046', 'Shakuyaku', power=5000)
 me.field_chars = [shakuyaku2]
 opp.hand = [mk(f'H{i}', f'Mao {i}') for i in range(5)]
 ee = EffectExecutor(me, opp)
-ee.execute(shakuyaku2, 'your_turn')
+ee.execute(shakuyaku2, 'on_own_effect_removes_char')
 check('OP08-046 dispara opp_place_hand_bottom_deck com mao do oponente no limiar (5 >= 5)',
       len(opp.hand) == 4)
 

@@ -1,0 +1,26 @@
+{
+  "trigger_card": "EB02-023",
+  "problem": "Fase 1.4 do mapeamento de combos (usuario, 24/07): 2 familias de gatilho 'removido/descartado por efeito' nao existiam no parser. (1) 'when a Character is removed from the field / your opponent's Character is returned to the owner's hand by your effect' -- Crocodile EB02-023, Boa Hancock OP07-038 (leader), Shakuyaku OP08-046 caiam em your_turn incondicional. (2) 'when a card is trashed from your hand by an effect' -- Kuroobi OP14-045, Jinbe OP14-049, Wadatsumi OP14-056 caiam em passive incondicional.",
+  "grammar_family": "'[tags] (This effect can be activated )?when (your opponent's Character is returned to the owner's hand|a Character is removed from the field) by your effect[.,] [efeito]' -> on_own_effect_removes_char (campos opcionais removal_type/target_side quando o texto e mais especifico que 'qualquer remocao'). '[tags] When a card is trashed from your hand by an effect, [efeito]' -> on_hand_card_trashed (sem filtro -- fonte da remocao, propria ou do oponente, nao muda o gatilho).",
+  "queries": [
+    "regex 'removed from the field by your effect|returned to the owner.s hand by your effect' contra cards_rows.csv inteiro: 3 cartas (EB02-023, OP07-038, OP08-046)",
+    "regex 'trashed from your hand by (an|your) effect' contra cards_rows.csv inteiro: 3 cartas (OP14-045, OP14-049, OP14-056)"
+  ],
+  "cards_found": [
+    "EB02-023",
+    "OP07-038",
+    "OP08-046",
+    "OP14-045",
+    "OP14-049",
+    "OP14-056"
+  ],
+  "resolution_scope": "global",
+  "decision": "Aprovado pelo usuario em 2026-07-24 (fase 1.4, ultima da ordem de correcao de bugs de regra). gerar_effects_db.py ganha 2 regex parametrizados (own_effect_removes_char_m, hand_card_trashed_m) inseridos apos os blocos de char_played (Fase 1.3). EB02-023 e o UNICO caso que precisa de filtro estruturado (removal_type='bounce', target_side='opp'); OP07-038/OP08-046 nao tem filtro (qualquer remocao, qualquer lado) e reusam o MESMO trigger sem popular esses campos. decision_engine.py ganha EffectExecutor._dispatch_own_effect_removes_char(removal_type, target_side) chamado nos 4 pontos de _execute_step onde uma HABILIDADE remove um Character (ko/trash_character, ko_selected, bounce, place_opp_character_bottom_deck -- nunca em remocao por BATALHA, fora do escopo do texto oficial) e EffectExecutor._dispatch_hand_card_trashed(owner, other) chamado nos 3 pontos onde uma acao de efeito trasha cartas de uma mao (trash_from_hand, opp_trash_from_hand, opp_choose_trash_our_hand).",
+  "validated_by": [
+    "diff_parser.py antes/depois: GANHOU=0, PERDEU=0, MUDOU=6 (as 6 esperadas), confirmado tambem por comparacao direta de TODAS as 2644 chaves do JSON (nenhuma outra carta afetada)",
+    "1 BUG PEGO E CORRIGIDO DURANTE A PROPRIA VALIDACAO (disciplina do workflow: nunca fechar sem rodar diff_parser.py): Kuroobi OP14-045/Jinbe OP14-049 duplicavam 'gains [Rush] during this turn' -- o novo trigger on_hand_card_trashed capturava certo, mas o mecanismo generico e PRE-EXISTENTE 'segmento solto antes da primeira tag formal' (roda incondicionalmente, sem checar se o texto ja foi consumido por um trigger dedicado) reprocessava o MESMO texto cru e recriava o step identico dentro de 'passive'. Fix generico (nao especifico dessas 2 cartas): helper _sem_steps_ja_dedicados() filtra, de QUALQUER segmento solto/pos-keyword, steps que ja aparecem em algum trigger PARAMETRIZADO ja capturado em result (lista _DEDICATED_TRIGGER_KEYS -- cobre todos os gatilhos das fases 1.1/1.2/1.3/1.4, nao so os 2 exemplos que revelaram o bug), aplicado nos 2 pontos de merge (segmento_solto e segmento_pos_kw).",
+    "smoke_fast.py: 2 novos testes end-to-end (test_on_own_effect_removes_char_dispara_gatilho_generico -- Crocodile dispara com bounce de personagem do OPONENTE, NAO dispara com bounce do PROPRIO; test_on_hand_card_trashed_dispara_gatilho_generico -- Kuroobi ganha Rush, Wadatsumi tem efeito negado, ambos via acao trash_from_hand generica). SMOKE FAST OK.",
+    "smoke_test.py: 1 teste pre-existente (OP08-046, linha ~1519) atualizado de ee.execute(shakuyaku, 'your_turn') para 'on_own_effect_removes_char' -- TODOS OS TESTES PASSARAM (regressao ampla, 2644 cartas)."
+  ],
+  "notes": "Escopo dos dispatchers deliberadamente limitado aos pontos de ACAO de habilidade (nao remocao em BATALHA, que e um conceito distinto no texto oficial das cartas -- 'by your effect' nunca cobre combate). on_hand_card_trashed NAO cobre custo de PAGAMENTO trash_from_hand (varios pontos espalhados em _pay_costs/_pay_counter_event_costs, nao um choke-point unico como remove_character_from_field) -- registrado aqui como gap pendente, nenhuma das 3 cartas confirmadas depende desse caminho ate onde a auditoria alcancou. Se aparecer um combo real dependente de custo-trash disparando Kuroobi/Jinbe/Wadatsumi, threadear o dispatch nos pontos de _pay_costs tambem."
+}
