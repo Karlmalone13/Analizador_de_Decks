@@ -12830,10 +12830,20 @@ class OPTCGMatch:
         refrescado + rampado via a mesma conta de don_phase(), personagens
         e lider desrestados) e reusa `_generate_and_score_actions` DE
         VERDADE contra esse estado -- a mesma logica calibrada que decide
-        o jogo real, nao uma tabela nova. Aplica a projecao TEMPORARIAMENTE
-        (muta e desfaz com try/finally) -- seguro mesmo em estado real
-        porque sempre restaura antes de retornar; usado sobretudo contra
-        copias descartaveis de simulacao (`_evaluate_state_v2`).
+        o jogo real, nao uma tabela nova.
+
+        FIX 24/07 (achado via audit_replay.py, "DON nao bate" -- Imu
+        acumulava +8 DON permanentemente numa partida real): a 1a versao
+        MUTAVA `actor` em campo (don_available/don_rested/rested) e
+        restaurava com try/finally. Mesmo `actor` sendo sempre uma copia
+        descartavel de simulacao (`_evaluate_state_v2` so roda em p2/opp2
+        deepcopiados, nunca no estado real), o restore nao provou ser
+        seguro na pratica -- confirmado isolando a chamada (audit_replay
+        zerava as anomalias com esta funcao desligada). Troca de
+        abordagem: DEEPCOPY dedicado (`actor2`) em vez de mutar+desfazer
+        -- `actor` original NUNCA e tocado, elimina a classe inteira de
+        risco em vez de tentar re-provar que o restore estava certo.
+        `other` fica de fora do deepcopy (so leitura nesta chamada).
 
         Retorna a MELHOR acao ((score, tipo, ...)) que `actor` teria
         disponivel nesse estado projetado, ou None se score<=0 ou se o
@@ -12844,24 +12854,15 @@ class OPTCGMatch:
         don_next = actor.don_available + actor.don_rested + ramp
         if don_next <= actor.don_available:
             return None
-        old_avail, old_rested = actor.don_available, actor.don_rested
-        old_char_rest = [c.rested for c in actor.field_chars]
-        old_leader_rest = actor.leader.rested if actor.leader else None
-        actor.don_available = don_next
-        actor.don_rested = 0
-        for c in actor.field_chars:
+        actor2 = deepcopy(actor)
+        actor2.don_available = don_next
+        actor2.don_rested = 0
+        for c in actor2.field_chars:
             c.rested = False
-        if actor.leader:
-            actor.leader.rested = False
-        try:
-            engine = DecisionEngine(actor, other)
-            acts = self._generate_and_score_actions(actor, other, engine)
-        finally:
-            actor.don_available, actor.don_rested = old_avail, old_rested
-            for c, r in zip(actor.field_chars, old_char_rest):
-                c.rested = r
-            if actor.leader is not None:
-                actor.leader.rested = old_leader_rest
+        if actor2.leader:
+            actor2.leader.rested = False
+        engine = DecisionEngine(actor2, other)
+        acts = self._generate_and_score_actions(actor2, other, engine)
         return acts[0] if acts and acts[0][0] > 0 else None
 
     def _next_turn_readiness_bonus(self, p, opp) -> float:

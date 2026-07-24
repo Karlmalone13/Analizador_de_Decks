@@ -224,6 +224,16 @@ class ReplayMatch:
             self._engine_match.replay_log = None
             self._engine_match._name_a = getattr(self, 'name_a', 'A')
             self._engine_match._name_b = getattr(self, 'name_b', 'B')
+            # _suppress_replay_log/decision_log: adicionados a OPTCGMatch.
+            # __init__ depois que este bypass via __new__ foi escrito --
+            # ficaram fora da lista manual de atributos e main_phase()
+            # (via _simulate_sequence_values/_log_turn_planner_decision)
+            # quebrava com AttributeError assim que a busca do Turn Planner
+            # rodava (achado 24/07, auditoria da fase A do Turn Planner --
+            # confirmado via git stash que ja quebrava ANTES desta sessao).
+            # Mesmos valores-padrao que OPTCGMatch.__init__ usa.
+            self._engine_match._suppress_replay_log = False
+            self._engine_match.decision_log = None
         return self._engine_match
 
     def setup(self):

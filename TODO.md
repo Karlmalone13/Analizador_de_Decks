@@ -2,6 +2,22 @@
 
 **Última atualização:** 24 de julho de 2026
 
+> 24/07/2026 (bloco HANDOFF 362): `audit_replay.py` consertado
+> (`replay_optcg.py._get_engine_match()` faltava 2 atributos numa
+> lista manual de inicializacao). Ao rodar de verdade contra 8
+> partidas reais, achou uma **REGRESSAO REAL** introduzida hoje: a
+> fase B (`_next_turn_readiness_bonus`) vazava DON permanentemente
+> numa partida (Imu, +8 DON do nada). Confirmado via worktree isolado
+> que NAO existia antes desta sessao. **Causa exata nao 100%
+> identificada** (mutar+restaurar `don_available`/`.rested` deveria
+> ser seguro em copias descartaveis, mas na pratica nao foi) — corrigido
+> de forma estrutural trocando mutacao+restore por `deepcopy` dedicado
+> em `_project_next_turn_best_action`, eliminando a classe de risco em
+> vez de caçar a causa exata. `audit_replay.py --n 8 --seed 7`: 0
+> excecoes, 0 anomalias (era 6). `smoke_test.py` 100%. **Pendente**:
+> se aparecer bug parecido (recurso "sumindo/duplicando") no futuro,
+> revisitar — pode ser algo mais profundo em `GameState.__deepcopy__`.
+
 > 24/07/2026 (bloco HANDOFF 361): Turn Planner Fase B — cobertura
 > COMPLETA de todos os 6 gatilhos de combo mapeados nas fases 1.1-1.4.
 > Faltavam 3: `on_own_effect_removes_char` (bônus em `avaliar_carta`

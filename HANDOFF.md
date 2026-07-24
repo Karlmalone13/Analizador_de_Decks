@@ -1,5 +1,77 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-24 (362) - Claude (sessao local) - audit_replay.py consertado + REGRESSAO REAL achada e corrigida na fase B (vazamento de DON)
+
+Usuario pediu pra consertar `audit_replay.py` (achado quebrado na fase
+A, bloco 357) e usar os logs reais pra validar se as mudancas do dia
+melhoraram/pioraram algo. Duas coisas nesta sessao:
+
+**1. `audit_replay.py` consertado.** Causa: `replay_optcg.py.
+_get_engine_match()` cria o `OPTCGMatch` interno via `__new__`
+(bypassa `__init__` de proposito, pra reaproveitar o estado do jogo ja
+em andamento em vez de recriar do zero) e monta manualmente so uma
+LISTA de atributos. Essa lista ficou desatualizada quando
+`_suppress_replay_log`/`decision_log` foram adicionados ao `__init__`
+depois -- `main_phase()` (via `_simulate_sequence_values`) quebrava
+com `AttributeError` assim que a busca do Turn Planner rodava. Fix:
+adicionados os 2 atributos faltantes na lista manual, mesmos
+valores-padrao do `__init__` real.
+
+**2. REGRESSAO REAL achada ao rodar o audit_replay recem-consertado.**
+Com o fix acima, `audit_replay.py --n 8 --seed 7` rodou de verdade
+contra 8 partidas com decks REAIS (`decklists_raw.csv`) e achou 6
+anomalias de conservacao de DON numa delas (Imu): soma
+(available+rested+anexado) chegava a 18 quando o esperado (10-don_deck)
+era 10 -- +8 DON surgindo do nada e ficando permanente dali pra
+frente. **Confirmado via `git worktree` isolado que isso NAO existia
+antes desta sessao** (baseline no commit `86470bf`, com o MESMO fix de
+`replay_optcg.py` aplicado: 0 anomalias em 4 partidas) -- e uma
+regressao real introduzida hoje, nao um bug antigo.
+
+Isolei a causa desligando/religando cada peca nova da fase B: com
+`_next_turn_readiness_bonus` desligado, 0 anomalias; religado, 6
+anomalias voltam. A causa exata do vazamento (qual linha exatamente
+corrompe `don_available`) **nao foi 100% identificada** -- a analise
+de `GameState.__deepcopy__`/`_simulate_sequence_once` mostra que
+`_evaluate_state_v2` (onde o termo roda) so opera em copias
+descartaveis (`p2`/`opp2`), nunca no estado real, e o
+`__deepcopy__` de `GameState` deep-copia `leader`/`field_chars`/etc
+corretamente (nao compartilha referencia) -- entao o mecanismo exato
+pelo qual a mutacao vazava pro estado real ficou sem explicacao
+completa.
+
+**Fix aplicado (estrutural, nao um patch pontual)**:
+`_project_next_turn_best_action` MUTAVA `actor` em campo
+(`don_available`/`don_rested`/`.rested`) e desfazia com
+`try/finally`. Trocado por um **`deepcopy` dedicado** (`actor2 =
+deepcopy(actor)`) -- a projecao roda inteira sobre a copia, `actor`
+original NUNCA e tocado. Isso elimina a CLASSE inteira de risco (mutar
++ restaurar estado compartilhado) em vez de depender de provar que o
+restore estava certo -- mais caro (+1 deepcopy por chamada, 2 chamadas
+por avaliacao), mas o custo de `_next_turn_readiness_bonus` ja era
+dominado por `_generate_and_score_actions` (3 chamadas reais), entao o
+impacto relativo e pequeno.
+
+**Validacao final**: `audit_replay.py --n 8 --seed 7`: **0 excecoes, 0
+anomalias** em 8 partidas reais (antes: 6 anomalias de DON). `smoke_fast.py`
+(inclui os testes de "estado restaurado" -- ainda passam, agora
+trivialmente, ja que `actor` nunca e mutado) + `smoke_test.py`: TODOS
+OS TESTES PASSARAM.
+
+**Licao pra proxima sessao**: mutar+restaurar estado real (mesmo com
+try/finally, mesmo em copias supostamente descartaveis) e mais
+arriscado do que parece — o mecanismo exato do vazamento aqui nunca
+foi provado, so eliminado por redesign. Preferir deepcopy dedicado
+sempre que o codigo for fazer uma projecao "e se" (what-if) que nao
+precisa alterar o estado de verdade, mesmo que isso custe mais.
+
+**Pendente**: a causa raiz exata do vazamento original nao foi
+encontrada (so contornada). Se aparecer um bug parecido no futuro
+(DON ou outro recurso "sumindo"/"duplicando"), vale revisitar esta
+investigacao — pode ser um problema mais profundo em
+`GameState.__deepcopy__`/memo do `deepcopy` que so se manifesta sob
+certas condicoes (nesta sessao, especificamente com o deck do Imu).
+
 ## 2026-07-24 (361) - Claude (sessao local) - Turn Planner fase B: cobertura COMPLETA de todos os gatilhos de combo mapeados (fases 1.1-1.4)
 
 Continuação do bloco 360 — usuário reforçou: "o turner planner tem que
