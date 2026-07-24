@@ -1,5 +1,25 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-24 (338) - Claude - benchmark humano vs bot de Mihawk (mais dado)
+
+Usuário pediu a mesma comparação do bloco 337, mas pro deck Mihawk (mais
+partidas disponíveis). Criados `metrics/mihawk_human_23jul.json` (3
+partidas do usuário pilotando Mihawk: 16.07.35, 16.54.39, 17.54.33 --
+todas vitórias) e `metrics/mihawk_bot_23jul.json` (1 partida do bot
+pilotando Mihawk: 18.13.41_p2, derrota).
+
+Números: `atk_por_turno` 1.5 (humano) vs 1.667 (bot) -- parecido;
+`pct_atk_lider` 85.7% vs **40.0%** -- diferença grande, bot ataca
+personagem muito mais que o humano, que vai na cara quase sempre;
+`dano_por_jogo` 3.667 vs 2.0; `counters_arrancados_por_jogo` 0.667 vs
+2.0 (bot arrancou MAIS counter aqui, direção oposta do cohort de
+Katakuri); `don_observado_por_ataque` **1.190 vs 0.000** -- o bot nunca
+observado com DON anexado num ataque nessa amostra (n=1, mas gap grande).
+Amostra do bot é n=1, do humano n=3 -- ambos ainda pequenos pra intervalo
+de confiança confiável, mas já dá pra ver que a diferença mais consistente
+entre os dois decks (Katakuri E Mihawk) é `pct_atk_lider`/frequência real
+de dano no líder, não tanto o DON por ataque isoladamente.
+
 ## 2026-07-24 (337) - Claude - benchmark humano vs bot de Katakuri
 
 Usuário pediu a métrica do PRÓPRIO deck que ele jogou (Katakuri), pra

@@ -1,0 +1,13 @@
+{
+  "schema": 1,
+  "description": "Partida(s) do BOT pilotando Dracule Mihawk (OP14-020) em 23/07/2026, benchmark pra comparar com o usuario pilotando o mesmo deck (mihawk_human_23jul.json).",
+  "cohorts": [
+    {
+      "label": "mihawk_bot_23jul",
+      "leader_code": "OP14-020",
+      "matches": [
+        {"file": "Charlotte.Katakuri-P_x_Dracule.Mihawk-G_2026-07-23T18.13.41_p2.json", "player": "Opponent"}
+      ]
+    }
+  ]
+}
