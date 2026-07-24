@@ -1,5 +1,76 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-24 (355) - Claude (sessao local) - fase 2 (primeira passada): scoring generico de ~24 acoes antes invisiveis em avaliar_carta
+
+Continuacao do bloco 354 -- Fase 2 da ordem de correcao combinada
+(usuario, 24/07: "temos que resolver para abranger o maximo de cartas
+possiveis"), a ultima etapa pendente. Escopo real, medido por auditoria
+(nao estimado): 101 tipos de `action` distintos aparecem em
+`on_play`/`main` no banco inteiro. `avaliar_carta` so reconhecia 8 flags
+estaticas (`get_card_flags`: draws/is_searcher/kos-is_removal/bounces/
+rests_opponent/power_buff/gives_don/gains_life) + `play_card`
+(`_conditional_play_card_combo_value`, ja existia) + concessao de
+keyword/estado a personagem PROPRIO ja em campo
+(`_conditional_board_synergy_value`, ja existia) -- o resto pontuava
+ZERO mesmo sendo o efeito PRINCIPAL da carta (ex: Ulti OP01-093 com
+`add_don` incondicional pontuava identico a uma vanilla do mesmo poder).
+
+**Decisao de escopo (primeira passada, nao a auditoria completa dos
+101)**: novo `_UNCOVERED_ACTION_VALUE` (dict) + `_uncovered_action_value()`
+cobrem so os ~24 tipos de ALTO VOLUME/ALTA CONFIANCA -- efeito PRINCIPAL
+da carta, sem ambiguidade de alvo/direcao (add_don, set_active,
+set_don_active, play_from_trash, play_from_deck, debuff_cost,
+life_to_hand, opp_trash_from_hand, gain_double_attack/blocker/banish/
+unblockable, grant_ko_immunity_type, negate_effect,
+lock_opp_blocker_turn, lock_opp_cannot_be_rested,
+place_opp_char_to_opp_life, opp_place_hand_bottom_deck,
+opp_place_trash_bottom_deck, deal_damage, attack_life,
+character_to_owner_life, transfer_don, rest_opp_don). Ficam DE FORA de
+proposito: steps de LIMPEZA/companion do mesmo bloco (deck_bottom_rest --
+159 ocorrencias, o MAIOR count do banco, mas e sempre o "resto das
+cartas vistas por look_top_deck volta pro fundo", pontuaria 2x se
+somado solto; mesma logica pra deck_reorder_rest/trash_rest) e steps
+que sao CUSTO/DRAWBACK pro proprio jogador (trash_from_hand,
+trash_own_life, give_don_opp, self_cant_*, lock_self_*, reveal_*
+informativo) -- essa segunda categoria precisaria de logica de
+sinal invertido (penalizar, nao bonificar), fora do escopo desta
+passada. Mesmo mecanismo de gate ja usado pelos outros bonus
+condicionais (`_check_conditions` contra bloco+step, estado ATUAL, nao
+so a flag estatica).
+
+**Bonus (achado durante a auditoria de acoes, nao fase 2 em si)**:
+`trash_character` (5 cartas: OP07-091, OP08-079, OP09-009, OP13-082,
+ST19-003) e a MESMA mecanica de remocao de campo que `ko` (comentario ja
+existente no handler generico de `_execute_step`: "trash_character usa
+a MESMA mecanica de remocao de campo que ko"), mas nem `is_removal`
+(`gerar_card_analysis_db.py`) nem `_is_ko_removal_step`
+(`avaliar_carta`) reconheciam -- 6 cartas ganharam `is_removal=True`
+(675 -> 681 no banco inteiro).
+
+**Validacao**: `smoke_fast.py` -- 2 checks novos (Ulti/OP01-093 recebe
++20 de `add_don`, vanilla nao recebe nada; OP09-009 agora conta como
+`is_removal`). `smoke_test.py`: TODOS OS TESTES PASSARAM (regressao
+ampla, 2644 cartas) -- sem `diff_parser.py` nesta fase porque
+`gerar_effects_db.py`/`card_effects_db.json` NAO mudaram (so
+`gerar_card_analysis_db.py`/`card_analysis_db.json` e
+`decision_engine.py`, mesmo padrao ja usado nesta sessao pro fix de
+`is_removal` dos 3 control-denial actions).
+
+**Status da ordem de correcao combinada (usuario, 24/07)**: Fase 1
+(1.1-1.4) e Fase 2 primeira passada -- ambas feitas. **Pendente pra
+proxima sessao (nao urgente, registrar aqui pra nao perder)**: os ~77
+tipos de acao restantes dos 101 auditados ficaram de fora desta
+passada (a maioria e realmente de baixo volume/baixa confianca --
+`select_grant_*` [5 variantes, mecanica de selecao +grant, nao
+mapeada pro `_BOARD_COMBO_ACTION_VALUE` existente por incerteza de
+`target`], `swap_base_power`, `reveal_opp_deck_top_choose_cost`, etc.
+-- mas vale uma segunda passada se aparecer um combo real ignorado ao
+vivo, mesmo padrao usado pra achar os bugs desta sessao inteira).
+Nenhum teste ao vivo nem push ainda (usuario pediu pra segurar) -- a
+ordem combinada de 24/07 esta agora INTEIRA (Fase 1 + Fase 2 primeira
+passada); proxima sessao decide com o usuario se testa ao vivo agora
+ou faz a segunda passada da Fase 2 primeiro.
+
 ## 2026-07-24 (354) - Claude (sessao local) - fase 1.4: gatilhos on_own_effect_removes_char + on_hand_card_trashed (6 cartas) -- FASE 1 (bugs de regra) COMPLETA
 
 Continuacao do bloco 353 -- Fase 1.4, ULTIMA etapa da Fase 1 (bugs de

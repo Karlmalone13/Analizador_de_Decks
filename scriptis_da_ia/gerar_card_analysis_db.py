@@ -141,7 +141,10 @@ def derive_analysis(card_text: str, card_type: str, counter: int) -> dict:
     _CONTROL_DENIAL_ACTIONS = {'place_opp_character_bottom_deck',
                                'lock_opp_character_refresh',
                                'lock_opp_character_attack'}
-    is_removal = (bool(actions & {'ko', 'bounce', 'rest_opp_character'})
+    # trash_character: mesma mecanica de remocao de campo que 'ko' (achado
+    # 24/07, fase 2 do mapeamento de combos -- so 4 cartas no banco, mas
+    # ficavam invisiveis pro mesmo bonus de is_removal que ko/bounce ja tem).
+    is_removal = (bool(actions & {'ko', 'bounce', 'rest_opp_character', 'trash_character'})
                  or has_opp_power_hit
                  or bool(actions & _CONTROL_DENIAL_ACTIONS))
     # comportamentos granulares (para detecção de arquétipo por cartas)

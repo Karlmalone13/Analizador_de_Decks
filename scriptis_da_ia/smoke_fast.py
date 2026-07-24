@@ -1447,6 +1447,35 @@ def test_on_hand_card_trashed_dispara_gatilho_generico() -> None:
           getattr(wadatsumi, 'own_effect_negated_this_turn', False) is True)
 
 
+def test_uncovered_action_value_pontua_acoes_antes_invisiveis() -> None:
+    # FASE 2 do mapeamento de combos (usuario, 24/07): avaliar_carta so
+    # reconhecia 8 flags (draws/is_searcher/kos-is_removal/bounces/
+    # rests_opponent/power_buff/gives_don/gains_life) + play_card + board
+    # synergy -- ~93 outros tipos de acao pontuavam ZERO. Ulti OP01-093
+    # (add_don incondicional no on_play) e um caso real disso: antes deste
+    # fix, pontuava identico a uma vanilla do mesmo poder.
+    ulti = real_card("OP01-093")
+    a = GameState(leader=real_card("OP11-062"), turn=3)
+    opp = GameState(leader=real_card("OP11-062"), turn=3)
+    eng = DecisionEngine(a, opp)
+    check("Ulti (add_don incondicional) recebe o bonus generico de _uncovered_action_value",
+          eng._uncovered_action_value(ulti) == 20.0)
+
+    vanilla = real_card("EB01-005")
+    check("Vanilla sem efeito nenhum NAO recebe bonus de _uncovered_action_value",
+          eng._uncovered_action_value(vanilla) == 0.0)
+
+    # trash_character (Fase 2, 5 cartas no banco: OP07-091, OP08-079,
+    # OP09-009, OP13-082, ST19-003) agora conta pra is_removal/kos igual a
+    # ko/bounce -- mesma mecanica de remocao de campo (comentario do
+    # handler generico em _execute_step, "trash_character usa a MESMA
+    # mecanica de remocao de campo que ko").
+    from optcg_engine.decision_engine import get_card_flags
+    flags = get_card_flags("OP09-009")
+    check("OP09-009 (Benn Beckman, trash_character no on_play) agora conta como is_removal",
+          flags.get('is_removal', False) is True)
+
+
 def test_opponent_model_ao_vivo_por_lider_e_fallback_seguro() -> None:
     # Item 3 ligado AO VIVO (14/07): lookup do .deck real por codigo do lider
     # (os decks de teste sao nomeados por arquetipo -- Kid.deck, Krieg.deck)
@@ -8059,6 +8088,7 @@ def main() -> int:
     test_on_char_played_dispara_gatilho_generico_com_filtro()
     test_on_own_effect_removes_char_dispara_gatilho_generico()
     test_on_hand_card_trashed_dispara_gatilho_generico()
+    test_uncovered_action_value_pontua_acoes_antes_invisiveis()
     test_opponent_model_ao_vivo_por_lider_e_fallback_seguro()
     test_contrafactual_ao_vivo_usa_apenas_estado_publico_mascarado()
     test_search_contextual_evita_congestionar_mao_com_bombas()

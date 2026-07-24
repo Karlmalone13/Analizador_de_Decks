@@ -9265,6 +9265,85 @@ class DecisionEngine:
                     bonus += min(60.0, len(candidatos) * valor)
         return bonus
 
+    # FASE 2 do mapeamento de combos (usuario, 24/07: "temos que resolver
+    # para abranger o maximo de cartas possiveis"). Auditoria 24/07 achou
+    # 101 tipos de 'action' distintos em on_play/main no banco inteiro --
+    # avaliar_carta so reconhecia 8 (via get_card_flags: draws/is_searcher/
+    # kos-is_removal/bounces/rests_opponent/power_buff/gives_don/gains_life)
+    # + play_card (_conditional_play_card_combo_value) + concessao de
+    # keyword/estado a personagem PROPRIO ja em campo
+    # (_conditional_board_synergy_value). O RESTO pontuava ZERO, mesmo
+    # sendo o efeito real e principal da carta -- ex: Charlotte Katakuri
+    # (add_don), Wapol (play_from_trash), Buggy (set_don_active).
+    # Primeira passada: so os tipos de ALTO VOLUME/ALTA CONFIANCA (efeito
+    # PRINCIPAL, sem ambiguidade de alvo/direcao) entram aqui -- steps de
+    # LIMPEZA/companion do mesmo bloco (deck_bottom_rest, deck_reorder_rest,
+    # trash_rest -- sempre acompanham look_top_deck/etc, contariam valor
+    # 2x se pontuados soltos) e steps que sao CUSTO/DRAWBACK pro proprio
+    # jogador (trash_from_hand, trash_own_life, give_don_opp, self_cant_*,
+    # lock_self_*, reveal_* informativo) ficam DE FORA de proposito --
+    # entram numa fase futura se algum combo real depender deles.
+    _UNCOVERED_ACTION_VALUE = {
+        'add_don': 20.0,                    # DON extra pro proprio campo
+        'set_active': 15.0,                 # desresta (ataca/bloqueia de novo)
+        'set_don_active': 15.0,             # desresta DON (recurso extra)
+        'play_from_trash': 30.0,            # recursao -- mesma familia de is_searcher
+        'play_from_deck': 25.0,             # desenvolve campo de graca
+        'debuff_cost': 12.0,                # mesmo valor usado em _BOARD_COMBO_ACTION_VALUE
+        'life_to_hand': 20.0,               # carta na mao + vida fica mais fina (defensivo)
+        'opp_trash_from_hand': 15.0,        # disrupcao de mao do oponente
+        'gain_double_attack': 25.0,         # concede a SI MESMA (mesmo valor do check estatico)
+        'gain_blocker': 20.0,
+        'gain_banish': 15.0,
+        'gain_unblockable': 20.0,
+        'grant_ko_immunity_type': 15.0,     # protege personagem(ns) proprio(s)
+        'negate_effect': 15.0,              # disrupcao/counter-play
+        'lock_opp_blocker_turn': 15.0,      # nega blocker do oponente por 1 turno -- tempo forte
+        'lock_opp_cannot_be_rested': 10.0,
+        'place_opp_char_to_opp_life': 15.0, # remove do campo do oponente (vai pra vida dele)
+        'opp_place_hand_bottom_deck': 15.0, # disrupcao de mao
+        'opp_place_trash_bottom_deck': 10.0,
+        'deal_damage': 15.0,
+        'attack_life': 10.0,
+        'character_to_owner_life': 10.0,
+        'transfer_don': 10.0,
+        'rest_opp_don': 10.0,
+    }
+
+    def _uncovered_action_value(self, card: 'Card') -> float:
+        """
+        Bonus GENERICO (fase 2) pros ~24 tipos de acao de alto
+        volume/confianca do banco que nenhum outro mecanismo de
+        avaliar_carta ainda reconhece (ver _UNCOVERED_ACTION_VALUE acima
+        pra lista e criterio de inclusao). Mesma convencao de
+        _conditional_play_card_combo_value/_conditional_board_synergy_value:
+        so on_play/main, condicoes do bloco E do step checadas contra o
+        estado ATUAL via _check_conditions, um bonus FLAT por tipo de acao
+        encontrado (nao escala por count -- mesmo padrao do bonus fixo das
+        8 flags antigas).
+        """
+        effects = get_card_effects(card.code)
+        ee = EffectExecutor(self.me, self.opp)
+        bonus = 0.0
+        vistos = set()
+        for trig in ('on_play', 'main'):
+            ef = effects.get(trig)
+            if not isinstance(ef, dict):
+                continue
+            block_conds = ef.get('conditions', {})
+            if block_conds and not ee._check_conditions(block_conds, card):
+                continue
+            for step in ef.get('steps', []):
+                action = step.get('action')
+                if action not in self._UNCOVERED_ACTION_VALUE or action in vistos:
+                    continue
+                step_conds = step.get('conditions', {})
+                if step_conds and not ee._check_conditions(step_conds, card):
+                    continue
+                vistos.add(action)
+                bonus += self._UNCOVERED_ACTION_VALUE[action]
+        return bonus
+
     def avaliar_carta(self, card: 'Card', stage_redundancy: bool = True) -> float:
         """
         Avalia o valor situacional de uma carta para jogar/guardar/descartar.
@@ -9362,7 +9441,12 @@ class DecisionEngine:
             # combos (has_ko/is_removal em gerar_card_analysis_db.py) --
             # espelha aqui pra o gate de viabilidade (_step_condition_
             # currently_holds) reconhecer o step certo quando a flag bater.
-            if act in ('ko', 'bounce', 'rest_opp_character',
+            # trash_character: mesma mecanica de remocao de campo que 'ko'
+            # (comentario do handler generico em _execute_step, "trash_
+            # character usa a MESMA mecanica de remocao de campo que ko") --
+            # achado 24/07 na fase 2 do mapeamento de combos, so 4 cartas no
+            # banco mas o gate de viabilidade tratava como acao desconhecida.
+            if act in ('ko', 'bounce', 'rest_opp_character', 'trash_character',
                       'place_opp_character_bottom_deck',
                       'lock_opp_character_refresh', 'lock_opp_character_attack'):
                 return True
@@ -9462,6 +9546,7 @@ class DecisionEngine:
 
         s += self._conditional_play_card_combo_value(card)
         s += self._conditional_board_synergy_value(card)
+        s += self._uncovered_action_value(card)
 
         # STAGE redundante: com stage propria ja em campo, a 2a copia na
         # mao so vale o UPGRADE liquido sobre a atual — e vira o pitch mais

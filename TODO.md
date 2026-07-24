@@ -2,6 +2,22 @@
 
 **Última atualização:** 24 de julho de 2026
 
+> 24/07/2026 (bloco HANDOFF 355): Fase 2 (primeira passada) feita —
+> `_uncovered_action_value()` pontua ~24 tipos de ação de alto
+> volume/alta confiança que `avaliar_carta` ignorava por completo (ex:
+> Ulti OP01-093 com `add_don` incondicional pontuava igual a uma
+> vanilla). Escopo deliberadamente limitado: fora ficam steps de
+> limpeza/companion (`deck_bottom_rest`, 159 ocorrências — sempre
+> acompanha `look_top_deck`, contaria 2x) e custos/drawback do próprio
+> jogador (precisam de sinal invertido, não bônus). Bônus lateral:
+> `trash_character` (5 cartas) agora conta como `is_removal`, mesma
+> mecânica de `ko`. `smoke_test.py` 100%. **Ordem combinada de 24/07
+> (Fase 1 completa + Fase 2 primeira passada) está INTEIRA.** Pendente
+> não-urgente: ~77 tipos de ação de baixo volume ficaram fora desta
+> passada (registrados no HANDOFF 355) — segunda passada só se um combo
+> real aparecer ignorado ao vivo. Próxima sessão: decidir com o usuário
+> se testa ao vivo agora ou faz a segunda passada primeiro.
+
 > 24/07/2026 (bloco HANDOFF 354): Fase 1.4 feita — gatilhos
 > `on_own_effect_removes_char` (Crocodile EB02-023, Boa Hancock OP07-038,
 > Shakuyaku OP08-046) e `on_hand_card_trashed` (Kuroobi OP14-045, Jinbe
