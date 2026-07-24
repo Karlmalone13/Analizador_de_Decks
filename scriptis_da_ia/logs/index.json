@@ -2293,5 +2293,30 @@
       "You": "decks/Charlotte.Katakuri-P_2026-07-23T18.13.41_p2.json",
       "Opponent": "decks/Dracule.Mihawk-G_2026-07-23T18.13.41_p2.json"
     }
+  },
+  {
+    "id": "2026-07-23T22.14.26",
+    "friendly_name": "Charlotte.Katakuri-P_x_Marshall.D.Teach-BY",
+    "date": "2026-07-23",
+    "p1": {
+      "name": "You",
+      "leader_code": "OP11-062",
+      "leader_name": "Charlotte Katakuri",
+      "slug": "Charlotte.Katakuri-P"
+    },
+    "p2": {
+      "name": "Opponent",
+      "leader_code": "OP16-080",
+      "leader_name": "Marshall D. Teach",
+      "slug": "Marshall.D.Teach-BY"
+    },
+    "turns": 9,
+    "winner": "p2",
+    "log_file": "raw/Charlotte.Katakuri-P_x_Marshall.D.Teach-BY_2026-07-23T22.14.26.log",
+    "parsed_file": "parsed/Charlotte.Katakuri-P_x_Marshall.D.Teach-BY_2026-07-23T22.14.26.json",
+    "deck_files": {
+      "You": "decks/Charlotte.Katakuri-P_2026-07-23T22.14.26.json",
+      "Opponent": "decks/Marshall.D.Teach-BY_2026-07-23T22.14.26.json"
+    }
   }
 ]
