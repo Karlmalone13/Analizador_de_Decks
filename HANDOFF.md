@@ -1,5 +1,52 @@
 # HANDOFF — registro de troca entre IAs (Claude / Codex)
 
+## 2026-07-24 (336) - Claude - order_target_candidates EXCLUI own_* de verdade (achado C#)
+
+Usuário pediu pra abrir o código C# (`BOT/OPTCGBotPlugin/`) pra investigar
+o bug do bloco 333 (Pekoms destruiu a própria Nola). Achado:
+`BotExecutor.CollectTargetCandidates` (C#) manda uma lista ÚNICA
+misturando candidatos de `own_board` e `opp_board`, confiando que "o jogo
+valida cada clique" (comentário do próprio código). Do lado Python
+(`order_target_candidates`), a detecção `actor_opp_only` (achado
+20/07, já existente) só DEPRIORIZAVA zonas `own_*` pro fim da ordem, nunca
+excluía -- a premissa era que um clique inválido é sempre no-op. Achado
+ao vivo 23-24/07 prova que essa premissa é falsa pra pelo menos esse
+padrão: o oponente não tinha nenhum personagem elegível pro KO do Pekoms
+(`power_lte=2000`), a deprioridade empurrou `own_board` pro fim mas ainda
+presente, e o clique na própria Nola foi ACEITO pelo jogo.
+
+Também achado (não corrigido, fora do escopo Python): comentário já
+existente em `server.py` (20/07) documentando 2 chamadas de
+`/choose_target` que ficaram presas 162-169 SEGUNDOS, sem causa raiz
+identificada -- muito provavelmente a mesma causa do "travamento" no
+turno 4 que o usuário reportou. Instrumentação de tempo já existe
+(`tgt_ms`, alerta se >2000ms); a causa do hang em si segue sem
+diagnóstico.
+
+**Fix aplicado:** `order_target_candidates` agora EXCLUI (não só
+deprioriza) as zonas de alvo próprias (`own_hand`, `own_board`,
+`own_trash`, `own_leader`, `own_stage`) quando `actor_opp_only` é
+verdadeiro -- nunca mais aparecem na ordem devolvida, nem como último
+recurso. Zonas de DON (`own_don*`) continuam de fora dessa exclusão
+(custo `DON!!-N` da mesma habilidade continua pagável). Sem fallback pra
+"deprioridade" quando a exclusão zera a lista -- é EXATAMENTE esse caso
+(oponente sem nenhum alvo elegível) que mais importa devolver vazio, não
+cair de volta pro bug antigo.
+
+2 testes novos em `smoke_fast.py` reproduzindo o cenário exato (Pekoms
+sem alvo elegível → lista vazia; com alvo elegível → só ele, own_* fora).
+1 teste existente (Mamaragan `[Main]`) tinha a asserção escrita pro
+comportamento antigo (deprioridade) -- atualizado pra refletir a exclusão
+de verdade, não é regressão, é o comportamento pretendido mudando.
+`smoke_fast.py` = SMOKE FAST OK. `smoke_test.py`: mesmas 3 falhas
+pré-existentes, sem regressão nova.
+
+Pendente: recompilar/reimplantar o plugin C# não foi necessário (fix
+inteiro ficou do lado Python). Validação ao vivo ainda pendente. O hang
+de 162-169s do `/choose_target` continua sem causa raiz -- precisa de
+log/console do servidor no momento exato de uma futura ocorrência pra
+diagnosticar.
+
 ## 2026-07-24 (335) - Claude - eficiencia agregada vira numero obrigatorio
 
 Usuário cobrou: eu vinha narrando "eficiência baixa" em prosa sem número

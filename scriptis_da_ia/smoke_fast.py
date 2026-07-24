@@ -180,6 +180,39 @@ def test_counter_buff_vai_pro_lider_defensor_no_empate() -> None:
           bool(order) and order[0] == 500)
 
 
+def test_actor_opp_only_exclui_own_board_de_verdade_nao_so_deprioriza() -> None:
+    # Achado ao vivo 23-24/07: Baron Tamago & Pekoms (ST34-005, "[When
+    # Attacking] DON!! -1: K.O. up to 1 of your OPPONENT'S Characters with
+    # 2000 base power or less") destruiu a PROPRIA Nola do bot -- o
+    # oponente nao tinha nenhum personagem elegivel, a deprioridade antiga
+    # so empurrava own_board pro fim da ordem (ainda presente na lista), e
+    # o clique nela foi ACEITO pelo jogo (nao foi um no-op inofensivo como
+    # a premissa antiga assumia). Fix: exclusao DURA de own_board/own_hand/
+    # own_trash/own_leader/own_stage quando o ator so mira o oponente --
+    # nunca aparecem na ordem devolvida, nem como ultimo recurso.
+    nola = real_card("OP15-069")
+    nola._deck_uid = 50
+    me = GameState(leader=real_card("OP11-062"), don_available=1)
+    me.field_chars = [nola]
+    opp = GameState(leader=real_card("ST04-001"))  # Kaido, sem personagens em campo
+    cands = [{"id": 50, "zone": "own_board", "code": "OP15-069"},
+              {"id": 1, "zone": "own_leader", "code": "OP11-062"}]
+    order = sim_bridge.order_target_candidates(
+        me, opp, cands, attacker_power=4000, actor_code="ST34-005")
+    check("Pekoms sem alvo elegivel no oponente NAO devolve a propria Nola/lider como candidato",
+          order == [])
+
+    # Com um personagem elegivel do OPONENTE na lista, ele continua vindo
+    # antes de qualquer own_* (comportamento ja esperado, sem regressao).
+    kaido_char = real_card("OP07-066")  # custo baixo, poder <=2000 tipico
+    kaido_char._deck_uid = -10
+    cands2 = cands + [{"id": -10, "zone": "opp_board", "code": "OP07-066"}]
+    order2 = sim_bridge.order_target_candidates(
+        me, opp, cands2, attacker_power=4000, actor_code="ST34-005")
+    check("Pekoms com alvo elegivel no oponente prioriza opp_board e ainda exclui own_*",
+          order2 == [-10])
+
+
 def test_draw_cost_trasha_corpo_morto_antes_da_mao() -> None:
     # Custo do draw do lider Imu (trash_char_or_hand celestial dragons): um
     # corpo de 0 poder ja usado no campo (Shalria) deve ser trashado ANTES de
@@ -442,8 +475,13 @@ def test_mamaragan_main_so_mira_oponente_apesar_do_counter_mirar_proprio() -> No
     order = sim_bridge.order_target_candidates(me, opp, candidates, actor_code="OP15-078")
     check("Mamaragan [Main]: opp_board (unico alvo legal) vem PRIMEIRO",
           order[0] == 50)
-    check("Mamaragan [Main]: own_leader/own_board (invalidos pro Main) vem depois do opp_board",
-          order.index(-1) > order.index(50) and order.index(-10) > order.index(50))
+    # Achado ao vivo 23-24/07 (Pekoms/Nola): deprioridade sozinha nao e
+    # segura -- o jogo aceitou um clique invalido em own_board no lugar de
+    # recusar. own_leader/own_board/own_hand/own_trash (invalidos pro
+    # [Main], que so mira opp_character) agora sao EXCLUIDOS de verdade,
+    # nao so empurrados pro fim.
+    check("Mamaragan [Main]: own_leader/own_board/own_hand/own_trash (invalidos) NAO aparecem mais na ordem",
+          order == [50])
 
 
 def test_katakuri_buff_so_paga_com_impacto_no_combate_e_na_curva() -> None:
@@ -7539,6 +7577,7 @@ def main() -> int:
     test_ground_death_no_low_value_negate()
     test_never_existed_no_stage_is_hard_blocked()
     test_counter_buff_vai_pro_lider_defensor_no_empate()
+    test_actor_opp_only_exclui_own_board_de_verdade_nao_so_deprioriza()
     test_draw_cost_trasha_corpo_morto_antes_da_mao()
     test_shalria_na_mao_protegida_enquanto_precisa_de_trash()
     test_debuff_when_attacking_mira_o_defensor_que_vira_o_combate()

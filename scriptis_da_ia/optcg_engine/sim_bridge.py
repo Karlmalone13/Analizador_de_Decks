@@ -1874,6 +1874,27 @@ def order_target_candidates(gs: GameState, opp_gs: GameState,
             return (5, -(engine.avaliar_carta(card) if card else 0))
         return (6, 0)
 
+    # actor_opp_only ate aqui so DEPRIORIZAVA own_* (linha ~1711),
+    # confiando que "o jogo recusa o clique invalido". Achado ao vivo
+    # 23-24/07: Baron Tamago & Pekoms (ST34-005, "[When Attacking] DON!!
+    # -1: K.O. up to 1 of your OPPONENT'S Characters with 2000 base power
+    # or less") destruiu a PROPRIA Nola do bot -- o oponente nao tinha
+    # nenhum personagem elegivel (a lista opp_board ficou vazia pra esse
+    # filtro), a deprioridade so empurrou own_board pro fim da ordem, e o
+    # clique nela foi ACEITO pelo jogo, contrariando a premissa de "clique
+    # invalido e sempre no-op". Exclusao DURA (nao so deprioridade) das
+    # zonas de ALVO proprias -- nunca inclui as zonas de DON (own_don*),
+    # que continuam validas pra pagar o custo DON!!-N da mesma habilidade.
+    # SEM fallback pro comportamento antigo: e exatamente quando a exclusao
+    # zera a lista (oponente sem NENHUM alvo elegivel, o caso real do
+    # Pekoms/Nola) que devolver vazio importa mais -- um fallback pra
+    # "deprioridade" aqui reintroduziria o proprio bug que este fix
+    # corrige. Lista vazia = nenhum alvo valido = decisao "Choose 0"
+    # (ja tratada pelo bloco 320), nao clicar em qualquer coisa.
+    _OWN_TARGET_ZONES = {'own_hand', 'own_board', 'own_trash', 'own_leader', 'own_stage'}
+    if actor_opp_only:
+        candidates = [c for c in candidates if c.get('zone') not in _OWN_TARGET_ZONES]
+
     return [c.get('id') for c in sorted(candidates, key=sort_key)]
 
 
